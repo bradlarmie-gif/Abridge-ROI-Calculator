@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import { motion, useInView, AnimatePresence } from "framer-motion";
+import { useEffect, useRef } from "react";
+import { motion, useInView } from "framer-motion";
 import { ArrowLeft, ChevronRight, Stethoscope, Zap, Building2, HeartPulse } from "lucide-react";
 import abridgeLogo from "@assets/abridge-logo-wordmark-red_1769020684647.png";
 
@@ -8,28 +8,28 @@ interface Props { onBack: () => void; onSelectSetting: (s: CareSetting) => void;
 
 const DOMAINS = [
   {
-    key: "capacity", name: "Capacity", color: "#EA2C00", lever: "time" as const,
-    tagline: "More patients. Same physicians.",
-    body: "Documentation takes 60–90 minutes per shift. When that time returns, encounter capacity expands — without adding headcount.",
-    chain: ["Documentation time ↓ 60–90 min/shift", "Visit throughput increases", "Patient access expands"],
+    key: "capacity", name: "Capacity", color: "#EA5028", lever: "time" as const,
+    tagline: "Reclaimed time becomes patient access — or a better clinical encounter.",
+    body: "Documentation can consume an hour or more per shift. When that time returns, encounter capacity can expand without adding headcount.",
+    chain: ["Hours returned to clinical care", "Visit throughput increases", "Patient access expands"],
   },
   {
-    key: "workforce", name: "Workforce", color: "#9B2B0A", lever: "time" as const,
-    tagline: "Burnout reverses. Clinicians stay.",
-    body: "Turnover costs $200K–$500K per physician. The primary driver is administrative burden. Ambient documentation attacks the root cause.",
-    chain: ["After-hours documentation eliminated", "Burnout pressure decreases", "Retention improves"],
+    key: "workforce", name: "Workforce", color: "#C35A37", lever: "time" as const,
+    tagline: "Less documentation means more medicine — and more sustainable careers.",
+    body: "The cost of replacing a physician is substantial. The primary driver is administrative burden — and ambient documentation addresses a root cause.",
+    chain: ["After-hours charting significantly reduced", "Burnout pressure decreases", "Retention improves"],
   },
   {
-    key: "revenue", name: "Revenue", color: "#1E3A5F", lever: "quality" as const,
-    tagline: "The documentation you have is the revenue you keep.",
-    body: "Notes written from full attention capture clinical specificity that memory-based notes miss. That specificity flows directly into coding accuracy and claim defense.",
-    chain: ["Clinical specificity captured in full", "Coding accuracy improves", "Denials and downgrades fall"],
+    key: "revenue", name: "Revenue", color: "#B87858", lever: "quality" as const,
+    tagline: "Revenue reflects the work performed — not the recall.",
+    body: "Notes documented in the room can capture clinical specificity that memory-based notes miss. That specificity supports coding accuracy and reduces claim vulnerability.",
+    chain: ["Clinical specificity documented in context", "Coding accuracy supported", "Claim vulnerability reduced"],
   },
   {
-    key: "quality", name: "Quality", color: "#333333", lever: "quality" as const,
-    tagline: "What gets captured gets acted on.",
-    body: "Documentation quality and physician presence during the visit both improve — the note reflects reality, and reality improves because attention was present.",
-    chain: ["Clinical complexity documented", "Care gaps identified during the visit", "Closure rates rise"],
+    key: "quality", name: "Quality", color: "#908880", lever: "quality" as const,
+    tagline: "Better notes are the foundation of better care — across every encounter.",
+    body: "When the note reflects the visit rather than a reconstruction of it, documentation can support care decisions, surface gaps, and contribute to longitudinal clinical insight.",
+    chain: ["Clinical complexity reflected in the note", "Care gaps surface during the visit", "Longitudinal insight improves"],
   },
 ];
 
@@ -37,7 +37,7 @@ const STAGES = [
   { n: "01", range: "Months 1–3", label: "Fragments", description: "Individual note quality improves. Clinicians recover time daily. The signal is present — the pattern is not yet." },
   { n: "02", range: "Months 4–12", label: "Patterns", description: "Coding trends shift. Denial rates begin to move. Retention data starts to reflect what changed in the room." },
   { n: "03", range: "Year 1–2", label: "Proof", description: "Longitudinal outcomes emerge. The model's assumptions become your organization's own data." },
-  { n: "04", range: "Year 3+", label: "Institution", description: "Clinical knowledge architecture transforms. The conversation layer becomes infrastructure — not a tool, a layer." },
+  { n: "04", range: "Year 3+", label: "Institution", description: "Clinical knowledge architecture transforms. The conversation layer becomes infrastructure — not a point solution, a foundation." },
 ];
 
 const SETTINGS = [
@@ -47,8 +47,50 @@ const SETTINGS = [
   { id: "nursing" as const, name: "Nursing", subtitle: "Inpatient nursing", icon: HeartPulse },
 ];
 
+// Named constellations — tiny asterism clusters sitting quietly in the margins
+// Nodes are silver (same as ambient) — only the thin connecting lines carry color
+// Max spread per constellation: ~50-60px on a 1440px viewport
+const NAMED_CONSTELLATIONS = [
+  {
+    name: "CAPACITY",
+    rgb: [234, 80, 40] as [number, number, number],
+    nodes: [
+      { rx: 0.042, ry: 0.572 }, { rx: 0.062, ry: 0.557 },
+      { rx: 0.073, ry: 0.585 }, { rx: 0.048, ry: 0.608 }, { rx: 0.060, ry: 0.598 },
+    ],
+    edges: [[0, 4], [1, 4], [2, 4], [4, 3]],  // star pattern, no closed loops
+  },
+  {
+    name: "WORKFORCE",
+    rgb: [195, 90, 55] as [number, number, number],
+    nodes: [
+      { rx: 0.037, ry: 0.783 }, { rx: 0.057, ry: 0.769 },
+      { rx: 0.070, ry: 0.795 }, { rx: 0.044, ry: 0.818 }, { rx: 0.064, ry: 0.811 },
+    ],
+    edges: [[0, 1], [1, 2], [2, 4], [3, 4]],  // chain/arc
+  },
+  {
+    name: "REVENUE",
+    rgb: [184, 120, 88] as [number, number, number],
+    nodes: [
+      { rx: 0.927, ry: 0.572 }, { rx: 0.947, ry: 0.557 },
+      { rx: 0.958, ry: 0.585 }, { rx: 0.932, ry: 0.608 }, { rx: 0.944, ry: 0.598 },
+    ],
+    edges: [[0, 4], [1, 4], [2, 4], [4, 3]],  // star pattern
+  },
+  {
+    name: "QUALITY",
+    rgb: [144, 136, 128] as [number, number, number],
+    nodes: [
+      { rx: 0.929, ry: 0.783 }, { rx: 0.949, ry: 0.769 },
+      { rx: 0.961, ry: 0.795 }, { rx: 0.936, ry: 0.818 }, { rx: 0.956, ry: 0.811 },
+    ],
+    edges: [[0, 1], [1, 2], [2, 4], [3, 4]],  // chain/arc
+  },
+];
+const TOTAL_CON_NODES = NAMED_CONSTELLATIONS.reduce((s, c) => s + c.nodes.length, 0);
+
 // ─── Particle Canvas ─────────────────────────────────────────────────────────
-// Warm glowing conversation particles — the visual core of this page
 
 function ParticleCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -65,28 +107,51 @@ function ParticleCanvas() {
     }
     setSize();
 
-    type P = { bx: number; by: number; fx: number; fy: number; ax: number; ay: number; ph: number; r: number; a: number; glow: boolean };
-
+    type P = {
+      bx: number; by: number; fx: number; fy: number;
+      ax: number; ay: number; ph: number; r: number; a: number;
+      glow: boolean; conIdx: number | null; nodeIdx: number | null;
+    };
     let pts: P[] = [];
 
     function initParticles() {
       const w = canvas!.width, h = canvas!.height;
-      const n = Math.min(380, Math.floor((w * h) / 4500));
-      pts = Array.from({ length: n }, () => {
-        const a = 0.28 + Math.random() * 0.58;
-        return {
-          bx: Math.random() * w,
-          by: Math.random() * h,
-          fx: 0.18 + Math.random() * 0.48,
-          fy: 0.12 + Math.random() * 0.36,
-          ax: 22 + Math.random() * 58,
-          ay: 10 + Math.random() * 28,
+      pts = [];
+
+      // Named constellation particles — tight oscillation, always present
+      for (let ci = 0; ci < NAMED_CONSTELLATIONS.length; ci++) {
+        const con = NAMED_CONSTELLATIONS[ci];
+        for (let ni = 0; ni < con.nodes.length; ni++) {
+          const node = con.nodes[ni];
+          pts.push({
+            bx: node.rx * w + (Math.random() - 0.5) * 6,
+            by: node.ry * h + (Math.random() - 0.5) * 4,
+            fx: 0.08 + Math.random() * 0.14,
+            fy: 0.06 + Math.random() * 0.11,
+            ax: 5 + Math.random() * 8,   // tight oscillation — stays clustered
+            ay: 3 + Math.random() * 5,
+            ph: Math.random() * Math.PI * 2,
+            r: 1.8 + Math.random() * 0.8,
+            a: 0.38 + Math.random() * 0.18,
+            glow: true,
+            conIdx: ci, nodeIdx: ni,
+          });
+        }
+      }
+
+      // Ambient particles
+      const ambient = Math.min(414, Math.max(0, Math.floor((w * h) / 3900) - TOTAL_CON_NODES));
+      for (let i = 0; i < ambient; i++) {
+        const a = 0.18 + Math.random() * 0.36;
+        pts.push({
+          bx: Math.random() * w, by: Math.random() * h,
+          fx: 0.18 + Math.random() * 0.48, fy: 0.12 + Math.random() * 0.36,
+          ax: 22 + Math.random() * 58, ay: 10 + Math.random() * 28,
           ph: Math.random() * Math.PI * 2,
-          r: 1.4 + Math.random() * 3.2,
-          a,
-          glow: a > 0.6,
-        };
-      });
+          r: 1.4 + Math.random() * 3.2, a,
+          glow: a > 0.6, conIdx: null, nodeIdx: null,
+        });
+      }
     }
     initParticles();
 
@@ -98,46 +163,93 @@ function ParticleCanvas() {
       const w = canvas!.width, h = canvas!.height;
       ctx!.clearRect(0, 0, w, h);
 
-      const pos = pts.map(p => ({
+      type Pos = { x: number; y: number; r: number; a: number; glow: boolean; conIdx: number | null; nodeIdx: number | null };
+      const pos: Pos[] = pts.map(p => ({
         x: p.bx + Math.sin(t * p.fx + p.ph) * p.ax,
         y: p.by + Math.cos(t * p.fy + p.ph * 1.42) * p.ay,
         r: p.r, a: p.a, glow: p.glow,
+        conIdx: p.conIdx, nodeIdx: p.nodeIdx,
       }));
 
-      // Connection lines
+      // Group constellation node positions for edge + label drawing
+      const conNodePos: { x: number; y: number }[][] = NAMED_CONSTELLATIONS.map(() => []);
+      for (const p of pos) {
+        if (p.conIdx !== null && p.nodeIdx !== null) {
+          conNodePos[p.conIdx][p.nodeIdx] = { x: p.x, y: p.y };
+        }
+      }
+
+      // Ambient connection lines
       ctx!.lineWidth = 0.6;
       for (let i = 0; i < pos.length; i++) {
+        if (pos[i].conIdx !== null) continue;
         for (let j = i + 1; j < pos.length; j++) {
-          const dx = pos[j].x - pos[i].x;
-          const dy = pos[j].y - pos[i].y;
+          if (pos[j].conIdx !== null) continue;
+          const dx = pos[j].x - pos[i].x, dy = pos[j].y - pos[i].y;
           const d2 = dx * dx + dy * dy;
-          if (d2 < 11025) { // 105px
+          if (d2 < 11025) {
             const alpha = (1 - Math.sqrt(d2) / 105) * 0.16;
             ctx!.beginPath();
             ctx!.moveTo(pos[i].x, pos[i].y);
             ctx!.lineTo(pos[j].x, pos[j].y);
-            ctx!.strokeStyle = `rgba(195, 205, 225, ${alpha})`;
+            ctx!.strokeStyle = `rgba(195,205,225,${alpha})`;
             ctx!.stroke();
           }
         }
       }
 
-      // Glow particles (brighter subset — rendered with shadow)
-      ctx!.shadowBlur = 10;
-      ctx!.shadowColor = "rgba(170, 185, 220, 0.65)";
-      for (const p of pos.filter(p => p.glow)) {
+      // Constellation edges + labels
+      ctx!.lineWidth = 0.65;
+      for (let ci = 0; ci < NAMED_CONSTELLATIONS.length; ci++) {
+        const con = NAMED_CONSTELLATIONS[ci];
+        const nodes = conNodePos[ci];
+        if (!nodes || nodes.length < con.nodes.length) continue;
+        const [r, g, b] = con.rgb;
+
+        for (let ei = 0; ei < con.edges.length; ei++) {
+          const ai = con.edges[ei][0], bi = con.edges[ei][1];
+          ctx!.beginPath();
+          ctx!.moveTo(nodes[ai].x, nodes[ai].y);
+          ctx!.lineTo(nodes[bi].x, nodes[bi].y);
+          ctx!.strokeStyle = `rgba(${r},${g},${b},0.22)`;
+          ctx!.stroke();
+        }
+
+        // Tiny star-map label below cluster centroid
+        let sumX = 0, maxY = -Infinity;
+        for (let ni = 0; ni < nodes.length; ni++) {
+          sumX += nodes[ni].x;
+          if (nodes[ni].y > maxY) maxY = nodes[ni].y;
+        }
+        const labelX = sumX / nodes.length;
+        const c2 = ctx as CanvasRenderingContext2D & { letterSpacing?: string };
+        ctx!.font = "bold 9px 'Manrope', system-ui, sans-serif";
+        ctx!.textAlign = "center";
+        ctx!.fillStyle = "rgba(255,255,255,0.42)";
+        if (c2.letterSpacing !== undefined) c2.letterSpacing = "2px";
+        ctx!.fillText(con.name, labelX, maxY + 14);
+        if (c2.letterSpacing !== undefined) c2.letterSpacing = "0px";
+      }
+
+      // Glow particles (constellation nodes + bright ambient)
+      ctx!.shadowBlur = 6;
+      ctx!.shadowColor = "rgba(170,185,220,0.35)";
+      for (const p of pos) {
+        if (!p.glow || p.a < 0.01) continue;
         ctx!.beginPath();
         ctx!.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx!.fillStyle = `rgba(215, 222, 238, ${p.a})`;
+        // Constellation nodes are the same silver as ambient — only the lines carry color
+        ctx!.fillStyle = `rgba(218,224,242,${p.a})`;
         ctx!.fill();
       }
 
-      // Regular particles (no shadow — cheaper)
+      // Regular ambient particles
       ctx!.shadowBlur = 0;
-      for (const p of pos.filter(p => !p.glow)) {
+      for (const p of pos) {
+        if (p.glow || p.a < 0.01) continue;
         ctx!.beginPath();
         ctx!.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx!.fillStyle = `rgba(190, 198, 218, ${p.a})`;
+        ctx!.fillStyle = `rgba(190,198,218,${p.a})`;
         ctx!.fill();
       }
 
@@ -153,123 +265,106 @@ function ParticleCanvas() {
   return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />;
 }
 
-// ─── Animated Causal Chain ────────────────────────────────────────────────────
+// ─── Waveform Canvas — continuously animated bars ────────────────────────────
 
-function CausalChain({ chain, color, active }: { chain: string[]; color: string; active: boolean }) {
-  return (
-    <div className="flex flex-col">
-      {chain.map((node, i) => (
-        <div key={i}>
-          <motion.div
-            initial={{ opacity: 0, x: -8 }}
-            animate={active ? { opacity: 1, x: 0 } : { opacity: 0, x: -8 }}
-            transition={{ delay: i * 0.14, duration: 0.28, ease: "easeOut" }}
-            className="flex items-center gap-3"
-          >
-            <div
-              className="w-5 h-5 rounded-full border flex items-center justify-center flex-shrink-0 text-[9px] font-bold"
-              style={{ borderColor: color, color, backgroundColor: `${color}12` }}
-            >
-              {i + 1}
-            </div>
-            <span className="text-[12.5px] text-[#4A4A4A] leading-tight">{node}</span>
-          </motion.div>
-          {i < chain.length - 1 && (
-            <motion.div
-              initial={{ scaleY: 0, opacity: 0 }}
-              animate={active ? { scaleY: 1, opacity: 1 } : { scaleY: 0, opacity: 0 }}
-              transition={{ delay: i * 0.14 + 0.1, duration: 0.18 }}
-              className="ml-[9px] w-px h-4 origin-top"
-              style={{ backgroundColor: `${color}35` }}
-            />
-          )}
-        </div>
-      ))}
-    </div>
-  );
+function pillRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number) {
+  const r = Math.min(w / 2, h / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
 }
 
-// ─── Domain Card ──────────────────────────────────────────────────────────────
+function WaveformCanvas({ active }: { active: boolean }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const activeRef = useRef(active);
 
-function DomainCard({ d, i }: { d: typeof DOMAINS[0]; i: number }) {
-  const [active, setActive] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { once: true, margin: "-40px" });
+  useEffect(() => { activeRef.current = active; }, [active]);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const BARS = 96;
+    const BAR_W = 2.5;
+
+    // Pre-compute per-bar parameters (bell-curve envelope + random oscillation)
+    const bars = Array.from({ length: BARS }, (_, i) => {
+      const norm = i / (BARS - 1);
+      const d = (norm - 0.5) * 3.0;
+      const env = Math.exp(-(d * d)); // Gaussian
+      const baseH = 3 + env * 58;
+      return {
+        baseH,
+        freq: 0.7 + Math.random() * 1.6,
+        phase: Math.random() * Math.PI * 2,
+        amp: 0.28 + Math.random() * 0.38,
+      };
+    });
+
+    function setSize() {
+      canvas!.width = canvas!.offsetWidth || 660;
+      canvas!.height = 88;
+    }
+    setSize();
+
+    let t = 0;
+    let opacity = 0;
+    let raf: number;
+
+    function frame() {
+      t += 0.022;
+      const w = canvas!.width;
+      const h = canvas!.height;
+
+      opacity = activeRef.current
+        ? Math.min(1, opacity + 0.03)
+        : Math.max(0, opacity - 0.03);
+
+      ctx!.clearRect(0, 0, w, h);
+
+      const gap = (w - BARS * BAR_W) / (BARS - 1);
+
+      for (let i = 0; i < BARS; i++) {
+        const bar = bars[i];
+        // Oscillate between baseH*(1-amp) and baseH
+        const osc = Math.sin(t * bar.freq + bar.phase) * 0.5 + 0.5; // 0..1
+        const barH = Math.max(2, bar.baseH * (1 - bar.amp + bar.amp * osc));
+        const x = i * (BAR_W + gap);
+        const y = (h - barH) / 2;
+
+        const norm = i / (BARS - 1);
+        const center = 1 - Math.abs(norm - 0.5) * 2;
+        const alpha = (0.18 + center * 0.34) * opacity;
+
+        ctx!.fillStyle = `rgba(255,255,255,${alpha})`;
+        pillRect(ctx!, x, y, BAR_W, barH);
+        ctx!.fill();
+      }
+
+      raf = requestAnimationFrame(frame);
+    }
+    frame();
+
+    const onResize = () => setSize();
+    window.addEventListener("resize", onResize);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("resize", onResize);
+    };
+  }, []);
 
   return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 24 }}
-      animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ delay: i * 0.1, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-      onMouseEnter={() => setActive(true)}
-      onMouseLeave={() => setActive(false)}
-      className="relative bg-white rounded-2xl overflow-hidden"
-      style={{
-        border: `1px solid ${active ? d.color + "55" : "#E8E3DC"}`,
-        boxShadow: active
-          ? `0 20px 56px -12px ${d.color}30, 0 4px 12px rgba(0,0,0,0.07)`
-          : "0 2px 6px rgba(0,0,0,0.05)",
-        transition: "box-shadow 0.35s ease, border-color 0.25s ease",
-      }}
-    >
-      {/* Color band */}
-      <motion.div
-        className="h-[3px] w-full"
-        style={{ backgroundColor: d.color }}
-        animate={{ opacity: active ? 1 : 0.55 }}
-      />
-
-      {/* Subtle color wash on hover */}
-      <motion.div
-        className="absolute inset-0 pointer-events-none"
-        style={{ background: `linear-gradient(135deg, ${d.color}06 0%, transparent 60%)` }}
-        animate={{ opacity: active ? 1 : 0 }}
-        transition={{ duration: 0.3 }}
-      />
-
-      <div className="relative p-7">
-        {/* Label */}
-        <div className="flex items-center gap-2 mb-3">
-          <motion.div
-            className="w-2 h-2 rounded-full"
-            style={{ backgroundColor: d.color }}
-            animate={{ scale: active ? 1.3 : 1 }}
-            transition={{ duration: 0.2 }}
-          />
-          <p className="text-[10.5px] font-bold uppercase tracking-[2.5px]" style={{ color: d.color }}>
-            {d.name}
-          </p>
-        </div>
-
-        <p className="text-[16px] font-bold text-[#1A1A1A] leading-snug mb-3">
-          {d.tagline}
-        </p>
-
-        <p className="text-[13px] text-[#787878] leading-relaxed">
-          {d.body}
-        </p>
-
-        <AnimatePresence>
-          {active && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.22, ease: "easeOut" }}
-              className="overflow-hidden"
-            >
-              <div className="mt-5 pt-5 border-t border-[#F0EAE2]">
-                <p className="text-[9.5px] font-bold text-[#C5BEB5] uppercase tracking-[2.5px] mb-4">
-                  Causal chain
-                </p>
-                <CausalChain chain={d.chain} color={d.color} active={active} />
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-    </motion.div>
+    <canvas
+      ref={canvasRef}
+      className="w-full max-w-[660px]"
+      style={{ height: 88, display: "block" }}
+    />
   );
 }
 
@@ -277,13 +372,10 @@ function DomainCard({ d, i }: { d: typeof DOMAINS[0]; i: number }) {
 
 export function MethodologyFramework({ onBack, onSelectSetting }: Props) {
   const leversRef = useRef<HTMLDivElement>(null);
-  const domainsRef = useRef<HTMLDivElement>(null);
-  const longRef = useRef<HTMLDivElement>(null);
-  const ctaRef = useRef<HTMLDivElement>(null);
+  const continuumRef = useRef<HTMLDivElement>(null);
 
   const leversInView = useInView(leversRef, { once: true, margin: "-60px" });
-  const longInView = useInView(longRef, { once: true, margin: "-60px" });
-  const ctaInView = useInView(ctaRef, { once: true, margin: "-60px" });
+  const continuumInView = useInView(continuumRef, { once: true, margin: "-80px" });
 
   return (
     <div>
@@ -351,19 +443,19 @@ export function MethodologyFramework({ onBack, onSelectSetting }: Props) {
 
               <h1
                 className="font-bold text-white leading-[1.0] tracking-[-0.025em] mb-8"
-                style={{ fontSize: "clamp(48px, 6.5vw, 76px)" }}
+                style={{ fontSize: "clamp(36px, 4.2vw, 52px)" }}
               >
                 Healthcare runs<br />on conversations.
               </h1>
 
               <motion.p
-                className="leading-[1.85] max-w-[500px] mx-auto"
-                style={{ fontSize: 17, color: "rgba(255,255,255,0.46)" }}
+                className="leading-[1.75] max-w-[520px] mx-auto"
+                style={{ fontSize: 17, color: "rgba(255,255,255,0.62)" }}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.5 }}
               >
-                4.3 billion clinical encounters every year in the US. Each produces a note — written from memory, after the fact, by a clinician with twelve more patients today.
+                The clinical note has long been a reconstruction — written from memory, after the fact, by a clinician already in the next room.
               </motion.p>
 
               <motion.div
@@ -397,27 +489,18 @@ export function MethodologyFramework({ onBack, onSelectSetting }: Props) {
             >
               <h2
                 className="font-bold text-white leading-[1.08] tracking-[-0.02em] mb-10"
-                style={{ fontSize: "clamp(34px, 4.5vw, 52px)" }}
+                style={{ fontSize: "clamp(36px, 4.2vw, 52px)" }}
               >
                 Captured in the room.<br />Returned as the note.
               </h2>
 
-              {/* Waveform — represents the capture moment */}
-              <div className="flex items-center justify-center gap-[3px] mb-10">
-                {[4,7,11,16,22,18,26,38,34,28,44,48,42,36,44,52,46,38,44,34,26,40,30,22,18,28,20,14,9,5].map((h, i) => (
-                  <motion.div
-                    key={i}
-                    className="rounded-full"
-                    style={{ width: 2, height: h, backgroundColor: "rgba(255,255,255,0.28)" }}
-                    initial={{ scaleY: 0, opacity: 0 }}
-                    animate={leversInView ? { scaleY: 1, opacity: 1 } : {}}
-                    transition={{ delay: 0.1 + i * 0.025, duration: 0.35, ease: "easeOut" }}
-                  />
-                ))}
+              {/* Live waveform — animated canvas */}
+              <div className="flex justify-center mb-10">
+                <WaveformCanvas active={leversInView} />
               </div>
 
-              <p className="text-[15px] leading-relaxed max-w-[420px] mx-auto" style={{ color: "rgba(255,255,255,0.36)" }}>
-                Every word spoken in every clinical encounter — automatically structured into complete documentation.
+              <p className="leading-[1.75] max-w-[520px] mx-auto" style={{ fontSize: 17, color: "rgba(255,255,255,0.58)" }}>
+                When the conversation is documented in the room, two things shift: clinicians reclaim time, and the record finally reflects what actually happened.
               </p>
             </motion.div>
 
@@ -430,13 +513,13 @@ export function MethodologyFramework({ onBack, onSelectSetting }: Props) {
               {
                 label: "Lever 1",
                 headline: "Time returns.",
-                sub: "Documentation takes 60–90 minutes per shift. When that time returns, two value pools open.",
+                sub: "Saved documentation time can expand patient access, improve the experience of practicing medicine — or both.",
                 domains: DOMAINS.filter(d => d.lever === "time"),
               },
               {
                 label: "Lever 2",
-                headline: "The note matches the room.",
-                sub: "Notes written with full attention capture what memory misses. That accuracy flows downstream into revenue and outcomes.",
+                headline: "Notes reflect.",
+                sub: "Memory compresses. The room doesn't. A complete transcript changes what revenue can be recognized and what care can be built on.",
                 domains: DOMAINS.filter(d => d.lever === "quality"),
               },
             ] as const).map((lever, li) => (
@@ -446,44 +529,40 @@ export function MethodologyFramework({ onBack, onSelectSetting }: Props) {
                 animate={leversInView ? { opacity: 1, y: 0 } : {}}
                 transition={{ delay: 0.2 + li * 0.12, duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
               >
-                <p className="text-[10px] font-bold uppercase tracking-[3px] mb-5" style={{ color: "rgba(255,255,255,0.2)" }}>
+                <p className="text-[10px] font-bold uppercase tracking-[3px] mb-6" style={{ color: "#EA2C00" }}>
                   {lever.label}
                 </p>
                 <h3
-                  className="font-bold text-white leading-[1.05] tracking-tight mb-5"
-                  style={{ fontSize: "clamp(30px, 3.2vw, 42px)" }}
+                  className="font-bold text-white leading-[1.05] tracking-tight mb-6"
+                  style={{ fontSize: "clamp(32px, 3.5vw, 46px)" }}
                 >
                   {lever.headline}
                 </h3>
-                <p className="text-[15px] leading-relaxed mb-10" style={{ color: "rgba(255,255,255,0.36)" }}>
+                <p className="leading-relaxed mb-12" style={{ fontSize: 18, color: "rgba(255,255,255,0.52)" }}>
                   {lever.sub}
                 </p>
 
-                {/* Domain list — accent bar + name + tagline, no chip boxes */}
-                <div className="space-y-6">
-                  {lever.domains.map(d => {
-                    const accentColor = d.color === "#333333" ? "rgba(255,255,255,0.28)" : d.color;
-                    const nameColor = d.color === "#333333" ? "rgba(255,255,255,0.45)" : d.color;
-                    return (
-                      <div key={d.key} className="flex gap-4">
-                        <div
-                          className="w-[2px] rounded-full flex-shrink-0"
-                          style={{ backgroundColor: accentColor, minHeight: 44 }}
-                        />
-                        <div>
-                          <p
-                            className="text-[10.5px] font-bold uppercase tracking-[2.5px] mb-1.5"
-                            style={{ color: nameColor }}
-                          >
-                            {d.name}
-                          </p>
-                          <p className="text-[14px] leading-snug" style={{ color: "rgba(255,255,255,0.44)" }}>
-                            {d.tagline}
-                          </p>
-                        </div>
+                {/* Domain items — all white/silver, no competing colors on dark bg */}
+                <div className="space-y-8">
+                  {lever.domains.map(d => (
+                    <div key={d.key} className="flex gap-5">
+                      <div
+                        className="w-[2px] rounded-full flex-shrink-0 mt-1"
+                        style={{ backgroundColor: "rgba(255,255,255,0.16)", minHeight: 52 }}
+                      />
+                      <div>
+                        <p
+                          className="text-[10px] font-bold uppercase tracking-[2.5px] mb-2"
+                          style={{ color: "rgba(255,255,255,0.38)" }}
+                        >
+                          {d.name}
+                        </p>
+                        <p style={{ fontSize: 17, lineHeight: 1.5, color: "rgba(255,255,255,0.60)" }}>
+                          {d.tagline}
+                        </p>
                       </div>
-                    );
-                  })}
+                    </div>
+                  ))}
                 </div>
               </motion.div>
             ))}
@@ -491,122 +570,218 @@ export function MethodologyFramework({ onBack, onSelectSetting }: Props) {
         </div>
       </section>
 
-      </div>{/* end shared dark canvas wrapper */}
+        {/* ── Unified: Continuum + Domains + Arc + Entry ─────────────── */}
+        <section ref={continuumRef} style={{ position: "relative", zIndex: 1 }}>
+          <div style={{ borderTop: "1px solid rgba(255,255,255,0.07)" }} />
+          <div className="max-w-[1080px] mx-auto px-6 md:px-10 pt-24 pb-36">
 
-      {/* ── Four Domains ───────────────────────────────────────────────── */}
-      <section ref={domainsRef} className="bg-[#F5F0EB] py-24 px-6 md:px-10">
-        <div className="max-w-[1080px] mx-auto">
-          <div className="mb-12">
-            <p className="text-[10px] font-bold text-[#EA2C00] uppercase tracking-[2.5px] mb-3">Four Domains</p>
-            <h2 className="text-[38px] font-bold text-[#1A1A1A] leading-tight tracking-tight">
-              The four outcomes.
-            </h2>
-            <p className="text-[16px] text-[#888888] leading-relaxed mt-3 max-w-[480px]">
-              Two levers, four distinct value pools. Each has a direct causal path from the transcription layer.
-            </p>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {DOMAINS.map((d, i) => <DomainCard key={d.key} d={d} i={i} />)}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Longitudinal Arc ───────────────────────────────────────────── */}
-      <section ref={longRef} className="bg-white py-24 px-6 md:px-10" style={{ borderTop: "1px solid #EDE8E2" }}>
-        <div className="max-w-[1080px] mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 18 }}
-            animate={longInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className="mb-14"
-          >
-            <p className="text-[10px] font-bold text-[#EA2C00] uppercase tracking-[2.5px] mb-3">The Arc</p>
-            <h2 className="text-[38px] font-bold text-[#1A1A1A] leading-tight tracking-tight mb-4">
-              Value deepens as conversations<br className="hidden md:inline" /> accumulate.
-            </h2>
-            <p className="text-[16px] text-[#888888] leading-relaxed max-w-[520px]">
-              The transcription layer is an evidence engine. What you can measure — and claim — grows with every conversation captured.
-            </p>
-          </motion.div>
-
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-5">
-            {STAGES.map((s, i) => (
-              <motion.div
-                key={s.label}
-                initial={{ opacity: 0, y: 18 }}
-                animate={longInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ delay: 0.1 + i * 0.1, duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
+            {/* Intro */}
+            <motion.div
+              className="mb-24"
+              initial={{ opacity: 0, y: 20 }}
+              animate={continuumInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <p className="text-[10px] font-bold uppercase tracking-[3px] mb-4" style={{ color: "#EA2C00" }}>
+                The Continuum
+              </p>
+              <h2
+                className="font-bold text-white leading-[1.08] tracking-[-0.02em] mb-5"
+                style={{ fontSize: "clamp(30px, 3.6vw, 46px)" }}
               >
-                <div className="flex md:flex-col items-start gap-4 mb-3">
-                  <div
-                    className="w-9 h-9 flex-shrink-0 rounded-full flex items-center justify-center"
-                    style={{ backgroundColor: "#F5F0EB", border: "1.5px solid #DDD6CC" }}
-                  >
-                    <span className="text-[10.5px] font-bold text-[#AAAAAA]">{s.n}</span>
-                  </div>
-                  <div className="md:mt-4">
-                    <p className="text-[9.5px] font-semibold uppercase tracking-[2px] text-[#BBBBBB] mb-1">{s.range}</p>
-                    <p className="text-[20px] font-bold text-[#1A1A1A] leading-tight">{s.label}</p>
-                  </div>
-                </div>
-                <p className="text-[13px] text-[#888888] leading-relaxed pl-[52px] md:pl-0">
-                  {s.description}
-                </p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
+                Every care setting.<br />One accumulating record.
+              </h2>
+              <p style={{ fontSize: 17, color: "rgba(255,255,255,0.48)", lineHeight: 1.75, maxWidth: 560 }}>
+                Healthcare is a continuum of care by nature. Each care setting is a different point of capture — and every captured conversation feeds the same four domains of value, simultaneously, across your whole system.
+              </p>
+            </motion.div>
 
-      {/* ── Settings CTA ───────────────────────────────────────────────── */}
-      <section
-        ref={ctaRef}
-        className="bg-[#FAF7F4] py-24 px-6 md:px-10"
-        style={{ borderTop: "1px solid #EDE8E2" }}
-      >
-        <div className="max-w-[1080px] mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={ctaInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
-            className="mb-10"
-          >
-            <p className="text-[10px] font-bold text-[#EA2C00] uppercase tracking-[2.5px] mb-3">Explore the Methodology</p>
-            <h2 className="text-[38px] font-bold text-[#1A1A1A] leading-tight tracking-tight mb-3">
-              Pick your setting.
-            </h2>
-            <p className="text-[16px] text-[#888888] leading-relaxed">
-              Each care setting has its own drivers, benchmarks, and causal chains.
-            </p>
-          </motion.div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {SETTINGS.map((s, i) => {
-              const Icon = s.icon;
-              return (
-                <motion.button
-                  key={s.id}
-                  initial={{ opacity: 0, y: 14 }}
-                  animate={ctaInView ? { opacity: 1, y: 0 } : {}}
-                  transition={{ delay: i * 0.07, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                  onClick={() => onSelectSetting(s.id)}
-                  className="group bg-white border border-[#E5E5E5] hover:border-[#EA2C00] rounded-xl p-6 text-left transition-all duration-200"
-                  data-testid={`button-setting-${s.id}`}
+            {/* Domains with vertical spine */}
+            <div className="relative">
+              {/* Spine */}
+              <div
+                className="absolute left-0 top-3 w-px hidden md:block"
+                style={{
+                  height: "calc(100% - 60px)",
+                  background: "linear-gradient(to bottom, rgba(234,80,40,0.55) 0%, rgba(195,90,55,0.45) 28%, rgba(184,120,88,0.38) 62%, rgba(144,136,128,0.26) 100%)",
+                }}
+              />
+              {DOMAINS.map((d, i) => (
+                <motion.div
+                  key={d.key}
+                  className="relative md:pl-12 pb-16 md:pb-20"
+                  initial={{ opacity: 0, y: 24 }}
+                  animate={continuumInView ? { opacity: 1, y: 0 } : {}}
+                  transition={{ delay: 0.12 + i * 0.14, duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
                 >
-                  <div className="w-10 h-10 bg-[#F5F0EB] group-hover:bg-[#EA2C00]/10 rounded-lg flex items-center justify-center mb-4 transition-colors">
-                    <Icon className="w-5 h-5 text-[#EA2C00]" />
+                  {/* Spine dot */}
+                  <div
+                    className="absolute left-[-4px] top-[10px] w-[9px] h-[9px] rounded-full hidden md:block"
+                    style={{ backgroundColor: d.color, boxShadow: `0 0 10px ${d.color}80` }}
+                  />
+                  <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-10 md:gap-16">
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-[2.5px] mb-4" style={{ color: d.color }}>
+                        {d.name}
+                      </p>
+                      <h3 className="font-bold text-white mb-4" style={{ fontSize: "clamp(19px, 2.1vw, 26px)", lineHeight: 1.25 }}>
+                        {d.tagline}
+                      </h3>
+                      <p style={{ fontSize: 14.5, color: "rgba(255,255,255,0.52)", lineHeight: 1.78 }}>
+                        {d.body}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[9px] font-bold uppercase tracking-[2.5px] mb-5" style={{ color: "rgba(255,255,255,0.35)" }}>
+                        Value chain
+                      </p>
+                      <div className="flex flex-col">
+                        {d.chain.map((step, si) => (
+                          <div key={si}>
+                            <div className="flex items-center gap-3">
+                              <div
+                                className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 text-[9px] font-bold"
+                                style={{ border: `1px solid ${d.color}90`, color: d.color }}
+                              >
+                                {si + 1}
+                              </div>
+                              <span style={{ fontSize: 13, color: "rgba(255,255,255,0.72)", lineHeight: 1.5 }}>
+                                {step}
+                              </span>
+                            </div>
+                            {si < d.chain.length - 1 && (
+                              <div className="ml-[9px] w-px h-4" style={{ backgroundColor: `${d.color}22` }} />
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   </div>
-                  <h3 className="font-semibold text-[#1A1A1A] mb-0.5 text-[15px]">{s.name}</h3>
-                  <p className="text-[13px] text-[#888888] mb-4">{s.subtitle}</p>
-                  <div className="flex items-center gap-1 text-[#EA2C00] opacity-0 group-hover:opacity-100 transition-opacity">
-                    <span className="text-[13px] font-medium">Explore</span>
-                    <ChevronRight className="w-3.5 h-3.5" />
-                  </div>
-                </motion.button>
-              );
-            })}
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Divider */}
+            <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", margin: "8px 0 80px" }} />
+
+            {/* The Arc */}
+            <motion.div
+              initial={{ opacity: 0, y: 18 }}
+              animate={continuumInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ delay: 0.7, duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <p className="text-[10px] font-bold uppercase tracking-[3px] mb-4" style={{ color: "#EA2C00" }}>
+                The Arc
+              </p>
+              <h2
+                className="font-bold text-white leading-[1.08] tracking-[-0.02em] mb-4"
+                style={{ fontSize: "clamp(26px, 3.0vw, 38px)" }}
+              >
+                Value deepens as conversations<br className="hidden md:inline" /> accumulate.
+              </h2>
+              <p style={{ fontSize: 16, color: "rgba(255,255,255,0.42)", lineHeight: 1.75, maxWidth: 500, marginBottom: 56 }}>
+                The transcription layer is an evidence engine. What you can measure — and claim — grows with every conversation captured.
+              </p>
+              <div className="relative">
+                <div
+                  className="absolute top-[15px] left-[15px] right-[15px] h-px hidden md:block"
+                  style={{ background: "linear-gradient(to right, rgba(234,44,0,0.28), rgba(255,255,255,0.07))" }}
+                />
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-6">
+                  {STAGES.map((s, i) => (
+                    <motion.div
+                      key={s.label}
+                      initial={{ opacity: 0, y: 14 }}
+                      animate={continuumInView ? { opacity: 1, y: 0 } : {}}
+                      transition={{ delay: 0.8 + i * 0.1, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                    >
+                      <div
+                        className="w-[30px] h-[30px] rounded-full flex items-center justify-center mb-5"
+                        style={{
+                          backgroundColor: `rgba(255,255,255,${0.03 + i * 0.025})`,
+                          border: `1px solid rgba(255,255,255,${0.07 + i * 0.045})`,
+                        }}
+                      >
+                        <span style={{ fontSize: 9.5, fontWeight: 700, color: `rgba(255,255,255,${0.25 + i * 0.16})` }}>
+                          {s.n}
+                        </span>
+                      </div>
+                      <p style={{ fontSize: 9, fontWeight: 600, textTransform: "uppercase" as const, letterSpacing: "2px", color: "rgba(255,255,255,0.22)", marginBottom: 4 }}>
+                        {s.range}
+                      </p>
+                      <p style={{ fontSize: 18, fontWeight: 700, color: `rgba(255,255,255,${0.46 + i * 0.16})`, lineHeight: 1.2, marginBottom: 8 }}>
+                        {s.label}
+                      </p>
+                      <p style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", lineHeight: 1.65 }}>
+                        {s.description}
+                      </p>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Divider */}
+            <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", margin: "80px 0" }} />
+
+            {/* Entry CTA */}
+            <motion.div
+              className="mb-12"
+              initial={{ opacity: 0, y: 18 }}
+              animate={continuumInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ delay: 1.1, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <p className="text-[10px] font-bold uppercase tracking-[3px] mb-4" style={{ color: "#EA2C00" }}>
+                Explore the Methodology
+              </p>
+              <h2
+                className="font-bold text-white leading-[1.08] tracking-[-0.02em] mb-4"
+                style={{ fontSize: "clamp(26px, 3.0vw, 38px)" }}
+              >
+                Where in the continuum<br />are you starting?
+              </h2>
+              <p style={{ fontSize: 16, color: "rgba(255,255,255,0.42)", lineHeight: 1.75, maxWidth: 500 }}>
+                Each care setting is a different point of capture — its own clinical conversations, documentation patterns, and value drivers.
+              </p>
+            </motion.div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {SETTINGS.map((s, i) => {
+                const Icon = s.icon;
+                return (
+                  <motion.button
+                    key={s.id}
+                    initial={{ opacity: 0, y: 14 }}
+                    animate={continuumInView ? { opacity: 1, y: 0 } : {}}
+                    transition={{ delay: 1.2 + i * 0.08, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                    onClick={() => onSelectSetting(s.id)}
+                    className="group text-left rounded-xl p-6 transition-all duration-200 hover:border-white/20"
+                    style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.09)" }}
+                    data-testid={`button-setting-${s.id}`}
+                  >
+                    <div className="w-10 h-10 rounded-lg flex items-center justify-center mb-4" style={{ backgroundColor: "rgba(255,255,255,0.07)" }}>
+                      <Icon className="w-5 h-5" style={{ color: "rgba(255,255,255,0.50)" }} />
+                    </div>
+                    <h3 style={{ fontWeight: 600, color: "rgba(255,255,255,0.88)", fontSize: 15, marginBottom: 3 }}>
+                      {s.name}
+                    </h3>
+                    <p style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", marginBottom: 20 }}>
+                      {s.subtitle}
+                    </p>
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: "#EA2C00" }}>
+                      <span style={{ fontSize: 13, fontWeight: 500 }}>Enter</span>
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </div>
+                  </motion.button>
+                );
+              })}
+            </div>
+
           </div>
-        </div>
-      </section>
+        </section>
+
+      </div>{/* end dark canvas */}
+
     </div>
   );
 }
