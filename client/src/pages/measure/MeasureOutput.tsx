@@ -189,7 +189,7 @@ function ManageQuotesPanel({
 
   return (
     <motion.div
-      className="bg-white rounded-2xl border border-[#E8E8E8] p-5 mb-4"
+      className="bg-white rounded-2xl border border-[#E8E8E8] overflow-hidden p-5 mb-4"
       initial={{ opacity: 0, height: 0 }}
       animate={{ opacity: 1, height: 'auto' }}
       exit={{ opacity: 0, height: 0 }}
@@ -741,7 +741,7 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
                 data-testid="button-manage-quotes"
               >
                 <MessageSquare className="w-3.5 h-3.5" />
-                {showManageQuotes ? 'Done' : `Quotes${(state.quotes?.length ?? 0) > 0 ? ` (${state.quotes!.length})` : ''}`}
+                {showManageQuotes ? 'Done' : `Quotes${(state.quotes?.length ?? 0) > 0 ? ` (${state.quotes?.length})` : ''}`}
               </button>
             </div>
 
@@ -754,7 +754,7 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
               )}
             </AnimatePresence>
 
-            {showQuotes && <QuotesBlock quotes={state.quotes!} />}
+            {showQuotes && <QuotesBlock quotes={state.quotes ?? []} />}
 
             {/* ── Domain sections ───────────────────────────────────────────── */}
             <motion.div
