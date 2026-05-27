@@ -30,23 +30,12 @@ const STAGE_DESCRIPTIONS: Record<MaturityStage, string> = {
   strategic: 'Abridge is embedded in organizational strategy with board-ready proof.',
 };
 
-const SETTING_SUGGESTIONS: Record<string, { label: string; benchmarks: string[] }> = {
-  outpatient: {
-    label: 'Emergency Department',
-    benchmarks: ['LWBS rate −0.6 to −1.2 pts', 'Door-to-doc time −18%', 'Note time −42%'],
-  },
-  ed: {
-    label: 'Inpatient',
-    benchmarks: ['CMI improvement +0.02–0.05', 'Note completion same-day +28%', 'Documentation time −35%'],
-  },
-  inpatient: {
-    label: 'Outpatient',
-    benchmarks: ['wRVU lift +0.15–0.40 per encounter', 'Note time −44%', 'After-hours work −1.2 hrs/day'],
-  },
-  nursing: {
-    label: 'Outpatient',
-    benchmarks: ['wRVU lift +0.15–0.40 per encounter', 'Note time −44%', 'After-hours work −1.2 hrs/day'],
-  },
+const ALL_CARE_SETTINGS = ['outpatient', 'ed', 'inpatient', 'nursing'] as const;
+const SETTING_DISPLAY: Record<string, string> = {
+  outpatient: 'Outpatient',
+  ed: 'Emergency Department',
+  inpatient: 'Inpatient',
+  nursing: 'Nursing',
 };
 
 function fmt(n: number): string {
@@ -317,7 +306,8 @@ export default function MeasureOpportunity({
 
   const showDeepenAdoption = utilizationRate < 75;
   const showExpandProviders = providers < totalProviders;
-  const showAddSetting = (state.activeCareSettings || [setting]).length <= 1;
+  const remainingSettings = ALL_CARE_SETTINGS.filter(s => !activeSettingsList.includes(s));
+  const showAddSetting = remainingSettings.length > 0;
   const allFullyDeployed = !showDeepenAdoption && !showExpandProviders && !showAddSetting;
 
   const [pdfLoading, setPdfLoading] = useState(false);
@@ -420,7 +410,6 @@ export default function MeasureOpportunity({
     }
   };
 
-  const suggestionData = SETTING_SUGGESTIONS[setting] || SETTING_SUGGESTIONS.outpatient;
 
   return (
     <div className="min-h-screen bg-[#FAFAFA]">
@@ -692,17 +681,15 @@ export default function MeasureOpportunity({
                 {showAddSetting && (
                   <div className="bg-[#F5F0EB] rounded-2xl border border-[#E5E5E5] p-6" data-testid="lever-add-setting">
                     <h3 className="text-xs font-bold uppercase tracking-widest text-[#666666] mb-3">Add a Care Setting</h3>
-                    <p className="text-sm text-[#666666] mb-1">Currently measuring: {settingLabel}</p>
-                    <p className="text-sm text-[#666666] mb-3">Next setting to consider: <span className="font-medium text-[#1A1A1A]">{suggestionData.label}</span></p>
-                    <p className="text-xs text-[#999999] mb-2">{suggestionData.label} deployments have shown (Abridge customer data, 2025–2026):</p>
-                    <ul className="space-y-1">
-                      {suggestionData.benchmarks.map((b, i) => (
-                        <li key={i} className="text-sm text-[#666666] flex items-start gap-2">
-                          <span className="text-[#EA2C00] mt-0.5 flex-shrink-0">•</span>
-                          <span>{b}</span>
-                        </li>
+                    <p className="text-sm text-[#666666] mb-4">Currently measuring: <span className="font-medium text-[#1A1A1A]">{settingLabel}</span></p>
+                    <p className="text-xs text-[#999999] uppercase tracking-widest mb-3">Not yet deployed</p>
+                    <div className="flex flex-wrap gap-2">
+                      {remainingSettings.map(s => (
+                        <span key={s} className="px-3 py-1.5 rounded-full bg-white border border-[#E5E5E5] text-sm text-[#666666]">
+                          {SETTING_DISPLAY[s]}
+                        </span>
                       ))}
-                    </ul>
+                    </div>
                   </div>
                 )}
               </div>
