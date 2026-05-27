@@ -30,7 +30,7 @@ export default function PricingScenarioCard({
   onRemove,
 }: PricingScenarioCardProps) {
   const scale = scenario.model === 'perProvider' ? displayProviders
-              : scenario.model === 'perEncounter' ? displayEncounters
+              : scenario.model === 'perEncounter' || scenario.model === 'platformFee' ? displayEncounters
               : 0;
   const { value: investment, tier: appliedTier, warning } = computeScenarioInvestment(scenario, scale);
   const net = displayValue - investment;
@@ -111,8 +111,8 @@ export default function PricingScenarioCard({
         </button>
       </div>
 
-      <div className="grid grid-cols-3 gap-1.5 p-1 bg-[#F5F0EB] rounded-lg mb-4">
-        {(['perProvider', 'perEncounter', 'annualLicense'] as PricingModel[]).map(m => (
+      <div className="grid grid-cols-4 gap-1 p-1 bg-[#F5F0EB] rounded-lg mb-4">
+        {(['perProvider', 'perEncounter', 'annualLicense', 'platformFee'] as PricingModel[]).map(m => (
           <button
             key={m}
             onClick={() => handleModelChange(m)}
@@ -126,10 +126,29 @@ export default function PricingScenarioCard({
         ))}
       </div>
 
+      {scenario.model === 'platformFee' && (
+        <div className="mb-3">
+          <label className="text-xs font-medium text-[#888888] uppercase tracking-wide mb-1 block">Annual Base Fee</label>
+          <div className="flex items-center gap-2">
+            <div className="relative flex-1">
+              <span className="absolute left-2 top-1/2 -translate-y-1/2 text-sm text-[#888888]">$</span>
+              <FormattedNumberInput
+                value={scenario.baseFee ?? 0}
+                onChange={(v: number) => onUpdate({ baseFee: v })}
+                className="h-8 bg-white text-sm pl-6"
+                data-testid={`input-base-fee-${scenario.id}`}
+              />
+            </div>
+            <span className="text-[10px] text-[#888888] whitespace-nowrap">/year flat</span>
+          </div>
+          <p className="text-[10px] text-[#AAAAAA] mt-1">Plus per-encounter rate below</p>
+        </div>
+      )}
+
       <div className="space-y-2 mb-4">
         <div className="flex items-center justify-between">
           <p className="text-xs font-medium text-[#888888] uppercase tracking-wide">
-            {isAnnualLicense ? 'Annual fee' : 'Tier structure (stepped)'}
+            {isAnnualLicense ? 'Annual fee' : scenario.model === 'platformFee' ? 'Per-encounter rate' : 'Tier structure (stepped)'}
           </p>
           {!isAnnualLicense && (
             <button

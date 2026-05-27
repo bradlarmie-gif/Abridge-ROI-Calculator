@@ -1,4 +1,4 @@
-export type PricingModel = 'perProvider' | 'perEncounter' | 'annualLicense';
+export type PricingModel = 'perProvider' | 'perEncounter' | 'annualLicense' | 'platformFee';
 
 export interface PricingTier {
   id: string;
@@ -12,24 +12,28 @@ export interface PricingScenario {
   label: string;
   model: PricingModel;
   tiers: PricingTier[];
+  baseFee?: number;
 }
 
 export const PRICING_MODEL_LABELS: Record<PricingModel, string> = {
   perProvider: 'Per Provider / Month',
   perEncounter: 'Per Encounter',
   annualLicense: 'Annual License',
+  platformFee: 'Platform Fee',
 };
 
 export const PRICING_MODEL_RATE_SUFFIX: Record<PricingModel, string> = {
   perProvider: '/provider/mo',
   perEncounter: '/encounter',
   annualLicense: '/year',
+  platformFee: '/encounter',
 };
 
 export const PRICING_MODEL_SCALE_LABEL: Record<PricingModel, string> = {
   perProvider: 'providers',
   perEncounter: 'encounters',
   annualLicense: 'flat (no scale axis)',
+  platformFee: 'encounters',
 };
 
 export function findApplicableTier(tiers: PricingTier[], scale: number): PricingTier | null {
@@ -62,6 +66,12 @@ export function computeScenarioInvestment(
   if (scenario.model === 'perEncounter') {
     return { value: scale * tier.rate, tier };
   }
+  if (scenario.model === 'platformFee') {
+    const pfTier = findApplicableTier(scenario.tiers, scale);
+    const encounterCost = pfTier ? scale * pfTier.rate : 0;
+    const base = scenario.baseFee ?? 0;
+    return { value: base + encounterCost, tier: pfTier ?? null };
+  }
   return { value: 0, tier: null };
 }
 
@@ -80,9 +90,24 @@ export function makeDefaultTiers(model: PricingModel): PricingTier[] {
       { id: `tier-${stamp}-2`, thresholdFrom: 200000, thresholdTo: null, rate: 0.4 },
     ];
   }
+  if (model === 'platformFee') {
+    return [
+      { id: `tier-${stamp}-1`, thresholdFrom: 1, thresholdTo: null, rate: 0.25 },
+    ];
+  }
   return [
     { id: `tier-${stamp}-1`, thresholdFrom: 0, thresholdTo: null, rate: 1500000 },
   ];
+}
+
+export interface PricingYearInput {
+  providers: number;
+  encounters: number;
+  capacityValue: number;
+  workforceValue: number;
+  revenueValue: number;
+  qualityValue: number;
+  totalValue: number;
 }
 
 export interface PricingTimeSeriesPoint {
@@ -108,41 +133,23 @@ export interface TierCrossingMarker {
   label: string;
 }
 
-export interface QuadrantRatios {
-  capacity: number;
-  workforce: number;
-  revenue: number;
-  quality: number;
-}
-
 export function computePricingTimeSeries(
   scenarios: PricingScenario[],
-  startProviders: number,
-  startEncounters: number,
-  annualProviderGrowthPct: number,
-  chartYears: number,
-  baseAnnualValue: number,
-  quadrantRatios: QuadrantRatios,
+  yearlyInputs: PricingYearInput[],
 ): { points: PricingTimeSeriesPoint[]; tierCrossings: TierCrossingMarker[] } {
   const points: PricingTimeSeriesPoint[] = [];
   const tierCrossings: TierCrossingMarker[] = [];
 
-  for (let year = 1; year <= chartYears; year++) {
-    const growthFactor = (1 + annualProviderGrowthPct / 100) ** (year - 1);
-    const providers = Math.round(startProviders * growthFactor);
-    const encounters = Math.round(startEncounters * growthFactor);
-    const totalValue = Math.round(baseAnnualValue * growthFactor);
-    const valueLow = Math.round(totalValue * 0.75);
-    const valueHigh = Math.round(totalValue * 1.25);
-    const capacityValue = Math.round(totalValue * quadrantRatios.capacity);
-    const workforceValue = Math.round(totalValue * quadrantRatios.workforce);
-    const revenueValue = Math.round(totalValue * quadrantRatios.revenue);
-    const qualityValue = totalValue - capacityValue - workforceValue - revenueValue;
+  for (let i = 0; i < yearlyInputs.length; i++) {
+    const year = i + 1;
+    const inp = yearlyInputs[i];
+    const valueLow = Math.round(inp.totalValue * 0.75);
+    const valueHigh = Math.round(inp.totalValue * 1.25);
 
     const investments: Record<string, number> = {};
     for (const scenario of scenarios) {
-      const scale = scenario.model === 'perProvider' ? providers
-                  : scenario.model === 'perEncounter' ? encounters
+      const scale = scenario.model === 'perProvider' ? inp.providers
+                  : (scenario.model === 'perEncounter' || scenario.model === 'platformFee') ? inp.encounters
                   : 0;
       investments[scenario.id] = computeScenarioInvestment(scenario, scale).value;
     }
@@ -150,27 +157,26 @@ export function computePricingTimeSeries(
     points.push({
       year,
       label: `Year ${year}`,
-      providers,
-      encounters,
-      capacityValue,
-      workforceValue,
-      revenueValue,
-      qualityValue,
-      totalValue,
+      providers: inp.providers,
+      encounters: inp.encounters,
+      capacityValue: inp.capacityValue,
+      workforceValue: inp.workforceValue,
+      revenueValue: inp.revenueValue,
+      qualityValue: inp.qualityValue,
+      totalValue: inp.totalValue,
       valueLow,
       valueHigh,
       investments,
     });
   }
 
-  // Tier crossing detection
   for (const scenario of scenarios) {
     if (scenario.model === 'annualLicense') continue;
     for (let i = 1; i < points.length; i++) {
       const prevPoint = points[i - 1];
       const currPoint = points[i];
-      const prevScale = scenario.model === 'perProvider' ? prevPoint.providers : prevPoint.encounters;
-      const currScale = scenario.model === 'perProvider' ? currPoint.providers : currPoint.encounters;
+      const prevScale = (scenario.model === 'perProvider') ? prevPoint.providers : prevPoint.encounters;
+      const currScale = (scenario.model === 'perProvider') ? currPoint.providers : currPoint.encounters;
       const prevTier = findApplicableTier(scenario.tiers, prevScale);
       const currTier = findApplicableTier(scenario.tiers, currScale);
       if (prevTier && currTier && prevTier.id !== currTier.id) {
