@@ -91,7 +91,8 @@ function buildDriverPayload(
   const latest = sortedMonthly[sortedMonthly.length - 1];
   const effWith = entry.isMonthlyMode && latest ? latest.withAbridge : entry.withAbridge;
   const effWithout = entry.isMonthlyMode && latest ? latest.withoutAbridge : entry.withoutAbridge;
-  const delta = entry.lowerIsBetter ? effWithout - effWith : effWith - effWithout;
+  const lowerIsBetter = md?.lowerIsBetter ?? entry.lowerIsBetter ?? false;
+  const delta = lowerIsBetter ? effWithout - effWith : effWith - effWithout;
   const isQuantifiable = driver.visibility === "quantified" && Boolean(md);
   const scale = (entry.scaleDivisor && entry.scaleDivisor > 0 && entry.scaleValue !== undefined)
     ? entry.scaleValue / entry.scaleDivisor

@@ -50,7 +50,7 @@ export default function MeasureDriverCard({ driver, entry, onUpdate, onRemove, i
   const { withAbridge: effectiveWithAbridge, withoutAbridge: effectiveWithoutAbridge } = getEffectiveWithWithout(entry);
   const lowerIsBetter = md?.lowerIsBetter ?? false;
   const delta = lowerIsBetter ? effectiveWithoutAbridge - effectiveWithAbridge : effectiveWithAbridge - effectiveWithoutAbridge;
-  const realizedValue = getRealizedValueForEntry(entry, isQuantifiable);
+  const realizedValue = getRealizedValueForEntry({ ...entry, lowerIsBetter }, isQuantifiable);
 
   const formatCurrency = (n: number) => '$' + Math.round(n).toLocaleString();
   const formatNumber = (n: number) => n.toLocaleString();

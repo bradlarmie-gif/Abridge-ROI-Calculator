@@ -89,7 +89,8 @@ export default function MeasureQuality({ state, updateState, onNext, onBack, onH
   const quadrantTotal = useMemo(() => {
     return trackedHere.reduce((sum, { driver, entry }) => {
       const isQuantifiable = driver.visibility === 'quantified' && Boolean(driver.measureDefaults);
-      return sum + getRealizedValueForEntry(entry, isQuantifiable);
+      const entryWithLib = { ...entry, lowerIsBetter: driver.measureDefaults?.lowerIsBetter ?? entry.lowerIsBetter };
+      return sum + getRealizedValueForEntry(entryWithLib, isQuantifiable);
     }, 0);
   }, [trackedHere]);
 

@@ -243,6 +243,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
       valuePerUnitPrefix: '$',
       realizationDefault: 100,
       scaleAxis: 'providers',
+      lowerIsBetter: true,
       benchmarkHint: 'Enter the total annual cost for the scribe position(s) being reduced — salary, benefits, and any service fees. Divide by FTEs to get cost per FTE if entering multiple. In-person scribes typically run $30K–$45K/yr all-in; virtual scribe services vary by hours and contract.',
     },
     measurePhase: 'demonstrated',

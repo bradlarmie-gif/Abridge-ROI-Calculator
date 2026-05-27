@@ -737,7 +737,8 @@ export function buildMeasurePDFDataFromState(state: MeasureState): MeasurePDFDat
           const latest = sortedMonthly[sortedMonthly.length - 1];
           const effWith = entry.isMonthlyMode && latest ? latest.withAbridge : entry.withAbridge;
           const effWithout = entry.isMonthlyMode && latest ? latest.withoutAbridge : entry.withoutAbridge;
-          const delta = entry.lowerIsBetter ? effWithout - effWith : effWith - effWithout;
+          const lowerIsBetter = md?.lowerIsBetter ?? entry.lowerIsBetter ?? false;
+          const delta = lowerIsBetter ? effWithout - effWith : effWith - effWithout;
           const scaleVal = (entry.scaleDivisor && entry.scaleDivisor > 0 && entry.scaleValue !== undefined)
             ? entry.scaleValue / entry.scaleDivisor : 1;
           const isQuant = d.visibility === "quantified" && Boolean(md);
