@@ -247,6 +247,33 @@ export default function MeasureDriverCard({ driver, entry, onUpdate, onRemove, i
                 monthly
               </span>
             )}
+            {isQuantifiable && !entry.expanded && delta !== 0 && md && !driver.isCustom && (() => {
+              if (isPerEnc && abridgeEncounters) {
+                const totalMin = Math.round(Math.abs(delta) * abridgeEncounters);
+                const label = totalMin >= 120
+                  ? `${Math.round(totalMin / 60).toLocaleString()} hrs`
+                  : `${totalMin.toLocaleString()} min`;
+                return (
+                  <span className="text-xs text-[#AAAAAA] tabular-nums hidden sm:inline">
+                    {label}
+                  </span>
+                );
+              }
+              if (delta !== 0) {
+                const absDelta = Math.abs(delta);
+                const formatted = absDelta >= 1000
+                  ? absDelta.toLocaleString(undefined, { maximumFractionDigits: 0 })
+                  : absDelta % 1 === 0
+                    ? absDelta.toLocaleString()
+                    : absDelta.toFixed(1);
+                return (
+                  <span className="text-xs text-[#AAAAAA] tabular-nums hidden sm:inline">
+                    {delta > 0 ? '+' : '-'}{formatted} {md.deltaUnit}
+                  </span>
+                );
+              }
+              return null;
+            })()}
             {isQuantifiable && !entry.expanded && (
               <span className="text-sm font-bold text-[#EA2C00] tabular-nums">
                 {realizedValue !== 0 ? formatCurrency(realizedValue) : '—'}
