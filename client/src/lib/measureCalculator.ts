@@ -198,6 +198,13 @@ export interface MeasureState {
   censusConstrained?: boolean;
   trackedDrivers: Record<string, Record<string, MeasureDriverEntry>>;
   forecastScenario: ForecastScenario;
+  settingForecasts?: Record<string, {
+    providers: number;
+    utilizationPercent: number;
+    encounters: number;
+    staffedBeds: number;
+    occupancyPercent: number;
+  }>;
   maturityPhase: MaturityStage | null;
 }
 

@@ -5,8 +5,8 @@ import { motion } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { EXPLORE_DRIVERS, type ExploreDriver, type ExploreSetting, type ExploreQuadrant, type DriverScaleAxis } from "@/lib/exploreDrivers";
-import { type MeasureState, type MeasureDriverEntry, type ForecastScenario, type ForecastAddedSetting } from "@/lib/measureCalculator";
-import { computeAddedSettingValue } from "@/lib/forecastDefaults";
+import { type MeasureState, type MeasureDriverEntry, type ForecastScenario, type ForecastAddedSetting, type MeasureCareSetting } from "@/lib/measureCalculator";
+import { SETTING_LABELS, computeAddedSettingValue } from "@/lib/forecastDefaults";
 import { computeScenarioInvestment, makeDefaultTiers, type PricingScenario } from "@/lib/forecastPricing";
 import AddCareSettingModal from "@/components/measure/AddCareSettingModal";
 import AddedSettingCard from "@/components/measure/AddedSettingCard";
@@ -20,7 +20,16 @@ interface MeasureForecastProps {
   onHome: () => void;
 }
 
+type SettingForecastValues = {
+  providers: number;
+  utilizationPercent: number;
+  encounters: number;
+  staffedBeds: number;
+  occupancyPercent: number;
+};
+
 const QUADRANT_ORDER: ExploreQuadrant[] = ['Capacity', 'Workforce', 'Revenue', 'Quality'];
+const SETTING_BADGE: Record<string, string> = { outpatient: 'OP', ed: 'ED', inpatient: 'IP', nursing: 'Nsg' };
 
 function computeRealizedBaseline(driver: ExploreDriver, entry: MeasureDriverEntry): number {
   const md = driver.measureDefaults;
@@ -38,8 +47,8 @@ function computeRealizedBaseline(driver: ExploreDriver, entry: MeasureDriverEntr
 
 function computeScaleFactor(
   axis: DriverScaleAxis,
-  baseline: ForecastScenario,
-  projected: ForecastScenario
+  baseline: SettingForecastValues,
+  projected: SettingForecastValues
 ): number {
   if (axis === 'fixed') return 1;
   if (axis === 'providers') {
@@ -61,94 +70,76 @@ function computeScaleFactor(
 }
 
 export default function MeasureForecast({ state, updateState, onNext, onBack, onHome }: MeasureForecastProps) {
-  const setting = (state.careSetting || 'outpatient') as ExploreSetting;
-  const isNursing = setting === 'nursing';
+  const activeSettings = (
+    state.activeCareSettings && state.activeCareSettings.length > 0
+      ? state.activeCareSettings
+      : [state.careSetting || 'outpatient']
+  ) as ExploreSetting[];
 
-  const baseline: ForecastScenario = useMemo(() => ({
-    providers: state.deployment?.providers ?? 0,
-    utilizationPercent: state.deployment?.utilizationRate ?? 0,
-    encounters: state.deployment?.totalEncounters ?? 0,
-    // staffedBeds / occupancyPercent are not captured in MeasureDeployment yet;
-    // nursing patientDays-axis reprojection is a known Sprint 3E gap until those
-    // fields are added to the deployment data model.
-    staffedBeds: 0,
-    occupancyPercent: 0,
-    addedSettings: [],
-    pricingScenarios: [],
-  }), [state.deployment]);
+  const isMultiSetting = activeSettings.length > 1;
+  const dep = state.deployment as any;
 
-  const projected: ForecastScenario = state.forecastScenario ?? {
-    providers: 0,
-    utilizationPercent: 0,
-    encounters: 0,
-    staffedBeds: 0,
-    occupancyPercent: 0,
-    addedSettings: [],
-    pricingScenarios: [],
+  const getSettingBaseline = (settingKey: string): SettingForecastValues => {
+    const sd = (state.settingData?.[settingKey as MeasureCareSetting] || {}) as Record<string, number>;
+    const providers = sd.deploy_providers || dep?.providers || 0;
+    const totalEnc = sd.deploy_totalEncounters || dep?.totalEncounters || 0;
+    const abridgeEnc = sd.deploy_abridgeEncounters || dep?.abridgeEncounters || 0;
+    const utilPct = totalEnc > 0 ? Math.round((abridgeEnc / totalEnc) * 100) : (dep?.utilizationRate || 0);
+    const staffedBeds = sd.deploy_staffedBeds || dep?.staffedBeds || 0;
+    const occupancyPercent = dep?.occupancyPercent || 0;
+    return { providers, utilizationPercent: utilPct, encounters: totalEnc, staffedBeds, occupancyPercent };
+  };
+
+  const getSettingProjected = (settingKey: string): SettingForecastValues => {
+    return state.settingForecasts?.[settingKey] || getSettingBaseline(settingKey);
   };
 
   const [addModalOpen, setAddModalOpen] = useState(false);
-  const addedSettings = projected.addedSettings ?? [];
-  const pricingScenarios = projected.pricingScenarios ?? [];
+  const addedSettings = state.forecastScenario?.addedSettings ?? [];
+  const pricingScenarios = state.forecastScenario?.pricingScenarios ?? [];
 
+  // Seed settingForecasts for each active setting from per-setting baseline on first load
   useEffect(() => {
-    const looksUninitialized =
-      projected.providers === 0 &&
-      projected.utilizationPercent === 0 &&
-      projected.encounters === 0 &&
-      projected.staffedBeds === 0 &&
-      projected.occupancyPercent === 0;
-    const hasBaseline =
-      baseline.providers > 0 ||
-      baseline.utilizationPercent > 0 ||
-      baseline.encounters > 0 ||
-      baseline.staffedBeds > 0 ||
-      baseline.occupancyPercent > 0;
-    if (looksUninitialized && hasBaseline) {
-      updateState({ forecastScenario: { ...baseline, addedSettings, pricingScenarios } });
+    const newSF: Record<string, SettingForecastValues> = { ...(state.settingForecasts || {}) };
+    let changed = false;
+    for (const settingKey of activeSettings) {
+      const sf = state.settingForecasts?.[settingKey];
+      const bl = getSettingBaseline(settingKey);
+      const isUnset = !sf || (sf.providers === 0 && sf.utilizationPercent === 0 && sf.encounters === 0 && sf.staffedBeds === 0 && sf.occupancyPercent === 0);
+      const hasBaseline = bl.providers > 0 || bl.utilizationPercent > 0 || bl.encounters > 0;
+      if (isUnset && hasBaseline) {
+        newSF[settingKey] = bl;
+        changed = true;
+      }
     }
+    if (changed) updateState({ settingForecasts: newSF });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const updateProjected = (updates: Partial<ForecastScenario>) => {
-    updateState({ forecastScenario: { ...projected, ...updates } });
+  const updateSettingProjected = (settingKey: string, updates: Partial<SettingForecastValues>) => {
+    const current = getSettingProjected(settingKey);
+    updateState({ settingForecasts: { ...(state.settingForecasts || {}), [settingKey]: { ...current, ...updates } } });
   };
 
-  const resetScenario = () => updateState({ forecastScenario: { ...baseline, addedSettings, pricingScenarios } });
+  const resetSettingScenario = (settingKey: string) => {
+    updateState({ settingForecasts: { ...(state.settingForecasts || {}), [settingKey]: getSettingBaseline(settingKey) } });
+  };
+
+  const updateForecastScenario = (updates: Partial<ForecastScenario>) => {
+    updateState({ forecastScenario: { ...(state.forecastScenario ?? {} as ForecastScenario), ...updates } });
+  };
 
   const addCareSetting = (added: ForecastAddedSetting) => {
-    updateState({ forecastScenario: { ...projected, addedSettings: [...addedSettings, added] } });
+    updateForecastScenario({ addedSettings: [...addedSettings, added] });
   };
-
   const updateAddedSetting = (id: string, updates: Partial<ForecastAddedSetting>) => {
-    updateState({
-      forecastScenario: {
-        ...projected,
-        addedSettings: addedSettings.map(a => a.id === id ? { ...a, ...updates } : a),
-      },
-    });
+    updateForecastScenario({ addedSettings: addedSettings.map(a => a.id === id ? { ...a, ...updates } : a) });
   };
-
   const removeAddedSetting = (id: string) => {
-    updateState({
-      forecastScenario: {
-        ...projected,
-        addedSettings: addedSettings.filter(a => a.id !== id),
-      },
-    });
+    updateForecastScenario({ addedSettings: addedSettings.filter(a => a.id !== id) });
   };
 
-  const addedSettingsTotal = useMemo(() => {
-    return addedSettings.reduce((sum, a) => sum + computeAddedSettingValue(a), 0);
-  }, [addedSettings]);
-
-  const combinedProviders = useMemo(() => {
-    return projected.providers + addedSettings.reduce((sum, a) => sum + a.providers, 0);
-  }, [projected.providers, addedSettings]);
-
-  const combinedEncounters = useMemo(() => {
-    return projected.encounters + addedSettings.reduce((sum, a) => sum + a.encounters, 0);
-  }, [projected.encounters, addedSettings]);
+  const addedSettingsTotal = useMemo(() => addedSettings.reduce((sum, a) => sum + computeAddedSettingValue(a), 0), [addedSettings]);
 
   const addPricingScenario = () => {
     const newScenario: PricingScenario = {
@@ -157,47 +148,35 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
       model: 'perProvider',
       tiers: makeDefaultTiers('perProvider'),
     };
-    updateState({
-      forecastScenario: {
-        ...projected,
-        pricingScenarios: [...pricingScenarios, newScenario],
-      },
-    });
+    updateForecastScenario({ pricingScenarios: [...pricingScenarios, newScenario] });
   };
-
   const updatePricingScenario = (id: string, updates: Partial<PricingScenario>) => {
-    updateState({
-      forecastScenario: {
-        ...projected,
-        pricingScenarios: pricingScenarios.map(s => s.id === id ? { ...s, ...updates } : s),
-      },
-    });
+    updateForecastScenario({ pricingScenarios: pricingScenarios.map(s => s.id === id ? { ...s, ...updates } : s) });
   };
-
   const removePricingScenario = (id: string) => {
-    updateState({
-      forecastScenario: {
-        ...projected,
-        pricingScenarios: pricingScenarios.filter(s => s.id !== id),
-      },
-    });
+    updateForecastScenario({ pricingScenarios: pricingScenarios.filter(s => s.id !== id) });
   };
 
-  const trackedDrivers = useMemo(() => {
-    const settingTracked = state.trackedDrivers?.[setting] || {};
-    return EXPLORE_DRIVERS
-      .filter(d => d.settings.includes(setting) && settingTracked[d.id])
-      .map(d => {
-        const entry = settingTracked[d.id];
-        const realized = computeRealizedBaseline(d, entry);
-        const scaleFactor = d.measureDefaults
-          ? computeScaleFactor(d.measureDefaults.scaleAxis, baseline, projected)
-          : 1;
-        const projectedValue = Math.round(realized * scaleFactor);
-        return { driver: d, entry, realized, projected: projectedValue, scaleFactor };
-      });
+  // All tracked drivers across active settings, each with its own scale factor
+  const allTrackedDrivers = useMemo(() => {
+    return activeSettings.flatMap(settingKey => {
+      const st = state.trackedDrivers?.[settingKey] || {};
+      const bl = getSettingBaseline(settingKey);
+      const proj = getSettingProjected(settingKey);
+      return EXPLORE_DRIVERS
+        .filter(d => d.settings.includes(settingKey as ExploreSetting) && st[d.id])
+        .map(d => {
+          const entry = st[d.id];
+          const realized = computeRealizedBaseline(d, entry);
+          const scaleFactor = d.measureDefaults
+            ? computeScaleFactor(d.measureDefaults.scaleAxis, bl, proj)
+            : 1;
+          const projectedValue = Math.round(realized * scaleFactor);
+          return { driver: d, entry, realized, projected: projectedValue, scaleFactor, setting: settingKey };
+        });
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setting, state.trackedDrivers, baseline, projected]);
+  }, [activeSettings, state.trackedDrivers, state.settingForecasts, state.settingData, state.deployment]);
 
   const totalsByQuadrant = useMemo(() => {
     const out: Record<ExploreQuadrant, { realized: number; projected: number }> = {
@@ -206,21 +185,31 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
       Revenue: { realized: 0, projected: 0 },
       Quality: { realized: 0, projected: 0 },
     };
-    trackedDrivers.forEach(({ driver, realized, projected: projVal }) => {
+    allTrackedDrivers.forEach(({ driver, realized, projected: projVal }) => {
       out[driver.quadrant].realized += realized;
       out[driver.quadrant].projected += projVal;
     });
     return out;
-  }, [trackedDrivers]);
+  }, [allTrackedDrivers]);
 
   const totalRealized = useMemo(() => Object.values(totalsByQuadrant).reduce((s, q) => s + q.realized, 0), [totalsByQuadrant]);
   const totalProjected = useMemo(() => Object.values(totalsByQuadrant).reduce((s, q) => s + q.projected, 0), [totalsByQuadrant]);
-  // Combined view: realized + projected drivers + added-setting expansions.
-  // The "Change" metric reflects the same combined number shown in the panel.
   const combinedTotal = totalProjected + addedSettingsTotal;
   const totalDelta = combinedTotal - totalRealized;
+  const totalPctChange = totalRealized > 0 ? ((totalDelta / totalRealized) * 100) : 0;
 
-  // Determine the best-value scenario (lowest investment among scenarios that price)
+  const combinedProviders = useMemo(() => {
+    return activeSettings.reduce((sum, s) => sum + getSettingProjected(s).providers, 0)
+      + addedSettings.reduce((sum, a) => sum + a.providers, 0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeSettings, state.settingForecasts, addedSettings]);
+
+  const combinedEncounters = useMemo(() => {
+    return activeSettings.reduce((sum, s) => sum + getSettingProjected(s).encounters, 0)
+      + addedSettings.reduce((sum, a) => sum + a.encounters, 0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeSettings, state.settingForecasts, addedSettings]);
+
   const bestValueScenarioId = useMemo(() => {
     if (pricingScenarios.length < 2) return null;
     const evaluated = pricingScenarios.map(s => {
@@ -234,22 +223,28 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
     evaluated.sort((a, b) => a.investment - b.investment);
     return evaluated[0].id;
   }, [pricingScenarios, combinedProviders, combinedEncounters]);
-  const totalPctChange = totalRealized > 0 ? ((totalDelta / totalRealized) * 100) : 0;
+
+  const isSettingChanged = (settingKey: string) => {
+    const bl = getSettingBaseline(settingKey);
+    const proj = getSettingProjected(settingKey);
+    return proj.providers !== bl.providers
+      || proj.utilizationPercent !== bl.utilizationPercent
+      || proj.encounters !== bl.encounters
+      || proj.staffedBeds !== bl.staffedBeds
+      || proj.occupancyPercent !== bl.occupancyPercent;
+  };
+
+  const isAnyChanged = activeSettings.some(s => isSettingChanged(s));
 
   const formatCurrency = (n: number) => '$' + Math.round(n).toLocaleString();
   const formatNumber = (n: number) => n.toLocaleString();
 
-  const isNoChange = projected.providers === baseline.providers
-    && projected.utilizationPercent === baseline.utilizationPercent
-    && projected.encounters === baseline.encounters
-    && projected.staffedBeds === baseline.staffedBeds
-    && projected.occupancyPercent === baseline.occupancyPercent;
-
   const renderAxisControl = (
     label: string,
-    field: keyof ForecastScenario,
+    field: keyof SettingForecastValues,
     baseValue: number,
     projValue: number,
+    settingKey: string,
     suffix: string = '',
     presets: number[] = []
   ) => {
@@ -257,24 +252,24 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
     const ratioLabel = baseValue > 0 ? `${ratio >= 1 ? '+' : ''}${Math.round((ratio - 1) * 100)}%` : '—';
     const ratioColor = ratio > 1 ? 'text-[#EA2C00]' : 'text-[#888888]';
     return (
-      <div className="bg-white rounded-lg p-4 border border-[#E5E5E5]" data-testid={`axis-control-${field}`}>
+      <div className="bg-white rounded-lg p-4 border border-[#E5E5E5]" data-testid={`axis-control-${settingKey}-${field}`} key={`${settingKey}-${field}`}>
         <div className="flex items-center justify-between mb-3">
           <label className="text-sm font-semibold text-black">{label}</label>
-          <span className={`text-xs font-medium ${ratioColor}`} data-testid={`text-ratio-${field}`}>{ratioLabel}</span>
+          <span className={`text-xs font-medium ${ratioColor}`}>{ratioLabel}</span>
         </div>
         <div className="flex items-center gap-3 mb-3">
           <div className="flex-1">
             <p className="text-xs text-[#888888] mb-1">Baseline</p>
-            <p className="text-base font-medium text-[#666666]" data-testid={`text-baseline-${field}`}>{formatNumber(baseValue)}{suffix}</p>
+            <p className="text-base font-medium text-[#666666]">{formatNumber(baseValue)}{suffix}</p>
           </div>
           <ArrowRight className="w-4 h-4 text-[#888888]" />
           <div className="flex-1">
             <p className="text-xs text-[#888888] mb-1">Projected</p>
             <FormattedNumberInput
               value={projValue}
-              onChange={(v: number) => updateProjected({ [field]: v } as Partial<ForecastScenario>)}
+              onChange={(v: number) => updateSettingProjected(settingKey, { [field]: v })}
               className="h-9 bg-white text-base"
-              data-testid={`input-projected-${field}`}
+              data-testid={`input-projected-${settingKey}-${field}`}
             />
           </div>
         </div>
@@ -283,19 +278,60 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
             {presets.map(mult => (
               <button
                 key={mult}
-                onClick={() => updateProjected({ [field]: Math.round(baseValue * mult) } as Partial<ForecastScenario>)}
+                onClick={() => updateSettingProjected(settingKey, { [field]: Math.round(baseValue * mult) })}
                 className={`flex-1 px-2 py-1 rounded text-xs font-medium transition-all ${
                   Math.abs(projValue - baseValue * mult) < 0.5
                     ? 'bg-[#EA2C00] text-white'
                     : 'bg-[#F5F0EB] text-[#666666] hover:bg-[#EBE6E1]'
                 }`}
-                data-testid={`button-preset-${field}-${mult}x`}
+                data-testid={`button-preset-${settingKey}-${field}-${mult}x`}
               >
                 {mult === 1 ? 'Current' : `${mult}×`}
               </button>
             ))}
           </div>
         )}
+      </div>
+    );
+  };
+
+  const renderSettingControls = (settingKey: string) => {
+    const isNursing = settingKey === 'nursing';
+    const bl = getSettingBaseline(settingKey);
+    const proj = getSettingProjected(settingKey);
+    const changed = isSettingChanged(settingKey);
+    return (
+      <div key={settingKey} className="mb-4">
+        {isMultiSetting && (
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#EA2C00]" />
+              <p className="text-[11px] font-semibold text-[#525252] uppercase tracking-widest">
+                {SETTING_LABELS[settingKey as ExploreSetting] || settingKey}
+              </p>
+            </div>
+            {changed && (
+              <button
+                onClick={() => resetSettingScenario(settingKey)}
+                className="inline-flex items-center gap-1 text-xs font-medium text-[#888888] hover:text-[#EA2C00]"
+                data-testid={`button-reset-${settingKey}`}
+              >
+                <RotateCcw className="w-3 h-3" /> Reset
+              </button>
+            )}
+          </div>
+        )}
+        <div className="space-y-3">
+          {renderAxisControl(isNursing ? 'Nurse FTEs' : 'Provider Count', 'providers', bl.providers, proj.providers, settingKey, '', [1, 1.5, 2, 3])}
+          {renderAxisControl('Utilization', 'utilizationPercent', bl.utilizationPercent, proj.utilizationPercent, settingKey, '%', [1, 1.2, 1.5])}
+          {!isNursing && renderAxisControl('Annual Encounters', 'encounters', bl.encounters, proj.encounters, settingKey, '', [1, 1.5, 2, 3])}
+          {isNursing && (
+            <>
+              {renderAxisControl('Staffed Beds', 'staffedBeds', bl.staffedBeds, proj.staffedBeds, settingKey, '', [1, 1.5, 2])}
+              {renderAxisControl('Occupancy', 'occupancyPercent', bl.occupancyPercent, proj.occupancyPercent, settingKey, '%', [1, 1.2])}
+            </>
+          )}
+        </div>
       </div>
     );
   };
@@ -333,17 +369,18 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
               </p>
             </motion.div>
 
+            {/* Scenario controls — one section per active setting */}
             <motion.div
-              className="space-y-3 mb-6"
+              className="mb-6"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.15 }}
             >
-              <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center justify-between mb-3">
                 <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px]">Scenario Controls</p>
-                {!isNoChange && (
+                {!isMultiSetting && isAnyChanged && (
                   <button
-                    onClick={resetScenario}
+                    onClick={() => resetSettingScenario(activeSettings[0])}
                     className="inline-flex items-center gap-1 text-xs font-medium text-[#888888] hover:text-[#EA2C00]"
                     data-testid="button-reset-scenario"
                   >
@@ -351,38 +388,10 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
                   </button>
                 )}
               </div>
-              {renderAxisControl(
-                isNursing ? 'Nurse FTEs' : 'Provider Count',
-                'providers',
-                baseline.providers,
-                projected.providers,
-                '',
-                [1, 1.5, 2, 3]
-              )}
-              {renderAxisControl(
-                'Utilization',
-                'utilizationPercent',
-                baseline.utilizationPercent,
-                projected.utilizationPercent,
-                '%',
-                [1, 1.2, 1.5]
-              )}
-              {!isNursing && renderAxisControl(
-                'Annual Encounters',
-                'encounters',
-                baseline.encounters,
-                projected.encounters,
-                '',
-                [1, 1.5, 2, 3]
-              )}
-              {isNursing && (
-                <>
-                  {renderAxisControl('Staffed Beds', 'staffedBeds', baseline.staffedBeds, projected.staffedBeds, '', [1, 1.5, 2])}
-                  {renderAxisControl('Occupancy', 'occupancyPercent', baseline.occupancyPercent, projected.occupancyPercent, '%', [1, 1.2])}
-                </>
-              )}
+              {activeSettings.map(settingKey => renderSettingControls(settingKey))}
             </motion.div>
 
+            {/* Projected by Quadrant */}
             <motion.div
               className="space-y-3"
               initial={{ opacity: 0, y: 20 }}
@@ -391,7 +400,7 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
             >
               <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">Projected by Quadrant</p>
               {QUADRANT_ORDER.map(quadrant => {
-                const quadrantDrivers = trackedDrivers.filter(td => td.driver.quadrant === quadrant);
+                const quadrantDrivers = allTrackedDrivers.filter(td => td.driver.quadrant === quadrant);
                 const totals = totalsByQuadrant[quadrant];
                 const delta = totals.projected - totals.realized;
                 if (quadrantDrivers.length === 0) return null;
@@ -411,9 +420,16 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
                       </div>
                     </div>
                     <div className="space-y-1.5">
-                      {quadrantDrivers.map(({ driver, realized, projected: projVal }) => (
-                        <div key={driver.id} className="flex items-center justify-between text-xs">
-                          <span className="text-[#666666] truncate flex-1 min-w-0">{driver.label}</span>
+                      {quadrantDrivers.map(({ driver, realized, projected: projVal, setting: driverSetting }) => (
+                        <div key={`${driverSetting}-${driver.id}`} className="flex items-center justify-between text-xs">
+                          <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                            <span className="text-[#666666] truncate">{driver.label}</span>
+                            {isMultiSetting && (
+                              <span className="inline-flex items-center px-1 py-0.5 rounded bg-[#F0EBE4] text-[9px] font-bold text-[#8C7E6E] uppercase tracking-wide flex-shrink-0">
+                                {SETTING_BADGE[driverSetting] ?? driverSetting}
+                              </span>
+                            )}
+                          </div>
                           {driver.visibility === 'quantified' ? (
                             <div className="flex items-center gap-1.5 flex-shrink-0">
                               <span className="text-[#888888]">{formatCurrency(realized)}</span>
@@ -429,13 +445,14 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
                   </div>
                 );
               })}
-              {trackedDrivers.length === 0 && (
+              {allTrackedDrivers.length === 0 && (
                 <div className="bg-[#F5F0EB] rounded-lg p-6 text-center" data-testid="text-no-drivers">
                   <p className="text-sm text-[#666666]">No drivers tracked yet. Go back to the quadrant pages to add drivers, then return to model their growth.</p>
                 </div>
               )}
             </motion.div>
 
+            {/* Modeled Expansions */}
             <motion.div
               className="mt-8"
               initial={{ opacity: 0, y: 20 }}
@@ -460,7 +477,6 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
                     onRemove={() => removeAddedSetting(added.id)}
                   />
                 ))}
-
                 <button
                   onClick={() => setAddModalOpen(true)}
                   className="w-full py-3 px-4 rounded-lg border-2 border-dashed border-[#E5E5E5] text-sm font-medium text-[#666666] hover:border-[#EA2C00] hover:text-[#EA2C00] transition-all flex items-center justify-center gap-1.5"
@@ -471,6 +487,7 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
               </div>
             </motion.div>
 
+            {/* Pricing Comparison */}
             <motion.div
               className="mt-8"
               initial={{ opacity: 0, y: 20 }}
@@ -507,7 +524,6 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
                     onRemove={() => removePricingScenario(scenario.id)}
                   />
                 ))}
-
                 <button
                   onClick={addPricingScenario}
                   className="w-full py-3 px-4 rounded-lg border-2 border-dashed border-[#E5E5E5] text-sm font-medium text-[#666666] hover:border-[#EA2C00] hover:text-[#EA2C00] transition-all flex items-center justify-center gap-1.5"
@@ -530,6 +546,7 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
             </motion.div>
           </div>
 
+          {/* Right panel */}
           <motion.div
             className="w-full lg:w-[320px] flex-shrink-0"
             initial={{ opacity: 0, x: 20 }}
@@ -608,7 +625,7 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
                 )}
               </div>
 
-              {isNoChange && (
+              {!isAnyChanged && addedSettings.length === 0 && (
                 <p className="text-xs text-white/40 italic mt-4" data-testid="text-no-change-hint">Adjust an axis to see projected impact.</p>
               )}
 
@@ -629,7 +646,7 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
 
       <AddCareSettingModal
         open={addModalOpen}
-        excludeSettings={[setting, ...addedSettings.map(a => a.setting)]}
+        excludeSettings={[...activeSettings, ...addedSettings.map(a => a.setting)]}
         onClose={() => setAddModalOpen(false)}
         onAdd={addCareSetting}
       />
