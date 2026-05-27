@@ -384,6 +384,7 @@ export const DEFAULT_MEASURE_STATE: MeasureState = {
     pricingScenarios: [],
   },
   maturityPhase: null,
+  quotes: [],
 };
 
 export function syncOutpatientMetricsToLegacy(state: MeasureState): Partial<MeasureState> {
