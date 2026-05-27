@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { ArrowRight, Building2, Stethoscope, Siren, BedDouble, Heart } from "lucide-react";
 import DataRequestModal from "@/components/DataRequestModal";
 import { Button } from "@/components/ui/button";
@@ -131,24 +131,49 @@ export default function MeasureDataEntry({
 
   const updateSettingData = useCallback((setting: MeasureCareSetting, field: string, value: number) => {
     const current = state.settingData?.[setting] || {};
-    updateState({
-      settingData: {
-        ...state.settingData,
-        [setting]: { ...current, [field]: value },
-      },
-    });
-  }, [state.settingData, updateState]);
+    const newData = { ...current, [field]: value };
+    const newSettingData = { ...state.settingData, [setting]: newData };
+    const updates: Partial<MeasureState> = { settingData: newSettingData };
+
+    if (field === 'deploy_totalEncounters' || field === 'deploy_abridgeEncounters') {
+      const provSettings = activeSettings.filter(s => s !== 'nursing');
+      const totalEnc = provSettings.reduce((sum, s) => {
+        const sd = newSettingData[s] || {};
+        return sum + ((sd.deploy_totalEncounters as number) ?? 0);
+      }, 0);
+      const abridgeEnc = provSettings.reduce((sum, s) => {
+        const sd = newSettingData[s] || {};
+        return sum + ((sd.deploy_abridgeEncounters as number) ?? 0);
+      }, 0);
+      updates.deployment = {
+        ...state.deployment,
+        totalEncounters: totalEnc,
+        abridgeEncounters: abridgeEnc,
+        encounterCoverageRate: totalEnc > 0 ? Math.round((abridgeEnc / totalEnc) * 100) : 0,
+      };
+    }
+
+    updateState(updates);
+  }, [state.settingData, state.deployment, activeSettings, updateState]);
 
   const providerSettingsList = useMemo(() =>
     activeSettings.filter(s => s !== 'nursing'), [activeSettings]);
 
-  const missingSplitData = useMemo(() => {
-    if (providerSettingsList.length <= 1) return false;
-    return providerSettingsList.some(s => {
-      const sd = state.settingData?.[s];
-      return !sd?.deploy_totalEncounters;
-    });
-  }, [providerSettingsList, state.settingData]);
+  // Seed per-setting encounter data from global deployment on mount (backward compat)
+  useEffect(() => {
+    if (providerSettingsList.length === 1 && state.deployment.totalEncounters > 0) {
+      const setting = providerSettingsList[0];
+      const sd = state.settingData?.[setting] || {};
+      if (!sd.deploy_totalEncounters) {
+        const newData: Record<string, number> = { ...sd, deploy_totalEncounters: state.deployment.totalEncounters };
+        if (state.deployment.abridgeEncounters > 0 && !sd.deploy_abridgeEncounters) {
+          newData.deploy_abridgeEncounters = state.deployment.abridgeEncounters;
+        }
+        updateState({ settingData: { ...state.settingData, [setting]: newData } });
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const settingLabelMap = useCallback((s: MeasureCareSetting) => {
     return s === 'ed' ? 'Emergency Dept' : s === 'inpatient' ? 'Inpatient' : s === 'outpatient' ? 'Outpatient' : 'Nursing';
@@ -480,105 +505,95 @@ export default function MeasureDataEntry({
                   Encounter Coverage
                 </span>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-black">{encounterLabel}</label>
-                  <FormattedNumberInput
-                    value={state.deployment.totalEncounters}
-                    onChange={(v) => updateDeployment("totalEncounters", v)}
-                    className="h-10 bg-white border-[#E5E5E5] text-right"
-                    data-testid="input-total-encounters"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-black">Abridge {encounterLabel}</label>
-                  <FormattedNumberInput
-                    value={state.deployment.abridgeEncounters}
-                    onChange={(v) => updateDeployment("abridgeEncounters", v)}
-                    className="h-10 bg-white border-[#E5E5E5] text-right"
-                    data-testid="input-abridge-encounters"
-                  />
-                  <p className="text-[10px] text-[#BBBBBB] hidden md:block">Where Abridge was used</p>
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-black">Coverage Rate</label>
-                  <div className="h-10 bg-white border border-[#E5E5E5] rounded-md flex items-center justify-end px-3 text-sm font-semibold text-black" data-testid="display-encounter-coverage">
-                    {state.deployment.totalEncounters > 0 ? Math.round((state.deployment.abridgeEncounters / state.deployment.totalEncounters) * 100) : 0}%
-                  </div>
-                  <p className="text-[10px] text-[#BBBBBB] hidden md:block">Abridge encounters / Total</p>
-                </div>
-              </div>
 
-              {state.deployment.totalEncounters > 0 && state.deployment.abridgeEncounters > 0 && (
-                <div className="mt-3" data-testid="encounter-funnel-visual">
-                  <div className="flex items-center gap-2">
-                    <div className="w-[100px] text-[10px] text-[#888888] text-right shrink-0">Total</div>
-                    <div className="flex-1 h-5 bg-white rounded overflow-hidden relative">
-                      <div
-                        className="h-full rounded transition-all duration-300"
-                        style={{
-                          width: `${Math.max(Math.round((state.deployment.abridgeEncounters / state.deployment.totalEncounters) * 100), 2)}%`,
-                          backgroundColor: '#EA2C00',
-                        }}
-                      />
+              {providerSettingsList.map(setting => {
+                const sd = state.settingData?.[setting] || {};
+                const totalEnc = (sd.deploy_totalEncounters as number) ?? 0;
+                const abridgeEnc = (sd.deploy_abridgeEncounters as number) ?? 0;
+                const coverageRate = totalEnc > 0 ? Math.round((abridgeEnc / totalEnc) * 100) : 0;
+                return (
+                  <div key={setting} className="mb-3 p-3.5 bg-[#F5F0EB] rounded-lg" data-testid={`setting-enc-${setting}`}>
+                    {providerSettingsList.length > 1 && (
+                      <p className="text-[10px] font-semibold text-[#525252] uppercase tracking-widest mb-3">
+                        {settingLabelMap(setting)}
+                      </p>
+                    )}
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      <div>
+                        <label className="text-[11px] text-[#888888] uppercase tracking-wide mb-1 block">Providers</label>
+                        <FormattedNumberInput
+                          value={sd.deploy_providers ?? ''}
+                          onChange={v => updateSettingData(setting, 'deploy_providers', v)}
+                          placeholder="e.g. 30"
+                          className="h-10 bg-white border-[#E5E5E5] text-right"
+                          data-testid={`input-providers-${setting}`}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[11px] text-[#888888] uppercase tracking-wide mb-1 block">Annual Encounters</label>
+                        <FormattedNumberInput
+                          value={sd.deploy_totalEncounters ?? ''}
+                          onChange={v => updateSettingData(setting, 'deploy_totalEncounters', v)}
+                          placeholder="e.g. 60,000"
+                          className="h-10 bg-white border-[#E5E5E5] text-right"
+                          data-testid={`input-encounters-${setting}`}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[11px] text-[#888888] uppercase tracking-wide mb-1 block">Abridge Encounters</label>
+                        <FormattedNumberInput
+                          value={sd.deploy_abridgeEncounters ?? ''}
+                          onChange={v => updateSettingData(setting, 'deploy_abridgeEncounters', v)}
+                          placeholder="e.g. 12,000"
+                          className="h-10 bg-white border-[#E5E5E5] text-right"
+                          data-testid={`input-abridge-enc-${setting}`}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[11px] text-[#888888] uppercase tracking-wide mb-1 block">Coverage Rate</label>
+                        <div
+                          className="h-10 bg-white border border-[#E5E5E5] rounded-md flex items-center justify-end px-3 text-sm font-semibold text-black"
+                          data-testid={`display-coverage-${setting}`}
+                        >
+                          {coverageRate}%
+                        </div>
+                      </div>
                     </div>
-                    <span className="text-[11px] font-semibold text-[#EA2C00] w-[80px] text-right">
-                      {state.deployment.encounterCoverageRate}% covered
-                    </span>
+                  </div>
+                );
+              })}
+
+              {providerSettingsList.length > 1 && state.deployment.totalEncounters > 0 && (
+                <div className="mt-1 p-3 bg-white border border-[#E8E2DA] rounded-lg" data-testid="encounter-rollup">
+                  <p className="text-[10px] font-semibold text-[#999999] uppercase tracking-[1px] mb-2">Combined Coverage</p>
+                  <div className="flex items-center gap-4">
+                    <div className="text-center">
+                      <p className="text-[10px] text-[#AAAAAA]">Total</p>
+                      <p className="text-sm font-semibold text-[#1A1A1A]">{state.deployment.totalEncounters.toLocaleString()}</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-[10px] text-[#AAAAAA]">Abridge</p>
+                      <p className="text-sm font-semibold text-[#EA2C00]">{state.deployment.abridgeEncounters.toLocaleString()}</p>
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 h-4 bg-[#F5F0EB] rounded overflow-hidden">
+                          <div
+                            className="h-full rounded transition-all duration-300"
+                            style={{ width: `${Math.max(state.deployment.encounterCoverageRate, 2)}%`, backgroundColor: '#EA2C00' }}
+                          />
+                        </div>
+                        <span className="text-sm font-semibold text-[#EA2C00] shrink-0">{state.deployment.encounterCoverageRate}%</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
 
               {providerSettingsList.length > 1 && (
-                <div className="mt-4">
-                  <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-wide mb-3">
-                    Enter counts per care setting to prevent double-counting
-                  </p>
-                  {providerSettingsList.map(setting => (
-                    <div key={setting} className="mb-4 p-4 bg-[#F5F0EB] rounded-lg" data-testid={`setting-split-${setting}`}>
-                      <p className="text-xs font-semibold text-[#525252] uppercase tracking-wide mb-3">
-                        {settingLabelMap(setting)}
-                      </p>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <label className="text-[11px] text-[#888888] uppercase tracking-wide mb-1 block">
-                            Providers
-                          </label>
-                          <FormattedNumberInput
-                            value={state.settingData?.[setting]?.deploy_providers ?? ''}
-                            onChange={v => updateSettingData(setting, 'deploy_providers', v)}
-                            placeholder="e.g. 30"
-                            className="h-10 bg-white border-[#E5E5E5] text-right"
-                            data-testid={`input-providers-${setting}`}
-                          />
-                        </div>
-                        <div>
-                          <label className="text-[11px] text-[#888888] uppercase tracking-wide mb-1 block">
-                            Annual Encounters
-                          </label>
-                          <FormattedNumberInput
-                            value={state.settingData?.[setting]?.deploy_totalEncounters ?? ''}
-                            onChange={v => updateSettingData(setting, 'deploy_totalEncounters', v)}
-                            placeholder="e.g. 60,000"
-                            className="h-10 bg-white border-[#E5E5E5] text-right"
-                            data-testid={`input-encounters-${setting}`}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                  <p className="text-[10px] text-[#AAAAAA] italic mt-2">
-                    If providers work across both settings, count them in their primary setting only.
-                  </p>
-                  {missingSplitData && (
-                    <div className="flex gap-2 bg-[#FFFBEB] border border-[#F59E0B]/30 rounded-lg p-3 mt-3" data-testid="warning-missing-split">
-                      <span className="text-[#92400E] text-sm shrink-0">⚠</span>
-                      <p className="text-xs text-[#92400E]">
-                        Using global encounter count for all settings. Enter per-setting counts above for accurate calculations.
-                      </p>
-                    </div>
-                  )}
-                </div>
+                <p className="text-[10px] text-[#AAAAAA] italic mt-2">
+                  If providers work across multiple settings, count them in their primary setting only.
+                </p>
               )}
             </motion.div>
           )}
