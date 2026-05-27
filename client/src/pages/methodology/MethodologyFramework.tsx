@@ -11,25 +11,25 @@ const DOMAINS = [
     key: "capacity", name: "Capacity", color: "#EA5028", lever: "time" as const,
     tagline: "Reclaimed time becomes patient access — or a better clinical encounter.",
     body: "Documentation can consume an hour or more per shift. When that time returns, encounter capacity can expand without adding headcount.",
-    chain: ["Hours returned to clinical care", "Visit throughput increases", "Patient access expands"],
+    chain: ["Documentation burden per encounter reduced", "Recovered time available for clinical work", "Capacity or schedule density can expand"],
   },
   {
     key: "workforce", name: "Workforce", color: "#C35A37", lever: "time" as const,
     tagline: "Less documentation means more medicine — and more sustainable careers.",
     body: "The cost of replacing a physician is substantial. The primary driver is administrative burden — and ambient documentation addresses a root cause.",
-    chain: ["After-hours charting significantly reduced", "Burnout pressure decreases", "Retention improves"],
+    chain: ["After-hours charting burden measurably reduced", "Administrative-to-clinical time ratio improves", "Provider experience and retention supported"],
   },
   {
     key: "revenue", name: "Revenue", color: "#B87858", lever: "quality" as const,
     tagline: "Revenue reflects the work performed — not the recall.",
     body: "Notes documented in the room can capture clinical specificity that memory-based notes miss. That specificity supports coding accuracy and reduces claim vulnerability.",
-    chain: ["Clinical specificity documented in context", "Coding accuracy supported", "Claim vulnerability reduced"],
+    chain: ["Clinical detail captured in the moment of care", "Coding and CDI teams have more complete documentation", "Appropriate revenue recognition supported"],
   },
   {
     key: "quality", name: "Quality", color: "#908880", lever: "quality" as const,
     tagline: "Better notes are the foundation of better care — across every encounter.",
     body: "When the note reflects the visit rather than a reconstruction of it, documentation can support care decisions, surface gaps, and contribute to longitudinal clinical insight.",
-    chain: ["Clinical complexity reflected in the note", "Care gaps surface during the visit", "Longitudinal insight improves"],
+    chain: ["Note reflects the actual clinical encounter", "Documentation supports care transitions and follow-up", "Longitudinal record completeness can improve"],
   },
 ];
 
@@ -140,7 +140,7 @@ function ParticleCanvas() {
       }
 
       // Ambient particles
-      const ambient = Math.min(414, Math.max(0, Math.floor((w * h) / 3900) - TOTAL_CON_NODES));
+      const ambient = Math.min(486, Math.max(0, Math.floor((w * h) / 3300) - TOTAL_CON_NODES));
       for (let i = 0; i < ambient; i++) {
         const a = 0.18 + Math.random() * 0.36;
         pts.push({
