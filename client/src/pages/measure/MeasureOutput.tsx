@@ -337,6 +337,11 @@ function FinancialDriverCard({
               {drv.realizationPercent}% realization
             </span>
           )}
+          {drv.entryDataSource && (
+            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-[#F0EBE4] text-[10px] font-medium text-[#8C7E6E]">
+              {ENTRY_DATA_SOURCE_LABELS[drv.entryDataSource] ?? drv.entryDataSource}
+            </span>
+          )}
           {drv.isMonthlyMode && sparkValues && sparkValues.length >= 2 && (
             <span className="text-[10px] text-[#AAAAAA]">{sparkValues.length}-month trend</span>
           )}
@@ -345,6 +350,11 @@ function FinancialDriverCard({
           <Sparkline values={sparkValues} lowerIsBetter={lowerIsBetter} id={drv.id} />
         )}
       </div>
+      {drv.measuredAt && (
+        <p className="text-[10px] text-[#AAAAAA] mt-1 px-5 pb-4">
+          Measured {new Date(drv.measuredAt + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+        </p>
+      )}
 
       {/* Notes */}
       {drv.notes && (
@@ -400,6 +410,20 @@ function SignalDriverRow({
           <div className="flex items-start gap-1.5 mt-1.5">
             <MessageSquare className="w-3 h-3 text-amber-500 mt-0.5 flex-shrink-0" />
             <p className="text-xs text-amber-700 leading-relaxed">{drv.notes}</p>
+          </div>
+        )}
+        {(drv.entryDataSource || drv.measuredAt) && (
+          <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+            {drv.entryDataSource && (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-[#F0EBE4] text-[10px] font-medium text-[#8C7E6E]">
+                {ENTRY_DATA_SOURCE_LABELS[drv.entryDataSource] ?? drv.entryDataSource}
+              </span>
+            )}
+            {drv.measuredAt && (
+              <span className="text-[10px] text-[#AAAAAA]">
+                Measured {new Date(drv.measuredAt + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+              </span>
+            )}
           </div>
         )}
       </div>
