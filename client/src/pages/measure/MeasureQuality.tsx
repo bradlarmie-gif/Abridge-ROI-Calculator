@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import MeasureDriverCard from "@/components/measure/MeasureDriverCard";
 import AddMeasureDriverPicker from "@/components/measure/AddMeasureDriverPicker";
-import { EXPLORE_DRIVERS, type ExploreDriver, type ExploreSetting } from "@/lib/exploreDrivers";
+import { getActiveDrivers, type ExploreDriver, type ExploreSetting, type CustomDriverDef } from "@/lib/exploreDrivers";
 import { getRealizedValueForEntry, type MeasureState, type MeasureDriverEntry, type MeasureCareSetting } from "@/lib/measureCalculator";
 
 interface MeasureQualityProps {
@@ -31,7 +31,7 @@ export default function MeasureQuality({ state, updateState, onNext, onBack, onH
   const trackedBySetting = useMemo(() =>
     activeSettings.map(settingKey => {
       const st = state.trackedDrivers?.[settingKey] || {};
-      const drivers = EXPLORE_DRIVERS
+      const drivers = getActiveDrivers(state.customDriverDefs)
         .filter(d => d.quadrant === QUADRANT && d.settings.includes(settingKey) && st[d.id])
         .map(d => ({ driver: d, entry: st[d.id] }));
       return {
@@ -43,7 +43,7 @@ export default function MeasureQuality({ state, updateState, onNext, onBack, onH
       };
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [state.trackedDrivers, activeSettings]
+    [state.trackedDrivers, activeSettings, state.customDriverDefs]
   );
 
   const trackedHere = useMemo(() => trackedBySetting.flatMap(({ financialDrivers, watchMetrics }) => [...financialDrivers, ...watchMetrics]), [trackedBySetting]);
@@ -72,7 +72,7 @@ export default function MeasureQuality({ state, updateState, onNext, onBack, onH
     const entry: MeasureDriverEntry = {
       driverId: driver.id,
       withoutAbridge: 0,
-      withAbridge: 0,
+      withAbridge: driver.isCustom && driver.visibility === 'quantified' ? 1 : 0,
       valuePerUnit: md?.valuePerUnitDefault ?? 0,
       attributionPercent: 100,
       realizationPercent: 100,
@@ -83,6 +83,12 @@ export default function MeasureQuality({ state, updateState, onNext, onBack, onH
     };
     updateState({
       trackedDrivers: { ...state.trackedDrivers, [settingKey]: { ...st, [driver.id]: entry } },
+    });
+  };
+
+  const addCustomDef = (def: CustomDriverDef) => {
+    updateState({
+      customDriverDefs: { ...(state.customDriverDefs || {}), [def.id]: def },
     });
   };
 
@@ -235,6 +241,7 @@ export default function MeasureQuality({ state, updateState, onNext, onBack, onH
                     settings={[settingKey as ExploreSetting]}
                     alreadyTracked={trackedIds}
                     onAdd={(driver) => addDriver(settingKey, driver)}
+                    onAddCustomDef={addCustomDef}
                   />
                 </motion.div>
               </div>

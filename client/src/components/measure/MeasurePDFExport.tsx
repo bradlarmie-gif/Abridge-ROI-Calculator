@@ -15,7 +15,7 @@ import { savePdfBlob } from "@/lib/pdf-save";
 import type { MeasureState, MeasureCareSetting, EntryDataSource } from "@/lib/measureCalculator";
 import { PDFCoverPage } from "@/components/pdf/PDFCoverPage";
 import {
-  EXPLORE_DRIVERS,
+  getActiveDrivers,
   type ExploreSetting,
   type ExploreQuadrant,
 } from "@/lib/exploreDrivers";
@@ -732,7 +732,7 @@ export function buildMeasurePDFDataFromState(state: MeasureState, audience?: str
     const drivers: MeasurePDFDriver[] = [];
     for (const settingKey of activeSettings) {
       const settingTracked = state.trackedDrivers?.[settingKey] || {};
-      EXPLORE_DRIVERS
+      getActiveDrivers(state.customDriverDefs)
         .filter(d => d.quadrant === q && d.settings.includes(settingKey) && settingTracked[d.id])
         .forEach(d => {
           const entry = settingTracked[d.id];
@@ -782,7 +782,7 @@ export function buildMeasurePDFDataFromState(state: MeasureState, audience?: str
   // Projected totals using per-setting scale factors from settingForecasts
   const totalProjected = quadrants.reduce((sum, q) => {
     return sum + q.drivers.reduce((dsum, drv) => {
-      const driverDef = EXPLORE_DRIVERS.find(d => d.id === drv.id);
+      const driverDef = getActiveDrivers(state.customDriverDefs).find(d => d.id === drv.id);
       if (!driverDef?.measureDefaults) return dsum + drv.realizedValue;
       const sk = drv.setting || primarySetting;
       const bl = blMap[sk] || blMap[primarySetting];

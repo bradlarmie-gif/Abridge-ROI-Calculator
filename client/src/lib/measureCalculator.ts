@@ -5,7 +5,7 @@ import { getTotalAvailableMetrics as getTotalAvailableMetricsFromConfig, OUTPATI
 
 export type MeasureCareSetting = 'outpatient' | 'ed' | 'nursing' | 'inpatient';
 
-import type { ExploreSetting } from "./exploreDrivers";
+import type { ExploreSetting, CustomDriverDef } from "./exploreDrivers";
 import type { ForecastScenarioLevel } from "./forecastDefaults";
 import type { PricingScenario } from "./forecastPricing";
 
@@ -220,6 +220,7 @@ export interface MeasureState {
   settingForecastYears?: Record<string, SettingForecastValues[]>;
   maturityPhase: MaturityStage | null;
   quotes?: MeasureQuote[];
+  customDriverDefs?: Record<string, CustomDriverDef>;
 }
 
 export interface MeasureDriverEntry {
@@ -390,6 +391,7 @@ export const DEFAULT_MEASURE_STATE: MeasureState = {
   settingForecastYears: {},
   maturityPhase: null,
   quotes: [],
+  customDriverDefs: {},
 };
 
 export function syncOutpatientMetricsToLegacy(state: MeasureState): Partial<MeasureState> {

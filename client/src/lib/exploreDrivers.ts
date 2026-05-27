@@ -80,6 +80,7 @@ export interface ExploreDriver {
   valueArc?: ValueArc;
   measurePhase?: 'emerging' | 'demonstrated' | 'strategic';
   prerequisites?: string[];
+  isCustom?: boolean;
 }
 
 export const EXPLORE_DRIVERS: ExploreDriver[] = [
@@ -2277,4 +2278,43 @@ export function isDriverEnabled(driver: ExploreDriver, state: ExploreState): boo
   const td = state.timeDriverInputs as any;
   const dq = state.docQualityInputs as any;
   return Boolean(td[driver.enabledStateKey] ?? dq[driver.enabledStateKey]);
+}
+
+export interface CustomDriverDef {
+  id: string;
+  label: string;
+  description: string;
+  quadrant: ExploreQuadrant;
+  settings: ExploreSetting[];
+  hasValue: boolean;
+}
+
+export function makeCustomDriver(def: CustomDriverDef): ExploreDriver {
+  return {
+    id: def.id,
+    label: def.label,
+    shortDescription: def.description || 'Custom tracked driver',
+    quadrant: def.quadrant,
+    settings: def.settings,
+    visibility: def.hasValue ? 'quantified' : 'qualitative',
+    enabledStateKey: def.id,
+    isCustom: true,
+    measureDefaults: def.hasValue ? {
+      deltaLabel: 'Annual impact',
+      deltaUnit: 'USD',
+      valuePerUnitLabel: 'Annual impact',
+      valuePerUnitDefault: 0,
+      valuePerUnitPrefix: '$',
+      realizationDefault: 100,
+      scaleAxis: 'fixed' as const,
+    } : undefined,
+  };
+}
+
+export function getActiveDrivers(customDriverDefs?: Record<string, CustomDriverDef>): ExploreDriver[] {
+  if (!customDriverDefs || Object.keys(customDriverDefs).length === 0) return EXPLORE_DRIVERS;
+  return [
+    ...EXPLORE_DRIVERS,
+    ...Object.values(customDriverDefs).map(makeCustomDriver),
+  ];
 }

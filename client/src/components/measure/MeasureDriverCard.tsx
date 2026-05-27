@@ -209,6 +209,11 @@ export default function MeasureDriverCard({ driver, entry, onUpdate, onRemove, i
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <p className="font-semibold text-black text-sm">{driver.label}</p>
+              {driver.isCustom && (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-[#F5F0EB] text-[10px] font-semibold text-[#888888] uppercase tracking-wide">
+                  Custom
+                </span>
+              )}
               {isQuantifiable ? (
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-semibold">
                   Financial
@@ -292,9 +297,25 @@ export default function MeasureDriverCard({ driver, entry, onUpdate, onRemove, i
                     />
                   ) : (
                     <>
-                      {tabSwitcher}
+                      {!driver.isCustom && tabSwitcher}
 
-                      {!entry.isMonthlyMode ? (
+                      {driver.isCustom ? (
+                        <div>
+                          <label className="text-[11px] font-semibold text-[#888888] uppercase tracking-wide mb-1.5 block">
+                            Documented annual impact
+                          </label>
+                          <div className="relative">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#888888] z-10 pointer-events-none">$</span>
+                            <FormattedNumberInput
+                              value={entry.valuePerUnit}
+                              onChange={(v: number) => onUpdate({ valuePerUnit: v, withAbridge: 1, withoutAbridge: 0 })}
+                              className="h-10 bg-white pl-7"
+                              data-testid={`input-custom-value-${driver.id}`}
+                            />
+                          </div>
+                          <p className="text-[10px] text-[#AAAAAA] mt-1.5">Enter the annual dollar value you&apos;ve documented for this driver.</p>
+                        </div>
+                      ) : !entry.isMonthlyMode ? (
                         <div className="grid grid-cols-2 gap-3">
                           <div>
                             <label className="text-[11px] font-semibold text-[#888888] uppercase tracking-wide mb-1.5 block">
@@ -354,33 +375,35 @@ export default function MeasureDriverCard({ driver, entry, onUpdate, onRemove, i
                       })()}
 
                       {/* Benchmark hint */}
-                      {md.benchmarkHint && (
+                      {!driver.isCustom && md.benchmarkHint && (
                         <div className="flex items-start gap-2 bg-blue-50 rounded-lg px-3 py-2">
                           <Info className="w-3.5 h-3.5 text-blue-400 mt-0.5 flex-shrink-0" />
                           <p className="text-[11px] text-blue-600">{md.benchmarkHint}</p>
                         </div>
                       )}
 
-                      {/* Conversion factor */}
-                      <div>
-                        <label className="text-[11px] font-semibold text-[#888888] uppercase tracking-wide mb-1.5 block">
-                          {md.valuePerUnitLabel}
-                        </label>
-                        <div className="relative">
-                          {md.valuePerUnitPrefix && (
-                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#888888] z-10 pointer-events-none">{md.valuePerUnitPrefix}</span>
-                          )}
-                          <FormattedNumberInput
-                            value={entry.valuePerUnit}
-                            onChange={(v: number) => onUpdate({ valuePerUnit: v })}
-                            className={`h-10 bg-white ${md.valuePerUnitPrefix ? 'pl-7' : ''}`}
-                            data-testid={`input-value-per-unit-${driver.id}`}
-                          />
+                      {/* Conversion factor — hidden for custom drivers (they enter value directly) */}
+                      {!driver.isCustom && (
+                        <div>
+                          <label className="text-[11px] font-semibold text-[#888888] uppercase tracking-wide mb-1.5 block">
+                            {md.valuePerUnitLabel}
+                          </label>
+                          <div className="relative">
+                            {md.valuePerUnitPrefix && (
+                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#888888] z-10 pointer-events-none">{md.valuePerUnitPrefix}</span>
+                            )}
+                            <FormattedNumberInput
+                              value={entry.valuePerUnit}
+                              onChange={(v: number) => onUpdate({ valuePerUnit: v })}
+                              className={`h-10 bg-white ${md.valuePerUnitPrefix ? 'pl-7' : ''}`}
+                              data-testid={`input-value-per-unit-${driver.id}`}
+                            />
+                          </div>
                         </div>
-                      </div>
+                      )}
 
                       {/* Scale input (HAI rate drivers) */}
-                      {md.scaleInput && (
+                      {!driver.isCustom && md.scaleInput && (
                         <div>
                           <label className="text-[11px] font-semibold text-[#888888] uppercase tracking-wide mb-1.5 block">
                             {md.scaleInput.label}
@@ -421,8 +444,8 @@ export default function MeasureDriverCard({ driver, entry, onUpdate, onRemove, i
                         <p className="text-[11px] text-[#AAAAAA] mt-1.5">Lower if other initiatives share credit for this outcome.</p>
                       </div>
 
-                      {/* Realized impact summary */}
-                      {delta !== 0 && (
+                      {/* Realized impact summary — hidden for custom drivers (value is entered directly) */}
+                      {!driver.isCustom && delta !== 0 && (
                         <div className="bg-[#FAFAF8] border border-[#E8E8E8] rounded-xl p-4">
                           <p className="text-[11px] font-semibold text-[#888888] uppercase tracking-[1.5px] mb-3">Financial Translation</p>
                           <div className="space-y-1.5 text-sm">
@@ -461,7 +484,7 @@ export default function MeasureDriverCard({ driver, entry, onUpdate, onRemove, i
                             </div>
                           </div>
                           <p className="text-[10px] text-[#AAAAAA] mt-3 italic">
-                            This represents what Abridge's impact could mean financially — not a guarantee of realized revenue.
+                            This represents what Abridge&apos;s impact could mean financially — not a guarantee of realized revenue.
                           </p>
                         </div>
                       )}

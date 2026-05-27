@@ -4,9 +4,10 @@ import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import {
-  EXPLORE_DRIVERS,
+  getActiveDrivers,
   type ExploreSetting,
   type ExploreQuadrant,
+  type ExploreDriver,
 } from "@/lib/exploreDrivers";
 import { SETTING_LABELS } from "@/lib/forecastDefaults";
 import {
@@ -91,7 +92,7 @@ function Sparkline({ values, lowerIsBetter, id }: { values: number[]; lowerIsBet
 
 // ─── Build driver payload ──────────────────────────────────────────────────────
 function buildDriverPayload(
-  driver: (typeof EXPLORE_DRIVERS)[number],
+  driver: ExploreDriver,
   entry: MeasureDriverEntry,
   abridgeEncounters?: number,
 ): MeasurePDFDriver {
@@ -483,7 +484,7 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
       for (const setting of activeSettings) {
         const st = state.trackedDrivers?.[setting] || {};
         const abridgeEnc = getSettingAbridgeEnc(setting);
-        EXPLORE_DRIVERS
+        getActiveDrivers(state.customDriverDefs)
           .filter(d => d.quadrant === q && d.settings.includes(setting) && st[d.id])
           .forEach(d => {
             drivers.push({ ...buildDriverPayload(d, st[d.id], abridgeEnc), setting });
@@ -492,7 +493,7 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
       const realizedTotal = drivers.reduce((sum, d) => sum + d.realizedValue, 0);
       return { quadrant: q, realizedTotal, drivers };
     });
-  }, [activeSettings, state.trackedDrivers, state.settingData, state.deployment]);
+  }, [activeSettings, state.trackedDrivers, state.settingData, state.deployment, state.customDriverDefs]);
 
   // Per-setting breakdown (used for multi-setting hero + content sections)
   const settingSections = useMemo(() => {
@@ -500,7 +501,7 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
       const st = state.trackedDrivers?.[setting] || {};
       const abridgeEnc = getSettingAbridgeEnc(setting);
       const settingQuadrants = QUADRANT_ORDER.map(q => {
-        const drivers = EXPLORE_DRIVERS
+        const drivers = getActiveDrivers(state.customDriverDefs)
           .filter(d => d.quadrant === q && d.settings.includes(setting) && st[d.id])
           .map(d => buildDriverPayload(d, st[d.id], abridgeEnc));
         return {
@@ -516,7 +517,7 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
         settingQuadrants,
       };
     }).filter(s => s.settingQuadrants.length > 0);
-  }, [activeSettings, state.trackedDrivers]);
+  }, [activeSettings, state.trackedDrivers, state.customDriverDefs]);
 
   const totalRealized = quadrants.reduce((sum, q) => sum + q.realizedTotal, 0);
   const driversTrackedCount = quadrants.reduce((sum, q) => sum + q.drivers.length, 0);
@@ -536,7 +537,7 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
   };
 
   const getDriverLowerIsBetter = (drvId: string) => {
-    return EXPLORE_DRIVERS.find(d => d.id === drvId)?.measureDefaults?.lowerIsBetter;
+    return getActiveDrivers(state.customDriverDefs).find(d => d.id === drvId)?.measureDefaults?.lowerIsBetter;
   };
 
   const handleExport = async () => {

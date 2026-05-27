@@ -49,6 +49,8 @@ export interface ForecastScalePDFData {
   yearlyInputs: PricingYearInput[];
   pricingScenarios: PricingScenario[];
   bestValueScenarioId: string | null;
+  baseAdoptionPct: number;
+  simpleInvestment: number;
 }
 
 // ─── Color system ─────────────────────────────────────────────────────────────
@@ -300,15 +302,12 @@ function MetricStrip({
 
 function buildScaleNarrative(data: ForecastScalePDFData): string {
   const org = data.clientName || "This organization";
-  const { combinedTotal, totalRealized, quadrantTotals, combinedProviders, forecastYears, yearlyInputs } = data;
+  const { combinedTotal, totalRealized, quadrantTotals, combinedProviders, forecastYears, yearlyInputs, baseAdoptionPct, simpleInvestment, pricingScenarios } = data;
 
   if (combinedTotal === 0) {
     return `${org} has configured a forecast scenario. Add tracked drivers to the quadrant pages to populate the scale projection.`;
   }
 
-  const upliftPct = totalRealized > 0
-    ? ((combinedTotal - totalRealized) / totalRealized) * 100
-    : 0;
   const multiplier = totalRealized > 0 ? combinedTotal / totalRealized : 0;
 
   const topQuad = QUADS.slice().sort(
@@ -318,19 +317,26 @@ function buildScaleNarrative(data: ForecastScalePDFData): string {
   const topPct = combinedTotal > 0 ? Math.round((topVal / combinedTotal) * 100) : 0;
   const topShare = topPct >= 60 ? "the majority" : topPct >= 40 ? "nearly half" : `${topPct}%`;
 
-  let text = `At full deployment across ${fmtNum(combinedProviders)} providers, this configuration projects ${fmtCurrency(combinedTotal)} in annual value`;
+  let text = "";
 
-  if (totalRealized > 0 && multiplier > 1) {
-    text += ` — ${multiplier.toFixed(1)}× what is currently measured`;
+  if (totalRealized > 0 && multiplier > 1.05) {
+    text = `${org}'s measured footprint documents ${fmtCurrency(totalRealized)} in annual value today. This projection applies those same per-unit economics to a ${fmtNum(combinedProviders)}-provider deployment — no new efficiency assumptions, no benchmark estimates. The result is ${fmtCurrency(combinedTotal)}, ${multiplier.toFixed(1)}× the current measurement, driven entirely by scaling the active provider base.`;
+  } else {
+    text = `Projected across ${fmtNum(combinedProviders)} providers at full deployment, this configuration generates ${fmtCurrency(combinedTotal)} in annual value. The projection applies measured per-unit economics directly — no benchmarks, no estimates beyond what the tracked drivers already show.`;
   }
-  text += `.`;
 
-  text += ` ${topQuad} accounts for ${topShare} of that total.`;
+  text += ` ${topQuad} accounts for ${topShare} of that total, reflecting where Abridge's documentation support has the most direct economic impact.`;
+
+  const baseValue = Math.round(combinedTotal * (baseAdoptionPct / 100));
+  const hasInvestment = (pricingScenarios.length > 0 || simpleInvestment > 0);
+  if (hasInvestment && baseValue > 0) {
+    text += ` At the ${baseAdoptionPct}% adoption base case, projected value is ${fmtCurrency(baseValue)}.`;
+  }
 
   if (forecastYears > 1 && yearlyInputs.length > 1) {
     const lastYear = yearlyInputs[yearlyInputs.length - 1];
-    if (lastYear.totalValue > combinedTotal) {
-      text += ` The case compounds over time: by Year ${forecastYears}, projected annual value reaches ${fmtCurrency(lastYear.totalValue)} as provider adoption and encounter volume scale.`;
+    if (lastYear.totalValue > combinedTotal * 1.1) {
+      text += ` The case builds over time: by Year ${forecastYears}, annual value reaches ${fmtCurrency(lastYear.totalValue)} as utilization and provider volume mature.`;
     }
   }
 
@@ -410,16 +416,19 @@ function ScaleSummaryPage({ data }: { data: ForecastScalePDFData }) {
     : 0;
   const multiplier = totalRealized > 0 ? combinedTotal / totalRealized : 0;
 
-  // Best pricing for ROI strip
+  // Best pricing for ROI strip — tier scenario takes priority, ACV as fallback
   const bestScenario = bestValueScenarioId
     ? pricingScenarios.find((s) => s.id === bestValueScenarioId)
     : pricingScenarios[0];
   const bestInvestment = (() => {
-    if (!bestScenario) return 0;
-    const scale = bestScenario.model === "perProvider" ? data.combinedProviders
-      : (bestScenario.model === "perEncounter" || bestScenario.model === "platformFee") ? data.combinedEncounters
-      : 0;
-    return computeScenarioInvestment(bestScenario, scale).value;
+    if (bestScenario) {
+      const scale = bestScenario.model === "perProvider" ? data.combinedProviders
+        : (bestScenario.model === "perEncounter" || bestScenario.model === "platformFee") ? data.combinedEncounters
+        : 0;
+      const { value, warning } = computeScenarioInvestment(bestScenario, scale);
+      if (!warning && value > 0) return value;
+    }
+    return data.simpleInvestment || 0;
   })();
   const bestNet = bestInvestment > 0 ? combinedTotal - bestInvestment : 0;
   const roi = bestInvestment > 0 ? combinedTotal / bestInvestment : 0;
@@ -635,7 +644,7 @@ function ScaleSummaryPage({ data }: { data: ForecastScalePDFData }) {
         <View style={styles.callout}>
           <Text style={[styles.label, { marginBottom: 5 }]}>How These Projections Are Derived</Text>
           <Text style={styles.body}>
-            Each domain's projected value is calculated by applying a scale factor to the measured per-unit economics — not by referencing benchmarks or published ranges. The scale factor is derived from the ratio of projected providers, encounters, or patient days to the current deployment baseline. If the scale factor is 2×, it means twice the volume with the same per-unit economics. Attribution adjustments from the measurement phase carry forward unchanged.
+            The scale projection is not a benchmark estimate. It multiplies the per-unit economics measured in active deployment — time saved per note, revenue recovered per encounter, staff hours retained per provider — by the difference between the current footprint and the projected one. A 2× scale factor means twice the active volume with the same per-unit outcomes. Attribution weights and value assumptions carry forward from the measurement phase without adjustment. Reviewers who disagree with a specific driver's per-unit value can update that driver in the source measurement and regenerate.
           </Text>
         </View>
       </View>
@@ -646,9 +655,9 @@ function ScaleSummaryPage({ data }: { data: ForecastScalePDFData }) {
 // ─── Page 3: Sensitivity Analysis ────────────────────────────────────────────
 
 const ADOPTION_ROWS = [
-  { label: "60% Adoption", sub: "Conservative floor", pct: 0.6 },
-  { label: "80% Adoption", sub: "Typical post-deployment", pct: 0.8 },
-  { label: "100% Adoption", sub: "Full utilization", pct: 1.0 },
+  { label: "50% Adoption", sub: "Conservative floor", pct: 0.5 },
+  { label: "70% Adoption", sub: "Typical deployment", pct: 0.7 },
+  { label: "90% Adoption", sub: "High utilization", pct: 0.9 },
 ];
 
 const VALUE_COLS = [
@@ -666,24 +675,30 @@ function SensitivityPage({ data }: { data: ForecastScalePDFData }) {
     pricingScenarios,
     bestValueScenarioId,
     clientName,
+    baseAdoptionPct,
+    simpleInvestment,
   } = data;
 
-  const hasPricing = pricingScenarios.length > 0 && combinedTotal > 0;
   const pricingScenario = bestValueScenarioId
     ? pricingScenarios.find((s) => s.id === bestValueScenarioId)
     : pricingScenarios[0];
 
   const investment = (() => {
-    if (!pricingScenario) return 0;
-    const scale =
-      pricingScenario.model === "perProvider"
-        ? combinedProviders
-        : pricingScenario.model === "perEncounter" ||
-          pricingScenario.model === "platformFee"
-        ? combinedEncounters
-        : 0;
-    return computeScenarioInvestment(pricingScenario, scale).value;
+    if (pricingScenario) {
+      const scale =
+        pricingScenario.model === "perProvider"
+          ? combinedProviders
+          : pricingScenario.model === "perEncounter" ||
+            pricingScenario.model === "platformFee"
+          ? combinedEncounters
+          : 0;
+      const { value, warning } = computeScenarioInvestment(pricingScenario, scale);
+      if (!warning && value > 0) return value;
+    }
+    return simpleInvestment || 0;
   })();
+
+  const hasPricing = investment > 0 && combinedTotal > 0;
 
   return (
     <Page size="LETTER" style={styles.page}>
@@ -710,9 +725,10 @@ function SensitivityPage({ data }: { data: ForecastScalePDFData }) {
               Rows — Adoption Rate
             </Text>
             <Text style={styles.body}>
-              Share of providers in the projected headcount who are actively
-              using Abridge. 60% is a conservative post-deployment floor;
-              100% is full utilization of the modeled provider base.
+              Share of the projected provider headcount actively using Abridge.
+              50% is a conservative floor for early deployment; 70% reflects
+              typical outcomes after change management; 90% represents high
+              sustained utilization in mature programs.
             </Text>
           </View>
           <View
@@ -723,10 +739,10 @@ function SensitivityPage({ data }: { data: ForecastScalePDFData }) {
               Columns — Value Realization
             </Text>
             <Text style={styles.body}>
-              Whether the measured per-unit economics hold, compress, or expand
-              at scale. 75% applies a discount for scale risk and adoption
-              friction; 125% reflects compounding effects seen in mature
-              deployments (year 2+).
+              Whether the measured per-unit economics hold, compress, or improve
+              at scale. 75% discounts for friction and scale risk. 100% means
+              outcomes match what was measured. 125% reflects compounding
+              effects documented in second-year deployments.
             </Text>
           </View>
         </View>
@@ -810,7 +826,7 @@ function SensitivityPage({ data }: { data: ForecastScalePDFData }) {
             {/* Cells */}
             {VALUE_COLS.map((col, ci) => {
               const cellValue = combinedTotal * row.pct * col.pct;
-              const isBase = row.pct === 1.0 && col.pct === 1.0;
+              const isBase = row.pct === baseAdoptionPct / 100 && col.pct === 1.0;
               const net = investment > 0 ? cellValue - investment : 0;
               const roi = investment > 0 ? cellValue / investment : 0;
 
@@ -906,7 +922,7 @@ function SensitivityPage({ data }: { data: ForecastScalePDFData }) {
           </View>
         ))}
 
-        {hasPricing && pricingScenario && investment > 0 && (
+        {hasPricing && investment > 0 && (
           <Text
             style={{
               fontSize: 8.5,
@@ -915,7 +931,9 @@ function SensitivityPage({ data }: { data: ForecastScalePDFData }) {
               marginBottom: 4,
             }}
           >
-            {`ROI uses the "${pricingScenario.label}" scenario · ${fmtCurrency(investment)}/yr at projected scale`}
+            {pricingScenario
+              ? `ROI uses the "${pricingScenario.label}" scenario · ${fmtCurrency(investment)}/yr at projected scale`
+              : `ROI uses the annual contract value · ${fmtCurrency(investment)}/yr`}
           </Text>
         )}
 
@@ -976,11 +994,7 @@ function SensitivityPage({ data }: { data: ForecastScalePDFData }) {
             Reading This Table
           </Text>
           <Text style={styles.body}>
-            The outlined cell is the base case — the number used throughout
-            this brief. The table tests that assumption in both directions. A
-            CFO reviewing this document should identify the cell that matches
-            their honest view of adoption and ask whether the case holds there.
-            In most deployments, it does at the 80% / 75% intersection.
+            {`The outlined cell is the base case — ${baseAdoptionPct}% adoption at 100% value realization — the assumption used throughout this brief. The matrix tests it in both directions. A CFO reviewing this document should find the cell that matches their honest view of adoption and ask whether the case holds there. In most deployments it does, even at the conservative 50% / 75% intersection.`}
           </Text>
         </View>
       </View>
@@ -1009,9 +1023,7 @@ function PricingROIPage({ data }: { data: ForecastScalePDFData }) {
         <SectionLabel>Pricing & Return on Investment</SectionLabel>
 
         <Text style={styles.body}>
-          Each pricing scenario below is evaluated against the full-scale value
-          projection. Use this page to compare contract structures and identify
-          which model delivers the strongest net return at projected scale.
+          Each scenario below shows what Abridge costs at projected scale and what it returns. Investment figures use the active tier at projected provider or encounter volume. Net and ROI are calculated against the full-scale value projection — the same number used throughout this brief.
         </Text>
 
         {pricingScenarios.map((scenario) => {

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
-import { EXPLORE_DRIVERS, type ExploreDriver, type ExploreSetting, type ExploreQuadrant, type DriverScaleAxis } from "@/lib/exploreDrivers";
+import { getActiveDrivers, type ExploreDriver, type ExploreSetting, type ExploreQuadrant, type DriverScaleAxis } from "@/lib/exploreDrivers";
 import { type MeasureState, type MeasureDriverEntry, type ForecastScenario, type ForecastAddedSetting, type MeasureCareSetting, type SettingForecastValues } from "@/lib/measureCalculator";
 import { SETTING_LABELS, computeAddedSettingValue } from "@/lib/forecastDefaults";
 import { computeScenarioInvestment, makeDefaultTiers, type PricingScenario, type PricingYearInput } from "@/lib/forecastPricing";
@@ -218,7 +218,7 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
       const bl = getSettingBaseline(settingKey);
       const proj = getSettingFinalYear(settingKey);
       const abridgeEnc = getSettingAbridgeEnc(settingKey);
-      return EXPLORE_DRIVERS
+      return getActiveDrivers(state.customDriverDefs)
         .filter(d => d.settings.includes(settingKey as ExploreSetting) && st[d.id])
         .map(d => {
           const entry = st[d.id];
@@ -231,7 +231,7 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
         });
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeSettings, state.trackedDrivers, state.settingForecasts, state.settingForecastYears, state.settingData, state.deployment, forecastYears]);
+  }, [activeSettings, state.trackedDrivers, state.settingForecasts, state.settingForecastYears, state.settingData, state.deployment, forecastYears, state.customDriverDefs]);
 
   const totalsByQuadrant = useMemo(() => {
     const out: Record<ExploreQuadrant, { realized: number; projected: number }> = {
@@ -294,7 +294,7 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
         const abridgeEnc = getSettingAbridgeEnc(settingKey);
         yearProviders += yv.providers;
         yearEncounters += yv.encounters;
-        for (const d of EXPLORE_DRIVERS) {
+        for (const d of getActiveDrivers(state.customDriverDefs)) {
           if (!d.settings.includes(settingKey as ExploreSetting) || !st[d.id] || !d.measureDefaults) continue;
           const entry = st[d.id];
           const realized = computeRealizedBaseline(d, entry, abridgeEnc);
@@ -374,6 +374,8 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
         yearlyInputs: pricingYearlyInputs,
         pricingScenarios,
         bestValueScenarioId,
+        baseAdoptionPct,
+        simpleInvestment,
       };
       await generateForecastScalePDF(pdfData);
     } finally {
@@ -769,7 +771,7 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
                 className="h-12 px-8 bg-black hover:bg-black/90 text-white font-semibold rounded-full gap-2"
                 data-testid="button-continue-measure-forecast-mobile"
               >
-                Continue to Outcome Summary
+                View Evidence Detail
                 <ArrowRight className="w-4 h-4" />
               </Button>
             </motion.div>
@@ -938,7 +940,7 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
                   className="w-full h-12 bg-white hover:bg-white/90 text-black font-semibold rounded-full gap-2"
                   data-testid="button-continue-measure-forecast"
                 >
-                  Continue to Outcome Summary
+                  View Evidence Detail
                   <ArrowRight className="w-4 h-4" />
                 </Button>
               </div>
