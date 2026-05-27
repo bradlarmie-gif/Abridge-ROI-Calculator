@@ -1,17 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowRight, RotateCcw, TrendingUp, TrendingDown, Plus, DollarSign, Download } from "lucide-react";
+import { ArrowRight, RotateCcw, TrendingUp, TrendingDown, Plus, Download, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { EXPLORE_DRIVERS, type ExploreDriver, type ExploreSetting, type ExploreQuadrant, type DriverScaleAxis } from "@/lib/exploreDrivers";
 import { type MeasureState, type MeasureDriverEntry, type ForecastScenario, type ForecastAddedSetting, type MeasureCareSetting, type SettingForecastValues } from "@/lib/measureCalculator";
 import { SETTING_LABELS, computeAddedSettingValue } from "@/lib/forecastDefaults";
-import { computeScenarioInvestment, computePricingTimeSeries, makeDefaultTiers, type PricingScenario, type PricingTimeSeriesPoint, type PricingYearInput } from "@/lib/forecastPricing";
+import { computeScenarioInvestment, makeDefaultTiers, type PricingScenario, type PricingYearInput } from "@/lib/forecastPricing";
 import AddCareSettingModal from "@/components/measure/AddCareSettingModal";
 import AddedSettingCard from "@/components/measure/AddedSettingCard";
 import PricingScenarioCard from "@/components/measure/PricingScenarioCard";
-import PricingComparisonChart from "@/components/measure/PricingComparisonChart";
 import { generateForecastScalePDF, type ForecastScalePDFData } from "@/components/measure/ForecastScalePDF";
 
 interface MeasureForecastProps {
@@ -94,6 +93,7 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
 
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [pdfGenerating, setPdfGenerating] = useState(false);
+  const [showAdvancedPricing, setShowAdvancedPricing] = useState(false);
   const addedSettings = state.forecastScenario?.addedSettings ?? [];
   const pricingScenarios = state.forecastScenario?.pricingScenarios ?? [];
 
@@ -315,13 +315,6 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [forecastYears, activeSettings, state.trackedDrivers, state.settingForecasts, state.settingForecastYears, state.settingData, state.deployment, addedSettings, addedSettingsTotal]);
 
-  const pricingTimeSeries = useMemo(() => {
-    if (pricingScenarios.length === 0 || pricingYearlyInputs.length === 0 || combinedTotal === 0) {
-      return { points: [] as PricingTimeSeriesPoint[], tierCrossings: [] };
-    }
-    return computePricingTimeSeries(pricingScenarios, pricingYearlyInputs);
-  }, [pricingScenarios, pricingYearlyInputs, combinedTotal]);
-
   const isSettingChanged = (settingKey: string) => {
     const bl = getSettingBaseline(settingKey);
     const proj = getSettingProjected(settingKey);
@@ -336,6 +329,27 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
 
   const formatCurrency = (n: number) => '$' + Math.round(n).toLocaleString();
   const formatNumber = (n: number) => n.toLocaleString();
+  const fmtShort = (n: number) => {
+    if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
+    if (n >= 1_000) return `$${Math.round(n / 1_000)}K`;
+    return `$${Math.round(n)}`;
+  };
+
+  const simpleInvestment: number = (dep?.annualContractValue as number) || 0;
+
+  const effectiveInvestment = useMemo(() => {
+    if (pricingScenarios.length > 0) {
+      const scenario = bestValueScenarioId
+        ? (pricingScenarios.find(s => s.id === bestValueScenarioId) ?? pricingScenarios[0])
+        : pricingScenarios[0];
+      const scale = scenario.model === 'perProvider' ? combinedProviders
+                  : scenario.model === 'perEncounter' ? combinedEncounters
+                  : 0;
+      const { value, warning } = computeScenarioInvestment(scenario, scale);
+      return warning ? simpleInvestment : value;
+    }
+    return simpleInvestment;
+  }, [pricingScenarios, bestValueScenarioId, combinedProviders, combinedEncounters, simpleInvestment]);
 
   const handleDownloadScalePDF = async () => {
     if (pdfGenerating) return;
@@ -591,61 +605,154 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
               </div>
             </motion.div>
 
-            {/* Pricing Comparison */}
+            {/* Sensitivity Analysis */}
+            {combinedTotal > 0 && (
+              <motion.div
+                className="mt-8"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+              >
+                <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Sensitivity Analysis</p>
+                <div className="bg-white rounded-xl border border-[#E5E5E5] overflow-hidden" data-testid="sensitivity-matrix">
+                  {/* Header */}
+                  <div className="grid grid-cols-4 bg-[#FAFAF8] border-b border-[#F0ECE7]">
+                    <div className="px-3 py-2.5" />
+                    {[
+                      { label: 'Conservative', sub: '75% realization', pct: 75 },
+                      { label: 'Base Case', sub: '100% realization', pct: 100 },
+                      { label: 'Optimistic', sub: '125% realization', pct: 125 },
+                    ].map(col => (
+                      <div key={col.pct} className={`px-3 py-2.5 text-center border-l border-[#F0ECE7] ${col.pct === 100 ? 'bg-[#F5F0EB]' : ''}`}>
+                        <p className="text-[10px] font-semibold text-[#555555] uppercase tracking-wide leading-none">{col.label}</p>
+                        <p className="text-[9px] text-[#AAAAAA] mt-0.5">{col.sub}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Rows: 50 / 70 / 90 % adoption */}
+                  {[50, 70, 90].map(adoption => (
+                    <div key={adoption} className={`grid grid-cols-4 border-b last:border-0 border-[#F0ECE7] ${adoption === 70 ? 'bg-[#FAFAF8]' : ''}`}>
+                      {/* Row label */}
+                      <div className="px-3 py-3 flex flex-col justify-center gap-0.5">
+                        <div className="flex items-center gap-1.5">
+                          <p className="text-sm font-bold text-[#1A1A1A]">{adoption}%</p>
+                          {adoption === 70 && (
+                            <span className="px-1.5 py-0.5 bg-[#EA2C00] text-white text-[8px] font-bold rounded-full uppercase tracking-wide">Base</span>
+                          )}
+                        </div>
+                        <p className="text-[10px] text-[#AAAAAA]">adoption</p>
+                      </div>
+
+                      {/* Value cells */}
+                      {[75, 100, 125].map(realization => {
+                        const cellValue = Math.round(combinedTotal * (adoption / 100) * (realization / 100));
+                        const isBase = adoption === 70 && realization === 100;
+                        const roi = effectiveInvestment > 0 ? cellValue / effectiveInvestment : null;
+                        return (
+                          <div
+                            key={realization}
+                            className={`px-3 py-3 text-center border-l border-[#F0ECE7] ${realization === 100 ? 'bg-[#F5F0EB]' : ''} ${isBase ? 'ring-2 ring-inset ring-[#EA2C00]/25' : ''}`}
+                            data-testid={`sensitivity-cell-${adoption}-${realization}`}
+                          >
+                            <p className={`text-sm font-bold tabular-nums ${isBase ? 'text-[#EA2C00]' : 'text-[#1A1A1A]'}`}>
+                              {fmtShort(cellValue)}
+                            </p>
+                            {roi !== null && (
+                              <p className={`text-[10px] font-semibold mt-0.5 ${roi >= 1 ? 'text-emerald-600' : 'text-[#AAAAAA]'}`}>
+                                {roi.toFixed(1)}× ROI
+                              </p>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ))}
+                </div>
+                <p className="text-[10px] text-[#AAAAAA] mt-2 leading-relaxed">
+                  Annual value at adoption × realization rate. 100% realization = drivers perform as measured.{effectiveInvestment > 0 ? ' ROI = value ÷ annual investment.' : ''}
+                </p>
+              </motion.div>
+            )}
+
+            {/* Pricing */}
             <motion.div
               className="mt-8"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
+              transition={{ delay: 0.35 }}
             >
-              <div className="flex items-center justify-between mb-3">
-                <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px]">Pricing Comparison</p>
+              <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Pricing</p>
+
+              {/* Simple ACV input */}
+              <div className="bg-white rounded-xl border border-[#E5E5E5] p-4 mb-3">
+                <label className="text-[11px] font-semibold text-[#888888] uppercase tracking-wide mb-2 block">
+                  Annual Contract Value
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#888888] pointer-events-none">$</span>
+                  <FormattedNumberInput
+                    value={simpleInvestment}
+                    onChange={(v: number) => updateState({ deployment: { ...(state.deployment || {}), annualContractValue: v } as typeof state.deployment })}
+                    className="h-10 bg-white pl-7"
+                    placeholder="0"
+                    data-testid="input-simple-acv"
+                  />
+                </div>
+                {simpleInvestment > 0 && combinedTotal > 0 && (
+                  <p className="text-xs text-emerald-600 font-medium mt-2">
+                    {(combinedTotal * 0.7 / simpleInvestment).toFixed(1)}× ROI at base case (70% adoption)
+                  </p>
+                )}
               </div>
 
-              {pricingScenarios.length === 0 && (
-                <div className="bg-[#F5F0EB] rounded-lg p-6 text-center mb-3" data-testid="text-no-pricing-scenarios">
-                  <DollarSign className="w-8 h-8 text-[#888888] mx-auto mb-2" />
-                  <p className="text-sm text-[#666666] mb-1">Compare pricing models at projected scale.</p>
-                  <p className="text-xs text-[#888888]">Add the customer's current contract terms and any alternatives you want to model.</p>
-                </div>
-              )}
-
-              {pricingScenarios.length > 0 && (
-                <>
-                  {/* Chart */}
-                  <div className="bg-white rounded-xl border border-[#E5E5E5] p-4 mb-4">
-                    <PricingComparisonChart
-                      points={pricingTimeSeries.points}
-                      tierCrossings={pricingTimeSeries.tierCrossings}
-                      scenarios={pricingScenarios}
-                    />
-                  </div>
-
-                  {/* Cards */}
-                  <div className={pricingScenarios.length >= 2 ? 'grid grid-cols-1 md:grid-cols-2 gap-4' : 'space-y-3'}>
-                    {pricingScenarios.map(scenario => (
-                      <PricingScenarioCard
-                        key={scenario.id}
-                        scenario={scenario}
-                        displayProviders={combinedProviders}
-                        displayEncounters={combinedEncounters}
-                        displayValue={combinedTotal}
-                        isBestValue={bestValueScenarioId === scenario.id}
-                        onUpdate={(updates) => updatePricingScenario(scenario.id, updates)}
-                        onRemove={() => removePricingScenario(scenario.id)}
-                      />
-                    ))}
-                  </div>
-                </>
-              )}
-
+              {/* Advanced pricing model toggle */}
               <button
-                onClick={addPricingScenario}
-                className="w-full mt-3 py-3 px-4 rounded-lg border-2 border-dashed border-[#E5E5E5] text-sm font-medium text-[#666666] hover:border-[#EA2C00] hover:text-[#EA2C00] transition-all flex items-center justify-center gap-1.5"
-                data-testid="button-add-pricing-scenario"
+                onClick={() => setShowAdvancedPricing(v => !v)}
+                className="flex items-center gap-1.5 text-xs font-medium text-[#888888] hover:text-[#EA2C00] transition-colors mb-2"
+                data-testid="button-toggle-advanced-pricing"
               >
-                <Plus className="w-4 h-4" /> Add a pricing scenario
+                <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${showAdvancedPricing ? 'rotate-0' : '-rotate-90'}`} />
+                Advanced: configure tier-based pricing
               </button>
+
+              <AnimatePresence initial={false}>
+                {showAdvancedPricing && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.22, ease: 'easeInOut' }}
+                    className="overflow-hidden"
+                  >
+                    <div className="pt-1">
+                      {pricingScenarios.length > 0 && (
+                        <div className={`mb-3 ${pricingScenarios.length >= 2 ? 'grid grid-cols-1 md:grid-cols-2 gap-4' : 'space-y-3'}`}>
+                          {pricingScenarios.map(scenario => (
+                            <PricingScenarioCard
+                              key={scenario.id}
+                              scenario={scenario}
+                              displayProviders={combinedProviders}
+                              displayEncounters={combinedEncounters}
+                              displayValue={combinedTotal}
+                              isBestValue={bestValueScenarioId === scenario.id}
+                              onUpdate={(updates) => updatePricingScenario(scenario.id, updates)}
+                              onRemove={() => removePricingScenario(scenario.id)}
+                            />
+                          ))}
+                        </div>
+                      )}
+                      <button
+                        onClick={addPricingScenario}
+                        className="w-full py-3 px-4 rounded-lg border-2 border-dashed border-[#E5E5E5] text-sm font-medium text-[#666666] hover:border-[#EA2C00] hover:text-[#EA2C00] transition-all flex items-center justify-center gap-1.5"
+                        data-testid="button-add-pricing-scenario"
+                      >
+                        <Plus className="w-4 h-4" /> Add a pricing scenario
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </motion.div>
 
             <motion.div className="flex justify-center mt-8 lg:hidden">
