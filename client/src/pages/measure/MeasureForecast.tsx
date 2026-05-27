@@ -94,6 +94,7 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [pdfGenerating, setPdfGenerating] = useState(false);
   const [showAdvancedPricing, setShowAdvancedPricing] = useState(false);
+  const [baseAdoptionPct, setBaseAdoptionPct] = useState(70);
   const addedSettings = state.forecastScenario?.addedSettings ?? [];
   const pricingScenarios = state.forecastScenario?.pricingScenarios ?? [];
 
@@ -631,46 +632,53 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
                   </div>
 
                   {/* Rows: 50 / 70 / 90 % adoption */}
-                  {[50, 70, 90].map(adoption => (
-                    <div key={adoption} className={`grid grid-cols-4 border-b last:border-0 border-[#F0ECE7] ${adoption === 70 ? 'bg-[#FAFAF8]' : ''}`}>
-                      {/* Row label */}
-                      <div className="px-3 py-3 flex flex-col justify-center gap-0.5">
-                        <div className="flex items-center gap-1.5">
-                          <p className="text-sm font-bold text-[#1A1A1A]">{adoption}%</p>
-                          {adoption === 70 && (
-                            <span className="px-1.5 py-0.5 bg-[#EA2C00] text-white text-[8px] font-bold rounded-full uppercase tracking-wide">Base</span>
-                          )}
-                        </div>
-                        <p className="text-[10px] text-[#AAAAAA]">adoption</p>
-                      </div>
-
-                      {/* Value cells */}
-                      {[75, 100, 125].map(realization => {
-                        const cellValue = Math.round(combinedTotal * (adoption / 100) * (realization / 100));
-                        const isBase = adoption === 70 && realization === 100;
-                        const roi = effectiveInvestment > 0 ? cellValue / effectiveInvestment : null;
-                        return (
-                          <div
-                            key={realization}
-                            className={`px-3 py-3 text-center border-l border-[#F0ECE7] ${realization === 100 ? 'bg-[#F5F0EB]' : ''} ${isBase ? 'ring-2 ring-inset ring-[#EA2C00]/25' : ''}`}
-                            data-testid={`sensitivity-cell-${adoption}-${realization}`}
-                          >
-                            <p className={`text-sm font-bold tabular-nums ${isBase ? 'text-[#EA2C00]' : 'text-[#1A1A1A]'}`}>
-                              {fmtShort(cellValue)}
-                            </p>
-                            {roi !== null && (
-                              <p className={`text-[10px] font-semibold mt-0.5 ${roi >= 1 ? 'text-emerald-600' : 'text-[#AAAAAA]'}`}>
-                                {roi.toFixed(1)}× ROI
-                              </p>
+                  {[50, 70, 90].map(adoption => {
+                    const isBaseRow = adoption === baseAdoptionPct;
+                    return (
+                      <div key={adoption} className={`grid grid-cols-4 border-b last:border-0 border-[#F0ECE7] ${isBaseRow ? 'bg-[#FAFAF8]' : ''}`}>
+                        {/* Row label — click to set as base */}
+                        <button
+                          onClick={() => setBaseAdoptionPct(adoption)}
+                          className={`px-3 py-3 flex flex-col justify-center gap-0.5 text-left transition-colors ${isBaseRow ? '' : 'hover:bg-[#F9F7F5]'}`}
+                          title="Set as base case"
+                        >
+                          <div className="flex items-center gap-1.5">
+                            <p className="text-sm font-bold text-[#1A1A1A]">{adoption}%</p>
+                            {isBaseRow && (
+                              <span className="px-1.5 py-0.5 bg-[#EA2C00] text-white text-[8px] font-bold rounded-full uppercase tracking-wide">Base</span>
                             )}
                           </div>
-                        );
-                      })}
-                    </div>
-                  ))}
+                          <p className="text-[10px] text-[#AAAAAA]">adoption</p>
+                        </button>
+
+                        {/* Value cells */}
+                        {[75, 100, 125].map(realization => {
+                          const cellValue = Math.round(combinedTotal * (adoption / 100) * (realization / 100));
+                          const isBase = isBaseRow && realization === 100;
+                          const roi = effectiveInvestment > 0 ? cellValue / effectiveInvestment : null;
+                          return (
+                            <div
+                              key={realization}
+                              className={`px-3 py-3 text-center border-l border-[#F0ECE7] ${realization === 100 ? 'bg-[#F5F0EB]' : ''} ${isBase ? 'ring-2 ring-inset ring-[#EA2C00]/25' : ''}`}
+                              data-testid={`sensitivity-cell-${adoption}-${realization}`}
+                            >
+                              <p className={`text-sm font-bold tabular-nums ${isBase ? 'text-[#EA2C00]' : 'text-[#1A1A1A]'}`}>
+                                {fmtShort(cellValue)}
+                              </p>
+                              {roi !== null && (
+                                <p className={`text-[10px] font-semibold mt-0.5 ${roi >= 1 ? 'text-emerald-600' : 'text-[#AAAAAA]'}`}>
+                                  {roi.toFixed(1)}× ROI
+                                </p>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })}
                 </div>
                 <p className="text-[10px] text-[#AAAAAA] mt-2 leading-relaxed">
-                  Annual value at adoption × realization rate. 100% realization = drivers perform as measured.{effectiveInvestment > 0 ? ' ROI = value ÷ annual investment.' : ''}
+                  Annual value at adoption × realization rate. 100% realization = drivers perform as measured.{effectiveInvestment > 0 ? ' ROI = value ÷ annual investment.' : ''}{' '}Click a row to change the base case.
                 </p>
               </motion.div>
             )}
@@ -701,7 +709,7 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
                 </div>
                 {simpleInvestment > 0 && combinedTotal > 0 && (
                   <p className="text-xs text-emerald-600 font-medium mt-2">
-                    {(combinedTotal * 0.7 / simpleInvestment).toFixed(1)}× ROI at base case (70% adoption)
+                    {(combinedTotal * (baseAdoptionPct / 100) / simpleInvestment).toFixed(1)}× ROI at base case ({baseAdoptionPct}% adoption)
                   </p>
                 )}
               </div>
