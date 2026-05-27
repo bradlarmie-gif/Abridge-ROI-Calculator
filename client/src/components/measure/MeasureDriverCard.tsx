@@ -32,9 +32,10 @@ interface MeasureDriverCardProps {
   onUpdate: (updates: Partial<MeasureDriverEntry>) => void;
   onRemove: () => void;
   isMultiSetting?: boolean;
+  abridgeEncounters?: number;
 }
 
-export default function MeasureDriverCard({ driver, entry, onUpdate, onRemove, isMultiSetting }: MeasureDriverCardProps) {
+export default function MeasureDriverCard({ driver, entry, onUpdate, onRemove, isMultiSetting, abridgeEncounters }: MeasureDriverCardProps) {
   const isQuantifiable = driver.visibility === 'quantified' && Boolean(driver.measureDefaults);
   const md = driver.measureDefaults;
 
@@ -329,6 +330,25 @@ export default function MeasureDriverCard({ driver, entry, onUpdate, onRemove, i
                       ) : (
                         monthlyEntrySection
                       )}
+
+                      {md.isPerEncounterRate && (abridgeEncounters ?? 0) > 0 && (() => {
+                        const latestWith = entry.isMonthlyMode && entry.monthlyData?.length
+                          ? [...entry.monthlyData].sort((a, b) => a.month.localeCompare(b.month)).at(-1)!.withAbridge
+                          : entry.withAbridge;
+                        const latestWithout = entry.isMonthlyMode && entry.monthlyData?.length
+                          ? [...entry.monthlyData].sort((a, b) => a.month.localeCompare(b.month)).at(-1)!.withoutAbridge
+                          : entry.withoutAbridge;
+                        const encDelta = latestWith - latestWithout;
+                        if (encDelta === 0) return null;
+                        return (
+                          <div className="mt-2 px-3 py-2 bg-[#F5F0EB] rounded-lg text-[11px] text-[#666666]">
+                            {Math.abs(encDelta).toFixed(2)} wRVUs/enc × {abridgeEncounters!.toLocaleString()} Abridge encounters
+                            <span className="font-semibold text-black ml-1">
+                              = {Math.round(Math.abs(encDelta) * abridgeEncounters!).toLocaleString()} total wRVUs/yr
+                            </span>
+                          </div>
+                        );
+                      })()}
 
                       {/* Benchmark hint */}
                       {md.benchmarkHint && (
