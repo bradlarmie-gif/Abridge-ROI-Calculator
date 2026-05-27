@@ -276,13 +276,13 @@ function SignalDriverRow({
 export default function MeasureOutput({ state, updateState, onNext, onBack, onHome }: MeasureOutputProps) {
   void updateState;
   const [exporting, setExporting] = useState(false);
-  const [expandedQuadrants, setExpandedQuadrants] = useState<Record<string, boolean>>({
-    Capacity: true, Workforce: true, Revenue: true, Quality: true,
-  });
+  // key is quadrant (single-setting) or "setting:quadrant" (multi-setting); absent = expanded
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
   const { toast } = useToast();
 
-  const toggleQuadrant = (q: string) =>
-    setExpandedQuadrants(prev => ({ ...prev, [q]: !prev[q] }));
+  const isSectionExpanded = (key: string) => expandedSections[key] !== false;
+  const toggleSection = (key: string) =>
+    setExpandedSections(prev => ({ ...prev, [key]: !(prev[key] !== false) }));
 
   const activeSettings = (
     state.activeCareSettings && state.activeCareSettings.length > 0
@@ -306,6 +306,29 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
       const realizedTotal = drivers.reduce((sum, d) => sum + d.realizedValue, 0);
       return { quadrant: q, realizedTotal, drivers };
     });
+  }, [activeSettings, state.trackedDrivers]);
+
+  // Per-setting breakdown (used for multi-setting hero + content sections)
+  const settingSections = useMemo(() => {
+    return activeSettings.map(setting => {
+      const st = state.trackedDrivers?.[setting] || {};
+      const settingQuadrants = QUADRANT_ORDER.map(q => {
+        const drivers = EXPLORE_DRIVERS
+          .filter(d => d.quadrant === q && d.settings.includes(setting) && st[d.id])
+          .map(d => buildDriverPayload(d, st[d.id]));
+        return {
+          quadrant: q as ExploreQuadrant,
+          realizedTotal: drivers.reduce((sum, d) => sum + d.realizedValue, 0),
+          drivers,
+        };
+      }).filter(q => q.drivers.length > 0);
+      return {
+        setting,
+        label: SETTING_LABELS[setting as keyof typeof SETTING_LABELS] || setting,
+        settingTotal: settingQuadrants.reduce((sum, q) => sum + q.realizedTotal, 0),
+        settingQuadrants,
+      };
+    }).filter(s => s.settingQuadrants.length > 0);
   }, [activeSettings, state.trackedDrivers]);
 
   const totalRealized = quadrants.reduce((sum, q) => sum + q.realizedTotal, 0);
@@ -456,42 +479,88 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
                   </div>
                 </div>
 
-                {/* Right: domain breakdown */}
+                {/* Right: breakdown panel */}
                 <div className="lg:w-[300px] flex-shrink-0">
-                  <p className="text-[10px] font-semibold text-white/40 uppercase tracking-[2px] mb-4">
-                    Value by Domain
-                  </p>
-                  <div className="space-y-3">
-                    {QUADRANT_ORDER.map(q => {
-                      const qd = quadrants.find(x => x.quadrant === q);
-                      const val = qd?.realizedTotal ?? 0;
-                      const pct = totalRealized > 0 ? (val / totalRealized) * 100 : 0;
-                      const color = QUADRANT_COLORS[q];
-                      const dCount = qd?.drivers.length ?? 0;
-                      return (
-                        <div key={q}>
-                          <div className="flex items-center justify-between mb-1.5">
-                            <div className="flex items-center gap-2">
-                              <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
-                              <span className="text-[11px] font-semibold text-white/60 uppercase tracking-wide">{q}</span>
-                              {dCount > 0 && (
-                                <span className="text-[10px] text-white/30">{dCount} driver{dCount === 1 ? '' : 's'}</span>
-                              )}
+                  {isMultiSetting ? (
+                    <>
+                      <p className="text-[10px] font-semibold text-white/40 uppercase tracking-[2px] mb-4">By Setting</p>
+                      <div className="space-y-3 mb-5">
+                        {settingSections.map(ss => {
+                          const pct = totalRealized > 0 ? (ss.settingTotal / totalRealized) * 100 : 0;
+                          return (
+                            <div key={ss.setting}>
+                              <div className="flex items-center justify-between mb-1.5">
+                                <span className="text-[11px] font-semibold text-white/60 uppercase tracking-wide">{ss.label}</span>
+                                <span className="text-sm font-bold text-white/80 tabular-nums">
+                                  {ss.settingTotal > 0 ? formatCurrency(ss.settingTotal) : <span className="text-white/25">—</span>}
+                                </span>
+                              </div>
+                              <div className="h-1 bg-white/10 rounded-full overflow-hidden">
+                                <div className="h-full rounded-full transition-all duration-700 bg-[#EA2C00]" style={{ width: `${pct}%`, opacity: pct > 0 ? 1 : 0 }} />
+                              </div>
                             </div>
-                            <span className="text-sm font-bold text-white/80 tabular-nums">
-                              {val > 0 ? formatCurrency(val) : <span className="text-white/25">—</span>}
-                            </span>
-                          </div>
-                          <div className="h-1 bg-white/10 rounded-full overflow-hidden">
-                            <div
-                              className="h-full rounded-full transition-all duration-700"
-                              style={{ width: `${pct}%`, backgroundColor: color, opacity: pct > 0 ? 1 : 0 }}
-                            />
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+                          );
+                        })}
+                      </div>
+                      <div className="h-px bg-white/10 mb-4" />
+                      <p className="text-[10px] font-semibold text-white/40 uppercase tracking-[2px] mb-3">By Domain</p>
+                      <div className="space-y-2 mb-4">
+                        {QUADRANT_ORDER.map(q => {
+                          const qd = quadrants.find(x => x.quadrant === q);
+                          const val = qd?.realizedTotal ?? 0;
+                          const color = QUADRANT_COLORS[q];
+                          const dCount = qd?.drivers.length ?? 0;
+                          if (dCount === 0) return null;
+                          return (
+                            <div key={q} className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
+                                <span className="text-[11px] text-white/50 uppercase tracking-wide">{q}</span>
+                              </div>
+                              <span className="text-xs font-bold text-white/60 tabular-nums">
+                                {val > 0 ? formatCurrency(val) : <span className="text-white/25">—</span>}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-[10px] font-semibold text-white/40 uppercase tracking-[2px] mb-4">Value by Domain</p>
+                      <div className="space-y-3">
+                        {QUADRANT_ORDER.map(q => {
+                          const qd = quadrants.find(x => x.quadrant === q);
+                          const val = qd?.realizedTotal ?? 0;
+                          const pct = totalRealized > 0 ? (val / totalRealized) * 100 : 0;
+                          const color = QUADRANT_COLORS[q];
+                          const dCount = qd?.drivers.length ?? 0;
+                          return (
+                            <div key={q}>
+                              <div className="flex items-center justify-between mb-1.5">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
+                                  <span className="text-[11px] font-semibold text-white/60 uppercase tracking-wide">{q}</span>
+                                  {dCount > 0 && (
+                                    <span className="text-[10px] text-white/30">{dCount} driver{dCount === 1 ? '' : 's'}</span>
+                                  )}
+                                </div>
+                                <span className="text-sm font-bold text-white/80 tabular-nums">
+                                  {val > 0 ? formatCurrency(val) : <span className="text-white/25">—</span>}
+                                </span>
+                              </div>
+                              <div className="h-1 bg-white/10 rounded-full overflow-hidden">
+                                <div
+                                  className="h-full rounded-full transition-all duration-700"
+                                  style={{ width: `${pct}%`, backgroundColor: color, opacity: pct > 0 ? 1 : 0 }}
+                                />
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </>
+                  )}
                   <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between text-[10px] text-white/30">
                     <span>{driversTrackedCount} drivers · {activeQuadrantCount} of 4 domains</span>
                     {signalDriverCount > 0 && <span>{signalDriverCount} signals tracked</span>}
@@ -508,111 +577,208 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
             >
-              {quadrants.filter(q => q.drivers.length > 0).map((q, qi) => {
-                const color = QUADRANT_COLORS[q.quadrant];
-                const isExpanded = expandedQuadrants[q.quadrant] ?? true;
-                const financialDrivers = q.drivers.filter(d => d.visibility === 'quantified');
-                const signalDrivers = q.drivers.filter(d => d.visibility === 'qualitative');
-                const tagline = QUADRANT_TAGLINES[q.quadrant];
-
-                return (
+              {isMultiSetting ? (
+                /* Multi-setting: one card per setting, nested collapsible quadrant rows */
+                settingSections.map((ss, si) => (
                   <motion.div
-                    key={q.quadrant}
+                    key={ss.setting}
                     className="bg-white rounded-2xl border border-[#E8E8E8] overflow-hidden"
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.12 + qi * 0.05 }}
-                    data-testid={`section-quadrant-${q.quadrant.toLowerCase()}`}
+                    transition={{ delay: 0.12 + si * 0.05 }}
+                    data-testid={`section-setting-${ss.setting}`}
                   >
-                    {/* Section header */}
-                    <button
-                      onClick={() => toggleQuadrant(q.quadrant)}
-                      className="w-full flex items-center justify-between px-6 py-4 hover:bg-[#FAFAF8] transition-colors text-left group"
-                      data-testid={`toggle-quadrant-${q.quadrant.toLowerCase()}`}
-                    >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-bold text-black uppercase tracking-wide">{q.quadrant}</span>
-                            <span className="text-xs text-[#AAAAAA]">
-                              {q.drivers.length} driver{q.drivers.length === 1 ? '' : 's'}
-                            </span>
-                          </div>
-                          <p className="text-[11px] text-[#AAAAAA] leading-none mt-0.5 truncate">{tagline}</p>
-                        </div>
+                    {/* Setting header */}
+                    <div className="flex items-center justify-between px-6 py-4 border-b border-[#F0F0F0]">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-[#EA2C00] flex-shrink-0" />
+                        <span className="text-sm font-bold text-black uppercase tracking-wide">{ss.label}</span>
+                        <span className="text-xs text-[#AAAAAA]">
+                          {ss.settingQuadrants.reduce((n, q) => n + q.drivers.length, 0)} drivers
+                        </span>
                       </div>
-                      <div className="flex items-center gap-3 flex-shrink-0 ml-4">
-                        {q.realizedTotal > 0 && (
-                          <span className="text-base font-bold tabular-nums" style={{ color }}>
-                            {formatCurrency(q.realizedTotal)}
-                          </span>
-                        )}
-                        <ChevronDown
-                          className={`w-4 h-4 text-[#CCCCCC] transition-transform duration-200 ${isExpanded ? 'rotate-0' : '-rotate-90'}`}
-                        />
-                      </div>
-                    </button>
-
-                    <AnimatePresence initial={false}>
-                      {isExpanded && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: 'auto', opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.22, ease: 'easeInOut' }}
-                          className="overflow-hidden"
-                        >
-                          <div className="border-t border-[#F0F0F0]">
-
-                            {/* Financial drivers */}
-                            {financialDrivers.length > 0 && (
-                              <div className="p-5">
-                                <p className="text-[10px] font-bold text-[#888888] uppercase tracking-[1.5px] mb-3">
-                                  Financial Impact
-                                </p>
-                                <div className="space-y-3">
-                                  {financialDrivers.map(drv => (
-                                    <FinancialDriverCard
-                                      key={drv.id}
-                                      drv={drv}
-                                      settingBadges={getDriverSettingBadges(drv)}
-                                      lowerIsBetter={getDriverLowerIsBetter(drv.id)}
-                                    />
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-
-                            {/* Signal drivers */}
-                            {signalDrivers.length > 0 && (
-                              <div className={`px-5 pb-5 ${financialDrivers.length > 0 ? 'pt-0' : 'pt-5'}`}>
-                                {financialDrivers.length > 0 && (
-                                  <div className="h-px bg-[#F0F0F0] mb-4" />
-                                )}
-                                <p className="text-[10px] font-bold text-[#888888] uppercase tracking-[1.5px] mb-3">
-                                  Signal Evidence
-                                </p>
-                                <div className="space-y-2">
-                                  {signalDrivers.map(drv => (
-                                    <SignalDriverRow
-                                      key={drv.id}
-                                      drv={drv}
-                                      settingBadges={getDriverSettingBadges(drv)}
-                                      lowerIsBetter={getDriverLowerIsBetter(drv.id)}
-                                    />
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-
-                          </div>
-                        </motion.div>
+                      {ss.settingTotal > 0 && (
+                        <span className="text-base font-bold text-[#EA2C00] tabular-nums">{formatCurrency(ss.settingTotal)}</span>
                       )}
-                    </AnimatePresence>
+                    </div>
+
+                    {/* Nested quadrant rows */}
+                    <div className="divide-y divide-[#F8F8F8]">
+                      {ss.settingQuadrants.map(q => {
+                        const color = QUADRANT_COLORS[q.quadrant];
+                        const sectionKey = `${ss.setting}:${q.quadrant}`;
+                        const isExpanded = isSectionExpanded(sectionKey);
+                        const financialDrivers = q.drivers.filter(d => d.visibility === 'quantified');
+                        const signalDrivers = q.drivers.filter(d => d.visibility === 'qualitative');
+                        const tagline = QUADRANT_TAGLINES[q.quadrant];
+                        return (
+                          <div key={q.quadrant}>
+                            <button
+                              onClick={() => toggleSection(sectionKey)}
+                              className="w-full flex items-center justify-between px-6 py-3 hover:bg-[#FAFAF8] transition-colors text-left"
+                              data-testid={`toggle-${ss.setting}-${q.quadrant.toLowerCase()}`}
+                            >
+                              <div className="flex items-center gap-3 min-w-0">
+                                <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
+                                <div className="min-w-0">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-xs font-bold text-black uppercase tracking-wide">{q.quadrant}</span>
+                                    <span className="text-[11px] text-[#AAAAAA]">{q.drivers.length} driver{q.drivers.length === 1 ? '' : 's'}</span>
+                                  </div>
+                                  <p className="text-[10px] text-[#AAAAAA] leading-none mt-0.5 truncate">{tagline}</p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-3 flex-shrink-0 ml-4">
+                                {q.realizedTotal > 0 && (
+                                  <span className="text-sm font-bold tabular-nums" style={{ color }}>{formatCurrency(q.realizedTotal)}</span>
+                                )}
+                                <ChevronDown className={`w-4 h-4 text-[#CCCCCC] transition-transform duration-200 ${isExpanded ? 'rotate-0' : '-rotate-90'}`} />
+                              </div>
+                            </button>
+
+                            <AnimatePresence initial={false}>
+                              {isExpanded && (
+                                <motion.div
+                                  initial={{ height: 0, opacity: 0 }}
+                                  animate={{ height: 'auto', opacity: 1 }}
+                                  exit={{ height: 0, opacity: 0 }}
+                                  transition={{ duration: 0.22, ease: 'easeInOut' }}
+                                  className="overflow-hidden"
+                                >
+                                  <div className="border-t border-[#F0F0F0]">
+                                    {financialDrivers.length > 0 && (
+                                      <div className="p-5">
+                                        <p className="text-[10px] font-bold text-[#888888] uppercase tracking-[1.5px] mb-3">Financial Impact</p>
+                                        <div className="space-y-3">
+                                          {financialDrivers.map(drv => (
+                                            <FinancialDriverCard key={drv.id} drv={drv} settingBadges={[]} lowerIsBetter={getDriverLowerIsBetter(drv.id)} />
+                                          ))}
+                                        </div>
+                                      </div>
+                                    )}
+                                    {signalDrivers.length > 0 && (
+                                      <div className={`px-5 pb-5 ${financialDrivers.length > 0 ? 'pt-0' : 'pt-5'}`}>
+                                        {financialDrivers.length > 0 && <div className="h-px bg-[#F0F0F0] mb-4" />}
+                                        <p className="text-[10px] font-bold text-[#888888] uppercase tracking-[1.5px] mb-3">Signal Evidence</p>
+                                        <div className="space-y-2">
+                                          {signalDrivers.map(drv => (
+                                            <SignalDriverRow key={drv.id} drv={drv} settingBadges={[]} lowerIsBetter={getDriverLowerIsBetter(drv.id)} />
+                                          ))}
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </motion.div>
-                );
-              })}
+                ))
+              ) : (
+                /* Single-setting: quadrant sections (same as before) */
+                quadrants.filter(q => q.drivers.length > 0).map((q, qi) => {
+                  const color = QUADRANT_COLORS[q.quadrant];
+                  const isExpanded = isSectionExpanded(q.quadrant);
+                  const financialDrivers = q.drivers.filter(d => d.visibility === 'quantified');
+                  const signalDrivers = q.drivers.filter(d => d.visibility === 'qualitative');
+                  const tagline = QUADRANT_TAGLINES[q.quadrant];
+
+                  return (
+                    <motion.div
+                      key={q.quadrant}
+                      className="bg-white rounded-2xl border border-[#E8E8E8] overflow-hidden"
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.12 + qi * 0.05 }}
+                      data-testid={`section-quadrant-${q.quadrant.toLowerCase()}`}
+                    >
+                      <button
+                        onClick={() => toggleSection(q.quadrant)}
+                        className="w-full flex items-center justify-between px-6 py-4 hover:bg-[#FAFAF8] transition-colors text-left group"
+                        data-testid={`toggle-quadrant-${q.quadrant.toLowerCase()}`}
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-bold text-black uppercase tracking-wide">{q.quadrant}</span>
+                              <span className="text-xs text-[#AAAAAA]">
+                                {q.drivers.length} driver{q.drivers.length === 1 ? '' : 's'}
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-[#AAAAAA] leading-none mt-0.5 truncate">{tagline}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3 flex-shrink-0 ml-4">
+                          {q.realizedTotal > 0 && (
+                            <span className="text-base font-bold tabular-nums" style={{ color }}>
+                              {formatCurrency(q.realizedTotal)}
+                            </span>
+                          )}
+                          <ChevronDown
+                            className={`w-4 h-4 text-[#CCCCCC] transition-transform duration-200 ${isExpanded ? 'rotate-0' : '-rotate-90'}`}
+                          />
+                        </div>
+                      </button>
+
+                      <AnimatePresence initial={false}>
+                        {isExpanded && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.22, ease: 'easeInOut' }}
+                            className="overflow-hidden"
+                          >
+                            <div className="border-t border-[#F0F0F0]">
+                              {financialDrivers.length > 0 && (
+                                <div className="p-5">
+                                  <p className="text-[10px] font-bold text-[#888888] uppercase tracking-[1.5px] mb-3">
+                                    Financial Impact
+                                  </p>
+                                  <div className="space-y-3">
+                                    {financialDrivers.map(drv => (
+                                      <FinancialDriverCard
+                                        key={drv.id}
+                                        drv={drv}
+                                        settingBadges={getDriverSettingBadges(drv)}
+                                        lowerIsBetter={getDriverLowerIsBetter(drv.id)}
+                                      />
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                              {signalDrivers.length > 0 && (
+                                <div className={`px-5 pb-5 ${financialDrivers.length > 0 ? 'pt-0' : 'pt-5'}`}>
+                                  {financialDrivers.length > 0 && (
+                                    <div className="h-px bg-[#F0F0F0] mb-4" />
+                                  )}
+                                  <p className="text-[10px] font-bold text-[#888888] uppercase tracking-[1.5px] mb-3">
+                                    Signal Evidence
+                                  </p>
+                                  <div className="space-y-2">
+                                    {signalDrivers.map(drv => (
+                                      <SignalDriverRow
+                                        key={drv.id}
+                                        drv={drv}
+                                        settingBadges={getDriverSettingBadges(drv)}
+                                        lowerIsBetter={getDriverLowerIsBetter(drv.id)}
+                                      />
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </motion.div>
+                  );
+                })
+              )}
             </motion.div>
 
             {/* ── Scale & Forecast CTA ──────────────────────────────────────── */}
