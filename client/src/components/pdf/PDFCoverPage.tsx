@@ -156,7 +156,7 @@ export function PDFCoverPage({
           <View>
             <Text style={styles.metaLabel}>PREPARED BY</Text>
             <Text style={styles.preparedByText}>
-              {displayPreparedBy} {"\u00B7"} {today}
+              {displayPreparedBy} {"·"} {today}
             </Text>
           </View>
         ) : null}

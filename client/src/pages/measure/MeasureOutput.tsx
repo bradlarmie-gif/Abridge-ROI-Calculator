@@ -195,7 +195,7 @@ function ManageQuotesPanel({
       exit={{ opacity: 0, height: 0 }}
       transition={{ duration: 0.22, ease: 'easeInOut' }}
     >
-      <p className="text-[11px] font-bold text-[#888888] uppercase tracking-[1.5px] mb-4">Clinician Quotes</p>
+      <p className="text-[11px] font-bold text-[#888888] uppercase tracking-[1.5px] mb-4">Love Stories</p>
 
       {/* Existing quotes */}
       {quotes.length > 0 && (
@@ -532,7 +532,7 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
   const handleExport = async () => {
     setExporting(true);
     try {
-      await generateMeasureNarrativePDF(buildMeasurePDFDataFromState(state));
+      await generateMeasureNarrativePDF(buildMeasurePDFDataFromState(state, audience));
       toast({ title: "Evidence doc generated", description: "PDF download has started." });
     } catch (err) {
       console.error("PDF generation failed", err);
@@ -765,7 +765,7 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
                 data-testid="button-manage-quotes"
               >
                 <MessageSquare className="w-3.5 h-3.5" />
-                {showManageQuotes ? 'Done' : `Quotes${(state.quotes?.length ?? 0) > 0 ? ` (${state.quotes?.length})` : ''}`}
+                {showManageQuotes ? 'Done' : `Love Stories${(state.quotes?.length ?? 0) > 0 ? ` (${state.quotes?.length})` : ''}`}
               </button>
             </div>
 

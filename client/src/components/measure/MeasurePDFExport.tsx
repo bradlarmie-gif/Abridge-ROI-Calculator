@@ -213,6 +213,8 @@ export interface MeasurePDFData {
   bestPricingScenarioLabel?: string;
   bestPricingInvestment?: number;
   bestPricingNet?: number;
+  audience?: 'clinical' | 'operational' | 'financial' | 'executive';
+  loveStories?: Array<{ text: string; attribution: string; role?: string }>;
   isMultiSetting?: boolean;
   settingBreakdowns?: Array<{
     setting: ExploreSetting;
@@ -710,7 +712,7 @@ function pdfScaleFactor(axis: string, bl: AxisValues, proj: AxisValues): number 
   return 1;
 }
 
-export function buildMeasurePDFDataFromState(state: MeasureState): MeasurePDFData {
+export function buildMeasurePDFDataFromState(state: MeasureState, audience?: string): MeasurePDFData {
   const activeSettings = (
     state.activeCareSettings && state.activeCareSettings.length > 0
       ? state.activeCareSettings
@@ -897,6 +899,8 @@ export function buildMeasurePDFDataFromState(state: MeasureState): MeasurePDFDat
     bestPricingScenarioLabel: bestEntry?.scenario.label,
     bestPricingInvestment: bestEntry?.investment,
     bestPricingNet: bestEntry?.net,
+    audience: audience as MeasurePDFData['audience'],
+    loveStories: (state.quotes ?? []).map(q => ({ text: q.text, attribution: q.attribution, role: q.role })),
   };
 }
 

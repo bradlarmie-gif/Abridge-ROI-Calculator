@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowRight, RotateCcw, TrendingUp, TrendingDown, Plus, DollarSign } from "lucide-react";
+import { ArrowRight, RotateCcw, TrendingUp, TrendingDown, Plus, DollarSign, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
@@ -12,6 +12,7 @@ import AddCareSettingModal from "@/components/measure/AddCareSettingModal";
 import AddedSettingCard from "@/components/measure/AddedSettingCard";
 import PricingScenarioCard from "@/components/measure/PricingScenarioCard";
 import PricingComparisonChart from "@/components/measure/PricingComparisonChart";
+import { generateForecastScalePDF, type ForecastScalePDFData } from "@/components/measure/ForecastScalePDF";
 
 interface MeasureForecastProps {
   state: MeasureState;
@@ -92,6 +93,7 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
   };
 
   const [addModalOpen, setAddModalOpen] = useState(false);
+  const [pdfGenerating, setPdfGenerating] = useState(false);
   const addedSettings = state.forecastScenario?.addedSettings ?? [];
   const pricingScenarios = state.forecastScenario?.pricingScenarios ?? [];
 
@@ -334,6 +336,35 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
 
   const formatCurrency = (n: number) => '$' + Math.round(n).toLocaleString();
   const formatNumber = (n: number) => n.toLocaleString();
+
+  const handleDownloadScalePDF = async () => {
+    if (pdfGenerating) return;
+    setPdfGenerating(true);
+    try {
+      const pdfData: ForecastScalePDFData = {
+        clientName: state.deployment?.organizationName || undefined,
+        totalRealized,
+        totalProjected,
+        addedSettingsTotal,
+        combinedTotal,
+        quadrantTotals: {
+          Capacity: { realized: totalsByQuadrant.Capacity.realized, projected: totalsByQuadrant.Capacity.projected },
+          Workforce: { realized: totalsByQuadrant.Workforce.realized, projected: totalsByQuadrant.Workforce.projected },
+          Revenue: { realized: totalsByQuadrant.Revenue.realized, projected: totalsByQuadrant.Revenue.projected },
+          Quality: { realized: totalsByQuadrant.Quality.realized, projected: totalsByQuadrant.Quality.projected },
+        },
+        combinedProviders,
+        combinedEncounters,
+        forecastYears,
+        yearlyInputs: pricingYearlyInputs,
+        pricingScenarios,
+        bestValueScenarioId,
+      };
+      await generateForecastScalePDF(pdfData);
+    } finally {
+      setPdfGenerating(false);
+    }
+  };
 
   const renderAxisControl = (
     label: string,
@@ -785,7 +816,16 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
                 <p className="text-xs text-white/40 italic mt-4" data-testid="text-no-change-hint">Adjust an axis to see projected impact.</p>
               )}
 
-              <div className="hidden lg:block mt-6">
+              <div className="hidden lg:block mt-6 space-y-2">
+                <Button
+                  onClick={handleDownloadScalePDF}
+                  disabled={pdfGenerating || combinedTotal === 0}
+                  className="w-full h-11 bg-[#2A2A2A] hover:bg-[#333333] text-white font-semibold rounded-full gap-2 disabled:opacity-40"
+                  data-testid="button-download-scale-pdf"
+                >
+                  <Download className="w-4 h-4" />
+                  {pdfGenerating ? "Building PDF…" : "Download Scale Brief"}
+                </Button>
                 <Button
                   onClick={onNext}
                   className="w-full h-12 bg-white hover:bg-white/90 text-black font-semibold rounded-full gap-2"
