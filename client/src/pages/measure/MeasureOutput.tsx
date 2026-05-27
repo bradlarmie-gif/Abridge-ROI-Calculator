@@ -14,7 +14,7 @@ import {
   buildMeasurePDFDataFromState,
 } from "@/components/measure/MeasurePDFExport";
 import { generateMeasureNarrativePDF } from "@/components/measure/MeasureNarrativePDF";
-import { type MeasureState, type MeasureDriverEntry } from "@/lib/measureCalculator";
+import { type MeasureState, type MeasureDriverEntry, type MeasureQuote } from "@/lib/measureCalculator";
 import { useToast } from "@/hooks/use-toast";
 
 interface MeasureOutputProps {
@@ -39,6 +39,14 @@ const QUADRANT_TAGLINES: Record<string, string> = {
   Workforce: 'The retention story, in the provider\'s own numbers',
   Revenue: 'Documentation accuracy showing up in the bill',
   Quality: 'Clinical signals building the long-term case',
+};
+
+const ENTRY_DATA_SOURCE_LABELS: Record<string, string> = {
+  ehr: 'EHR',
+  survey: 'Survey',
+  admin_data: 'Admin data',
+  chart_review: 'Chart review',
+  manual_entry: 'Manual entry',
 };
 
 const SETTING_BADGE: Record<string, string> = { outpatient: 'OP', ed: 'ED', inpatient: 'IP', nursing: 'Nsg' };
@@ -123,6 +131,133 @@ function buildDriverPayload(
     measuredAt: entry.measuredAt,
     entryDataSource: entry.entryDataSource,
   };
+}
+
+// ─── Quote card ────────────────────────────────────────────────────────────────
+function QuoteCard({ quote }: { quote: MeasureQuote }) {
+  return (
+    <div className="bg-white rounded-xl shadow-sm overflow-hidden flex">
+      <div className="w-1 flex-shrink-0 bg-[#EA2C00]" />
+      <div className="px-5 py-4 flex-1 min-w-0">
+        <p className="text-[15px] leading-relaxed text-[#1A1A1A] mb-3">
+          <span className="text-[#EA2C00] font-bold mr-1 text-lg leading-none">"</span>
+          {quote.text}
+        </p>
+        <p className="text-xs text-[#8C7E6E] font-medium">
+          — {quote.attribution}{quote.role ? `, ${quote.role}` : ''}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ─── Quotes block ──────────────────────────────────────────────────────────────
+function QuotesBlock({ quotes }: { quotes: MeasureQuote[] }) {
+  if (quotes.length === 0) return null;
+  return (
+    <motion.div
+      className={`mb-4 ${quotes.length === 1 ? '' : 'grid grid-cols-1 md:grid-cols-2 gap-3'}`}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.2 }}
+    >
+      {quotes.map(q => <QuoteCard key={q.id} quote={q} />)}
+    </motion.div>
+  );
+}
+
+// ─── Manage quotes panel ───────────────────────────────────────────────────────
+function ManageQuotesPanel({
+  quotes,
+  onUpdate,
+}: {
+  quotes: MeasureQuote[];
+  onUpdate: (quotes: MeasureQuote[]) => void;
+}) {
+  const [draft, setDraft] = useState<Omit<MeasureQuote, 'id'>>({ text: '', attribution: '', role: '' });
+
+  const addQuote = () => {
+    if (!draft.text.trim() || !draft.attribution.trim()) return;
+    onUpdate([...quotes, { ...draft, id: crypto.randomUUID(), role: draft.role || undefined }]);
+    setDraft({ text: '', attribution: '', role: '' });
+  };
+
+  const removeQuote = (id: string) => onUpdate(quotes.filter(q => q.id !== id));
+
+  const updateQuote = (id: string, changes: Partial<MeasureQuote>) =>
+    onUpdate(quotes.map(q => q.id === id ? { ...q, ...changes } : q));
+
+  return (
+    <motion.div
+      className="bg-white rounded-2xl border border-[#E8E8E8] p-5 mb-4"
+      initial={{ opacity: 0, height: 0 }}
+      animate={{ opacity: 1, height: 'auto' }}
+      exit={{ opacity: 0, height: 0 }}
+      transition={{ duration: 0.22, ease: 'easeInOut' }}
+    >
+      <p className="text-[11px] font-bold text-[#888888] uppercase tracking-[1.5px] mb-4">Clinician Quotes</p>
+
+      {/* Existing quotes */}
+      {quotes.length > 0 && (
+        <div className="space-y-3 mb-5">
+          {quotes.map(q => (
+            <div key={q.id} className="group relative bg-[#FAFAF8] rounded-xl p-4 border border-[#EEEEEE]">
+              <button
+                onClick={() => removeQuote(q.id)}
+                className="absolute top-2 right-2 w-5 h-5 rounded-full bg-[#F0EBE4] text-[#8C7E6E] text-xs opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center hover:bg-red-100 hover:text-red-500"
+                aria-label="Remove quote"
+              >
+                ×
+              </button>
+              <textarea
+                value={q.text}
+                onChange={(e) => updateQuote(q.id, { text: e.target.value })}
+                className="w-full bg-transparent text-sm text-[#1A1A1A] leading-relaxed outline-none resize-none mb-2 focus:ring-0"
+                rows={2}
+              />
+              <input
+                value={q.attribution}
+                onChange={(e) => updateQuote(q.id, { attribution: e.target.value })}
+                className="w-full bg-transparent text-xs text-[#8C7E6E] outline-none border-b border-[#EEEEEE] pb-1 focus:ring-0 focus:border-[#EA2C00]"
+                placeholder="Dr. Name, Specialty"
+              />
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Add new quote */}
+      <div className="border border-dashed border-[#E0D8D0] rounded-xl p-4">
+        <textarea
+          value={draft.text}
+          onChange={(e) => setDraft(d => ({ ...d, text: e.target.value }))}
+          placeholder="What did they say?"
+          className="w-full h-16 bg-transparent text-sm text-[#1A1A1A] outline-none resize-none mb-3 placeholder:text-[#CCCCCC]"
+        />
+        <div className="flex items-center gap-2">
+          <input
+            value={draft.attribution}
+            onChange={(e) => setDraft(d => ({ ...d, attribution: e.target.value }))}
+            placeholder="Dr. Name, Specialty"
+            className="flex-1 h-8 bg-[#F7F6F3] border border-[#E5E5E5] rounded-lg px-3 text-xs text-[#444] outline-none focus:border-[#EA2C00]"
+          />
+          <input
+            value={draft.role ?? ''}
+            onChange={(e) => setDraft(d => ({ ...d, role: e.target.value }))}
+            placeholder="Role (optional)"
+            className="w-28 h-8 bg-[#F7F6F3] border border-[#E5E5E5] rounded-lg px-3 text-xs text-[#444] outline-none focus:border-[#EA2C00]"
+          />
+          <button
+            onClick={addQuote}
+            disabled={!draft.text.trim() || !draft.attribution.trim()}
+            className="h-8 px-4 bg-[#EA2C00] hover:bg-[#EA2C00]/90 disabled:bg-[#F0EBE4] disabled:text-[#CCCCCC] text-white text-xs font-semibold rounded-lg transition-colors"
+          >
+            Add
+          </button>
+        </div>
+      </div>
+    </motion.div>
+  );
 }
 
 // ─── Financial driver card ─────────────────────────────────────────────────────
@@ -287,11 +422,11 @@ const AUDIENCE_LABELS: Record<Audience, string> = {
 
 // ─── Main component ────────────────────────────────────────────────────────────
 export default function MeasureOutput({ state, updateState, onNext, onBack, onHome }: MeasureOutputProps) {
-  void updateState;
   const [exporting, setExporting] = useState(false);
   // key is quadrant (single-setting) or "setting:quadrant" (multi-setting); absent = expanded
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
   const [audience, setAudience] = useState<Audience>('executive');
+  const [showManageQuotes, setShowManageQuotes] = useState(false);
 
   const showDollars = audience === 'financial' || audience === 'executive';
   const showRevenue = audience !== 'clinical';
@@ -600,8 +735,26 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
                   </button>
                 ))}
               </div>
-              {/* Manage Quotes button added in Task 5 */}
+              <button
+                onClick={() => setShowManageQuotes(v => !v)}
+                className="text-xs font-medium text-[#8C7E6E] hover:text-neutral-900 transition-colors flex items-center gap-1.5"
+                data-testid="button-manage-quotes"
+              >
+                <MessageSquare className="w-3.5 h-3.5" />
+                {showManageQuotes ? 'Done' : `Quotes${(state.quotes?.length ?? 0) > 0 ? ` (${state.quotes!.length})` : ''}`}
+              </button>
             </div>
+
+            <AnimatePresence>
+              {showManageQuotes && (
+                <ManageQuotesPanel
+                  quotes={state.quotes ?? []}
+                  onUpdate={(quotes) => updateState({ quotes })}
+                />
+              )}
+            </AnimatePresence>
+
+            {showQuotes && <QuotesBlock quotes={state.quotes!} />}
 
             {/* ── Domain sections ───────────────────────────────────────────── */}
             <motion.div
