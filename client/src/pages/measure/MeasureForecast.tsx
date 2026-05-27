@@ -7,10 +7,11 @@ import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { EXPLORE_DRIVERS, type ExploreDriver, type ExploreSetting, type ExploreQuadrant, type DriverScaleAxis } from "@/lib/exploreDrivers";
 import { type MeasureState, type MeasureDriverEntry, type ForecastScenario, type ForecastAddedSetting, type MeasureCareSetting } from "@/lib/measureCalculator";
 import { SETTING_LABELS, computeAddedSettingValue } from "@/lib/forecastDefaults";
-import { computeScenarioInvestment, makeDefaultTiers, type PricingScenario } from "@/lib/forecastPricing";
+import { computeScenarioInvestment, computePricingTimeSeries, makeDefaultTiers, type PricingScenario, type PricingTimeSeriesPoint } from "@/lib/forecastPricing";
 import AddCareSettingModal from "@/components/measure/AddCareSettingModal";
 import AddedSettingCard from "@/components/measure/AddedSettingCard";
 import PricingScenarioCard from "@/components/measure/PricingScenarioCard";
+import PricingComparisonChart from "@/components/measure/PricingComparisonChart";
 
 interface MeasureForecastProps {
   state: MeasureState;
@@ -224,6 +225,42 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
     evaluated.sort((a, b) => a.investment - b.investment);
     return evaluated[0].id;
   }, [pricingScenarios, combinedProviders, combinedEncounters]);
+
+  const quadrantRatios = useMemo(() => {
+    const total = combinedTotal;
+    if (total === 0) return { capacity: 0.25, workforce: 0.25, revenue: 0.25, quality: 0.25 };
+    return {
+      capacity:  totalsByQuadrant.Capacity.projected  / total,
+      workforce: totalsByQuadrant.Workforce.projected / total,
+      revenue:   totalsByQuadrant.Revenue.projected   / total,
+      quality:   totalsByQuadrant.Quality.projected   / total,
+    };
+  }, [totalsByQuadrant, combinedTotal]);
+
+  const pricingTimeSeries = useMemo(() => {
+    if (pricingScenarios.length === 0 || combinedTotal === 0) {
+      return { points: [] as PricingTimeSeriesPoint[], tierCrossings: [] };
+    }
+    return computePricingTimeSeries(
+      pricingScenarios,
+      combinedProviders,
+      combinedEncounters,
+      state.forecastScenario?.annualProviderGrowthPct ?? 0,
+      state.forecastScenario?.chartYears ?? 3,
+      combinedTotal,
+      quadrantRatios,
+    );
+  }, [pricingScenarios, combinedProviders, combinedEncounters, combinedTotal, quadrantRatios, state.forecastScenario?.annualProviderGrowthPct, state.forecastScenario?.chartYears]);
+
+  const finalPoint = pricingTimeSeries.points[pricingTimeSeries.points.length - 1];
+  const finalYearProviders  = finalPoint?.providers  ?? combinedProviders;
+  const finalYearEncounters = finalPoint?.encounters ?? combinedEncounters;
+  const finalYearValue      = finalPoint?.totalValue ?? combinedTotal;
+
+  const updateGrowthPct = (v: number) => updateForecastScenario({ annualProviderGrowthPct: Math.max(0, Math.min(100, v)) });
+  const updateChartYears = (v: 3 | 5 | 10) => updateForecastScenario({ chartYears: v });
+  const growthPct = state.forecastScenario?.annualProviderGrowthPct ?? 0;
+  const chartYears = (state.forecastScenario?.chartYears ?? 3) as 3 | 5 | 10;
 
   const isSettingChanged = (settingKey: string) => {
     const bl = getSettingBaseline(settingKey);
@@ -497,11 +534,6 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
             >
               <div className="flex items-center justify-between mb-3">
                 <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px]">Pricing Comparison</p>
-                {pricingScenarios.length > 0 && (
-                  <p className="text-xs text-[#666666]" data-testid="text-combined-scale">
-                    Combined scale: {combinedProviders.toLocaleString()} providers · {combinedEncounters.toLocaleString()} encounters
-                  </p>
-                )}
               </div>
 
               {pricingScenarios.length === 0 && (
@@ -512,27 +544,79 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
                 </div>
               )}
 
-              <div className="space-y-3">
-                {pricingScenarios.map(scenario => (
-                  <PricingScenarioCard
-                    key={scenario.id}
-                    scenario={scenario}
-                    combinedProviders={combinedProviders}
-                    combinedEncounters={combinedEncounters}
-                    combinedValue={combinedTotal}
-                    isBestValue={bestValueScenarioId === scenario.id}
-                    onUpdate={(updates) => updatePricingScenario(scenario.id, updates)}
-                    onRemove={() => removePricingScenario(scenario.id)}
-                  />
-                ))}
-                <button
-                  onClick={addPricingScenario}
-                  className="w-full py-3 px-4 rounded-lg border-2 border-dashed border-[#E5E5E5] text-sm font-medium text-[#666666] hover:border-[#EA2C00] hover:text-[#EA2C00] transition-all flex items-center justify-center gap-1.5"
-                  data-testid="button-add-pricing-scenario"
-                >
-                  <Plus className="w-4 h-4" /> Add a pricing scenario
-                </button>
-              </div>
+              {pricingScenarios.length > 0 && (
+                <>
+                  {/* Growth config row */}
+                  <div className="flex items-center gap-6 mb-4 flex-wrap">
+                    <div className="flex items-center gap-2">
+                      <label className="text-xs text-[#8C7E6E] whitespace-nowrap">Annual provider growth</label>
+                      <div className="flex items-center gap-1">
+                        <input
+                          type="number"
+                          min={0}
+                          max={100}
+                          step={1}
+                          value={growthPct}
+                          onChange={e => updateGrowthPct(Number(e.target.value))}
+                          className="w-12 text-center text-sm font-medium border border-[#E5E5E5] rounded-lg px-1 py-0.5 focus:outline-none focus:border-[#EA2C00]"
+                          data-testid="input-annual-growth-pct"
+                        />
+                        <span className="text-xs text-[#8C7E6E]">%</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <label className="text-xs text-[#8C7E6E]">Model</label>
+                      <div className="flex items-center gap-0.5 bg-[#F5F0EB] rounded-full p-0.5">
+                        {([3, 5, 10] as const).map(yr => (
+                          <button
+                            key={yr}
+                            onClick={() => updateChartYears(yr)}
+                            className={`px-2.5 py-0.5 rounded-full text-xs font-medium transition-colors ${
+                              chartYears === yr ? 'bg-white text-neutral-900 shadow-sm' : 'text-[#8C7E6E] hover:text-neutral-900'
+                            }`}
+                            data-testid={`pill-chart-years-${yr}`}
+                          >
+                            {yr}yr
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Chart */}
+                  <div className="bg-white rounded-xl border border-[#E5E5E5] p-4 mb-4">
+                    <PricingComparisonChart
+                      points={pricingTimeSeries.points}
+                      tierCrossings={pricingTimeSeries.tierCrossings}
+                      scenarios={pricingScenarios}
+                    />
+                  </div>
+
+                  {/* Cards */}
+                  <div className={pricingScenarios.length >= 2 ? 'grid grid-cols-1 md:grid-cols-2 gap-4' : 'space-y-3'}>
+                    {pricingScenarios.map(scenario => (
+                      <PricingScenarioCard
+                        key={scenario.id}
+                        scenario={scenario}
+                        displayProviders={finalYearProviders}
+                        displayEncounters={finalYearEncounters}
+                        displayValue={finalYearValue}
+                        isBestValue={bestValueScenarioId === scenario.id}
+                        onUpdate={(updates) => updatePricingScenario(scenario.id, updates)}
+                        onRemove={() => removePricingScenario(scenario.id)}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
+
+              <button
+                onClick={addPricingScenario}
+                className="w-full mt-3 py-3 px-4 rounded-lg border-2 border-dashed border-[#E5E5E5] text-sm font-medium text-[#666666] hover:border-[#EA2C00] hover:text-[#EA2C00] transition-all flex items-center justify-center gap-1.5"
+                data-testid="button-add-pricing-scenario"
+              >
+                <Plus className="w-4 h-4" /> Add a pricing scenario
+              </button>
             </motion.div>
 
             <motion.div className="flex justify-center mt-8 lg:hidden">
