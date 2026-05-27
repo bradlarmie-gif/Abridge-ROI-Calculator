@@ -274,12 +274,26 @@ function SignalDriverRow({
   );
 }
 
+// ─── Audience toggle types ─────────────────────────────────────────────────────
+type Audience = 'executive' | 'clinical' | 'operational' | 'financial';
+const AUDIENCE_LABELS: Record<Audience, string> = {
+  clinical: 'Clinical',
+  operational: 'Operational',
+  financial: 'Financial',
+  executive: 'Executive',
+};
+
 // ─── Main component ────────────────────────────────────────────────────────────
 export default function MeasureOutput({ state, updateState, onNext, onBack, onHome }: MeasureOutputProps) {
   void updateState;
   const [exporting, setExporting] = useState(false);
   // key is quadrant (single-setting) or "setting:quadrant" (multi-setting); absent = expanded
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
+  const [audience, setAudience] = useState<Audience>('executive');
+
+  const showDollars = audience === 'financial' || audience === 'executive';
+  const showRevenue = audience !== 'clinical';
+  const showQuotes = (audience === 'clinical' || audience === 'executive') && (state.quotes?.length ?? 0) > 0;
   const { toast } = useToast();
 
   const isSectionExpanded = (key: string) => expandedSections[key] !== false;
@@ -481,7 +495,9 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
                       <div className="h-px bg-white/10 mb-4" />
                       <p className="text-[10px] font-semibold text-white/40 uppercase tracking-[2px] mb-3">By Domain</p>
                       <div className="space-y-2 mb-4">
-                        {QUADRANT_ORDER.map(q => {
+                        {QUADRANT_ORDER
+                          .filter(q => showRevenue || q !== 'Revenue')
+                          .map(q => {
                           const qd = quadrants.find(x => x.quadrant === q);
                           const val = qd?.realizedTotal ?? 0;
                           const color = QUADRANT_COLORS[q];
@@ -505,7 +521,9 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
                     <>
                       <p className="text-[10px] font-semibold text-white/40 uppercase tracking-[2px] mb-4">Value by Domain</p>
                       <div className="space-y-3">
-                        {QUADRANT_ORDER.map(q => {
+                        {QUADRANT_ORDER
+                          .filter(q => showRevenue || q !== 'Revenue')
+                          .map(q => {
                           const qd = quadrants.find(x => x.quadrant === q);
                           const val = qd?.realizedTotal ?? 0;
                           const pct = totalRealized > 0 ? (val / totalRealized) * 100 : 0;
@@ -546,6 +564,27 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
               </div>
             </motion.div>
 
+            {/* ── Audience toggle ─────────────────────────────────────────────────────── */}
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-1 bg-[#F5F0EB] rounded-full p-0.5">
+                {(['clinical', 'operational', 'financial', 'executive'] as Audience[]).map(a => (
+                  <button
+                    key={a}
+                    onClick={() => setAudience(a)}
+                    className={`px-4 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                      audience === a
+                        ? 'bg-white text-neutral-900 shadow-sm'
+                        : 'text-[#8C7E6E] hover:text-neutral-900'
+                    }`}
+                    data-testid={`audience-tab-${a}`}
+                  >
+                    {AUDIENCE_LABELS[a]}
+                  </button>
+                ))}
+              </div>
+              {/* Manage Quotes button added in Task 5 */}
+            </div>
+
             {/* ── Domain sections ───────────────────────────────────────────── */}
             <motion.div
               className="space-y-3 mb-5"
@@ -580,7 +619,9 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
 
                     {/* Nested quadrant rows */}
                     <div className="divide-y divide-[#F8F8F8]">
-                      {ss.settingQuadrants.map(q => {
+                      {ss.settingQuadrants
+                        .filter(q => showRevenue || q.quadrant !== 'Revenue')
+                        .map(q => {
                         const color = QUADRANT_COLORS[q.quadrant];
                         const sectionKey = `${ss.setting}:${q.quadrant}`;
                         const isExpanded = isSectionExpanded(sectionKey);
@@ -655,7 +696,9 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
                 ))
               ) : (
                 /* Single-setting: quadrant sections (same as before) */
-                quadrants.filter(q => q.drivers.length > 0).map((q, qi) => {
+                quadrants
+                  .filter(q => q.drivers.length > 0 && (showRevenue || q.quadrant !== 'Revenue'))
+                  .map((q, qi) => {
                   const color = QUADRANT_COLORS[q.quadrant];
                   const isExpanded = isSectionExpanded(q.quadrant);
                   const financialDrivers = q.drivers.filter((d: MeasurePDFDriver) => d.visibility === 'quantified');
