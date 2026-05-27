@@ -47,6 +47,7 @@ export interface ExploreDriverMeasureDefaults {
   emCodes?: Array<{ code: string; label: string; section?: string }>;
   highComplexityCodes?: string[];
   scaleInput?: { label: string; defaultValue: number; unit: string; divisor: number };
+  isPerEncounterRate?: boolean;
 }
 
 export interface ValueArcStage {
@@ -721,14 +722,14 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     calcComponent: WrvuCalc,
     trackedMeasureIds: ['wrvu'],
     measureDefaults: {
-      deltaLabel: 'Additional wRVUs generated (total annual)',
-      deltaUnit: 'wRVUs',
+      deltaLabel: 'Avg wRVU per encounter',
+      deltaUnit: 'wRVUs/enc',
       valuePerUnitLabel: 'Medicare conversion factor (2026)',
       valuePerUnitDefault: 33.40,
       valuePerUnitPrefix: '$',
       realizationDefault: 75,
       scaleAxis: 'encounters',
-      benchmarkHint: 'Abridge customers typically see 0.2–0.5 wRVU lift per encounter',
+      isPerEncounterRate: true,
     },
     measurePhase: 'demonstrated',
   },
