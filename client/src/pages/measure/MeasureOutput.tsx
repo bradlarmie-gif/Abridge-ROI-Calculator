@@ -294,9 +294,15 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
 
   const quadrants: MeasurePDFQuadrantSection[] = useMemo(() => {
     return QUADRANT_ORDER.map((q) => {
-      const drivers = EXPLORE_DRIVERS.filter(
-        (d) => d.quadrant === q && d.settings.some(s => activeSettings.includes(s)) && state.trackedDrivers?.[d.id],
-      ).map((d) => buildDriverPayload(d, state.trackedDrivers[d.id]));
+      const drivers: MeasurePDFDriver[] = [];
+      for (const setting of activeSettings) {
+        const st = state.trackedDrivers?.[setting] || {};
+        EXPLORE_DRIVERS
+          .filter(d => d.quadrant === q && d.settings.includes(setting) && st[d.id])
+          .forEach(d => {
+            drivers.push({ ...buildDriverPayload(d, st[d.id]), setting });
+          });
+      }
       const realizedTotal = drivers.reduce((sum, d) => sum + d.realizedValue, 0);
       return { quadrant: q, realizedTotal, drivers };
     });
@@ -314,10 +320,9 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
     ? activeSettings.map(s => SETTING_LABELS[s]).join(' + ')
     : SETTING_LABELS[primarySetting];
 
-  const getDriverSettingBadges = (drvId: string) => {
+  const getDriverSettingBadges = (drv: MeasurePDFDriver) => {
     if (!isMultiSetting) return [];
-    const found = EXPLORE_DRIVERS.find(d => d.id === drvId);
-    return (found?.settings ?? []).filter(s => activeSettings.includes(s));
+    return drv.setting ? [drv.setting] : [];
   };
 
   const getDriverLowerIsBetter = (drvId: string) => {
@@ -571,7 +576,7 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
                                     <FinancialDriverCard
                                       key={drv.id}
                                       drv={drv}
-                                      settingBadges={getDriverSettingBadges(drv.id)}
+                                      settingBadges={getDriverSettingBadges(drv)}
                                       lowerIsBetter={getDriverLowerIsBetter(drv.id)}
                                     />
                                   ))}
@@ -593,7 +598,7 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
                                     <SignalDriverRow
                                       key={drv.id}
                                       drv={drv}
-                                      settingBadges={getDriverSettingBadges(drv.id)}
+                                      settingBadges={getDriverSettingBadges(drv)}
                                       lowerIsBetter={getDriverLowerIsBetter(drv.id)}
                                     />
                                   ))}

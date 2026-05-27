@@ -116,6 +116,14 @@ export function decodeStateFromUrl(encoded: string): MeasureState | null {
       if (!parsed.metricValues) {
         parsed.metricValues = {};
       }
+      // Migrate trackedDrivers from flat format { driverId: entry } to per-setting { setting: { driverId: entry } }
+      if (parsed.trackedDrivers && typeof parsed.trackedDrivers === 'object') {
+        const firstValue = Object.values(parsed.trackedDrivers)[0];
+        if (firstValue && typeof firstValue === 'object' && 'driverId' in (firstValue as object)) {
+          const primarySetting = parsed.activeCareSettings?.[0] || parsed.careSetting || 'outpatient';
+          parsed.trackedDrivers = { [primarySetting]: parsed.trackedDrivers };
+        }
+      }
       if (parsed.streamStates === undefined) {
         parsed.streamStates = undefined;
       }

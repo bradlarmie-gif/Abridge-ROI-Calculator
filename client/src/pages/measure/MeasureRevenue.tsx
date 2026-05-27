@@ -24,36 +24,50 @@ export default function MeasureRevenue({ state, updateState, onNext, onBack, onH
       ? state.activeCareSettings
       : [state.careSetting || 'outpatient']
   ) as ExploreSetting[];
-  const tracked = state.trackedDrivers || {};
+  const SETTING_LABELS_MAP: Record<string, string> = {
+    outpatient: 'Outpatient', ed: 'Emergency Dept', inpatient: 'Inpatient', nursing: 'Nursing',
+  };
 
-  const trackedDriverIds = Object.keys(tracked);
-  const trackedHere = useMemo(() =>
-    EXPLORE_DRIVERS
-      .filter(d => d.quadrant === QUADRANT && d.settings.some(s => activeSettings.includes(s)) && trackedDriverIds.includes(d.id))
-      .map(d => ({ driver: d, entry: tracked[d.id] })),
+  const trackedBySetting = useMemo(() =>
+    activeSettings.map(settingKey => {
+      const st = state.trackedDrivers?.[settingKey] || {};
+      const drivers = EXPLORE_DRIVERS
+        .filter(d => d.quadrant === QUADRANT && d.settings.includes(settingKey) && st[d.id])
+        .map(d => ({ driver: d, entry: st[d.id] }));
+      return {
+        setting: settingKey,
+        label: SETTING_LABELS_MAP[settingKey] || settingKey,
+        financialDrivers: drivers.filter(({ driver }) => driver.visibility === 'quantified'),
+        watchMetrics: drivers.filter(({ driver }) => driver.visibility === 'qualitative'),
+        trackedIds: Object.keys(st),
+      };
+    }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [tracked, activeSettings]
+    [state.trackedDrivers, activeSettings]
   );
 
+  const trackedHere = useMemo(() => trackedBySetting.flatMap(({ financialDrivers, watchMetrics }) => [...financialDrivers, ...watchMetrics]), [trackedBySetting]);
   const financialDrivers = trackedHere.filter(({ driver }) => driver.visibility === 'quantified');
   const watchMetrics = trackedHere.filter(({ driver }) => driver.visibility === 'qualitative');
 
-  const updateEntry = (driverId: string, updates: Partial<MeasureDriverEntry>) => {
+  const updateEntry = (settingKey: string, driverId: string, updates: Partial<MeasureDriverEntry>) => {
+    const st = state.trackedDrivers?.[settingKey] || {};
     updateState({
       trackedDrivers: {
-        ...tracked,
-        [driverId]: { ...tracked[driverId], ...updates },
+        ...state.trackedDrivers,
+        [settingKey]: { ...st, [driverId]: { ...st[driverId], ...updates } },
       },
     });
   };
 
-  const removeEntry = (driverId: string) => {
-    const next = { ...tracked };
-    delete next[driverId];
-    updateState({ trackedDrivers: next });
+  const removeEntry = (settingKey: string, driverId: string) => {
+    const st = { ...(state.trackedDrivers?.[settingKey] || {}) };
+    delete st[driverId];
+    updateState({ trackedDrivers: { ...state.trackedDrivers, [settingKey]: st } });
   };
 
-  const addDriver = (driver: ExploreDriver) => {
+  const addDriver = (settingKey: string, driver: ExploreDriver) => {
+    const st = state.trackedDrivers?.[settingKey] || {};
     const md = driver.measureDefaults;
     const entry: MeasureDriverEntry = {
       driverId: driver.id,
@@ -68,7 +82,7 @@ export default function MeasureRevenue({ state, updateState, onNext, onBack, onH
       scaleDivisor: md?.scaleInput?.divisor,
     };
     updateState({
-      trackedDrivers: { ...tracked, [driver.id]: entry },
+      trackedDrivers: { ...state.trackedDrivers, [settingKey]: { ...st, [driver.id]: entry } },
     });
   };
 
@@ -135,79 +149,90 @@ export default function MeasureRevenue({ state, updateState, onNext, onBack, onH
               <p className="text-sm text-black leading-relaxed">{howToUse}</p>
             </motion.div>
 
-            {financialDrivers.length > 0 && (
-              <motion.div
-                className="bg-[#F5F0EB] rounded-lg p-6 mb-4"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.15 }}
-              >
-                <div className="mb-4">
-                  <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">Financial Drivers</p>
-                  <p className="text-xs text-[#AAAAAA]">Drivers that build the business case with dollar value.</p>
-                </div>
-                <div className="space-y-3">
-                  {financialDrivers.map(({ driver, entry }) => (
-                    <MeasureDriverCard
-                      key={driver.id}
-                      driver={driver}
-                      entry={entry}
-                      onUpdate={(updates) => updateEntry(driver.id, updates)}
-                      onRemove={() => removeEntry(driver.id)}
-                      isMultiSetting={isMultiSetting}
-                    />
-                  ))}
-                </div>
-              </motion.div>
-            )}
+            {trackedBySetting.map(({ setting: settingKey, label: settingLabel, financialDrivers: settingFD, watchMetrics: settingWM, trackedIds }) => (
+              <div key={settingKey} className={isMultiSetting ? "mb-8" : ""}>
+                {isMultiSetting && (
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#EA2C00]" />
+                    <p className="text-[11px] font-semibold text-[#525252] uppercase tracking-widest">{settingLabel}</p>
+                  </div>
+                )}
 
-            {watchMetrics.length > 0 && (
-              <motion.div
-                className="bg-[#F5F0EB] rounded-lg p-6 mb-4"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.18 }}
-              >
-                <div className="mb-4">
-                  <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">Signals to Track</p>
-                  <p className="text-xs text-[#AAAAAA]">Outcomes tracked post-deployment that don't carry direct dollar value.</p>
-                </div>
-                <div className="space-y-3">
-                  {watchMetrics.map(({ driver, entry }) => (
-                    <MeasureDriverCard
-                      key={driver.id}
-                      driver={driver}
-                      entry={entry}
-                      onUpdate={(updates) => updateEntry(driver.id, updates)}
-                      onRemove={() => removeEntry(driver.id)}
-                      isMultiSetting={isMultiSetting}
-                    />
-                  ))}
-                </div>
-              </motion.div>
-            )}
+                {settingFD.length > 0 && (
+                  <motion.div
+                    className="bg-[#F5F0EB] rounded-lg p-6 mb-4"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.15 }}
+                  >
+                    <div className="mb-4">
+                      <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">Financial Drivers</p>
+                      <p className="text-xs text-[#AAAAAA]">Drivers that build the business case with dollar value.</p>
+                    </div>
+                    <div className="space-y-3">
+                      {settingFD.map(({ driver, entry }) => (
+                        <MeasureDriverCard
+                          key={driver.id}
+                          driver={driver}
+                          entry={entry}
+                          onUpdate={(updates) => updateEntry(settingKey, driver.id, updates)}
+                          onRemove={() => removeEntry(settingKey, driver.id)}
+                          isMultiSetting={false}
+                        />
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
 
-            {financialDrivers.length === 0 && watchMetrics.length === 0 && (
-              <motion.div
-                className="bg-[#F5F0EB] rounded-lg p-6 text-center mb-4"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.15 }}
-                data-testid="empty-state-revenue"
-              >
-                <p className="text-sm text-[#666666]">No drivers tracked yet for Revenue.</p>
-                <p className="text-xs text-[#888888] mt-1">Add the ones that matter to this customer below.</p>
-              </motion.div>
-            )}
+                {settingWM.length > 0 && (
+                  <motion.div
+                    className="bg-[#F5F0EB] rounded-lg p-6 mb-4"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.18 }}
+                  >
+                    <div className="mb-4">
+                      <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">Signals to Track</p>
+                      <p className="text-xs text-[#AAAAAA]">Outcomes tracked post-deployment that don't carry direct dollar value.</p>
+                    </div>
+                    <div className="space-y-3">
+                      {settingWM.map(({ driver, entry }) => (
+                        <MeasureDriverCard
+                          key={driver.id}
+                          driver={driver}
+                          entry={entry}
+                          onUpdate={(updates) => updateEntry(settingKey, driver.id, updates)}
+                          onRemove={() => removeEntry(settingKey, driver.id)}
+                          isMultiSetting={false}
+                        />
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
 
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
-              <AddMeasureDriverPicker
-                quadrant={QUADRANT}
-                settings={activeSettings}
-                alreadyTracked={trackedDriverIds}
-                onAdd={addDriver}
-              />
-            </motion.div>
+                {settingFD.length === 0 && settingWM.length === 0 && (
+                  <motion.div
+                    className="bg-[#F5F0EB] rounded-lg p-6 text-center mb-4"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.15 }}
+                    data-testid="empty-state-revenue"
+                  >
+                    <p className="text-sm text-[#666666]">No drivers tracked yet{isMultiSetting ? ` for ${settingLabel}` : ''} for Revenue.</p>
+                    <p className="text-xs text-[#888888] mt-1">Add the ones that matter to this customer below.</p>
+                  </motion.div>
+                )}
+
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
+                  <AddMeasureDriverPicker
+                    quadrant={QUADRANT}
+                    settings={[settingKey as ExploreSetting]}
+                    alreadyTracked={trackedIds}
+                    onAdd={(driver) => addDriver(settingKey, driver)}
+                  />
+                </motion.div>
+              </div>
+            ))}
 
             <motion.div
               className="flex justify-center mt-8 lg:hidden"

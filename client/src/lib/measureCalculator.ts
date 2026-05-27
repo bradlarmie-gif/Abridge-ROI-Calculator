@@ -196,7 +196,7 @@ export interface MeasureState {
   emEligibilityRate?: number;
   maEncounterPct?: number;
   censusConstrained?: boolean;
-  trackedDrivers: Record<string, MeasureDriverEntry>;
+  trackedDrivers: Record<string, Record<string, MeasureDriverEntry>>;
   forecastScenario: ForecastScenario;
   maturityPhase: MaturityStage | null;
 }

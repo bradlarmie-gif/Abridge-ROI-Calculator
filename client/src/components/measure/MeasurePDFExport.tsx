@@ -124,6 +124,7 @@ export interface MeasurePDFDriver {
   deltaLabel?: string;
   valuePerUnitLabel?: string;
   valuePerUnitPrefix?: string;
+  setting?: string;
 }
 
 export interface MeasurePDFQuadrantSection {
@@ -684,10 +685,11 @@ export function buildMeasurePDFDataFromState(state: MeasureState): MeasurePDFDat
   };
 
   const quadrants: MeasurePDFQuadrantSection[] = QUADRANT_ORDER.map((q) => {
+    const settingTracked = state.trackedDrivers?.[setting] || {};
     const drivers = EXPLORE_DRIVERS.filter(
-      (d) => d.quadrant === q && d.settings.includes(setting) && state.trackedDrivers && state.trackedDrivers[d.id]
+      (d) => d.quadrant === q && d.settings.includes(setting) && settingTracked[d.id]
     ).map((d) => {
-      const entry = state.trackedDrivers[d.id];
+      const entry = settingTracked[d.id];
       const md = d.measureDefaults;
       const sortedMonthly = [...(entry.monthlyData || [])].sort((a, b) => a.month.localeCompare(b.month));
       const latest = sortedMonthly[sortedMonthly.length - 1];

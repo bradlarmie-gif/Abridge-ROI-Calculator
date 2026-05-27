@@ -183,12 +183,12 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
     });
   };
 
-  const trackedDriverIds = Object.keys(state.trackedDrivers || {});
   const trackedDrivers = useMemo(() => {
+    const settingTracked = state.trackedDrivers?.[setting] || {};
     return EXPLORE_DRIVERS
-      .filter(d => d.settings.includes(setting) && trackedDriverIds.includes(d.id))
+      .filter(d => d.settings.includes(setting) && settingTracked[d.id])
       .map(d => {
-        const entry = state.trackedDrivers[d.id];
+        const entry = settingTracked[d.id];
         const realized = computeRealizedBaseline(d, entry);
         const scaleFactor = d.measureDefaults
           ? computeScaleFactor(d.measureDefaults.scaleAxis, baseline, projected)
@@ -197,7 +197,7 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
         return { driver: d, entry, realized, projected: projectedValue, scaleFactor };
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [trackedDriverIds.join(','), setting, state.trackedDrivers, baseline, projected]);
+  }, [setting, state.trackedDrivers, baseline, projected]);
 
   const totalsByQuadrant = useMemo(() => {
     const out: Record<ExploreQuadrant, { realized: number; projected: number }> = {
