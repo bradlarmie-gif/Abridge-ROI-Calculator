@@ -115,6 +115,15 @@ export type DataSource = 'analytics' | 'benchmark' | 'estimate';
 
 export type MetricDataSource = 'ehr' | 'survey';
 
+export type EntryDataSource = 'ehr' | 'survey' | 'admin_data' | 'chart_review' | 'manual_entry';
+
+export interface MeasureQuote {
+  id: string;
+  text: string;
+  attribution: string;
+  role?: string;
+}
+
 export interface MetricValue {
   before: number | null;
   after: number | null;
@@ -206,6 +215,7 @@ export interface MeasureState {
     occupancyPercent: number;
   }>;
   maturityPhase: MaturityStage | null;
+  quotes?: MeasureQuote[];
 }
 
 export interface MeasureDriverEntry {
@@ -223,6 +233,8 @@ export interface MeasureDriverEntry {
   distributionData?: { before: Record<string, number>; after: Record<string, number> };
   scaleValue?: number;
   scaleDivisor?: number;
+  measuredAt?: string;
+  entryDataSource?: EntryDataSource;
 }
 
 export function getEffectiveWithWithout(entry: MeasureDriverEntry): { withAbridge: number; withoutAbridge: number } {
