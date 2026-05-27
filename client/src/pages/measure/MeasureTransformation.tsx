@@ -377,8 +377,31 @@ export default function MeasureTransformation({ state, onNext, onBack, onHome }:
 
   const isNursing = settings.includes('nursing');
   const isInpatient = settings.includes('inpatient');
-  const adoptedEncounters = Math.round(state.deployment.totalEncounters * (state.deployment.utilizationRate / 100));
-  const nonAdoptedEncounters = state.deployment.totalEncounters - adoptedEncounters;
+  const isMultiSetting = settings.length > 1;
+  const dep = state.deployment as unknown as Record<string, number>;
+
+  // Per-setting aggregated counts — use settingData when available, fall back to global
+  const settingCounts = useMemo(() => settings.map(s => {
+    const sd = (state.settingData?.[s as MeasureCareSetting] || {}) as Record<string, number>;
+    const providers = sd.deploy_providers || dep.providers || 0;
+    const totalEnc = sd.deploy_totalEncounters || dep.totalEncounters || 0;
+    const abridgeEnc = sd.deploy_abridgeEncounters ||
+      Math.round(totalEnc * ((dep.utilizationRate || 0) / 100));
+    return { setting: s, providers, totalEnc, abridgeEnc };
+  }), [settings, state.settingData, dep.providers, dep.totalEncounters, dep.utilizationRate]);
+
+  const combinedProviders = isMultiSetting
+    ? settingCounts.reduce((sum, s) => sum + s.providers, 0) || dep.providers
+    : dep.providers;
+  const combinedTotalEncounters = isMultiSetting
+    ? settingCounts.reduce((sum, s) => sum + s.totalEnc, 0) || dep.totalEncounters
+    : dep.totalEncounters;
+  const combinedAbridgeEncounters = isMultiSetting
+    ? settingCounts.reduce((sum, s) => sum + s.abridgeEnc, 0)
+    : Math.round((dep.totalEncounters || 0) * ((dep.utilizationRate || 0) / 100));
+
+  const adoptedEncounters = combinedAbridgeEncounters;
+  const nonAdoptedEncounters = combinedTotalEncounters - combinedAbridgeEncounters;
   const timeReclaimed = Math.max(0, (state.timeEfficiency?.timeInNotesWithout ?? 0) - (state.timeEfficiency?.timeInNotesWith ?? 0));
   const wrvuLift = (state.documentationQuality?.wrvuWith ?? 0) - (state.documentationQuality?.wrvuWithout ?? 0);
 
@@ -442,12 +465,21 @@ export default function MeasureTransformation({ state, onNext, onBack, onHome }:
             <span className="text-lg font-normal text-white/40 ml-1">/ year</span>
           </p>
           <p className="text-sm text-white/40">
-            {state.deployment.providers} {isNursing ? 'nurses' : 'providers'}
+            {combinedProviders} {isNursing ? 'nurses' : 'providers'}
             {' \u00B7 '}
             {formatNumber(adoptedEncounters)} Abridge-documented {isNursing ? 'shifts' : isInpatient ? 'discharges' : 'encounters'}
             {' \u00B7 '}
             {goLiveDisplay} {'\u2192'} today
           </p>
+          {isMultiSetting && (
+            <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2">
+              {settingCounts.map(sc => (
+                <span key={sc.setting} className="text-xs text-white/25 capitalize">
+                  {sc.setting}: {sc.providers} providers \u00B7 {formatNumber(sc.abridgeEnc)} encounters
+                </span>
+              ))}
+            </div>
+          )}
           <p className="text-xs text-white/25 mt-2">
             conservative (50%) {'\u2014'} typical (75%) attribution
           </p>
@@ -570,12 +602,12 @@ export default function MeasureTransformation({ state, onNext, onBack, onHome }:
                     </p>
                   </div>
 
-                  {state.deployment.utilizationRate < 100 && (
+                  {adoptedEncounters < combinedTotalEncounters && combinedTotalEncounters > 0 && (
                     <div className="bg-[#F5F0EB] rounded-lg p-4">
                       <div className="flex items-start gap-3">
                         <div className="w-1 bg-[#EA2C00] rounded-full self-stretch flex-shrink-0" />
                         <p className="text-xs text-[#666666] leading-relaxed">
-                          At {state.deployment.utilizationRate}% adoption, these results reflect {formatNumber(adoptedEncounters)} of {formatNumber(state.deployment.totalEncounters)} total {isNursing ? 'shifts' : isInpatient ? 'discharges' : 'encounters'}. The remaining {formatNumber(nonAdoptedEncounters)} represent additional headroom at current provider count.
+                          These results reflect {formatNumber(adoptedEncounters)} of {formatNumber(combinedTotalEncounters)} total {isNursing ? 'shifts' : isInpatient ? 'discharges' : 'encounters'}. The remaining {formatNumber(nonAdoptedEncounters)} represent additional headroom at current provider count.
                         </p>
                       </div>
                     </div>
