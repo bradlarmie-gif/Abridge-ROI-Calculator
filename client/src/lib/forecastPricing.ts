@@ -84,3 +84,106 @@ export function makeDefaultTiers(model: PricingModel): PricingTier[] {
     { id: `tier-${stamp}-1`, thresholdFrom: 0, thresholdTo: null, rate: 1500000 },
   ];
 }
+
+export interface PricingTimeSeriesPoint {
+  year: number;
+  label: string;
+  providers: number;
+  encounters: number;
+  capacityValue: number;
+  workforceValue: number;
+  revenueValue: number;
+  qualityValue: number;
+  totalValue: number;
+  valueLow: number;
+  valueHigh: number;
+  investments: Record<string, number>;
+}
+
+export interface TierCrossingMarker {
+  scenarioId: string;
+  year: number;
+  providers: number;
+  investment: number;
+  label: string;
+}
+
+export interface QuadrantRatios {
+  capacity: number;
+  workforce: number;
+  revenue: number;
+  quality: number;
+}
+
+export function computePricingTimeSeries(
+  scenarios: PricingScenario[],
+  startProviders: number,
+  startEncounters: number,
+  annualProviderGrowthPct: number,
+  chartYears: number,
+  baseAnnualValue: number,
+  quadrantRatios: QuadrantRatios,
+): { points: PricingTimeSeriesPoint[]; tierCrossings: TierCrossingMarker[] } {
+  const points: PricingTimeSeriesPoint[] = [];
+  const tierCrossings: TierCrossingMarker[] = [];
+
+  for (let year = 1; year <= chartYears; year++) {
+    const growthFactor = (1 + annualProviderGrowthPct / 100) ** (year - 1);
+    const providers = Math.round(startProviders * growthFactor);
+    const encounters = Math.round(startEncounters * growthFactor);
+    const totalValue = Math.round(baseAnnualValue * growthFactor);
+    const valueLow = Math.round(totalValue * 0.75);
+    const valueHigh = Math.round(totalValue * 1.25);
+    const capacityValue = Math.round(totalValue * quadrantRatios.capacity);
+    const workforceValue = Math.round(totalValue * quadrantRatios.workforce);
+    const revenueValue = Math.round(totalValue * quadrantRatios.revenue);
+    const qualityValue = totalValue - capacityValue - workforceValue - revenueValue;
+
+    const investments: Record<string, number> = {};
+    for (const scenario of scenarios) {
+      const scale = scenario.model === 'perProvider' ? providers
+                  : scenario.model === 'perEncounter' ? encounters
+                  : 0;
+      investments[scenario.id] = computeScenarioInvestment(scenario, scale).value;
+    }
+
+    points.push({
+      year,
+      label: `Year ${year}`,
+      providers,
+      encounters,
+      capacityValue,
+      workforceValue,
+      revenueValue,
+      qualityValue,
+      totalValue,
+      valueLow,
+      valueHigh,
+      investments,
+    });
+  }
+
+  // Tier crossing detection
+  for (const scenario of scenarios) {
+    if (scenario.model === 'annualLicense') continue;
+    for (let i = 1; i < points.length; i++) {
+      const prevPoint = points[i - 1];
+      const currPoint = points[i];
+      const prevScale = scenario.model === 'perProvider' ? prevPoint.providers : prevPoint.encounters;
+      const currScale = scenario.model === 'perProvider' ? currPoint.providers : currPoint.encounters;
+      const prevTier = findApplicableTier(scenario.tiers, prevScale);
+      const currTier = findApplicableTier(scenario.tiers, currScale);
+      if (prevTier && currTier && prevTier.id !== currTier.id) {
+        tierCrossings.push({
+          scenarioId: scenario.id,
+          year: currPoint.year,
+          providers: currScale,
+          investment: currPoint.investments[scenario.id] ?? 0,
+          label: `Tier changes at ${currTier.thresholdFrom.toLocaleString()} ${scenario.model === 'perProvider' ? 'providers' : 'encounters'}`,
+        });
+      }
+    }
+  }
+
+  return { points, tierCrossings };
+}
