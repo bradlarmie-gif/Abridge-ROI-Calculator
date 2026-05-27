@@ -130,10 +130,12 @@ function FinancialDriverCard({
   drv,
   settingBadges,
   lowerIsBetter,
+  showDollars,
 }: {
   drv: MeasurePDFDriver;
   settingBadges: string[];
   lowerIsBetter?: boolean;
+  showDollars?: boolean;
 }) {
   const hasData = drv.withoutAbridge !== 0 || drv.withAbridge !== 0;
   const positiveOutcome = drv.delta >= 0;
@@ -154,7 +156,7 @@ function FinancialDriverCard({
           </div>
           <p className="text-xs text-[#999999] leading-relaxed">{drv.shortDescription}</p>
         </div>
-        {drv.realizedValue !== 0 && (
+        {showDollars && drv.realizedValue !== 0 && (
           <div className="text-right flex-shrink-0">
             <p className="text-xl font-bold text-[#EA2C00] tabular-nums leading-none">
               {'$' + Math.round(drv.realizedValue).toLocaleString()}
@@ -433,15 +435,25 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
                 {/* Left: headline number + context */}
                 <div className="flex-1 min-w-0">
                   <p className="text-[10px] font-semibold text-white/40 uppercase tracking-[2px] mb-3">
-                    Realized Annual Value · {careSettingLabel}
+                    {showDollars ? `Realized Annual Value · ${careSettingLabel}` : `Measured Outcomes · ${careSettingLabel}`}
                   </p>
-                  <p className="text-5xl md:text-6xl font-bold text-white tabular-nums leading-none mb-3">
-                    {totalRealized > 0 ? formatCurrency(totalRealized) : '—'}
-                  </p>
+                  {showDollars ? (
+                    <p className="text-5xl md:text-6xl font-bold text-white tabular-nums leading-none mb-3">
+                      {totalRealized > 0 ? formatCurrency(totalRealized) : '—'}
+                    </p>
+                  ) : (
+                    <p className="text-5xl md:text-6xl font-bold text-white tabular-nums leading-none mb-3">
+                      {driversTrackedCount}
+                      <span className="text-2xl font-normal text-white/40 ml-2">drivers measured</span>
+                    </p>
+                  )}
                   <p className="text-sm text-white/40 mb-5">
-                    {financialDriverCount > 0
-                      ? `Across ${financialDriverCount} financial driver${financialDriverCount === 1 ? '' : 's'}, attribution-adjusted`
-                      : 'Add financial drivers to see dollar impact'}
+                    {showDollars
+                      ? (financialDriverCount > 0
+                          ? `Across ${financialDriverCount} financial driver${financialDriverCount === 1 ? '' : 's'}, attribution-adjusted`
+                          : 'Add financial drivers to see dollar impact')
+                      : `${activeQuadrantCount} of 4 domains · ${activeSettings.length} care setting${activeSettings.length === 1 ? '' : 's'}`
+                    }
                   </p>
 
                   {/* Deployment context chips */}
@@ -482,7 +494,9 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
                               <div className="flex items-center justify-between mb-1.5">
                                 <span className="text-[11px] font-semibold text-white/60 uppercase tracking-wide">{ss.label}</span>
                                 <span className="text-sm font-bold text-white/80 tabular-nums">
-                                  {ss.settingTotal > 0 ? formatCurrency(ss.settingTotal) : <span className="text-white/25">—</span>}
+                                  {showDollars && ss.settingTotal > 0
+                                    ? formatCurrency(ss.settingTotal)
+                                    : <span className="text-white/25">—</span>}
                                 </span>
                               </div>
                               <div className="h-1 bg-white/10 rounded-full overflow-hidden">
@@ -510,7 +524,9 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
                                 <span className="text-[11px] text-white/50 uppercase tracking-wide">{q}</span>
                               </div>
                               <span className="text-xs font-bold text-white/60 tabular-nums">
-                                {val > 0 ? formatCurrency(val) : <span className="text-white/25">—</span>}
+                                {showDollars && val > 0
+                                  ? formatCurrency(val)
+                                  : <span className="text-white/25">—</span>}
                               </span>
                             </div>
                           );
@@ -540,7 +556,9 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
                                   )}
                                 </div>
                                 <span className="text-sm font-bold text-white/80 tabular-nums">
-                                  {val > 0 ? formatCurrency(val) : <span className="text-white/25">—</span>}
+                                  {showDollars && val > 0
+                                    ? formatCurrency(val)
+                                    : <span className="text-white/25">—</span>}
                                 </span>
                               </div>
                               <div className="h-1 bg-white/10 rounded-full overflow-hidden">
@@ -612,7 +630,7 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
                           {ss.settingQuadrants.reduce((n, q) => n + q.drivers.length, 0)} drivers
                         </span>
                       </div>
-                      {ss.settingTotal > 0 && (
+                      {showDollars && ss.settingTotal > 0 && (
                         <span className="text-base font-bold text-[#EA2C00] tabular-nums">{formatCurrency(ss.settingTotal)}</span>
                       )}
                     </div>
@@ -646,7 +664,7 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
                                 </div>
                               </div>
                               <div className="flex items-center gap-3 flex-shrink-0 ml-4">
-                                {q.realizedTotal > 0 && (
+                                {showDollars && q.realizedTotal > 0 && (
                                   <span className="text-sm font-bold tabular-nums" style={{ color }}>{formatCurrency(q.realizedTotal)}</span>
                                 )}
                                 <ChevronDown className={`w-4 h-4 text-[#CCCCCC] transition-transform duration-200 ${isExpanded ? 'rotate-0' : '-rotate-90'}`} />
@@ -668,7 +686,7 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
                                         <p className="text-[10px] font-bold text-[#888888] uppercase tracking-[1.5px] mb-3">Financial Impact</p>
                                         <div className="space-y-3">
                                           {financialDrivers.map(drv => (
-                                            <FinancialDriverCard key={drv.id} drv={drv} settingBadges={[]} lowerIsBetter={getDriverLowerIsBetter(drv.id)} />
+                                            <FinancialDriverCard key={drv.id} drv={drv} settingBadges={[]} lowerIsBetter={getDriverLowerIsBetter(drv.id)} showDollars={showDollars} />
                                           ))}
                                         </div>
                                       </div>
@@ -732,7 +750,7 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
                           </div>
                         </div>
                         <div className="flex items-center gap-3 flex-shrink-0 ml-4">
-                          {q.realizedTotal > 0 && (
+                          {showDollars && q.realizedTotal > 0 && (
                             <span className="text-base font-bold tabular-nums" style={{ color }}>
                               {formatCurrency(q.realizedTotal)}
                             </span>
@@ -765,6 +783,7 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
                                         drv={drv}
                                         settingBadges={getDriverSettingBadges(drv)}
                                         lowerIsBetter={getDriverLowerIsBetter(drv.id)}
+                                        showDollars={showDollars}
                                       />
                                     ))}
                                   </div>
