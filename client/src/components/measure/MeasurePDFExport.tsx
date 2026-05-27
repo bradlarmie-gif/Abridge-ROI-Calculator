@@ -12,7 +12,7 @@ import {
   Font,
 } from "@react-pdf/renderer";
 import { savePdfBlob } from "@/lib/pdf-save";
-import type { MeasureState, MeasureCareSetting } from "@/lib/measureCalculator";
+import type { MeasureState, MeasureCareSetting, EntryDataSource } from "@/lib/measureCalculator";
 import { PDFCoverPage } from "@/components/pdf/PDFCoverPage";
 import {
   EXPLORE_DRIVERS,
@@ -125,6 +125,8 @@ export interface MeasurePDFDriver {
   valuePerUnitLabel?: string;
   valuePerUnitPrefix?: string;
   setting?: string;
+  measuredAt?: string;
+  entryDataSource?: EntryDataSource;
 }
 
 export interface MeasurePDFQuadrantSection {

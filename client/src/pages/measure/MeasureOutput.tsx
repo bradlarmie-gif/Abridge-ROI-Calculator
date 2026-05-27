@@ -120,6 +120,8 @@ function buildDriverPayload(
     deltaLabel: md?.deltaLabel,
     valuePerUnitLabel: md?.valuePerUnitLabel,
     valuePerUnitPrefix: md?.valuePerUnitPrefix,
+    measuredAt: entry.measuredAt,
+    entryDataSource: entry.entryDataSource,
   };
 }
 
