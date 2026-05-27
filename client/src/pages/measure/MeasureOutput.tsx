@@ -93,6 +93,7 @@ function Sparkline({ values, lowerIsBetter, id }: { values: number[]; lowerIsBet
 function buildDriverPayload(
   driver: (typeof EXPLORE_DRIVERS)[number],
   entry: MeasureDriverEntry,
+  abridgeEncounters?: number,
 ): MeasurePDFDriver {
   const md = driver.measureDefaults;
   const sortedMonthly = [...(entry.monthlyData || [])].sort((a, b) => a.month.localeCompare(b.month));
@@ -102,9 +103,11 @@ function buildDriverPayload(
   const lowerIsBetter = md?.lowerIsBetter ?? entry.lowerIsBetter ?? false;
   const delta = lowerIsBetter ? effWithout - effWith : effWith - effWithout;
   const isQuantifiable = driver.visibility === "quantified" && Boolean(md);
-  const scale = (entry.scaleDivisor && entry.scaleDivisor > 0 && entry.scaleValue !== undefined)
-    ? entry.scaleValue / entry.scaleDivisor
-    : 1;
+  const scale = md?.isPerEncounterRate && (abridgeEncounters ?? 0) > 0
+    ? abridgeEncounters!
+    : (entry.scaleDivisor && entry.scaleDivisor > 0 && entry.scaleValue !== undefined)
+      ? entry.scaleValue / entry.scaleDivisor
+      : 1;
   const realizedValue = isQuantifiable
     ? Math.round(delta * entry.valuePerUnit * scale * (entry.attributionPercent / 100))
     : 0;
@@ -469,30 +472,37 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
 
   const dep = state.deployment as any;
 
+  const getSettingAbridgeEnc = (setting: string): number => {
+    const sd = (state.settingData?.[setting as ExploreSetting] || {}) as Record<string, number>;
+    return sd.deploy_abridgeEncounters || dep?.abridgeEncounters || 0;
+  };
+
   const quadrants = useMemo(() => {
     return QUADRANT_ORDER.map((q) => {
       const drivers: MeasurePDFDriver[] = [];
       for (const setting of activeSettings) {
         const st = state.trackedDrivers?.[setting] || {};
+        const abridgeEnc = getSettingAbridgeEnc(setting);
         EXPLORE_DRIVERS
           .filter(d => d.quadrant === q && d.settings.includes(setting) && st[d.id])
           .forEach(d => {
-            drivers.push({ ...buildDriverPayload(d, st[d.id]), setting });
+            drivers.push({ ...buildDriverPayload(d, st[d.id], abridgeEnc), setting });
           });
       }
       const realizedTotal = drivers.reduce((sum, d) => sum + d.realizedValue, 0);
       return { quadrant: q, realizedTotal, drivers };
     });
-  }, [activeSettings, state.trackedDrivers]);
+  }, [activeSettings, state.trackedDrivers, state.settingData, state.deployment]);
 
   // Per-setting breakdown (used for multi-setting hero + content sections)
   const settingSections = useMemo(() => {
     return activeSettings.map(setting => {
       const st = state.trackedDrivers?.[setting] || {};
+      const abridgeEnc = getSettingAbridgeEnc(setting);
       const settingQuadrants = QUADRANT_ORDER.map(q => {
         const drivers = EXPLORE_DRIVERS
           .filter(d => d.quadrant === q && d.settings.includes(setting) && st[d.id])
-          .map(d => buildDriverPayload(d, st[d.id]));
+          .map(d => buildDriverPayload(d, st[d.id], abridgeEnc));
         return {
           quadrant: q as ExploreQuadrant,
           realizedTotal: drivers.reduce((sum, d) => sum + d.realizedValue, 0),

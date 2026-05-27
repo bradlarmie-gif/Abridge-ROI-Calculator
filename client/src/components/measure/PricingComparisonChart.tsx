@@ -157,10 +157,6 @@ export default function PricingComparisonChart({ points, tierCrossings, scenario
         <Bar dataKey="revenueValue"   stackId="value" fill={DOMAIN_COLORS.revenue}   name="Revenue"   barSize={32} />
         <Bar dataKey="qualityValue"   stackId="value" fill={DOMAIN_COLORS.quality}   name="Quality"   barSize={32} />
 
-        {/* Sensitivity envelope */}
-        <Line dataKey="valueHigh" stroke={VALUE_BAND_COLOR} strokeWidth={1.5} strokeDasharray="4 3" dot={false} name="Value +25%" legendType="none" />
-        <Line dataKey="valueLow"  stroke={VALUE_BAND_COLOR} strokeWidth={1.5} strokeDasharray="4 3" dot={false} name="Value −25%" legendType="none" />
-
         {/* Cost line per scenario */}
         {scenarios.map((s, i) => (
           <Line

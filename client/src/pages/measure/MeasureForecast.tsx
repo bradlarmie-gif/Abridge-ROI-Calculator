@@ -516,18 +516,6 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
               <p className="text-base text-[#888888]">Model how outcomes scale with growth.</p>
             </motion.div>
 
-            <motion.div
-              className="bg-[#F5F0EB] rounded-lg p-5 mb-6"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-            >
-              <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">How This Works</p>
-              <p className="text-sm text-black leading-relaxed">
-                Adjust the axes below to model expansion. Drivers tracked in your quadrant pages re-project automatically based on what they scale with — provider count, encounter volume, or patient days.
-              </p>
-            </motion.div>
-
             {/* Scenario controls — one section per active setting */}
             <motion.div
               className="mb-6"
@@ -566,67 +554,6 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
                 </div>
               </div>
               {activeSettings.map(settingKey => renderSettingControls(settingKey))}
-            </motion.div>
-
-            {/* Projected by Quadrant */}
-            <motion.div
-              className="space-y-3"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-            >
-              <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">Projected by Quadrant</p>
-              {QUADRANT_ORDER.map(quadrant => {
-                const quadrantDrivers = allTrackedDrivers.filter(td => td.driver.quadrant === quadrant);
-                const totals = totalsByQuadrant[quadrant];
-                const delta = totals.projected - totals.realized;
-                if (quadrantDrivers.length === 0) return null;
-                return (
-                  <div key={quadrant} className="bg-white rounded-lg p-4 border border-[#E5E5E5]" data-testid={`card-quadrant-${quadrant.toLowerCase()}`}>
-                    <div className="flex items-center justify-between mb-3">
-                      <p className="text-sm font-semibold text-black">{quadrant}</p>
-                      <div className="flex items-center gap-2 text-sm">
-                        <span className="text-[#888888]">{formatCurrency(totals.realized)}</span>
-                        <ArrowRight className="w-3.5 h-3.5 text-[#888888]" />
-                        <span className="font-bold text-[#EA2C00]" data-testid={`text-quadrant-projected-${quadrant.toLowerCase()}`}>{formatCurrency(totals.projected)}</span>
-                        {delta !== 0 && (
-                          <span className={`text-xs font-medium ${delta > 0 ? 'text-[#EA2C00]' : 'text-[#888888]'}`}>
-                            ({delta > 0 ? '+' : ''}{formatCurrency(delta)})
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="space-y-1.5">
-                      {quadrantDrivers.map(({ driver, realized, projected: projVal, setting: driverSetting }) => (
-                        <div key={`${driverSetting}-${driver.id}`} className="flex items-center justify-between text-xs">
-                          <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                            <span className="text-[#666666] truncate">{driver.label}</span>
-                            {isMultiSetting && (
-                              <span className="inline-flex items-center px-1 py-0.5 rounded bg-[#F0EBE4] text-[9px] font-bold text-[#8C7E6E] uppercase tracking-wide flex-shrink-0">
-                                {SETTING_BADGE[driverSetting] ?? driverSetting}
-                              </span>
-                            )}
-                          </div>
-                          {driver.visibility === 'quantified' ? (
-                            <div className="flex items-center gap-1.5 flex-shrink-0">
-                              <span className="text-[#888888]">{formatCurrency(realized)}</span>
-                              <ArrowRight className="w-3 h-3 text-[#AAAAAA]" />
-                              <span className="font-medium text-black" data-testid={`text-driver-projected-${driver.id}`}>{formatCurrency(projVal)}</span>
-                            </div>
-                          ) : (
-                            <span className="text-[#888888] italic flex-shrink-0">Qualitative</span>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })}
-              {allTrackedDrivers.length === 0 && (
-                <div className="bg-[#F5F0EB] rounded-lg p-6 text-center" data-testid="text-no-drivers">
-                  <p className="text-sm text-[#666666]">No drivers tracked yet. Go back to the quadrant pages to add drivers, then return to model their growth.</p>
-                </div>
-              )}
             </motion.div>
 
             {/* Modeled Expansions */}
@@ -765,27 +692,68 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
                 </div>
               </div>
 
-              {pricingScenarios.length >= 2 && bestValueScenarioId && (() => {
-                const best = pricingScenarios.find(s => s.id === bestValueScenarioId);
-                if (!best) return null;
-                const scale = best.model === 'perProvider' ? combinedProviders
-                            : best.model === 'perEncounter' ? combinedEncounters
+              {/* Investment + ROI — shown whenever pricing is configured (1 or more scenarios) */}
+              {pricingScenarios.length > 0 && (() => {
+                const displayScenario = bestValueScenarioId
+                  ? pricingScenarios.find(s => s.id === bestValueScenarioId) ?? pricingScenarios[0]
+                  : pricingScenarios[0];
+                const scale = displayScenario.model === 'perProvider' ? combinedProviders
+                            : displayScenario.model === 'perEncounter' ? combinedEncounters
                             : 0;
-                const { value: investment } = computeScenarioInvestment(best, scale);
+                const { value: investment, warning } = computeScenarioInvestment(displayScenario, scale);
+                if (warning || investment <= 0) return null;
                 const net = combinedTotal - investment;
+                const roi = investment > 0 ? combinedTotal / investment : null;
                 return (
-                  <div data-testid="panel-best-pricing">
+                  <div data-testid="panel-pricing-receipt">
                     <div className="h-px bg-[#333333] my-4" />
-                    <p className="text-xs font-medium text-white uppercase tracking-[1.5px] mb-1">Best Pricing</p>
-                    <p className="text-sm text-white/50 mb-3" data-testid="text-best-pricing-label">{best.label}</p>
-                    <div className="space-y-1.5">
+                    <p className="text-xs font-medium text-white uppercase tracking-[1.5px] mb-1">
+                      {pricingScenarios.length >= 2 ? 'Best Value Scenario' : 'Investment'}
+                    </p>
+                    {pricingScenarios.length >= 2 && (
+                      <p className="text-sm text-white/50 mb-3" data-testid="text-best-pricing-label">{displayScenario.label}</p>
+                    )}
+                    <div className="space-y-1.5 mt-3">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-white/50">Investment</span>
+                        <span className="text-xs text-white/50">{pricingScenarios.length >= 2 ? 'Investment' : displayScenario.label}</span>
                         <span className="text-sm font-medium text-white/80" data-testid="text-best-pricing-investment">{formatCurrency(investment)}</span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-xs text-white/50">Net annual</span>
-                        <span className="text-base font-bold text-[#EA2C00]" data-testid="text-best-pricing-net">{formatCurrency(net)}</span>
+                        <span className={`text-base font-bold ${net >= 0 ? 'text-[#EA2C00]' : 'text-white/70'}`} data-testid="text-best-pricing-net">{formatCurrency(net)}</span>
+                      </div>
+                      {roi !== null && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-white/50">ROI</span>
+                          <span className="text-sm font-semibold text-emerald-400">{roi.toFixed(1)}×</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* ACV from setup — shown only when no pricing scenarios configured */}
+              {pricingScenarios.length === 0 && (dep?.annualContractValue ?? 0) > 0 && combinedTotal > 0 && (() => {
+                const investment = dep.annualContractValue as number;
+                const net = combinedTotal - investment;
+                const roi = combinedTotal / investment;
+                return (
+                  <div data-testid="panel-acv-receipt">
+                    <div className="h-px bg-[#333333] my-4" />
+                    <p className="text-xs font-medium text-white uppercase tracking-[1.5px] mb-3">Investment</p>
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-white/50">Annual contract</span>
+                        <span className="text-sm font-medium text-white/80">{formatCurrency(investment)}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-white/50">Net annual</span>
+                        <span className={`text-base font-bold ${net >= 0 ? 'text-[#EA2C00]' : 'text-white/70'}`}>{formatCurrency(net)}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-white/50">ROI</span>
+                        <span className="text-sm font-semibold text-emerald-400">{roi.toFixed(1)}×</span>
                       </div>
                     </div>
                   </div>
@@ -793,6 +761,30 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
               })()}
 
               <div className="h-px bg-[#333333] my-4" />
+
+              {/* Projected by Quadrant */}
+              {allTrackedDrivers.length > 0 && (
+                <div className="mb-4">
+                  <p className="text-xs font-medium text-white/40 uppercase tracking-[1.5px] mb-3">By Domain</p>
+                  <div className="space-y-2">
+                    {QUADRANT_ORDER.map(quadrant => {
+                      const totals = totalsByQuadrant[quadrant];
+                      if (totals.projected === 0 && totals.realized === 0) return null;
+                      return (
+                        <div key={quadrant} className="flex items-center justify-between" data-testid={`card-quadrant-${quadrant.toLowerCase()}`}>
+                          <span className="text-xs text-white/50">{quadrant}</span>
+                          <div className="flex items-center gap-1.5 text-xs">
+                            <span className="text-white/30">{formatCurrency(totals.realized)}</span>
+                            <ArrowRight className="w-3 h-3 text-white/20" />
+                            <span className="font-semibold text-white/80" data-testid={`text-quadrant-projected-${quadrant.toLowerCase()}`}>{formatCurrency(totals.projected)}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className="h-px bg-[#333333] my-4" />
+                </div>
+              )}
 
               <p className="text-xs font-medium text-white uppercase tracking-[1.5px] mb-2">Change</p>
               <div className="flex items-center gap-2">

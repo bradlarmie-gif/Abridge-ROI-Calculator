@@ -38,6 +38,7 @@ interface MeasureDriverCardProps {
 export default function MeasureDriverCard({ driver, entry, onUpdate, onRemove, isMultiSetting, abridgeEncounters }: MeasureDriverCardProps) {
   const isQuantifiable = driver.visibility === 'quantified' && Boolean(driver.measureDefaults);
   const md = driver.measureDefaults;
+  const isPerEnc = Boolean(md?.isPerEncounterRate) && (abridgeEncounters ?? 0) > 0;
 
   const sortedMonthly = useMemo(() => {
     return (entry.monthlyData || [])
@@ -51,7 +52,9 @@ export default function MeasureDriverCard({ driver, entry, onUpdate, onRemove, i
   const { withAbridge: effectiveWithAbridge, withoutAbridge: effectiveWithoutAbridge } = getEffectiveWithWithout(entry);
   const lowerIsBetter = md?.lowerIsBetter ?? false;
   const delta = lowerIsBetter ? effectiveWithoutAbridge - effectiveWithAbridge : effectiveWithAbridge - effectiveWithoutAbridge;
-  const realizedValue = getRealizedValueForEntry({ ...entry, lowerIsBetter }, isQuantifiable);
+  const realizedValue = isPerEnc
+    ? Math.round(delta * entry.valuePerUnit * abridgeEncounters! * (entry.attributionPercent / 100))
+    : getRealizedValueForEntry({ ...entry, lowerIsBetter }, isQuantifiable);
 
   const formatCurrency = (n: number) => '$' + Math.round(n).toLocaleString();
   const formatNumber = (n: number) => n.toLocaleString();
@@ -427,6 +430,12 @@ export default function MeasureDriverCard({ driver, entry, onUpdate, onRemove, i
                               <span className="text-[#888888]">{lowerIsBetter ? 'Improvement' : 'Δ'} {md.deltaUnit}</span>
                               <span className="font-medium text-black tabular-nums">{delta >= 0 ? '+' : ''}{formatNumber(delta)}</span>
                             </div>
+                            {isPerEnc && (
+                              <div className="flex justify-between items-center">
+                                <span className="text-[#888888]">× Abridge encounters</span>
+                                <span className="font-medium text-black tabular-nums">{abridgeEncounters!.toLocaleString()}</span>
+                              </div>
+                            )}
                             {md.scaleInput && (
                               <div className="flex justify-between items-center">
                                 <span className="text-[#888888]">× {md.scaleInput.label} ÷ {md.scaleInput.divisor}</span>
