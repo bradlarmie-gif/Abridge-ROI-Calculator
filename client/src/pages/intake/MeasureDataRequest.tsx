@@ -157,13 +157,13 @@ function MetricRow({ metric, checked, entry, onToggle, onUpdate }: {
         role="button"
         tabIndex={0}
         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onToggle(); } }}
-        className="group flex items-center gap-3 px-2 py-2.5 rounded-lg cursor-pointer transition-all hover:bg-[#FFF5F2]"
+        className="group flex items-center gap-3 py-3 cursor-pointer border-b border-[#F0EDE8] last:border-b-0"
         data-testid={`metric-row-${metric.id}`}
       >
-        <div className="w-4 h-4 rounded-full border-2 border-[#CCCCCC] bg-white flex-shrink-0 transition-colors group-hover:border-[#EA2C00]/50" />
+        <div className="w-4 h-4 rounded border border-[#DDDDDD] bg-[#F5F0EB] flex-shrink-0 transition-colors group-hover:border-[#EA2C00]/60" />
         <div className="flex-1 min-w-0">
           <span className="text-sm text-[#1A1A1A] font-medium leading-snug">{metric.label}</span>
-          <span className="text-xs text-[#AAAAAA] ml-1.5 whitespace-nowrap">{metric.unitLabel}</span>
+          <span className="text-[11px] text-[#AAAAAA] ml-1.5 whitespace-nowrap">{metric.unitLabel}</span>
         </div>
       </div>
     );
@@ -173,38 +173,35 @@ function MetricRow({ metric, checked, entry, onToggle, onUpdate }: {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="rounded-lg bg-white overflow-hidden"
-      style={{ borderLeft: '3px solid #EA2C00', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}
+      className="border-b border-[#F0EDE8] last:border-b-0 py-3"
       data-testid={`metric-row-${metric.id}`}
     >
-      <div className="flex items-start gap-3 px-3 sm:px-4 pt-3 pb-2">
+      <div className="flex items-center gap-3 mb-3">
         <button
           onClick={onToggle}
-          className="w-4 h-4 mt-0.5 rounded-full bg-[#EA2C00] flex-shrink-0 flex items-center justify-center transition-all hover:bg-[#c92500]"
+          className="w-4 h-4 rounded bg-[#EA2C00] flex-shrink-0 flex items-center justify-center transition-all hover:bg-[#c92500]"
           data-testid={`toggle-metric-${metric.id}`}
         >
           <Check className="w-2.5 h-2.5 text-white" />
         </button>
-        <div className="flex-1 min-w-0">
-          <span className="text-sm font-semibold text-[#1A1A1A] leading-snug">{metric.label}</span>
-          <span className="text-xs text-[#AAAAAA] ml-1.5">{metric.unitLabel}</span>
-        </div>
+        <span className="text-sm font-semibold text-[#1A1A1A] leading-snug">{metric.label}</span>
+        <span className="text-[11px] text-[#AAAAAA]">{metric.unitLabel}</span>
       </div>
 
-      <div className="px-3 sm:px-4 pb-3">
+      <div className="pl-7">
         <div className="flex items-end gap-2 sm:gap-3">
           <div className="flex-1 min-w-0">
-            <label className="block text-[10px] font-medium text-[#AAAAAA] uppercase tracking-wider mb-1">Before</label>
+            <label className="block text-[11px] font-medium text-[#777777] mb-1.5 uppercase tracking-wider">Before</label>
             <MetricInput
               value={entry?.before ?? null}
               onCommit={(v) => onUpdate({ before: v })}
               placeholder="—"
-              className="w-full bg-transparent border-b border-[#E0D9D0] pb-1.5 text-base font-semibold text-[#1A1A1A] placeholder:text-[#DDDDDD] focus:outline-none focus:border-[#EA2C00] transition-colors"
+              className="w-full bg-[#F5F0EB] border-0 rounded-lg px-3 h-11 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 transition-colors"
               data-testid={`input-before-${metric.id}`}
             />
           </div>
 
-          <div className="flex flex-col items-center pb-1.5 gap-1">
+          <div className="flex flex-col items-center pb-1 gap-1 flex-shrink-0">
             <span className="text-[#CCCCCC] text-sm">→</span>
             {deltaPct !== null && (
               <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
@@ -216,12 +213,12 @@ function MetricRow({ metric, checked, entry, onToggle, onUpdate }: {
           </div>
 
           <div className="flex-1 min-w-0">
-            <label className="block text-[10px] font-medium text-[#AAAAAA] uppercase tracking-wider mb-1">With Abridge</label>
+            <label className="block text-[11px] font-medium text-[#777777] mb-1.5 uppercase tracking-wider">With Abridge</label>
             <MetricInput
               value={entry?.after ?? null}
               onCommit={(v) => onUpdate({ after: v })}
               placeholder="—"
-              className="w-full bg-transparent border-b border-[#E0D9D0] pb-1.5 text-base font-semibold text-[#EA2C00] placeholder:text-[#DDDDDD] focus:outline-none focus:border-[#EA2C00] transition-colors"
+              className="w-full bg-[#F5F0EB] border-0 rounded-lg px-3 h-11 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 transition-colors"
               data-testid={`input-after-${metric.id}`}
             />
           </div>
@@ -242,7 +239,7 @@ function MetricRow({ metric, checked, entry, onToggle, onUpdate }: {
                 onChange={(e) => onUpdate({ notes: e.target.value || undefined })}
                 placeholder="Context — e.g. Q3 2025, outpatient only, excludes ED"
                 autoFocus
-                className="w-full mt-3 bg-transparent border-b border-[#E0D9D0] pb-1.5 text-xs text-[#555555] placeholder:text-[#CCCCCC] focus:outline-none focus:border-[#EA2C00] transition-colors"
+                className="w-full mt-2 bg-[#F5F0EB] border-0 rounded-lg px-3 h-10 text-xs text-[#555555] placeholder:text-[#BBBBBB] focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30"
                 data-testid={`input-notes-${metric.id}`}
               />
             </motion.div>
@@ -258,8 +255,8 @@ function MetricRow({ metric, checked, entry, onToggle, onUpdate }: {
               transition={{ duration: 0.15 }}
               className="overflow-hidden"
             >
-              <div className="mt-3 overflow-x-auto pb-1">
-                <div className="flex gap-2 min-w-max">
+              <div className="mt-2 overflow-x-auto pb-1">
+                <div className="flex gap-1.5 min-w-max">
                   {MONTH_LABELS.map((month, i) => (
                     <div key={month} className="flex flex-col items-center gap-1">
                       <span className="text-[9px] text-[#AAAAAA] uppercase">{month}</span>
@@ -272,7 +269,7 @@ function MetricRow({ metric, checked, entry, onToggle, onUpdate }: {
                           newData[i] = e.target.value === "" ? null : Number(e.target.value);
                           onUpdate({ monthlyData: newData });
                         }}
-                        className="w-12 bg-transparent border-b border-[#E0D9D0] pb-1 text-xs text-center text-[#1A1A1A] placeholder:text-[#DDDDDD] focus:outline-none focus:border-[#EA2C00] transition-colors"
+                        className="w-11 bg-[#F5F0EB] border-0 rounded-md px-1 h-8 text-xs text-center text-[#1A1A1A] placeholder:text-[#DDDDDD] focus:outline-none focus:ring-1 focus:ring-[#EA2C00]/30"
                         data-testid={`input-monthly-${metric.id}-${i}`}
                       />
                     </div>
@@ -283,11 +280,11 @@ function MetricRow({ metric, checked, entry, onToggle, onUpdate }: {
           )}
         </AnimatePresence>
 
-        <div className="flex items-center justify-end gap-3 mt-2.5">
+        <div className="flex items-center gap-3 mt-2">
           {!showNotes && (
             <button
               onClick={() => setShowNotes(true)}
-              className="text-[11px] text-[#CCCCCC] hover:text-[#EA2C00] transition-colors"
+              className="text-[11px] text-[#BBBBBB] hover:text-[#EA2C00] transition-colors"
               data-testid={`button-show-notes-${metric.id}`}
             >
               + context
@@ -299,7 +296,7 @@ function MetricRow({ metric, checked, entry, onToggle, onUpdate }: {
               setShowTrend(next);
               onUpdate({ isMonthlyMode: next, monthlyData: next ? new Array(12).fill(null) : undefined });
             }}
-            className="text-[11px] text-[#CCCCCC] hover:text-[#EA2C00] transition-colors"
+            className="text-[11px] text-[#BBBBBB] hover:text-[#EA2C00] transition-colors"
             data-testid={`toggle-monthly-${metric.id}`}
           >
             {showTrend ? '− trend' : '+ trend'}
@@ -433,7 +430,7 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
   const hasAnyData = hasAnyMetricData || hasAnyIpOp;
 
   return (
-    <div className="min-h-screen bg-[#F5F0EB] flex flex-col items-center py-8 sm:py-12 px-3 sm:px-4 pb-24">
+    <div className="min-h-screen bg-[#FAFAFA] flex flex-col items-center py-8 sm:py-12 px-3 sm:px-4 pb-24">
       <div className="w-full max-w-2xl mb-8">
         <div className="flex items-center justify-center mb-4">
           <img src={abridgeLogo} alt="Abridge" className="h-6" />
@@ -466,35 +463,35 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
       </div>
 
       <div className="w-full max-w-2xl space-y-6">
-        <div className="bg-white rounded-xl border border-[#E0D9D0] p-4 sm:p-6 shadow-md">
+        <div className="bg-white rounded-xl border border-[#EEEAE4] p-4 sm:p-6">
           <h2 className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-widest mb-4">Your Organization</h2>
           <div className="space-y-4">
             <div>
-              <label className="block text-[11px] font-medium text-[#777777] mb-1 uppercase tracking-wider">Organization Name</label>
+              <label className="block text-[11px] font-medium text-[#777777] mb-1.5 uppercase tracking-wider">Organization Name</label>
               <input
                 type="text"
                 value={deployment.organizationName}
                 onChange={(e) => updateDeployment({ organizationName: e.target.value })}
                 placeholder="e.g., Valley Health System"
-                className="w-full bg-white border border-[#E5E5E5] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30"
+                className="w-full bg-[#F5F0EB] border-0 rounded-lg px-3 h-11 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30"
                 data-testid="input-dep-org-name"
               />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-[11px] font-medium text-[#777777] mb-1 uppercase tracking-wider">Go-Live Date</label>
+                <label className="block text-[11px] font-medium text-[#777777] mb-1.5 uppercase tracking-wider">Go-Live Date</label>
                 <input
                   type="date"
                   value={deployment.goLiveDate || ''}
                   onChange={(e) => updateDeployment({ goLiveDate: e.target.value || null })}
-                  className="w-full bg-white border border-[#E5E5E5] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30"
+                  className="w-full bg-[#F5F0EB] border-0 rounded-lg px-3 h-11 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30"
                   data-testid="input-dep-go-live"
                 />
               </div>
               <div>
-                <label className="block text-[11px] font-medium text-[#777777] mb-1 uppercase tracking-wider">Months on Abridge</label>
+                <label className="block text-[11px] font-medium text-[#777777] mb-1.5 uppercase tracking-wider">Months on Abridge</label>
                 {deployment.goLiveDate ? (
-                  <div className="w-full bg-[#FAF8F5] border border-[#E5E5E5] rounded-md px-3 py-2 text-sm font-semibold text-gray-900 text-right">
+                  <div className="w-full bg-[#F5F0EB] rounded-lg px-3 h-11 flex items-center justify-end text-sm font-semibold text-gray-900">
                     {deployment.monthsOnAbridge}
                   </div>
                 ) : (
@@ -503,7 +500,7 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
                     value={deployment.monthsOnAbridge || ''}
                     placeholder="—"
                     onChange={(e) => updateDeployment({ monthsOnAbridge: e.target.value === '' ? 0 : Number(e.target.value) })}
-                    className="w-full bg-white border border-[#E5E5E5] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 text-right"
+                    className="w-full bg-[#F5F0EB] border-0 rounded-lg px-3 h-11 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 text-right"
                     data-testid="input-dep-months"
                   />
                 )}
@@ -526,7 +523,7 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
                       const raw = e.target.value.replace(/[^0-9]/g, '');
                       updateDeployment({ totalProviders: raw === '' ? 0 : Number(raw) });
                     }}
-                    className="w-full bg-white border border-[#E5E5E5] rounded-md px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 text-right"
+                    className="w-full bg-[#F5F0EB] border-0 rounded-lg px-2 h-11 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 text-right"
                     data-testid="input-dep-total-providers"
                   />
                 </div>
@@ -541,7 +538,7 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
                       const raw = e.target.value.replace(/[^0-9]/g, '');
                       updateDeployment({ liveProviders: raw === '' ? 0 : Number(raw) });
                     }}
-                    className="w-full bg-white border border-[#E5E5E5] rounded-md px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 text-right"
+                    className="w-full bg-[#F5F0EB] border-0 rounded-lg px-2 h-11 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 text-right"
                     data-testid="input-dep-live-providers"
                   />
                 </div>
@@ -556,7 +553,7 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
                       const raw = e.target.value.replace(/[^0-9]/g, '');
                       updateDeployment({ mruProviders: raw === '' ? 0 : Number(raw) });
                     }}
-                    className="w-full bg-white border border-[#E5E5E5] rounded-md px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 text-right"
+                    className="w-full bg-[#F5F0EB] border-0 rounded-lg px-2 h-11 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 text-right"
                     data-testid="input-dep-mru-providers"
                   />
                 </div>
@@ -597,7 +594,7 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
                       const raw = e.target.value.replace(/[^0-9]/g, '');
                       updateDeployment({ totalEncounters: raw === '' ? 0 : Number(raw) });
                     }}
-                    className="w-full bg-white border border-[#E5E5E5] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 text-right"
+                    className="w-full bg-[#F5F0EB] border-0 rounded-lg px-3 h-11 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 text-right"
                     data-testid="input-dep-total-encounters"
                   />
                 </div>
@@ -612,7 +609,7 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
                       const raw = e.target.value.replace(/[^0-9]/g, '');
                       updateDeployment({ abridgeEncounters: raw === '' ? 0 : Number(raw) });
                     }}
-                    className="w-full bg-white border border-[#E5E5E5] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 text-right"
+                    className="w-full bg-[#F5F0EB] border-0 rounded-lg px-3 h-11 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 text-right"
                     data-testid="input-dep-abridge-encounters"
                   />
                 </div>
@@ -636,17 +633,14 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
         </div>
 
         {primarySetting === 'inpatient' && (
-          <div className="bg-white rounded-xl border border-[#E0D9D0] p-4 sm:p-6 shadow-md">
-            <div className="flex items-start gap-3 mb-5">
-              <div className="w-1 rounded-full bg-[#EA2C00] flex-shrink-0 mt-1" style={{ height: '2.5rem' }} />
-              <div>
-                <h2 className="text-xs font-bold text-[#1A1A1A] uppercase tracking-widest mb-0.5">
-                  Inpatient Model Assumptions
-                </h2>
-                <p className="text-xs text-[#999999] leading-snug">
-                  These operational inputs calibrate the ROI model. Provide your best estimate — we'll verify these with you during the analysis.
-                </p>
-              </div>
+          <div className="bg-white rounded-xl border border-[#EEEAE4] px-4 sm:px-6 pb-4 pt-5">
+            <div className="mb-5">
+              <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-widest mb-0.5">
+                Inpatient Model Assumptions
+              </p>
+              <p className="text-[11px] text-[#AAAAAA] leading-relaxed">
+                These operational inputs calibrate the ROI model. Provide your best estimate — we'll verify these with you during the analysis.
+              </p>
             </div>
 
             {/* Throughput */}
@@ -657,7 +651,7 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
                 <p className="text-[11px] text-[#999999] mb-1.5">Average inpatient length of stay. National median is ~4.5 days for hospital medicine.</p>
                 <MetricInput value={ipOperational['avgLos'] ?? null} onCommit={(v) => updateIpOp('avgLos', v)}
                   placeholder="e.g., 4.5"
-                  className="w-full bg-transparent border-b border-[#E0D9D0] pb-1.5 text-base font-semibold text-[#1A1A1A] placeholder:text-[#DDDDDD] focus:outline-none focus:border-[#EA2C00] transition-colors" />
+                  className="w-full bg-[#F5F0EB] border-0 rounded-lg px-3 h-11 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 transition-colors" />
               </div>
             </div>
 
@@ -670,28 +664,28 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
                   <p className="text-[11px] text-[#999999] mb-1.5">Estimated % of admissions with a documentation gap that could affect DRG assignment. Typically 15–25%.</p>
                   <MetricInput value={ipOperational['drgGapRate'] ?? null} onCommit={(v) => updateIpOp('drgGapRate', v)}
                     placeholder="e.g., 18"
-                    className="w-full bg-transparent border-b border-[#E0D9D0] pb-1.5 text-base font-semibold text-[#1A1A1A] placeholder:text-[#DDDDDD] focus:outline-none focus:border-[#EA2C00] transition-colors" />
+                    className="w-full bg-[#F5F0EB] border-0 rounded-lg px-3 h-11 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 transition-colors" />
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-[#1A1A1A] mb-0.5">Average DRG weight improvement per corrected case</label>
                   <p className="text-[11px] text-[#999999] mb-1.5">Expected average DRG weight increase per corrected admission. Industry benchmark ~0.4.</p>
                   <MetricInput value={ipOperational['avgDrgWeightIncrease'] ?? null} onCommit={(v) => updateIpOp('avgDrgWeightIncrease', v)}
                     placeholder="e.g., 0.4"
-                    className="w-full bg-transparent border-b border-[#E0D9D0] pb-1.5 text-base font-semibold text-[#1A1A1A] placeholder:text-[#DDDDDD] focus:outline-none focus:border-[#EA2C00] transition-colors" />
+                    className="w-full bg-[#F5F0EB] border-0 rounded-lg px-3 h-11 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 transition-colors" />
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-[#1A1A1A] mb-0.5">Base DRG reimbursement ($/case)</label>
                   <p className="text-[11px] text-[#999999] mb-1.5">Your average base DRG reimbursement per admission. Typically $5,000–$9,000.</p>
                   <MetricInput value={ipOperational['baseDrgPayment'] ?? null} onCommit={(v) => updateIpOp('baseDrgPayment', v)}
                     placeholder="e.g., 6000"
-                    className="w-full bg-transparent border-b border-[#E0D9D0] pb-1.5 text-base font-semibold text-[#1A1A1A] placeholder:text-[#DDDDDD] focus:outline-none focus:border-[#EA2C00] transition-colors" />
+                    className="w-full bg-[#F5F0EB] border-0 rounded-lg px-3 h-11 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 transition-colors" />
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-[#1A1A1A] mb-0.5">DRG value realization rate (%)</label>
                   <p className="text-[11px] text-[#999999] mb-1.5">% of identified DRG opportunities that convert to actual net revenue after coding, billing, and payer adjudication. Typically 25–40%.</p>
                   <MetricInput value={ipOperational['drgRealizationRate'] ?? null} onCommit={(v) => updateIpOp('drgRealizationRate', v)}
                     placeholder="e.g., 33"
-                    className="w-full bg-transparent border-b border-[#E0D9D0] pb-1.5 text-base font-semibold text-[#1A1A1A] placeholder:text-[#DDDDDD] focus:outline-none focus:border-[#EA2C00] transition-colors" />
+                    className="w-full bg-[#F5F0EB] border-0 rounded-lg px-3 h-11 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 transition-colors" />
                 </div>
               </div>
             </div>
@@ -705,21 +699,21 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
                   <p className="text-[11px] text-[#999999] mb-1.5">% of admissions subject to medical necessity review and denial. Typically 3–8%.</p>
                   <MetricInput value={ipOperational['obsDenialRate'] ?? null} onCommit={(v) => updateIpOp('obsDenialRate', v)}
                     placeholder="e.g., 5"
-                    className="w-full bg-transparent border-b border-[#E0D9D0] pb-1.5 text-base font-semibold text-[#1A1A1A] placeholder:text-[#DDDDDD] focus:outline-none focus:border-[#EA2C00] transition-colors" />
+                    className="w-full bg-[#F5F0EB] border-0 rounded-lg px-3 h-11 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 transition-colors" />
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-[#1A1A1A] mb-0.5">Average claim value at risk ($/case)</label>
                   <p className="text-[11px] text-[#999999] mb-1.5">Average revenue at risk per denied admission. Typically $8,000–$15,000.</p>
                   <MetricInput value={ipOperational['obsAvgClaimValue'] ?? null} onCommit={(v) => updateIpOp('obsAvgClaimValue', v)}
                     placeholder="e.g., 10000"
-                    className="w-full bg-transparent border-b border-[#E0D9D0] pb-1.5 text-base font-semibold text-[#1A1A1A] placeholder:text-[#DDDDDD] focus:outline-none focus:border-[#EA2C00] transition-colors" />
+                    className="w-full bg-[#F5F0EB] border-0 rounded-lg px-3 h-11 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 transition-colors" />
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-[#1A1A1A] mb-0.5">Documentation's share of successful appeals (%)</label>
                   <p className="text-[11px] text-[#999999] mb-1.5">% of successfully overturned denials where documentation quality was a deciding factor. Typically 15–25%.</p>
                   <MetricInput value={ipOperational['obsDocContributionPct'] ?? null} onCommit={(v) => updateIpOp('obsDocContributionPct', v)}
                     placeholder="e.g., 20"
-                    className="w-full bg-transparent border-b border-[#E0D9D0] pb-1.5 text-base font-semibold text-[#1A1A1A] placeholder:text-[#DDDDDD] focus:outline-none focus:border-[#EA2C00] transition-colors" />
+                    className="w-full bg-[#F5F0EB] border-0 rounded-lg px-3 h-11 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 transition-colors" />
                 </div>
               </div>
             </div>
@@ -733,14 +727,14 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
                   <p className="text-[11px] text-[#999999] mb-1.5">How many clarification queries your CDI program generates per 100 admissions. Typically 20–40.</p>
                   <MetricInput value={ipOperational['cdiQueryRate'] ?? null} onCommit={(v) => updateIpOp('cdiQueryRate', v)}
                     placeholder="e.g., 30"
-                    className="w-full bg-transparent border-b border-[#E0D9D0] pb-1.5 text-base font-semibold text-[#1A1A1A] placeholder:text-[#DDDDDD] focus:outline-none focus:border-[#EA2C00] transition-colors" />
+                    className="w-full bg-[#F5F0EB] border-0 rounded-lg px-3 h-11 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 transition-colors" />
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-[#1A1A1A] mb-0.5">CDI cost per query ($)</label>
                   <p className="text-[11px] text-[#999999] mb-1.5">Fully loaded cost to generate and resolve one CDI query (CDI staff time, systems). Typically $40–$75.</p>
                   <MetricInput value={ipOperational['cdiCostPerQuery'] ?? null} onCommit={(v) => updateIpOp('cdiCostPerQuery', v)}
                     placeholder="e.g., 50"
-                    className="w-full bg-transparent border-b border-[#E0D9D0] pb-1.5 text-base font-semibold text-[#1A1A1A] placeholder:text-[#DDDDDD] focus:outline-none focus:border-[#EA2C00] transition-colors" />
+                    className="w-full bg-[#F5F0EB] border-0 rounded-lg px-3 h-11 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 transition-colors" />
                 </div>
               </div>
             </div>
@@ -754,21 +748,21 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
                   <p className="text-[11px] text-[#999999] mb-1.5">% of hospitalists who leave per year. National average is 6–10%.</p>
                   <MetricInput value={ipOperational['hospitalistTurnoverRate'] ?? null} onCommit={(v) => updateIpOp('hospitalistTurnoverRate', v)}
                     placeholder="e.g., 8"
-                    className="w-full bg-transparent border-b border-[#E0D9D0] pb-1.5 text-base font-semibold text-[#1A1A1A] placeholder:text-[#DDDDDD] focus:outline-none focus:border-[#EA2C00] transition-colors" />
+                    className="w-full bg-[#F5F0EB] border-0 rounded-lg px-3 h-11 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 transition-colors" />
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-[#1A1A1A] mb-0.5">Documentation burden's share of turnover (%)</label>
                   <p className="text-[11px] text-[#999999] mb-1.5">% of departures where documentation burden was a contributing factor. Typically 40–50% for hospitalists.</p>
                   <MetricInput value={ipOperational['burnoutTurnoverPct'] ?? null} onCommit={(v) => updateIpOp('burnoutTurnoverPct', v)}
                     placeholder="e.g., 45"
-                    className="w-full bg-transparent border-b border-[#E0D9D0] pb-1.5 text-base font-semibold text-[#1A1A1A] placeholder:text-[#DDDDDD] focus:outline-none focus:border-[#EA2C00] transition-colors" />
+                    className="w-full bg-[#F5F0EB] border-0 rounded-lg px-3 h-11 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 transition-colors" />
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-[#1A1A1A] mb-0.5">Hospitalist replacement cost ($)</label>
                   <p className="text-[11px] text-[#999999] mb-1.5">All-in cost to recruit and onboard a replacement hospitalist (agency fees, onboarding, productivity ramp). Typically $250,000–$400,000.</p>
                   <MetricInput value={ipOperational['hospitalistReplacementCost'] ?? null} onCommit={(v) => updateIpOp('hospitalistReplacementCost', v)}
                     placeholder="e.g., 300000"
-                    className="w-full bg-transparent border-b border-[#E0D9D0] pb-1.5 text-base font-semibold text-[#1A1A1A] placeholder:text-[#DDDDDD] focus:outline-none focus:border-[#EA2C00] transition-colors" />
+                    className="w-full bg-[#F5F0EB] border-0 rounded-lg px-3 h-11 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 transition-colors" />
                 </div>
               </div>
             </div>
@@ -788,40 +782,30 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
                   <div className="h-px flex-1 bg-[#E8E2DA]" />
                 </div>
               )}
-              {Object.entries(byDomain).map(([domain, metrics]) => (
-                <div key={`${s}-${domain}`} className="bg-white rounded-xl border border-[#E0D9D0] p-4 sm:p-6 shadow-md mb-6">
-                  <div className="flex items-start gap-3 mb-5">
-                    <div className="w-1 rounded-full bg-[#EA2C00] flex-shrink-0 mt-1" style={{ height: '2.5rem' }} />
-                    <div>
-                      <h2 className="text-xs font-bold text-[#1A1A1A] uppercase tracking-widest mb-0.5">
+              <div className="bg-white rounded-xl border border-[#EEEAE4] px-4 sm:px-6 pb-2">
+                {Object.entries(byDomain).map(([domain, metrics], di) => (
+                  <div key={`${s}-${domain}`} className={di === 0 ? "pt-5" : ""}>
+                    <div className={`${di > 0 ? "border-t border-[#EDE8E2] pt-5 mt-2" : ""} mb-3`}>
+                      <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-widest mb-0.5">
                         {DOMAIN_LABELS[domain] || domain}
-                      </h2>
-                      <p className="text-xs text-[#999999] leading-snug">
+                      </p>
+                      <p className="text-[11px] text-[#AAAAAA] leading-relaxed">
                         {DOMAIN_DESCRIPTIONS[domain] || ""}
                       </p>
                     </div>
+                    <div>
+                      {metrics.map((metric) => (
+                        <MetricRow key={metric.id} metric={metric} checked={checkedIds.has(metric.id)} entry={entries[metric.id]}
+                          onToggle={() => toggleMetric(metric.id)} onUpdate={(updates) => updateEntry(metric.id, updates)} />
+                      ))}
+                    </div>
                   </div>
-                  <div className="space-y-3">
-                    {metrics.map((metric) => (
-                      <MetricRow key={metric.id} metric={metric} checked={checkedIds.has(metric.id)} entry={entries[metric.id]}
-                        onToggle={() => toggleMetric(metric.id)} onUpdate={(updates) => updateEntry(metric.id, updates)} />
-                    ))}
-                  </div>
-                  {(() => {
-                    const anyChecked = metrics.some(m => checkedIds.has(m.id));
-                    if (anyChecked) return null;
-                    return (
-                      <p className="text-xs text-[#BBBBBB] text-center py-2 italic">
-                        No metrics selected in this section — check any that apply to your deployment.
-                      </p>
-                    );
-                  })()}
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           );
         })}
-        <div className="bg-white rounded-xl border border-[#E0D9D0] p-4 sm:p-6 shadow-md">
+        <div className="bg-white rounded-xl border border-[#EEEAE4] p-4 sm:p-6">
           {!hasAnyData ? (
             <div className="text-center">
               <p className="text-sm text-[#BBBBBB]">Select at least one metric and enter a value to export your summary.</p>
