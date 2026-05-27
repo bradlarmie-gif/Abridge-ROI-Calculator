@@ -29,6 +29,8 @@ export interface ForecastScenario {
   occupancyPercent: number;
   addedSettings: ForecastAddedSetting[];
   pricingScenarios: PricingScenario[];
+  annualProviderGrowthPct?: number;  // default 0 = flat growth
+  chartYears?: number;               // default 3; options: 3, 5, 10
 }
 
 export interface MeasureDeployment {
