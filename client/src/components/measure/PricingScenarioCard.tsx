@@ -12,9 +12,9 @@ import {
 
 interface PricingScenarioCardProps {
   scenario: PricingScenario;
-  combinedProviders: number;
-  combinedEncounters: number;
-  combinedValue: number;
+  displayProviders: number;
+  displayEncounters: number;
+  displayValue: number;
   isBestValue: boolean;
   onUpdate: (updates: Partial<PricingScenario>) => void;
   onRemove: () => void;
@@ -22,19 +22,19 @@ interface PricingScenarioCardProps {
 
 export default function PricingScenarioCard({
   scenario,
-  combinedProviders,
-  combinedEncounters,
-  combinedValue,
+  displayProviders,
+  displayEncounters,
+  displayValue,
   isBestValue,
   onUpdate,
   onRemove,
 }: PricingScenarioCardProps) {
-  const scale = scenario.model === 'perProvider' ? combinedProviders
-              : scenario.model === 'perEncounter' ? combinedEncounters
+  const scale = scenario.model === 'perProvider' ? displayProviders
+              : scenario.model === 'perEncounter' ? displayEncounters
               : 0;
   const { value: investment, tier: appliedTier, warning } = computeScenarioInvestment(scenario, scale);
-  const net = combinedValue - investment;
-  const roi = investment > 0 ? combinedValue / investment : 0;
+  const net = displayValue - investment;
+  const roi = investment > 0 ? displayValue / investment : 0;
 
   const updateTier = (tierId: string, updates: Partial<PricingTier>) => {
     onUpdate({
