@@ -15,6 +15,7 @@ import {
   CONFIDENCE_LABELS,
   EM_TO_WRVU,
 } from "@/lib/measureCalculator";
+import { computeScenarioInvestment } from "@/lib/forecastPricing";
 
 const STAGES: { key: MaturityStage; label: string }[] = [
   { key: 'unmeasured', label: 'Unmeasured' },
@@ -254,7 +255,18 @@ export default function MeasureOpportunity({
   const enabledConfirmed = useMemo(() => computeConfirmedRange(state, state.streamStates), [state]);
   const hasConfirmedValue = confirmed.low > 0;
   const confirmedMid = Math.round((enabledConfirmed.low + enabledConfirmed.high) / 2);
-  const annualContractValue = state.deployment.annualContractValue || 0;
+  const annualContractValue = useMemo(() => {
+    const scenarios = state.forecastScenario?.pricingScenarios ?? [];
+    if (scenarios.length > 0) {
+      const s = scenarios[0];
+      const scale = s.model === 'perProvider' ? (state.deployment.providers || 0)
+                  : (s.model === 'perEncounter' || s.model === 'platformFee') ? (state.deployment.abridgeEncounters || 0)
+                  : 0;
+      const { value } = computeScenarioInvestment(s, scale);
+      if (value > 0) return value;
+    }
+    return state.deployment.annualContractValue || 0;
+  }, [state.forecastScenario?.pricingScenarios, state.deployment.annualContractValue, state.deployment.providers, state.deployment.abridgeEncounters]);
   const confidenceLabel = CONFIDENCE_LABELS[ctx.maturityStage] || 'Estimate';
 
   const roiMetrics = useMemo(() => {

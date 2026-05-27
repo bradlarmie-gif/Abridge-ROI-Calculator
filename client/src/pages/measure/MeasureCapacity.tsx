@@ -6,7 +6,7 @@ import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import MeasureDriverCard from "@/components/measure/MeasureDriverCard";
 import AddMeasureDriverPicker from "@/components/measure/AddMeasureDriverPicker";
 import { EXPLORE_DRIVERS, type ExploreDriver, type ExploreSetting } from "@/lib/exploreDrivers";
-import { getRealizedValueForEntry, type MeasureState, type MeasureDriverEntry } from "@/lib/measureCalculator";
+import { getRealizedValueForEntry, type MeasureState, type MeasureDriverEntry, type MeasureCareSetting } from "@/lib/measureCalculator";
 
 interface MeasureCapacityProps {
   state: MeasureState;
@@ -150,7 +150,10 @@ export default function MeasureCapacity({ state, updateState, onNext, onBack, on
               <p className="text-sm text-black leading-relaxed">{howToUse}</p>
             </motion.div>
 
-            {trackedBySetting.map(({ setting: settingKey, label: settingLabel, financialDrivers: settingFD, watchMetrics: settingWM, trackedIds }) => (
+            {trackedBySetting.map(({ setting: settingKey, label: settingLabel, financialDrivers: settingFD, watchMetrics: settingWM, trackedIds }) => {
+              const sd = (state.settingData?.[settingKey as MeasureCareSetting] || {}) as Record<string, number>;
+              const settingAbridgeEnc = (sd.deploy_abridgeEncounters as number) || state.deployment?.abridgeEncounters || 0;
+              return (
               <div key={settingKey} className={isMultiSetting ? "mb-8" : ""}>
                 {isMultiSetting && (
                   <div className="flex items-center gap-2 mb-3">
@@ -179,6 +182,7 @@ export default function MeasureCapacity({ state, updateState, onNext, onBack, on
                           onUpdate={(updates) => updateEntry(settingKey, driver.id, updates)}
                           onRemove={() => removeEntry(settingKey, driver.id)}
                           isMultiSetting={false}
+                          abridgeEncounters={settingAbridgeEnc}
                         />
                       ))}
                     </div>
@@ -205,6 +209,7 @@ export default function MeasureCapacity({ state, updateState, onNext, onBack, on
                           onUpdate={(updates) => updateEntry(settingKey, driver.id, updates)}
                           onRemove={() => removeEntry(settingKey, driver.id)}
                           isMultiSetting={false}
+                          abridgeEncounters={settingAbridgeEnc}
                         />
                       ))}
                     </div>
@@ -233,7 +238,8 @@ export default function MeasureCapacity({ state, updateState, onNext, onBack, on
                   />
                 </motion.div>
               </div>
-            ))}
+              );
+            })}
 
             <motion.div
               className="flex justify-center mt-8 lg:hidden"

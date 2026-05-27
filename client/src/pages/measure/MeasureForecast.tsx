@@ -7,7 +7,7 @@ import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { EXPLORE_DRIVERS, type ExploreDriver, type ExploreSetting, type ExploreQuadrant, type DriverScaleAxis } from "@/lib/exploreDrivers";
 import { type MeasureState, type MeasureDriverEntry, type ForecastScenario, type ForecastAddedSetting, type MeasureCareSetting, type SettingForecastValues } from "@/lib/measureCalculator";
 import { SETTING_LABELS, computeAddedSettingValue } from "@/lib/forecastDefaults";
-import { computeScenarioInvestment, computePricingTimeSeries, makeDefaultTiers, type PricingScenario, type PricingTimeSeriesPoint } from "@/lib/forecastPricing";
+import { computeScenarioInvestment, computePricingTimeSeries, makeDefaultTiers, type PricingScenario, type PricingTimeSeriesPoint, type PricingYearInput } from "@/lib/forecastPricing";
 import AddCareSettingModal from "@/components/measure/AddCareSettingModal";
 import AddedSettingCard from "@/components/measure/AddedSettingCard";
 import PricingScenarioCard from "@/components/measure/PricingScenarioCard";
@@ -25,7 +25,7 @@ interface MeasureForecastProps {
 const QUADRANT_ORDER: ExploreQuadrant[] = ['Capacity', 'Workforce', 'Revenue', 'Quality'];
 const SETTING_BADGE: Record<string, string> = { outpatient: 'OP', ed: 'ED', inpatient: 'IP', nursing: 'Nsg' };
 
-function computeRealizedBaseline(driver: ExploreDriver, entry: MeasureDriverEntry): number {
+function computeRealizedBaseline(driver: ExploreDriver, entry: MeasureDriverEntry, settingAbridgeEncounters: number): number {
   const md = driver.measureDefaults;
   if (!md || driver.visibility !== 'quantified') return 0;
   const sortedMonthly = [...(entry.monthlyData || [])].sort((a, b) => a.month.localeCompare(b.month));
@@ -34,9 +34,11 @@ function computeRealizedBaseline(driver: ExploreDriver, entry: MeasureDriverEntr
   const effWithout = entry.isMonthlyMode && latest ? latest.withoutAbridge : entry.withoutAbridge;
   const lowerIsBetter = md?.lowerIsBetter ?? entry.lowerIsBetter ?? false;
   const delta = lowerIsBetter ? effWithout - effWith : effWith - effWithout;
-  const scale = (entry.scaleDivisor && entry.scaleDivisor > 0 && entry.scaleValue !== undefined)
-    ? entry.scaleValue / entry.scaleDivisor
-    : 1;
+  const scale = md.isPerEncounterRate
+    ? settingAbridgeEncounters
+    : (entry.scaleDivisor && entry.scaleDivisor > 0 && entry.scaleValue !== undefined)
+      ? entry.scaleValue / entry.scaleDivisor
+      : 1;
   return Math.round(delta * entry.valuePerUnit * scale * (entry.attributionPercent / 100));
 }
 
@@ -124,6 +126,60 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
     updateState({ forecastScenario: { ...(state.forecastScenario ?? {} as ForecastScenario), ...updates } });
   };
 
+  const forecastYears = state.forecastScenario?.forecastYears ?? 1;
+
+  const getSettingAbridgeEnc = (settingKey: string): number => {
+    const sd = (state.settingData?.[settingKey as MeasureCareSetting] || {}) as Record<string, number>;
+    return sd.deploy_abridgeEncounters || dep?.abridgeEncounters || 0;
+  };
+
+  const getSettingYearValues = (settingKey: string, yearIdx: number): SettingForecastValues => {
+    // yearIdx is 1-based. Year 1 uses settingForecasts (existing projected). Year 2+ uses settingForecastYears.
+    if (yearIdx <= 1) return getSettingProjected(settingKey);
+    return state.settingForecastYears?.[settingKey]?.[yearIdx - 1] ?? getSettingProjected(settingKey);
+  };
+
+  const getSettingFinalYear = (settingKey: string): SettingForecastValues => {
+    return getSettingYearValues(settingKey, forecastYears);
+  };
+
+  const handleForecastYearsChange = (newYears: 1 | 2 | 3 | 5) => {
+    if (newYears === forecastYears) return;
+    const newSFY: Record<string, SettingForecastValues[]> = { ...(state.settingForecastYears || {}) };
+    for (const settingKey of activeSettings) {
+      const yr1 = getSettingProjected(settingKey);
+      const arr: SettingForecastValues[] = [...(newSFY[settingKey] || [])];
+      // Ensure index 0 (Year 1) is always set
+      if (!arr[0]) arr[0] = yr1;
+      // Initialize missing year slots with linear extrapolation from year 1 values
+      for (let y = 2; y <= newYears; y++) {
+        if (!arr[y - 1]) {
+          arr[y - 1] = {
+            providers: Math.round(yr1.providers * y),
+            utilizationPercent: Math.min(100, yr1.utilizationPercent),
+            encounters: Math.round(yr1.encounters * y),
+            staffedBeds: yr1.staffedBeds,
+            occupancyPercent: Math.min(100, yr1.occupancyPercent),
+          };
+        }
+      }
+      newSFY[settingKey] = arr;
+    }
+    updateForecastScenario({ forecastYears: newYears });
+    updateState({ settingForecastYears: newSFY });
+  };
+
+  const updateSettingYear = (settingKey: string, yearIdx: number, updates: Partial<SettingForecastValues>) => {
+    if (yearIdx <= 1) {
+      updateSettingProjected(settingKey, updates);
+      return;
+    }
+    const arr = [...(state.settingForecastYears?.[settingKey] || [])];
+    const current = arr[yearIdx - 1] || getSettingProjected(settingKey);
+    arr[yearIdx - 1] = { ...current, ...updates };
+    updateState({ settingForecastYears: { ...(state.settingForecastYears || {}), [settingKey]: arr } });
+  };
+
   const addCareSetting = (added: ForecastAddedSetting) => {
     updateForecastScenario({ addedSettings: [...addedSettings, added] });
   };
@@ -157,12 +213,13 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
     return activeSettings.flatMap(settingKey => {
       const st = state.trackedDrivers?.[settingKey] || {};
       const bl = getSettingBaseline(settingKey);
-      const proj = getSettingProjected(settingKey);
+      const proj = getSettingFinalYear(settingKey);
+      const abridgeEnc = getSettingAbridgeEnc(settingKey);
       return EXPLORE_DRIVERS
         .filter(d => d.settings.includes(settingKey as ExploreSetting) && st[d.id])
         .map(d => {
           const entry = st[d.id];
-          const realized = computeRealizedBaseline(d, entry);
+          const realized = computeRealizedBaseline(d, entry, abridgeEnc);
           const scaleFactor = d.measureDefaults
             ? computeScaleFactor(d.measureDefaults.scaleAxis, bl, proj)
             : 1;
@@ -171,7 +228,7 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
         });
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeSettings, state.trackedDrivers, state.settingForecasts, state.settingData, state.deployment]);
+  }, [activeSettings, state.trackedDrivers, state.settingForecasts, state.settingForecastYears, state.settingData, state.deployment, forecastYears]);
 
   const totalsByQuadrant = useMemo(() => {
     const out: Record<ExploreQuadrant, { realized: number; projected: number }> = {
@@ -194,16 +251,16 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
   const totalPctChange = totalRealized > 0 ? ((totalDelta / totalRealized) * 100) : 0;
 
   const combinedProviders = useMemo(() => {
-    return activeSettings.reduce((sum, s) => sum + getSettingProjected(s).providers, 0)
+    return activeSettings.reduce((sum, s) => sum + getSettingFinalYear(s).providers, 0)
       + addedSettings.reduce((sum, a) => sum + a.providers, 0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeSettings, state.settingForecasts, addedSettings]);
+  }, [activeSettings, state.settingForecasts, state.settingForecastYears, addedSettings, forecastYears]);
 
   const combinedEncounters = useMemo(() => {
-    return activeSettings.reduce((sum, s) => sum + getSettingProjected(s).encounters, 0)
+    return activeSettings.reduce((sum, s) => sum + getSettingFinalYear(s).encounters, 0)
       + addedSettings.reduce((sum, a) => sum + a.encounters, 0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeSettings, state.settingForecasts, addedSettings]);
+  }, [activeSettings, state.settingForecasts, state.settingForecastYears, addedSettings, forecastYears]);
 
   const bestValueScenarioId = useMemo(() => {
     if (pricingScenarios.length < 2) return null;
@@ -219,41 +276,49 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
     return evaluated[0].id;
   }, [pricingScenarios, combinedProviders, combinedEncounters]);
 
-  const quadrantRatios = useMemo(() => {
-    const total = combinedTotal;
-    if (total === 0) return { capacity: 0.25, workforce: 0.25, revenue: 0.25, quality: 0.25 };
-    return {
-      capacity:  totalsByQuadrant.Capacity.projected  / total,
-      workforce: totalsByQuadrant.Workforce.projected / total,
-      revenue:   totalsByQuadrant.Revenue.projected   / total,
-      quality:   totalsByQuadrant.Quality.projected   / total,
-    };
-  }, [totalsByQuadrant, combinedTotal]);
+  const pricingYearlyInputs = useMemo((): PricingYearInput[] => {
+    const numYears = forecastYears;
+    return Array.from({ length: numYears }, (_, i) => {
+      const yearIdx = i + 1;
+      let yearProviders = 0;
+      let yearEncounters = 0;
+      const yearQuadrantValues: Record<string, number> = { Capacity: 0, Workforce: 0, Revenue: 0, Quality: 0 };
+
+      for (const settingKey of activeSettings) {
+        const st = state.trackedDrivers?.[settingKey] || {};
+        const bl = getSettingBaseline(settingKey);
+        const yv = getSettingYearValues(settingKey, yearIdx);
+        const abridgeEnc = getSettingAbridgeEnc(settingKey);
+        yearProviders += yv.providers;
+        yearEncounters += yv.encounters;
+        for (const d of EXPLORE_DRIVERS) {
+          if (!d.settings.includes(settingKey as ExploreSetting) || !st[d.id] || !d.measureDefaults) continue;
+          const entry = st[d.id];
+          const realized = computeRealizedBaseline(d, entry, abridgeEnc);
+          const sf = computeScaleFactor(d.measureDefaults.scaleAxis, bl, yv);
+          yearQuadrantValues[d.quadrant] = (yearQuadrantValues[d.quadrant] || 0) + Math.round(realized * sf);
+        }
+      }
+      yearProviders += addedSettings.reduce((sum, a) => sum + a.providers, 0);
+      yearEncounters += addedSettings.reduce((sum, a) => sum + a.encounters, 0);
+
+      const capacityValue = yearQuadrantValues['Capacity'] || 0;
+      const workforceValue = yearQuadrantValues['Workforce'] || 0;
+      const revenueValue = yearQuadrantValues['Revenue'] || 0;
+      const qualityValue = yearQuadrantValues['Quality'] || 0;
+      const totalValue = capacityValue + workforceValue + revenueValue + qualityValue + addedSettingsTotal;
+
+      return { providers: yearProviders, encounters: yearEncounters, capacityValue, workforceValue, revenueValue, qualityValue, totalValue };
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [forecastYears, activeSettings, state.trackedDrivers, state.settingForecasts, state.settingForecastYears, state.settingData, state.deployment, addedSettings, addedSettingsTotal]);
 
   const pricingTimeSeries = useMemo(() => {
-    if (pricingScenarios.length === 0 || combinedTotal === 0) {
+    if (pricingScenarios.length === 0 || pricingYearlyInputs.length === 0 || combinedTotal === 0) {
       return { points: [] as PricingTimeSeriesPoint[], tierCrossings: [] };
     }
-    return computePricingTimeSeries(
-      pricingScenarios,
-      combinedProviders,
-      combinedEncounters,
-      state.forecastScenario?.annualProviderGrowthPct ?? 0,
-      state.forecastScenario?.chartYears ?? 3,
-      combinedTotal,
-      quadrantRatios,
-    );
-  }, [pricingScenarios, combinedProviders, combinedEncounters, combinedTotal, quadrantRatios, state.forecastScenario?.annualProviderGrowthPct, state.forecastScenario?.chartYears]);
-
-  const finalPoint = pricingTimeSeries.points[pricingTimeSeries.points.length - 1];
-  const finalYearProviders  = finalPoint?.providers  ?? combinedProviders;
-  const finalYearEncounters = finalPoint?.encounters ?? combinedEncounters;
-  const finalYearValue      = finalPoint?.totalValue ?? combinedTotal;
-
-  const updateGrowthPct = (v: number) => updateForecastScenario({ annualProviderGrowthPct: Math.max(0, Math.min(100, v)) });
-  const updateChartYears = (v: 3 | 5 | 10) => updateForecastScenario({ chartYears: v });
-  const growthPct = state.forecastScenario?.annualProviderGrowthPct ?? 0;
-  const chartYears = (state.forecastScenario?.chartYears ?? 3) as 3 | 5 | 10;
+    return computePricingTimeSeries(pricingScenarios, pricingYearlyInputs);
+  }, [pricingScenarios, pricingYearlyInputs, combinedTotal]);
 
   const isSettingChanged = (settingKey: string) => {
     const bl = getSettingBaseline(settingKey);
@@ -274,54 +339,87 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
     label: string,
     field: keyof SettingForecastValues,
     baseValue: number,
-    projValue: number,
     settingKey: string,
     suffix: string = '',
     presets: number[] = []
   ) => {
-    const ratio = baseValue > 0 ? projValue / baseValue : 1;
-    const ratioLabel = baseValue > 0 ? `${ratio >= 1 ? '+' : ''}${Math.round((ratio - 1) * 100)}%` : '—';
-    const ratioColor = ratio > 1 ? 'text-[#EA2C00]' : 'text-[#888888]';
+    if (forecastYears === 1) {
+      const projValue = getSettingProjected(settingKey)[field] as number;
+      const ratio = baseValue > 0 ? projValue / baseValue : 1;
+      const ratioLabel = baseValue > 0 ? `${ratio >= 1 ? '+' : ''}${Math.round((ratio - 1) * 100)}%` : '—';
+      const ratioColor = ratio > 1 ? 'text-[#EA2C00]' : 'text-[#888888]';
+      return (
+        <div className="bg-white rounded-lg p-4 border border-[#E5E5E5]" data-testid={`axis-control-${settingKey}-${field}`} key={`${settingKey}-${field}`}>
+          <div className="flex items-center justify-between mb-3">
+            <label className="text-sm font-semibold text-black">{label}</label>
+            <span className={`text-xs font-medium ${ratioColor}`}>{ratioLabel}</span>
+          </div>
+          <div className="flex items-center gap-3 mb-3">
+            <div className="flex-1">
+              <p className="text-xs text-[#888888] mb-1">Baseline</p>
+              <p className="text-base font-medium text-[#666666]">{formatNumber(baseValue)}{suffix}</p>
+            </div>
+            <ArrowRight className="w-4 h-4 text-[#888888]" />
+            <div className="flex-1">
+              <p className="text-xs text-[#888888] mb-1">Projected</p>
+              <FormattedNumberInput
+                value={projValue}
+                onChange={(v: number) => updateSettingProjected(settingKey, { [field]: v })}
+                className="h-9 bg-white text-base"
+                data-testid={`input-projected-${settingKey}-${field}`}
+              />
+            </div>
+          </div>
+          {presets.length > 0 && baseValue > 0 && (
+            <div className="flex gap-1.5 mt-2">
+              {presets.map(mult => (
+                <button
+                  key={mult}
+                  onClick={() => updateSettingProjected(settingKey, { [field]: Math.round(baseValue * mult) })}
+                  className={`flex-1 px-2 py-1 rounded text-xs font-medium transition-all ${
+                    Math.abs(projValue - baseValue * mult) < 0.5
+                      ? 'bg-[#EA2C00] text-white'
+                      : 'bg-[#F5F0EB] text-[#666666] hover:bg-[#EBE6E1]'
+                  }`}
+                  data-testid={`button-preset-${settingKey}-${field}-${mult}x`}
+                >
+                  {mult === 1 ? 'Current' : `${mult}×`}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // Multi-year layout
+    const YEAR_COLS = Array.from({ length: forecastYears }, (_, i) => i + 1);
     return (
-      <div className="bg-white rounded-lg p-4 border border-[#E5E5E5]" data-testid={`axis-control-${settingKey}-${field}`} key={`${settingKey}-${field}`}>
-        <div className="flex items-center justify-between mb-3">
-          <label className="text-sm font-semibold text-black">{label}</label>
-          <span className={`text-xs font-medium ${ratioColor}`}>{ratioLabel}</span>
+      <div className="bg-white rounded-lg p-4 border border-[#E5E5E5]" data-testid={`axis-control-${settingKey}-${field}`} key={`${settingKey}-${field}-multi`}>
+        <label className="text-sm font-semibold text-black block mb-3">{label}</label>
+        <div className="overflow-x-auto">
+          <div className="flex gap-3 min-w-0">
+            <div className="flex-shrink-0 w-20">
+              <p className="text-xs text-[#888888] mb-1">Baseline</p>
+              <p className="text-sm font-medium text-[#666666]">{formatNumber(baseValue)}{suffix}</p>
+            </div>
+            {YEAR_COLS.map(yearIdx => {
+              const yv = getSettingYearValues(settingKey, yearIdx);
+              const val = yv[field] as number;
+              return (
+                <div key={yearIdx} className="flex-1 min-w-[72px]">
+                  <p className="text-xs text-[#888888] mb-1">Yr {yearIdx}</p>
+                  <FormattedNumberInput
+                    value={val}
+                    onChange={(v: number) => updateSettingYear(settingKey, yearIdx, { [field]: v })}
+                    className="h-8 bg-white text-sm"
+                    data-testid={`input-yr${yearIdx}-${settingKey}-${field}`}
+                  />
+                </div>
+              );
+            })}
+          </div>
         </div>
-        <div className="flex items-center gap-3 mb-3">
-          <div className="flex-1">
-            <p className="text-xs text-[#888888] mb-1">Baseline</p>
-            <p className="text-base font-medium text-[#666666]">{formatNumber(baseValue)}{suffix}</p>
-          </div>
-          <ArrowRight className="w-4 h-4 text-[#888888]" />
-          <div className="flex-1">
-            <p className="text-xs text-[#888888] mb-1">Projected</p>
-            <FormattedNumberInput
-              value={projValue}
-              onChange={(v: number) => updateSettingProjected(settingKey, { [field]: v })}
-              className="h-9 bg-white text-base"
-              data-testid={`input-projected-${settingKey}-${field}`}
-            />
-          </div>
-        </div>
-        {presets.length > 0 && baseValue > 0 && (
-          <div className="flex gap-1.5 mt-2">
-            {presets.map(mult => (
-              <button
-                key={mult}
-                onClick={() => updateSettingProjected(settingKey, { [field]: Math.round(baseValue * mult) })}
-                className={`flex-1 px-2 py-1 rounded text-xs font-medium transition-all ${
-                  Math.abs(projValue - baseValue * mult) < 0.5
-                    ? 'bg-[#EA2C00] text-white'
-                    : 'bg-[#F5F0EB] text-[#666666] hover:bg-[#EBE6E1]'
-                }`}
-                data-testid={`button-preset-${settingKey}-${field}-${mult}x`}
-              >
-                {mult === 1 ? 'Current' : `${mult}×`}
-              </button>
-            ))}
-          </div>
-        )}
       </div>
     );
   };
@@ -329,7 +427,6 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
   const renderSettingControls = (settingKey: string) => {
     const isNursing = settingKey === 'nursing';
     const bl = getSettingBaseline(settingKey);
-    const proj = getSettingProjected(settingKey);
     const changed = isSettingChanged(settingKey);
     return (
       <div key={settingKey} className="mb-4">
@@ -353,13 +450,13 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
           </div>
         )}
         <div className="space-y-3">
-          {renderAxisControl(isNursing ? 'Nurse FTEs' : 'Provider Count', 'providers', bl.providers, proj.providers, settingKey, '', [1, 1.5, 2, 3])}
-          {renderAxisControl('Utilization', 'utilizationPercent', bl.utilizationPercent, proj.utilizationPercent, settingKey, '%', [1, 1.2, 1.5])}
-          {!isNursing && renderAxisControl('Annual Encounters', 'encounters', bl.encounters, proj.encounters, settingKey, '', [1, 1.5, 2, 3])}
+          {renderAxisControl(isNursing ? 'Nurse FTEs' : 'Provider Count', 'providers', bl.providers, settingKey, '', [1, 1.5, 2, 3])}
+          {renderAxisControl('Utilization', 'utilizationPercent', bl.utilizationPercent, settingKey, '%', [1, 1.2, 1.5])}
+          {!isNursing && renderAxisControl('Annual Encounters', 'encounters', bl.encounters, settingKey, '', [1, 1.5, 2, 3])}
           {isNursing && (
             <>
-              {renderAxisControl('Staffed Beds', 'staffedBeds', bl.staffedBeds, proj.staffedBeds, settingKey, '', [1, 1.5, 2])}
-              {renderAxisControl('Occupancy', 'occupancyPercent', bl.occupancyPercent, proj.occupancyPercent, settingKey, '%', [1, 1.2])}
+              {renderAxisControl('Staffed Beds', 'staffedBeds', bl.staffedBeds, settingKey, '', [1, 1.5, 2])}
+              {renderAxisControl('Occupancy', 'occupancyPercent', bl.occupancyPercent, settingKey, '%', [1, 1.2])}
             </>
           )}
         </div>
@@ -418,6 +515,24 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
                     <RotateCcw className="w-3 h-3" /> Reset to baseline
                   </button>
                 )}
+              </div>
+              {/* Forecast horizon selector */}
+              <div className="flex items-center gap-2 mb-3">
+                <label className="text-xs text-[#8C7E6E] whitespace-nowrap">Forecast</label>
+                <div className="flex items-center gap-0.5 bg-[#F5F0EB] rounded-full p-0.5">
+                  {([1, 2, 3, 5] as const).map(yr => (
+                    <button
+                      key={yr}
+                      onClick={() => handleForecastYearsChange(yr)}
+                      className={`px-2.5 py-0.5 rounded-full text-xs font-medium transition-colors ${
+                        forecastYears === yr ? 'bg-white text-neutral-900 shadow-sm' : 'text-[#8C7E6E] hover:text-neutral-900'
+                      }`}
+                      data-testid={`pill-forecast-years-${yr}`}
+                    >
+                      {yr}yr
+                    </button>
+                  ))}
+                </div>
               </div>
               {activeSettings.map(settingKey => renderSettingControls(settingKey))}
             </motion.div>
@@ -539,43 +654,6 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
 
               {pricingScenarios.length > 0 && (
                 <>
-                  {/* Growth config row */}
-                  <div className="flex items-center gap-6 mb-4 flex-wrap">
-                    <div className="flex items-center gap-2">
-                      <label className="text-xs text-[#8C7E6E] whitespace-nowrap">Annual provider growth</label>
-                      <div className="flex items-center gap-1">
-                        <input
-                          type="number"
-                          min={0}
-                          max={100}
-                          step={1}
-                          value={growthPct}
-                          onChange={e => updateGrowthPct(Number(e.target.value))}
-                          className="w-12 text-center text-sm font-medium border border-[#E5E5E5] rounded-lg px-1 py-0.5 focus:outline-none focus:border-[#EA2C00]"
-                          data-testid="input-annual-growth-pct"
-                        />
-                        <span className="text-xs text-[#8C7E6E]">%</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <label className="text-xs text-[#8C7E6E]">Model</label>
-                      <div className="flex items-center gap-0.5 bg-[#F5F0EB] rounded-full p-0.5">
-                        {([3, 5, 10] as const).map(yr => (
-                          <button
-                            key={yr}
-                            onClick={() => updateChartYears(yr)}
-                            className={`px-2.5 py-0.5 rounded-full text-xs font-medium transition-colors ${
-                              chartYears === yr ? 'bg-white text-neutral-900 shadow-sm' : 'text-[#8C7E6E] hover:text-neutral-900'
-                            }`}
-                            data-testid={`pill-chart-years-${yr}`}
-                          >
-                            {yr}yr
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
                   {/* Chart */}
                   <div className="bg-white rounded-xl border border-[#E5E5E5] p-4 mb-4">
                     <PricingComparisonChart
@@ -591,9 +669,9 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
                       <PricingScenarioCard
                         key={scenario.id}
                         scenario={scenario}
-                        displayProviders={finalYearProviders}
-                        displayEncounters={finalYearEncounters}
-                        displayValue={finalYearValue}
+                        displayProviders={combinedProviders}
+                        displayEncounters={combinedEncounters}
+                        displayValue={combinedTotal}
                         isBestValue={bestValueScenarioId === scenario.id}
                         onUpdate={(updates) => updatePricingScenario(scenario.id, updates)}
                         onRemove={() => removePricingScenario(scenario.id)}

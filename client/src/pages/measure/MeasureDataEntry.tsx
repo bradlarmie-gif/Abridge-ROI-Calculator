@@ -698,6 +698,7 @@ export default function MeasureDataEntry({
             className="h-10 bg-white border-[#E5E5E5] text-right"
             data-testid="input-annual-contract-value"
           />
+          <p className="text-xs text-[#AAAAAA] mt-1.5">If pricing scenarios are configured in Forecast, contract value will be derived automatically.</p>
         </motion.div>
 
         <motion.div
