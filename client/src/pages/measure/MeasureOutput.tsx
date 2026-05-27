@@ -402,7 +402,7 @@ function SignalDriverRow({
             <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full tabular-nums ${
               improved ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'
             }`}>
-              {improved ? '↑' : '↓'}
+              {drv.withAbridge < drv.withoutAbridge ? '↓' : '↑'}
               {' '}{drv.withoutAbridge.toLocaleString()} → {drv.withAbridge.toLocaleString()} {drv.deltaUnit}
             </span>
           )}
@@ -561,7 +561,7 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
       <UnifiedHeader
         pathType="measure"
         currentStep={6}
-        totalSteps={6}
+        totalSteps={7}
         stepName="Evidence Summary"
         onBack={onBack}
         onHome={onHome}
@@ -588,7 +588,7 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
               onClick={onBack}
               className="h-12 px-8 bg-[#EA2C00] hover:bg-[#EA2C00]/90 text-white font-semibold rounded-full"
             >
-              <ArrowLeft className="w-4 h-4 mr-2" /> Back to Quality
+              <ArrowLeft className="w-4 h-4 mr-2" /> Go back
             </Button>
           </motion.div>
         ) : (

@@ -249,10 +249,17 @@ export default function MeasureDriverCard({ driver, entry, onUpdate, onRemove, i
             )}
             {isQuantifiable && !entry.expanded && delta !== 0 && md && !driver.isCustom && (() => {
               if (isPerEnc && abridgeEncounters) {
-                const totalMin = Math.round(Math.abs(delta) * abridgeEncounters);
-                const label = totalMin >= 120
-                  ? `${Math.round(totalMin / 60).toLocaleString()} hrs`
-                  : `${totalMin.toLocaleString()} min`;
+                const total = Math.round(Math.abs(delta) * abridgeEncounters);
+                const isTimeUnit = md.deltaUnit.toLowerCase().includes('min');
+                let label: string;
+                if (isTimeUnit) {
+                  label = total >= 120
+                    ? `${Math.round(total / 60).toLocaleString()} hrs`
+                    : `${total.toLocaleString()} min`;
+                } else {
+                  const aggUnit = md.deltaUnit.replace(/\/enc(ounter)?/i, '').trim();
+                  label = `${total.toLocaleString()} ${aggUnit}`;
+                }
                 return (
                   <span className="text-xs text-[#AAAAAA] tabular-nums hidden sm:inline">
                     {label}

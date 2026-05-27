@@ -6,7 +6,7 @@ import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import MeasureDriverCard from "@/components/measure/MeasureDriverCard";
 import AddMeasureDriverPicker from "@/components/measure/AddMeasureDriverPicker";
 import { getActiveDrivers, type ExploreDriver, type ExploreSetting, type CustomDriverDef } from "@/lib/exploreDrivers";
-import { getRealizedValueForEntry, type MeasureState, type MeasureDriverEntry, type MeasureCareSetting } from "@/lib/measureCalculator";
+import { getRealizedValueForEntry, getEffectiveWithWithout, type MeasureState, type MeasureDriverEntry, type MeasureCareSetting } from "@/lib/measureCalculator";
 
 interface MeasureQualityProps {
   state: MeasureState;
@@ -93,12 +93,23 @@ export default function MeasureQuality({ state, updateState, onNext, onBack, onH
   };
 
   const quadrantTotal = useMemo(() => {
-    return trackedHere.reduce((sum, { driver, entry }) => {
-      const isQuantifiable = driver.visibility === 'quantified' && Boolean(driver.measureDefaults);
-      const entryWithLib = { ...entry, lowerIsBetter: driver.measureDefaults?.lowerIsBetter ?? entry.lowerIsBetter };
-      return sum + getRealizedValueForEntry(entryWithLib, isQuantifiable);
+    return trackedBySetting.reduce((sum, { setting: settingKey, financialDrivers: settingFD, watchMetrics: settingWM }) => {
+      const sd = (state.settingData?.[settingKey as MeasureCareSetting] || {}) as Record<string, number>;
+      const abridgeEnc: number = (sd.deploy_abridgeEncounters as number) || state.deployment?.abridgeEncounters || 0;
+      return sum + [...settingFD, ...settingWM].reduce((s, { driver, entry }) => {
+        const isQuantifiable = driver.visibility === 'quantified' && Boolean(driver.measureDefaults);
+        const md = driver.measureDefaults;
+        if (md?.isPerEncounterRate && abridgeEnc > 0 && isQuantifiable) {
+          const { withAbridge, withoutAbridge } = getEffectiveWithWithout(entry);
+          const delta = (md.lowerIsBetter ?? false) ? withoutAbridge - withAbridge : withAbridge - withoutAbridge;
+          return s + Math.round(delta * entry.valuePerUnit * abridgeEnc * (entry.attributionPercent / 100));
+        }
+        const entryWithLib = { ...entry, lowerIsBetter: md?.lowerIsBetter ?? entry.lowerIsBetter };
+        return s + getRealizedValueForEntry(entryWithLib, isQuantifiable);
+      }, 0);
     }, 0);
-  }, [trackedHere]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [trackedBySetting, state.settingData, state.deployment]);
 
   const isMultiSetting = activeSettings.length > 1;
 
@@ -132,7 +143,7 @@ export default function MeasureQuality({ state, updateState, onNext, onBack, onH
       <UnifiedHeader
         pathType="measure"
         currentStep={5}
-        totalSteps={6}
+        totalSteps={7}
         stepName="Quality"
         onBack={onBack}
         onHome={onHome}

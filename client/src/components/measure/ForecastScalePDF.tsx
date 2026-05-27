@@ -939,8 +939,8 @@ function SensitivityPage({ data }: { data: ForecastScalePDFData }) {
 
         <View style={[styles.rule, { marginTop: 10 }]} />
 
-        {/* Domain composition of base case */}
-        <Text style={styles.subHead}>Base Case Composition</Text>
+        {/* Domain composition of projected value */}
+        <Text style={styles.subHead}>Domain Value Composition</Text>
         <View
           style={{
             flexDirection: "row",

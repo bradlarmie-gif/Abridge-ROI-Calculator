@@ -146,24 +146,17 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
     return getSettingYearValues(settingKey, forecastYears);
   };
 
-  const handleForecastYearsChange = (newYears: 1 | 2 | 3 | 5) => {
+  const handleForecastYearsChange = (newYears: 1 | 2 | 3) => {
     if (newYears === forecastYears) return;
     const newSFY: Record<string, SettingForecastValues[]> = { ...(state.settingForecastYears || {}) };
     for (const settingKey of activeSettings) {
       const yr1 = getSettingProjected(settingKey);
       const arr: SettingForecastValues[] = [...(newSFY[settingKey] || [])];
-      // Ensure index 0 (Year 1) is always set
       if (!arr[0]) arr[0] = yr1;
-      // Initialize missing year slots with linear extrapolation from year 1 values
+      // Default new year slots to Year 1 values — reps edit from there
       for (let y = 2; y <= newYears; y++) {
         if (!arr[y - 1]) {
-          arr[y - 1] = {
-            providers: Math.round(yr1.providers * y),
-            utilizationPercent: Math.min(100, yr1.utilizationPercent),
-            encounters: Math.round(yr1.encounters * y),
-            staffedBeds: yr1.staffedBeds,
-            occupancyPercent: Math.min(100, yr1.occupancyPercent),
-          };
+          arr[y - 1] = { ...yr1 };
         }
       }
       newSFY[settingKey] = arr;
@@ -556,7 +549,7 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
               <div className="flex items-center gap-2 mb-3">
                 <label className="text-xs text-[#8C7E6E] whitespace-nowrap">Forecast</label>
                 <div className="flex items-center gap-0.5 bg-[#F5F0EB] rounded-full p-0.5">
-                  {([1, 2, 3, 5] as const).map(yr => (
+                  {([1, 2, 3] as const).map(yr => (
                     <button
                       key={yr}
                       onClick={() => handleForecastYearsChange(yr)}
@@ -786,7 +779,7 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
           >
             <div className="bg-[#1A1A1A] rounded-xl p-6 lg:sticky lg:top-24">
               <p className="text-xs font-medium text-white uppercase tracking-[1.5px] mb-1">Combined Annual Value</p>
-              <p className="text-sm text-white/50 mb-5">Realized + projected + expansion</p>
+              <p className="text-sm text-white/50 mb-5">Realized + projected + expansion · 100% adoption</p>
 
               <div className="space-y-3 mb-5">
                 <div className="flex items-center justify-between">

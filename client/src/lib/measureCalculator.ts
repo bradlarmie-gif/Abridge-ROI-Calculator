@@ -29,7 +29,7 @@ export interface ForecastScenario {
   occupancyPercent: number;
   addedSettings: ForecastAddedSetting[];
   pricingScenarios: PricingScenario[];
-  forecastYears?: 1 | 2 | 3 | 5;
+  forecastYears?: 1 | 2 | 3;
 }
 
 export interface SettingForecastValues {
