@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { EXPLORE_DRIVERS, type ExploreDriver, type ExploreSetting, type ExploreQuadrant, type DriverScaleAxis } from "@/lib/exploreDrivers";
-import { type MeasureState, type MeasureDriverEntry, type ForecastScenario, type ForecastAddedSetting, type MeasureCareSetting } from "@/lib/measureCalculator";
+import { type MeasureState, type MeasureDriverEntry, type ForecastScenario, type ForecastAddedSetting, type MeasureCareSetting, type SettingForecastValues } from "@/lib/measureCalculator";
 import { SETTING_LABELS, computeAddedSettingValue } from "@/lib/forecastDefaults";
 import { computeScenarioInvestment, computePricingTimeSeries, makeDefaultTiers, type PricingScenario, type PricingTimeSeriesPoint } from "@/lib/forecastPricing";
 import AddCareSettingModal from "@/components/measure/AddCareSettingModal";
@@ -21,13 +21,6 @@ interface MeasureForecastProps {
   onHome: () => void;
 }
 
-type SettingForecastValues = {
-  providers: number;
-  utilizationPercent: number;
-  encounters: number;
-  staffedBeds: number;
-  occupancyPercent: number;
-};
 
 const QUADRANT_ORDER: ExploreQuadrant[] = ['Capacity', 'Workforce', 'Revenue', 'Quality'];
 const SETTING_BADGE: Record<string, string> = { outpatient: 'OP', ed: 'ED', inpatient: 'IP', nursing: 'Nsg' };

@@ -29,8 +29,15 @@ export interface ForecastScenario {
   occupancyPercent: number;
   addedSettings: ForecastAddedSetting[];
   pricingScenarios: PricingScenario[];
-  annualProviderGrowthPct?: number;  // default 0 = flat growth
-  chartYears?: number;               // default 3; options: 3, 5, 10
+  forecastYears?: 1 | 2 | 3 | 5;
+}
+
+export interface SettingForecastValues {
+  providers: number;
+  utilizationPercent: number;
+  encounters: number;
+  staffedBeds: number;
+  occupancyPercent: number;
 }
 
 export interface MeasureDeployment {
@@ -209,13 +216,8 @@ export interface MeasureState {
   censusConstrained?: boolean;
   trackedDrivers: Record<string, Record<string, MeasureDriverEntry>>;
   forecastScenario: ForecastScenario;
-  settingForecasts?: Record<string, {
-    providers: number;
-    utilizationPercent: number;
-    encounters: number;
-    staffedBeds: number;
-    occupancyPercent: number;
-  }>;
+  settingForecasts?: Record<string, SettingForecastValues>;
+  settingForecastYears?: Record<string, SettingForecastValues[]>;
   maturityPhase: MaturityStage | null;
   quotes?: MeasureQuote[];
 }
@@ -385,6 +387,7 @@ export const DEFAULT_MEASURE_STATE: MeasureState = {
     addedSettings: [],
     pricingScenarios: [],
   },
+  settingForecastYears: {},
   maturityPhase: null,
   quotes: [],
 };
