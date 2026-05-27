@@ -450,42 +450,42 @@ export default function MeasureDriverCard({ driver, entry, onUpdate, onRemove, i
                           data-testid={`textarea-notes-${driver.id}`}
                         />
                       </div>
-
-                      {/* Source + timestamp */}
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <label className="text-[11px] font-semibold text-[#888888] uppercase tracking-wide mb-1.5 block">
-                            Data Source
-                          </label>
-                          <select
-                            value={entry.entryDataSource ?? ''}
-                            onChange={(e) => onUpdate({ entryDataSource: (e.target.value as EntryDataSource) || undefined })}
-                            className="w-full h-9 bg-[#FAFAF8] border border-[#E5E5E5] rounded-xl px-3 text-sm text-[#444] focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none"
-                            data-testid={`select-source-${driver.id}`}
-                          >
-                            <option value="">Not specified</option>
-                            <option value="ehr">EHR</option>
-                            <option value="survey">Survey</option>
-                            <option value="admin_data">Admin data</option>
-                            <option value="chart_review">Chart review</option>
-                            <option value="manual_entry">Manual entry</option>
-                          </select>
-                        </div>
-                        <div>
-                          <label className="text-[11px] font-semibold text-[#888888] uppercase tracking-wide mb-1.5 block">
-                            Measured On
-                          </label>
-                          <input
-                            type="date"
-                            value={entry.measuredAt ?? ''}
-                            onChange={(e) => onUpdate({ measuredAt: e.target.value || undefined })}
-                            className="w-full h-9 bg-[#FAFAF8] border border-[#E5E5E5] rounded-xl px-3 text-sm text-[#444] focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none"
-                            data-testid={`input-measured-at-${driver.id}`}
-                          />
-                        </div>
-                      </div>
                     </>
                   )}
+
+                  {/* Source + timestamp — shown for ALL financial drivers */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-[11px] font-semibold text-[#888888] uppercase tracking-wide mb-1.5 block">
+                        Data Source
+                      </label>
+                      <select
+                        value={entry.entryDataSource ?? ''}
+                        onChange={(e) => onUpdate({ entryDataSource: (e.target.value as EntryDataSource) || undefined })}
+                        className="w-full h-9 bg-[#FAFAF8] border border-[#E5E5E5] rounded-xl px-3 text-sm text-[#444] focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none"
+                        data-testid={`select-source-${driver.id}`}
+                      >
+                        <option value="">Not specified</option>
+                        <option value="ehr">EHR</option>
+                        <option value="survey">Survey</option>
+                        <option value="admin_data">Admin data</option>
+                        <option value="chart_review">Chart review</option>
+                        <option value="manual_entry">Manual entry</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-[11px] font-semibold text-[#888888] uppercase tracking-wide mb-1.5 block">
+                        Measured On
+                      </label>
+                      <input
+                        type="date"
+                        value={entry.measuredAt ?? ''}
+                        onChange={(e) => onUpdate({ measuredAt: e.target.value || undefined })}
+                        className="w-full h-9 bg-[#FAFAF8] border border-[#E5E5E5] rounded-xl px-3 text-sm text-[#444] focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none"
+                        data-testid={`input-measured-at-${driver.id}`}
+                      />
+                    </div>
+                  </div>
                 </>
               ) : (
                 /* Signal / qualitative driver */
