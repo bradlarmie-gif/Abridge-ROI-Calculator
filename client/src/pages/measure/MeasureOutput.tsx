@@ -326,7 +326,7 @@ function FinancialDriverCard({
         </div>
       )}
 
-      {/* Bottom: attribution + sparkline */}
+      {/* Bottom: attribution + sparkline + timestamp */}
       <div className="flex items-center justify-between px-5 pb-4 gap-3">
         <div className="flex items-center gap-2 flex-wrap">
           <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-[#F0EBE4] text-[10px] font-medium text-[#8C7E6E]">
@@ -349,12 +349,12 @@ function FinancialDriverCard({
         {sparkValues && sparkValues.length >= 2 && (
           <Sparkline values={sparkValues} lowerIsBetter={lowerIsBetter} id={drv.id} />
         )}
+        {drv.measuredAt && (
+          <p className="text-[10px] text-[#AAAAAA] mt-1 w-full">
+            Measured {new Date(drv.measuredAt + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+          </p>
+        )}
       </div>
-      {drv.measuredAt && (
-        <p className="text-[10px] text-[#AAAAAA] mt-1 px-5 pb-4">
-          Measured {new Date(drv.measuredAt + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-        </p>
-      )}
 
       {/* Notes */}
       {drv.notes && (
