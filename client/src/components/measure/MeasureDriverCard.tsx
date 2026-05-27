@@ -3,7 +3,7 @@ import { Plus, Trash2, ChevronDown, Info } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { EXPLORE_DRIVERS, type ExploreDriver } from "@/lib/exploreDrivers";
-import { getRealizedValueForEntry, getEffectiveWithWithout, type MeasureDriverEntry } from "@/lib/measureCalculator";
+import { getRealizedValueForEntry, getEffectiveWithWithout, type MeasureDriverEntry, type EntryDataSource } from "@/lib/measureCalculator";
 import MeasureTrendChart from "./MeasureTrendChart";
 import EmDistributionInput from "./EmDistributionInput";
 
@@ -450,6 +450,40 @@ export default function MeasureDriverCard({ driver, entry, onUpdate, onRemove, i
                           data-testid={`textarea-notes-${driver.id}`}
                         />
                       </div>
+
+                      {/* Source + timestamp */}
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="text-[11px] font-semibold text-[#888888] uppercase tracking-wide mb-1.5 block">
+                            Data Source
+                          </label>
+                          <select
+                            value={entry.entryDataSource ?? ''}
+                            onChange={(e) => onUpdate({ entryDataSource: (e.target.value as EntryDataSource) || undefined })}
+                            className="w-full h-9 bg-[#FAFAF8] border border-[#E5E5E5] rounded-xl px-3 text-sm text-[#444] focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none"
+                            data-testid={`select-source-${driver.id}`}
+                          >
+                            <option value="">Not specified</option>
+                            <option value="ehr">EHR</option>
+                            <option value="survey">Survey</option>
+                            <option value="admin_data">Admin data</option>
+                            <option value="chart_review">Chart review</option>
+                            <option value="manual_entry">Manual entry</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="text-[11px] font-semibold text-[#888888] uppercase tracking-wide mb-1.5 block">
+                            Measured On
+                          </label>
+                          <input
+                            type="date"
+                            value={entry.measuredAt ?? ''}
+                            onChange={(e) => onUpdate({ measuredAt: e.target.value || undefined })}
+                            className="w-full h-9 bg-[#FAFAF8] border border-[#E5E5E5] rounded-xl px-3 text-sm text-[#444] focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none"
+                            data-testid={`input-measured-at-${driver.id}`}
+                          />
+                        </div>
+                      </div>
                     </>
                   )}
                 </>
@@ -508,6 +542,40 @@ export default function MeasureDriverCard({ driver, entry, onUpdate, onRemove, i
                       className="w-full h-20 bg-[#FAFAF8] border border-[#E5E5E5] rounded-xl p-3 text-sm focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none resize-none"
                       data-testid={`textarea-notes-${driver.id}`}
                     />
+                  </div>
+
+                  {/* Source + timestamp */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-[11px] font-semibold text-[#888888] uppercase tracking-wide mb-1.5 block">
+                        Data Source
+                      </label>
+                      <select
+                        value={entry.entryDataSource ?? ''}
+                        onChange={(e) => onUpdate({ entryDataSource: (e.target.value as EntryDataSource) || undefined })}
+                        className="w-full h-9 bg-[#FAFAF8] border border-[#E5E5E5] rounded-xl px-3 text-sm text-[#444] focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none"
+                        data-testid={`select-source-${driver.id}`}
+                      >
+                        <option value="">Not specified</option>
+                        <option value="ehr">EHR</option>
+                        <option value="survey">Survey</option>
+                        <option value="admin_data">Admin data</option>
+                        <option value="chart_review">Chart review</option>
+                        <option value="manual_entry">Manual entry</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-[11px] font-semibold text-[#888888] uppercase tracking-wide mb-1.5 block">
+                        Measured On
+                      </label>
+                      <input
+                        type="date"
+                        value={entry.measuredAt ?? ''}
+                        onChange={(e) => onUpdate({ measuredAt: e.target.value || undefined })}
+                        className="w-full h-9 bg-[#FAFAF8] border border-[#E5E5E5] rounded-xl px-3 text-sm text-[#444] focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none"
+                        data-testid={`input-measured-at-${driver.id}`}
+                      />
+                    </div>
                   </div>
 
                   <div className="flex items-center gap-2 text-[11px] text-[#AAAAAA]">
