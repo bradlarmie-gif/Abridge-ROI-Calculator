@@ -10,9 +10,8 @@ import {
 } from "@/lib/exploreDrivers";
 import { SETTING_LABELS } from "@/lib/forecastDefaults";
 import {
-  type MeasurePDFData,
   type MeasurePDFDriver,
-  type MeasurePDFQuadrantSection,
+  buildMeasurePDFDataFromState,
 } from "@/components/measure/MeasurePDFExport";
 import { generateMeasureNarrativePDF } from "@/components/measure/MeasureNarrativePDF";
 import { type MeasureState, type MeasureDriverEntry } from "@/lib/measureCalculator";
@@ -292,7 +291,7 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
 
   const dep = state.deployment as any;
 
-  const quadrants: MeasurePDFQuadrantSection[] = useMemo(() => {
+  const quadrants = useMemo(() => {
     return QUADRANT_ORDER.map((q) => {
       const drivers: MeasurePDFDriver[] = [];
       for (const setting of activeSettings) {
@@ -333,7 +332,7 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
 
   const totalRealized = quadrants.reduce((sum, q) => sum + q.realizedTotal, 0);
   const driversTrackedCount = quadrants.reduce((sum, q) => sum + q.drivers.length, 0);
-  const financialDriverCount = quadrants.reduce((sum, q) => sum + q.drivers.filter(d => d.visibility === 'quantified').length, 0);
+  const financialDriverCount = quadrants.reduce((sum, q) => sum + q.drivers.filter((d: MeasurePDFDriver) => d.visibility === 'quantified').length, 0);
   const signalDriverCount = driversTrackedCount - financialDriverCount;
   const activeQuadrantCount = quadrants.filter(q => q.drivers.length > 0).length;
 
@@ -352,36 +351,10 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
     return EXPLORE_DRIVERS.find(d => d.id === drvId)?.measureDefaults?.lowerIsBetter;
   };
 
-  const buildPDFData = (): MeasurePDFData => ({
-    organizationName: dep?.organizationName || undefined,
-    date: new Date().toLocaleDateString(),
-    careSettingLabel,
-    monthsLive: dep?.monthsOnAbridge ?? undefined,
-    careSetting: primarySetting,
-    numberOfProviders: dep?.providers ?? 0,
-    utilizationPercent: dep?.utilizationRate ?? 0,
-    annualEncounters: dep?.totalEncounters ?? 0,
-    staffedBeds: activeSettings.includes("nursing") ? (dep?.staffedBeds ?? 0) : undefined,
-    occupancyPercent: activeSettings.includes("nursing") ? (dep?.occupancyPercent ?? 0) : undefined,
-    totalRealized,
-    totalProjected: totalRealized,
-    addedSettingsTotal: 0,
-    combinedAnnualTotal: totalRealized,
-    driversTrackedCount,
-    quadrants,
-    forecastBaseline: { providers: dep?.providers ?? 0, utilizationPercent: dep?.utilizationRate ?? 0, encounters: dep?.totalEncounters ?? 0, staffedBeds: 0, occupancyPercent: 0 },
-    forecastProjected: state.forecastScenario ?? { providers: 0, utilizationPercent: 0, encounters: 0, staffedBeds: 0, occupancyPercent: 0 },
-    addedSettings: [],
-    pricingScenarios: [],
-    bestPricingScenarioLabel: undefined,
-    bestPricingInvestment: undefined,
-    bestPricingNet: undefined,
-  });
-
   const handleExport = async () => {
     setExporting(true);
     try {
-      await generateMeasureNarrativePDF(buildPDFData());
+      await generateMeasureNarrativePDF(buildMeasurePDFDataFromState(state));
       toast({ title: "Evidence doc generated", description: "PDF download has started." });
     } catch (err) {
       console.error("PDF generation failed", err);
@@ -682,8 +655,8 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
                 quadrants.filter(q => q.drivers.length > 0).map((q, qi) => {
                   const color = QUADRANT_COLORS[q.quadrant];
                   const isExpanded = isSectionExpanded(q.quadrant);
-                  const financialDrivers = q.drivers.filter(d => d.visibility === 'quantified');
-                  const signalDrivers = q.drivers.filter(d => d.visibility === 'qualitative');
+                  const financialDrivers = q.drivers.filter((d: MeasurePDFDriver) => d.visibility === 'quantified');
+                  const signalDrivers = q.drivers.filter((d: MeasurePDFDriver) => d.visibility === 'qualitative');
                   const tagline = QUADRANT_TAGLINES[q.quadrant];
 
                   return (
@@ -740,7 +713,7 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
                                     Financial Impact
                                   </p>
                                   <div className="space-y-3">
-                                    {financialDrivers.map(drv => (
+                                    {financialDrivers.map((drv: MeasurePDFDriver) => (
                                       <FinancialDriverCard
                                         key={drv.id}
                                         drv={drv}
@@ -760,7 +733,7 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
                                     Signal Evidence
                                   </p>
                                   <div className="space-y-2">
-                                    {signalDrivers.map(drv => (
+                                    {signalDrivers.map((drv: MeasurePDFDriver) => (
                                       <SignalDriverRow
                                         key={drv.id}
                                         drv={drv}

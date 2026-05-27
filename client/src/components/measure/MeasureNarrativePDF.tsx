@@ -797,39 +797,111 @@ function PricingPage({ data }: { data: MeasurePDFData }) {
 
 function RoadAheadPage({ data }: { data: MeasurePDFData }) {
   const orgName = data.organizationName || "Your Organization";
-  const isNursing = data.careSetting === "nursing";
   const hasAddedSettings = data.addedSettings.length > 0;
   const uplift = data.totalProjected - data.totalRealized;
 
+  // Multi-setting layout: per-setting forecast tables
+  if (data.isMultiSetting && data.settingBreakdowns && data.settingBreakdowns.length > 0) {
+    return (
+      <Page size="LETTER" style={styles.page}>
+        <View style={styles.pageWrapper}>
+          <SectionLabel>FULL DEPLOYMENT POTENTIAL</SectionLabel>
+          <Text style={styles.sectionHeadline}>The Road Ahead.</Text>
+          <Text style={styles.body}>
+            {`This deployment spans ${data.settingBreakdowns.length} care settings. The projections below apply the unit economics measured today to each setting's full-scale footprint.`}
+          </Text>
+
+          {data.settingBreakdowns.map((sb, i) => {
+            const isNursing = sb.setting === "nursing";
+            const rows = isNursing
+              ? [
+                  { label: "Staffed Beds", baseline: fmtNum(sb.forecastBaseline.staffedBeds), projected: fmtNum(sb.forecastProjected.staffedBeds) },
+                  { label: "Occupancy", baseline: `${sb.forecastBaseline.occupancyPercent}%`, projected: `${sb.forecastProjected.occupancyPercent}%` },
+                ]
+              : [
+                  { label: "Providers", baseline: fmtNum(sb.forecastBaseline.providers), projected: fmtNum(sb.forecastProjected.providers) },
+                  { label: "Utilization", baseline: `${sb.forecastBaseline.utilizationPercent}%`, projected: `${sb.forecastProjected.utilizationPercent}%` },
+                  { label: "Annual Encounters", baseline: fmtNum(sb.forecastBaseline.encounters), projected: fmtNum(sb.forecastProjected.encounters) },
+                ];
+            return (
+              <View key={sb.setting} style={{ marginBottom: i < data.settingBreakdowns!.length - 1 ? 12 : 0 }} wrap={false}>
+                <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primaryText, marginBottom: 6, textTransform: "uppercase", letterSpacing: 1 }}>
+                  {sb.label}
+                </Text>
+                <View style={{ borderRadius: 4, borderWidth: 1, borderColor: colors.separator }}>
+                  <View style={{ flexDirection: "row", backgroundColor: colors.cards, paddingVertical: 6, paddingHorizontal: 10, borderTopLeftRadius: 4, borderTopRightRadius: 4 }}>
+                    <View style={{ flex: 2 }} />
+                    <Text style={{ flex: 1, fontSize: 7.5, fontWeight: "bold", color: colors.secondary, textTransform: "uppercase", letterSpacing: 1, textAlign: "right" }}>Current</Text>
+                    <Text style={{ flex: 1, fontSize: 7.5, fontWeight: "bold", color: colors.primaryText, textTransform: "uppercase", letterSpacing: 1, textAlign: "right" }}>Full Scale</Text>
+                  </View>
+                  {rows.map((row, ri) => (
+                    <View key={row.label} style={{ flexDirection: "row", paddingVertical: 6, paddingHorizontal: 10, borderTopWidth: 1, borderTopColor: colors.separator, backgroundColor: ri % 2 === 0 ? "#FFFFFF" : colors.background }}>
+                      <Text style={{ flex: 2, fontSize: 8.5, color: colors.secondary }}>{row.label}</Text>
+                      <Text style={{ flex: 1, fontSize: 8.5, color: colors.secondary, textAlign: "right" }}>{row.baseline}</Text>
+                      <Text style={{ flex: 1, fontSize: 8.5, fontWeight: "bold", color: colors.primaryText, textAlign: "right" }}>{row.projected}</Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            );
+          })}
+
+          {/* Combined value summary */}
+          <View style={{ marginTop: 14, borderRadius: 4, borderWidth: 1, borderColor: colors.separator }}>
+            <View style={{ flexDirection: "row", alignItems: "center", paddingVertical: 8, paddingHorizontal: 12, backgroundColor: "#FFFFFF", borderTopLeftRadius: 4, borderTopRightRadius: 4 }}>
+              <Text style={{ flex: 2, fontSize: 9, color: colors.secondary }}>Realized Annual Value</Text>
+              <Text style={{ flex: 1, fontSize: 9, color: colors.secondary, textAlign: "right" }}>{fmtCurrency(data.totalRealized)}</Text>
+              <Text style={{ flex: 1, fontSize: 11, fontWeight: "bold", color: colors.primaryText, textAlign: "right" }}>{fmtCurrency(data.totalProjected)}</Text>
+            </View>
+            {uplift > 0 && (
+              <View style={{ flexDirection: "row", alignItems: "center", paddingVertical: 9, paddingHorizontal: 12, backgroundColor: colors.primaryText, borderBottomLeftRadius: 4, borderBottomRightRadius: 4 }}>
+                <Text style={{ flex: 2, fontSize: 9, fontWeight: "bold", color: "#FFFFFF" }}>Combined Uplift</Text>
+                <Text style={{ flex: 1, fontSize: 9, color: "#777777", textAlign: "right" }}>—</Text>
+                <Text style={{ flex: 1, fontSize: 13, fontWeight: "bold", color: colors.primary, textAlign: "right" }}>{`+${fmtCurrency(uplift)}`}</Text>
+              </View>
+            )}
+          </View>
+
+          {hasAddedSettings && (
+            <>
+              <Text style={[styles.subSectionHeader, { marginTop: 12 }]}>Expansion Settings</Text>
+              {data.addedSettings.map((setting, i) => (
+                <View key={i} style={{ backgroundColor: colors.cards, borderRadius: 4, padding: 12, marginBottom: 8, flexDirection: "row", justifyContent: "space-between", alignItems: "center" }} wrap={false}>
+                  <View>
+                    <Text style={{ fontSize: 9.5, fontWeight: "bold", color: colors.primaryText, marginBottom: 3 }}>{setting.settingLabel}</Text>
+                    <Text style={{ fontSize: 8.5, color: colors.secondary }}>
+                      {setting.isNursing
+                        ? `${fmtNum(setting.staffedBeds)} beds · ${setting.occupancyPercent}% occupancy`
+                        : `${fmtNum(setting.providers)} providers · ${setting.utilizationPercent}% utilization`}
+                    </Text>
+                  </View>
+                  <Text style={{ fontSize: 13, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(setting.estimatedValue)}</Text>
+                </View>
+              ))}
+              <View style={{ backgroundColor: colors.primaryText, borderRadius: 4, paddingHorizontal: 14, paddingVertical: 10, flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+                <Text style={{ fontSize: 8, color: "#777777" }}>{`${fmtCurrency(data.totalProjected)} current + ${fmtCurrency(data.addedSettingsTotal)} expansion`}</Text>
+                <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(data.combinedAnnualTotal)}</Text>
+              </View>
+            </>
+          )}
+
+          <PageFooter orgName={orgName} settingLabel={data.careSettingLabel} />
+        </View>
+      </Page>
+    );
+  }
+
+  // Single-setting layout (original)
+  const isNursing = data.careSetting === "nursing";
   const baselineRows = isNursing
     ? [
-        {
-          label: "Staffed Beds",
-          baseline: fmtNum(data.forecastBaseline.staffedBeds),
-          projected: fmtNum(data.forecastProjected.staffedBeds),
-        },
-        {
-          label: "Occupancy Rate",
-          baseline: `${data.forecastBaseline.occupancyPercent}%`,
-          projected: `${data.forecastProjected.occupancyPercent}%`,
-        },
+        { label: "Staffed Beds", baseline: fmtNum(data.forecastBaseline.staffedBeds), projected: fmtNum(data.forecastProjected.staffedBeds) },
+        { label: "Occupancy Rate", baseline: `${data.forecastBaseline.occupancyPercent}%`, projected: `${data.forecastProjected.occupancyPercent}%` },
       ]
     : [
-        {
-          label: "Providers",
-          baseline: fmtNum(data.forecastBaseline.providers),
-          projected: fmtNum(data.forecastProjected.providers),
-        },
-        {
-          label: "Utilization",
-          baseline: `${data.forecastBaseline.utilizationPercent}%`,
-          projected: `${data.forecastProjected.utilizationPercent}%`,
-        },
-        {
-          label: "Annual Encounters",
-          baseline: fmtNum(data.forecastBaseline.encounters),
-          projected: fmtNum(data.forecastProjected.encounters),
-        },
+        { label: "Providers", baseline: fmtNum(data.forecastBaseline.providers), projected: fmtNum(data.forecastProjected.providers) },
+        { label: "Utilization", baseline: `${data.forecastBaseline.utilizationPercent}%`, projected: `${data.forecastProjected.utilizationPercent}%` },
+        { label: "Annual Encounters", baseline: fmtNum(data.forecastBaseline.encounters), projected: fmtNum(data.forecastProjected.encounters) },
       ];
 
   return (
@@ -841,36 +913,19 @@ function RoadAheadPage({ data }: { data: MeasurePDFData }) {
           {`The current deployment covers ${fmtNum(data.numberOfProviders)} providers at ${data.utilizationPercent}% adoption. The full-scale scenario below uses identical unit economics — the same value-per-provider measured today, applied to the complete footprint.`}
         </Text>
 
-        {/* Current vs Projected comparison */}
         <View style={{ marginBottom: 14, borderRadius: 4, borderWidth: 1, borderColor: colors.separator }}>
           <View style={{ flexDirection: "row", backgroundColor: colors.cards, paddingVertical: 8, paddingHorizontal: 12, borderTopLeftRadius: 4, borderTopRightRadius: 4 }}>
             <View style={{ flex: 2 }} />
-            <Text style={{ flex: 1, fontSize: 8, fontWeight: "bold", color: colors.secondary, textTransform: "uppercase", letterSpacing: 1, textAlign: "right" }}>
-              Current
-            </Text>
-            <Text style={{ flex: 1, fontSize: 8, fontWeight: "bold", color: colors.primaryText, textTransform: "uppercase", letterSpacing: 1, textAlign: "right" }}>
-              Full Scale
-            </Text>
+            <Text style={{ flex: 1, fontSize: 8, fontWeight: "bold", color: colors.secondary, textTransform: "uppercase", letterSpacing: 1, textAlign: "right" }}>Current</Text>
+            <Text style={{ flex: 1, fontSize: 8, fontWeight: "bold", color: colors.primaryText, textTransform: "uppercase", letterSpacing: 1, textAlign: "right" }}>Full Scale</Text>
           </View>
           {baselineRows.map((row, i) => (
-            <View
-              key={row.label}
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                paddingVertical: 7,
-                paddingHorizontal: 12,
-                backgroundColor: i % 2 === 0 ? "#FFFFFF" : colors.background,
-                borderTopWidth: 1,
-                borderTopColor: colors.separator,
-              }}
-            >
+            <View key={row.label} style={{ flexDirection: "row", alignItems: "center", paddingVertical: 7, paddingHorizontal: 12, backgroundColor: i % 2 === 0 ? "#FFFFFF" : colors.background, borderTopWidth: 1, borderTopColor: colors.separator }}>
               <Text style={{ flex: 2, fontSize: 9, color: colors.secondary }}>{row.label}</Text>
               <Text style={{ flex: 1, fontSize: 9, color: colors.secondary, textAlign: "right" }}>{row.baseline}</Text>
               <Text style={{ flex: 1, fontSize: 9, fontWeight: "bold", color: colors.primaryText, textAlign: "right" }}>{row.projected}</Text>
             </View>
           ))}
-          {/* Value rows */}
           <View style={{ borderTopWidth: 1, borderTopColor: colors.separatorHeavy }}>
             <View style={{ flexDirection: "row", alignItems: "center", paddingVertical: 8, paddingHorizontal: 12, backgroundColor: "#FFFFFF" }}>
               <Text style={{ flex: 2, fontSize: 9, color: colors.secondary }}>Realized Annual Value</Text>
@@ -887,20 +942,13 @@ function RoadAheadPage({ data }: { data: MeasurePDFData }) {
           </View>
         </View>
 
-        {/* Added settings */}
         {hasAddedSettings && (
           <>
             <Text style={styles.subSectionHeader}>Expansion Settings</Text>
             {data.addedSettings.map((setting, i) => (
-              <View
-                key={i}
-                style={{ backgroundColor: colors.cards, borderRadius: 4, padding: 12, marginBottom: 8, flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}
-                wrap={false}
-              >
+              <View key={i} style={{ backgroundColor: colors.cards, borderRadius: 4, padding: 12, marginBottom: 8, flexDirection: "row", justifyContent: "space-between", alignItems: "center" }} wrap={false}>
                 <View>
-                  <Text style={{ fontSize: 9.5, fontWeight: "bold", color: colors.primaryText, marginBottom: 3 }}>
-                    {setting.settingLabel}
-                  </Text>
+                  <Text style={{ fontSize: 9.5, fontWeight: "bold", color: colors.primaryText, marginBottom: 3 }}>{setting.settingLabel}</Text>
                   <Text style={{ fontSize: 8.5, color: colors.secondary }}>
                     {setting.isNursing
                       ? `${fmtNum(setting.staffedBeds)} beds · ${setting.occupancyPercent}% occupancy`
@@ -912,35 +960,16 @@ function RoadAheadPage({ data }: { data: MeasurePDFData }) {
                     <Text style={{ fontSize: 7.5, color: colors.primary, fontWeight: "bold" }}>{setting.scenarioLabel}</Text>
                   </View>
                   <Text style={{ fontSize: 13, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(setting.estimatedValue)}</Text>
-                  <Text style={{ fontSize: 7, color: colors.tertiary }}>
-                    {`est. annual value${setting.isOverridden ? " (overridden)" : ""}`}
-                  </Text>
+                  <Text style={{ fontSize: 7, color: colors.tertiary }}>{`est. annual value${setting.isOverridden ? " (overridden)" : ""}`}</Text>
                 </View>
               </View>
             ))}
-
-            <View
-              style={{
-                backgroundColor: colors.primaryText,
-                borderRadius: 4,
-                paddingHorizontal: 14,
-                paddingVertical: 10,
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
+            <View style={{ backgroundColor: colors.primaryText, borderRadius: 4, paddingHorizontal: 14, paddingVertical: 10, flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
               <View>
-                <Text style={{ fontSize: 7, color: "#777777", textTransform: "uppercase", letterSpacing: 1, marginBottom: 3 }}>
-                  Combined Annual Value
-                </Text>
-                <Text style={{ fontSize: 8, color: "#777777" }}>
-                  {`${fmtCurrency(data.totalRealized)} current + ${fmtCurrency(data.addedSettingsTotal)} expansion`}
-                </Text>
+                <Text style={{ fontSize: 7, color: "#777777", textTransform: "uppercase", letterSpacing: 1, marginBottom: 3 }}>Combined Annual Value</Text>
+                <Text style={{ fontSize: 8, color: "#777777" }}>{`${fmtCurrency(data.totalRealized)} current + ${fmtCurrency(data.addedSettingsTotal)} expansion`}</Text>
               </View>
-              <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.primary }}>
-                {fmtCurrency(data.combinedAnnualTotal)}
-              </Text>
+              <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(data.combinedAnnualTotal)}</Text>
             </View>
           </>
         )}

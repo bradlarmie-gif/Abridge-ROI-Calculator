@@ -12,7 +12,7 @@ import {
   Font,
 } from "@react-pdf/renderer";
 import { savePdfBlob } from "@/lib/pdf-save";
-import type { MeasureState } from "@/lib/measureCalculator";
+import type { MeasureState, MeasureCareSetting } from "@/lib/measureCalculator";
 import { PDFCoverPage } from "@/components/pdf/PDFCoverPage";
 import {
   EXPLORE_DRIVERS,
@@ -211,6 +211,16 @@ export interface MeasurePDFData {
   bestPricingScenarioLabel?: string;
   bestPricingInvestment?: number;
   bestPricingNet?: number;
+  isMultiSetting?: boolean;
+  settingBreakdowns?: Array<{
+    setting: ExploreSetting;
+    label: string;
+    providers: number;
+    encounters: number;
+    utilizationPercent: number;
+    forecastBaseline: { providers: number; utilizationPercent: number; encounters: number; staffedBeds: number; occupancyPercent: number };
+    forecastProjected: { providers: number; utilizationPercent: number; encounters: number; staffedBeds: number; occupancyPercent: number };
+  }>;
 }
 
 function fmtC(n: number): string {
@@ -664,64 +674,99 @@ const MeasureEvidenceDoc = ({ data }: { data: MeasurePDFData }) => {
 
 const QUADRANT_ORDER: ExploreQuadrant[] = ["Capacity", "Workforce", "Revenue", "Quality"];
 
-export function buildMeasurePDFDataFromState(state: MeasureState): MeasurePDFData {
-  const setting = (state.careSetting || "outpatient") as ExploreSetting;
+function getSettingBaselineValues(settingKey: string, state: MeasureState) {
+  const sd = (state.settingData?.[settingKey as MeasureCareSetting] || {}) as Record<string, number>;
   const dep: any = state.deployment || {};
+  const providers = sd.deploy_providers || dep.providers || 0;
+  const totalEnc = sd.deploy_totalEncounters || dep.totalEncounters || 0;
+  const abridgeEnc = sd.deploy_abridgeEncounters || dep.abridgeEncounters || 0;
+  const utilPct = totalEnc > 0 ? Math.round((abridgeEnc / totalEnc) * 100) : (dep.utilizationRate || 0);
+  const staffedBeds = (sd.deploy_staffedBeds as number | undefined) ?? (dep.staffedBeds ?? 0);
+  const occupancyPercent = dep.occupancyPercent ?? 0;
+  return { providers, utilizationPercent: utilPct, encounters: totalEnc, staffedBeds, occupancyPercent };
+}
 
-  const baseline = {
-    providers: dep.providers ?? 0,
-    utilizationPercent: dep.utilizationRate ?? 0,
-    encounters: dep.totalEncounters ?? 0,
-    staffedBeds: dep.staffedBeds ?? 0,
-    occupancyPercent: dep.occupancyPercent ?? 0,
-  };
+type AxisValues = ReturnType<typeof getSettingBaselineValues>;
+
+function pdfScaleFactor(axis: string, bl: AxisValues, proj: AxisValues): number {
+  if (axis === "fixed") return 1;
+  if (axis === "providers") {
+    const b = bl.providers * (bl.utilizationPercent / 100);
+    const p = proj.providers * (proj.utilizationPercent / 100);
+    return b > 0 ? p / b : 1;
+  }
+  if (axis === "encounters") {
+    const b = bl.encounters * (bl.utilizationPercent / 100);
+    const p = proj.encounters * (proj.utilizationPercent / 100);
+    return b > 0 ? p / b : 1;
+  }
+  if (axis === "patientDays") {
+    const b = bl.staffedBeds * (bl.occupancyPercent / 100);
+    const p = proj.staffedBeds * (proj.occupancyPercent / 100);
+    return b > 0 ? p / b : 1;
+  }
+  return 1;
+}
+
+export function buildMeasurePDFDataFromState(state: MeasureState): MeasurePDFData {
+  const activeSettings = (
+    state.activeCareSettings && state.activeCareSettings.length > 0
+      ? state.activeCareSettings
+      : [state.careSetting || "outpatient"]
+  ) as ExploreSetting[];
+  const isMultiSetting = activeSettings.length > 1;
+  const primarySetting = activeSettings[0];
+  const dep: any = state.deployment || {};
   const fc = state.forecastScenario || ({} as any);
-  const projected = {
-    providers: fc.providers ?? 0,
-    utilizationPercent: fc.utilizationPercent ?? 0,
-    encounters: fc.encounters ?? 0,
-    staffedBeds: fc.staffedBeds ?? 0,
-    occupancyPercent: fc.occupancyPercent ?? 0,
-  };
 
+  // Per-setting baselines and projections
+  const blMap = Object.fromEntries(activeSettings.map(s => [s, getSettingBaselineValues(s, state)]));
+  const projMap = Object.fromEntries(activeSettings.map(s => [s, state.settingForecasts?.[s] || blMap[s]]));
+
+  // Aggregate quadrants across all active settings
   const quadrants: MeasurePDFQuadrantSection[] = QUADRANT_ORDER.map((q) => {
-    const settingTracked = state.trackedDrivers?.[setting] || {};
-    const drivers = EXPLORE_DRIVERS.filter(
-      (d) => d.quadrant === q && d.settings.includes(setting) && settingTracked[d.id]
-    ).map((d) => {
-      const entry = settingTracked[d.id];
-      const md = d.measureDefaults;
-      const sortedMonthly = [...(entry.monthlyData || [])].sort((a, b) => a.month.localeCompare(b.month));
-      const latest = sortedMonthly[sortedMonthly.length - 1];
-      const effWith = entry.isMonthlyMode && latest ? latest.withAbridge : entry.withAbridge;
-      const effWithout = entry.isMonthlyMode && latest ? latest.withoutAbridge : entry.withoutAbridge;
-      const delta = effWith - effWithout;
-      const isQuant = d.visibility === "quantified" && Boolean(md);
-      const realizedValue = isQuant
-        ? Math.round(delta * entry.valuePerUnit * (entry.attributionPercent / 100))
-        : 0;
-      const driver: MeasurePDFDriver = {
-        id: d.id,
-        label: d.label,
-        shortDescription: d.shortDescription,
-        visibility: d.visibility,
-        isMonthlyMode: Boolean(entry.isMonthlyMode),
-        withoutAbridge: effWithout,
-        withAbridge: effWith,
-        delta,
-        valuePerUnit: entry.valuePerUnit,
-        attributionPercent: entry.attributionPercent,
-        realizationPercent: entry.realizationPercent,
-        realizedValue,
-        notes: entry.notes,
-        monthlyData: sortedMonthly.length > 0 ? sortedMonthly : undefined,
-        deltaUnit: md?.deltaUnit,
-        deltaLabel: md?.deltaLabel,
-        valuePerUnitLabel: md?.valuePerUnitLabel,
-        valuePerUnitPrefix: md?.valuePerUnitPrefix,
-      };
-      return driver;
-    });
+    const drivers: MeasurePDFDriver[] = [];
+    for (const settingKey of activeSettings) {
+      const settingTracked = state.trackedDrivers?.[settingKey] || {};
+      EXPLORE_DRIVERS
+        .filter(d => d.quadrant === q && d.settings.includes(settingKey) && settingTracked[d.id])
+        .forEach(d => {
+          const entry = settingTracked[d.id];
+          const md = d.measureDefaults;
+          const sortedMonthly = [...(entry.monthlyData || [])].sort((a, b) => a.month.localeCompare(b.month));
+          const latest = sortedMonthly[sortedMonthly.length - 1];
+          const effWith = entry.isMonthlyMode && latest ? latest.withAbridge : entry.withAbridge;
+          const effWithout = entry.isMonthlyMode && latest ? latest.withoutAbridge : entry.withoutAbridge;
+          const delta = entry.lowerIsBetter ? effWithout - effWith : effWith - effWithout;
+          const scaleVal = (entry.scaleDivisor && entry.scaleDivisor > 0 && entry.scaleValue !== undefined)
+            ? entry.scaleValue / entry.scaleDivisor : 1;
+          const isQuant = d.visibility === "quantified" && Boolean(md);
+          const realizedValue = isQuant
+            ? Math.round(delta * entry.valuePerUnit * scaleVal * (entry.attributionPercent / 100))
+            : 0;
+          drivers.push({
+            id: d.id,
+            label: d.label,
+            shortDescription: d.shortDescription,
+            visibility: d.visibility,
+            isMonthlyMode: Boolean(entry.isMonthlyMode),
+            withoutAbridge: effWithout,
+            withAbridge: effWith,
+            delta,
+            valuePerUnit: entry.valuePerUnit,
+            attributionPercent: entry.attributionPercent,
+            realizationPercent: entry.realizationPercent,
+            realizedValue,
+            notes: entry.notes,
+            monthlyData: sortedMonthly.length > 0 ? sortedMonthly : undefined,
+            deltaUnit: md?.deltaUnit,
+            deltaLabel: md?.deltaLabel,
+            valuePerUnitLabel: md?.valuePerUnitLabel,
+            valuePerUnitPrefix: md?.valuePerUnitPrefix,
+            setting: settingKey,
+          });
+        });
+    }
     const realizedTotal = drivers.reduce((sum, d) => sum + d.realizedValue, 0);
     return { quadrant: q, realizedTotal, drivers };
   });
@@ -729,30 +774,17 @@ export function buildMeasurePDFDataFromState(state: MeasureState): MeasurePDFDat
   const totalRealized = quadrants.reduce((sum, q) => sum + q.realizedTotal, 0);
   const driversTrackedCount = quadrants.reduce((sum, q) => sum + q.drivers.length, 0);
 
+  // Projected totals using per-setting scale factors from settingForecasts
   const totalProjected = quadrants.reduce((sum, q) => {
-    return (
-      sum +
-      q.drivers.reduce((qSum, drv) => {
-        const driverDef = EXPLORE_DRIVERS.find((d) => d.id === drv.id);
-        if (!driverDef?.measureDefaults) return qSum + drv.realizedValue;
-        const axis = driverDef.measureDefaults.scaleAxis;
-        let scale = 1;
-        if (axis === "providers") {
-          const baseScale = baseline.providers * (baseline.utilizationPercent / 100);
-          const projScale = projected.providers * (projected.utilizationPercent / 100);
-          scale = baseScale > 0 ? projScale / baseScale : 1;
-        } else if (axis === "encounters") {
-          const baseScale = baseline.encounters * (baseline.utilizationPercent / 100);
-          const projScale = projected.encounters * (projected.utilizationPercent / 100);
-          scale = baseScale > 0 ? projScale / baseScale : 1;
-        } else if (axis === "patientDays") {
-          const baseScale = baseline.staffedBeds * (baseline.occupancyPercent / 100);
-          const projScale = projected.staffedBeds * (projected.occupancyPercent / 100);
-          scale = baseScale > 0 ? projScale / baseScale : 1;
-        }
-        return qSum + Math.round(drv.realizedValue * scale);
-      }, 0)
-    );
+    return sum + q.drivers.reduce((dsum, drv) => {
+      const driverDef = EXPLORE_DRIVERS.find(d => d.id === drv.id);
+      if (!driverDef?.measureDefaults) return dsum + drv.realizedValue;
+      const sk = drv.setting || primarySetting;
+      const bl = blMap[sk] || blMap[primarySetting];
+      const proj = projMap[sk] || projMap[primarySetting];
+      const sf = pdfScaleFactor(driverDef.measureDefaults.scaleAxis, bl, proj);
+      return dsum + Math.round(drv.realizedValue * sf);
+    }, 0);
   }, 0);
 
   const addedSettings = fc.addedSettings ?? [];
@@ -760,8 +792,10 @@ export function buildMeasurePDFDataFromState(state: MeasureState): MeasurePDFDat
   const combinedAnnualTotal = totalProjected + addedSettingsTotal;
 
   const pricingScenarios = fc.pricingScenarios ?? [];
-  const combinedProviders = projected.providers + addedSettings.reduce((s: number, a: any) => s + (a.providers || 0), 0);
-  const combinedEncounters = projected.encounters + addedSettings.reduce((s: number, a: any) => s + (a.encounters || 0), 0);
+  const combinedProviders = activeSettings.reduce((sum, s) => sum + (projMap[s]?.providers || 0), 0)
+    + addedSettings.reduce((s: number, a: any) => s + (a.providers || 0), 0);
+  const combinedEncounters = activeSettings.reduce((sum, s) => sum + (projMap[s]?.encounters || 0), 0)
+    + addedSettings.reduce((s: number, a: any) => s + (a.encounters || 0), 0);
 
   const evaluated = pricingScenarios.map((sc: any) => {
     const scale = sc.model === "perProvider" ? combinedProviders : sc.model === "perEncounter" ? combinedEncounters : 0;
@@ -780,21 +814,42 @@ export function buildMeasurePDFDataFromState(state: MeasureState): MeasurePDFDat
     }
   }
   const bestEntry = bestId ? evaluated.find((e: any) => e.scenario.id === bestId) : null;
-
   const titleScenario = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
+  const primaryBl = blMap[primarySetting];
+  const primaryProj = projMap[primarySetting];
+
+  const settingBreakdowns: MeasurePDFData["settingBreakdowns"] = isMultiSetting
+    ? activeSettings.map(s => ({
+        setting: s,
+        label: SETTING_LABELS[s] || String(s),
+        providers: blMap[s].providers,
+        encounters: blMap[s].encounters,
+        utilizationPercent: blMap[s].utilizationPercent,
+        forecastBaseline: blMap[s],
+        forecastProjected: projMap[s],
+      }))
+    : undefined;
+
+  const totalProviders = activeSettings.reduce((sum, s) => sum + blMap[s].providers, 0);
+  const avgUtilization = activeSettings.length > 0
+    ? Math.round(activeSettings.reduce((sum, s) => sum + blMap[s].utilizationPercent, 0) / activeSettings.length)
+    : 0;
 
   return {
     organizationName: dep.organizationName || undefined,
     date: new Date().toLocaleDateString(),
-    careSettingLabel: SETTING_LABELS[setting],
+    careSettingLabel: isMultiSetting
+      ? activeSettings.map(s => SETTING_LABELS[s] || s).join(" + ")
+      : SETTING_LABELS[primarySetting],
     monthsLive: dep.monthsOnAbridge ?? undefined,
 
-    careSetting: setting,
-    numberOfProviders: baseline.providers,
-    utilizationPercent: baseline.utilizationPercent,
-    annualEncounters: baseline.encounters,
-    staffedBeds: setting === "nursing" ? baseline.staffedBeds : undefined,
-    occupancyPercent: setting === "nursing" ? baseline.occupancyPercent : undefined,
+    careSetting: primarySetting,
+    numberOfProviders: totalProviders,
+    utilizationPercent: avgUtilization,
+    annualEncounters: activeSettings.reduce((sum, s) => sum + blMap[s].encounters, 0),
+    staffedBeds: activeSettings.includes("nursing" as ExploreSetting) ? primaryBl.staffedBeds : undefined,
+    occupancyPercent: activeSettings.includes("nursing" as ExploreSetting) ? primaryBl.occupancyPercent : undefined,
 
     totalRealized,
     totalProjected,
@@ -803,9 +858,10 @@ export function buildMeasurePDFDataFromState(state: MeasureState): MeasurePDFDat
     driversTrackedCount,
 
     quadrants,
-
-    forecastBaseline: baseline,
-    forecastProjected: projected,
+    forecastBaseline: primaryBl,
+    forecastProjected: primaryProj,
+    isMultiSetting,
+    settingBreakdowns,
 
     addedSettings: addedSettings.map((a: any) => ({
       settingLabel: SETTING_LABELS[a.setting as ExploreSetting] || String(a.setting),
