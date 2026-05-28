@@ -44,36 +44,42 @@ export default function SwitchPathSelection({ onSelectPath, onBack, onBackToJour
         </div>
 
         <div className="grid sm:grid-cols-1 md:grid-cols-3 gap-5 md:gap-6">
-          <div
-            aria-disabled="true"
-            className="group relative rounded-xl text-left flex flex-col opacity-50 cursor-not-allowed select-none"
+          <button
+            onClick={() => onSelectPath("ambient-ai")}
+            onMouseEnter={() => setHoveredPath("ambient-ai")}
+            onMouseLeave={() => setHoveredPath(null)}
+            className="group relative rounded-xl text-left flex flex-col transition-all duration-300"
             style={{
               backgroundColor: '#F5F0EB',
-              border: '2px solid transparent',
+              border: hoveredPath === "ambient-ai" ? '2px solid #EA2C00' : '2px solid transparent',
               borderRadius: '12px',
               padding: '24px',
               minHeight: '280px',
+              transform: hoveredPath === "ambient-ai" ? 'translateY(-2px)' : 'translateY(0)',
+              boxShadow: hoveredPath === "ambient-ai" ? '0 4px 16px rgba(234,44,0,0.08)' : 'none',
+              cursor: 'pointer',
             }}
             data-testid="button-path-ambient"
           >
             <div className="flex items-start justify-between mb-3">
-              <div 
+              <div
                 className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
-                style={{ 
+                style={{
                   backgroundColor: '#FFFFFF',
                   boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
                 }}
               >
-                <Mic className="w-4 h-4 text-[#888888]" />
+                <Mic className="w-4 h-4 text-[#1A1A1A]" />
               </div>
-              <span
-                className="text-[10px] font-semibold uppercase tracking-[1.5px] px-2 py-1 rounded-full"
-                style={{ backgroundColor: '#E5E5E5', color: '#666666' }}
-              >
-                Coming Soon
-              </span>
+              <ArrowRight
+                className="w-4 h-4 transition-all duration-300"
+                style={{
+                  color: '#EA2C00',
+                  opacity: hoveredPath === "ambient-ai" ? 1 : 0,
+                }}
+              />
             </div>
-            
+
             <h2 className="text-lg font-bold text-[#1A1A1A] mb-1">
               Ambient Assessment
             </h2>
@@ -104,16 +110,16 @@ export default function SwitchPathSelection({ onSelectPath, onBack, onBackToJour
             </div>
 
             <div className="flex-1" />
-            
+
             <div className="flex items-center justify-between pt-3 border-t border-[#E0E0E0]/50">
               <span className="text-[12px] text-[#999999] font-medium">
-                5-step assessment
+                8-step assessment
               </span>
               <span className="text-[12px] text-[#999999] font-medium">
-                ~5 min
+                ~8 min
               </span>
             </div>
-          </div>
+          </button>
 
           <button
             onClick={() => onSelectPath("human-scribes")}
