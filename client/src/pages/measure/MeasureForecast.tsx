@@ -518,7 +518,7 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
       <UnifiedHeaderSpacer />
 
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-8 md:py-12">
-        <div className="flex flex-col lg:flex-row gap-10">
+        <div className="flex flex-col md:flex-row gap-10">
           <div className="flex-1 min-w-0 max-w-[700px]">
             <motion.div className="text-center mb-6" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
               <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-3">Project the Path Forward</p>
@@ -610,9 +610,10 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
                 transition={{ delay: 0.3 }}
               >
                 <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Sensitivity Analysis</p>
-                <div className="bg-white rounded-xl border border-[#E5E5E5] overflow-hidden" data-testid="sensitivity-matrix">
+                <div className="overflow-x-auto rounded-xl border border-[#E5E5E5]" data-testid="sensitivity-matrix">
+                <div className="bg-white min-w-[400px]">
                   {/* Header */}
-                  <div className="grid grid-cols-4 bg-[#FAFAF8] border-b border-[#F0ECE7]">
+                  <div className="grid grid-cols-4 bg-[#FAFAF8] border-b border-[#F0ECE7] rounded-t-xl overflow-hidden">
                     <div className="px-3 py-2.5" />
                     {[
                       { label: 'Conservative', sub: '75% realization', pct: 75 },
@@ -671,6 +672,7 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
                       </div>
                     );
                   })}
+                </div>
                 </div>
                 <p className="text-[10px] text-[#AAAAAA] mt-2 leading-relaxed">
                   Annual value at adoption × realization rate. 100% realization = drivers perform as measured.{effectiveInvestment > 0 ? ' ROI = value ÷ annual investment.' : ''}{' '}Click a row to change the base case.
@@ -758,7 +760,7 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
               </AnimatePresence>
             </motion.div>
 
-            <motion.div className="flex justify-center mt-8 lg:hidden">
+            <motion.div className="flex justify-center mt-8 md:hidden">
               <Button
                 onClick={onNext}
                 className="h-12 px-8 bg-black hover:bg-black/90 text-white font-semibold rounded-full gap-2"
@@ -772,12 +774,12 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
 
           {/* Right panel */}
           <motion.div
-            className="w-full lg:w-[320px] flex-shrink-0"
+            className="w-full md:w-[320px] flex-shrink-0"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
           >
-            <div className="bg-[#1A1A1A] rounded-xl p-6 lg:sticky lg:top-24">
+            <div className="bg-[#1A1A1A] rounded-xl p-6 md:sticky md:top-24">
               <p className="text-xs font-medium text-white uppercase tracking-[1.5px] mb-1">Combined Annual Value</p>
               <p className="text-sm text-white/50 mb-5">Realized + projected + expansion · 100% adoption</p>
 

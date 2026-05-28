@@ -409,12 +409,11 @@ export default function MeasureOpportunity({
   const handleExport = async () => {
     setPdfLoading(true);
     try {
-      const mod = await import('@/components/measure/MeasurePDFExport');
-      if (mod.generateMeasurePDF) {
-        await mod.generateMeasurePDF(state);
-      } else {
-        window.print();
-      }
+      const [{ generateMeasureNarrativePDF }, { buildMeasurePDFDataFromState }] = await Promise.all([
+        import('@/components/measure/MeasureNarrativePDF'),
+        import('@/components/measure/MeasurePDFExport'),
+      ]);
+      await generateMeasureNarrativePDF(buildMeasurePDFDataFromState(state));
     } catch {
       window.print();
     } finally {

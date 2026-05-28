@@ -26,6 +26,8 @@ Font.register({
   fonts: [
     { src: manropeRegular, fontWeight: 400 },
     { src: manropeBold, fontWeight: 700 },
+    { src: manropeRegular, fontWeight: 400, fontStyle: "italic" },
+    { src: manropeBold, fontWeight: 700, fontStyle: "italic" },
   ],
 });
 Font.registerHyphenationCallback((w) => [w]);
@@ -40,7 +42,7 @@ const colors = {
   cards: "#F5F0EB",
   separator: "#E5DCD0",
   separatorHeavy: "#D4C9BC",
-  background: "#FDFAF7",
+  background: "#FFFFFF",
 };
 
 const domainColors: Record<string, string> = {
@@ -76,6 +78,36 @@ const domainCalibrationNotes: Record<string, string> = {
   Workforce: "Calibration: Retention impact is modeled using a threshold approach that acknowledges diminishing returns. Not every hour of documentation relief prevents a departure. The attrition reduction percentages used here reflect organizations with moderate documentation burden — conservative relative to top-quartile benchmarks.",
   Revenue:   "Calibration: Revenue improvement requires both better documentation and downstream coding execution. Attribution percentages on revenue drivers account for coding team behavior, payer policies, and timing — factors outside Abridge's direct control. Studies show 8–15% of encounters are systematically undercoded due to documentation gaps; the figures above use the lower end of that range.",
   Quality:   "Calibration: Clinical quality improvement compounds over time, which makes point-in-time measurement inherently conservative. The figures shown reflect what has been captured in the current measurement window. Organizations that continue measurement past 12 months consistently find that quality value grows faster than capacity or workforce value.",
+};
+
+const domainMeasurementRoadmaps: Record<string, Array<{ window: string; metric: string; source: string }>> = {
+  Capacity: [
+    { window: "Month 1–3", metric: "Documentation time per encounter and note completion rate", source: "EHR audit logs" },
+    { window: "Month 3–6", metric: "Time reallocation signals — earlier sign-offs, reduced after-hours charting", source: "EHR timestamps" },
+    { window: "Month 6–12+", metric: "Provider capacity utilization and schedule density changes", source: "Scheduling + EHR" },
+  ],
+  Workforce: [
+    { window: "Month 1–3", metric: "After-hours charting frequency and documentation time per shift", source: "EHR audit logs" },
+    { window: "Month 3–6", metric: "Burnout and satisfaction survey scores, PTO utilization trends", source: "HR + survey data" },
+    { window: "Month 6–12+", metric: "Voluntary attrition rate vs. prior-year baseline", source: "HR records" },
+  ],
+  Revenue: [
+    { window: "Month 1–3", metric: "E/M level distribution and documentation specificity scores", source: "EHR + coding audit" },
+    { window: "Month 3–6", metric: "First-pass denial rate and wRVU capture vs. prior year", source: "RCM system" },
+    { window: "Month 6–12+", metric: "HCC capture rate, CDI query reduction, net revenue per encounter", source: "Revenue Cycle + Coding" },
+  ],
+  Quality: [
+    { window: "Month 1–3", metric: "Documentation completeness score and problem list accuracy", source: "EHR / CDI audit" },
+    { window: "Month 3–6", metric: "CDI query rate and care gap closure rate", source: "CDI program + Quality" },
+    { window: "Month 6–12+", metric: "Risk-adjusted quality scores and HEDIS measure performance", source: "Quality scorecard" },
+  ],
+};
+
+const SETTING_SHORT_LABELS: Record<string, string> = {
+  outpatient: "Outpatient",
+  ed: "ED",
+  inpatient: "Inpatient",
+  nursing: "Nursing",
 };
 
 const DATA_SOURCE_LABELS: Record<string, string> = {
@@ -119,7 +151,7 @@ const styles = StyleSheet.create({
     lineHeight: 1.2,
   },
   body: {
-    fontSize: 10,
+    fontSize: 10.5,
     color: colors.secondary,
     lineHeight: 1.6,
     marginBottom: 10,
@@ -160,9 +192,15 @@ const PageFooter = ({ orgName, settingLabel }: { orgName: string; settingLabel: 
       borderTopColor: colors.separator,
       paddingTop: 8,
     }}
+    fixed
   >
-    <Text style={{ fontSize: 8.5, color: colors.secondary }}>{`${orgName} · ${settingLabel}`}</Text>
-    <Text style={{ fontSize: 8.5, color: colors.tertiary }}>Confidential · Abridge Evidence Summary</Text>
+    <Text style={{ fontSize: 8.5, color: colors.secondary, flex: 1 }}>{`${orgName} · ${settingLabel}`}</Text>
+    <Text
+      style={{ fontSize: 8.5, color: colors.tertiary, textAlign: "right", width: 72 }}
+      render={({ pageNumber, totalPages }: { pageNumber: number; totalPages: number }) =>
+        `Page ${pageNumber - 1} / ${totalPages - 1}`
+      }
+    />
   </View>
 );
 
@@ -215,6 +253,39 @@ function Sparkline({
       <Text style={{ fontSize: 7, color: colors.tertiary, marginTop: 2 }}>
         {"Solid: With Abridge   Dashed: Baseline"}
       </Text>
+    </View>
+  );
+}
+
+// ─── Measurement Roadmap card ─────────────────────────────────────────────────
+
+function MeasurementRoadmapCard({ domain }: { domain: string }) {
+  const milestones = domainMeasurementRoadmaps[domain];
+  if (!milestones) return null;
+  return (
+    <View style={{ borderRadius: 4, borderWidth: 1, borderColor: colors.separator, marginTop: 12, marginBottom: 6 }} wrap={false}>
+      <View style={{ backgroundColor: colors.cards, paddingVertical: 7, paddingHorizontal: 10, borderTopLeftRadius: 4, borderTopRightRadius: 4 }}>
+        <Text style={{ fontSize: 7, fontWeight: "bold", color: colors.secondary, textTransform: "uppercase", letterSpacing: 2 }}>
+          Measurement Roadmap
+        </Text>
+      </View>
+      {milestones.map((m, i) => (
+        <View
+          key={i}
+          style={{
+            flexDirection: "row",
+            paddingVertical: 7,
+            paddingHorizontal: 10,
+            borderTopWidth: 1,
+            borderTopColor: colors.separator,
+            backgroundColor: i % 2 === 0 ? "#FFFFFF" : colors.cards + "66",
+          }}
+        >
+          <Text style={{ width: 64, fontSize: 7.5, fontWeight: "bold", color: colors.secondary, lineHeight: 1.4 }}>{m.window}</Text>
+          <Text style={{ flex: 1, fontSize: 7.5, color: colors.primaryText, lineHeight: 1.4 }}>{m.metric}</Text>
+          <Text style={{ width: 84, fontSize: 7, color: colors.tertiary, textAlign: "right", lineHeight: 1.4 }}>{m.source}</Text>
+        </View>
+      ))}
     </View>
   );
 }
@@ -302,11 +373,13 @@ function DriverCard({
   accentColor,
   showDollars = true,
   showDataSource = false,
+  showSetting = false,
 }: {
   driver: MeasurePDFDriver;
   accentColor: string;
   showDollars?: boolean;
   showDataSource?: boolean;
+  showSetting?: boolean;
 }) {
   const isQuant = driver.visibility === "quantified";
   const hasMonthly = driver.isMonthlyMode && (driver.monthlyData?.length ?? 0) >= 2;
@@ -334,6 +407,13 @@ function DriverCard({
             <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText, lineHeight: 1.3 }}>
               {driver.label}
             </Text>
+            {showSetting && driver.setting && (
+              <View style={{ backgroundColor: accentColor + "18", borderRadius: 2, paddingHorizontal: 5, paddingVertical: 1 }}>
+                <Text style={{ fontSize: 6.5, color: accentColor, fontWeight: "bold", textTransform: "uppercase", letterSpacing: 0.8 }}>
+                  {SETTING_SHORT_LABELS[driver.setting] ?? driver.setting}
+                </Text>
+              </View>
+            )}
             {showDataSource && dataSourceLabel && (
               <View style={{ backgroundColor: colors.cards, borderRadius: 2, paddingHorizontal: 5, paddingVertical: 1 }}>
                 <Text style={{ fontSize: 6.5, color: colors.secondary, textTransform: "uppercase", letterSpacing: 0.8 }}>
@@ -522,11 +602,11 @@ function ExecutiveSummaryPage({ data, showDollars }: { data: MeasurePDFData; sho
         {/* Hero */}
         <View style={[styles.cardBg, { marginBottom: 12, paddingVertical: 20 }]}>
           <Text style={{ fontSize: 8.5, color: colors.secondary, textTransform: "uppercase", letterSpacing: 2.5, fontWeight: "bold", marginBottom: 6 }}>
-            {showDollars
+            {showDollars && data.totalRealized > 0
               ? `Realized Annual Value · ${data.careSettingLabel}`
               : `Outcomes Measured · ${data.careSettingLabel}`}
           </Text>
-          {showDollars ? (
+          {showDollars && data.totalRealized > 0 ? (
             <Text style={{ fontSize: 38, fontWeight: "bold", color: colors.primary, lineHeight: 1.0, marginBottom: 8 }}>
               {fmtCurrency(data.totalRealized)}
             </Text>
@@ -536,12 +616,12 @@ function ExecutiveSummaryPage({ data, showDollars }: { data: MeasurePDFData; sho
                 {`${data.driversTrackedCount}`}
               </Text>
               <Text style={{ fontSize: 14, color: colors.secondary }}>
-                outcomes tracked
+                {data.driversTrackedCount === 1 ? "outcome tracked" : "outcomes tracked"}
               </Text>
             </View>
           )}
           <Text style={{ fontSize: 9, color: colors.secondary, marginBottom: 10 }}>
-            {showDollars
+            {showDollars && data.totalRealized > 0
               ? `Across ${data.driversTrackedCount} financial driver${data.driversTrackedCount !== 1 ? "s" : ""}, attribution-adjusted`
               : `Across 4 domains · ${data.careSettingLabel}`}
           </Text>
@@ -620,11 +700,11 @@ function ExecutiveSummaryPage({ data, showDollars }: { data: MeasurePDFData; sho
                 </Text>
                 {showDollars ? (
                   <Text style={{ fontSize: 11, fontWeight: "bold", color: total > 0 ? colors.primaryText : colors.tertiary }}>
-                    {total > 0 ? fmtCurrency(total) : (qualCount > 0 ? "Signals" : "—")}
+                    {total > 0 ? fmtCurrency(total) : (qualCount > 0 ? "Signals" : "Upcoming")}
                   </Text>
                 ) : (
                   <Text style={{ fontSize: 11, fontWeight: "bold", color: hasAny ? colors.primaryText : colors.tertiary }}>
-                    {hasAny ? `${driverCount}` : "—"}
+                    {hasAny ? `${driverCount}` : "Upcoming"}
                   </Text>
                 )}
                 {hasAny && (
@@ -772,11 +852,12 @@ function DomainPage({
           <>
             {quantified.map((driver) => (
               <DriverCard
-                key={driver.id}
+                key={`${driver.id}-${driver.setting}`}
                 driver={driver}
                 accentColor={accentColor}
                 showDollars={showDollars}
                 showDataSource={showDataSource}
+                showSetting={data.isMultiSetting}
               />
             ))}
           </>
@@ -802,6 +883,9 @@ function DomainPage({
             </Text>
           </View>
         )}
+
+        {/* Measurement roadmap — always shown; fills sparse pages and educates the reader */}
+        <MeasurementRoadmapCard domain={section.quadrant} />
 
         {qualitative.length > 0 && (
           <>
