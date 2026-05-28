@@ -397,6 +397,14 @@
   }
 }
 
+/* Headline-style input — overrides the iOS-zoom-prevention 16px rule */
+.headline-input {
+  font-size: clamp(2rem, 5vw, 4rem) !important;
+}
+.headline-input::placeholder {
+  color: #CCCCCC;
+}
+
 /* Selection color */
 ::selection {
   background: rgba(232, 83, 47, 0.2);
