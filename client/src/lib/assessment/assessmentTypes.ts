@@ -43,6 +43,7 @@ export const DEFAULT_PILLARS_META: PillarMetaMap = {
 
 export const DEFAULT_SWITCH_INPUTS: SwitchInputs = {
   solution: "ambient-ai" as SolutionType,
+  providersProvisioned: 0,
   providers: 0,
   annualEncounters: 0,
   currentCostPerProvider: 200,
@@ -70,7 +71,7 @@ export const DEFAULT_SWITCH_INPUTS: SwitchInputs = {
   qualityReportingFriction: "manageable" as const,
   structuredDataUsability: "some" as const,
   entryEstimate: null,
-  revenuePerVisit: 200,
+  revenuePerVisit: 0,
   conversionFactor: 33,
   capacityScore: 0,
   capacityGap: 0,
@@ -114,6 +115,12 @@ export const DEFAULT_SWITCH_INPUTS: SwitchInputs = {
   payerMixMedicaid: 0,
   payerMixCommercial: 0,
   deploymentTenure: '' as const,
+  patientExperienceAwareness: '',
+  patientExperienceNoticeable: '',
+  patientExperienceSignals: '',
+  patientExperienceFormalized: '',
+  patientExperienceFormalData: '',
+  organizationName: '',
 };
 
 export const DEFAULT_ASSESSMENT_STATE: AssessmentState = {

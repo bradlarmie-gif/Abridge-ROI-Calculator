@@ -11,8 +11,14 @@ import { savePdfBlob } from "@/lib/pdf-save";
 import { PDFCoverPage } from "@/components/pdf/PDFCoverPage";
 import manropeRegular from "../assets/fonts/manrope-regular.ttf";
 import manropeBold from "../assets/fonts/manrope-bold.ttf";
+import abridgeFont from "../assets/fonts/abridge.otf";
 
 Font.registerHyphenationCallback((word) => [word]);
+
+Font.register({
+  family: "Abridge",
+  src: abridgeFont,
+});
 
 Font.register({
   family: "Manrope",
@@ -47,17 +53,13 @@ export interface AmbientAssessmentPDFData {
   timeSavings: number;
   documentationScore: number;
   totalAnnualGap: number;
-  monthlyGap: number;
-  dailyGap: number;
-  actNow3yr: number;
-  wait6mo3yr: number;
-  wait12mo3yr: number;
-  permanentlyLost6mo: number;
-  permanentlyLost12mo: number;
   revenuePerVisit?: number;
   conversionFactor?: number;
-  assessmentNarrative: string;
   deploymentTenure?: string;
+  patientExperienceNoticeable?: string;
+  patientExperienceSignals?: string;
+  patientExperienceFormalized?: string;
+  priorityDomain?: string;
   orgContext?: OrgContext;
   domains: {
     capacity: DomainData;
@@ -80,13 +82,14 @@ export interface DomainData {
   formula?: string;
   footnote?: string;
   userInputs?: Record<string, string>;
+  gapItems?: string[];
 }
 
 // ============================================================================
 // CONSTANTS & UTILITIES
 // ============================================================================
 
-const TOTAL_PAGES = 8;
+const TOTAL_PAGES = 10;
 const DOMAIN_ORDER = ["capacity", "revenue", "workforce", "risk"];
 
 const fmt = (n: number): string => {
@@ -104,11 +107,10 @@ const domainDisplayName: Record<string, string> = {
 };
 
 function scoreBand(score: number): string {
-  if (score <= 16) return "Pre-Measurement";
-  if (score <= 38) return "Signal";
-  if (score <= 60) return "Confirmed";
-  if (score <= 79) return "Managed ROI";
-  return "Strategic Asset";
+  if (score <= 16) return "Unmeasured";
+  if (score <= 48) return "Emerging";
+  if (score <= 76) return "Demonstrated";
+  return "Strategic Impact";
 }
 
 function tenureLabel(tenure: string): string {
@@ -125,6 +127,32 @@ function tenureScoreBand(score: number): "low" | "mid" | "high" {
   if (score <= 30) return "low";
   if (score <= 60) return "mid";
   return "high";
+}
+
+const PE_SIGNAL_LABELS: Record<string, string> = {
+  provider_present: 'Providers more present in the room',
+  feel_heard: 'Patients report feeling more heard',
+  fewer_interruptions: 'Fewer interruptions during visits',
+  better_summaries: 'Better after-visit summaries and care follow-through',
+  satisfaction_scores: 'Visit satisfaction or experience scores shifted',
+  love_story: 'Providers sharing meaningful patient moments',
+};
+
+function computePESignal(noticeable: string, signals: string, formalized: string): string | null {
+  if (!noticeable || noticeable === 'not_tracked') return null;
+  const signalKeys = signals.split(',').filter(s => s && s !== 'nothing_yet' && PE_SIGNAL_LABELS[s]);
+  const signalNames = signalKeys.map(s => PE_SIGNAL_LABELS[s]);
+  const hasSignals = signalKeys.length > 0;
+  if (noticeable === 'frequently' && hasSignals) {
+    const suffix = formalized === 'yes' ? ' Connected to the formal value story.' : '';
+    const listed = signalNames.length > 0 ? ` Signals present: ${signalNames.join('; ')}.` : '';
+    return `Patients are noticing a difference in the room.${listed}${suffix}`;
+  }
+  if ((noticeable === 'occasionally' || hasSignals) && noticeable !== 'not_tracked') {
+    const listed = signalNames.length > 0 ? ` Observed: ${signalNames.join('; ')}.` : '';
+    return `Patient signals are present \u2014 not yet systematically captured.${listed}`;
+  }
+  return null;
 }
 
 const BENCH: Record<string, { low: (p: number) => number; high: (p: number) => number; desc: string; source: string }> = {
@@ -216,9 +244,9 @@ function computeArchetype(
         body: `Recovered time has moved into operational action. The revenue, workforce, and quality implications of that decision haven\u2019t been formally analyzed.${uStr ? ` ${uStr} ${uVerb} been measured yet.` : ""}`,
       },
       revenue: {
-        name: "Revenue Signal Measured. Ecosystem Unmeasured.",
-        headline: "Revenue impact is on the radar. The rest of the value chain awaits.",
-        body: `The documentation-to-revenue connection is on your radar and being measured. The capacity, workforce, and quality dimensions that inform and amplify that signal ${uVerb} been connected yet.${uStr ? ` ${uStr} remain${unmeasured.length === 1 ? "s" : ""} unmeasured.` : ""}`,
+        name: "Revenue Confirmed. Broader Value Story Building.",
+        headline: "Revenue impact is confirmed. The rest of the value chain is next.",
+        body: `The documentation-to-revenue connection is confirmed and on the books. The capacity, workforce, and quality dimensions that inform and amplify that signal ${uVerb} been formally attributed yet.${uStr ? ` ${uStr} ${unmeasured.length === 1 ? "hasn\u2019t" : "haven\u2019t"} been examined yet.` : ""}`,
       },
       workforce: {
         name: "Provider Experience Quantified. Broader Picture Unmeasured.",
@@ -311,6 +339,275 @@ function computeTenureModifier(tenure: string, totalScore: number): string {
   return matrix[tenure]?.[band] ?? "";
 }
 
+function deriveCTAEmail(preparedBy: string | undefined): string {
+  if (!preparedBy) return 'partnersuccess@abridge.com';
+  const parts = preparedBy.trim().split(/\s+/);
+  if (parts.length < 2) return 'partnersuccess@abridge.com';
+  const firstName = parts[0].toLowerCase().replace(/[^a-z]/g, '');
+  const lastName = parts[parts.length - 1].toLowerCase().replace(/[^a-z]/g, '');
+  if (!firstName || !lastName) return 'partnersuccess@abridge.com';
+  return `${firstName}.${lastName}@abridge.com`;
+}
+
+function deriveCTAFirstName(preparedBy: string | undefined): string {
+  if (!preparedBy) return '';
+  const first = preparedBy.trim().split(/\s+/)[0] || '';
+  return first.charAt(0).toUpperCase() + first.slice(1).toLowerCase();
+}
+
+// Per-domain, per-level: generates 1–3 sentences using the user's specific inputs.
+// Returns null if nothing meaningful to surface.
+function buildPersonalizedContext(
+  domainKey: string,
+  level: number,
+  userInputs: Record<string, string>,
+  providers: number,
+): string | null {
+  const parts: string[] = [];
+
+  if (domainKey === 'capacity') {
+    const timeSaved = userInputs['Time saved per encounter'];
+    const usage = userInputs['Active uses of recovered time'];
+    const additionalPatients = userInputs['Additional patients/provider/month'];
+    const providersInRedesign = userInputs['Providers in redesign'];
+    const accessOutcomes = userInputs['Access outcomes tracked'];
+    if (level === 1 && timeSaved) {
+      parts.push(`Providers are saving ${timeSaved} per encounter. At ${providers > 0 ? providers.toLocaleString() + ' providers' : 'your scale'}, that\u2019s real recovered time \u2014 none of which has been formally assigned a destination yet.`);
+    }
+    if (level === 2) {
+      if (timeSaved) parts.push(`With ${timeSaved} recovered per encounter, the time exists.`);
+      if (usage) parts.push(`Recovered time is being directed toward ${usage.toLowerCase()}.`);
+    }
+    if (level === 3) {
+      if (additionalPatients) parts.push(`You\u2019re confirming ${additionalPatients} additional patients per provider per month from recovered time.`);
+      if (providersInRedesign && providers > 0) parts.push(`${providersInRedesign} of ${providers.toLocaleString()} providers have had schedules formally redesigned around the recovered time.`);
+    }
+    if (level === 4 && accessOutcomes) {
+      parts.push(`The organization is tracking ${accessOutcomes.toLowerCase()} as access outcomes attributable to recovered time.`);
+    }
+  }
+
+  if (domainKey === 'revenue') {
+    const rcEngagement = userInputs['Revenue cycle engagement'];
+    const emReview = userInputs['E&M distribution review'];
+    const observedAreas = userInputs['Areas showing movement'];
+    const wrvuEstimate = userInputs['Estimated wRVU improvement'];
+    const wrvuDelta = userInputs['Measured wRVU delta'];
+    const denialReduction = userInputs['Denial rate reduction'];
+    const collectionsDelta = userInputs['Collections delta'];
+    const attributedRevenue = userInputs['Attributed annual revenue'];
+    const integrations = userInputs['Strategic integrations'];
+    if (level === 1) {
+      if (rcEngagement === 'Formally engaged') parts.push('Revenue cycle has been formally engaged on documentation quality \u2014 that conversation has started.');
+      else if (rcEngagement === 'Conversations started') parts.push('Informal conversations with revenue cycle have started. A formal analysis is the next step.');
+      else parts.push('Revenue cycle hasn\u2019t been formally engaged on documentation quality changes yet \u2014 that engagement is the entire Unmeasured-to-Emerging move.');
+      if (emReview === 'Pre/post distribution reviewed') parts.push('E&M distribution has been reviewed before and after deployment \u2014 coding complexity shifts are visible.');
+    }
+    if (level === 2) {
+      if (observedAreas) parts.push(`Movement observed in: ${observedAreas.toLowerCase()}.`);
+      if (wrvuEstimate) parts.push(`Estimated a ${wrvuEstimate} wRVU improvement per encounter \u2014 directional, not yet confirmed in billing data.`);
+    }
+    if (level === 3) {
+      const confirmed: string[] = [];
+      if (wrvuDelta) confirmed.push(`a ${wrvuDelta} wRVU improvement per encounter`);
+      if (denialReduction) confirmed.push(`a ${denialReduction} denial rate reduction`);
+      if (collectionsDelta) confirmed.push(`${collectionsDelta} improvement in collections`);
+      if (confirmed.length > 0) parts.push(`Confirmed: ${confirmed.join(' and ')} \u2014 in billing data.`);
+    }
+    if (level === 4) {
+      if (attributedRevenue) parts.push(`${attributedRevenue} in annual revenue has been formally attributed to documentation quality.`);
+      if (integrations) parts.push(`Documentation intelligence is connected to: ${integrations.toLowerCase()}.`);
+    }
+  }
+
+  if (domainKey === 'workforce') {
+    const inClinicSaved = userInputs['In-clinic time saved'];
+    const surveyFindings = userInputs['Survey findings'];
+    const behaviors = userInputs['Behavioral changes'];
+    const afterHours = userInputs['After-hours reduction'];
+    const beforeTurnover = userInputs['Turnover rate before deployment'];
+    const afterTurnover = userInputs['Turnover rate after deployment'];
+    const replacementCost = userInputs['Replacement cost per provider'];
+    const strategies = userInputs['Strategic integrations'];
+    const outcomes = userInputs['Measured outcomes'];
+    if (level === 1) {
+      if (inClinicSaved) parts.push(`Providers are saving ${inClinicSaved} per day in-clinic.`);
+      if (surveyFindings) parts.push(`Survey data has surfaced: ${surveyFindings.toLowerCase()}.`);
+    }
+    if (level === 2) {
+      if (behaviors) parts.push(`Behavioral changes documented: ${behaviors.toLowerCase()}.`);
+      if (afterHours) parts.push(`After-hours documentation work has dropped by ${afterHours} per week.`);
+    }
+    if (level === 3) {
+      if (beforeTurnover && afterTurnover) {
+        parts.push(`Turnover moved from ${beforeTurnover} to ${afterTurnover} since deployment.`);
+        if (replacementCost) parts.push(`At ${replacementCost} per provider, each percentage point of retention improvement has a confirmed dollar value.`);
+      } else if (afterTurnover) {
+        parts.push(`Post-deployment turnover: ${afterTurnover}.`);
+      }
+    }
+    if (level === 4) {
+      if (strategies) parts.push(`Provider experience data is formally integrated into: ${strategies.toLowerCase()}.`);
+      if (outcomes) parts.push(`Confirmed outcomes: ${outcomes.toLowerCase()}.`);
+    }
+  }
+
+  if (domainKey === 'risk') {
+    const qcStatus = userInputs['Quality connection status'];
+    const attrs = userInputs['Quality attributes tracked'];
+    const workflows = userInputs['Connected workflows'];
+    const cdiReduction = userInputs['CDI query reduction'];
+    const hccImprovement = userInputs['HCC improvement'];
+    const mipsValue = userInputs['MIPS / quality program'];
+    const strategicAreas = userInputs['Strategic areas'];
+    if (level === 1) {
+      if (qcStatus && !qcStatus.includes('Quality improving')) parts.push(`${qcStatus}.`);
+      else parts.push('Documentation quality has improved across encounters \u2014 the improvement hasn\u2019t been connected to any downstream program yet.');
+    }
+    if (level === 2 && attrs) {
+      parts.push(`Quality dimensions actively tracked: ${attrs.toLowerCase()}.`);
+    }
+    if (level === 3) {
+      if (workflows) parts.push(`Documentation quality is feeding: ${workflows.toLowerCase()}.`);
+      if (cdiReduction) parts.push(`${cdiReduction}.`);
+      if (hccImprovement) parts.push(`HCC improvement: ${hccImprovement}.`);
+      if (mipsValue) parts.push(`Quality program value: ${mipsValue}.`);
+    }
+    if (level === 4 && strategicAreas) {
+      parts.push(`Structured documentation is informing: ${strategicAreas.toLowerCase()}.`);
+    }
+  }
+
+  return parts.length > 0 ? parts.join(' ') : null;
+}
+
+// Generates a forensic opening paragraph for the executive summary — specific to this org's situation.
+function generateForensicOpening(
+  data: AmbientAssessmentPDFData,
+  domainLevels: Record<string, number>,
+): string {
+  const tenure = data.deploymentTenure || '';
+  const providers = data.providers || 0;
+  const confirmedDomains = DOMAIN_ORDER.filter(d => {
+    const dom = data.domains?.[d as keyof typeof data.domains];
+    return dom?.hasValue && !(d === 'revenue' && domainLevels[d] === 2);
+  });
+  const measuredDomainNames = DOMAIN_ORDER.filter(d => domainLevels[d] >= 3);
+  const unmeasuredDomains = DOMAIN_ORDER.filter(d => domainLevels[d] === 1);
+  const measuredTotal = confirmedDomains.reduce((sum, d) => {
+    const dom = data.domains?.[d as keyof typeof data.domains];
+    return sum + (dom?.gapValue || 0);
+  }, 0);
+  const providerStr = providers > 0 ? `${providers.toLocaleString()} providers` : 'your provider group';
+  const joinD = (keys: string[]) => {
+    const labels = keys.map(d => domainDisplayName[d]);
+    if (!labels.length) return '';
+    if (labels.length === 1) return labels[0];
+    return labels.slice(0, -1).join(', ') + ' and ' + labels[labels.length - 1];
+  };
+  if (DOMAIN_ORDER.every(d => domainLevels[d] === 4)) {
+    return `Four domains measured, connected, and managed across ${providerStr}. That profile is rare \u2014 and it reflects consistent organizational commitment over time. The work ahead is depth and compounding, not foundation-building.`;
+  }
+  if (tenure === '24+' && confirmedDomains.length >= 2) {
+    const unmStr = unmeasuredDomains.length > 0
+      ? ` ${joinD(unmeasuredDomains)} ${unmeasuredDomains.length === 1 ? 'hasn\u2019t' : 'haven\u2019t'} been formally analyzed \u2014 and at this tenure and scale, that\u2019s where the largest remaining gap lives.`
+      : '';
+    return `More than two years live across ${providerStr}. ${joinD(measuredDomainNames)} ${measuredDomainNames.length === 1 ? 'is' : 'are'} generating confirmed, attributable value${measuredTotal > 0 ? ' \u2014 ' + fmt(measuredTotal) + ' per year from stated inputs' : ''}.${unmStr}`;
+  }
+  if (tenure === '24+') {
+    return `More than two years live across ${providerStr}, and the value story hasn\u2019t been formally told yet. The deployment is running \u2014 what it\u2019s returning in revenue, workforce, and quality terms hasn\u2019t been attributed. At this tenure, that\u2019s not a technology gap. It\u2019s a measurement program gap.`;
+  }
+  if (tenure === '12-24' && confirmedDomains.length >= 1) {
+    const unmStr = unmeasuredDomains.length > 0
+      ? ` ${joinD(unmeasuredDomains)} ${unmeasuredDomains.length === 1 ? 'hasn\u2019t' : 'haven\u2019t'} been examined yet \u2014 and the data to do it is likely already in your systems.`
+      : '';
+    return `One to two years in across ${providerStr}. ${joinD(measuredDomainNames)} ${measuredDomainNames.length === 1 ? 'is' : 'are'} yielding confirmed value${measuredTotal > 0 ? ' \u2014 ' + fmt(measuredTotal) + ' annually' : ''}.${unmStr}`;
+  }
+  if (tenure === '12-24') {
+    return `One to two years in across ${providerStr}, and the measurement program is still forming. Value is generating across all four domains \u2014 none has been formally attributed. This is the stage where measurement habits either get built or don\u2019t. Organizations that build them now don\u2019t have to reconstruct them at year three.`;
+  }
+  if (tenure === '6-12' && confirmedDomains.length >= 1) {
+    const unmStr = unmeasuredDomains.length > 0 ? ` ${joinD(unmeasuredDomains)} ${unmeasuredDomains.length === 1 ? 'hasn\u2019t' : 'haven\u2019t'} been looked at yet.` : '';
+    return `About a year in across ${providerStr}. Measurement is underway${measuredTotal > 0 ? ' \u2014 ' + fmt(measuredTotal) + ' confirmed annually' : ''}.${unmStr} The 12-month window is when baseline data is most accessible \u2014 organizations that formalize measurement now don\u2019t have to reconstruct it later.`;
+  }
+  if (tenure === '6-12') {
+    return `About a year in across ${providerStr}. The deployment is stabilizing and value is starting to generate. The measurement infrastructure is in its earliest stages \u2014 the expected position at this stage, and also the moment when measurement habits are cheapest to build.`;
+  }
+  if (tenure === '0-6') {
+    return `Less than six months in across ${providerStr}. Early stage \u2014 adoption is still building and the measurement baseline hasn\u2019t been established yet. The organizations furthest ahead at 24 months started asking measurement questions before month six.`;
+  }
+  if (confirmedDomains.length >= 2) {
+    return `${joinD(measuredDomainNames)} ${measuredDomainNames.length === 1 ? 'is' : 'are'} generating confirmed, attributable value${measuredTotal > 0 ? ' \u2014 ' + fmt(measuredTotal) + ' per year' : ''}. ${unmeasuredDomains.length > 0 ? joinD(unmeasuredDomains) + (unmeasuredDomains.length === 1 ? ' hasn\u2019t' : ' haven\u2019t') + ' been formally examined yet.' : ''}`;
+  }
+  return `The ambient deployment is running across ${providerStr}. The value it\u2019s generating across all four dimensions hasn\u2019t been formally attributed yet \u2014 that\u2019s where this assessment starts.`;
+}
+
+// Generates the opening paragraph for the What Comes Next page — specific to this org.
+function generateWhatComesNextOpening(
+  data: AmbientAssessmentPDFData,
+  domainLevels: Record<string, number>,
+): string {
+  const confirmedDomains = DOMAIN_ORDER.filter(d => {
+    const dom = data.domains?.[d as keyof typeof data.domains];
+    return dom?.hasValue && !(d === 'revenue' && domainLevels[d] === 2);
+  });
+  const unmeasuredDomains = DOMAIN_ORDER.filter(d => domainLevels[d] === 1);
+  const measuredTotal = confirmedDomains.reduce((sum, d) => {
+    const dom = data.domains?.[d as keyof typeof data.domains];
+    return sum + (dom?.gapValue || 0);
+  }, 0);
+  const tenure = data.deploymentTenure || '';
+  const joinNames = (keys: string[]) => {
+    const labels = keys.map(d => domainDisplayName[d]);
+    if (!labels.length) return '';
+    if (labels.length === 1) return labels[0];
+    return labels.slice(0, -1).join(', ') + ' and ' + labels[labels.length - 1];
+  };
+  const confirmedNames = confirmedDomains.map(d => domainDisplayName[d]);
+  const unmeasuredNames = unmeasuredDomains.map(d => domainDisplayName[d]);
+  if (confirmedDomains.length >= 3) {
+    return `${joinNames(confirmedNames)} are generating confirmed, attributable value${measuredTotal > 0 ? ' \u2014 ' + fmt(measuredTotal) + ' per year from stated inputs' : ''}. The measurement infrastructure is real. The work ahead is integration depth: making sure the confirmed data is reaching the decisions it should be informing${unmeasuredDomains.length > 0 ? ', and closing the gap in ' + joinNames(unmeasuredNames) : ''}.`;
+  }
+  if (confirmedDomains.length === 2) {
+    return `Two domains are confirmed${measuredTotal > 0 ? ' \u2014 ' + fmt(measuredTotal) + ' per year' : ''}. ${joinNames(unmeasuredNames)} ${unmeasuredDomains.length === 1 ? 'represents' : 'represent'} the measurement gap. Based on this profile, the highest-return next move is the domain closest to confirmation \u2014 and the data to get there is likely already in your systems.`;
+  }
+  if (confirmedDomains.length === 1) {
+    return `One domain is confirmed${measuredTotal > 0 ? ' \u2014 ' + fmt(measuredTotal) + ' per year' : ''}. Three are generating returns that haven\u2019t been formally attributed. Organizations that confirm a second domain within 90 days of the first tend to move faster \u2014 because the organizational habit transfers.`;
+  }
+  if (tenure === '24+' || tenure === '12-24') {
+    return `No domain has been formally confirmed yet. The value is generating across all four dimensions \u2014 that\u2019s not in question at this tenure and scale. The question is whether there\u2019s a structured program to count it. Revenue and Workforce are typically the fastest paths, because the data exists in systems you already run.`;
+  }
+  return `The measurement program is in its earliest stages. The question isn\u2019t whether the value is there \u2014 it\u2019s which domain to confirm first, and what the fastest path to a defensible number looks like.`;
+}
+
+// Per-domain, per-level diagnostic questions — phrased as consultant interrogation, not checklists.
+const DOMAIN_DIAGNOSTIC_QUESTIONS: Record<string, Record<number, string>> = {
+  capacity: {
+    1: "Has anyone formally compared scheduling data before and after documentation time recovery \u2014 not survey feedback, but actual patient volume per provider? That comparison is what turns recovered time into a confirmed access number. Organizations that make it within 90 days tend to find it changes the operational conversation.",
+    2: "Recovered time is being directed somewhere. What\u2019s the confirmed change in patient volume per provider per month \u2014 in the scheduling system, not estimated? That number is the only gap between an emerging commitment and a demonstrated result.",
+    3: "Is capacity recovery a formal variable in your next FTE model or care model design? Moving from Demonstrated to Strategic Impact is a governance decision: when does recovered capacity start informing hiring plans rather than just metrics reports?",
+    4: "",
+  },
+  revenue: {
+    1: "When did your revenue cycle team last formally review coding distribution before and after documentation quality changed? Most haven\u2019t been asked. The organizations that ask \u2014 even informally \u2014 find a signal worth formalizing within the first review cycle.",
+    2: "You have directional signals. A single formal before/after analysis \u2014 4 to 6 weeks, with revenue cycle and clinical leadership aligned \u2014 converts a signal into a number leadership can act on. What\u2019s the barrier to scheduling that analysis?",
+    3: "Is your confirmed revenue impact data in the hands of the people negotiating your payer contracts? Moving from Demonstrated to Strategic Impact is a governance decision: who owns the connection between documentation quality and payer strategy?",
+    4: "",
+  },
+  workforce: {
+    1: "At your current provider turnover rate, what\u2019s the estimated annual replacement cost \u2014 and has anyone run that against your ambient adoption data? Organizations that do this calculation find it changes how they describe the deployment to their board. It stops being a documentation story and becomes a labor cost management story.",
+    2: "Behavioral changes are visible. The move to Demonstrated is a single HR data pull: ambient adopters versus non-adopters on 12-month turnover, with a dollar figure attached. That comparison is typically the most credible number in any ambient ROI presentation.",
+    3: "Is provider sustainability a formal variable in your FTE model? If not, the workforce economics you\u2019ve measured are informing a presentation rather than a hiring decision. Strategic Impact is when they inform the plan.",
+    4: "",
+  },
+  risk: {
+    1: "Which downstream team \u2014 CDI, coding, quality reporting, compliance \u2014 has formally seen the documentation quality improvement from your deployment? The value compounds when the teams built to use better documentation are actually receiving it. Making that connection is a meeting, not a technology project.",
+    2: "You\u2019re tracking quality attributes. Which program is structurally positioned to act on that data? Tracking without a downstream consumer is measuring without consequence. The Emerging-to-Demonstrated move is building one formal bridge \u2014 CDI, denials, or quality measures \u2014 and letting the breadth follow the first confirmed connection.",
+    3: "Is documentation quality on the agenda at your next value-based care planning session? The organizations that treat it as a governance input \u2014 not a departmental metric \u2014 are the ones that reach Strategic Impact. That repositioning is a leadership decision, not a data problem.",
+    4: "",
+  },
+};
+
 // ============================================================================
 // STYLES
 // ============================================================================
@@ -320,7 +617,7 @@ const s = StyleSheet.create({
   beigePageBg: { backgroundColor: "#F5F0EB", padding: 48, fontFamily: "Manrope", fontSize: 10 },
   darkPage: { backgroundColor: "#1A1A1A", padding: 48, fontFamily: "Manrope", fontSize: 10 },
   eyebrow: { fontSize: 8, fontWeight: 700, color: "#EA2C00", letterSpacing: 2, textTransform: "uppercase", marginBottom: 8 },
-  eyebrowDark: { fontSize: 8, fontWeight: 700, color: "rgba(255,255,255,0.4)", letterSpacing: 2, textTransform: "uppercase", marginBottom: 8 },
+  eyebrowDark: { fontSize: 8, fontWeight: 700, color: "rgba(255,255,255,0.58)", letterSpacing: 2, textTransform: "uppercase", marginBottom: 8 },
   eyebrowGray: { fontSize: 8, fontWeight: 700, color: "#888888", letterSpacing: 2, textTransform: "uppercase", marginBottom: 8 },
   headline: { fontSize: 26, fontWeight: 800, color: "#1A1A1A", lineHeight: 1.15, textTransform: "uppercase", marginBottom: 14 },
   headlineDark: { fontSize: 28, fontWeight: 800, color: "#FFFFFF", lineHeight: 1.15, marginBottom: 12 },
@@ -328,11 +625,11 @@ const s = StyleSheet.create({
   body: { fontSize: 11, fontWeight: 400, color: "#555555", lineHeight: 1.65, marginBottom: 10 },
   bodyDark: { fontSize: 11, fontWeight: 400, color: "rgba(255,255,255,0.65)", lineHeight: 1.65 },
   bodyMuted: { fontSize: 10.5, fontWeight: 400, color: "#888888", lineHeight: 1.6 },
-  italic: { fontSize: 9, fontWeight: 400, color: "rgba(255,255,255,0.4)", lineHeight: 1.6, fontStyle: "italic" },
+  italic: { fontSize: 9, fontWeight: 400, color: "rgba(255,255,255,0.62)", lineHeight: 1.6, fontStyle: "italic" },
   disclaimer: { fontSize: 8, color: "#999999", lineHeight: 1.5 },
   bigNum: { fontSize: 48, fontWeight: 800, color: "#EA2C00", lineHeight: 1 },
   bigNumDark: { fontSize: 40, fontWeight: 800, color: "#FFFFFF", lineHeight: 1 },
-  bigNumGray: { fontSize: 32, fontWeight: 800, color: "rgba(255,255,255,0.3)", lineHeight: 1 },
+  bigNumGray: { fontSize: 32, fontWeight: 800, color: "rgba(255,255,255,0.55)", lineHeight: 1 },
   medNum: { fontSize: 22, fontWeight: 800, color: "#EA2C00", lineHeight: 1 },
   redRule: { height: 3, backgroundColor: "#EA2C00", width: 48, marginBottom: 14 },
   divider: { height: 1, backgroundColor: "#E5E0D9", marginVertical: 18 },
@@ -341,14 +638,14 @@ const s = StyleSheet.create({
   tile: { backgroundColor: "#FFFFFF", borderRadius: 4, padding: 16, borderWidth: 1, borderColor: "#E5E0D9" },
   beigeBox: { backgroundColor: "#F5F0EB", borderRadius: 4, padding: 16 },
   darkTile: { backgroundColor: "#1A1A1A", borderRadius: 4, padding: 18 },
-  darkCard: { backgroundColor: "rgba(255,255,255,0.06)", borderRadius: 4, padding: 14, marginBottom: 8 },
+  darkCard: { backgroundColor: "rgba(255,255,255,0.09)", borderRadius: 4, padding: 14, marginBottom: 8 },
   orangeTile: { backgroundColor: "#EA2C00", borderRadius: 4, padding: 16 },
   unmeasuredBadge: {
     backgroundColor: "rgba(255,255,255,0.08)", borderRadius: 3,
     paddingVertical: 3, paddingHorizontal: 8, alignSelf: "flex-start",
   },
   levelBadge: { width: 26, height: 26, borderRadius: 13, backgroundColor: "#EA2C00", alignItems: "center", justifyContent: "center" },
-  levelBadgeDark: { width: 26, height: 26, borderRadius: 13, backgroundColor: "rgba(255,255,255,0.1)", alignItems: "center", justifyContent: "center" },
+  levelBadgeDark: { width: 26, height: 26, borderRadius: 13, backgroundColor: "#E5E7EB", alignItems: "center", justifyContent: "center" },
   footerWrapper: {
     marginTop: "auto", flexDirection: "row", justifyContent: "space-between",
     alignItems: "center", paddingTop: 8, borderTopWidth: 1, borderTopColor: "#E5E0D9",
@@ -357,6 +654,11 @@ const s = StyleSheet.create({
     marginTop: "auto", flexDirection: "row", justifyContent: "space-between",
     alignItems: "center", paddingTop: 8, borderTopWidth: 1, borderTopColor: "rgba(255,255,255,0.1)",
   },
+  beigeSidebar: { backgroundColor: "#F5F0EB", borderRadius: 4, padding: 20, flex: 0.9 },
+  sidebarLabel: { fontSize: 7.5, fontWeight: 700, color: "#888888", letterSpacing: 2, textTransform: "uppercase" as const, marginBottom: 6 },
+  sidebarValue: { fontSize: 44, fontWeight: 800, color: "#EA2C00", lineHeight: 1, marginBottom: 4 },
+  sidebarDivider: { height: 1, backgroundColor: "#E5E0D9", marginVertical: 12 },
+  gapItem: { flexDirection: "row" as const, gap: 6, marginBottom: 5 },
 });
 
 // ============================================================================
@@ -378,344 +680,130 @@ function PageFooter({ pageNum, orgName, dark = false }: { pageNum: number; orgNa
 }
 
 // ============================================================================
-// PAGE 3: THE FINANCIAL SHAPE
+// PAGE 2: ASSESSMENT PAGE
 // ============================================================================
 
-function FinancialShapePage({ data }: { data: AmbientAssessmentPDFData }) {
+function AssessmentPage({ data, archetype }: {
+  data: AmbientAssessmentPDFData;
+  archetype: { name: string; headline: string; body: string };
+}) {
   const domainLevels: Record<string, number> = {
     capacity: data.domains?.capacity?.activationLevel || 1,
     revenue: data.domains?.revenue?.activationLevel || 1,
     workforce: data.domains?.workforce?.activationLevel || 1,
     risk: data.domains?.risk?.activationLevel || 1,
   };
-  const measuredTotal = DOMAIN_ORDER.reduce((sum, d) => {
-    const dom = data.domains?.[d as keyof typeof data.domains];
-    if (!dom?.hasValue) return sum;
-    if (d === 'revenue' && dom.activationLevel === 2) return sum;
-    return sum + (dom.gapValue || 0);
-  }, 0);
-  const revL2Value = (domainLevels.revenue === 2 && data.domains?.revenue?.hasValue)
-    ? (data.domains.revenue.gapValue || 0) : 0;
-  const unmeasuredLow = DOMAIN_ORDER.reduce((sum, d) => {
-    if (domainLevels[d] === 1 && data.providers > 0) return sum + BENCH[d].low(data.providers);
-    return sum;
-  }, 0);
-  const unmeasuredHigh = DOMAIN_ORDER.reduce((sum, d) => {
-    if (domainLevels[d] === 1 && data.providers > 0) return sum + BENCH[d].high(data.providers);
-    return sum;
-  }, 0);
-
-  const unmeasuredMid = Math.round((unmeasuredLow + unmeasuredHigh) / 2);
-  const yr1 = Math.round(measuredTotal + unmeasuredMid * 0.25);
-  const yr2 = Math.round(measuredTotal + unmeasuredMid * 0.65);
-  const yr3 = Math.round(measuredTotal + unmeasuredMid);
-  const maxBar = yr3 > 0 ? yr3 : 1;
-  const showTrajectory = yr3 > measuredTotal;
-
-  return (
-    <Page size="LETTER" style={s.whitePage} wrap={false}>
-      <View style={s.redRule} />
-      <Text style={s.eyebrow}>The Financial Shape</Text>
-      <Text style={{ fontSize: 9, color: "#888888", lineHeight: 1.6, marginBottom: 20, maxWidth: 460 }}>
-        {"The numbers below are either confirmed from your stated inputs or labeled as benchmark ranges. Nothing is projected without being labeled. The confirmed figures belong to your organization. The range reflects what organizations your size typically find when they analyze the domains you haven\u2019t measured yet."}
-      </Text>
-
-      <View style={{ flexDirection: "row", gap: 12, marginBottom: 6 }}>
-        <View style={{ flex: 1, backgroundColor: "#1A1A1A", borderRadius: 6, padding: 20 }}>
-          <Text style={{ fontSize: 7.5, fontWeight: 700, color: "rgba(255,255,255,0.35)", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 10 }}>
-            Confirmed Annual Value
-          </Text>
-          {measuredTotal > 0 ? (
-            <>
-              <Text style={{ fontSize: 42, fontWeight: 800, color: "#EA2C00", lineHeight: 1, marginBottom: 4 }}>
-                {fmt(measuredTotal)}
-              </Text>
-              <Text style={{ fontSize: 8.5, color: "rgba(255,255,255,0.3)" }}>
-                {"per year \u00B7 from your inputs"}
-              </Text>
-              <Text style={{ fontSize: 8, color: "rgba(255,255,255,0.2)", marginTop: 4 }}>
-                {`Confirmed across ${DOMAIN_ORDER.filter(d => {
-                  const dom = data.domains?.[d as keyof typeof data.domains];
-                  return dom?.hasValue && !(d === 'revenue' && domainLevels[d] === 2);
-                }).length} of 4 domains`}
-              </Text>
-            </>
-          ) : (
-            <>
-              <Text style={{ fontSize: 22, fontWeight: 700, color: "rgba(255,255,255,0.2)", lineHeight: 1, marginBottom: 4 }}>
-                {"\u2014"}
-              </Text>
-              <Text style={{ fontSize: 8.5, color: "rgba(255,255,255,0.2)" }}>No domains formally measured yet</Text>
-            </>
-          )}
-          {unmeasuredLow > 0 && (
-            <View style={{ marginTop: 14, paddingTop: 12, borderTopWidth: 1, borderTopColor: "rgba(255,255,255,0.08)" }}>
-              <Text style={{ fontSize: 7.5, fontWeight: 700, color: "rgba(255,255,255,0.25)", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 6 }}>
-                Not Yet in the Picture
-              </Text>
-              <Text style={{ fontSize: 22, fontWeight: 800, color: "rgba(255,255,255,0.4)", lineHeight: 1, marginBottom: 3 }}>
-                {`+ ${fmt(unmeasuredLow)}\u2013${fmt(unmeasuredHigh)}`}
-              </Text>
-              <Text style={{ fontSize: 8, color: "rgba(255,255,255,0.2)" }}>per year {"\u00B7"} benchmark range</Text>
-            </View>
-          )}
-          {revL2Value > 0 && (
-            <View style={{ marginTop: 12, paddingTop: 10, borderTopWidth: 1, borderTopColor: "rgba(255,255,255,0.08)" }}>
-              <Text style={{ fontSize: 7.5, fontWeight: 700, color: "rgba(245,158,11,0.7)", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 4 }}>
-                Revenue Signal
-              </Text>
-              <Text style={{ fontSize: 11, fontWeight: 700, color: "rgba(245,158,11,0.8)", lineHeight: 1 }}>
-                {`~${fmt(revL2Value)}/yr`}
-              </Text>
-              <Text style={{ fontSize: 7.5, color: "rgba(255,255,255,0.2)", marginTop: 3 }}>
-                Signals observed {"\u00B7"} not yet confirmed in billing data {"\u00B7"} Next: retrospective coding audit
-              </Text>
-            </View>
-          )}
-        </View>
-      </View>
-
-      {showTrajectory && (
-        <View style={[s.beigeBox, { marginTop: 16 }]}>
-          <Text style={s.eyebrow}>Value of Acting Now</Text>
-          <Text style={{ fontSize: 8.5, color: "#888888", marginBottom: 12 }}>
-            {"What the measurement program is worth over 36 months \u2014 at your scale."}
-          </Text>
-          {[
-            { label: "TODAY", value: measuredTotal, note: "confirmed", highlight: false },
-            { label: "YEAR 1", value: yr1, note: "if measurement begins now", highlight: false },
-            { label: "YEAR 2", value: yr2, note: "domains formalized", highlight: false },
-            { label: "YEAR 3", value: yr3, note: "full measurement", highlight: true },
-          ].map((item, i) => {
-            const pct = Math.round((item.value / maxBar) * 100);
-            return (
-              <View key={i} style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: i < 3 ? 6 : 0 }}>
-                <Text style={{ fontSize: 7, fontWeight: 700, color: "#888888", letterSpacing: 1, width: 34 }}>{item.label}</Text>
-                <View style={{ flex: 1, height: 7, backgroundColor: "#E5E0D9", borderRadius: 3 }}>
-                  <View style={{ width: pct + "%", height: 7, backgroundColor: i === 0 ? "#CCCCCC" : "#EA2C00", borderRadius: 3, opacity: i === 0 ? 0.6 : 0.4 + i * 0.2 }} />
-                </View>
-                <Text style={{ fontSize: 8.5, fontWeight: 700, color: item.highlight ? "#EA2C00" : "#555555", width: 62, textAlign: "right" }}>{fmt(item.value)}</Text>
-                <Text style={{ fontSize: 7.5, color: "#AAAAAA", width: 90 }}>{item.note}</Text>
-              </View>
-            );
-          })}
-          <Text style={{ fontSize: 7.5, color: "#AAAAAA", marginTop: 10, fontStyle: "italic" }}>
-            {"3-year value assumes 55% realization in Year 1 as deployment scales, 75% in Year 2, and 85% in Year 3 as utilization matures \u2014 consistent with typical ambient AI adoption curves. The \u201Cpermanently lost\u201D figures reflect quarters of delayed measurement multiplied by the adoption-curve delta observed between organizations that formalize measurement in Year 1 vs. Year 2+. These are illustrative scenarios, not projections. Methodology available upon request."}
-          </Text>
-        </View>
-      )}
-
-      <View style={{ marginTop: "auto" }}>
-        <Text style={s.disclaimer}>
-          {"Confirmed values derived from stated inputs using conservative 11-month projection with confidence discounts. Benchmark ranges for unmeasured domains are based on organizations of comparable size and are not projections for your organization. Actual results vary."}
-        </Text>
-      </View>
-
-      <PageFooter pageNum={3} orgName={data.organizationName} />
-    </Page>
-  );
-}
-
-// ============================================================================
-// PAGE 1: YOUR ASSESSMENT
-// ============================================================================
-
-function YourAssessmentPage({ data }: { data: AmbientAssessmentPDFData }) {
-  const domainLevels: Record<string, number> = {
-    capacity: data.domains?.capacity?.activationLevel || 1,
-    revenue: data.domains?.revenue?.activationLevel || 1,
-    workforce: data.domains?.workforce?.activationLevel || 1,
-    risk: data.domains?.risk?.activationLevel || 1,
-  };
-  const archetype = computeArchetype(domainLevels, data.providers);
-  const tenureMod = computeTenureModifier(data.deploymentTenure || "", data.documentationScore);
   const band = scoreBand(data.documentationScore);
-  const domainScores: Record<string, number> = {
-    capacity: data.domains?.capacity?.score || 0,
-    revenue: data.domains?.revenue?.score || 0,
-    workforce: data.domains?.workforce?.score || 0,
-    risk: data.domains?.risk?.score || 0,
-  };
-
-  return (
-    <Page size="LETTER" style={s.whitePage} wrap={false}>
-      <View style={s.redRule} />
-      <Text style={s.eyebrow}>Your Assessment</Text>
-
-      <View style={{ flexDirection: "row", gap: 24, marginBottom: 20 }}>
-        <View style={{ flex: 1.6 }}>
-          <Text style={{ fontSize: 9, fontWeight: 700, color: "#888888", letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 6 }}>
-            {`Your Ambient Profile \u00B7 ${archetype.name}`}
-          </Text>
-          <Text style={{ fontSize: 22, fontWeight: 800, color: "#1A1A1A", lineHeight: 1.2, marginBottom: 10 }}>
-            {archetype.name}
-          </Text>
-          <View style={{ height: 1, backgroundColor: "#E5E0D9", marginBottom: 10 }} />
-          {tenureMod ? (
-            <Text style={{ fontSize: 10, color: "rgba(26,26,26,0.6)", lineHeight: 1.6, marginBottom: 8 }}>
-              {tenureMod}
-            </Text>
-          ) : null}
-          <Text style={{ fontSize: 10, color: "#555555", lineHeight: 1.65, marginBottom: 14 }}>
-            {archetype.body}
-          </Text>
-        </View>
-
-        <View style={{ flex: 0.75 }}>
-          <View style={[s.beigeBox, { alignItems: "center", paddingVertical: 18 }]}>
-            <Text style={{ fontSize: 7.5, fontWeight: 700, color: "#888888", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>
-              Maturity Score
-            </Text>
-            <Text style={{ fontSize: 56, fontWeight: 800, color: "#EA2C00", lineHeight: 1 }}>
-              {data.documentationScore}
-            </Text>
-            <Text style={{ fontSize: 13, color: "#AAAAAA", marginTop: 2 }}>/100</Text>
-            <View style={{ height: 4, backgroundColor: "#E5E0D9", borderRadius: 2, width: "80%", marginTop: 8, marginBottom: 6 }}>
-              <View style={{ height: 4, backgroundColor: "#EA2C00", borderRadius: 2, width: `${data.documentationScore}%` }} />
-            </View>
-            <Text style={{ fontSize: 10, fontWeight: 700, color: "#1A1A1A" }}>{band}</Text>
-            {data.deploymentTenure && (
-              <View style={{ backgroundColor: "#FFFFFF", borderRadius: 3, paddingVertical: 4, paddingHorizontal: 10, marginTop: 8 }}>
-                <Text style={{ fontSize: 8, color: "#888888", textAlign: "center" }}>
-                  {tenureLabel(data.deploymentTenure) + " in deployment"}
-                </Text>
-              </View>
-            )}
-          </View>
-        </View>
-      </View>
-
-      <View style={s.divider} />
-      <Text style={[s.eyebrowGray, { marginBottom: 10 }]}>Domain Breakdown</Text>
-
-      {DOMAIN_ORDER.map((key) => {
-        const score = domainScores[key];
-        const level = data.domains?.[key as keyof typeof data.domains]?.activationLevel || 1;
-        const label = data.domains?.[key as keyof typeof data.domains]?.activationLabel || "";
-        const pct = (score / 25) * 100;
-        const isUnmeasured = level === 1;
-        return (
-          <View key={key} style={{ marginBottom: 12 }}>
-            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 2 }}>
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                <Text style={{ fontSize: 10, fontWeight: 700, color: isUnmeasured ? "#AAAAAA" : "#1A1A1A" }}>
-                  {domainDisplayName[key]}
-                </Text>
-                <Text style={{ fontSize: 8.5, color: isUnmeasured ? "#BBBBBB" : "#888888" }}>
-                  {`L${level} \u00B7 ${label}`}
-                </Text>
-              </View>
-              <Text style={{ fontSize: 10, fontWeight: 700, color: isUnmeasured ? "#AAAAAA" : "#1A1A1A" }}>
-                {score} / 25
-              </Text>
-            </View>
-            <View style={{ height: 5, backgroundColor: "#E5E0D9", borderRadius: 2 }}>
-              <View style={{ height: 5, backgroundColor: isUnmeasured ? "#D1D5DB" : "#EA2C00", borderRadius: 2, width: `${pct}%` }} />
-            </View>
-          </View>
-        );
-      })}
-
-      <View style={[s.beigeBox, { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingVertical: 12, marginTop: 8 }]}>
-        {[
-          { label: "Pre-Measurement", range: "\u226416" },
-          { label: "Signal", range: "17\u201338" },
-          { label: "Confirmed", range: "39\u201360" },
-          { label: "Managed ROI", range: "61\u201379" },
-          { label: "Strategic Asset", range: "80\u2013100" },
-        ].map((b, i) => {
-          const isCurrent = scoreBand(data.documentationScore) === b.label;
-          return (
-            <View key={i} style={{ alignItems: "center", flex: 1 }}>
-              <View style={{ width: 8, height: 8, borderRadius: 4, marginBottom: 3, backgroundColor: isCurrent ? "#EA2C00" : "#CCCCCC" }} />
-              <Text style={{ fontSize: 7.5, fontWeight: isCurrent ? 700 : 400, color: isCurrent ? "#EA2C00" : "#999999", textAlign: "center" }}>
-                {b.label}
-              </Text>
-              <Text style={{ fontSize: 7, color: "#AAAAAA", textAlign: "center" }}>{b.range}</Text>
-            </View>
-          );
-        })}
-      </View>
-
-      <PageFooter pageNum={1} orgName={data.organizationName} />
-    </Page>
+  const peText = computePESignal(
+    data.patientExperienceNoticeable || '',
+    data.patientExperienceSignals || '',
+    data.patientExperienceFormalized || '',
   );
-}
+  const tenureShort = data.deploymentTenure === "0-6" ? "<6 mo"
+    : data.deploymentTenure === "6-12" ? "6\u201312 mo"
+    : data.deploymentTenure === "12-24" ? "1\u20132 yrs"
+    : data.deploymentTenure === "24+" ? "2+ yrs" : "";
 
-// ============================================================================
-// PAGE 2: WHAT YOU TOLD US
-// ============================================================================
-
-function WhatYouToldUsPage({ data }: { data: AmbientAssessmentPDFData }) {
   return (
     <Page size="LETTER" style={s.whitePage} wrap={false}>
-      <View style={s.redRule} />
-      <Text style={s.eyebrow}>What You Told Us</Text>
-      <Text style={{ fontSize: 9, color: "#888888", lineHeight: 1.6, marginBottom: 18, maxWidth: 460 }}>
-        {"This page reflects what your organization reported across four domains. These are your words \u2014 organized by how far each domain has traveled."}
-      </Text>
+      <View style={{ flexDirection: "row", gap: 22, flex: 1 }}>
 
-      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12 }}>
-        {DOMAIN_ORDER.map((key) => {
-          const domain = data.domains?.[key as keyof typeof data.domains];
-          const level = domain?.activationLevel || 1;
-          const label = domain?.activationLabel || "";
-          const userInputs = domain?.userInputs || {};
-          const inputEntries = Object.entries(userInputs).filter(([, v]) => v);
-          const isUnmeasured = level === 1;
-          const nextStep = level < 4 ? (domainNextUnlock[key]?.[level] || "") : "";
+        {/* LEFT COLUMN */}
+        <View style={{ flex: 1.55 }}>
+          <Text style={{ fontSize: 8, fontWeight: 700, color: "#888888", letterSpacing: 2.5, textTransform: "uppercase", marginBottom: 10 }}>
+            The Assessment
+          </Text>
 
-          return (
-            <View key={key} style={{ width: "48%", borderWidth: 1, borderColor: "#E5E0D9", borderRadius: 6, padding: 14, backgroundColor: "#FFFFFF" }}>
-              <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                <Text style={{ fontSize: 10, fontWeight: 800, color: isUnmeasured ? "#AAAAAA" : "#1A1A1A" }}>
-                  {domainDisplayName[key]}
-                </Text>
-                <View style={{
-                  backgroundColor: isUnmeasured ? "#F3F4F6" : "#FFF0ED",
-                  borderRadius: 3, paddingVertical: 2, paddingHorizontal: 7,
-                }}>
-                  <Text style={{ fontSize: 8, fontWeight: 700, color: isUnmeasured ? "#888888" : "#EA2C00", letterSpacing: 0.8 }}>
-                    {`L${level}`}
-                  </Text>
-                </View>
-              </View>
+          <Text style={{ fontFamily: "Abridge", fontSize: 28, color: "#1A1A1A", lineHeight: 1.08, textTransform: "uppercase", marginBottom: 10, maxWidth: 380 }}>
+            {archetype.headline}
+          </Text>
 
-              <Text style={{ fontSize: 8, color: isUnmeasured ? "#BBBBBB" : "#888888", marginBottom: 8, fontStyle: "italic" }}>
-                {label}
-              </Text>
+          <View style={s.redRule} />
 
-              <View style={{ height: 1, backgroundColor: "#F0EDEA", marginBottom: 8 }} />
+          <Text style={{ fontSize: 10.5, color: "#555555", lineHeight: 1.72, marginBottom: 14 }}>
+            {generateForensicOpening(data, domainLevels)}
+          </Text>
 
-              {isUnmeasured ? (
-                <Text style={{ fontSize: 9, color: "#BBBBBB", fontStyle: "italic", lineHeight: 1.5 }}>
-                  Not yet formally measured.
-                </Text>
-              ) : inputEntries.length > 0 ? (
-                inputEntries.map(([k, v], i) => (
-                  <View key={i} style={{ flexDirection: "row", gap: 6, marginBottom: 5, alignItems: "flex-start" }}>
-                    <View style={{ width: 5, height: 5, borderRadius: 2.5, backgroundColor: "#EA2C00", marginTop: 3.5, flexShrink: 0 }} />
-                    <View style={{ flex: 1 }}>
-                      <Text style={{ fontSize: 8, color: "#888888" }}>{k}</Text>
-                      <Text style={{ fontSize: 9, fontWeight: 700, color: "#1A1A1A" }}>{v}</Text>
-                    </View>
-                  </View>
-                ))
-              ) : (
-                <Text style={{ fontSize: 9, color: "#AAAAAA", fontStyle: "italic" }}>No specific inputs recorded.</Text>
-              )}
-
-              {nextStep ? (
-                <View style={{ marginTop: 10, paddingTop: 8, borderTopWidth: 1, borderTopColor: "#F0EDEA" }}>
-                  <Text style={{ fontSize: 7.5, fontWeight: 700, color: "#888888", letterSpacing: 1, textTransform: "uppercase", marginBottom: 3 }}>
-                    Next
-                  </Text>
-                  <Text style={{ fontSize: 8.5, color: "#888888", lineHeight: 1.5 }}>{nextStep}</Text>
-                </View>
-              ) : null}
+          {/* Profile badge */}
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 14 }}>
+            <View style={{ width: 2, height: 26, backgroundColor: "#EA2C00", borderRadius: 1 }} />
+            <View>
+              <Text style={{ fontSize: 7, fontWeight: 700, color: "#AAAAAA", letterSpacing: 2, textTransform: "uppercase" }}>Profile</Text>
+              <Text style={{ fontSize: 10, fontWeight: 700, color: "#555555" }}>{archetype.name}</Text>
             </View>
-          );
-        })}
+          </View>
+
+          {/* PE signal */}
+          {peText && (
+            <View style={{ backgroundColor: "#FFF5F2", borderRadius: 4, padding: 12, borderLeftWidth: 2, borderLeftColor: "#EA2C00", marginBottom: 14 }}>
+              <Text style={{ fontSize: 7.5, fontWeight: 700, color: "#EA2C00", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 4 }}>Patient Experience Signal</Text>
+              <Text style={{ fontSize: 9.5, color: "#555555", lineHeight: 1.6 }}>{peText}</Text>
+            </View>
+          )}
+
+          {/* Bridge sentence */}
+          <Text style={{ fontSize: 8.5, color: "#AAAAAA", lineHeight: 1.55, fontStyle: "italic", marginTop: "auto" }}>
+            {"The domain pages that follow show what each measurement step looks like and what organizations at this stage typically find."}
+          </Text>
+        </View>
+
+        {/* RIGHT COLUMN */}
+        <View style={{ flex: 0.9 }}>
+          <View style={{ backgroundColor: "#F5F0EB", borderRadius: 6, padding: 18 }}>
+
+            {/* Score */}
+            <Text style={{ fontSize: 7.5, fontWeight: 700, color: "#888888", letterSpacing: 2, textTransform: "uppercase", marginBottom: 6 }}>Maturity Score</Text>
+            <Text style={{ fontSize: 44, fontWeight: 800, color: "#EA2C00", lineHeight: 1 }}>{data.documentationScore}</Text>
+            <Text style={{ fontSize: 10, color: "#888888", marginTop: 2, marginBottom: 8 }}>{band}</Text>
+            <View style={{ height: 5, backgroundColor: "#E5E0D9", borderRadius: 3, marginBottom: 10 }}>
+              <View style={{ height: 5, backgroundColor: "#EA2C00", borderRadius: 3, width: `${data.documentationScore}%` }} />
+            </View>
+
+            {/* Stats */}
+            <View style={{ flexDirection: "row", gap: 14, marginBottom: 14 }}>
+              {data.providers > 0 && (
+                <View>
+                  <Text style={{ fontSize: 7, fontWeight: 700, color: "#AAAAAA", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 2 }}>Providers</Text>
+                  <Text style={{ fontSize: 14, fontWeight: 800, color: "#1A1A1A" }}>{data.providers.toLocaleString()}</Text>
+                </View>
+              )}
+              {tenureShort && (
+                <View>
+                  <Text style={{ fontSize: 7, fontWeight: 700, color: "#AAAAAA", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 2 }}>Tenure</Text>
+                  <Text style={{ fontSize: 14, fontWeight: 800, color: "#1A1A1A" }}>{tenureShort}</Text>
+                </View>
+              )}
+            </View>
+
+            <View style={{ height: 1, backgroundColor: "#E5E0D9", marginBottom: 12 }} />
+
+            {/* Domain matrix */}
+            <Text style={{ fontSize: 7.5, fontWeight: 700, color: "#888888", letterSpacing: 2, textTransform: "uppercase", marginBottom: 8 }}>Domain Status</Text>
+            {DOMAIN_ORDER.map((key) => {
+              const level = domainLevels[key];
+              const label = data.domains?.[key as keyof typeof data.domains]?.activationLabel || "";
+              const isL1 = level === 1;
+              return (
+                <View key={key} style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 7 }}>
+                    <View style={{
+                      width: 20, height: 20, borderRadius: 10,
+                      backgroundColor: isL1 ? "#E5E7EB" : "#EA2C00",
+                      alignItems: "center", justifyContent: "center"
+                    }}>
+                      <Text style={{ fontSize: 9, fontWeight: 800, color: isL1 ? "#888888" : "#FFFFFF" }}>{level}</Text>
+                    </View>
+                    <Text style={{ fontSize: 9, fontWeight: 700, color: isL1 ? "#AAAAAA" : "#1A1A1A" }}>
+                      {domainDisplayName[key]}
+                    </Text>
+                  </View>
+                  <Text style={{ fontSize: 8, color: "#AAAAAA", maxWidth: 80, textAlign: "right" }}>{label}</Text>
+                </View>
+              );
+            })}
+          </View>
+        </View>
+
       </View>
 
       <PageFooter pageNum={2} orgName={data.organizationName} />
@@ -724,7 +812,227 @@ function WhatYouToldUsPage({ data }: { data: AmbientAssessmentPDFData }) {
 }
 
 // ============================================================================
-// PAGES 4–7: DOMAIN PAGES
+// PAGE 4: CONFIRMED AND NOT YET EXAMINED
+// ============================================================================
+
+function ConfirmedAndUnexaminedPage({ data }: { data: AmbientAssessmentPDFData }) {
+  const domainLevels: Record<string, number> = {
+    capacity: data.domains?.capacity?.activationLevel || 1,
+    revenue: data.domains?.revenue?.activationLevel || 1,
+    workforce: data.domains?.workforce?.activationLevel || 1,
+    risk: data.domains?.risk?.activationLevel || 1,
+  };
+
+  const confirmedDomains = DOMAIN_ORDER.filter(d => {
+    const dom = data.domains?.[d as keyof typeof data.domains];
+    return dom?.hasValue && !(d === 'revenue' && domainLevels[d] === 2);
+  });
+
+  const measuredTotal = confirmedDomains.reduce((sum, d) => {
+    const dom = data.domains?.[d as keyof typeof data.domains];
+    return sum + (dom?.gapValue || 0);
+  }, 0);
+
+  const unexaminedDomains = DOMAIN_ORDER.filter(d => domainLevels[d] === 1);
+  const providers = data.providers || 0;
+
+  return (
+    <Page size="LETTER" style={s.whitePage} wrap={false}>
+      <View style={s.redRule} />
+      <Text style={s.eyebrow}>Confirmed and Not Yet Examined</Text>
+
+      {/* Dynamic headline */}
+      <Text style={{ fontFamily: "Abridge", fontSize: 24, color: "#1A1A1A", textTransform: "uppercase", lineHeight: 1.1, marginBottom: 8, maxWidth: 500 }}>
+        {measuredTotal > 0
+          ? `${fmt(measuredTotal)} confirmed annually.`
+          : "Four domains generating value. None formally measured yet."}
+      </Text>
+
+      {/* Framing sentence */}
+      <Text style={{ fontSize: 9.5, color: "#888888", lineHeight: 1.65, marginBottom: 20, maxWidth: 500 }}>
+        {measuredTotal > 0
+          ? "The figures below are from stated inputs \u2014 not projections. Domains not yet formally measured are listed separately with industry benchmark ranges from published sources."
+          : "The deployment is live. The value it\u2019s generating across all four dimensions hasn\u2019t been formally attributed yet. The domain pages that follow show what each measurement step looks like."}
+      </Text>
+
+      <View style={{ flexDirection: "row", gap: 16, flex: 1 }}>
+
+        {/* Zone 1: Confirmed */}
+        {confirmedDomains.length > 0 && (
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontSize: 7.5, fontWeight: 700, color: "#EA2C00", letterSpacing: 2, textTransform: "uppercase", marginBottom: 10 }}>
+              Confirmed
+            </Text>
+            {confirmedDomains.map(d => {
+              const dom = data.domains?.[d as keyof typeof data.domains]!;
+              return (
+                <View key={d} style={{ backgroundColor: "#1A1A1A", borderRadius: 6, padding: 16, marginBottom: 8 }}>
+                  <Text style={{ fontSize: 8, fontWeight: 700, color: "rgba(255,255,255,0.55)", letterSpacing: 2, textTransform: "uppercase", marginBottom: 4 }}>
+                    {domainDisplayName[d]}
+                  </Text>
+                  <Text style={{ fontSize: 8, color: "rgba(255,255,255,0.55)", marginBottom: 6 }}>{dom.activationLabel}</Text>
+                  <Text style={{ fontSize: 30, fontWeight: 800, color: "#EA2C00", lineHeight: 1, marginBottom: 3 }}>
+                    {fmt(dom.gapValue || 0)}
+                  </Text>
+                  <Text style={{ fontSize: 7.5, color: "rgba(255,255,255,0.45)" }}>per year \u00B7 from stated inputs</Text>
+                </View>
+              );
+            })}
+            {measuredTotal > 0 && confirmedDomains.length > 1 && (
+              <View style={{ flexDirection: "row", justifyContent: "space-between", paddingHorizontal: 4, paddingTop: 8, borderTopWidth: 1, borderTopColor: "#E5E0D9" }}>
+                <Text style={{ fontSize: 8.5, fontWeight: 700, color: "#888888" }}>Total confirmed annually</Text>
+                <Text style={{ fontSize: 8.5, fontWeight: 800, color: "#EA2C00" }}>{fmt(measuredTotal)}</Text>
+              </View>
+            )}
+          </View>
+        )}
+
+        {/* Zone 2: Not Yet Examined */}
+        {unexaminedDomains.length > 0 && (
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontSize: 7.5, fontWeight: 700, color: "#888888", letterSpacing: 2, textTransform: "uppercase", marginBottom: 10 }}>
+              Not Yet Examined \u00B7 Industry Benchmark Ranges
+            </Text>
+            {unexaminedDomains.map(d => {
+              const bench = BENCH[d];
+              return (
+                <View key={d} style={{ borderWidth: 1, borderColor: "#E5E0D9", borderRadius: 6, padding: 14, marginBottom: 8 }}>
+                  <Text style={{ fontSize: 8, fontWeight: 700, color: "#AAAAAA", letterSpacing: 2, textTransform: "uppercase", marginBottom: 6 }}>
+                    {domainDisplayName[d]}
+                  </Text>
+                  {providers > 0 ? (
+                    <>
+                      <Text style={{ fontSize: 18, fontWeight: 800, color: "#888888", lineHeight: 1, marginBottom: 3 }}>
+                        {`${fmt(bench.low(providers))}\u2013${fmt(bench.high(providers))}/yr`}
+                      </Text>
+                      <Text style={{ fontSize: 8, color: "#AAAAAA", lineHeight: 1.5, marginBottom: 4 }}>{bench.desc}</Text>
+                      <Text style={{ fontSize: 7, color: "#CCCCCC", fontStyle: "italic", lineHeight: 1.4 }}>{bench.source}</Text>
+                    </>
+                  ) : (
+                    <Text style={{ fontSize: 8.5, color: "#AAAAAA", fontStyle: "italic" }}>Not yet formally measured.</Text>
+                  )}
+                </View>
+              );
+            })}
+            <Text style={{ fontSize: 7.5, color: "#BBBBBB", lineHeight: 1.55, fontStyle: "italic", marginTop: 6 }}>
+              {"Benchmark ranges reflect what organizations of comparable size typically find when they measure this domain. These are published ranges, not projections for this organization."}
+            </Text>
+          </View>
+        )}
+
+        {/* All L1 — no confirmed, no providers */}
+        {confirmedDomains.length === 0 && unexaminedDomains.length === 0 && (
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontSize: 9.5, color: "#888888", lineHeight: 1.65 }}>
+              {"No domains have been formally measured yet. The domain pages that follow show what each measurement step looks like."}
+            </Text>
+          </View>
+        )}
+
+      </View>
+
+      {/* Bridge sentence */}
+      <Text style={{ fontSize: 8.5, color: "#AAAAAA", lineHeight: 1.55, fontStyle: "italic", marginTop: 14 }}>
+        {"Each domain page that follows shows the detail behind these numbers and the specific questions that drive the next measurement step."}
+      </Text>
+
+      <PageFooter pageNum={4} orgName={data.organizationName} />
+    </Page>
+  );
+}
+
+// ============================================================================
+// FRAMEWORK PAGE
+// ============================================================================
+
+function FrameworkPage({ data }: { data: AmbientAssessmentPDFData }) {
+  const domainLevels: Record<string, number> = {
+    capacity: data.domains?.capacity?.activationLevel || 1,
+    revenue: data.domains?.revenue?.activationLevel || 1,
+    workforce: data.domains?.workforce?.activationLevel || 1,
+    risk: data.domains?.risk?.activationLevel || 1,
+  };
+
+  const DOMAIN_CARDS = [
+    { key: 'capacity', question: 'Did recovered time reach patients?', desc: 'Measures whether documentation time savings translated into additional patient access \u2014 or disappeared into the schedule.' },
+    { key: 'revenue', question: 'Did documentation quality reach revenue cycle?', desc: 'Measures whether improved notes changed coding accuracy, denial rates, or wRVU capture in your billing data.' },
+    { key: 'workforce', question: 'Did provider relief reach the workforce economics?', desc: 'Measures whether reduced documentation burden translated into retention improvement and measurable labor cost impact.' },
+    { key: 'risk', question: 'Did documentation quality reach downstream programs?', desc: 'Measures whether improved notes are feeding CDI, quality reporting, compliance, and value-based care \u2014 or stopping at the chart.' },
+  ];
+
+  const LEVELS = [
+    { label: 'L1', name: 'Unmeasured', desc: 'Value generating. Not yet attributed. Returns are real \u2014 no one has formally counted them yet.' },
+    { label: 'L2', name: 'Emerging', desc: 'Signal visible. Not yet defensible. Early data suggests impact. No confirmed number exists yet.' },
+    { label: 'L3', name: 'Demonstrated', desc: 'Measured, repeatable, defensible. A confirmed number derived from real data, defensible to a skeptic.' },
+    { label: 'L4', name: 'Strategic Impact', desc: 'The organization does things it couldn\u2019t before. This dimension is a strategic variable, not a metric.' },
+  ];
+
+  return (
+    <Page size="LETTER" style={s.whitePage} wrap={false}>
+      <View style={s.redRule} />
+      <Text style={s.eyebrow}>The Ambient Value Domains</Text>
+      <Text style={{ fontFamily: "Abridge", fontSize: 22, color: "#1A1A1A", textTransform: "uppercase", lineHeight: 1.1, marginBottom: 8, maxWidth: 440 }}>
+        Four dimensions of ambient return.
+      </Text>
+      <Text style={{ fontSize: 10, color: "#555555", lineHeight: 1.7, marginBottom: 18, maxWidth: 500 }}>
+        {"Ambient AI creates value across four organizational dimensions simultaneously \u2014 and almost every deployment captures some while leaving others unmeasured. The gap between what\u2019s generating returns and what\u2019s been formally counted is where most of the strategic conversation lives."}
+      </Text>
+
+      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10, marginBottom: 18 }}>
+        {DOMAIN_CARDS.map((d) => {
+          const level = domainLevels[d.key];
+          const isActive = level >= 2;
+          return (
+            <View key={d.key} style={{ width: "48%", borderWidth: 1, borderColor: isActive ? "#EA2C00" : "#E5E0D9", borderRadius: 6, padding: 14, backgroundColor: isActive ? "#FFF8F6" : "#FFFFFF" }}>
+              <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                <Text style={{ fontSize: 9, fontWeight: 700, color: isActive ? "#EA2C00" : "#AAAAAA", letterSpacing: 1.5, textTransform: "uppercase" }}>
+                  {domainDisplayName[d.key]}
+                </Text>
+                <View style={{ backgroundColor: isActive ? "#EA2C00" : "#E5E7EB", borderRadius: 3, paddingVertical: 2, paddingHorizontal: 6 }}>
+                  <Text style={{ fontSize: 7, fontWeight: 700, color: isActive ? "#FFFFFF" : "#999999", letterSpacing: 0.5 }}>{`L${level}`}</Text>
+                </View>
+              </View>
+              <Text style={{ fontSize: 10, fontWeight: 700, color: "#1A1A1A", lineHeight: 1.4, marginBottom: 5, fontStyle: "italic" }}>
+                {d.question}
+              </Text>
+              <Text style={{ fontSize: 8.5, color: "#888888", lineHeight: 1.55 }}>
+                {d.desc}
+              </Text>
+            </View>
+          );
+        })}
+      </View>
+
+      <View style={{ backgroundColor: "#1A1A1A", borderRadius: 6, padding: 16, marginBottom: 10 }}>
+        <Text style={{ fontSize: 7.5, fontWeight: 700, color: "rgba(255,255,255,0.60)", letterSpacing: 2, textTransform: "uppercase", marginBottom: 12 }}>
+          The Four Levels of Maturity \u00B7 Applied to Each Domain
+        </Text>
+        <View style={{ flexDirection: "row", gap: 10 }}>
+          {LEVELS.map((l, i) => (
+            <View key={l.label} style={{ flex: 1, paddingRight: i < 3 ? 10 : 0, borderRightWidth: i < 3 ? 1 : 0, borderRightColor: "rgba(255,255,255,0.15)" }}>
+              <Text style={{ fontSize: 16, fontWeight: 800, color: "#EA2C00", lineHeight: 1, marginBottom: 3 }}>{l.label}</Text>
+              <Text style={{ fontSize: 9, fontWeight: 700, color: "#FFFFFF", marginBottom: 5 }}>{l.name}</Text>
+              <Text style={{ fontSize: 7.5, color: "rgba(255,255,255,0.70)", lineHeight: 1.55 }}>{l.desc}</Text>
+            </View>
+          ))}
+        </View>
+      </View>
+
+      <Text style={{ fontSize: 8, color: "#AAAAAA", lineHeight: 1.5, fontStyle: "italic" }}>
+        {"These levels don\u2019t measure how well the technology works. They measure how far the organization has taken the value."}
+      </Text>
+
+      <Text style={{ fontSize: 8.5, color: "#AAAAAA", lineHeight: 1.55, fontStyle: "italic", marginTop: 10 }}>
+        {"The financial picture that emerges from these four domain readings is on the following page."}
+      </Text>
+
+      <PageFooter pageNum={3} orgName={data.organizationName} />
+    </Page>
+  );
+}
+
+// ============================================================================
+// PAGES 6–9: DOMAIN PAGES
 // ============================================================================
 
 const domainFrameText: Record<string, string> = {
@@ -790,8 +1098,8 @@ const domainNextUnlock: Record<string, Record<number, string>> = {
 
 const domainCoachingNote: Record<string, Record<string, string>> = {
   capacity: {
-    low: "The organizations moving fastest from Level 1 to Level 3 share one thing: they scheduled the operational conversation \u2014 with a recommendation in hand \u2014 before they thought they were ready. The number doesn\u2019t need to be perfect. It needs to be in the room.",
-    high: "Connecting recovered time to access revenue is one thing. Connecting it to a hiring model is another. Level 4 is where ambient stops being a documentation decision and starts being a workforce strategy.",
+    low: "The organizations moving fastest from Unmeasured to Demonstrated share one thing: they scheduled the operational conversation \u2014 with a recommendation in hand \u2014 before they thought they were ready. The number doesn\u2019t need to be perfect. It needs to be in the room.",
+    high: "Connecting recovered time to access revenue is one thing. Connecting it to a hiring model is another. Strategic Impact is where ambient stops being a documentation decision and starts being a workforce strategy.",
   },
   revenue: {
     low: "The revenue cycle team almost always finds something when they look. The barrier isn\u2019t data \u2014 it\u2019s the first conversation. Organizations that formalize that conversation within 90 days of deployment typically have a number before their first contract renewal.",
@@ -799,10 +1107,10 @@ const domainCoachingNote: Record<string, Record<string, string>> = {
   },
   workforce: {
     low: "Provider experience is the most politically powerful data in a health system \u2014 and it\u2019s consistently under-quantified. Organizations that formalize this measurement tend to use it in ways they didn\u2019t initially plan: recruitment, contracts, board presentations.",
-    high: "The transition from Level 3 to Level 4 is a governance decision, not a measurement decision. It\u2019s asking: is provider sustainability a formal variable in our FTE model?",
+    high: "The transition from Demonstrated to Strategic Impact is a governance decision, not a measurement decision. It\u2019s asking: is provider sustainability a formal variable in our FTE model?",
   },
   risk: {
-    low: "The downstream value of better documentation compounds \u2014 but only when someone connects the improvement to the teams that depend on it. CDI, coding, quality reporting, and compliance teams need to see the change. That connection, formally structured, is the Level 1 to Level 2 move.",
+    low: "The downstream value of better documentation compounds \u2014 but only when someone connects the improvement to the teams that depend on it. CDI, coding, quality reporting, and compliance teams need to see the change. That connection, formally structured, is the Unmeasured to Emerging move.",
     high: "Documentation quality as a strategic organizational asset is where ambient AI\u2019s long-term value gets locked in. Quality program design, VBC strategy, AI readiness, payer negotiations \u2014 these all depend on structured, complete documentation.",
   },
 };
@@ -817,7 +1125,7 @@ const DOMAIN_SOURCE_ATTRIBUTIONS: Record<string, string> = {
 const DOMAIN_STRATEGIC_QUESTIONS: Record<string, { question: string; context: string }> = {
   capacity: {
     question: "If the time your providers recover from documentation was fully converted to patient access \u2014 what would your access metrics look like in 18 months, and does your scheduling infrastructure support that conversion today?",
-    context: "Most organizations find they have recovered time but haven\u2019t made the operational decision about where it goes. That decision is the Level 2 move.",
+    context: "Most organizations find they have recovered time but haven\u2019t made the operational decision about where it goes. That decision is the Emerging move.",
   },
   revenue: {
     question: "When did your revenue cycle team last formally look at documentation quality as a driver of coding accuracy and denial prevention? A before/after analysis at your scale typically takes 4\u20136 weeks. What would that number change about your next planning cycle?",
@@ -894,14 +1202,6 @@ function DomainPage({
                 </Text>
               </View>
             )}
-            {!isUnmeasured && hasValue && value > 0 && (
-              <View style={{ backgroundColor: "#FFF0ED", borderRadius: 3, paddingVertical: 4, paddingHorizontal: 10 }}>
-                <Text style={{ fontSize: 16, fontWeight: 800, color: "#EA2C00", lineHeight: 1 }}>
-                  {fmt(value)}
-                </Text>
-                <Text style={{ fontSize: 7.5, color: "#EA2C00", marginTop: 1 }}>per year</Text>
-              </View>
-            )}
           </View>
 
           <View style={[s.divider, { marginVertical: 10 }]} />
@@ -913,11 +1213,20 @@ function DomainPage({
           <Text style={s.body}>{domainFrameText[domainKey]}</Text>
 
           <Text style={{ fontSize: 8, fontWeight: 700, color: "#EA2C00", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 5 }}>
-            {isUnmeasured ? "THE UNMEASURED SIGNAL" : "WHERE YOU STAND"}
+            {isUnmeasured ? "THE UNMEASURED SIGNAL" : "WHERE IT STANDS"}
           </Text>
           <Text style={s.body}>
             {domain.context || domainAtThisLevel[domainKey]?.[level] || ""}
           </Text>
+
+          {(() => {
+            const personalized = buildPersonalizedContext(domainKey, level, userInputs, providers);
+            return personalized ? (
+              <View style={{ backgroundColor: "#F8F7F5", borderRadius: 4, padding: 10, borderLeftWidth: 2, borderLeftColor: "#EA2C00", marginBottom: 10, marginTop: -4 }}>
+                <Text style={{ fontSize: 9.5, color: "#1A1A1A", lineHeight: 1.65 }}>{personalized}</Text>
+              </View>
+            ) : null;
+          })()}
 
           {!isUnmeasured && domain.headlineMetric && (
             <View style={[s.beigeBox, { marginBottom: 10 }]}>
@@ -930,13 +1239,12 @@ function DomainPage({
 
           {isUnmeasured && benchLow > 0 && (
             <View style={[s.beigeBox, { marginBottom: 10 }]}>
-              <Text style={s.eyebrowGray}>BENCHMARK RANGE</Text>
-              <Text style={{ fontSize: 26, fontWeight: 800, color: "#555555", lineHeight: 1.1, marginBottom: 4 }}>
-                {fmt(benchLow)}{"–"}{fmt(benchHigh)}
+              <Text style={s.eyebrowGray}>WHAT ORGANIZATIONS YOUR SIZE TYPICALLY FIND</Text>
+              <Text style={{ fontSize: 9, color: "#888888", lineHeight: 1.6, marginBottom: 4 }}>
+                {bench.desc}
               </Text>
-              <Text style={{ fontSize: 8.5, color: "#888888" }}>{bench.desc}</Text>
-              <Text style={{ fontSize: 8, color: "#AAAAAA", marginTop: 4, fontStyle: "italic" }}>
-                Benchmark range based on organizations your size. Not a projection for your organization.
+              <Text style={{ fontSize: 8, color: "#AAAAAA", lineHeight: 1.5 }}>
+                {`Reference range: ${fmt(benchLow)}\u2013${fmt(benchHigh)} per year. This is not a projection for your organization — it reflects what comparable organizations have documented.`}
               </Text>
               {bench.source && (
                 <Text style={{ fontSize: 7, color: "#BBBBBB", marginTop: 3, fontStyle: "italic" }}>
@@ -954,15 +1262,6 @@ function DomainPage({
               <Text style={{ fontSize: 10, color: "#555555", lineHeight: 1.6 }}>{nextUnlock}</Text>
             </View>
           ) : null}
-
-          <View style={{ marginTop: 14, paddingTop: 12, borderTopWidth: 1, borderTopColor: "#E5E0D9" }}>
-            <Text style={{ fontSize: 7.5, fontWeight: 700, color: "#888888", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 5 }}>
-              The Question This Domain Raises
-            </Text>
-            <Text style={{ fontSize: 9.5, color: "#444444", lineHeight: 1.6, fontStyle: "italic" }}>
-              {DOMAIN_STRATEGIC_QUESTIONS[domainKey]?.question || ""}
-            </Text>
-          </View>
 
           {footnote ? (
             <Text style={{ fontSize: 8, color: "#AAAAAA", lineHeight: 1.5, fontStyle: "italic", marginTop: 8 }}>
@@ -987,36 +1286,38 @@ function DomainPage({
           )}
         </View>
 
-        <View style={[s.darkTile, { flex: 0.9, padding: 20 }]}>
+        <View style={[s.beigeSidebar, { flex: 0.9, padding: 20 }]}>
 
           {!isUnmeasured && hasValue && value > 0 ? (
             <>
-              <Text style={{ fontSize: 8, fontWeight: 700, color: "rgba(255,255,255,0.4)", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 6 }}>
-                CALCULATED IMPACT
+              <Text style={{ fontSize: 7.5, fontWeight: 700, color: "#888888", letterSpacing: 2, textTransform: "uppercase", marginBottom: 6 }}>
+                Demonstrated Impact
               </Text>
-              <Text style={{ fontSize: 34, fontWeight: 800, color: "#EA2C00", lineHeight: 1, marginBottom: 3 }}>
+              <Text style={{ fontSize: 44, fontWeight: 800, color: "#EA2C00", lineHeight: 1, marginBottom: 4 }}>
                 {fmt(value)}
               </Text>
-              <Text style={{ fontSize: 8.5, color: "rgba(255,255,255,0.3)", marginBottom: 12 }}>per year</Text>
+              <Text style={{ fontSize: 8, fontWeight: 700, color: "#AAAAAA", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 14 }}>
+                Per Year {"·"} Confirmed
+              </Text>
             </>
           ) : isUnmeasured && benchLow > 0 ? (
             <>
-              <Text style={{ fontSize: 8, fontWeight: 700, color: "rgba(255,255,255,0.3)", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 6 }}>
-                BENCHMARK RANGE
+              <Text style={{ fontSize: 7.5, fontWeight: 700, color: "#888888", letterSpacing: 2, textTransform: "uppercase", marginBottom: 6 }}>
+                Not Yet Measured
               </Text>
-              <Text style={{ fontSize: 22, fontWeight: 800, color: "rgba(255,255,255,0.4)", lineHeight: 1, marginBottom: 3 }}>
-                {fmt(benchLow)}{"–"}{fmt(benchHigh)}
+              <Text style={{ fontSize: 9, color: "#888888", lineHeight: 1.5, marginBottom: 4 }}>
+                This domain has not been formally measured yet.
               </Text>
-              <Text style={{ fontSize: 8.5, color: "rgba(255,255,255,0.25)", marginBottom: 12 }}>
-                typical range at your scale {"·"} not a projection
+              <Text style={{ fontSize: 8, color: "#AAAAAA", marginBottom: 14 }}>
+                {`Reference range: ${fmt(benchLow)}\u2013${fmt(benchHigh)}/yr`}
               </Text>
             </>
           ) : (
             <>
-              <Text style={{ fontSize: 8, fontWeight: 700, color: "rgba(255,255,255,0.3)", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 6 }}>
-                IMPACT
+              <Text style={{ fontSize: 7.5, fontWeight: 700, color: "#888888", letterSpacing: 2, textTransform: "uppercase", marginBottom: 6 }}>
+                Impact
               </Text>
-              <Text style={{ fontSize: 14, fontWeight: 600, color: "rgba(255,255,255,0.25)", marginBottom: 12 }}>
+              <Text style={{ fontSize: 14, fontWeight: 600, color: "#BBBBBB", marginBottom: 14 }}>
                 Not yet calculated
               </Text>
             </>
@@ -1024,44 +1325,94 @@ function DomainPage({
 
           {userInputEntries.length > 0 && (
             <>
-              <View style={s.darkDivider} />
+              <View style={s.sidebarDivider} />
               <Text style={{ fontSize: 8, fontWeight: 700, color: "#EA2C00", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>
-                YOUR INPUTS
+                WHAT'S BEEN ESTABLISHED
               </Text>
               {userInputEntries.map(([key, val], i) => (
                 <View key={i} style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 5 }}>
-                  <Text style={{ fontSize: 8.5, color: "rgba(255,255,255,0.4)", flex: 1 }}>{key}</Text>
-                  <Text style={{ fontSize: 8.5, fontWeight: 600, color: "rgba(255,255,255,0.75)", textAlign: "right", maxWidth: "50%" }}>{val}</Text>
+                  <Text style={{ fontSize: 8.5, color: "#888888", flex: 1 }}>{key}</Text>
+                  <Text style={{ fontSize: 8.5, fontWeight: 600, color: "#1A1A1A", textAlign: "right", maxWidth: "50%" }}>{val}</Text>
                 </View>
               ))}
             </>
           )}
 
-          <View style={[s.darkDivider, { marginTop: 14 }]} />
+          {domain.gapItems && domain.gapItems.length > 0 && (
+            <>
+              <View style={s.sidebarDivider} />
+              <Text style={{ fontSize: 8, fontWeight: 700, color: "#888888", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>
+                STILL UNCAPTURED AT THIS LEVEL
+              </Text>
+              {domain.gapItems.map((gap, i) => (
+                <View key={i} style={s.gapItem}>
+                  <Text style={{ fontSize: 9, color: "#EA2C00", fontWeight: 700, marginTop: 1 }}>–</Text>
+                  <Text style={{ fontSize: 8.5, color: "#555555", lineHeight: 1.5, flex: 1 }}>{gap}</Text>
+                </View>
+              ))}
+            </>
+          )}
+
+          {domainKey === 'revenue' && data.orgContext && (
+            data.orgContext.payerMixMedicare || data.orgContext.payerMixMedicaid || data.orgContext.payerMixCommercial
+          ) ? (
+            <>
+              <View style={s.sidebarDivider} />
+              <Text style={{ fontSize: 8, fontWeight: 700, color: "#EA2C00", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>
+                PAYER MIX
+              </Text>
+              {data.orgContext.payerMixMedicare ? (
+                <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
+                  <Text style={{ fontSize: 8.5, color: "#888888" }}>Medicare</Text>
+                  <Text style={{ fontSize: 8.5, fontWeight: 600, color: "#1A1A1A" }}>{data.orgContext.payerMixMedicare}%</Text>
+                </View>
+              ) : null}
+              {data.orgContext.payerMixMedicaid ? (
+                <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
+                  <Text style={{ fontSize: 8.5, color: "#888888" }}>Medicaid</Text>
+                  <Text style={{ fontSize: 8.5, fontWeight: 600, color: "#1A1A1A" }}>{data.orgContext.payerMixMedicaid}%</Text>
+                </View>
+              ) : null}
+              {data.orgContext.payerMixCommercial ? (
+                <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
+                  <Text style={{ fontSize: 8.5, color: "#888888" }}>Commercial</Text>
+                  <Text style={{ fontSize: 8.5, fontWeight: 600, color: "#1A1A1A" }}>{data.orgContext.payerMixCommercial}%</Text>
+                </View>
+              ) : null}
+            </>
+          ) : null}
+
+          <View style={[s.sidebarDivider, { marginTop: 14 }]} />
 
           <Text style={{ fontSize: 8, fontWeight: 700, color: "#EA2C00", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 6 }}>
-            WHAT HIGH PERFORMERS DO
+            THE QUESTION FROM HERE
           </Text>
-          <Text style={{ fontSize: 9.5, color: "rgba(255,255,255,0.6)", lineHeight: 1.6 }}>
-            {coachNote}
+          <Text style={{ fontSize: 9.5, color: "#555555", lineHeight: 1.6 }}>
+            {DOMAIN_DIAGNOSTIC_QUESTIONS[domainKey]?.[level] || coachNote}
           </Text>
 
-          <View style={[s.darkDivider, { marginTop: 14 }]} />
-          <Text style={{ fontSize: 8, fontWeight: 700, color: "rgba(255,255,255,0.3)", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>
+          <View style={[s.sidebarDivider, { marginTop: 14 }]} />
+          <Text style={{ fontSize: 8, fontWeight: 700, color: "#888888", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>
             MATURITY LEVEL
           </Text>
           <View style={{ flexDirection: "row", gap: 5 }}>
             {[1, 2, 3, 4].map((l) => (
-              <View key={l} style={{ flex: 1, height: 4, borderRadius: 2, backgroundColor: l <= level ? "#EA2C00" : "rgba(255,255,255,0.1)" }} />
+              <View key={l} style={{ flex: 1, height: 4, borderRadius: 2, backgroundColor: l <= level ? "#EA2C00" : "#E5E0D9" }} />
             ))}
           </View>
-          <Text style={{ fontSize: 8, color: "rgba(255,255,255,0.3)", marginTop: 5 }}>Level {level} of 4</Text>
+          <Text style={{ fontSize: 8, color: "#AAAAAA", marginTop: 5 }}>Level {level} of 4</Text>
         </View>
       </View>
 
       {bench.source && (
         <Text style={{ fontSize: 7, color: "#BBBBBB", fontStyle: "italic", marginTop: 4 }}>
           {bench.source}
+        </Text>
+      )}
+
+      {domainKey === "risk" && (
+        <Text style={{ fontSize: 8.5, color: "#AAAAAA", lineHeight: 1.55, fontStyle: "italic", marginTop: 8 }}>
+          {"The priority domain and the questions ahead are on the following page."}
         </Text>
       )}
 
@@ -1074,75 +1425,220 @@ function DomainPage({
 // PAGE 8: THE QUESTIONS AHEAD
 // ============================================================================
 
-function TheQuestionsPage({ data }: { data: AmbientAssessmentPDFData }) {
+function TheQuestionsPage({
+  data,
+  archetype: archetypeProp,
+}: {
+  data: AmbientAssessmentPDFData;
+  archetype?: { name: string; headline: string; body: string };
+}) {
   const domainLevels: Record<string, number> = {
     capacity: data.domains?.capacity?.activationLevel || 1,
     revenue: data.domains?.revenue?.activationLevel || 1,
     workforce: data.domains?.workforce?.activationLevel || 1,
     risk: data.domains?.risk?.activationLevel || 1,
   };
-  const archetype = computeArchetype(domainLevels, data.providers);
+  const archetype = archetypeProp || computeArchetype(domainLevels, data.providers);
   const band = scoreBand(data.documentationScore);
 
+  const priorityKey = data.priorityDomain || DOMAIN_ORDER.find((k) => domainLevels[k] === 2) || DOMAIN_ORDER[0];
+  const remainingKeys = DOMAIN_ORDER.filter((k) => k !== priorityKey);
+
+  const confirmedCount = DOMAIN_ORDER.filter((k) => {
+    const d = data.domains?.[k as keyof typeof data.domains];
+    return (d?.activationLevel || 1) >= 3;
+  }).length;
+
+  const measuredTotal = DOMAIN_ORDER.reduce((sum, d) => {
+    const dom = data.domains?.[d as keyof typeof data.domains];
+    if (!dom?.hasValue) return sum;
+    if (d === 'revenue' && (dom.activationLevel || 1) === 2) return sum;
+    return sum + (dom.gapValue || 0);
+  }, 0);
+
+  const tenure = data.deploymentTenure || "0-6";
+  const isEarlyTenure = tenure === "0-6";
+
+  let ctaHeading: string;
+  let ctaBody: string;
+  if (confirmedCount >= 3) {
+    ctaHeading = "Most of the story is confirmed.";
+    ctaBody = "Most of the story is confirmed. The work ahead is depth and compounding \u2014 deepening the connection between the ambient data and the strategic decisions that run on it.";
+  } else if (confirmedCount >= 1) {
+    ctaHeading = "The measurement story has started.";
+    ctaBody = "The measurement story has started. The domains not yet confirmed are the next phase of work \u2014 and the data is already in the systems.";
+  } else if (!isEarlyTenure) {
+    ctaHeading = "The measurement story hasn\u2019t started yet.";
+    ctaBody = "The deployment is running and the value is generating \u2014 but none of it has been formally counted yet. At this tenure, that\u2019s the conversation worth having now.";
+  } else {
+    ctaHeading = "The measurement foundation is forming.";
+    ctaBody = "The measurement foundation is still forming. The organizations that move fastest build measurement habits in the first 6 months \u2014 before the window of easiest access to baseline data closes.";
+  }
+
+  const nextMoveByLevel: Record<number, string> = {
+    1: "Not yet measured \u00B7 First step: establish a baseline",
+    2: "Signal captured \u00B7 Next: validate and act on it",
+    3: "Demonstrated \u00B7 Next: deepen and connect to strategy",
+    4: "Strategic Impact \u00B7 Compound the value",
+  };
+
+  const priorityDomainData = data.domains?.[priorityKey as keyof typeof data.domains];
+  const priorityLevel = priorityDomainData?.activationLevel || 1;
+
+  const peText = computePESignal(
+    data.patientExperienceNoticeable || '',
+    data.patientExperienceSignals || '',
+    data.patientExperienceFormalized || '',
+  );
+  const hasPE = !!peText;
+  const ctaEmail = deriveCTAEmail(data.preparedBy);
+  const ctaFirstName = deriveCTAFirstName(data.preparedBy);
+
   return (
-    <Page size="LETTER" style={s.darkPage} wrap={false}>
+    <Page size="LETTER" style={s.whitePage} wrap={false}>
       <View style={s.redRule} />
-      <Text style={s.eyebrowDark}>The Questions Ahead</Text>
-      <Text style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", lineHeight: 1.6, marginBottom: 4, maxWidth: 460 }}>
-        {`${archetype.name} \u2014 ${band}.`}
-      </Text>
-      <Text style={{ fontSize: 9, color: "rgba(255,255,255,0.3)", lineHeight: 1.6, marginBottom: 24, maxWidth: 460 }}>
-        {"These are the questions worth taking into your next internal conversation. They don\u2019t have easy answers \u2014 and they shouldn\u2019t. The organizations that move fastest are the ones that decide, in a room like this one, that they want to find out."}
+      <Text style={s.eyebrow}>What Comes Next</Text>
+      <Text style={{ fontSize: 10.5, color: "#555555", lineHeight: 1.7, marginBottom: 16, maxWidth: 490 }}>
+        {generateWhatComesNextOpening(data, domainLevels)}
       </Text>
 
-      {DOMAIN_ORDER.map((key, i) => (
-        <View key={key} style={{ marginBottom: i < DOMAIN_ORDER.length - 1 ? 20 : 0 }}>
-          <Text style={{ fontSize: 8, fontWeight: 700, color: "#EA2C00", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 6 }}>
-            {domainDisplayName[key]}
-          </Text>
-          <Text style={{ fontSize: 11.5, fontWeight: 700, color: "#FFFFFF", lineHeight: 1.5, marginBottom: 6 }}>
-            {DOMAIN_STRATEGIC_QUESTIONS[key]?.question || ""}
-          </Text>
-          <Text style={{ fontSize: 9, color: "rgba(255,255,255,0.4)", lineHeight: 1.55 }}>
-            {DOMAIN_STRATEGIC_QUESTIONS[key]?.context || ""}
-          </Text>
-          {i < DOMAIN_ORDER.length - 1 && (
-            <View style={{ height: 1, backgroundColor: "rgba(255,255,255,0.08)", marginTop: 18 }} />
+      <View style={{ flexDirection: "row", gap: 20, flex: 1 }}>
+
+        {/* LEFT — Strategic questions */}
+        <View style={{ flex: 1.5 }}>
+
+          {/* Patient Experience — The Fifth Dimension */}
+          {hasPE ? (
+            <View style={{ backgroundColor: "#FFF5F2", borderRadius: 4, padding: 14, borderLeftWidth: 3, borderLeftColor: "#EA2C00", marginBottom: 16 }}>
+              <Text style={{ fontSize: 8, fontWeight: 700, color: "#EA2C00", letterSpacing: 2, textTransform: "uppercase", marginBottom: 4 }}>
+                Patient Experience · The Fifth Dimension
+              </Text>
+              <Text style={{ fontSize: 10.5, fontWeight: 700, color: "#1A1A1A", lineHeight: 1.4, marginBottom: 6 }}>
+                {peText}
+              </Text>
+              <Text style={{ fontSize: 8.5, color: "#888888", lineHeight: 1.55 }}>
+                {"This signal doesn\u2019t generate a number in this framework \u2014 it shapes what every number in it means. The patient was in the room when this happened."}
+              </Text>
+            </View>
+          ) : (
+            <View style={{ backgroundColor: "#F8F7F5", borderRadius: 4, padding: 12, borderLeftWidth: 2, borderLeftColor: "#E5E0D9", marginBottom: 16 }}>
+              <Text style={{ fontSize: 8, fontWeight: 700, color: "#AAAAAA", letterSpacing: 2, textTransform: "uppercase", marginBottom: 4 }}>
+                Patient Experience · The Fifth Dimension
+              </Text>
+              <Text style={{ fontSize: 9.5, color: "#AAAAAA", lineHeight: 1.55, fontStyle: "italic" }}>
+                {"Not yet formally tracked. The patient experience connection hasn\u2019t been looked at yet \u2014 which is a story worth telling when it is."}
+              </Text>
+            </View>
           )}
-        </View>
-      ))}
 
-      {/* Next Steps CTA */}
-      <View style={{ marginTop: 28, borderTopWidth: 1, borderTopColor: "rgba(255,255,255,0.15)", paddingTop: 20 }}>
-        <Text style={{ fontSize: 9, fontWeight: 700, color: "#EA2C00", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>
-          {"What Comes Next"}
-        </Text>
-        <Text style={{ fontSize: 11, fontWeight: 700, color: "#FFFFFF", marginBottom: 6 }}>
-          {"Schedule a Working Session"}
-        </Text>
-        <Text style={{ fontSize: 9.5, color: "rgba(255,255,255,0.7)", lineHeight: 1.6, marginBottom: 14 }}>
-          {"The gaps identified in this assessment are closeable \u2014 but only with intentional measurement. A 60-minute working session with your Abridge partner team will map your fastest path from where you are to confirmed, board-ready ROI."}
-        </Text>
-        <View style={{ flexDirection: "row", gap: 24 }}>
-          <View style={{ flex: 1 }}>
-            <Text style={{ fontSize: 8.5, fontWeight: 700, color: "rgba(255,255,255,0.5)", letterSpacing: 1, textTransform: "uppercase", marginBottom: 4 }}>{"In That Session"}</Text>
-            <Text style={{ fontSize: 8.5, color: "rgba(255,255,255,0.65)", lineHeight: 1.6 }}>{"\u2022 Prioritize the 1\u20132 domains with the fastest path to confirmed value\n\u2022 Identify the data sources already available in your systems\n\u2022 Define a 90-day measurement sprint with clear owners"}</Text>
+          {/* Priority Domain — elevated treatment */}
+          <View style={{ marginBottom: 14, backgroundColor: "#F5F0EB", borderRadius: 4, padding: 14, borderLeftWidth: 2, borderLeftColor: "#EA2C00" }}>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 6 }}>
+              <Text style={{ fontSize: 7.5, fontWeight: 700, color: "#EA2C00", letterSpacing: 2, textTransform: "uppercase" }}>
+                Priority Domain
+              </Text>
+              <View style={{ flex: 1, height: 1, backgroundColor: "#E5E0D9" }} />
+            </View>
+            <Text style={{ fontSize: 11, fontWeight: 700, color: "#EA2C00", letterSpacing: 0.8, marginBottom: 6, textTransform: "uppercase" }}>
+              {domainDisplayName[priorityKey]}
+            </Text>
+            <Text style={{ fontSize: 11, fontWeight: 700, color: "#1A1A1A", lineHeight: 1.45, marginBottom: 6 }}>
+              {DOMAIN_STRATEGIC_QUESTIONS[priorityKey]?.question || ""}
+            </Text>
+            <Text style={{ fontSize: 9, color: "#888888", lineHeight: 1.55, marginBottom: 8 }}>
+              {DOMAIN_STRATEGIC_QUESTIONS[priorityKey]?.context || ""}
+            </Text>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 7 }}>
+              <Text style={{ fontSize: 8, fontWeight: 700, color: "#EA2C00", backgroundColor: "#FFF0ED", paddingVertical: 3, paddingHorizontal: 7, borderRadius: 3 }}>
+                {`L${priorityLevel}`}
+              </Text>
+              <Text style={{ fontSize: 8, color: "#888888", letterSpacing: 0.3 }}>
+                {nextMoveByLevel[priorityLevel]}
+              </Text>
+            </View>
           </View>
-          <View style={{ flex: 1 }}>
-            <Text style={{ fontSize: 8.5, fontWeight: 700, color: "rgba(255,255,255,0.5)", letterSpacing: 1, textTransform: "uppercase", marginBottom: 4 }}>{"To Get Started"}</Text>
-            <Text style={{ fontSize: 8.5, color: "rgba(255,255,255,0.65)", lineHeight: 1.6 }}>{"Contact your Abridge partner success manager or reach out to\npartnersuccess@abridge.com"}</Text>
+
+          {/* Remaining 3 domains — compact */}
+          {remainingKeys.map((key, i) => (
+            <View key={key} style={{ marginBottom: i < remainingKeys.length - 1 ? 12 : 0 }}>
+              <Text style={{ fontSize: 7.5, fontWeight: 700, color: "#EA2C00", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 3 }}>
+                {domainDisplayName[key]}
+              </Text>
+              <Text style={{ fontSize: 10, fontWeight: 700, color: "#1A1A1A", lineHeight: 1.4, marginBottom: 3 }}>
+                {DOMAIN_STRATEGIC_QUESTIONS[key]?.question || ""}
+              </Text>
+              <Text style={{ fontSize: 8.5, color: "#888888", lineHeight: 1.5 }}>
+                {DOMAIN_STRATEGIC_QUESTIONS[key]?.context || ""}
+              </Text>
+              {i < remainingKeys.length - 1 && (
+                <View style={{ height: 1, backgroundColor: "#E5E0D9", marginTop: 10 }} />
+              )}
+            </View>
+          ))}
+        </View>
+
+        {/* RIGHT — CTA */}
+        <View style={{ flex: 0.85 }}>
+          <View style={{ backgroundColor: "#F5F0EB", borderRadius: 4, padding: 18, marginBottom: 14 }}>
+            <Text style={{ fontSize: 7.5, fontWeight: 700, color: "#EA2C00", letterSpacing: 2, textTransform: "uppercase", marginBottom: 8 }}>
+              What Comes Next
+            </Text>
+            <Text style={{ fontSize: 13, fontWeight: 800, color: "#1A1A1A", lineHeight: 1.3, marginBottom: 10 }}>
+              {ctaHeading}
+            </Text>
+            <Text style={{ fontSize: 9, color: "#555555", lineHeight: 1.6, marginBottom: 16 }}>
+              {ctaBody}
+            </Text>
+            <View style={{ height: 1, backgroundColor: "#E5E0D9", marginBottom: 12 }} />
+            {ctaFirstName ? (
+              <Text style={{ fontSize: 10.5, fontWeight: 700, color: "#1A1A1A", marginBottom: 3 }}>
+                {ctaFirstName}
+              </Text>
+            ) : null}
+            <Text style={{ fontSize: 9.5, fontWeight: 700, color: "#EA2C00" }}>
+              {ctaEmail}
+            </Text>
+          </View>
+
+          <View style={{ borderWidth: 1, borderColor: "#E5E0D9", borderRadius: 4, padding: 14 }}>
+            <Text style={{ fontSize: 7.5, fontWeight: 700, color: "#888888", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>
+              Domain Status
+            </Text>
+            {DOMAIN_ORDER.map((key) => {
+              const level = domainLevels[key];
+              return (
+                <View key={key} style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+                  <Text style={{ fontSize: 9, fontWeight: 600, color: level >= 3 ? "#1A1A1A" : "#888888" }}>
+                    {domainDisplayName[key]}
+                  </Text>
+                  <View style={{ flexDirection: "row", gap: 3 }}>
+                    {[1, 2, 3, 4].map((l) => (
+                      <View key={l} style={{ width: 10, height: 4, borderRadius: 1, backgroundColor: l <= level ? "#EA2C00" : "#E5E0D9" }} />
+                    ))}
+                  </View>
+                </View>
+              );
+            })}
           </View>
         </View>
+
       </View>
+
+      {/* Closing arc */}
+      <Text style={{ fontSize: 8.5, color: "#AAAAAA", lineHeight: 1.55, fontStyle: "italic", marginBottom: 10 }}>
+        {measuredTotal > 0
+          ? "The measurement infrastructure is real. The work ahead is depth, not foundation."
+          : "The deployment is running. The measurement story starts with a single domain \u2014 the one closest to confirmation."}
+      </Text>
 
       <View style={{ marginTop: "auto" }}>
-        <View style={{ height: 1, backgroundColor: "rgba(255,255,255,0.08)", marginBottom: 12 }} />
-        <Text style={{ fontSize: 8.5, color: "rgba(255,255,255,0.25)", lineHeight: 1.6 }}>
-          {"This assessment reflects self-reported maturity across four organizational value domains. Confirmed figures are derived from your stated inputs. Benchmark ranges are based on organizations of comparable size and are not projections for your organization. Assessment completed " + data.assessmentDate + "."}
+        <View style={{ height: 1, backgroundColor: "#E5E0D9", marginBottom: 10 }} />
+        <Text style={{ fontSize: 8, color: "#AAAAAA", lineHeight: 1.6 }}>
+          {"This assessment reflects self-reported maturity across four organizational value domains. Demonstrated figures are derived from stated inputs. Benchmark ranges are based on organizations of comparable size and are not projections for your organization. Assessment completed " + data.assessmentDate + "."}
         </Text>
       </View>
 
-      <PageFooter pageNum={10} orgName={data.organizationName} dark />
+      <PageFooter pageNum={9} orgName={data.organizationName} />
     </Page>
   );
 }
@@ -1194,17 +1690,17 @@ function MethodologyPage({ data }: { data: AmbientAssessmentPDFData }) {
         <View style={{ flex: 1 }}>
           <Text style={{ fontSize: 10, fontWeight: 700, color: "#1A1A1A", marginBottom: 4, marginTop: 0 }}>How Scores Are Calculated</Text>
           <Text style={{ fontSize: 9, color: "#555555", lineHeight: 1.6, marginBottom: 14 }}>
-            {"Each domain is assessed on a 1\u20134 activation scale. Level 1 indicates measured time recovery with no operational response. Level 4 indicates full integration into strategic planning with board-level reporting. The overall maturity score (0\u2013100) is a weighted composite of domain scores, weighted by typical value contribution at each activation level."}
+            {"Each domain is assessed across four activation levels: Unmeasured (value generating, not yet attributed), Emerging (early signals visible, not yet defensible at scale), Demonstrated (measurable, repeatable, defensible to a skeptic), and Strategic Impact (the organization can now do things it could not do before)."}
           </Text>
 
-          <Text style={{ fontSize: 10, fontWeight: 700, color: "#1A1A1A", marginBottom: 4 }}>Confirmed vs. Benchmark Values</Text>
+          <Text style={{ fontSize: 10, fontWeight: 700, color: "#1A1A1A", marginBottom: 4 }}>Demonstrated vs. Benchmark Values</Text>
           <Text style={{ fontSize: 9, color: "#555555", lineHeight: 1.6, marginBottom: 14 }}>
-            {"Values labeled \u201CConfirmed\u201D are derived directly from your stated inputs using conservative formulas (11-month annual projection with confidence discounts applied based on measurement maturity). Values labeled \u201CBenchmark Range\u201D are based on organizations of comparable size and specialty mix from published sources. Benchmark ranges are illustrative, not projections."}
+            {"Values labeled \u201CDemonstrated\u201D are derived directly from stated inputs using conservative formulas (11-month annual projection with confidence discounts applied based on measurement maturity). Values labeled \u201CBenchmark Range\u201D are based on organizations of comparable size and specialty mix from published sources. Benchmark ranges are illustrative, not projections."}
           </Text>
 
           <Text style={{ fontSize: 10, fontWeight: 700, color: "#1A1A1A", marginBottom: 4 }}>Capacity Domain</Text>
           <Text style={{ fontSize: 9, color: "#555555", lineHeight: 1.6, marginBottom: 14 }}>
-            {"Time recovered is calculated as: minutes saved per encounter \u00D7 annual documented encounters \u00F7 60. Access revenue at Level 3+ is calculated as: additional patients/provider/month \u00D7 active providers \u00D7 11 months \u00D7 revenue per visit. Source: MGMA Physician Compensation and Production Report."}
+            {"Time recovered is calculated as: minutes saved per encounter \u00D7 annual documented encounters \u00F7 60. Access revenue at Demonstrated and above is calculated as: additional patients/provider/month \u00D7 active providers \u00D7 11 months \u00D7 revenue per visit. Source: MGMA Physician Compensation and Production Report."}
           </Text>
 
           <Text style={{ fontSize: 10, fontWeight: 700, color: "#1A1A1A", marginBottom: 4 }}>Revenue Domain</Text>
@@ -1226,7 +1722,7 @@ function MethodologyPage({ data }: { data: AmbientAssessmentPDFData }) {
 
           <Text style={{ fontSize: 10, fontWeight: 700, color: "#1A1A1A", marginBottom: 4 }}>Key Assumptions</Text>
           <Text style={{ fontSize: 9, color: "#555555", lineHeight: 1.6, marginBottom: 14 }}>
-            {"\u2022 Annual projection uses 11 months (conservative, excludes go-live month)\n\u2022 Confidence discounts: Estimated inputs discounted 20%; Aspirational inputs discounted 40%\n\u2022 3-year trajectory: 55% Year 1 / 75% Year 2 / 85% Year 3 utilization ramp\n\u2022 All dollar values in current USD; no inflation adjustment applied"}
+            {"\u2022 Annual projection uses 11 months (conservative, excludes go-live month)\n\u2022 Confidence discounts: Estimated inputs discounted 20%; Aspirational inputs discounted 40%\n\u2022 Benchmark midpoint scenario: 25% realization in Year 1 as measurement programs launch, 65% in Year 2 as data matures, 100% in Year 3. Illustrative \u2014 not a projection.\n\u2022 All dollar values in current USD; no inflation adjustment applied"}
           </Text>
 
           <View style={{ backgroundColor: "#F5F3EF", borderRadius: 4, padding: 12, marginTop: 4 }}>
@@ -1238,7 +1734,7 @@ function MethodologyPage({ data }: { data: AmbientAssessmentPDFData }) {
         </View>
       </View>
 
-      <PageFooter pageNum={9} orgName={data.organizationName} />
+      <PageFooter pageNum={10} orgName={data.organizationName} />
     </Page>
   );
 }
@@ -1248,24 +1744,32 @@ function MethodologyPage({ data }: { data: AmbientAssessmentPDFData }) {
 // ============================================================================
 
 const AmbientAssessmentDocument = ({ data }: { data: AmbientAssessmentPDFData }) => {
+  const domainLevels: Record<string, number> = {
+    capacity: data.domains?.capacity?.activationLevel || 1,
+    revenue: data.domains?.revenue?.activationLevel || 1,
+    workforce: data.domains?.workforce?.activationLevel || 1,
+    risk: data.domains?.risk?.activationLevel || 1,
+  };
+  const archetype = computeArchetype(domainLevels, data.providers);
+
   return (
     <Document>
       <PDFCoverPage
         reportLabel="Ambient AI Value Assessment"
         title={data.organizationName || "Your Organization"}
-        subtitle="Ambient AI Value Assessment"
+        subtitle={archetype.name}
         preparedBy={data.preparedBy || "Abridge Partner Success"}
         disclaimerText="This assessment is for strategic planning purposes. All estimates are based on organizational self-assessment and your inputs. Benchmarks reflect published industry sources. Individual results vary."
       />
-      <YourAssessmentPage data={data} />
-      <WhatYouToldUsPage data={data} />
-      <FinancialShapePage data={data} />
-      <DomainPage domainKey="capacity" data={data} pageNum={4} />
-      <DomainPage domainKey="revenue" data={data} pageNum={5} />
-      <DomainPage domainKey="workforce" data={data} pageNum={6} />
-      <DomainPage domainKey="risk" data={data} pageNum={7} />
+      <AssessmentPage data={data} archetype={archetype} />
+      <FrameworkPage data={data} />
+      <ConfirmedAndUnexaminedPage data={data} />
+      <DomainPage domainKey="capacity" data={data} pageNum={5} />
+      <DomainPage domainKey="revenue" data={data} pageNum={6} />
+      <DomainPage domainKey="workforce" data={data} pageNum={7} />
+      <DomainPage domainKey="risk" data={data} pageNum={8} />
+      <TheQuestionsPage data={data} archetype={archetype} />
       <MethodologyPage data={data} />
-      <TheQuestionsPage data={data} />
     </Document>
   );
 };

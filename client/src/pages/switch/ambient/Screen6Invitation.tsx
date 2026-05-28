@@ -38,11 +38,10 @@ interface Screen6Props {
 }
 
 function getScoreBandLabel(score: number): string {
-  if (score <= 16) return "Pre-Measurement";
-  if (score <= 38) return "Signal";
-  if (score <= 60) return "Confirmed";
-  if (score <= 79) return "Managed ROI";
-  return "Strategic Asset";
+  if (score <= 16) return "Unmeasured";
+  if (score <= 48) return "Emerging";
+  if (score <= 76) return "Demonstrated";
+  return "Strategic Impact";
 }
 
 function getArchetypeName(domainLevelsMap: Record<Domain, number>): string {
@@ -310,8 +309,6 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
 
   const hasMeasuredDomains = DOMAIN_ORDER.some(d => domainHasValue[d]);
 
-  const displayedMonthly = Math.round(displayedTotal / 12);
-  const displayedDaily = Math.round(displayedTotal / 365);
 
   const assessmentDate = useMemo(() => {
     return new Date().toLocaleDateString("en-US", {
@@ -342,9 +339,6 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
   }, [domainData, inputs.providers]);
 
   const dt = displayedTotal;
-  const actNow3yr = Math.round(dt * 3.45);
-  const permanentlyLost6mo = Math.round(dt * 0.42);
-  const permanentlyLost12mo = Math.round(dt * 0.95);
 
   const openExportModal = () => {
     setExportSuccess(false);
@@ -366,36 +360,6 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
     return getArchetypeName(domainLevelsMap);
   }, [domainData]);
 
-  const assessmentNarrative = useMemo(() => {
-    const domainLevels: Record<string, number> = {};
-    for (const d of DOMAIN_ORDER) {
-      domainLevels[d] = domainData[d]?.activationLevel || 1;
-    }
-    const TIEBREAKER: (typeof DOMAIN_ORDER[number])[] = ['risk', 'revenue', 'workforce', 'capacity'];
-    let lowestDomain = TIEBREAKER[0];
-    let lowestLevel = domainLevels[lowestDomain];
-    for (const d of TIEBREAKER) {
-      if (domainLevels[d] < lowestLevel) { lowestDomain = d; lowestLevel = domainLevels[d]; }
-    }
-    const strongDomains = DOMAIN_ORDER.filter(d => domainLevels[d] >= 3).map(d => DOMAIN_LABELS[d]);
-    const weakDomains = DOMAIN_ORDER.filter(d => domainLevels[d] <= 2).map(d => DOMAIN_LABELS[d]);
-
-    const INSIGHTS: Record<string, Record<1|2, string>> = {
-      capacity: { 1: "Recovered time isn't being tracked or deployed.", 2: "Recovered time is measured but not being converted to access." },
-      revenue: { 1: "No one has analyzed whether documentation changes are affecting reimbursement.", 2: "Directional signals observed but not formally validated." },
-      workforce: { 1: "After-hours burden reduced but broader workforce impact isn't tracked.", 2: "Burden is measured but not connected to retention or labor costs." },
-      risk: { 1: "Documentation quality improved but no downstream teams have been engaged.", 2: "Quality attributes tracked but not yet connected to downstream programs." },
-    };
-    const insightLevel = Math.min(lowestLevel, 2) as 1|2;
-    const domainInsight = INSIGHTS[lowestDomain]?.[insightLevel] || '';
-    const lowestLabel = DOMAIN_LABELS[lowestDomain as Domain].toLowerCase();
-
-    if (totalScore <= 30) return `Your organization is in the early stages of capturing ambient ROI. Time is being saved, but value capture is largely unmeasured and unstructured. Your biggest opportunity is in ${lowestLabel} \u2014 ${domainInsight.toLowerCase()}`;
-    if (totalScore <= 50) return `Your organization is beginning to capture ambient ROI${weakDomains.length > 0 ? `, but ${weakDomains.join(' and ')} remain${weakDomains.length === 1 ? 's' : ''} in early stages` : ''}. Your biggest opportunity is in ${lowestLabel} \u2014 ${domainInsight.toLowerCase()}`;
-    if (totalScore <= 70) return `Your organization is actively managing ambient ROI in ${strongDomains.join(' and ') || 'some domains'}${weakDomains.length > 0 ? `, but ${weakDomains.join(' and ')} remain${weakDomains.length === 1 ? 's' : ''} in early stages` : ''}. Your biggest opportunity is in ${lowestLabel} \u2014 ${domainInsight.toLowerCase()}`;
-    if (totalScore <= 85) return `Your organization is strategically managing ambient ROI across ${strongDomains.join(', ') || 'multiple domains'}. Focus on ${lowestLabel} to reach full maturity \u2014 ${domainInsight.toLowerCase()}`;
-    return 'Your organization has institutionalized ambient ROI across all four domains. This is strategic-level documentation intelligence.';
-  }, [domainData, totalScore]);
 
   const dataShowsCards = useMemo(() => {
     const domainLevels: Record<string, number> = {};
@@ -409,24 +373,24 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
 
     const nextStepMap: Record<string, Record<number, { title: string; body: string }>> = {
       capacity: {
-        1: { title: "Capacity: the first move", body: "Schedule the operational conversation about converting recovered time. Organizations that reach Level 3 Capacity within 12 months make this decision before they think they\u2019re ready \u2014 not after." },
-        2: { title: "Capacity: confirm the number", body: "A provider volume measurement \u2014 even a 30-day pilot \u2014 is what separates directional intent from a confirmed access revenue figure leadership can stand behind." },
-        3: { title: "Capacity: wire it into the model", body: "Connecting recovered capacity to the annual FTE and growth plan is the Level 4 move. The organizations that do this use ambient as a staffing variable, not just a documentation tool." },
+        1: { title: "Capacity: the first move", body: "Schedule the operational conversation about converting recovered time. Organizations that reach Demonstrated Capacity within 12 months make this decision before they think they're ready — not after." },
+        2: { title: "Capacity: confirm the number", body: "A provider volume measurement — even a 30-day pilot — is what separates emerging intent from a demonstrated access revenue figure leadership can stand behind." },
+        3: { title: "Capacity: wire it into the model", body: "Connecting recovered capacity to the annual FTE and growth plan is the Strategic Impact move. The organizations that do this use ambient as a staffing variable, not just a documentation tool." },
       },
       revenue: {
-        1: { title: "Revenue: ask the revenue cycle team", body: "Most organizations are surprised by what surfaces when they formally ask. A structured CDI and coding review connected to ambient documentation \u2014 not a one-time study, but an ongoing program \u2014 is what gets organizations to Level 3 within 12 months." },
-        2: { title: "Revenue: formalize the signal", body: "A formal before/after analysis that produces a number revenue cycle leadership can stand behind is the Level 2 to Level 3 move. The data is already there \u2014 it hasn\u2019t been looked at formally yet." },
-        3: { title: "Revenue: tie it to strategy", body: "Documentation governance tied to payer strategy \u2014 where coding accuracy data informs contract negotiations \u2014 is where Revenue becomes a strategic asset, not just a confirmed metric." },
+        1: { title: "Revenue: ask the revenue cycle team", body: "Most organizations are surprised by what surfaces when they formally ask. A structured CDI and coding review connected to ambient documentation — not a one-time study, but an ongoing program — is what gets organizations to Demonstrated within 12 months." },
+        2: { title: "Revenue: formalize the signal", body: "A formal before/after analysis that produces a number revenue cycle leadership can stand behind is the Emerging to Demonstrated move. The data is already there — it hasn't been looked at formally yet." },
+        3: { title: "Revenue: tie it to strategy", body: "Documentation governance tied to payer strategy — where coding accuracy data informs contract negotiations — is where Revenue becomes a strategic asset, not just a demonstrated metric." },
       },
       workforce: {
-        1: { title: "Workforce: formalize the signal", body: "Organizations that reach Level 3 Workforce within 12 months have a formal provider satisfaction measurement program running on a cadence \u2014 explicitly connected to ambient data, not running in parallel to it." },
-        2: { title: "Workforce: model the economics", body: "Connecting provider satisfaction data to turnover modeling is the Level 3 move. The organizations that do this find it changes how they frame ambient to their board \u2014 not just documentation, but labor cost management." },
-        3: { title: "Workforce: make it a planning variable", body: "Provider sustainability as a formal input to the FTE model \u2014 influencing recruitment, retention programs, and staffing decisions \u2014 is Level 4. It\u2019s a governance decision, not a measurement decision." },
+        1: { title: "Workforce: formalize the signal", body: "Organizations that reach Demonstrated Workforce within 12 months have a formal provider satisfaction measurement program running on a cadence — explicitly connected to ambient data, not running in parallel to it." },
+        2: { title: "Workforce: model the economics", body: "Connecting provider satisfaction data to turnover modeling is the Demonstrated move. The organizations that do this find it changes how they frame ambient to their board — not just documentation, but labor cost management." },
+        3: { title: "Workforce: make it a planning variable", body: "Provider sustainability as a formal input to the FTE model — influencing recruitment, retention programs, and staffing decisions — is Strategic Impact. It's a governance decision, not a measurement decision." },
       },
       risk: {
-        1: { title: "Quality: start tracking downstream", body: "Documentation completeness, specificity, and compliance readiness tracked systematically is the Level 1 to Level 2 move. CDI, coding, and quality teams need to see the improvement \u2014 that connection, formally structured, is what unlocks the downstream value." },
-        2: { title: "Quality: connect to programs", body: "Wiring quality data into CDI workflows, coding accuracy, and prior auth so documentation intelligence becomes an active operational input \u2014 that\u2019s the Level 3 move. The infrastructure already exists; the connection hasn\u2019t been built." },
-        3: { title: "Quality: position for strategic value", body: "Documentation quality as a strategic organizational asset \u2014 informing value-based care, compliance governance, and AI readiness \u2014 is where the compounding returns live. This is what Level 4 organizations have that most don\u2019t." },
+        1: { title: "Quality: start tracking downstream", body: "Documentation completeness, specificity, and compliance readiness tracked systematically is the Unmeasured to Emerging move. CDI, coding, and quality teams need to see the improvement — that connection, formally structured, is what unlocks the downstream value." },
+        2: { title: "Quality: connect to programs", body: "Wiring quality data into CDI workflows, coding accuracy, and prior auth so documentation intelligence becomes an active operational input — that's the Demonstrated move. The infrastructure already exists; the connection hasn't been built." },
+        3: { title: "Quality: position for strategic value", body: "Documentation quality as a strategic organizational asset — informing value-based care, compliance governance, and AI readiness — is where the compounding returns live. This is what Strategic Impact organizations have that most don't." },
       },
     };
 
@@ -459,7 +423,7 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
     const opening = `Based on your profile — ${archetypeName} — here's what the organizations that move fastest have in common.`;
 
     const bodies: Record<'low' | 'mid' | 'high', string> = {
-      low: `They have a measurement program — not just a deployment. A structured CDI and coding review process connected to their ambient data. A formal provider satisfaction measurement program that runs on a cadence. Executive ownership of the maturity roadmap, not just the technology. Your current profile is the most common starting point for organizations that reach Level 3+ within 12 months — not because the gap is small, but because the gap is now visible.`,
+      low: `They have a measurement program — not just a deployment. A structured CDI and coding review process connected to their ambient data. A formal provider satisfaction measurement program that runs on a cadence. Executive ownership of the maturity roadmap, not just the technology. Your current profile is the most common starting point for organizations that reach Demonstrated within 12 months — not because the gap is small, but because the gap is now visible.`,
       mid: `They used the signal they'd already built to accelerate what hadn't been measured yet — not one domain at a time, but as a connected program. The measurement infrastructure you've started is the hardest part to build from scratch. You're not starting from scratch. The question is what gets prioritized in the next planning cycle.`,
       high: `They governed it — ensuring the measurement capability is institutional, not dependent on individual champions, and that it scales as the deployment grows. Your profile is closer to that frontier than most. The question is whether that's owned by the organization or by a few people inside it.`,
     };
@@ -495,16 +459,8 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
         timeSavings,
         documentationScore: totalScore,
         totalAnnualGap: dt,
-        monthlyGap: displayedMonthly,
-        dailyGap: displayedDaily,
-        actNow3yr,
-        wait6mo3yr: Math.round(dt * (3.45 - 0.42)),
-        wait12mo3yr: Math.round(dt * (3.45 - 0.95)),
-        permanentlyLost6mo,
-        permanentlyLost12mo,
         revenuePerVisit,
         conversionFactor: inputs.conversionFactor || 33,
-        assessmentNarrative,
         deploymentTenure: inputs.deploymentTenure || '',
         orgContext: {
           systemSize: (inputs as any).systemSize || 0,
@@ -644,10 +600,10 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
           >
             <div className="bg-[#1A1A1A] rounded-lg p-6 sm:p-8">
               <p className="text-xl sm:text-2xl font-bold text-white mb-3">
-                Your gap is real. Here's how to close it.
+                The Ambient Value Domains framework shows where this deployment stands. The depth of what that means for this organization is what the next conversation is for.
               </p>
               <p className="text-sm text-white/50 mb-6">
-                A 45-minute working session turns this assessment into a prioritized measurement plan — built around your domains, your scale, and what peer organizations have done in the first 90 days.
+                A focused conversation with the Abridge team connects this framework to the organization's specific context — the domains with the clearest path to measurement, the data that already exists in the systems, and what organizations at this maturity stage have done first.
               </p>
               <div className="flex flex-col items-start gap-3">
                 <Button
@@ -753,7 +709,7 @@ export default function Screen6Invitation({ onBack, onNavigateToExplore }: Scree
               Export Ambient Assessment
             </DialogTitle>
             <DialogDescription>
-              Generate a professional PDF report with your assessment results, domain analysis, and cost-of-inaction projections.
+              Generate a professional PDF report with your assessment results, domain analysis, and 3-year value trajectory.
             </DialogDescription>
           </DialogHeader>
 

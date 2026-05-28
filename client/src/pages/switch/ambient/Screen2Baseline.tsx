@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { ChevronDown, Building2, Calculator } from "lucide-react";
+import { ChevronDown, Building2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { Button } from "@/components/ui/button";
@@ -20,7 +20,6 @@ const INDUSTRY_UTIL = 45;
 
 export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }: Screen2Props) {
   const [showEstimator, setShowEstimator] = useState(false);
-  const [showAdvanced, setShowAdvanced] = useState(false);
   const [showOrgProfile, setShowOrgProfile] = useState(false);
   const [utilSet, setUtilSet] = useState(inputs.utilization > 0);
 
@@ -29,7 +28,7 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
   const canProceed = hasBothInputs && utilSet && !!inputs.deploymentTenure;
 
   const utilization = inputs.utilization || 0;
-  const revenuePerVisit = inputs.revenuePerVisit || 200;
+  const revenuePerVisit = inputs.revenuePerVisit || 0;
   const conversionFactor = inputs.conversionFactor || 33;
 
   const estimatedEncounters = useMemo(() => inputs.providers * 3000, [inputs.providers]);
@@ -84,7 +83,7 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
             Let's build your deployment profile.
           </h1>
           <p className="text-base text-[#888888]">
-            A few inputs. Everything that follows is built on what you tell us here.
+            ROI of ambient lives in four places. Most organizations have confirmed value in one — maybe two. What follows maps where yours actually lives.
           </p>
         </motion.div>
 
@@ -115,7 +114,7 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
 
               <div>
                 <label className="block text-sm font-medium text-black mb-2">
-                  How many total encounters does your practice handle per year?
+                  How many total encounters does your organization handle per year?
                 </label>
                 <FormattedNumberInput
                   value={inputs.annualEncounters}
@@ -223,69 +222,55 @@ export default function Screen2Baseline({ inputs, updateInput, onNext, onBack }:
 
             </div>
 
-            <div className="mt-8">
-              <button
-                type="button"
-                onClick={() => setShowAdvanced(!showAdvanced)}
-                className="flex items-center gap-2 cursor-pointer bg-transparent border-none text-sm font-medium text-[#888888] hover:text-black transition-colors"
-                data-testid="button-advanced-toggle"
-              >
-                <Calculator size={14} />
-                <ChevronDown
-                  size={14}
-                  className="transition-transform duration-200"
-                  style={{ transform: showAdvanced ? 'rotate(180deg)' : 'rotate(0)' }}
-                />
-                Financial Assumptions
-              </button>
+            <div className="mt-8 pt-6 border-t border-[#E5E7EB]">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px]">Optional</span>
+                <span className="text-sm font-medium text-black">Financial estimates</span>
+              </div>
+              <p className="text-xs text-[#888888] leading-relaxed mb-5">
+                Enter your average revenue per visit to unlock personalized dollar estimates in your results.
+                Leave blank for narrative-only scoring.
+              </p>
 
-              <AnimatePresence>
-                {showAdvanced && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="flex flex-col gap-5 mt-4 pt-4 border-t border-[#E5E7EB]">
-                      <p className="text-xs text-[#888888] italic leading-relaxed -mt-1 mb-1">These defaults reflect published benchmarks. Adjust only if you have organization-specific data.</p>
-                      <div>
-                        <label className="block text-sm font-medium text-black mb-1">
-                          Average revenue per visit
-                        </label>
-                        <p className="text-xs text-[#888888] mb-2">Average visit revenue ($). Used in capacity and revenue calculations.</p>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm text-[#888888]">$</span>
-                          <FormattedNumberInput
-                            value={revenuePerVisit}
-                            onChange={(v) => updateInput("revenuePerVisit", v || 200)}
-                            placeholder="200"
-                            className="w-full h-12 bg-white border-[#E5E7EB]"
-                            data-testid="input-revenue-per-visit"
-                          />
-                        </div>
-                      </div>
+              <div className="flex flex-col gap-5">
+                <div>
+                  <label className="block text-sm font-medium text-black mb-1">
+                    Average revenue per visit
+                  </label>
+                  <p className="text-xs text-[#888888] mb-2">
+                    Typical range: $150–$500 depending on specialty and payer mix.
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-[#888888]">$</span>
+                    <FormattedNumberInput
+                      value={revenuePerVisit || ''}
+                      onChange={(v) => updateInput("revenuePerVisit", v || 0)}
+                      placeholder="e.g. 250"
+                      className="w-full h-12 bg-white border-[#E5E7EB]"
+                      data-testid="input-revenue-per-visit"
+                    />
+                  </div>
+                </div>
 
-                      <div>
-                        <label className="block text-sm font-medium text-black mb-1">
-                          CMS wRVU conversion factor
-                        </label>
-                        <p className="text-xs text-[#888888] mb-2">Medicare conversion factor applied to wRVU calculations. Default $33.</p>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm text-[#888888]">$</span>
-                          <FormattedNumberInput
-                            value={conversionFactor}
-                            onChange={(v) => updateInput("conversionFactor", v || 33)}
-                            placeholder="33"
-                            className="w-full h-12 bg-white border-[#E5E7EB]"
-                            data-testid="input-conversion-factor"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                <div>
+                  <label className="block text-sm font-medium text-black mb-1">
+                    CMS wRVU conversion factor
+                  </label>
+                  <p className="text-xs text-[#888888] mb-2">
+                    2024 CMS Physician Fee Schedule standard.
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-[#888888]">$</span>
+                    <FormattedNumberInput
+                      value={conversionFactor}
+                      onChange={(v) => updateInput("conversionFactor", v || 33)}
+                      placeholder="33"
+                      className="w-full h-12 bg-white border-[#E5E7EB]"
+                      data-testid="input-conversion-factor"
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div className="mt-8">

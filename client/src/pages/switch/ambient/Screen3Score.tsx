@@ -1,11 +1,13 @@
 import { useEffect, useRef, useMemo, useState } from "react";
-import { motion } from "framer-motion";
-import { Check } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+
 import { useAssessment } from "@/lib/assessment";
-import StepFooter, { STEP_FOOTER_SPACER_CLASS } from "@/components/StepFooter";
+import { formatDollar } from "./ambientCalculator";
 import {
-  DOMAIN_ORDER, DOMAIN_LABELS, ACTIVATION_LABELS,
-  scoreToActivationLevel, tenureScoreBand,
+  DOMAIN_ORDER, DOMAIN_LABELS, ACTIVATION_LABELS, LEVEL_NAMES,
+  scoreToActivationLevel,
+  CAPACITY_TIME_USAGE_LABELS,
+  QUALITY_ATTRIBUTES, DOWNSTREAM_WORKFLOWS, REVENUE_SIGNALS,
   type Domain, type ActivationLevel,
 } from "./domainCalculations";
 
@@ -26,13 +28,26 @@ function csvCount(csv: unknown): number {
   return String(csv).split(',').filter(Boolean).length;
 }
 
+function joinArr(arr: string[]): string {
+  if (arr.length === 0) return '';
+  if (arr.length === 1) return arr[0];
+  if (arr.length === 2) return `${arr[0]} and ${arr[1]}`;
+  return `${arr.slice(0, -1).join(', ')}, and ${arr[arr.length - 1]}`;
+}
+
 const SCORE_BANDS = [
-  { label: 'Pre-Measurement', max: 16 },
-  { label: 'Signal', max: 38 },
-  { label: 'Confirmed', max: 60 },
-  { label: 'Managed ROI', max: 79 },
-  { label: 'Strategic Asset', max: 100 },
+  { label: 'Unmeasured', max: 16 },
+  { label: 'Emerging', max: 48 },
+  { label: 'Demonstrated', max: 76 },
+  { label: 'Strategic Impact', max: 100 },
 ] as const;
+
+const BAND_DESCRIPTIONS: Record<string, string> = {
+  'Unmeasured': "The deployment is live and value is generating. No domain has been formally measured — the baseline for capturing that value is still ahead.",
+  'Emerging': "Observable signals exist across the deployment. Value is generating — the formal attribution work is at different stages across the four domains.",
+  'Demonstrated': "At least one domain has moved from signal to proof — a calculable, attributable figure that can stand up to scrutiny.",
+  'Strategic Impact': "Demonstrated value across most or all domains. Documentation intelligence has become a strategic asset — informing what this organization can compete for, serve, and sustain.",
+};
 
 function getScoreBandLabel(score: number): string {
   for (const band of SCORE_BANDS) {
@@ -41,275 +56,35 @@ function getScoreBandLabel(score: number): string {
   return SCORE_BANDS[SCORE_BANDS.length - 1].label;
 }
 
-const TIEBREAKER_ORDER: DomainKey[] = ['risk', 'revenue', 'workforce', 'capacity'];
+const TIEBREAKER_ORDER: DomainKey[] = ['capacity', 'revenue', 'workforce', 'risk'];
 
-const DOMAIN_INSIGHTS: Record<DomainKey, Record<1 | 2 | 3, string>> = {
+const FIRST_MOVES: Record<Domain, Record<number, string>> = {
   capacity: {
-    1: "Recovered time hasn't been deployed yet — where it goes is the decision in front of you.",
-    2: "Access decision is in place — measuring the patient volume is the next confirmation.",
-    3: "Patients are being seen — tracking the downstream access impact completes the story.",
+    1: "The question organizations at this stage typically haven't answered internally yet: where did the recovered time go? Not tracked formally — just answered. The answer almost always exists in scheduling data.",
+    2: "Access patterns are forming. The organizations that connect recovered time to a specific access outcome — slots, panel size, same-day availability — are the ones that convert directional signal to demonstrable value.",
+    3: "One confirmed pathway exists. The question most organizations at this stage are working through: how far does the full access picture extend across the provider panel?",
+    4: "Time recovery is a planning input, not just a metric. The work at this stage is how care model design incorporates what the deployment has already shown.",
   },
   revenue: {
-    1: "The documentation-to-revenue connection hasn't been analyzed yet — that's where the financial story begins.",
-    2: "Directional signals are visible — a formal before/after analysis would confirm the number.",
-    3: "Impact is measured — embedding documentation into revenue strategy makes it a permanent capability.",
+    1: "The documentation-revenue relationship almost always surfaces in a retrospective analysis. Organizations that run the pre/post coding review consistently find it. The question is who owns that analysis.",
+    2: "Most organizations at this stage have the underlying data — coding has shifted, collections have moved. The gap between a directional signal and a confirmed figure is almost always organizational rather than analytical. The data is already there.",
+    3: "A confirmed revenue figure attributable to documentation changes opens different conversations than a trend observation. That number belongs in different rooms.",
+    4: "Documentation quality has become a revenue input. The next layer is how it informs payer strategy and CDI governance — not just reporting.",
   },
   workforce: {
-    1: "Provider experience is improving — connecting it to retention data is the next chapter.",
-    2: "Observable changes are documented — turnover data would close the retention story.",
-    3: "Retention is connected — integrating this into workforce strategy makes it a competitive asset.",
+    1: "Provider experience rarely surfaces in formal measurement before someone looks for it. The organizations that have started here almost always found more than they expected — and the baseline data is simpler to establish than most assume.",
+    2: "The organizations where behavioral signal converts to a confirmed retention figure have something in common: the conversation between clinical ops and HR has already happened. The data exists in both systems — it just hasn't been placed in the same room yet.",
+    3: "A retained provider has a calculable value. The organizations that have made this calculation tend to describe it as the moment the deployment stopped being a productivity tool and became a workforce strategy.",
+    4: "Provider experience data is a board-level input at this stage. The work is integration — deepening how workforce intelligence informs care model decisions.",
   },
   risk: {
-    1: "Documentation quality is improving — connecting it to CDI and coding is what unlocks downstream value.",
-    2: "Quality monitoring is in place — connecting it to downstream workflows is next.",
-    3: "Workflows are connected — elevating documentation quality to a board-level strategic asset is what comes next.",
+    1: "Documentation specificity improvements flow downstream to every system that depends on documentation — coding, CDI, quality programs, compliance. When organizations start the attribution, CDI is almost always where the first signal surfaces.",
+    2: "Documentation quality changes propagate through every downstream system — CDI, coding, denials, quality programs. At this stage the signal is in multiple places. The question is which program gets the first formal attribution.",
+    3: "A confirmed downstream value from documentation changes belongs in the quality strategy — not just the ambient reporting. That's the conversation this level makes possible.",
+    4: "Documentation is organizational infrastructure at this stage. The layer ahead is how it positions the organization for value-based contracts and clinical AI readiness.",
   },
 };
 
-type Checkpoint = { label: string; done: boolean };
-
-function buildCheckpoints(
-  domain: Domain,
-  level: number,
-  inp: Record<string, number | string>,
-  g: Record<string, number | string>,
-): Checkpoint[] {
-  switch (domain) {
-    case 'capacity': {
-      const timeSaved = (inp.timeSaved as number) || (g.timeSavedPerEncounter as number) || 0;
-      const usageCount = csvCount(inp.capacityTimeUsage);
-      const confidence = inp.capacityAccessConfidence as string | undefined;
-      const additionalPts = (inp.additionalPatientsPerMonth as number) || 0;
-      return [
-        {
-          label: timeSaved > 0
-            ? `${timeSaved} min/encounter recovered from documentation`
-            : 'Documentation time recovered per encounter',
-          done: level >= 1,
-        },
-        {
-          label: usageCount > 0
-            ? `Recovered time deployed across ${usageCount} use${usageCount !== 1 ? 's' : ''}`
-            : 'Recovered time being converted to patient access',
-          done: level >= 2 && usageCount > 0,
-        },
-        {
-          label: additionalPts > 0
-            ? `${additionalPts.toLocaleString()} additional patients/month${confidence === 'confirmed' ? ' — confirmed' : ' — estimated'}`
-            : 'Additional patient volume confirmed',
-          done: level >= 3,
-        },
-        {
-          label: 'Downstream access impact tracked and attributed',
-          done: level >= 4,
-        },
-      ];
-    }
-
-    case 'revenue': {
-      const engaged = inp.revenueCycleEngaged as string | undefined;
-      const movementCount = csvCount(inp.observedMovement);
-      const metricType = inp.revenueMetricType as string | undefined;
-      const metricLabels: Record<string, string> = {
-        wrvu: 'wRVU lift', collections: 'collections increase', denial_rate: 'denial rate reduction',
-      };
-      const integrationsCount = csvCount(inp.revenueIntegrations);
-      return [
-        {
-          label: engaged === 'yes'
-            ? 'Revenue cycle team formally engaged'
-            : engaged === 'informal'
-              ? 'Revenue cycle team informally aware'
-              : 'Revenue cycle team engaged',
-          done: engaged === 'yes' || engaged === 'informal' || level >= 2,
-        },
-        {
-          label: movementCount > 0
-            ? `${movementCount} directional signal${movementCount !== 1 ? 's' : ''} observed in coding and collections`
-            : 'Directional movement observed',
-          done: level >= 2,
-        },
-        {
-          label: metricType
-            ? `Before/after analysis complete — ${metricLabels[metricType] || 'impact'} measured`
-            : 'Before/after analysis completed and impact measured',
-          done: level >= 3,
-        },
-        {
-          label: integrationsCount > 0
-            ? `Documentation integrated into ${integrationsCount} revenue strategy area${integrationsCount !== 1 ? 's' : ''}`
-            : 'Documentation integrated into revenue strategy',
-          done: level >= 4,
-        },
-      ];
-    }
-
-    case 'workforce': {
-      const editTimeSaved = (inp.editTimeSaved as number) || 0;
-      const surveyType = inp.surveyType as string | undefined;
-      const behaviorCount = csvCount(inp.observedBehaviors);
-      const trBefore = (inp.beforeTurnoverRate as number) || 0;
-      const trAfter = inp.afterTurnoverRate !== undefined ? (inp.afterTurnoverRate as number) : undefined;
-      const hasDelta = trBefore > 0 && trAfter !== undefined && trAfter < trBefore;
-      const strategyCount = csvCount(inp.workforceStrategies);
-      return [
-        {
-          label: editTimeSaved > 0
-            ? `${editTimeSaved} min/day per provider recovered in clinic`
-            : 'In-clinic documentation time savings measured',
-          done: editTimeSaved > 0 || level >= 1,
-        },
-        {
-          label: surveyType === 'structured'
-            ? 'Structured provider survey completed'
-            : surveyType === 'informal'
-              ? 'Provider feedback informally captured'
-              : 'Provider sentiment captured',
-          done: !!surveyType && surveyType !== 'not_yet',
-        },
-        {
-          label: behaviorCount > 0
-            ? `${behaviorCount} observable behavioral change${behaviorCount !== 1 ? 's' : ''} documented`
-            : 'Observable behavioral changes documented',
-          done: level >= 2 && behaviorCount > 0,
-        },
-        {
-          label: hasDelta
-            ? `Turnover rate improved ${trBefore}% → ${trAfter}% — retention connected`
-            : trBefore > 0
-              ? 'Turnover rate tracked since deployment'
-              : 'Retention data connected to burden reduction',
-          done: level >= 3 && trBefore > 0,
-        },
-        {
-          label: strategyCount > 0
-            ? 'Workforce strategy informed by documentation burden data'
-            : 'Documentation burden integrated into workforce strategy',
-          done: level >= 4,
-        },
-      ];
-    }
-
-    case 'risk': {
-      const monitoringApproach = inp.monitoringApproach as string | undefined;
-      const attrCount = csvCount(inp.qualityAttributes);
-      const approachLabels: Record<string, string> = {
-        realtime: 'real-time', systematic: 'structured', spot_checks: 'informal',
-      };
-      const financialPathway = inp.financialPathway as string | undefined;
-      const pathwayLabels: Record<string, string> = {
-        mips: 'MIPS/quality measures', denials: 'denial reduction',
-      };
-      const siCount = csvCount(inp.strategicIntegrations);
-      const executiveOwner = inp.executiveOwner as string | undefined;
-      const boardPresented = inp.executiveBoardPresented as string | undefined;
-
-      const checkpoints: Checkpoint[] = [
-        {
-          label: 'Documentation quality improving — downstream teams not yet connected',
-          done: level >= 1,
-        },
-        {
-          label: monitoringApproach && attrCount > 0
-            ? `${attrCount} of 5 quality dimensions tracked — ${approachLabels[monitoringApproach] || ''} monitoring`
-            : monitoringApproach
-              ? 'Quality dimensions actively monitored'
-              : 'Quality dimensions being actively monitored',
-          done: level >= 2 && !!monitoringApproach,
-        },
-        {
-          label: financialPathway && financialPathway !== 'none_yet'
-            ? `Downstream connected — ${pathwayLabels[financialPathway] || financialPathway} pathway`
-            : 'Connected to CDI, coding, and downstream programs',
-          done: level >= 3 && !!financialPathway && financialPathway !== 'none_yet',
-        },
-        {
-          label: siCount > 0
-            ? `Documentation quality integrated into ${siCount} strategic area${siCount !== 1 ? 's' : ''}`
-            : 'Documentation quality an organizational strategic asset',
-          done: level >= 4 && siCount > 0,
-        },
-      ];
-
-      if (level >= 4) {
-        checkpoints.push({
-          label: executiveOwner === 'yes'
-            ? boardPresented === 'yes'
-              ? 'Named executive owner · Presented to board'
-              : 'Named executive owner in place'
-            : 'Executive ownership established',
-          done: executiveOwner === 'yes',
-        });
-      }
-
-      return checkpoints;
-    }
-  }
-}
-
-function DomainDecisionCard({
-  domain, level, domainInputs, globalInputs, onClick,
-}: {
-  domain: Domain;
-  level: number;
-  domainInputs: Record<string, number | string>;
-  globalInputs: Record<string, number | string>;
-  onClick?: () => void;
-}) {
-  const checkpoints = buildCheckpoints(domain, level, domainInputs, globalInputs);
-  const doneCount = checkpoints.filter(cp => cp.done).length;
-  const allDone = doneCount === checkpoints.length;
-
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="bg-white border border-[#E8E3DC] rounded-xl p-4 text-left w-full hover:border-[#EA2C00]/40 hover:shadow-sm transition-all duration-200 cursor-pointer"
-      data-testid={`decision-card-${domain}`}
-    >
-      <div className="flex items-start justify-between mb-3">
-        <div className="min-w-0 flex-1 pr-3">
-          <p className="text-sm font-bold text-[#1A1A1A] leading-tight">
-            {DOMAIN_LABELS[domain]}
-          </p>
-          <p className="text-[11px] text-[#888888] mt-0.5 leading-tight">
-            {ACTIVATION_LABELS[domain][level as ActivationLevel]}
-          </p>
-        </div>
-        <span
-          className={`text-[11px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0 ${
-            allDone
-              ? 'bg-[#EA2C00]/10 text-[#EA2C00]'
-              : 'bg-[#F0EDEA] text-[#888888]'
-          }`}
-        >
-          {doneCount}/{checkpoints.length}
-        </span>
-      </div>
-
-      <div className="flex flex-col gap-2">
-        {checkpoints.map((cp, i) => (
-          <div key={i} className="flex items-start gap-2.5">
-            <div
-              className={`w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors ${
-                cp.done ? 'bg-[#EA2C00]' : 'bg-[#E8E3DC]'
-              }`}
-            >
-              {cp.done && <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />}
-            </div>
-            <span
-              className={`text-xs leading-relaxed ${
-                cp.done ? 'text-[#1A1A1A] font-medium' : 'text-[#BBBBBB]'
-              }`}
-            >
-              {cp.label}
-            </span>
-          </div>
-        ))}
-      </div>
-    </button>
-  );
-}
 
 function AnimatedCounter({ target, duration = 800, delay = 0 }: { target: number; duration?: number; delay?: number }) {
   const startValue = Math.max(target - 8, 0);
@@ -341,26 +116,665 @@ function AnimatedCounter({ target, duration = 800, delay = 0 }: { target: number
   return <>{current}</>;
 }
 
-function AnimatedBar({ percent, delay = 0, height = 5 }: { percent: number; delay?: number; height?: number }) {
-  const [width, setWidth] = useState(0);
+
+const MATURITY_BANDS = [
+  { label: 'Unmeasured', short: 'Unmeasured', min: 0, max: 16 },
+  { label: 'Emerging', short: 'Emerging', min: 17, max: 48 },
+  { label: 'Demonstrated', short: 'Demonstrated', min: 49, max: 76 },
+  { label: 'Strategic Impact', short: 'Strategic', min: 77, max: 100 },
+];
+
+function scoreToVisualPct(s: number): number {
+  const n = MATURITY_BANDS.length;
+  const bandWidth = 100 / n;
+  for (let i = 0; i < n; i++) {
+    const band = MATURITY_BANDS[i];
+    if (s <= band.max) {
+      const posInBand = (s - band.min) / (band.max - band.min);
+      return i * bandWidth + posInBand * bandWidth;
+    }
+  }
+  return 100;
+}
+
+function MaturityArc({ score }: { score: number }) {
+  const [markerReady, setMarkerReady] = useState(false);
   useEffect(() => {
-    const timer = setTimeout(() => setWidth(Math.min(percent, 100)), delay);
-    return () => clearTimeout(timer);
-  }, [percent, delay]);
+    const t = setTimeout(() => setMarkerReady(true), 700);
+    return () => clearTimeout(t);
+  }, []);
+
+  const activeBandIdx = MATURITY_BANDS.findIndex(b => score <= b.max);
+  const safeBandIdx = activeBandIdx < 0 ? MATURITY_BANDS.length - 1 : activeBandIdx;
+  const markerPct = markerReady ? scoreToVisualPct(score) : 0;
 
   return (
-    <div className="flex-1 bg-[#E5E7EB] rounded-full overflow-hidden" style={{ height }}>
-      <div
-        className="h-full bg-[#EA2C00] rounded-full transition-all duration-500 ease-out"
-        style={{ width: `${width}%` }}
-      />
+    <div className="mb-6">
+      <div className="relative mb-1.5" style={{ height: '6px' }}>
+        <div className="flex gap-[2px] h-full">
+          {MATURITY_BANDS.map((band, i) => {
+            const isActive = i === safeBandIdx;
+            const isPast = i < safeBandIdx;
+            return (
+              <div
+                key={band.label}
+                style={{
+                  flex: '1 0 0',
+                  height: '100%',
+                  borderRadius: '2px',
+                  backgroundColor: isActive
+                    ? '#EA2C00'
+                    : isPast
+                      ? 'rgba(234,44,0,0.28)'
+                      : 'rgba(255,255,255,0.07)',
+                  transition: 'background-color 0.6s ease',
+                }}
+              />
+            );
+          })}
+        </div>
+        <div
+          className="absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-white rounded-full shadow-md"
+          style={{
+            left: `${markerPct}%`,
+            transform: 'translate(-50%, -50%)',
+            transition: 'left 1s cubic-bezier(0.34, 1.56, 0.64, 1)',
+            boxShadow: '0 0 0 3px rgba(234,44,0,0.3)',
+          }}
+        />
+      </div>
+      <div className="flex gap-[2px]">
+        {MATURITY_BANDS.map((band, i) => {
+          const isActive = i === safeBandIdx;
+          const isPast = i < safeBandIdx;
+          return (
+            <div key={band.label} style={{ flex: '1 0 0', overflow: 'hidden' }}>
+              <p
+                className="text-[9px] uppercase tracking-[0.3px] leading-tight pt-1 truncate"
+                style={{
+                  fontFamily: "'Manrope', sans-serif",
+                  color: isActive
+                    ? 'rgba(255,255,255,0.80)'
+                    : isPast
+                      ? 'rgba(255,255,255,0.45)'
+                      : 'rgba(255,255,255,0.30)',
+                }}
+              >
+                {band.short}
+              </p>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
 
+
+// ── PERSONALIZED NARRATIVE FUNCTIONS ──
+
+function generatePersonalizedSub(
+  domainLevels: Record<Domain, number>,
+  inputs: any,
+  providers: number,
+  annualEncounters: number,
+  utilization: number,
+): string {
+  const tenure = inputs.deploymentTenure as string | undefined;
+  const orgType = inputs.orgType as string | undefined;
+  const orgTypeLabels: Record<string, string> = {
+    'amc': 'Academic medical center',
+    'community': 'Community hospital',
+    'idn': 'Integrated delivery network',
+    'physician_group': 'Physician group',
+  };
+  const orgTypeLabel = orgType ? orgTypeLabels[orgType] : null;
+  const tenureLabels: Record<string, string> = {
+    '0-6': 'Less than six months in',
+    '6-12': 'Less than a year in',
+    '12-24': 'One to two years in',
+    '24+': 'Two-plus years in',
+  };
+
+  const confirmed = DOMAIN_ORDER.filter(d => domainLevels[d] >= 3);
+  const signal = DOMAIN_ORDER.filter(d => domainLevels[d] === 2);
+
+  const parts: string[] = [];
+
+  const tenureLabel = tenure ? tenureLabels[tenure] : null;
+  const docEnc = annualEncounters > 0 && utilization > 0
+    ? Math.round(annualEncounters * (utilization / 100))
+    : 0;
+  if (tenureLabel && providers > 0 && docEnc > 0) {
+    const orgCtx = orgTypeLabel ? `${orgTypeLabel} — ` : '';
+    parts.push(`${tenureLabel}. ${orgCtx}${providers.toLocaleString()} provider${providers !== 1 ? 's' : ''} at ${utilization}% utilization — roughly ${docEnc.toLocaleString()} documented encounters per year.`);
+  } else if (tenureLabel) {
+    parts.push(`${tenureLabel}.`);
+  }
+
+  const join = (arr: Domain[]) => {
+    const names = arr.map(d => DOMAIN_LABELS[d]);
+    if (names.length === 0) return '';
+    if (names.length === 1) return names[0];
+    if (names.length === 2) return `${names[0]} and ${names[1]}`;
+    return `${names.slice(0, -1).join(', ')}, and ${names[names.length - 1]}`;
+  };
+
+  if (confirmed.length === 4) {
+    parts.push('All four domains confirmed.');
+  } else if (confirmed.length >= 2) {
+    const unconfirmed = DOMAIN_ORDER.filter(d => domainLevels[d] < 3);
+    parts.push(`${join(confirmed)} ${confirmed.length === 2 ? 'are' : 'are'} confirmed. ${join(unconfirmed)} ${unconfirmed.length === 1 ? "hasn't" : "haven't"} been formally examined.`);
+  } else if (confirmed.length === 1) {
+    parts.push(`${DOMAIN_LABELS[confirmed[0]]} is confirmed. The other three haven't been formally attributed yet.`);
+  } else if (signal.length >= 2) {
+    parts.push(`${join(signal)} are generating signal — nothing formally attributed yet.`);
+  } else if (signal.length === 1) {
+    parts.push(`${DOMAIN_LABELS[signal[0]]} is generating signal — nothing formally attributed yet.`);
+  } else {
+    parts.push('Four streams running — none of it formally attributed yet.');
+  }
+
+  if (confirmed.includes('revenue')) {
+    const revInp = parseDomainInputs(inputs.revenueDomainInputs);
+    const metricType = revInp.revenueMetricType as string | undefined;
+    const metricLabels: Record<string, string> = {
+      wrvu: 'wRVU lift', collections: 'Collections per encounter',
+      denial_rate: 'Denial rate reduction', hcc_capture: 'HCC capture rate',
+    };
+    if (metricType && metricLabels[metricType]) {
+      parts.push(`${metricLabels[metricType]} is the confirmed metric.`);
+    }
+  } else if (confirmed.includes('risk')) {
+    const riskInp = parseDomainInputs(inputs.riskDomainInputs);
+    const owner = riskInp.executiveOwner as string | undefined;
+    const board = riskInp.executiveBoardPresented as string | undefined;
+    if (owner === 'yes' && board === 'yes') {
+      parts.push('Documentation quality has been to the board.');
+    }
+  } else if (signal.includes('workforce') || confirmed.includes('workforce')) {
+    const wfInp = parseDomainInputs(inputs.workforceDomainInputs);
+    const voice = wfInp.providerVoice as string | undefined;
+    if (voice === 'frequently') {
+      parts.push('Providers are frequently reporting impact.');
+    }
+  }
+
+  return parts.join(' ');
+}
+
+
+function generateDomainNarrative(
+  domain: Domain,
+  level: number,
+  inp: Record<string, number | string>,
+): string {
+  const n = (v: unknown) => csvCount(v);
+  const str = (v: unknown) => (v as string | undefined) ?? '';
+  const num = (v: unknown) => (v as number | undefined) ?? 0;
+  const plural = (count: number, word: string) => `${count} ${word}${count !== 1 ? 's' : ''}`;
+
+  switch (domain) {
+    case 'capacity': {
+      const signsCount = n(inp.capacityTimeSavingsSigns ?? inp.capacityTimeSigns);
+      const usageCount = n(inp.capacityTimeUsage);
+      const decision = str(inp.capacityTimeDecision);
+      const providerBucket = str(inp.capacityProviderBucket);
+      const additionalPatients = num(inp.additionalPatientsPerMonth);
+      const embed = str(inp.capacityLeadershipEmbeddedness);
+      const finInt = str(inp.capacityFinancialIntegration);
+
+      if (level >= 4) {
+        const embedLine = embed === 'full'
+          ? 'Named executive owner — capacity data has been at the board.'
+          : embed === 'owner_only'
+            ? 'Named executive owner — not yet at board level.'
+            : embed === 'operational'
+              ? 'Tracked operationally — no named strategic owner yet.'
+              : '';
+        const finLine = finInt === 'yes' ? ' Embedded in the operating budget.'
+          : finInt === 'in_progress' ? ' Planned for the next budget cycle.' : '';
+        return (embedLine + finLine) || 'Access impact fully integrated into organizational planning.';
+      }
+
+      if (level >= 3) {
+        const bucketLabels: Record<string, string> = {
+          handful: 'A handful of providers',
+          quarter: 'About a quarter of providers',
+          half: 'About half of providers',
+          most: 'More than three-quarters of providers',
+          nearly_all: 'All or nearly all providers',
+        };
+        const bucketLabel = bucketLabels[providerBucket] ?? 'Providers';
+        if (additionalPatients > 0) {
+          return `${bucketLabel} — ${additionalPatients} additional patient${additionalPatients !== 1 ? 's' : ''} per provider per month.`;
+        }
+        return `${bucketLabel} confirmed additional patient volume.`;
+      }
+
+      if (level >= 2) {
+        const decisionLines: Record<string, string> = {
+          directed: 'leadership has directed where it goes.',
+          discussed: 'where it goes is being discussed.',
+          organic: 'providers deciding individually.',
+        };
+        const base = usageCount > 0
+          ? `Recovered time across ${plural(usageCount, 'use')}`
+          : 'Recovered time visible';
+        const tail = decisionLines[decision] ? ` — ${decisionLines[decision]}` : '.';
+        return base + tail;
+      }
+
+      return signsCount > 0
+        ? `Documentation time savings visible — the access connection hasn't been examined yet.`
+        : "Documentation time savings visible — downstream access story is ahead.";
+    }
+
+    case 'revenue': {
+      const metricType = str(inp.revenueMetricType);
+      const engagement = str(inp.revenueCycleEngaged);
+      const alignment = str(inp.revenueLeadershipAlignment);
+      const recognizedRevenue = num(inp.recognizedRevenue);
+      const movementCount = n(inp.observedMovement ?? inp.downstreamObservations);
+      const integrationsCount = n(inp.revenueIntegrations);
+      const signalsCount = n(inp.revenueSignalsL1);
+
+      const metricLabels: Record<string, string> = {
+        wrvu: 'wRVU lift',
+        collections: 'Collections per encounter',
+        denial_rate: 'Denial rate reduction',
+        hcc_capture: 'HCC capture rate',
+      };
+      const metricLabel = metricLabels[metricType] ?? '';
+
+      const alignLines: Record<string, string> = {
+        aligned: 'Revenue cycle formally aligned.',
+        partial: 'Partially aligned.',
+        siloed: 'Still operating separately.',
+      };
+      const alignLine = alignLines[alignment] ?? '';
+
+      if (level >= 4) {
+        const base = metricLabel ? `${metricLabel} confirmed and integrated.` : 'Revenue impact confirmed and integrated.';
+        const intLine = integrationsCount > 0
+          ? ` ${plural(integrationsCount, 'revenue strategy area')} informed by documentation quality.`
+          : '';
+        return base + intLine;
+      }
+
+      if (level >= 3) {
+        if (metricLabel && recognizedRevenue > 0) {
+          return `${metricLabel} measured — ${formatDollar(recognizedRevenue)}/yr formally attributed. ${alignLine}`.trim();
+        }
+        return `${metricLabel || 'Revenue impact'} measured — no confirmed annual figure yet. ${alignLine}`.trim();
+      }
+
+      if (level >= 2) {
+        const engageLines: Record<string, string> = {
+          yes: 'Revenue cycle formally engaged.',
+          informal: 'Revenue cycle informally aware.',
+        };
+        const engageLine = engageLines[engagement] ?? '';
+        if (metricLabel) {
+          return `${metricLabel} — movement observed, not yet formally measured. ${engageLine}`.trim();
+        }
+        return `Movement visible in coding and collections — not yet formally attributed. ${engageLine}`.trim();
+      }
+
+      return 'Documentation-to-revenue connection not yet formally examined.';
+    }
+
+    case 'workforce': {
+      const providerVoice = str(inp.providerVoice);
+      const afterHoursReduction = num(inp.afterHoursReduction);
+      const behaviorCount = n(inp.observedBehaviors);
+      const retentionSignalCount = n(inp.retentionSignals);
+      const formalReview = str(inp.retentionFormalReview);
+      const beforeTurnover = num(inp.beforeTurnoverRate);
+      const afterTurnover = num(inp.afterTurnoverRate);
+      const leadershipLevel = str(inp.workforceLeadershipLevel);
+      const strategyCount = n(inp.workforceStrategies);
+
+      const voiceLines: Record<string, string> = {
+        frequently: 'Providers frequently reporting impact.',
+        occasionally: 'Providers occasionally reporting impact.',
+        not_really: 'No consistent provider voice yet.',
+      };
+      const voiceLine = voiceLines[providerVoice] ?? '';
+
+      if (level >= 4) {
+        const lvlLines: Record<string, string> = {
+          board_level: 'Provider experience data is part of board reporting.',
+          executive_only: 'Executive ownership in place — not yet at board level.',
+          operational: 'Tracked operationally — not elevated to executive strategy.',
+        };
+        const base = lvlLines[leadershipLevel] ?? 'Provider experience integrated into organizational strategy.';
+        const stratLine = strategyCount > 0
+          ? ` Informing ${plural(strategyCount, 'workforce strategy area')}.`
+          : '';
+        return base + stratLine;
+      }
+
+      if (level >= 3) {
+        const reviewLines: Record<string, string> = {
+          yes: `Retention data formally reviewed. ${plural(retentionSignalCount, 'signal')} connected to deployment.`,
+          informal: 'Retention connection informal — not yet formally reviewed.',
+          no: 'Retention signals visible — formal review hasn\'t happened yet.',
+        };
+        const base = reviewLines[formalReview] ?? 'Retention signals visible.';
+        const turnoverLine = beforeTurnover > 0 && afterTurnover > 0
+          ? ` Turnover ${beforeTurnover}% → ${afterTurnover}%.`
+          : '';
+        return base + turnoverLine;
+      }
+
+      if (level >= 2) {
+        const base = voiceLine ? voiceLine : '';
+        const behaviorLine = behaviorCount > 0
+          ? ' Behavioral changes documented.'
+          : '';
+        const hoursLine = afterHoursReduction > 0
+          ? ` ${afterHoursReduction}h/week per provider recovered after-hours.`
+          : '';
+        return (base + behaviorLine + hoursLine) || 'Behavioral changes documented — formal retention data ahead.';
+      }
+
+      return voiceLine || 'Early signals of provider experience improvement.';
+    }
+
+    case 'risk': {
+      const monitoringApproach = str(inp.monitoringApproach);
+      const qualityAttrCount = n(inp.qualityAttributes);
+      const downstreamSignalCount = n(inp.downstreamSignals);
+      const connectedWorkflowCount = n(inp.connectedWorkflows);
+      const formalAttribution = str(inp.downstreamFormalAttribution);
+      const measurementDepth = str(inp.qualityMeasurementDepth);
+      const executiveOwner = str(inp.executiveOwner);
+      const boardPresented = str(inp.executiveBoardPresented);
+      const strategicIntegCount = n(inp.strategicIntegrations);
+      const vbcContractUse = str(inp.vbcContractUse);
+      const qualityImproveCount = n(inp.qualityImprovements);
+
+      const monitoringLabels: Record<string, string> = {
+        realtime: 'real-time dashboard',
+        systematic: 'structured audits',
+        spot_checks: 'informal spot checks',
+      };
+
+      if (level >= 4) {
+        const govLine = executiveOwner === 'yes' && boardPresented === 'yes'
+          ? 'Named executive owner. Documentation quality presented to board.'
+          : executiveOwner === 'yes'
+            ? 'Named executive owner — not yet at board level.'
+            : '';
+        const vbcLine = vbcContractUse === 'yes' ? ' In use for value-based contract strategy.' : '';
+        const integLine = strategicIntegCount > 0
+          ? ` Integrated into ${plural(strategicIntegCount, 'organizational strategy area')}.`
+          : '';
+        return (govLine + vbcLine + integLine) || 'Documentation quality an organizational strategic asset.';
+      }
+
+      if (level >= 3) {
+        const attrLines: Record<string, string> = {
+          yes: `Downstream value formally attributed. ${plural(connectedWorkflowCount, 'workflow')} connected.`,
+          informal: 'Connection to downstream informally understood — not formally quantified.',
+          no: 'Downstream connection not yet formally reviewed.',
+        };
+        const base = attrLines[formalAttribution] ?? 'Downstream connection in place.';
+        const depthLine = measurementDepth === 'measured' ? ' Impact measurable.'
+          : measurementDepth === 'partial' ? ' Some areas measured, others anecdotal.' : '';
+        return base + depthLine;
+      }
+
+      if (level >= 2) {
+        const monLabel = monitoringLabels[monitoringApproach];
+        const base = monLabel
+          ? `${qualityAttrCount > 0 ? `${qualityAttrCount} of 5 quality dimensions` : 'Quality dimensions'} tracked via ${monLabel}.`
+          : 'Quality dimensions being monitored.';
+        const signalLine = downstreamSignalCount > 0
+          ? ` ${plural(downstreamSignalCount, 'downstream signal')} visible.`
+          : '';
+        return base + signalLine;
+      }
+
+      return qualityImproveCount > 0
+        ? `${plural(qualityImproveCount, 'quality dimension')} visibly improving — downstream teams not yet connected.`
+        : 'Documentation quality improving — CDI and downstream not yet connected.';
+    }
+  }
+}
+
+
+function generatePatientExperienceSub(signals: string[], status: 'strong' | 'signal' | 'gap'): string {
+  if (signals.length === 0) return '';
+
+  const signalLabels: Record<string, string> = {
+    provider_present: 'providers more present in the room',
+    feel_heard: 'patients saying they feel more heard',
+    fewer_interruptions: 'fewer mid-exam interruptions',
+    better_summaries: 'better after-visit summaries',
+    satisfaction_scores: 'CAHPS or Press Ganey scores moving',
+    love_story: 'a provider story from the room',
+  };
+
+  const labels = signals.map(s => signalLabels[s]).filter(Boolean);
+  if (labels.length === 0) return '';
+
+  let base = '';
+  if (labels.length === 1) {
+    base = `${labels[0].charAt(0).toUpperCase() + labels[0].slice(1)} — the patient dimension is present but not yet formally connected to the value story.`;
+  } else if (labels.length === 2) {
+    base = `${labels[0].charAt(0).toUpperCase() + labels[0].slice(1)} and ${labels[1]}. Those two together suggest the in-room experience has genuinely shifted.`;
+  } else {
+    base = `${labels[0].charAt(0).toUpperCase() + labels[0].slice(1)}, ${labels[1]}, and ${labels.length - 2} more — a consistent pattern across ${labels.length} signals.`;
+  }
+
+  if (signals.includes('love_story')) {
+    base = base.replace(/\.$/, '') + ' A provider story from the room is the signal that\'s hardest to manufacture.';
+  } else if (signals.includes('satisfaction_scores')) {
+    base = base.replace(/\.$/, '') + ' CAHPS or Press Ganey movement is the strongest formal signal in this tier.';
+  } else if (status === 'strong' && signals.length >= 2) {
+    base = base.replace(/\.$/, '') + ' Connected to the formal value story.';
+  }
+
+  return base;
+}
+
+
+// Short chip labels for items selected in domain inputs
+const CAPACITY_TIME_SIGNS_SHORT = [
+  'Docs done before leaving',
+  'After-hours time reduced',
+  'More time between patients',
+  'More appointment slots',
+];
+const BEHAVIORAL_CHANGES_SHORT = [
+  'After-hours docs reduced',
+  'Leaving clinic on time',
+  'Lunch breaks resumed',
+  'Less work-outside-work',
+  'Weekend catch-up reduced',
+  'Notes done before leaving',
+  'Personal time reclaimed',
+];
+const RETENTION_SIGNALS_SHORT = [
+  'Turnover rate improved',
+  'Agency/locum spend down',
+  'Time-to-fill improved',
+  'Exit interviews shifted',
+  'Recruitment acceptance up',
+];
+
+function getDomainSelectedChips(domain: Domain, level: number, inp: Record<string, number | string>): string[] {
+  const csvToIndices = (csv: unknown) =>
+    (csv as string || '').split(',').filter(Boolean).map(Number);
+  const shortLabel = (s: string) => { const p = s.indexOf('('); return p > 0 ? s.substring(0, p).trim() : s; };
+
+  const chips: string[] = [];
+
+  if (domain === 'capacity') {
+    if (level === 1) {
+      csvToIndices(inp.capacityTimeSigns).forEach(i => {
+        if (CAPACITY_TIME_SIGNS_SHORT[i]) chips.push(CAPACITY_TIME_SIGNS_SHORT[i]);
+      });
+    }
+    if (level >= 2) {
+      csvToIndices(inp.capacityTimeUsage).forEach(i => {
+        if (CAPACITY_TIME_USAGE_LABELS[i]) chips.push(shortLabel(CAPACITY_TIME_USAGE_LABELS[i]));
+      });
+    }
+  }
+
+  if (domain === 'revenue') {
+    const metricMap: Record<string, string> = { wrvu: 'wRVU lift', collections: 'Collections/encounter', denial_rate: 'Denial rate', hcc_capture: 'HCC capture' };
+    const metric = inp.revenueMetricType as string;
+    if (metricMap[metric]) chips.push(metricMap[metric]);
+    if (level === 1 || level === 2) {
+      csvToIndices(inp.revenueSignalsL1).forEach(i => {
+        if (REVENUE_SIGNALS[i]) chips.push(shortLabel(REVENUE_SIGNALS[i]));
+      });
+    }
+    const engageMap: Record<string, string> = { yes: 'Revenue cycle engaged', informal: 'Revenue cycle aware' };
+    if (engageMap[inp.revenueCycleEngaged as string]) chips.push(engageMap[inp.revenueCycleEngaged as string]);
+  }
+
+  if (domain === 'workforce') {
+    if (level === 1) {
+      const voiceMap: Record<string, string> = { yes: 'Providers speaking up', some: 'Some provider feedback', surveys: 'Captured in surveys', not_yet: 'Not yet surfaced' };
+      if (voiceMap[inp.providerVoice as string]) chips.push(voiceMap[inp.providerVoice as string]);
+    }
+    if (level >= 2) {
+      csvToIndices(inp.observedBehaviors).forEach(i => {
+        if (BEHAVIORAL_CHANGES_SHORT[i]) chips.push(BEHAVIORAL_CHANGES_SHORT[i]);
+      });
+    }
+    if (level >= 3) {
+      csvToIndices(inp.retentionSignals).forEach(i => {
+        if (RETENTION_SIGNALS_SHORT[i]) chips.push(RETENTION_SIGNALS_SHORT[i]);
+      });
+    }
+  }
+
+  if (domain === 'risk') {
+    if (level === 1) {
+      csvToIndices(inp.qualityAttributes).forEach(i => {
+        if (QUALITY_ATTRIBUTES[i]) chips.push(shortLabel(QUALITY_ATTRIBUTES[i]));
+      });
+    }
+    if (level >= 2) {
+      csvToIndices(inp.connectedWorkflows).forEach(i => {
+        if (DOWNSTREAM_WORKFLOWS[i]) chips.push(shortLabel(DOWNSTREAM_WORKFLOWS[i]));
+      });
+    }
+  }
+
+  return chips;
+}
+
+
+// ── THE PATTERN — educational mirror ──
+function generateScorePattern(
+  domainLevels: Record<Domain, number>,
+  tenure: string,
+): string {
+  const confirmed = DOMAIN_ORDER.filter(d => domainLevels[d] >= 3);
+  const signal = DOMAIN_ORDER.filter(d => domainLevels[d] === 2);
+  const unchecked = DOMAIN_ORDER.filter(d => domainLevels[d] === 1);
+
+  const confNames = confirmed.map(d => DOMAIN_LABELS[d]);
+  const sigNames = signal.map(d => DOMAIN_LABELS[d]);
+  const uncheckedNames = unchecked.map(d => DOMAIN_LABELS[d]);
+
+  const orgHome: Partial<Record<Domain, string>> = {
+    capacity: 'scheduling and access management',
+    revenue: 'revenue cycle',
+    workforce: 'HR and operations',
+    risk: 'CDI and downstream quality programs',
+  };
+
+  // All four confirmed
+  if (confirmed.length === 4) {
+    return "Four confirmed domains means measurement infrastructure spans clinical, financial, workforce, and quality systems simultaneously — that requires deliberate organizational investment in the measurement work itself, separate from the deployment. The question shifts: from how much value is generating to how documentation intelligence informs what the organization decides next.";
+  }
+
+  // Three confirmed
+  if (confirmed.length === 3) {
+    const remaining = unchecked[0] ?? signal[0];
+    const remainingLabel = remaining ? DOMAIN_LABELS[remaining] : 'the remaining domain';
+    return `Three confirmed domains reflects measurement maturity that requires sustained, cross-functional executive attention over time — that's not common. ${remainingLabel} is generating value; that domain's sponsor conversation is still forming.`;
+  }
+
+  // Two confirmed — specific pairs
+  if (confirmed.length === 2) {
+    const remaining = [...unchecked, ...signal];
+    const remJoined = joinArr(remaining.map(d => DOMAIN_LABELS[d]));
+    const remIs = remaining.length === 1 ? 'is' : 'are';
+
+    if (confirmed.includes('revenue') && confirmed.includes('workforce')) {
+      return `Revenue and Workforce tend to reach formal attribution together in organizations where both the CFO and CMO are active sponsors — one measuring through billing data, one through retention economics. ${remJoined} ${remIs} generating value in systems that often don't have the same named executive lens, which is why they tend to follow.`;
+    }
+    if (confirmed.includes('revenue') && confirmed.includes('capacity')) {
+      return `Revenue and Capacity tend to confirm together in organizations where the deployment was positioned as both a financial and access solution from the start — finance had visibility into both. ${remJoined} ${remIs} generating value in different organizational systems; that analytical lens hasn't been applied there yet.`;
+    }
+    if (confirmed.includes('revenue') && confirmed.includes('risk')) {
+      return `Revenue and Quality tend to confirm together in organizations where revenue cycle and CDI are closely aligned — both systems were already watching documentation closely. ${remJoined} ${remIs} generating value in parallel; those organizational homes haven't had the same institutional attention yet.`;
+    }
+    // General two-confirmed
+    const confJoined = joinArr(confNames);
+    return `${confJoined} are confirmed. The value across all four domains is structural and parallel — the measurement tends to be sequential because each domain has its own organizational home and its own moment when institutional attention intersects with the data. ${remJoined} ${remIs} generating value; that analytical moment is still forming.`;
+  }
+
+  // One confirmed
+  if (confirmed.length === 1) {
+    const conf = confirmed[0];
+    const remaining = [...unchecked, ...signal];
+    const remJoined = joinArr(remaining.map(d => DOMAIN_LABELS[d]));
+    const remIs = remaining.length === 1 ? 'is' : 'are';
+
+    switch (conf) {
+      case 'revenue':
+        return `Revenue tends to be the first domain to reach formal attribution because revenue cycle already had visibility into the underlying data before ambient — wRVU, collections, coding distribution were being tracked. ${remJoined} ${remIs} generating value in systems that don't always have the same pre-existing measurement infrastructure: scheduling for Capacity, HR for Workforce, CDI and downstream programs for Quality. Each one has its own organizational home.`;
+      case 'workforce':
+        return `Workforce tends to reach formal attribution when provider retention becomes a visible organizational concern — when the cost of turnover becomes concrete enough that someone runs the numbers. Revenue, Capacity, and Quality are generating value in their own organizational systems; they haven't had the same moment of urgency yet.`;
+      case 'capacity':
+        return `Capacity tends to reach formal attribution in organizations where access pressure was the primary presenting problem before deployment — wait times, panel constraints, same-day availability. The documentation-time connection was the most legible because there was already a language for it. The other domains are generating value in different organizational homes; they haven't had the same pre-existing vocabulary applied yet.`;
+      case 'risk':
+        return `Quality tends to reach formal attribution first in organizations where CDI or coding programs already had measurement infrastructure — the downstream systems were watching. Revenue, Capacity, and Workforce have been generating value in parallel; they just haven't had the same institutional lens applied yet.`;
+    }
+  }
+
+  // All L2 — signal everywhere
+  if (confirmed.length === 0 && signal.length === 4) {
+    return "Signal across all four domains is a sign of healthy deployment adoption — the clinical patterns are real and visible. The move from signal to formal attribution is a different organizational act: it requires the measurement conversation to happen between clinical and finance, which tends to follow adoption on its own timeline.";
+  }
+
+  // Mixed L1/L2 — some signal, some not examined
+  if (confirmed.length === 0 && signal.length > 0) {
+    const sigJoined = joinArr(sigNames);
+    const sigHas = signal.length === 1 ? 'has' : 'have';
+    if (unchecked.length > 0) {
+      const uncheckedHomes = unchecked.map(d => orgHome[d]).filter(Boolean).join(' and ');
+      return `${sigJoined} ${sigHas} directional signal — the patterns are real and the direction is clear. ${joinArr(uncheckedNames)} ${unchecked.length === 1 ? 'is' : 'are'} generating value in ${uncheckedHomes || 'different organizational systems'} — those systems tend to surface when the relevant organizational function starts looking. Each domain has its own home and its own moment.`;
+    }
+    return `${sigJoined} ${sigHas} directional signal across the deployment. The patterns are real; the formal attribution step is the next organizational act — the one that converts visible movement into a number that belongs in a different set of conversations.`;
+  }
+
+  // All L1 — tenure based
+  const tenureVariants: Record<string, string> = {
+    '0-6': "The first six months of a deployment are predominantly about clinical adoption — getting providers comfortable, building documentation consistency, establishing workflow. The value measurement story builds on top of that foundation, which is why it follows rather than runs in parallel. The patterns are forming; the data history is getting long enough to be meaningful.",
+    '6-12': "In the six-to-twelve-month window, documentation patterns are stabilizing and the longitudinal data is getting long enough for the measurement to hold up. Adoption is settling, the baseline exists, and the numbers that emerge at this stage are defensible. This is when the four value streams become readable for the first time.",
+    '12-24': "Between one and two years in, documentation quality has compounded, adoption is deep, and the data history across all four domains is long enough to produce figures that hold up to scrutiny. This is typically when organizations get the most complete picture of what the deployment has actually done.",
+    '24+': "Two or more years of a live deployment means the value accumulation is longitudinal — compounded changes in coding specificity, provider experience, and downstream quality over an extended period. When organizations at this tenure run the formal analysis, they're capturing something a shorter deployment can't produce.",
+  };
+
+  return tenureVariants[tenure] ?? "Four value streams running simultaneously — documentation quality improving, provider experience shifting, coding getting more specific, downstream quality changing. Each one generates differently and surfaces in different organizational systems.";
+}
+
+
 export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Screen3Props) {
   const { state } = useAssessment();
   const { inputs } = state;
+  const [copied, setCopied] = useState(false);
 
   const domainScores: Record<DomainKey, number> = useMemo(() => ({
     capacity: inputs.capacityScore || 0,
@@ -390,6 +804,9 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
   }), [domainScores]);
 
   const lowestDomain = useMemo(() => {
+    const L2_PRIORITY: DomainKey[] = ['revenue', 'workforce', 'capacity', 'risk'];
+    const l2Domains = L2_PRIORITY.filter(d => domainLevels[d] === 2);
+    if (l2Domains.length > 0) return l2Domains[0];
     let lowest: DomainKey = TIEBREAKER_ORDER[0];
     let lowestLevel = domainLevels[lowest];
     for (const d of TIEBREAKER_ORDER) {
@@ -399,386 +816,541 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
   }, [domainLevels]);
 
   const providers = inputs.providers || 0;
+  const annualEncounters = inputs.annualEncounters || 0;
+  const utilization = inputs.utilization || 0;
+  const tenure = (inputs.deploymentTenure as string) || '';
 
-  const archetype = useMemo(() => {
-    const high = DOMAIN_ORDER.filter(d => domainLevels[d] >= 3);
+  const scoreStory = useMemo(() => {
+    const confirmed = DOMAIN_ORDER.filter(d => domainLevels[d] >= 3);
+    const signal = DOMAIN_ORDER.filter(d => domainLevels[d] === 2);
     const unmeasured = DOMAIN_ORDER.filter(d => domainLevels[d] === 1);
-    const allL1 = unmeasured.length === 4;
-    const allHigh = DOMAIN_ORDER.every(d => domainLevels[d] >= 3);
 
-    const joinNames = (arr: DomainKey[]) => {
-      const names = arr.map(d => DOMAIN_LABELS[d]);
-      if (names.length === 0) return '';
-      if (names.length === 1) return names[0];
-      return names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1];
+    const join = (arr: string[]) => {
+      if (arr.length === 0) return '';
+      if (arr.length === 1) return arr[0];
+      if (arr.length === 2) return arr.join(' and ');
+      return arr.slice(0, -1).join(', ') + ', and ' + arr[arr.length - 1];
     };
 
-    if (allL1) {
-      return {
-        name: 'Live. Not Yet Measured.',
-        headline: providers > 0
-          ? `${providers.toLocaleString()} providers generating value — the measurement story hasn't been written yet.`
-          : 'Your deployment is live — the value is generating, and the measurement story hasn\'t been written yet.',
-        body: `This is the most common profile at this stage — adoption is real, and the measurement infrastructure hasn't been built yet. The organizations that move fastest from here decide, in a room like this one, that the measurement program starts now.`,
-      };
-    }
+    const confNames = confirmed.map(d => DOMAIN_LABELS[d]);
+    const sigNames = signal.map(d => DOMAIN_LABELS[d]);
+    const unmNames = unmeasured.map(d => DOMAIN_LABELS[d]);
 
-    if (allHigh) {
-      return {
-        name: 'Strategic Maturity.',
-        headline: `Four domains measured, connected, and managed. This is where most ambient deployments aspire to be — and few arrive.`,
-        body: 'The work ahead is deepening strategic integration — not building the measurement foundation.',
-      };
-    }
+    let headline = '';
 
-    if (high.length === 0) {
-      const l2count = DOMAIN_ORDER.filter(d => domainLevels[d] === 2).length;
-      if (l2count >= 3) {
-        return {
-          name: 'Early Measurement Across All Domains.',
-          headline: 'Every domain has moved from awareness to data — none has been pushed to confirmed value yet.',
-          body: 'The measurement foundation is in place. The question is which domain gets pushed first and what it unlocks.',
-        };
+    if (confirmed.length === 4) {
+      headline = 'All four confirmed.';
+    } else if (confirmed.length === 0 && signal.length === 0) {
+      if (tenure === '24+') {
+        headline = 'Two-plus years live.';
+      } else if (tenure === '12-24') {
+        headline = 'Deployment mature.';
+      } else if (tenure === '6-12') {
+        headline = 'Patterns forming.';
+      } else if (providers > 0 && annualEncounters > 0 && utilization > 0) {
+        const active = Math.round(annualEncounters * utilization / 100);
+        headline = active >= 100 ? 'Live. Generating.' : 'Four streams. The work ahead is clear.';
+      } else {
+        headline = 'Four streams. None counted.';
       }
-      return {
-        name: 'Measuring the Basics. Opportunity Ahead.',
-        headline: providers > 0
-          ? `At ${providers.toLocaleString()} providers, the confirmed value is a starting point — not the ceiling.`
-          : 'The measurement foundation is forming — most of the value story is still ahead.',
-        body: `Some domains have moved from awareness to data. Most of the ambient value story hasn't been told yet.`,
-      };
+    } else if (confirmed.length === 0) {
+      headline = 'Signal confirmed. The number is ahead.';
+    } else if (confirmed.length === 1) {
+      headline = `${confNames[0]} confirmed.`;
+    } else if (confirmed.length === 2) {
+      headline = 'Two of four confirmed.';
+    } else if (confirmed.length === 3) {
+      headline = 'Three of four confirmed.';
+    } else {
+      headline = `${confirmed.length} domains confirmed.`;
     }
 
-    if (high.length >= 3) {
-      const gap = DOMAIN_ORDER.filter(d => domainLevels[d] < 3);
-      const gapStr = joinNames(gap);
-      return {
-        name: 'Measuring Across Most Domains.',
-        headline: gapStr
-          ? `Three of four domains confirming value — ${gapStr} is the one story still to tell.`
-          : 'Three or more domains generating confirmed value — the work ahead is deepening each one.',
-        body: gapStr
-          ? `Three or more domains are generating confirmed, validated value. ${gapStr} is the remaining gap — and at your scale, it's worth closing before the next planning cycle.`
-          : 'The work ahead is deepening each domain, not widening the foundation.',
-      };
+    return { headline };
+  }, [domainLevels, tenure, providers, annualEncounters, utilization]);
+
+  const patientExperienceSignal = useMemo(() => {
+    const noticeable = inputs.patientExperienceNoticeable || '';
+    const formalized = inputs.patientExperienceFormalized || '';
+    const signalsCsv = inputs.patientExperienceSignals || '';
+    const formalData = inputs.patientExperienceFormalData || '';
+    const signals = signalsCsv.split(',').filter(Boolean);
+    const hasSignals = signals.length > 0 && !signals.includes('nothing_yet');
+
+    if (!noticeable) return null;
+
+    const SIGNAL_LABELS: Record<string, string> = {
+      provider_present: 'Provider presence',
+      feel_heard: 'Patients feel more heard',
+      fewer_interruptions: 'Fewer interruptions',
+      better_summaries: 'Better after-visit summaries',
+      satisfaction_scores: 'CAHPS / Press Ganey movement',
+      love_story: 'A story from the room',
+    };
+    const selectedLabels = signals
+      .filter(s => s !== 'nothing_yet' && SIGNAL_LABELS[s])
+      .map(s => SIGNAL_LABELS[s]);
+
+    const hasFormalDataMovement = formalData === 'yes_scores' || formalData === 'yes_nps';
+
+    if ((formalized === 'yes' || hasFormalDataMovement) && hasSignals) {
+      return { status: 'strong' as const, headline: 'Connected to your value story.', signals: selectedLabels };
     }
-
-    if (high.length === 1) {
-      const d = high[0];
-      const uStr = unmeasured.length > 0 ? joinNames(unmeasured) : '';
-      const uVerb = unmeasured.length === 1 ? 'hasn\'t' : 'haven\'t';
-      const profiles: Record<DomainKey, { name: string; headline: string; body: string }> = {
-        capacity: {
-          name: 'Time Captured. Financial Story Unwritten.',
-          headline: 'Recovered time has moved into operational action — the revenue, workforce, and quality implications haven\'t been formally counted yet.',
-          body: `The access decision is live.${uStr ? ` ${uStr} ${uVerb} been measured yet — and at your scale, those domains typically carry significant additional value.` : ''}`,
-        },
-        revenue: {
-          name: 'Revenue Signal Measured. Ecosystem Unmeasured.',
-          headline: 'The documentation-to-revenue connection is on the board — the capacity, workforce, and quality dimensions haven\'t been connected yet.',
-          body: `The revenue signal is measured and real.${uStr ? ` ${uStr} remain${unmeasured.length === 1 ? 's' : ''} unmeasured.` : ''}`,
-        },
-        workforce: {
-          name: 'Provider Experience Quantified. Broader Picture Unmeasured.',
-          headline: providers > 0
-            ? `${providers.toLocaleString()} providers — you've quantified what ambient is doing for them. What it means for access and revenue hasn't been connected yet.`
-            : 'Provider experience is quantified — what that means for access and revenue hasn\'t been connected yet.',
-          body: `The organizational implications — what provider relief means for capacity, revenue, and quality — ${uVerb} been formally connected yet.`,
-        },
-        risk: {
-          name: 'Quality Infrastructure Present. Value Chain Not Yet Built.',
-          headline: 'The quality foundation is solid — connecting it to CDI, coding, and compliance programs is the work ahead.',
-          body: `Documentation quality is tracked and monitored.${uStr ? ` ${uStr} remain${unmeasured.length === 1 ? 's' : ''} unmeasured.` : ''}`,
-        },
-      };
-      return profiles[d];
+    if (noticeable === 'frequently' && hasSignals) {
+      return { status: 'signal' as const, headline: 'Patients are noticing.', signals: selectedLabels };
     }
+    if (noticeable === 'occasionally' || (hasSignals && noticeable !== 'not_tracked')) {
+      return { status: 'signal' as const, headline: 'Signal present, not yet captured.', signals: selectedLabels };
+    }
+    return { status: 'gap' as const, headline: 'Not yet connected.', signals: [] as string[] };
+  }, [inputs.patientExperienceNoticeable, inputs.patientExperienceFormalized, inputs.patientExperienceSignals, inputs.patientExperienceFormalData]);
 
-    const pair = [...high].sort().join('+') as string;
-    const uStr = unmeasured.length > 0 ? joinNames(unmeasured) : '';
-    const pairMap: Record<string, { name: string; headline: string; body: string }> = {
-      'capacity+revenue': {
-        name: 'Operational and Financial Capture Underway.',
-        headline: 'Time recovery is in action and revenue impact is measured — workforce and quality are the next chapters.',
-        body: uStr ? `${uStr} remain${unmeasured.length === 1 ? 's' : ''} unmeasured — and at your scale, those domains typically carry significant additional value.` : 'The foundation is strong.',
-      },
-      'capacity+workforce': {
-        name: 'Provider and Operational Value Captured.',
-        headline: 'Time recovery and workforce dimensions are measured — revenue impact and quality downstream effects haven\'t been formally analyzed yet.',
-        body: 'Revenue and quality are often the highest-value domains per provider — they remain ahead.',
-      },
-      'capacity+risk': {
-        name: 'Operations and Quality Tracked. Revenue and Workforce Unmeasured.',
-        headline: 'Time conversion and quality monitoring are in place — revenue impact and workforce implications haven\'t been formally measured yet.',
-        body: 'Revenue and workforce typically represent the largest financial returns at scale.',
-      },
-      'revenue+workforce': {
-        name: 'Financial and Provider Value Both Measured.',
-        headline: 'Revenue impact and workforce implications are both on the table — capacity conversion and quality downstream effects haven\'t been connected yet.',
-        body: 'Capacity and quality compound the value of what you\'ve already built.',
-      },
-      'revenue+risk': {
-        name: 'Financial and Clinical Intelligence Present.',
-        headline: 'Revenue and quality dimensions are measured — capacity conversion and workforce implications are where the largest per-provider ROI typically lives.',
-        body: 'Both dimensions are formally measured. Capacity and workforce remain ahead.',
-      },
-      'risk+workforce': {
-        name: 'Clinical Quality and Provider Experience Measured.',
-        headline: 'Documentation quality and workforce impact are tracked — capacity and revenue are what recovered time and quality improvement are actually worth.',
-        body: 'The operational and financial picture remains unmeasured.',
-      },
-    };
+  const patternText = useMemo(() =>
+    generateScorePattern(domainLevels, tenure),
+  [domainLevels, tenure]);
 
-    return pairMap[pair] || {
-      name: 'Multiple Domains Measured.',
-      headline: `Multiple dimensions of ambient value are being captured.`,
-      body: uStr
-        ? `${uStr} ${unmeasured.length === 1 ? 'hasn\'t' : 'haven\'t'} been formally analyzed yet. The work ahead is connecting the measured domains into a unified strategic picture.`
-        : 'The work ahead is connecting the measured domains into a unified strategic picture.',
-    };
-  }, [domainLevels, providers]);
+  const lowestDomainInsight = FIRST_MOVES[lowestDomain]?.[domainLevels[lowestDomain]]
+    ?? 'The domain analysis shows where the framework sees this deployment next.';
 
-  const tenureModifier = useMemo(() => {
-    const tenure = inputs.deploymentTenure;
-    if (!tenure) return null;
-    const band = tenureScoreBand(totalScore);
-    const matrix: Record<string, Record<'low' | 'mid' | 'high', string>> = {
-      '0-6': {
-        low: "Early stage — most organizations at 6 months are still stabilizing adoption. The question isn't the score. It's whether measurement habits are being built now.",
-        mid: "Six months in with meaningful measurement already underway — ahead of the typical adoption curve.",
-        high: "Less than 6 months in with strong measurement across multiple domains. That typically signals a pre-existing measurement culture or a focused implementation team.",
-      },
-      '6-12': {
-        low: "A year in, and the measurement infrastructure is still forming. Organizations that build measurement habits at 12 months don't usually have to rebuild them at 24.",
-        mid: "A year in with several domains measured — past early adoption and moving into deliberate value realization.",
-        high: "One year in with strong maturity. This pace is uncommon — it typically signals explicit executive sponsorship of the measurement work, not just the deployment.",
-      },
-      '12-24': {
-        low: "One to two years in, and most of the value story hasn't been told yet. Every month without measurement is a month of value sitting uncounted.",
-        mid: "One to two years in with moderate maturity. Some domains are yielding confirmed value — the gap isn't about adoption, it's about building the measurement program.",
-        high: "One to two years in with strong maturity. You've used the deployment period to build real infrastructure. The work ahead is integration and depth.",
-      },
-      '24+': {
-        low: "Two or more years live, and the measurement foundation hasn't been built. What you find when you look will be surprising.",
-        mid: "Two or more years live with mixed maturity — some domains yielding confirmed value, others generating returns that haven't been looked at yet.",
-        high: "Two or more years live with strong maturity. The deployment isn't just generating value — it's being managed as a strategic asset.",
-      },
-    };
-    return matrix[tenure]?.[band] ?? null;
-  }, [inputs.deploymentTenure, totalScore]);
+  const handleShare = async () => {
+    const domainLines = DOMAIN_ORDER.map(d =>
+      `${DOMAIN_LABELS[d]}: ${LEVEL_NAMES[domainLevels[d] as ActivationLevel]} — ${ACTIVATION_LABELS[d][domainLevels[d] as ActivationLevel]}`
+    ).join('\n');
+    const text = [
+      'Ambient Assessment by Abridge',
+      `Score: ${totalScore}/100 · ${scoreBandLabel}`,
+      '',
+      domainLines,
+      '',
+      scoreStory.headline,
+      '',
+      `Biggest opportunity: ${DOMAIN_LABELS[lowestDomain]}`,
+      '',
+      'Take the assessment → https://abridge.com/assess',
+    ].join('\n');
+    try {
+      if (typeof navigator !== 'undefined' && navigator.share) {
+        await navigator.share({ title: 'Ambient Assessment by Abridge', text });
+      } else {
+        await navigator.clipboard.writeText(text);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2500);
+      }
+    } catch { /* user cancelled */ }
+  };
 
   return (
-    <div className={STEP_FOOTER_SPACER_CLASS}>
-      <motion.div
-        className="text-center mb-6"
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-      >
-        <p className="text-[11px] font-semibold text-[#888888] uppercase tracking-[2px]">
-          Your Assessment
-        </p>
-      </motion.div>
+    <>
+      <div className="pb-32">
 
-      <div className="flex flex-col md:flex-row gap-6 md:gap-10">
-        <div className="flex-1 min-w-0">
+        {/* ── CARD 1: THE VERDICT ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.10, duration: 0.5 }}
+          className="bg-[#1A1A1A] rounded-2xl overflow-hidden mb-4"
+          data-testid="card-score-hero"
+        >
+          <div className="px-6 sm:px-8 md:px-10 pt-8 pb-8">
 
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15, duration: 0.5 }}
-          >
-            <div className="bg-[#F5F0EB] rounded-lg p-5 sm:p-8 md:p-10 mb-6" data-testid="card-buildup">
-              <div
-                className="rounded-lg px-5 py-4 mb-6 flex items-center justify-between gap-4 bg-white/60"
-                data-testid="card-composite-score"
-              >
-                <div>
-                  <p className="text-[10px] font-semibold text-[#9CA3AF] uppercase tracking-[1.5px] mb-1">
-                    Ambient Maturity Score
-                  </p>
-                  <div className="flex items-baseline gap-1">
-                    <span className="font-bold text-4xl sm:text-5xl text-black leading-none tracking-tight" data-testid="text-composite-score">
-                      <AnimatedCounter target={totalScore} duration={800} delay={800} />
-                    </span>
-                    <span className="text-sm font-normal text-[#9CA3AF]">/100</span>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-[10px] font-semibold text-[#9CA3AF] uppercase tracking-[1.5px] mb-1">Band</p>
-                  <p className="font-bold text-sm text-[#EA2C00]">{scoreBandLabel}</p>
-                  {(() => {
-                    const bands = ['Pre-Measurement', 'Signal', 'Confirmed', 'Managed ROI', 'Strategic Asset'];
-                    const activeBand = totalScore <= 16 ? 0 : totalScore <= 38 ? 1 : totalScore <= 60 ? 2 : totalScore <= 79 ? 3 : 4;
-                    return (
-                      <div className="flex items-center gap-2 mt-2 justify-end">
-                        {bands.map((band, i) => (
-                          <div key={band}>
-                            <div
-                              className="rounded-full transition-all duration-300"
-                              style={{
-                                width: i === activeBand ? 10 : 6,
-                                height: i === activeBand ? 10 : 6,
-                                backgroundColor: i === activeBand ? '#EA2C00' : i < activeBand ? '#EA2C00' : '#D1D5DB',
-                                opacity: i < activeBand ? 0.35 : 1,
-                              }}
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    );
-                  })()}
+            <p
+              className="text-[9px] font-semibold text-white/50 uppercase tracking-[3px] mb-7"
+              style={{ fontFamily: "'Manrope', sans-serif" }}
+            >
+              Ambient Value Assessment
+            </p>
+
+            {/* Score number */}
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.30, duration: 0.5 }}
+              className="mb-5"
+              data-testid="text-composite-score"
+            >
+              <div className="flex items-end gap-3">
+                <span
+                  className="font-abridge text-white leading-none"
+                  style={{ fontSize: 'clamp(5rem, 14vw, 8rem)' }}
+                >
+                  <AnimatedCounter target={totalScore} duration={900} delay={300} />
+                </span>
+                <div className="mb-3 flex flex-col gap-1">
+                  <span
+                    className="text-base font-bold text-white/45 leading-none"
+                    style={{ fontFamily: "'Manrope', sans-serif" }}
+                  >
+                    /100
+                  </span>
+                  <span
+                    className="text-[11px] font-semibold text-[#EA2C00] uppercase tracking-[2px] leading-none"
+                    style={{ fontFamily: "'Manrope', sans-serif" }}
+                  >
+                    {scoreBandLabel}
+                  </span>
                 </div>
               </div>
+            </motion.div>
 
-              <div className="h-px bg-[#E5E7EB] mb-4" />
+            {/* Maturity arc + band description */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.55, duration: 0.5 }}
+            >
+              <MaturityArc score={totalScore} />
+              {BAND_DESCRIPTIONS[scoreBandLabel] && (
+                <p
+                  className="text-white/50 text-xs leading-relaxed mb-0 max-w-[400px]"
+                  style={{ fontFamily: "'Manrope', sans-serif", fontWeight: 300 }}
+                >
+                  {BAND_DESCRIPTIONS[scoreBandLabel]}
+                </p>
+              )}
+            </motion.div>
 
-              {DOMAIN_ORDER.map((domain, idx) => {
-                const level = scoreToActivationLevel(domain, domainScores[domain]) as ActivationLevel;
-                const barPercent = (domainScores[domain] / 25) * 100;
+            {/* Headline + sub + rule */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.65, duration: 0.45 }}
+              className="border-t border-white/[0.08] pt-7 mt-7"
+            >
+              <h2
+                className="font-abridge uppercase text-white leading-[1.04] mb-4"
+                style={{ fontSize: 'clamp(2.6rem, 5vw, 4rem)', maxWidth: '520px' }}
+                data-testid="text-verdict-headline"
+              >
+                {scoreStory.headline}
+              </h2>
+
+              {(() => {
+                const sub = generatePersonalizedSub(domainLevels, inputs, providers, annualEncounters, utilization);
+                return sub ? (
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.75, duration: 0.4 }}
+                    className="mb-5"
+                    style={{
+                      fontFamily: "'Manrope', sans-serif",
+                      fontWeight: 400,
+                      fontSize: 'clamp(0.95rem, 1.3vw, 1.05rem)',
+                      lineHeight: 1.75,
+                      color: 'rgba(255,255,255,0.55)',
+                      maxWidth: '480px',
+                    }}
+                    data-testid="text-verdict-sub"
+                  >
+                    {sub}
+                  </motion.p>
+                ) : null;
+              })()}
+
+              <motion.div
+                className="bg-[#EA2C00] h-[2px]"
+                initial={{ width: 0 }}
+                animate={{ width: 44 }}
+                transition={{ delay: 0.70, duration: 0.5, ease: 'easeOut' }}
+              />
+            </motion.div>
+          </div>
+        </motion.div>
+
+        {/* ── CARD 2: WHAT YOU TOLD US ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.55, duration: 0.5 }}
+          className="bg-[#F5F0EB] rounded-2xl overflow-hidden mb-4"
+        >
+          <div className="px-6 sm:px-8 md:px-10 py-7 sm:py-8">
+
+            <p
+              className="text-[9px] font-semibold uppercase tracking-[3px] mb-6"
+              style={{ fontFamily: "'Manrope', sans-serif", color: 'rgba(234,44,0,0.75)' }}
+            >
+              Assessment Summary
+            </p>
+
+            <div className="flex flex-col">
+              {DOMAIN_ORDER.map((domain, i) => {
+                const level = domainLevels[domain] as ActivationLevel;
+                const isConfirmed = level >= 3;
+                const isSignal = level === 2;
+                const gapVal = (inputs as any)[`${domain}Gap`] as number || 0;
+                const hasVal = (inputs as any)[`${domain}HasValue`] as boolean || false;
+                const narrative = generateDomainNarrative(domain, level, parsedDomainInputs[domain]);
+                const chips = getDomainSelectedChips(domain, level, parsedDomainInputs[domain]).slice(0, 4);
+
                 return (
-                  <div key={domain}>
-                    <motion.div
-                      initial={{ opacity: 0, y: 12 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.15 + idx * 0.1, duration: 0.5 }}
-                    >
-                      <button
-                        type="button"
-                        className="w-full flex items-center gap-4 h-14 cursor-pointer bg-transparent border-none hover:bg-white/40 rounded-lg transition-colors px-2 -mx-2"
-                        onClick={() => onNavigateToDomain?.(domain)}
-                        data-testid={`domain-row-${domain}`}
-                      >
-                        <div className="w-[40%] sm:w-[35%] text-left">
-                          <p className="font-semibold text-xs sm:text-sm text-black leading-tight">{DOMAIN_LABELS[domain]}</p>
-                          <p className="text-[11px] sm:text-xs text-[#888888]">{ACTIVATION_LABELS[domain][level]}</p>
+                  <div
+                    key={domain}
+                    className={`py-4 ${i < DOMAIN_ORDER.length - 1 ? 'border-b border-[#1A1A1A]/[0.08]' : ''}`}
+                  >
+                    <div className="flex items-start gap-2.5">
+                      {/* Level badge */}
+                      <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                        isConfirmed ? 'bg-[#EA2C00]' : isSignal ? 'bg-[#EA2C00]/[0.12]' : 'bg-[#1A1A1A]/[0.07]'
+                      }`}>
+                        <span
+                          className={`text-[10px] font-bold leading-none ${
+                            isConfirmed ? 'text-white' : isSignal ? 'text-[#EA2C00]' : 'text-[#1A1A1A]/35'
+                          }`}
+                          style={{ fontFamily: "'Manrope', sans-serif" }}
+                        >
+                          L{level}
+                        </span>
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        {/* Domain name + value */}
+                        <div className="flex items-start justify-between gap-2 mb-0.5">
+                          <div>
+                            <p
+                              className={`text-sm font-semibold leading-tight ${
+                                isConfirmed ? 'text-[#1A1A1A]' : isSignal ? 'text-[#1A1A1A]/85' : 'text-[#1A1A1A]/65'
+                              }`}
+                              style={{ fontFamily: "'Manrope', sans-serif" }}
+                            >
+                              {DOMAIN_LABELS[domain]}
+                            </p>
+                            <p
+                              className="text-xs text-[#1A1A1A]/50 leading-tight mt-0.5"
+                              style={{ fontFamily: "'Manrope', sans-serif" }}
+                            >
+                              {ACTIVATION_LABELS[domain][level]}
+                            </p>
+                          </div>
+                          {isConfirmed && hasVal && gapVal > 0 && (
+                            <span
+                              className="text-sm font-bold text-[#EA2C00] flex-shrink-0"
+                              style={{ fontFamily: "'Manrope', sans-serif" }}
+                            >
+                              {formatDollar(gapVal)}/yr
+                            </span>
+                          )}
                         </div>
-                        <div className="hidden sm:block w-[45%]">
-                          <AnimatedBar percent={barPercent} delay={400 + idx * 150 + 100} height={5} />
-                        </div>
-                        <p className="font-bold text-sm text-black w-[60%] sm:w-[20%] text-right" data-testid={`domain-score-${domain}`}>
-                          {domainScores[domain]} / 25
-                        </p>
-                      </button>
-                    </motion.div>
-                    {idx < DOMAIN_ORDER.length - 1 && <div className="h-px bg-[#E5E7EB]/50" />}
+
+                        {/* Narrative */}
+                        {narrative && (
+                          <p
+                            className="text-xs text-[#1A1A1A]/55 leading-relaxed mt-1.5"
+                            style={{ fontFamily: "'Manrope', sans-serif" }}
+                          >
+                            {narrative}
+                          </p>
+                        )}
+
+                        {/* Chips */}
+                        {chips.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5 mt-2">
+                            {chips.map((chip, idx) => (
+                              <span
+                                key={idx}
+                                className="text-[11px] rounded-full px-2.5 py-1 bg-[#1A1A1A]/[0.07] text-[#1A1A1A]/60"
+                                style={{ fontFamily: "'Manrope', sans-serif" }}
+                              >
+                                {chip}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 );
               })}
             </div>
-          </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.2, duration: 0.5 }}
-          >
-            <div className="bg-[#F5F0EB] rounded-xl p-5 sm:p-7 mb-6">
-              <p className="text-[11px] font-semibold text-[#888888] uppercase tracking-[1.5px] mb-3">
-                What you told us — by domain
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3" data-testid="grid-decision-mirror">
-                {DOMAIN_ORDER.map((domain) => (
-                  <DomainDecisionCard
-                    key={domain}
-                    domain={domain}
-                    level={domainLevels[domain]}
-                    domainInputs={parsedDomainInputs[domain]}
-                    globalInputs={{ timeSavedPerEncounter: (inputs.timeSavedPerEncounter as number) || 0 }}
-                    onClick={() => onNavigateToDomain?.(domain)}
-                  />
-                ))}
+            {/* Patient Experience strip */}
+            {patientExperienceSignal && (
+              <div className="border-t border-[#1A1A1A]/[0.08] pt-4 mt-2">
+                <div className="flex items-start gap-2.5">
+                  <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                    patientExperienceSignal.status === 'strong' ? 'bg-[#EA2C00]' :
+                    patientExperienceSignal.status === 'signal' ? 'bg-[#EA2C00]/[0.12]' : 'bg-[#1A1A1A]/[0.07]'
+                  }`}>
+                    <span
+                      className={`text-[8px] font-bold leading-none ${
+                        patientExperienceSignal.status === 'strong' ? 'text-white' :
+                        patientExperienceSignal.status === 'signal' ? 'text-[#EA2C00]' : 'text-[#1A1A1A]/35'
+                      }`}
+                      style={{ fontFamily: "'Manrope', sans-serif" }}
+                    >
+                      Px
+                    </span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-2 mb-0.5">
+                      <div>
+                        <p className="text-sm font-semibold text-[#1A1A1A]/65 leading-tight" style={{ fontFamily: "'Manrope', sans-serif" }}>
+                          Patient Experience
+                        </p>
+                        <p className="text-xs text-[#1A1A1A]/50 leading-tight mt-0.5" style={{ fontFamily: "'Manrope', sans-serif" }}>
+                          {patientExperienceSignal.headline}
+                        </p>
+                      </div>
+                      <span
+                        className={`text-[10px] font-semibold uppercase tracking-[1px] px-2 py-0.5 rounded-full flex-shrink-0 ${
+                          patientExperienceSignal.status === 'strong' ? 'bg-[#EA2C00]/10 text-[#EA2C00]/80' :
+                          patientExperienceSignal.status === 'signal' ? 'bg-[#1A1A1A]/[0.07] text-[#1A1A1A]/50' :
+                          'bg-[#1A1A1A]/[0.04] text-[#1A1A1A]/35'
+                        }`}
+                        style={{ fontFamily: "'Manrope', sans-serif" }}
+                      >
+                        {patientExperienceSignal.status === 'strong' ? 'Connected' :
+                         patientExperienceSignal.status === 'signal' ? 'Signal' : 'Not tracked'}
+                      </span>
+                    </div>
+                    {patientExperienceSignal.signals.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 mt-2">
+                        {patientExperienceSignal.signals.map((sig) => (
+                          <span
+                            key={sig}
+                            className="text-[11px] rounded-full px-2.5 py-1 bg-[#1A1A1A]/[0.07] text-[#1A1A1A]/60"
+                            style={{ fontFamily: "'Manrope', sans-serif" }}
+                          >
+                            {sig}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
-            </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.7, duration: 0.5 }}
-          >
-            <StepFooter onBack={onBack} onNext={onNext} nextLabel="See What This Means in Dollars →" showBack={false} />
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1.8, duration: 0.5 }}
-          >
-            <p className="text-xs text-[#888888] italic mt-4 leading-relaxed" data-testid="text-disclaimer">
-              Self-reported maturity assessment across four domains. Scores reflect activation level, not guaranteed financial outcomes.
-            </p>
-          </motion.div>
-
-          <div className={STEP_FOOTER_SPACER_CLASS} />
-        </div>
-
-        <motion.div
-          className="w-full md:w-[300px] flex-shrink-0"
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 2.0, duration: 0.6, ease: "easeOut" }}
-        >
-          <div className="bg-[#1A1A1A] rounded-xl p-6 md:sticky md:top-20" data-testid="panel-score-hero">
-
-            <div className="mb-5">
-              <p className="text-3xl font-bold text-[#EA2C00]" data-testid="sidebar-score">
-                {totalScore}
-              </p>
-              <p className="text-sm text-white/70">{scoreBandLabel}</p>
-            </div>
-
-            <div className="h-px bg-white/10 mb-5" />
-
-            <p className="text-[10px] font-medium text-white/35 uppercase tracking-[1.5px] mb-3">
-              Your Ambient Profile &nbsp;&middot;&nbsp; {archetype.name}
-            </p>
-            <p className="text-base font-bold text-white leading-snug mb-4" data-testid="text-verdict-headline">
-              {archetype.headline}
-            </p>
-            <div className="h-px bg-white/10 mb-4" />
-            {tenureModifier && (
-              <p className="text-xs text-white/60 leading-relaxed mb-3" data-testid="text-tenure-modifier">
-                {tenureModifier}
-              </p>
             )}
-            <p className="text-xs text-white/40 leading-relaxed" data-testid="text-verdict-body">
-              {archetype.body}
-            </p>
-
-            <div className="h-px bg-white/10 mt-5 mb-5" />
-
-            <p className="text-[10px] font-medium text-white/40 uppercase tracking-[1.5px] mb-2">Confirmed Value</p>
-            <p className="text-white font-bold text-sm leading-tight mb-1">
-              {DOMAIN_ORDER.filter(d => domainLevels[d] >= 3).length} of 4 domains
-            </p>
-            <p className="text-xs text-white/40 leading-relaxed mb-5">
-              {DOMAIN_ORDER.filter(d => domainLevels[d] >= 3).length > 0
-                ? DOMAIN_ORDER.filter(d => domainLevels[d] >= 3).map(d => DOMAIN_LABELS[d]).join(', ') + ' generating confirmed value'
-                : 'Building toward confirmed value across all domains'}
-            </p>
-
-            <div className="h-px bg-white/10 mb-5" />
-
-            <p className="text-[10px] font-medium text-[#EA2C00]/70 uppercase tracking-[1.5px] mb-2">Biggest Opportunity</p>
-            <p className="font-bold text-white text-sm leading-tight mb-2" data-testid="snapshot-weakest-domain">
-              {DOMAIN_LABELS[lowestDomain]}
-            </p>
-            <p className="text-xs text-white/45 leading-relaxed mb-5">
-              {domainLevels[lowestDomain] >= 4
-                ? 'All domains at full activation — the work ahead is deepening strategic integration.'
-                : DOMAIN_INSIGHTS[lowestDomain][Math.min(domainLevels[lowestDomain], 3) as 1 | 2 | 3]}
-            </p>
-
-            <div className="h-px bg-white/10 mb-4" />
-
-            <p className="text-[11px] text-white/25 leading-relaxed italic">
-              The next screen translates each domain into dollar terms — what's confirmed, and what the opportunity is worth.
-            </p>
 
           </div>
         </motion.div>
+
+        {/* ── CARD 3: THE PATTERN ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.75, duration: 0.5 }}
+          className="bg-white rounded-2xl overflow-hidden mb-4"
+        >
+          <div className="px-6 sm:px-8 md:px-10 py-7 sm:py-8">
+            <p
+              className="text-[9px] font-semibold uppercase tracking-[3px] mb-5"
+              style={{ fontFamily: "'Manrope', sans-serif", color: 'rgba(234,44,0,0.75)' }}
+            >
+              The Pattern
+            </p>
+            <p
+              style={{
+                fontFamily: "'Manrope', sans-serif",
+                fontWeight: 400,
+                fontSize: 'clamp(0.95rem, 1.3vw, 1.05rem)',
+                lineHeight: 1.8,
+                color: 'rgba(26,26,26,0.75)',
+              }}
+            >
+              {patternText}
+            </p>
+          </div>
+        </motion.div>
+
+        {/* ── CARD 4: WHERE TO FOCUS NEXT ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.90, duration: 0.5 }}
+          className="bg-[#1A1A1A] rounded-2xl overflow-hidden mb-6"
+        >
+          <div className="px-6 sm:px-8 md:px-10 py-7 sm:py-8">
+            <p
+              className="text-[9px] font-semibold text-[#EA2C00] uppercase tracking-[3px] mb-5"
+              style={{ fontFamily: "'Manrope', sans-serif" }}
+            >
+              Where to Focus Next
+            </p>
+
+            <h3
+              className="font-abridge uppercase text-white leading-none mb-2"
+              style={{ fontSize: 'clamp(2rem, 4vw, 3rem)' }}
+            >
+              {DOMAIN_LABELS[lowestDomain]}
+            </h3>
+
+            <p
+              className="text-sm text-white/60 leading-snug mb-5"
+              style={{ fontFamily: "'Manrope', sans-serif", fontWeight: 300 }}
+            >
+              {ACTIVATION_LABELS[lowestDomain][domainLevels[lowestDomain] as ActivationLevel]}
+            </p>
+
+            <div className="w-8 h-[2px] bg-[#EA2C00] mb-5" />
+
+            <p
+              className="text-sm text-white/70 leading-relaxed"
+              style={{ fontFamily: "'Manrope', sans-serif", fontWeight: 400, maxWidth: '480px' }}
+            >
+              {lowestDomainInsight}
+            </p>
+          </div>
+
+          {/* Card footer */}
+          <div className="border-t border-white/[0.07] px-6 sm:px-8 md:px-10 py-4 flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <img src="/abridge-pattern.png" alt="Abridge" className="w-5 h-5 opacity-40" />
+              <span className="text-[11px] text-white/40 tracking-wide" style={{ fontFamily: "'Manrope', sans-serif" }}>
+                Ambient Assessment by Abridge
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={handleShare}
+              className="text-xs font-semibold text-white/40 hover:text-white/70 transition-colors border-none bg-transparent cursor-pointer"
+              style={{ fontFamily: "'Manrope', sans-serif" }}
+            >
+              {copied ? 'Copied ✓' : 'Share →'}
+            </button>
+          </div>
+        </motion.div>
+
       </div>
-    </div>
+
+      {/* ── STICKY CTA ── */}
+      <motion.div
+        initial={{ y: 80, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 1.10, duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
+        className="fixed bottom-0 left-0 right-0 z-50"
+        style={{ background: '#1A1A1A', borderTop: '1px solid rgba(255,255,255,0.10)' }}
+      >
+        <div className="max-w-[860px] mx-auto px-6 py-4 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <span
+              className="font-abridge text-white"
+              style={{ fontSize: 'clamp(1.5rem, 4vw, 2rem)', lineHeight: 1 }}
+            >
+              {totalScore}
+            </span>
+            <span className="text-xs text-white/40" style={{ fontFamily: "'Manrope', sans-serif" }}>/100</span>
+            <span
+              className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] ml-1"
+              style={{ fontFamily: "'Manrope', sans-serif" }}
+            >
+              {scoreBandLabel}
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={onNext}
+            className="flex-shrink-0 bg-[#EA2C00] text-white rounded-full hover:bg-white hover:text-[#1A1A1A] transition-colors duration-200 border-none cursor-pointer"
+            style={{
+              fontFamily: "'Manrope', sans-serif",
+              fontWeight: 600,
+              fontSize: '0.875rem',
+              letterSpacing: '0.3px',
+              padding: '0.75rem 1.75rem',
+            }}
+          >
+            Domain Analysis →
+          </button>
+        </div>
+      </motion.div>
+    </>
   );
 }
