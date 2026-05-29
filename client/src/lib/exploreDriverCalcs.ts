@@ -180,7 +180,7 @@ export function computeAllDriverValues(
   if (dq.hccEnabled && isOP) {
     let totalGross = 0;
     for (const plan of dq.hccPlans) {
-      const planPts = state.numberOfProviders * (dq.panelSize * plan.planPct / 100);
+      const planPts = state.numberOfProviders * plan.panelSize;
       const gapPts = planPts * (plan.gapRate / 100);
       const recap = (HCC_SCENARIOS[plan.recaptureScenario] ?? 10) / 100;
       totalGross += gapPts * recap * dq.avgHccs * plan.rafImpact * plan.annualPaymentPerRaf;
@@ -378,7 +378,7 @@ export function computeAllDriverCalcSummaries(
     else out.wrvu = summary;
   }
   if (dq.hccEnabled && isOP) {
-    const planSummary = dq.hccPlans.map((p: { name: string; planPct: number; gapRate: number; rafImpact: number; annualPaymentPerRaf: number; recaptureScenario: string }) => `${p.name}: ${p.planPct}% of ${dq.panelSize} panel × ${p.gapRate}% gap × ${HCC_SCENARIOS[p.recaptureScenario] ?? 10}% recapture × ${p.rafImpact} RAF × $${p.annualPaymentPerRaf}/RAF`).join(' + ');
+    const planSummary = dq.hccPlans.map((p: { name: string; panelSize: number; gapRate: number; rafImpact: number; annualPaymentPerRaf: number; recaptureScenario: string }) => `${p.name}: ${p.panelSize} pts/prov × ${p.gapRate}% gap × ${HCC_SCENARIOS[p.recaptureScenario] ?? 10}% recapture × ${p.rafImpact} RAF × $${p.annualPaymentPerRaf}/RAF`).join(' + ');
     out.hccCapture = `${fmtN(state.numberOfProviders)} providers | ${planSummary} | ${dq.avgHccs} avg HCCs × ${dq.hccRealization}% realization`;
   }
   if (dq.denialsEnabled && (isOP || isED)) {

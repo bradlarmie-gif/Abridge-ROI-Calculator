@@ -367,7 +367,7 @@ export interface HccPlan {
   id: string;
   planType: 'medicare_advantage' | 'aca_marketplace' | 'medicaid_mco' | 'custom';
   name: string;
-  planPct: number;             // % of total panel on this plan (0-100)
+  panelSize: number;           // patients on this plan per provider
   gapRate: number;
   rafImpact: number;
   annualPaymentPerRaf: number;
@@ -386,7 +386,6 @@ export interface DocQualityInputs {
 
   // HCC
   hccEnabled: boolean;
-  panelSize: number;           // total patients per provider (global, used for all plans)
   hccPlans: HccPlan[];
   avgHccs: number;
   hccRealization: number;
@@ -815,12 +814,11 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     conversionFactor: 33,
     wrvuRealization: 75,
     hccEnabled: false,
-    panelSize: 1000,
     hccPlans: [{
       id: 'plan-ma',
       planType: 'medicare_advantage' as const,
       name: 'Medicare Advantage',
-      planPct: 30,
+      panelSize: 300,
       gapRate: 70,
       rafImpact: 0.15,
       annualPaymentPerRaf: 10000,
@@ -1254,7 +1252,7 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
     if (docQualityInputs.hccEnabled) {
       let totalGross = 0;
       for (const plan of docQualityInputs.hccPlans) {
-        const planPatients = state.numberOfProviders * (docQualityInputs.panelSize * plan.planPct / 100);
+        const planPatients = state.numberOfProviders * plan.panelSize;
         const gapPts = planPatients * (plan.gapRate / 100);
         const recap = (hccScenarios[plan.recaptureScenario] ?? 10) / 100;
         totalGross += gapPts * recap * docQualityInputs.avgHccs * plan.rafImpact * plan.annualPaymentPerRaf;

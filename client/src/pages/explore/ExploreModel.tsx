@@ -226,7 +226,7 @@ export default function ExploreModel({
     if (!isOutpatient || !docQualityInputs.hccEnabled) return 0;
     let totalGross = 0;
     for (const plan of docQualityInputs.hccPlans) {
-      const planPatients = state.numberOfProviders * (docQualityInputs.panelSize * plan.planPct / 100);
+      const planPatients = state.numberOfProviders * plan.panelSize;
       const gapPatients = planPatients * (plan.gapRate / 100);
       const recapturePct = (hccScenarios[plan.recaptureScenario] ?? 10) / 100;
       const recaptured = gapPatients * recapturePct;
@@ -790,13 +790,11 @@ export default function ExploreModel({
                 return `At ${fmt(encounters)} annual ED visits, documentation that captures clinical complexity during high-volume periods — when notes most commonly understate the encounter — recovers ${fmtCur(value)} annually in E/M level accuracy.`;
               case 'hccCapture': {
                 const hccPlans = docQualityInputs.hccPlans;
-                const panelSize = docQualityInputs.panelSize;
                 if (hccPlans.length === 1) {
                   const plan = hccPlans[0];
-                  const ptsPerProv = Math.round(panelSize * plan.planPct / 100);
-                  return `With ${fmt(providers)} providers each carrying ${fmt(ptsPerProv)} ${plan.name} patients, conditions that are clinically present — addressed every visit — but absent from the note don't factor into risk adjustment. Ambient documentation closes that gap at the point of care, recovering ${fmtCur(value)} in annual risk-adjusted revenue.`;
+                  return `With ${fmt(providers)} providers each carrying ${fmt(plan.panelSize)} ${plan.name} patients, conditions that are clinically present — addressed every visit — but absent from the note don't factor into risk adjustment. Ambient documentation closes that gap at the point of care, recovering ${fmtCur(value)} in annual risk-adjusted revenue.`;
                 }
-                const totalPlanPts = hccPlans.reduce((s: number, p: { planPct: number }) => s + Math.round(providers * panelSize * p.planPct / 100), 0);
+                const totalPlanPts = hccPlans.reduce((s: number, p: { panelSize: number }) => s + providers * p.panelSize, 0);
                 const names = hccPlans.map((p: { name: string }) => p.name);
                 const planNameList = names.length <= 2
                   ? names.join(' and ')

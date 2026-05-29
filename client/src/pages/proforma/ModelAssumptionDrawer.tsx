@@ -54,7 +54,7 @@ export function recomputeDriverFromExploreState(driverId: string, state: Explore
       const pcts: Record<string, number> = { conservative: 6, typical: 10, aggressive: 15 };
       let totalGross = 0;
       for (const plan of dq.hccPlans) {
-        const planPts = numberOfProviders * (dq.panelSize * plan.planPct / 100);
+        const planPts = numberOfProviders * plan.panelSize;
         const pct = (pcts[plan.recaptureScenario] ?? 10) / 100;
         const gapPts = planPts * (plan.gapRate / 100) * pct * dq.avgHccs;
         totalGross += gapPts * plan.rafImpact * plan.annualPaymentPerRaf;
@@ -265,9 +265,9 @@ export function ModelAssumptionRow({
         return (
           <div className="mt-2">
             <p className="text-[9px] text-neutral-400 uppercase tracking-wider mb-1.5">Recapture — Per Plan</p>
-            {dq.hccPlans.map((plan: { id: string; name: string; planPct: number; recaptureScenario: string }) => (
+            {dq.hccPlans.map((plan: { id: string; name: string; panelSize: number; recaptureScenario: string }) => (
               <div key={plan.id} className="flex justify-between items-center text-[10px] text-neutral-500 mb-0.5">
-                <span>{plan.name} ({plan.planPct}%)</span>
+                <span>{plan.name} ({plan.panelSize} pts/prov)</span>
                 <span className="text-neutral-400">{scenarioLabels[plan.recaptureScenario] ?? plan.recaptureScenario}</span>
               </div>
             ))}
