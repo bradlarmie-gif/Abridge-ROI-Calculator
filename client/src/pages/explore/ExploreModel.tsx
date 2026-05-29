@@ -789,10 +789,19 @@ export default function ExploreModel({
               case 'edEmLevel':
                 return `At ${fmt(encounters)} annual ED visits, documentation that captures clinical complexity during high-volume periods — when notes most commonly understate the encounter — recovers ${fmtCur(value)} annually in E/M level accuracy.`;
               case 'hccCapture': {
-                const planDescriptions = docQualityInputs.hccPlans
-                  .map((p: { name: string; planPct: number; rafImpact: number; annualPaymentPerRaf: number; recaptureScenario: string }) => `${p.name} (${p.planPct}% of ${docQualityInputs.panelSize} panel, ${p.rafImpact} RAF × $${p.annualPaymentPerRaf}/RAF)`)
-                  .join(', ');
-                return `${fmt(providers)} providers. Risk adjustment plans: ${planDescriptions}. This driver models ${fmtCur(value)} in annual HCC capture value.`;
+                const hccPlans = docQualityInputs.hccPlans;
+                const panelSize = docQualityInputs.panelSize;
+                if (hccPlans.length === 1) {
+                  const plan = hccPlans[0];
+                  const ptsPerProv = Math.round(panelSize * plan.planPct / 100);
+                  return `With ${fmt(providers)} providers each carrying ${fmt(ptsPerProv)} ${plan.name} patients, conditions that are clinically present — addressed every visit — but absent from the note don't factor into risk adjustment. Ambient documentation closes that gap at the point of care, recovering ${fmtCur(value)} in annual risk-adjusted revenue.`;
+                }
+                const totalPlanPts = hccPlans.reduce((s: number, p: { planPct: number }) => s + Math.round(providers * panelSize * p.planPct / 100), 0);
+                const names = hccPlans.map((p: { name: string }) => p.name);
+                const planNameList = names.length <= 2
+                  ? names.join(' and ')
+                  : `${names.slice(0, -1).join(', ')}, and ${names[names.length - 1]}`;
+                return `Across ${fmt(providers)} providers, ${fmt(totalPlanPts)} patients enrolled in ${planNameList} plans carry chronic conditions that surface in the visit but never reach the note — suppressing risk scores across every plan type. Structured capture at the point of care recovers ${fmtCur(value)} annually.`;
               }
               case 'denialPrevention':
                 return `Across ${fmt(encounters)} annual claims, documentation gaps that trigger unappealable medical-necessity denials represent a recoverable loss. Capturing clinical reasoning at the point of care prevents ${fmtCur(value)} in documentation-related denials annually.`;
