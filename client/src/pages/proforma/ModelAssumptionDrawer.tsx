@@ -53,9 +53,13 @@ export function recomputeDriverFromExploreState(driverId: string, state: Explore
     case 'hcc': {
       const pcts: Record<string, number> = { conservative: 6, typical: 10, aggressive: 15 };
       const pct = pcts[dq.hccScenario] ?? 10;
-      const ma = numberOfProviders * dq.panelSize * (dq.maPercent / 100);
-      const recaptured = ma * (dq.gapRate / 100) * (pct / 100) * dq.avgHccs;
-      return Math.round(recaptured * dq.rafImpact * dq.annualPayment * (dq.hccRealization / 100));
+      let totalGross = 0;
+      for (const plan of dq.hccPlans) {
+        const planPts = numberOfProviders * dq.panelSize * (plan.panelPct / 100);
+        const gapPts = planPts * (plan.gapRate / 100) * (pct / 100) * dq.avgHccs;
+        totalGross += gapPts * plan.rafImpact * plan.annualPaymentPerRaf;
+      }
+      return Math.round(totalGross * (dq.hccRealization / 100));
     }
     case 'denials': {
       const isED = careSetting === 'ed';
@@ -273,9 +277,13 @@ export function ModelAssumptionRow({
         };
         const handleHccCustomPct = (v: number) => {
           setLocalCustomPct(v);
-          const ma = es.numberOfProviders * dq!.panelSize * (dq!.maPercent / 100);
-          const recaptured = ma * (dq!.gapRate / 100) * (v / 100) * dq!.avgHccs;
-          const newVal = Math.round(recaptured * dq!.rafImpact * dq!.annualPayment * (dq!.hccRealization / 100));
+          let totalGross = 0;
+          for (const plan of dq!.hccPlans) {
+            const planPts = es.numberOfProviders * dq!.panelSize * (plan.panelPct / 100);
+            const gapPts = planPts * (plan.gapRate / 100) * (v / 100) * dq!.avgHccs;
+            totalGross += gapPts * plan.rafImpact * plan.annualPaymentPerRaf;
+          }
+          const newVal = Math.round(totalGross * (dq!.hccRealization / 100));
           onUpdate(settingId, driver.id, newVal, es);
         };
         return (

@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
-import { ArrowRight, ChevronDown, Info } from "lucide-react";
+import { ArrowRight, ChevronDown, Info, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
-import { type ExploreState, type DocQualityInputs } from "./ExploreFlow";
+import { type ExploreState, type DocQualityInputs, type HccPlan } from "./ExploreFlow";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 
 interface ExploreDocQualityProps {
@@ -17,11 +17,32 @@ interface ExploreDocQualityProps {
 
 type ScenarioLevel = 'conservative' | 'typical' | 'aggressive' | 'custom';
 
-const HCC_DEFAULTS = {
-  avgHccs: 0.5,
-  rafImpact: 0.15,
-  annualPayment: 10000,
-  hccRealization: 40,
+const PLAN_TYPE_DEFAULTS: Record<HccPlan['planType'], Omit<HccPlan, 'id'>> = {
+  medicare_advantage: { planType: 'medicare_advantage', name: 'Medicare Advantage', panelPct: 30, gapRate: 70, rafImpact: 0.15, annualPaymentPerRaf: 10000 },
+  aca_marketplace:    { planType: 'aca_marketplace',    name: 'ACA Marketplace',    panelPct: 15, gapRate: 65, rafImpact: 0.10, annualPaymentPerRaf: 4000  },
+  medicaid_mco:       { planType: 'medicaid_mco',        name: 'Medicaid MCO',        panelPct: 20, gapRate: 60, rafImpact: 0.05, annualPaymentPerRaf: 5000  },
+  custom:             { planType: 'custom',               name: 'Custom Plan',         panelPct: 10, gapRate: 65, rafImpact: 0.12, annualPaymentPerRaf: 5000  },
+};
+
+const RAF_HINTS: Record<HccPlan['planType'], string> = {
+  medicare_advantage: '0.10–0.20',
+  aca_marketplace:    '0.05–0.15',
+  medicaid_mco:       '0.04–0.10',
+  custom:             '',
+};
+
+const PAYMENT_HINTS: Record<HccPlan['planType'], string> = {
+  medicare_advantage: '$8,000–14,000',
+  aca_marketplace:    '$3,000–6,000',
+  medicaid_mco:       '$2,000–5,000',
+  custom:             '',
+};
+
+const PLAN_TYPE_LABELS: Record<HccPlan['planType'], string> = {
+  medicare_advantage: 'MA',
+  aca_marketplace:    'ACA',
+  medicaid_mco:       'MCO',
+  custom:             'Custom',
 };
 
 function HccExpandedContent({
@@ -29,11 +50,6 @@ function HccExpandedContent({
   docQualityInputs,
   updateDocInputs,
   hccScenarios,
-  recapturePercent,
-  gapPatients,
-  hccsDocumented,
-  hccGrossValue,
-  hccRevenueNet,
   formatNumber,
   formatCurrency,
 }: {
@@ -41,98 +57,212 @@ function HccExpandedContent({
   docQualityInputs: DocQualityInputs;
   updateDocInputs: (updates: Partial<DocQualityInputs>) => void;
   hccScenarios: Record<ScenarioLevel, number>;
-  recapturePercent: number;
-  gapPatients: number;
-  hccsDocumented: number;
-  hccGrossValue: number;
-  hccRevenueNet: number;
   formatNumber: (n: number) => string;
   formatCurrency: (n: number) => string;
 }) {
   const [advancedOpen, setAdvancedOpen] = useState(false);
+  const recapturePercent = hccScenarios[docQualityInputs.hccScenario];
+  const plans = docQualityInputs.hccPlans;
 
-  const hasCustomValues =
-    docQualityInputs.avgHccs !== HCC_DEFAULTS.avgHccs ||
-    docQualityInputs.rafImpact !== HCC_DEFAULTS.rafImpact ||
-    docQualityInputs.annualPayment !== HCC_DEFAULTS.annualPayment ||
-    docQualityInputs.hccRealization !== HCC_DEFAULTS.hccRealization;
+  // Per-plan calculations
+  const planCalcs = plans.map(plan => {
+    const planPatients = state.numberOfProviders * docQualityInputs.panelSize * (plan.panelPct / 100);
+    const gapPatients = planPatients * (plan.gapRate / 100);
+    const recaptured = gapPatients * (recapturePercent / 100);
+    const hccs = recaptured * docQualityInputs.avgHccs;
+    const rafPoints = hccs * plan.rafImpact;
+    const gross = rafPoints * plan.annualPaymentPerRaf;
+    return { planPatients, gapPatients, hccs, rafPoints, gross };
+  });
 
-  const valuePerHcc = docQualityInputs.rafImpact * docQualityInputs.annualPayment;
+  const totalGross = planCalcs.reduce((s, c) => s + c.gross, 0);
+  const totalHccRevenueNet = totalGross * (docQualityInputs.hccRealization / 100);
+  const totalGapPatients = planCalcs.reduce((s, c) => s + c.gapPatients, 0);
+  const totalHccs = planCalcs.reduce((s, c) => s + c.hccs, 0);
+  const totalRafPoints = planCalcs.reduce((s, c) => s + c.rafPoints, 0);
+
+  const updatePlan = (id: string, updates: Partial<HccPlan>) => {
+    updateDocInputs({
+      hccPlans: plans.map(p => p.id === id ? { ...p, ...updates } : p),
+    });
+  };
+
+  const removePlan = (id: string) => {
+    updateDocInputs({ hccPlans: plans.filter(p => p.id !== id) });
+  };
+
+  const addPlan = () => {
+    const newPlan: HccPlan = {
+      ...PLAN_TYPE_DEFAULTS.custom,
+      id: `plan-${Date.now()}`,
+    };
+    updateDocInputs({ hccPlans: [...plans, newPlan] });
+  };
+
+  const applyPlanType = (id: string, planType: HccPlan['planType']) => {
+    const defaults = PLAN_TYPE_DEFAULTS[planType];
+    updateDocInputs({
+      hccPlans: plans.map(p => p.id === id ? { ...p, ...defaults, id: p.id } : p),
+    });
+  };
 
   return (
     <div className="bg-white rounded-b-lg p-5">
       <p className="text-sm text-[#666666] leading-relaxed mb-3">
-        When providers use ambient documentation, chronic conditions addressed verbally are more likely to appear in the note. For Medicare Advantage patients, documented conditions drive risk-adjusted payment. This models the estimated revenue impact of that documentation improvement {"–"} not a guarantee, and not your total HCC program value.
+        When providers use ambient documentation, chronic conditions addressed verbally are more likely to appear in the note. Documented conditions drive risk-adjusted payment across multiple plan types. This models the estimated revenue impact of that documentation improvement.
       </p>
 
       <div className="h-px bg-[#E5E5E5] my-4" />
 
+      {/* Shared: Panel size */}
       <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Your Population</p>
+      <div className="flex justify-between items-start gap-4 mb-4">
+        <div className="flex-1 min-w-0">
+          <p className="text-sm text-black">Panel size per provider</p>
+          <p className="text-xs text-[#888888] mt-0.5">Active patients per provider. Primary care typically 1,200–2,000.</p>
+        </div>
+        <div className="flex items-center gap-1 flex-shrink-0">
+          <input
+            type="text"
+            inputMode="numeric"
+            value={docQualityInputs.panelSize ? docQualityInputs.panelSize.toLocaleString("en-US") : ""}
+            onChange={(e) => { const v = parseFloat(e.target.value.replace(/,/g, "")) || 0; updateDocInputs({ panelSize: v }); }}
+            className="w-20 h-8 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none transition-colors"
+            data-testid="input-panel-size"
+          />
+          <span className="text-xs text-[#888888]">pts</span>
+        </div>
+      </div>
+
+      {/* Plan cards */}
       <div className="space-y-3">
-        <div className="flex justify-between items-start gap-4">
-          <div className="flex-1 min-w-0">
-            <p className="text-sm text-black">Panel size per provider</p>
-            <p className="text-xs text-[#888888] mt-0.5">Active patients per provider. Primary care typically 1,200{"–"}2,000.</p>
-          </div>
-          <div className="flex items-center gap-1 flex-shrink-0">
-            <input
-              type="text"
-              inputMode="numeric"
-              value={docQualityInputs.panelSize ? docQualityInputs.panelSize.toLocaleString("en-US") : ""}
-              onChange={(e) => { const v = parseFloat(e.target.value.replace(/,/g, "")) || 0; updateDocInputs({ panelSize: v }); }}
-              className="w-20 h-8 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none transition-colors"
-              data-testid="input-panel-size"
-            />
-            <span className="text-xs text-[#888888]">pts</span>
-          </div>
-        </div>
+        {plans.map((plan, idx) => {
+          const calc = planCalcs[idx];
+          return (
+            <div key={plan.id} className="border border-[#E5E5E5] rounded-lg p-4 bg-[#FAFAFA]">
+              {/* Plan header: name + type buttons + remove */}
+              <div className="flex items-center gap-2 mb-3">
+                <input
+                  type="text"
+                  value={plan.name}
+                  onChange={(e) => updatePlan(plan.id, { name: e.target.value })}
+                  className="flex-1 h-8 bg-white border border-[#E5E5E5] rounded px-2 text-sm font-medium focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none transition-colors min-w-0"
+                  placeholder="Plan name"
+                />
+                <div className="flex items-center gap-1 flex-shrink-0">
+                  {(['medicare_advantage', 'aca_marketplace', 'medicaid_mco', 'custom'] as const).map(pt => (
+                    <button
+                      key={pt}
+                      onClick={() => applyPlanType(plan.id, pt)}
+                      className={`px-2 py-1 rounded text-[10px] font-semibold transition-colors ${
+                        plan.planType === pt
+                          ? 'bg-[#EA2C00] text-white'
+                          : 'bg-white border border-[#E5E5E5] text-[#888888] hover:border-[#EA2C00] hover:text-[#EA2C00]'
+                      }`}
+                    >
+                      {PLAN_TYPE_LABELS[pt]}
+                    </button>
+                  ))}
+                </div>
+                {plans.length > 1 && (
+                  <button
+                    onClick={() => removePlan(plan.id)}
+                    className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-[#F5F0EB] text-[#999999] hover:text-[#666666] transition-colors flex-shrink-0"
+                    title="Remove plan"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
 
-        <div className="flex justify-between items-start gap-4">
-          <div className="flex-1 min-w-0">
-            <p className="text-sm text-black">Medicare Advantage %</p>
-            <p className="text-xs text-[#888888] mt-0.5">Share of your panel enrolled in MA plans. Many primary care panels run 30{"–"}45%.</p>
-          </div>
-          <div className="flex items-center gap-1 flex-shrink-0">
-            <input
-              type="number"
-              value={docQualityInputs.maPercent}
-              onChange={(e) => updateDocInputs({ maPercent: parseFloat(e.target.value) || 0 })}
-              className="w-14 h-8 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none transition-colors"
-              data-testid="input-ma-percent"
-            />
-            <span className="text-xs text-[#888888]">%</span>
-          </div>
-        </div>
+              {/* Row 1: % of panel + gap rate */}
+              <div className="grid grid-cols-2 gap-3 mb-3">
+                <div>
+                  <p className="text-xs text-[#888888] mb-1">% of panel</p>
+                  <div className="flex items-center gap-0.5">
+                    <input
+                      type="number"
+                      value={plan.panelPct}
+                      onChange={(e) => updatePlan(plan.id, { panelPct: parseFloat(e.target.value) || 0 })}
+                      className="w-14 h-8 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none transition-colors"
+                    />
+                    <span className="text-xs text-[#888888]">%</span>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-xs text-[#888888] mb-1">Gap rate</p>
+                  <div className="flex items-center gap-0.5">
+                    <input
+                      type="number"
+                      value={plan.gapRate}
+                      onChange={(e) => updatePlan(plan.id, { gapRate: parseFloat(e.target.value) || 0 })}
+                      className="w-14 h-8 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none transition-colors"
+                    />
+                    <span className="text-xs text-[#888888]">%</span>
+                  </div>
+                </div>
+              </div>
 
-        <div className="flex justify-between items-start gap-4">
-          <div className="flex-1 min-w-0">
-            <p className="text-sm text-black">Documentation gap rate</p>
-            <p className="text-xs text-[#888888] mt-0.5">CMS MA data: 10{"–"}18% of members have at least one gap annually. 12% is a mid-range estimate.</p>
-          </div>
-          <div className="flex items-center gap-1 flex-shrink-0">
-            <input
-              type="number"
-              value={docQualityInputs.gapRate}
-              onChange={(e) => updateDocInputs({ gapRate: parseFloat(e.target.value) || 0 })}
-              className="w-14 h-8 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none transition-colors"
-              data-testid="input-gap-rate"
-            />
-            <span className="text-xs text-[#888888]">%</span>
-          </div>
-        </div>
+              {/* Row 2: RAF impact + annual payment */}
+              <div className="grid grid-cols-2 gap-3 mb-3">
+                <div>
+                  <p className="text-xs text-[#888888] mb-1">RAF score / HCC</p>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={plan.rafImpact}
+                    onChange={(e) => updatePlan(plan.id, { rafImpact: parseFloat(e.target.value) || 0 })}
+                    className="w-full h-8 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none transition-colors"
+                  />
+                  {RAF_HINTS[plan.planType] && (
+                    <p className="text-[10px] text-[#999999] mt-0.5">Typically {RAF_HINTS[plan.planType]}</p>
+                  )}
+                </div>
+                <div>
+                  <p className="text-xs text-[#888888] mb-1">Annual $ / RAF point</p>
+                  <div className="flex items-center gap-0.5">
+                    <span className="text-xs text-[#888888]">$</span>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={plan.annualPaymentPerRaf ? plan.annualPaymentPerRaf.toLocaleString("en-US") : ""}
+                      onChange={(e) => { const v = parseFloat(e.target.value.replace(/,/g, "")) || 0; updatePlan(plan.id, { annualPaymentPerRaf: v }); }}
+                      className="w-full h-8 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none transition-colors"
+                    />
+                  </div>
+                  {PAYMENT_HINTS[plan.planType] && (
+                    <p className="text-[10px] text-[#999999] mt-0.5">Typically {PAYMENT_HINTS[plan.planType]}</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Formula row */}
+              <div className="bg-[#F5F0EB] rounded-lg px-3 py-2">
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-[#666666]">
+                    {formatNumber(state.numberOfProviders)} providers × {formatNumber(docQualityInputs.panelSize)} panel × {plan.panelPct}% × {plan.gapRate}% gap
+                  </span>
+                  <span className="font-semibold text-black ml-2 flex-shrink-0">= {formatNumber(Math.round(calc.gapPatients))} with gaps</span>
+                </div>
+              </div>
+            </div>
+          );
+        })}
       </div>
 
-      <div className="bg-[#F5F0EB] rounded-lg px-4 py-3 mt-3">
-        <div className="flex justify-between items-center text-sm">
-          <span className="text-[#666666]">
-            {formatNumber(state.numberOfProviders)} providers {"×"} {formatNumber(docQualityInputs.panelSize)} panel {"×"} {docQualityInputs.maPercent}% MA {"×"} {docQualityInputs.gapRate}% gap rate
-          </span>
-          <span className="font-semibold text-black ml-2 flex-shrink-0">= {formatNumber(Math.round(gapPatients))} patients with gaps</span>
-        </div>
-      </div>
+      {/* Add plan button */}
+      <button
+        onClick={addPlan}
+        className="mt-3 flex items-center gap-1.5 text-sm text-[#EA2C00] hover:text-[#C52200] transition-colors font-medium"
+        data-testid="button-add-hcc-plan"
+      >
+        <Plus className="w-4 h-4" />
+        Add another plan
+      </button>
 
       <div className="h-px bg-[#E5E5E5] my-5" />
 
+      {/* Recapture Scenario */}
       <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Recapture Scenario</p>
       <div className="grid grid-cols-3 gap-2 mb-3">
         {(['conservative', 'typical', 'aggressive'] as const).map((level) => (
@@ -156,40 +286,69 @@ function HccExpandedContent({
       <div className="text-xs text-[#888888] space-y-1 mb-2">
         <p><strong>Conservative (6%):</strong> Existing HCC program in place. Models only the incremental visit-level capture.</p>
         <p><strong>Typical (10%):</strong> Limited gap closure program. Ambient is the primary point-of-care documentation mechanism.</p>
-        <p><strong>Optimistic (15%):</strong> High MA concentration, strong provider adoption, minimal competing workflow.</p>
+        <p><strong>Optimistic (15%):</strong> High concentration, strong provider adoption, minimal competing workflow.</p>
       </div>
 
       <div className="bg-[#FFF8F0] border border-[#EA2C00]/20 rounded-lg px-4 py-3 mb-4 flex items-start gap-2">
         <span className="text-[#EA2C00] text-sm mt-0.5 shrink-0">{"ⓘ"}</span>
         <p className="text-xs text-[#666666]">
-          <strong>Already running an HCC program?</strong> Lower your recapture target to reflect only what slips through {"–"} conditions discussed at the visit that your existing workflow doesn't catch. 6% (Conservative) is the right starting point.
+          <strong>Already running an HCC program?</strong> Lower your recapture target to reflect only what slips through – conditions discussed at the visit that your existing workflow doesn't catch. 6% (Conservative) is the right starting point.
         </p>
       </div>
 
       <div className="h-px bg-[#E5E5E5] my-5" />
 
+      {/* Estimated Value */}
       <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Estimated Value</p>
       <div className="bg-[#F5F0EB] rounded-lg p-4">
-        <div className="text-sm text-[#666666] leading-relaxed mb-3">
-          {formatNumber(Math.round(gapPatients))} patients with gaps {"×"} {docQualityInputs.avgHccs} avg missed HCCs {"×"} {recapturePercent}% recapture {"="} <span className="font-semibold text-black">{formatNumber(Math.round(hccsDocumented))} HCCs</span>
-        </div>
-        <div className="text-sm text-[#666666] leading-relaxed mb-4">
-          {formatNumber(Math.round(hccsDocumented))} HCCs {"×"} {formatCurrency(Math.round(valuePerHcc))}/HCC {"="} {formatCurrency(Math.round(hccGrossValue))} gross {"×"} {docQualityInputs.hccRealization}% realization
-        </div>
+        {plans.length > 1 ? (
+          /* Multi-plan breakdown */
+          <div className="space-y-3 mb-3">
+            {plans.map((plan, idx) => {
+              const calc = planCalcs[idx];
+              return (
+                <div key={plan.id} className="space-y-1">
+                  <p className="text-xs font-semibold text-[#888888] uppercase tracking-wide">{plan.name}</p>
+                  <p className="text-sm text-[#666666]">
+                    {formatNumber(Math.round(calc.gapPatients))} pts × {docQualityInputs.avgHccs} HCCs × {recapturePercent}% = <span className="font-medium text-black">{formatNumber(Math.round(calc.hccs))} HCCs</span>
+                  </p>
+                  <p className="text-sm text-[#666666]">
+                    {formatNumber(Math.round(calc.hccs))} HCCs × {plan.rafImpact} RAF = <span className="font-medium text-black">{calc.rafPoints.toFixed(1)} RAF pts</span> × {formatCurrency(plan.annualPaymentPerRaf)}/pt = <span className="font-semibold text-black">{formatCurrency(Math.round(calc.gross))}</span>
+                  </p>
+                </div>
+              );
+            })}
+            <div className="h-px bg-[#D1D5DB]" />
+            <p className="text-sm text-[#666666]">
+              Total {formatCurrency(Math.round(totalGross))} gross × {docQualityInputs.hccRealization}% realization
+            </p>
+          </div>
+        ) : (
+          /* Single-plan layout */
+          <div className="space-y-1.5 mb-3">
+            <p className="text-sm text-[#666666]">
+              {formatNumber(Math.round(totalGapPatients))} patients × {docQualityInputs.avgHccs} HCCs × {recapturePercent}% recapture = <span className="font-semibold text-black">{formatNumber(Math.round(totalHccs))} HCCs</span>
+            </p>
+            <p className="text-sm text-[#666666]">
+              {formatNumber(Math.round(totalHccs))} HCCs × {plans[0]?.rafImpact ?? 0} RAF/HCC = <span className="font-semibold text-black">{totalRafPoints.toFixed(1)} RAF pts</span>
+            </p>
+            <p className="text-sm text-[#666666]">
+              {totalRafPoints.toFixed(1)} RAF × {formatCurrency(plans[0]?.annualPaymentPerRaf ?? 0)}/pt = {formatCurrency(Math.round(totalGross))} gross × {docQualityInputs.hccRealization}% realization
+            </p>
+          </div>
+        )}
         <div className="h-px bg-[#D1D5DB] mb-3" />
         <div className="flex justify-between items-center">
-          <div>
-            <span className="font-semibold text-black">Estimated Annual HCC Value</span>
-            {hasCustomValues && (
-              <span className="ml-2 text-[10px] font-medium text-[#EA2C00] bg-[#EA2C00]/10 px-1.5 py-0.5 rounded" data-testid="badge-custom-values">Custom values</span>
-            )}
-          </div>
-          <span className="text-2xl font-bold text-[#EA2C00]" data-testid="text-hcc-result">{formatCurrency(Math.round(hccRevenueNet))}</span>
+          <span className="font-semibold text-black">
+            Estimated Annual HCC Value{plans.length > 1 ? ` (${plans.length} plans)` : ''}
+          </span>
+          <span className="text-2xl font-bold text-[#EA2C00]" data-testid="text-hcc-result">{formatCurrency(Math.round(totalHccRevenueNet))}</span>
         </div>
       </div>
 
       <div className="h-px bg-[#E5E5E5] my-5" />
 
+      {/* Advanced: shared fields only */}
       <button
         onClick={() => setAdvancedOpen(!advancedOpen)}
         className="flex items-center gap-2 text-sm text-[#666666] hover:text-black transition-colors w-full"
@@ -197,7 +356,7 @@ function HccExpandedContent({
       >
         <ChevronDown className={`w-4 h-4 transition-transform ${advancedOpen ? 'rotate-0' : '-rotate-90'}`} />
         <span className="font-medium">Customize Assumptions</span>
-        <span className="text-xs text-[#888888]">{"–"} adjust if you have your own data</span>
+        <span className="text-xs text-[#888888]">– adjust if you have your own data</span>
       </button>
 
       <AnimatePresence>
@@ -212,7 +371,7 @@ function HccExpandedContent({
               <div className="flex justify-between items-start gap-4">
                 <div className="flex-1 min-w-0">
                   <p className="text-sm text-black">Avg missed HCCs per patient</p>
-                  <p className="text-xs text-[#888888] mt-0.5">Conditions discussed but not written {"–"} specifically attributable to note compression. 0.5 is conservative; 0.7+ if providers routinely omit chronic condition reaffirmation.</p>
+                  <p className="text-xs text-[#888888] mt-0.5">Conditions discussed but not written. 0.5 is conservative; 0.7+ if providers routinely omit chronic condition reaffirmation.</p>
                 </div>
                 <input
                   type="number"
@@ -223,47 +382,13 @@ function HccExpandedContent({
                   data-testid="input-avg-hccs"
                 />
               </div>
-
-              <div className="flex justify-between items-start gap-4">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-black">RAF impact per HCC</p>
-                  <p className="text-xs text-[#888888] mt-0.5">Low-to-mid severity: 0.10{"–"}0.20. Complex chronic: 0.20{"–"}0.40.</p>
-                </div>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={docQualityInputs.rafImpact}
-                  onChange={(e) => updateDocInputs({ rafImpact: parseFloat(e.target.value) || 0 })}
-                  className="w-16 h-8 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm flex-shrink-0 focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none transition-colors"
-                  data-testid="input-raf-impact"
-                />
-              </div>
-
-              <div className="flex justify-between items-start gap-4">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-black">Annual payment per RAF</p>
-                  <p className="text-xs text-[#888888] mt-0.5">National MA average ~$12{"–"}14K (2024 CMS). $10,000 is intentionally conservative.</p>
-                </div>
-                <div className="flex items-center gap-1 flex-shrink-0">
-                  <span className="text-xs text-[#888888]">$</span>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    value={docQualityInputs.annualPayment ? docQualityInputs.annualPayment.toLocaleString("en-US") : ""}
-                    onChange={(e) => { const v = parseFloat(e.target.value.replace(/,/g, "")) || 0; updateDocInputs({ annualPayment: v }); }}
-                    className="w-20 h-8 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none transition-colors"
-                    data-testid="input-annual-payment"
-                  />
-                </div>
-              </div>
-
               <div className="flex justify-between items-start gap-4">
                 <div className="flex-1 min-w-0">
                   <p className="text-sm text-black flex items-center gap-1">
                     Realization rate
-                    <Info className="w-3.5 h-3.5 inline-block text-[#999999] cursor-help" title="Accounts for RADV audit risk, payer reconciliation timing, partial adoption, and cases where documentation doesn't change final risk score. 40% means you capture 40 cents of every gross dollar estimated." />
+                    <Info className="w-3.5 h-3.5 inline-block text-[#999999] cursor-help" title="Accounts for RADV audit risk, payer reconciliation timing, partial adoption. 40% means you capture 40 cents of every gross dollar estimated." />
                   </p>
-                  <p className="text-xs text-[#888888] mt-0.5">40% is conservative. Mature programs with clean documentation typically realize 55{"–"}70%.</p>
+                  <p className="text-xs text-[#888888] mt-0.5">40% is conservative. Mature programs with clean documentation typically realize 55–70%.</p>
                 </div>
                 <div className="flex items-center gap-1 flex-shrink-0">
                   <input
@@ -276,10 +401,9 @@ function HccExpandedContent({
                   <span className="text-xs text-[#888888]">%</span>
                 </div>
               </div>
-
-              {hasCustomValues && (
+              {(docQualityInputs.avgHccs !== 0.5 || docQualityInputs.hccRealization !== 40) && (
                 <button
-                  onClick={() => updateDocInputs(HCC_DEFAULTS)}
+                  onClick={() => updateDocInputs({ avgHccs: 0.5, hccRealization: 40 })}
                   className="text-xs text-[#EA2C00] hover:underline mt-1"
                   data-testid="button-reset-hcc-defaults"
                 >
@@ -290,10 +414,6 @@ function HccExpandedContent({
           </motion.div>
         )}
       </AnimatePresence>
-
-      <p className="text-xs text-[#888888] mt-4 italic">
-        This is a planning estimate based on inputs you provided. Actual results depend on provider adoption, payer mix, and existing HCC program maturity. Validate with your coding and revenue cycle teams.
-      </p>
     </div>
   );
 }
@@ -320,10 +440,10 @@ export default function ExploreDocQuality({
 
   // Scenario percentages
   const wrvuScenarios: Record<ScenarioLevel, number> = { conservative: 2, typical: 5, aggressive: 9, custom: docQualityInputs.wrvuCustomPercent ?? 5 };
-  const hccScenarios: Record<ScenarioLevel, number> = { conservative: 6, typical: 10, aggressive: 15 };
-  const denialsScenarios: Record<ScenarioLevel, number> = { conservative: 25, typical: 50, aggressive: 75 };
-  const ipDrgProtectionScenarios: Record<ScenarioLevel, number> = { conservative: 15, typical: 20, aggressive: 25 };
-  const ipCdiReductionScenarios: Record<ScenarioLevel, number> = { conservative: 15, typical: 25, aggressive: 35 };
+  const hccScenarios: Record<ScenarioLevel, number> = { conservative: 6, typical: 10, aggressive: 15, custom: 10 };
+  const denialsScenarios: Record<ScenarioLevel, number> = { conservative: 25, typical: 50, aggressive: 75, custom: 50 };
+  const ipDrgProtectionScenarios: Record<ScenarioLevel, number> = { conservative: 15, typical: 20, aggressive: 25, custom: 20 };
+  const ipCdiReductionScenarios: Record<ScenarioLevel, number> = { conservative: 15, typical: 25, aggressive: 35, custom: 25 };
 
   // wRVU Calculation
   const wrvuLiftPercent = wrvuScenarios[docQualityInputs.wrvuScenario];
@@ -332,15 +452,15 @@ export default function ExploreDocQuality({
   const wrvuRevenueGross = totalAdditionalWrvus * docQualityInputs.conversionFactor;
   const wrvuRevenueNet = wrvuRevenueGross * (docQualityInputs.wrvuRealization / 100);
 
-  // HCC Calculation
+  // HCC Calculation (multi-plan)
   const recapturePercent = hccScenarios[docQualityInputs.hccScenario];
-  const totalPatients = state.numberOfProviders * docQualityInputs.panelSize;
-  const maPatients = totalPatients * (docQualityInputs.maPercent / 100);
-  const gapPatients = maPatients * (docQualityInputs.gapRate / 100);
-  const totalRecaptureOpportunity = gapPatients * docQualityInputs.avgHccs;
-  const hccsDocumented = totalRecaptureOpportunity * (recapturePercent / 100);
-  const hccGrossValue = hccsDocumented * docQualityInputs.rafImpact * docQualityInputs.annualPayment;
-  const hccRevenueNet = hccGrossValue * (docQualityInputs.hccRealization / 100);
+  let hccTotalGross = 0;
+  for (const plan of docQualityInputs.hccPlans) {
+    const planPts = state.numberOfProviders * docQualityInputs.panelSize * (plan.panelPct / 100);
+    const gapPts = planPts * (plan.gapRate / 100);
+    hccTotalGross += gapPts * (recapturePercent / 100) * docQualityInputs.avgHccs * plan.rafImpact * plan.annualPaymentPerRaf;
+  }
+  const hccRevenueNet = hccTotalGross * (docQualityInputs.hccRealization / 100);
 
   // Denials Calculation
   const preventionPercent = denialsScenarios[docQualityInputs.denialsScenario];
@@ -1879,11 +1999,6 @@ export default function ExploreDocQuality({
                   docQualityInputs={docQualityInputs}
                   updateDocInputs={updateDocInputs}
                   hccScenarios={hccScenarios}
-                  recapturePercent={recapturePercent}
-                  gapPatients={gapPatients}
-                  hccsDocumented={hccsDocumented}
-                  hccGrossValue={hccGrossValue}
-                  hccRevenueNet={hccRevenueNet}
                   formatNumber={formatNumber}
                   formatCurrency={formatCurrency}
                 />

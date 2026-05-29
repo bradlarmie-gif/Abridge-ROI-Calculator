@@ -119,11 +119,13 @@ export function computeRevenueBreakdown(state: ExploreState, _totalHoursSaved: n
   }
   if (dq.hccEnabled && state.careSetting === 'outpatient') {
     const recap = hccScenarios[dq.hccScenario] / 100;
-    const ma = state.numberOfProviders * dq.panelSize * (dq.maPercent / 100);
-    const gap = ma * (dq.gapRate / 100);
-    const recaptured = gap * recap;
-    const hccs = recaptured * dq.avgHccs;
-    result.hccCapture = Math.round(hccs * dq.rafImpact * dq.annualPayment * (dq.hccRealization / 100));
+    let totalGross = 0;
+    for (const plan of dq.hccPlans) {
+      const planPts = state.numberOfProviders * dq.panelSize * (plan.panelPct / 100);
+      const gapPts = planPts * (plan.gapRate / 100);
+      totalGross += gapPts * recap * dq.avgHccs * plan.rafImpact * plan.annualPaymentPerRaf;
+    }
+    result.hccCapture = Math.round(totalGross * (dq.hccRealization / 100));
   }
   if (dq.denialsEnabled && isOPorED) {
     const prev = denialsScenarios[dq.denialsScenario] / 100;

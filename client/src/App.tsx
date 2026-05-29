@@ -37,6 +37,8 @@ import { SwitchFlow } from "@/pages/switch";
 import LearnPath, { type LearnScreen } from "@/pages/LearnPath";
 import MeasureFlow from "@/pages/measure/MeasureFlow";
 import ForecastFlow from "@/pages/forecast/ForecastFlow";
+import ForecastModeSelector from "@/pages/forecast/ForecastModeSelector";
+import PricingComparisonFlow from "@/pages/forecast/PricingComparisonFlow";
 import { ExploreFlow, type ExploreState, type ExploreCareSetting, type ExplorePhase } from "@/pages/explore";
 import ExploreIntakeForm from "@/pages/intake/ExploreIntakeForm";
 import MeasureDataRequest from "@/pages/intake/MeasureDataRequest";
@@ -51,7 +53,7 @@ import { DEFAULT_PROFORMA_CONFIG } from "@/pages/proforma/proformaTypes";
 import { type CareSettingType } from "@/lib/SETTING_CONFIG";
 import { type RoiInputs } from "@/lib/roi-types";
 
-type AppView = "splash" | "journey" | "explore" | "baseline-setup" | "model-builder" | "investment" | "calculator" | "expand" | "switch" | "learn" | "measure" | "forecast" | "proforma-hub" | "proforma-view" | "explore-intake" | "measure-data-request" | "explore-intake-receipt" | "measure-data-receipt";
+type AppView = "splash" | "journey" | "explore" | "baseline-setup" | "model-builder" | "investment" | "calculator" | "expand" | "switch" | "learn" | "measure" | "forecast" | "forecast-mode" | "forecast-pricing" | "proforma-hub" | "proforma-view" | "explore-intake" | "measure-data-request" | "explore-intake-receipt" | "measure-data-receipt";
 
 interface SelectionState {
   selectedSettings: CareSettingType[];
@@ -281,6 +283,7 @@ export default function App() {
   const [proformaConfig, setProformaConfig] = useState<ProformaConfig>(() => ({ ...DEFAULT_PROFORMA_CONFIG }));
   const [proformaAddCareSetting, setProformaAddCareSetting] = useState<ExploreCareSetting | undefined>(undefined);
   const [proformaEditExploreState, setProformaEditExploreState] = useState<ExploreState | undefined>(undefined);
+  const [measureFromForecastMode, setMeasureFromForecastMode] = useState(false);
 
   const handleAddToProforma = useCallback((snapshot: ProformaSettingSnapshot) => {
     setProformaSettings(prev => {
@@ -626,7 +629,7 @@ export default function App() {
                 }}
                 onSelectExpand={() => navigateTo("measure")}
                 onSelectSwitch={() => navigateTo("switch")}
-                onSelectForecast={() => navigateTo("forecast")}
+                onSelectForecast={() => navigateTo("forecast-mode")}
                 onSelectLearn={() => {
                   setLearnInitialScreen(undefined);
                   navigateTo("learn");
@@ -729,11 +732,31 @@ export default function App() {
             )}
 
             {currentView === "measure" && (
-              <MeasureFlow onBackToJourney={() => navigateTo("journey")} />
+              <MeasureFlow onBackToJourney={() => {
+                const dest = measureFromForecastMode ? "forecast-mode" : "journey";
+                setMeasureFromForecastMode(false);
+                navigateTo(dest);
+              }} />
             )}
 
             {currentView === "forecast" && (
-              <ForecastFlow onBackToJourney={() => navigateTo("journey")} />
+              <ForecastFlow onBackToJourney={() => navigateTo("forecast-mode")} />
+            )}
+
+            {currentView === "forecast-mode" && (
+              <ForecastModeSelector
+                onSelectNewDeal={() => navigateTo("proforma-hub")}
+                onSelectPricingComparison={() => navigateTo("forecast-pricing")}
+                onSelectPartnerModel={() => { setMeasureFromForecastMode(true); navigateTo("measure"); }}
+                onHome={() => navigateTo("journey")}
+              />
+            )}
+
+            {currentView === "forecast-pricing" && (
+              <PricingComparisonFlow
+                onBack={() => navigateTo("forecast-mode")}
+                onHome={() => navigateTo("journey")}
+              />
             )}
 
             {currentView === "measure-data-request" && (

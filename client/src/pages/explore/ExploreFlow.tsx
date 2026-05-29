@@ -363,6 +363,16 @@ export interface TimeDriverInputs {
   ipNoteCompletenessExpanded: boolean;
 }
 
+export interface HccPlan {
+  id: string;
+  planType: 'medicare_advantage' | 'aca_marketplace' | 'medicaid_mco' | 'custom';
+  name: string;
+  panelPct: number;
+  gapRate: number;
+  rafImpact: number;
+  annualPaymentPerRaf: number;
+}
+
 // Documentation Quality inputs
 export interface DocQualityInputs {
   // wRVU
@@ -372,16 +382,13 @@ export interface DocQualityInputs {
   currentWrvu: number;
   conversionFactor: number;
   wrvuRealization: number;
-  
+
   // HCC
   hccEnabled: boolean;
   hccScenario: 'conservative' | 'typical' | 'aggressive';
   panelSize: number;
-  maPercent: number;
-  gapRate: number;
+  hccPlans: HccPlan[];
   avgHccs: number;
-  rafImpact: number;
-  annualPayment: number;
   hccRealization: number;
   
   // Denials
@@ -810,11 +817,16 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     hccEnabled: false,
     hccScenario: 'typical',
     panelSize: 1500,
-    maPercent: 30,
-    gapRate: 12,
+    hccPlans: [{
+      id: 'plan-ma',
+      planType: 'medicare_advantage' as const,
+      name: 'Medicare Advantage',
+      panelPct: 30,
+      gapRate: 70,
+      rafImpact: 0.15,
+      annualPaymentPerRaf: 10000,
+    }],
     avgHccs: 0.5,
-    rafImpact: 0.15,
-    annualPayment: 10000,
     hccRealization: 40,
     denialsEnabled: false,
     denialsScenario: 'typical',
@@ -1240,13 +1252,14 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
 
     // HCC
     if (docQualityInputs.hccEnabled) {
-      const recapturePercent = hccScenarios[docQualityInputs.hccScenario];
-      const maPatients = state.numberOfProviders * docQualityInputs.panelSize * (docQualityInputs.maPercent / 100);
-      const gapPatients = maPatients * (docQualityInputs.gapRate / 100);
-      const recaptured = gapPatients * (recapturePercent / 100);
-      const hccsRecaptured = recaptured * docQualityInputs.avgHccs;
-      const rafValue = hccsRecaptured * docQualityInputs.rafImpact * docQualityInputs.annualPayment;
-      total += rafValue * (docQualityInputs.hccRealization / 100);
+      const recap = hccScenarios[docQualityInputs.hccScenario] / 100;
+      let totalGross = 0;
+      for (const plan of docQualityInputs.hccPlans) {
+        const planPatients = state.numberOfProviders * docQualityInputs.panelSize * (plan.panelPct / 100);
+        const gapPts = planPatients * (plan.gapRate / 100);
+        totalGross += gapPts * recap * docQualityInputs.avgHccs * plan.rafImpact * plan.annualPaymentPerRaf;
+      }
+      total += totalGross * (docQualityInputs.hccRealization / 100);
     }
 
     // Denials (not for inpatient - included in DRG Accuracy)

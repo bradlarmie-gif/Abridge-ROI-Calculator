@@ -225,12 +225,14 @@ export default function ExploreModel({
     const isOutpatient = state.careSetting === 'outpatient';
     if (!isOutpatient || !docQualityInputs.hccEnabled) return 0;
     const recapturePercent = hccScenarios[docQualityInputs.hccScenario];
-    const maPatients = state.numberOfProviders * docQualityInputs.panelSize * (docQualityInputs.maPercent / 100);
-    const gapPatients = maPatients * (docQualityInputs.gapRate / 100);
-    const recaptured = gapPatients * (recapturePercent / 100);
-    const hccsRecaptured = recaptured * docQualityInputs.avgHccs;
-    const rafValue = hccsRecaptured * docQualityInputs.rafImpact * docQualityInputs.annualPayment;
-    return Math.round(rafValue * (docQualityInputs.hccRealization / 100));
+    let totalGross = 0;
+    for (const plan of docQualityInputs.hccPlans) {
+      const planPatients = state.numberOfProviders * docQualityInputs.panelSize * (plan.panelPct / 100);
+      const gapPatients = planPatients * (plan.gapRate / 100);
+      const recaptured = gapPatients * (recapturePercent / 100);
+      totalGross += recaptured * docQualityInputs.avgHccs * plan.rafImpact * plan.annualPaymentPerRaf;
+    }
+    return Math.round(totalGross * (docQualityInputs.hccRealization / 100));
   }, [state.numberOfProviders, docQualityInputs]);
 
   const denialsValue = useMemo(() => {
@@ -786,8 +788,13 @@ export default function ExploreModel({
                 return `Across ${fmt(encounters)} annual encounters, notes that fully reflect visit complexity — MDM detail, conditions addressed, time-based billing eligibility — recover ${fmtCur(value)} in E/M coding accuracy annually.`;
               case 'edEmLevel':
                 return `At ${fmt(encounters)} annual ED visits, documentation that captures clinical complexity during high-volume periods — when notes most commonly understate the encounter — recovers ${fmtCur(value)} annually in E/M level accuracy.`;
-              case 'hccCapture':
-                return `Across ${fmt(providers)} providers with a Medicare Advantage panel, conditions documented during the visit but omitted from risk adjustment create RAF score gaps. Closing those gaps generates ${fmtCur(value)} annually.`;
+              case 'hccCapture': {
+                const panelSize = docQualityInputs.panelSize;
+                const planDescriptions = docQualityInputs.hccPlans
+                  .map((p: { name: string; panelPct: number; rafImpact: number; annualPaymentPerRaf: number }) => `${p.name} (${p.panelPct}% of panel, ${p.rafImpact} RAF × $${p.annualPaymentPerRaf}/RAF)`)
+                  .join(', ');
+                return `${fmt(providers)} providers across ${fmt(panelSize)}-patient panels. Risk adjustment plans: ${planDescriptions}. This driver models ${fmtCur(value)} in annual HCC capture value.`;
+              }
               case 'denialPrevention':
                 return `Across ${fmt(encounters)} annual claims, documentation gaps that trigger unappealable medical-necessity denials represent a recoverable loss. Capturing clinical reasoning at the point of care prevents ${fmtCur(value)} in documentation-related denials annually.`;
               case 'drgAccuracy':
