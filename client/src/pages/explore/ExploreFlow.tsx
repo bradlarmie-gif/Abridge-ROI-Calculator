@@ -367,10 +367,11 @@ export interface HccPlan {
   id: string;
   planType: 'medicare_advantage' | 'aca_marketplace' | 'medicaid_mco' | 'custom';
   name: string;
-  panelPct: number;
+  panelSize: number;           // patients on this plan per provider (absolute)
   gapRate: number;
   rafImpact: number;
   annualPaymentPerRaf: number;
+  recaptureScenario: 'conservative' | 'typical' | 'aggressive';
 }
 
 // Documentation Quality inputs
@@ -385,8 +386,6 @@ export interface DocQualityInputs {
 
   // HCC
   hccEnabled: boolean;
-  hccScenario: 'conservative' | 'typical' | 'aggressive';
-  panelSize: number;
   hccPlans: HccPlan[];
   avgHccs: number;
   hccRealization: number;
@@ -815,16 +814,15 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     conversionFactor: 33,
     wrvuRealization: 75,
     hccEnabled: false,
-    hccScenario: 'typical',
-    panelSize: 1500,
     hccPlans: [{
       id: 'plan-ma',
       planType: 'medicare_advantage' as const,
       name: 'Medicare Advantage',
-      panelPct: 30,
+      panelSize: 300,
       gapRate: 70,
       rafImpact: 0.15,
       annualPaymentPerRaf: 10000,
+      recaptureScenario: 'typical' as const,
     }],
     avgHccs: 0.5,
     hccRealization: 40,
@@ -1252,11 +1250,11 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
 
     // HCC
     if (docQualityInputs.hccEnabled) {
-      const recap = hccScenarios[docQualityInputs.hccScenario] / 100;
       let totalGross = 0;
       for (const plan of docQualityInputs.hccPlans) {
-        const planPatients = state.numberOfProviders * docQualityInputs.panelSize * (plan.panelPct / 100);
+        const planPatients = state.numberOfProviders * plan.panelSize;
         const gapPts = planPatients * (plan.gapRate / 100);
+        const recap = (hccScenarios[plan.recaptureScenario] ?? 10) / 100;
         totalGross += gapPts * recap * docQualityInputs.avgHccs * plan.rafImpact * plan.annualPaymentPerRaf;
       }
       total += totalGross * (docQualityInputs.hccRealization / 100);

@@ -52,11 +52,11 @@ export function recomputeDriverFromExploreState(driverId: string, state: Explore
     }
     case 'hcc': {
       const pcts: Record<string, number> = { conservative: 6, typical: 10, aggressive: 15 };
-      const pct = pcts[dq.hccScenario] ?? 10;
       let totalGross = 0;
       for (const plan of dq.hccPlans) {
-        const planPts = numberOfProviders * dq.panelSize * (plan.panelPct / 100);
-        const gapPts = planPts * (plan.gapRate / 100) * (pct / 100) * dq.avgHccs;
+        const planPts = numberOfProviders * plan.panelSize;
+        const pct = (pcts[plan.recaptureScenario] ?? 10) / 100;
+        const gapPts = planPts * (plan.gapRate / 100) * pct * dq.avgHccs;
         totalGross += gapPts * plan.rafImpact * plan.annualPaymentPerRaf;
       }
       return Math.round(totalGross * (dq.hccRealization / 100));
@@ -261,41 +261,17 @@ export function ModelAssumptionRow({
         );
       }
       case 'hcc': {
-        const customSub = useLocalCustom && driver.id === 'hcc' ? `${localCustomPct}%` : 'set %';
-        const isHccCustom = useLocalCustom && driver.id === 'hcc';
-        const activeScenario = isHccCustom ? 'custom' : dq.hccScenario;
-        const opts = [
-          { key: 'conservative', label: 'Conservative', sub: '6%' },
-          { key: 'typical', label: 'Typical', sub: '10%' },
-          { key: 'aggressive', label: 'Optimistic', sub: '15%' },
-          { key: 'custom', label: 'Custom', sub: customSub },
-        ];
-        const handleHccChange = (k: string) => {
-          if (k === 'custom') { setUseLocalCustom(true); return; }
-          setUseLocalCustom(false);
-          updateDQ({ hccScenario: k });
-        };
-        const handleHccCustomPct = (v: number) => {
-          setLocalCustomPct(v);
-          let totalGross = 0;
-          for (const plan of dq!.hccPlans) {
-            const planPts = es.numberOfProviders * dq!.panelSize * (plan.panelPct / 100);
-            const gapPts = planPts * (plan.gapRate / 100) * (v / 100) * dq!.avgHccs;
-            totalGross += gapPts * plan.rafImpact * plan.annualPaymentPerRaf;
-          }
-          const newVal = Math.round(totalGross * (dq!.hccRealization / 100));
-          onUpdate(settingId, driver.id, newVal, es);
-        };
+        const scenarioLabels: Record<string, string> = { conservative: 'Conservative (6%)', typical: 'Typical (10%)', aggressive: 'Optimistic (15%)' };
         return (
           <div className="mt-2">
-            <p className="text-[9px] text-neutral-400 uppercase tracking-wider">HCC Recapture Scenario</p>
-            <ScenarioPills opts={opts} value={activeScenario} onChange={handleHccChange} />
-            {isHccCustom && (
-              <div className="mt-2.5">
-                <p className="text-[9px] text-neutral-400 uppercase tracking-wider mb-1.5">Custom Recapture</p>
-                <NumInput value={localCustomPct} onChange={handleHccCustomPct} suffix="%" />
+            <p className="text-[9px] text-neutral-400 uppercase tracking-wider mb-1.5">Recapture — Per Plan</p>
+            {dq.hccPlans.map((plan: { id: string; name: string; recaptureScenario: string }) => (
+              <div key={plan.id} className="flex justify-between items-center text-[10px] text-neutral-500 mb-0.5">
+                <span>{plan.name}</span>
+                <span className="text-neutral-400">{scenarioLabels[plan.recaptureScenario] ?? plan.recaptureScenario}</span>
               </div>
-            )}
+            ))}
+            <p className="text-[9px] text-neutral-400 mt-1.5">Adjust per-plan in the HCC driver.</p>
           </div>
         );
       }
