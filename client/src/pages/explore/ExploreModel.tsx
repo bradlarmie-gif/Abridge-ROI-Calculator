@@ -226,7 +226,7 @@ export default function ExploreModel({
     if (!isOutpatient || !docQualityInputs.hccEnabled) return 0;
     let totalGross = 0;
     for (const plan of docQualityInputs.hccPlans) {
-      const planPatients = state.numberOfProviders * plan.panelSize;
+      const planPatients = state.numberOfProviders * (docQualityInputs.panelSize * plan.planPct / 100);
       const gapPatients = planPatients * (plan.gapRate / 100);
       const recapturePct = (hccScenarios[plan.recaptureScenario] ?? 10) / 100;
       const recaptured = gapPatients * recapturePct;
@@ -790,7 +790,7 @@ export default function ExploreModel({
                 return `At ${fmt(encounters)} annual ED visits, documentation that captures clinical complexity during high-volume periods — when notes most commonly understate the encounter — recovers ${fmtCur(value)} annually in E/M level accuracy.`;
               case 'hccCapture': {
                 const planDescriptions = docQualityInputs.hccPlans
-                  .map((p: { name: string; panelSize: number; rafImpact: number; annualPaymentPerRaf: number; recaptureScenario: string }) => `${p.name} (${p.panelSize} pts/prov, ${p.rafImpact} RAF × $${p.annualPaymentPerRaf}/RAF)`)
+                  .map((p: { name: string; planPct: number; rafImpact: number; annualPaymentPerRaf: number; recaptureScenario: string }) => `${p.name} (${p.planPct}% of ${docQualityInputs.panelSize} panel, ${p.rafImpact} RAF × $${p.annualPaymentPerRaf}/RAF)`)
                   .join(', ');
                 return `${fmt(providers)} providers. Risk adjustment plans: ${planDescriptions}. This driver models ${fmtCur(value)} in annual HCC capture value.`;
               }

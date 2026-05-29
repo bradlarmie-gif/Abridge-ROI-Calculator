@@ -7,10 +7,10 @@ import type { HccPlan } from "@/pages/explore/ExploreFlow";
 const HCC_SCENARIOS: Record<string, number> = { conservative: 6, typical: 10, aggressive: 15 };
 
 const PLAN_TYPE_DEFAULTS: Record<HccPlan['planType'], Omit<HccPlan, 'id'>> = {
-  medicare_advantage: { planType: 'medicare_advantage', name: 'Medicare Advantage', panelSize: 300, gapRate: 70, rafImpact: 0.15, annualPaymentPerRaf: 10000, recaptureScenario: 'typical' },
-  aca_marketplace:    { planType: 'aca_marketplace',    name: 'ACA Marketplace',    panelSize: 150, gapRate: 65, rafImpact: 0.10, annualPaymentPerRaf: 4000,  recaptureScenario: 'typical' },
-  medicaid_mco:       { planType: 'medicaid_mco',       name: 'Medicaid MCO',       panelSize: 200, gapRate: 60, rafImpact: 0.05, annualPaymentPerRaf: 5000,  recaptureScenario: 'typical' },
-  custom:             { planType: 'custom',              name: 'Custom Plan',        panelSize: 100, gapRate: 65, rafImpact: 0.12, annualPaymentPerRaf: 5000,  recaptureScenario: 'typical' },
+  medicare_advantage: { planType: 'medicare_advantage', name: 'Medicare Advantage', planPct: 30, gapRate: 70, rafImpact: 0.15, annualPaymentPerRaf: 10000, recaptureScenario: 'typical' },
+  aca_marketplace:    { planType: 'aca_marketplace',    name: 'ACA Marketplace',    planPct: 15, gapRate: 65, rafImpact: 0.10, annualPaymentPerRaf: 4000,  recaptureScenario: 'typical' },
+  medicaid_mco:       { planType: 'medicaid_mco',       name: 'Medicaid MCO',       planPct: 20, gapRate: 60, rafImpact: 0.05, annualPaymentPerRaf: 5000,  recaptureScenario: 'typical' },
+  custom:             { planType: 'custom',              name: 'Custom Plan',        planPct: 10, gapRate: 65, rafImpact: 0.12, annualPaymentPerRaf: 5000,  recaptureScenario: 'typical' },
 };
 
 const RAF_HINTS: Record<HccPlan['planType'], string> = {
@@ -43,7 +43,7 @@ export default function HccCaptureCalc({ state, updateDocQualityInputs }: Props)
   const plans = docQualityInputs.hccPlans;
 
   const planCalcs = plans.map(plan => {
-    const planPatients = state.numberOfProviders * plan.panelSize;
+    const planPatients = state.numberOfProviders * (docQualityInputs.panelSize * plan.planPct / 100);
     const gapPatients = planPatients * (plan.gapRate / 100);
     const recapturePct = (HCC_SCENARIOS[plan.recaptureScenario] ?? 10) / 100;
     const recaptured = gapPatients * recapturePct;
@@ -89,6 +89,26 @@ export default function HccCaptureCalc({ state, updateDocQualityInputs }: Props)
 
       <div className="h-px bg-[#E5E5E5] my-4" />
 
+      {/* Global panel size */}
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <p className="text-sm font-medium text-black">Panel size / provider</p>
+          <p className="text-xs text-[#888888] mt-0.5">Active patients per provider. Primary care typically 1,200–2,000.</p>
+        </div>
+        <div className="flex items-center gap-1 flex-shrink-0">
+          <input
+            type="text"
+            inputMode="numeric"
+            value={docQualityInputs.panelSize ? docQualityInputs.panelSize.toLocaleString("en-US") : ""}
+            onChange={(e) => { const v = parseFloat(e.target.value.replace(/,/g, "")) || 0; updateDocQualityInputs({ panelSize: v }); }}
+            className="w-20 h-8 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none transition-colors"
+          />
+          <span className="text-xs text-[#888888]">pts</span>
+        </div>
+      </div>
+
+      <div className="h-px bg-[#E5E5E5] mb-4" />
+
       {/* Plan cards */}
       <div className="space-y-3">
         {plans.map((plan, idx) => {
@@ -130,20 +150,20 @@ export default function HccCaptureCalc({ state, updateDocQualityInputs }: Props)
                 )}
               </div>
 
-              {/* Row 1: patients/provider + gap rate */}
+              {/* Row 1: % of panel + gap rate */}
               <div className="grid grid-cols-2 gap-3 mb-3">
                 <div>
-                  <p className="text-xs text-[#888888] mb-1">Patients / provider</p>
+                  <p className="text-xs text-[#888888] mb-1">% of panel on this plan</p>
                   <div className="flex items-center gap-0.5">
                     <input
-                      type="text"
-                      inputMode="numeric"
-                      value={plan.panelSize ? plan.panelSize.toLocaleString("en-US") : ""}
-                      onChange={(e) => { const v = parseFloat(e.target.value.replace(/,/g, "")) || 0; updatePlan(plan.id, { panelSize: v }); }}
-                      className="w-20 h-8 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none transition-colors"
+                      type="number"
+                      value={plan.planPct}
+                      onChange={(e) => updatePlan(plan.id, { planPct: parseFloat(e.target.value) || 0 })}
+                      className="w-16 h-8 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none transition-colors"
                     />
-                    <span className="text-xs text-[#888888]">pts</span>
+                    <span className="text-xs text-[#888888]">%</span>
                   </div>
+                  <p className="text-[10px] text-[#999999] mt-0.5">= {Math.round(docQualityInputs.panelSize * plan.planPct / 100).toLocaleString()} pts/prov</p>
                 </div>
                 <div>
                   <p className="text-xs text-[#888888] mb-1">Gap rate</p>
@@ -219,7 +239,7 @@ export default function HccCaptureCalc({ state, updateDocQualityInputs }: Props)
               <div className="bg-[#F5F0EB] rounded-lg px-3 py-2">
                 <div className="flex justify-between items-center text-xs">
                   <span className="text-[#666666]">
-                    {fmtN(state.numberOfProviders)} × {fmtN(plan.panelSize)} × {plan.gapRate}% gap × {recapturePct}% recapture
+                    {fmtN(state.numberOfProviders)} × {plan.planPct}% of {fmtN(docQualityInputs.panelSize)} × {plan.gapRate}% gap × {recapturePct}% recapture
                   </span>
                   <span className="font-semibold text-black ml-2 flex-shrink-0">= {fmtN(Math.round(calc.hccs))} HCCs</span>
                 </div>
