@@ -47,7 +47,19 @@ export interface VolumeInputs {
 
 export interface DealYearResult {
   year: number;
-  annualCost: number;
+  baseCost: number;       // cost at exactly provisioned volume
+  annualCost: number;     // same as baseCost (alias kept for compat)
+  platformFeePortion: number; // for platform model: the flat fee component
+  volumeCostPortion: number;  // the volume × rate component
+}
+
+export interface UsageScenarioResult {
+  label: string;
+  utilizationPct: number;   // e.g. 75, 100, 125
+  baseCost: number;         // year-1 base (provisioned)
+  overageCost: number;      // extra charges if over provisioned
+  totalCost: number;        // baseCost + overageCost
+  overageUnits: number;     // units over provisioned (0 if under)
 }
 
 export interface DealResult {
@@ -82,23 +94,36 @@ export function computeDealResult(
     const cfg = deal.yearConfigs[y];
     const provisioned = cfg?.provisionedVolume ?? 0;
 
-    let annualCost = 0;
+    let baseCost = 0;
+    let platformFeePortion = 0;
+    let volumeCostPortion = 0;
     switch (deal.model) {
       case "perProviderMonth":
-        annualCost = provisioned * escalatedUnitPrice * 12;
+        volumeCostPortion = provisioned * escalatedUnitPrice * 12;
+        baseCost = volumeCostPortion;
         break;
       case "perEncounterAnnual":
-        annualCost = provisioned * escalatedUnitPrice;
+        volumeCostPortion = provisioned * escalatedUnitPrice;
+        baseCost = volumeCostPortion;
         break;
       case "enterpriseFlat":
-        annualCost = escalatedUnitPrice; // volume doesn't factor in
+        baseCost = escalatedUnitPrice;
+        volumeCostPortion = baseCost;
         break;
       case "platform":
-        annualCost = escalatedPlatformFee + provisioned * escalatedUnitPrice;
+        platformFeePortion = escalatedPlatformFee;
+        volumeCostPortion = provisioned * escalatedUnitPrice;
+        baseCost = platformFeePortion + volumeCostPortion;
         break;
     }
 
-    years.push({ year: y + 1, annualCost: Math.round(annualCost) });
+    years.push({
+      year: y + 1,
+      baseCost: Math.round(baseCost),
+      annualCost: Math.round(baseCost),
+      platformFeePortion: Math.round(platformFeePortion),
+      volumeCostPortion: Math.round(volumeCostPortion),
+    });
   }
 
   const totalContractCost = years.reduce((s, r) => s + r.annualCost, 0);
@@ -190,6 +215,68 @@ export function makeDefaultDeal(label: string, id: string, defaultVolume = 0): D
     overageModel: "hardCap",
     overageUnitPrice: 0,
   };
+}
+
+/**
+ * Returns 3 usage scenarios for a deal based on Year 1 provisioned volume:
+ * 75% utilization (under), 100% (at cap), 125% (over provisioned — overage kicks in).
+ */
+export function computeUsageScenarios(deal: DealOption): UsageScenarioResult[] {
+  if (deal.model === "enterpriseFlat") return [];
+
+  const y1Provisioned = deal.yearConfigs[0]?.provisionedVolume ?? 0;
+  const escalatedUnitPrice = deal.unitPrice; // year 1, no escalation
+  const escalatedPlatformFee = deal.platformFee;
+
+  const scenarios = [
+    { label: "Conservative", utilizationPct: 75 },
+    { label: "Typical", utilizationPct: 100 },
+    { label: "Over Provisioned", utilizationPct: 125 },
+  ];
+
+  return scenarios.map(({ label, utilizationPct }) => {
+    const actualVolume = y1Provisioned * (utilizationPct / 100);
+    const overageUnits = Math.max(0, actualVolume - y1Provisioned);
+
+    let baseCost = 0;
+    switch (deal.model) {
+      case "perProviderMonth":
+        baseCost = y1Provisioned * escalatedUnitPrice * 12;
+        break;
+      case "perEncounterAnnual":
+        baseCost = y1Provisioned * escalatedUnitPrice;
+        break;
+      case "platform":
+        baseCost = escalatedPlatformFee + y1Provisioned * escalatedUnitPrice;
+        break;
+    }
+
+    let overageCost = 0;
+    if (overageUnits > 0) {
+      switch (deal.overageModel) {
+        case "billedPerUnit": {
+          const rate = deal.overageUnitPrice > 0 ? deal.overageUnitPrice : escalatedUnitPrice;
+          overageCost = deal.model === "perProviderMonth"
+            ? overageUnits * rate * 12
+            : overageUnits * rate;
+          break;
+        }
+        case "hardCap":
+        case "included":
+          overageCost = 0;
+          break;
+      }
+    }
+
+    return {
+      label,
+      utilizationPct,
+      baseCost: Math.round(baseCost),
+      overageCost: Math.round(overageCost),
+      totalCost: Math.round(baseCost + overageCost),
+      overageUnits: Math.round(overageUnits),
+    };
+  });
 }
 
 /** Ensures yearConfigs has exactly `years` entries, filling new ones with `defaultVolume`. */
