@@ -3,6 +3,7 @@ import { ArrowRight, BarChart2, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
+import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import {
@@ -1325,10 +1326,9 @@ export default function MeasureAllocate({
                     <div className="flex items-center justify-between mb-2">
                       <label className="text-sm text-[#666666]">Conversion factor ($/wRVU)</label>
                     </div>
-                    <Input
-                      type="number"
+                    <FormattedNumberInput
                       value={assumptions.conversionFactor}
-                      onChange={e => updateAssumption('conversionFactor', Number(e.target.value) || 0)}
+                      onChange={v => updateAssumption('conversionFactor', v)}
                       className="h-9 bg-white border-[#E5E5E5] text-sm"
                       data-testid="input-conversion-factor"
                     />
@@ -1385,10 +1385,9 @@ export default function MeasureAllocate({
                     <div className="flex items-center justify-between mb-2">
                       <label className="text-sm text-[#666666]">OT premium rate ($/hr)</label>
                     </div>
-                    <Input
-                      type="number"
+                    <FormattedNumberInput
                       value={assumptions.otPremiumRate}
-                      onChange={e => updateAssumption('otPremiumRate', Number(e.target.value) || 0)}
+                      onChange={v => updateAssumption('otPremiumRate', v)}
                       className="h-9 bg-white border-[#E5E5E5] text-sm"
                       data-testid="input-ot-rate"
                     />
@@ -1399,10 +1398,9 @@ export default function MeasureAllocate({
                       <div className="flex items-center justify-between mb-2">
                         <label className="text-sm text-[#666666]">ED revenue per visit</label>
                       </div>
-                      <Input
-                        type="number"
+                      <FormattedNumberInput
                         value={assumptions.edRevenuePerVisit}
-                        onChange={e => updateAssumption('edRevenuePerVisit', Number(e.target.value) || 0)}
+                        onChange={v => updateAssumption('edRevenuePerVisit', v)}
                         className="h-9 bg-white border-[#E5E5E5] text-sm"
                         data-testid="input-ed-revenue"
                       />
@@ -1414,10 +1412,9 @@ export default function MeasureAllocate({
                       <div className="flex items-center justify-between mb-2">
                         <label className="text-sm text-[#666666]">DRG base rate ($)</label>
                       </div>
-                      <Input
-                        type="number"
+                      <FormattedNumberInput
                         value={assumptions.drgBaseRate}
-                        onChange={e => updateAssumption('drgBaseRate', Number(e.target.value) || 0)}
+                        onChange={v => updateAssumption('drgBaseRate', v)}
                         className="h-9 bg-white border-[#E5E5E5] text-sm"
                         data-testid="input-drg-rate"
                       />
@@ -1429,10 +1426,9 @@ export default function MeasureAllocate({
                       <label className="text-xs font-medium text-[#666666] block mb-1">Cost per bed day</label>
                       <div className="flex items-center gap-2">
                         <span className="text-sm text-[#999999]">$</span>
-                        <Input
-                          type="number"
+                        <FormattedNumberInput
                           value={assumptions.costPerBedDay}
-                          onChange={e => updateAssumption('costPerBedDay', Number(e.target.value) || 0)}
+                          onChange={v => updateAssumption('costPerBedDay', v)}
                           className="h-9 w-28 text-sm"
                           data-testid="input-cost-per-bed-day"
                         />
@@ -1446,10 +1442,9 @@ export default function MeasureAllocate({
                       <label className="text-xs font-medium text-[#666666] block mb-1">Revenue per visit ($)</label>
                       <div className="flex items-center gap-2">
                         <span className="text-sm text-[#999999]">$</span>
-                        <Input
-                          type="number"
+                        <FormattedNumberInput
                           value={assumptions.revenuePerVisit}
-                          onChange={e => updateAssumption('revenuePerVisit', Number(e.target.value) || 0)}
+                          onChange={v => updateAssumption('revenuePerVisit', v)}
                           className="h-9 w-28 text-sm"
                           data-testid="input-revenue-per-visit"
                         />

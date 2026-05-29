@@ -97,11 +97,12 @@ function NumberInput({
     <div className={`flex items-center bg-white border border-[#E8E2DA] rounded-lg px-3 h-10 gap-1 focus-within:border-[#1A1A1A] transition-colors ${className ?? ""}`}>
       {prefix && <span className="text-[#8C7E6E] text-sm flex-shrink-0">{prefix}</span>}
       <input
-        type="number"
-        value={value === 0 ? "" : value}
-        onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
+        type="text"
+        inputMode="numeric"
+        value={value === 0 ? "" : value.toLocaleString("en-US")}
+        onChange={(e) => onChange(parseFloat(e.target.value.replace(/,/g, "")) || 0)}
         placeholder={placeholder ?? "0"}
-        className="flex-1 min-w-0 bg-transparent text-sm text-[#1A1A1A] outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+        className="flex-1 min-w-0 bg-transparent text-sm text-[#1A1A1A] outline-none"
       />
       {suffix && <span className="text-[#8C7E6E] text-xs flex-shrink-0 whitespace-nowrap">{suffix}</span>}
     </div>
@@ -200,8 +201,10 @@ function DealCard({
                 <p className="text-xs text-[#8C7E6E] mb-1">Platform Fee</p>
                 <div className="flex items-center bg-white border border-[#E8E2DA] rounded-lg focus-within:border-[#EA2C00] transition-colors overflow-hidden">
                   <span className="pl-3 text-sm text-[#A39888]">$</span>
-                  <input type="number" value={deal.platformFee || ""} placeholder="0"
-                    onChange={(e) => onUpdate({ platformFee: Number(e.target.value) || 0 })}
+                  <input type="text" inputMode="numeric"
+                    value={deal.platformFee ? deal.platformFee.toLocaleString("en-US") : ""}
+                    placeholder="0"
+                    onChange={(e) => onUpdate({ platformFee: parseFloat(e.target.value.replace(/,/g, "")) || 0 })}
                     className="flex-1 px-2 py-2.5 text-sm bg-transparent outline-none"
                   />
                   <span className="pr-2 text-xs text-[#A39888]">/yr</span>
@@ -211,8 +214,10 @@ function DealCard({
                 <p className="text-xs text-[#8C7E6E] mb-1">Per Encounter</p>
                 <div className="flex items-center bg-white border border-[#E8E2DA] rounded-lg focus-within:border-[#EA2C00] transition-colors overflow-hidden">
                   <span className="pl-3 text-sm text-[#A39888]">$</span>
-                  <input type="number" value={deal.unitPrice || ""} placeholder="0"
-                    onChange={(e) => onUpdate({ unitPrice: Number(e.target.value) || 0 })}
+                  <input type="text" inputMode="numeric"
+                    value={deal.unitPrice ? deal.unitPrice.toLocaleString("en-US") : ""}
+                    placeholder="0"
+                    onChange={(e) => onUpdate({ unitPrice: parseFloat(e.target.value.replace(/,/g, "")) || 0 })}
                     className="flex-1 px-2 py-2.5 text-sm bg-transparent outline-none"
                   />
                   <span className="pr-2 text-xs text-[#A39888]">/enc</span>
@@ -272,11 +277,12 @@ function DealCard({
                   <span className="text-xs text-[#8C7E6E] w-11 flex-shrink-0">Yr {yr.year}</span>
                   {showVolumeInput && (
                     <input
-                      type="number"
-                      value={deal.yearConfigs[idx]?.provisionedVolume === 0 ? "" : deal.yearConfigs[idx]?.provisionedVolume}
+                      type="text"
+                      inputMode="numeric"
+                      value={(deal.yearConfigs[idx]?.provisionedVolume ?? 0) === 0 ? "" : (deal.yearConfigs[idx]?.provisionedVolume ?? 0).toLocaleString("en-US")}
                       onChange={(e) => {
                         const newConfigs = [...deal.yearConfigs];
-                        newConfigs[idx] = { provisionedVolume: Number(e.target.value) || 0 };
+                        newConfigs[idx] = { provisionedVolume: parseFloat(e.target.value.replace(/,/g, "")) || 0 };
                         onUpdate({ yearConfigs: newConfigs });
                       }}
                       placeholder="0"
@@ -340,9 +346,9 @@ function DealCard({
                 <span className="text-xs text-[#8C7E6E] flex-shrink-0">Overage rate</span>
                 <div className="flex items-center bg-white border border-[#E8E2DA] rounded-lg focus-within:border-[#EA2C00] transition-colors overflow-hidden">
                   <span className="pl-2.5 text-xs text-[#A39888]">$</span>
-                  <input type="number"
-                    value={deal.overageUnitPrice === 0 ? "" : deal.overageUnitPrice}
-                    onChange={(e) => onUpdate({ overageUnitPrice: Number(e.target.value) || 0 })}
+                  <input type="text" inputMode="numeric"
+                    value={deal.overageUnitPrice ? deal.overageUnitPrice.toLocaleString("en-US") : ""}
+                    onChange={(e) => onUpdate({ overageUnitPrice: parseFloat(e.target.value.replace(/,/g, "")) || 0 })}
                     placeholder="0"
                     className="w-16 px-1.5 py-1.5 text-xs bg-transparent outline-none"
                   />
