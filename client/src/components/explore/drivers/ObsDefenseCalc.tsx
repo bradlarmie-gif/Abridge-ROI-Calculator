@@ -19,7 +19,7 @@ export default function ObsDefenseCalc({ state, updateDocQualityInputs }: Props)
   return (
     <div>
       <p className="text-[13px] text-[#666666] leading-relaxed mb-4">
-        IP status denials hinge on medical necessity {"—"} and medical necessity lives in the attending{"'"}s clinical reasoning, not just the final diagnosis codes. Abridge captures that reasoning at the time of admission, so when payers review the claim, the record already shows why the IP level of care was warranted.
+        Payers audit every inpatient admission against the two-midnight rule — did the physician expect inpatient-level care at the time of admission? The physician made that judgment. But if the note doesn{"'"}t capture the clinical reasoning behind it, the payer downgrades to observation and claws back the difference. Abridge captures the admission conversation — the acuity, the alternatives considered, the {"\""}why this patient stays{"\""}  — so the record defends itself before the audit arrives.
       </p>
       <div className="bg-[#FFF8F0] border border-[#EA2C00]/20 rounded-lg px-4 py-3 mb-6 flex items-start gap-2">
         <span className="text-[#EA2C00] text-sm mt-0.5 shrink-0">{"ⓘ"}</span>

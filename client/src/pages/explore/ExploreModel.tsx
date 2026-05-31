@@ -820,7 +820,7 @@ export default function ExploreModel({
               case 'cdiQueryReduction':
                 return `Each CDI query costs $40–$60 in specialist labor. Across ${fmt(encounters)} admissions, documentation that closes gaps at the point of care eliminates ${fmtCur(value)} in query overhead annually.`;
               case 'obsDefense':
-                return `Inpatient status downgrades average $3,500–$10,000 per contested case. Documentation that supports medical necessity at point of care defends ${fmtCur(value)} in at-risk admission revenue annually.`;
+                return `Every inpatient admission gets audited against the two-midnight rule — did the physician's clinical judgment at admission expect the patient to need inpatient-level care? The physician made that judgment. But if the note says "admitted for monitoring" instead of capturing the acuity reasoning behind it, the payer downgrades to observation and claws back the difference. Abridge captures the admission conversation — the "why this patient stays" — building the documentation that survives a RAC audit. At ${fmt(encounters)} annual admissions, that defends ${fmtCur(value)} in at-risk inpatient revenue annually.`;
               case 'nursingRetention':
                 return `With ${fmt(providers)} nurses on staff, each departure costs $50K–$100K in recruiting and onboarding. Documentation burden is the most controllable retention lever — this driver models ${fmtCur(value)} in avoided replacement cost annually.`;
               case 'nursingAgency':
