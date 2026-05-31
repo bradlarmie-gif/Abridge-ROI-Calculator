@@ -811,7 +811,7 @@ export default function ExploreModel({
               }
               case 'denialPrevention':
                 if (state.careSetting === 'ed') {
-                  return `Payers review ED claims retrospectively — comparing the final diagnosis to the presenting complaint. When the note captures the outcome but not the presenting acuity, visits with benign final diagnoses can be denied as non-emergent. The physician correctly evaluated a high-risk presentation; the note just didn't capture why emergency evaluation was warranted. Across ${fmt(encounters)} annual ED visits, this driver models ${fmtCur(value)} in potential value from documentation that can support medical necessity at the point of care.`;
+                  return `ED physicians document under volume and time pressure — the clinical reasoning behind the visit often doesn't make it into the note. When documentation doesn't show why the service was medically necessary, payers have grounds to challenge the claim. Across ${fmt(encounters)} annual ED visits, this driver models ${fmtCur(value)} in potential value from documentation that can capture that reasoning at the point of care.`;
                 }
                 return `The physician reasoned correctly — the note didn't show it. Across ${fmt(encounters)} annual outpatient claims, medical necessity denials occur when documentation doesn't capture why the service was clinically warranted. This driver models ${fmtCur(value)} in potential value from documentation that can reduce these denials before they're filed.`;
               case 'drgAccuracy':
