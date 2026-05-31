@@ -1321,9 +1321,9 @@ function buildDriverFormula(
       const claimVal   = dqi.avgClaimValue || 0;
       const eligible   = Math.round(annEnc * (denialRate / 100));
       return [
-        { label: `${n(annEnc)} encounters  ×  ${p(denialRate)} denial rate`, value: `${n(eligible)} eligible claims/yr` },
-        { label: `${denialPct > 0 ? denialPct.toFixed(0) : "~"}% of denials prevented via documentation  ×  ${d(claimVal)} avg claim`, value: `denial avoidance` },
-        { label: `Claims avoided  ×  avg claim value  ×  realization`, value: fmt(driverValue), isResult: true },
+        { label: `${n(annEnc)} encounters  ×  ${p(denialRate)} denial rate  →  unappealable subset targeted`, value: `${n(eligible)} claims at risk` },
+        { label: `Medical necessity denials — physician reasoned correctly, note didn't show it  ×  ${d(claimVal)} avg claim`, value: `prevented before filing` },
+        { label: `Denials prevented  ×  avg claim value  ×  realization`, value: fmt(driverValue), isResult: true },
       ];
     }
 
@@ -1358,8 +1358,8 @@ function buildDriverFormula(
       const totalEnc  = annEnc || providers * encPerProv;
       const defended  = obsRate > 0 ? Math.round(totalEnc * (obsRate / 100)) : Math.round(driverValue / avgDelta);
       return [
-        { label: `Complete documentation supports inpatient vs. observation status defense`, value: `per payer audit` },
-        { label: `${n(defended)} cases correctly documented as inpatient  ×  ${d(avgDelta)} avg inpatient/obs revenue delta`, value: fmt(driverValue), isResult: true },
+        { label: `Admission reasoning captured at point of care — two-midnight clinical expectation documented before audit`, value: `inpatient status defended` },
+        { label: `${n(defended)} cases defended  ×  ${d(avgDelta)} avg inpatient vs. observation revenue delta`, value: fmt(driverValue), isResult: true },
       ];
     }
 
