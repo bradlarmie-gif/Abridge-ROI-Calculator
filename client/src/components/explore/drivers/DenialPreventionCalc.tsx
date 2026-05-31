@@ -19,9 +19,8 @@ export default function DenialPreventionCalc({ state, updateDocQualityInputs }: 
     : { conservative: 25, typical: 50, aggressive: 75 };
 
   const preventionPercent = denialsScenarios[docQualityInputs.denialsScenario];
-  const totalDenials = eligibleEncounters * (docQualityInputs.denialRate / 100);
-  const unappealableDenials = totalDenials * (docQualityInputs.unappealableRate / 100);
-  const preventedDenials = unappealableDenials * (preventionPercent / 100);
+  const medNecessityDenials = eligibleEncounters * (docQualityInputs.medNecessityDenialRate / 100);
+  const preventedDenials = medNecessityDenials * (preventionPercent / 100);
   const denialsRevenueGross = preventedDenials * docQualityInputs.avgClaimValue;
   const denialsRevenueNet = denialsRevenueGross * (docQualityInputs.denialsRealization / 100);
 
@@ -32,8 +31,8 @@ export default function DenialPreventionCalc({ state, updateDocQualityInputs }: 
     <div>
       <p className="text-sm text-[#666666] leading-relaxed mb-4">
         {isED
-          ? "ED denials are often status challenges — payers audit the admission note and downgrade inpatient to observation when the clinical reasoning for why the patient needed to stay isn't documented. Capturing that reasoning at the point of care can help prevent these denials before the claim is filed."
-          : "An estimated 30–40% of claim denials are rooted in documentation that doesn't support medical necessity — not a coding error, not a missing auth. The physician reasoned correctly; the note didn't show it. Capturing that reasoning in real time can reduce these denials before they're filed."
+          ? "ED denials are often status challenges — payers audit the admission note and downgrade inpatient to observation when the clinical reasoning for why the patient needed to stay isn't documented. Medical necessity denial rate tracks these claims as a percentage of total encounters. Capturing that reasoning at the point of care may help reduce these denials before the claim is filed."
+          : "Medical necessity denials occur when documentation doesn't show why the service was clinically warranted — the physician reasoned correctly, but the note didn't capture it. This is already tracked by most revenue cycle teams as a percentage of total encounters. Capturing clinical reasoning in real time may help reduce denials before they're filed."
         }
       </p>
 
@@ -74,59 +73,22 @@ export default function DenialPreventionCalc({ state, updateDocQualityInputs }: 
             <span className="text-black">{formatNumber(eligibleEncounters)}</span>
           </div>
           <div className="flex justify-between items-center">
-            <span className="text-[#666666]">× Baseline denial rate</span>
+            <span className="text-[#666666]">× Medical necessity denial rate</span>
             <div className="flex items-center gap-1">
               <input
                 type="number"
-                value={docQualityInputs.denialRate}
-                onChange={(e) => updateDocQualityInputs({ denialRate: parseFloat(e.target.value) || 0 })}
+                value={docQualityInputs.medNecessityDenialRate}
+                onChange={(e) => updateDocQualityInputs({ medNecessityDenialRate: parseFloat(e.target.value) || 0 })}
                 className="w-14 h-7 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm"
-                data-testid="input-denial-rate"
+                data-testid="input-med-necessity-denial-rate"
               />
               <span className="text-[#888888]">%</span>
             </div>
           </div>
           <div className="h-px bg-[#D1D5DB] my-1" />
           <div className="flex justify-between gap-2">
-            <span className="text-[#666666]">= Total denials</span>
-            <span className="font-semibold text-black">{formatNumber(Math.round(totalDenials))} claims</span>
-          </div>
-
-          <div className="bg-white/50 rounded p-3 my-2 overflow-hidden">
-            <p className="text-xs font-medium text-[#666666] mb-2">Denial breakdown:</p>
-            <div className="space-y-1 text-xs">
-              <div className="flex items-start gap-1 sm:gap-2 flex-wrap sm:flex-nowrap">
-                <span className="text-[#888888] flex-shrink-0">├─</span>
-                <span className="text-[#666666]">Appealable ({100 - docQualityInputs.unappealableRate}%):</span>
-                <span className="text-black flex-shrink-0">{formatNumber(Math.round(totalDenials - unappealableDenials))}</span>
-                <span className="text-[#888888] hidden sm:inline">— Recovered through appeals</span>
-              </div>
-              <div className="flex items-start gap-1 sm:gap-2 flex-wrap sm:flex-nowrap">
-                <span className="text-[#888888] flex-shrink-0">└─</span>
-                <span className="text-[#666666]">Unappealable ({docQualityInputs.unappealableRate}%):</span>
-                <span className="font-semibold text-black flex-shrink-0">{formatNumber(Math.round(unappealableDenials))}</span>
-                <span className="text-[#888888] hidden sm:inline">— Abridge targeted impact</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex justify-between items-center">
-            <span className="text-[#666666]">Unappealable rate</span>
-            <div className="flex items-center gap-1">
-              <input
-                type="number"
-                value={docQualityInputs.unappealableRate}
-                onChange={(e) => updateDocQualityInputs({ unappealableRate: parseFloat(e.target.value) || 0 })}
-                className="w-14 h-7 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm"
-                data-testid="input-unappealable-rate"
-              />
-              <span className="text-[#888888]">%</span>
-            </div>
-          </div>
-          <div className="h-px bg-[#D1D5DB] my-1" />
-          <div className="flex justify-between gap-2">
-            <span className="text-[#666666]">= Unrecoverable denials</span>
-            <span className="font-semibold text-black">{formatNumber(Math.round(unappealableDenials))} claims</span>
+            <span className="text-[#666666]">= Medical necessity denials</span>
+            <span className="font-semibold text-black">{formatNumber(Math.round(medNecessityDenials))} claims</span>
           </div>
 
           <div className="flex justify-between gap-2">
@@ -135,7 +97,7 @@ export default function DenialPreventionCalc({ state, updateDocQualityInputs }: 
           </div>
           <div className="h-px bg-[#D1D5DB] my-1" />
           <div className="flex justify-between gap-2">
-            <span className="text-[#666666]">= Denials prevented</span>
+            <span className="text-[#666666]">= Denials targeted for reduction</span>
             <span className="font-semibold text-black">{formatNumber(Math.round(preventedDenials))} claims</span>
           </div>
 

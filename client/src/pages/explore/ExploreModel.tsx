@@ -241,9 +241,8 @@ export default function ExploreModel({
   const denialsValue = useMemo(() => {
     if (!docQualityInputs.denialsEnabled) return 0;
     const preventionPercent = denialsScenarios[docQualityInputs.denialsScenario];
-    const totalDenials = eligibleEncounters * (docQualityInputs.denialRate / 100);
-    const unappealable = totalDenials * (docQualityInputs.unappealableRate / 100);
-    const prevented = unappealable * (preventionPercent / 100);
+    const medNecessityDenials = eligibleEncounters * (docQualityInputs.medNecessityDenialRate / 100);
+    const prevented = medNecessityDenials * (preventionPercent / 100);
     return Math.round(prevented * docQualityInputs.avgClaimValue * (docQualityInputs.denialsRealization / 100));
   }, [eligibleEncounters, docQualityInputs]);
 

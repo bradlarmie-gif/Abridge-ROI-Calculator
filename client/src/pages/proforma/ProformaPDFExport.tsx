@@ -1317,13 +1317,13 @@ function buildDriverFormula(
     case "denialPrevention": {
       const denialPct  = es.denialsPctReduced || 0;
       const dqi        = es.docQualityInputs ?? {};
-      const denialRate = dqi.denialRate || 0;
+      const denialRate = dqi.medNecessityDenialRate || dqi.denialRate || 0;
       const claimVal   = dqi.avgClaimValue || 0;
       const eligible   = Math.round(annEnc * (denialRate / 100));
       return [
-        { label: `${n(annEnc)} encounters  ×  ${p(denialRate)} denial rate  →  unappealable subset targeted`, value: `${n(eligible)} claims at risk` },
-        { label: `Medical necessity denials — physician reasoned correctly, note didn't show it  ×  ${d(claimVal)} avg claim`, value: `targeted for reduction` },
-        { label: `Denials prevented  ×  avg claim value  ×  realization`, value: fmt(driverValue), isResult: true },
+        { label: `${n(annEnc)} encounters  ×  ${p(denialRate)} medical necessity denial rate`, value: `${n(eligible)} claims at risk` },
+        { label: `Physician reasoned correctly, note didn't capture it  ×  ${d(claimVal)} avg claim`, value: `targeted for reduction` },
+        { label: `Denials targeted for reduction  ×  avg claim value  ×  realization`, value: fmt(driverValue), isResult: true },
       ];
     }
 

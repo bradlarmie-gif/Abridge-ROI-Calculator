@@ -134,9 +134,8 @@ export function computeRevenueBreakdown(state: ExploreState, _totalHoursSaved: n
   }
   if (dq.denialsEnabled && isOPorED) {
     const prev = denialsScenarios[dq.denialsScenario] / 100;
-    const totalDenials = eligibleEncounters * (dq.denialRate / 100);
-    const unappealable = totalDenials * (dq.unappealableRate / 100);
-    const prevented = unappealable * prev;
+    const medNecessityDenials = eligibleEncounters * (dq.medNecessityDenialRate / 100);
+    const prevented = medNecessityDenials * prev;
     result.denialPrevention = Math.round(prevented * dq.avgClaimValue * (dq.denialsRealization / 100));
   }
   if (isIP && dq.ipDrgEnabled) {

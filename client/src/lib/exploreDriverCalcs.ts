@@ -189,10 +189,9 @@ export function computeAllDriverValues(
   }
   if (dq.denialsEnabled && (isOP || isED)) {
     const prev = denialsScenarios[dq.denialsScenario] / 100;
-    const tot = eligibleEncounters * (dq.denialRate / 100);
-    const unapp = tot * (dq.unappealableRate / 100);
+    const medNecessityDenials = eligibleEncounters * (dq.medNecessityDenialRate / 100);
     result.denialPrevention = Math.round(
-      unapp * prev * dq.avgClaimValue * (dq.denialsRealization / 100),
+      medNecessityDenials * prev * dq.avgClaimValue * (dq.denialsRealization / 100),
     );
   }
   if (isIP && dq.ipDrgEnabled) {
@@ -403,7 +402,7 @@ export function computeAllDriverCalcSummaries(
   }
   if (dq.denialsEnabled && (isOP || isED)) {
     const prevPct = denialsScenarios[dq.denialsScenario] ?? 0;
-    out.denialPrevention = `${fmtN(eligibleEncounters)} encounters × ${dq.denialRate}% denial rate × ${dq.unappealableRate}% unappealable × ${prevPct}% prevention × ${fmt$(dq.avgClaimValue)}/claim × ${dq.denialsRealization}% realization`;
+    out.denialPrevention = `${fmtN(eligibleEncounters)} encounters × ${dq.medNecessityDenialRate}% medical necessity denial rate × ${prevPct}% reduction target × ${fmt$(dq.avgClaimValue)}/claim × ${dq.denialsRealization}% realization`;
   }
   if (isIP && dq.ipDrgEnabled) {
     const protectPct = IP_DRG_PROTECT_SCENARIOS[dq.ipDrgScenario] ?? 0;

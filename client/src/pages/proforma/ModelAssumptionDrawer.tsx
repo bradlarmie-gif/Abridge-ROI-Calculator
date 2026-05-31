@@ -71,7 +71,7 @@ export function recomputeDriverFromExploreState(driverId: string, state: Explore
         ? { conservative: 15, typical: 30, aggressive: 50 }
         : { conservative: 25, typical: 50, aggressive: 75 };
       const pct = pcts[dq.denialsScenario] ?? 50;
-      const prevented = eligible * (dq.denialRate / 100) * (dq.unappealableRate / 100) * (pct / 100);
+      const prevented = eligible * (dq.medNecessityDenialRate / 100) * (pct / 100);
       return Math.round(prevented * dq.avgClaimValue * (dq.denialsRealization / 100));
     }
     case 'ipDrg': {
@@ -302,7 +302,7 @@ export function ModelAssumptionRow({
           setLocalCustomPct(v);
           if (!es) return;
           const eligibleEnc = es.annualEncounters * (es.utilizationPercent / 100);
-          const prevented = eligibleEnc * (dq!.denialRate / 100) * (dq!.unappealableRate / 100) * (v / 100);
+          const prevented = eligibleEnc * (dq!.medNecessityDenialRate / 100) * (v / 100);
           const newVal = Math.round(prevented * dq!.avgClaimValue * (dq!.denialsRealization / 100));
           onUpdate(settingId, driver.id, newVal, es);
         };

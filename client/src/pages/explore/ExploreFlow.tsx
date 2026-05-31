@@ -398,8 +398,7 @@ export interface DocQualityInputs {
   // Denials
   denialsEnabled: boolean;
   denialsScenario: 'conservative' | 'typical' | 'aggressive';
-  denialRate: number;
-  unappealableRate: number;
+  medNecessityDenialRate: number;
   avgClaimValue: number;
   denialsRealization: number;
   
@@ -836,8 +835,7 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     hccRealization: 50,
     denialsEnabled: false,
     denialsScenario: 'typical',
-    denialRate: 8,
-    unappealableRate: 30,
+    medNecessityDenialRate: 3,
     avgClaimValue: 200,
     denialsRealization: 60,
     // Inpatient: DRG Accuracy defaults
@@ -988,7 +986,7 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
           fresh.docQualityInputs = {
             ...fresh.docQualityInputs,
             currentWrvu: 1.8,
-            denialRate: 10,
+            medNecessityDenialRate: 5,
             avgClaimValue: 300,
           };
         }
@@ -1276,9 +1274,8 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
     // Denials (not for inpatient - included in DRG Accuracy)
     if (docQualityInputs.denialsEnabled && state.careSetting !== 'inpatient') {
       const preventionPercent = denialsScenarios[docQualityInputs.denialsScenario];
-      const totalDenials = eligibleEncounters * (docQualityInputs.denialRate / 100);
-      const unappealable = totalDenials * (docQualityInputs.unappealableRate / 100);
-      const prevented = unappealable * (preventionPercent / 100);
+      const medNecessityDenials = eligibleEncounters * (docQualityInputs.medNecessityDenialRate / 100);
+      const prevented = medNecessityDenials * (preventionPercent / 100);
       total += prevented * docQualityInputs.avgClaimValue * (docQualityInputs.denialsRealization / 100);
     }
 
