@@ -294,12 +294,15 @@ export default function ProformaView({
         }
       }
 
+      const scaledAtScale = summary.runRateInvestment > 0 ? (summary.totalSystemValue * factor) / summary.runRateInvestment : 0;
+
       return {
         annualValue: scaledAnnual,
         valueToCost: scaledVTC,
         paybackMonth: scaledPayback,
         termNet: scaledNet,
         simpleROI: scaledROI,
+        atScaleReturn: scaledAtScale,
       };
     };
 
@@ -311,6 +314,7 @@ export default function ProformaView({
         paybackMonth: summary.paybackMonth,
         termNet: summary.termNet,
         simpleROI: summary.simpleROI,
+        atScaleReturn: summary.atScaleReturn,
       },
       optimistic: buildScaled((100 + sensitivityRange) / 100),
     };
@@ -483,11 +487,13 @@ export default function ProformaView({
                 )}
               </div>
               <div>
-                <p className="text-[12px] text-white/50 uppercase tracking-wide mb-1">Simple ROI</p>
-                <p className="text-xl font-bold" data-testid="text-roi">{Math.round(summary.simpleROI * 100)}%</p>
-                <p className="text-[12px] text-white/40 mt-0.5" data-testid="text-roi-benchmark-mobile">
-                  Abridge benchmark: 200–600%
-                </p>
+                <p className="text-[12px] text-white/50 uppercase tracking-wide mb-1">Return at Scale</p>
+                <p className="text-xl font-bold" data-testid="text-roi">{hasInvestment ? `${summary.atScaleReturn.toFixed(1)}x` : "N/A"}</p>
+                {hasInvestment && (
+                  <p className="text-[12px] text-white/40 mt-0.5" data-testid="text-roi-benchmark-mobile">
+                    3-yr net: {Math.round(summary.simpleROI * 100)}%
+                  </p>
+                )}
               </div>
               <div>
                 <p className="text-[12px] text-white/50 uppercase tracking-wide mb-1">Hours Returned (Annual)</p>
@@ -520,11 +526,13 @@ export default function ProformaView({
               )}
             </div>
             <div>
-              <p className="text-xs text-white/50 uppercase tracking-wide mb-1">Simple ROI</p>
-              <p className="text-2xl font-bold">{Math.round(summary.simpleROI * 100)}%</p>
-              <p className="text-[12px] text-white/40 mt-1" data-testid="text-roi-benchmark">
-                Abridge benchmark: 200–600%
-              </p>
+              <p className="text-xs text-white/50 uppercase tracking-wide mb-1">Return at Scale</p>
+              <p className="text-2xl font-bold">{hasInvestment ? `${summary.atScaleReturn.toFixed(1)}x` : "N/A"}</p>
+              {hasInvestment && (
+                <p className="text-[12px] text-white/40 mt-1" data-testid="text-roi-benchmark">
+                  3-yr net: {Math.round(summary.simpleROI * 100)}%
+                </p>
+              )}
             </div>
             <div>
               <p className="text-xs text-white/50 uppercase tracking-wide mb-1">Hours Returned (Annual)</p>
@@ -799,6 +807,12 @@ export default function ProformaView({
                   <div className={`h-px mb-4 ${scenario.dark ? "bg-white/10" : "bg-neutral-200"}`} />
 
                   <div className="space-y-2.5">
+                    <div className="flex justify-between items-baseline gap-2">
+                      <span className={`text-[11px] ${scenario.dark ? "text-white/40" : "text-neutral-500"}`}>Return at Scale</span>
+                      <span className={`text-sm font-bold tabular-nums ${scenario.dark ? "text-white" : "text-neutral-900"}`} data-testid={`sensitivity-atscale-${scenario.key}`}>
+                        {hasInvestment ? `${data.atScaleReturn.toFixed(1)}x` : "—"}
+                      </span>
+                    </div>
                     <div className="flex justify-between items-baseline gap-2">
                       <span className={`text-[11px] ${scenario.dark ? "text-white/40" : "text-neutral-500"}`}>Value-to-Cost</span>
                       <span className={`text-sm font-bold tabular-nums ${scenario.dark ? "text-white" : "text-neutral-900"}`} data-testid={`sensitivity-vtc-${scenario.key}`}>
@@ -1184,7 +1198,7 @@ export default function ProformaView({
             <div className="mt-2 p-4 sm:p-6 bg-white border border-neutral-200 rounded-xl text-xs sm:text-sm text-neutral-600 space-y-3">
               <p><strong className="text-neutral-900">Implementation Ramp:</strong> A {config.implementationRampMonths}-month gradual implementation ramp is applied as providers are onboarded. During this period, value scales gradually (e.g. ~33%/67%/100% for a 3-month ramp) while full subscription costs are incurred. This accounts for training, EHR integration, and workflow adjustment.</p>
               <p><strong className="text-neutral-900">Utilization Ramp:</strong> Utilization increases over the contract period: Year 1 target {config.yearlyUtilization.year1}%, Year 2 target {config.yearlyUtilization.year2}%, Year 3 target {config.yearlyUtilization.year3}%.{config.nursingYearlyUtilization && settings.some(s => s.careSetting === "nursing") ? ` Nursing uses separate targets: ${config.nursingYearlyUtilization.year1}%/${config.nursingYearlyUtilization.year2}%/${config.nursingYearlyUtilization.year3}%.` : ""} These targets reflect realistic organizational adoption curves.</p>
-              <p><strong className="text-neutral-900">Driver Onset Timing:</strong> Value materializes at different speeds across the four domains. <strong style={{ color: '#1E3A5F' }}>Revenue</strong> drivers (wRVU capture, HCC, denial prevention, DRG accuracy, CDI) have a {ONSET_DELAY_MONTHS.immediate}-month billing cycle lag before value appears, then ramp over 3 months. <strong style={{ color: '#EA2C00' }}>Capacity</strong> gains (patient access, throughput, LWBS recovery, bedside time freed) onset at month {ONSET_DELAY_MONTHS.delayed} as organizations operationalize available capacity, then ramp over 3 months. <strong style={{ color: '#888888' }}>Quality</strong> improvements (care gap closure, HEDIS/Stars performance, core measures, {settings.some(s => s.careSetting === "nursing") ? "HAPI, falls, CAUTI, CLABSI, sepsis" : "ED core measures, documentation deficiency"}) also onset at month {ONSET_DELAY_MONTHS.delayed} — clinical outcomes require a full quarter of consistent documentation before measurable improvement occurs. <strong style={{ color: '#7A1F04' }}>Workforce</strong> gains (provider wellbeing, locum/agency reduction, nursing retention) phase in over years per your configured phasing ({config.retentionPhasing.year1Pct}% Y1 / {config.retentionPhasing.year2Pct}% Y2 / {config.retentionPhasing.year3Pct}% Y3{config.nursingRetentionPhasing && settings.some(s => s.careSetting === "nursing") && (config.nursingRetentionPhasing.year1Pct !== config.retentionPhasing.year1Pct || config.nursingRetentionPhasing.year2Pct !== config.retentionPhasing.year2Pct) ? `; Nursing: ${config.nursingRetentionPhasing.year1Pct}% Y1 / ${config.nursingRetentionPhasing.year2Pct}% Y2 / ${config.nursingRetentionPhasing.year3Pct}% Y3` : ""}).</p>
+              <p><strong className="text-neutral-900">Driver Onset Timing:</strong> Value materializes at different speeds across the four domains. <strong style={{ color: '#1E3A5F' }}>Revenue</strong> drivers (wRVU capture, denial prevention, DRG accuracy, CDI) have a {ONSET_DELAY_MONTHS.immediate}-month billing cycle lag before value appears, then ramp over 3 months. HCC Recapture has a {ONSET_DELAY_MONTHS.longTerm}-month lag — documentation improves in Year 1, but capitation adjustments flow through the annual RAF reconciliation cycle and appear in Year 2. <strong style={{ color: '#EA2C00' }}>Capacity</strong> gains (patient access, throughput, LWBS recovery, bedside time freed) onset at month {ONSET_DELAY_MONTHS.delayed} as organizations operationalize available capacity, then ramp over 3 months. <strong style={{ color: '#888888' }}>Quality</strong> improvements (care gap closure, HEDIS/Stars performance, core measures, {settings.some(s => s.careSetting === "nursing") ? "HAPI, falls, CAUTI, CLABSI, sepsis" : "ED core measures, documentation deficiency"}) also onset at month {ONSET_DELAY_MONTHS.delayed} — clinical outcomes require a full quarter of consistent documentation before measurable improvement occurs. <strong style={{ color: '#7A1F04' }}>Workforce</strong> gains (provider wellbeing, locum/agency reduction, nursing retention) phase in over years per your configured phasing ({config.retentionPhasing.year1Pct}% Y1 / {config.retentionPhasing.year2Pct}% Y2 / {config.retentionPhasing.year3Pct}% Y3{config.nursingRetentionPhasing && settings.some(s => s.careSetting === "nursing") && (config.nursingRetentionPhasing.year1Pct !== config.retentionPhasing.year1Pct || config.nursingRetentionPhasing.year2Pct !== config.retentionPhasing.year2Pct) ? `; Nursing: ${config.nursingRetentionPhasing.year1Pct}% Y1 / ${config.nursingRetentionPhasing.year2Pct}% Y2 / ${config.nursingRetentionPhasing.year3Pct}% Y3` : ""}).</p>
               <p><strong className="text-neutral-900">Value-to-Cost:</strong> Total contract value divided by total contract cost (implementation fees + subscription). A {summary.valueToCost.toFixed(1)}x ratio means you receive ${summary.valueToCost.toFixed(2)} in value for every $1 invested.</p>
               <p><strong className="text-neutral-900">Simple ROI:</strong> Total contract net value divided by total contract cost. {Math.round(summary.simpleROI * 100)}% means for every $1 of Abridge investment, you generate ${summary.simpleROI.toFixed(2)} in net value above the cost.</p>
               <p><strong className="text-neutral-900">Payback Period:</strong> The month in which cumulative net value turns positive, accounting for the implementation ramp and subscription costs from day one.</p>

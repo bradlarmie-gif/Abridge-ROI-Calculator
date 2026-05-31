@@ -833,9 +833,10 @@ function ValueTrajectoryPage({ settings, config, summary, yearlyData, chartData,
   const hasRevenue   = yearlyData.some(y => y.revenueValue   > 0);
   const hasQuality   = yearlyData.some(y => y.qualityValue   > 0);
   const hasNursing   = settings.some(s => s.careSetting === "nursing");
+  const hasHcc       = settings.some(s => s.drivers?.some((d: { id: string }) => d.id === "hcc"));
 
   const onsetRows = [
-    hasRevenue   && { domain: "Revenue",   color: brand.revenue,   label: "Revenue",   note: `Begins month 1 — 1-month billing cycle lag, then ramps over 3 months as claims reflect improved documentation.`, inactiveFrac: 1/config.contractTermMonths },
+    hasRevenue   && { domain: "Revenue",   color: brand.revenue,   label: "Revenue",   note: `wRVU, denials, DRG, CDI begin month 1 — 1-month billing cycle lag, then ramp over 3 months.${hasHcc ? " HCC Recapture begins month 12 — documentation improves in Year 1 but revenue flows through the annual RAF reconciliation cycle." : ""}`, inactiveFrac: 1/config.contractTermMonths },
     hasCapacity  && { domain: "Capacity",  color: brand.capacity,  label: "Capacity",  note: `Begins month ${delayedOnset} — organizations need a quarter to operationalize freed capacity before throughput converts.`, inactiveFrac: delayedOnset / config.contractTermMonths },
     hasQuality   && { domain: "Quality",   color: brand.quality,   label: "Quality",   note: `Begins month ${delayedOnset}${hasNursing ? "–5 for nursing safety outcomes" : ""} — clinical improvements require consistent documentation for measurable change.`, inactiveFrac: delayedOnset / config.contractTermMonths },
     hasWorkforce && { domain: "Workforce", color: brand.workforce, label: "Workforce", note: `Phased over ${contractYears >= 3 ? "3 years" : "contract term"} — ${config.retentionPhasing.year1Pct}% Y1 / ${config.retentionPhasing.year2Pct}% Y2${contractYears >= 3 ? ` / ${config.retentionPhasing.year3Pct}% Y3` : ""}. Retention and wellbeing effects compound gradually.`, inactiveFrac: 0.15 },
@@ -1619,7 +1620,7 @@ function ValueDriverDetailPage({ settings, config, preparedBy, totalPDFPages }: 
 
 // ─── PAGE 6: MODEL CONFIDENCE ─────────────────────────────────────────────────
 
-function ModelConfidencePage({ settings, config, summary, yearlyData, preparedBy, totalPDFPages }: ProformaPDFProps) {
+function ModelConfidencePage({ settings, config, summary, yearlyData, sensitivityData, preparedBy, totalPDFPages }: ProformaPDFProps) {
   const termLabel     = contractTermLabel(config.contractTermMonths);
   const contractYears = Math.ceil(config.contractTermMonths / 12);
   const activeSettingCount = Math.max(1, settings.filter(s => s.drivers.some(d => d.value > 0)).length);
@@ -1722,8 +1723,8 @@ function ModelConfidencePage({ settings, config, summary, yearlyData, preparedBy
           },
           {
             param: "Sensitivity Range",
-            value: "70% – 130% of base value",
-            method: "Investment held constant; VTC, ROI, and payback recalculated from scaled value.",
+            value: `${fmt(Math.round(summary.termValue * 0.7))} – ${fmt(Math.round(summary.termValue * 1.3))} (${termLabel} value)`,
+            method: `Investment (${fmt(summary.termInvestment)}) held constant across all three scenarios. Conservative: ${fmt(sensitivityData.conservative.termNet)} net · Base: ${fmt(summary.termNet)} net · Optimistic: ${fmt(sensitivityData.optimistic.termNet)} net.`,
           },
         ].map((row, i, arr) => (
           <View key={i} style={[S.tableRow, i === arr.length - 1 ? S.tableRowLast : {}]}>
@@ -1737,7 +1738,7 @@ function ModelConfidencePage({ settings, config, summary, yearlyData, preparedBy
       <View style={[S.insightBox, { marginTop: 10 }]}>
         <Text style={S.insightLabel}>Methodology Statement</Text>
         <Text style={S.insightText}>
-          We intentionally err conservative on every parameter where there's a range. Realization rates are discounted for scheduling friction, payer mix, and attribution uncertainty. Organizations that execute well routinely beat these projections. We'd rather you be pleasantly surprised than disappointed.
+          {`This model projects ${fmt(summary.termValue)} in ${termLabel} gross value against ${fmt(summary.termInvestment)} in total investment — ${summary.valueToCost.toFixed(1)}× value-to-cost at base case. At conservative realization (70%), term value is ${fmt(Math.round(summary.termValue * 0.7))} and net is ${fmt(sensitivityData.conservative.termNet)}; at optimistic (130%), term value is ${fmt(Math.round(summary.termValue * 1.3))} and net is ${fmt(sensitivityData.optimistic.termNet)}. Implementation ramp (${config.implementationRampMonths} months), utilization targets, and domain onset delays are all modeled conservatively. Treat this as a planning-stage estimate — validate against your organization's operational data before committing to contracts.`}
         </Text>
       </View>
 
