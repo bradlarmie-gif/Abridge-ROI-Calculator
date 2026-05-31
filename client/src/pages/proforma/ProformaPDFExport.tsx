@@ -1294,8 +1294,8 @@ function buildDriverFormula(
       const wrvuGained = Math.round(totalEnc * (wrvuPct / 100));
       return [
         { label: `${n(providers)} providers  ×  ${n(encPerProv)} encounters/provider/yr`, value: `${n(Math.round(totalEnc))} total encounters` },
-        { label: `${wrvuPct > 0 ? wrvuPct.toFixed(1) : "~2–4"}% E/M level improvement  →  ${n(wrvuGained > 0 ? wrvuGained : Math.round(totalEnc * 0.03))} wRVUs gained`, value: `per documentation audit` },
-        { label: `wRVUs gained  ×  ${d(convFactor)} conversion factor`, value: fmt(driverValue), isResult: true },
+        { label: `Problems addressed, data reviewed, and risk documented — complexity delivered, note didn't show it  →  ${wrvuPct > 0 ? wrvuPct.toFixed(1) : "~2–4"}% wRVU lift`, value: `${n(wrvuGained > 0 ? wrvuGained : Math.round(totalEnc * 0.03))} wRVUs recovered` },
+        { label: `wRVUs recovered  ×  ${d(convFactor)} conversion factor`, value: fmt(driverValue), isResult: true },
       ];
     }
 

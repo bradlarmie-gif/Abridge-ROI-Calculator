@@ -33,11 +33,11 @@ export default function WrvuCalc({ state, updateDocQualityInputs }: Props) {
 
   return (
     <div>
-      <p className="text-sm text-black mb-4">
-        When notes fully reflect visit complexity, E/M levels code to the right level.
+      <p className="text-sm text-[#666666] leading-relaxed mb-4">
         {isED
-          ? ' Documentation improvement drives 2–9% E/M level accuracy lift in ED settings — largest when surge-driven under-documentation is highest.'
-          : ' Industry data shows 2–9% E/M level accuracy lift from better documentation.'}
+          ? "MDM-based E/M billing requires documenting problems addressed, data reviewed, and risk — but ED physicians reconstruct notes from memory between patients, and under-documentation is worst when volume is highest. The physician did the work. The note didn't show it. Abridge captures everything said in the room so the coding reflects the actual visit."
+          : "MDM-based E/M billing requires three documented elements: problems addressed, data reviewed, and risk of management. In a rushed visit, a physician might touch four problems and review labs — but the note says 'HTN follow-up, refill meds.' The work happened. The note didn't show it. Abridge captures all of it in real time."
+        }
       </p>
 
       <p className="text-sm font-medium text-black mb-2">Choose your scenario:</p>

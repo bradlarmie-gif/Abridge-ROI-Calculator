@@ -788,9 +788,9 @@ export default function ExploreModel({
               case 'physicianLocumAgency':
                 return `Every retained provider eliminates a coverage gap that would otherwise require locum or agency fill. At your scale, avoided contract coverage adds ${fmtCur(value)} annually.`;
               case 'wrvu':
-                return `Across ${fmt(encounters)} annual encounters, notes that fully reflect visit complexity — MDM detail, conditions addressed, time-based billing eligibility — recover ${fmtCur(value)} in E/M coding accuracy annually.`;
+                return `MDM-based E/M billing requires documenting problems addressed, data reviewed, and risk of management. The physician touched all three — the note said "HTN follow-up, refill meds." Across ${fmt(encounters)} annual encounters, recovering that gap between complexity delivered and complexity documented adds ${fmtCur(value)} annually.`;
               case 'edEmLevel':
-                return `At ${fmt(encounters)} annual ED visits, documentation that captures clinical complexity during high-volume periods — when notes most commonly understate the encounter — recovers ${fmtCur(value)} annually in E/M level accuracy.`;
+                return `ED physicians reconstruct notes from memory between patients, and under-documentation is worst when volume is highest. The work happened — the note didn't show it. Across ${fmt(encounters)} annual ED visits, documentation that reflects actual visit complexity recovers ${fmtCur(value)} annually in E/M level accuracy.`;
               case 'hccCapture': {
                 const hccPlans = docQualityInputs.hccPlans;
                 const upliftMap: Record<string, number> = { conservative: 5, typical: 10, optimistic: 15 };
