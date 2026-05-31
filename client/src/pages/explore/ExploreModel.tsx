@@ -206,7 +206,6 @@ export default function ExploreModel({
   const wrvuScenarios: Record<string, number> = isEDForScenarios
     ? { conservative: 2, typical: 5, aggressive: 9, custom: docQualityInputs.wrvuCustomPercent ?? 5 }
     : { conservative: 2, typical: 5, aggressive: 9, custom: docQualityInputs.wrvuCustomPercent ?? 5 };
-  const hccScenarios: Record<string, number> = { conservative: 6, typical: 10, aggressive: 15 };
   const denialsScenarios: Record<string, number> = isEDForScenarios
     ? { conservative: 15, typical: 30, aggressive: 50 }
     : { conservative: 25, typical: 50, aggressive: 75 };
@@ -224,13 +223,17 @@ export default function ExploreModel({
     // HCC only applies to Outpatient
     const isOutpatient = state.careSetting === 'outpatient';
     if (!isOutpatient || !docQualityInputs.hccEnabled) return 0;
+    const upliftMap: Record<string, number> = { conservative: 5, typical: 10, optimistic: 15 };
     let totalGross = 0;
     for (const plan of docQualityInputs.hccPlans) {
-      const planPatients = state.numberOfProviders * plan.panelSize;
-      const gapPatients = planPatients * (plan.gapRate / 100);
-      const recapturePct = (hccScenarios[plan.recaptureScenario] ?? 10) / 100;
-      const recaptured = gapPatients * recapturePct;
-      totalGross += recaptured * docQualityInputs.avgHccs * plan.rafImpact * plan.annualPaymentPerRaf;
+      const upliftPp = upliftMap[plan.uplift] ?? 10;
+      const effectiveUplift = Math.min(upliftPp, Math.max(0, 90 - plan.currentRecaptureRate));
+      const gapPatients = state.numberOfProviders * plan.panelSize * plan.gapRate / 100;
+      totalGross += gapPatients * (effectiveUplift / 100) * docQualityInputs.avgHccs * plan.valuePerHcc;
+      if (plan.netNewEnabled) {
+        const netNewPts = state.numberOfProviders * plan.panelSize * plan.netNewDiscoveryRate / 100;
+        totalGross += netNewPts * plan.netNewAvgConditions * plan.valuePerHcc;
+      }
     }
     return Math.round(totalGross * (docQualityInputs.hccRealization / 100));
   }, [state.numberOfProviders, state.careSetting, docQualityInputs]);
@@ -790,16 +793,22 @@ export default function ExploreModel({
                 return `At ${fmt(encounters)} annual ED visits, documentation that captures clinical complexity during high-volume periods — when notes most commonly understate the encounter — recovers ${fmtCur(value)} annually in E/M level accuracy.`;
               case 'hccCapture': {
                 const hccPlans = docQualityInputs.hccPlans;
+                const upliftMap: Record<string, number> = { conservative: 5, typical: 10, optimistic: 15 };
+                const hasNetNew = hccPlans.some((p: { netNewEnabled: boolean }) => p.netNewEnabled);
                 if (hccPlans.length === 1) {
                   const plan = hccPlans[0];
-                  return `With ${fmt(providers)} providers each carrying ${fmt(plan.panelSize)} ${plan.name} patients, conditions that are clinically present — addressed every visit — but absent from the note don't factor into risk adjustment. Ambient documentation closes that gap at the point of care, recovering ${fmtCur(value)} in annual risk-adjusted revenue.`;
+                  const upliftPp = upliftMap[plan.uplift] ?? 10;
+                  const effective = Math.min(upliftPp, Math.max(0, 90 - plan.currentRecaptureRate));
+                  const projected = plan.currentRecaptureRate + effective;
+                  const totalPatients = fmt(providers * plan.panelSize);
+                  if (hasNetNew) {
+                    return `Your ${plan.name} population of ${totalPatients} patients carries chronic conditions discussed in the room but missing from the note — suppressing risk scores and the payment that follows. Ambient documentation lifts recapture from ${plan.currentRecaptureRate}% to ${projected}% and surfaces previously uncoded conditions, adding ${fmtCur(value)} in annual risk-adjusted revenue.`;
+                  }
+                  return `Your ${plan.name} population of ${totalPatients} patients carries chronic conditions discussed in the room but missing from the note — a direct suppressor of risk-adjusted payment. Ambient documentation closes that gap, lifting the recapture rate from ${plan.currentRecaptureRate}% to ${projected}% and adding ${fmtCur(value)} in annual revenue.`;
                 }
-                const totalPlanPts = hccPlans.reduce((s: number, p: { panelSize: number }) => s + providers * p.panelSize, 0);
                 const names = hccPlans.map((p: { name: string }) => p.name);
-                const planNameList = names.length <= 2
-                  ? names.join(' and ')
-                  : `${names.slice(0, -1).join(', ')}, and ${names[names.length - 1]}`;
-                return `Across ${fmt(providers)} providers, ${fmt(totalPlanPts)} patients enrolled in ${planNameList} plans carry chronic conditions that surface in the visit but never reach the note — suppressing risk scores across every plan type. Structured capture at the point of care recovers ${fmtCur(value)} annually.`;
+                const planNameList = names.length <= 2 ? names.join(' and ') : `${names.slice(0, -1).join(', ')}, and ${names[names.length - 1]}`;
+                return `Across your ${planNameList} populations, chronic conditions addressed verbally are routinely absent from the note — suppressing risk scores and the payment they drive. Ambient documentation systematically closes that gap${hasNetNew ? ', including previously uncoded conditions,' : ''}, driving ${fmtCur(value)} in annual risk-adjusted revenue.`;
               }
               case 'denialPrevention':
                 return `Across ${fmt(encounters)} annual claims, documentation gaps that trigger unappealable medical-necessity denials represent a recoverable loss. Capturing clinical reasoning at the point of care prevents ${fmtCur(value)} in documentation-related denials annually.`;

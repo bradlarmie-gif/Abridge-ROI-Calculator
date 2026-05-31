@@ -42,11 +42,6 @@ const RETENTION_SCENARIOS_NURSING_BASE: Record<string, number> = {
 };
 const retentionPhysician = (customPct: number): Record<string, number> => ({ ...RETENTION_SCENARIOS_PHYSICIAN_BASE, custom: customPct });
 const retentionNursing = (customPct: number): Record<string, number> => ({ ...RETENTION_SCENARIOS_NURSING_BASE, custom: customPct });
-const HCC_SCENARIOS: Record<string, number> = {
-  conservative: 6,
-  typical: 10,
-  aggressive: 15,
-};
 const IP_DRG_PROTECT_SCENARIOS: Record<string, number> = {
   conservative: 15,
   typical: 20,
@@ -178,12 +173,17 @@ export function computeAllDriverValues(
     else result.wrvu = Math.round(value);
   }
   if (dq.hccEnabled && isOP) {
+    const upliftMap: Record<string, number> = { conservative: 5, typical: 10, optimistic: 15 };
     let totalGross = 0;
     for (const plan of dq.hccPlans) {
-      const planPts = state.numberOfProviders * plan.panelSize;
-      const gapPts = planPts * (plan.gapRate / 100);
-      const recap = (HCC_SCENARIOS[plan.recaptureScenario] ?? 10) / 100;
-      totalGross += gapPts * recap * dq.avgHccs * plan.rafImpact * plan.annualPaymentPerRaf;
+      const upliftPp = upliftMap[plan.uplift] ?? 10;
+      const effectiveUplift = Math.min(upliftPp, Math.max(0, 90 - plan.currentRecaptureRate));
+      const gapPts = state.numberOfProviders * plan.panelSize * plan.gapRate / 100;
+      totalGross += gapPts * (effectiveUplift / 100) * dq.avgHccs * plan.valuePerHcc;
+      if (plan.netNewEnabled) {
+        const netNewPts = state.numberOfProviders * plan.panelSize * plan.netNewDiscoveryRate / 100;
+        totalGross += netNewPts * plan.netNewAvgConditions * plan.valuePerHcc;
+      }
     }
     result.hccCapture = Math.round(totalGross * (dq.hccRealization / 100));
   }
@@ -378,8 +378,28 @@ export function computeAllDriverCalcSummaries(
     else out.wrvu = summary;
   }
   if (dq.hccEnabled && isOP) {
-    const planSummary = dq.hccPlans.map((p: { name: string; panelSize: number; gapRate: number; rafImpact: number; annualPaymentPerRaf: number; recaptureScenario: string }) => `${p.name}: ${p.panelSize} pts/prov × ${p.gapRate}% gap × ${HCC_SCENARIOS[p.recaptureScenario] ?? 10}% recapture × ${p.rafImpact} RAF × $${p.annualPaymentPerRaf}/RAF`).join(' + ');
-    out.hccCapture = `${fmtN(state.numberOfProviders)} providers | ${planSummary} | ${dq.avgHccs} avg HCCs × ${dq.hccRealization}% realization`;
+    const upliftMap: Record<string, number> = { conservative: 5, typical: 10, optimistic: 15 };
+    if (dq.hccPlans.length === 1) {
+      const p = dq.hccPlans[0];
+      const upliftPp = upliftMap[p.uplift] ?? 10;
+      const effective = Math.min(upliftPp, Math.max(0, 90 - p.currentRecaptureRate));
+      const projected = p.currentRecaptureRate + effective;
+      const gapPatients = Math.round(state.numberOfProviders * p.panelSize * p.gapRate / 100);
+      let formula = `${fmtN(gapPatients)} gap patients (${p.gapRate}% of ${fmtN(state.numberOfProviders * p.panelSize)} ${p.name} pts) × +${effective}pp Abridge uplift (${p.currentRecaptureRate}%→${projected}%) × ${dq.avgHccs} avg HCCs per patient × ${fmt$(p.valuePerHcc)} per captured HCC × ${dq.hccRealization}% realization`;
+      if (p.netNewEnabled) {
+        const netNewPts = Math.round(state.numberOfProviders * p.panelSize * (p.netNewDiscoveryRate / 100));
+        formula += ` (+ ${fmtN(netNewPts)} pts × ${p.netNewAvgConditions} cond net new)`;
+      }
+      out.hccCapture = formula;
+    } else {
+      const planLines = dq.hccPlans.map((p: { name: string; panelSize: number; gapRate: number; currentRecaptureRate: number; uplift: string; netNewEnabled: boolean; netNewDiscoveryRate: number }) => {
+        const upliftPp = upliftMap[p.uplift] ?? 10;
+        const effective = Math.min(upliftPp, Math.max(0, 90 - p.currentRecaptureRate));
+        const gapPts = Math.round(state.numberOfProviders * p.panelSize * p.gapRate / 100);
+        return `${p.name}: ${fmtN(gapPts)} gap pts × +${effective}pp (${p.currentRecaptureRate}%→${p.currentRecaptureRate + effective}%)${p.netNewEnabled ? ` + net new` : ''}`;
+      }).join(' | ');
+      out.hccCapture = `${planLines} × ${dq.avgHccs} avg HCCs × ${dq.hccRealization}% realization`;
+    }
   }
   if (dq.denialsEnabled && (isOP || isED)) {
     const prevPct = denialsScenarios[dq.denialsScenario] ?? 0;
