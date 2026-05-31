@@ -2065,7 +2065,10 @@ const denialsScenarios: Record<ScenarioLevel, number> = { conservative: 25, typi
               >
                 <div className="bg-white rounded-b-lg p-5">
                   <p className="text-sm text-[#666666] leading-relaxed mb-4">
-                    Medical necessity denials occur when documentation doesn't show why the service was clinically warranted — the physician reasoned correctly, but the note didn't capture it. This is already tracked by most revenue cycle teams as a percentage of total encounters. Capturing clinical reasoning in real time may help reduce denials before they're filed.
+                    {isED
+                      ? "Payers review ED claims retrospectively — comparing the final diagnosis to the presenting complaint. When the note captures the outcome but not the presenting acuity, visits with benign final diagnoses can be denied as non-emergent. The physician correctly evaluated a high-risk presentation; the note just didn't capture why emergency evaluation was warranted. Documentation that captures the clinical picture at point of care can support medical necessity before the claim is reviewed."
+                      : "Medical necessity denials occur when documentation doesn't show why the service was clinically warranted — the physician reasoned correctly, but the note didn't capture it. This is already tracked by most revenue cycle teams as a percentage of total encounters. Capturing clinical reasoning in real time may help reduce denials before they're filed."
+                    }
                   </p>
 
                   <div className="h-px bg-[#E5E5E5] my-4" />

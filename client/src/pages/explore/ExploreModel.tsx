@@ -811,9 +811,9 @@ export default function ExploreModel({
               }
               case 'denialPrevention':
                 if (state.careSetting === 'ed') {
-                  return `ED denials are often status challenges — payers audit the admission note and downgrade inpatient to observation when the clinical reasoning for why the patient needed to stay isn't documented. Across ${fmt(encounters)} annual ED visits, this driver models ${fmtCur(value)} in potential value from documentation that can better support inpatient status at the point of care.`;
+                  return `Payers review ED claims retrospectively — comparing the final diagnosis to the presenting complaint. When the note captures the outcome but not the presenting acuity, visits with benign final diagnoses can be denied as non-emergent. The physician correctly evaluated a high-risk presentation; the note just didn't capture why emergency evaluation was warranted. Across ${fmt(encounters)} annual ED visits, this driver models ${fmtCur(value)} in potential value from documentation that can support medical necessity at the point of care.`;
                 }
-                return `The physician reasoned correctly — the note didn't show it. Across ${fmt(encounters)} annual claims, medical necessity denials that can't be appealed represent permanent revenue loss. This driver models ${fmtCur(value)} in potential value from documentation that can reduce these denials before they're filed.`;
+                return `The physician reasoned correctly — the note didn't show it. Across ${fmt(encounters)} annual outpatient claims, medical necessity denials occur when documentation doesn't capture why the service was clinically warranted. This driver models ${fmtCur(value)} in potential value from documentation that can reduce these denials before they're filed.`;
               case 'drgAccuracy':
                 return `CCs and MCCs shift DRG weight — a patient with acute kidney injury may move from DRG 470 to DRG 469, typically worth $2,000–$4,000 more per stay. The physician mentioned it at the bedside. It never made it into the note. Across ${fmt(encounters)} annual admissions, this driver models ${fmtCur(value)} in potential value from documentation that more accurately reflects case complexity.`;
               case 'cdiQueryReduction':

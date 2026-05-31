@@ -31,7 +31,7 @@ export default function DenialPreventionCalc({ state, updateDocQualityInputs }: 
     <div>
       <p className="text-sm text-[#666666] leading-relaxed mb-4">
         {isED
-          ? "ED denials are often status challenges — payers audit the admission note and downgrade inpatient to observation when the clinical reasoning for why the patient needed to stay isn't documented. Medical necessity denial rate tracks these claims as a percentage of total encounters. Capturing that reasoning at the point of care may help reduce these denials before the claim is filed."
+          ? "Payers review ED claims retrospectively — comparing the final diagnosis to the presenting complaint. When the note captures the outcome but not the presenting acuity, visits with benign final diagnoses can be denied as non-emergent. The physician correctly evaluated a high-risk presentation; the note just didn't capture why emergency evaluation was warranted. Medical necessity denial rate tracks ED visits denied on this basis as a percentage of total encounters. Documentation that captures the clinical picture at point of care can support medical necessity before the claim is reviewed."
           : "Medical necessity denials occur when documentation doesn't show why the service was clinically warranted — the physician reasoned correctly, but the note didn't capture it. This is already tracked by most revenue cycle teams as a percentage of total encounters. Capturing clinical reasoning in real time may help reduce denials before they're filed."
         }
       </p>
