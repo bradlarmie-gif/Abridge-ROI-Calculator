@@ -824,9 +824,9 @@ export default function ExploreModel({
               case 'nursingRetention':
                 return `The shift ends at 7pm and the nurse can't leave — charting isn't done. That experience, repeated every shift, is what drives the turnover decision. With ${fmt(providers)} nurses on staff, avoiding the departures that documentation spillover drives prevents ${fmtCur(value)} in recruiting and onboarding costs annually.`;
               case 'nursingAgency':
-                return `Agency and travel nurse premiums run $2,000–$4,000 per week per vacancy. As retention stabilizes across your nursing staff, avoided agency coverage adds ${fmtCur(value)} annually.`;
+                return `Travel and agency nurses run $2,500–$5,000/week. When nurses don't leave, the vacancy doesn't exist and the premium never gets paid. Across ${fmt(providers)} nurses, avoiding the agency fill that documentation-driven turnover would otherwise require saves ${fmtCur(value)} annually.`;
               case 'nursingOvertime':
-                return `Documentation completed during the shift rather than after it reduces overtime hours across ${fmt(providers)} nurses. At overtime rates, that converts to ${fmtCur(value)} annually in avoided labor cost.`;
+                return `Documentation is supposed to happen in the gaps between patient care — but those gaps shrink when acuity rises and ratios tighten. Documentation debt accumulates through the shift and gets paid off on overtime at the end. Across ${fmt(providers)} nurses, moving charting into the patient interaction eliminates ${fmtCur(value)} annually in post-shift overtime.`;
               case 'nursingHapi':
                 return `Real-time skin and turning documentation ensures risk factors are captured when observed, not reconstructed at end of shift. CMS does not reimburse for hospital-acquired pressure injuries — this driver models ${fmtCur(value)} in prevented HAPI costs annually.`;
               case 'nursingFalls':
