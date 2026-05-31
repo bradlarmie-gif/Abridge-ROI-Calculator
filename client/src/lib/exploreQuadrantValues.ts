@@ -118,12 +118,17 @@ export function computeRevenueBreakdown(state: ExploreState, _totalHoursSaved: n
     else result.wrvu = Math.round(value);
   }
   if (dq.hccEnabled && state.careSetting === 'outpatient') {
+    const upliftMap: Record<string, number> = { conservative: 5, typical: 10, optimistic: 15 };
     let totalGross = 0;
     for (const plan of dq.hccPlans) {
-      const planPts = state.numberOfProviders * plan.panelSize;
-      const gapPts = planPts * (plan.gapRate / 100);
-      const recap = (hccScenarios[plan.recaptureScenario] ?? 10) / 100;
-      totalGross += gapPts * recap * dq.avgHccs * plan.rafImpact * plan.annualPaymentPerRaf;
+      const upliftPp = upliftMap[plan.uplift] ?? 10;
+      const effectiveUplift = Math.min(upliftPp, Math.max(0, 90 - plan.currentRecaptureRate));
+      const gapPts = state.numberOfProviders * plan.panelSize * plan.gapRate / 100;
+      totalGross += gapPts * (effectiveUplift / 100) * dq.avgHccs * plan.valuePerHcc;
+      if (plan.netNewEnabled) {
+        const netNewPts = state.numberOfProviders * plan.panelSize * plan.netNewDiscoveryRate / 100;
+        totalGross += netNewPts * plan.netNewAvgConditions * plan.valuePerHcc;
+      }
     }
     result.hccCapture = Math.round(totalGross * (dq.hccRealization / 100));
   }

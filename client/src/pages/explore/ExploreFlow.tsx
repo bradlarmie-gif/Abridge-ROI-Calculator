@@ -367,11 +367,16 @@ export interface HccPlan {
   id: string;
   planType: 'medicare_advantage' | 'aca_marketplace' | 'medicaid_mco' | 'custom';
   name: string;
-  panelSize: number;           // patients on this plan per provider
-  gapRate: number;
-  rafImpact: number;
-  annualPaymentPerRaf: number;
-  recaptureScenario: 'conservative' | 'typical' | 'aggressive';
+  panelSize: number;              // patients on this plan per provider
+  valuePerHcc: number;            // $ per captured HCC condition (RAF impact × annual payment collapsed)
+  // Recapture
+  gapRate: number;                // % of plan patients with known conditions needing recode annually
+  currentRecaptureRate: number;   // % they currently capture (0–100)
+  uplift: 'conservative' | 'typical' | 'optimistic';
+  // Net new
+  netNewEnabled: boolean;
+  netNewDiscoveryRate: number;    // % of plan patients where ambient surfaces a never-coded condition
+  netNewAvgConditions: number;    // avg new HCC conditions per discovered patient
 }
 
 // Documentation Quality inputs
@@ -819,13 +824,16 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
       planType: 'medicare_advantage' as const,
       name: 'Medicare Advantage',
       panelSize: 300,
-      gapRate: 70,
-      rafImpact: 0.15,
-      annualPaymentPerRaf: 10000,
-      recaptureScenario: 'typical' as const,
+      valuePerHcc: 1500,
+      gapRate: 65,
+      currentRecaptureRate: 65,
+      uplift: 'typical' as const,
+      netNewEnabled: false,
+      netNewDiscoveryRate: 3,
+      netNewAvgConditions: 1.2,
     }],
     avgHccs: 0.5,
-    hccRealization: 40,
+    hccRealization: 50,
     denialsEnabled: false,
     denialsScenario: 'typical',
     denialRate: 8,
@@ -1250,12 +1258,17 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
 
     // HCC
     if (docQualityInputs.hccEnabled) {
+      const upliftMap: Record<string, number> = { conservative: 5, typical: 10, optimistic: 15 };
       let totalGross = 0;
       for (const plan of docQualityInputs.hccPlans) {
-        const planPatients = state.numberOfProviders * plan.panelSize;
-        const gapPts = planPatients * (plan.gapRate / 100);
-        const recap = (hccScenarios[plan.recaptureScenario] ?? 10) / 100;
-        totalGross += gapPts * recap * docQualityInputs.avgHccs * plan.rafImpact * plan.annualPaymentPerRaf;
+        const upliftPp = upliftMap[plan.uplift] ?? 10;
+        const effectiveUplift = Math.min(upliftPp, Math.max(0, 90 - plan.currentRecaptureRate));
+        const gapPatients = state.numberOfProviders * plan.panelSize * plan.gapRate / 100;
+        totalGross += gapPatients * (effectiveUplift / 100) * docQualityInputs.avgHccs * plan.valuePerHcc;
+        if (plan.netNewEnabled) {
+          const netNewPts = state.numberOfProviders * plan.panelSize * plan.netNewDiscoveryRate / 100;
+          totalGross += netNewPts * plan.netNewAvgConditions * plan.valuePerHcc;
+        }
       }
       total += totalGross * (docQualityInputs.hccRealization / 100);
     }
