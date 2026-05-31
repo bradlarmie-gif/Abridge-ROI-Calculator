@@ -43,7 +43,7 @@ export default function NursingAgencyCalc({ state, updateTimeDriverInputs }: Pro
     <div>
       <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">The Logic</p>
       <p className="text-sm text-[#666666] leading-relaxed mb-6">
-        Travel and agency nurses run $2,500–$5,000/week. At 20% annual turnover with 12-week vacancies, a hospital can be running premium labor for a quarter of its nursing staff at any given time — not as a crisis measure, just as the baseline cost of normal attrition. When nurses don't leave, the vacancy doesn't exist and the premium never gets paid.
+        Travel and agency nurses typically run $2,500–$5,000/week. At 20% annual turnover with 12-week vacancies, a hospital may be running premium labor for a quarter of its nursing staff at any given time — not as a crisis measure, just as the baseline cost of normal attrition. When nurses don't leave, the vacancy doesn't exist and that premium spend may be avoided.
       </p>
 
       {retentionOff ? (

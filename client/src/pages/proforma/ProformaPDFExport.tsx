@@ -1322,7 +1322,7 @@ function buildDriverFormula(
       const eligible   = Math.round(annEnc * (denialRate / 100));
       return [
         { label: `${n(annEnc)} encounters  ×  ${p(denialRate)} denial rate  →  unappealable subset targeted`, value: `${n(eligible)} claims at risk` },
-        { label: `Medical necessity denials — physician reasoned correctly, note didn't show it  ×  ${d(claimVal)} avg claim`, value: `prevented before filing` },
+        { label: `Medical necessity denials — physician reasoned correctly, note didn't show it  ×  ${d(claimVal)} avg claim`, value: `targeted for reduction` },
         { label: `Denials prevented  ×  avg claim value  ×  realization`, value: fmt(driverValue), isResult: true },
       ];
     }
@@ -1334,7 +1334,7 @@ function buildDriverFormula(
       const totalEnc = annEnc || providers * encPerProv;
       const casesDelta = Math.round(totalEnc * (drgRate > 0 ? drgRate / 100 : 0.03));
       return [
-        { label: `CCs/MCCs mentioned at bedside, not in note — conditions that shift DRG weight $2–4K per stay  ×  ${drgRate > 0 ? drgRate.toFixed(1) + "%" : "~2–4%"} capture lift`, value: `${n(casesDelta)} cases correctly coded` },
+        { label: `CCs/MCCs mentioned at bedside, not in note — conditions that may shift DRG weight $2–4K per stay  ×  ${drgRate > 0 ? drgRate.toFixed(1) + "%" : "~2–4%"} documentation lift`, value: `${n(casesDelta)} cases more accurately coded` },
         { label: `${n(casesDelta)} cases  ×  avg DRG payment delta from accurate complexity documentation`, value: fmt(driverValue), isResult: true },
       ];
     }
@@ -1346,7 +1346,7 @@ function buildDriverFormula(
       const annualQueries = queryVol > 0 ? queryVol * 12 : Math.round(annEnc * 0.08);
       const reduced   = Math.round(annualQueries * 0.35);
       return [
-        { label: `${n(annualQueries)} CDI queries/yr — conditions named at bedside, note said "elevated BMP"  →  Abridge closes the loop before CDI opens the chart`, value: `${n(reduced)} queries eliminated` },
+        { label: `${n(annualQueries)} CDI queries/yr — conditions named at bedside, note said "elevated BMP"  →  documentation captured at point of care can reduce queries`, value: `${n(reduced)} queries potentially avoided` },
         { label: `${n(reduced)} queries eliminated  ×  avg CDI specialist cost per query`, value: fmt(driverValue), isResult: true },
       ];
     }

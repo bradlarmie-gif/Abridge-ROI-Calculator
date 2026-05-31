@@ -46,7 +46,7 @@ export default function PhysicianLocumAgencyCalc({ state, updateTimeDriverInputs
     <div>
       <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">The Logic</p>
       <p className="text-sm text-[#666666] leading-relaxed mb-6">
-        When a physician leaves, the vacancy doesn't stay empty — it gets filled with locum or agency coverage at $3,000–$8,000/week above the cost of an employed physician. Every week of vacancy burns that premium. Retaining even one provider who would have left avoids 16+ weeks of that spend, which is why the locum line item often exceeds the replacement cost in total burn.
+        When a physician leaves, the vacancy is typically filled with locum or agency coverage at a premium commonly running $3,000–$8,000/week above the cost of an employed physician. Every week of vacancy incurs that cost. Reducing documentation-driven departures can significantly reduce this contracted-coverage spend — in many cases the locum line item exceeds the one-time replacement cost in total burn.
       </p>
 
       {blocked ? (

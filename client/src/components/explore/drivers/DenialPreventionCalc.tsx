@@ -32,8 +32,8 @@ export default function DenialPreventionCalc({ state, updateDocQualityInputs }: 
     <div>
       <p className="text-sm text-[#666666] leading-relaxed mb-4">
         {isED
-          ? "ED denials are often status challenges — payers audit the admission note and downgrade inpatient to observation when the clinical reasoning for why the patient needed to stay isn't documented. Abridge captures that reasoning at the point of care, before the claim is filed."
-          : "30–40% of claim denials stem from documentation that doesn't support medical necessity — not a coding error, not a missing auth. The physician reasoned correctly; the note didn't show it. Abridge captures that reasoning in real time, preventing these denials before they're filed."
+          ? "ED denials are often status challenges — payers audit the admission note and downgrade inpatient to observation when the clinical reasoning for why the patient needed to stay isn't documented. Capturing that reasoning at the point of care can help prevent these denials before the claim is filed."
+          : "An estimated 30–40% of claim denials are rooted in documentation that doesn't support medical necessity — not a coding error, not a missing auth. The physician reasoned correctly; the note didn't show it. Capturing that reasoning in real time can reduce these denials before they're filed."
         }
       </p>
 

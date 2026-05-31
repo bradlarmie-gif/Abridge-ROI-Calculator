@@ -33,7 +33,7 @@ export default function PatientAccessCalc({ state, updateTimeDriverInputs, total
   return (
     <div>
       <p className="text-sm text-[#666666] leading-relaxed mb-4">
-        Hours returned from documentation go back to the physician's schedule as schedulable capacity. Not all of it gets converted to visits — physicians use recovered time in different ways — but the portion that does translates directly into additional appointments, reduced wait times, and incremental revenue. The question is how much of that time your providers would realistically reinvest.
+        Hours returned from documentation become available capacity in the physician's schedule. Not all of it gets converted to visits — providers use recovered time in different ways — but the portion reinvested in patient care can translate into additional appointments, reduced wait times, and incremental revenue. The question is how much of that time your providers would realistically reinvest.
       </p>
 
       <div className="space-y-3 mb-6">

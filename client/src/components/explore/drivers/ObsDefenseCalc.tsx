@@ -19,7 +19,7 @@ export default function ObsDefenseCalc({ state, updateDocQualityInputs }: Props)
   return (
     <div>
       <p className="text-[13px] text-[#666666] leading-relaxed mb-4">
-        Payers audit every inpatient admission against the two-midnight rule — did the physician expect inpatient-level care at the time of admission? The physician made that judgment. But if the note doesn{"'"}t capture the clinical reasoning behind it, the payer downgrades to observation and claws back the difference. Abridge captures the admission conversation — the acuity, the alternatives considered, the {"\""}why this patient stays{"\""}  — so the record defends itself before the audit arrives.
+        Payers routinely audit inpatient admissions against the two-midnight rule — did the physician expect inpatient-level care at the time of admission? The physician made that judgment. But if the note doesn{"'"}t capture the clinical reasoning behind it, the payer may downgrade to observation and claw back the difference. Capturing the admission conversation — the acuity, the alternatives considered, the {"\""}why this patient stays{"\""}  — supports documentation that is better positioned when a payer audit arrives.
       </p>
       <div className="bg-[#FFF8F0] border border-[#EA2C00]/20 rounded-lg px-4 py-3 mb-6 flex items-start gap-2">
         <span className="text-[#EA2C00] text-sm mt-0.5 shrink-0">{"ⓘ"}</span>

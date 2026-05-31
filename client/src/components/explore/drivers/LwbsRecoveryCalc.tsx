@@ -26,7 +26,7 @@ export default function LwbsRecoveryCalc({ state, updateTimeDriverInputs }: Prop
   return (
     <div>
       <p className="text-sm text-[#666666] leading-relaxed mb-4">
-        Documentation time is part of the ED flow bottleneck. While a physician is scribing the prior patient's note, they're unavailable for the next. Faster documentation means the physician is available sooner — door-to-doc time drops, wait times drop, and fewer patients give up and leave before being seen.
+        Documentation time is part of the ED flow bottleneck. While a physician is scribing the prior patient's note, they're unavailable for the next. Faster documentation means the physician is available sooner — door-to-doc time and wait times can decrease, reducing the number of patients who leave without being seen.
       </p>
 
       {state.minutesSavedPerEncounter > 0 && (

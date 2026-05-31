@@ -39,7 +39,7 @@ export default function NursingRetentionCalc({ state, updateTimeDriverInputs }: 
     <div>
       <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">The Logic</p>
       <p className="text-sm text-[#666666] leading-relaxed mb-6">
-        The specific experience that drives nursing turnover decisions: the shift ends at 7pm and the nurse can't leave until charting is done — 8pm, 8:30, sometimes later. It's unpaid or straight-time work for something that should have happened in the flow of care, and it means never fully decompressing from the shift. Abridge moves documentation into the patient interaction itself, so nurses finish charting when the encounter ends — not after.
+        The specific experience that drives nursing turnover decisions: the shift ends at 7pm and the nurse can't leave until charting is done — 8pm, 8:30, sometimes later. It's unpaid or straight-time work for something that should have happened in the flow of care, and it means never fully decompressing from the shift. Moving documentation into the patient interaction can help nurses complete charting when the encounter ends rather than after.
       </p>
 
       <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Your Organization</p>

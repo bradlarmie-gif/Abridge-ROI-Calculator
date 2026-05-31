@@ -31,7 +31,7 @@ export default function NursingOvertimeCalc({ state, updateTimeDriverInputs }: P
     <div>
       <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">The Logic</p>
       <p className="text-sm text-[#666666] leading-relaxed mb-6">
-        Nurses are doing direct patient care all shift — documentation is supposed to happen in the gaps, but those gaps shrink when acuity rises and ratios tighten. Documentation debt accumulates through the shift and gets paid off on overtime at the end. Abridge moves charting into the patient interaction itself, so the debt doesn't build and nurses leave when their shift ends.
+        Nurses are doing direct patient care all shift — documentation is supposed to happen in the gaps, but those gaps shrink when acuity rises and ratios tighten. Documentation debt accumulates through the shift and gets paid off on overtime at the end. Moving charting into the patient interaction can reduce that debt, helping nurses complete documentation before their shift ends.
       </p>
 
       <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Your Organization</p>

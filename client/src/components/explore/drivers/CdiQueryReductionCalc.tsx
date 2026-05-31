@@ -25,7 +25,7 @@ export default function CdiQueryReductionCalc({ state, updateDocQualityInputs }:
   return (
     <div>
       <p className="text-[13px] text-[#666666] leading-relaxed mb-8">
-        CDI queries exist because the physician mentioned a condition at the bedside — sepsis, acute kidney injury, respiratory failure — but the note said "elevated BMP" or "shortness of breath." CDI has to send a query to get the physician to codify it. Abridge closes that loop at the point of care, so the diagnosis is in the note before CDI ever opens the chart.
+        CDI queries often exist because the physician mentioned a condition at the bedside — sepsis, acute kidney injury, respiratory failure — but the note said "elevated BMP" or "shortness of breath." CDI has to send a query to get the physician to codify it. Capturing that clinical context at the point of care can close that loop, reducing the queries CDI needs to send.
       </p>
 
       {/* STEP 1 */}
