@@ -38,13 +38,8 @@ export default function NursingRetentionCalc({ state, updateTimeDriverInputs }: 
   return (
     <div>
       <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">The Logic</p>
-      <p className="text-sm text-black mb-3">
-        Documentation burden is a leading contributor to nurse burnout and turnover.
-        Of nurses who leave, roughly 40% cite burnout-related reasons. Reducing charting time directly addresses this driver.
-      </p>
-      <p className="text-sm text-[#666666] mb-6">
-        Reclaimed documentation time reduces end-of-shift pressure — the primary mechanism behind burnout reduction.
-        Less charting burden means less burnout-driven turnover.
+      <p className="text-sm text-[#666666] leading-relaxed mb-6">
+        The specific experience that drives nursing turnover decisions: the shift ends at 7pm and the nurse can't leave until charting is done — 8pm, 8:30, sometimes later. It's unpaid or straight-time work for something that should have happened in the flow of care, and it means never fully decompressing from the shift. Abridge moves documentation into the patient interaction itself, so nurses finish charting when the encounter ends — not after.
       </p>
 
       <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Your Organization</p>

@@ -784,9 +784,9 @@ export default function ExploreModel({
               case 'admissionCapture':
                 return `Of LWBS-recovered patients, a portion require inpatient admission. Capturing that downstream revenue adds ${fmtCur(value)} annually on top of the ED visit recovery.`;
               case 'providerWellbeing':
-                return `With ${fmt(providers)} providers on staff, each departure runs $250K–$500K in recruiting, locum coverage, and ramp-up. This driver models ${fmtCur(value)} in avoided replacement cost annually when documentation burden stops driving people toward the door.`;
+                return `The documentation problem isn't the work — it's the timing. Notes reconstructed from memory at the end of a shift or at home late at night. Physicians call it "pajama time." Work that bleeds into personal life with no natural stopping point. With ${fmt(providers)} providers, avoiding the departures that documentation burden drives prevents ${fmtCur(value)} in recruiting, locum coverage, and ramp-up costs annually.`;
               case 'physicianLocumAgency':
-                return `Every retained provider eliminates a coverage gap that would otherwise require locum or agency fill. At your scale, avoided contract coverage adds ${fmtCur(value)} annually.`;
+                return `When a physician leaves, the vacancy gets filled with locum or agency coverage at $3,000–$8,000/week above the cost of an employed physician. Every week of vacancy burns that premium. At your scale, avoiding those gaps adds ${fmtCur(value)} annually in avoided contract coverage spend.`;
               case 'wrvu':
                 return `MDM-based E/M billing requires documenting problems addressed, data reviewed, and risk of management. The physician touched all three — the note said "HTN follow-up, refill meds." Across ${fmt(encounters)} annual encounters, recovering that gap between complexity delivered and complexity documented adds ${fmtCur(value)} annually.`;
               case 'edEmLevel':
@@ -822,7 +822,7 @@ export default function ExploreModel({
               case 'obsDefense':
                 return `Every inpatient admission gets audited against the two-midnight rule — did the physician's clinical judgment at admission expect the patient to need inpatient-level care? The physician made that judgment. But if the note says "admitted for monitoring" instead of capturing the acuity reasoning behind it, the payer downgrades to observation and claws back the difference. Abridge captures the admission conversation — the "why this patient stays" — building the documentation that survives a RAC audit. At ${fmt(encounters)} annual admissions, that defends ${fmtCur(value)} in at-risk inpatient revenue annually.`;
               case 'nursingRetention':
-                return `With ${fmt(providers)} nurses on staff, each departure costs $50K–$100K in recruiting and onboarding. Documentation burden is the most controllable retention lever — this driver models ${fmtCur(value)} in avoided replacement cost annually.`;
+                return `The shift ends at 7pm and the nurse can't leave — charting isn't done. That experience, repeated every shift, is what drives the turnover decision. With ${fmt(providers)} nurses on staff, avoiding the departures that documentation spillover drives prevents ${fmtCur(value)} in recruiting and onboarding costs annually.`;
               case 'nursingAgency':
                 return `Agency and travel nurse premiums run $2,000–$4,000 per week per vacancy. As retention stabilizes across your nursing staff, avoided agency coverage adds ${fmtCur(value)} annually.`;
               case 'nursingOvertime':

@@ -68,8 +68,7 @@ export default function ProviderWellbeingCalc({ state, updateTimeDriverInputs, t
       </p>
 
       <p className="text-sm text-[#666666] leading-relaxed mb-4">
-        Documentation burden is the #1 driver of burnout. Burnout is the #1 reason physicians leave.
-        Reducing documentation time can help retain providers who would otherwise leave.
+        The problem isn't that documentation is hard — it's when it happens. In EHR-heavy environments, charting gets pushed after the patient leaves, reconstructed from memory at the end of a shift or at home late at night. Physicians call it "pajama time." It's not just a workload problem, it's a boundary problem — the work never ends because the chart is always waiting. That's the specific mechanism that makes documentation burden a burnout driver, not just a nuisance.
       </p>
 
       <div className="h-px bg-[#E5E5E5] my-4" />
