@@ -4,27 +4,17 @@ import { motion, AnimatePresence } from "framer-motion";
 import type { ExploreCalcComponentProps } from "@/lib/exploreDrivers";
 import type { HccPlan } from "@/pages/explore/ExploreFlow";
 
-const HCC_SCENARIOS: Record<string, number> = { conservative: 6, typical: 10, aggressive: 15 };
+const UPLIFT_OPTIONS: { key: 'conservative' | 'typical' | 'optimistic'; label: string; pp: number }[] = [
+  { key: 'conservative', label: 'Conservative', pp: 5 },
+  { key: 'typical',      label: 'Typical',      pp: 10 },
+  { key: 'optimistic',   label: 'Optimistic',   pp: 15 },
+];
 
 const PLAN_TYPE_DEFAULTS: Record<HccPlan['planType'], Omit<HccPlan, 'id'>> = {
-  medicare_advantage: { planType: 'medicare_advantage', name: 'Medicare Advantage', panelSize: 300, gapRate: 70, rafImpact: 0.15, annualPaymentPerRaf: 10000, recaptureScenario: 'typical' },
-  aca_marketplace:    { planType: 'aca_marketplace',    name: 'ACA Marketplace',    panelSize: 150, gapRate: 65, rafImpact: 0.10, annualPaymentPerRaf: 4000,  recaptureScenario: 'typical' },
-  medicaid_mco:       { planType: 'medicaid_mco',       name: 'Medicaid MCO',       panelSize: 200, gapRate: 60, rafImpact: 0.05, annualPaymentPerRaf: 5000,  recaptureScenario: 'typical' },
-  custom:             { planType: 'custom',              name: 'Custom Plan',        panelSize: 100, gapRate: 65, rafImpact: 0.12, annualPaymentPerRaf: 5000,  recaptureScenario: 'typical' },
-};
-
-const RAF_HINTS: Record<HccPlan['planType'], string> = {
-  medicare_advantage: '0.10–0.20',
-  aca_marketplace:    '0.05–0.15',
-  medicaid_mco:       '0.04–0.10',
-  custom:             '',
-};
-
-const PAYMENT_HINTS: Record<HccPlan['planType'], string> = {
-  medicare_advantage: '$8,000–14,000',
-  aca_marketplace:    '$3,000–6,000',
-  medicaid_mco:       '$2,000–5,000',
-  custom:             '',
+  medicare_advantage: { planType: 'medicare_advantage', name: 'Medicare Advantage', panelSize: 300, valuePerHcc: 1500, gapRate: 65, currentRecaptureRate: 65, uplift: 'typical', netNewEnabled: false, netNewDiscoveryRate: 3, netNewAvgConditions: 1.2 },
+  aca_marketplace:    { planType: 'aca_marketplace',    name: 'ACA Marketplace',    panelSize: 150, valuePerHcc: 800,  gapRate: 60, currentRecaptureRate: 60, uplift: 'typical', netNewEnabled: false, netNewDiscoveryRate: 2, netNewAvgConditions: 1.0 },
+  medicaid_mco:       { planType: 'medicaid_mco',       name: 'Medicaid MCO',       panelSize: 200, valuePerHcc: 600,  gapRate: 55, currentRecaptureRate: 55, uplift: 'typical', netNewEnabled: false, netNewDiscoveryRate: 2, netNewAvgConditions: 1.0 },
+  custom:             { planType: 'custom',              name: 'Custom Plan',        panelSize: 100, valuePerHcc: 1000, gapRate: 60, currentRecaptureRate: 60, uplift: 'typical', netNewEnabled: false, netNewDiscoveryRate: 3, netNewAvgConditions: 1.2 },
 };
 
 const PLAN_TYPE_LABELS: Record<HccPlan['planType'], string> = {
@@ -39,21 +29,27 @@ type Props = ExploreCalcComponentProps;
 export default function HccCaptureCalc({ state, updateDocQualityInputs }: Props) {
   const { docQualityInputs } = state;
   const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [netNewOpen, setNetNewOpen] = useState<Record<string, boolean>>({});
 
   const plans = docQualityInputs.hccPlans;
+  const upliftMap: Record<string, number> = { conservative: 5, typical: 10, optimistic: 15 };
 
   const planCalcs = plans.map(plan => {
-    const planPatients = state.numberOfProviders * plan.panelSize;
-    const gapPatients = planPatients * (plan.gapRate / 100);
-    const recapturePct = (HCC_SCENARIOS[plan.recaptureScenario] ?? 10) / 100;
-    const recaptured = gapPatients * recapturePct;
-    const hccs = recaptured * docQualityInputs.avgHccs;
-    const rafPoints = hccs * plan.rafImpact;
-    const gross = rafPoints * plan.annualPaymentPerRaf;
-    return { planPatients, gapPatients, hccs, rafPoints, gross };
+    const upliftPp = upliftMap[plan.uplift] ?? 10;
+    const effectiveUplift = Math.min(upliftPp, Math.max(0, 90 - plan.currentRecaptureRate));
+    const projectedRate = plan.currentRecaptureRate + effectiveUplift;
+    const gapPatients = state.numberOfProviders * plan.panelSize * (plan.gapRate / 100);
+    const recapturedPts = gapPatients * (effectiveUplift / 100);
+    const recaptureGross = recapturedPts * docQualityInputs.avgHccs * plan.valuePerHcc;
+    let netNewGross = 0;
+    if (plan.netNewEnabled) {
+      const netNewPts = state.numberOfProviders * plan.panelSize * (plan.netNewDiscoveryRate / 100);
+      netNewGross = netNewPts * plan.netNewAvgConditions * plan.valuePerHcc;
+    }
+    return { upliftPp, effectiveUplift, projectedRate, gapPatients, recapturedPts, recaptureGross, netNewGross, planGross: recaptureGross + netNewGross };
   });
 
-  const totalGross = planCalcs.reduce((s, c) => s + c.gross, 0);
+  const totalGross = planCalcs.reduce((s, c) => s + c.planGross, 0);
   const hccRevenueNet = totalGross * (docQualityInputs.hccRealization / 100);
 
   const fmt$ = (n: number) => '$' + Math.round(n).toLocaleString();
@@ -81,19 +77,22 @@ export default function HccCaptureCalc({ state, updateDocQualityInputs }: Props)
     });
   };
 
+  const toggleNetNew = (id: string) => {
+    setNetNewOpen(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
   return (
     <div>
       <p className="text-sm text-[#666666] leading-relaxed mb-3">
-        When providers use ambient documentation, chronic conditions addressed verbally are more likely to appear in the note. Documented conditions drive risk-adjusted payment across multiple plan types.
+        When providers use ambient documentation, chronic conditions addressed verbally are more likely to appear in the note. Better documentation drives higher HCC recapture rates, improving risk-adjusted payment across plan types.
       </p>
 
       <div className="h-px bg-[#E5E5E5] my-4" />
 
-      {/* Plan cards */}
       <div className="space-y-3">
         {plans.map((plan, idx) => {
           const calc = planCalcs[idx];
-          const recapturePct = HCC_SCENARIOS[plan.recaptureScenario] ?? 10;
+          const isNetNewOpen = netNewOpen[plan.id] ?? false;
           return (
             <div key={plan.id} className="border border-[#E5E5E5] rounded-xl p-4 bg-[#FAFAFA]">
               {/* Plan name + type buttons */}
@@ -130,8 +129,8 @@ export default function HccCaptureCalc({ state, updateDocQualityInputs }: Props)
                 )}
               </div>
 
-              {/* Row 1: patients/provider + gap rate */}
-              <div className="grid grid-cols-2 gap-3 mb-3">
+              {/* Patients/provider + $ per HCC */}
+              <div className="grid grid-cols-2 gap-3 mb-4">
                 <div>
                   <p className="text-xs text-[#888888] mb-1">Patients / provider</p>
                   <div className="flex items-center gap-0.5">
@@ -146,83 +145,148 @@ export default function HccCaptureCalc({ state, updateDocQualityInputs }: Props)
                   </div>
                 </div>
                 <div>
-                  <p className="text-xs text-[#888888] mb-1">Gap rate</p>
-                  <div className="flex items-center gap-0.5">
-                    <input
-                      type="number"
-                      value={plan.gapRate}
-                      onChange={(e) => updatePlan(plan.id, { gapRate: parseFloat(e.target.value) || 0 })}
-                      className="w-14 h-8 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none transition-colors"
-                    />
-                    <span className="text-xs text-[#888888]">%</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Row 2: RAF impact + annual payment */}
-              <div className="grid grid-cols-2 gap-3 mb-4">
-                <div>
-                  <p className="text-xs text-[#888888] mb-1">RAF score / HCC</p>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={plan.rafImpact}
-                    onChange={(e) => updatePlan(plan.id, { rafImpact: parseFloat(e.target.value) || 0 })}
-                    className="w-full h-8 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none transition-colors"
-                  />
-                  {RAF_HINTS[plan.planType] && (
-                    <p className="text-[10px] text-[#999999] mt-0.5">Typically {RAF_HINTS[plan.planType]}</p>
-                  )}
-                </div>
-                <div>
-                  <p className="text-xs text-[#888888] mb-1">Annual $ / RAF point</p>
+                  <p className="text-xs text-[#888888] mb-1 flex items-center gap-1">
+                    $ per captured HCC
+                    <Info className="w-3 h-3 text-[#BBBBBB] cursor-help" title="Combined value of RAF score × annual payment per RAF point. Typically $800–$1,500 for MA." />
+                  </p>
                   <div className="flex items-center gap-0.5">
                     <span className="text-xs text-[#888888]">$</span>
                     <input
                       type="text"
                       inputMode="numeric"
-                      value={plan.annualPaymentPerRaf ? plan.annualPaymentPerRaf.toLocaleString("en-US") : ""}
-                      onChange={(e) => { const v = parseFloat(e.target.value.replace(/,/g, "")) || 0; updatePlan(plan.id, { annualPaymentPerRaf: v }); }}
+                      value={plan.valuePerHcc ? plan.valuePerHcc.toLocaleString("en-US") : ""}
+                      onChange={(e) => { const v = parseFloat(e.target.value.replace(/,/g, "")) || 0; updatePlan(plan.id, { valuePerHcc: v }); }}
                       className="w-full h-8 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none transition-colors"
                     />
                   </div>
-                  {PAYMENT_HINTS[plan.planType] && (
-                    <p className="text-[10px] text-[#999999] mt-0.5">Typically {PAYMENT_HINTS[plan.planType]}</p>
-                  )}
                 </div>
               </div>
 
-              {/* Per-plan recapture scenario */}
+              {/* RECAPTURE section */}
               <div className="mb-3">
-                <p className="text-[10px] font-medium text-[#888888] uppercase tracking-[1px] mb-1.5">Recapture Scenario</p>
-                <div className="flex items-center gap-1.5">
-                  {(['conservative', 'typical', 'aggressive'] as const).map((level) => (
+                <p className="text-[10px] font-semibold text-[#888888] uppercase tracking-[1px] mb-2">Recapture</p>
+                <div className="grid grid-cols-2 gap-3 mb-3">
+                  <div>
+                    <p className="text-xs text-[#888888] mb-1">HCC gap rate</p>
+                    <div className="flex items-center gap-0.5">
+                      <input
+                        type="number"
+                        value={plan.gapRate}
+                        onChange={(e) => updatePlan(plan.id, { gapRate: parseFloat(e.target.value) || 0 })}
+                        className="w-14 h-8 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none transition-colors"
+                      />
+                      <span className="text-xs text-[#888888]">%</span>
+                    </div>
+                    <p className="text-[10px] text-[#AAAAAA] mt-0.5">% of pts with documented gaps</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-[#888888] mb-1">Current recapture rate</p>
+                    <div className="flex items-center gap-0.5">
+                      <input
+                        type="number"
+                        value={plan.currentRecaptureRate}
+                        onChange={(e) => updatePlan(plan.id, { currentRecaptureRate: parseFloat(e.target.value) || 0 })}
+                        className="w-14 h-8 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none transition-colors"
+                      />
+                      <span className="text-xs text-[#888888]">%</span>
+                    </div>
+                    <p className="text-[10px] text-[#AAAAAA] mt-0.5">% of gaps currently captured</p>
+                  </div>
+                </div>
+                <p className="text-xs text-[#888888] mb-1.5">Abridge uplift</p>
+                <div className="flex items-center gap-1.5 mb-2">
+                  {UPLIFT_OPTIONS.map(({ key, label, pp }) => (
                     <button
-                      key={level}
-                      onClick={() => updatePlan(plan.id, { recaptureScenario: level })}
+                      key={key}
+                      onClick={() => updatePlan(plan.id, { uplift: key })}
                       className={`flex-1 py-1.5 rounded-lg border text-center transition-all ${
-                        plan.recaptureScenario === level
+                        plan.uplift === key
                           ? 'bg-[#EA2C00] border-[#EA2C00] text-white'
                           : 'bg-white border-[#E5E5E5] text-[#444] hover:border-[#D1D5DB]'
                       }`}
                     >
-                      <p className={`text-[9px] ${plan.recaptureScenario === level ? 'text-white/80' : 'text-[#888888]'}`}>
-                        {level === 'conservative' ? 'Conservative' : level === 'typical' ? 'Typical' : 'Optimistic'}
-                      </p>
-                      <p className="text-xs font-semibold">{HCC_SCENARIOS[level]}%</p>
+                      <p className={`text-[9px] ${plan.uplift === key ? 'text-white/80' : 'text-[#888888]'}`}>{label}</p>
+                      <p className="text-xs font-semibold">+{pp}pp</p>
                     </button>
                   ))}
                 </div>
+                <div className="flex items-center gap-2 bg-[#F5F0EB] rounded-lg px-3 py-2">
+                  <span className="text-xs text-[#888888]">{plan.currentRecaptureRate}%</span>
+                  <div className="flex-1 h-1 bg-[#D1C4B0] rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-[#EA2C00] rounded-full"
+                      style={{ width: `${Math.max(0, Math.min(100, calc.effectiveUplift > 0 && (100 - plan.currentRecaptureRate) > 0 ? (calc.effectiveUplift / (100 - plan.currentRecaptureRate)) * 100 : 0))}%` }}
+                    />
+                  </div>
+                  <span className="text-xs font-semibold text-[#EA2C00]">{calc.projectedRate}%</span>
+                  <span className="text-[10px] text-[#888888]">with Abridge</span>
+                  {calc.effectiveUplift < calc.upliftPp && (
+                    <span className="text-[9px] text-[#AAAAAA]">(capped)</span>
+                  )}
+                </div>
               </div>
 
-              {/* Formula row */}
-              <div className="bg-[#F5F0EB] rounded-lg px-3 py-2">
-                <div className="flex justify-between items-center text-xs">
-                  <span className="text-[#666666]">
-                    {fmtN(state.numberOfProviders)} × {fmtN(plan.panelSize)} × {plan.gapRate}% gap × {recapturePct}% recapture
-                  </span>
-                  <span className="font-semibold text-black ml-2 flex-shrink-0">= {fmtN(Math.round(calc.hccs))} HCCs</span>
-                </div>
+              {/* NET NEW section */}
+              <div className="border-t border-[#E5E5E5] pt-3">
+                <button
+                  onClick={() => {
+                    const opening = !isNetNewOpen;
+                    if (opening && !plan.netNewEnabled) updatePlan(plan.id, { netNewEnabled: true });
+                    if (!opening) updatePlan(plan.id, { netNewEnabled: false });
+                    toggleNetNew(plan.id);
+                  }}
+                  className="flex items-center gap-2 w-full text-left"
+                >
+                  <ChevronDown className={`w-3.5 h-3.5 text-[#888888] transition-transform ${isNetNewOpen ? 'rotate-0' : '-rotate-90'}`} />
+                  <span className="text-[10px] font-semibold text-[#888888] uppercase tracking-[1px]">Net New Discovery</span>
+                  <span className="text-[10px] text-[#AAAAAA] ml-1">– conditions Abridge surfaces that were never coded</span>
+                </button>
+                <AnimatePresence>
+                  {isNetNewOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="mt-3 grid grid-cols-2 gap-3">
+                        <div>
+                          <p className="text-xs text-[#888888] mb-1">Discovery rate</p>
+                          <div className="flex items-center gap-0.5">
+                            <input
+                              type="number"
+                              step="0.1"
+                              value={plan.netNewDiscoveryRate}
+                              onChange={(e) => updatePlan(plan.id, { netNewDiscoveryRate: parseFloat(e.target.value) || 0 })}
+                              className="w-14 h-8 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none transition-colors"
+                            />
+                            <span className="text-xs text-[#888888]">%</span>
+                          </div>
+                          <p className="text-[10px] text-[#AAAAAA] mt-0.5">% of patients with new conditions</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-[#888888] mb-1">Avg new conditions</p>
+                          <input
+                            type="number"
+                            step="0.1"
+                            value={plan.netNewAvgConditions}
+                            onChange={(e) => updatePlan(plan.id, { netNewAvgConditions: parseFloat(e.target.value) || 0 })}
+                            className="w-full h-8 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none transition-colors"
+                          />
+                          <p className="text-[10px] text-[#AAAAAA] mt-0.5">per patient discovered</p>
+                        </div>
+                      </div>
+                      <div className="mt-2 bg-[#F5F0EB] rounded-lg px-3 py-2">
+                        <div className="flex justify-between items-center text-xs">
+                          <span className="text-[#666666]">
+                            {fmtN(state.numberOfProviders)} × {fmtN(plan.panelSize)} × {plan.netNewDiscoveryRate}% × {plan.netNewAvgConditions} cond
+                          </span>
+                          <span className="font-semibold text-black ml-2 flex-shrink-0">= {fmt$(Math.round(calc.netNewGross))}</span>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </div>
           );
@@ -244,16 +308,17 @@ export default function HccCaptureCalc({ state, updateDocQualityInputs }: Props)
         <div className="space-y-3 mb-3">
           {plans.map((plan, idx) => {
             const calc = planCalcs[idx];
-            const recapturePct = HCC_SCENARIOS[plan.recaptureScenario] ?? 10;
             return (
               <div key={plan.id} className="space-y-1">
                 <p className="text-xs font-semibold text-[#888888] uppercase tracking-wide">{plan.name}</p>
                 <p className="text-sm text-[#666666]">
-                  {fmtN(Math.round(calc.gapPatients))} pts × {docQualityInputs.avgHccs} HCCs × {recapturePct}% = <span className="font-medium text-black">{fmtN(Math.round(calc.hccs))} HCCs</span>
+                  {fmtN(Math.round(calc.gapPatients))} gap pts × {calc.effectiveUplift}pp × {docQualityInputs.avgHccs} HCCs × {fmt$(plan.valuePerHcc)} = <span className="font-semibold text-black">{fmt$(Math.round(calc.recaptureGross))}</span>
                 </p>
-                <p className="text-sm text-[#666666]">
-                  {fmtN(Math.round(calc.hccs))} HCCs × {plan.rafImpact} RAF = <span className="font-medium text-black">{calc.rafPoints.toFixed(1)} RAF pts</span> × {fmt$(plan.annualPaymentPerRaf)}/pt = <span className="font-semibold text-black">{fmt$(Math.round(calc.gross))}</span>
-                </p>
+                {plan.netNewEnabled && calc.netNewGross > 0 && (
+                  <p className="text-sm text-[#666666]">
+                    Net new: {fmtN(Math.round(state.numberOfProviders * plan.panelSize * plan.netNewDiscoveryRate / 100))} pts × {plan.netNewAvgConditions} cond × {fmt$(plan.valuePerHcc)} = <span className="font-semibold text-black">{fmt$(Math.round(calc.netNewGross))}</span>
+                  </p>
+                )}
               </div>
             );
           })}
@@ -321,9 +386,9 @@ export default function HccCaptureCalc({ state, updateDocQualityInputs }: Props)
                   <span className="text-xs text-[#888888]">%</span>
                 </div>
               </div>
-              {(docQualityInputs.avgHccs !== 0.5 || docQualityInputs.hccRealization !== 40) && (
+              {(docQualityInputs.avgHccs !== 0.5 || docQualityInputs.hccRealization !== 50) && (
                 <button
-                  onClick={() => updateDocQualityInputs({ avgHccs: 0.5, hccRealization: 40 })}
+                  onClick={() => updateDocQualityInputs({ avgHccs: 0.5, hccRealization: 50 })}
                   className="text-xs text-[#EA2C00] hover:underline mt-1"
                   data-testid="button-reset-hcc-defaults"
                 >
