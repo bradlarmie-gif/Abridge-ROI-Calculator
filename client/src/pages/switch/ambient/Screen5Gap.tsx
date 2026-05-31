@@ -35,7 +35,7 @@ const NEXT_MOVES: Record<Domain, Record<1|2|3|4, string>> = {
     4: "Revenue is integrated and strategic. The work ahead is depth — using documentation intelligence as an active tool in payer strategy and CDI governance.",
   },
   workforce: {
-    1: "Compare ambient adopters to non-adopters on 12-month turnover data. HR can pull it in a day. The calculation is simple — and the number it produces is almost never small.",
+    1: "Provider experience data is sitting in HR right now — turnover rate, time-to-fill, engagement scores, agency spend. Pulling that baseline before deployment is what makes the before/after story board-worthy. Most organizations that skip this step spend month six wishing they had the numbers.",
     2: "Behavioral signals are visible. The move to Demonstrated is one HR data pull: ambient adopters vs. non-adopters on turnover, with a dollar figure attached. Clinical ops and HR need to own it together — that's usually the only barrier.",
     3: "Retention value is confirmed. The next move is elevating it: provider experience data as a board-level asset in recruitment positioning and workforce planning — not just a satisfaction metric.",
     4: "Workforce advantage is fully integrated. Provider experience data is informing board-level decisions. The work ahead is depth and compounding.",

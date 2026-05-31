@@ -43,8 +43,8 @@ const SCORE_BANDS = [
 ] as const;
 
 const BAND_DESCRIPTIONS: Record<string, string> = {
-  'Unmeasured': "The deployment is live and value is generating. No domain has been formally measured — the baseline for capturing that value is still ahead.",
-  'Emerging': "Observable signals exist across the deployment. Value is generating — the formal attribution work is at different stages across the four domains.",
+  'Unmeasured': "No domain has a confirmed figure yet. Value is almost certainly there — the measurement infrastructure to capture it is the work ahead.",
+  'Emerging': "Observable signals across multiple domains. The formal attribution work is at different stages — directional data exists, defensible numbers don't yet.",
   'Demonstrated': "At least one domain has moved from signal to proof — a calculable, attributable figure that can stand up to scrutiny.",
   'Strategic Impact': "Demonstrated value across most or all domains. Documentation intelligence has become a strategic asset — informing what this organization can compete for, serve, and sustain.",
 };
@@ -74,7 +74,7 @@ const FIRST_MOVES: Record<Domain, Record<number, string>> = {
   workforce: {
     1: "Provider experience rarely surfaces in formal measurement before someone looks for it. The organizations that have started here almost always found more than they expected — and the baseline data is simpler to establish than most assume.",
     2: "The organizations where behavioral signal converts to a confirmed retention figure have something in common: the conversation between clinical ops and HR has already happened. The data exists in both systems — it just hasn't been placed in the same room yet.",
-    3: "A retained provider has a calculable value. The organizations that have made this calculation tend to describe it as the moment the deployment stopped being a productivity tool and became a workforce strategy.",
+    3: "A retained provider has a calculable value. The organizations that have made this calculation tend to describe it as the moment ambient stopped being a productivity tool and became a workforce strategy.",
     4: "Provider experience data is a board-level input at this stage. The work is integration — deepening how workforce intelligence informs care model decisions.",
   },
   risk: {
@@ -909,14 +909,14 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
   [domainLevels, tenure]);
 
   const lowestDomainInsight = FIRST_MOVES[lowestDomain]?.[domainLevels[lowestDomain]]
-    ?? 'The domain analysis shows where the framework sees this deployment next.';
+    ?? 'The domain analysis shows where the most meaningful opportunity sits.';
 
   const handleShare = async () => {
     const domainLines = DOMAIN_ORDER.map(d =>
       `${DOMAIN_LABELS[d]}: ${LEVEL_NAMES[domainLevels[d] as ActivationLevel]} — ${ACTIVATION_LABELS[d][domainLevels[d] as ActivationLevel]}`
     ).join('\n');
     const text = [
-      'Ambient Assessment by Abridge',
+      'Ambient Assessment',
       `Score: ${totalScore}/100 · ${scoreBandLabel}`,
       '',
       domainLines,
@@ -929,7 +929,7 @@ export default function Screen3Score({ onNext, onBack, onNavigateToDomain }: Scr
     ].join('\n');
     try {
       if (typeof navigator !== 'undefined' && navigator.share) {
-        await navigator.share({ title: 'Ambient Assessment by Abridge', text });
+        await navigator.share({ title: 'Ambient Assessment', text });
       } else {
         await navigator.clipboard.writeText(text);
         setCopied(true);

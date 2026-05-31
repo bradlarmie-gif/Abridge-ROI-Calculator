@@ -382,6 +382,7 @@ export default function AmbientNarrativeFlow({
   const [initialDomain, setInitialDomain] = useState<Domain>('capacity');
   const [showScoreReveal, setShowScoreReveal] = useState(false);
   const [showFrameworkIntro, setShowFrameworkIntro] = useState(false);
+  const [hasSeenFrameworkIntro, setHasSeenFrameworkIntro] = useState(false);
   const { state, dispatch } = useAssessment();
   const { inputs } = state;
   const currentStep = state.navigation.currentStep;
@@ -407,7 +408,11 @@ export default function AmbientNarrativeFlow({
     // After Scale (step 4), show the framework intro before domains
     if (currentStep === 4) {
       if (!canProceedFromScale) return;
-      setShowFrameworkIntro(true);
+      if (!hasSeenFrameworkIntro) {
+        setShowFrameworkIntro(true);
+        return;
+      }
+      goToStep(5);
       return;
     }
 
@@ -438,6 +443,7 @@ export default function AmbientNarrativeFlow({
 
   const handleFrameworkIntroComplete = () => {
     setShowFrameworkIntro(false);
+    setHasSeenFrameworkIntro(true);
     goToStep(5);
   };
 
@@ -500,7 +506,7 @@ export default function AmbientNarrativeFlow({
         totalSteps={TOTAL_SCREENS}
         stepName={STEP_NAMES[currentStep - 1]}
         onBack={handleBack}
-        showBack={currentStep !== 5}
+        showBack={true}
         onHome={handleHome}
       />
       <UnifiedHeaderSpacer />

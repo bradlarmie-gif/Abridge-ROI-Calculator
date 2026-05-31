@@ -71,7 +71,7 @@ export const DEFAULT_SWITCH_INPUTS: SwitchInputs = {
   qualityReportingFriction: "manageable" as const,
   structuredDataUsability: "some" as const,
   entryEstimate: null,
-  revenuePerVisit: 0,
+  revenuePerVisit: 200,
   conversionFactor: 33,
   capacityScore: 0,
   capacityGap: 0,

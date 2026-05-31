@@ -1050,13 +1050,13 @@ const domainAtThisLevel: Record<string, Record<number, string>> = {
     4: "Recovered capacity is fully integrated into your operating model. Hiring decisions, panel targets, and access strategy all reflect what ambient has made possible.",
   },
   revenue: {
-    1: "Documentation quality has improved across your deployment. Whether that improvement is changing coding accuracy, denial rates, or wRVU capture is still an open question. The revenue cycle team hasn\u2019t been asked yet.",
+    1: "Documentation quality is improving. Whether that improvement is changing coding accuracy, denial rates, or wRVU capture is still an open question. The revenue cycle team hasn\u2019t been asked yet.",
     2: "Your organization has observed directional signals \u2014 trends in coding, denials, or collections suggesting documentation is affecting reimbursement. The formal validation is in progress.",
     3: "A confirmed before/after number exists. The revenue cycle team is part of the ambient conversation. Documentation quality is a managed revenue lever, not incidental, but engineered.",
     4: "Documentation intelligence drives revenue cycle strategy, payer positioning, and financial planning. Documentation quality is a standing organizational metric.",
   },
   workforce: {
-    1: "Providers are reporting less after-hours documentation time. That burden reduction has measurable value \u2014 but it hasn\u2019t been quantified or connected to retention or labor costs yet.",
+    1: "Documentation burden is showing signs of lifting. That relief has measurable value \u2014 but it hasn\u2019t been quantified or connected to retention or labor costs yet.",
     2: "Effort reduction is measured. In-clinic and after-hours time savings are quantified. What hasn\u2019t been asked yet is what turnover is costing \u2014 and how much of it traces back to documentation burden.",
     3: "Documentation burden is connected to turnover risk. The workforce economics are being understood. Provider experience data is informing staffing and recruitment decisions.",
     4: "Provider sustainability is fully integrated into workforce strategy. Documentation burden reduction is a variable in the FTE model, recruitment positioning, and labor cost management.",
@@ -1755,10 +1755,10 @@ const AmbientAssessmentDocument = ({ data }: { data: AmbientAssessmentPDFData })
   return (
     <Document>
       <PDFCoverPage
-        reportLabel="Ambient AI Value Assessment"
+        reportLabel="Ambient Assessment"
         title={data.organizationName || "Your Organization"}
         subtitle={archetype.name}
-        preparedBy={data.preparedBy || "Abridge Partner Success"}
+        preparedBy={data.preparedBy || ""}
         disclaimerText="This assessment is for strategic planning purposes. All estimates are based on organizational self-assessment and your inputs. Benchmarks reflect published industry sources. Individual results vary."
       />
       <AssessmentPage data={data} archetype={archetype} />

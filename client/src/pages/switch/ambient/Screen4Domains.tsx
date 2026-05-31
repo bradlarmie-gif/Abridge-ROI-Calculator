@@ -250,7 +250,7 @@ function MeasurementBlock({
       {liveResult && (
         <div className="mt-3 flex items-baseline gap-2">
           <span className="text-base font-bold text-[#EA2C00]">{liveResult}</span>
-          <span className="text-xs text-[#AAAAAA]">/ yr estimated across your deployment</span>
+          <span className="text-xs text-[#AAAAAA]">/ yr estimated opportunity</span>
         </div>
       )}
     </div>
@@ -1435,7 +1435,7 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
         <div className="flex flex-col gap-5">
           <div>
             <label className="block text-sm font-semibold text-[#EA2C00] mb-3">
-              What signs of provider relief have you observed since deployment?
+              What signs of documentation burden relief are you seeing across providers?
             </label>
             <div className="flex flex-col gap-2.5">
               {WORKFORCE_L1_SIGNALS.map((signal, i) => {
@@ -1483,7 +1483,7 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
         <div className="flex flex-col gap-5">
           <div>
             <label className="block text-sm font-semibold text-[#EA2C00] mb-2">
-              Which behavioral changes are you seeing as a consistent pattern across providers?
+              Which provider behaviors are changing — or where do you see the most potential for change?
             </label>
             <div className="flex flex-col gap-2">
               {BEHAVIORAL_CHANGES.map((change, i) => {
@@ -1581,10 +1581,10 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
           {/* Gate: has a retention impact analysis been completed? */}
           <div>
             <label className="block text-sm font-semibold text-[#EA2C00] mb-1">
-              Has a workforce retention impact analysis been completed?
+              Has your organization run a formal retention impact analysis?
             </label>
             <p className="text-xs text-[#888888] mb-3">
-              This is the line between Level 2 and Level 3 — a confirmed change in retention metrics, not just behavioral observations.
+              Level 3 requires confirmed retention data — a measurable change in turnover or related metrics, not just behavioral observations.
             </p>
             <div className="flex flex-col gap-2">
               {[
@@ -1608,7 +1608,7 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
           {retentionFormalReview === 'not_yet' && (
             <div className="rounded-xl border border-[#E5E7EB] bg-[#F7F7F5] px-4 py-3">
               <p className="text-sm text-[#525252] leading-relaxed">
-                If you're seeing behavioral changes but haven't yet confirmed retention impact, <strong>Level 2 — Behavioral Signals Visible</strong> is the right fit. Come back to Level 3 once the analysis is done.
+                Behavioral signals without confirmed retention data = Level 2. Return to Level 3 once the analysis is done.
               </p>
             </div>
           )}
@@ -1745,13 +1745,13 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
         {/* 1. Governance — leadership elevation */}
         <div>
           <label className="block text-sm font-semibold text-[#EA2C00] mb-1">
-            How elevated is provider experience data in your organization's leadership structure?
+            Is provider experience data — including documentation burden metrics — part of your executive or board-level reporting?
           </label>
           <div className="flex flex-col gap-2 mt-2">
             {[
-              { id: 'board_level',      label: 'Board or executive committee — provider experience metrics are part of board reporting' },
-              { id: 'executive_only',   label: 'Senior leadership level — executive ownership, not yet at the board' },
-              { id: 'operational',      label: 'Operational level — tracked by HR or ops, not yet elevated to executive strategy' },
+              { id: 'board_level',      label: 'Yes — provider experience data reaches the board or executive committee' },
+              { id: 'executive_only',   label: 'Partially — executive awareness, but not yet board-level visibility' },
+              { id: 'operational',      label: 'Not yet — lives at the HR or operational level' },
             ].map((opt) => (
               <button key={opt.id} type="button" onClick={() => setDomainInput('workforceLeadershipLevel', opt.id)}
                 className={`rounded-lg p-3.5 text-left text-sm transition-all cursor-pointer active:scale-[0.99] ${workforceLeadershipLevel === opt.id ? 'bg-[#FFF5F2] border-2 border-[#EA2C00] text-[#1A1A1A] font-semibold' : 'bg-white border-2 border-[rgba(26,26,26,0.12)] text-[#1A1A1A] hover:border-[rgba(26,26,26,0.25)]'}`}
@@ -1769,7 +1769,7 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
         {/* 2. Strategic integrations */}
         <div>
           <label className="block text-sm font-semibold text-[#EA2C00] mb-2">
-            Where is documentation burden data informing workforce strategy?
+            Where is documentation experience data actively shaping workforce decisions?
           </label>
           <div className="flex flex-col gap-2.5">
             {WORKFORCE_STRATEGIES.map((strategy, i) => {
@@ -1793,7 +1793,7 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
 
         <div>
           <label className="block text-sm font-semibold text-[#EA2C00] mb-2">
-            Which workforce outcomes has your organization formally attributed to ambient?
+            Which workforce outcomes has your organization connected to documentation experience?
           </label>
           <div className="flex flex-col gap-2.5">
             {WORKFORCE_OUTCOMES.map((outcome, i) => {
@@ -1941,7 +1941,7 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
         <div className="flex flex-col gap-5">
           <div>
             <label className="block text-sm font-medium text-black mb-3">
-              Which downstream changes have you observed since deploying ambient documentation?
+              Which downstream changes are visible in your documentation workflows today?
             </label>
             <div className="flex flex-col gap-2.5">
               {DOWNSTREAM_SIGNALS.map((signal, i) => {
@@ -2411,13 +2411,13 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
         {/* 1. Governance — executive ownership and board visibility */}
         <div>
           <label className="block text-sm font-semibold text-[#EA2C00] mb-1">
-            How is documentation quality strategy owned and elevated in your organization?
+            Who owns documentation quality strategy — and how far has it traveled up the organization?
           </label>
           <div className="flex flex-col gap-2 mt-2">
             {[
-              { id: 'board_level',    label: 'Named executive owner — and documentation quality data has been at the board or executive committee' },
-              { id: 'owner_only',     label: 'Named executive owner — but not yet elevated to the board' },
-              { id: 'operational',    label: 'No named strategic owner yet — lives at the operational or department level' },
+              { id: 'board_level',    label: 'Named executive owner — documentation quality data has reached the board' },
+              { id: 'owner_only',     label: 'Named executive owner — but not yet board visibility' },
+              { id: 'operational',    label: 'No named strategic owner — lives at the operational or department level' },
             ].map((opt) => (
               <button key={opt.id} type="button" onClick={() => handleDocQualityGovernance(opt.id)}
                 className={`rounded-lg p-3.5 text-left text-sm transition-all cursor-pointer active:scale-[0.99] ${docQualityGovernance === opt.id ? 'bg-[#FFF5F2] border-2 border-[#EA2C00] text-[#1A1A1A] font-semibold' : 'bg-white border-2 border-[rgba(26,26,26,0.12)] text-[#1A1A1A] hover:border-[rgba(26,26,26,0.25)]'}`}
@@ -2435,7 +2435,7 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
         {/* 2. Strategic integrations */}
         <div>
           <label className="block text-sm font-semibold text-[#EA2C00] mb-2">
-            Where is documentation quality embedded in your strategic programs?
+            Where is documentation quality actively connected to strategic programs?
           </label>
           <div className="flex flex-col gap-2.5">
             {STRATEGIC_INTEGRATIONS.map((item, i) => {
@@ -2466,7 +2466,7 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
 
         <div>
           <label className="block text-sm font-semibold text-[#EA2C00] mb-1">
-            Has documentation quality data been used in a value-based contract negotiation, risk corridor review, or payer performance report?
+            Has documentation quality data entered a payer relationship — contract negotiation, risk corridor review, or performance reporting?
           </label>
           <div className="flex flex-col gap-2">
             {[
