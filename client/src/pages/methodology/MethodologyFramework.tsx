@@ -34,10 +34,10 @@ const DOMAINS = [
 ];
 
 const STAGES = [
-  { n: "01", range: "Months 1–3", label: "Fragments", description: "Individual note quality improves. Clinicians recover time daily. The signal is present — the pattern is not yet." },
-  { n: "02", range: "Months 4–12", label: "Patterns", description: "Coding trends shift. Denial rates begin to move. Retention data starts to reflect what changed in the room." },
-  { n: "03", range: "Year 1–2", label: "Proof", description: "Longitudinal outcomes emerge. The model's assumptions become your organization's own data." },
-  { n: "04", range: "Year 3+", label: "Institution", description: "Clinical knowledge architecture transforms. The conversation layer becomes infrastructure — not a point solution, a foundation." },
+  { n: "01", range: "Months 1–3", label: "Unmeasured", description: "Value is generating — documentation improves, time returns, signals appear. Nothing has been formally measured or attributed yet. This is where most deployments begin." },
+  { n: "02", range: "Months 4–12", label: "Emerging", description: "Coding trends shift. Denial rates begin to move. Retention data starts to reflect what changed in the room. Direction is visible — a formal number isn't." },
+  { n: "03", range: "Year 1–2", label: "Demonstrated", description: "Longitudinal outcomes emerge. A formal dollar figure is on the books — calculable, attributable, defensible to finance." },
+  { n: "04", range: "Year 3+", label: "Strategic", description: "Documentation intelligence informs how the organization competes — care model design, payer strategy, workforce planning, clinical AI. Infrastructure, not a point solution." },
 ];
 
 const SETTINGS = [

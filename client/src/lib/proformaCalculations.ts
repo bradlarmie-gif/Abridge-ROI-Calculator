@@ -655,11 +655,13 @@ export function calculateProformaSummary(
   const lastYearRows = cashFlows.slice(-12);
   const runRateValue = lastYearRows.reduce((s, r) => s + r.totalValue, 0);
   const runRateInvestment = lastYearRows.reduce((s, r) => s + r.investment, 0);
+  const atScaleReturn = runRateInvestment > 0 ? totalSystemValue / runRateInvestment : 0;
 
   return {
     totalSystemValue,
     simpleROI,
     valueToCost,
+    atScaleReturn,
     totalHours,
     paybackMonth,
     termNet,

@@ -151,6 +151,7 @@ export interface ProformaSummary {
   totalSystemValue: number;
   simpleROI: number;
   valueToCost: number;
+  atScaleReturn: number;
   totalHours: number;
   paybackMonth: number | null;
   termNet: number;
