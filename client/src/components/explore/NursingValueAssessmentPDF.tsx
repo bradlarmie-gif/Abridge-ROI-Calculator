@@ -2083,7 +2083,7 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
             How this assessment was built.
           </Text>
           <Text style={{ fontSize: 9.5, color: colors.secondary, lineHeight: 1.6, marginBottom: 16 }}>
-            {`This model was built in a working session using three inputs: the staffing data and assumptions you provided, Abridge's deployment medians from comparable acute care nursing units, and published clinical benchmarks. Every value line is formula-driven, source-cited, and auditable to the rows below. Hard value lines (Workforce, Capacity) run on your specific headcount, cost, and utilization data — no estimates, no averages. Potential value lines (Quality) apply published incidence rates with documentation-attributable prevention fractions that are conservative by design. Where Abridge deployment averages are used as defaults, they reflect medians from live implementations and can be replaced with your institutional data at any time.`}
+            {`This model was built using inputs specific to your organization: ${fmtNum(data.nurseFTEs)} nursing FTEs across ${fmtNum(data.staffedBeds)} staffed beds, ${fmtNum(data.patientDaysAnnual)} patient days annually, and ${data.utilizationPercent}% Abridge utilization. The base-case estimate is ${fmtCurrency(data.totalAnnualValue)} in annual value against ${fmtCurrency(data.annualInvestment)} in annual investment — ${data.annualInvestment > 0 ? (data.totalAnnualValue / data.annualInvestment).toFixed(1) : "N/A"}× Year 1 ROI. Every value line is formula-driven, source-cited, and auditable to the rows below. Hard value lines (Workforce) run on your specific headcount, cost, and utilization data. Potential value lines (Quality) apply published incidence rates with conservative documentation-attributable prevention fractions. Where Abridge deployment averages are used as defaults, they reflect medians from live implementations and can be replaced with your institutional data.`}
           </Text>
 
           {/* Domain header helper — inline */}
@@ -2204,6 +2204,26 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
             <View style={{ flexDirection: "row", paddingVertical: 5, borderTopWidth: 0.5, borderTopColor: colors.separator }}>
               <Text style={{ flex: 1.4, fontSize: 8.5, fontWeight: "bold", color: colors.primaryText }}>HAC Penalty</Text>
               <Text style={{ flex: 4.5, fontSize: 8.5, color: colors.secondary, lineHeight: 1.45 }}>1% of Medicare revenue if in the bottom performance quartile. Displayed as risk context only — not included in the ROI total.</Text>
+            </View>
+          </View>
+
+          {/* Sensitivity range */}
+          <View wrap={false} style={{ marginBottom: 12 }}>
+            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 6 }}>
+              <View style={{ width: 3, height: 12, backgroundColor: colors.tertiary, marginRight: 8 }} />
+              <Text style={{ fontSize: 8, fontWeight: "bold", color: colors.primaryText, textTransform: "uppercase", letterSpacing: 2 }}>Scenario Range</Text>
+            </View>
+            <View style={{ flexDirection: "row", paddingVertical: 5, borderTopWidth: 0.5, borderTopColor: colors.separator }}>
+              <Text style={{ flex: 1.4, fontSize: 8.5, fontWeight: "bold", color: colors.primaryText }}>Annual Value</Text>
+              <Text style={{ flex: 3, fontSize: 8.5, color: colors.secondary, lineHeight: 1.45 }}>
+                {`Conservative (−25%): ${fmtCurrency(Math.round(data.totalAnnualValue * 0.75))}  ·  Base case: ${fmtCurrency(data.totalAnnualValue)}  ·  Optimistic (+25%): ${fmtCurrency(Math.round(data.totalAnnualValue * 1.25))}. Annual investment (${fmtCurrency(data.annualInvestment)}) is held constant across all three scenarios.`}
+              </Text>
+            </View>
+            <View style={{ flexDirection: "row", paddingVertical: 5, borderTopWidth: 0.5, borderTopColor: colors.separator }}>
+              <Text style={{ flex: 1.4, fontSize: 8.5, fontWeight: "bold", color: colors.primaryText }}>Net Annual Value</Text>
+              <Text style={{ flex: 3, fontSize: 8.5, color: colors.secondary, lineHeight: 1.45 }}>
+                {`Conservative: ${fmtCurrency(Math.round(data.totalAnnualValue * 0.75) - data.annualInvestment)}  ·  Base case: ${fmtCurrency(data.netAnnualValue)}  ·  Optimistic: ${fmtCurrency(Math.round(data.totalAnnualValue * 1.25) - data.annualInvestment)}.`}
+              </Text>
             </View>
           </View>
 
