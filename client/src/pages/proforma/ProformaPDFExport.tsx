@@ -1334,8 +1334,8 @@ function buildDriverFormula(
       const totalEnc = annEnc || providers * encPerProv;
       const casesDelta = Math.round(totalEnc * (drgRate > 0 ? drgRate / 100 : 0.03));
       return [
-        { label: `${n(Math.round(totalEnc))} inpatient encounters  ×  ${drgRate > 0 ? drgRate.toFixed(1) + "%" : "~2–4%"} documentation accuracy lift`, value: `${n(casesDelta)} cases correctly coded` },
-        { label: `${n(casesDelta)} cases  ×  avg DRG payment delta from accurate documentation`, value: fmt(driverValue), isResult: true },
+        { label: `CCs/MCCs mentioned at bedside, not in note — conditions that shift DRG weight $2–4K per stay  ×  ${drgRate > 0 ? drgRate.toFixed(1) + "%" : "~2–4%"} capture lift`, value: `${n(casesDelta)} cases correctly coded` },
+        { label: `${n(casesDelta)} cases  ×  avg DRG payment delta from accurate complexity documentation`, value: fmt(driverValue), isResult: true },
       ];
     }
 
@@ -1346,8 +1346,8 @@ function buildDriverFormula(
       const annualQueries = queryVol > 0 ? queryVol * 12 : Math.round(annEnc * 0.08);
       const reduced   = Math.round(annualQueries * 0.35);
       return [
-        { label: `${n(annualQueries)} CDI queries/yr  →  reduction from complete first-pass documentation`, value: `${n(reduced)} queries eliminated` },
-        { label: `${n(reduced)} queries  ×  avg time per query  ×  CDI staff cost/hr`, value: fmt(driverValue), isResult: true },
+        { label: `${n(annualQueries)} CDI queries/yr — conditions named at bedside, note said "elevated BMP"  →  Abridge closes the loop before CDI opens the chart`, value: `${n(reduced)} queries eliminated` },
+        { label: `${n(reduced)} queries eliminated  ×  avg CDI specialist cost per query`, value: fmt(driverValue), isResult: true },
       ];
     }
 

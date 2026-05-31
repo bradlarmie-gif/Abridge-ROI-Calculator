@@ -780,7 +780,7 @@ export default function ExploreModel({
                 return `${fmt(hoursSaved)} hours returned across ${fmt(providers)} providers. Reinvesting ${realizePct}% of that time into additional visits at ${visitsPerWk} visit${visitsPerWk === 1 ? '' : 's'}/provider/week generates ${fmtCur(value)} annually${providers > 0 ? ` — ${fmtCur(Math.round(value / providers))} per provider` : ''}.`;
               }
               case 'lwbsRecovery':
-                return `Across ${fmt(encounters)} annual ED visits, reducing LWBS through faster documentation generates ${fmtCur(value)} in recovered visit revenue annually.`;
+                return `Documentation time is part of the ED flow bottleneck — while a physician finishes scribing, they're unavailable for the next patient. Across ${fmt(encounters)} annual ED visits, faster documentation shortens door-to-doc time, reduces wait times, and recovers ${fmtCur(value)} in visit revenue from patients who would otherwise leave without being seen.`;
               case 'admissionCapture':
                 return `Of LWBS-recovered patients, a portion require inpatient admission. Capturing that downstream revenue adds ${fmtCur(value)} annually on top of the ED visit recovery.`;
               case 'providerWellbeing':
@@ -816,9 +816,9 @@ export default function ExploreModel({
                 }
                 return `The physician reasoned correctly — the note didn't show it. Across ${fmt(encounters)} annual claims, medical necessity denials that can't be appealed represent permanent revenue loss. Abridge captures the clinical reasoning in real time, preventing ${fmtCur(value)} in documentation-driven denials before they're filed.`;
               case 'drgAccuracy':
-                return `Across ${fmt(encounters)} annual admissions, conditions discussed at bedside but missing from the note shift DRG weight by 0.3–0.5 each — worth $2,000–$4,000 per stay. Capturing that complexity in real time recovers ${fmtCur(value)} annually.`;
+                return `CCs and MCCs shift DRG weight — a patient with acute kidney injury moves from DRG 470 to DRG 469, worth $2,000–$4,000 more per stay. The physician mentioned it at the bedside. It never made it into the note. Across ${fmt(encounters)} annual admissions, capturing those conditions at the point of care recovers ${fmtCur(value)} annually.`;
               case 'cdiQueryReduction':
-                return `Each CDI query costs $40–$60 in specialist labor. Across ${fmt(encounters)} admissions, documentation that closes gaps at the point of care eliminates ${fmtCur(value)} in query overhead annually.`;
+                return `CDI queries exist because conditions were mentioned at the bedside — sepsis, AKI, respiratory failure — but the note said "elevated BMP" or "shortness of breath." CDI has to query to get the physician to codify it. Across ${fmt(encounters)} admissions, documentation that closes that loop at the point of care eliminates ${fmtCur(value)} in query overhead annually.`;
               case 'obsDefense':
                 return `Every inpatient admission gets audited against the two-midnight rule — did the physician's clinical judgment at admission expect the patient to need inpatient-level care? The physician made that judgment. But if the note says "admitted for monitoring" instead of capturing the acuity reasoning behind it, the payer downgrades to observation and claws back the difference. Abridge captures the admission conversation — the "why this patient stays" — building the documentation that survives a RAC audit. At ${fmt(encounters)} annual admissions, that defends ${fmtCur(value)} in at-risk inpatient revenue annually.`;
               case 'nursingRetention':

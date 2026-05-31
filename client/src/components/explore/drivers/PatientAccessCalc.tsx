@@ -32,8 +32,8 @@ export default function PatientAccessCalc({ state, updateTimeDriverInputs, total
 
   return (
     <div>
-      <p className="text-sm text-black mb-4">
-        What percentage of recovered documentation time could realistically be reinvested into seeing additional patients?
+      <p className="text-sm text-[#666666] leading-relaxed mb-4">
+        Hours returned from documentation go back to the physician's schedule as schedulable capacity. Not all of it gets converted to visits — physicians use recovered time in different ways — but the portion that does translates directly into additional appointments, reduced wait times, and incremental revenue. The question is how much of that time your providers would realistically reinvest.
       </p>
 
       <div className="space-y-3 mb-6">
