@@ -811,7 +811,7 @@ export default function ExploreModel({
                 return `Across your ${planNameList} populations, chronic conditions addressed verbally are routinely absent from the note — suppressing risk scores and the payment they drive. Ambient documentation systematically closes that gap${hasNetNew ? ', including previously uncoded conditions,' : ''}, driving ${fmtCur(value)} in annual risk-adjusted revenue.`;
               }
               case 'denialPrevention':
-                return `Across ${fmt(encounters)} annual claims, documentation gaps that trigger unappealable medical-necessity denials represent a recoverable loss. Capturing clinical reasoning at the point of care prevents ${fmtCur(value)} in documentation-related denials annually.`;
+                return `The physician reasoned correctly — the note didn't show it. Across ${fmt(encounters)} annual claims, medical necessity denials that can't be appealed represent permanent revenue loss. Abridge captures the clinical reasoning in real time, preventing ${fmtCur(value)} in documentation-driven denials before they're filed.`;
               case 'drgAccuracy':
                 return `Across ${fmt(encounters)} annual admissions, conditions discussed at bedside but missing from the note shift DRG weight by 0.3–0.5 each — worth $2,000–$4,000 per stay. Capturing that complexity in real time recovers ${fmtCur(value)} annually.`;
               case 'cdiQueryReduction':

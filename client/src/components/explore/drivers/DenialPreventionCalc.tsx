@@ -31,8 +31,10 @@ export default function DenialPreventionCalc({ state, updateDocQualityInputs }: 
   return (
     <div>
       <p className="text-sm text-[#666666] leading-relaxed mb-4">
-        Documentation gaps drive 30-40% of denials that cannot be appealed—permanent revenue loss.
-        Abridge captures clinical reasoning and medical necessity in real-time, preventing denials before they occur.
+        {isED
+          ? "ED denials are often status challenges — payers audit the admission note and downgrade inpatient to observation when the clinical reasoning for why the patient needed to stay isn't documented. Abridge captures that reasoning at the point of care, before the claim is filed."
+          : "30–40% of claim denials stem from documentation that doesn't support medical necessity — not a coding error, not a missing auth. The physician reasoned correctly; the note didn't show it. Abridge captures that reasoning in real time, preventing these denials before they're filed."
+        }
       </p>
 
       <div className="h-px bg-[#E5E5E5] my-4" />
