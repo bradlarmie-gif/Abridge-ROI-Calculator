@@ -161,8 +161,8 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
   const isPresetSelected = (presetValue: number) => encountersPerProvider === presetValue && !usingTotalInput;
   const isUtilizationPresetSelected = (presetValue: number) => state.utilizationPercent === presetValue;
 
-  const pageTitle = isNursing ? "Your Nursing Program" : isInpatient ? "Your Hospitalist Program" : isED ? "Your Emergency Department" : "Your Outpatient Practice";
-  const providerLabel = isNursing ? "Nurse FTEs" : isInpatient ? "Hospitalists" : isED ? "ED Physicians" : "Number of Providers";
+  const pageTitle = isNursing ? "Your Nursing Program" : isInpatient ? "Your Inpatient Program" : isED ? "Your Emergency Department" : "Your Outpatient Practice";
+  const providerLabel = isNursing ? "Nurse FTEs" : isInpatient ? "Inpatient Providers" : isED ? "ED Physicians" : "Number of Providers";
   const encounterLabel = isInpatient ? "Admissions" : "Encounters";
 
   return (
@@ -352,7 +352,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                     {isED
                       ? "Based on ~240 working days. Typical reflects blended community ED."
                       : isInpatient
-                        ? "Annual admissions per hospitalist."
+                        ? "Annual admissions per inpatient provider."
                         : "Based on ~240 working days per year."
                     }
                   </p>
@@ -657,7 +657,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                   ) : isInpatient ? (
                     <>
                       <div className="flex justify-between items-center gap-2">
-                        <span className="text-sm text-white/50 min-w-0 truncate">Hospitalists</span>
+                        <span className="text-sm text-white/50 min-w-0 truncate">Inpatient Providers</span>
                         <span className="text-base font-semibold text-white flex-shrink-0">
                           {state.numberOfProviders > 0 ? formatNumber(state.numberOfProviders) : '—'}
                         </span>

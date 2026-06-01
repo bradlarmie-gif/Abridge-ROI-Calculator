@@ -62,7 +62,7 @@ export default function ProviderWellbeingCalc({ state, updateTimeDriverInputs, t
 
   return (
     <div>
-      <p className="text-sm text-[#888888] mb-3">Your {isInpatient ? 'hospitalists' : 'providers'} would get back:</p>
+      <p className="text-sm text-[#888888] mb-3">Your {isInpatient ? 'inpatient providers' : 'providers'} would get back:</p>
 
       <div className="text-center mb-4">
         <p className="text-3xl font-bold text-[#EA2C00]" data-testid="text-wellbeing-hours-per-week">{hoursPerProviderPerWeek} hours per week</p>
@@ -105,7 +105,7 @@ export default function ProviderWellbeingCalc({ state, updateTimeDriverInputs, t
           </p>
 
           <div className="mb-4">
-            <label className="text-sm text-black mb-1.5 block">Annual {isInpatient ? 'hospitalist' : 'provider'} turnover rate</label>
+            <label className="text-sm text-black mb-1.5 block">Annual {isInpatient ? 'inpatient provider' : 'provider'} turnover rate</label>
             <div className="relative">
               <FormattedNumberInput
                 value={turnoverValue}
@@ -116,7 +116,7 @@ export default function ProviderWellbeingCalc({ state, updateTimeDriverInputs, t
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
             </div>
             <p className="text-xs text-[#888888] italic mt-1">
-              {isInpatient ? 'Hospitalist typical range: 8–12%' : 'Industry average: 6–7%'}
+              {isInpatient ? 'Inpatient provider typical range: 8–12%' : 'Industry average: 6–7%'}
             </p>
           </div>
 
@@ -135,7 +135,7 @@ export default function ProviderWellbeingCalc({ state, updateTimeDriverInputs, t
           </div>
 
           <div className="mb-4">
-            <label className="text-sm text-black mb-1.5 block">Cost to replace one {isInpatient ? 'hospitalist' : 'provider'}</label>
+            <label className="text-sm text-black mb-1.5 block">Cost to replace one {isInpatient ? 'inpatient provider' : 'provider'}</label>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">$</span>
               <FormattedNumberInput
@@ -147,7 +147,7 @@ export default function ProviderWellbeingCalc({ state, updateTimeDriverInputs, t
             </div>
             <p className="text-xs text-[#888888] italic mt-1">
               {isInpatient
-                ? 'Hospitalist replacement typically $250–$350K (search, recruitment, onboarding, ramp). Default $300K.'
+                ? 'Inpatient provider replacement typically $250–$350K (search, recruitment, onboarding, ramp). Default $300K.'
                 : 'Estimated cost to replace a departing provider. Range $300K–$1M depending on specialty. Default $400K (conservative midpoint).'}
             </p>
           </div>
@@ -259,7 +259,7 @@ export default function ProviderWellbeingCalc({ state, updateTimeDriverInputs, t
                 <span className="text-black">{turnoverValue}%</span>
               </div>
               <div className="flex justify-between gap-2">
-                <span className="text-[#666666]">= {isInpatient ? 'Hospitalists' : 'Providers'} leaving per year</span>
+                <span className="text-[#666666]">= {isInpatient ? 'Inpatient providers' : 'Providers'} leaving per year</span>
                 <span className="text-black">{retentionCalcs.providersLeavingPerYear.toFixed(1)}</span>
               </div>
               <div className="h-px bg-[#E5E5E5] my-2" />
@@ -277,7 +277,7 @@ export default function ProviderWellbeingCalc({ state, updateTimeDriverInputs, t
                 <span className="text-black">{retentionScenarios[td.retentionImpactScenario]}%</span>
               </div>
               <div className="flex justify-between gap-2">
-                <span className="text-[#666666]">= {isInpatient ? 'Hospitalists' : 'Providers'} retained</span>
+                <span className="text-[#666666]">= {isInpatient ? 'Inpatient providers' : 'Providers'} retained</span>
                 <span className="text-black">{retentionCalcs.providersRetained.toFixed(2)}</span>
               </div>
               <div className="h-px bg-[#E5E5E5] my-2" />
