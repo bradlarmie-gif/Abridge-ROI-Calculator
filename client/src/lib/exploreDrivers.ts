@@ -19,6 +19,7 @@ import DenialPreventionCalc from "@/components/explore/drivers/DenialPreventionC
 import DrgAccuracyCalc from "@/components/explore/drivers/DrgAccuracyCalc";
 import CdiQueryReductionCalc from "@/components/explore/drivers/CdiQueryReductionCalc";
 import ObsDefenseCalc from "@/components/explore/drivers/ObsDefenseCalc";
+import InpatientDischargePlanningCalc from "@/components/explore/drivers/InpatientDischargePlanningCalc";
 
 export type ExploreQuadrant = 'Capacity' | 'Workforce' | 'Revenue' | 'Quality';
 
@@ -1533,6 +1534,31 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
       benchmarkHint: 'Enter total staff hours per week spent reworking denied or rejected ED claims. ED denial rates typically run 5–10% of volume. Measurable via billing system reports or RCM team logs.',
     },
     valueArc: { signal: { timing: 'Weeks 4-8', metric: 'Note completeness ↑' }, trend: { timing: 'Month 1-3', metric: 'First-pass acceptance ↑' }, proof: { timing: 'Month 2-4', metric: 'Claims rework hours ↓' } },
+  },
+
+  // IP Capacity (quantified)
+  {
+    id: 'ipDischargePlanning',
+    label: 'Discharge Planning Initiation',
+    shortDescription: 'Ambient progress notes surface discharge-readiness language hours earlier. Case management starts SNF placement, transport, and home health orders sooner — moving more discharges before noon and freeing beds for afternoon admissions.',
+    tagline: 'Earlier discharge-ready language in the progress note → earlier planning start → beds available sooner',
+    quadrant: 'Capacity',
+    settings: ['inpatient'],
+    visibility: 'quantified',
+    enabledStateKey: 'ipDischargePlanningEnabled',
+    expandedStateKey: 'ipDischargePlanningExpanded',
+    calcComponent: InpatientDischargePlanningCalc,
+    trackedMeasureIds: [],
+    measureDefaults: {
+      deltaLabel: 'Discharges before noon',
+      deltaUnit: '%',
+      valuePerUnitLabel: 'Net revenue per admission',
+      valuePerUnitDefault: 12000,
+      realizationDefault: 100,
+      scaleAxis: 'fixed',
+      benchmarkHint: 'Track % of discharges completed before noon. Top-quartile hospitals target 30%+ discharge before noon. Compare to baseline to quantify improvement.',
+    },
+    valueArc: { signal: { timing: 'Weeks 2-4', metric: 'Discharge goal doc rate ↑' }, trend: { timing: 'Month 1-3', metric: 'Discharge planning lead time ↑' }, proof: { timing: 'Month 3-6', metric: 'Before-noon discharge rate ↑' } },
   },
 
   // IP Capacity (qualitative — 3 drivers; ipHnpCompletion24h appended at end of array and renders FIRST)

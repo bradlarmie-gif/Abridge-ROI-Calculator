@@ -118,6 +118,17 @@ export default function ExploreCapacity({ state, updateState, totalHoursSaved, p
       result.nursingOvertime = Math.round(otHrs * td.nursingOtHourlyRate);
     }
 
+    const isIP = state.careSetting === 'inpatient';
+    if (isIP && td.ipDischargePlanningEnabled) {
+      const annualDischarges = td.ipStaffedBeds > 0 && td.ipAlos > 0
+        ? Math.round(td.ipStaffedBeds * (td.ipOccupancyRate / 100) * 365 / td.ipAlos)
+        : state.annualEncounters;
+      const affected = annualDischarges * (td.ipDischargeLagAffectedRate / 100);
+      const dbnUplift = affected * (td.ipDbnCrossNoonRate / 100);
+      const incrementalAdmissions = dbnUplift * (td.ipBedFillRate / 100);
+      result.ipDischargePlanning = Math.round(incrementalAdmissions * td.ipNetRevenuePerAdmission);
+    }
+
     return result;
   }, [state, totalHoursSaved]);
 
@@ -134,6 +145,22 @@ export default function ExploreCapacity({ state, updateState, totalHoursSaved, p
   }, [driverValues, annualBenefitsTotal]);
 
   const renderDriverCard = (driver: ExploreDriver) => {
+    if (driver.comingSoon) {
+      return (
+        <div key={driver.id} className="bg-white border border-[#E5E5E5] rounded-lg p-4 opacity-50 cursor-not-allowed">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-black">{driver.label}</p>
+              <p className="text-sm text-[#888888] line-clamp-2">{driver.tagline ?? driver.shortDescription}</p>
+            </div>
+            <span className="text-xs font-medium text-[#888888] bg-[#F5F0EB] px-3 py-1 rounded-full whitespace-nowrap flex-shrink-0">
+              Coming Soon — Late 2026
+            </span>
+          </div>
+        </div>
+      );
+    }
+
     const enabled = isEnabled(driver);
     const expanded = isExpanded(driver);
     const childDrivers = drivers.filter(d => d.childOfDriverId === driver.id);

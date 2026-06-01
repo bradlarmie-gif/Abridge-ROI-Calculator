@@ -52,6 +52,16 @@ export function computeCapacityBreakdown(state: ExploreState, totalHoursSaved: n
     result.admissionCapture = Math.round(admissions * td.edAdmissionRevenue * (td.edAdmissionRealization / 100));
   }
 
+  if (state.careSetting === 'inpatient' && td.ipDischargePlanningEnabled) {
+    const annualDischarges = td.ipStaffedBeds > 0 && td.ipAlos > 0
+      ? Math.round(td.ipStaffedBeds * (td.ipOccupancyRate / 100) * 365 / td.ipAlos)
+      : state.annualEncounters;
+    const affected = annualDischarges * (td.ipDischargeLagAffectedRate / 100);
+    const dbnUplift = affected * (td.ipDbnCrossNoonRate / 100);
+    const incrementalAdmissions = dbnUplift * (td.ipBedFillRate / 100);
+    result.ipDischargePlanning = Math.round(incrementalAdmissions * td.ipNetRevenuePerAdmission);
+  }
+
   return buildResult(result, benefitsForQuadrant(state, 'Capacity'));
 }
 

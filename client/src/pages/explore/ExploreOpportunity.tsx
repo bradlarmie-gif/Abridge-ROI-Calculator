@@ -359,6 +359,94 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                 </div>
               )}
 
+              {/* Section 2b (Inpatient): Hospital Baseline */}
+              {isInpatient && (
+                <div>
+                  <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+                    HOSPITAL BASELINE
+                  </p>
+                  <div className="h-px bg-[#D1D5DB] mb-6" />
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div className="space-y-2.5">
+                      <label className="text-sm font-medium text-black">Staffed Inpatient Beds</label>
+                      <FormattedNumberInput
+                        value={state.timeDriverInputs.ipStaffedBeds}
+                        onChange={(v) => updateState({ timeDriverInputs: { ...state.timeDriverInputs, ipStaffedBeds: v } })}
+                        placeholder="e.g., 300"
+                        className="h-12 bg-white border-[#E5E5E5]"
+                        data-testid="input-ip-beds"
+                      />
+                      <p className="text-xs text-[#888888]">Licensed beds with active inpatient coverage</p>
+                    </div>
+                    <div className="space-y-2.5">
+                      <label className="text-sm font-medium text-black">Net Revenue per Admission</label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#888888] text-sm">$</span>
+                        <FormattedNumberInput
+                          value={state.timeDriverInputs.ipNetRevenuePerAdmission}
+                          onChange={(v) => updateState({ timeDriverInputs: { ...state.timeDriverInputs, ipNetRevenuePerAdmission: v } })}
+                          placeholder="e.g., 12,000"
+                          className="h-12 pl-7 bg-white border-[#E5E5E5]"
+                          data-testid="input-ip-revenue"
+                        />
+                      </div>
+                      <p className="text-xs text-[#888888]">Average net revenue per inpatient discharge</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div className="space-y-2.5">
+                      <label className="text-sm font-medium text-black">Avg Length of Stay</label>
+                      <div className="relative">
+                        <FormattedNumberInput
+                          value={state.timeDriverInputs.ipAlos}
+                          onChange={(v) => updateState({ timeDriverInputs: { ...state.timeDriverInputs, ipAlos: v } })}
+                          placeholder="e.g., 4.5"
+                          className="h-12 bg-white border-[#E5E5E5] pr-14"
+                          data-testid="input-ip-alos"
+                        />
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#888888] text-sm">days</span>
+                      </div>
+                      <p className="text-xs text-[#888888]">Average days per inpatient stay</p>
+                    </div>
+                    <div className="space-y-2.5">
+                      <label className="text-sm font-medium text-black">Bed Occupancy Rate</label>
+                      <div className="space-y-2">
+                        <input
+                          type="range"
+                          min={50}
+                          max={100}
+                          value={state.timeDriverInputs.ipOccupancyRate}
+                          onChange={(e) => updateState({ timeDriverInputs: { ...state.timeDriverInputs, ipOccupancyRate: Number(e.target.value) } })}
+                          className="w-full h-2 bg-[#E5E5E5] rounded-lg appearance-none cursor-pointer accent-[#EA2C00]"
+                          data-testid="slider-ip-occupancy"
+                        />
+                        <div className="flex justify-between text-xs text-[#888888]">
+                          <span>50%</span>
+                          <span className="font-semibold text-[#EA2C00]">{state.timeDriverInputs.ipOccupancyRate}%</span>
+                          <span>100%</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {state.timeDriverInputs.ipStaffedBeds > 0 && state.timeDriverInputs.ipAlos > 0 && (
+                    <div className="bg-white rounded-lg p-4 border border-[#E5E5E5]">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-black">Estimated Annual Discharges</span>
+                        <span className="text-xl font-bold text-[#EA2C00]">
+                          {Math.round(state.timeDriverInputs.ipStaffedBeds * (state.timeDriverInputs.ipOccupancyRate / 100) * 365 / state.timeDriverInputs.ipAlos).toLocaleString()}
+                        </span>
+                      </div>
+                      <p className="text-xs text-[#888888]">
+                        {state.timeDriverInputs.ipStaffedBeds} beds × {state.timeDriverInputs.ipOccupancyRate}% occupancy × 365 days ÷ {state.timeDriverInputs.ipAlos} day ALOS
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Section 2 (Nursing): Occupancy */}
               {isNursing && (
                 <div>
@@ -566,6 +654,38 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                         <span className="text-base font-semibold text-white flex-shrink-0">{state.utilizationPercent > 0 ? `${state.utilizationPercent}%` : '—'}</span>
                       </div>
                     </>
+                  ) : isInpatient ? (
+                    <>
+                      <div className="flex justify-between items-center gap-2">
+                        <span className="text-sm text-white/50 min-w-0 truncate">Hospitalists</span>
+                        <span className="text-base font-semibold text-white flex-shrink-0">
+                          {state.numberOfProviders > 0 ? formatNumber(state.numberOfProviders) : '—'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center gap-2">
+                        <span className="text-sm text-white/50 min-w-0 truncate">Admissions/Provider</span>
+                        <span className="text-base font-semibold text-white flex-shrink-0">{formatNumber(encountersPerProvider)}</span>
+                      </div>
+                      <div className="flex justify-between items-center gap-2 pt-3 border-t border-white/10">
+                        <span className="text-sm text-white/50 min-w-0 truncate">Annual Admissions</span>
+                        <span className="text-base font-semibold text-white flex-shrink-0">
+                          {state.numberOfProviders > 0 ? formatNumber(annualEncounters) : '—'}
+                        </span>
+                      </div>
+                      {state.timeDriverInputs.ipStaffedBeds > 0 && (
+                        <>
+                          <div className="h-px bg-white/10 my-2" />
+                          <div className="flex justify-between items-center gap-2">
+                            <span className="text-sm text-white/50 min-w-0 truncate">Staffed Beds</span>
+                            <span className="text-base font-semibold text-white flex-shrink-0">{formatNumber(state.timeDriverInputs.ipStaffedBeds)}</span>
+                          </div>
+                          <div className="flex justify-between items-center gap-2">
+                            <span className="text-sm text-white/50 min-w-0 truncate">Occupancy / ALOS</span>
+                            <span className="text-base font-semibold text-white flex-shrink-0">{state.timeDriverInputs.ipOccupancyRate}% / {state.timeDriverInputs.ipAlos}d</span>
+                          </div>
+                        </>
+                      )}
+                    </>
                   ) : (
                     <>
                       <div className="flex justify-between items-center gap-2">
@@ -586,7 +706,13 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                       </div>
                     </>
                   )}
-                  {!isNursing && (
+                  {!isNursing && !isInpatient && (
+                    <div className="flex justify-between items-center gap-2">
+                      <span className="text-sm text-white/50 min-w-0 truncate">Utilization</span>
+                      <span className="text-base font-semibold text-white flex-shrink-0">{state.utilizationPercent}%</span>
+                    </div>
+                  )}
+                  {isInpatient && (
                     <div className="flex justify-between items-center gap-2">
                       <span className="text-sm text-white/50 min-w-0 truncate">Utilization</span>
                       <span className="text-base font-semibold text-white flex-shrink-0">{state.utilizationPercent}%</span>
