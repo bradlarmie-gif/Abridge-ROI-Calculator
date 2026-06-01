@@ -20,11 +20,12 @@ export default function InpatientDischargePlanningCalc({ state, updateTimeDriver
   const td = state.timeDriverInputs;
 
   const annualDischarges = useMemo(() => {
+    if (td.ipAnnualDischarges >= 100) return td.ipAnnualDischarges;
     if (td.ipStaffedBeds > 0 && td.ipAlos > 0) {
       return Math.round(td.ipStaffedBeds * (td.ipOccupancyRate / 100) * 365 / td.ipAlos);
     }
     return state.annualEncounters;
-  }, [td.ipStaffedBeds, td.ipOccupancyRate, td.ipAlos, state.annualEncounters]);
+  }, [td.ipAnnualDischarges, td.ipStaffedBeds, td.ipOccupancyRate, td.ipAlos, state.annualEncounters]);
 
   const affected = Math.round(annualDischarges * (td.ipDischargeLagAffectedRate / 100));
   const dbnUplift = Math.round(affected * (td.ipDbnCrossNoonRate / 100));

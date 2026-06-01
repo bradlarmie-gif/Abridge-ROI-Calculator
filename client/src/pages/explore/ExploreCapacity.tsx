@@ -120,9 +120,11 @@ export default function ExploreCapacity({ state, updateState, totalHoursSaved, p
 
     const isIP = state.careSetting === 'inpatient';
     if (isIP && td.ipDischargePlanningEnabled) {
-      const annualDischarges = td.ipStaffedBeds > 0 && td.ipAlos > 0
-        ? Math.round(td.ipStaffedBeds * (td.ipOccupancyRate / 100) * 365 / td.ipAlos)
-        : state.annualEncounters;
+      const annualDischarges = td.ipAnnualDischarges >= 100
+        ? td.ipAnnualDischarges
+        : td.ipStaffedBeds > 0 && td.ipAlos > 0
+          ? Math.round(td.ipStaffedBeds * (td.ipOccupancyRate / 100) * 365 / td.ipAlos)
+          : state.annualEncounters;
       const affected = annualDischarges * (td.ipDischargeLagAffectedRate / 100);
       const dbnUplift = affected * (td.ipDbnCrossNoonRate / 100);
       const incrementalAdmissions = dbnUplift * (td.ipBedFillRate / 100);

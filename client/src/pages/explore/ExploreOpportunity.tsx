@@ -431,19 +431,48 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                     </div>
                   </div>
 
-                  {state.timeDriverInputs.ipStaffedBeds > 0 && state.timeDriverInputs.ipAlos > 0 && (
-                    <div className="bg-white rounded-lg p-4 border border-[#E5E5E5]">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-black">Estimated Annual Discharges</span>
-                        <span className="text-xl font-bold text-[#EA2C00]">
-                          {Math.round(state.timeDriverInputs.ipStaffedBeds * (state.timeDriverInputs.ipOccupancyRate / 100) * 365 / state.timeDriverInputs.ipAlos).toLocaleString()}
-                        </span>
-                      </div>
-                      <p className="text-xs text-[#888888]">
-                        {state.timeDriverInputs.ipStaffedBeds} beds × {state.timeDriverInputs.ipOccupancyRate}% occupancy × 365 days ÷ {state.timeDriverInputs.ipAlos} day ALOS
-                      </p>
+                  {/* OR — enter discharges directly */}
+                  <div className="space-y-2.5 mb-4">
+                    <label className="text-sm font-medium text-black">
+                      <span className="text-[#888888]">OR</span> Annual Discharges (if known)
+                    </label>
+                    <div className="relative">
+                      <FormattedNumberInput
+                        value={state.timeDriverInputs.ipAnnualDischarges || 0}
+                        onChange={(v) => updateState({ timeDriverInputs: { ...state.timeDriverInputs, ipAnnualDischarges: v >= 100 ? v : 0 } })}
+                        placeholder="e.g., 18,000"
+                        className="h-12 bg-white border-[#E5E5E5] pr-16"
+                        data-testid="input-ip-annual-discharges"
+                      />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#888888] text-sm">/year</span>
                     </div>
-                  )}
+                    <p className="text-xs text-[#888888]">Overrides the beds/occupancy/ALOS derivation when filled in</p>
+                  </div>
+
+                  {(() => {
+                    const td = state.timeDriverInputs;
+                    const usingDirect = td.ipAnnualDischarges >= 100;
+                    const derived = td.ipStaffedBeds > 0 && td.ipAlos > 0
+                      ? Math.round(td.ipStaffedBeds * (td.ipOccupancyRate / 100) * 365 / td.ipAlos)
+                      : null;
+                    const displayValue = usingDirect ? td.ipAnnualDischarges : derived;
+                    if (!displayValue) return null;
+                    return (
+                      <div className="bg-white rounded-lg p-4 border border-[#E5E5E5]">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium text-black">
+                            {usingDirect ? 'Annual Discharges' : 'Estimated Annual Discharges'}
+                          </span>
+                          <span className="text-xl font-bold text-[#EA2C00]">{displayValue.toLocaleString()}</span>
+                        </div>
+                        <p className="text-xs text-[#888888]">
+                          {usingDirect
+                            ? 'Entered directly — beds/occupancy/ALOS used for context only'
+                            : `${td.ipStaffedBeds} beds × ${td.ipOccupancyRate}% occupancy × 365 days ÷ ${td.ipAlos} day ALOS`}
+                        </p>
+                      </div>
+                    );
+                  })()}
                 </div>
               )}
 

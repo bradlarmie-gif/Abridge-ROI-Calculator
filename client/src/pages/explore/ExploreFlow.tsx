@@ -120,6 +120,7 @@ export interface TimeDriverInputs {
   ipOccupancyRate: number;
   ipAlos: number;
   ipNetRevenuePerAdmission: number;
+  ipAnnualDischarges: number; // 0 = not set, derive from beds × occupancy × 365 / ALOS
   // Discharge Planning Initiation driver
   ipDischargePlanningEnabled: boolean;
   ipDischargePlanningExpanded: boolean;
@@ -614,6 +615,7 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     ipOccupancyRate: 75,
     ipAlos: 4.5,
     ipNetRevenuePerAdmission: 12000,
+    ipAnnualDischarges: 0,
     // Discharge Planning Initiation defaults
     ipDischargePlanningEnabled: false,
     ipDischargePlanningExpanded: false,
