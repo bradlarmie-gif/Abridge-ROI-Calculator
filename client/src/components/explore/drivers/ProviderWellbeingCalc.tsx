@@ -7,15 +7,24 @@ type Props = ExploreCalcComponentProps;
 type RetentionScenario = 'conservative' | 'typical' | 'optimistic' | 'custom';
 
 export default function ProviderWellbeingCalc({ state, updateTimeDriverInputs, totalHoursSaved }: Props) {
-  const { timeDriverInputs } = state;
-  const [customMode, setCustomMode] = useState(timeDriverInputs.retentionImpactScenario === 'custom');
-  const [customDisplay, setCustomDisplay] = useState(String(timeDriverInputs.retentionCustomPercent ?? 10));
+  const { timeDriverInputs: td } = state;
+  const isInpatient = state.careSetting === 'inpatient';
+  const [customMode, setCustomMode] = useState(td.retentionImpactScenario === 'custom');
+  const [customDisplay, setCustomDisplay] = useState(String(td.retentionCustomPercent ?? 10));
+
+  const turnoverValue = isInpatient ? td.ipAnnualTurnoverRate : td.annualTurnoverRate;
+  const burnoutValue = isInpatient ? td.ipBurnoutRelatedTurnover : td.burnoutRelatedTurnover;
+  const replacementValue = isInpatient ? td.ipReplacementCost : td.replacementCost;
+
+  const updateTurnover = (v: number) => updateTimeDriverInputs(isInpatient ? { ipAnnualTurnoverRate: v } : { annualTurnoverRate: v });
+  const updateBurnout = (v: number) => updateTimeDriverInputs(isInpatient ? { ipBurnoutRelatedTurnover: v } : { burnoutRelatedTurnover: v });
+  const updateReplacement = (v: number) => updateTimeDriverInputs(isInpatient ? { ipReplacementCost: v } : { replacementCost: v });
 
   const retentionScenarios: Record<RetentionScenario, number> = {
     conservative: 5,
     typical: 10,
     optimistic: 15,
-    custom: timeDriverInputs.retentionCustomPercent ?? 10,
+    custom: td.retentionCustomPercent ?? 10,
   };
 
   const hoursPerProviderPerWeek = state.numberOfProviders > 0
@@ -24,15 +33,14 @@ export default function ProviderWellbeingCalc({ state, updateTimeDriverInputs, t
 
   const retentionCalcs = useMemo(() => {
     const providers = state.numberOfProviders;
-    const turnoverRate = timeDriverInputs.annualTurnoverRate / 100;
-    const burnoutRate = timeDriverInputs.burnoutRelatedTurnover / 100;
-    const impactRate = retentionScenarios[timeDriverInputs.retentionImpactScenario] / 100;
-    const replacementCost = timeDriverInputs.replacementCost;
+    const turnoverRate = turnoverValue / 100;
+    const burnoutRate = burnoutValue / 100;
+    const impactRate = retentionScenarios[td.retentionImpactScenario] / 100;
 
     const providersLeavingPerYear = providers * turnoverRate;
     const burnoutRelatedDepartures = providersLeavingPerYear * burnoutRate;
     const providersRetained = burnoutRelatedDepartures * impactRate;
-    const retentionValue = providersRetained * replacementCost;
+    const retentionValue = providersRetained * replacementValue;
 
     return {
       providersLeavingPerYear,
@@ -42,11 +50,11 @@ export default function ProviderWellbeingCalc({ state, updateTimeDriverInputs, t
     };
   }, [
     state.numberOfProviders,
-    timeDriverInputs.annualTurnoverRate,
-    timeDriverInputs.burnoutRelatedTurnover,
-    timeDriverInputs.retentionImpactScenario,
-    timeDriverInputs.replacementCost,
-    timeDriverInputs.retentionCustomPercent,
+    turnoverValue,
+    burnoutValue,
+    td.retentionImpactScenario,
+    replacementValue,
+    td.retentionCustomPercent,
   ]);
 
   const formatCurrency = (n: number) => '$' + Math.round(n).toLocaleString();
@@ -54,7 +62,7 @@ export default function ProviderWellbeingCalc({ state, updateTimeDriverInputs, t
 
   return (
     <div>
-      <p className="text-sm text-[#888888] mb-3">Your providers would get back:</p>
+      <p className="text-sm text-[#888888] mb-3">Your {isInpatient ? 'hospitalists' : 'providers'} would get back:</p>
 
       <div className="text-center mb-4">
         <p className="text-3xl font-bold text-[#EA2C00]" data-testid="text-wellbeing-hours-per-week">{hoursPerProviderPerWeek} hours per week</p>
@@ -74,21 +82,21 @@ export default function ProviderWellbeingCalc({ state, updateTimeDriverInputs, t
       <div className="h-px bg-[#E5E5E5] my-4" />
 
       <button
-        onClick={() => updateTimeDriverInputs({ calculateRetentionValue: !timeDriverInputs.calculateRetentionValue })}
+        onClick={() => updateTimeDriverInputs({ calculateRetentionValue: !td.calculateRetentionValue })}
         className="flex items-center gap-3 text-sm text-black hover:text-[#EA2C00] transition-colors mb-4"
         data-testid="checkbox-calculate-retention"
       >
         <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
-          timeDriverInputs.calculateRetentionValue
+          td.calculateRetentionValue
             ? 'bg-[#EA2C00] border-[#EA2C00]'
             : 'border-[#D1D5DB] bg-white'
         }`}>
-          {timeDriverInputs.calculateRetentionValue && <Check className="w-3.5 h-3.5 text-white" />}
+          {td.calculateRetentionValue && <Check className="w-3.5 h-3.5 text-white" />}
         </div>
         Calculate retention value
       </button>
 
-      {timeDriverInputs.calculateRetentionValue && (
+      {td.calculateRetentionValue && (
         <div>
           <div className="h-px bg-[#E5E5E5] mb-6" />
 
@@ -97,45 +105,51 @@ export default function ProviderWellbeingCalc({ state, updateTimeDriverInputs, t
           </p>
 
           <div className="mb-4">
-            <label className="text-sm text-black mb-1.5 block">Annual provider turnover rate</label>
+            <label className="text-sm text-black mb-1.5 block">Annual {isInpatient ? 'hospitalist' : 'provider'} turnover rate</label>
             <div className="relative">
               <FormattedNumberInput
-                value={timeDriverInputs.annualTurnoverRate}
-                onChange={(v: number) => updateTimeDriverInputs({ annualTurnoverRate: v })}
+                value={turnoverValue}
+                onChange={(v: number) => updateTurnover(v)}
                 className="h-12 bg-white pr-8"
                 data-testid="input-turnover-rate"
               />
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
             </div>
-            <p className="text-xs text-[#888888] italic mt-1">Industry average: 6-7%</p>
+            <p className="text-xs text-[#888888] italic mt-1">
+              {isInpatient ? 'Hospitalist typical range: 8–12%' : 'Industry average: 6–7%'}
+            </p>
           </div>
 
           <div className="mb-4">
             <label className="text-sm text-black mb-1.5 block">Turnover related to burnout</label>
             <div className="relative">
               <FormattedNumberInput
-                value={timeDriverInputs.burnoutRelatedTurnover}
-                onChange={(v: number) => updateTimeDriverInputs({ burnoutRelatedTurnover: v })}
+                value={burnoutValue}
+                onChange={(v: number) => updateBurnout(v)}
                 className="h-12 bg-white pr-8"
                 data-testid="input-burnout-turnover"
               />
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
             </div>
-            <p className="text-xs text-[#888888] italic mt-1">Research suggests 30-50% of physician turnover is burnout-related</p>
+            <p className="text-xs text-[#888888] italic mt-1">Research suggests 30–50% of physician turnover is burnout-related</p>
           </div>
 
           <div className="mb-4">
-            <label className="text-sm text-black mb-1.5 block">Cost to replace one provider</label>
+            <label className="text-sm text-black mb-1.5 block">Cost to replace one {isInpatient ? 'hospitalist' : 'provider'}</label>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">$</span>
               <FormattedNumberInput
-                value={timeDriverInputs.replacementCost}
-                onChange={(v: number) => updateTimeDriverInputs({ replacementCost: v })}
+                value={replacementValue}
+                onChange={(v: number) => updateReplacement(v)}
                 className="h-12 bg-white pl-7"
                 data-testid="input-replacement-cost"
               />
             </div>
-            <p className="text-xs text-[#888888] italic mt-1">Estimated cost to replace a departing provider. Industry estimates range from $300K–$1M depending on specialty. Default is $400K (conservative midpoint).</p>
+            <p className="text-xs text-[#888888] italic mt-1">
+              {isInpatient
+                ? 'Hospitalist replacement typically $250–$350K (search, recruitment, onboarding, ramp). Default $300K.'
+                : 'Estimated cost to replace a departing provider. Range $300K–$1M depending on specialty. Default $400K (conservative midpoint).'}
+            </p>
           </div>
 
           <div className="h-px bg-[#E5E5E5] my-4" />
@@ -161,7 +175,7 @@ export default function ProviderWellbeingCalc({ state, updateTimeDriverInputs, t
                   updateTimeDriverInputs({ retentionImpactScenario: preset.value });
                 }}
                 className={`flex-1 py-2 px-2 rounded-lg text-xs transition-all ${
-                  !customMode && timeDriverInputs.retentionImpactScenario === preset.value
+                  !customMode && td.retentionImpactScenario === preset.value
                     ? 'bg-[#EA2C00] text-white'
                     : 'bg-[#F5F0EB] text-[#666666] hover:bg-[#EBE6E1]'
                 }`}
@@ -242,16 +256,16 @@ export default function ProviderWellbeingCalc({ state, updateTimeDriverInputs, t
               </div>
               <div className="flex justify-between gap-2">
                 <span className="text-[#666666]">× Annual turnover rate</span>
-                <span className="text-black">{timeDriverInputs.annualTurnoverRate}%</span>
+                <span className="text-black">{turnoverValue}%</span>
               </div>
               <div className="flex justify-between gap-2">
-                <span className="text-[#666666]">= Providers leaving per year</span>
+                <span className="text-[#666666]">= {isInpatient ? 'Hospitalists' : 'Providers'} leaving per year</span>
                 <span className="text-black">{retentionCalcs.providersLeavingPerYear.toFixed(1)}</span>
               </div>
               <div className="h-px bg-[#E5E5E5] my-2" />
               <div className="flex justify-between gap-2">
                 <span className="text-[#666666]">× Burnout-related turnover</span>
-                <span className="text-black">{timeDriverInputs.burnoutRelatedTurnover}%</span>
+                <span className="text-black">{burnoutValue}%</span>
               </div>
               <div className="flex justify-between gap-2">
                 <span className="text-[#666666]">= Burnout-related departures</span>
@@ -260,16 +274,16 @@ export default function ProviderWellbeingCalc({ state, updateTimeDriverInputs, t
               <div className="h-px bg-[#E5E5E5] my-2" />
               <div className="flex justify-between gap-2">
                 <span className="text-[#666666]">× Abridge retention impact</span>
-                <span className="text-black">{retentionScenarios[timeDriverInputs.retentionImpactScenario]}%</span>
+                <span className="text-black">{retentionScenarios[td.retentionImpactScenario]}%</span>
               </div>
               <div className="flex justify-between gap-2">
-                <span className="text-[#666666]">= Providers retained</span>
+                <span className="text-[#666666]">= {isInpatient ? 'Hospitalists' : 'Providers'} retained</span>
                 <span className="text-black">{retentionCalcs.providersRetained.toFixed(2)}</span>
               </div>
               <div className="h-px bg-[#E5E5E5] my-2" />
               <div className="flex justify-between gap-2">
                 <span className="text-[#666666]">× Replacement cost</span>
-                <span className="text-black">{formatCurrency(timeDriverInputs.replacementCost)}</span>
+                <span className="text-black">{formatCurrency(replacementValue)}</span>
               </div>
               <div className="h-px bg-[#888888] my-2" />
               <div className="flex justify-between gap-2 font-semibold">

@@ -92,11 +92,12 @@ export default function ExploreWorkforce({ state, updateState, totalHoursSaved, 
 
     // Provider Wellbeing (OP/ED/IP)
     if (td.wellbeingEnabled && td.calculateRetentionValue) {
-      const turnover = td.annualTurnoverRate / 100;
-      const burnout = td.burnoutRelatedTurnover / 100;
+      const isIP = state.careSetting === 'inpatient';
+      const turnover = (isIP ? td.ipAnnualTurnoverRate : td.annualTurnoverRate) / 100;
+      const burnout = (isIP ? td.ipBurnoutRelatedTurnover : td.burnoutRelatedTurnover) / 100;
       const impact = retentionScenarios[td.retentionImpactScenario] / 100;
       const retained = state.numberOfProviders * turnover * burnout * impact;
-      result.providerWellbeing = Math.round(retained * td.replacementCost);
+      result.providerWellbeing = Math.round(retained * (isIP ? td.ipReplacementCost : td.replacementCost));
 
       // Physician Locum/Agency (child of Wellbeing)
       if (td.physicianAgencyEnabled) {
