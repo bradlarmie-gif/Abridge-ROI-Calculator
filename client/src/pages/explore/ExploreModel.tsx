@@ -223,10 +223,10 @@ export default function ExploreModel({
     // HCC only applies to Outpatient
     const isOutpatient = state.careSetting === 'outpatient';
     if (!isOutpatient || !docQualityInputs.hccEnabled) return 0;
-    const upliftMap: Record<string, number> = { conservative: 5, typical: 10, optimistic: 15 };
+    const upliftMap: Record<string, number> = { conservative: 3, typical: 5, optimistic: 10 };
     let totalGross = 0;
     for (const plan of docQualityInputs.hccPlans) {
-      const upliftPp = upliftMap[plan.uplift] ?? 10;
+      const upliftPp = plan.uplift === 'custom' ? (plan.upliftCustomPp ?? 5) : (upliftMap[plan.uplift] ?? 5);
       const effectiveUplift = Math.min(upliftPp, Math.max(0, 90 - plan.currentRecaptureRate));
       const gapPatients = state.numberOfProviders * plan.panelSize * plan.gapRate / 100;
       totalGross += gapPatients * (effectiveUplift / 100) * docQualityInputs.avgHccs * plan.valuePerHcc;
@@ -792,11 +792,11 @@ export default function ExploreModel({
                 return `ED physicians reconstruct notes from memory between patients, and under-documentation tends to be worst when volume is highest. The work happened — the note didn't show it. Across ${fmt(encounters)} annual ED visits, this driver models ${fmtCur(value)} in potential value from documentation that more accurately reflects actual visit complexity.`;
               case 'hccCapture': {
                 const hccPlans = docQualityInputs.hccPlans;
-                const upliftMap: Record<string, number> = { conservative: 5, typical: 10, optimistic: 15 };
+                const upliftMap: Record<string, number> = { conservative: 3, typical: 5, optimistic: 10 };
                 const hasNetNew = hccPlans.some((p: { netNewEnabled: boolean }) => p.netNewEnabled);
                 if (hccPlans.length === 1) {
                   const plan = hccPlans[0];
-                  const upliftPp = upliftMap[plan.uplift] ?? 10;
+                  const upliftPp = plan.uplift === 'custom' ? (plan.upliftCustomPp ?? 5) : (upliftMap[plan.uplift] ?? 5);
                   const effective = Math.min(upliftPp, Math.max(0, 90 - plan.currentRecaptureRate));
                   const projected = plan.currentRecaptureRate + effective;
                   const totalPatients = fmt(providers * plan.panelSize);

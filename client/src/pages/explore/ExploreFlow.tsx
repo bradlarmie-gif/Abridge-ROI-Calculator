@@ -372,7 +372,8 @@ export interface HccPlan {
   // Recapture
   gapRate: number;                // % of plan patients with known conditions needing recode annually
   currentRecaptureRate: number;   // % they currently capture (0–100)
-  uplift: 'conservative' | 'typical' | 'optimistic';
+  uplift: 'conservative' | 'typical' | 'optimistic' | 'custom';
+  upliftCustomPp?: number;
   // Net new
   netNewEnabled: boolean;
   netNewDiscoveryRate: number;    // % of plan patients where ambient surfaces a never-coded condition
@@ -1256,10 +1257,10 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
 
     // HCC
     if (docQualityInputs.hccEnabled) {
-      const upliftMap: Record<string, number> = { conservative: 5, typical: 10, optimistic: 15 };
+      const upliftMap: Record<string, number> = { conservative: 3, typical: 5, optimistic: 10 };
       let totalGross = 0;
       for (const plan of docQualityInputs.hccPlans) {
-        const upliftPp = upliftMap[plan.uplift] ?? 10;
+        const upliftPp = plan.uplift === 'custom' ? (plan.upliftCustomPp ?? 5) : (upliftMap[plan.uplift] ?? 5);
         const effectiveUplift = Math.min(upliftPp, Math.max(0, 90 - plan.currentRecaptureRate));
         const gapPatients = state.numberOfProviders * plan.panelSize * plan.gapRate / 100;
         totalGross += gapPatients * (effectiveUplift / 100) * docQualityInputs.avgHccs * plan.valuePerHcc;

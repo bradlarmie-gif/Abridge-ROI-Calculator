@@ -173,10 +173,10 @@ export function computeAllDriverValues(
     else result.wrvu = Math.round(value);
   }
   if (dq.hccEnabled && isOP) {
-    const upliftMap: Record<string, number> = { conservative: 5, typical: 10, optimistic: 15 };
+    const upliftMap: Record<string, number> = { conservative: 3, typical: 5, optimistic: 10 };
     let totalGross = 0;
     for (const plan of dq.hccPlans) {
-      const upliftPp = upliftMap[plan.uplift] ?? 10;
+      const upliftPp = plan.uplift === 'custom' ? (plan.upliftCustomPp ?? 5) : (upliftMap[plan.uplift] ?? 5);
       const effectiveUplift = Math.min(upliftPp, Math.max(0, 90 - plan.currentRecaptureRate));
       const gapPts = state.numberOfProviders * plan.panelSize * plan.gapRate / 100;
       totalGross += gapPts * (effectiveUplift / 100) * dq.avgHccs * plan.valuePerHcc;
@@ -377,10 +377,10 @@ export function computeAllDriverCalcSummaries(
     else out.wrvu = summary;
   }
   if (dq.hccEnabled && isOP) {
-    const upliftMap: Record<string, number> = { conservative: 5, typical: 10, optimistic: 15 };
+    const upliftMap: Record<string, number> = { conservative: 3, typical: 5, optimistic: 10 };
     if (dq.hccPlans.length === 1) {
       const p = dq.hccPlans[0];
-      const upliftPp = upliftMap[p.uplift] ?? 10;
+      const upliftPp = p.uplift === 'custom' ? (p.upliftCustomPp ?? 5) : (upliftMap[p.uplift] ?? 5);
       const effective = Math.min(upliftPp, Math.max(0, 90 - p.currentRecaptureRate));
       const projected = p.currentRecaptureRate + effective;
       const gapPatients = Math.round(state.numberOfProviders * p.panelSize * p.gapRate / 100);
@@ -391,8 +391,8 @@ export function computeAllDriverCalcSummaries(
       }
       out.hccCapture = formula;
     } else {
-      const planLines = dq.hccPlans.map((p: { name: string; panelSize: number; gapRate: number; currentRecaptureRate: number; uplift: string; netNewEnabled: boolean; netNewDiscoveryRate: number }) => {
-        const upliftPp = upliftMap[p.uplift] ?? 10;
+      const planLines = dq.hccPlans.map((p: { name: string; panelSize: number; gapRate: number; currentRecaptureRate: number; uplift: string; upliftCustomPp?: number; netNewEnabled: boolean; netNewDiscoveryRate: number }) => {
+        const upliftPp = p.uplift === 'custom' ? (p.upliftCustomPp ?? 5) : (upliftMap[p.uplift] ?? 5);
         const effective = Math.min(upliftPp, Math.max(0, 90 - p.currentRecaptureRate));
         const gapPts = Math.round(state.numberOfProviders * p.panelSize * p.gapRate / 100);
         return `${p.name}: ${fmtN(gapPts)} gap pts × +${effective}pp (${p.currentRecaptureRate}%→${p.currentRecaptureRate + effective}%)${p.netNewEnabled ? ` + net new` : ''}`;
