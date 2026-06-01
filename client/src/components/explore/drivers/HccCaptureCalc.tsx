@@ -5,9 +5,9 @@ import type { ExploreCalcComponentProps } from "@/lib/exploreDrivers";
 import type { HccPlan } from "@/pages/explore/ExploreFlow";
 
 const UPLIFT_OPTIONS: { key: 'conservative' | 'typical' | 'optimistic'; label: string; pp: number }[] = [
-  { key: 'conservative', label: 'Conservative', pp: 5 },
-  { key: 'typical',      label: 'Typical',      pp: 10 },
-  { key: 'optimistic',   label: 'Optimistic',   pp: 15 },
+  { key: 'conservative', label: 'Conservative', pp: 3 },
+  { key: 'typical',      label: 'Typical',      pp: 5 },
+  { key: 'optimistic',   label: 'Optimistic',   pp: 10 },
 ];
 
 const PLAN_TYPE_DEFAULTS: Record<HccPlan['planType'], Omit<HccPlan, 'id'>> = {
@@ -32,10 +32,10 @@ export default function HccCaptureCalc({ state, updateDocQualityInputs }: Props)
   const [netNewOpen, setNetNewOpen] = useState<Record<string, boolean>>({});
 
   const plans = docQualityInputs.hccPlans;
-  const upliftMap: Record<string, number> = { conservative: 5, typical: 10, optimistic: 15 };
+  const upliftMap: Record<string, number> = { conservative: 3, typical: 5, optimistic: 10 };
 
   const planCalcs = plans.map(plan => {
-    const upliftPp = upliftMap[plan.uplift] ?? 10;
+    const upliftPp = plan.uplift === 'custom' ? (plan.upliftCustomPp ?? 5) : (upliftMap[plan.uplift] ?? 5);
     const effectiveUplift = Math.min(upliftPp, Math.max(0, 90 - plan.currentRecaptureRate));
     const projectedRate = plan.currentRecaptureRate + effectiveUplift;
     const gapPatients = state.numberOfProviders * plan.panelSize * (plan.gapRate / 100);
@@ -147,7 +147,9 @@ export default function HccCaptureCalc({ state, updateDocQualityInputs }: Props)
                 <div>
                   <p className="text-xs text-[#888888] mb-1 flex items-center gap-1">
                     $ per captured HCC
-                    <Info className="w-3 h-3 text-[#BBBBBB] cursor-help" title="Combined value of RAF score × annual payment per RAF point. Typically $800–$1,500 for MA." />
+                    <span title="Combined value of RAF score × annual payment per RAF point. Typically $800–$1,500 for MA." className="cursor-help">
+                      <Info className="w-3 h-3 text-[#BBBBBB]" />
+                    </span>
                   </p>
                   <div className="flex items-center gap-0.5">
                     <span className="text-xs text-[#888888]">$</span>
@@ -209,7 +211,35 @@ export default function HccCaptureCalc({ state, updateDocQualityInputs }: Props)
                       <p className="text-xs font-semibold">+{pp}pp</p>
                     </button>
                   ))}
+                  <button
+                    onClick={() => updatePlan(plan.id, { uplift: 'custom', ...(!plan.upliftCustomPp ? { upliftCustomPp: 5 } : {}) })}
+                    className={`flex-1 py-1.5 rounded-lg border text-center transition-all ${
+                      plan.uplift === 'custom'
+                        ? 'bg-[#EA2C00] border-[#EA2C00] text-white'
+                        : 'bg-white border-[#E5E5E5] text-[#444] hover:border-[#D1D5DB]'
+                    }`}
+                  >
+                    <p className={`text-[9px] ${plan.uplift === 'custom' ? 'text-white/80' : 'text-[#888888]'}`}>Custom</p>
+                    <p className="text-xs font-semibold">
+                      {plan.uplift === 'custom' ? `+${plan.upliftCustomPp ?? 5}pp` : '—'}
+                    </p>
+                  </button>
                 </div>
+                {plan.uplift === 'custom' && (
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-xs text-[#888888]">Custom uplift</span>
+                    <div className="flex items-center gap-1">
+                      <input
+                        type="number"
+                        value={plan.upliftCustomPp ?? 5}
+                        onChange={(e) => updatePlan(plan.id, { upliftCustomPp: parseFloat(e.target.value) || 0 })}
+                        className="w-14 h-7 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none"
+                        data-testid="input-hcc-custom-uplift"
+                      />
+                      <span className="text-xs text-[#888888]">pp</span>
+                    </div>
+                  </div>
+                )}
                 <div className="flex items-center gap-2 bg-[#F5F0EB] rounded-lg px-3 py-2">
                   <span className="text-xs text-[#888888]">{plan.currentRecaptureRate}%</span>
                   <div className="flex-1 h-1 bg-[#D1C4B0] rounded-full overflow-hidden">
