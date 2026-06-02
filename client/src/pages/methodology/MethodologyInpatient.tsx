@@ -302,7 +302,7 @@ const ipDomainCards: IPDomainCardData[] = [
         body: "Your CMI is below peer benchmark despite similar patient acuity, your CDI team is running high query volume, your coder query-back rate is above 15%, or your DRG downgrade rate on concurrent review is climbing.",
       },
     ],
-    alsoNote: "Observation status defense and audit protection. When progress notes capture clinical reasoning for continued inpatient level of care, concurrent review is more defensible — and payer audits have a harder time finding documentation gaps to challenge.",
+    alsoNote: "Observation status defense is a second revenue mechanism that runs off the same admission documentation. Payers audit inpatient stays post-discharge and reclassify to observation APC if the documentation doesn't clearly establish medical necessity. The financial consequence is the IP-to-obs revenue delta — typically $3K–$8K per downgraded case — not the full claim value. The same admission note quality that drives DRG accuracy is the defense against that reclassification.",
     chain: [
       { key: 'source', label: 'Abridge Ambient', sub: 'hospital documentation AI', isSource: true },
       {
@@ -394,78 +394,62 @@ const ipDomainCards: IPDomainCardData[] = [
   {
     domain: 'QUALITY',
     number: 'Domain 4 of 4',
-    badge: 'Severity Capture & Risk Adjustment',
-    northStar: 'Risk-Adjusted Quality Score Accuracy',
-    direction: '↑',
-    northStarSub: "Quality scores improve through two mechanisms: documentation accuracy and rounding quality. When hospitalists aren't carrying a documentation backlog into rounds, their clinical assessment is more thorough — more comorbidities recognized, more severity captured. And when that complexity is recognized, Abridge ensures it makes it into the record with the specificity risk adjustment requires.",
+    badge: 'CDI Quality, Physician Presence & Readmissions',
+    northStar: '30-Day Readmission Rate',
+    direction: '↓',
+    northStarSub: "Documentation drives readmission performance through two paths: clinical specificity that reduces CDI queries and enables accurate risk adjustment — and the physician presence that ambient documentation creates at the bedside. A hospitalist who is not navigating the EHR during rounds is fully present with the patient. HCAHPS measures that. Readmissions are the proof.",
     matterBoxes: [
       {
         tag: 'Matters most if…',
-        body: "Your observed-to-expected ratios on mortality or readmissions look worse than peer hospitals with similar patient populations, CDI query volume on complex admissions is high, or your CMO is concerned that quality scores don't reflect actual care quality.",
+        body: "Your HRRP report shows excess readmissions in any of the 6 penalized conditions, your HCAHPS doctor communication composite is below the 50th percentile, your CDI team is running above 4 queries per provider per month, or your VBP Total Performance Score is being dragged down by patient experience.",
+      },
+      {
+        tag: 'The financial stakes',
+        body: "HRRP imposes up to 3% penalties on all base Medicare DRG payments — not just penalized conditions — for hospitals with excess readmissions in 6 high-volume conditions. HCAHPS doctor communication drives 25% of the VBP Total Performance Score, putting 2% of base Medicare payments at risk from a single domain.",
       },
     ],
-    alsoNote: "CDI graduation — when CDI query volume drops consistently, it's the signal that documentation is capturing complexity at the point of care rather than requiring clarification after the fact. The quality and revenue stories converge here.",
+    matterLayout: '2col',
+    alsoNote: "CDI graduation — when CDI query volume drops consistently, documentation is capturing complexity at the point of care. That closes the loop on DRG accuracy while freeing CDI bandwidth for higher-complexity review. The revenue and quality stories converge here.",
     chain: [
       { key: 'source', label: 'Abridge Ambient', sub: 'hospital documentation AI', isSource: true },
       {
-        key: 'presence', label: 'Rounding Quality ↑', sub: 'cognitive bandwidth during rounds',
+        key: 'cdiqueries', label: 'CDI Query Rate ↓', sub: 'documentation specificity improving',
         detail: {
           cols: [
-            { l: 'The second causal path', b: "A hospitalist managing 15–20 patients carries a documentation backlog into every rounding encounter. When part of their attention is on what they need to remember to document later, clinical assessment becomes shallower — subtle comorbidities get noted, not fully explored." },
-            { l: 'What changes with Abridge', b: "When documentation is captured automatically during rounds, the hospitalist's full attention is on the patient in front of them. That presence produces a more thorough clinical picture — comorbidities explored, severity recognized, plan reasoning articulated." },
-            { l: 'Why it matters for quality', b: "This mechanism is distinct from documentation accuracy: it increases the clinical complexity that gets recognized and documented in the first place, not just what gets captured from an already-complete clinical assessment. It's additive to the documentation-accuracy path." },
+            { l: 'What it measures', b: "CDI queries per attending per month — each query represents a note that lacked the specificity needed for accurate DRG and severity assignment. Typical range: 2–8 queries per provider per month. Target is below 1." },
+            { l: 'Why it falls with Abridge', b: "When the attending narrates clinical reasoning at the bedside and Abridge captures it, the diagnostic specificity CDI would query is already in the note. 'Iron deficiency anemia' instead of 'anemia.' 'Acute systolic heart failure' instead of 'CHF.' The query becomes unnecessary." },
+            { l: 'The dual impact', b: "Lower CDI query rate signals better documentation quality AND reduces the query-response cycle that occupies physician time. It's the earliest quality signal and a workforce efficiency indicator simultaneously." },
           ],
-          grad: "This path is visible when CDI query rates drop without a concurrent CDI education initiative — meaning complexity is arriving complete, not just being coached in after the fact.",
+          grad: "When CDI query rate per provider reaches a stable low, documentation specificity has genuinely changed — not just occasionally, but consistently. Start watching HCAHPS doctor communication scores as the patient experience confirmation.",
         },
       },
       {
-        key: 'complexity', label: 'Clinical Complexity Documented ↑', sub: 'conditions, severity captured',
+        key: 'presence', label: 'Physician Presence at Bedside ↑', sub: 'less time in the chart, more time with the patient',
         detail: {
           cols: [
-            { l: 'What it means', b: 'The full constellation of a patient\'s clinical conditions — acute and chronic, primary and comorbid — documented with the specificity required for risk adjustment systems to calculate an accurate expected outcome.' },
-            { l: 'Why it\'s the foundation', b: 'Risk adjustment algorithms (APR-DRGs, CMS HCC, 3M) use documented diagnoses to calculate expected outcomes. If the documentation understates how sick the patient was, the expected outcome is set too low — and any death or readmission looks worse than peers.' },
-            { l: 'What Abridge captures', b: "The rounding conversation contains the clinical picture. When ambient capture preserves that conversation in the note — chronic conditions mentioned in passing, comorbidities relevant to the plan — risk adjustment has the data it needs." },
-          ],
-          grad: "When CDI query rates drop, it means documentation is arriving complete. That's the signal complexity documentation has improved. Start watching severity classification rates as the next confirmation.",
-        },
-      },
-      {
-        key: 'severity', label: 'Severity of Illness Captured ↑', sub: 'complex patients classified correctly',
-        detail: {
-          cols: [
-            { l: 'What it measures', b: 'The degree to which patients with high clinical severity are classified at the correct APR-DRG Severity of Illness (SOI) level — particularly SOI 3 (major) and SOI 4 (extreme) for the most complex cases.' },
-            { l: 'Why classification matters', b: "SOI level directly affects expected outcome calculations. A patient classified as SOI 2 who is actually SOI 3 has a lower expected mortality — making any bad outcome look worse than it was on risk-adjusted reports." },
-            { l: 'The documentation connection', b: "SOI assignment is driven by secondary diagnoses — the comorbidities and complications that documentation often omits. Ambient capture preserves these conditions, enabling accurate SOI classification without CDI prompting." },
+            { l: 'The mechanism', b: "When documentation is captured automatically during rounds, the physician's full attention is on the patient — not on remembering what needs to go in the note later. HCAHPS 'Doctor Communication' measures this: whether the doctor listened, explained, and was present." },
+            { l: 'The VBP connection', b: "Doctor communication is one of four HCAHPS domains driving 25% of the VBP Total Performance Score. A 5-point improvement in the doctor communication composite can shift a hospital from the 40th to the 60th percentile — crossing the VBP bonus threshold." },
+            { l: 'How to observe it', b: "After-hours EHR session time falling is the operational signal. Rising HCAHPS doctor communication scores are the patient-experience confirmation — typically visible at the 2–3 quarter mark after rollout." },
           ],
         },
       },
       {
-        key: 'riskadjust', label: 'Risk Adjustment Accurate ↑', sub: 'actual patient mix reflected',
+        key: 'hcahps', label: 'HCAHPS Doctor Communication ↑', sub: '25% of VBP Total Performance Score', isOutcome: true,
         detail: {
           cols: [
-            { l: 'What it means', b: 'Expected outcomes are calculated from an accurate picture of patient severity — so observed-to-expected ratios reflect care quality rather than documentation quality.' },
-            { l: 'The quality program impact', b: "CMS publicly reports observed-to-expected mortality and readmission ratios. Hospitals with inaccurate documentation appear to have worse outcomes than they do — and can receive payment penalties based on that inaccuracy." },
-            { l: 'Where to look', b: "Compare your O/E ratios to peer hospitals. If your documentation is understating severity, your O/E ratios will be higher than peers with similar patient populations. That's the gap ambient documentation is closing." },
+            { l: 'What it measures', b: "The patient's perception of doctor communication — whether the doctor communicated clearly, listened carefully, and was present. Composite score 0–100; national average ~79; top quartile ~88." },
+            { l: 'Why it connects to documentation', b: "A physician navigating the EHR during a patient conversation is visibly not listening. Ambient documentation removes the keyboard from the interaction — and patients notice. Multiple health systems report HCAHPS doctor communication scores moving within 3–4 months of ambient deployment." },
+            { l: 'Financial stake', b: "HCAHPS drives 25% of VBP TPS. Hospitals scoring below peers in doctor communication are leaving real payment adjustments on the table — adjustments tied directly to whether the physician was present during the encounter." },
           ],
         },
       },
       {
-        key: 'score', label: 'Quality Score Accuracy ↑', sub: '', isOutcome: true,
+        key: 'readmission', label: '30-Day Readmission Rate ↓', sub: '', isOutcome: true,
         detail: {
           cols: [
-            { l: 'What it measures', b: 'Publicly reported quality metrics — CMS Value-Based Purchasing scores, core measure compliance rates, O/E mortality and readmission ratios — that accurately reflect care quality because risk adjustment has the data it needs.' },
-            { l: 'Data source', b: 'CMS public reporting (Hospital Compare), internal quality reporting system, accreditation body reporting. Trended quarterly. Requires 6–12 months of claims data to show meaningful movement.' },
-            { l: 'The reputational value', b: "CMS Overall Hospital Quality Star Rating is publicly visible to patients choosing where to receive care. Improving star ratings through better documentation accuracy — not by changing care — is one of the most defensible quality improvement arguments." },
-          ],
-        },
-      },
-      {
-        key: 'cdiqueries', label: 'CDI Query Volume ↓', sub: '', isOutcome: true,
-        detail: {
-          cols: [
-            { l: 'What it measures', b: 'The rate at which CDI specialists send queries back to attending physicians to clarify documented conditions for coding and quality measurement purposes.' },
-            { l: 'Why declining queries is the graduation signal', b: "When CDI query volume drops, it means documentation is arriving with what CDI needs. The query is a lagging correction for a documentation gap that should never have existed. Ambient capture closes the gap at the point of care." },
-            { l: 'The dual impact', b: "Every CDI query that doesn't need to be sent is physician time returned, CDI specialist time freed for higher-complexity review, and a billing cycle accelerated. Query volume reduction is a quality and an operational efficiency outcome simultaneously." },
+            { l: 'What it measures', b: "The rate of patients readmitted within 30 days — the most scrutinized quality metric in hospital medicine, publicly reported, and the basis for HRRP penalties on all Medicare DRG payments in hospitals with excess readmissions in 6 conditions: AMI, HF, pneumonia, CABG, COPD, and hip/knee replacement." },
+            { l: 'The documentation chain', b: "Complete H&P and progress notes inform post-acute placement. Complete consult notes ensure specialist recommendations are available at the time of discharge. Complete medication reconciliation reduces the information gaps that send patients back. The discharge summary — completed while the encounter is still in memory — is the care transition document that prevents the preventable readmission." },
+            { l: 'Attribution note', b: "30-day readmission has many drivers. We don't claim documentation alone drives the outcome. We claim that documentation gaps are a measurable contributor, and that Abridge closes those gaps. Track alongside CDI query rate and discharge summary timeliness to build the causal chain." },
           ],
         },
       },
@@ -473,33 +457,31 @@ const ipDomainCards: IPDomainCardData[] = [
     timeline: {
       signal: {
         window: 'Week 4–8',
-        desc: 'Documentation behavior shifts',
+        desc: 'CDI query rate moves first',
         metrics: [
-          { name: 'Progress Note Completeness Rate ↑', source: 'EHR analytics or CDI software · % of progress notes meeting completeness criteria (required elements present) · Abridge providers vs. baseline', badge: 'Week 4–6', why: "When progress notes consistently capture the full clinical picture — acute diagnoses, relevant comorbidities, clinical reasoning for the plan — risk adjustment systems have the data they need. This is the earliest observable signal that quality score inputs are improving." },
-          { name: 'Clinical Specificity Per Note ↑', source: 'CDI software or NLP · average number of codeable diagnoses captured per admission · Abridge providers vs. baseline · proxy for documentation depth', badge: 'Week 4–8', why: "CDI queries exist because documentation is missing specificity that risk adjustment requires. When specificity improves at the point of care, CDI has less to chase — and severity classification data follows." },
-          { name: 'Condition Present on Admission (POA) Documentation Rate ↑', source: 'Coding or CDI audit · % of admissions where all relevant conditions are documented as POA in H&P or admission note · Abridge providers vs. baseline', badge: 'Week 4–8', why: "When conditions present at admission aren't documented as such, CMS logic defaults them to hospital-acquired — triggering HAC penalties and distorting risk-adjusted quality scores. Ambient documentation captures chronic and acute conditions as they're discussed during the admission encounter, when POA status is clinically obvious, rather than leaving it to retrospective coding inference." },
+          { name: 'CDI Query Rate per Provider', source: 'CDI team data · queries per attending per month · Abridge providers vs. baseline · CDI teams track this daily', badge: 'Week 4–8', why: "Each CDI query is a documentation gap made visible. When Abridge captures clinical reasoning at the point of care, queries become unnecessary — and this is the earliest quality signal available. Falling query rate confirms documentation specificity is changing." },
+          { name: 'After-Hours EHR Session Time ↓', source: 'EHR audit logs · session activity after scheduled shift end · per provider · no survey needed', badge: 'Week 4–8', why: "The physician who finishes notes during rounds has more cognitive bandwidth at the bedside the next day. Post-shift EHR time is the operational signal that precedes the HCAHPS improvement — and it's available without waiting for survey data." },
         ],
-        callout: "Why start here: CDI query volume, SOI classification, and O/E ratios all follow from note completeness. Documentation specificity is the input; quality scores are the output — and they move in that order.",
+        callout: "Why start here: CDI query rate is the earliest quality signal and requires no additional data infrastructure — CDI teams already track it daily. It's the proof that documentation specificity has changed before any quality program data becomes available.",
       },
       trend: {
-        window: 'Month 1–7',
-        desc: 'CDI and severity capture respond',
+        window: 'Month 2–6',
+        desc: 'Patient experience and discharge signals emerge',
         metrics: [
-          { name: 'CDI Query Rate per Provider', source: 'CDI team data · queries per 100 admissions · Abridge providers vs. baseline · CDI teams track this continuously', badge: 'Month 1–3', why: "CDI querying the same notes Abridge drafted means notes aren't yet capturing the clinical specificity CDI expects. A declining query rate confirms that documentation behavior changes are translating into the clinical detail CDI needs." },
-          { name: 'High-Severity Case Classification Rate (SOI Level 3/4)', source: 'CDI or coding team · % of eligible admissions classified at major or extreme severity · Abridge cohort vs. baseline', badge: 'Month 3–6', why: "Accurate severity classification requires documentation of clinical complexity. Rising SOI 3/4 rate means the clinical story being delivered is now being captured in the documentation — not just coded later." },
-          { name: 'Chronic Condition Documentation Rate', source: 'EHR or CDI data · % of admissions where relevant chronic conditions are documented with appropriate specificity · proxy for completeness', badge: 'Month 3–7', why: "Chronic conditions need documentation at every admission to support risk adjustment and quality measure attribution. Abridge captures the clinical reasoning that makes this happen consistently." },
+          { name: 'HCAHPS Doctor Communication Composite', source: 'HCAHPS survey results · doctor communication composite score · quarterly CAHPS data · Abridge provider cohort vs. non-Abridge', badge: 'Month 3–6', why: "Doctor communication is the fastest-moving HCAHPS domain when documentation burden falls — because it directly measures whether the physician was present in the encounter. When the keyboard is out of the interaction, patients notice within 2–3 survey cycles." },
+          { name: 'Discharge Summary Timeliness', source: 'HIM / EHR data · hours from patient discharge to signed discharge summary · Abridge providers vs. baseline', badge: 'Month 2–5', why: "The discharge summary is the care transition document that the next provider needs before the patient gets readmitted. When ambient documentation reduces the burden of producing it, the clock from discharge to signed handoff shortens." },
+          { name: 'CC/MCC Capture Rate ↑', source: 'CDI or coding team · % of eligible admissions with CC or MCC codes assigned · Abridge providers vs. control cohort', badge: 'Month 3–5', why: "As CDI query rate falls, CC/MCC capture should rise — confirming that the documentation specificity improvement is translating into accurate coding, not just fewer queries." },
         ],
-        callout: "The severity capture story: SOI level improvement shows up in CDI and coding data before it appears in publicly reported quality scores. Track it at the provider cohort level to build the attribution story before external reporting reflects it.",
+        callout: "The HCAHPS bridge: Doctor communication composite drives 25% of VBP TPS. A 5-point improvement can shift a hospital toward the VBP bonus threshold — tied directly to whether the physician was present during rounds.",
       },
       proof: {
         window: 'Month 6–18',
-        desc: 'Quality scores reflect reality',
+        desc: 'Readmission rate and VBP performance confirm',
         metrics: [
-          { name: 'Observed vs. Expected Mortality Rate', source: 'Quality reporting system or CMS · O/E ratio trended quarterly · compare Abridge provider cohort to baseline and peers', badge: 'Month 6–12', why: "O/E mortality rate is risk-adjusted — it only improves if documentation accurately reflects patient severity. Improving O/E means the true clinical complexity is now being captured before outcomes are measured." },
-          { name: 'Core Measure Compliance Rate', source: 'Quality program data · % of qualifying encounters meeting core measure documentation requirements · Abridge providers vs. non-Abridge', badge: 'Month 6–12', why: "Core measure compliance requires specific documentation elements captured in real time. Ambient capture during clinical encounters makes these elements available without retrospective documentation." },
-          { name: '30-Day Readmission Rate (Risk-Adjusted)', source: 'CMS or internal quality data · risk-adjusted readmission rate · directional comparison to peer benchmark · affected by accurate risk adjustment input', badge: 'Month 9–18', why: "Risk-adjusted readmission is affected by accurate documentation of patient complexity at discharge. Better documentation of chronic conditions and clinical reasoning supports accurate risk adjustment input." },
+          { name: '30-Day Readmission Rate (HRRP Conditions)', source: 'CMS HRRP report or internal quality data · risk-adjusted readmission rate · Abridge provider cohort vs. non-Abridge · AMI, HF, pneumonia, CABG, COPD, hip/knee', badge: 'Month 9–18', why: "The lagging proof metric. HRRP penalties are calculated annually across 6 high-volume conditions. Declining readmission rate in these conditions is the financial and quality confirmation that the discharge documentation chain is working." },
+          { name: 'VBP Total Performance Score', source: 'CMS VBP program · hospital-level TPS trended annually · HCAHPS doctor communication contributes 25% of patient experience domain weight', badge: 'Month 9–18', why: "VBP TPS determines the sign of the Medicare payment adjustment — bonus or penalty. HCAHPS doctor communication drives 25% of the patient experience domain. Hospitals above the 50th percentile receive bonuses; hospitals below receive penalties. Moving the doctor communication composite by 5–10 points changes that calculation." },
         ],
-        callout: "The long game: Risk-adjusted quality scores reflect care from months prior and change slowly. The strategy is to show CDI query reduction early, SOI capture improvement at mid-term, and quality score movement as the long-term confirmation. Each stage builds credibility for the next.",
+        callout: "The long game: Readmission rate and VBP TPS change slowly. The strategy is to prove CDI query reduction early (Week 4–8), show HCAHPS doctor communication improvement at Month 3–6, and let readmission rate and VBP scores confirm the story as they mature.",
       },
     },
   },
@@ -569,30 +551,34 @@ const ipFramework: FrameworkItem[] = [
   {
     domain: 'REVENUE',
     tag: 'modeled',
-    narrative: "Inpatient DRG reimbursement is driven by case complexity — specifically whether complication and comorbidity codes (CCs and MCCs) are captured in the discharge record. When clinical documentation doesn't reflect the full severity of a patient's conditions, CDI teams must issue queries to resolve ambiguity. Unresolved queries or documentation gaps result in lower DRG weights and reduced reimbursement. More thorough clinical documentation may reduce CDI query burden and support higher case mix capture. The model quantifies this through estimated CMI improvement multiplied against discharge volume and base rate.",
+    narrative: "Inpatient documentation quality drives revenue through two distinct mechanisms. First, DRG accuracy: when clinical reasoning is captured in real time, CC/MCC codes are preserved — the complication and comorbidity specificity that drives DRG weight and case mix index. Every missed CC shifts a DRG by 0.3–0.5 weight points; every missed MCC by 0.5–1.0. Second, admission status defense: payers audit inpatient stays post-discharge and reclassify to observation APC status when medical necessity documentation is insufficient. The financial consequence is the IP-to-obs revenue delta — typically $3K–$8K per downgraded case. Both mechanisms are modeled separately because they have different triggers, different defensibility arguments, and different activation rates.",
     chain: ['Clinical Documentation Specificity ↑', 'CC/MCC Capture Rate ↑', 'CDI Query Rate ↓'],
-    chainOutput: 'Case Mix Index ↑',
+    chainOutput: 'Case Mix Index ↑ + Obs Downgrades ↓',
     steps: [
       {
         vars: [
-          { v: 'Annual inpatient discharges', kind: 'input' },
-          { v: 'Estimated CMI improvement', kind: 'input' },
+          { v: 'Eligible encounters', kind: 'input' },
+          { v: '% admissions with at-risk DRG', kind: 'input' },
+          { v: '% protected with ambient doc', kind: 'benchmark', hint: '15–25%' },
+          { v: 'DRG weight increase per protected case', kind: 'input' },
           { v: 'Hospital base rate', kind: 'input' },
         ],
-        result: 'DRG revenue impact',
+        result: 'DRG accuracy value',
       },
       {
         vars: [
-          { v: 'Annual encounters', kind: 'input' },
-          { v: 'Documentation denial rate reduction', kind: 'input' },
-          { v: 'Avg inpatient denial value', kind: 'benchmark', hint: '~$500–1,200' },
+          { v: 'Eligible encounters', kind: 'input' },
+          { v: '% downgrade rate (IP → obs)', kind: 'input' },
+          { v: 'IP-to-obs revenue delta per case', kind: 'benchmark', hint: '~$3K–$8K' },
+          { v: '% doc-preventable (scenario)', kind: 'benchmark', hint: 'Conservative 25% / Typical 40% / Aggressive 55%' },
         ],
-        result: 'Denial recovery',
+        result: 'Obs defense value',
       },
       {
         vars: [
-          { v: 'DRG revenue impact', kind: 'derived' },
-          { v: 'Denial recovery', kind: 'derived', op: '+' },
+          { v: 'DRG accuracy value', kind: 'derived' },
+          { v: 'Obs defense value', kind: 'derived', op: '+' },
+          { v: 'Realization haircut', kind: 'input' },
         ],
         result: 'Total estimated revenue',
         isFinal: true,
@@ -602,10 +588,10 @@ const ipFramework: FrameworkItem[] = [
   {
     domain: 'QUALITY',
     tag: 'tracked',
-    narrative: "Risk-adjusted quality metrics — observed-to-expected mortality, readmission rates, PSI-90 composite — depend on the severity adjustment applied to each case. Severity adjustment is only as accurate as the severity documentation. When comorbidities and complications are underrepresented in the record, risk models underestimate expected outcomes, and performance appears worse than it actually is. More complete documentation may produce more accurate risk adjustment, which in turn may improve O/E ratios and CMS program performance. These signals are tracked over time; dollar amounts are not modeled directly.",
-    chain: ['Comorbidity Documentation ↑', 'Risk Model Inputs Accurate ↑', 'O/E Ratio Improves ↑'],
-    chainOutput: 'VBP Performance ↑',
-    note: "Overlaps with Revenue via VBP, HACRP, and HRRP quality programs. Not modeled in dollars — program payouts use CMS-specific formulas. Tracked as O/E mortality ratio, core measure compliance, and risk-adjusted readmission rate.",
+    narrative: "The inpatient quality story runs through physician presence and documentation specificity — and tracks as a leading-to-lagging chain. CDI query rate is the leading signal: when ambient documentation captures clinical reasoning at the point of care, CDI has fewer gaps to query. HCAHPS doctor communication is the patient experience signal: a physician not navigating the EHR during rounds is present in the encounter — and patients report it within 2–3 survey cycles. 30-day readmission rate is the lagging proof: complete discharge documentation enables the post-acute coordination that prevents the preventable readmission. VBP and HRRP create real financial stakes — but program payouts use CMS-specific formulas and are tracked directionally rather than modeled.",
+    chain: ['CDI Query Rate ↓', 'Physician Presence at Bedside ↑', 'HCAHPS Doctor Communication ↑'],
+    chainOutput: '30-Day Readmission Rate ↓',
+    note: "Tracked signals: CDI query rate per provider (leading — Week 4–8), HCAHPS doctor communication composite (patient experience — Month 3–6), 30-day readmission rate (lagging proof — Month 9–18). VBP TPS and HRRP penalty exposure provide financial stakes but are not modeled in dollar terms.",
   },
 ];
 
@@ -615,7 +601,7 @@ const ipFrameworkPersonas: Record<DomainName, string[]> = {
   CAPACITY:  ['COO', 'Hospitalist Director'],
   WORKFORCE: ['CMO', 'CHRO'],
   REVENUE:   ['CFO', 'CDI Director'],
-  QUALITY:   ['VP Quality', 'CMO'],
+  QUALITY:   ['CMO', 'VP Quality', 'CFO'],
 };
 
 const ipFrameworkQuestions: Record<DomainName, string[]> = {
@@ -635,9 +621,9 @@ const ipFrameworkQuestions: Record<DomainName, string[]> = {
     'Are there DRG weight losses on your high-complexity cases that your CDI team attributes to documentation gaps?',
   ],
   QUALITY: [
-    'When you look at your O/E mortality or readmission ratios, do your hospitalists believe the risk adjustment accurately reflects patient severity?',
-    'How are your VBP or HRRP scores trending — and is documentation quality coming up in root cause analysis of performance gaps?',
-    'How much of your quality team\'s bandwidth is spent resolving documentation-related flags versus driving improvement initiatives?',
+    'How many CDI queries is your team issuing per attending per month — and when you ask CDI, do they believe the query volume is coming down or holding steady?',
+    'What does your HCAHPS doctor communication composite look like relative to peer benchmark — and has documentation burden come up in any conversation about patient experience?',
+    'Are you currently in HRRP penalty status for any of the 6 conditions, or tracking close to the excess readmission threshold in any of them?',
   ],
 };
 
