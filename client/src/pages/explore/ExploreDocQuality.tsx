@@ -509,7 +509,10 @@ const denialsScenarios: Record<ScenarioLevel, number> = { conservative: 25, typi
   const ipDrgNetValue = ipDrgGrossValue * (docQualityInputs.ipDrgRealization / 100);
 
   // Inpatient: Obs/IP Status Defense Calculation
-  const ipObsDefenseGross = eligibleEncounters * (docQualityInputs.ipObsDefenseDenialRate / 100) * docQualityInputs.ipObsDefenseClaimValue * (docQualityInputs.ipObsDefenseDocContribution / 100);
+  const ipObsPreventableScenarios: Record<string, number> = { conservative: 25, typical: 40, aggressive: 55 };
+  const ipObsDowngrades = eligibleEncounters * (docQualityInputs.ipObsDefenseDenialRate / 100);
+  const ipObsPreventablePct = ipObsPreventableScenarios[docQualityInputs.ipObsDefensePreventableScenario] / 100;
+  const ipObsDefenseGross = ipObsDowngrades * docQualityInputs.ipObsDefenseRevenueDelta * ipObsPreventablePct;
   const ipObsDefenseNet = ipObsDefenseGross * (docQualityInputs.ipObsDefenseRealization / 100);
 
   // Inpatient: CDI Query Reduction Calculation
@@ -1471,78 +1474,85 @@ const denialsScenarios: Record<ScenarioLevel, number> = { conservative: 25, typi
                     </div>
                   </div>
 
-                  {/* STEP 2: CLAIM VALUE */}
+                  {/* STEP 2: REVENUE DELTA */}
                   <div className="mb-10">
                     <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">
-                      Step 2: Average Contested Claim Value
+                      Step 2: Revenue at Stake per Downgrade
                     </p>
                     <div className="bg-[#F5F0EB] rounded-lg p-5">
                       <div className="flex-1">
-                        <label className="text-[13px] text-[#666666] mb-1.5 block">Avg Contested Claim Value</label>
+                        <label className="text-[13px] text-[#666666] mb-1.5 block">Inpatient-to-Observation Revenue Delta</label>
                         <div className="relative">
                           <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#888888] z-10">$</span>
                           <FormattedNumberInput
-                            value={docQualityInputs.ipObsDefenseClaimValue}
-                            onChange={(val) => updateDocInputs({ ipObsDefenseClaimValue: val })}
+                            value={docQualityInputs.ipObsDefenseRevenueDelta}
+                            onChange={(val) => updateDocInputs({ ipObsDefenseRevenueDelta: val })}
                             className="w-full h-12 bg-white border border-[#E5E5E5] rounded-lg pl-8 pr-4 text-black font-semibold text-base"
-                            data-testid="input-obs-claim-value"
+                            data-testid="input-obs-delta"
                           />
                         </div>
                       </div>
                       <p className="text-[13px] text-[#888888] mt-3">
-                        The average inpatient claim subject to status denials. $10,000 is a conservative benchmark.
+                        The revenue difference between inpatient DRG and outpatient APC rates for the same case. Medicare delta typically runs $3,000–$8,000; commercial payers vary. $5,000 is a conservative starting point.
                       </p>
                     </div>
                   </div>
 
-                  {/* STEP 3: DOCUMENTATION CONTRIBUTION */}
+                  {/* STEP 3: DOCUMENTATION-PREVENTABLE */}
                   <div className="mb-10">
-                    <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">
-                      Step 3: Appeal-Sensitive Denials
+                    <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+                      Step 3: Documentation-Preventable Downgrades
                     </p>
-                    <div className="bg-[#F5F0EB] rounded-lg p-5">
-                      <div className="flex-1">
-                        <label className="text-[13px] text-[#666666] mb-1.5 block">Documentation Contribution %</label>
-                        <div className="relative">
-                          <input
-                            type="number"
-                            step="5"
-                            min={25}
-                            max={55}
-                            value={docQualityInputs.ipObsDefenseDocContribution}
-                            onChange={(e) => updateDocInputs({ ipObsDefenseDocContribution: parseFloat(e.target.value) || 0 })}
-                            className="w-full h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 pr-8 text-black font-semibold text-base"
-                            data-testid="input-obs-doc-contribution"
-                          />
-                          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#888888]">%</span>
-                        </div>
-                      </div>
-                      <p className="text-[13px] text-[#888888] mt-3">
-                        Of your medical necessity denials, what % do you lose specifically because documentation didn{"'"}t capture clinical reasoning adequately? For systems using Abridge, 35{"–"}55% is appropriate {"—"} better notes directly reduce these losses.
-                      </p>
+                    <p className="text-[13px] text-[#666666] mb-4">
+                      Of those downgrades, what share did you lose on documentation grounds — not payer policy?
+                    </p>
+                    <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-3">
+                      {([
+                        { label: 'Conservative', value: 'conservative', pct: 25 },
+                        { label: 'Typical', value: 'typical', pct: 40 },
+                        { label: 'Aggressive', value: 'aggressive', pct: 55 },
+                      ] as const).map((s) => (
+                        <button
+                          key={s.value}
+                          onClick={() => updateDocInputs({ ipObsDefensePreventableScenario: s.value })}
+                          className={`p-2 sm:p-4 rounded-lg border transition-all text-center ${
+                            docQualityInputs.ipObsDefensePreventableScenario === s.value
+                              ? "bg-[#EA2C00] border-[#EA2C00] text-white"
+                              : "bg-white border-[#E5E5E5] text-black hover:border-[#D1D5DB]"
+                          }`}
+                          data-testid={`button-obs-${s.value}`}
+                        >
+                          <p className={`text-xs capitalize mb-1 ${docQualityInputs.ipObsDefensePreventableScenario === s.value ? 'text-white/80' : 'text-[#888888]'}`}>{s.label}</p>
+                          <p className="font-semibold text-lg">{s.pct}%</p>
+                        </button>
+                      ))}
+                    </div>
+                    <div className="bg-[#F5F0EB] rounded-lg p-4 text-center">
+                      <span className="text-[13px] text-[#666666]">{formatNumber(Math.round(ipObsDowngrades))} × {ipObsPreventableScenarios[docQualityInputs.ipObsDefensePreventableScenario]}% = </span>
+                      <span className="font-semibold text-black">{formatNumber(Math.round(ipObsDowngrades * ipObsPreventablePct))} documentation-preventable downgrades</span>
                     </div>
                   </div>
 
                   {/* STEP 4: REALIZATION */}
                   <div className="mb-8">
                     <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
-                      Step 4: What You Can Count On
+                      Step 4: Realization
                     </p>
-                    <p className="text-[13px] text-[#666666] mb-4">Not all improved documentation prevents every denial.</p>
+                    <p className="text-[13px] text-[#666666] mb-4">Not every prevented downgrade translates to recovered revenue — appeals take time and some cases are written off.</p>
                     <div className="bg-[#F5F0EB] rounded-lg p-5">
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-4">
-                        <div className="flex-1">
-                          <label className="text-[13px] text-[#666666] mb-1.5 block">Gross Value</label>
-                          <div className="h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 flex items-center">
-                            <span className="font-semibold text-black">{formatCurrency(Math.round(ipObsDefenseGross))}</span>
-                          </div>
-                        </div>
-                        <span className="text-[#888888] text-xl hidden sm:block">×</span>
-                        <div className="flex-1">
-                          <label className="text-[13px] text-[#666666] mb-1.5 block">Conservative Realization</label>
-                          <div className="h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 flex items-center">
-                            <span className="font-semibold text-black">{docQualityInputs.ipObsDefenseRealization}%</span>
-                          </div>
+                      <div className="flex items-center gap-3 mb-3">
+                        <input
+                          type="range"
+                          min={20}
+                          max={80}
+                          step={5}
+                          value={docQualityInputs.ipObsDefenseRealization}
+                          onChange={(e) => updateDocInputs({ ipObsDefenseRealization: Number(e.target.value) })}
+                          className="flex-1 h-2 bg-[#E5E5E5] rounded-lg appearance-none cursor-pointer accent-[#EA2C00]"
+                          data-testid="slider-obs-realization"
+                        />
+                        <div className="flex items-center gap-1 bg-white rounded-lg px-3 py-1.5 border border-[#D1D5DB]">
+                          <span className="text-sm font-bold text-[#EA2C00]">{docQualityInputs.ipObsDefenseRealization}%</span>
                         </div>
                       </div>
                       <div className="text-center py-2">
@@ -1550,7 +1560,7 @@ const denialsScenarios: Record<ScenarioLevel, number> = { conservative: 25, typi
                         <span className="font-semibold text-black">{formatCurrency(Math.round(ipObsDefenseNet))} net</span>
                       </div>
                       <p className="text-[13px] text-[#888888] mt-3">
-                        25% accounts for the reality that most denials involve medical judgment disputes, not just documentation gaps. Even with perfect documentation, payers often sustain denials. Only count cases where documentation quality was the deciding factor.
+                        50% is a reasonable midpoint — assumes roughly half of documentation-preventable denials are actually prevented or reversed.
                       </p>
                     </div>
                   </div>

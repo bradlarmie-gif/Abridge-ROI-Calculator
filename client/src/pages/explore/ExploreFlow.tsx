@@ -426,8 +426,8 @@ export interface DocQualityInputs {
   // Inpatient: Obs/IP Status Defense
   ipObsDefenseEnabled: boolean;
   ipObsDefenseDenialRate: number;
-  ipObsDefenseClaimValue: number;
-  ipObsDefenseDocContribution: number;
+  ipObsDefenseRevenueDelta: number;         // IP-to-Obs revenue delta per downgraded case
+  ipObsDefensePreventableScenario: 'conservative' | 'typical' | 'aggressive';
   ipObsDefenseRealization: number;
   ipObsDefenseExpanded: boolean;
   
@@ -873,9 +873,9 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     // Inpatient: Obs/IP Status Defense defaults
     ipObsDefenseEnabled: false,
     ipObsDefenseDenialRate: 5,
-    ipObsDefenseClaimValue: 10000,
-    ipObsDefenseDocContribution: 45,
-    ipObsDefenseRealization: 25,
+    ipObsDefenseRevenueDelta: 5000,
+    ipObsDefensePreventableScenario: 'typical',
+    ipObsDefenseRealization: 50,
     ipObsDefenseExpanded: false,
     // Inpatient: CDI Query Reduction defaults
     ipCdiEnabled: false,
@@ -1314,19 +1314,13 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
       total += grossValue * (docQualityInputs.ipDrgRealization / 100);
     }
 
-    // Inpatient: CDI Query Reduction
-    if (state.careSetting === 'inpatient' && docQualityInputs.ipCdiEnabled) {
-      const ipCdiReductionScenarios: Record<string, number> = { conservative: 15, typical: 30, aggressive: 50 };
-      const reductionPercent = ipCdiReductionScenarios[docQualityInputs.ipCdiScenario];
-      const totalQueries = eligibleEncounters * (docQualityInputs.ipCdiQueryRate / 100);
-      const queriesAvoided = totalQueries * (reductionPercent / 100);
-      total += queriesAvoided * docQualityInputs.ipCdiCostPerQuery * (docQualityInputs.ipCdiRealization / 100);
-    }
-
     // Inpatient: Obs/IP Status Defense
     if (state.careSetting === 'inpatient' && docQualityInputs.ipObsDefenseEnabled) {
-      const obsDefenseGross = eligibleEncounters * (docQualityInputs.ipObsDefenseDenialRate / 100) * docQualityInputs.ipObsDefenseClaimValue * (docQualityInputs.ipObsDefenseDocContribution / 100);
-      total += obsDefenseGross * (docQualityInputs.ipObsDefenseRealization / 100);
+      const preventableScenarios: Record<string, number> = { conservative: 25, typical: 40, aggressive: 55 };
+      const preventablePct = preventableScenarios[docQualityInputs.ipObsDefensePreventableScenario] / 100;
+      const downgrades = eligibleEncounters * (docQualityInputs.ipObsDefenseDenialRate / 100);
+      const gross = downgrades * docQualityInputs.ipObsDefenseRevenueDelta * preventablePct;
+      total += gross * (docQualityInputs.ipObsDefenseRealization / 100);
     }
 
 

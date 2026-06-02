@@ -286,7 +286,10 @@ export default function ExploreModel({
 
   const ipObsDefenseValue = useMemo(() => {
     if (!isInpatient || !docQualityInputs.ipObsDefenseEnabled) return 0;
-    const gross = eligibleEncounters * (docQualityInputs.ipObsDefenseDenialRate / 100) * docQualityInputs.ipObsDefenseClaimValue * (docQualityInputs.ipObsDefenseDocContribution / 100);
+    const preventableScenarios: Record<string, number> = { conservative: 25, typical: 40, aggressive: 55 };
+    const preventablePct = preventableScenarios[docQualityInputs.ipObsDefensePreventableScenario] / 100;
+    const downgrades = eligibleEncounters * (docQualityInputs.ipObsDefenseDenialRate / 100);
+    const gross = downgrades * docQualityInputs.ipObsDefenseRevenueDelta * preventablePct;
     return Math.round(gross * (docQualityInputs.ipObsDefenseRealization / 100));
   }, [isInpatient, eligibleEncounters, docQualityInputs]);
 

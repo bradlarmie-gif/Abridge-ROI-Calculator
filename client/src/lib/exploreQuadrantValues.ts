@@ -165,7 +165,10 @@ export function computeRevenueBreakdown(state: ExploreState, _totalHoursSaved: n
     result.cdiQueryReduction = Math.round(avoided * dq.ipCdiCostPerQuery * (dq.ipCdiRealization / 100));
   }
   if (isIP && dq.ipObsDefenseEnabled) {
-    const gross = eligibleEncounters * (dq.ipObsDefenseDenialRate / 100) * dq.ipObsDefenseClaimValue * (dq.ipObsDefenseDocContribution / 100);
+    const preventableScenarios: Record<string, number> = { conservative: 25, typical: 40, aggressive: 55 };
+    const preventablePct = preventableScenarios[dq.ipObsDefensePreventableScenario] / 100;
+    const downgrades = eligibleEncounters * (dq.ipObsDefenseDenialRate / 100);
+    const gross = downgrades * dq.ipObsDefenseRevenueDelta * preventablePct;
     result.obsDefense = Math.round(gross * (dq.ipObsDefenseRealization / 100));
   }
 

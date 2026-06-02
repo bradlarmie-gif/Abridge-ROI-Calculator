@@ -213,11 +213,10 @@ export function computeAllDriverValues(
     );
   }
   if (isIP && dq.ipObsDefenseEnabled) {
-    const gross =
-      eligibleEncounters *
-      (dq.ipObsDefenseDenialRate / 100) *
-      dq.ipObsDefenseClaimValue *
-      (dq.ipObsDefenseDocContribution / 100);
+    const preventableScenarios: Record<string, number> = { conservative: 25, typical: 40, aggressive: 55 };
+    const preventablePct = (preventableScenarios[dq.ipObsDefensePreventableScenario] ?? 40) / 100;
+    const downgrades = eligibleEncounters * (dq.ipObsDefenseDenialRate / 100);
+    const gross = downgrades * dq.ipObsDefenseRevenueDelta * preventablePct;
     result.obsDefense = Math.round(gross * (dq.ipObsDefenseRealization / 100));
   }
 
@@ -413,7 +412,9 @@ export function computeAllDriverCalcSummaries(
     out.cdiQueryReduction = `${fmtN(eligibleEncounters)} encounters × ${dq.ipCdiQueryRate}% query rate × ${reductionPct}% reduction × ${fmt$(dq.ipCdiCostPerQuery)}/query × ${dq.ipCdiRealization}% realization`;
   }
   if (isIP && dq.ipObsDefenseEnabled) {
-    out.obsDefense = `${fmtN(eligibleEncounters)} encounters × ${dq.ipObsDefenseDenialRate}% denial × ${fmt$(dq.ipObsDefenseClaimValue)}/claim × ${dq.ipObsDefenseDocContribution}% doc contribution × ${dq.ipObsDefenseRealization}% realization`;
+    const preventableScenarios: Record<string, number> = { conservative: 25, typical: 40, aggressive: 55 };
+    const preventablePct = preventableScenarios[dq.ipObsDefensePreventableScenario] ?? 40;
+    out.obsDefense = `${fmtN(eligibleEncounters)} encounters × ${dq.ipObsDefenseDenialRate}% downgrade rate × ${fmt$(dq.ipObsDefenseRevenueDelta)}/case delta × ${preventablePct}% doc-preventable × ${dq.ipObsDefenseRealization}% realization`;
   }
 
   // Quality (Nursing only quantified) — derive every multiplicand from the

@@ -17,7 +17,7 @@ import WrvuCalc from "@/components/explore/drivers/WrvuCalc";
 import HccCaptureCalc from "@/components/explore/drivers/HccCaptureCalc";
 import DenialPreventionCalc from "@/components/explore/drivers/DenialPreventionCalc";
 import DrgAccuracyCalc from "@/components/explore/drivers/DrgAccuracyCalc";
-import CdiQueryReductionCalc from "@/components/explore/drivers/CdiQueryReductionCalc";
+
 import ObsDefenseCalc from "@/components/explore/drivers/ObsDefenseCalc";
 import InpatientDischargePlanningCalc from "@/components/explore/drivers/InpatientDischargePlanningCalc";
 
@@ -826,29 +826,6 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
       scaleAxis: 'encounters',
     },
     measurePhase: 'strategic',
-    prerequisites: ['cdiQueryReduction'],
-  },
-  {
-    id: 'cdiQueryReduction',
-    label: 'CDI Query Reduction',
-    shortDescription: 'Fewer queries when documentation is complete upfront.',
-    quadrant: 'Revenue',
-    settings: ['inpatient'],
-    visibility: 'quantified',
-    enabledStateKey: 'ipCdiEnabled',
-    expandedStateKey: 'ipCdiExpanded',
-    calcComponent: CdiQueryReductionCalc,
-    trackedMeasureIds: ['cdiQueryReduction'],
-    measureDefaults: {
-      deltaLabel: 'Queries avoided',
-      deltaUnit: 'queries',
-      valuePerUnitLabel: 'Cost per query',
-      valuePerUnitDefault: 50,
-      valuePerUnitPrefix: '$',
-      realizationDefault: 75,
-      scaleAxis: 'encounters',
-    },
-    measurePhase: 'demonstrated',
   },
   {
     id: 'obsDefense',
@@ -2028,28 +2005,6 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     valueArc: { signal: { timing: 'Weeks 4-8', metric: 'Documentation specificity ↑' }, proof: { timing: 'Month 1-3', metric: 'CDI query rate per provider ↓' } },
   },
   {
-    id: 'ipSoiClassification',
-    label: 'SOI 3/4 Classification Rate',
-    shortDescription: 'SOI drives the denominator for risk-adjusted quality metrics: when a patient is documented at SOI 2 but was clinically SOI 3, the hospital appears to have worse-than-expected outcomes for a patient who was actually sicker than the record shows.',
-    tagline: 'SOI 3/4 capture rate — the intermediate signal that complete documentation is correcting risk-adjusted quality baselines',
-    quadrant: 'Quality',
-    settings: ['inpatient'],
-    visibility: 'qualitative',
-    enabledStateKey: 'ipSoiClassificationEnabled',
-    expandedStateKey: 'ipSoiClassificationExpanded',
-    trackedMeasureIds: [],
-    measureDefaults: {
-      deltaLabel: 'SOI 3/4 classification rate',
-      deltaUnit: '%',
-      valuePerUnitLabel: 'Signal — no dollar value',
-      valuePerUnitDefault: 0,
-      realizationDefault: 100,
-      scaleAxis: 'fixed',
-      benchmarkHint: 'Enter % of admissions classified at SOI 3 or 4. Accurate SOI capture directly affects risk-adjusted quality metrics. A 3–5 point improvement in SOI 3/4 capture materially shifts expected mortality ratios.',
-    },
-    valueArc: { signal: { timing: 'Month 1-3', metric: 'CDI query rate ↓' }, proof: { timing: 'Month 3-6', metric: 'SOI 3/4 capture ↑' } },
-  },
-  {
     id: 'ipHcahpsDoctor',
     label: 'HCAHPS Doctor Communication',
     shortDescription: 'A hospitalist who is not navigating the EHR during rounds sustains eye contact, asks follow-up questions, and is perceived as listening. HCAHPS accounts for 25% of the Total Performance Score — 2% of base Medicare payments are at risk.',
@@ -2093,50 +2048,6 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
       benchmarkHint: 'Enter 30-day all-cause readmission rate as %. National average: ~15% for acute care. HRRP penalties apply to excess readmissions for AMI, HF, pneumonia, CABG, COPD, and hip/knee.',
     },
     valueArc: { signal: { timing: 'Month 1-3', metric: 'H&P completion rate ↑' }, trend: { timing: 'Month 3-6', metric: 'Discharge planning lead time ↑' }, proof: { timing: 'Month 9-18', metric: '30-day readmission rate ↓' } },
-  },
-  {
-    id: 'ipPoaDocRate',
-    label: 'Condition Present on Admission (POA) Documentation Rate',
-    shortDescription: 'When chronic or acute conditions aren\'t documented as present on admission, they default to hospital-acquired — triggering HAC penalties and distorting risk-adjusted quality scores. Ambient documentation captures conditions as they\'re discussed during the admission encounter, not retrospectively.',
-    tagline: 'POA status documented at admission — preventing incorrect HAC attribution',
-    quadrant: 'Quality',
-    settings: ['inpatient'],
-    visibility: 'qualitative',
-    enabledStateKey: 'ipPoaDocRateEnabled',
-    expandedStateKey: 'ipPoaDocRateExpanded',
-    trackedMeasureIds: [],
-    measureDefaults: {
-      deltaLabel: 'POA documentation rate',
-      deltaUnit: '%',
-      valuePerUnitLabel: 'Signal — no dollar value',
-      valuePerUnitDefault: 0,
-      realizationDefault: 100,
-      scaleAxis: 'fixed',
-      benchmarkHint: 'Enter % of admissions where all conditions present on admission are documented as POA in the H&P or admission note. Gaps default to hospital-acquired under CMS logic, triggering HAC penalties. Measurable via coding or CDI audit.',
-    },
-    valueArc: { signal: { timing: 'Weeks 1-2', metric: 'H&P completeness ↑' }, trend: { timing: 'Month 1-3', metric: 'CDI queries on HAC conditions ↓' }, proof: { timing: 'Month 2-5', metric: 'POA documentation rate ↑' } },
-  },
-  {
-    id: 'ipNoteCompleteness',
-    label: 'Note Completeness Score',
-    shortDescription: 'Inpatient documentation completeness — capturing the full clinical picture across H&Ps, progress notes, consult notes, and discharge summaries — is the upstream input for DRG accuracy, CDI query volume, SOI classification, readmission risk, and care transitions. When completeness improves, every downstream metric follows.',
-    tagline: 'Structured completeness across the inpatient note family — the upstream signal for DRG, CDI, and quality',
-    quadrant: 'Quality',
-    settings: ['inpatient'],
-    visibility: 'qualitative',
-    enabledStateKey: 'ipNoteCompletenessEnabled',
-    expandedStateKey: 'ipNoteCompletenessExpanded',
-    trackedMeasureIds: [],
-    measureDefaults: {
-      deltaLabel: 'Note completeness score',
-      deltaUnit: '% complete',
-      valuePerUnitLabel: 'Signal — no dollar value',
-      valuePerUnitDefault: 0,
-      realizationDefault: 100,
-      scaleAxis: 'fixed',
-      benchmarkHint: 'Enter average note completeness score as a percentage across the inpatient note family (H&P, progress notes, discharge summaries). Measurable via CDI audit, chart review rubric, or documentation quality tool. Typical range before ambient: 55–70%. Goal: 85%+.',
-    },
-    valueArc: { signal: { timing: 'Weeks 1-2', metric: 'Documentation time per note ↓' }, trend: { timing: 'Weeks 4-8', metric: 'Problem list and HPI coverage ↑' }, proof: { timing: 'Month 1-3', metric: 'Completeness score ↑' } },
   },
 
   // ───── CAPACITY — Documentation Time per Note (all care settings) ─────

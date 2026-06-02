@@ -439,9 +439,9 @@ describe("Explore OP/ED/IP PDF reconciliation — engine math vs. printed formul
           ...ipBase.docQualityInputs,
           ipObsDefenseEnabled: true,
           ipObsDefenseDenialRate: 5,
-          ipObsDefenseClaimValue: 10_000,
-          ipObsDefenseDocContribution: 45,
-          ipObsDefenseRealization: 25,
+          ipObsDefenseRevenueDelta: 5_000,
+          ipObsDefensePreventableScenario: 'typical',
+          ipObsDefenseRealization: 50,
         },
       };
       const values = computeAllDriverValues(state, TOTAL_HOURS_SAVED);
