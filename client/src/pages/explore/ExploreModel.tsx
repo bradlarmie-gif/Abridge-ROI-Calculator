@@ -293,6 +293,20 @@ export default function ExploreModel({
     return Math.round(gross * (docQualityInputs.ipObsDefenseRealization / 100));
   }, [isInpatient, eligibleEncounters, docQualityInputs]);
 
+  const ipDischargePlanningValue = useMemo(() => {
+    if (!isInpatient || !timeDriverInputs.ipDischargePlanningEnabled) return 0;
+    const td = timeDriverInputs;
+    const annualDischarges = td.ipAnnualDischarges >= 100
+      ? td.ipAnnualDischarges
+      : td.ipStaffedBeds > 0 && td.ipAlos > 0
+        ? Math.round(td.ipStaffedBeds * (td.ipOccupancyRate / 100) * 365 / td.ipAlos)
+        : state.annualEncounters;
+    const affected = annualDischarges * (td.ipDischargeLagAffectedRate / 100);
+    const dbnUplift = affected * (td.ipDbnCrossNoonRate / 100);
+    const incrementalAdmissions = dbnUplift * (td.ipBedFillRate / 100);
+    return Math.round(incrementalAdmissions * td.ipNetRevenuePerAdmission);
+  }, [isInpatient, timeDriverInputs, state.annualEncounters]);
+
   const hoursPerProviderPerWeek = state.numberOfProviders > 0 
     ? (isED
         ? (totalHoursSaved * ((timeDriverInputs.edAllocDocQualityPercent + timeDriverInputs.edAllocWellbeingPercent) / 100) / state.numberOfProviders / 48)
@@ -526,6 +540,7 @@ export default function ExploreModel({
     if (ipDrgValue > 0) drivers.push({ id: "ipDrg", name: "DRG Accuracy", value: ipDrgValue, category: "documentation", quadrant: "Revenue", onset: "immediate" as const });
     if (ipObsDefenseValue > 0) drivers.push({ id: "ipObsDefense", name: "Obs/IP Status Defense", value: ipObsDefenseValue, category: "documentation", quadrant: "Revenue", onset: "immediate" as const });
     if (ipCdiValue > 0) drivers.push({ id: "ipCdi", name: "CDI Query Reduction", value: ipCdiValue, category: "documentation", quadrant: "Revenue", onset: "immediate" as const });
+    if (ipDischargePlanningValue > 0) drivers.push({ id: "ipDischargePlanning", name: "Discharge Planning", value: ipDischargePlanningValue, category: "time", quadrant: "Capacity", onset: "delayed" as const });
     if (nursingHapiValue > 0) drivers.push({ id: "nursingHapi", name: "HAPI Risk Reduction", value: nursingHapiValue, category: "documentation", quadrant: "Quality", onset: "delayed" as const });
     if (nursingFallsValue > 0) drivers.push({ id: "nursingFalls", name: "Fall Risk Visibility", value: nursingFallsValue, category: "documentation", quadrant: "Quality", onset: "delayed" as const });
     if (nursingCautiValue > 0) drivers.push({ id: "nursingCauti", name: "CAUTI Bundle Compliance", value: nursingCautiValue, category: "documentation", quadrant: "Quality", onset: "delayed" as const });
