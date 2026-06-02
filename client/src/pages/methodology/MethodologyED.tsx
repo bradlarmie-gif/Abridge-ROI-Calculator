@@ -311,7 +311,7 @@ const edDomainCards: EDDomainCardData[] = [
         body: "Your E/M distribution is skewed toward mid-level codes, your medical necessity denial rate is above 3–5%, or your revenue cycle team is flagging documentation gaps as a root cause of write-offs.",
       },
     ],
-    alsoNote: "This is frequently the larger financial impact of the two tracks — and it lives in your revenue cycle team, not with the physician alone. Cross-departmental visibility is required to tell the full story.",
+    alsoNote: "This is frequently the larger financial impact of the two revenue tracks — E/M coding uplift and denial recovery — and it lives in your revenue cycle team, not with the physician alone. Cross-departmental visibility is required to tell the full story.",
     chain: [
       { key: 'source', label: 'Abridge Ambient', sub: 'documentation AI', isSource: true },
       {
@@ -409,8 +409,12 @@ const edDomainCards: EDDomainCardData[] = [
     northStarSub: "If it wasn't documented, it didn't happen. Providers in the ED often deliver compliant care — the gap is that time-sensitive clinical reasoning never makes it into the chart. Abridge captures the \"why\" in real time, not reconstructed hours later.",
     matterBoxes: [
       {
-        tag: 'Matters most if…',
-        body: "Your quality program shows compliance gaps that don't match your clinical team's account of care delivered, you're facing CMS core measure pressure, or your quality director is spending time on documentation deficiency resolution rather than improvement initiatives.",
+        tag: 'CMO / VP Quality',
+        body: "Your compliance gaps don't match your clinical team's account of care delivered — providers believe they did the work, but the record doesn't support it. CMS core measure pressure on sepsis, stroke, or STEMI documentation. Quality team hours consumed by deficiency resolution rather than improvement initiatives.",
+      },
+      {
+        tag: 'CFO / COO',
+        body: "Documentation deficiency resolution is a hidden operational cost — peer review, HIM rework, and appeal cycles that rarely surface in quality dashboards. Every hour the quality team spends closing documentation gaps is an hour not spent on performance improvement that reduces readmissions, penalties, or length of stay.",
       },
     ],
     alsoNote: "Documentation quality in the ED has downstream effects that extend beyond quality scores — it reduces CDI query burden on ED-to-admit transitions and strengthens the clinical record for risk and compliance review.",
