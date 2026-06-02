@@ -40,7 +40,7 @@ export default function LwbsRecoveryCalc({ state, updateTimeDriverInputs }: Prop
               <span className="font-semibold text-[#1A1A1A]">{state.minutesSavedPerEncounter} min</span>
             </div>
             <div className="flex justify-between">
-              <span>Implied reduction in door-to-disposition time</span>
+              <span>Physician time returned to queue</span>
               <span className="font-semibold text-[#1A1A1A]">~{state.minutesSavedPerEncounter} min/encounter</span>
             </div>
             <div className="flex justify-between">
@@ -51,7 +51,7 @@ export default function LwbsRecoveryCalc({ state, updateTimeDriverInputs }: Prop
             </div>
           </div>
           <p className="text-xs text-[#888888] mt-2">
-            Based on ED throughput research: faster documentation shortens encounter completion time, clearing rooms sooner and reducing the wait that drives LWBS. Approximately 1.5–3% LWBS reduction per minute of door-to-disposition improvement (Welch et al., Annals of Emergency Medicine). Use this range to anchor your selection below.
+            This is a system-level throughput effect, not a direct per-encounter reduction. Saved documentation time returns physician availability to the waiting queue — but door-to-disposition also includes labs, imaging, and boarding time that Abridge doesn't shorten. The Welch et al. relationship (Annals of Emergency Medicine: ~1.5–3% LWBS reduction per minute of throughput improvement) holds when physician availability is the binding constraint. In boarding-dominant EDs, the effect is smaller — use the Conservative preset.
           </p>
         </div>
       )}
@@ -161,7 +161,7 @@ export default function LwbsRecoveryCalc({ state, updateTimeDriverInputs }: Prop
         )}
 
         <p className="text-xs text-[#888888]">
-          Conservative (10%) suits EDs where LWBS is driven more by bed availability than wait time. Moderate (20%) aligns with the literature-implied range for most documentation-improvement deployments.
+          Conservative (10%) — use when boarding or bed availability drives LWBS, or when physician availability isn't the primary throughput constraint. Moderate (20%) — use when wait-to-be-seen time is the dominant LWBS driver and documentation is a known bottleneck. Optimistic (30%) — use when Abridge deployment data or operational analysis supports a higher throughput effect.
         </p>
         <div className="bg-[#F5F0EB] rounded-lg p-3">
           <p className="text-xs text-[#666666]">
