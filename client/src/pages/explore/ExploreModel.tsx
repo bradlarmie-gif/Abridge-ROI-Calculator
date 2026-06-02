@@ -304,6 +304,15 @@ export default function ExploreModel({
       ).toFixed(1)
     : '0';
 
+  const scribeCostValue = useMemo(() => {
+    if (!state.timeDriverInputs.scribeCostReductionEnabled) return 0;
+    const eliminated = Math.min(
+      state.timeDriverInputs.scribePositionsEliminated || 0,
+      state.timeDriverInputs.scribeHeadcount || 0,
+    );
+    return Math.round(eliminated * (state.timeDriverInputs.scribeCostPerPosition || 0));
+  }, [state.timeDriverInputs]);
+
   const nursingOtValue = useMemo(() => {
     if (!isNursing || !state.timeDriverInputs.nursingOtEnabled) return 0;
     const otHoursEliminated = Math.round(
@@ -535,6 +544,8 @@ export default function ExploreModel({
     if (nursingCautiValue > 0) drivers.push({ id: "nursingCauti", name: "CAUTI Bundle Compliance", value: nursingCautiValue, category: "documentation", quadrant: "Quality", onset: "delayed" as const });
     if (nursingClabsiValue > 0) drivers.push({ id: "nursingClabsi", name: "CLABSI Bundle Compliance", value: nursingClabsiValue, category: "documentation", quadrant: "Quality", onset: "delayed" as const });
     if (nursingSepsisValue > 0) drivers.push({ id: "nursingSepsis", name: "Sepsis SEP-1 Bundle", value: nursingSepsisValue, category: "documentation", quadrant: "Quality", onset: "delayed" as const });
+
+    if (scribeCostValue > 0) drivers.push({ id: "scribeCost", name: "Scribe Cost Reduction", value: scribeCostValue, category: "time", quadrant: "Workforce", onset: "immediate" as const });
 
     for (const item of state.timeDriverInputs.nursingAdditionalCostSavings) {
       if (item.amount > 0 && item.label) {

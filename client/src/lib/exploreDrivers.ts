@@ -20,6 +20,7 @@ import DrgAccuracyCalc from "@/components/explore/drivers/DrgAccuracyCalc";
 
 import ObsDefenseCalc from "@/components/explore/drivers/ObsDefenseCalc";
 import InpatientDischargePlanningCalc from "@/components/explore/drivers/InpatientDischargePlanningCalc";
+import ScribeCostReductionCalc from "@/components/explore/drivers/ScribeCostReductionCalc";
 
 export type ExploreQuadrant = 'Capacity' | 'Workforce' | 'Revenue' | 'Quality';
 
@@ -235,8 +236,8 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     quadrant: 'Workforce',
     settings: ['outpatient', 'ed'],
     visibility: 'quantified',
-    enabledStateKey: 'scribeCostEnabled',
-    expandedStateKey: 'scribeCostExpanded',
+    enabledStateKey: 'scribeCostReductionEnabled',
+    expandedStateKey: 'scribeCostReductionExpanded',
     trackedMeasureIds: [],
     measureDefaults: {
       deltaLabel: 'FTE scribes eliminated or reduced',
@@ -250,6 +251,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
       benchmarkHint: 'Enter the total annual cost for the scribe position(s) being reduced — salary, benefits, and any service fees. Divide by FTEs to get cost per FTE if entering multiple. In-person scribes typically run $30K–$45K/yr all-in; virtual scribe services vary by hours and contract.',
     },
     measurePhase: 'demonstrated',
+    calcComponent: ScribeCostReductionCalc,
   },
   {
     id: 'nursingRetention',

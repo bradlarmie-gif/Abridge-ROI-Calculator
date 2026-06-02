@@ -174,6 +174,11 @@ export interface TimeDriverInputs {
 
   nursingAdditionalCostSavings: Array<{ id: string; label: string; amount: number }>;
 
+  // Scribe Cost Reduction (OP/ED)
+  scribeHeadcount: number;
+  scribeCostPerPosition: number;
+  scribePositionsEliminated: number;
+
   // Care Quality (Nursing) - HAPI & Falls prevention
   nursingCareQualityEnabled: boolean;
   nursingCareQualityExpanded: boolean;
@@ -661,6 +666,9 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     physicianAgencyWeeksPerVacancy: 16, // 16 weeks average to fill a physician vacancy
     physicianAgencyWeeklyPremium: 5000, // $5K/week premium for locum coverage
     nursingAdditionalCostSavings: [],
+    scribeHeadcount: 0,
+    scribeCostPerPosition: 0,
+    scribePositionsEliminated: 0,
     // Care Quality (HAPI & Falls) defaults
     nursingCareQualityEnabled: false,
     nursingCareQualityExpanded: false,
