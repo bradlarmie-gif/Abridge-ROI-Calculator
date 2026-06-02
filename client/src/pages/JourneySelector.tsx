@@ -1,4 +1,4 @@
-import { Compass, TrendingUp, ClipboardCheck, BookOpen, ChevronRight, ArrowRight, Layers, LineChart } from "lucide-react";
+import { Compass, TrendingUp, ClipboardCheck, BookOpen, ChevronRight, ArrowRight, Layers, LineChart, FileSpreadsheet } from "lucide-react";
 
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -11,11 +11,12 @@ interface JourneySelectorProps {
   onSelectSwitch: () => void;
   onSelectLearn: () => void;
   onSelectForecast?: () => void;
+  onSelectDataRequest?: () => void;
   proformaCount?: number;
   onOpenProforma?: () => void;
 }
 
-export default function JourneySelector({ onSelectExplore, onSelectExpand, onSelectSwitch, onSelectLearn, onSelectForecast, proformaCount, onOpenProforma }: JourneySelectorProps) {
+export default function JourneySelector({ onSelectExplore, onSelectExpand, onSelectSwitch, onSelectLearn, onSelectForecast, onSelectDataRequest, proformaCount, onOpenProforma }: JourneySelectorProps) {
   const handleCardKey = (e: React.KeyboardEvent, handler: () => void) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
@@ -257,10 +258,52 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
                 </Button>
               </motion.div>
             )}
+
+            {onSelectDataRequest && (
+              <motion.div
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.55, ease: [0.25, 0.46, 0.45, 0.94] }}
+                whileHover={{ y: -4 }}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => handleCardKey(e, onSelectDataRequest)}
+                className="group relative flex flex-col cursor-pointer transition-all duration-300 ease-out rounded-xl p-8 min-h-[320px] bg-[#F5F0EB] hover:bg-[#EDE7E0] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#EA2C00] focus-visible:ring-offset-2"
+                onClick={onSelectDataRequest}
+                data-testid="card-data-request"
+              >
+                <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center mb-5">
+                  <FileSpreadsheet className="w-6 h-6 text-[#EA2C00]" />
+                </div>
+
+                <p className="text-[13px] text-[#EA2C00] font-medium mb-1.5" data-testid="text-data-request-tagline">
+                  Preparing for a conversation?
+                </p>
+                <h3 className="text-2xl font-bold text-[#1A1A1A] mb-2.5" data-testid="text-data-request-title">
+                  Data Request
+                </h3>
+                <p className="text-sm text-[#666666] leading-relaxed flex-1 mb-6" data-testid="text-data-request-description">
+                  Generate a targeted Excel to collect the exact data points you need from a prospect — no more, no less.
+                </p>
+
+                <Button
+                  className="w-full bg-[#EA2C00] text-white border-[#EA2C00]"
+                  size="lg"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSelectDataRequest();
+                  }}
+                  data-testid="card-data-request-button"
+                >
+                  Build a Request
+                  <ChevronRight className="w-4 h-4 ml-1" />
+                </Button>
+              </motion.div>
+            )}
           </div>
         </section>
 
-        <motion.footer 
+        <motion.footer
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.4, delay: 0.5 }}

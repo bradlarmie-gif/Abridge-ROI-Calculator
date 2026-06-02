@@ -47,13 +47,14 @@ import MeasureDataReceipt from "@/pages/intake/MeasureDataReceipt";
 import { type IntakeFormPreseed, type ExploreIntakeResponse, decodeIntakePreseed, decodeIntake } from "@/lib/intakeUrlState";
 import { type DataFormPreseed, type MeasureDataRequestResponse, decodeDataFormPreseed, decodeDataRequest } from "@/lib/dataRequestUrlState";
 import ProformaHub from "@/pages/proforma/ProformaHub";
+import DataRequestBuilder from "@/pages/data-request/DataRequestBuilder";
 import type { ProformaSettingSnapshot, ProformaConfig } from "@/pages/proforma/proformaTypes";
 import { DEFAULT_PROFORMA_CONFIG } from "@/pages/proforma/proformaTypes";
 
 import { type CareSettingType } from "@/lib/SETTING_CONFIG";
 import { type RoiInputs } from "@/lib/roi-types";
 
-type AppView = "splash" | "journey" | "explore" | "baseline-setup" | "model-builder" | "investment" | "calculator" | "expand" | "switch" | "learn" | "measure" | "forecast" | "forecast-mode" | "forecast-pricing" | "proforma-hub" | "proforma-view" | "explore-intake" | "measure-data-request" | "explore-intake-receipt" | "measure-data-receipt";
+type AppView = "splash" | "journey" | "explore" | "baseline-setup" | "model-builder" | "investment" | "calculator" | "expand" | "switch" | "learn" | "measure" | "forecast" | "forecast-mode" | "forecast-pricing" | "proforma-hub" | "proforma-view" | "explore-intake" | "measure-data-request" | "explore-intake-receipt" | "measure-data-receipt" | "data-request-builder";
 
 interface SelectionState {
   selectedSettings: CareSettingType[];
@@ -634,6 +635,7 @@ export default function App() {
                   setLearnInitialScreen(undefined);
                   navigateTo("learn");
                 }}
+                onSelectDataRequest={() => navigateTo("data-request-builder")}
                 proformaCount={proformaSettings.length}
                 onOpenProforma={() => navigateTo("proforma-hub")}
               />
@@ -777,6 +779,10 @@ export default function App() {
               <MeasureDataReceipt data={dataReceiptData} onLoadInCalculator={() => {
                 navigateTo("measure");
               }} />
+            )}
+
+            {currentView === "data-request-builder" && (
+              <DataRequestBuilder onBack={() => navigateTo('journey')} />
             )}
 
             {(currentView === "proforma-hub" || currentView === "proforma-view") && (
