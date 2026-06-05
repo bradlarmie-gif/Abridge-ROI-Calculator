@@ -725,8 +725,11 @@ export default function ProformaHub({
   // so the hub card value/investment ratio matches the ProformaView ROI exactly.
   const perSettingTotals = useMemo(() => {
     const map: Record<string, { contractValue: number; contractInvestment: number }> = {};
+    // Strip systemWideFee so each card shows only its own direct costs — the system fee is
+    // a deal-level charge counted once in the global total, not per setting.
+    const settingConfig = { ...config, systemWideFee: undefined };
     for (const setting of settings) {
-      const flows = buildMonthlyCashFlows([setting], config);
+      const flows = buildMonthlyCashFlows([setting], settingConfig);
       const contractValue = flows.reduce((s, r) => s + r.totalValue, 0);
       const contractInvestment = flows.reduce((s, r) => s + r.investment, 0) + (setting.implementationFee ?? 0);
       map[setting.id] = { contractValue, contractInvestment };
