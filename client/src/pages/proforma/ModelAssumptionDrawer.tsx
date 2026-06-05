@@ -586,7 +586,14 @@ export function VolumeAndPricingSection({
       if (model === "perUnit") return provByYear[idx] * compRates.perUnit * 12;
       const abridgeEnc = Math.round(encByYear[idx] * (yuArr[idx] ?? 0) / 100);
       if (model === "perEncounter") return abridgeEnc * compRates.perEncounter;
-      if (model === "platform")     return compRates.platform.fee + abridgeEnc * compRates.platform.encRate;
+      if (model === "platform") {
+        if (setting.bankedEncounters) {
+          const billingIdx = i === 0 ? -1 : Math.min(i - 1, 2);
+          const billedEnc = billingIdx < 0 ? 0 : Math.round(encByYear[billingIdx] * (yuArr[billingIdx] ?? 0) / 100);
+          return compRates.platform.fee + billedEnc * compRates.platform.encRate;
+        }
+        return compRates.platform.fee + abridgeEnc * compRates.platform.encRate;
+      }
       return compRates.annualFlat;  // annualFlat
     });
     const total = years.reduce((s, v) => s + v, 0);
@@ -796,6 +803,18 @@ export function VolumeAndPricingSection({
                 className={inputCls + " pl-5"}
               />
             </div>
+          </div>
+          <div className="flex items-center justify-between pt-2 border-t border-[#F0EAE2]">
+            <div>
+              <p className="text-[11px] text-neutral-700 font-medium">Banked encounters</p>
+              <p className="text-[10px] text-neutral-400">Y1 consumption billed in Y2, Y2 in Y3</p>
+            </div>
+            <button
+              onClick={() => onUpdateSetting(setting.id, { bankedEncounters: !setting.bankedEncounters })}
+              className={`relative flex-shrink-0 w-8 h-4 rounded-full transition-colors ${setting.bankedEncounters ? 'bg-[#EA2C00]' : 'bg-neutral-200'}`}
+            >
+              <span className={`absolute top-0.5 w-3 h-3 bg-white rounded-full shadow-sm transition-transform ${setting.bankedEncounters ? 'translate-x-4' : 'translate-x-0.5'}`} />
+            </button>
           </div>
         </div>
       )}

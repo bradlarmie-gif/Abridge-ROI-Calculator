@@ -771,7 +771,8 @@ function InvestmentCasePage({ settings, config, summary, yearlyData, preparedBy,
                 : isPerEnc
                 ? (s.yearlyPricing?.year1 ?? s.costPerEncounter ?? 0) * yr1AbridgeEnc
                 : isPlatform
-                ? (s.annualLicenseFee ?? 0) + (s.platformEncRate ?? s.costPerEncounter ?? 0) * yr1AbridgeEnc
+                // Banked: Y1 is platform fee only — encounter billing starts in Y2
+                ? (s.annualLicenseFee ?? 0) + (s.bankedEncounters ? 0 : (s.platformEncRate ?? s.costPerEncounter ?? 0) * yr1AbridgeEnc)
                 : (s.yearlyPricing?.year1 ?? s.costPerUnit) * (yp?.year1 ?? s.providerCount) * 12;
               const encUnit = s.careSetting === "inpatient" ? "dc/yr" : "enc/yr";
               const year3Enc = ye?.year3 ?? 0;

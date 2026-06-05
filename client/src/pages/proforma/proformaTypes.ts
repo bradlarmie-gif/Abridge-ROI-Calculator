@@ -84,6 +84,7 @@ export interface ProformaSettingSnapshot {
   pricingModel?: "perUnit" | "annualFlat" | "perEncounter" | "platform";
   platformEncRate?: number;
   annualLicenseFee?: number;
+  bankedEncounters?: boolean;
   costPerEncounter?: number;
   yearlyPricing?: YearlyPricing;
   implementationFee: number;

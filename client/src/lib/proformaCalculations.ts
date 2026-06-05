@@ -444,22 +444,29 @@ export function buildMonthlyCashFlows(
       } else if (setting.pricingModel === "platform") {
         const platformFee = setting.annualLicenseFee || 0;
         const encRate = setting.platformEncRate ?? setting.costPerEncounter ?? 0;
-        let annualEncounters: number;
-        if (setting.yearlyEncounters) {
-          const ye = setting.yearlyEncounters;
-          annualEncounters = yearIndex === 0 ? ye.year1 : yearIndex === 1 ? ye.year2 : ye.year3;
-        } else {
-          const encountersPerProvider = setting.providerCount > 0
-            ? setting.encounters / setting.providerCount
-            : 0;
-          annualEncounters = licensedProviders * encountersPerProvider;
+        // Banked: encounter component is billed 1 year in arrears (Y1 consumption billed in Y2).
+        // billingYearIndex = -1 means no encounter billing this year.
+        const billingYearIndex = setting.bankedEncounters
+          ? (yearIndex === 0 ? -1 : yearIndex - 1)
+          : yearIndex;
+        let monthlyEncounters = 0;
+        if (billingYearIndex >= 0) {
+          let annualEncounters: number;
+          if (setting.yearlyEncounters) {
+            const ye = setting.yearlyEncounters;
+            annualEncounters = billingYearIndex === 0 ? ye.year1 : billingYearIndex === 1 ? ye.year2 : ye.year3;
+          } else {
+            const encountersPerProvider = setting.providerCount > 0
+              ? setting.encounters / setting.providerCount
+              : 0;
+            annualEncounters = licensedProviders * encountersPerProvider;
+          }
+          const yu = setting.yearlyUtilization;
+          const utilPct = (yu
+            ? (billingYearIndex === 0 ? yu.year1 : billingYearIndex === 1 ? yu.year2 : yu.year3)
+            : (setting.utilizationPercent ?? 100)) / 100;
+          monthlyEncounters = (annualEncounters * utilPct) / 12;
         }
-        const yu = setting.yearlyUtilization;
-        const utilPct = (yu
-          ? (yearIndex === 0 ? yu.year1 : yearIndex === 1 ? yu.year2 : yu.year3)
-          : (setting.utilizationPercent ?? 100)) / 100;
-        const abridgeEncounters = annualEncounters * utilPct;
-        const monthlyEncounters = abridgeEncounters / 12;
         monthlyInvestment = platformFee / 12 + encRate * monthlyEncounters;
       } else {
         const price = resolvedPrice ?? setting.costPerUnit;
