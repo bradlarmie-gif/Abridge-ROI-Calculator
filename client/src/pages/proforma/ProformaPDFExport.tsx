@@ -316,7 +316,7 @@ const S = StyleSheet.create({
     marginBottom: 8,
   },
   milestoneMetricLabel: { fontSize: 7, color: brand.textTertiary, marginBottom: 1 },
-  milestoneMetricValue: { fontSize: 11, fontWeight: 700, color: brand.textPrimary, marginBottom: 5 },
+  milestoneMetricValue: { fontSize: 9, fontWeight: 700, color: brand.textPrimary, marginBottom: 5 },
   milestoneValueLabel: { fontSize: 7, color: brand.textTertiary, marginTop: 6, marginBottom: 1 },
   milestoneValue: { fontSize: 14, fontWeight: 700, color: brand.textPrimary },
   milestoneValueFinal: { fontSize: 14, fontWeight: 700, color: brand.coral },
@@ -820,17 +820,23 @@ function ValueTrajectoryPage({ settings, config, summary, yearlyData, chartData,
     const unitSet = new Set(settings.map(s => unitLabel(s.careSetting)));
     return `${fmtNum(prov)} ${Array.from(unitSet).join("/")}`;
   }
-  function getMilestoneEncounters(yearIdx: number): string {
+  function getMilestoneActivity(yearIdx: number): { enc: number; dc: number } {
     const yearKey = (["year1", "year2", "year3"] as const)[Math.min(yearIdx, 2)];
-    let abridgeEnc = 0;
+    let encTotal = 0;
+    let dcTotal = 0;
     for (const s of settings) {
       const totalEnc = s.yearlyEncounters ? s.yearlyEncounters[yearKey] : s.encounters;
       const utilSrc = s.yearlyUtilization
         ?? (s.careSetting === "nursing" && config.nursingYearlyUtilization
           ? config.nursingYearlyUtilization : config.yearlyUtilization);
-      abridgeEnc += Math.round(totalEnc * utilSrc[yearKey] / 100);
+      const abridge = Math.round(totalEnc * utilSrc[yearKey] / 100);
+      if (s.careSetting === "inpatient") {
+        dcTotal += abridge;
+      } else {
+        encTotal += abridge;
+      }
     }
-    return `${fmtNum(abridgeEnc)} encounters`;
+    return { enc: encTotal, dc: dcTotal };
   }
 
   // Onset rows
@@ -876,8 +882,25 @@ function ValueTrajectoryPage({ settings, config, summary, yearlyData, chartData,
               <Text style={S.milestoneYear}>{m.label}</Text>
               <Text style={S.milestoneMetricLabel}>Scale</Text>
               <Text style={S.milestoneMetricValue}>{getMilestoneScale(y)}</Text>
-              <Text style={S.milestoneMetricLabel}>Abridge encounters</Text>
-              <Text style={S.milestoneMetricValue}>{getMilestoneEncounters(m.yearIdx)}</Text>
+              {(() => {
+                const { enc, dc } = getMilestoneActivity(m.yearIdx);
+                return (
+                  <>
+                    {enc > 0 && (
+                      <>
+                        <Text style={S.milestoneMetricLabel}>Abridge encounters</Text>
+                        <Text style={S.milestoneMetricValue}>{fmtNum(enc)} encounters</Text>
+                      </>
+                    )}
+                    {dc > 0 && (
+                      <>
+                        <Text style={S.milestoneMetricLabel}>Abridge discharges</Text>
+                        <Text style={S.milestoneMetricValue}>{fmtNum(dc)} discharges</Text>
+                      </>
+                    )}
+                  </>
+                );
+              })()}
               <Text style={S.milestoneValueLabel}>Projected Value</Text>
               <Text style={isFinal ? S.milestoneValueFinal : S.milestoneValue}>{fmt(y.totalValue)}</Text>
             </View>
