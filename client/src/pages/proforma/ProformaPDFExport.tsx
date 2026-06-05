@@ -810,7 +810,7 @@ function InvestmentCasePage({ settings, config, summary, yearlyData, preparedBy,
           )}
           {isBanked && (
             <Text style={{ fontSize: 7, color: brand.textSecondary, marginTop: 6, paddingHorizontal: 2 }}>
-              * Banked Encounter: Y1 Investment reflects platform/base fee only. Encounter consumption is billed in arrears starting Year 2.
+              * Banked Encounter: Encounter consumption is billed in arrears beginning Year 2. Y1 reflects upfront license fees only; settings with no license fee show $0.
             </Text>
           )}
         </>
