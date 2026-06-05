@@ -1736,6 +1736,8 @@ function ModelConfidencePage({ settings, config, summary, yearlyData, sensitivit
   const hasRevenue    = yearlyData.some(y => y.revenueValue   > 0);
   const hasQuality    = yearlyData.some(y => y.qualityValue   > 0);
   const delayedMonths = ONSET_DELAY_MONTHS.delayed;
+  const hasNursingWorkforce  = settings.some(s => s.careSetting === "nursing" && s.workforceValue > 0);
+  const hasClinicalWorkforce = settings.some(s => s.careSetting !== "nursing" && s.workforceValue > 0);
 
   // GROUNDED IN DATA — only include what's actually modeled
   const strongItems: string[] = [];
@@ -1824,7 +1826,21 @@ function ModelConfidencePage({ settings, config, summary, yearlyData, sensitivit
           },
           ...(hasWorkforce ? [{
             param: "Workforce Phasing",
-            value: `${config.retentionPhasing.year1Pct}% Y1 / ${config.retentionPhasing.year2Pct}% Y2${contractYears >= 3 ? ` / ${config.retentionPhasing.year3Pct}% Y3` : ""}`,
+            value: (() => {
+              if (hasNursingWorkforce && !hasClinicalWorkforce) {
+                const p = config.nursingRetentionPhasing ?? config.retentionPhasing;
+                return `${p.year1Pct}% Y1 / ${p.year2Pct}% Y2${contractYears >= 3 ? ` / ${p.year3Pct}% Y3` : ""}`;
+              }
+              if (hasNursingWorkforce && hasClinicalWorkforce) {
+                const cp = config.retentionPhasing;
+                const np = config.nursingRetentionPhasing ?? config.retentionPhasing;
+                const same = cp.year1Pct === np.year1Pct && cp.year2Pct === np.year2Pct;
+                if (same) return `${cp.year1Pct}% Y1 / ${cp.year2Pct}% Y2${contractYears >= 3 ? ` / ${cp.year3Pct}% Y3` : ""}`;
+                return `Clinical ${cp.year1Pct}%→${cp.year2Pct}%${contractYears >= 3 ? `→${cp.year3Pct}%` : ""} · Nursing ${np.year1Pct}%→${np.year2Pct}%${contractYears >= 3 ? `→${np.year3Pct}%` : ""}`;
+              }
+              const p = config.retentionPhasing;
+              return `${p.year1Pct}% Y1 / ${p.year2Pct}% Y2${contractYears >= 3 ? ` / ${p.year3Pct}% Y3` : ""}`;
+            })(),
           }] : []),
           ...(totalHours > 0 ? [{
             param: "Hours Returned",
@@ -1860,7 +1876,12 @@ function ModelConfidencePage({ settings, config, summary, yearlyData, sensitivit
         const maxY1 = Math.max(...allUtil);
         if (maxY1 < 50) conservativeItems.push(`Year 1 utilization targets set well below steady-state — highest setting at ${maxY1}%, reflecting a conservative adoption ramp rather than projected mature-state performance`);
         else conservativeItems.push(`Utilization targets reflect a gradual adoption ramp — Year 1 targets are set conservatively, with value scaling as provider adoption deepens`);
-        if (hasWorkforce) conservativeItems.push(`Workforce and retention benefits phased at ${config.retentionPhasing.year1Pct}% in Year 1 — real effects modeled to materialize gradually rather than immediately`);
+        if (hasWorkforce) {
+          const wfPhasing = (hasNursingWorkforce && !hasClinicalWorkforce)
+            ? (config.nursingRetentionPhasing ?? config.retentionPhasing)
+            : config.retentionPhasing;
+          conservativeItems.push(`Workforce and retention benefits phased at ${wfPhasing.year1Pct}% in Year 1 — real effects modeled to materialize gradually rather than immediately`);
+        }
 
         return (
           <View style={{ marginTop: 12 }}>
