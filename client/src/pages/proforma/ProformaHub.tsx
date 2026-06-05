@@ -50,24 +50,6 @@ function fmtNum(n: number) {
   return n.toLocaleString();
 }
 
-function calcAnnualInvestment(setting: ProformaSettingSnapshot): number {
-  const pm = setting.pricingModel ?? "perUnit";
-  const price = setting.yearlyPricing?.year1;
-  if (pm === "annualFlat") return price ?? setting.annualLicenseFee ?? 0;
-  if (pm === "perEncounter") {
-    const totalEnc = setting.yearlyEncounters?.year1 ?? setting.encounters;
-    const util = (setting.yearlyUtilization?.year1 ?? setting.utilizationPercent ?? 100) / 100;
-    return (price ?? setting.costPerEncounter ?? 0) * Math.round(totalEnc * util);
-  }
-  if (pm === "platform") {
-    const flatFee = setting.annualLicenseFee ?? 0;
-    const encRate = setting.platformEncRate ?? setting.costPerEncounter ?? 0;
-    const totalEnc = setting.yearlyEncounters?.year1 ?? setting.encounters;
-    const util = (setting.yearlyUtilization?.year1 ?? setting.utilizationPercent ?? 100) / 100;
-    return flatFee + encRate * Math.round(totalEnc * util);
-  }
-  return (price ?? setting.costPerUnit) * setting.providerCount * 12;
-}
 
 function RolloutTimeline({ settings, contractMonths, onContractTermChange }: {
   settings: ProformaSettingSnapshot[];
@@ -732,6 +714,19 @@ export default function ProformaHub({
 
   const summary = proformaA?.summary ?? null;
 
+  // Per-setting contract totals — runs the same cash flow engine as the sensitivity analysis
+  // so the hub card value/investment ratio matches the ProformaView ROI exactly.
+  const perSettingTotals = useMemo(() => {
+    const map: Record<string, { contractValue: number; contractInvestment: number }> = {};
+    for (const setting of settings) {
+      const flows = buildMonthlyCashFlows([setting], config);
+      const contractValue = flows.reduce((s, r) => s + r.totalValue, 0);
+      const contractInvestment = flows.reduce((s, r) => s + r.investment, 0) + (setting.implementationFee ?? 0);
+      map[setting.id] = { contractValue, contractInvestment };
+    }
+    return map;
+  }, [settings, config]);
+
   const settingsWithB = settings.filter(s => s.scenarioB);
   const proformaB = useMemo(() => {
     if (!settings.some(s => s.scenarioB)) return null;
@@ -887,13 +882,7 @@ export default function ProformaHub({
                 : config.yearlyUtilization;
               const yu = setting.yearlyUtilization ?? defaultUtil;
               const contractYears = Math.ceil(config.contractTermMonths / 12);
-              const scaleUtil = contractYears >= 3 ? yu.year3 : contractYears === 2 ? yu.year2 : yu.year1;
-              // Scale annualValue to reflect hub utilization vs the original Explore terminal util.
-              // The cash flow engine does this same ratio via expansionMultiplier; the card header
-              // should match so the user sees a consistent number.
-              const origTerminalUtil = setting.utilizationPercent || 100;
-              const utilRatio = Math.min(scaleUtil / origTerminalUtil, 1);
-              const displayAnnualValue = Math.round(setting.annualValue * utilRatio);
+              const totals = perSettingTotals[setting.id] ?? { contractValue: 0, contractInvestment: 0 };
               return (
                 <motion.div
                   key={setting.id}
@@ -925,7 +914,7 @@ export default function ProformaHub({
                             <p className="text-sm text-[#8C7E6E] flex items-center gap-1.5 flex-wrap">
                               {isEncPricing
                                 ? `${fmtNum(ye.year1)} → ${fmtNum(contractYears >= 2 ? ye.year2 : ye.year1)} encounters · ${yu.year1}% → ${contractYears >= 2 ? yu.year2 : yu.year1}% util`
-                                : `${fmtNum(setting.providerCount)} → ${fmtNum(setting.fullScaleProviders)} ${unitLabel} · ${scaleUtil}% util at scale`
+                                : `${fmtNum(setting.providerCount)} → ${fmtNum(setting.fullScaleProviders)} ${unitLabel} · ${contractYears >= 3 ? yu.year3 : contractYears === 2 ? yu.year2 : yu.year1}% util at scale`
                               }
                               {setting.yearlyUtilization && (
                                 <span className="text-[9px] font-bold tracking-wide uppercase px-1.5 py-0.5 rounded" style={{ color: '#EA2C00', backgroundColor: '#EA2C0012' }}>
@@ -973,12 +962,12 @@ export default function ProformaHub({
 
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-3">
                         <div>
-                          <p className="text-xs text-[#8C7E6E] mb-1">Annual Value</p>
-                          <p className="text-lg font-bold" style={{ color }}>{fmt(displayAnnualValue)}</p>
+                          <p className="text-xs text-[#8C7E6E] mb-1">{contractYears}-Year Value</p>
+                          <p className="text-lg font-bold" style={{ color }}>{fmt(totals.contractValue)}</p>
                         </div>
                         <div>
-                          <p className="text-xs text-[#8C7E6E] mb-1">Annual Investment</p>
-                          <p className="text-lg font-bold text-neutral-900">{fmt(calcAnnualInvestment(setting))}</p>
+                          <p className="text-xs text-[#8C7E6E] mb-1">{contractYears}-Year Investment</p>
+                          <p className="text-lg font-bold text-neutral-900">{fmt(totals.contractInvestment)}</p>
                         </div>
                         <div>
                           <p className="text-xs text-[#8C7E6E] mb-1">Go-Live Month</p>

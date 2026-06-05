@@ -332,7 +332,9 @@ export function buildMonthlyCashFlows(
           currentYearEncounters = currentProviders * encountersPerProvider;
         }
         activelyDocumenting = Math.round(currentYearEncounters * currentUtil / 100);
-        const terminalEncounters = setting.encounters;
+        // terminalEncounters = full-scale year3 so encounterScale reflects provider ramp 0→1.
+        // annualValue is already at full-scale providers, so this keeps the scale consistent.
+        const terminalEncounters = setting.yearlyEncounters?.year3 ?? setting.encounters;
         const encounterScale = terminalEncounters > 0 ? currentYearEncounters / terminalEncounters : 1;
         const utilScale = terminalUtil > 0 ? currentUtil / terminalUtil : 1;
         expansionMultiplier = Math.min(encounterScale * utilScale, 1);
