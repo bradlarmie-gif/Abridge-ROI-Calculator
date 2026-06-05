@@ -817,17 +817,15 @@ function ValueTrajectoryPage({ settings, config, summary, yearlyData, chartData,
     milestones.push({ yearIdx: contractYears - 1, stage: "Maturity", label: `Year ${contractYears}` });
   }
 
-  function getMilestoneScale(y: typeof yearlyData[0]): string {
-    if (allPerEnc) {
-      const encTotal = settings.filter(s => s.careSetting !== "inpatient").reduce((sum, x) => sum + (y.bySettings[x.id]?.encounters || 0), 0);
-      const dcTotal  = settings.filter(s => s.careSetting === "inpatient").reduce((sum, x) => sum + (y.bySettings[x.id]?.encounters || 0), 0);
-      if (encTotal > 0 && dcTotal === 0) return `${fmtNum(encTotal)} encounters`;
-      if (dcTotal > 0 && encTotal === 0) return `${fmtNum(dcTotal)} discharges`;
-      return `${fmtNum(encTotal + dcTotal)} encounters / discharges`;
-    }
-    const prov = settings.reduce((s, x) => s + (y.bySettings[x.id]?.licensedProviders || 0), 0);
-    const unitSet = new Set(settings.map(s => unitLabel(s.careSetting)));
-    return `${fmtNum(prov)} ${Array.from(unitSet).join("/")}`;
+  function getMilestoneScale(yearIdx: number): string {
+    const yearKey = (["year1", "year2", "year3"] as const)[Math.min(yearIdx, 2)];
+    const totalProviders = settings.reduce((sum, s) => {
+      const yp = s.yearlyProviders;
+      const count = yp ? yp[yearKey] : (yearKey === "year1" ? s.providerCount : s.fullScaleProviders ?? s.providerCount);
+      return sum + count;
+    }, 0);
+    const singleUnit = settings.length === 1 ? unitLabel(settings[0].careSetting).toLowerCase() : "providers";
+    return `${fmtNum(totalProviders)} ${singleUnit}`;
   }
   function getMilestoneActivity(yearIdx: number): { enc: number; dc: number } {
     const yearKey = (["year1", "year2", "year3"] as const)[Math.min(yearIdx, 2)];
@@ -890,7 +888,7 @@ function ValueTrajectoryPage({ settings, config, summary, yearlyData, chartData,
               <Text style={S.milestoneStage}>{m.stage}</Text>
               <Text style={S.milestoneYear}>{m.label}</Text>
               <Text style={S.milestoneMetricLabel}>Scale</Text>
-              <Text style={S.milestoneMetricValue}>{getMilestoneScale(y)}</Text>
+              <Text style={S.milestoneMetricValue}>{getMilestoneScale(m.yearIdx)}</Text>
               {(() => {
                 const { enc, dc } = getMilestoneActivity(m.yearIdx);
                 return (
