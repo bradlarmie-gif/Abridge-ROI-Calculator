@@ -262,9 +262,12 @@ export function buildMonthlyCashFlows(
   const months = config.contractTermMonths;
   const rows: ProformaCashFlowRow[] = [];
   let cumulativeNet = 0;
+  let economicCumulativeNet = 0;
+  const hasbanked = settings.some(s => s.bankedEncounters && s.pricingModel === "platform");
 
   for (let m = 1; m <= months; m++) {
     let totalInvestment = 0;
+    let totalEconomicInvestment = 0;
     let totalCapacityValue = 0;
     let totalWorkforceValue = 0;
     let totalRevenueValue = 0;
@@ -468,9 +471,28 @@ export function buildMonthlyCashFlows(
           monthlyEncounters = (annualEncounters * utilPct) / 12;
         }
         monthlyInvestment = platformFee / 12 + encRate * monthlyEncounters;
+
+        // Economic investment: encounters billed in the year consumed (used only for payback).
+        if (setting.bankedEncounters) {
+          let economicAnnualEnc: number;
+          if (setting.yearlyEncounters) {
+            const ye = setting.yearlyEncounters;
+            economicAnnualEnc = yearIndex === 0 ? ye.year1 : yearIndex === 1 ? ye.year2 : ye.year3;
+          } else {
+            economicAnnualEnc = licensedProviders * (setting.providerCount > 0 ? setting.encounters / setting.providerCount : 0);
+          }
+          const yu = setting.yearlyUtilization;
+          const utilPct = (yu
+            ? (yearIndex === 0 ? yu.year1 : yearIndex === 1 ? yu.year2 : yu.year3)
+            : (setting.utilizationPercent ?? 100)) / 100;
+          totalEconomicInvestment += platformFee / 12 + encRate * (economicAnnualEnc * utilPct) / 12;
+        } else {
+          totalEconomicInvestment += monthlyInvestment;
+        }
       } else {
         const price = resolvedPrice ?? setting.costPerUnit;
         monthlyInvestment = price * licensedProviders;
+        totalEconomicInvestment += monthlyInvestment;
       }
 
       totalCapacityValue  += settingCapacityValue;
@@ -503,6 +525,7 @@ export function buildMonthlyCashFlows(
     const totalValue = totalCapacityValue + totalWorkforceValue + totalRevenueValue + totalQualityValue + totalDisplacementValue;
     const netValue = totalValue - totalInvestment;
     cumulativeNet += netValue;
+    if (hasbanked) economicCumulativeNet += totalValue - totalEconomicInvestment;
 
     rows.push({
       period: m,
@@ -516,6 +539,7 @@ export function buildMonthlyCashFlows(
       totalValue: Math.round(totalValue),
       netValue: Math.round(netValue),
       cumulativeNet: Math.round(cumulativeNet),
+      ...(hasbanked && { economicCumulativeNet: Math.round(economicCumulativeNet) }),
       bySettings,
     });
   }
@@ -585,6 +609,7 @@ export function groupByQuarter(rows: ProformaCashFlowRow[], startDate?: Date): P
       totalValue: chunk.reduce((s, r) => s + r.totalValue, 0),
       netValue: chunk.reduce((s, r) => s + r.netValue, 0),
       cumulativeNet: chunk[chunk.length - 1]?.cumulativeNet || 0,
+      ...(chunk[chunk.length - 1]?.economicCumulativeNet != null && { economicCumulativeNet: chunk[chunk.length - 1].economicCumulativeNet }),
       bySettings,
     });
   }
@@ -639,6 +664,7 @@ export function groupByYear(rows: ProformaCashFlowRow[], startDate?: Date): Prof
       totalValue: chunk.reduce((s, r) => s + r.totalValue, 0),
       netValue: chunk.reduce((s, r) => s + r.netValue, 0),
       cumulativeNet: chunk[chunk.length - 1]?.cumulativeNet || 0,
+      ...(chunk[chunk.length - 1]?.economicCumulativeNet != null && { economicCumulativeNet: chunk[chunk.length - 1].economicCumulativeNet }),
       bySettings,
     });
   }
@@ -653,11 +679,17 @@ export function calculateProformaSummary(
   const totalSystemValue = settings.reduce((s, v) => s + v.annualValue, 0);
   const totalHours = settings.reduce((s, v) => s + v.totalHoursSaved, 0);
 
+  // Use economic cumulative net for payback when banked encounters are on.
+  // This prevents payback from appearing unrealistically early (e.g. Month 2)
+  // because Year 1 billing is just the platform fee — economic basis charges
+  // encounters in the year they're consumed, giving a fair payback figure.
+  const usesEconomicPayback = settings.some(s => s.bankedEncounters && s.pricingModel === "platform");
   let paybackMonth: number | null = null;
   let cumulativeWentNegative = false;
   for (const row of cashFlows) {
-    if (row.cumulativeNet < 0) cumulativeWentNegative = true;
-    if (cumulativeWentNegative && row.cumulativeNet >= 0 && paybackMonth === null) {
+    const cumNet = usesEconomicPayback ? (row.economicCumulativeNet ?? row.cumulativeNet) : row.cumulativeNet;
+    if (cumNet < 0) cumulativeWentNegative = true;
+    if (cumulativeWentNegative && cumNet >= 0 && paybackMonth === null) {
       paybackMonth = row.period;
     }
   }

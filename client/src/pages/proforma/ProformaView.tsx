@@ -282,12 +282,16 @@ export default function ProformaView({
 
       // scaledCumNet_m = cumulativeNet_m + (factor - 1) * cumValue_m
       // Investment and impl-fee timing stay exactly as in the base case.
+      // For banked encounter deals, use economicCumulativeNet so payback
+      // reflects encounter cost in the year consumed, not the billing lag.
+      const usesEconomicPayback = settings.some(s => s.bankedEncounters && s.pricingModel === "platform");
       let scaledPayback: number | null = null;
       let scaledWentNegative = false;
       let cumValue = 0;
       for (const row of cashFlows) {
         cumValue += row.totalValue;
-        const scaledCumNet = row.cumulativeNet + (factor - 1) * cumValue;
+        const baseCumNet = usesEconomicPayback ? (row.economicCumulativeNet ?? row.cumulativeNet) : row.cumulativeNet;
+        const scaledCumNet = baseCumNet + (factor - 1) * cumValue;
         if (scaledCumNet < 0) scaledWentNegative = true;
         if (scaledWentNegative && scaledCumNet >= 0 && scaledPayback === null) {
           scaledPayback = row.period;

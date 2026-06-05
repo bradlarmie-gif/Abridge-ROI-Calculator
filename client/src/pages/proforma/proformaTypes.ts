@@ -144,6 +144,7 @@ export interface ProformaCashFlowRow {
   totalValue: number;
   netValue: number;
   cumulativeNet: number;
+  economicCumulativeNet?: number;
   displacementValue: number;
   bySettings: Record<string, { value: number; investment: number; providers: number; licensedProviders: number; encounters: number; capacityValue: number; workforceValue: number; revenueValue: number; qualityValue: number; displacementValue: number }>;
 }
