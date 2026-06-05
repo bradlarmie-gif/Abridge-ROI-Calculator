@@ -888,6 +888,12 @@ export default function ProformaHub({
               const yu = setting.yearlyUtilization ?? defaultUtil;
               const contractYears = Math.ceil(config.contractTermMonths / 12);
               const scaleUtil = contractYears >= 3 ? yu.year3 : contractYears === 2 ? yu.year2 : yu.year1;
+              // Scale annualValue to reflect hub utilization vs the original Explore terminal util.
+              // The cash flow engine does this same ratio via expansionMultiplier; the card header
+              // should match so the user sees a consistent number.
+              const origTerminalUtil = setting.utilizationPercent || 100;
+              const utilRatio = Math.min(scaleUtil / origTerminalUtil, 1);
+              const displayAnnualValue = Math.round(setting.annualValue * utilRatio);
               return (
                 <motion.div
                   key={setting.id}
@@ -968,7 +974,7 @@ export default function ProformaHub({
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-3">
                         <div>
                           <p className="text-xs text-[#8C7E6E] mb-1">Annual Value</p>
-                          <p className="text-lg font-bold" style={{ color }}>{fmt(setting.annualValue)}</p>
+                          <p className="text-lg font-bold" style={{ color }}>{fmt(displayAnnualValue)}</p>
                         </div>
                         <div>
                           <p className="text-xs text-[#8C7E6E] mb-1">Annual Investment</p>
