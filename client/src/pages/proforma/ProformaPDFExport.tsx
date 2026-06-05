@@ -1762,7 +1762,6 @@ function ModelConfidencePage({ settings, config, summary, yearlyData, sensitivit
     <Page size="LETTER" style={[S.page, S.contentPage]} wrap={false}>
       <PageHeader label="Model Confidence" />
 
-      <Text style={S.eyebrow}>Model Confidence</Text>
       <Text style={S.sectionTitle}>Hard Numbers. Honest Assumptions.</Text>
       <Text style={[S.sectionIntro, { marginBottom: 14 }]}>
         Every input in this model traces to a verifiable clinical or operational source. Below is what is locked in from day one — and where your deployment decisions will determine the realized return.
@@ -1786,25 +1785,17 @@ function ModelConfidencePage({ settings, config, summary, yearlyData, sensitivit
 
       <View style={S.divider} />
 
-      {/* METHODOLOGY INPUTS */}
-      <Text style={[S.eyebrowGray, { marginBottom: 8 }]}>Model Inputs & Methodology</Text>
+      {/* MODEL INPUTS TERM SHEET */}
+      <Text style={[S.eyebrowGray, { marginBottom: 8 }]}>Model Inputs</Text>
       <View style={S.tableWrap}>
-        <View style={S.tableHead}>
-          <Text style={[S.tableHeadCell, { flex: 2 }]}>Parameter</Text>
-          <Text style={[S.tableHeadCell, { flex: 3 }]}>Value</Text>
-          <Text style={[S.tableHeadCell, { flex: 3 }]}>Methodology</Text>
-        </View>
-
         {[
           {
             param: "Contract Term",
             value: termLabel,
-            method: "Defines the projection horizon and financial table column count.",
           },
           {
             param: "Implementation Ramp",
             value: `${config.implementationRampMonths} months`,
-            method: "Value scales linearly ~33%/67%/100% during ramp while full subscription costs are incurred.",
           },
           {
             param: "Utilization Targets",
@@ -1821,7 +1812,6 @@ function ModelConfidencePage({ settings, config, summary, yearlyData, sensitivit
                 return `${abbr}: ${yu.year1}%→${yu.year2}%${contractYears >= 3 ? `→${yu.year3}%` : ""}`;
               }).join(" · ");
             })(),
-            method: "Per-setting utilization targets reflect configured adoption ramp. Value scales proportionally.",
           },
           {
             param: "Domain Onset",
@@ -1831,33 +1821,27 @@ function ModelConfidencePage({ settings, config, summary, yearlyData, sensitivit
               hasQuality   && `Quality M${delayedMonths}`,
               hasWorkforce && `Workforce phased`,
             ].filter(Boolean).join(" · "),
-            method: "Reflects actual clinical and operational timelines, not vendor-favorable assumptions.",
           },
           ...(hasWorkforce ? [{
             param: "Workforce Phasing",
             value: `${config.retentionPhasing.year1Pct}% Y1 / ${config.retentionPhasing.year2Pct}% Y2${contractYears >= 3 ? ` / ${config.retentionPhasing.year3Pct}% Y3` : ""}`,
-            method: "Conservative ramp for retention and wellbeing effects that compound over time.",
           }] : []),
           ...(totalHours > 0 ? [{
             param: "Hours Returned",
             value: `${fmtNum(totalHours)} hrs/yr (full scale)`,
-            method: "Aggregated across all settings based on utilization × minutes saved per encounter.",
           }] : []),
           ...((config.systemWideFee ?? 0) > 0 ? [{
             param: "System-wide Fee",
             value: `${fmt(config.systemWideFee!)} / yr`,
-            method: "Enterprise platform fee applied across all settings; billed annually regardless of individual setting go-live dates.",
           }] : []),
           {
             param: "Sensitivity Range",
             value: `${fmt(Math.round(summary.termValue * 0.7))} – ${fmt(Math.round(summary.termValue * 1.3))} (${termLabel} value)`,
-            method: `Investment (${fmt(summary.termInvestment)}) held constant across all three scenarios. Conservative: ${fmt(sensitivityData.conservative.termNet)} net · Base: ${fmt(summary.termNet)} net · Optimistic: ${fmt(sensitivityData.optimistic.termNet)} net.`,
           },
         ].map((row, i, arr) => (
-          <View key={i} style={[S.tableRow, i === arr.length - 1 ? S.tableRowLast : {}]}>
-            <Text style={[S.tableCellBold, { flex: 2 }]}>{row.param}</Text>
-            <Text style={[S.tableCellMono, { flex: 3 }]}>{row.value}</Text>
-            <Text style={[S.tableCellMono, { flex: 3 }]}>{row.method}</Text>
+          <View key={i} style={[S.tableRow, i === arr.length - 1 ? S.tableRowLast : {}, i % 2 === 1 ? { backgroundColor: brand.warmGray } : {}]}>
+            <Text style={[S.tableCellBold, { flex: 2.5, color: brand.textSecondary, fontSize: 8 }]}>{row.param}</Text>
+            <Text style={[S.tableCellMono, { flex: 4.5, color: brand.textPrimary, fontSize: 8.5 }]}>{row.value}</Text>
           </View>
         ))}
       </View>
