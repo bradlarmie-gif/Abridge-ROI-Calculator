@@ -767,8 +767,9 @@ function InvestmentCasePage({ settings, config, summary, yearlyData, preparedBy,
                 : isPerEnc
                 ? (s.yearlyPricing?.year1 ?? s.costPerEncounter ?? 0) * (ye?.year1 ?? s.encounters ?? 0)
                 : (s.yearlyPricing?.year1 ?? s.costPerUnit) * (yp?.year1 ?? s.providerCount) * 12;
+              const encUnit = s.careSetting === "inpatient" ? "dc/yr" : "enc/yr";
               const scaleText = isPerEnc
-                ? `${fmtNum(ye?.year1 ?? s.encounters)} enc/yr`
+                ? `${fmtNum(ye?.year1 ?? s.encounters)} ${encUnit}`
                 : `${fmtNum(yp?.year1 ?? s.providerCount)} → ${fmtNum(s.fullScaleProviders || s.providerCount)} ${unitLabel(s.careSetting).toLowerCase()}`;
               return (
                 <View key={s.id} style={[S.tableRow, si === settings.length - 1 ? S.tableRowLast : {}]}>
@@ -813,8 +814,11 @@ function ValueTrajectoryPage({ settings, config, summary, yearlyData, chartData,
 
   function getMilestoneScale(y: typeof yearlyData[0]): string {
     if (allPerEnc) {
-      const enc = settings.reduce((s, x) => s + (y.bySettings[x.id]?.encounters || 0), 0);
-      return `${fmtNum(enc)} encounters`;
+      const encTotal = settings.filter(s => s.careSetting !== "inpatient").reduce((sum, x) => sum + (y.bySettings[x.id]?.encounters || 0), 0);
+      const dcTotal  = settings.filter(s => s.careSetting === "inpatient").reduce((sum, x) => sum + (y.bySettings[x.id]?.encounters || 0), 0);
+      if (encTotal > 0 && dcTotal === 0) return `${fmtNum(encTotal)} encounters`;
+      if (dcTotal > 0 && encTotal === 0) return `${fmtNum(dcTotal)} discharges`;
+      return `${fmtNum(encTotal + dcTotal)} encounters / discharges`;
     }
     const prov = settings.reduce((s, x) => s + (y.bySettings[x.id]?.licensedProviders || 0), 0);
     const unitSet = new Set(settings.map(s => unitLabel(s.careSetting)));
@@ -1678,23 +1682,23 @@ function ModelConfidencePage({ settings, config, summary, yearlyData, sensitivit
   const hasCapacity   = yearlyData.some(y => y.capacityValue  > 0);
   const delayedMonths = ONSET_DELAY_MONTHS.delayed;
 
-  // MOST DEFENSIBLE — only include what's actually modeled
+  // GROUNDED IN DATA — only include what's actually modeled
   const strongItems: string[] = [];
-  strongItems.push("Investment is contractual — the cost side is exact, not estimated");
-  strongItems.push(`Implementation ramp is conservative — ${config.implementationRampMonths} months of gradual value scaling while full costs are incurred`);
+  strongItems.push("Investment is contractual — cost is exact and fixed from day one");
+  strongItems.push(`Implementation ramp is conservative — ${config.implementationRampMonths} months of gradual value scaling while full subscription costs run from the start`);
   if (allDriverIds.has("wrvu"))             strongItems.push("wRVU lift is auditable against billing data within 90 days of go-live");
-  if (allDriverIds.has("hccCapture"))       strongItems.push("HCC gap closure traces to claims, not assumptions — verifiable through coding records");
-  if (allDriverIds.has("denialPrevention")) strongItems.push("Denial prevention is measurable against payer adjudication records with clear attribution");
-  if (allDriverIds.has("drgAccuracy") || allDriverIds.has("cdiQueryReduction")) strongItems.push("DRG / CDI capture verifiable through coding audit and query volume tracking");
-  if (allDriverIds.has("nursingOvertime") || allDriverIds.has("nursingAgency"))  strongItems.push("Nursing overtime and agency reduction are directly visible in payroll and staffing data");
+  if (allDriverIds.has("hccCapture"))       strongItems.push("HCC gap closure traces directly to claims — verifiable through coding records, no inference required");
+  if (allDriverIds.has("denialPrevention")) strongItems.push("Denial prevention is measurable against payer adjudication records with direct attribution");
+  if (allDriverIds.has("drgAccuracy") || allDriverIds.has("cdiQueryReduction")) strongItems.push("DRG and CDI capture are verifiable through coding audit and query volume data");
+  if (allDriverIds.has("nursingOvertime") || allDriverIds.has("nursingAgency"))  strongItems.push("Nursing overtime and agency costs are directly visible in payroll and staffing records");
   if (allDriverIds.has("lwbsRecovery"))     strongItems.push("LWBS recovery ties to documented patient arrival data — a hard operational metric");
 
-  // REQUIRES VALIDATION
+  // SHAPED BY YOUR EXECUTION
   const watchItems: string[] = [];
-  watchItems.push("Provider adoption curve — actual utilization ramp may differ from modeled trajectory; early utilization data will calibrate this");
-  if (hasCapacity) watchItems.push("Capacity conversion — freed time value depends on unmet demand and scheduling availability to fill released slots");
-  if (hasWorkforce) watchItems.push("Workforce attribution — isolating Abridge's contribution from other organizational factors (compensation changes, management, culture) requires a structured measurement approach");
-  if (settings.length > 1) watchItems.push("Multi-setting interdependencies — each setting ramps independently in this model; coordinated deployment may accelerate or compress the curve");
+  watchItems.push("Adoption pace — modeled conservatively; your rollout velocity determines when value accelerates past the base case");
+  if (hasCapacity) watchItems.push("Capacity realization — time recovered converts to revenue where patient demand exists and scheduling is positioned to absorb it");
+  if (hasWorkforce) watchItems.push("Retention attribution — the effect is real, but surfacing it requires a measurement baseline and a consistent tracking cadence");
+  if (settings.length > 1) watchItems.push("Deployment sequencing — a well-coordinated multi-setting rollout compresses the ramp; each week of earlier go-live moves payback forward");
 
   // Methodology inputs: per-setting
   const totalHours = settings.reduce((s, v) => s + v.totalHoursSaved, 0);
@@ -1704,21 +1708,21 @@ function ModelConfidencePage({ settings, config, summary, yearlyData, sensitivit
       <PageHeader label="Model Confidence" />
 
       <Text style={S.eyebrow}>Model Confidence</Text>
-      <Text style={S.sectionTitle}>What We're Confident In — and What to Watch</Text>
+      <Text style={S.sectionTitle}>Hard Numbers. Honest Assumptions.</Text>
       <Text style={[S.sectionIntro, { marginBottom: 14 }]}>
-        This model was built to survive a finance team review. Below is an honest account of where the numbers are hard and where they require organizational validation.
+        Every input in this model traces to a verifiable clinical or operational source. Below is what is locked in from day one — and where your deployment decisions will determine the realized return.
       </Text>
 
       {/* TWO-COLUMN CONFIDENCE CARDS */}
       <View style={S.twoCols}>
         <View style={[S.confidenceCard, { borderTopWidth: 2, borderTopColor: brand.positive }]}>
-          <Text style={[S.confidenceTitle, { color: brand.positive }]}>Most Defensible</Text>
+          <Text style={[S.confidenceTitle, { color: brand.positive }]}>Grounded in Data</Text>
           {strongItems.map((item, i) => (
             <Text key={i} style={S.confidenceItem}>{"• "}{item}</Text>
           ))}
         </View>
         <View style={[S.confidenceCard, { borderTopWidth: 2, borderTopColor: brand.amber }]}>
-          <Text style={[S.confidenceTitle, { color: brand.amber }]}>Requires Validation</Text>
+          <Text style={[S.confidenceTitle, { color: brand.amber }]}>Shaped by Your Execution</Text>
           {watchItems.map((item, i) => (
             <Text key={i} style={S.confidenceItem}>{"• "}{item}</Text>
           ))}
@@ -1784,7 +1788,7 @@ function ModelConfidencePage({ settings, config, summary, yearlyData, sensitivit
       <View style={[S.insightBox, { marginTop: 10 }]}>
         <Text style={S.insightLabel}>Methodology Statement</Text>
         <Text style={S.insightText}>
-          {`This model projects ${fmt(summary.termValue)} in ${termLabel} gross value against ${fmt(summary.termInvestment)} in total investment — ${summary.valueToCost.toFixed(1)}× value-to-cost at base case. At conservative realization (70%), term value is ${fmt(Math.round(summary.termValue * 0.7))} and net is ${fmt(sensitivityData.conservative.termNet)}; at optimistic (130%), term value is ${fmt(Math.round(summary.termValue * 1.3))} and net is ${fmt(sensitivityData.optimistic.termNet)}. Implementation ramp (${config.implementationRampMonths} months), utilization targets, and domain onset delays are all modeled conservatively. This model was built to survive a finance team review — start validation with provider adoption rate and your highest-value drivers, as those are the variables most likely to move the outcome.`}
+          {`This model projects ${fmt(summary.termValue)} in ${termLabel} gross value against ${fmt(summary.termInvestment)} in total investment — ${summary.valueToCost.toFixed(1)}× value-to-cost at base case. Conservative realization (70%) yields ${fmt(sensitivityData.conservative.termNet)} net; optimistic (130%) yields ${fmt(sensitivityData.optimistic.termNet)} net. Implementation ramp, utilization targets, and domain onset delays are all held conservative — cost runs from day one while value builds. Start validation with provider adoption rate and your highest-value drivers; those are the variables most likely to move the outcome. The base case is built to hold. The upside belongs to the organizations that execute.`}
         </Text>
       </View>
 
