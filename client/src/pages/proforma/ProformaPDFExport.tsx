@@ -1370,10 +1370,13 @@ function buildDriverFormula(
 
     case "edEmLevel":
     case "wrvu": {
-      const wrvuPct    = es.wrvuPctIncrease || 0;
-      const convFactor = es.docQualityInputs?.conversionFactor || 55;
+      const dqi        = es.docQualityInputs;
+      const wrvuMap: Record<string, number> = { conservative: 2, typical: 5, aggressive: 9, custom: dqi?.wrvuCustomPercent ?? 5 };
+      const wrvuPct    = dqi?.wrvuScenario ? (wrvuMap[dqi.wrvuScenario] ?? 5) : (es.wrvuPctIncrease || 0);
+      const convFactor = dqi?.conversionFactor || 55;
       const totalEnc   = annEnc || providers * encPerProv;
-      const wrvuGained = Math.round(totalEnc * (wrvuPct / 100));
+      // Derive actual wRVUs from the dollar value to stay consistent with calculation engine
+      const wrvuGained = convFactor > 0 ? Math.round(driverValue / convFactor) : Math.round(totalEnc * (wrvuPct / 100));
       return [
         { label: `${n(providers)} providers  ×  ${n(encPerProv)} encounters/provider/yr`, value: `${n(Math.round(totalEnc))} total encounters` },
         { label: `Problems addressed, data reviewed, and risk documented — complexity delivered, note didn't show it  →  ${wrvuPct > 0 ? wrvuPct.toFixed(1) : "~2–4"}% wRVU lift`, value: `${n(wrvuGained > 0 ? wrvuGained : Math.round(totalEnc * 0.03))} wRVUs recovered` },
