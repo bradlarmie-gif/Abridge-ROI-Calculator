@@ -71,7 +71,7 @@ export default function ExploreQuality({ state, updateState, totalHoursSaved, pr
     if (enabledTarget === 'doc') docUpdates[driver.enabledStateKey] = !current;
     else timeUpdates[driver.enabledStateKey] = !current;
 
-    if (!current && driver.expandedStateKey) {
+    if (!current && driver.expandedStateKey && driver.visibility !== 'qualitative') {
       if (expandedTarget === 'doc') docUpdates[driver.expandedStateKey] = true;
       else timeUpdates[driver.expandedStateKey] = true;
     }

@@ -42,7 +42,7 @@ export default function ExploreCapacity({ state, updateState, totalHoursSaved, p
   const toggleEnabled = (driver: ExploreDriver) => {
     const current = isEnabled(driver);
     const updates: any = { [driver.enabledStateKey]: !current };
-    if (!current && driver.expandedStateKey) {
+    if (!current && driver.expandedStateKey && driver.visibility !== 'qualitative') {
       updates[driver.expandedStateKey] = true;
     }
     updateTimeDriverInputs(updates);

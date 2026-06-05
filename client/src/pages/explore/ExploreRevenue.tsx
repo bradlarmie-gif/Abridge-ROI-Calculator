@@ -53,7 +53,7 @@ export default function ExploreRevenue({ state, updateState, totalHoursSaved, pr
     const inTd = driver.enabledStateKey in td;
     const current = inTd ? td[driver.enabledStateKey] : dq[driver.enabledStateKey];
     const updates: any = { [driver.enabledStateKey]: !current };
-    if (!current && driver.expandedStateKey) {
+    if (!current && driver.expandedStateKey && driver.visibility !== 'qualitative') {
       updates[driver.expandedStateKey] = true;
     }
     if (inTd) {
