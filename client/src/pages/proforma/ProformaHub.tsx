@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Trash2, Edit, ArrowRight, ArrowLeftRight, Building2, Stethoscope, HeartPulse, BedDouble, Layers, ChevronDown, ChevronUp, TrendingUp, Clock, DollarSign, BarChart3, X, Sliders, GitCompare, Download, Loader2 } from "lucide-react";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
@@ -661,6 +661,13 @@ export default function ProformaHub({
 }: ProformaHubProps) {
   const [confirmRemove, setConfirmRemove] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const cardRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  useEffect(() => {
+    if (!editingId) return;
+    const el = cardRefs.current[editingId];
+    if (!el) return;
+    setTimeout(() => el.scrollIntoView({ behavior: "smooth", block: "nearest" }), 50);
+  }, [editingId]);
   const [assumptionsDrawerSettingId, setAssumptionsDrawerSettingId] = useState<string | null>(null);
   const [drawerInitialScenario, setDrawerInitialScenario] = useState<"A" | "B">("A");
   const [showComparePricingModal, setShowComparePricingModal] = useState(false);
@@ -893,6 +900,7 @@ export default function ProformaHub({
                   transition={{ delay: idx * 0.05 }}
                   className="bg-white rounded-xl overflow-hidden border border-[#E8E2DA] shadow-sm"
                   data-testid={`proforma-setting-card-${setting.careSetting}`}
+                  ref={(el) => { cardRefs.current[setting.id] = el; }}
                 >
                   <div className="flex">
                     <div className="w-1 flex-shrink-0" style={{ backgroundColor: color }} />
