@@ -1790,6 +1790,9 @@ function ModelConfidencePage({ settings, config, summary, yearlyData, sensitivit
         <Text style={S.insightText}>
           {`This model projects ${fmt(summary.termValue)} in ${termLabel} gross value against ${fmt(summary.termInvestment)} in total investment — ${summary.valueToCost.toFixed(1)}× value-to-cost at base case. Conservative realization (70%) yields ${fmt(sensitivityData.conservative.termNet)} net; optimistic (130%) yields ${fmt(sensitivityData.optimistic.termNet)} net. Implementation ramp, utilization targets, and domain onset delays are all held conservative — cost runs from day one while value builds. Start validation with provider adoption rate and your highest-value drivers; those are the variables most likely to move the outcome. The base case is built to hold. The upside belongs to the organizations that execute.`}
         </Text>
+        <Text style={{ fontSize: 7, color: brand.textTertiary, marginTop: 8, lineHeight: 1.5 }}>
+          Projections are illustrative and based on organization-specific inputs provided at time of modeling. Actual results will vary. This document does not constitute a contractual commitment to financial outcomes.
+        </Text>
       </View>
 
       <PageFooter pageNum={confidencePageNum} preparedBy={preparedBy} totalPDFPages={tp} />
