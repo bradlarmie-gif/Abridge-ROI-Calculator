@@ -1187,8 +1187,14 @@ function buildDriverFormula(
 
   if (!es) return [];
   const tdi = es.timeDriverInputs ?? {};
-  const annEnc = es.annualEncounters || 0;
-  const encPerProv = es.encountersPerProvider || (providers > 0 ? Math.round(annEnc / providers) : 0);
+  // Scale pilot encounters up to full-scale so formula steps match the scaled driverValue.
+  // yearlyEncounters.year3 is the ground truth when the rep edited the box; otherwise
+  // derive it by applying the same providerScaleFactor used in handleAddToProforma.
+  const pilotProviders = setting.providerCount || 1;
+  const providerScaleFactor = providers > pilotProviders ? providers / pilotProviders : 1;
+  const annEnc = setting.yearlyEncounters?.year3
+    ?? Math.round((es.annualEncounters || 0) * providerScaleFactor);
+  const encPerProv = providers > 0 ? Math.round(annEnc / providers) : 0;
 
   switch (driverId) {
 
