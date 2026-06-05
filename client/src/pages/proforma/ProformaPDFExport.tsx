@@ -991,17 +991,23 @@ function FinancialSummaryPage({ settings, config, summary, yearlyData, sensitivi
   const conservPayback = sensitivityData.conservative.paybackMonth;
 
   let floorMsg: string;
+  let floorLabel: string;
   if (!hasInvestment) {
+    floorLabel = "Reading the Range";
     floorMsg = `No investment is modeled against this value, so the conservative floor represents pure upside — ${fmt(conservFloor)} in realized value at 70% realization across all domains.`;
   } else if (conservFloor < 0) {
+    floorLabel = "Risk Assessment";
     const shortfall = fmt(Math.abs(conservFloor));
     floorMsg = `At 70% realization, this model runs ${shortfall} in the red — investment is not fully recovered in the downside case. The primary levers are provider adoption rate and capacity conversion timing. Revisit utilization assumptions and the implementation timeline before finalizing commitments.`;
   } else if (conservROI < 0.04) {
-    floorMsg = `The conservative scenario essentially breaks even — ${fmt(conservFloor)} net on ${fmt(summary.termInvestment)} invested. That's an honest floor, not a strong return. Execution quality is load-bearing: provider adoption rate and capacity conversion are the two variables most likely to compress value in practice. Build explicit accountability for both into the implementation plan.`;
+    floorLabel = "Reading the Range";
+    floorMsg = `At 70% realization, the floor is ${fmt(conservFloor)} net — investment is recovered${conservPayback ? ` at month ${conservPayback}` : ""}. The base case at ${fmt(summary.termNet)} reflects the model's central projection under conservative adoption assumptions. Execution quality is load-bearing: provider adoption rate and capacity conversion timing determine where in this range outcomes land.`;
   } else if (conservROI >= 0.15) {
-    floorMsg = `Even at 70% realization — 30% lower across every domain — this model returns ${fmt(conservFloor)} net (${Math.round(conservROI * 100)}% ROI${conservPayback ? `, payback at month ${conservPayback}` : ""}). The downside case is well-defined and positive. The base and optimistic scenarios compound from there.`;
+    floorLabel = "Reading the Range";
+    floorMsg = `At 70% realization — 30% lower across every domain — this model returns ${fmt(conservFloor)} net${conservPayback ? ` (payback at month ${conservPayback})` : ""}. The floor is positive and well-defined. The base case at ${fmt(summary.termNet)} reflects conservative utilization targets and phased onset timing. Everything above that is execution: faster adoption, earlier go-live, capacity that converts to scheduled volume. The range is tight. All of it works.`;
   } else {
-    floorMsg = `At 70% realization, the floor is ${fmt(conservFloor)} net — investment is recovered${conservPayback ? ` at month ${conservPayback}` : ""}, though with limited margin above cost. Provider adoption rate and capacity conversion timing are the execution variables most likely to determine which scenario materializes.`;
+    floorLabel = "Reading the Range";
+    floorMsg = `At 70% realization, the floor is ${fmt(conservFloor)} net — investment recovered${conservPayback ? ` at month ${conservPayback}` : ""}, with positive return above cost. The base case at ${fmt(summary.termNet)} is the central projection. Provider adoption rate and capacity conversion timing are the execution variables most likely to determine where outcomes land across the range.`;
   }
 
   return (
@@ -1182,7 +1188,7 @@ function FinancialSummaryPage({ settings, config, summary, yearlyData, sensitivi
       </View>
 
       <View style={[S.insightBox, { marginTop: 10 }]}>
-        <Text style={S.insightLabel}>Downside Case</Text>
+        <Text style={S.insightLabel}>{floorLabel}</Text>
         <Text style={S.insightText}>{floorMsg}</Text>
       </View>
 
