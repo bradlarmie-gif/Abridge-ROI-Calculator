@@ -433,7 +433,11 @@ export function buildMonthlyCashFlows(
             : 0;
           annualEncounters = licensedProviders * encountersPerProvider;
         }
-        const monthlyEncounters = annualEncounters / 12;
+        const yuE = setting.yearlyUtilization;
+        const utilPctE = (yuE
+          ? (yearIndex === 0 ? yuE.year1 : yearIndex === 1 ? yuE.year2 : yuE.year3)
+          : (setting.utilizationPercent ?? 100)) / 100;
+        const monthlyEncounters = (annualEncounters * utilPctE) / 12;
         monthlyInvestment = price * monthlyEncounters;
       } else if (setting.pricingModel === "platform") {
         const platformFee = setting.annualLicenseFee || 0;

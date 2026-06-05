@@ -769,7 +769,7 @@ function InvestmentCasePage({ settings, config, summary, yearlyData, preparedBy,
               const yr1inv = s.pricingModel === "annualFlat"
                 ? (s.yearlyPricing?.year1 ?? s.annualLicenseFee ?? 0)
                 : isPerEnc
-                ? (s.yearlyPricing?.year1 ?? s.costPerEncounter ?? 0) * (ye?.year1 ?? s.encounters ?? 0)
+                ? (s.yearlyPricing?.year1 ?? s.costPerEncounter ?? 0) * yr1AbridgeEnc
                 : isPlatform
                 ? (s.annualLicenseFee ?? 0) + (s.platformEncRate ?? s.costPerEncounter ?? 0) * yr1AbridgeEnc
                 : (s.yearlyPricing?.year1 ?? s.costPerUnit) * (yp?.year1 ?? s.providerCount) * 12;
@@ -2011,6 +2011,7 @@ function getScenarioAnnualInvestmentRows(
     const util = yuSrc[yk];
 
     const priceOverride = setting.yearlyPricing?.[yk];
+    const abridgeEnc = Math.round(encounters * util / 100);
     let investment = 0;
     let formula = "";
     const unitStr = (SETTING_UNIT_LABELS[setting.careSetting] ?? "providers").replace(/s$/, "");
@@ -2021,16 +2022,16 @@ function getScenarioAnnualInvestmentRows(
       formula = `$${rate}/${unitStr}/mo × ${fmtNum(providers)} × 12 mo`;
     } else if (pm === "perEncounter") {
       const rate = priceOverride ?? (setting.costPerEncounter ?? 0);
-      investment = rate * encounters;
-      formula = `$${rate}/enc × ${fmtNum(encounters)} enc`;
+      investment = rate * abridgeEnc;
+      formula = `$${rate}/enc × ${fmtNum(abridgeEnc)} Abridge enc`;
     } else if (pm === "annualFlat") {
       investment = priceOverride ?? (setting.annualLicenseFee ?? 0);
       formula = "Fixed annual license";
     } else if (pm === "platform") {
       const fee = setting.annualLicenseFee ?? 0;
       const encRate = setting.platformEncRate ?? setting.costPerEncounter ?? 0;
-      investment = fee + encRate * encounters;
-      formula = `$${fmtNum(fee)}/yr + $${encRate}/enc × ${fmtNum(encounters)} enc`;
+      investment = fee + encRate * abridgeEnc;
+      formula = `$${fmtNum(fee)}/yr + $${encRate}/enc × ${fmtNum(abridgeEnc)} Abridge enc`;
     }
 
     const yLabel = i < 2 ? `Year ${i + 1}` : isExtended && isLast ? "Year 3+" : "Year 3";

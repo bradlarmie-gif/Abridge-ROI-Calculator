@@ -583,12 +583,10 @@ export function VolumeAndPricingSection({
     const yuArr = [yu.year1, yu.year2 ?? yu.year1, yu.year3 ?? yu.year2 ?? yu.year1];
     const years = Array.from({ length: termYears }, (_, i) => {
       const idx = Math.min(i, 2);
-      if (model === "perUnit")      return provByYear[idx] * compRates.perUnit * 12;
-      if (model === "perEncounter") return encByYear[idx] * compRates.perEncounter;
-      if (model === "platform") {
-        const abridgeEnc = Math.round(encByYear[idx] * (yuArr[idx] ?? 0) / 100);
-        return compRates.platform.fee + abridgeEnc * compRates.platform.encRate;
-      }
+      if (model === "perUnit") return provByYear[idx] * compRates.perUnit * 12;
+      const abridgeEnc = Math.round(encByYear[idx] * (yuArr[idx] ?? 0) / 100);
+      if (model === "perEncounter") return abridgeEnc * compRates.perEncounter;
+      if (model === "platform")     return compRates.platform.fee + abridgeEnc * compRates.platform.encRate;
       return compRates.annualFlat;  // annualFlat
     });
     const total = years.reduce((s, v) => s + v, 0);

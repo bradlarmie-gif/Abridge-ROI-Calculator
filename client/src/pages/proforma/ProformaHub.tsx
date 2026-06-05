@@ -54,7 +54,11 @@ function calcAnnualInvestment(setting: ProformaSettingSnapshot): number {
   const pm = setting.pricingModel ?? "perUnit";
   const price = setting.yearlyPricing?.year1;
   if (pm === "annualFlat") return price ?? setting.annualLicenseFee ?? 0;
-  if (pm === "perEncounter") return (price ?? setting.costPerEncounter ?? 0) * (setting.yearlyEncounters?.year1 ?? setting.encounters);
+  if (pm === "perEncounter") {
+    const totalEnc = setting.yearlyEncounters?.year1 ?? setting.encounters;
+    const util = (setting.yearlyUtilization?.year1 ?? setting.utilizationPercent ?? 100) / 100;
+    return (price ?? setting.costPerEncounter ?? 0) * Math.round(totalEnc * util);
+  }
   if (pm === "platform") {
     const flatFee = setting.annualLicenseFee ?? 0;
     const encRate = setting.platformEncRate ?? setting.costPerEncounter ?? 0;
