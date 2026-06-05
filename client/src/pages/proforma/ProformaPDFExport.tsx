@@ -753,7 +753,7 @@ function InvestmentCasePage({ settings, config, summary, yearlyData, preparedBy,
           <View style={S.tableWrap}>
             <View style={S.tableHead}>
               <Text style={[S.tableHeadCell, { flex: 3 }]}>Setting</Text>
-              <Text style={[S.tableHeadCell, { flex: 3 }]}>Scale</Text>
+              <Text style={[S.tableHeadCell, { flex: 3 }]}>Full Scale (Y3)</Text>
               <Text style={[S.tableHeadCell, { flex: 2, textAlign: "right" }]}>Y1 Investment</Text>
               <Text style={[S.tableHeadCell, { flex: 2, textAlign: "right" }]}>Run-Rate Value</Text>
             </View>
@@ -887,7 +887,7 @@ function ValueTrajectoryPage({ settings, config, summary, yearlyData, chartData,
             <View key={m.label} style={[cardStyle, idx < milestones.length - 1 ? { marginRight: 6 } : {}]}>
               <Text style={S.milestoneStage}>{m.stage}</Text>
               <Text style={S.milestoneYear}>{m.label}</Text>
-              <Text style={S.milestoneMetricLabel}>Scale</Text>
+              <Text style={S.milestoneMetricLabel}>Full Scale</Text>
               <Text style={S.milestoneMetricValue}>{getMilestoneScale(m.yearIdx)}</Text>
               {(() => {
                 const { enc, dc } = getMilestoneActivity(m.yearIdx);
