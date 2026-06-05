@@ -1928,6 +1928,7 @@ function buildPDFSensitivity(
   factor: number,
   termInvestment: number,
   termValue: number,
+  useEconomicPayback: boolean,
 ): SensitivityScenario {
   const scaledValue = termValue * factor;
   const scaledNet   = scaledValue - termInvestment;
@@ -1939,7 +1940,9 @@ function buildPDFSensitivity(
   let cumValue = 0;
   for (const row of cashFlows) {
     cumValue += row.totalValue;
-    const scaledCumNet = row.cumulativeNet + (factor - 1) * cumValue;
+    // Use same payback basis as base case — economic cumulative net for banked deals
+    const baseCumNet = useEconomicPayback ? (row.economicCumulativeNet ?? row.cumulativeNet) : row.cumulativeNet;
+    const scaledCumNet = baseCumNet + (factor - 1) * cumValue;
     if (scaledCumNet < 0) wentNegative = true;
     if (wentNegative && scaledCumNet >= 0 && paybackMonth === null) paybackMonth = row.period;
   }
@@ -1960,9 +1963,10 @@ export async function generateProformaPDF(
   const yearlyData = getYearlySummary(cashFlows, settings);
   const startDate  = getContractStartDate();
 
+  const useEconomicPayback = settings.some(s => s.bankedEncounters && (s.pricingModel === "platform" || s.pricingModel === "perEncounter"));
   const sensitivityData: ProformaSensitivityData = {
-    conservative: buildPDFSensitivity(cashFlows, 0.7, summary.termInvestment, summary.termValue),
-    optimistic:   buildPDFSensitivity(cashFlows, 1.3, summary.termInvestment, summary.termValue),
+    conservative: buildPDFSensitivity(cashFlows, 0.7, summary.termInvestment, summary.termValue, useEconomicPayback),
+    optimistic:   buildPDFSensitivity(cashFlows, 1.3, summary.termInvestment, summary.termValue, useEconomicPayback),
   };
 
   const quarterlyData = groupByQuarter(cashFlows, startDate);
