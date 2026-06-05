@@ -637,7 +637,7 @@ export function VolumeAndPricingSection({
           {modelDefs.map(m => (
             <button
               key={m.key}
-              onClick={() => applyModel(m.key)}
+              onClick={() => { if (pricingModel !== m.key) applyModel(m.key); }}
               className={`flex-1 px-2 py-1 rounded-full text-[10px] font-medium transition-colors ${
                 pricingModel === m.key
                   ? "bg-white text-neutral-900 shadow-sm"
