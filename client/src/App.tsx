@@ -651,6 +651,7 @@ export default function App() {
                 initialExploreState={proformaEditExploreState}
                 onAddToProforma={handleAddToProforma}
                 disabledCareSettings={proformaSettings.map(s => s.careSetting as ExploreCareSetting)}
+                onDataRequest={() => navigateTo("data-request-builder")}
               />
             )}
 

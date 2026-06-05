@@ -968,9 +968,10 @@ interface ExploreFlowProps {
   initialExploreState?: ExploreState;
   onAddToProforma?: (snapshot: import("@/pages/proforma/proformaTypes").ProformaSettingSnapshot) => void;
   disabledCareSettings?: ExploreCareSetting[];
+  onDataRequest?: () => void;
 }
 
-export default function ExploreFlow({ onBackToJourney, onBackToProforma, initialCareSetting, initialPhase, initialExploreState, onAddToProforma, disabledCareSettings = [] }: ExploreFlowProps) {
+export default function ExploreFlow({ onBackToJourney, onBackToProforma, initialCareSetting, initialPhase, initialExploreState, onAddToProforma, disabledCareSettings = [], onDataRequest }: ExploreFlowProps) {
   const [phase, setPhase] = useState<ExplorePhase>(() => {
     const requested = initialPhase || (initialExploreState ? 'practice' : 'careSetting');
     const legacyMap: Record<string, ExplorePhase> = {
@@ -1384,6 +1385,7 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
           onBack={goHome}
           onHome={goHome}
           disabledSettings={disabledCareSettings}
+          onDataRequest={onDataRequest}
         />
       );
       break;
