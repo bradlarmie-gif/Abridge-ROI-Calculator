@@ -808,19 +808,6 @@ export default function ProformaHub({
                 <p className={`text-xl font-bold ${summary.termNet >= 0 ? "text-[#E8350A]" : "text-[#9CA3AF]"}`} data-testid="hub-net-value">{fmt(summary.termNet)}</p>
               </div>
             </div>
-            <div className="border-t border-[#E8E2DA] pt-3 mb-3 flex items-center justify-end">
-              <button
-                onClick={() => setShowComparePricingModal(true)}
-                className={`inline-flex items-center gap-1.5 text-xs font-medium transition-colors ${
-                  settingsWithB.length > 0
-                    ? "text-[#EA2C00] hover:text-[#D42800]"
-                    : "text-[#8C7E6E] hover:text-[#4A3F35]"
-                }`}
-              >
-                <ArrowLeftRight className="w-3.5 h-3.5" />
-                {settingsWithB.length > 0 ? "Edit pricing comparison" : "Compare deal pricing"}
-              </button>
-            </div>
             <div className="border-t border-[#E8E2DA] pt-3 grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
               <div className="flex flex-col items-center">
                 <TrendingUp className="w-3.5 h-3.5 text-[#E8350A] mb-1" />
