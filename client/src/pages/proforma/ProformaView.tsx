@@ -284,7 +284,7 @@ export default function ProformaView({
       // Investment and impl-fee timing stay exactly as in the base case.
       // For banked encounter deals, use economicCumulativeNet so payback
       // reflects encounter cost in the year consumed, not the billing lag.
-      const usesEconomicPayback = settings.some(s => s.bankedEncounters && s.pricingModel === "platform");
+      const usesEconomicPayback = settings.some(s => s.bankedEncounters && (s.pricingModel === "platform" || s.pricingModel === "perEncounter"));
       let scaledPayback: number | null = null;
       let scaledWentNegative = false;
       let cumValue = 0;

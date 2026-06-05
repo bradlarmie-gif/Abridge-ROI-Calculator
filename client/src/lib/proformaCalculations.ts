@@ -263,7 +263,7 @@ export function buildMonthlyCashFlows(
   const rows: ProformaCashFlowRow[] = [];
   let cumulativeNet = 0;
   let economicCumulativeNet = 0;
-  const hasbanked = settings.some(s => s.bankedEncounters && s.pricingModel === "platform");
+  const hasbanked = settings.some(s => s.bankedEncounters && (s.pricingModel === "platform" || s.pricingModel === "perEncounter"));
 
   for (let m = 1; m <= months; m++) {
     let totalInvestment = 0;
@@ -426,24 +426,50 @@ export function buildMonthlyCashFlows(
       if (setting.pricingModel === "annualFlat") {
         const price = resolvedPrice ?? (setting.annualLicenseFee || 0);
         monthlyInvestment = price / 12;
+        totalEconomicInvestment += monthlyInvestment;
       } else if (setting.pricingModel === "perEncounter") {
         const price = resolvedPrice ?? (setting.costPerEncounter || 0);
-        let annualEncounters: number;
-        if (setting.yearlyEncounters) {
-          const ye = setting.yearlyEncounters;
-          annualEncounters = yearIndex === 0 ? ye.year1 : yearIndex === 1 ? ye.year2 : ye.year3;
-        } else {
-          const encountersPerProvider = setting.providerCount > 0
-            ? setting.encounters / setting.providerCount
-            : 0;
-          annualEncounters = licensedProviders * encountersPerProvider;
+        // Banked: encounter billing lags by 1 year (Y1 consumption billed in Y2).
+        const billingYearIndex = setting.bankedEncounters
+          ? (yearIndex === 0 ? -1 : yearIndex - 1)
+          : yearIndex;
+        let monthlyEncounters = 0;
+        if (billingYearIndex >= 0) {
+          let annualEncounters: number;
+          if (setting.yearlyEncounters) {
+            const ye = setting.yearlyEncounters;
+            annualEncounters = billingYearIndex === 0 ? ye.year1 : billingYearIndex === 1 ? ye.year2 : ye.year3;
+          } else {
+            const encountersPerProvider = setting.providerCount > 0
+              ? setting.encounters / setting.providerCount
+              : 0;
+            annualEncounters = licensedProviders * encountersPerProvider;
+          }
+          const yuE = setting.yearlyUtilization;
+          const utilPctE = (yuE
+            ? (billingYearIndex === 0 ? yuE.year1 : billingYearIndex === 1 ? yuE.year2 : yuE.year3)
+            : (setting.utilizationPercent ?? 100)) / 100;
+          monthlyEncounters = (annualEncounters * utilPctE) / 12;
         }
-        const yuE = setting.yearlyUtilization;
-        const utilPctE = (yuE
-          ? (yearIndex === 0 ? yuE.year1 : yearIndex === 1 ? yuE.year2 : yuE.year3)
-          : (setting.utilizationPercent ?? 100)) / 100;
-        const monthlyEncounters = (annualEncounters * utilPctE) / 12;
         monthlyInvestment = price * monthlyEncounters;
+
+        // Economic investment: encounters billed in year consumed (for payback only).
+        if (setting.bankedEncounters) {
+          let economicAnnualEnc: number;
+          if (setting.yearlyEncounters) {
+            const ye = setting.yearlyEncounters;
+            economicAnnualEnc = yearIndex === 0 ? ye.year1 : yearIndex === 1 ? ye.year2 : ye.year3;
+          } else {
+            economicAnnualEnc = licensedProviders * (setting.providerCount > 0 ? setting.encounters / setting.providerCount : 0);
+          }
+          const yuE = setting.yearlyUtilization;
+          const utilPctE = (yuE
+            ? (yearIndex === 0 ? yuE.year1 : yearIndex === 1 ? yuE.year2 : yuE.year3)
+            : (setting.utilizationPercent ?? 100)) / 100;
+          totalEconomicInvestment += price * (economicAnnualEnc * utilPctE) / 12;
+        } else {
+          totalEconomicInvestment += monthlyInvestment;
+        }
       } else if (setting.pricingModel === "platform") {
         const platformFee = setting.annualLicenseFee || 0;
         const encRate = setting.platformEncRate ?? setting.costPerEncounter ?? 0;
@@ -683,7 +709,7 @@ export function calculateProformaSummary(
   // This prevents payback from appearing unrealistically early (e.g. Month 2)
   // because Year 1 billing is just the platform fee — economic basis charges
   // encounters in the year they're consumed, giving a fair payback figure.
-  const usesEconomicPayback = settings.some(s => s.bankedEncounters && s.pricingModel === "platform");
+  const usesEconomicPayback = settings.some(s => s.bankedEncounters && (s.pricingModel === "platform" || s.pricingModel === "perEncounter"));
   let paybackMonth: number | null = null;
   let cumulativeWentNegative = false;
   for (const row of cashFlows) {
