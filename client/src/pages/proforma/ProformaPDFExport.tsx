@@ -797,6 +797,17 @@ function InvestmentCasePage({ settings, config, summary, yearlyData, preparedBy,
               );
             })}
           </View>
+          {(config.systemWideFee ?? 0) > 0 && (
+            <View style={[S.tableRow, S.tableRowLast, { marginTop: 4, borderTopWidth: 1, borderTopColor: brand.midGray }]}>
+              <View style={{ flex: 3, flexDirection: "row", alignItems: "center", gap: 6 }}>
+                <View style={{ width: 3, height: 14, backgroundColor: brand.midGray, borderRadius: 1 }} />
+                <Text style={S.tableCellBold}>System-wide Platform Fee</Text>
+              </View>
+              <Text style={[S.tableCellMono, { flex: 3 }]}>All settings</Text>
+              <Text style={[S.tableCell, { flex: 2, textAlign: "right" }]}>{fmt(config.systemWideFee ?? 0)}</Text>
+              <Text style={[S.tableCell, { flex: 2, textAlign: "right" }]}>—</Text>
+            </View>
+          )}
           {isBanked && (
             <Text style={{ fontSize: 7, color: brand.textSecondary, marginTop: 6, paddingHorizontal: 2 }}>
               * Banked Encounter: Y1 Investment reflects platform/base fee only. Encounter consumption is billed in arrears starting Year 2.

@@ -131,6 +131,7 @@ export interface ProformaConfig {
   yearlyUtilization: YearlyUtilization;
   nursingYearlyUtilization?: YearlyUtilization;
   granularity?: "annual" | "quarterly";
+  systemWideFee?: number;
 }
 
 export interface ProformaCashFlowRow {

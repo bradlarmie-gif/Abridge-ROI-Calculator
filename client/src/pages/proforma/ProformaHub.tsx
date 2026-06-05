@@ -830,6 +830,21 @@ export default function ProformaHub({
                 <p className="text-[12px] text-[#A39888]">Hours/Year</p>
               </div>
             </div>
+            <div className="border-t border-[#E8E2DA] pt-3 mt-3 flex items-center justify-between gap-4">
+              <div>
+                <p className="text-[11px] font-medium text-neutral-700">System-wide Annual Fee</p>
+                <p className="text-[10px] text-[#A39888]">Enterprise platform fee applied across all settings (e.g. shared Abridge license)</p>
+              </div>
+              <div className="relative flex-shrink-0 w-36">
+                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[11px] text-neutral-400">$</span>
+                <FormattedNumberInput
+                  value={config.systemWideFee ?? 0}
+                  onChange={(v) => onConfigChange({ ...config, systemWideFee: v || undefined })}
+                  className="w-full text-xs border border-[#E8E2DA] rounded-lg py-1.5 pl-5 pr-2 text-right bg-white"
+                  placeholder="0"
+                />
+              </div>
+            </div>
           </motion.div>
         )}
 

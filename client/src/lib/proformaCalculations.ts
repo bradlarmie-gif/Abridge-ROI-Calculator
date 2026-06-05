@@ -548,6 +548,11 @@ export function buildMonthlyCashFlows(
 
     
 
+    // System-wide fee applies every month regardless of individual setting go-live dates
+    const monthlySystemFee = (config.systemWideFee ?? 0) / 12;
+    totalInvestment += monthlySystemFee;
+    totalEconomicInvestment += monthlySystemFee;
+
     const totalValue = totalCapacityValue + totalWorkforceValue + totalRevenueValue + totalQualityValue + totalDisplacementValue;
     const netValue = totalValue - totalInvestment;
     cumulativeNet += netValue;
