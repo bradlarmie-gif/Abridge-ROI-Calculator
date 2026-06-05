@@ -635,7 +635,6 @@ export default function App() {
                   setLearnInitialScreen(undefined);
                   navigateTo("learn");
                 }}
-                onSelectDataRequest={() => navigateTo("data-request-builder")}
                 proformaCount={proformaSettings.length}
                 onOpenProforma={() => navigateTo("proforma-hub")}
               />
