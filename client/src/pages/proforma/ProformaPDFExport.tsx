@@ -664,13 +664,19 @@ function InvestmentCasePage({ settings, config, summary, yearlyData, preparedBy,
       thesis = `Value is distributed across ${activeDomains.length} independent domains — ${allDomainStr} — so no single mechanism carries the entire case. The top driver, ${topDriver ? `${topDriver.name.toLowerCase()} at ${fmt(topDriver.value)}/yr` : fmt(summary.runRateValue)}, is auditable against operational records. Against ${fmt(summary.termInvestment)} invested across ${scale}, this projects ${fmt(summary.runRateValue)}/yr at maturity${summary.paybackMonth ? ` with payback at month ${summary.paybackMonth}` : ""}.`;
     }
   } else {
-    // Multi-setting: lead with independence of value sources
-    const settingLines = settings
-      .map(s => `${SETTING_LABELS[s.careSetting] || s.label} (${fmt(s.annualValue)}/yr)`)
-      .join(", ");
-    const dominantSetting = [...settings].sort((a, b) => b.annualValue - a.annualValue)[0];
-    const dominantName = SETTING_LABELS[dominantSetting?.careSetting] || dominantSetting?.label || "";
-    thesis = `Value compounds across ${settings.length} care settings: ${settingLines}. The sources are structurally independent — ${dominantName} is driven by ${topDomain?.domain.toLowerCase() ?? "capacity"} and throughput, while other settings add ${sortedDomains.slice(1).map(d => d.domain.toLowerCase()).join(" and ")} gains on top. If one setting ramps slower than modeled, the others hold. At maturity, ${fmt(summary.runRateValue)}/yr runs across ${scaleDesc} against ${fmt(summary.termInvestment)} invested${summary.paybackMonth ? `, recovering at month ${summary.paybackMonth}` : ""}.`;
+    // Multi-setting: lead with structural independence, name each setting's top driver
+    const settingDescriptions = [...settings]
+      .sort((a, b) => b.annualValue - a.annualValue)
+      .map(s => {
+        const topD = [...s.drivers].filter(d => d.value > 0).sort((a, b) => b.value - a.value)[0];
+        const driverNote = topD ? `, led by ${topD.name.toLowerCase()}` : '';
+        return `${SETTING_LABELS[s.careSetting] || s.label} (${fmt(s.annualValue)}/yr${driverNote})`;
+      })
+      .join('; ');
+    const multiScaleDesc = allPerEnc
+      ? `${fmtNum(totalFullScaleEnc)} contracted encounters`
+      : `${fmtNum(totalFullScale)} providers`;
+    thesis = `${settings.length} structurally independent value sources: ${settingDescriptions}. Each draws from distinct clinical workflows and operational levers — if one setting ramps slower than projected, the others hold. At maturity, ${fmt(summary.runRateValue)}/yr runs across ${multiScaleDesc} against ${fmt(summary.termInvestment)} invested${summary.paybackMonth ? `, with payback at month ${summary.paybackMonth}` : ''}.`;
   }
 
   return (
