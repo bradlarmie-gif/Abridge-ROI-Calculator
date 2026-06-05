@@ -1069,9 +1069,9 @@ function FinancialSummaryPage({ settings, config, summary, yearlyData, sensitivi
       <View style={S.tableWrap}>
         <View style={S.tableHead}>
           <Text style={[S.tableHeadCell, { flex: 2 }]}>Metric</Text>
-          <Text style={[S.tableHeadCell, { flex: 1, textAlign: "center" }]}>Conservative  −30%</Text>
+          <Text style={[S.tableHeadCell, { flex: 1, textAlign: "center" }]}>Conservative (70% Realization)</Text>
           <Text style={[S.tableHeadCell, { flex: 1, textAlign: "center", color: brand.coral }]}>Base Case</Text>
-          <Text style={[S.tableHeadCell, { flex: 1, textAlign: "center" }]}>Optimistic  +30%</Text>
+          <Text style={[S.tableHeadCell, { flex: 1, textAlign: "center" }]}>Optimistic (130% Realization)</Text>
         </View>
 
         {hasInvestment && (
@@ -1084,7 +1084,7 @@ function FinancialSummaryPage({ settings, config, summary, yearlyData, sensitivi
         )}
         {hasInvestment && (
           <View style={S.tableRow}>
-            <Text style={[S.tableCell, { flex: 2 }]}>Simple ROI</Text>
+            <Text style={[S.tableCell, { flex: 2 }]}>ROI</Text>
             <Text style={[S.tableCell, { flex: 1, textAlign: "center" }]}>{Math.round(sensitivityData.conservative.simpleROI * 100)}%</Text>
             <Text style={[S.tableCellBold, { flex: 1, textAlign: "center", color: brand.coral }]}>{Math.round(summary.simpleROI * 100)}%</Text>
             <Text style={[S.tableCellBold, { flex: 1, textAlign: "center", color: brand.positive }]}>{Math.round(sensitivityData.optimistic.simpleROI * 100)}%</Text>
@@ -1222,16 +1222,19 @@ function buildDriverFormula(
     // ── Workforce ─────────────────────────────────────────────────────────────
 
     case "providerWellbeing": {
-      const turnover   = tdi.annualTurnoverRate || 0;
-      const burnout    = tdi.burnoutRelatedTurnover || 0;
-      const impPct     = tdi.retentionCustomPercent || 15;
-      const replaceCost= tdi.replacementCost || 200000;
-      const atRisk     = providers * (turnover / 100) * (burnout / 100);
-      const retained   = atRisk * (impPct / 100);
+      const turnover    = tdi.annualTurnoverRate || 0;
+      const burnout     = tdi.burnoutRelatedTurnover || 0;
+      const retScenarios: Record<string, number> = { conservative: 5, typical: 10, optimistic: 15, custom: tdi.retentionCustomPercent ?? 10 };
+      const impPct      = retScenarios[tdi.retentionImpactScenario || 'typical'] ?? 10;
+      const replaceCost = tdi.replacementCost || 200000;
+      const unitWord    = setting.careSetting === 'inpatient' ? 'physician' : setting.careSetting === 'ed' ? 'physician' : 'provider';
+      const unitWords   = unitWord + 's';
+      const atRisk      = providers * (turnover / 100) * (burnout / 100);
+      const retained    = atRisk * (impPct / 100);
       return [
-        { label: `${n(providers)} providers  ×  ${p(turnover)} turnover  ×  ${p(burnout)} burnout-driven`, value: `${atRisk.toFixed(1)} physicians/yr at risk` },
-        { label: `${atRisk.toFixed(1)}  ×  ${p(impPct)} retention improvement from reduced burnout`, value: `${retained.toFixed(1)} physicians retained/yr` },
-        { label: `${retained.toFixed(1)}  ×  ${d(replaceCost)} replacement cost per physician`, value: fmt(driverValue), isResult: true },
+        { label: `${n(providers)} ${unitWords}  ×  ${p(turnover)} turnover  ×  ${p(burnout)} burnout-driven`, value: `${atRisk.toFixed(1)} ${unitWords}/yr at risk` },
+        { label: `${atRisk.toFixed(1)}  ×  ${p(impPct)} retention improvement from reduced burnout`, value: `${retained.toFixed(1)} ${unitWords} retained/yr` },
+        { label: `${retained.toFixed(1)}  ×  ${d(replaceCost)} replacement cost per ${unitWord}`, value: fmt(driverValue), isResult: true },
       ];
     }
 
@@ -1256,10 +1259,12 @@ function buildDriverFormula(
       const occupancy     = Math.round((es.nursingOccupancyRate || 0.85) * 100);
       const estNurses     = Math.round(beds * (occupancy / 100) * 2.5);
       const atRisk        = Math.round(estNurses * (turnoverRate / 100));
-      const retained      = (atRisk * 0.15).toFixed(1);
+      const nursingRates: Record<string, number> = { conservative: 10, typical: 15, optimistic: 25, custom: tdi.retentionCustomPercent ?? 10 };
+      const impPct        = nursingRates[tdi.retentionImpactScenario || 'typical'] ?? 15;
+      const retained      = (atRisk * (impPct / 100)).toFixed(1);
       return [
         { label: `${n(beds)} beds  ×  ${p(occupancy)} occupancy  →  ~${n(estNurses)} nurses  ×  ${p(turnoverRate)} turnover`, value: `${n(atRisk)} nurses/yr at risk` },
-        { label: `${n(atRisk)}  ×  ~15% improvement from reduced documentation burden`, value: `${retained} nurses retained/yr` },
+        { label: `${n(atRisk)}  ×  ${p(impPct)} Abridge impact on burnout-driven departures`, value: `${retained} nurses retained/yr` },
         { label: `${retained}  ×  ${d(replaceCost)} replacement cost per nurse`, value: fmt(driverValue), isResult: true },
       ];
     }
@@ -1412,6 +1417,18 @@ function buildDriverFormula(
       return [
         { label: `Earlier sepsis recognition via real-time documentation → timely SEP-1 bundle adherence`, value: `mortality & cost reduction` },
         { label: `${eventsAvoided} sepsis complications avoided/yr  ×  ${d(avgSepsisCost)} avg cost per event`, value: fmt(driverValue), isResult: true },
+      ];
+    }
+
+    case "scribeCostReduction":
+    case "scribeCost": {
+      const headcount  = tdi.scribeHeadcount || 0;
+      const costPerPos = tdi.scribeCostPerPosition || 0;
+      const eliminated = Math.min(tdi.scribePositionsEliminated || 0, headcount);
+      const totalSpend = headcount * costPerPos;
+      return [
+        { label: `${n(headcount)} current scribe positions  ×  ${d(costPerPos)} annual cost per position`, value: `${d(totalSpend)} current scribe spend` },
+        { label: `${n(eliminated)} of ${n(headcount)} positions eliminated with Abridge`, value: fmt(driverValue), isResult: true },
       ];
     }
 
@@ -1744,7 +1761,7 @@ function ModelConfidencePage({ settings, config, summary, yearlyData, sensitivit
       <View style={[S.insightBox, { marginTop: 10 }]}>
         <Text style={S.insightLabel}>Methodology Statement</Text>
         <Text style={S.insightText}>
-          {`This model projects ${fmt(summary.termValue)} in ${termLabel} gross value against ${fmt(summary.termInvestment)} in total investment — ${summary.valueToCost.toFixed(1)}× value-to-cost at base case. At conservative realization (70%), term value is ${fmt(Math.round(summary.termValue * 0.7))} and net is ${fmt(sensitivityData.conservative.termNet)}; at optimistic (130%), term value is ${fmt(Math.round(summary.termValue * 1.3))} and net is ${fmt(sensitivityData.optimistic.termNet)}. Implementation ramp (${config.implementationRampMonths} months), utilization targets, and domain onset delays are all modeled conservatively. Treat this as a planning-stage estimate — validate against your organization's operational data before committing to contracts.`}
+          {`This model projects ${fmt(summary.termValue)} in ${termLabel} gross value against ${fmt(summary.termInvestment)} in total investment — ${summary.valueToCost.toFixed(1)}× value-to-cost at base case. At conservative realization (70%), term value is ${fmt(Math.round(summary.termValue * 0.7))} and net is ${fmt(sensitivityData.conservative.termNet)}; at optimistic (130%), term value is ${fmt(Math.round(summary.termValue * 1.3))} and net is ${fmt(sensitivityData.optimistic.termNet)}. Implementation ramp (${config.implementationRampMonths} months), utilization targets, and domain onset delays are all modeled conservatively. This model was built to survive a finance team review — start validation with provider adoption rate and your highest-value drivers, as those are the variables most likely to move the outcome.`}
         </Text>
       </View>
 
@@ -1802,10 +1819,16 @@ function ProformaPDFDocument({
         <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 72 }}>
           <Image src={abridgeLogoRed} style={{ width: 140, marginBottom: 24 }} />
           <View style={{ borderTopWidth: 2, borderTopColor: brand.coral, width: 80, marginBottom: 24 }} />
-          <Text style={{ fontSize: 14, color: brand.textSecondary, marginBottom: 6 }}>Prepared for</Text>
-          <Text style={{ fontSize: 22, fontFamily: "Abridge", fontWeight: 400, color: brand.textPrimary, marginBottom: 24 }}>
-            {organizationName || "Organization"}
-          </Text>
+          {organizationName ? (
+            <>
+              <Text style={{ fontSize: 14, color: brand.textSecondary, marginBottom: 6 }}>Prepared for</Text>
+              <Text style={{ fontSize: 22, fontFamily: "Abridge", fontWeight: 400, color: brand.textPrimary, marginBottom: 24 }}>
+                {organizationName}
+              </Text>
+            </>
+          ) : (
+            <View style={{ marginBottom: 24 }} />
+          )}
           <Text style={{ fontSize: 10, color: brand.textTertiary, marginBottom: 4 }}>{dateStr}</Text>
           {preparedBy && (
             <Text style={{ fontSize: 10, color: brand.textTertiary, marginBottom: 4 }}>Prepared by {preparedBy}</Text>
