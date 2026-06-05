@@ -760,17 +760,22 @@ function InvestmentCasePage({ settings, config, summary, yearlyData, preparedBy,
             {settings.map((s, si) => {
               const sc     = s.color || brand.coral;
               const isPerEnc = s.pricingModel === "perEncounter";
+              const isPlatform = s.pricingModel === "platform";
               const ye     = s.yearlyEncounters;
               const yp     = s.yearlyProviders;
               const yr1inv = s.pricingModel === "annualFlat"
                 ? (s.yearlyPricing?.year1 ?? s.annualLicenseFee ?? 0)
                 : isPerEnc
                 ? (s.yearlyPricing?.year1 ?? s.costPerEncounter ?? 0) * (ye?.year1 ?? s.encounters ?? 0)
+                : isPlatform
+                ? (s.annualLicenseFee ?? 0) + (s.platformEncRate ?? s.costPerEncounter ?? 0) * (ye?.year1 ?? s.encounters ?? 0)
                 : (s.yearlyPricing?.year1 ?? s.costPerUnit) * (yp?.year1 ?? s.providerCount) * 12;
               const encUnit = s.careSetting === "inpatient" ? "dc/yr" : "enc/yr";
-              const scaleText = isPerEnc
-                ? `${fmtNum(ye?.year1 ?? s.encounters)} ${encUnit}`
-                : `${fmtNum(yp?.year1 ?? s.providerCount)} → ${fmtNum(s.fullScaleProviders || s.providerCount)} ${unitLabel(s.careSetting).toLowerCase()}`;
+              const year3Enc = ye?.year3 ?? 0;
+              const year3Providers = yp?.year3 ?? s.fullScaleProviders ?? s.providerCount;
+              const scaleText = (isPerEnc || isPlatform) && year3Enc > 0
+                ? `${fmtNum(year3Enc)} ${encUnit}`
+                : `${fmtNum(year3Providers)} ${unitLabel(s.careSetting).toLowerCase()}`;
               return (
                 <View key={s.id} style={[S.tableRow, si === settings.length - 1 ? S.tableRowLast : {}]}>
                   <View style={{ flex: 3, flexDirection: "row", alignItems: "center", gap: 6 }}>
