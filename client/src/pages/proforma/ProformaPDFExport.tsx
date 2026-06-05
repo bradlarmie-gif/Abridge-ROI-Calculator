@@ -879,10 +879,10 @@ function ValueTrajectoryPage({ settings, config, summary, yearlyData, chartData,
   const hasHcc       = settings.some(s => s.drivers?.some((d: { id: string }) => d.id === "hcc"));
 
   const onsetRows = [
-    hasRevenue   && { domain: "Revenue",   color: brand.revenue,   label: "Revenue",   note: `wRVU, denials, DRG, CDI begin month 1 — 1-month billing cycle lag, then ramp over 3 months.${hasHcc ? " HCC Recapture begins month 12 — documentation improves in Year 1 but revenue flows through the annual RAF reconciliation cycle." : ""}`, inactiveFrac: 1/config.contractTermMonths },
-    hasCapacity  && { domain: "Capacity",  color: brand.capacity,  label: "Capacity",  note: `Begins month ${delayedOnset} — organizations need a quarter to operationalize freed capacity before throughput converts.`, inactiveFrac: delayedOnset / config.contractTermMonths },
-    hasQuality   && { domain: "Quality",   color: brand.quality,   label: "Quality",   note: `Begins month ${delayedOnset}${hasNursing ? "–5 for nursing safety outcomes" : ""} — clinical improvements require consistent documentation for measurable change.`, inactiveFrac: delayedOnset / config.contractTermMonths },
-    hasWorkforce && { domain: "Workforce", color: brand.workforce, label: "Workforce", note: `Phased over ${contractYears >= 3 ? "3 years" : "contract term"} — ${config.retentionPhasing.year1Pct}% Y1 / ${config.retentionPhasing.year2Pct}% Y2${contractYears >= 3 ? ` / ${config.retentionPhasing.year3Pct}% Y3` : ""}. Retention and wellbeing effects compound gradually.`, inactiveFrac: 0.15 },
+    hasRevenue   && { domain: "Revenue",   color: brand.revenue,   label: "Revenue",   note: `Modeled from Month 1, ramping over an initial adoption period.${hasHcc ? " HCC/RAF value projected beginning Year 2, reflecting typical reconciliation timelines." : ""}`, inactiveFrac: 1/config.contractTermMonths },
+    hasCapacity  && { domain: "Capacity",  color: brand.capacity,  label: "Capacity",  note: `Projected beginning Month ${delayedOnset}, reflecting a conservative adoption ramp as clinical workflows adjust.`, inactiveFrac: delayedOnset / config.contractTermMonths },
+    hasQuality   && { domain: "Quality",   color: brand.quality,   label: "Quality",   note: `Projected beginning Month ${delayedOnset}${hasNursing ? "–5" : ""}, modeled conservatively to allow time for documentation patterns to stabilize.`, inactiveFrac: delayedOnset / config.contractTermMonths },
+    hasWorkforce && { domain: "Workforce", color: brand.workforce, label: "Workforce", note: `Phased over ${contractYears >= 3 ? "3 years" : "the contract term"} — ${config.retentionPhasing.year1Pct}% Y1 / ${config.retentionPhasing.year2Pct}% Y2${contractYears >= 3 ? ` / ${config.retentionPhasing.year3Pct}% Y3` : ""}. Retention and wellbeing effects are projected to compound over time.`, inactiveFrac: 0.15 },
   ].filter(Boolean) as { domain: string; color: string; label: string; note: string; inactiveFrac: number }[];
 
   return (
@@ -940,7 +940,7 @@ function ValueTrajectoryPage({ settings, config, summary, yearlyData, chartData,
       </View>
 
       {/* DOMAIN ONSET TABLE */}
-      <Text style={[S.eyebrowGray, { marginBottom: 6 }]}>When Each Domain Switches On</Text>
+      <Text style={[S.eyebrowGray, { marginBottom: 6 }]}>Value Onset Assumptions</Text>
       <View style={S.tableWrap}>
         {onsetRows.map((row, i) => (
           <View key={row.domain} style={[
