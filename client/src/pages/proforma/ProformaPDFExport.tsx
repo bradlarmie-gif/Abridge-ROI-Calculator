@@ -1800,8 +1800,20 @@ function ModelConfidencePage({ settings, config, summary, yearlyData, sensitivit
           },
           {
             param: "Utilization Targets",
-            value: `Y1: ${config.yearlyUtilization.year1}% → Y${contractYears >= 2 ? "2" : "1"}: ${config.yearlyUtilization.year2}%${contractYears >= 3 ? ` → Y3: ${config.yearlyUtilization.year3}%` : ""}`,
-            method: "Applies to providers actively using Abridge. Value scales proportionally to utilization.",
+            value: (() => {
+              const allSameAsGlobal = settings.every(s => !s.yearlyUtilization);
+              if (allSameAsGlobal) {
+                const yu = config.yearlyUtilization;
+                return `Y1: ${yu.year1}% → Y2: ${yu.year2}%${contractYears >= 3 ? ` → Y3: ${yu.year3}%` : ""}`;
+              }
+              return settings.map(s => {
+                const yu = s.yearlyUtilization ?? config.yearlyUtilization;
+                const settingLabel = SETTING_LABELS[s.careSetting] ?? s.label;
+                const abbr = settingLabel === "Outpatient" ? "OP" : settingLabel === "Emergency Department" ? "ED" : settingLabel === "Inpatient" ? "IP" : settingLabel.slice(0, 3);
+                return `${abbr}: ${yu.year1}%→${yu.year2}%${contractYears >= 3 ? `→${yu.year3}%` : ""}`;
+              }).join(" · ");
+            })(),
+            method: "Per-setting utilization targets reflect configured adoption ramp. Value scales proportionally.",
           },
           {
             param: "Domain Onset",
