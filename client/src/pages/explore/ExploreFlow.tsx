@@ -528,10 +528,11 @@ export interface ExploreState {
   docQualityInputs: DocQualityInputs;
   
   // Investment values
-  pricingModel: 'perProvider' | 'perEncounter' | 'annual';
+  pricingModel: 'perProvider' | 'perEncounter' | 'annual' | 'platform';
   costPerProvider: number;
   costPerEncounter: number;
   annualLicenseFee: number;
+  platformEncRate: number;
   implementationFee: number;
   includeImplementation: boolean;
   
@@ -941,6 +942,7 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
   costPerProvider: 0,
   costPerEncounter: 0,
   annualLicenseFee: 0,
+  platformEncRate: 0,
   implementationFee: 25000,
   includeImplementation: false,
   fullScaleProviders: 500,
@@ -1345,8 +1347,11 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
     if (state.pricingModel === 'perEncounter') {
       return state.annualEncounters * state.costPerEncounter;
     }
+    if (state.pricingModel === 'platform') {
+      return state.annualLicenseFee + state.annualEncounters * state.platformEncRate;
+    }
     return state.annualLicenseFee;
-  }, [state.pricingModel, state.numberOfProviders, state.nursingStaffedBeds, state.costPerProvider, state.annualLicenseFee, state.careSetting, state.annualEncounters, state.costPerEncounter]);
+  }, [state.pricingModel, state.numberOfProviders, state.nursingStaffedBeds, state.costPerProvider, state.annualLicenseFee, state.careSetting, state.annualEncounters, state.costPerEncounter, state.platformEncRate]);
 
   const isNursing = state.careSetting === 'nursing';
   const isED = state.careSetting === 'ed';

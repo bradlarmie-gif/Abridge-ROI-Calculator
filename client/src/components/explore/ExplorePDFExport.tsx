@@ -89,10 +89,11 @@ export interface ExplorePDFData {
   totalOneTimeValue: number;
 
   // Investment
-  pricingModel: "perProvider" | "perEncounter" | "annual";
+  pricingModel: "perProvider" | "perEncounter" | "annual" | "platform";
   costPerProvider?: number;
   costPerEncounter?: number;
   annualLicenseFee?: number;
+  platformEncRate?: number;
   implementationFee: number;
   includeImplementation: boolean;
   annualInvestment: number;

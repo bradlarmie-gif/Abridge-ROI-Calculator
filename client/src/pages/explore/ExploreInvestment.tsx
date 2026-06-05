@@ -71,8 +71,11 @@ export default function ExploreInvestment({
     if (state.pricingModel === 'perEncounter') {
       return state.annualEncounters * state.costPerEncounter;
     }
+    if (state.pricingModel === 'platform') {
+      return state.annualLicenseFee + state.annualEncounters * (state.platformEncRate ?? 0);
+    }
     return state.annualLicenseFee;
-  }, [isNursing, state.pricingModel, state.numberOfProviders, state.nursingStaffedBeds, state.costPerProvider, state.annualLicenseFee, state.annualEncounters, state.costPerEncounter]);
+  }, [isNursing, state.pricingModel, state.numberOfProviders, state.nursingStaffedBeds, state.costPerProvider, state.annualLicenseFee, state.annualEncounters, state.costPerEncounter, state.platformEncRate]);
 
   const netAnnualValue = totalValue - annualInvestment;
   const roi = annualInvestment > 0 ? totalValue / annualInvestment : 0;
@@ -205,6 +208,33 @@ export default function ExploreInvestment({
                 </div>
               </div>
             </button>
+
+            {/* Platform Fee */}
+            {!isNursing && (
+              <button
+                onClick={() => updateState({ pricingModel: 'platform' })}
+                className={`w-full p-3 sm:p-4 rounded-lg text-left transition-all min-h-[56px] ${
+                  state.pricingModel === 'platform'
+                    ? "bg-white border-l-4 border-[#EA2C00]"
+                    : "bg-white hover:bg-white/80"
+                }`}
+                data-testid="button-pricing-platform"
+              >
+                <div className="flex items-start sm:items-center gap-3">
+                  <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 sm:mt-0 ${
+                    state.pricingModel === 'platform' ? 'border-[#EA2C00]' : 'border-[#D1D5DB]'
+                  }`}>
+                    {state.pricingModel === 'platform' && (
+                      <div className="w-2 h-2 rounded-full bg-[#EA2C00]" />
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-medium text-black text-sm sm:text-base">Platform Fee</p>
+                    <p className="text-xs sm:text-sm text-[#888888]">Annual platform fee plus a per-encounter rate.</p>
+                  </div>
+                </div>
+              </button>
+            )}
           </div>
 
           {/* Pricing Input */}
@@ -248,6 +278,39 @@ export default function ExploreInvestment({
               </div>
               <p className="text-xs sm:text-sm text-[#888888] break-words">
                 {formatNumber(state.annualEncounters)} encounters × ${(state.costPerEncounter ?? 0).toFixed(2)} = <strong className="text-black">{formatCurrency(annualInvestment)}/year</strong>
+              </p>
+            </div>
+          ) : state.pricingModel === 'platform' ? (
+            <div className="space-y-3">
+              <div className="space-y-1.5">
+                <label className="text-sm text-black">Annual platform fee</label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">$</span>
+                  <FormattedNumberInput
+                    value={state.annualLicenseFee}
+                    onChange={(v: number) => updateState({ annualLicenseFee: v })}
+                    className="h-11 bg-white pl-7 pr-14 text-base"
+                    data-testid="input-platform-license"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">/year</span>
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-sm text-black">Per-encounter rate</label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">$</span>
+                  <FormattedNumberInput
+                    value={state.platformEncRate ?? 0}
+                    onChange={(v: number) => updateState({ platformEncRate: v })}
+                    step={0.01}
+                    className="h-11 bg-white pl-7 pr-20 text-base"
+                    data-testid="input-platform-enc-rate"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">/encounter</span>
+                </div>
+              </div>
+              <p className="text-xs sm:text-sm text-[#888888] break-words">
+                {formatCurrency(state.annualLicenseFee)} platform + {formatNumber(state.annualEncounters)} enc × ${(state.platformEncRate ?? 0).toFixed(2)} = <strong className="text-black">{formatCurrency(annualInvestment)}/year</strong>
               </p>
             </div>
           ) : (

@@ -270,10 +270,11 @@ export interface NursingPDFInput {
   expansionRoi?: number;
   expansionInvestment?: number;
 
-  pricingModel: 'perProvider' | 'perEncounter' | 'annual';
+  pricingModel: 'perProvider' | 'perEncounter' | 'annual' | 'platform';
   costPerBedPerMonth: number;
   costPerEncounter?: number;
   annualLicenseFee?: number;
+  platformEncRate?: number;
   year2Encounters?: number;
   annualInvestment: number;
   implementationFee: number;
