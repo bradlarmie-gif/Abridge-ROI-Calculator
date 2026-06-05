@@ -635,6 +635,7 @@ function InvestmentCasePage({ settings, config, summary, yearlyData, preparedBy,
     .flatMap(s => s.drivers.filter(d => d.value > 0))
     .sort((a, b) => b.value - a.value)[0];
 
+  const isBanked = settings.some(s => s.bankedEncounters && s.pricingModel === "platform");
   const allPerEnc    = settings.every(s => s.pricingModel === "perEncounter");
   const totalFullScale = settings.reduce((s, v) => s + (v.fullScaleProviders || v.providerCount), 0);
   const totalFullScaleEnc = settings.reduce((s, v) => {
@@ -754,7 +755,7 @@ function InvestmentCasePage({ settings, config, summary, yearlyData, preparedBy,
             <View style={S.tableHead}>
               <Text style={[S.tableHeadCell, { flex: 3 }]}>Setting</Text>
               <Text style={[S.tableHeadCell, { flex: 3 }]}>Full Scale (Y3)</Text>
-              <Text style={[S.tableHeadCell, { flex: 2, textAlign: "right" }]}>Y1 Investment</Text>
+              <Text style={[S.tableHeadCell, { flex: 2, textAlign: "right" }]}>{isBanked ? "Y1 Investment *" : "Y1 Investment"}</Text>
               <Text style={[S.tableHeadCell, { flex: 2, textAlign: "right" }]}>Run-Rate Value</Text>
             </View>
             {settings.map((s, si) => {
@@ -795,6 +796,11 @@ function InvestmentCasePage({ settings, config, summary, yearlyData, preparedBy,
               );
             })}
           </View>
+          {isBanked && (
+            <Text style={{ fontSize: 7, color: brand.textSecondary, marginTop: 6, paddingHorizontal: 2 }}>
+              * Platform + Banked Encounter: Y1 Investment reflects platform fee only. Encounter consumption billed in arrears starting Year 2.
+            </Text>
+          )}
         </>
       )}
 
@@ -958,6 +964,8 @@ function FinancialSummaryPage({ settings, config, summary, yearlyData, sensitivi
   const totalQualVal = yearlyData.reduce((s, y) => s + y.qualityValue,      0);
   const totalDispVal = yearlyData.reduce((s, y) => s + y.displacementValue, 0);
 
+  const isBanked = settings.some(s => s.bankedEncounters && s.pricingModel === "platform");
+
   // Cell font scales down for longer contracts
   const cellFontSize = contractYears <= 3 ? 8.5 : contractYears <= 4 ? 8 : 7.5;
   const labelFlex = 3;
@@ -1072,6 +1080,15 @@ function FinancialSummaryPage({ settings, config, summary, yearlyData, sensitivi
             ))}
             <Text style={{ flex: yearFlex, fontSize: cellFontSize, fontWeight: 600, color: brand.negative, textAlign: "right" }}>
               ({colFmt(summary.termInvestment)})
+            </Text>
+          </View>
+        )}
+
+        {/* Banked encounter footnote — explains why Y1 investment is unusually low */}
+        {isBanked && hasInvestment && (
+          <View style={{ paddingHorizontal: 10, paddingVertical: 5, borderTopWidth: 1, borderTopColor: brand.midGray }}>
+            <Text style={{ fontSize: 7, color: brand.textSecondary, lineHeight: 1.5 }}>
+              * Platform + Banked Encounter: Year 1 billed at platform fee only. Encounter consumption charged in arrears starting Year 2. Payback reflects full economic cost independent of billing schedule.
             </Text>
           </View>
         )}
