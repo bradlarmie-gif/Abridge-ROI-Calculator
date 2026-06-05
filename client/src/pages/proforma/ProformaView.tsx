@@ -1104,42 +1104,20 @@ export default function ProformaView({
                 </tr>
                 {!isMobile && (
                   <>
-                    <tr className="border-b border-neutral-100">
-                      <td className="py-2 pl-4 text-xs" style={{ color: CHART_COLORS.capacity }}>Capacity</td>
-                      {yearlyData.map(y => (
-                        <td key={y.label} className="text-right py-2 px-4 text-xs text-neutral-500">{fmt(y.capacityValue)}</td>
-                      ))}
-                      <td className="text-right py-2 px-4 text-xs text-neutral-500">
-                        {fmt(yearlyData.reduce((s, y) => s + y.capacityValue, 0))}
-                      </td>
-                    </tr>
-                    <tr className="border-b border-neutral-100">
-                      <td className="py-2 pl-4 text-xs" style={{ color: CHART_COLORS.workforce }}>Workforce</td>
-                      {yearlyData.map(y => (
-                        <td key={y.label} className="text-right py-2 px-4 text-xs text-neutral-500">{fmt(y.workforceValue)}</td>
-                      ))}
-                      <td className="text-right py-2 px-4 text-xs text-neutral-500">
-                        {fmt(yearlyData.reduce((s, y) => s + y.workforceValue, 0))}
-                      </td>
-                    </tr>
-                    <tr className="border-b border-neutral-100">
-                      <td className="py-2 pl-4 text-xs" style={{ color: CHART_COLORS.revenue }}>Revenue</td>
-                      {yearlyData.map(y => (
-                        <td key={y.label} className="text-right py-2 px-4 text-xs text-neutral-500">{fmt(y.revenueValue)}</td>
-                      ))}
-                      <td className="text-right py-2 px-4 text-xs text-neutral-500">
-                        {fmt(yearlyData.reduce((s, y) => s + y.revenueValue, 0))}
-                      </td>
-                    </tr>
-                    <tr className="border-b border-neutral-100">
-                      <td className="py-2 pl-4 text-xs" style={{ color: CHART_COLORS.quality }}>Quality</td>
-                      {yearlyData.map(y => (
-                        <td key={y.label} className="text-right py-2 px-4 text-xs text-neutral-500">{fmt(y.qualityValue)}</td>
-                      ))}
-                      <td className="text-right py-2 px-4 text-xs text-neutral-500">
-                        {fmt(yearlyData.reduce((s, y) => s + y.qualityValue, 0))}
-                      </td>
-                    </tr>
+                    {[
+                      { label: "Capacity",  color: CHART_COLORS.capacity,  vals: yearlyData.map(y => y.capacityValue),  total: yearlyData.reduce((s, y) => s + y.capacityValue, 0)  },
+                      { label: "Workforce", color: CHART_COLORS.workforce, vals: yearlyData.map(y => y.workforceValue), total: yearlyData.reduce((s, y) => s + y.workforceValue, 0) },
+                      { label: "Revenue",   color: CHART_COLORS.revenue,   vals: yearlyData.map(y => y.revenueValue),   total: yearlyData.reduce((s, y) => s + y.revenueValue, 0)   },
+                      { label: "Quality",   color: CHART_COLORS.quality,   vals: yearlyData.map(y => y.qualityValue),   total: yearlyData.reduce((s, y) => s + y.qualityValue, 0)   },
+                    ].map(({ label, color, vals, total }) => (
+                      <tr key={label} className="border-b border-neutral-100">
+                        <td className="py-2 pl-4 text-xs" style={{ color }}>{label}</td>
+                        {vals.map((v, i) => (
+                          <td key={i} className="text-right py-2 px-4 text-xs text-neutral-500">{v === 0 ? "—" : fmt(v)}</td>
+                        ))}
+                        <td className="text-right py-2 px-4 text-xs text-neutral-500">{total === 0 ? "—" : fmt(total)}</td>
+                      </tr>
+                    ))}
                     {yearlyData.some(y => (y as any).displacementValue > 0) && (
                       <tr className="border-b border-neutral-100">
                         <td className="py-2 pl-4 text-xs" style={{ color: CHART_COLORS.displacement }}>Cost Displacement</td>

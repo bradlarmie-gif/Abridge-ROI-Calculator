@@ -647,7 +647,7 @@ export default function ExploreModel({
         year2: state.utilizationPercent,
         year3: state.utilizationPercent,
       },
-      retentionRate: retentionValue > 0 ? 0 : (isNursing ? 0 : 0.5),
+      retentionRate: 0,
       replacementCost: isNursing ? (state.timeDriverInputs.nursingReplacementCost || 56300) : (state.timeDriverInputs.replacementCost || 400000),
       capacityValue,
       workforceValue,
