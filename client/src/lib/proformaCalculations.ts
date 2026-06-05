@@ -448,7 +448,12 @@ export function buildMonthlyCashFlows(
             : 0;
           annualEncounters = licensedProviders * encountersPerProvider;
         }
-        const monthlyEncounters = annualEncounters / 12;
+        const yu = setting.yearlyUtilization;
+        const utilPct = (yu
+          ? (yearIndex === 0 ? yu.year1 : yearIndex === 1 ? yu.year2 : yu.year3)
+          : (setting.utilizationPercent ?? 100)) / 100;
+        const abridgeEncounters = annualEncounters * utilPct;
+        const monthlyEncounters = abridgeEncounters / 12;
         monthlyInvestment = platformFee / 12 + encRate * monthlyEncounters;
       } else {
         const price = resolvedPrice ?? setting.costPerUnit;

@@ -580,18 +580,22 @@ export function VolumeAndPricingSection({
   const computeInv = useMemo(() => (model: ModelKey) => {
     const provByYear = [yp.year1, yp.year2 ?? yp.year1, yp.year3 ?? yp.year2 ?? yp.year1];
     const encByYear = [yearlyEncounters.year1, yearlyEncounters.year2, yearlyEncounters.year3];
+    const yuArr = [yu.year1, yu.year2 ?? yu.year1, yu.year3 ?? yu.year2 ?? yu.year1];
     const years = Array.from({ length: termYears }, (_, i) => {
       const idx = Math.min(i, 2);
       if (model === "perUnit")      return provByYear[idx] * compRates.perUnit * 12;
       if (model === "perEncounter") return encByYear[idx] * compRates.perEncounter;
-      if (model === "platform")     return compRates.platform.fee + encByYear[idx] * compRates.platform.encRate;
+      if (model === "platform") {
+        const abridgeEnc = Math.round(encByYear[idx] * (yuArr[idx] ?? 0) / 100);
+        return compRates.platform.fee + abridgeEnc * compRates.platform.encRate;
+      }
       return compRates.annualFlat;  // annualFlat
     });
     const total = years.reduce((s, v) => s + v, 0);
     const net = totalValue - total;
     const roi = total > 0 ? ((net / total) * 100) : 0;
     return { years, total, net, roi };
-  }, [compRates, yp, yearlyEncounters, termYears, totalValue]);
+  }, [compRates, yp, yearlyEncounters, yu, termYears, totalValue]);
 
   const modelDefs: { key: ModelKey; name: string; shortName: string; desc: string }[] = [
     { key: "perUnit",      name: `$ / ${unitLabel.replace(/s$/, "")} / Mo`, shortName: "$ / Mo",  desc: "Rate × licensed providers × 12" },

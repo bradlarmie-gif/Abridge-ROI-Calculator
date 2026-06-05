@@ -763,12 +763,15 @@ function InvestmentCasePage({ settings, config, summary, yearlyData, preparedBy,
               const isPlatform = s.pricingModel === "platform";
               const ye     = s.yearlyEncounters;
               const yp     = s.yearlyProviders;
+              const yr1TotalEnc = ye?.year1 ?? s.encounters ?? 0;
+              const yr1Util = (s.yearlyUtilization?.year1 ?? s.utilizationPercent ?? 100) / 100;
+              const yr1AbridgeEnc = Math.round(yr1TotalEnc * yr1Util);
               const yr1inv = s.pricingModel === "annualFlat"
                 ? (s.yearlyPricing?.year1 ?? s.annualLicenseFee ?? 0)
                 : isPerEnc
                 ? (s.yearlyPricing?.year1 ?? s.costPerEncounter ?? 0) * (ye?.year1 ?? s.encounters ?? 0)
                 : isPlatform
-                ? (s.annualLicenseFee ?? 0) + (s.platformEncRate ?? s.costPerEncounter ?? 0) * (ye?.year1 ?? s.encounters ?? 0)
+                ? (s.annualLicenseFee ?? 0) + (s.platformEncRate ?? s.costPerEncounter ?? 0) * yr1AbridgeEnc
                 : (s.yearlyPricing?.year1 ?? s.costPerUnit) * (yp?.year1 ?? s.providerCount) * 12;
               const encUnit = s.careSetting === "inpatient" ? "dc/yr" : "enc/yr";
               const year3Enc = ye?.year3 ?? 0;
