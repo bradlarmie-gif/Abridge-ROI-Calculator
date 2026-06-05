@@ -775,9 +775,11 @@ function InvestmentCasePage({ settings, config, summary, yearlyData, preparedBy,
                 : (s.yearlyPricing?.year1 ?? s.costPerUnit) * (yp?.year1 ?? s.providerCount) * 12;
               const encUnit = s.careSetting === "inpatient" ? "dc/yr" : "enc/yr";
               const year3Enc = ye?.year3 ?? 0;
+              const year3Util = (s.yearlyUtilization?.year3 ?? s.yearlyUtilization?.year2 ?? s.yearlyUtilization?.year1 ?? s.utilizationPercent ?? 100) / 100;
+              const year3AbridgeEnc = Math.round(year3Enc * year3Util);
               const year3Providers = yp?.year3 ?? s.fullScaleProviders ?? s.providerCount;
-              const scaleText = (isPerEnc || isPlatform) && year3Enc > 0
-                ? `${fmtNum(year3Enc)} ${encUnit}`
+              const scaleText = (isPerEnc || isPlatform) && year3AbridgeEnc > 0
+                ? `${fmtNum(year3AbridgeEnc)} ${encUnit}`
                 : `${fmtNum(year3Providers)} ${unitLabel(s.careSetting).toLowerCase()}`;
               return (
                 <View key={s.id} style={[S.tableRow, si === settings.length - 1 ? S.tableRowLast : {}]}>

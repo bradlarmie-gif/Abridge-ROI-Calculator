@@ -685,10 +685,13 @@ export function VolumeAndPricingSection({
         {isExtendedTerm && <p className="text-[9px] text-neutral-400 mt-1.5">Y3+ rate held constant for years 4–{actualTermYears}</p>}
       </div>
 
-      {/* Encounters by Year — always editable for non-nursing; Abridge derived always shown */}
+      {/* Abridge Encounters by Year — primary display; total encounters editable as denominator */}
       {setting.careSetting !== 'nursing' && (
         <div>
-          <p className="text-[11px] text-neutral-500 mb-2">Encounters by Year</p>
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-[11px] text-neutral-500">Abridge Encounters by Year</p>
+            <p className="text-[10px] text-neutral-400">util% × total enc</p>
+          </div>
           <div className={`grid ${colClass} gap-2`}>
             {yearKeys.map((yk, i) => {
               const encVal = Math.round(yearlyEncounters[yk] ?? 0);
@@ -696,19 +699,33 @@ export function VolumeAndPricingSection({
               return (
                 <div key={yk}>
                   <p className="text-[10px] text-neutral-400 mb-1">{yearLabel(i)}</p>
-                  <FormattedNumberInput
-                    value={encVal}
-                    onChange={(v) => {
-                      const updated = { ...yearlyEncounters, [yk]: v };
-                      onUpdateSetting(setting.id, { yearlyEncounters: updated });
-                    }}
-                    className={inputCls + " text-right"}
-                  />
-                  <p className="text-[10px] text-[#EA2C00] mt-0.5 text-right pr-1">{abridgeEnc.toLocaleString()} Abridge</p>
+                  <p className="text-sm font-semibold text-neutral-800 text-right px-2 py-1.5 bg-[#F5F0EB] rounded-lg">{abridgeEnc.toLocaleString()}</p>
+                  <p className="text-[10px] text-neutral-400 mt-0.5 text-right pr-1">{encVal.toLocaleString()} total</p>
                 </div>
               );
             })}
           </div>
+          <details className="mt-2">
+            <summary className="text-[10px] text-neutral-400 cursor-pointer hover:text-neutral-600 select-none">Edit total encounters</summary>
+            <div className={`grid ${colClass} gap-2 mt-2`}>
+              {yearKeys.map((yk, i) => {
+                const encVal = Math.round(yearlyEncounters[yk] ?? 0);
+                return (
+                  <div key={yk}>
+                    <p className="text-[10px] text-neutral-400 mb-1">{yearLabel(i)}</p>
+                    <FormattedNumberInput
+                      value={encVal}
+                      onChange={(v) => {
+                        const updated = { ...yearlyEncounters, [yk]: v };
+                        onUpdateSetting(setting.id, { yearlyEncounters: updated });
+                      }}
+                      className={inputCls + " text-right"}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          </details>
           {isExtendedTerm && <p className="text-[9px] text-neutral-400 mt-1.5">Y3+ rate held constant for years 4–{actualTermYears}</p>}
         </div>
       )}

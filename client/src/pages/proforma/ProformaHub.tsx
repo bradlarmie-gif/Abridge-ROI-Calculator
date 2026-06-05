@@ -913,7 +913,11 @@ export default function ProformaHub({
                             </div>
                             <p className="text-sm text-[#8C7E6E] flex items-center gap-1.5 flex-wrap">
                               {isEncPricing
-                                ? `${fmtNum(ye.year1)} → ${fmtNum(contractYears >= 2 ? ye.year2 : ye.year1)} encounters · ${yu.year1}% → ${contractYears >= 2 ? yu.year2 : yu.year1}% util`
+                                ? (() => {
+                                    const abr1 = Math.round((ye.year1 ?? 0) * (yu.year1 ?? 0) / 100);
+                                    const abr2 = Math.round((contractYears >= 2 ? (ye.year2 ?? ye.year1 ?? 0) : (ye.year1 ?? 0)) * ((contractYears >= 2 ? (yu.year2 ?? yu.year1 ?? 0) : (yu.year1 ?? 0))) / 100);
+                                    return `${fmtNum(abr1)} → ${fmtNum(abr2)} Abridge enc · ${yu.year1}% → ${contractYears >= 2 ? (yu.year2 ?? yu.year1) : yu.year1}% util`;
+                                  })()
                                 : `${fmtNum(setting.providerCount)} → ${fmtNum(setting.fullScaleProviders)} ${unitLabel} · ${contractYears >= 3 ? yu.year3 : contractYears === 2 ? yu.year2 : yu.year1}% util at scale`
                               }
                               {setting.yearlyUtilization && (
