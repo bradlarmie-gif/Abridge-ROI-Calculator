@@ -1727,6 +1727,8 @@ function ModelConfidencePage({ settings, config, summary, yearlyData, sensitivit
   const allPerEnc     = settings.every(s => s.pricingModel === "perEncounter");
   const hasWorkforce  = yearlyData.some(y => y.workforceValue > 0);
   const hasCapacity   = yearlyData.some(y => y.capacityValue  > 0);
+  const hasRevenue    = yearlyData.some(y => y.revenueValue   > 0);
+  const hasQuality    = yearlyData.some(y => y.qualityValue   > 0);
   const delayedMonths = ONSET_DELAY_MONTHS.delayed;
 
   // GROUNDED IN DATA — only include what's actually modeled
@@ -1817,19 +1819,29 @@ function ModelConfidencePage({ settings, config, summary, yearlyData, sensitivit
           },
           {
             param: "Domain Onset",
-            value: `Revenue M1 · Capacity M${delayedMonths} · Quality M${delayedMonths} · Workforce phased`,
+            value: [
+              hasRevenue   && `Revenue M1`,
+              hasCapacity  && `Capacity M${delayedMonths}`,
+              hasQuality   && `Quality M${delayedMonths}`,
+              hasWorkforce && `Workforce phased`,
+            ].filter(Boolean).join(" · "),
             method: "Reflects actual clinical and operational timelines, not vendor-favorable assumptions.",
           },
-          {
+          ...(hasWorkforce ? [{
             param: "Workforce Phasing",
             value: `${config.retentionPhasing.year1Pct}% Y1 / ${config.retentionPhasing.year2Pct}% Y2${contractYears >= 3 ? ` / ${config.retentionPhasing.year3Pct}% Y3` : ""}`,
             method: "Conservative ramp for retention and wellbeing effects that compound over time.",
-          },
-          {
+          }] : []),
+          ...(totalHours > 0 ? [{
             param: "Hours Returned",
             value: `${fmtNum(totalHours)} hrs/yr (full scale)`,
             method: "Aggregated across all settings based on utilization × minutes saved per encounter.",
-          },
+          }] : []),
+          ...((config.systemWideFee ?? 0) > 0 ? [{
+            param: "System-wide Fee",
+            value: `${fmt(config.systemWideFee!)} / yr`,
+            method: "Enterprise platform fee applied across all settings; billed annually regardless of individual setting go-live dates.",
+          }] : []),
           {
             param: "Sensitivity Range",
             value: `${fmt(Math.round(summary.termValue * 0.7))} – ${fmt(Math.round(summary.termValue * 1.3))} (${termLabel} value)`,
