@@ -1862,15 +1862,39 @@ function ModelConfidencePage({ settings, config, summary, yearlyData, sensitivit
         ))}
       </View>
 
-      <View style={[S.insightBox, { marginTop: 10 }]}>
-        <Text style={S.insightLabel}>Methodology Statement</Text>
-        <Text style={S.insightText}>
-          {`This model projects ${fmt(summary.termValue)} in ${termLabel} gross value against ${fmt(summary.termInvestment)} in total investment — ${summary.valueToCost.toFixed(1)}× value-to-cost at base case. Conservative realization (70%) yields ${fmt(sensitivityData.conservative.termNet)} net; optimistic (130%) yields ${fmt(sensitivityData.optimistic.termNet)} net. Implementation ramp, utilization targets, and domain onset delays are all held conservative — cost runs from day one while value builds. Start validation with provider adoption rate and your highest-value drivers; those are the variables most likely to move the outcome. The base case is built to hold. The upside belongs to the organizations that execute.`}
-        </Text>
-        <Text style={{ fontSize: 7, color: brand.textTertiary, marginTop: 8, lineHeight: 1.5 }}>
-          Projections are illustrative and based on organization-specific inputs provided at time of modeling. Actual results will vary. This document does not constitute a contractual commitment to financial outcomes.
-        </Text>
-      </View>
+      {(() => {
+        const conservativeItems: string[] = [];
+        conservativeItems.push(`Full subscription cost runs from day one — value builds across a ${config.implementationRampMonths}-month implementation ramp while cost is already at full rate`);
+        if (hasCapacity || hasRevenue || hasQuality) {
+          const delayedDomains = [hasCapacity && "Capacity", hasQuality && "Quality"].filter(Boolean).join(" and ");
+          if (delayedDomains) conservativeItems.push(`${delayedDomains} value onset delayed to Month ${delayedMonths} — modeled to arrive later than typically observed in Abridge deployments`);
+        }
+        const allUtil = settings.map(s => {
+          const yu = s.yearlyUtilization ?? config.yearlyUtilization;
+          return yu.year1;
+        });
+        const maxY1 = Math.max(...allUtil);
+        if (maxY1 < 50) conservativeItems.push(`Year 1 utilization targets set well below steady-state — highest setting at ${maxY1}%, reflecting a conservative adoption ramp rather than projected mature-state performance`);
+        else conservativeItems.push(`Utilization targets reflect a gradual adoption ramp — Year 1 targets are set conservatively, with value scaling as provider adoption deepens`);
+        if (hasWorkforce) conservativeItems.push(`Workforce and retention benefits phased at ${config.retentionPhasing.year1Pct}% in Year 1 — real effects modeled to materialize gradually rather than immediately`);
+
+        return (
+          <View style={{ marginTop: 12 }}>
+            <Text style={[S.eyebrowGray, { marginBottom: 8 }]}>Where We Held Conservative</Text>
+            <View style={{ gap: 6 }}>
+              {conservativeItems.map((item, i) => (
+                <View key={i} style={{ flexDirection: "row", gap: 8, alignItems: "flex-start" }}>
+                  <View style={{ width: 3, height: 3, borderRadius: 2, backgroundColor: brand.textTertiary, marginTop: 4, flexShrink: 0 }} />
+                  <Text style={{ fontSize: 8, color: brand.textSecondary, lineHeight: 1.5, flex: 1 }}>{item}</Text>
+                </View>
+              ))}
+            </View>
+            <Text style={{ fontSize: 7, color: brand.textTertiary, marginTop: 10, lineHeight: 1.5 }}>
+              Projections are illustrative and based on organization-specific inputs provided at time of modeling. Actual results will vary. This document does not constitute a contractual commitment to financial outcomes.
+            </Text>
+          </View>
+        );
+      })()}
 
       <PageFooter pageNum={confidencePageNum} preparedBy={preparedBy} totalPDFPages={tp} />
     </Page>
