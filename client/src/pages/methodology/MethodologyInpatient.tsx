@@ -204,8 +204,7 @@ const ipDomainCards: IPDomainCardData[] = [
         body: 'Documentation burden is the top-cited driver of hospitalist burnout. Reducing the mechanical charting load is the most direct, fastest-acting lever for improving physician wellbeing — ahead of schedule changes, team restructuring, or wellness programs.',
       },
     ],
-    matterLayout: '2col',
-    alsoNote: "Hospitalists who aren't burned out document more thoroughly (Quality → DRG accuracy) and are more present in patient conversations (Capacity → HCAHPS). This domain's outcomes connect across the full value story.",
+    matterLayout: '2col'
     chain: [
       { key: 'source', label: 'Abridge Ambient', sub: 'hospital documentation AI', isSource: true },
       {
@@ -310,8 +309,7 @@ const ipDomainCards: IPDomainCardData[] = [
         body: "Documentation quality is a DRG accuracy problem. When hospitalists capture the full clinical picture in real time, the code reflects the encounter — CDI queries become exceptions rather than routine workflow overhead.",
       },
     ],
-    matterLayout: '2col',
-    alsoNote: "Observation status defense is a second revenue mechanism that runs off the same admission documentation. Payers audit inpatient stays post-discharge and reclassify to observation APC if the documentation doesn't clearly establish medical necessity. The financial consequence is the IP-to-obs revenue delta — typically $3K–$8K per downgraded case — not the full claim value. The same admission note quality that drives DRG accuracy is the defense against that reclassification.",
+    matterLayout: '2col'
     chain: [
       { key: 'source', label: 'Abridge Ambient', sub: 'hospital documentation AI', isSource: true },
       {
@@ -417,8 +415,7 @@ const ipDomainCards: IPDomainCardData[] = [
         body: "HRRP imposes up to 3% penalties on all base Medicare DRG payments — not just penalized conditions — for hospitals with excess readmissions in 6 high-volume conditions. HCAHPS doctor communication drives 25% of the VBP Total Performance Score, putting 2% of base Medicare payments at risk from a single domain.",
       },
     ],
-    matterLayout: '2col',
-    alsoNote: "CDI graduation — when CDI query volume drops consistently, documentation is capturing complexity at the point of care. That closes the loop on DRG accuracy while freeing CDI bandwidth for higher-complexity review. The revenue and quality stories converge here.",
+    matterLayout: '2col'
     chain: [
       { key: 'source', label: 'Abridge Ambient', sub: 'hospital documentation AI', isSource: true },
       {
@@ -840,13 +837,6 @@ function IPDomainCard({ data }: { data: IPDomainCardData }) {
             </div>
           ))}
         </div>
-
-        {data.alsoNote && (
-          <div className="mt-3 px-4 py-4 rounded-xl border border-[#E0D4C4] bg-[#FAF6EF]">
-            <p className="text-[9px] font-bold tracking-[0.14em] uppercase text-[#999999] mb-1.5">Also note</p>
-            <p className="text-[12px] text-[#555555] leading-relaxed">{data.alsoNote}</p>
-          </div>
-        )}
       </div>
 
       {/* ── CAUSAL CHAIN ── */}

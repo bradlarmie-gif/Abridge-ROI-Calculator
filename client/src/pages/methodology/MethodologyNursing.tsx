@@ -98,8 +98,7 @@ const nursingDomainCards: NursingDomainCardData[] = [
         body: "EHR audit logs tie directly to time-and-attendance data — nurses finishing charts after shift end are charging overtime hours for documentation. This makes documentation ROI payroll-verifiable within 90 days, not a modeled estimate.",
       },
     ],
-    matterLayout: '2col',
-    alsoNote: "Freed nursing time supports patient presence and bedside communication — a leading indicator of HCAHPS nurse communication scores that feeds Value-Based Purchasing.",
+    matterLayout: '2col'
     chain: [
       { key: 'source', label: 'Abridge Nursing', sub: 'ambient flowsheet AI', isSource: true },
       {
@@ -203,8 +202,7 @@ const nursingDomainCards: NursingDomainCardData[] = [
         body: "Documentation burden is the most actionable lever for nurse wellbeing because it's addressable at the tool level — unlike scheduling, patient acuity, or staffing ratios, which require system-level changes. Ambient flowsheet documentation reduces the per-patient charting burden across the full panel, shift after shift.",
       },
     ],
-    matterLayout: '2col',
-    alsoNote: "Stable nursing workforce reduces the institutional knowledge loss that compounds when experienced nurses leave — and fewer open shifts means less per diem and agency exposure for the staffing budget.",
+    matterLayout: '2col'
     chain: [
       { key: 'source', label: 'Abridge Nursing', sub: 'ambient flowsheet AI', isSource: true },
       {
@@ -309,8 +307,7 @@ const nursingDomainCards: NursingDomainCardData[] = [
         body: "CMS survey or Joint Commission citations for nursing record deficiencies. Complete nursing records are the evidentiary foundation for both clinical quality reviews and payer compliance — the same documentation problem drives both risks.",
       },
     ],
-    matterLayout: '2col',
-    alsoNote: "Complete nursing documentation supports CDI evidence for CC/MCC capture — nursing observations on skin breakdown, functional decline, and nutritional status corroborate the physician documentation that drives DRG accuracy. Value flows to the inpatient revenue story, not a nursing billing line.",
+    matterLayout: '2col'
     chain: [
       { key: 'source', label: 'Abridge Nursing', sub: 'ambient flowsheet AI', isSource: true },
       {
@@ -414,8 +411,7 @@ const nursingDomainCards: NursingDomainCardData[] = [
         body: "CMS HAC Reduction Program imposes payment reductions for hospitals in the worst-performing quartile. Nursing documentation quality influences harm event attributions that feed HAC scores and the publicly visible CMS star rating.",
       },
     ],
-    matterLayout: '2col',
-    alsoNote: "Improvement in CMS Overall Hospital Quality Star Rating — nursing-sensitive harm event rates feed into multiple safety and quality domains that determine the publicly visible star rating patients and families use when choosing where to receive care.",
+    matterLayout: '2col'
     chain: [
       { key: 'source', label: 'Abridge Nursing', sub: 'ambient flowsheet AI', isSource: true },
       {
@@ -843,13 +839,6 @@ function NursingDomainCard({ data }: { data: NursingDomainCardData }) {
             </div>
           ))}
         </div>
-
-        {data.alsoNote && (
-          <div className="mt-3 px-4 py-4 rounded-xl border border-[#E0D4C4] bg-[#FAF6EF]">
-            <p className="text-[9px] font-bold tracking-[0.14em] uppercase text-[#999999] mb-1.5">Also note</p>
-            <p className="text-[12px] text-[#555555] leading-relaxed">{data.alsoNote}</p>
-          </div>
-        )}
       </div>
 
       {/* ── CAUSAL CHAIN ── */}

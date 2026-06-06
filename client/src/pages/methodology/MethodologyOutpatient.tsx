@@ -201,8 +201,7 @@ const opDomainCards: OPDomainCardData[] = [
         body: "Documentation burden is the #1 cited driver of outpatient physician burnout. It shows up specifically as pajama time — the hours spent finishing notes after patients have left and the clinic has closed for the day.",
       },
     ],
-    matterLayout: '2col',
-    alsoNote: "Providers who aren't burned out document more thoroughly (Revenue → E/M accuracy) and are more present in patient conversations (Quality → patient-reported experience). The workforce and quality stories reinforce each other.",
+    matterLayout: '2col'
     chain: [
       { key: 'source', label: 'Abridge Ambient', sub: 'outpatient documentation AI', isSource: true },
       {
@@ -307,8 +306,7 @@ const opDomainCards: OPDomainCardData[] = [
         body: "When documentation doesn't capture the complexity of the visit, the physician is billing below the work actually performed. Improved note quality recovers revenue already earned — it's attribution, not upcoding.",
       },
     ],
-    matterLayout: '2col',
-    alsoNote: "HCC capture for Medicare Advantage contracts. Accurate documentation of chronic conditions supports accurate risk adjustment for value-based care contracts — connecting the revenue story to the quality infrastructure. Coding accuracy, not upcoding.",
+    matterLayout: '2col'
     chain: [
       { key: 'source', label: 'Abridge Ambient', sub: 'outpatient documentation AI', isSource: true },
       {
@@ -415,8 +413,7 @@ const opDomainCards: OPDomainCardData[] = [
         body: "Value-based contracts pay for documented quality performance. STARS ratings and shared savings calculations depend on care gap closure evidence. Documentation quality improvement is a direct quality revenue lever.",
       },
     ],
-    matterLayout: '2col',
-    alsoNote: "HCC capture and RAF score accuracy for value-based contracts. When chronic condition documentation is complete and specific, risk adjustment reflects the actual patient population — which protects per-member-per-month revenue in capitated arrangements.",
+    matterLayout: '2col'
     chain: [
       { key: 'source', label: 'Abridge Ambient', sub: 'outpatient documentation AI', isSource: true },
       {
@@ -865,13 +862,6 @@ function OPDomainCard({ data }: { data: OPDomainCardData }) {
             </div>
           ))}
         </div>
-
-        {data.alsoNote && (
-          <div className="mt-3 px-4 py-4 rounded-xl border border-[#E0D4C4] bg-[#FAF6EF]">
-            <p className="text-[9px] font-bold tracking-[0.14em] uppercase text-[#999999] mb-1.5">Also note</p>
-            <p className="text-[12px] text-[#555555] leading-relaxed">{data.alsoNote}</p>
-          </div>
-        )}
       </div>
 
       {/* ── CAUSAL CHAIN ── */}

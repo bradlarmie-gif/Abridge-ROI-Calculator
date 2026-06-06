@@ -212,8 +212,7 @@ const edDomainCards: EDDomainCardData[] = [
         body: 'ED physicians have among the highest burnout rates in medicine. Documentation burden is a top-cited contributor. Wellbeing improvement is a mission outcome — and a proof point you can show in months, not years.',
       },
     ],
-    matterLayout: '2col',
-    alsoNote: "Engaged, non-burned-out physicians document more thoroughly (Quality) and see patients more efficiently (Capacity). This domain's outcomes ripple across the full value story.",
+    matterLayout: '2col'
     chain: [
       { key: 'source', label: 'Abridge Ambient', sub: 'documentation AI', isSource: true },
       {
@@ -319,8 +318,7 @@ const edDomainCards: EDDomainCardData[] = [
         body: "When the note doesn't reflect the clinical complexity of the encounter, the physician worked at a higher acuity than the record shows. Better documentation recovers the work already done — it's attribution, not upcoding.",
       },
     ],
-    matterLayout: '2col',
-    alsoNote: "This is frequently the larger financial impact of the two revenue tracks — E/M coding uplift and denial recovery — and it lives in your revenue cycle team, not with the physician alone. Cross-departmental visibility is required to tell the full story.",
+    matterLayout: '2col'
     chain: [
       { key: 'source', label: 'Abridge Ambient', sub: 'documentation AI', isSource: true },
       {
@@ -425,8 +423,7 @@ const edDomainCards: EDDomainCardData[] = [
         tag: 'CFO / COO',
         body: "Documentation deficiency resolution is a hidden operational cost — peer review, HIM rework, and appeal cycles that rarely surface in quality dashboards. Every hour the quality team spends closing documentation gaps is an hour not spent on performance improvement that reduces readmissions, penalties, or length of stay.",
       },
-    ],
-    alsoNote: "Documentation quality in the ED has downstream effects that extend beyond quality scores — it reduces CDI query burden on ED-to-admit transitions and strengthens the clinical record for risk and compliance review.",
+    ]
     chain: [
       { key: 'source', label: 'Abridge Ambient', sub: 'documentation AI', isSource: true },
       {
@@ -863,13 +860,6 @@ function NewEDDomainCard({ data }: { data: EDDomainCardData }) {
             </div>
           ))}
         </div>
-
-        {data.alsoNote && (
-          <div className="mt-3 px-4 py-4 rounded-xl border border-[#E0D4C4] bg-[#FAF6EF]">
-            <p className="text-[9px] font-bold tracking-[0.14em] uppercase text-[#999999] mb-1.5">Also note</p>
-            <p className="text-[12px] text-[#555555] leading-relaxed">{data.alsoNote}</p>
-          </div>
-        )}
       </div>
 
       {/* ── CAUSAL CHAIN ── */}
