@@ -273,7 +273,7 @@ const opDomainCards: OPDomainCardData[] = [
         callout: "The CFO bridge: Wellbeing scores don't appear on a balance sheet. Build the connection explicitly: improved wellbeing is a leading indicator of lower voluntary departure intent, which translates directly into reduced replacement and locum costs at quantifiable rates.",
       },
       proof: {
-        window: 'Month 12–18',
+        window: 'Month 9–18',
         desc: 'Retention and cost confirmed',
         metrics: [
           { name: 'Locum & Agency Utilization', source: 'Finance / staffing data · locum hours and cost per open shift · year-over-year comparison', badge: 'Month 9–18', why: "Locum spend drops when fewer providers are leaving or on medical leave from burnout. It's the financial proof of the workforce story that CFOs can see directly in the budget." },
@@ -355,7 +355,7 @@ const opDomainCards: OPDomainCardData[] = [
     ],
     timeline: {
       signal: {
-        window: 'Week 2–8',
+        window: 'Week 2 – Month 3',
         desc: 'Documentation behavior shifts',
         metrics: [
           { name: 'Documentation Time Per Visit ↓', source: 'EHR audit logs · active documentation time per encounter · pre/post per-provider · most direct Abridge signal', badge: 'Week 2–4', why: "When documentation time per visit drops, the note is being completed during or immediately after the encounter rather than in the evening. This is the upstream behavior that E/M accuracy, first-pass rates, and wRVU per encounter all depend on." },
@@ -376,7 +376,7 @@ const opDomainCards: OPDomainCardData[] = [
         callout: "The HCC connection: For Medicare Advantage panels, accurate chronic condition documentation supports both E/M level and HCC risk adjustment. These are not competing narratives — they're the same documentation quality story told to two different audiences.",
       },
       proof: {
-        window: 'Month 4–9',
+        window: 'Month 3–9',
         desc: 'Revenue impact confirmed',
         metrics: [
           { name: 'wRVU Per Encounter', source: 'Billing system · per-provider pre/post · show distribution (99202–99215), not just mean · provider-level granularity required', badge: 'Month 3–6', why: "The financial proof that documentation completeness translates to appropriate reimbursement. Provider-level pre/post comparison shows the attribution — and the distribution shift (not just the mean) is the real signal." },
@@ -469,7 +469,7 @@ const opDomainCards: OPDomainCardData[] = [
     ],
     timeline: {
       signal: {
-        window: 'Week 4–8',
+        window: 'Week 4–10',
         desc: 'Note specificity improves',
         metrics: [
           { name: 'Care Gap Documentation Rate', source: "EHR or population health platform · % of scheduled care gap visits resulting in a documented care gap closure · Abridge vs. baseline · early proxy for attribution quality", badge: 'Week 4–8', why: "The upstream gate for everything downstream. If care gaps are being closed but not documented with sufficient specificity, quality systems can't attribute the closure. This measures whether documentation is opening that door." },
@@ -489,7 +489,7 @@ const opDomainCards: OPDomainCardData[] = [
         callout: "The attribution lag: HEDIS measurement uses claims and records from the measurement year. Real-time documentation improvement shows up in population health platforms first, then in formal HEDIS reporting at year-end. Track the leading indicator, not just the annual score.",
       },
       proof: {
-        window: 'Month 6–18',
+        window: 'Month 9–18',
         desc: 'Quality scores confirm',
         metrics: [
           { name: 'HEDIS Composite Score vs. Benchmark', source: 'Health plan reporting · annual HEDIS composite score · Abridge provider cohort vs. prior year and peer practices', badge: 'Month 9–18', why: "The annual strategic proof point — how Abridge-enabled practices compare to peers on the measures health plans use to allocate bonuses. Documentation is not the only driver, but it's the foundational one." },

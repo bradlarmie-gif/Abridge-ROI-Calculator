@@ -269,8 +269,8 @@ const nursingDomainCards: NursingDomainCardData[] = [
         desc: 'Wellbeing signal emerges',
         metrics: [
           { name: 'Documentation Burden Score (Survey)', source: 'Validated burnout instrument or NDNQI survey · documentation-specific subscale · Abridge units vs. control · quarterly cadence', badge: 'Month 2–4', why: "The attitudinal measure — do nurses feel the documentation burden is manageable? Survey-based but validated. Tracks the psychological relief that follows the operational improvement." },
-          { name: 'Intent to Stay', source: 'Institutional engagement survey or validated single-item intent measure · Abridge adopters vs. non-adopters at same unit · trended quarterly', badge: 'Month 3–5', why: "Nursing intent-to-stay is a leading indicator that moves before actual departure decisions. Watch for divergence between Abridge units and non-Abridge units — that gap is the signal." },
           { name: 'Agency / Travel Nurse Fill Rate', source: 'Staffing data · % of shifts filled by agency vs. core staff · monthly by unit · early signal of vacancy pressure', badge: 'Month 2–4', why: "Agency fill rate rising is a leading indicator of vacancy pressure — nurses leaving or on leave. Declining fill rate suggests stability is improving before annual turnover data confirms it." },
+          { name: 'Intent to Stay', source: 'Institutional engagement survey or validated single-item intent measure · Abridge adopters vs. non-adopters at same unit · trended quarterly', badge: 'Month 3–5', why: "Nursing intent-to-stay is a leading indicator that moves before actual departure decisions. Watch for divergence between Abridge units and non-Abridge units — that gap is the signal." },
         ],
         callout: "The CNO bridge: Wellbeing scores at Month 2–4 are the evidence that connects reduced documentation burden to the retention forecast. Present the trend as a leading indicator — not a claim — and let the 12-month data confirm it.",
       },
@@ -375,11 +375,11 @@ const nursingDomainCards: NursingDomainCardData[] = [
         callout: "The compliance team bridge: Internal audit data at Month 2–4 provides the attributable evidence that connects flowsheet completeness to documentation quality. It's the metric compliance officers can take to a corrective action plan conversation.",
       },
       proof: {
-        window: 'Month 6–18',
+        window: 'Month 9–18',
         desc: 'Audit and denial trends confirm',
         metrics: [
-          { name: 'Regulatory Survey Deficiency Rate (Nursing Documentation)', source: 'Compliance team · CMS or TJC nursing documentation deficiency findings · trended year-over-year', badge: 'Month 12–18', why: "The annual regulatory proof point — what CMS or TJC found in nursing documentation. A year-over-year decline is the strategic narrative that compliance leadership can present to the board." },
           { name: 'Documentation-Related Denial Rate', source: 'Revenue cycle · denials citing nursing documentation gaps · isolated from total denial volume · Abridge unit cohort vs. baseline', badge: 'Month 9–18', why: "Nursing documentation gaps cause payer denials for medical necessity and level-of-care. Declining denial rate is the revenue cycle proof that nursing documentation quality improvements are financially material." },
+          { name: 'Regulatory Survey Deficiency Rate (Nursing Documentation)', source: 'Compliance team · CMS or TJC nursing documentation deficiency findings · trended year-over-year', badge: 'Month 12–18', why: "The annual regulatory proof point — what CMS or TJC found in nursing documentation. A year-over-year decline is the strategic narrative that compliance leadership can present to the board." },
         ],
         callout: "The attribution challenge: Regulatory survey findings are infrequent and multi-factorial. The stronger ongoing signal is the documentation-related denial subset in concurrent review — it's continuous, attributable, and tracked by revenue cycle already.",
       },

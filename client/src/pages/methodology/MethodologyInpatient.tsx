@@ -150,7 +150,7 @@ const ipDomainCards: IPDomainCardData[] = [
     ],
     timeline: {
       signal: {
-        window: 'Week 4–8',
+        window: 'Week 4–10',
         desc: 'Note timeliness moves',
         metrics: [
           { name: 'Progress Note Completion Time', source: 'EHR timestamps · time from encounter end to note sign · per-provider · direct Abridge signal', badge: 'Week 4–8', why: "The direct Abridge signal for inpatient. When the progress note is done before the care team disperses, every downstream step — case management, discharge planning, coordination — can start immediately." },
@@ -257,7 +257,7 @@ const ipDomainCards: IPDomainCardData[] = [
     ],
     timeline: {
       signal: {
-        window: 'Week 4–8',
+        window: 'Week 4–10',
         desc: 'Charting behavior changes',
         metrics: [
           { name: 'After-Shift Charting Time (Pajama Time)', source: 'EHR session logs · minutes after scheduled shift end · per-provider · no survey needed', badge: 'Week 4–8', why: "Hospitalists finishing notes after shift end is a persistent burnout driver — undone work carries cognitive weight into the next shift. This is the earliest signal that Abridge is recapturing that time." },
@@ -276,7 +276,7 @@ const ipDomainCards: IPDomainCardData[] = [
         callout: "The CFO bridge: Wellbeing scores don't appear on a balance sheet. Build the bridge explicitly: improved wellbeing is a leading indicator of lower voluntary departure intent, which translates to reduced replacement and locum costs.",
       },
       proof: {
-        window: 'Month 12–18',
+        window: 'Month 9–18',
         desc: 'Retention and cost impact',
         metrics: [
           { name: 'Locum & Agency Utilization', source: 'Finance / staffing data · locum hours and cost per open shift · year-over-year comparison', badge: 'Month 9–18', why: "Open shifts filled by locums represent the financial cost of workforce instability. Declining locum dependence is the CFO's proof that the retention story is real, not just survey-reported." },
@@ -474,7 +474,7 @@ const ipDomainCards: IPDomainCardData[] = [
         callout: "The HCAHPS bridge: Doctor communication composite drives 25% of VBP TPS. A 5-point improvement can shift a hospital toward the VBP bonus threshold — tied directly to whether the physician was present during rounds.",
       },
       proof: {
-        window: 'Month 6–18',
+        window: 'Month 9–18',
         desc: 'Readmission rate and VBP performance confirm',
         metrics: [
           { name: '30-Day Readmission Rate (HRRP Conditions)', source: 'CMS HRRP report or internal quality data · risk-adjusted readmission rate · Abridge provider cohort vs. non-Abridge · AMI, HF, pneumonia, CABG, COPD, hip/knee', badge: 'Month 9–18', why: "The lagging proof metric. HRRP penalties are calculated annually across 6 high-volume conditions. Declining readmission rate in these conditions is the financial and quality confirmation that the discharge documentation chain is working." },

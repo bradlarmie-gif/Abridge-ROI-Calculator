@@ -175,7 +175,7 @@ const edDomainCards: EDDomainCardData[] = [
           { name: 'Patients Per Provider Per Hour', source: 'Scheduling + EHR · by shift type · volume-normalized', badge: 'Month 3–6', why: "The normalized throughput measure. Rising throughput here is the causal mechanism behind both LWBS improvement and volume growth — you need this moving before claiming either." },
           { name: 'Door-to-Disposition Time', source: 'ED tracking board · median LOS proxy · admitted vs. discharged split', badge: 'Month 4–7', why: "Full-cycle throughput. Faster documentation during the encounter compresses the time from presentation to disposition decision — but only if the note timeliness improvement holds." },
         ],
-        callout: '',
+        callout: "The path to LWBS: Door-to-provider and door-to-disposition are the intermediate proof that freed documentation time is becoming faster patient flow. When both trend down together, capacity headroom is forming — and that's when LWBS starts to move. LWBS typically lags these metrics by 3–6 months.",
       },
       proof: {
         window: 'Month 7–12+',
@@ -384,7 +384,7 @@ const edDomainCards: EDDomainCardData[] = [
           { name: 'E/M Level Distribution', source: 'Billing system · % of visits at each level (99281–99285) · same-provider pre/post comparison', badge: 'Month 2–4', why: "Complete notes support the level of service actually delivered. Watch the distribution shift toward appropriate higher levels (99284–99285), not just the mean — the mix is the real signal." },
           { name: 'CDI Query Rate on ED Admissions', source: 'CDI team data · queries per 100 admissions · Abridge providers vs. baseline', badge: 'Month 2–4', why: "CDI querying the ED team means the documentation didn't fully capture the clinical picture on first creation. A declining query rate means less documentation rework and more accurate initial coding." },
         ],
-        callout: 'The distribution shift matters more than the average: A single wRVU average can be flat while the underlying distribution shifts meaningfully — fewer mid-level codes, more high-acuity codes. Always show the distribution, not just the mean.',
+        callout: "What to watch in this stage: Charge lag is the fastest-moving financial signal — same-day notes becoming same-day charges confirms the documentation behavior has changed. E/M distribution shift confirms completeness is supporting appropriate coding. Declining CDI queries on ED-to-admit transitions confirm the clinical picture is complete on first creation. All three need to move before wRVU and denial rate data is statistically significant.",
       },
       proof: {
         window: 'Month 4–9',
@@ -473,7 +473,7 @@ const edDomainCards: EDDomainCardData[] = [
     ],
     timeline: {
       signal: {
-        window: 'Month 1–3',
+        window: 'Week 4 – Month 3',
         desc: 'Documentation behavior shifts',
         metrics: [
           { name: 'Note Completion Rate (Same Shift)', source: "EHR data · % of notes signed before end of provider's shift · Abridge providers vs. baseline", badge: 'Week 4–8', why: "Quality measure capture requires documentation to exist when it's needed. Same-shift completion is the upstream gate — if it's not high, nothing downstream will reliably close." },
