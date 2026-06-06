@@ -649,7 +649,9 @@ const opFrameworkQuestions: Record<DomainName, string[]> = {
 // ─── Value Architecture Component ────────────────────────────────────────────
 
 function OPValueArchitectureSection() {
-  const [collapsed, setCollapsed] = useState<Set<string>>(new Set(['CAPACITY', 'WORKFORCE', 'REVENUE', 'QUALITY']));
+  const domainOrder: DomainName[] = ['WORKFORCE', 'CAPACITY', 'REVENUE', 'QUALITY'];
+  const sortedFramework = [...opFramework].sort((a, b) => domainOrder.indexOf(a.domain) - domainOrder.indexOf(b.domain));
+  const [collapsed, setCollapsed] = useState<Set<string>>(new Set(['WORKFORCE', 'CAPACITY', 'REVENUE', 'QUALITY']));
   const tagCfg = {
     modeled: { label: 'Modeled', cls: 'bg-[#1A1A1A] text-white' },
     tracked: { label: 'Signal',  cls: 'bg-[#F0EDE8] text-[#666666]' },
@@ -662,7 +664,7 @@ function OPValueArchitectureSection() {
         <p className="text-[13px] text-[#888888] mt-1">Four domains. Each formula shows the full calculation — which numbers are yours, which are industry estimates, and how they chain together.</p>
       </div>
       <div className="divide-y divide-[#EDEBE6] border border-[#E4DDD4] rounded-xl overflow-hidden">
-        {opFramework.map((item) => {
+        {sortedFramework.map((item) => {
           const tc = tagCfg[item.tag];
           const isCollapsed = collapsed.has(item.domain);
           const personas = opFrameworkPersonas[item.domain] ?? [];
@@ -1030,8 +1032,10 @@ function OPDomainCard({ data }: { data: OPDomainCardData }) {
 // ─── OP Domain Methodology Section ───────────────────────────────────────────
 
 function OPDomainMethodologySection() {
-  const [activeDomain, setActiveDomain] = useState(opDomainCards[0].domain);
-  const activeCard = opDomainCards.find(c => c.domain === activeDomain)!;
+  const domainOrder: DomainName[] = ['WORKFORCE', 'CAPACITY', 'REVENUE', 'QUALITY'];
+  const sortedCards = [...opDomainCards].sort((a, b) => domainOrder.indexOf(a.domain) - domainOrder.indexOf(b.domain));
+  const [activeDomain, setActiveDomain] = useState(sortedCards[0].domain);
+  const activeCard = sortedCards.find(c => c.domain === activeDomain)!;
 
   return (
     <div className="mb-10">
@@ -1043,7 +1047,7 @@ function OPDomainMethodologySection() {
         </p>
       </div>
       <div className="bg-[#F5F0EB] rounded-xl p-1 flex mb-5">
-        {opDomainCards.map(card => {
+        {sortedCards.map(card => {
           const isActive = activeDomain === card.domain;
           return (
             <button

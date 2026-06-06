@@ -627,7 +627,9 @@ const nursingFrameworkQuestions: Record<DomainName, string[]> = {
 // ─── Value Architecture Component ────────────────────────────────────────────
 
 function NursingValueArchitectureSection() {
-  const [collapsed, setCollapsed] = useState<Set<string>>(new Set(['CAPACITY', 'WORKFORCE', 'REVENUE', 'QUALITY']));
+  const domainOrder: DomainName[] = ['WORKFORCE', 'CAPACITY', 'REVENUE', 'QUALITY'];
+  const sortedFramework = [...nursingFramework].sort((a, b) => domainOrder.indexOf(a.domain) - domainOrder.indexOf(b.domain));
+  const [collapsed, setCollapsed] = useState<Set<string>>(new Set(['WORKFORCE', 'CAPACITY', 'REVENUE', 'QUALITY']));
   const tagCfg = {
     modeled: { label: 'Modeled', cls: 'bg-[#1A1A1A] text-white' },
     tracked: { label: 'Signal',  cls: 'bg-[#F0EDE8] text-[#666666]' },
@@ -640,7 +642,7 @@ function NursingValueArchitectureSection() {
         <p className="text-[13px] text-[#888888] mt-1">Four domains. Each formula shows the full calculation — which numbers are yours, which are industry estimates, and how they chain together.</p>
       </div>
       <div className="divide-y divide-[#EDEBE6] border border-[#E4DDD4] rounded-xl overflow-hidden">
-        {nursingFramework.map((item) => {
+        {sortedFramework.map((item) => {
           const tc = tagCfg[item.tag];
           const isCollapsed = collapsed.has(item.domain);
           const personas = nursingFrameworkPersonas[item.domain] ?? [];
@@ -1008,8 +1010,10 @@ function NursingDomainCard({ data }: { data: NursingDomainCardData }) {
 // ─── Nursing Domain Methodology Section ──────────────────────────────────────
 
 function NursingDomainMethodologySection() {
-  const [activeDomain, setActiveDomain] = useState(nursingDomainCards[0].domain);
-  const activeCard = nursingDomainCards.find(c => c.domain === activeDomain)!;
+  const domainOrder: DomainName[] = ['WORKFORCE', 'CAPACITY', 'REVENUE', 'QUALITY'];
+  const sortedCards = [...nursingDomainCards].sort((a, b) => domainOrder.indexOf(a.domain) - domainOrder.indexOf(b.domain));
+  const [activeDomain, setActiveDomain] = useState(sortedCards[0].domain);
+  const activeCard = sortedCards.find(c => c.domain === activeDomain)!;
 
   return (
     <div className="mb-10">
@@ -1021,7 +1025,7 @@ function NursingDomainMethodologySection() {
         </p>
       </div>
       <div className="bg-[#F5F0EB] rounded-xl p-1 flex mb-5">
-        {nursingDomainCards.map(card => {
+        {sortedCards.map(card => {
           const isActive = activeDomain === card.domain;
           return (
             <button

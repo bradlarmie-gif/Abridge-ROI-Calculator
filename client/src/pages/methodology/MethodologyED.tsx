@@ -159,7 +159,7 @@ const edDomainCards: EDDomainCardData[] = [
     ],
     timeline: {
       signal: {
-        window: 'Month 1–3',
+        window: 'Week 4–8',
         desc: 'What Abridge directly moves',
         metrics: [
           { name: 'Documentation Time Per Encounter', source: 'EHR audit logs · pre/post per-provider · most direct Abridge signal', badge: 'Week 6–8', why: "Everything in this domain flows from here. If documentation time isn't falling, throughput won't improve and LWBS won't move — this is the first gate to check before expecting any downstream metric." },
@@ -168,7 +168,7 @@ const edDomainCards: EDDomainCardData[] = [
         callout: "Graduation signal: When documentation time reaches a stable low, your physicians have recaptured bandwidth. That's the trigger to start watching Trend-stage process metrics — not a plateau, a foundation.",
       },
       trend: {
-        window: 'Month 3–7',
+        window: 'Month 2–5',
         desc: 'Process metrics that follow',
         metrics: [
           { name: 'Door-to-Provider Time', source: 'Triage system or EDIS · median by shift · trended monthly', badge: 'Month 3–5', why: "The primary throughput signal. When providers finish documentation faster, they're available for the next patient sooner — door-to-provider is where that operational change shows up first." },
@@ -265,7 +265,7 @@ const edDomainCards: EDDomainCardData[] = [
     ],
     timeline: {
       signal: {
-        window: 'Month 1–3',
+        window: 'Week 4–8',
         desc: 'Behavioral change in EHR data',
         metrics: [
           { name: 'After-Shift Charting Time (Pajama Time)', source: 'EHR session logs · minutes after scheduled shift end · per-provider · no survey needed', badge: 'Week 4–6', why: "Pajama time in the ED is a patient safety and burnout issue — providers reviewing prior cases while starting new ones. This is the most sensitive early Abridge signal in the ED." },
@@ -274,7 +274,7 @@ const edDomainCards: EDDomainCardData[] = [
         callout: "Why start here: EHR data is objective and requires no survey coordination. Pajama time reduction is the most visceral proof point for clinicians — and the most believable one for administrators skeptical of self-reported wellbeing data.",
       },
       trend: {
-        window: 'Month 3–6',
+        window: 'Month 2–5',
         desc: 'Wellbeing signals emerge',
         metrics: [
           { name: 'Provider Wellbeing Score', source: 'Validated burnout assessment survey · Abridge vs. non-Abridge providers at same site · run quarterly', badge: 'Month 3–6', why: "Burnout recovery lags documentation relief by 2–4 months — the psychological recovery takes time. This is the mechanism connecting reduced documentation burden to eventual retention improvement." },
@@ -651,7 +651,9 @@ const edFrameworkQuestions: Record<DomainName, string[]> = {
 // ─── Value Architecture Component ────────────────────────────────────────────
 
 function EDValueArchitectureSection() {
-  const [collapsed, setCollapsed] = useState<Set<string>>(new Set(['CAPACITY', 'WORKFORCE', 'REVENUE', 'QUALITY']));
+  const domainOrder: DomainName[] = ['WORKFORCE', 'CAPACITY', 'REVENUE', 'QUALITY'];
+  const sortedFramework = [...edFramework].sort((a, b) => domainOrder.indexOf(a.domain) - domainOrder.indexOf(b.domain));
+  const [collapsed, setCollapsed] = useState<Set<string>>(new Set(['WORKFORCE', 'CAPACITY', 'REVENUE', 'QUALITY']));
   const tagCfg = {
     modeled: { label: 'Modeled', cls: 'bg-[#1A1A1A] text-white' },
     tracked: { label: 'Signal',  cls: 'bg-[#F0EDE8] text-[#666666]' },
@@ -664,7 +666,7 @@ function EDValueArchitectureSection() {
         <p className="text-[13px] text-[#888888] mt-1">Four domains. Each formula shows the full calculation — which numbers are yours, which are industry estimates, and how they chain together.</p>
       </div>
       <div className="divide-y divide-[#EDEBE6] border border-[#E4DDD4] rounded-xl overflow-hidden">
-        {edFramework.map((item) => {
+        {sortedFramework.map((item) => {
           const tc = tagCfg[item.tag];
           const isCollapsed = collapsed.has(item.domain);
           const personas = edFrameworkPersonas[item.domain] ?? [];
@@ -1039,8 +1041,10 @@ function NewEDDomainCard({ data }: { data: EDDomainCardData }) {
 // Keeps the existing heading exactly as-is; replaces only the domain cards.
 
 function EDDomainMethodologySection() {
-  const [activeDomain, setActiveDomain] = useState(edDomainCards[0].domain);
-  const activeCard = edDomainCards.find(c => c.domain === activeDomain)!;
+  const domainOrder: DomainName[] = ['WORKFORCE', 'CAPACITY', 'REVENUE', 'QUALITY'];
+  const sortedCards = [...edDomainCards].sort((a, b) => domainOrder.indexOf(a.domain) - domainOrder.indexOf(b.domain));
+  const [activeDomain, setActiveDomain] = useState(sortedCards[0].domain);
+  const activeCard = sortedCards.find(c => c.domain === activeDomain)!;
 
   return (
     <div className="mb-10">
@@ -1052,7 +1056,7 @@ function EDDomainMethodologySection() {
         </p>
       </div>
       <div className="bg-[#F5F0EB] rounded-xl p-1 flex mb-5">
-        {edDomainCards.map(card => {
+        {sortedCards.map(card => {
           const isActive = activeDomain === card.domain;
           return (
             <button

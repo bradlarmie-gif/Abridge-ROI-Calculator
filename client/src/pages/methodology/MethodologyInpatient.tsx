@@ -629,7 +629,9 @@ const ipFrameworkQuestions: Record<DomainName, string[]> = {
 // ─── Value Architecture Component ────────────────────────────────────────────
 
 function IPValueArchitectureSection() {
-  const [collapsed, setCollapsed] = useState<Set<string>>(new Set(['CAPACITY', 'WORKFORCE', 'REVENUE', 'QUALITY']));
+  const domainOrder: DomainName[] = ['WORKFORCE', 'CAPACITY', 'REVENUE', 'QUALITY'];
+  const sortedFramework = [...ipFramework].sort((a, b) => domainOrder.indexOf(a.domain) - domainOrder.indexOf(b.domain));
+  const [collapsed, setCollapsed] = useState<Set<string>>(new Set(['WORKFORCE', 'CAPACITY', 'REVENUE', 'QUALITY']));
   const tagCfg = {
     modeled: { label: 'Modeled', cls: 'bg-[#1A1A1A] text-white' },
     tracked: { label: 'Signal',  cls: 'bg-[#F0EDE8] text-[#666666]' },
@@ -642,7 +644,7 @@ function IPValueArchitectureSection() {
         <p className="text-[13px] text-[#888888] mt-1">Four domains. Each formula shows the full calculation — which numbers are yours, which are industry estimates, and how they chain together.</p>
       </div>
       <div className="divide-y divide-[#EDEBE6] border border-[#E4DDD4] rounded-xl overflow-hidden">
-        {ipFramework.map((item) => {
+        {sortedFramework.map((item) => {
           const tc = tagCfg[item.tag];
           const isCollapsed = collapsed.has(item.domain);
           const personas = ipFrameworkPersonas[item.domain] ?? [];
@@ -1010,8 +1012,10 @@ function IPDomainCard({ data }: { data: IPDomainCardData }) {
 // ─── IP Domain Methodology Section ───────────────────────────────────────────
 
 function IPDomainMethodologySection() {
-  const [activeDomain, setActiveDomain] = useState(ipDomainCards[0].domain);
-  const activeCard = ipDomainCards.find(c => c.domain === activeDomain)!;
+  const domainOrder: DomainName[] = ['WORKFORCE', 'CAPACITY', 'REVENUE', 'QUALITY'];
+  const sortedCards = [...ipDomainCards].sort((a, b) => domainOrder.indexOf(a.domain) - domainOrder.indexOf(b.domain));
+  const [activeDomain, setActiveDomain] = useState(sortedCards[0].domain);
+  const activeCard = sortedCards.find(c => c.domain === activeDomain)!;
 
   return (
     <div className="mb-10">
@@ -1023,7 +1027,7 @@ function IPDomainMethodologySection() {
         </p>
       </div>
       <div className="bg-[#F5F0EB] rounded-xl p-1 flex mb-5">
-        {ipDomainCards.map(card => {
+        {sortedCards.map(card => {
           const isActive = activeDomain === card.domain;
           return (
             <button
