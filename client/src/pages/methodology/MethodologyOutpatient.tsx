@@ -267,8 +267,8 @@ const opDomainCards: OPDomainCardData[] = [
         desc: 'Wellbeing signals emerge',
         metrics: [
           { name: 'Provider Wellbeing Score', source: 'Validated burnout assessment survey · Abridge vs. non-Abridge providers at same site · quarterly', badge: 'Month 2–4', why: "Burnout improvement lags documentation relief by 2–4 months — the psychological recovery takes time. This is the mechanism that connects reduced documentation burden to eventual retention improvement." },
-          { name: 'Intent to Stay', source: 'Institutional engagement survey or validated single-item measure · trended quarterly', badge: 'Month 3–5', why: "Intent to stay moves before actual departures, giving you a window to act. Watch for divergence between Abridge adopters and non-adopters before annual turnover data is available." },
           { name: 'Satisfaction with Documentation Workflow', source: 'EHR satisfaction survey or department pulse · Abridge adopters vs. non-adopters', badge: 'Month 2–4', why: "The most direct attitudinal signal — do providers feel the tool is helping? Tracks separately from wellbeing because satisfaction can improve faster and is a leading indicator of adoption sustainability." },
+          { name: 'Intent to Stay', source: 'Institutional engagement survey or validated single-item measure · trended quarterly', badge: 'Month 3–5', why: "Intent to stay moves before actual departures, giving you a window to act. Watch for divergence between Abridge adopters and non-adopters before annual turnover data is available." },
         ],
         callout: "The CFO bridge: Wellbeing scores don't appear on a balance sheet. Build the connection explicitly: improved wellbeing is a leading indicator of lower voluntary departure intent, which translates directly into reduced replacement and locum costs at quantifiable rates.",
       },
@@ -276,8 +276,8 @@ const opDomainCards: OPDomainCardData[] = [
         window: 'Month 12–18',
         desc: 'Retention and cost confirmed',
         metrics: [
-          { name: 'Voluntary Turnover Rate', source: 'HR data · annual voluntary departures / headcount · Abridge providers vs. non-Abridge or pre-adoption baseline', badge: 'Month 12–18', why: "The lagging outcome — takes 12–18 months because departure decisions have long lead times and are measured annually. Meaningful only in comparison to a baseline cohort, not in isolation." },
           { name: 'Locum & Agency Utilization', source: 'Finance / staffing data · locum hours and cost per open shift · year-over-year comparison', badge: 'Month 9–18', why: "Locum spend drops when fewer providers are leaving or on medical leave from burnout. It's the financial proof of the workforce story that CFOs can see directly in the budget." },
+          { name: 'Voluntary Turnover Rate', source: 'HR data · annual voluntary departures / headcount · Abridge providers vs. non-Abridge or pre-adoption baseline', badge: 'Month 12–18', why: "The lagging outcome — takes 12–18 months because departure decisions have long lead times and are measured annually. Meaningful only in comparison to a baseline cohort, not in isolation." },
         ],
         callout: "Why the long timeline: Voluntary turnover is a lagging indicator — you need 12–18 months before departure rates are statistically meaningful. The strategy is to demonstrate pajama time reduction early, link it to wellbeing at Month 4, and let turnover data confirm the story as it matures.",
       },

@@ -162,8 +162,8 @@ const edDomainCards: EDDomainCardData[] = [
         window: 'Week 4–8',
         desc: 'What Abridge directly moves',
         metrics: [
-          { name: 'Documentation Time Per Encounter', source: 'EHR audit logs · pre/post per-provider · most direct Abridge signal', badge: 'Week 6–8', why: "Everything in this domain flows from here. If documentation time isn't falling, throughput won't improve and LWBS won't move — this is the first gate to check before expecting any downstream metric." },
           { name: 'After-Shift Charting Time', source: 'EHR session minutes after scheduled shift end · per-provider', badge: 'Week 4–6', why: "Documentation deferred past the shift blocked the provider from turning over to the next patient. This is the earliest signal available — it appears before door-to-provider time has had time to move." },
+          { name: 'Documentation Time Per Encounter', source: 'EHR audit logs · pre/post per-provider · most direct Abridge signal', badge: 'Week 6–8', why: "Everything in this domain flows from here. If documentation time isn't falling, throughput won't improve and LWBS won't move — this is the first gate to check before expecting any downstream metric." },
         ],
         callout: "Graduation signal: When documentation time reaches a stable low, your physicians have recaptured bandwidth. That's the trigger to start watching Trend-stage process metrics — not a plateau, a foundation.",
       },
@@ -172,8 +172,8 @@ const edDomainCards: EDDomainCardData[] = [
         desc: 'Process metrics that follow',
         metrics: [
           { name: 'Door-to-Provider Time', source: 'Triage system or EDIS · median by shift · trended monthly', badge: 'Month 3–5', why: "The primary throughput signal. When providers finish documentation faster, they're available for the next patient sooner — door-to-provider is where that operational change shows up first." },
-          { name: 'Door-to-Disposition Time', source: 'ED tracking board · median LOS proxy · admitted vs. discharged split', badge: 'Month 4–7', why: "Full-cycle throughput. Faster documentation during the encounter compresses the time from presentation to disposition decision — but only if the note timeliness improvement holds." },
           { name: 'Patients Per Provider Per Hour', source: 'Scheduling + EHR · by shift type · volume-normalized', badge: 'Month 3–6', why: "The normalized throughput measure. Rising throughput here is the causal mechanism behind both LWBS improvement and volume growth — you need this moving before claiming either." },
+          { name: 'Door-to-Disposition Time', source: 'ED tracking board · median LOS proxy · admitted vs. discharged split', badge: 'Month 4–7', why: "Full-cycle throughput. Faster documentation during the encounter compresses the time from presentation to disposition decision — but only if the note timeliness improvement holds." },
         ],
         callout: '',
       },
@@ -277,9 +277,9 @@ const edDomainCards: EDDomainCardData[] = [
         window: 'Month 2–5',
         desc: 'Wellbeing signals emerge',
         metrics: [
+          { name: 'Satisfaction with Documentation Workflow', source: 'EHR satisfaction survey or department-specific pulse · Abridge adopters vs. non-adopters', badge: 'Month 2–4', why: "The most direct attitudinal signal. Can improve faster than deeper wellbeing metrics and is a leading indicator of both adoption sustainability and eventual intent-to-stay improvement." },
           { name: 'Provider Wellbeing Score', source: 'Validated burnout assessment survey · Abridge vs. non-Abridge providers at same site · run quarterly', badge: 'Month 3–6', why: "Burnout recovery lags documentation relief by 2–4 months — the psychological recovery takes time. This is the mechanism connecting reduced documentation burden to eventual retention improvement." },
           { name: 'Intent to Stay', source: 'Validated single-item or institutional engagement survey · trended quarterly', badge: 'Month 3–6', why: "Intent to stay moves before actual departures, giving you a window to act. Watch for divergence between Abridge adopters and non-adopters before annual turnover data is available." },
-          { name: 'Satisfaction with Documentation Workflow', source: 'EHR satisfaction survey or department-specific pulse · Abridge adopters vs. non-adopters', badge: 'Month 2–4', why: "The most direct attitudinal signal. Can improve faster than deeper wellbeing metrics and is a leading indicator of both adoption sustainability and eventual intent-to-stay improvement." },
         ],
         callout: 'The CFO bridge: Wellbeing scores don\'t directly appear on a balance sheet. Build the bridge explicitly: improved wellbeing is a leading indicator of lower voluntary departure intent. This converts a soft metric into a financial forecast.',
       },
@@ -287,8 +287,8 @@ const edDomainCards: EDDomainCardData[] = [
         window: 'Month 12–18',
         desc: 'Retention and cost impact',
         metrics: [
-          { name: 'Voluntary Physician Turnover Rate', source: 'HR data · annual departures / total headcount · Abridge units vs. comparable non-Abridge units', badge: 'Month 12–18', why: "The lagging outcome — takes 12–18 months because departure decisions have long lead times and are measured annually. Requires cohort-level comparison to be meaningful." },
           { name: 'Locum & Agency Utilization', source: 'Staffing / finance data · locum hours and cost per open shift · year-over-year comparison', badge: 'Month 9–18', why: "Open shifts filled by locums indicate workforce instability. As turnover drops, locum dependency drops — this is the financial expression of the retention story that CFOs can see directly." },
+          { name: 'Voluntary Physician Turnover Rate', source: 'HR data · annual departures / total headcount · Abridge units vs. comparable non-Abridge units', badge: 'Month 12–18', why: "The lagging outcome — takes 12–18 months because departure decisions have long lead times and are measured annually. Requires cohort-level comparison to be meaningful." },
           { name: 'Vacancy Fill Time', source: 'HR data · days from open to filled per physician role · trended annually', badge: 'Month 12+', why: "How long it takes to fill an open physician role. Declining fill time indicates the employer brand has improved — a lagging indicator of the retention story becoming known in the market." },
         ],
         callout: "Why the long timeline: Turnover is a lagging indicator — you need 12–18 months of data before departures are statistically meaningful. The strategy is to prove wellbeing early, build the CFO bridge at Month 6, and let the turnover data confirm the story as it matures.",
@@ -483,11 +483,11 @@ const edDomainCards: EDDomainCardData[] = [
         callout: "Graduation signal: When same-shift note completion stabilizes and CDI queries on ED admissions trend down, the clinical story is being captured in real time. That's the trigger to start watching quality measure attribution in the Trend stage.",
       },
       trend: {
-        window: 'Month 3–6',
+        window: 'Month 2–6',
         desc: 'Measure attribution improves',
         metrics: [
-          { name: 'Core Measure Documentation Rate', source: 'Quality reporting system · % of qualifying encounters with required documentation elements present · trended monthly', badge: 'Month 3–5', why: "Core measures (STEMI, sepsis, stroke) require specific time-stamped elements. Ambient documentation captures these in real time during the clinical encounter rather than reconstructed hours later." },
           { name: 'Sepsis Bundle Documentation Completeness', source: 'ED quality data · % of sepsis-qualifying encounters with recognition time, clinical reasoning, and bundle element documentation', badge: 'Month 2–5', why: "Sepsis bundle documentation requires capturing recognition timing, decision-making, and intervention timing. Ambient notes capture this in the moment — retrospective documentation misses or compresses these details." },
+          { name: 'Core Measure Documentation Rate', source: 'Quality reporting system · % of qualifying encounters with required documentation elements present · trended monthly', badge: 'Month 3–5', why: "Core measures (STEMI, sepsis, stroke) require specific time-stamped elements. Ambient documentation captures these in real time during the clinical encounter rather than reconstructed hours later." },
           { name: 'Documentation Deficiency Rate', source: 'HIM system · % of charts flagged for incomplete documentation · Abridge providers vs. non-Abridge cohort', badge: 'Month 3–6', why: "Deficiencies indicate what reviewers found incomplete after the fact. A declining deficiency rate means notes are complete enough on first creation — reducing audit burden and quality team workload." },
         ],
         callout: "The attribution gap: Core measure compliance often improves before the formal compliance score reflects it — because attribution logic has a lag. Track the documentation elements directly first. The score follows.",
