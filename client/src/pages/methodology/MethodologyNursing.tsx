@@ -638,7 +638,7 @@ function NursingValueArchitectureSection() {
     <div className="mt-10 mb-10">
       <div className="mb-5">
         <p className="text-[11px] font-bold uppercase tracking-[2.5px] text-[#888888] mb-1.5">The Value Architecture</p>
-        <h2 className="text-[22px] font-bold text-black tracking-tight">Four formulas. Every line defensible.</h2>
+        <h2 className="text-[22px] font-bold text-black tracking-tight">The Evidence Model</h2>
         <p className="text-[13px] text-[#888888] mt-1">Four domains. Each formula shows the full calculation — which numbers are yours, which are industry estimates, and how they chain together.</p>
       </div>
       <div className="divide-y divide-[#EDEBE6] border border-[#E4DDD4] rounded-xl overflow-hidden">
@@ -697,59 +697,31 @@ function NursingValueArchitectureSection() {
                 </p>
               </div>
               {item.steps && (
-                <div className="rounded-xl overflow-hidden border border-[#DEDAD2]">
-                  <div className="flex items-center justify-between px-5 py-2.5 bg-[#F2EDE5] border-b border-[#DEDAD2]">
-                    <span className="text-[9px] font-bold tracking-[0.18em] uppercase text-[#999999]">How it's calculated</span>
-                    <div className="flex items-center gap-4">
-                      <span className="flex items-center gap-1.5">
-                        <span className="w-[9px] h-[9px] rounded-sm bg-white border border-[#C8BFB4] inline-block"></span>
-                        <span className="text-[8px] text-[#BBBBBB] tracking-wide">your input</span>
-                      </span>
-                      <span className="flex items-center gap-1.5">
-                        <span className="w-[9px] h-[9px] rounded-sm bg-[#FDF5E4] border border-[#DCBF60] inline-block"></span>
-                        <span className="text-[8px] text-[#BBBBBB] tracking-wide">industry est.</span>
-                      </span>
-                    </div>
-                  </div>
+                <div style={{ marginTop: 4 }}>
+                  <p style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.14em", color: "#AAAAAA", marginBottom: 12 }}>The Calculation</p>
                   {item.steps.map((step, si) => (
-                    <div key={si}>
+                    <div key={si} style={{ marginTop: si > 0 ? 20 : 0 }}>
                       {step.vars.map((variable, vi) => {
                         const op = variable.op ?? (vi > 0 ? '×' : '');
                         const isDerived = variable.kind === 'derived';
                         const isBenchmark = variable.kind === 'benchmark' || variable.kind === 'default';
-                        const rowBg = isDerived ? 'bg-[#F7F3EE]' : isBenchmark ? 'bg-[#FFFDF6]' : 'bg-white';
+                        const kindLabel = isDerived ? 'carried forward'
+                          : variable.kind === 'benchmark' ? (variable.hint ? `est.  ${variable.hint}` : 'industry est.')
+                          : variable.kind === 'default' ? (variable.hint ? `assumed  ${variable.hint}` : 'assumed')
+                          : 'your input';
                         return (
-                          <div key={vi} className={`flex items-stretch border-b border-[#EDE7DF] ${rowBg}`}>
-                            <div className="w-10 flex items-center justify-center shrink-0 border-r border-[#EDE7DF]">
-                              <span className="font-mono text-[15px] font-light text-[#C8C0B4]">{op}</span>
-                            </div>
-                            <div className="flex flex-1 items-center justify-between gap-4 px-4 py-[11px]">
-                              <span className={`text-[12.5px] leading-snug ${isDerived ? 'text-[#888888]' : 'text-[#1A1A1A]'}`}>
-                                {variable.v}
-                              </span>
-                              <span className={`text-[8px] font-bold tracking-[0.1em] uppercase shrink-0 ${
-                                isDerived ? 'text-[#C8C0B8]'
-                                : isBenchmark ? 'text-[#9A7000]'
-                                : 'text-[#C8C0B8]'
-                              }`}>
-                                {isDerived ? 'carried forward'
-                                  : variable.kind === 'benchmark' ? (variable.hint ? `est. · ${variable.hint}` : 'industry est.')
-                                  : variable.kind === 'default' ? (variable.hint ? `assumed · ${variable.hint}` : 'assumed')
-                                  : 'your input'}
-                              </span>
-                            </div>
+                          <div key={vi} style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 16, padding: "7px 0", borderBottom: "1px solid #F0EBE4" }}>
+                            <span style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+                              <span style={{ width: 14, textAlign: "right", fontFamily: "monospace", fontSize: 13, fontWeight: 300, color: "#C8C0B4", flexShrink: 0 }}>{op}</span>
+                              <span style={{ fontSize: 12.5, lineHeight: 1.35, color: isDerived ? '#BBBBBB' : '#1A1A1A' }}>{variable.v}</span>
+                            </span>
+                            <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", flexShrink: 0, whiteSpace: "nowrap", color: isBenchmark ? '#9A7000' : '#C8C0B8' }}>{kindLabel}</span>
                           </div>
                         );
                       })}
-                      <div className={`flex items-stretch ${step.isFinal ? 'bg-[#1A1A1A]' : 'bg-[#EAE4DC] border-b border-[#D8D0C4]'}`}>
-                        <div className={`w-10 flex items-center justify-center shrink-0 border-r ${step.isFinal ? 'border-[#333]' : 'border-[#D8D0C4]'}`}>
-                          <span className={`font-mono text-[15px] font-light ${step.isFinal ? 'text-white/50' : 'text-[#999]'}`}>=</span>
-                        </div>
-                        <div className="flex flex-1 items-center px-4 py-[11px]">
-                          <span className={`leading-snug ${step.isFinal ? 'text-[13px] font-bold text-white tracking-tight' : 'text-[12.5px] font-semibold text-[#3A3630]'}`}>
-                            {step.result}
-                          </span>
-                        </div>
+                      <div style={{ borderTop: step.isFinal ? "1.5px solid #1A1A1A" : "1px solid #C8C0B4", marginTop: 2, paddingTop: 8, paddingBottom: 4, display: "flex", alignItems: "baseline", gap: 8 }}>
+                        <span style={{ width: 14, textAlign: "right", fontFamily: "monospace", fontSize: 13, fontWeight: 300, color: step.isFinal ? "#1A1A1A" : "#AAAAAA", flexShrink: 0 }}>=</span>
+                        <span style={{ fontSize: step.isFinal ? 13 : 12.5, fontWeight: step.isFinal ? 700 : 600, color: step.isFinal ? '#1A1A1A' : '#555555', letterSpacing: step.isFinal ? '-0.01em' : 'normal' }}>{step.result}</span>
                       </div>
                     </div>
                   ))}
