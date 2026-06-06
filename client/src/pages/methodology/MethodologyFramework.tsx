@@ -698,18 +698,18 @@ export function MethodologyFramework({ onBack, onSelectSetting }: Props) {
                       <div
                         className="w-[30px] h-[30px] rounded-full flex items-center justify-center mb-5"
                         style={{
-                          backgroundColor: `rgba(255,255,255,${0.03 + i * 0.025})`,
-                          border: `1px solid rgba(255,255,255,${0.07 + i * 0.045})`,
+                          backgroundColor: `rgba(255,255,255,${0.06 + i * 0.02})`,
+                          border: `1px solid rgba(255,255,255,${0.18 + i * 0.04})`,
                         }}
                       >
-                        <span style={{ fontSize: 9.5, fontWeight: 700, color: `rgba(255,255,255,${0.25 + i * 0.16})` }}>
+                        <span style={{ fontSize: 9.5, fontWeight: 700, color: `rgba(255,255,255,${0.6 + i * 0.1})` }}>
                           {s.n}
                         </span>
                       </div>
-                      <p style={{ fontSize: 9, fontWeight: 600, textTransform: "uppercase" as const, letterSpacing: "2px", color: "rgba(255,255,255,0.22)", marginBottom: 4 }}>
+                      <p style={{ fontSize: 9, fontWeight: 600, textTransform: "uppercase" as const, letterSpacing: "2px", color: "rgba(255,255,255,0.35)", marginBottom: 4 }}>
                         {s.range}
                       </p>
-                      <p style={{ fontSize: 18, fontWeight: 700, color: `rgba(255,255,255,${0.46 + i * 0.16})`, lineHeight: 1.2, marginBottom: 8 }}>
+                      <p style={{ fontSize: 18, fontWeight: 700, color: `rgba(255,255,255,${0.75 + i * 0.07})`, lineHeight: 1.2, marginBottom: 8 }}>
                         {s.label}
                       </p>
                       <p style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", lineHeight: 1.65 }}>
