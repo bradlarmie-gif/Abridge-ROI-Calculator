@@ -1312,8 +1312,6 @@ export function MethodologyOutpatient({ onBack, onHome, onNavigateToSetting, onB
 
         <OPDomainMethodologySection />
 
-        <OPAdoptionSection />
-
         <OPValueArchitectureSection />
 
         <motion.div className="mt-4 mb-10 bg-gradient-to-r from-[#1A1A1A] to-[#2D2D2D] rounded-lg p-8 text-center" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>

@@ -816,6 +816,84 @@ export function MethodologyFramework({ onBack, onSelectSetting }: Props) {
             {/* Divider */}
             <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", margin: "80px 0" }} />
 
+            {/* Attribution Gate */}
+            <motion.div
+              className="mb-16"
+              initial={{ opacity: 0, y: 18 }}
+              animate={continuumInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ delay: 1.0, duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <p className="text-[10px] font-bold uppercase tracking-[3px] mb-4" style={{ color: "#EA2C00" }}>
+                The Attribution Gate
+              </p>
+              <h2
+                className="font-bold text-white leading-[1.08] tracking-[-0.02em] mb-4"
+                style={{ fontSize: "clamp(26px, 3.0vw, 38px)" }}
+              >
+                Before any of this is yours.
+              </h2>
+              <p style={{ fontSize: 16, color: "rgba(255,255,255,0.42)", lineHeight: 1.75, maxWidth: 540, marginBottom: 40 }}>
+                Every metric in this framework is downstream of adoption. If Abridge is in the workflow — consistently, completely, across most providers — the story holds. If adoption is thin, every number becomes a correlation instead of a cause. Four gates. Check them before any care setting conversation begins.
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {([
+                  {
+                    tag: "Breadth",
+                    label: "% of clinicians using ambient",
+                    why: "Coverage below 60–70% means the downstream numbers reflect a subpopulation. Attribution claims require most providers to be in the workflow.",
+                    source: "Platform analytics / Abridge dashboard",
+                  },
+                  {
+                    tag: "Depth",
+                    label: "% of encounters using ambient",
+                    why: "Selective use creates attribution gaps. Downstream metrics only hold when use is consistent across encounters — not just when it's convenient.",
+                    source: "Platform analytics vs. EHR encounter count",
+                  },
+                  {
+                    tag: "Quality",
+                    label: "Avg ambient session duration",
+                    why: "Sessions under 5 minutes typically indicate abandonment. Complete encounters run 10–20 minutes. Duration confirms the session captured the clinical conversation.",
+                    source: "Platform analytics",
+                  },
+                  {
+                    tag: "Output",
+                    label: "% of note completed by ambient vs. manual",
+                    why: "Confirms the note is Abridge-generated — not opened as a template and typed over. The higher this number, the stronger every attribution claim.",
+                    source: "Platform analytics / EHR audit logs",
+                  },
+                ]).map((gate, i) => (
+                  <motion.div
+                    key={gate.tag}
+                    initial={{ opacity: 0, y: 14 }}
+                    animate={continuumInView ? { opacity: 1, y: 0 } : {}}
+                    transition={{ delay: 1.1 + i * 0.08, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                    className="rounded-xl p-5"
+                    style={{
+                      backgroundColor: "rgba(255,255,255,0.04)",
+                      border: "1px solid rgba(234,44,0,0.18)",
+                    }}
+                  >
+                    <p className="text-[9px] font-bold uppercase tracking-[2px] mb-3" style={{ color: "#EA2C00" }}>
+                      {gate.tag}
+                    </p>
+                    <p style={{ fontSize: 14, fontWeight: 600, color: "rgba(255,255,255,0.88)", lineHeight: 1.35, marginBottom: 10 }}>
+                      {gate.label}
+                    </p>
+                    <p style={{ fontSize: 12.5, color: "rgba(255,255,255,0.40)", lineHeight: 1.65, marginBottom: 14 }}>
+                      {gate.why}
+                    </p>
+                    <p style={{ fontSize: 10.5, color: "rgba(255,255,255,0.20)" }}>
+                      {gate.source}
+                    </p>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+
+            {/* Divider */}
+            <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", margin: "0 0 80px" }} />
+
             {/* Entry CTA */}
             <motion.div
               className="mb-12"
