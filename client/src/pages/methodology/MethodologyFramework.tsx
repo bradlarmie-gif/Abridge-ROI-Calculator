@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, useInView } from "framer-motion";
 import { ArrowLeft, ChevronRight, Stethoscope, Zap, Building2, HeartPulse } from "lucide-react";
 import abridgeLogo from "@assets/abridge-logo-wordmark-red_1769020684647.png";
@@ -34,10 +34,10 @@ const DOMAINS = [
 ];
 
 const STAGES = [
-  { n: "01", range: "Months 1–3", label: "Unmeasured", description: "Value is generating — documentation improves, time returns, signals appear. Nothing has been formally measured or attributed yet. This is where most deployments begin." },
-  { n: "02", range: "Months 4–12", label: "Emerging", description: "Coding trends shift. Denial rates begin to move. Retention data starts to reflect what changed in the room. Direction is visible — a formal number isn't." },
-  { n: "03", range: "Year 1–2", label: "Demonstrated", description: "Longitudinal outcomes emerge. A formal dollar figure is on the books — calculable, attributable, defensible to finance." },
-  { n: "04", range: "Year 3+", label: "Strategic", description: "Documentation intelligence informs how the organization competes — care model design, payer strategy, workforce planning, clinical AI. Infrastructure, not a point solution." },
+  { n: "01", range: "Months 1–3", label: "Unmeasured", description: "Value is generating — documentation improves, time returns, signals appear. Nothing has been formally measured or attributed yet. This is where most deployments begin.", callout: "This is where most deployments start. The value is real — documentation is better, time is returning. Measurement infrastructure isn't in place yet. Your job right now: capture the conversations." },
+  { n: "02", range: "Months 4–12", label: "Emerging", description: "Coding trends shift. Denial rates begin to move. Retention data starts to reflect what changed in the room. Direction is visible — a formal number isn't.", callout: "Signals are becoming numbers. Coding trend lines are moving. This is the inflection point where direction becomes visible — formal attribution is weeks away." },
+  { n: "03", range: "Year 1–2", label: "Demonstrated", description: "Longitudinal outcomes emerge. A formal dollar figure is on the books — calculable, attributable, defensible to finance.", callout: "A dollar figure is on the books. ROI is now a fact, not a forecast. This is where renewal conversations shift from trust to evidence." },
+  { n: "04", range: "Year 3+", label: "Strategic", description: "Documentation intelligence informs how the organization competes — care model design, payer strategy, workforce planning, clinical AI. Infrastructure, not a point solution.", callout: "Abridge is infrastructure. Documentation intelligence informs care model design, payer strategy, and clinical AI. The question is no longer 'does it work' — it's 'what do we build next.'" },
 ];
 
 const SETTINGS = [
@@ -373,6 +373,7 @@ function WaveformCanvas({ active }: { active: boolean }) {
 export function MethodologyFramework({ onBack, onSelectSetting }: Props) {
   const leversRef = useRef<HTMLDivElement>(null);
   const continuumRef = useRef<HTMLDivElement>(null);
+  const [activeStage, setActiveStage] = useState<number | null>(null);
 
   const leversInView = useInView(leversRef, { once: true, margin: "-60px" });
   const continuumInView = useInView(continuumRef, { once: true, margin: "-80px" });
@@ -683,40 +684,93 @@ export function MethodologyFramework({ onBack, onSelectSetting }: Props) {
                 The transcription layer is an evidence engine. What you can measure — and claim — grows with every conversation captured.
               </p>
               <div className="relative">
-                <div
-                  className="absolute top-[15px] left-[15px] right-[15px] h-px hidden md:block"
-                  style={{ background: "linear-gradient(to right, rgba(234,44,0,0.28), rgba(255,255,255,0.07))" }}
-                />
+                {/* SVG arc curve — replaces flat gradient line */}
+                <svg
+                  className="absolute hidden md:block pointer-events-none"
+                  style={{ top: "-12px", left: 0, width: "100%", height: "56px", overflow: "visible" }}
+                  viewBox="0 0 100 18"
+                  preserveAspectRatio="none"
+                >
+                  <defs>
+                    <linearGradient id="arcStrokeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="rgba(234,44,0,0.55)" />
+                      <stop offset="55%" stopColor="rgba(255,255,255,0.18)" />
+                      <stop offset="100%" stopColor="rgba(255,255,255,0.28)" />
+                    </linearGradient>
+                  </defs>
+                  {/* Cubic bezier: starts low-left, peaks center, ends low-right — the arc shape */}
+                  <path
+                    d="M 5,16 C 28,16 44,2 52,2 C 60,2 72,16 95,16"
+                    fill="none"
+                    stroke="url(#arcStrokeGrad)"
+                    strokeWidth="0.45"
+                  />
+                  {/* Tick marks at each stage position */}
+                  {[5, 36, 64, 95].map((x, idx) => (
+                    <circle
+                      key={idx}
+                      cx={x}
+                      cy={idx === 0 || idx === 3 ? 16 : idx === 1 ? 7.8 : 7.8}
+                      r="1"
+                      fill={idx === 0 ? "rgba(234,44,0,0.7)" : "rgba(255,255,255,0.18)"}
+                    />
+                  ))}
+                </svg>
+
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-6">
-                  {STAGES.map((s, i) => (
-                    <motion.div
-                      key={s.label}
-                      initial={{ opacity: 0, y: 14 }}
-                      animate={continuumInView ? { opacity: 1, y: 0 } : {}}
-                      transition={{ delay: 0.8 + i * 0.1, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                    >
-                      <div
-                        className="w-[30px] h-[30px] rounded-full flex items-center justify-center mb-5"
+                  {STAGES.map((s, i) => {
+                    const isActive = activeStage === i;
+                    return (
+                      <motion.div
+                        key={s.label}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={continuumInView ? { opacity: 1, y: 0 } : {}}
+                        transition={{ delay: 0.85 + i * 0.22, duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
+                        onClick={() => setActiveStage(isActive ? null : i)}
+                        className="cursor-pointer select-none rounded-xl"
                         style={{
-                          backgroundColor: `rgba(255,255,255,${0.06 + i * 0.02})`,
-                          border: `1px solid rgba(255,255,255,${0.18 + i * 0.04})`,
+                          padding: "14px 12px",
+                          background: isActive ? "rgba(255,255,255,0.045)" : "transparent",
+                          border: `1px solid ${isActive ? "rgba(234,44,0,0.22)" : "transparent"}`,
+                          transition: "background 0.2s, border-color 0.2s",
                         }}
                       >
-                        <span style={{ fontSize: 9.5, fontWeight: 700, color: `rgba(255,255,255,${0.6 + i * 0.1})` }}>
-                          {s.n}
-                        </span>
-                      </div>
-                      <p style={{ fontSize: 9, fontWeight: 600, textTransform: "uppercase" as const, letterSpacing: "2px", color: "rgba(255,255,255,0.35)", marginBottom: 4 }}>
-                        {s.range}
-                      </p>
-                      <p style={{ fontSize: 18, fontWeight: 700, color: `rgba(255,255,255,${0.75 + i * 0.07})`, lineHeight: 1.2, marginBottom: 8 }}>
-                        {s.label}
-                      </p>
-                      <p style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", lineHeight: 1.65 }}>
-                        {s.description}
-                      </p>
-                    </motion.div>
-                  ))}
+                        <div
+                          className="w-[30px] h-[30px] rounded-full flex items-center justify-center mb-5"
+                          style={{
+                            backgroundColor: isActive ? "rgba(234,44,0,0.14)" : `rgba(255,255,255,${0.06 + i * 0.02})`,
+                            border: `1px solid ${isActive ? "rgba(234,44,0,0.55)" : `rgba(255,255,255,${0.18 + i * 0.04})`}`,
+                            transition: "all 0.2s",
+                          }}
+                        >
+                          <span style={{ fontSize: 9.5, fontWeight: 700, color: isActive ? "#EA2C00" : `rgba(255,255,255,${0.6 + i * 0.1})`, transition: "color 0.2s" }}>
+                            {s.n}
+                          </span>
+                        </div>
+                        <p style={{ fontSize: 9, fontWeight: 600, textTransform: "uppercase" as const, letterSpacing: "2px", color: "rgba(255,255,255,0.35)", marginBottom: 4 }}>
+                          {s.range}
+                        </p>
+                        <p style={{ fontSize: 18, fontWeight: 700, color: isActive ? "rgba(255,255,255,0.97)" : `rgba(255,255,255,${0.75 + i * 0.07})`, lineHeight: 1.2, marginBottom: 8, transition: "color 0.2s" }}>
+                          {s.label}
+                        </p>
+                        <p style={{ fontSize: 13, color: "rgba(255,255,255,0.38)", lineHeight: 1.65 }}>
+                          {s.description}
+                        </p>
+                        {isActive && (
+                          <motion.div
+                            initial={{ opacity: 0, y: 6 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                            style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid rgba(234,44,0,0.2)" }}
+                          >
+                            <p style={{ fontSize: 12.5, color: "rgba(234,44,0,0.9)", lineHeight: 1.65 }}>
+                              {s.callout}
+                            </p>
+                          </motion.div>
+                        )}
+                      </motion.div>
+                    );
+                  })}
                 </div>
               </div>
             </motion.div>
