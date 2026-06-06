@@ -389,13 +389,7 @@ export function MethodologyFramework({ onBack, onSelectSetting }: Props) {
         }}
       >
         <div className="max-w-[1080px] mx-auto px-6 md:px-10 py-4 flex items-center justify-between">
-          <button onClick={onBack} className="cursor-pointer bg-transparent border-none p-0" data-testid="link-home-logo">
-            <img src={abridgeLogo} alt="Abridge" className="h-[18px] brightness-0 invert" />
-          </button>
-          <div className="flex items-center gap-3">
-            <span className="hidden sm:inline text-[10px] font-semibold uppercase tracking-[2.5px]" style={{ color: "rgba(255,255,255,0.25)" }}>
-              Value Methodology
-            </span>
+          <div className="flex items-center gap-4">
             <button
               onClick={onBack}
               className="flex items-center gap-1.5 text-sm"
@@ -405,7 +399,13 @@ export function MethodologyFramework({ onBack, onSelectSetting }: Props) {
               <ArrowLeft className="w-3.5 h-3.5" />
               Back
             </button>
+            <button onClick={onBack} className="cursor-pointer bg-transparent border-none p-0" data-testid="link-home-logo">
+              <img src={abridgeLogo} alt="Abridge" className="h-[18px] brightness-0 invert" />
+            </button>
           </div>
+          <span className="hidden sm:inline text-[10px] font-semibold uppercase tracking-[2.5px]" style={{ color: "rgba(255,255,255,0.25)" }}>
+            Value Methodology
+          </span>
         </div>
       </header>
 
