@@ -676,19 +676,6 @@ function NursingValueArchitectureSection() {
               {!isCollapsed && (
               <div className="px-6 pb-6">
               <NarrativeText text={item.narrative} />
-              {questions.length > 0 && (
-                <div className="mb-4 border-l-2 border-[#F0EDE8] pl-3">
-                  <p className="text-[9px] font-bold tracking-[0.14em] uppercase text-[#BBBBBB] mb-2">Ask to explore</p>
-                  <ul className="space-y-1.5">
-                    {questions.map((q, i) => (
-                      <li key={i} className="flex gap-2">
-                        <span className="text-[#C4BBAD] text-[12px] shrink-0 mt-0.5">›</span>
-                        <span className="text-[12px] text-[#777777] italic leading-snug">{q}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
               <div className="mb-4" style={{ borderLeft: "2px solid rgba(234,44,0,0.20)", paddingLeft: 14 }}>
                 <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-[#AAAAAA] mb-1.5">Evidence Chain</p>
                 <p className="text-[12px] text-[#666666] leading-[1.55]">
@@ -697,7 +684,7 @@ function NursingValueArchitectureSection() {
                 </p>
               </div>
               {item.steps && (
-                <div style={{ marginTop: 4 }}>
+                <div style={{ marginTop: 24, paddingTop: 20, borderTop: "1px solid #EEEAE4" }}>
                   <p style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.14em", color: "#AAAAAA", marginBottom: 12 }}>The Calculation</p>
                   {item.steps.map((step, si) => (
                     <div key={si} style={{ marginTop: si > 0 ? 20 : 0 }}>
@@ -729,6 +716,16 @@ function NursingValueArchitectureSection() {
               )}
               {item.note && (
                 <p className="text-[11px] text-[#888888] leading-relaxed mt-3">{item.note}</p>
+              )}
+              {questions.length > 0 && (
+                <div style={{ marginTop: 20, paddingTop: 16, borderTop: "1px solid #EEEAE4" }}>
+                  <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#CCCCCC", marginBottom: 8 }}>Discovery Questions</p>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                    {questions.map((q, i) => (
+                      <p key={i} style={{ fontSize: 11.5, color: "#AAAAAA", fontStyle: "italic", lineHeight: 1.5 }}>{q}</p>
+                    ))}
+                  </div>
+                </div>
               )}
               </div>
               )}
