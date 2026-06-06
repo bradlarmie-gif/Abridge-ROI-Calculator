@@ -16,6 +16,7 @@ interface MethodologyNursingProps {
   onBack: () => void;
   onHome?: () => void;
   onNavigateToSetting?: (setting: string) => void;
+  onBuildModel?: () => void;
 }
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -1116,7 +1117,7 @@ function NursingValueArcSection() {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export function MethodologyNursing({ onBack, onHome, onNavigateToSetting }: MethodologyNursingProps) {
+export function MethodologyNursing({ onBack, onHome, onNavigateToSetting, onBuildModel }: MethodologyNursingProps) {
   const [isExporting, setIsExporting] = useState(false);
 
   const handleExportPDF = async () => {
@@ -1172,7 +1173,7 @@ export function MethodologyNursing({ onBack, onHome, onNavigateToSetting }: Meth
         <motion.div className="mt-4 mb-10 bg-gradient-to-r from-[#1A1A1A] to-[#2D2D2D] rounded-lg p-8 text-center" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
           <h3 className="text-xl font-bold text-white mb-2">Ready to Build Your Model?</h3>
           <p className="text-[#999999] mb-6 text-sm">Use these methodology principles to create a customized ROI model for your nursing program.</p>
-          <button onClick={onBack} className="inline-flex items-center gap-2 bg-[#EA2C00] hover:bg-[#D12600] text-white font-medium px-6 py-3 rounded-lg transition-colors" data-testid="button-build-model">
+          <button onClick={onBuildModel ?? onBack} className="inline-flex items-center gap-2 bg-[#EA2C00] hover:bg-[#D12600] text-white font-medium px-6 py-3 rounded-lg transition-colors" data-testid="button-build-model">
             Build a Nursing Model <ArrowRight className="w-4 h-4" />
           </button>
         </motion.div>
