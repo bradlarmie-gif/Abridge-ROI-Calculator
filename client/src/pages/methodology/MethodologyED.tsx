@@ -99,10 +99,15 @@ const edDomainCards: EDDomainCardData[] = [
     northStarSub: 'Left without being seen — driven by throughput improvement and additional volume filling the recaptured capacity.',
     matterBoxes: [
       {
-        tag: 'Matters most if…',
-        body: "Your LWBS rate is above benchmark, you're competing on patient access, or your CFO is asking why throughput hasn't improved despite staffing investments.",
+        tag: 'COO / ED Medical Director',
+        body: "LWBS above benchmark, throughput flatlined despite staffing investments, or providers spending time on documentation while patients wait. Documentation burden is a constraint on flow that headcount alone doesn't solve.",
+      },
+      {
+        tag: 'CFO',
+        body: "Every recaptured LWBS patient is additional encounter revenue. Throughput improvement enables volume growth without adding physicians. The financial case: visit recovery × net revenue per ED encounter.",
       },
     ],
+    matterLayout: '2col',
     chain: [
       { key: 'source', label: 'Abridge Ambient', sub: 'documentation AI', isSource: true },
       {
@@ -199,11 +204,11 @@ const edDomainCards: EDDomainCardData[] = [
     northStarSub: 'Physician retention is the financial outcome — but wellbeing is the leading signal. One precedes the other, and you can prove wellbeing long before turnover data matures.',
     matterBoxes: [
       {
-        tag: 'CFO conversation',
+        tag: 'CFO',
         body: "Each physician departure costs an estimated $250K–$500K to replace — recruiting, credentialing, onboarding, lost productivity. Locum coverage during vacancy adds further cost. Retention is the financial story.",
       },
       {
-        tag: 'CMO conversation',
+        tag: 'CMO',
         body: 'ED physicians have among the highest burnout rates in medicine. Documentation burden is a top-cited contributor. Wellbeing improvement is a mission outcome — and a proof point you can show in months, not years.',
       },
     ],
@@ -306,10 +311,15 @@ const edDomainCards: EDDomainCardData[] = [
     northStarSub: 'The revenue story in ED runs on two tracks — E/M coding lift and denial reduction. Neither alone tells the full picture. Both are driven by documentation completeness.',
     matterBoxes: [
       {
-        tag: 'Matters most if…',
-        body: "Your E/M distribution is skewed toward mid-level codes, your medical necessity denial rate is above 3–5%, or your revenue cycle team is flagging documentation gaps as a root cause of write-offs.",
+        tag: 'CFO / VP Revenue Cycle',
+        body: "E/M distribution skewed toward mid-level codes despite high-acuity visits, or medical necessity denial rate above 3–5%. Incomplete documentation produces preventable write-offs on both coding and denial tracks.",
+      },
+      {
+        tag: 'CMO',
+        body: "When the note doesn't reflect the clinical complexity of the encounter, the physician worked at a higher acuity than the record shows. Better documentation recovers the work already done — it's attribution, not upcoding.",
       },
     ],
+    matterLayout: '2col',
     alsoNote: "This is frequently the larger financial impact of the two revenue tracks — E/M coding uplift and denial recovery — and it lives in your revenue cycle team, not with the physician alone. Cross-departmental visibility is required to tell the full story.",
     chain: [
       { key: 'source', label: 'Abridge Ambient', sub: 'documentation AI', isSource: true },
@@ -856,7 +866,7 @@ function NewEDDomainCard({ data }: { data: EDDomainCardData }) {
 
         {data.alsoNote && (
           <div className="mt-3 px-4 py-4 rounded-xl border border-[#E0D4C4] bg-[#FAF6EF]">
-            <p className="text-[9px] font-bold tracking-[0.14em] uppercase text-[#999999] mb-1.5">Also Enables</p>
+            <p className="text-[9px] font-bold tracking-[0.14em] uppercase text-[#999999] mb-1.5">Also note</p>
             <p className="text-[12px] text-[#555555] leading-relaxed">{data.alsoNote}</p>
           </div>
         )}

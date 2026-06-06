@@ -89,10 +89,15 @@ const opDomainCards: OPDomainCardData[] = [
     northStarSub: "Third next available, same-day slot availability, and panel size are the metrics — but Patient Access is the outcome. When providers spend less time documenting per visit, they have more time for visits.",
     matterBoxes: [
       {
-        tag: 'Matters most if…',
-        body: "Your third next available appointment is above benchmark, same-day access is limited, providers are running behind schedule due to documentation, or you're competing on access in a market with alternative care options.",
+        tag: 'COO / Practice Operations',
+        body: "Third next available above benchmark, providers running behind schedule, or same-day access limited. Persistent schedule delays are frequently a documentation load problem — physicians are finishing prior charts during appointment time.",
+      },
+      {
+        tag: 'CFO',
+        body: "Each additional visit slot freed by documentation efficiency is direct revenue. Panel capacity expansion also defers the need for provider headcount additions. The model shows incremental encounter value against program cost.",
       },
     ],
+    matterLayout: '2col',
     chain: [
       { key: 'source', label: 'Abridge Ambient', sub: 'outpatient documentation AI', isSource: true },
       {
@@ -188,11 +193,11 @@ const opDomainCards: OPDomainCardData[] = [
     northStarSub: "Outpatient providers spend more time on documentation than nearly any other clinical activity. The average office-based physician spends 2 hours per day on EHR-related tasks outside of patient care — most of it after clinic hours.",
     matterBoxes: [
       {
-        tag: 'CFO conversation',
+        tag: 'CFO',
         body: "Replacing a primary care physician costs an estimated $250K–$350K in recruiting, credentialing, and practice rebuild costs. Replacing a specialist is often higher. Reducing documentation-driven turnover has direct financial impact.",
       },
       {
-        tag: 'CMO conversation',
+        tag: 'CMO',
         body: "Documentation burden is the #1 cited driver of outpatient physician burnout. It shows up specifically as pajama time — the hours spent finishing notes after patients have left and the clinic has closed for the day.",
       },
     ],
@@ -294,10 +299,15 @@ const opDomainCards: OPDomainCardData[] = [
     northStarSub: "E/M coding in outpatient runs on Medical Decision Making. When documentation captures the full complexity of the clinical conversation, codes reflect what was actually managed — and revenue per visit reflects the work actually done.",
     matterBoxes: [
       {
-        tag: 'Matters most if…',
-        body: "Your E/M level distribution is skewed toward lower codes despite high-complexity panels, your first-pass claim acceptance rate is below 95%, or your revenue cycle team is citing documentation gaps as a root cause of write-offs.",
+        tag: 'CFO / VP Revenue Cycle',
+        body: "E/M distribution underrepresenting complexity, first-pass claim acceptance below 95%, or revenue cycle citing documentation gaps as a denial root cause. Two recovery mechanisms — coding accuracy and denial prevention — both improve with the same intervention.",
+      },
+      {
+        tag: 'CMO / CDO',
+        body: "When documentation doesn't capture the complexity of the visit, the physician is billing below the work actually performed. Improved note quality recovers revenue already earned — it's attribution, not upcoding.",
       },
     ],
+    matterLayout: '2col',
     alsoNote: "HCC capture for Medicare Advantage contracts. Accurate documentation of chronic conditions supports accurate risk adjustment for value-based care contracts — connecting the revenue story to the quality infrastructure. Coding accuracy, not upcoding.",
     chain: [
       { key: 'source', label: 'Abridge Ambient', sub: 'outpatient documentation AI', isSource: true },
@@ -397,10 +407,15 @@ const opDomainCards: OPDomainCardData[] = [
     northStarSub: "Care gaps close through two mechanisms: documentation quality and physician presence. When documentation happens automatically, providers aren't mentally composing the note during the visit — they're fully in the encounter, which means they notice and act on more gaps. And when care is delivered, it gets captured with the specificity quality systems require.",
     matterBoxes: [
       {
-        tag: 'Matters most if…',
-        body: "Your HEDIS composite scores are below benchmark despite high clinical quality, your value-based contracts include quality performance incentives tied to care gap closure, or your Medicare Advantage STARS rating affects CMS bonus payment eligibility.",
+        tag: 'CMO / VP Quality',
+        body: "HEDIS scores below benchmark despite strong clinical performance, or quality gaps that don't match the care your team reports delivering. The gap is frequently documentation attribution — care was delivered, but not captured in a way quality systems can attribute.",
+      },
+      {
+        tag: 'CFO',
+        body: "Value-based contracts pay for documented quality performance. STARS ratings and shared savings calculations depend on care gap closure evidence. Documentation quality improvement is a direct quality revenue lever.",
       },
     ],
+    matterLayout: '2col',
     alsoNote: "HCC capture and RAF score accuracy for value-based contracts. When chronic condition documentation is complete and specific, risk adjustment reflects the actual patient population — which protects per-member-per-month revenue in capitated arrangements.",
     chain: [
       { key: 'source', label: 'Abridge Ambient', sub: 'outpatient documentation AI', isSource: true },
@@ -853,7 +868,7 @@ function OPDomainCard({ data }: { data: OPDomainCardData }) {
 
         {data.alsoNote && (
           <div className="mt-3 px-4 py-4 rounded-xl border border-[#E0D4C4] bg-[#FAF6EF]">
-            <p className="text-[9px] font-bold tracking-[0.14em] uppercase text-[#999999] mb-1.5">Also Enables</p>
+            <p className="text-[9px] font-bold tracking-[0.14em] uppercase text-[#999999] mb-1.5">Also note</p>
             <p className="text-[12px] text-[#555555] leading-relaxed">{data.alsoNote}</p>
           </div>
         )}

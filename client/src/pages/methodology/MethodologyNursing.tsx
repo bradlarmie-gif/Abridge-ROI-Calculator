@@ -90,10 +90,15 @@ const nursingDomainCards: NursingDomainCardData[] = [
     northStarSub: "Nursing is the only care setting where documentation time savings convert directly to a payroll dollar. Nurses are hourly. Every minute of post-shift charting that ambient flowsheet capture eliminates is a minute that doesn't appear on the overtime register — multiplied across a panel of 5–6 patients per shift.",
     matterBoxes: [
       {
-        tag: 'Matters most if…',
-        body: "Overtime is a visible line item in your nursing budget, time-and-attendance data shows consistent post-shift EHR activity, or the CFO wants a payroll-verifiable ROI metric rather than a modeled estimate. Payroll data makes this defensible within 90 days.",
+        tag: 'COO / CNO',
+        body: "Overtime a visible line item in the nursing budget, or time-and-attendance data showing consistent post-shift EHR activity. Post-shift documentation time is a direct overtime driver — nurses finishing charts after clock-out are working beyond scheduled hours.",
+      },
+      {
+        tag: 'CFO',
+        body: "EHR audit logs tie directly to time-and-attendance data — nurses finishing charts after shift end are charging overtime hours for documentation. This makes documentation ROI payroll-verifiable within 90 days, not a modeled estimate.",
       },
     ],
+    matterLayout: '2col',
     alsoNote: "Freed nursing time supports patient presence and bedside communication — a leading indicator of HCAHPS nurse communication scores that feeds Value-Based Purchasing.",
     chain: [
       { key: 'source', label: 'Abridge Nursing', sub: 'ambient flowsheet AI', isSource: true },
@@ -190,11 +195,11 @@ const nursingDomainCards: NursingDomainCardData[] = [
     northStarSub: "Nursing turnover runs 15–22% nationally. Documentation burden is consistently cited in ANA surveys as a top driver of the voluntary departures in that range. The mechanism is mathematical: a 12-hour shift generating 60–90 minutes of post-shift charting compresses recovery time for every nurse on every shift.",
     matterBoxes: [
       {
-        tag: 'CFO conversation',
+        tag: 'CFO',
         body: "Replacing one bedside RN costs an estimated $50K–$100K fully loaded — recruiting, onboarding, orientation, productivity ramp. Specialty and ICU nurses run higher. A unit with 20 nurses at 18% turnover replaces 3–4 nurses per year. Agency and travel nurse coverage during vacancies adds cost at 2–3× employed rates.",
       },
       {
-        tag: 'CNO conversation',
+        tag: 'CNO',
         body: "Documentation burden is the most actionable lever for nurse wellbeing because it's addressable at the tool level — unlike scheduling, patient acuity, or staffing ratios, which require system-level changes. Ambient flowsheet documentation reduces the per-patient charting burden across the full panel, shift after shift.",
       },
     ],
@@ -296,10 +301,15 @@ const nursingDomainCards: NursingDomainCardData[] = [
     northStarSub: "Nurses don't generate billing codes — but nursing documentation is audited. CMS, state surveyors, and commercial payers review nursing records during audits. Incomplete flowsheets and missing assessments are deficiency findings. Complete records are the defense.",
     matterBoxes: [
       {
-        tag: 'Matters most if…',
-        body: "Your compliance team is flagging nursing documentation as a risk area, CMS surveys or Joint Commission reviews have cited nursing record deficiencies, or concurrent review by payers is finding documentation gaps that support denial activity. Incomplete nursing records are both a quality risk and a revenue risk.",
+        tag: 'CFO / Revenue Cycle',
+        body: "Concurrent review by payers finding documentation gaps that support denial activity, or compliance team flagging nursing records as a denial risk. Incomplete nursing documentation creates revenue exposure that payer audits will find.",
+      },
+      {
+        tag: 'CMO / CNO',
+        body: "CMS survey or Joint Commission citations for nursing record deficiencies. Complete nursing records are the evidentiary foundation for both clinical quality reviews and payer compliance — the same documentation problem drives both risks.",
       },
     ],
+    matterLayout: '2col',
     alsoNote: "Complete nursing documentation supports CDI evidence for CC/MCC capture — nursing observations on skin breakdown, functional decline, and nutritional status corroborate the physician documentation that drives DRG accuracy. Value flows to the inpatient revenue story, not a nursing billing line.",
     chain: [
       { key: 'source', label: 'Abridge Nursing', sub: 'ambient flowsheet AI', isSource: true },
@@ -396,10 +406,15 @@ const nursingDomainCards: NursingDomainCardData[] = [
     northStarSub: "Falls, HAPIs, CAUTIs, CLABSIs — these are nursing-sensitive outcomes because nursing documentation is the clinical record for the assessments and interventions that prevent them. Real-time documentation closes the gap between a care event and when it's visible in the chart.",
     matterBoxes: [
       {
-        tag: 'Matters most if…',
-        body: "Your CNO or VP of Patient Safety is tracking nursing-sensitive harm event rates as a safety program goal, your hospital participates in the CMS HAC Reduction Program, or your patient safety program has specific targets for fall rates, HAPI incidence, or bundle compliance that nursing documentation quality directly enables.",
+        tag: 'CNO / VP Patient Safety',
+        body: "Nursing-sensitive harm event rates tracked as a safety program goal, specific targets for fall rates, HAPI incidence, or bundle compliance that nursing documentation directly enables.",
+      },
+      {
+        tag: 'CFO / COO',
+        body: "CMS HAC Reduction Program imposes payment reductions for hospitals in the worst-performing quartile. Nursing documentation quality influences harm event attributions that feed HAC scores and the publicly visible CMS star rating.",
       },
     ],
+    matterLayout: '2col',
     alsoNote: "Improvement in CMS Overall Hospital Quality Star Rating — nursing-sensitive harm event rates feed into multiple safety and quality domains that determine the publicly visible star rating patients and families use when choosing where to receive care.",
     chain: [
       { key: 'source', label: 'Abridge Nursing', sub: 'ambient flowsheet AI', isSource: true },
@@ -831,7 +846,7 @@ function NursingDomainCard({ data }: { data: NursingDomainCardData }) {
 
         {data.alsoNote && (
           <div className="mt-3 px-4 py-4 rounded-xl border border-[#E0D4C4] bg-[#FAF6EF]">
-            <p className="text-[9px] font-bold tracking-[0.14em] uppercase text-[#999999] mb-1.5">Also Enables</p>
+            <p className="text-[9px] font-bold tracking-[0.14em] uppercase text-[#999999] mb-1.5">Also note</p>
             <p className="text-[12px] text-[#555555] leading-relaxed">{data.alsoNote}</p>
           </div>
         )}

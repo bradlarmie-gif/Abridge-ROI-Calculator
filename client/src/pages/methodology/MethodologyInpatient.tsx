@@ -90,10 +90,15 @@ const ipDomainCards: IPDomainCardData[] = [
     northStarSub: 'Length of stay has too many drivers to claim. Documentation-attributed delays are a specific UM cause code — a trackable gap between when a patient is medically ready to discharge and when the documentation exists to act on it.',
     matterBoxes: [
       {
-        tag: 'Matters most if…',
-        body: "Utilization management is flagging documentation gaps as a reason for delayed discharge orders, your avoidable day rate is above peer benchmark, or CDI query loops are slowing down the discharge planning process.",
+        tag: 'COO / VP Patient Care',
+        body: "UM flagging documentation gaps as a cause of discharge delays, avoidable day rate above peer benchmark, or CDI query loops holding up discharge planning. Documentation bottlenecks create LOS variance that staffing and care management alone can't resolve.",
+      },
+      {
+        tag: 'CFO',
+        body: "Avoidable days cost on both sides — observation revenue is lower than inpatient, and payer denials increase when documentation doesn't establish medical necessity per level of care. Reducing documentation-driven LOS variance is direct cost avoidance.",
       },
     ],
+    matterLayout: '2col',
     chain: [
       { key: 'source', label: 'Abridge Ambient', sub: 'hospital documentation AI', isSource: true },
       {
@@ -191,11 +196,11 @@ const ipDomainCards: IPDomainCardData[] = [
     northStarSub: "Hospitalists manage 15–20 patients per shift, each requiring a progress note. That's 2–4 hours of daily documentation before the shift ends — and another hour after. Burnout here is mathematical, not emotional. Fix the math.",
     matterBoxes: [
       {
-        tag: 'CFO conversation',
+        tag: 'CFO',
         body: "Replacing a hospitalist costs an estimated $250K–$500K fully loaded — recruiting, credentialing, onboarding, productivity ramp. Locum coverage during the vacancy adds further cost at 2–3× employed rates.",
       },
       {
-        tag: 'CMO conversation',
+        tag: 'CMO',
         body: 'Documentation burden is the top-cited driver of hospitalist burnout. Reducing the mechanical charting load is the most direct, fastest-acting lever for improving physician wellbeing — ahead of schedule changes, team restructuring, or wellness programs.',
       },
     ],
@@ -297,10 +302,15 @@ const ipDomainCards: IPDomainCardData[] = [
     northStarSub: 'CMI is the financial fingerprint of clinical complexity. When documentation captures the full clinical story — comorbidities, complications, severity — DRG weights reflect what was actually managed, not what was minimally documented.',
     matterBoxes: [
       {
-        tag: 'Matters most if…',
-        body: "Your CMI is below peer benchmark despite similar patient acuity, your CDI team is running high query volume, your coder query-back rate is above 15%, or your DRG downgrade rate on concurrent review is climbing.",
+        tag: 'CFO / Revenue Cycle',
+        body: "CMI below peer benchmark despite comparable acuity, CDI query volume above 4 per provider per month, or DRG downgrade rate climbing on concurrent review. Query reduction and CMI improvement both compound across high admission volumes.",
+      },
+      {
+        tag: 'CMO / CDO',
+        body: "Documentation quality is a DRG accuracy problem. When hospitalists capture the full clinical picture in real time, the code reflects the encounter — CDI queries become exceptions rather than routine workflow overhead.",
       },
     ],
+    matterLayout: '2col',
     alsoNote: "Observation status defense is a second revenue mechanism that runs off the same admission documentation. Payers audit inpatient stays post-discharge and reclassify to observation APC if the documentation doesn't clearly establish medical necessity. The financial consequence is the IP-to-obs revenue delta — typically $3K–$8K per downgraded case — not the full claim value. The same admission note quality that drives DRG accuracy is the defense against that reclassification.",
     chain: [
       { key: 'source', label: 'Abridge Ambient', sub: 'hospital documentation AI', isSource: true },
@@ -399,11 +409,11 @@ const ipDomainCards: IPDomainCardData[] = [
     northStarSub: "Documentation drives readmission performance through two paths: clinical specificity that reduces CDI queries and enables accurate risk adjustment — and the physician presence that ambient documentation creates at the bedside. A hospitalist who is not navigating the EHR during rounds is fully present with the patient. HCAHPS measures that. Readmissions are the proof.",
     matterBoxes: [
       {
-        tag: 'Matters most if…',
+        tag: 'CMO / VP Quality',
         body: "Your HRRP report shows excess readmissions in any of the 6 penalized conditions, your HCAHPS doctor communication composite is below the 50th percentile, your CDI team is running above 4 queries per provider per month, or your VBP Total Performance Score is being dragged down by patient experience.",
       },
       {
-        tag: 'The financial stakes',
+        tag: 'CFO',
         body: "HRRP imposes up to 3% penalties on all base Medicare DRG payments — not just penalized conditions — for hospitals with excess readmissions in 6 high-volume conditions. HCAHPS doctor communication drives 25% of the VBP Total Performance Score, putting 2% of base Medicare payments at risk from a single domain.",
       },
     ],
@@ -833,7 +843,7 @@ function IPDomainCard({ data }: { data: IPDomainCardData }) {
 
         {data.alsoNote && (
           <div className="mt-3 px-4 py-4 rounded-xl border border-[#E0D4C4] bg-[#FAF6EF]">
-            <p className="text-[9px] font-bold tracking-[0.14em] uppercase text-[#999999] mb-1.5">Also Enables</p>
+            <p className="text-[9px] font-bold tracking-[0.14em] uppercase text-[#999999] mb-1.5">Also note</p>
             <p className="text-[12px] text-[#555555] leading-relaxed">{data.alsoNote}</p>
           </div>
         )}
