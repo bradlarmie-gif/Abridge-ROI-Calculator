@@ -164,7 +164,7 @@ const opDomainCards: OPDomainCardData[] = [
           { name: 'After-Hours EHR Activity', source: 'EHR session logs · documentation activity outside scheduled clinic hours · per-provider · pajama time proxy', badge: 'Month 2–4', why: "Pajama time dropping means providers have genuinely recaptured shift hours — not just deferred work to the next day. Without after-hours activity falling, same-day slot availability won't open up." },
           { name: 'Same-Day Appointment Slot Availability', source: 'Scheduling system · % of shifts with same-day slots open vs. fully booked · by provider', badge: 'Month 2–4', why: "The first scheduling signal that recaptured documentation time is turning into real capacity. Watch this before TNA improves — it moves faster because it reflects day-level flexibility, not average access." },
         ],
-        callout: '',
+        callout: "Two signals, one story: After-hours activity falling confirms the recaptured time is real — not deferred to the next morning, not absorbed by inbox, but genuinely returned. Same-day slot availability rising confirms scheduling is absorbing it. Both need to move together before Third Next Available can show meaningful improvement. Access can't open up if freed documentation time never reaches the schedule.",
       },
       proof: {
         window: 'Month 4–12',
@@ -472,9 +472,9 @@ const opDomainCards: OPDomainCardData[] = [
         window: 'Week 4–10',
         desc: 'Note specificity improves',
         metrics: [
+          { name: 'Note Completeness Score ↑', source: 'CDI audit, chart review rubric, or documentation quality tool · average completeness % across outpatient notes · Abridge providers vs. baseline', badge: 'Week 4–8', why: "Completeness is the upstream input for every downstream quality metric. HEDIS attribution, care gap closure, and chronic condition management all require notes that capture the full clinical encounter — not just the visit date and chief complaint. This is the foundational signal to establish before any outcome measure is credible." },
           { name: 'Care Gap Documentation Rate', source: "EHR or population health platform · % of scheduled care gap visits resulting in a documented care gap closure · Abridge vs. baseline · early proxy for attribution quality", badge: 'Week 4–8', why: "The upstream gate for everything downstream. If care gaps are being closed but not documented with sufficient specificity, quality systems can't attribute the closure. This measures whether documentation is opening that door." },
           { name: 'Post-Visit Note Specificity', source: 'Qualitative or CDI audit · % of notes containing specific terminology for preventive services vs. generic "discussed" language · directional signal', badge: 'Week 6–10', why: "Specific language (e.g., 'mammogram discussed, patient declined due to preference') is the difference between a closeable quality measure and a missed attribution. Generic notes can't be acted on by quality systems." },
-          { name: 'Note Completeness Score ↑', source: 'CDI audit, chart review rubric, or documentation quality tool · average completeness % across outpatient notes · Abridge providers vs. baseline', badge: 'Week 4–8', why: "Completeness is the upstream input for every downstream quality metric. HEDIS attribution, care gap closure, and chronic condition management all require notes that capture the full clinical encounter — not just the visit date and chief complaint. This is the foundational signal to establish before any outcome measure is credible." },
         ],
         callout: "Graduation signal: When post-visit note specificity for preventive and chronic care visits reaches a consistent high, the documentation foundation is in place. Start watching quality measure attribution rates as the next confirmation.",
       },
