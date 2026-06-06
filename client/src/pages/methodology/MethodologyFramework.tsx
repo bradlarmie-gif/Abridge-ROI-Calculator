@@ -832,58 +832,124 @@ export function MethodologyFramework({ onBack, onSelectSetting }: Props) {
               >
                 Before any of this is yours.
               </h2>
-              <p style={{ fontSize: 16, color: "rgba(255,255,255,0.42)", lineHeight: 1.75, maxWidth: 540, marginBottom: 40 }}>
-                Every metric in this framework is downstream of adoption. If Abridge is in the workflow — consistently, completely, across most providers — the story holds. If adoption is thin, every number becomes a correlation instead of a cause. Four gates. Check them before any care setting conversation begins.
+              <p style={{ fontSize: 16, color: "rgba(255,255,255,0.60)", lineHeight: 1.75, maxWidth: 560, marginBottom: 52 }}>
+                Every metric in this framework is downstream of adoption. If Abridge is in the workflow — consistently, completely, across most providers — the story holds. If adoption is thin, every number becomes a correlation instead of a cause. Three gates. Check them before any care setting conversation begins.
               </p>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* Gate track */}
+              <div style={{ position: "relative", marginBottom: 52 }}>
+                <div style={{ height: 1, background: "rgba(255,255,255,0.08)", position: "relative" }}>
+                  {[0, 50, 100].map((pct, idx) => (
+                    <div
+                      key={idx}
+                      style={{
+                        position: "absolute",
+                        top: "50%",
+                        left: `${pct}%`,
+                        transform: "translate(-50%, -50%)",
+                        width: 8,
+                        height: 8,
+                        borderRadius: "50%",
+                        background: "#EA2C00",
+                        boxShadow: "0 0 10px 3px rgba(234,44,0,0.45)",
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Three gate columns */}
+              <div className="grid grid-cols-1 md:grid-cols-3">
                 {([
                   {
-                    tag: "Breadth",
-                    label: "% of clinicians using ambient",
-                    why: "Coverage below 60–70% means the downstream numbers reflect a subpopulation. Attribution claims require most providers to be in the workflow.",
+                    num: "01",
+                    tag: "BREADTH",
+                    label: "Providers in workflow",
+                    threshold: "≥ 70% of providers",
+                    why: "Coverage below 70% means the downstream numbers reflect a subpopulation — not a system. Attribution claims require most providers to be in the workflow before domain metrics can move.",
                     source: "Platform analytics / Abridge dashboard",
                   },
                   {
-                    tag: "Depth",
-                    label: "% of encounters using ambient",
-                    why: "Selective use creates attribution gaps. Downstream metrics only hold when use is consistent across encounters — not just when it's convenient.",
+                    num: "02",
+                    tag: "DEPTH",
+                    label: "Encounters captured",
+                    threshold: "≥ 60% of encounters",
+                    why: "Selective use creates attribution gaps. Downstream metrics only hold when use is consistent across encounters — not just when it's convenient or the case is straightforward.",
                     source: "Platform analytics vs. EHR encounter count",
                   },
                   {
-                    tag: "Quality",
-                    label: "Avg ambient session duration",
-                    why: "Sessions under 5 minutes typically indicate abandonment. Complete encounters run 10–20 minutes. Duration confirms the session captured the clinical conversation.",
+                    num: "03",
+                    tag: "QUALITY",
+                    label: "Session completeness",
+                    threshold: "≥ 10 min avg session",
+                    why: "Sessions under 5 minutes typically indicate abandonment. Complete encounters run 10–20 minutes. Duration confirms the session captured the full clinical conversation.",
                     source: "Platform analytics",
-                  },
-                  {
-                    tag: "Output",
-                    label: "% of note completed by ambient vs. manual",
-                    why: "Confirms the note is Abridge-generated — not opened as a template and typed over. The higher this number, the stronger every attribution claim.",
-                    source: "Platform analytics / EHR audit logs",
                   },
                 ]).map((gate, i) => (
                   <motion.div
                     key={gate.tag}
                     initial={{ opacity: 0, y: 14 }}
                     animate={continuumInView ? { opacity: 1, y: 0 } : {}}
-                    transition={{ delay: 1.1 + i * 0.08, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                    className="rounded-xl p-5"
+                    transition={{ delay: 1.1 + i * 0.1, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                    className={`relative overflow-hidden ${i === 0 ? 'pr-0 md:pr-8 pb-10 md:pb-0' : 'pl-0 md:pl-8 pr-0 md:pr-8 pt-10 md:pt-0'}`}
                     style={{
-                      backgroundColor: "rgba(255,255,255,0.04)",
-                      border: "1px solid rgba(234,44,0,0.18)",
+                      borderLeft: i > 0 ? "1px solid rgba(255,255,255,0.06)" : undefined,
                     }}
                   >
-                    <p className="text-[9px] font-bold uppercase tracking-[2px] mb-3" style={{ color: "#EA2C00" }}>
+                    {/* Watermark number */}
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: -8,
+                        right: 8,
+                        fontSize: 92,
+                        fontWeight: 800,
+                        lineHeight: 1,
+                        color: "rgba(255,255,255,0.03)",
+                        letterSpacing: "-0.04em",
+                        userSelect: "none",
+                        pointerEvents: "none",
+                      }}
+                    >
+                      {gate.num}
+                    </div>
+
+                    {/* Tag */}
+                    <p className="text-[9px] font-bold uppercase tracking-[3px] mb-4" style={{ color: "#EA2C00" }}>
                       {gate.tag}
                     </p>
-                    <p style={{ fontSize: 14, fontWeight: 600, color: "rgba(255,255,255,0.88)", lineHeight: 1.35, marginBottom: 10 }}>
+
+                    {/* Metric label */}
+                    <p style={{ fontSize: 20, fontWeight: 700, color: "rgba(255,255,255,0.92)", lineHeight: 1.2, marginBottom: 16, letterSpacing: "-0.01em" }}>
                       {gate.label}
                     </p>
-                    <p style={{ fontSize: 12.5, color: "rgba(255,255,255,0.40)", lineHeight: 1.65, marginBottom: 14 }}>
+
+                    {/* Threshold pill */}
+                    <div
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 6,
+                        border: "1px solid rgba(234,44,0,0.30)",
+                        background: "rgba(234,44,0,0.06)",
+                        borderRadius: 100,
+                        padding: "4px 12px",
+                        marginBottom: 20,
+                      }}
+                    >
+                      <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#EA2C00", flexShrink: 0 }} />
+                      <span style={{ fontSize: 11.5, fontWeight: 700, color: "rgba(234,44,0,0.9)", letterSpacing: "0.01em" }}>
+                        {gate.threshold}
+                      </span>
+                    </div>
+
+                    {/* Why copy */}
+                    <p style={{ fontSize: 13.5, color: "rgba(255,255,255,0.58)", lineHeight: 1.72, marginBottom: 20 }}>
                       {gate.why}
                     </p>
-                    <p style={{ fontSize: 10.5, color: "rgba(255,255,255,0.20)" }}>
+
+                    {/* Source */}
+                    <p style={{ fontSize: 10.5, color: "rgba(255,255,255,0.30)" }}>
                       {gate.source}
                     </p>
                   </motion.div>
