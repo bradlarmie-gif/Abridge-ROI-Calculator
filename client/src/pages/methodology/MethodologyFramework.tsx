@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { motion, useInView } from "framer-motion";
+import { motion, useInView, useMotionValue, animate as animateValue } from "framer-motion";
 import { ArrowLeft, ChevronRight, Stethoscope, Zap, Building2, HeartPulse } from "lucide-react";
 import abridgeLogo from "@assets/abridge-logo-wordmark-red_1769020684647.png";
 
@@ -378,6 +378,35 @@ export function MethodologyFramework({ onBack, onSelectSetting }: Props) {
   const leversInView = useInView(leversRef, { once: true, margin: "-60px" });
   const continuumInView = useInView(continuumRef, { once: true, margin: "-80px" });
 
+  const arcPathRef = useRef<SVGPathElement>(null);
+  const arcDotRef = useRef<SVGCircleElement>(null);
+  const arcGlowRef = useRef<SVGCircleElement>(null);
+  const arcProgress = useMotionValue(0);
+
+  useEffect(() => {
+    if (!continuumInView) return;
+    const unsub = arcProgress.on("change", (v) => {
+      const path = arcPathRef.current;
+      const dot = arcDotRef.current;
+      const glow = arcGlowRef.current;
+      if (!path || !dot) return;
+      const len = path.getTotalLength();
+      const pt = path.getPointAtLength(v * len);
+      dot.setAttribute("cx", String(pt.x));
+      dot.setAttribute("cy", String(pt.y));
+      if (glow) { glow.setAttribute("cx", String(pt.x)); glow.setAttribute("cy", String(pt.y)); }
+    });
+    const controls = animateValue(arcProgress, [0, 1], {
+      duration: 13,
+      ease: [0.08, 0, 0.55, 1],
+      delay: 1.1,
+      repeat: Infinity,
+      repeatType: "loop",
+      repeatDelay: 4,
+    });
+    return () => { unsub(); controls.stop(); };
+  }, [continuumInView]);
+
   return (
     <div>
       {/* ── Header ─────────────────────────────────────────────────────── */}
@@ -684,37 +713,58 @@ export function MethodologyFramework({ onBack, onSelectSetting }: Props) {
                 The transcription layer is an evidence engine. What you can measure — and claim — grows with every conversation captured.
               </p>
               <div className="relative">
-                {/* SVG arc curve — replaces flat gradient line */}
+                {/* SVG arc — exponential J-curve, dot animates slow→fast along path */}
                 <svg
                   className="absolute hidden md:block pointer-events-none"
-                  style={{ top: "-12px", left: 0, width: "100%", height: "56px", overflow: "visible" }}
+                  style={{ top: "-64px", left: 0, width: "100%", height: "72px", overflow: "visible" }}
                   viewBox="0 0 100 18"
                   preserveAspectRatio="none"
                 >
                   <defs>
+                    {/* Gradient flows faint→bright-coral: value builds toward Strategic */}
                     <linearGradient id="arcStrokeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                      <stop offset="0%" stopColor="rgba(234,44,0,0.55)" />
-                      <stop offset="55%" stopColor="rgba(255,255,255,0.18)" />
-                      <stop offset="100%" stopColor="rgba(255,255,255,0.28)" />
+                      <stop offset="0%" stopColor="rgba(255,255,255,0.07)" />
+                      <stop offset="55%" stopColor="rgba(234,44,0,0.38)" />
+                      <stop offset="100%" stopColor="rgba(234,44,0,0.9)" />
                     </linearGradient>
                   </defs>
-                  {/* Cubic bezier: starts low-left, peaks center, ends low-right — the arc shape */}
-                  <path
-                    d="M 5,16 C 28,16 44,2 52,2 C 60,2 72,16 95,16"
+
+                  {/* Faint baseline at y=16 — the "unmeasured floor" */}
+                  <line x1="5" y1="16" x2="95" y2="16" stroke="rgba(255,255,255,0.05)" strokeWidth="0.3" strokeDasharray="1 2" />
+
+                  {/* J-curve path: flat through Emerging, accelerates sharply at Demonstrated, shoots off at Strategic */}
+                  <motion.path
+                    ref={arcPathRef as React.RefObject<SVGPathElement>}
+                    d="M 5,16 C 38,16 58,14.5 68,9 C 80,4 88,1 95,0.5"
                     fill="none"
                     stroke="url(#arcStrokeGrad)"
-                    strokeWidth="0.45"
+                    strokeWidth="0.5"
+                    initial={{ pathLength: 0 }}
+                    animate={continuumInView ? { pathLength: 1 } : {}}
+                    transition={{ duration: 5, ease: [0.08, 0, 0.55, 1], delay: 1.1 }}
                   />
-                  {/* Tick marks at each stage position */}
-                  {[5, 36, 64, 95].map((x, idx) => (
-                    <circle
-                      key={idx}
-                      cx={x}
-                      cy={idx === 0 || idx === 3 ? 16 : idx === 1 ? 7.8 : 7.8}
-                      r="1"
-                      fill={idx === 0 ? "rgba(234,44,0,0.7)" : "rgba(255,255,255,0.18)"}
-                    />
+
+                  {/* Stage tick dots — sitting on the curve */}
+                  {([
+                    { x: 5,  y: 16   },
+                    { x: 36, y: 15   },
+                    { x: 64, y: 9    },
+                    { x: 95, y: 0.5  },
+                  ] as { x: number; y: number }[]).map(({ x, y }, idx) => (
+                    <circle key={idx} cx={x} cy={y} r="0.7" fill="rgba(255,255,255,0.2)" />
                   ))}
+
+                  {/* Expanding glow ring — follows the moving dot, pulses outward */}
+                  <circle ref={arcGlowRef as React.RefObject<SVGCircleElement>} cx={5} cy={16} r="0" fill="none" stroke="rgba(234,44,0,0.45)" strokeWidth="0.35">
+                    <animate attributeName="r" values="0;2.2;5" dur="1.7s" repeatCount="indefinite" />
+                    <animate attributeName="stroke-opacity" values="0.65;0.22;0" dur="1.7s" repeatCount="indefinite" />
+                  </circle>
+
+                  {/* Moving red dot — position driven by arcProgress/getPointAtLength */}
+                  <circle ref={arcDotRef as React.RefObject<SVGCircleElement>} cx={5} cy={16} r="1.3" fill="#EA2C00">
+                    <animate attributeName="r" values="1.3;1.75;1.3" dur="0.88s" repeatCount="indefinite" />
+                    <animate attributeName="opacity" values="1;0.6;1" dur="0.88s" repeatCount="indefinite" />
+                  </circle>
                 </svg>
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-6">
@@ -735,18 +785,6 @@ export function MethodologyFramework({ onBack, onSelectSetting }: Props) {
                           transition: "background 0.2s, border-color 0.2s",
                         }}
                       >
-                        <div
-                          className="w-[30px] h-[30px] rounded-full flex items-center justify-center mb-5"
-                          style={{
-                            backgroundColor: isActive ? "rgba(234,44,0,0.14)" : `rgba(255,255,255,${0.06 + i * 0.02})`,
-                            border: `1px solid ${isActive ? "rgba(234,44,0,0.55)" : `rgba(255,255,255,${0.18 + i * 0.04})`}`,
-                            transition: "all 0.2s",
-                          }}
-                        >
-                          <span style={{ fontSize: 9.5, fontWeight: 700, color: isActive ? "#EA2C00" : `rgba(255,255,255,${0.6 + i * 0.1})`, transition: "color 0.2s" }}>
-                            {s.n}
-                          </span>
-                        </div>
                         <p style={{ fontSize: 9, fontWeight: 600, textTransform: "uppercase" as const, letterSpacing: "2px", color: "rgba(255,255,255,0.35)", marginBottom: 4 }}>
                           {s.range}
                         </p>

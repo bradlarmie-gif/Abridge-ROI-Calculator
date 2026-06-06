@@ -1,11 +1,9 @@
-import { motion } from "framer-motion";
-import { useState } from "react";
+import { motion, useInView } from "framer-motion";
+import { useState, useRef } from "react";
 import { ArrowLeft, Download, ArrowRight, Activity, Stethoscope, Heart, Loader2 } from "lucide-react";
 import { generateMethodologyPDF } from "@/lib/methodology-pdf-export";
 import abridgeLogo from '@assets/abridge-logo-wordmark-red_1769020684647.png';
 import {
-  CollapsibleSection,
-  ImpactBadge,
   NarrativeText,
   type BadgeType,
   type DomainName,
@@ -1053,65 +1051,107 @@ function IPDomainMethodologySection() {
 // ─── Value Arc Section ────────────────────────────────────────────────────────
 
 function IPValueArcSection() {
-  const stages: { badge: BadgeType; timing: string; title: string; description: string; domains: DomainName[] }[] = [
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: true, margin: "-80px" });
+
+  const stages: { number: string; badge: BadgeType; timing: string; title: string; description: string; activeDomains: DomainName[] }[] = [
     {
+      number: "01",
       badge: "Signal",
       timing: "Week 4–8",
       title: "The Provider Feels It",
       description: "H&P and progress note drafts appear in real time. After-shift charting drops measurably. EHR session timestamps show documentation time falling within weeks of consistent use.",
-      domains: ["CAPACITY", "WORKFORCE"],
+      activeDomains: ["CAPACITY", "WORKFORCE"],
     },
     {
+      number: "02",
       badge: "Trend",
       timing: "Month 2–4",
       title: "CDI Notices It",
       description: "Progress note specificity improves. CDI query rates drop as notes capture clinical reasoning without prompting. CC/MCC capture begins moving in claims data.",
-      domains: ["QUALITY", "REVENUE"],
+      activeDomains: ["QUALITY", "REVENUE"],
     },
     {
+      number: "03",
       badge: "Proof",
       timing: "Month 6–18",
       title: "The System Measures It",
       description: "CMI improvement validated against a provider cohort. Medical necessity denial rates traceable to documentation quality. Hospitalist retention signal begins to emerge.",
-      domains: ["REVENUE", "WORKFORCE"],
+      activeDomains: ["REVENUE", "WORKFORCE"],
     },
   ];
 
-  const chipStyles: Record<DomainName, string> = {
-    CAPACITY: "bg-[#F0EEEC] text-[#888888]",
-    WORKFORCE: "bg-[#EDECEB] text-[#555555]",
-    REVENUE: "bg-[#FFF0EC] text-[#EA2C00]",
-    QUALITY: "bg-[#E8E8E8] text-[#1A1A1A]",
-  };
-
   return (
-    <div className="mb-10">
-      <div className="mb-6 pb-3 border-b-2 border-[#EA2C00]">
-        <p className="text-[11px] font-bold uppercase tracking-[2.5px] text-[#888888] mb-2">Value Arc</p>
-        <h2 className="text-[24px] font-bold text-black tracking-tight">How It Accrues Over Time</h2>
-        <p className="text-sm text-[#888888] mt-1">
-          Value doesn't arrive all at once. The sequence is mechanistically predictable — not arbitrary.
-        </p>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 border border-[#E5E5E5] rounded-lg overflow-hidden divide-y md:divide-y-0 md:divide-x divide-[#E5E5E5]">
-        {stages.map((stage) => {
-          const cellBg = stage.badge === "Signal" ? "bg-white" : stage.badge === "Trend" ? "bg-[#F9F7F5]" : "bg-[#F5F0EB]";
-          return (
-            <div key={stage.badge} className={`${cellBg} px-6 py-6`}>
-              <div className="flex items-center justify-between mb-3">
-                <ImpactBadge type={stage.badge} />
-                <span className="text-[11px] font-medium text-[#888888]">{stage.timing}</span>
+    <div ref={ref} className="mb-10 rounded-2xl overflow-hidden" style={{ background: "linear-gradient(160deg, #141210 0%, #1C1714 100%)" }}>
+      <div className="px-8 pt-10 pb-8">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.5 }}
+          className="mb-8"
+        >
+          <p className="text-[11px] font-bold uppercase tracking-[2.5px] mb-2" style={{ color: "#EA2C00" }}>Value Arc</p>
+          <h2 className="text-[24px] font-bold text-white tracking-tight">How Value Accrues Over Time</h2>
+          <p className="text-[13px] mt-1.5 max-w-[520px] leading-relaxed" style={{ color: "rgba(255,255,255,0.38)" }}>
+            Value doesn't arrive all at once. The sequence is mechanistically predictable — each stage builds on the last.
+          </p>
+        </motion.div>
+
+        <div className="relative hidden md:block mb-7" style={{ height: 20 }}>
+          <div className="absolute left-0 right-0" style={{ top: "50%", height: 1, background: "rgba(255,255,255,0.07)", transform: "translateY(-50%)" }} />
+          <motion.div
+            className="absolute left-0"
+            style={{ top: "50%", height: 1.5, transform: "translateY(-50%)", background: "linear-gradient(90deg, rgba(234,44,0,0.35) 0%, #EA2C00 100%)", borderRadius: 2 }}
+            initial={{ width: "0%" }}
+            animate={isInView ? { width: "100%" } : {}}
+            transition={{ duration: 2.0, ease: "linear", delay: 0.5 }}
+          />
+          <div className="relative grid grid-cols-3 gap-3 h-full">
+            {stages.map((_, i) => (
+              <div key={i} className="flex justify-center items-center">
+                <motion.div
+                  style={{ width: 8, height: 8, borderRadius: "50%", background: "#EA2C00", position: "relative", zIndex: 1 }}
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={isInView ? { scale: 1, opacity: 1 } : {}}
+                  transition={{ delay: 0.5 + 2.0 * ([1 / 6, 1 / 2, 5 / 6][i]), duration: 0.22, ease: "backOut" }}
+                />
               </div>
-              <p className="text-[17px] font-bold text-black tracking-tight mb-2">{stage.title}</p>
-              <p className="text-[12px] text-[#666666] leading-relaxed mb-4">{stage.description}</p>
-              <div className="flex flex-wrap gap-1.5">
-                {stage.domains.map((d) => (
-                  <span key={d} className={`rounded-sm px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide ${chipStyles[d]}`}>{d}</span>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {stages.map((stage, i) => (
+            <motion.div
+              key={stage.badge}
+              initial={{ opacity: 0, y: 14 }}
+              animate={isInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.5, delay: [0.85, 1.5, 2.1][i], ease: [0.22, 1, 0.36, 1] }}
+              className="relative rounded-xl p-6 overflow-hidden flex flex-col"
+              style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}
+            >
+              <div
+                className="absolute bottom-1 right-2.5 text-[44px] font-black leading-none select-none pointer-events-none"
+                style={{ color: "rgba(255,255,255,0.04)", fontVariantNumeric: "tabular-nums" }}
+              >
+                {stage.number}
+              </div>
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-[9px] font-bold uppercase tracking-[0.1em]" style={{ color: "rgba(255,255,255,0.35)" }}>{stage.badge}</span>
+                <span className="text-[11px] font-medium tabular-nums" style={{ color: "rgba(255,255,255,0.28)" }}>{stage.timing}</span>
+              </div>
+              <p className="text-[19px] font-bold text-white tracking-tight leading-snug mb-2">{stage.title}</p>
+              <p className="text-[12px] leading-relaxed" style={{ color: "rgba(255,255,255,0.45)" }}>{stage.description}</p>
+              <div className="flex flex-wrap gap-1.5 pt-4 mt-auto" style={i < 2 ? { borderTop: "1px solid rgba(255,255,255,0.07)" } : undefined}>
+                {stage.activeDomains.map(d => (
+                  <span key={d} className="rounded-sm px-2.5 py-1 text-[9px] font-bold uppercase tracking-wide" style={{ background: "rgba(255,255,255,0.09)", color: "rgba(255,255,255,0.65)" }}>
+                    {d}
+                  </span>
                 ))}
               </div>
-            </div>
-          );
-        })}
+            </motion.div>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -1166,9 +1206,9 @@ export function MethodologyInpatient({ onBack, onHome, onNavigateToSetting, onBu
           </p>
         </motion.div>
 
-        <IPDomainMethodologySection />
-
         <IPValueArcSection />
+
+        <IPDomainMethodologySection />
 
         <IPValueArchitectureSection />
 
