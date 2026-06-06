@@ -638,7 +638,7 @@ function NursingValueArchitectureSection() {
     <div className="mt-10 mb-10">
       <div className="mb-5">
         <p className="text-[11px] font-bold uppercase tracking-[2.5px] text-[#888888] mb-1.5">The Value Architecture</p>
-        <h2 className="text-[22px] font-bold text-black tracking-tight">How Abridge Creates Value</h2>
+        <h2 className="text-[22px] font-bold text-black tracking-tight">Four formulas. Every line defensible.</h2>
         <p className="text-[13px] text-[#888888] mt-1">Four domains. Each formula shows the full calculation — which numbers are yours, which are industry estimates, and how they chain together.</p>
       </div>
       <div className="divide-y divide-[#EDEBE6] border border-[#E4DDD4] rounded-xl overflow-hidden">
@@ -689,19 +689,12 @@ function NursingValueArchitectureSection() {
                   </ul>
                 </div>
               )}
-              <div className="flex flex-wrap items-center gap-1.5 mb-4">
-                {item.chain.map((step, i) => (
-                  <div key={i} className="flex items-center gap-1.5">
-                    {i > 0 && <span className="text-[#C0B8B0] text-xs">→</span>}
-                    <span className="text-[10px] font-medium text-[#444444] bg-[#F6F3EF] border border-[#E4DDD5] rounded-md px-2.5 py-1.5 leading-none whitespace-nowrap">{step}</span>
-                  </div>
-                ))}
-                {item.chainOutput && (
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-[#C0B8B0] text-xs">→</span>
-                    <span className="text-[10px] font-semibold text-white bg-[#1A1A1A] rounded-md px-2.5 py-1.5 leading-none whitespace-nowrap">{item.chainOutput}</span>
-                  </div>
-                )}
+              <div className="mb-4" style={{ borderLeft: "2px solid rgba(234,44,0,0.20)", paddingLeft: 14 }}>
+                <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-[#AAAAAA] mb-1.5">Evidence Chain</p>
+                <p className="text-[12px] text-[#666666] leading-[1.55]">
+                  {item.chain.join(' → ')}
+                  {item.chainOutput && <> → <span className="font-semibold text-[#333333]">{item.chainOutput}</span></>}
+                </p>
               </div>
               {item.steps && (
                 <div className="rounded-xl overflow-hidden border border-[#DEDAD2]">
