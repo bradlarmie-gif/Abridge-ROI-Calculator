@@ -166,7 +166,7 @@ const ipDomainCards: IPDomainCardData[] = [
           { name: 'Case Manager Notification Lead Time', source: 'Case management system · hours between physician progress note sign and CM review of note · proxy for shared clinical picture lag', badge: 'Month 2–5', why: "Exposes whether note timeliness improvement is actually translating to earlier discharge planning — or whether case managers are still waiting for notes even after physicians sign them." },
           { name: 'Discharge Summary Timeliness', source: 'HIM / EHR data · hours from patient discharge to signed discharge summary · Abridge providers vs. baseline', badge: 'Month 2–4', why: "Late discharge summaries delay post-acute placement, primary care follow-up, and care transitions. When ambient documentation reduces the burden of producing the discharge summary itself, the clock from discharge to signed handoff shortens — giving downstream providers what they need sooner." },
         ],
-        callout: '',
+        callout: "Three signals, one story: Discharge goal documentation moving earlier gives case management more runway. Case manager notification lead time confirms that earlier planning is actually happening — not just documented in the note. Discharge summary timeliness confirms the handoff is cleaner at the end. All three need to trend together before documentation-attributed delay codes will move in the proof stage.",
       },
       proof: {
         window: 'Month 4–12',
