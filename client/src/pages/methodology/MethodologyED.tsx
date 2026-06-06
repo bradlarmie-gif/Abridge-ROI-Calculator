@@ -1085,27 +1085,49 @@ function EDDomainMethodologySection() {
 
 function EDAdoptionSection() {
   const metrics = [
-    { label: "% of ED clinicians using ambient", note: "Platform analytics / Abridge dashboard" },
-    { label: "% of encounters using ambient", note: "Platform analytics vs. EHR encounter count" },
-    { label: "Notes generated per shift", note: "Platform analytics" },
-    { label: "Avg ambient session duration", note: "Platform analytics" },
-    { label: "% of note completed by ambient vs. manual", note: "Platform analytics / EHR audit logs" },
+    {
+      tag: "Breadth",
+      label: "% of ED clinicians using ambient",
+      why: "Is Abridge in the workflow for most providers, or concentrated in a few early adopters? Coverage below 60–70% makes attribution claims unreliable — the downstream numbers reflect a subpopulation, not the department.",
+      source: "Platform analytics / Abridge dashboard",
+    },
+    {
+      tag: "Depth",
+      label: "% of encounters using ambient",
+      why: "Are providers using it every patient, or selectively? Selective use creates attribution gaps. Downstream metrics only hold when use is consistent across encounters — not just when it's convenient.",
+      source: "Platform analytics vs. EHR encounter count",
+    },
+    {
+      tag: "Quality",
+      label: "Avg ambient session duration",
+      why: "Sessions under 5 minutes typically indicate abandonment before full note capture. Complete ED encounters run 10–20 minutes. Duration is the behavioral proof the session actually captured the clinical conversation.",
+      source: "Platform analytics",
+    },
+    {
+      tag: "Output",
+      label: "% of note completed by ambient vs. manual",
+      why: "Confirms the note is Abridge-generated — not opened as a template and then typed over. The higher this percentage, the stronger every downstream attribution claim in this framework.",
+      source: "Platform analytics / EHR audit logs",
+    },
   ];
 
   return (
-    <div className="mb-10 bg-[#1A1A1A] rounded-sm overflow-hidden">
-      <div className="px-6 pt-6 pb-4">
-        <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#EA2C00] mb-1">Non-Negotiable</p>
-        <h3 className="text-base font-bold text-white mb-2">Foundational: Adoption & Utilization</h3>
+    <div className="mb-10 bg-[#1A1A1A] rounded-lg overflow-hidden">
+      <div className="h-[3px] bg-[#EA2C00]" />
+      <div className="px-6 pt-6 pb-5">
+        <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#EA2C00] mb-1.5">Non-Negotiable</p>
+        <h3 className="text-base font-bold text-white mb-3">Foundational: Adoption & Utilization</h3>
         <p className="text-[13px] text-[#888888] leading-relaxed">
-          If adoption isn't demonstrated, no downstream metric can be attributed to Abridge. Every ROI conversation has to establish these first — before any capacity, revenue, or quality number carries weight.
+          Every number in this framework is downstream of this section. If adoption is real — consistent, complete, across most providers — the downstream story holds. If adoption is thin, every metric becomes a correlation instead of a cause. These four gates determine attribution. Verify them first, every time.
         </p>
       </div>
       <div className="px-6 pb-6 grid grid-cols-1 sm:grid-cols-2 gap-2">
         {metrics.map((m) => (
-          <div key={m.label} className="bg-[#2D2D2D] rounded-sm p-4">
-            <p className="text-[13px] text-white font-medium mb-1">{m.label}</p>
-            <p className="text-[11px] text-[#666666]">{m.note}</p>
+          <div key={m.label} className="bg-[#242424] rounded-sm p-4 border-l-2 border-[#EA2C00]">
+            <p className="text-[9px] font-bold uppercase tracking-[1.5px] text-[#EA2C00] mb-2">{m.tag}</p>
+            <p className="text-[13px] text-white font-semibold mb-2">{m.label}</p>
+            <p className="text-[12px] text-[#999999] leading-relaxed mb-2.5">{m.why}</p>
+            <p className="text-[10px] text-[#555555]">{m.source}</p>
           </div>
         ))}
       </div>

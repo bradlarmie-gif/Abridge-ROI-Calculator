@@ -1007,6 +1007,60 @@ function NursingDomainCard({ data }: { data: NursingDomainCardData }) {
   );
 }
 
+// ─── Nursing Adoption Section ─────────────────────────────────────────────────
+
+function NursingAdoptionSection() {
+  const metrics = [
+    {
+      tag: "Breadth",
+      label: "% of nurses using ambient flowsheet",
+      why: "Is Abridge in the workflow for most nurses on pilot units, or only a few early adopters? Coverage below 60–70% makes unit-level attribution unreliable — the overtime and compliance story only holds at scale.",
+      source: "Platform analytics / Abridge dashboard",
+    },
+    {
+      tag: "Depth",
+      label: "% of patient assessments using ambient",
+      why: "Are nurses using it for every patient, or selectively? The panel-level overtime story depends on consistent use across all 5–6 patients per shift — selective use creates gaps that break the aggregate math.",
+      source: "Platform analytics vs. EHR assessment count",
+    },
+    {
+      tag: "Quality",
+      label: "Avg ambient session duration",
+      why: "Short sessions indicate abandonment before full assessment capture. A complete nursing documentation event runs 8–15 minutes per patient. Duration confirms the tool is capturing actual bedside care, not just being opened.",
+      source: "Platform analytics",
+    },
+    {
+      tag: "Output",
+      label: "% of flowsheet completed by ambient vs. manual",
+      why: "Confirms the flowsheet entry is ambient-captured — not opened and then manually typed. The higher this percentage, the stronger every downstream claim about overtime reduction and documentation quality.",
+      source: "Platform analytics / EHR audit logs",
+    },
+  ];
+
+  return (
+    <div className="mb-10 bg-[#1A1A1A] rounded-lg overflow-hidden">
+      <div className="h-[3px] bg-[#EA2C00]" />
+      <div className="px-6 pt-6 pb-5">
+        <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#EA2C00] mb-1.5">Non-Negotiable</p>
+        <h3 className="text-base font-bold text-white mb-3">Foundational: Adoption & Utilization</h3>
+        <p className="text-[13px] text-[#888888] leading-relaxed">
+          Every number in this framework is downstream of this section. If adoption is real — consistent, complete, across most nurses on pilot units — the downstream story holds. If adoption is thin, every metric becomes a correlation instead of a cause. These four gates determine attribution. Verify them first, every time.
+        </p>
+      </div>
+      <div className="px-6 pb-6 grid grid-cols-1 sm:grid-cols-2 gap-2">
+        {metrics.map((m) => (
+          <div key={m.label} className="bg-[#242424] rounded-sm p-4 border-l-2 border-[#EA2C00]">
+            <p className="text-[9px] font-bold uppercase tracking-[1.5px] text-[#EA2C00] mb-2">{m.tag}</p>
+            <p className="text-[13px] text-white font-semibold mb-2">{m.label}</p>
+            <p className="text-[12px] text-[#999999] leading-relaxed mb-2.5">{m.why}</p>
+            <p className="text-[10px] text-[#555555]">{m.source}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ─── Nursing Domain Methodology Section ──────────────────────────────────────
 
 function NursingDomainMethodologySection() {
@@ -1211,6 +1265,8 @@ export function MethodologyNursing({ onBack, onHome, onNavigateToSetting, onBuil
         <NursingValueArcSection />
 
         <NursingDomainMethodologySection />
+
+        <NursingAdoptionSection />
 
         <NursingValueArchitectureSection />
 
