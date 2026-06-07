@@ -423,7 +423,7 @@ const edDomainCards: EDDomainCardData[] = [
         tag: 'CFO / COO',
         body: "Documentation deficiency resolution is a hidden operational cost — peer review, HIM rework, and appeal cycles that rarely surface in quality dashboards. Every hour the quality team spends closing documentation gaps is an hour not spent on performance improvement that reduces readmissions, penalties, or length of stay.",
       },
-    ]
+    ],
     chain: [
       { key: 'source', label: 'Abridge Ambient', sub: 'documentation AI', isSource: true },
       {
