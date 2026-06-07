@@ -25,7 +25,13 @@ export default function ExploreWorkforce({ state, updateState, totalHoursSaved, 
   const drivers = setting ? getDriversForPage('Workforce', setting) : [];
   const topLevelDrivers = drivers.filter(d => !d.childOfDriverId);
   const financialDrivers = topLevelDrivers.filter(d => d.visibility === 'quantified');
-  const watchMetrics = topLevelDrivers.filter(d => d.visibility === 'qualitative');
+  const watchMetrics = topLevelDrivers
+    .filter(d => d.visibility === 'qualitative')
+    .sort((a, b) => {
+      if (a.comingSoon && !b.comingSoon) return 1;
+      if (!a.comingSoon && b.comingSoon) return -1;
+      return a.label.localeCompare(b.label);
+    });
 
   const updateTimeDriverInputs = (updates: Partial<typeof state.timeDriverInputs>) => {
     updateState({ timeDriverInputs: { ...state.timeDriverInputs, ...updates } });

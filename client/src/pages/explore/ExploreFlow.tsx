@@ -115,18 +115,9 @@ export interface TimeDriverInputs {
   ipAnnualTurnoverRate: number; // Hospitalist turnover rate
   ipBurnoutRelatedTurnover: number; // % of turnover burnout-related
   ipReplacementCost: number; // Hospitalist replacement cost
-  // Inpatient hospital baseline (gathered on Opportunity screen)
-  ipStaffedBeds: number;
-  ipOccupancyRate: number;
-  ipAlos: number;
-  ipNetRevenuePerAdmission: number;
-  ipAnnualDischarges: number; // 0 = not set, derive from beds × occupancy × 365 / ALOS
-  // Discharge Planning Initiation driver
+  // Discharge Planning Initiation driver (qualitative — no calc inputs needed)
   ipDischargePlanningEnabled: boolean;
   ipDischargePlanningExpanded: boolean;
-  ipDischargeLagAffectedRate: number;
-  ipDbnCrossNoonRate: number;
-  ipBedFillRate: number;
   
   // Outpatient time allocation
   opAllocCapacityPercent: number;
@@ -616,18 +607,8 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     ipAnnualTurnoverRate: 8, // Hospitalist turnover: 8%
     ipBurnoutRelatedTurnover: 45, // 45% of turnover is burnout-related
     ipReplacementCost: 300000, // $300,000 replacement cost
-    // Inpatient hospital baseline defaults
-    ipStaffedBeds: 300,
-    ipOccupancyRate: 75,
-    ipAlos: 4.5,
-    ipNetRevenuePerAdmission: 12000,
-    ipAnnualDischarges: 0,
-    // Discharge Planning Initiation defaults
     ipDischargePlanningEnabled: false,
     ipDischargePlanningExpanded: false,
-    ipDischargeLagAffectedRate: 30,
-    ipDbnCrossNoonRate: 40,
-    ipBedFillRate: 25,
     // Outpatient time allocation defaults (auto-set, no longer user-facing)
     opAllocCapacityPercent: 33,
     opAllocDocQualityPercent: 34,

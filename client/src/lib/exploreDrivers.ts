@@ -19,7 +19,6 @@ import DenialPreventionCalc from "@/components/explore/drivers/DenialPreventionC
 import DrgAccuracyCalc from "@/components/explore/drivers/DrgAccuracyCalc";
 
 import ObsDefenseCalc from "@/components/explore/drivers/ObsDefenseCalc";
-import InpatientDischargePlanningCalc from "@/components/explore/drivers/InpatientDischargePlanningCalc";
 import ScribeCostReductionCalc from "@/components/explore/drivers/ScribeCostReductionCalc";
 
 export type ExploreQuadrant = 'Capacity' | 'Workforce' | 'Revenue' | 'Quality';

@@ -25,7 +25,13 @@ export default function ExploreQuality({ state, updateState, totalHoursSaved, pr
   const drivers = setting ? getDriversForPage('Quality', setting) : [];
   const topLevelDrivers = drivers.filter(d => !d.childOfDriverId);
   const financialDrivers = topLevelDrivers.filter(d => d.visibility === 'quantified');
-  const watchMetrics = topLevelDrivers.filter(d => d.visibility === 'qualitative');
+  const watchMetrics = topLevelDrivers
+    .filter(d => d.visibility === 'qualitative')
+    .sort((a, b) => {
+      if (a.comingSoon && !b.comingSoon) return 1;
+      if (!a.comingSoon && b.comingSoon) return -1;
+      return a.label.localeCompare(b.label);
+    });
 
   const updateTimeDriverInputs = (updates: Partial<typeof state.timeDriverInputs>) => {
     updateState({ timeDriverInputs: { ...state.timeDriverInputs, ...updates } });

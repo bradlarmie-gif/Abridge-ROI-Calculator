@@ -25,7 +25,13 @@ export default function ExploreCapacity({ state, updateState, totalHoursSaved, p
   const drivers = setting ? getDriversForPage('Capacity', setting) : [];
   const topLevelDrivers = drivers.filter(d => !d.childOfDriverId);
   const financialDrivers = topLevelDrivers.filter(d => d.visibility === 'quantified');
-  const watchMetrics = topLevelDrivers.filter(d => d.visibility === 'qualitative');
+  const watchMetrics = topLevelDrivers
+    .filter(d => d.visibility === 'qualitative')
+    .sort((a, b) => {
+      if (a.comingSoon && !b.comingSoon) return 1;
+      if (!a.comingSoon && b.comingSoon) return -1;
+      return a.label.localeCompare(b.label);
+    });
 
   const updateTimeDriverInputs = (updates: Partial<typeof state.timeDriverInputs>) => {
     updateState({ timeDriverInputs: { ...state.timeDriverInputs, ...updates } });
@@ -116,19 +122,6 @@ export default function ExploreCapacity({ state, updateState, totalHoursSaved, p
     if (isNursing && td.nursingOtEnabled) {
       const otHrs = td.nursingOtHoursPerNurseWeek * (td.nursingOtReductionPercent / 100) * state.numberOfProviders * 52;
       result.nursingOvertime = Math.round(otHrs * td.nursingOtHourlyRate);
-    }
-
-    const isIP = state.careSetting === 'inpatient';
-    if (isIP && td.ipDischargePlanningEnabled) {
-      const annualDischarges = td.ipAnnualDischarges >= 100
-        ? td.ipAnnualDischarges
-        : td.ipStaffedBeds > 0 && td.ipAlos > 0
-          ? Math.round(td.ipStaffedBeds * (td.ipOccupancyRate / 100) * 365 / td.ipAlos)
-          : state.annualEncounters;
-      const affected = annualDischarges * (td.ipDischargeLagAffectedRate / 100);
-      const dbnUplift = affected * (td.ipDbnCrossNoonRate / 100);
-      const incrementalAdmissions = dbnUplift * (td.ipBedFillRate / 100);
-      result.ipDischargePlanning = Math.round(incrementalAdmissions * td.ipNetRevenuePerAdmission);
     }
 
     return result;

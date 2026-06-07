@@ -118,18 +118,6 @@ export function computeAllDriverValues(
       );
     }
   }
-  if (isIP && td.ipDischargePlanningEnabled) {
-    const annualDischarges = td.ipAnnualDischarges >= 100
-      ? td.ipAnnualDischarges
-      : td.ipStaffedBeds > 0 && td.ipAlos > 0
-        ? Math.round(td.ipStaffedBeds * (td.ipOccupancyRate / 100) * 365 / td.ipAlos)
-        : state.annualEncounters;
-    const affected = annualDischarges * (td.ipDischargeLagAffectedRate / 100);
-    const dbnUplift = affected * (td.ipDbnCrossNoonRate / 100);
-    const incrementalAdmissions = dbnUplift * (td.ipBedFillRate / 100);
-    result.ipDischargePlanning = Math.round(incrementalAdmissions * td.ipNetRevenuePerAdmission);
-  }
-
   // ─── Workforce ───
   const RETENTION_SCENARIOS_PHYSICIAN = retentionPhysician(td.retentionCustomPercent ?? 10);
   const RETENTION_SCENARIOS_NURSING = retentionNursing(td.retentionCustomPercent ?? 10);
@@ -426,14 +414,6 @@ export function computeAllDriverCalcSummaries(
     const preventableScenarios: Record<string, number> = { conservative: 25, typical: 40, aggressive: 55 };
     const preventablePct = preventableScenarios[dq.ipObsDefensePreventableScenario] ?? 40;
     out.obsDefense = `${fmtN(eligibleEncounters)} encounters × ${dq.ipObsDefenseDenialRate}% downgrade rate × ${fmt$(dq.ipObsDefenseRevenueDelta)}/case delta × ${preventablePct}% doc-preventable × ${dq.ipObsDefenseRealization}% realization`;
-  }
-  if (isIP && td.ipDischargePlanningEnabled) {
-    const annualDischarges = td.ipAnnualDischarges >= 100
-      ? td.ipAnnualDischarges
-      : td.ipStaffedBeds > 0 && td.ipAlos > 0
-        ? Math.round(td.ipStaffedBeds * (td.ipOccupancyRate / 100) * 365 / td.ipAlos)
-        : state.annualEncounters;
-    out.ipDischargePlanning = `${fmtN(annualDischarges)} annual discharges × ${td.ipDischargeLagAffectedRate}% discharge-lag affected × ${td.ipDbnCrossNoonRate}% DBN/cross-noon conversion × ${td.ipBedFillRate}% bed fill rate × ${fmt$(td.ipNetRevenuePerAdmission)}/admission`;
   }
 
   // Quality (Nursing only quantified) — derive every multiplicand from the
