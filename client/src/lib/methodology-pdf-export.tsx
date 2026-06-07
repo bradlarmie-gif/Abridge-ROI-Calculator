@@ -90,7 +90,7 @@ export const settingData: Record<MethodologyCareSetting, SettingPDFData> = {
         signal: {
           window: "Week 4–8",
           desc: "Documentation behavior shifts",
-          metrics: ["Documentation Time Per Encounter", "After-Shift Charting Time"],
+          metrics: ["Documentation Time Per Encounter ↓", "Same-Shift Note Completion Rate ↑"],
           callout:
             "Documentation time is the upstream gate. Until it reaches a consistent low, physician availability, bed cycle time, and LWBS all stay locked. Stabilizing this metric isn't the goal — it's the precondition for every outcome downstream.",
         },
@@ -104,7 +104,7 @@ export const settingData: Record<MethodologyCareSetting, SettingPDFData> = {
         proof: {
           window: "Month 7–12+",
           desc: "Access outcomes confirmed",
-          metrics: ["LWBS Rate (%)", "Additional Patient Volume"],
+          metrics: ["LWBS Rate (%)", "Additional Patient Volume", "Admitted Patient Volume ↑"],
           callout:
             "LWBS moves at 7–12 months for two reasons that compound: throughput improvement has to be consistent enough that patients who would have left are actually being seen before they leave — that requires department-wide adoption; and volume has to be present to fill the recaptured capacity. Both conditions have to hold simultaneously.",
         },
@@ -127,7 +127,7 @@ export const settingData: Record<MethodologyCareSetting, SettingPDFData> = {
         signal: {
           window: "Week 4–8",
           desc: "EHR behavior changes",
-          metrics: ["After-Shift Charting Time (Pajama Time)", "Documentation Time Per Encounter"],
+          metrics: ["After-Shift Charting Time (Pajama Time)", "In-Shift Documentation Completion Rate ↑"],
           callout:
             "For consistent adopters, EHR audit data typically shows pajama time reduction within the first month, requires no coordination, and is the most visceral proof point for physicians. It's also your adoption infrastructure — physicians who experience reduced pajama time tell each other. The peer conversation that happens around this metric is what drives adoption in months 2–6.",
         },
@@ -141,7 +141,7 @@ export const settingData: Record<MethodologyCareSetting, SettingPDFData> = {
         proof: {
           window: "Month 12–18",
           desc: "Retention confirmed",
-          metrics: ["Voluntary Physician Turnover Rate", "Locum & Agency Utilization"],
+          metrics: ["Voluntary Physician Turnover Rate", "Vacancy Fill Time", "Locum & Agency Utilization"],
           callout:
             "Voluntary turnover requires 12–18 months for two reasons: individual departure decisions accumulate and reverse slowly, and annual departure counts are small enough that statistical movement requires a full measurement year. A group of 30 physicians at 10% voluntary turnover produces 3 departures per year — preventing 1 additional departure is meaningful financially, but requires a full year to see.",
         },
@@ -171,7 +171,7 @@ export const settingData: Record<MethodologyCareSetting, SettingPDFData> = {
         trend: {
           window: "Month 1–4",
           desc: "Coding patterns emerge",
-          metrics: ["E/M Level Distribution (99281–99285 mix)", "CDI Query Rate on Admissions"],
+          metrics: ["E/M Level Distribution", "First-Pass Claim Acceptance Rate ↑"],
           callout:
             "A single wRVU average can sit flat while the distribution shifts meaningfully — fewer mid-level codes, more high-acuity codes. Always show the full distribution alongside the mean. When providers who adopt consistently show more high-level codes in their distribution, documentation is improving — revenue follows the coding, and coding follows the note quality.",
         },
@@ -201,7 +201,7 @@ export const settingData: Record<MethodologyCareSetting, SettingPDFData> = {
         signal: {
           window: "Week 4 – Month 3",
           desc: "Documentation behavior shifts",
-          metrics: ["Note Completion Rate (Same Shift)", "CDI Query Rate on ED Admissions"],
+          metrics: ["Note Completeness Score ↑", "Note Completion Rate (Same Shift)"],
           callout:
             "CDI query rate on ED admissions drops in the first 1–3 months because clinical documentation is capturing complexity during the encounter rather than requiring clarification after it. A declining rate is evidence that documentation quality is improving — observable months before any quality score moves.",
         },
@@ -252,7 +252,7 @@ export const settingData: Record<MethodologyCareSetting, SettingPDFData> = {
         signal: {
           window: "Week 4–10",
           desc: "Note timeliness moves",
-          metrics: ["Progress Note Completion Time", "Same-Encounter Note Completion Rate"],
+          metrics: ["Morning Rounding Note Completion Time ↓", "Same-Encounter Note Completion Rate"],
           callout:
             "Progress note completion time shows up in EHR audit data within the first month. This is the first upstream signal: when notes complete before rounding ends, the clinical picture is available to the full care team earlier in the day. Without this changing, nothing downstream in the discharge chain can improve — case managers can't act on notes that don't exist yet.",
         },
@@ -266,7 +266,7 @@ export const settingData: Record<MethodologyCareSetting, SettingPDFData> = {
         proof: {
           window: "Month 4–12",
           desc: "Delay cause codes move",
-          metrics: ["Documentation-Attributed Delay Rate", "Avoidable Day Rate"],
+          metrics: ["Discharge Order Lead Time ↓", "Avoidable Day Rate"],
           callout:
             "Always filter to the documentation-specific cause code bucket — total avoidable day rate has too many concurrent drivers to attribute cleanly. The documentation-attributed subset is where Abridge has direct attribution. Avoidable day measurement requires administrative coding of delay causes, which is reviewed retrospectively — that's the source of the Month 4–12 lag.",
         },
@@ -326,7 +326,7 @@ export const settingData: Record<MethodologyCareSetting, SettingPDFData> = {
         signal: {
           window: "Week 4–8",
           desc: "CDI query volume drops",
-          metrics: ["Coder Query-Back Rate", "CDI Query Rate per Provider"],
+          metrics: ["Admission Note Completeness Score ↑", "CDI Query Rate per Provider ↓"],
           callout:
             "CDI query rate is the most direct early signal of documentation quality improvement, and it's already tracked in most health systems. Each CDI query is a documentation failure made visible — a clinical condition the provider knew about that wasn't captured with sufficient specificity for DRG accuracy. When query rates drop, documentation is improving — observable months before claims data reflects the change.",
         },
@@ -348,7 +348,7 @@ export const settingData: Record<MethodologyCareSetting, SettingPDFData> = {
       {
         domain: "QUALITY",
         badge: "Severity Capture & Risk Adjustment",
-        northStar: "Risk-Adjusted Quality Score Accuracy",
+        northStar: "30-Day Readmission Rate",
         direction: "↑",
         sub: "Risk-adjusted quality metrics — observed-to-expected mortality, readmission rates, PSI-90 — use documented complexity to calculate the expected outcome. If documentation understates how sick the patient was, the risk model assumes a lower-acuity case, sets a lower expected mortality, and any adverse outcome looks worse relative to peers. Documentation doesn't change what care was delivered — but it does determine whether quality systems credit the care appropriately. Complete severity documentation improves the denominator (expected outcomes), which improves the O/E ratio, even when actual care quality is unchanged.",
         matterMostIf:
@@ -363,21 +363,21 @@ export const settingData: Record<MethodologyCareSetting, SettingPDFData> = {
         signal: {
           window: "Week 4–8",
           desc: "CDI query rates respond",
-          metrics: ["CDI Query Rate per Provider", "CDI Query Agreement Rate"],
+          metrics: ["Clinical Reasoning Capture Rate ↑", "Same-Shift Progress Note Completion Rate ↑"],
           callout:
             "When CDI query rate drops consistently and agreement rate on remaining queries also drops (CDI is increasingly sending queries on ambiguous cases rather than clear documentation gaps), the documentation quality baseline has improved. This is the graduation signal: documentation is capturing complexity at the point of care rather than requiring clarification after the fact. Start watching severity classification data.",
         },
         trend: {
           window: "Month 2–6",
           desc: "Severity capture improves",
-          metrics: ["High-Severity Case Classification Rate (SOI 3/4)", "Chronic Condition Documentation Rate"],
+          metrics: ["Core Measure Documentation Rate ↑", "Discharge Summary Timeliness"],
           callout:
             "SOI level improvement shows up in CDI and coding data before it appears in publicly reported quality scores. Track it at the provider cohort level — SOI improvement on Abridge-adopting providers builds the attribution story before external reporting reflects it. Building this cohort-level evidence is how you get ahead of the annual quality reporting cycle.",
         },
         proof: {
           window: "Month 9–18",
           desc: "Quality scores reflect reality",
-          metrics: ["Observed vs. Expected Mortality Rate", "Core Measure Compliance Rate"],
+          metrics: ["30-Day Readmission Rate (HRRP Conditions)", "VBP Total Performance Score"],
           callout:
             "CMS risk-adjusted quality scores reflect the prior measurement year — changes in documentation quality made today won't appear in public reporting for 12–18 months. The internal signal path is shorter: CDI query reduction at 3–4 months, SOI classification improvement at 4–7 months, O/E ratio improvement in internal quality reports at 6–9 months. Each stage builds the evidentiary chain before the public score confirms it.",
         },
@@ -399,7 +399,7 @@ export const settingData: Record<MethodologyCareSetting, SettingPDFData> = {
       {
         domain: "CAPACITY",
         badge: "Shift Efficiency & Direct Care Time",
-        northStar: "Point-of-Care Documentation Rate",
+        northStar: "Nursing Overtime",
         direction: "↑",
         sub: "A nursing shift has a fixed amount of time. When documentation is batched at the end — assessments recalled from memory, flowsheets completed after twelve hours of care — the shift ends with an open queue rather than a closed chart. That queue is what generates overtime, erodes bedside presence during the shift, and produces documentation lag that delays every downstream consumer of the nursing record. Point-of-care documentation rate is the upstream behavior that changes all of it: when nurses document at the moment of care, the queue never accumulates. The financial consequence — overtime reduction — is quantified in the Workforce domain, where it belongs as a labor cost. The capacity story is what causes it.",
         matterMostIf:
@@ -414,21 +414,21 @@ export const settingData: Record<MethodologyCareSetting, SettingPDFData> = {
         signal: {
           window: "Week 4–8",
           desc: "Documentation timing shifts to point of care",
-          metrics: ["Point-of-Care Documentation Rate", "Post-Shift EHR Session Time"],
+          metrics: ["Documentation Event Distribution Across Shift", "Post-Shift EHR Session Time"],
           callout:
             "Point-of-care documentation rate and post-shift EHR session time are visible from EHR audit logs within the first two to six weeks of deployment. No new infrastructure required. These are the earliest behavioral signals that the documentation habit has shifted — and the data that drives peer adoption on the unit when nurses who leave on time tell each other.",
         },
         trend: {
           window: "Month 2–4",
           desc: "Documentation lag compresses, bedside time rises",
-          metrics: ["Median Documentation Lag (Minutes)", "Bedside Time Ratio (Direct Care %)"],
+          metrics: ["On-Time Clock-Out Rate", "Overtime Hours Per Unit Per Pay Period"],
           callout:
             "Documentation lag — median minutes from care event to chart entry — compresses at Month 1–3 as point-of-care documentation rate stabilizes. Bedside time ratio follows as the cognitive load of the accumulating queue lifts. These two metrics together confirm that the behavioral change is translating into a different shift experience, not just a different documentation timing.",
         },
         proof: {
           window: "Month 6–12",
           desc: "Shift efficiency confirmed; Workforce outcomes begin",
-          metrics: ["On-Time Shift Completion Rate", "Documentation Queue Size at Shift End"],
+          metrics: ["Annual OT Spend Comparison (Pilot Units)", "Staffing Budget Variance"],
           callout:
             "On-time shift completion rate — the share of shifts ending without a post-shift documentation queue — is the capacity proof metric. When it stabilizes above baseline, the downstream Workforce outcomes (overtime cost reduction, burnout score improvement) have the behavioral foundation they need to emerge. The capacity story closes here; the financial story continues in Workforce.",
         },
@@ -436,7 +436,7 @@ export const settingData: Record<MethodologyCareSetting, SettingPDFData> = {
       {
         domain: "WORKFORCE",
         badge: "Nurse Wellbeing & Staffing Economics",
-        northStar: "Overtime Cost + Voluntary Turnover",
+        northStar: "Voluntary Turnover",
         direction: "↓",
         sub: "Nursing documentation burden creates two distinct financial exposures — one immediate, one deferred. The immediate exposure is overtime: nurses are hourly employees, and post-shift charting is a hard cost in the payroll register. Eight minutes saved per patient across a 6-patient panel is 48 minutes per shift, which sits inside a typical overtime threshold. The deferred exposure is turnover: a 12-hour shift with 60–90 minutes of post-shift documentation compresses recovery time structurally, and documentation burden appears consistently in exit surveys and ANA research as a top driver of departure intent. The mechanism is cumulative — no single shift drives a resignation, but the accumulated weight of hundreds eventually does. Both exposures respond to the same upstream change: documentation that happens during the shift rather than after it.",
         matterMostIf:
@@ -451,21 +451,21 @@ export const settingData: Record<MethodologyCareSetting, SettingPDFData> = {
         signal: {
           window: "Week 4–8",
           desc: "Post-shift charting drops; OT trajectory visible",
-          metrics: ["Charting After Shift (Minutes)", "Post-Shift EHR Session Time"],
+          metrics: ["Per-Patient Documentation Time", "Post-Shift Documentation Queue Size"],
           callout:
             "Charting-after-shift time is the earliest financial signal in the nursing workforce story — it's the behavior that directly generates overtime, and it shows up in EHR audit logs within weeks of consistent adoption. When this metric drops, the payroll consequence follows at the next comparison period. This is also the data that drives peer adoption: nurses who leave on time tell each other.",
         },
         trend: {
           window: "Month 2–4",
           desc: "OT cost confirmed; wellbeing signal emerges",
-          metrics: ["Overtime Hours Per Unit Per Pay Period", "Burnout Score (Survey)", "Likelihood to Stay"],
+          metrics: ["Agency / Travel Nurse Fill Rate", "Documentation Burden Score (Survey)", "Intent to Stay"],
           callout:
             "Overtime data becomes confirmable at Month 2–4 when payroll has a full prior period for comparison — before versus after, same units, controlled for census. Present it simply: overtime hours these units, before deployment versus after. Meanwhile, wellbeing survey scores at Month 2–4 connect documentation relief to the retention forecast. A burnout score improving and likelihood-to-stay rising is evidence that the departure calculus is changing before the turnover data can confirm it.",
         },
         proof: {
           window: "Month 12–18",
           desc: "Retention cost and annual OT savings confirmed",
-          metrics: ["Annual OT Spend Comparison (Pilot Units)", "Voluntary Nurse Turnover Rate", "Agency and Travel Nurse Spend"],
+          metrics: ["Voluntary Nurse Turnover Rate", "Agency and Travel Nurse Spend"],
           callout:
             "The 12-month payroll comparison closes the overtime story without any model — OT spend on Abridge units this year versus last year, adjusted for census and unit mix. Turnover data requires 12–18 months; a unit with 20 nurses at 18% turnover produces only 3–4 departures per year, which is too small to show a statistically meaningful trend in a shorter window. The near-term financial proxy is agency and travel spend: open shifts that would have been filled at 2–3× employed rates are the first financial signal that retention is stabilizing.",
         },
@@ -525,21 +525,21 @@ export const settingData: Record<MethodologyCareSetting, SettingPDFData> = {
         signal: {
           window: "Week 4–Month 2",
           desc: "Assessment timeliness and reassessment frequency respond",
-          metrics: ["Fall Risk Reassessment Completion Rate (Post-Medication / Post-Ambulation)", "Skin & Pressure Injury Assessment Rate", "Catheter Utilization Ratio", "SEP-1 Documentation Timeliness"],
+          metrics: ["Fall Risk Assessment Completion Rate", "Skin & Pressure Injury Assessment Completion Rate"],
           callout:
             "Assessment completion and reassessment frequency are the fastest-moving quality signals — already tracked by quality departments and visible within weeks of consistent adoption. Fall risk reassessment frequency after clinical events (medication changes, ambulation) and catheter utilization ratio are the metrics that confirm the mechanism is working: not just that documentation is happening, but that it is happening at the right moment to trigger the prevention protocol.",
         },
         trend: {
           window: "Month 2–6",
           desc: "Bundle compliance moves; harm event exposure compresses",
-          metrics: ["Care Bundle Compliance Rate (SEP-1, CAUTI, CLABSI)", "HAPI Stage 1 Detection Rate", "Catheter Days per Admission"],
+          metrics: ["Care Bundle Compliance Rate (SEP-1, CAUTI, CLABSI)", "Protocol Adherence Rate (Turn Schedule, Line Care)"],
           callout:
             "Graduation signal: don't expect harm event rates to move until bundle compliance is consistently high on Abridge units. Bundle compliance is the process measure; harm events are the outcome. HAPI Stage 1 detection rate — the share of pressure injury documentation captured at Stage 1 rather than Stage 2+ — is the mechanism-specific trend metric that confirms early documentation is intercepting injuries before they progress. Catheter days per admission declining means the daily necessity review is working.",
         },
         proof: {
           window: "Month 6–18",
           desc: "Harm event rates confirm",
-          metrics: ["Nursing-Sensitive Harm Event Rate (Falls, HAPI, CAUTI, CLABSI)", "SEP-1 Bundle Compliance Rate", "CMS HAC Reduction Score"],
+          metrics: ["Nursing-Sensitive Harm Event Rate", "CMS HAC Reduction Score"],
           callout:
             "Harm events are low-frequency outcomes that require substantial volume and time to show statistically meaningful trends. Build the quality narrative in sequence: assessment timeliness up (Month 1) → bundle compliance up (Month 3–6) → harm events declining (Month 12+). Leading with harm event data and waiting for it to move is the wrong approach — the process measures are what confirm the program is working while waiting for the outcome data to accumulate.",
         },
@@ -576,14 +576,14 @@ export const settingData: Record<MethodologyCareSetting, SettingPDFData> = {
         signal: {
           window: "Week 4–8",
           desc: "Documentation time drops",
-          metrics: ["Post-Visit Note Completion Time", "Same-Day Note Completion Rate"],
+          metrics: ["Provider Schedule Adherence Rate ↑", "Same-Day Note Completion Rate"],
           callout:
             "Post-visit note completion time and same-day note completion rate are the upstream behavioral gates. When note completion time reaches a consistent low and same-day rate is high, the provider has recaptured time from the schedule. The next question is whether scheduling is using it — that's the transition to Trend stage. The behavioral change has to stabilize before the scheduling change can begin.",
         },
         trend: {
           window: "Month 2–4",
           desc: "Scheduling absorbs recaptured time",
-          metrics: ["After-Hours EHR Activity", "Same-Day Appointment Slot Availability"],
+          metrics: ["Average Appointment Delay ↓", "Same-Day Appointment Slot Availability"],
           callout:
             "After-hours EHR activity is the critical Trend-stage metric because it distinguishes two scenarios: did the provider genuinely recapture shift time, or did the work just shift to later in the day? If pajama time isn't dropping, same-day slot availability won't open — the recovered time has been reabsorbed elsewhere. When both metrics move together, the system has genuinely freed capacity.",
         },
@@ -613,7 +613,7 @@ export const settingData: Record<MethodologyCareSetting, SettingPDFData> = {
         signal: {
           window: "Week 4–8",
           desc: "Pajama time drops",
-          metrics: ["After-Hours Charting Time (Pajama Time)", "Post-Visit Note Completion Time"],
+          metrics: ["After-Hours Charting Time (Pajama Time)", "In-Visit Note Completion Rate ↑"],
           callout:
             "After-hours charting time reduction shows up in EHR audit logs within the first month, is objective, and doesn't require survey coordination. This is the proof point physicians reference when recommending Abridge to colleagues — that peer recommendation is more effective than any formal communication. Signal-stage data isn't just evidence of program success; it's the word-of-mouth engine for adoption.",
         },
@@ -650,14 +650,14 @@ export const settingData: Record<MethodologyCareSetting, SettingPDFData> = {
         signal: {
           window: "Week 2 – Month 3",
           desc: "Note quality and speed improve",
-          metrics: ["E/M Level Distribution per Provider", "First-Pass Claim Acceptance Rate"],
+          metrics: ["Documentation Time Per Visit ↓", "First-Pass Claim Acceptance Rate ↑"],
           callout:
             "E/M level distribution per provider shows improvement within 4–8 weeks for consistent adopters. Always show the distribution, not just the mean wRVU — a single average can sit flat while Level 3 codes decline and Level 4 codes increase meaningfully. First-pass claim acceptance rate is the complementary signal: cleaner notes mean fewer initial rejections before the revenue shows up in the data.",
         },
         trend: {
           window: "Month 1–5",
           desc: "Coding accuracy confirmed",
-          metrics: ["Charge Lag (Days to Bill)", "HCC Capture Rate"],
+          metrics: ["E/M Level Distribution per Provider", "HCC Capture Rate"],
           callout:
             "Charge lag and HCC capture move at Month 2–5 because coding changes precede payment by 60–90 days in the revenue cycle. For Medicare Advantage panels, the HCC capture story connects revenue improvement and quality improvement in a single documentation change — the same note that supports a Level 4 code also supports chronic condition specificity for risk adjustment. These are not competing narratives; they're the same documentation improvement.",
         },
@@ -687,14 +687,14 @@ export const settingData: Record<MethodologyCareSetting, SettingPDFData> = {
         signal: {
           window: "Week 4–10",
           desc: "Note specificity improves",
-          metrics: ["Care Gap Documentation Rate", "Post-Visit Note Specificity"],
+          metrics: ["Care Gap Documentation Rate", "Chronic Condition Documentation Rate ↑"],
           callout:
             "Care gap documentation rate and post-visit note specificity for preventive visits are the earliest-moving quality signals. When notes start containing the specific clinical content required for HEDIS attribution, that's the documentation change — not a modeled estimate, but a direct observation of what's in the record. Population health platforms that track care gap documentation show this within 4–8 weeks.",
         },
         trend: {
           window: "Month 2–5",
           desc: "Measure attribution improves",
-          metrics: ["Quality Measure Attribution Rate", "HEDIS Composite Score"],
+          metrics: ["Quality Measure Attribution Rate", "Specialist Callback Rate on Referrals ↓"],
           callout:
             "Quality measure attribution rate in population health platforms moves at Month 2–5, before formal HEDIS reporting reflects it, because population health tools aggregate documentation in near-real-time while HEDIS reporting is annual. Track the leading indicator — care gap documentation rate in the platform — and use formal HEDIS scores as annual confirmation, not primary evidence.",
         },
