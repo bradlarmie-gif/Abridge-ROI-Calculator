@@ -305,6 +305,8 @@ export interface TimeDriverInputs {
   ipCcMccCaptureExpanded: boolean;
   ipCdiQueryTrendEnabled: boolean;
   ipCdiQueryTrendExpanded: boolean;
+  ipObsDowngradeRateEnabled: boolean;
+  ipObsDowngradeRateExpanded: boolean;
   // Nursing Capacity qualitative (3 — expanded by R-IA-6)
   nursingDocumentationLagEnabled: boolean;
   nursingDocumentationLagExpanded: boolean;
@@ -769,6 +771,8 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     ipCcMccCaptureExpanded: false,
     ipCdiQueryTrendEnabled: false,
     ipCdiQueryTrendExpanded: false,
+    ipObsDowngradeRateEnabled: false,
+    ipObsDowngradeRateExpanded: false,
     nursingDocumentationLagEnabled: false,
     nursingDocumentationLagExpanded: false,
     nursingPointOfCareDocEnabled: false,

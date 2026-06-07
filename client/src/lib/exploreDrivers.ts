@@ -1930,6 +1930,29 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     },
     valueArc: { signal: { timing: 'Month 1-3', metric: 'Documentation completeness ↑' }, trend: { timing: 'Month 2-4', metric: 'CC/MCC capture ↑, CDI queries ↓' }, proof: { timing: 'Month 3-6', metric: 'Claims rework hours ↓' } },
   },
+  {
+    id: 'ipObsDowngradeRate',
+    label: 'IP-to-Obs Downgrade Rate',
+    shortDescription: 'When a payer reviews an inpatient admission post-discharge and the H&P does not clearly establish medical necessity — severity of illness, expected length of stay, and why inpatient-level care was required — the claim is reclassified to observation status. The downgrade rate tracks how often that documentation failure occurs.',
+    tagline: 'Post-discharge IP-to-obs conversions — the payer review outcome that H&P medical necessity language directly defends against',
+    quadrant: 'Revenue',
+    settings: ['inpatient'],
+    visibility: 'qualitative',
+    enabledStateKey: 'ipObsDowngradeRateEnabled',
+    expandedStateKey: 'ipObsDowngradeRateExpanded',
+    trackedMeasureIds: [],
+    measureDefaults: {
+      deltaLabel: 'IP-to-obs downgrade rate',
+      deltaUnit: '%',
+      valuePerUnitLabel: 'Signal — no dollar value',
+      valuePerUnitDefault: 0,
+      realizationDefault: 100,
+      scaleAxis: 'fixed',
+      lowerIsBetter: true,
+      benchmarkHint: 'Enter % of inpatient admissions converted to observation status post-discharge by payer review. Typical range: 1–4% of inpatient admissions. Each downgrade costs $3K–$8K in the IP-to-obs revenue delta. Measurable via RCM denial reporting system.',
+    },
+    valueArc: { signal: { timing: 'Weeks 4-8', metric: 'H&P medical necessity language ↑' }, trend: { timing: 'Month 2-4', metric: 'Payer concurrent review challenges ↓' }, proof: { timing: 'Month 4-6', metric: 'IP-to-obs downgrade rate ↓' } },
+  },
 
   // Nursing Workforce (qualitative — 3 drivers, expanded by R-IA-6)
   {
