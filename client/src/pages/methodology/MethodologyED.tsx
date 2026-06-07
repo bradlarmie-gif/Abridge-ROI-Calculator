@@ -167,7 +167,7 @@ const edDomainCards: EDDomainCardData[] = [
         window: 'Week 4–8',
         desc: 'What Abridge directly moves',
         metrics: [
-          { name: 'After-Shift Charting Time', source: 'EHR session minutes after scheduled shift end · per-provider', badge: 'Week 4–6', why: "Documentation deferred past the shift blocked the provider from turning over to the next patient. This is the earliest signal available — it appears before door-to-provider time has had time to move." },
+          { name: 'Documentation Time Per Encounter ↓', source: 'EHR audit logs · active documentation time per encounter · per-provider · pre/post comparison', badge: 'Week 4–6', why: "The direct throughput lever. Every minute shaved from documentation per encounter is time the physician is available for the next patient. This moves within weeks of consistent Abridge use and is the root cause of every capacity improvement downstream." },
           { name: 'Same-Shift Note Completion Rate ↑', source: 'EHR audit logs · percentage of notes signed before shift end · per-provider · pre/post comparison', badge: 'Week 6–8', why: "Notes closed within the shift mean the provider has no backlog when the next patient arrives. Rising same-shift completion is the earliest sign that documentation is moving from deferred to real-time — the precondition for every throughput improvement downstream." },
         ],
         callout: "Graduation signal: When documentation time reaches a stable low, your physicians have recaptured bandwidth. That's the trigger to start watching Trend-stage process metrics — not a plateau, a foundation.",
@@ -187,6 +187,7 @@ const edDomainCards: EDDomainCardData[] = [
         desc: 'Strategic outcome',
         metrics: [
           { name: 'Additional Patient Volume', source: 'Visit delta vs. baseline · seasonality-adjusted · fills recaptured capacity', badge: 'Month 9–12+', why: "The financial proof of recaptured capacity. Rising volume alongside declining LWBS confirms the story — capacity headroom was created and is being utilized." },
+          { name: 'Admitted Patient Volume ↑', source: 'ADT system · inpatient admissions from ED · Abridge-period vs. baseline · seasonality-adjusted', badge: 'Month 9–12+', why: "Recaptured LWBS patients include some who would have been admitted — at 5–10× the revenue of an ED visit. Tracking admitted volume separately from total volume isolates the highest-value end of the throughput story. This is the number a CFO needs to build the financial case." },
           { name: 'LWBS Rate (%)', source: 'EDIS registration + disposition · monthly · requires comparable baseline', badge: 'Month 7–12+', why: "The North Star outcome. Requires recaptured capacity to be filled with additional volume before it moves — which is why it takes 7–12+ months and requires active volume management alongside the documentation work." },
         ],
         callout: 'Why these move together: LWBS rate decreases when throughput improves and additional volume fills the recaptured capacity. Track them as a pair — one without the other is an incomplete picture.',
@@ -387,7 +388,7 @@ const edDomainCards: EDDomainCardData[] = [
         window: 'Month 1–4',
         desc: 'Billing and coding patterns emerge',
         metrics: [
-          { name: 'CDI Query Rate on ED Admissions', source: 'CDI team data · queries per 100 admissions · Abridge providers vs. baseline', badge: 'Month 2–4', why: "CDI querying the ED team means the documentation didn't fully capture the clinical picture on first creation. A declining query rate means less documentation rework and more accurate initial coding." },
+          { name: 'First-Pass Claim Acceptance Rate ↑', source: 'Revenue cycle system · % of claims accepted without rejection or denial on first submission · trended monthly', badge: 'Month 1–3', why: "First-pass acceptance is the most direct measure of whether documentation quality is meeting payer standards before a denial happens. Rising acceptance rate means fewer rework cycles, faster cash flow, and lower denial exposure — the earliest revenue cycle signal that note quality has changed." },
           { name: 'Claims Rework Staff Hours ↓', source: 'RCM system or billing team logs · staff hours per week spent reworking denied or rejected ED claims · trended monthly', badge: 'Month 1–3', why: "Documentation-related denials require staff time to write appeal letters and resubmit. When note quality improves and medical necessity is documented in real time, that work simply doesn't get triggered. Tracking rework hours isolates the operational cost of poor documentation before the denial rate itself moves." },
           { name: 'E/M Level Distribution', source: 'Billing system · % of visits at each level (99281–99285) · same-provider pre/post comparison', badge: 'Month 2–4', why: "Complete notes support the level of service actually delivered. Watch the distribution shift toward appropriate higher levels (99284–99285), not just the mean — the mix is the real signal." },
         ],
