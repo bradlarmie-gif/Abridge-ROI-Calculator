@@ -158,8 +158,8 @@ const nursingDomainCards: NursingDomainCardData[] = [
         window: 'Week 4–8',
         desc: 'Post-shift EHR activity drops',
         metrics: [
-          { name: 'Post-Shift EHR Session Time', source: 'EHR audit logs · minutes of session activity after scheduled shift end · per nurse · no survey needed', badge: 'Week 4–6', why: "Post-shift EHR activity is the nursing equivalent of pajama time — documentation carried home from the unit. This is the earliest and most direct signal that the documentation burden is lifting." },
           { name: 'Documentation Event Distribution Across Shift', source: 'EHR timestamps · % of documentation events occurring in last 2 hours vs. spread across full shift · pre/post comparison', badge: 'Week 4–8', why: "End-of-shift documentation backlog is visible before overtime data catches up. If nurses are documenting throughout the shift rather than the last 2 hours, the overtime overhang will shrink." },
+          { name: 'Post-Shift EHR Session Time', source: 'EHR audit logs · minutes of session activity after scheduled shift end · per nurse · no survey needed', badge: 'Week 4–6', why: "Post-shift EHR activity is the nursing equivalent of pajama time — documentation carried home from the unit. This is the earliest and most direct signal that the documentation burden is lifting." },
         ],
         callout: "Why start here: Post-shift EHR data is objective, requires no new infrastructure, and is visible to nursing managers before any payroll cycle comparison is possible. It's also the signal nurses experience directly — which drives organic peer-to-peer adoption.",
       },
@@ -271,8 +271,8 @@ const nursingDomainCards: NursingDomainCardData[] = [
         window: 'Month 2–4',
         desc: 'Wellbeing signal emerges',
         metrics: [
-          { name: 'Documentation Burden Score (Survey)', source: 'Validated burnout instrument or NDNQI survey · documentation-specific subscale · Abridge units vs. control · quarterly cadence', badge: 'Month 2–4', why: "The attitudinal measure — do nurses feel the documentation burden is manageable? Survey-based but validated. Tracks the psychological relief that follows the operational improvement." },
           { name: 'Agency / Travel Nurse Fill Rate', source: 'Staffing data · % of shifts filled by agency vs. core staff · monthly by unit · early signal of vacancy pressure', badge: 'Month 2–4', why: "Agency fill rate rising is a leading indicator of vacancy pressure — nurses leaving or on leave. Declining fill rate suggests stability is improving before annual turnover data confirms it." },
+          { name: 'Documentation Burden Score (Survey)', source: 'Validated burnout instrument or NDNQI survey · documentation-specific subscale · Abridge units vs. control · quarterly cadence', badge: 'Month 2–4', why: "The attitudinal measure — do nurses feel the documentation burden is manageable? Survey-based but validated. Tracks the psychological relief that follows the operational improvement." },
           { name: 'Intent to Stay', source: 'Institutional engagement survey or validated single-item intent measure · Abridge adopters vs. non-adopters at same unit · trended quarterly', badge: 'Month 3–5', why: "Nursing intent-to-stay is a leading indicator that moves before actual departure decisions. Watch for divergence between Abridge units and non-Abridge units — that gap is the signal." },
         ],
         callout: "The CNO bridge: Wellbeing scores at Month 2–4 are the evidence that connects reduced documentation burden to the retention forecast. Present the trend as a leading indicator — not a claim — and let the 12-month data confirm it.",
@@ -281,8 +281,8 @@ const nursingDomainCards: NursingDomainCardData[] = [
         window: 'Month 12–18',
         desc: 'Retention and cost confirmed',
         metrics: [
-          { name: 'Voluntary Nurse Turnover Rate', source: 'HR data · annual voluntary departures per unit · Abridge units vs. comparable non-Abridge units · requires 12+ months of data', badge: 'Month 12–18', why: "The lagging outcome — takes 12–18 months because nurse turnover is measured annually and departure decisions have long lead times. Confirms the workforce story when it arrives." },
           { name: 'Agency and Travel Nurse Spend', source: 'Finance · annual agency cost on pilot units vs. 12-month pre-deployment baseline · adjusted for census', badge: 'Month 12–18', why: "Agency spend drops as fewer nurses leave or request leave. CNO and CFO both care about this number directly — it's the financial proxy for workforce stability." },
+          { name: 'Voluntary Nurse Turnover Rate', source: 'HR data · annual voluntary departures per unit · Abridge units vs. comparable non-Abridge units · requires 12+ months of data', badge: 'Month 12–18', why: "The lagging outcome — takes 12–18 months because nurse turnover is measured annually and departure decisions have long lead times. Confirms the workforce story when it arrives." },
         ],
         callout: "The long game: Turnover is a lagging indicator. The strategy is to show burden reduction early, wellbeing improvement at mid-term, and agency spend reduction as the near-term financial signal — then let turnover data confirm the story as the program matures.",
       },
@@ -376,8 +376,8 @@ const nursingDomainCards: NursingDomainCardData[] = [
         window: 'Month 2–5',
         desc: 'Internal audit findings improve',
         metrics: [
-          { name: 'Internal Compliance Audit Score (Nursing Documentation)', source: 'Compliance team · chart review scoring on Abridge pilot units vs. control · monthly sample of 10–15 charts per unit', badge: 'Month 2–4', why: "Monthly chart reviews give the fastest feedback on whether documentation is meeting organizational standards — the quality team's leading indicator before regulatory surveys arrive." },
           { name: 'Documentation Deficiency Finding Rate', source: 'Internal audit results · deficiency findings per 100 charts reviewed · Abridge units vs. pre-deployment baseline', badge: 'Month 3–5', why: "Deficiency findings per chart reviewed is the normalized compliance signal. A declining rate means the average quality of nursing documentation is rising — not just a few star performers improving." },
+          { name: 'Internal Compliance Audit Score (Nursing Documentation)', source: 'Compliance team · chart review scoring on Abridge pilot units vs. control · monthly sample of 10–15 charts per unit', badge: 'Month 2–4', why: "Monthly chart reviews give the fastest feedback on whether documentation is meeting organizational standards — the quality team's leading indicator before regulatory surveys arrive." },
         ],
         callout: "The compliance team bridge: Internal audit data at Month 2–4 provides the attributable evidence that connects flowsheet completeness to documentation quality. It's the metric compliance officers can take to a corrective action plan conversation.",
       },
@@ -489,8 +489,8 @@ const nursingDomainCards: NursingDomainCardData[] = [
         window: 'Month 6–18',
         desc: 'Harm event rates confirm',
         metrics: [
-          { name: 'Nursing-Sensitive Harm Event Rate', source: 'Quality reporting system / NDNQI · falls, HAPIs, CAUTIs, CLABSIs per 1,000 patient days · Abridge units vs. peer benchmark · requires sufficient volume', badge: 'Month 6–18', why: "The North Star outcome — falls, HAPIs, CAUTIs, CLABSIs per 1,000 patient days. Takes 6–18 months because harm events require sufficient volume and time to show a statistically meaningful trend." },
           { name: 'CMS HAC Reduction Score', source: 'CMS public reporting · Hospital-Acquired Condition Reduction Program score · annual · directional signal for strategic narrative', badge: 'Month 12–18', why: "The annual strategic quality narrative for boards and quality committees. Documentation is one of many contributors, but accurate, timely nursing documentation is the foundation every bundle compliance measure builds on." },
+          { name: 'Nursing-Sensitive Harm Event Rate', source: 'Quality reporting system / NDNQI · falls, HAPIs, CAUTIs, CLABSIs per 1,000 patient days · Abridge units vs. peer benchmark · requires sufficient volume', badge: 'Month 6–18', why: "The North Star outcome — falls, HAPIs, CAUTIs, CLABSIs per 1,000 patient days. Takes 6–18 months because harm events require sufficient volume and time to show a statistically meaningful trend." },
         ],
         callout: "The volume caveat: Harm events are low-frequency outcomes. A single unit may not have sufficient event volume to show a statistically significant rate change quickly. Use the multi-unit aggregate, or supplement with bundle compliance rates as the primary near-term evidence.",
       },
