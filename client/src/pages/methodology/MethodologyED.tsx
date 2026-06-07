@@ -274,7 +274,7 @@ const edDomainCards: EDDomainCardData[] = [
         desc: 'Behavioral change in EHR data',
         metrics: [
           { name: 'After-Shift Charting Time (Pajama Time)', source: 'EHR session logs · minutes after scheduled shift end · per-provider · no survey needed', badge: 'Week 4–6', why: "Pajama time in the ED is a patient safety and burnout issue — providers reviewing prior cases while starting new ones. This is the most sensitive early Abridge signal in the ED." },
-          { name: 'Documentation Time Per Encounter', source: 'EHR audit logs · active time on note per encounter · pre/post comparison', badge: 'Week 6–8', why: "Confirms notes are being completed during the encounter, not deferred. Downstream wellbeing improvements can't happen until this is consistently low across the department." },
+          { name: 'In-Shift Documentation Completion Rate ↑', source: 'EHR audit logs · % of ED encounter notes signed before provider leaves the department · per-provider · no survey needed', badge: 'Week 6–8', why: "Confirms documentation is happening during the shift, not deferred to post-shift pajama time. Downstream wellbeing improvements can't happen until providers stop carrying note debt home." },
         ],
         callout: "Why start here: EHR data is objective and requires no survey coordination. Pajama time reduction is the most visceral proof point for clinicians — and the most believable one for administrators skeptical of self-reported wellbeing data.",
       },
