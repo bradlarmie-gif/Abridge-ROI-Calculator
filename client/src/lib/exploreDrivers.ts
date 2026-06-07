@@ -262,7 +262,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     enabledStateKey: 'nursingRetentionEnabled',
     expandedStateKey: 'nursingRetentionExpanded',
     calcComponent: NursingRetentionCalc,
-    trackedMeasureIds: ['rnRetention', 'burnoutAssessment', 'likelihoodToStay'],
+    trackedMeasureIds: ['nurseRetentionRate', 'burnoutAssessment', 'likelihoodToStay'],
     measureDefaults: {
       deltaLabel: 'RN departures per year',
       deltaUnit: 'departures',
@@ -287,7 +287,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     expandedStateKey: 'nursingAgencyExpanded',
     childOfDriverId: 'nursingRetention',
     calcComponent: NursingAgencyCalc,
-    trackedMeasureIds: ['travelAgencyNurseSpend'],
+    trackedMeasureIds: ['travelNurseSpend'],
     measureDefaults: {
       deltaLabel: 'Nurse-weeks of agency coverage avoided',
       deltaUnit: 'weeks',
@@ -309,7 +309,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     enabledStateKey: 'nursingOtEnabled',
     expandedStateKey: 'nursingOtExpanded',
     calcComponent: NursingOvertimeCalc,
-    trackedMeasureIds: ['documentationOvertime', 'chartingAfterShift'],
+    trackedMeasureIds: ['overtimeHours', 'chartingAfterShift'],
     measureDefaults: {
       deltaLabel: 'Overtime hours eliminated per year',
       deltaUnit: 'hours',
@@ -746,7 +746,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     enabledStateKey: 'wrvuEnabled',
     expandedStateKey: 'wrvuExpanded',
     calcComponent: WrvuCalc,
-    trackedMeasureIds: ['wrvuPerShift', 'emLevel'],
+    trackedMeasureIds: ['wrvu', 'emLevel'],
     measureDefaults: {
       deltaLabel: 'Additional wRVUs generated (total annual)',
       deltaUnit: 'wRVUs',
@@ -793,7 +793,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     enabledStateKey: 'denialsEnabled',
     expandedStateKey: 'denialsExpanded',
     calcComponent: DenialPreventionCalc,
-    trackedMeasureIds: ['cleanClaim', 'medicalNecessityDenial'],
+    trackedMeasureIds: ['cleanClaimRate', 'medicalNecessityDenialRate'],
     measureDefaults: {
       deltaLabel: 'Denials prevented',
       deltaUnit: 'claims',
@@ -817,7 +817,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     enabledStateKey: 'ipDrgEnabled',
     expandedStateKey: 'ipDrgExpanded',
     calcComponent: DrgAccuracyCalc,
-    trackedMeasureIds: ['drgAccuracy', 'ccMccCapture', 'caseMixIndex'],
+    trackedMeasureIds: ['drgAccuracyRate', 'ccMccCaptureRate', 'caseMixIndex'],
     measureDefaults: {
       deltaLabel: 'Admissions with DRG lift',
       deltaUnit: 'admissions',
@@ -840,7 +840,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     enabledStateKey: 'ipObsDefenseEnabled',
     expandedStateKey: 'ipObsDefenseExpanded',
     calcComponent: ObsDefenseCalc,
-    trackedMeasureIds: ['medicalNecessityDenial'],
+    trackedMeasureIds: ['medicalNecessityDenialRate'],
     measureDefaults: {
       deltaLabel: 'Appeal-defensible downgrades',
       deltaUnit: 'cases',
@@ -885,7 +885,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     visibility: 'qualitative',
     enabledStateKey: 'nursingDocCompletionEnabled',
     expandedStateKey: 'nursingDocCompletionExpanded',
-    trackedMeasureIds: ['nursingDocCompletion'],
+    trackedMeasureIds: ['nursingDocCompletionRate'],
     measureDefaults: {
       deltaLabel: 'Documentation completion rate at discharge',
       deltaUnit: '%',
