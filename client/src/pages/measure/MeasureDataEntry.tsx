@@ -1,6 +1,5 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { ArrowRight, Building2, Stethoscope, Siren, BedDouble, Heart } from "lucide-react";
-import DataRequestModal from "@/components/DataRequestModal";
 import { Button } from "@/components/ui/button";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { motion, AnimatePresence } from "framer-motion";
@@ -39,7 +38,6 @@ export default function MeasureDataEntry({
     ? state.activeCareSettings
     : ['outpatient' as MeasureCareSetting];
 
-  const [dataRequestModalOpen, setDataRequestModalOpen] = useState(false);
 
   const hasNursing = activeSettings.includes('nursing');
   const hasProviderSettings = activeSettings.some(s => s !== 'nursing');
@@ -233,9 +231,13 @@ export default function MeasureDataEntry({
         onHome={onHome}
         rightAction={
           <button
-            onClick={() => setDataRequestModalOpen(true)}
+            onClick={() => {
+              import('@/lib/measureDataRequestExcel').then(({ generateMeasureDataRequestExcel }) => {
+                generateMeasureDataRequestExcel(state);
+              });
+            }}
             className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium bg-[#F0EBE4] text-[#8C7E6F] hover:bg-[#E8E2DA] transition-all"
-            data-testid="button-send-data-request"
+            data-testid="button-data-request"
           >
             Data Request
           </button>
@@ -730,15 +732,6 @@ export default function MeasureDataEntry({
           </Button>
         </motion.div>
       </div>
-      <DataRequestModal
-        open={dataRequestModalOpen}
-        onOpenChange={setDataRequestModalOpen}
-        orgName={state.deployment?.organizationName || ""}
-        generateUrl={async (repName: string, orgName: string) => {
-          const { generateDataFormUrl } = await import("@/lib/dataRequestUrlState");
-          return generateDataFormUrl({ settings: activeSettings, repName, orgName });
-        }}
-      />
     </div>
   );
 }
