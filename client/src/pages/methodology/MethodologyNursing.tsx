@@ -98,7 +98,7 @@ const nursingDomainCards: NursingDomainCardData[] = [
         body: "EHR audit logs tie directly to time-and-attendance data — nurses finishing charts after shift end are charging overtime hours for documentation. This makes documentation ROI payroll-verifiable within 90 days, not a modeled estimate.",
       },
     ],
-    matterLayout: '2col'
+    matterLayout: '2col',
     chain: [
       { key: 'source', label: 'Abridge Nursing', sub: 'ambient flowsheet AI', isSource: true },
       {
@@ -202,7 +202,7 @@ const nursingDomainCards: NursingDomainCardData[] = [
         body: "Documentation burden is the most actionable lever for nurse wellbeing because it's addressable at the tool level — unlike scheduling, patient acuity, or staffing ratios, which require system-level changes. Ambient flowsheet documentation reduces the per-patient charting burden across the full panel, shift after shift.",
       },
     ],
-    matterLayout: '2col'
+    matterLayout: '2col',
     chain: [
       { key: 'source', label: 'Abridge Nursing', sub: 'ambient flowsheet AI', isSource: true },
       {
@@ -307,7 +307,7 @@ const nursingDomainCards: NursingDomainCardData[] = [
         body: "CMS survey or Joint Commission citations for nursing record deficiencies. Complete nursing records are the evidentiary foundation for both clinical quality reviews and payer compliance — the same documentation problem drives both risks.",
       },
     ],
-    matterLayout: '2col'
+    matterLayout: '2col',
     chain: [
       { key: 'source', label: 'Abridge Nursing', sub: 'ambient flowsheet AI', isSource: true },
       {
@@ -411,7 +411,7 @@ const nursingDomainCards: NursingDomainCardData[] = [
         body: "CMS HAC Reduction Program imposes payment reductions for hospitals in the worst-performing quartile. Nursing documentation quality influences harm event attributions that feed HAC scores and the publicly visible CMS star rating.",
       },
     ],
-    matterLayout: '2col'
+    matterLayout: '2col',
     chain: [
       { key: 'source', label: 'Abridge Nursing', sub: 'ambient flowsheet AI', isSource: true },
       {

@@ -201,7 +201,7 @@ const opDomainCards: OPDomainCardData[] = [
         body: "Documentation burden is the #1 cited driver of outpatient physician burnout. It shows up specifically as pajama time — the hours spent finishing notes after patients have left and the clinic has closed for the day.",
       },
     ],
-    matterLayout: '2col'
+    matterLayout: '2col',
     chain: [
       { key: 'source', label: 'Abridge Ambient', sub: 'outpatient documentation AI', isSource: true },
       {
@@ -306,7 +306,7 @@ const opDomainCards: OPDomainCardData[] = [
         body: "When documentation doesn't capture the complexity of the visit, the physician is billing below the work actually performed. Improved note quality recovers revenue already earned — it's attribution, not upcoding.",
       },
     ],
-    matterLayout: '2col'
+    matterLayout: '2col',
     chain: [
       { key: 'source', label: 'Abridge Ambient', sub: 'outpatient documentation AI', isSource: true },
       {
@@ -411,7 +411,7 @@ const opDomainCards: OPDomainCardData[] = [
         body: "Value-based contracts pay for documented quality performance. STARS ratings and shared savings calculations depend on care gap closure evidence. Documentation quality improvement is a direct quality revenue lever.",
       },
     ],
-    matterLayout: '2col'
+    matterLayout: '2col',
     chain: [
       { key: 'source', label: 'Abridge Ambient', sub: 'outpatient documentation AI', isSource: true },
       {

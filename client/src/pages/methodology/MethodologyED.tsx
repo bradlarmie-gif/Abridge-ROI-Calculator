@@ -213,7 +213,7 @@ const edDomainCards: EDDomainCardData[] = [
         body: 'ED physicians have among the highest burnout rates in medicine. Documentation burden is a top-cited contributor. Wellbeing improvement is a mission outcome — and a proof point you can show in months, not years.',
       },
     ],
-    matterLayout: '2col'
+    matterLayout: '2col',
     chain: [
       { key: 'source', label: 'Abridge Ambient', sub: 'documentation AI', isSource: true },
       {
@@ -319,7 +319,7 @@ const edDomainCards: EDDomainCardData[] = [
         body: "When the note doesn't reflect the clinical complexity of the encounter, the physician worked at a higher acuity than the record shows. Better documentation recovers the work already done — it's attribution, not upcoding.",
       },
     ],
-    matterLayout: '2col'
+    matterLayout: '2col',
     chain: [
       { key: 'source', label: 'Abridge Ambient', sub: 'documentation AI', isSource: true },
       {

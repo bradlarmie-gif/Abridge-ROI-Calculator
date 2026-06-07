@@ -203,7 +203,7 @@ const ipDomainCards: IPDomainCardData[] = [
         body: 'Documentation burden is the top-cited driver of hospitalist burnout. Reducing the mechanical charting load is the most direct, fastest-acting lever for improving physician wellbeing — ahead of schedule changes, team restructuring, or wellness programs.',
       },
     ],
-    matterLayout: '2col'
+    matterLayout: '2col',
     chain: [
       { key: 'source', label: 'Abridge Ambient', sub: 'hospital documentation AI', isSource: true },
       {
@@ -308,7 +308,7 @@ const ipDomainCards: IPDomainCardData[] = [
         body: "Documentation quality is a DRG accuracy problem. When hospitalists capture the full clinical picture in real time, the code reflects the encounter — CDI queries become exceptions rather than routine workflow overhead.",
       },
     ],
-    matterLayout: '2col'
+    matterLayout: '2col',
     chain: [
       { key: 'source', label: 'Abridge Ambient', sub: 'hospital documentation AI', isSource: true },
       {
@@ -413,7 +413,7 @@ const ipDomainCards: IPDomainCardData[] = [
         body: "HRRP imposes up to 3% penalties on all base Medicare DRG payments — not just penalized conditions — for hospitals with excess readmissions in 6 high-volume conditions. HCAHPS doctor communication drives 25% of the VBP Total Performance Score, putting 2% of base Medicare payments at risk from a single domain.",
       },
     ],
-    matterLayout: '2col'
+    matterLayout: '2col',
     chain: [
       { key: 'source', label: 'Abridge Ambient', sub: 'hospital documentation AI', isSource: true },
       {
