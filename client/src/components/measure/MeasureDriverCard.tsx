@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Plus, Trash2, ChevronDown, Info } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
@@ -38,6 +38,10 @@ interface MeasureDriverCardProps {
 export default function MeasureDriverCard({ driver, entry, onUpdate, onRemove, isMultiSetting, abridgeEncounters }: MeasureDriverCardProps) {
   const isQuantifiable = driver.visibility === 'quantified' && Boolean(driver.measureDefaults);
   const md = driver.measureDefaults;
+
+  const [showDetails, setShowDetails] = useState(
+    Boolean(entry.entryDataSource || entry.measuredAt || (entry.attributionPercent !== 100))
+  );
   const isPerEnc = Boolean(md?.isPerEncounterRate) && (abridgeEncounters ?? 0) > 0;
 
   const sortedMonthly = useMemo(() => {
@@ -318,17 +322,96 @@ export default function MeasureDriverCard({ driver, entry, onUpdate, onRemove, i
 
               {isQuantifiable && md ? (
                 <>
-                  {/* E&M distribution drivers: replace before/after inputs + Financial Translation with EmDistributionInput */}
+                  {/* E&M distribution drivers: primary data entry is EmDistributionInput */}
                   {md.emCodes ? (
-                    <EmDistributionInput
-                      codes={md.emCodes}
-                      before={entry.distributionData?.before ?? {}}
-                      after={entry.distributionData?.after ?? {}}
-                      onBeforeChange={(before) => onUpdate({ distributionData: { before, after: entry.distributionData?.after ?? {} } })}
-                      onAfterChange={(after) => onUpdate({ distributionData: { before: entry.distributionData?.before ?? {}, after } })}
-                      driverId={driver.id}
-                      highComplexityCodes={md.highComplexityCodes}
-                    />
+                    <>
+                      <EmDistributionInput
+                        codes={md.emCodes}
+                        before={entry.distributionData?.before ?? {}}
+                        after={entry.distributionData?.after ?? {}}
+                        onBeforeChange={(before) => onUpdate({ distributionData: { before, after: entry.distributionData?.after ?? {} } })}
+                        onAfterChange={(after) => onUpdate({ distributionData: { before: entry.distributionData?.before ?? {}, after } })}
+                        driverId={driver.id}
+                        highComplexityCodes={md.highComplexityCodes}
+                      />
+
+                      {/* Details toggle */}
+                      <button
+                        onClick={() => setShowDetails(v => !v)}
+                        className="flex items-center gap-1.5 text-[11px] font-medium text-[#9E948C] hover:text-[#525252] transition-colors"
+                      >
+                        <ChevronDown className={`w-3 h-3 transition-transform duration-150 ${showDetails ? 'rotate-0' : '-rotate-90'}`} />
+                        {showDetails ? 'Hide details' : 'Attribution · Source · Notes'}
+                      </button>
+
+                      <AnimatePresence initial={false}>
+                        {showDetails && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.18, ease: 'easeInOut' }}
+                            className="overflow-hidden space-y-5 pt-4"
+                          >
+                            {/* Attribution — single slider */}
+                            <div>
+                              <div className="flex items-center justify-between mb-2">
+                                <label className="text-[11px] font-semibold text-[#888888] uppercase tracking-wide flex items-center gap-1">
+                                  Abridge Attribution
+                                  <Info className="w-3 h-3 text-[#CCCCCC]" />
+                                </label>
+                                <span className="text-sm font-bold text-black tabular-nums">{entry.attributionPercent}%</span>
+                              </div>
+                              <input
+                                type="range"
+                                min={0}
+                                max={100}
+                                step={5}
+                                value={entry.attributionPercent}
+                                onChange={(e) => onUpdate({ attributionPercent: Number(e.target.value) })}
+                                className="w-full accent-[#EA2C00] h-1.5 cursor-pointer"
+                                data-testid={`slider-attribution-${driver.id}`}
+                              />
+                              <p className="text-[11px] text-[#AAAAAA] mt-1.5">Lower if other initiatives share credit for this outcome.</p>
+                            </div>
+
+                            {/* Source + timestamp */}
+                            <div className="grid grid-cols-2 gap-3">
+                              <div>
+                                <label className="text-[11px] font-semibold text-[#888888] uppercase tracking-wide mb-1.5 block">
+                                  Data Source
+                                </label>
+                                <select
+                                  value={entry.entryDataSource ?? ''}
+                                  onChange={(e) => onUpdate({ entryDataSource: (e.target.value as EntryDataSource) || undefined })}
+                                  className="w-full h-9 bg-[#FAFAF8] border border-[#E5E5E5] rounded-xl px-3 text-sm text-[#444] focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none"
+                                  data-testid={`select-source-${driver.id}`}
+                                >
+                                  <option value="">Not specified</option>
+                                  <option value="ehr">EHR</option>
+                                  <option value="survey">Survey</option>
+                                  <option value="admin_data">Admin data</option>
+                                  <option value="chart_review">Chart review</option>
+                                  <option value="manual_entry">Manual entry</option>
+                                </select>
+                              </div>
+                              <div>
+                                <label className="text-[11px] font-semibold text-[#888888] uppercase tracking-wide mb-1.5 block">
+                                  Measured On
+                                </label>
+                                <input
+                                  type="date"
+                                  value={entry.measuredAt ?? ''}
+                                  onChange={(e) => onUpdate({ measuredAt: e.target.value || undefined })}
+                                  className="w-full h-9 bg-[#FAFAF8] border border-[#E5E5E5] rounded-xl px-3 text-sm text-[#444] focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none"
+                                  data-testid={`input-measured-at-${driver.id}`}
+                                />
+                              </div>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </>
                   ) : (
                     <>
                       {!driver.isCustom && tabSwitcher}
@@ -416,68 +499,6 @@ export default function MeasureDriverCard({ driver, entry, onUpdate, onRemove, i
                         </div>
                       )}
 
-                      {/* Conversion factor — hidden for custom drivers (they enter value directly) */}
-                      {!driver.isCustom && (
-                        <div>
-                          <label className="text-[11px] font-semibold text-[#888888] uppercase tracking-wide mb-1.5 block">
-                            {md.valuePerUnitLabel}
-                          </label>
-                          <div className="relative">
-                            {md.valuePerUnitPrefix && (
-                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#888888] z-10 pointer-events-none">{md.valuePerUnitPrefix}</span>
-                            )}
-                            <FormattedNumberInput
-                              value={entry.valuePerUnit}
-                              onChange={(v: number) => onUpdate({ valuePerUnit: v })}
-                              className={`h-10 bg-white ${md.valuePerUnitPrefix ? 'pl-7' : ''}`}
-                              data-testid={`input-value-per-unit-${driver.id}`}
-                            />
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Scale input (HAI rate drivers) */}
-                      {!driver.isCustom && md.scaleInput && (
-                        <div>
-                          <label className="text-[11px] font-semibold text-[#888888] uppercase tracking-wide mb-1.5 block">
-                            {md.scaleInput.label}
-                          </label>
-                          <div className="relative">
-                            <FormattedNumberInput
-                              value={entry.scaleValue ?? md.scaleInput.defaultValue}
-                              onChange={(v: number) => onUpdate({ scaleValue: v })}
-                              className="h-10 bg-white"
-                              data-testid={`input-scale-${driver.id}`}
-                            />
-                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#AAAAAA] pointer-events-none">
-                              {md.scaleInput.unit}
-                            </span>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Attribution — single slider */}
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <label className="text-[11px] font-semibold text-[#888888] uppercase tracking-wide flex items-center gap-1">
-                            Abridge Attribution
-                            <Info className="w-3 h-3 text-[#CCCCCC]" />
-                          </label>
-                          <span className="text-sm font-bold text-black tabular-nums">{entry.attributionPercent}%</span>
-                        </div>
-                        <input
-                          type="range"
-                          min={0}
-                          max={100}
-                          step={5}
-                          value={entry.attributionPercent}
-                          onChange={(e) => onUpdate({ attributionPercent: Number(e.target.value) })}
-                          className="w-full accent-[#EA2C00] h-1.5 cursor-pointer"
-                          data-testid={`slider-attribution-${driver.id}`}
-                        />
-                        <p className="text-[11px] text-[#AAAAAA] mt-1.5">Lower if other initiatives share credit for this outcome.</p>
-                      </div>
-
                       {/* Realized impact summary — hidden for custom drivers (value is entered directly) */}
                       {!driver.isCustom && delta !== 0 && (
                         <div className="bg-[#FAFAF8] border border-[#E8E8E8] rounded-xl p-4">
@@ -523,55 +544,140 @@ export default function MeasureDriverCard({ driver, entry, onUpdate, onRemove, i
                         </div>
                       )}
 
-                      {/* Notes — financial drivers */}
-                      <div>
-                        <label className="text-[11px] font-semibold text-[#888888] uppercase tracking-wide mb-1.5 block">
-                          Context Notes
-                        </label>
-                        <textarea
-                          value={entry.notes ?? ''}
-                          onChange={(e) => onUpdate({ notes: e.target.value })}
-                          placeholder="Where did this data come from? Any caveats, exclusions, or context the executive team should know?"
-                          className="w-full h-16 bg-[#FAFAF8] border border-[#E5E5E5] rounded-xl p-3 text-sm focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none resize-none"
-                          data-testid={`textarea-notes-${driver.id}`}
-                        />
-                      </div>
+                      {/* Details toggle */}
+                      <button
+                        onClick={() => setShowDetails(v => !v)}
+                        className="flex items-center gap-1.5 text-[11px] font-medium text-[#9E948C] hover:text-[#525252] transition-colors"
+                      >
+                        <ChevronDown className={`w-3 h-3 transition-transform duration-150 ${showDetails ? 'rotate-0' : '-rotate-90'}`} />
+                        {showDetails ? 'Hide details' : 'Attribution · Source · Notes'}
+                      </button>
+
+                      <AnimatePresence initial={false}>
+                        {showDetails && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.18, ease: 'easeInOut' }}
+                            className="overflow-hidden space-y-5 pt-4"
+                          >
+                            {/* Conversion factor — hidden for custom drivers (they enter value directly) */}
+                            {!driver.isCustom && (
+                              <div>
+                                <label className="text-[11px] font-semibold text-[#888888] uppercase tracking-wide mb-1.5 block">
+                                  {md.valuePerUnitLabel}
+                                </label>
+                                <div className="relative">
+                                  {md.valuePerUnitPrefix && (
+                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#888888] z-10 pointer-events-none">{md.valuePerUnitPrefix}</span>
+                                  )}
+                                  <FormattedNumberInput
+                                    value={entry.valuePerUnit}
+                                    onChange={(v: number) => onUpdate({ valuePerUnit: v })}
+                                    className={`h-10 bg-white ${md.valuePerUnitPrefix ? 'pl-7' : ''}`}
+                                    data-testid={`input-value-per-unit-${driver.id}`}
+                                  />
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Scale input (HAI rate drivers) */}
+                            {!driver.isCustom && md.scaleInput && (
+                              <div>
+                                <label className="text-[11px] font-semibold text-[#888888] uppercase tracking-wide mb-1.5 block">
+                                  {md.scaleInput.label}
+                                </label>
+                                <div className="relative">
+                                  <FormattedNumberInput
+                                    value={entry.scaleValue ?? md.scaleInput.defaultValue}
+                                    onChange={(v: number) => onUpdate({ scaleValue: v })}
+                                    className="h-10 bg-white"
+                                    data-testid={`input-scale-${driver.id}`}
+                                  />
+                                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#AAAAAA] pointer-events-none">
+                                    {md.scaleInput.unit}
+                                  </span>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Attribution — single slider */}
+                            {!driver.isCustom && (
+                              <div>
+                                <div className="flex items-center justify-between mb-2">
+                                  <label className="text-[11px] font-semibold text-[#888888] uppercase tracking-wide flex items-center gap-1">
+                                    Abridge Attribution
+                                    <Info className="w-3 h-3 text-[#CCCCCC]" />
+                                  </label>
+                                  <span className="text-sm font-bold text-black tabular-nums">{entry.attributionPercent}%</span>
+                                </div>
+                                <input
+                                  type="range"
+                                  min={0}
+                                  max={100}
+                                  step={5}
+                                  value={entry.attributionPercent}
+                                  onChange={(e) => onUpdate({ attributionPercent: Number(e.target.value) })}
+                                  className="w-full accent-[#EA2C00] h-1.5 cursor-pointer"
+                                  data-testid={`slider-attribution-${driver.id}`}
+                                />
+                                <p className="text-[11px] text-[#AAAAAA] mt-1.5">Lower if other initiatives share credit for this outcome.</p>
+                              </div>
+                            )}
+
+                            {/* Notes — financial drivers */}
+                            <div>
+                              <label className="text-[11px] font-semibold text-[#888888] uppercase tracking-wide mb-1.5 block">
+                                Context Notes
+                              </label>
+                              <textarea
+                                value={entry.notes ?? ''}
+                                onChange={(e) => onUpdate({ notes: e.target.value })}
+                                placeholder="Where did this data come from? Any caveats, exclusions, or context the executive team should know?"
+                                className="w-full h-16 bg-[#FAFAF8] border border-[#E5E5E5] rounded-xl p-3 text-sm focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none resize-none"
+                                data-testid={`textarea-notes-${driver.id}`}
+                              />
+                            </div>
+
+                            {/* Source + timestamp */}
+                            <div className="grid grid-cols-2 gap-3">
+                              <div>
+                                <label className="text-[11px] font-semibold text-[#888888] uppercase tracking-wide mb-1.5 block">
+                                  Data Source
+                                </label>
+                                <select
+                                  value={entry.entryDataSource ?? ''}
+                                  onChange={(e) => onUpdate({ entryDataSource: (e.target.value as EntryDataSource) || undefined })}
+                                  className="w-full h-9 bg-[#FAFAF8] border border-[#E5E5E5] rounded-xl px-3 text-sm text-[#444] focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none"
+                                  data-testid={`select-source-${driver.id}`}
+                                >
+                                  <option value="">Not specified</option>
+                                  <option value="ehr">EHR</option>
+                                  <option value="survey">Survey</option>
+                                  <option value="admin_data">Admin data</option>
+                                  <option value="chart_review">Chart review</option>
+                                  <option value="manual_entry">Manual entry</option>
+                                </select>
+                              </div>
+                              <div>
+                                <label className="text-[11px] font-semibold text-[#888888] uppercase tracking-wide mb-1.5 block">
+                                  Measured On
+                                </label>
+                                <input
+                                  type="date"
+                                  value={entry.measuredAt ?? ''}
+                                  onChange={(e) => onUpdate({ measuredAt: e.target.value || undefined })}
+                                  className="w-full h-9 bg-[#FAFAF8] border border-[#E5E5E5] rounded-xl px-3 text-sm text-[#444] focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none"
+                                  data-testid={`input-measured-at-${driver.id}`}
+                                />
+                              </div>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </>
                   )}
-
-                  {/* Source + timestamp — shown for ALL financial drivers */}
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="text-[11px] font-semibold text-[#888888] uppercase tracking-wide mb-1.5 block">
-                        Data Source
-                      </label>
-                      <select
-                        value={entry.entryDataSource ?? ''}
-                        onChange={(e) => onUpdate({ entryDataSource: (e.target.value as EntryDataSource) || undefined })}
-                        className="w-full h-9 bg-[#FAFAF8] border border-[#E5E5E5] rounded-xl px-3 text-sm text-[#444] focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none"
-                        data-testid={`select-source-${driver.id}`}
-                      >
-                        <option value="">Not specified</option>
-                        <option value="ehr">EHR</option>
-                        <option value="survey">Survey</option>
-                        <option value="admin_data">Admin data</option>
-                        <option value="chart_review">Chart review</option>
-                        <option value="manual_entry">Manual entry</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="text-[11px] font-semibold text-[#888888] uppercase tracking-wide mb-1.5 block">
-                        Measured On
-                      </label>
-                      <input
-                        type="date"
-                        value={entry.measuredAt ?? ''}
-                        onChange={(e) => onUpdate({ measuredAt: e.target.value || undefined })}
-                        className="w-full h-9 bg-[#FAFAF8] border border-[#E5E5E5] rounded-xl px-3 text-sm text-[#444] focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none"
-                        data-testid={`input-measured-at-${driver.id}`}
-                      />
-                    </div>
-                  </div>
                 </>
               ) : (
                 /* Signal / qualitative driver */
@@ -617,57 +723,78 @@ export default function MeasureDriverCard({ driver, entry, onUpdate, onRemove, i
                     monthlyEntrySection
                   )}
 
-                  <div>
-                    <label className="text-[11px] font-semibold text-[#888888] uppercase tracking-wide mb-1.5 block">
-                      Notes
-                    </label>
-                    <textarea
-                      value={entry.notes ?? ''}
-                      onChange={(e) => onUpdate({ notes: e.target.value })}
-                      placeholder="What are you observing? What's the story behind this signal?"
-                      className="w-full h-20 bg-[#FAFAF8] border border-[#E5E5E5] rounded-xl p-3 text-sm focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none resize-none"
-                      data-testid={`textarea-notes-${driver.id}`}
-                    />
-                  </div>
+                  {/* Details toggle */}
+                  <button
+                    onClick={() => setShowDetails(v => !v)}
+                    className="flex items-center gap-1.5 text-[11px] font-medium text-[#9E948C] hover:text-[#525252] transition-colors"
+                  >
+                    <ChevronDown className={`w-3 h-3 transition-transform duration-150 ${showDetails ? 'rotate-0' : '-rotate-90'}`} />
+                    {showDetails ? 'Hide details' : 'Attribution · Source · Notes'}
+                  </button>
 
-                  {/* Source + timestamp */}
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="text-[11px] font-semibold text-[#888888] uppercase tracking-wide mb-1.5 block">
-                        Data Source
-                      </label>
-                      <select
-                        value={entry.entryDataSource ?? ''}
-                        onChange={(e) => onUpdate({ entryDataSource: (e.target.value as EntryDataSource) || undefined })}
-                        className="w-full h-9 bg-[#FAFAF8] border border-[#E5E5E5] rounded-xl px-3 text-sm text-[#444] focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none"
-                        data-testid={`select-source-${driver.id}`}
+                  <AnimatePresence initial={false}>
+                    {showDetails && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.18, ease: 'easeInOut' }}
+                        className="overflow-hidden space-y-5 pt-4"
                       >
-                        <option value="">Not specified</option>
-                        <option value="ehr">EHR</option>
-                        <option value="survey">Survey</option>
-                        <option value="admin_data">Admin data</option>
-                        <option value="chart_review">Chart review</option>
-                        <option value="manual_entry">Manual entry</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="text-[11px] font-semibold text-[#888888] uppercase tracking-wide mb-1.5 block">
-                        Measured On
-                      </label>
-                      <input
-                        type="date"
-                        value={entry.measuredAt ?? ''}
-                        onChange={(e) => onUpdate({ measuredAt: e.target.value || undefined })}
-                        className="w-full h-9 bg-[#FAFAF8] border border-[#E5E5E5] rounded-xl px-3 text-sm text-[#444] focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none"
-                        data-testid={`input-measured-at-${driver.id}`}
-                      />
-                    </div>
-                  </div>
+                        <div>
+                          <label className="text-[11px] font-semibold text-[#888888] uppercase tracking-wide mb-1.5 block">
+                            Notes
+                          </label>
+                          <textarea
+                            value={entry.notes ?? ''}
+                            onChange={(e) => onUpdate({ notes: e.target.value })}
+                            placeholder="What are you observing? What's the story behind this signal?"
+                            className="w-full h-20 bg-[#FAFAF8] border border-[#E5E5E5] rounded-xl p-3 text-sm focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none resize-none"
+                            data-testid={`textarea-notes-${driver.id}`}
+                          />
+                        </div>
 
-                  <div className="flex items-center gap-2 text-[11px] text-[#AAAAAA]">
-                    <div className="w-1.5 h-1.5 rounded-full bg-[#AAAAAA] flex-shrink-0" />
-                    Signal tracked — adds qualitative evidence, not modeled financially.
-                  </div>
+                        {/* Source + timestamp */}
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="text-[11px] font-semibold text-[#888888] uppercase tracking-wide mb-1.5 block">
+                              Data Source
+                            </label>
+                            <select
+                              value={entry.entryDataSource ?? ''}
+                              onChange={(e) => onUpdate({ entryDataSource: (e.target.value as EntryDataSource) || undefined })}
+                              className="w-full h-9 bg-[#FAFAF8] border border-[#E5E5E5] rounded-xl px-3 text-sm text-[#444] focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none"
+                              data-testid={`select-source-${driver.id}`}
+                            >
+                              <option value="">Not specified</option>
+                              <option value="ehr">EHR</option>
+                              <option value="survey">Survey</option>
+                              <option value="admin_data">Admin data</option>
+                              <option value="chart_review">Chart review</option>
+                              <option value="manual_entry">Manual entry</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="text-[11px] font-semibold text-[#888888] uppercase tracking-wide mb-1.5 block">
+                              Measured On
+                            </label>
+                            <input
+                              type="date"
+                              value={entry.measuredAt ?? ''}
+                              onChange={(e) => onUpdate({ measuredAt: e.target.value || undefined })}
+                              className="w-full h-9 bg-[#FAFAF8] border border-[#E5E5E5] rounded-xl px-3 text-sm text-[#444] focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none"
+                              data-testid={`input-measured-at-${driver.id}`}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 text-[11px] text-[#AAAAAA]">
+                          <div className="w-1.5 h-1.5 rounded-full bg-[#AAAAAA] flex-shrink-0" />
+                          Signal tracked — adds qualitative evidence, not modeled financially.
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </>
               )}
             </div>

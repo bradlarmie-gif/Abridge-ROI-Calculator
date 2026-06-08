@@ -7,6 +7,7 @@ import {
   Svg,
   Rect,
   Font,
+  Image,
   pdf,
 } from "@react-pdf/renderer";
 import { PDFCoverPage } from "@/components/pdf/PDFCoverPage";
@@ -19,8 +20,12 @@ import {
 } from "@/lib/forecastPricing";
 import manropeRegular from "../../assets/fonts/manrope-regular.ttf";
 import manropeBold from "../../assets/fonts/manrope-bold.ttf";
+import abridgeFontPath from "../../assets/fonts/abridge.otf";
+import abridgeLogoRed from "@assets/abridge-logo-wordmark-red_1769187440253.png";
 
-Font.registerHyphenationCallback((w) => [w]);
+// ─── Font Registration ────────────────────────────────────────────────────────
+
+Font.registerHyphenationCallback((word) => [word]);
 Font.register({
   family: "Manrope",
   fonts: [
@@ -28,6 +33,7 @@ Font.register({
     { src: manropeBold, fontWeight: 700 },
   ],
 });
+Font.register({ family: "Abridge", src: abridgeFontPath, fontWeight: 400 });
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -53,28 +59,267 @@ export interface ForecastScalePDFData {
   simpleInvestment: number;
 }
 
-// ─── Color system ─────────────────────────────────────────────────────────────
+// ─── Brand Palette ────────────────────────────────────────────────────────────
 
-const colors = {
-  primary: "#EA2C00",
-  primaryText: "#1A1A1A",
-  secondary: "#666666",
-  tertiary: "#999999",
-  cards: "#F5F0EB",
-  separator: "#E5DCD0",
-  separatorHeavy: "#D4C9BC",
-  background: "#FDFAF7",
-  white: "#FFFFFF",
+const brand = {
+  black:         "#1A1A1A",
+  white:         "#FFFFFF",
+  coral:         "#EA2C00",
+  warmGray:      "#F8F7F6",
+  lightGray:     "#F5F4F3",
+  midGray:       "#E5E4E3",
+  borderGray:    "#D4D4D4",
+  textPrimary:   "#1A1A1A",
+  textSecondary: "#6B7280",
+  textTertiary:  "#9CA3AF",
+  positive:      "#059669",
 };
 
 const domainColors: Record<string, string> = {
-  Capacity: "#2563EB",
-  Workforce: "#7C3AED",
-  Revenue: "#EA2C00",
-  Quality: "#059669",
+  Capacity:  "#0891B2",
+  Workforce: "#B45309",
+  Revenue:   "#EA2C00",
+  Quality:   "#059669",
 };
 
 const QUADS = ["Capacity", "Workforce", "Revenue", "Quality"] as const;
+
+// ─── Styles ───────────────────────────────────────────────────────────────────
+
+const S = StyleSheet.create({
+  page: {
+    fontFamily: "Manrope",
+    fontSize: 10,
+    color: brand.textPrimary,
+    backgroundColor: brand.white,
+    paddingHorizontal: 48,
+    paddingTop: 36,
+    paddingBottom: 48,
+  },
+
+  // Header
+  pageHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: brand.midGray,
+    marginBottom: 20,
+  },
+  headerLogo: { height: 16 },
+  headerMeta: {
+    fontSize: 8,
+    fontWeight: 600,
+    color: brand.textSecondary,
+    textTransform: "uppercase",
+    letterSpacing: 1.5,
+  },
+
+  // Footer
+  footer: {
+    position: "absolute",
+    bottom: 20,
+    left: 48,
+    right: 48,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderTopWidth: 1,
+    borderTopColor: brand.midGray,
+    paddingTop: 7,
+  },
+  footerLeft:  { fontSize: 7.5, color: brand.textTertiary },
+  footerRight: { fontSize: 7.5, fontWeight: 600, color: brand.textSecondary },
+
+  // Typography
+  eyebrow: {
+    fontSize: 8,
+    fontWeight: 600,
+    color: brand.coral,
+    letterSpacing: 2,
+    textTransform: "uppercase",
+    marginBottom: 5,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontFamily: "Abridge",
+    fontWeight: 400,
+    letterSpacing: 0.4,
+    color: brand.textPrimary,
+    marginBottom: 5,
+  },
+  sectionIntro: {
+    fontSize: 9.5,
+    color: brand.textSecondary,
+    lineHeight: 1.6,
+    marginBottom: 14,
+  },
+  subEyebrow: {
+    fontSize: 7.5,
+    fontWeight: 600,
+    color: brand.textSecondary,
+    textTransform: "uppercase",
+    letterSpacing: 1.5,
+    marginBottom: 8,
+    marginTop: 14,
+  },
+  body: {
+    fontSize: 9.5,
+    color: brand.textSecondary,
+    lineHeight: 1.65,
+    marginBottom: 10,
+  },
+
+  // Hero band
+  heroBand: {
+    backgroundColor: brand.black,
+    borderRadius: 3,
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    flexDirection: "row",
+    marginBottom: 12,
+  },
+  heroDivider: { width: 1, backgroundColor: "#2D2D2D" },
+  heroMetric:  { flex: 1, alignItems: "center" },
+  heroLabel:   {
+    fontSize: 6.5,
+    color: "#777777",
+    textTransform: "uppercase",
+    letterSpacing: 1.2,
+    textAlign: "center",
+  },
+
+  // Insight box
+  insightBox: {
+    backgroundColor: brand.lightGray,
+    paddingVertical: 11,
+    paddingHorizontal: 14,
+    borderLeftWidth: 3,
+    borderLeftColor: brand.coral,
+    marginBottom: 12,
+  },
+  insightLabel: {
+    fontSize: 7.5,
+    fontWeight: 600,
+    color: brand.coral,
+    letterSpacing: 1.2,
+    textTransform: "uppercase",
+    marginBottom: 4,
+  },
+  insightText: {
+    fontSize: 9.5,
+    color: brand.textSecondary,
+    lineHeight: 1.6,
+  },
+
+  // Domain tiles
+  domainTileRow: { flexDirection: "row", gap: 6, marginBottom: 12 },
+  domainTile: {
+    flex: 1,
+    backgroundColor: brand.lightGray,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: brand.midGray,
+  },
+  domainTileValue: {
+    fontSize: 16,
+    fontWeight: 700,
+    color: brand.textPrimary,
+    marginTop: 4,
+    marginBottom: 2,
+  },
+  domainTileSub: { fontSize: 7, color: brand.textTertiary },
+
+  // Milestone cards
+  milestoneRow: { flexDirection: "row", gap: 0, marginBottom: 10 },
+  milestoneCard: {
+    flex: 1,
+    backgroundColor: "#F5F0EB",
+    borderWidth: 1,
+    borderColor: brand.midGray,
+    borderTopWidth: 3,
+    borderTopColor: brand.coral,
+    padding: 12,
+    marginRight: 6,
+  },
+  milestoneCardLast: {
+    flex: 1,
+    backgroundColor: "#F5F0EB",
+    borderWidth: 1,
+    borderColor: brand.midGray,
+    borderTopWidth: 3,
+    borderTopColor: brand.coral,
+    padding: 12,
+  },
+  milestoneStage: {
+    fontSize: 7,
+    fontWeight: 600,
+    color: brand.textTertiary,
+    letterSpacing: 1.5,
+    textTransform: "uppercase",
+    marginBottom: 3,
+  },
+  milestoneYear: {
+    fontSize: 13,
+    fontFamily: "Abridge",
+    color: brand.textPrimary,
+    marginBottom: 6,
+  },
+  milestoneValue:      { fontSize: 14, fontWeight: 700, color: brand.textPrimary },
+  milestoneValueFinal: { fontSize: 14, fontWeight: 700, color: brand.coral },
+
+  // Table system
+  tableWrap: {
+    borderWidth: 1,
+    borderColor: brand.midGray,
+    borderRadius: 3,
+    overflow: "hidden",
+    marginBottom: 10,
+  },
+  tableHead: {
+    flexDirection: "row",
+    backgroundColor: brand.lightGray,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: brand.midGray,
+  },
+  tableHeadCell: {
+    fontSize: 7,
+    fontWeight: 600,
+    color: brand.textSecondary,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  tableRow: {
+    flexDirection: "row",
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: brand.midGray,
+  },
+  tableRowHighlight: {
+    flexDirection: "row",
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: brand.midGray,
+    backgroundColor: brand.warmGray,
+  },
+  tableRowTotal: {
+    flexDirection: "row",
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    backgroundColor: brand.lightGray,
+  },
+  tableCell:     { fontSize: 8.5, color: brand.textPrimary },
+  tableCellBold: { fontSize: 8.5, fontWeight: 600, color: brand.textPrimary },
+  tableCellMuted: { fontSize: 8.5, color: brand.textSecondary },
+
+  // Divider
+  divider: { borderBottomWidth: 1, borderBottomColor: brand.midGray, marginVertical: 12 },
+});
 
 // ─── Formatters ───────────────────────────────────────────────────────────────
 
@@ -92,217 +337,46 @@ function fmtNum(n: number): string {
   return Math.round(n).toLocaleString();
 }
 
-function fmtPct(n: number, showPlus = true): string {
-  const prefix = showPlus && n > 0 ? "+" : "";
-  return `${prefix}${n.toFixed(0)}%`;
-}
-
-// ─── Shared styles ────────────────────────────────────────────────────────────
-
-const styles = StyleSheet.create({
-  page: {
-    paddingTop: 54,
-    paddingLeft: 54,
-    paddingRight: 54,
-    paddingBottom: 0,
-    fontFamily: "Manrope",
-    fontSize: 10,
-    color: colors.primaryText,
-    backgroundColor: colors.background,
-  },
-  pageWrapper: {
-    flex: 1,
-    flexDirection: "column",
-    paddingBottom: 72,
-  },
-  sectionLabel: {
-    fontSize: 8.5,
-    color: colors.primary,
-    textTransform: "uppercase",
-    letterSpacing: 2.5,
-    fontWeight: "bold",
-    marginBottom: 14,
-  },
-  subHead: {
-    fontSize: 8.5,
-    fontWeight: "bold",
-    color: colors.secondary,
-    textTransform: "uppercase",
-    letterSpacing: 1.5,
-    marginBottom: 8,
-    marginTop: 14,
-  },
-  body: {
-    fontSize: 9.5,
-    color: colors.secondary,
-    lineHeight: 1.65,
-    marginBottom: 10,
-  },
-  cardBg: {
-    backgroundColor: colors.cards,
-    borderRadius: 4,
-    padding: 14,
-  },
-  callout: {
-    backgroundColor: colors.cards,
-    borderLeftWidth: 3,
-    borderLeftColor: colors.primary,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderRadius: 3,
-    marginBottom: 10,
-  },
-  rule: {
-    height: 1,
-    backgroundColor: colors.separator,
-    marginVertical: 12,
-  },
-  chip: {
-    backgroundColor: colors.separator,
-    borderRadius: 10,
-    paddingHorizontal: 9,
-    paddingVertical: 3,
-  },
-  chipText: {
-    fontSize: 8,
-    color: colors.primaryText,
-    fontWeight: "bold",
-  },
-  label: {
-    fontSize: 6.5,
-    color: colors.tertiary,
-    textTransform: "uppercase",
-    letterSpacing: 1.2,
-    marginBottom: 3,
-  },
-  // Table
-  tableHead: {
-    flexDirection: "row",
-    backgroundColor: colors.cards,
-    paddingVertical: 7,
-    paddingHorizontal: 10,
-    borderRadius: 3,
-    marginBottom: 1,
-  },
-  tableRow: {
-    flexDirection: "row",
-    paddingVertical: 7,
-    paddingHorizontal: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.separator,
-  },
-  tableCell: {
-    flex: 1,
-    fontSize: 8.5,
-    color: colors.secondary,
-    textAlign: "right",
-  },
-  tableCellH: {
-    flex: 1,
-    fontSize: 7,
-    fontWeight: "bold",
-    color: colors.tertiary,
-    textTransform: "uppercase",
-    letterSpacing: 1,
-    textAlign: "right",
-  },
-  tableCellLeft: {
-    flex: 1,
-    fontSize: 8.5,
-    fontWeight: "bold",
-    color: colors.primaryText,
-  },
-  tableCellHLeft: {
-    flex: 1,
-    fontSize: 7,
-    fontWeight: "bold",
-    color: colors.tertiary,
-    textTransform: "uppercase",
-    letterSpacing: 1,
-  },
-});
-
 // ─── Shared components ────────────────────────────────────────────────────────
 
-function SectionLabel({ children }: { children: string }) {
-  return <Text style={styles.sectionLabel}>{children}</Text>;
+function PageHeader({ label }: { label: string }) {
+  return (
+    <View style={S.pageHeader}>
+      <Image src={abridgeLogoRed} style={S.headerLogo} />
+      <Text style={S.headerMeta}>{label}</Text>
+    </View>
+  );
 }
 
 function PageFooter({ orgName }: { orgName: string }) {
   return (
-    <View
-      style={{
-        position: "absolute",
-        bottom: 24,
-        left: 54,
-        right: 54,
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        borderTopWidth: 1,
-        borderTopColor: colors.separator,
-        paddingTop: 8,
-      }}
-    >
-      <Text style={{ fontSize: 8, color: colors.secondary }}>
-        {orgName ? `${orgName} · ` : ""}Scale Opportunity Brief
+    <View style={S.footer} fixed>
+      <Text style={S.footerLeft}>
+        {`Confidential · ${orgName} · Scale Opportunity Brief`}
       </Text>
-      <Text style={{ fontSize: 8, color: colors.tertiary }}>
-        Confidential · Abridge
-      </Text>
+      <Text
+        style={S.footerRight}
+        render={({ pageNumber, totalPages }) => `${pageNumber - 1} / ${totalPages - 1}`}
+      />
     </View>
   );
 }
 
-// Metric strip used on both Summary and Pricing pages
-function MetricStrip({
-  items,
-}: {
-  items: { label: string; value: string; highlight?: boolean }[];
-}) {
-  return (
-    <View
-      style={{
-        flexDirection: "row",
-        backgroundColor: colors.white,
-        borderRadius: 4,
-        borderWidth: 1,
-        borderColor: colors.separator,
-        marginBottom: 12,
-      }}
-    >
-      {items.map(({ label, value, highlight }, i) => (
-        <View
-          key={label}
-          style={{
-            flex: 1,
-            padding: 12,
-            alignItems: "center",
-            borderRightWidth: i < items.length - 1 ? 1 : 0,
-            borderRightColor: colors.separator,
-          }}
-        >
-          <Text style={styles.label}>{label}</Text>
-          <Text
-            style={{
-              fontSize: 16,
-              fontWeight: "bold",
-              color: highlight ? colors.primary : colors.primaryText,
-            }}
-          >
-            {value}
-          </Text>
-        </View>
-      ))}
-    </View>
-  );
-}
-
-// ─── Narrative generators ─────────────────────────────────────────────────────
+// ─── Narrative generator ──────────────────────────────────────────────────────
 
 function buildScaleNarrative(data: ForecastScalePDFData): string {
   const org = data.clientName || "This organization";
-  const { combinedTotal, totalRealized, quadrantTotals, combinedProviders, forecastYears, yearlyInputs, baseAdoptionPct, simpleInvestment, pricingScenarios } = data;
+  const {
+    combinedTotal,
+    totalRealized,
+    quadrantTotals,
+    combinedProviders,
+    forecastYears,
+    yearlyInputs,
+    baseAdoptionPct,
+    simpleInvestment,
+    pricingScenarios,
+  } = data;
 
   if (combinedTotal === 0) {
     return `${org} has configured a forecast scenario. Add tracked drivers to the quadrant pages to populate the scale projection.`;
@@ -315,7 +389,8 @@ function buildScaleNarrative(data: ForecastScalePDFData): string {
   )[0];
   const topVal = quadrantTotals[topQuad].projected;
   const topPct = combinedTotal > 0 ? Math.round((topVal / combinedTotal) * 100) : 0;
-  const topShare = topPct >= 60 ? "the majority" : topPct >= 40 ? "nearly half" : `${topPct}%`;
+  const topShare =
+    topPct >= 60 ? "the majority" : topPct >= 40 ? "nearly half" : `${topPct}%`;
 
   let text = "";
 
@@ -328,7 +403,7 @@ function buildScaleNarrative(data: ForecastScalePDFData): string {
   text += ` ${topQuad} accounts for ${topShare} of that total, reflecting where Abridge's documentation support has the most direct economic impact.`;
 
   const baseValue = Math.round(combinedTotal * (baseAdoptionPct / 100));
-  const hasInvestment = (pricingScenarios.length > 0 || simpleInvestment > 0);
+  const hasInvestment = pricingScenarios.length > 0 || simpleInvestment > 0;
   if (hasInvestment && baseValue > 0) {
     text += ` At the ${baseAdoptionPct}% adoption base case, projected value is ${fmtCurrency(baseValue)}.`;
   }
@@ -343,12 +418,12 @@ function buildScaleNarrative(data: ForecastScalePDFData): string {
   return text;
 }
 
-// ─── Stacked bar chart for multi-year ────────────────────────────────────────
+// ─── Yearly bar chart ─────────────────────────────────────────────────────────
 
 function YearlyBarChart({ yearlyInputs }: { yearlyInputs: PricingYearInput[] }) {
   if (yearlyInputs.length < 2) return null;
 
-  const W = 396;
+  const W = 420;
   const H = 72;
   const barPad = 8;
   const n = yearlyInputs.length;
@@ -356,13 +431,12 @@ function YearlyBarChart({ yearlyInputs }: { yearlyInputs: PricingYearInput[] }) 
   const maxVal = Math.max(...yearlyInputs.map((y) => y.totalValue), 1);
 
   const STACK: Array<{ key: keyof PricingYearInput; fill: string; label: string }> = [
-    { key: "qualityValue",   fill: "#059669", label: "Quality" },
-    { key: "revenueValue",   fill: "#EA2C00", label: "Revenue" },
-    { key: "workforceValue", fill: "#7C3AED", label: "Workforce" },
-    { key: "capacityValue",  fill: "#2563EB", label: "Capacity" },
+    { key: "qualityValue",   fill: domainColors.Quality,   label: "Quality"   },
+    { key: "revenueValue",   fill: domainColors.Revenue,   label: "Revenue"   },
+    { key: "workforceValue", fill: domainColors.Workforce, label: "Workforce" },
+    { key: "capacityValue",  fill: domainColors.Capacity,  label: "Capacity"  },
   ];
 
-  // Pre-compute flat list of rects (no View wrappers inside Svg)
   const rects: Array<{ x: number; y: number; w: number; h: number; fill: string }> = [];
   yearlyInputs.forEach((yr, i) => {
     const x = barPad + i * (barW + barPad);
@@ -384,10 +458,12 @@ function YearlyBarChart({ yearlyInputs }: { yearlyInputs: PricingYearInput[] }) 
           <Rect key={idx} x={r.x} y={r.y} width={r.w} height={r.h} fill={r.fill} opacity={0.9} />
         ))}
       </Svg>
-      {/* Year labels — outside SVG using regular Views */}
       <View style={{ flexDirection: "row", paddingHorizontal: barPad }}>
         {yearlyInputs.map((_, i) => (
-          <Text key={i} style={{ flex: 1, fontSize: 7, color: colors.tertiary, textAlign: "center" }}>
+          <Text
+            key={i}
+            style={{ flex: 1, fontSize: 7, color: brand.textTertiary, textAlign: "center" }}
+          >
             {`Yr ${i + 1}`}
           </Text>
         ))}
@@ -396,7 +472,7 @@ function YearlyBarChart({ yearlyInputs }: { yearlyInputs: PricingYearInput[] }) 
         {STACK.slice().reverse().map(({ fill, label }) => (
           <View key={label} style={{ flexDirection: "row", alignItems: "center", gap: 3 }}>
             <View style={{ width: 7, height: 7, borderRadius: 1, backgroundColor: fill }} />
-            <Text style={{ fontSize: 7, color: colors.tertiary }}>{label}</Text>
+            <Text style={{ fontSize: 7, color: brand.textTertiary }}>{label}</Text>
           </View>
         ))}
       </View>
@@ -408,245 +484,182 @@ function YearlyBarChart({ yearlyInputs }: { yearlyInputs: PricingYearInput[] }) 
 
 function ScaleSummaryPage({ data }: { data: ForecastScalePDFData }) {
   const org = data.clientName || "";
-  const { totalRealized, combinedTotal, quadrantTotals, combinedProviders, addedSettingsTotal, forecastYears, yearlyInputs, pricingScenarios, bestValueScenarioId } = data;
+  const {
+    totalRealized,
+    combinedTotal,
+    quadrantTotals,
+    combinedProviders,
+    addedSettingsTotal,
+    forecastYears,
+    yearlyInputs,
+    pricingScenarios,
+    bestValueScenarioId,
+    simpleInvestment,
+  } = data;
   const isMultiYear = forecastYears > 1 && yearlyInputs.length > 1;
 
-  const upliftPct = totalRealized > 0
-    ? ((combinedTotal - totalRealized) / totalRealized) * 100
-    : 0;
-  const multiplier = totalRealized > 0 ? combinedTotal / totalRealized : 0;
-
-  // Best pricing for ROI strip — tier scenario takes priority, ACV as fallback
+  // Best pricing for hero band
   const bestScenario = bestValueScenarioId
     ? pricingScenarios.find((s) => s.id === bestValueScenarioId)
     : pricingScenarios[0];
+
   const bestInvestment = (() => {
     if (bestScenario) {
-      const scale = bestScenario.model === "perProvider" ? data.combinedProviders
-        : (bestScenario.model === "perEncounter" || bestScenario.model === "platformFee") ? data.combinedEncounters
-        : 0;
+      const scale =
+        bestScenario.model === "perProvider"
+          ? data.combinedProviders
+          : bestScenario.model === "perEncounter" || bestScenario.model === "platformFee"
+          ? data.combinedEncounters
+          : 0;
       const { value, warning } = computeScenarioInvestment(bestScenario, scale);
       if (!warning && value > 0) return value;
     }
-    return data.simpleInvestment || 0;
+    return simpleInvestment || 0;
   })();
-  const bestNet = bestInvestment > 0 ? combinedTotal - bestInvestment : 0;
+
+  const bestNet = bestInvestment > 0 ? combinedTotal - bestInvestment : combinedTotal;
   const roi = bestInvestment > 0 ? combinedTotal / bestInvestment : 0;
-  const showROIStrip = bestInvestment > 0 && combinedTotal > 0;
 
   const narrative = buildScaleNarrative(data);
 
+  const heroItems = [
+    { label: "Annual Value at Scale", value: fmtCurrency(combinedTotal) },
+    { label: "Realized Today",        value: fmtCurrency(totalRealized), dim: totalRealized === 0 },
+    { label: "Net Annual Value",       value: fmtCurrency(bestNet),       green: bestInvestment > 0 && bestNet > 0 },
+    { label: "ROI Multiple",           value: roi > 0 ? `${roi.toFixed(1)}×` : "—" },
+  ];
+
   return (
-    <Page size="LETTER" style={styles.page}>
+    <Page size="LETTER" style={S.page}>
       <PageFooter orgName={org} />
-      <View style={styles.pageWrapper}>
-        <SectionLabel>Scale Opportunity Brief</SectionLabel>
+      <PageHeader label="Scale Opportunity" />
 
-        {/* Hero card */}
-        <View style={[styles.cardBg, { marginBottom: 12, paddingVertical: 22 }]}>
-          <Text
-            style={{
-              fontSize: 8.5,
-              color: colors.secondary,
-              textTransform: "uppercase",
-              letterSpacing: 2.5,
-              fontWeight: "bold",
-              marginBottom: 6,
-            }}
-          >
-            Projected Annual Value at Full Scale
-          </Text>
-          <Text
-            style={{
-              fontSize: 40,
-              fontWeight: "bold",
-              color: colors.primary,
-              lineHeight: 1.0,
-              marginBottom: 8,
-            }}
-          >
-            {fmtCurrency(combinedTotal)}
-          </Text>
-          <Text style={{ fontSize: 9, color: colors.secondary, marginBottom: 12 }}>
-            {totalRealized > 0 && multiplier > 1
-              ? `${multiplier.toFixed(1)}× the ${fmtCurrency(totalRealized)} currently measured · ${fmtNum(combinedProviders)} providers at scale`
-              : `${fmtNum(combinedProviders)} providers at projected scale`}
-          </Text>
-          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6 }}>
-            {[
-              org || null,
-              `${fmtNum(combinedProviders)} providers`,
-              totalRealized > 0 ? `${fmtCurrency(totalRealized)} measured today` : null,
-              upliftPct > 0 ? `${fmtPct(upliftPct)} scale uplift` : null,
-            ]
-              .filter(Boolean)
-              .map((chip, i) => (
-                <View key={i} style={styles.chip}>
-                  <Text style={styles.chipText}>{chip as string}</Text>
-                </View>
-              ))}
-          </View>
-        </View>
+      {/* Eyebrow + title */}
+      <Text style={S.eyebrow}>Scale Opportunity</Text>
+      <Text style={S.sectionTitle}>From measured value to full deployment</Text>
+      <View style={S.divider} />
 
-        {/* ROI strip (conditional on pricing) */}
-        {showROIStrip && (
-          <MetricStrip
-            items={[
-              { label: "Annual Investment", value: fmtCurrency(bestInvestment) },
-              { label: "Net Annual Value", value: fmtCurrency(bestNet), highlight: bestNet > 0 },
-              { label: "Return on Investment", value: `${roi.toFixed(1)}×`, highlight: true },
-            ]}
-          />
-        )}
-
-        {/* Domain cards */}
-        <Text style={styles.subHead}>Value by Domain</Text>
-        <View style={{ flexDirection: "row", gap: 7, marginBottom: 14 }}>
-          {QUADS.map((q) => {
-            const t = quadrantTotals[q];
-            const dColor = domainColors[q];
-            const hasVal = t.projected > 0;
-            const delta = t.projected - t.realized;
-            const pct = t.realized > 0 ? (delta / t.realized) * 100 : 0;
-            return (
-              <View
-                key={q}
+      {/* Hero band */}
+      <View style={S.heroBand}>
+        {heroItems.map((m, i) => (
+          <View key={i} style={{ flexDirection: "row", flex: 1 }}>
+            {i > 0 && <View style={S.heroDivider} />}
+            <View style={S.heroMetric}>
+              <Text
                 style={{
-                  flex: 1,
-                  backgroundColor: colors.white,
-                  borderRadius: 4,
-                  borderWidth: 1,
-                  borderColor: hasVal ? dColor + "40" : colors.separator,
-                  padding: 10,
-                  alignItems: "center",
+                  fontSize: 21,
+                  fontWeight: 700,
+                  marginBottom: 3,
+                  color: m.green
+                    ? "#34D399"
+                    : m.dim
+                    ? "#555555"
+                    : brand.white,
                 }}
               >
-                <View
-                  style={{
-                    width: 8,
-                    height: 8,
-                    borderRadius: 4,
-                    backgroundColor: hasVal ? dColor : colors.separator,
-                    marginBottom: 5,
-                  }}
-                />
-                <Text
-                  style={{
-                    fontSize: 7.5,
-                    fontWeight: "bold",
-                    color: hasVal ? dColor : colors.tertiary,
-                    textTransform: "uppercase",
-                    letterSpacing: 1,
-                    marginBottom: 5,
-                    textAlign: "center",
-                  }}
-                >
-                  {q}
-                </Text>
-                {hasVal ? (
-                  <>
-                    <Text
-                      style={{
-                        fontSize: 14,
-                        fontWeight: "bold",
-                        color: colors.primaryText,
-                        textAlign: "center",
-                        lineHeight: 1.1,
-                      }}
-                    >
-                      {fmtCurrency(t.projected)}
-                    </Text>
-                    {t.realized > 0 && (
-                      <Text
-                        style={{
-                          fontSize: 7.5,
-                          color: colors.tertiary,
-                          marginTop: 3,
-                          textAlign: "center",
-                        }}
-                      >
-                        from {fmtCurrency(t.realized)}
-                        {delta > 0 ? ` · ${fmtPct(pct)}` : ""}
-                      </Text>
-                    )}
-                  </>
-                ) : (
-                  <Text style={{ fontSize: 8, color: colors.tertiary, textAlign: "center" }}>
-                    No drivers
-                  </Text>
-                )}
-              </View>
-            );
-          })}
-        </View>
-
-        {/* Added settings row */}
-        {addedSettingsTotal > 0 && (
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "space-between",
-              backgroundColor: colors.white,
-              borderRadius: 4,
-              borderWidth: 1,
-              borderColor: colors.separator,
-              paddingHorizontal: 12,
-              paddingVertical: 8,
-              marginBottom: 12,
-            }}
-          >
-            <Text style={{ fontSize: 9, color: colors.secondary }}>
-              + Modeled expansion settings
-            </Text>
-            <Text style={{ fontSize: 12, fontWeight: "bold", color: colors.primaryText }}>
-              {fmtCurrency(addedSettingsTotal)}
-            </Text>
+                {m.value}
+              </Text>
+              <Text style={S.heroLabel}>{m.label}</Text>
+            </View>
           </View>
-        )}
+        ))}
+      </View>
 
-        {/* Narrative */}
-        <Text style={styles.body}>{narrative}</Text>
+      {/* Domain tiles */}
+      <View style={S.domainTileRow}>
+        {QUADS.map((q) => {
+          const val = quadrantTotals[q].projected;
+          const dColor = domainColors[q];
+          return (
+            <View
+              key={q}
+              style={[
+                S.domainTile,
+                { borderTopWidth: 3, borderTopColor: dColor },
+              ]}
+            >
+              <Text
+                style={{
+                  fontSize: 7,
+                  color: dColor,
+                  textTransform: "uppercase",
+                  letterSpacing: 1.5,
+                }}
+              >
+                {q}
+              </Text>
+              <Text style={S.domainTileValue}>
+                {val > 0 ? fmtCurrency(val) : "—"}
+              </Text>
+              <Text style={S.domainTileSub}>projected / yr</Text>
+            </View>
+          );
+        })}
+      </View>
 
-        {/* Multi-year table */}
-        {isMultiYear && (
-          <>
-            <Text style={styles.subHead}>Multi-Year Trajectory</Text>
-            <YearlyBarChart yearlyInputs={yearlyInputs} />
-            <View style={{ marginBottom: 14 }}>
-              <View style={styles.tableHead}>
-                <Text style={styles.tableCellHLeft}>Year</Text>
-                <Text style={styles.tableCellH}>Providers</Text>
-                <Text style={styles.tableCellH}>Capacity</Text>
-                <Text style={styles.tableCellH}>Workforce</Text>
-                <Text style={styles.tableCellH}>Revenue</Text>
-                <Text style={styles.tableCellH}>Quality</Text>
-                <Text style={[styles.tableCellH, { color: colors.primaryText }]}>Total</Text>
-              </View>
-              {yearlyInputs.map((yr, i) => (
-                <View key={i} style={styles.tableRow}>
-                  <Text style={styles.tableCellLeft}>Year {i + 1}</Text>
-                  <Text style={styles.tableCell}>{fmtNum(yr.providers)}</Text>
-                  <Text style={styles.tableCell}>{fmtCurrency(yr.capacityValue)}</Text>
-                  <Text style={styles.tableCell}>{fmtCurrency(yr.workforceValue)}</Text>
-                  <Text style={styles.tableCell}>{fmtCurrency(yr.revenueValue)}</Text>
-                  <Text style={styles.tableCell}>{fmtCurrency(yr.qualityValue)}</Text>
-                  <Text style={[styles.tableCell, { fontWeight: "bold", color: colors.primaryText }]}>
+      {/* Narrative insight box */}
+      <View style={S.insightBox}>
+        <Text style={S.insightLabel}>Scale Analysis</Text>
+        <Text style={S.insightText}>{narrative}</Text>
+      </View>
+
+      {/* Multi-year trajectory */}
+      {isMultiYear && (
+        <>
+          <Text style={S.subEyebrow}>Year-by-Year Value Trajectory</Text>
+          <YearlyBarChart yearlyInputs={yearlyInputs} />
+
+          {/* Milestone cards */}
+          <View style={S.milestoneRow}>
+            {yearlyInputs.map((yr, i) => {
+              const isLast = i === yearlyInputs.length - 1;
+              return (
+                <View key={i} style={isLast ? S.milestoneCardLast : S.milestoneCard}>
+                  <Text style={S.milestoneStage}>
+                    {i === 0 ? "Launch" : i === yearlyInputs.length - 1 ? "Full Scale" : `Year ${i + 1}`}
+                  </Text>
+                  <Text style={S.milestoneYear}>Year {i + 1}</Text>
+                  <Text style={{ fontSize: 7, color: brand.textTertiary, marginBottom: 2 }}>
+                    {fmtNum(yr.providers)} providers
+                  </Text>
+                  <Text style={isLast ? S.milestoneValueFinal : S.milestoneValue}>
                     {fmtCurrency(yr.totalValue)}
                   </Text>
                 </View>
-              ))}
-            </View>
-          </>
-        )}
+              );
+            })}
+          </View>
+        </>
+      )}
 
-        {/* Methodology callout */}
-        <View style={styles.callout}>
-          <Text style={[styles.label, { marginBottom: 5 }]}>How These Projections Are Derived</Text>
-          <Text style={styles.body}>
-            The scale projection is not a benchmark estimate. It multiplies the per-unit economics measured in active deployment — time saved per note, revenue recovered per encounter, staff hours retained per provider — by the difference between the current footprint and the projected one. A 2× scale factor means twice the active volume with the same per-unit outcomes. Attribution weights and value assumptions carry forward from the measurement phase without adjustment. Reviewers who disagree with a specific driver's per-unit value can update that driver in the source measurement and regenerate.
-          </Text>
-        </View>
+      {/* Expansion settings */}
+      {addedSettingsTotal > 0 && (
+        <>
+          <Text style={S.subEyebrow}>Expansion Settings</Text>
+          <View style={[S.insightBox, { borderLeftColor: brand.textSecondary }]}>
+            <Text style={[S.insightLabel, { color: brand.textSecondary }]}>
+              Additional Modeled Value
+            </Text>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+              <Text style={S.insightText}>
+                Expansion settings configured outside core deployment
+              </Text>
+              <Text style={{ fontSize: 14, fontWeight: 700, color: brand.textPrimary }}>
+                {fmtCurrency(addedSettingsTotal)}
+              </Text>
+            </View>
+          </View>
+        </>
+      )}
+
+      {/* Methodology callout */}
+      <View style={[S.insightBox, { borderLeftColor: brand.textSecondary }]}>
+        <Text style={[S.insightLabel, { color: brand.textSecondary }]}>
+          How These Projections Are Derived
+        </Text>
+        <Text style={S.insightText}>
+          The scale projection multiplies per-unit economics measured in active deployment — time saved per note, revenue recovered per encounter, staff hours retained per provider — by the difference between the current footprint and the projected one. No benchmarks. No new assumptions. Reviewers who disagree with a specific driver's per-unit value can update that driver in the source measurement and regenerate.
+        </Text>
       </View>
     </Page>
   );
@@ -654,28 +667,19 @@ function ScaleSummaryPage({ data }: { data: ForecastScalePDFData }) {
 
 // ─── Page 3: Sensitivity Analysis ────────────────────────────────────────────
 
-const ADOPTION_ROWS = [
-  { label: "50% Adoption", sub: "Conservative floor", pct: 0.5 },
-  { label: "70% Adoption", sub: "Typical deployment", pct: 0.7 },
-  { label: "90% Adoption", sub: "High utilization", pct: 0.9 },
-];
-
-const VALUE_COLS = [
-  { top: "75%", sub: "Value Realization", pct: 0.75 },
-  { top: "100%", sub: "Value Realization", pct: 1.0 },
-  { top: "125%", sub: "Value Realization", pct: 1.25 },
-];
+const SENS_ADOPTION = [0.5, 0.75, 1.0];
+const SENS_REALIZATION = [0.7, 0.85, 1.0];
 
 function SensitivityPage({ data }: { data: ForecastScalePDFData }) {
   const {
     combinedTotal,
     combinedProviders,
     combinedEncounters,
-    quadrantTotals,
     pricingScenarios,
     bestValueScenarioId,
     clientName,
     baseAdoptionPct,
+    totalRealized,
     simpleInvestment,
   } = data;
 
@@ -688,8 +692,7 @@ function SensitivityPage({ data }: { data: ForecastScalePDFData }) {
       const scale =
         pricingScenario.model === "perProvider"
           ? combinedProviders
-          : pricingScenario.model === "perEncounter" ||
-            pricingScenario.model === "platformFee"
+          : pricingScenario.model === "perEncounter" || pricingScenario.model === "platformFee"
           ? combinedEncounters
           : 0;
       const { value, warning } = computeScenarioInvestment(pricingScenario, scale);
@@ -700,100 +703,54 @@ function SensitivityPage({ data }: { data: ForecastScalePDFData }) {
 
   const hasPricing = investment > 0 && combinedTotal > 0;
 
+  // Base case is baseAdoptionPct / 100 adoption × 1.0 realization
+  const baseAdoptionFraction = baseAdoptionPct / 100;
+
   return (
-    <Page size="LETTER" style={styles.page}>
+    <Page size="LETTER" style={S.page}>
       <PageFooter orgName={clientName || ""} />
-      <View style={styles.pageWrapper}>
-        <SectionLabel>Sensitivity Analysis</SectionLabel>
+      <PageHeader label="Scale Opportunity" />
 
-        <Text style={styles.body}>
-          Two variables independently determine the range of outcomes: how many
-          providers actively use Abridge at full scale (adoption), and whether
-          the per-unit economics measured so far hold as the deployment grows
-          (value realization). The matrix stress-tests both.
-        </Text>
+      <Text style={S.eyebrow}>Risk & Sensitivity</Text>
+      <Text style={S.sectionTitle}>What if utilization or value realization falls short?</Text>
+      <View style={S.divider} />
 
-        {/* Axis explanation */}
-        <View
-          style={[
-            styles.cardBg,
-            { flexDirection: "row", gap: 14, marginBottom: 16 },
-          ]}
-        >
-          <View style={{ flex: 1 }}>
-            <Text style={[styles.label, { marginBottom: 5 }]}>
-              Rows — Adoption Rate
-            </Text>
-            <Text style={styles.body}>
-              Share of the projected provider headcount actively using Abridge.
-              50% is a conservative floor for early deployment; 70% reflects
-              typical outcomes after change management; 90% represents high
-              sustained utilization in mature programs.
-            </Text>
-          </View>
+      <Text style={S.sectionIntro}>
+        The matrix below shows projected annual value across different adoption rates and value realization scenarios. The highlighted cell is your base case.
+      </Text>
+
+      {/* Matrix */}
+      {/* Column headers */}
+      <View style={{ flexDirection: "row", marginBottom: 3 }}>
+        <View style={{ width: 110, flexShrink: 0 }} />
+        {SENS_REALIZATION.map((r, ci) => (
           <View
-            style={{ width: 1, backgroundColor: colors.separator }}
-          />
-          <View style={{ flex: 1 }}>
-            <Text style={[styles.label, { marginBottom: 5 }]}>
-              Columns — Value Realization
+            key={ci}
+            style={{
+              flex: 1,
+              backgroundColor: brand.lightGray,
+              borderWidth: 1,
+              borderColor: brand.midGray,
+              paddingVertical: 7,
+              paddingHorizontal: 6,
+              alignItems: "center",
+              marginHorizontal: 2,
+            }}
+          >
+            <Text style={{ fontSize: 10, fontWeight: 700, color: brand.textPrimary }}>
+              {Math.round(r * 100)}%
             </Text>
-            <Text style={styles.body}>
-              Whether the measured per-unit economics hold, compress, or improve
-              at scale. 75% discounts for friction and scale risk. 100% means
-              outcomes match what was measured. 125% reflects compounding
-              effects documented in second-year deployments.
-            </Text>
-          </View>
-        </View>
-
-        {/* Matrix column headers */}
-        <View style={{ flexDirection: "row", marginBottom: 3 }}>
-          {/* Corner label */}
-          <View style={{ width: 118, flexShrink: 0, justifyContent: "flex-end", paddingBottom: 6, paddingRight: 6 }}>
-            <Text style={[styles.label, { textAlign: "right" }]}>
-              Adoption ↓  Value →
+            <Text style={{ fontSize: 6.5, color: brand.textTertiary, marginTop: 1 }}>
+              Value Realization
             </Text>
           </View>
-          {VALUE_COLS.map((col, ci) => (
-            <View
-              key={ci}
-              style={{
-                flex: 1,
-                backgroundColor: colors.cards,
-                borderRadius: 4,
-                paddingVertical: 8,
-                paddingHorizontal: 4,
-                marginHorizontal: 2,
-                alignItems: "center",
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: 11,
-                  fontWeight: "bold",
-                  color: colors.primaryText,
-                  textAlign: "center",
-                }}
-              >
-                {col.top}
-              </Text>
-              <Text
-                style={{
-                  fontSize: 7.5,
-                  color: colors.tertiary,
-                  textAlign: "center",
-                  marginTop: 1,
-                }}
-              >
-                {col.sub}
-              </Text>
-            </View>
-          ))}
-        </View>
+        ))}
+      </View>
 
-        {/* Matrix rows */}
-        {ADOPTION_ROWS.map((row, ri) => (
+      {/* Rows */}
+      {SENS_ADOPTION.map((adoptionFrac, ri) => {
+        const adoptionPct = Math.round(adoptionFrac * baseAdoptionFraction * 100);
+        return (
           <View
             key={ri}
             style={{ flexDirection: "row", marginBottom: 3, alignItems: "stretch" }}
@@ -801,45 +758,47 @@ function SensitivityPage({ data }: { data: ForecastScalePDFData }) {
             {/* Row header */}
             <View
               style={{
-                width: 118,
+                width: 110,
                 flexShrink: 0,
-                backgroundColor: colors.cards,
-                borderRadius: 4,
+                backgroundColor: brand.lightGray,
+                borderWidth: 1,
+                borderColor: brand.midGray,
                 paddingVertical: 10,
                 paddingHorizontal: 10,
                 justifyContent: "center",
               }}
             >
-              <Text
-                style={{
-                  fontSize: 8.5,
-                  fontWeight: "bold",
-                  color: colors.primaryText,
-                  marginBottom: 2,
-                }}
-              >
-                {row.label}
+              <Text style={{ fontSize: 8.5, fontWeight: 700, color: brand.textPrimary, marginBottom: 2 }}>
+                {adoptionPct}% Adoption
               </Text>
-              <Text style={{ fontSize: 7, color: colors.tertiary }}>{row.sub}</Text>
+              <Text style={{ fontSize: 7, color: brand.textTertiary }}>
+                {adoptionFrac === 0.5
+                  ? "Conservative floor"
+                  : adoptionFrac === 0.75
+                  ? "Typical deployment"
+                  : "Full adoption"}
+              </Text>
             </View>
 
             {/* Cells */}
-            {VALUE_COLS.map((col, ci) => {
-              const cellValue = combinedTotal * row.pct * col.pct;
-              const isBase = row.pct === baseAdoptionPct / 100 && col.pct === 1.0;
-              const net = investment > 0 ? cellValue - investment : 0;
-              const roi = investment > 0 ? cellValue / investment : 0;
+            {SENS_REALIZATION.map((realizationFrac, ci) => {
+              const cellValue = combinedTotal * adoptionFrac * baseAdoptionFraction * realizationFrac;
+              const isBase =
+                adoptionFrac === 1.0 && realizationFrac === 1.0;
+              const net = hasPricing ? cellValue - investment : 0;
+              const cellROI = hasPricing && investment > 0 ? cellValue / investment : 0;
+              const isPositive = cellValue >= combinedTotal * 0.8;
 
               return (
                 <View
                   key={ci}
                   style={{
                     flex: 1,
-                    backgroundColor: isBase ? colors.cards : colors.white,
+                    backgroundColor: isBase ? brand.warmGray : brand.white,
                     borderWidth: isBase ? 2 : 1,
-                    borderColor: isBase ? colors.primary : colors.separator,
-                    borderRadius: 4,
-                    paddingVertical: 12,
+                    borderColor: isBase ? brand.coral : brand.midGray,
+                    borderRadius: 2,
+                    paddingVertical: 10,
                     paddingHorizontal: 8,
                     marginHorizontal: 2,
                     alignItems: "center",
@@ -849,18 +808,18 @@ function SensitivityPage({ data }: { data: ForecastScalePDFData }) {
                   {isBase && (
                     <View
                       style={{
-                        backgroundColor: colors.primary,
-                        borderRadius: 3,
+                        backgroundColor: brand.coral,
+                        borderRadius: 2,
                         paddingHorizontal: 6,
                         paddingVertical: 2,
-                        marginBottom: 5,
+                        marginBottom: 4,
                       }}
                     >
                       <Text
                         style={{
                           fontSize: 6,
-                          fontWeight: "bold",
-                          color: colors.white,
+                          fontWeight: 700,
+                          color: brand.white,
                           textTransform: "uppercase",
                           letterSpacing: 1,
                         }}
@@ -872,9 +831,13 @@ function SensitivityPage({ data }: { data: ForecastScalePDFData }) {
                   <Text
                     style={{
                       fontSize: isBase ? 15 : 13,
-                      fontWeight: "bold",
-                      color: isBase ? colors.primary : colors.primaryText,
+                      fontWeight: 700,
                       textAlign: "center",
+                      color: isBase
+                        ? brand.coral
+                        : isPositive
+                        ? brand.positive
+                        : brand.textPrimary,
                     }}
                   >
                     {fmtCurrency(cellValue)}
@@ -883,31 +846,28 @@ function SensitivityPage({ data }: { data: ForecastScalePDFData }) {
                     <>
                       <View
                         style={{
-                          marginTop: 5,
-                          backgroundColor:
-                            roi >= 1
-                              ? "#059669" + "18"
-                              : colors.separator,
-                          borderRadius: 3,
-                          paddingHorizontal: 6,
+                          marginTop: 4,
+                          backgroundColor: cellROI >= 1 ? brand.positive + "18" : brand.midGray,
+                          borderRadius: 2,
+                          paddingHorizontal: 5,
                           paddingVertical: 2,
                         }}
                       >
                         <Text
                           style={{
-                            fontSize: 8,
-                            fontWeight: "bold",
-                            color: roi >= 1 ? "#059669" : colors.secondary,
+                            fontSize: 7.5,
+                            fontWeight: 700,
+                            color: cellROI >= 1 ? brand.positive : brand.textSecondary,
                             textAlign: "center",
                           }}
                         >
-                          {roi.toFixed(1)}× ROI
+                          {cellROI.toFixed(1)}× ROI
                         </Text>
                       </View>
                       <Text
                         style={{
                           fontSize: 7,
-                          color: colors.tertiary,
+                          color: brand.textTertiary,
                           marginTop: 2,
                           textAlign: "center",
                         }}
@@ -920,89 +880,79 @@ function SensitivityPage({ data }: { data: ForecastScalePDFData }) {
               );
             })}
           </View>
-        ))}
+        );
+      })}
 
-        {hasPricing && investment > 0 && (
-          <Text
-            style={{
-              fontSize: 8.5,
-              color: colors.tertiary,
-              marginTop: 6,
-              marginBottom: 4,
-            }}
-          >
-            {pricingScenario
-              ? `ROI uses the "${pricingScenario.label}" scenario · ${fmtCurrency(investment)}/yr at projected scale`
-              : `ROI uses the annual contract value · ${fmtCurrency(investment)}/yr`}
-          </Text>
-        )}
+      {hasPricing && (
+        <Text style={{ fontSize: 7.5, color: brand.textTertiary, marginTop: 4, marginBottom: 8 }}>
+          {pricingScenario
+            ? `ROI uses the "${pricingScenario.label}" scenario · ${fmtCurrency(investment)}/yr at projected scale`
+            : `ROI uses the annual contract value · ${fmtCurrency(investment)}/yr`}
+        </Text>
+      )}
 
-        <View style={[styles.rule, { marginTop: 10 }]} />
+      <View style={S.divider} />
 
-        {/* Domain composition of projected value */}
-        <Text style={styles.subHead}>Domain Value Composition</Text>
-        <View
-          style={{
-            flexDirection: "row",
-            backgroundColor: colors.white,
-            borderRadius: 4,
-            borderWidth: 1,
-            borderColor: colors.separator,
-            marginBottom: 12,
-          }}
-        >
-          {QUADS.filter((q) => data.quadrantTotals[q].projected > 0).map(
-            (q, i, arr) => {
-              const val = data.quadrantTotals[q].projected;
-              const pct =
-                combinedTotal > 0
-                  ? Math.round((val / combinedTotal) * 100)
-                  : 0;
-              return (
-                <View
-                  key={q}
-                  style={{
-                    flex: 1,
-                    padding: 10,
-                    alignItems: "center",
-                    borderRightWidth: i < arr.length - 1 ? 1 : 0,
-                    borderRightColor: colors.separator,
-                  }}
-                >
-                  <Text style={styles.label}>{q}</Text>
-                  <Text
-                    style={{
-                      fontSize: 14,
-                      fontWeight: "bold",
-                      color: domainColors[q],
-                    }}
-                  >
-                    {fmtCurrency(val)}
-                  </Text>
-                  <Text style={{ fontSize: 8, color: colors.tertiary, marginTop: 2 }}>
-                    {pct}% of total
-                  </Text>
-                </View>
-              );
-            }
-          )}
+      {/* Reading guide */}
+      <View style={S.insightBox}>
+        <Text style={S.insightLabel}>Reading This Matrix</Text>
+        <Text style={S.insightText}>
+          {`The outlined cell is the base case — ${baseAdoptionPct}% adoption at 100% value realization — the assumption used throughout this brief. The rows test whether partial adoption changes the conclusion. The columns test whether the measured per-unit economics hold at scale. `}
+          {totalRealized > 0
+            ? `Even at 50% adoption and 70% value realization, this projection exceeds the measured baseline of ${fmtCurrency(totalRealized)}.`
+            : `In most deployments, the case holds even at the conservative 50% / 70% intersection.`}
+        </Text>
+      </View>
+
+      {/* Domain composition */}
+      <Text style={S.subEyebrow}>Value by Domain at Base Case</Text>
+      <View style={[S.tableWrap]}>
+        <View style={S.tableHead}>
+          <Text style={[S.tableHeadCell, { flex: 2 }]}>Domain</Text>
+          <Text style={[S.tableHeadCell, { flex: 1, textAlign: "right" }]}>Projected / yr</Text>
+          <Text style={[S.tableHeadCell, { flex: 1, textAlign: "right" }]}>Share of Total</Text>
         </View>
-
-        {/* Reading callout */}
-        <View style={[styles.callout, { borderLeftColor: colors.secondary }]}>
-          <Text style={[styles.label, { marginBottom: 5 }]}>
-            Reading This Table
+        {QUADS.filter((q) => data.quadrantTotals[q].projected > 0).map((q, i, arr) => {
+          const val = data.quadrantTotals[q].projected;
+          const pct = combinedTotal > 0 ? Math.round((val / combinedTotal) * 100) : 0;
+          return (
+            <View
+              key={q}
+              style={i === arr.length - 1 ? [S.tableRow, { borderBottomWidth: 0 }] : S.tableRow}
+            >
+              <View style={{ flex: 2, flexDirection: "row", alignItems: "center", gap: 6 }}>
+                <View
+                  style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: 1,
+                    backgroundColor: domainColors[q],
+                  }}
+                />
+                <Text style={S.tableCellBold}>{q}</Text>
+              </View>
+              <Text style={[S.tableCell, { flex: 1, textAlign: "right" }]}>
+                {fmtCurrency(val)}
+              </Text>
+              <Text style={[S.tableCellMuted, { flex: 1, textAlign: "right" }]}>
+                {pct}%
+              </Text>
+            </View>
+          );
+        })}
+        <View style={S.tableRowTotal}>
+          <Text style={[S.tableCellBold, { flex: 2 }]}>Total</Text>
+          <Text style={[S.tableCellBold, { flex: 1, textAlign: "right" }]}>
+            {fmtCurrency(combinedTotal)}
           </Text>
-          <Text style={styles.body}>
-            {`The outlined cell is the base case — ${baseAdoptionPct}% adoption at 100% value realization — the assumption used throughout this brief. The matrix tests it in both directions. A CFO reviewing this document should find the cell that matches their honest view of adoption and ask whether the case holds there. In most deployments it does, even at the conservative 50% / 75% intersection.`}
-          </Text>
+          <Text style={[S.tableCellMuted, { flex: 1, textAlign: "right" }]}>100%</Text>
         </View>
       </View>
     </Page>
   );
 }
 
-// ─── Page 4: Pricing & ROI (conditional) ─────────────────────────────────────
+// ─── Page 4: Pricing & ROI ────────────────────────────────────────────────────
 
 function PricingROIPage({ data }: { data: ForecastScalePDFData }) {
   const {
@@ -1017,234 +967,270 @@ function PricingROIPage({ data }: { data: ForecastScalePDFData }) {
   } = data;
 
   return (
-    <Page size="LETTER" style={styles.page}>
+    <Page size="LETTER" style={S.page}>
       <PageFooter orgName={clientName || ""} />
-      <View style={styles.pageWrapper}>
-        <SectionLabel>Pricing & Return on Investment</SectionLabel>
+      <PageHeader label="Scale Opportunity" />
 
-        <Text style={styles.body}>
-          Each scenario below shows what Abridge costs at projected scale and what it returns. Investment figures use the active tier at projected provider or encounter volume. Net and ROI are calculated against the full-scale value projection — the same number used throughout this brief.
-        </Text>
+      <Text style={S.eyebrow}>Investment & Return</Text>
+      <Text style={S.sectionTitle}>Pricing scenarios and return on investment</Text>
+      <View style={S.divider} />
 
-        {pricingScenarios.map((scenario) => {
-          const isBest = scenario.id === bestValueScenarioId;
-          const scale =
-            scenario.model === "perProvider"
-              ? combinedProviders
-              : scenario.model === "perEncounter" ||
-                scenario.model === "platformFee"
-              ? combinedEncounters
-              : 0;
-          const { value: investment, warning } = computeScenarioInvestment(
-            scenario,
-            scale
-          );
-          const net = combinedTotal - investment;
-          const roi =
-            investment > 0 ? combinedTotal / investment : 0;
+      <Text style={S.sectionIntro}>
+        Each scenario below shows what Abridge costs at projected scale and what it returns. Investment figures use the active tier at projected provider or encounter volume. Net and ROI are calculated against the full-scale value projection — the same number used throughout this brief.
+      </Text>
 
-          return (
+      {pricingScenarios.map((scenario) => {
+        const isBest = scenario.id === bestValueScenarioId;
+        const scale =
+          scenario.model === "perProvider"
+            ? combinedProviders
+            : scenario.model === "perEncounter" || scenario.model === "platformFee"
+            ? combinedEncounters
+            : 0;
+        const { value: investment, warning } = computeScenarioInvestment(scenario, scale);
+        const net = combinedTotal - investment;
+        const roi = investment > 0 ? combinedTotal / investment : 0;
+
+        return (
+          <View
+            key={scenario.id}
+            style={{
+              borderWidth: isBest ? 2 : 1,
+              borderColor: isBest ? brand.coral : brand.midGray,
+              borderRadius: 3,
+              padding: 14,
+              marginBottom: 14,
+              backgroundColor: brand.white,
+            }}
+            wrap={false}
+          >
+            {/* Header row */}
             <View
-              key={scenario.id}
               style={{
-                backgroundColor: colors.white,
-                borderRadius: 4,
-                borderWidth: isBest ? 2 : 1,
-                borderColor: isBest ? colors.primary : colors.separator,
-                padding: 14,
-                marginBottom: 12,
+                flexDirection: "row",
+                alignItems: "center",
+                marginBottom: 10,
               }}
-              wrap={false}
             >
-              {/* Header */}
-              <View
+              <Text
                 style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  marginBottom: 12,
+                  flex: 1,
+                  fontSize: 11,
+                  fontWeight: 700,
+                  color: brand.textPrimary,
                 }}
               >
-                <Text
-                  style={{
-                    fontSize: 13,
-                    fontWeight: "bold",
-                    color: colors.primaryText,
-                    flex: 1,
-                  }}
-                >
-                  {scenario.label}
-                </Text>
-                {isBest && (
-                  <View
-                    style={{
-                      backgroundColor: colors.primary,
-                      borderRadius: 3,
-                      paddingHorizontal: 8,
-                      paddingVertical: 3,
-                    }}
-                  >
-                    <Text
-                      style={{
-                        fontSize: 7,
-                        fontWeight: "bold",
-                        color: colors.white,
-                        textTransform: "uppercase",
-                        letterSpacing: 1,
-                      }}
-                    >
-                      Best Value
-                    </Text>
-                  </View>
-                )}
-              </View>
-
-              {/* Metric strip */}
-              <View
-                style={{
-                  flexDirection: "row",
-                  backgroundColor: colors.background,
-                  borderRadius: 4,
-                  borderWidth: 1,
-                  borderColor: colors.separator,
-                  marginBottom: 12,
-                }}
-              >
-                {[
-                  { label: "Annual Investment", value: fmtCurrency(investment) },
-                  { label: "Full-Scale Value", value: fmtCurrency(combinedTotal) },
-                  { label: "Net Annual", value: fmtCurrency(net), color: net > 0 ? "#059669" : colors.secondary },
-                  { label: "ROI Multiple", value: `${roi.toFixed(1)}×`, color: roi > 1 ? colors.primary : colors.secondary },
-                ].map(({ label, value, color: c }, i) => (
-                  <View
-                    key={label}
-                    style={{
-                      flex: 1,
-                      padding: 10,
-                      alignItems: "center",
-                      borderRightWidth: i < 3 ? 1 : 0,
-                      borderRightColor: colors.separator,
-                    }}
-                  >
-                    <Text style={styles.label}>{label}</Text>
-                    <Text
-                      style={{
-                        fontSize: 14,
-                        fontWeight: "bold",
-                        color: c || colors.primaryText,
-                      }}
-                    >
-                      {value}
-                    </Text>
-                  </View>
-                ))}
-              </View>
-
-              {/* Model + tiers */}
-              <Text style={[styles.label, { marginBottom: 6 }]}>
-                {PRICING_MODEL_LABELS[scenario.model]}
+                {scenario.label}
               </Text>
-              <View
-                style={{
-                  borderRadius: 3,
-                  borderWidth: 1,
-                  borderColor: colors.separator,
-                  overflow: "hidden",
-                  marginBottom: warning ? 6 : 0,
-                }}
-              >
+              {isBest && (
                 <View
                   style={{
-                    flexDirection: "row",
-                    backgroundColor: colors.cards,
-                    paddingVertical: 5,
-                    paddingHorizontal: 10,
+                    backgroundColor: brand.coral,
+                    borderRadius: 2,
+                    paddingHorizontal: 8,
+                    paddingVertical: 3,
+                    marginRight: 10,
                   }}
                 >
-                  <Text style={[styles.tableCellHLeft, { flex: 2 }]}>Volume</Text>
-                  <Text style={styles.tableCellH}>Rate</Text>
+                  <Text
+                    style={{
+                      fontSize: 7,
+                      fontWeight: 700,
+                      color: brand.white,
+                      textTransform: "uppercase",
+                      letterSpacing: 1,
+                    }}
+                  >
+                    Best Value
+                  </Text>
                 </View>
-                {scenario.tiers.map((tier) => {
-                  const isActive = (() => {
-                    const s = scenario.model === "perProvider" ? scale : scale;
-                    return s >= tier.thresholdFrom && (tier.thresholdTo === null || s < tier.thresholdTo);
-                  })();
+              )}
+              <Text style={{ fontSize: 9, color: brand.textSecondary }}>
+                {fmtCurrency(investment)}/yr
+              </Text>
+            </View>
+
+            {/* Model label */}
+            <Text
+              style={{
+                fontSize: 8,
+                color: brand.textTertiary,
+                textTransform: "uppercase",
+                letterSpacing: 1,
+                marginBottom: 8,
+              }}
+            >
+              {PRICING_MODEL_LABELS[scenario.model]}
+            </Text>
+
+            {/* ROI strip */}
+            <View
+              style={{
+                flexDirection: "row",
+                backgroundColor: brand.lightGray,
+                borderWidth: 1,
+                borderColor: brand.midGray,
+                borderRadius: 3,
+                marginBottom: 10,
+              }}
+            >
+              {[
+                { label: "Investment",    value: fmtCurrency(investment) },
+                { label: "Annual Value",  value: fmtCurrency(combinedTotal) },
+                { label: "Net Annual",    value: fmtCurrency(net),            color: net > 0 ? brand.positive : brand.textSecondary },
+                { label: "ROI Multiple",  value: roi > 0 ? `${roi.toFixed(1)}×` : "—", color: roi > 1 ? brand.coral : brand.textSecondary },
+              ].map(({ label, value, color: c }, i) => (
+                <View
+                  key={label}
+                  style={{
+                    flex: 1,
+                    padding: 10,
+                    alignItems: "center",
+                    borderRightWidth: i < 3 ? 1 : 0,
+                    borderRightColor: brand.midGray,
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontSize: 6.5,
+                      color: brand.textTertiary,
+                      textTransform: "uppercase",
+                      letterSpacing: 1.2,
+                      marginBottom: 3,
+                    }}
+                  >
+                    {label}
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: 14,
+                      fontWeight: 700,
+                      color: c || brand.textPrimary,
+                    }}
+                  >
+                    {value}
+                  </Text>
+                </View>
+              ))}
+            </View>
+
+            {/* Tier table */}
+            {scenario.tiers.length > 0 && (
+              <View style={S.tableWrap}>
+                <View style={S.tableHead}>
+                  <Text style={[S.tableHeadCell, { flex: 2 }]}>Volume Range</Text>
+                  <Text style={[S.tableHeadCell, { flex: 1, textAlign: "right" }]}>Rate</Text>
+                  <Text style={[S.tableHeadCell, { flex: 1, textAlign: "right" }]}>Applied</Text>
+                </View>
+                {scenario.tiers.map((tier, ti) => {
+                  const isActive =
+                    scale >= tier.thresholdFrom &&
+                    (tier.thresholdTo === null || scale < tier.thresholdTo);
                   return (
                     <View
                       key={tier.id}
-                      style={{
-                        flexDirection: "row",
-                        paddingVertical: 6,
-                        paddingHorizontal: 10,
-                        borderTopWidth: 1,
-                        borderTopColor: colors.separator,
-                        backgroundColor: isActive ? colors.cards : "transparent",
-                      }}
+                      style={isActive ? S.tableRowHighlight : S.tableRow}
                     >
-                      <Text style={[styles.tableCell, { flex: 2, textAlign: "left", color: colors.primaryText }]}>
+                      <Text style={[S.tableCell, { flex: 2 }]}>
                         {tier.thresholdFrom.toLocaleString()} –{" "}
                         {tier.thresholdTo ? tier.thresholdTo.toLocaleString() : "∞"}
-                        {isActive ? "  ✓" : ""}
                       </Text>
-                      <Text style={[styles.tableCell, { fontWeight: "bold", color: colors.primaryText }]}>
+                      <Text style={[S.tableCellBold, { flex: 1, textAlign: "right" }]}>
                         ${tier.rate.toLocaleString()}
-                        {scenario.model === "perProvider" ? "/provider/mo" : scenario.model === "perEncounter" ? "/enc" : ""}
+                        {scenario.model === "perProvider"
+                          ? "/provider/mo"
+                          : scenario.model === "perEncounter"
+                          ? "/enc"
+                          : ""}
+                      </Text>
+                      <Text
+                        style={[
+                          S.tableCellBold,
+                          {
+                            flex: 1,
+                            textAlign: "right",
+                            color: isActive ? brand.positive : brand.textTertiary,
+                          },
+                        ]}
+                      >
+                        {isActive ? "✓ Active" : "—"}
                       </Text>
                     </View>
                   );
                 })}
               </View>
+            )}
 
-              {warning && (
-                <Text style={{ fontSize: 8.5, color: colors.primary, marginTop: 6 }}>
-                  ⚠ {warning}
+            {warning && (
+              <Text style={{ fontSize: 8, color: brand.coral, marginTop: 4 }}>
+                ⚠ {warning}
+              </Text>
+            )}
+
+            {/* Year-by-year breakdown */}
+            {forecastYears > 1 && yearlyInputs.length > 1 && (
+              <View style={{ marginTop: 10 }}>
+                <Text
+                  style={{
+                    fontSize: 7.5,
+                    fontWeight: 600,
+                    color: brand.textTertiary,
+                    textTransform: "uppercase",
+                    letterSpacing: 1.2,
+                    marginBottom: 6,
+                  }}
+                >
+                  Year-by-Year
                 </Text>
-              )}
-
-              {/* Year-by-year table */}
-              {forecastYears > 1 && yearlyInputs.length > 1 && (
-                <View style={{ marginTop: 12 }}>
-                  <Text style={[styles.label, { marginBottom: 6 }]}>
-                    Year-by-Year
-                  </Text>
-                  <View style={styles.tableHead}>
-                    <Text style={styles.tableCellHLeft}>Year</Text>
-                    <Text style={styles.tableCellH}>Value</Text>
-                    <Text style={styles.tableCellH}>Investment</Text>
-                    <Text style={styles.tableCellH}>Net</Text>
-                    <Text style={styles.tableCellH}>ROI</Text>
+                <View style={S.tableWrap}>
+                  <View style={S.tableHead}>
+                    <Text style={[S.tableHeadCell, { flex: 1 }]}>Year</Text>
+                    <Text style={[S.tableHeadCell, { flex: 1, textAlign: "right" }]}>Value</Text>
+                    <Text style={[S.tableHeadCell, { flex: 1, textAlign: "right" }]}>Investment</Text>
+                    <Text style={[S.tableHeadCell, { flex: 1, textAlign: "right" }]}>Net</Text>
+                    <Text style={[S.tableHeadCell, { flex: 1, textAlign: "right" }]}>ROI</Text>
                   </View>
                   {yearlyInputs.map((yr, i) => {
                     const yrScale =
-                      scenario.model === "perProvider"
-                        ? yr.providers
-                        : yr.encounters;
-                    const yrInv = computeScenarioInvestment(
-                      scenario,
-                      yrScale
-                    ).value;
+                      scenario.model === "perProvider" ? yr.providers : yr.encounters;
+                    const yrInv = computeScenarioInvestment(scenario, yrScale).value;
                     const yrNet = yr.totalValue - yrInv;
                     const yrROI = yrInv > 0 ? yr.totalValue / yrInv : 0;
+                    const isLastRow = i === yearlyInputs.length - 1;
                     return (
-                      <View key={i} style={styles.tableRow}>
-                        <Text style={styles.tableCellLeft}>Year {i + 1}</Text>
-                        <Text style={styles.tableCell}>
+                      <View
+                        key={i}
+                        style={isLastRow ? [S.tableRow, { borderBottomWidth: 0 }] : S.tableRow}
+                      >
+                        <Text style={[S.tableCellBold, { flex: 1 }]}>Year {i + 1}</Text>
+                        <Text style={[S.tableCell, { flex: 1, textAlign: "right" }]}>
                           {fmtCurrency(yr.totalValue)}
                         </Text>
-                        <Text style={styles.tableCell}>
+                        <Text style={[S.tableCell, { flex: 1, textAlign: "right" }]}>
                           {fmtCurrency(yrInv)}
                         </Text>
                         <Text
                           style={[
-                            styles.tableCell,
-                            { color: yrNet > 0 ? "#059669" : colors.secondary },
+                            S.tableCell,
+                            {
+                              flex: 1,
+                              textAlign: "right",
+                              color: yrNet > 0 ? brand.positive : brand.textSecondary,
+                              fontWeight: yrNet > 0 ? 700 : 400,
+                            },
                           ]}
                         >
                           {fmtCurrency(yrNet)}
                         </Text>
                         <Text
                           style={[
-                            styles.tableCell,
-                            { color: yrROI > 1 ? colors.primary : colors.secondary },
+                            S.tableCell,
+                            {
+                              flex: 1,
+                              textAlign: "right",
+                              color: yrROI > 1 ? brand.coral : brand.textSecondary,
+                              fontWeight: yrROI > 1 ? 700 : 400,
+                            },
                           ]}
                         >
                           {yrROI.toFixed(1)}×
@@ -1253,26 +1239,28 @@ function PricingROIPage({ data }: { data: ForecastScalePDFData }) {
                     );
                   })}
                 </View>
-              )}
-            </View>
-          );
-        })}
-      </View>
+              </View>
+            )}
+          </View>
+        );
+      })}
     </Page>
   );
 }
 
 // ─── Document ─────────────────────────────────────────────────────────────────
 
-function ForecastScalePDFDocument({ data }: { data: ForecastScalePDFData }) {
+export function ForecastScalePDFDocument({ data }: { data: ForecastScalePDFData }) {
   const hasPricing = data.pricingScenarios.length > 0 && data.combinedTotal > 0;
+
   return (
     <Document>
       <PDFCoverPage
         reportLabel="Scale Opportunity Brief"
-        title="Scale Opportunity"
-        subtitle="Projected value at full deployment"
-        clientName={data.clientName}
+        title={data.clientName || "Your Organization"}
+        subtitle={`${fmtNum(data.combinedProviders)} providers at scale · ${data.forecastYears}-Year Projection`}
+        preparedBy="Abridge Partner Success"
+        disclaimerText="Projections apply measured per-unit economics to your scale deployment. No benchmark estimates — only what your tracked drivers already show."
         showPreparedBy
       />
       <ScaleSummaryPage data={data} />

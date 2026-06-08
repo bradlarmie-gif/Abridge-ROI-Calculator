@@ -71,8 +71,8 @@ const phaseToStep: Record<MeasurePhase, number> = {
   workforce: 3,
   revenue: 4,
   quality: 5,
-  forecast: 6,
-  output: 7,
+  output: 6,
+  forecast: 7,
 };
 
 function migratePhase(requested: string | undefined | null): MeasurePhase {

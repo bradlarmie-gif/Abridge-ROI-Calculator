@@ -111,6 +111,29 @@ export default function MeasureWorkforce({ state, updateState, onNext, onBack, o
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [trackedBySetting, state.settingData, state.deployment]);
 
+  const allDomainsTotal = useMemo(() => {
+    return activeSettings.reduce((totalSum, settingKey) => {
+      const st = state.trackedDrivers?.[settingKey] || {};
+      const sd = (state.settingData?.[settingKey as MeasureCareSetting] || {}) as Record<string, number>;
+      const abridgeEnc: number = (sd.deploy_abridgeEncounters as number) || state.deployment?.abridgeEncounters || 0;
+      return totalSum + getActiveDrivers(state.customDriverDefs)
+        .filter(d => d.settings.includes(settingKey as ExploreSetting) && st[d.id])
+        .reduce((s, driver) => {
+          const entry = st[driver.id];
+          const isQuantifiable = driver.visibility === 'quantified' && Boolean(driver.measureDefaults);
+          const md = driver.measureDefaults;
+          if (md?.isPerEncounterRate && abridgeEnc > 0 && isQuantifiable) {
+            const { withAbridge, withoutAbridge } = getEffectiveWithWithout(entry);
+            const delta = (md.lowerIsBetter ?? false) ? withoutAbridge - withAbridge : withAbridge - withoutAbridge;
+            return s + Math.round(delta * entry.valuePerUnit * abridgeEnc * (entry.attributionPercent / 100));
+          }
+          const entryWithLib = { ...entry, lowerIsBetter: md?.lowerIsBetter ?? entry.lowerIsBetter };
+          return s + getRealizedValueForEntry(entryWithLib, isQuantifiable);
+        }, 0);
+    }, 0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeSettings, state.trackedDrivers, state.settingData, state.deployment, state.customDriverDefs]);
+
   const isMultiSetting = activeSettings.length > 1;
 
   const subtitle = useMemo(() => {
@@ -241,8 +264,8 @@ export default function MeasureWorkforce({ state, updateState, onNext, onBack, o
                     transition={{ delay: 0.15 }}
                     data-testid="empty-state-workforce"
                   >
-                    <p className="text-sm text-[#666666]">No drivers tracked yet{isMultiSetting ? ` for ${settingLabel}` : ''} for Workforce.</p>
-                    <p className="text-xs text-[#888888] mt-1">Add the ones that matter to this customer below.</p>
+                    <p className="text-sm font-medium text-[#444444]">No Workforce drivers yet{isMultiSetting ? ` for ${settingLabel}` : ''}.</p>
+                    <p className="text-xs text-[#666666] mt-1.5">Provider Wellbeing or Locum &amp; Agency Cost Avoidance give this domain a dollar number. Without them, you have no people story.</p>
                   </motion.div>
                 )}
 
@@ -283,6 +306,13 @@ export default function MeasureWorkforce({ state, updateState, onNext, onBack, o
             transition={{ delay: 0.2 }}
           >
             <div className="bg-[#1A1A1A] rounded-xl p-6 md:sticky md:top-24">
+              {allDomainsTotal > 0 && (
+                <div className="mb-5 pb-4 border-b border-[#2A2A2A]">
+                  <p className="text-[10px] font-medium text-white/40 uppercase tracking-[1.5px] mb-1">All Domains</p>
+                  <p className="text-xl font-bold text-white/60 tabular-nums">{formatCurrency(allDomainsTotal)}</p>
+                  <p className="text-[10px] text-white/30 mt-0.5">cumulative · attribution-adjusted</p>
+                </div>
+              )}
               <p className="text-xs font-medium text-white uppercase tracking-[1.5px] mb-1">Workforce Realized</p>
               <p className="text-sm text-white/50 mb-4">Quantifiable drivers, attribution-adjusted</p>
 

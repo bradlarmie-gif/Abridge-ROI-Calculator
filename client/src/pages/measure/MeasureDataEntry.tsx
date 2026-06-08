@@ -686,24 +686,6 @@ export default function MeasureDataEntry({
         </AnimatePresence>
 
         <motion.div
-          className="mt-6 pt-6 border-t border-[#E5E5E5]"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.25, duration: 0.4 }}
-        >
-          <p className="text-xs font-semibold text-[#525252] uppercase tracking-wide mb-1">
-            Annual Contract Value <span className="text-[#AAAAAA] font-normal normal-case">(optional — for ROI calculation)</span>
-          </p>
-          <FormattedNumberInput
-            value={state.deployment.annualContractValue || ''}
-            onChange={(v) => updateDeployment('annualContractValue' as any, v)}
-            className="h-10 bg-white border-[#E5E5E5] text-right"
-            data-testid="input-annual-contract-value"
-          />
-          <p className="text-xs text-[#AAAAAA] mt-1.5">If pricing scenarios are configured in Forecast, contract value will be derived automatically.</p>
-        </motion.div>
-
-        <motion.div
           className="max-w-[480px] mx-auto text-center mt-5 md:mt-8"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -723,7 +705,7 @@ export default function MeasureDataEntry({
           >
             {isValid ? (
               <>
-                Select Metrics
+                Start Measuring
                 <ArrowRight className="w-4 h-4" />
               </>
             ) : (

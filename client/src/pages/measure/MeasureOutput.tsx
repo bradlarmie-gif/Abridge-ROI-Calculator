@@ -29,10 +29,10 @@ interface MeasureOutputProps {
 const QUADRANT_ORDER: ExploreQuadrant[] = ["Capacity", "Workforce", "Revenue", "Quality"];
 
 const QUADRANT_COLORS: Record<string, string> = {
-  Capacity: '#2563EB',
-  Workforce: '#7C3AED',
-  Revenue: '#EA2C00',
-  Quality: '#059669',
+  Capacity: '#0891B2',   // sky/cyan — clinical efficiency, calm
+  Workforce: '#B45309',  // dark amber/sienna — warm, human, earthy
+  Revenue: '#EA2C00',    // brand red
+  Quality: '#059669',    // emerald — clinical outcomes
 };
 
 const QUADRANT_TAGLINES: Record<string, string> = {
@@ -440,12 +440,16 @@ function SignalDriverRow({
 }
 
 // ─── Audience toggle types ─────────────────────────────────────────────────────
-type Audience = 'executive' | 'clinical' | 'operational' | 'financial';
+type Audience = 'executive' | 'clinical' | 'financial';
 const AUDIENCE_LABELS: Record<Audience, string> = {
   clinical: 'Clinical',
-  operational: 'Operational',
   financial: 'Financial',
   executive: 'Executive',
+};
+const AUDIENCE_DESCRIPTIONS: Record<Audience, string> = {
+  clinical: 'Outcomes & trends — no dollar figures',
+  financial: 'Full dollar impact across all domains',
+  executive: 'Complete view — value + provider voice',
 };
 
 // ─── Main component ────────────────────────────────────────────────────────────
@@ -457,7 +461,7 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
   const [showManageQuotes, setShowManageQuotes] = useState(false);
 
   const showDollars = audience === 'financial' || audience === 'executive';
-  const showRevenue = audience !== 'clinical';
+  const showRevenue = true;
   const showQuotes = (audience === 'clinical' || audience === 'executive') && (state.quotes?.length ?? 0) > 0;
   const { toast } = useToast();
 
@@ -753,31 +757,40 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
             </motion.div>
 
             {/* ── Audience toggle ─────────────────────────────────────────────────────── */}
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-1 bg-[#F5F0EB] rounded-full p-0.5">
-                {(['clinical', 'operational', 'financial', 'executive'] as Audience[]).map(a => (
-                  <button
-                    key={a}
-                    onClick={() => setAudience(a)}
-                    className={`px-4 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                      audience === a
-                        ? 'bg-white text-neutral-900 shadow-sm'
-                        : 'text-[#8C7E6E] hover:text-neutral-900'
-                    }`}
-                    data-testid={`audience-tab-${a}`}
-                  >
-                    {AUDIENCE_LABELS[a]}
-                  </button>
-                ))}
+            <div className="mb-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1 bg-[#F0EBE4] rounded-full p-0.5">
+                  {(['clinical', 'financial', 'executive'] as Audience[]).map(a => (
+                    <button
+                      key={a}
+                      onClick={() => setAudience(a)}
+                      className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${
+                        audience === a
+                          ? 'bg-white text-neutral-900 shadow-sm'
+                          : 'text-[#8C7E6E] hover:text-neutral-900'
+                      }`}
+                      data-testid={`audience-tab-${a}`}
+                    >
+                      {AUDIENCE_LABELS[a]}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  onClick={() => setShowManageQuotes(v => !v)}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                    showManageQuotes
+                      ? 'bg-[#1A1A1A] text-white'
+                      : (state.quotes?.length ?? 0) > 0
+                        ? 'bg-[#1A1A1A] text-white'
+                        : 'bg-[#F0EBE4] text-[#525252] hover:bg-[#E8E2DA]'
+                  }`}
+                  data-testid="button-manage-quotes"
+                >
+                  <MessageSquare className="w-3 h-3" />
+                  {showManageQuotes ? 'Done' : (state.quotes?.length ?? 0) > 0 ? `Love Stories · ${state.quotes?.length}` : 'Add Quotes'}
+                </button>
               </div>
-              <button
-                onClick={() => setShowManageQuotes(v => !v)}
-                className="text-xs font-medium text-[#8C7E6E] hover:text-neutral-900 transition-colors flex items-center gap-1.5"
-                data-testid="button-manage-quotes"
-              >
-                <MessageSquare className="w-3.5 h-3.5" />
-                {showManageQuotes ? 'Done' : `Love Stories${(state.quotes?.length ?? 0) > 0 ? ` (${state.quotes?.length})` : ''}`}
-              </button>
+              <p className="text-[11px] text-[#9E948C] mt-2 pl-1">{AUDIENCE_DESCRIPTIONS[audience]}</p>
             </div>
 
             <AnimatePresence>
@@ -788,6 +801,25 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
                 />
               )}
             </AnimatePresence>
+
+            {!showManageQuotes && (state.quotes?.length ?? 0) === 0 && (
+              <motion.button
+                onClick={() => setShowManageQuotes(true)}
+                className="w-full flex items-center justify-between gap-4 mb-4 px-5 py-4 rounded-2xl border border-dashed border-[#DDD6CE] bg-white hover:border-[#C4A882] hover:bg-[#FDFCFA] transition-all text-left"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                data-testid="card-empty-quotes"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <MessageSquare className="w-5 h-5 text-[#C4A882] flex-shrink-0" />
+                  <div>
+                    <p className="text-sm font-semibold text-[#525252]">Add provider quotes</p>
+                    <p className="text-xs text-[#9E948C] mt-0.5">The voice behind the numbers — often the most memorable part of an EBR</p>
+                  </div>
+                </div>
+                <span className="text-xs font-semibold text-[#8C7E6E] flex-shrink-0">+ Add</span>
+              </motion.button>
+            )}
 
             {showQuotes && <QuotesBlock quotes={state.quotes ?? []} />}
 

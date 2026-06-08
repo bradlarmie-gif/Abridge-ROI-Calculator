@@ -714,11 +714,16 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
               {/* Advanced pricing model toggle */}
               <button
                 onClick={() => setShowAdvancedPricing(v => !v)}
-                className="flex items-center gap-1.5 text-xs font-medium text-[#888888] hover:text-[#EA2C00] transition-colors mb-2"
+                className="w-full flex items-center justify-between gap-2 px-4 py-3 bg-[#F5F0EB] hover:bg-[#EDE8E1] rounded-xl transition-colors mb-2"
                 data-testid="button-toggle-advanced-pricing"
               >
-                <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${showAdvancedPricing ? 'rotate-0' : '-rotate-90'}`} />
-                Advanced: configure tier-based pricing
+                <div className="text-left">
+                  <p className="text-xs font-semibold text-[#525252]">Tier-Based Pricing Model</p>
+                  {!showAdvancedPricing && (
+                    <p className="text-[10px] text-[#9E948C] mt-0.5">Compare per-provider, per-encounter, and platform fee scenarios</p>
+                  )}
+                </div>
+                <ChevronDown className={`w-4 h-4 text-[#8C7E6E] flex-shrink-0 transition-transform duration-200 ${showAdvancedPricing ? 'rotate-0' : '-rotate-90'}`} />
               </button>
 
               <AnimatePresence initial={false}>
@@ -780,8 +785,8 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
             transition={{ delay: 0.2 }}
           >
             <div className="bg-[#1A1A1A] rounded-xl p-6 md:sticky md:top-24">
-              <p className="text-xs font-medium text-white uppercase tracking-[1.5px] mb-1">Combined Annual Value</p>
-              <p className="text-sm text-white/50 mb-5">Realized + projected + expansion · 100% adoption</p>
+              <p className="text-xs font-medium text-white uppercase tracking-[1.5px] mb-1">Projected Annual Value</p>
+              <p className="text-sm text-white/50 mb-5">At scale · 100% adoption</p>
 
               <div className="space-y-3 mb-5">
                 <div className="flex items-center justify-between">
@@ -799,7 +804,7 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
                   </div>
                 )}
                 <div className="flex items-center justify-between pt-3 border-t border-[#333333]">
-                  <span className="text-xs font-semibold text-white">Combined total</span>
+                  <span className="text-xs font-semibold text-white">Projected total</span>
                   <span className="text-2xl font-bold text-[#EA2C00]" data-testid="text-combined-total">{formatCurrency(totalProjected + addedSettingsTotal)}</span>
                 </div>
               </div>
