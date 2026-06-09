@@ -159,6 +159,16 @@ export function computeAllDriverValues(
       52;
     result.nursingOvertime = Math.round(otHrs * td.nursingOtHourlyRate);
   }
+  if ((isOP || isED) && td.scribeCostReductionEnabled) {
+    if (td.scribeBillingMode === 'hourly') {
+      const costPerVisit = (td.scribeHourlyRate || 0) * ((td.scribeMinutesPerNote || 0) / 60);
+      const scribedVisits = state.annualEncounters * ((td.scribeCoveragePercent || 0) / 100);
+      result.scribeCostReduction = Math.round(costPerVisit * scribedVisits * ((td.scribeVisitPercentEliminated || 0) / 100));
+    } else {
+      const eliminated = Math.min(td.scribePositionsEliminated || 0, td.scribeHeadcount || 0);
+      result.scribeCostReduction = Math.round(eliminated * (td.scribeCostPerPosition || 0));
+    }
+  }
 
   // ─── Revenue ───
   const wrvuScenarios = wrvuScenariosFor(isED, dq.wrvuCustomPercent);

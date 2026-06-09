@@ -291,17 +291,7 @@ export default function ExploreModel({
       ).toFixed(1)
     : '0';
 
-  const scribeCostValue = useMemo(() => {
-    if (!state.timeDriverInputs.scribeCostReductionEnabled) return 0;
-    const t = state.timeDriverInputs;
-    if (t.scribeBillingMode === 'hourly') {
-      const costPerVisit = (t.scribeHourlyRate || 0) * ((t.scribeMinutesPerNote || 0) / 60);
-      const scribedVisits = (state.annualEncounters || 0) * ((t.scribeCoveragePercent || 0) / 100);
-      return Math.round(costPerVisit * scribedVisits * ((t.scribeVisitPercentEliminated || 0) / 100));
-    }
-    const eliminated = Math.min(t.scribePositionsEliminated || 0, t.scribeHeadcount || 0);
-    return Math.round(eliminated * (t.scribeCostPerPosition || 0));
-  }, [state.timeDriverInputs]);
+  const scribeCostValue = allDriverValues.scribeCostReduction || 0;
 
   const nursingOtValue = useMemo(() => {
     if (!isNursing || !state.timeDriverInputs.nursingOtEnabled) return 0;
