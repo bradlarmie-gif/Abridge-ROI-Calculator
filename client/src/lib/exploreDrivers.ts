@@ -739,7 +739,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
   {
     id: 'edEmLevel',
     label: 'E&M Level Accuracy',
-    shortDescription: 'Capture the true complexity of ED visits supporting accurate E/M leveling.',
+    shortDescription: 'Capture the clinical complexity of ED visits to support accurate E/M code assignment.',
     quadrant: 'Revenue',
     settings: ['ed'],
     visibility: 'quantified',
@@ -786,7 +786,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
   {
     id: 'denialPrevention',
     label: 'Denial Prevention',
-    shortDescription: 'Reduce documentation-related claim denials.',
+    shortDescription: 'Prevent documentation-related claim denials before they\'re filed.',
     quadrant: 'Revenue',
     settings: ['outpatient', 'ed'],
     visibility: 'quantified',
@@ -1280,8 +1280,8 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
   {
     id: 'edDoorToProvider',
     label: 'Door-to-Provider Time',
-    shortDescription: 'When documentation time per encounter drops, the physician finishes the current patient\'s note faster and becomes available for the next patient sooner. Door-to-provider is the direct expression of that recycling speed.',
-    tagline: 'Time from arrival to first provider contact — physician recycling speed',
+    shortDescription: 'When documentation time per encounter drops, the physician finishes the current patient\'s note faster and becomes available for the next patient sooner. Door-to-provider time falls as a direct result.',
+    tagline: 'Time from arrival to first provider contact — falls directly as per-encounter documentation time drops',
     quadrant: 'Capacity',
     settings: ['ed'],
     visibility: 'qualitative',
@@ -1397,7 +1397,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     id: 'edEndOfShiftCompletion',
     label: 'End-of-Shift Note Completion Rate',
     shortDescription: 'End-of-shift completion tracks whether the behavioral habit of closing notes during the shift has taken hold. When documentation is faster per encounter, this rate rises within weeks — the shift ends with closed charts rather than an open queue.',
-    tagline: 'Notes signed before leaving the shift — the habit forming',
+    tagline: 'Notes signed before the shift ends — behavioral signal that documentation speed has changed',
     quadrant: 'Workforce',
     settings: ['ed'],
     visibility: 'qualitative',
@@ -1493,7 +1493,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
   },
   {
     id: 'edChargeLag',
-    label: 'Charge Lag (Days to Bill)',
+    label: 'Charge Lag',
     shortDescription: 'When documentation is incomplete, billing holds the claim — the note must be finalized before the charge can be submitted. Charge lag is the billing cycle\'s earliest signal that documentation speed has changed. Every day of lag is working capital sitting uncollected and a window in which the claim can age out of timely filing limits.',
     tagline: 'Days from encounter to bill submission — documentation completeness determines billing cycle speed',
     quadrant: 'Revenue',
@@ -1539,7 +1539,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
   },
   {
     id: 'edFirstPassClaimRate',
-    label: 'First-Pass Claim Acceptance Rate',
+    label: 'First-Pass Acceptance Rate',
     shortDescription: 'The percentage of ED claims accepted by payers on first submission without rejection or denial. When the note captures complete MDM, acuity justification, and medical necessity, claims arrive at the payer whole and pass without challenge — no rework cycle, no write-off risk, no cash flow delay.',
     tagline: '% of ED claims accepted on first submission — the cleanest early signal that documentation quality is translating to revenue',
     quadrant: 'Revenue',
@@ -1561,9 +1561,9 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
   },
   {
     id: 'edDowncodingRate',
-    label: 'Down-coding Rate',
+    label: 'Downcoding Rate',
     shortDescription: 'Down-coding is a payer judgment that the note doesn\'t prove the complexity of care billed. When documentation captures MDM completely, payers have less basis for reducing the code on review.',
-    tagline: 'Claims down-coded by payers — documentation not supporting the billed level',
+    tagline: 'Claims downgraded by payers — when documentation doesn\'t prove the complexity billed',
     quadrant: 'Revenue',
     settings: ['ed'],
     visibility: 'qualitative',
