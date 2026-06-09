@@ -221,7 +221,7 @@ export default function MeasureDataEntry({
   }, [state.deployment, activeSettings, hasProviderSettings, hasNursing, nursingData]);
 
   return (
-    <div className="min-h-screen bg-[#FAFAF8]">
+    <div className="min-h-screen bg-[#F7F6F3]">
       <UnifiedHeader
         pathType="measure"
         currentStep={1}

@@ -162,7 +162,7 @@ export default function MeasureCapacity({ state, updateState, onNext, onBack, on
   const formatCurrency = (n: number) => '$' + Math.round(n).toLocaleString();
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[#F7F6F3]">
       <UnifiedHeader
         pathType="measure"
         currentStep={2}
@@ -306,7 +306,7 @@ export default function MeasureCapacity({ state, updateState, onNext, onBack, on
             transition={{ delay: 0.2 }}
           >
             <div className="bg-[#1A1A1A] rounded-xl p-6 md:sticky md:top-24">
-              {allDomainsTotal > 0 && (
+              {allDomainsTotal > 0 && activeSettings.length > 1 && (
                 <div className="mb-5 pb-4 border-b border-[#2A2A2A]">
                   <p className="text-[10px] font-medium text-white/40 uppercase tracking-[1.5px] mb-1">All Domains</p>
                   <p className="text-xl font-bold text-white/60 tabular-nums">{formatCurrency(allDomainsTotal)}</p>

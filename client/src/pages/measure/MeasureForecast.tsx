@@ -506,7 +506,7 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[#F7F6F3]">
       <UnifiedHeader
         pathType="measure"
         currentStep={7}
