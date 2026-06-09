@@ -293,11 +293,14 @@ export default function ExploreModel({
 
   const scribeCostValue = useMemo(() => {
     if (!state.timeDriverInputs.scribeCostReductionEnabled) return 0;
-    const eliminated = Math.min(
-      state.timeDriverInputs.scribePositionsEliminated || 0,
-      state.timeDriverInputs.scribeHeadcount || 0,
-    );
-    return Math.round(eliminated * (state.timeDriverInputs.scribeCostPerPosition || 0));
+    const t = state.timeDriverInputs;
+    if (t.scribeBillingMode === 'hourly') {
+      const costPerVisit = (t.scribeHourlyRate || 0) * ((t.scribeMinutesPerNote || 0) / 60);
+      const scribedVisits = (t.scribeAnnualVisitVolume || 0) * ((t.scribeCoveragePercent || 0) / 100);
+      return Math.round(costPerVisit * scribedVisits * ((t.scribeVisitPercentEliminated || 0) / 100));
+    }
+    const eliminated = Math.min(t.scribePositionsEliminated || 0, t.scribeHeadcount || 0);
+    return Math.round(eliminated * (t.scribeCostPerPosition || 0));
   }, [state.timeDriverInputs]);
 
   const nursingOtValue = useMemo(() => {
