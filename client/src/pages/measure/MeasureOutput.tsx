@@ -1071,7 +1071,7 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
 
             {/* ── Download ─────────────────────────────────────────────────── */}
             <motion.div
-              className="flex flex-col items-center justify-center gap-2 pt-2 pb-6"
+              className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2 pb-6"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.35 }}
@@ -1088,13 +1088,6 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
                   <><Download className="w-4 h-4" /> Download Evidence Doc</>
                 )}
               </Button>
-              <button
-                onClick={onNext}
-                className="text-sm text-[#9E948C] hover:text-[#525252] transition-colors mt-1"
-                data-testid="button-build-scale-brief"
-              >
-                Build Scale Brief →
-              </button>
             </motion.div>
 
           </>
