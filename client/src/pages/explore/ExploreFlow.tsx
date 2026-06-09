@@ -1018,7 +1018,7 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
             ...fresh.docQualityInputs,
             currentWrvu: 1.8,
             medNecessityDenialRate: 5,
-            avgClaimValue: 300,
+            avgClaimValue: 1200,
           };
         }
         return fresh;
