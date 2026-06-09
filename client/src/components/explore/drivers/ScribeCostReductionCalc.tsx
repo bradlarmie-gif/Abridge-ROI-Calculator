@@ -8,6 +8,9 @@ export default function ScribeCostReductionCalc({ state, updateTimeDriverInputs 
   const { timeDriverInputs: t } = state;
   const mode = t.scribeBillingMode ?? 'position';
   const annualEncounters = state.annualEncounters || 0;
+  const isED = state.careSetting === 'ed';
+  const visitNoun = isED ? 'ED visit' : 'visit';
+  const visitNounPlural = isED ? 'ED visits' : 'visits';
 
   const calc = useMemo(() => {
     if (mode === 'hourly') {
@@ -163,19 +166,19 @@ export default function ScribeCostReductionCalc({ state, updateTimeDriverInputs 
                 className="h-12 bg-white"
                 data-testid="input-scribe-minutes-per-note"
               />
-              <p className="text-xs text-[#888888]">Time a scribe spends on each visit. Virtual scribes are typically 15–25 min.</p>
+              <p className="text-xs text-[#888888]">Time a scribe spends on each {visitNoun}. Virtual scribes are typically 15–25 min.</p>
             </div>
           </div>
 
-          <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Visit Coverage</p>
+          <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">{isED ? 'ED Visit' : 'Visit'} Coverage</p>
 
           <div className="bg-[#F5F0EB] rounded-lg px-4 py-3 mb-4 flex items-center justify-between">
-            <span className="text-xs text-[#666666]">Eligible encounters (from setup)</span>
+            <span className="text-xs text-[#666666]">Eligible {visitNounPlural} (from setup)</span>
             <span className="text-sm font-semibold text-[#1A1A1A]">{annualEncounters.toLocaleString()}/yr</span>
           </div>
 
           <div className="space-y-2.5 mb-6">
-            <label className="text-sm text-[#888888]">% of visits currently scribed</label>
+            <label className="text-sm text-[#888888]">% of {visitNounPlural} currently scribed</label>
             <div className="relative">
               <FormattedNumberInput
                 value={t.scribeCoveragePercent}
@@ -186,11 +189,11 @@ export default function ScribeCostReductionCalc({ state, updateTimeDriverInputs 
               />
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
             </div>
-            <p className="text-xs text-[#888888]">Share of those visits where a scribe is currently used.</p>
+            <p className="text-xs text-[#888888]">Share of those {visitNounPlural} where a scribe is currently used.</p>
           </div>
 
           <div className="space-y-2.5 mb-6">
-            <label className="text-sm text-[#888888]">% of scribed visits being replaced by Abridge</label>
+            <label className="text-sm text-[#888888]">% of scribed {visitNounPlural} being replaced by Abridge</label>
             <div className="relative">
               <FormattedNumberInput
                 value={t.scribeVisitPercentEliminated}
@@ -201,20 +204,20 @@ export default function ScribeCostReductionCalc({ state, updateTimeDriverInputs 
               />
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
             </div>
-            <p className="text-xs text-[#888888]">Enter less than 100% if you plan to retain scribes in certain specialties or visit types.</p>
+            <p className="text-xs text-[#888888]">Enter less than 100% if you plan to retain scribes in certain specialties or {visitNoun} types.</p>
           </div>
 
           <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Calculation</p>
           <div className="bg-[#F5F0EB] rounded-lg p-4">
             <div className="space-y-2 text-sm">
               <div className="flex justify-between gap-2">
-                <span className="text-[#666666]">Cost per scribed visit</span>
+                <span className="text-[#666666]">Cost per scribed {visitNoun}</span>
                 <span className="font-semibold text-black flex-shrink-0">
                   {calc.mode === 'hourly' ? fmtDec(calc.costPerVisit) : '$0.00'}
                 </span>
               </div>
               <div className="flex justify-between gap-2">
-                <span className="text-[#666666]">× Scribed visits replaced</span>
+                <span className="text-[#666666]">× Scribed {visitNounPlural} replaced</span>
                 <span className="font-semibold text-black flex-shrink-0">
                   {calc.mode === 'hourly' ? Math.round(calc.scribedVisits * ((t.scribeVisitPercentEliminated || 0) / 100)).toLocaleString() : '0'}
                 </span>
@@ -230,7 +233,7 @@ export default function ScribeCostReductionCalc({ state, updateTimeDriverInputs 
           {calc.mode === 'hourly' && calc.costPerVisit > 0 && (
             <div className="bg-[#F5F0EB]/60 rounded-lg p-3 mt-4">
               <p className="text-xs text-[#888888]">
-                Scribe cost: <span className="font-medium text-[#444444]">{fmtDec(calc.costPerVisit)}/visit</span> — use this to benchmark against Abridge's per-visit pricing for a direct apples-to-apples comparison.
+                Scribe cost: <span className="font-medium text-[#444444]">{fmtDec(calc.costPerVisit)}/{visitNoun}</span> — use this to benchmark against Abridge's per-{visitNoun} pricing for a direct apples-to-apples comparison.
               </p>
             </div>
           )}
