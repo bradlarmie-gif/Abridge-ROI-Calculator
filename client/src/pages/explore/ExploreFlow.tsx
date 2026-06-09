@@ -172,7 +172,6 @@ export interface TimeDriverInputs {
   scribePositionsEliminated: number;
   scribeHourlyRate: number;
   scribeMinutesPerNote: number;
-  scribeAnnualVisitVolume: number;
   scribeCoveragePercent: number;
   scribeVisitPercentEliminated: number;
 
@@ -662,7 +661,6 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     scribePositionsEliminated: 0,
     scribeHourlyRate: 0,
     scribeMinutesPerNote: 20,
-    scribeAnnualVisitVolume: 0,
     scribeCoveragePercent: 100,
     scribeVisitPercentEliminated: 100,
     // Care Quality (HAPI & Falls) defaults

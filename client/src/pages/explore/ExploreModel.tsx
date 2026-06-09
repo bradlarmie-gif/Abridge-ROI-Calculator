@@ -296,7 +296,7 @@ export default function ExploreModel({
     const t = state.timeDriverInputs;
     if (t.scribeBillingMode === 'hourly') {
       const costPerVisit = (t.scribeHourlyRate || 0) * ((t.scribeMinutesPerNote || 0) / 60);
-      const scribedVisits = (t.scribeAnnualVisitVolume || 0) * ((t.scribeCoveragePercent || 0) / 100);
+      const scribedVisits = (state.annualEncounters || 0) * ((t.scribeCoveragePercent || 0) / 100);
       return Math.round(costPerVisit * scribedVisits * ((t.scribeVisitPercentEliminated || 0) / 100));
     }
     const eliminated = Math.min(t.scribePositionsEliminated || 0, t.scribeHeadcount || 0);

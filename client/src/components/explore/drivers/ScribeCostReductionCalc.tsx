@@ -7,11 +7,12 @@ type Props = ExploreCalcComponentProps;
 export default function ScribeCostReductionCalc({ state, updateTimeDriverInputs }: Props) {
   const { timeDriverInputs: t } = state;
   const mode = t.scribeBillingMode ?? 'position';
+  const annualEncounters = state.annualEncounters || 0;
 
   const calc = useMemo(() => {
     if (mode === 'hourly') {
       const costPerVisit = (t.scribeHourlyRate || 0) * ((t.scribeMinutesPerNote || 0) / 60);
-      const scribedVisits = (t.scribeAnnualVisitVolume || 0) * ((t.scribeCoveragePercent || 0) / 100);
+      const scribedVisits = annualEncounters * ((t.scribeCoveragePercent || 0) / 100);
       const annualSavings = Math.round(costPerVisit * scribedVisits * ((t.scribeVisitPercentEliminated || 0) / 100));
       return { mode: 'hourly' as const, costPerVisit, scribedVisits, annualSavings };
     }
@@ -21,9 +22,8 @@ export default function ScribeCostReductionCalc({ state, updateTimeDriverInputs 
     const annualSavings = Math.round(eliminated * costPerPosition);
     const remainingSpend = (headcount - eliminated) * costPerPosition;
     return { mode: 'position' as const, headcount, costPerPosition, eliminated, annualSavings, remainingSpend };
-  }, [mode, t.scribeHeadcount, t.scribeCostPerPosition, t.scribePositionsEliminated,
-      t.scribeHourlyRate, t.scribeMinutesPerNote, t.scribeAnnualVisitVolume,
-      t.scribeCoveragePercent, t.scribeVisitPercentEliminated]);
+  }, [mode, annualEncounters, t.scribeHeadcount, t.scribeCostPerPosition, t.scribePositionsEliminated,
+      t.scribeHourlyRate, t.scribeMinutesPerNote, t.scribeCoveragePercent, t.scribeVisitPercentEliminated]);
 
   const fmt = (n: number) => '$' + Math.round(n).toLocaleString();
   const fmtDec = (n: number) => '$' + n.toFixed(2);
@@ -167,34 +167,26 @@ export default function ScribeCostReductionCalc({ state, updateTimeDriverInputs 
             </div>
           </div>
 
-          <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Visit Volume</p>
+          <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Visit Coverage</p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6">
-            <div className="space-y-2.5">
-              <label className="text-sm text-[#888888]">Annual E/M visit volume</label>
+          <div className="bg-[#F5F0EB] rounded-lg px-4 py-3 mb-4 flex items-center justify-between">
+            <span className="text-xs text-[#666666]">Eligible encounters (from setup)</span>
+            <span className="text-sm font-semibold text-[#1A1A1A]">{annualEncounters.toLocaleString()}/yr</span>
+          </div>
+
+          <div className="space-y-2.5 mb-6">
+            <label className="text-sm text-[#888888]">% of visits currently scribed</label>
+            <div className="relative">
               <FormattedNumberInput
-                value={t.scribeAnnualVisitVolume}
-                placeholder="e.g., 50,000"
-                onChange={(v: number) => updateTimeDriverInputs({ scribeAnnualVisitVolume: v })}
-                className="h-12 bg-white"
-                data-testid="input-scribe-annual-visits"
+                value={t.scribeCoveragePercent}
+                placeholder="e.g., 50"
+                onChange={(v: number) => updateTimeDriverInputs({ scribeCoveragePercent: Math.min(v, 100) })}
+                className="h-12 bg-white pr-8"
+                data-testid="input-scribe-coverage-pct"
               />
-              <p className="text-xs text-[#888888]">Total E/M visits per year across the covered population.</p>
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
             </div>
-            <div className="space-y-2.5">
-              <label className="text-sm text-[#888888]">% of visits currently scribed</label>
-              <div className="relative">
-                <FormattedNumberInput
-                  value={t.scribeCoveragePercent}
-                  placeholder="e.g., 50"
-                  onChange={(v: number) => updateTimeDriverInputs({ scribeCoveragePercent: Math.min(v, 100) })}
-                  className="h-12 bg-white pr-8"
-                  data-testid="input-scribe-coverage-pct"
-                />
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
-              </div>
-              <p className="text-xs text-[#888888]">Share of visits where a scribe is currently used.</p>
-            </div>
+            <p className="text-xs text-[#888888]">Share of those visits where a scribe is currently used.</p>
           </div>
 
           <div className="space-y-2.5 mb-6">
@@ -222,7 +214,7 @@ export default function ScribeCostReductionCalc({ state, updateTimeDriverInputs 
                 </span>
               </div>
               <div className="flex justify-between gap-2">
-                <span className="text-[#666666]">× Scribes visits replaced</span>
+                <span className="text-[#666666]">× Scribed visits replaced</span>
                 <span className="font-semibold text-black flex-shrink-0">
                   {calc.mode === 'hourly' ? Math.round(calc.scribedVisits * ((t.scribeVisitPercentEliminated || 0) / 100)).toLocaleString() : '0'}
                 </span>
