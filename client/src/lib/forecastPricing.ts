@@ -13,7 +13,23 @@ export interface PricingScenario {
   model: PricingModel;
   tiers: PricingTier[];
   baseFee?: number;
+  contractTermMonths?: number;
+  escalatorPct?: number;
 }
+
+export const CONTRACT_TERM_OPTIONS = [
+  { label: '1 yr',  months: 12 },
+  { label: '2 yr',  months: 24 },
+  { label: '3 yr',  months: 36 },
+  { label: '5 yr',  months: 60 },
+] as const;
+
+export const ESCALATOR_OPTIONS = [
+  { label: 'Flat', pct: 0 },
+  { label: '+3%',  pct: 3 },
+  { label: '+5%',  pct: 5 },
+  { label: '+8%',  pct: 8 },
+] as const;
 
 export const PRICING_MODEL_LABELS: Record<PricingModel, string> = {
   perProvider: 'Per Provider / Month',
@@ -192,4 +208,20 @@ export function computePricingTimeSeries(
   }
 
   return { points, tierCrossings };
+}
+
+export function computeTCV(scenario: PricingScenario, scale: number): number {
+  const termYears = Math.round((scenario.contractTermMonths ?? 12) / 12);
+  const escalator = (scenario.escalatorPct ?? 0) / 100;
+  const { value: yearOneACV } = computeScenarioInvestment(scenario, scale);
+  let total = 0;
+  for (let y = 1; y <= termYears; y++) {
+    total += Math.round(yearOneACV * Math.pow(1 + escalator, y - 1));
+  }
+  return total;
+}
+
+export function computePaybackMonths(yearOneACV: number, annualValue: number): number | null {
+  if (annualValue <= 0 || yearOneACV <= 0) return null;
+  return Math.ceil((yearOneACV / annualValue) * 12);
 }

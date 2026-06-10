@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowRight, RotateCcw, TrendingUp, TrendingDown, Plus, Download, ChevronDown } from "lucide-react";
+import { ArrowRight, RotateCcw, TrendingUp, TrendingDown, Plus, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
@@ -7,7 +7,7 @@ import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { getActiveDrivers, type ExploreDriver, type ExploreSetting, type ExploreQuadrant, type DriverScaleAxis } from "@/lib/exploreDrivers";
 import { type MeasureState, type MeasureDriverEntry, type ForecastScenario, type ForecastAddedSetting, type MeasureCareSetting, type SettingForecastValues } from "@/lib/measureCalculator";
 import { SETTING_LABELS, computeAddedSettingValue } from "@/lib/forecastDefaults";
-import { computeScenarioInvestment, makeDefaultTiers, type PricingScenario, type PricingYearInput } from "@/lib/forecastPricing";
+import { computeScenarioInvestment, computeTCV, computePaybackMonths, makeDefaultTiers, type PricingScenario, type PricingYearInput } from "@/lib/forecastPricing";
 import AddCareSettingModal from "@/components/measure/AddCareSettingModal";
 import AddedSettingCard from "@/components/measure/AddedSettingCard";
 import PricingScenarioCard from "@/components/measure/PricingScenarioCard";
@@ -93,7 +93,6 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
 
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [pdfGenerating, setPdfGenerating] = useState(false);
-  const [showAdvancedPricing, setShowAdvancedPricing] = useState(false);
   const addedSettings = state.forecastScenario?.addedSettings ?? [];
   const pricingScenarios = state.forecastScenario?.pricingScenarios ?? [];
 
@@ -288,16 +287,15 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
   const bestValueScenarioId = useMemo(() => {
     if (pricingScenarios.length < 2) return null;
     const evaluated = pricingScenarios.map(s => {
-      const scale = s.model === 'perProvider' ? combinedProviders
-                  : s.model === 'perEncounter' ? combinedEncounters
-                  : 0;
+      const scale = s.model === 'perProvider' ? combinedProviders : combinedEncounters;
       const { value, warning } = computeScenarioInvestment(s, scale);
-      return { id: s.id, investment: value, warning };
+      const roi = value > 0 ? combinedTotal / value : 0;
+      return { id: s.id, investment: value, roi, warning };
     }).filter(e => !e.warning && e.investment > 0);
     if (evaluated.length === 0) return null;
-    evaluated.sort((a, b) => a.investment - b.investment);
+    evaluated.sort((a, b) => b.roi - a.roi);
     return evaluated[0].id;
-  }, [pricingScenarios, combinedProviders, combinedEncounters]);
+  }, [pricingScenarios, combinedProviders, combinedEncounters, combinedTotal]);
 
   const pricingYearlyInputs = useMemo((): PricingYearInput[] => {
     const numYears = forecastYears;
@@ -711,89 +709,124 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
               </motion.div>
             )}
 
-            {/* Pricing */}
+            {/* Deal Desk */}
             <motion.div
               className="mt-8"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.35 }}
             >
-              <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Pricing</p>
+              <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Deal Desk</p>
 
-              {/* Simple ACV input */}
-              <div className="bg-white rounded-xl border border-[#E5E5E5] p-4 mb-3">
-                <label className="text-[11px] font-semibold text-[#888888] uppercase tracking-wide mb-2 block">
-                  Annual Contract Value
-                </label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#888888] pointer-events-none">$</span>
-                  <FormattedNumberInput
-                    value={simpleInvestment}
-                    onChange={(v: number) => updateState({ deployment: { ...(state.deployment || {}), annualContractValue: v } as typeof state.deployment })}
-                    className="h-10 bg-white pl-7"
-                    placeholder="0"
-                    data-testid="input-simple-acv"
-                  />
-                </div>
-                {simpleInvestment > 0 && combinedTotal > 0 && (
-                  <p className="text-xs text-emerald-600 font-medium mt-2">
-                    {(combinedTotal / simpleInvestment).toFixed(1)}× ROI at projected scenario
-                  </p>
-                )}
-              </div>
-
-              {/* Advanced pricing model toggle */}
-              <button
-                onClick={() => setShowAdvancedPricing(v => !v)}
-                className="w-full flex items-center justify-between gap-2 px-4 py-3 bg-[#F5F0EB] hover:bg-[#EDE8E1] rounded-xl transition-colors mb-2"
-                data-testid="button-toggle-advanced-pricing"
-              >
-                <div className="text-left">
-                  <p className="text-xs font-semibold text-[#525252]">Tier-Based Pricing Model</p>
-                  {!showAdvancedPricing && (
-                    <p className="text-[10px] text-[#9E948C] mt-0.5">Compare per-provider, per-encounter, and platform fee scenarios</p>
-                  )}
-                </div>
-                <ChevronDown className={`w-4 h-4 text-[#8C7E6E] flex-shrink-0 transition-transform duration-200 ${showAdvancedPricing ? 'rotate-0' : '-rotate-90'}`} />
-              </button>
-
-              <AnimatePresence initial={false}>
-                {showAdvancedPricing && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.22, ease: 'easeInOut' }}
-                    className="overflow-hidden"
+              {pricingScenarios.length === 0 ? (
+                <div className="bg-[#F5F0EB] rounded-xl p-5 text-center">
+                  <p className="text-sm text-[#666666] mb-3">Model a pricing scenario to see payback period, total contract value, and ROI.</p>
+                  <button
+                    onClick={addPricingScenario}
+                    className="inline-flex items-center gap-1.5 py-2 px-4 bg-black text-white rounded-full text-sm font-medium hover:bg-black/80 transition-colors"
+                    data-testid="button-add-pricing-scenario"
                   >
-                    <div className="pt-1">
-                      {pricingScenarios.length > 0 && (
-                        <div className={`mb-3 ${pricingScenarios.length >= 2 ? 'grid grid-cols-1 md:grid-cols-2 gap-4' : 'space-y-3'}`}>
-                          {pricingScenarios.map(scenario => (
-                            <PricingScenarioCard
-                              key={scenario.id}
-                              scenario={scenario}
-                              displayProviders={combinedProviders}
-                              displayEncounters={combinedEncounters}
-                              displayValue={combinedTotal}
-                              isBestValue={bestValueScenarioId === scenario.id}
-                              onUpdate={(updates) => updatePricingScenario(scenario.id, updates)}
-                              onRemove={() => removePricingScenario(scenario.id)}
-                            />
+                    <Plus className="w-3.5 h-3.5" /> Add pricing scenario
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div className="space-y-3">
+                    {pricingScenarios.map(scenario => (
+                      <PricingScenarioCard
+                        key={scenario.id}
+                        scenario={scenario}
+                        displayProviders={combinedProviders}
+                        displayEncounters={combinedEncounters}
+                        displayValue={combinedTotal}
+                        isBestValue={bestValueScenarioId === scenario.id}
+                        onUpdate={(updates) => updatePricingScenario(scenario.id, updates)}
+                        onRemove={() => removePricingScenario(scenario.id)}
+                      />
+                    ))}
+                  </div>
+
+                  {/* Comparison table — 2+ scenarios */}
+                  {pricingScenarios.length >= 2 && combinedTotal > 0 && (() => {
+                    const cols = pricingScenarios.map(s => {
+                      const scale = s.model === 'perProvider' ? combinedProviders : combinedEncounters;
+                      const { value: acv, warning } = computeScenarioInvestment(s, scale);
+                      const tcv = computeTCV(s, scale);
+                      const payback = computePaybackMonths(acv, combinedTotal);
+                      const roi = acv > 0 ? combinedTotal / acv : 0;
+                      return { id: s.id, label: s.label, acv, tcv, payback, roi, warning };
+                    });
+                    const valid = cols.filter(c => !c.warning && c.acv > 0);
+                    if (valid.length < 2) return null;
+                    const bestROI = Math.max(...valid.map(c => c.roi));
+                    const fastestPayback = Math.min(...valid.filter(c => c.payback != null).map(c => c.payback!));
+                    const lowestACV = Math.min(...valid.map(c => c.acv));
+                    const lowestTCV = Math.min(...valid.map(c => c.tcv));
+                    const termYears = Math.round((pricingScenarios[0].contractTermMonths ?? 12) / 12);
+
+                    const gridStyle = { display: 'grid', gridTemplateColumns: `auto repeat(${cols.length}, 1fr)` };
+                    return (
+                      <div className="mt-3 rounded-xl overflow-hidden border border-[#E5E5E5]" data-testid="deal-comparison-table">
+                        {/* Header */}
+                        <div style={gridStyle} className="bg-[#FAFAF8] border-b border-[#F0ECE7]">
+                          <div className="px-3 py-2" />
+                          {cols.map(c => (
+                            <div key={c.id} className="px-3 py-2 text-center border-l border-[#F0ECE7]">
+                              <p className="text-[10px] font-semibold text-[#555555] truncate">{c.label}</p>
+                            </div>
                           ))}
                         </div>
-                      )}
-                      <button
-                        onClick={addPricingScenario}
-                        className="w-full py-3 px-4 rounded-lg border-2 border-dashed border-[#E5E5E5] text-sm font-medium text-[#666666] hover:border-[#EA2C00] hover:text-[#EA2C00] transition-all flex items-center justify-center gap-1.5"
-                        data-testid="button-add-pricing-scenario"
-                      >
-                        <Plus className="w-4 h-4" /> Add a pricing scenario
-                      </button>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                        {[
+                          {
+                            label: 'Year 1 ACV',
+                            getValue: (c: typeof cols[0]) => fmtShort(c.acv),
+                            isWinner: (c: typeof cols[0]) => c.acv === lowestACV,
+                          },
+                          {
+                            label: `${termYears}-yr TCV`,
+                            getValue: (c: typeof cols[0]) => fmtShort(c.tcv),
+                            isWinner: (c: typeof cols[0]) => c.tcv === lowestTCV,
+                          },
+                          {
+                            label: 'Payback',
+                            getValue: (c: typeof cols[0]) => c.payback != null ? `${c.payback} mo` : '—',
+                            isWinner: (c: typeof cols[0]) => c.payback != null && c.payback === fastestPayback,
+                          },
+                          {
+                            label: 'ROI',
+                            getValue: (c: typeof cols[0]) => c.roi > 0 ? `${c.roi.toFixed(1)}×` : '—',
+                            isWinner: (c: typeof cols[0]) => c.roi === bestROI,
+                          },
+                        ].map((row, ri) => (
+                          <div key={ri} style={gridStyle} className="border-b last:border-0 border-[#F0ECE7]">
+                            <div className="px-3 py-2.5">
+                              <p className="text-[10px] text-[#888888]">{row.label}</p>
+                            </div>
+                            {cols.map(c => {
+                              const win = row.isWinner(c);
+                              return (
+                                <div key={c.id} className={`px-3 py-2.5 text-center border-l border-[#F0ECE7] ${win ? 'bg-emerald-50' : ''}`}>
+                                  <p className={`text-sm font-bold tabular-nums ${win ? 'text-emerald-700' : 'text-[#1A1A1A]'}`}>
+                                    {row.getValue(c)}
+                                  </p>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
+
+                  <button
+                    onClick={addPricingScenario}
+                    className="w-full mt-3 py-2.5 px-4 rounded-lg border-2 border-dashed border-[#E5E5E5] text-sm font-medium text-[#666666] hover:border-[#EA2C00] hover:text-[#EA2C00] transition-all flex items-center justify-center gap-1.5"
+                    data-testid="button-add-pricing-scenario"
+                  >
+                    <Plus className="w-4 h-4" /> Add scenario
+                  </button>
+                </>
+              )}
             </motion.div>
 
             <motion.div className="flex justify-center mt-8 md:hidden">
@@ -840,42 +873,45 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
                 </div>
               </div>
 
-              {/* Investment + ROI — shown whenever pricing is configured (1 or more scenarios) */}
+              {/* Deal Desk summary — shown whenever pricing scenarios are configured */}
               {pricingScenarios.length > 0 && (() => {
                 const displayScenario = bestValueScenarioId
                   ? pricingScenarios.find(s => s.id === bestValueScenarioId) ?? pricingScenarios[0]
                   : pricingScenarios[0];
-                const scale = displayScenario.model === 'perProvider' ? combinedProviders
-                            : displayScenario.model === 'perEncounter' ? combinedEncounters
-                            : 0;
+                const scale = displayScenario.model === 'perProvider' ? combinedProviders : combinedEncounters;
                 const { value: investment, warning } = computeScenarioInvestment(displayScenario, scale);
                 if (warning || investment <= 0) return null;
                 const net = combinedTotal - investment;
-                const roi = investment > 0 ? combinedTotal / investment : null;
+                const roi = combinedTotal / investment;
+                const payback = computePaybackMonths(investment, combinedTotal);
                 return (
                   <div data-testid="panel-pricing-receipt">
                     <div className="h-px bg-[#333333] my-4" />
                     <p className="text-xs font-medium text-white uppercase tracking-[1.5px] mb-1">
-                      {pricingScenarios.length >= 2 ? 'Best Value Scenario' : 'Investment'}
+                      {pricingScenarios.length >= 2 ? 'Best ROI Scenario' : 'Deal Desk'}
                     </p>
                     {pricingScenarios.length >= 2 && (
                       <p className="text-sm text-white/50 mb-3" data-testid="text-best-pricing-label">{displayScenario.label}</p>
                     )}
                     <div className="space-y-1.5 mt-3">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-white/50">{pricingScenarios.length >= 2 ? 'Investment' : displayScenario.label}</span>
+                        <span className="text-xs text-white/50">Year 1 ACV</span>
                         <span className="text-sm font-medium text-white/80" data-testid="text-best-pricing-investment">{formatCurrency(investment)}</span>
                       </div>
+                      {payback != null && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-white/50">Payback</span>
+                          <span className="text-sm font-semibold text-white">{payback} months</span>
+                        </div>
+                      )}
                       <div className="flex items-center justify-between">
                         <span className="text-xs text-white/50">Net annual</span>
                         <span className={`text-base font-bold ${net >= 0 ? 'text-[#EA2C00]' : 'text-white/70'}`} data-testid="text-best-pricing-net">{formatCurrency(net)}</span>
                       </div>
-                      {roi !== null && (
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs text-white/50">ROI</span>
-                          <span className="text-sm font-semibold text-emerald-400">{roi.toFixed(1)}×</span>
-                        </div>
-                      )}
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-white/50">ROI</span>
+                        <span className="text-sm font-semibold text-emerald-400">{roi.toFixed(1)}×</span>
+                      </div>
                     </div>
                   </div>
                 );
