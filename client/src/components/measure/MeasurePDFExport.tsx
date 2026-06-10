@@ -338,11 +338,13 @@ const MeasureEvidenceDoc = ({ data }: { data: MeasurePDFData }) => {
   const hasForecast = data.totalProjected > 0 || data.combinedAnnualTotal > 0;
   const hasExpansions = data.addedSettings.length > 0;
   const hasPricing = data.pricingScenarios.length > 0;
+  const hasLoveStories = (data.loveStories?.length ?? 0) > 0;
 
   let pageCount = 3;
   if (hasForecast) pageCount += 1;
   if (hasExpansions) pageCount += 1;
   if (hasPricing) pageCount += 1;
+  if (hasLoveStories) pageCount += 1;
   pageCount += 1;
   let pageN = 0;
   const P = () => ++pageN;
@@ -619,6 +621,46 @@ const MeasureEvidenceDoc = ({ data }: { data: MeasurePDFData }) => {
                 </Text>
               </View>
             ) : null}
+
+            <Footer n={P()} total={pageCount} org={orgName} />
+          </View>
+        </Page>
+      ) : null}
+
+      {/* PAGE: Love Stories */}
+      {hasLoveStories ? (
+        <Page size="LETTER" style={s.page}>
+          <View style={s.wrap}>
+            <Conf org={orgName} />
+            <Text style={s.eyebrow}>Love Stories</Text>
+            <Text style={s.headline}>What providers say about Abridge.</Text>
+            <Text style={s.subline}>Often the most memorable part of a business review.</Text>
+
+            {(data.loveStories ?? []).slice(0, 6).map((story, i) => (
+              <View
+                key={i}
+                style={{
+                  backgroundColor: C.card,
+                  borderLeftWidth: 3,
+                  borderLeftColor: C.orange,
+                  paddingVertical: 12,
+                  paddingHorizontal: 14,
+                  marginBottom: 10,
+                  borderRadius: 4,
+                }}
+                wrap={false}
+              >
+                <Text style={{ fontSize: 10.5, fontStyle: "italic", color: C.dark, lineHeight: 1.6, marginBottom: 8 }}>
+                  {`"${story.text}"`}
+                </Text>
+                <Text style={{ fontSize: 8.5, fontWeight: "bold", color: C.orange }}>
+                  {`— ${story.attribution}`}
+                </Text>
+                {story.role ? (
+                  <Text style={{ fontSize: 7.5, color: C.muted, marginTop: 2 }}>{story.role}</Text>
+                ) : null}
+              </View>
+            ))}
 
             <Footer n={P()} total={pageCount} org={orgName} />
           </View>

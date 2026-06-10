@@ -94,7 +94,6 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [pdfGenerating, setPdfGenerating] = useState(false);
   const [showAdvancedPricing, setShowAdvancedPricing] = useState(false);
-  const [baseAdoptionPct, setBaseAdoptionPct] = useState(70);
   const addedSettings = state.forecastScenario?.addedSettings ?? [];
   const pricingScenarios = state.forecastScenario?.pricingScenarios ?? [];
 
@@ -257,6 +256,34 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
       + addedSettings.reduce((sum, a) => sum + a.encounters, 0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeSettings, state.settingForecasts, state.settingForecastYears, addedSettings, forecastYears]);
+
+  const baselineProviderCount = useMemo(() =>
+    activeSettings.reduce((sum, s) => sum + getSettingBaseline(s).providers, 0),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [activeSettings, state.settingData, state.deployment]
+  );
+
+  const baselineUtilPct = useMemo(() => {
+    const totalProv = activeSettings.reduce((sum, s) => sum + getSettingBaseline(s).providers, 0);
+    if (totalProv === 0) return getSettingBaseline(activeSettings[0] || 'outpatient').utilizationPercent;
+    return activeSettings.reduce((sum, s) => {
+      const bl = getSettingBaseline(s);
+      return sum + bl.utilizationPercent * (bl.providers / totalProv);
+    }, 0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeSettings, state.settingData, state.deployment]);
+
+  const snapRow = combinedProviders > 0
+    ? [50, 75, 100].reduce((best, r) => {
+        const bPct = (baselineProviderCount / combinedProviders) * 100;
+        return Math.abs(r - bPct) < Math.abs(best - bPct) ? r : best;
+      }, 100)
+    : 100;
+  const snapCol = [50, 70, 90].reduce((best, c) =>
+    Math.abs(c - baselineUtilPct) < Math.abs(best - baselineUtilPct) ? c : best, 70);
+  const baseAdoptionPct = combinedProviders > 0
+    ? Math.min(100, Math.round((baselineProviderCount / combinedProviders) * 100))
+    : 70;
 
   const bestValueScenarioId = useMemo(() => {
     if (pricingScenarios.length < 2) return null;
@@ -602,7 +629,7 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
             </motion.div>
 
             {/* Sensitivity Analysis */}
-            {combinedTotal > 0 && (
+            {combinedTotal > 0 && totalRealized > 0 && (
               <motion.div
                 className="mt-8"
                 initial={{ opacity: 0, y: 20 }}
@@ -614,49 +641,53 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
                 <div className="bg-white min-w-[400px]">
                   {/* Header */}
                   <div className="grid grid-cols-4 bg-[#FAFAF8] border-b border-[#F0ECE7] rounded-t-xl overflow-hidden">
-                    <div className="px-3 py-2.5" />
+                    <div className="px-3 py-2.5">
+                      <p className="text-[9px] font-semibold text-[#888888] uppercase tracking-wide leading-none">Breadth</p>
+                      <p className="text-[9px] text-[#AAAAAA] mt-0.5">providers enrolled</p>
+                    </div>
                     {[
-                      { label: 'Conservative', sub: '75% realization', pct: 75 },
-                      { label: 'Base Case', sub: '100% realization', pct: 100 },
-                      { label: 'Optimistic', sub: '125% realization', pct: 125 },
+                      { label: 'Low Use', sub: '50% utilization', pct: 50 },
+                      { label: 'Mid Use', sub: '70% utilization', pct: 70 },
+                      { label: 'High Use', sub: '90% utilization', pct: 90 },
                     ].map(col => (
-                      <div key={col.pct} className={`px-3 py-2.5 text-center border-l border-[#F0ECE7] ${col.pct === 100 ? 'bg-[#F5F0EB]' : ''}`}>
+                      <div key={col.pct} className={`px-3 py-2.5 text-center border-l border-[#F0ECE7] ${col.pct === snapCol ? 'bg-[#F5F0EB]' : ''}`}>
                         <p className="text-[10px] font-semibold text-[#555555] uppercase tracking-wide leading-none">{col.label}</p>
                         <p className="text-[9px] text-[#AAAAAA] mt-0.5">{col.sub}</p>
                       </div>
                     ))}
                   </div>
 
-                  {/* Rows: 50 / 70 / 90 % adoption */}
-                  {[50, 70, 90].map(adoption => {
-                    const isBaseRow = adoption === baseAdoptionPct;
+                  {/* Rows: 50 / 75 / 100 % of target providers */}
+                  {[50, 75, 100].map(breadthPct => {
+                    const cellProviders = Math.round(combinedProviders * (breadthPct / 100));
+                    const isSnapRow = breadthPct === snapRow;
+                    const baseScale = baselineProviderCount * (baselineUtilPct / 100);
                     return (
-                      <div key={adoption} className={`grid grid-cols-4 border-b last:border-0 border-[#F0ECE7] ${isBaseRow ? 'bg-[#FAFAF8]' : ''}`}>
-                        {/* Row label — click to set as base */}
-                        <button
-                          onClick={() => setBaseAdoptionPct(adoption)}
-                          className={`px-3 py-3 flex flex-col justify-center gap-0.5 text-left transition-colors ${isBaseRow ? '' : 'hover:bg-[#F9F7F5]'}`}
-                          title="Set as base case"
-                        >
+                      <div key={breadthPct} className={`grid grid-cols-4 border-b last:border-0 border-[#F0ECE7] ${isSnapRow ? 'bg-[#FAFAF8]' : ''}`}>
+                        {/* Row label */}
+                        <div className="px-3 py-3 flex flex-col justify-center gap-0.5">
                           <div className="flex items-center gap-1.5">
-                            <p className="text-sm font-bold text-[#1A1A1A]">{adoption}%</p>
-                            {isBaseRow && (
-                              <span className="px-1.5 py-0.5 bg-[#EA2C00] text-white text-[8px] font-bold rounded-full uppercase tracking-wide">Base</span>
+                            <p className="text-sm font-bold text-[#1A1A1A]">{breadthPct}%</p>
+                            {isSnapRow && (
+                              <span className="px-1.5 py-0.5 bg-[#EA2C00] text-white text-[8px] font-bold rounded-full uppercase tracking-wide">Now</span>
                             )}
                           </div>
-                          <p className="text-[10px] text-[#AAAAAA]">adoption</p>
-                        </button>
+                          <p className="text-[10px] text-[#AAAAAA]">{cellProviders} of {combinedProviders}</p>
+                        </div>
 
                         {/* Value cells */}
-                        {[75, 100, 125].map(realization => {
-                          const cellValue = Math.round(combinedTotal * (adoption / 100) * (realization / 100));
-                          const isBase = isBaseRow && realization === 100;
+                        {[50, 70, 90].map(depthPct => {
+                          const cellScale = baseScale > 0
+                            ? (cellProviders * (depthPct / 100)) / baseScale
+                            : 0;
+                          const cellValue = Math.round(totalRealized * cellScale);
+                          const isBase = isSnapRow && depthPct === snapCol;
                           const roi = effectiveInvestment > 0 ? cellValue / effectiveInvestment : null;
                           return (
                             <div
-                              key={realization}
-                              className={`px-3 py-3 text-center border-l border-[#F0ECE7] ${realization === 100 ? 'bg-[#F5F0EB]' : ''} ${isBase ? 'ring-2 ring-inset ring-[#EA2C00]/25' : ''}`}
-                              data-testid={`sensitivity-cell-${adoption}-${realization}`}
+                              key={depthPct}
+                              className={`px-3 py-3 text-center border-l border-[#F0ECE7] ${depthPct === snapCol ? 'bg-[#F5F0EB]' : ''} ${isBase ? 'ring-2 ring-inset ring-[#EA2C00]/25' : ''}`}
+                              data-testid={`sensitivity-cell-${breadthPct}-${depthPct}`}
                             >
                               <p className={`text-sm font-bold tabular-nums ${isBase ? 'text-[#EA2C00]' : 'text-[#1A1A1A]'}`}>
                                 {fmtShort(cellValue)}
@@ -675,7 +706,7 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
                 </div>
                 </div>
                 <p className="text-[10px] text-[#AAAAAA] mt-2 leading-relaxed">
-                  Annual value at adoption × realization rate. 100% realization = drivers perform as measured.{effectiveInvestment > 0 ? ' ROI = value ÷ annual investment.' : ''}{' '}Click a row to change the base case.
+                  Annual value across deployment scenarios. Breadth = share of target providers enrolled; depth = encounter utilization rate. "Now" reflects current deployment.{effectiveInvestment > 0 ? ' ROI = value ÷ annual investment.' : ''}
                 </p>
               </motion.div>
             )}
@@ -706,7 +737,7 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
                 </div>
                 {simpleInvestment > 0 && combinedTotal > 0 && (
                   <p className="text-xs text-emerald-600 font-medium mt-2">
-                    {(combinedTotal * (baseAdoptionPct / 100) / simpleInvestment).toFixed(1)}× ROI at base case ({baseAdoptionPct}% adoption)
+                    {(combinedTotal / simpleInvestment).toFixed(1)}× ROI at projected scenario
                   </p>
                 )}
               </div>

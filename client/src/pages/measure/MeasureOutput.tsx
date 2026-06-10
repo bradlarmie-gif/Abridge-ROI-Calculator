@@ -199,7 +199,7 @@ function ManageQuotesPanel({
       exit={{ opacity: 0, height: 0 }}
       transition={{ duration: 0.22, ease: 'easeInOut' }}
     >
-      <p className="text-[11px] font-bold text-[#888888] uppercase tracking-[1.5px] mb-4">Provider Quotes</p>
+      <p className="text-[11px] font-bold text-[#888888] uppercase tracking-[1.5px] mb-4">Love Stories</p>
 
       {/* Existing quotes */}
       {quotes.length > 0 && (
@@ -789,7 +789,7 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
                   data-testid="button-manage-quotes"
                 >
                   <MessageSquare className="w-3 h-3" />
-                  {showManageQuotes ? 'Done' : (state.quotes?.length ?? 0) > 0 ? `Provider Quotes · ${state.quotes?.length}` : 'Add Quotes'}
+                  {showManageQuotes ? 'Done' : (state.quotes?.length ?? 0) > 0 ? `Love Stories · ${state.quotes?.length}` : 'Add Love Stories'}
                 </button>
               </div>
               <p className="text-[11px] text-[#9E948C] mt-2 pl-1">{AUDIENCE_DESCRIPTIONS[audience]}</p>
