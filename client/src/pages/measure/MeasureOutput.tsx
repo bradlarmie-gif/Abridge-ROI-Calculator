@@ -199,7 +199,7 @@ function ManageQuotesPanel({
       exit={{ opacity: 0, height: 0 }}
       transition={{ duration: 0.22, ease: 'easeInOut' }}
     >
-      <p className="text-[11px] font-bold text-[#888888] uppercase tracking-[1.5px] mb-4">Love Stories</p>
+      <p className="text-[11px] font-bold text-[#888888] uppercase tracking-[1.5px] mb-4">Provider Quotes</p>
 
       {/* Existing quotes */}
       {quotes.length > 0 && (
@@ -331,30 +331,32 @@ function FinancialDriverCard({
       )}
 
       {/* Bottom: attribution + sparkline + timestamp */}
-      <div className="flex items-center justify-between px-5 pb-4 gap-3">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-[#F0EBE4] text-[10px] font-medium text-[#8C7E6E]">
-            {drv.attributionPercent}% attributed to Abridge
-          </span>
-          {drv.realizationPercent !== undefined && drv.realizationPercent !== 100 && (
-            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-[#F5F5F5] text-[10px] font-medium text-[#888888]">
-              {drv.realizationPercent}% realization
-            </span>
-          )}
-          {drv.entryDataSource && (
+      <div className="px-5 pb-4">
+        <div className="flex items-center justify-between gap-3 mb-1">
+          <div className="flex items-center gap-2 flex-wrap">
             <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-[#F0EBE4] text-[10px] font-medium text-[#8C7E6E]">
-              {ENTRY_DATA_SOURCE_LABELS[drv.entryDataSource] ?? drv.entryDataSource}
+              {drv.attributionPercent}% attributed to Abridge
             </span>
-          )}
-          {drv.isMonthlyMode && sparkValues && sparkValues.length >= 2 && (
-            <span className="text-[10px] text-[#AAAAAA]">{sparkValues.length}-month trend</span>
+            {drv.realizationPercent !== undefined && drv.realizationPercent !== 100 && (
+              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-[#F5F5F5] text-[10px] font-medium text-[#888888]">
+                {drv.realizationPercent}% realization
+              </span>
+            )}
+            {drv.entryDataSource && (
+              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-[#F0EBE4] text-[10px] font-medium text-[#8C7E6E]">
+                {ENTRY_DATA_SOURCE_LABELS[drv.entryDataSource] ?? drv.entryDataSource}
+              </span>
+            )}
+            {drv.isMonthlyMode && sparkValues && sparkValues.length >= 2 && (
+              <span className="text-[10px] text-[#AAAAAA]">{sparkValues.length}-month trend</span>
+            )}
+          </div>
+          {sparkValues && sparkValues.length >= 2 && (
+            <Sparkline values={sparkValues} lowerIsBetter={lowerIsBetter} id={drv.id} />
           )}
         </div>
-        {sparkValues && sparkValues.length >= 2 && (
-          <Sparkline values={sparkValues} lowerIsBetter={lowerIsBetter} id={drv.id} />
-        )}
         {drv.measuredAt && (
-          <p className="text-[10px] text-[#AAAAAA] mt-1 w-full">
+          <p className="text-[10px] text-[#AAAAAA]">
             Measured {new Date(drv.measuredAt + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
           </p>
         )}
@@ -787,7 +789,7 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
                   data-testid="button-manage-quotes"
                 >
                   <MessageSquare className="w-3 h-3" />
-                  {showManageQuotes ? 'Done' : (state.quotes?.length ?? 0) > 0 ? `Love Stories · ${state.quotes?.length}` : 'Add Quotes'}
+                  {showManageQuotes ? 'Done' : (state.quotes?.length ?? 0) > 0 ? `Provider Quotes · ${state.quotes?.length}` : 'Add Quotes'}
                 </button>
               </div>
               <p className="text-[11px] text-[#9E948C] mt-2 pl-1">{AUDIENCE_DESCRIPTIONS[audience]}</p>
@@ -814,7 +816,7 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
                   <MessageSquare className="w-5 h-5 text-[#C4A882] flex-shrink-0" />
                   <div>
                     <p className="text-sm font-semibold text-[#525252]">Add provider quotes</p>
-                    <p className="text-xs text-[#9E948C] mt-0.5">The voice behind the numbers — often the most memorable part of an EBR</p>
+                    <p className="text-xs text-[#9E948C] mt-0.5">The voice behind the numbers — often the most memorable part of a customer review</p>
                   </div>
                 </div>
                 <span className="text-xs font-semibold text-[#8C7E6E] flex-shrink-0">+ Add</span>
@@ -1038,6 +1040,36 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
                 })
               )}
             </motion.div>
+
+            {/* ── Sensitivity range ─────────────────────────────────────────── */}
+            {totalRealized > 0 && financialDriverCount > 0 && (
+              <motion.div
+                className="bg-white rounded-2xl border border-[#E8E8E8] p-5 mb-3"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.25 }}
+              >
+                <p className="text-[10px] font-bold text-[#888888] uppercase tracking-[1.5px] mb-3">Value Range</p>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { label: 'Conservative', pct: 0.75, sub: '75% adoption & realization' },
+                    { label: 'Base case', pct: 1.0, sub: 'As measured', highlight: true },
+                    { label: 'Optimistic', pct: 1.25, sub: '125% realization' },
+                  ].map(({ label, pct, sub, highlight }) => (
+                    <div
+                      key={label}
+                      className={`rounded-xl p-3 text-center ${highlight ? 'bg-[#1A1A1A]' : 'bg-[#F7F6F3]'}`}
+                    >
+                      <p className={`text-[10px] mb-1 ${highlight ? 'text-white/50' : 'text-[#888888]'}`}>{label}</p>
+                      <p className={`text-base font-bold tabular-nums ${highlight ? 'text-white' : 'text-[#1A1A1A]'}`}>
+                        {'$' + Math.round(totalRealized * pct).toLocaleString()}
+                      </p>
+                      <p className={`text-[9px] mt-0.5 ${highlight ? 'text-white/30' : 'text-[#BBBBBB]'}`}>{sub}</p>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
 
             {/* ── Scale & Forecast CTA ──────────────────────────────────────── */}
             <motion.div
