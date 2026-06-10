@@ -406,19 +406,19 @@ function DealCard({
             <p className="text-[10px] uppercase font-semibold tracking-widest" style={{ color }}>ROI at This Price</p>
             <div className="grid grid-cols-3 gap-2 text-center">
               <div>
-                <p className="text-[10px] text-[#8C7E6E] mb-0.5">Year 1 VTC</p>
+                <p className="text-[10px] text-[#8C7E6E] mb-0.5">Year 1 ROI</p>
                 <p className="text-base font-bold text-[#1A1A1A]">{result.vtcYear1.toFixed(1)}×</p>
               </div>
               {result.termVtc !== null && (
                 <div>
-                  <p className="text-[10px] text-[#8C7E6E] mb-0.5">Term VTC</p>
+                  <p className="text-[10px] text-[#8C7E6E] mb-0.5">Term ROI</p>
                   <p className="text-base font-bold text-[#1A1A1A]">{result.termVtc.toFixed(1)}×</p>
                 </div>
               )}
               {result.paybackMonths !== null && (
                 <div>
                   <p className="text-[10px] text-[#8C7E6E] mb-0.5">Payback</p>
-                  <p className="text-base font-bold text-[#1A1A1A]">Mo. {result.paybackMonths}</p>
+                  <p className="text-base font-bold text-[#1A1A1A]">{result.paybackMonths} months</p>
                 </div>
               )}
             </div>
@@ -438,12 +438,11 @@ function DealCard({
 }
 
 function RoiAnalysisSection({
-  deals, volumes, annualValueEstimate, onValueChange,
+  deals, volumes, annualValueEstimate,
 }: {
   deals: DealOption[];
   volumes: VolumeInputs;
   annualValueEstimate: number;
-  onValueChange: (v: number) => void;
 }) {
   const results = deals.map((d) => computeDealResult(d, volumes, annualValueEstimate));
 
@@ -470,17 +469,6 @@ function RoiAnalysisSection({
         <div className="flex-1">
           <h2 className="text-sm font-bold text-[#1A1A1A]">ROI Analysis</h2>
           <p className="text-xs text-[#8C7E6E]">Layer in expected value to compare ROI across options</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <label className="text-xs text-[#666666] font-medium whitespace-nowrap">Annual Value Estimate</label>
-          <NumberInput
-            value={annualValueEstimate}
-            onChange={onValueChange}
-            prefix="$"
-            suffix="/yr"
-            placeholder="0"
-            className="w-44"
-          />
         </div>
       </div>
 
@@ -572,7 +560,7 @@ function RoiAnalysisSection({
                       ))}
                     </tr>
                     <tr>
-                      <td className="py-2.5 pr-4 text-xs text-[#8C7E6E]">Year 1 VTC</td>
+                      <td className="py-2.5 pr-4 text-xs text-[#8C7E6E]">Year 1 ROI</td>
                       {results.map((r, ri) => (
                         <td key={ri} className="py-2.5 px-3 text-right text-sm font-semibold tabular-nums" style={{ color: DEAL_COLORS[ri] }}>
                           {r.vtcYear1 !== null ? `${r.vtcYear1.toFixed(1)}×` : "—"}
@@ -580,7 +568,7 @@ function RoiAnalysisSection({
                       ))}
                     </tr>
                     <tr>
-                      <td className="py-2.5 pr-4 text-xs text-[#8C7E6E]">Term VTC</td>
+                      <td className="py-2.5 pr-4 text-xs text-[#8C7E6E]">Term ROI</td>
                       {results.map((r, ri) => (
                         <td key={ri} className="py-2.5 px-3 text-right text-sm font-semibold tabular-nums" style={{ color: DEAL_COLORS[ri] }}>
                           {r.termVtc !== null ? `${r.termVtc.toFixed(1)}×` : "—"}
@@ -599,7 +587,7 @@ function RoiAnalysisSection({
                       <td className="py-2.5 pr-4 text-xs text-[#8C7E6E]">Payback Period</td>
                       {results.map((r, ri) => (
                         <td key={ri} className="py-2.5 px-3 text-right text-sm font-semibold tabular-nums" style={{ color: DEAL_COLORS[ri] }}>
-                          {r.paybackMonths !== null ? `Mo. ${r.paybackMonths}` : "—"}
+                          {r.paybackMonths !== null ? `${r.paybackMonths} months` : "—"}
                         </td>
                       ))}
                     </tr>
@@ -610,7 +598,7 @@ function RoiAnalysisSection({
           </div>
           {!hasValue && (
             <p className="text-xs text-[#A39888] mt-3 italic">
-              Enter an annual value estimate above to unlock ROI, VTC, and payback comparisons.
+              Enter an annual value estimate above to unlock ROI and payback comparisons.
             </p>
           )}
         </div>
@@ -696,6 +684,24 @@ export default function PricingComparisonFlow({ onBack, onHome }: PricingCompari
           </div>
         </div>
 
+        {/* Annual Value Estimate */}
+        <div className="bg-white rounded-2xl border border-[#E8E2DA] p-5 mb-6">
+          <div className="flex items-center gap-3">
+            <div className="flex-1">
+              <p className="text-[10px] uppercase font-semibold text-[#8C7E6E] tracking-widest mb-0.5">Annual Value Estimate</p>
+              <p className="text-xs text-[#A39888]">Use Measure to calculate this, or enter an estimate. Unlocks ROI and payback comparisons.</p>
+            </div>
+            <NumberInput
+              value={annualValueEstimate}
+              onChange={setAnnualValueEstimate}
+              prefix="$"
+              suffix="/yr"
+              placeholder="0"
+              className="w-52 flex-shrink-0"
+            />
+          </div>
+        </div>
+
         {/* Deal cards */}
         <div className="mb-2">
           <p className="text-[10px] uppercase font-semibold text-[#8C7E6E] tracking-widest mb-4">Deal Options</p>
@@ -739,7 +745,6 @@ export default function PricingComparisonFlow({ onBack, onHome }: PricingCompari
           deals={deals}
           volumes={volumes}
           annualValueEstimate={annualValueEstimate}
-          onValueChange={setAnnualValueEstimate}
         />
       </div>
     </div>
