@@ -15,7 +15,7 @@ import {
   buildMeasurePDFDataFromState,
 } from "@/components/measure/MeasurePDFExport";
 import { generateMeasureNarrativePDF } from "@/components/measure/MeasureNarrativePDF";
-import { type MeasureState, type MeasureDriverEntry, type MeasureQuote } from "@/lib/measureCalculator";
+import { type MeasureState, type MeasureDriverEntry, type MeasureQuote, computeRealizedDriverValue } from "@/lib/measureCalculator";
 import { useToast } from "@/hooks/use-toast";
 
 interface MeasureOutputProps {
@@ -103,15 +103,8 @@ function buildDriverPayload(
   const effWithout = entry.isMonthlyMode && latest ? latest.withoutAbridge : entry.withoutAbridge;
   const lowerIsBetter = md?.lowerIsBetter ?? entry.lowerIsBetter ?? false;
   const delta = lowerIsBetter ? effWithout - effWith : effWith - effWithout;
-  const isQuantifiable = driver.visibility === "quantified" && Boolean(md);
-  const scale = md?.isPerEncounterRate && (abridgeEncounters ?? 0) > 0
-    ? abridgeEncounters!
-    : (entry.scaleDivisor && entry.scaleDivisor > 0 && entry.scaleValue !== undefined)
-      ? entry.scaleValue / entry.scaleDivisor
-      : 1;
-  const realizedValue = isQuantifiable
-    ? Math.round(delta * entry.valuePerUnit * scale * (entry.attributionPercent / 100))
-    : 0;
+  // Single source of truth shared with the exported PDF.
+  const realizedValue = computeRealizedDriverValue(driver, entry, abridgeEncounters);
 
   return {
     id: driver.id,

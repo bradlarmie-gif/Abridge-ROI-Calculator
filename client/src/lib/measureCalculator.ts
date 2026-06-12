@@ -5,7 +5,7 @@ import { getTotalAvailableMetrics as getTotalAvailableMetricsFromConfig, OUTPATI
 
 export type MeasureCareSetting = 'outpatient' | 'ed' | 'nursing' | 'inpatient';
 
-import type { ExploreSetting, CustomDriverDef } from "./exploreDrivers";
+import type { ExploreSetting, CustomDriverDef, ExploreDriver } from "./exploreDrivers";
 import type { ForecastScenarioLevel } from "./forecastDefaults";
 import type { PricingScenario } from "./forecastPricing";
 
@@ -240,6 +240,33 @@ export interface MeasureDriverEntry {
   scaleDivisor?: number;
   measuredAt?: string;
   entryDataSource?: EntryDataSource;
+}
+
+/**
+ * Single source of truth for a tracked driver's realized annual $ value.
+ * Used by the Measure output screen AND its exported PDF so the two cannot
+ * disagree. Per-encounter-rate drivers scale by the setting's Abridge encounter
+ * count; everything else scales by scaleValue/scaleDivisor (default 1).
+ */
+export function computeRealizedDriverValue(
+  driver: ExploreDriver,
+  entry: MeasureDriverEntry,
+  abridgeEncounters?: number,
+): number {
+  const md = driver.measureDefaults;
+  if (driver.visibility !== "quantified" || !md) return 0;
+  const sortedMonthly = [...(entry.monthlyData || [])].sort((a, b) => a.month.localeCompare(b.month));
+  const latest = sortedMonthly[sortedMonthly.length - 1];
+  const effWith = entry.isMonthlyMode && latest ? latest.withAbridge : entry.withAbridge;
+  const effWithout = entry.isMonthlyMode && latest ? latest.withoutAbridge : entry.withoutAbridge;
+  const lowerIsBetter = md?.lowerIsBetter ?? entry.lowerIsBetter ?? false;
+  const delta = lowerIsBetter ? effWithout - effWith : effWith - effWithout;
+  const scale = md.isPerEncounterRate && (abridgeEncounters ?? 0) > 0
+    ? abridgeEncounters!
+    : (entry.scaleDivisor && entry.scaleDivisor > 0 && entry.scaleValue !== undefined)
+      ? entry.scaleValue / entry.scaleDivisor
+      : 1;
+  return Math.round(delta * entry.valuePerUnit * scale * (entry.attributionPercent / 100));
 }
 
 export function getEffectiveWithWithout(entry: MeasureDriverEntry): { withAbridge: number; withoutAbridge: number } {

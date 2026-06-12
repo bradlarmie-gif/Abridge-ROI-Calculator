@@ -13,6 +13,7 @@ import {
 } from "@react-pdf/renderer";
 import { savePdfBlob } from "@/lib/pdf-save";
 import type { MeasureState, MeasureCareSetting, EntryDataSource } from "@/lib/measureCalculator";
+import { computeRealizedDriverValue } from "@/lib/measureCalculator";
 import { PDFCoverPage } from "@/components/pdf/PDFCoverPage";
 import {
   getActiveDrivers,
@@ -778,6 +779,8 @@ export function buildMeasurePDFDataFromState(state: MeasureState, audience?: str
     const drivers: MeasurePDFDriver[] = [];
     for (const settingKey of activeSettings) {
       const settingTracked = state.trackedDrivers?.[settingKey] || {};
+      const sd = (state.settingData?.[settingKey] || {}) as Record<string, number>;
+      const abridgeEnc = (sd.deploy_abridgeEncounters as number) || (state.deployment as any)?.abridgeEncounters || 0;
       getActiveDrivers(state.customDriverDefs)
         .filter(d => d.quadrant === q && d.settings.includes(settingKey) && settingTracked[d.id])
         .forEach(d => {
@@ -789,12 +792,8 @@ export function buildMeasurePDFDataFromState(state: MeasureState, audience?: str
           const effWithout = entry.isMonthlyMode && latest ? latest.withoutAbridge : entry.withoutAbridge;
           const lowerIsBetter = md?.lowerIsBetter ?? entry.lowerIsBetter ?? false;
           const delta = lowerIsBetter ? effWithout - effWith : effWith - effWithout;
-          const scaleVal = (entry.scaleDivisor && entry.scaleDivisor > 0 && entry.scaleValue !== undefined)
-            ? entry.scaleValue / entry.scaleDivisor : 1;
-          const isQuant = d.visibility === "quantified" && Boolean(md);
-          const realizedValue = isQuant
-            ? Math.round(delta * entry.valuePerUnit * scaleVal * (entry.attributionPercent / 100))
-            : 0;
+          // Single source of truth — same per-encounter-aware formula the output screen uses.
+          const realizedValue = computeRealizedDriverValue(d, entry, abridgeEnc);
           drivers.push({
             id: d.id,
             label: d.label,
