@@ -31,7 +31,12 @@ export default function NursingNextStepScreen({ baseline, selectedPriorities, in
     } catch (e: any) {
       const msg = e?.message || String(e);
       console.error("PDF export failed:", msg, e);
-      setExportError(msg);
+      const isChunkError = msg.includes("dynamically imported module") || msg.includes("Failed to fetch") || msg.includes("Loading chunk");
+      setExportError(
+        isChunkError
+          ? "A newer version of the app is available. Please refresh the page (Ctrl+Shift+R) and try again."
+          : msg || "Unable to generate PDF. Please try again."
+      );
     } finally {
       setIsExporting(false);
     }

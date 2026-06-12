@@ -190,7 +190,8 @@ function StrategicPicturePage({
       <Text style={s.heading}>Your Priorities & Documentation Burden</Text>
 
       {summaries.map(summary => {
-        const config = PRIORITY_CONFIGS.find(cfg => cfg.id === summary.priority)!;
+        const config = PRIORITY_CONFIGS.find(cfg => cfg.id === summary.priority);
+        if (!config) return null;
         return (
           <View key={summary.priority} style={s.summaryCard}>
             <Text style={{ fontSize: 10, fontWeight: 700, color: c.black, marginBottom: 4 }}>
@@ -302,7 +303,7 @@ export async function generateNursingPdf(
   const doc = (
     <Document>
       <PDFCoverPage
-        reportLabel="AMBIENT ASSESSMENT"
+        reportLabel="NURSING ASSESSMENT"
         title="Nursing Edition"
         subtitle="Strategic alignment assessment for nursing leadership"
         clientName={orgName}

@@ -20,12 +20,15 @@ import {
   PRIORITY_CONFIGS,
 } from './nursingTypes';
 
+// One nurse works ~3 shifts/week × 52 weeks. Single source for the magic number.
+export const SHIFTS_PER_NURSE_YEAR = 156;
+
 export function derivePatientDays(baseline: NursingBaselineInputs): number {
   return Math.round(baseline.staffedBeds * (baseline.bedOccupancy / 100) * 365);
 }
 
 export function deriveShiftsPerYear(baseline: NursingBaselineInputs): number {
-  return Math.round(baseline.nurseFTEs * 156);
+  return Math.round(baseline.nurseFTEs * SHIFTS_PER_NURSE_YEAR);
 }
 
 function fmt(n: number): string {
@@ -34,7 +37,12 @@ function fmt(n: number): string {
 
 function fmtDollar(n: number): string {
   if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `$${Math.round(n / 1_000).toLocaleString()}K`;
+  if (n >= 1_000) {
+    const k = Math.round(n / 1_000);
+    // Avoid "$1,000K" at the rounding boundary — roll up to millions.
+    if (k >= 1000) return `$${(n / 1_000_000).toFixed(1)}M`;
+    return `$${k.toLocaleString()}K`;
+  }
   return `$${n.toLocaleString()}`;
 }
 
@@ -73,7 +81,7 @@ export function getOTNarrative(inputs: StaffingCostsInputs, baseline: NursingBas
 
 export function computeBedsideImpact(inputs: BedsidePresenceInputs, baseline: NursingBaselineInputs) {
   const annualDocHours = inputs.docHoursPerShift > 0
-    ? Math.round(inputs.docHoursPerShift * baseline.nurseFTEs * 156)
+    ? Math.round(inputs.docHoursPerShift * deriveShiftsPerYear(baseline))
     : 0;
   return { annualDocHours };
 }
@@ -129,6 +137,10 @@ export function buildPrioritySummary(
       if (hasAgency && s.agencyMonthlySpend > 0) {
         parts.push(`Monthly agency spend is ${fmtDollar(s.agencyMonthlySpend)} (${fmtDollar(annualAgency)} annually)`);
       }
+      if (s.costInterventions.length > 0) {
+        const interventionLabels = s.costInterventions.map(i => STAFFING_COST_INTERVENTIONS[i]).filter(Boolean);
+        parts.push(`You're already pursuing ${s.costInterventions.length} cost intervention${s.costInterventions.length > 1 ? 's' : ''}${interventionLabels.length > 0 ? ` including ${interventionLabels.slice(0, 2).join(' and ').toLowerCase()}` : ''}`);
+      }
       situation = parts.length > 0 ? parts.join('. ') + '.' : 'Staffing costs were identified as a priority. Enter details to see your organizational picture.';
       let sidebarLine = '';
       const sidebarParts: string[] = [];
@@ -178,6 +190,19 @@ export function buildPrioritySummary(
         situation = `At ${b.docHoursPerShift} hours of documentation per shift across ${fmt(baseline.nurseFTEs)} nurses, your nursing program spends approximately ${fmt(annualDocHours)} hours annually on documentation.`;
       } else {
         situation = 'Bedside presence was identified as a priority. Enter your estimated documentation hours per shift to see your organizational picture.';
+      }
+      const bedsidePriorityText: Record<string, string> = {
+        conversation: 'Bedside time has come up in conversations',
+        leadership_priority: 'Bedside time is a stated leadership priority',
+        org_quality_goal: 'Bedside time is tied to an organizational quality goal',
+      };
+      const bedsideMeasuringText: Record<string, string> = {
+        yes: ' and you are actively measuring it',
+        informal: ' with informal tracking in place',
+        no: ' though it is not yet formally measured',
+      };
+      if (b.bedsidePriority && bedsidePriorityText[b.bedsidePriority]) {
+        situation += ` ${bedsidePriorityText[b.bedsidePriority]}${b.measuringBedside ? bedsideMeasuringText[b.measuringBedside] || '' : ''}.`;
       }
       const sidebarLine = annualDocHours > 0 ? `${fmt(annualDocHours)} doc hrs/yr` : 'Data needed';
       return {
@@ -292,7 +317,9 @@ export function generateFocusNarrative(
   baseline: NursingBaselineInputs,
 ): { situation: string; framingOptions: FramingOption[]; evaluation: string[] } {
   const strong = selected.filter(p => STRONG_PRIORITIES.includes(p));
-  const titles = selected.map(p => PRIORITY_CONFIGS.find(c => c.id === p)!.title.toLowerCase());
+  const titles = selected
+    .map(p => PRIORITY_CONFIGS.find(c => c.id === p)?.title.toLowerCase())
+    .filter((t): t is string => Boolean(t));
   const situation = `Your nursing program is focused on ${titles.join(', ')}. Documentation burden connects to ${selected.length > 1 ? 'all of these' : 'this'} — but not ${selected.length > 1 ? 'in the same way or on the same timeline' : 'in isolation'}.`;
 
   const framingOptions: FramingOption[] = [];
