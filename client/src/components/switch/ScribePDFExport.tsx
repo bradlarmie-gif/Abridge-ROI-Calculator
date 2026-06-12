@@ -142,7 +142,12 @@ interface ScribePDFData {
 const fmtCurrency = (n: number): string => {
   if (isNaN(n) || n === undefined) return "$0";
   if (Math.abs(n) >= 1000000) return `$${(n / 1000000).toFixed(1)}M`;
-  if (Math.abs(n) >= 1000) return `$${Math.round(n / 1000)}K`;
+  if (Math.abs(n) >= 1000) {
+    const k = Math.round(n / 1000);
+    // Avoid "$1000K" at the rounding boundary — roll up to millions.
+    if (Math.abs(k) >= 1000) return `$${(n / 1000000).toFixed(1)}M`;
+    return `$${k}K`;
+  }
   return `$${Math.round(n).toLocaleString()}`;
 };
 
@@ -201,17 +206,21 @@ const CostLineItem = ({
 );
 
 const ScribePDFDocument = ({ inputs, calculations, clientName, preparedBy }: ScribePDFData) => {
-  const turnoverRate = (inputs.turnoverRate > 0 ? inputs.turnoverRate : 40) / 100;
+  // True-cost figures come from the shared engine (calculateScribeGap) so the
+  // PDF and the on-screen analysis can never disagree — see scribeGap.test.ts.
+  const {
+    annualTurnoverCost,
+    managementOverhead,
+    totalHiddenCosts,
+    trueTotalCost,
+    trueCostPerProvider,
+    hiddenCostPercent: hiddenCostPct,
+    scaleMultiplier,
+    fullCoverageTrueCost,
+    scribeReplacements,
+  } = calculations;
+  const turnoverRatePct = inputs.turnoverRate > 0 ? inputs.turnoverRate : 40;
   const trainingCostPerScribe = inputs.trainingCostPerScribe > 0 ? inputs.trainingCostPerScribe : 5000;
-  const annualTurnoverCost = Math.round(inputs.scribeCount * turnoverRate * trainingCostPerScribe);
-  const managementOverhead = Math.round(calculations.totalScribeCost * 0.15);
-  const totalHiddenCosts = annualTurnoverCost + managementOverhead;
-  const trueTotalCost = calculations.totalScribeCost + totalHiddenCosts;
-  const trueCostPerProvider = inputs.providersWithScribes > 0 ? Math.round(trueTotalCost / inputs.providersWithScribes) : 0;
-  const hiddenCostPct = calculations.totalScribeCost > 0 ? Math.round((totalHiddenCosts / calculations.totalScribeCost) * 100) : 0;
-  const scaleMultiplier = calculations.totalScribeCost > 0 ? Math.round(calculations.fullScribeCost / calculations.totalScribeCost) : 1;
-  const fullCoverageTrueCost = Math.round(calculations.fullScribeCost * (1 + hiddenCostPct / 100));
-  const scribeReplacements = Math.round(inputs.scribeCount * turnoverRate);
   const orgName = clientName || "Organization";
 
   return (
@@ -278,7 +287,7 @@ const ScribePDFDocument = ({ inputs, calculations, clientName, preparedBy }: Scr
             title="Turnover & Training"
             amount={fmtCurrency(annualTurnoverCost)}
             lines={[
-              `~${Math.round(turnoverRate * 100)}% annual turnover \u2192 ~${scribeReplacements} replacements/year`,
+              `~${turnoverRatePct}% annual turnover \u2192 ~${scribeReplacements} replacements/year`,
               `${scribeReplacements} scribes \u00D7 ${fmtCurrency(trainingCostPerScribe)} training cost\u00B2`,
             ]}
           />
@@ -357,7 +366,7 @@ const ScribePDFDocument = ({ inputs, calculations, clientName, preparedBy }: Scr
                   <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(calculations.fullScribeCost)}/yr</Text>
                 </View>
                 <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-                  {inputs.totalProviders} providers {"\u00F7"} {safe(calculations.scribeRatio)}:1 ratio = {safe(calculations.scribesNeededForFullCoverage)} scribes
+                  {inputs.totalProviders} providers {"\u00F7"} {safe(calculations.scalingRatio)}:1 ratio = {safe(calculations.scribesNeededForFullCoverage)} scribes
                 </Text>
                 <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
                   {safe(calculations.scribesNeededForFullCoverage)} {"\u00D7"} {fmtCurrency(calculations.scribeSalaryAnnual)}/yr = {fmtCurrency(calculations.fullScribeCost)} direct
@@ -424,7 +433,7 @@ const ScribePDFDocument = ({ inputs, calculations, clientName, preparedBy }: Scr
               <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.6 }}>
                 {safe(calculations.coveragePercent)}% of providers covered{"\n"}
                 {safe(calculations.scribeRatio)}:1 provider-to-scribe ratio{"\n"}
-                {Math.round(turnoverRate * 100)}% annual turnover cycle{"\n"}
+                {turnoverRatePct}% annual turnover cycle{"\n"}
                 3-6 month ramp per new scribe{"\n"}
                 Linear cost curve to scale
               </Text>
@@ -663,7 +672,7 @@ const ScribePDFDocument = ({ inputs, calculations, clientName, preparedBy }: Scr
             <View style={[styles.cardBg, { flex: 1 }]}>
               <Text style={{ fontSize: 8.5, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>ASSUMPTIONS</Text>
               <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.7 }}>
-                Turnover rate: {Math.round(turnoverRate * 100)}%{"\n"}
+                Turnover rate: {turnoverRatePct}%{"\n"}
                 Training cost: {fmtCurrency(trainingCostPerScribe)}/scribe{"\n"}
                 Mgmt overhead: 15%{"\n"}
                 Doc time: {inputs.minutesPerEncounter || 10} min/enc{"\n"}

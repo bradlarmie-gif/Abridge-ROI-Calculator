@@ -115,12 +115,6 @@ export default function ScribeAssessment({
                   onChange={(v) => updateInput("minutesPerEncounter", v)}
                   testId="input-minutes-per-encounter"
                 />
-                <InputField
-                  label="Scribe turnover rate (%)"
-                  value={inputs.turnoverRate}
-                  onChange={(v) => updateInput("turnoverRate", v)}
-                  testId="input-turnover-rate"
-                />
               </div>
             </div>
 
@@ -254,7 +248,10 @@ export default function ScribeAssessment({
                     Hours/year documenting
                   </div>
                   <div className="text-xs text-[#888888] italic mt-1">
-                    {Math.round(calculations.unsupportedDocTimeHours / 2080)} FTEs worth of time
+                    {(() => {
+                      const fte = calculations.unsupportedDocTimeHours / 2080;
+                      return fte >= 1 ? Math.round(fte) : fte.toFixed(1);
+                    })()} FTEs worth of time
                   </div>
                 </div>
 

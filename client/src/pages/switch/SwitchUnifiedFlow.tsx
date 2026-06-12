@@ -112,6 +112,7 @@ export default function SwitchUnifiedFlow({ onBack, onBackToJourney, onExploreAm
         return (
           <ScribeFullAnalysis
             inputs={scribeInputs}
+            setInputs={setScribeInputs}
             onBack={handleBackFromScribeAnalysis}
             onBackToJourney={onBackToJourney}
             onExploreAmbientAI={onExploreAmbientAI}

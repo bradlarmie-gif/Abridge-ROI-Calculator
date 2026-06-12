@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 
 interface ScribeFullAnalysisProps {
   inputs: ScribeInputs;
+  setInputs?: React.Dispatch<React.SetStateAction<ScribeInputs>>;
   onBack: () => void;
   onBackToJourney?: () => void;
   onExploreAmbientAI?: (providers: number, encounters: number) => void;
@@ -21,6 +22,7 @@ interface ScribeFullAnalysisProps {
 
 export default function ScribeFullAnalysis({
   inputs,
+  setInputs,
   onBack,
   onBackToJourney,
   onExploreAmbientAI,
@@ -30,13 +32,19 @@ export default function ScribeFullAnalysis({
   const [showExportModal, setShowExportModal] = useState(false);
   const { toast } = useToast();
 
-  const turnoverRate = (inputs.turnoverRate > 0 ? inputs.turnoverRate : 40) / 100;
+  // All true-cost math now comes from the engine (single source of truth shared
+  // with the PDF) — see calculateScribeGap / scribeGap.test.ts.
+  const {
+    annualTurnoverCost,
+    managementOverhead,
+    totalHiddenCosts,
+    trueTotalCost,
+    trueCostPerProvider: costPerProvider,
+  } = calculations;
+
+  // Assumptions surfaced for display (turnover %, training $/scribe).
+  const turnoverRatePct = inputs.turnoverRate > 0 ? inputs.turnoverRate : 40;
   const trainingCostPerScribe = inputs.trainingCostPerScribe > 0 ? inputs.trainingCostPerScribe : 5000;
-  const annualTurnoverCost = Math.round(inputs.scribeCount * turnoverRate * trainingCostPerScribe);
-  const managementOverhead = Math.round(calculations.totalScribeCost * 0.15);
-  const totalHiddenCosts = annualTurnoverCost + managementOverhead;
-  const trueTotalCost = calculations.totalScribeCost + totalHiddenCosts;
-  const costPerProvider = Math.round(trueTotalCost / inputs.providersWithScribes);
 
   const handleExportPDF = async (clientName: string, preparedBy: string) => {
     setIsExporting(true);
@@ -239,9 +247,26 @@ export default function ScribeFullAnalysis({
               <div className="text-2xl font-bold text-black mb-1">{formatCurrency(annualTurnoverCost)}</div>
               <div className="text-xs font-medium text-[#888888] uppercase tracking-wide">Turnover & Training</div>
               <p className="text-xs text-[#888888] mt-2">
-                ~{inputs.turnoverRate || 40}% annual turnover<br/>
-                ~{Math.round(inputs.scribeCount * turnoverRate)} scribes replaced/year at ~${(trainingCostPerScribe / 1000).toFixed(0)}K each
+                ~{calculations.scribeReplacements} scribes replaced/year
               </p>
+              {setInputs && (
+                <div className="grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-[#F0EDE8]">
+                  <AssumptionInput
+                    label="Annual turnover"
+                    value={turnoverRatePct}
+                    suffix="%"
+                    onChange={(v) => setInputs((p) => ({ ...p, turnoverRate: v }))}
+                    testId="input-scribe-turnover"
+                  />
+                  <AssumptionInput
+                    label="Training / scribe"
+                    value={trainingCostPerScribe}
+                    prefix="$"
+                    onChange={(v) => setInputs((p) => ({ ...p, trainingCostPerScribe: v }))}
+                    testId="input-scribe-training"
+                  />
+                </div>
+              )}
             </div>
 
             <div className="bg-white rounded-xl p-5 shadow-sm">
@@ -325,6 +350,47 @@ export default function ScribeFullAnalysis({
         isExporting={isExporting}
         documentType="scribe"
       />
+    </div>
+  );
+}
+
+// Compact, on-brand inline input for adjusting cost assumptions on the analysis screen.
+function AssumptionInput({
+  label,
+  value,
+  onChange,
+  prefix,
+  suffix,
+  testId,
+}: {
+  label: string;
+  value: number;
+  onChange: (value: number) => void;
+  prefix?: string;
+  suffix?: string;
+  testId: string;
+}) {
+  return (
+    <div>
+      <label className="block text-[10px] text-[#888888] uppercase tracking-wide mb-1">{label}</label>
+      <div className="flex items-center bg-[#F5F0EB] rounded-md px-2 h-9 border border-transparent focus-within:border-[#EA2C00] transition-colors">
+        {prefix && <span className="text-sm text-[#888888] mr-0.5">{prefix}</span>}
+        <input
+          type="text"
+          inputMode="numeric"
+          value={value === 0 ? "" : value.toLocaleString("en-US")}
+          onChange={(e) => {
+            const cleaned = e.target.value.replace(/[^\d.]/g, "");
+            const parsed = parseFloat(cleaned);
+            onChange(isNaN(parsed) ? 0 : parsed);
+          }}
+          onFocus={(e) => setTimeout(() => e.target.select(), 0)}
+          className="w-full min-w-0 text-sm font-semibold text-black bg-transparent border-none focus:outline-none focus:ring-0 p-0"
+          placeholder="0"
+          data-testid={testId}
+        />
+        {suffix && <span className="text-sm text-[#888888] ml-0.5">{suffix}</span>}
+      </div>
     </div>
   );
 }
