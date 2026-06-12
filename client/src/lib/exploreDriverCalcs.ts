@@ -6,6 +6,7 @@ import {
   calcSepsis,
 } from "@/lib/nursingQualityCalcs";
 import type { ExploreState } from "@/pages/explore/ExploreFlow";
+import { EXPLORE_DRIVERS, type ExploreQuadrant } from "@/lib/exploreDrivers";
 
 /**
  * Pure helpers that compute every quantified Explore driver's:
@@ -472,4 +473,92 @@ export function computeAllDriverCalcSummaries(
   }
 
   return out;
+}
+
+export interface ExploreTotals {
+  /** Per-quadrant driver totals (excludes "other financial benefits"). */
+  valueByQuadrant: Record<ExploreQuadrant, number>;
+  /** Recurring annual value: all driver values + annual other-financial-benefits. */
+  totalAnnualValue: number;
+  /** One-time value: one-time other-financial-benefits only. */
+  totalOneTimeValue: number;
+  /** Time/efficiency value shown on the Investment screen = Capacity + Workforce. */
+  efficiencyValue: number;
+  /** Documentation/quality value shown on the Investment screen = Revenue + Quality. */
+  documentationValue: number;
+}
+
+/**
+ * Single source of truth for the headline Explore totals. Both the
+ * Investment screen (ExploreInvestment) and the Your Model screen
+ * (ExploreModel) consume this so they can never disagree about Total Value or
+ * ROI. The math mirrors ExploreModel's original quadrant aggregation:
+ * driver values come from `computeAllDriverValues` summed by quadrant, plus
+ * the user's "other financial benefits" (annual into the recurring total,
+ * one-time tracked separately).
+ *
+ * The efficiency / documentation split is just a regrouping of the same
+ * quadrants (Capacity+Workforce vs Revenue+Quality), so
+ * `efficiencyValue + documentationValue === totalAnnualValue` always holds.
+ */
+export function computeExploreTotals(
+  state: ExploreState,
+  totalHoursSaved: number,
+): ExploreTotals {
+  const allDriverValues = computeAllDriverValues(state, totalHoursSaved);
+
+  const valueByQuadrant: Record<ExploreQuadrant, number> = {
+    Capacity: 0,
+    Workforce: 0,
+    Revenue: 0,
+    Quality: 0,
+  };
+  if (state.careSetting) {
+    EXPLORE_DRIVERS.forEach((d) => {
+      if (d.settings.includes(state.careSetting!)) {
+        valueByQuadrant[d.quadrant] += allDriverValues[d.id] || 0;
+      }
+    });
+  }
+
+  const annualBenefitByQuadrant: Record<ExploreQuadrant, number> = {
+    Capacity: 0,
+    Workforce: 0,
+    Revenue: 0,
+    Quality: 0,
+  };
+  let totalOneTimeValue = 0;
+  (state.otherFinancialBenefits ?? []).forEach((b) => {
+    if (b.label.trim() && b.amount > 0) {
+      if (b.type === "annual") annualBenefitByQuadrant[b.quadrant] += b.amount;
+      else totalOneTimeValue += b.amount;
+    }
+  });
+
+  const driverSum =
+    valueByQuadrant.Capacity +
+    valueByQuadrant.Workforce +
+    valueByQuadrant.Revenue +
+    valueByQuadrant.Quality;
+  const annualBenefitSum =
+    annualBenefitByQuadrant.Capacity +
+    annualBenefitByQuadrant.Workforce +
+    annualBenefitByQuadrant.Revenue +
+    annualBenefitByQuadrant.Quality;
+
+  return {
+    valueByQuadrant,
+    totalAnnualValue: driverSum + annualBenefitSum,
+    totalOneTimeValue,
+    efficiencyValue:
+      valueByQuadrant.Capacity +
+      valueByQuadrant.Workforce +
+      annualBenefitByQuadrant.Capacity +
+      annualBenefitByQuadrant.Workforce,
+    documentationValue:
+      valueByQuadrant.Revenue +
+      valueByQuadrant.Quality +
+      annualBenefitByQuadrant.Revenue +
+      annualBenefitByQuadrant.Quality,
+  };
 }

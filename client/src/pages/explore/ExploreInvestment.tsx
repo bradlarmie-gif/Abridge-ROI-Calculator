@@ -10,8 +10,8 @@ interface ExploreInvestmentProps {
   state: ExploreState;
   updateState: (updates: Partial<ExploreState>) => void;
   totalHoursSaved: number;
-  timeValue: number;
-  docValue: number;
+  efficiencyValue: number;
+  documentationValue: number;
   onNext: () => void;
   onBack: () => void;
   onHome: () => void;
@@ -21,45 +21,19 @@ export default function ExploreInvestment({
   state,
   updateState,
   totalHoursSaved,
-  timeValue,
-  docValue,
+  efficiencyValue,
+  documentationValue,
   onNext,
   onBack,
   onHome,
 }: ExploreInvestmentProps) {
   const isNursing = state.careSetting === 'nursing';
 
-  const nursingCareQualityPotential = useMemo(() => {
-    if (!isNursing) return 0;
-    const { docQualityInputs } = state;
-    const patientDays = state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365;
-    let total = 0;
-    if (docQualityInputs.nursingHapiEnabled) {
-      const hapIs = (patientDays / 1000) * docQualityInputs.nursingHapiRate;
-      total += hapIs * (docQualityInputs.nursingHapiPreventionRate / 100) * docQualityInputs.nursingHapiCost;
-    }
-    if (docQualityInputs.nursingFallsEnabled) {
-      const falls = (patientDays / 1000) * docQualityInputs.nursingFallsRate;
-      total += falls * (docQualityInputs.nursingFallsPreventionRate / 100) * docQualityInputs.nursingFallsCost;
-    }
-    if (docQualityInputs.nursingCautiEnabled) {
-      const cathDays = patientDays * (docQualityInputs.nursingCautiUtilizationRatio / 100);
-      total += (cathDays / 1000) * docQualityInputs.nursingCautiRate * (docQualityInputs.nursingCautiPreventionRate / 100) * docQualityInputs.nursingCautiCost;
-    }
-    if (docQualityInputs.nursingClabsiEnabled) {
-      const clDays = patientDays * (docQualityInputs.nursingClabsiUtilizationRatio / 100);
-      total += (clDays / 1000) * docQualityInputs.nursingClabsiRate * (docQualityInputs.nursingClabsiPreventionRate / 100) * docQualityInputs.nursingClabsiCost;
-    }
-    if (docQualityInputs.nursingSepsisEnabled) {
-      const sepsisPerYear = (patientDays / 1000) * docQualityInputs.nursingSepsisRatePerThousand;
-      const nonCompliant = sepsisPerYear * ((100 - docQualityInputs.nursingSepsisCurrentCompliance) / 100);
-      const docLagCases = nonCompliant * (docQualityInputs.nursingSepsisDocLagPercent / 100);
-      total += docLagCases * docQualityInputs.nursingSepsisExcessCostPerCase * (docQualityInputs.nursingSepsisRealization / 100);
-    }
-    return Math.round(total);
-  }, [isNursing, state.nursingStaffedBeds, state.nursingOccupancyRate, state.docQualityInputs]);
-
-  const totalValue = timeValue + docValue + nursingCareQualityPotential;
+  // Total Value must match the Your Model screen / PDF / proforma. All four
+  // surfaces derive their headline from the same driver engine — efficiency
+  // (Capacity+Workforce) + documentation (Revenue+Quality) — via
+  // computeExploreTotals. See exploreTotals.test.ts for the guardrail.
+  const totalValue = efficiencyValue + documentationValue;
 
   const annualInvestment = useMemo(() => {
     if (isNursing && state.pricingModel === 'perProvider') {
@@ -424,12 +398,12 @@ export default function ExploreInvestment({
                   <>
                     <div className="flex justify-between items-center gap-3">
                       <span className="text-sm text-[#888888] min-w-0">Time Savings</span>
-                      <span className="text-sm font-semibold text-white flex-shrink-0">{formatCurrency(timeValue)}</span>
+                      <span className="text-sm font-semibold text-white flex-shrink-0">{formatCurrency(efficiencyValue)}</span>
                     </div>
-                    {nursingCareQualityPotential > 0 && (
+                    {documentationValue > 0 && (
                       <div className="flex justify-between items-center gap-3">
                         <span className="text-sm text-[#888888] min-w-0">Care Quality</span>
-                        <span className="text-sm font-semibold text-white flex-shrink-0">{formatCurrency(nursingCareQualityPotential)}</span>
+                        <span className="text-sm font-semibold text-white flex-shrink-0">{formatCurrency(documentationValue)}</span>
                       </div>
                     )}
                     <div className="flex justify-between items-center gap-3">
@@ -441,11 +415,11 @@ export default function ExploreInvestment({
                   <>
                     <div className="flex justify-between items-center gap-3">
                       <span className="text-sm text-[#888888] min-w-0">Efficiency Value</span>
-                      <span className="text-sm font-semibold text-white flex-shrink-0">{formatCurrency(timeValue)}</span>
+                      <span className="text-sm font-semibold text-white flex-shrink-0">{formatCurrency(efficiencyValue)}</span>
                     </div>
                     <div className="flex justify-between items-center gap-3">
                       <span className="text-sm text-[#888888] min-w-0">Documentation Quality</span>
-                      <span className="text-sm font-semibold text-white flex-shrink-0">{formatCurrency(docValue)}</span>
+                      <span className="text-sm font-semibold text-white flex-shrink-0">{formatCurrency(documentationValue)}</span>
                     </div>
                     <div className="flex justify-between items-center gap-3">
                       <span className="text-sm font-semibold text-white min-w-0">Total Value</span>

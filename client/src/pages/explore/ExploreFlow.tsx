@@ -16,6 +16,7 @@ import {
   computeRevenueBreakdown,
   type PriorQuadrantEntry,
 } from "@/lib/exploreQuadrantValues";
+import { computeExploreTotals } from "@/lib/exploreDriverCalcs";
 
 export type ExploreCareSetting = 'outpatient' | 'ed' | 'nursing' | 'inpatient';
 
@@ -1333,6 +1334,14 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
     return Math.round(total);
   }, [state.annualEncounters, state.utilizationPercent, state.numberOfProviders, state.docQualityInputs, state.careSetting]);
 
+  // Canonical headline totals — same driver engine the Your Model screen, PDF,
+  // and proforma use. The Investment screen consumes these so its Total Value
+  // and ROI can never diverge from the Model screen (see exploreTotals.test.ts).
+  const exploreTotals = useMemo(
+    () => computeExploreTotals(state, totalHoursSaved),
+    [state, totalHoursSaved],
+  );
+
   // Calculate annual investment
   const annualInvestment = useMemo(() => {
     if (state.pricingModel === 'perProvider') {
@@ -1501,8 +1510,8 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
           state={state}
           updateState={updateState}
           totalHoursSaved={totalHoursSaved}
-          timeValue={timeValue}
-          docValue={docValue}
+          efficiencyValue={exploreTotals.efficiencyValue}
+          documentationValue={exploreTotals.documentationValue}
           onNext={() => navigate('model')}
           onBack={() => navigate('quality')}
           onHome={goHome}
