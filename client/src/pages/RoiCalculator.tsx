@@ -6250,7 +6250,11 @@ export default function RoiCalculator({
                       return '$0';
                     }
                     if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`;
-                    if (value >= 1000) return `$${(value / 1000).toFixed(0)}K`;
+                    if (value >= 1000) {
+                      const k = Number((value / 1000).toFixed(0));
+                      if (k >= 1000) return `$${(value / 1000000).toFixed(1)}M`;
+                      return `$${k}K`;
+                    }
                     return `$${value.toFixed(0)}`;
                   };
                   

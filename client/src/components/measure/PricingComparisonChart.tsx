@@ -32,7 +32,11 @@ const SCENARIO_LINE_COLORS = ['#EA2C00', '#1A1A1A', '#0891B2', '#6B7280'];
 
 function formatCurrencyShort(n: number): string {
   if (Math.abs(n) >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
-  if (Math.abs(n) >= 1_000) return `$${(n / 1_000).toFixed(0)}K`;
+  if (Math.abs(n) >= 1_000) {
+    const k = Number((n / 1_000).toFixed(0));
+    if (Math.abs(k) >= 1000) return `$${(n / 1_000_000).toFixed(1)}M`;
+    return `$${k}K`;
+  }
   return `$${Math.round(n)}`;
 }
 

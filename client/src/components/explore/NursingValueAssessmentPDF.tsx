@@ -299,7 +299,11 @@ export interface NursingPDFInput {
 const fmtCurrency = (n: number): string => {
   const v = Math.round(n);
   if (Math.abs(v) >= 1_000_000) return `$${(v / 1_000_000).toFixed(2)}M`;
-  if (Math.abs(v) >= 1_000) return `$${(v / 1_000).toFixed(0)}K`;
+  if (Math.abs(v) >= 1_000) {
+    const k = Math.round(v / 1_000);
+    if (Math.abs(k) >= 1000) return `$${(v / 1_000_000).toFixed(2)}M`;
+    return `$${k.toFixed(0)}K`;
+  }
   return `$${v.toLocaleString()}`;
 };
 

@@ -507,7 +507,11 @@ const styles = StyleSheet.create({
 
 const formatCurrency = (num: number): string => {
   if (Math.abs(num) >= 1000000) return `$${(num / 1000000).toFixed(1)}M`;
-  if (Math.abs(num) >= 1000) return `$${Math.round(num / 1000)}K`;
+  if (Math.abs(num) >= 1000) {
+    const k = Math.round(num / 1000);
+    if (Math.abs(k) >= 1000) return `$${(num / 1000000).toFixed(1)}M`;
+    return `$${k}K`;
+  }
   return `$${num.toLocaleString()}`;
 };
 

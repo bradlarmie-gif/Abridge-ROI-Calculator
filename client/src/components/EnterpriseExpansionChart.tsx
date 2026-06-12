@@ -46,7 +46,9 @@ interface ChartDataItem {
 function formatCompactCurrency(value: number) {
   const absVal = Math.abs(value);
   if (absVal >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`;
-  return `$${(value / 1_000).toFixed(0)}K`;
+  const k = Math.round(value / 1_000);
+  if (Math.abs(k) >= 1000) return `$${(value / 1_000_000).toFixed(1)}M`;
+  return `$${k.toFixed(0)}K`;
 }
 
 export function EnterpriseExpansionChart({
@@ -308,7 +310,9 @@ export function EnterpriseExpansionChart({
                 tickFormatter={(value) => {
                   if (value >= 1000000)
                     return `$${(value / 1000000).toFixed(1)}M`;
-                  return `$${(value / 1000).toFixed(0)}K`;
+                  const k = Math.round(value / 1000);
+                  if (k >= 1000) return `$${(value / 1000000).toFixed(1)}M`;
+                  return `$${k.toFixed(0)}K`;
                 }}
                 tick={{ fontSize: 10, fill: "#737373" }}
                 tickLine={false}

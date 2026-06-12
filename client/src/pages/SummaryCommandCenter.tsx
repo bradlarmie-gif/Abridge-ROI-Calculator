@@ -81,7 +81,9 @@ const formatCompactCurrency = (value: number): string => {
     return `$${(value / 1000000).toFixed(2)}M`;
   }
   if (value >= 1000) {
-    return `$${(value / 1000).toFixed(0)}K`;
+    const k = Number((value / 1000).toFixed(0));
+    if (k >= 1000) return `$${(value / 1000000).toFixed(2)}M`;
+    return `$${k}K`;
   }
   return `$${value}`;
 };

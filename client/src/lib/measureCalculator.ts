@@ -697,7 +697,9 @@ export function formatCurrency(value: number): string {
     return `$${(value / 1000000).toFixed(1)}M`;
   }
   if (value >= 1000) {
-    return `$${Math.round(value / 1000)}K`;
+    const k = Math.round(value / 1000);
+    if (k >= 1000) return `$${(value / 1000000).toFixed(1)}M`;
+    return `$${k}K`;
   }
   return `$${Math.round(value).toLocaleString()}`;
 }

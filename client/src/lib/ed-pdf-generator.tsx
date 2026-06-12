@@ -731,7 +731,9 @@ const formatCurrency = (value: number): string => {
     return `$${(value / 1000000).toFixed(2)}M`;
   }
   if (Math.abs(value) >= 1000) {
-    return `$${Math.round(value / 1000)}K`;
+    const k = Math.round(value / 1000);
+    if (Math.abs(k) >= 1000) return `$${(value / 1000000).toFixed(2)}M`;
+    return `$${k}K`;
   }
   return `$${value.toLocaleString()}`;
 };

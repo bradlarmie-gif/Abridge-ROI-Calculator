@@ -39,7 +39,11 @@ export default function MeasureTrendChart({ data, unit, height = 220 }: MeasureT
 
   const formatTick = (n: number) => {
     if (Math.abs(n) >= 1000000) return `${(n / 1000000).toFixed(1)}M`;
-    if (Math.abs(n) >= 1000) return `${(n / 1000).toFixed(1)}K`;
+    if (Math.abs(n) >= 1000) {
+      const k = n / 1000;
+      if (Math.abs(Math.round(k * 10) / 10) >= 1000) return `${(n / 1000000).toFixed(1)}M`;
+      return `${k.toFixed(1)}K`;
+    }
     return String(n);
   };
 

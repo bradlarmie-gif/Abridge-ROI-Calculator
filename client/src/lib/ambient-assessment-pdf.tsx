@@ -95,7 +95,11 @@ const DOMAIN_ORDER = ["capacity", "revenue", "workforce", "risk"];
 const fmt = (n: number): string => {
   if (!n || n === 0) return "\u2014";
   if (n >= 1000000) return `$${(n / 1000000).toFixed(1)}M`;
-  if (n >= 1000) return `$${Math.round(n / 1000)}K`;
+  if (n >= 1000) {
+    const k = Math.round(n / 1000);
+    if (k >= 1000) return `$${(n / 1000000).toFixed(1)}M`;
+    return `$${k}K`;
+  }
   return `$${n.toLocaleString()}`;
 };
 

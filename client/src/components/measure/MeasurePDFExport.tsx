@@ -230,7 +230,11 @@ export interface MeasurePDFData {
 function fmtC(n: number): string {
   if (!Number.isFinite(n)) return "$0";
   if (Math.abs(n) >= 1_000_000) return `${n < 0 ? "-" : ""}$${(Math.abs(n) / 1_000_000).toFixed(1)}M`;
-  if (Math.abs(n) >= 1_000) return `${n < 0 ? "-" : ""}$${Math.round(Math.abs(n) / 1_000)}K`;
+  if (Math.abs(n) >= 1_000) {
+    const k = Math.round(Math.abs(n) / 1_000);
+    if (k >= 1000) return `${n < 0 ? "-" : ""}$${(Math.abs(n) / 1_000_000).toFixed(1)}M`;
+    return `${n < 0 ? "-" : ""}$${k}K`;
+  }
   return `${n < 0 ? "-" : ""}$${Math.round(Math.abs(n))}`;
 }
 function fmtN(n: number): string {

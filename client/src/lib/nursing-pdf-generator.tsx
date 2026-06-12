@@ -146,7 +146,11 @@ const brand = {
 
 const formatCurrency = (value: number): string => {
   if (Math.abs(value) >= 1000000) return `$${(value / 1000000).toFixed(1)}M`;
-  if (Math.abs(value) >= 1000) return `$${Math.round(value / 1000).toLocaleString()}K`;
+  if (Math.abs(value) >= 1000) {
+    const k = Math.round(value / 1000);
+    if (Math.abs(k) >= 1000) return `$${(value / 1000000).toFixed(1)}M`;
+    return `$${k.toLocaleString()}K`;
+  }
   return `$${value.toLocaleString()}`;
 };
 

@@ -87,7 +87,9 @@ function firstSentence(text?: string) {
 function formatAxisTick(value: number) {
   const absVal = Math.abs(value);
   if (absVal >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`;
-  return `$${(value / 1_000).toFixed(0)}K`;
+  const k = Math.round(value / 1_000);
+  if (Math.abs(k) >= 1000) return `$${(value / 1_000_000).toFixed(1)}M`;
+  return `$${k.toFixed(0)}K`;
 }
 
 function computeAxisDomain(values: number[]) {
