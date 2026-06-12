@@ -859,7 +859,10 @@ export function buildMeasurePDFDataFromState(state: MeasureState, audience?: str
   if (evaluated.length >= 2) {
     const valid = evaluated.filter((e: any) => !e.warning && e.investment > 0);
     if (valid.length > 0) {
-      valid.sort((a: any, b: any) => a.investment - b.investment);
+      // Match the screen's rule (highest ROI). Equivalent to lowest-investment
+      // today since value is constant across scenarios, but stays correct if
+      // value ever becomes scenario-specific. See MeasureForecast bestValueScenarioId.
+      valid.sort((a: any, b: any) => b.roi - a.roi);
       bestId = valid[0].scenario.id;
     }
   }
