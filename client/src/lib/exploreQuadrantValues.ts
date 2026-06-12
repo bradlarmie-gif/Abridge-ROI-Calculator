@@ -1,4 +1,5 @@
 import type { ExploreState, OtherFinancialBenefitItem } from "@/pages/explore/ExploreFlow";
+import { wrvuScenariosFor } from "@/lib/exploreDriverCalcs";
 
 export interface QuadrantBreakdown {
   driverValues: Record<string, number>;
@@ -104,9 +105,7 @@ export function computeRevenueBreakdown(state: ExploreState, _totalHoursSaved: n
   const isOPorED = state.careSetting === 'outpatient' || state.careSetting === 'ed';
   const isIP = state.careSetting === 'inpatient';
 
-  const wrvuScenarios: Record<string, number> = isED
-    ? { conservative: 2, typical: 5, aggressive: 9, custom: dq.wrvuCustomPercent ?? 5 }
-    : { conservative: 2, typical: 5, aggressive: 9, custom: dq.wrvuCustomPercent ?? 5 };
+  const wrvuScenarios = wrvuScenariosFor(isED, dq.wrvuCustomPercent);
   const denialsScenarios: Record<string, number> = isED
     ? { conservative: 15, typical: 30, aggressive: 50 }
     : { conservative: 25, typical: 50, aggressive: 75 };

@@ -54,7 +54,9 @@ const IP_CDI_SCENARIOS: Record<string, number> = {
   aggressive: 35,
 };
 
-const wrvuScenariosFor = (isED: boolean, customPct?: number): Record<string, number> =>
+// Canonical wRVU lift scenarios — single source of truth for both the headline
+// engine and the per-screen Revenue breakdown / driver card.
+export const wrvuScenariosFor = (isED: boolean, customPct?: number): Record<string, number> =>
   isED
     ? { conservative: 1, typical: 2.5, aggressive: 4, custom: customPct ?? 5 }
     : { conservative: 2, typical: 5, aggressive: 7, custom: customPct ?? 5 };
@@ -123,12 +125,15 @@ export function computeAllDriverValues(
   const RETENTION_SCENARIOS_PHYSICIAN = retentionPhysician(td.retentionCustomPercent ?? 10);
   const RETENTION_SCENARIOS_NURSING = retentionNursing(td.retentionCustomPercent ?? 10);
   if (isPhysician && td.wellbeingEnabled && td.calculateRetentionValue) {
-    const turnover = td.annualTurnoverRate / 100;
-    const burnout = td.burnoutRelatedTurnover / 100;
+    // Inpatient uses hospitalist-specific turnover/replacement inputs (the
+    // fields the IP wellbeing card lets the user edit); other physician
+    // settings use the generic fields. Mirrors exploreQuadrantValues.
+    const turnover = (isIP ? td.ipAnnualTurnoverRate : td.annualTurnoverRate) / 100;
+    const burnout = (isIP ? td.ipBurnoutRelatedTurnover : td.burnoutRelatedTurnover) / 100;
     const impact =
       RETENTION_SCENARIOS_PHYSICIAN[td.retentionImpactScenario] / 100;
     const retained = state.numberOfProviders * turnover * burnout * impact;
-    result.providerWellbeing = Math.round(retained * td.replacementCost);
+    result.providerWellbeing = Math.round(retained * (isIP ? td.ipReplacementCost : td.replacementCost));
     if (td.physicianAgencyEnabled) {
       result.physicianLocumAgency = Math.round(
         retained *
@@ -346,7 +351,12 @@ export function computeAllDriverCalcSummaries(
   if (isPhysician && td.wellbeingEnabled && td.calculateRetentionValue) {
     const impactPct =
       CS_RETENTION_PHYSICIAN[td.retentionImpactScenario] ?? 0;
-    out.providerWellbeing = `${fmtN(state.numberOfProviders)} providers × ${td.annualTurnoverRate}% turnover × ${td.burnoutRelatedTurnover}% burnout × ${impactPct}% impact × ${fmt$(td.replacementCost)}/replacement`;
+    // Inpatient prints its hospitalist-specific fields so the formula keeps
+    // multiplying out to the engine value (which now uses them too).
+    const wbTurnover = isIP ? td.ipAnnualTurnoverRate : td.annualTurnoverRate;
+    const wbBurnout = isIP ? td.ipBurnoutRelatedTurnover : td.burnoutRelatedTurnover;
+    const wbReplacement = isIP ? td.ipReplacementCost : td.replacementCost;
+    out.providerWellbeing = `${fmtN(state.numberOfProviders)} providers × ${wbTurnover}% turnover × ${wbBurnout}% burnout × ${impactPct}% impact × ${fmt$(wbReplacement)}/replacement`;
     if (td.physicianAgencyEnabled) {
       // Print the full factor breakdown rather than a precomputed
       // `${fmtNd(retained)} retained` token. Rounding the retained-providers
@@ -354,7 +364,7 @@ export function computeAllDriverCalcSummaries(
       // the printed math by ~25% versus the engine value. Breaking the
       // formula down keeps the printed multiplicands in lockstep with the
       // engine's unrounded retained × weeks × premium product.
-      out.physicianLocumAgency = `${fmtN(state.numberOfProviders)} providers × ${td.annualTurnoverRate}% turnover × ${td.burnoutRelatedTurnover}% burnout × ${impactPct}% impact × ${td.physicianAgencyWeeksPerVacancy} wks/vacancy × ${fmt$(td.physicianAgencyWeeklyPremium)}/wk`;
+      out.physicianLocumAgency = `${fmtN(state.numberOfProviders)} providers × ${wbTurnover}% turnover × ${wbBurnout}% burnout × ${impactPct}% impact × ${td.physicianAgencyWeeksPerVacancy} wks/vacancy × ${fmt$(td.physicianAgencyWeeklyPremium)}/wk`;
     }
   }
   if (isNursing && td.nursingRetentionEnabled) {

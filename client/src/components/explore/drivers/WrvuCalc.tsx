@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Info } from "lucide-react";
 import type { ExploreCalcComponentProps } from "@/lib/exploreDrivers";
+import { wrvuScenariosFor } from "@/lib/exploreDriverCalcs";
 
 const SCENARIO_LABELS: Record<string, string> = {
   conservative: 'Conservative',
@@ -18,9 +19,7 @@ export default function WrvuCalc({ state, updateDocQualityInputs }: Props) {
   const [customDisplay, setCustomDisplay] = useState(String(docQualityInputs.wrvuCustomPercent ?? 5));
 
   const eligibleEncounters = Math.round(annualEncounters * (utilizationPercent / 100));
-  const wrvuScenarios: Record<string, number> = isED
-    ? { conservative: 2, typical: 5, aggressive: 9, custom: docQualityInputs.wrvuCustomPercent ?? 5 }
-    : { conservative: 2, typical: 5, aggressive: 9, custom: docQualityInputs.wrvuCustomPercent ?? 5 };
+  const wrvuScenarios = wrvuScenariosFor(isED, docQualityInputs.wrvuCustomPercent);
 
   const wrvuLiftPercent = wrvuScenarios[docQualityInputs.wrvuScenario];
   const wrvuLiftPerVisit = (docQualityInputs.currentWrvu * wrvuLiftPercent) / 100;
