@@ -62,13 +62,21 @@ function parseFormulaProduct(calcSummary: string): number {
   const tokens = calcSummary.split("×").map((t) => t.trim());
   let product = 1;
   for (const token of tokens) {
-    const dollarMatch = token.match(/\$([\d,]+(?:\.\d+)?)/);
-    const percentMatch = token.match(/(-?[\d,]+(?:\.\d+)?)\s*%/);
-    const bareMatch = token.match(/(-?[\d,]+(?:\.\d+)?)/);
+    // Strip explanatory parentheticals like "(65% of 15,000 MA pts)" or
+    // "(65%→70%)" — the multiplicand is always the leading figure, and the
+    // parenthetical often contains an unrelated % that must not be matched.
+    const cleaned = token.replace(/\([^)]*\)/g, " ");
+    const dollarMatch = cleaned.match(/\$([\d,]+(?:\.\d+)?)/);
+    const ppMatch = cleaned.match(/(-?[\d,]+(?:\.\d+)?)\s*pp\b/);
+    const percentMatch = cleaned.match(/(-?[\d,]+(?:\.\d+)?)\s*%/);
+    const bareMatch = cleaned.match(/(-?[\d,]+(?:\.\d+)?)/);
 
     let factor: number | null = null;
     if (dollarMatch) {
       factor = Number(dollarMatch[1].replace(/,/g, ""));
+    } else if (ppMatch) {
+      // "percentage points" (e.g. "+5pp Abridge uplift") → 0.05
+      factor = Number(ppMatch[1].replace(/,/g, "")) / 100;
     } else if (percentMatch) {
       factor = Number(percentMatch[1].replace(/,/g, "")) / 100;
     } else if (bareMatch) {

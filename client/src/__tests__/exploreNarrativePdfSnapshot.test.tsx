@@ -537,25 +537,29 @@ describe("Explore Narrative PDF — structural snapshot", () => {
       expect(flat).toContain("REVENUE");
       expect(flat).toContain("QUALITY");
 
-      // HeroSubtotal copy lands at the bottom of each quadrant page —
-      // the punchline anchor that replaced the previous top-of-page
-      // "Quadrant total" header row.
-      expect(flat).toContain("Capacity Subtotal");
-      expect(flat).toContain("Workforce Subtotal");
-      expect(flat).toContain("Revenue Subtotal");
+      // Per-quadrant subtotal figures — the dollar punchline each quadrant
+      // resolves to. Capacity / Workforce / Revenue carry $ math (rendered in
+      // the Value-by-Domain and Value Summary blocks); the qualitative Quality
+      // quadrant resolves to its tracked-state HeroSubtotal. These are the
+      // same across all three settings (shared buildFixture numbers), so a
+      // regression that drops a quadrant's subtotal fails CI for every setting.
+      expect(flat).toContain("$2.40M"); // Capacity subtotal
+      expect(flat).toContain("$1.80M"); // Workforce subtotal
+      expect(flat).toContain("$3.60M"); // Revenue subtotal
       expect(flat).toContain("Quality Subtotal");
 
       // Investment + summary pages — assert the unique copy on each so
       // accidentally dropping either page fails this test even if page
-      // count somehow stays at 9. The cumulative-multiple eyebrow is the
-      // hero block that replaced the inline redBorderCallout.
+      // count somehow stays at 9. The Investment Case page now carries a
+      // scenario-sensitivity framing (conservative / base / optimistic).
       expect(flat).toContain("THE INVESTMENT CASE");
-      expect(flat).toContain("Infrastructure, Not Expense.");
-      expect(flat).toContain("By Year 3, For Every $1 Invested");
+      expect(flat).toContain("The Investment Case.");
+      expect(flat).toContain("configured model");
       expect(flat).toMatch(/\d+(\.\d+)?×/);
       expect(flat).toContain("YOUR ASSESSMENT SUMMARY");
       expect(flat).toContain("Projected Net Annual Value");
-      expect(flat).toContain("Methodology");
+      expect(flat).toContain("METHODOLOGY");
+      expect(flat).toContain("How the Model Works.");
     },
   );
 
@@ -587,19 +591,17 @@ describe("Explore Narrative PDF — structural snapshot", () => {
       expect(flat).not.toContain("ED Value Assessment");
       expect(flat).not.toContain("Inpatient Value Assessment");
 
-      // Hero cumulative multiple (eyebrow + standalone number).
-      expect(flat).toContain("By Year 3, For Every $1 Invested");
+      // Scenario-sensitivity framing on the Investment Case page renders the
+      // ROI multiple as a standalone "X.X×" token (not inline body copy).
+      expect(flat).toContain("configured model");
       expect(flat).toMatch(/\d+(\.\d+)?×/);
 
-      // Each quadrant's HeroSubtotal anchors the bottom of its page.
-      expect(flat).toContain("Capacity Subtotal");
-      expect(flat).toContain("Workforce Subtotal");
-      expect(flat).toContain("Revenue Subtotal");
+      // Quality's tracked-state HeroSubtotal anchors the bottom of its page.
       expect(flat).toContain("Quality Subtotal");
 
       // Capacity (the largest single-driver figure) renders via fmtCurrency
-      // in the millions form, asserting the HeroSubtotal can hold a
-      // 2-digit-million value at 24pt without reflowing.
+      // in the millions form, asserting a 2-digit-million value formats
+      // without reflowing across the Value-by-Domain and Summary blocks.
       expect(flat).toContain("$12.40M");
     },
   );

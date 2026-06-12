@@ -360,7 +360,7 @@ describe("Nursing Value Assessment PDF — structural snapshot", () => {
     expect(buildLongOrgTree()).toMatchSnapshot();
   });
 
-  it("contains exactly 9 top-level pages (1 cover + 8 content) and matches the rendered count", () => {
+  it("contains exactly 10 top-level pages (1 cover + 9 content) and matches the rendered count", () => {
     // Sanity check independent of the snapshot — guards against a Page being
     // accidentally added or removed even if the rest of the structure churns
     // enough that a snapshot diff is hard to read.
@@ -391,7 +391,7 @@ describe("Nursing Value Assessment PDF — structural snapshot", () => {
     };
     tree.forEach(visit);
 
-    expect(pageCount).toBe(9);
+    expect(pageCount).toBe(10);
   });
 
   it("includes the headline copy + driver totals as printed text", () => {
@@ -420,7 +420,7 @@ describe("Nursing Value Assessment PDF — structural snapshot", () => {
   // ── Long-org-name stress test ─────────────────────────────────────────
   // Anchors three layout invariants for a customer with a
   // deliberately-long org name and billion-class dollar figures:
-  //   1. Page count is still exactly 9 (no card overflow forcing extra pages).
+  //   1. Page count is still exactly 10 (no card overflow forcing extra pages).
   //   2. The footer center text is just the org name — never glued to a
   //      document-title slug — so it cannot grow into the right-slot
   //      "PAGE X / Y" the way the shipped bug did.
@@ -442,15 +442,16 @@ describe("Nursing Value Assessment PDF — structural snapshot", () => {
     tree.forEach(visit);
     const flat = text.join(" | ");
 
-    expect(pageCount).toBe(9);
+    expect(pageCount).toBe(10);
     expect(flat).toContain("Northwestern Memorial HealthCare System — Northwest Region");
     // Footer center text must be JUST the org name. The shipped-bug
     // " · Nursing Value Assessment" suffix is gone — assert the
     // non-uppercase suffix string is nowhere in the tree.
     expect(flat).not.toContain(" · Nursing Value Assessment");
-    // Hero cumulative multiple (95.5M / (4.2M × 3) ≈ 7.6×) lands as its
-    // own text node next to the eyebrow.
-    expect(flat).toContain("By Year 3, For Every $1 Invested");
+    // Hero ROI multiple lands as its own text node next to the eyebrow
+    // ("Annual ROI" eyebrow + standalone "X.X×" + "Per dollar invested").
+    expect(flat).toContain("Annual ROI");
+    expect(flat).toContain("Per dollar invested");
     expect(flat).toMatch(/\d+(\.\d+)?×/);
     // Workforce HeroSubtotal (and Quality HeroSubtotal) both render the
     // tinted dollar total with the canonical fmtCurrency formatting.
