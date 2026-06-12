@@ -108,7 +108,15 @@ function executiveNarrative(state: ForecastState, result: ForecastResult, partne
   const fromMeasure = state.importSource.type === 'measure';
 
   const p1: NarrativePart[] = [];
-  if (roi >= 3) {
+  if (cost <= 0) {
+    // No pricing entered yet — ROI is undefined, so don't claim "no positive ROI".
+    p1.push(
+      { text: partnerName, bold: true },
+      { text: " has " },
+      { text: fmtCurrencyShort(tcv), bold: true },
+      { text: " in modeled value. Enter pricing to see ROI, net value, and break-even." },
+    );
+  } else if (roi >= 3) {
     p1.push(
       { text: partnerName, bold: true },
       { text: " is projecting a " },
@@ -385,15 +393,15 @@ export function ForecastPDF({ state, result, partnerName, dateStr }: { state: Fo
             </View>
             <View style={s.gridCell}>
               <Text style={s.smallLabel}>ROI Multiple</Text>
-              <Text style={s.largeValue}>{result.kpis.roiMultiple.toFixed(2)}x</Text>
+              <Text style={s.largeValue}>{result.kpis.totalContractCost > 0 ? `${result.kpis.roiMultiple.toFixed(2)}x` : "—"}</Text>
             </View>
             <View style={s.gridCell}>
-              <Text style={s.smallLabel}>Fast Break-Even</Text>
-              <Text style={s.largeValue}>{breakEvenLabel(result.kpis.fastBreakEvenMonth)}</Text>
-            </View>
-            <View style={s.gridCell}>
-              <Text style={s.smallLabel}>Full Break-Even</Text>
+              <Text style={s.smallLabel}>Break-Even</Text>
               <Text style={s.largeValue}>{breakEvenLabel(result.kpis.fullBreakEvenMonth)}</Text>
+            </View>
+            <View style={s.gridCell}>
+              <Text style={s.smallLabel}>Break-Even (excl. long-term)</Text>
+              <Text style={s.largeValue}>{breakEvenLabel(result.kpis.fastBreakEvenMonth)}</Text>
             </View>
             {(state.currentPricing.model === 'perEncounter' || state.currentPricing.model === 'hybrid') && (
               <View style={s.gridCell}>
