@@ -91,7 +91,7 @@ export default function ExploreCareSettings({ selectedSetting, onSelectSetting, 
       <UnifiedHeader
         pathType="explore"
         currentStep={1}
-        totalSteps={6}
+        totalSteps={9}
         stepName="Care Setting"
         onBack={onBack}
         onHome={onHome}

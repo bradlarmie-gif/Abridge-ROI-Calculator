@@ -491,7 +491,7 @@ export default function ExploreModel({
 
   const expansionMultiplier = !isNursing && currentAbridgeEncounters > 0 && fullScaleAbridgeEncounters !== null
     ? fullScaleAbridgeEncounters / currentAbridgeEncounters
-    : expansionBaselineCount > 0
+    : expansionBaselineCount > 0 && state.utilizationPercent > 0
       ? (expandedProviders / expansionBaselineCount) * (expandedUtilization / state.utilizationPercent)
       : 0;
   const expandedValue = Math.round(netAnnualValue * expansionMultiplier);
@@ -1191,8 +1191,8 @@ export default function ExploreModel({
     <div className="min-h-screen bg-white">
       <UnifiedHeader
         pathType="explore"
-        currentStep={7}
-        totalSteps={7}
+        currentStep={9}
+        totalSteps={9}
         stepName="Your Model"
         onBack={onBack}
         onHome={onHome}

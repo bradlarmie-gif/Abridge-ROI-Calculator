@@ -227,7 +227,12 @@ export function convertMeasureToForecast(m: MeasureState): ForecastState {
     // Skip cleanClaimRate by checking that after < before for denial keys.
     const denialDelta = Math.max(0, denialMetric.before - denialMetric.after);
     if (denialDelta > 0) {
-      const avgClaimValue = 350;
+      // Inpatient denials are admissions (~$3,200/case), not outpatient claims
+      // (~$350). Use the inpatient denial-cost-per-case when inpatient is the
+      // primary setting; otherwise the outpatient/ED per-claim value.
+      const avgClaimValue = primarySetting === "inpatient"
+        ? ((m.settingData?.inpatient?.vm_denialCostPerCase as number) ?? 3200)
+        : 350;
       const dollarsPerEnc = (denialDelta / 100) * avgClaimValue;
       if (dollarsPerEnc > 0) {
         drivers.push({

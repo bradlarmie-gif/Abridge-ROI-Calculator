@@ -120,7 +120,7 @@ export default function ExploreTimeSavings({
       <UnifiedHeader
         pathType="explore"
         currentStep={3}
-        totalSteps={7}
+        totalSteps={9}
         stepName="Time Savings"
         onBack={onBack}
         onHome={onHome}
