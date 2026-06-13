@@ -545,7 +545,10 @@ export function ForecastPDF({ state, result, partnerName, dateStr }: { state: Fo
                 if (qMonths[qMonths.length - 1] !== state.contractTermMonths) qMonths.push(state.contractTermMonths);
 
                 qMonths.forEach((m) => {
-                  const val = m === 0 ? (state.activeUsersToday * (state.adoptionCurve.startPct/100) * (state.utilizationCurve.values[0]/100)) : result.monthly[m-1].activeUsers;
+                  // "Today" anchor is the actual current active-user count — not
+                  // deflated by future adoption/utilization ramp params (which
+                  // are forward-looking and caused a kink at the chart origin).
+                  const val = m === 0 ? state.activeUsersToday : result.monthly[m-1].activeUsers;
                   const x = 40 + (m / state.contractTermMonths) * chartWidth;
                   const y = 100 - (val / maxVal) * chartHeight;
                   points.push([x, y]);

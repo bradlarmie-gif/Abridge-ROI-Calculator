@@ -161,6 +161,27 @@ describe("calculateForecast", () => {
     expect(r.kpis.totalContractCost).toBeCloseTo(720_000, 0);
   });
 
+  it("per-provider cost is flat on contracted seats even while adoption ramps", () => {
+    // Adoption starts at 20% and ramps; utilization 50%. Cost must NOT shrink —
+    // per-provider bills the contracted seat count (100 × $200), like per-bed.
+    const state = makeState({
+      adoptionCurve: { type: "linear", rampMonths: 12, startPct: 20, endPct: 100 },
+      utilizationCurve: { values: Array.from({ length: 12 }, () => 50) },
+      currentPricing: {
+        model: "perProvider",
+        unitPrice: 200,
+        yearlyEscalators: [0, 0, 0, 0, 0],
+      },
+    });
+    const r = calculateForecast(state);
+    // Month 1 active users are far below 100 (low adoption × 50% util), but cost
+    // is the full contracted 100 × $200 = $20,000.
+    expect(r.monthly[0].activeUsers).toBeLessThan(50);
+    expect(r.monthly[0].cost).toBe(20_000);
+    expect(r.monthly[11].cost).toBe(20_000);
+    expect(r.kpis.totalContractCost).toBeCloseTo(720_000, 0);
+  });
+
   it("per-bed nursing: 50 beds × $150/mo × 60 months = $450,000", () => {
     const state = makeState({
       contractTermMonths: 60,

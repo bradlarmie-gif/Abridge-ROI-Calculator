@@ -134,7 +134,7 @@ export function yearlyEscalatorForMonth(escalators: number[] | undefined, month:
 export function computeCost(
   p: PricingConfig,
   month: number,
-  activeUsers: number,
+  providerUnits: number,
   monthlyEncounters: number,
   nursingBeds: number | undefined,
   cumulativeEncountersBefore: number,
@@ -148,7 +148,9 @@ export function computeCost(
   ): { cost: number; overage: number } => {
     switch (model) {
       case "perProvider":
-        return { cost: activeUsers * unitPrice, overage: 0 };
+        // Billed per CONTRACTED provider seat (flat) — not adoption/utilization
+        // scaled. Adoption & utilization affect VALUE only, mirroring per-bed.
+        return { cost: providerUnits * unitPrice, overage: 0 };
       case "perStaffedBed":
         return { cost: (nursingBeds ?? 0) * unitPrice, overage: 0 };
       case "annualFlat":
@@ -249,7 +251,9 @@ function runProjection(
     const { cost, overage } = computeCost(
       pricing,
       month,
-      activeUsers,
+      // Per-provider pricing bills the contracted seat count (flat), not the
+      // adoption/utilization-ramped active users — consistent with per-bed.
+      state.provisionedSeats,
       monthlyAbridgeEncounters,
       state.nursingStaffedBeds || undefined,
       cumulativeEncounters,
