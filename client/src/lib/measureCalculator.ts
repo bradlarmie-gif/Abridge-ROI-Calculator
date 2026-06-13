@@ -269,6 +269,64 @@ export function computeRealizedDriverValue(
   return Math.round(delta * entry.valuePerUnit * scale * (entry.attributionPercent / 100));
 }
 
+// ── Rollout sensitivity grid (shared by the Measure screen + its PDF) ──
+// breadth = % of target providers enrolled; depth = % encounter utilization.
+export interface RolloutSensitivityCell {
+  breadthPct: number;
+  depthPct: number;
+  providers: number;
+  value: number;
+  roi: number | null;
+  isSnap: boolean; // the "Now" cell = current deployment baseline
+}
+export interface RolloutSensitivity {
+  breadths: number[];
+  depths: number[];
+  snapRow: number;
+  snapCol: number;
+  hasInvestment: boolean;
+  cells: RolloutSensitivityCell[];
+}
+
+const SENS_BREADTHS = [50, 75, 100];
+const SENS_DEPTHS = [50, 70, 90];
+
+export function computeRolloutSensitivity(p: {
+  totalRealized: number;
+  combinedProviders: number;
+  baselineProviderCount: number;
+  baselineUtilPct: number;
+  investment: number;
+}): RolloutSensitivity {
+  const { totalRealized, combinedProviders, baselineProviderCount, baselineUtilPct, investment } = p;
+  const snapRow = combinedProviders > 0
+    ? SENS_BREADTHS.reduce((best, r) => {
+        const bPct = (baselineProviderCount / combinedProviders) * 100;
+        return Math.abs(r - bPct) < Math.abs(best - bPct) ? r : best;
+      }, 100)
+    : 100;
+  const snapCol = SENS_DEPTHS.reduce((best, c) =>
+    Math.abs(c - baselineUtilPct) < Math.abs(best - baselineUtilPct) ? c : best, 70);
+  const baseScale = baselineProviderCount * (baselineUtilPct / 100);
+  const cells: RolloutSensitivityCell[] = [];
+  for (const breadthPct of SENS_BREADTHS) {
+    const providers = Math.round(combinedProviders * (breadthPct / 100));
+    for (const depthPct of SENS_DEPTHS) {
+      const cellScale = baseScale > 0 ? (providers * (depthPct / 100)) / baseScale : 0;
+      const value = Math.round(totalRealized * cellScale);
+      cells.push({
+        breadthPct,
+        depthPct,
+        providers,
+        value,
+        roi: investment > 0 ? value / investment : null,
+        isSnap: breadthPct === snapRow && depthPct === snapCol,
+      });
+    }
+  }
+  return { breadths: SENS_BREADTHS, depths: SENS_DEPTHS, snapRow, snapCol, hasInvestment: investment > 0, cells };
+}
+
 export function getEffectiveWithWithout(entry: MeasureDriverEntry): { withAbridge: number; withoutAbridge: number } {
   if (entry.isMonthlyMode && entry.monthlyData && entry.monthlyData.length > 0) {
     const sorted = [...entry.monthlyData].sort((a, b) => a.month.localeCompare(b.month));

@@ -18,6 +18,7 @@ import {
   type PricingScenario,
   type PricingYearInput,
 } from "@/lib/forecastPricing";
+import { type RolloutSensitivity } from "@/lib/measureCalculator";
 import manropeRegular from "../../assets/fonts/manrope-regular.ttf";
 import manropeBold from "../../assets/fonts/manrope-bold.ttf";
 import abridgeFontPath from "../../assets/fonts/abridge.otf";
@@ -57,6 +58,7 @@ export interface ForecastScalePDFData {
   bestValueScenarioId: string | null;
   baseAdoptionPct: number;
   simpleInvestment: number;
+  sensitivityGrid: RolloutSensitivity;
 }
 
 // ─── Brand Palette ────────────────────────────────────────────────────────────
@@ -671,44 +673,22 @@ function ScaleSummaryPage({ data }: { data: ForecastScalePDFData }) {
 
 // ─── Page 3: Sensitivity Analysis ────────────────────────────────────────────
 
-const SENS_ADOPTION = [0.5, 0.75, 1.0];
-const SENS_REALIZATION = [0.7, 0.85, 1.0];
-
 function SensitivityPage({ data }: { data: ForecastScalePDFData }) {
   const {
     combinedTotal,
     combinedProviders,
-    combinedEncounters,
     pricingScenarios,
     bestValueScenarioId,
     clientName,
-    baseAdoptionPct,
     totalRealized,
-    simpleInvestment,
+    sensitivityGrid: grid,
   } = data;
 
   const pricingScenario = bestValueScenarioId
     ? pricingScenarios.find((s) => s.id === bestValueScenarioId)
     : pricingScenarios[0];
-
-  const investment = (() => {
-    if (pricingScenario) {
-      const scale =
-        pricingScenario.model === "perProvider"
-          ? combinedProviders
-          : pricingScenario.model === "perEncounter" || pricingScenario.model === "platformFee"
-          ? combinedEncounters
-          : 0;
-      const { value, warning } = computeScenarioInvestment(pricingScenario, scale);
-      if (!warning && value > 0) return value;
-    }
-    return simpleInvestment || 0;
-  })();
-
-  const hasPricing = investment > 0 && combinedTotal > 0;
-
-  // Base case is baseAdoptionPct / 100 adoption × 1.0 realization
-  const baseAdoptionFraction = baseAdoptionPct / 100;
+  // ROI per cell is already computed in the shared grid (same as the screen).
+  const hasPricing = grid.hasInvestment;
 
   return (
     <Page size="LETTER" style={S.page}>
@@ -716,18 +696,18 @@ function SensitivityPage({ data }: { data: ForecastScalePDFData }) {
       <PageHeader label="Scale Opportunity" />
 
       <Text style={S.eyebrow}>Risk & Sensitivity</Text>
-      <Text style={S.sectionTitle}>What if utilization or value realization falls short?</Text>
+      <Text style={S.sectionTitle}>What if rollout breadth or utilization falls short?</Text>
       <View style={S.divider} />
 
       <Text style={S.sectionIntro}>
-        The matrix below shows projected annual value across different adoption rates and value realization scenarios. The highlighted cell is your base case.
+        Projected annual value across deployment scenarios. Breadth = share of target providers enrolled; depth = encounter utilization. The outlined "Now" cell reflects your current deployment.
       </Text>
 
       {/* Matrix */}
       {/* Column headers */}
       <View style={{ flexDirection: "row", marginBottom: 3 }}>
         <View style={{ width: 110, flexShrink: 0 }} />
-        {SENS_REALIZATION.map((r, ci) => (
+        {grid.depths.map((depthPct, ci) => (
           <View
             key={ci}
             style={{
@@ -742,18 +722,20 @@ function SensitivityPage({ data }: { data: ForecastScalePDFData }) {
             }}
           >
             <Text style={{ fontSize: 10, fontWeight: 700, color: brand.textPrimary }}>
-              {Math.round(r * 100)}%
+              {depthPct}%
             </Text>
             <Text style={{ fontSize: 6.5, color: brand.textTertiary, marginTop: 1 }}>
-              Value Realization
+              Utilization
             </Text>
           </View>
         ))}
       </View>
 
-      {/* Rows */}
-      {SENS_ADOPTION.map((adoptionFrac, ri) => {
-        const adoptionPct = Math.round(adoptionFrac * baseAdoptionFraction * 100);
+      {/* Rows = % of target providers (breadth) */}
+      {grid.breadths.map((breadthPct, ri) => {
+        const rowCells = grid.cells.filter((c) => c.breadthPct === breadthPct);
+        const providers = rowCells[0]?.providers ?? 0;
+        const isSnapRow = breadthPct === grid.snapRow;
         return (
           <View
             key={ri}
@@ -773,24 +755,19 @@ function SensitivityPage({ data }: { data: ForecastScalePDFData }) {
               }}
             >
               <Text style={{ fontSize: 8.5, fontWeight: 700, color: brand.textPrimary, marginBottom: 2 }}>
-                {adoptionPct}% Adoption
+                {breadthPct}% of providers
               </Text>
               <Text style={{ fontSize: 7, color: brand.textTertiary }}>
-                {adoptionFrac === 0.5
-                  ? "Conservative floor"
-                  : adoptionFrac === 0.75
-                  ? "Typical deployment"
-                  : "Full adoption"}
+                {providers} of {combinedProviders}{isSnapRow ? " · Now" : ""}
               </Text>
             </View>
 
             {/* Cells */}
-            {SENS_REALIZATION.map((realizationFrac, ci) => {
-              const cellValue = combinedTotal * adoptionFrac * baseAdoptionFraction * realizationFrac;
-              const isBase =
-                adoptionFrac === 1.0 && realizationFrac === 1.0;
-              const net = hasPricing ? cellValue - investment : 0;
-              const cellROI = hasPricing && investment > 0 ? cellValue / investment : 0;
+            {grid.depths.map((depthPct, ci) => {
+              const cell = rowCells.find((c) => c.depthPct === depthPct);
+              const cellValue = cell?.value ?? 0;
+              const isBase = cell?.isSnap ?? false;
+              const cellROI = cell?.roi ?? 0;
               const isPositive = cellValue >= combinedTotal * 0.8;
 
               return (
@@ -828,7 +805,7 @@ function SensitivityPage({ data }: { data: ForecastScalePDFData }) {
                           letterSpacing: 1,
                         }}
                       >
-                        Base Case
+                        Now
                       </Text>
                     </View>
                   )}
@@ -846,39 +823,27 @@ function SensitivityPage({ data }: { data: ForecastScalePDFData }) {
                   >
                     {fmtCurrency(cellValue)}
                   </Text>
-                  {hasPricing && investment > 0 && (
-                    <>
-                      <View
-                        style={{
-                          marginTop: 4,
-                          backgroundColor: cellROI >= 1 ? brand.positive + "18" : brand.midGray,
-                          borderRadius: 2,
-                          paddingHorizontal: 5,
-                          paddingVertical: 2,
-                        }}
-                      >
-                        <Text
-                          style={{
-                            fontSize: 7.5,
-                            fontWeight: 700,
-                            color: cellROI >= 1 ? brand.positive : brand.textSecondary,
-                            textAlign: "center",
-                          }}
-                        >
-                          {cellROI.toFixed(1)}× ROI
-                        </Text>
-                      </View>
+                  {hasPricing && cell?.roi != null && (
+                    <View
+                      style={{
+                        marginTop: 4,
+                        backgroundColor: cellROI >= 1 ? brand.positive + "18" : brand.midGray,
+                        borderRadius: 2,
+                        paddingHorizontal: 5,
+                        paddingVertical: 2,
+                      }}
+                    >
                       <Text
                         style={{
-                          fontSize: 7,
-                          color: brand.textTertiary,
-                          marginTop: 2,
+                          fontSize: 7.5,
+                          fontWeight: 700,
+                          color: cellROI >= 1 ? brand.positive : brand.textSecondary,
                           textAlign: "center",
                         }}
                       >
-                        net {fmtCurrency(net)}
+                        {cellROI.toFixed(1)}× ROI
                       </Text>
-                    </>
+                    </View>
                   )}
                 </View>
               );
@@ -890,8 +855,8 @@ function SensitivityPage({ data }: { data: ForecastScalePDFData }) {
       {hasPricing && (
         <Text style={{ fontSize: 7.5, color: brand.textTertiary, marginTop: 4, marginBottom: 8 }}>
           {pricingScenario
-            ? `ROI uses the "${pricingScenario.label}" scenario · ${fmtCurrency(investment)}/yr at projected scale`
-            : `ROI uses the annual contract value · ${fmtCurrency(investment)}/yr`}
+            ? `ROI uses the "${pricingScenario.label}" scenario at projected scale`
+            : `ROI uses the annual contract value`}
         </Text>
       )}
 
@@ -901,10 +866,10 @@ function SensitivityPage({ data }: { data: ForecastScalePDFData }) {
       <View style={S.insightBox}>
         <Text style={S.insightLabel}>Reading This Matrix</Text>
         <Text style={S.insightText}>
-          {`The outlined cell is the base case — ${baseAdoptionPct}% adoption at 100% value realization — the assumption used throughout this brief. The rows test whether partial adoption changes the conclusion. The columns test whether the measured per-unit economics hold at scale. `}
+          {`The outlined "Now" cell is your current deployment. Rows test broader provider rollout; columns test higher encounter utilization — together they show how projected annual value scales. `}
           {totalRealized > 0
-            ? `Even at 50% adoption and 70% value realization, this projection exceeds the measured baseline of ${fmtCurrency(totalRealized)}.`
-            : `In most deployments, the case holds even at the conservative 50% / 70% intersection.`}
+            ? `Your measured value today is ${fmtCurrency(totalRealized)}.`
+            : ``}
         </Text>
       </View>
 

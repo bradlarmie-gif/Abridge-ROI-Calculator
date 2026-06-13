@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { getActiveDrivers, type ExploreDriver, type ExploreSetting, type ExploreQuadrant, type DriverScaleAxis } from "@/lib/exploreDrivers";
-import { type MeasureState, type MeasureDriverEntry, type ForecastScenario, type ForecastAddedSetting, type MeasureCareSetting, type SettingForecastValues } from "@/lib/measureCalculator";
+import { type MeasureState, type MeasureDriverEntry, type ForecastScenario, type ForecastAddedSetting, type MeasureCareSetting, type SettingForecastValues, computeRolloutSensitivity } from "@/lib/measureCalculator";
 import { SETTING_LABELS, computeAddedSettingValue } from "@/lib/forecastDefaults";
 import { computeScenarioInvestment, computeTCV, computePaybackMonths, makeDefaultTiers, type PricingScenario, type PricingYearInput } from "@/lib/forecastPricing";
 import AddCareSettingModal from "@/components/measure/AddCareSettingModal";
@@ -272,14 +272,6 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeSettings, state.settingData, state.deployment]);
 
-  const snapRow = combinedProviders > 0
-    ? [50, 75, 100].reduce((best, r) => {
-        const bPct = (baselineProviderCount / combinedProviders) * 100;
-        return Math.abs(r - bPct) < Math.abs(best - bPct) ? r : best;
-      }, 100)
-    : 100;
-  const snapCol = [50, 70, 90].reduce((best, c) =>
-    Math.abs(c - baselineUtilPct) < Math.abs(best - baselineUtilPct) ? c : best, 70);
   const baseAdoptionPct = combinedProviders > 0
     ? Math.min(100, Math.round((baselineProviderCount / combinedProviders) * 100))
     : 70;
@@ -370,6 +362,20 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
     return simpleInvestment;
   }, [pricingScenarios, bestValueScenarioId, combinedProviders, combinedEncounters, simpleInvestment]);
 
+  // Rollout sensitivity grid — single source of truth shared with the PDF.
+  const sensitivity = useMemo(
+    () => computeRolloutSensitivity({
+      totalRealized,
+      combinedProviders,
+      baselineProviderCount,
+      baselineUtilPct,
+      investment: effectiveInvestment,
+    }),
+    [totalRealized, combinedProviders, baselineProviderCount, baselineUtilPct, effectiveInvestment],
+  );
+  const snapRow = sensitivity.snapRow;
+  const snapCol = sensitivity.snapCol;
+
   const handleDownloadScalePDF = async () => {
     if (pdfGenerating) return;
     setPdfGenerating(true);
@@ -394,6 +400,7 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
         bestValueScenarioId,
         baseAdoptionPct,
         simpleInvestment,
+        sensitivityGrid: sensitivity,
       };
       await generateForecastScalePDF(pdfData);
     } finally {
@@ -657,9 +664,8 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
 
                   {/* Rows: 50 / 75 / 100 % of target providers */}
                   {[50, 75, 100].map(breadthPct => {
-                    const cellProviders = Math.round(combinedProviders * (breadthPct / 100));
+                    const cellProviders = sensitivity.cells.find(c => c.breadthPct === breadthPct)?.providers ?? 0;
                     const isSnapRow = breadthPct === snapRow;
-                    const baseScale = baselineProviderCount * (baselineUtilPct / 100);
                     return (
                       <div key={breadthPct} className={`grid grid-cols-4 border-b last:border-0 border-[#F0ECE7] ${isSnapRow ? 'bg-[#FAFAF8]' : ''}`}>
                         {/* Row label */}
@@ -675,12 +681,10 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
 
                         {/* Value cells */}
                         {[50, 70, 90].map(depthPct => {
-                          const cellScale = baseScale > 0
-                            ? (cellProviders * (depthPct / 100)) / baseScale
-                            : 0;
-                          const cellValue = Math.round(totalRealized * cellScale);
-                          const isBase = isSnapRow && depthPct === snapCol;
-                          const roi = effectiveInvestment > 0 ? cellValue / effectiveInvestment : null;
+                          const cell = sensitivity.cells.find(c => c.breadthPct === breadthPct && c.depthPct === depthPct);
+                          const cellValue = cell?.value ?? 0;
+                          const isBase = cell?.isSnap ?? false;
+                          const roi = cell?.roi ?? null;
                           return (
                             <div
                               key={depthPct}
