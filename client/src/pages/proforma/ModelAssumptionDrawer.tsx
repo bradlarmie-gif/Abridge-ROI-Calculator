@@ -1167,7 +1167,10 @@ export function AssumptionsDrawer({ setting, config, onClose, onUpdate, onOnsetC
               {/* Value Drivers */}
               <div className="px-5 py-5">
                 <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-1">Value Drivers</p>
-                <p className="text-[11px] text-neutral-400 mb-4">Clinical inputs driving your model.</p>
+                <p className="text-[11px] text-neutral-400 mb-4">
+                  Clinical inputs driving your model.
+                  {hasScenarioB && " Shared across Scenario A & B — only deal terms (pricing & volume) differ."}
+                </p>
                 {activeDrivers.length === 0 ? (
                   <p className="text-sm text-neutral-400 text-center py-8">No active drivers to configure.</p>
                 ) : (
@@ -1177,7 +1180,9 @@ export function AssumptionsDrawer({ setting, config, onClose, onUpdate, onOnsetC
                         key={driver.id}
                         settingId={setting.id}
                         driver={driver}
-                        setting={setting}
+                        // Estimates reflect the active scenario's volume; driver edits
+                        // are shared across scenarios (scenarios differ only in deal terms).
+                        setting={effectiveSetting}
                         config={config}
                         onUpdate={onUpdate}
                         onOnsetChange={onOnsetChange}

@@ -401,7 +401,10 @@ export function buildMonthlyCashFlows(
         settingDisplacementValue += targetMonthly * rampFactor;
       }
 
-      const nonDriverValue = setting.annualValue - setting.drivers.reduce((s, d) => s + d.value, 0);
+      // Subtract the synthesized retention too — it's added to effectiveDrivers
+      // (Workforce) but NOT to setting.drivers, so without this it would also be
+      // re-added here as a phantom Revenue residual (double-count).
+      const nonDriverValue = setting.annualValue - setting.drivers.reduce((s, d) => s + d.value, 0) - proformaRetentionAnnual;
       if (nonDriverValue > 0) {
         const nonDriverRamp = getAdoptionRamp(monthsSinceGoLive, 3);
         settingRevenueValue += (nonDriverValue / 12) * nonDriverRamp * expansionMultiplier;

@@ -202,6 +202,36 @@ describe("driver onset in a multi-setting model", () => {
   });
 });
 
+describe("synthesized retention does not double-count into the residual", () => {
+  it("retention-rate value lands in Workforce only, not also in the Revenue residual", () => {
+    // No itemized drivers, but a retention RATE + annualValue == the synthesized
+    // retention amount. The residual (annualValue - drivers) must not re-add it.
+    const providerCount = 100;
+    const retentionRate = 10; // %
+    const replacementCost = 400_000;
+    const retentionAmount = providerCount * (retentionRate / 100) * replacementCost; // 4,000,000
+    const s = makeSetting("outpatient", {
+      id: "ret",
+      drivers: [],
+      annualValue: retentionAmount,
+      retentionRate,
+      replacementCost,
+      providerCount,
+      fullScaleProviders: providerCount,
+      utilizationPercent: 100,
+      fullScaleUtilization: 100,
+      yearlyUtilization: { year1: 100, year2: 100, year3: 100 },
+      goLiveMonth: 1,
+    });
+    const rows = buildMonthlyCashFlows([s], makeConfig());
+    // Month 30 = Year 3, retention phased to 100%, full ramp/expansion.
+    const m30 = rows[29].bySettings["ret"];
+    expect(m30.workforceValue).toBeGreaterThan(retentionAmount / 12 * 0.9);
+    // The residual must be ~0 — NOT another ~$333k of phantom Revenue.
+    expect(m30.revenueValue).toBeLessThan(retentionAmount / 12 * 0.05);
+  });
+});
+
 describe("lever / assumption editing (recomputeDriverFromExploreState)", () => {
   const op = (overrides: Partial<ExploreState>): ExploreState => ({
     ...DEFAULT_EXPLORE_STATE,
