@@ -202,6 +202,51 @@ describe("driver onset in a multi-setting model", () => {
   });
 });
 
+describe("editing assumptions propagates to the displayed cash flows / summary", () => {
+  // These mirror the exact state transformations the assumptions drawer produces
+  // (handleDriverChangeWithExplore keeps annualValue == sum(drivers); onset edits
+  // rewrite the driver onset; deal-term edits go through onUpdateSetting). The
+  // screen re-derives via useMemo([settings, config]), so if the engine output
+  // moves here, the screen moves there.
+  const config = makeConfig();
+  const termValue = (s: ProformaSettingSnapshot) =>
+    calculateProformaSummary([s], config, buildMonthlyCashFlows([s], config)).termValue;
+  const termInvestment = (s: ProformaSettingSnapshot) =>
+    calculateProformaSummary([s], config, buildMonthlyCashFlows([s], config)).termInvestment;
+
+  it("driver value edit: raising a driver raises term value", () => {
+    const before = makeSetting("outpatient", { id: "e1" });
+    const drivers = before.drivers.map((d) => (d.id === "d-rev" ? { ...d, value: d.value * 2 } : d));
+    const after = { ...before, drivers, annualValue: drivers.reduce((s, d) => s + d.value, 0) };
+    expect(termValue(after)).toBeGreaterThan(termValue(before));
+  });
+
+  it("driver onset edit: switching a driver to long-term defers its Year-1 value to $0", () => {
+    const immediate = makeSetting("outpatient", {
+      id: "e2",
+      drivers: [{ id: "d", name: "D", value: 1_200_000, category: "documentation", quadrant: "Revenue", onset: "immediate" }],
+      annualValue: 1_200_000,
+    });
+    const longTerm = { ...immediate, drivers: immediate.drivers.map((d) => ({ ...d, onset: "longTerm" as const })) };
+    const y1 = (s: ProformaSettingSnapshot) => buildMonthlyCashFlows([s], config).slice(0, 12).reduce((sum, r) => sum + r.totalValue, 0);
+    expect(y1(longTerm)).toBeLessThan(y1(immediate));
+    expect(y1(longTerm)).toBe(0);
+  });
+
+  it("deal-term edit: raising cost-per-unit raises investment", () => {
+    const base = makeSetting("outpatient", { id: "e3", pricingModel: "perUnit", costPerUnit: 200 });
+    const edited = { ...base, costPerUnit: 400 };
+    expect(termInvestment(edited)).toBeGreaterThan(termInvestment(base));
+  });
+
+  it("deal-term edit: switching pricing model changes investment but not value", () => {
+    const perUnit = makeSetting("outpatient", { id: "e4", pricingModel: "perUnit", costPerUnit: 300 });
+    const annualFlat = { ...perUnit, pricingModel: "annualFlat" as const, annualLicenseFee: 600_000 };
+    expect(termInvestment(annualFlat)).not.toBe(termInvestment(perUnit));
+    expect(termValue(annualFlat)).toBe(termValue(perUnit)); // value is independent of pricing
+  });
+});
+
 describe("synthesized retention does not double-count into the residual", () => {
   it("retention-rate value lands in Workforce only, not also in the Revenue residual", () => {
     // No itemized drivers, but a retention RATE + annualValue == the synthesized
