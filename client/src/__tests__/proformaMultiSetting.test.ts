@@ -3,6 +3,7 @@ import {
   buildMonthlyCashFlows,
   calculateProformaSummary,
   getYearlySummary,
+  costOffsetDisplacedAmount,
 } from "@/lib/proformaCalculations";
 import {
   type ProformaSettingSnapshot,
@@ -244,6 +245,27 @@ describe("editing assumptions propagates to the displayed cash flows / summary",
     const annualFlat = { ...perUnit, pricingModel: "annualFlat" as const, annualLicenseFee: 600_000 };
     expect(termInvestment(annualFlat)).not.toBe(termInvestment(perUnit));
     expect(termValue(annualFlat)).toBe(termValue(perUnit)); // value is independent of pricing
+  });
+});
+
+describe("cost-offset itemization (named cost-reduction items)", () => {
+  it("displaced amount = annualSpend × displacement%", () => {
+    expect(costOffsetDisplacedAmount({ id: "o", label: "Scribes", annualSpend: 400_000, displacementPct: 50, transitionMonths: 1 })).toBe(200_000);
+    expect(costOffsetDisplacedAmount({ id: "o", label: "Agency", annualSpend: 250_000, displacementPct: 100, transitionMonths: 1 })).toBe(250_000);
+  });
+
+  it("itemized displaced amounts reconcile to the model's full-ramp annual displacement", () => {
+    const offsets = [
+      { id: "o1", label: "Scribe program", annualSpend: 400_000, displacementPct: 50, transitionMonths: 1 },
+      { id: "o2", label: "Agency contract", annualSpend: 250_000, displacementPct: 100, transitionMonths: 1 },
+    ];
+    const s = makeSetting("outpatient", { id: "co", costOffsets: offsets });
+    const rows = buildMonthlyCashFlows([s], makeConfig());
+    // Month 30: offsets fully ramped (transitionMonths=1). Monthly displacement × 12 ≈ Σ items.
+    const annualizedFromModel = rows[29].bySettings["co"].displacementValue * 12;
+    const itemizedTotal = offsets.reduce((sum, o) => sum + costOffsetDisplacedAmount(o), 0);
+    expect(Math.abs(annualizedFromModel - itemizedTotal)).toBeLessThanOrEqual(itemizedTotal * 0.001 + 2);
+    expect(itemizedTotal).toBe(450_000);
   });
 });
 

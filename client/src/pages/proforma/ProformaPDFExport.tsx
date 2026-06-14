@@ -27,6 +27,7 @@ import {
   calculateProformaSummary,
   getYearlySummary,
   getContractStartDate,
+  costOffsetDisplacedAmount,
 } from "@/lib/proformaCalculations";
 import { EXPLORE_DRIVERS } from "@/lib/exploreDrivers";
 
@@ -976,6 +977,22 @@ function FinancialSummaryPage({ settings, config, summary, yearlyData, sensitivi
   const totalQualVal = yearlyData.reduce((s, y) => s + y.qualityValue,      0);
   const totalDispVal = yearlyData.reduce((s, y) => s + y.displacementValue, 0);
 
+  // Named cost-reduction items, flattened across settings. Each shows its annual
+  // displaced amount (annualSpend × displacement%) — what flows into the
+  // "Cost Displacement" line above. The multi-setting label disambiguates.
+  const isMultiSetting = settings.length > 1;
+  const costOffsetItems = settings.flatMap(s =>
+    (s.costOffsets ?? [])
+      .filter(o => o.annualSpend > 0 && o.displacementPct > 0)
+      .map(o => ({
+        id: o.id,
+        name: (o.label || "").trim() || "Cost reduction",
+        settingLabel: isMultiSetting ? (s.label || "") : "",
+        displaced: costOffsetDisplacedAmount(o),
+      }))
+  );
+  const costOffsetTotal = costOffsetItems.reduce((sum, i) => sum + i.displaced, 0);
+
   const isBanked = settings.some(s => s.bankedEncounters && (s.pricingModel === "platform" || s.pricingModel === "perEncounter"));
 
   // Cell font scales down for longer contracts
@@ -1130,6 +1147,33 @@ function FinancialSummaryPage({ settings, config, summary, yearlyData, sensitivi
           </Text>
         </View>
       </View>
+
+      {/* COST REDUCTIONS CAPTURED — names the items rolled into Cost Displacement */}
+      {costOffsetItems.length > 0 && (
+        <View style={{ marginBottom: 12 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 5, marginBottom: 3 }}>
+            <View style={{ width: 6, height: 6, backgroundColor: brand.displacement, borderRadius: 1 }} />
+            <Text style={S.eyebrow}>Cost Reductions Captured</Text>
+          </View>
+          <Text style={{ fontSize: 7.5, color: brand.textTertiary, marginBottom: 5 }}>
+            Annual spend displaced by Abridge — ramps into the Cost Displacement line above.
+          </Text>
+          {costOffsetItems.map(item => (
+            <View key={item.id} style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 1.5 }}>
+              <Text style={{ fontSize: 8, color: brand.textPrimary }}>
+                {item.name}{item.settingLabel ? ` · ${item.settingLabel}` : ""}
+              </Text>
+              <Text style={{ fontSize: 8, fontWeight: 600, color: brand.displacement }}>{fmt(item.displaced)}/yr</Text>
+            </View>
+          ))}
+          {costOffsetItems.length > 1 && (
+            <View style={{ flexDirection: "row", justifyContent: "space-between", borderTopWidth: 1, borderTopColor: brand.midGray, marginTop: 3, paddingTop: 3 }}>
+              <Text style={{ fontSize: 8, fontWeight: 600, color: brand.textPrimary }}>Total annual displacement</Text>
+              <Text style={{ fontSize: 8, fontWeight: 600, color: brand.displacement }}>{fmt(costOffsetTotal)}/yr</Text>
+            </View>
+          )}
+        </View>
+      )}
 
       <View style={S.divider} />
 

@@ -10,8 +10,18 @@ import type {
   YearlyProviders,
   YearlyPricing,
   YearlyUtilization,
+  CostOffset,
 } from "@/pages/proforma/proformaTypes";
 import { ONSET_DELAY_MONTHS } from "@/pages/proforma/proformaTypes";
+
+/**
+ * Annual dollars displaced by a single cost-reduction item once fully ramped
+ * in = annualSpend × displacement%. This is what flows into the model's
+ * "Cost Displacement" line, and what gets itemized by name on the PDF.
+ */
+export function costOffsetDisplacedAmount(offset: CostOffset): number {
+  return Math.round(offset.annualSpend * offset.displacementPct / 100);
+}
 
 const QUARTERLY_KEYS: (keyof QuarterlyProviders)[] = [
   "q1","q2","q3","q4","q5","q6","q7","q8","q9","q10","q11","q12",
