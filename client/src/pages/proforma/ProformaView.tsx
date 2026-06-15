@@ -267,9 +267,12 @@ export default function ProformaView({
   const summary = useMemo(() => calculateProformaSummary(settings, config, cashFlows), [settings, config, cashFlows]);
   const yearlyData = useMemo(() => getYearlySummary(cashFlows, settings, startDate), [cashFlows, settings, startDate]);
 
-  const hasInvestment = useMemo(() => {
-    return settings.some(s => s.implementationFee > 0 || s.costPerUnit > 0 || (s.annualLicenseFee || 0) > 0 || (s.costPerEncounter || 0) > 0);
-  }, [settings]);
+  // Any cost at all means the ratios are meaningful. Use the actual total
+  // investment (which already includes the system-wide fee, platform enc rates,
+  // impl fees, etc.) rather than enumerating per-setting fee fields — the old
+  // list omitted the system-wide fee, so a deal priced entirely on the
+  // enterprise fee wrongly showed "—" for Value-to-Cost / Return at Scale.
+  const hasInvestment = useMemo(() => summary.termInvestment > 0, [summary.termInvestment]);
 
   const totalFullScaleProviders = useMemo(() => {
     return settings.reduce((s, v) => s + (v.fullScaleProviders || v.providerCount), 0);
