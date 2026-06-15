@@ -1231,6 +1231,10 @@ function FinancialSummaryPage({ settings, config, summary, yearlyData, sensitivi
         </View>
       </View>
 
+      <Text style={{ fontSize: 7, color: brand.textSecondary, marginTop: 6 }}>
+        Investment is held constant across scenarios; only value realization scales (±30%). Value-to-Cost is the whole-contract ratio — it includes the one-time implementation fee and the early adoption ramp. Payback is measured from day one, so a 30% downside shifts it out further than an equal upside pulls it in.
+      </Text>
+
       <View style={[S.insightBox, { marginTop: 10 }]}>
         <Text style={S.insightLabel}>{floorLabel}</Text>
         <Text style={S.insightText}>{floorMsg}</Text>
