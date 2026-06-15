@@ -312,7 +312,11 @@ export function buildMonthlyCashFlows(
           ? config.nursingYearlyUtilization : config.yearlyUtilization);
       let currentUtil: number;
       if (isPerEncounter) {
-        currentUtil = yearIndex === 0 ? encUtil.year1 : yearIndex === 1 ? encUtil.year2 : encUtil.year3;
+        // Honor quarterly utilization when set (consistent with the billing path
+        // below and the non-encounter path) — falls back to yearly otherwise.
+        currentUtil = setting.quarterlyUtilization
+          ? getQuarterlyValue(setting.quarterlyUtilization, monthsSinceGoLive)
+          : (yearIndex === 0 ? encUtil.year1 : yearIndex === 1 ? encUtil.year2 : encUtil.year3);
       } else {
         const settingYearlyUtil = setting.yearlyUtilization
           ?? (setting.careSetting === "nursing" && config.nursingYearlyUtilization
@@ -459,9 +463,13 @@ export function buildMonthlyCashFlows(
             annualEncounters = licensedProviders * encountersPerProvider;
           }
           const yuE = setting.yearlyUtilization;
-          const utilPctE = (yuE
-            ? (billingYearIndex === 0 ? yuE.year1 : billingYearIndex === 1 ? yuE.year2 : yuE.year3)
-            : (setting.utilizationPercent ?? 100)) / 100;
+          // Quarterly util drives billing when set (non-banked); banked arrears
+          // stays on the yearly basis.
+          const utilPctE = (setting.quarterlyUtilization && !setting.bankedEncounters
+            ? getQuarterlyValue(setting.quarterlyUtilization, monthsSinceGoLive)
+            : yuE
+              ? (billingYearIndex === 0 ? yuE.year1 : billingYearIndex === 1 ? yuE.year2 : yuE.year3)
+              : (setting.utilizationPercent ?? 100)) / 100;
           monthlyEncounters = (annualEncounters * utilPctE) / 12;
         }
         monthlyInvestment = price * monthlyEncounters;
@@ -504,9 +512,12 @@ export function buildMonthlyCashFlows(
             annualEncounters = licensedProviders * encountersPerProvider;
           }
           const yu = setting.yearlyUtilization;
-          const utilPct = (yu
-            ? (billingYearIndex === 0 ? yu.year1 : billingYearIndex === 1 ? yu.year2 : yu.year3)
-            : (setting.utilizationPercent ?? 100)) / 100;
+          // Quarterly util drives the encounter component when set (non-banked).
+          const utilPct = (setting.quarterlyUtilization && !setting.bankedEncounters
+            ? getQuarterlyValue(setting.quarterlyUtilization, monthsSinceGoLive)
+            : yu
+              ? (billingYearIndex === 0 ? yu.year1 : billingYearIndex === 1 ? yu.year2 : yu.year3)
+              : (setting.utilizationPercent ?? 100)) / 100;
           monthlyEncounters = (annualEncounters * utilPct) / 12;
         }
         monthlyInvestment = platformFee / 12 + encRate * monthlyEncounters;

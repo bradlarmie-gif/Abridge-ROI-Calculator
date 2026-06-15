@@ -248,6 +248,28 @@ describe("editing assumptions propagates to the displayed cash flows / summary",
   });
 });
 
+describe("per-encounter pricing honors quarterly utilization", () => {
+  const q = (v: number) => ({ q1: v, q2: v, q3: v, q4: v, q5: v, q6: v, q7: v, q8: v, q9: v, q10: v, q11: v, q12: v });
+
+  it("month-1 billing uses the quarterly util, not the yearly fallback", () => {
+    const s = makeSetting("outpatient", {
+      id: "pe",
+      pricingModel: "perEncounter",
+      costPerEncounter: 2,
+      providerCount: 100,
+      fullScaleProviders: 100,
+      encounters: 1_200_000,
+      yearlyUtilization: { year1: 80, year2: 80, year3: 80 },
+      quarterlyUtilization: q(50),
+      goLiveMonth: 1,
+    });
+    const rows = buildMonthlyCashFlows([s], makeConfig());
+    // annualEnc = 100 × (1,200,000/100) = 1,200,000; quarterly util 50% → 50,000/mo × $2 = $100,000
+    // (the yearly fallback of 80% would wrongly give $160,000).
+    expect(rows[0].bySettings["pe"].investment).toBe(100_000);
+  });
+});
+
 describe("cost-offset itemization (named cost-reduction items)", () => {
   it("displaced amount = annualSpend × displacement%", () => {
     expect(costOffsetDisplacedAmount({ id: "o", label: "Scribes", annualSpend: 400_000, displacementPct: 50, transitionMonths: 1 })).toBe(200_000);
