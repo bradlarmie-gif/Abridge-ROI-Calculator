@@ -930,11 +930,16 @@ export default function ProformaHub({
                             <p className="text-sm text-[#8C7E6E] flex items-center gap-1.5 flex-wrap">
                               {isEncPricing
                                 ? (() => {
-                                    const abr1 = Math.round((ye.year1 ?? 0) * (yu.year1 ?? 0) / 100);
+                                    // Encounter counts stay annual (no quarterly-encounters field — derived
+                                    // by design), but the util ramp reads Q1→Q12 when utilization is quarterly.
+                                    const startYu = setting.quarterlyUtilization ? setting.quarterlyUtilization.q1 : (yu.year1 ?? 0);
+                                    const termYu = setting.quarterlyUtilization
+                                      ? setting.quarterlyUtilization.q12
+                                      : (contractYears >= 3 ? (yu.year3 ?? yu.year2 ?? yu.year1 ?? 0) : contractYears === 2 ? (yu.year2 ?? yu.year1 ?? 0) : (yu.year1 ?? 0));
+                                    const abr1 = Math.round((ye.year1 ?? 0) * startYu / 100);
                                     const termYe = contractYears >= 3 ? (ye.year3 ?? ye.year2 ?? ye.year1 ?? 0) : contractYears === 2 ? (ye.year2 ?? ye.year1 ?? 0) : (ye.year1 ?? 0);
-                                    const termYu = contractYears >= 3 ? (yu.year3 ?? yu.year2 ?? yu.year1 ?? 0) : contractYears === 2 ? (yu.year2 ?? yu.year1 ?? 0) : (yu.year1 ?? 0);
                                     const abrTerm = Math.round(termYe * termYu / 100);
-                                    return `${fmtNum(abr1)} → ${fmtNum(abrTerm)} Abridge enc · ${yu.year1}% → ${termYu}% util`;
+                                    return `${fmtNum(abr1)} → ${fmtNum(abrTerm)} Abridge enc · ${startYu}% → ${termYu}% util`;
                                   })()
                                 : (() => {
                                     // In quarterly mode the ramp starts at Q1 (not the yearly Y1/Q4
