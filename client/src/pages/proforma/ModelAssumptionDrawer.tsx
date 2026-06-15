@@ -1,10 +1,15 @@
 import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ExternalLink, ArrowLeftRight, ChevronUp, Plus, Trash2 } from "lucide-react";
-import type { ProformaSettingSnapshot, ProformaConfig, DriverOnset, ScenarioDealTerms } from "./proformaTypes";
+import type { ProformaSettingSnapshot, ProformaConfig, DriverOnset, ScenarioDealTerms, QuarterlyProviders } from "./proformaTypes";
 import { SETTING_UNIT_LABELS } from "./proformaTypes";
 import type { ExploreState } from "../explore/ExploreFlow";
-import { computeDriverYear1Value } from "@/lib/proformaCalculations";
+import {
+  computeDriverYear1Value,
+  annualToQuarterlyProviders, quarterlyToAnnualProviders,
+  annualToQuarterlyUtilization, quarterlyToAnnualUtilization,
+  annualToQuarterlyPricing, quarterlyToAnnualPricing,
+} from "@/lib/proformaCalculations";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 
 export const DOMAIN_PILL_COLORS: Record<string, string> = {
@@ -512,6 +517,61 @@ interface CompRates {
   platform: { fee: number; encRate: number };
 }
 
+const QKEYS: (keyof QuarterlyProviders)[] = ["q1","q2","q3","q4","q5","q6","q7","q8","q9","q10","q11","q12"];
+const qInputCls = "w-full h-7 bg-white border border-neutral-200 rounded-md px-1 text-[11px] font-medium text-neutral-900 text-right focus:outline-none focus:ring-1 focus:ring-[#EA2C00]/30";
+
+// Small Yr|Qtr pill toggle, matching the scenario/pricing switcher styling.
+function GranularityToggle({ quarterly, onToggle }: { quarterly: boolean; onToggle: (q: boolean) => void }) {
+  return (
+    <div className="flex items-center gap-0.5 bg-[#F5F0EB] rounded-full p-0.5">
+      {([["Yr", false], ["Qtr", true]] as const).map(([lbl, q]) => (
+        <button
+          key={lbl}
+          onClick={() => { if (quarterly !== q) onToggle(q); }}
+          className={`px-2 py-0.5 rounded-full text-[9px] font-bold transition-colors ${
+            quarterly === q ? "bg-white text-neutral-900 shadow-sm" : "text-[#8C7E6E] hover:text-neutral-900"
+          }`}
+        >
+          {lbl}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// Quarterly input grid — quarters grouped by year (Q1–Q4 per row), capped at 3 years.
+// All three quarterly types are structurally identical (q1..q12: number), so
+// QuarterlyProviders stands in for any of them here.
+function QuarterlyGrid({
+  contractYears, quarterly, onChange, renderInput,
+}: {
+  contractYears: number;
+  quarterly: QuarterlyProviders;
+  onChange: (qk: keyof QuarterlyProviders, v: number) => void;
+  renderInput: (value: number, onChange: (v: number) => void) => React.ReactNode;
+}) {
+  return (
+    <div className="space-y-2">
+      {Array.from({ length: Math.min(contractYears, 3) }, (_, yi) => (
+        <div key={yi}>
+          <p className="text-[10px] text-neutral-400 mb-1">Y{yi + 1}</p>
+          <div className="grid grid-cols-4 gap-1">
+            {[0, 1, 2, 3].map(qi => {
+              const qk = QKEYS[yi * 4 + qi];
+              return (
+                <div key={qk}>
+                  <p className="text-[8px] text-neutral-300 mb-0.5 text-center">Q{qi + 1}</p>
+                  {renderInput(quarterly[qk] ?? 0, (v) => onChange(qk, v))}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function VolumeAndPricingSection({
   setting,
   config,
@@ -650,53 +710,110 @@ export function VolumeAndPricingSection({
         </div>
       </div>
 
-      {/* Providers by Year — always shown */}
+      {/* Providers — yearly or quarterly ramp */}
       <div>
-        <p className="text-[11px] text-neutral-500 mb-2">{unitLabel} by Year</p>
-        <div className={`grid ${colClass} gap-2`}>
-          {yearKeys.map((yk, i) => (
-            <div key={yk}>
-              <p className="text-[10px] text-neutral-400 mb-1">{yearLabel(i)}</p>
-              <FormattedNumberInput
-                value={yp[yk]}
-                onChange={(v) => {
-                  const updated = { ...yp, [yk]: v };
-                  onUpdateSetting(setting.id, {
-                    yearlyProviders: updated,
-                    providerCount: updated.year1,
-                    fullScaleProviders: updated.year3 ?? updated.year2 ?? updated.year1,
-                  });
-                }}
-                className={inputCls + " text-right"}
-              />
-            </div>
-          ))}
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-[11px] text-neutral-500">{unitLabel}</p>
+          <GranularityToggle
+            quarterly={!!setting.quarterlyProviders}
+            onToggle={(q) => {
+              if (q) {
+                onUpdateSetting(setting.id, { quarterlyProviders: annualToQuarterlyProviders(yp) });
+              } else {
+                const ann = setting.quarterlyProviders ? quarterlyToAnnualProviders(setting.quarterlyProviders) : yp;
+                onUpdateSetting(setting.id, {
+                  quarterlyProviders: undefined,
+                  yearlyProviders: ann,
+                  providerCount: ann.year1,
+                  fullScaleProviders: ann.year3 ?? ann.year2 ?? ann.year1,
+                });
+              }
+            }}
+          />
         </div>
-        {isExtendedTerm && <p className="text-[9px] text-neutral-400 mt-1.5">Y3+ rate held constant for years 4–{actualTermYears}</p>}
+        {setting.quarterlyProviders ? (
+          <QuarterlyGrid
+            contractYears={contractYears}
+            quarterly={setting.quarterlyProviders}
+            onChange={(qk, v) => onUpdateSetting(setting.id, { quarterlyProviders: { ...setting.quarterlyProviders!, [qk]: v } })}
+            renderInput={(value, onChange) => <FormattedNumberInput value={value} onChange={onChange} className={qInputCls} />}
+          />
+        ) : (
+          <div className={`grid ${colClass} gap-2`}>
+            {yearKeys.map((yk, i) => (
+              <div key={yk}>
+                <p className="text-[10px] text-neutral-400 mb-1">{yearLabel(i)}</p>
+                <FormattedNumberInput
+                  value={yp[yk]}
+                  onChange={(v) => {
+                    const updated = { ...yp, [yk]: v };
+                    onUpdateSetting(setting.id, {
+                      yearlyProviders: updated,
+                      providerCount: updated.year1,
+                      fullScaleProviders: updated.year3 ?? updated.year2 ?? updated.year1,
+                    });
+                  }}
+                  className={inputCls + " text-right"}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+        {isExtendedTerm && <p className="text-[9px] text-neutral-400 mt-1.5">Y3+ rate held constant for years 4–{actualTermYears} (quarterly covers Y1–3)</p>}
       </div>
 
-      {/* Utilization by Year — always shown */}
+      {/* Utilization — yearly or quarterly ramp */}
       <div>
-        <p className="text-[11px] text-neutral-500 mb-2">Utilization by Year</p>
-        <div className={`grid ${colClass} gap-2`}>
-          {yearKeys.map((yk, i) => (
-            <div key={yk}>
-              <p className="text-[10px] text-neutral-400 mb-1">{yearLabel(i)}</p>
-              <div className="relative">
-                <FormattedNumberInput
-                  value={yu[yk]}
-                  onChange={(v) => {
-                    const clamped = Math.min(100, Math.max(0, v));
-                    onUpdateSetting(setting.id, { yearlyUtilization: { ...yu, [yk]: clamped } });
-                  }}
-                  className={inputCls + " text-right pr-6"}
-                />
-                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[11px] text-neutral-400">%</span>
-              </div>
-            </div>
-          ))}
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-[11px] text-neutral-500">Utilization</p>
+          <GranularityToggle
+            quarterly={!!setting.quarterlyUtilization}
+            onToggle={(q) => {
+              if (q) {
+                onUpdateSetting(setting.id, { quarterlyUtilization: annualToQuarterlyUtilization(yu) });
+              } else {
+                const ann = setting.quarterlyUtilization ? quarterlyToAnnualUtilization(setting.quarterlyUtilization) : yu;
+                onUpdateSetting(setting.id, { quarterlyUtilization: undefined, yearlyUtilization: ann });
+              }
+            }}
+          />
         </div>
-        {isExtendedTerm && <p className="text-[9px] text-neutral-400 mt-1.5">Y3+ rate held constant for years 4–{actualTermYears}</p>}
+        {setting.quarterlyUtilization ? (
+          <QuarterlyGrid
+            contractYears={contractYears}
+            quarterly={setting.quarterlyUtilization}
+            onChange={(qk, v) => {
+              const clamped = Math.min(100, Math.max(0, v));
+              onUpdateSetting(setting.id, { quarterlyUtilization: { ...setting.quarterlyUtilization!, [qk]: clamped } });
+            }}
+            renderInput={(value, onChange) => (
+              <div className="relative">
+                <FormattedNumberInput value={value} onChange={onChange} className={qInputCls + " pr-4"} />
+                <span className="absolute right-1 top-1/2 -translate-y-1/2 text-[9px] text-neutral-400">%</span>
+              </div>
+            )}
+          />
+        ) : (
+          <div className={`grid ${colClass} gap-2`}>
+            {yearKeys.map((yk, i) => (
+              <div key={yk}>
+                <p className="text-[10px] text-neutral-400 mb-1">{yearLabel(i)}</p>
+                <div className="relative">
+                  <FormattedNumberInput
+                    value={yu[yk]}
+                    onChange={(v) => {
+                      const clamped = Math.min(100, Math.max(0, v));
+                      onUpdateSetting(setting.id, { yearlyUtilization: { ...yu, [yk]: clamped } });
+                    }}
+                    className={inputCls + " text-right pr-6"}
+                  />
+                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[11px] text-neutral-400">%</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        {isExtendedTerm && <p className="text-[9px] text-neutral-400 mt-1.5">Y3+ rate held constant for years 4–{actualTermYears} (quarterly covers Y1–3)</p>}
       </div>
 
       {/* Abridge Encounters by Year — primary display; total encounters editable as denominator */}
@@ -747,7 +864,35 @@ export function VolumeAndPricingSection({
       {/* Current pricing inputs */}
       {!isAnnualFlat && !isPlatform && (
         <div>
-          <p className="text-[11px] text-neutral-500 mb-2">{isEncPricing ? "$ / Encounter by Year" : `$ / ${unitLabel.replace(/s$/, "")} / Mo by Year`}</p>
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-[11px] text-neutral-500">{isEncPricing ? "$ / Encounter" : `$ / ${unitLabel.replace(/s$/, "")} / Mo`}</p>
+            <GranularityToggle
+              quarterly={!!setting.quarterlyPricing}
+              onToggle={(q) => {
+                if (q) {
+                  onUpdateSetting(setting.id, { quarterlyPricing: annualToQuarterlyPricing(yPricing) });
+                } else {
+                  const ann = setting.quarterlyPricing ? quarterlyToAnnualPricing(setting.quarterlyPricing) : yPricing;
+                  const leg: Partial<ProformaSettingSnapshot> = { quarterlyPricing: undefined, yearlyPricing: ann };
+                  if (isEncPricing) leg.costPerEncounter = ann.year1; else leg.costPerUnit = ann.year1;
+                  onUpdateSetting(setting.id, leg);
+                }
+              }}
+            />
+          </div>
+          {setting.quarterlyPricing ? (
+            <QuarterlyGrid
+              contractYears={contractYears}
+              quarterly={setting.quarterlyPricing}
+              onChange={(qk, v) => onUpdateSetting(setting.id, { quarterlyPricing: { ...setting.quarterlyPricing!, [qk]: v } })}
+              renderInput={(value, onChange) => (
+                <div className="relative">
+                  <span className="absolute left-1 top-1/2 -translate-y-1/2 text-[9px] text-neutral-400">$</span>
+                  <FormattedNumberInput value={value} onChange={onChange} className={qInputCls + " pl-3"} />
+                </div>
+              )}
+            />
+          ) : (
           <div className={`grid ${colClass} gap-2`}>
             {yearKeys.map((yk, i) => (
               <div key={yk}>
@@ -769,6 +914,7 @@ export function VolumeAndPricingSection({
               </div>
             ))}
           </div>
+          )}
           {isExtendedTerm && <p className="text-[9px] text-neutral-400 mt-1.5">Y3+ rate held constant for years 4–{actualTermYears}</p>}
           {isEncPricing && (
             <div className="flex items-center justify-between mt-3 pt-2 border-t border-[#F0EAE2]">
