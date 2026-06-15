@@ -9,6 +9,7 @@ import {
   annualToQuarterlyProviders, quarterlyToAnnualProviders,
   annualToQuarterlyUtilization, quarterlyToAnnualUtilization,
   annualToQuarterlyPricing, quarterlyToAnnualPricing,
+  scaleSettingValue,
 } from "@/lib/proformaCalculations";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 
@@ -740,11 +741,14 @@ export function VolumeAndPricingSection({
               // yearly-reading surfaces (PDF scale labels, encounter displays) stay correct.
               const nextQ = { ...setting.quarterlyProviders!, [qk]: v };
               const ann = quarterlyToAnnualProviders(nextQ);
+              const newFull = ann.year3 ?? ann.year2 ?? ann.year1;
               onUpdateSetting(setting.id, {
                 quarterlyProviders: nextQ,
                 yearlyProviders: ann,
                 providerCount: ann.year1,
-                fullScaleProviders: ann.year3 ?? ann.year2 ?? ann.year1,
+                fullScaleProviders: newFull,
+                // Rescale value when the full-scale (Q12) moves — same as yearly. No-ops otherwise.
+                ...(isEncPricing ? {} : scaleSettingValue(setting, newFull)),
               });
             }}
             renderInput={(value, onChange) => <FormattedNumberInput value={value} onChange={onChange} className={qInputCls} />}
@@ -758,10 +762,15 @@ export function VolumeAndPricingSection({
                   value={yp[yk]}
                   onChange={(v) => {
                     const updated = { ...yp, [yk]: v };
+                    const newFull = updated.year3 ?? updated.year2 ?? updated.year1;
                     onUpdateSetting(setting.id, {
                       yearlyProviders: updated,
                       providerCount: updated.year1,
-                      fullScaleProviders: updated.year3 ?? updated.year2 ?? updated.year1,
+                      fullScaleProviders: newFull,
+                      // Editing the full-scale count rescales the value (more providers
+                      // → more value), mirroring Explore. No-ops unless full-scale moves.
+                      // Per-encounter scales value by the encounter ramp already — skip.
+                      ...(isEncPricing ? {} : scaleSettingValue(setting, newFull)),
                     });
                   }}
                   className={inputCls + " text-right"}

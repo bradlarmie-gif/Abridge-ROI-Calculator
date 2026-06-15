@@ -4,6 +4,7 @@ import {
   calculateProformaSummary,
   getYearlySummary,
   costOffsetDisplacedAmount,
+  scaleSettingValue,
 } from "@/lib/proformaCalculations";
 import {
   type ProformaSettingSnapshot,
@@ -357,5 +358,56 @@ describe("lever / assumption editing (recomputeDriverFromExploreState)", () => {
     const hi = op({ timeDriverInputs: { ...DEFAULT_EXPLORE_STATE.timeDriverInputs, annualTurnoverRate: 15 } });
     expect(recomputeDriverFromExploreState("retention", hi))
       .toBeGreaterThan(recomputeDriverFromExploreState("retention", lo));
+  });
+});
+
+describe("provider scaling — more providers means more value", () => {
+  it("scaleSettingValue scales drivers and annualValue by the full-scale ratio", () => {
+    const s = makeSetting("outpatient", { providerCount: 1000, fullScaleProviders: 2000 });
+    const scaled = scaleSettingValue(s, 2200); // +10%
+    expect(scaled.annualValue).toBe(Math.round(s.annualValue * 2200 / 2000));
+    scaled.drivers!.forEach((d, i) => {
+      expect(d.value).toBe(Math.round(s.drivers[i].value * 2200 / 2000));
+    });
+  });
+
+  it("returns no change when the full-scale is unchanged", () => {
+    const s = makeSetting("outpatient", { fullScaleProviders: 2000 });
+    expect(scaleSettingValue(s, 2000)).toEqual({});
+  });
+
+  it("raising full-scale providers raises at-scale value but leaves ramp years ~unchanged", () => {
+    const base = makeSetting("outpatient", {
+      providerCount: 1000,
+      fullScaleProviders: 2000,
+      yearlyProviders: { year1: 1000, year2: 1500, year3: 2000 },
+      yearlyUtilization: { year1: 100, year2: 100, year3: 100 },
+      utilizationPercent: 100,
+      fullScaleUtilization: 100,
+      pricingModel: "annualFlat",
+      annualLicenseFee: 0,
+    });
+    const config = makeConfig({ contractTermMonths: 36 });
+
+    const yrBase = getYearlySummary(buildMonthlyCashFlows([base], config), [base]);
+    const baseY2 = yrBase[1].bySettings[base.id].value;
+    const baseY3 = yrBase[2].bySettings[base.id].value;
+
+    // Raise full-scale 2000 -> 2200 and rescale value (mirrors what the drawer does).
+    const grown = {
+      ...base,
+      ...scaleSettingValue(base, 2200),
+      fullScaleProviders: 2200,
+      yearlyProviders: { year1: 1000, year2: 1500, year3: 2200 },
+    };
+    const yrGrown = getYearlySummary(buildMonthlyCashFlows([grown], config), [grown]);
+    const grownY2 = yrGrown[1].bySettings[grown.id].value;
+    const grownY3 = yrGrown[2].bySettings[grown.id].value;
+
+    // At-scale (Year 3) value grows with providers...
+    expect(grownY3).toBeGreaterThan(baseY3);
+    expect(grownY3 / baseY3).toBeCloseTo(2200 / 2000, 1);
+    // ...while the ramp year (Year 2, same provider/util level) is essentially unchanged.
+    expect(Math.abs(grownY2 - baseY2) / baseY2).toBeLessThan(0.02);
   });
 });

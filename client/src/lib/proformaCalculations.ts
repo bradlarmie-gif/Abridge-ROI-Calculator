@@ -87,6 +87,39 @@ export function quarterlyToAnnualUtilization(qu: QuarterlyUtilization): YearlyUt
   return { year1: qu.q4, year2: qu.q8, year3: qu.q12 };
 }
 
+/**
+ * Rescale a setting's value to a new full-scale provider count, mirroring the
+ * scaling Explore applies at import (ExploreModel: drivers represent the
+ * *full-scale* annual value, scaled up by fullScale/pilot). The monthly engine
+ * realizes `annualValue` at full deployment and ramps providers/fullScale → 1
+ * below it, so editing the full-scale count in the proforma must rescale the
+ * value the same way — otherwise raising providers only dilutes the ramp years
+ * (it can never grow the prize). With this, "more providers → more value" holds
+ * and the ramp-year value is unchanged. Returns the fields to merge; empty when
+ * nothing changes. Not for per-encounter pricing — that path already scales
+ * value by the encounter ramp, so rescaling here would double-count.
+ */
+export function scaleSettingValue(
+  setting: ProformaSettingSnapshot,
+  newFullScale: number,
+): Partial<ProformaSettingSnapshot> {
+  const oldFullScale = setting.fullScaleProviders || setting.providerCount;
+  if (oldFullScale <= 0 || newFullScale <= 0 || newFullScale === oldFullScale) return {};
+  const ratio = newFullScale / oldFullScale;
+  const scale = (n: number | undefined) => (n != null ? Math.round(n * ratio) : n);
+  return {
+    annualValue: Math.round(setting.annualValue * ratio),
+    timeValue: scale(setting.timeValue),
+    docValue: scale(setting.docValue),
+    retentionValue: scale(setting.retentionValue),
+    capacityValue: scale(setting.capacityValue),
+    workforceValue: scale(setting.workforceValue),
+    revenueValue: scale(setting.revenueValue),
+    qualityValue: scale(setting.qualityValue),
+    drivers: setting.drivers.map((d) => ({ ...d, value: Math.round(d.value * ratio) })),
+  };
+}
+
 function getQuarterlyValue<T extends QuarterlyProviders | QuarterlyPricing | QuarterlyUtilization>(
   qData: T,
   monthsSinceGoLive: number
