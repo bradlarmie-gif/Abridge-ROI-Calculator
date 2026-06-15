@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ChevronDown, ChevronUp, Download, Settings, TrendingUp, Clock, DollarSign, Building2, HeartPulse, BedDouble, Stethoscope, Info, Loader2, Users, BarChart3, Shield, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -207,6 +207,21 @@ export default function ProformaView({
       onConfigChange(updater);
     }
   };
+  // When any setting is in quarterly mode, default the projection to Quarters so
+  // the per-quarter ramp is visible without hunting for the toggle. One-time
+  // nudge on the false→true edge — the user can still flip back to Years.
+  const hasQuarterlyInput = settings.some(
+    (s) => s.quarterlyProviders || s.quarterlyUtilization || s.quarterlyPricing,
+  );
+  const prevHasQuarterly = useRef(false);
+  useEffect(() => {
+    if (hasQuarterlyInput && !prevHasQuarterly.current && config.viewMode !== "quarterly") {
+      setConfig((c) => ({ ...c, viewMode: "quarterly" }));
+    }
+    prevHasQuarterly.current = hasQuarterlyInput;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasQuarterlyInput]);
+
   const [showMethodology, setShowMethodology] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [versionA, setVersionA] = useState<ProformaScenario | null>(null);
