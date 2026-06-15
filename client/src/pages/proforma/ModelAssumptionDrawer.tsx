@@ -735,7 +735,18 @@ export function VolumeAndPricingSection({
           <QuarterlyGrid
             contractYears={contractYears}
             quarterly={setting.quarterlyProviders}
-            onChange={(qk, v) => onUpdateSetting(setting.id, { quarterlyProviders: { ...setting.quarterlyProviders!, [qk]: v } })}
+            onChange={(qk, v) => {
+              // Quarterly is the source of truth; keep the annual mirror in sync so
+              // yearly-reading surfaces (PDF scale labels, encounter displays) stay correct.
+              const nextQ = { ...setting.quarterlyProviders!, [qk]: v };
+              const ann = quarterlyToAnnualProviders(nextQ);
+              onUpdateSetting(setting.id, {
+                quarterlyProviders: nextQ,
+                yearlyProviders: ann,
+                providerCount: ann.year1,
+                fullScaleProviders: ann.year3 ?? ann.year2 ?? ann.year1,
+              });
+            }}
             renderInput={(value, onChange) => <FormattedNumberInput value={value} onChange={onChange} className={qInputCls} />}
           />
         ) : (
@@ -784,7 +795,11 @@ export function VolumeAndPricingSection({
             quarterly={setting.quarterlyUtilization}
             onChange={(qk, v) => {
               const clamped = Math.min(100, Math.max(0, v));
-              onUpdateSetting(setting.id, { quarterlyUtilization: { ...setting.quarterlyUtilization!, [qk]: clamped } });
+              const nextQ = { ...setting.quarterlyUtilization!, [qk]: clamped };
+              onUpdateSetting(setting.id, {
+                quarterlyUtilization: nextQ,
+                yearlyUtilization: quarterlyToAnnualUtilization(nextQ),
+              });
             }}
             renderInput={(value, onChange) => (
               <div className="relative">
@@ -884,7 +899,13 @@ export function VolumeAndPricingSection({
             <QuarterlyGrid
               contractYears={contractYears}
               quarterly={setting.quarterlyPricing}
-              onChange={(qk, v) => onUpdateSetting(setting.id, { quarterlyPricing: { ...setting.quarterlyPricing!, [qk]: v } })}
+              onChange={(qk, v) => {
+                const nextQ = { ...setting.quarterlyPricing!, [qk]: v };
+                const ann = quarterlyToAnnualPricing(nextQ);
+                const upd: Partial<ProformaSettingSnapshot> = { quarterlyPricing: nextQ, yearlyPricing: ann };
+                if (isEncPricing) upd.costPerEncounter = ann.year1; else upd.costPerUnit = ann.year1;
+                onUpdateSetting(setting.id, upd);
+              }}
               renderInput={(value, onChange) => (
                 <div className="relative">
                   <span className="absolute left-1 top-1/2 -translate-y-1/2 text-[9px] text-neutral-400">$</span>
