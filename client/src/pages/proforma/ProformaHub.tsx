@@ -936,7 +936,16 @@ export default function ProformaHub({
                                     const abrTerm = Math.round(termYe * termYu / 100);
                                     return `${fmtNum(abr1)} → ${fmtNum(abrTerm)} Abridge enc · ${yu.year1}% → ${termYu}% util`;
                                   })()
-                                : `${fmtNum(setting.providerCount)} → ${fmtNum(setting.fullScaleProviders)} ${unitLabel} · ${contractYears >= 3 ? yu.year3 : contractYears === 2 ? yu.year2 : yu.year1}% util at scale`
+                                : (() => {
+                                    // In quarterly mode the ramp starts at Q1 (not the yearly Y1/Q4
+                                    // value) and tops out at Q12 — mirror what the engine actually models.
+                                    const startProv = setting.quarterlyProviders ? setting.quarterlyProviders.q1 : setting.providerCount;
+                                    const endProv = setting.quarterlyProviders ? setting.quarterlyProviders.q12 : setting.fullScaleProviders;
+                                    const atScaleUtil = setting.quarterlyUtilization
+                                      ? setting.quarterlyUtilization.q12
+                                      : (contractYears >= 3 ? yu.year3 : contractYears === 2 ? yu.year2 : yu.year1);
+                                    return `${fmtNum(startProv)} → ${fmtNum(endProv)} ${unitLabel} · ${atScaleUtil}% util at scale`;
+                                  })()
                               }
                               {setting.yearlyUtilization && (
                                 <span className="text-[9px] font-bold tracking-wide uppercase px-1.5 py-0.5 rounded" style={{ color: '#EA2C00', backgroundColor: '#EA2C0012' }}>
