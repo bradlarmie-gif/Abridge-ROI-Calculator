@@ -18,6 +18,7 @@ import manropeRegular from "../../assets/fonts/manrope-regular.ttf";
 import manropeBold from "../../assets/fonts/manrope-bold.ttf";
 import abridgeFontPath from "../../assets/fonts/abridge.otf";
 import abridgeLogoRed from "@assets/abridge-logo-wordmark-red_1769187440253.png";
+import type { ReactElement } from "react";
 import type { ProformaSettingSnapshot, ProformaConfig } from "./proformaTypes";
 import type { ProformaSummary } from "./proformaTypes";
 import { SETTING_LABELS, SETTING_UNIT_LABELS, ONSET_DELAY_MONTHS } from "./proformaTypes";
@@ -2062,12 +2063,18 @@ function buildPDFSensitivity(
 
 // ─── EXPORT ───────────────────────────────────────────────────────────────────
 
-export async function generateProformaPDF(
+/**
+ * Builds the proforma PDF React element (derived props + JSX) WITHOUT
+ * rasterizing it to a PDF blob. Exported so structural snapshot tests can
+ * serialize the document tree deterministically. `generateProformaPDF` is the
+ * only production caller and simply wraps this with `pdf(...).toBlob()`.
+ */
+export function buildProformaPDFDocument(
   settings: ProformaSettingSnapshot[],
   config: ProformaConfig,
   organizationName?: string,
   preparedBy?: string,
-): Promise<void> {
+): ReactElement {
   const cashFlows  = buildMonthlyCashFlows(settings, config);
   const summary    = calculateProformaSummary(settings, config, cashFlows);
   const yearlyData = getYearlySummary(cashFlows, settings);
@@ -2100,7 +2107,7 @@ export async function generateProformaPDF(
     paybackQuarter = `Q${q}'${yr}`;
   }
 
-  const blob = await pdf(
+  return (
     <ProformaPDFDocument
       settings={settings}
       config={config}
@@ -2112,6 +2119,17 @@ export async function generateProformaPDF(
       organizationName={organizationName}
       preparedBy={preparedBy}
     />
+  );
+}
+
+export async function generateProformaPDF(
+  settings: ProformaSettingSnapshot[],
+  config: ProformaConfig,
+  organizationName?: string,
+  preparedBy?: string,
+): Promise<void> {
+  const blob = await pdf(
+    buildProformaPDFDocument(settings, config, organizationName, preparedBy)
   ).toBlob();
 
   const org = organizationName ? organizationName.replace(/\s+/g, "-").toLowerCase() : "proforma";
