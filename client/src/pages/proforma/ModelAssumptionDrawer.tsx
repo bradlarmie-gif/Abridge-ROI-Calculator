@@ -128,6 +128,26 @@ export function recomputeDriverFromExploreState(driverId: string, state: Explore
   }
 }
 
+/**
+ * Build the setting patch for a driver edit. Updates the driver's value AND
+ * syncs `setting.fullExploreState` to the new state — the drawer reads its
+ * inputs/scenario pills from `fullExploreState`, so without syncing it the
+ * controls snap back to stale values after every edit (the value recomputes and
+ * the proforma moves, but the UI reverts — the reported bug).
+ */
+export function buildDriverChangeUpdate(
+  setting: ProformaSettingSnapshot,
+  driverId: string,
+  newValue: number,
+  newExploreState: ExploreState,
+): Partial<ProformaSettingSnapshot> {
+  const updatedDrivers = setting.drivers.map(d =>
+    d.id === driverId ? { ...d, value: newValue, exploreState: newExploreState } : d
+  );
+  const newAnnualValue = updatedDrivers.reduce((sum, d) => sum + d.value, 0);
+  return { drivers: updatedDrivers, annualValue: newAnnualValue, fullExploreState: newExploreState };
+}
+
 function NumInput({
   value, onChange, suffix, prefix, width = 'w-14',
 }: {

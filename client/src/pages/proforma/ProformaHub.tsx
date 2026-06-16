@@ -10,7 +10,7 @@ import { buildMonthlyCashFlows, calculateProformaSummary, computeYearlyEncounter
 import { ComposedChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ReferenceLine, ResponsiveContainer } from "recharts";
 import type { ProformaCashFlowRow } from "./proformaTypes";
 import ProformaView from "./ProformaView";
-import { AssumptionsDrawer, VolumeAndPricingSection } from "./ModelAssumptionDrawer";
+import { AssumptionsDrawer, VolumeAndPricingSection, buildDriverChangeUpdate } from "./ModelAssumptionDrawer";
 import { generateScenarioComparisonPDF } from "./ProformaPDFExport";
 import type { DriverOnset } from "./proformaTypes";
 import type { ExploreState } from "../explore/ExploreFlow";
@@ -753,11 +753,7 @@ export default function ProformaHub({
   const handleDriverChangeWithExplore = useCallback((settingId: string, driverId: string, newValue: number, newExploreState: ExploreState) => {
     const setting = settings.find(s => s.id === settingId);
     if (!setting) return;
-    const updatedDrivers = setting.drivers.map(d =>
-      d.id === driverId ? { ...d, value: newValue, exploreState: newExploreState } : d
-    );
-    const newAnnualValue = updatedDrivers.reduce((sum, d) => sum + d.value, 0);
-    onUpdateSetting(settingId, { drivers: updatedDrivers, annualValue: newAnnualValue });
+    onUpdateSetting(settingId, buildDriverChangeUpdate(setting, driverId, newValue, newExploreState));
   }, [settings, onUpdateSetting]);
 
   const handleDriverOnsetChange = useCallback((settingId: string, driverId: string, onset: DriverOnset) => {

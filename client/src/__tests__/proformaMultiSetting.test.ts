@@ -12,7 +12,7 @@ import {
   type ProformaDriver,
   DEFAULT_PROFORMA_CONFIG,
 } from "@/pages/proforma/proformaTypes";
-import { recomputeDriverFromExploreState } from "@/pages/proforma/ModelAssumptionDrawer";
+import { recomputeDriverFromExploreState, buildDriverChangeUpdate } from "@/pages/proforma/ModelAssumptionDrawer";
 import { DEFAULT_EXPLORE_STATE, type ExploreState } from "@/pages/explore/ExploreFlow";
 
 /**
@@ -358,6 +358,32 @@ describe("lever / assumption editing (recomputeDriverFromExploreState)", () => {
     const hi = op({ timeDriverInputs: { ...DEFAULT_EXPLORE_STATE.timeDriverInputs, annualTurnoverRate: 15 } });
     expect(recomputeDriverFromExploreState("retention", hi))
       .toBeGreaterThan(recomputeDriverFromExploreState("retention", lo));
+  });
+});
+
+describe("driver edit propagation — fullExploreState stays in sync", () => {
+  const drgState: ExploreState = {
+    ...DEFAULT_EXPLORE_STATE,
+    docQualityInputs: { ...DEFAULT_EXPLORE_STATE.docQualityInputs, ipDrgScenario: "conservative" },
+  } as ExploreState;
+
+  it("writes the new explore state to setting.fullExploreState (not just the driver copy)", () => {
+    const setting = makeSetting("inpatient", {
+      drivers: [{ id: "ipDrg", name: "DRG Accuracy", value: 100_000, category: "documentation", quadrant: "Revenue", onset: "immediate" }],
+      fullExploreState: drgState,
+    });
+    const newES: ExploreState = {
+      ...drgState,
+      docQualityInputs: { ...drgState.docQualityInputs, ipDrgScenario: "aggressive" },
+    } as ExploreState;
+
+    const update = buildDriverChangeUpdate(setting, "ipDrg", 175_000, newES);
+
+    // The bug: previously only the driver's own .exploreState was updated, so the
+    // drawer (which reads setting.fullExploreState) snapped its inputs back.
+    expect(update.fullExploreState?.docQualityInputs?.ipDrgScenario).toBe("aggressive");
+    expect(update.drivers?.find((d) => d.id === "ipDrg")?.value).toBe(175_000);
+    expect(update.annualValue).toBe(175_000);
   });
 });
 
