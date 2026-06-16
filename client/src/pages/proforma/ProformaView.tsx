@@ -509,15 +509,6 @@ export default function ProformaView({
                 )}
               </div>
               <div>
-                <p className="text-[12px] text-white/50 uppercase tracking-wide mb-1">Return at Scale</p>
-                <p className="text-xl font-bold" data-testid="text-roi">{hasInvestment ? `${summary.atScaleReturn.toFixed(1)}x` : "N/A"}</p>
-                {hasInvestment && (
-                  <p className="text-[12px] text-white/40 mt-0.5" data-testid="text-roi-benchmark-mobile">
-                    3-yr net: {Math.round(summary.simpleROI * 100)}%
-                  </p>
-                )}
-              </div>
-              <div>
                 <p className="text-[12px] text-white/50 uppercase tracking-wide mb-1">Hours Returned (Annual)</p>
                 <p className="text-xl font-bold" data-testid="text-hours">{fmtNum(summary.totalHours)}</p>
                 {summary.totalHours > 0 && (
@@ -530,7 +521,7 @@ export default function ProformaView({
           </div>
 
           {/* Desktop: 4 cols */}
-          <div className="hidden min-[820px]:grid grid-cols-4 gap-6">
+          <div className="hidden min-[820px]:grid grid-cols-3 gap-6">
             <div>
               <p className="text-xs text-white/50 uppercase tracking-wide mb-1">Annual Value at Scale</p>
               <p className="text-3xl font-bold text-[#EA2C00]">{fmt(summary.runRateValue)}</p>
@@ -544,15 +535,6 @@ export default function ProformaView({
               {hasInvestment && (
                 <p className="text-[12px] text-white/40 mt-1" data-testid="text-vtc-benchmark">
                   Abridge benchmark: 3–7x
-                </p>
-              )}
-            </div>
-            <div>
-              <p className="text-xs text-white/50 uppercase tracking-wide mb-1">Return at Scale</p>
-              <p className="text-2xl font-bold">{hasInvestment ? `${summary.atScaleReturn.toFixed(1)}x` : "N/A"}</p>
-              {hasInvestment && (
-                <p className="text-[12px] text-white/40 mt-1" data-testid="text-roi-benchmark">
-                  3-yr net: {Math.round(summary.simpleROI * 100)}%
                 </p>
               )}
             </div>
@@ -829,12 +811,6 @@ export default function ProformaView({
                   <div className={`h-px mb-4 ${scenario.dark ? "bg-white/10" : "bg-neutral-200"}`} />
 
                   <div className="space-y-2.5">
-                    <div className="flex justify-between items-baseline gap-2">
-                      <span className={`text-[11px] ${scenario.dark ? "text-white/40" : "text-neutral-500"}`}>Return at Scale</span>
-                      <span className={`text-sm font-bold tabular-nums ${scenario.dark ? "text-white" : "text-neutral-900"}`} data-testid={`sensitivity-atscale-${scenario.key}`}>
-                        {hasInvestment ? `${data.atScaleReturn.toFixed(1)}x` : "—"}
-                      </span>
-                    </div>
                     <div className="flex justify-between items-baseline gap-2">
                       <span className={`text-[11px] ${scenario.dark ? "text-white/40" : "text-neutral-500"}`}>Value-to-Cost</span>
                       <span className={`text-sm font-bold tabular-nums ${scenario.dark ? "text-white" : "text-neutral-900"}`} data-testid={`sensitivity-vtc-${scenario.key}`}>
@@ -1200,7 +1176,6 @@ export default function ProformaView({
               <p><strong className="text-neutral-900">Utilization Ramp:</strong> Utilization increases over the contract period: Year 1 target {config.yearlyUtilization.year1}%, Year 2 target {config.yearlyUtilization.year2}%, Year 3 target {config.yearlyUtilization.year3}%.{config.nursingYearlyUtilization && settings.some(s => s.careSetting === "nursing") ? ` Nursing uses separate targets: ${config.nursingYearlyUtilization.year1}%/${config.nursingYearlyUtilization.year2}%/${config.nursingYearlyUtilization.year3}%.` : ""} These targets reflect realistic organizational adoption curves.</p>
               <p><strong className="text-neutral-900">Driver Onset Timing:</strong> Value materializes at different speeds across the four domains. <strong style={{ color: '#1E3A5F' }}>Revenue</strong> drivers (wRVU capture, denial prevention, DRG accuracy, CDI) have a {ONSET_DELAY_MONTHS.immediate}-month billing cycle lag before value appears, then ramp over 3 months. HCC Recapture has a {ONSET_DELAY_MONTHS.longTerm}-month lag — documentation improves in Year 1, but capitation adjustments flow through the annual RAF reconciliation cycle and appear in Year 2. <strong style={{ color: '#EA2C00' }}>Capacity</strong> gains (patient access, throughput, LWBS recovery, bedside time freed) onset at month {ONSET_DELAY_MONTHS.delayed} as organizations operationalize available capacity, then ramp over 3 months. <strong style={{ color: '#888888' }}>Quality</strong> improvements (care gap closure, HEDIS/Stars performance, core measures, {settings.some(s => s.careSetting === "nursing") ? "HAPI, falls, CAUTI, CLABSI, sepsis" : "ED core measures, documentation deficiency"}) also onset at month {ONSET_DELAY_MONTHS.delayed} — clinical outcomes require a full quarter of consistent documentation before measurable improvement occurs. <strong style={{ color: '#7A1F04' }}>Workforce</strong> gains (provider wellbeing, locum/agency reduction, nursing retention) phase in over years per your configured phasing ({config.retentionPhasing.year1Pct}% Y1 / {config.retentionPhasing.year2Pct}% Y2 / {config.retentionPhasing.year3Pct}% Y3{config.nursingRetentionPhasing && settings.some(s => s.careSetting === "nursing") && (config.nursingRetentionPhasing.year1Pct !== config.retentionPhasing.year1Pct || config.nursingRetentionPhasing.year2Pct !== config.retentionPhasing.year2Pct) ? `; Nursing: ${config.nursingRetentionPhasing.year1Pct}% Y1 / ${config.nursingRetentionPhasing.year2Pct}% Y2 / ${config.nursingRetentionPhasing.year3Pct}% Y3` : ""}).</p>
               <p><strong className="text-neutral-900">Value-to-Cost:</strong> Total value over the <em>entire contract</em> divided by total contract cost (one-time implementation fees + all subscription). This is the blended, whole-deal figure — it deliberately includes the early ramp months, when value is still climbing, and the upfront setup cost. A {summary.valueToCost.toFixed(1)}x ratio means you receive ${summary.valueToCost.toFixed(2)} of value for every $1 invested across the full term.</p>
-              <p><strong className="text-neutral-900">Return at Scale:</strong> The fully-ramped <em>annual</em> value divided by the steady-state <em>annual</em> subscription — no implementation fees, no ramp drag. This is the run-rate once every provider is onboarded and adoption has matured: the relationship at cruising altitude. It is always higher than Value-to-Cost because it strips out the one-time setup cost and the slower early months. Read Value-to-Cost as the conservative whole-contract return, and Return at Scale as where it settles once mature.</p>
               <p><strong className="text-neutral-900">Simple ROI:</strong> Total contract net value divided by total contract cost. {Math.round(summary.simpleROI * 100)}% means for every $1 of Abridge investment, you generate ${summary.simpleROI.toFixed(2)} in net value above the cost.</p>
               <p><strong className="text-neutral-900">Payback Period:</strong> The month in which cumulative net value turns positive — i.e. when accumulated value has recouped the upfront implementation fee plus the subscription paid from day one. Because the implementation fee lands on day one while value builds gradually through the adoption ramp, payback is sensitive right around break-even: in the conservative (70%) case, reduced monthly value only narrowly clears monthly cost during the early ramp, so it takes noticeably longer to recoup the upfront fee. That asymmetry is expected — a downside pushes payback out more than an equal upside pulls it in.</p>
               <p><strong className="text-neutral-900">Provider Expansion:</strong> Providers scale linearly from pilot count to full-scale count over the contract term. This models a realistic organizational rollout trajectory.</p>
