@@ -14,6 +14,7 @@ import {
 } from "@/pages/proforma/proformaTypes";
 import { recomputeDriverFromExploreState, buildDriverChangeUpdate } from "@/pages/proforma/ModelAssumptionDrawer";
 import { DEFAULT_EXPLORE_STATE, type ExploreState } from "@/pages/explore/ExploreFlow";
+import { computeAllDriverValues } from "@/lib/exploreDriverCalcs";
 
 /**
  * Proforma audit — multiple care settings, pricing models, and lever editing.
@@ -435,5 +436,64 @@ describe("provider scaling — more providers means more value", () => {
     expect(grownY3 / baseY3).toBeCloseTo(2200 / 2000, 1);
     // ...while the ramp year (Year 2, same provider/util level) is essentially unchanged.
     expect(Math.abs(grownY2 - baseY2) / baseY2).toBeLessThan(0.02);
+  });
+});
+
+describe("newly-tunable drivers recompute correctly", () => {
+  it("ipObsDefense matches the engine and is denial-rate monotonic", () => {
+    const base: ExploreState = {
+      ...DEFAULT_EXPLORE_STATE,
+      careSetting: "inpatient",
+      annualEncounters: 40000,
+      utilizationPercent: 80,
+      docQualityInputs: {
+        ...DEFAULT_EXPLORE_STATE.docQualityInputs,
+        ipObsDefenseEnabled: true,
+        ipObsDefensePreventableScenario: "typical",
+        ipObsDefenseDenialRate: 8,
+        ipObsDefenseRevenueDelta: 6000,
+        ipObsDefenseRealization: 50,
+      },
+    };
+    const recomputed = recomputeDriverFromExploreState("ipObsDefense", base);
+    expect(recomputed).toBe(computeAllDriverValues(base, 0).obsDefense);
+    expect(recomputed).toBeGreaterThan(0);
+
+    const higher: ExploreState = {
+      ...base,
+      docQualityInputs: { ...base.docQualityInputs, ipObsDefenseDenialRate: 16 },
+    };
+    expect(recomputeDriverFromExploreState("ipObsDefense", higher))
+      .toBeGreaterThan(recomputed);
+  });
+
+  it("scribeCost (headcount mode) matches the engine and is > 0", () => {
+    const state: ExploreState = {
+      ...DEFAULT_EXPLORE_STATE,
+      careSetting: "outpatient",
+      timeDriverInputs: {
+        ...DEFAULT_EXPLORE_STATE.timeDriverInputs,
+        scribeCostReductionEnabled: true,
+        scribeBillingMode: "position",
+        scribeHeadcount: 10,
+        scribePositionsEliminated: 6,
+        scribeCostPerPosition: 55000,
+      },
+    };
+    const recomputed = recomputeDriverFromExploreState("scribeCost", state);
+    expect(recomputed).toBe(computeAllDriverValues(state, 0).scribeCostReduction);
+    expect(recomputed).toBeGreaterThan(0);
+  });
+
+  it("costReduction returns the typed dollar amount directly", () => {
+    const state: ExploreState = {
+      ...DEFAULT_EXPLORE_STATE,
+      careSetting: "inpatient",
+      timeDriverInputs: {
+        ...DEFAULT_EXPLORE_STATE.timeDriverInputs,
+        estimatedCostReduction: 250000,
+      },
+    };
+    expect(recomputeDriverFromExploreState("costReduction", state)).toBe(250000);
   });
 });

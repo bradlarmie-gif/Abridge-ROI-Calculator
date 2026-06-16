@@ -12,6 +12,7 @@ import {
   scaleSettingValue,
 } from "@/lib/proformaCalculations";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
+import { computeAllDriverValues } from "@/lib/exploreDriverCalcs";
 
 export const DOMAIN_PILL_COLORS: Record<string, string> = {
   Capacity:  "#EA2C00",
@@ -123,6 +124,20 @@ export function recomputeDriverFromExploreState(driverId: string, state: Explore
       const hrs = Math.round(ti.nursingOtHoursPerNurseWeek * (ti.nursingOtReductionPercent / 100) * numberOfProviders * 52);
       return hrs * ti.nursingOtHourlyRate;
     }
+    // Delegate to the canonical engine so these never diverge from Explore.
+    // totalHoursSaved is irrelevant to obsDefense / scribeCostReduction (neither reads it).
+    case 'ipObsDefense':
+      return computeAllDriverValues(state, 0).obsDefense ?? -1;
+    case 'scribeCost':
+      return computeAllDriverValues(state, 0).scribeCostReduction ?? -1;
+    case 'costReduction': {
+      // Not an engine driver — a direct dollar amount the user types.
+      const v = state.timeDriverInputs.estimatedCostReduction;
+      return typeof v === 'number' ? v : -1;
+    }
+    // NOTE: no case for 'docQuality' — it's an implied fallback with no backing
+    // input field. It hits default (-1) so mutateAndRecompute keeps the prior
+    // value; its edits flow through a direct-onUpdate NumInput (see renderParams).
     default:
       return -1;
   }
@@ -474,6 +489,105 @@ export function ModelAssumptionRow({
               <p className="text-[9px] text-neutral-400 uppercase tracking-wider mb-1.5">OT Rate</p>
               <NumInput value={ti.nursingOtHourlyRate} onChange={v => updateTI({ nursingOtHourlyRate: v })} prefix="$" />
             </div>
+          </div>
+        );
+      case 'ipObsDefense': {
+        const opts = [
+          { key: 'conservative', label: 'Conservative', sub: '25%' },
+          { key: 'typical', label: 'Typical', sub: '40%' },
+          { key: 'aggressive', label: 'Optimistic', sub: '55%' },
+        ];
+        return (
+          <div className="mt-2">
+            <p className="text-[9px] text-neutral-400 uppercase tracking-wider">Doc-Preventable Share</p>
+            <ScenarioPills opts={opts} value={dq.ipObsDefensePreventableScenario} onChange={k => updateDQ({ ipObsDefensePreventableScenario: k })} />
+            <div className="grid grid-cols-3 gap-2 mt-2.5">
+              <div>
+                <p className="text-[9px] text-neutral-400 uppercase tracking-wider mb-1.5">Downgrade Rate</p>
+                <NumInput value={dq.ipObsDefenseDenialRate} onChange={v => updateDQ({ ipObsDefenseDenialRate: v })} suffix="%" />
+              </div>
+              <div>
+                <p className="text-[9px] text-neutral-400 uppercase tracking-wider mb-1.5">Rev / Case Delta</p>
+                <NumInput value={dq.ipObsDefenseRevenueDelta} onChange={v => updateDQ({ ipObsDefenseRevenueDelta: v })} prefix="$" />
+              </div>
+              <div>
+                <p className="text-[9px] text-neutral-400 uppercase tracking-wider mb-1.5">Realization</p>
+                <NumInput value={dq.ipObsDefenseRealization} onChange={v => updateDQ({ ipObsDefenseRealization: v })} suffix="%" />
+              </div>
+            </div>
+          </div>
+        );
+      }
+      case 'costReduction':
+        return (
+          <div className="mt-2.5">
+            <p className="text-[9px] text-neutral-400 uppercase tracking-wider mb-1.5">Estimated Annual Cost Reduction</p>
+            <NumInput value={ti.estimatedCostReduction} onChange={v => updateTI({ estimatedCostReduction: v })} prefix="$" />
+          </div>
+        );
+      case 'scribeCost': {
+        const isHourly = ti.scribeBillingMode === 'hourly';
+        return (
+          <div className="mt-2">
+            <p className="text-[9px] text-neutral-400 uppercase tracking-wider mb-1.5">Billing Mode</p>
+            <div className="flex items-center bg-[#F5F0EB] rounded-xl p-1 gap-0.5">
+              {([['headcount', 'position'], ['hourly', 'hourly']] as const).map(([lbl, mode]) => (
+                <button key={mode}
+                  onClick={() => updateTI({ scribeBillingMode: mode })}
+                  className={`flex-1 py-1.5 rounded-lg text-[10px] font-medium text-center capitalize transition-all ${
+                    ti.scribeBillingMode === mode ? 'bg-white text-neutral-900 shadow-sm' : 'text-[#8C7E6E] hover:text-neutral-700'
+                  }`}
+                >
+                  {lbl}
+                </button>
+              ))}
+            </div>
+            {isHourly ? (
+              <div className="grid grid-cols-2 gap-2 mt-2.5">
+                <div>
+                  <p className="text-[9px] text-neutral-400 uppercase tracking-wider mb-1.5">Hourly Rate</p>
+                  <NumInput value={ti.scribeHourlyRate} onChange={v => updateTI({ scribeHourlyRate: v })} prefix="$" />
+                </div>
+                <div>
+                  <p className="text-[9px] text-neutral-400 uppercase tracking-wider mb-1.5">Min / Note</p>
+                  <NumInput value={ti.scribeMinutesPerNote} onChange={v => updateTI({ scribeMinutesPerNote: v })} />
+                </div>
+                <div>
+                  <p className="text-[9px] text-neutral-400 uppercase tracking-wider mb-1.5">Coverage</p>
+                  <NumInput value={ti.scribeCoveragePercent} onChange={v => updateTI({ scribeCoveragePercent: v })} suffix="%" />
+                </div>
+                <div>
+                  <p className="text-[9px] text-neutral-400 uppercase tracking-wider mb-1.5">% Eliminated</p>
+                  <NumInput value={ti.scribeVisitPercentEliminated} onChange={v => updateTI({ scribeVisitPercentEliminated: v })} suffix="%" />
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-3 gap-2 mt-2.5">
+                <div>
+                  <p className="text-[9px] text-neutral-400 uppercase tracking-wider mb-1.5">Headcount</p>
+                  <NumInput value={ti.scribeHeadcount} onChange={v => updateTI({ scribeHeadcount: v })} />
+                </div>
+                <div>
+                  <p className="text-[9px] text-neutral-400 uppercase tracking-wider mb-1.5">Eliminated</p>
+                  <NumInput value={ti.scribePositionsEliminated} onChange={v => updateTI({ scribePositionsEliminated: v })} />
+                </div>
+                <div>
+                  <p className="text-[9px] text-neutral-400 uppercase tracking-wider mb-1.5">Cost / Position</p>
+                  <NumInput value={ti.scribeCostPerPosition} onChange={v => updateTI({ scribeCostPerPosition: v })} prefix="$" />
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      }
+      case 'docQuality':
+        // Implied fallback driver with no backing input field — edit it as a
+        // direct dollar override (explore state unchanged; recompute has no case).
+        if (!es) return null;
+        return (
+          <div className="mt-2.5">
+            <p className="text-[9px] text-neutral-400 uppercase tracking-wider mb-1.5">Annual Documentation Value</p>
+            <NumInput value={driver.value} onChange={v => onUpdate(settingId, driver.id, v, es)} prefix="$" />
           </div>
         );
       default:
