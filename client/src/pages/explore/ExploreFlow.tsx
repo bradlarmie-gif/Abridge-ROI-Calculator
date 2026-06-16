@@ -957,6 +957,26 @@ type ExplorePhase =
   | 'investment'
   | 'model';
 
+const LEGACY_PHASE_MAP: Record<string, ExplorePhase> = {
+  valueDrivers: 'capacity',
+  docQuality: 'revenue',
+  careQuality: 'quality',
+};
+
+/**
+ * Single source of truth for turning a requested phase (from navigate, the
+ * browser popstate handler, or the initial-phase prop) into the phase we
+ * actually show. Applies the legacy alias map AND, when editing an existing
+ * proforma setting, hides the expansion ('investment') page — the proforma
+ * owns deployment, so that page is irrelevant on an edit and its output is
+ * discarded on merge. Every setPhase path funnels through here so the page
+ * can't sneak back via Next, a breadcrumb step, OR browser back/forward.
+ */
+export function resolveExplorePhase(requested: string, editing: boolean): ExplorePhase {
+  const mapped = (LEGACY_PHASE_MAP[requested] ?? requested) as ExplorePhase;
+  return (editing && mapped === 'investment') ? 'model' : mapped;
+}
+
 interface ExploreFlowProps {
   onBackToJourney?: () => void;
   onBackToProforma?: () => void;
@@ -972,12 +992,7 @@ interface ExploreFlowProps {
 export default function ExploreFlow({ onBackToJourney, onBackToProforma, initialCareSetting, initialPhase, initialExploreState, onAddToProforma, disabledCareSettings = [], onDataRequest }: ExploreFlowProps) {
   const [phase, setPhase] = useState<ExplorePhase>(() => {
     const requested = initialPhase || (initialExploreState ? 'practice' : 'careSetting');
-    const legacyMap: Record<string, ExplorePhase> = {
-      valueDrivers: 'capacity',
-      docQuality: 'revenue',
-      careQuality: 'quality',
-    };
-    return (legacyMap[requested as string] ?? requested) as ExplorePhase;
+    return resolveExplorePhase(requested, !!initialExploreState && !!onAddToProforma);
   });
   const [state, setState] = useState<ExploreState>(() => {
     if (initialExploreState) {
@@ -1057,12 +1072,7 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
     const handlePopState = (event: PopStateEvent) => {
       if (event.state?.view === 'explore' && event.state?.explorePhase) {
         const requested = event.state.explorePhase as string;
-        const legacyMap: Record<string, ExplorePhase> = {
-          valueDrivers: 'capacity',
-          docQuality: 'revenue',
-          careQuality: 'quality',
-        };
-        const resolved = (legacyMap[requested] ?? requested) as ExplorePhase;
+        const resolved = resolveExplorePhase(requested, !!initialExploreState && !!onAddToProforma);
         setPhase(resolved);
         window.scrollTo({ top: 0, behavior: 'instant' });
       } else if (event.state?.view === 'journey' || !event.state?.view) {
@@ -1086,7 +1096,7 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
     }
 
     return () => window.removeEventListener('popstate', handlePopState);
-  }, [onBackToJourney, onBackToProforma]);
+  }, [onBackToJourney, onBackToProforma, initialExploreState, onAddToProforma]);
 
   const goHome = useCallback(() => {
     if (onBackToProforma) {
@@ -1103,8 +1113,7 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
     // expansion — the Explore "investment" (expansion) page is irrelevant and its
     // output is discarded on merge. Make it unreachable so users can't land on it
     // and think a ramp change there will stick. Redirect to the model summary.
-    const editing = !!initialExploreState && !!onAddToProforma;
-    const target: ExplorePhase = (editing && nextPhase === 'investment') ? 'model' : nextPhase;
+    const target = resolveExplorePhase(nextPhase, !!initialExploreState && !!onAddToProforma);
     setPhase(target);
     window.history.pushState({
       view: 'explore',
