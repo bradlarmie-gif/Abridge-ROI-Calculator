@@ -749,6 +749,12 @@ export function VolumeAndPricingSection({
 
   // Comparison panel state and logic
   const encPerProv = setting.providerCount > 0 ? setting.encounters / setting.providerCount : 0;
+  // Inpatient volume is measured in discharges, not encounters.
+  const isInpatientSetting = setting.careSetting === 'inpatient';
+  const volNounPl = isInpatientSetting ? 'discharges' : 'encounters';
+  const volNounAbbr = isInpatientSetting ? 'dc' : 'enc';
+  const VolNounPlCap = isInpatientSetting ? 'Discharges' : 'Encounters';
+  const VolNounSingCap = isInpatientSetting ? 'Discharge' : 'Encounter';
   const [compRates, setCompRates] = useState<CompRates>(() => ({
     perUnit: setting.costPerUnit || 175,
     perEncounter: setting.costPerEncounter || 1.67,
@@ -806,9 +812,9 @@ export function VolumeAndPricingSection({
 
   const modelDefs: { key: ModelKey; name: string; shortName: string; desc: string }[] = [
     { key: "perUnit",      name: `$ / ${unitLabel.replace(/s$/, "")} / Mo`, shortName: "$ / Mo",  desc: "Rate × licensed providers × 12" },
-    { key: "perEncounter", name: "Per Encounter",  shortName: "Per Enc",   desc: "Rate × encounters / year" },
+    { key: "perEncounter", name: `Per ${VolNounSingCap}`,  shortName: isInpatientSetting ? "Per Dc" : "Per Enc",   desc: `Rate × ${volNounPl} / year` },
     { key: "annualFlat",   name: "Annual License", shortName: "Annual",    desc: "Fixed yearly fee regardless of usage" },
-    { key: "platform",     name: "Platform",       shortName: "Platform",  desc: "Annual fee + per-encounter rate" },
+    { key: "platform",     name: "Platform",       shortName: "Platform",  desc: `Annual fee + per-${isInpatientSetting ? "discharge" : "encounter"} rate` },
   ];
 
   const applyModel = (key: ModelKey) => {
@@ -978,8 +984,8 @@ export function VolumeAndPricingSection({
       {setting.careSetting !== 'nursing' && (
         <div>
           <div className="flex items-center justify-between mb-2">
-            <p className="text-[11px] text-neutral-500">Abridge Encounters by Year</p>
-            <p className="text-[10px] text-neutral-400">util% × total enc</p>
+            <p className="text-[11px] text-neutral-500">Abridge {VolNounPlCap} by Year</p>
+            <p className="text-[10px] text-neutral-400">util% × total {volNounAbbr}</p>
           </div>
           <div className={`grid ${colClass} gap-2`}>
             {yearKeys.map((yk, i) => {
@@ -995,7 +1001,7 @@ export function VolumeAndPricingSection({
             })}
           </div>
           <details className="mt-2">
-            <summary className="text-[10px] text-neutral-400 cursor-pointer hover:text-neutral-600 select-none">Edit total encounters</summary>
+            <summary className="text-[10px] text-neutral-400 cursor-pointer hover:text-neutral-600 select-none">Edit total {volNounPl}</summary>
             <div className={`grid ${colClass} gap-2 mt-2`}>
               {yearKeys.map((yk, i) => {
                 const encVal = Math.round(yearlyEncounters[yk] ?? 0);
@@ -1023,7 +1029,7 @@ export function VolumeAndPricingSection({
       {!isAnnualFlat && !isPlatform && (
         <div>
           <div className="flex items-center justify-between mb-2">
-            <p className="text-[11px] text-neutral-500">{isEncPricing ? "$ / Encounter" : `$ / ${unitLabel.replace(/s$/, "")} / Mo`}</p>
+            <p className="text-[11px] text-neutral-500">{isEncPricing ? `$ / ${VolNounSingCap}` : `$ / ${unitLabel.replace(/s$/, "")} / Mo`}</p>
             <GranularityToggle
               quarterly={!!setting.quarterlyPricing}
               onToggle={(q) => {
@@ -1125,7 +1131,7 @@ export function VolumeAndPricingSection({
             </div>
           </div>
           <div>
-            <p className="text-[11px] text-neutral-500 mb-2">+ $ / Encounter</p>
+            <p className="text-[11px] text-neutral-500 mb-2">+ $ / {VolNounSingCap}</p>
             <div className="relative">
               <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[11px] text-neutral-400">$</span>
               <FormattedNumberInput

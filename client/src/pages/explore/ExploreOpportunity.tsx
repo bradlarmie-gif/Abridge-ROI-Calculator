@@ -163,7 +163,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
 
   const pageTitle = isNursing ? "Your Nursing Program" : isInpatient ? "Your Inpatient Program" : isED ? "Your Emergency Department" : "Your Outpatient Practice";
   const providerLabel = isNursing ? "Nurse FTEs" : isInpatient ? "Inpatient Providers" : isED ? "ED Physicians" : "Number of Providers";
-  const encounterLabel = isInpatient ? "Admissions" : "Encounters";
+  const encounterLabel = isInpatient ? "Discharges" : "Encounters";
 
   return (
     <div className="min-h-screen bg-white">

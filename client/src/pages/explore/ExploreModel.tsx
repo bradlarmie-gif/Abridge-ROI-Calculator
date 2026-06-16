@@ -1408,7 +1408,7 @@ export default function ExploreModel({
                             />
                           </div>
                           <div>
-                            <label className="block text-[12px] text-neutral-500 mb-1">Encounters / Provider / Year</label>
+                            <label className="block text-[12px] text-neutral-500 mb-1">{isInpatient ? "Discharges" : "Encounters"} / Provider / Year</label>
                             <FormattedNumberInput
                               value={state.encountersPerProvider}
                               onChange={(v) => {
@@ -1464,7 +1464,7 @@ export default function ExploreModel({
                     <div className="px-4 pb-4 space-y-3">
                       <div className="h-px bg-neutral-200" />
                       <div>
-                        <label className="block text-[12px] text-neutral-500 mb-1">Minutes Saved / Encounter</label>
+                        <label className="block text-[12px] text-neutral-500 mb-1">Minutes Saved / {isInpatient ? "Discharge" : "Encounter"}</label>
                         <FormattedNumberInput
                           value={state.minutesSavedPerEncounter}
                           onChange={(v) => updateState({ minutesSavedPerEncounter: Math.max(v, 0) })}
@@ -1523,7 +1523,7 @@ export default function ExploreModel({
                         </div>
                       ) : state.pricingModel === 'perEncounter' ? (
                         <div>
-                          <label className="block text-[12px] text-neutral-500 mb-1">$ / Encounter</label>
+                          <label className="block text-[12px] text-neutral-500 mb-1">$ / {isInpatient ? "Discharge" : "Encounter"}</label>
                           <FormattedNumberInput
                             value={state.costPerEncounter}
                             onChange={(v) => updateState({ costPerEncounter: Math.max(v, 0) })}

@@ -938,7 +938,7 @@ export default function ProformaHub({
                                     const abr1 = Math.round((ye.year1 ?? 0) * startYu / 100);
                                     const termYe = contractYears >= 3 ? (ye.year3 ?? ye.year2 ?? ye.year1 ?? 0) : contractYears === 2 ? (ye.year2 ?? ye.year1 ?? 0) : (ye.year1 ?? 0);
                                     const abrTerm = Math.round(termYe * termYu / 100);
-                                    return `${fmtNum(abr1)} → ${fmtNum(abrTerm)} Abridge enc · ${startYu}% → ${termYu}% util`;
+                                    return `${fmtNum(abr1)} → ${fmtNum(abrTerm)} Abridge ${setting.careSetting === "inpatient" ? "dc" : "enc"} · ${startYu}% → ${termYu}% util`;
                                   })()
                                 : (() => {
                                     // In quarterly mode the ramp starts at Q1 (not the yearly Y1/Q4
