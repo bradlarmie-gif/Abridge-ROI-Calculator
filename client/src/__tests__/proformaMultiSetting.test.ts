@@ -5,6 +5,7 @@ import {
   getYearlySummary,
   costOffsetDisplacedAmount,
   scaleSettingValue,
+  mergeExploreEditIntoSetting,
 } from "@/lib/proformaCalculations";
 import {
   type ProformaSettingSnapshot,
@@ -385,6 +386,56 @@ describe("driver edit propagation — fullExploreState stays in sync", () => {
     expect(update.fullExploreState?.docQualityInputs?.ipDrgScenario).toBe("aggressive");
     expect(update.drivers?.find((d) => d.id === "ipDrg")?.value).toBe(175_000);
     expect(update.annualValue).toBe(175_000);
+  });
+});
+
+describe("Explore round-trip preserves proforma-side edits", () => {
+  it("keeps deployment + pricing, takes Explore's drivers rescaled to the proforma full-scale", () => {
+    // The proforma setting the user customized: flat 1,100 ramp, custom util,
+    // perUnit pricing, a cost offset, month-3 go-live.
+    const old = makeSetting("ed", {
+      id: "ed-keep",
+      providerCount: 1100,
+      fullScaleProviders: 1100,
+      yearlyProviders: { year1: 1100, year2: 1100, year3: 1100 },
+      yearlyUtilization: { year1: 25, year2: 50, year3: 65 },
+      pricingModel: "perUnit",
+      costPerUnit: 500,
+      goLiveMonth: 3,
+      costOffsets: [{ id: "co1", label: "Scribe program", annualSpend: 200_000, displacementPct: 80, transitionMonths: 6 }],
+    });
+
+    // What Explore rebuilds: same care setting, but Explore's own full-scale
+    // (2,200) and default ramp/pricing, and updated drivers worth $4M at 2,200.
+    const fresh = makeSetting("ed", {
+      id: "ed-fresh",
+      providerCount: 1100,
+      fullScaleProviders: 2200,
+      yearlyProviders: { year1: 1100, year2: 1650, year3: 2200 },
+      yearlyUtilization: { year1: 60, year2: 70, year3: 80 },
+      pricingModel: "annualFlat",
+      annualLicenseFee: 999_000,
+      goLiveMonth: 1,
+      drivers: [{ id: "edLwbs", name: "LWBS Recovery", value: 4_000_000, category: "time", quadrant: "Capacity", onset: "delayed" }],
+    });
+
+    const merged = mergeExploreEditIntoSetting(old, fresh);
+
+    // Proforma-owned deployment + commercial terms preserved:
+    expect(merged.id).toBe("ed-keep");
+    expect(merged.fullScaleProviders).toBe(1100);
+    expect(merged.yearlyProviders).toEqual({ year1: 1100, year2: 1100, year3: 1100 });
+    expect(merged.yearlyUtilization).toEqual({ year1: 25, year2: 50, year3: 65 });
+    expect(merged.pricingModel).toBe("perUnit");
+    expect(merged.costPerUnit).toBe(500);
+    expect(merged.goLiveMonth).toBe(3);
+    expect(merged.costOffsets?.[0].id).toBe("co1");
+
+    // Explore's clinical value taken, but rescaled from 2,200 → 1,100 (half):
+    expect(merged.drivers.map(d => d.id)).toEqual(["edLwbs"]);
+    expect(merged.drivers[0].value).toBe(2_000_000);
+    expect(merged.annualValue).toBe(2_000_000);
+    expect(merged.fullExploreState).toBe(fresh.fullExploreState);
   });
 });
 

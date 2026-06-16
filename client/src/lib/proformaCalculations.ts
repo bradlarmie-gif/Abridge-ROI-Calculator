@@ -120,6 +120,60 @@ export function scaleSettingValue(
   };
 }
 
+/**
+ * Merge a freshly-rebuilt Explore snapshot back into an existing proforma
+ * setting after the user round-trips through "Edit drivers in Explore". Explore
+ * owns the clinical value (drivers + value fields + fullExploreState); the
+ * proforma owns deployment (provider ramp, utilization, encounters) and
+ * commercial terms (pricing, go-live, cost offsets, scenario B). Without this,
+ * the round-trip overwrote the whole setting and wiped the user's proforma-side
+ * edits (and re-derived a "goofy" ramp from Explore's defaults).
+ *
+ * The fresh value is rescaled from Explore's full-scale to the proforma's
+ * preserved full-scale so it lands at the deployment the user actually set.
+ */
+export function mergeExploreEditIntoSetting(
+  old: ProformaSettingSnapshot,
+  fresh: ProformaSettingSnapshot,
+): ProformaSettingSnapshot {
+  const valueAtProformaScale = {
+    ...fresh,
+    ...scaleSettingValue(fresh, old.fullScaleProviders || fresh.fullScaleProviders),
+  };
+  return {
+    ...valueAtProformaScale,
+    // identity / labels
+    id: old.id,
+    label: old.label,
+    color: old.color,
+    // deployment (provider ramp + utilization + encounters)
+    providerCount: old.providerCount,
+    fullScaleProviders: old.fullScaleProviders,
+    fullScaleUtilization: old.fullScaleUtilization,
+    utilizationPercent: old.utilizationPercent,
+    encounters: old.encounters,
+    yearlyProviders: old.yearlyProviders,
+    quarterlyProviders: old.quarterlyProviders,
+    yearlyUtilization: old.yearlyUtilization,
+    quarterlyUtilization: old.quarterlyUtilization,
+    yearlyEncounters: old.yearlyEncounters,
+    // commercial terms
+    pricingModel: old.pricingModel,
+    costPerUnit: old.costPerUnit,
+    costPerEncounter: old.costPerEncounter,
+    annualLicenseFee: old.annualLicenseFee,
+    platformEncRate: old.platformEncRate,
+    yearlyPricing: old.yearlyPricing,
+    quarterlyPricing: old.quarterlyPricing,
+    bankedEncounters: old.bankedEncounters,
+    implementationFee: old.implementationFee,
+    goLiveMonth: old.goLiveMonth,
+    // proforma-only constructs
+    costOffsets: old.costOffsets,
+    scenarioB: old.scenarioB,
+  };
+}
+
 function getQuarterlyValue<T extends QuarterlyProviders | QuarterlyPricing | QuarterlyUtilization>(
   qData: T,
   monthsSinceGoLive: number

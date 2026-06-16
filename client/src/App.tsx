@@ -50,6 +50,7 @@ import ProformaHub from "@/pages/proforma/ProformaHub";
 import DataRequestBuilder from "@/pages/data-request/DataRequestBuilder";
 import type { ProformaSettingSnapshot, ProformaConfig } from "@/pages/proforma/proformaTypes";
 import { DEFAULT_PROFORMA_CONFIG } from "@/pages/proforma/proformaTypes";
+import { mergeExploreEditIntoSetting } from "@/lib/proformaCalculations";
 
 import { type CareSettingType } from "@/lib/SETTING_CONFIG";
 import { type RoiInputs } from "@/lib/roi-types";
@@ -291,7 +292,9 @@ export default function App() {
       const existing = prev.findIndex(s => s.careSetting === snapshot.careSetting);
       if (existing >= 0) {
         const updated = [...prev];
-        updated[existing] = snapshot;
+        // Editing an existing setting in Explore: keep the user's proforma-side
+        // deployment & pricing edits, take only Explore's updated clinical value.
+        updated[existing] = mergeExploreEditIntoSetting(prev[existing], snapshot);
         return updated;
       }
       return [...prev, snapshot];
