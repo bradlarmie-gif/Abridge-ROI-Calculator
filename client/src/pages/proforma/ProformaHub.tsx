@@ -666,7 +666,10 @@ export default function ProformaHub({
     if (!editingId) return;
     const el = cardRefs.current[editingId];
     if (!el) return;
-    setTimeout(() => el.scrollIntoView({ behavior: "smooth", block: "nearest" }), 50);
+    // Align the TOP of the expanded card to the top of the viewport (minus the
+    // sticky bar via scroll-mt). "nearest" used to bring the now-tall card's
+    // BOTTOM into view, dropping the user at the bottom of the card on expand.
+    setTimeout(() => el.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
   }, [editingId]);
   const [assumptionsDrawerSettingId, setAssumptionsDrawerSettingId] = useState<string | null>(null);
   const [drawerInitialScenario, setDrawerInitialScenario] = useState<"A" | "B">("A");
@@ -902,7 +905,7 @@ export default function ProformaHub({
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ delay: idx * 0.05 }}
-                  className="bg-white rounded-xl overflow-hidden border border-[#E8E2DA] shadow-sm"
+                  className="bg-white rounded-xl overflow-hidden border border-[#E8E2DA] shadow-sm scroll-mt-24"
                   data-testid={`proforma-setting-card-${setting.careSetting}`}
                   ref={(el) => { cardRefs.current[setting.id] = el; }}
                 >
