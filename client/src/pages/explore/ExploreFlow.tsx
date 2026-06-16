@@ -1099,13 +1099,19 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
   }, [onBackToProforma, onBackToJourney]);
 
   const navigate = useCallback((nextPhase: ExplorePhase) => {
-    setPhase(nextPhase);
+    // When editing an existing proforma setting, the proforma owns deployment/
+    // expansion — the Explore "investment" (expansion) page is irrelevant and its
+    // output is discarded on merge. Make it unreachable so users can't land on it
+    // and think a ramp change there will stick. Redirect to the model summary.
+    const editing = !!initialExploreState && !!onAddToProforma;
+    const target: ExplorePhase = (editing && nextPhase === 'investment') ? 'model' : nextPhase;
+    setPhase(target);
     window.history.pushState({
       view: 'explore',
-      explorePhase: nextPhase
+      explorePhase: target
     }, '');
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, []);
+  }, [initialExploreState, onAddToProforma]);
 
   // Fast-exit: when editing an existing proforma setting's drivers, let the user
   // commit from any driver screen and jump straight back to the Business Case,
@@ -1587,7 +1593,7 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
           docValue={docValue}
           annualInvestment={annualInvestment}
           onEdit={() => navigate('practice')}
-          onBack={() => navigate('investment')}
+          onBack={() => navigate(isEditingProforma ? 'quality' : 'investment')}
           onHome={goHome}
           onAddToProforma={onAddToProforma}
           onStepClick={(step: number) => navigate(stepPhaseMap[step - 1])}
