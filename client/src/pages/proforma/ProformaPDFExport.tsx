@@ -793,7 +793,8 @@ function InvestmentCasePage({ settings, config, summary, yearlyData, preparedBy,
                     <Text style={S.tableCellBold}>{s.label}</Text>
                   </View>
                   <Text style={[S.tableCellMono, { flex: 3 }]}>{scaleText}</Text>
-                  <Text style={[S.tableCell, { flex: 2, textAlign: "right" }]}>{fmt(yr1inv)}</Text>
+                  {/* No per-setting cost (e.g. covered by the system-wide fee) → "—" not "$0". */}
+                  <Text style={[S.tableCell, { flex: 2, textAlign: "right" }]}>{yr1inv > 0 ? fmt(yr1inv) : "—"}</Text>
                   <Text style={[S.tableCellBold, { flex: 2, textAlign: "right", color: sc }]}>{fmt(s.annualValue)}</Text>
                 </View>
               );

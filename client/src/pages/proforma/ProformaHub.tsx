@@ -999,7 +999,8 @@ export default function ProformaHub({
                         </div>
                         <div>
                           <p className="text-xs text-[#8C7E6E] mb-1">{contractYears}-Year Investment</p>
-                          <p className="text-lg font-bold text-neutral-900">{fmt(totals.contractInvestment)}</p>
+                          {/* No per-setting cost (e.g. covered by the system-wide fee) → show "—" not "$0". */}
+                          <p className="text-lg font-bold text-neutral-900">{totals.contractInvestment > 0 ? fmt(totals.contractInvestment) : "—"}</p>
                         </div>
                         <div>
                           <p className="text-xs text-[#8C7E6E] mb-1">Go-Live Month</p>
