@@ -1409,24 +1409,16 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
     isEditingProforma &&
     ['practice', 'timeSavings', 'capacity', 'workforce', 'revenue', 'quality'].includes(phase);
 
+  // Single, restrained secondary action — quiet pill, right-aligned, not a CTA bar.
   const fastExitBar = showFastExitBar ? (
-    <div className="px-4 pt-3 max-w-2xl mx-auto w-full">
-      <div className="flex items-center justify-between gap-3 rounded-xl border border-neutral-200 bg-neutral-50 px-3 py-2">
-        <button
-          type="button"
-          onClick={fastExitToProforma}
-          className="inline-flex items-center gap-1 text-sm font-medium text-neutral-600 hover:text-[#EA2C00] transition-colors"
-        >
-          <span aria-hidden="true">←</span> Business Case
-        </button>
-        <button
-          type="button"
-          onClick={fastExitToProforma}
-          className="inline-flex items-center gap-2 rounded-lg bg-[#1A1A1A] px-4 py-2 text-sm font-semibold text-white hover:bg-[#EA2C00] transition-colors"
-        >
-          Done — Back to Business Case
-        </button>
-      </div>
+    <div className="px-4 pt-3 max-w-2xl mx-auto w-full flex justify-end">
+      <button
+        type="button"
+        onClick={fastExitToProforma}
+        className="inline-flex items-center gap-1.5 rounded-full border border-neutral-200 bg-white px-3.5 py-1.5 text-[12.5px] font-medium text-neutral-600 shadow-sm hover:border-[#EA2C00]/40 hover:text-[#EA2C00] transition-colors"
+      >
+        <span aria-hidden="true">←</span> Done · Back to Business Case
+      </button>
     </div>
   ) : null;
 
