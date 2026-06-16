@@ -467,10 +467,12 @@ export default function ExploreDocQuality({
   }, [state.annualEncounters, state.utilizationPercent]);
 
   // Scenario percentages
-  const wrvuScenarios: Record<ScenarioLevel, number> = { conservative: 2, typical: 5, aggressive: 9, custom: docQualityInputs.wrvuCustomPercent ?? 5 };
+  const wrvuScenarios: Record<ScenarioLevel, number> = state.careSetting === 'ed'
+    ? { conservative: 1, typical: 3, aggressive: 6, custom: docQualityInputs.wrvuCustomPercent ?? 5 }
+    : { conservative: 2, typical: 5, aggressive: 9, custom: docQualityInputs.wrvuCustomPercent ?? 5 };
 const denialsScenarios: Record<ScenarioLevel, number> = { conservative: 25, typical: 50, aggressive: 75, custom: docQualityInputs.denialsCustomPercent ?? 15 };
-  const ipDrgProtectionScenarios: Record<ScenarioLevel, number> = { conservative: 15, typical: 20, aggressive: 25, custom: 20 };
-  const ipCdiReductionScenarios: Record<ScenarioLevel, number> = { conservative: 15, typical: 25, aggressive: 35, custom: 25 };
+  const ipDrgProtectionScenarios: Record<ScenarioLevel, number> = { conservative: 15, typical: 20, aggressive: 25, custom: docQualityInputs.ipDrgCustomPercent ?? 20 };
+  const ipCdiReductionScenarios: Record<ScenarioLevel, number> = { conservative: 15, typical: 25, aggressive: 35, custom: docQualityInputs.ipCdiCustomPercent ?? 25 };
 
   // wRVU Calculation
   const wrvuLiftPercent = wrvuScenarios[docQualityInputs.wrvuScenario];
@@ -509,7 +511,7 @@ const denialsScenarios: Record<ScenarioLevel, number> = { conservative: 25, typi
   const ipDrgNetValue = ipDrgGrossValue * (docQualityInputs.ipDrgRealization / 100);
 
   // Inpatient: Obs/IP Status Defense Calculation
-  const ipObsPreventableScenarios: Record<string, number> = { conservative: 25, typical: 40, aggressive: 55 };
+  const ipObsPreventableScenarios: Record<string, number> = { conservative: 25, typical: 40, aggressive: 55, custom: docQualityInputs.ipObsDefenseCustomPercent ?? 40 };
   const ipObsDowngrades = eligibleEncounters * (docQualityInputs.ipObsDefenseDenialRate / 100);
   const ipObsPreventablePct = ipObsPreventableScenarios[docQualityInputs.ipObsDefensePreventableScenario] / 100;
   const ipObsDefenseGross = ipObsDowngrades * docQualityInputs.ipObsDefenseRevenueDelta * ipObsPreventablePct;
@@ -1207,25 +1209,72 @@ const denialsScenarios: Record<ScenarioLevel, number> = { conservative: 25, typi
                       Not all gaps are the same. Abridge specifically captures "discussed but not documented"—clinical reasoning that happened verbally but didn't make the note.
                     </p>
                     <p className="text-[13px] text-[#666666] mb-4">What portion of your documentation gaps are verbal-to-written gaps?</p>
-                    <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-3">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mb-3">
                       {(['conservative', 'typical', 'aggressive'] as const).map((level) => (
                         <button
                           key={level}
                           onClick={() => updateDocInputs({ ipDrgScenario: level })}
                           className={`p-2 sm:p-4 rounded-lg border transition-all text-center ${
-                            docQualityInputs.ipDrgScenario === level
+                            docQualityInputs.ipDrgScenario !== 'custom' && docQualityInputs.ipDrgScenario === level
                               ? "bg-[#EA2C00] border-[#EA2C00] text-white"
                               : "bg-white border-[#E5E5E5] text-black hover:border-[#D1D5DB]"
                           }`}
                           data-testid={`button-drg-${level}`}
                         >
-                          <p className={`text-xs capitalize mb-1 ${docQualityInputs.ipDrgScenario === level ? 'text-white/80' : 'text-[#888888]'}`}>
+                          <p className={`text-xs capitalize mb-1 ${docQualityInputs.ipDrgScenario !== 'custom' && docQualityInputs.ipDrgScenario === level ? 'text-white/80' : 'text-[#888888]'}`}>
                             {level === 'aggressive' ? 'Optimistic' : level}
                           </p>
-                          <p className="font-semibold text-lg">{ipDrgProtectionScenarios[level]}%</p>
+                          <p className="text-sm">{ipDrgProtectionScenarios[level]}%</p>
                         </button>
                       ))}
+                      <button
+                        onClick={() => updateDocInputs({ ipDrgScenario: 'custom' })}
+                        className={`p-2 sm:p-4 rounded-lg border transition-all text-center ${
+                          docQualityInputs.ipDrgScenario === 'custom'
+                            ? "bg-[#EA2C00] border-[#EA2C00] text-white"
+                            : "bg-white border-[#E5E5E5] text-black hover:border-[#D1D5DB]"
+                        }`}
+                        data-testid="button-drg-custom"
+                      >
+                        <p className={`text-xs capitalize mb-1 ${docQualityInputs.ipDrgScenario === 'custom' ? 'text-white/80' : 'text-[#888888]'}`}>Custom</p>
+                        {docQualityInputs.ipDrgScenario === 'custom' && (
+                          <p className="text-sm">{docQualityInputs.ipDrgCustomPercent ?? 20}%</p>
+                        )}
+                      </button>
                     </div>
+                    {docQualityInputs.ipDrgScenario === 'custom' && (
+                      <div className="flex items-center gap-3 mb-3">
+                        <label className="text-sm text-[#666666] flex-shrink-0">Verbal-to-written gap %</label>
+                        <div className="relative flex-1">
+                          <input
+                            type="text"
+                            inputMode="decimal"
+                            value={docQualityInputs.ipDrgCustomPercent ?? 20}
+                            onChange={(e) => {
+                              const raw = e.target.value.replace(/[^0-9.]/g, '');
+                              const n = parseFloat(raw);
+                              if (raw === '' || raw === '.') {
+                                updateDocInputs({ ipDrgCustomPercent: 0 });
+                              } else if (!isNaN(n) && n >= 0 && n <= 100) {
+                                updateDocInputs({ ipDrgCustomPercent: n });
+                              }
+                            }}
+                            onBlur={(e) => {
+                              const n = parseFloat(e.target.value);
+                              if (isNaN(n) || n < 0.1) {
+                                updateDocInputs({ ipDrgCustomPercent: 20 });
+                              } else {
+                                updateDocInputs({ ipDrgCustomPercent: Math.min(100, n) });
+                              }
+                            }}
+                            className="w-full h-10 bg-white border border-[#E5E5E5] rounded-lg px-3 pr-8 text-sm font-semibold text-black focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30"
+                            autoFocus
+                            data-testid="input-dq-drg-custom"
+                          />
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
+                        </div>
+                      </div>
+                    )}
                     <div className="bg-[#F5F0EB] rounded-lg p-4 text-center mb-4">
                       <span className="text-[13px] text-[#666666]">{formatNumber(Math.round(ipAdmissionsAtRisk))} × {ipDrgProtectionPercent}% = </span>
                       <span className="font-semibold text-black">{formatNumber(Math.round(ipAdmissionsProtected))} admissions where Abridge captures what was missed</span>
@@ -1506,7 +1555,7 @@ const denialsScenarios: Record<ScenarioLevel, number> = { conservative: 25, typi
                     <p className="text-[13px] text-[#666666] mb-4">
                       Of those downgrades, what share did you lose on documentation grounds — not payer policy?
                     </p>
-                    <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-3">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mb-3">
                       {([
                         { label: 'Conservative', value: 'conservative', pct: 25 },
                         { label: 'Typical', value: 'typical', pct: 40 },
@@ -1516,17 +1565,64 @@ const denialsScenarios: Record<ScenarioLevel, number> = { conservative: 25, typi
                           key={s.value}
                           onClick={() => updateDocInputs({ ipObsDefensePreventableScenario: s.value })}
                           className={`p-2 sm:p-4 rounded-lg border transition-all text-center ${
-                            docQualityInputs.ipObsDefensePreventableScenario === s.value
+                            docQualityInputs.ipObsDefensePreventableScenario !== 'custom' && docQualityInputs.ipObsDefensePreventableScenario === s.value
                               ? "bg-[#EA2C00] border-[#EA2C00] text-white"
                               : "bg-white border-[#E5E5E5] text-black hover:border-[#D1D5DB]"
                           }`}
                           data-testid={`button-obs-${s.value}`}
                         >
-                          <p className={`text-xs capitalize mb-1 ${docQualityInputs.ipObsDefensePreventableScenario === s.value ? 'text-white/80' : 'text-[#888888]'}`}>{s.label}</p>
-                          <p className="font-semibold text-lg">{s.pct}%</p>
+                          <p className={`text-xs capitalize mb-1 ${docQualityInputs.ipObsDefensePreventableScenario !== 'custom' && docQualityInputs.ipObsDefensePreventableScenario === s.value ? 'text-white/80' : 'text-[#888888]'}`}>{s.label}</p>
+                          <p className="text-sm">{s.pct}%</p>
                         </button>
                       ))}
+                      <button
+                        onClick={() => updateDocInputs({ ipObsDefensePreventableScenario: 'custom' })}
+                        className={`p-2 sm:p-4 rounded-lg border transition-all text-center ${
+                          docQualityInputs.ipObsDefensePreventableScenario === 'custom'
+                            ? "bg-[#EA2C00] border-[#EA2C00] text-white"
+                            : "bg-white border-[#E5E5E5] text-black hover:border-[#D1D5DB]"
+                        }`}
+                        data-testid="button-obs-custom"
+                      >
+                        <p className={`text-xs capitalize mb-1 ${docQualityInputs.ipObsDefensePreventableScenario === 'custom' ? 'text-white/80' : 'text-[#888888]'}`}>Custom</p>
+                        {docQualityInputs.ipObsDefensePreventableScenario === 'custom' && (
+                          <p className="text-sm">{docQualityInputs.ipObsDefenseCustomPercent ?? 40}%</p>
+                        )}
+                      </button>
                     </div>
+                    {docQualityInputs.ipObsDefensePreventableScenario === 'custom' && (
+                      <div className="flex items-center gap-3 mb-3">
+                        <label className="text-sm text-[#666666] flex-shrink-0">Doc-preventable %</label>
+                        <div className="relative flex-1">
+                          <input
+                            type="text"
+                            inputMode="decimal"
+                            value={docQualityInputs.ipObsDefenseCustomPercent ?? 40}
+                            onChange={(e) => {
+                              const raw = e.target.value.replace(/[^0-9.]/g, '');
+                              const n = parseFloat(raw);
+                              if (raw === '' || raw === '.') {
+                                updateDocInputs({ ipObsDefenseCustomPercent: 0 });
+                              } else if (!isNaN(n) && n >= 0 && n <= 100) {
+                                updateDocInputs({ ipObsDefenseCustomPercent: n });
+                              }
+                            }}
+                            onBlur={(e) => {
+                              const n = parseFloat(e.target.value);
+                              if (isNaN(n) || n < 0.1) {
+                                updateDocInputs({ ipObsDefenseCustomPercent: 40 });
+                              } else {
+                                updateDocInputs({ ipObsDefenseCustomPercent: Math.min(100, n) });
+                              }
+                            }}
+                            className="w-full h-10 bg-white border border-[#E5E5E5] rounded-lg px-3 pr-8 text-sm font-semibold text-black focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30"
+                            autoFocus
+                            data-testid="input-dq-obs-custom"
+                          />
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
+                        </div>
+                      </div>
+                    )}
                     <div className="bg-[#F5F0EB] rounded-lg p-4 text-center">
                       <span className="text-[13px] text-[#666666]">{formatNumber(Math.round(ipObsDowngrades))} × {ipObsPreventableScenarios[docQualityInputs.ipObsDefensePreventableScenario]}% = </span>
                       <span className="font-semibold text-black">{formatNumber(Math.round(ipObsDowngrades * ipObsPreventablePct))} documentation-preventable downgrades</span>
@@ -1679,25 +1775,72 @@ const denialsScenarios: Record<ScenarioLevel, number> = { conservative: 25, typi
                     <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">
                       Step 2: Queries Avoided
                     </p>
-                    <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mb-4">
                       {(['conservative', 'typical', 'aggressive'] as const).map((level) => (
                         <button
                           key={level}
                           onClick={() => updateDocInputs({ ipCdiScenario: level })}
                           className={`p-2 sm:p-4 rounded-lg border transition-all text-center ${
-                            docQualityInputs.ipCdiScenario === level
+                            docQualityInputs.ipCdiScenario !== 'custom' && docQualityInputs.ipCdiScenario === level
                               ? "bg-[#EA2C00] border-[#EA2C00] text-white"
                               : "bg-white border-[#E5E5E5] text-black hover:border-[#D1D5DB]"
                           }`}
                           data-testid={`button-cdi-${level}`}
                         >
-                          <p className={`text-xs capitalize mb-1 ${docQualityInputs.ipCdiScenario === level ? 'text-white/80' : 'text-[#888888]'}`}>
+                          <p className={`text-xs capitalize mb-1 ${docQualityInputs.ipCdiScenario !== 'custom' && docQualityInputs.ipCdiScenario === level ? 'text-white/80' : 'text-[#888888]'}`}>
                             {level === 'aggressive' ? 'Optimistic' : level}
                           </p>
-                          <p className="font-semibold text-lg">{ipCdiReductionScenarios[level]}%</p>
+                          <p className="text-sm">{ipCdiReductionScenarios[level]}%</p>
                         </button>
                       ))}
+                      <button
+                        onClick={() => updateDocInputs({ ipCdiScenario: 'custom' })}
+                        className={`p-2 sm:p-4 rounded-lg border transition-all text-center ${
+                          docQualityInputs.ipCdiScenario === 'custom'
+                            ? "bg-[#EA2C00] border-[#EA2C00] text-white"
+                            : "bg-white border-[#E5E5E5] text-black hover:border-[#D1D5DB]"
+                        }`}
+                        data-testid="button-cdi-custom"
+                      >
+                        <p className={`text-xs capitalize mb-1 ${docQualityInputs.ipCdiScenario === 'custom' ? 'text-white/80' : 'text-[#888888]'}`}>Custom</p>
+                        {docQualityInputs.ipCdiScenario === 'custom' && (
+                          <p className="text-sm">{docQualityInputs.ipCdiCustomPercent ?? 25}%</p>
+                        )}
+                      </button>
                     </div>
+                    {docQualityInputs.ipCdiScenario === 'custom' && (
+                      <div className="flex items-center gap-3 mb-4">
+                        <label className="text-sm text-[#666666] flex-shrink-0">Query reduction %</label>
+                        <div className="relative flex-1">
+                          <input
+                            type="text"
+                            inputMode="decimal"
+                            value={docQualityInputs.ipCdiCustomPercent ?? 25}
+                            onChange={(e) => {
+                              const raw = e.target.value.replace(/[^0-9.]/g, '');
+                              const n = parseFloat(raw);
+                              if (raw === '' || raw === '.') {
+                                updateDocInputs({ ipCdiCustomPercent: 0 });
+                              } else if (!isNaN(n) && n >= 0 && n <= 100) {
+                                updateDocInputs({ ipCdiCustomPercent: n });
+                              }
+                            }}
+                            onBlur={(e) => {
+                              const n = parseFloat(e.target.value);
+                              if (isNaN(n) || n < 0.1) {
+                                updateDocInputs({ ipCdiCustomPercent: 25 });
+                              } else {
+                                updateDocInputs({ ipCdiCustomPercent: Math.min(100, n) });
+                              }
+                            }}
+                            className="w-full h-10 bg-white border border-[#E5E5E5] rounded-lg px-3 pr-8 text-sm font-semibold text-black focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30"
+                            autoFocus
+                            data-testid="input-dq-cdi-custom"
+                          />
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
+                        </div>
+                      </div>
+                    )}
                     <div className="bg-[#F5F0EB] rounded-lg p-4 text-center">
                       <span className="text-[13px] text-[#666666]">{formatNumber(Math.round(ipTotalQueries))} × {ipCdiReductionPercent}% = </span>
                       <span className="font-semibold text-black">{formatNumber(Math.round(ipQueriesAvoided))} queries avoided</span>
@@ -1843,8 +1986,8 @@ const denialsScenarios: Record<ScenarioLevel, number> = { conservative: 25, typi
               >
                 <div className="bg-white rounded-b-lg p-5">
                   <p className="text-sm text-black mb-4">
-                    When notes fully reflect visit complexity, E/M levels often code higher. 
-                    Industry data shows 2–9% E/M level accuracy lift from better documentation.
+                    When notes fully reflect visit complexity, E/M levels often code higher.
+                    Industry data shows {state.careSetting === 'ed' ? '1–6%' : '2–9%'} E/M level accuracy lift from better documentation.
                   </p>
 
                   <p className="text-sm font-medium text-black mb-2">Choose your scenario:</p>

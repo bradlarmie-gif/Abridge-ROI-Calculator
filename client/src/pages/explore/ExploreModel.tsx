@@ -267,7 +267,7 @@ export default function ExploreModel({
   // Inpatient: DRG Accuracy Value
   const ipDrgValue = useMemo(() => {
     if (!isInpatient || !docQualityInputs.ipDrgEnabled) return 0;
-    const ipDrgProtectionScenarios: Record<string, number> = { conservative: 15, typical: 20, aggressive: 25 };
+    const ipDrgProtectionScenarios: Record<string, number> = { conservative: 15, typical: 20, aggressive: 25, custom: docQualityInputs.ipDrgCustomPercent ?? 20 };
     const protectionPercent = ipDrgProtectionScenarios[docQualityInputs.ipDrgScenario];
     const admissionsAtRisk = eligibleEncounters * (docQualityInputs.ipDrgAtRiskRate / 100);
     const admissionsProtected = admissionsAtRisk * (protectionPercent / 100);
@@ -277,7 +277,7 @@ export default function ExploreModel({
 
   const ipObsDefenseValue = useMemo(() => {
     if (!isInpatient || !docQualityInputs.ipObsDefenseEnabled) return 0;
-    const preventableScenarios: Record<string, number> = { conservative: 25, typical: 40, aggressive: 55 };
+    const preventableScenarios: Record<string, number> = { conservative: 25, typical: 40, aggressive: 55, custom: docQualityInputs.ipObsDefenseCustomPercent ?? 40 };
     const preventablePct = preventableScenarios[docQualityInputs.ipObsDefensePreventableScenario] / 100;
     const downgrades = eligibleEncounters * (docQualityInputs.ipObsDefenseDenialRate / 100);
     const gross = downgrades * docQualityInputs.ipObsDefenseRevenueDelta * preventablePct;

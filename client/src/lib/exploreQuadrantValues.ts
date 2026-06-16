@@ -140,20 +140,20 @@ export function computeRevenueBreakdown(state: ExploreState, _totalHoursSaved: n
   }
   if (isIP && dq.ipDrgEnabled) {
     const protectScenarios: Record<string, number> = { conservative: 15, typical: 20, aggressive: 25 };
-    const pct = protectScenarios[dq.ipDrgScenario] / 100;
+    const pct = (dq.ipDrgScenario === 'custom' ? (dq.ipDrgCustomPercent ?? 20) : protectScenarios[dq.ipDrgScenario]) / 100;
     const atRisk = eligibleEncounters * (dq.ipDrgAtRiskRate / 100);
     result.drgAccuracy = Math.round(atRisk * pct * dq.ipDrgWeightIncrease * dq.ipDrgBasePayment * (dq.ipDrgRealization / 100));
   }
   if (isIP && dq.ipCdiEnabled) {
     const cdiScenarios: Record<string, number> = { conservative: 15, typical: 25, aggressive: 35 };
-    const pct = cdiScenarios[dq.ipCdiScenario] / 100;
+    const pct = (dq.ipCdiScenario === 'custom' ? (dq.ipCdiCustomPercent ?? 25) : cdiScenarios[dq.ipCdiScenario]) / 100;
     const totalQueries = eligibleEncounters * (dq.ipCdiQueryRate / 100);
     const avoided = totalQueries * pct;
     result.cdiQueryReduction = Math.round(avoided * dq.ipCdiCostPerQuery * (dq.ipCdiRealization / 100));
   }
   if (isIP && dq.ipObsDefenseEnabled) {
     const preventableScenarios: Record<string, number> = { conservative: 25, typical: 40, aggressive: 55 };
-    const preventablePct = preventableScenarios[dq.ipObsDefensePreventableScenario] / 100;
+    const preventablePct = (dq.ipObsDefensePreventableScenario === 'custom' ? (dq.ipObsDefenseCustomPercent ?? 40) : preventableScenarios[dq.ipObsDefensePreventableScenario]) / 100;
     const downgrades = eligibleEncounters * (dq.ipObsDefenseDenialRate / 100);
     const gross = downgrades * dq.ipObsDefenseRevenueDelta * preventablePct;
     result.obsDefense = Math.round(gross * (dq.ipObsDefenseRealization / 100));

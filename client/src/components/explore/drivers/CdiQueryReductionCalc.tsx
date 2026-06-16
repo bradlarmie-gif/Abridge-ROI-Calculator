@@ -12,7 +12,7 @@ export default function CdiQueryReductionCalc({ state, updateDocQualityInputs }:
   const { docQualityInputs, annualEncounters, utilizationPercent } = state;
   const eligibleEncounters = Math.round(annualEncounters * (utilizationPercent / 100));
 
-  const ipCdiReductionScenarios: Record<string, number> = { conservative: 15, typical: 30, aggressive: 50 };
+  const ipCdiReductionScenarios: Record<string, number> = { conservative: 15, typical: 30, aggressive: 50, custom: docQualityInputs.ipCdiCustomPercent ?? 25 };
   const ipCdiReductionPercent = ipCdiReductionScenarios[docQualityInputs.ipCdiScenario];
   const ipTotalQueries = eligibleEncounters * (docQualityInputs.ipCdiQueryRate / 100);
   const ipQueriesAvoided = ipTotalQueries * (ipCdiReductionPercent / 100);

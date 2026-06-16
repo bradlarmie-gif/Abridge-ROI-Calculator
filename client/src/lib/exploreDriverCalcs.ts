@@ -58,7 +58,7 @@ const IP_CDI_SCENARIOS: Record<string, number> = {
 // engine and the per-screen Revenue breakdown / driver card.
 export const wrvuScenariosFor = (isED: boolean, customPct?: number): Record<string, number> =>
   isED
-    ? { conservative: 1, typical: 2.5, aggressive: 4, custom: customPct ?? 5 }
+    ? { conservative: 1, typical: 3, aggressive: 6, custom: customPct ?? 5 }
     : { conservative: 2, typical: 5, aggressive: 7, custom: customPct ?? 5 };
 
 const denialsScenariosFor = (isED: boolean, customPct?: number): Record<string, number> =>
@@ -210,7 +210,8 @@ export function computeAllDriverValues(
     );
   }
   if (isIP && dq.ipDrgEnabled) {
-    const pct = IP_DRG_PROTECT_SCENARIOS[dq.ipDrgScenario] / 100;
+    const drgPct = dq.ipDrgScenario === 'custom' ? (dq.ipDrgCustomPercent ?? 20) : IP_DRG_PROTECT_SCENARIOS[dq.ipDrgScenario];
+    const pct = drgPct / 100;
     const atRisk = eligibleEncounters * (dq.ipDrgAtRiskRate / 100);
     result.drgAccuracy = Math.round(
       atRisk *
@@ -221,7 +222,8 @@ export function computeAllDriverValues(
     );
   }
   if (isIP && dq.ipCdiEnabled) {
-    const pct = IP_CDI_SCENARIOS[dq.ipCdiScenario] / 100;
+    const cdiPct = dq.ipCdiScenario === 'custom' ? (dq.ipCdiCustomPercent ?? 25) : IP_CDI_SCENARIOS[dq.ipCdiScenario];
+    const pct = cdiPct / 100;
     const queries = eligibleEncounters * (dq.ipCdiQueryRate / 100);
     result.cdiQueryReduction = Math.round(
       queries * pct * dq.ipCdiCostPerQuery * (dq.ipCdiRealization / 100),
@@ -229,7 +231,8 @@ export function computeAllDriverValues(
   }
   if (isIP && dq.ipObsDefenseEnabled) {
     const preventableScenarios: Record<string, number> = { conservative: 25, typical: 40, aggressive: 55 };
-    const preventablePct = (preventableScenarios[dq.ipObsDefensePreventableScenario] ?? 40) / 100;
+    const preventableRaw = dq.ipObsDefensePreventableScenario === 'custom' ? (dq.ipObsDefenseCustomPercent ?? 40) : (preventableScenarios[dq.ipObsDefensePreventableScenario] ?? 40);
+    const preventablePct = preventableRaw / 100;
     const downgrades = eligibleEncounters * (dq.ipObsDefenseDenialRate / 100);
     const gross = downgrades * dq.ipObsDefenseRevenueDelta * preventablePct;
     result.obsDefense = Math.round(gross * (dq.ipObsDefenseRealization / 100));
@@ -424,16 +427,16 @@ export function computeAllDriverCalcSummaries(
     out.denialPrevention = `${fmtN(eligibleEncounters)} encounters × ${dq.medNecessityDenialRate}% medical necessity denial rate × ${prevPct}% reduction target × ${fmt$(dq.avgClaimValue)}/claim × ${dq.denialsRealization}% realization`;
   }
   if (isIP && dq.ipDrgEnabled) {
-    const protectPct = IP_DRG_PROTECT_SCENARIOS[dq.ipDrgScenario] ?? 0;
+    const protectPct = dq.ipDrgScenario === 'custom' ? (dq.ipDrgCustomPercent ?? 20) : (IP_DRG_PROTECT_SCENARIOS[dq.ipDrgScenario] ?? 0);
     out.drgAccuracy = `${fmtN(eligibleEncounters)} encounters × ${dq.ipDrgAtRiskRate}% at-risk × ${protectPct}% protect × ${dq.ipDrgWeightIncrease} weight × ${fmt$(dq.ipDrgBasePayment)}/case × ${dq.ipDrgRealization}% realization`;
   }
   if (isIP && dq.ipCdiEnabled) {
-    const reductionPct = IP_CDI_SCENARIOS[dq.ipCdiScenario] ?? 0;
+    const reductionPct = dq.ipCdiScenario === 'custom' ? (dq.ipCdiCustomPercent ?? 25) : (IP_CDI_SCENARIOS[dq.ipCdiScenario] ?? 0);
     out.cdiQueryReduction = `${fmtN(eligibleEncounters)} encounters × ${dq.ipCdiQueryRate}% query rate × ${reductionPct}% reduction × ${fmt$(dq.ipCdiCostPerQuery)}/query × ${dq.ipCdiRealization}% realization`;
   }
   if (isIP && dq.ipObsDefenseEnabled) {
     const preventableScenarios: Record<string, number> = { conservative: 25, typical: 40, aggressive: 55 };
-    const preventablePct = preventableScenarios[dq.ipObsDefensePreventableScenario] ?? 40;
+    const preventablePct = dq.ipObsDefensePreventableScenario === 'custom' ? (dq.ipObsDefenseCustomPercent ?? 40) : (preventableScenarios[dq.ipObsDefensePreventableScenario] ?? 40);
     out.obsDefense = `${fmtN(eligibleEncounters)} encounters × ${dq.ipObsDefenseDenialRate}% downgrade rate × ${fmt$(dq.ipObsDefenseRevenueDelta)}/case delta × ${preventablePct}% doc-preventable × ${dq.ipObsDefenseRealization}% realization`;
   }
 

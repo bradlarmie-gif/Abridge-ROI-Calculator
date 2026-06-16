@@ -562,3 +562,71 @@ describe("newly-tunable drivers recompute correctly", () => {
     expect(recomputeDriverFromExploreState("costReduction", state)).toBe(250000);
   });
 });
+
+describe("ED wRVU scenario values (conservative 1 / typical 3 / optimistic 6)", () => {
+  const edWrvu = (scenario: "conservative" | "typical" | "aggressive" | "custom"): ExploreState => ({
+    ...DEFAULT_EXPLORE_STATE,
+    careSetting: "ed",
+    annualEncounters: 50000,
+    utilizationPercent: 100,
+    docQualityInputs: {
+      ...DEFAULT_EXPLORE_STATE.docQualityInputs,
+      wrvuEnabled: true,
+      wrvuScenario: scenario,
+    },
+  });
+
+  it("ED aggressive uses 6% lift — value scales 6/3 vs typical", () => {
+    const typical = computeAllDriverValues(edWrvu("typical"), 0).edEmLevel;
+    const aggressive = computeAllDriverValues(edWrvu("aggressive"), 0).edEmLevel;
+    expect(typical).toBeGreaterThan(0);
+    // typical=3%, aggressive=6% — value is linear in lift %, so ratio is 2x.
+    expect(aggressive).toBeCloseTo(typical * (6 / 3), -1);
+  });
+
+  it("ED conservative uses 1% lift (1/3 of typical)", () => {
+    const typical = computeAllDriverValues(edWrvu("typical"), 0).edEmLevel;
+    const conservative = computeAllDriverValues(edWrvu("conservative"), 0).edEmLevel;
+    expect(conservative).toBeCloseTo(typical * (1 / 3), -1);
+  });
+});
+
+describe("inpatient doc-quality drivers honor a persisted 'custom' scenario", () => {
+  const ipBase = (overrides: Partial<ExploreState["docQualityInputs"]>): ExploreState => ({
+    ...DEFAULT_EXPLORE_STATE,
+    careSetting: "inpatient",
+    annualEncounters: 40000,
+    utilizationPercent: 80,
+    docQualityInputs: { ...DEFAULT_EXPLORE_STATE.docQualityInputs, ...overrides },
+  });
+
+  it("ipDrg custom % flows through the engine and recompute (not a fallback)", () => {
+    const customState = ipBase({ ipDrgEnabled: true, ipDrgScenario: "custom", ipDrgCustomPercent: 50 });
+    const typicalState = ipBase({ ipDrgEnabled: true, ipDrgScenario: "typical" }); // typical = 20
+    const custom = computeAllDriverValues(customState, 0).drgAccuracy;
+    const typical = computeAllDriverValues(typicalState, 0).drgAccuracy;
+    expect(custom).toBeGreaterThan(0);
+    // 50% custom vs 20% typical → 2.5x, proving the chosen custom % is used.
+    expect(custom).toBeCloseTo(typical * (50 / 20), -1);
+    // recompute path resolves the same value.
+    expect(recomputeDriverFromExploreState("ipDrg", customState)).toBe(custom);
+  });
+
+  it("ipCdi custom % flows through the engine (not a fallback)", () => {
+    const customState = ipBase({ ipCdiEnabled: true, ipCdiScenario: "custom", ipCdiCustomPercent: 50 });
+    const typicalState = ipBase({ ipCdiEnabled: true, ipCdiScenario: "typical" }); // typical = 25
+    const custom = computeAllDriverValues(customState, 0).cdiQueryReduction;
+    const typical = computeAllDriverValues(typicalState, 0).cdiQueryReduction;
+    expect(custom).toBeGreaterThan(0);
+    expect(custom).toBeCloseTo(typical * (50 / 25), -1);
+  });
+
+  it("ipObsDefense custom % flows through the engine (not a fallback)", () => {
+    const customState = ipBase({ ipObsDefenseEnabled: true, ipObsDefensePreventableScenario: "custom", ipObsDefenseCustomPercent: 80, ipObsDefenseDenialRate: 8, ipObsDefenseRevenueDelta: 6000 });
+    const typicalState = ipBase({ ipObsDefenseEnabled: true, ipObsDefensePreventableScenario: "typical", ipObsDefenseDenialRate: 8, ipObsDefenseRevenueDelta: 6000 }); // typical = 40
+    const custom = computeAllDriverValues(customState, 0).obsDefense;
+    const typical = computeAllDriverValues(typicalState, 0).obsDefense;
+    expect(custom).toBeGreaterThan(0);
+    expect(custom).toBeCloseTo(typical * (80 / 40), -1);
+  });
+});

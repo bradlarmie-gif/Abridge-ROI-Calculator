@@ -52,7 +52,7 @@ export function recomputeDriverFromExploreState(driverId: string, state: Explore
     case 'wrvu': {
       const isED = careSetting === 'ed';
       const scenarios: Record<string, number> = isED
-        ? { conservative: 2, typical: 5, aggressive: 9, custom: dq.wrvuCustomPercent ?? 5 }
+        ? { conservative: 1, typical: 3, aggressive: 6, custom: dq.wrvuCustomPercent ?? 5 }
         : { conservative: 2, typical: 5, aggressive: 9, custom: dq.wrvuCustomPercent ?? 5 };
       const liftPct = scenarios[dq.wrvuScenario] ?? scenarios.typical;
       return Math.round(eligible * dq.currentWrvu * (liftPct / 100) * dq.conversionFactor * (dq.wrvuRealization / 100));
@@ -82,13 +82,13 @@ export function recomputeDriverFromExploreState(driverId: string, state: Explore
       return Math.round(prevented * dq.avgClaimValue * (dq.denialsRealization / 100));
     }
     case 'ipDrg': {
-      const pcts: Record<string, number> = { conservative: 15, typical: 20, aggressive: 25 };
+      const pcts: Record<string, number> = { conservative: 15, typical: 20, aggressive: 25, custom: dq.ipDrgCustomPercent ?? 20 };
       const pct = pcts[dq.ipDrgScenario] ?? 20;
       const atRisk = eligible * (dq.ipDrgAtRiskRate / 100);
       return Math.round(atRisk * (pct / 100) * dq.ipDrgWeightIncrease * dq.ipDrgBasePayment * (dq.ipDrgRealization / 100));
     }
     case 'ipCdi': {
-      const pcts: Record<string, number> = { conservative: 15, typical: 30, aggressive: 50 };
+      const pcts: Record<string, number> = { conservative: 15, typical: 30, aggressive: 50, custom: dq.ipCdiCustomPercent ?? 25 };
       const pct = pcts[dq.ipCdiScenario] ?? 30;
       const queries = eligible * (dq.ipCdiQueryRate / 100);
       return Math.round(queries * (pct / 100) * dq.ipCdiCostPerQuery * (dq.ipCdiRealization / 100));

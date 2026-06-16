@@ -13,7 +13,7 @@ export default function ObsDefenseCalc({ state, updateDocQualityInputs }: Props)
   const dq = docQualityInputs;
   const eligibleAdmissions = Math.round(annualEncounters * (utilizationPercent / 100));
 
-  const preventablePcts: Record<string, number> = { conservative: 25, typical: 40, aggressive: 55 };
+  const preventablePcts: Record<string, number> = { conservative: 25, typical: 40, aggressive: 55, custom: dq.ipObsDefenseCustomPercent ?? 40 };
   const preventablePct = preventablePcts[dq.ipObsDefensePreventableScenario] / 100;
 
   const downgrades = Math.round(eligibleAdmissions * (dq.ipObsDefenseDenialRate / 100));

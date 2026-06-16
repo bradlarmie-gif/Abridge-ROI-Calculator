@@ -422,7 +422,8 @@ export interface DocQualityInputs {
   
   // Inpatient: DRG Accuracy
   ipDrgEnabled: boolean;
-  ipDrgScenario: 'conservative' | 'typical' | 'aggressive';
+  ipDrgScenario: 'conservative' | 'typical' | 'aggressive' | 'custom';
+  ipDrgCustomPercent: number;
   ipDrgAtRiskRate: number; // % of admissions with documentation gaps
   ipDrgWeightIncrease: number; // Average DRG weight difference
   ipDrgBasePayment: number; // Base DRG payment
@@ -432,13 +433,15 @@ export interface DocQualityInputs {
   ipObsDefenseEnabled: boolean;
   ipObsDefenseDenialRate: number;
   ipObsDefenseRevenueDelta: number;         // IP-to-Obs revenue delta per downgraded case
-  ipObsDefensePreventableScenario: 'conservative' | 'typical' | 'aggressive';
+  ipObsDefensePreventableScenario: 'conservative' | 'typical' | 'aggressive' | 'custom';
+  ipObsDefenseCustomPercent: number;
   ipObsDefenseRealization: number;
   ipObsDefenseExpanded: boolean;
   
   // Inpatient: CDI Query Reduction
   ipCdiEnabled: boolean;
-  ipCdiScenario: 'conservative' | 'typical' | 'aggressive';
+  ipCdiScenario: 'conservative' | 'typical' | 'aggressive' | 'custom';
+  ipCdiCustomPercent: number;
   ipCdiQueryRate: number; // % of admissions that generate queries
   ipCdiCostPerQuery: number; // Cost per query
   ipCdiRealization: number;
@@ -873,6 +876,7 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     // Inpatient: DRG Accuracy defaults
     ipDrgEnabled: false,
     ipDrgScenario: 'typical',
+    ipDrgCustomPercent: 20,
     ipDrgAtRiskRate: 18, // 18% of admissions have documentation gaps
     ipDrgWeightIncrease: 0.3, // Average DRG weight difference
     ipDrgBasePayment: 6000, // $6,000 base DRG payment
@@ -882,11 +886,13 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     ipObsDefenseDenialRate: 5,
     ipObsDefenseRevenueDelta: 5000,
     ipObsDefensePreventableScenario: 'typical',
+    ipObsDefenseCustomPercent: 40,
     ipObsDefenseRealization: 50,
     ipObsDefenseExpanded: false,
     // Inpatient: CDI Query Reduction defaults
     ipCdiEnabled: false,
     ipCdiScenario: 'typical',
+    ipCdiCustomPercent: 25,
     ipCdiQueryRate: 30, // 30% of admissions generate queries
     ipCdiCostPerQuery: 50, // $50 per query
     ipCdiRealization: 75,
@@ -1298,7 +1304,7 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
     let total = 0;
     
     const wrvuScenarios: Record<string, number> = isEDLocal
-      ? { conservative: 2, typical: 5, aggressive: 9, custom: docQualityInputs.wrvuCustomPercent ?? 5 }
+      ? { conservative: 1, typical: 3, aggressive: 6, custom: docQualityInputs.wrvuCustomPercent ?? 5 }
       : { conservative: 2, typical: 5, aggressive: 9, custom: docQualityInputs.wrvuCustomPercent ?? 5 };
     const hccScenarios: Record<string, number> = { conservative: 6, typical: 10, aggressive: 15 };
     const denialsScenarios: Record<string, number> = isEDLocal
@@ -1341,7 +1347,7 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
 
     // Inpatient: DRG Accuracy
     if (state.careSetting === 'inpatient' && docQualityInputs.ipDrgEnabled) {
-      const ipDrgProtectionScenarios: Record<string, number> = { conservative: 15, typical: 20, aggressive: 25 };
+      const ipDrgProtectionScenarios: Record<string, number> = { conservative: 15, typical: 20, aggressive: 25, custom: docQualityInputs.ipDrgCustomPercent ?? 20 };
       const protectionPercent = ipDrgProtectionScenarios[docQualityInputs.ipDrgScenario];
       const admissionsAtRisk = eligibleEncounters * (docQualityInputs.ipDrgAtRiskRate / 100);
       const admissionsProtected = admissionsAtRisk * (protectionPercent / 100);
@@ -1351,7 +1357,7 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
 
     // Inpatient: Obs/IP Status Defense
     if (state.careSetting === 'inpatient' && docQualityInputs.ipObsDefenseEnabled) {
-      const preventableScenarios: Record<string, number> = { conservative: 25, typical: 40, aggressive: 55 };
+      const preventableScenarios: Record<string, number> = { conservative: 25, typical: 40, aggressive: 55, custom: docQualityInputs.ipObsDefenseCustomPercent ?? 40 };
       const preventablePct = preventableScenarios[docQualityInputs.ipObsDefensePreventableScenario] / 100;
       const downgrades = eligibleEncounters * (docQualityInputs.ipObsDefenseDenialRate / 100);
       const gross = downgrades * docQualityInputs.ipObsDefenseRevenueDelta * preventablePct;
