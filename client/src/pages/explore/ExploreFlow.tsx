@@ -1100,12 +1100,23 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
 
   const navigate = useCallback((nextPhase: ExplorePhase) => {
     setPhase(nextPhase);
-    window.history.pushState({ 
-      view: 'explore', 
-      explorePhase: nextPhase 
+    window.history.pushState({
+      view: 'explore',
+      explorePhase: nextPhase
     }, '');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
+
+  // Fast-exit: when editing an existing proforma setting's drivers, let the user
+  // commit from any driver screen and jump straight back to the Business Case,
+  // skipping the investment + model pages. Routes THROUGH ExploreModel's existing
+  // handleAddToProforma (via autoCommitToProforma) so the numbers match the normal flow.
+  const isEditingProforma = !!initialExploreState && !!onAddToProforma;
+  const [fastExitCommit, setFastExitCommit] = useState(false);
+  const fastExitToProforma = useCallback(() => {
+    setFastExitCommit(true);
+    navigate('model');
+  }, [navigate]);
 
   // Calculate total hours saved
   const totalHoursSaved = useMemo(() => {
@@ -1379,6 +1390,31 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
     </div>
   );
 
+  const showFastExitBar =
+    isEditingProforma &&
+    ['practice', 'timeSavings', 'capacity', 'workforce', 'revenue', 'quality'].includes(phase);
+
+  const fastExitBar = showFastExitBar ? (
+    <div className="px-4 pt-3 max-w-2xl mx-auto w-full">
+      <div className="flex items-center justify-between gap-3 rounded-xl border border-neutral-200 bg-neutral-50 px-3 py-2">
+        <button
+          type="button"
+          onClick={fastExitToProforma}
+          className="inline-flex items-center gap-1 text-sm font-medium text-neutral-600 hover:text-[#EA2C00] transition-colors"
+        >
+          <span aria-hidden="true">←</span> Business Case
+        </button>
+        <button
+          type="button"
+          onClick={fastExitToProforma}
+          className="inline-flex items-center gap-2 rounded-lg bg-[#1A1A1A] px-4 py-2 text-sm font-semibold text-white hover:bg-[#EA2C00] transition-colors"
+        >
+          Done — Back to Business Case
+        </button>
+      </div>
+    </div>
+  ) : null;
+
   let content: React.ReactNode = null;
 
   switch (phase) {
@@ -1556,6 +1592,7 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
           onAddToProforma={onAddToProforma}
           onStepClick={(step: number) => navigate(stepPhaseMap[step - 1])}
           stepLabels={stepLabels}
+          autoCommitToProforma={fastExitCommit}
         />
       );
       break;
@@ -1565,6 +1602,7 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
   return (
     <>
       {progressBar}
+      {fastExitBar}
       {content}
     </>
   );

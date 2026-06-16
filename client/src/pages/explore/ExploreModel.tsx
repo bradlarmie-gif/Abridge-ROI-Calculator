@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Download, ChevronDown, ChevronUp, Edit, FileText, TrendingUp, Link, BarChart3, Check, AlertTriangle, Sparkles, FileCheck, Loader2, Layers, Users, Clock, DollarSign, Building2, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
@@ -39,6 +39,7 @@ interface ExploreModelProps {
   onAddToProforma?: (snapshot: ProformaSettingSnapshot) => void;
   onStepClick?: (step: number) => void;
   stepLabels?: string[];
+  autoCommitToProforma?: boolean;
 }
 
 export default function ExploreModel({
@@ -54,6 +55,7 @@ export default function ExploreModel({
   onAddToProforma,
   onStepClick,
   stepLabels,
+  autoCommitToProforma,
 }: ExploreModelProps) {
   const [showMethodology, setShowMethodology] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
@@ -1186,6 +1188,23 @@ export default function ExploreModel({
   };
 
   const labels = driverLabels[state.careSetting || 'outpatient'];
+
+  // Fast-exit: when editing a proforma setting, auto-commit the snapshot exactly
+  // once via the existing handleAddToProforma, then App.tsx routes back to the
+  // Business Case. Must be an unconditional hook call (after all other hooks).
+  useEffect(() => {
+    if (autoCommitToProforma) handleAddToProforma();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoCommitToProforma]);
+
+  // Render a lightweight saving state so the heavy model UI never flashes.
+  if (autoCommitToProforma) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-neutral-500 text-sm">
+        Saving changes…
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white">
