@@ -59,7 +59,7 @@ const IP_CDI_SCENARIOS: Record<string, number> = {
 export const wrvuScenariosFor = (isED: boolean, customPct?: number): Record<string, number> =>
   isED
     ? { conservative: 1, typical: 3, aggressive: 6, custom: customPct ?? 5 }
-    : { conservative: 2, typical: 5, aggressive: 7, custom: customPct ?? 5 };
+    : { conservative: 2, typical: 5, aggressive: 9, custom: customPct ?? 5 };
 
 const denialsScenariosFor = (isED: boolean, customPct?: number): Record<string, number> =>
   isED
