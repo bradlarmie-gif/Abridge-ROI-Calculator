@@ -414,7 +414,8 @@ export interface DocQualityInputs {
   
   // Denials
   denialsEnabled: boolean;
-  denialsScenario: 'conservative' | 'typical' | 'aggressive';
+  denialsScenario: 'conservative' | 'typical' | 'aggressive' | 'custom';
+  denialsCustomPercent: number;
   medNecessityDenialRate: number;
   avgClaimValue: number;
   denialsRealization: number;
@@ -865,6 +866,7 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     hccRealization: 50,
     denialsEnabled: false,
     denialsScenario: 'typical',
+    denialsCustomPercent: 15,
     medNecessityDenialRate: 3,
     avgClaimValue: 200,
     denialsRealization: 60,
@@ -1300,8 +1302,8 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
       : { conservative: 2, typical: 5, aggressive: 9, custom: docQualityInputs.wrvuCustomPercent ?? 5 };
     const hccScenarios: Record<string, number> = { conservative: 6, typical: 10, aggressive: 15 };
     const denialsScenarios: Record<string, number> = isEDLocal
-      ? { conservative: 15, typical: 30, aggressive: 50 }
-      : { conservative: 25, typical: 50, aggressive: 75 };
+      ? { conservative: 15, typical: 30, aggressive: 50, custom: docQualityInputs.denialsCustomPercent ?? 15 }
+      : { conservative: 25, typical: 50, aggressive: 75, custom: docQualityInputs.denialsCustomPercent ?? 15 };
 
     // wRVU
     if (docQualityInputs.wrvuEnabled) {

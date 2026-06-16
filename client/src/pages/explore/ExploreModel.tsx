@@ -208,8 +208,8 @@ export default function ExploreModel({
   const isEDForScenarios = state.careSetting === 'ed';
   const wrvuScenarios = wrvuScenariosFor(isEDForScenarios, docQualityInputs.wrvuCustomPercent);
   const denialsScenarios: Record<string, number> = isEDForScenarios
-    ? { conservative: 15, typical: 30, aggressive: 50 }
-    : { conservative: 25, typical: 50, aggressive: 75 };
+    ? { conservative: 15, typical: 30, aggressive: 50, custom: docQualityInputs.denialsCustomPercent ?? 15 }
+    : { conservative: 25, typical: 50, aggressive: 75, custom: docQualityInputs.denialsCustomPercent ?? 15 };
 
   const wrvuValue = useMemo(() => {
     if (!docQualityInputs.wrvuEnabled) return 0;

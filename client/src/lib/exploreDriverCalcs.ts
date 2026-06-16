@@ -61,10 +61,10 @@ export const wrvuScenariosFor = (isED: boolean, customPct?: number): Record<stri
     ? { conservative: 1, typical: 2.5, aggressive: 4, custom: customPct ?? 5 }
     : { conservative: 2, typical: 5, aggressive: 7, custom: customPct ?? 5 };
 
-const denialsScenariosFor = (isED: boolean): Record<string, number> =>
+const denialsScenariosFor = (isED: boolean, customPct?: number): Record<string, number> =>
   isED
-    ? { conservative: 15, typical: 30, aggressive: 50 }
-    : { conservative: 25, typical: 50, aggressive: 75 };
+    ? { conservative: 15, typical: 30, aggressive: 50, custom: customPct ?? 25 }
+    : { conservative: 25, typical: 50, aggressive: 75, custom: customPct ?? 25 };
 
 const fmtN = (n: number) => Math.round(n).toLocaleString();
 const fmtNd = (n: number) =>
@@ -178,7 +178,7 @@ export function computeAllDriverValues(
 
   // ─── Revenue ───
   const wrvuScenarios = wrvuScenariosFor(isED, dq.wrvuCustomPercent);
-  const denialsScenarios = denialsScenariosFor(isED);
+  const denialsScenarios = denialsScenariosFor(isED, dq.denialsCustomPercent);
 
   if (dq.wrvuEnabled && (isOP || isED)) {
     const lift = (dq.currentWrvu * wrvuScenarios[dq.wrvuScenario]) / 100;
@@ -387,7 +387,7 @@ export function computeAllDriverCalcSummaries(
 
   // Revenue
   const wrvuScenarios = wrvuScenariosFor(isED, dq.wrvuCustomPercent);
-  const denialsScenarios = denialsScenariosFor(isED);
+  const denialsScenarios = denialsScenariosFor(isED, dq.denialsCustomPercent);
 
   if (dq.wrvuEnabled && (isOP || isED)) {
     const liftPct = wrvuScenarios[dq.wrvuScenario] ?? 0;

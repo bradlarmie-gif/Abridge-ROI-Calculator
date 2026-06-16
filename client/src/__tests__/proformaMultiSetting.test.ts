@@ -348,6 +348,20 @@ describe("lever / assumption editing (recomputeDriverFromExploreState)", () => {
     expect(av).toBeGreaterThan(cv);
   });
 
+  it("denials custom % is honored (low custom < typical) across the canonical engine and recompute", () => {
+    const typical = op({ docQualityInputs: { ...DEFAULT_EXPLORE_STATE.docQualityInputs, denialsEnabled: true, denialsScenario: "typical" } });
+    const custom = op({ docQualityInputs: { ...DEFAULT_EXPLORE_STATE.docQualityInputs, denialsEnabled: true, denialsScenario: "custom", denialsCustomPercent: 15 } });
+    // Canonical engine: custom 15% must use 15 (not a fallback) and beat-down typical 50%.
+    const typEngine = computeAllDriverValues(typical, 0).denialPrevention;
+    const cusEngine = computeAllDriverValues(custom, 0).denialPrevention;
+    expect(cusEngine).toBeGreaterThan(0);
+    expect(cusEngine).toBeLessThan(typEngine);
+    // The custom 15% value must equal scaling typical (50%) down to 15/50.
+    expect(cusEngine).toBe(Math.round(typEngine * (15 / 50)));
+    // recomputeDriverFromExploreState (drawer path) must agree with the engine.
+    expect(recomputeDriverFromExploreState("denials", custom)).toBe(cusEngine);
+  });
+
   it("patient-access value rises with minutes saved per encounter", () => {
     const lo = op({ minutesSavedPerEncounter: 2, timeDriverInputs: { ...DEFAULT_EXPLORE_STATE.timeDriverInputs, patientAccessEnabled: true } });
     const hi = op({ minutesSavedPerEncounter: 8, timeDriverInputs: { ...DEFAULT_EXPLORE_STATE.timeDriverInputs, patientAccessEnabled: true } });

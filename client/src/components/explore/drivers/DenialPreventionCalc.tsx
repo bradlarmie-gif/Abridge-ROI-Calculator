@@ -15,8 +15,8 @@ export default function DenialPreventionCalc({ state, updateDocQualityInputs }: 
 
   const eligibleEncounters = Math.round(annualEncounters * (utilizationPercent / 100));
   const denialsScenarios: Record<string, number> = isED
-    ? { conservative: 15, typical: 30, aggressive: 50 }
-    : { conservative: 25, typical: 50, aggressive: 75 };
+    ? { conservative: 15, typical: 30, aggressive: 50, custom: docQualityInputs.denialsCustomPercent ?? 15 }
+    : { conservative: 25, typical: 50, aggressive: 75, custom: docQualityInputs.denialsCustomPercent ?? 15 };
 
   const preventionPercent = denialsScenarios[docQualityInputs.denialsScenario];
   const medNecessityDenials = eligibleEncounters * (docQualityInputs.medNecessityDenialRate / 100);

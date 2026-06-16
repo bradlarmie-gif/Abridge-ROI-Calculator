@@ -107,8 +107,8 @@ export function computeRevenueBreakdown(state: ExploreState, _totalHoursSaved: n
 
   const wrvuScenarios = wrvuScenariosFor(isED, dq.wrvuCustomPercent);
   const denialsScenarios: Record<string, number> = isED
-    ? { conservative: 15, typical: 30, aggressive: 50 }
-    : { conservative: 25, typical: 50, aggressive: 75 };
+    ? { conservative: 15, typical: 30, aggressive: 50, custom: dq.denialsCustomPercent ?? 15 }
+    : { conservative: 25, typical: 50, aggressive: 75, custom: dq.denialsCustomPercent ?? 15 };
   const hccScenarios: Record<string, number> = { conservative: 6, typical: 10, aggressive: 15 };
 
   if (dq.wrvuEnabled && isOPorED) {

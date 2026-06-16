@@ -468,7 +468,7 @@ export default function ExploreDocQuality({
 
   // Scenario percentages
   const wrvuScenarios: Record<ScenarioLevel, number> = { conservative: 2, typical: 5, aggressive: 9, custom: docQualityInputs.wrvuCustomPercent ?? 5 };
-const denialsScenarios: Record<ScenarioLevel, number> = { conservative: 25, typical: 50, aggressive: 75, custom: 50 };
+const denialsScenarios: Record<ScenarioLevel, number> = { conservative: 25, typical: 50, aggressive: 75, custom: docQualityInputs.denialsCustomPercent ?? 15 };
   const ipDrgProtectionScenarios: Record<ScenarioLevel, number> = { conservative: 15, typical: 20, aggressive: 25, custom: 20 };
   const ipCdiReductionScenarios: Record<ScenarioLevel, number> = { conservative: 15, typical: 25, aggressive: 35, custom: 25 };
 
@@ -2106,25 +2106,73 @@ const denialsScenarios: Record<ScenarioLevel, number> = { conservative: 25, typi
                   <div className="h-px bg-[#E5E5E5] my-4" />
 
                   <p className="text-sm font-medium text-black mb-3">Prevention target:</p>
-                  <div className="grid grid-cols-3 gap-2 mb-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
                     {(['conservative', 'typical', 'aggressive'] as const).map((level) => (
                       <button
                         key={level}
                         onClick={() => updateDocInputs({ denialsScenario: level })}
                         className={`p-2 sm:p-3 rounded-lg border transition-all text-center ${
-                          docQualityInputs.denialsScenario === level
+                          docQualityInputs.denialsScenario !== 'custom' && docQualityInputs.denialsScenario === level
                             ? "bg-[#EA2C00] border-[#EA2C00] text-white"
                             : "bg-white border-[#E5E5E5] text-black hover:border-[#D1D5DB]"
                         }`}
                         data-testid={`button-denials-${level}`}
                       >
-                        <p className={`text-xs mb-1 ${docQualityInputs.denialsScenario === level ? 'text-white/80' : ''}`}>
+                        <p className={`font-medium ${docQualityInputs.denialsScenario !== 'custom' && docQualityInputs.denialsScenario === level ? 'text-white' : 'text-black'}`}>
                           {{ conservative: 'Conservative', typical: 'Typical', aggressive: 'Optimistic' }[level]}
                         </p>
-                        <p className="font-semibold">{denialsScenarios[level]}%</p>
+                        <p className={`text-sm ${docQualityInputs.denialsScenario !== 'custom' && docQualityInputs.denialsScenario === level ? 'text-white/80' : 'text-[#888888]'}`}>{denialsScenarios[level]}%</p>
                       </button>
                     ))}
+                    <button
+                      onClick={() => updateDocInputs({ denialsScenario: 'custom' })}
+                      className={`p-2 sm:p-3 rounded-lg border transition-all text-center ${
+                        docQualityInputs.denialsScenario === 'custom'
+                          ? "bg-[#EA2C00] border-[#EA2C00] text-white"
+                          : "bg-white border-[#E5E5E5] text-black hover:border-[#D1D5DB]"
+                      }`}
+                      data-testid="button-denials-custom"
+                    >
+                      <p className={`font-medium ${docQualityInputs.denialsScenario === 'custom' ? 'text-white' : 'text-black'}`}>Custom</p>
+                      {docQualityInputs.denialsScenario === 'custom' && (
+                        <p className="text-sm text-white/80">{docQualityInputs.denialsCustomPercent ?? 15}%</p>
+                      )}
+                    </button>
                   </div>
+
+                  {docQualityInputs.denialsScenario === 'custom' && (
+                    <div className="flex items-center gap-3 mb-4">
+                      <label className="text-sm text-[#666666] flex-shrink-0">Prevention %</label>
+                      <div className="relative flex-1">
+                        <input
+                          type="text"
+                          inputMode="decimal"
+                          value={docQualityInputs.denialsCustomPercent ?? 15}
+                          onChange={(e) => {
+                            const raw = e.target.value.replace(/[^0-9.]/g, '');
+                            const n = parseFloat(raw);
+                            if (raw === '' || raw === '.') {
+                              updateDocInputs({ denialsCustomPercent: 0 });
+                            } else if (!isNaN(n) && n >= 0 && n <= 100) {
+                              updateDocInputs({ denialsCustomPercent: n });
+                            }
+                          }}
+                          onBlur={(e) => {
+                            const n = parseFloat(e.target.value);
+                            if (isNaN(n) || n < 0.1) {
+                              updateDocInputs({ denialsCustomPercent: 15 });
+                            } else {
+                              updateDocInputs({ denialsCustomPercent: Math.min(100, n) });
+                            }
+                          }}
+                          className="w-full h-10 bg-white border border-[#E5E5E5] rounded-lg px-3 pr-8 text-sm font-semibold text-black focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30"
+                          autoFocus
+                          data-testid="input-dq-denials-custom"
+                        />
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
+                      </div>
+                    </div>
+                  )}
 
                   <div className="h-px bg-[#E5E5E5] my-4" />
 

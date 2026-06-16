@@ -75,8 +75,8 @@ export function recomputeDriverFromExploreState(driverId: string, state: Explore
     case 'denials': {
       const isED = careSetting === 'ed';
       const pcts: Record<string, number> = isED
-        ? { conservative: 15, typical: 30, aggressive: 50 }
-        : { conservative: 25, typical: 50, aggressive: 75 };
+        ? { conservative: 15, typical: 30, aggressive: 50, custom: dq.denialsCustomPercent ?? 15 }
+        : { conservative: 25, typical: 50, aggressive: 75, custom: dq.denialsCustomPercent ?? 15 };
       const pct = pcts[dq.denialsScenario] ?? 50;
       const prevented = eligible * (dq.medNecessityDenialRate / 100) * (pct / 100);
       return Math.round(prevented * dq.avgClaimValue * (dq.denialsRealization / 100));
