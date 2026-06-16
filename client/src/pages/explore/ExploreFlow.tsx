@@ -1135,6 +1135,10 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
   // skipping the investment + model pages. Routes THROUGH ExploreModel's existing
   // handleAddToProforma (via autoCommitToProforma) so the numbers match the normal flow.
   const isEditingProforma = !!initialExploreState && !!onAddToProforma;
+  // "Back to Business Case" should appear whenever we arrived from the proforma —
+  // editing an existing setting OR adding a new one — for a consistent escape
+  // hatch on every screen. (Expansion-page hiding stays edit-only below.)
+  const cameFromProforma = !!onBackToProforma && !!onAddToProforma;
   const [fastExitCommit, setFastExitCommit] = useState(false);
   const fastExitToProforma = useCallback(() => {
     setFastExitCommit(true);
@@ -1413,23 +1417,6 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
     </div>
   );
 
-  const showFastExitBar =
-    isEditingProforma &&
-    ['practice', 'timeSavings', 'capacity', 'workforce', 'revenue', 'quality'].includes(phase);
-
-  // Single, restrained secondary action — quiet pill, right-aligned, not a CTA bar.
-  const fastExitBar = showFastExitBar ? (
-    <div className="px-4 pt-3 max-w-2xl mx-auto w-full flex justify-end">
-      <button
-        type="button"
-        onClick={fastExitToProforma}
-        className="inline-flex items-center gap-1.5 rounded-full border border-neutral-200 bg-white px-3.5 py-1.5 text-[12.5px] font-medium text-neutral-600 shadow-sm hover:border-[#EA2C00]/40 hover:text-[#EA2C00] transition-colors"
-      >
-        <span aria-hidden="true">←</span> Done · Back to Business Case
-      </button>
-    </div>
-  ) : null;
-
   let content: React.ReactNode = null;
 
   switch (phase) {
@@ -1458,6 +1445,7 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
           onNext={() => navigate('timeSavings')}
           onBack={() => navigate('careSetting')}
           onHome={goHome}
+          onReturnToBusinessCase={cameFromProforma ? fastExitToProforma : undefined}
         />
       );
       break;
@@ -1472,6 +1460,7 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
           }}
           onBack={() => navigate('practice')}
           onHome={goHome}
+          onReturnToBusinessCase={cameFromProforma ? fastExitToProforma : undefined}
         />
       );
       break;
@@ -1487,6 +1476,7 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
           onNext={() => navigate('workforce')}
           onBack={() => navigate('timeSavings')}
           onHome={goHome}
+          onReturnToBusinessCase={cameFromProforma ? fastExitToProforma : undefined}
         />
       );
       break;
@@ -1506,6 +1496,7 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
           onNext={() => navigate('revenue')}
           onBack={() => navigate('capacity')}
           onHome={goHome}
+          onReturnToBusinessCase={cameFromProforma ? fastExitToProforma : undefined}
         />
       );
       break;
@@ -1527,6 +1518,7 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
           onNext={() => navigate('quality')}
           onBack={() => navigate('workforce')}
           onHome={goHome}
+          onReturnToBusinessCase={cameFromProforma ? fastExitToProforma : undefined}
         />
       );
       break;
@@ -1550,6 +1542,7 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
           onNext={() => navigate('investment')}
           onBack={() => navigate('revenue')}
           onHome={goHome}
+          onReturnToBusinessCase={cameFromProforma ? fastExitToProforma : undefined}
         />
       );
       break;
@@ -1617,7 +1610,6 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
   return (
     <>
       {progressBar}
-      {fastExitBar}
       {content}
     </>
   );

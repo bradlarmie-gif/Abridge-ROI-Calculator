@@ -12,6 +12,7 @@ interface ExploreOpportunityProps {
   onNext: () => void;
   onBack: () => void;
   onHome: () => void;
+  onReturnToBusinessCase?: () => void;
 }
 
 interface BusynessPreset {
@@ -55,7 +56,7 @@ const FTE_ESTIMATES = [
   { label: "Mixed", multiplier: 2.0, description: "Blended unit types" },
 ];
 
-export default function ExploreOpportunity({ state, updateState, onNext, onBack, onHome }: ExploreOpportunityProps) {
+export default function ExploreOpportunity({ state, updateState, onNext, onBack, onHome, onReturnToBusinessCase }: ExploreOpportunityProps) {
   const isED = state.careSetting === 'ed';
   const isInpatient = state.careSetting === 'inpatient';
   const isNursing = state.careSetting === 'nursing';
@@ -174,7 +175,15 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
         stepName="Opportunity Size"
         onBack={onBack}
         onHome={onHome}
-
+        rightAction={onReturnToBusinessCase ? (
+          <button
+            onClick={() => onReturnToBusinessCase?.()}
+            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium bg-[#F0EBE4] text-[#8C7E6F] hover:bg-[#E8E2DA] transition-all"
+            data-testid="button-return-business-case"
+          >
+            ← Back to Business Case
+          </button>
+        ) : undefined}
       />
       <UnifiedHeaderSpacer />
 

@@ -18,9 +18,10 @@ interface ExploreRevenueProps {
   onNext: () => void;
   onBack: () => void;
   onHome: () => void;
+  onReturnToBusinessCase?: () => void;
 }
 
-export default function ExploreRevenue({ state, updateState, totalHoursSaved, priorQuadrants = [], onNext, onBack, onHome }: ExploreRevenueProps) {
+export default function ExploreRevenue({ state, updateState, totalHoursSaved, priorQuadrants = [], onNext, onBack, onHome, onReturnToBusinessCase }: ExploreRevenueProps) {
   const setting = state.careSetting;
   const drivers = setting ? getDriversForPage('Revenue', setting) : [];
   const topLevelDrivers = drivers.filter(d => !d.childOfDriverId);
@@ -156,7 +157,15 @@ export default function ExploreRevenue({ state, updateState, totalHoursSaved, pr
 
   return (
     <div className="min-h-screen bg-white">
-      <UnifiedHeader pathType="explore" currentStep={6} totalSteps={9} stepName="Revenue" onBack={onBack} onHome={onHome} />
+      <UnifiedHeader pathType="explore" currentStep={6} totalSteps={9} stepName="Revenue" onBack={onBack} onHome={onHome} rightAction={onReturnToBusinessCase ? (
+        <button
+          onClick={() => onReturnToBusinessCase?.()}
+          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium bg-[#F0EBE4] text-[#8C7E6F] hover:bg-[#E8E2DA] transition-all"
+          data-testid="button-return-business-case"
+        >
+          ← Back to Business Case
+        </button>
+      ) : undefined} />
       <UnifiedHeaderSpacer />
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-8 md:py-12">
         <div className="flex flex-col lg:flex-row gap-10">

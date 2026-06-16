@@ -18,9 +18,10 @@ interface ExploreWorkforceProps {
   onNext: () => void;
   onBack: () => void;
   onHome: () => void;
+  onReturnToBusinessCase?: () => void;
 }
 
-export default function ExploreWorkforce({ state, updateState, totalHoursSaved, priorQuadrants = [], onNext, onBack, onHome }: ExploreWorkforceProps) {
+export default function ExploreWorkforce({ state, updateState, totalHoursSaved, priorQuadrants = [], onNext, onBack, onHome, onReturnToBusinessCase }: ExploreWorkforceProps) {
   const setting = state.careSetting;
   const drivers = setting ? getDriversForPage('Workforce', setting) : [];
   const topLevelDrivers = drivers.filter(d => !d.childOfDriverId);
@@ -228,6 +229,15 @@ export default function ExploreWorkforce({ state, updateState, totalHoursSaved, 
         stepName="Workforce"
         onBack={onBack}
         onHome={onHome}
+        rightAction={onReturnToBusinessCase ? (
+          <button
+            onClick={() => onReturnToBusinessCase?.()}
+            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium bg-[#F0EBE4] text-[#8C7E6F] hover:bg-[#E8E2DA] transition-all"
+            data-testid="button-return-business-case"
+          >
+            ← Back to Business Case
+          </button>
+        ) : undefined}
       />
       <UnifiedHeaderSpacer />
 

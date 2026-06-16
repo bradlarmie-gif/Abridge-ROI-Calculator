@@ -12,6 +12,7 @@ interface ExploreTimeSavingsProps {
   onNext: () => void;
   onBack: () => void;
   onHome: () => void;
+  onReturnToBusinessCase?: () => void;
 }
 
 export default function ExploreTimeSavings({
@@ -20,6 +21,7 @@ export default function ExploreTimeSavings({
   onNext,
   onBack,
   onHome,
+  onReturnToBusinessCase,
 }: ExploreTimeSavingsProps) {
   const isED = state.careSetting === 'ed';
   const isInpatient = state.careSetting === 'inpatient';
@@ -124,7 +126,15 @@ export default function ExploreTimeSavings({
         stepName="Time Savings"
         onBack={onBack}
         onHome={onHome}
-
+        rightAction={onReturnToBusinessCase ? (
+          <button
+            onClick={() => onReturnToBusinessCase?.()}
+            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium bg-[#F0EBE4] text-[#8C7E6F] hover:bg-[#E8E2DA] transition-all"
+            data-testid="button-return-business-case"
+          >
+            ← Back to Business Case
+          </button>
+        ) : undefined}
       />
       <UnifiedHeaderSpacer />
 
