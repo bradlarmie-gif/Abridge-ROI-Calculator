@@ -68,7 +68,7 @@ const brand = {
   amber:         "#D4930A",
   // Domain
   capacity:     "#EA2C00",
-  workforce:    "#7A1F04",
+  workforce:    "#4E5A6B",
   revenue:      "#1E3A5F",
   quality:      "#888888",
   displacement: "#2D6F6B",

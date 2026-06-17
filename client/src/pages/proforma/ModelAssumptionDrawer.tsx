@@ -16,7 +16,7 @@ import { computeAllDriverValues } from "@/lib/exploreDriverCalcs";
 
 export const DOMAIN_PILL_COLORS: Record<string, string> = {
   Capacity:  "#EA2C00",
-  Workforce: "#7A1F04",
+  Workforce: "#4E5A6B",
   Revenue:   "#1E3A5F",
   Quality:   "#888888",
 };

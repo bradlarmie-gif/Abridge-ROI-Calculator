@@ -123,7 +123,7 @@ function RolloutTimeline({ settings, contractMonths, onContractTermChange }: {
 
 const QUADRANT_COLORS: Record<string, string> = {
   Capacity: "#EA2C00",
-  Workforce: "#7A1F04",
+  Workforce: "#4E5A6B",
   Revenue: "#1A1A1A",
   Quality: "#888888",
 };
