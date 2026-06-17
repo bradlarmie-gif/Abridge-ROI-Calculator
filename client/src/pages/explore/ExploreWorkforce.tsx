@@ -7,7 +7,7 @@ import DriverCard from "@/components/explore/DriverCard";
 import ValueArcDisplay from "@/components/explore/ValueArcDisplay";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { getDriversForPage, type ExploreDriver } from "@/lib/exploreDrivers";
-import type { PriorQuadrantEntry } from "@/lib/exploreQuadrantValues";
+import { computeWorkforceBreakdown, type PriorQuadrantEntry } from "@/lib/exploreQuadrantValues";
 import { type ExploreState, type OtherFinancialBenefitItem } from "./ExploreFlow";
 
 interface ExploreWorkforceProps {
@@ -91,61 +91,13 @@ export default function ExploreWorkforce({ state, updateState, totalHoursSaved, 
     updateState({ docQualityInputs: { ...state.docQualityInputs, ...updates } });
   };
 
-  const driverValues = useMemo(() => {
-    const result: Record<string, number> = {};
-    const td = state.timeDriverInputs;
-    const retentionScenarios: Record<string, number> = { conservative: 5, typical: 10, optimistic: 15, custom: td.retentionCustomPercent ?? 10 };
-    const nursingScenarios: Record<string, number> = { conservative: 10, typical: 15, optimistic: 25, custom: td.retentionCustomPercent ?? 10 };
-
-    // Provider Wellbeing (OP/ED/IP)
-    if (td.wellbeingEnabled && td.calculateRetentionValue) {
-      const isIP = state.careSetting === 'inpatient';
-      const turnover = (isIP ? td.ipAnnualTurnoverRate : td.annualTurnoverRate) / 100;
-      const burnout = (isIP ? td.ipBurnoutRelatedTurnover : td.burnoutRelatedTurnover) / 100;
-      const impact = retentionScenarios[td.retentionImpactScenario] / 100;
-      const retained = state.numberOfProviders * turnover * burnout * impact;
-      result.providerWellbeing = Math.round(retained * (isIP ? td.ipReplacementCost : td.replacementCost));
-
-      // Physician Locum/Agency (child of Wellbeing)
-      if (td.physicianAgencyEnabled) {
-        result.physicianLocumAgency = Math.round(retained * td.physicianAgencyWeeksPerVacancy * td.physicianAgencyWeeklyPremium);
-      }
-    }
-
-    // Nursing Retention
-    if (td.nursingRetentionEnabled) {
-      const turnover = td.nursingTurnoverRate / 100;
-      const impact = nursingScenarios[td.retentionImpactScenario] / 100;
-      const burnoutDepartures = state.numberOfProviders * turnover * 0.40;
-      const retained = burnoutDepartures * impact;
-      result.nursingRetention = Math.round(retained * td.nursingReplacementCost);
-
-      // Nursing Agency (child of Retention)
-      if (td.nursingAgencyEnabled) {
-        result.nursingAgency = Math.round(retained * td.nursingAgencyWeeksPerVacancy * td.nursingAgencyWeeklyPremium);
-      }
-    }
-
-    // Nursing Overtime
-    if (td.nursingOtEnabled) {
-      const otHours = td.nursingOtHoursPerNurseWeek * (td.nursingOtReductionPercent / 100) * state.numberOfProviders * 52;
-      result.nursingOvertime = Math.round(otHours * td.nursingOtHourlyRate);
-    }
-
-    return result;
-  }, [state, totalHoursSaved]);
-
-  const annualBenefitsTotal = useMemo(() => {
-    return benefits.filter(b => b.type === 'annual').reduce((sum, b) => sum + (b.amount || 0), 0);
-  }, [benefits]);
-
-  const oneTimeBenefitsTotal = useMemo(() => {
-    return benefits.filter(b => b.type === 'oneTime').reduce((sum, b) => sum + (b.amount || 0), 0);
-  }, [benefits]);
-
-  const quadrantAnnualTotal = useMemo(() => {
-    return Object.values(driverValues).reduce((sum, v) => sum + v, 0) + annualBenefitsTotal;
-  }, [driverValues, annualBenefitsTotal]);
+  // Single source of truth: shared computeWorkforceBreakdown (canonical-backed)
+  // so this page, the carry-forward, and the Model/PDF can never drift.
+  const breakdown = useMemo(() => computeWorkforceBreakdown(state, totalHoursSaved), [state, totalHoursSaved]);
+  const driverValues = breakdown.driverValues;
+  const annualBenefitsTotal = breakdown.annualBenefitsTotal;
+  const oneTimeBenefitsTotal = breakdown.oneTimeBenefitsTotal;
+  const quadrantAnnualTotal = breakdown.quadrantAnnualTotal;
 
   const renderDriverCard = (driver: ExploreDriver) => {
     const enabled = isEnabled(driver);

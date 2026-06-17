@@ -1,5 +1,6 @@
 import type { ExploreState, OtherFinancialBenefitItem } from "@/pages/explore/ExploreFlow";
-import { wrvuScenariosFor, denialsScenariosFor } from "@/lib/exploreDriverCalcs";
+import { wrvuScenariosFor, denialsScenariosFor, computeAllDriverValues } from "@/lib/exploreDriverCalcs";
+import { EXPLORE_DRIVERS } from "@/lib/exploreDrivers";
 
 export interface QuadrantBreakdown {
   driverValues: Record<string, number>;
@@ -56,43 +57,24 @@ export function computeCapacityBreakdown(state: ExploreState, totalHoursSaved: n
   return buildResult(result, benefitsForQuadrant(state, 'Capacity'));
 }
 
-export function computeWorkforceBreakdown(state: ExploreState, _totalHoursSaved: number): QuadrantBreakdown {
+export function computeWorkforceBreakdown(state: ExploreState, totalHoursSaved: number): QuadrantBreakdown {
+  // Single source of truth: pull the Workforce driver values straight from the
+  // canonical engine so the screen total can't drift from the Model/PDF. This
+  // previously re-derived each driver inline and silently OMITTED
+  // scribeCostReduction (a Workforce driver for OP/ED), understating the screen.
+  return buildResult(driverValuesForQuadrant(state, totalHoursSaved, 'Workforce'), benefitsForQuadrant(state, 'Workforce'));
+}
+
+function driverValuesForQuadrant(state: ExploreState, totalHoursSaved: number, quadrant: Quadrant): Record<string, number> {
+  const all = computeAllDriverValues(state, totalHoursSaved);
   const result: Record<string, number> = {};
-  const td = state.timeDriverInputs;
-  const retentionScenarios: Record<string, number> = { conservative: 5, typical: 10, optimistic: 15, custom: td.retentionCustomPercent ?? 10 };
-  const nursingScenarios: Record<string, number> = { conservative: 10, typical: 15, optimistic: 25, custom: td.retentionCustomPercent ?? 10 };
-
-  if (td.wellbeingEnabled && td.calculateRetentionValue) {
-    const isIP = state.careSetting === 'inpatient';
-    const turnover = (isIP ? td.ipAnnualTurnoverRate : td.annualTurnoverRate) / 100;
-    const burnout = (isIP ? td.ipBurnoutRelatedTurnover : td.burnoutRelatedTurnover) / 100;
-    const impact = retentionScenarios[td.retentionImpactScenario] / 100;
-    const retained = state.numberOfProviders * turnover * burnout * impact;
-    result.providerWellbeing = Math.round(retained * (isIP ? td.ipReplacementCost : td.replacementCost));
-
-    if (td.physicianAgencyEnabled) {
-      result.physicianLocumAgency = Math.round(retained * td.physicianAgencyWeeksPerVacancy * td.physicianAgencyWeeklyPremium);
+  if (!state.careSetting) return result;
+  EXPLORE_DRIVERS.forEach(d => {
+    if (d.quadrant === quadrant && d.settings.includes(state.careSetting!) && all[d.id] !== undefined) {
+      result[d.id] = all[d.id];
     }
-  }
-
-  if (td.nursingRetentionEnabled) {
-    const turnover = td.nursingTurnoverRate / 100;
-    const impact = nursingScenarios[td.retentionImpactScenario] / 100;
-    const burnoutDepartures = state.numberOfProviders * turnover * 0.40;
-    const retained = burnoutDepartures * impact;
-    result.nursingRetention = Math.round(retained * td.nursingReplacementCost);
-
-    if (td.nursingAgencyEnabled) {
-      result.nursingAgency = Math.round(retained * td.nursingAgencyWeeksPerVacancy * td.nursingAgencyWeeklyPremium);
-    }
-  }
-
-  if (td.nursingOtEnabled) {
-    const otHours = td.nursingOtHoursPerNurseWeek * (td.nursingOtReductionPercent / 100) * state.numberOfProviders * 52;
-    result.nursingOvertime = Math.round(otHours * td.nursingOtHourlyRate);
-  }
-
-  return buildResult(result, benefitsForQuadrant(state, 'Workforce'));
+  });
+  return result;
 }
 
 export function computeRevenueBreakdown(state: ExploreState, _totalHoursSaved: number): QuadrantBreakdown {

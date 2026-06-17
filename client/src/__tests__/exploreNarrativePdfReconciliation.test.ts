@@ -228,23 +228,36 @@ describe("Explore OP/ED/IP PDF reconciliation — engine math vs. printed formul
     });
 
     it("Revenue / hccCapture: printed multiplicands reconcile to engine value", () => {
+      // The engine reads dq.hccPlans[], NOT top-level panelSize/gapRate/etc. — so
+      // those fields were ignored and this test used to silently pin the default
+      // seed plan. Configure an explicit non-default plan so it exercises a real
+      // scenario.
       const state: ExploreState = {
         ...opBase,
         docQualityInputs: {
           ...opBase.docQualityInputs,
           hccEnabled: true,
-          hccScenario: "typical",
-          panelSize: 1500,
-          maPercent: 30,
-          gapRate: 12,
-          avgHccs: 0.5,
-          rafImpact: 0.15,
-          annualPayment: 10_000,
+          avgHccs: 0.6,
           hccRealization: 40,
+          hccPlans: [{
+            id: "plan-test",
+            planType: "medicare_advantage",
+            name: "Medicare Advantage",
+            panelSize: 1200,
+            valuePerHcc: 1400,
+            gapRate: 55,
+            currentRecaptureRate: 60,
+            uplift: "typical",
+            netNewEnabled: false,
+            netNewDiscoveryRate: 3,
+            netNewAvgConditions: 1.2,
+          }],
         },
       };
       const values = computeAllDriverValues(state, TOTAL_HOURS_SAVED);
       const summaries = computeAllDriverCalcSummaries(state, TOTAL_HOURS_SAVED);
+      // Guard against the regression itself: a configured plan must produce value.
+      expect(values.hccCapture).toBeGreaterThan(0);
       assertReconciles("hccCapture", values.hccCapture, summaries.hccCapture);
     });
 
