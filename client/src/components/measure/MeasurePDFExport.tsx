@@ -119,6 +119,11 @@ export interface MeasurePDFDriver {
   attributionPercent: number;
   realizationPercent: number;
   realizedValue: number;
+  // The volume multiplier applied (encounters for per-encounter drivers, or the
+  // scaleValue/scaleDivisor factor) so the printed equation equals the result.
+  scaleUnits: number;
+  isPerEncounter: boolean;
+  scaleUnitLabel: string;
   notes?: string;
   monthlyData?: Array<{ month: string; withAbridge: number; withoutAbridge: number }>;
   deltaUnit?: string;
@@ -319,7 +324,10 @@ function DriverCard({ d }: { d: MeasurePDFDriver }) {
             {"  ("}\u0394 {d.delta >= 0 ? "+" : ""}{fmtN(d.delta)} {unit}{")"}
           </Text>
           <Text style={s.calcLine}>
-            \u0394 {fmtN(d.delta)} {unit} \u00D7 {valPrefix}{fmtN(d.valuePerUnit)} {valLabel} \u00D7 {fmtPct(d.attributionPercent)} attribution
+            \u0394 {fmtN(d.delta)} {unit} \u00D7 {valPrefix}{fmtN(d.valuePerUnit)} {valLabel}
+            {d.isPerEncounter ? ` \u00D7 ${fmtN(d.scaleUnits)} ${d.scaleUnitLabel}` : (d.scaleUnits !== 1 ? ` \u00D7 ${fmtN(d.scaleUnits)}` : "")}
+            {" \u00D7 "}{fmtPct(d.attributionPercent)} attribution
+            {d.realizationPercent !== 100 ? ` \u00D7 ${fmtPct(d.realizationPercent)} realization` : ""}
           </Text>
           <Text style={s.calcResult}>= {fmtC(d.realizedValue)}</Text>
           {showMonthly && d.monthlyData ? <MonthlySparkline data={d.monthlyData} /> : null}
@@ -794,6 +802,14 @@ export function buildMeasurePDFDataFromState(state: MeasureState, audience?: str
           const delta = lowerIsBetter ? effWithout - effWith : effWith - effWithout;
           // Single source of truth — same per-encounter-aware formula the output screen uses.
           const realizedValue = computeRealizedDriverValue(d, entry, abridgeEnc);
+          // Mirror the scale the formula applies, so the printed equation equals the result.
+          const isPerEncounter = Boolean(md?.isPerEncounterRate && abridgeEnc > 0);
+          const scaleUnits = isPerEncounter
+            ? abridgeEnc
+            : (entry.scaleDivisor && entry.scaleDivisor > 0 && entry.scaleValue !== undefined)
+              ? entry.scaleValue / entry.scaleDivisor
+              : 1;
+          const scaleUnitLabel = settingKey === "inpatient" ? "discharges" : "encounters";
           drivers.push({
             id: d.id,
             label: d.label,
@@ -807,6 +823,9 @@ export function buildMeasurePDFDataFromState(state: MeasureState, audience?: str
             attributionPercent: entry.attributionPercent,
             realizationPercent: entry.realizationPercent,
             realizedValue,
+            scaleUnits,
+            isPerEncounter,
+            scaleUnitLabel,
             notes: entry.notes,
             monthlyData: sortedMonthly.length > 0 ? sortedMonthly : undefined,
             deltaUnit: md?.deltaUnit,

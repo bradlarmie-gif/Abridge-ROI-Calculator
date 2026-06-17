@@ -105,6 +105,13 @@ function buildDriverPayload(
   const delta = lowerIsBetter ? effWithout - effWith : effWith - effWithout;
   // Single source of truth shared with the exported PDF.
   const realizedValue = computeRealizedDriverValue(driver, entry, abridgeEncounters);
+  const isPerEncounter = Boolean(md?.isPerEncounterRate && (abridgeEncounters ?? 0) > 0);
+  const scaleUnits = isPerEncounter
+    ? abridgeEncounters!
+    : (entry.scaleDivisor && entry.scaleDivisor > 0 && entry.scaleValue !== undefined)
+      ? entry.scaleValue / entry.scaleDivisor
+      : 1;
+  const scaleUnitLabel = driver.settings.length === 1 && driver.settings[0] === "inpatient" ? "discharges" : "encounters";
 
   return {
     id: driver.id,
@@ -119,6 +126,9 @@ function buildDriverPayload(
     attributionPercent: entry.attributionPercent,
     realizationPercent: entry.realizationPercent,
     realizedValue,
+    scaleUnits,
+    isPerEncounter,
+    scaleUnitLabel,
     notes: entry.notes,
     monthlyData: sortedMonthly.length > 0 ? sortedMonthly : undefined,
     deltaUnit: md?.deltaUnit,

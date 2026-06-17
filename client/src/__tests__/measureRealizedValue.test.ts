@@ -68,4 +68,11 @@ describe("computeRealizedDriverValue", () => {
     const e = entry({ withAbridge: 5, withoutAbridge: 4, valuePerUnit: 33, attributionPercent: 100 });
     expect(computeRealizedDriverValue(d, e, 300000)).toBe(0);
   });
+
+  it("applies realization% as a discount (the lever actually moves the number)", () => {
+    const d = driver({ isPerEncounterRate: false });
+    const e = entry({ withAbridge: 2, withoutAbridge: 1, valuePerUnit: 100, attributionPercent: 100, realizationPercent: 50 });
+    // delta 1 × $100 × scale 1 × 100% attribution × 50% realization = 50
+    expect(computeRealizedDriverValue(d, e, 0)).toBe(50);
+  });
 });
