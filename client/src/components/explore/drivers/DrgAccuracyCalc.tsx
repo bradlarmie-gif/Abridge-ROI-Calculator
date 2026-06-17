@@ -169,9 +169,6 @@ export default function DrgAccuracyCalc({ state, updateDocQualityInputs }: Props
                 className="w-full h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 text-black font-semibold text-base"
                 data-testid="input-drg-weight"
               />
-              <p className="text-[13px] text-[#888888] mt-2">
-                Typical CC/MCC capture shifts DRG weight 0.2–0.4. 0.3 is a defensible midpoint; adjust based on your case mix complexity.
-              </p>
             </div>
             <span className="text-[#888888] text-xl hidden sm:block">×</span>
             <div className="flex-1">
@@ -189,6 +186,9 @@ export default function DrgAccuracyCalc({ state, updateDocQualityInputs }: Props
               </div>
             </div>
           </div>
+          <p className="text-[13px] text-[#888888] mb-3">
+            Typical CC/MCC capture shifts DRG weight 0.2–0.4. 0.3 is a defensible midpoint; adjust based on your case mix complexity.
+          </p>
           <div className="text-center py-2">
             <span className="text-[13px] text-[#666666]">= </span>
             <span className="font-semibold text-black">{formatCurrency(Math.round(ipDrgGrossValue))} gross value</span>
