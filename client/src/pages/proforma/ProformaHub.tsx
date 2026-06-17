@@ -839,7 +839,7 @@ export default function ProformaHub({
                 <p className={`text-xl font-bold ${summary.termNet >= 0 ? "text-[#E8350A]" : "text-[#9CA3AF]"}`} data-testid="hub-net-value">{fmt(summary.termNet)}</p>
               </div>
             </div>
-            <div className="border-t border-[#E8E2DA] pt-3 grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+            <div className="border-t border-[#E8E2DA] pt-3 grid grid-cols-3 gap-4 text-center">
               <div className="flex flex-col items-center">
                 <TrendingUp className="w-3.5 h-3.5 text-[#E8350A] mb-1" />
                 <p className="text-sm font-bold text-[#E8350A]" data-testid="hub-vtc">{summary.valueToCost > 0 ? `${summary.valueToCost.toFixed(1)}x` : "N/A"}</p>
@@ -849,11 +849,6 @@ export default function ProformaHub({
                 <Clock className="w-3.5 h-3.5 text-[#A39888] mb-1" />
                 <p className="text-sm font-bold text-neutral-900" data-testid="hub-payback">{summary.paybackMonth ? `${summary.paybackMonth} mo` : "—"}</p>
                 <p className="text-[12px] text-[#A39888]">Payback</p>
-              </div>
-              <div className="flex flex-col items-center">
-                <BarChart3 className="w-3.5 h-3.5 text-[#A39888] mb-1" />
-                <p className="text-sm font-bold text-neutral-900" data-testid="hub-roi">{Math.round(summary.simpleROI * 100)}%</p>
-                <p className="text-[12px] text-[#A39888]">Simple ROI</p>
               </div>
               <div className="flex flex-col items-center">
                 <DollarSign className="w-3.5 h-3.5 text-[#A39888] mb-1" />
@@ -975,7 +970,7 @@ export default function ProformaHub({
                                     const abr1 = Math.round((ye.year1 ?? 0) * startYu / 100);
                                     const termYe = contractYears >= 3 ? (ye.year3 ?? ye.year2 ?? ye.year1 ?? 0) : contractYears === 2 ? (ye.year2 ?? ye.year1 ?? 0) : (ye.year1 ?? 0);
                                     const abrTerm = Math.round(termYe * termYu / 100);
-                                    return `${fmtNum(abr1)} → ${fmtNum(abrTerm)} Abridge ${setting.careSetting === "inpatient" ? "dc" : "enc"} · ${startYu}% → ${termYu}% util`;
+                                    return `${fmtNum(abr1)} → ${fmtNum(abrTerm)} Abridge ${setting.careSetting === "inpatient" ? "discharges" : "encounters"} · ${startYu}% → ${termYu}% utilization`;
                                   })()
                                 : (() => {
                                     // In quarterly mode the ramp starts at Q1 (not the yearly Y1/Q4
@@ -985,14 +980,9 @@ export default function ProformaHub({
                                     const atScaleUtil = setting.quarterlyUtilization
                                       ? setting.quarterlyUtilization.q12
                                       : (contractYears >= 3 ? yu.year3 : contractYears === 2 ? yu.year2 : yu.year1);
-                                    return `${fmtNum(startProv)} → ${fmtNum(endProv)} ${unitLabel} · ${atScaleUtil}% util at scale`;
+                                    return `${fmtNum(startProv)} → ${fmtNum(endProv)} ${unitLabel} · ${atScaleUtil}% utilization at scale`;
                                   })()
                               }
-                              {setting.yearlyUtilization && (
-                                <span className="text-[9px] font-bold tracking-wide uppercase px-1.5 py-0.5 rounded" style={{ color: '#EA2C00', backgroundColor: '#EA2C0012' }}>
-                                  Custom
-                                </span>
-                              )}
                             </p>
                           </div>
                         </div>
