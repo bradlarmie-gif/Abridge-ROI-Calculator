@@ -16,7 +16,7 @@ import {
   computeRevenueBreakdown,
   type PriorQuadrantEntry,
 } from "@/lib/exploreQuadrantValues";
-import { computeExploreTotals } from "@/lib/exploreDriverCalcs";
+import { computeExploreTotals, wrvuScenariosFor, denialsScenariosFor } from "@/lib/exploreDriverCalcs";
 
 export type ExploreCareSetting = 'outpatient' | 'ed' | 'nursing' | 'inpatient';
 
@@ -1241,13 +1241,8 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
     const isEDLocal = state.careSetting === 'ed';
     let total = 0;
     
-    const wrvuScenarios: Record<string, number> = isEDLocal
-      ? { conservative: 1, typical: 3, aggressive: 6, custom: docQualityInputs.wrvuCustomPercent ?? 5 }
-      : { conservative: 2, typical: 5, aggressive: 9, custom: docQualityInputs.wrvuCustomPercent ?? 5 };
-    const hccScenarios: Record<string, number> = { conservative: 6, typical: 10, aggressive: 15 };
-    const denialsScenarios: Record<string, number> = isEDLocal
-      ? { conservative: 15, typical: 30, aggressive: 50, custom: docQualityInputs.denialsCustomPercent ?? 15 }
-      : { conservative: 25, typical: 50, aggressive: 75, custom: docQualityInputs.denialsCustomPercent ?? 15 };
+    const wrvuScenarios = wrvuScenariosFor(isEDLocal, docQualityInputs.wrvuCustomPercent);
+    const denialsScenarios = denialsScenariosFor(isEDLocal, docQualityInputs.denialsCustomPercent);
 
     // wRVU
     if (docQualityInputs.wrvuEnabled) {

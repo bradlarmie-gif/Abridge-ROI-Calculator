@@ -61,7 +61,7 @@ export const wrvuScenariosFor = (isED: boolean, customPct?: number): Record<stri
     ? { conservative: 1, typical: 3, aggressive: 6, custom: customPct ?? 5 }
     : { conservative: 2, typical: 5, aggressive: 9, custom: customPct ?? 5 };
 
-const denialsScenariosFor = (isED: boolean, customPct?: number): Record<string, number> =>
+export const denialsScenariosFor = (isED: boolean, customPct?: number): Record<string, number> =>
   isED
     ? { conservative: 15, typical: 30, aggressive: 50, custom: customPct ?? 25 }
     : { conservative: 25, typical: 50, aggressive: 75, custom: customPct ?? 25 };

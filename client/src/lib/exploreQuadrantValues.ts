@@ -1,5 +1,5 @@
 import type { ExploreState, OtherFinancialBenefitItem } from "@/pages/explore/ExploreFlow";
-import { wrvuScenariosFor } from "@/lib/exploreDriverCalcs";
+import { wrvuScenariosFor, denialsScenariosFor } from "@/lib/exploreDriverCalcs";
 
 export interface QuadrantBreakdown {
   driverValues: Record<string, number>;
@@ -106,10 +106,7 @@ export function computeRevenueBreakdown(state: ExploreState, _totalHoursSaved: n
   const isIP = state.careSetting === 'inpatient';
 
   const wrvuScenarios = wrvuScenariosFor(isED, dq.wrvuCustomPercent);
-  const denialsScenarios: Record<string, number> = isED
-    ? { conservative: 15, typical: 30, aggressive: 50, custom: dq.denialsCustomPercent ?? 15 }
-    : { conservative: 25, typical: 50, aggressive: 75, custom: dq.denialsCustomPercent ?? 15 };
-  const hccScenarios: Record<string, number> = { conservative: 6, typical: 10, aggressive: 15 };
+  const denialsScenarios = denialsScenariosFor(isED, dq.denialsCustomPercent);
 
   if (dq.wrvuEnabled && isOPorED) {
     const lift = (dq.currentWrvu * wrvuScenarios[dq.wrvuScenario]) / 100;

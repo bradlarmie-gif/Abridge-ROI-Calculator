@@ -23,6 +23,7 @@ import {
   computeAllDriverCalcSummaries,
   computeExploreTotals,
   wrvuScenariosFor,
+  denialsScenariosFor,
 } from "@/lib/exploreDriverCalcs";
 import type { ProformaSettingSnapshot } from "@/pages/proforma/proformaTypes";
 import { SETTING_COLORS, SETTING_LABELS } from "@/pages/proforma/proformaTypes";
@@ -199,9 +200,7 @@ export default function ExploreModel({
   const eligibleEncounters = state.annualEncounters * (state.utilizationPercent / 100);
   const isEDForScenarios = state.careSetting === 'ed';
   const wrvuScenarios = wrvuScenariosFor(isEDForScenarios, docQualityInputs.wrvuCustomPercent);
-  const denialsScenarios: Record<string, number> = isEDForScenarios
-    ? { conservative: 15, typical: 30, aggressive: 50, custom: docQualityInputs.denialsCustomPercent ?? 15 }
-    : { conservative: 25, typical: 50, aggressive: 75, custom: docQualityInputs.denialsCustomPercent ?? 15 };
+  const denialsScenarios = denialsScenariosFor(isEDForScenarios, docQualityInputs.denialsCustomPercent);
 
   const wrvuValue = useMemo(() => {
     if (!docQualityInputs.wrvuEnabled) return 0;

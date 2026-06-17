@@ -1,5 +1,6 @@
 import { Info } from "lucide-react";
 import type { ExploreCalcComponentProps } from "@/lib/exploreDrivers";
+import { denialsScenariosFor } from "@/lib/exploreDriverCalcs";
 
 const SCENARIO_LABELS: Record<string, string> = {
   conservative: 'Conservative',
@@ -14,9 +15,7 @@ export default function DenialPreventionCalc({ state, updateDocQualityInputs }: 
   const isED = careSetting === 'ed';
 
   const eligibleEncounters = Math.round(annualEncounters * (utilizationPercent / 100));
-  const denialsScenarios: Record<string, number> = isED
-    ? { conservative: 15, typical: 30, aggressive: 50, custom: docQualityInputs.denialsCustomPercent ?? 15 }
-    : { conservative: 25, typical: 50, aggressive: 75, custom: docQualityInputs.denialsCustomPercent ?? 15 };
+  const denialsScenarios = denialsScenariosFor(isED, docQualityInputs.denialsCustomPercent);
 
   const preventionPercent = denialsScenarios[docQualityInputs.denialsScenario];
   const medNecessityDenials = eligibleEncounters * (docQualityInputs.medNecessityDenialRate / 100);
