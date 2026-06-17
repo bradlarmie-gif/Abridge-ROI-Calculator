@@ -21,6 +21,7 @@ import {
 import {
   computeAllDriverValues,
   computeAllDriverCalcSummaries,
+  computeExploreTotals,
   wrvuScenariosFor,
 } from "@/lib/exploreDriverCalcs";
 import type { ProformaSettingSnapshot } from "@/pages/proforma/proformaTypes";
@@ -83,16 +84,14 @@ export default function ExploreModel({
     [state, totalHoursSaved],
   );
 
-  const valueByQuadrant = useMemo(() => {
-    const totals: Record<ExploreQuadrant, number> = { Capacity: 0, Workforce: 0, Revenue: 0, Quality: 0 };
-    if (!state.careSetting) return totals;
-    EXPLORE_DRIVERS.forEach(d => {
-      if (d.settings.includes(state.careSetting!)) {
-        totals[d.quadrant] += allDriverValues[d.id] || 0;
-      }
-    });
-    return totals;
-  }, [allDriverValues, state.careSetting]);
+  // Headline totals route through the canonical engine (same function the
+  // Investment screen + reconciliation tests use) so the hero number can't
+  // drift from a local re-derivation.
+  const exploreTotals = useMemo(
+    () => computeExploreTotals(state, totalHoursSaved),
+    [state, totalHoursSaved],
+  );
+  const valueByQuadrant = exploreTotals.valueByQuadrant;
 
   const benefitsByQuadrant = useMemo(() => {
     const result: Record<ExploreQuadrant, { annual: number; oneTime: number; items: OtherFinancialBenefitItem[] }> = {
@@ -112,15 +111,8 @@ export default function ExploreModel({
     return result;
   }, [state.otherFinancialBenefits]);
 
-  const totalAnnualValue = useMemo(() => {
-    const driverSum = Object.values(valueByQuadrant).reduce((s, v) => s + v, 0);
-    const benefitSum = Object.values(benefitsByQuadrant).reduce((s, b) => s + b.annual, 0);
-    return driverSum + benefitSum;
-  }, [valueByQuadrant, benefitsByQuadrant]);
-
-  const totalOneTimeValue = useMemo(() => {
-    return Object.values(benefitsByQuadrant).reduce((s, b) => s + b.oneTime, 0);
-  }, [benefitsByQuadrant]);
+  const totalAnnualValue = exploreTotals.totalAnnualValue;
+  const totalOneTimeValue = exploreTotals.totalOneTimeValue;
 
   // Preserve nursingCareQualityPotential as a derived value for downstream PDF consumers
   const nursingCareQualityPotential = isNursingForTotal ? valueByQuadrant.Quality : 0;
@@ -709,11 +701,13 @@ export default function ExploreModel({
       const utilizationProgress = Math.pow(progress, 0.8);
       const utilization = Math.round(pilotUtil + (fullScaleUtil - pilotUtil) * utilizationProgress);
       
-      // Linear value: simple provider scaling
-      const linearValue = Math.round(pilotValue * (providers / pilotProviders));
-      
+      // Linear value: simple provider scaling. Guard the denominators — an
+      // edited setting injected with 0 baseline providers/utilization would
+      // otherwise produce Infinity/NaN here.
+      const linearValue = pilotProviders > 0 ? Math.round(pilotValue * (providers / pilotProviders)) : 0;
+
       // Projected value: includes utilization boost and maturity gains
-      const utilizationBoost = utilization / pilotUtil;
+      const utilizationBoost = pilotUtil > 0 ? utilization / pilotUtil : 1;
       const maturityBoost = 1 + ((currentPace.maturityMultiplier - 1) * Math.pow(progress, 1.5));
       const projectedValue = Math.round(linearValue * utilizationBoost * maturityBoost);
 
