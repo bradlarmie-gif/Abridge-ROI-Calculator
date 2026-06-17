@@ -15,7 +15,7 @@ import {
   buildMeasurePDFDataFromState,
 } from "@/components/measure/MeasurePDFExport";
 import { generateMeasureNarrativePDF } from "@/components/measure/MeasureNarrativePDF";
-import { type MeasureState, type MeasureDriverEntry, type MeasureQuote, computeRealizedDriverValue } from "@/lib/measureCalculator";
+import { type MeasureState, type MeasureDriverEntry, type MeasureQuote, computeRealizedDriverValue, fmtMoneyCompact } from "@/lib/measureCalculator";
 import { useToast } from "@/hooks/use-toast";
 
 interface MeasureOutputProps {
@@ -30,7 +30,7 @@ const QUADRANT_ORDER: ExploreQuadrant[] = ["Capacity", "Workforce", "Revenue", "
 
 const QUADRANT_COLORS: Record<string, string> = {
   Capacity: '#0891B2',   // sky/cyan — clinical efficiency, calm
-  Workforce: '#B45309',  // dark amber/sienna — warm, human, earthy
+  Workforce: '#4E5A6B',  // slate — neutral, on-palette
   Revenue: '#EA2C00',    // brand red
   Quality: '#059669',    // emerald — clinical outcomes
 };
@@ -562,7 +562,7 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
     }
   };
 
-  const formatCurrency = (n: number) => "$" + Math.round(n).toLocaleString();
+  const formatCurrency = fmtMoneyCompact;
   const noContent = driversTrackedCount === 0;
 
   return (
@@ -810,13 +810,13 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
             {!showManageQuotes && (state.quotes?.length ?? 0) === 0 && (
               <motion.button
                 onClick={() => setShowManageQuotes(true)}
-                className="w-full flex items-center justify-between gap-4 mb-4 px-5 py-4 rounded-2xl border border-dashed border-[#DDD6CE] bg-white hover:border-[#C4A882] hover:bg-[#FDFCFA] transition-all text-left"
+                className="w-full flex items-center justify-between gap-4 mb-4 px-5 py-4 rounded-2xl border border-dashed border-[#DDD6CE] bg-white hover:border-[#A39888] hover:bg-[#FDFCFA] transition-all text-left"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 data-testid="card-empty-quotes"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <MessageSquare className="w-5 h-5 text-[#C4A882] flex-shrink-0" />
+                  <MessageSquare className="w-5 h-5 text-[#A39888] flex-shrink-0" />
                   <div>
                     <p className="text-sm font-semibold text-[#525252]">Add provider quotes</p>
                     <p className="text-xs text-[#9E948C] mt-0.5">The voice behind the numbers — often the most memorable part of a customer review</p>

@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { getActiveDrivers, type ExploreDriver, type ExploreSetting, type ExploreQuadrant, type DriverScaleAxis } from "@/lib/exploreDrivers";
-import { type MeasureState, type MeasureDriverEntry, type ForecastScenario, type ForecastAddedSetting, type MeasureCareSetting, type SettingForecastValues, computeRolloutSensitivity } from "@/lib/measureCalculator";
+import { type MeasureState, type MeasureDriverEntry, type ForecastScenario, type ForecastAddedSetting, type MeasureCareSetting, type SettingForecastValues, computeRolloutSensitivity, fmtMoneyCompact } from "@/lib/measureCalculator";
 import { SETTING_LABELS, computeAddedSettingValue } from "@/lib/forecastDefaults";
 import { computeScenarioInvestment, computeTCV, computePaybackMonths, makeDefaultTiers, type PricingScenario, type PricingYearInput } from "@/lib/forecastPricing";
 import AddCareSettingModal from "@/components/measure/AddCareSettingModal";
@@ -338,13 +338,9 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
 
   const isAnyChanged = activeSettings.some(s => isSettingChanged(s));
 
-  const formatCurrency = (n: number) => '$' + Math.round(n).toLocaleString();
+  const formatCurrency = fmtMoneyCompact;
   const formatNumber = (n: number) => n.toLocaleString();
-  const fmtShort = (n: number) => {
-    if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
-    if (n >= 1_000) return `$${Math.round(n / 1_000)}K`;
-    return `$${Math.round(n)}`;
-  };
+  const fmtShort = fmtMoneyCompact;
 
   const simpleInvestment: number = (dep?.annualContractValue as number) || 0;
 

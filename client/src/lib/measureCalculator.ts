@@ -789,6 +789,13 @@ export function formatCurrency(value: number): string {
   return `$${Math.round(value).toLocaleString()}`;
 }
 
+export function fmtMoneyCompact(n: number): string {
+  const abs = Math.abs(n);
+  if (abs >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
+  if (abs >= 1_000) return `$${Math.round(n / 1_000).toLocaleString()}K`;
+  return `$${Math.round(n).toLocaleString()}`;
+}
+
 export function formatNumber(value: number): string {
   return Math.round(value).toLocaleString();
 }

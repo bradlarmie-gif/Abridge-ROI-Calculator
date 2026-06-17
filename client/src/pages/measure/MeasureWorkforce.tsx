@@ -6,7 +6,7 @@ import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import MeasureDriverCard from "@/components/measure/MeasureDriverCard";
 import AddMeasureDriverPicker from "@/components/measure/AddMeasureDriverPicker";
 import { getActiveDrivers, type ExploreDriver, type ExploreSetting, type CustomDriverDef } from "@/lib/exploreDrivers";
-import { getRealizedValueForEntry, getEffectiveWithWithout, type MeasureState, type MeasureDriverEntry, type MeasureCareSetting } from "@/lib/measureCalculator";
+import { getRealizedValueForEntry, getEffectiveWithWithout, fmtMoneyCompact, type MeasureState, type MeasureDriverEntry, type MeasureCareSetting } from "@/lib/measureCalculator";
 
 interface MeasureWorkforceProps {
   state: MeasureState;
@@ -159,7 +159,7 @@ export default function MeasureWorkforce({ state, updateState, onNext, onBack, o
     }[activeSettings[0]] ?? 'Track the Workforce outcomes that matter for this customer. For each driver, enter the value with and without Abridge, then dial attribution and realization to reflect their reality.';
   }, [activeSettings, isMultiSetting]);
 
-  const formatCurrency = (n: number) => '$' + Math.round(n).toLocaleString();
+  const formatCurrency = fmtMoneyCompact;
 
   return (
     <div className="min-h-screen bg-[#F7F6F3]">

@@ -79,7 +79,7 @@ const brand = {
 
 const domainColors: Record<string, string> = {
   Capacity:  "#0891B2",
-  Workforce: "#B45309",
+  Workforce: "#4E5A6B",
   Revenue:   "#EA2C00",
   Quality:   "#059669",
 };

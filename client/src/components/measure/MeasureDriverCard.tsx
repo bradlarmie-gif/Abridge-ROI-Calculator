@@ -3,7 +3,7 @@ import { Plus, Trash2, ChevronDown, Info } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { EXPLORE_DRIVERS, type ExploreDriver } from "@/lib/exploreDrivers";
-import { getRealizedValueForEntry, getEffectiveWithWithout, type MeasureDriverEntry, type EntryDataSource } from "@/lib/measureCalculator";
+import { getRealizedValueForEntry, getEffectiveWithWithout, fmtMoneyCompact, type MeasureDriverEntry, type EntryDataSource } from "@/lib/measureCalculator";
 import MeasureTrendChart from "./MeasureTrendChart";
 import EmDistributionInput from "./EmDistributionInput";
 
@@ -60,7 +60,7 @@ export default function MeasureDriverCard({ driver, entry, onUpdate, onRemove, i
     ? Math.round(delta * entry.valuePerUnit * abridgeEncounters! * (entry.attributionPercent / 100))
     : getRealizedValueForEntry({ ...entry, lowerIsBetter }, isQuantifiable);
 
-  const formatCurrency = (n: number) => '$' + Math.round(n).toLocaleString();
+  const formatCurrency = fmtMoneyCompact;
   const formatNumber = (n: number) => n.toLocaleString();
 
   const addMonthlyRow = () => {
