@@ -218,11 +218,12 @@ function getOnsetMultiplier(
   monthsSinceGoLive: number,
   onset: DriverOnset,
   phasing: ProformaConfig["retentionPhasing"],
-  careSetting?: string
+  careSetting?: string,
+  delayMonthsOverride?: number
 ): number {
   if (monthsSinceGoLive < 0) return 0;
 
-  const delayMonths = ONSET_DELAY_MONTHS[onset] || 0;
+  const delayMonths = delayMonthsOverride ?? (ONSET_DELAY_MONTHS[onset] || 0);
 
   if (onset === "phased") {
     if (monthsSinceGoLive < delayMonths) return 0;
@@ -236,6 +237,13 @@ function getOnsetMultiplier(
 
   if (monthsSinceGoLive < delayMonths) return 0;
   return 1;
+}
+
+// Resolve a driver's onset delay (month its value starts). For "custom" onset
+// the start month comes from the driver itself; otherwise from the preset map.
+function resolveDelayMonths(onset: DriverOnset, customOnsetMonths?: number): number {
+  if (onset === "custom") return Math.max(0, Math.round(customOnsetMonths ?? 0));
+  return ONSET_DELAY_MONTHS[onset] || 0;
 }
 
 function getProviderExpansion(
@@ -474,14 +482,14 @@ export function buildMonthlyCashFlows(
 
       for (const driver of effectiveDrivers) {
         const onset = driver.onset || (driver.category === "documentation" ? "immediate" : "delayed");
-        const delayMonths = ONSET_DELAY_MONTHS[onset] || 0;
+        const delayMonths = resolveDelayMonths(onset, driver.customOnsetMonths);
         const rampMonths = implRampMonths;
         const monthsSinceOnset = monthsSinceGoLive - delayMonths;
         const adoptionRamp = getAdoptionRamp(monthsSinceOnset, rampMonths);
         const retentionPhasingToUse = (onset === "phased" && setting.careSetting === "nursing" && config.nursingRetentionPhasing)
           ? config.nursingRetentionPhasing
           : config.retentionPhasing;
-        const onsetMult = getOnsetMultiplier(monthsSinceGoLive, onset, retentionPhasingToUse, setting.careSetting);
+        const onsetMult = getOnsetMultiplier(monthsSinceGoLive, onset, retentionPhasingToUse, setting.careSetting, delayMonths);
         const monthlyDriverValue = (driver.value / 12) * adoptionRamp * expansionMultiplier * onsetMult;
 
         switch (driver.quadrant) {
@@ -952,10 +960,12 @@ export function computeDriverYear1Value(
   driverValue: number,
   onset: DriverOnset,
   setting: ProformaSettingSnapshot,
-  config: ProformaConfig
+  config: ProformaConfig,
+  customOnsetMonths?: number
 ): number {
   const goLiveMonth = setting.goLiveMonth;
   const rampMonths = config.implementationRampMonths ?? 3;
+  const delayMonths = resolveDelayMonths(onset, customOnsetMonths);
   const contractMonths = config.contractTermMonths;
   const fullScale = setting.fullScaleProviders || setting.providerCount;
   const terminalUtil = setting.utilizationPercent;
@@ -993,9 +1003,9 @@ export function computeDriverYear1Value(
     const utilScale = terminalUtil > 0 ? currentUtil / terminalUtil : 1;
     const expansionMultiplier = Math.min(providerScale * utilScale, 1);
 
-    const monthsSinceOnset = monthsSinceGoLive - (ONSET_DELAY_MONTHS[onset] || 0);
+    const monthsSinceOnset = monthsSinceGoLive - delayMonths;
     const adoptionRamp = getAdoptionRamp(monthsSinceOnset, rampMonths);
-    const onsetMult = getOnsetMultiplier(monthsSinceGoLive, onset, retentionPhasingToUse, setting.careSetting);
+    const onsetMult = getOnsetMultiplier(monthsSinceGoLive, onset, retentionPhasingToUse, setting.careSetting, delayMonths);
 
     total += (driverValue / 12) * adoptionRamp * expansionMultiplier * onsetMult;
   }

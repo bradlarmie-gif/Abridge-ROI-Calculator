@@ -26,6 +26,7 @@ const ONSET_OPTIONS: { value: DriverOnset; label: string }[] = [
   { value: "delayed",   label: "M3+"       },
   { value: "phased",    label: "Phased"    },
   { value: "longTerm",  label: "M12+"      },
+  { value: "custom",    label: "Custom"    },
 ];
 
 export function fmtCompact(n: number): string {
@@ -221,15 +222,15 @@ export function ModelAssumptionRow({
   settingId, driver, setting, config, onUpdate, onOnsetChange,
 }: {
   settingId: string;
-  driver: { id: string; name: string; value: number; onset: string; quadrant: string };
+  driver: { id: string; name: string; value: number; onset: string; quadrant: string; customOnsetMonths?: number };
   setting: ProformaSettingSnapshot;
   config: ProformaConfig;
   onUpdate: (settingId: string, driverId: string, newValue: number, newExploreState: ExploreState) => void;
-  onOnsetChange: (settingId: string, driverId: string, onset: DriverOnset) => void;
+  onOnsetChange: (settingId: string, driverId: string, onset: DriverOnset, customOnsetMonths?: number) => void;
 }) {
   const color = DOMAIN_PILL_COLORS[driver.quadrant] || '#888';
   const onset = (driver.onset || "immediate") as DriverOnset;
-  const year1Est = computeDriverYear1Value(driver.value, onset, setting, config);
+  const year1Est = computeDriverYear1Value(driver.value, onset, setting, config, driver.customOnsetMonths);
 
   const [localCustomPct, setLocalCustomPct] = useState<number>(50);
   const [useLocalCustom, setUseLocalCustom] = useState(false);
@@ -629,7 +630,7 @@ export function ModelAssumptionRow({
         <div className="flex items-center bg-[#F5F0EB] rounded-xl p-1 gap-0.5">
           {ONSET_OPTIONS.map(opt => (
             <button key={opt.value}
-              onClick={() => onOnsetChange(settingId, driver.id, opt.value)}
+              onClick={() => onOnsetChange(settingId, driver.id, opt.value, opt.value === 'custom' ? (driver.customOnsetMonths ?? 6) : undefined)}
               className={`flex-1 py-1.5 rounded-lg text-[10px] font-medium text-center transition-all ${
                 onset === opt.value ? 'bg-white text-neutral-900 shadow-sm' : 'text-[#8C7E6E] hover:text-neutral-700'
               }`}
@@ -638,6 +639,16 @@ export function ModelAssumptionRow({
             </button>
           ))}
         </div>
+        {onset === 'custom' && (
+          <div className="flex items-center gap-2 mt-2">
+            <span className="text-[10px] text-neutral-500">Value starts at month</span>
+            <NumInput
+              value={driver.customOnsetMonths ?? 6}
+              onChange={(v) => onOnsetChange(settingId, driver.id, 'custom', Math.max(0, Math.round(v)))}
+              width="w-12"
+            />
+          </div>
+        )}
       </div>
     </div>
   );
@@ -1309,7 +1320,7 @@ interface AssumptionsDrawerProps {
   config: ProformaConfig;
   onClose: () => void;
   onUpdate: (settingId: string, driverId: string, newValue: number, newExploreState: ExploreState) => void;
-  onOnsetChange: (settingId: string, driverId: string, onset: DriverOnset) => void;
+  onOnsetChange: (settingId: string, driverId: string, onset: DriverOnset, customOnsetMonths?: number) => void;
   onUpdateSetting: (id: string, updates: Partial<ProformaSettingSnapshot>) => void;
   onEditInExplore?: (settingId: string) => void;
   initialScenario?: "A" | "B";

@@ -1,6 +1,6 @@
 import { type ExploreState } from "../explore/ExploreFlow";
 
-export type DriverOnset = "immediate" | "delayed" | "phased" | "longTerm";
+export type DriverOnset = "immediate" | "delayed" | "phased" | "longTerm" | "custom";
 export type ExploreQuadrant = "Capacity" | "Workforce" | "Revenue" | "Quality";
 
 export interface ProformaDriver {
@@ -10,6 +10,8 @@ export interface ProformaDriver {
   category: "time" | "documentation";
   quadrant: ExploreQuadrant;
   onset: DriverOnset;
+  // For onset === "custom": the month the value starts (then ramps from there).
+  customOnsetMonths?: number;
 }
 
 export interface YearlyProviders {
@@ -250,6 +252,7 @@ export const ONSET_DELAY_MONTHS: Record<DriverOnset, number> = {
   delayed: 3,
   phased: 6,
   longTerm: 12,
+  custom: 0, // placeholder — actual delay comes from driver.customOnsetMonths
 };
 
 export const ONSET_LABELS: Record<DriverOnset, string> = {
@@ -257,4 +260,5 @@ export const ONSET_LABELS: Record<DriverOnset, string> = {
   delayed: `Delayed (M${ONSET_DELAY_MONTHS.delayed}+)`,
   phased: "Phased (Y1/Y2/Y3)",
   longTerm: `Long-term (M${ONSET_DELAY_MONTHS.longTerm}+)`,
+  custom: "Custom start month",
 };

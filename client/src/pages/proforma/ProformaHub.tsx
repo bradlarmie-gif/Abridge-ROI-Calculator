@@ -759,10 +759,14 @@ export default function ProformaHub({
     onUpdateSetting(settingId, buildDriverChangeUpdate(setting, driverId, newValue, newExploreState));
   }, [settings, onUpdateSetting]);
 
-  const handleDriverOnsetChange = useCallback((settingId: string, driverId: string, onset: DriverOnset) => {
+  const handleDriverOnsetChange = useCallback((settingId: string, driverId: string, onset: DriverOnset, customOnsetMonths?: number) => {
     const setting = settings.find(s => s.id === settingId);
     if (!setting) return;
-    const updatedDrivers = setting.drivers.map(d => d.id === driverId ? { ...d, onset } : d);
+    const updatedDrivers = setting.drivers.map(d =>
+      d.id === driverId
+        ? { ...d, onset, ...(customOnsetMonths !== undefined ? { customOnsetMonths } : {}) }
+        : d
+    );
     onUpdateSetting(settingId, { drivers: updatedDrivers });
   }, [settings, onUpdateSetting]);
 

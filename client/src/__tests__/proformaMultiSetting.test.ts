@@ -630,3 +630,33 @@ describe("inpatient doc-quality drivers honor a persisted 'custom' scenario", ()
     expect(custom).toBeCloseTo(typical * (80 / 40), -1);
   });
 });
+
+describe("custom onset — value starts at the chosen month", () => {
+  const makeOnsetSetting = (onset: ProformaDriver["onset"], customOnsetMonths?: number) =>
+    makeSetting("outpatient", {
+      drivers: [{ id: "d", name: "D", value: 1_200_000, category: "time", quadrant: "Capacity", onset, customOnsetMonths }],
+      yearlyUtilization: { year1: 100, year2: 100, year3: 100 },
+      utilizationPercent: 100,
+      fullScaleUtilization: 100,
+      yearlyProviders: { year1: 40, year2: 40, year3: 40 },
+      providerCount: 40,
+      fullScaleProviders: 40,
+      goLiveMonth: 1,
+      pricingModel: "annualFlat",
+      annualLicenseFee: 0,
+    });
+
+  it("defers a custom-onset driver's value until its start month, then turns on", () => {
+    const rows = buildMonthlyCashFlows([makeOnsetSetting("custom", 6)], makeConfig());
+    // goLive month 1 → monthsSinceGoLive = period - 1; custom start 6 means $0 until period 7.
+    expect(rows.find(r => r.period === 3)!.totalValue).toBe(0);
+    expect(rows.find(r => r.period === 9)!.totalValue).toBeGreaterThan(0);
+  });
+
+  it("an earlier custom start yields more Year-1 value than a later one", () => {
+    const early = buildMonthlyCashFlows([makeOnsetSetting("custom", 2)], makeConfig());
+    const late = buildMonthlyCashFlows([makeOnsetSetting("custom", 10)], makeConfig());
+    const y1 = (rows: typeof early) => rows.filter(r => r.period <= 12).reduce((s, r) => s + r.totalValue, 0);
+    expect(y1(early)).toBeGreaterThan(y1(late));
+  });
+});
