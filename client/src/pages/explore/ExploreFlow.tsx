@@ -37,48 +37,9 @@ export interface CostDisplacementItem {
 
 export type TimePathScenario = 'conservative' | 'typical' | 'aggressive' | null;
 
-export type TimeAllocationFocus = 'patientAccess' | 'reducingLocums' | 'clinicianWellbeing';
-
-export type EDTimeAllocationFocus = 'throughput' | 'retention' | 'clinicianWellbeing';
-
+// DocPathFocus is retained as an exported type; the per-path doc-driver state
+// it once gated is dead and was removed.
 export type DocPathFocus = 'wrvu' | 'hcc' | 'denials';
-
-export interface TimeAllocation {
-  patientAccess: number;
-  patientExperience: number;
-  reducingLocums: number;
-  clinicianWellbeing: number;
-}
-
-export interface EDTimeAllocation {
-  throughput: number;
-  retention: number;
-  clinicianWellbeing: number;
-}
-
-export interface DocDriverSettings {
-  enabled: boolean;
-  value: number;
-}
-
-export interface DocDriversState {
-  wrvu: DocDriverSettings;
-  hcc: DocDriverSettings;
-  denials: DocDriverSettings;
-}
-
-export interface CalculatedValues {
-  timeValue: number;
-  docValue: number;
-  driverBreakdown: {
-    patientAccess: number;
-    locums: number;
-    retention: number;
-    wrvu: number;
-    hcc: number;
-    denials: number;
-  };
-}
 
 // Value Drivers - Time inputs
 export interface TimeDriverInputs {
@@ -513,13 +474,7 @@ export interface ExploreState {
 
   timePathScenario: TimePathScenario;
   minutesSavedPerEncounter: number;
-  
-  timeAllocation: TimeAllocation;
-  edTimeAllocation: EDTimeAllocation;
-  
-  docPathFocus: DocPathFocus | null;
-  docDrivers: DocDriversState;
-  
+
   wrvuPctIncrease: number;
   hccPctRecaptured: number;
   denialsPctReduced: number;
@@ -542,9 +497,6 @@ export interface ExploreState {
   // Full scale projection
   fullScaleProviders: number;
   
-  // Calculated values
-  calculatedValues?: CalculatedValues;
-
   otherFinancialBenefits: OtherFinancialBenefitItem[];
   costDisplacementItems: CostDisplacementItem[];
   costDisplacementY1Override?: number;
@@ -567,23 +519,6 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
   nursingMinutesPerShift: 0,
   timePathScenario: null,
   minutesSavedPerEncounter: 0,
-  timeAllocation: {
-    patientAccess: 15,
-    patientExperience: 0,
-    reducingLocums: 0,
-    clinicianWellbeing: 100,
-  },
-  edTimeAllocation: {
-    throughput: 50,
-    retention: 25,
-    clinicianWellbeing: 25,
-  },
-  docPathFocus: null,
-  docDrivers: {
-    wrvu: { enabled: false, value: 5 },
-    hcc: { enabled: false, value: 15 },
-    denials: { enabled: false, value: 50 },
-  },
   wrvuPctIncrease: 5,
   hccPctRecaptured: 15,
   denialsPctReduced: 50,
@@ -954,8 +889,8 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
   year3GrowthPercent: 10,
 };
 
-type ExplorePhase = 
-  | 'careSetting' 
+export type ExplorePhase =
+  | 'careSetting'
   | 'practice' 
   | 'timeSavings' 
   | 'capacity'
@@ -988,7 +923,6 @@ export function resolveExplorePhase(requested: string, editing: boolean): Explor
 interface ExploreFlowProps {
   onBackToJourney?: () => void;
   onBackToProforma?: () => void;
-  onContinueToInvestment?: (state: ExploreState) => void;
   initialCareSetting?: ExploreCareSetting;
   initialPhase?: ExplorePhase;
   initialExploreState?: ExploreState;
