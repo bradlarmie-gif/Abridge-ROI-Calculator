@@ -152,9 +152,9 @@ export default function MeasureCapacity({ state, updateState, onNext, onBack, on
   const howToUse = useMemo(() => {
     if (isMultiSetting) return 'Add capacity drivers for each active care setting. Enter before/after values and adjust attribution to reflect what\'s genuinely attributable to Abridge across your deployment.';
     return {
-      outpatient: 'Patient Access translates reclaimed documentation time into additional patient visits. Documentation Time per Note is the foundational signal — everything else traces back to it.',
+      outpatient: 'Patient Access translates reclaimed documentation time into additional patient visits. Documentation Time per Note is the foundational signal. Everything else traces back to it.',
       ed: 'LWBS Recovery and Admission Capture model the throughput impact of faster documentation. Documentation Time per Encounter is the upstream signal driving both.',
-      inpatient: 'Note completion time determines how quickly the downstream care chain can move — consulting physicians, care management, and discharge planning all depend on it.',
+      inpatient: 'Note completion time determines how quickly the downstream care chain can move. Consulting physicians, care management, and discharge planning all depend on it.',
       nursing: 'Documentation Time per Care Event is the root behavior. When nurses chart at the bedside in real time, every other nursing outcome becomes measurable.',
     }[activeSettings[0]] ?? 'Track the Capacity outcomes that matter for this customer. For each driver, enter the value with and without Abridge, then dial attribution and realization to reflect their reality.';
   }, [activeSettings, isMultiSetting]);
@@ -265,7 +265,7 @@ export default function MeasureCapacity({ state, updateState, onNext, onBack, on
                     data-testid="empty-state-capacity"
                   >
                     <p className="text-sm font-medium text-[#444444]">No Capacity drivers yet{isMultiSetting ? ` for ${settingLabel}` : ''}.</p>
-                    <p className="text-xs text-[#666666] mt-1.5">Time Saved Per Visit is the most universal Abridge driver — start there. It anchors every conversation about provider efficiency.</p>
+                    <p className="text-xs text-[#666666] mt-1.5">Time Saved Per Visit is the most universal Abridge driver. Start there. It anchors every conversation about provider efficiency.</p>
                   </motion.div>
                 )}
 
@@ -324,7 +324,7 @@ export default function MeasureCapacity({ state, updateState, onNext, onBack, on
               ) : (
                 <>
                   <p className="text-3xl font-bold text-white/20" data-testid="text-quadrant-total-capacity">—</p>
-                  <p className="text-xs text-white/40 mt-1">{watchMetrics.length > 0 ? 'Signals only — no financial drivers yet' : 'No drivers tracked yet'}</p>
+                  <p className="text-xs text-white/40 mt-1">{watchMetrics.length > 0 ? 'Signals only, no financial drivers yet' : 'No drivers tracked yet'}</p>
                 </>
               )}
 

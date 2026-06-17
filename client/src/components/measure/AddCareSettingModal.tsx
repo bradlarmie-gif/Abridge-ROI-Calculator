@@ -156,7 +156,7 @@ export default function AddCareSettingModal({ open, excludeSettings, onClose, on
                     <div>
                       <label className="text-xs font-medium text-[#888888] uppercase tracking-wide mb-1.5 block">Annual encounters</label>
                       <FormattedNumberInput value={encounters} onChange={setEncounters} className="h-11 bg-white" data-testid="input-modal-encounters" />
-                      <p className="text-xs text-[#888888] mt-1">Optional context — used in 3G pricing comparison.</p>
+                      <p className="text-xs text-[#888888] mt-1">Optional context, used in 3G pricing comparison.</p>
                     </div>
                   )}
 

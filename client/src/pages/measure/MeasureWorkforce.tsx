@@ -150,11 +150,11 @@ export default function MeasureWorkforce({ state, updateState, onNext, onBack, o
   }, [activeSettings, isMultiSetting]);
 
   const howToUse = useMemo(() => {
-    if (isMultiSetting) return 'Add workforce drivers relevant to each care setting. Provider Wellbeing and Locum Cost Avoidance apply across all provider settings — enter combined values.';
+    if (isMultiSetting) return 'Add workforce drivers relevant to each care setting. Provider Wellbeing and Locum Cost Avoidance apply across all provider settings. Enter combined values.';
     return {
       outpatient: 'Provider Wellbeing models avoided replacement cost when turnover improves. Locum & Agency Cost Avoidance captures the downstream benefit of reduced reliance on contracted coverage.',
       ed: 'ED providers experience some of the highest burnout and turnover rates in medicine. Even modest retention improvements produce significant avoided replacement cost.',
-      inpatient: 'Hospitalist turnover is expensive — recruitment, onboarding, and ramp time add up quickly. This section quantifies the workforce value of reducing documentation burden.',
+      inpatient: 'Hospitalist turnover is expensive. Recruitment, onboarding, and ramp time add up quickly. This section quantifies the workforce value of reducing documentation burden.',
       nursing: 'Nursing retention drivers model the replacement cost avoided when burnout-driven turnover declines. Charting After Shift and Burnout Score are the leading signals.',
     }[activeSettings[0]] ?? 'Track the Workforce outcomes that matter for this customer. For each driver, enter the value with and without Abridge, then dial attribution and realization to reflect their reality.';
   }, [activeSettings, isMultiSetting]);
@@ -324,7 +324,7 @@ export default function MeasureWorkforce({ state, updateState, onNext, onBack, o
               ) : (
                 <>
                   <p className="text-3xl font-bold text-white/20" data-testid="text-quadrant-total-workforce">—</p>
-                  <p className="text-xs text-white/40 mt-1">{watchMetrics.length > 0 ? 'Signals only — no financial drivers yet' : 'No drivers tracked yet'}</p>
+                  <p className="text-xs text-white/40 mt-1">{watchMetrics.length > 0 ? 'Signals only, no financial drivers yet' : 'No drivers tracked yet'}</p>
                 </>
               )}
 

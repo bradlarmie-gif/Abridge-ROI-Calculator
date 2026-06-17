@@ -23,7 +23,7 @@ const SETTING_BADGE_LABEL: Record<string, string> = {
   outpatient: 'OP',
   ed: 'ED',
   inpatient: 'IP',
-  nursing: 'Nsg',
+  nursing: 'NUR',
 };
 
 interface MeasureDriverCardProps {
@@ -172,7 +172,7 @@ export default function MeasureDriverCard({ driver, entry, onUpdate, onRemove, i
 
       {latestMonthlyPoint && (
         <p className="text-xs text-[#888888]">
-          Latest entry ({latestMonthlyPoint.month}) used in calculation — Δ {delta >= 0 ? '+' : ''}{formatNumber(delta)} {md?.deltaUnit ?? 'value'}.
+          Latest entry ({latestMonthlyPoint.month}) used in calculation. Δ {delta >= 0 ? '+' : ''}{formatNumber(delta)} {md?.deltaUnit ?? 'value'}.
         </p>
       )}
     </div>
@@ -539,7 +539,7 @@ export default function MeasureDriverCard({ driver, entry, onUpdate, onRemove, i
                             </div>
                           </div>
                           <p className="text-[10px] text-[#AAAAAA] mt-3 italic">
-                            This represents what Abridge&apos;s impact could mean financially — not a guarantee of realized revenue.
+                            This represents what Abridge&apos;s impact could mean financially, not a guarantee of realized revenue.
                           </p>
                         </div>
                       )}
@@ -790,7 +790,7 @@ export default function MeasureDriverCard({ driver, entry, onUpdate, onRemove, i
 
                         <div className="flex items-center gap-2 text-[11px] text-[#AAAAAA]">
                           <div className="w-1.5 h-1.5 rounded-full bg-[#AAAAAA] flex-shrink-0" />
-                          Signal tracked — adds qualitative evidence, not modeled financially.
+                          Signal tracked. Adds qualitative evidence, not modeled financially.
                         </div>
                       </motion.div>
                     )}

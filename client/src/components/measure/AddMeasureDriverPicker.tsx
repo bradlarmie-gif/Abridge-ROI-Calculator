@@ -27,7 +27,7 @@ const SETTING_BADGE: Record<ExploreSetting, string> = {
   outpatient: 'OP',
   ed: 'ED',
   inpatient: 'IP',
-  nursing: 'Nsg',
+  nursing: 'NUR',
 };
 
 export default function AddMeasureDriverPicker({ quadrant, settings, alreadyTracked, onAdd, onAddCustomDef }: AddMeasureDriverPickerProps) {
@@ -39,9 +39,9 @@ export default function AddMeasureDriverPicker({ quadrant, settings, alreadyTrac
   const [customHasValue, setCustomHasValue] = useState(false);
 
   const inScope = EXPLORE_DRIVERS.filter(d =>
-    d.quadrant === quadrant && d.settings.some(s => settings.includes(s))
+    d.quadrant === quadrant && d.settings.some(s => settings.includes(s)) && !d.comingSoon
   );
-  const inScopeTrackedCount = inScope.filter(d => alreadyTracked.includes(d.id) && !d.comingSoon).length;
+  const inScopeTrackedCount = inScope.filter(d => alreadyTracked.includes(d.id)).length;
   const available = inScope
     .filter(d =>
       !alreadyTracked.includes(d.id) &&
@@ -143,14 +143,13 @@ export default function AddMeasureDriverPicker({ quadrant, settings, alreadyTrac
                     <p className="text-sm text-[#888888] text-center py-6 italic">
                       {inScope.length === 0
                         ? 'No drivers available for this care setting.'
-                        : inScopeTrackedCount === inScope.filter(d => !d.comingSoon).length
+                        : inScopeTrackedCount === inScope.length
                           ? 'All drivers in this quadrant are already tracked.'
                           : 'No drivers match your search.'}
                     </p>
                   )}
                   {available.map(driver => {
                     const isQuantifiable = driver.visibility === 'quantified' && Boolean(driver.measureDefaults);
-                    const isComingSoon = Boolean(driver.comingSoon);
                     const prereqLabels = driver.prerequisites?.map(pid => {
                       const d = EXPLORE_DRIVERS.find(x => x.id === pid);
                       return d?.label ?? pid;
@@ -158,27 +157,22 @@ export default function AddMeasureDriverPicker({ quadrant, settings, alreadyTrac
                     return (
                       <button
                         key={driver.id}
-                        onClick={() => !isComingSoon && handleAdd(driver)}
-                        disabled={isComingSoon}
-                        className={`w-full p-3 text-left rounded-lg transition-colors flex items-start gap-3 ${
-                          isComingSoon
-                            ? 'opacity-50 cursor-not-allowed'
-                            : 'hover:bg-[#F5F0EB]'
-                        }`}
+                        onClick={() => handleAdd(driver)}
+                        className="w-full p-3 text-left rounded-lg transition-colors flex items-start gap-3 hover:bg-[#F5F0EB]"
                         data-testid={`add-driver-${driver.id}`}
                       >
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <p className={`font-semibold ${isComingSoon ? 'text-[#888888]' : 'text-black'}`}>{driver.label}</p>
-                            {isQuantifiable && !isComingSoon && (
+                            <p className="font-semibold text-black">{driver.label}</p>
+                            {isQuantifiable && (
                               <span
                                 className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-[#F5F0EB] text-[10px] font-semibold text-[#888888]"
-                                title="Quantifiable — carries dollar value"
+                                title="Quantifiable, carries dollar value"
                               >
                                 $
                               </span>
                             )}
-                            {driver.measurePhase && !isComingSoon && (
+                            {driver.measurePhase && (
                               <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold ${PHASE_COLOR[driver.measurePhase]}`}>
                                 {PHASE_LABEL[driver.measurePhase]}
                               </span>
@@ -190,11 +184,6 @@ export default function AddMeasureDriverPicker({ quadrant, settings, alreadyTrac
                                 </span>
                               ) : null
                             ))}
-                            {isComingSoon && (
-                              <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-[#F5F0EB] text-[10px] font-semibold text-[#AAAAAA] uppercase tracking-wide">
-                                Coming soon
-                              </span>
-                            )}
                           </div>
                           <p className="text-sm text-[#888888] mt-0.5">{driver.shortDescription}</p>
                           {prereqLabels && prereqLabels.length > 0 && (
@@ -203,7 +192,7 @@ export default function AddMeasureDriverPicker({ quadrant, settings, alreadyTrac
                             </p>
                           )}
                         </div>
-                        {!isComingSoon && <Plus className="w-4 h-4 text-[#EA2C00] flex-shrink-0 mt-1" />}
+                        <Plus className="w-4 h-4 text-[#EA2C00] flex-shrink-0 mt-1" />
                       </button>
                     );
                   })}
@@ -287,7 +276,7 @@ export default function AddMeasureDriverPicker({ quadrant, settings, alreadyTrac
                           <p className="text-[10px] text-[#AAAAAA] mt-1.5 leading-relaxed">
                             {customHasValue
                               ? "You've documented a dollar value for this outcome."
-                              : "Qualitative signal — no dollar calculation."}
+                              : "Qualitative signal, no dollar calculation."}
                           </p>
                         </div>
 

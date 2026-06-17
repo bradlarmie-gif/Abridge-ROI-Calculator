@@ -23,7 +23,7 @@ interface MeasureForecastProps {
 
 
 const QUADRANT_ORDER: ExploreQuadrant[] = ['Capacity', 'Workforce', 'Revenue', 'Quality'];
-const SETTING_BADGE: Record<string, string> = { outpatient: 'OP', ed: 'ED', inpatient: 'IP', nursing: 'Nsg' };
+const SETTING_BADGE: Record<string, string> = { outpatient: 'OP', ed: 'ED', inpatient: 'IP', nursing: 'NUR' };
 
 function computeRealizedBaseline(driver: ExploreDriver, entry: MeasureDriverEntry, settingAbridgeEncounters: number): number {
   const md = driver.measureDefaults;

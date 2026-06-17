@@ -265,7 +265,7 @@ export default function MeasureQuality({ state, updateState, onNext, onBack, onH
                     data-testid="empty-state-quality"
                   >
                     <p className="text-sm font-medium text-[#444444]">No Quality drivers yet{isMultiSetting ? ` for ${settingLabel}` : ''}.</p>
-                    <p className="text-xs text-[#666666] mt-1.5">HEDIS, STARS, and Press Ganey are the three quality signals every executive recognizes — and all three respond to documentation completeness.</p>
+                    <p className="text-xs text-[#666666] mt-1.5">HEDIS, STARS, and Press Ganey are the three quality signals every executive recognizes, and all three respond to documentation completeness.</p>
                   </motion.div>
                 )}
 
@@ -324,7 +324,7 @@ export default function MeasureQuality({ state, updateState, onNext, onBack, onH
               ) : (
                 <>
                   <p className="text-3xl font-bold text-white/20" data-testid="text-quadrant-total-quality">—</p>
-                  <p className="text-xs text-white/40 mt-1">{watchMetrics.length > 0 ? 'Signals only — no financial drivers yet' : 'No drivers tracked yet'}</p>
+                  <p className="text-xs text-white/40 mt-1">{watchMetrics.length > 0 ? 'Signals only, no financial drivers yet' : 'No drivers tracked yet'}</p>
                 </>
               )}
 

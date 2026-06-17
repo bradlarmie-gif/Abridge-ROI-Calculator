@@ -36,7 +36,7 @@ const QUADRANT_COLORS: Record<string, string> = {
 };
 
 const QUADRANT_TAGLINES: Record<string, string> = {
-  Capacity: 'Time reclaimed — and what it became',
+  Capacity: 'Time reclaimed, and what it became',
   Workforce: 'The retention story, in the provider\'s own numbers',
   Revenue: 'Documentation accuracy showing up in the bill',
   Quality: 'Clinical signals building the long-term case',
@@ -50,7 +50,7 @@ const ENTRY_DATA_SOURCE_LABELS: Record<string, string> = {
   manual_entry: 'Manual entry',
 };
 
-const SETTING_BADGE: Record<string, string> = { outpatient: 'OP', ed: 'ED', inpatient: 'IP', nursing: 'Nsg' };
+const SETTING_BADGE: Record<string, string> = { outpatient: 'OP', ed: 'ED', inpatient: 'IP', nursing: 'NUR' };
 
 // ─── Sparkline (SVG, no recharts needed) ───────────────────────────────────────
 function Sparkline({ values, lowerIsBetter, id }: { values: number[]; lowerIsBetter?: boolean; id: string }) {
@@ -452,9 +452,9 @@ const AUDIENCE_LABELS: Record<Audience, string> = {
   executive: 'Executive',
 };
 const AUDIENCE_DESCRIPTIONS: Record<Audience, string> = {
-  clinical: 'Outcomes & trends — no dollar figures',
+  clinical: 'Outcomes & trends, no dollar figures',
   financial: 'Full dollar impact across all domains',
-  executive: 'Complete view — value + provider voice',
+  executive: 'Complete view, value + provider voice',
 };
 
 // ─── Main component ────────────────────────────────────────────────────────────
@@ -466,7 +466,6 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
   const [showManageQuotes, setShowManageQuotes] = useState(false);
 
   const showDollars = audience === 'financial' || audience === 'executive';
-  const showRevenue = true;
   const showQuotes = (audience === 'clinical' || audience === 'executive') && (state.quotes?.length ?? 0) > 0;
   const { toast } = useToast();
 
@@ -689,7 +688,6 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
                       <p className="text-[10px] font-semibold text-white/40 uppercase tracking-[2px] mb-3">By Domain</p>
                       <div className="space-y-2 mb-4">
                         {QUADRANT_ORDER
-                          .filter(q => showRevenue || q !== 'Revenue')
                           .map(q => {
                           const qd = quadrants.find(x => x.quadrant === q);
                           const val = qd?.realizedTotal ?? 0;
@@ -717,7 +715,6 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
                       <p className="text-[10px] font-semibold text-white/40 uppercase tracking-[2px] mb-4">Value by Domain</p>
                       <div className="space-y-3">
                         {QUADRANT_ORDER
-                          .filter(q => showRevenue || q !== 'Revenue')
                           .map(q => {
                           const qd = quadrants.find(x => x.quadrant === q);
                           const val = qd?.realizedTotal ?? 0;
@@ -819,7 +816,7 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
                   <MessageSquare className="w-5 h-5 text-[#A39888] flex-shrink-0" />
                   <div>
                     <p className="text-sm font-semibold text-[#525252]">Add provider quotes</p>
-                    <p className="text-xs text-[#9E948C] mt-0.5">The voice behind the numbers — often the most memorable part of a customer review</p>
+                    <p className="text-xs text-[#9E948C] mt-0.5">The voice behind the numbers, often the most memorable part of a customer review</p>
                   </div>
                 </div>
                 <span className="text-xs font-semibold text-[#8C7E6E] flex-shrink-0">+ Add</span>
@@ -863,7 +860,6 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
                     {/* Nested quadrant rows */}
                     <div className="divide-y divide-[#F8F8F8]">
                       {ss.settingQuadrants
-                        .filter(q => showRevenue || q.quadrant !== 'Revenue')
                         .map(q => {
                         const color = QUADRANT_COLORS[q.quadrant];
                         const sectionKey = `${ss.setting}:${q.quadrant}`;
@@ -940,7 +936,7 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
               ) : (
                 /* Single-setting: quadrant sections (same as before) */
                 quadrants
-                  .filter(q => q.drivers.length > 0 && (showRevenue || q.quadrant !== 'Revenue'))
+                  .filter(q => q.drivers.length > 0)
                   .map((q, qi) => {
                   const color = QUADRANT_COLORS[q.quadrant];
                   const isExpanded = isSectionExpanded(q.quadrant);
@@ -1053,7 +1049,7 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
                 transition={{ delay: 0.25 }}
               >
                 <p className="text-[10px] font-bold text-[#888888] uppercase tracking-[1.5px] mb-1">Value Range</p>
-                <p className="text-[10px] text-[#A39888] mb-3 leading-snug">±25% sensitivity on adoption depth. Base is what was measured — rollout breadth is modeled explicitly in Forecast.</p>
+                <p className="text-[10px] text-[#A39888] mb-3 leading-snug">±25% sensitivity on adoption depth. Base is what was measured. Rollout breadth is modeled explicitly in Forecast.</p>
                 <div className="grid grid-cols-3 gap-2">
                   {[
                     { label: 'Conservative', pct: 0.75, sub: 'Adoption 25% shallower' },
