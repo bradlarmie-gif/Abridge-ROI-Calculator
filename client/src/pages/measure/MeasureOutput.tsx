@@ -124,7 +124,6 @@ function buildDriverPayload(
     delta,
     valuePerUnit: entry.valuePerUnit,
     attributionPercent: entry.attributionPercent,
-    realizationPercent: entry.realizationPercent,
     realizedValue,
     scaleUnits,
     isPerEncounter,
@@ -340,11 +339,6 @@ function FinancialDriverCard({
             <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-[#F0EBE4] text-[10px] font-medium text-[#8C7E6E]">
               {drv.attributionPercent}% attributed to Abridge
             </span>
-            {drv.realizationPercent !== undefined && drv.realizationPercent !== 100 && (
-              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-[#F5F5F5] text-[10px] font-medium text-[#888888]">
-                {drv.realizationPercent}% realization
-              </span>
-            )}
             {drv.entryDataSource && (
               <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-[#F0EBE4] text-[10px] font-medium text-[#8C7E6E]">
                 {ENTRY_DATA_SOURCE_LABELS[drv.entryDataSource] ?? drv.entryDataSource}

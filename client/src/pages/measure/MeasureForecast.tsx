@@ -39,7 +39,7 @@ function computeRealizedBaseline(driver: ExploreDriver, entry: MeasureDriverEntr
     : (entry.scaleDivisor && entry.scaleDivisor > 0 && entry.scaleValue !== undefined)
       ? entry.scaleValue / entry.scaleDivisor
       : 1;
-  return Math.round(delta * entry.valuePerUnit * scale * (entry.attributionPercent / 100) * ((entry.realizationPercent ?? 100) / 100));
+  return Math.round(delta * entry.valuePerUnit * scale * (entry.attributionPercent / 100));
 }
 
 function computeScaleFactor(

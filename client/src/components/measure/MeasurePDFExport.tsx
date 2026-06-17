@@ -117,7 +117,6 @@ export interface MeasurePDFDriver {
   delta: number;
   valuePerUnit: number;
   attributionPercent: number;
-  realizationPercent: number;
   realizedValue: number;
   // The volume multiplier applied (encounters for per-encounter drivers, or the
   // scaleValue/scaleDivisor factor) so the printed equation equals the result.
@@ -327,7 +326,6 @@ function DriverCard({ d }: { d: MeasurePDFDriver }) {
             \u0394 {fmtN(d.delta)} {unit} \u00D7 {valPrefix}{fmtN(d.valuePerUnit)} {valLabel}
             {d.isPerEncounter ? ` \u00D7 ${fmtN(d.scaleUnits)} ${d.scaleUnitLabel}` : (d.scaleUnits !== 1 ? ` \u00D7 ${fmtN(d.scaleUnits)}` : "")}
             {" \u00D7 "}{fmtPct(d.attributionPercent)} attribution
-            {d.realizationPercent !== 100 ? ` \u00D7 ${fmtPct(d.realizationPercent)} realization` : ""}
           </Text>
           <Text style={s.calcResult}>= {fmtC(d.realizedValue)}</Text>
           {showMonthly && d.monthlyData ? <MonthlySparkline data={d.monthlyData} /> : null}
@@ -690,7 +688,7 @@ const MeasureEvidenceDoc = ({ data }: { data: MeasurePDFData }) => {
           <View style={s.bulletRow}>
             <View style={s.bullet} />
             <Text style={s.bulletText}>
-              Each quantified driver computes realized value as: \u0394 (With \u2212 Without) \u00D7 value-per-unit \u00D7 attribution\u202F% \u00D7 realization\u202F%. Attribution captures how much of the change is reasonably tied to Abridge; realization captures what fraction of the value is actually captured by the business.
+              Each quantified driver computes realized value as: \u0394 (With \u2212 Without) \u00D7 value-per-unit \u00D7 encounter volume \u00D7 attribution\u202F%. Attribution captures how much of the change is reasonably tied to Abridge.
             </Text>
           </View>
           <View style={s.bulletRow}>
@@ -821,7 +819,6 @@ export function buildMeasurePDFDataFromState(state: MeasureState, audience?: str
             delta,
             valuePerUnit: entry.valuePerUnit,
             attributionPercent: entry.attributionPercent,
-            realizationPercent: entry.realizationPercent,
             realizedValue,
             scaleUnits,
             isPerEncounter,

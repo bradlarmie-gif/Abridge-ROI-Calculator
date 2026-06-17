@@ -75,7 +75,6 @@ export default function MeasureQuality({ state, updateState, onNext, onBack, onH
       withAbridge: driver.isCustom && driver.visibility === 'quantified' ? 1 : 0,
       valuePerUnit: md?.valuePerUnitDefault ?? 0,
       attributionPercent: 100,
-      realizationPercent: 100,
       lowerIsBetter: md?.lowerIsBetter ?? false,
       expanded: true,
       scaleValue: md?.scaleInput?.defaultValue,

@@ -232,7 +232,6 @@ export interface MeasureDriverEntry {
   withAbridge: number;
   valuePerUnit: number;
   attributionPercent: number;
-  realizationPercent: number;
   expanded: boolean;
   notes?: string;
   isMonthlyMode?: boolean;
@@ -269,7 +268,7 @@ export function computeRealizedDriverValue(
     : (entry.scaleDivisor && entry.scaleDivisor > 0 && entry.scaleValue !== undefined)
       ? entry.scaleValue / entry.scaleDivisor
       : 1;
-  return Math.round(delta * entry.valuePerUnit * scale * (entry.attributionPercent / 100) * ((entry.realizationPercent ?? 100) / 100));
+  return Math.round(delta * entry.valuePerUnit * scale * (entry.attributionPercent / 100));
 }
 
 // ── Rollout sensitivity grid (shared by the Measure screen + its PDF) ──
