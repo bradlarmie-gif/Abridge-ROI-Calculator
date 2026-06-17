@@ -176,9 +176,13 @@ export function convertMeasureToForecast(m: MeasureState): ForecastState {
   }
 
   // ── Revenue — E/M level improvement (non-inpatient only) ──
+  // E/M-level lift and wRVU lift monetize the SAME coding-completeness dollars
+  // on the same encounters (a higher E/M level is, mechanically, more wRVUs).
+  // Counting both double-counts that revenue, so E/M is only seeded as a
+  // fallback when wRVU lift wasn't measured.
   const emLevelDelta =
     (m.documentationQuality.emLevelWith ?? 0) - (m.documentationQuality.emLevelWithout ?? 0);
-  if (emLevelDelta > 0 && !isInpatient && adoptedEnc > 0) {
+  if (emLevelDelta > 0 && wrvuDelta <= 0 && !isInpatient && adoptedEnc > 0) {
     const valuePerLevel = 15;
     const dollarsPerEnc = emLevelDelta * valuePerLevel;
     if (dollarsPerEnc > 0) {

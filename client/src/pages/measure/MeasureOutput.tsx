@@ -1052,12 +1052,13 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.25 }}
               >
-                <p className="text-[10px] font-bold text-[#888888] uppercase tracking-[1.5px] mb-3">Value Range</p>
+                <p className="text-[10px] font-bold text-[#888888] uppercase tracking-[1.5px] mb-1">Value Range</p>
+                <p className="text-[10px] text-[#A39888] mb-3 leading-snug">±25% sensitivity on adoption depth. Base is what was measured — rollout breadth is modeled explicitly in Forecast.</p>
                 <div className="grid grid-cols-3 gap-2">
                   {[
-                    { label: 'Conservative', pct: 0.75, sub: '75% adoption & realization' },
+                    { label: 'Conservative', pct: 0.75, sub: 'Adoption 25% shallower' },
                     { label: 'Base case', pct: 1.0, sub: 'As measured', highlight: true },
-                    { label: 'Optimistic', pct: 1.25, sub: '125% realization' },
+                    { label: 'Optimistic', pct: 1.25, sub: 'Adoption 25% deeper' },
                   ].map(({ label, pct, sub, highlight }) => (
                     <div
                       key={label}

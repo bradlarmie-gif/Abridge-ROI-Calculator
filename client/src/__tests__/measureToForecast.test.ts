@@ -84,6 +84,48 @@ describe("convertMeasureToForecast", () => {
     expect(inpatient.valueDrivers.find((d) => d.id === "drv-revenue-wrvu")).toBeUndefined();
   });
 
+  it("does not double-count E/M lift on top of wRVU lift (same coding dollars)", () => {
+    // Both measured: wRVU wins, E/M is suppressed so the same revenue isn't booked twice.
+    const both = convertMeasureToForecast(
+      makeMeasure({
+        documentationQuality: {
+          ...DEFAULT_MEASURE_STATE.documentationQuality,
+          wrvuWithout: 1.4,
+          wrvuWith: 1.7,
+          emLevelWithout: 3.0,
+          emLevelWith: 3.4,
+        },
+      }),
+    );
+    expect(both.valueDrivers.find((d) => d.id === "drv-revenue-wrvu")).toBeDefined();
+    expect(both.valueDrivers.find((d) => d.id === "drv-revenue-em")).toBeUndefined();
+
+    // E/M only (no wRVU measured): E/M is seeded as the fallback.
+    const emOnly = convertMeasureToForecast(
+      makeMeasure({
+        documentationQuality: {
+          ...DEFAULT_MEASURE_STATE.documentationQuality,
+          emLevelWithout: 3.0,
+          emLevelWith: 3.4,
+        },
+      }),
+    );
+    expect(emOnly.valueDrivers.find((d) => d.id === "drv-revenue-em")).toBeDefined();
+  });
+
+  it("dollarizes OP/ED denials with the tunable calibration claim value, not a literal", () => {
+    const m = makeMeasure({
+      calibration: { ...DEFAULT_MEASURE_STATE.calibration, avgClaimValue: 900 },
+      outpatientMetrics: { initialDenialRate: { before: 10, after: 6 } } as any,
+    });
+    const f = convertMeasureToForecast(m);
+    const denial = f.valueDrivers.find((d) => d.id === "drv-revenue-denials");
+    expect(denial).toBeDefined();
+    // 4-point drop × $900/claim ÷ 100 = $36/encounter, and it flows to calibration.
+    expect(denial!.projectedDelta).toBeCloseTo((4 / 100) * 900, 1);
+    expect(f.calibration.avgClaimValue).toBe(900);
+  });
+
   it("creates a CMI quality driver only for inpatient", () => {
     const m = makeMeasure({
       careSetting: "inpatient",
