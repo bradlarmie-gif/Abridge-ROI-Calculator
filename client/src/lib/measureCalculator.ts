@@ -85,6 +85,9 @@ export interface Calibration {
   minutesPerVisit: number;
   revenuePerVisit: number;
   conversionFactor: number;
+  // Avg value of a clean (recovered) OP/ED claim — used to dollarize denial-rate
+  // improvement. Inpatient uses its own per-case value (vm_denialCostPerCase).
+  avgClaimValue?: number;
 }
 
 export type MonthlyMetricData = Record<string, number[]>;
@@ -413,6 +416,7 @@ export const DEFAULT_MEASURE_STATE: MeasureState = {
     minutesPerVisit: 30,
     revenuePerVisit: 200,
     conversionFactor: 33,
+    avgClaimValue: 350,
   },
   trendConfig: {
     enabled: false,

@@ -227,12 +227,13 @@ export function convertMeasureToForecast(m: MeasureState): ForecastState {
     // Skip cleanClaimRate by checking that after < before for denial keys.
     const denialDelta = Math.max(0, denialMetric.before - denialMetric.after);
     if (denialDelta > 0) {
-      // Inpatient denials are admissions (~$3,200/case), not outpatient claims
-      // (~$350). Use the inpatient denial-cost-per-case when inpatient is the
-      // primary setting; otherwise the outpatient/ED per-claim value.
+      // Inpatient denials are admissions (~$3,200/case), not outpatient claims.
+      // Use the inpatient denial-cost-per-case when inpatient is the primary
+      // setting; otherwise the tunable OP/ED avg-claim-value from calibration
+      // (single source of truth — flows to the Forecast calibration below).
       const avgClaimValue = primarySetting === "inpatient"
         ? ((m.settingData?.inpatient?.vm_denialCostPerCase as number) ?? 3200)
-        : 350;
+        : (m.calibration.avgClaimValue ?? DEFAULT_FORECAST_CALIBRATION.avgClaimValue);
       const dollarsPerEnc = (denialDelta / 100) * avgClaimValue;
       if (dollarsPerEnc > 0) {
         drivers.push({
@@ -435,7 +436,7 @@ export function convertMeasureToForecast(m: MeasureState): ForecastState {
       m.calibration.revenuePerVisit ?? DEFAULT_FORECAST_CALIBRATION.revenuePerVisit,
     minutesPerVisit:
       m.calibration.minutesPerVisit ?? DEFAULT_FORECAST_CALIBRATION.minutesPerVisit,
-    avgClaimValue: DEFAULT_FORECAST_CALIBRATION.avgClaimValue,
+    avgClaimValue: m.calibration.avgClaimValue ?? DEFAULT_FORECAST_CALIBRATION.avgClaimValue,
     nursingHourlyRate: DEFAULT_FORECAST_CALIBRATION.nursingHourlyRate,
     providerReplacementCost: DEFAULT_FORECAST_CALIBRATION.providerReplacementCost,
   };
