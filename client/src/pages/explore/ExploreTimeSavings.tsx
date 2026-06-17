@@ -60,8 +60,17 @@ export default function ExploreTimeSavings({
     return state.numberOfProviders > 0 ? Math.round(hoursSaved / state.numberOfProviders) : 0;
   }, [hoursSaved, state.numberOfProviders]);
 
-  const hoursPerWeek = useMemo(() => {
-    return state.numberOfProviders > 0 ? (hoursSaved / state.numberOfProviders / 48).toFixed(1) : '0';
+  // Per-provider weekly time saved. When it's under 0.1 hr it rounds to an
+  // unhelpful "0.0", so show minutes instead (e.g. "~2 min"). The value carries
+  // its own unit so the row label stays unit-neutral.
+  const perWeekDisplay = useMemo(() => {
+    if (state.numberOfProviders <= 0) return '0';
+    const hrs = hoursSaved / state.numberOfProviders / 48;
+    if (hrs > 0 && hrs < 0.1) {
+      const mins = hrs * 60;
+      return mins < 1 ? '<1 min' : `~${Math.round(mins)} min`;
+    }
+    return `${hrs.toFixed(1)} hrs`;
   }, [hoursSaved, state.numberOfProviders]);
 
   const handleScenarioSelect = (scenario: 'conservative' | 'typical' | 'aggressive') => {
@@ -359,8 +368,8 @@ export default function ExploreTimeSavings({
                   <span className="text-white font-semibold">{state.minutesSavedPerEncounter > 0 ? formatNumber(hoursPerProvider) : '—'}</span>
                 </div>
                 <div className="flex justify-between gap-2">
-                  <span className="text-white/50">Hours/week</span>
-                  <span className="text-white font-semibold">{state.minutesSavedPerEncounter > 0 ? hoursPerWeek : '—'}</span>
+                  <span className="text-white/50">Per week</span>
+                  <span className="text-white font-semibold">{state.minutesSavedPerEncounter > 0 ? perWeekDisplay : '—'}</span>
                 </div>
                 <div className="flex justify-between gap-2">
                   <span className="text-white/50">{isNursing ? 'Per-shift impact' : 'Daily impact'}</span>
