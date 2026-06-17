@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowRight, RotateCcw, TrendingUp, TrendingDown, Plus, Download } from "lucide-react";
+import { ArrowLeft, ArrowRight, RotateCcw, TrendingUp, TrendingDown, Plus, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
@@ -835,8 +835,8 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
                 className="h-12 px-8 bg-black hover:bg-black/90 text-white font-semibold rounded-full gap-2"
                 data-testid="button-continue-measure-forecast-mobile"
               >
-                View Evidence Detail
-                <ArrowRight className="w-4 h-4" />
+                <ArrowLeft className="w-4 h-4" />
+                Back to Evidence Detail
               </Button>
             </motion.div>
           </div>
@@ -1007,8 +1007,8 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
                   className="w-full h-12 bg-white hover:bg-white/90 text-black font-semibold rounded-full gap-2"
                   data-testid="button-continue-measure-forecast"
                 >
-                  View Evidence Detail
-                  <ArrowRight className="w-4 h-4" />
+                  <ArrowLeft className="w-4 h-4" />
+                  Back to Evidence Detail
                 </Button>
               </div>
             </div>
