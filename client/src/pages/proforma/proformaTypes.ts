@@ -170,7 +170,7 @@ export const SETTING_COLORS: Record<string, string> = {
   outpatient: "#E8350A",
   ed: "#BF2A06",
   inpatient: "#333333",
-  nursing: "#4E5A6B",
+  nursing: "#7A1F04",
 };
 
 export const SETTING_LABELS: Record<string, string> = {
