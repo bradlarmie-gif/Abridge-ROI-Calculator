@@ -105,7 +105,7 @@ export default function ObsDefenseCalc({ state, updateDocQualityInputs }: Props)
         <p className="text-[13px] text-[#666666] mb-4">
           Of your IP-to-Obs downgrades, what share were lost on documentation grounds — not payer policy? This is the portion where the physician's clinical judgment was sound but the note didn't capture the reasoning well enough to withstand audit.
         </p>
-        <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mb-3">
           {PREVENTABLE_SCENARIOS.map((s) => (
             <button
               key={s.value}
@@ -120,13 +120,52 @@ export default function ObsDefenseCalc({ state, updateDocQualityInputs }: Props)
               <p className={`text-xs capitalize mb-1 ${dq.ipObsDefensePreventableScenario === s.value ? 'text-white/80' : 'text-[#888888]'}`}>
                 {s.label}
               </p>
-              <p className="font-semibold text-lg">{s.pct}%</p>
+              <p className="text-sm font-semibold">{s.pct}%</p>
               <p className={`text-[10px] mt-0.5 leading-tight ${dq.ipObsDefensePreventableScenario === s.value ? 'text-white/70' : 'text-[#AAAAAA]'}`}>
                 {s.hint}
               </p>
             </button>
           ))}
+          <button
+            onClick={() => updateDocQualityInputs({ ipObsDefensePreventableScenario: 'custom' })}
+            className={`p-2 sm:p-4 rounded-lg border transition-all text-center ${
+              dq.ipObsDefensePreventableScenario === 'custom'
+                ? "bg-[#EA2C00] border-[#EA2C00] text-white"
+                : "bg-white border-[#E5E5E5] text-black hover:border-[#D1D5DB]"
+            }`}
+            data-testid="button-obs-custom"
+          >
+            <p className={`text-xs capitalize mb-1 ${dq.ipObsDefensePreventableScenario === 'custom' ? 'text-white/80' : 'text-[#888888]'}`}>
+              Custom
+            </p>
+            <p className="text-sm font-semibold">{dq.ipObsDefensePreventableScenario === 'custom' ? `${dq.ipObsDefenseCustomPercent ?? 40}%` : 'set %'}</p>
+            <p className={`text-[10px] mt-0.5 leading-tight ${dq.ipObsDefensePreventableScenario === 'custom' ? 'text-white/70' : 'text-[#AAAAAA]'}`}>
+              Set your own
+            </p>
+          </button>
         </div>
+
+        {dq.ipObsDefensePreventableScenario === 'custom' && (
+          <div className="flex items-center gap-3 mb-3">
+            <label className="text-[13px] text-[#666666] flex-shrink-0">Documentation-preventable %</label>
+            <div className="relative flex-1">
+              <input
+                type="text"
+                inputMode="decimal"
+                value={dq.ipObsDefenseCustomPercent ?? 40}
+                onChange={(e) => {
+                  const raw = e.target.value.replace(/[^0-9.]/g, '');
+                  const n = parseFloat(raw);
+                  if (raw === '') { updateDocQualityInputs({ ipObsDefenseCustomPercent: 0 }); }
+                  else if (!isNaN(n) && n >= 0 && n <= 100) { updateDocQualityInputs({ ipObsDefenseCustomPercent: n }); }
+                }}
+                className="w-full h-10 bg-white border border-[#E5E5E5] rounded-lg px-3 pr-8 text-sm font-semibold text-black focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30"
+                data-testid="input-obs-custom"
+              />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
+            </div>
+          </div>
+        )}
         <div className="bg-[#F5F0EB] rounded-lg p-4 text-center">
           <span className="text-[13px] text-[#666666]">{fmtN(downgrades)} × {preventablePcts[dq.ipObsDefensePreventableScenario]}% = </span>
           <span className="font-semibold text-black">{fmtN(preventable)} documentation-preventable downgrades</span>

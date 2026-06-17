@@ -66,7 +66,7 @@ export default function CdiQueryReductionCalc({ state, updateDocQualityInputs }:
       {/* STEP 2 */}
       <div className="mb-10">
         <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">Step 2: Queries Avoided</p>
-        <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mb-4">
           {(['conservative', 'typical', 'aggressive'] as const).map((level) => (
             <button
               key={level}
@@ -81,10 +81,46 @@ export default function CdiQueryReductionCalc({ state, updateDocQualityInputs }:
               <p className={`text-xs capitalize mb-1 ${docQualityInputs.ipCdiScenario === level ? 'text-white/80' : 'text-[#888888]'}`}>
                 {SCENARIO_LABELS[level]}
               </p>
-              <p className="font-semibold text-lg">{ipCdiReductionScenarios[level]}%</p>
+              <p className="text-sm font-semibold">{ipCdiReductionScenarios[level]}%</p>
             </button>
           ))}
+          <button
+            onClick={() => updateDocQualityInputs({ ipCdiScenario: 'custom' })}
+            className={`p-2 sm:p-4 rounded-lg border transition-all text-center ${
+              docQualityInputs.ipCdiScenario === 'custom'
+                ? "bg-[#EA2C00] border-[#EA2C00] text-white"
+                : "bg-white border-[#E5E5E5] text-black hover:border-[#D1D5DB]"
+            }`}
+            data-testid="button-ipcdi-custom"
+          >
+            <p className={`text-xs capitalize mb-1 ${docQualityInputs.ipCdiScenario === 'custom' ? 'text-white/80' : 'text-[#888888]'}`}>
+              Custom
+            </p>
+            <p className="text-sm font-semibold">{docQualityInputs.ipCdiScenario === 'custom' ? `${docQualityInputs.ipCdiCustomPercent ?? 25}%` : 'set %'}</p>
+          </button>
         </div>
+
+        {docQualityInputs.ipCdiScenario === 'custom' && (
+          <div className="flex items-center gap-3 mb-4">
+            <label className="text-[13px] text-[#666666] flex-shrink-0">Query reduction %</label>
+            <div className="relative flex-1">
+              <input
+                type="text"
+                inputMode="decimal"
+                value={docQualityInputs.ipCdiCustomPercent ?? 25}
+                onChange={(e) => {
+                  const raw = e.target.value.replace(/[^0-9.]/g, '');
+                  const n = parseFloat(raw);
+                  if (raw === '') { updateDocQualityInputs({ ipCdiCustomPercent: 0 }); }
+                  else if (!isNaN(n) && n >= 0 && n <= 100) { updateDocQualityInputs({ ipCdiCustomPercent: n }); }
+                }}
+                className="w-full h-10 bg-white border border-[#E5E5E5] rounded-lg px-3 pr-8 text-sm font-semibold text-black focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30"
+                data-testid="input-ipcdi-custom"
+              />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
+            </div>
+          </div>
+        )}
         <div className="bg-[#F5F0EB] rounded-lg p-4 text-center">
           <span className="text-[13px] text-[#666666]">{formatNumber(Math.round(ipTotalQueries))} × {ipCdiReductionPercent}% = </span>
           <span className="font-semibold text-black">{formatNumber(Math.round(ipQueriesAvoided))} queries avoided</span>

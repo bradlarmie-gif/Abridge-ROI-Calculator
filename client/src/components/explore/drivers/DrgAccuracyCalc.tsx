@@ -78,7 +78,7 @@ export default function DrgAccuracyCalc({ state, updateDocQualityInputs }: Props
           Not all gaps are the same. Abridge specifically captures "discussed but not documented"—clinical reasoning that happened verbally but didn't make the note.
         </p>
         <p className="text-[13px] text-[#666666] mb-4">What portion of your documentation gaps are verbal-to-written gaps?</p>
-        <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mb-3">
           {(['conservative', 'typical', 'aggressive'] as const).map((level) => (
             <button
               key={level}
@@ -93,10 +93,46 @@ export default function DrgAccuracyCalc({ state, updateDocQualityInputs }: Props
               <p className={`text-xs capitalize mb-1 ${docQualityInputs.ipDrgScenario === level ? 'text-white/80' : 'text-[#888888]'}`}>
                 {SCENARIO_LABELS[level]}
               </p>
-              <p className="font-semibold text-lg">{ipDrgProtectionScenarios[level]}%</p>
+              <p className="text-sm font-semibold">{ipDrgProtectionScenarios[level]}%</p>
             </button>
           ))}
+          <button
+            onClick={() => updateDocQualityInputs({ ipDrgScenario: 'custom' })}
+            className={`p-2 sm:p-4 rounded-lg border transition-all text-center ${
+              docQualityInputs.ipDrgScenario === 'custom'
+                ? "bg-[#EA2C00] border-[#EA2C00] text-white"
+                : "bg-white border-[#E5E5E5] text-black hover:border-[#D1D5DB]"
+            }`}
+            data-testid="button-ipdrg-custom"
+          >
+            <p className={`text-xs capitalize mb-1 ${docQualityInputs.ipDrgScenario === 'custom' ? 'text-white/80' : 'text-[#888888]'}`}>
+              Custom
+            </p>
+            <p className="text-sm font-semibold">{docQualityInputs.ipDrgScenario === 'custom' ? `${docQualityInputs.ipDrgCustomPercent ?? 20}%` : 'set %'}</p>
+          </button>
         </div>
+
+        {docQualityInputs.ipDrgScenario === 'custom' && (
+          <div className="flex items-center gap-3 mb-3">
+            <label className="text-[13px] text-[#666666] flex-shrink-0">Verbal-to-written gap %</label>
+            <div className="relative flex-1">
+              <input
+                type="text"
+                inputMode="decimal"
+                value={docQualityInputs.ipDrgCustomPercent ?? 20}
+                onChange={(e) => {
+                  const raw = e.target.value.replace(/[^0-9.]/g, '');
+                  const n = parseFloat(raw);
+                  if (raw === '') { updateDocQualityInputs({ ipDrgCustomPercent: 0 }); }
+                  else if (!isNaN(n) && n >= 0 && n <= 100) { updateDocQualityInputs({ ipDrgCustomPercent: n }); }
+                }}
+                className="w-full h-10 bg-white border border-[#E5E5E5] rounded-lg px-3 pr-8 text-sm font-semibold text-black focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30"
+                data-testid="input-ipdrg-custom"
+              />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
+            </div>
+          </div>
+        )}
         <div className="bg-[#F5F0EB] rounded-lg p-4 text-center mb-4">
           <span className="text-[13px] text-[#666666]">{formatNumber(Math.round(ipAdmissionsAtRisk))} × {ipDrgProtectionPercent}% = </span>
           <span className="font-semibold text-black">{formatNumber(Math.round(ipAdmissionsProtected))} admissions where Abridge captures what was missed</span>

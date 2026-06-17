@@ -54,7 +54,7 @@ export default function DenialPreventionCalc({ state, updateDocQualityInputs }: 
             <p className={`text-xs mb-1 ${docQualityInputs.denialsScenario === level ? 'text-white/80' : ''}`}>
               {SCENARIO_LABELS[level]}
             </p>
-            <p className="font-semibold">{denialsScenarios[level]}%</p>
+            <p className="text-sm font-semibold">{denialsScenarios[level]}%</p>
           </button>
         ))}
         <button
@@ -67,7 +67,7 @@ export default function DenialPreventionCalc({ state, updateDocQualityInputs }: 
           data-testid="button-denials-custom"
         >
           <p className={`text-xs mb-1 ${docQualityInputs.denialsScenario === 'custom' ? 'text-white/80' : ''}`}>Custom</p>
-          <p className="font-semibold">{docQualityInputs.denialsScenario === 'custom' ? `${docQualityInputs.denialsCustomPercent ?? 15}%` : 'set %'}</p>
+          <p className="text-sm font-semibold">{docQualityInputs.denialsScenario === 'custom' ? `${docQualityInputs.denialsCustomPercent ?? 15}%` : 'set %'}</p>
         </button>
       </div>
 
