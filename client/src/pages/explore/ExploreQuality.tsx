@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { ArrowRight, Plus, Trash2 } from "lucide-react";
+import { ArrowRight, Plus, Trash2, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
@@ -318,6 +318,16 @@ export default function ExploreQuality({ state, updateState, totalHoursSaved, pr
                   <p className="text-xs text-[#AAAAAA] mb-2">Drivers that build the business case with dollar value.</p>
                   <div className="h-px bg-[#D1D5DB] mb-6" />
                 </div>
+                {state.careSetting === 'nursing'
+                  && (state.nursingStaffedBeds <= 0 || state.nursingOccupancyRate <= 0)
+                  && financialDrivers.some(d => isEnabled(d)) && (
+                  <div className="mb-5 rounded-lg bg-[#F5F0EB] border border-[#E8E2DA] px-4 py-3 flex gap-2" data-testid="nudge-nursing-beds">
+                    <Info className="w-4 h-4 text-[#EA2C00] flex-shrink-0 mt-0.5" />
+                    <p className="text-xs text-[#666666] leading-relaxed">
+                      Enter <span className="font-semibold text-[#444444]">staffed beds</span> and <span className="font-semibold text-[#444444]">occupancy</span> on the first step to see these quality values. Without them, patient-days are zero, so the dollar figures stay at $0.
+                    </p>
+                  </div>
+                )}
                 {(() => {
                   const subGroupOrder: string[] = [];
                   financialDrivers.forEach(d => {

@@ -93,7 +93,7 @@ export default function LwbsRecoveryCalc({ state, updateTimeDriverInputs }: Prop
         <div className="flex gap-2">
           {[
             { label: 'Conservative', value: 10 },
-            { label: 'Moderate', value: 20 },
+            { label: 'Typical', value: 20 },
             { label: 'Optimistic', value: 30 },
           ].map((preset) => (
             <button
@@ -161,7 +161,7 @@ export default function LwbsRecoveryCalc({ state, updateTimeDriverInputs }: Prop
         )}
 
         <p className="text-xs text-[#888888]">
-          Conservative (10%) — use when boarding or bed availability drives LWBS, or when physician availability isn't the primary throughput constraint. Moderate (20%) — use when wait-to-be-seen time is the dominant LWBS driver and documentation is a known bottleneck. Optimistic (30%) — use when Abridge deployment data or operational analysis supports a higher throughput effect.
+          Conservative (10%) — use when boarding or bed availability drives LWBS, or when physician availability isn't the primary throughput constraint. Typical (20%) — use when wait-to-be-seen time is the dominant LWBS driver and documentation is a known bottleneck. Optimistic (30%) — use when Abridge deployment data or operational analysis supports a higher throughput effect.
         </p>
         <div className="bg-[#F5F0EB] rounded-lg p-3">
           <p className="text-xs text-[#666666]">

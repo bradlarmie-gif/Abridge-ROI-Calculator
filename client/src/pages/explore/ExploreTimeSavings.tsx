@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { AnimatedValue } from "@/components/explore/AnimatedValue";
 import { motion } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
@@ -316,7 +317,7 @@ export default function ExploreTimeSavings({
               {/* Hero Value */}
               <div className="text-center my-5">
                 <p className="text-5xl font-bold text-[#EA2C00]">
-                  {state.minutesSavedPerEncounter > 0 ? formatNumber(hoursSaved) : '—'}
+                  {state.minutesSavedPerEncounter > 0 ? <AnimatedValue value={hoursSaved} format={formatNumber} /> : '—'}
                 </p>
                 <p className="text-sm text-white/50 mt-1">
                   {state.minutesSavedPerEncounter > 0 ? 'hours / year' : 'Select a scenario below'}

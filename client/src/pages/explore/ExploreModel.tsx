@@ -27,6 +27,7 @@ import {
 } from "@/lib/exploreDriverCalcs";
 import type { ProformaSettingSnapshot } from "@/pages/proforma/proformaTypes";
 import { SETTING_COLORS, SETTING_LABELS } from "@/pages/proforma/proformaTypes";
+import { AnimatedValue } from "@/components/explore/AnimatedValue";
 
 interface ExploreModelProps {
   state: ExploreState;
@@ -1268,7 +1269,7 @@ export default function ExploreModel({
             </p>
           ) : (
             <p className="text-4xl sm:text-5xl md:text-7xl font-bold text-[#EA2C00] mb-1" data-testid="text-net-value">
-              {formatCurrency(netAnnualValue)}
+              <AnimatedValue value={netAnnualValue} format={formatCurrency} duration={700} />
             </p>
           )}
           {!isQualitativeOnly && <p className="text-xl text-[#888888] mb-4">/ year</p>}
@@ -1822,7 +1823,7 @@ export default function ExploreModel({
 
                     <div className="mb-4">
                       <p className="text-3xl font-bold text-black">
-                        {cardAnnual > 0 ? formatCurrency(cardAnnual) : '—'}
+                        {cardAnnual > 0 ? <AnimatedValue value={cardAnnual} format={formatCurrency} /> : '—'}
                       </p>
                       <p className="text-xs text-[#888888]">annual</p>
                       {benefits.oneTime > 0 && (

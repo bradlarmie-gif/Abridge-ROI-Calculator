@@ -201,10 +201,10 @@ export default function HccCaptureCalc({ state, updateDocQualityInputs }: Props)
                     <button
                       key={key}
                       onClick={() => updatePlan(plan.id, { uplift: key })}
-                      className={`flex-1 py-1.5 rounded-lg border text-center transition-all ${
+                      className={`flex-1 py-1.5 rounded-lg text-center transition-all ${
                         plan.uplift === key
-                          ? 'bg-[#EA2C00] border-[#EA2C00] text-white'
-                          : 'bg-white border-[#E5E5E5] text-[#444] hover:border-[#D1D5DB]'
+                          ? 'bg-[#EA2C00] text-white'
+                          : 'bg-[#F5F0EB] text-[#666666] hover:bg-[#EBE6E1]'
                       }`}
                     >
                       <p className={`text-[9px] ${plan.uplift === key ? 'text-white/80' : 'text-[#888888]'}`}>{label}</p>
@@ -213,10 +213,10 @@ export default function HccCaptureCalc({ state, updateDocQualityInputs }: Props)
                   ))}
                   <button
                     onClick={() => updatePlan(plan.id, { uplift: 'custom', ...(!plan.upliftCustomPp ? { upliftCustomPp: 5 } : {}) })}
-                    className={`flex-1 py-1.5 rounded-lg border text-center transition-all ${
+                    className={`flex-1 py-1.5 rounded-lg text-center transition-all ${
                       plan.uplift === 'custom'
-                        ? 'bg-[#EA2C00] border-[#EA2C00] text-white'
-                        : 'bg-white border-[#E5E5E5] text-[#444] hover:border-[#D1D5DB]'
+                        ? 'bg-[#EA2C00] text-white'
+                        : 'bg-[#F5F0EB] text-[#666666] hover:bg-[#EBE6E1]'
                     }`}
                   >
                     <p className={`text-[9px] ${plan.uplift === 'custom' ? 'text-white/80' : 'text-[#888888]'}`}>Custom</p>
