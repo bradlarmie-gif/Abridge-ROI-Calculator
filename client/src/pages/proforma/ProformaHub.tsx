@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Trash2, Edit, ArrowRight, ArrowLeftRight, Building2, Stethoscope, HeartPulse, BedDouble, Layers, ChevronDown, ChevronUp, TrendingUp, Clock, DollarSign, BarChart3, X, Sliders, GitCompare, Download, Loader2 } from "lucide-react";
+import { Plus, Trash2, Edit, ArrowRight, ArrowLeftRight, Building2, Stethoscope, HeartPulse, BedDouble, Layers, ChevronDown, ChevronUp, TrendingUp, Clock, DollarSign, BarChart3, X, Sliders, GitCompare, Download, Loader2, Presentation } from "lucide-react";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import type { ProformaSettingSnapshot, ProformaConfig, ProformaSummary, ScenarioDealTerms } from "./proformaTypes";
@@ -661,6 +661,7 @@ export default function ProformaHub({
 }: ProformaHubProps) {
   const [confirmRemove, setConfirmRemove] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [focusMode, setFocusMode] = useState(false);
   const cardRefs = useRef<Record<string, HTMLDivElement | null>>({});
   useEffect(() => {
     if (!editingId) return;
@@ -789,6 +790,30 @@ export default function ProformaHub({
       </div>
 
       <div className="max-w-[900px] mx-auto px-4 sm:px-6 -mt-8">
+        {settings.length > 0 && (
+          <div className="flex justify-end mb-4">
+            <button
+              onClick={() => {
+                setFocusMode((prev) => {
+                  const next = !prev;
+                  if (next) setEditingId(null);
+                  return next;
+                });
+                setConfirmRemove(null);
+              }}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                focusMode
+                  ? "bg-[#EA2C00] text-white border-[#EA2C00]"
+                  : "bg-white text-[#6B5E4F] border-[#E8E2DA] hover:border-[#EA2C00] hover:text-[#EA2C00]"
+              }`}
+              data-testid="button-focus-mode"
+            >
+              <Presentation className="w-3.5 h-3.5" />
+              {focusMode ? "Exit Focus" : "Focus"}
+            </button>
+          </div>
+        )}
+
         {settings.length > 0 && summary && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -872,15 +897,23 @@ export default function ProformaHub({
               <p className="text-xs font-medium text-neutral-700">System-wide Annual Fee</p>
               <p className="text-[11px] text-[#A39888]">Enterprise license covering all settings (e.g. shared Abridge platform fee)</p>
             </div>
-            <div className="relative flex-shrink-0 w-36">
-              <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[11px] text-neutral-400">$</span>
-              <FormattedNumberInput
-                value={config.systemWideFee ?? 0}
-                onChange={(v) => onConfigChange({ ...config, systemWideFee: v || undefined })}
-                className="w-full text-xs border border-[#E8E2DA] rounded-lg py-1.5 pl-5 pr-2 text-right bg-white"
-                placeholder="0"
-              />
-            </div>
+            {focusMode ? (
+              <div className="flex-shrink-0 text-right">
+                <p className="text-sm font-semibold text-neutral-900" data-testid="text-system-fee">
+                  {(config.systemWideFee ?? 0) > 0 ? `$${(config.systemWideFee ?? 0).toLocaleString()}` : "—"}
+                </p>
+              </div>
+            ) : (
+              <div className="relative flex-shrink-0 w-36">
+                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[11px] text-neutral-400">$</span>
+                <FormattedNumberInput
+                  value={config.systemWideFee ?? 0}
+                  onChange={(v) => onConfigChange({ ...config, systemWideFee: v || undefined })}
+                  className="w-full text-xs border border-[#E8E2DA] rounded-lg py-1.5 pl-5 pr-2 text-right bg-white"
+                  placeholder="0"
+                />
+              </div>
+            )}
           </div>
         )}
 
@@ -963,40 +996,42 @@ export default function ProformaHub({
                             </p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <button
-                            onClick={() => setEditingId(isEditing ? null : setting.id)}
-                            className={`p-2 rounded-lg transition-colors ${isEditing ? 'bg-[#EA2C00]/10 text-[#EA2C00]' : 'hover:bg-[#F5F0EB] text-[#A39888] hover:text-[#6B5E4F]'}`}
-                            data-testid={`button-edit-${setting.careSetting}`}
-                          >
-                            {isEditing ? <ChevronUp className="w-4 h-4" /> : <Edit className="w-4 h-4" />}
-                          </button>
-                          {confirmRemove === setting.id ? (
-                            <div className="flex items-center gap-1 ml-1">
-                              <button
-                                onClick={() => { onRemoveSetting(setting.id); setConfirmRemove(null); }}
-                                className="px-2 py-1 text-xs font-medium text-red-600 bg-red-50 rounded hover:bg-red-100 transition-colors"
-                                data-testid={`button-confirm-remove-${setting.careSetting}`}
-                              >
-                                Remove
-                              </button>
-                              <button
-                                onClick={() => setConfirmRemove(null)}
-                                className="px-2 py-1 text-xs text-[#8C7E6E] hover:text-[#6B5E4F]"
-                              >
-                                Cancel
-                              </button>
-                            </div>
-                          ) : (
+                        {!focusMode && (
+                          <div className="flex items-center gap-1">
                             <button
-                              onClick={() => setConfirmRemove(setting.id)}
-                              className="p-2 rounded-lg hover:bg-red-50 text-[#A39888] hover:text-red-500 transition-colors"
-                              data-testid={`button-remove-${setting.careSetting}`}
+                              onClick={() => setEditingId(isEditing ? null : setting.id)}
+                              className={`p-2 rounded-lg transition-colors ${isEditing ? 'bg-[#EA2C00]/10 text-[#EA2C00]' : 'hover:bg-[#F5F0EB] text-[#A39888] hover:text-[#6B5E4F]'}`}
+                              data-testid={`button-edit-${setting.careSetting}`}
                             >
-                              <Trash2 className="w-4 h-4" />
+                              {isEditing ? <ChevronUp className="w-4 h-4" /> : <Edit className="w-4 h-4" />}
                             </button>
-                          )}
-                        </div>
+                            {confirmRemove === setting.id ? (
+                              <div className="flex items-center gap-1 ml-1">
+                                <button
+                                  onClick={() => { onRemoveSetting(setting.id); setConfirmRemove(null); }}
+                                  className="px-2 py-1 text-xs font-medium text-red-600 bg-red-50 rounded hover:bg-red-100 transition-colors"
+                                  data-testid={`button-confirm-remove-${setting.careSetting}`}
+                                >
+                                  Remove
+                                </button>
+                                <button
+                                  onClick={() => setConfirmRemove(null)}
+                                  className="px-2 py-1 text-xs text-[#8C7E6E] hover:text-[#6B5E4F]"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => setConfirmRemove(setting.id)}
+                                className="p-2 rounded-lg hover:bg-red-50 text-[#A39888] hover:text-red-500 transition-colors"
+                                data-testid={`button-remove-${setting.careSetting}`}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            )}
+                          </div>
+                        )}
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-3">
@@ -1011,16 +1046,22 @@ export default function ProformaHub({
                         </div>
                         <div>
                           <p className="text-xs text-[#8C7E6E] mb-1">Go-Live Month</p>
-                          <select
-                            value={setting.goLiveMonth}
-                            onChange={(e) => onUpdateSetting(setting.id, { goLiveMonth: parseInt(e.target.value) })}
-                            className="h-8 w-full rounded-lg border border-[#DDD6CC] bg-white px-2 text-sm font-medium text-neutral-900 focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30"
-                            data-testid={`select-golive-${setting.careSetting}`}
-                          >
-                            {Array.from({ length: Math.max(1, config.contractTermMonths - 1) }, (_, i) => (
-                              <option key={i + 1} value={i + 1}>Month {i + 1}</option>
-                            ))}
-                          </select>
+                          {focusMode ? (
+                            <p className="h-8 flex items-center text-sm font-medium text-neutral-900" data-testid={`text-golive-${setting.careSetting}`}>
+                              Month {setting.goLiveMonth}
+                            </p>
+                          ) : (
+                            <select
+                              value={setting.goLiveMonth}
+                              onChange={(e) => onUpdateSetting(setting.id, { goLiveMonth: parseInt(e.target.value) })}
+                              className="h-8 w-full rounded-lg border border-[#DDD6CC] bg-white px-2 text-sm font-medium text-neutral-900 focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30"
+                              data-testid={`select-golive-${setting.careSetting}`}
+                            >
+                              {Array.from({ length: Math.max(1, config.contractTermMonths - 1) }, (_, i) => (
+                                <option key={i + 1} value={i + 1}>Month {i + 1}</option>
+                              ))}
+                            </select>
+                          )}
                         </div>
                       </div>
 
@@ -1044,22 +1085,24 @@ export default function ProformaHub({
                               A/B
                             </span>
                           )}
-                          <button
-                            onClick={() => {
-                              setDrawerInitialScenario("A");
-                              setAssumptionsDrawerSettingId(setting.id);
-                            }}
-                            className="inline-flex items-center gap-1.5 text-xs text-[#6B5E4F] hover:text-[#4A3F35] font-medium transition-colors"
-                            data-testid={`button-edit-assumptions-${setting.careSetting}`}
-                          >
-                            <Sliders className="w-3 h-3" />
-                            Edit Assumptions
-                          </button>
+                          {!focusMode && (
+                            <button
+                              onClick={() => {
+                                setDrawerInitialScenario("A");
+                                setAssumptionsDrawerSettingId(setting.id);
+                              }}
+                              className="inline-flex items-center gap-1.5 text-xs text-[#6B5E4F] hover:text-[#4A3F35] font-medium transition-colors"
+                              data-testid={`button-edit-assumptions-${setting.careSetting}`}
+                            >
+                              <Sliders className="w-3 h-3" />
+                              Edit Assumptions
+                            </button>
+                          )}
                         </div>
                       </div>
 
                       <AnimatePresence>
-                        {isEditing && (
+                        {isEditing && !focusMode && (
                           <motion.div
                             initial={{ height: 0, opacity: 0 }}
                             animate={{ height: "auto", opacity: 1 }}
@@ -1130,7 +1173,7 @@ export default function ProformaHub({
           </motion.div>
         )}
 
-        {availableSettings.length > 0 && (
+        {!focusMode && availableSettings.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
