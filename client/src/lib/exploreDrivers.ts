@@ -303,7 +303,10 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     id: 'nursingOvertime',
     label: 'Overtime Reduction',
     shortDescription: 'Faster charting reduces documentation-related overtime hours.',
-    quadrant: 'Capacity',
+    // Workforce, not Capacity: overtime reduction is a labor-cost saving, and
+    // the Workforce breakdown screen already computes it there — the registry
+    // quadrant must match so the Model rollup and the screen agree.
+    quadrant: 'Workforce',
     settings: ['nursing'],
     visibility: 'quantified',
     enabledStateKey: 'nursingOtEnabled',
