@@ -8,9 +8,9 @@ function easeOutCubic(t: number): number {
  * Smooth count-up that interpolates from previous value (not 0) when target changes.
  * Suitable for a live dashboard where targets shift on every slider drag.
  */
-export function useSmoothCountUp(target: number, duration = 300): number {
-  const [value, setValue] = useState(target);
-  const fromRef = useRef(target);
+export function useSmoothCountUp(target: number, duration = 300, fromZero = false): number {
+  const [value, setValue] = useState(fromZero ? 0 : target);
+  const fromRef = useRef(fromZero ? 0 : target);
   const frameRef = useRef<number>();
   const startRef = useRef<number>();
 
