@@ -55,13 +55,15 @@ interface ProformaPresentProps {
   config: ProformaConfig;
   summary: ProformaSummary;
   perSettingTotals: Record<string, { contractValue: number; contractInvestment: number }>;
+  orgName: string;
+  onOrgNameChange: (name: string) => void;
   onExit: () => void;
 }
 
 const KICKER = "text-[11px] font-semibold uppercase tracking-[3px] text-white/40";
 const SUPPORT = "text-white/55";
 
-export default function ProformaPresent({ settings, config, summary, perSettingTotals, onExit }: ProformaPresentProps) {
+export default function ProformaPresent({ settings, config, summary, perSettingTotals, orgName, onOrgNameChange, onExit }: ProformaPresentProps) {
   // Beat 0 = hook, 1..N = each setting, N+1 = combine.
   const totalBeats = settings.length + 2;
   const [beat, setBeat] = useState(0);
@@ -71,15 +73,33 @@ export default function ProformaPresent({ settings, config, summary, perSettingT
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      // Don't hijack typing in the org-name field.
+      const el = e.target as HTMLElement | null;
+      if (el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA")) {
+        if (e.key === "Escape") (el as HTMLInputElement).blur();
+        return;
+      }
       if (e.key === "ArrowRight") setBeat(b => Math.min(b + 1, totalBeats - 1));
       else if (e.key === "ArrowLeft") setBeat(b => Math.max(b - 1, 0));
       else if (e.key === "Escape") onExit();
+      else if (/^[1-9]$/.test(e.key)) {
+        // Jump straight to a care setting (1 = first setting) — agility on a call.
+        const n = parseInt(e.key, 10);
+        if (n <= settings.length) setBeat(n);
+      } else if (e.key === "0") setBeat(0);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [totalBeats, onExit]);
+  }, [totalBeats, settings.length, onExit]);
 
   const term = termLabel(config.contractTermMonths);
+
+  // Labeled chapters for the jump rail.
+  const chapters = [
+    { label: "Overview", beat: 0 },
+    ...settings.map((s, i) => ({ label: SETTING_LABELS[s.careSetting] || s.label, beat: i + 1 })),
+    { label: "Together", beat: settings.length + 1 },
+  ];
 
   return (
     <motion.div
@@ -99,6 +119,27 @@ export default function ProformaPresent({ settings, config, summary, perSettingT
         <X className="h-3.5 w-3.5" /> Exit
       </button>
 
+      {/* Chapter rail — jump to any beat (a CFO says "show me inpatient") */}
+      <div className="absolute top-5 left-1/2 z-20 flex max-w-[70vw] -translate-x-1/2 flex-wrap items-center justify-center gap-1">
+        {chapters.map((c) => (
+          <button
+            key={c.beat}
+            onClick={() => setBeat(c.beat)}
+            className="rounded-full px-3 py-1 text-[11px] font-medium tracking-wide transition-colors"
+            style={
+              c.beat === beat
+                ? { backgroundColor: CORAL, color: "#fff" }
+                : { color: "rgba(255,255,255,0.4)" }
+            }
+            onMouseEnter={(e) => { if (c.beat !== beat) e.currentTarget.style.color = "rgba(255,255,255,0.85)"; }}
+            onMouseLeave={(e) => { if (c.beat !== beat) e.currentTarget.style.color = "rgba(255,255,255,0.4)"; }}
+            data-testid={`present-chapter-${c.beat}`}
+          >
+            {c.label}
+          </button>
+        ))}
+      </div>
+
       {/* Stage */}
       <div className="flex h-full w-full items-center justify-center px-6 pb-24 pt-16">
         <div className="w-full max-w-[920px]">
@@ -110,7 +151,7 @@ export default function ProformaPresent({ settings, config, summary, perSettingT
               exit={{ opacity: 0, y: -12 }}
               transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
             >
-              {beat === 0 && <HookBeat settings={settings} summary={summary} term={term} showMath={showMath} />}
+              {beat === 0 && <HookBeat settings={settings} summary={summary} term={term} showMath={showMath} orgName={orgName} onOrgNameChange={onOrgNameChange} />}
               {beat >= 1 && beat <= settings.length && (
                 <SettingBeat
                   setting={settings[beat - 1]}
@@ -139,8 +180,8 @@ export default function ProformaPresent({ settings, config, summary, perSettingT
         {showMath ? "Hide the math" : "Show the math"}
       </button>
 
-      {/* Nav: prev · dots · next */}
-      <div className="absolute bottom-5 left-1/2 z-20 flex -translate-x-1/2 items-center gap-4">
+      {/* Nav: prev · position · next */}
+      <div className="absolute bottom-5 left-1/2 z-20 flex -translate-x-1/2 items-center gap-5">
         <button
           onClick={() => setBeat(b => Math.max(b - 1, 0))}
           disabled={beat === 0}
@@ -149,20 +190,7 @@ export default function ProformaPresent({ settings, config, summary, perSettingT
         >
           <ChevronLeft className="h-5 w-5" />
         </button>
-        <div className="flex items-center gap-2">
-          {Array.from({ length: totalBeats }, (_, i) => (
-            <button
-              key={i}
-              onClick={() => setBeat(i)}
-              className="h-1.5 rounded-full transition-all"
-              style={{
-                width: i === beat ? 22 : 6,
-                backgroundColor: i === beat ? CORAL : "rgba(255,255,255,0.25)",
-              }}
-              aria-label={`Go to beat ${i + 1}`}
-            />
-          ))}
-        </div>
+        <span className="text-[11px] tabular-nums tracking-widest text-white/35">{beat + 1} / {totalBeats}</span>
         <button
           onClick={() => setBeat(b => Math.min(b + 1, totalBeats - 1))}
           disabled={beat === totalBeats - 1}
@@ -177,36 +205,71 @@ export default function ProformaPresent({ settings, config, summary, perSettingT
 }
 
 // ── Beat 1: the hook ────────────────────────────────────────────────────────
-function HookBeat({ settings, summary, term, showMath }: {
+// Sequenced reveal: the kicker, then the big number lands alone, then the proof,
+// then the setting list — so the number gets its solo moment (the "hero" beat).
+function HookBeat({ settings, summary, term, showMath, orgName, onOrgNameChange }: {
   settings: ProformaSettingSnapshot[];
   summary: ProformaSummary;
   term: string;
   showMath: boolean;
+  orgName: string;
+  onOrgNameChange: (name: string) => void;
 }) {
   const settingNames = settings.map(s => SETTING_LABELS[s.careSetting] || s.label).join(" · ");
+  const ease = [0.22, 1, 0.36, 1] as const;
   return (
     <div className="text-center">
-      <p className={KICKER}>Business Case</p>
-      <p className="mt-3 text-sm text-white/45">{settings.length} care setting{settings.length === 1 ? "" : "s"} &middot; {term} term</p>
+      <motion.div
+        className="flex items-center justify-center gap-1.5"
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}
+      >
+        <input
+          value={orgName}
+          onChange={(e) => onOrgNameChange(e.target.value)}
+          placeholder="Organization"
+          className="bg-transparent text-right text-[11px] font-semibold uppercase tracking-[3px] text-white/45 placeholder-white/20 focus:text-white/80 focus:outline-none"
+          style={{ width: `${Math.max(orgName.length || 12, 4)}ch` }}
+          data-testid="present-org-name"
+        />
+        <span className={KICKER}>· Business Case</span>
+      </motion.div>
+      <motion.p
+        className="mt-3 text-sm text-white/45"
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 0.15 }}
+      >
+        {settings.length} care setting{settings.length === 1 ? "" : "s"} &middot; {term} term
+      </motion.p>
 
-      <div className="mt-10">
+      <motion.div
+        className="mt-10"
+        initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.3, ease }}
+      >
         <AnimatedValue
           value={summary.termNet}
           format={fmt}
           fromZero
-          duration={1100}
+          duration={1300}
           className="block text-7xl md:text-8xl font-bold tracking-tight"
         />
         <p className="mt-3 text-lg text-white/50">Net value over the {term.toLowerCase()} term</p>
-      </div>
+        <p className="mt-1 text-sm text-white/30">Status quo delivers none of it. This is the lift.</p>
+      </motion.div>
 
-      <div className="mt-9 inline-flex items-center gap-6 rounded-2xl border border-white/10 bg-white/[0.03] px-7 py-4">
+      <motion.div
+        className="mt-9 inline-flex items-center gap-6 rounded-2xl border border-white/10 bg-white/[0.03] px-7 py-4"
+        initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 1.5, ease }}
+      >
         <Stat label="Value-to-cost" value={summary.valueToCost > 0 ? `${summary.valueToCost.toFixed(1)}×` : "—"} accent />
         <span className="h-8 w-px bg-white/10" />
         <Stat label="Payback" value={summary.paybackMonth ? `${summary.paybackMonth} mo` : "—"} />
-      </div>
+      </motion.div>
 
-      <p className="mt-12 text-sm text-white/35">{settingNames}</p>
+      <motion.p
+        className="mt-12 text-sm text-white/35"
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 1.8 }}
+      >
+        {settingNames}
+      </motion.p>
 
       <AnimatePresence>
         {showMath && (
@@ -259,12 +322,18 @@ function SettingBeat({ setting, index, count, totals, term, showMath }: {
 
       <div className="mt-8 text-center">
         {setting.annualValue > 0 ? (
-          <AnimatedValue value={setting.annualValue} format={fmt} fromZero duration={950}
-            className="block text-6xl md:text-7xl font-bold tracking-tight" style={{ color }} />
+          <>
+            <AnimatedValue value={setting.annualValue} format={fmt} fromZero duration={950}
+              className="block text-6xl md:text-7xl font-bold tracking-tight" style={{ color }} />
+            <p className="mt-2 text-base text-white/50">annual value at scale</p>
+            <p className="mt-1 text-sm text-white/30">Captured today: $0. Every dollar is net-new.</p>
+          </>
         ) : (
-          <span className="block text-5xl font-bold text-white/70">Qualitative</span>
+          <>
+            <span className="block text-5xl font-bold text-white/70">Qualitative</span>
+            <p className="mt-2 text-base text-white/50">strategic value, not dollarized</p>
+          </>
         )}
-        <p className="mt-2 text-base text-white/50">annual value at scale</p>
       </div>
 
       {/* Composition — bespoke, grows on entry */}

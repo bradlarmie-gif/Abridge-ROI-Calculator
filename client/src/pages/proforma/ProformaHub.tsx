@@ -663,6 +663,7 @@ export default function ProformaHub({
   const [confirmRemove, setConfirmRemove] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [presenting, setPresenting] = useState(false);
+  const [presentOrgName, setPresentOrgName] = useState("");
   const cardRefs = useRef<Record<string, HTMLDivElement | null>>({});
   useEffect(() => {
     if (!editingId) return;
@@ -1217,6 +1218,8 @@ export default function ProformaHub({
             config={config}
             summary={summary}
             perSettingTotals={perSettingTotals}
+            orgName={presentOrgName}
+            onOrgNameChange={setPresentOrgName}
             onExit={() => setPresenting(false)}
           />
         )}
