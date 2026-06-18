@@ -110,39 +110,41 @@ export default function ProformaPresent({ settings, config, summary, perSettingT
       exit={{ opacity: 0 }}
       data-testid="proforma-present"
     >
-      {/* Exit */}
-      <button
-        onClick={onExit}
-        className="absolute top-5 right-5 z-20 inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-medium text-white/70 transition-colors hover:bg-white/10 hover:text-white"
-        data-testid="button-present-exit"
-      >
-        <X className="h-3.5 w-3.5" /> Exit
-      </button>
-
-      {/* Chapter rail — jump to any beat (a CFO says "show me inpatient") */}
-      <div className="absolute top-5 left-1/2 z-20 flex max-w-[70vw] -translate-x-1/2 flex-wrap items-center justify-center gap-1">
-        {chapters.map((c) => (
-          <button
-            key={c.beat}
-            onClick={() => setBeat(c.beat)}
-            className="rounded-full px-3 py-1 text-[11px] font-medium tracking-wide transition-colors"
-            style={
-              c.beat === beat
-                ? { backgroundColor: CORAL, color: "#fff" }
-                : { color: "rgba(255,255,255,0.4)" }
-            }
-            onMouseEnter={(e) => { if (c.beat !== beat) e.currentTarget.style.color = "rgba(255,255,255,0.85)"; }}
-            onMouseLeave={(e) => { if (c.beat !== beat) e.currentTarget.style.color = "rgba(255,255,255,0.4)"; }}
-            data-testid={`present-chapter-${c.beat}`}
-          >
-            {c.label}
-          </button>
-        ))}
+      {/* Top bar: chapter rail (scrolls horizontally on small screens) + exit.
+          A flex header so the rail and exit can never overlap on a phone. */}
+      <div className="absolute inset-x-0 top-0 z-20 flex items-center gap-3 px-3 py-3 sm:px-4">
+        <div className="flex flex-1 items-center justify-start gap-1 overflow-x-auto sm:justify-center [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {chapters.map((c) => (
+            <button
+              key={c.beat}
+              onClick={() => setBeat(c.beat)}
+              className="shrink-0 rounded-full px-3 py-1 text-[11px] font-medium tracking-wide transition-colors"
+              style={
+                c.beat === beat
+                  ? { backgroundColor: CORAL, color: "#fff" }
+                  : { color: "rgba(255,255,255,0.4)" }
+              }
+              onMouseEnter={(e) => { if (c.beat !== beat) e.currentTarget.style.color = "rgba(255,255,255,0.85)"; }}
+              onMouseLeave={(e) => { if (c.beat !== beat) e.currentTarget.style.color = "rgba(255,255,255,0.4)"; }}
+              data-testid={`present-chapter-${c.beat}`}
+            >
+              {c.label}
+            </button>
+          ))}
+        </div>
+        <button
+          onClick={onExit}
+          className="shrink-0 inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-2.5 py-1.5 text-xs font-medium text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+          data-testid="button-present-exit"
+        >
+          <X className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Exit</span>
+        </button>
       </div>
 
-      {/* Stage */}
-      <div className="flex h-full w-full items-center justify-center px-6 pb-24 pt-16">
-        <div className="w-full max-w-[920px]">
+      {/* Stage — scrolls vertically so nothing clips on short/small screens */}
+      <div className="absolute inset-0 overflow-y-auto">
+        <div className="flex min-h-full w-full items-center justify-center px-5 py-24 sm:px-6">
+          <div className="w-full max-w-[920px]">
           <AnimatePresence mode="wait">
             <motion.div
               key={beat}
@@ -167,38 +169,43 @@ export default function ProformaPresent({ settings, config, summary, perSettingT
               )}
             </motion.div>
           </AnimatePresence>
+          </div>
         </div>
       </div>
 
-      {/* Show the math */}
-      <button
-        onClick={() => setShowMath(s => !s)}
-        className="absolute bottom-6 left-6 z-20 inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-medium text-white/60 transition-colors hover:bg-white/10 hover:text-white"
-        data-testid="button-present-show-math"
-      >
-        {showMath ? <Minus className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />}
-        {showMath ? "Hide the math" : "Show the math"}
-      </button>
+      {/* Bottom bar: show-math (left) · nav (center) — a flex bar so they
+          never collide on a phone. */}
+      <div className="absolute inset-x-0 bottom-0 z-20 flex items-center justify-between gap-2 px-3 py-3 sm:px-4">
+        <button
+          onClick={() => setShowMath(s => !s)}
+          className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-2.5 py-1.5 text-xs font-medium text-white/60 transition-colors hover:bg-white/10 hover:text-white"
+          data-testid="button-present-show-math"
+        >
+          {showMath ? <Minus className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />}
+          <span className="hidden sm:inline">{showMath ? "Hide the math" : "Show the math"}</span>
+        </button>
 
-      {/* Nav: prev · position · next */}
-      <div className="absolute bottom-5 left-1/2 z-20 flex -translate-x-1/2 items-center gap-5">
-        <button
-          onClick={() => setBeat(b => Math.max(b - 1, 0))}
-          disabled={beat === 0}
-          className="rounded-full p-1.5 text-white/50 transition hover:text-white disabled:opacity-25"
-          data-testid="button-present-prev"
-        >
-          <ChevronLeft className="h-5 w-5" />
-        </button>
-        <span className="text-[11px] tabular-nums tracking-widest text-white/35">{beat + 1} / {totalBeats}</span>
-        <button
-          onClick={() => setBeat(b => Math.min(b + 1, totalBeats - 1))}
-          disabled={beat === totalBeats - 1}
-          className="rounded-full p-1.5 text-white/50 transition hover:text-white disabled:opacity-25"
-          data-testid="button-present-next"
-        >
-          <ChevronRight className="h-5 w-5" />
-        </button>
+        <div className="flex items-center gap-4 sm:gap-5">
+          <button
+            onClick={() => setBeat(b => Math.max(b - 1, 0))}
+            disabled={beat === 0}
+            className="rounded-full p-1.5 text-white/50 transition hover:text-white disabled:opacity-25"
+            data-testid="button-present-prev"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+          <span className="text-[11px] tabular-nums tracking-widest text-white/35">{beat + 1} / {totalBeats}</span>
+          <button
+            onClick={() => setBeat(b => Math.min(b + 1, totalBeats - 1))}
+            disabled={beat === totalBeats - 1}
+            className="rounded-full p-1.5 text-white/50 transition hover:text-white disabled:opacity-25"
+            data-testid="button-present-next"
+          >
+            <ChevronRight className="h-5 w-5" />
+          </button>
+        </div>
+
+        <span className="w-8 shrink-0" aria-hidden />
       </div>
     </motion.div>
   );
@@ -249,7 +256,7 @@ function HookBeat({ settings, summary, term, showMath, orgName, onOrgNameChange 
           format={fmt}
           fromZero
           duration={1300}
-          className="block text-7xl md:text-8xl font-bold tracking-tight"
+          className="block text-5xl sm:text-7xl md:text-8xl font-bold tracking-tight"
         />
         <p className="mt-3 text-lg text-white/50">Net value over the {term.toLowerCase()} term</p>
         <p className="mt-1 text-sm text-white/30">Status quo delivers none of it. This is the lift.</p>
@@ -277,7 +284,7 @@ function HookBeat({ settings, summary, term, showMath, orgName, onOrgNameChange 
             initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
             className="overflow-hidden"
           >
-            <div className="mx-auto mt-8 grid max-w-lg grid-cols-2 gap-x-10 gap-y-3 rounded-2xl border border-white/10 bg-white/[0.03] px-8 py-6 text-left">
+            <div className="mx-auto mt-8 grid max-w-lg grid-cols-1 gap-x-10 gap-y-3 rounded-2xl border border-white/10 bg-white/[0.03] px-6 py-6 text-left sm:grid-cols-2 sm:px-8">
               <MathRow label="Annual value at scale" value={fmt(summary.runRateValue)} />
               <MathRow label={`${term} total value`} value={fmt(summary.termValue)} />
               <MathRow label={`${term} investment`} value={fmt(summary.termInvestment)} />
@@ -318,13 +325,13 @@ function SettingBeat({ setting, index, count, totals, term, showMath }: {
         <p className={KICKER}>Care setting {index} of {count}</p>
       </div>
 
-      <h2 className="mt-5 text-center text-4xl md:text-5xl font-bold tracking-tight">{SETTING_LABELS[setting.careSetting] || setting.label}</h2>
+      <h2 className="mt-5 text-center text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight">{SETTING_LABELS[setting.careSetting] || setting.label}</h2>
 
       <div className="mt-8 text-center">
         {setting.annualValue > 0 ? (
           <>
             <AnimatedValue value={setting.annualValue} format={fmt} fromZero duration={950}
-              className="block text-6xl md:text-7xl font-bold tracking-tight" style={{ color }} />
+              className="block text-5xl sm:text-6xl md:text-7xl font-bold tracking-tight" style={{ color }} />
             <p className="mt-2 text-base text-white/50">annual value at scale</p>
             <p className="mt-1 text-sm text-white/30">Captured today: $0. Every dollar is net-new.</p>
           </>
@@ -361,12 +368,12 @@ function SettingBeat({ setting, index, count, totals, term, showMath }: {
         </div>
       )}
 
-      {/* Supporting line */}
-      <div className="mt-10 flex items-center justify-center gap-7 text-center">
+      {/* Supporting line — wraps on small screens instead of overflowing */}
+      <div className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-4 text-center">
         <Stat label={`${term} value`} value={fmt(totals.contractValue)} />
-        <span className="h-8 w-px bg-white/10" />
+        <span className="hidden h-8 w-px bg-white/10 sm:block" />
         <Stat label="Investment" value={totals.contractInvestment > 0 ? fmt(totals.contractInvestment) : "—"} />
-        <span className="h-8 w-px bg-white/10" />
+        <span className="hidden h-8 w-px bg-white/10 sm:block" />
         <Stat label="Value-to-cost" value={multiple > 0 ? `${multiple.toFixed(1)}×` : "—"} accent />
       </div>
 
@@ -411,11 +418,11 @@ function CombineBeat({ settings, summary, perSettingTotals, term, showMath }: {
   return (
     <div className="text-center">
       <p className={KICKER}>Together</p>
-      <h2 className="mt-4 text-3xl md:text-4xl font-bold tracking-tight">The full picture</h2>
+      <h2 className="mt-4 text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">The full picture</h2>
 
       <div className="mt-9">
         <AnimatedValue value={summary.runRateValue} format={fmt} fromZero duration={1000}
-          className="block text-6xl md:text-7xl font-bold tracking-tight" style={{ color: CORAL }} />
+          className="block text-5xl sm:text-6xl md:text-7xl font-bold tracking-tight" style={{ color: CORAL }} />
         <p className="mt-2 text-base text-white/50">combined annual value at scale</p>
       </div>
 
@@ -444,13 +451,13 @@ function CombineBeat({ settings, summary, perSettingTotals, term, showMath }: {
         </div>
       )}
 
-      <div className="mt-11 flex items-center justify-center gap-8">
+      <div className="mt-11 flex flex-wrap items-center justify-center gap-x-7 gap-y-4">
         <Stat label={`${term} total`} value={fmt(summary.termValue)} />
-        <span className="h-9 w-px bg-white/10" />
+        <span className="hidden h-9 w-px bg-white/10 sm:block" />
         <Stat label="Investment" value={fmt(summary.termInvestment)} />
-        <span className="h-9 w-px bg-white/10" />
+        <span className="hidden h-9 w-px bg-white/10 sm:block" />
         <Stat label={`Net ${term.toLowerCase()}`} value={fmt(summary.termNet)} accent />
-        <span className="h-9 w-px bg-white/10" />
+        <span className="hidden h-9 w-px bg-white/10 sm:block" />
         <Stat label="Payback" value={summary.paybackMonth ? `${summary.paybackMonth} mo` : "—"} />
       </div>
 
