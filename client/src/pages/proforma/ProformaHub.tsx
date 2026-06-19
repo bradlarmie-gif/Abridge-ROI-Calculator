@@ -775,7 +775,24 @@ export default function ProformaHub({
 
   return (
     <div className="min-h-screen bg-[#FAFAF7]">
-      <UnifiedHeader pathType="explore" currentStep={1} totalSteps={2} stepName="Business Case" onHome={onHome} onBack={onBack} />
+      <UnifiedHeader
+        pathType="explore"
+        currentStep={1}
+        totalSteps={2}
+        stepName="Business Case"
+        onHome={onHome}
+        onBack={onBack}
+        rightAction={settings.length > 0 ? (
+          <button
+            onClick={() => { setEditingId(null); setConfirmRemove(null); setPresenting(true); }}
+            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium bg-[#F0EBE4] text-[#8C7E6F] hover:bg-[#E8E2DA] transition-all"
+            data-testid="button-present"
+          >
+            <Presentation className="w-3.5 h-3.5" />
+            Present
+          </button>
+        ) : undefined}
+      />
       <UnifiedHeaderSpacer />
 
       <div className="bg-[#1A1A1A] text-white py-14 px-4">
@@ -792,22 +809,6 @@ export default function ProformaHub({
       </div>
 
       <div className="max-w-[900px] mx-auto px-4 sm:px-6 -mt-8">
-        {settings.length > 0 && (
-          <div className="flex justify-end mb-4">
-            <button
-              onClick={() => {
-                setEditingId(null);
-                setConfirmRemove(null);
-                setPresenting(true);
-              }}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border bg-white text-[#6B5E4F] border-[#E8E2DA] hover:border-[#EA2C00] hover:text-[#EA2C00] transition-colors"
-              data-testid="button-present"
-            >
-              <Presentation className="w-3.5 h-3.5" />
-              Present
-            </button>
-          </div>
-        )}
 
         {settings.length > 0 && summary && (
           <motion.div
