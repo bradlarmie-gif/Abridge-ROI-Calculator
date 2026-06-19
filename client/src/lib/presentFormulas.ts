@@ -16,7 +16,7 @@ import { computeAllDriverCalcSummaries } from "@/lib/exploreDriverCalcs";
  */
 
 // proforma driver id  →  engine calc-summary key
-function summaryKeyFor(driverId: string, careSetting: string): string | undefined {
+export function summaryKeyFor(driverId: string, careSetting: string): string | undefined {
   const isED = careSetting === "ed";
   const map: Record<string, string> = {
     patientAccess: "patientAccess",
@@ -36,6 +36,11 @@ function summaryKeyFor(driverId: string, careSetting: string): string | undefine
     nursingClabsi: "nursingClabsi",
     nursingSepsis: "nursingSepsis",
   };
+  // Clinician retention === providerWellbeing for OP/ED (same generic turnover
+  // fields, same formula). NOT mapped for inpatient (proforma uses generic
+  // turnover fields while the engine's IP wellbeing uses IP-specific fields, so
+  // it can diverge) or nursing (the value bundles retention + agency).
+  if (careSetting === "outpatient" || isED) map.retention = "providerWellbeing";
   return map[driverId];
 }
 
