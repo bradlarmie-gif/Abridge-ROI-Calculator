@@ -38,6 +38,42 @@ interface QuadrantValues {
 
 const CORAL = "#FF5230";
 
+// Quadrant dot color (matches the composition bar above) keyed by the driver's
+// quadrant name.
+const QUADRANT_COLOR: Record<string, string> = {
+  Capacity: "#FF5230",
+  Workforce: "#93A4BC",
+  Revenue: "#E8DCC8",
+  Quality: "#8A8F99",
+};
+
+// Plain, CFO-readable "what this actually is" line per driver — keyed by the
+// proforma driver id (see ExploreModel snapshot builder). We show the mechanism
+// + each driver's share of the setting's value, NOT a raw formula: the proforma
+// scales driver values to the deployment, so a printed formula wouldn't tie out
+// to the dollar shown. Mechanism + share is honest and reconciles.
+const DRIVER_BLURB: Record<string, string> = {
+  patientAccess: "Reclaimed documentation time turned into added patient visits",
+  edLwbs: "Patients who would have left without being seen, now kept",
+  edAdmission: "Appropriate admissions captured from recovered ED throughput",
+  costReduction: "Direct operating cost removed",
+  nursingOt: "Overtime hours avoided as charting speeds up",
+  scribeCost: "Scribe spend removed as Abridge covers the documentation role",
+  wrvu: "More complete notes supporting accurate visit-level coding",
+  hcc: "Chronic conditions documented and risk-adjusted correctly",
+  denials: "Denials avoided through cleaner, more defensible documentation",
+  ipDrg: "Inpatient stays coded to the correct severity",
+  ipCdi: "Fewer documentation queries to chase down",
+  ipObsDefense: "Observation-vs-inpatient status defended against downgrades",
+  docQuality: "Cleaner documentation flowing through to reimbursement",
+  retention: "Providers retained who would otherwise have left",
+  nursingHapi: "Pressure-injury risk caught and documented earlier",
+  nursingFalls: "Fall risk surfaced and acted on sooner",
+  nursingCauti: "Catheter-bundle compliance documented consistently",
+  nursingClabsi: "Line-bundle compliance documented consistently",
+  nursingSepsis: "SEP-1 sepsis bundle steps documented on time",
+};
+
 function fmt(n: number): string {
   if (Math.abs(n) >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
   if (Math.abs(n) >= 1_000) return `$${Math.round(n / 1_000).toLocaleString()}K`;
@@ -387,13 +423,31 @@ function SettingBeat({ setting, index, count, totals, term, showMath }: {
             initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
             className="overflow-hidden"
           >
-            <div className="mx-auto mt-8 max-w-lg rounded-2xl border border-white/10 bg-white/[0.03] px-8 py-6">
+            <div className="mx-auto mt-8 max-w-xl rounded-2xl border border-white/10 bg-white/[0.03] px-6 py-6 text-left sm:px-8">
               <p className={`${KICKER} mb-4`}>How this is built</p>
-              <div className="space-y-2.5">
-                {setting.drivers.filter(d => d.value > 0).map(d => (
-                  <MathRow key={d.id} label={d.name} value={fmt(d.value)} />
-                ))}
-              </div>
+              {(() => {
+                const shown = setting.drivers.filter(d => d.value > 0);
+                const driverTotal = shown.reduce((s, d) => s + d.value, 0) || 1;
+                return (
+                  <div className="space-y-3">
+                    {shown.map(d => (
+                      <div key={d.id} className="border-b border-white/[0.06] pb-2.5 last:border-0 last:pb-0">
+                        <div className="flex items-baseline justify-between gap-3">
+                          <span className="flex items-center gap-2 text-sm text-white/85">
+                            <span className="h-2 w-2 flex-shrink-0 rounded-full" style={{ backgroundColor: QUADRANT_COLOR[d.quadrant] || "#888" }} />
+                            {d.name}
+                          </span>
+                          <span className="flex-shrink-0 text-sm font-semibold text-white/90">{fmt(d.value)}</span>
+                        </div>
+                        <p className="mt-1 pl-4 text-xs leading-relaxed text-white/40">
+                          {Math.round((d.value / driverTotal) * 100)}% of value
+                          {DRIVER_BLURB[d.id] ? ` · ${DRIVER_BLURB[d.id]}` : ""}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
             </div>
           </motion.div>
         )}

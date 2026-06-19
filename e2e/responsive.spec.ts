@@ -123,10 +123,14 @@ for (const vp of VIEWPORTS) {
       await page.waitForTimeout(600);
       await expectNoHorizontalOverflow(page, "present-hook");
 
-      // Jump to the care-setting beat.
+      // Jump to the care-setting beat, including its expanded "how this is
+      // built" breakdown (driver name + share + plain description).
       await page.getByTestId("present-chapter-1").click();
       await page.waitForTimeout(600);
       await expectNoHorizontalOverflow(page, "present-setting");
+      await page.getByTestId("button-present-show-math").click();
+      await page.waitForTimeout(400);
+      await expectNoHorizontalOverflow(page, "present-setting-math");
 
       // Jump to the combine beat + reveal the math (densest layout).
       await page.getByTestId("present-chapter-2").click();
