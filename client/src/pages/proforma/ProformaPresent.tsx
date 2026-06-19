@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, ChevronLeft, ChevronRight, Building2, HeartPulse, BedDouble, Stethoscope, Plus, Minus } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, ChevronDown, Building2, HeartPulse, BedDouble, Stethoscope, Plus, Minus } from "lucide-react";
 import type { ProformaSettingSnapshot, ProformaConfig, ProformaSummary } from "./proformaTypes";
 import { SETTING_COLORS, SETTING_LABELS, SETTING_UNIT_LABELS } from "./proformaTypes";
 import { AnimatedValue } from "@/components/explore/AnimatedValue";
+import { computeSettingDriverFormulas } from "@/lib/presentFormulas";
 
 /**
  * Present mode — a guided, full-screen story for walking a room of executives
@@ -346,6 +347,9 @@ function SettingBeat({ setting, index, count, totals, term, showMath }: {
   const color = SETTING_COLORS[setting.careSetting] || CORAL;
   const unit = SETTING_UNIT_LABELS[setting.careSetting] || "providers";
   const multiple = totals.contractInvestment > 0 ? totals.contractValue / totals.contractInvestment : 0;
+  // At-scale formula per driver (only those that reconcile to the dollar shown).
+  const formulas = useMemo(() => computeSettingDriverFormulas(setting), [setting]);
+  const [openDriver, setOpenDriver] = useState<string | null>(null);
 
   const segs = QUADRANT
     .map(q => ({ ...q, value: (setting[q.key] as number) ?? 0 }))
@@ -430,21 +434,47 @@ function SettingBeat({ setting, index, count, totals, term, showMath }: {
                 const driverTotal = shown.reduce((s, d) => s + d.value, 0) || 1;
                 return (
                   <div className="space-y-3">
-                    {shown.map(d => (
-                      <div key={d.id} className="border-b border-white/[0.06] pb-2.5 last:border-0 last:pb-0">
-                        <div className="flex items-baseline justify-between gap-3">
-                          <span className="flex items-center gap-2 text-sm text-white/85">
-                            <span className="h-2 w-2 flex-shrink-0 rounded-full" style={{ backgroundColor: QUADRANT_COLOR[d.quadrant] || "#888" }} />
-                            {d.name}
-                          </span>
-                          <span className="flex-shrink-0 text-sm font-semibold text-white/90">{fmt(d.value)}</span>
+                    {shown.map(d => {
+                      const formula = formulas[d.id];
+                      const isOpen = openDriver === d.id;
+                      return (
+                        <div key={d.id} className="border-b border-white/[0.06] pb-2.5 last:border-0 last:pb-0">
+                          <button
+                            type="button"
+                            disabled={!formula}
+                            onClick={() => setOpenDriver(isOpen ? null : d.id)}
+                            className={`flex w-full items-baseline justify-between gap-3 text-left ${formula ? "cursor-pointer" : "cursor-default"}`}
+                            data-testid={`present-driver-${d.id}`}
+                          >
+                            <span className="flex items-center gap-2 text-sm text-white/85">
+                              <span className="h-2 w-2 flex-shrink-0 rounded-full" style={{ backgroundColor: QUADRANT_COLOR[d.quadrant] || "#888" }} />
+                              {d.name}
+                              {formula && (
+                                <ChevronDown className={`h-3.5 w-3.5 text-white/30 transition-transform ${isOpen ? "rotate-180" : ""}`} />
+                              )}
+                            </span>
+                            <span className="flex-shrink-0 text-sm font-semibold text-white/90">{fmt(d.value)}</span>
+                          </button>
+                          <p className="mt-1 pl-4 text-xs leading-relaxed text-white/40">
+                            {Math.round((d.value / driverTotal) * 100)}% of value
+                            {DRIVER_BLURB[d.id] ? ` · ${DRIVER_BLURB[d.id]}` : ""}
+                          </p>
+                          <AnimatePresence>
+                            {isOpen && formula && (
+                              <motion.div
+                                initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
+                                className="overflow-hidden"
+                              >
+                                <p className="mt-2 ml-4 rounded-lg bg-black/30 px-3 py-2 text-[11px] leading-relaxed text-white/55">
+                                  {formula} <span className="text-white/80">= {fmt(d.value)}</span>
+                                </p>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
                         </div>
-                        <p className="mt-1 pl-4 text-xs leading-relaxed text-white/40">
-                          {Math.round((d.value / driverTotal) * 100)}% of value
-                          {DRIVER_BLURB[d.id] ? ` · ${DRIVER_BLURB[d.id]}` : ""}
-                        </p>
-                      </div>
-                    ))}
+                      );
+                    })}
+                    <p className="pt-1 text-[11px] text-white/25">{Object.keys(formulas).length > 0 ? "Tap a driver to see how it's calculated." : ""}</p>
                   </div>
                 );
               })()}

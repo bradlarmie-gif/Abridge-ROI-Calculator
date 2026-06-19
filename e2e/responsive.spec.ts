@@ -131,6 +131,13 @@ for (const vp of VIEWPORTS) {
       await page.getByTestId("button-present-show-math").click();
       await page.waitForTimeout(400);
       await expectNoHorizontalOverflow(page, "present-setting-math");
+      // Drill into a driver's formula (wRVU was enabled) — must not overflow.
+      const wrvuRow = page.getByTestId("present-driver-wrvu");
+      if (await wrvuRow.isVisible().catch(() => false)) {
+        await wrvuRow.click();
+        await page.waitForTimeout(300);
+        await expectNoHorizontalOverflow(page, "present-driver-formula");
+      }
 
       // Jump to the combine beat + reveal the math (densest layout).
       await page.getByTestId("present-chapter-2").click();
