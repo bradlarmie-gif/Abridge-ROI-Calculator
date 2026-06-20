@@ -273,7 +273,6 @@ function TimeBeat({ settings, config, totalHours, orgName, onOrgNameChange }: {
   const ease = [0.22, 1, 0.36, 1] as const;
   const pilot = settings.reduce((s, v) => s + (v.providerCount || 0), 0);
   const full = settings.reduce((s, v) => s + (v.fullScaleProviders || 0), 0);
-  const unit = settings.length > 0 && settings.every(s => s.careSetting === "nursing") ? "beds" : "providers";
   const utilStart = config.yearlyUtilization?.year1 ?? 0;
   const utilEnd = config.yearlyUtilization?.year3 ?? config.yearlyUtilization?.year2 ?? utilStart;
   return (
@@ -287,7 +286,8 @@ function TimeBeat({ settings, config, totalHours, orgName, onOrgNameChange }: {
           onChange={(e) => onOrgNameChange(e.target.value)}
           placeholder="Organization"
           className="bg-transparent text-right text-[11px] font-semibold uppercase tracking-[3px] text-white/45 placeholder-white/20 focus:text-white/80 focus:outline-none"
-          style={{ width: `${Math.max(orgName.length || 12, 4)}ch` }}
+          // +5ch headroom so uppercase + letter-spacing never clips the value/placeholder.
+          style={{ width: `${Math.max(orgName.length, "Organization".length) + 5}ch` }}
           data-testid="present-org-name"
         />
         <span className={KICKER}>· Business Case</span>
@@ -305,7 +305,7 @@ function TimeBeat({ settings, config, totalHours, orgName, onOrgNameChange }: {
           className="block text-5xl sm:text-7xl md:text-8xl font-bold tracking-tight"
         />
         <p className="mt-3 text-lg text-white/50">clinician hours reclaimed every year</p>
-        <p className="mt-1 text-sm text-white/30">Back to patients, to focus, to time at home.</p>
+        <p className="mt-1 text-sm text-white/30">Back to patients. Back to teaching. Back home for dinner.</p>
       </motion.div>
 
       {/* The engine: expansion + adoption — why the value grows */}
@@ -324,7 +324,7 @@ function TimeBeat({ settings, config, totalHours, orgName, onOrgNameChange }: {
         className="mx-auto mt-10 max-w-md text-sm leading-relaxed text-white/35"
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 1.8 }}
       >
-        This is the engine. As more {unit} come on and use it more, the reclaimed time compounds — and so does the value.
+        The more your team adopts it and the wider you roll it out, the more time comes back. The value scales right alongside it.
       </motion.p>
     </div>
   );
