@@ -273,6 +273,14 @@ function TimeBeat({ settings, config, totalHours, orgName, onOrgNameChange }: {
   const ease = [0.22, 1, 0.36, 1] as const;
   const pilot = settings.reduce((s, v) => s + (v.providerCount || 0), 0);
   const full = settings.reduce((s, v) => s + (v.fullScaleProviders || 0), 0);
+  // Name the NON-time value actually in this deal, so the open doesn't read as
+  // "Abridge is just a time-saver" — but never claims a pillar that isn't there.
+  const revTotal = settings.reduce((s, v) => s + (v.revenueValue || 0), 0);
+  const qualTotal = settings.reduce((s, v) => s + (v.qualityValue || 0), 0);
+  const otherValue = [revTotal > 0 ? "captured revenue" : null, qualTotal > 0 ? "clinical quality" : null].filter(Boolean) as string[];
+  const breadth = otherValue.length > 0
+    ? `Time is the most visible return. The same documentation also shows up as ${otherValue.join(" and ")}.`
+    : "Time is the most visible return, not the only one.";
   const utilStart = config.yearlyUtilization?.year1 ?? 0;
   const utilEnd = config.yearlyUtilization?.year3 ?? config.yearlyUtilization?.year2 ?? utilStart;
   return (
@@ -305,7 +313,7 @@ function TimeBeat({ settings, config, totalHours, orgName, onOrgNameChange }: {
           className="block text-5xl sm:text-7xl md:text-8xl font-bold tracking-tight"
         />
         <p className="mt-3 text-lg text-white/50">clinician hours reclaimed every year</p>
-        <p className="mt-1 text-sm text-white/30">Back to patients. Back to teaching. Back home for dinner.</p>
+        <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-white/35">{breadth}</p>
       </motion.div>
 
       {/* The engine: expansion + adoption — why the value grows */}
