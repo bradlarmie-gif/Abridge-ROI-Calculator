@@ -195,7 +195,7 @@ export default function ProformaPresent({ settings, config, summary, perSettingT
               exit={{ opacity: 0, y: -12 }}
               transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
             >
-              {beat === 0 && <TimeBeat settings={settings} config={config} totalHours={settings.reduce((s, v) => s + (v.totalHoursSaved || 0), 0)} orgName={orgName} onOrgNameChange={onOrgNameChange} />}
+              {beat === 0 && <TimeBeat settings={settings} totalHours={settings.reduce((s, v) => s + (v.totalHoursSaved || 0), 0)} orgName={orgName} onOrgNameChange={onOrgNameChange} />}
               {beat === 1 && <DollarsBeat settings={settings} summary={summary} term={term} showMath={showMath} />}
               {beat >= FIRST_SETTING && beat < COMBINE_BEAT && (() => {
                 const s = settings[beat - FIRST_SETTING];
@@ -263,9 +263,8 @@ export default function ProformaPresent({ settings, config, summary, perSettingT
 // ── Beat 0: TIME — the operational truth that starts the story ────────────────
 // Lead with the hours handed back (count up), then the engine that turns them
 // into value: expansion (pilot → full) and adoption (utilization climbing).
-function TimeBeat({ settings, config, totalHours, orgName, onOrgNameChange }: {
+function TimeBeat({ settings, totalHours, orgName, onOrgNameChange }: {
   settings: ProformaSettingSnapshot[];
-  config: ProformaConfig;
   totalHours: number;
   orgName: string;
   onOrgNameChange: (name: string) => void;
@@ -281,8 +280,13 @@ function TimeBeat({ settings, config, totalHours, orgName, onOrgNameChange }: {
   const breadth = otherValue.length > 0
     ? `Time is the most visible return. The same documentation also shows up as ${otherValue.join(" and ")}.`
     : "Time is the most visible return, not the only one.";
-  const utilStart = config.yearlyUtilization?.year1 ?? 0;
-  const utilEnd = config.yearlyUtilization?.year3 ?? config.yearlyUtilization?.year2 ?? utilStart;
+  // Adoption = provider-weighted blend of each setting's ACTUAL utilization
+  // (start → at scale), so it's true for a mixed multi-setting deal rather than
+  // the org-wide default ramp.
+  const wPilot = pilot || 1;
+  const wFull = full || 1;
+  const utilStart = Math.round(settings.reduce((s, v) => s + (v.utilizationPercent || 0) * (v.providerCount || 0), 0) / wPilot);
+  const utilEnd = Math.round(settings.reduce((s, v) => s + ((v.fullScaleUtilization || v.utilizationPercent || 0)) * (v.fullScaleProviders || 0), 0) / wFull);
   return (
     <div className="text-center">
       <motion.div
