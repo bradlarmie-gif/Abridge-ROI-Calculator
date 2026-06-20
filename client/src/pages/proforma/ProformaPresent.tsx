@@ -207,11 +207,12 @@ export default function ProformaPresent({ settings, config, summary, perSettingT
                     totals={perSettingTotals[s.id] ?? { contractValue: 0, contractInvestment: 0 }}
                     term={term}
                     showMath={showMath}
+                    systemFee={config.systemWideFee ?? 0}
                   />
                 );
               })()}
               {beat === COMBINE_BEAT && (
-                <CombineBeat settings={settings} summary={summary} perSettingTotals={perSettingTotals} term={term} showMath={showMath} />
+                <CombineBeat settings={settings} summary={summary} perSettingTotals={perSettingTotals} term={term} showMath={showMath} systemFee={config.systemWideFee ?? 0} />
               )}
               {beat === CLOSE_BEAT && (
                 <CloseBeat summary={summary} term={term} orgName={orgName} totalHours={settings.reduce((s, v) => s + (v.totalHoursSaved || 0), 0)} />
@@ -431,13 +432,14 @@ function DollarsBeat({ settings, summary, term, showMath }: {
 }
 
 // ── Beats 2..N: one care setting ──────────────────────────────────────────────
-function SettingBeat({ setting, index, count, totals, term, showMath }: {
+function SettingBeat({ setting, index, count, totals, term, showMath, systemFee }: {
   setting: ProformaSettingSnapshot;
   index: number;
   count: number;
   totals: { contractValue: number; contractInvestment: number };
   term: string;
   showMath: boolean;
+  systemFee: number;
 }) {
   const Icon = ICONS[setting.careSetting] || Building2;
   const color = SETTING_COLORS[setting.careSetting] || CORAL;
@@ -504,14 +506,25 @@ function SettingBeat({ setting, index, count, totals, term, showMath }: {
         </div>
       )}
 
-      {/* Supporting line — wraps on small screens instead of overflowing */}
-      <div className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-4 text-center">
-        <Stat label={`${term} value`} value={fmt(totals.contractValue)} />
-        <span className="hidden h-8 w-px bg-white/10 sm:block" />
-        <Stat label="Investment" value={totals.contractInvestment > 0 ? fmt(totals.contractInvestment) : "—"} />
-        <span className="hidden h-8 w-px bg-white/10 sm:block" />
-        <Stat label="Value-to-cost" value={multiple > 0 ? `${multiple.toFixed(1)}×` : "—"} accent />
-      </div>
+      {/* Supporting line — wraps on small screens instead of overflowing. When
+          this setting has no direct cost (it's covered by the system-wide fee),
+          show the value + a clear note instead of dead "—" investment stats. */}
+      {totals.contractInvestment > 0 ? (
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-4 text-center">
+          <Stat label={`${term} value`} value={fmt(totals.contractValue)} />
+          <span className="hidden h-8 w-px bg-white/10 sm:block" />
+          <Stat label="Investment" value={fmt(totals.contractInvestment)} />
+          <span className="hidden h-8 w-px bg-white/10 sm:block" />
+          <Stat label="Value-to-cost" value={multiple > 0 ? `${multiple.toFixed(1)}×` : "—"} accent />
+        </div>
+      ) : (
+        <div className="mt-10 text-center">
+          <Stat label={`${term} value`} value={fmt(totals.contractValue)} />
+          <p className="mt-3 text-sm text-white/35">
+            {systemFee > 0 ? "Cost is carried by the system-wide fee, shown in Together." : "No direct cost entered for this setting."}
+          </p>
+        </div>
+      )}
 
       <p className="mt-7 text-center text-sm text-white/35">
         {fmtNum(setting.providerCount)} &rarr; {fmtNum(setting.fullScaleProviders)} {unit} &middot; live month {setting.goLiveMonth}
@@ -583,12 +596,13 @@ function SettingBeat({ setting, index, count, totals, term, showMath }: {
 }
 
 // ── Beat N+1: combine ─────────────────────────────────────────────────────────
-function CombineBeat({ settings, summary, perSettingTotals, term, showMath }: {
+function CombineBeat({ settings, summary, perSettingTotals, term, showMath, systemFee }: {
   settings: ProformaSettingSnapshot[];
   summary: ProformaSummary;
   perSettingTotals: Record<string, { contractValue: number; contractInvestment: number }>;
   term: string;
   showMath: boolean;
+  systemFee: number;
 }) {
   const contributions = settings
     .map(s => ({ id: s.id, label: SETTING_LABELS[s.careSetting] || s.label, color: SETTING_COLORS[s.careSetting] || CORAL, value: s.annualValue }))
@@ -703,6 +717,12 @@ function CombineBeat({ settings, summary, perSettingTotals, term, showMath }: {
                     </div>
                   );
                 })}
+                {systemFee > 0 && (
+                  <div className="flex items-center justify-between gap-4 border-t border-white/10 pt-2.5 text-sm">
+                    <span className="text-white/70">System-wide fee</span>
+                    <span className="text-white/45">{fmt(systemFee * (parseInt(term, 10) || 1))} cost · covers every setting</span>
+                  </div>
+                )}
               </div>
             </div>
           </motion.div>
