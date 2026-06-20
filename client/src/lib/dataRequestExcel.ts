@@ -3,8 +3,8 @@
 // which is why the downloaded sheet looked like a raw grid.
 import * as XLSX from 'xlsx-js-style';
 import { saveAs } from 'file-saver';
-import type { DataRequestSetting, DataRequestField } from './dataRequestFields';
-import { BASELINE_FIELDS, getDriverFieldGroups } from './dataRequestFields';
+import type { DataRequestSetting } from './dataRequestFields';
+import { getDriverFieldGroups, getRequestFieldPlan } from './dataRequestFields';
 
 // ── Brand palette (matches measureDataRequestExcel) ───────────────────────────
 const C = {
@@ -98,6 +98,25 @@ const S_INPUT = {
   },
 };
 
+// Optional fields get a quieter input cell so the must-fills clearly pop.
+const S_INPUT_OPTIONAL = {
+  fill: { fgColor: { rgb: 'F7F5F2' } },
+  font: { sz: 10, color: { rgb: C.textMuted } },
+  alignment: { vertical: 'center', horizontal: 'center' },
+  border: {
+    top: b(C.separator), bottom: b(C.separator),
+    left: b(C.separator), right: b(C.separator),
+  },
+};
+
+// Required tier band — coral, white, "do these." Optional band reuses S_SECTION (cream).
+const S_SECTION_REQUIRED = {
+  font: { bold: true, sz: 10, color: { rgb: C.white } },
+  fill: { fgColor: { rgb: C.red } },
+  alignment: { vertical: 'center', indent: 1 },
+  border: { top: b(C.red), bottom: b(C.red) },
+};
+
 function ensureCell(ws: XLSX.WorkSheet, ref: string, style: object) {
   if (!ws[ref]) ws[ref] = { t: 'z', v: undefined };
   ws[ref].s = style;
@@ -119,31 +138,39 @@ function buildDataFieldsSheet(
   setting: DataRequestSetting,
   selectedDriverIds: string[],
 ): XLSX.WorkSheet {
+  const plan = getRequestFieldPlan(setting, selectedDriverIds);
   const aoa: (string | number | null)[][] = [];
   const rowHeights: number[] = [];
+  // Track how to style each input cell (bright = required, quiet = optional).
+  const inputStyleByRow: Record<number, object> = {};
 
-  aoa.push(['Field', 'Description', 'Who Has This', 'Example', 'Your Value']);
-  rowHeights.push(H.colHeader);
-
-  // Baseline section
-  const baselineFields = BASELINE_FIELDS[setting];
-  aoa.push(['BASELINE — Always Required', null, null, null, null]);
-  rowHeights.push(H.section);
-
-  for (const f of baselineFields) {
+  const pushHeader = () => { aoa.push(['Field', 'Description', 'Who Has This', 'Example', 'Your Value']); rowHeights.push(H.colHeader); };
+  const pushField = (f: { label: string; description: string; who: string; example: string }, required: boolean) => {
     aoa.push([f.label, f.description, f.who, f.example, '']);
     rowHeights.push(H.dataRow);
-  }
+    inputStyleByRow[aoa.length - 1] = required ? S_INPUT : S_INPUT_OPTIONAL;
+  };
 
-  // Driver groups
-  const driverGroups = getDriverFieldGroups(setting, selectedDriverIds);
-  for (const group of driverGroups) {
+  pushHeader();
+
+  // ── Tier 1: required ("we need these") ──
+  aoa.push([`WE NEED THESE · ${plan.requiredCount} numbers`, null, null, null, null]);
+  rowHeights.push(H.section);
+  const requiredBandRow = aoa.length - 1;
+  for (const f of plan.required) pushField(f, true);
+
+  // ── Tier 2: optional (benchmarked if blank) ──
+  const optionalBandRow = aoa.length;
+  aoa.push([`OPTIONAL · WE'LL USE INDUSTRY BENCHMARKS IF LEFT BLANK`, null, null, null, null]);
+  rowHeights.push(H.section);
+  for (const f of plan.optionalBaseline) pushField(f, false);
+
+  const driverBandRows: number[] = [];
+  for (const group of plan.driverGroups) {
+    driverBandRows.push(aoa.length);
     aoa.push([group.driverLabel, null, null, null, null]);
     rowHeights.push(H.driver);
-    for (const f of group.fields) {
-      aoa.push([f.label, f.description, f.who, f.example, '']);
-      rowHeights.push(H.dataRow);
-    }
+    for (const f of group.fields) pushField(f, false);
   }
 
   const ws = XLSX.utils.aoa_to_sheet(aoa);
@@ -155,49 +182,26 @@ function buildDataFieldsSheet(
     { wch: 20 },  // D Example
     { wch: 20 },  // E Your Value
   ];
-
   ws['!rows'] = rowHeights.map(hpt => ({ hpt }));
   ws['!freeze'] = { xSplit: 0, ySplit: 1 };
   (ws as any)['!sheetView'] = [{ showGridLines: false }];
 
   // Column headers
-  for (const col of COL_LETTERS) {
-    ensureCell(ws, `${col}1`, S_HEADER);
-  }
+  for (const col of COL_LETTERS) ensureCell(ws, `${col}1`, S_HEADER);
 
-  let r = 1;
+  // Section bands (row index → A1 ref is row+1)
+  styleIfExists(ws, `A${requiredBandRow + 1}`, S_SECTION_REQUIRED); mergeRow(ws, requiredBandRow);
+  styleIfExists(ws, `A${optionalBandRow + 1}`, S_SECTION); mergeRow(ws, optionalBandRow);
+  for (const dr of driverBandRows) { styleIfExists(ws, `A${dr + 1}`, S_DRIVER); mergeRow(ws, dr); }
 
-  // Baseline section header
-  styleIfExists(ws, `A${r + 1}`, S_SECTION);
-  mergeRow(ws, r);
-  r++;
-
-  for (const _f of baselineFields) {
-    const row = r + 1;
+  // Field rows: every row that has an input style is a field row.
+  for (const [rowIdxStr, inputStyle] of Object.entries(inputStyleByRow)) {
+    const row = Number(rowIdxStr) + 1;
     styleIfExists(ws, `A${row}`, S_FIELD_LABEL);
     styleIfExists(ws, `B${row}`, S_DESC);
     styleIfExists(ws, `C${row}`, S_WHO);
     styleIfExists(ws, `D${row}`, S_EXAMPLE);
-    ensureCell(ws, `E${row}`, S_INPUT);
-    r++;
-  }
-
-  // Driver group sections
-  for (const group of driverGroups) {
-    // Driver header — red left accent, same as Measure
-    styleIfExists(ws, `A${r + 1}`, S_DRIVER);
-    mergeRow(ws, r);
-    r++;
-
-    for (const _f of group.fields) {
-      const row = r + 1;
-      styleIfExists(ws, `A${row}`, S_FIELD_LABEL);
-      styleIfExists(ws, `B${row}`, S_DESC);
-      styleIfExists(ws, `C${row}`, S_WHO);
-      styleIfExists(ws, `D${row}`, S_EXAMPLE);
-      ensureCell(ws, `E${row}`, S_INPUT);
-      r++;
-    }
+    ensureCell(ws, `E${row}`, inputStyle);
   }
 
   return ws;
@@ -226,12 +230,12 @@ function buildInstructionsSheet(
     [null],
     [null],
     ['PURPOSE'],
-    [`This template collects the data needed to model the value of Abridge for your ${settingDisplay[setting]} organization. Fill in every yellow cell in the Data Fields tab and return the completed file to your Abridge account team.`],
+    [`This collects the numbers we use to model the value of Abridge for your ${settingDisplay[setting]} organization. We only truly need the short "We need these" block. Everything else is optional and sharpens the estimate.`],
     [null],
     ['HOW TO USE'],
-    ['1.  Share the Data Fields tab with your data or finance contact.'],
-    ['2.  Ask them to fill in every yellow cell — yellow means we need their number.'],
-    ['3.  Return the completed file to your Abridge account team.'],
+    ['1.  Fill the "We need these" block on the Data Fields tab. That is all we truly need.'],
+    ['2.  Optional fields make it sharper. Leave any blank and we use an industry benchmark.'],
+    ['3.  Return the file to your Abridge account team.'],
     [null],
     ['AREAS BEING MODELED'],
     ...driverLabels.map(label => [`    ${label}`]),

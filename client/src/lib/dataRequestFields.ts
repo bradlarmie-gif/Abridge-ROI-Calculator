@@ -7,6 +7,8 @@ export interface DataRequestField {
   who: string;          // who at the hospital has this data (e.g. "Revenue cycle director")
   example: string;      // example value as a string (e.g. "3%" or "$480" or "12")
   type: FieldType;
+  required?: boolean;   // true = must-fill (scale/identity, can't be benchmarked);
+                        // otherwise optional — the engine uses an industry benchmark if blank.
 }
 
 export interface DriverFieldGroup {
@@ -20,30 +22,30 @@ export type DataRequestSetting = 'outpatient' | 'ed' | 'inpatient' | 'nursing';
 
 export const BASELINE_FIELDS: Record<DataRequestSetting, DataRequestField[]> = {
   outpatient: [
-    { id: 'orgName', label: 'Organization name', description: 'Name of the practice or health system.', who: 'Anyone', example: 'Riverside Medical Group', type: 'text' },
-    { id: 'opProviders', label: 'Number of providers', description: 'Total physicians and APPs in the outpatient practice.', who: 'Operations or HR', example: '24', type: 'number' },
-    { id: 'opEncounters', label: 'Annual patient encounters', description: 'Total outpatient visits per year across all providers.', who: 'Operations or revenue cycle', example: '85,000', type: 'number' },
-    { id: 'opRevenuePerVisit', label: 'Net revenue per visit', description: 'Average net collected revenue per outpatient encounter after adjustments.', who: 'Finance or revenue cycle', example: '$150', type: 'currency' },
+    { id: 'orgName', label: 'Organization name', description: 'Name of the practice or health system.', who: 'Anyone', example: 'Riverside Medical Group', type: 'text', required: true },
+    { id: 'opProviders', label: 'Number of providers', description: 'Total physicians and APPs in the outpatient practice.', who: 'Operations or HR', example: '24', type: 'number', required: true },
+    { id: 'opEncounters', label: 'Annual patient encounters', description: 'Total outpatient visits per year across all providers.', who: 'Operations or revenue cycle', example: '85,000', type: 'number', required: true },
+    { id: 'opRevenuePerVisit', label: 'Net revenue per visit', description: 'Average net collected revenue per outpatient encounter after adjustments.', who: 'Finance or revenue cycle', example: '$150', type: 'currency', required: true },
   ],
   ed: [
-    { id: 'orgName', label: 'Organization name', description: 'Name of the health system or ED facility.', who: 'Anyone', example: 'Metro Health ED', type: 'text' },
-    { id: 'edProviders', label: 'Number of ED providers', description: 'Total ED physicians and APPs who see patients.', who: 'ED medical director or operations', example: '18', type: 'number' },
-    { id: 'edVisits', label: 'Annual ED visits', description: 'Total ED patient visits per year.', who: 'ED operations or finance', example: '55,000', type: 'number' },
-    { id: 'edRevenuePerVisit', label: 'Net revenue per ED visit', description: 'Average net collected revenue per ED encounter.', who: 'Finance or revenue cycle', example: '$480', type: 'currency' },
+    { id: 'orgName', label: 'Organization name', description: 'Name of the health system or ED facility.', who: 'Anyone', example: 'Metro Health ED', type: 'text', required: true },
+    { id: 'edProviders', label: 'Number of ED providers', description: 'Total ED physicians and APPs who see patients.', who: 'ED medical director or operations', example: '18', type: 'number', required: true },
+    { id: 'edVisits', label: 'Annual ED visits', description: 'Total ED patient visits per year.', who: 'ED operations or finance', example: '55,000', type: 'number', required: true },
+    { id: 'edRevenuePerVisit', label: 'Net revenue per ED visit', description: 'Average net collected revenue per ED encounter.', who: 'Finance or revenue cycle', example: '$480', type: 'currency', required: true },
   ],
   inpatient: [
-    { id: 'orgName', label: 'Organization name', description: 'Name of the health system or hospital.', who: 'Anyone', example: 'St. Catherine Medical Center', type: 'text' },
-    { id: 'ipProviders', label: 'Number of hospitalists / attending physicians', description: 'Total inpatient physicians using Abridge.', who: 'Operations or HR', example: '32', type: 'number' },
-    { id: 'ipStaffedBeds', label: 'Total staffed inpatient beds', description: 'Licensed beds actively staffed and available for patient care.', who: 'Operations or finance', example: '350', type: 'number' },
+    { id: 'orgName', label: 'Organization name', description: 'Name of the health system or hospital.', who: 'Anyone', example: 'St. Catherine Medical Center', type: 'text', required: true },
+    { id: 'ipProviders', label: 'Number of hospitalists / attending physicians', description: 'Total inpatient physicians using Abridge.', who: 'Operations or HR', example: '32', type: 'number', required: true },
+    { id: 'ipStaffedBeds', label: 'Total staffed inpatient beds', description: 'Licensed beds actively staffed and available for patient care.', who: 'Operations or finance', example: '350', type: 'number', required: true },
     { id: 'ipOccupancyRate', label: 'Average occupancy rate', description: 'Average percentage of staffed beds occupied.', who: 'Operations or finance', example: '75%', type: 'percent' },
     { id: 'ipAlos', label: 'Average length of stay (days)', description: 'Average inpatient length of stay across all admissions.', who: 'Finance or case management', example: '4.5', type: 'number' },
-    { id: 'ipNetRevenuePerAdmission', label: 'Net revenue per admission', description: 'Average net collected revenue per inpatient admission.', who: 'Finance', example: '$9,000', type: 'currency' },
+    { id: 'ipNetRevenuePerAdmission', label: 'Net revenue per admission', description: 'Average net collected revenue per inpatient admission.', who: 'Finance', example: '$9,000', type: 'currency', required: true },
   ],
   nursing: [
-    { id: 'orgName', label: 'Organization name', description: 'Name of the health system or facility.', who: 'Anyone', example: 'Lakewood Regional Hospital', type: 'text' },
-    { id: 'nursingFTEs', label: 'Registered nurse FTEs', description: 'Total RN FTEs in the unit or facility.', who: 'HR or nursing operations', example: '180', type: 'number' },
-    { id: 'nursingStaffedBeds', label: 'Staffed beds', description: 'Total staffed inpatient beds covered by these RNs.', who: 'Operations', example: '200', type: 'number' },
-    { id: 'nursingOccupancyRate', label: 'Average occupancy rate', description: 'Average percentage of staffed beds occupied.', who: 'Operations or finance', example: '78%', type: 'percent' },
+    { id: 'orgName', label: 'Organization name', description: 'Name of the health system or facility.', who: 'Anyone', example: 'Lakewood Regional Hospital', type: 'text', required: true },
+    { id: 'nursingFTEs', label: 'Registered nurse FTEs', description: 'Total RN FTEs in the unit or facility.', who: 'HR or nursing operations', example: '180', type: 'number', required: true },
+    { id: 'nursingStaffedBeds', label: 'Staffed beds', description: 'Total staffed inpatient beds covered by these RNs.', who: 'Operations', example: '200', type: 'number', required: true },
+    { id: 'nursingOccupancyRate', label: 'Average occupancy rate', description: 'Average percentage of staffed beds occupied.', who: 'Operations or finance', example: '78%', type: 'percent', required: true },
   ],
 };
 
@@ -256,6 +258,34 @@ export const DRIVER_FIELDS: DriverFieldGroup[] = [
     ],
   },
 ];
+
+/**
+ * Splits the requested fields into the must-fill tier (required scale/identity)
+ * and the optional tier (everything else — benchmarked if left blank). Drives
+ * both the two-tier spreadsheet and the builder's "N required · M optional" count.
+ */
+export interface RequestFieldPlan {
+  required: DataRequestField[];
+  optionalBaseline: DataRequestField[];
+  driverGroups: DriverFieldGroup[];
+  requiredCount: number;
+  optionalCount: number;
+}
+
+export function getRequestFieldPlan(setting: DataRequestSetting, driverIds: string[]): RequestFieldPlan {
+  const baseline = BASELINE_FIELDS[setting];
+  const required = baseline.filter(f => f.required);
+  const optionalBaseline = baseline.filter(f => !f.required);
+  const driverGroups = getDriverFieldGroups(setting, driverIds);
+  const driverFieldCount = driverGroups.reduce((s, g) => s + g.fields.length, 0);
+  return {
+    required,
+    optionalBaseline,
+    driverGroups,
+    requiredCount: required.length,
+    optionalCount: optionalBaseline.length + driverFieldCount,
+  };
+}
 
 export function getDriverFieldGroups(setting: DataRequestSetting, driverIds: string[]): DriverFieldGroup[] {
   const settingDriverMap: Record<DataRequestSetting, string[]> = {

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ArrowRight, Download, Check, Building2, Stethoscope, Heart, Users } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { BASELINE_FIELDS, DRIVER_FIELDS, type DataRequestSetting } from "@/lib/dataRequestFields";
+import { BASELINE_FIELDS, DRIVER_FIELDS, getRequestFieldPlan, type DataRequestSetting } from "@/lib/dataRequestFields";
 import { generateDataRequestExcel } from "@/lib/dataRequestExcel";
 import abridgeLogo from "@assets/abridge-logo-wordmark-red_1769020684647.png";
 
@@ -56,7 +56,9 @@ export default function DataRequestBuilder({ onBack }: Props) {
   const baselineFields      = setting ? BASELINE_FIELDS[setting] : [];
   const selectedGroups      = availableDrivers.filter(d => selectedIds.includes(d.driverId));
   const totalDriverFields   = selectedGroups.reduce((n, g) => n + g.fields.length, 0);
-  const totalFields         = baselineFields.length + totalDriverFields;
+  const fieldPlan           = setting
+    ? getRequestFieldPlan(setting, selectedIds)
+    : { requiredCount: 0, optionalCount: 0, required: [], optionalBaseline: [], driverGroups: [] };
   const settingLabel        = SETTINGS.find(s => s.id === setting)?.label ?? '';
 
   return (
@@ -268,14 +270,15 @@ export default function DataRequestBuilder({ onBack }: Props) {
 
                     <div className="border-t border-white/10 pt-4 mt-2 mb-5">
                       <div className="flex items-center justify-between">
-                        <span className="text-[11px] text-white/40">Total fields</span>
-                        <span className="text-[13px] font-bold text-white">{totalFields}</span>
+                        <span className="text-[11px] text-white/40">The ask</span>
+                        <span className="text-[13px] font-bold text-white">
+                          <span className="text-[#EA2C00]">{fieldPlan.requiredCount} required</span>
+                          <span className="text-white/40"> · {fieldPlan.optionalCount} optional</span>
+                        </span>
                       </div>
-                      {selectedIds.length > 0 && (
-                        <p className="text-[10px] text-white/30 mt-1">
-                          {baselineFields.length} baseline · {totalDriverFields} from {selectedIds.length} driver{selectedIds.length !== 1 ? 's' : ''}
-                        </p>
-                      )}
+                      <p className="text-[10px] text-white/30 mt-1">
+                        Only the required numbers must be filled. Optional fields use an industry benchmark if left blank.
+                      </p>
                     </div>
 
                     {downloaded ? (
