@@ -1131,13 +1131,13 @@ export default function ProformaHub({
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="text-center py-20"
+            className="text-center pt-8 pb-6"
           >
-            <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-[#F5F0EB] flex items-center justify-center">
-              <Layers className="w-8 h-8 text-[#A39888]" />
+            <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-[#F5F0EB] flex items-center justify-center">
+              <Layers className="w-7 h-7 text-[#A39888]" />
             </div>
-            <h3 className="text-xl font-bold text-neutral-900 mb-2">Start Building Your Proforma</h3>
-            <p className="text-[#8C7E6E] mb-8 max-w-md mx-auto">
+            <h3 className="text-xl font-bold text-neutral-900 mb-1.5">Start Building Your Proforma</h3>
+            <p className="text-[#8C7E6E] mb-0 max-w-md mx-auto">
               Complete the Explore flow for a care setting, then add it here to build a multi-setting financial model.
             </p>
           </motion.div>
