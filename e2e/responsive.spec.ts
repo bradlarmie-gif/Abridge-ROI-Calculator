@@ -117,21 +117,25 @@ for (const vp of VIEWPORTS) {
       await expect(page.getByTestId("button-present")).toBeVisible();
       await expectNoHorizontalOverflow(page, "proforma-hub");
 
-      // Launch Present (the live-call story).
+      // Launch Present — opens on the Time beat (chapter 0).
       await page.getByTestId("button-present").click();
       await expect(page.getByTestId("proforma-present")).toBeVisible();
       await page.waitForTimeout(600);
-      await expectNoHorizontalOverflow(page, "present-hook");
+      await expectNoHorizontalOverflow(page, "present-time");
 
-      // Jump to the care-setting beat, including its expanded "how this is
-      // built" breakdown (driver name + share + plain description).
+      // Dollars beat (chapter 1).
       await page.getByTestId("present-chapter-1").click();
+      await page.waitForTimeout(600);
+      await expectNoHorizontalOverflow(page, "present-dollars");
+
+      // Care-setting beat (chapter 2) + its expanded "how this is built"
+      // breakdown + a drilled-open driver formula.
+      await page.getByTestId("present-chapter-2").click();
       await page.waitForTimeout(600);
       await expectNoHorizontalOverflow(page, "present-setting");
       await page.getByTestId("button-present-show-math").click();
       await page.waitForTimeout(400);
       await expectNoHorizontalOverflow(page, "present-setting-math");
-      // Drill into a driver's formula (wRVU was enabled) — must not overflow.
       const wrvuRow = page.getByTestId("present-driver-wrvu");
       if (await wrvuRow.isVisible().catch(() => false)) {
         await wrvuRow.click();
@@ -139,13 +143,18 @@ for (const vp of VIEWPORTS) {
         await expectNoHorizontalOverflow(page, "present-driver-formula");
       }
 
-      // Jump to the combine beat + reveal the math (densest layout).
-      await page.getByTestId("present-chapter-2").click();
+      // Together beat (chapter 3) — combine + the "when it lands" ramp + math.
+      await page.getByTestId("present-chapter-3").click();
       await page.waitForTimeout(600);
       await expectNoHorizontalOverflow(page, "present-combine");
       await page.getByTestId("button-present-show-math").click();
       await page.waitForTimeout(400);
       await expectNoHorizontalOverflow(page, "present-combine-math");
+
+      // Close beat (chapter 4).
+      await page.getByTestId("present-chapter-4").click();
+      await page.waitForTimeout(600);
+      await expectNoHorizontalOverflow(page, "present-close");
     });
   });
 }

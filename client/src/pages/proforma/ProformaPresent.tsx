@@ -98,11 +98,14 @@ interface ProformaPresentProps {
 }
 
 const KICKER = "text-[11px] font-semibold uppercase tracking-[3px] text-white/40";
-const SUPPORT = "text-white/55";
 
 export default function ProformaPresent({ settings, config, summary, perSettingTotals, orgName, onOrgNameChange, onExit }: ProformaPresentProps) {
-  // Beat 0 = hook, 1..N = each setting, N+1 = combine.
-  const totalBeats = settings.length + 2;
+  // Arc: 0 = Time, 1 = Dollars, 2..N+1 = each setting, N+2 = Together, N+3 = Close.
+  const N = settings.length;
+  const FIRST_SETTING = 2;
+  const COMBINE_BEAT = N + 2;
+  const CLOSE_BEAT = N + 3;
+  const totalBeats = N + 4;
   const [beat, setBeat] = useState(0);
   const [showMath, setShowMath] = useState(false);
 
@@ -122,20 +125,22 @@ export default function ProformaPresent({ settings, config, summary, perSettingT
       else if (/^[1-9]$/.test(e.key)) {
         // Jump straight to a care setting (1 = first setting) — agility on a call.
         const n = parseInt(e.key, 10);
-        if (n <= settings.length) setBeat(n);
+        if (n <= N) setBeat(FIRST_SETTING + n - 1);
       } else if (e.key === "0") setBeat(0);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [totalBeats, settings.length, onExit]);
+  }, [totalBeats, N, onExit]);
 
   const term = termLabel(config.contractTermMonths);
 
   // Labeled chapters for the jump rail.
   const chapters = [
-    { label: "Overview", beat: 0 },
-    ...settings.map((s, i) => ({ label: SETTING_LABELS[s.careSetting] || s.label, beat: i + 1 })),
-    { label: "Together", beat: settings.length + 1 },
+    { label: "Time", beat: 0 },
+    { label: "Value", beat: 1 },
+    ...settings.map((s, i) => ({ label: SETTING_LABELS[s.careSetting] || s.label, beat: FIRST_SETTING + i })),
+    { label: "Together", beat: COMBINE_BEAT },
+    { label: "The case", beat: CLOSE_BEAT },
   ];
 
   return (
@@ -190,19 +195,26 @@ export default function ProformaPresent({ settings, config, summary, perSettingT
               exit={{ opacity: 0, y: -12 }}
               transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
             >
-              {beat === 0 && <HookBeat settings={settings} summary={summary} term={term} showMath={showMath} orgName={orgName} onOrgNameChange={onOrgNameChange} />}
-              {beat >= 1 && beat <= settings.length && (
-                <SettingBeat
-                  setting={settings[beat - 1]}
-                  index={beat}
-                  count={settings.length}
-                  totals={perSettingTotals[settings[beat - 1].id] ?? { contractValue: 0, contractInvestment: 0 }}
-                  term={term}
-                  showMath={showMath}
-                />
-              )}
-              {beat === settings.length + 1 && (
+              {beat === 0 && <TimeBeat settings={settings} config={config} totalHours={settings.reduce((s, v) => s + (v.totalHoursSaved || 0), 0)} orgName={orgName} onOrgNameChange={onOrgNameChange} />}
+              {beat === 1 && <DollarsBeat settings={settings} summary={summary} term={term} showMath={showMath} />}
+              {beat >= FIRST_SETTING && beat < COMBINE_BEAT && (() => {
+                const s = settings[beat - FIRST_SETTING];
+                return (
+                  <SettingBeat
+                    setting={s}
+                    index={beat - FIRST_SETTING + 1}
+                    count={N}
+                    totals={perSettingTotals[s.id] ?? { contractValue: 0, contractInvestment: 0 }}
+                    term={term}
+                    showMath={showMath}
+                  />
+                );
+              })()}
+              {beat === COMBINE_BEAT && (
                 <CombineBeat settings={settings} summary={summary} perSettingTotals={perSettingTotals} term={term} showMath={showMath} />
+              )}
+              {beat === CLOSE_BEAT && (
+                <CloseBeat summary={summary} term={term} orgName={orgName} totalHours={settings.reduce((s, v) => s + (v.totalHoursSaved || 0), 0)} />
               )}
             </motion.div>
           </AnimatePresence>
@@ -248,19 +260,22 @@ export default function ProformaPresent({ settings, config, summary, perSettingT
   );
 }
 
-// ── Beat 1: the hook ────────────────────────────────────────────────────────
-// Sequenced reveal: the kicker, then the big number lands alone, then the proof,
-// then the setting list — so the number gets its solo moment (the "hero" beat).
-function HookBeat({ settings, summary, term, showMath, orgName, onOrgNameChange }: {
+// ── Beat 0: TIME — the operational truth that starts the story ────────────────
+// Lead with the hours handed back (count up), then the engine that turns them
+// into value: expansion (pilot → full) and adoption (utilization climbing).
+function TimeBeat({ settings, config, totalHours, orgName, onOrgNameChange }: {
   settings: ProformaSettingSnapshot[];
-  summary: ProformaSummary;
-  term: string;
-  showMath: boolean;
+  config: ProformaConfig;
+  totalHours: number;
   orgName: string;
   onOrgNameChange: (name: string) => void;
 }) {
-  const settingNames = settings.map(s => SETTING_LABELS[s.careSetting] || s.label).join(" · ");
   const ease = [0.22, 1, 0.36, 1] as const;
+  const pilot = settings.reduce((s, v) => s + (v.providerCount || 0), 0);
+  const full = settings.reduce((s, v) => s + (v.fullScaleProviders || 0), 0);
+  const unit = settings.length > 0 && settings.every(s => s.careSetting === "nursing") ? "beds" : "providers";
+  const utilStart = config.yearlyUtilization?.year1 ?? 0;
+  const utilEnd = config.yearlyUtilization?.year3 ?? config.yearlyUtilization?.year2 ?? utilStart;
   return (
     <div className="text-center">
       <motion.div
@@ -277,16 +292,63 @@ function HookBeat({ settings, summary, term, showMath, orgName, onOrgNameChange 
         />
         <span className={KICKER}>· Business Case</span>
       </motion.div>
-      <motion.p
-        className="mt-3 text-sm text-white/45"
-        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 0.15 }}
-      >
-        {settings.length} care setting{settings.length === 1 ? "" : "s"} &middot; {term} term
-      </motion.p>
 
       <motion.div
         className="mt-10"
-        initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.3, ease }}
+        initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.25, ease }}
+      >
+        <AnimatedValue
+          value={totalHours}
+          format={fmtNum}
+          fromZero
+          duration={1300}
+          className="block text-5xl sm:text-7xl md:text-8xl font-bold tracking-tight"
+        />
+        <p className="mt-3 text-lg text-white/50">clinician hours reclaimed every year</p>
+        <p className="mt-1 text-sm text-white/30">Back to patients, to focus, to time at home.</p>
+      </motion.div>
+
+      {/* The engine: expansion + adoption — why the value grows */}
+      <motion.div
+        className="mt-9 inline-flex flex-wrap items-center justify-center gap-x-7 gap-y-4 rounded-2xl border border-white/10 bg-white/[0.03] px-7 py-4"
+        initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 1.5, ease }}
+      >
+        <Stat label="Expansion" value={`${fmtNum(pilot)} → ${fmtNum(full)}`} />
+        <span className="hidden h-8 w-px bg-white/10 sm:block" />
+        <Stat label="Adoption" value={utilEnd > 0 ? `${utilStart}% → ${utilEnd}%` : "—"} accent />
+        <span className="hidden h-8 w-px bg-white/10 sm:block" />
+        <Stat label="Care settings" value={`${settings.length}`} />
+      </motion.div>
+
+      <motion.p
+        className="mx-auto mt-10 max-w-md text-sm leading-relaxed text-white/35"
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 1.8 }}
+      >
+        This is the engine. As more {unit} come on and use it more, the reclaimed time compounds — and so does the value.
+      </motion.p>
+    </div>
+  );
+}
+
+// ── Beat 1: DOLLARS — what that reclaimed time is worth ───────────────────────
+// Sequenced reveal: the big number lands alone, then the proof.
+function DollarsBeat({ settings, summary, term, showMath }: {
+  settings: ProformaSettingSnapshot[];
+  summary: ProformaSummary;
+  term: string;
+  showMath: boolean;
+}) {
+  const settingNames = settings.map(s => SETTING_LABELS[s.careSetting] || s.label).join(" · ");
+  const ease = [0.22, 1, 0.36, 1] as const;
+  return (
+    <div className="text-center">
+      <motion.p className={KICKER} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
+        What that time is worth
+      </motion.p>
+
+      <motion.div
+        className="mt-8"
+        initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2, ease }}
       >
         <AnimatedValue
           value={summary.termNet}
@@ -294,6 +356,7 @@ function HookBeat({ settings, summary, term, showMath, orgName, onOrgNameChange 
           fromZero
           duration={1300}
           className="block text-5xl sm:text-7xl md:text-8xl font-bold tracking-tight"
+          style={{ color: CORAL }}
         />
         <p className="mt-3 text-lg text-white/50">Net value over the {term.toLowerCase()} term</p>
         <p className="mt-1 text-sm text-white/30">Status quo delivers none of it. This is the lift.</p>
@@ -301,7 +364,7 @@ function HookBeat({ settings, summary, term, showMath, orgName, onOrgNameChange 
 
       <motion.div
         className="mt-9 inline-flex items-center gap-6 rounded-2xl border border-white/10 bg-white/[0.03] px-7 py-4"
-        initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 1.5, ease }}
+        initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 1.4, ease }}
       >
         <Stat label="Value-to-cost" value={summary.valueToCost > 0 ? `${summary.valueToCost.toFixed(1)}×` : "—"} accent />
         <span className="h-8 w-px bg-white/10" />
@@ -310,7 +373,7 @@ function HookBeat({ settings, summary, term, showMath, orgName, onOrgNameChange 
 
       <motion.p
         className="mt-12 text-sm text-white/35"
-        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 1.8 }}
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 1.7 }}
       >
         {settingNames}
       </motion.p>
@@ -499,6 +562,21 @@ function CombineBeat({ settings, summary, perSettingTotals, term, showMath }: {
     .filter(s => s.value > 0);
   const total = contributions.reduce((s, x) => s + x.value, 0) || 1;
 
+  // Provider expansion across the term — the "when it lands" payoff of the engine.
+  const termYears = parseInt(term, 10) || 1;
+  const ramp = [1, 2, 3].slice(0, Math.max(termYears, 1)).map(yr =>
+    settings.reduce((s, v) => {
+      const yp = v.yearlyProviders;
+      const val = yr === 1
+        ? (yp?.year1 ?? v.providerCount)
+        : yr === 2
+          ? (yp?.year2 ?? Math.round(((v.providerCount || 0) + (v.fullScaleProviders || 0)) / 2))
+          : (yp?.year3 ?? v.fullScaleProviders);
+      return s + (val || 0);
+    }, 0),
+  );
+  const rampMax = Math.max(...ramp, 1);
+
   return (
     <div className="text-center">
       <p className={KICKER}>Together</p>
@@ -545,6 +623,31 @@ function CombineBeat({ settings, summary, perSettingTotals, term, showMath }: {
         <Stat label="Payback" value={summary.paybackMonth ? `${summary.paybackMonth} mo` : "—"} />
       </div>
 
+      {/* When it lands — providers expand over the term; the run-rate follows */}
+      {ramp.length > 1 && (
+        <div className="mx-auto mt-11 max-w-md">
+          <p className={`${KICKER} mb-4`}>When it lands</p>
+          <div className="flex items-end justify-center gap-4">
+            {ramp.map((p, i) => (
+              <div key={i} className="flex-1">
+                <motion.div
+                  className="mx-auto w-3/5 rounded-t"
+                  initial={{ height: 0 }}
+                  animate={{ height: `${18 + (p / rampMax) * 46}px` }}
+                  transition={{ duration: 0.6, delay: 0.3 + i * 0.12, ease: [0.22, 1, 0.36, 1] }}
+                  style={{ backgroundColor: i === ramp.length - 1 ? CORAL : "rgba(255,255,255,0.18)" }}
+                />
+                <p className="mt-2 text-[11px] text-white/40">Year {i + 1}</p>
+                <p className="text-xs text-white/70">{fmtNum(p)}</p>
+              </div>
+            ))}
+          </div>
+          <p className="mt-4 text-xs leading-relaxed text-white/35">
+            Providers ramp to full scale; the {fmt(summary.runRateValue)}/yr run-rate is fully on by year {termYears}.
+          </p>
+        </div>
+      )}
+
       <AnimatePresence>
         {showMath && (
           <motion.div
@@ -572,6 +675,47 @@ function CombineBeat({ settings, summary, perSettingTotals, term, showMath }: {
           </motion.div>
         )}
       </AnimatePresence>
+    </div>
+  );
+}
+
+// ── Beat N+3: CLOSE — the landing ─────────────────────────────────────────────
+function CloseBeat({ summary, term, orgName, totalHours }: {
+  summary: ProformaSummary;
+  term: string;
+  orgName: string;
+  totalHours: number;
+}) {
+  const ease = [0.22, 1, 0.36, 1] as const;
+  return (
+    <div className="text-center">
+      <motion.p className={KICKER} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
+        {orgName ? orgName : "The case"}
+      </motion.p>
+      <motion.h2
+        className="mt-5 text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight"
+        initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.15, ease }}
+      >
+        The case, in one line
+      </motion.h2>
+
+      <motion.div
+        className="mt-10 flex flex-wrap items-center justify-center gap-x-9 gap-y-5"
+        initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.4, ease }}
+      >
+        <Stat label="Hours reclaimed / year" value={fmtNum(totalHours)} />
+        <span className="hidden h-9 w-px bg-white/10 sm:block" />
+        <Stat label={`Net ${term.toLowerCase()} value`} value={fmt(summary.termNet)} accent />
+        <span className="hidden h-9 w-px bg-white/10 sm:block" />
+        <Stat label="Value-to-cost" value={summary.valueToCost > 0 ? `${summary.valueToCost.toFixed(1)}×` : "—"} />
+      </motion.div>
+
+      <motion.p
+        className="mx-auto mt-11 max-w-lg text-sm leading-relaxed text-white/40"
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 0.8 }}
+      >
+        Status quo captures none of it. This is what Abridge puts on the table: clinician time first, and the dollars that follow.
+      </motion.p>
     </div>
   );
 }
