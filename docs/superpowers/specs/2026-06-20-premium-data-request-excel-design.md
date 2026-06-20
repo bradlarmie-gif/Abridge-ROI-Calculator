@@ -1,7 +1,23 @@
 # Premium Data-Request Spreadsheet — Design
 
 **Date:** 2026-06-20
-**Status:** approved (design)
+**Status:** implemented (simpler than the original design — see note)
+
+## Implementation note (what actually happened)
+On opening the generator, the spreadsheet was **already designed premium** — black
+header bar, coral accents, cream section bands, highlighted input cells, merges,
+column widths. It just never rendered, because the library (`xlsx` / SheetJS
+community) **silently drops all `.s` cell styles**. So the fix was NOT an ExcelJS
+rewrite — it was a one-line, low-risk swap to **`xlsx-js-style`** (a drop-in fork
+that renders the styles), applied to BOTH `dataRequestExcel.ts` (Explore) and
+`measureDataRequestExcel.ts` (Measure). Kept the existing BASELINE + driver
+structure and the "Who Has This" column (which already serves the
+forward-across-departments need), so we did NOT reshuffle by owner, add data
+validation, or add cell-locking — the visual was the whole problem. Extracted a
+pure `buildDataRequestWorkbook()` for a guard test. The sections below are the
+original design; the realized change is narrower and lower-risk.
+
+---
 
 ## Goal
 Replace the raw, unstyled Excel data-request export (which "looks like a default export") with a clean, branded, **no-nonsense-but-designed** workbook — best-in-class *for a spreadsheet*, not a web app. A finance/HR/revenue-cycle reader should find it clear and trustworthy; it should never embarrass us next to the application. Driven entirely by the single canonical field list, and it must not break.

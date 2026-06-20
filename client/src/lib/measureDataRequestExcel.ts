@@ -1,4 +1,6 @@
-import * as XLSX from 'xlsx';
+// xlsx-js-style renders the `.s` cell styles below; the community `xlsx`
+// package silently dropped them (raw-grid output).
+import * as XLSX from 'xlsx-js-style';
 import { saveAs } from 'file-saver';
 import type { MeasureState } from './measureCalculator';
 import { EXPLORE_DRIVERS, type ExploreQuadrant, type ExploreSetting } from './exploreDrivers';

@@ -1,4 +1,7 @@
-import * as XLSX from 'xlsx';
+// xlsx-js-style is a drop-in fork of SheetJS that actually RENDERS the `.s`
+// cell styles below. The community `xlsx` package silently dropped all of them,
+// which is why the downloaded sheet looked like a raw grid.
+import * as XLSX from 'xlsx-js-style';
 import { saveAs } from 'file-saver';
 import type { DataRequestSetting, DataRequestField } from './dataRequestFields';
 import { BASELINE_FIELDS, getDriverFieldGroups } from './dataRequestFields';
@@ -299,25 +302,26 @@ function buildInstructionsSheet(
 
 // ── Export ────────────────────────────────────────────────────────────────────
 
-export function generateDataRequestExcel(
+const SETTING_TAB_COLORS: Record<DataRequestSetting, string> = {
+  outpatient: 'EA2C00',
+  ed:         'C42800',
+  inpatient:  'A82000',
+  nursing:    '8C1A00',
+};
+
+const SETTING_FILE_LABELS: Record<DataRequestSetting, string> = {
+  outpatient: 'Outpatient',
+  ed: 'Emergency-Department',
+  inpatient: 'Inpatient',
+  nursing: 'Nursing',
+};
+
+/** Pure builder (no browser APIs) so it can be unit-tested. */
+export function buildDataRequestWorkbook(
   setting: DataRequestSetting,
   selectedDriverIds: string[],
   orgName?: string,
-): void {
-  const settingLabels: Record<DataRequestSetting, string> = {
-    outpatient: 'Outpatient',
-    ed: 'Emergency-Department',
-    inpatient: 'Inpatient',
-    nursing: 'Nursing',
-  };
-
-  const settingTabColors: Record<DataRequestSetting, string> = {
-    outpatient: 'EA2C00',
-    ed:         'C42800',
-    inpatient:  'A82000',
-    nursing:    '8C1A00',
-  };
-
+): XLSX.WorkBook {
   const wb = XLSX.utils.book_new();
 
   const instrSheet = buildInstructionsSheet(setting, selectedDriverIds, orgName);
@@ -330,11 +334,20 @@ export function generateDataRequestExcel(
   wb.Workbook = wb.Workbook || {};
   wb.Workbook.Sheets = wb.Workbook.Sheets || [];
   (wb.Workbook.Sheets[0] as any) = { ...(wb.Workbook.Sheets[0] || {}), tabColor: { rgb: C.black } };
-  (wb.Workbook.Sheets[1] as any) = { ...(wb.Workbook.Sheets[1] || {}), tabColor: { rgb: settingTabColors[setting] } };
+  (wb.Workbook.Sheets[1] as any) = { ...(wb.Workbook.Sheets[1] || {}), tabColor: { rgb: SETTING_TAB_COLORS[setting] } };
 
+  return wb;
+}
+
+export function generateDataRequestExcel(
+  setting: DataRequestSetting,
+  selectedDriverIds: string[],
+  orgName?: string,
+): void {
+  const wb = buildDataRequestWorkbook(setting, selectedDriverIds, orgName);
   const buf = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
   saveAs(
     new Blob([buf], { type: 'application/octet-stream' }),
-    `Abridge-Data-Request-${settingLabels[setting]}.xlsx`,
+    `Abridge-Data-Request-${SETTING_FILE_LABELS[setting]}.xlsx`,
   );
 }
