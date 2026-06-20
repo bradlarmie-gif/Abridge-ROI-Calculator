@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ChevronLeft, ChevronRight, ChevronDown, Building2, HeartPulse, BedDouble, Stethoscope, Plus, Minus } from "lucide-react";
 import type { ProformaSettingSnapshot, ProformaConfig, ProformaSummary } from "./proformaTypes";
@@ -287,6 +287,26 @@ function TimeBeat({ settings, totalHours, orgName, onOrgNameChange }: {
   const wFull = full || 1;
   const utilStart = Math.round(settings.reduce((s, v) => s + (v.utilizationPercent || 0) * (v.providerCount || 0), 0) / wPilot);
   const utilEnd = Math.round(settings.reduce((s, v) => s + ((v.fullScaleUtilization || v.utilizationPercent || 0)) * (v.fullScaleProviders || 0), 0) / wFull);
+
+  // Providers and nursing beds are different units — never sum them together.
+  const provSettings = settings.filter(s => s.careSetting !== "nursing");
+  const bedSettings = settings.filter(s => s.careSetting === "nursing");
+  const sumKey = (arr: ProformaSettingSnapshot[], k: "providerCount" | "fullScaleProviders") => arr.reduce((s, v) => s + (v[k] || 0), 0);
+  const engineStats: { label: string; value: string; accent?: boolean }[] = [];
+  if (provSettings.length > 0) {
+    engineStats.push({
+      label: bedSettings.length > 0 ? "Providers" : "Expansion",
+      value: `${fmtNum(sumKey(provSettings, "providerCount"))} → ${fmtNum(sumKey(provSettings, "fullScaleProviders"))}`,
+    });
+  }
+  if (bedSettings.length > 0) {
+    engineStats.push({
+      label: "Beds",
+      value: `${fmtNum(sumKey(bedSettings, "providerCount"))} → ${fmtNum(sumKey(bedSettings, "fullScaleProviders"))}`,
+    });
+  }
+  engineStats.push({ label: "Adoption", value: utilEnd > 0 ? `${utilStart}% → ${utilEnd}%` : "—", accent: true });
+  engineStats.push({ label: "Care settings", value: `${settings.length}` });
   return (
     <div className="text-center">
       <motion.div
@@ -325,11 +345,12 @@ function TimeBeat({ settings, totalHours, orgName, onOrgNameChange }: {
         className="mt-9 inline-flex flex-wrap items-center justify-center gap-x-7 gap-y-4 rounded-2xl border border-white/10 bg-white/[0.03] px-7 py-4"
         initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 1.5, ease }}
       >
-        <Stat label="Expansion" value={`${fmtNum(pilot)} → ${fmtNum(full)}`} />
-        <span className="hidden h-8 w-px bg-white/10 sm:block" />
-        <Stat label="Adoption" value={utilEnd > 0 ? `${utilStart}% → ${utilEnd}%` : "—"} accent />
-        <span className="hidden h-8 w-px bg-white/10 sm:block" />
-        <Stat label="Care settings" value={`${settings.length}`} />
+        {engineStats.map((st, i) => (
+          <Fragment key={st.label}>
+            {i > 0 && <span className="hidden h-8 w-px bg-white/10 sm:block" />}
+            <Stat label={st.label} value={st.value} accent={st.accent} />
+          </Fragment>
+        ))}
       </motion.div>
 
       <motion.p
