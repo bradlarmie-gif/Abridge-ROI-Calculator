@@ -77,6 +77,22 @@ export interface DealResult {
   paybackMonths: number | null;
 }
 
+/**
+ * The volume a deal bills against, sourced from the Organization Volume the user
+ * entered once at the top. Per-year provisioned overrides take precedence when set.
+ */
+export function orgVolumeForModel(volumes: VolumeInputs, model: PricingModel): number {
+  if (model === "perProviderMonth") return volumes.providerCount;
+  if (model === "perEncounterAnnual" || model === "platform") return volumes.annualEncounters;
+  return 0; // enterpriseFlat is volume-independent
+}
+
+/** Effective provisioned volume for a year: an explicit override if set, else the org volume. */
+export function effectiveProvisioned(deal: DealOption, volumes: VolumeInputs, yearIdx: number): number {
+  const override = deal.yearConfigs[yearIdx]?.provisionedVolume ?? 0;
+  return override > 0 ? override : orgVolumeForModel(volumes, deal.model);
+}
+
 export function computeDealResult(
   deal: DealOption,
   volumes: VolumeInputs,
@@ -90,9 +106,8 @@ export function computeDealResult(
     const escalatedUnitPrice = deal.unitPrice * priceEscalation;
     const escalatedPlatformFee = deal.platformFee * priceEscalation;
 
-    // Use this year's provisioned volume; fall back to 0 if yearConfigs is short
-    const cfg = deal.yearConfigs[y];
-    const provisioned = cfg?.provisionedVolume ?? 0;
+    // Org volume flows in as the default; a per-year override wins if set.
+    const provisioned = effectiveProvisioned(deal, volumes, y);
 
     let baseCost = 0;
     let platformFeePortion = 0;
@@ -129,12 +144,10 @@ export function computeDealResult(
   const totalContractCost = years.reduce((s, r) => s + r.annualCost, 0);
   const averageAnnualCost = contractYears > 0 ? totalContractCost / contractYears : 0;
 
-  // Cost per provider / encounter: use average annual provisioned volume
-  const avgProvisioned =
-    deal.yearConfigs.length > 0
-      ? deal.yearConfigs.slice(0, contractYears).reduce((s, c) => s + (c?.provisionedVolume ?? 0), 0) /
-        Math.max(1, contractYears)
-      : 0;
+  // Cost per provider / encounter: use average annual effective volume (override or org).
+  let avgProvisionedSum = 0;
+  for (let y = 0; y < contractYears; y++) avgProvisionedSum += effectiveProvisioned(deal, volumes, y);
+  const avgProvisioned = avgProvisionedSum / Math.max(1, contractYears);
 
   const costPerProvider =
     deal.model === "perProviderMonth" && avgProvisioned > 0
@@ -221,10 +234,10 @@ export function makeDefaultDeal(label: string, id: string, defaultVolume = 0): D
  * Returns 3 usage scenarios for a deal based on Year 1 provisioned volume:
  * 75% utilization (under), 100% (at cap), 125% (over provisioned — overage kicks in).
  */
-export function computeUsageScenarios(deal: DealOption): UsageScenarioResult[] {
+export function computeUsageScenarios(deal: DealOption, volumes: VolumeInputs): UsageScenarioResult[] {
   if (deal.model === "enterpriseFlat") return [];
 
-  const y1Provisioned = deal.yearConfigs[0]?.provisionedVolume ?? 0;
+  const y1Provisioned = effectiveProvisioned(deal, volumes, 0);
   const escalatedUnitPrice = deal.unitPrice; // year 1, no escalation
   const escalatedPlatformFee = deal.platformFee;
 

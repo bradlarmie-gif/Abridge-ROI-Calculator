@@ -16,6 +16,7 @@ import {
   computeUsageScenarios,
   makeDefaultDeal,
   syncYearConfigs,
+  orgVolumeForModel,
 } from "@/lib/pricingComparisonCalc";
 
 interface PricingComparisonFlowProps {
@@ -110,12 +111,13 @@ function NumberInput({
 }
 
 function DealCard({
-  deal, index, volumes, annualValueEstimate, onUpdate, onRemove, canRemove,
+  deal, index, volumes, annualValueEstimate, advanced, onUpdate, onRemove, canRemove,
 }: {
   deal: DealOption;
   index: number;
   volumes: VolumeInputs;
   annualValueEstimate: number;
+  advanced: boolean;
   onUpdate: (updates: Partial<DealOption>) => void;
   onRemove: () => void;
   canRemove: boolean;
@@ -128,7 +130,7 @@ function DealCard({
     [deal, volumes, annualValueEstimate],
   );
 
-  const scenarios = useMemo(() => computeUsageScenarios(deal), [deal]);
+  const scenarios = useMemo(() => computeUsageScenarios(deal, volumes), [deal, volumes]);
 
   const PRICING_MODELS: { label: string; value: PricingModel }[] = [
     { label: PRICING_MODEL_LABELS.perProviderMonth, value: "perProviderMonth" },
@@ -267,7 +269,7 @@ function DealCard({
         <div className="rounded-xl overflow-hidden border border-[#E8E2DA]">
           <div className="px-4 py-2.5 border-b border-[#E8E2DA]" style={{ backgroundColor: colorLight }}>
             <p className="text-[10px] uppercase font-semibold tracking-widest" style={{ color }}>
-              {deal.model === "enterpriseFlat" ? "Annual Cost" : "Provisioned Volume & Cost"}
+              {deal.model === "enterpriseFlat" ? "Annual Cost" : advanced ? "Provisioned Volume & Cost" : "Cost by Year"}
             </p>
           </div>
           <div className="divide-y divide-[#F0EAE3]">
@@ -275,7 +277,7 @@ function DealCard({
               <div key={yr.year} className="px-4 py-2.5">
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-[#8C7E6E] w-11 flex-shrink-0">Yr {yr.year}</span>
-                  {showVolumeInput && (
+                  {advanced && showVolumeInput && (
                     <input
                       type="text"
                       inputMode="numeric"
@@ -285,11 +287,11 @@ function DealCard({
                         newConfigs[idx] = { provisionedVolume: parseFloat(e.target.value.replace(/,/g, "")) || 0 };
                         onUpdate({ yearConfigs: newConfigs });
                       }}
-                      placeholder="0"
+                      placeholder={orgVolumeForModel(volumes, deal.model) > 0 ? orgVolumeForModel(volumes, deal.model).toLocaleString("en-US") : "0"}
                       className="w-20 px-2 py-0.5 text-xs bg-white border border-[#E8E2DA] rounded-md focus:border-[#EA2C00] outline-none text-center"
                     />
                   )}
-                  {showVolumeInput && (
+                  {advanced && showVolumeInput && (
                     <span className="text-[10px] text-[#A39888] flex-shrink-0">{volumeLabel(deal.model)}</span>
                   )}
                   <span className="ml-auto text-sm font-semibold text-[#1A1A1A]">{fmt(yr.annualCost)}</span>
@@ -323,8 +325,8 @@ function DealCard({
           )}
         </div>
 
-        {/* Overage handling */}
-        {deal.model !== "enterpriseFlat" && (
+        {/* Overage handling — advanced only */}
+        {advanced && deal.model !== "enterpriseFlat" && (
           <div>
             <p className="text-[10px] uppercase font-semibold text-[#8C7E6E] tracking-widest mb-2">If Usage Exceeds Provisioned</p>
             <div className="flex items-center gap-1.5 flex-wrap mb-2">
@@ -359,8 +361,8 @@ function DealCard({
           </div>
         )}
 
-        {/* Usage scenarios */}
-        {scenarios.length > 0 && (
+        {/* Usage scenarios — advanced only */}
+        {advanced && scenarios.length > 0 && (
           <div>
             <div className="flex items-center gap-1.5 mb-2">
               <p className="text-[10px] uppercase font-semibold text-[#8C7E6E] tracking-widest">Usage Scenarios</p>
@@ -467,8 +469,8 @@ function RoiAnalysisSection({
           <TrendingUp className="w-4 h-4 text-[#EA2C00]" />
         </div>
         <div className="flex-1">
-          <h2 className="text-sm font-bold text-[#1A1A1A]">ROI Analysis</h2>
-          <p className="text-xs text-[#8C7E6E]">Layer in expected value to compare ROI across options</p>
+          <h2 className="text-sm font-bold text-[#1A1A1A]">Total Cost of Ownership</h2>
+          <p className="text-xs text-[#8C7E6E]">Full cost per option side by side. Add a value estimate to layer in ROI.</p>
         </div>
       </div>
 
@@ -615,6 +617,24 @@ export default function PricingComparisonFlow({ onBack, onHome }: PricingCompari
     makeDefaultDeal("Option B", "deal-b"),
   ]);
   const [annualValueEstimate, setAnnualValueEstimate] = useState(0);
+  const [advanced, setAdvanced] = useState(false);
+
+  // Total-cost-of-ownership verdict across the deals (the lead).
+  const verdict = useMemo(() => {
+    const priced = deals
+      .map((d) => ({ deal: d, result: computeDealResult(d, volumes, annualValueEstimate) }))
+      .filter((x) => x.result.totalContractCost > 0);
+    if (priced.length < 2) return null;
+    const sorted = [...priced].sort((a, b) => a.result.totalContractCost - b.result.totalContractCost);
+    const cheapest = sorted[0];
+    const runnerUp = sorted[1];
+    const savings = runnerUp.result.totalContractCost - cheapest.result.totalContractCost;
+    const bestRoi = annualValueEstimate > 0
+      ? [...priced].sort((a, b) => (b.result.termVtc ?? 0) - (a.result.termVtc ?? 0))[0]
+      : null;
+    const termYears = Math.max(1, Math.ceil(cheapest.deal.contractTermMonths / 12));
+    return { cheapest, savings, bestRoi, termYears };
+  }, [deals, volumes, annualValueEstimate]);
 
   const updateDeal = (id: string, updates: Partial<DealOption>) => {
     setDeals((prev) => prev.map((d) => (d.id === id ? { ...d, ...updates } : d)));
@@ -702,9 +722,44 @@ export default function PricingComparisonFlow({ onBack, onHome }: PricingCompari
           </div>
         </div>
 
+        {/* TCO verdict — lead with the answer */}
+        {verdict && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+            className="rounded-2xl bg-[#1A1A1A] text-white p-5 sm:p-6 mb-6"
+          >
+            <p className="text-[10px] uppercase font-semibold tracking-widest text-white/40 mb-2">Lowest total cost of ownership</p>
+            <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+              <span className="text-2xl sm:text-3xl font-bold" style={{ color: "#FF5230" }}>{verdict.cheapest.deal.label}</span>
+              <span className="text-lg sm:text-xl font-bold">{fmtFull(verdict.cheapest.result.totalContractCost)}</span>
+              <span className="text-sm text-white/50">over {verdict.termYears} year{verdict.termYears === 1 ? "" : "s"}</span>
+            </div>
+            <p className="mt-2 text-sm text-white/55">
+              {verdict.savings > 0
+                ? `Saves ${fmtFull(verdict.savings)} versus the next option.`
+                : "Tied with the next option on total cost."}
+              {verdict.bestRoi && verdict.bestRoi.result.termVtc !== null && (
+                <> Best return: <span className="text-white/80 font-medium">{verdict.bestRoi.deal.label} at {verdict.bestRoi.result.termVtc.toFixed(1)}× over the term</span>.</>
+              )}
+            </p>
+          </motion.div>
+        )}
+
         {/* Deal cards */}
         <div className="mb-2">
-          <p className="text-[10px] uppercase font-semibold text-[#8C7E6E] tracking-widest mb-4">Deal Options</p>
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-[10px] uppercase font-semibold text-[#8C7E6E] tracking-widest">Deal Options</p>
+            <button
+              type="button"
+              onClick={() => setAdvanced((a) => !a)}
+              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium border transition-colors ${
+                advanced ? "bg-[#1A1A1A] text-white border-[#1A1A1A]" : "bg-white text-[#6B5E4F] border-[#E8E2DA] hover:border-[#1A1A1A]"
+              }`}
+              data-testid="button-advanced-provisioning"
+            >
+              {advanced ? "Hide" : "Show"} provisioning & usage
+            </button>
+          </div>
           <AnimatePresence mode="popLayout">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {deals.map((deal, index) => (
@@ -714,6 +769,7 @@ export default function PricingComparisonFlow({ onBack, onHome }: PricingCompari
                   index={index}
                   volumes={volumes}
                   annualValueEstimate={annualValueEstimate}
+                  advanced={advanced}
                   onUpdate={(updates) => updateDeal(deal.id, updates)}
                   onRemove={() => removeDeal(deal.id)}
                   canRemove={deals.length > 2}
