@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, ChevronLeft, ChevronRight, ChevronDown, Building2, HeartPulse, BedDouble, Stethoscope, Plus, Minus } from "lucide-react";
-import type { ProformaSettingSnapshot, ProformaConfig, ProformaSummary } from "./proformaTypes";
+import { X, ChevronLeft, ChevronRight, ChevronDown, Building2, HeartPulse, BedDouble, Stethoscope, Plus, Minus, TrendingUp, TrendingDown } from "lucide-react";
+import type { ProformaSettingSnapshot, ProformaConfig, ProformaSummary, ProformaDriver } from "./proformaTypes";
 import { SETTING_COLORS, SETTING_LABELS, SETTING_UNIT_LABELS } from "./proformaTypes";
 import { AnimatedValue } from "@/components/explore/AnimatedValue";
 import { computeSettingDriverFormulas } from "@/lib/presentFormulas";
@@ -454,7 +454,19 @@ function SettingBeat({ setting, index, count, totals, term, showMath, systemFee 
   const multiple = totals.contractInvestment > 0 ? totals.contractValue / totals.contractInvestment : 0;
   // At-scale formula per driver (only those that reconcile to the dollar shown).
   const formulas = useMemo(() => computeSettingDriverFormulas(setting), [setting]);
-  const [openDriver, setOpenDriver] = useState<string | null>(null);
+
+  // Full-screen "show the math" view — one driver at a time, anchored to this setting.
+  const mathDrivers = useMemo(() => setting.drivers.filter(d => d.value > 0), [setting]);
+  const [mathIdx, setMathIdx] = useState(0);
+  if (showMath && mathDrivers.length > 0) {
+    return (
+      <SettingMathView
+        setting={setting} index={index} count={count} color={color} Icon={Icon}
+        formulas={formulas} drivers={mathDrivers}
+        activeIdx={Math.min(mathIdx, mathDrivers.length - 1)} onIdx={setMathIdx}
+      />
+    );
+  }
 
   const segs = QUADRANT
     .map(q => ({ ...q, value: (setting[q.key] as number) ?? 0 }))
@@ -537,67 +549,93 @@ function SettingBeat({ setting, index, count, totals, term, showMath, systemFee 
         {rampLabel(setting.providerCount, setting.fullScaleProviders, unit)} &middot; live month {setting.goLiveMonth}
       </p>
 
-      <AnimatePresence>
-        {showMath && setting.drivers.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
-            className="overflow-hidden"
-          >
-            <div className="mx-auto mt-8 max-w-xl rounded-2xl border border-white/10 bg-white/[0.03] px-6 py-6 text-left sm:px-8">
-              <p className={`${KICKER} mb-4`}>How this is built</p>
-              {(() => {
-                const shown = setting.drivers.filter(d => d.value > 0);
-                const driverTotal = shown.reduce((s, d) => s + d.value, 0) || 1;
-                return (
-                  <div className="space-y-3">
-                    {shown.map(d => {
-                      const formula = formulas[d.id];
-                      const isOpen = openDriver === d.id;
-                      return (
-                        <div key={d.id} className="border-b border-white/[0.06] pb-2.5 last:border-0 last:pb-0">
-                          <button
-                            type="button"
-                            disabled={!formula}
-                            onClick={() => setOpenDriver(isOpen ? null : d.id)}
-                            className={`flex w-full items-baseline justify-between gap-3 text-left ${formula ? "cursor-pointer" : "cursor-default"}`}
-                            data-testid={`present-driver-${d.id}`}
-                          >
-                            <span className="flex items-center gap-2 text-sm text-white/85">
-                              <span className="h-2 w-2 flex-shrink-0 rounded-full" style={{ backgroundColor: QUADRANT_COLOR[d.quadrant] || "#888" }} />
-                              {d.name}
-                              {formula && (
-                                <ChevronDown className={`h-3.5 w-3.5 text-white/30 transition-transform ${isOpen ? "rotate-180" : ""}`} />
-                              )}
-                            </span>
-                            <span className="flex-shrink-0 text-sm font-semibold text-white/90">{fmt(d.value)}</span>
-                          </button>
-                          <p className="mt-1 pl-4 text-xs leading-relaxed text-white/40">
-                            {Math.round((d.value / driverTotal) * 100)}% of value
-                            {DRIVER_BLURB[d.id] ? ` · ${DRIVER_BLURB[d.id]}` : ""}
-                          </p>
-                          <AnimatePresence>
-                            {isOpen && formula && (
-                              <motion.div
-                                initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
-                                className="overflow-hidden"
-                              >
-                                <p className="mt-2 ml-4 rounded-lg bg-black/30 px-3 py-2 text-[11px] leading-relaxed text-white/55">
-                                  {formula} <span className="text-white/80">= {fmt(d.value)}</span>
-                                </p>
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
-                        </div>
-                      );
-                    })}
-                    <p className="pt-1 text-[11px] text-white/25">{Object.keys(formulas).length > 0 ? "Tap a driver to see how it's calculated." : ""}</p>
-                  </div>
-                );
-              })()}
+      {mathDrivers.length > 0 && (
+        <p className="mt-8 text-center text-xs text-white/25">Show the math to see how every dollar is built.</p>
+      )}
+    </div>
+  );
+}
+
+// Full-screen per-driver calculation view for a care setting (the "show the math" takeover).
+function SettingMathView({ setting, index, count, color, Icon, formulas, drivers, activeIdx, onIdx }: {
+  setting: ProformaSettingSnapshot;
+  index: number;
+  count: number;
+  color: string;
+  Icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
+  formulas: Record<string, string>;
+  drivers: ProformaDriver[];
+  activeIdx: number;
+  onIdx: (i: number) => void;
+}) {
+  const active = drivers[activeIdx] ?? drivers[0];
+  const driverTotal = drivers.reduce((s, d) => s + d.value, 0) || 1;
+  const formula = formulas[active.id];
+  const factors = formula ? formula.split(" × ") : [];
+  const prev = drivers[(activeIdx - 1 + drivers.length) % drivers.length];
+  const next = drivers[(activeIdx + 1) % drivers.length];
+
+  return (
+    <div className="text-center">
+      <div className="flex items-center justify-center gap-3">
+        <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg" style={{ backgroundColor: `${color}22` }}>
+          <Icon className="h-5 w-5" style={{ color }} />
+        </span>
+        <p className={KICKER}>{SETTING_LABELS[setting.careSetting] || setting.label} &middot; setting {index} of {count}</p>
+      </div>
+
+      <motion.div key={active.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}>
+        <h2 className="mt-6 text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">{active.name}</h2>
+        <p className="mt-3 text-5xl sm:text-6xl md:text-7xl font-bold tracking-tight" style={{ color }}>{fmt(active.value)}</p>
+        <p className="mt-2 text-sm text-white/40">
+          {Math.round((active.value / driverTotal) * 100)}% of this setting&rsquo;s value
+          {DRIVER_BLURB[active.id] ? ` · ${DRIVER_BLURB[active.id]}` : ""}
+        </p>
+
+        {factors.length > 0 ? (
+          <div className="mx-auto mt-9 max-w-md text-left">
+            {factors.map((f, idx) => (
+              <div key={idx} className="flex items-baseline gap-3 border-b border-white/[0.05] py-2.5 last:border-0">
+                <span className="w-5 flex-shrink-0 text-right text-lg text-white/25">{idx === 0 ? "" : "×"}</span>
+                <span className="text-lg sm:text-xl text-white/85">{f}</span>
+              </div>
+            ))}
+            <div className="mt-3 flex items-baseline gap-3 border-t border-white/15 pt-3.5">
+              <span className="w-5 flex-shrink-0 text-right text-2xl text-white/30">=</span>
+              <span className="text-3xl sm:text-4xl font-bold tracking-tight" style={{ color }}>{fmt(active.value)}</span>
             </div>
-          </motion.div>
+          </div>
+        ) : (
+          <p className="mx-auto mt-9 max-w-md text-base text-white/50">Strategic value — not reduced to a single formula.</p>
         )}
-      </AnimatePresence>
+      </motion.div>
+
+      {drivers.length > 1 && (
+        <>
+          <div className="mt-11 flex items-center justify-center gap-5 sm:gap-8">
+            <button
+              type="button"
+              onClick={() => onIdx((activeIdx - 1 + drivers.length) % drivers.length)}
+              className="flex max-w-[42%] items-center gap-1.5 text-sm text-white/45 transition-colors hover:text-white"
+              data-testid="present-math-prev"
+            >
+              <ChevronLeft className="h-4 w-4 flex-shrink-0" />
+              <span className="truncate">{prev.name}</span>
+            </button>
+            <span className="text-white/15">·</span>
+            <button
+              type="button"
+              onClick={() => onIdx((activeIdx + 1) % drivers.length)}
+              className="flex max-w-[42%] items-center gap-1.5 text-sm text-white/45 transition-colors hover:text-white"
+              data-testid="present-math-next"
+            >
+              <span className="truncate">{next.name}</span>
+              <ChevronRight className="h-4 w-4 flex-shrink-0" />
+            </button>
+          </div>
+          <p className="mt-3 text-[11px] uppercase tracking-wider text-white/25">Driver {activeIdx + 1} of {drivers.length}</p>
+        </>
+      )}
     </div>
   );
 }
@@ -616,20 +654,32 @@ function CombineBeat({ settings, summary, perSettingTotals, term, showMath, syst
     .filter(s => s.value > 0);
   const total = contributions.reduce((s, x) => s + x.value, 0) || 1;
 
-  // Provider expansion across the term — the "when it lands" payoff of the engine.
+  // Value ramp across the term — the "when it lands" payoff. Providers can be flat,
+  // but adoption climbing (and partial year-1 from go-live timing) ramps realized value
+  // toward the at-scale run-rate. Realized value ≈ annual value × (providers/full) ×
+  // (adoption/full) × (months live / 12 in year 1).
   const termYears = parseInt(term, 10) || 1;
-  const ramp = [1, 2, 3].slice(0, Math.max(termYears, 1)).map(yr =>
+  const yearFactors = [1, 2, 3].slice(0, Math.max(termYears, 1)).map(yr =>
     settings.reduce((s, v) => {
       const yp = v.yearlyProviders;
-      const val = yr === 1
-        ? (yp?.year1 ?? v.providerCount)
-        : yr === 2
-          ? (yp?.year2 ?? Math.round(((v.providerCount || 0) + (v.fullScaleProviders || 0)) / 2))
-          : (yp?.year3 ?? v.fullScaleProviders);
-      return s + (val || 0);
+      const prov = yr === 1 ? (yp?.year1 ?? v.providerCount)
+        : yr === 2 ? (yp?.year2 ?? Math.round(((v.providerCount || 0) + (v.fullScaleProviders || 0)) / 2))
+        : (yp?.year3 ?? v.fullScaleProviders);
+      const yu = v.yearlyUtilization;
+      const util = yr === 1 ? (yu?.year1 ?? v.utilizationPercent)
+        : yr === 2 ? (yu?.year2 ?? Math.round(((v.utilizationPercent || 0) + (v.fullScaleUtilization || v.utilizationPercent || 0)) / 2))
+        : (yu?.year3 ?? v.fullScaleUtilization ?? v.utilizationPercent);
+      const fullProv = v.fullScaleProviders || v.providerCount || 1;
+      const fullUtil = v.fullScaleUtilization || v.utilizationPercent || 1;
+      const rampFrac = Math.min(1, (prov / fullProv) * (util / fullUtil));
+      const liveFraction = yr === 1 ? Math.max(0, (12 - ((v.goLiveMonth || 1) - 1)) / 12) : 1;
+      return s + (v.annualValue || 0) * rampFrac * liveFraction;
     }, 0),
   );
-  const rampMax = Math.max(...ramp, 1);
+  // Anchor the final year to the at-scale run-rate shown above; scale earlier years to it.
+  const lastFactor = yearFactors[yearFactors.length - 1] || 1;
+  const yearValue = yearFactors.map(f => (lastFactor > 0 ? summary.runRateValue * (f / lastFactor) : 0));
+  const valueMax = Math.max(...yearValue, 1);
 
   return (
     <div className="text-center">
@@ -677,27 +727,27 @@ function CombineBeat({ settings, summary, perSettingTotals, term, showMath, syst
         <Stat label="Payback" value={summary.paybackMonth ? `${summary.paybackMonth} mo` : "—"} />
       </div>
 
-      {/* When it lands — providers expand over the term; the run-rate follows */}
-      {ramp.length > 1 && (
+      {/* When it lands — realized value builds over the term toward the run-rate */}
+      {yearValue.length > 1 && (
         <div className="mx-auto mt-11 max-w-md">
           <p className={`${KICKER} mb-4`}>When it lands</p>
           <div className="flex items-end justify-center gap-4">
-            {ramp.map((p, i) => (
+            {yearValue.map((val, i) => (
               <div key={i} className="flex-1">
                 <motion.div
                   className="mx-auto w-3/5 rounded-t"
                   initial={{ height: 0 }}
-                  animate={{ height: `${18 + (p / rampMax) * 46}px` }}
+                  animate={{ height: `${20 + (val / valueMax) * 64}px` }}
                   transition={{ duration: 0.6, delay: 0.3 + i * 0.12, ease: [0.22, 1, 0.36, 1] }}
-                  style={{ backgroundColor: i === ramp.length - 1 ? CORAL : "rgba(255,255,255,0.18)" }}
+                  style={{ backgroundColor: i === yearValue.length - 1 ? CORAL : "rgba(255,255,255,0.18)" }}
                 />
                 <p className="mt-2 text-[11px] text-white/40">Year {i + 1}</p>
-                <p className="text-xs text-white/70">{fmtNum(p)}</p>
+                <p className="text-sm font-semibold text-white/85">{fmt(val)}</p>
               </div>
             ))}
           </div>
           <p className="mt-4 text-xs leading-relaxed text-white/35">
-            Providers ramp to full scale; the {fmt(summary.runRateValue)}/yr run-rate is fully on by year {termYears}.
+            Value builds as adoption climbs; the {fmt(summary.runRateValue)}/yr run-rate is fully on by year {termYears}.
           </p>
         </div>
       )}
@@ -747,6 +797,26 @@ function CloseBeat({ summary, term, orgName, totalHours }: {
   totalHours: number;
 }) {
   const ease = [0.22, 1, 0.36, 1] as const;
+
+  // Sensitivity band: ±20% on realized value, recomputed against the fixed investment.
+  const SENS = 0.2;
+  const inv = summary.termInvestment || 1;
+  const scenarios = [
+    { key: "Conservative", value: summary.termValue * (1 - SENS), base: false },
+    { key: "Base", value: summary.termValue, base: true },
+    { key: "Optimistic", value: summary.termValue * (1 + SENS), base: false },
+  ].map(s => ({ ...s, net: s.value - summary.termInvestment, vtc: s.value / inv }));
+  const cons = scenarios[0];
+
+  // Operational signals the buyer would watch to confirm the value is real.
+  const signals: { label: string; dir: "up" | "down" }[] = [
+    { label: "Documentation time per note", dir: "down" },
+    { label: "Visits per provider / day", dir: "up" },
+    { label: "Coding accuracy (E/M level)", dir: "up" },
+    { label: "Claim denial rate", dir: "down" },
+    { label: "After-hours charting", dir: "down" },
+  ];
+
   return (
     <div className="text-center">
       <motion.p className={KICKER} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
@@ -756,25 +826,54 @@ function CloseBeat({ summary, term, orgName, totalHours }: {
         className="mt-5 text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight"
         initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.15, ease }}
       >
-        The case, in one line
+        Even the conservative case pays.
       </motion.h2>
 
+      {/* Sensitivity band — Conservative / Base / Optimistic */}
       <motion.div
-        className="mt-10 flex flex-wrap items-center justify-center gap-x-9 gap-y-5"
-        initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.4, ease }}
+        className="mx-auto mt-9 max-w-2xl"
+        initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.35, ease }}
       >
-        <Stat label="Hours reclaimed / year" value={fmtNum(totalHours)} />
-        <span className="hidden h-9 w-px bg-white/10 sm:block" />
-        <Stat label={`Net ${term.toLowerCase()} value`} value={fmt(summary.termNet)} accent />
-        <span className="hidden h-9 w-px bg-white/10 sm:block" />
-        <Stat label="Value-to-cost" value={summary.valueToCost > 0 ? `${summary.valueToCost.toFixed(1)}×` : "—"} />
+        <div className="grid grid-cols-3 gap-px overflow-hidden rounded-2xl border border-white/10 bg-white/10">
+          {scenarios.map(s => (
+            <div key={s.key} className={`px-2 py-5 sm:px-4 ${s.base ? "bg-[#1b1b1b]" : "bg-[#111111]"}`}>
+              <p className={`text-[10px] uppercase tracking-wider ${s.base ? "text-white/65" : "text-white/35"}`}>{s.key}</p>
+              <p className="mt-2 text-xl sm:text-3xl font-bold tracking-tight" style={s.base ? { color: CORAL } : { color: "rgba(255,255,255,0.85)" }}>{fmt(s.net)}</p>
+              <p className="mt-0.5 text-[10px] uppercase tracking-wider text-white/30">net {term.toLowerCase()}</p>
+              <p className="mt-2.5 text-xs sm:text-sm font-semibold text-white/65">{s.vtc.toFixed(1)}× value-to-cost</p>
+            </div>
+          ))}
+        </div>
+        <p className="mt-3 text-xs leading-relaxed text-white/35">
+          Range reflects ±20% on realized value — adoption and coding accuracy vary by site.
+          {cons.vtc > 1 ? ` Even at the conservative end it returns ${cons.vtc.toFixed(1)}× and pays for itself.` : ""}
+        </p>
+      </motion.div>
+
+      {/* Signals to track — how you'll know it's working */}
+      <motion.div
+        className="mx-auto mt-10 max-w-md"
+        initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.55, ease }}
+      >
+        <p className={`${KICKER} mb-4`}>What to watch as it works</p>
+        <div className="space-y-2.5 text-left">
+          {signals.map(sig => (
+            <div key={sig.label} className="flex items-center justify-between border-b border-white/[0.06] pb-2 last:border-0 last:pb-0">
+              <span className="text-sm text-white/70">{sig.label}</span>
+              <span className="flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider" style={{ color: CORAL }}>
+                {sig.dir === "up" ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}
+                {sig.dir === "up" ? "up" : "down"}
+              </span>
+            </div>
+          ))}
+        </div>
       </motion.div>
 
       <motion.p
-        className="mx-auto mt-11 max-w-lg text-sm leading-relaxed text-white/40"
-        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 0.8 }}
+        className="mx-auto mt-10 max-w-lg text-sm leading-relaxed text-white/40"
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 0.85 }}
       >
-        Status quo captures none of it. This is what Abridge puts on the table: clinician time first, and the dollars that follow.
+        {fmtNum(totalHours)} clinician hours reclaimed a year — status quo captures none of it. Clinician time first, and the dollars that follow.
       </motion.p>
     </div>
   );
