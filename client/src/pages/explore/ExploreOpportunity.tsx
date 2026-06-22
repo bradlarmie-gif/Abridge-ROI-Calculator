@@ -146,8 +146,12 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
     updateState({ nursingOccupancyRate: Math.max(50, Math.min(100, value)) });
   }, [updateState]);
 
-  const annualEncounters = usingTotalInput && state.annualEncounters > 0 
-    ? state.annualEncounters 
+  // Trust the stored annual total whenever it exists — it's the authoritative figure the
+  // input box shows and the rest of the app uses. Deriving it from providers × (rounded)
+  // per-provider instead drifted by the rounding remainder once `usingTotalInput` reset to
+  // false on remount (e.g. returning from the proforma), so the input and baseline disagreed.
+  const annualEncounters = state.annualEncounters > 0
+    ? state.annualEncounters
     : state.numberOfProviders * encountersPerProvider;
   const eligibleEncounters = Math.round(annualEncounters * (state.utilizationPercent / 100));
   const nursingTotalShiftsPerYear = state.numberOfProviders * state.nursingShiftsPerNurseYear;
