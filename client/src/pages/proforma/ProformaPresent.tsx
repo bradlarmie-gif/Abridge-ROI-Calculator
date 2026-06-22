@@ -83,6 +83,13 @@ function fmt(n: number): string {
 function fmtNum(n: number): string {
   return Math.round(n).toLocaleString();
 }
+// "A → B suffix", collapsed to just "A suffix" when there's no ramp (start === end).
+function rampLabel(a: number, b: number, suffix = ""): string {
+  const tail = suffix ? ` ${suffix}` : "";
+  return Math.round(a) === Math.round(b)
+    ? `${fmtNum(a)}${tail}`
+    : `${fmtNum(a)} → ${fmtNum(b)}${tail}`;
+}
 function termLabel(months: number): string {
   return `${months / 12}-Year`;
 }
@@ -297,16 +304,16 @@ function TimeBeat({ settings, totalHours, orgName, onOrgNameChange }: {
   if (provSettings.length > 0) {
     engineStats.push({
       label: bedSettings.length > 0 ? "Providers" : "Expansion",
-      value: `${fmtNum(sumKey(provSettings, "providerCount"))} → ${fmtNum(sumKey(provSettings, "fullScaleProviders"))}`,
+      value: rampLabel(sumKey(provSettings, "providerCount"), sumKey(provSettings, "fullScaleProviders")),
     });
   }
   if (bedSettings.length > 0) {
     engineStats.push({
       label: "Beds",
-      value: `${fmtNum(sumKey(bedSettings, "providerCount"))} → ${fmtNum(sumKey(bedSettings, "fullScaleProviders"))}`,
+      value: rampLabel(sumKey(bedSettings, "providerCount"), sumKey(bedSettings, "fullScaleProviders")),
     });
   }
-  engineStats.push({ label: "Adoption", value: utilEnd > 0 ? `${utilStart}% → ${utilEnd}%` : "—", accent: true });
+  engineStats.push({ label: "Adoption", value: utilEnd > 0 ? (utilStart === utilEnd ? `${utilEnd}%` : `${utilStart}% → ${utilEnd}%`) : "—", accent: true });
   engineStats.push({ label: "Care settings", value: `${settings.length}` });
   return (
     <div className="text-center">
@@ -471,7 +478,7 @@ function SettingBeat({ setting, index, count, totals, term, showMath, systemFee 
             <AnimatedValue value={setting.annualValue} format={fmt} fromZero duration={950}
               className="block text-5xl sm:text-6xl md:text-7xl font-bold tracking-tight" style={{ color }} />
             <p className="mt-2 text-base text-white/50">annual value at scale</p>
-            <p className="mt-1 text-sm text-white/30">Captured today: $0. Every dollar is net-new.</p>
+            <p className="mt-1 text-sm text-white/30">None of this is captured today — every dollar is net-new.</p>
           </>
         ) : (
           <>
@@ -527,7 +534,7 @@ function SettingBeat({ setting, index, count, totals, term, showMath, systemFee 
       )}
 
       <p className="mt-7 text-center text-sm text-white/35">
-        {fmtNum(setting.providerCount)} &rarr; {fmtNum(setting.fullScaleProviders)} {unit} &middot; live month {setting.goLiveMonth}
+        {rampLabel(setting.providerCount, setting.fullScaleProviders, unit)} &middot; live month {setting.goLiveMonth}
       </p>
 
       <AnimatePresence>
