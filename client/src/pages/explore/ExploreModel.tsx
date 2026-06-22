@@ -1510,7 +1510,6 @@ export default function ExploreModel({
                           <FormattedNumberInput
                             value={state.costPerProvider}
                             onChange={(v) => updateState({ costPerProvider: Math.max(v, 0) })}
-                            prefix="$"
                             className="w-full text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
                             data-testid="input-quick-cost"
                           />
@@ -1532,7 +1531,6 @@ export default function ExploreModel({
                           <FormattedNumberInput
                             value={state.annualLicenseFee}
                             onChange={(v) => updateState({ annualLicenseFee: Math.max(v, 0) })}
-                            prefix="$"
                             className="w-full text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
                             data-testid="input-quick-license"
                           />
@@ -1543,7 +1541,6 @@ export default function ExploreModel({
                         <FormattedNumberInput
                           value={state.implementationFee}
                           onChange={(v) => updateState({ implementationFee: Math.max(v, 0) })}
-                          prefix="$"
                           className="w-full text-right text-sm h-8 bg-white border border-neutral-300 rounded-lg px-2"
                           data-testid="input-quick-impl-fee"
                         />

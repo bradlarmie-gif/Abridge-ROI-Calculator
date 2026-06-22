@@ -512,6 +512,9 @@ function computeRisk(
 
 function safeInputs(raw: AssessmentState["inputs"]): AssessmentState["inputs"] {
   return {
+    // Carry through every field so the result is a complete SwitchInputs; the explicit
+    // defaults below still override the numeric/specialty fields this guard normalizes.
+    ...raw,
     solution: raw.solution ?? ("ambient-ai" as any),
     providers: raw.providers ?? 0,
     annualEncounters: raw.annualEncounters ?? 0,

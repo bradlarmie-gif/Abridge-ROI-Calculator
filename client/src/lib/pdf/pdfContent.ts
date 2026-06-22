@@ -37,7 +37,9 @@ export function generateDriverExplanation(
   );
   const totalHoursReclaimed = (inputs.minutesSavedPerEncounter * encountersWithAbridge) / 60;
 
-  const explanations: Record<LeverId, () => DriverExplanation> = {
+  // Partial: this is the outpatient PDF, so only outpatient levers have explanations here.
+  // (ED/inpatient/nursing levers have their own generators and never reach this map.)
+  const explanations: Partial<Record<LeverId, () => DriverExplanation>> = {
     patientAccess: () => {
       const minutesSaved = inputs.minutesSavedPerEncounter;
       const totalMinutes = minutesSaved * encountersWithAbridge;
@@ -329,7 +331,7 @@ export function generateDriverExplanation(
     },
   };
 
-  return explanations[driverId]();
+  return explanations[driverId]!();
 }
 
 export function generateExecutiveSummaryContent(model: ModelSnapshot): {

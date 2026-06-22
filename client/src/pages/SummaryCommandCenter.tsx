@@ -561,9 +561,8 @@ export default function SummaryCommandCenter({
       fileName = clientSlug ? `Abridge_ED_Value_Assessment_${clientSlug}.pdf` : `Abridge_ED_Value_Assessment_${today}.pdf`;
     } else if (activeSetting === "inpatient") {
       const pdfData = transformToInpatientPDFData(modelResultsForPDF, journeyInputs, undefined, effectiveClientName, effectivePreparedBy);
-      const result = await generateInpatientROIPDFBlob(pdfData);
-      blob = result.blob;
-      fileName = result.filename;
+      blob = await generateInpatientROIPDFBlob(pdfData);
+      fileName = clientSlug ? `Abridge_Inpatient_Value_Assessment_${clientSlug}.pdf` : `Abridge_Inpatient_Value_Assessment_${today}.pdf`;
     } else if (activeSetting === "nursing") {
       const nursingJourneyInputs = {
         pilotBeds: pilotUnits,

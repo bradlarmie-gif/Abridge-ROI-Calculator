@@ -917,7 +917,7 @@ function getDriverLogic(driver: DriverCalculation, data: OutpatientPDFData): Dri
     case "workforce": {
       // Get wellbeing allocation - try from inputs first (wellbeingPct), then from timeAllocation
       const wellbeingPct = (inputs.wellbeingPct as number) ?? allocation.clinicianWellbeing ?? 30;
-      const docQualityPct = (inputs.docQualityPct as number) ?? allocation.documentationQuality ?? 30;
+      const docQualityPct = (inputs.docQualityPct as number) ?? (allocation as { documentationQuality?: number }).documentationQuality ?? 30;
       const burdenReliefPct = docQualityPct + wellbeingPct;
       const hoursAllocated = (inputs.wellbeingHours as number) || Math.round(data.hoursReturned * (burdenReliefPct / 100));
       const hoursPerProvider = (inputs.hoursPerProvider as number) || Math.round(hoursAllocated / data.providers);

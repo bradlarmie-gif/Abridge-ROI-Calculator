@@ -2190,7 +2190,9 @@ export function getSettingDomains(setting: MeasureCareSetting): { key: DomainKey
       { key: 'quality', label: 'Quality' },
     ];
   }
-  const config = CARE_SETTING_CONFIGS[setting];
+  // Unreachable: all settings are handled above, so `setting` is `never` here. Cast keeps
+  // the type-checker happy without changing the (dead) runtime behavior.
+  const config = CARE_SETTING_CONFIGS[setting as MeasureCareSetting];
   return [
     { key: 'workforce', label: 'Workforce' },
     { key: 'revenue', label: 'Revenue' },
@@ -2466,7 +2468,8 @@ export function getTotalAvailableMetrics(setting: MeasureCareSetting): number {
   if (setting === 'nursing') {
     return NURSING_METRICS.filter(m => !m.phase3Roadmap).length;
   }
-  const config = CARE_SETTING_CONFIGS[setting];
+  // Unreachable: all settings handled above (`setting` is `never`). Cast for the type-checker.
+  const config = CARE_SETTING_CONFIGS[setting as MeasureCareSetting];
   let count = 0;
   for (const section of config.metricSections) {
     for (const metric of section.metrics) {
