@@ -270,7 +270,7 @@ describe("Test Case 3: Multi-Driver Onset Timing", () => {
     expect(month25Ret).toBeLessThan(fullMonthlyRet * 1.15);
   });
 
-  it("total value = sum of all three driver categories", () => {
+  it("total value = sum of all driver categories", () => {
     for (const row of cashFlows) {
       expect(Math.abs(row.totalValue - (row.capacityValue + row.workforceValue + row.revenueValue + row.qualityValue + row.displacementValue))).toBeLessThanOrEqual(2);
     }
@@ -872,5 +872,30 @@ describe("Variable contract term (1–6 years)", () => {
     const s48 = calculateProformaSummary(settings, config48, cf48);
 
     expect(s48.termInvestment).toBeGreaterThan(s24.termInvestment);
+  });
+});
+
+describe("Displacement is cost-reduction (Way B), not value", () => {
+  const config = makeConfig();
+  const base = [makeSetting()];
+  const withOffset = [makeSetting({
+    costOffsets: [{ id: "o", label: "Scribes", annualSpend: 12000, displacementPct: 100, transitionMonths: 0 }],
+  })];
+  const baseS = calculateProformaSummary(base, config, buildMonthlyCashFlows(base, config));
+  const offS = calculateProformaSummary(withOffset, config, buildMonthlyCashFlows(withOffset, config));
+
+  it("a cost offset does NOT inflate value — value stays clinical", () => {
+    expect(offS.termValue).toBeCloseTo(baseS.termValue, -1);
+  });
+
+  it("a cost offset reduces what you pay — investment drops", () => {
+    expect(offS.termInvestment).toBeLessThan(baseS.termInvestment);
+  });
+
+  it("net gain equals the cost reduction (net dollars preserved, just reframed)", () => {
+    const costDrop = baseS.termInvestment - offS.termInvestment;
+    const netGain = offS.termNet - baseS.termNet;
+    expect(costDrop).toBeGreaterThan(0);
+    expect(netGain).toBeCloseTo(costDrop, -1);
   });
 });

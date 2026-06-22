@@ -844,17 +844,27 @@ export function calculateProformaSummary(
     }
   }
 
-  const termValue = cashFlows.reduce((s, r) => s + r.totalValue, 0);
+  // Way B — displacement is cost takeout, not value. The cash-flow rows bucket it under
+  // value (Way A) for the detailed waterfall; here, for the headline economics, we present
+  // value as clinical-only and cost as net-of-displacement. Net dollars are unchanged
+  // (clinical − (cost − displaced) == (clinical + displaced) − cost), but the value figure
+  // stays honest and the ratios line up with Compare Pricing's cost-reduction framing.
+  const termDisplacement = cashFlows.reduce((s, r) => s + r.displacementValue, 0);
+  const grossTermValue = cashFlows.reduce((s, r) => s + r.totalValue, 0);
   const totalImplFees = settings.reduce((s, v) => s + v.implementationFee, 0);
-  const termInvestment = cashFlows.reduce((s, r) => s + r.investment, 0) + totalImplFees;
+  const grossTermInvestment = cashFlows.reduce((s, r) => s + r.investment, 0) + totalImplFees;
+
+  const termValue = grossTermValue - termDisplacement;
+  const termInvestment = Math.max(0, grossTermInvestment - termDisplacement);
   const termNet = termValue - termInvestment;
 
   const simpleROI = termInvestment > 0 ? termNet / termInvestment : 0;
   const valueToCost = termInvestment > 0 ? termValue / termInvestment : 0;
 
   const lastYearRows = cashFlows.slice(-12);
-  const runRateValue = lastYearRows.reduce((s, r) => s + r.totalValue, 0);
-  const runRateInvestment = lastYearRows.reduce((s, r) => s + r.investment, 0);
+  const lastYearDisplacement = lastYearRows.reduce((s, r) => s + r.displacementValue, 0);
+  const runRateValue = lastYearRows.reduce((s, r) => s + r.totalValue, 0) - lastYearDisplacement;
+  const runRateInvestment = Math.max(0, lastYearRows.reduce((s, r) => s + r.investment, 0) - lastYearDisplacement);
   const atScaleReturn = runRateInvestment > 0 ? totalSystemValue / runRateInvestment : 0;
 
   return {

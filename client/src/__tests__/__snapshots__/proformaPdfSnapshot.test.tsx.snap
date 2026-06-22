@@ -360,7 +360,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                     "children": [
                       {
                         "kind": "text",
-                        "value": "A 3.2x Return, Paying Back at Month 9",
+                        "value": "A 3.5x Return, Paying Back at Month 9",
                       },
                     ],
                     "kind": "primitive",
@@ -447,7 +447,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                             "children": [
                               {
                                 "kind": "text",
-                                "value": "3.2x",
+                                "value": "3.5x",
                               },
                             ],
                             "kind": "primitive",
@@ -565,7 +565,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                             "children": [
                               {
                                 "kind": "text",
-                                "value": "$12.4M",
+                                "value": "$12.1M",
                               },
                             ],
                             "kind": "primitive",
@@ -647,7 +647,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                         "children": [
                           {
                             "kind": "text",
-                            "value": "3 structurally independent value sources: Outpatient ($4.3M/yr, led by documentation time); Emergency Department ($4.3M/yr, led by documentation time); Inpatient ($4.3M/yr, led by documentation time). Each draws from distinct clinical workflows and operational levers — if one setting ramps slower than projected, the others hold. At maturity, $12.4M/yr runs across 690 providers against $8.0M invested, with payback at month 9.",
+                            "value": "3 structurally independent value sources: Outpatient ($4.3M/yr, led by documentation time); Emergency Department ($4.3M/yr, led by documentation time); Inpatient ($4.3M/yr, led by documentation time). Each draws from distinct clinical workflows and operational levers — if one setting ramps slower than projected, the others hold. At maturity, $12.1M/yr runs across 690 providers against $7.0M invested, with payback at month 9.",
                           },
                         ],
                         "kind": "primitive",
@@ -6382,7 +6382,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                             "children": [
                               {
                                 "kind": "text",
-                                "value": "$25.3M",
+                                "value": "$24.3M",
                               },
                             ],
                             "kind": "primitive",
@@ -7175,7 +7175,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                               },
                               {
                                 "kind": "text",
-                                "value": "$8.0M",
+                                "value": "$7.0M",
                               },
                               {
                                 "kind": "text",
@@ -7670,7 +7670,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                             "children": [
                               {
                                 "kind": "text",
-                                "value": "2.2",
+                                "value": "2.4",
                               },
                               {
                                 "kind": "text",
@@ -7696,7 +7696,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                             "children": [
                               {
                                 "kind": "text",
-                                "value": "3.2",
+                                "value": "3.5",
                               },
                               {
                                 "kind": "text",
@@ -7724,7 +7724,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                             "children": [
                               {
                                 "kind": "text",
-                                "value": "4.1",
+                                "value": "4.5",
                               },
                               {
                                 "kind": "text",
@@ -7788,7 +7788,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                             "children": [
                               {
                                 "kind": "text",
-                                "value": "121",
+                                "value": "142",
                               },
                               {
                                 "kind": "text",
@@ -7814,7 +7814,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                             "children": [
                               {
                                 "kind": "text",
-                                "value": "215",
+                                "value": "246",
                               },
                               {
                                 "kind": "text",
@@ -7842,7 +7842,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                             "children": [
                               {
                                 "kind": "text",
-                                "value": "310",
+                                "value": "350",
                               },
                               {
                                 "kind": "text",
@@ -8016,7 +8016,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                             "children": [
                               {
                                 "kind": "text",
-                                "value": "$9.7M",
+                                "value": "$10.0M",
                               },
                             ],
                             "kind": "primitive",
@@ -8064,7 +8064,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                             "children": [
                               {
                                 "kind": "text",
-                                "value": "$24.9M",
+                                "value": "$24.6M",
                               },
                             ],
                             "kind": "primitive",
@@ -8158,7 +8158,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                         "children": [
                           {
                             "kind": "text",
-                            "value": "At 70% realization — 30% lower across every domain — this model returns $9.7M net (payback at month 12). The floor is positive and well-defined. The base case at $17.3M reflects conservative utilization targets and phased onset timing. Everything above that is execution: faster adoption, earlier go-live, capacity that converts to scheduled volume. The range is tight. All of it works.",
+                            "value": "At 70% realization — 30% lower across every domain — this model returns $10.0M net (payback at month 12). The floor is positive and well-defined. The base case at $17.3M reflects conservative utilization targets and phased onset timing. Everything above that is execution: faster adoption, earlier go-live, capacity that converts to scheduled volume. The range is tight. All of it works.",
                           },
                         ],
                         "kind": "primitive",
@@ -12427,7 +12427,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                             "children": [
                               {
                                 "kind": "text",
-                                "value": "$17.7M – $32.9M (3-Year value)",
+                                "value": "$17.0M – $31.6M (3-Year value)",
                               },
                             ],
                             "kind": "primitive",
