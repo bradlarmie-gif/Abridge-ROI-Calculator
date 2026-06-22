@@ -1,5 +1,5 @@
 import { X } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { NumberField } from "@/components/NumberField";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { formatCurrency, formatNumber, parseFormattedNumber } from "@/lib/roi-calculator";
+import { formatCurrency, formatNumber } from "@/lib/roi-calculator";
 import { useEffect } from "react";
 
 export interface PatientAccessInputs {
@@ -131,12 +131,10 @@ export function PatientAccessDrawer({
               <Label htmlFor="clinicians-scope" className="text-sm font-medium">
                 Clinicians included in this analysis
               </Label>
-              <Input
+              <NumberField
                 id="clinicians-scope"
-                type="text"
-                inputMode="numeric"
-                value={formatNumber(inputs.cliniciansInScope)}
-                onChange={(e) => onChange("cliniciansInScope", parseFormattedNumber(e.target.value))}
+                value={inputs.cliniciansInScope}
+                onValueChange={(v) => onChange("cliniciansInScope", v)}
                 className="font-mono"
                 data-testid="input-clinicians-scope"
               />
@@ -146,12 +144,10 @@ export function PatientAccessDrawer({
               <Label htmlFor="encounters-per-clinician" className="text-sm font-medium">
                 Annual encounters per clinician
               </Label>
-              <Input
+              <NumberField
                 id="encounters-per-clinician"
-                type="text"
-                inputMode="numeric"
-                value={formatNumber(inputs.encountersPerClinician)}
-                onChange={(e) => onChange("encountersPerClinician", parseFormattedNumber(e.target.value))}
+                value={inputs.encountersPerClinician}
+                onValueChange={(v) => onChange("encountersPerClinician", v)}
                 className="font-mono"
                 data-testid="input-encounters-per-clinician"
               />
@@ -201,12 +197,10 @@ export function PatientAccessDrawer({
               <Label htmlFor="net-revenue" className="text-sm font-medium">
                 Net revenue per encounter ($)
               </Label>
-              <Input
+              <NumberField
                 id="net-revenue"
-                type="text"
-                inputMode="numeric"
-                value={formatNumber(inputs.netRevenuePerEncounter)}
-                onChange={(e) => onChange("netRevenuePerEncounter", parseFormattedNumber(e.target.value))}
+                value={inputs.netRevenuePerEncounter}
+                onValueChange={(v) => onChange("netRevenuePerEncounter", v)}
                 className="font-mono"
                 data-testid="input-net-revenue"
               />

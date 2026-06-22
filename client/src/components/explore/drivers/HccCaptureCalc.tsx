@@ -3,6 +3,7 @@ import { ChevronDown, Info, Plus, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { ExploreCalcComponentProps } from "@/lib/exploreDrivers";
 import type { HccPlan } from "@/pages/explore/ExploreFlow";
+import { NumberField } from "@/components/NumberField";
 
 const UPLIFT_OPTIONS: { key: 'conservative' | 'typical' | 'optimistic'; label: string; pp: number }[] = [
   { key: 'conservative', label: 'Conservative', pp: 3 },
@@ -171,10 +172,9 @@ export default function HccCaptureCalc({ state, updateDocQualityInputs }: Props)
                   <div>
                     <p className="text-xs text-[#888888] mb-1">HCC gap rate</p>
                     <div className="flex items-center gap-0.5">
-                      <input
-                        type="number"
+                      <NumberField
                         value={plan.gapRate}
-                        onChange={(e) => updatePlan(plan.id, { gapRate: parseFloat(e.target.value) || 0 })}
+                        onValueChange={(v) => updatePlan(plan.id, { gapRate: v })}
                         className="w-14 h-8 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none transition-colors"
                       />
                       <span className="text-xs text-[#888888]">%</span>
@@ -184,10 +184,9 @@ export default function HccCaptureCalc({ state, updateDocQualityInputs }: Props)
                   <div>
                     <p className="text-xs text-[#888888] mb-1">Current recapture rate</p>
                     <div className="flex items-center gap-0.5">
-                      <input
-                        type="number"
+                      <NumberField
                         value={plan.currentRecaptureRate}
-                        onChange={(e) => updatePlan(plan.id, { currentRecaptureRate: parseFloat(e.target.value) || 0 })}
+                        onValueChange={(v) => updatePlan(plan.id, { currentRecaptureRate: v })}
                         className="w-14 h-8 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none transition-colors"
                       />
                       <span className="text-xs text-[#888888]">%</span>
@@ -229,10 +228,9 @@ export default function HccCaptureCalc({ state, updateDocQualityInputs }: Props)
                   <div className="flex items-center gap-2 mb-2">
                     <span className="text-xs text-[#888888]">Custom uplift</span>
                     <div className="flex items-center gap-1">
-                      <input
-                        type="number"
+                      <NumberField
                         value={plan.upliftCustomPp ?? 5}
-                        onChange={(e) => updatePlan(plan.id, { upliftCustomPp: parseFloat(e.target.value) || 0 })}
+                        onValueChange={(v) => updatePlan(plan.id, { upliftCustomPp: v })}
                         className="w-14 h-7 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none"
                         data-testid="input-hcc-custom-uplift"
                       />
@@ -283,11 +281,9 @@ export default function HccCaptureCalc({ state, updateDocQualityInputs }: Props)
                         <div>
                           <p className="text-xs text-[#888888] mb-1">Discovery rate</p>
                           <div className="flex items-center gap-0.5">
-                            <input
-                              type="number"
-                              step="0.1"
+                            <NumberField
                               value={plan.netNewDiscoveryRate}
-                              onChange={(e) => updatePlan(plan.id, { netNewDiscoveryRate: parseFloat(e.target.value) || 0 })}
+                              onValueChange={(v) => updatePlan(plan.id, { netNewDiscoveryRate: v })}
                               className="w-14 h-8 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none transition-colors"
                             />
                             <span className="text-xs text-[#888888]">%</span>
@@ -296,11 +292,9 @@ export default function HccCaptureCalc({ state, updateDocQualityInputs }: Props)
                         </div>
                         <div>
                           <p className="text-xs text-[#888888] mb-1">Avg new conditions</p>
-                          <input
-                            type="number"
-                            step="0.1"
+                          <NumberField
                             value={plan.netNewAvgConditions}
-                            onChange={(e) => updatePlan(plan.id, { netNewAvgConditions: parseFloat(e.target.value) || 0 })}
+                            onValueChange={(v) => updatePlan(plan.id, { netNewAvgConditions: v })}
                             className="w-full h-8 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none transition-colors"
                           />
                           <p className="text-[10px] text-[#AAAAAA] mt-0.5">per patient discovered</p>
@@ -388,11 +382,9 @@ export default function HccCaptureCalc({ state, updateDocQualityInputs }: Props)
                 <div className="flex-1 min-w-0">
                   <p className="text-sm text-black">Avg missed HCCs per patient</p>
                 </div>
-                <input
-                  type="number"
-                  step="0.1"
+                <NumberField
                   value={docQualityInputs.avgHccs}
-                  onChange={(e) => updateDocQualityInputs({ avgHccs: parseFloat(e.target.value) || 0 })}
+                  onValueChange={(v) => updateDocQualityInputs({ avgHccs: v })}
                   className="w-16 h-8 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm flex-shrink-0"
                   data-testid="input-avg-hccs"
                 />
@@ -406,10 +398,9 @@ export default function HccCaptureCalc({ state, updateDocQualityInputs }: Props)
                   <p className="text-xs text-[#888888] mt-0.5">Conservative share of modeled value to claim.</p>
                 </div>
                 <div className="flex items-center gap-1 flex-shrink-0">
-                  <input
-                    type="number"
+                  <NumberField
                     value={docQualityInputs.hccRealization}
-                    onChange={(e) => updateDocQualityInputs({ hccRealization: parseFloat(e.target.value) || 0 })}
+                    onValueChange={(v) => updateDocQualityInputs({ hccRealization: v })}
                     className="w-14 h-8 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm"
                     data-testid="input-hcc-realization"
                   />

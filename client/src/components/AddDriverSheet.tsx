@@ -6,7 +6,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { NumberField } from "@/components/NumberField";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -586,15 +586,11 @@ export function AddDriverSheet({
                             <Label className="text-sm text-[#374151] mb-1.5 block">
                               {config.label}
                             </Label>
-                            <Input
-                              type="number"
+                            <NumberField
                               value={currentValue}
-                              onChange={(e) => 
-                                handleInputChange(driver.id, config.key, parseFloat(e.target.value) || 0)
+                              onValueChange={(v) =>
+                                handleInputChange(driver.id, config.key, v)
                               }
-                              min={config.min}
-                              max={config.max}
-                              step={config.step || 1}
                               className="h-10"
                               data-testid={`input-${driver.id}-${config.key}`}
                             />

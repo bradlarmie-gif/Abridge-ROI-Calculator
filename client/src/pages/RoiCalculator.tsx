@@ -46,6 +46,7 @@ import {
 } from "@/lib/SETTING_CONFIG";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
+import { NumberField } from "@/components/NumberField";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { ExportModal, type ExportType } from "@/components/ExportModal";
@@ -5820,15 +5821,9 @@ export default function RoiCalculator({
                                             {field.prefix && (
                                               <span className="text-gray-400 text-sm">{field.prefix}</span>
                                             )}
-                                            <input
-                                              type="number"
+                                            <NumberField
                                               value={modalAssumptions[field.id] ?? field.default}
-                                              onChange={(e) => {
-                                                const val = parseFloat(e.target.value);
-                                                if (!isNaN(val)) {
-                                                  setModalAssumptions(prev => ({ ...prev, [field.id]: val }));
-                                                }
-                                              }}
+                                              onValueChange={(v) => setModalAssumptions(prev => ({ ...prev, [field.id]: v }))}
                                               className="flex-1 px-4 py-2 border border-gray-200 rounded-lg text-right font-medium focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00] outline-none"
                                               data-testid={`input-${field.id}`}
                                             />

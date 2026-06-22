@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Info } from "lucide-react";
 import type { ExploreCalcComponentProps } from "@/lib/exploreDrivers";
 import { wrvuScenariosFor } from "@/lib/exploreDriverCalcs";
+import { NumberField } from "@/components/NumberField";
 
 const SCENARIO_LABELS: Record<string, string> = {
   conservative: 'Conservative',
@@ -123,11 +124,9 @@ export default function WrvuCalc({ state, updateDocQualityInputs }: Props) {
           <div className="flex justify-between items-center">
             <span className="text-[#666666]">Current avg wRVU/visit</span>
             <div className="flex items-center gap-1">
-              <input
-                type="number"
-                step="0.1"
+              <NumberField
                 value={docQualityInputs.currentWrvu}
-                onChange={(e) => updateDocQualityInputs({ currentWrvu: parseFloat(e.target.value) || 0 })}
+                onValueChange={(v) => updateDocQualityInputs({ currentWrvu: v })}
                 className="w-16 h-7 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm"
                 data-testid="input-current-wrvu"
               />
@@ -178,10 +177,9 @@ export default function WrvuCalc({ state, updateDocQualityInputs }: Props) {
               </button>
               <div className="flex items-center gap-1">
                 <span className="text-[#888888]">$</span>
-                <input
-                  type="number"
+                <NumberField
                   value={docQualityInputs.conversionFactor}
-                  onChange={(e) => updateDocQualityInputs({ conversionFactor: parseFloat(e.target.value) || 0 })}
+                  onValueChange={(v) => updateDocQualityInputs({ conversionFactor: v })}
                   className="w-14 h-7 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm"
                   data-testid="input-wrvu-conversion"
                 />
@@ -194,10 +192,9 @@ export default function WrvuCalc({ state, updateDocQualityInputs }: Props) {
           <div className="flex justify-between items-center">
             <span className="text-[#666666]">× Realization rate <Info className="w-3.5 h-3.5 inline-block text-[#999999] -mt-0.5 cursor-help" /></span>
             <div className="flex items-center gap-1">
-              <input
-                type="number"
+              <NumberField
                 value={docQualityInputs.wrvuRealization}
-                onChange={(e) => updateDocQualityInputs({ wrvuRealization: parseFloat(e.target.value) || 0 })}
+                onValueChange={(v) => updateDocQualityInputs({ wrvuRealization: v })}
                 className="w-14 h-7 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm"
                 data-testid="input-wrvu-realization"
               />

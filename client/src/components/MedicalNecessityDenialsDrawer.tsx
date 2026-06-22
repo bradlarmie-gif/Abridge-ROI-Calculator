@@ -1,10 +1,10 @@
 import { X } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { NumberField } from "@/components/NumberField";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { formatCurrency, formatNumber, parseFormattedNumber } from "@/lib/roi-calculator";
+import { formatCurrency } from "@/lib/roi-calculator";
 import { useEffect } from "react";
 
 export interface MedicalNecessityDenialsInputs {
@@ -108,12 +108,10 @@ export function MedicalNecessityDenialsDrawer({
                 <Label htmlFor="net-collectible-revenue" className="text-sm font-medium">
                   Net collectible outpatient revenue ($)
                 </Label>
-                <Input
+                <NumberField
                   id="net-collectible-revenue"
-                  type="text"
-                  inputMode="numeric"
-                  value={formatNumber(inputs.netCollectibleRevenue)}
-                  onChange={(e) => onChange("netCollectibleRevenue", parseFormattedNumber(e.target.value))}
+                  value={inputs.netCollectibleRevenue}
+                  onValueChange={(v) => onChange("netCollectibleRevenue", v)}
                   className="font-mono"
                   data-testid="input-net-collectible-revenue"
                 />

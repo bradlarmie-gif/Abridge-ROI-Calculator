@@ -1,4 +1,5 @@
 import type { ExploreCalcComponentProps } from "@/lib/exploreDrivers";
+import { NumberField } from "@/components/NumberField";
 
 const SCENARIO_LABELS: Record<string, string> = {
   conservative: 'Conservative',
@@ -43,11 +44,9 @@ export default function CdiQueryReductionCalc({ state, updateDocQualityInputs }:
             <div className="flex-1">
               <label className="text-[13px] text-[#666666] mb-1.5 block">Query Rate</label>
               <div className="relative">
-                <input
-                  type="number"
-                  step="5"
+                <NumberField
                   value={docQualityInputs.ipCdiQueryRate}
-                  onChange={(e) => updateDocQualityInputs({ ipCdiQueryRate: parseFloat(e.target.value) || 0 })}
+                  onValueChange={(v) => updateDocQualityInputs({ ipCdiQueryRate: v })}
                   className="w-full h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 pr-8 text-black font-semibold text-base"
                   data-testid="input-cdi-query-rate"
                 />
@@ -169,13 +168,11 @@ export default function CdiQueryReductionCalc({ state, updateDocQualityInputs }:
           <div className="flex-1">
             <label className="text-[13px] text-[#666666] mb-1.5 block">Realization Rate</label>
             <div className="relative">
-              <input
-                type="number"
-                step="5"
+              <NumberField
                 min={50}
                 max={100}
                 value={docQualityInputs.ipCdiRealization}
-                onChange={(e) => updateDocQualityInputs({ ipCdiRealization: parseFloat(e.target.value) || 0 })}
+                onValueChange={(v) => updateDocQualityInputs({ ipCdiRealization: v })}
                 className="w-full h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 pr-8 text-black font-semibold text-base"
                 data-testid="input-cdi-realization"
               />

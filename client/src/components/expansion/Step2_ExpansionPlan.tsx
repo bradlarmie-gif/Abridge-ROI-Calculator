@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { NumberField } from "@/components/NumberField";
 import { Slider } from "@/components/ui/slider";
 import { ArrowLeft, ArrowRight, Users, Clock, DollarSign, Check, AlertTriangle, Lightbulb } from "lucide-react";
 import type { BaselineData, ExpansionInputs, PhasedPlan } from "./expansion-types";
@@ -89,12 +90,12 @@ export function Step2_ExpansionPlan({
             </Label>
 
             <div className="flex items-center gap-4">
-              <Input
-                type="number"
+              <NumberField
                 value={targetProviders}
-                onChange={(e) => setTargetProviders(parseInt(e.target.value) || baseline.providers)}
+                onValueChange={(v) => setTargetProviders(v)}
                 min={baseline.providers}
                 max={500}
+                decimal={false}
                 className="w-32"
                 data-testid="input-target-providers"
               />
@@ -221,15 +222,15 @@ export function Step2_ExpansionPlan({
                         <span className="font-medium">Wave 1</span>
                         <span className="text-muted-foreground">Months 1-3</span>
                       </div>
-                      <Input
-                        type="number"
+                      <NumberField
                         value={phasedPlan.wave1.providers}
-                        onChange={(e) =>
+                        onValueChange={(v) =>
                           setPhasedPlan({
                             ...phasedPlan,
-                            wave1: { ...phasedPlan.wave1, providers: parseInt(e.target.value) || 0 },
+                            wave1: { ...phasedPlan.wave1, providers: v },
                           })
                         }
+                        decimal={false}
                         className="text-center"
                         data-testid="input-wave1-providers"
                       />
@@ -241,15 +242,15 @@ export function Step2_ExpansionPlan({
                         <span className="font-medium">Wave 2</span>
                         <span className="text-muted-foreground">Months 4-6</span>
                       </div>
-                      <Input
-                        type="number"
+                      <NumberField
                         value={phasedPlan.wave2.providers}
-                        onChange={(e) =>
+                        onValueChange={(v) =>
                           setPhasedPlan({
                             ...phasedPlan,
-                            wave2: { ...phasedPlan.wave2, providers: parseInt(e.target.value) || 0 },
+                            wave2: { ...phasedPlan.wave2, providers: v },
                           })
                         }
+                        decimal={false}
                         className="text-center"
                         data-testid="input-wave2-providers"
                       />
@@ -261,15 +262,15 @@ export function Step2_ExpansionPlan({
                         <span className="font-medium">Wave 3</span>
                         <span className="text-muted-foreground">Months 7-12</span>
                       </div>
-                      <Input
-                        type="number"
+                      <NumberField
                         value={phasedPlan.wave3.providers}
-                        onChange={(e) =>
+                        onValueChange={(v) =>
                           setPhasedPlan({
                             ...phasedPlan,
-                            wave3: { ...phasedPlan.wave3, providers: parseInt(e.target.value) || 0 },
+                            wave3: { ...phasedPlan.wave3, providers: v },
                           })
                         }
+                        decimal={false}
                         className="text-center"
                         data-testid="input-wave3-providers"
                       />

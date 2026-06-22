@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { EditableNumberInput } from "@/components/ui/editable-number-input";
 import { FormattedNumberInput } from "@/components/ui/formatted-number-input";
+import { NumberField } from "@/components/NumberField";
 import { Slider } from "@/components/ui/slider";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { ExploreProgressBar } from "@/components/ExploreProgressBar";
@@ -1743,10 +1744,10 @@ export default function ModelBuilder({
                 {Math.round(usableHours).toLocaleString()} hrs
               </div>
               <span className="text-neutral-400">÷</span>
-              <Input
-                type="number"
+              <NumberField
                 value={timePerVisit}
-                onChange={(e) => setDriverInputs(prev => ({ ...prev, patientAccess: { ...prev.patientAccess, timePerVisit: Number(e.target.value) || 1 } }))}
+                onValueChange={(v) => setDriverInputs(prev => ({ ...prev, patientAccess: { ...prev.patientAccess, timePerVisit: v } }))}
+                min={1}
                 className="w-16 text-center font-mono text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
                 data-testid="pa-time-per-visit-input"
               />

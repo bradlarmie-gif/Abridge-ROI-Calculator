@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { useKeyboardNavigation } from "@/hooks/useKeyboardNavigation";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { ExploreProgressBar } from "@/components/ExploreProgressBar";
+import { NumberField } from "@/components/NumberField";
 import { type SelectedLever } from "@/pages/ObjectiveSelectionScreen";
 import {
   type CareSettingType,
@@ -294,17 +295,12 @@ export default function BaselineSetup({
                     </Tooltip>
                   </label>
                   <div className="relative">
-                    <input
-                      type="number"
+                    <NumberField
+                      decimal={false}
                       min={50}
                       max={100}
                       value={occupancyRate}
-                      onChange={(e) => {
-                        const val = parseInt(e.target.value, 10);
-                        if (!isNaN(val) && val >= 0 && val <= 100) {
-                          setOccupancyRate(val);
-                        }
-                      }}
+                      onValueChange={(v) => setOccupancyRate(v)}
                       placeholder="e.g., 85"
                       className="w-full px-5 py-4 text-lg font-semibold border-2 border-[#E5E7EB] rounded-xl focus:outline-none focus:border-[#EA2C00] focus:ring-4 focus:ring-[rgba(234,44,0,0.1)] transition-all"
                       data-testid="input-occupancy-rate"

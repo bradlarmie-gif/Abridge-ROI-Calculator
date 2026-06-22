@@ -1,10 +1,10 @@
 import { X } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { NumberField } from "@/components/NumberField";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { formatCurrency, formatNumber, parseFormattedNumber } from "@/lib/roi-calculator";
+import { formatCurrency, formatNumber } from "@/lib/roi-calculator";
 import { useEffect } from "react";
 
 export interface ClinicianRetentionInputs {
@@ -108,12 +108,10 @@ export function ClinicianRetentionDrawer({
                 <Label htmlFor="clinicians-scope-retention" className="text-sm font-medium">
                   Clinicians included in this analysis
                 </Label>
-                <Input
+                <NumberField
                   id="clinicians-scope-retention"
-                  type="text"
-                  inputMode="numeric"
-                  value={formatNumber(inputs.cliniciansInScope)}
-                  onChange={(e) => onChange("cliniciansInScope", parseFormattedNumber(e.target.value))}
+                  value={inputs.cliniciansInScope}
+                  onValueChange={(v) => onChange("cliniciansInScope", v)}
                   className="font-mono"
                   data-testid="input-clinicians-retention"
                 />
@@ -234,12 +232,10 @@ export function ClinicianRetentionDrawer({
                 <Label htmlFor="cost-per-departure" className="text-sm font-medium">
                   Cost per departure ($)
                 </Label>
-                <Input
+                <NumberField
                   id="cost-per-departure"
-                  type="text"
-                  inputMode="numeric"
-                  value={formatNumber(inputs.costPerDeparture)}
-                  onChange={(e) => onChange("costPerDeparture", parseFormattedNumber(e.target.value))}
+                  value={inputs.costPerDeparture}
+                  onValueChange={(v) => onChange("costPerDeparture", v)}
                   className="font-mono"
                   data-testid="input-cost-per-departure"
                 />

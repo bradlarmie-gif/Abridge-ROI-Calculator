@@ -1,10 +1,10 @@
 import { X } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { NumberField } from "@/components/NumberField";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { formatCurrency, formatNumber, parseFormattedNumber } from "@/lib/roi-calculator";
+import { formatCurrency, formatNumber } from "@/lib/roi-calculator";
 import { useEffect } from "react";
 
 export interface LevelOfServiceInputs {
@@ -104,12 +104,10 @@ export function LevelOfServiceDrawer({
                 <Label htmlFor="annual-encounters-los" className="text-sm font-medium">
                   Annual encounters in this analysis
                 </Label>
-                <Input
+                <NumberField
                   id="annual-encounters-los"
-                  type="text"
-                  inputMode="numeric"
-                  value={formatNumber(inputs.annualEncounters)}
-                  onChange={(e) => onChange("annualEncounters", parseFormattedNumber(e.target.value))}
+                  value={inputs.annualEncounters}
+                  onValueChange={(v) => onChange("annualEncounters", v)}
                   className="font-mono"
                   data-testid="input-encounters-los"
                 />
@@ -176,12 +174,10 @@ export function LevelOfServiceDrawer({
                 <Label htmlFor="incremental-wrvu" className="text-sm font-medium">
                   Incremental wRVU per corrected visit
                 </Label>
-                <Input
+                <NumberField
                   id="incremental-wrvu"
-                  type="text"
-                  inputMode="numeric"
-                  value={formatNumber(inputs.incrementalWrvuPerVisit, 2)}
-                  onChange={(e) => onChange("incrementalWrvuPerVisit", parseFormattedNumber(e.target.value))}
+                  value={inputs.incrementalWrvuPerVisit}
+                  onValueChange={(v) => onChange("incrementalWrvuPerVisit", v)}
                   className="font-mono"
                   data-testid="input-incremental-wrvu"
                 />
@@ -202,12 +198,10 @@ export function LevelOfServiceDrawer({
                 <Label htmlFor="wrvu-conversion" className="text-sm font-medium">
                   wRVU conversion factor ($)
                 </Label>
-                <Input
+                <NumberField
                   id="wrvu-conversion"
-                  type="text"
-                  inputMode="numeric"
-                  value={formatNumber(inputs.wrvuConversionFactor, 2)}
-                  onChange={(e) => onChange("wrvuConversionFactor", parseFormattedNumber(e.target.value))}
+                  value={inputs.wrvuConversionFactor}
+                  onValueChange={(v) => onChange("wrvuConversionFactor", v)}
                   className="font-mono"
                   data-testid="input-wrvu-conversion"
                 />

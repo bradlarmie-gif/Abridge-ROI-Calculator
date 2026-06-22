@@ -1,10 +1,10 @@
 import { X } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { NumberField } from "@/components/NumberField";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { formatCurrency, formatNumber, parseFormattedNumber } from "@/lib/roi-calculator";
+import { formatCurrency, formatNumber } from "@/lib/roi-calculator";
 import { useEffect } from "react";
 
 export interface OvertimeLocumInputs {
@@ -175,12 +175,10 @@ export function OvertimeLocumDrawer({
                 <Label htmlFor="overtime-rate" className="text-sm font-medium">
                   Overtime hourly rate ($)
                 </Label>
-                <Input
+                <NumberField
                   id="overtime-rate"
-                  type="text"
-                  inputMode="numeric"
-                  value={formatNumber(inputs.overtimeRate)}
-                  onChange={(e) => onChange("overtimeRate", parseFormattedNumber(e.target.value))}
+                  value={inputs.overtimeRate}
+                  onValueChange={(v) => onChange("overtimeRate", v)}
                   className="font-mono"
                   data-testid="input-overtime-rate"
                 />
@@ -193,12 +191,10 @@ export function OvertimeLocumDrawer({
                 <Label htmlFor="locum-rate" className="text-sm font-medium">
                   Locum hourly rate ($)
                 </Label>
-                <Input
+                <NumberField
                   id="locum-rate"
-                  type="text"
-                  inputMode="numeric"
-                  value={formatNumber(inputs.locumRate)}
-                  onChange={(e) => onChange("locumRate", parseFormattedNumber(e.target.value))}
+                  value={inputs.locumRate}
+                  onValueChange={(v) => onChange("locumRate", v)}
                   className="font-mono"
                   data-testid="input-locum-rate"
                 />

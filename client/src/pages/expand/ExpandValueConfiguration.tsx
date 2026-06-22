@@ -3,6 +3,7 @@ import { ArrowLeft, ArrowRight, DollarSign, Clock, Heart, AlertTriangle, Info, C
 import { Button } from "@/components/ui/button";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { Slider } from "@/components/ui/slider";
+import { NumberField } from "@/components/NumberField";
 import { TermTooltip, TERMS } from "@/components/TermTooltip";
 import {
   type DeploymentData,
@@ -424,16 +425,15 @@ export default function ExpandValueConfiguration({
                     Based on satisfaction improvement, estimate departures prevented:
                   </p>
                   <div className="flex items-center gap-3">
-                    <input
-                      type="number"
-                      inputMode="numeric"
-                      min="0"
-                      max="5"
+                    <NumberField
                       value={valueConfig.departuresPrevented}
-                      onChange={(e) => setValueConfig({ 
-                        ...valueConfig, 
-                        departuresPrevented: Math.min(5, Math.max(0, parseInt(e.target.value) || 0))
+                      onValueChange={(v) => setValueConfig({
+                        ...valueConfig,
+                        departuresPrevented: v
                       })}
+                      min={0}
+                      max={5}
+                      decimal={false}
                       className="w-20 px-3 py-2 border border-neutral-200 rounded-lg text-center focus:outline-none focus:ring-2 focus:ring-[#EA2C00] focus:border-transparent"
                       data-testid="input-departures-prevented"
                     />

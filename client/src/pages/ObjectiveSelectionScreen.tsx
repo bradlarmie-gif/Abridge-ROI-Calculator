@@ -1,6 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { useKeyboardNavigation } from "@/hooks/useKeyboardNavigation";
 import { LiveReceipt } from "@/components/LiveReceipt";
+import { NumberField } from "@/components/NumberField";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { Button } from "@/components/ui/button";
 import geometricPattern from "@assets/Screenshot_2026-01-09_at_2.33.22_AM_1767947608832.png";
@@ -3728,10 +3729,9 @@ export default function ObjectiveSelectionScreen({
                                     <div>
                                       <label className="text-xs text-neutral-600 mb-1 block">Minutes saved per event</label>
                                       <div className="flex items-center gap-2">
-                                        <input
-                                          type="number"
+                                        <NumberField
                                           value={nursingMinutesSavedPerEvent}
-                                          onChange={(e) => setNursingMinutesSavedPerEvent(Number(e.target.value))}
+                                          onValueChange={(v) => setNursingMinutesSavedPerEvent(v)}
                                           className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
                                           data-testid="input-nursing-minutes"
                                         />
@@ -3743,10 +3743,9 @@ export default function ObjectiveSelectionScreen({
                                       <label className="text-xs text-neutral-600 mb-1 block">Avg nurse hourly rate</label>
                                       <div className="flex items-center gap-2">
                                         <span className="text-sm text-neutral-500">$</span>
-                                        <input
-                                          type="number"
+                                        <NumberField
                                           value={nursingHourlyRate}
-                                          onChange={(e) => setNursingHourlyRate(Number(e.target.value))}
+                                          onValueChange={(v) => setNursingHourlyRate(v)}
                                           className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
                                           data-testid="input-nursing-rate"
                                         />
@@ -3774,10 +3773,9 @@ export default function ObjectiveSelectionScreen({
                                     <div>
                                       <label className="text-xs text-neutral-600 mb-1 block">% of overtime from documentation</label>
                                       <div className="flex items-center gap-2">
-                                        <input
-                                          type="number"
+                                        <NumberField
                                           value={nursingPctOvertimeFromDocs}
-                                          onChange={(e) => setNursingPctOvertimeFromDocs(Number(e.target.value))}
+                                          onValueChange={(v) => setNursingPctOvertimeFromDocs(v)}
                                           className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
                                           data-testid="input-nursing-ot-pct"
                                         />
@@ -3788,10 +3786,9 @@ export default function ObjectiveSelectionScreen({
                                     <div>
                                       <label className="text-xs text-neutral-600 mb-1 block">Overtime reduction factor</label>
                                       <div className="flex items-center gap-2">
-                                        <input
-                                          type="number"
+                                        <NumberField
                                           value={nursingOvertimeReductionPct}
-                                          onChange={(e) => setNursingOvertimeReductionPct(Number(e.target.value))}
+                                          onValueChange={(v) => setNursingOvertimeReductionPct(v)}
                                           className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
                                           data-testid="input-nursing-ot-reduction"
                                         />
@@ -3819,10 +3816,9 @@ export default function ObjectiveSelectionScreen({
                                   <div>
                                     <label className="text-xs text-neutral-600 mb-1 block">Agency reduction factor</label>
                                     <div className="flex items-center gap-2">
-                                      <input
-                                        type="number"
+                                      <NumberField
                                         value={nursingAgencyReductionPct}
-                                        onChange={(e) => setNursingAgencyReductionPct(Number(e.target.value))}
+                                        onValueChange={(v) => setNursingAgencyReductionPct(v)}
                                         className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
                                         data-testid="input-nursing-agency"
                                       />
@@ -3846,10 +3842,9 @@ export default function ObjectiveSelectionScreen({
                                   <div>
                                     <label className="text-xs text-neutral-600 mb-1 block">Abridge prevention effectiveness</label>
                                     <div className="flex items-center gap-2">
-                                      <input
-                                        type="number"
+                                      <NumberField
                                         value={nursingRetentionPreventionPct}
-                                        onChange={(e) => setNursingRetentionPreventionPct(Number(e.target.value))}
+                                        onValueChange={(v) => setNursingRetentionPreventionPct(v)}
                                         className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
                                         data-testid="input-nursing-retention"
                                       />
@@ -3887,10 +3882,9 @@ export default function ObjectiveSelectionScreen({
                                   <div>
                                     <label className="text-xs text-neutral-600 mb-1 block">Risk reduction value (%)</label>
                                     <div className="flex items-center gap-2">
-                                      <input
-                                        type="number"
+                                      <NumberField
                                         value={nursingTimelinessRiskReduction}
-                                        onChange={(e) => setNursingTimelinessRiskReduction(Number(e.target.value))}
+                                        onValueChange={(v) => setNursingTimelinessRiskReduction(v)}
                                         className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
                                         data-testid="input-nursing-timeliness"
                                       />
@@ -3914,10 +3908,9 @@ export default function ObjectiveSelectionScreen({
                                   <div>
                                     <label className="text-xs text-neutral-600 mb-1 block">Risk reduction value (%)</label>
                                     <div className="flex items-center gap-2">
-                                      <input
-                                        type="number"
+                                      <NumberField
                                         value={nursingCompletenessRiskReduction}
-                                        onChange={(e) => setNursingCompletenessRiskReduction(Number(e.target.value))}
+                                        onValueChange={(v) => setNursingCompletenessRiskReduction(v)}
                                         className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
                                         data-testid="input-nursing-completeness"
                                       />
@@ -3960,10 +3953,9 @@ export default function ObjectiveSelectionScreen({
                                   <div>
                                     <label className="text-xs text-neutral-600 mb-1 block">Prevention factor</label>
                                     <div className="flex items-center gap-2">
-                                      <input
-                                        type="number"
+                                      <NumberField
                                         value={nursingSafetyPreventionPct}
-                                        onChange={(e) => setNursingSafetyPreventionPct(Number(e.target.value))}
+                                        onValueChange={(v) => setNursingSafetyPreventionPct(v)}
                                         className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
                                         data-testid="input-nursing-safety"
                                       />
@@ -3987,10 +3979,9 @@ export default function ObjectiveSelectionScreen({
                                   <div>
                                     <label className="text-xs text-neutral-600 mb-1 block">Capture improvement</label>
                                     <div className="flex items-center gap-2">
-                                      <input
-                                        type="number"
+                                      <NumberField
                                         value={nursingCcmccCaptureImprovement}
-                                        onChange={(e) => setNursingCcmccCaptureImprovement(Number(e.target.value))}
+                                        onValueChange={(v) => setNursingCcmccCaptureImprovement(v)}
                                         className="w-24 px-3 py-2 border border-neutral-200 rounded-lg text-sm font-mono"
                                         data-testid="input-nursing-ccmcc"
                                       />

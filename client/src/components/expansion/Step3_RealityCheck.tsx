@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
+import { NumberField } from "@/components/NumberField";
 import { Progress } from "@/components/ui/progress";
 import { ArrowLeft, ArrowRight, Check, AlertTriangle, Clock, Users, TrendingUp, FileText, Lightbulb, Heart } from "lucide-react";
 import type { BaselineData, ExpansionInputs, DriverValidation, AccessValidation, RetentionValidation, LosValidation, DefaultDriverValidation } from "./expansion-types";
@@ -466,12 +467,10 @@ function AccessValidationCard({ baseline, validation, onUpdate, valuePerProvider
                       className="flex-1"
                       data-testid="slider-visits-per-week"
                     />
-                    <Input
-                      type="number"
+                    <NumberField
                       value={additionalVisitsPerWeek}
-                      onChange={(e) => onUpdate({ additionalVisitsPerWeek: parseFloat(e.target.value) || 0 })}
+                      onValueChange={(v) => onUpdate({ additionalVisitsPerWeek: v })}
                       className="w-20"
-                      step={0.5}
                       data-testid="input-visits-per-week"
                     />
                     <span className="text-sm text-muted-foreground">visits/week</span>
@@ -652,12 +651,10 @@ function RetentionValidationCard({ baseline, validation, onUpdate, valuePerProvi
               <div className="p-4 bg-muted rounded-lg space-y-3">
                 <Label>Expected turnover reduction (%):</Label>
                 <div className="flex items-center gap-4">
-                  <Input
-                    type="number"
+                  <NumberField
                     value={validation.turnoverReduction}
-                    onChange={(e) => onUpdate({ turnoverReduction: parseFloat(e.target.value) || 0 })}
+                    onValueChange={(v) => onUpdate({ turnoverReduction: v })}
                     className="w-24"
-                    step={0.1}
                     data-testid="input-turnover-reduction"
                   />
                   <span className="text-sm text-muted-foreground">Current: 1.6% reduction (8% → 6.4%)</span>
@@ -803,10 +800,9 @@ function LosValidationCard({ baseline, validation, onUpdate, valuePerProvider, n
               <div className="p-4 bg-muted rounded-lg space-y-3">
                 <Label>Expected wRVU uplift for new providers (per year):</Label>
                 <div className="flex items-center gap-4">
-                  <Input
-                    type="number"
+                  <NumberField
                     value={wrvuUplift}
-                    onChange={(e) => onUpdate({ wrvuUplift: parseFloat(e.target.value) || 0 })}
+                    onValueChange={(v) => onUpdate({ wrvuUplift: v })}
                     className="w-24"
                     data-testid="input-wrvu-uplift"
                   />

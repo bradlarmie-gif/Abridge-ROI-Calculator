@@ -1,4 +1,5 @@
 import type { ExploreCalcComponentProps } from "@/lib/exploreDrivers";
+import { NumberField } from "@/components/NumberField";
 
 type Props = ExploreCalcComponentProps;
 
@@ -51,13 +52,11 @@ export default function ObsDefenseCalc({ state, updateDocQualityInputs }: Props)
             <div className="flex-1">
               <label className="text-[13px] text-[#666666] mb-1.5 block">IP-to-Obs Downgrade Rate</label>
               <div className="relative">
-                <input
-                  type="number"
-                  step="0.5"
+                <NumberField
                   min={1}
                   max={15}
                   value={dq.ipObsDefenseDenialRate}
-                  onChange={(e) => updateDocQualityInputs({ ipObsDefenseDenialRate: parseFloat(e.target.value) || 0 })}
+                  onValueChange={(v) => updateDocQualityInputs({ ipObsDefenseDenialRate: v })}
                   className="w-full h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 pr-8 text-black font-semibold text-base"
                   data-testid="input-obs-denial-rate"
                 />

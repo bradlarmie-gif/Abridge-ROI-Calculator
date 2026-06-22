@@ -1,6 +1,7 @@
 import { Info } from "lucide-react";
 import type { ExploreCalcComponentProps } from "@/lib/exploreDrivers";
 import { denialsScenariosFor } from "@/lib/exploreDriverCalcs";
+import { NumberField } from "@/components/NumberField";
 
 const SCENARIO_LABELS: Record<string, string> = {
   conservative: 'Conservative',
@@ -108,10 +109,9 @@ export default function DenialPreventionCalc({ state, updateDocQualityInputs }: 
           <div className="flex justify-between items-center">
             <span className="text-[#666666]">× Medical necessity denial rate</span>
             <div className="flex items-center gap-1">
-              <input
-                type="number"
+              <NumberField
                 value={docQualityInputs.medNecessityDenialRate}
-                onChange={(e) => updateDocQualityInputs({ medNecessityDenialRate: parseFloat(e.target.value) || 0 })}
+                onValueChange={(v) => updateDocQualityInputs({ medNecessityDenialRate: v })}
                 className="w-14 h-7 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm"
                 data-testid="input-med-necessity-denial-rate"
               />
@@ -163,10 +163,9 @@ export default function DenialPreventionCalc({ state, updateDocQualityInputs }: 
               <p className="text-xs text-[#888888]">(collection timing, adjustments)</p>
             </div>
             <div className="flex items-center gap-1">
-              <input
-                type="number"
+              <NumberField
                 value={docQualityInputs.denialsRealization}
-                onChange={(e) => updateDocQualityInputs({ denialsRealization: parseFloat(e.target.value) || 0 })}
+                onValueChange={(v) => updateDocQualityInputs({ denialsRealization: v })}
                 className="w-14 h-7 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm"
                 data-testid="input-denials-realization"
               />

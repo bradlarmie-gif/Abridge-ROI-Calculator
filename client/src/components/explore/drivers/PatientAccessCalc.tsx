@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
+import { NumberField } from "@/components/NumberField";
 import type { ExploreCalcComponentProps } from "@/lib/exploreDrivers";
 
 type Props = ExploreCalcComponentProps;
@@ -121,15 +122,12 @@ export default function PatientAccessCalc({ state, updateTimeDriverInputs, total
       <div className="mb-6">
         <div className="space-y-2.5">
           <label className="text-sm text-[#888888]">Providers with scheduling capacity</label>
-          <input
-            type="number"
+          <NumberField
             min={1}
             max={state.numberOfProviders}
+            decimal={false}
             value={effectiveAccessProviders}
-            onChange={(e) => {
-              const v = Math.max(1, Math.min(state.numberOfProviders, parseInt(e.target.value) || 1));
-              updateTimeDriverInputs({ accessProviders: v });
-            }}
+            onValueChange={(v) => updateTimeDriverInputs({ accessProviders: v })}
             className="w-full h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 text-black font-semibold text-base"
             data-testid="input-access-providers"
           />

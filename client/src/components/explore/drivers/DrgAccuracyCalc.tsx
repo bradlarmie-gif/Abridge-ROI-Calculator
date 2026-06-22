@@ -1,5 +1,6 @@
 import { Info } from "lucide-react";
 import type { ExploreCalcComponentProps } from "@/lib/exploreDrivers";
+import { NumberField } from "@/components/NumberField";
 
 const SCENARIO_LABELS: Record<string, string> = {
   conservative: 'Conservative',
@@ -47,11 +48,9 @@ export default function DrgAccuracyCalc({ state, updateDocQualityInputs }: Props
             <div className="flex-1">
               <label className="text-[13px] text-[#666666] mb-1.5 block">CDI Opportunity Rate</label>
               <div className="relative">
-                <input
-                  type="number"
-                  step="1"
+                <NumberField
                   value={docQualityInputs.ipDrgAtRiskRate}
-                  onChange={(e) => updateDocQualityInputs({ ipDrgAtRiskRate: parseFloat(e.target.value) || 0 })}
+                  onValueChange={(v) => updateDocQualityInputs({ ipDrgAtRiskRate: v })}
                   className="w-full h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 pr-8 text-black font-semibold text-base"
                   data-testid="input-drg-at-risk"
                 />
@@ -161,11 +160,9 @@ export default function DrgAccuracyCalc({ state, updateDocQualityInputs }: Props
             <span className="text-[#888888] text-xl hidden sm:block">×</span>
             <div className="flex-1">
               <label className="text-[13px] text-[#666666] mb-1.5 block">Avg DRG Weight Lift</label>
-              <input
-                type="number"
-                step="0.1"
+              <NumberField
                 value={docQualityInputs.ipDrgWeightIncrease}
-                onChange={(e) => updateDocQualityInputs({ ipDrgWeightIncrease: parseFloat(e.target.value) || 0 })}
+                onValueChange={(v) => updateDocQualityInputs({ ipDrgWeightIncrease: v })}
                 className="w-full h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 text-black font-semibold text-base"
                 data-testid="input-drg-weight"
               />
@@ -214,11 +211,9 @@ export default function DrgAccuracyCalc({ state, updateDocQualityInputs }: Props
             <div className="flex-1">
               <label className="text-[13px] text-[#666666] mb-1.5 block">Realization Rate <Info className="w-3.5 h-3.5 inline-block text-[#999999] -mt-0.5 cursor-help" /></label>
               <div className="relative">
-                <input
-                  type="number"
-                  step="5"
+                <NumberField
                   value={docQualityInputs.ipDrgRealization}
-                  onChange={(e) => updateDocQualityInputs({ ipDrgRealization: parseFloat(e.target.value) || 0 })}
+                  onValueChange={(v) => updateDocQualityInputs({ ipDrgRealization: v })}
                   className="w-full h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 pr-8 text-black font-semibold text-base"
                   data-testid="input-drg-realization"
                 />

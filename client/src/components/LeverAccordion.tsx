@@ -6,6 +6,7 @@ import {
 } from "@/components/ui/accordion";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { NumberField } from "@/components/NumberField";
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
 import { type RoiInputs, type LeverId } from "@/lib/roi-types";
@@ -79,22 +80,20 @@ export function LeverAccordion({ inputs, onInputChange }: LeverAccordionProps) {
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <Label className="text-xs">Avg Visit Duration (min)</Label>
-                  <Input
-                    type="number"
+                  <NumberField
                     value={inputs.patientAccess.avgVisitDurationMinutes}
-                    onChange={(e) => 
-                      onInputChange("patientAccess.avgVisitDurationMinutes", Number(e.target.value))
+                    onValueChange={(v) =>
+                      onInputChange("patientAccess.avgVisitDurationMinutes", v)
                     }
                     data-testid="input-visit-duration"
                   />
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs">Avg Revenue per Visit ($)</Label>
-                  <Input
-                    type="number"
+                  <NumberField
                     value={inputs.patientAccess.avgNetRevenuePerVisit}
-                    onChange={(e) => 
-                      onInputChange("patientAccess.avgNetRevenuePerVisit", Number(e.target.value))
+                    onValueChange={(v) =>
+                      onInputChange("patientAccess.avgNetRevenuePerVisit", v)
                     }
                     data-testid="input-revenue-per-visit"
                   />
@@ -130,11 +129,10 @@ export function LeverAccordion({ inputs, onInputChange }: LeverAccordionProps) {
               </div>
               <div className="space-y-1">
                 <Label className="text-xs">Blended Overtime/Locum Rate ($/hr)</Label>
-                <Input
-                  type="number"
+                <NumberField
                   value={inputs.overtime.blendedOvertimeRate}
-                  onChange={(e) => 
-                    onInputChange("overtime.blendedOvertimeRate", Number(e.target.value))
+                  onValueChange={(v) =>
+                    onInputChange("overtime.blendedOvertimeRate", v)
                   }
                   data-testid="input-overtime-rate"
                 />
@@ -152,22 +150,21 @@ export function LeverAccordion({ inputs, onInputChange }: LeverAccordionProps) {
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <Label className="text-xs">Provider Count</Label>
-                  <Input
-                    type="number"
+                  <NumberField
+                    decimal={false}
                     value={inputs.workforce.providerCount}
-                    onChange={(e) => 
-                      onInputChange("workforce.providerCount", Number(e.target.value))
+                    onValueChange={(v) =>
+                      onInputChange("workforce.providerCount", v)
                     }
                     data-testid="input-workforce-provider-count"
                   />
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs">Baseline Attrition Rate (%)</Label>
-                  <Input
-                    type="number"
+                  <NumberField
                     value={inputs.workforce.baselineAttritionRate}
-                    onChange={(e) => 
-                      onInputChange("workforce.baselineAttritionRate", Number(e.target.value))
+                    onValueChange={(v) =>
+                      onInputChange("workforce.baselineAttritionRate", v)
                     }
                     data-testid="input-attrition-rate"
                   />
@@ -176,22 +173,20 @@ export function LeverAccordion({ inputs, onInputChange }: LeverAccordionProps) {
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <Label className="text-xs">% Attrition from Burnout</Label>
-                  <Input
-                    type="number"
+                  <NumberField
                     value={inputs.workforce.pctAttritionLinkedToBurnout}
-                    onChange={(e) => 
-                      onInputChange("workforce.pctAttritionLinkedToBurnout", Number(e.target.value))
+                    onValueChange={(v) =>
+                      onInputChange("workforce.pctAttritionLinkedToBurnout", v)
                     }
                     data-testid="input-burnout-attrition"
                   />
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs">% Burnout Exits Avoided</Label>
-                  <Input
-                    type="number"
+                  <NumberField
                     value={inputs.workforce.pctBurnoutExitsAvoided}
-                    onChange={(e) => 
-                      onInputChange("workforce.pctBurnoutExitsAvoided", Number(e.target.value))
+                    onValueChange={(v) =>
+                      onInputChange("workforce.pctBurnoutExitsAvoided", v)
                     }
                     data-testid="input-burnout-avoided"
                   />
@@ -223,22 +218,20 @@ export function LeverAccordion({ inputs, onInputChange }: LeverAccordionProps) {
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <Label className="text-xs">wRVU Conversion Factor ($)</Label>
-                  <Input
-                    type="number"
+                  <NumberField
                     value={inputs.wrvu.wrvuConversionFactor}
-                    onChange={(e) => 
-                      onInputChange("wrvu.wrvuConversionFactor", Number(e.target.value))
+                    onValueChange={(v) =>
+                      onInputChange("wrvu.wrvuConversionFactor", v)
                     }
                     data-testid="input-wrvu-factor"
                   />
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs">% wRVU Increase per Encounter</Label>
-                  <Input
-                    type="number"
+                  <NumberField
                     value={inputs.wrvu.pctIncreaseWrvuPerEncounter}
-                    onChange={(e) => 
-                      onInputChange("wrvu.pctIncreaseWrvuPerEncounter", Number(e.target.value))
+                    onValueChange={(v) =>
+                      onInputChange("wrvu.pctIncreaseWrvuPerEncounter", v)
                     }
                     data-testid="input-wrvu-increase"
                   />
@@ -270,11 +263,10 @@ export function LeverAccordion({ inputs, onInputChange }: LeverAccordionProps) {
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs">Baseline Denial Rate (%)</Label>
-                  <Input
-                    type="number"
+                  <NumberField
                     value={inputs.denials.baselineDenialRate}
-                    onChange={(e) => 
-                      onInputChange("denials.baselineDenialRate", Number(e.target.value))
+                    onValueChange={(v) =>
+                      onInputChange("denials.baselineDenialRate", v)
                     }
                     data-testid="input-denial-rate"
                   />
@@ -283,22 +275,20 @@ export function LeverAccordion({ inputs, onInputChange }: LeverAccordionProps) {
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <Label className="text-xs">% Denials from Documentation</Label>
-                  <Input
-                    type="number"
+                  <NumberField
                     value={inputs.denials.pctDenialsFromDocumentation}
-                    onChange={(e) => 
-                      onInputChange("denials.pctDenialsFromDocumentation", Number(e.target.value))
+                    onValueChange={(v) =>
+                      onInputChange("denials.pctDenialsFromDocumentation", v)
                     }
                     data-testid="input-denials-documentation"
                   />
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs">% Doc Denials Recovered</Label>
-                  <Input
-                    type="number"
+                  <NumberField
                     value={inputs.denials.pctDocDenialsRecovered}
-                    onChange={(e) => 
-                      onInputChange("denials.pctDocDenialsRecovered", Number(e.target.value))
+                    onValueChange={(v) =>
+                      onInputChange("denials.pctDocDenialsRecovered", v)
                     }
                     data-testid="input-denials-recovered"
                   />
@@ -330,12 +320,10 @@ export function LeverAccordion({ inputs, onInputChange }: LeverAccordionProps) {
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs">Avg Conditions/Member</Label>
-                  <Input
-                    type="number"
-                    step="0.1"
+                  <NumberField
                     value={inputs.hcc.avgConditionsPerMember}
-                    onChange={(e) => 
-                      onInputChange("hcc.avgConditionsPerMember", Number(e.target.value))
+                    onValueChange={(v) =>
+                      onInputChange("hcc.avgConditionsPerMember", v)
                     }
                     data-testid="input-conditions-per-member"
                   />
@@ -344,22 +332,20 @@ export function LeverAccordion({ inputs, onInputChange }: LeverAccordionProps) {
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <Label className="text-xs">% Conditions Missed</Label>
-                  <Input
-                    type="number"
+                  <NumberField
                     value={inputs.hcc.pctConditionsMissed}
-                    onChange={(e) => 
-                      onInputChange("hcc.pctConditionsMissed", Number(e.target.value))
+                    onValueChange={(v) =>
+                      onInputChange("hcc.pctConditionsMissed", v)
                     }
                     data-testid="input-conditions-missed"
                   />
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs">% Missed Recaptured</Label>
-                  <Input
-                    type="number"
+                  <NumberField
                     value={inputs.hcc.pctMissedConditionsRecaptured}
-                    onChange={(e) => 
-                      onInputChange("hcc.pctMissedConditionsRecaptured", Number(e.target.value))
+                    onValueChange={(v) =>
+                      onInputChange("hcc.pctMissedConditionsRecaptured", v)
                     }
                     data-testid="input-missed-recaptured"
                   />
@@ -368,23 +354,20 @@ export function LeverAccordion({ inputs, onInputChange }: LeverAccordionProps) {
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <Label className="text-xs">% New Conditions Found</Label>
-                  <Input
-                    type="number"
+                  <NumberField
                     value={inputs.hcc.pctNewConditionsIdentified}
-                    onChange={(e) => 
-                      onInputChange("hcc.pctNewConditionsIdentified", Number(e.target.value))
+                    onValueChange={(v) =>
+                      onInputChange("hcc.pctNewConditionsIdentified", v)
                     }
                     data-testid="input-new-conditions"
                   />
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs">RAF Gain per Condition</Label>
-                  <Input
-                    type="number"
-                    step="0.001"
+                  <NumberField
                     value={inputs.hcc.rafGainPerCondition}
-                    onChange={(e) => 
-                      onInputChange("hcc.rafGainPerCondition", Number(e.target.value))
+                    onValueChange={(v) =>
+                      onInputChange("hcc.rafGainPerCondition", v)
                     }
                     data-testid="input-raf-gain"
                   />
@@ -393,11 +376,10 @@ export function LeverAccordion({ inputs, onInputChange }: LeverAccordionProps) {
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <Label className="text-xs">RAF Realization Haircut (%)</Label>
-                  <Input
-                    type="number"
+                  <NumberField
                     value={inputs.hcc.rafRealizationHaircut}
-                    onChange={(e) => 
-                      onInputChange("hcc.rafRealizationHaircut", Number(e.target.value))
+                    onValueChange={(v) =>
+                      onInputChange("hcc.rafRealizationHaircut", v)
                     }
                     data-testid="input-raf-haircut"
                   />

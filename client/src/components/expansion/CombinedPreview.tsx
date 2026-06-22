@@ -6,7 +6,8 @@ import { Slider } from "@/components/ui/slider";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { 
+import { NumberField } from "@/components/NumberField";
+import {
   AlertCircle, 
   HeartPulse, 
   Building2, 
@@ -127,15 +128,15 @@ export function CombinedPreview({ baseline, settingType, onBack, onSave }: Combi
                 </Label>
                 
                 <div className="flex items-center gap-4">
-                  <Input
-                    type="number"
+                  <NumberField
                     value={config.providers}
-                    onChange={(e) => setConfig(prev => ({ 
-                      ...prev, 
-                      providers: Math.max(1, parseInt(e.target.value) || 1) 
+                    onValueChange={(v) => setConfig(prev => ({
+                      ...prev,
+                      providers: v
                     }))}
                     min={1}
                     max={100}
+                    decimal={false}
                     className="w-24"
                     data-testid="input-new-providers"
                   />

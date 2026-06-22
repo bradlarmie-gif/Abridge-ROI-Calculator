@@ -1,10 +1,10 @@
 import { X } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { NumberField } from "@/components/NumberField";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { formatCurrency, formatNumber, parseFormattedNumber } from "@/lib/roi-calculator";
+import { formatCurrency, formatNumber } from "@/lib/roi-calculator";
 import { useEffect } from "react";
 
 export interface HccConditionCaptureInputs {
@@ -111,12 +111,10 @@ export function HccConditionCaptureDrawer({
                 <Label htmlFor="risk-based-patients" className="text-sm font-medium">
                   Risk-based patients in this analysis
                 </Label>
-                <Input
+                <NumberField
                   id="risk-based-patients"
-                  type="text"
-                  inputMode="numeric"
-                  value={formatNumber(inputs.riskBasedPatients)}
-                  onChange={(e) => onChange("riskBasedPatients", parseFormattedNumber(e.target.value))}
+                  value={inputs.riskBasedPatients}
+                  onValueChange={(v) => onChange("riskBasedPatients", v)}
                   className="font-mono"
                   data-testid="input-risk-based-patients"
                 />
@@ -129,12 +127,10 @@ export function HccConditionCaptureDrawer({
                 <Label htmlFor="avg-conditions" className="text-sm font-medium">
                   Average chronic conditions per patient
                 </Label>
-                <Input
+                <NumberField
                   id="avg-conditions"
-                  type="text"
-                  inputMode="numeric"
-                  value={formatNumber(inputs.avgConditionsPerPatient, 1)}
-                  onChange={(e) => onChange("avgConditionsPerPatient", parseFormattedNumber(e.target.value))}
+                  value={inputs.avgConditionsPerPatient}
+                  onValueChange={(v) => onChange("avgConditionsPerPatient", v)}
                   className="font-mono"
                   data-testid="input-avg-conditions"
                 />
@@ -255,12 +251,10 @@ export function HccConditionCaptureDrawer({
                 <Label htmlFor="revenue-per-condition" className="text-sm font-medium">
                   Incremental revenue per captured condition ($)
                 </Label>
-                <Input
+                <NumberField
                   id="revenue-per-condition"
-                  type="text"
-                  inputMode="numeric"
-                  value={formatNumber(inputs.revenuePerCondition)}
-                  onChange={(e) => onChange("revenuePerCondition", parseFormattedNumber(e.target.value))}
+                  value={inputs.revenuePerCondition}
+                  onValueChange={(v) => onChange("revenuePerCondition", v)}
                   className="font-mono"
                   data-testid="input-revenue-per-condition"
                 />
