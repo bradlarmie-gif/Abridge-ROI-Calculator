@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   computeDealResult, makeDefaultDeal, effectiveProvisioned, type VolumeInputs,
   vendorDisplacedAnnual, displacedInYear, computeNetResult, makeDefaultVendor,
+  computeValueMetrics,
   type DisplacedVendor,
 } from "@/lib/pricingComparisonCalc";
 
@@ -81,5 +82,27 @@ describe("pricing comparison — vendor displacement (switch savings)", () => {
     ];
     const net = computeNetResult(result, vendors);
     expect(net.netByYear.every((n) => n >= 0)).toBe(true);
+  });
+});
+
+describe("value metrics reflect NET cost when displacement is on (ROI/payback fix)", () => {
+  it("net cost yields better value-to-cost and faster payback than gross", () => {
+    // value $120k/yr over 3 yr = $360k total value.
+    const gross = computeValueMetrics([60_000, 60_000, 60_000], 180_000, 36, 120_000);
+    const net = computeValueMetrics([20_000, 20_000, 20_000], 60_000, 36, 120_000);
+    expect(gross.termVtc!).toBeCloseTo(2.0, 5); // 360 / 180
+    expect(net.termVtc!).toBeCloseTo(6.0, 5);   // 360 / 60 — much better once cost is net
+    expect(net.paybackMonths!).toBeLessThanOrEqual(gross.paybackMonths!);
+  });
+
+  it("computeDealResult value layer matches computeValueMetrics on gross (refactor parity)", () => {
+    const volumes: VolumeInputs = { providerCount: 50, annualEncounters: 0, staffedBeds: 0 };
+    const deal = makeDefaultDeal("A", "a");
+    deal.unitPrice = 100; // $60k/yr, $180k over 3 yr
+    const r = computeDealResult(deal, volumes, 120_000);
+    const m = computeValueMetrics(r.years.map((y) => y.annualCost), r.totalContractCost, deal.contractTermMonths, 120_000);
+    expect(r.termVtc).toBe(m.termVtc);
+    expect(r.annualRoiPct).toBe(m.annualRoiPct);
+    expect(r.paybackMonths).toBe(m.paybackMonths);
   });
 });

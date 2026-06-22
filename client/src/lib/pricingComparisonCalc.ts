@@ -93,6 +93,50 @@ export function effectiveProvisioned(deal: DealOption, volumes: VolumeInputs, ye
   return override > 0 ? override : orgVolumeForModel(volumes, deal.model);
 }
 
+export interface ValueMetrics {
+  vtcYear1: number | null;
+  termVtc: number | null;
+  annualRoiPct: number | null;
+  termRoiPct: number | null;
+  paybackMonths: number | null;
+}
+
+/**
+ * Value-to-cost / ROI / payback for a cost stream. Shared by the gross deal result and the
+ * net (post-displacement) view so the two never compute ROI differently. Pass the cost by
+ * contract year + the total; when displacement is on, pass the NET cost stream.
+ */
+export function computeValueMetrics(
+  costByYear: number[],
+  totalCost: number,
+  contractTermMonths: number,
+  annualValueEstimate: number,
+): ValueMetrics {
+  const y1Cost = costByYear[0] ?? 0;
+  if (!(annualValueEstimate > 0 && y1Cost > 0)) {
+    return { vtcYear1: null, termVtc: null, annualRoiPct: null, termRoiPct: null, paybackMonths: null };
+  }
+  const contractYears = Math.max(1, costByYear.length);
+  const totalValue = annualValueEstimate * contractYears;
+  const vtcYear1 = annualValueEstimate / y1Cost;
+  const termVtc = totalCost > 0 ? totalValue / totalCost : null;
+  const annualRoiPct = ((annualValueEstimate - y1Cost) / y1Cost) * 100;
+  const termRoiPct = totalCost > 0 ? ((totalValue - totalCost) / totalCost) * 100 : null;
+
+  let paybackMonths: number | null = null;
+  let cumValue = 0;
+  let cumCost = 0;
+  const monthlyValue = annualValueEstimate / 12;
+  for (let m = 1; m <= contractTermMonths; m++) {
+    const yearIdx = Math.min(Math.floor((m - 1) / 12), costByYear.length - 1);
+    const monthlyCost = (costByYear[yearIdx] ?? 0) / 12;
+    cumValue += monthlyValue;
+    cumCost += monthlyCost;
+    if (cumValue >= cumCost) { paybackMonths = m; break; }
+  }
+  return { vtcYear1, termVtc, annualRoiPct, termRoiPct, paybackMonths };
+}
+
 export function computeDealResult(
   deal: DealOption,
   volumes: VolumeInputs,
@@ -163,38 +207,13 @@ export function computeDealResult(
       ? totalContractCost / (volumes.annualEncounters * contractYears)
       : null;
 
-  // Value layer
-  let vtcYear1: number | null = null;
-  let termVtc: number | null = null;
-  let annualRoiPct: number | null = null;
-  let termRoiPct: number | null = null;
-  let paybackMonths: number | null = null;
-
-  const y1Cost = years[0]?.annualCost ?? 0;
-  if (annualValueEstimate > 0 && y1Cost > 0) {
-    vtcYear1 = annualValueEstimate / y1Cost;
-    const totalValue = annualValueEstimate * contractYears;
-    termVtc = totalContractCost > 0 ? totalValue / totalContractCost : null;
-    annualRoiPct = ((annualValueEstimate - y1Cost) / y1Cost) * 100;
-    termRoiPct =
-      totalContractCost > 0
-        ? ((totalValue - totalContractCost) / totalContractCost) * 100
-        : null;
-
-    let cumValue = 0;
-    let cumCost = 0;
-    const monthlyValue = annualValueEstimate / 12;
-    for (let m = 1; m <= deal.contractTermMonths; m++) {
-      const yearIdx = Math.min(Math.floor((m - 1) / 12), years.length - 1);
-      const monthlyCost = (years[yearIdx]?.annualCost ?? 0) / 12;
-      cumValue += monthlyValue;
-      cumCost += monthlyCost;
-      if (paybackMonths === null && cumValue >= cumCost) {
-        paybackMonths = m;
-        break;
-      }
-    }
-  }
+  // Value layer — shared with the net (post-displacement) view via computeValueMetrics.
+  const metrics = computeValueMetrics(
+    years.map((y) => y.annualCost),
+    totalContractCost,
+    deal.contractTermMonths,
+    annualValueEstimate,
+  );
 
   return {
     dealId: deal.id,
@@ -203,11 +222,7 @@ export function computeDealResult(
     averageAnnualCost,
     costPerProvider,
     costPerEncounter,
-    vtcYear1,
-    termVtc,
-    annualRoiPct,
-    termRoiPct,
-    paybackMonths,
+    ...metrics,
   };
 }
 
