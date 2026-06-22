@@ -1,5 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { computeDealResult, makeDefaultDeal, effectiveProvisioned, type VolumeInputs } from "@/lib/pricingComparisonCalc";
+import {
+  computeDealResult, makeDefaultDeal, effectiveProvisioned, type VolumeInputs,
+  vendorDisplacedAnnual, displacedInYear, computeNetResult, makeDefaultVendor,
+  type DisplacedVendor,
+} from "@/lib/pricingComparisonCalc";
 
 /**
  * The fix that made Compare Pricing work: the Organization Volume entered once at
@@ -32,5 +36,50 @@ describe("pricing comparison — org volume flows into deals", () => {
     deal.yearConfigs[0] = { provisionedVolume: 80 };
     expect(effectiveProvisioned(deal, volumes, 0)).toBe(80);
     expect(effectiveProvisioned(deal, volumes, 1)).toBe(50);
+  });
+});
+
+describe("pricing comparison — vendor displacement (switch savings)", () => {
+  it("a vendor's displaced annual = annualSpend × displacementPct", () => {
+    const v: DisplacedVendor = { ...makeDefaultVendor("v"), annualSpend: 2_400_000, displacementPct: 90 };
+    expect(vendorDisplacedAnnual(v)).toBe(2_160_000);
+    expect(vendorDisplacedAnnual({ ...v, displacementPct: 0 })).toBe(0);
+  });
+
+  it("displacedInYear respects each vendor's startYear (cost offset over years, proforma-style)", () => {
+    const vendors: DisplacedVendor[] = [
+      { ...makeDefaultVendor("a"), annualSpend: 1_000_000, displacementPct: 100, startYear: 1 },
+      { ...makeDefaultVendor("b"), annualSpend: 500_000, displacementPct: 100, startYear: 2 },
+    ];
+    expect(displacedInYear(vendors, 1)).toBe(1_000_000); // only vendor a is live in yr 1
+    expect(displacedInYear(vendors, 2)).toBe(1_500_000); // both live from yr 2
+  });
+
+  it("computeNetResult nets gross by year and reports % covered", () => {
+    const volumes: VolumeInputs = { providerCount: 50, annualEncounters: 0, staffedBeds: 0 };
+    const deal = makeDefaultDeal("A", "a");
+    deal.unitPrice = 100; // 50 × $100 × 12 = $60,000/yr, 3yr gross = $180,000
+    const result = computeDealResult(deal, volumes, 0);
+    const vendors: DisplacedVendor[] = [
+      { ...makeDefaultVendor("v"), annualSpend: 40_000, displacementPct: 100, startYear: 1 },
+    ];
+    const net = computeNetResult(result, vendors);
+    expect(net.displacedByYear).toEqual([40_000, 40_000, 40_000]);
+    expect(net.totalDisplaced).toBe(120_000);
+    expect(net.netByYear).toEqual([20_000, 20_000, 20_000]); // 60k − 40k
+    expect(net.netTotalContract).toBe(60_000);               // 180k − 120k
+    expect(Math.round(net.pctCovered)).toBe(67);             // 120k / 180k
+  });
+
+  it("net never goes below zero in a year (over-displacement is capped)", () => {
+    const volumes: VolumeInputs = { providerCount: 50, annualEncounters: 0, staffedBeds: 0 };
+    const deal = makeDefaultDeal("A", "a");
+    deal.unitPrice = 100; // $60k/yr
+    const result = computeDealResult(deal, volumes, 0);
+    const vendors: DisplacedVendor[] = [
+      { ...makeDefaultVendor("v"), annualSpend: 999_999, displacementPct: 100, startYear: 1 },
+    ];
+    const net = computeNetResult(result, vendors);
+    expect(net.netByYear.every((n) => n >= 0)).toBe(true);
   });
 });

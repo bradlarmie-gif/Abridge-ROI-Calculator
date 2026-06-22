@@ -17,6 +17,12 @@ import {
   makeDefaultDeal,
   syncYearConfigs,
   orgVolumeForModel,
+  type DisplacedVendor,
+  type DisplacementCategoryId,
+  DISPLACEMENT_CATEGORIES,
+  makeDefaultVendor,
+  vendorDisplacedAnnual,
+  computeNetResult,
 } from "@/lib/pricingComparisonCalc";
 
 interface PricingComparisonFlowProps {
@@ -111,13 +117,15 @@ function NumberInput({
 }
 
 function DealCard({
-  deal, index, volumes, annualValueEstimate, advanced, onUpdate, onRemove, canRemove,
+  deal, index, volumes, annualValueEstimate, advanced, vendors, displacementOn, onUpdate, onRemove, canRemove,
 }: {
   deal: DealOption;
   index: number;
   volumes: VolumeInputs;
   annualValueEstimate: number;
   advanced: boolean;
+  vendors: DisplacedVendor[];
+  displacementOn: boolean;
   onUpdate: (updates: Partial<DealOption>) => void;
   onRemove: () => void;
   canRemove: boolean;
@@ -129,6 +137,9 @@ function DealCard({
     () => computeDealResult(deal, volumes, annualValueEstimate),
     [deal, volumes, annualValueEstimate],
   );
+
+  const net = useMemo(() => computeNetResult(result, vendors), [result, vendors]);
+  const showNet = displacementOn && net.totalDisplaced > 0;
 
   const scenarios = useMemo(() => computeUsageScenarios(deal, volumes), [deal, volumes]);
 
@@ -311,6 +322,18 @@ function DealCard({
             <span className="text-xs font-bold text-[#1A1A1A]">Total Contract</span>
             <span className="text-base font-bold tabular-nums" style={{ color }}>{fmt(result.totalContractCost)}</span>
           </div>
+          {showNet && (
+            <>
+              <div className="flex items-center justify-between px-4 py-2 border-t border-[#F0EAE3]">
+                <span className="text-xs text-[#8C7E6E]">− Displaced spend</span>
+                <span className="text-xs font-medium text-[#8C7E6E] tabular-nums">−{fmt(net.totalDisplaced)}</span>
+              </div>
+              <div className="flex items-center justify-between px-4 py-3 border-t border-[#E8E2DA] bg-[#FFF0ED]">
+                <span className="text-xs font-bold text-[#1A1A1A]">Net contract</span>
+                <span className="text-base font-bold tabular-nums" style={{ color: "#EA2C00" }}>{fmt(net.netTotalContract)}</span>
+              </div>
+            </>
+          )}
           {result.costPerProvider !== null && (
             <div className="flex items-center justify-between px-4 py-2 border-t border-[#F0EAE3]">
               <span className="text-xs text-[#8C7E6E]">Effective cost / provider</span>
@@ -440,21 +463,27 @@ function DealCard({
 }
 
 function RoiAnalysisSection({
-  deals, volumes, annualValueEstimate,
+  deals, volumes, annualValueEstimate, vendors, displacementOn,
 }: {
   deals: DealOption[];
   volumes: VolumeInputs;
   annualValueEstimate: number;
+  vendors: DisplacedVendor[];
+  displacementOn: boolean;
 }) {
   const results = deals.map((d) => computeDealResult(d, volumes, annualValueEstimate));
+  const nets = results.map((r) => computeNetResult(r, vendors));
+  const showNet = displacementOn && nets.some((n) => n.totalDisplaced > 0);
 
-  // Chart data: one entry per year of the longest contract
+  // Chart data: one entry per year of the longest contract. When displacement is on,
+  // the bars show net cost by year (gross − displaced).
   const maxYears = Math.max(...deals.map((d) => Math.ceil(d.contractTermMonths / 12)));
   const chartData = Array.from({ length: maxYears }, (_, i) => {
     const entry: Record<string, number | string> = { year: `Year ${i + 1}` };
     deals.forEach((deal, di) => {
       const yr = results[di].years[i];
-      entry[deal.label] = yr ? yr.annualCost : 0;
+      const gross = yr ? yr.annualCost : 0;
+      entry[deal.label] = showNet ? (nets[di].netByYear[i] ?? gross) : gross;
     });
     return entry;
   });
@@ -477,7 +506,7 @@ function RoiAnalysisSection({
       <div className="p-6 space-y-8">
         {/* Multi-year cost chart */}
         <div>
-          <p className="text-[10px] uppercase font-semibold text-[#8C7E6E] tracking-widest mb-4">Annual Cost by Year</p>
+          <p className="text-[10px] uppercase font-semibold text-[#8C7E6E] tracking-widest mb-4">{showNet ? "Net Cost by Year" : "Annual Cost by Year"}</p>
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={chartData} barGap={4} barCategoryGap="28%">
               <CartesianGrid strokeDasharray="3 3" stroke="#F0EAE3" vertical={false} />
@@ -531,6 +560,34 @@ function RoiAnalysisSection({
                     </td>
                   ))}
                 </tr>
+                {showNet && (
+                  <>
+                    <tr>
+                      <td className="py-2.5 pr-4 text-xs text-[#8C7E6E]">Displaced / yr</td>
+                      {nets.map((nr, ri) => (
+                        <td key={ri} className="py-2.5 px-3 text-right text-sm text-[#8C7E6E] tabular-nums">
+                          −{fmt(nr.totalDisplaced / Math.max(1, results[ri].years.length))}
+                        </td>
+                      ))}
+                    </tr>
+                    <tr className="border-t-2 border-[#E8E2DA]">
+                      <td className="py-2.5 pr-4 text-xs font-semibold text-[#1A1A1A]">Net Contract Cost</td>
+                      {nets.map((nr, ri) => (
+                        <td key={ri} className="py-2.5 px-3 text-right text-sm font-bold tabular-nums" style={{ color: "#EA2C00" }}>
+                          {fmt(nr.netTotalContract)}
+                        </td>
+                      ))}
+                    </tr>
+                    <tr>
+                      <td className="py-2.5 pr-4 text-xs text-[#8C7E6E]">Net Annual Cost</td>
+                      {nets.map((nr, ri) => (
+                        <td key={ri} className="py-2.5 px-3 text-right text-sm text-[#666666] tabular-nums">
+                          {fmt(nr.netAverageAnnual)}
+                        </td>
+                      ))}
+                    </tr>
+                  </>
+                )}
                 {results.some((r) => r.costPerProvider !== null) && (
                   <tr>
                     <td className="py-2.5 pr-4 text-xs text-[#8C7E6E]">Cost / Provider</td>
@@ -618,23 +675,45 @@ export default function PricingComparisonFlow({ onBack, onHome }: PricingCompari
   ]);
   const [annualValueEstimate, setAnnualValueEstimate] = useState(0);
   const [advanced, setAdvanced] = useState(false);
+  const [displacementOn, setDisplacementOn] = useState(false);
+  const [vendors, setVendors] = useState<DisplacedVendor[]>([]);
 
-  // Total-cost-of-ownership verdict across the deals (the lead).
+  const addVendor = () => setVendors((p) => [...p, makeDefaultVendor(`v-${Date.now()}`)]);
+  const updateVendor = (id: string, u: Partial<DisplacedVendor>) =>
+    setVendors((p) => p.map((v) => (v.id === id ? { ...v, ...u } : v)));
+  const removeVendor = (id: string) => setVendors((p) => p.filter((v) => v.id !== id));
+  const toggleDisplacement = () =>
+    setDisplacementOn((on) => {
+      const next = !on;
+      if (next && vendors.length === 0) setVendors([makeDefaultVendor(`v-${Date.now()}`)]);
+      return next;
+    });
+  const totalDisplacedAtScale = useMemo(
+    () => vendors.reduce((s, v) => s + vendorDisplacedAnnual(v), 0),
+    [vendors],
+  );
+
+  // Total-cost-of-ownership verdict across the deals (the lead). When displacement is on,
+  // the lead becomes the lowest NET cost after takeout.
   const verdict = useMemo(() => {
     const priced = deals
-      .map((d) => ({ deal: d, result: computeDealResult(d, volumes, annualValueEstimate) }))
+      .map((d) => {
+        const result = computeDealResult(d, volumes, annualValueEstimate);
+        return { deal: d, result, net: computeNetResult(result, vendors) };
+      })
       .filter((x) => x.result.totalContractCost > 0);
     if (priced.length < 2) return null;
-    const sorted = [...priced].sort((a, b) => a.result.totalContractCost - b.result.totalContractCost);
+    const cost = (x: (typeof priced)[number]) => (displacementOn ? x.net.netTotalContract : x.result.totalContractCost);
+    const sorted = [...priced].sort((a, b) => cost(a) - cost(b));
     const cheapest = sorted[0];
     const runnerUp = sorted[1];
-    const savings = runnerUp.result.totalContractCost - cheapest.result.totalContractCost;
+    const savings = cost(runnerUp) - cost(cheapest);
     const bestRoi = annualValueEstimate > 0
       ? [...priced].sort((a, b) => (b.result.termVtc ?? 0) - (a.result.termVtc ?? 0))[0]
       : null;
     const termYears = Math.max(1, Math.ceil(cheapest.deal.contractTermMonths / 12));
     return { cheapest, savings, bestRoi, termYears };
-  }, [deals, volumes, annualValueEstimate]);
+  }, [deals, volumes, annualValueEstimate, vendors, displacementOn]);
 
   const updateDeal = (id: string, updates: Partial<DealOption>) => {
     setDeals((prev) => prev.map((d) => (d.id === id ? { ...d, ...updates } : d)));
@@ -722,22 +801,115 @@ export default function PricingComparisonFlow({ onBack, onHome }: PricingCompari
           </div>
         </div>
 
+        {/* Switch savings — optional displacement bolt-on */}
+        <div className="bg-white rounded-2xl border border-[#E8E2DA] p-5 mb-6">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-sm font-bold text-[#1A1A1A]">Switch savings <span className="font-medium text-[#A39888]">· optional</span></p>
+              <p className="text-xs text-[#8C7E6E] mt-0.5 max-w-xl leading-relaxed">
+                Switching from existing tech? Add what they'd retire — each option shows its net after takeout, applied over the contract years.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={toggleDisplacement}
+              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium border transition-colors flex-shrink-0 ${
+                displacementOn ? "bg-[#EA2C00] text-white border-[#EA2C00]" : "bg-white text-[#6B5E4F] border-[#E8E2DA] hover:border-[#1A1A1A]"
+              }`}
+              data-testid="button-switch-savings"
+            >
+              {displacementOn ? "On" : "Off"}
+            </button>
+          </div>
+
+          <AnimatePresence initial={false}>
+            {displacementOn && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.25 }} className="overflow-hidden"
+              >
+                <div className="mt-5 pt-5 border-t border-[#F0EAE3]">
+                  <p className="text-[10px] uppercase font-semibold text-[#EA2C00] tracking-widest mb-3">What they pay today</p>
+                  <div className="space-y-2.5">
+                    {vendors.map((v) => (
+                      <div key={v.id} className="grid grid-cols-1 sm:grid-cols-[1.4fr_1fr_1.3fr_auto_auto] gap-2.5 items-center">
+                        <select
+                          value={v.category}
+                          onChange={(e) => {
+                            const cat = e.target.value as DisplacementCategoryId;
+                            const meta = DISPLACEMENT_CATEGORIES.find((c) => c.id === cat);
+                            updateVendor(v.id, { category: cat, label: meta && cat !== "custom" ? meta.label : v.label });
+                          }}
+                          className="h-10 bg-[#F5F0EB] border border-[#E8E2DA] rounded-lg px-3 text-sm text-[#1A1A1A] outline-none focus:border-[#1A1A1A] cursor-pointer"
+                        >
+                          {DISPLACEMENT_CATEGORIES.map((c) => (<option key={c.id} value={c.id}>{c.label}</option>))}
+                        </select>
+                        <NumberInput value={v.annualSpend} onChange={(n) => updateVendor(v.id, { annualSpend: n })} prefix="$" placeholder="annual spend" className="w-full" />
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="range" min={0} max={100} value={v.displacementPct}
+                            onChange={(e) => updateVendor(v.id, { displacementPct: parseInt(e.target.value, 10) })}
+                            className="flex-1 accent-[#EA2C00] cursor-pointer"
+                            aria-label="Percent displaced"
+                          />
+                          <span className="text-xs font-semibold text-[#EA2C00] w-11 text-right tabular-nums">{v.displacementPct}%</span>
+                        </div>
+                        <select
+                          value={v.startYear}
+                          onChange={(e) => updateVendor(v.id, { startYear: parseInt(e.target.value, 10) })}
+                          className="h-10 bg-[#F5F0EB] border border-[#E8E2DA] rounded-lg px-2 text-xs text-[#666666] outline-none cursor-pointer"
+                        >
+                          <option value={1}>from Yr 1</option>
+                          <option value={2}>from Yr 2</option>
+                          <option value={3}>from Yr 3</option>
+                        </select>
+                        <button
+                          type="button" onClick={() => removeVendor(v.id)}
+                          className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-[#F5F0EB] text-[#8C7E6E] hover:text-[#1A1A1A] transition-colors justify-self-end"
+                          aria-label="Remove vendor"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex items-center justify-between mt-4 flex-wrap gap-2">
+                    <button type="button" onClick={addVendor} className="text-xs font-semibold text-[#EA2C00] hover:text-[#C42600] transition-colors">+ Add vendor</button>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-[10px] uppercase font-semibold text-[#8C7E6E] tracking-widest">Displaceable / yr at scale</span>
+                      <span className="text-lg font-bold text-[#1A1A1A] tabular-nums">{fmt(totalDisplacedAtScale)}</span>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
         {/* TCO verdict — lead with the answer */}
         {verdict && (
           <motion.div
             initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
             className="rounded-2xl bg-[#1A1A1A] text-white p-5 sm:p-6 mb-6"
           >
-            <p className="text-[10px] uppercase font-semibold tracking-widest text-white/40 mb-2">Lowest total cost of ownership</p>
+            <p className="text-[10px] uppercase font-semibold tracking-widest text-white/40 mb-2">
+              {displacementOn && verdict.cheapest.net.totalDisplaced > 0 ? "Lowest net cost after switch savings" : "Lowest total cost of ownership"}
+            </p>
             <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
               <span className="text-2xl sm:text-3xl font-bold" style={{ color: "#FF5230" }}>{verdict.cheapest.deal.label}</span>
-              <span className="text-lg sm:text-xl font-bold">{fmtFull(verdict.cheapest.result.totalContractCost)}</span>
+              <span className="text-lg sm:text-xl font-bold">
+                {fmtFull(displacementOn ? verdict.cheapest.net.netTotalContract : verdict.cheapest.result.totalContractCost)}
+              </span>
               <span className="text-sm text-white/50">over {verdict.termYears} year{verdict.termYears === 1 ? "" : "s"}</span>
             </div>
             <p className="mt-2 text-sm text-white/55">
               {verdict.savings > 0
                 ? `Saves ${fmtFull(verdict.savings)} versus the next option.`
                 : "Tied with the next option on total cost."}
+              {displacementOn && verdict.cheapest.net.totalDisplaced > 0 && (
+                <> {fmtFull(verdict.cheapest.net.totalDisplaced)} of it is covered by spend they already make
+                  {" "}(<span className="text-white/80 font-medium">{Math.round(verdict.cheapest.net.pctCovered)}%</span>).</>
+              )}
               {verdict.bestRoi && verdict.bestRoi.result.termVtc !== null && (
                 <> Best return: <span className="text-white/80 font-medium">{verdict.bestRoi.deal.label} at {verdict.bestRoi.result.termVtc.toFixed(1)}× over the term</span>.</>
               )}
@@ -770,6 +942,8 @@ export default function PricingComparisonFlow({ onBack, onHome }: PricingCompari
                   volumes={volumes}
                   annualValueEstimate={annualValueEstimate}
                   advanced={advanced}
+                  vendors={vendors}
+                  displacementOn={displacementOn}
                   onUpdate={(updates) => updateDeal(deal.id, updates)}
                   onRemove={() => removeDeal(deal.id)}
                   canRemove={deals.length > 2}
@@ -801,6 +975,8 @@ export default function PricingComparisonFlow({ onBack, onHome }: PricingCompari
           deals={deals}
           volumes={volumes}
           annualValueEstimate={annualValueEstimate}
+          vendors={vendors}
+          displacementOn={displacementOn}
         />
       </div>
     </div>

@@ -292,6 +292,73 @@ export function computeUsageScenarios(deal: DealOption, volumes: VolumeInputs): 
   });
 }
 
+// ── Vendor displacement ("switch savings") ──────────────────────────────────
+// An optional bolt-on: the incumbent tech a partner retires when they move to
+// Abridge. The displaced spend nets against each deal's gross cost. Mirrors the
+// proforma's cost-offset model (annualSpend × displacementPct, applied over years).
+
+export type DisplacementCategoryId =
+  | "scribes" | "ambientAi" | "dictation" | "transcription" | "cdiCoding" | "clinicalEvidence" | "custom";
+
+export interface DisplacedVendor {
+  id: string;
+  label: string;
+  category: DisplacementCategoryId;
+  annualSpend: number;      // their current spend on this tech (source of truth)
+  displacementPct: number;  // 0–100; how much Abridge takes off the table (partial is the norm)
+  startYear: number;        // 1-based contract year the displacement begins (cost offset over years)
+}
+
+export const DISPLACEMENT_CATEGORIES: { id: DisplacementCategoryId; label: string; hint: string }[] = [
+  { id: "scribes", label: "Medical scribes", hint: "in-person / virtual" },
+  { id: "ambientAi", label: "Competing ambient AI", hint: "DAX, Suki, Nabla, Ambience" },
+  { id: "dictation", label: "Dictation / speech-to-text", hint: "Dragon Medical" },
+  { id: "transcription", label: "Transcription services", hint: "outsourced / offshore" },
+  { id: "cdiCoding", label: "Third-party CDI / coding", hint: "" },
+  { id: "clinicalEvidence", label: "Clinical evidence & search", hint: "OpenEvidence, redundant reference" },
+  { id: "custom", label: "Custom", hint: "" },
+];
+
+export function makeDefaultVendor(id: string): DisplacedVendor {
+  return { id, label: "", category: "scribes", annualSpend: 0, displacementPct: 80, startYear: 1 };
+}
+
+/** Annual dollars a single vendor displaces at full ramp. */
+export function vendorDisplacedAnnual(v: DisplacedVendor): number {
+  return Math.round((v.annualSpend || 0) * (v.displacementPct || 0) / 100);
+}
+
+/** Total displaced in a given (1-based) contract year — a vendor counts only from its startYear. */
+export function displacedInYear(vendors: DisplacedVendor[], year: number): number {
+  return vendors.reduce((s, v) => s + (year >= (v.startYear || 1) ? vendorDisplacedAnnual(v) : 0), 0);
+}
+
+export interface NetResult {
+  displacedByYear: number[];
+  totalDisplaced: number;
+  netByYear: number[];
+  netTotalContract: number;
+  netAverageAnnual: number;
+  pctCovered: number; // displaced / gross over the term, 0–100
+}
+
+/** Net a deal's gross cost by the displaced vendor spend, year by year. */
+export function computeNetResult(result: DealResult, vendors: DisplacedVendor[]): NetResult {
+  const displacedByYear = result.years.map((y) => displacedInYear(vendors, y.year));
+  const netByYear = result.years.map((y, i) => Math.max(0, y.annualCost - displacedByYear[i]));
+  const totalDisplaced = displacedByYear.reduce((a, b) => a + b, 0);
+  const netTotalContract = netByYear.reduce((a, b) => a + b, 0);
+  const yrs = Math.max(1, result.years.length);
+  return {
+    displacedByYear,
+    totalDisplaced,
+    netByYear,
+    netTotalContract,
+    netAverageAnnual: netTotalContract / yrs,
+    pctCovered: result.totalContractCost > 0 ? Math.min(100, (totalDisplaced / result.totalContractCost) * 100) : 0,
+  };
+}
+
 /** Ensures yearConfigs has exactly `years` entries, filling new ones with `defaultVolume`. */
 export function syncYearConfigs(
   configs: DealYearConfig[],

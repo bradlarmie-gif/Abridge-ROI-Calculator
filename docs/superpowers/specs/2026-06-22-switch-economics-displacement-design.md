@@ -1,8 +1,31 @@
 # Vendor displacement in Compare Pricing (cost takeout)
 
 **Date:** 2026-06-22
-**Status:** Design — pending review (rev 3, scoped to Compare Pricing only)
+**Status:** BUILT (rev 4) — shipped into the real Compare Pricing component
 **Owner:** Brad
+
+## What shipped
+
+Built directly into the real components so it's on-brand by construction (no redesign):
+- Engine: `pricingComparisonCalc.ts` — `DisplacedVendor`, `DISPLACEMENT_CATEGORIES`,
+  `vendorDisplacedAnnual`, `displacedInYear` (cost offset applies from a vendor's
+  `startYear`), `computeNetResult`. Unit-tested in `pricingComparison.test.ts`.
+- UI in `PricingComparisonFlow.tsx`, all additive:
+  1. **Switch savings** toggle (off by default) styled like the existing "provisioning" pill.
+  2. **What they pay today** card (only when on) — category dropdown · spend · % slider ·
+     from-Yr selector · remove · "+ Add vendor" · "Displaceable / yr at scale".
+  3. Each **DealCard** gains `− Displaced` + **Net contract** rows under Total Contract.
+  4. The **TCO bar chart** switches to Net Cost by Year when on.
+  5. The **Side-by-Side Comparison** table gains Displaced / yr, Net Contract Cost,
+     Net Annual Cost rows.
+  6. The **verdict banner** leads with lowest NET cost + "% covered" when on.
+
+Verified: tsc 0, 272 tests, build clean, 8/8 e2e. The pricing comparison (the hero) is
+untouched when the toggle is off — pure deal-structure comparison as before.
+
+---
+
+(original design, rev 3, below)
 
 ## Scope (read this first)
 
