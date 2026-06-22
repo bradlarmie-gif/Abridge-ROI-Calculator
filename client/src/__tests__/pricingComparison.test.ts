@@ -47,13 +47,18 @@ describe("pricing comparison — vendor displacement (switch savings)", () => {
     expect(vendorDisplacedAnnual({ ...v, displacementPct: 0 })).toBe(0);
   });
 
-  it("displacedInYear respects each vendor's startYear (cost offset over years, proforma-style)", () => {
-    const vendors: DisplacedVendor[] = [
-      { ...makeDefaultVendor("a"), annualSpend: 1_000_000, displacementPct: 100, startYear: 1 },
-      { ...makeDefaultVendor("b"), annualSpend: 500_000, displacementPct: 100, startYear: 2 },
+  it("displacedInYear ramps each vendor's displacement to full over rampYears", () => {
+    const ramp2: DisplacedVendor[] = [
+      { ...makeDefaultVendor("a"), annualSpend: 1_000_000, displacementPct: 100, rampYears: 2 },
     ];
-    expect(displacedInYear(vendors, 1)).toBe(1_000_000); // only vendor a is live in yr 1
-    expect(displacedInYear(vendors, 2)).toBe(1_500_000); // both live from yr 2
+    expect(displacedInYear(ramp2, 1)).toBe(500_000);   // 50% in yr 1 of a 2-yr ramp
+    expect(displacedInYear(ramp2, 2)).toBe(1_000_000); // full by yr 2
+    expect(displacedInYear(ramp2, 3)).toBe(1_000_000); // stays full
+
+    const immediate: DisplacedVendor[] = [
+      { ...makeDefaultVendor("b"), annualSpend: 1_000_000, displacementPct: 100, rampYears: 1 },
+    ];
+    expect(displacedInYear(immediate, 1)).toBe(1_000_000); // rampYears 1 = immediate full
   });
 
   it("computeNetResult nets gross by year and reports % covered", () => {
@@ -62,7 +67,7 @@ describe("pricing comparison — vendor displacement (switch savings)", () => {
     deal.unitPrice = 100; // 50 × $100 × 12 = $60,000/yr, 3yr gross = $180,000
     const result = computeDealResult(deal, volumes, 0);
     const vendors: DisplacedVendor[] = [
-      { ...makeDefaultVendor("v"), annualSpend: 40_000, displacementPct: 100, startYear: 1 },
+      { ...makeDefaultVendor("v"), annualSpend: 40_000, displacementPct: 100, rampYears: 1 },
     ];
     const net = computeNetResult(result, vendors);
     expect(net.displacedByYear).toEqual([40_000, 40_000, 40_000]);
@@ -78,7 +83,7 @@ describe("pricing comparison — vendor displacement (switch savings)", () => {
     deal.unitPrice = 100; // $60k/yr
     const result = computeDealResult(deal, volumes, 0);
     const vendors: DisplacedVendor[] = [
-      { ...makeDefaultVendor("v"), annualSpend: 999_999, displacementPct: 100, startYear: 1 },
+      { ...makeDefaultVendor("v"), annualSpend: 999_999, displacementPct: 100, rampYears: 1 },
     ];
     const net = computeNetResult(result, vendors);
     expect(net.netByYear.every((n) => n >= 0)).toBe(true);

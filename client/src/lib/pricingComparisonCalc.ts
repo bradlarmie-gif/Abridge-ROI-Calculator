@@ -321,7 +321,7 @@ export interface DisplacedVendor {
   category: DisplacementCategoryId;
   annualSpend: number;      // their current spend on this tech (source of truth)
   displacementPct: number;  // 0–100; how much Abridge takes off the table (partial is the norm)
-  startYear: number;        // 1-based contract year the displacement begins (cost offset over years)
+  rampYears: number;        // years over which the displacement ramps to full (1 = immediate)
 }
 
 export const DISPLACEMENT_CATEGORIES: { id: DisplacementCategoryId; label: string; hint: string }[] = [
@@ -335,17 +335,22 @@ export const DISPLACEMENT_CATEGORIES: { id: DisplacementCategoryId; label: strin
 ];
 
 export function makeDefaultVendor(id: string): DisplacedVendor {
-  return { id, label: "", category: "scribes", annualSpend: 0, displacementPct: 80, startYear: 1 };
+  return { id, label: "", category: "scribes", annualSpend: 0, displacementPct: 80, rampYears: 1 };
 }
 
-/** Annual dollars a single vendor displaces at full ramp. */
+/** Annual dollars a single vendor displaces at full ramp (steady state). */
 export function vendorDisplacedAnnual(v: DisplacedVendor): number {
   return Math.round((v.annualSpend || 0) * (v.displacementPct || 0) / 100);
 }
 
-/** Total displaced in a given (1-based) contract year — a vendor counts only from its startYear. */
+/** Fraction of a vendor's displacement realized in a given (1-based) contract year. */
+export function vendorRampFraction(v: DisplacedVendor, year: number): number {
+  return Math.min(1, year / Math.max(1, v.rampYears || 1));
+}
+
+/** Total displaced in a given (1-based) contract year — ramps each vendor over its rampYears. */
 export function displacedInYear(vendors: DisplacedVendor[], year: number): number {
-  return vendors.reduce((s, v) => s + (year >= (v.startYear || 1) ? vendorDisplacedAnnual(v) : 0), 0);
+  return vendors.reduce((s, v) => s + Math.round(vendorDisplacedAnnual(v) * vendorRampFraction(v, year)), 0);
 }
 
 export interface NetResult {

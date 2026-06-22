@@ -530,7 +530,14 @@ function RoiAnalysisSection({
     deals.forEach((deal, di) => {
       const yr = results[di].years[i];
       const gross = yr ? yr.annualCost : 0;
-      entry[deal.label] = showNet ? (nets[di].netByYear[i] ?? gross) : gross;
+      if (showNet) {
+        const yrNet = nets[di].netByYear[i] ?? gross;
+        // net (solid) + displaced (shaded) stack to the gross bar height, so you see the takeout.
+        entry[`${deal.label} (net)`] = yrNet;
+        entry[`${deal.label} (displaced)`] = Math.max(0, gross - yrNet);
+      } else {
+        entry[deal.label] = gross;
+      }
     });
     return entry;
   });
@@ -553,7 +560,8 @@ function RoiAnalysisSection({
       <div className="p-6 space-y-8">
         {/* Multi-year cost chart */}
         <div>
-          <p className="text-[10px] uppercase font-semibold text-[#8C7E6E] tracking-widest mb-4">{showNet ? "Net Cost by Year" : "Annual Cost by Year"}</p>
+          <p className="text-[10px] uppercase font-semibold text-[#8C7E6E] tracking-widest mb-1">{showNet ? "Cost by Year — net vs displaced" : "Annual Cost by Year"}</p>
+          {showNet && <p className="text-[11px] text-[#A39888] mb-3">Solid = net cost you pay · shaded = spend displaced from existing vendors</p>}
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={chartData} barGap={4} barCategoryGap="28%">
               <CartesianGrid strokeDasharray="3 3" stroke="#F0EAE3" vertical={false} />
@@ -568,9 +576,14 @@ function RoiAnalysisSection({
                 contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #E8E2DA", boxShadow: "0 4px 12px rgba(0,0,0,0.08)" }}
               />
               <Legend wrapperStyle={{ fontSize: 12, paddingTop: 12 }} />
-              {deals.map((deal, di) => (
-                <Bar key={deal.id} dataKey={deal.label} fill={DEAL_COLORS[di] ?? DEAL_COLORS[0]} radius={[3, 3, 0, 0]} />
-              ))}
+              {showNet
+                ? deals.flatMap((deal, di) => [
+                    <Bar key={`${deal.id}-net`} dataKey={`${deal.label} (net)`} stackId={deal.id} fill={DEAL_COLORS[di] ?? DEAL_COLORS[0]} radius={[0, 0, 0, 0]} />,
+                    <Bar key={`${deal.id}-disp`} dataKey={`${deal.label} (displaced)`} stackId={deal.id} fill={DEAL_COLORS[di] ?? DEAL_COLORS[0]} fillOpacity={0.22} radius={[3, 3, 0, 0]} legendType="none" />,
+                  ])
+                : deals.map((deal, di) => (
+                    <Bar key={deal.id} dataKey={deal.label} fill={DEAL_COLORS[di] ?? DEAL_COLORS[0]} radius={[3, 3, 0, 0]} />
+                  ))}
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -902,9 +915,9 @@ export default function PricingComparisonFlow({ onBack, onHome }: PricingCompari
                           <span className="text-xs font-semibold text-[#EA2C00] w-11 text-right tabular-nums">{v.displacementPct}%</span>
                         </div>
                         <PillToggle
-                          options={[{ label: "Yr 1", value: 1 }, { label: "Yr 2", value: 2 }, { label: "Yr 3", value: 3 }]}
-                          value={v.startYear}
-                          onChange={(y) => updateVendor(v.id, { startYear: y })}
+                          options={[{ label: "Now", value: 1 }, { label: "2-yr", value: 2 }, { label: "3-yr", value: 3 }]}
+                          value={v.rampYears}
+                          onChange={(y) => updateVendor(v.id, { rampYears: y })}
                         />
                         <button
                           type="button" onClick={() => removeVendor(v.id)}
