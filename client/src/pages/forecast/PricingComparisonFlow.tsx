@@ -915,9 +915,9 @@ export default function PricingComparisonFlow({ onBack, onHome }: PricingCompari
                           <span className="text-xs font-semibold text-[#EA2C00] w-11 text-right tabular-nums">{v.displacementPct}%</span>
                         </div>
                         <PillToggle
-                          options={[{ label: "Now", value: 1 }, { label: "2-yr", value: 2 }, { label: "3-yr", value: 3 }]}
-                          value={v.rampYears}
-                          onChange={(y) => updateVendor(v.id, { rampYears: y })}
+                          options={[{ label: "Now", value: 0 }, { label: "6mo", value: 6 }, { label: "1yr", value: 12 }, { label: "2yr", value: 24 }]}
+                          value={v.transitionMonths}
+                          onChange={(m) => updateVendor(v.id, { transitionMonths: m })}
                         />
                         <button
                           type="button" onClick={() => removeVendor(v.id)}

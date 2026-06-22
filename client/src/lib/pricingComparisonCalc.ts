@@ -319,9 +319,9 @@ export interface DisplacedVendor {
   id: string;
   label: string;
   category: DisplacementCategoryId;
-  annualSpend: number;      // their current spend on this tech (source of truth)
-  displacementPct: number;  // 0–100; how much Abridge takes off the table (partial is the norm)
-  rampYears: number;        // years over which the displacement ramps to full (1 = immediate)
+  annualSpend: number;       // their current spend on this tech (source of truth)
+  displacementPct: number;   // 0–100; how much Abridge takes off the table (partial is the norm)
+  transitionMonths: number;  // months to fully cut over (0 = immediate) — same ramp as the proforma
 }
 
 export const DISPLACEMENT_CATEGORIES: { id: DisplacementCategoryId; label: string; hint: string }[] = [
@@ -335,7 +335,7 @@ export const DISPLACEMENT_CATEGORIES: { id: DisplacementCategoryId; label: strin
 ];
 
 export function makeDefaultVendor(id: string): DisplacedVendor {
-  return { id, label: "", category: "scribes", annualSpend: 0, displacementPct: 80, rampYears: 1 };
+  return { id, label: "", category: "scribes", annualSpend: 0, displacementPct: 80, transitionMonths: 12 };
 }
 
 /** Annual dollars a single vendor displaces at full ramp (steady state). */
@@ -343,12 +343,23 @@ export function vendorDisplacedAnnual(v: DisplacedVendor): number {
   return Math.round((v.annualSpend || 0) * (v.displacementPct || 0) / 100);
 }
 
-/** Fraction of a vendor's displacement realized in a given (1-based) contract year. */
+/**
+ * Fraction of a vendor's displacement realized across a (1-based) contract year — the
+ * average of the proforma's monthly ramp (min(monthsElapsed / transitionMonths, 1)) over
+ * that year's 12 months, so the ramp matches the proforma exactly.
+ */
 export function vendorRampFraction(v: DisplacedVendor, year: number): number {
-  return Math.min(1, year / Math.max(1, v.rampYears || 1));
+  const tm = v.transitionMonths || 0;
+  if (tm <= 0) return 1;
+  let sum = 0;
+  const monthsBefore = (year - 1) * 12;
+  for (let i = 0; i < 12; i++) {
+    sum += Math.min((monthsBefore + i + 1) / tm, 1);
+  }
+  return sum / 12;
 }
 
-/** Total displaced in a given (1-based) contract year — ramps each vendor over its rampYears. */
+/** Total displaced in a given (1-based) contract year — each vendor ramps over its transitionMonths. */
 export function displacedInYear(vendors: DisplacedVendor[], year: number): number {
   return vendors.reduce((s, v) => s + Math.round(vendorDisplacedAnnual(v) * vendorRampFraction(v, year)), 0);
 }
