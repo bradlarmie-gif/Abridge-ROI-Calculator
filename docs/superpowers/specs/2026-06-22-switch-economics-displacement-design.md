@@ -1,87 +1,85 @@
-# Switch Economics — vendor displacement (cost takeout)
+# Vendor displacement in Compare Pricing (cost takeout)
 
 **Date:** 2026-06-22
-**Status:** Design — pending review (rev 2, simplified)
+**Status:** Design — pending review (rev 3, scoped to Compare Pricing only)
 **Owner:** Brad
+
+## Scope (read this first)
+
+This lives **only in the Compare Pricing path** under Forecast. It is **deal/org-level**.
+It does **not** touch the proforma, Explore, or any other path. Nothing outside Compare
+Pricing changes.
 
 ## Problem & goal
 
 Buyers keep asking: *"I already pay for [scribes / a competing ambient vendor / dictation /
 a search tool]. What's my **net** cost if Abridge absorbs that and I stop paying for it?"*
 
-Reframe Abridge from net-new spend to **cost takeout** — the most CFO-credible value we have,
-because it's hard dollars already on the budget. `Net = Abridge gross − what you stop paying.`
+Reframe Abridge from net-new spend to **cost takeout**: `Net = Abridge gross − what you stop
+paying`. Compare Pricing already computes each deal's gross cost; we add a displacement layer
+and surface net.
 
 ## Strategic framing
 
-Abridge is moving from "AI scribe" → "clinical intelligence platform" (clinical-trial
-matching, etc.). As it absorbs more adjacent jobs, more incumbent spend becomes displaceable.
-So the category list is **data-driven and easy to grow** — adding one is a config change.
+Abridge is moving from "AI scribe" → "clinical intelligence platform." As it absorbs more
+adjacent jobs, more incumbent spend becomes displaceable — so the category list is
+**data-driven and easy to grow** (adding one is a config change).
 
-## The key insight: the engine already exists
+## Where it plugs in
 
-Displacement is already built and proven in Explore + Proforma. We extend it; we do **not**
-build a parallel model (that's the dual-source bug we keep hitting).
+Compare Pricing has its own engine — `client/src/lib/pricingComparisonCalc.ts` (`DealOption`,
+`VolumeInputs`, `computeDealResult` → gross `totalContractCost` / `averageAnnualCost`) — and UI
+`client/src/pages/forecast/PricingComparisonFlow.tsx`. We add to **that** engine only.
 
-In `proformaTypes.ts` / `proformaCalculations.ts`, **per care setting**:
+Displacement is the customer's **current vendor stack**, which is the same regardless of which
+Abridge deal structure (A/B/C) they pick. So it's a **single comparison-level input**, applied
+to every deal column to show net. (Not per-deal, not per-care-setting.)
+
+## Data model (self-contained to Compare Pricing)
+
+Reuse the **shape** of the proven `CostOffset` type (import the type only — zero runtime impact
+on the proforma) and compute the displaced dollars inside `pricingComparisonCalc.ts`:
 
 ```ts
-interface CostOffset {
-  id; label;
-  annualSpend: number;       // their current spend on the displaced item
-  displacementPct: number;   // % Abridge takes off the table — partial is the norm
-  transitionMonths: number;  // ramp — fully custom, set whatever the deal needs
+interface DisplacedVendor {
+  id: string;
+  label: string;            // custom name, or the category label
+  category?: DisplacementCategoryId;  // undefined ⇒ custom "add your own"
+  annualSpend: number;      // their current spend — source of truth
+  displacementPct: number;  // % Abridge takes off the table — partial is the norm
+  transitionMonths: number; // fully custom ramp
 }
-// displacedAnnual = round(annualSpend × displacementPct / 100), ramped over transitionMonths,
-// already aggregated into the model's displacementValue.
+// displacedAnnual = round(annualSpend × displacementPct / 100)
 ```
 
-This is exactly the `$`-anchored, partial, contract-agnostic, per-setting model we want.
-`displacementPct` = the dynamic lever; `annualSpend` = source of truth (survives any contract
-structure); `transitionMonths` = custom ramp.
+(Same formula the proforma uses, so numbers stay consistent. The formula is one line — copied
+into Compare Pricing for full self-containment, not shared at runtime.)
 
-## What we're actually building (small)
+## Categories (data-driven config — `displacementCategories.ts`)
 
-1. **Category dropdown** on the existing per-setting cost-offset row. Add an optional
-   `category?` to `CostOffset` (additive — existing offsets keep working). Categories come from
-   a config list (`displacementCategories.ts`) so they grow with the platform:
+| id | Label | basis hint |
+|----|-------|-----------|
+| `scribes` | Medical scribes (in-person / virtual) | per provider / yr |
+| `ambientAi` | Competing ambient AI (DAX, Suki, Nabla, Ambience) | per provider / mo |
+| `dictation` | Dictation / speech-to-text (Dragon Medical) | per provider / yr |
+| `transcription` | Transcription services (outsourced/offshore) | per encounter / flat |
+| `cdiCoding` | Third-party CDI / coding tooling | flat / per encounter |
+| `clinicalEvidence` | Clinical evidence & search | per provider / yr or flat |
+| *(custom)* | + Add your own | freeform |
 
-   | id | Label | basis hint |
-   |----|-------|-----------|
-   | `scribes` | Medical scribes (in-person / virtual) | per provider / yr |
-   | `ambientAi` | Competing ambient AI (DAX, Suki, Nabla, Ambience) | per provider / mo |
-   | `dictation` | Dictation / speech-to-text (Dragon Medical) | per provider / yr |
-   | `transcription` | Transcription services (outsourced/offshore) | per encounter / flat |
-   | `cdiCoding` | Third-party CDI / coding tooling | flat / per encounter |
-   | `clinicalEvidence` | Clinical evidence & search | per provider / yr or flat |
-   | *(custom)* | + Add your own | freeform |
+Basis is a **hint only** — no fabricated default dollars; the rep enters the real spend (blank
+placeholder until they do). Grows with the platform (clinical-trial matching, etc. added later).
 
-   Basis is a **hint only** — no fabricated default dollars; the rep enters the real spend
-   (blank placeholder until they do). Custom row = freeform label + spend + %.
+## What we build (inside Compare Pricing only)
 
-2. **Editable transition months** on each offset (already in the type; just expose the input).
-
-3. **Net-cost "Switch Economics" view** — a roll-up of the per-setting displacement into one
-   before→after story:
-
-   ```
-   What you pay today        →   Abridge            →   Net
-   ─────────────────             ────────               ─────
-   Scribes      $2.4M            Gross   $3.0M           $0.6M / yr net
-   Dictation    $0.3M            − displaced $2.7M       "90% of Abridge is covered by
-   Evidence     $0.0M                                     spend you already make"
-   ─────────────                                          payback accelerates
-   Displaceable $2.7M
-   ```
-
-   Headline flips from "Abridge costs $X" → **net cost** + "% of Abridge covered" + payback
-   impact. Lives where the per-setting settings already live (the proforma), as a roll-up —
-   not rebuilt inside Compare Pricing's separate engine.
-
-4. **Partial-impact view** — net cost at **40% / 60% / 80%**, plus a **"+ custom" level** the
-   rep can add. Reuses the sensitivity-band pattern from ProformaPresent. This is the
-   "move fast when pushed into a corner" affordance: partial displacement still reads as a real
-   dent, not all-or-nothing.
+1. **A "What you pay today" section** at the top of the comparison: rows of `DisplacedVendor`
+   (category dropdown + spend + % displaced slider + custom transition months). "+ Add your own"
+   for custom.
+2. **Net cost per deal:** each deal column shows **gross** and **net = gross − total displaced
+   annual**, plus "% of Abridge covered by displacement." Headline metric becomes net.
+3. **Before → after framing:** `What you pay today → Abridge gross → Net`.
+4. **Partial-impact view:** net at **40% / 60% / 80%** displacement, plus a **"+ custom" level**.
+   A sensitivity on `displacementPct` — the "move fast when pushed into a corner" lever.
 
 ## Conservatism (non-negotiable)
 
@@ -90,33 +88,29 @@ structure); `transitionMonths` = custom ramp.
 
 ## States
 
-- No displacement entered → net = gross (graceful, nothing claimed).
-- Spend entered, 0% displaced → no offset.
-- Transition ramp → displaced $ ramps over the custom `transitionMonths`.
+- No vendors added → net = gross (graceful; nothing claimed).
+- Vendor added, 0% displaced → no offset.
+- Custom transition ramp → displaced $ ramps in over `transitionMonths` (year-1 partial).
 
 ## Out of scope (v1)
 
-- Auto-pulling real vendor price benchmarks (bases stay hints only).
-- Rebuilding Compare Pricing's deal A/B/C engine — untouched; this rides the proforma's
-  existing per-setting displacement. (Whether Compare Pricing is later retired/folded is a
-  separate call.)
+- The proforma, Explore, and everything outside Compare Pricing — untouched.
+- Per-care-setting displacement (this is deal-level).
+- Rebuilding the deal A/B/C structure engine — we add a displacement layer + net rendering, we
+  don't change how gross is computed.
+- Auto-pulling real vendor price benchmarks (bases are hints only).
+- Renaming "Compare Pricing" (optional; not part of this).
 
 ## Resolved decisions
 
-1. **Per care setting** (matches the existing `CostOffset`). ✓
-2. **Transition months: fully custom** per offset. ✓
-3. **Partial-impact view: 40/60/80 + a custom level.** ✓
-4. **Strategic callout: cut** (overcomplicated; a real paid line goes in the math, nothing
-   special needed). ✓
-
-## One thing to confirm
-
-Placement of the net-cost view: build it as a **roll-up in the proforma** (simplest — the
-per-setting offsets and displacement math already live there), rather than inside the separate
-Compare Pricing tool. Confirm that's fine, or say if you still want it surfaced under Forecast.
+1. **Scope: Compare Pricing path only; proforma untouched.** ✓
+2. **Deal/org-level** (not per care setting). ✓
+3. **Transition months: fully custom** per vendor. ✓
+4. **Partial-impact view: 40/60/80 + a custom level.** ✓
+5. **Strategic callout: cut.** ✓
 
 ## Testing
 
-- Unit: shared `displacedAnnual` (partial %, 0%, 100%, ramp).
-- Guard: per-setting offset and the net-cost roll-up produce the same displaced-$ (one engine).
-- Existing Explore/Proforma offset behavior unchanged (additive `category`).
+- Unit (in `pricingComparison.test.ts`): `displacedAnnual` (partial %, 0%, 100%); net per deal
+  = gross − total displaced; net at the 40/60/80/custom levels.
+- Verify nothing outside Compare Pricing is imported-from in a way that changes its behavior.
