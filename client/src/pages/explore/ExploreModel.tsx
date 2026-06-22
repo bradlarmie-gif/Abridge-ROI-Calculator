@@ -454,9 +454,12 @@ export default function ExploreModel({
   const threeYearNetTotal = useMemo(() => year1Net + year2Net + year3Net, [year1Net, year2Net, year3Net]);
   const threeYearInvestmentTotal = useMemo(() => year1Investment + year2Investment + year3Investment, [year1Investment, year2Investment, year3Investment]);
 
-  // Combined ROI including cost displacement (Option B: clinical + displaced budget)
+  // Combined case with cost displacement treated as a cost reduction (Way B — net of
+  // displaced spend), matching the proforma and Compare Pricing. Net dollars are unchanged
+  // vs. counting displacement as added value; only the ROI ratio reflects the lower net cost.
   const combinedNetY1 = year1Net + displacementYear1;
-  const combinedRoiY1 = annualInvestment > 0 ? (totalAnnualValue + displacementYear1) / annualInvestment : 0;
+  const netInvestmentY1 = Math.max(1, annualInvestment - displacementYear1);
+  const combinedRoiY1 = annualInvestment > 0 ? totalAnnualValue / netInvestmentY1 : 0;
   const combinedThreeYearNet = threeYearNetTotal + displacementYear1 + displacementYear2 + displacementYear3;
 
   // Expansion opportunity (use fullScaleProviders from state, editable utilization)
@@ -626,6 +629,13 @@ export default function ExploreModel({
       workforceValue,
       revenueValue,
       qualityValue,
+      // Carry the cost displacement entered in Explore into the proforma's cost-offset model
+      // so it isn't re-entered. Explore's ~50%-year-1 ramp ≈ a 12-month transition.
+      costOffsets: displacementItems.length > 0
+        ? displacementItems.map((d) => ({
+            id: d.id, label: d.label, annualSpend: d.annualSpend, displacementPct: d.displacementPct, transitionMonths: 12,
+          }))
+        : undefined,
     };
 
     onAddToProforma(snapshot);
