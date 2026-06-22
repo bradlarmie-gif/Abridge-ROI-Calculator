@@ -80,11 +80,20 @@ export interface SwitchInputs {
   workforceFootnote: string;
   riskFootnote: string;
   systemSize: number;
-  orgType: "amc" | "community" | "idn" | "other" | "";
+  orgType: "amc" | "community" | "idn" | "physician_group" | "other" | "";
   payerMixMedicare: number;
   payerMixMedicaid: number;
   payerMixCommercial: number;
   deploymentTenure: '0-6' | '6-12' | '12-24' | '24+' | '';
+  // Ambient narrative-flow fields (already initialized in assessment defaults; declared here so
+  // the ambient screens that read/write them type-check against SwitchInputs).
+  organizationName: string;
+  providersProvisioned: number;
+  patientExperienceAwareness: string;
+  patientExperienceNoticeable: string;
+  patientExperienceFormalized: string;
+  patientExperienceSignals: string;
+  patientExperienceFormalData: string;
 }
 
 export interface GapItem {

@@ -11,6 +11,7 @@ interface FormattedNumberInputProps {
   className?: string;
   style?: React.CSSProperties;
   placeholder?: string;
+  disabled?: boolean;
   'data-testid'?: string;
 }
 
@@ -39,6 +40,7 @@ export function FormattedNumberInput({
   className = '',
   style,
   placeholder = '',
+  disabled,
   'data-testid': testId
 }: FormattedNumberInputProps) {
   const decimals = step < 1 ? Math.ceil(-Math.log10(step)) : 0;
@@ -144,6 +146,7 @@ export function FormattedNumberInput({
       className={className}
       style={style}
       placeholder={placeholder}
+      disabled={disabled}
       data-testid={testId}
       autoComplete="off"
     />
