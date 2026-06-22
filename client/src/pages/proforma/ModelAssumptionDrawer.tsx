@@ -164,6 +164,37 @@ export function buildDriverChangeUpdate(
   return { drivers: updatedDrivers, annualValue: newAnnualValue, fullExploreState: newExploreState };
 }
 
+/**
+ * Re-derive a setting's value layer from a changed ExploreState — used when an input
+ * that affects EVERY driver changes (e.g. total encounters). Mirrors the snapshot
+ * builder's convention: drivers recompute from the engine at the explore (pilot) scale,
+ * then scale up by fullScale/pilot so investment and value still track on an expanding
+ * deal. Drivers the engine can't recompute (manual dollars, implied docQuality) keep
+ * their prior value. Aggregates roll up from the resulting driver set.
+ */
+export function recomputeSettingValues(
+  setting: ProformaSettingSnapshot,
+  newExploreState: ExploreState,
+): Partial<ProformaSettingSnapshot> {
+  const pilot = setting.providerCount || 1;
+  const full = setting.fullScaleProviders || pilot;
+  const scale = full > pilot && pilot > 0 ? full / pilot : 1;
+  const drivers = setting.drivers.map(d => {
+    const v = recomputeDriverFromExploreState(d.id, newExploreState);
+    return v >= 0 ? { ...d, value: Math.round(v * scale) } : d;
+  });
+  const sumQ = (q: string) => drivers.filter(d => d.quadrant === q).reduce((s, d) => s + d.value, 0);
+  return {
+    drivers,
+    annualValue: drivers.reduce((s, d) => s + d.value, 0),
+    fullExploreState: newExploreState,
+    capacityValue: sumQ("Capacity"),
+    workforceValue: sumQ("Workforce"),
+    revenueValue: sumQ("Revenue"),
+    qualityValue: sumQ("Quality"),
+  };
+}
+
 function NumInput({
   value, onChange, suffix, prefix, width = 'w-14',
 }: {
@@ -1023,7 +1054,14 @@ export function VolumeAndPricingSection({
                       value={encVal}
                       onChange={(v) => {
                         const updated = { ...yearlyEncounters, [yk]: v };
-                        onUpdateSetting(setting.id, { yearlyEncounters: updated });
+                        // Editing total encounters must move the value drivers too — they're
+                        // derived from the explore state's annualEncounters. Re-anchor it to the
+                        // entered figure and re-derive every driver + the aggregates.
+                        const es = setting.fullExploreState;
+                        const patch = es
+                          ? recomputeSettingValues(setting, { ...es, annualEncounters: v })
+                          : {};
+                        onUpdateSetting(setting.id, { yearlyEncounters: updated, ...patch });
                       }}
                       className={inputCls + " text-right"}
                     />

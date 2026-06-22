@@ -2475,7 +2475,7 @@ function ScenarioDriversPage({
                       <Text style={{ fontSize: 8, color: brand.textSecondary }}>{driver.quadrant}</Text>
                     </View>
                     <Text style={[S.tableCellBold, { flex: 1, textAlign: "right" }]}>{fmt(driver.value)}</Text>
-                    <Text style={[S.tableCellMono, { flex: 1.2, textAlign: "right", textTransform: "capitalize" }]}>{driver.onset}</Text>
+                    <Text style={[S.tableCellMono, { flex: 1.2, textAlign: "right", textTransform: "capitalize" }]}>{driver.onset === "custom" ? `Month ${Math.max(1, Math.round(driver.customOnsetMonths ?? 1))}` : driver.onset}</Text>
                   </View>
                 );
               })}
