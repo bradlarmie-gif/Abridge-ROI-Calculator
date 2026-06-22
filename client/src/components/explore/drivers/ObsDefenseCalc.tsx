@@ -82,11 +82,9 @@ export default function ObsDefenseCalc({ state, updateDocQualityInputs }: Props)
             <label className="text-[13px] text-[#666666] mb-1.5 block">Inpatient-to-Observation Revenue Delta</label>
             <div className="relative">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#888888] z-10">$</span>
-              <input
-                type="text"
-                inputMode="numeric"
-                value={dq.ipObsDefenseRevenueDelta ? dq.ipObsDefenseRevenueDelta.toLocaleString("en-US") : ""}
-                onChange={(e) => { const v = parseFloat(e.target.value.replace(/,/g, "")) || 0; updateDocQualityInputs({ ipObsDefenseRevenueDelta: v }); }}
+              <NumberField
+                value={dq.ipObsDefenseRevenueDelta}
+                onValueChange={(v) => updateDocQualityInputs({ ipObsDefenseRevenueDelta: v })}
                 className="w-full h-12 bg-white border border-[#E5E5E5] rounded-lg pl-8 pr-4 text-black font-semibold text-base"
                 data-testid="input-obs-delta"
               />

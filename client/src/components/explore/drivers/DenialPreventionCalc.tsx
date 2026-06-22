@@ -141,11 +141,9 @@ export default function DenialPreventionCalc({ state, updateDocQualityInputs }: 
             </div>
             <div className="flex items-center gap-1">
               <span className="text-[#888888]">$</span>
-              <input
-                type="text"
-                inputMode="numeric"
-                value={docQualityInputs.avgClaimValue ? docQualityInputs.avgClaimValue.toLocaleString("en-US") : ""}
-                onChange={(e) => { const v = parseFloat(e.target.value.replace(/,/g, "")) || 0; updateDocQualityInputs({ avgClaimValue: v }); }}
+              <NumberField
+                value={docQualityInputs.avgClaimValue}
+                onValueChange={(v) => updateDocQualityInputs({ avgClaimValue: v })}
                 className="w-20 h-7 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm"
                 data-testid="input-claim-value"
               />

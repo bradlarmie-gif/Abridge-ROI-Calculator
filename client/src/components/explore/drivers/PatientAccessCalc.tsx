@@ -79,18 +79,18 @@ export default function PatientAccessCalc({ state, updateTimeDriverInputs, total
             <div className="relative flex-1">
               <input
                 type="text"
-                inputMode="numeric"
+                inputMode="decimal"
                 value={customReinvestDisplay}
                 onChange={(e) => {
-                  const raw = e.target.value.replace(/[^0-9]/g, '');
+                  const raw = e.target.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');
                   setCustomReinvestDisplay(raw);
-                  const n = parseInt(raw);
+                  const n = parseFloat(raw);
                   if (!isNaN(n) && n >= 1 && n <= 100) {
                     updateTimeDriverInputs({ capacityRealizationPercent: n });
                   }
                 }}
                 onBlur={() => {
-                  const n = parseInt(customReinvestDisplay);
+                  const n = parseFloat(customReinvestDisplay);
                   if (isNaN(n) || n < 1) {
                     updateTimeDriverInputs({ capacityRealizationPercent: 25 });
                     setCustomReinvestDisplay('25');

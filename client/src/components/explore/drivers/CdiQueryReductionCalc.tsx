@@ -142,11 +142,9 @@ export default function CdiQueryReductionCalc({ state, updateDocQualityInputs }:
               <label className="text-[13px] text-[#666666] mb-1.5 block">Cost per Query</label>
               <div className="relative">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#888888] z-10">$</span>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  value={docQualityInputs.ipCdiCostPerQuery ? docQualityInputs.ipCdiCostPerQuery.toLocaleString("en-US") : ""}
-                  onChange={(e) => { const v = parseFloat(e.target.value.replace(/,/g, "")) || 0; updateDocQualityInputs({ ipCdiCostPerQuery: v }); }}
+                <NumberField
+                  value={docQualityInputs.ipCdiCostPerQuery}
+                  onValueChange={(v) => updateDocQualityInputs({ ipCdiCostPerQuery: v })}
                   className="w-full h-12 bg-white border border-[#E5E5E5] rounded-lg pl-8 pr-4 text-black font-semibold text-base"
                   data-testid="input-cdi-cost"
                 />

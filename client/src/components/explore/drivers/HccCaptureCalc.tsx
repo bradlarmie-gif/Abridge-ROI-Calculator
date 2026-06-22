@@ -135,11 +135,10 @@ export default function HccCaptureCalc({ state, updateDocQualityInputs }: Props)
                 <div>
                   <p className="text-xs text-[#888888] mb-1">Patients / provider</p>
                   <div className="flex items-center gap-0.5">
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      value={plan.panelSize ? plan.panelSize.toLocaleString("en-US") : ""}
-                      onChange={(e) => { const v = parseFloat(e.target.value.replace(/,/g, "")) || 0; updatePlan(plan.id, { panelSize: v }); }}
+                    <NumberField
+                      decimal={false}
+                      value={plan.panelSize}
+                      onValueChange={(v) => updatePlan(plan.id, { panelSize: v })}
                       className="w-20 h-8 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none transition-colors"
                     />
                     <span className="text-xs text-[#888888]">pts</span>
@@ -154,11 +153,9 @@ export default function HccCaptureCalc({ state, updateDocQualityInputs }: Props)
                   </p>
                   <div className="flex items-center gap-0.5">
                     <span className="text-xs text-[#888888]">$</span>
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      value={plan.valuePerHcc ? plan.valuePerHcc.toLocaleString("en-US") : ""}
-                      onChange={(e) => { const v = parseFloat(e.target.value.replace(/,/g, "")) || 0; updatePlan(plan.id, { valuePerHcc: v }); }}
+                    <NumberField
+                      value={plan.valuePerHcc}
+                      onValueChange={(v) => updatePlan(plan.id, { valuePerHcc: v })}
                       className="w-full h-8 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none transition-colors"
                     />
                   </div>

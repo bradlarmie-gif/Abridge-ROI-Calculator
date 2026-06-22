@@ -205,18 +205,18 @@ export default function ProviderWellbeingCalc({ state, updateTimeDriverInputs, t
               <div className="relative flex-1">
                 <input
                   type="text"
-                  inputMode="numeric"
+                  inputMode="decimal"
                   value={customDisplay}
                   onChange={(e) => {
-                    const raw = e.target.value.replace(/[^0-9]/g, '');
+                    const raw = e.target.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');
                     setCustomDisplay(raw);
-                    const n = parseInt(raw);
+                    const n = parseFloat(raw);
                     if (!isNaN(n) && n >= 1 && n <= 100) {
                       updateTimeDriverInputs({ retentionCustomPercent: n, retentionImpactScenario: 'custom' });
                     }
                   }}
                   onBlur={() => {
-                    const n = parseInt(customDisplay);
+                    const n = parseFloat(customDisplay);
                     if (isNaN(n) || n < 1) {
                       updateTimeDriverInputs({ retentionCustomPercent: 10, retentionImpactScenario: 'custom' });
                       setCustomDisplay('10');

@@ -172,11 +172,9 @@ export default function DrgAccuracyCalc({ state, updateDocQualityInputs }: Props
               <label className="text-[13px] text-[#666666] mb-1.5 block">Base DRG Payment</label>
               <div className="relative">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#888888]">$</span>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  value={docQualityInputs.ipDrgBasePayment ? docQualityInputs.ipDrgBasePayment.toLocaleString("en-US") : ""}
-                  onChange={(e) => { const v = parseFloat(e.target.value.replace(/,/g, "")) || 0; updateDocQualityInputs({ ipDrgBasePayment: v }); }}
+                <NumberField
+                  value={docQualityInputs.ipDrgBasePayment}
+                  onValueChange={(v) => updateDocQualityInputs({ ipDrgBasePayment: v })}
                   className="w-full h-12 bg-white border border-[#E5E5E5] rounded-lg pl-8 pr-4 text-black font-semibold text-base"
                   data-testid="input-drg-base"
                 />

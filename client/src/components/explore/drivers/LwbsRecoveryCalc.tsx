@@ -130,18 +130,19 @@ export default function LwbsRecoveryCalc({ state, updateTimeDriverInputs }: Prop
             <div className="relative flex-1">
               <input
                 type="text"
-                inputMode="numeric"
+                inputMode="decimal"
                 value={customDisplay}
                 onChange={(e) => {
-                  const raw = e.target.value.replace(/[^0-9]/g, '');
+                  // Allow decimals (e.g. 7.5%): keep digits and a single decimal point.
+                  const raw = e.target.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');
                   setCustomDisplay(raw);
-                  const n = parseInt(raw);
+                  const n = parseFloat(raw);
                   if (!isNaN(n) && n >= 1 && n <= 100) {
                     updateTimeDriverInputs({ edLwbsReduction: n });
                   }
                 }}
                 onBlur={() => {
-                  const n = parseInt(customDisplay);
+                  const n = parseFloat(customDisplay);
                   if (isNaN(n) || n < 1) {
                     updateTimeDriverInputs({ edLwbsReduction: 20 });
                     setCustomDisplay('20');
