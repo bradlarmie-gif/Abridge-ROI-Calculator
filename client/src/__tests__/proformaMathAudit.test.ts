@@ -875,7 +875,7 @@ describe("Variable contract term (1–6 years)", () => {
   });
 });
 
-describe("Displacement is cost-reduction (Way B), not value", () => {
+describe("Displacement is a separate savings line (Way C), never in the ROI ratio", () => {
   const config = makeConfig();
   const base = [makeSetting()];
   const withOffset = [makeSetting({
@@ -884,18 +884,20 @@ describe("Displacement is cost-reduction (Way B), not value", () => {
   const baseS = calculateProformaSummary(base, config, buildMonthlyCashFlows(base, config));
   const offS = calculateProformaSummary(withOffset, config, buildMonthlyCashFlows(withOffset, config));
 
-  it("a cost offset does NOT inflate value — value stays clinical", () => {
+  it("does NOT change value-to-cost — the ratio is clinical / gross, never juiced by displacement", () => {
+    expect(offS.valueToCost).toBeCloseTo(baseS.valueToCost, 5);
+  });
+
+  it("does NOT change the gross cost — displacement is separate, not netted into the ratio", () => {
+    expect(offS.termInvestment).toBeCloseTo(baseS.termInvestment, -1);
+  });
+
+  it("does NOT change the clinical value figure", () => {
     expect(offS.termValue).toBeCloseTo(baseS.termValue, -1);
   });
 
-  it("a cost offset reduces what you pay — investment drops", () => {
-    expect(offS.termInvestment).toBeLessThan(baseS.termInvestment);
-  });
-
-  it("net gain equals the cost reduction (net dollars preserved, just reframed)", () => {
-    const costDrop = baseS.termInvestment - offS.termInvestment;
-    const netGain = offS.termNet - baseS.termNet;
-    expect(costDrop).toBeGreaterThan(0);
-    expect(netGain).toBeCloseTo(costDrop, -1);
+  it("surfaces the displaced spend separately as displacementSavings", () => {
+    expect(baseS.displacementSavings).toBe(0);
+    expect(offS.displacementSavings).toBeGreaterThan(0);
   });
 });

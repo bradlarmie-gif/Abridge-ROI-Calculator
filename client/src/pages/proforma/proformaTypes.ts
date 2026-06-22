@@ -162,6 +162,7 @@ export interface ProformaSummary {
   termNet: number;
   termValue: number;
   termInvestment: number;
+  displacementSavings: number; // displaced vendor spend, surfaced separately (Way C — never in the ROI ratio)
   runRateValue: number;
   runRateInvestment: number;
 }

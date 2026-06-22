@@ -454,12 +454,11 @@ export default function ExploreModel({
   const threeYearNetTotal = useMemo(() => year1Net + year2Net + year3Net, [year1Net, year2Net, year3Net]);
   const threeYearInvestmentTotal = useMemo(() => year1Investment + year2Investment + year3Investment, [year1Investment, year2Investment, year3Investment]);
 
-  // Combined case with cost displacement treated as a cost reduction (Way B — net of
-  // displaced spend), matching the proforma and Compare Pricing. Net dollars are unchanged
-  // vs. counting displacement as added value; only the ROI ratio reflects the lower net cost.
+  // Way C — displacement is a SEPARATE savings line. The ROI ratio stays clinical value /
+  // gross investment (never juiced by displacement); the displaced spend shows up only in the
+  // net figures as a clearly-separate saving, matching the proforma and Compare Pricing.
   const combinedNetY1 = year1Net + displacementYear1;
-  const netInvestmentY1 = Math.max(1, annualInvestment - displacementYear1);
-  const combinedRoiY1 = annualInvestment > 0 ? totalAnnualValue / netInvestmentY1 : 0;
+  const combinedRoiY1 = annualInvestment > 0 ? totalAnnualValue / annualInvestment : 0;
   const combinedThreeYearNet = threeYearNetTotal + displacementYear1 + displacementYear2 + displacementYear3;
 
   // Expansion opportunity (use fullScaleProviders from state, editable utilization)

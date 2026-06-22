@@ -23,7 +23,6 @@ import {
   makeDefaultVendor,
   vendorDisplacedAnnual,
   computeNetResult,
-  computeValueMetrics,
 } from "@/lib/pricingComparisonCalc";
 
 interface PricingComparisonFlowProps {
@@ -516,11 +515,9 @@ function RoiAnalysisSection({
   const results = deals.map((d) => computeDealResult(d, volumes, annualValueEstimate));
   const nets = results.map((r) => computeNetResult(r, vendors));
   const showNet = displacementOn && nets.some((n) => n.totalDisplaced > 0);
-  // ROI / payback must reflect the cost the customer actually pays. When displacement is on,
-  // recompute the value metrics against net cost so ROI improves as it should.
-  const netMetrics = deals.map((d, di) =>
-    computeValueMetrics(nets[di].netByYear, nets[di].netTotalContract, d.contractTermMonths, annualValueEstimate));
-  const metricsFor = showNet ? netMetrics : results;
+  // ROI / payback are computed on GROSS Abridge cost — never net of displacement. Displaced
+  // spend is shown separately (the net-cost rows + switch-economics block) so it can never
+  // inflate the ROI multiple. Keeps the ratio bulletproof against "you're juicing it."
 
   // Chart data: one entry per year of the longest contract. When displacement is on,
   // the bars show net cost by year (gross − displaced).
@@ -679,34 +676,34 @@ function RoiAnalysisSection({
                       ))}
                     </tr>
                     <tr>
-                      <td className="py-2.5 pr-4 text-xs text-[#8C7E6E]">Year 1 ROI{showNet ? " (net)" : ""}</td>
-                      {metricsFor.map((m, ri) => (
+                      <td className="py-2.5 pr-4 text-xs text-[#8C7E6E]">Year 1 ROI</td>
+                      {results.map((r, ri) => (
                         <td key={ri} className="py-2.5 px-3 text-right text-sm font-semibold tabular-nums" style={{ color: DEAL_COLORS[ri] }}>
-                          {m.vtcYear1 !== null ? `${m.vtcYear1.toFixed(1)}×` : "—"}
+                          {r.vtcYear1 !== null ? `${r.vtcYear1.toFixed(1)}×` : "—"}
                         </td>
                       ))}
                     </tr>
                     <tr>
-                      <td className="py-2.5 pr-4 text-xs text-[#8C7E6E]">Term ROI{showNet ? " (net)" : ""}</td>
-                      {metricsFor.map((m, ri) => (
+                      <td className="py-2.5 pr-4 text-xs text-[#8C7E6E]">Term ROI</td>
+                      {results.map((r, ri) => (
                         <td key={ri} className="py-2.5 px-3 text-right text-sm font-semibold tabular-nums" style={{ color: DEAL_COLORS[ri] }}>
-                          {m.termVtc !== null ? `${m.termVtc.toFixed(1)}×` : "—"}
+                          {r.termVtc !== null ? `${r.termVtc.toFixed(1)}×` : "—"}
                         </td>
                       ))}
                     </tr>
                     <tr>
-                      <td className="py-2.5 pr-4 text-xs text-[#8C7E6E]">Annual ROI{showNet ? " (net)" : ""}</td>
-                      {metricsFor.map((m, ri) => (
+                      <td className="py-2.5 pr-4 text-xs text-[#8C7E6E]">Annual ROI</td>
+                      {results.map((r, ri) => (
                         <td key={ri} className="py-2.5 px-3 text-right text-sm font-bold tabular-nums" style={{ color: DEAL_COLORS[ri] }}>
-                          {m.annualRoiPct !== null ? `${m.annualRoiPct >= 0 ? "+" : ""}${Math.round(m.annualRoiPct)}%` : "—"}
+                          {r.annualRoiPct !== null ? `${r.annualRoiPct >= 0 ? "+" : ""}${Math.round(r.annualRoiPct)}%` : "—"}
                         </td>
                       ))}
                     </tr>
                     <tr>
-                      <td className="py-2.5 pr-4 text-xs text-[#8C7E6E]">Payback Period{showNet ? " (net)" : ""}</td>
-                      {metricsFor.map((m, ri) => (
+                      <td className="py-2.5 pr-4 text-xs text-[#8C7E6E]">Payback Period</td>
+                      {results.map((r, ri) => (
                         <td key={ri} className="py-2.5 px-3 text-right text-sm font-semibold tabular-nums" style={{ color: DEAL_COLORS[ri] }}>
-                          {m.paybackMonths !== null ? `${m.paybackMonths} months` : "—"}
+                          {r.paybackMonths !== null ? `${r.paybackMonths} months` : "—"}
                         </td>
                       ))}
                     </tr>
@@ -760,10 +757,7 @@ export default function PricingComparisonFlow({ onBack, onHome }: PricingCompari
       .map((d) => {
         const result = computeDealResult(d, volumes, annualValueEstimate);
         const net = computeNetResult(result, vendors);
-        const termVtc = displacementOn
-          ? computeValueMetrics(net.netByYear, net.netTotalContract, d.contractTermMonths, annualValueEstimate).termVtc
-          : result.termVtc;
-        return { deal: d, result, net, termVtc };
+        return { deal: d, result, net, termVtc: result.termVtc };
       })
       .filter((x) => x.result.totalContractCost > 0);
     if (priced.length < 2) return null;
@@ -967,7 +961,7 @@ export default function PricingComparisonFlow({ onBack, onHome }: PricingCompari
                   {" "}(<span className="text-white/80 font-medium">{Math.round(verdict.cheapest.net.pctCovered)}%</span>).</>
               )}
               {verdict.bestRoi && verdict.bestRoi.termVtc !== null && (
-                <> Best return: <span className="text-white/80 font-medium">{verdict.bestRoi.deal.label} at {verdict.bestRoi.termVtc.toFixed(1)}× over the term{displacementOn ? " (net)" : ""}</span>.</>
+                <> Best return: <span className="text-white/80 font-medium">{verdict.bestRoi.deal.label} at {verdict.bestRoi.termVtc.toFixed(1)}× over the term</span>.</>
               )}
             </p>
           </motion.div>
