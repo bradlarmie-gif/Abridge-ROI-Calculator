@@ -27,7 +27,6 @@ import JourneySelector from "@/pages/JourneySelector";
 import ObjectiveSelectionScreen, {
   type SelectedLever,
 } from "@/pages/ObjectiveSelectionScreen";
-import RoiCalculator from "@/pages/RoiCalculator";
 import ModelBuilder, { type ModelResults, type ValueResults } from "@/pages/ModelBuilder";
 import BaselineSetup, { type BaselineInfo } from "@/pages/BaselineSetup";
 import InvestmentPage from "@/pages/InvestmentPage";
