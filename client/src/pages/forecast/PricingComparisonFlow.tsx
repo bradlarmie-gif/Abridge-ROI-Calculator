@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, TrendingUp, Info } from "lucide-react";
+import { X, TrendingUp, Info, ChevronDown } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
   Legend, ResponsiveContainer,
@@ -113,6 +113,47 @@ function NumberInput({
         className="flex-1 min-w-0 bg-transparent text-sm text-[#1A1A1A] outline-none"
       />
       {suffix && <span className="text-[#8C7E6E] text-xs flex-shrink-0 whitespace-nowrap">{suffix}</span>}
+    </div>
+  );
+}
+
+// Brand-styled category picker — matches Compare Pricing's inputs (no native <select>).
+function CategorySelect({ value, onChange }: {
+  value: DisplacementCategoryId;
+  onChange: (v: DisplacementCategoryId) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const current = DISPLACEMENT_CATEGORIES.find((c) => c.id === value) ?? DISPLACEMENT_CATEGORIES[0];
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="w-full h-10 flex items-center justify-between gap-2 bg-white border border-[#E8E2DA] rounded-lg px-3 text-sm text-[#1A1A1A] hover:border-[#1A1A1A] transition-colors"
+      >
+        <span className="truncate">{current.label}</span>
+        <ChevronDown className={`w-3.5 h-3.5 text-[#8C7E6E] flex-shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
+          <div className="absolute z-20 mt-1 w-full min-w-[220px] bg-white border border-[#E8E2DA] rounded-lg shadow-lg py-1 max-h-72 overflow-auto">
+            {DISPLACEMENT_CATEGORIES.map((c) => (
+              <button
+                key={c.id}
+                type="button"
+                onClick={() => { onChange(c.id); setOpen(false); }}
+                className={`w-full text-left px-3 py-2 text-sm hover:bg-[#F5F0EB] transition-colors flex items-baseline justify-between gap-2 ${
+                  c.id === value ? "text-[#EA2C00] font-medium" : "text-[#1A1A1A]"
+                }`}
+              >
+                <span>{c.label}</span>
+                {c.hint && <span className="text-[10px] text-[#A39888] flex-shrink-0">{c.hint}</span>}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -843,17 +884,13 @@ export default function PricingComparisonFlow({ onBack, onHome }: PricingCompari
                   <div className="space-y-2.5">
                     {vendors.map((v) => (
                       <div key={v.id} className="grid grid-cols-1 sm:grid-cols-[1.4fr_1fr_1.3fr_auto_auto] gap-2.5 items-center">
-                        <select
+                        <CategorySelect
                           value={v.category}
-                          onChange={(e) => {
-                            const cat = e.target.value as DisplacementCategoryId;
+                          onChange={(cat) => {
                             const meta = DISPLACEMENT_CATEGORIES.find((c) => c.id === cat);
                             updateVendor(v.id, { category: cat, label: meta && cat !== "custom" ? meta.label : v.label });
                           }}
-                          className="h-10 bg-[#F5F0EB] border border-[#E8E2DA] rounded-lg px-3 text-sm text-[#1A1A1A] outline-none focus:border-[#1A1A1A] cursor-pointer"
-                        >
-                          {DISPLACEMENT_CATEGORIES.map((c) => (<option key={c.id} value={c.id}>{c.label}</option>))}
-                        </select>
+                        />
                         <NumberInput value={v.annualSpend} onChange={(n) => updateVendor(v.id, { annualSpend: n })} prefix="$" placeholder="annual spend" className="w-full" />
                         <div className="flex items-center gap-2">
                           <input
@@ -864,15 +901,11 @@ export default function PricingComparisonFlow({ onBack, onHome }: PricingCompari
                           />
                           <span className="text-xs font-semibold text-[#EA2C00] w-11 text-right tabular-nums">{v.displacementPct}%</span>
                         </div>
-                        <select
+                        <PillToggle
+                          options={[{ label: "Yr 1", value: 1 }, { label: "Yr 2", value: 2 }, { label: "Yr 3", value: 3 }]}
                           value={v.startYear}
-                          onChange={(e) => updateVendor(v.id, { startYear: parseInt(e.target.value, 10) })}
-                          className="h-10 bg-[#F5F0EB] border border-[#E8E2DA] rounded-lg px-2 text-xs text-[#666666] outline-none cursor-pointer"
-                        >
-                          <option value={1}>from Yr 1</option>
-                          <option value={2}>from Yr 2</option>
-                          <option value={3}>from Yr 3</option>
-                        </select>
+                          onChange={(y) => updateVendor(v.id, { startYear: y })}
+                        />
                         <button
                           type="button" onClick={() => removeVendor(v.id)}
                           className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-[#F5F0EB] text-[#8C7E6E] hover:text-[#1A1A1A] transition-colors justify-self-end"
@@ -926,6 +959,58 @@ export default function PricingComparisonFlow({ onBack, onHome }: PricingCompari
             </p>
           </motion.div>
         )}
+
+        {/* Switch economics — before → after (the takeout moment) */}
+        {displacementOn && verdict && totalDisplacedAtScale > 0 && (() => {
+          const best = verdict.cheapest;
+          const grossAnnual = best.result.averageAnnualCost;
+          const displacedAnnual = totalDisplacedAtScale;
+          const netAnnual = Math.max(0, grossAnnual - displacedAnnual);
+          const pct = grossAnnual > 0 ? Math.min(100, Math.round((displacedAnnual / grossAnnual) * 100)) : 0;
+          const active = vendors.filter((v) => v.annualSpend > 0 && v.displacementPct > 0);
+          const labelFor = (v: DisplacedVendor) =>
+            v.category === "custom" ? (v.label || "Custom") : (DISPLACEMENT_CATEGORIES.find((c) => c.id === v.category)?.label ?? v.label);
+          return (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+              className="bg-white rounded-2xl border border-[#E8E2DA] p-5 sm:p-6 mb-6"
+            >
+              <p className="text-[10px] uppercase font-semibold text-[#8C7E6E] tracking-widest mb-4">Switch economics · {best.deal.label}</p>
+              <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr] gap-4 items-center">
+                <div className="rounded-xl bg-[#F5F0EB] p-4">
+                  <p className="text-[10px] uppercase font-semibold text-[#8C7E6E] tracking-widest mb-2.5">What they pay today</p>
+                  {active.map((v) => (
+                    <div key={v.id} className="flex items-center justify-between py-1.5 border-b border-black/[0.06] last:border-0 text-sm">
+                      <span className="text-[#666666] truncate pr-2">{labelFor(v)}</span>
+                      <span className="font-semibold text-[#1A1A1A] tabular-nums">{fmt(vendorDisplacedAnnual(v))}</span>
+                    </div>
+                  ))}
+                  <div className="flex items-center justify-between mt-2.5 pt-2 border-t-2 border-[#1A1A1A] text-sm font-bold">
+                    <span>Displaceable / yr</span><span className="tabular-nums">{fmt(displacedAnnual)}</span>
+                  </div>
+                </div>
+                <div className="text-[#EA2C00] text-2xl font-bold text-center rotate-90 sm:rotate-0">&rarr;</div>
+                <div className="rounded-xl border border-[#E8E2DA] p-4">
+                  <p className="text-[10px] uppercase font-semibold text-[#8C7E6E] tracking-widest mb-2.5">With Abridge · / yr at scale</p>
+                  <div className="flex items-center justify-between py-1.5 text-sm">
+                    <span className="text-[#666666]">Abridge gross</span><span className="font-semibold text-[#1A1A1A] tabular-nums">{fmt(grossAnnual)}</span>
+                  </div>
+                  <div className="flex items-center justify-between py-1.5 text-sm">
+                    <span className="text-[#666666]">&minus; Displaced spend</span><span className="font-semibold text-[#EA2C00] tabular-nums">&minus;{fmt(displacedAnnual)}</span>
+                  </div>
+                  <div className="mt-2.5 pt-2.5 border-t border-[#E8E2DA]">
+                    <p className="text-[10px] uppercase font-semibold text-[#8C7E6E] tracking-widest">Net new / yr</p>
+                    <p className="text-3xl font-bold text-[#EA2C00] tabular-nums mt-0.5">{fmt(netAnnual)}</p>
+                  </div>
+                </div>
+              </div>
+              <p className="text-center text-sm text-[#8C7E6E] mt-4">
+                <span className="font-semibold text-[#1A1A1A]">{fmt(displacedAnnual)}</span> of Abridge is covered by spend they already make
+                {" "}— <span className="font-semibold text-[#EA2C00]">{pct}%</span> covered.
+              </p>
+            </motion.div>
+          );
+        })()}
 
         {/* Deal cards */}
         <div className="mb-2">
