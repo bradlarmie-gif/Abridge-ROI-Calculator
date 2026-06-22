@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Trash2, Edit, ArrowRight, ArrowLeftRight, Building2, Stethoscope, HeartPulse, BedDouble, Layers, ChevronDown, ChevronUp, TrendingUp, Clock, DollarSign, BarChart3, X, Sliders, GitCompare, Download, Loader2, Presentation } from "lucide-react";
+import { Plus, Trash2, Edit, ArrowRight, ArrowLeftRight, Building2, Stethoscope, HeartPulse, BedDouble, Layers, ChevronDown, ChevronUp, TrendingUp, Clock, DollarSign, BarChart3, X, Sliders, GitCompare, Download, Loader2, Presentation, MoreHorizontal } from "lucide-react";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import type { ProformaSettingSnapshot, ProformaConfig, ProformaSummary, ScenarioDealTerms } from "./proformaTypes";
@@ -974,42 +974,37 @@ export default function ProformaHub({
                             </p>
                           </div>
                         </div>
-                        {(
-                          <div className="flex items-center gap-1">
-                            <button
-                              onClick={() => setEditingId(isEditing ? null : setting.id)}
-                              className={`p-2 rounded-lg transition-colors ${isEditing ? 'bg-[#EA2C00]/10 text-[#EA2C00]' : 'hover:bg-[#F5F0EB] text-[#A39888] hover:text-[#6B5E4F]'}`}
-                              data-testid={`button-edit-${setting.careSetting}`}
-                            >
-                              {isEditing ? <ChevronUp className="w-4 h-4" /> : <Edit className="w-4 h-4" />}
-                            </button>
-                            {confirmRemove === setting.id ? (
-                              <div className="flex items-center gap-1 ml-1">
-                                <button
-                                  onClick={() => { onRemoveSetting(setting.id); setConfirmRemove(null); }}
-                                  className="px-2 py-1 text-xs font-medium text-red-600 bg-red-50 rounded hover:bg-red-100 transition-colors"
-                                  data-testid={`button-confirm-remove-${setting.careSetting}`}
-                                >
-                                  Remove
-                                </button>
-                                <button
-                                  onClick={() => setConfirmRemove(null)}
-                                  className="px-2 py-1 text-xs text-[#8C7E6E] hover:text-[#6B5E4F]"
-                                >
-                                  Cancel
-                                </button>
-                              </div>
-                            ) : (
+                        {/* Top-right holds only the overflow → Delete. Edit actions live in the
+                            labeled footer row so destructive + edit aren't adjacent bare icons. */}
+                        <div className="flex items-center gap-1">
+                          {confirmRemove === setting.id ? (
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-xs text-[#8C7E6E]">Delete setting?</span>
                               <button
-                                onClick={() => setConfirmRemove(setting.id)}
-                                className="p-2 rounded-lg hover:bg-red-50 text-[#A39888] hover:text-red-500 transition-colors"
-                                data-testid={`button-remove-${setting.careSetting}`}
+                                onClick={() => { onRemoveSetting(setting.id); setConfirmRemove(null); }}
+                                className="px-2 py-1 text-xs font-medium text-red-600 bg-red-50 rounded hover:bg-red-100 transition-colors"
+                                data-testid={`button-confirm-remove-${setting.careSetting}`}
                               >
-                                <Trash2 className="w-4 h-4" />
+                                Remove
                               </button>
-                            )}
-                          </div>
-                        )}
+                              <button
+                                onClick={() => setConfirmRemove(null)}
+                                className="px-2 py-1 text-xs text-[#8C7E6E] hover:text-[#6B5E4F]"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => setConfirmRemove(setting.id)}
+                              className="p-2 rounded-lg hover:bg-[#F5F0EB] text-[#A39888] hover:text-[#6B5E4F] transition-colors"
+                              data-testid={`button-remove-${setting.careSetting}`}
+                              aria-label="Setting options"
+                            >
+                              <MoreHorizontal className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-3">
@@ -1058,6 +1053,15 @@ export default function ProformaHub({
                             </span>
                           )}
                           <button
+                            onClick={() => setEditingId(isEditing ? null : setting.id)}
+                            className={`inline-flex items-center gap-1.5 text-xs font-medium transition-colors ${isEditing ? 'text-[#EA2C00]' : 'text-[#6B5E4F] hover:text-[#4A3F35]'}`}
+                            data-testid={`button-edit-${setting.careSetting}`}
+                          >
+                            <BarChart3 className="w-3 h-3" />
+                            Volumes &amp; Pricing
+                          </button>
+                          <span className="text-[#D8CFC4] select-none">&middot;</span>
+                          <button
                             onClick={() => {
                               setDrawerInitialScenario("A");
                               setAssumptionsDrawerSettingId(setting.id);
@@ -1066,7 +1070,7 @@ export default function ProformaHub({
                             data-testid={`button-edit-assumptions-${setting.careSetting}`}
                           >
                             <Sliders className="w-3 h-3" />
-                            Edit Assumptions
+                            Assumptions
                           </button>
                         </div>
                       </div>
