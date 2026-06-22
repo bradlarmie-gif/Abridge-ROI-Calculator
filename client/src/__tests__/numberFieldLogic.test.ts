@@ -63,4 +63,12 @@ describe("numberFieldLogic — you can always clear the field", () => {
     expect(formatGrouped(1234.5)).toBe("1,234.5");
     expect(formatGrouped(0.3)).toBe("0.3");
   });
+
+  it("both displays survive undefined/null/NaN/Infinity without crashing or showing 'undefined'", () => {
+    const bad = [undefined, null, NaN, Infinity, -Infinity] as unknown as number[];
+    for (const v of bad) {
+      expect(displayValue(v)).toBe("");
+      expect(formatGrouped(v)).toBe("");
+    }
+  });
 });

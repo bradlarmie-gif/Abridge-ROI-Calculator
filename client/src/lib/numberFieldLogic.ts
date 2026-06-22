@@ -43,9 +43,11 @@ export function clampNumber(n: number, min?: number, max?: number): number {
   return v;
 }
 
-/** Raw (ungrouped) string for editing: empty for 0, the literal number otherwise. */
+/** Raw (ungrouped) string for editing: empty for 0/blank, the literal number otherwise. */
 export function displayValue(value: number): string {
-  return value === 0 ? "" : String(value);
+  // Guard undefined/null/NaN/Infinity — state can lag the type, and we must never render "undefined".
+  if (!value || !Number.isFinite(value)) return "";
+  return String(value);
 }
 
 /**
@@ -54,6 +56,7 @@ export function displayValue(value: number): string {
  * {@link displayValue}, so grouping never gets in the way of clearing or typing.
  */
 export function formatGrouped(value: number): string {
-  if (value === 0) return "";
+  // Guard undefined/null/NaN/Infinity so a lagging value can never crash toLocaleString.
+  if (!value || !Number.isFinite(value)) return "";
   return value.toLocaleString("en-US", { maximumFractionDigits: 20 });
 }
