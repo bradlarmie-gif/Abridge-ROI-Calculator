@@ -843,6 +843,9 @@ export default function PricingComparisonFlow({ onBack, onHome }: PricingCompari
   const [advanced, setAdvanced] = useState(false);
   const [displacementOn, setDisplacementOn] = useState(false);
   const [vendors, setVendors] = useState<DisplacedVendor[]>([]);
+  // Once the Switch-savings panel finishes expanding, let it show overflow so the
+  // category dropdown isn't clipped by the height-animation's overflow-hidden.
+  const [vendorPanelSettled, setVendorPanelSettled] = useState(false);
 
   const addVendor = () => setVendors((p) => [...p, makeDefaultVendor(`v-${Date.now()}`)]);
   const updateVendor = (id: string, u: Partial<DisplacedVendor>) =>
@@ -896,7 +899,7 @@ export default function PricingComparisonFlow({ onBack, onHome }: PricingCompari
   };
 
   return (
-    <div className="min-h-screen bg-[#F5F0EB]">
+    <div className="min-h-screen bg-[#F7F6F3]">
       <UnifiedHeader
         pathType="forecast"
         currentStep={1}
@@ -934,7 +937,7 @@ export default function PricingComparisonFlow({ onBack, onHome }: PricingCompari
 
         {/* Live scoreboard — pinned readout of whatever's configured (updates as they tweak) */}
         {verdict && (
-          <div className="sticky top-14 sm:top-16 z-40 -mx-4 sm:-mx-6 px-4 sm:px-6 py-2.5 bg-[#F5F0EB]/90 backdrop-blur-md border-b border-[#E8E2DA]">
+          <div className="sticky top-14 sm:top-16 z-40 -mx-4 sm:-mx-6 px-4 sm:px-6 py-2.5 bg-[#F7F6F3]/90 backdrop-blur-md border-b border-[#E8E2DA]">
             <div className="flex flex-wrap items-center gap-x-5 gap-y-1">
               <span className="inline-flex items-baseline gap-2">
                 <span className={KICKER}>
@@ -1013,20 +1016,34 @@ export default function PricingComparisonFlow({ onBack, onHome }: PricingCompari
             {displacementOn && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.25 }} className="overflow-hidden"
+                transition={{ duration: 0.25 }}
+                className={vendorPanelSettled ? "overflow-visible" : "overflow-hidden"}
+                onAnimationStart={() => setVendorPanelSettled(false)}
+                onAnimationComplete={() => setVendorPanelSettled(true)}
               >
                 <div className="mt-5 pt-5 border-t border-[#F0EAE3]">
                   <p className="text-[10px] uppercase font-semibold text-[#EA2C00] tracking-widest mb-3">What they pay today</p>
                   <div className="space-y-2.5">
                     {vendors.map((v) => (
-                      <div key={v.id} className="grid grid-cols-1 sm:grid-cols-[1.4fr_1fr_1.3fr_auto_auto] gap-2.5 items-center">
-                        <CategorySelect
-                          value={v.category}
-                          onChange={(cat) => {
-                            const meta = DISPLACEMENT_CATEGORIES.find((c) => c.id === cat);
-                            updateVendor(v.id, { category: cat, label: meta && cat !== "custom" ? meta.label : v.label });
-                          }}
-                        />
+                      <div key={v.id} className="grid grid-cols-1 sm:grid-cols-[1.4fr_1fr_1.3fr_auto_auto] gap-2.5 items-start">
+                        <div className="space-y-1.5">
+                          <CategorySelect
+                            value={v.category}
+                            onChange={(cat) => {
+                              const meta = DISPLACEMENT_CATEGORIES.find((c) => c.id === cat);
+                              updateVendor(v.id, { category: cat, label: meta && cat !== "custom" ? meta.label : "" });
+                            }}
+                          />
+                          {v.category === "custom" && (
+                            <input
+                              type="text"
+                              value={v.label}
+                              onChange={(e) => updateVendor(v.id, { label: e.target.value })}
+                              placeholder="Name this vendor"
+                              className="w-full h-9 bg-white border border-[#E8E2DA] rounded-lg px-3 text-sm text-[#1A1A1A] outline-none placeholder-[#A39888] focus:border-[#1A1A1A] transition-colors"
+                            />
+                          )}
+                        </div>
                         <NumberInput value={v.annualSpend} onChange={(n) => updateVendor(v.id, { annualSpend: n })} prefix="$" placeholder="annual spend" className="w-full" />
                         <div className="flex items-center gap-2">
                           <input
