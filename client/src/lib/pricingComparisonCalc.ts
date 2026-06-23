@@ -390,6 +390,40 @@ export function computeNetResult(result: DealResult, vendors: DisplacedVendor[])
   };
 }
 
+/**
+ * Reads the configured deal back to the rep in plain English (the "tailored insight" line).
+ * Pure + formatter-injected so it's deterministic to test and never inflates: it states the
+ * lowest deal, its model, cost, savings vs the runner-up, the share covered by retired spend,
+ * and (only when a value estimate exists) the return multiple.
+ */
+export function buildDealInsight(args: {
+  cheapestLabel: string;
+  cheapestModelLabel: string;
+  cheapestCost: number;
+  termYears: number;
+  savings: number;
+  runnerUpLabel: string | null;
+  displaced: number;
+  pctCovered: number;
+  termVtc: number | null;
+  fmtMoney: (n: number) => string;
+}): string {
+  const { cheapestLabel, cheapestModelLabel, cheapestCost, termYears, savings,
+    runnerUpLabel, displaced, pctCovered, termVtc, fmtMoney } = args;
+  const yr = `${termYears} year${termYears === 1 ? "" : "s"}`;
+
+  let s = `${cheapestLabel} (${cheapestModelLabel}) is the lowest at ${fmtMoney(cheapestCost)} over ${yr}`;
+  s += savings > 0 && runnerUpLabel ? ` — ${fmtMoney(savings)} under ${runnerUpLabel}.` : ".";
+
+  if (displaced > 0 && pctCovered > 0) {
+    s += ` ${fmtMoney(displaced)} of it is covered by spend they'd retire — ${Math.round(pctCovered)}% of the deal pays for itself from budget they already spend.`;
+  }
+  if (termVtc !== null) {
+    s += ` At the value estimate, it returns ${termVtc.toFixed(1)}× over the term.`;
+  }
+  return s;
+}
+
 /** Ensures yearConfigs has exactly `years` entries, filling new ones with `defaultVolume`. */
 export function syncYearConfigs(
   configs: DealYearConfig[],

@@ -3,8 +3,61 @@ import {
   computeDealResult, makeDefaultDeal, effectiveProvisioned, type VolumeInputs,
   vendorDisplacedAnnual, displacedInYear, computeNetResult, makeDefaultVendor,
   computeValueMetrics,
+  buildDealInsight,
   type DisplacedVendor,
 } from "@/lib/pricingComparisonCalc";
+
+// Plain money formatter for deterministic insight assertions.
+const m = (n: number) => `$${Math.round(n).toLocaleString()}`;
+
+describe("buildDealInsight — reads the configured deal back in plain English", () => {
+  it("leads with the cheapest deal, its model, cost, term, and savings vs the runner-up", () => {
+    const s = buildDealInsight({
+      cheapestLabel: "Option B", cheapestModelLabel: "Platform + encounter",
+      cheapestCost: 1_180_000, termYears: 3, savings: 240_000, runnerUpLabel: "Option A",
+      displaced: 0, pctCovered: 0, termVtc: null, fmtMoney: m,
+    });
+    expect(s).toContain("Option B");
+    expect(s).toContain("Platform + encounter");
+    expect(s).toContain("$1,180,000");
+    expect(s).toContain("3 years");
+    expect(s).toContain("$240,000");
+    expect(s).toContain("Option A");
+  });
+
+  it("omits the savings clause when it's a tie (savings = 0)", () => {
+    const s = buildDealInsight({
+      cheapestLabel: "Option B", cheapestModelLabel: "Per provider",
+      cheapestCost: 900_000, termYears: 2, savings: 0, runnerUpLabel: "Option A",
+      displaced: 0, pctCovered: 0, termVtc: null, fmtMoney: m,
+    });
+    expect(s).not.toContain("under");
+  });
+
+  it("adds the displacement coverage clause when spend is retired", () => {
+    const s = buildDealInsight({
+      cheapestLabel: "Option B", cheapestModelLabel: "Platform + encounter",
+      cheapestCost: 1_180_000, termYears: 3, savings: 240_000, runnerUpLabel: "Option A",
+      displaced: 540_000, pctCovered: 62, termVtc: null, fmtMoney: m,
+    });
+    expect(s).toContain("$540,000");
+    expect(s).toContain("62%");
+    expect(s.toLowerCase()).toContain("retire");
+  });
+
+  it("adds the return multiple only when a value estimate is present", () => {
+    const withVtc = buildDealInsight({
+      cheapestLabel: "B", cheapestModelLabel: "Per provider", cheapestCost: 100, termYears: 1,
+      savings: 0, runnerUpLabel: null, displaced: 0, pctCovered: 0, termVtc: 5.2, fmtMoney: m,
+    });
+    expect(withVtc).toContain("5.2×");
+    const without = buildDealInsight({
+      cheapestLabel: "B", cheapestModelLabel: "Per provider", cheapestCost: 100, termYears: 1,
+      savings: 0, runnerUpLabel: null, displaced: 0, pctCovered: 0, termVtc: null, fmtMoney: m,
+    });
+    expect(without).not.toContain("×");
+  });
+});
 
 /**
  * The fix that made Compare Pricing work: the Organization Volume entered once at

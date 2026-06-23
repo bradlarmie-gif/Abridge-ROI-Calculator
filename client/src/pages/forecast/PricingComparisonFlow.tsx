@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect, useRef, type ReactNode, type CSSProperties } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, TrendingUp, Info, ChevronDown } from "lucide-react";
 import {
@@ -23,6 +23,7 @@ import {
   makeDefaultVendor,
   vendorDisplacedAnnual,
   computeNetResult,
+  buildDealInsight,
 } from "@/lib/pricingComparisonCalc";
 
 interface PricingComparisonFlowProps {
@@ -116,6 +117,73 @@ function NumberInput({
   );
 }
 
+// Rolls a number from its current value to the next whenever it changes (easeOutCubic).
+// This is what makes the deal desk feel alive — tweak an input and the totals count, not snap.
+// Honors prefers-reduced-motion.
+function useAnimatedNumber(value: number, duration = 480): number {
+  const [display, setDisplay] = useState(value);
+  const displayRef = useRef(value);
+  const rafRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    const from = displayRef.current;
+    const to = value;
+    if (from === to) return;
+
+    const reduce = typeof window !== "undefined"
+      && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    if (reduce || Math.abs(to - from) < 1) {
+      displayRef.current = to;
+      setDisplay(to);
+      return;
+    }
+
+    const start = performance.now();
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - t, 3);
+      const cur = from + (to - from) * eased;
+      displayRef.current = cur;
+      setDisplay(cur);
+      if (t < 1) rafRef.current = requestAnimationFrame(tick);
+      else displayRef.current = to;
+    };
+    rafRef.current = requestAnimationFrame(tick);
+    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
+  }, [value, duration]);
+
+  return display;
+}
+
+function AnimatedNumber({
+  value, format, className, style,
+}: {
+  value: number;
+  format: (n: number) => string;
+  className?: string;
+  style?: CSSProperties;
+}) {
+  const display = useAnimatedNumber(value);
+  return <span className={className} style={style}>{format(display)}</span>;
+}
+
+// One label scale for the whole deal desk (kills the four competing label treatments).
+const KICKER = "text-[10px] uppercase font-semibold tracking-widest text-[#8C7E6E]";
+const FIELD_LABEL = "block text-xs font-medium text-[#666666] mb-1.5";
+
+// Groups the page into Setup / Recommendation / Deal options with a hairline rule.
+function SectionHeader({ label, action }: { label: string; action?: ReactNode }) {
+  return (
+    <div className="flex items-center gap-4 mt-12 mb-4 first:mt-0">
+      <span className="text-[11px] uppercase font-semibold tracking-[2px] text-[#6B5E4F] flex-shrink-0">
+        {label}
+      </span>
+      <span className="h-px flex-1 bg-[#E8E2DA]" />
+      {action && <div className="flex-shrink-0">{action}</div>}
+    </div>
+  );
+}
+
 // Brand-styled category picker — matches Compare Pricing's inputs (no native <select>).
 function CategorySelect({ value, onChange }: {
   value: DisplacementCategoryId;
@@ -158,7 +226,7 @@ function CategorySelect({ value, onChange }: {
 }
 
 function DealCard({
-  deal, index, volumes, annualValueEstimate, advanced, vendors, displacementOn, onUpdate, onRemove, canRemove,
+  deal, index, volumes, annualValueEstimate, advanced, vendors, displacementOn, isLowest, lowestCost, onUpdate, onRemove, canRemove,
 }: {
   deal: DealOption;
   index: number;
@@ -167,6 +235,8 @@ function DealCard({
   advanced: boolean;
   vendors: DisplacedVendor[];
   displacementOn: boolean;
+  isLowest: boolean;
+  lowestCost: number | null;
   onUpdate: (updates: Partial<DealOption>) => void;
   onRemove: () => void;
   canRemove: boolean;
@@ -181,6 +251,10 @@ function DealCard({
 
   const net = useMemo(() => computeNetResult(result, vendors), [result, vendors]);
   const showNet = displacementOn && net.totalDisplaced > 0;
+
+  // Gap vs the cheapest option, on the same basis the scoreboard ranks by (net when displacing).
+  const dealCost = displacementOn ? net.netTotalContract : result.totalContractCost;
+  const deltaVsLowest = lowestCost !== null && result.totalContractCost > 0 ? dealCost - lowestCost : 0;
 
   const scenarios = useMemo(() => computeUsageScenarios(deal, volumes), [deal, volumes]);
 
@@ -200,7 +274,9 @@ function DealCard({
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.94 }}
       transition={{ duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] }}
-      className="bg-white rounded-2xl border border-[#E8E2DA] overflow-hidden flex flex-col"
+      className={`bg-white rounded-2xl border overflow-hidden flex flex-col transition-shadow ${
+        isLowest ? "border-[#EA2C00] shadow-[0_10px_34px_rgba(234,44,0,0.13)]" : "border-[#E8E2DA]"
+      }`}
     >
       <div className="h-1.5" style={{ backgroundColor: color }} />
 
@@ -214,6 +290,16 @@ function DealCard({
             className="flex-1 min-w-0 text-lg font-bold text-[#1A1A1A] bg-transparent outline-none border-b border-transparent focus:border-[#E8E2DA] transition-colors placeholder-[#A39888]"
             placeholder="Deal label"
           />
+          {isLowest && (
+            <motion.span
+              layoutId="lowest-deal-badge"
+              transition={{ type: "spring", stiffness: 380, damping: 30 }}
+              className="flex-shrink-0 inline-flex items-center rounded-full text-white text-[10px] font-bold uppercase tracking-[0.5px] px-2 py-0.5"
+              style={{ backgroundColor: "#EA2C00" }}
+            >
+              Lowest
+            </motion.span>
+          )}
           {canRemove && (
             <button type="button" onClick={onRemove}
               className="flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-full hover:bg-[#F5F0EB] text-[#8C7E6E] hover:text-[#1A1A1A] transition-colors"
@@ -361,19 +447,26 @@ function DealCard({
           </div>
           <div className="flex items-center justify-between px-4 py-3 border-t border-[#E8E2DA] bg-[#FAFAF8]">
             <span className="text-xs font-bold text-[#1A1A1A]">Total Contract</span>
-            <span className="text-base font-bold tabular-nums" style={{ color }}>{fmt(result.totalContractCost)}</span>
+            <AnimatedNumber value={result.totalContractCost} format={fmt} className="text-base font-bold tabular-nums" style={{ color }} />
           </div>
           {showNet && (
             <>
               <div className="flex items-center justify-between px-4 py-2 border-t border-[#F0EAE3]">
                 <span className="text-xs text-[#8C7E6E]">− Displaced spend</span>
-                <span className="text-xs font-medium text-[#8C7E6E] tabular-nums">−{fmt(net.totalDisplaced)}</span>
+                <AnimatedNumber value={net.totalDisplaced} format={(n) => `−${fmt(n)}`} className="text-xs font-medium text-[#8C7E6E] tabular-nums" />
               </div>
               <div className="flex items-center justify-between px-4 py-3 border-t border-[#E8E2DA] bg-[#FFF0ED]">
                 <span className="text-xs font-bold text-[#1A1A1A]">Net contract</span>
-                <span className="text-base font-bold tabular-nums" style={{ color: "#EA2C00" }}>{fmt(net.netTotalContract)}</span>
+                <AnimatedNumber value={net.netTotalContract} format={fmt} className="text-base font-bold tabular-nums" style={{ color: "#EA2C00" }} />
               </div>
             </>
+          )}
+          {!isLowest && deltaVsLowest > 0 && (
+            <div className="flex items-center justify-end gap-1 px-4 py-1.5 border-t border-[#F0EAE3]">
+              <span className="text-[11px] font-semibold text-[#8C7E6E] tabular-nums">
+                +<AnimatedNumber value={deltaVsLowest} format={fmt} /> vs lowest
+              </span>
+            </div>
           )}
           {result.costPerProvider !== null && (
             <div className="flex items-center justify-between px-4 py-2 border-t border-[#F0EAE3]">
@@ -542,7 +635,7 @@ function RoiAnalysisSection({
   const hasValue = annualValueEstimate > 0;
 
   return (
-    <div className="bg-white rounded-2xl border border-[#E8E2DA] overflow-hidden mt-6">
+    <div className="bg-white rounded-2xl border border-[#E8E2DA] overflow-hidden">
       {/* Header bar */}
       <div className="flex items-center gap-3 px-6 py-4 border-b border-[#E8E2DA] bg-[#FAFAF8]">
         <div className="w-8 h-8 rounded-full bg-[#F5F0EB] flex items-center justify-center">
@@ -559,6 +652,7 @@ function RoiAnalysisSection({
         <div>
           <p className="text-[10px] uppercase font-semibold text-[#8C7E6E] tracking-widest mb-1">{showNet ? "Cost by Year — net vs displaced" : "Annual Cost by Year"}</p>
           {showNet && <p className="text-[11px] text-[#A39888] mb-3">Solid = net cost you pay · shaded = spend displaced from existing vendors</p>}
+          {!showNet && maxYears > 1 && <p className="text-[11px] text-[#A39888] mb-3">Each bar includes that deal's annual price escalator — see "Cost growth" in the table below.</p>}
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={chartData} barGap={4} barCategoryGap="28%">
               <CartesianGrid strokeDasharray="3 3" stroke="#F0EAE3" vertical={false} />
@@ -617,6 +711,21 @@ function RoiAnalysisSection({
                     </td>
                   ))}
                 </tr>
+                {maxYears > 1 && (
+                  <tr>
+                    <td className="py-2.5 pr-4 text-xs text-[#8C7E6E]">Cost growth · Y1→Y{maxYears}</td>
+                    {results.map((r, ri) => {
+                      const first = r.years[0]?.annualCost ?? 0;
+                      const last = r.years[r.years.length - 1]?.annualCost ?? 0;
+                      const g = first > 0 ? Math.round(((last - first) / first) * 100) : 0;
+                      return (
+                        <td key={ri} className="py-2.5 px-3 text-right text-sm tabular-nums" style={{ color: g > 0 ? "#B0411F" : "#8C9A6E" }}>
+                          {first <= 0 ? "—" : g > 0 ? `+${g}%` : g < 0 ? `${g}%` : "Flat"}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                )}
                 {showNet && (
                   <>
                     <tr>
@@ -770,7 +879,8 @@ export default function PricingComparisonFlow({ onBack, onHome }: PricingCompari
       ? [...priced].sort((a, b) => (b.termVtc ?? 0) - (a.termVtc ?? 0))[0]
       : null;
     const termYears = Math.max(1, Math.ceil(cheapest.deal.contractTermMonths / 12));
-    return { cheapest, savings, bestRoi, termYears };
+    const lowestCost = cost(cheapest);
+    return { cheapest, runnerUp, savings, bestRoi, termYears, lowestCost };
   }, [deals, volumes, annualValueEstimate, vendors, displacementOn]);
 
   const updateDeal = (id: string, updates: Partial<DealOption>) => {
@@ -811,7 +921,7 @@ export default function PricingComparisonFlow({ onBack, onHome }: PricingCompari
             </p>
           </div>
           <div className="sm:flex-shrink-0 sm:w-64">
-            <label className="block text-[10px] uppercase font-medium text-[#8C7E6E] tracking-widest mb-1.5">Partner Name</label>
+            <label className={`${KICKER} block mb-1.5`}>Partner Name</label>
             <input
               type="text"
               value={partnerName}
@@ -822,45 +932,64 @@ export default function PricingComparisonFlow({ onBack, onHome }: PricingCompari
           </div>
         </div>
 
-        {/* Volume inputs */}
-        <div className="bg-white rounded-2xl border border-[#E8E2DA] p-5 mb-6">
-          <p className="text-[10px] uppercase font-semibold text-[#8C7E6E] tracking-widest mb-4">Organization Volume</p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {/* Live scoreboard — pinned readout of whatever's configured (updates as they tweak) */}
+        {verdict && (
+          <div className="sticky top-14 sm:top-16 z-40 -mx-4 sm:-mx-6 px-4 sm:px-6 py-2.5 bg-[#F5F0EB]/90 backdrop-blur-md border-b border-[#E8E2DA]">
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-1">
+              <span className="inline-flex items-baseline gap-2">
+                <span className={KICKER}>
+                  {displacementOn && verdict.cheapest.net.totalDisplaced > 0 ? "Lowest net" : "Lowest cost"}
+                </span>
+                <span className="text-sm font-bold text-[#1A1A1A]">{verdict.cheapest.deal.label}</span>
+                <AnimatedNumber
+                  value={displacementOn ? verdict.cheapest.net.netTotalContract : verdict.cheapest.result.totalContractCost}
+                  format={fmtFull}
+                  className="text-sm font-bold tabular-nums"
+                  style={{ color: "#EA2C00" }}
+                />
+                <span className="text-xs text-[#8C7E6E]">/ {verdict.termYears} yr{verdict.termYears === 1 ? "" : "s"}</span>
+              </span>
+              {verdict.savings > 0 && (
+                <span className="text-xs text-[#666666]">saves <AnimatedNumber value={verdict.savings} format={fmtFull} className="font-semibold text-[#1A1A1A] tabular-nums" /> vs next</span>
+              )}
+              {verdict.bestRoi && verdict.bestRoi.termVtc !== null && (
+                <span className="text-xs text-[#666666]">best ROI <span className="font-semibold text-[#1A1A1A] tabular-nums">{verdict.bestRoi.termVtc.toFixed(1)}×</span></span>
+              )}
+              {displacementOn && verdict.cheapest.net.totalDisplaced > 0 && (
+                <span className="text-xs text-[#666666]"><span className="font-semibold tabular-nums" style={{ color: "#EA2C00" }}>{Math.round(verdict.cheapest.net.pctCovered)}%</span> covered by current spend</span>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* SETUP — their world today: volume, value baseline, displaceable spend */}
+        <SectionHeader label="Setup · their world today" />
+        <div className="bg-white rounded-2xl border border-[#E8E2DA] p-5 mb-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
-              <label className="block text-xs font-medium text-[#666666] mb-1.5">Providers</label>
+              <label className={FIELD_LABEL}>Providers</label>
               <NumberInput value={volumes.providerCount} onChange={(v) => setVolumes((p) => ({ ...p, providerCount: v }))} suffix="providers" className="w-full" />
             </div>
             <div>
-              <label className="block text-xs font-medium text-[#666666] mb-1.5">Annual Encounters</label>
+              <label className={FIELD_LABEL}>Annual Encounters</label>
               <NumberInput value={volumes.annualEncounters} onChange={(v) => setVolumes((p) => ({ ...p, annualEncounters: v }))} suffix="encounters/yr" className="w-full" />
             </div>
             <div>
-              <label className="block text-xs font-medium text-[#666666] mb-1.5">Staffed Beds (Nursing)</label>
+              <label className={FIELD_LABEL}>Staffed Beds (Nursing)</label>
               <NumberInput value={volumes.staffedBeds} onChange={(v) => setVolumes((p) => ({ ...p, staffedBeds: v }))} suffix="beds" className="w-full" />
             </div>
-          </div>
-        </div>
-
-        {/* Annual Value Estimate */}
-        <div className="bg-white rounded-2xl border border-[#E8E2DA] p-5 mb-6">
-          <div className="flex items-center gap-3">
-            <div className="flex-1">
-              <p className="text-[10px] uppercase font-semibold text-[#8C7E6E] tracking-widest mb-0.5">Annual Value Estimate</p>
-              <p className="text-xs text-[#A39888]">Use Measure to calculate this, or enter an estimate. Unlocks ROI and payback comparisons.</p>
+            <div>
+              <label className={FIELD_LABEL}>Annual Value Estimate</label>
+              <NumberInput value={annualValueEstimate} onChange={setAnnualValueEstimate} prefix="$" suffix="/yr" placeholder="0" className="w-full" />
             </div>
-            <NumberInput
-              value={annualValueEstimate}
-              onChange={setAnnualValueEstimate}
-              prefix="$"
-              suffix="/yr"
-              placeholder="0"
-              className="w-52 flex-shrink-0"
-            />
           </div>
+          <p className="text-xs text-[#A39888] mt-3 leading-relaxed">
+            Value estimate unlocks ROI and payback comparisons — use Measure to calculate it, or enter an estimate.
+          </p>
         </div>
 
-        {/* Switch savings — optional displacement bolt-on */}
-        <div className="bg-white rounded-2xl border border-[#E8E2DA] p-5 mb-6">
+        {/* Switch savings — optional displacement bolt-on (part of Setup) */}
+        <div className="bg-white rounded-2xl border border-[#E8E2DA] p-5 mb-0">
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-sm font-bold text-[#1A1A1A]">Switch savings <span className="font-medium text-[#A39888]">· optional</span></p>
@@ -936,36 +1065,94 @@ export default function PricingComparisonFlow({ onBack, onHome }: PricingCompari
           </AnimatePresence>
         </div>
 
-        {/* TCO verdict — lead with the answer */}
+        {/* BUILD THE DEALS — the playground: tweak pricing models + costs, compare side by side */}
+        <SectionHeader
+          label="Build the deals"
+          action={
+            <button
+              type="button"
+              onClick={() => setAdvanced((a) => !a)}
+              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium border transition-colors ${
+                advanced ? "bg-[#1A1A1A] text-white border-[#1A1A1A]" : "bg-white text-[#6B5E4F] border-[#E8E2DA] hover:border-[#1A1A1A]"
+              }`}
+              data-testid="button-advanced-provisioning"
+            >
+              {advanced ? "Hide" : "Show"} provisioning & usage
+            </button>
+          }
+        />
+        <div className="mb-2">
+          <AnimatePresence mode="popLayout">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {deals.map((deal, index) => (
+                <DealCard
+                  key={deal.id}
+                  deal={deal}
+                  index={index}
+                  volumes={volumes}
+                  annualValueEstimate={annualValueEstimate}
+                  advanced={advanced}
+                  vendors={vendors}
+                  displacementOn={displacementOn}
+                  isLowest={verdict?.cheapest.deal.id === deal.id}
+                  lowestCost={verdict?.lowestCost ?? null}
+                  onUpdate={(updates) => updateDeal(deal.id, updates)}
+                  onRemove={() => removeDeal(deal.id)}
+                  canRemove={deals.length > 2}
+                />
+              ))}
+
+              {deals.length < 3 && (
+                <motion.button
+                  key="add-option-c"
+                  layout
+                  initial={{ opacity: 0, scale: 0.96 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.94 }}
+                  transition={{ duration: 0.22 }}
+                  type="button"
+                  onClick={addDealC}
+                  className="rounded-2xl border-2 border-dashed border-[#E8E2DA] bg-white/60 hover:bg-white hover:border-[#A39888] transition-all flex items-center justify-center min-h-[200px] text-[#8C7E6E] hover:text-[#1A1A1A] gap-2 text-sm font-medium"
+                >
+                  <span className="text-lg leading-none">+</span>
+                  Add Option C
+                </motion.button>
+              )}
+            </div>
+          </AnimatePresence>
+        </div>
+
+        {/* HOW IT PANS OUT — 3-year cost growth + ROI, then the switch takeout */}
+        <SectionHeader label="How it pans out" />
         {verdict && (
           <motion.div
             initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-            className="rounded-2xl bg-[#1A1A1A] text-white p-5 sm:p-6 mb-6"
+            className="rounded-2xl bg-[#1A1A1A] text-white p-5 sm:p-6 mb-4"
           >
-            <p className="text-[10px] uppercase font-semibold tracking-widest text-white/40 mb-2">
-              {displacementOn && verdict.cheapest.net.totalDisplaced > 0 ? "Lowest net cost after switch savings" : "Lowest total cost of ownership"}
-            </p>
-            <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-              <span className="text-2xl sm:text-3xl font-bold" style={{ color: "#FF5230" }}>{verdict.cheapest.deal.label}</span>
-              <span className="text-lg sm:text-xl font-bold">
-                {fmtFull(displacementOn ? verdict.cheapest.net.netTotalContract : verdict.cheapest.result.totalContractCost)}
-              </span>
-              <span className="text-sm text-white/50">over {verdict.termYears} year{verdict.termYears === 1 ? "" : "s"}</span>
-            </div>
-            <p className="mt-2 text-sm text-white/55">
-              {verdict.savings > 0
-                ? `Saves ${fmtFull(verdict.savings)} versus the next option.`
-                : "Tied with the next option on total cost."}
-              {displacementOn && verdict.cheapest.net.totalDisplaced > 0 && (
-                <> {fmtFull(verdict.cheapest.net.totalDisplaced)} of it is covered by spend they already make
-                  {" "}(<span className="text-white/80 font-medium">{Math.round(verdict.cheapest.net.pctCovered)}%</span>).</>
-              )}
-              {verdict.bestRoi && verdict.bestRoi.termVtc !== null && (
-                <> Best return: <span className="text-white/80 font-medium">{verdict.bestRoi.deal.label} at {verdict.bestRoi.termVtc.toFixed(1)}× over the term</span>.</>
-              )}
+            <p className="text-[10px] uppercase font-semibold tracking-widest text-white/40 mb-2">The read</p>
+            <p className="text-sm sm:text-[15px] leading-relaxed text-white/90">
+              {buildDealInsight({
+                cheapestLabel: verdict.cheapest.deal.label,
+                cheapestModelLabel: PRICING_MODEL_LABELS[verdict.cheapest.deal.model],
+                cheapestCost: displacementOn ? verdict.cheapest.net.netTotalContract : verdict.cheapest.result.totalContractCost,
+                termYears: verdict.termYears,
+                savings: verdict.savings,
+                runnerUpLabel: verdict.runnerUp?.deal.label ?? null,
+                displaced: displacementOn ? verdict.cheapest.net.totalDisplaced : 0,
+                pctCovered: displacementOn ? verdict.cheapest.net.pctCovered : 0,
+                termVtc: annualValueEstimate > 0 ? verdict.cheapest.termVtc : null,
+                fmtMoney: fmt,
+              })}
             </p>
           </motion.div>
         )}
+        <RoiAnalysisSection
+          deals={deals}
+          volumes={volumes}
+          annualValueEstimate={annualValueEstimate}
+          vendors={vendors}
+          displacementOn={displacementOn}
+        />
 
         {/* Switch economics — before → after (the takeout moment) */}
         {displacementOn && verdict && totalDisplacedAtScale > 0 && (() => {
@@ -980,9 +1167,9 @@ export default function PricingComparisonFlow({ onBack, onHome }: PricingCompari
           return (
             <motion.div
               initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-              className="bg-white rounded-2xl border border-[#E8E2DA] p-5 sm:p-6 mb-6"
+              className="bg-white rounded-2xl border border-[#E8E2DA] p-5 sm:p-6 mt-6"
             >
-              <p className="text-[10px] uppercase font-semibold text-[#8C7E6E] tracking-widest mb-4">Switch economics · {best.deal.label}</p>
+              <p className={`${KICKER} mb-4`}>Switch economics · {best.deal.label}</p>
               <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr] gap-4 items-center">
                 <div className="rounded-xl bg-[#F5F0EB] p-4">
                   <p className="text-[10px] uppercase font-semibold text-[#8C7E6E] tracking-widest mb-2.5">What they pay today</p>
@@ -1018,68 +1205,6 @@ export default function PricingComparisonFlow({ onBack, onHome }: PricingCompari
             </motion.div>
           );
         })()}
-
-        {/* Deal cards */}
-        <div className="mb-2">
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-[10px] uppercase font-semibold text-[#8C7E6E] tracking-widest">Deal Options</p>
-            <button
-              type="button"
-              onClick={() => setAdvanced((a) => !a)}
-              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium border transition-colors ${
-                advanced ? "bg-[#1A1A1A] text-white border-[#1A1A1A]" : "bg-white text-[#6B5E4F] border-[#E8E2DA] hover:border-[#1A1A1A]"
-              }`}
-              data-testid="button-advanced-provisioning"
-            >
-              {advanced ? "Hide" : "Show"} provisioning & usage
-            </button>
-          </div>
-          <AnimatePresence mode="popLayout">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {deals.map((deal, index) => (
-                <DealCard
-                  key={deal.id}
-                  deal={deal}
-                  index={index}
-                  volumes={volumes}
-                  annualValueEstimate={annualValueEstimate}
-                  advanced={advanced}
-                  vendors={vendors}
-                  displacementOn={displacementOn}
-                  onUpdate={(updates) => updateDeal(deal.id, updates)}
-                  onRemove={() => removeDeal(deal.id)}
-                  canRemove={deals.length > 2}
-                />
-              ))}
-
-              {deals.length < 3 && (
-                <motion.button
-                  key="add-option-c"
-                  layout
-                  initial={{ opacity: 0, scale: 0.96 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.94 }}
-                  transition={{ duration: 0.22 }}
-                  type="button"
-                  onClick={addDealC}
-                  className="rounded-2xl border-2 border-dashed border-[#E8E2DA] bg-white/60 hover:bg-white hover:border-[#A39888] transition-all flex items-center justify-center min-h-[200px] text-[#8C7E6E] hover:text-[#1A1A1A] gap-2 text-sm font-medium"
-                >
-                  <span className="text-lg leading-none">+</span>
-                  Add Option C
-                </motion.button>
-              )}
-            </div>
-          </AnimatePresence>
-        </div>
-
-        {/* ROI Analysis section */}
-        <RoiAnalysisSection
-          deals={deals}
-          volumes={volumes}
-          annualValueEstimate={annualValueEstimate}
-          vendors={vendors}
-          displacementOn={displacementOn}
-        />
       </div>
     </div>
   );
