@@ -430,6 +430,9 @@ function DollarsBeat({ settings, summary, term, showMath }: {
               <MathRow label={`${term} total value`} value={fmt(summary.termValue)} />
               <MathRow label={`${term} investment`} value={fmt(summary.termInvestment)} />
               <MathRow label={`Net ${term.toLowerCase()} value`} value={fmt(summary.termNet)} accent />
+              {summary.displacementSavings > 0 && (
+                <MathRow label="+ Vendor spend displaced (separate savings)" value={fmt(summary.displacementSavings)} />
+              )}
             </div>
           </motion.div>
         )}
@@ -725,6 +728,12 @@ function CombineBeat({ settings, summary, perSettingTotals, term, showMath, syst
         <Stat label={`Net ${term.toLowerCase()}`} value={fmt(summary.termNet)} accent />
         <span className="hidden h-9 w-px bg-white/10 sm:block" />
         <Stat label="Payback" value={summary.paybackMonth ? `${summary.paybackMonth} mo` : "—"} />
+        {summary.displacementSavings > 0 && (
+          <>
+            <span className="hidden h-9 w-px bg-white/10 sm:block" />
+            <Stat label="Vendor spend displaced" value={fmt(summary.displacementSavings)} />
+          </>
+        )}
       </div>
 
       {/* When it lands — realized value builds over the term toward the run-rate */}
