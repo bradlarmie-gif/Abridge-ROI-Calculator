@@ -2,8 +2,10 @@
 // cell styles below. The community `xlsx` package silently dropped all of them,
 // which is why the downloaded sheet looked like a raw grid.
 import * as XLSX from 'xlsx-js-style';
-import { saveAs } from 'file-saver';
+import { shareOrSaveBlob } from './pdf-save';
 import type { DataRequestSetting } from './dataRequestFields';
+
+const XLSX_MIME = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 import { getDriverFieldGroups, getRequestFieldPlan } from './dataRequestFields';
 
 // ── Brand palette (matches measureDataRequestExcel) ───────────────────────────
@@ -343,15 +345,16 @@ export function buildDataRequestWorkbook(
   return wb;
 }
 
-export function generateDataRequestExcel(
+export async function generateDataRequestExcel(
   setting: DataRequestSetting,
   selectedDriverIds: string[],
   orgName?: string,
-): void {
+): Promise<void> {
   const wb = buildDataRequestWorkbook(setting, selectedDriverIds, orgName);
   const buf = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-  saveAs(
-    new Blob([buf], { type: 'application/octet-stream' }),
+  await shareOrSaveBlob(
+    new Blob([buf], { type: XLSX_MIME }),
     `Abridge-Data-Request-${SETTING_FILE_LABELS[setting]}.xlsx`,
+    'Abridge Data Request',
   );
 }

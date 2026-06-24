@@ -1,8 +1,10 @@
 // xlsx-js-style renders the `.s` cell styles below; the community `xlsx`
 // package silently dropped them (raw-grid output).
 import * as XLSX from 'xlsx-js-style';
-import { saveAs } from 'file-saver';
+import { shareOrSaveBlob } from './pdf-save';
 import type { MeasureState } from './measureCalculator';
+
+const XLSX_MIME = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 import { EXPLORE_DRIVERS, type ExploreQuadrant, type ExploreSetting } from './exploreDrivers';
 
 type Row = (string | number | null)[];
@@ -589,7 +591,7 @@ function buildInstructionsSheet(state: MeasureState, activeSettings: string[]): 
 
 // ── Export ────────────────────────────────────────────────────────────────────
 
-export function generateMeasureDataRequestExcel(state: MeasureState): void {
+export async function generateMeasureDataRequestExcel(state: MeasureState): Promise<void> {
   const wb = XLSX.utils.book_new();
 
   const activeSettings = state.activeCareSettings?.length > 0
@@ -624,8 +626,9 @@ export function generateMeasureDataRequestExcel(state: MeasureState): void {
     : 'Org';
 
   const buf = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-  saveAs(
-    new Blob([buf], { type: 'application/octet-stream' }),
+  await shareOrSaveBlob(
+    new Blob([buf], { type: XLSX_MIME }),
     `Abridge-Measure-Template-${orgSlug}.xlsx`,
+    'Abridge Data Request',
   );
 }
