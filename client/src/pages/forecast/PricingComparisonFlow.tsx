@@ -1,12 +1,13 @@
 import { useMemo, useState, useEffect, useRef, type ReactNode, type CSSProperties } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, TrendingUp, Info, ChevronDown } from "lucide-react";
+import { X, TrendingUp, Info, ChevronDown, Download } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
   Legend, ResponsiveContainer,
 } from "recharts";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { NumberField } from "@/components/NumberField";
+import { generatePricingSummaryPDF } from "./PricingSummaryPDF";
 import {
   type PricingModel,
   type OverageModel,
@@ -855,6 +856,7 @@ export default function PricingComparisonFlow({ onBack, onHome }: PricingCompari
   // Once the Switch-savings panel finishes expanding, let it show overflow so the
   // category dropdown isn't clipped by the height-animation's overflow-hidden.
   const [vendorPanelSettled, setVendorPanelSettled] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   const addVendor = () => setVendors((p) => [...p, makeDefaultVendor(`v-${Date.now()}`)]);
   const updateVendor = (id: string, u: Partial<DisplacedVendor>) =>
@@ -894,6 +896,36 @@ export default function PricingComparisonFlow({ onBack, onHome }: PricingCompari
     const lowestCost = cost(cheapest);
     return { cheapest, runnerUp, savings, bestRoi, termYears, lowestCost };
   }, [deals, volumes, annualValueEstimate, vendors, displacementOn]);
+
+  // Customer-facing one-pager: leads with the net savings on the recommended (cheapest) deal.
+  const handleExportSummary = async () => {
+    if (!verdict || isExporting) return;
+    setIsExporting(true);
+    try {
+      const rec = verdict.cheapest;
+      const labelFor = (v: DisplacedVendor) =>
+        v.category === "custom" ? (v.label || "Custom") : (DISPLACEMENT_CATEGORIES.find((c) => c.id === v.category)?.label ?? v.label);
+      const activeVendors = displacementOn
+        ? vendors.filter((v) => v.annualSpend > 0 && v.displacementPct > 0).map((v) => ({ label: labelFor(v), annual: vendorDisplacedAnnual(v) }))
+        : [];
+      await generatePricingSummaryPDF({
+        partnerName,
+        termYears: verdict.termYears,
+        modelLabel: PRICING_MODEL_LABELS[rec.deal.model],
+        yearCosts: rec.result.years.map((y) => y.annualCost),
+        totalContract: rec.result.totalContractCost,
+        vendors: activeVendors,
+        retiredPerYear: totalDisplacedAtScale,
+        coveredOverTerm: displacementOn ? rec.net.totalDisplaced : 0,
+        netOverTerm: displacementOn ? rec.net.netTotalContract : rec.result.totalContractCost,
+        pctCovered: displacementOn ? rec.net.pctCovered : 0,
+        annualValue: annualValueEstimate || undefined,
+        termVtc: annualValueEstimate > 0 ? rec.termVtc : null,
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   const updateDeal = (id: string, updates: Partial<DealOption>) => {
     setDeals((prev) => prev.map((d) => (d.id === id ? { ...d, ...updates } : d)));
@@ -1149,7 +1181,21 @@ export default function PricingComparisonFlow({ onBack, onHome }: PricingCompari
         </div>
 
         {/* HOW IT PANS OUT — 3-year cost growth + ROI, then the switch takeout */}
-        <SectionHeader label="How it pans out" />
+        <SectionHeader
+          label="How it pans out"
+          action={verdict ? (
+            <button
+              type="button"
+              onClick={handleExportSummary}
+              disabled={isExporting}
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium border border-[#E8E2DA] bg-white text-[#6B5E4F] hover:border-[#1A1A1A] transition-colors disabled:opacity-50"
+              data-testid="button-export-pricing-summary"
+            >
+              <Download className="w-3 h-3" />
+              {isExporting ? "Preparing…" : "Download summary"}
+            </button>
+          ) : undefined}
+        />
         {verdict && (
           <motion.div
             initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
