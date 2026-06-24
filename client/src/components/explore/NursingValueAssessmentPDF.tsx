@@ -1023,6 +1023,8 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
             if (data.hcahpsEnabled) tracked.push({ label: "HCAHPS / Patient Experience", domain: "Quality" });
             if (data.medErrorEnabled) tracked.push({ label: "Early Deterioration Documentation", domain: "Quality" });
             if (data.bundleComplianceEnabled) tracked.push({ label: "Care Bundle Compliance", domain: "Quality" });
+            if (data.cdiResponseEnabled) tracked.push({ label: "CDI Query Response", domain: "Revenue" });
+            if (data.docCompletionEnabled) tracked.push({ label: "Documentation Completion Rate", domain: "Revenue" });
 
             const domainTile = (
               domain: string,
