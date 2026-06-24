@@ -94,7 +94,7 @@ function PillToggle<T extends string | number>({
 }
 
 function NumberInput({
-  value, onChange, prefix, suffix, placeholder, className, decimal = false,
+  value, onChange, prefix, suffix, placeholder, className, decimal = false, testId,
 }: {
   value: number;
   onChange: (v: number) => void;
@@ -103,6 +103,7 @@ function NumberInput({
   placeholder?: string;
   className?: string;
   decimal?: boolean;
+  testId?: string;
 }) {
   // Inner input is the shared NumberField so it can be cleared and accepts decimals
   // (e.g. $1.50/encounter) — same fix the rest of the app uses.
@@ -115,6 +116,7 @@ function NumberInput({
         decimal={decimal}
         min={0}
         placeholder={placeholder ?? "0"}
+        data-testid={testId}
         className="flex-1 min-w-0 bg-transparent text-sm text-[#1A1A1A] outline-none"
       />
       {suffix && <span className="text-[#8C7E6E] text-xs flex-shrink-0 whitespace-nowrap">{suffix}</span>}
@@ -383,6 +385,7 @@ function DealCard({
               suffix={deal.model === "perProviderMonth" ? "/provider/mo" : deal.model === "perEncounterAnnual" ? "/encounter" : "/year"}
               className="w-full"
               decimal
+              testId={`input-deal-price-${index}`}
             />
           </div>
         )}
@@ -978,7 +981,7 @@ export default function PricingComparisonFlow({ onBack, onHome }: PricingCompari
 
         {/* Live scoreboard — pinned readout of whatever's configured (updates as they tweak) */}
         {verdict && (
-          <div className="sticky top-14 sm:top-16 z-40 -mx-4 sm:-mx-6 px-4 sm:px-6 py-2.5 bg-[#F7F6F3]/90 backdrop-blur-md border-b border-[#E8E2DA]">
+          <div data-testid="pricing-scoreboard" className="sticky top-14 sm:top-16 z-40 -mx-4 sm:-mx-6 px-4 sm:px-6 py-2.5 bg-[#F7F6F3]/90 backdrop-blur-md border-b border-[#E8E2DA]">
             <div className="flex flex-wrap items-center gap-x-5 gap-y-1">
               <span className="inline-flex items-baseline gap-2">
                 <span className={KICKER}>
@@ -1012,7 +1015,7 @@ export default function PricingComparisonFlow({ onBack, onHome }: PricingCompari
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
               <label className={FIELD_LABEL}>Providers</label>
-              <NumberInput value={volumes.providerCount} onChange={(v) => setVolumes((p) => ({ ...p, providerCount: v }))} suffix="providers" className="w-full" />
+              <NumberInput value={volumes.providerCount} onChange={(v) => setVolumes((p) => ({ ...p, providerCount: v }))} suffix="providers" className="w-full" testId="input-org-providers" />
             </div>
             <div>
               <label className={FIELD_LABEL}>Annual Encounters</label>
