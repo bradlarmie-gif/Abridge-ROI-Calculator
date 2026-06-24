@@ -6,6 +6,7 @@ import {
   Legend, ResponsiveContainer,
 } from "recharts";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
+import { NumberField } from "@/components/NumberField";
 import {
   type PricingModel,
   type OverageModel,
@@ -92,7 +93,7 @@ function PillToggle<T extends string | number>({
 }
 
 function NumberInput({
-  value, onChange, prefix, suffix, placeholder, className,
+  value, onChange, prefix, suffix, placeholder, className, decimal = false,
 }: {
   value: number;
   onChange: (v: number) => void;
@@ -100,15 +101,18 @@ function NumberInput({
   suffix?: string;
   placeholder?: string;
   className?: string;
+  decimal?: boolean;
 }) {
+  // Inner input is the shared NumberField so it can be cleared and accepts decimals
+  // (e.g. $1.50/encounter) — same fix the rest of the app uses.
   return (
     <div className={`flex items-center bg-white border border-[#E8E2DA] rounded-lg px-3 h-10 gap-1 focus-within:border-[#1A1A1A] transition-colors ${className ?? ""}`}>
       {prefix && <span className="text-[#8C7E6E] text-sm flex-shrink-0">{prefix}</span>}
-      <input
-        type="text"
-        inputMode="numeric"
-        value={value === 0 ? "" : value.toLocaleString("en-US")}
-        onChange={(e) => onChange(parseFloat(e.target.value.replace(/,/g, "")) || 0)}
+      <NumberField
+        value={value}
+        onValueChange={onChange}
+        decimal={decimal}
+        min={0}
         placeholder={placeholder ?? "0"}
         className="flex-1 min-w-0 bg-transparent text-sm text-[#1A1A1A] outline-none"
       />
@@ -341,11 +345,12 @@ function DealCard({
                 <p className="text-xs text-[#8C7E6E] mb-1">Platform Fee</p>
                 <div className="flex items-center bg-white border border-[#E8E2DA] rounded-lg focus-within:border-[#EA2C00] transition-colors overflow-hidden">
                   <span className="pl-3 text-sm text-[#A39888]">$</span>
-                  <input type="text" inputMode="numeric"
-                    value={deal.platformFee ? deal.platformFee.toLocaleString("en-US") : ""}
+                  <NumberField
+                    value={deal.platformFee}
+                    onValueChange={(v) => onUpdate({ platformFee: v })}
+                    min={0}
                     placeholder="0"
-                    onChange={(e) => onUpdate({ platformFee: parseFloat(e.target.value.replace(/,/g, "")) || 0 })}
-                    className="flex-1 px-2 py-2.5 text-sm bg-transparent outline-none"
+                    className="flex-1 min-w-0 px-2 py-2.5 text-sm bg-transparent outline-none"
                   />
                   <span className="pr-2 text-xs text-[#A39888]">/yr</span>
                 </div>
@@ -354,11 +359,13 @@ function DealCard({
                 <p className="text-xs text-[#8C7E6E] mb-1">Per Encounter</p>
                 <div className="flex items-center bg-white border border-[#E8E2DA] rounded-lg focus-within:border-[#EA2C00] transition-colors overflow-hidden">
                   <span className="pl-3 text-sm text-[#A39888]">$</span>
-                  <input type="text" inputMode="numeric"
-                    value={deal.unitPrice ? deal.unitPrice.toLocaleString("en-US") : ""}
+                  <NumberField
+                    value={deal.unitPrice}
+                    onValueChange={(v) => onUpdate({ unitPrice: v })}
+                    decimal
+                    min={0}
                     placeholder="0"
-                    onChange={(e) => onUpdate({ unitPrice: parseFloat(e.target.value.replace(/,/g, "")) || 0 })}
-                    className="flex-1 px-2 py-2.5 text-sm bg-transparent outline-none"
+                    className="flex-1 min-w-0 px-2 py-2.5 text-sm bg-transparent outline-none"
                   />
                   <span className="pr-2 text-xs text-[#A39888]">/enc</span>
                 </div>
@@ -374,6 +381,7 @@ function DealCard({
               prefix="$"
               suffix={deal.model === "perProviderMonth" ? "/provider/mo" : deal.model === "perEncounterAnnual" ? "/encounter" : "/year"}
               className="w-full"
+              decimal
             />
           </div>
         )}
@@ -416,15 +424,14 @@ function DealCard({
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-[#8C7E6E] w-11 flex-shrink-0">Yr {yr.year}</span>
                   {advanced && showVolumeInput && (
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      value={(deal.yearConfigs[idx]?.provisionedVolume ?? 0) === 0 ? "" : (deal.yearConfigs[idx]?.provisionedVolume ?? 0).toLocaleString("en-US")}
-                      onChange={(e) => {
+                    <NumberField
+                      value={deal.yearConfigs[idx]?.provisionedVolume ?? 0}
+                      onValueChange={(v) => {
                         const newConfigs = [...deal.yearConfigs];
-                        newConfigs[idx] = { provisionedVolume: parseFloat(e.target.value.replace(/,/g, "")) || 0 };
+                        newConfigs[idx] = { provisionedVolume: v };
                         onUpdate({ yearConfigs: newConfigs });
                       }}
+                      min={0}
                       placeholder={orgVolumeForModel(volumes, deal.model) > 0 ? orgVolumeForModel(volumes, deal.model).toLocaleString("en-US") : "0"}
                       className="w-20 px-2 py-0.5 text-xs bg-white border border-[#E8E2DA] rounded-md focus:border-[#EA2C00] outline-none text-center"
                     />
@@ -505,9 +512,11 @@ function DealCard({
                 <span className="text-xs text-[#8C7E6E] flex-shrink-0">Overage rate</span>
                 <div className="flex items-center bg-white border border-[#E8E2DA] rounded-lg focus-within:border-[#EA2C00] transition-colors overflow-hidden">
                   <span className="pl-2.5 text-xs text-[#A39888]">$</span>
-                  <input type="text" inputMode="numeric"
-                    value={deal.overageUnitPrice ? deal.overageUnitPrice.toLocaleString("en-US") : ""}
-                    onChange={(e) => onUpdate({ overageUnitPrice: parseFloat(e.target.value.replace(/,/g, "")) || 0 })}
+                  <NumberField
+                    value={deal.overageUnitPrice}
+                    onValueChange={(v) => onUpdate({ overageUnitPrice: v })}
+                    decimal
+                    min={0}
                     placeholder="0"
                     className="w-16 px-1.5 py-1.5 text-xs bg-transparent outline-none"
                   />
@@ -719,7 +728,7 @@ function RoiAnalysisSection({
                       const last = r.years[r.years.length - 1]?.annualCost ?? 0;
                       const g = first > 0 ? Math.round(((last - first) / first) * 100) : 0;
                       return (
-                        <td key={ri} className="py-2.5 px-3 text-right text-sm tabular-nums" style={{ color: g > 0 ? "#B0411F" : "#8C9A6E" }}>
+                        <td key={ri} className="py-2.5 px-3 text-right text-sm tabular-nums" style={{ color: g > 0 ? "#EA2C00" : "#666666" }}>
                           {first <= 0 ? "—" : g > 0 ? `+${g}%` : g < 0 ? `${g}%` : "Flat"}
                         </td>
                       );
