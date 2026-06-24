@@ -6,6 +6,7 @@ import {
   type SwitchCalculations
 } from "@/lib/switchGapCalculator";
 import StepFooter, { STEP_FOOTER_SPACER_CLASS } from "@/components/StepFooter";
+import { NumberField } from "@/components/NumberField";
 
 interface StepWhereYouAreProps {
   inputs: SwitchInputs;
@@ -456,14 +457,14 @@ export default function StepWhereYouAre({
                 data-testid="slider-after-hours"
               />
               <div className="flex items-center gap-1 min-w-[90px] justify-end">
-                <input
-                  type="number"
-                  value={afterHoursPerWeek || ''}
-                  onChange={(e) => handleMetricChange('afterHoursPerWeek', parseFloat(e.target.value) || 0)}
-                  placeholder="--"
+                <NumberField
+                  value={afterHoursPerWeek}
+                  onValueChange={(v) => handleMetricChange('afterHoursPerWeek', v)}
+                  decimal
                   min={0}
                   max={15}
-                  className="w-12 text-lg font-bold text-center text-white bg-[#333333] border border-[#555555] rounded-lg px-2 py-1 focus:border-[#EA2C00] focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  placeholder="--"
+                  className="w-12 text-lg font-bold text-center text-white bg-[#333333] border border-[#555555] rounded-lg px-2 py-1 focus:border-[#EA2C00] focus:outline-none"
                   data-testid="slider-after-hours-input"
                 />
                 <span className="text-sm text-[#999999]">hrs/wk</span>

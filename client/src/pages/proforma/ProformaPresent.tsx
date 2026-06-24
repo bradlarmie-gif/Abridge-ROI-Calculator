@@ -77,7 +77,11 @@ const DRIVER_BLURB: Record<string, string> = {
 
 function fmt(n: number): string {
   if (Math.abs(n) >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
-  if (Math.abs(n) >= 1_000) return `$${Math.round(n / 1_000).toLocaleString()}K`;
+  if (Math.abs(n) >= 1_000) {
+    const k = Math.round(n / 1_000);
+    if (Math.abs(k) >= 1_000) return `$${(n / 1_000_000).toFixed(1)}M`; // $999.5k+ rolls to $1.0M, never "$1000K"
+    return `$${k.toLocaleString()}K`;
+  }
   return `$${Math.round(n).toLocaleString()}`;
 }
 function fmtNum(n: number): string {

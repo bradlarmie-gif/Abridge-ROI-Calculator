@@ -795,7 +795,11 @@ export function formatCurrency(value: number): string {
 export function fmtMoneyCompact(n: number): string {
   const abs = Math.abs(n);
   if (abs >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
-  if (abs >= 1_000) return `$${Math.round(n / 1_000).toLocaleString()}K`;
+  if (abs >= 1_000) {
+    const k = Math.round(n / 1_000);
+    if (Math.abs(k) >= 1_000) return `$${(n / 1_000_000).toFixed(1)}M`; // $999.5k+ rolls to $1.0M, never "$1000K"
+    return `$${k.toLocaleString()}K`;
+  }
   return `$${Math.round(n).toLocaleString()}`;
 }
 
