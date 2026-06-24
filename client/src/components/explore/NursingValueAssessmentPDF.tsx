@@ -892,6 +892,18 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
   const cumY2 = data.year1Net + data.year2Net;
   const cumY3 = data.year1Net + data.year2Net + data.year3Net;
 
+  // Honor the selected projection horizon (1–3yr; default 3) so the PDF matches
+  // the on-screen toggle. Slices the year rows and re-derives the cumulative.
+  const projYears = Math.min(3, Math.max(1, Math.round(data.projectionYears ?? 3)));
+  let _projCum = 0;
+  const projectionRows = [
+    { label: "Year 1  (30-day ramp)", value: y1Recurring, inv: data.annualInvestment, net: data.year1Net },
+    { label: "Year 2", value: y2Recurring, inv: data.annualInvestment, net: data.year2Net },
+    { label: "Year 3", value: y3Recurring, inv: data.annualInvestment, net: data.year3Net },
+  ].slice(0, projYears).map((r) => { _projCum += r.net; return { ...r, cum: _projCum }; });
+  const horizonCumNet = _projCum;
+  const horizonRampCaption = projYears === 1 ? "Year 1  ·  30-day ramp" : projYears === 2 ? "Yr 1 ramp  ·  Yr 2 steady state" : "Yr 1 ramp  ·  Yrs 2–3 steady state";
+
   return (
     <Document>
       {/* PAGE 1 — COVER */}
@@ -957,12 +969,12 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
                 <Text style={{ fontSize: 8, color: colors.tertiary }}>Per dollar invested</Text>
               </View>
               <View style={{ flex: 1.1, paddingLeft: 14 }}>
-                <Text style={{ fontSize: 7, color: colors.secondary, textTransform: "uppercase", letterSpacing: 1.5, fontWeight: "bold", marginBottom: 5 }}>3-Year Net Value</Text>
+                <Text style={{ fontSize: 7, color: colors.secondary, textTransform: "uppercase", letterSpacing: 1.5, fontWeight: "bold", marginBottom: 5 }}>{`${projYears}-Year Net Value`}</Text>
                 <Text style={{ fontSize: 34, fontWeight: "bold", color: colors.primary, lineHeight: 1.0, marginBottom: 5 }}>
-                  {fmtCurrency(data.threeYearCumulativeNet)}
+                  {fmtCurrency(horizonCumNet)}
                 </Text>
                 <Text style={{ fontSize: 8, color: colors.tertiary }}>
-                  Yr 1 ramp  ·  Yrs 2–3 steady state
+                  {horizonRampCaption}
                 </Text>
               </View>
             </View>
@@ -1637,18 +1649,14 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
               </View>
             )}
 
-            {[
-              { label: "Year 1  (30-day ramp)", value: y1Recurring, inv: data.annualInvestment, net: data.year1Net, cum: cumY1 },
-              { label: "Year 2", value: y2Recurring, inv: data.annualInvestment, net: data.year2Net, cum: cumY2 },
-              { label: "Year 3", value: y3Recurring, inv: data.annualInvestment, net: data.year3Net, cum: cumY3 },
-            ].map((row, idx) => (
+            {projectionRows.map((row, idx) => (
               <View
                 key={row.label}
                 style={{
                   flexDirection: "row",
                   paddingVertical: 8,
                   paddingHorizontal: 10,
-                  borderBottomWidth: idx === 2 ? 0 : 1,
+                  borderBottomWidth: idx === projectionRows.length - 1 ? 0 : 1,
                   borderBottomColor: colors.separator,
                 }}
               >
@@ -1691,7 +1699,9 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
 
           {/* Bridging copy — describes the model constraints before the expansion section */}
           <Text style={{ fontSize: 9.5, color: colors.secondary, lineHeight: 1.6, marginBottom: 14 }}>
-            {`Unit size, staffing, and adoption rate are held constant across all three years. No volume growth is assumed. Year 2 and Year 3 values reflect a full calendar year at the inputs above. The ${fmtCurrency(data.threeYearCumulativeNet)} cumulative net is the sum of the rows above — no compounding or incremental growth is embedded. Adoption rate is the primary sensitivity; a change in utilization adjusts all workforce and capacity values proportionally.`}
+            {projYears === 3
+              ? `Unit size, staffing, and adoption rate are held constant across all three years. No volume growth is assumed. Year 2 and Year 3 values reflect a full calendar year at the inputs above. The ${fmtCurrency(data.threeYearCumulativeNet)} cumulative net is the sum of the rows above — no compounding or incremental growth is embedded. Adoption rate is the primary sensitivity; a change in utilization adjusts all workforce and capacity values proportionally.`
+              : `Unit size, staffing, and adoption rate are held constant across all ${projYears === 1 ? 'of Year 1' : `${projYears} years`}. No volume growth is assumed.${projYears === 2 ? ' Year 2 reflects a full calendar year at the inputs above.' : ''} The ${fmtCurrency(horizonCumNet)} cumulative net is the sum of the rows above — no compounding or incremental growth is embedded. Adoption rate is the primary sensitivity; a change in utilization adjusts all workforce and capacity values proportionally.`}
           </Text>
 
           {/* Cost Displacement callout — only renders when items are present */}
