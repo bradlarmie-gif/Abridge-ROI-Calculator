@@ -595,11 +595,35 @@ const nursingFramework: FrameworkItem[] = [
   },
   {
     domain: 'QUALITY',
-    tag: 'tracked',
-    narrative: "Nursing-sensitive quality measures — fall rates, hospital-acquired pressure injuries, CAUTI, CLABSI — depend on whether care protocols were followed and whether they were documented. Bundle compliance cannot be measured if documentation is incomplete. When assessment and intervention documentation is more complete and timely, quality teams have the data needed to identify protocol adherence patterns and address gaps before they produce adverse events. Harm event rates require 12–18 months to show a statistically meaningful trend and are tracked as program performance signals, not modeled in dollars.",
-    chain: ['Assessment Timeliness ↑', 'Bundle Documentation Rate ↑', 'Protocol Adherence Visibility ↑'],
-    chainOutput: 'Nursing-Sensitive Harm Events ↓',
-    note: "Not modeled in dollars — harm event trends require 12–18 months to be statistically meaningful. Tracked as bundle compliance rate, assessment completion rate, and harm event rate per 1,000 patient days.",
+    tag: 'modeled',
+    narrative: "Nursing-sensitive harm events — pressure injuries (HAPIs), falls, CAUTIs, CLABSIs, and sepsis — are documentation-sensitive: real-time assessment and bundle documentation is what lets prevention protocols be triggered and verified. The model quantifies this in dollars, conservatively. For each condition it starts from the unit's event rate per 1,000 patient-days, credits only the fraction of events that better documentation can realistically prevent — not all of them, because the causal link is indirect — and multiplies by the cost per event. Because only that documentation-attributable prevention fraction is credited, the figure is deliberately conservative. Harm-rate confirmation in the field still takes 12–18 months; the expected dollar impact is modeled up front.",
+    chain: ['Assessment Timeliness ↑', 'Bundle Documentation Rate ↑', 'Prevention Protocols Verified ↑', 'Harm Events ↓'],
+    chainOutput: 'Avoided Harm-Event Cost ↓',
+    steps: [
+      {
+        vars: [
+          { v: 'Annual patient-days', kind: 'input' },
+          { v: 'Event rate / 1,000 patient-days', kind: 'benchmark', hint: '~1–4' },
+        ],
+        result: 'Baseline harm events/year',
+      },
+      {
+        vars: [
+          { v: 'Baseline harm events', kind: 'derived' },
+          { v: 'Documentation-preventable fraction', kind: 'benchmark', hint: '~5–30%' },
+        ],
+        result: 'Events avoided/year',
+      },
+      {
+        vars: [
+          { v: 'Events avoided/year', kind: 'derived' },
+          { v: 'Cost per event', kind: 'benchmark', hint: '$3.5K–$25K' },
+        ],
+        result: 'Estimated harm-prevention savings',
+        isFinal: true,
+      },
+    ],
+    note: "Modeled per condition (HAPI, falls, CAUTI, CLABSI, sepsis) from your event rates per 1,000 patient-days. Conservative by design — only the documentation-attributable prevention fraction is credited, since the causal link is indirect. Harm-rate trends still take 12–18 months to confirm in the field.",
   },
 ];
 
