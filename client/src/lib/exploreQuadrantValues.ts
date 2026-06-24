@@ -31,6 +31,13 @@ export function computeCapacityBreakdown(state: ExploreState, totalHoursSaved: n
   const result: Record<string, number> = {};
   const td = state.timeDriverInputs;
 
+  // Nursing's Capacity drivers (overtime, bedside time) are tag-pulled from the
+  // registry, like Workforce. Nursing has no patient-access/ED capacity items, so
+  // this never collides with the inline OP/ED logic below.
+  if (state.careSetting === 'nursing') {
+    Object.assign(result, driverValuesForQuadrant(state, totalHoursSaved, 'Capacity'));
+  }
+
   if (td.patientAccessEnabled) {
     const effectiveAccessProviders = Math.min(td.accessProviders || state.numberOfProviders, state.numberOfProviders);
     const hrsPerProvPerWeek = state.numberOfProviders > 0 ? totalHoursSaved / state.numberOfProviders / 48 : 0;

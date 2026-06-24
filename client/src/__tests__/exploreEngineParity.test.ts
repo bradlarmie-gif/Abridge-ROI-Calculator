@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { computeAllDriverValues } from "@/lib/exploreDriverCalcs";
-import { computeRevenueBreakdown, computeWorkforceBreakdown } from "@/lib/exploreQuadrantValues";
+import { computeAllDriverValues, computeExploreTotals } from "@/lib/exploreDriverCalcs";
+import { computeRevenueBreakdown, computeWorkforceBreakdown, computeCapacityBreakdown } from "@/lib/exploreQuadrantValues";
 import { DEFAULT_EXPLORE_STATE, type ExploreState } from "@/pages/explore/ExploreFlow";
 
 const td = (overrides: Partial<ExploreState["timeDriverInputs"]>): ExploreState["timeDriverInputs"] => ({
@@ -106,13 +106,33 @@ describe("nursing workforce parity (screen breakdown vs canonical engine)", () =
       retentionImpactScenario: "typical",
     }),
   };
-  it.each(["nursingRetention", "nursingAgency", "nursingOvertime"])(
-    "%s matches the canonical engine",
+  it.each(["nursingRetention", "nursingAgency"])(
+    "%s matches the canonical engine (Workforce)",
     (driverId) => {
       expect(computeWorkforceBreakdown(nursing, HOURS).driverValues[driverId])
         .toBe(computeAllDriverValues(nursing, HOURS)[driverId]);
     },
   );
+  // Overtime is a Capacity driver for nursing (documentation time → payroll), per
+  // the methodology — so it must show up in the Capacity breakdown, not Workforce.
+  it("nursingOvertime matches the canonical engine (Capacity)", () => {
+    expect(computeCapacityBreakdown(nursing, HOURS).driverValues.nursingOvertime)
+      .toBe(computeAllDriverValues(nursing, HOURS).nursingOvertime);
+    expect(computeWorkforceBreakdown(nursing, HOURS).driverValues.nursingOvertime)
+      .toBeUndefined();
+  });
+
+  // The headline rollup (valueByQuadrant) feeds the Model totals and the PDF
+  // domain tiles. Overtime must land in Capacity there too — and Workforce must
+  // be retention + agency only (guards against the old double-count where OT was
+  // summed into Workforce while the Capacity tile also showed it).
+  it("rolls nursing overtime into Capacity, not Workforce", () => {
+    const all = computeAllDriverValues(nursing, HOURS);
+    const { valueByQuadrant } = computeExploreTotals(nursing, HOURS);
+    expect(all.nursingOvertime).toBeGreaterThan(0);
+    expect(valueByQuadrant.Workforce).toBe((all.nursingRetention ?? 0) + (all.nursingAgency ?? 0));
+    expect(valueByQuadrant.Capacity).toBe(all.nursingOvertime);
+  });
 });
 
 describe("denials custom-scenario parity (screen vs canonical use the same map)", () => {
