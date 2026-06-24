@@ -61,7 +61,7 @@ for (const vp of VIEWPORTS) {
       expect(crashes, `Scribe crashes:\n${crashes.join("\n")}`).toHaveLength(0);
     });
 
-    test("Nursing assessment: launches and navigates", async ({ page }) => {
+    test("Nursing assessment → Next Step → export PDF", async ({ page }) => {
       const crashes: string[] = [];
       page.on("pageerror", (e) => crashes.push(String(e)));
 
@@ -70,21 +70,50 @@ for (const vp of VIEWPORTS) {
       await page.getByTestId("card-switch").click();
       await page.getByTestId("button-path-nursing").click();
 
-      // Screen 1: program inputs render + accept input.
+      // Screen 1: program inputs.
       await expect(page.getByTestId("text-nursing-program-headline")).toBeVisible();
       await page.getByTestId("input-staffed-beds").fill("300");
       await page.getByTestId("input-nurse-ftes").fill("450");
       await expectNoHorizontalOverflow(page, "nursing-assess-1");
 
-      // Advance to the "focus" screen (a guided priority picker), select a
-      // priority, and continue — proves the bespoke nursing flow navigates.
-      const cont1 = page.getByRole("button", { name: /continue|next/i }).first();
-      if (await cont1.isVisible().catch(() => false)) await cont1.click();
-      await expect(page.getByRole("heading", { name: /what is your nursing program focused on/i })).toBeVisible();
-      await page.getByRole("button", { name: /Nurse Retention/i }).first().click();
-      await page.getByRole("button", { name: /Explore Your Priorities/i }).click();
-      await page.waitForTimeout(400);
-      await expectNoHorizontalOverflow(page, "nursing-assess-priorities");
+      // Walk all 6 screens to the Next Step screen. Each screen's primary CTA is a
+      // StepFooter "button-next" (desktop+mobile twins → click the visible one); the
+      // priorities screen gates its CTA until a priority card is selected.
+      for (let i = 0; i < 10; i++) {
+        if (await page.getByTestId("text-nursing-nextstep-headline").isVisible().catch(() => false)) break;
+        const priority = page.locator('[data-testid^="priority-card-"]').first();
+        if (await priority.isVisible().catch(() => false)) await priority.click();
+        const nexts = page.locator('[data-testid^="button-nursing-next"]');
+        const n = await nexts.count();
+        let clicked = false;
+        for (let j = 0; j < n; j++) {
+          const el = nexts.nth(j);
+          if ((await el.isVisible().catch(() => false)) && (await el.isEnabled().catch(() => false))) {
+            await el.click();
+            clicked = true;
+            break;
+          }
+        }
+        if (!clicked) break;
+        await page.waitForTimeout(350);
+      }
+
+      await expect(page.getByTestId("text-nursing-nextstep-headline")).toBeVisible();
+      await expectNoHorizontalOverflow(page, "nursing-assess-nextstep");
+
+      // Export the assessment (form → confirm).
+      await page.getByTestId("button-export-assessment").click();
+      await page.getByTestId("input-export-org").fill("Test Health");
+      if (vp.canDownload) {
+        const dl = page.waitForEvent("download", { timeout: 25_000 });
+        await page.getByTestId("button-export-confirm").click();
+        const download = await dl;
+        expect(download.suggestedFilename(), "nursing assessment PDF").toMatch(/\.pdf$/i);
+      } else {
+        // Mobile uses the share sheet (navigator.share), which isn't catchable in
+        // headless — just confirm the export action is reachable.
+        await expect(page.getByTestId("button-export-confirm")).toBeVisible();
+      }
 
       expect(crashes, `Nursing assess crashes:\n${crashes.join("\n")}`).toHaveLength(0);
     });
