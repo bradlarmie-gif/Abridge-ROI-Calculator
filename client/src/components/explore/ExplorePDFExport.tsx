@@ -113,6 +113,9 @@ export interface ExplorePDFData {
   threeYearGrossTotal: number;
   threeYearInvestmentTotal: number;
   threeYearNetTotal: number;
+  /** Selected projection horizon (1–3yr). This PDF doesn't render a year-by-year
+      table, so it's carried for parity but unused here. */
+  projectionYears?: number;
 
   // Headline
   netAnnualValue: number;

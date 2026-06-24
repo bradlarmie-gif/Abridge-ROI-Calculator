@@ -454,6 +454,17 @@ export default function ExploreModel({
   const threeYearNetTotal = useMemo(() => year1Net + year2Net + year3Net, [year1Net, year2Net, year3Net]);
   const threeYearInvestmentTotal = useMemo(() => year1Investment + year2Investment + year3Investment, [year1Investment, year2Investment, year3Investment]);
 
+  // Selectable projection horizon (1/2/3-year, default 3) — so a 2-year customer
+  // sees a 2-year view, not a hard-coded 3. Slices the already-computed years.
+  const [projectionYears, setProjectionYears] = useState(3);
+  const yearValuesArr = [year1Value, year2Value, year3Value];
+  const yearNetsArr = [year1Net, year2Net, year3Net];
+  const yearInvestmentsArr = [year1Investment, year2Investment, year3Investment];
+  const projGrossTotal = yearValuesArr.slice(0, projectionYears).reduce((a, b) => a + b, 0);
+  const projNetTotal = yearNetsArr.slice(0, projectionYears).reduce((a, b) => a + b, 0);
+  const projInvestmentTotal = yearInvestmentsArr.slice(0, projectionYears).reduce((a, b) => a + b, 0);
+  const PROJ_GRID_COLS: Record<number, string> = { 1: 'lg:grid-cols-2', 2: 'lg:grid-cols-3', 3: 'lg:grid-cols-4' };
+
   // Way C — displacement is a SEPARATE savings line. The ROI ratio stays clinical value /
   // gross investment (never juiced by displacement); the displaced spend shows up only in the
   // net figures as a clearly-separate saving, matching the proforma and Compare Pricing.
@@ -966,6 +977,7 @@ export default function ExploreModel({
           threeYearGrossTotal,
           threeYearInvestmentTotal,
           threeYearNetTotal,
+          projectionYears,
 
           // Headline
           netAnnualValue: year1Net,
@@ -1091,6 +1103,7 @@ export default function ExploreModel({
             year2Net,
             year3Net,
             threeYearCumulativeNet: threeYearNetTotal,
+            projectionYears,
             workforceTotal: valueByQuadrant.Workforce || 0,
             qualityTotal: valueByQuadrant.Quality || 0,
             totalAnnualValue,
@@ -2219,18 +2232,26 @@ export default function ExploreModel({
                       const point = chartData.find(d => d.month === payload.value);
                       if (!point) return <g />;
                       const anchor = point.isFullScale ? "end" : point.isPilot ? "start" : "middle";
+                      const accent = point.isPilot || point.isFullScale;
                       return (
                         <g transform={`translate(${x},${y})`}>
-                          <text 
-                            x={0} 
-                            y={16} 
-                            textAnchor={anchor} 
-                            fill={point.isPilot || point.isFullScale ? "#EA2C00" : "#888888"}
+                          <text
+                            x={0}
+                            y={16}
+                            textAnchor={anchor}
+                            fill={accent ? "#EA2C00" : "#888888"}
                             fontSize={12}
-                            fontWeight={point.isPilot || point.isFullScale ? 700 : 400}
+                            fontWeight={accent ? 700 : 400}
                           >
                             {point.milestoneLabel}
                           </text>
+                          {/* Show the actual month under "Full Scale" so the axis matches the
+                              selected timeline (e.g. 24mo) — updates when the pace changes. */}
+                          {point.isFullScale && (
+                            <text x={0} y={31} textAnchor={anchor} fill="#888888" fontSize={10} fontWeight={400}>
+                              {point.month}mo
+                            </text>
+                          )}
                         </g>
                       );
                     }}
@@ -2331,89 +2352,68 @@ export default function ExploreModel({
         >
           <div className="text-center mb-6">
             <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-2">Year by Year</p>
-            <p className="text-xl font-bold text-black">3-Year Projection</p>
+            <p className="text-xl font-bold text-black">{projectionYears}-Year Projection</p>
             {expandedProviders > expansionBaselineCount && (
               <p className="text-xs text-[#AAAAAA] mt-1">
-                Based on current pilot scale ({isNursing ? formatNumber(expansionBaselineCount) + ' beds' : formatNumber(state.numberOfProviders) + ' providers'}) with Y2/Y3 growth. Expansion opportunity modeled separately above.
+                Based on current pilot scale ({isNursing ? formatNumber(expansionBaselineCount) + ' beds' : formatNumber(state.numberOfProviders) + ' providers'}) with year-over-year growth. Expansion opportunity modeled separately above.
               </p>
             )}
+            <div className="inline-flex bg-[#F5F0EB] rounded-full p-0.5 gap-0.5 mt-4" data-testid="projection-horizon-toggle">
+              {[1, 2, 3].map((n) => (
+                <button
+                  key={n}
+                  type="button"
+                  onClick={() => setProjectionYears(n)}
+                  data-testid={`projection-horizon-${n}`}
+                  className={`rounded-full px-4 py-1.5 text-xs font-medium transition-all ${projectionYears === n ? 'bg-white text-[#1A1A1A] shadow-sm' : 'text-[#888888] hover:text-[#1A1A1A]'}`}
+                >
+                  {n} {n === 1 ? 'Year' : 'Years'}
+                </button>
+              ))}
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
-            {/* Year 1 */}
-            <div className="bg-white rounded-xl border border-[#E5E5E5] p-5 flex flex-col" data-testid="projection-year-1">
-              <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-2">Year 1</p>
-              <p className="text-2xl font-bold text-black mb-1">{formatCurrency(year1Value)}</p>
-              <p className="text-xs text-[#888888]">gross value</p>
-              {totalOneTimeValue > 0 && (
-                <p className="text-[11px] text-[#666666] mt-1">includes {formatCurrency(totalOneTimeValue)} one-time</p>
-              )}
-              <div className="h-px bg-[#F0EBE4] my-3" />
-              <div className="flex justify-between items-center text-sm mt-auto">
-                <span className="text-[#888888]">Net</span>
-                <span className={`font-semibold ${year1Net >= 0 ? 'text-[#EA2C00]' : 'text-[#888888]'}`} data-testid="projection-year-1-net">{formatCurrency(year1Net)}</span>
-              </div>
-              {state.pricingModel === 'perEncounter' && (
-                <div className="flex justify-between items-center text-xs mt-1">
-                  <span className="text-[#AAAAAA]">Investment</span>
-                  <span className="text-[#888888]">{formatCurrency(year1Investment)}</span>
+          <div className={`grid grid-cols-1 sm:grid-cols-2 ${PROJ_GRID_COLS[projectionYears] ?? 'lg:grid-cols-4'} gap-3 sm:gap-4 mb-6`}>
+            {Array.from({ length: projectionYears }, (_, i) => {
+              const gross = yearValuesArr[i];
+              const net = yearNetsArr[i];
+              const inv = yearInvestmentsArr[i];
+              return (
+                <div key={i} className="bg-white rounded-xl border border-[#E5E5E5] p-5 flex flex-col" data-testid={`projection-year-${i + 1}`}>
+                  <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-2">Year {i + 1}</p>
+                  <p className="text-2xl font-bold text-black mb-1">{formatCurrency(gross)}</p>
+                  <p className="text-xs text-[#888888]">gross value</p>
+                  {i === 0 && totalOneTimeValue > 0 && (
+                    <p className="text-[11px] text-[#666666] mt-1">includes {formatCurrency(totalOneTimeValue)} one-time</p>
+                  )}
+                  <div className="h-px bg-[#F0EBE4] my-3" />
+                  <div className="flex justify-between items-center text-sm mt-auto">
+                    <span className="text-[#888888]">Net</span>
+                    <span className={`font-semibold ${net >= 0 ? 'text-[#EA2C00]' : 'text-[#888888]'}`} data-testid={`projection-year-${i + 1}-net`}>{formatCurrency(net)}</span>
+                  </div>
+                  {state.pricingModel === 'perEncounter' && (
+                    <div className="flex justify-between items-center text-xs mt-1">
+                      <span className="text-[#AAAAAA]">Investment</span>
+                      <span className="text-[#888888]">{formatCurrency(inv)}</span>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
+              );
+            })}
 
-            {/* Year 2 */}
-            <div className="bg-white rounded-xl border border-[#E5E5E5] p-5 flex flex-col" data-testid="projection-year-2">
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px]">Year 2</p>
-              </div>
-              <p className="text-2xl font-bold text-black mb-1">{formatCurrency(year2Value)}</p>
-              <p className="text-xs text-[#888888]">gross value</p>
-              <div className="h-px bg-[#F0EBE4] my-3" />
-              <div className="flex justify-between items-center text-sm mt-auto">
-                <span className="text-[#888888]">Net</span>
-                <span className={`font-semibold ${year2Net >= 0 ? 'text-[#EA2C00]' : 'text-[#888888]'}`} data-testid="projection-year-2-net">{formatCurrency(year2Net)}</span>
-              </div>
-              {state.pricingModel === 'perEncounter' && (
-                <div className="flex justify-between items-center text-xs mt-1">
-                  <span className="text-[#AAAAAA]">Investment</span>
-                  <span className="text-[#888888]">{formatCurrency(year2Investment)}</span>
-                </div>
-              )}
-            </div>
-
-            {/* Year 3 */}
-            <div className="bg-white rounded-xl border border-[#E5E5E5] p-5 flex flex-col" data-testid="projection-year-3">
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px]">Year 3</p>
-              </div>
-              <p className="text-2xl font-bold text-black mb-1">{formatCurrency(year3Value)}</p>
-              <p className="text-xs text-[#888888]">gross value</p>
-              <div className="h-px bg-[#F0EBE4] my-3" />
-              <div className="flex justify-between items-center text-sm mt-auto">
-                <span className="text-[#888888]">Net</span>
-                <span className={`font-semibold ${year3Net >= 0 ? 'text-[#EA2C00]' : 'text-[#888888]'}`} data-testid="projection-year-3-net">{formatCurrency(year3Net)}</span>
-              </div>
-              {state.pricingModel === 'perEncounter' && (
-                <div className="flex justify-between items-center text-xs mt-1">
-                  <span className="text-[#AAAAAA]">Investment</span>
-                  <span className="text-[#888888]">{formatCurrency(year3Investment)}</span>
-                </div>
-              )}
-            </div>
-
-            {/* 3-Year Total — same shape, distinct treatment */}
+            {/* N-Year Total — same shape, distinct treatment */}
             <div className="bg-[#1A1A1A] rounded-xl p-5 flex flex-col" data-testid="projection-three-year-total">
-              <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-2">3-Year Total</p>
-              <p className="text-2xl font-bold text-white mb-1">{formatCurrency(threeYearGrossTotal)}</p>
+              <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-2">{projectionYears}-Year Total</p>
+              <p className="text-2xl font-bold text-white mb-1">{formatCurrency(projGrossTotal)}</p>
               <p className="text-xs text-white/60">gross value</p>
               <div className="h-px bg-white/10 my-3" />
               <div className="flex justify-between items-center text-sm mt-auto">
                 <span className="text-white/60">Net</span>
-                <span className={`font-semibold ${threeYearNetTotal >= 0 ? 'text-[#EA2C00]' : 'text-white/70'}`} data-testid="projection-three-year-net">{formatCurrency(threeYearNetTotal)}</span>
+                <span className={`font-semibold ${projNetTotal >= 0 ? 'text-[#EA2C00]' : 'text-white/70'}`} data-testid="projection-three-year-net">{formatCurrency(projNetTotal)}</span>
               </div>
               <div className="flex justify-between items-center text-xs mt-1">
                 <span className="text-white/40">Investment</span>
-                <span className="text-white/60">{formatCurrency(threeYearInvestmentTotal)}</span>
+                <span className="text-white/60">{formatCurrency(projInvestmentTotal)}</span>
               </div>
             </div>
           </div>

@@ -283,6 +283,9 @@ export interface NursingPDFInput {
   year2Net: number;
   year3Net: number;
   threeYearCumulativeNet: number;
+  /** Selected projection horizon (1–3yr). Carried for parity; this PDF still
+      renders the full 3-year table for now (separate, eyeballed follow-up). */
+  projectionYears?: number;
 
   workforceTotal: number;
   qualityTotal: number;
