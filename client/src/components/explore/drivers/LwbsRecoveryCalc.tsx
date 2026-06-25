@@ -152,7 +152,7 @@ export default function LwbsRecoveryCalc({ state, updateTimeDriverInputs }: Prop
                     setCustomDisplay(String(clamped));
                   }
                 }}
-                className="w-full h-10 bg-white border border-[#E5E5E5] rounded-lg px-3 pr-8 text-sm font-semibold text-black focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30"
+                className="w-full h-12 bg-white border border-[#E5E5E5] rounded-lg px-3 pr-8 text-sm font-semibold text-black focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30"
                 autoFocus
                 data-testid="input-lwbs-custom"
               />

@@ -104,7 +104,7 @@ export default function ExpandValueConfiguration({
       
       <div className="py-6 md:py-8 px-6 pb-8 max-w-4xl mx-auto">
         <div className="text-center mb-6 lg:mb-8">
-          <h1 className="text-2xl lg:text-3xl font-semibold text-[#1F2937] mb-2">
+          <h1 className="text-2xl md:text-3xl font-bold text-[#1F2937] mb-2">
             Building Your Case
           </h1>
           <p className="text-[#6B7280] text-sm lg:text-lg px-2">

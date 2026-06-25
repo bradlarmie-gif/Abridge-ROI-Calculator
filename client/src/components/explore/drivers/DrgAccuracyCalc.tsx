@@ -125,7 +125,7 @@ export default function DrgAccuracyCalc({ state, updateDocQualityInputs }: Props
                   if (raw === '') { updateDocQualityInputs({ ipDrgCustomPercent: 0 }); }
                   else if (!isNaN(n) && n >= 0 && n <= 100) { updateDocQualityInputs({ ipDrgCustomPercent: n }); }
                 }}
-                className="w-full h-10 bg-white border border-[#E5E5E5] rounded-lg px-3 pr-8 text-sm font-semibold text-black focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30"
+                className="w-full h-12 bg-white border border-[#E5E5E5] rounded-lg px-3 pr-8 text-sm font-semibold text-black focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30"
                 data-testid="input-ipdrg-custom"
               />
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
