@@ -56,11 +56,12 @@ const brand = {
 
 // ─── DOMAIN COLORS ────────────────────────────────────────────────────────────
 
+// Harmonized categorical set — one tonal family, coral kept as the brand anchor.
 const domainColors: Record<string, string> = {
-  Capacity:  "#0891B2",
-  Workforce: "#4E5A6B",
+  Capacity:  "#2C6E7F",
+  Workforce: "#5B6480",
   Revenue:   "#EA2C00",
-  Quality:   "#059669",
+  Quality:   "#3F7D66",
 };
 
 // ─── CONTENT MAPS ─────────────────────────────────────────────────────────────
@@ -149,12 +150,12 @@ const S = StyleSheet.create({
     marginBottom: 5,
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 23,
     fontFamily: "Abridge",
     fontWeight: 400,
     letterSpacing: 0.4,
     color: brand.textPrimary,
-    marginBottom: 5,
+    marginBottom: 6,
   },
   sectionIntro: {
     fontSize: 9.5,
@@ -189,16 +190,16 @@ const S = StyleSheet.create({
   // HERO BAND
   heroBand: {
     backgroundColor: brand.black,
-    borderRadius: 3,
-    paddingVertical: 14,
-    paddingHorizontal: 12,
+    borderRadius: 4,
+    paddingVertical: 18,
+    paddingHorizontal: 14,
     flexDirection: "row",
-    marginBottom: 12,
+    marginBottom: 14,
   },
   heroMetric:  { flex: 1, alignItems: "center" },
-  heroValue:   { fontSize: 21, fontWeight: 700, color: brand.white, marginBottom: 3 },
-  heroLabel:   { fontSize: 6.5, color: "#777777", textTransform: "uppercase", letterSpacing: 1.2 },
-  heroDivider: { width: 1, backgroundColor: "#2D2D2D" },
+  heroValue:   { fontSize: 26, fontWeight: 700, color: brand.white, marginBottom: 4 },
+  heroLabel:   { fontSize: 7.5, color: "#AEAEAE", textTransform: "uppercase", letterSpacing: 1.4 },
+  heroDivider: { width: 1, backgroundColor: "#333333" },
 
   // TABLE
   tableWrap: {
@@ -396,32 +397,32 @@ function CalcChainRow({
   ];
 
   return (
-    <View style={{ marginTop: 6, marginBottom: 2 }} wrap={false}>
-      <Text style={{ fontSize: 6.5, color: brand.textTertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>
+    <View style={{ marginTop: 8, marginBottom: 2 }} wrap={false}>
+      <Text style={{ fontSize: 7.5, color: brand.textTertiary, textTransform: "uppercase", letterSpacing: 1.4, marginBottom: 5 }}>
         How this was calculated
       </Text>
-      <View style={{ flexDirection: "row", backgroundColor: brand.white, borderRadius: 3, borderWidth: 1, borderColor: brand.midGray }}>
+      <View style={{ flexDirection: "row", backgroundColor: brand.warmGray, borderRadius: 4 }}>
         {steps.map((step, i) => (
           <View
             key={step.topLabel}
             style={{
               flex: 1,
-              paddingVertical: 6,
+              paddingVertical: 9,
               paddingHorizontal: 8,
               alignItems: "center",
-              borderRightWidth: i < steps.length - 1 ? 1 : 0,
+              borderRightWidth: i < steps.length - 1 ? 0.5 : 0,
               borderRightColor: brand.midGray,
-              backgroundColor: step.accent ? accentColor + "0A" : "transparent",
+              backgroundColor: step.accent ? accentColor + "12" : "transparent",
             }}
           >
-            <Text style={{ fontSize: 6, color: brand.textTertiary, textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 3 }}>
+            <Text style={{ fontSize: 7.5, color: brand.textTertiary, textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 4 }}>
               {step.topLabel}
             </Text>
-            <Text style={{ fontSize: 11, fontWeight: 700, color: step.accent ? accentColor : brand.textPrimary, lineHeight: 1.1 }}>
+            <Text style={{ fontSize: 14, fontWeight: 700, color: step.accent ? accentColor : brand.textPrimary, lineHeight: 1.1 }}>
               {step.value}
             </Text>
             {step.bottomLabel ? (
-              <Text style={{ fontSize: 6.5, color: brand.textTertiary, marginTop: 2, textAlign: "center" }}>
+              <Text style={{ fontSize: 7.5, color: brand.textTertiary, marginTop: 3, textAlign: "center" }}>
                 {step.bottomLabel}
               </Text>
             ) : null}
@@ -453,17 +454,15 @@ function DriverCard({
   return (
     <View
       style={{
-        backgroundColor: brand.white,
-        borderRadius: 4,
-        borderWidth: 1,
-        borderColor: brand.midGray,
-        padding: 12,
-        marginBottom: 10,
+        borderTopWidth: 0.5,
+        borderTopColor: brand.midGray,
+        paddingTop: 12,
+        marginBottom: 14,
       }}
       wrap={false}
     >
       {/* Header row */}
-      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 5 }}>
+      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 }}>
         <View style={{ flex: 1, marginRight: 10 }}>
           <View style={{ flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: 5, marginBottom: 3 }}>
             <Text style={{ fontSize: 10, fontWeight: 700, color: brand.textPrimary, lineHeight: 1.3 }}>
@@ -501,7 +500,7 @@ function DriverCard({
       {isQuant ? (
         <>
           {/* Before / With Abridge / Change strip */}
-          <View style={{ flexDirection: "row", backgroundColor: brand.lightGray, borderRadius: 3, marginTop: 4, marginBottom: 4 }}>
+          <View style={{ flexDirection: "row", backgroundColor: brand.warmGray, borderRadius: 4, marginTop: 4, marginBottom: 4 }}>
             {[
               { label: "Before",       value: driver.withoutAbridge, color: brand.textSecondary, prefix: "" },
               { label: "With Abridge", value: driver.withAbridge,    color: brand.textPrimary,   prefix: "" },
@@ -511,21 +510,21 @@ function DriverCard({
                 key={label}
                 style={{
                   flex: 1,
-                  paddingVertical: 6,
+                  paddingVertical: 9,
                   paddingHorizontal: 8,
                   alignItems: "center",
-                  borderRightWidth: i < 2 ? 1 : 0,
+                  borderRightWidth: i < 2 ? 0.5 : 0,
                   borderRightColor: brand.midGray,
                 }}
               >
-                <Text style={{ fontSize: 6.5, color: brand.textTertiary, textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 2 }}>
+                <Text style={{ fontSize: 7.5, color: brand.textTertiary, textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 3 }}>
                   {label}
                 </Text>
-                <Text style={{ fontSize: 13, fontWeight: 700, color: cellColor, lineHeight: 1.1 }}>
+                <Text style={{ fontSize: 15, fontWeight: 700, color: cellColor, lineHeight: 1.1 }}>
                   {`${prefix}${fmtNum(value)}`}
                 </Text>
                 {unit ? (
-                  <Text style={{ fontSize: 6.5, color: brand.textTertiary, marginTop: 1 }}>{unit}</Text>
+                  <Text style={{ fontSize: 7.5, color: brand.textTertiary, marginTop: 2 }}>{unit}</Text>
                 ) : null}
               </View>
             ))}
@@ -707,18 +706,27 @@ function ExecutiveSummaryPage({ data, showDollars }: { data: MeasurePDFData; sho
       {/* Deployment context — the "who and how much" before the value numbers */}
       {contextStats.length > 0 && (
         <>
-          <Text style={[S.eyebrow, { color: brand.textSecondary, marginBottom: 6 }]}>Deployment</Text>
-          <View style={{ flexDirection: "row", gap: 6, marginBottom: contextSubline ? 6 : 12 }}>
+          <Text style={[S.eyebrow, { color: brand.textSecondary, marginBottom: 8 }]}>Deployment</Text>
+          <View style={{
+            flexDirection: "row",
+            gap: 6,
+            paddingVertical: 12,
+            borderTopWidth: 0.5,
+            borderTopColor: brand.midGray,
+            borderBottomWidth: 0.5,
+            borderBottomColor: brand.midGray,
+            marginBottom: contextSubline ? 6 : 14,
+          }}>
             {contextStats.map((c, i) => (
-              <View key={i} style={{ flex: 1, backgroundColor: brand.lightGray, borderWidth: 1, borderColor: brand.midGray, padding: 10 }}>
-                <Text style={{ fontSize: 15, fontWeight: 700, color: brand.textPrimary, marginBottom: 2 }}>{c.value}</Text>
-                <Text style={{ fontSize: 6.5, fontWeight: 700, color: brand.textSecondary, textTransform: "uppercase", letterSpacing: 0.8 }}>{c.label}</Text>
-                {c.sub ? <Text style={{ fontSize: 6.5, color: brand.textTertiary, marginTop: 2 }}>{c.sub}</Text> : null}
+              <View key={i} style={{ flex: 1 }}>
+                <Text style={{ fontSize: 18, fontWeight: 700, color: brand.textPrimary, marginBottom: 3 }}>{c.value}</Text>
+                <Text style={{ fontSize: 7.5, fontWeight: 700, color: brand.textSecondary, textTransform: "uppercase", letterSpacing: 0.8 }}>{c.label}</Text>
+                {c.sub ? <Text style={{ fontSize: 7.5, color: brand.textTertiary, marginTop: 2 }}>{c.sub}</Text> : null}
               </View>
             ))}
           </View>
           {contextSubline ? (
-            <Text style={{ fontSize: 8, color: brand.textTertiary, marginBottom: 14 }}>{contextSubline}</Text>
+            <Text style={{ fontSize: 8, color: brand.textTertiary, marginBottom: 16 }}>{contextSubline}</Text>
           ) : null}
         </>
       )}
@@ -740,36 +748,43 @@ function ExecutiveSummaryPage({ data, showDollars }: { data: MeasurePDFData; sho
         ]} />
       )}
 
-      {/* 4-domain tiles */}
-      <View style={S.domainTiles}>
+      {/* Domain contribution — where the value comes from */}
+      {showDollars && data.totalRealized > 0 && (
+        <View style={{ height: 12, borderRadius: 3, overflow: "hidden", backgroundColor: brand.lightGray, flexDirection: "row", marginBottom: 12 }}>
+          {(["Capacity", "Workforce", "Revenue", "Quality"] as const).map((qName) => {
+            const q = data.quadrants.find((x) => x.quadrant === qName);
+            const total = q?.realizedTotal ?? 0;
+            if (total <= 0) return null;
+            const pct = (total / data.totalRealized) * 100;
+            return <View key={qName} style={{ width: `${pct}%`, backgroundColor: domainColors[qName] }} />;
+          })}
+        </View>
+      )}
+
+      {/* Domain legend */}
+      <View style={{ flexDirection: "row", gap: 6, marginBottom: 16 }}>
         {(["Capacity", "Workforce", "Revenue", "Quality"] as const).map((qName) => {
           const q = data.quadrants.find((x) => x.quadrant === qName);
           const total = q?.realizedTotal ?? 0;
+          const count = q?.drivers.length ?? 0;
           const dColor = domainColors[qName];
+          const active = showDollars ? total > 0 : count > 0;
+          const pct = data.totalRealized > 0 ? Math.round((total / data.totalRealized) * 100) : 0;
           return (
-            <View
-              key={qName}
-              style={[
-                S.domainTile,
-                { borderTopWidth: 3, borderTopColor: dColor },
-              ]}
-            >
-              <Text style={{ fontSize: 7, fontWeight: 700, color: dColor, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>
-                {qName}
+            <View key={qName} style={{ flex: 1 }}>
+              <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
+                <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: active ? dColor : brand.midGray, marginRight: 4 }} />
+                <Text style={{ fontSize: 7.5, fontWeight: 700, color: active ? dColor : brand.textTertiary, textTransform: "uppercase", letterSpacing: 0.8 }}>
+                  {qName}
+                </Text>
+              </View>
+              <Text style={{ fontSize: 17, fontWeight: 700, color: active ? brand.textPrimary : brand.textTertiary, marginBottom: 2 }}>
+                {showDollars ? (total > 0 ? fmtCurrency(total) : "—") : count}
               </Text>
-              {showDollars ? (
-                <Text style={{ fontSize: 16, fontWeight: 700, color: total > 0 ? brand.textPrimary : brand.textTertiary, marginBottom: 2 }}>
-                  {total > 0 ? fmtCurrency(total) : "—"}
-                </Text>
-              ) : (
-                <Text style={{ fontSize: 16, fontWeight: 700, color: brand.textPrimary, marginBottom: 2 }}>
-                  {q?.drivers.length ?? 0}
-                </Text>
-              )}
-              <Text style={{ fontSize: 7, color: brand.textTertiary }}>
+              <Text style={{ fontSize: 7.5, color: brand.textTertiary }}>
                 {showDollars
-                  ? (total > 0 ? "realized" : "not yet tracked")
-                  : `driver${(q?.drivers.length ?? 0) !== 1 ? "s" : ""}`}
+                  ? (total > 0 ? `${pct}% of total` : "not yet tracked")
+                  : `driver${count !== 1 ? "s" : ""}`}
               </Text>
             </View>
           );
