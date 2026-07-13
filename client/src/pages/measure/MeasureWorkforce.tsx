@@ -141,17 +141,17 @@ export default function MeasureWorkforce({ state, updateState, onNext, onBack, o
       return `Workforce impact across your ${names.join(' + ')} deployment`;
     }
     return {
-      outpatient: 'Where is Abridge reducing burnout and improving provider retention?',
-      ed: 'Where is Abridge reducing ED burnout and improving retention?',
-      inpatient: 'Where is Abridge reducing hospitalist burnout and improving retention?',
-      nursing: 'Where is Abridge reducing nursing burnout and improving retention?',
-    }[activeSettings[0]] ?? "What's changed for your workforce because of Abridge?";
+      outpatient: 'Where are you seeing burnout ease and provider retention improve with Abridge?',
+      ed: 'Where are you seeing ED burnout ease and retention improve with Abridge?',
+      inpatient: 'Where are you seeing hospitalist burnout ease and retention improve with Abridge?',
+      nursing: 'Where are you seeing nursing burnout ease and retention improve with Abridge?',
+    }[activeSettings[0]] ?? "What's changed for your workforce since adopting Abridge?";
   }, [activeSettings, isMultiSetting]);
 
   const howToUse = useMemo(() => {
     if (isMultiSetting) return 'Add workforce drivers relevant to each care setting. Provider Wellbeing and Locum Cost Avoidance apply across all provider settings. Enter combined values.';
     return {
-      outpatient: 'Provider Wellbeing models avoided replacement cost when turnover improves. Locum & Agency Cost Avoidance captures the downstream benefit of reduced reliance on contracted coverage.',
+      outpatient: 'Provider Wellbeing models avoided replacement cost when turnover improves. Locum & Agency Cost Avoidance captures the downstream benefit when reliance on contracted coverage falls.',
       ed: 'ED providers experience some of the highest burnout and turnover rates in medicine. Even modest retention improvements produce significant avoided replacement cost.',
       inpatient: 'Hospitalist turnover is expensive. Recruitment, onboarding, and ramp time add up quickly. This section quantifies the workforce value of reducing documentation burden.',
       nursing: 'Nursing retention drivers model the replacement cost avoided when burnout-driven turnover declines. Charting After Shift and Burnout Score are the leading signals.',

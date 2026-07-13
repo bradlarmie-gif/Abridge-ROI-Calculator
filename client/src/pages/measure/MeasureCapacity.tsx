@@ -142,16 +142,16 @@ export default function MeasureCapacity({ state, updateState, onNext, onBack, on
     }
     return {
       outpatient: 'How much time have your outpatient providers reclaimed?',
-      ed: 'What throughput and time has Abridge freed up in the ED?',
+      ed: 'What throughput and time have your ED providers reclaimed with Abridge?',
       inpatient: 'What documentation time have your hospitalists reclaimed?',
       nursing: 'What bedside time have your nurses reclaimed?',
-    }[activeSettings[0]] ?? "What's been freed up because of Abridge?";
+    }[activeSettings[0]] ?? "What's been freed up since adopting Abridge?";
   }, [activeSettings, isMultiSetting]);
 
   const howToUse = useMemo(() => {
     if (isMultiSetting) return 'Add capacity drivers for each active care setting. Enter before/after values and adjust attribution to reflect what\'s genuinely attributable to Abridge across your deployment.';
     return {
-      outpatient: 'Patient Access translates reclaimed documentation time into additional patient visits. Documentation Time per Note is the foundational signal. Everything else traces back to it.',
+      outpatient: 'Patient Access models how reclaimed documentation time can become additional patient visits. Documentation Time per Note is the foundational signal. Everything else traces back to it.',
       ed: 'LWBS Recovery and Admission Capture model the throughput impact of faster documentation. Documentation Time per Encounter is the upstream signal driving both.',
       inpatient: 'Note completion time determines how quickly the downstream care chain can move. Consulting physicians, care management, and discharge planning all depend on it.',
       nursing: 'Documentation Time per Care Event is the root behavior. When nurses chart at the bedside in real time, every other nursing outcome becomes measurable.',

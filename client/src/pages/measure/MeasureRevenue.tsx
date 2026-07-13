@@ -141,10 +141,10 @@ export default function MeasureRevenue({ state, updateState, onNext, onBack, onH
       return `Revenue integrity across your ${names.join(' + ')} deployment`;
     }
     return {
-      outpatient: 'Where is Abridge improving coding accuracy and revenue capture?',
-      ed: 'Where is Abridge improving ED revenue integrity?',
-      inpatient: 'Where is Abridge improving inpatient coding accuracy and revenue integrity?',
-      nursing: 'Where is Abridge affecting nursing-related revenue signals?',
+      outpatient: 'Where are you seeing coding accuracy and revenue capture improve with Abridge?',
+      ed: 'Where are you seeing ED revenue integrity improve with Abridge?',
+      inpatient: 'Where are you seeing inpatient coding accuracy and revenue integrity improve with Abridge?',
+      nursing: 'Where are you seeing nursing-related revenue signals move with Abridge?',
     }[activeSettings[0]] ?? 'How has documentation quality shown up in revenue capture?';
   }, [activeSettings, isMultiSetting]);
 
@@ -154,7 +154,7 @@ export default function MeasureRevenue({ state, updateState, onNext, onBack, onH
       outpatient: 'wRVU Capture and HCC Capture are the two highest-leverage outpatient revenue drivers. Denial Prevention is a clean, defensible metric, often the easiest for a CFO to verify independently.',
       ed: 'E&M Level Accuracy is the primary ED revenue lever. Documentation that fully captures visit complexity supports accurate leveling at the point of care rather than through retrospective coding.',
       inpatient: 'DRG Accuracy and CDI Query Reduction quantify how documentation completeness affects inpatient payment. SOI 3/4 classification is the upstream signal.',
-      nursing: 'Nursing documentation directly affects the accuracy of inpatient billing, particularly for HAI reporting and accurate capture of care interventions.',
+      nursing: 'Nursing documentation shapes the accuracy of inpatient billing, particularly for HAI reporting and accurate capture of care interventions.',
     }[activeSettings[0]] ?? 'Track the Revenue outcomes that matter for this customer. For each driver, enter the value with and without Abridge, then dial attribution and realization to reflect their reality.';
   }, [activeSettings, isMultiSetting]);
 

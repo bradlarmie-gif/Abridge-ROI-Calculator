@@ -152,9 +152,9 @@ export default function MeasureQuality({ state, updateState, onNext, onBack, onH
     if (isMultiSetting) return 'Outpatient quality focuses on HEDIS, care gaps, and patient experience. ED quality centers on compliance, deficiency rates, and Press Ganey. Add the signals that matter most for this EBR.';
     return {
       outpatient: 'These are the signals that show whether the care itself is being captured more accurately. HEDIS, STARS, and CG-CAHPS all trace back to documentation quality at the point of care.',
-      ed: 'Core measure compliance, documentation deficiency rate, and Press Ganey scores are the three quality pillars for an ED EBR. All three are measurable and all three respond to ambient capture.',
+      ed: 'Core measure compliance, documentation deficiency rate, and Press Ganey scores are the three quality pillars for an ED EBR. All three are measurable, and all three can shift as documentation quality improves.',
       inpatient: 'CDI query rate per provider is the leading quality signal for inpatient. SOI classification accuracy and H&P timeliness are the two upstream drivers.',
-      nursing: 'HAPI, falls, CAUTI, CLABSI, and SEP-1 are the five nursing safety outcomes that are both measurable and directly affected by documentation timeliness.',
+      nursing: 'HAPI, falls, CAUTI, CLABSI, and SEP-1 are the five nursing safety outcomes that are both measurable and closely tied to documentation timeliness.',
     }[activeSettings[0]] ?? 'Track the Quality outcomes that matter for this customer. For each driver, enter the value with and without Abridge, then dial attribution and realization to reflect their reality.';
   }, [activeSettings, isMultiSetting]);
 
