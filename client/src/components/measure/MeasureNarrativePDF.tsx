@@ -73,17 +73,17 @@ const domainSubtitles: Record<string, string> = {
 };
 
 const domainIntros: Record<string, string> = {
-  Capacity:  "Provider time is the highest-cost input in clinical operations, and documentation is where most of it goes. When Abridge shortens the time between an encounter and a completed note, that time does not disappear — it reallocates to patients, care coordination, or the end of a provider's day. The drivers below measure how much time was recovered and, where the data supports it, what that time became.",
-  Workforce: "Provider attrition costs $250K–$500K per physician when you factor recruiting, onboarding, and ramp time — and documentation burden is consistently cited as burnout's leading cause. The drivers below measure the upstream signals: charting hours, after-hours documentation rates, and the cost of turnover that does not happen when administrative load decreases. Attribution is set conservatively throughout this domain because workforce outcomes are multi-causal.",
-  Revenue:   "Documentation quality determines coding accuracy, and coding accuracy determines what gets paid. The gap between what was clinically appropriate and what was actually billed often traces directly to incomplete or late documentation at the point of care. The drivers below measure where Abridge is closing that gap — from wRVU capture to denial rates to HCC accuracy. These figures are among the most auditable in this document because billing data is precise and traceable.",
-  Quality:   "Most quality metrics are lagging indicators — they report what happened months ago. The documentation signals below are upstream: they predict where quality scores will move before they move. A CDI query rate that improves today shows up in DRG accuracy six months from now; a HEDIS care gap closed this quarter shows up in STARS the following year. Drivers shown with a dollar figure represent hard cost avoidance. Drivers shown as signals are excluded from financial totals and will become financial drivers in future measurement cycles as the data matures.",
+  Capacity:  "Provider time is the highest-cost input in clinical operations, and documentation is where most of it goes. When Abridge shortens the time between an encounter and a completed note, that recovered time can go back to patients, care coordination, or the end of a provider's day. The drivers below measure how much time was recovered and, where the data supports it, what that time became.",
+  Workforce: "Provider attrition costs $250K–$500K per physician when you factor recruiting, onboarding, and ramp time, and documentation burden is consistently cited as burnout's leading cause. The drivers below measure the upstream signals: charting hours, after-hours documentation rates, and the cost of turnover that does not happen when administrative load decreases. Attribution is set conservatively throughout this domain because workforce outcomes are multi-causal.",
+  Revenue:   "Documentation quality shapes coding accuracy, and coding accuracy shapes what gets paid. The gap between what was clinically appropriate and what was actually billed often traces to incomplete or late documentation at the point of care. The drivers below measure where the documentation Abridge captures can close that gap, from wRVU capture to denial rates to HCC accuracy. These figures are among the most auditable in this document because billing data is precise and traceable.",
+  Quality:   "Most quality metrics are lagging indicators. They report what happened months ago. The documentation signals below are upstream: they point to where quality scores can move before they move. A CDI query rate that improves today can show up in DRG accuracy six months from now, and a HEDIS care gap closed this quarter can show up in STARS the following year. Drivers shown with a dollar figure represent hard cost avoidance. Drivers shown as signals are excluded from financial totals and can become financial drivers in future measurement cycles as the data matures.",
 };
 
 const domainTakeaways: Record<string, string> = {
-  Capacity:  "The time figures above are attribution-adjusted — they credit Abridge only for the portion of change the team determined was directly caused by the tool, not the full observed improvement. If anything, these numbers understate total value by design.",
+  Capacity:  "The time figures above are attribution-adjusted. They credit Abridge only for the portion of change the team attributed to the tool, not the full observed improvement. If anything, these numbers understate total value by design.",
   Workforce: "Workforce drivers carry the most uncertainty of any domain. The figures above are intentionally conservative: attribution was set below 100% wherever staffing changes, management interventions, or other factors were running concurrently. A skeptical CFO should be able to defend every number above independently.",
   Revenue:   "Revenue drivers are the most independently verifiable in this document. The figures above can be cross-checked against payer reports and coding audit logs, making them the strongest candidates for CFO validation and the most defensible in a contract review.",
-  Quality:   "Quality drivers shown as financial figures represent hard cost avoidance — avoided penalties, avoided CDI rework, avoided audit exposure. Signals tracked qualitatively are not included in the totals above; they are forward-looking indicators of where financial value will appear in subsequent measurement cycles.",
+  Quality:   "Quality drivers shown as financial figures represent hard cost avoidance: avoided penalties, avoided CDI rework, avoided audit exposure. Signals tracked qualitatively are not included in the totals above; they are forward-looking indicators of where financial value may appear in subsequent measurement cycles.",
 };
 
 const DATA_SOURCE_LABELS: Record<string, string> = {
@@ -391,7 +391,7 @@ function CalcChainRow({
   const steps = [
     { topLabel: "CHANGE",      value: `${deltaSign}${fmtNum(driver.delta)}`, bottomLabel: unit },
     { topLabel: "VALUE / UNIT", value: vpuStr,                               bottomLabel: `per ${unitLabel}` },
-    { topLabel: "ATTRIBUTION",  value: `${driver.attributionPercent}%`,      bottomLabel: "credited to Abridge" },
+    { topLabel: "ATTRIBUTION",  value: `${driver.attributionPercent}%`,      bottomLabel: "attributed to Abridge" },
     { topLabel: "REALIZED",     value: fmtCurrency(driver.realizedValue),    bottomLabel: "per year", accent: true },
   ];
 
@@ -541,7 +541,7 @@ function DriverCard({
             <View style={{ marginTop: 5, flexDirection: "row", alignItems: "flex-start" }}>
               <View style={{ width: 3, height: 3, borderRadius: 1.5, backgroundColor: brand.textTertiary, marginTop: 4, marginRight: 5, flexShrink: 0 }} />
               <Text style={{ fontSize: 7.5, color: brand.textSecondary, fontStyle: "italic", lineHeight: 1.45, flex: 1 }}>
-                {`Attribution set to ${driver.attributionPercent}%: the remaining ${100 - driver.attributionPercent}% of the observed change is credited to concurrent factors — staffing, workflow changes, or other initiatives running in parallel.`}
+                {`Attribution set to ${driver.attributionPercent}%: the remaining ${100 - driver.attributionPercent}% of the observed change is attributed to concurrent factors such as staffing, workflow changes, or other initiatives running in parallel.`}
               </Text>
             </View>
           )}
@@ -625,7 +625,7 @@ function buildNarrative(data: MeasurePDFData): string {
   if (topDriver && data.totalRealized > 0) {
     const pct = Math.round((topDriver.realizedValue / data.totalRealized) * 100);
     const share = pct >= 60 ? "the majority" : pct >= 40 ? "nearly half" : `${pct}%`;
-    text += ` ${topDomain.quadrant} accounts for ${share} of that total. ${topDriver.label} is the primary contributor at ${fmtCurrency(topDriver.realizedValue)}/yr, with ${topDriver.attributionPercent}% of the change credited to Abridge.`;
+    text += ` ${topDomain.quadrant} accounts for ${share} of that total. ${topDriver.label} is the primary contributor at ${fmtCurrency(topDriver.realizedValue)}/yr, with ${topDriver.attributionPercent}% of the change attributed to Abridge.`;
   }
 
   if (activeDomains.length > 1) {
@@ -849,7 +849,7 @@ function DomainPage({
       {qualitative.length > 0 && quantified.length === 0 && (
         <View style={{ backgroundColor: brand.lightGray, borderRadius: 3, padding: 12, marginBottom: 10 }}>
           <Text style={{ fontSize: 8.5, color: brand.textSecondary, lineHeight: 1.55 }}>
-            These drivers are tracked as directional indicators, not financial contributors. They will become financial drivers in subsequent measurement cycles as data quality and sample size improve.
+            These drivers are tracked as directional indicators, not financial contributors. They can become financial drivers in subsequent measurement cycles as data quality and sample size improve.
           </Text>
         </View>
       )}
@@ -877,7 +877,7 @@ function ProviderVoicesPage({ data }: { data: MeasurePDFData }) {
       <Text style={[S.eyebrow, { color: brand.coral }]}>Provider Voices</Text>
       <Text style={S.sectionTitle}>The voice behind the numbers</Text>
       <Text style={S.sectionIntro}>
-        What providers say about Abridge — often the most memorable part of a business review.
+        What providers say about Abridge, often the most memorable part of a business review.
       </Text>
 
       {stories.map((story, i) => (

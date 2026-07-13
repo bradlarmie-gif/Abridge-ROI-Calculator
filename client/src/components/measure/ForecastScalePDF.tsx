@@ -401,12 +401,12 @@ function buildScaleNarrative(data: ForecastScalePDFData): string {
   let text = "";
 
   if (totalRealized > 0 && multiplier > 1.05) {
-    text = `${org}'s measured footprint documents ${fmtCurrency(totalRealized)} in annual value today. This projection applies those same per-unit economics to a ${fmtNum(combinedProviders)}-provider deployment — no new efficiency assumptions, no benchmark estimates. The result is ${fmtCurrency(combinedTotal)}, ${multiplier.toFixed(1)}× the current measurement, driven entirely by scaling the active provider base.`;
+    text = `${org}'s measured footprint documents ${fmtCurrency(totalRealized)} in annual value today. This projection applies those same per-unit economics to a ${fmtNum(combinedProviders)}-provider deployment, with no new efficiency assumptions and no benchmark estimates. The result is ${fmtCurrency(combinedTotal)}, ${multiplier.toFixed(1)}× the current measurement, entirely from scaling the active provider base.`;
   } else {
-    text = `Projected across ${fmtNum(combinedProviders)} providers at full deployment, this configuration generates ${fmtCurrency(combinedTotal)} in annual value. The projection applies measured per-unit economics directly — no benchmarks, no estimates beyond what the tracked drivers already show.`;
+    text = `Projected across ${fmtNum(combinedProviders)} providers at full deployment, this configuration models ${fmtCurrency(combinedTotal)} in annual value. The projection applies measured per-unit economics directly, with no benchmarks and no estimates beyond what the tracked drivers already show.`;
   }
 
-  text += ` ${topQuad} accounts for ${topShare} of that total, reflecting where Abridge's documentation support has the most direct economic impact.`;
+  text += ` ${topQuad} accounts for ${topShare} of that total, reflecting where the documentation Abridge supports is most closely tied to economic value.`;
 
   const baseValue = Math.round(combinedTotal * (baseAdoptionPct / 100));
   const hasInvestment = pricingScenarios.length > 0 || simpleInvestment > 0;
@@ -664,7 +664,7 @@ function ScaleSummaryPage({ data }: { data: ForecastScalePDFData }) {
           How These Projections Are Derived
         </Text>
         <Text style={S.insightText}>
-          The scale projection multiplies per-unit economics measured in active deployment — time saved per note, revenue recovered per encounter, staff hours retained per provider — by the difference between the current footprint and the projected one. No benchmarks. No new assumptions. Reviewers who disagree with a specific driver's per-unit value can update that driver in the source measurement and regenerate.
+          The scale projection takes per-unit economics measured in active deployment (time saved per note, revenue recovered per encounter, staff hours retained per provider) and multiplies them by the difference between the current footprint and the projected one. No benchmarks. No new assumptions. Reviewers who disagree with a specific driver's per-unit value can update that driver in the source measurement and regenerate.
         </Text>
       </View>
     </Page>
@@ -866,7 +866,7 @@ function SensitivityPage({ data }: { data: ForecastScalePDFData }) {
       <View style={S.insightBox}>
         <Text style={S.insightLabel}>Reading This Matrix</Text>
         <Text style={S.insightText}>
-          {`The outlined "Now" cell is your current deployment. Rows test broader provider rollout; columns test higher encounter utilization — together they show how projected annual value scales. `}
+          {`The outlined "Now" cell is your current deployment. Rows test broader provider rollout; columns test higher encounter utilization, and together they show how projected annual value scales. `}
           {totalRealized > 0
             ? `Your measured value today is ${fmtCurrency(totalRealized)}.`
             : ``}
@@ -945,7 +945,7 @@ function PricingROIPage({ data }: { data: ForecastScalePDFData }) {
       <View style={S.divider} />
 
       <Text style={S.sectionIntro}>
-        Each scenario below shows what Abridge costs at projected scale and what it returns. Investment figures use the active tier at projected provider or encounter volume. Net and ROI are calculated against the full-scale value projection — the same number used throughout this brief.
+        Each scenario below shows what Abridge costs at projected scale and what it returns. Investment figures use the active tier at projected provider or encounter volume. Net and ROI are calculated against the full-scale value projection, the same number used throughout this brief.
       </Text>
 
       {pricingScenarios.map((scenario) => {
@@ -1229,7 +1229,7 @@ export function ForecastScalePDFDocument({ data }: { data: ForecastScalePDFData 
         title={data.clientName || "Your Organization"}
         subtitle={`${fmtNum(data.combinedProviders)} providers at scale · ${data.forecastYears}-Year Projection`}
         preparedBy="Abridge Partner Success"
-        disclaimerText="Projections apply measured per-unit economics to your scale deployment. No benchmark estimates — only what your tracked drivers already show."
+        disclaimerText="Projections apply measured per-unit economics to your scale deployment. No benchmark estimates, only what your tracked drivers already show."
         showPreparedBy
       />
       <ScaleSummaryPage data={data} />
