@@ -397,18 +397,28 @@ function SignalDriverRow({
               {SETTING_BADGE[s] ?? s}
             </span>
           ))}
-          {hasData && drv.deltaUnit && (
-            <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full tabular-nums ${
-              improved ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'
-            }`}>
-              {drv.withAbridge < drv.withoutAbridge ? '↓' : '↑'}
-              {' '}{drv.withoutAbridge.toLocaleString()} → {drv.withAbridge.toLocaleString()} {drv.deltaUnit}
-            </span>
-          )}
           {!hasData && (
             <span className="text-[10px] text-[#BBBBBB] italic">tracking</span>
           )}
         </div>
+        {hasData && drv.deltaUnit && (
+          <div className="flex items-center gap-2 flex-wrap mt-1.5">
+            <span className="text-xs text-[#666666] tabular-nums">
+              <span className="text-[9px] font-bold uppercase tracking-wide text-[#AAAAAA] mr-1">Before</span>
+              {drv.withoutAbridge.toLocaleString()} {drv.deltaUnit}
+            </span>
+            <span className="text-[#CCCCCC]">→</span>
+            <span className="text-xs font-semibold text-[#1A1A1A] tabular-nums">
+              <span className="text-[9px] font-bold uppercase tracking-wide text-[#AAAAAA] mr-1">Now</span>
+              {drv.withAbridge.toLocaleString()} {drv.deltaUnit}
+            </span>
+            <span className={`inline-flex items-center gap-0.5 text-xs font-semibold px-2 py-0.5 rounded-full tabular-nums ${
+              improved ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'
+            }`}>
+              {drv.withAbridge < drv.withoutAbridge ? '↓' : '↑'} {Math.abs(delta).toLocaleString()} {drv.deltaUnit}
+            </span>
+          </div>
+        )}
         {drv.notes && (
           <div className="flex items-start gap-1.5 mt-1.5">
             <MessageSquare className="w-3 h-3 text-amber-500 mt-0.5 flex-shrink-0" />
@@ -909,7 +919,8 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
                                     {signalDrivers.length > 0 && (
                                       <div className={`px-5 pb-5 ${financialDrivers.length > 0 ? 'pt-0' : 'pt-5'}`}>
                                         {financialDrivers.length > 0 && <div className="h-px bg-[#F0F0F0] mb-4" />}
-                                        <p className="text-[10px] font-bold text-[#888888] uppercase tracking-[1.5px] mb-3">Signal Evidence</p>
+                                        <p className="text-[10px] font-bold text-[#888888] uppercase tracking-[1.5px] mb-1">Signal Evidence</p>
+                                        <p className="text-[11px] text-[#AAAAAA] mb-3">Early proof the value story is real — metrics trending the right way, not yet valued in dollars.</p>
                                         <div className="space-y-2">
                                           {signalDrivers.map(drv => (
                                             <SignalDriverRow key={drv.id} drv={drv} settingBadges={[]} lowerIsBetter={getDriverLowerIsBetter(drv.id)} />
@@ -1009,8 +1020,11 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
                                   {financialDrivers.length > 0 && (
                                     <div className="h-px bg-[#F0F0F0] mb-4" />
                                   )}
-                                  <p className="text-[10px] font-bold text-[#888888] uppercase tracking-[1.5px] mb-3">
+                                  <p className="text-[10px] font-bold text-[#888888] uppercase tracking-[1.5px] mb-1">
                                     Signal Evidence
+                                  </p>
+                                  <p className="text-[11px] text-[#AAAAAA] mb-3">
+                                    Early proof the value story is real — metrics trending the right way, not yet valued in dollars.
                                   </p>
                                   <div className="space-y-2">
                                     {signalDrivers.map((drv: MeasurePDFDriver) => (
@@ -1065,12 +1079,46 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
               </motion.div>
             )}
 
-            {/* ── Scale & Forecast CTA ──────────────────────────────────────── */}
+            {/* ── Download summary ─────────────────────────────────────────── */}
             <motion.div
               className="bg-[#1A1A1A] rounded-2xl p-6 mb-4"
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
+            >
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-[#EA2C00]/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Download className="w-5 h-5 text-[#EA2C00]" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-white mb-1">Take this with you</p>
+                    <p className="text-sm text-white/50 leading-relaxed max-w-sm">
+                      A polished PDF of the full summary — ready to share or present.
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  onClick={handleExport}
+                  disabled={exporting}
+                  className="h-11 px-6 bg-[#EA2C00] hover:bg-[#EA2C00]/90 text-white font-semibold rounded-full gap-2 flex-shrink-0"
+                  data-testid="button-download-evidence-doc"
+                >
+                  {exporting ? (
+                    <><Loader2 className="w-4 h-4 animate-spin" /> Generating…</>
+                  ) : (
+                    <><Download className="w-4 h-4" /> Download Summary</>
+                  )}
+                </Button>
+              </div>
+            </motion.div>
+
+            {/* ── Scale & Forecast CTA ──────────────────────────────────────── */}
+            <motion.div
+              className="bg-[#1A1A1A] rounded-2xl p-6 mb-6"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.35 }}
             >
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div className="flex items-start gap-4">
@@ -1093,27 +1141,6 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
                   <TrendingUp className="w-4 h-4" />
                 </Button>
               </div>
-            </motion.div>
-
-            {/* ── Download ─────────────────────────────────────────────────── */}
-            <motion.div
-              className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2 pb-6"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.35 }}
-            >
-              <Button
-                onClick={handleExport}
-                disabled={exporting}
-                className="h-12 px-8 bg-[#EA2C00] hover:bg-[#EA2C00]/90 text-white font-semibold rounded-full gap-2"
-                data-testid="button-download-evidence-doc"
-              >
-                {exporting ? (
-                  <><Loader2 className="w-4 h-4 animate-spin" /> Generating…</>
-                ) : (
-                  <><Download className="w-4 h-4" /> Download Evidence Doc</>
-                )}
-              </Button>
             </motion.div>
 
           </>

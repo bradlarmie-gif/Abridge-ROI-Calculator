@@ -7,18 +7,6 @@ import { getRealizedValueForEntry, getEffectiveWithWithout, fmtMoneyCompact, typ
 import MeasureTrendChart from "./MeasureTrendChart";
 import EmDistributionInput from "./EmDistributionInput";
 
-const PHASE_LABEL: Record<string, string> = {
-  emerging: 'Emerging',
-  demonstrated: 'Demonstrated',
-  strategic: 'Strategic',
-};
-
-const PHASE_COLOR: Record<string, string> = {
-  emerging: 'bg-amber-50 text-amber-700',
-  demonstrated: 'bg-blue-50 text-blue-700',
-  strategic: 'bg-purple-50 text-purple-700',
-};
-
 const SETTING_BADGE_LABEL: Record<string, string> = {
   outpatient: 'OP',
   ed: 'ED',
@@ -225,11 +213,6 @@ export default function MeasureDriverCard({ driver, entry, onUpdate, onRemove, i
               ) : (
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#F5F0EB] text-[#888888] text-[10px] font-semibold">
                   Signal
-                </span>
-              )}
-              {driver.measurePhase && (
-                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold ${PHASE_COLOR[driver.measurePhase]}`}>
-                  {PHASE_LABEL[driver.measurePhase]}
                 </span>
               )}
               {isMultiSetting && driver.settings.map(s => (

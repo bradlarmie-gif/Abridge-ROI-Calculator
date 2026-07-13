@@ -471,6 +471,13 @@ export default function MeasureDataEntry({
                 const totalEnc = (sd.deploy_totalEncounters as number) ?? 0;
                 const abridgeEnc = (sd.deploy_abridgeEncounters as number) ?? 0;
                 const coverageRate = totalEnc > 0 ? Math.round((abridgeEnc / totalEnc) * 100) : 0;
+                // Single-setting deployments: prefill Providers from "Live on Abridge" so it
+                // isn't re-entered. Still editable; multi-setting keeps a manual per-setting split.
+                const isSingleSetting = providerSettingsList.length === 1;
+                const liveOnAbridge = state.deployment.liveProviders || 0;
+                const derivedProviders = isSingleSetting && liveOnAbridge > 0 ? liveOnAbridge : undefined;
+                const providersShown = sd.deploy_providers ?? derivedProviders ?? '';
+                const providersIsDerived = sd.deploy_providers == null && derivedProviders != null;
                 return (
                   <div key={setting} className="mb-3 p-3.5 bg-[#F5F0EB] rounded-lg" data-testid={`setting-enc-${setting}`}>
                     {providerSettingsList.length > 1 && (
@@ -482,12 +489,15 @@ export default function MeasureDataEntry({
                       <div>
                         <label className="text-[11px] text-[#888888] uppercase tracking-wide mb-1 block">Providers</label>
                         <FormattedNumberInput
-                          value={sd.deploy_providers ?? ''}
+                          value={providersShown}
                           onChange={v => updateSettingData(setting, 'deploy_providers', v)}
-                          placeholder="e.g. 30"
+                          placeholder={isSingleSetting ? '' : 'e.g. 30'}
                           className="h-10 bg-white border-[#E5E5E5] text-right"
                           data-testid={`input-providers-${setting}`}
                         />
+                        {providersIsDerived && (
+                          <p className="text-[10px] text-[#BBBBBB] mt-1">From Live on Abridge</p>
+                        )}
                       </div>
                       <div>
                         <label className="text-[11px] text-[#888888] uppercase tracking-wide mb-1 block">Annual Encounters</label>

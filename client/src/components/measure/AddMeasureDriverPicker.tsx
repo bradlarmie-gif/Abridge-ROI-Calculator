@@ -3,18 +3,6 @@ import { Plus, Search, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { EXPLORE_DRIVERS, makeCustomDriver, type ExploreQuadrant, type ExploreSetting, type ExploreDriver, type CustomDriverDef } from "@/lib/exploreDrivers";
 
-const PHASE_LABEL: Record<string, string> = {
-  emerging: 'Emerging',
-  demonstrated: 'Demonstrated',
-  strategic: 'Strategic',
-};
-
-const PHASE_COLOR: Record<string, string> = {
-  emerging: 'bg-amber-50 text-amber-700',
-  demonstrated: 'bg-blue-50 text-blue-700',
-  strategic: 'bg-purple-50 text-purple-700',
-};
-
 interface AddMeasureDriverPickerProps {
   quadrant: ExploreQuadrant;
   settings: ExploreSetting[];
@@ -87,7 +75,7 @@ export default function AddMeasureDriverPicker({ quadrant, settings, alreadyTrac
     <>
       <button
         onClick={() => setOpen(true)}
-        className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-lg border-2 border-dashed border-[#E5E5E5] text-sm font-medium text-[#666666] hover:border-[#EA2C00] hover:text-[#EA2C00] transition-all w-full justify-center"
+        className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-lg bg-[#EA2C00] text-sm font-semibold text-white shadow-sm hover:bg-[#D12800] transition-all w-full justify-center"
         data-testid={`button-add-driver-${quadrant.toLowerCase()}`}
       >
         <Plus className="w-4 h-4" /> Add a driver to track
@@ -172,11 +160,6 @@ export default function AddMeasureDriverPicker({ quadrant, settings, alreadyTrac
                                 $
                               </span>
                             )}
-                            {driver.measurePhase && (
-                              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold ${PHASE_COLOR[driver.measurePhase]}`}>
-                                {PHASE_LABEL[driver.measurePhase]}
-                              </span>
-                            )}
                             {settings.length > 1 && driver.settings.map(s => (
                               settings.includes(s) ? (
                                 <span key={s} className="inline-flex items-center px-1.5 py-0.5 rounded bg-[#F5F0EB] text-[10px] font-semibold text-[#888888] uppercase tracking-wide">
@@ -208,9 +191,9 @@ export default function AddMeasureDriverPicker({ quadrant, settings, alreadyTrac
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={() => setShowCustomForm(true)}
-                        className="w-full text-left px-2 py-1.5 text-xs text-[#BBBBBB] hover:text-[#888888] flex items-center gap-2 transition-colors rounded-lg hover:bg-[#FAFAF8]"
+                        className="w-full text-left px-2 py-2 text-sm font-semibold text-[#EA2C00] hover:text-[#D12800] flex items-center gap-2 transition-colors rounded-lg hover:bg-[#FAF3F1]"
                       >
-                        <Plus className="w-3 h-3 flex-shrink-0" />
+                        <Plus className="w-4 h-4 flex-shrink-0" />
                         Don&apos;t see what you need? Add a custom driver
                       </motion.button>
                     ) : (
