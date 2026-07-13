@@ -63,7 +63,7 @@ export function MeasuredOutcomesPanel({ state }: Props) {
         <div className="flex items-center gap-2">
           <CheckCircle2 className="w-3.5 h-3.5 text-[#EA2C00]" />
           <h2 className="text-[11px] uppercase tracking-[2px] text-[#666666] font-semibold">
-            What We&apos;ve Proven
+            What We&apos;ve Measured
           </h2>
           <Badge className="text-[9px] uppercase tracking-wide bg-[#FBE9E2] text-[#A82200] hover:bg-[#FBE9E2]">
             from Measure

@@ -31,8 +31,8 @@ export default function NursingHapiCalc({ state, updateDocQualityInputs }: Props
       <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">The Theory</p>
       <p className="text-sm text-black mb-6">
         HAPIs happen when assessments are missed or interventions are delayed. Real-time documentation
-        ensures skin assessments, turning schedules, and risk factors are captured as they're observed —
-        enabling earlier intervention.
+        captures skin assessments, turning schedules, and risk factors as they're observed, which can
+        support earlier intervention.
       </p>
 
       <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Step 1: Current HAPI Volume</p>

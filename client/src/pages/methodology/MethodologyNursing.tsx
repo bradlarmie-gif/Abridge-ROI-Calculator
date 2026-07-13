@@ -158,7 +158,7 @@ const nursingDomainCards: NursingDomainCardData[] = [
         window: 'Week 4–8',
         desc: 'Post-shift EHR activity drops',
         metrics: [
-          { name: 'Documentation Event Distribution Across Shift', source: 'EHR timestamps · % of documentation events occurring in last 2 hours vs. spread across full shift · pre/post comparison', badge: 'Week 4–8', why: "End-of-shift documentation backlog is visible before overtime data catches up. If nurses are documenting throughout the shift rather than the last 2 hours, the overtime overhang will shrink." },
+          { name: 'Documentation Event Distribution Across Shift', source: 'EHR timestamps · % of documentation events occurring in last 2 hours vs. spread across full shift · pre/post comparison', badge: 'Week 4–8', why: "End-of-shift documentation backlog is visible before overtime data catches up. If nurses are documenting throughout the shift rather than the last 2 hours, the overtime overhang tends to shrink." },
           { name: 'Post-Shift EHR Session Time', source: 'EHR audit logs · minutes of session activity after scheduled shift end · per nurse · no survey needed', badge: 'Week 4–6', why: "Post-shift EHR activity is the nursing equivalent of pajama time — documentation carried home from the unit. This is the earliest and most direct signal that the documentation burden is lifting." },
         ],
         callout: "Why start here: Post-shift EHR data is objective, requires no new infrastructure, and is visible to nursing managers before any payroll cycle comparison is possible. It's also the signal nurses experience directly — which drives organic peer-to-peer adoption.",
@@ -368,7 +368,7 @@ const nursingDomainCards: NursingDomainCardData[] = [
         desc: 'Completeness rates respond',
         metrics: [
           { name: 'Flowsheet Completion Rate', source: 'EHR compliance dashboard · % of required assessments completed within required window · Abridge units vs. baseline · most EHRs report this natively', badge: 'Week 4–6', why: "Incomplete flowsheets are the most common nursing documentation deficiency in compliance audits. Rising completion rate is the first signal that documentation discipline is improving with Abridge support." },
-          { name: 'On-Time Assessment Completion Rate', source: 'EHR data · % of scheduled assessments (Braden, fall risk, pain) completed within required timeframe · per unit · daily tracking', badge: 'Week 4–8', why: "Time-critical assessments (fall risk, Braden, pain) must be completed within required windows. Abridge reduces cognitive competition for documentation time, making on-time completion more consistent." },
+          { name: 'On-Time Assessment Completion Rate', source: 'EHR data · % of scheduled assessments (Braden, fall risk, pain) completed within required timeframe · per unit · daily tracking', badge: 'Week 4–8', why: "Time-critical assessments (fall risk, Braden, pain) must be completed within required windows. Abridge reduces the cognitive competition for documentation time, which can make on-time completion more consistent." },
         ],
         callout: "Why start here: Flowsheet completion rates are visible in existing EHR dashboards within the first month. It's the fastest signal available and requires no new data infrastructure. Compliance teams often already track it.",
       },
@@ -472,7 +472,7 @@ const nursingDomainCards: NursingDomainCardData[] = [
         desc: 'Assessment timeliness responds',
         metrics: [
           { name: 'Fall Risk Assessment Completion Rate', source: 'EHR quality dashboard · % of required fall risk reassessments completed on time · Abridge units vs. control · daily tracking', badge: 'Week 4–8', why: "Falls are the most common nursing-sensitive harm event. On-time fall risk reassessment is the upstream gate — if it's not happening consistently, prevention protocols can't be triggered reliably." },
-          { name: 'Skin & Pressure Injury Assessment Completion Rate', source: 'EHR quality dashboard · Braden scale completion within required window · per unit · pre/post comparison', badge: 'Week 4–8', why: "Braden scale completion within required windows is the documentation gate for pressure injury prevention. Abridge reduces the documentation competition that causes nurses to defer these assessments." },
+          { name: 'Skin & Pressure Injury Assessment Completion Rate', source: 'EHR quality dashboard · Braden scale completion within required window · per unit · pre/post comparison', badge: 'Week 4–8', why: "Braden scale completion within required windows is the documentation gate for pressure injury prevention. Abridge can reduce the documentation competition that leads nurses to defer these assessments." },
         ],
         callout: "Why start here: Assessment completion rates are the most direct and fastest-moving signal for nursing quality. They're tracked by quality teams already, require no new data infrastructure, and show improvement before bundle compliance or harm event data is available.",
       },
@@ -868,7 +868,7 @@ function NursingDomainCard({ data }: { data: NursingDomainCardData }) {
       {/* ── CAUSAL CHAIN ── */}
       <div className="px-8 py-6 border-b border-[#F0F0F0]">
         <div className="flex items-center justify-between mb-4">
-          <p className="text-[10px] font-bold tracking-[0.11em] uppercase text-[#888888]">How Abridge Nursing enables progress toward this outcome</p>
+          <p className="text-[10px] font-bold tracking-[0.11em] uppercase text-[#888888]">How Abridge Nursing supports progress toward this outcome</p>
           <p className="text-[11px] text-[#888888] italic">Click any step to explore</p>
         </div>
 
@@ -1065,7 +1065,7 @@ function NursingDomainMethodologySection() {
         <p className="text-[11px] font-bold uppercase tracking-[2.5px] text-[#888888] mb-2">The Nursing Value Story</p>
         <h2 className="text-[24px] font-bold text-black tracking-tight">Four Domains of Value</h2>
         <p className="text-sm text-[#888888] mt-1">
-          Each domain has a distinct North Star outcome, a causal chain showing how Abridge Nursing enables it, and a measurement path with honest timelines.
+          Each domain has a distinct North Star outcome, a causal chain showing how Abridge Nursing supports it, and a measurement path with honest timelines.
         </p>
       </div>
       <div className="bg-[#F5F0EB] rounded-xl p-1 flex mb-5">

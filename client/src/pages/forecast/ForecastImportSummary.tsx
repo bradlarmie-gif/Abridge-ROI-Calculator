@@ -215,13 +215,13 @@ export default function ForecastImportSummary({
             className="text-[11px] uppercase font-medium text-[#EA2C00] mb-3 relative"
             style={{ letterSpacing: "2.5px" }}
           >
-            Your proven outcomes
+            Your measured outcomes
           </p>
           <h2
             className="text-2xl md:text-3xl font-bold font-abridge uppercase leading-tight relative max-w-3xl"
             style={{ letterSpacing: "0.01em" }}
           >
-            These are your proven outcomes. Let&apos;s model what they mean over the next {years} year{years === 1 ? "" : "s"}.
+            These are your measured outcomes. Let&apos;s model what they mean over the next {years} year{years === 1 ? "" : "s"}.
           </h2>
         </motion.section>
 

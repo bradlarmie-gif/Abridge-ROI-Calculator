@@ -211,11 +211,11 @@ const settingThesisCardTitle: Record<Exclude<ExploreCareSetting, "nursing">, str
 
 const settingThesisCardBody: Record<Exclude<ExploreCareSetting, "nursing">, string> = {
   outpatient:
-    "Faster documentation reclaims time that becomes patient access (Capacity), reduces the burden behind provider turnover (Workforce), and lifts coding accuracy on E/M and HCC capture (Revenue). Quality outcomes — care continuity and note completeness — are tracked post-deployment as the leading indicators of clinical impact.",
+    "Faster documentation reclaims time that can become patient access (Capacity), eases the burden behind provider turnover (Workforce), and supports coding accuracy on E/M and HCC capture (Revenue). Quality outcomes, care continuity and note completeness, are tracked post-deployment as the leading indicators of clinical impact.",
   ed:
-    "Faster note-write per encounter compresses door-to-disposition time and recovers LWBS volume (Capacity), protects retention against shift-based burnout (Workforce), and tightens E/M leveling and clean-claim performance (Revenue). Quality is tracked post-deployment as the leading indicator that documentation lift translated to clinical signal.",
+    "Faster note-write per encounter can compress door-to-disposition time and recover LWBS volume (Capacity), support retention against shift-based burnout (Workforce), and tighten E/M leveling and clean-claim performance (Revenue). Quality is tracked post-deployment as the leading indicator of whether documentation gains translated to clinical signal.",
   inpatient:
-    "Faster H&Ps, signed progress notes, and complete discharge summaries unlock bed turnover and consult flow (Capacity), reduce after-hours charting that drives hospitalist attrition (Workforce), and lift CMI integrity through DRG accuracy and CC/MCC capture (Revenue). Quality is tracked post-deployment as documentation completeness translates to clinical signal.",
+    "Faster H&Ps, signed progress notes, and complete discharge summaries can open up bed turnover and consult flow (Capacity), cut the after-hours charting behind hospitalist attrition (Workforce), and support CMI integrity through DRG accuracy and CC/MCC capture (Revenue). Quality is tracked post-deployment as documentation completeness translates to clinical signal.",
 };
 
 const settingQuadrantFraming: Record<
@@ -224,11 +224,11 @@ const settingQuadrantFraming: Record<
 > = {
   outpatient: {
     Capacity:
-      "Reclaimed documentation time becomes patient access — more visits per provider, shorter waits, complex patients getting the time their care requires. The model estimates the access value of returning charting time to the schedule.",
+      "Reclaimed documentation time can become patient access: more visits per provider, shorter waits, complex patients getting the time their care requires. The model estimates the access value of returning charting time to the schedule.",
     Workforce:
-      "Documentation burden is among the most-cited reasons clinicians leave outpatient practice. Reducing after-hours charting protects retention — and the locum spend that follows every vacancy.",
+      "Documentation burden is among the most-cited reasons clinicians leave outpatient practice. Reducing after-hours charting can support retention, and the locum spend that follows every vacancy.",
     Revenue:
-      "Faster, more complete notes mean cleaner E/M leveling, fewer denials, and HCC capture that reflects the conditions actually addressed during the visit. Revenue lifts when documentation stops understating the encounter.",
+      "Faster, more complete notes can mean cleaner E/M leveling, fewer denials, and HCC capture that reflects the conditions actually addressed during the visit. Revenue lifts when documentation stops understating the encounter.",
     Quality:
       "Quality metrics in outpatient care are only as accurate as the documentation feeding them. When problem lists are incomplete, gaps appear in care continuity, care gap closure rates, and quality program performance — not because care was bad, but because it wasn't documented. These are the downstream proofs that documentation completeness improved.",
   },
@@ -236,7 +236,7 @@ const settingQuadrantFraming: Record<
     Capacity:
       "In the ED, every minute saved on charting is a minute back to the next patient. Recovered LWBS volume is the most measurable line — patients seen and treated instead of walking out the door.",
     Workforce:
-      "Shift-based documentation burden drives ED burnout. Reducing end-of-shift charting protects retention — and the locum and agency spend that follows every gap in coverage.",
+      "Shift-based documentation burden is a known contributor to ED burnout. Reducing end-of-shift charting can support retention, and the locum and agency spend that follows every gap in coverage.",
     Revenue:
       "Defensible E/M leveling and clean-claim performance both depend on how completely the encounter is documented. Down-coding and denial losses are recovered as documentation tightens.",
     Quality:
@@ -244,9 +244,9 @@ const settingQuadrantFraming: Record<
   },
   inpatient: {
     Capacity:
-      "Inpatient capacity follows information flow. Faster H&Ps, signed progress notes, and complete discharge summaries free beds, accelerate consults, and shorten care-transition lag.",
+      "Inpatient capacity follows information flow. Faster H&Ps, signed progress notes, and complete discharge summaries can free beds, accelerate consults, and shorten care-transition lag.",
     Workforce:
-      "After-hours charting and the 24-hour H&P signature requirement are the two most-cited burden drivers in hospital medicine. Reducing both protects hospitalist retention — and the locum spend behind every vacancy.",
+      "After-hours charting and the 24-hour H&P signature requirement are the two most-cited burden drivers in hospital medicine. Reducing both can support hospitalist retention, and the locum spend behind every vacancy.",
     Revenue:
       "Inpatient revenue lift centers on CMI integrity — DRG accuracy, CC/MCC capture, and CDI query reduction all reflect notes that fully describe the admission's clinical complexity.",
     Quality:

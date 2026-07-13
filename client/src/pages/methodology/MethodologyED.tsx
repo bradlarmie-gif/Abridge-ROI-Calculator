@@ -222,7 +222,7 @@ const edDomainCards: EDDomainCardData[] = [
           cols: [
             { l: 'What it measures', b: 'Time physicians spend charting after their shift ends — captured via EHR session logs comparing activity timestamps to scheduled shift end time.' },
             { l: 'Data source', b: 'EHR audit logs. No survey needed. Pull session activity after shift end per provider, pre- and post-Abridge adoption.' },
-            { l: 'Why it matters', b: "Pajama time is the most cited contributor to ED physician burnout. Reducing it directly returns personal time — the most visceral benefit Abridge delivers." },
+            { l: 'Why it matters', b: "Pajama time is the most cited contributor to ED physician burnout. Reducing it returns personal time, one of the benefits providers feel most directly." },
           ],
           grad: "When pajama time approaches zero consistently, providers have their evenings back. The next signal to watch is how that recovery translates to wellbeing scores at Month 3–4.",
         },
@@ -502,7 +502,7 @@ const edDomainCards: EDDomainCardData[] = [
         window: 'Month 6–12',
         desc: 'Quality scores confirmed',
         metrics: [
-          { name: 'Peer Review / Deficiency Resolution Rate', source: 'Quality operations data · hours spent on documentation deficiency review and resolution · leading indicator of quality team capacity freed', badge: 'Month 6–10', why: "Quality team hours spent resolving deficiencies are hours not spent on improvement work. As Abridge notes reduce deficiency volume, quality capacity is freed for higher-value activity." },
+          { name: 'Peer Review / Deficiency Resolution Rate', source: 'Quality operations data · hours spent on documentation deficiency review and resolution · leading indicator of quality team capacity freed', badge: 'Month 6–10', why: "Quality team hours spent resolving deficiencies are hours not spent on improvement work. When Abridge notes carry fewer deficiencies, quality capacity is freed for higher-value activity." },
           { name: 'Quality Measure Compliance Score', source: 'CMS / quality program reporting · composite or individual measure score · Abridge provider cohort vs. pre-Abridge baseline · requires sufficient volume', badge: 'Month 6–12', why: "The composite outcome. All upstream documentation improvements converge here — but it takes 6–12 months because it requires sufficient volume to be statistically meaningful." },
         ],
         callout: "Why deficiency rate is a meaningful outcome: Every hour the quality team spends resolving documentation gaps is an hour not spent on improvement initiatives. A declining deficiency rate is both a quality signal and a workforce efficiency signal for the quality program itself.",
@@ -864,7 +864,7 @@ function NewEDDomainCard({ data }: { data: EDDomainCardData }) {
       {/* ── CAUSAL CHAIN ── */}
       <div className="px-8 py-6 border-b border-[#F0F0F0]">
         <div className="flex items-center justify-between mb-4">
-          <p className="text-[10px] font-bold tracking-[0.11em] uppercase text-[#888888]">How Abridge enables progress toward this outcome</p>
+          <p className="text-[10px] font-bold tracking-[0.11em] uppercase text-[#888888]">How Abridge supports progress toward this outcome</p>
           <p className="text-[11px] text-[#888888] italic">Click any step to explore</p>
         </div>
 
@@ -1013,7 +1013,7 @@ function EDDomainMethodologySection() {
         <p className="text-[11px] font-bold uppercase tracking-[2.5px] text-[#888888] mb-2">Methodology</p>
         <h2 className="text-[24px] font-bold text-black tracking-tight">Understanding the Value</h2>
         <p className="text-sm text-[#888888] mt-1">
-          Four domains. Each has a distinct North Star outcome, a causal chain showing how Abridge enables it, and a measurement path with honest timelines.
+          Four domains. Each has a distinct North Star outcome, a causal chain showing how Abridge supports it, and a measurement path with honest timelines.
         </p>
       </div>
       <div className="bg-[#F5F0EB] rounded-xl p-1 flex mb-5">

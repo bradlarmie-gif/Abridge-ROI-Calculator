@@ -840,7 +840,7 @@ function IPDomainCard({ data }: { data: IPDomainCardData }) {
       {/* ── CAUSAL CHAIN ── */}
       <div className="px-8 py-6 border-b border-[#F0F0F0]">
         <div className="flex items-center justify-between mb-4">
-          <p className="text-[10px] font-bold tracking-[0.11em] uppercase text-[#888888]">How Abridge enables progress toward this outcome</p>
+          <p className="text-[10px] font-bold tracking-[0.11em] uppercase text-[#888888]">How Abridge supports progress toward this outcome</p>
           <p className="text-[11px] text-[#888888] italic">Click any step to explore</p>
         </div>
 
@@ -1037,7 +1037,7 @@ function IPDomainMethodologySection() {
         <p className="text-[11px] font-bold uppercase tracking-[2.5px] text-[#888888] mb-2">The Inpatient Value Story</p>
         <h2 className="text-[24px] font-bold text-black tracking-tight">Four Domains of Value</h2>
         <p className="text-sm text-[#888888] mt-1">
-          Each domain has a distinct North Star outcome, a causal chain showing how Abridge enables it, and a measurement path with honest timelines.
+          Each domain has a distinct North Star outcome, a causal chain showing how Abridge supports it, and a measurement path with honest timelines.
         </p>
       </div>
       <div className="bg-[#F5F0EB] rounded-xl p-1 flex mb-5">

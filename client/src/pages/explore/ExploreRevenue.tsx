@@ -185,8 +185,8 @@ export default function ExploreRevenue({ state, updateState, totalHoursSaved, pr
               <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">How to Use This Section</p>
               <p className="text-sm text-black leading-relaxed">
                 {setting === 'inpatient'
-                  ? "Inpatient documentation quality drives revenue through two levers: DRG accuracy — preserving CC/MCC capture and case mix index — and admission status defense, preventing post-discharge downgrades from inpatient DRG to observation APC. Enable the drivers that match your organization's priorities."
-                  : "Engage with the drivers that match your strategic priorities. Each models the revenue Abridge captures by improving documentation completeness."
+                  ? "Inpatient documentation quality can support revenue through two levers. DRG accuracy preserves CC/MCC capture and case mix index. Admission status defense strengthens the case against post-discharge downgrades from inpatient DRG to observation APC. Turn on the drivers that match your organization's priorities."
+                  : "Engage with the drivers that match your strategic priorities. Each models the revenue that more complete documentation can help capture."
                 }
               </p>
             </motion.div>

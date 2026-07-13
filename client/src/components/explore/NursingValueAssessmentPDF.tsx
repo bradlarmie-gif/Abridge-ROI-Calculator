@@ -1254,7 +1254,7 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
                     name="Agency & Travel Nurse Reduction"
                     value={fmtCurrency(data.agency.value)}
                     linkedTo={data.retention.enabled ? "retention" : undefined}
-                    body="Retained nurses eliminate vacancy fills — each vacancy avoided saves weeks of agency coverage at a premium over permanent-staff cost."
+                    body="Retained nurses avoid vacancy fills. Each vacancy avoided saves weeks of agency coverage at a premium over permanent-staff cost."
                     mathRows={[
                       { label: "Nurse FTEs", value: fmtNum(data.nurseFTEs) },
                       { label: "Vacancies eliminated / yr", value: (data.nurseFTEs * data.retention.turnoverPct / 100 * data.retention.burnoutRelatedPct / 100 * data.retention.impactPct / 100).toFixed(1) },
@@ -2214,7 +2214,7 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
             {data.bundleComplianceEnabled && (
               <View style={{ flexDirection: "row", paddingVertical: 5, borderTopWidth: 0.5, borderTopColor: colors.separator }}>
                 <Text style={{ flex: 1.4, fontSize: 8.5, fontWeight: "bold", color: colors.primaryText }}>Bundle Compliance</Text>
-                <Text style={{ flex: 4.5, fontSize: 8.5, color: colors.secondary, lineHeight: 1.45 }}>Flowsheet documentation drives CLABSI, VAP, sepsis, and fall-prevention bundle adherence. Effect is additive to the HAI lines above; tracked separately to avoid double-counting.</Text>
+                <Text style={{ flex: 4.5, fontSize: 8.5, color: colors.secondary, lineHeight: 1.45 }}>Flowsheet documentation supports CLABSI, VAP, sepsis, and fall-prevention bundle adherence. Effect is additive to the HAI lines above; tracked separately to avoid double-counting.</Text>
               </View>
             )}
             <View style={{ flexDirection: "row", paddingVertical: 5, borderTopWidth: 0.5, borderTopColor: colors.separator }}>

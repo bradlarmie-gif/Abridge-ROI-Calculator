@@ -744,7 +744,7 @@ export function ForecastPDF({ state, result, partnerName, dateStr }: { state: Fo
                 <Text style={{ fontSize: 10, color: C.mid, lineHeight: 1.6 }}>
                   <Text style={s.bold}>Why this matters: </Text>
                   {savings.length > 0 
-                    ? `Switching to ${savings[0].label} would save ${fmtCurrency(savings[0].savings)} over the contract term. Optimization of pricing models ensures that encounter-mode or hybrid pricing decouples cost from headcount as your program scales.`
+                    ? `Switching to ${savings[0].label} would save ${fmtCurrency(savings[0].savings)} over the contract term. Encounter-mode or hybrid pricing can decouple cost from headcount as your program scales.`
                     : "Your current pricing remains the lowest-cost option among configured comparisons."}
                 </Text>
               </View>

@@ -197,7 +197,7 @@ export const settingData: Record<MethodologyCareSetting, SettingPDFData> = {
         chainOutput: "Quality Measure Compliance ↑",
         tag: "tracked",
         narrative:
-          "Quality program compliance requires documentation of clinical reasoning — not just actions taken. Real-time capture via Abridge preserves the 'why' as it was articulated during the encounter, enabling attribution to core measures, sepsis bundles, and protocol elements. The signal here is tracked rather than modeled because quality incentive structures are health system- and payer-specific.",
+          "Quality program compliance requires documentation of clinical reasoning, not just actions taken. Real-time capture via Abridge preserves the 'why' as it was articulated during the encounter, which supports attribution to core measures, sepsis bundles, and protocol elements. The signal here is tracked rather than modeled because quality incentive structures are health system- and payer-specific.",
         signal: {
           window: "Week 4 – Month 3",
           desc: "Documentation behavior shifts",

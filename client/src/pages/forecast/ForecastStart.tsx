@@ -523,7 +523,7 @@ function ImportHeroCard({
               Import from Measure
             </h3>
             <p className="text-sm md:text-base text-neutral-300 leading-relaxed max-w-xl">
-              Measure data available — your partner&apos;s proven outcomes are
+              Measure data available. Your partner&apos;s measured outcomes are
               ready to import.
             </p>
           </div>

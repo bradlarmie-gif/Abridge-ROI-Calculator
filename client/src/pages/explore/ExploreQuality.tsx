@@ -296,7 +296,7 @@ export default function ExploreQuality({ state, updateState, totalHoursSaved, pr
               <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">How to Use This Section</p>
               <p className="text-sm text-black leading-relaxed">
                 {setting === 'inpatient'
-                  ? "Inpatient quality tracks as a leading-to-lagging chain: falling CDI query rate is the first signal that documentation specificity is improving → rising HCAHPS doctor communication scores show the patient experience of a physician present at the bedside, not the keyboard — with 2% of Medicare VBP payments at stake → falling 30-day readmissions is the proof that complete inpatient records enabled better post-acute coordination."
+                  ? "Inpatient quality tracks as a leading-to-lagging chain: a falling CDI query rate is the first signal that documentation specificity is improving → rising HCAHPS doctor communication scores show the patient experience of a physician present at the bedside, not the keyboard, with 2% of Medicare VBP payments at stake → falling 30-day readmissions can be the downstream signal that more complete inpatient records supported better post-acute coordination."
                   : "Engage with the drivers that match your strategic priorities. Skip the ones that don't apply."
                 }
               </p>
