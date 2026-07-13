@@ -86,36 +86,6 @@ const domainTakeaways: Record<string, string> = {
   Quality:   "Quality drivers shown as financial figures represent hard cost avoidance — avoided penalties, avoided CDI rework, avoided audit exposure. Signals tracked qualitatively are not included in the totals above; they are forward-looking indicators of where financial value will appear in subsequent measurement cycles.",
 };
 
-const domainCalibrationNotes: Record<string, string> = {
-  Capacity:  "Calibration: Time savings are measured from documentation completion timestamps. Conversion to capacity or wellbeing value requires an additional operational assumption about where that time went — which is why realization rates on capacity drivers are typically set at 50–75%, not 100%.",
-  Workforce: "Calibration: Retention impact is modeled using a threshold approach that acknowledges diminishing returns. Not every hour of documentation relief prevents a departure. The attrition reduction percentages used here reflect organizations with moderate documentation burden — conservative relative to top-quartile benchmarks.",
-  Revenue:   "Calibration: Revenue improvement requires both better documentation and downstream coding execution. Attribution percentages on revenue drivers account for coding team behavior, payer policies, and timing — factors outside Abridge's direct control. Studies show 8–15% of encounters are systematically undercoded due to documentation gaps; the figures above use the lower end of that range.",
-  Quality:   "Calibration: Clinical quality improvement compounds over time, which makes point-in-time measurement inherently conservative. The figures shown reflect what has been captured in the current measurement window. Organizations that continue measurement past 12 months consistently find that quality value grows faster than capacity or workforce value.",
-};
-
-const domainMeasurementRoadmaps: Record<string, Array<{ window: string; metric: string; source: string }>> = {
-  Capacity: [
-    { window: "Month 1–3",   metric: "Documentation time per encounter and note completion rate",              source: "EHR audit logs" },
-    { window: "Month 3–6",   metric: "Time reallocation signals — earlier sign-offs, reduced after-hours charting", source: "EHR timestamps" },
-    { window: "Month 6–12+", metric: "Provider capacity utilization and schedule density changes",             source: "Scheduling + EHR" },
-  ],
-  Workforce: [
-    { window: "Month 1–3",   metric: "After-hours charting frequency and documentation time per shift",       source: "EHR audit logs" },
-    { window: "Month 3–6",   metric: "Burnout and satisfaction survey scores, PTO utilization trends",        source: "HR + survey data" },
-    { window: "Month 6–12+", metric: "Voluntary attrition rate vs. prior-year baseline",                     source: "HR records" },
-  ],
-  Revenue: [
-    { window: "Month 1–3",   metric: "E/M level distribution and documentation specificity scores",          source: "EHR + coding audit" },
-    { window: "Month 3–6",   metric: "First-pass denial rate and wRVU capture vs. prior year",               source: "RCM system" },
-    { window: "Month 6–12+", metric: "HCC capture rate, CDI query reduction, net revenue per encounter",     source: "Revenue Cycle + Coding" },
-  ],
-  Quality: [
-    { window: "Month 1–3",   metric: "Documentation completeness score and problem list accuracy",           source: "EHR / CDI audit" },
-    { window: "Month 3–6",   metric: "CDI query rate and care gap closure rate",                             source: "CDI program + Quality" },
-    { window: "Month 6–12+", metric: "Risk-adjusted quality scores and HEDIS measure performance",          source: "Quality scorecard" },
-  ],
-};
-
 const DATA_SOURCE_LABELS: Record<string, string> = {
   ehr:          "EHR data",
   survey:       "Survey",
@@ -622,30 +592,6 @@ function DriverCard({
   );
 }
 
-// ─── MEASUREMENT ROADMAP CARD ─────────────────────────────────────────────────
-
-function MeasurementRoadmapCard({ domain }: { domain: string }) {
-  const milestones = domainMeasurementRoadmaps[domain];
-  if (!milestones) return null;
-  return (
-    <View style={S.tableWrap} wrap={false}>
-      <View style={S.tableHead}>
-        <Text style={S.tableHeadCell}>Measurement Roadmap</Text>
-      </View>
-      {milestones.map((m, i) => (
-        <View
-          key={i}
-          style={i % 2 === 0 ? S.tableRow : S.tableRowAlt}
-        >
-          <Text style={[S.tableCell, { width: 68, fontWeight: 600 }]}>{m.window}</Text>
-          <Text style={[S.tableCell, { flex: 1 }]}>{m.metric}</Text>
-          <Text style={[S.tableCellMuted, { width: 90, textAlign: "right" }]}>{m.source}</Text>
-        </View>
-      ))}
-    </View>
-  );
-}
-
 // ─── NARRATIVE GENERATOR ──────────────────────────────────────────────────────
 
 function buildNarrative(data: MeasurePDFData): string {
@@ -721,9 +667,66 @@ function ExecutiveSummaryPage({ data, showDollars }: { data: MeasurePDFData; sho
 
   const encounters = data.annualEncounters > 0 ? fmtNum(data.annualEncounters) : null;
 
+  // Deployment context (from the partner-profile screen) — shown before value.
+  const totalInOrg = data.totalProvidersInOrg || data.numberOfProviders;
+  const live       = data.liveProviders || 0;
+  const mru        = data.mruProviders || 0;
+  const coverage   = data.encounterCoverageRate || 0;
+  const abridgeEnc = data.abridgeEncounters || 0;
+
+  const contextStats: Array<{ value: string; label: string; sub?: string }> = [];
+  if (totalInOrg > 0) contextStats.push({ value: fmtNum(totalInOrg), label: "Providers in Org" });
+  if (live > 0) contextStats.push({
+    value: fmtNum(live),
+    label: "Live on Abridge",
+    sub: totalInOrg > 0 ? `${Math.round((live / totalInOrg) * 100)}% of org` : undefined,
+  });
+  if (mru > 0) contextStats.push({
+    value: fmtNum(mru),
+    label: "Monthly Recording Users",
+    sub: live > 0 ? `${Math.round((mru / live) * 100)}% of live` : undefined,
+  });
+  if (coverage > 0) contextStats.push({
+    value: `${coverage}%`,
+    label: "Encounter Coverage",
+    sub: abridgeEnc > 0 && data.annualEncounters > 0
+      ? `${fmtNum(abridgeEnc)} of ${fmtNum(data.annualEncounters)} enc`
+      : undefined,
+  });
+
+  const contextSubline = [
+    encounters ? `${encounters} annual encounters` : null,
+    data.careSettingLabel,
+    monthsLive > 0 ? `${monthsLive} months live` : null,
+  ].filter(Boolean).join(" · ");
+
   return (
     <Page size="LETTER" style={S.page}>
       <PageHeader label="Evidence Summary" />
+
+      {/* Deployment context — the "who and how much" before the value numbers */}
+      {contextStats.length > 0 && (
+        <>
+          <Text style={[S.eyebrow, { color: brand.textSecondary, marginBottom: 6 }]}>Deployment</Text>
+          <View style={{ flexDirection: "row", gap: 6, marginBottom: contextSubline ? 6 : 12 }}>
+            {contextStats.map((c, i) => (
+              <View key={i} style={{ flex: 1, backgroundColor: brand.lightGray, borderWidth: 1, borderColor: brand.midGray, padding: 10 }}>
+                <Text style={{ fontSize: 15, fontWeight: 700, color: brand.textPrimary, marginBottom: 2 }}>{c.value}</Text>
+                <Text style={{ fontSize: 6.5, fontWeight: 700, color: brand.textSecondary, textTransform: "uppercase", letterSpacing: 0.8 }}>{c.label}</Text>
+                {c.sub ? <Text style={{ fontSize: 6.5, color: brand.textTertiary, marginTop: 2 }}>{c.sub}</Text> : null}
+              </View>
+            ))}
+          </View>
+          {contextSubline ? (
+            <Text style={{ fontSize: 8, color: brand.textTertiary, marginBottom: 14 }}>{contextSubline}</Text>
+          ) : null}
+        </>
+      )}
+
+      {/* Value realized */}
+      {showDollars && (
+        <Text style={[S.eyebrow, { color: brand.coral, marginBottom: 6 }]}>Value Realized</Text>
+      )}
 
       {/* Hero band */}
       {showDollars && (
@@ -755,8 +758,8 @@ function ExecutiveSummaryPage({ data, showDollars }: { data: MeasurePDFData; sho
                 {qName}
               </Text>
               {showDollars ? (
-                <Text style={{ fontSize: 16, fontWeight: 700, color: brand.textPrimary, marginBottom: 2 }}>
-                  {total > 0 ? fmtCurrency(total) : "$0"}
+                <Text style={{ fontSize: 16, fontWeight: 700, color: total > 0 ? brand.textPrimary : brand.textTertiary, marginBottom: 2 }}>
+                  {total > 0 ? fmtCurrency(total) : "—"}
                 </Text>
               ) : (
                 <Text style={{ fontSize: 16, fontWeight: 700, color: brand.textPrimary, marginBottom: 2 }}>
@@ -776,21 +779,14 @@ function ExecutiveSummaryPage({ data, showDollars }: { data: MeasurePDFData; sho
       {/* Narrative insight box */}
       <InsightBox label="Summary" text={narrative} />
 
-      {/* Metadata strip */}
-      <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 14 }}>
-        <Text style={{ fontSize: 8, color: brand.textSecondary }}>
-          {[
-            `${fmtNum(data.numberOfProviders)} providers`,
-            encounters ? `${encounters} encounters` : null,
-            data.careSettingLabel,
-          ].filter(Boolean).join(" · ")}
-        </Text>
-        {allDataSources.length > 0 && (
+      {/* Data sources */}
+      {allDataSources.length > 0 && (
+        <View style={{ marginBottom: 14 }}>
           <Text style={{ fontSize: 8, color: brand.textTertiary }}>
             {`Data sources: ${allDataSources.join(", ")}`}
           </Text>
-        )}
-      </View>
+        </View>
+      )}
 
       <PageFooter orgName={orgName} />
     </Page>
@@ -813,7 +809,6 @@ function DomainPage({
   const subtitle   = domainSubtitles[section.quadrant] ?? "";
   const intro      = domainIntros[section.quadrant] ?? "";
   const takeaway   = domainTakeaways[section.quadrant] ?? "";
-  const calibrationNote = domainCalibrationNotes[section.quadrant] ?? "";
   const quantified  = section.drivers.filter((d) => d.visibility === "quantified");
   const qualitative = section.drivers.filter((d) => d.visibility === "qualitative");
 
@@ -863,18 +858,6 @@ function DomainPage({
       {showDollars && quantified.length > 0 && takeaway && (
         <InsightBox label="Reading This Section" text={takeaway} />
       )}
-
-      {/* Calibration note */}
-      {showDollars && quantified.length > 0 && calibrationNote && (
-        <View style={{ borderLeftWidth: 2, borderLeftColor: accentColor + "60", paddingLeft: 10, marginBottom: 10 }} wrap={false}>
-          <Text style={{ fontSize: 7.5, color: brand.textTertiary, lineHeight: 1.5 }}>
-            {calibrationNote}
-          </Text>
-        </View>
-      )}
-
-      {/* Measurement Roadmap */}
-      <MeasurementRoadmapCard domain={section.quadrant} />
 
       <PageFooter orgName={orgName} />
     </Page>
@@ -1103,7 +1086,10 @@ export const MeasureNarrativePDFDocument = ({ data }: { data: MeasurePDFData }) 
 
   const showDollars     = audience !== "clinical";
   const showLoveStories = (data.loveStories?.length ?? 0) > 0;
-  const showScale       = showDollars && (data.totalProjected > 0 || data.combinedAnnualTotal > 0);
+  // Only include the Scale Opportunity page when there is real full-deployment
+  // information to show — added settings or pricing scenarios. Without those it
+  // was rendering an empty page at a meaningless 1.0× scale multiple.
+  const showScale       = showDollars && (data.addedSettings.length > 0 || data.pricingScenarios.length > 0);
   const activeDomains   = data.quadrants.filter((q) => q.drivers.length > 0);
 
   const subtitle = [

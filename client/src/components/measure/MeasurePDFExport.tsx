@@ -186,6 +186,12 @@ export interface MeasurePDFData {
   numberOfProviders: number;
   utilizationPercent: number;
   annualEncounters: number;
+  // Deployment snapshot (from the partner-profile screen)
+  totalProvidersInOrg: number;
+  liveProviders: number;
+  mruProviders: number;
+  abridgeEncounters: number;
+  encounterCoverageRate: number;
   staffedBeds?: number;
   occupancyPercent?: number;
 
@@ -917,6 +923,11 @@ export function buildMeasurePDFDataFromState(state: MeasureState, audience?: str
     numberOfProviders: totalProviders,
     utilizationPercent: avgUtilization,
     annualEncounters: activeSettings.reduce((sum, s) => sum + blMap[s].encounters, 0),
+    totalProvidersInOrg: dep.totalProviders ?? totalProviders,
+    liveProviders: dep.liveProviders ?? totalProviders,
+    mruProviders: dep.mruProviders ?? 0,
+    abridgeEncounters: dep.abridgeEncounters ?? 0,
+    encounterCoverageRate: dep.encounterCoverageRate ?? 0,
     staffedBeds: activeSettings.includes("nursing" as ExploreSetting) ? primaryBl.staffedBeds : undefined,
     occupancyPercent: activeSettings.includes("nursing" as ExploreSetting) ? primaryBl.occupancyPercent : undefined,
 
