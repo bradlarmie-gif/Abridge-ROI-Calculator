@@ -17,6 +17,9 @@ interface JourneySelectorProps {
 }
 
 export default function JourneySelector({ onSelectExplore, onSelectExpand, onSelectSwitch, onSelectLearn, onSelectForecast, onSelectDataRequest, proformaCount, onOpenProforma }: JourneySelectorProps) {
+  // Temporarily hide the "Assess" path from the home page. Set back to true to restore it.
+  const SHOW_ASSESS = false;
+
   const handleCardKey = (e: React.KeyboardEvent, handler: () => void) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
@@ -92,7 +95,7 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
             </motion.div>
           )}
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 md:gap-6 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6 max-w-5xl mx-auto">
 
             {/* CARD 1: EXPLORE */}
             <motion.div 
@@ -176,8 +179,9 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
               </Button>
             </motion.div>
 
-            {/* CARD 3: SWITCH */}
-            <motion.div 
+            {/* CARD 3: SWITCH / ASSESS — hidden for now via SHOW_ASSESS flag (not deleted) */}
+            {SHOW_ASSESS && (
+            <motion.div
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
@@ -216,6 +220,7 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
                 <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
             </motion.div>
+            )}
 
             {onSelectForecast && (
               <motion.div
