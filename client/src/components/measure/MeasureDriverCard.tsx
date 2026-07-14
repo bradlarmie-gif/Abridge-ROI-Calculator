@@ -565,11 +565,42 @@ export default function MeasureDriverCard({ driver, entry, onUpdate, onRemove, i
                               </div>
                             )}
 
+                            {/* Risk-adjustment program selector (e.g. HCC Capture) */}
+                            {!driver.isCustom && md.populationOptions && md.populationOptions.length > 0 && (
+                              <div>
+                                <label className="text-[11px] font-semibold text-[#888888] uppercase tracking-wide mb-1.5 block">
+                                  Risk-adjustment program
+                                </label>
+                                <div className="flex gap-1.5 flex-wrap">
+                                  {md.populationOptions.map((opt) => {
+                                    const active = (entry.populationType ?? md.populationOptions![0]) === opt;
+                                    return (
+                                      <button
+                                        key={opt}
+                                        type="button"
+                                        onClick={() => onUpdate({ populationType: opt })}
+                                        className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                                          active
+                                            ? 'bg-[#EA2C00] border-[#EA2C00] text-white'
+                                            : 'bg-white border-[#E5E5E5] text-[#666666] hover:border-[#CCCCCC]'
+                                        }`}
+                                        data-testid={`population-${driver.id}-${opt.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}`}
+                                      >
+                                        {opt}
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            )}
+
                             {/* Scale input (HAI rate drivers) */}
                             {!driver.isCustom && md.scaleInput && (
                               <div>
                                 <label className="text-[11px] font-semibold text-[#888888] uppercase tracking-wide mb-1.5 block">
-                                  {md.scaleInput.label}
+                                  {md.populationOptions && md.populationOptions.length > 0
+                                    ? `${entry.populationType ?? md.populationOptions[0]} patient panel`
+                                    : md.scaleInput.label}
                                 </label>
                                 <div className="relative">
                                   <FormattedNumberInput

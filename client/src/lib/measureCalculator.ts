@@ -242,6 +242,7 @@ export interface MeasureDriverEntry {
   scaleDivisor?: number;
   measuredAt?: string;
   entryDataSource?: EntryDataSource;
+  populationType?: string;
 }
 
 /**

@@ -50,6 +50,8 @@ export interface ExploreDriverMeasureDefaults {
   highComplexityCodes?: string[];
   scaleInput?: { label: string; defaultValue: number; unit: string; divisor: number };
   isPerEncounterRate?: boolean;
+  /** Optional risk-adjustment program selector (e.g. MA / Medicaid MCO / ACA). Drives the panel terminology; value-per-unit stays user-set. */
+  populationOptions?: string[];
 }
 
 export interface ValueArcStage {
@@ -775,22 +777,23 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     calcComponent: HccCaptureCalc,
     trackedMeasureIds: ['hccCapture'],
     measureDefaults: {
-      deltaLabel: 'Avg HCCs per MA patient',
+      deltaLabel: 'Avg HCCs per patient',
       deltaUnit: 'HCCs/patient',
       valuePerUnitLabel: 'Value per HCC',
       valuePerUnitDefault: 1500,
       valuePerUnitPrefix: '$',
       scaleAxis: 'providers',
+      populationOptions: ['Medicare Advantage', 'Medicaid MCO', 'ACA / Exchange'],
       scaleInput: { label: 'Medicare Advantage patient panel', defaultValue: 5000, unit: 'patients', divisor: 1 },
-      benchmarkHint: 'Enter avg HCCs per MA patient before and after, then the size of the MA panel. Each HCC is worth $1,000–$2,500 in risk-adjustment revenue.',
+      benchmarkHint: 'Pick the risk-adjustment program, then enter avg HCCs per patient before and after and the size of that panel. Set the value per HCC for that program. Each HCC is often worth $1,000 to $2,500.',
     },
     measurePhase: 'demonstrated',
     prerequisites: ['wrvu'],
   },
   {
     id: 'denialPrevention',
-    label: 'Denial Prevention',
-    shortDescription: 'Prevent documentation-related claim denials before they\'re filed.',
+    label: 'Medical Necessity Denial Rate',
+    shortDescription: 'When documentation establishes medical necessity, fewer of those claims come back denied.',
     quadrant: 'Revenue',
     settings: ['outpatient', 'ed'],
     visibility: 'quantified',
@@ -799,7 +802,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     calcComponent: DenialPreventionCalc,
     trackedMeasureIds: ['cleanClaimRate', 'medicalNecessityDenialRate'],
     measureDefaults: {
-      deltaLabel: 'Denial rate',
+      deltaLabel: 'Medical necessity denial rate',
       deltaUnit: '%',
       valuePerUnitLabel: 'Avg claim value',
       valuePerUnitDefault: 500,
@@ -807,7 +810,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
       lowerIsBetter: true,
       scaleAxis: 'encounters',
       scaleInput: { label: 'Annual claims', defaultValue: 50000, unit: 'claims', divisor: 100 },
-      benchmarkHint: 'Enter the documentation-related denial rate before and after, then annual claims volume. A drop from 8% to 5% across 50,000 claims is 1,500 fewer denials. Typical claim value: $300–$800.',
+      benchmarkHint: 'Enter the medical necessity denial rate before and after, then annual claims volume. A drop from 8% to 5% across 50,000 claims is 1,500 fewer denials. Typical claim value: $300 to $800.',
     },
     measurePhase: 'demonstrated',
   },
