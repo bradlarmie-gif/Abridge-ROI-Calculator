@@ -865,8 +865,8 @@ export default function PricingComparisonFlow({ onBack, onHome }: PricingCompari
   const [partnerName, setPartnerName] = useState("");
   const [volumes, setVolumes] = useState<VolumeInputs>({ providerCount: 0, annualEncounters: 0, staffedBeds: 0 });
   const [deals, setDeals] = useState<DealOption[]>([
+    makeDefaultDeal("Current", "deal-current"),
     makeDefaultDeal("Option A", "deal-a"),
-    makeDefaultDeal("Option B", "deal-b"),
   ]);
   const [annualValueEstimate, setAnnualValueEstimate] = useState(0);
   const [advanced, setAdvanced] = useState(false);
@@ -954,8 +954,9 @@ export default function PricingComparisonFlow({ onBack, onHome }: PricingCompari
     setDeals((prev) => prev.filter((d) => d.id !== id));
   };
 
+  // First slot is "Current"; added deals are Option A, B, C… (letter tracks non-Current count).
   const addDealC = () => {
-    setDeals((prev) => [...prev, makeDefaultDeal("Option C", `deal-c-${Date.now()}`)]);
+    setDeals((prev) => [...prev, makeDefaultDeal(`Option ${String.fromCharCode(64 + prev.length)}`, `deal-${Date.now()}`)]);
   };
 
   return (
@@ -1202,7 +1203,7 @@ export default function PricingComparisonFlow({ onBack, onHome }: PricingCompari
                   className="rounded-2xl border-2 border-dashed border-[#E8E2DA] bg-white/60 hover:bg-white hover:border-[#A39888] transition-all flex items-center justify-center min-h-[200px] text-[#8C7E6E] hover:text-[#1A1A1A] gap-2 text-sm font-medium"
                 >
                   <span className="text-lg leading-none">+</span>
-                  Add Option C
+                  Add Option {String.fromCharCode(64 + deals.length)}
                 </motion.button>
               )}
             </div>
