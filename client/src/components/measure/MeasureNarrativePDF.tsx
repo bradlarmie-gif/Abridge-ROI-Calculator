@@ -578,6 +578,29 @@ function DriverCard({
         </>
       ) : (
         <>
+          {driver.serviceLineRows && driver.serviceLineRows.length > 0 && (
+            <View style={{ marginTop: 4, marginBottom: 5 }}>
+              <View style={{ flexDirection: "row", paddingBottom: 3, borderBottomWidth: 0.5, borderBottomColor: brand.midGray }}>
+                <Text style={{ fontSize: 6.5, color: brand.textTertiary, textTransform: "uppercase", letterSpacing: 0.5, flex: 2 }}>Service line</Text>
+                <Text style={{ fontSize: 6.5, color: brand.textTertiary, textTransform: "uppercase", letterSpacing: 0.5, flex: 1, textAlign: "right" }}>Before</Text>
+                <Text style={{ fontSize: 6.5, color: brand.textTertiary, textTransform: "uppercase", letterSpacing: 0.5, flex: 1, textAlign: "right" }}>Now</Text>
+                <Text style={{ fontSize: 6.5, color: brand.textTertiary, textTransform: "uppercase", letterSpacing: 0.5, flex: 1, textAlign: "right" }}>{`Change${unit ? " (" + unit + ")" : ""}`}</Text>
+              </View>
+              {driver.serviceLineRows.map((row, i) => {
+                const rowDelta = driver.lowerIsBetter ? row.withoutAbridge - row.withAbridge : row.withAbridge - row.withoutAbridge;
+                const improved = rowDelta > 0;
+                const changeStr = `${row.withAbridge < row.withoutAbridge ? "-" : "+"}${fmtNum(Math.abs(row.withAbridge - row.withoutAbridge))}`;
+                return (
+                  <View key={i} style={{ flexDirection: "row", alignItems: "center", paddingVertical: 3, borderTopWidth: i > 0 ? 0.5 : 0, borderTopColor: brand.midGray }}>
+                    <Text style={{ fontSize: 8.5, fontWeight: 600, color: brand.textPrimary, flex: 2 }}>{row.serviceLine || "Unspecified"}</Text>
+                    <Text style={{ fontSize: 8.5, color: brand.textSecondary, flex: 1, textAlign: "right" }}>{fmtNum(row.withoutAbridge)}</Text>
+                    <Text style={{ fontSize: 8.5, fontWeight: 700, color: brand.textPrimary, flex: 1, textAlign: "right" }}>{fmtNum(row.withAbridge)}</Text>
+                    <Text style={{ fontSize: 8.5, fontWeight: 700, color: rowDelta === 0 ? brand.textTertiary : improved ? brand.positive : brand.coral, flex: 1, textAlign: "right" }}>{rowDelta === 0 ? "—" : changeStr}</Text>
+                  </View>
+                );
+              })}
+            </View>
+          )}
           {driver.notes && (
             <Text style={{ fontSize: 8.5, color: brand.textSecondary, marginBottom: 4, lineHeight: 1.5 }}>
               {driver.notes}
