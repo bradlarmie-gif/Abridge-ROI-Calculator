@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, ArrowRight, RotateCcw, TrendingUp, TrendingDown, Plus, Download } from "lucide-react";
+import { ArrowLeft, ArrowRight, RotateCcw, TrendingUp, TrendingDown, Plus, Download, Link2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
@@ -114,9 +114,39 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Encounters ride the provider count at the baseline encounters-per-provider
+  // ratio unless the user unlinks them. Undefined defaults to linked.
+  const isEncountersLinked = (settingKey: string): boolean => state.encountersLinked?.[settingKey] ?? true;
+  const encountersPerProvider = (settingKey: string): number => {
+    const bl = getSettingBaseline(settingKey);
+    return bl.providers > 0 ? bl.encounters / bl.providers : 0;
+  };
+
   const updateSettingProjected = (settingKey: string, updates: Partial<SettingForecastValues>) => {
     const current = getSettingProjected(settingKey);
-    updateState({ settingForecasts: { ...(state.settingForecasts || {}), [settingKey]: { ...current, ...updates } } });
+    const next: SettingForecastValues = { ...current, ...updates };
+    // When provider count moves and encounters are linked, encounters follow it.
+    if (updates.providers !== undefined && isEncountersLinked(settingKey)) {
+      const perProv = encountersPerProvider(settingKey);
+      if (perProv > 0) next.encounters = Math.round(updates.providers * perProv);
+    }
+    updateState({ settingForecasts: { ...(state.settingForecasts || {}), [settingKey]: next } });
+  };
+
+  const setEncountersLinked = (settingKey: string, linked: boolean) => {
+    const map = { ...(state.encountersLinked || {}), [settingKey]: linked };
+    if (linked) {
+      // Snap encounters back onto the provider ratio the moment linking turns on.
+      const proj = getSettingProjected(settingKey);
+      const perProv = encountersPerProvider(settingKey);
+      const encounters = perProv > 0 ? Math.round(proj.providers * perProv) : proj.encounters;
+      updateState({
+        encountersLinked: map,
+        settingForecasts: { ...(state.settingForecasts || {}), [settingKey]: { ...proj, encounters } },
+      });
+    } else {
+      updateState({ encountersLinked: map });
+    }
   };
 
   const resetSettingScenario = (settingKey: string) => {
@@ -410,7 +440,8 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
     baseValue: number,
     settingKey: string,
     suffix: string = '',
-    presets: number[] = []
+    presets: number[] = [],
+    linkage?: { linked: boolean; onToggle: () => void; perProvider: number }
   ) => {
     if (forecastYears === 1) {
       const projValue = getSettingProjected(settingKey)[field] as number;
@@ -431,15 +462,24 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
             <ArrowRight className="w-4 h-4 text-[#888888]" />
             <div className="flex-1">
               <p className="text-xs text-[#888888] mb-1">Projected</p>
-              <FormattedNumberInput
-                value={projValue}
-                onChange={(v: number) => updateSettingProjected(settingKey, { [field]: v })}
-                className="h-9 bg-white text-base"
-                data-testid={`input-projected-${settingKey}-${field}`}
-              />
+              {linkage?.linked ? (
+                <div
+                  className="h-9 flex items-center px-3 rounded-md bg-[#F7F4EF] border border-[#E8E2DA] text-base font-medium text-[#1A1A1A] tabular-nums"
+                  data-testid={`input-projected-${settingKey}-${field}`}
+                >
+                  {formatNumber(projValue)}{suffix}
+                </div>
+              ) : (
+                <FormattedNumberInput
+                  value={projValue}
+                  onChange={(v: number) => updateSettingProjected(settingKey, { [field]: v })}
+                  className="h-9 bg-white text-base"
+                  data-testid={`input-projected-${settingKey}-${field}`}
+                />
+              )}
             </div>
           </div>
-          {presets.length > 0 && baseValue > 0 && (
+          {presets.length > 0 && baseValue > 0 && !linkage?.linked && (
             <div className="flex gap-1.5 mt-2">
               {presets.map(mult => (
                 <button
@@ -455,6 +495,27 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
                   {mult === 1 ? 'Current' : `${mult}×`}
                 </button>
               ))}
+            </div>
+          )}
+          {linkage && (
+            <div className="mt-2">
+              <button
+                type="button"
+                onClick={linkage.onToggle}
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium border transition-colors ${
+                  linkage.linked
+                    ? 'bg-[#EA2C00] text-white border-[#EA2C00]'
+                    : 'bg-white text-[#6B5E4F] border-[#E8E2DA] hover:border-[#1A1A1A]'
+                }`}
+                data-testid={`toggle-encounters-link-${settingKey}`}
+              >
+                <Link2 className="w-3 h-3" /> Scale with provider count
+              </button>
+              {linkage.linked && linkage.perProvider > 0 && (
+                <p className="text-[11px] text-[#999999] mt-1.5">
+                  ≈ {formatNumber(Math.round(linkage.perProvider))} encounters / provider · moves when provider count changes
+                </p>
+              )}
             </div>
           )}
         </div>
@@ -519,9 +580,12 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
           </div>
         )}
         <div className="space-y-3">
+          {renderAxisControl('Coverage', 'utilizationPercent', bl.utilizationPercent, settingKey, '%', [1, 1.2, 1.5])}
           {renderAxisControl(isNursing ? 'Nurse FTEs' : 'Provider Count', 'providers', bl.providers, settingKey, '', [1, 1.5, 2, 3])}
-          {renderAxisControl('Utilization', 'utilizationPercent', bl.utilizationPercent, settingKey, '%', [1, 1.2, 1.5])}
-          {!isNursing && renderAxisControl('Annual Encounters', 'encounters', bl.encounters, settingKey, '', [1, 1.5, 2, 3])}
+          {!isNursing && renderAxisControl(
+            'Annual Encounters', 'encounters', bl.encounters, settingKey, '', [1, 1.5, 2, 3],
+            { linked: isEncountersLinked(settingKey), onToggle: () => setEncountersLinked(settingKey, !isEncountersLinked(settingKey)), perProvider: encountersPerProvider(settingKey) },
+          )}
           {isNursing && (
             <>
               {renderAxisControl('Staffed Beds', 'staffedBeds', bl.staffedBeds, settingKey, '', [1, 1.5, 2])}

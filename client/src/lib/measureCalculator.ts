@@ -221,6 +221,9 @@ export interface MeasureState {
   forecastScenario: ForecastScenario;
   settingForecasts?: Record<string, SettingForecastValues>;
   settingForecastYears?: Record<string, SettingForecastValues[]>;
+  // Per setting: whether projected Annual Encounters ride the projected provider
+  // count (at the baseline encounters-per-provider ratio). Undefined = linked.
+  encountersLinked?: Record<string, boolean>;
   maturityPhase: MaturityStage | null;
   quotes?: MeasureQuote[];
   customDriverDefs?: Record<string, CustomDriverDef>;
