@@ -230,8 +230,6 @@ export interface TimeDriverInputs {
   edDoorToProviderExpanded: boolean;
   edEncountersPerShiftEnabled: boolean;
   edEncountersPerShiftExpanded: boolean;
-  edLwbsRateEnabled: boolean;
-  edLwbsRateExpanded: boolean;
   // ED Workforce qualitative (4)
   edAfterHoursDocEnabled: boolean;
   edAfterHoursDocExpanded: boolean;
@@ -683,8 +681,6 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     edDoorToProviderExpanded: false,
     edEncountersPerShiftEnabled: false,
     edEncountersPerShiftExpanded: false,
-    edLwbsRateEnabled: false,
-    edLwbsRateExpanded: false,
     edAfterHoursDocEnabled: false,
     edAfterHoursDocExpanded: false,
     edEndOfShiftCompletionEnabled: false,
