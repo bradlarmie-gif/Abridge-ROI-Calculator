@@ -500,7 +500,14 @@ function DriverCard({
 
       {isQuant ? (
         <>
-          {/* Before / With Abridge / Change strip */}
+          {/* Single-value drivers: the amount is the gain, show one number */}
+          {driver.singleValueEntry ? (
+            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", backgroundColor: brand.lightGray, borderRadius: 3, paddingVertical: 8, paddingHorizontal: 10, marginTop: 4, marginBottom: 4 }}>
+              <Text style={{ fontSize: 8.5, color: brand.textSecondary }}>{driver.deltaLabel || "Amount"}</Text>
+              <Text style={{ fontSize: 14, fontWeight: 700, color: accentColor }}>{`+${fmtNum(driver.delta)}${unit ? " " + unit : ""}`}</Text>
+            </View>
+          ) : (
+          /* Before / With Abridge / Change strip */
           <View style={{ flexDirection: "row", backgroundColor: brand.lightGray, borderRadius: 3, marginTop: 4, marginBottom: 4 }}>
             {[
               { label: "Before",       value: driver.withoutAbridge, color: brand.textSecondary, prefix: "" },
@@ -530,6 +537,7 @@ function DriverCard({
               </View>
             ))}
           </View>
+          )}
 
           {/* Calculation chain */}
           {showDollars && (

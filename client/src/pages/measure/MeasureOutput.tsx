@@ -307,8 +307,20 @@ function FinancialDriverCard({
         )}
       </div>
 
-      {/* Before → After data row */}
-      {hasData && drv.deltaUnit && (
+      {/* Single-value drivers (e.g. Patient Access): the amount IS the gain, so show one number */}
+      {drv.singleValueEntry && hasData && drv.deltaUnit && (
+        <div className="mx-5 mb-4">
+          <div className="bg-[#F7F7F5] rounded-xl border border-[#EEEEEE] py-3 px-4 flex items-center justify-between gap-3">
+            <p className="text-[11px] font-medium text-[#888888] leading-snug">{drv.deltaLabel ?? 'Amount'}</p>
+            <p className="text-lg font-bold text-emerald-600 tabular-nums flex-shrink-0">
+              +{drv.delta.toLocaleString()} <span className="text-xs font-medium text-[#999999]">{drv.deltaUnit}</span>
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Before → After data row (level metrics) */}
+      {!drv.singleValueEntry && hasData && drv.deltaUnit && (
         <div className="mx-5 mb-4">
           <div className="grid grid-cols-3 gap-0 bg-[#F7F7F5] rounded-xl overflow-hidden border border-[#EEEEEE]">
             <div className="text-center py-3 px-2">

@@ -134,6 +134,7 @@ export interface MeasurePDFDriver {
   entryDataSource?: EntryDataSource;
   serviceLineRows?: Array<{ serviceLine: string; withoutAbridge: number; withAbridge: number }>;
   lowerIsBetter?: boolean;
+  singleValueEntry?: boolean;
 }
 
 export interface MeasurePDFQuadrantSection {
@@ -840,6 +841,7 @@ export function buildMeasurePDFDataFromState(state: MeasureState, audience?: str
             setting: settingKey,
             serviceLineRows: entry.serviceLineRows,
             lowerIsBetter,
+            singleValueEntry: md?.singleValueEntry,
           });
         });
     }
