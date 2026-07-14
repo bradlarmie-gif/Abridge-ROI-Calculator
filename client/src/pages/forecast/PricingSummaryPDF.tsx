@@ -6,8 +6,10 @@ import manropeBold from "../../assets/fonts/manrope-bold.ttf";
 import abridgeLogoRed from "@assets/abridge-logo-wordmark-red_1769187440253.png";
 
 // Customer-facing deal-desk summary. Page 2 tells the switch story (net after retiring
-// existing spend, plus the return); page 3 lays every option out side by side so the
-// better deal is unmistakable. Same react-pdf pipeline as the other exports.
+// existing spend, plus the return); page 3 lays every option out side by side, itemizes
+// what the retired spend actually covers, and shows cost by year. Same react-pdf pipeline
+// as the other exports. Warm beige surfaces (never coral fills); coral is reserved for the
+// numbers that carry the argument.
 
 Font.registerHyphenationCallback((w) => [w]);
 Font.register({
@@ -21,9 +23,10 @@ Font.register({
 const C = {
   black: "#1A1A1A",
   coral: "#EA2C00",
-  coralSoft: "#FFF0ED",
-  coralLine: "#F3C9BF",
-  cream: "#F7F6F3",
+  beige: "#F4F0E9",       // card surface (bottom line, callouts)
+  beigeDeep: "#EDE7DC",   // winner column / deeper surface
+  beigeLine: "#E4DCCE",   // hairline on beige
+  cream: "#FAF9F6",       // neutral tiles (year cells)
   border: "#E5E4E3",
   hair: "#EFEEEC",
   sub: "#6B7280",
@@ -54,6 +57,13 @@ export interface PricingOptionRow {
   yearCosts: number[];
 }
 
+export interface PricingVendorRow {
+  label: string;
+  annual: number;   // dollars Abridge displaces per year (at full ramp)
+  spend: number;    // their current annual spend on this tool
+  pct: number;      // 0–100, how much Abridge displaces
+}
+
 export interface PricingSummaryArgs {
   partnerName: string;
   termYears: number;
@@ -62,7 +72,7 @@ export interface PricingSummaryArgs {
   savingsVsNext: number;
   yearCosts: number[];        // gross Abridge cost per contract year (recommended)
   totalContract: number;      // gross over the term (recommended)
-  vendors: { label: string; annual: number }[];
+  vendors: PricingVendorRow[];
   retiredPerYear: number;     // displaceable spend per year at scale
   coveredOverTerm: number;    // displaced over the term (ramped)
   netOverTerm: number;        // gross − displaced over the term
@@ -79,69 +89,85 @@ const S = StyleSheet.create({
     color: C.black,
     backgroundColor: "#FFFFFF",
     paddingHorizontal: 52,
-    paddingTop: 38,
-    paddingBottom: 34,
+    paddingTop: 36,
+    paddingBottom: 30,
     flexDirection: "column",
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingBottom: 14,
+    paddingBottom: 12,
     borderBottomWidth: 1,
     borderBottomColor: C.border,
-    marginBottom: 20,
+    marginBottom: 16,
   },
   logo: { height: 17 },
   headerTitle: { fontSize: 12.5, fontWeight: 700 },
   headerMeta: { fontSize: 9, color: C.sub, marginTop: 3 },
 
-  kicker: { fontSize: 8, letterSpacing: 1.5, textTransform: "uppercase", color: C.coral, fontWeight: 700, marginBottom: 10 },
-  sectionKicker: { fontSize: 8, letterSpacing: 1.5, textTransform: "uppercase", color: C.sub, fontWeight: 700, marginBottom: 10 },
-  lead: { fontSize: 12.5, color: C.black, lineHeight: 1.5, marginBottom: 18 },
+  kicker: { fontSize: 8, letterSpacing: 1.5, textTransform: "uppercase", color: C.muted, fontWeight: 700, marginBottom: 9 },
+  sectionKicker: { fontSize: 8, letterSpacing: 1.5, textTransform: "uppercase", color: C.sub, fontWeight: 700, marginBottom: 9 },
+  lead: { fontSize: 11.5, color: C.black, lineHeight: 1.55, marginBottom: 16 },
   leadStrong: { fontWeight: 700, color: C.coral },
 
-  // Bottom line
-  bottomLine: { backgroundColor: C.coralSoft, borderRadius: 10, paddingHorizontal: 22, paddingVertical: 18, marginBottom: 22 },
-  blRow: { flexDirection: "row", justifyContent: "space-between", paddingVertical: 3 },
-  blLabel: { fontSize: 11, color: C.black },
-  blValue: { fontSize: 11, fontWeight: 700 },
-  netRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end", marginTop: 8, paddingTop: 12, borderTopWidth: 1, borderTopColor: C.coralLine },
-  netLabel: { fontSize: 12, fontWeight: 700, color: C.black },
-  netValue: { fontSize: 26, fontWeight: 700, color: C.coral },
+  // Bottom line — beige card, compact
+  bottomLine: { backgroundColor: C.beige, borderRadius: 10, paddingHorizontal: 20, paddingVertical: 15, marginBottom: 18 },
+  blRow: { flexDirection: "row", justifyContent: "space-between", paddingVertical: 2.5 },
+  blLabel: { fontSize: 10.5, color: C.black },
+  blValue: { fontSize: 10.5, fontWeight: 700 },
+  netRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end", marginTop: 7, paddingTop: 10, borderTopWidth: 1, borderTopColor: C.beigeLine },
+  netLabel: { fontSize: 11, fontWeight: 700, color: C.black },
+  netValue: { fontSize: 19, fontWeight: 700, color: C.coral },
 
-  section: { marginBottom: 22 },
-  vendorRow: { flexDirection: "row", justifyContent: "space-between", paddingVertical: 5, borderBottomWidth: 1, borderBottomColor: C.hair },
-  vendorLabel: { fontSize: 10.5, color: C.black },
-  vendorVal: { fontSize: 10.5, fontWeight: 700 },
+  section: { marginBottom: 16 },
+
+  // Consolidate list (page 2)
+  vendorRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: C.hair },
+  vendorLabel: { fontSize: 10.5, color: C.black, fontWeight: 700 },
+  vendorSub: { fontSize: 8.5, color: C.sub, marginTop: 2 },
+  vendorVal: { fontSize: 11, fontWeight: 700 },
   perYr: { fontSize: 8, color: C.tertiary, fontWeight: 400 },
-  retireRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 9, paddingTop: 9, borderTopWidth: 1, borderTopColor: C.black },
+  retireRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 8, paddingTop: 8, borderTopWidth: 1, borderTopColor: C.black },
   retireLabel: { fontSize: 11, fontWeight: 700 },
   retireVal: { fontSize: 14, fontWeight: 700 },
-  coveredNote: { fontSize: 9.5, color: C.sub, marginTop: 9 },
+  coveredStrip: { flexDirection: "row", alignItems: "center", backgroundColor: C.beige, borderRadius: 8, paddingHorizontal: 14, paddingVertical: 10, marginTop: 11 },
+  coveredStripText: { fontSize: 10, color: C.black, lineHeight: 1.45 },
+  coveredStripPct: { fontWeight: 700, color: C.coral },
 
   yearRow: { flexDirection: "row", marginHorizontal: -4 },
-  yearCell: { flex: 1, backgroundColor: C.cream, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 13, marginHorizontal: 4 },
+  yearCell: { flex: 1, backgroundColor: C.cream, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 12, marginHorizontal: 4 },
   yearLabel: { fontSize: 8, textTransform: "uppercase", letterSpacing: 1, color: C.sub, marginBottom: 5 },
   yearVal: { fontSize: 15, fontWeight: 700 },
-  roiNote: { fontSize: 9.5, color: C.sub, marginTop: 11 },
+  roiNote: { fontSize: 9.5, color: C.sub, marginTop: 10, lineHeight: 1.45 },
 
   // Return box (page 2)
   returnBox: { flexDirection: "row", backgroundColor: C.black, borderRadius: 10, overflow: "hidden" },
-  returnCell: { flex: 1, paddingVertical: 16, paddingHorizontal: 14 },
+  returnCell: { flex: 1, paddingVertical: 15, paddingHorizontal: 14 },
   returnDivide: { borderLeftWidth: 1, borderLeftColor: "#333333" },
   returnLabel: { fontSize: 7.5, textTransform: "uppercase", letterSpacing: 1, color: "#9A9A9A", marginBottom: 5 },
-  returnValue: { fontSize: 20, fontWeight: 700, color: "#FFFFFF" },
-  returnValueCoral: { fontSize: 20, fontWeight: 700, color: C.coral },
+  returnValue: { fontSize: 19, fontWeight: 700, color: "#FFFFFF" },
+  returnValueCoral: { fontSize: 19, fontWeight: 700, color: C.coral },
 
   // Comparison table (page 3)
-  tRow: { flexDirection: "row", alignItems: "center", borderBottomWidth: 1, borderBottomColor: C.hair, minHeight: 26 },
+  tRow: { flexDirection: "row", alignItems: "center", borderBottomWidth: 1, borderBottomColor: C.hair, minHeight: 24 },
   tHeadRow: { flexDirection: "row", alignItems: "flex-end", borderBottomWidth: 1.5, borderBottomColor: C.border, paddingBottom: 6, marginBottom: 2 },
-  tMetric: { flex: 1.5, fontSize: 9.5, color: C.sub, paddingVertical: 6 },
-  tCell: { flex: 1, fontSize: 10, textAlign: "right", paddingVertical: 6, paddingHorizontal: 6 },
-  tHeadCell: { flex: 1, fontSize: 10, fontWeight: 700, textAlign: "right", paddingHorizontal: 6 },
+  tMetric: { flex: 1.5, fontSize: 9.5, color: C.sub, paddingVertical: 5 },
+  tCell: { flex: 1, fontSize: 10, textAlign: "right", paddingVertical: 5, paddingHorizontal: 6 },
+  tHeadCell: { flex: 1, paddingHorizontal: 6, paddingTop: 6 },
   tHeadSub: { fontSize: 7, fontWeight: 400, color: C.muted },
-  winnerBg: { backgroundColor: C.coralSoft },
+  winnerBg: { backgroundColor: C.beigeDeep },
+
+  // Pro-forma breakdown (page 3)
+  pfRow: { flexDirection: "row", alignItems: "center", paddingVertical: 5, borderBottomWidth: 1, borderBottomColor: C.hair },
+  pfLabel: { flex: 2, fontSize: 10, color: C.black },
+  pfMid: { flex: 1.1, fontSize: 9, color: C.sub, textAlign: "right" },
+  pfVal: { flex: 1.1, fontSize: 10, fontWeight: 700, textAlign: "right" },
+  pfTotalRow: { flexDirection: "row", alignItems: "center", marginTop: 6, paddingTop: 7, borderTopWidth: 1, borderTopColor: C.black },
+  pfTotalLabel: { flex: 2, fontSize: 10.5, fontWeight: 700 },
+  pfTotalVal: { flex: 1.1, fontSize: 12, fontWeight: 700, textAlign: "right" },
+
+  closer: { fontSize: 9.5, color: C.muted, lineHeight: 1.45, marginTop: 2 },
 
   footer: { marginTop: "auto", paddingTop: 12, borderTopWidth: 1, borderTopColor: C.border },
   footerText: { fontSize: 8, color: C.tertiary },
@@ -161,6 +187,7 @@ function PricingSummaryDoc(a: PricingSummaryArgs) {
   const opts = a.options.length ? a.options : [];
   const winnerIdx = Math.max(0, opts.findIndex((o) => o.isWinner));
   const maxYears = opts.reduce((m, o) => Math.max(m, o.yearCosts.length), a.yearCosts.length);
+  const netAnnual = a.netOverTerm / Math.max(1, a.termYears);
 
   const Head = ({ label }: { label: string }) => (
     <View style={S.header}>
@@ -187,9 +214,20 @@ function PricingSummaryDoc(a: PricingSummaryArgs) {
         <Head label="Pricing & Savings Summary" />
 
         <Text style={S.lead}>
-          {hasSavings
-            ? <>Your recommended path is <Text style={S.leadStrong}>{a.recommendedLabel}</Text>. Over {a.termYears} years it costs {money(a.totalContract)}, but {money(a.coveredOverTerm)} of that is already covered by tools you retire — a net new investment of <Text style={S.leadStrong}>{money(a.netOverTerm)}</Text>.</>
-            : <>Your recommended path is <Text style={S.leadStrong}>{a.recommendedLabel}</Text>, at {money(a.totalContract)} over {a.termYears} years.</>}
+          {hasSavings ? (
+            <>
+              The recommended path is <Text style={S.leadStrong}>{a.recommendedLabel}</Text>. Over {a.termYears} years it
+              costs {money(a.totalContract)}. Of that, {money(a.coveredOverTerm)} is already covered by tools you retire
+              when you switch, so the real decision is a net new investment of <Text style={S.leadStrong}>{money(a.netOverTerm)}</Text>,
+              about {money(netAnnual)} a year.
+              {hasValue ? <> Set against an estimated {money(a.annualValue!)} a year in value, that returns {a.termVtc!.toFixed(1)}× over the term.</> : null}
+            </>
+          ) : (
+            <>
+              The recommended path is <Text style={S.leadStrong}>{a.recommendedLabel}</Text>, at {money(a.totalContract)} over {a.termYears} years.
+              {hasValue ? <> Against an estimated {money(a.annualValue!)} a year in value, that returns {a.termVtc!.toFixed(1)}× over the term.</> : null}
+            </>
+          )}
         </Text>
 
         <View style={S.bottomLine}>
@@ -210,12 +248,19 @@ function PricingSummaryDoc(a: PricingSummaryArgs) {
             <Text style={S.sectionKicker}>What you consolidate today</Text>
             {a.vendors.map((v, i) => (
               <View key={i} style={S.vendorRow}>
-                <Text style={S.vendorLabel}>{v.label}</Text>
+                <View style={{ flex: 1, paddingRight: 12 }}>
+                  <Text style={S.vendorLabel}>{v.label}</Text>
+                  <Text style={S.vendorSub}>{money(v.spend)} a year today. Abridge displaces {Math.round(v.pct)}%.</Text>
+                </View>
                 <Text style={S.vendorVal}>{money(v.annual)}<Text style={S.perYr}> /yr</Text></Text>
               </View>
             ))}
             <View style={S.retireRow}><Text style={S.retireLabel}>You retire / year</Text><Text style={S.retireVal}>{money(a.retiredPerYear)}</Text></View>
-            <Text style={S.coveredNote}>{Math.round(a.pctCovered)}% of Abridge is paid for by spend you already make.</Text>
+            <View style={S.coveredStrip}>
+              <Text style={S.coveredStripText}>
+                <Text style={S.coveredStripPct}>{Math.round(a.pctCovered)}%</Text> of Abridge is paid for by spend you already make. You are moving budget you already carry onto one platform.
+              </Text>
+            </View>
           </View>
         )}
 
@@ -248,7 +293,7 @@ function PricingSummaryDoc(a: PricingSummaryArgs) {
                 <Text style={S.returnValue}>{money(a.netOverTerm)}</Text>
               </View>
             </View>
-            <Text style={S.roiNote}>At an estimated {money(a.annualValue!)}/yr of value, {a.recommendedLabel} returns {a.termVtc!.toFixed(1)}× over the {a.termYears}-year term.</Text>
+            <Text style={S.roiNote}>At an estimated {money(a.annualValue!)} a year in value, {a.recommendedLabel} returns {a.termVtc!.toFixed(1)}× over the {a.termYears}-year term.</Text>
           </View>
         )}
 
@@ -264,8 +309,8 @@ function PricingSummaryDoc(a: PricingSummaryArgs) {
 
           <Text style={S.lead}>
             {a.savingsVsNext > 0
-              ? <><Text style={S.leadStrong}>{a.recommendedLabel}</Text> is {money(a.savingsVsNext)} less than the next option over the {a.termYears}-year term. Every option they're weighing, side by side.</>
-              : <>Every option, side by side. <Text style={S.leadStrong}>{a.recommendedLabel}</Text> is the recommended path.</>}
+              ? <><Text style={S.leadStrong}>{a.recommendedLabel}</Text> comes in {money(a.savingsVsNext)} below the next option over the {a.termYears}-year term. Here is every option you are weighing, priced on the same volumes and the same value assumptions, side by side.</>
+              : <>Here is every option you are weighing, priced on the same volumes and the same value assumptions, side by side. <Text style={S.leadStrong}>{a.recommendedLabel}</Text> is the recommended path.</>}
           </Text>
 
           {/* Comparison table */}
@@ -311,13 +356,33 @@ function PricingSummaryDoc(a: PricingSummaryArgs) {
             ))}
           </View>
 
+          {/* What the retired spend covers — pro-forma style itemization */}
+          {hasSavings && (
+            <View style={S.section}>
+              <Text style={S.sectionKicker}>What retired spend covers</Text>
+              {a.vendors.map((v, i) => (
+                <View key={i} style={S.pfRow}>
+                  <Text style={S.pfLabel}>{v.label}</Text>
+                  <Text style={S.pfMid}>{money(v.spend)} /yr today</Text>
+                  <Text style={S.pfMid}>{Math.round(v.pct)}% displaced</Text>
+                  <Text style={S.pfVal}>{money(v.annual)} /yr</Text>
+                </View>
+              ))}
+              <View style={S.pfTotalRow}>
+                <Text style={S.pfTotalLabel}>Total retired / year</Text>
+                <Text style={[S.pfMid, { flex: 2.2 }]}> </Text>
+                <Text style={S.pfTotalVal}>{money(a.retiredPerYear)}</Text>
+              </View>
+            </View>
+          )}
+
           {/* Cost by year, per option */}
           <View style={S.section}>
             <Text style={S.sectionKicker}>Cost by year</Text>
             <View style={S.tHeadRow}>
               <Text style={[S.tMetric, { fontWeight: 700, color: C.sub }]}>Option</Text>
               {Array.from({ length: maxYears }, (_, y) => (
-                <Text key={y} style={S.tHeadCell}>Year {y + 1}</Text>
+                <Text key={y} style={[S.tCell, { fontWeight: 700, color: C.black }]}>Year {y + 1}</Text>
               ))}
             </View>
             {opts.map((o, i) => (
@@ -331,6 +396,10 @@ function PricingSummaryDoc(a: PricingSummaryArgs) {
               </View>
             ))}
           </View>
+
+          <Text style={S.closer}>
+            Same volumes and the same value math sit behind every column. The only thing that changes is the contract you sign.
+          </Text>
 
           <View style={S.footer}>
             <Text style={S.footerText}>Prepared by Abridge · {date}. Figures are estimates for planning and may vary with final contract terms.</Text>

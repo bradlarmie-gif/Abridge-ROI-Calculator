@@ -925,7 +925,9 @@ export default function PricingComparisonFlow({ onBack, onHome }: PricingCompari
       const labelFor = (v: DisplacedVendor) =>
         v.category === "custom" ? (v.label || "Custom") : (DISPLACEMENT_CATEGORIES.find((c) => c.id === v.category)?.label ?? v.label);
       const activeVendors = displacementOn
-        ? vendors.filter((v) => v.annualSpend > 0 && v.displacementPct > 0).map((v) => ({ label: labelFor(v), annual: vendorDisplacedAnnual(v) }))
+        ? vendors
+            .filter((v) => v.annualSpend > 0 && v.displacementPct > 0)
+            .map((v) => ({ label: labelFor(v), annual: vendorDisplacedAnnual(v), spend: v.annualSpend, pct: v.displacementPct }))
         : [];
       // Every deal (Current + options) for the itemized page.
       const optionRows = deals
