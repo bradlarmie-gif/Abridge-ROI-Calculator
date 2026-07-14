@@ -927,10 +927,34 @@ export default function PricingComparisonFlow({ onBack, onHome }: PricingCompari
       const activeVendors = displacementOn
         ? vendors.filter((v) => v.annualSpend > 0 && v.displacementPct > 0).map((v) => ({ label: labelFor(v), annual: vendorDisplacedAnnual(v) }))
         : [];
+      // Every deal (Current + options) for the itemized page.
+      const optionRows = deals
+        .map((d) => {
+          const result = computeDealResult(d, volumes, annualValueEstimate);
+          const net = computeNetResult(result, vendors);
+          return {
+            label: d.label,
+            isWinner: d.id === rec.deal.id,
+            modelLabel: PRICING_MODEL_LABELS[d.model],
+            totalContract: result.totalContractCost,
+            netTotal: displacementOn ? net.netTotalContract : result.totalContractCost,
+            netAnnual: displacementOn ? net.netAverageAnnual : result.averageAnnualCost,
+            costPerProvider: result.costPerProvider,
+            costPerEncounter: result.costPerEncounter,
+            escalatorPct: d.escalatorPct,
+            termVtc: annualValueEstimate > 0 ? result.termVtc : null,
+            annualRoiPct: annualValueEstimate > 0 ? result.annualRoiPct : null,
+            paybackMonths: annualValueEstimate > 0 ? result.paybackMonths : null,
+            yearCosts: result.years.map((y) => y.annualCost),
+          };
+        })
+        .filter((o) => o.totalContract > 0);
       await generatePricingSummaryPDF({
         partnerName,
         termYears: verdict.termYears,
         modelLabel: PRICING_MODEL_LABELS[rec.deal.model],
+        recommendedLabel: rec.deal.label,
+        savingsVsNext: verdict.savings,
         yearCosts: rec.result.years.map((y) => y.annualCost),
         totalContract: rec.result.totalContractCost,
         vendors: activeVendors,
@@ -940,6 +964,7 @@ export default function PricingComparisonFlow({ onBack, onHome }: PricingCompari
         pctCovered: displacementOn ? rec.net.pctCovered : 0,
         annualValue: annualValueEstimate || undefined,
         termVtc: annualValueEstimate > 0 ? rec.termVtc : null,
+        options: optionRows,
       });
     } finally {
       setIsExporting(false);
