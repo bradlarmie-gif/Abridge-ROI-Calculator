@@ -3204,7 +3204,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                                         "children": [
                                           {
                                             "kind": "text",
-                                            "value": "Retained nurses eliminate vacancy fills — each vacancy avoided saves weeks of agency coverage at a premium over permanent-staff cost.",
+                                            "value": "Retained nurses avoid vacancy fills. Each vacancy avoided saves weeks of agency coverage at a premium over permanent-staff cost.",
                                           },
                                         ],
                                         "kind": "primitive",
@@ -15137,7 +15137,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                                         "children": [
                                           {
                                             "kind": "text",
-                                            "value": "Retained nurses eliminate vacancy fills — each vacancy avoided saves weeks of agency coverage at a premium over permanent-staff cost.",
+                                            "value": "Retained nurses avoid vacancy fills. Each vacancy avoided saves weeks of agency coverage at a premium over permanent-staff cost.",
                                           },
                                         ],
                                         "kind": "primitive",
