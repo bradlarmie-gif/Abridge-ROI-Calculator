@@ -261,15 +261,11 @@ export interface TimeDriverInputs {
   ipBurnoutTrackingExpanded: boolean;
   ipLikelihoodToStayEnabled: boolean;
   ipLikelihoodToStayExpanded: boolean;
-  // IP Revenue qualitative (3 — expanded by R-IA-5)
-  ipCmiTrackingEnabled: boolean;
-  ipCmiTrackingExpanded: boolean;
+  // IP Revenue qualitative (expanded by R-IA-5)
   ipCcMccCaptureEnabled: boolean;
   ipCcMccCaptureExpanded: boolean;
   ipCdiQueryTrendEnabled: boolean;
   ipCdiQueryTrendExpanded: boolean;
-  ipObsDowngradeRateEnabled: boolean;
-  ipObsDowngradeRateExpanded: boolean;
   // Nursing Capacity qualitative (3 — expanded by R-IA-6)
   nursingDocumentationLagEnabled: boolean;
   nursingDocumentationLagExpanded: boolean;
@@ -707,14 +703,10 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     ipBurnoutTrackingExpanded: false,
     ipLikelihoodToStayEnabled: false,
     ipLikelihoodToStayExpanded: false,
-    ipCmiTrackingEnabled: false,
-    ipCmiTrackingExpanded: false,
     ipCcMccCaptureEnabled: false,
     ipCcMccCaptureExpanded: false,
     ipCdiQueryTrendEnabled: false,
     ipCdiQueryTrendExpanded: false,
-    ipObsDowngradeRateEnabled: false,
-    ipObsDowngradeRateExpanded: false,
     nursingDocumentationLagEnabled: false,
     nursingDocumentationLagExpanded: false,
     nursingPointOfCareDocEnabled: false,
