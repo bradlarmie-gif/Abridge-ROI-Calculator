@@ -248,8 +248,9 @@ function DealCard({
   onRemove: () => void;
   canRemove: boolean;
 }) {
-  const color = DEAL_COLORS[index] ?? DEAL_COLORS[0];
-  const colorLight = DEAL_COLORS_LIGHT[index] ?? DEAL_COLORS_LIGHT[0];
+  // Color by winner, not by position: the lowest-cost option is coral, the rest are muted.
+  const color = isLowest ? "#EA2C00" : "#8C7E6E";
+  const colorLight = isLowest ? "#FFF0ED" : "#F3F1EE";
 
   const result = useMemo(
     () => computeDealResult(deal, volumes, annualValueEstimate),
@@ -621,6 +622,15 @@ function RoiAnalysisSection({
   const results = deals.map((d) => computeDealResult(d, volumes, annualValueEstimate));
   const nets = results.map((r) => computeNetResult(r, vendors));
   const showNet = displacementOn && nets.some((n) => n.totalDisplaced > 0);
+  // Winner-aware coloring: lowest net (or gross) is coral; everyone else muted.
+  const netTotals = results.map((r, i) => (showNet ? nets[i].netTotalContract : r.totalContractCost));
+  const winnerIdx = netTotals.length ? netTotals.indexOf(Math.min(...netTotals)) : 0;
+  const barColor = (di: number) => (di === winnerIdx ? "#EA2C00" : "#B8AFA6");
+  const cellColor = (di: number) => (di === winnerIdx ? "#EA2C00" : "#6B5E4F");
+  const sortedTotals = [...netTotals].sort((a, b) => a - b);
+  const winnerSavings = sortedTotals.length > 1 ? sortedTotals[1] - sortedTotals[0] : 0;
+  const winnerLabel = deals[winnerIdx]?.label ?? "";
+  const termYearsForChart = Math.max(1, ...deals.map((d) => Math.ceil(d.contractTermMonths / 12)));
   // ROI / payback are computed on GROSS Abridge cost — never net of displacement. Displaced
   // spend is shown separately (the net-cost rows + switch-economics block) so it can never
   // inflate the ROI multiple. Keeps the ratio bulletproof against "you're juicing it."
@@ -663,9 +673,15 @@ function RoiAnalysisSection({
       <div className="p-6 space-y-8">
         {/* Multi-year cost chart */}
         <div>
-          <p className="text-[10px] uppercase font-semibold text-[#8C7E6E] tracking-widest mb-1">{showNet ? "Cost by Year — net vs displaced" : "Annual Cost by Year"}</p>
-          {showNet && <p className="text-[11px] text-[#A39888] mb-3">Solid = net cost you pay · shaded = spend displaced from existing vendors</p>}
-          {!showNet && maxYears > 1 && <p className="text-[11px] text-[#A39888] mb-3">Each bar includes that deal's annual price escalator — see "Cost growth" in the table below.</p>}
+          <p className="text-[10px] uppercase font-semibold text-[#8C7E6E] tracking-widest mb-1">{showNet ? "Net cost by year" : "Annual cost by year"}</p>
+          {showNet
+            ? <p className="text-[11px] text-[#A39888] mb-2">What you actually pay each year, after retiring the tools you'd replace. Shortest bar wins.</p>
+            : (maxYears > 1 && <p className="text-[11px] text-[#A39888] mb-2">Each bar includes that deal's annual price escalator. Shortest bar wins.</p>)}
+          {winnerSavings > 0 && (
+            <p className="text-sm font-semibold text-[#1A1A1A] mb-3">
+              <span style={{ color: "#EA2C00" }}>{winnerLabel}</span> costs {fmt(winnerSavings)} less over the {termYearsForChart}-year term.
+            </p>
+          )}
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={chartData} barGap={4} barCategoryGap="28%">
               <CartesianGrid strokeDasharray="3 3" stroke="#F0EAE3" vertical={false} />
@@ -680,14 +696,14 @@ function RoiAnalysisSection({
                 contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #E8E2DA", boxShadow: "0 4px 12px rgba(0,0,0,0.08)" }}
               />
               <Legend wrapperStyle={{ fontSize: 12, paddingTop: 12 }} />
-              {showNet
-                ? deals.flatMap((deal, di) => [
-                    <Bar key={`${deal.id}-net`} dataKey={`${deal.label} (net)`} stackId={deal.id} fill={DEAL_COLORS[di] ?? DEAL_COLORS[0]} radius={[0, 0, 0, 0]} />,
-                    <Bar key={`${deal.id}-disp`} dataKey={`${deal.label} (displaced)`} stackId={deal.id} fill={DEAL_COLORS[di] ?? DEAL_COLORS[0]} fillOpacity={0.22} radius={[3, 3, 0, 0]} legendType="none" />,
-                  ])
-                : deals.map((deal, di) => (
-                    <Bar key={deal.id} dataKey={deal.label} fill={DEAL_COLORS[di] ?? DEAL_COLORS[0]} radius={[3, 3, 0, 0]} />
-                  ))}
+              {deals.map((deal, di) => (
+                <Bar
+                  key={deal.id}
+                  dataKey={showNet ? `${deal.label} (net)` : deal.label}
+                  fill={barColor(di)}
+                  radius={[3, 3, 0, 0]}
+                />
+              ))}
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -701,8 +717,8 @@ function RoiAnalysisSection({
                 <tr className="border-b border-[#E8E2DA]">
                   <th className="text-left py-2 pr-4 text-xs font-semibold text-[#8C7E6E] w-36">Metric</th>
                   {deals.map((deal, di) => (
-                    <th key={deal.id} className="text-right py-2 px-3 text-xs font-bold" style={{ color: DEAL_COLORS[di] }}>
-                      {deal.label}
+                    <th key={deal.id} className="text-right py-2 px-3 text-xs font-bold" style={{ color: di === winnerIdx ? "#EA2C00" : "#8C7E6E" }}>
+                      {deal.label}{di === winnerIdx ? " · best" : ""}
                     </th>
                   ))}
                 </tr>
@@ -752,7 +768,7 @@ function RoiAnalysisSection({
                     <tr className="border-t-2 border-[#E8E2DA]">
                       <td className="py-2.5 pr-4 text-xs font-semibold text-[#1A1A1A]">Net Contract Cost</td>
                       {nets.map((nr, ri) => (
-                        <td key={ri} className="py-2.5 px-3 text-right text-sm font-bold tabular-nums" style={{ color: "#EA2C00" }}>
+                        <td key={ri} className="py-2.5 px-3 text-right text-sm font-bold tabular-nums" style={{ color: cellColor(ri) }}>
                           {fmt(nr.netTotalContract)}
                         </td>
                       ))}
@@ -800,7 +816,7 @@ function RoiAnalysisSection({
                     <tr>
                       <td className="py-2.5 pr-4 text-xs text-[#8C7E6E]">Year 1 ROI</td>
                       {results.map((r, ri) => (
-                        <td key={ri} className="py-2.5 px-3 text-right text-sm font-semibold tabular-nums" style={{ color: DEAL_COLORS[ri] }}>
+                        <td key={ri} className="py-2.5 px-3 text-right text-sm font-semibold tabular-nums" style={{ color: cellColor(ri) }}>
                           {r.vtcYear1 !== null ? `${r.vtcYear1.toFixed(1)}×` : "—"}
                         </td>
                       ))}
@@ -808,7 +824,7 @@ function RoiAnalysisSection({
                     <tr>
                       <td className="py-2.5 pr-4 text-xs text-[#8C7E6E]">Term ROI</td>
                       {results.map((r, ri) => (
-                        <td key={ri} className="py-2.5 px-3 text-right text-sm font-semibold tabular-nums" style={{ color: DEAL_COLORS[ri] }}>
+                        <td key={ri} className="py-2.5 px-3 text-right text-sm font-semibold tabular-nums" style={{ color: cellColor(ri) }}>
                           {r.termVtc !== null ? `${r.termVtc.toFixed(1)}×` : "—"}
                         </td>
                       ))}
@@ -816,7 +832,7 @@ function RoiAnalysisSection({
                     <tr>
                       <td className="py-2.5 pr-4 text-xs text-[#8C7E6E]">Annual ROI</td>
                       {results.map((r, ri) => (
-                        <td key={ri} className="py-2.5 px-3 text-right text-sm font-bold tabular-nums" style={{ color: DEAL_COLORS[ri] }}>
+                        <td key={ri} className="py-2.5 px-3 text-right text-sm font-bold tabular-nums" style={{ color: cellColor(ri) }}>
                           {r.annualRoiPct !== null ? `${r.annualRoiPct >= 0 ? "+" : ""}${Math.round(r.annualRoiPct)}%` : "—"}
                         </td>
                       ))}
@@ -824,7 +840,7 @@ function RoiAnalysisSection({
                     <tr>
                       <td className="py-2.5 pr-4 text-xs text-[#8C7E6E]">Payback Period</td>
                       {results.map((r, ri) => (
-                        <td key={ri} className="py-2.5 px-3 text-right text-sm font-semibold tabular-nums" style={{ color: DEAL_COLORS[ri] }}>
+                        <td key={ri} className="py-2.5 px-3 text-right text-sm font-semibold tabular-nums" style={{ color: cellColor(ri) }}>
                           {r.paybackMonths !== null ? `${r.paybackMonths} months` : "—"}
                         </td>
                       ))}
