@@ -52,6 +52,10 @@ export interface ExploreDriverMeasureDefaults {
   isPerEncounterRate?: boolean;
   /** Optional risk-adjustment program selector (e.g. MA / Medicaid MCO / ACA). Drives the panel terminology; value-per-unit stays user-set. */
   populationOptions?: string[];
+  /** Render one "amount" input instead of before/after (the value IS the gain, e.g. additional visits created). */
+  singleValueEntry?: boolean;
+  /** Before/after are entered directly in dollars; the value is the difference. Hides the value-per-unit field. */
+  dollarLevel?: boolean;
 }
 
 export interface ValueArcStage {
@@ -101,14 +105,14 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     calcComponent: PatientAccessCalc,
     trackedMeasureIds: ['patientsPerProvider', 'visitsPerHour', 'timeInNote'],
     measureDefaults: {
-      deltaLabel: 'Additional visits per year (across all providers)',
+      deltaLabel: 'Additional visits created per year',
       deltaUnit: 'visits',
-      valuePerUnitLabel: 'Revenue per visit',
-      valuePerUnitDefault: 250,
+      valuePerUnitLabel: 'Margin per visit',
+      valuePerUnitDefault: 150,
       valuePerUnitPrefix: '$',
-      realizationDefault: 80,
       scaleAxis: 'providers',
-      benchmarkHint: 'Enter total additional visits generated across all MRU providers. At 15 min/note saved: ~2 additional visits/week/provider = ~100 additional visits/year/provider.',
+      singleValueEntry: true,
+      benchmarkHint: 'Enter the additional visits created per year across all recording providers, then the contribution margin per visit (not gross charges). At 15 min/note saved, roughly 2 more visits per provider per week is about 100 per provider per year.',
     },
     measurePhase: 'demonstrated',
   },
@@ -208,8 +212,8 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
   },
   {
     id: 'physicianLocumAgency',
-    label: 'Locum & Agency Cost Avoidance',
-    shortDescription: 'Reduced reliance on contracted physician coverage as retention improves.',
+    label: 'Locum & Agency Spend',
+    shortDescription: 'Actual locum and agency spend, before and after. The value is the reduction, straight off the P&L.',
     quadrant: 'Workforce',
     settings: ['outpatient', 'ed', 'inpatient'],
     visibility: 'quantified',
@@ -219,22 +223,22 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     calcComponent: PhysicianLocumAgencyCalc,
     trackedMeasureIds: ['agencyLocumSpend'],
     measureDefaults: {
-      deltaLabel: 'Provider-weeks of locum coverage avoided',
-      deltaUnit: 'weeks',
-      valuePerUnitLabel: 'Weekly locum premium',
-      valuePerUnitDefault: 5000,
-      valuePerUnitPrefix: '$',
-      realizationDefault: 100,
+      deltaLabel: 'Annual locum & agency spend',
+      deltaUnit: '$',
+      valuePerUnitLabel: 'Value per dollar',
+      valuePerUnitDefault: 1,
       scaleAxis: 'providers',
-      benchmarkHint: 'Enter total locum-weeks avoided per year. Typical specialist locum premium: $2,000–$5,000/day ($10K–$25K/week).',
+      dollarLevel: true,
+      lowerIsBetter: true,
+      benchmarkHint: 'Enter total annual locum and agency spend before and after Abridge. The value is the difference.',
     },
     prerequisites: ['providerWellbeing'],
   },
   {
     id: 'scribeCostReduction',
-    label: 'Scribe Cost Reduction',
-    shortDescription: 'Practices using in-person or virtual scribes can reduce or eliminate that spend as Abridge covers the documentation role. This is a direct, measurable P&L line item — not a modeled projection.',
-    tagline: 'Scribe positions eliminated or reduced — a direct cost removal',
+    label: 'Scribe Spend',
+    shortDescription: 'Practices using in-person or virtual scribes can reduce that spend as Abridge covers the documentation role. This is a direct P&L line item, not a modeled projection.',
+    tagline: 'Actual scribe spend, before and after',
     quadrant: 'Workforce',
     settings: ['outpatient', 'ed'],
     visibility: 'quantified',
@@ -242,15 +246,14 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     expandedStateKey: 'scribeCostReductionExpanded',
     trackedMeasureIds: [],
     measureDefaults: {
-      deltaLabel: 'FTE scribes eliminated or reduced',
-      deltaUnit: 'FTEs',
-      valuePerUnitLabel: 'Annual cost per scribe position',
-      valuePerUnitDefault: 0,
-      valuePerUnitPrefix: '$',
-      realizationDefault: 100,
+      deltaLabel: 'Annual scribe spend',
+      deltaUnit: '$',
+      valuePerUnitLabel: 'Value per dollar',
+      valuePerUnitDefault: 1,
       scaleAxis: 'providers',
+      dollarLevel: true,
       lowerIsBetter: true,
-      benchmarkHint: 'Enter the total annual cost for the scribe position(s) being reduced — salary, benefits, and any service fees. Divide by FTEs to get cost per FTE if entering multiple. In-person scribes typically run $30K–$45K/yr all-in; virtual scribe services vary by hours and contract.',
+      benchmarkHint: 'Enter total annual scribe spend before and after Abridge, including salary, benefits, and any service fees. The value is the difference. In-person scribes typically run $30K to $45K per year all-in.',
     },
     measurePhase: 'demonstrated',
     calcComponent: ScribeCostReductionCalc,

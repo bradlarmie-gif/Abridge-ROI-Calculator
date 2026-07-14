@@ -416,41 +416,64 @@ export default function MeasureDriverCard({ driver, entry, onUpdate, onRemove, i
                           <p className="text-[10px] text-[#AAAAAA] mt-1.5">Enter the annual dollar value you&apos;ve documented for this driver.</p>
                         </div>
                       ) : !entry.isMonthlyMode ? (
+                        md.singleValueEntry ? (
+                          <div>
+                            <label className="text-[11px] font-semibold text-[#EA2C00] uppercase tracking-wide mb-1.5 block">
+                              {md.deltaLabel}
+                            </label>
+                            <FormattedNumberInput
+                              value={entry.withAbridge}
+                              onChange={(v: number) => onUpdate({ withAbridge: v, withoutAbridge: 0 })}
+                              className="h-10 bg-white border-[#EA2C00]/30 focus:border-[#EA2C00]"
+                              data-testid={`input-single-${driver.id}`}
+                            />
+                            <p className="text-[11px] text-[#AAAAAA] mt-1">{md.deltaUnit}</p>
+                          </div>
+                        ) : (
                         <div className="grid grid-cols-2 gap-3">
                           <div>
                             <label className="text-[11px] font-semibold text-[#888888] uppercase tracking-wide mb-1.5 block">
                               Before Abridge
                             </label>
-                            <FormattedNumberInput
-                              value={entry.withoutAbridge}
-                              onChange={(v: number) => onUpdate({ withoutAbridge: v })}
-                              className="h-10 bg-white"
-                              data-testid={`input-without-${driver.id}`}
-                            />
-                            <p className="text-[11px] text-[#AAAAAA] mt-1">{md.deltaUnit}</p>
+                            <div className="relative">
+                              {md.dollarLevel && <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#888888] z-10 pointer-events-none">$</span>}
+                              <FormattedNumberInput
+                                value={entry.withoutAbridge}
+                                onChange={(v: number) => onUpdate({ withoutAbridge: v })}
+                                className={`h-10 bg-white ${md.dollarLevel ? 'pl-7' : ''}`}
+                                data-testid={`input-without-${driver.id}`}
+                              />
+                            </div>
+                            <p className="text-[11px] text-[#AAAAAA] mt-1">{md.dollarLevel ? 'Spend before Abridge' : md.deltaUnit}</p>
                           </div>
                           <div>
                             <label className="text-[11px] font-semibold text-[#EA2C00] uppercase tracking-wide mb-1.5 block">
                               With Abridge
                             </label>
-                            <FormattedNumberInput
-                              value={entry.withAbridge}
-                              onChange={(v: number) => onUpdate({ withAbridge: v })}
-                              className="h-10 bg-white border-[#EA2C00]/30 focus:border-[#EA2C00]"
-                              data-testid={`input-with-${driver.id}`}
-                            />
+                            <div className="relative">
+                              {md.dollarLevel && <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#888888] z-10 pointer-events-none">$</span>}
+                              <FormattedNumberInput
+                                value={entry.withAbridge}
+                                onChange={(v: number) => onUpdate({ withAbridge: v })}
+                                className={`h-10 bg-white border-[#EA2C00]/30 focus:border-[#EA2C00] ${md.dollarLevel ? 'pl-7' : ''}`}
+                                data-testid={`input-with-${driver.id}`}
+                              />
+                            </div>
                             <p className="text-[11px] text-[#AAAAAA] mt-1">
                               {delta !== 0 && (
                                 <span className={delta > 0 ? 'text-emerald-600 font-medium' : 'text-red-500 font-medium'}>
-                                  {lowerIsBetter
+                                  {md.dollarLevel
+                                    ? `$${formatNumber(Math.abs(delta))} ${delta >= 0 ? 'saved' : 'more'}`
+                                    : lowerIsBetter
                                     ? `${delta > 0 ? '-' : '+'}${formatNumber(Math.abs(delta))} ${md.deltaUnit}`
                                     : `${delta > 0 ? '+' : ''}${formatNumber(delta)} ${md.deltaUnit}`}
                                 </span>
                               )}
-                              {delta === 0 && md.deltaUnit}
+                              {delta === 0 && (md.dollarLevel ? 'Spend with Abridge' : md.deltaUnit)}
                             </p>
                           </div>
                         </div>
+                        )
                       ) : (
                         monthlyEntrySection
                       )}
@@ -545,8 +568,8 @@ export default function MeasureDriverCard({ driver, entry, onUpdate, onRemove, i
                             transition={{ duration: 0.18, ease: 'easeInOut' }}
                             className="overflow-hidden space-y-5 pt-4"
                           >
-                            {/* Conversion factor — hidden for custom drivers (they enter value directly) */}
-                            {!driver.isCustom && (
+                            {/* Conversion factor — hidden for custom drivers and dollar-level drivers (value is the before/after difference) */}
+                            {!driver.isCustom && !md.dollarLevel && (
                               <div>
                                 <label className="text-[11px] font-semibold text-[#888888] uppercase tracking-wide mb-1.5 block">
                                   {md.valuePerUnitLabel}
