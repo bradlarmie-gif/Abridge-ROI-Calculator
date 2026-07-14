@@ -9,7 +9,6 @@ import ExploreRevenue from "./ExploreRevenue";
 import ExploreQuality from "./ExploreQuality";
 import ExploreInvestment from "./ExploreInvestment";
 import ExploreModel from "./ExploreModel";
-import { ExploreProgressBar } from "@/components/ExploreProgressBar";
 import {
   computeCapacityBreakdown,
   computeWorkforceBreakdown,
@@ -1312,24 +1311,6 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
   const isED = state.careSetting === 'ed';
   const isInpatient = state.careSetting === 'inpatient';
 
-  const phaseToStep: Record<ExplorePhase, number> = {
-    careSetting: 1,
-    practice: 2,
-    timeSavings: 3,
-    capacity: 4,
-    workforce: 5,
-    revenue: 6,
-    quality: 7,
-    investment: 8,
-    model: 9,
-  };
-
-  const progressBar = (
-    <div className="px-4 pt-4 max-w-2xl mx-auto w-full">
-      <ExploreProgressBar currentStep={phaseToStep[phase]} totalSteps={9} />
-    </div>
-  );
-
   let content: React.ReactNode = null;
 
   switch (phase) {
@@ -1520,12 +1501,7 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
     }
   }
 
-  return (
-    <>
-      {progressBar}
-      {content}
-    </>
-  );
+  return <>{content}</>;
 }
 
 export { ExploreFlow };
