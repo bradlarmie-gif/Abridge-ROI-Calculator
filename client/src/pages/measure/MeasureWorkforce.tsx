@@ -149,13 +149,13 @@ export default function MeasureWorkforce({ state, updateState, onNext, onBack, o
   }, [activeSettings, isMultiSetting]);
 
   const howToUse = useMemo(() => {
-    if (isMultiSetting) return 'Add workforce drivers relevant to each care setting. Provider Wellbeing and Locum Cost Avoidance apply across all provider settings. Enter combined values.';
+    if (isMultiSetting) return 'Add workforce drivers relevant to each care setting. Provider Retention and Locum & Agency Spend apply across all provider settings. Enter combined values.';
     return {
-      outpatient: 'Provider Wellbeing models avoided replacement cost when turnover improves. Locum & Agency Cost Avoidance captures the downstream benefit when reliance on contracted coverage falls.',
+      outpatient: 'Provider Retention values the replacement cost avoided when turnover improves. Locum & Agency Spend captures the reduction when reliance on contracted coverage falls.',
       ed: 'ED providers experience some of the highest burnout and turnover rates in medicine. Even modest retention improvements produce significant avoided replacement cost.',
       inpatient: 'Hospitalist turnover is expensive. Recruitment, onboarding, and ramp time add up quickly. This section quantifies the workforce value of reducing documentation burden.',
       nursing: 'Nursing retention drivers model the replacement cost avoided when burnout-driven turnover declines. Charting After Shift and Burnout Score are the leading signals.',
-    }[activeSettings[0]] ?? 'Track the Workforce outcomes that matter for this customer. For each driver, enter the value with and without Abridge, then dial attribution and realization to reflect their reality.';
+    }[activeSettings[0]] ?? 'Track the Workforce outcomes that matter for this customer. For each driver, enter the value with and without Abridge, then set attribution to reflect their reality.';
   }, [activeSettings, isMultiSetting]);
 
   const formatCurrency = fmtMoneyCompact;
@@ -264,7 +264,7 @@ export default function MeasureWorkforce({ state, updateState, onNext, onBack, o
                     data-testid="empty-state-workforce"
                   >
                     <p className="text-sm font-medium text-[#444444]">No Workforce drivers yet{isMultiSetting ? ` for ${settingLabel}` : ''}.</p>
-                    <p className="text-xs text-[#666666] mt-1.5">Provider Wellbeing or Locum &amp; Agency Cost Avoidance give this domain a dollar number. Without them, you have no people story.</p>
+                    <p className="text-xs text-[#666666] mt-1.5">Provider Retention or Locum &amp; Agency Spend give this domain a dollar number. Without them, you have no people story.</p>
                   </motion.div>
                 )}
 

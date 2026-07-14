@@ -149,13 +149,13 @@ export default function MeasureRevenue({ state, updateState, onNext, onBack, onH
   }, [activeSettings, isMultiSetting]);
 
   const howToUse = useMemo(() => {
-    if (isMultiSetting) return 'Add revenue drivers relevant to each care setting. Some drivers (like Denial Prevention) apply across multiple settings. Enter the combined impact.';
+    if (isMultiSetting) return 'Add revenue drivers relevant to each care setting. Some drivers (like Medical Necessity Denial Rate) apply across multiple settings. Enter the combined impact.';
     return {
-      outpatient: 'wRVU Capture and HCC Capture are the two highest-leverage outpatient revenue drivers. Denial Prevention is a clean, defensible metric, often the easiest for a CFO to verify independently.',
+      outpatient: 'wRVU Capture and HCC Capture are the two highest-leverage outpatient revenue drivers. Medical Necessity Denial Rate is a clean, defensible metric, often the easiest for a CFO to verify independently.',
       ed: 'E&M Level Accuracy is the primary ED revenue lever. Documentation that fully captures visit complexity supports accurate leveling at the point of care rather than through retrospective coding.',
       inpatient: 'DRG Accuracy and CDI Query Reduction quantify how documentation completeness affects inpatient payment. SOI 3/4 classification is the upstream signal.',
       nursing: 'Nursing documentation shapes the accuracy of inpatient billing, particularly for HAI reporting and accurate capture of care interventions.',
-    }[activeSettings[0]] ?? 'Track the Revenue outcomes that matter for this customer. For each driver, enter the value with and without Abridge, then dial attribution and realization to reflect their reality.';
+    }[activeSettings[0]] ?? 'Track the Revenue outcomes that matter for this customer. For each driver, enter the value with and without Abridge, then set attribution to reflect their reality.';
   }, [activeSettings, isMultiSetting]);
 
   const formatCurrency = fmtMoneyCompact;
@@ -264,7 +264,7 @@ export default function MeasureRevenue({ state, updateState, onNext, onBack, onH
                     data-testid="empty-state-revenue"
                   >
                     <p className="text-sm font-medium text-[#444444]">No Revenue drivers yet{isMultiSetting ? ` for ${settingLabel}` : ''}.</p>
-                    <p className="text-xs text-[#666666] mt-1.5">wRVU Capture and Denial Prevention are the fastest wins. Both are independently verifiable and CFO-friendly.</p>
+                    <p className="text-xs text-[#666666] mt-1.5">wRVU Capture and Medical Necessity Denial Rate are the fastest wins. Both are independently verifiable and CFO-friendly.</p>
                   </motion.div>
                 )}
 

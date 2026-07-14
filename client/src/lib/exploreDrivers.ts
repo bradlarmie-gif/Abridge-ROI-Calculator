@@ -188,8 +188,8 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
   // ───── WORKFORCE ─────
   {
     id: 'providerWellbeing',
-    label: 'Provider Wellbeing',
-    shortDescription: 'Documentation burden is a leading contributor to provider burnout and turnover. This driver models the avoided replacement cost when retention improves.',
+    label: 'Provider Retention',
+    shortDescription: 'Documentation burden is a leading contributor to provider burnout and turnover. This driver measures departures before and after, and values the replacement cost avoided when fewer providers leave.',
     quadrant: 'Workforce',
     settings: ['outpatient', 'ed', 'inpatient'],
     visibility: 'quantified',
@@ -203,7 +203,6 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
       valuePerUnitLabel: 'Replacement cost per provider',
       valuePerUnitDefault: 400000,
       valuePerUnitPrefix: '$',
-      realizationDefault: 100,
       scaleAxis: 'providers',
       lowerIsBetter: true,
       benchmarkHint: 'Typical replacement cost: $150K–$350K for PCPs and hospitalists, $400K–$700K for specialists. Adjust based on your specialty mix.',
