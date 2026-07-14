@@ -1,4 +1,5 @@
 import { type MeasureState, calculateConfirmedValue } from "./measureCalculator";
+import { catalogLabelForFormulaType } from "./forecastDriverCatalog";
 import {
   type ForecastState,
   type ForecastValueDriver,
@@ -427,6 +428,14 @@ export function convertMeasureToForecast(m: MeasureState): ForecastState {
         formulaType: "retentionLift",
       },
     });
+  }
+
+  // Name the produced drivers from the shared exploreDrivers catalog by
+  // catalogId (resolved through formulaType) so Measure to Forecast shows the
+  // same driver names as Measure. Drivers with no catalog match keep their own.
+  for (const d of drivers) {
+    const catalogLabel = catalogLabelForFormulaType(d.clinicalInputs?.formulaType);
+    if (catalogLabel) d.label = catalogLabel;
   }
 
   const sharePct = totalEnc > 0 ? (dep.abridgeEncounters / totalEnc) * 100 : 60;

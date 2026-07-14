@@ -77,6 +77,10 @@ import {
   SCALING_UNIT_LABELS,
   confidenceLabelFor,
 } from "./dashboard/constants";
+import {
+  FORECAST_DRIVER_CATALOG_IDS,
+  resolveForecastDriver,
+} from "@/lib/forecastDriverCatalog";
 
 interface Props {
   state: ForecastState;
@@ -197,11 +201,14 @@ export function recalculateAllDrivers(
 interface DriverTemplateDef {
   id: string;
   label: string;
+  /** exploreDrivers catalog id — the driver's display name/copy comes from there. Absent when no catalog entry fits. */
+  catalogId?: string;
   formulaType?: import("./types").DriverClinicalInputs["formulaType"];
   domain: ValueDomain;
   onset: DriverOnset;
   scaling: ScalingUnit;
-  defaultLabel: string;
+  /** Fallback driver name for templates with no catalogId; catalog-mapped templates take their name from the catalog. */
+  defaultLabel?: string;
   category: ForecastValueDriver["category"];
   metricLabel?: string;
   metricUnit?: string;
@@ -242,11 +249,11 @@ const DRIVER_TEMPLATES: DriverTemplateDef[] = [
   {
     id: "timeSavingsCapacity",
     label: "Time savings → Patient access",
+    catalogId: FORECAST_DRIVER_CATALOG_IDS.timeSavingsCapacity,
     formulaType: "timeSavingsCapacity",
     domain: "capacity",
     onset: "delayed",
     scaling: "perEncounter",
-    defaultLabel: "Throughput from time saved",
     category: "time",
     metricLabel: "Minutes in note",
     metricUnit: "min/encounter",
@@ -260,11 +267,11 @@ const DRIVER_TEMPLATES: DriverTemplateDef[] = [
   {
     id: "wrvuLift",
     label: "wRVU improvement → Revenue",
+    catalogId: FORECAST_DRIVER_CATALOG_IDS.wrvuLift,
     formulaType: "wrvuLift",
     domain: "revenue",
     onset: "delayed",
     scaling: "perEncounter",
-    defaultLabel: "wRVU lift per encounter",
     category: "documentation",
     metricLabel: "wRVU per encounter",
     metricUnit: "wRVU/encounter",
@@ -274,11 +281,11 @@ const DRIVER_TEMPLATES: DriverTemplateDef[] = [
   {
     id: "emLevelLift",
     label: "E/M level improvement → Revenue",
+    catalogId: FORECAST_DRIVER_CATALOG_IDS.emLevelLift,
     formulaType: "emLevelLift",
     domain: "revenue",
     onset: "delayed",
     scaling: "perEncounter",
-    defaultLabel: "E/M level improvement",
     category: "documentation",
     metricLabel: "E/M level",
     metricUnit: "avg E/M level",
@@ -288,11 +295,11 @@ const DRIVER_TEMPLATES: DriverTemplateDef[] = [
   {
     id: "cmiLift",
     label: "CMI improvement → Revenue (inpatient)",
+    catalogId: FORECAST_DRIVER_CATALOG_IDS.cmiLift,
     formulaType: "cmiLift",
     domain: "quality",
     onset: "phased",
     scaling: "perEncounter",
-    defaultLabel: "CMI improvement",
     category: "documentation",
     metricLabel: "Case-mix index",
     metricUnit: "CMI points",
@@ -302,11 +309,11 @@ const DRIVER_TEMPLATES: DriverTemplateDef[] = [
   {
     id: "hccCapture",
     label: "HCC capture rate → Revenue",
+    catalogId: FORECAST_DRIVER_CATALOG_IDS.hccCapture,
     formulaType: "hccCapture",
     domain: "revenue",
     onset: "phased",
     scaling: "perEncounter",
-    defaultLabel: "HCC capture improvement",
     category: "documentation",
     metricLabel: "HCC capture rate",
     metricUnit: "%",
@@ -316,11 +323,11 @@ const DRIVER_TEMPLATES: DriverTemplateDef[] = [
   {
     id: "denialReduction",
     label: "Denial rate reduction → Revenue",
+    catalogId: FORECAST_DRIVER_CATALOG_IDS.denialReduction,
     formulaType: "denialReduction",
     domain: "revenue",
     onset: "phased",
     scaling: "perEncounter",
-    defaultLabel: "Denial rate reduction",
     category: "documentation",
     metricLabel: "Initial denial rate",
     metricUnit: "% denial rate",
@@ -330,11 +337,11 @@ const DRIVER_TEMPLATES: DriverTemplateDef[] = [
   {
     id: "retentionLift",
     label: "Provider retention improvement",
+    catalogId: FORECAST_DRIVER_CATALOG_IDS.retentionLift,
     formulaType: "retentionLift",
     domain: "workforce",
     onset: "longTerm",
     scaling: "perActiveUser",
-    defaultLabel: "Provider retention lift",
     category: "retention",
     factor1Label: "Replacement cost per provider ($)",
     factor1Value: 150_000,
@@ -342,11 +349,11 @@ const DRIVER_TEMPLATES: DriverTemplateDef[] = [
   {
     id: "nursingOvertimeReduction",
     label: "Nursing overtime reduction",
+    catalogId: FORECAST_DRIVER_CATALOG_IDS.nursingOvertimeReduction,
     formulaType: "nursingOvertimeReduction",
     domain: "workforce",
     onset: "immediate",
     scaling: "perBed",
-    defaultLabel: "Nursing overtime reduction",
     category: "time",
     metricLabel: "Overtime hours per nurse",
     metricUnit: "hrs/month overtime",
@@ -1352,6 +1359,8 @@ function AddDriverDialog({
     () => DRIVER_TEMPLATES.find((t) => t.id === templateId) ?? DRIVER_TEMPLATES[0],
     [templateId],
   );
+  // Driver name and copy come from the shared exploreDrivers catalog by catalogId.
+  const resolvedTemplate = useMemo(() => resolveForecastDriver(template), [template]);
   const isCustom = templateId === "custom";
 
   const [label, setLabel] = useState("");
@@ -1376,7 +1385,7 @@ function AddDriverDialog({
   const applyTemplate = (id: string) => {
     setTemplateId(id);
     const t = DRIVER_TEMPLATES.find((x) => x.id === id) ?? DRIVER_TEMPLATES[0];
-    setLabel(t.defaultLabel);
+    setLabel(resolveForecastDriver(t).label);
     setDomain(t.domain);
     setOnset(t.onset);
     setScalingUnit(t.scaling);
@@ -1489,7 +1498,7 @@ function AddDriverDialog({
     } else {
       onSave({
         id: `drv-${Date.now().toString(36)}`,
-        label: label.trim() || template.defaultLabel,
+        label: label.trim() || resolvedTemplate.label,
         domain,
         category: template.category,
         scalingUnit,
@@ -1547,7 +1556,7 @@ function AddDriverDialog({
               data-testid="input-new-driver-label"
               value={label}
               onChange={(e) => setLabel(e.target.value)}
-              placeholder={template.defaultLabel || "e.g. wRVU per encounter"}
+              placeholder={resolvedTemplate.label || "e.g. wRVU per encounter"}
               autoFocus
             />
           </div>
