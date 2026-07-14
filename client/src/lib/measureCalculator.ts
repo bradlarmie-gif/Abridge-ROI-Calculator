@@ -243,6 +243,7 @@ export interface MeasureDriverEntry {
   measuredAt?: string;
   entryDataSource?: EntryDataSource;
   populationType?: string;
+  serviceLineRows?: Array<{ serviceLine: string; withoutAbridge: number; withAbridge: number }>;
 }
 
 /**

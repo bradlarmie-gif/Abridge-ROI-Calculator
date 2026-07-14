@@ -56,6 +56,10 @@ export interface ExploreDriverMeasureDefaults {
   singleValueEntry?: boolean;
   /** Before/after are entered directly in dollars; the value is the difference. Hides the value-per-unit field. */
   dollarLevel?: boolean;
+  /** Allow breaking the metric out into per-service-line rows (select-or-type). Metric is never meaningful at the aggregate. */
+  serviceLineBreakdown?: boolean;
+  /** Preset service lines offered in the select-or-type field (users can still type their own). */
+  serviceLineOptions?: string[];
 }
 
 export interface ValueArcStage {
@@ -935,7 +939,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
   {
     id: 'opThirdNextAvailable',
     label: '3rd Next Available',
-    shortDescription: 'Abridge shortens documentation time — but converting that into shorter 3rd Next Available requires schedulers to open new slots based on demonstrated throughput headroom. The documentation metric moves in weeks; the access metric moves when the organization acts on it.',
+    shortDescription: 'Abridge shortens documentation time. Converting that into shorter 3rd Next Available requires schedulers to open new slots based on demonstrated throughput headroom. The documentation metric moves in weeks. The access metric moves when the organization acts on it.',
     tagline: 'Days until the third next available appointment',
     quadrant: 'Capacity',
     settings: ['outpatient'],
@@ -946,19 +950,20 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     measureDefaults: {
       deltaLabel: '3rd Next Available (days)',
       deltaUnit: 'days',
-      valuePerUnitLabel: 'Signal — no dollar value',
+      valuePerUnitLabel: 'Signal, no dollar value',
       valuePerUnitDefault: 0,
-      realizationDefault: 100,
       scaleAxis: 'fixed',
       lowerIsBetter: true,
-      benchmarkHint: 'Enter days until 3rd next available appointment. MGMA benchmark: <7 days for primary care. >14 days indicates significant access constraints.',
+      serviceLineBreakdown: true,
+      serviceLineOptions: ['Primary Care', 'Cardiology', 'Orthopedics', 'Dermatology', 'OB/GYN', 'Gastroenterology', 'Endocrinology', 'Behavioral Health', 'Pulmonology', 'Neurology'],
+      benchmarkHint: 'Enter days until 3rd next available appointment, by service line. Nobody manages this at the aggregate. MGMA benchmark is under 7 days for primary care; over 14 days signals real access constraints.',
     },
     valueArc: { signal: { timing: 'Weeks 4-8', metric: 'Documentation time per note ↓' }, trend: { timing: 'Month 2-4', metric: 'After-hours EHR time ↓' }, proof: { timing: 'Month 6-18', metric: '3rd Next Available ↓' } },
   },
   {
     id: 'opSameDayAccess',
     label: 'Same-Day or Urgent Access Slots',
-    shortDescription: 'Faster documentation creates throughput headroom — but converting that headroom into open urgent slots requires schedulers to actively change templates. The operational step between "providers have more time" and "slots appear on the schedule" is a workflow decision, not automatic.',
+    shortDescription: 'Faster documentation creates throughput headroom. Converting that headroom into open urgent slots requires schedulers to actively change templates. The step between providers having more time and slots appearing on the schedule is a workflow decision, not automatic.',
     tagline: 'Same-day and urgent slots opened on the schedule',
     quadrant: 'Capacity',
     settings: ['outpatient'],
@@ -969,11 +974,12 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     measureDefaults: {
       deltaLabel: 'Same-day access slots per week',
       deltaUnit: 'slots/week',
-      valuePerUnitLabel: 'Signal — no dollar value',
+      valuePerUnitLabel: 'Signal, no dollar value',
       valuePerUnitDefault: 0,
-      realizationDefault: 100,
       scaleAxis: 'fixed',
-      benchmarkHint: 'Enter total same-day or urgent slots available per week across the practice. Even 2–3 slots/provider/week represents meaningful access improvement.',
+      serviceLineBreakdown: true,
+      serviceLineOptions: ['Primary Care', 'Cardiology', 'Orthopedics', 'Dermatology', 'OB/GYN', 'Gastroenterology', 'Endocrinology', 'Behavioral Health', 'Pulmonology', 'Neurology'],
+      benchmarkHint: 'Enter same-day or urgent slots per week, by service line. Even 2 to 3 slots per provider per week is meaningful access improvement.',
     },
     valueArc: { signal: { timing: 'Weeks 4-8', metric: 'Documentation time per note ↓' }, trend: { timing: 'Month 2-4', metric: 'Provider schedule headroom ↑' }, proof: { timing: 'Month 4-9', metric: 'Same-day slot count ↑' } },
   },

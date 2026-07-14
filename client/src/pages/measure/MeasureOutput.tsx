@@ -380,6 +380,8 @@ function SignalDriverRow({
   settingBadges: string[];
   lowerIsBetter?: boolean;
 }) {
+  const slRows = drv.serviceLineRows ?? [];
+  const hasServiceLines = slRows.length > 0;
   const hasData = drv.withoutAbridge !== 0 || drv.withAbridge !== 0;
   const sparkValues = drv.monthlyData?.map(m => m.withAbridge);
   const delta = lowerIsBetter ? drv.withoutAbridge - drv.withAbridge : drv.withAbridge - drv.withoutAbridge;
@@ -397,11 +399,34 @@ function SignalDriverRow({
               {SETTING_BADGE[s] ?? s}
             </span>
           ))}
-          {!hasData && (
+          {!hasData && !hasServiceLines && (
             <span className="text-[10px] text-[#BBBBBB] italic">tracking</span>
           )}
         </div>
-        {hasData && drv.deltaUnit && (
+        {hasServiceLines && (
+          <div className="mt-1.5 space-y-1">
+            {slRows.map((row, i) => {
+              const rowDelta = lowerIsBetter ? row.withoutAbridge - row.withAbridge : row.withAbridge - row.withoutAbridge;
+              const rowImproved = rowDelta > 0;
+              return (
+                <div key={i} className="flex items-center gap-2 flex-wrap">
+                  <span className="text-xs font-medium text-[#1A1A1A] min-w-[110px]">{row.serviceLine || 'Unspecified'}</span>
+                  <span className="text-xs text-[#666666] tabular-nums">{row.withoutAbridge.toLocaleString()}</span>
+                  <span className="text-[#CCCCCC]">→</span>
+                  <span className="text-xs font-semibold text-[#1A1A1A] tabular-nums">{row.withAbridge.toLocaleString()} {drv.deltaUnit}</span>
+                  {rowDelta !== 0 && (
+                    <span className={`inline-flex items-center gap-0.5 text-[11px] font-semibold px-1.5 py-0.5 rounded-full tabular-nums ${
+                      rowImproved ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'
+                    }`}>
+                      {row.withAbridge < row.withoutAbridge ? '↓' : '↑'} {Math.abs(rowDelta).toLocaleString()}
+                    </span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+        {!hasServiceLines && hasData && drv.deltaUnit && (
           <div className="flex items-center gap-2 flex-wrap mt-1.5">
             <span className="text-xs text-[#666666] tabular-nums">
               <span className="text-[9px] font-bold uppercase tracking-wide text-[#AAAAAA] mr-1">Before</span>

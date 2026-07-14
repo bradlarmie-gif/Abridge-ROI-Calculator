@@ -51,6 +51,14 @@ export default function MeasureDriverCard({ driver, entry, onUpdate, onRemove, i
   const formatCurrency = fmtMoneyCompact;
   const formatNumber = (n: number) => n.toLocaleString();
 
+  // Service-line breakdown rows (e.g. 3rd Next Available per specialty)
+  const serviceLineRows = entry.serviceLineRows ?? [];
+  const hasServiceLines = Boolean(md?.serviceLineBreakdown) && serviceLineRows.length > 0;
+  const addServiceLineRow = () => onUpdate({ serviceLineRows: [...serviceLineRows, { serviceLine: '', withoutAbridge: entry.withoutAbridge || 0, withAbridge: entry.withAbridge || 0 }] });
+  const updateServiceLineRow = (i: number, patch: Partial<{ serviceLine: string; withoutAbridge: number; withAbridge: number }>) =>
+    onUpdate({ serviceLineRows: serviceLineRows.map((r, idx) => (idx === i ? { ...r, ...patch } : r)) });
+  const removeServiceLineRow = (i: number) => onUpdate({ serviceLineRows: serviceLineRows.filter((_, idx) => idx !== i) });
+
   const addMonthlyRow = () => {
     let nextMonth: string;
     if (sortedMonthly.length === 0) {
@@ -416,7 +424,38 @@ export default function MeasureDriverCard({ driver, entry, onUpdate, onRemove, i
                           <p className="text-[10px] text-[#AAAAAA] mt-1.5">Enter the annual dollar value you&apos;ve documented for this driver.</p>
                         </div>
                       ) : !entry.isMonthlyMode ? (
-                        md.singleValueEntry ? (
+                        hasServiceLines ? (
+                          <div className="space-y-2">
+                            {serviceLineRows.map((row, i) => {
+                              const rowDelta = lowerIsBetter ? row.withoutAbridge - row.withAbridge : row.withAbridge - row.withoutAbridge;
+                              const rowImproved = rowDelta > 0;
+                              return (
+                                <div key={i} className="flex items-center gap-2">
+                                  <input
+                                    list={`sl-${driver.id}`}
+                                    value={row.serviceLine}
+                                    onChange={(e) => updateServiceLineRow(i, { serviceLine: e.target.value })}
+                                    placeholder="Service line"
+                                    className="flex-1 min-w-0 h-9 bg-white border border-[#E5E5E5] rounded-lg px-2.5 text-sm text-[#444] focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none"
+                                    data-testid={`input-serviceline-${driver.id}-${i}`}
+                                  />
+                                  <FormattedNumberInput value={row.withoutAbridge} onChange={(v: number) => updateServiceLineRow(i, { withoutAbridge: v })} className="w-16 h-9 bg-white text-right" />
+                                  <span className="text-[#CCCCCC] text-xs">→</span>
+                                  <FormattedNumberInput value={row.withAbridge} onChange={(v: number) => updateServiceLineRow(i, { withAbridge: v })} className="w-16 h-9 bg-white border-[#EA2C00]/30 focus:border-[#EA2C00] text-right" />
+                                  <span className={`text-[11px] w-10 text-right tabular-nums ${rowDelta === 0 ? 'text-[#CCCCCC]' : rowImproved ? 'text-emerald-600' : 'text-red-500'}`}>
+                                    {rowDelta !== 0 ? `${row.withAbridge < row.withoutAbridge ? '↓' : '↑'}${formatNumber(Math.abs(rowDelta))}` : ''}
+                                  </span>
+                                  <button type="button" onClick={() => removeServiceLineRow(i)} className="text-[#CCCCCC] hover:text-red-500 text-lg leading-none px-1" data-testid={`remove-serviceline-${driver.id}-${i}`}>×</button>
+                                </div>
+                              );
+                            })}
+                            <datalist id={`sl-${driver.id}`}>
+                              {(md.serviceLineOptions ?? []).map((o) => <option key={o} value={o} />)}
+                            </datalist>
+                            <button type="button" onClick={addServiceLineRow} className="text-xs font-semibold text-[#EA2C00] hover:text-[#D12800]" data-testid={`add-serviceline-${driver.id}`}>+ Add service line</button>
+                            <p className="text-[11px] text-[#AAAAAA]">{md.deltaUnit}, per service line. Remove all rows to go back to one number.</p>
+                          </div>
+                        ) : md.singleValueEntry ? (
                           <div>
                             <label className="text-[11px] font-semibold text-[#EA2C00] uppercase tracking-wide mb-1.5 block">
                               {md.deltaLabel}
@@ -430,6 +469,7 @@ export default function MeasureDriverCard({ driver, entry, onUpdate, onRemove, i
                             <p className="text-[11px] text-[#AAAAAA] mt-1">{md.deltaUnit}</p>
                           </div>
                         ) : (
+                        <>
                         <div className="grid grid-cols-2 gap-3">
                           <div>
                             <label className="text-[11px] font-semibold text-[#888888] uppercase tracking-wide mb-1.5 block">
@@ -473,6 +513,10 @@ export default function MeasureDriverCard({ driver, entry, onUpdate, onRemove, i
                             </p>
                           </div>
                         </div>
+                        {md.serviceLineBreakdown && (
+                          <button type="button" onClick={addServiceLineRow} className="mt-2 text-xs font-semibold text-[#EA2C00] hover:text-[#D12800]" data-testid={`breakout-serviceline-${driver.id}`}>+ Break out by service line</button>
+                        )}
+                        </>
                         )
                       ) : (
                         monthlyEntrySection
