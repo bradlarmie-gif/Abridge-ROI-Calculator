@@ -135,18 +135,23 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
 
   const setEncountersLinked = (settingKey: string, linked: boolean) => {
     const map = { ...(state.encountersLinked || {}), [settingKey]: linked };
-    if (linked) {
-      // Snap encounters back onto the provider ratio the moment linking turns on.
-      const proj = getSettingProjected(settingKey);
-      const perProv = encountersPerProvider(settingKey);
-      const encounters = perProv > 0 ? Math.round(proj.providers * perProv) : proj.encounters;
-      updateState({
-        encountersLinked: map,
-        settingForecasts: { ...(state.settingForecasts || {}), [settingKey]: { ...proj, encounters } },
-      });
-    } else {
+    if (!linked) {
       updateState({ encountersLinked: map });
+      return;
     }
+    // Snap encounters back onto the provider ratio the moment linking turns on —
+    // for Year 1 and every projected year.
+    const perProv = encountersPerProvider(settingKey);
+    const snap = (v: SettingForecastValues): SettingForecastValues =>
+      perProv > 0 ? { ...v, encounters: Math.round(v.providers * perProv) } : v;
+    const proj = snap(getSettingProjected(settingKey));
+    const years = state.settingForecastYears?.[settingKey];
+    const nextYears = years ? years.map((y) => (y ? snap(y) : y)) : years;
+    updateState({
+      encountersLinked: map,
+      settingForecasts: { ...(state.settingForecasts || {}), [settingKey]: proj },
+      ...(nextYears ? { settingForecastYears: { ...(state.settingForecastYears || {}), [settingKey]: nextYears } } : {}),
+    });
   };
 
   const resetSettingScenario = (settingKey: string) => {
@@ -200,7 +205,12 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
     }
     const arr = [...(state.settingForecastYears?.[settingKey] || [])];
     const current = arr[yearIdx - 1] || getSettingProjected(settingKey);
-    arr[yearIdx - 1] = { ...current, ...updates };
+    const nextY: SettingForecastValues = { ...current, ...updates };
+    if (updates.providers !== undefined && isEncountersLinked(settingKey)) {
+      const perProv = encountersPerProvider(settingKey);
+      if (perProv > 0) nextY.encounters = Math.round(updates.providers * perProv);
+    }
+    arr[yearIdx - 1] = nextY;
     updateState({ settingForecastYears: { ...(state.settingForecastYears || {}), [settingKey]: arr } });
   };
 
@@ -539,17 +549,47 @@ export default function MeasureForecast({ state, updateState, onNext, onBack, on
               return (
                 <div key={yearIdx} className="flex-1 min-w-[72px]">
                   <p className="text-xs text-[#888888] mb-1">Yr {yearIdx}</p>
-                  <FormattedNumberInput
-                    value={val}
-                    onChange={(v: number) => updateSettingYear(settingKey, yearIdx, { [field]: v })}
-                    className="h-8 bg-white text-sm"
-                    data-testid={`input-yr${yearIdx}-${settingKey}-${field}`}
-                  />
+                  {linkage?.linked ? (
+                    <div
+                      className="h-8 flex items-center px-2.5 rounded-md bg-[#F7F4EF] border border-[#E8E2DA] text-sm font-medium text-[#1A1A1A] tabular-nums"
+                      data-testid={`input-yr${yearIdx}-${settingKey}-${field}`}
+                    >
+                      {formatNumber(val)}{suffix}
+                    </div>
+                  ) : (
+                    <FormattedNumberInput
+                      value={val}
+                      onChange={(v: number) => updateSettingYear(settingKey, yearIdx, { [field]: v })}
+                      className="h-8 bg-white text-sm"
+                      data-testid={`input-yr${yearIdx}-${settingKey}-${field}`}
+                    />
+                  )}
                 </div>
               );
             })}
           </div>
         </div>
+        {linkage && (
+          <div className="mt-3">
+            <button
+              type="button"
+              onClick={linkage.onToggle}
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium border transition-colors ${
+                linkage.linked
+                  ? 'bg-[#EA2C00] text-white border-[#EA2C00]'
+                  : 'bg-white text-[#6B5E4F] border-[#E8E2DA] hover:border-[#1A1A1A]'
+              }`}
+              data-testid={`toggle-encounters-link-${settingKey}`}
+            >
+              <Link2 className="w-3 h-3" /> Scale with provider count
+            </button>
+            {linkage.linked && linkage.perProvider > 0 && (
+              <p className="text-[11px] text-[#999999] mt-1.5">
+                ≈ {formatNumber(Math.round(linkage.perProvider))} encounters / provider · each year moves with its provider count
+              </p>
+            )}
+          </div>
+        )}
       </div>
     );
   };
