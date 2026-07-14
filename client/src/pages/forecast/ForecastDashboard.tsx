@@ -729,6 +729,7 @@ function ValueDriversBlock({
 }) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [preset, setPreset] = useState<PresetId>("standard");
+  const [fineTuneOpen, setFineTuneOpen] = useState<Record<string, boolean>>({});
 
   const updateDriver = (id: string, patch: Partial<ForecastValueDriver>) => {
     updateState({
@@ -837,7 +838,7 @@ function ValueDriversBlock({
               </p>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+            <div className="mb-3">
               <div className="space-y-1">
                 <Label className="text-[10px] uppercase tracking-wide text-[#666666]">
                   Projected Δ
@@ -849,54 +850,6 @@ function ValueDriversBlock({
                   step={0.01}
                   className="bg-white border-[#E8E2DA]"
                 />
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <div className="space-y-1">
-                  <Label className="text-[10px] uppercase tracking-wide text-[#666666]">
-                    Onset
-                  </Label>
-                  <Select
-                    value={d.onset}
-                    onValueChange={(v) => updateDriver(d.id, { onset: v as DriverOnset })}
-                  >
-                    <SelectTrigger
-                      className="text-xs h-9 bg-white border-[#E8E2DA]"
-                      data-testid={`select-onset-${d.id}`}
-                    >
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {ONSET_VALUES.map((o) => (
-                        <SelectItem key={o} value={o}>
-                          {ONSET_LABELS[o]}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-[10px] uppercase tracking-wide text-[#666666]">
-                    Scaling
-                  </Label>
-                  <Select
-                    value={d.scalingUnit}
-                    onValueChange={(v) => updateDriver(d.id, { scalingUnit: v as ScalingUnit })}
-                  >
-                    <SelectTrigger
-                      className="text-xs h-9 bg-white border-[#E8E2DA]"
-                      data-testid={`select-scaling-${d.id}`}
-                    >
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {SCALING_VALUES.map((s) => (
-                        <SelectItem key={s} value={s}>
-                          {SCALING_UNIT_LABELS[s]}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
               </div>
             </div>
 
@@ -1085,6 +1038,59 @@ function ValueDriversBlock({
                   </div>
                 </div>
               )}
+
+            {/* Fine-tune — set-once config tucked away to keep the card focused on the story */}
+            <div className="mt-3 pt-3 border-t border-[#E8E2DA]">
+              <button
+                type="button"
+                onClick={() => setFineTuneOpen((s) => ({ ...s, [d.id]: !s[d.id] }))}
+                className="flex items-center gap-1.5 text-[11px] font-medium text-[#9E948C] hover:text-[#525252] transition-colors"
+                data-testid={`toggle-finetune-${d.id}`}
+              >
+                <ChevronDown className={`w-3 h-3 transition-transform duration-150 ${fineTuneOpen[d.id] ? "rotate-0" : "-rotate-90"}`} />
+                {fineTuneOpen[d.id] ? "Hide fine-tune" : "Fine-tune · onset & scaling"}
+              </button>
+              <AnimatePresence initial={false}>
+                {fineTuneOpen[d.id] && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.18, ease: "easeInOut" }}
+                    className="overflow-hidden"
+                  >
+                    <div className="grid grid-cols-2 gap-2 pt-3">
+                      <div className="space-y-1">
+                        <Label className="text-[10px] uppercase tracking-wide text-[#666666]">Onset</Label>
+                        <Select value={d.onset} onValueChange={(v) => updateDriver(d.id, { onset: v as DriverOnset })}>
+                          <SelectTrigger className="text-xs h-9 bg-white border-[#E8E2DA]" data-testid={`select-onset-${d.id}`}>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {ONSET_VALUES.map((o) => (
+                              <SelectItem key={o} value={o}>{ONSET_LABELS[o]}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-[10px] uppercase tracking-wide text-[#666666]">Scaling</Label>
+                        <Select value={d.scalingUnit} onValueChange={(v) => updateDriver(d.id, { scalingUnit: v as ScalingUnit })}>
+                          <SelectTrigger className="text-xs h-9 bg-white border-[#E8E2DA]" data-testid={`select-scaling-${d.id}`}>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {SCALING_VALUES.map((s) => (
+                              <SelectItem key={s} value={s}>{SCALING_UNIT_LABELS[s]}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
           );
         })}
