@@ -610,47 +610,49 @@ function HeroROI({ result, state }: { result: ForecastResult; state: ForecastSta
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.1 }}
-      className="rounded-xl bg-[#1A1A1A] text-white p-6 md:p-8 mb-8 relative overflow-hidden"
+      className="rounded-2xl text-white p-6 md:p-8 mb-8 relative overflow-hidden"
+      style={{ background: "linear-gradient(155deg, #211E1B 0%, #131110 100%)" }}
       data-testid="section-hero-roi"
     >
-      <div
-        className="absolute -top-12 -right-12 w-40 h-40 rounded-full opacity-20"
-        style={{ background: ACCENT }}
-      />
-      <p className="text-[10px] uppercase tracking-[2px] text-white/50 font-semibold mb-2">
-        Forecast Summary
-      </p>
-      <p className="text-4xl md:text-5xl font-bold font-abridge mb-2" data-testid="text-hero-tcv">
+      <div className="absolute inset-x-0 top-0 h-[3px]" style={{ background: ACCENT }} />
+
+      <div className="flex items-center gap-2 mb-3">
+        <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: ACCENT }} />
+        <p className="text-[10px] uppercase tracking-[2.5px] text-white/45 font-semibold">
+          Forecast Summary
+        </p>
+      </div>
+      <p className="text-4xl md:text-[52px] leading-none font-bold font-abridge mb-3 tabular-nums" data-testid="text-hero-tcv">
         {fmtCurrencyShort(tcv)}
       </p>
-      <p className="text-sm text-white/70 mb-6">
-        modeled total contract value at <span style={{ color: ACCENT }}>{pricingLabel}</span>
+      <p className="text-sm text-white/60 mb-7">
+        modeled total contract value at <span className="font-semibold" style={{ color: ACCENT }}>{pricingLabel}</span>
       </p>
 
-      <div className="grid grid-cols-3 gap-4 pt-6 border-t border-white/10">
-        <div>
-          <p className="text-[10px] uppercase tracking-widest text-white/50 mb-1">Net Value</p>
+      <div className="flex pt-6 border-t border-white/10">
+        <div className="flex-1 pr-4">
+          <p className="text-[10px] uppercase tracking-widest text-white/45 mb-1.5">Net Value</p>
           <p
-            className="text-xl md:text-2xl font-bold font-abridge"
+            className="text-xl md:text-2xl font-bold font-abridge tabular-nums"
             style={{ color: hasDrivers && ncv < 0 ? "#FF6B6B" : ACCENT }}
             data-testid="text-hero-ncv"
           >
             {ncvDisplay}
           </p>
         </div>
-        <div>
-          <p className="text-[10px] uppercase tracking-widest text-white/50 mb-1">ROI Multiple</p>
+        <div className="flex-1 px-4 border-l border-white/10">
+          <p className="text-[10px] uppercase tracking-widest text-white/45 mb-1.5">ROI Multiple</p>
           <p
-            className="text-xl md:text-2xl font-bold font-abridge"
+            className="text-xl md:text-2xl font-bold font-abridge tabular-nums"
             style={{ color: ACCENT }}
             data-testid="text-hero-roi"
           >
             {roiDisplay}
           </p>
         </div>
-        <div>
-          <p className="text-[10px] uppercase tracking-widest text-white/50 mb-1">Break-Even</p>
-          <p className="text-xl md:text-2xl font-bold font-abridge text-white" data-testid="text-hero-be">
+        <div className="flex-1 pl-4 border-l border-white/10">
+          <p className="text-[10px] uppercase tracking-widest text-white/45 mb-1.5">Break-Even</p>
+          <p className="text-xl md:text-2xl font-bold font-abridge text-white tabular-nums" data-testid="text-hero-be">
             {breakEvenLabel}
           </p>
         </div>
@@ -678,11 +680,12 @@ function NarrativeBar({
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-[#1A1A1A] text-white rounded-xl px-6 py-4 mb-4 flex items-start gap-4"
+      className="bg-white border border-[#E8E2DA] rounded-xl px-5 py-4 mb-4 flex items-start gap-3"
+      style={{ borderLeft: "3px solid #EA2C00" }}
       data-testid="narrative-bar"
     >
       <TrendingUp className="w-4 h-4 text-[#EA2C00] flex-shrink-0 mt-0.5" />
-      <p className="text-sm leading-relaxed text-white/90">{narrative.heroSummary}</p>
+      <p className="text-sm leading-relaxed text-[#1A1A1A]">{narrative.heroSummary}</p>
     </motion.div>
   );
 }
