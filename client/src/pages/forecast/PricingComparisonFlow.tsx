@@ -7,6 +7,7 @@ import {
 } from "recharts";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { NumberField } from "@/components/NumberField";
+import { Slider } from "@/components/ui/slider";
 import { generatePricingSummaryPDF } from "./PricingSummaryPDF";
 import {
   type PricingModel,
@@ -1140,14 +1141,18 @@ export default function PricingComparisonFlow({ onBack, onHome }: PricingCompari
                           )}
                         </div>
                         <NumberInput value={v.annualSpend} onChange={(n) => updateVendor(v.id, { annualSpend: n })} prefix="$" placeholder="annual spend" className="w-full" />
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="range" min={0} max={100} value={v.displacementPct}
-                            onChange={(e) => updateVendor(v.id, { displacementPct: parseInt(e.target.value, 10) })}
-                            className="flex-1 accent-[#EA2C00] cursor-pointer"
+                        <div className="flex items-center gap-3 h-10">
+                          <Slider
+                            min={0}
+                            max={100}
+                            step={1}
+                            value={[v.displacementPct]}
+                            onValueChange={(vals) => updateVendor(v.id, { displacementPct: vals[0] })}
+                            accent="coral"
                             aria-label="Percent displaced"
+                            className="flex-1"
                           />
-                          <span className="text-xs font-semibold text-[#EA2C00] w-11 text-right tabular-nums">{v.displacementPct}%</span>
+                          <span className="text-sm font-semibold text-[#EA2C00] w-10 text-right tabular-nums">{v.displacementPct}%</span>
                         </div>
                         <PillToggle
                           options={[{ label: "Now", value: 0 }, { label: "6mo", value: 6 }, { label: "1yr", value: 12 }, { label: "2yr", value: 24 }]}
