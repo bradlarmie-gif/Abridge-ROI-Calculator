@@ -169,6 +169,16 @@ const S = StyleSheet.create({
 
   closer: { fontSize: 9.5, color: C.muted, lineHeight: 1.45, marginTop: 2 },
 
+  // Educational / narrative blocks (Explore-PDF depth)
+  readCard: { backgroundColor: C.beige, borderRadius: 10, paddingHorizontal: 18, paddingVertical: 14, marginBottom: 18, borderLeftWidth: 3, borderLeftColor: C.coral },
+  readKicker: { fontSize: 8, letterSpacing: 1.5, textTransform: "uppercase", color: C.muted, fontWeight: 700, marginBottom: 7 },
+  readBody: { fontSize: 10, color: C.black, lineHeight: 1.55 },
+  explainNote: { fontSize: 9, color: C.sub, lineHeight: 1.5, marginTop: 10 },
+  defGrid: { flexDirection: "row", flexWrap: "wrap", marginHorizontal: -8 },
+  defItem: { width: "50%", paddingHorizontal: 8, marginBottom: 11 },
+  defTerm: { fontSize: 9, fontWeight: 700, color: C.black, marginBottom: 2 },
+  defBody: { fontSize: 8.5, color: C.sub, lineHeight: 1.4 },
+
   footer: { marginTop: "auto", paddingTop: 12, borderTopWidth: 1, borderTopColor: C.border },
   footerText: { fontSize: 8, color: C.tertiary },
 });
@@ -180,6 +190,16 @@ function fmtMoneyOrDash(n: number | null): string {
   return n !== null ? money(n) : "—";
 }
 
+// Plain-language explanation of what the chosen pricing model means for the buyer.
+// Written for a skeptic: describe the mechanism, not the label.
+function modelExplainer(modelLabel: string): string {
+  const m = modelLabel.toLowerCase();
+  if (m.includes("encounter")) return "It is priced per encounter, so cost tracks the documentation that actually happens rather than headcount.";
+  if (m.includes("provider")) return "It is priced per provider, so cost stays predictable and does not move with volume.";
+  if (m.includes("platform") || m.includes("enterprise") || m.includes("flat")) return "It is priced as a flat platform fee, so cost is fixed regardless of volume or headcount.";
+  return "";
+}
+
 function PricingSummaryDoc(a: PricingSummaryArgs) {
   const hasSavings = a.coveredOverTerm > 0 && a.vendors.length > 0;
   const hasValue = !!(a.annualValue && a.termVtc);
@@ -188,6 +208,26 @@ function PricingSummaryDoc(a: PricingSummaryArgs) {
   const winnerIdx = Math.max(0, opts.findIndex((o) => o.isWinner));
   const maxYears = opts.reduce((m, o) => Math.max(m, o.yearCosts.length), a.yearCosts.length);
   const netAnnual = a.netOverTerm / Math.max(1, a.termYears);
+
+  // Narrative + educational copy (Explore-PDF depth)
+  const recEscalator = opts[winnerIdx]?.escalatorPct ?? 0;
+  const modelEx = modelExplainer(a.modelLabel);
+  const escPhrase = recEscalator > 0 ? `the price is set to rise ${recEscalator}% a year` : "the price is held flat for the full term";
+  const structureLine = modelEx ? `${modelEx} And ${escPhrase}.` : `Here, ${escPhrase}.`;
+  const pricingNote = [modelEx, recEscalator > 0 ? `The price is set to rise ${recEscalator}% a year.` : "The price is held flat for the full term."].filter(Boolean).join(" ");
+  const readBody = `${a.recommendedLabel} is the lowest total cost here${a.savingsVsNext > 0 ? `, ${money(a.savingsVsNext)} under the next option,` : ""} across ${a.termYears} years. ${structureLine}${hasSavings ? ` Because ${money(a.coveredOverTerm)} of it is offset by spend you retire, the budget it actually adds is ${money(a.netOverTerm)}.` : ""} Every column is built on the same volumes and the same value assumptions, so the difference between them is the contract structure, not the math. That is the option we would put forward.`;
+  const metricDefs: [string, string][] = [
+    ["Total contract", "Everything paid to Abridge over the full term."],
+    ["Net over term", hasSavings ? "The contract total minus the spend you retire. The real budget impact." : "With no spend retired, this matches the total contract."],
+    ["Net / year", "The net cost spread evenly across the term."],
+    ["Annual escalator", "How much the price changes each year. Flat means no annual increase."],
+    ["Cost / provider", "The annual cost divided by the providers on the platform."],
+    ["Cost / encounter", "The cost of each documented encounter. Lower means the price tracks the work."],
+    ...(hasValue ? ([
+      ["Return over term", "Estimated value divided by cost. A conservative estimate, not a promise."],
+      ["Payback", "When the value returned catches up to what you have paid."],
+    ] as [string, string][]) : []),
+  ];
 
   const Head = ({ label }: { label: string }) => (
     <View style={S.header}>
@@ -274,7 +314,17 @@ function PricingSummaryDoc(a: PricingSummaryArgs) {
               </View>
             ))}
           </View>
+          {pricingNote ? <Text style={S.explainNote}>{pricingNote}</Text> : null}
         </View>
+
+        {hasValue && !hasSavings && (
+          <View style={S.readCard}>
+            <Text style={S.readKicker}>What the return means</Text>
+            <Text style={S.readBody}>
+              The value estimate behind this return is deliberately conservative. It counts documented, defensible gains and leaves out anything we cannot stand behind. Read the multiple as a floor you can commit to in front of finance, not a ceiling.
+            </Text>
+          </View>
+        )}
 
         {hasValue && (
           <View style={S.section}>
@@ -312,6 +362,11 @@ function PricingSummaryDoc(a: PricingSummaryArgs) {
               ? <><Text style={S.leadStrong}>{a.recommendedLabel}</Text> comes in {money(a.savingsVsNext)} below the next option over the {a.termYears}-year term. Here is every option you are weighing, priced on the same volumes and the same value assumptions, side by side.</>
               : <>Here is every option you are weighing, priced on the same volumes and the same value assumptions, side by side. <Text style={S.leadStrong}>{a.recommendedLabel}</Text> is the recommended path.</>}
           </Text>
+
+          <View style={S.readCard}>
+            <Text style={S.readKicker}>The read</Text>
+            <Text style={S.readBody}>{readBody}</Text>
+          </View>
 
           {/* Comparison table */}
           <View style={S.section}>
@@ -355,6 +410,21 @@ function PricingSummaryDoc(a: PricingSummaryArgs) {
               </View>
             ))}
           </View>
+
+          {/* How to read this — metric glossary (fills the page when there is neither a retired-spend breakdown nor value rows) */}
+          {!hasSavings && !hasValue && (
+            <View style={S.section}>
+              <Text style={S.sectionKicker}>How to read this</Text>
+              <View style={S.defGrid}>
+                {metricDefs.map(([term, body], i) => (
+                  <View key={i} style={S.defItem}>
+                    <Text style={S.defTerm}>{term}</Text>
+                    <Text style={S.defBody}>{body}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
 
           {/* What the retired spend covers — pro-forma style itemization */}
           {hasSavings && (
