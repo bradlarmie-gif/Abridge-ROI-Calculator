@@ -436,7 +436,7 @@ export default function MeasureDriverCard({ driver, entry, onUpdate, onRemove, i
                                     value={row.serviceLine}
                                     onChange={(e) => updateServiceLineRow(i, { serviceLine: e.target.value })}
                                     placeholder="Service line"
-                                    className="flex-1 min-w-0 h-9 bg-white border border-[#E5E5E5] rounded-lg px-2.5 text-sm text-[#444] focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none"
+                                    className="flex-1 min-w-0 h-9 bg-white border border-[#E5E5E5] rounded-xl px-3 text-sm text-[#444] focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none"
                                     data-testid={`input-serviceline-${driver.id}-${i}`}
                                   />
                                   <FormattedNumberInput value={row.withoutAbridge} onChange={(v: number) => updateServiceLineRow(i, { withoutAbridge: v })} className="w-16 h-9 bg-white text-right" />
@@ -445,7 +445,7 @@ export default function MeasureDriverCard({ driver, entry, onUpdate, onRemove, i
                                   <span className={`text-[11px] w-10 text-right tabular-nums ${rowDelta === 0 ? 'text-[#CCCCCC]' : rowImproved ? 'text-emerald-600' : 'text-red-500'}`}>
                                     {rowDelta !== 0 ? `${row.withAbridge < row.withoutAbridge ? '↓' : '↑'}${formatNumber(Math.abs(rowDelta))}` : ''}
                                   </span>
-                                  <button type="button" onClick={() => removeServiceLineRow(i)} className="text-[#CCCCCC] hover:text-red-500 text-lg leading-none px-1" data-testid={`remove-serviceline-${driver.id}-${i}`}>×</button>
+                                  <button type="button" onClick={() => removeServiceLineRow(i)} className="text-[#CCCCCC] hover:text-red-500 flex-shrink-0" data-testid={`remove-serviceline-${driver.id}-${i}`}><Trash2 className="w-3.5 h-3.5" /></button>
                                 </div>
                               );
                             })}
