@@ -136,6 +136,9 @@ function buildDriverPayload(
     valuePerUnitPrefix: md?.valuePerUnitPrefix,
     measuredAt: entry.measuredAt,
     entryDataSource: entry.entryDataSource,
+    serviceLineRows: entry.serviceLineRows,
+    lowerIsBetter,
+    singleValueEntry: md?.singleValueEntry,
   };
 }
 
