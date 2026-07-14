@@ -307,7 +307,7 @@ export function computeUsageScenarios(deal: DealOption, volumes: VolumeInputs): 
   });
 }
 
-// ── Vendor displacement ("switch savings") ──────────────────────────────────
+// ── Vendor displacement ("retired spend") ───────────────────────────────────
 // An optional bolt-on: the incumbent tech a partner retires when they move to
 // Abridge. The displaced spend nets against each deal's gross cost. Mirrors the
 // proforma's cost-offset model (annualSpend × displacementPct, applied over years).
@@ -413,10 +413,10 @@ export function buildDealInsight(args: {
   const yr = `${termYears} year${termYears === 1 ? "" : "s"}`;
 
   let s = `${cheapestLabel} (${cheapestModelLabel}) is the lowest at ${fmtMoney(cheapestCost)} over ${yr}`;
-  s += savings > 0 && runnerUpLabel ? ` — ${fmtMoney(savings)} under ${runnerUpLabel}.` : ".";
+  s += savings > 0 && runnerUpLabel ? `, ${fmtMoney(savings)} under ${runnerUpLabel}.` : ".";
 
   if (displaced > 0 && pctCovered > 0) {
-    s += ` ${fmtMoney(displaced)} of it is covered by spend they'd retire — ${Math.round(pctCovered)}% of the deal pays for itself from budget they already spend.`;
+    s += ` ${fmtMoney(displaced)} of that is covered by retired spend, so ${Math.round(pctCovered)}% of the deal is paid for from budget they already carry.`;
   }
   if (termVtc !== null) {
     s += ` At the value estimate, it returns ${termVtc.toFixed(1)}× over the term.`;

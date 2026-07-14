@@ -93,7 +93,7 @@ describe("pricing comparison — org volume flows into deals", () => {
   });
 });
 
-describe("pricing comparison — vendor displacement (switch savings)", () => {
+describe("pricing comparison - vendor displacement (retired spend)", () => {
   it("a vendor's displaced annual = annualSpend × displacementPct", () => {
     const v: DisplacedVendor = { ...makeDefaultVendor("v"), annualSpend: 2_400_000, displacementPct: 90 };
     expect(vendorDisplacedAnnual(v)).toBe(2_160_000);

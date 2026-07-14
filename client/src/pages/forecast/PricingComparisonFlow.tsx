@@ -1079,13 +1079,13 @@ export default function PricingComparisonFlow({ onBack, onHome }: PricingCompari
           </p>
         </div>
 
-        {/* Switch savings — optional displacement bolt-on (part of Setup) */}
+        {/* Retired spend — optional displacement bolt-on (part of Setup) */}
         <div className="bg-white rounded-2xl border border-[#E8E2DA] p-5 mb-0">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-sm font-bold text-[#1A1A1A]">Switch savings <span className="font-medium text-[#A39888]">· optional</span></p>
+              <p className="text-sm font-bold text-[#1A1A1A]">Retired spend <span className="font-medium text-[#A39888]">· optional</span></p>
               <p className="text-xs text-[#8C7E6E] mt-0.5 max-w-xl leading-relaxed">
-                Switching from existing tech? Add what they'd retire — each option shows its net after takeout, applied over the contract years.
+                Switching from existing tech? Add what they retire. Each option shows its net after that spend is applied over the contract years.
               </p>
             </div>
             <button
