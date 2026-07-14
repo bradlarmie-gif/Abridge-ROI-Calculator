@@ -155,7 +155,7 @@ export default function MeasureCapacity({ state, updateState, onNext, onBack, on
       ed: 'LWBS Recovery and Admission Capture model the throughput impact of faster documentation. Documentation Time per Encounter is the upstream signal driving both.',
       inpatient: 'Note completion time determines how quickly the downstream care chain can move. Consulting physicians, care management, and discharge planning all depend on it.',
       nursing: 'Documentation Time per Care Event is the root behavior. When nurses chart at the bedside in real time, every other nursing outcome becomes measurable.',
-    }[activeSettings[0]] ?? 'Track the Capacity outcomes that matter for this customer. For each driver, enter the value with and without Abridge, then dial attribution and realization to reflect their reality.';
+    }[activeSettings[0]] ?? 'Track the Capacity outcomes that matter for this customer. For each driver, enter the value with and without Abridge, then set attribution to reflect their reality.';
   }, [activeSettings, isMultiSetting]);
 
   const formatCurrency = fmtMoneyCompact;

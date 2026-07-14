@@ -155,7 +155,7 @@ export default function MeasureQuality({ state, updateState, onNext, onBack, onH
       ed: 'Core measure compliance, documentation deficiency rate, and Press Ganey scores are the three quality pillars for an ED EBR. All three are measurable, and all three can shift as documentation quality improves.',
       inpatient: 'CDI query rate per provider is the leading quality signal for inpatient. SOI classification accuracy and H&P timeliness are the two upstream drivers.',
       nursing: 'HAPI, falls, CAUTI, CLABSI, and SEP-1 are the five nursing safety outcomes that are both measurable and closely tied to documentation timeliness.',
-    }[activeSettings[0]] ?? 'Track the Quality outcomes that matter for this customer. For each driver, enter the value with and without Abridge, then dial attribution and realization to reflect their reality.';
+    }[activeSettings[0]] ?? 'Track the Quality outcomes that matter for this customer. For each driver, enter the value with and without Abridge, then set attribution to reflect their reality.';
   }, [activeSettings, isMultiSetting]);
 
   const formatCurrency = fmtMoneyCompact;
