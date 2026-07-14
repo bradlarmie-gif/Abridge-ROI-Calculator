@@ -41,7 +41,8 @@ export interface ExploreDriverMeasureDefaults {
   valuePerUnitDefault: number;
   valuePerUnitPrefix?: string;
   valuePerUnitSuffix?: string;
-  realizationDefault: number;
+  /** Legacy Explore-era field, unused by the Measure value math (attribution only). Optional so it can be dropped as drivers are remodeled. */
+  realizationDefault?: number;
   scaleAxis: DriverScaleAxis;
   benchmarkHint?: string;
   lowerIsBetter?: boolean;
@@ -734,7 +735,6 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
       valuePerUnitLabel: 'Medicare conversion factor (2026)',
       valuePerUnitDefault: 33.40,
       valuePerUnitPrefix: '$',
-      realizationDefault: 75,
       scaleAxis: 'encounters',
       isPerEncounterRate: true,
     },
@@ -752,14 +752,14 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     calcComponent: WrvuCalc,
     trackedMeasureIds: ['wrvu', 'emLevel'],
     measureDefaults: {
-      deltaLabel: 'Additional wRVUs generated (total annual)',
-      deltaUnit: 'wRVUs',
+      deltaLabel: 'Avg wRVU per encounter',
+      deltaUnit: 'wRVUs/enc',
       valuePerUnitLabel: 'Medicare conversion factor (2026)',
       valuePerUnitDefault: 33.40,
       valuePerUnitPrefix: '$',
-      realizationDefault: 75,
       scaleAxis: 'encounters',
-      benchmarkHint: 'ED customers typically see 0.3–0.6 wRVU lift per shift',
+      isPerEncounterRate: true,
+      benchmarkHint: 'Enter avg wRVU per encounter before and after. ED customers often see a 0.1–0.2 wRVU per encounter lift as documentation captures full visit complexity.',
     },
     measurePhase: 'demonstrated',
   },
@@ -775,14 +775,14 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     calcComponent: HccCaptureCalc,
     trackedMeasureIds: ['hccCapture'],
     measureDefaults: {
-      deltaLabel: 'HCCs documented',
-      deltaUnit: 'HCCs',
+      deltaLabel: 'Avg HCCs per MA patient',
+      deltaUnit: 'HCCs/patient',
       valuePerUnitLabel: 'Value per HCC',
       valuePerUnitDefault: 1500,
       valuePerUnitPrefix: '$',
-      realizationDefault: 40,
       scaleAxis: 'providers',
-      benchmarkHint: 'Enter total additional HCCs documented per year. Each HCC generates $1,000–$2,500 in Medicare Advantage risk adjustment revenue.',
+      scaleInput: { label: 'Medicare Advantage patient panel', defaultValue: 5000, unit: 'patients', divisor: 1 },
+      benchmarkHint: 'Enter avg HCCs per MA patient before and after, then the size of the MA panel. Each HCC is worth $1,000–$2,500 in risk-adjustment revenue.',
     },
     measurePhase: 'demonstrated',
     prerequisites: ['wrvu'],
@@ -799,14 +799,15 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     calcComponent: DenialPreventionCalc,
     trackedMeasureIds: ['cleanClaimRate', 'medicalNecessityDenialRate'],
     measureDefaults: {
-      deltaLabel: 'Denials prevented',
-      deltaUnit: 'claims',
+      deltaLabel: 'Denial rate',
+      deltaUnit: '%',
       valuePerUnitLabel: 'Avg claim value',
       valuePerUnitDefault: 500,
       valuePerUnitPrefix: '$',
-      realizationDefault: 75,
+      lowerIsBetter: true,
       scaleAxis: 'encounters',
-      benchmarkHint: 'Enter total documentation-related denials prevented per year. Typical clean claim value recovered: $300–$800 per denial.',
+      scaleInput: { label: 'Annual claims', defaultValue: 50000, unit: 'claims', divisor: 100 },
+      benchmarkHint: 'Enter the documentation-related denial rate before and after, then annual claims volume. A drop from 8% to 5% across 50,000 claims is 1,500 fewer denials. Typical claim value: $300–$800.',
     },
     measurePhase: 'demonstrated',
   },
