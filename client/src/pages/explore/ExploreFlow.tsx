@@ -221,8 +221,6 @@ export interface TimeDriverInputs {
   // OP Revenue qualitative (3 — trimmed by R-IA-3)
   opEmLevelDistributionEnabled: boolean;
   opEmLevelDistributionExpanded: boolean;
-  opCodingSpecificityEnabled: boolean;
-  opCodingSpecificityExpanded: boolean;
   opFirstPassClaimRateEnabled: boolean;
   opFirstPassClaimRateExpanded: boolean;
   opCgCahpsEnabled: boolean;
@@ -677,8 +675,6 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     opBurnoutTrackingExpanded: false,
     opEmLevelDistributionEnabled: false,
     opEmLevelDistributionExpanded: false,
-    opCodingSpecificityEnabled: false,
-    opCodingSpecificityExpanded: false,
     opFirstPassClaimRateEnabled: false,
     opFirstPassClaimRateExpanded: false,
     opCgCahpsEnabled: false,
