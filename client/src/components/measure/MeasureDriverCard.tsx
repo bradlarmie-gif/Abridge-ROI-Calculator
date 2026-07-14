@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Plus, Trash2, ChevronDown, Info } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
+import { Slider } from "@/components/ui/slider";
 import { EXPLORE_DRIVERS, type ExploreDriver } from "@/lib/exploreDrivers";
 import { getRealizedValueForEntry, getEffectiveWithWithout, fmtMoneyCompact, type MeasureDriverEntry, type EntryDataSource } from "@/lib/measureCalculator";
 import MeasureTrendChart from "./MeasureTrendChart";
@@ -574,11 +575,37 @@ export default function MeasureDriverCard({ driver, entry, onUpdate, onRemove, i
                             )}
                             <div className="flex justify-between items-center">
                               <span className="text-[#888888]">× {md.valuePerUnitLabel}</span>
-                              <span className="font-medium text-black tabular-nums">{md.valuePerUnitPrefix || ''}{entry.valuePerUnit.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</span>
+                              {md.dollarLevel ? (
+                                <span className="font-medium text-black tabular-nums">{md.valuePerUnitPrefix || ''}{entry.valuePerUnit.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</span>
+                              ) : (
+                                <div className="relative w-28">
+                                  {md.valuePerUnitPrefix && <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-sm text-[#888888] z-10 pointer-events-none">{md.valuePerUnitPrefix}</span>}
+                                  <FormattedNumberInput
+                                    value={entry.valuePerUnit}
+                                    onChange={(v: number) => onUpdate({ valuePerUnit: v })}
+                                    className={`h-8 bg-white text-right ${md.valuePerUnitPrefix ? 'pl-6' : ''}`}
+                                    data-testid={`input-value-per-unit-${driver.id}`}
+                                  />
+                                </div>
+                              )}
                             </div>
-                            <div className="flex justify-between items-center">
-                              <span className="text-[#888888]">× Attribution</span>
-                              <span className="font-medium text-black tabular-nums">{entry.attributionPercent}%</span>
+                            <div>
+                              <div className="flex justify-between items-center">
+                                <span className="text-[#888888]">× Attribution</span>
+                                <span className="font-medium text-black tabular-nums">{entry.attributionPercent}%</span>
+                              </div>
+                              <Slider
+                                min={0}
+                                max={100}
+                                step={5}
+                                value={[entry.attributionPercent]}
+                                onValueChange={(vals) => onUpdate({ attributionPercent: vals[0] })}
+                                accent="coral"
+                                aria-label="Abridge attribution"
+                                className="mt-2"
+                                data-testid={`slider-attribution-${driver.id}`}
+                              />
+                              <p className="text-[11px] text-[#AAAAAA] mt-1.5">Lower if other initiatives share credit for this outcome.</p>
                             </div>
                             <div className="h-px bg-[#E8E8E8] my-1" />
                             <div className="flex justify-between items-center">
@@ -600,7 +627,7 @@ export default function MeasureDriverCard({ driver, entry, onUpdate, onRemove, i
                         className="flex items-center gap-1.5 text-[11px] font-medium text-[#9E948C] hover:text-[#525252] transition-colors"
                       >
                         <ChevronDown className={`w-3 h-3 transition-transform duration-150 ${showDetails ? 'rotate-0' : '-rotate-90'}`} />
-                        {showDetails ? 'Hide details' : 'Attribution · Source · Notes'}
+                        {showDetails ? 'Hide details' : (((md.populationOptions?.length ?? 0) > 0 || md.scaleInput) ? 'Assumptions · Source · Notes' : 'Source · Notes')}
                       </button>
 
                       <AnimatePresence initial={false}>
@@ -612,26 +639,6 @@ export default function MeasureDriverCard({ driver, entry, onUpdate, onRemove, i
                             transition={{ duration: 0.18, ease: 'easeInOut' }}
                             className="overflow-hidden space-y-5 pt-4"
                           >
-                            {/* Conversion factor — hidden for custom drivers and dollar-level drivers (value is the before/after difference) */}
-                            {!driver.isCustom && !md.dollarLevel && (
-                              <div>
-                                <label className="text-[11px] font-semibold text-[#888888] uppercase tracking-wide mb-1.5 block">
-                                  {md.valuePerUnitLabel}
-                                </label>
-                                <div className="relative">
-                                  {md.valuePerUnitPrefix && (
-                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#888888] z-10 pointer-events-none">{md.valuePerUnitPrefix}</span>
-                                  )}
-                                  <FormattedNumberInput
-                                    value={entry.valuePerUnit}
-                                    onChange={(v: number) => onUpdate({ valuePerUnit: v })}
-                                    className={`h-10 bg-white ${md.valuePerUnitPrefix ? 'pl-7' : ''}`}
-                                    data-testid={`input-value-per-unit-${driver.id}`}
-                                  />
-                                </div>
-                              </div>
-                            )}
-
                             {/* Risk-adjustment program selector (e.g. HCC Capture) */}
                             {!driver.isCustom && md.populationOptions && md.populationOptions.length > 0 && (
                               <div>
@@ -680,30 +687,6 @@ export default function MeasureDriverCard({ driver, entry, onUpdate, onRemove, i
                                     {md.scaleInput.unit}
                                   </span>
                                 </div>
-                              </div>
-                            )}
-
-                            {/* Attribution — single slider */}
-                            {!driver.isCustom && (
-                              <div>
-                                <div className="flex items-center justify-between mb-2">
-                                  <label className="text-[11px] font-semibold text-[#888888] uppercase tracking-wide flex items-center gap-1">
-                                    Abridge Attribution
-                                    <Info className="w-3 h-3 text-[#CCCCCC]" />
-                                  </label>
-                                  <span className="text-sm font-bold text-black tabular-nums">{entry.attributionPercent}%</span>
-                                </div>
-                                <input
-                                  type="range"
-                                  min={0}
-                                  max={100}
-                                  step={5}
-                                  value={entry.attributionPercent}
-                                  onChange={(e) => onUpdate({ attributionPercent: Number(e.target.value) })}
-                                  className="w-full accent-[#EA2C00] h-1.5 cursor-pointer"
-                                  data-testid={`slider-attribution-${driver.id}`}
-                                />
-                                <p className="text-[11px] text-[#AAAAAA] mt-1.5">Lower if other initiatives share credit for this outcome.</p>
                               </div>
                             )}
 
