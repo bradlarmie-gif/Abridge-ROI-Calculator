@@ -742,7 +742,7 @@ function RoiAnalysisSection({
                 {showNet && (
                   <>
                     <tr>
-                      <td className="py-2.5 pr-4 text-xs text-[#8C7E6E]">Displaced / yr</td>
+                      <td className="py-2.5 pr-4 text-xs text-[#8C7E6E]">Displaced / yr (avg over term)</td>
                       {nets.map((nr, ri) => (
                         <td key={ri} className="py-2.5 px-3 text-right text-sm text-[#8C7E6E] tabular-nums">
                           −{fmt(nr.totalDisplaced / Math.max(1, results[ri].years.length))}
@@ -990,14 +990,14 @@ export default function PricingComparisonFlow({ onBack, onHome }: PricingCompari
                 <span className="text-sm font-bold text-[#1A1A1A]">{verdict.cheapest.deal.label}</span>
                 <AnimatedNumber
                   value={displacementOn ? verdict.cheapest.net.netTotalContract : verdict.cheapest.result.totalContractCost}
-                  format={fmtFull}
+                  format={fmt}
                   className="text-sm font-bold tabular-nums"
                   style={{ color: "#EA2C00" }}
                 />
                 <span className="text-xs text-[#8C7E6E]">/ {verdict.termYears} yr{verdict.termYears === 1 ? "" : "s"}</span>
               </span>
               {verdict.savings > 0 && (
-                <span className="text-xs text-[#666666]">saves <AnimatedNumber value={verdict.savings} format={fmtFull} className="font-semibold text-[#1A1A1A] tabular-nums" /> vs next</span>
+                <span className="text-xs text-[#666666]">saves <AnimatedNumber value={verdict.savings} format={fmt} className="font-semibold text-[#1A1A1A] tabular-nums" /> vs next</span>
               )}
               {verdict.bestRoi && verdict.bestRoi.termVtc !== null && (
                 <span className="text-xs text-[#666666]">best ROI <span className="font-semibold text-[#1A1A1A] tabular-nums">{verdict.bestRoi.termVtc.toFixed(1)}×</span></span>
@@ -1067,6 +1067,13 @@ export default function PricingComparisonFlow({ onBack, onHome }: PricingCompari
               >
                 <div className="mt-5 pt-5 border-t border-[#F0EAE3]">
                   <p className="text-[10px] uppercase font-semibold text-[#EA2C00] tracking-widest mb-3">What they pay today</p>
+                  <div className="hidden sm:grid grid-cols-[1.4fr_1fr_1.3fr_auto_auto] gap-2.5 px-0.5 mb-1.5">
+                    <span className="text-[10px] uppercase font-semibold text-[#A39888] tracking-wide">Vendor</span>
+                    <span className="text-[10px] uppercase font-semibold text-[#A39888] tracking-wide">Annual spend</span>
+                    <span className="text-[10px] uppercase font-semibold text-[#A39888] tracking-wide">% Abridge displaces</span>
+                    <span className="text-[10px] uppercase font-semibold text-[#A39888] tracking-wide">Cut over by</span>
+                    <span aria-hidden="true" />
+                  </div>
                   <div className="space-y-2.5">
                     {vendors.map((v) => (
                       <div key={v.id} className="grid grid-cols-1 sm:grid-cols-[1.4fr_1fr_1.3fr_auto_auto] gap-2.5 items-start">
@@ -1115,9 +1122,12 @@ export default function PricingComparisonFlow({ onBack, onHome }: PricingCompari
                   </div>
                   <div className="flex items-center justify-between mt-4 flex-wrap gap-2">
                     <button type="button" onClick={addVendor} className="text-xs font-semibold text-[#EA2C00] hover:text-[#C42600] transition-colors">+ Add vendor</button>
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-[10px] uppercase font-semibold text-[#8C7E6E] tracking-widest">Displaceable / yr at scale</span>
-                      <span className="text-lg font-bold text-[#1A1A1A] tabular-nums">{fmt(totalDisplacedAtScale)}</span>
+                    <div className="flex flex-col items-end">
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-[10px] uppercase font-semibold text-[#8C7E6E] tracking-widest">Displaceable / yr at full adoption</span>
+                        <span className="text-lg font-bold text-[#1A1A1A] tabular-nums">{fmt(totalDisplacedAtScale)}</span>
+                      </div>
+                      <span className="text-[10px] text-[#A39888]">ramps in over each deal's term below</span>
                     </div>
                   </div>
                 </div>
@@ -1229,57 +1239,6 @@ export default function PricingComparisonFlow({ onBack, onHome }: PricingCompari
           displacementOn={displacementOn}
         />
 
-        {/* Switch economics — before → after (the takeout moment) */}
-        {displacementOn && verdict && totalDisplacedAtScale > 0 && (() => {
-          const best = verdict.cheapest;
-          const grossAnnual = best.result.averageAnnualCost;
-          const displacedAnnual = totalDisplacedAtScale;
-          const netAnnual = Math.max(0, grossAnnual - displacedAnnual);
-          const pct = grossAnnual > 0 ? Math.min(100, Math.round((displacedAnnual / grossAnnual) * 100)) : 0;
-          const active = vendors.filter((v) => v.annualSpend > 0 && v.displacementPct > 0);
-          const labelFor = (v: DisplacedVendor) =>
-            v.category === "custom" ? (v.label || "Custom") : (DISPLACEMENT_CATEGORIES.find((c) => c.id === v.category)?.label ?? v.label);
-          return (
-            <motion.div
-              initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-              className="bg-white rounded-2xl border border-[#E8E2DA] p-5 sm:p-6 mt-6"
-            >
-              <p className={`${KICKER} mb-4`}>Switch economics · {best.deal.label}</p>
-              <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr] gap-4 items-center">
-                <div className="rounded-xl bg-[#F5F0EB] p-4">
-                  <p className="text-[10px] uppercase font-semibold text-[#8C7E6E] tracking-widest mb-2.5">What they pay today</p>
-                  {active.map((v) => (
-                    <div key={v.id} className="flex items-center justify-between py-1.5 border-b border-black/[0.06] last:border-0 text-sm">
-                      <span className="text-[#666666] truncate pr-2">{labelFor(v)}</span>
-                      <span className="font-semibold text-[#1A1A1A] tabular-nums">{fmt(vendorDisplacedAnnual(v))}</span>
-                    </div>
-                  ))}
-                  <div className="flex items-center justify-between mt-2.5 pt-2 border-t-2 border-[#1A1A1A] text-sm font-bold">
-                    <span>Displaceable / yr</span><span className="tabular-nums">{fmt(displacedAnnual)}</span>
-                  </div>
-                </div>
-                <div className="text-[#EA2C00] text-2xl font-bold text-center rotate-90 sm:rotate-0">&rarr;</div>
-                <div className="rounded-xl border border-[#E8E2DA] p-4">
-                  <p className="text-[10px] uppercase font-semibold text-[#8C7E6E] tracking-widest mb-2.5">With Abridge · / yr at scale</p>
-                  <div className="flex items-center justify-between py-1.5 text-sm">
-                    <span className="text-[#666666]">Abridge gross</span><span className="font-semibold text-[#1A1A1A] tabular-nums">{fmt(grossAnnual)}</span>
-                  </div>
-                  <div className="flex items-center justify-between py-1.5 text-sm">
-                    <span className="text-[#666666]">&minus; Displaced spend</span><span className="font-semibold text-[#EA2C00] tabular-nums">&minus;{fmt(displacedAnnual)}</span>
-                  </div>
-                  <div className="mt-2.5 pt-2.5 border-t border-[#E8E2DA]">
-                    <p className="text-[10px] uppercase font-semibold text-[#8C7E6E] tracking-widest">Net new / yr</p>
-                    <p className="text-3xl font-bold text-[#EA2C00] tabular-nums mt-0.5">{fmt(netAnnual)}</p>
-                  </div>
-                </div>
-              </div>
-              <p className="text-center text-sm text-[#8C7E6E] mt-4">
-                <span className="font-semibold text-[#1A1A1A]">{fmt(displacedAnnual)}</span> of Abridge is covered by spend they already make
-                {" "}— <span className="font-semibold text-[#EA2C00]">{pct}%</span> covered.
-              </p>
-            </motion.div>
-          );
-        })()}
       </div>
     </div>
   );
