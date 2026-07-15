@@ -65,7 +65,7 @@ export default function ConsolidationFlow({ items }: { items: AppRatItem[] }) {
         {stays.height > 0 && (
           <>
             <rect x={sinkX} y={stays.y} width={sinkWidth} height={stays.height} rx={8} fill="#2A2621" stroke="#3A342D" />
-            <text x={sinkX + sinkWidth + 8} y={stays.y + stays.height / 2 + 4} fill="#8C8377" fontSize={11} fontWeight={600} style={{ fontVariantNumeric: "tabular-nums" }}>Stays {fmtM(totals.stays)}</text>
+            <text x={sinkX + sinkWidth} y={stays.y - 8} textAnchor="end" fill="#8C8377" fontSize={11} fontWeight={600} style={{ fontVariantNumeric: "tabular-nums" }}>Stays {fmtM(totals.stays)}</text>
           </>
         )}
       </svg>
