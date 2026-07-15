@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ArrowRight, Download, Check, Building2, Stethoscope, Heart, Users, X } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { BASELINE_FIELDS, DRIVER_FIELDS, getMultiRequestFieldPlan, type DataRequestSetting } from "@/lib/dataRequestFields";
+import { BASELINE_FIELDS, getDriverFieldGroups, getMultiRequestFieldPlan, type DataRequestSetting } from "@/lib/dataRequestFields";
 import { generateMultiDataRequestExcel } from "@/lib/dataRequestExcel";
 import abridgeLogo from "@assets/abridge-logo-wordmark-red_1769020684647.png";
 
@@ -70,10 +70,10 @@ export default function DataRequestBuilder({ onBack }: Props) {
     setStep(1);
   }
 
+  // Deduped against the practice profile, so nothing is asked twice and the
+  // card badges, right panel, and generated Excel all agree.
   const driversForSetting = (setting: DataRequestSetting) =>
-    SETTING_DRIVER_IDS[setting]
-      .map(id => DRIVER_FIELDS.find(g => g.driverId === id))
-      .filter(Boolean) as typeof DRIVER_FIELDS;
+    getDriverFieldGroups(setting, SETTING_DRIVER_IDS[setting]);
 
   const settingLabel = (id: DataRequestSetting) => SETTINGS.find(s => s.id === id)?.label ?? '';
 

@@ -296,9 +296,21 @@ export function getDriverFieldGroups(setting: DataRequestSetting, driverIds: str
   };
   const available = settingDriverMap[setting];
   const selected = driverIds.filter(id => available.includes(id));
+
+  // A field already collected in the practice profile (baseline) must not be
+  // asked again inside a value driver. Match on id or normalized label so a
+  // renamed-but-identical field (e.g. "Net revenue per visit") is caught too.
+  const baseline = BASELINE_FIELDS[setting];
+  const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const baselineIds = new Set(baseline.map(f => f.id));
+  const baselineLabels = new Set(baseline.map(f => norm(f.label)));
+  const isDuplicate = (f: DataRequestField) => baselineIds.has(f.id) || baselineLabels.has(norm(f.label));
+
   return selected
     .map(id => DRIVER_FIELDS.find(g => g.driverId === id))
-    .filter((g): g is DriverFieldGroup => g !== undefined);
+    .filter((g): g is DriverFieldGroup => g !== undefined)
+    .map(g => ({ ...g, fields: g.fields.filter(f => !isDuplicate(f)) }))
+    .filter(g => g.fields.length > 0);
 }
 
 export interface MultiRequestFieldPlan {
