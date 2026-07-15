@@ -5,15 +5,16 @@ import ArSetupStep from "./appRationalization/ArSetupStep";
 import ArApplicationsStep from "./appRationalization/ArApplicationsStep";
 import ConsolidationFlow from "@/components/forecast/ConsolidationFlow";
 import { AnimatedValue } from "@/components/explore/AnimatedValue";
+import RoadmapChart from "@/components/forecast/RoadmapChart";
 
-type ArStep = "setup" | "applications" | "consolidation";
+type ArStep = "setup" | "applications" | "consolidation" | "change";
 
 interface AppRationalizationFlowProps {
   onBack: () => void;
   onHome: () => void;
 }
 
-const STEP_INDEX: Record<ArStep, number> = { setup: 1, applications: 2, consolidation: 3 };
+const STEP_INDEX: Record<ArStep, number> = { setup: 1, applications: 2, consolidation: 3, change: 4 };
 const STEP_LABELS = ["Setup", "Applications", "Consolidation", "The change", "Why we can"];
 
 export default function AppRationalizationFlow({ onBack, onHome }: AppRationalizationFlowProps) {
@@ -77,18 +78,43 @@ export default function AppRationalizationFlow({ onBack, onHome }: AppRationaliz
                 <AnimatedValue value={totals.stackTotal} format={fmtM} className="font-bold tabular-nums" /> stack
               </p>
               <ConsolidationFlow items={items} />
-              <div className="mt-8 text-center">
+              <div className="mt-8 flex items-center justify-center gap-6">
                 <button
                   onClick={() => setStep("applications")}
-                  className="text-sm font-semibold text-[#EA2C00]"
+                  className="text-sm font-semibold text-[#8C7E6E] hover:text-[#1A1A1A] transition-colors"
                   data-testid="ar-back-to-applications"
                 >
                   ← Back to applications
+                </button>
+                <button
+                  onClick={() => setStep("change")}
+                  className="h-11 px-6 rounded-xl bg-[#EA2C00] text-white text-sm font-semibold"
+                  data-testid="ar-see-the-change"
+                >
+                  See the change →
                 </button>
               </div>
             </div>
           );
         })()}
+        {step === "change" && (
+          <div data-testid="ar-step-change" className="max-w-[940px] mx-auto px-6 py-8">
+            <h1 className="font-abridge text-4xl uppercase tracking-tight text-[#1A1A1A] text-center">The change</h1>
+            <p className="text-[15px] text-[#6B6B6B] text-center mt-3 mb-8">
+              Watch the stack come apart, tool by tool, as each reaches a point where Abridge can take it on.
+            </p>
+            <RoadmapChart items={items} termYears={termYears} />
+            <div className="mt-8 text-center">
+              <button
+                onClick={() => setStep("consolidation")}
+                className="text-sm font-semibold text-[#8C7E6E] hover:text-[#1A1A1A] transition-colors"
+                data-testid="ar-back-to-consolidation"
+              >
+                ← Back to the consolidation
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
