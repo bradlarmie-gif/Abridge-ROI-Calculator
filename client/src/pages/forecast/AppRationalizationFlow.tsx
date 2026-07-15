@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { UnifiedHeader } from "@/components/UnifiedHeader";
 import { type AppRatItem, type AppRatCategoryId, makeItem } from "@/lib/appRationalizationCalc";
+import ArSetupStep from "./appRationalization/ArSetupStep";
 
 type ArStep = "setup" | "applications" | "consolidation";
 
@@ -37,7 +38,12 @@ export default function AppRationalizationFlow({ onBack, onHome }: AppRationaliz
       />
       <div className="pt-14 sm:pt-16">
         {step === "setup" && (
-          <div data-testid="ar-step-setup" className="p-8">Setup step (Task 3)</div>
+          <ArSetupStep
+            orgName={orgName}
+            termYears={termYears}
+            onChange={(p) => { if (p.orgName !== undefined) setOrgName(p.orgName); if (p.termYears !== undefined) setTermYears(p.termYears); }}
+            onContinue={() => setStep("applications")}
+          />
         )}
         {step === "applications" && (
           <div data-testid="ar-step-applications" className="p-8">Applications step (Task 5)</div>
