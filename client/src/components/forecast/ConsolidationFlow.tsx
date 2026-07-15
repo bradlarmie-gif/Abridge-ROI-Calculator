@@ -39,7 +39,7 @@ export default function ConsolidationFlow({ items }: { items: AppRatItem[] }) {
         {sources.map((s) => {
           const mine = ribbons.filter((r) => r.id === s.id);
           return (
-            <g key={s.id} className="fg">
+            <g key={s.id} className="crf-fg">
               {mine.map((r) => (
                 <path
                   key={r.kind}
@@ -52,24 +52,24 @@ export default function ConsolidationFlow({ items }: { items: AppRatItem[] }) {
                 />
               ))}
               <text x={40} y={s.rowCenterY - 4} fill="#ffffff" fontSize={15} fontWeight={700}>{s.name}</text>
-              <text x={40} y={s.rowCenterY + 13} fill="#8C8377" fontSize={11}>{s.category} · {fmtM(s.spend)}</text>
-              <text x={ribbonStartX - 20} y={s.rowCenterY + 2} textAnchor="end" fill="#EA2C00" fontSize={20} fontWeight={800}>{s.coveragePct}%</text>
+              <text x={40} y={s.rowCenterY + 13} fill="#8C8377" fontSize={11} style={{ fontVariantNumeric: "tabular-nums" }}>{s.category} · {fmtM(s.spend)}</text>
+              <text x={ribbonStartX - 20} y={s.rowCenterY + 2} textAnchor="end" fill="#EA2C00" fontSize={20} fontWeight={800} style={{ fontVariantNumeric: "tabular-nums" }}>{s.coveragePct}%</text>
             </g>
           );
         })}
 
         <rect x={sinkX} y={abridge.y} width={sinkWidth} height={abridge.height} rx={12} fill="#EA2C00" />
         <text x={sinkX + sinkWidth / 2} y={abridge.y + abridge.height / 2 - 2} textAnchor="middle" fill="#ffffff" fontSize={15} fontWeight={800}>Abridge</text>
-        <text x={sinkX + sinkWidth / 2} y={abridge.y + abridge.height / 2 + 16} textAnchor="middle" fill="#ffffff" fontSize={11.5} fontWeight={700} opacity={0.95}>{fmtM(totals.toAbridge)}</text>
+        <text x={sinkX + sinkWidth / 2} y={abridge.y + abridge.height / 2 + 16} textAnchor="middle" fill="#ffffff" fontSize={11.5} fontWeight={700} opacity={0.95} style={{ fontVariantNumeric: "tabular-nums" }}>{fmtM(totals.toAbridge)}</text>
 
         {stays.height > 0 && (
           <>
             <rect x={sinkX} y={stays.y} width={sinkWidth} height={stays.height} rx={8} fill="#2A2621" stroke="#3A342D" />
-            <text x={sinkX + sinkWidth + 8} y={stays.y + stays.height / 2 + 4} fill="#8C8377" fontSize={11} fontWeight={600}>Stays {fmtM(totals.stays)}</text>
+            <text x={sinkX + sinkWidth + 8} y={stays.y + stays.height / 2 + 4} fill="#8C8377" fontSize={11} fontWeight={600} style={{ fontVariantNumeric: "tabular-nums" }}>Stays {fmtM(totals.stays)}</text>
           </>
         )}
       </svg>
-      <style>{`svg:hover .fg { opacity: .25; transition: opacity .18s } svg .fg:hover { opacity: 1 }`}</style>
+      <style>{`svg:hover .crf-fg { opacity: .25; transition: opacity .18s } svg .crf-fg:hover { opacity: 1 }`}</style>
     </div>
   );
 }
