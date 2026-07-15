@@ -306,6 +306,88 @@ function buildInstructionsSheet(
   return ws;
 }
 
+function buildMultiInstructionsSheet(
+  settings: DataRequestSetting[],
+  selectedBySetting: Record<DataRequestSetting, string[]>,
+  orgName?: string,
+): XLSX.WorkSheet {
+  const settingDisplay: Record<DataRequestSetting, string> = {
+    outpatient: 'Outpatient',
+    ed: 'Emergency Department',
+    inpatient: 'Inpatient',
+    nursing: 'Nursing',
+  };
+
+  const aoa: (string | null)[][] = [];
+  const rowHeights: number[] = [];
+  const push = (text: string | null, hpt: number) => { aoa.push([text]); rowHeights.push(hpt); };
+
+  push(null, 8);
+  push('ABRIDGE', 14);
+  push('Data Request Template', 32);
+  push(orgName ? `Prepared for ${orgName}` : 'Prepared by your Abridge account team', 18);
+  push(null, 10);
+  push(null, 4);
+  const purposeHeaderRow = aoa.length; push('PURPOSE', 16);
+  const purposeBodyRow = aoa.length; push('This collects the numbers we use to model the value of Abridge across the care settings below. Each setting has its own tab. We only truly need the short "We need these" block on each tab. Everything else is optional and sharpens the estimate.', 60);
+  push(null, 10);
+  const howHeaderRow = aoa.length; push('HOW TO USE', 16);
+  const how1Row = aoa.length; push('1.  Each care setting has its own tab along the bottom. Fill the "We need these" block on each.', 16);
+  const how2Row = aoa.length; push('2.  Optional fields make it sharper. Leave any blank and we use an industry benchmark.', 16);
+  const how3Row = aoa.length; push('3.  Return the file to your Abridge account team.', 16);
+  push(null, 10);
+  const settingsHeaderRow = aoa.length; push('CARE SETTINGS IN THIS FILE', 16);
+  const settingRows: number[] = [];
+  for (const s of settings) {
+    const groups = getDriverFieldGroups(s, selectedBySetting[s] ?? []);
+    const labels = groups.map(g => g.driverLabel).join(', ');
+    settingRows.push(aoa.length);
+    push(`    ${settingDisplay[s]}${labels ? `:  ${labels}` : ''}`, 30);
+  }
+  push(null, 10);
+  const contactRow = aoa.length; push('Questions? Contact your Abridge account team.', 15);
+
+  const ws = XLSX.utils.aoa_to_sheet(aoa);
+  ws['!cols'] = [{ wch: 82 }];
+  ws['!rows'] = rowHeights.map(hpt => ({ hpt }));
+  (ws as any)['!sheetView'] = [{ showGridLines: false }];
+
+  const at = (rowIdx: number) => `A${rowIdx + 1}`;
+
+  if (ws['A2']) ws['A2'].s = { font: { bold: true, sz: 8, color: { rgb: C.textMuted } } };
+  if (ws['A3']) ws['A3'].s = { font: { bold: true, sz: 20, color: { rgb: C.black } } };
+  if (ws['A4']) ws['A4'].s = {
+    font: { bold: true, sz: 12, color: { rgb: C.red } },
+    border: { bottom: b(C.separator) },
+  };
+
+  const sectionStyle = {
+    font: { bold: true, sz: 9, color: { rgb: C.textSection } },
+    border: { bottom: b(C.red, 'medium') },
+  };
+  const bodyStyle = {
+    font: { sz: 10, color: { rgb: C.textBody } },
+    alignment: { wrapText: true, vertical: 'top' },
+  };
+  const listStyle = {
+    font: { sz: 10, color: { rgb: C.textBody } },
+    alignment: { wrapText: true, vertical: 'top' },
+  };
+  const mutedStyle = { font: { sz: 9, italic: true, color: { rgb: C.textMuted } } };
+
+  styleIfExists(ws, at(purposeHeaderRow), sectionStyle);
+  styleIfExists(ws, at(purposeBodyRow), bodyStyle);
+  styleIfExists(ws, at(howHeaderRow), sectionStyle);
+  styleIfExists(ws, at(how1Row), listStyle);
+  styleIfExists(ws, at(how2Row), listStyle);
+  styleIfExists(ws, at(how3Row), listStyle);
+  styleIfExists(ws, at(settingsHeaderRow), sectionStyle);
+  for (const r of settingRows) styleIfExists(ws, at(r), listStyle);
+  styleIfExists(ws, at(contactRow), mutedStyle);
+
+  return ws;
+}
+
 // ── Export ────────────────────────────────────────────────────────────────────
 
 const SETTING_TAB_COLORS: Record<DataRequestSetting, string> = {
@@ -320,6 +402,13 @@ const SETTING_FILE_LABELS: Record<DataRequestSetting, string> = {
   ed: 'Emergency-Department',
   inpatient: 'Inpatient',
   nursing: 'Nursing',
+};
+
+const SETTING_SHEET_NAMES: Record<DataRequestSetting, string> = {
+  outpatient: 'Outpatient',
+  ed:         'Emergency Dept',
+  inpatient:  'Inpatient',
+  nursing:    'Nursing',
 };
 
 /** Pure builder (no browser APIs) so it can be unit-tested. */
@@ -355,6 +444,53 @@ export async function generateDataRequestExcel(
   await shareOrSaveBlob(
     new Blob([buf], { type: XLSX_MIME }),
     `Abridge-Data-Request-${SETTING_FILE_LABELS[setting]}.xlsx`,
+    'Abridge Data Request',
+  );
+}
+
+/** Combined workbook across multiple care settings: one shared Instructions
+ *  sheet plus one Data Fields sheet per selected setting. Reuses the same
+ *  styled per-setting sheet builder as the single-setting path. */
+export function buildMultiDataRequestWorkbook(
+  settings: DataRequestSetting[],
+  selectedBySetting: Record<DataRequestSetting, string[]>,
+  orgName?: string,
+): XLSX.WorkBook {
+  const wb = XLSX.utils.book_new();
+
+  const instrSheet = buildMultiInstructionsSheet(settings, selectedBySetting, orgName);
+  XLSX.utils.book_append_sheet(wb, instrSheet, 'Instructions');
+
+  for (const setting of settings) {
+    const dataSheet = buildDataFieldsSheet(setting, selectedBySetting[setting] ?? []);
+    XLSX.utils.book_append_sheet(wb, dataSheet, SETTING_SHEET_NAMES[setting]);
+  }
+
+  // Tab colors: Instructions black, then one accent per setting tab.
+  wb.Workbook = wb.Workbook || {};
+  wb.Workbook.Sheets = wb.Workbook.Sheets || [];
+  (wb.Workbook.Sheets[0] as any) = { ...(wb.Workbook.Sheets[0] || {}), tabColor: { rgb: C.black } };
+  settings.forEach((setting, i) => {
+    (wb.Workbook!.Sheets![i + 1] as any) = {
+      ...(wb.Workbook!.Sheets![i + 1] || {}),
+      tabColor: { rgb: SETTING_TAB_COLORS[setting] },
+    };
+  });
+
+  return wb;
+}
+
+export async function generateMultiDataRequestExcel(
+  settings: DataRequestSetting[],
+  selectedBySetting: Record<DataRequestSetting, string[]>,
+  orgName?: string,
+): Promise<void> {
+  const wb = buildMultiDataRequestWorkbook(settings, selectedBySetting, orgName);
+  const buf = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+  const fileLabel = settings.length === 1 ? SETTING_FILE_LABELS[settings[0]] : 'Multi-Setting';
+  await shareOrSaveBlob(
+    new Blob([buf], { type: XLSX_MIME }),
+    `Abridge-Data-Request-${fileLabel}.xlsx`,
     'Abridge Data Request',
   );
 }
