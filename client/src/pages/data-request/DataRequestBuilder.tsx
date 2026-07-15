@@ -312,19 +312,28 @@ export default function DataRequestBuilder({ onBack }: Props) {
                             </ul>
                           </div>
 
-                          {groups.map(group => (
-                            <div key={group.driverId} className="mb-3">
-                              <p className="text-[9px] font-bold uppercase tracking-[1.5px] text-white/25 mb-1.5">{group.driverLabel}</p>
-                              <ul className="space-y-1">
-                                {group.fields.map(f => (
-                                  <li key={f.id} className="flex items-center gap-2">
-                                    <span className="w-1 h-1 rounded-full bg-[#EA2C00]/60 shrink-0" />
-                                    <span className="text-[12px] text-white/70">{f.label}</span>
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          ))}
+                          <AnimatePresence initial={false}>
+                            {groups.map(group => (
+                              <motion.div
+                                key={group.driverId}
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: 'auto' }}
+                                exit={{ opacity: 0, height: 0 }}
+                                transition={{ duration: 0.18 }}
+                                className="mb-3 overflow-hidden"
+                              >
+                                <p className="text-[9px] font-bold uppercase tracking-[1.5px] text-white/25 mb-1.5">{group.driverLabel}</p>
+                                <ul className="space-y-1">
+                                  {group.fields.map(f => (
+                                    <li key={f.id} className="flex items-center gap-2">
+                                      <span className="w-1 h-1 rounded-full bg-[#EA2C00]/60 shrink-0" />
+                                      <span className="text-[12px] text-white/70">{f.label}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </motion.div>
+                            ))}
+                          </AnimatePresence>
                         </div>
                       );
                     })}
