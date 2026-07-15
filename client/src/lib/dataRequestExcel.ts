@@ -32,8 +32,8 @@ const H = {
   dataRow:   42,
 };
 
-const NUM_COLS = 5;
-const COL_LETTERS = ['A', 'B', 'C', 'D', 'E'];
+const NUM_COLS = 4;
+const COL_LETTERS = ['A', 'B', 'C', 'D'];
 
 function b(color: string, style: 'thin' | 'medium' = 'thin') {
   return { style, color: { rgb: color } };
@@ -71,13 +71,6 @@ const S_FIELD_LABEL = {
 
 const S_DESC = {
   font: { sz: 9, color: { rgb: C.textBody } },
-  fill: { fgColor: { rgb: C.white } },
-  alignment: { vertical: 'top', wrapText: true },
-  border: { bottom: b(C.driverLine) },
-};
-
-const S_WHO = {
-  font: { sz: 9, italic: true, color: { rgb: C.textMuted } },
   fill: { fgColor: { rgb: C.white } },
   alignment: { vertical: 'top', wrapText: true },
   border: { bottom: b(C.driverLine) },
@@ -146,9 +139,9 @@ function buildDataFieldsSheet(
   // Track how to style each input cell (bright = required, quiet = optional).
   const inputStyleByRow: Record<number, object> = {};
 
-  const pushHeader = () => { aoa.push(['Field', 'Description', 'Who Has This', 'Example', 'Your Value']); rowHeights.push(H.colHeader); };
-  const pushField = (f: { label: string; description: string; who: string; example: string }, required: boolean) => {
-    aoa.push([f.label, f.description, f.who, f.example, '']);
+  const pushHeader = () => { aoa.push(['Field', 'Description', 'Example', 'Your Value']); rowHeights.push(H.colHeader); };
+  const pushField = (f: { label: string; description: string; example: string }, required: boolean) => {
+    aoa.push([f.label, f.description, f.example, '']);
     rowHeights.push(H.dataRow);
     inputStyleByRow[aoa.length - 1] = required ? S_INPUT : S_INPUT_OPTIONAL;
   };
@@ -156,21 +149,21 @@ function buildDataFieldsSheet(
   pushHeader();
 
   // ── Tier 1: required ("we need these") ──
-  aoa.push([`WE NEED THESE · ${plan.requiredCount} numbers`, null, null, null, null]);
+  aoa.push([`WE NEED THESE · ${plan.requiredCount} numbers`, null, null, null]);
   rowHeights.push(H.section);
   const requiredBandRow = aoa.length - 1;
   for (const f of plan.required) pushField(f, true);
 
   // ── Tier 2: optional (benchmarked if blank) ──
   const optionalBandRow = aoa.length;
-  aoa.push([`OPTIONAL · WE'LL USE INDUSTRY BENCHMARKS IF LEFT BLANK`, null, null, null, null]);
+  aoa.push([`OPTIONAL · WE'LL USE INDUSTRY BENCHMARKS IF LEFT BLANK`, null, null, null]);
   rowHeights.push(H.section);
   for (const f of plan.optionalBaseline) pushField(f, false);
 
   const driverBandRows: number[] = [];
   for (const group of plan.driverGroups) {
     driverBandRows.push(aoa.length);
-    aoa.push([group.driverLabel, null, null, null, null]);
+    aoa.push([group.driverLabel, null, null, null]);
     rowHeights.push(H.driver);
     for (const f of group.fields) pushField(f, false);
   }
@@ -179,10 +172,9 @@ function buildDataFieldsSheet(
 
   ws['!cols'] = [
     { wch: 32 },  // A Field
-    { wch: 46 },  // B Description
-    { wch: 24 },  // C Who Has This
-    { wch: 20 },  // D Example
-    { wch: 20 },  // E Your Value
+    { wch: 52 },  // B Description
+    { wch: 22 },  // C Example
+    { wch: 22 },  // D Your Value
   ];
   ws['!rows'] = rowHeights.map(hpt => ({ hpt }));
   ws['!freeze'] = { xSplit: 0, ySplit: 1 };
@@ -201,9 +193,8 @@ function buildDataFieldsSheet(
     const row = Number(rowIdxStr) + 1;
     styleIfExists(ws, `A${row}`, S_FIELD_LABEL);
     styleIfExists(ws, `B${row}`, S_DESC);
-    styleIfExists(ws, `C${row}`, S_WHO);
-    styleIfExists(ws, `D${row}`, S_EXAMPLE);
-    ensureCell(ws, `E${row}`, inputStyle);
+    styleIfExists(ws, `C${row}`, S_EXAMPLE);
+    ensureCell(ws, `D${row}`, inputStyle);
   }
 
   return ws;
