@@ -2,6 +2,7 @@ import { useState } from "react";
 import { UnifiedHeader } from "@/components/UnifiedHeader";
 import { type AppRatItem, type AppRatCategoryId, makeItem } from "@/lib/appRationalizationCalc";
 import ArSetupStep from "./appRationalization/ArSetupStep";
+import ArApplicationsStep from "./appRationalization/ArApplicationsStep";
 
 type ArStep = "setup" | "applications" | "consolidation";
 
@@ -46,7 +47,13 @@ export default function AppRationalizationFlow({ onBack, onHome }: AppRationaliz
           />
         )}
         {step === "applications" && (
-          <div data-testid="ar-step-applications" className="p-8">Applications step (Task 5)</div>
+          <ArApplicationsStep
+            items={items}
+            onAdd={addItem}
+            onUpdate={updateItem}
+            onRemove={removeItem}
+            onContinue={() => setStep("consolidation")}
+          />
         )}
         {step === "consolidation" && (
           <div data-testid="ar-step-consolidation" className="max-w-3xl mx-auto px-6 py-24 text-center">
