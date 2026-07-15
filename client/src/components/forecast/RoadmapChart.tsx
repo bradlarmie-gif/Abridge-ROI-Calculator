@@ -31,6 +31,7 @@ export default function RoadmapChart({ items, termYears }: { items: AppRatItem[]
   const yOf = (v: number) => baseline - v * k;
 
   const trendPts = rm.snapshots.map((s, i) => `${centerX(i)},${yOf(s.total)}`).join(" ");
+  const stripDeltas = rm.deltas.filter((d) => d.amount > 0).slice(0, 4);
 
   if (tools.length === 0) {
     return (
@@ -125,8 +126,8 @@ export default function RoadmapChart({ items, termYears }: { items: AppRatItem[]
         })}
       </svg>
 
-      <div className="grid gap-2.5 mt-5" style={{ gridTemplateColumns: `repeat(${Math.min(rm.deltas.length, 4)}, 1fr)` }}>
-        {rm.deltas.filter((d) => d.amount > 0).slice(0, 4).map((d) => (
+      <div className="grid gap-2.5 mt-5" style={{ gridTemplateColumns: `repeat(${Math.max(1, stripDeltas.length)}, 1fr)` }}>
+        {stripDeltas.map((d) => (
           <div key={d.year} className="rounded-[12px] p-[13px_15px]" style={{ background: "#FCFAF5", border: "1px solid #ECE4D6" }}>
             <div className="text-[10px] font-bold uppercase tracking-[1.5px] text-[#8C7E6E]">Year {d.year}</div>
             <div className="text-[12.5px] text-[#4A443D] mt-1.5">{d.tools.join(", ")}</div>
