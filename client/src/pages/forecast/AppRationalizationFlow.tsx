@@ -15,7 +15,7 @@ interface AppRationalizationFlowProps {
 }
 
 const STEP_INDEX: Record<ArStep, number> = { setup: 1, applications: 2, consolidation: 3, change: 4 };
-const STEP_LABELS = ["Setup", "Applications", "Consolidation", "The change", "Why we can"];
+const STEP_LABELS = ["Setup", "Applications", "Consolidation", "The change"];
 
 export default function AppRationalizationFlow({ onBack, onHome }: AppRationalizationFlowProps) {
   const [step, setStep] = useState<ArStep>("setup");
@@ -42,7 +42,7 @@ export default function AppRationalizationFlow({ onBack, onHome }: AppRationaliz
         pathType="forecast"
         stepName="App Rationalization"
         currentStep={STEP_INDEX[step]}
-        totalSteps={5}
+        totalSteps={4}
         stepLabels={STEP_LABELS}
         onBack={onBack}
         onHome={onHome}
@@ -78,6 +78,14 @@ export default function AppRationalizationFlow({ onBack, onHome }: AppRationaliz
                 <AnimatedValue value={totals.stackTotal} format={fmtM} className="font-bold tabular-nums" /> stack
               </p>
               <ConsolidationFlow items={items} />
+
+              {/* On-demand "why" proof, on the way. Placeholder until the team lands the rationale copy. */}
+              <div className="mt-6 flex items-center gap-3 rounded-xl border border-[#E8E2DA] bg-white/60 px-5 py-4" data-testid="ar-why-coming-soon">
+                <span className="text-sm font-semibold text-[#1A1A1A]">Why Abridge can take these on</span>
+                <span className="text-[10px] font-bold uppercase tracking-wide text-[#8C7E6E] bg-[#F5F0EB] border border-[#E8E2DA] rounded-full px-2.5 py-1">Coming soon</span>
+                <span className="text-[12.5px] text-[#8C7E6E] ml-auto hidden sm:block">The case for each capability is on the way.</span>
+              </div>
+
               <div className="mt-8 flex items-center justify-center gap-6">
                 <button
                   onClick={() => setStep("applications")}
