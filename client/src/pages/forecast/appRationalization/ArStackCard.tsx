@@ -2,7 +2,7 @@ import { Slider } from "@/components/ui/slider";
 import { NumberField } from "@/components/NumberField";
 import { CategoryIcon } from "./CategoryIcon";
 import {
-  itemRetired, itemStays, categoryLabel, APP_RAT_CATEGORIES, KNOWN_VENDORS,
+  itemRetired, itemStays, APP_RAT_CATEGORIES, KNOWN_VENDORS,
   type AppRatItem,
 } from "@/lib/appRationalizationCalc";
 

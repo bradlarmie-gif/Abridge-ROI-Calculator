@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { UnifiedHeader } from "@/components/UnifiedHeader";
 import { type AppRatItem, type AppRatCategoryId, makeItem } from "@/lib/appRationalizationCalc";
 import ArSetupStep from "./appRationalization/ArSetupStep";
@@ -19,9 +19,10 @@ export default function AppRationalizationFlow({ onBack, onHome }: AppRationaliz
   const [orgName, setOrgName] = useState("");
   const [termYears, setTermYears] = useState(3);
   const [items, setItems] = useState<AppRatItem[]>([]);
+  const nextId = useRef(0);
 
   const addItem = (category: AppRatCategoryId, vendorName?: string) =>
-    setItems((prev) => [...prev, { ...makeItem(`ar-${Date.now()}`, category), vendorName }]);
+    setItems((prev) => [...prev, { ...makeItem(`ar-${nextId.current++}`, category), vendorName }]);
   const updateItem = (id: string, patch: Partial<AppRatItem>) =>
     setItems((prev) => prev.map((i) => (i.id === id ? { ...i, ...patch } : i)));
   const removeItem = (id: string) => setItems((prev) => prev.filter((i) => i.id !== id));
