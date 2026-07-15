@@ -102,3 +102,20 @@ export function searchApplications(query: string): { vendors: KnownVendor[]; cat
   const categories = APP_RAT_CATEGORIES.filter((c) => c.label.toLowerCase().includes(q));
   return { vendors, categories };
 }
+
+/**
+ * The contract year (1..termYears) in which a tool becomes a candidate to
+ * retire, derived from its renewal descriptor. "Open term" retires now;
+ * a 4-digit year maps relative to the current year; empty/"Unknown" holds to
+ * the last year (conservative). currentYear is injectable for deterministic tests.
+ */
+export function retirementYear(item: AppRatItem, termYears: number, currentYear: number = new Date().getFullYear()): number {
+  const term = Math.max(1, Math.floor(termYears));
+  const clamp = (n: number) => Math.min(term, Math.max(1, n));
+  const r = (item.renewal ?? "").trim();
+  if (!r || /unknown/i.test(r)) return term;
+  if (/open term/i.test(r)) return 1;
+  const m = r.match(/\b(\d{4})\b/);
+  if (m) return clamp(parseInt(m[1], 10) - currentYear + 1);
+  return term;
+}
