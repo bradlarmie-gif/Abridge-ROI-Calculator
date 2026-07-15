@@ -300,3 +300,24 @@ export function getDriverFieldGroups(setting: DataRequestSetting, driverIds: str
     .map(id => DRIVER_FIELDS.find(g => g.driverId === id))
     .filter((g): g is DriverFieldGroup => g !== undefined);
 }
+
+export interface MultiRequestFieldPlan {
+  perSetting: { setting: DataRequestSetting; plan: RequestFieldPlan }[];
+  requiredCount: number;
+  optionalCount: number;
+}
+
+export function getMultiRequestFieldPlan(
+  settings: DataRequestSetting[],
+  selectedBySetting: Record<DataRequestSetting, string[]>,
+): MultiRequestFieldPlan {
+  const perSetting = settings.map(setting => ({
+    setting,
+    plan: getRequestFieldPlan(setting, selectedBySetting[setting] ?? []),
+  }));
+  return {
+    perSetting,
+    requiredCount: perSetting.reduce((n, p) => n + p.plan.requiredCount, 0),
+    optionalCount: perSetting.reduce((n, p) => n + p.plan.optionalCount, 0),
+  };
+}
