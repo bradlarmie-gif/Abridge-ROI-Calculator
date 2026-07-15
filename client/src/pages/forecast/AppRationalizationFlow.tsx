@@ -1,8 +1,10 @@
 import { useRef, useState } from "react";
 import { UnifiedHeader } from "@/components/UnifiedHeader";
-import { type AppRatItem, type AppRatCategoryId, makeItem } from "@/lib/appRationalizationCalc";
+import { type AppRatItem, type AppRatCategoryId, makeItem, computeTotals } from "@/lib/appRationalizationCalc";
 import ArSetupStep from "./appRationalization/ArSetupStep";
 import ArApplicationsStep from "./appRationalization/ArApplicationsStep";
+import ConsolidationFlow from "@/components/forecast/ConsolidationFlow";
+import { AnimatedValue } from "@/components/explore/AnimatedValue";
 
 type ArStep = "setup" | "applications" | "consolidation";
 
@@ -26,6 +28,12 @@ export default function AppRationalizationFlow({ onBack, onHome }: AppRationaliz
   const updateItem = (id: string, patch: Partial<AppRatItem>) =>
     setItems((prev) => prev.map((i) => (i.id === id ? { ...i, ...patch } : i)));
   const removeItem = (id: string) => setItems((prev) => prev.filter((i) => i.id !== id));
+
+  const fmtM = (n: number): string => {
+    if (Math.abs(n) >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
+    if (Math.abs(n) >= 1_000) return `$${Math.round(n / 1_000)}K`;
+    return `$${Math.round(n)}`;
+  };
 
   return (
     <div className="min-h-screen bg-[#FAF8F5]">
@@ -56,19 +64,31 @@ export default function AppRationalizationFlow({ onBack, onHome }: AppRationaliz
             onContinue={() => setStep("consolidation")}
           />
         )}
-        {step === "consolidation" && (
-          <div data-testid="ar-step-consolidation" className="max-w-3xl mx-auto px-6 py-24 text-center">
-            <h2 className="font-abridge text-3xl uppercase tracking-tight text-[#1A1A1A]">The consolidation</h2>
-            <p className="text-sm text-[#6B6B6B] mt-3">Coming next: the two-sink flow that shows what Abridge takes on and what stays.</p>
-            <button
-              onClick={() => setStep("applications")}
-              className="mt-6 text-sm font-semibold text-[#EA2C00]"
-              data-testid="ar-back-to-applications"
-            >
-              ← Back to applications
-            </button>
-          </div>
-        )}
+        {step === "consolidation" && (() => {
+          const totals = computeTotals(items);
+          return (
+            <div data-testid="ar-step-consolidation" className="max-w-[1120px] mx-auto px-6 py-8">
+              <h1 className="font-abridge text-4xl uppercase tracking-tight text-[#1A1A1A] text-center">Consolidation</h1>
+              <p className="text-[15px] text-[#1A1A1A] text-center mt-3 mb-8">
+                <AnimatedValue value={totals.toAbridge} format={fmtM} className="font-bold text-[#EA2C00] tabular-nums" /> to Abridge
+                {" · "}
+                <AnimatedValue value={totals.stays} format={fmtM} className="font-bold tabular-nums" /> stays
+                {" · from a "}
+                <AnimatedValue value={totals.stackTotal} format={fmtM} className="font-bold tabular-nums" /> stack
+              </p>
+              <ConsolidationFlow items={items} />
+              <div className="mt-8 text-center">
+                <button
+                  onClick={() => setStep("applications")}
+                  className="text-sm font-semibold text-[#EA2C00]"
+                  data-testid="ar-back-to-applications"
+                >
+                  ← Back to applications
+                </button>
+              </div>
+            </div>
+          );
+        })()}
       </div>
     </div>
   );
