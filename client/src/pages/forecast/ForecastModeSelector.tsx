@@ -115,37 +115,6 @@ export default function ForecastModeSelector({
             whileHover={{ y: -4 }}
             role="button"
             tabIndex={0}
-            onKeyDown={(e) => handleCardKey(e, onSelectPricingComparison)}
-            className="group relative flex flex-col cursor-pointer transition-all duration-300 ease-out rounded-xl p-8 min-h-[300px] bg-[#F5F0EB] hover:bg-[#EDE7E0] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#EA2C00] focus-visible:ring-offset-2"
-            onClick={onSelectPricingComparison}
-            data-testid="card-forecast-pricing"
-          >
-            <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center mb-5">
-              <BarChart3 className="w-6 h-6 text-[#EA2C00]" />
-            </div>
-            <p className="text-[13px] text-[#EA2C00] font-medium mb-1.5">Deal desk</p>
-            <h3 className="text-2xl font-bold text-[#1A1A1A] mb-2.5">Compare Pricing</h3>
-            <p className="text-sm text-[#666666] leading-relaxed flex-1 mb-6">
-              Total cost of ownership for two or three deal structures, side by side. Optionally layer in a value estimate to flip to ROI view.
-            </p>
-            <Button
-              className="w-full bg-[#EA2C00] text-white border-[#EA2C00]"
-              size="lg"
-              onClick={(e) => { e.stopPropagation(); onSelectPricingComparison(); }}
-              data-testid="card-forecast-pricing-button"
-            >
-              Compare Options
-              <ChevronRight className="w-4 h-4 ml-1" />
-            </Button>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.45, ease: [0.25, 0.46, 0.45, 0.94] }}
-            whileHover={{ y: -4 }}
-            role="button"
-            tabIndex={0}
             onKeyDown={(e) => handleCardKey(e, onSelectAppRationalization)}
             className="group relative flex flex-col cursor-pointer transition-all duration-300 ease-out rounded-xl p-8 min-h-[300px] bg-[#F5F0EB] hover:bg-[#EDE7E0] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#EA2C00] focus-visible:ring-offset-2"
             onClick={onSelectAppRationalization}
@@ -166,6 +135,37 @@ export default function ForecastModeSelector({
               data-testid="card-forecast-app-rationalization-button"
             >
               Build the case
+              <ChevronRight className="w-4 h-4 ml-1" />
+            </Button>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.45, ease: [0.25, 0.46, 0.45, 0.94] }}
+            whileHover={{ y: -4 }}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => handleCardKey(e, onSelectPricingComparison)}
+            className="group relative flex flex-col cursor-pointer transition-all duration-300 ease-out rounded-xl p-8 min-h-[300px] bg-[#F5F0EB] hover:bg-[#EDE7E0] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#EA2C00] focus-visible:ring-offset-2"
+            onClick={onSelectPricingComparison}
+            data-testid="card-forecast-pricing"
+          >
+            <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center mb-5">
+              <BarChart3 className="w-6 h-6 text-[#EA2C00]" />
+            </div>
+            <p className="text-[13px] text-[#EA2C00] font-medium mb-1.5">Deal desk</p>
+            <h3 className="text-2xl font-bold text-[#1A1A1A] mb-2.5">Compare Pricing</h3>
+            <p className="text-sm text-[#666666] leading-relaxed flex-1 mb-6">
+              Total cost of ownership for two or three deal structures, side by side. Optionally layer in a value estimate to flip to ROI view.
+            </p>
+            <Button
+              className="w-full bg-[#EA2C00] text-white border-[#EA2C00]"
+              size="lg"
+              onClick={(e) => { e.stopPropagation(); onSelectPricingComparison(); }}
+              data-testid="card-forecast-pricing-button"
+            >
+              Compare Options
               <ChevronRight className="w-4 h-4 ml-1" />
             </Button>
           </motion.div>
