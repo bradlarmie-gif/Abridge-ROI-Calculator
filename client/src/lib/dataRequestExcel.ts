@@ -83,6 +83,12 @@ const S_EXAMPLE = {
   border: { bottom: b(C.driverLine) },
 };
 
+const S_LEGEND = {
+  font: { sz: 9, italic: true, color: { rgb: C.textMuted } },
+  fill: { fgColor: { rgb: C.white } },
+  alignment: { vertical: 'center', wrapText: true, indent: 1 },
+};
+
 const S_INPUT = {
   fill: { fgColor: { rgb: C.inputFill } },
   font: { sz: 10, color: { rgb: C.textPrimary } },
@@ -148,24 +154,40 @@ function buildDataFieldsSheet(
 
   pushHeader();
 
-  // ── Tier 1: required ("we need these") ──
-  aoa.push([`WE NEED THESE · ${plan.requiredCount} numbers`, null, null, null]);
+  // Legend: how the bright vs quiet input cells read.
+  const legendRow = aoa.length;
+  aoa.push(['Fill the bright cells. Quiet cells are optional; we use an industry benchmark if you leave them blank.', null, null, null]);
+  rowHeights.push(H.section);
+
+  // ── Your practice: the foundation numbers that describe the organization ──
+  aoa.push([`YOUR PRACTICE · ${plan.requiredCount} required`, null, null, null]);
   rowHeights.push(H.section);
   const requiredBandRow = aoa.length - 1;
   for (const f of plan.required) pushField(f, true);
 
-  // ── Tier 2: optional (benchmarked if blank) ──
-  const optionalBandRow = aoa.length;
-  aoa.push([`OPTIONAL · WE'LL USE INDUSTRY BENCHMARKS IF LEFT BLANK`, null, null, null]);
-  rowHeights.push(H.section);
-  for (const f of plan.optionalBaseline) pushField(f, false);
+  // Cream section bands (optional practice context + the value-driver divider).
+  const sectionBandRows: number[] = [];
 
+  // ── More about your practice: optional profile numbers (benchmarked if blank) ──
+  if (plan.optionalBaseline.length > 0) {
+    sectionBandRows.push(aoa.length);
+    aoa.push(['MORE ABOUT YOUR PRACTICE · OPTIONAL', null, null, null]);
+    rowHeights.push(H.section);
+    for (const f of plan.optionalBaseline) pushField(f, false);
+  }
+
+  // ── Value drivers: the areas being modeled ──
   const driverBandRows: number[] = [];
-  for (const group of plan.driverGroups) {
-    driverBandRows.push(aoa.length);
-    aoa.push([group.driverLabel, null, null, null]);
-    rowHeights.push(H.driver);
-    for (const f of group.fields) pushField(f, false);
+  if (plan.driverGroups.length > 0) {
+    sectionBandRows.push(aoa.length);
+    aoa.push(['VALUE DRIVERS', null, null, null]);
+    rowHeights.push(H.section);
+    for (const group of plan.driverGroups) {
+      driverBandRows.push(aoa.length);
+      aoa.push([group.driverLabel, null, null, null]);
+      rowHeights.push(H.driver);
+      for (const f of group.fields) pushField(f, false);
+    }
   }
 
   const ws = XLSX.utils.aoa_to_sheet(aoa);
@@ -183,9 +205,10 @@ function buildDataFieldsSheet(
   // Column headers
   for (const col of COL_LETTERS) ensureCell(ws, `${col}1`, S_HEADER);
 
-  // Section bands (row index → A1 ref is row+1)
+  // Legend row + section bands (row index → A1 ref is row+1)
+  styleIfExists(ws, `A${legendRow + 1}`, S_LEGEND); mergeRow(ws, legendRow);
   styleIfExists(ws, `A${requiredBandRow + 1}`, S_SECTION_REQUIRED); mergeRow(ws, requiredBandRow);
-  styleIfExists(ws, `A${optionalBandRow + 1}`, S_SECTION); mergeRow(ws, optionalBandRow);
+  for (const sr of sectionBandRows) { styleIfExists(ws, `A${sr + 1}`, S_SECTION); mergeRow(ws, sr); }
   for (const dr of driverBandRows) { styleIfExists(ws, `A${dr + 1}`, S_DRIVER); mergeRow(ws, dr); }
 
   // Field rows: every row that has an input style is a field row.
