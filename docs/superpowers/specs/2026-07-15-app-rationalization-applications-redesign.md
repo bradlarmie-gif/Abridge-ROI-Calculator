@@ -82,7 +82,7 @@ type AppRatWhen = "thisYear" | "nextYear" | "year3" | "notSure";
 `AppRatItem` change:
 - **Add** `when: AppRatWhen`.
 - **Remove** `renewal?: string` and `transitionMonths` (confirm `transitionMonths` is unused in App Rationalization during implementation; if referenced anywhere, remove those references too).
-- `makeItem` defaults `when: "notSure"` (conservative — see mapping).
+- `makeItem` defaults `when: "thisYear"` (a freshly added app shows movement on the roadmap immediately; the rep adjusts per app).
 
 `retirementYear` is rewritten to depend on `when`, not a renewal string. Signature simplifies to drop the calendar `currentYear` argument:
 
