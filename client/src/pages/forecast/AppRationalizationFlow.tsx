@@ -1,0 +1,61 @@
+import { useState } from "react";
+import { UnifiedHeader } from "@/components/UnifiedHeader";
+import { type AppRatItem, type AppRatCategoryId, makeItem } from "@/lib/appRationalizationCalc";
+
+type ArStep = "setup" | "applications" | "consolidation";
+
+interface AppRationalizationFlowProps {
+  onBack: () => void;
+  onHome: () => void;
+}
+
+const STEP_INDEX: Record<ArStep, number> = { setup: 1, applications: 2, consolidation: 3 };
+const STEP_LABELS = ["Setup", "Applications", "Consolidation", "The change", "Why we can"];
+
+export default function AppRationalizationFlow({ onBack, onHome }: AppRationalizationFlowProps) {
+  const [step, setStep] = useState<ArStep>("setup");
+  const [orgName, setOrgName] = useState("");
+  const [termYears, setTermYears] = useState(3);
+  const [items, setItems] = useState<AppRatItem[]>([]);
+
+  const addItem = (category: AppRatCategoryId, vendorName?: string) =>
+    setItems((prev) => [...prev, { ...makeItem(`ar-${Date.now()}`, category), vendorName }]);
+  const updateItem = (id: string, patch: Partial<AppRatItem>) =>
+    setItems((prev) => prev.map((i) => (i.id === id ? { ...i, ...patch } : i)));
+  const removeItem = (id: string) => setItems((prev) => prev.filter((i) => i.id !== id));
+
+  return (
+    <div className="min-h-screen bg-[#FAF8F5]">
+      <UnifiedHeader
+        pathType="forecast"
+        stepName="App Rationalization"
+        currentStep={STEP_INDEX[step]}
+        totalSteps={5}
+        stepLabels={STEP_LABELS}
+        onBack={onBack}
+        onHome={onHome}
+      />
+      <div className="pt-14 sm:pt-16">
+        {step === "setup" && (
+          <div data-testid="ar-step-setup" className="p-8">Setup step (Task 3)</div>
+        )}
+        {step === "applications" && (
+          <div data-testid="ar-step-applications" className="p-8">Applications step (Task 5)</div>
+        )}
+        {step === "consolidation" && (
+          <div data-testid="ar-step-consolidation" className="max-w-3xl mx-auto px-6 py-24 text-center">
+            <h2 className="font-abridge text-3xl uppercase tracking-tight text-[#1A1A1A]">The consolidation</h2>
+            <p className="text-sm text-[#6B6B6B] mt-3">Coming next: the two-sink flow that shows what Abridge takes on and what stays.</p>
+            <button
+              onClick={() => setStep("applications")}
+              className="mt-6 text-sm font-semibold text-[#EA2C00]"
+              data-testid="ar-back-to-applications"
+            >
+              ← Back to applications
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
