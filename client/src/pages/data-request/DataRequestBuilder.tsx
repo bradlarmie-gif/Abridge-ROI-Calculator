@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, ArrowRight, Download, Check, Building2, Stethoscope, Heart, Users } from "lucide-react";
+import { ArrowLeft, ArrowRight, Download, Check, Building2, Stethoscope, Heart, Users, X } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { BASELINE_FIELDS, DRIVER_FIELDS, getRequestFieldPlan, type DataRequestSetting } from "@/lib/dataRequestFields";
 import { generateDataRequestExcel } from "@/lib/dataRequestExcel";
@@ -75,7 +75,13 @@ export default function DataRequestBuilder({ onBack }: Props) {
             {step === 2 ? 'Change setting' : 'Back'}
           </button>
           <img src={abridgeLogo} alt="Abridge" className="h-5" />
-          <div className="w-24" />
+          <button
+            onClick={onBack}
+            className="flex items-center gap-1.5 text-[#888888] text-sm hover:text-[#1A1A1A] transition-colors"
+            data-testid="btn-exit-data-request"
+          >
+            Exit <X className="w-4 h-4" />
+          </button>
         </div>
       </header>
 
