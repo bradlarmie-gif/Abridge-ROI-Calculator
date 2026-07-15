@@ -1,6 +1,6 @@
+import { useMemo } from "react";
 import ArCommandSearch from "./ArCommandSearch";
-import ArStackCard from "./ArStackCard";
-import { AnimatedValue } from "@/components/explore/AnimatedValue";
+import ArStackRow from "./ArStackRow";
 import { computeTotals, type AppRatItem, type AppRatCategoryId } from "@/lib/appRationalizationCalc";
 
 function fmtM(n: number): string {
@@ -9,68 +9,93 @@ function fmtM(n: number): string {
   return `$${Math.round(n)}`;
 }
 
+const COL_HEADERS = ["Application", "Annual spend", "How much could you displace?", "Over", "Displaceable"];
+
 export default function ArApplicationsStep({
-  items, onAdd, onUpdate, onRemove, onContinue,
+  items, orgName, onOrgNameChange, onAdd, onUpdate, onRemove, onContinue,
 }: {
   items: AppRatItem[];
+  orgName: string;
+  onOrgNameChange: (v: string) => void;
   onAdd: (category: AppRatCategoryId, vendorName?: string) => void;
   onUpdate: (id: string, patch: Partial<AppRatItem>) => void;
   onRemove: (id: string) => void;
   onContinue: () => void;
 }) {
-  const totals = computeTotals(items);
+  const totals = useMemo(() => computeTotals(items), [items]);
 
   return (
     <div className="max-w-[1120px] mx-auto px-6 py-8">
-      <h1 className="font-abridge text-4xl uppercase tracking-tight text-[#1A1A1A] text-center">Applications</h1>
-      <p className="text-sm text-[#6B6B6B] text-center mt-2.5 mb-8">
-        Browse the capabilities, or type a vendor and we place it for you.
-      </p>
-
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_296px] gap-6 items-start">
+      {/* Header: title + org field */}
+      <div className="flex items-start justify-between gap-6 mb-2">
         <div>
-          <div className="mb-6"><ArCommandSearch onSelect={onAdd} /></div>
-
-          {items.length > 0 && (
-            <div className="text-[11px] font-bold uppercase tracking-[2px] text-[#8C7E6E] mb-3" data-testid="ar-stack-count">
-              Your stack · {items.length} added
-            </div>
-          )}
-          {items.map((it) => (
-            <ArStackCard key={it.id} item={it} onChange={(p) => onUpdate(it.id, p)} onRemove={() => onRemove(it.id)} />
-          ))}
+          <h1 className="font-abridge text-4xl uppercase tracking-tight text-[#1A1A1A]">Applications</h1>
+          <p className="text-sm text-[#6B6B6B] mt-2.5">Browse the capabilities, or type a vendor and we place it for you.</p>
         </div>
+        <div className="flex flex-col items-end gap-1.5 shrink-0">
+          <label htmlFor="ar-org" className="text-[9px] font-bold uppercase tracking-[0.14em] text-[#8C7E6E]">Organization</label>
+          <input
+            id="ar-org"
+            value={orgName}
+            onChange={(e) => onOrgNameChange(e.target.value)}
+            placeholder="Organization name"
+            className="w-[200px] h-9 bg-white border border-[#E8E2DA] rounded-[9px] px-3 text-[13px] text-[#1A1A1A] text-right outline-none focus:border-[#1A1A1A] placeholder-[#B4A99B]"
+            data-testid="ar-org-name"
+          />
+        </div>
+      </div>
 
-        <div className="lg:sticky lg:top-20 rounded-2xl p-5 text-white" style={{ background: "linear-gradient(155deg,#221E19,#141210)" }}>
-          <div className="text-[10px] font-bold uppercase tracking-[1.6px] text-white/45">Stack today</div>
-          <AnimatedValue value={totals.stackTotal} format={fmtM} className="block text-[32px] font-extrabold tracking-tight mt-1.5 tabular-nums" data-testid="ar-sidebar-total" />
-          <div className="text-xs text-white/50 mt-1">/ year · {items.length} {items.length === 1 ? "application" : "applications"}</div>
+      {/* Hero command search */}
+      <div className="mt-6"><ArCommandSearch onSelect={onAdd} /></div>
 
-          <div className="my-4">
-            <div className="flex justify-between items-center text-[12.5px] mb-2">
-              <span className="flex items-center gap-2 text-white/80"><i className="w-2.5 h-2.5 rounded-sm inline-block" style={{ background: "#EA2C00" }} />To Abridge</span>
-              <b className="tabular-nums">{fmtM(totals.toAbridge)}</b>
+      {items.length > 0 && (
+        <>
+          <div className="text-[11px] font-bold uppercase tracking-[2px] text-[#8C7E6E] mt-8 mb-3" data-testid="ar-stack-count">
+            Your stack · {items.length} added
+          </div>
+
+          {/* Column headers */}
+          <div className="hidden md:grid grid-cols-[1fr_120px_190px_150px_120px] gap-3.5 px-4 pb-2">
+            {COL_HEADERS.map((h, i) => (
+              <span key={h} className={`text-[9px] font-bold uppercase tracking-[0.13em] text-[#B4A99B] ${i === COL_HEADERS.length - 1 ? "text-right" : ""}`}>{h}</span>
+            ))}
+          </div>
+
+          {items.map((it) => (
+            <ArStackRow key={it.id} item={it} onChange={(p) => onUpdate(it.id, p)} onRemove={() => onRemove(it.id)} />
+          ))}
+
+          {/* Slim total bar (replaces the black panel) */}
+          <div className="flex flex-wrap items-center gap-4 mt-4 px-5 py-4 bg-[#FAF8F5] border border-[#E8E2DA] rounded-2xl">
+            <div>
+              <div className="text-[9px] font-bold uppercase tracking-[0.14em] text-[#8C7E6E]">Stack today</div>
+              <div className="text-[19px] font-extrabold text-[#1A1A1A] tabular-nums">
+                {fmtM(totals.stackTotal)} <span className="text-[12px] font-medium text-[#8C7E6E]">/ yr</span>
+              </div>
             </div>
-            <div className="flex justify-between items-center text-[12.5px]">
-              <span className="flex items-center gap-2 text-white/80"><i className="w-2.5 h-2.5 rounded-sm inline-block" style={{ background: "#D8CEC1" }} />Stays</span>
-              <b className="tabular-nums">{fmtM(totals.stays)}</b>
-            </div>
-            <div className="h-2 rounded-md overflow-hidden flex mt-2">
+            <div className="h-2 rounded-md overflow-hidden flex" style={{ width: 170 }}>
               <div style={{ width: `${totals.pctToAbridge}%`, background: "#EA2C00" }} />
               <div style={{ width: `${100 - totals.pctToAbridge}%`, background: "#D8CEC1" }} />
             </div>
+            <div className="text-[12.5px] text-[#6B6B6B] tabular-nums">
+              <b className="text-[#1A1A1A]">{fmtM(totals.toAbridge)}</b> displaceable · {fmtM(totals.stays)} stays
+            </div>
+            <button
+              onClick={onContinue}
+              className="ml-auto h-11 px-5 rounded-xl bg-[#EA2C00] text-white text-sm font-bold"
+              data-testid="ar-see-consolidation"
+            >
+              See the consolidation →
+            </button>
           </div>
+        </>
+      )}
 
-          <button
-            onClick={onContinue}
-            disabled={items.length === 0}
-            className="w-full h-11 rounded-xl bg-[#EA2C00] text-white text-sm font-bold disabled:opacity-40"
-            data-testid="ar-see-consolidation"
-          >
-            See the consolidation →
-          </button>
-        </div>
-      </div>
+      {items.length === 0 && (
+        <p className="text-center text-[13px] text-[#8C7E6E] mt-10" data-testid="ar-empty-hint">
+          Search a vendor or pick a capability above to start building the stack.
+        </p>
+      )}
     </div>
   );
 }
