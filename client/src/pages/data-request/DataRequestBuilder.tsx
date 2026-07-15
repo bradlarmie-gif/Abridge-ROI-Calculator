@@ -2,8 +2,8 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ArrowRight, Download, Check, Building2, Stethoscope, Heart, Users, X } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { BASELINE_FIELDS, DRIVER_FIELDS, getRequestFieldPlan, type DataRequestSetting } from "@/lib/dataRequestFields";
-import { generateDataRequestExcel } from "@/lib/dataRequestExcel";
+import { BASELINE_FIELDS, DRIVER_FIELDS, getMultiRequestFieldPlan, type DataRequestSetting } from "@/lib/dataRequestFields";
+import { generateMultiDataRequestExcel } from "@/lib/dataRequestExcel";
 import abridgeLogo from "@assets/abridge-logo-wordmark-red_1769020684647.png";
 
 interface Props {
@@ -11,10 +11,10 @@ interface Props {
 }
 
 const SETTINGS: { id: DataRequestSetting; label: string; description: string; icon: LucideIcon }[] = [
-  { id: 'ed',         label: 'Emergency Department', description: 'ED physicians and APPs',                        icon: Building2   },
-  { id: 'outpatient', label: 'Outpatient',            description: 'Clinic and ambulatory providers',               icon: Stethoscope },
-  { id: 'inpatient',  label: 'Inpatient',             description: 'Hospitalists and attending physicians',         icon: Heart       },
-  { id: 'nursing',    label: 'Nursing',               description: 'Registered nurses and nursing leadership',     icon: Users       },
+  { id: 'ed',         label: 'Emergency Department', description: 'ED physicians and APPs',                    icon: Building2   },
+  { id: 'outpatient', label: 'Outpatient',           description: 'Clinic and ambulatory providers',           icon: Stethoscope },
+  { id: 'inpatient',  label: 'Inpatient',            description: 'Hospitalists and attending physicians',     icon: Heart       },
+  { id: 'nursing',    label: 'Nursing',              description: 'Registered nurses and nursing leadership',  icon: Users       },
 ];
 
 const SETTING_DRIVER_IDS: Record<DataRequestSetting, string[]> = {
@@ -26,40 +26,59 @@ const SETTING_DRIVER_IDS: Record<DataRequestSetting, string[]> = {
 
 const QUADRANTS = ['Capacity', 'Workforce', 'Revenue', 'Quality'] as const;
 
-export default function DataRequestBuilder({ onBack }: Props) {
-  const [step, setStep]                     = useState<1 | 2>(1);
-  const [setting, setSetting]               = useState<DataRequestSetting | null>(null);
-  const [selectedIds, setSelectedIds]       = useState<string[]>([]);
-  const [downloaded, setDownloaded]         = useState(false);
+const EMPTY_SELECTION: Record<DataRequestSetting, string[]> = {
+  outpatient: [], ed: [], inpatient: [], nursing: [],
+};
 
-  function handleSelectSetting(s: DataRequestSetting) {
-    setSetting(s);
-    setSelectedIds([]);
+export default function DataRequestBuilder({ onBack }: Props) {
+  const [step, setStep]                       = useState<1 | 2>(1);
+  const [settings, setSettings]               = useState<DataRequestSetting[]>([]);
+  const [selectedBySetting, setSelectedBySetting] = useState<Record<DataRequestSetting, string[]>>(EMPTY_SELECTION);
+  const [downloaded, setDownloaded]           = useState(false);
+
+  // Canonical display order, filtered to what's selected.
+  const orderedSettings = SETTINGS.filter(s => settings.includes(s.id)).map(s => s.id);
+
+  function toggleSetting(id: DataRequestSetting) {
     setDownloaded(false);
+    setSettings(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  }
+
+  function toggleDriver(setting: DataRequestSetting, id: string) {
+    setDownloaded(false);
+    setSelectedBySetting(prev => {
+      const cur = prev[setting];
+      return { ...prev, [setting]: cur.includes(id) ? cur.filter(d => d !== id) : [...cur, id] };
+    });
+  }
+
+  function handleContinue() {
+    if (settings.length === 0) return;
     setStep(2);
   }
 
-  function toggleDriver(id: string) {
-    setSelectedIds(prev => prev.includes(id) ? prev.filter(d => d !== id) : [...prev, id]);
-  }
-
   function handleDownload() {
-    if (!setting) return;
-    generateDataRequestExcel(setting, selectedIds);
+    if (orderedSettings.length === 0) return;
+    generateMultiDataRequestExcel(orderedSettings, selectedBySetting);
     setDownloaded(true);
   }
 
-  const availableDrivers = setting
-    ? SETTING_DRIVER_IDS[setting].map(id => DRIVER_FIELDS.find(g => g.driverId === id)).filter(Boolean) as typeof DRIVER_FIELDS
-    : [];
+  function startOver() {
+    setSettings([]);
+    setSelectedBySetting(EMPTY_SELECTION);
+    setDownloaded(false);
+    setStep(1);
+  }
 
-  const baselineFields      = setting ? BASELINE_FIELDS[setting] : [];
-  const selectedGroups      = availableDrivers.filter(d => selectedIds.includes(d.driverId));
-  const totalDriverFields   = selectedGroups.reduce((n, g) => n + g.fields.length, 0);
-  const fieldPlan           = setting
-    ? getRequestFieldPlan(setting, selectedIds)
-    : { requiredCount: 0, optionalCount: 0, required: [], optionalBaseline: [], driverGroups: [] };
-  const settingLabel        = SETTINGS.find(s => s.id === setting)?.label ?? '';
+  const driversForSetting = (setting: DataRequestSetting) =>
+    SETTING_DRIVER_IDS[setting]
+      .map(id => DRIVER_FIELDS.find(g => g.driverId === id))
+      .filter(Boolean) as typeof DRIVER_FIELDS;
+
+  const settingLabel = (id: DataRequestSetting) => SETTINGS.find(s => s.id === id)?.label ?? '';
+
+  const totalSelectedDrivers = orderedSettings.reduce((n, s) => n + selectedBySetting[s].length, 0);
+  const multiPlan = getMultiRequestFieldPlan(orderedSettings, selectedBySetting);
 
   return (
     <div className="min-h-screen bg-[#FAFAF8]">
@@ -72,7 +91,7 @@ export default function DataRequestBuilder({ onBack }: Props) {
             className="flex items-center gap-1.5 text-[#888888] text-sm hover:text-[#1A1A1A] transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
-            {step === 2 ? 'Change setting' : 'Back'}
+            {step === 2 ? 'Change settings' : 'Back'}
           </button>
           <img src={abridgeLogo} alt="Abridge" className="h-5" />
           <button
@@ -88,7 +107,7 @@ export default function DataRequestBuilder({ onBack }: Props) {
       <div className="pt-14">
         <AnimatePresence mode="wait">
 
-          {/* ── Step 1: Setting Selection ── */}
+          {/* ── Step 1: Setting Selection (multi-select) ── */}
           {step === 1 && (
             <motion.div
               key="step1"
@@ -106,7 +125,7 @@ export default function DataRequestBuilder({ onBack }: Props) {
                   Who are you modeling for?
                 </h1>
                 <p className="text-[15px] text-[#888888] leading-relaxed max-w-md mx-auto">
-                  Select a care setting. You'll choose which value drivers to include — we'll generate a clean Excel with only the data you actually need.
+                  Pick every care setting in scope. You'll choose the value drivers for each, and we'll generate one clean Excel with a tab per setting.
                 </p>
               </div>
 
@@ -114,35 +133,65 @@ export default function DataRequestBuilder({ onBack }: Props) {
                 {SETTINGS.map((s, i) => {
                   const Icon = s.icon;
                   const driverCount = SETTING_DRIVER_IDS[s.id].length;
+                  const selected = settings.includes(s.id);
                   return (
                     <motion.button
                       key={s.id}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: i * 0.06 }}
-                      onClick={() => handleSelectSetting(s.id)}
-                      className="group text-left bg-white border border-[#E5E5E5] rounded-2xl p-6 hover:border-[#1A1A1A] hover:shadow-md transition-all duration-200"
+                      onClick={() => toggleSetting(s.id)}
+                      aria-pressed={selected}
+                      data-testid={`ds-setting-${s.id}`}
+                      className={`group text-left bg-white border rounded-2xl p-6 transition-all duration-200 ${
+                        selected
+                          ? 'border-[#1A1A1A] shadow-md'
+                          : 'border-[#E5E5E5] hover:border-[#1A1A1A] hover:shadow-md'
+                      }`}
                     >
-                      <div className="w-11 h-11 rounded-xl bg-[#FEF2EE] flex items-center justify-center mb-5 group-hover:bg-[#EA2C00]/10 transition-colors">
-                        <Icon className="w-5 h-5 text-[#EA2C00]" />
+                      <div className="flex items-start justify-between mb-5">
+                        <div className={`w-11 h-11 rounded-xl flex items-center justify-center transition-colors ${
+                          selected ? 'bg-[#EA2C00]/10' : 'bg-[#FEF2EE] group-hover:bg-[#EA2C00]/10'
+                        }`}>
+                          <Icon className="w-5 h-5 text-[#EA2C00]" />
+                        </div>
+                        <div className={`w-5 h-5 rounded-full flex items-center justify-center border transition-all ${
+                          selected ? 'bg-[#1A1A1A] border-[#1A1A1A]' : 'border-[#D5D5D5]'
+                        }`}>
+                          {selected && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
+                        </div>
                       </div>
                       <p className="font-bold text-[#1A1A1A] text-base mb-1">{s.label}</p>
                       <p className="text-sm text-[#888888] mb-4">{s.description}</p>
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-bold uppercase tracking-[1.5px] text-[#AAAAAA]">
-                          {driverCount} drivers available
-                        </span>
-                        <ArrowRight className="w-4 h-4 text-[#CCCCCC] group-hover:text-[#1A1A1A] group-hover:translate-x-0.5 transition-all" />
-                      </div>
+                      <span className="text-[10px] font-bold uppercase tracking-[1.5px] text-[#AAAAAA]">
+                        {driverCount} drivers available
+                      </span>
                     </motion.button>
                   );
                 })}
               </div>
+
+              <div className="mt-10 flex flex-col items-center">
+                <button
+                  onClick={handleContinue}
+                  disabled={settings.length === 0}
+                  data-testid="ds-continue"
+                  className="inline-flex items-center gap-2 bg-[#1A1A1A] text-white rounded-xl px-7 py-3 text-sm font-semibold disabled:opacity-30 disabled:cursor-not-allowed hover:bg-black transition-all"
+                >
+                  Continue
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+                <p className="text-[12px] text-[#888888] mt-3 h-4">
+                  {settings.length > 0
+                    ? `${settings.length} ${settings.length === 1 ? 'care setting' : 'care settings'} selected`
+                    : ''}
+                </p>
+              </div>
             </motion.div>
           )}
 
-          {/* ── Step 2: Driver Selection + Right Panel ── */}
-          {step === 2 && setting && (
+          {/* ── Step 2: Driver Selection (grouped by setting) + Right Panel ── */}
+          {step === 2 && orderedSettings.length > 0 && (
             <motion.div
               key="step2"
               initial={{ opacity: 0, y: 16 }}
@@ -153,74 +202,81 @@ export default function DataRequestBuilder({ onBack }: Props) {
             >
               <div className="flex flex-col lg:flex-row gap-10 items-start">
 
-                {/* Left: Driver Selection */}
+                {/* Left: Driver Selection, grouped by setting */}
                 <div className="flex-1 min-w-0">
                   <div className="mb-8">
                     <p className="text-[10px] font-bold uppercase tracking-[2.5px] text-[#888888] mb-3">
-                      {settingLabel}
+                      {orderedSettings.length} {orderedSettings.length === 1 ? 'care setting' : 'care settings'}
                     </p>
                     <h1 className="text-[28px] font-bold tracking-tight text-[#1A1A1A] mb-2">
                       Which areas are you modeling?
                     </h1>
                     <p className="text-[14px] text-[#888888]">
-                      Select the value drivers relevant to this prospect. Only drivers with quantifiable dollar impact are shown.
+                      Select the value drivers relevant to this prospect, per setting. Only drivers with quantifiable dollar impact are shown.
                     </p>
                   </div>
 
-                  <div className="space-y-8">
-                    {QUADRANTS.map(q => {
-                      const qDrivers = availableDrivers.filter(d => d.quadrant === q);
-                      if (qDrivers.length === 0) return null;
+                  <div className="space-y-12">
+                    {orderedSettings.map(setting => {
+                      const settingDrivers = driversForSetting(setting);
                       return (
-                        <motion.div
-                          key={q}
-                          initial={{ opacity: 0, y: 12 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.05 }}
-                        >
-                          <p className="text-[10px] font-bold uppercase tracking-[2.5px] text-[#AAAAAA] mb-3">{q}</p>
-                          <div className="space-y-2">
-                            {qDrivers.map(driver => {
-                              const selected = selectedIds.includes(driver.driverId);
+                        <div key={setting} data-testid={`ds-setting-section-${setting}`}>
+                          <p className="text-[11px] font-bold uppercase tracking-[2.5px] text-[#1A1A1A] mb-5 pb-2 border-b border-[#EDEBE6]">
+                            {settingLabel(setting)}
+                          </p>
+                          <div className="space-y-8">
+                            {QUADRANTS.map(q => {
+                              const qDrivers = settingDrivers.filter(d => d.quadrant === q);
+                              if (qDrivers.length === 0) return null;
                               return (
-                                <button
-                                  key={driver.driverId}
-                                  onClick={() => toggleDriver(driver.driverId)}
-                                  className={`w-full text-left flex items-start gap-4 rounded-xl px-5 py-4 border transition-all duration-150 ${
-                                    selected
-                                      ? 'border-[#1A1A1A] bg-white shadow-sm'
-                                      : 'border-[#E8E4DF] bg-white hover:border-[#CCCCCC]'
-                                  }`}
-                                >
-                                  <div className={`mt-0.5 w-4 h-4 rounded flex items-center justify-center border shrink-0 transition-colors ${
-                                    selected ? 'bg-[#1A1A1A] border-[#1A1A1A]' : 'border-[#CCCCCC]'
-                                  }`}>
-                                    {selected && <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />}
+                                <div key={q}>
+                                  <p className="text-[10px] font-bold uppercase tracking-[2.5px] text-[#AAAAAA] mb-3">{q}</p>
+                                  <div className="space-y-2">
+                                    {qDrivers.map(driver => {
+                                      const selected = selectedBySetting[setting].includes(driver.driverId);
+                                      return (
+                                        <button
+                                          key={driver.driverId}
+                                          onClick={() => toggleDriver(setting, driver.driverId)}
+                                          className={`w-full text-left flex items-start gap-4 rounded-xl px-5 py-4 border transition-all duration-150 ${
+                                            selected
+                                              ? 'border-[#1A1A1A] bg-white shadow-sm'
+                                              : 'border-[#E8E4DF] bg-white hover:border-[#CCCCCC]'
+                                          }`}
+                                        >
+                                          <div className={`mt-0.5 w-4 h-4 rounded flex items-center justify-center border shrink-0 transition-colors ${
+                                            selected ? 'bg-[#1A1A1A] border-[#1A1A1A]' : 'border-[#CCCCCC]'
+                                          }`}>
+                                            {selected && <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />}
+                                          </div>
+                                          <div className="flex-1 min-w-0">
+                                            <p className={`text-sm font-semibold leading-snug ${selected ? 'text-[#1A1A1A]' : 'text-[#333333]'}`}>
+                                              {driver.driverLabel}
+                                            </p>
+                                            <p className="text-xs text-[#888888] mt-0.5 leading-snug">
+                                              {driver.fields.map(f => f.label).join(' · ')}
+                                            </p>
+                                          </div>
+                                          <span className={`shrink-0 text-[9px] font-bold uppercase tracking-[1px] rounded-full px-2.5 py-1 mt-0.5 ${
+                                            selected ? 'bg-[#1A1A1A] text-white' : 'bg-[#F5F0EB] text-[#888888]'
+                                          }`}>
+                                            {driver.fields.length} {driver.fields.length === 1 ? 'field' : 'fields'}
+                                          </span>
+                                        </button>
+                                      );
+                                    })}
                                   </div>
-                                  <div className="flex-1 min-w-0">
-                                    <p className={`text-sm font-semibold leading-snug ${selected ? 'text-[#1A1A1A]' : 'text-[#333333]'}`}>
-                                      {driver.driverLabel}
-                                    </p>
-                                    <p className="text-xs text-[#888888] mt-0.5 leading-snug">
-                                      {driver.fields.map(f => f.label).join(' · ')}
-                                    </p>
-                                  </div>
-                                  <span className={`shrink-0 text-[9px] font-bold uppercase tracking-[1px] rounded-full px-2.5 py-1 mt-0.5 ${
-                                    selected ? 'bg-[#1A1A1A] text-white' : 'bg-[#F5F0EB] text-[#888888]'
-                                  }`}>
-                                    {driver.fields.length} {driver.fields.length === 1 ? 'field' : 'fields'}
-                                  </span>
-                                </button>
+                                </div>
                               );
                             })}
                           </div>
-                        </motion.div>
+                        </div>
                       );
                     })}
                   </div>
                 </div>
 
-                {/* Right: Live Preview Panel */}
+                {/* Right: Live Preview Panel (aggregated across settings) */}
                 <motion.div
                   className="w-full lg:w-[320px] shrink-0 lg:sticky lg:top-24"
                   initial={{ opacity: 0, x: 20 }}
@@ -228,58 +284,61 @@ export default function DataRequestBuilder({ onBack }: Props) {
                   transition={{ delay: 0.15 }}
                 >
                   <div className="bg-[#1A1A1A] rounded-2xl p-6">
-                    <p className="text-[10px] font-bold uppercase tracking-[2px] text-white/50 mb-1">Your Data Request</p>
-                    <div className="inline-flex items-center gap-1.5 bg-white/10 rounded-full px-2.5 py-1 mb-5">
-                      <span className="text-[11px] font-medium text-white/80">{settingLabel}</span>
-                    </div>
-
-                    {/* Baseline — always included */}
-                    <div className="mb-4">
-                      <p className="text-[9px] font-bold uppercase tracking-[1.5px] text-white/30 mb-2">Baseline — always included</p>
-                      <ul className="space-y-1">
-                        {baselineFields.map(f => (
-                          <li key={f.id} className="flex items-center gap-2">
-                            <span className="w-1 h-1 rounded-full bg-white/20 shrink-0" />
-                            <span className="text-[12px] text-white/60">{f.label}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    {/* Selected drivers */}
-                    <AnimatePresence>
-                      {selectedGroups.map(group => (
-                        <motion.div
-                          key={group.driverId}
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: 'auto' }}
-                          exit={{ opacity: 0, height: 0 }}
-                          transition={{ duration: 0.18 }}
-                          className="mb-4 overflow-hidden"
-                        >
-                          <p className="text-[9px] font-bold uppercase tracking-[1.5px] text-white/30 mb-2">{group.driverLabel}</p>
-                          <ul className="space-y-1">
-                            {group.fields.map(f => (
-                              <li key={f.id} className="flex items-center gap-2">
-                                <span className="w-1 h-1 rounded-full bg-[#EA2C00]/60 shrink-0" />
-                                <span className="text-[12px] text-white/70">{f.label}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </motion.div>
+                    <p className="text-[10px] font-bold uppercase tracking-[2px] text-white/50 mb-3">Your Data Request</p>
+                    <div className="flex flex-wrap gap-1.5 mb-5">
+                      {orderedSettings.map(s => (
+                        <span key={s} className="inline-flex items-center bg-white/10 rounded-full px-2.5 py-1 text-[11px] font-medium text-white/80">
+                          {settingLabel(s)}
+                        </span>
                       ))}
-                    </AnimatePresence>
+                    </div>
 
-                    {selectedIds.length === 0 && (
-                      <p className="text-[12px] text-white/30 italic mb-4">Select drivers to see what will be included.</p>
+                    {orderedSettings.map(setting => {
+                      const baseline = BASELINE_FIELDS[setting];
+                      const groups = driversForSetting(setting).filter(d => selectedBySetting[setting].includes(d.driverId));
+                      return (
+                        <div key={setting} className="mb-5">
+                          <p className="text-[10px] font-bold uppercase tracking-[1.5px] text-white/50 mb-2">{settingLabel(setting)}</p>
+
+                          <div className="mb-3">
+                            <p className="text-[9px] font-bold uppercase tracking-[1.5px] text-white/25 mb-1.5">Baseline · always included</p>
+                            <ul className="space-y-1">
+                              {baseline.map(f => (
+                                <li key={f.id} className="flex items-center gap-2">
+                                  <span className="w-1 h-1 rounded-full bg-white/20 shrink-0" />
+                                  <span className="text-[12px] text-white/60">{f.label}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+
+                          {groups.map(group => (
+                            <div key={group.driverId} className="mb-3">
+                              <p className="text-[9px] font-bold uppercase tracking-[1.5px] text-white/25 mb-1.5">{group.driverLabel}</p>
+                              <ul className="space-y-1">
+                                {group.fields.map(f => (
+                                  <li key={f.id} className="flex items-center gap-2">
+                                    <span className="w-1 h-1 rounded-full bg-[#EA2C00]/60 shrink-0" />
+                                    <span className="text-[12px] text-white/70">{f.label}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    })}
+
+                    {totalSelectedDrivers === 0 && (
+                      <p className="text-[12px] text-white/30 italic mb-4">Select drivers to add them to the request.</p>
                     )}
 
                     <div className="border-t border-white/10 pt-4 mt-2 mb-5">
                       <div className="flex items-center justify-between">
                         <span className="text-[11px] text-white/40">The ask</span>
                         <span className="text-[13px] font-bold text-white">
-                          <span className="text-[#EA2C00]">{fieldPlan.requiredCount} required</span>
-                          <span className="text-white/40"> · {fieldPlan.optionalCount} optional</span>
+                          <span className="text-[#EA2C00]">{multiPlan.requiredCount} required</span>
+                          <span className="text-white/40"> · {multiPlan.optionalCount} optional</span>
                         </span>
                       </div>
                       <p className="text-[10px] text-white/30 mt-1">
@@ -295,7 +354,7 @@ export default function DataRequestBuilder({ onBack }: Props) {
                         </div>
                         <p className="text-[11px] text-white/50 mb-3">Share with your prospect to collect their numbers.</p>
                         <button
-                          onClick={() => { setSetting(null); setSelectedIds([]); setDownloaded(false); setStep(1); }}
+                          onClick={startOver}
                           className="text-[11px] text-[#EA2C00] hover:text-[#EA2C00]/80 font-medium transition-colors"
                         >
                           Start over →
@@ -304,7 +363,8 @@ export default function DataRequestBuilder({ onBack }: Props) {
                     ) : (
                       <button
                         onClick={handleDownload}
-                        disabled={selectedIds.length === 0}
+                        disabled={totalSelectedDrivers === 0}
+                        data-testid="ds-download"
                         className="w-full flex items-center justify-center gap-2 bg-white text-[#1A1A1A] rounded-xl py-3 text-sm font-semibold disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white/90 transition-all"
                       >
                         <Download className="w-4 h-4" />
