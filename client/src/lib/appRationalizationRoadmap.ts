@@ -29,7 +29,7 @@ export interface Roadmap {
   read: string;
 }
 
-export function computeRoadmap(items: AppRatItem[], termYears: number, currentYear?: number): Roadmap {
+export function computeRoadmap(items: AppRatItem[], termYears: number): Roadmap {
   const term = Math.max(1, Math.floor(termYears));
   const rows = items.filter((i) => (i.annualSpend || 0) > 0);
   const totals = computeTotals(rows);
@@ -40,7 +40,7 @@ export function computeRoadmap(items: AppRatItem[], termYears: number, currentYe
     spend: r.annualSpend,
     retired: itemRetired(r),
     stays: itemStays(r),
-    ry: retirementYear(r, term, currentYear),
+    ry: retirementYear(r, term),
   }));
 
   const snapshots: RoadmapSnapshot[] = [];
@@ -74,14 +74,14 @@ export function computeRoadmap(items: AppRatItem[], termYears: number, currentYe
   if (rows.length === 0) {
     read = "Add applications with spend to see the roadmap.";
   } else if (totalRetired === 0) {
-    read = "Nothing retires at the current coverage. Raise coverage on a tool to see it come off the stack.";
+    read = "Nothing moves at the current share. Raise how much you could displace on a tool to see it come off the stack.";
   } else {
     let maxYear = 1;
     for (let i = 0; i < deltas.length; i++) if (deltas[i].amount > deltas[maxYear - 1].amount) maxYear = deltas[i].year;
     const gated = enriched.some((e) => e.ry > 1 && e.retired > 0);
     read = `Most of the retirement lands in Year ${maxYear}.` +
       (gated
-        ? " The rest is renewal-gated, so it holds until those contracts turn over."
+        ? " The rest is scheduled for later years."
         : " It can all move now.");
   }
 

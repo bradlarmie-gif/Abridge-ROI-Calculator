@@ -5,7 +5,7 @@ import {
 } from "@/lib/appRationalizationCalc";
 
 const item = (over: Partial<AppRatItem> = {}): AppRatItem => ({
-  id: "x", category: "dictation", annualSpend: 1_800_000, coveragePct: 80, transitionMonths: 12, ...over,
+  id: "x", category: "dictation", annualSpend: 1_800_000, coveragePct: 80, when: "thisYear", ...over,
 });
 
 describe("appRationalizationCalc", () => {
@@ -34,9 +34,9 @@ describe("appRationalizationCalc", () => {
   it("computeTotals is zero-safe on an empty stack", () => {
     expect(computeTotals([])).toEqual({ stackTotal: 0, toAbridge: 0, stays: 0, pctToAbridge: 0 });
   });
-  it("makeItem defaults to 80% coverage and the given category", () => {
+  it("makeItem defaults to an 80% displace share, This year, and the given category", () => {
     const m = makeItem("id1", "cds");
-    expect(m).toMatchObject({ id: "id1", category: "cds", coveragePct: 80, annualSpend: 0, transitionMonths: 12 });
+    expect(m).toMatchObject({ id: "id1", category: "cds", coveragePct: 80, annualSpend: 0, when: "thisYear" });
   });
   it("categoryLabel resolves known ids", () => {
     expect(categoryLabel("cds")).toBe("Clinical decision support");

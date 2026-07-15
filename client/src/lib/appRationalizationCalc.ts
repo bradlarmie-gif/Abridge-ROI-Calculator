@@ -9,6 +9,15 @@ export type AppRatIconKey =
 
 export type AppRatCategoryId = AppRatIconKey;
 
+export type AppRatWhen = "thisYear" | "nextYear" | "year3" | "notSure";
+
+export const AR_WHEN_OPTIONS: { value: AppRatWhen; label: string }[] = [
+  { value: "thisYear", label: "This year" },
+  { value: "nextYear", label: "Next year" },
+  { value: "year3",    label: "Year 3" },
+  { value: "notSure",  label: "Not sure" },
+];
+
 export interface AppRatCategory {
   id: AppRatCategoryId;
   label: string;
@@ -52,8 +61,9 @@ export interface AppRatItem {
   annualSpend: number;
   coveragePct: number;      // 0-100; the share of THIS tool's spend Abridge can take on
   abridgeProduct?: string;  // "Covered by"; defaults to the category label when empty
-  renewal?: string;         // "Open term" | "2026" | "Mid 2027" | "Unknown"; drives the roadmap later
-  transitionMonths: number; // ramp, reused by later phases
+  when?: AppRatWhen;        // contract-year bucket for when the displacement lands
+  renewal?: string;         // legacy, removed once the UI migration lands
+  transitionMonths?: number;// legacy, removed once the UI migration lands
 }
 
 const CATEGORY_BY_ID: Record<AppRatCategoryId, AppRatCategory> =
@@ -64,7 +74,7 @@ export function categoryLabel(id: AppRatCategoryId): string {
 }
 
 export function makeItem(id: string, category: AppRatCategoryId): AppRatItem {
-  return { id, category, annualSpend: 0, coveragePct: 80, transitionMonths: 12 };
+  return { id, category, annualSpend: 0, coveragePct: 80, when: "thisYear" };
 }
 
 export function itemDisplayName(item: AppRatItem): string {
@@ -103,19 +113,20 @@ export function searchApplications(query: string): { vendors: KnownVendor[]; cat
   return { vendors, categories };
 }
 
+const WHEN_TO_YEAR: Record<AppRatWhen, (term: number) => number> = {
+  thisYear: () => 1,
+  nextYear: () => 2,
+  year3:    () => 3,
+  notSure:  (term) => term,
+};
+
 /**
- * The contract year (1..termYears) in which a tool becomes a candidate to
- * retire, derived from its renewal descriptor. "Open term" retires now;
- * a 4-digit year maps relative to the current year; empty/"Unknown" holds to
- * the last year (conservative). currentYear is injectable for deterministic tests.
+ * The contract year (1..termYears) in which a tool's displacement lands, from
+ * its "when" bucket. "Not sure" holds to the last year (conservative). The
+ * result is clamped to [1, termYears].
  */
-export function retirementYear(item: AppRatItem, termYears: number, currentYear: number = new Date().getFullYear()): number {
+export function retirementYear(item: AppRatItem, termYears: number): number {
   const term = Math.max(1, Math.floor(termYears));
-  const clamp = (n: number) => Math.min(term, Math.max(1, n));
-  const r = (item.renewal ?? "").trim();
-  if (!r || /unknown/i.test(r)) return term;
-  if (/open term/i.test(r)) return 1;
-  const m = r.match(/\b(\d{4})\b/);
-  if (m) return clamp(parseInt(m[1], 10) - currentYear + 1);
-  return term;
+  const raw = WHEN_TO_YEAR[item.when ?? "notSure"](term);
+  return Math.min(term, Math.max(1, raw));
 }
