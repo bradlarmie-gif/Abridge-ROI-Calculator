@@ -1,24 +1,24 @@
 // client/src/components/forecast/ConsolidationWaterfall.tsx
-// The consolidation hero: a deal-bridge waterfall. Today is a composed stack of
-// the tools; each tool peels off into a coral step (taupe -> coral = "your tool
-// becomes Abridge") as it sunsets; it lands on what stays. Below, a compact
-// "how the sunset lands" phasing strip over the contract term.
+// The consolidation hero: an editorial deal-bridge waterfall (Direction A).
+// Today is a composed stack of the tools; each peels off into a coral step
+// (taupe -> coral = "your tool becomes Abridge") as it sunsets, landing on what
+// stays. SVG draws the bars/connectors; all type is crisp HTML (AnimatedValue
+// count-ups) overlaid by percentage so it scales. Phasing strip folded in below.
 import { useMemo, useState } from "react";
 import { ChevronDown } from "lucide-react";
+import { AnimatedValue } from "@/components/explore/AnimatedValue";
 import { buildStackBars, type AppRatItem } from "@/lib/appRationalizationCalc";
 import { computeRoadmap } from "@/lib/appRationalizationRoadmap";
 
-const TAUPE = ["#5A5148", "#7A6E60", "#8E8172", "#A2937F", "#B6A78F", "#C6B9A2"];
+const TAUPE = ["#6E6355", "#7E7263", "#8E8172", "#9E9080", "#AC9E89", "#BCAF99"];
 const STAYS_COLOR = "#C6B9A2";
 const TERM_OPTIONS = [2, 3, 4, 5];
 
-// geometry
-const VB_W = 760;
-const VB_H = 324;
-const PLOT_LEFT = 56;
-const PLOT_RIGHT = 712;
-const BASELINE = 262;
-const PLOT_TOP = 46;
+// SVG geometry (labels overlaid in HTML by percentage of these dims)
+const VB_W = 760, VB_H = 262;
+const PLOT_LEFT = 56, PLOT_RIGHT = 712, BASELINE = 210, PLOT_TOP = 44;
+const pctX = (x: number) => (x / VB_W) * 100;
+const pctY = (y: number) => (y / VB_H) * 100;
 
 function fmtM(n: number): string {
   const a = Math.abs(n);
@@ -30,13 +30,15 @@ function fmtM(n: number): string {
 export default function ConsolidationWaterfall({
   items, termYears, onTermChange,
 }: { items: AppRatItem[]; termYears: number; onTermChange: (y: number) => void }) {
-  const [hover, setHover] = useState<{ id: string; label: string; value: string; centerPct: number } | null>(null);
+  const [hover, setHover] = useState<{ id: string; label: string; value: string; leftPct: number; topPct: number } | null>(null);
   const bars = useMemo(() => buildStackBars(items), [items]);
   const roadmap = useMemo(() => computeRoadmap(items, termYears), [items, termYears]);
 
   const L = useMemo(() => {
     const shadeFor = (i: number) => TAUPE[i % TAUPE.length];
-    const todaySegs = bars.tools.map((t, i) => ({ id: t.id, name: t.name, spend: t.spend, shade: shadeFor(i) }));
+    const total = Math.max(1, bars.stackTotal);
+    const k = (BASELINE - PLOT_TOP) / total;
+    const yOf = (v: number) => BASELINE - v * k;
 
     let running = bars.stackTotal;
     const steps = bars.tools
@@ -48,15 +50,20 @@ export default function ConsolidationWaterfall({
         return { id: t.id, name: t.name, amount: t.sunset, before, after: running, shade: shadeFor(i) };
       });
 
-    const n = 2 + steps.length; // Today + steps + Stays
+    const n = 2 + steps.length;
     const slotW = (PLOT_RIGHT - PLOT_LEFT) / n;
-    const barW = Math.min(72, slotW * 0.56);
+    const barW = Math.min(66, slotW * 0.5);
     const centerX = (i: number) => PLOT_LEFT + slotW * (i + 0.5);
-    const maxV = Math.max(1, bars.stackTotal);
-    const k = (BASELINE - PLOT_TOP) / maxV;
-    const yOf = (v: number) => BASELINE - v * k;
 
-    return { todaySegs, steps, n, barW, centerX, yOf, stays: bars.stays, stackTotal: bars.stackTotal, sunset: bars.sunset };
+    // Today composed segments (top to bottom by spend)
+    let cursorV = bars.stackTotal;
+    const todaySegs = bars.tools.map((t, i) => {
+      const topV = cursorV, botV = cursorV - t.spend;
+      cursorV = botV;
+      return { id: t.id, name: t.name, spend: t.spend, shade: shadeFor(i), yTop: yOf(topV), yBot: yOf(botV) };
+    });
+
+    return { steps, todaySegs, n, barW, centerX, yOf, stays: bars.stays, stackTotal: bars.stackTotal, sunset: bars.sunset };
   }, [bars]);
 
   if (bars.stackTotal === 0) {
@@ -67,113 +74,100 @@ export default function ConsolidationWaterfall({
     );
   }
 
-  const { todaySegs, steps, n, barW, centerX, yOf } = L;
+  const { steps, todaySegs, n, barW, centerX, yOf } = L;
   const staysX = n - 1;
   const dim = (id: string) => hover !== null && hover.id !== id;
+  const half = barW / 2;
 
-  // Today stacked segments (top to bottom by spend)
-  let cursorV = L.stackTotal;
-  const todayRects = todaySegs.map((s) => {
-    const topV = cursorV;
-    const botV = cursorV - s.spend;
-    cursorV = botV;
-    return { ...s, y: yOf(topV), h: yOf(botV) - yOf(topV) };
-  });
+  const numCls = "font-semibold text-[#1A1A1A] tabular-nums";
 
   return (
-    <div className="rounded-[20px] p-6 md:p-7" style={{ background: "linear-gradient(160deg,#FDFBF8,#F6F1EA)", border: "1px solid #E8E2DA" }} data-testid="ar-waterfall">
+    <div className="rounded-[20px] p-6 md:p-8" style={{ background: "linear-gradient(160deg,#FDFBF8,#F6F1EA)", border: "1px solid #E8E2DA" }} data-testid="ar-waterfall">
+      <div className="font-abridge uppercase tracking-[0.16em] text-[11px] text-[#B4A99B] mb-5 px-0.5">Your stack, consolidated</div>
+
       <div className="relative">
+        {/* hover tooltip */}
         {hover && (
-          <div className="absolute z-10 -translate-x-1/2 pointer-events-none" style={{ left: `${hover.centerPct}%`, top: 0 }}>
+          <div className="absolute z-10 pointer-events-none" style={{ left: `${hover.leftPct}%`, top: `${hover.topPct}%`, transform: "translate(-50%, -120%)" }}>
             <div className="bg-[#1A1A1A] text-white rounded-lg px-3 py-1.5 shadow-[0_8px_20px_rgba(0,0,0,0.18)] whitespace-nowrap">
               <div className="text-[11px] font-semibold leading-tight">{hover.label}</div>
               <div className="text-[11px] text-white/70 tabular-nums leading-tight">{hover.value}</div>
             </div>
           </div>
         )}
-        <div className="px-1 pb-2 text-[11px] font-bold uppercase tracking-[2px] text-[#B4A99B]">Your stack, consolidated</div>
-        <svg viewBox={`0 0 ${VB_W} ${VB_H}`} width="100%" style={{ fontFamily: "Manrope, sans-serif" }} data-testid="ar-waterfall-svg">
-          {/* baseline */}
-          <line x1={PLOT_LEFT} y1={BASELINE} x2={PLOT_RIGHT} y2={BASELINE} stroke="#E0D7C8" />
 
-          {/* connectors at running levels */}
-          <g stroke="#C4B8A8" strokeDasharray="4 4">
-            {steps.length > 0 && (
-              <line x1={centerX(0) + barW / 2} y1={yOf(L.stackTotal)} x2={centerX(1) - barW / 2} y2={yOf(L.stackTotal)} />
-            )}
+        {/* SVG bars + connectors (no text) */}
+        <svg viewBox={`0 0 ${VB_W} ${VB_H}`} width="100%" className="block" data-testid="ar-waterfall-svg">
+          <line x1={PLOT_LEFT} y1={BASELINE} x2={PLOT_RIGHT} y2={BASELINE} stroke="#E4DBCC" />
+
+          <g stroke="#C9BCA9" strokeDasharray="3 4">
+            {steps.length > 0 && <line x1={centerX(0) + half} y1={yOf(L.stackTotal)} x2={centerX(1) - half} y2={yOf(L.stackTotal)} />}
             {steps.map((s, j) => (
-              <line key={s.id} x1={centerX(1 + j) + barW / 2} y1={yOf(s.after)} x2={centerX(1 + j + 1) - barW / 2} y2={yOf(s.after)} />
+              <line key={s.id} x1={centerX(1 + j) + half} y1={yOf(s.after)} x2={centerX(1 + j + 1) - half} y2={yOf(s.after)} />
             ))}
           </g>
 
-          {/* TODAY: composed stack of tools */}
-          <g opacity={hover === null ? 1 : 0.999}>
-            {todayRects.map((r) => (
-              <rect
-                key={r.id}
-                x={centerX(0) - barW / 2}
-                y={r.y}
-                width={barW}
-                height={Math.max(1, r.h)}
-                fill={r.shade}
-                opacity={dim(r.id) ? 0.35 : 1}
-                stroke="#FDFBF8"
-                strokeWidth={1.5}
-                onMouseEnter={() => setHover({ id: r.id, label: r.name, value: `${fmtM(r.spend)} / yr`, centerPct: (centerX(0) / VB_W) * 100 })}
-                onMouseLeave={() => setHover(null)}
-              />
-            ))}
-            <text x={centerX(0)} y={yOf(L.stackTotal) - 9} textAnchor="middle" fontSize={12} fontWeight={700} fill="#1A1A1A" style={{ fontVariantNumeric: "tabular-nums" }}>{fmtM(L.stackTotal)}</text>
-          </g>
+          {/* Today composed stack */}
+          {todaySegs.map((s) => (
+            <rect
+              key={s.id}
+              x={centerX(0) - half} y={s.yTop} width={barW} height={Math.max(1, s.yBot - s.yTop)}
+              fill={s.shade} opacity={dim(s.id) ? 0.35 : 1}
+              stroke="#FDFBF8" strokeWidth={2}
+              onMouseEnter={() => setHover({ id: s.id, label: s.name, value: `${fmtM(s.spend)} / yr`, leftPct: pctX(centerX(0)), topPct: pctY(s.yTop) })}
+              onMouseLeave={() => setHover(null)}
+            />
+          ))}
 
-          {/* DECREMENT steps: each tool sunsets (taupe -> coral) */}
+          {/* Decrement steps (taupe -> coral) */}
           {steps.map((s, j) => {
             const yTop = yOf(s.before);
-            const h = yOf(s.after) - yTop;
             return (
-              <g key={s.id}>
-                <rect
-                  className="wf-step"
-                  style={{ ["--wf-from" as string]: s.shade, animationDelay: `${0.15 + j * 0.16}s` }}
-                  x={centerX(1 + j) - barW / 2}
-                  y={yTop}
-                  width={barW}
-                  height={Math.max(2, h)}
-                  rx={4}
-                  fill="#EA2C00"
-                  opacity={dim(s.id) ? 0.28 : 1}
-                  onMouseEnter={() => setHover({ id: s.id, label: s.name, value: `${fmtM(s.amount)} sunsets onto Abridge`, centerPct: (centerX(1 + j) / VB_W) * 100 })}
-                  onMouseLeave={() => setHover(null)}
-                />
-                <text x={centerX(1 + j)} y={yTop + Math.max(2, h) / 2 + 4} textAnchor="middle" fontSize={h > 26 ? 11 : 9} fontWeight={700} fill={h > 26 ? "#fff" : "#B23A12"} style={{ fontVariantNumeric: "tabular-nums" }}>−{fmtM(s.amount)}</text>
-              </g>
+              <rect
+                key={s.id}
+                className="wf-step"
+                style={{ ["--wf-from" as string]: s.shade, animationDelay: `${0.15 + j * 0.16}s` }}
+                x={centerX(1 + j) - half} y={yTop} width={barW} height={Math.max(2, yOf(s.after) - yTop)} rx={3}
+                fill="#EA2C00" opacity={dim(s.id) ? 0.28 : 1}
+                onMouseEnter={() => setHover({ id: s.id, label: s.name, value: `${fmtM(s.amount)} sunsets onto Abridge`, leftPct: pctX(centerX(1 + j)), topPct: pctY(yTop) })}
+                onMouseLeave={() => setHover(null)}
+              />
             );
           })}
 
-          {/* STAYS */}
-          <rect x={centerX(staysX) - barW / 2} y={yOf(L.stays)} width={barW} height={Math.max(2, BASELINE - yOf(L.stays))} rx={4} fill={STAYS_COLOR} />
-          <text x={centerX(staysX)} y={yOf(L.stays) - 9} textAnchor="middle" fontSize={11} fontWeight={700} fill="#1A1A1A" style={{ fontVariantNumeric: "tabular-nums" }}>{fmtM(L.stays)}</text>
-
-          {/* x labels */}
-          <g fontSize={10} fill="#8C7E6E" textAnchor="middle">
-            <text x={centerX(0)} y={BASELINE + 18} fill="#1A1A1A" fontWeight={700}>Today</text>
-            {steps.map((s, j) => (
-              <text key={s.id} x={centerX(1 + j)} y={BASELINE + 18}>{s.name}</text>
-            ))}
-            <text x={centerX(staysX)} y={BASELINE + 18} fill="#1A1A1A" fontWeight={700}>Stays</text>
-          </g>
-
-          {/* sunset bracket + total */}
-          {steps.length > 0 && (
-            <>
-              <path
-                d={`M${centerX(1) - barW / 2},${BASELINE + 34} L${centerX(1) - barW / 2},${BASELINE + 40} L${centerX(steps.length) + barW / 2},${BASELINE + 40} L${centerX(steps.length) + barW / 2},${BASELINE + 34}`}
-                fill="none" stroke="#EA2C00" strokeWidth={1.5} opacity={0.5}
-              />
-              <text x={(centerX(1) + centerX(steps.length)) / 2} y={BASELINE + 56} textAnchor="middle" fontSize={11} fontWeight={700} fill="#EA2C00">{fmtM(L.sunset)} sunsets onto Abridge</text>
-            </>
-          )}
+          {/* Stays */}
+          <rect x={centerX(staysX) - half} y={yOf(L.stays)} width={barW} height={Math.max(2, BASELINE - yOf(L.stays))} rx={3} fill={STAYS_COLOR} />
         </svg>
+
+        {/* HTML labels overlaid by percentage */}
+        {/* value: Today */}
+        <div className="absolute text-[14px]" style={{ left: `${pctX(centerX(0))}%`, top: `${pctY(yOf(L.stackTotal))}%`, transform: "translate(-50%, -128%)" }}>
+          <AnimatedValue value={L.stackTotal} format={fmtM} className={`${numCls} text-[15px] font-bold`} />
+        </div>
+        {/* value: steps */}
+        {steps.map((s, j) => (
+          <div key={s.id} className="absolute text-[13px]" style={{ left: `${pctX(centerX(1 + j))}%`, top: `${pctY(yOf(s.before))}%`, transform: "translate(-50%, -128%)" }}>
+            <AnimatedValue value={s.amount} format={(v) => `−${fmtM(v)}`} className={numCls} />
+          </div>
+        ))}
+        {/* value: stays */}
+        <div className="absolute text-[13px]" style={{ left: `${pctX(centerX(staysX))}%`, top: `${pctY(yOf(L.stays))}%`, transform: "translate(-50%, -128%)" }}>
+          <AnimatedValue value={L.stays} format={fmtM} className={numCls} />
+        </div>
+
+        {/* x labels */}
+        <div className="absolute text-[11px] text-[#1A1A1A] font-semibold" style={{ left: `${pctX(centerX(0))}%`, top: `${pctY(228)}%`, transform: "translate(-50%,0)" }}>Today</div>
+        {steps.map((s, j) => (
+          <div key={s.id} className="absolute text-[11px] text-[#8C7E6E] text-center max-w-[120px] truncate" style={{ left: `${pctX(centerX(1 + j))}%`, top: `${pctY(228)}%`, transform: "translate(-50%,0)" }}>{s.name}</div>
+        ))}
+        <div className="absolute text-[11px] text-[#1A1A1A] font-semibold" style={{ left: `${pctX(centerX(staysX))}%`, top: `${pctY(228)}%`, transform: "translate(-50%,0)" }}>Stays</div>
+
+        {/* sunset total */}
+        {steps.length > 0 && (
+          <div className="absolute text-[12px] font-semibold text-[#EA2C00] tabular-nums" style={{ left: `${pctX((centerX(1) + centerX(steps.length)) / 2)}%`, top: `${pctY(248)}%`, transform: "translate(-50%,0)" }}>
+            {fmtM(L.sunset)} sunsets onto Abridge
+          </div>
+        )}
       </div>
 
       {/* Phasing: how the sunset lands across the term */}
