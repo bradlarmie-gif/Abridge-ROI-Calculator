@@ -38,7 +38,7 @@ export default function ArApplicationsStep({
           <h1 className="font-abridge text-4xl uppercase tracking-tight text-[#1A1A1A]">Applications</h1>
           <p className="text-sm text-[#6B6B6B] mt-2.5">Browse the capabilities, or type a vendor and we place it for you.</p>
         </div>
-        <div className="flex items-end gap-3 shrink-0">
+        <div className="flex items-start gap-3 shrink-0">
           <div className="flex flex-col items-start gap-1.5">
             <label htmlFor="ar-org" className="text-[9px] font-bold uppercase tracking-[0.14em] text-[#8C7E6E]">Organization</label>
             <input
@@ -62,6 +62,7 @@ export default function ArApplicationsStep({
                 data-testid="ar-abridge-price"
               />
             </div>
+            <p className="text-[9.5px] leading-tight text-[#B4A99B] max-w-[168px]">Leave $0 if they already have Abridge — savings is the tools they retire.</p>
           </div>
         </div>
       </div>
