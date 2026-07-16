@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
 import { ChevronDown } from "lucide-react";
-import { AnimatedValue } from "@/components/explore/AnimatedValue";
-import { buildStackBars, computeNet, type AppRatItem } from "@/lib/appRationalizationCalc";
+import { buildStackBars, type AppRatItem } from "@/lib/appRationalizationCalc";
 import { computeRoadmap } from "@/lib/appRationalizationRoadmap";
 
 const TAUPE = ["#5A5148", "#7A6E60", "#8E8172", "#A2937F", "#B6A78F", "#C6B9A2"];
@@ -56,11 +55,10 @@ function Bar({ segments, animClass, height = 48 }: { segments: Seg[]; animClass:
 }
 
 export default function ConsolidationBars({
-  items, abridgePrice, termYears, onTermChange,
-}: { items: AppRatItem[]; abridgePrice: number; termYears: number; onTermChange: (y: number) => void }) {
+  items, termYears, onTermChange,
+}: { items: AppRatItem[]; termYears: number; onTermChange: (y: number) => void }) {
   const bars = useMemo(() => buildStackBars(items), [items]);
-  const net = useMemo(() => computeNet(items, abridgePrice), [items, abridgePrice]);
-  const roadmap = useMemo(() => computeRoadmap(items, termYears, abridgePrice), [items, termYears, abridgePrice]);
+  const roadmap = useMemo(() => computeRoadmap(items, termYears), [items, termYears]);
 
   const { todaySegs, abridgeSegs } = useMemo(() => {
     const total = Math.max(1, bars.stackTotal);
@@ -99,30 +97,8 @@ export default function ConsolidationBars({
     );
   }
 
-  const futureSpend = net.abridgePrice + net.stays;
-
   return (
     <div className="rounded-[18px] border border-[#E8E2DA] bg-white p-6 md:p-7" data-testid="ar-consolidation-bars">
-      {/* Header: The Consolidation + net savings hero */}
-      <div className="flex items-start justify-between gap-6 mb-7">
-        <div className="font-abridge uppercase tracking-[0.03em] text-[18px] text-[#1A1A1A] pt-1">The Consolidation</div>
-        <div className="text-right leading-none">
-          <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#8C7E6E] mb-1.5">
-            {net.isNetCost ? "Net cost / yr" : "Net savings / yr"}
-          </div>
-          <AnimatedValue
-            value={Math.abs(net.netSavings)}
-            format={fmtM}
-            className={`text-[34px] font-extrabold tabular-nums ${net.isNetCost ? "text-[#1A1A1A]" : "text-[#EA2C00]"}`}
-            style={{ letterSpacing: "-0.01em" }}
-            data-testid="ar-bars-net"
-          />
-          <div className="text-[12px] text-[#8C7E6E] tabular-nums mt-1.5">
-            {fmtM(bars.stackTotal)} today → {fmtM(futureSpend)} on Abridge
-          </div>
-        </div>
-      </div>
-
       {/* Today bar */}
       <div className="flex justify-between items-baseline mb-2">
         <span className="text-[12px] font-bold text-[#1A1A1A]">Today · fragmented</span>

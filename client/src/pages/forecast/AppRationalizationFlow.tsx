@@ -1,9 +1,17 @@
 import { useRef, useState } from "react";
 import { UnifiedHeader } from "@/components/UnifiedHeader";
-import { type AppRatItem, type AppRatCategoryId, makeItem } from "@/lib/appRationalizationCalc";
+import { type AppRatItem, type AppRatCategoryId, makeItem, computeNet } from "@/lib/appRationalizationCalc";
+import { AnimatedValue } from "@/components/explore/AnimatedValue";
 import ArApplicationsStep from "./appRationalization/ArApplicationsStep";
 import ConsolidationFlow from "@/components/forecast/ConsolidationFlow";
 import ConsolidationBars from "@/components/forecast/ConsolidationBars";
+
+function fmtM(n: number): string {
+  const a = Math.abs(n);
+  if (a >= 1_000_000) return `$${(a / 1_000_000).toFixed(1)}M`;
+  if (a >= 1_000) return `$${Math.round(a / 1_000)}K`;
+  return `$${Math.round(a)}`;
+}
 
 type ArStep = "applications" | "consolidation";
 
@@ -62,11 +70,39 @@ export default function AppRationalizationFlow({ onBack, onHome }: AppRationaliz
           />
         )}
 
-        {step === "consolidation" && (
+        {step === "consolidation" && (() => {
+          const net = computeNet(items, abridgePrice);
+          const futureSpend = net.abridgePrice + net.stays;
+          return (
           <div data-testid="ar-step-consolidation" className="max-w-[1120px] mx-auto px-6 py-8">
+            {/* Page header, matching the Applications screen */}
+            <div className="flex items-start justify-between gap-6 mb-6">
+              <div>
+                <h1 className="font-abridge text-4xl uppercase tracking-tight text-[#1A1A1A]">Consolidation</h1>
+                <p className="text-sm text-[#6B6B6B] mt-2.5">How much of your stack sunsets onto Abridge, and what you keep.</p>
+              </div>
+              {net.stackTotal > 0 && (
+                <div className="text-right shrink-0 leading-none">
+                  <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#8C7E6E] mb-1.5">
+                    {net.isNetCost ? "Net cost / yr" : "Net savings / yr"}
+                  </div>
+                  <AnimatedValue
+                    value={Math.abs(net.netSavings)}
+                    format={fmtM}
+                    className={`text-[34px] font-extrabold tabular-nums ${net.isNetCost ? "text-[#1A1A1A]" : "text-[#EA2C00]"}`}
+                    style={{ letterSpacing: "-0.01em" }}
+                    data-testid="ar-net-hero"
+                  />
+                  <div className="text-[12px] text-[#8C7E6E] tabular-nums mt-1.5">
+                    {fmtM(net.stackTotal)} today → {fmtM(futureSpend)} on Abridge
+                  </div>
+                </div>
+              )}
+            </div>
+
             <ConsolidationFlow items={items} />
             <div className="mt-6">
-              <ConsolidationBars items={items} abridgePrice={abridgePrice} termYears={termYears} onTermChange={setTermYears} />
+              <ConsolidationBars items={items} termYears={termYears} onTermChange={setTermYears} />
             </div>
 
             {/* On-demand "why" proof, on the way. Placeholder until the team lands the rationale copy. */}
@@ -76,7 +112,8 @@ export default function AppRationalizationFlow({ onBack, onHome }: AppRationaliz
               <span className="text-[12.5px] text-[#8C7E6E] ml-auto hidden sm:block">The case for each capability is on the way.</span>
             </div>
           </div>
-        )}
+          );
+        })()}
       </div>
     </div>
   );
