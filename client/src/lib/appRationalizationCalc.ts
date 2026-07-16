@@ -61,9 +61,7 @@ export interface AppRatItem {
   annualSpend: number;
   coveragePct: number;      // 0-100; the share of THIS tool's spend Abridge can take on
   abridgeProduct?: string;  // "Covered by"; defaults to the category label when empty
-  when?: AppRatWhen;        // contract-year bucket for when the displacement lands
-  renewal?: string;         // legacy, removed once the UI migration lands
-  transitionMonths?: number;// legacy, removed once the UI migration lands
+  when: AppRatWhen;         // contract-year bucket for when the displacement lands
 }
 
 const CATEGORY_BY_ID: Record<AppRatCategoryId, AppRatCategory> =
