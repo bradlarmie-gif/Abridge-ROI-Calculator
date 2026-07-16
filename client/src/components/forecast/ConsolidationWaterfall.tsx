@@ -10,7 +10,7 @@ import { AnimatedValue } from "@/components/explore/AnimatedValue";
 import { buildStackBars, type AppRatItem } from "@/lib/appRationalizationCalc";
 import { computeRoadmap } from "@/lib/appRationalizationRoadmap";
 
-const TAUPE = ["#6E6355", "#7E7263", "#8E8172", "#9E9080", "#AC9E89", "#BCAF99"];
+const TODAY_COLOR = "#7E7263";   // one warm neutral for the whole current stack
 const STAYS_COLOR = "#C6B9A2";
 const TERM_OPTIONS = [2, 3, 4, 5];
 
@@ -35,19 +35,17 @@ export default function ConsolidationWaterfall({
   const roadmap = useMemo(() => computeRoadmap(items, termYears), [items, termYears]);
 
   const L = useMemo(() => {
-    const shadeFor = (i: number) => TAUPE[i % TAUPE.length];
     const total = Math.max(1, bars.stackTotal);
     const k = (BASELINE - PLOT_TOP) / total;
     const yOf = (v: number) => BASELINE - v * k;
 
     let running = bars.stackTotal;
     const steps = bars.tools
-      .map((t, i) => ({ t, i }))
-      .filter((x) => x.t.sunset > 0)
-      .map(({ t, i }) => {
+      .filter((t) => t.sunset > 0)
+      .map((t) => {
         const before = running;
         running -= t.sunset;
-        return { id: t.id, name: t.name, amount: t.sunset, before, after: running, shade: shadeFor(i) };
+        return { id: t.id, name: t.name, amount: t.sunset, before, after: running };
       });
 
     const n = 2 + steps.length;
@@ -55,12 +53,12 @@ export default function ConsolidationWaterfall({
     const barW = Math.min(66, slotW * 0.5);
     const centerX = (i: number) => PLOT_LEFT + slotW * (i + 0.5);
 
-    // Today composed segments (top to bottom by spend)
+    // Today composed segments (top to bottom by spend), one neutral, split by hairlines
     let cursorV = bars.stackTotal;
-    const todaySegs = bars.tools.map((t, i) => {
+    const todaySegs = bars.tools.map((t) => {
       const topV = cursorV, botV = cursorV - t.spend;
       cursorV = botV;
-      return { id: t.id, name: t.name, spend: t.spend, shade: shadeFor(i), yTop: yOf(topV), yBot: yOf(botV) };
+      return { id: t.id, name: t.name, spend: t.spend, yTop: yOf(topV), yBot: yOf(botV) };
     });
 
     return { steps, todaySegs, n, barW, centerX, yOf, stays: bars.stays, stackTotal: bars.stackTotal, sunset: bars.sunset };
@@ -112,7 +110,7 @@ export default function ConsolidationWaterfall({
             <rect
               key={s.id}
               x={centerX(0) - half} y={s.yTop} width={barW} height={Math.max(1, s.yBot - s.yTop)}
-              fill={s.shade} opacity={dim(s.id) ? 0.35 : 1}
+              fill={TODAY_COLOR} opacity={dim(s.id) ? 0.35 : 1}
               stroke="#FDFBF8" strokeWidth={2}
               onMouseEnter={() => setHover({ id: s.id, label: s.name, value: `${fmtM(s.spend)} / yr`, leftPct: pctX(centerX(0)), topPct: pctY(s.yTop) })}
               onMouseLeave={() => setHover(null)}
@@ -126,7 +124,7 @@ export default function ConsolidationWaterfall({
               <rect
                 key={s.id}
                 className="wf-step"
-                style={{ ["--wf-from" as string]: s.shade, animationDelay: `${0.15 + j * 0.16}s` }}
+                style={{ ["--wf-from" as string]: TODAY_COLOR, animationDelay: `${0.15 + j * 0.16}s` }}
                 x={centerX(1 + j) - half} y={yTop} width={barW} height={Math.max(2, yOf(s.after) - yTop)} rx={3}
                 fill="#EA2C00" opacity={dim(s.id) ? 0.28 : 1}
                 onMouseEnter={() => setHover({ id: s.id, label: s.name, value: `${fmtM(s.amount)} sunsets onto Abridge`, leftPct: pctX(centerX(1 + j)), topPct: pctY(yTop) })}
