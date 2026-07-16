@@ -3,8 +3,7 @@ import { UnifiedHeader } from "@/components/UnifiedHeader";
 import { type AppRatItem, type AppRatCategoryId, makeItem, computeNet } from "@/lib/appRationalizationCalc";
 import { AnimatedValue } from "@/components/explore/AnimatedValue";
 import ArApplicationsStep from "./appRationalization/ArApplicationsStep";
-import ConsolidationFlow from "@/components/forecast/ConsolidationFlow";
-import ConsolidationBars from "@/components/forecast/ConsolidationBars";
+import ConsolidationWaterfall from "@/components/forecast/ConsolidationWaterfall";
 
 function fmtM(n: number): string {
   const a = Math.abs(n);
@@ -100,10 +99,7 @@ export default function AppRationalizationFlow({ onBack, onHome }: AppRationaliz
               )}
             </div>
 
-            <ConsolidationFlow items={items} />
-            <div className="mt-6">
-              <ConsolidationBars items={items} termYears={termYears} onTermChange={setTermYears} />
-            </div>
+            <ConsolidationWaterfall items={items} termYears={termYears} onTermChange={setTermYears} />
 
             {/* On-demand "why" proof, on the way. Placeholder until the team lands the rationale copy. */}
             <div className="mt-6 flex items-center gap-3 rounded-xl border border-[#E8E2DA] bg-white/60 px-5 py-4" data-testid="ar-why-coming-soon">
