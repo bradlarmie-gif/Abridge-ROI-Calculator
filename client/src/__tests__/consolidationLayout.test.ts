@@ -3,7 +3,7 @@ import { computeConsolidationLayout } from "@/lib/consolidationLayout";
 import { type AppRatItem } from "@/lib/appRationalizationCalc";
 
 const item = (over: Partial<AppRatItem>): AppRatItem => ({
-  id: "x", category: "dictation", annualSpend: 1_000_000, coveragePct: 80, transitionMonths: 12, ...over,
+  id: "x", category: "dictation", annualSpend: 1_000_000, coveragePct: 80, when: "thisYear", ...over,
 });
 
 const coral = (l: ReturnType<typeof computeConsolidationLayout>) => l.ribbons.filter((r) => r.kind === "retired");
