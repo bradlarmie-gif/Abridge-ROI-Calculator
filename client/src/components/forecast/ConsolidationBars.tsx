@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { ChevronDown } from "lucide-react";
 import { AnimatedValue } from "@/components/explore/AnimatedValue";
 import { buildStackBars, computeNet, type AppRatItem } from "@/lib/appRationalizationCalc";
 import { computeRoadmap } from "@/lib/appRationalizationRoadmap";
@@ -147,14 +148,17 @@ export default function ConsolidationBars({
           <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#8C7E6E]">How the sunset lands</span>
           <div className="flex items-center gap-2 text-[11px] text-[#8C7E6E]">
             <span>over a</span>
-            <select
-              value={termYears}
-              onChange={(e) => onTermChange(Number(e.target.value))}
-              className="h-8 bg-white border border-[#E8E2DA] rounded-lg px-2.5 text-[12px] text-[#1A1A1A] outline-none focus:border-[#1A1A1A]"
-              data-testid="ar-term-select"
-            >
-              {TERM_OPTIONS.map((y) => <option key={y} value={y}>{y}-year</option>)}
-            </select>
+            <div className="relative">
+              <select
+                value={termYears}
+                onChange={(e) => onTermChange(Number(e.target.value))}
+                className="h-8 appearance-none bg-white border border-[#E8E2DA] rounded-lg pl-2.5 pr-7 text-[12px] text-[#1A1A1A] outline-none focus:border-[#1A1A1A] cursor-pointer"
+                data-testid="ar-term-select"
+              >
+                {TERM_OPTIONS.map((y) => <option key={y} value={y}>{y}-year</option>)}
+              </select>
+              <ChevronDown className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#8C7E6E]" />
+            </div>
             <span>term</span>
           </div>
         </div>

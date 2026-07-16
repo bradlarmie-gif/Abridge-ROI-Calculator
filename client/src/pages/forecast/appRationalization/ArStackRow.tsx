@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { ChevronDown } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { NumberField } from "@/components/NumberField";
 import { CategoryIcon } from "./CategoryIcon";
@@ -75,15 +76,18 @@ export default function ArStackRow({
       </div>
 
       {/* Over (when) */}
-      <select
-        value={item.when ?? "thisYear"}
-        onChange={(e) => onChange({ when: e.target.value as AppRatWhen })}
-        aria-label="Over what time period"
-        className="h-10 bg-white border border-[#E8E2DA] rounded-[10px] px-3 text-[12.5px] text-[#1A1A1A] outline-none focus:border-[#EA2C00]"
-        data-testid={`ar-row-when-${item.id}`}
-      >
-        {AR_WHEN_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-      </select>
+      <div className="relative">
+        <select
+          value={item.when ?? "thisYear"}
+          onChange={(e) => onChange({ when: e.target.value as AppRatWhen })}
+          aria-label="Over what time period"
+          className="w-full h-10 appearance-none bg-white border border-[#E8E2DA] rounded-[10px] pl-3 pr-8 text-[12.5px] text-[#1A1A1A] outline-none focus:border-[#EA2C00] cursor-pointer"
+          data-testid={`ar-row-when-${item.id}`}
+        >
+          {AR_WHEN_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+        </select>
+        <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8C7E6E]" />
+      </div>
 
       {/* Displaceable result + remove */}
       <div className="flex items-center justify-end gap-2.5">
