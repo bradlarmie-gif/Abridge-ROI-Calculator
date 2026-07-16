@@ -141,6 +141,40 @@ export function computeNet(items: AppRatItem[], abridgePrice: number): AppRatNet
   };
 }
 
+export interface StackBarTool {
+  id: string;
+  name: string;
+  spend: number;
+  sunset: number; // itemRetired
+  stays: number;  // itemStays
+}
+
+export interface StackBars {
+  stackTotal: number;
+  sunset: number;
+  stays: number;
+  tools: StackBarTool[]; // spend-only tools, in the given order
+}
+
+/** Per-tool spend/sunset/stays for the consolidation magnitude bars. */
+export function buildStackBars(items: AppRatItem[]): StackBars {
+  const tools: StackBarTool[] = items
+    .filter((i) => (i.annualSpend || 0) > 0)
+    .map((i) => ({
+      id: i.id,
+      name: itemDisplayName(i),
+      spend: i.annualSpend,
+      sunset: itemRetired(i),
+      stays: itemStays(i),
+    }));
+  return {
+    stackTotal: tools.reduce((s, t) => s + t.spend, 0),
+    sunset: tools.reduce((s, t) => s + t.sunset, 0),
+    stays: tools.reduce((s, t) => s + t.stays, 0),
+    tools,
+  };
+}
+
 /** Command-search matcher: substring match on vendor names and category labels. */
 export function searchApplications(query: string): { vendors: KnownVendor[]; categories: AppRatCategory[] } {
   const q = query.trim().toLowerCase();
