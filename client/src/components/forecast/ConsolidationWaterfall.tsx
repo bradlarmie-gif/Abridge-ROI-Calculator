@@ -123,7 +123,7 @@ export default function ConsolidationWaterfall({
                 onMouseLeave={() => setHover(null)}
               />
             ))}
-            <text x={centerX(0)} y={yOf(L.stackTotal) - 9} textAnchor="middle" fontSize={12} fontWeight={800} fill="#1A1A1A" style={{ fontVariantNumeric: "tabular-nums" }}>{fmtM(L.stackTotal)}</text>
+            <text x={centerX(0)} y={yOf(L.stackTotal) - 9} textAnchor="middle" fontSize={12} fontWeight={700} fill="#1A1A1A" style={{ fontVariantNumeric: "tabular-nums" }}>{fmtM(L.stackTotal)}</text>
           </g>
 
           {/* DECREMENT steps: each tool sunsets (taupe -> coral) */}
@@ -145,14 +145,14 @@ export default function ConsolidationWaterfall({
                   onMouseEnter={() => setHover({ id: s.id, label: s.name, value: `${fmtM(s.amount)} sunsets onto Abridge`, centerPct: (centerX(1 + j) / VB_W) * 100 })}
                   onMouseLeave={() => setHover(null)}
                 />
-                <text x={centerX(1 + j)} y={yTop + Math.max(2, h) / 2 + 4} textAnchor="middle" fontSize={h > 26 ? 11 : 9} fontWeight={800} fill={h > 26 ? "#fff" : "#B23A12"} style={{ fontVariantNumeric: "tabular-nums" }}>−{fmtM(s.amount)}</text>
+                <text x={centerX(1 + j)} y={yTop + Math.max(2, h) / 2 + 4} textAnchor="middle" fontSize={h > 26 ? 11 : 9} fontWeight={700} fill={h > 26 ? "#fff" : "#B23A12"} style={{ fontVariantNumeric: "tabular-nums" }}>−{fmtM(s.amount)}</text>
               </g>
             );
           })}
 
           {/* STAYS */}
           <rect x={centerX(staysX) - barW / 2} y={yOf(L.stays)} width={barW} height={Math.max(2, BASELINE - yOf(L.stays))} rx={4} fill={STAYS_COLOR} />
-          <text x={centerX(staysX)} y={yOf(L.stays) - 9} textAnchor="middle" fontSize={11} fontWeight={800} fill="#1A1A1A" style={{ fontVariantNumeric: "tabular-nums" }}>{fmtM(L.stays)}</text>
+          <text x={centerX(staysX)} y={yOf(L.stays) - 9} textAnchor="middle" fontSize={11} fontWeight={700} fill="#1A1A1A" style={{ fontVariantNumeric: "tabular-nums" }}>{fmtM(L.stays)}</text>
 
           {/* x labels */}
           <g fontSize={10} fill="#8C7E6E" textAnchor="middle">
@@ -170,7 +170,7 @@ export default function ConsolidationWaterfall({
                 d={`M${centerX(1) - barW / 2},${BASELINE + 34} L${centerX(1) - barW / 2},${BASELINE + 40} L${centerX(steps.length) + barW / 2},${BASELINE + 40} L${centerX(steps.length) + barW / 2},${BASELINE + 34}`}
                 fill="none" stroke="#EA2C00" strokeWidth={1.5} opacity={0.5}
               />
-              <text x={(centerX(1) + centerX(steps.length)) / 2} y={BASELINE + 56} textAnchor="middle" fontSize={11} fontWeight={800} fill="#EA2C00">{fmtM(L.sunset)} sunsets onto Abridge</text>
+              <text x={(centerX(1) + centerX(steps.length)) / 2} y={BASELINE + 56} textAnchor="middle" fontSize={11} fontWeight={700} fill="#EA2C00">{fmtM(L.sunset)} sunsets onto Abridge</text>
             </>
           )}
         </svg>
