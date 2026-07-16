@@ -1,6 +1,7 @@
 // client/src/components/forecast/ConsolidationFlow.tsx
 import { useMemo } from "react";
 import { computeConsolidationLayout } from "@/lib/consolidationLayout";
+import { useSmoothCountUp } from "@/pages/forecast/dashboard/useSmoothCountUp";
 import type { AppRatItem } from "@/lib/appRationalizationCalc";
 
 function fmtM(n: number): string {
@@ -17,6 +18,7 @@ function ribbonPath(x1: number, y1: number, x2: number, y2: number): string {
 export default function ConsolidationFlow({ items }: { items: AppRatItem[] }) {
   const layout = useMemo(() => computeConsolidationLayout(items), [items]);
   const { width, height, ribbonStartX, sinkX, sinkWidth, sources, ribbons, abridge, stays, totals } = layout;
+  const animTotal = useSmoothCountUp(totals.toAbridge, 750);
 
   if (sources.length === 0) {
     return (
@@ -36,17 +38,37 @@ export default function ConsolidationFlow({ items }: { items: AppRatItem[] }) {
         <span>Two ways it lands</span>
       </div>
       <svg viewBox={`0 0 ${width} ${height}`} width="100%" style={{ fontFamily: "Manrope, sans-serif" }} data-testid="consolidation-svg">
-        {sources.map((s) => {
+        <defs>
+          {/* Coral ribbon gradient: deeper at the tool, hot into the Abridge sink. */}
+          <linearGradient id="crf-coral" gradientUnits="userSpaceOnUse" x1={ribbonStartX} y1={0} x2={sinkX} y2={0}>
+            <stop offset="0%" stopColor="#B23A12" />
+            <stop offset="55%" stopColor="#EA2C00" />
+            <stop offset="100%" stopColor="#FF6A3D" />
+          </linearGradient>
+          {/* Coral sink fill + a soft luminous glow so it reads as the destination. */}
+          <linearGradient id="crf-sink" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#FF5A2C" />
+            <stop offset="100%" stopColor="#D8320A" />
+          </linearGradient>
+          <filter id="crf-glow" x="-40%" y="-40%" width="180%" height="180%">
+            <feDropShadow dx="0" dy="0" stdDeviation="7" floodColor="#EA2C00" floodOpacity="0.5" />
+          </filter>
+        </defs>
+
+        {sources.map((s, si) => {
           const mine = ribbons.filter((r) => r.id === s.id);
+          const delay = 0.12 + si * 0.09;
           return (
             <g key={s.id} className="crf-fg">
               {mine.map((r) => (
                 <path
                   key={r.kind}
+                  className="crf-ribbon"
+                  style={{ animationDelay: `${delay}s` }}
                   d={ribbonPath(ribbonStartX, r.y1, sinkX, r.y2)}
                   fill="none"
-                  stroke={r.kind === "retired" ? "#EA2C00" : "#6B6258"}
-                  strokeOpacity={r.kind === "retired" ? 0.6 : 0.4}
+                  stroke={r.kind === "retired" ? "url(#crf-coral)" : "#6B6258"}
+                  strokeOpacity={r.kind === "retired" ? 0.75 : 0.4}
                   strokeWidth={Math.max(1.5, r.thickness)}
                   strokeLinecap="butt"
                 />
@@ -58,9 +80,13 @@ export default function ConsolidationFlow({ items }: { items: AppRatItem[] }) {
           );
         })}
 
-        <rect x={sinkX} y={abridge.y} width={sinkWidth} height={abridge.height} rx={12} fill="#EA2C00" />
+        <rect
+          className="crf-sink-rect"
+          x={sinkX} y={abridge.y} width={sinkWidth} height={abridge.height} rx={12}
+          fill="url(#crf-sink)" filter="url(#crf-glow)"
+        />
         <text x={sinkX + sinkWidth / 2} y={abridge.y + abridge.height / 2 - 2} textAnchor="middle" fill="#ffffff" fontSize={15} fontWeight={800}>Abridge</text>
-        <text x={sinkX + sinkWidth / 2} y={abridge.y + abridge.height / 2 + 16} textAnchor="middle" fill="#ffffff" fontSize={11.5} fontWeight={700} opacity={0.95} style={{ fontVariantNumeric: "tabular-nums" }}>{fmtM(totals.toAbridge)}</text>
+        <text x={sinkX + sinkWidth / 2} y={abridge.y + abridge.height / 2 + 16} textAnchor="middle" fill="#ffffff" fontSize={11.5} fontWeight={700} opacity={0.95} style={{ fontVariantNumeric: "tabular-nums" }}>{fmtM(animTotal)}</text>
 
         {stays.height > 0 && (
           <>
@@ -69,7 +95,16 @@ export default function ConsolidationFlow({ items }: { items: AppRatItem[] }) {
           </>
         )}
       </svg>
-      <style>{`svg:hover .crf-fg { opacity: .25; transition: opacity .18s } svg .crf-fg:hover { opacity: 1 }`}</style>
+      <style>{`
+        svg:hover .crf-fg { opacity: .25; transition: opacity .18s }
+        svg .crf-fg:hover { opacity: 1 }
+        @media (prefers-reduced-motion: no-preference){
+          .crf-ribbon { stroke-dasharray: 2000; stroke-dashoffset: 2000; animation: crfDraw 1s cubic-bezier(.4,.7,.3,1) forwards; }
+          .crf-sink-rect { transform-box: fill-box; transform-origin: 50% 100%; animation: crfGrow .7s .1s cubic-bezier(.2,.8,.3,1) both; }
+        }
+        @keyframes crfDraw { to { stroke-dashoffset: 0 } }
+        @keyframes crfGrow { from { transform: scaleY(.16); opacity: .35 } to { transform: scaleY(1); opacity: 1 } }
+      `}</style>
     </div>
   );
 }
