@@ -60,3 +60,37 @@ export function formatGrouped(value: number): string {
   if (!value || !Number.isFinite(value)) return "";
   return value.toLocaleString("en-US", { maximumFractionDigits: 20 });
 }
+
+/**
+ * Group a (sanitized) editing draft with thousand separators on the integer part,
+ * WHILE preserving a partial/trailing decimal so typing is never interrupted
+ * ("1234" -> "1,234", "1234." -> "1,234.", "1234.5" -> "1,234.5", "" -> "").
+ * Every digit is preserved (no leading-zero stripping), so the numeric-character
+ * count is stable and the caret can be restored exactly.
+ */
+export function groupDraft(draft: string): string {
+  if (draft === "") return "";
+  const dot = draft.indexOf(".");
+  const intPart = dot === -1 ? draft : draft.slice(0, dot);
+  const fracPart = dot === -1 ? "" : draft.slice(dot); // includes the leading "."
+  const grouped = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  return grouped + fracPart;
+}
+
+/**
+ * Caret index in a grouped string that sits just after the Nth numeric character
+ * ([0-9.]). Lets the caller keep the caret next to the same digit after commas
+ * are inserted. N is the count of numeric characters before the caret in the raw
+ * (pre-grouping) input.
+ */
+export function caretForDigits(grouped: string, digitsBeforeCaret: number): number {
+  if (digitsBeforeCaret <= 0) return 0;
+  let count = 0;
+  for (let i = 0; i < grouped.length; i++) {
+    if (/[0-9.]/.test(grouped[i])) {
+      count++;
+      if (count === digitsBeforeCaret) return i + 1;
+    }
+  }
+  return grouped.length;
+}

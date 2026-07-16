@@ -5,7 +5,47 @@ import {
   clampNumber,
   displayValue,
   formatGrouped,
+  groupDraft,
+  caretForDigits,
 } from "@/lib/numberFieldLogic";
+
+describe("groupDraft (live thousand separators while typing)", () => {
+  it("groups the integer part", () => {
+    expect(groupDraft("1000")).toBe("1,000");
+    expect(groupDraft("1234567")).toBe("1,234,567");
+    expect(groupDraft("999")).toBe("999");
+  });
+  it("preserves a trailing dot and decimals so typing is never interrupted", () => {
+    expect(groupDraft("1234.")).toBe("1,234.");
+    expect(groupDraft("1234.5")).toBe("1,234.5");
+    expect(groupDraft("1234.50")).toBe("1,234.50");
+    expect(groupDraft(".5")).toBe(".5");
+  });
+  it("empty stays empty", () => {
+    expect(groupDraft("")).toBe("");
+  });
+  it("keeps every numeric character (no leading-zero stripping) so the caret stays exact", () => {
+    expect(groupDraft("0100").replace(/,/g, "")).toBe("0100");
+  });
+});
+
+describe("caretForDigits (restore caret after commas are inserted)", () => {
+  it("returns 0 for no digits before the caret", () => {
+    expect(caretForDigits("1,000", 0)).toBe(0);
+  });
+  it("lands just after the Nth numeric character, skipping commas", () => {
+    // "1,234", 2 digits typed ("12") -> caret after the "2", which is index 3
+    expect(caretForDigits("1,234", 2)).toBe(3);
+    // 4 digits -> end of "1,234" (index 5)
+    expect(caretForDigits("1,234", 4)).toBe(5);
+  });
+  it("counts the decimal point as a numeric character", () => {
+    expect(caretForDigits("1,234.5", 5)).toBe(6); // the 5th numeric char is the ".", caret lands right after it
+  });
+  it("clamps to the string length when asked for more digits than exist", () => {
+    expect(caretForDigits("1,000", 99)).toBe(5);
+  });
+});
 
 /**
  * The bug: raw `<input type="number" value={n} onChange={parseFloat(e)||N}>` re-coerces
