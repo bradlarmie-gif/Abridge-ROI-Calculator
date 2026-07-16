@@ -1,8 +1,9 @@
 import { useMemo } from "react";
 import ArCommandSearch from "./ArCommandSearch";
 import ArStackRow from "./ArStackRow";
+import { CategoryIcon } from "./CategoryIcon";
 import { NumberField } from "@/components/NumberField";
-import { computeNet, type AppRatItem, type AppRatCategoryId } from "@/lib/appRationalizationCalc";
+import { APP_RAT_CATEGORIES, computeNet, type AppRatItem, type AppRatCategoryId } from "@/lib/appRationalizationCalc";
 
 function fmtM(n: number): string {
   const a = Math.abs(n);
@@ -120,9 +121,26 @@ export default function ArApplicationsStep({
       )}
 
       {items.length === 0 && (
-        <p className="text-center text-[13px] text-[#8C7E6E] mt-10" data-testid="ar-empty-hint">
-          Search a vendor or pick a capability above to start building the stack.
-        </p>
+        <div className="mt-9" data-testid="ar-empty-browse">
+          <div className="text-[11px] font-bold uppercase tracking-[2px] text-[#8C7E6E] mb-4">Browse capabilities to consolidate</div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+            {APP_RAT_CATEGORIES.filter((c) => c.id !== "custom").map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => onAdd(cat.id)}
+                className="group text-left bg-white border border-[#E8E2DA] rounded-2xl p-5 hover:border-[#1A1A1A] hover:shadow-[0_8px_24px_rgba(0,0,0,0.05)] transition-all"
+                data-testid={`ar-browse-${cat.id}`}
+              >
+                <div className="w-11 h-11 rounded-xl bg-[#F5F0EB] flex items-center justify-center mb-4 text-[#6B5E4F] group-hover:bg-[#EA2C00]/10 group-hover:text-[#EA2C00] transition-colors">
+                  <CategoryIcon icon={cat.icon} className="w-5 h-5" />
+                </div>
+                <p className="font-bold text-[#1A1A1A] text-[15px]">{cat.label}</p>
+                <p className="text-[12px] text-[#8C7E6E] mt-1 truncate">{cat.hint}</p>
+              </button>
+            ))}
+          </div>
+          <p className="text-[12px] text-[#8C7E6E] mt-5">Or search a specific vendor above · add anything not listed as <span className="font-semibold text-[#1A1A1A]">Custom</span>.</p>
+        </div>
       )}
     </div>
   );
