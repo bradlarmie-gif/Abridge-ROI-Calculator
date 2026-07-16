@@ -69,22 +69,44 @@ A single **Abridge price / yr** input in the Applications header, beside Organiz
 
 ## 6. Where net shows
 
-**Applications total bar** and **Consolidation payoff** both show the breakdown, keyed off `computeNet`:
+Both surfaces key off `computeNet`. Shared copy rules:
+- Rename the current "to Abridge" copy to **"Sunsets onto Abridge"** (internal field stays `coveragePct`/`toAbridge`).
+- The **Abridge price** and **Net savings** lines/segments appear only when `abridgePrice > 0`, so an existing customer with price 0 sees a clean sunset story with no "−$0" noise (net collapses to the sunset amount).
+- When `isNetCost` (price > sunset), the net label reads **"Net cost / yr"** in neutral ink (not coral); when positive, **"Net savings / yr"** in coral. No stoplight colors.
+
+### 6a. Applications total bar (compact)
+
+The slim total bar keeps its inline form, extended with the net when a price is set:
 
 ```
-Stack today $Y / yr
-  Sunset onto Abridge     $sunset
-  Abridge price          −$price       (shown only when price > 0)
-  Net savings             $net         (+ $stays stays)
+Stack today $Y / yr    ·  Sunsets onto Abridge $sunset  ·  −$price Abridge  ·  Net $net  ·  $stays stays   [See the consolidation →]
 ```
 
-Rules:
-- The **Sunset onto Abridge** and **stays** lines always show (this is the existing-customer / no-price story).
-- The **Abridge price** and **Net savings / Net cost** lines show only when `abridgePrice > 0`, so an existing customer with price 0 sees a clean sunset story with no "−$0" noise.
-- When `isNetCost`, the label reads **"Net cost"** and the amount is the magnitude, rendered in neutral ink (not coral). When positive, **"Net savings"** in coral. No stoplight colors.
-- Rename the current "to Abridge" copy to **"Sunset onto Abridge"** (internal field stays `coveragePct`/`toAbridge`).
+When `abridgePrice = 0`: `Stack today $Y / yr · Sunsets onto Abridge $sunset · $stays stays`.
 
-Consolidation: keep the two-sink diagram unchanged; place the breakdown block above it (replacing the current one-line "$X to Abridge · $Y stays · from $Z stack" headline). `AnimatedValue` count-ups on the numbers, tabular-nums.
+### 6b. Consolidation payoff — the editorial ledger (approved design "A")
+
+A dedicated **"The Consolidation" ledger card** sits above the untouched two-sink `ConsolidationFlow` diagram (it replaces the current one-line "$X to Abridge · $Y stays · from $Z stack" headline). New component `ConsolidationLedger.tsx`. Two columns separated by a hairline vertical rule:
+
+**Left — the ledger:**
+- Heading **"The Consolidation"** in the Abridge display font (`.font-abridge`, uppercase, ~17px).
+- `Sunsets onto Abridge      $sunset`
+- `Abridge price            −$price`   (only when price > 0)
+- hairline rule
+- `Net savings / yr    $net` — the net is the one large coral number (`AnimatedValue` count-up, ~36px, tabular-nums). "Net cost / yr" + neutral ink when `isNetCost`.
+- `+ $stays stays in place` (quiet, muted).
+
+**Right — "Your $Y stack" vertical proportion bar:**
+- Small uppercase eyebrow "Your $Y stack".
+- A slim vertical bar (rounded, ~46px wide) representing the whole `stackTotal`, split top-to-bottom into segments with heights proportional to dollars:
+  - **Net savings** — coral `#EA2C00`
+  - **Abridge price** — deep coral `#B23A12`   (only when price > 0)
+  - **Stays in place** — taupe `#D8CEC1`
+- A legend beside the bar: colored chip + label + value for each segment.
+- Identity: `Net savings + Abridge price = Sunsets onto Abridge`, and `Sunsets + Stays = stackTotal`, so the three segments always sum to the full stack when net ≥ 0.
+- Edge (`isNetCost`, net < 0): do not draw a negative segment. Show two segments — **Sunsets onto Abridge** (coral, = sunset) and **Stays** (taupe) — and let the left ledger carry the "Net cost" story.
+
+Numbers use `AnimatedValue` count-ups and tabular-nums; coral only on the net-savings figure/segment.
 
 ## 7. Roadmap
 
@@ -106,8 +128,9 @@ netSavings: number;     // totalRetired - abridgePrice (run-rate at full sunset)
 
 - Modify: `client/src/lib/appRationalizationCalc.ts` — add `AppRatNet` + `computeNet`.
 - Modify: `client/src/lib/appRationalizationRoadmap.ts` — `computeRoadmap` third arg + `abridgePrice`/`netSavings` on `Roadmap`.
-- Modify: `client/src/pages/forecast/AppRationalizationFlow.tsx` — `abridgePrice` state; pass to Applications header, Consolidation breakdown, RoadmapChart.
-- Modify: `client/src/pages/forecast/appRationalization/ArApplicationsStep.tsx` — Abridge price input in header; net breakdown in the total bar.
+- Modify: `client/src/pages/forecast/AppRationalizationFlow.tsx` — `abridgePrice` state; pass to Applications header, render `ConsolidationLedger` above the two-sink diagram, pass `abridgePrice` to RoadmapChart.
+- Create: `client/src/components/forecast/ConsolidationLedger.tsx` — the "The Consolidation" editorial ledger + right-side vertical proportion bar (design 6b), driven by `computeNet`.
+- Modify: `client/src/pages/forecast/appRationalization/ArApplicationsStep.tsx` — Abridge price input in header; net added to the compact total bar (6a).
 - Modify: `client/src/components/forecast/RoadmapChart.tsx` — `abridgePrice` prop; net hero; pass to `computeRoadmap`.
 - Test: `client/src/__tests__/appRationalizationCalc.test.ts` — `computeNet` (positive net, zero price, net cost, clamping).
 - Test: `client/src/__tests__/appRationalizationRoadmap.test.ts` — `abridgePrice`/`netSavings` fields (including negative).
@@ -133,3 +156,4 @@ netSavings: number;     // totalRetired - abridgePrice (run-rate at full sunset)
 - Sunset is the hero; net savings is the honesty layer beneath it. ✓
 - Roadmap nets the price into the summary/hero, bars unchanged. ✓
 - Net cost shown plainly when price > sunset. ✓
+- Consolidation payoff = the "The Consolidation" editorial ledger (Abridge-font heading) + right-side "Your $Y stack" vertical proportion bar (approved mock "A"); the two-sink chart stays untouched. ✓
