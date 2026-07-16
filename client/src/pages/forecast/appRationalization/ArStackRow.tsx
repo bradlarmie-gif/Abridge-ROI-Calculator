@@ -4,7 +4,7 @@ import { Slider } from "@/components/ui/slider";
 import { NumberField } from "@/components/NumberField";
 import { CategoryIcon } from "./CategoryIcon";
 import {
-  itemRetired, itemStays, APP_RAT_CATEGORIES, KNOWN_VENDORS, AR_WHEN_OPTIONS,
+  itemRetired, itemStays, APP_RAT_CATEGORIES, AR_WHEN_OPTIONS,
   type AppRatItem, type AppRatWhen,
 } from "@/lib/appRationalizationCalc";
 
@@ -18,10 +18,6 @@ export default function ArStackRow({
   item, onChange, onRemove,
 }: { item: AppRatItem; onChange: (patch: Partial<AppRatItem>) => void; onRemove: () => void }) {
   const cat = useMemo(() => APP_RAT_CATEGORIES.find((c) => c.id === item.category)!, [item.category]);
-  const vendorSuggestions = useMemo(
-    () => KNOWN_VENDORS.filter((v) => v.category === item.category).map((v) => v.name),
-    [item.category],
-  );
   const retired = itemRetired(item);
   const stays = itemStays(item);
 
@@ -37,16 +33,14 @@ export default function ArStackRow({
         </div>
         <div className="min-w-0 flex-1">
           <input
-            list={`ar-vend-${item.id}`}
             value={item.vendorName ?? ""}
             onChange={(e) => onChange({ vendorName: e.target.value })}
-            placeholder={cat.label}
-            aria-label="Vendor"
-            className="w-full bg-transparent text-[14px] font-bold text-[#1A1A1A] outline-none placeholder-[#1A1A1A] truncate"
+            placeholder={`Name this ${cat.label.toLowerCase()} tool`}
+            aria-label="Vendor name"
+            className="w-full -ml-1.5 px-1.5 py-0.5 rounded-md bg-transparent text-[14px] font-bold text-[#1A1A1A] outline-none placeholder:font-medium placeholder:text-[#B4A99B] truncate hover:bg-[#F7F3EE] focus:bg-white focus:ring-1 focus:ring-[#EA2C00] transition-colors"
             data-testid={`ar-row-vendor-${item.id}`}
           />
-          <datalist id={`ar-vend-${item.id}`}>{vendorSuggestions.map((n) => <option key={n} value={n} />)}</datalist>
-          <div className="text-[11.5px] text-[#8C7E6E] truncate">{cat.label}</div>
+          <div className="text-[11.5px] text-[#8C7E6E] truncate mt-0.5">{cat.label}</div>
         </div>
       </div>
 
