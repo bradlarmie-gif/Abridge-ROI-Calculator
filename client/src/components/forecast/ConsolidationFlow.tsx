@@ -3,12 +3,6 @@ import { useMemo } from "react";
 import { computeConsolidationLayout } from "@/lib/consolidationLayout";
 import type { AppRatItem } from "@/lib/appRationalizationCalc";
 
-function fmtM(n: number): string {
-  if (Math.abs(n) >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
-  if (Math.abs(n) >= 1_000) return `$${Math.round(n / 1_000)}K`;
-  return `$${Math.round(n)}`;
-}
-
 function ribbonPath(x1: number, y1: number, x2: number, y2: number): string {
   const mx = (x1 + x2) / 2;
   return `M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}`;
@@ -16,7 +10,7 @@ function ribbonPath(x1: number, y1: number, x2: number, y2: number): string {
 
 export default function ConsolidationFlow({ items }: { items: AppRatItem[] }) {
   const layout = useMemo(() => computeConsolidationLayout(items), [items]);
-  const { width, height, ribbonStartX, sinkX, sinkWidth, sources, ribbons, abridge, stays, totals } = layout;
+  const { width, height, ribbonStartX, sinkX, sinkWidth, sources, ribbons, abridge, stays } = layout;
 
   if (sources.length === 0) {
     return (
@@ -52,20 +46,19 @@ export default function ConsolidationFlow({ items }: { items: AppRatItem[] }) {
                 />
               ))}
               <text x={40} y={s.rowCenterY - 4} fill="#ffffff" fontSize={15} fontWeight={700}>{s.name}</text>
-              <text x={40} y={s.rowCenterY + 13} fill="#8C8377" fontSize={11} style={{ fontVariantNumeric: "tabular-nums" }}>{s.category} · {fmtM(s.spend)}</text>
+              <text x={40} y={s.rowCenterY + 13} fill="#8C8377" fontSize={11}>{s.category}</text>
               <text x={ribbonStartX - 20} y={s.rowCenterY + 2} textAnchor="end" fill="#EA2C00" fontSize={20} fontWeight={800} style={{ fontVariantNumeric: "tabular-nums" }}>{s.coveragePct}%</text>
             </g>
           );
         })}
 
         <rect x={sinkX} y={abridge.y} width={sinkWidth} height={abridge.height} rx={12} fill="#EA2C00" />
-        <text x={sinkX + sinkWidth / 2} y={abridge.y + abridge.height / 2 - 2} textAnchor="middle" fill="#ffffff" fontSize={15} fontWeight={800}>Abridge</text>
-        <text x={sinkX + sinkWidth / 2} y={abridge.y + abridge.height / 2 + 16} textAnchor="middle" fill="#ffffff" fontSize={11.5} fontWeight={700} opacity={0.95} style={{ fontVariantNumeric: "tabular-nums" }}>{fmtM(totals.toAbridge)}</text>
+        <text x={sinkX + sinkWidth / 2} y={abridge.y + abridge.height / 2 + 5} textAnchor="middle" fill="#ffffff" fontSize={15} fontWeight={800}>Abridge</text>
 
         {stays.height > 0 && (
           <>
             <rect x={sinkX} y={stays.y} width={sinkWidth} height={stays.height} rx={8} fill="#2A2621" stroke="#3A342D" />
-            <text x={sinkX + sinkWidth} y={stays.y - 8} textAnchor="end" fill="#8C8377" fontSize={11} fontWeight={600} style={{ fontVariantNumeric: "tabular-nums" }}>Stays {fmtM(totals.stays)}</text>
+            <text x={sinkX + sinkWidth} y={stays.y - 8} textAnchor="end" fill="#8C8377" fontSize={11} fontWeight={600}>Stays</text>
           </>
         )}
       </svg>
