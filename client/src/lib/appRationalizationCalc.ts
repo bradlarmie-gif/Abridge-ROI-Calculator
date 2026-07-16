@@ -71,8 +71,23 @@ export function categoryLabel(id: AppRatCategoryId): string {
   return CATEGORY_BY_ID[id]?.label ?? "Application";
 }
 
+// Starting displace share per capability: how much of that tool's spend Abridge
+// can typically take on. The rep can still adjust per tool.
+const CATEGORY_DEFAULT_COVERAGE: Record<AppRatCategoryId, number> = {
+  ambientDoc:       100,
+  dictation:        80,
+  scribe:           90,
+  cds:              90,
+  clinicalEvidence: 90,
+  transcription:    80,
+  preChartRisk:     60,
+  inEncounterCdi:   60,
+  postChartCoding:  60,
+  custom:           80,
+};
+
 export function makeItem(id: string, category: AppRatCategoryId): AppRatItem {
-  return { id, category, annualSpend: 0, coveragePct: 80, when: "thisYear" };
+  return { id, category, annualSpend: 0, coveragePct: CATEGORY_DEFAULT_COVERAGE[category] ?? 80, when: "thisYear" };
 }
 
 export function itemDisplayName(item: AppRatItem): string {
