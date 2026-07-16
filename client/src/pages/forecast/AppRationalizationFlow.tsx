@@ -31,6 +31,14 @@ export default function AppRationalizationFlow({ onBack, onHome }: AppRationaliz
     setItems((prev) => prev.map((i) => (i.id === id ? { ...i, ...patch } : i)));
   const removeItem = (id: string) => setItems((prev) => prev.filter((i) => i.id !== id));
 
+  // Top-left Back steps back one screen; from the first step it exits the flow.
+  // State stays intact while stepping because the flow only unmounts on exit.
+  const handleBack = () => {
+    if (step === "change") setStep("consolidation");
+    else if (step === "consolidation") setStep("applications");
+    else onBack();
+  };
+
   return (
     <div className="min-h-screen bg-[#FAF8F5]">
       <UnifiedHeader
@@ -39,7 +47,7 @@ export default function AppRationalizationFlow({ onBack, onHome }: AppRationaliz
         currentStep={STEP_INDEX[step]}
         totalSteps={3}
         stepLabels={STEP_LABELS}
-        onBack={onBack}
+        onBack={handleBack}
         onHome={onHome}
       />
       <div className="pt-14 sm:pt-16">
@@ -69,8 +77,7 @@ export default function AppRationalizationFlow({ onBack, onHome }: AppRationaliz
               <span className="text-[12.5px] text-[#8C7E6E] ml-auto hidden sm:block">The case for each capability is on the way.</span>
             </div>
 
-            <div className="mt-8 flex items-center justify-center gap-6">
-              <button onClick={() => setStep("applications")} className="text-sm font-semibold text-[#8C7E6E] hover:text-[#1A1A1A] transition-colors" data-testid="ar-back-to-applications">← Back to applications</button>
+            <div className="mt-8 flex items-center justify-center">
               <button onClick={() => setStep("change")} className="h-11 px-6 rounded-xl bg-[#EA2C00] text-white text-sm font-semibold" data-testid="ar-see-the-change">See the change →</button>
             </div>
           </div>
@@ -94,9 +101,6 @@ export default function AppRationalizationFlow({ onBack, onHome }: AppRationaliz
               </select>
             </div>
             <RoadmapChart items={items} termYears={termYears} abridgePrice={abridgePrice} />
-            <div className="mt-8 text-center">
-              <button onClick={() => setStep("consolidation")} className="text-sm font-semibold text-[#8C7E6E] hover:text-[#1A1A1A] transition-colors" data-testid="ar-back-to-consolidation">← Back to the consolidation</button>
-            </div>
           </div>
         )}
       </div>
