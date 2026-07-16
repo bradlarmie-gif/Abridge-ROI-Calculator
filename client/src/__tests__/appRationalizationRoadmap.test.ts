@@ -51,4 +51,17 @@ describe("computeRoadmap (term 3, when-based)", () => {
     expect(rmNone.totalRetired).toBe(0);
     expect(rmNone.read.toLowerCase()).toContain("nothing");
   });
+  it("nets the Abridge price into netSavings", () => {
+    const rmP = computeRoadmap(stack, 3, 1_000_000);
+    expect(rmP.abridgePrice).toBe(1_000_000);
+    expect(rmP.netSavings).toBe(2_840_000);
+  });
+  it("defaults abridgePrice to 0 so netSavings equals totalRetired", () => {
+    expect(rm.abridgePrice).toBe(0);
+    expect(rm.netSavings).toBe(3_840_000);
+  });
+  it("net can go negative when the price exceeds what retires", () => {
+    const rmC = computeRoadmap(stack, 3, 5_000_000);
+    expect(rmC.netSavings).toBe(-1_160_000);
+  });
 });

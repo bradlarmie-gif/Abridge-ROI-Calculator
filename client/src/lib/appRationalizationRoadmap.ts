@@ -25,11 +25,13 @@ export interface Roadmap {
   snapshots: RoadmapSnapshot[];
   deltas: RoadmapDelta[];
   totalRetired: number;
+  abridgePrice: number;
+  netSavings: number;
   endStays: number;
   read: string;
 }
 
-export function computeRoadmap(items: AppRatItem[], termYears: number): Roadmap {
+export function computeRoadmap(items: AppRatItem[], termYears: number, abridgePrice = 0): Roadmap {
   const term = Math.max(1, Math.floor(termYears));
   const rows = items.filter((i) => (i.annualSpend || 0) > 0);
   const totals = computeTotals(rows);
@@ -85,5 +87,6 @@ export function computeRoadmap(items: AppRatItem[], termYears: number): Roadmap 
         : " It can all move now.");
   }
 
-  return { termYears: term, snapshots, deltas, totalRetired, endStays, read };
+  const price = Math.max(0, abridgePrice || 0);
+  return { termYears: term, snapshots, deltas, totalRetired, abridgePrice: price, netSavings: totalRetired - price, endStays, read };
 }
