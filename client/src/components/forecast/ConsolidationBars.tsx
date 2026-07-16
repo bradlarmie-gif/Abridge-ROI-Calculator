@@ -1,8 +1,10 @@
 import { useMemo, useState } from "react";
 import { AnimatedValue } from "@/components/explore/AnimatedValue";
 import { buildStackBars, computeNet, type AppRatItem } from "@/lib/appRationalizationCalc";
+import { computeRoadmap } from "@/lib/appRationalizationRoadmap";
 
 const TAUPE = ["#5A5148", "#7A6E60", "#8E8172", "#A2937F", "#B6A78F", "#C6B9A2"];
+const TERM_OPTIONS = [2, 3, 4, 5];
 
 function fmtM(n: number): string {
   const a = Math.abs(n);
@@ -52,9 +54,12 @@ function Bar({ segments, animClass, height = 48 }: { segments: Seg[]; animClass:
   );
 }
 
-export default function ConsolidationBars({ items, abridgePrice }: { items: AppRatItem[]; abridgePrice: number }) {
+export default function ConsolidationBars({
+  items, abridgePrice, termYears, onTermChange,
+}: { items: AppRatItem[]; abridgePrice: number; termYears: number; onTermChange: (y: number) => void }) {
   const bars = useMemo(() => buildStackBars(items), [items]);
   const net = useMemo(() => computeNet(items, abridgePrice), [items, abridgePrice]);
+  const roadmap = useMemo(() => computeRoadmap(items, termYears, abridgePrice), [items, termYears, abridgePrice]);
 
   const { todaySegs, abridgeSegs } = useMemo(() => {
     const total = Math.max(1, bars.stackTotal);
@@ -134,6 +139,33 @@ export default function ConsolidationBars({ items, abridgePrice }: { items: AppR
       <div className="mt-2 flex justify-between text-[11px]">
         <span className="text-[#8C7E6E]"><b className="text-[#EA2C00]">{fmtM(bars.sunset)}</b> sunsets onto Abridge</span>
         <span className="text-[#8C7E6E] tabular-nums">{fmtM(bars.stays)} stays</span>
+      </div>
+
+      {/* Phasing: how the sunset lands across the contract term */}
+      <div className="mt-6 pt-5 border-t border-[#F0EBE4]">
+        <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+          <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#8C7E6E]">How the sunset lands</span>
+          <div className="flex items-center gap-2 text-[11px] text-[#8C7E6E]">
+            <span>over a</span>
+            <select
+              value={termYears}
+              onChange={(e) => onTermChange(Number(e.target.value))}
+              className="h-8 bg-white border border-[#E8E2DA] rounded-lg px-2.5 text-[12px] text-[#1A1A1A] outline-none focus:border-[#1A1A1A]"
+              data-testid="ar-term-select"
+            >
+              {TERM_OPTIONS.map((y) => <option key={y} value={y}>{y}-year</option>)}
+            </select>
+            <span>term</span>
+          </div>
+        </div>
+        <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${roadmap.deltas.length}, minmax(0, 1fr))` }}>
+          {roadmap.deltas.map((d) => (
+            <div key={d.year} className="rounded-xl border border-[#EFE7DC] bg-[#FAF8F5] px-3 py-2.5" data-testid={`ar-phase-year-${d.year}`}>
+              <div className="text-[9px] font-bold uppercase tracking-[0.12em] text-[#8C7E6E]">Year {d.year}</div>
+              <div className={`text-[15px] font-extrabold tabular-nums mt-0.5 ${d.amount > 0 ? "text-[#EA2C00]" : "text-[#C4B8A8]"}`}>{fmtM(d.amount)}</div>
+            </div>
+          ))}
+        </div>
       </div>
 
       <style>{`
