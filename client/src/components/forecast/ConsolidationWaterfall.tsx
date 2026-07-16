@@ -168,10 +168,10 @@ export default function ConsolidationWaterfall({
         )}
       </div>
 
-      {/* Phasing: how the sunset lands across the term */}
+      {/* Phasing: the recurring savings in effect each year (cumulative, not one-time) */}
       <div className="mt-6 pt-5 border-t border-[#F0EBE4]">
-        <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-          <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#8C7E6E]">How the sunset lands</span>
+        <div className="flex items-center justify-between mb-1 flex-wrap gap-2">
+          <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#8C7E6E]">Savings in effect, year by year</span>
           <div className="flex items-center gap-2 text-[11px] text-[#8C7E6E]">
             <span>over a</span>
             <div className="relative">
@@ -188,14 +188,20 @@ export default function ConsolidationWaterfall({
             <span>term</span>
           </div>
         </div>
+        <p className="text-[11px] text-[#8C7E6E] mb-3">Once a tool comes off, its savings recur every year after · these are the annual savings you would be running in each year.</p>
         <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${roadmap.deltas.length}, minmax(0, 1fr))` }}>
           {roadmap.deltas.map((d) => (
             <div key={d.year} className="rounded-xl border border-[#EFE7DC] bg-[#FAF8F5] px-3 py-2.5" data-testid={`ar-phase-year-${d.year}`}>
               <div className="text-[9px] font-bold uppercase tracking-[0.12em] text-[#8C7E6E]">Year {d.year}</div>
-              <div className={`text-[15px] font-extrabold tabular-nums mt-0.5 ${d.amount > 0 ? "text-[#EA2C00]" : "text-[#C4B8A8]"}`}>{fmtM(d.amount)}</div>
+              <div className={`text-[15px] font-extrabold tabular-nums mt-0.5 ${d.running > 0 ? "text-[#EA2C00]" : "text-[#C4B8A8]"}`}>{fmtM(d.running)}<span className="text-[10px] font-medium text-[#8C7E6E]"> / yr</span></div>
             </div>
           ))}
         </div>
+        {roadmap.deltas.length > 0 && (
+          <div className="mt-3 text-[11.5px] text-[#8C7E6E] tabular-nums">
+            <b className="text-[#EA2C00]">{fmtM(roadmap.deltas.reduce((s, d) => s + d.running, 0))}</b> saved across the {termYears}-year term
+          </div>
+        )}
       </div>
 
       <style>{`
