@@ -102,6 +102,30 @@ export function computeTotals(items: AppRatItem[]): AppRatTotals {
   return { stackTotal, toAbridge, stays, pctToAbridge };
 }
 
+export interface AppRatNet {
+  stackTotal: number;
+  sunset: number;       // what consolidates onto Abridge (= computeTotals().toAbridge)
+  stays: number;
+  abridgePrice: number; // clamped >= 0
+  netSavings: number;   // sunset - abridgePrice; may be negative (a net cost)
+  isNetCost: boolean;   // netSavings < 0
+}
+
+/** Nets the single Abridge price against what sunsets onto Abridge. */
+export function computeNet(items: AppRatItem[], abridgePrice: number): AppRatNet {
+  const t = computeTotals(items);
+  const price = Math.max(0, abridgePrice || 0);
+  const netSavings = t.toAbridge - price;
+  return {
+    stackTotal: t.stackTotal,
+    sunset: t.toAbridge,
+    stays: t.stays,
+    abridgePrice: price,
+    netSavings,
+    isNetCost: netSavings < 0,
+  };
+}
+
 /** Command-search matcher: substring match on vendor names and category labels. */
 export function searchApplications(query: string): { vendors: KnownVendor[]; categories: AppRatCategory[] } {
   const q = query.trim().toLowerCase();
