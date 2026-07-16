@@ -12,8 +12,8 @@ function fmtM(n: number): string {
   return `$${Math.round(n)}`;
 }
 
-export default function RoadmapChart({ items, termYears }: { items: AppRatItem[]; termYears: number }) {
-  const rm = useMemo(() => computeRoadmap(items, termYears), [items, termYears]);
+export default function RoadmapChart({ items, termYears, abridgePrice = 0 }: { items: AppRatItem[]; termYears: number; abridgePrice?: number }) {
+  const rm = useMemo(() => computeRoadmap(items, termYears, abridgePrice), [items, termYears, abridgePrice]);
   const tools = rm.snapshots[0]?.perTool ?? [];
   const colorFor = (id: string) => {
     const idx = tools.findIndex((t) => t.id === id);
@@ -49,8 +49,14 @@ export default function RoadmapChart({ items, termYears }: { items: AppRatItem[]
       <div className="flex justify-between items-start">
         <div className="text-[10.5px] font-bold uppercase tracking-[2px] text-[#8C7E6E] pt-2">Adjacent stack cost · over the term</div>
         <div className="text-right leading-none">
-          <AnimatedValue value={rm.totalRetired} format={(v) => `−${fmtM(v)}`} className="text-[30px] font-extrabold text-[#EA2C00] tracking-tight tabular-nums" />
-          <div className="text-[11px] text-[#8C7E6E] font-semibold mt-1.5">retired across {rm.termYears} {rm.termYears === 1 ? "year" : "years"}</div>
+          <AnimatedValue
+            value={Math.abs(rm.netSavings)}
+            format={fmtM}
+            className={`text-[30px] font-extrabold tracking-tight tabular-nums ${rm.netSavings < 0 ? "text-[#1A1A1A]" : "text-[#EA2C00]"}`}
+          />
+          <div className="text-[11px] text-[#8C7E6E] font-semibold mt-1.5">
+            {rm.netSavings < 0 ? "net cost / yr" : (rm.abridgePrice > 0 ? "net savings / yr, after Abridge" : "net savings / yr")}
+          </div>
         </div>
       </div>
 
