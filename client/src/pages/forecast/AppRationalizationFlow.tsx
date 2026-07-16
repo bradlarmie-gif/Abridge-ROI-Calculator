@@ -3,7 +3,7 @@ import { UnifiedHeader } from "@/components/UnifiedHeader";
 import { type AppRatItem, type AppRatCategoryId, makeItem } from "@/lib/appRationalizationCalc";
 import ArApplicationsStep from "./appRationalization/ArApplicationsStep";
 import ConsolidationFlow from "@/components/forecast/ConsolidationFlow";
-import ConsolidationLedger from "@/components/forecast/ConsolidationLedger";
+import ConsolidationBars from "@/components/forecast/ConsolidationBars";
 import RoadmapChart from "@/components/forecast/RoadmapChart";
 
 type ArStep = "applications" | "consolidation" | "change";
@@ -67,8 +67,8 @@ export default function AppRationalizationFlow({ onBack, onHome }: AppRationaliz
 
         {step === "consolidation" && (
           <div data-testid="ar-step-consolidation" className="max-w-[1120px] mx-auto px-6 py-8">
-            <ConsolidationLedger items={items} abridgePrice={abridgePrice} />
-            <div className="mt-6"><ConsolidationFlow items={items} /></div>
+            <ConsolidationFlow items={items} />
+            <div className="mt-6"><ConsolidationBars items={items} abridgePrice={abridgePrice} /></div>
 
             {/* On-demand "why" proof, on the way. Placeholder until the team lands the rationale copy. */}
             <div className="mt-6 flex items-center gap-3 rounded-xl border border-[#E8E2DA] bg-white/60 px-5 py-4" data-testid="ar-why-coming-soon">
