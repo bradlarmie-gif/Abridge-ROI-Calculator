@@ -27,31 +27,98 @@ export interface AppRatCategory {
 
 export const APP_RAT_CATEGORIES: AppRatCategory[] = [
   { id: "ambientDoc",       label: "Ambient documentation",        hint: "Nuance DAX, Suki, Nabla, Ambience", icon: "ambientDoc" },
-  { id: "dictation",        label: "Dictation",                    hint: "Fluency, Dragon Medical",           icon: "dictation" },
-  { id: "scribe",           label: "Medical scribe",               hint: "in-person or virtual scribes",       icon: "scribe" },
-  { id: "cds",              label: "Clinical decision support",    hint: "UpToDate, OpenEvidence",             icon: "cds" },
-  { id: "preChartRisk",     label: "Pre-charting risk",            hint: "Iodine, Stanson",                    icon: "preChartRisk" },
-  { id: "inEncounterCdi",   label: "In-encounter risk / CDI",      hint: "Stanson",                            icon: "inEncounterCdi" },
-  { id: "postChartCoding",  label: "Post-charting CDI / coding",   hint: "Solventum",                          icon: "postChartCoding" },
-  { id: "transcription",    label: "Transcription services",       hint: "outsourced or offshore",             icon: "transcription" },
-  { id: "clinicalEvidence", label: "Clinical evidence & search",   hint: "OpenEvidence, redundant reference",  icon: "clinicalEvidence" },
+  { id: "dictation",        label: "Dictation",                    hint: "Dragon Medical One, Fluency",        icon: "dictation" },
+  { id: "scribe",           label: "Medical scribe",               hint: "ScribeAmerica, Aquity",              icon: "scribe" },
+  { id: "cds",              label: "Clinical decision support",    hint: "UpToDate, DynaMed, Epocrates",       icon: "cds" },
+  { id: "preChartRisk",     label: "Pre-charting risk",            hint: "Iodine, Regard, Navina",             icon: "preChartRisk" },
+  { id: "inEncounterCdi",   label: "In-encounter risk / CDI",      hint: "Stanson, 3M CDI",                    icon: "inEncounterCdi" },
+  { id: "postChartCoding",  label: "Post-charting CDI / coding",   hint: "Solventum, Optum360",                icon: "postChartCoding" },
+  { id: "transcription",    label: "Transcription services",       hint: "iMedX, Athreon, offshore",           icon: "transcription" },
+  { id: "clinicalEvidence", label: "Clinical evidence & search",   hint: "OpenEvidence, ClinicalKey",          icon: "clinicalEvidence" },
   { id: "custom",           label: "Custom",                       hint: "not on the list",                    icon: "custom" },
 ];
 
 export interface KnownVendor { name: string; category: AppRatCategoryId }
 
+// The common vendors health systems actually run, per capability. Searchable so a
+// rep can type the tool they have and it lands in the right category. The subtext
+// on each category only shows a couple; the full set lives here for search.
 export const KNOWN_VENDORS: KnownVendor[] = [
+  // Ambient documentation
   { name: "Nuance DAX", category: "ambientDoc" },
+  { name: "DAX Copilot", category: "ambientDoc" },
   { name: "Suki", category: "ambientDoc" },
   { name: "Nabla", category: "ambientDoc" },
   { name: "Ambience", category: "ambientDoc" },
-  { name: "Fluency", category: "dictation" },
+  { name: "DeepScribe", category: "ambientDoc" },
+  { name: "Augmedix", category: "ambientDoc" },
+  { name: "Sunoh.ai", category: "ambientDoc" },
+  { name: "Freed", category: "ambientDoc" },
+  { name: "Heidi", category: "ambientDoc" },
+  { name: "Commure", category: "ambientDoc" },
+  { name: "Corti", category: "ambientDoc" },
+
+  // Dictation
+  { name: "Dragon Medical One", category: "dictation" },
   { name: "Dragon Medical", category: "dictation" },
+  { name: "Fluency Direct", category: "dictation" },
+  { name: "Fluency", category: "dictation" },
+  { name: "Philips SpeechLive", category: "dictation" },
+  { name: "nVoq", category: "dictation" },
+
+  // Medical scribe
+  { name: "ScribeAmerica", category: "scribe" },
+  { name: "Aquity Solutions", category: "scribe" },
+  { name: "ProScribe", category: "scribe" },
+  { name: "iScribes", category: "scribe" },
+  { name: "Scribe-X", category: "scribe" },
+  { name: "Physicians Angels", category: "scribe" },
+
+  // Clinical decision support
   { name: "UpToDate", category: "cds" },
-  { name: "OpenEvidence", category: "cds" },
+  { name: "DynaMed", category: "cds" },
+  { name: "Epocrates", category: "cds" },
+  { name: "VisualDx", category: "cds" },
+  { name: "Isabel", category: "cds" },
+  { name: "Lexicomp", category: "cds" },
+  { name: "Micromedex", category: "cds" },
+
+  // Pre-charting risk
+  { name: "Iodine Software", category: "preChartRisk" },
   { name: "Iodine", category: "preChartRisk" },
+  { name: "Regard", category: "preChartRisk" },
+  { name: "Navina", category: "preChartRisk" },
+  { name: "Xsolis", category: "preChartRisk" },
+  { name: "Pieces", category: "preChartRisk" },
+
+  // In-encounter risk / CDI
   { name: "Stanson", category: "inEncounterCdi" },
+  { name: "Nuance CDE", category: "inEncounterCdi" },
+  { name: "ChartWise", category: "inEncounterCdi" },
+  { name: "Dolbey", category: "inEncounterCdi" },
+  { name: "3M CDI", category: "inEncounterCdi" },
+
+  // Post-charting CDI / coding
   { name: "Solventum", category: "postChartCoding" },
+  { name: "3M 360 Encompass", category: "postChartCoding" },
+  { name: "Optum360", category: "postChartCoding" },
+  { name: "nThrive", category: "postChartCoding" },
+  { name: "TruCode", category: "postChartCoding" },
+  { name: "AGS Health", category: "postChartCoding" },
+  { name: "CorroHealth", category: "postChartCoding" },
+  { name: "Aviacode", category: "postChartCoding" },
+
+  // Transcription services
+  { name: "iMedX", category: "transcription" },
+  { name: "Athreon", category: "transcription" },
+  { name: "InfraWare", category: "transcription" },
+  { name: "DataMatrix Medical", category: "transcription" },
+
+  // Clinical evidence & search
+  { name: "OpenEvidence", category: "clinicalEvidence" },
+  { name: "ClinicalKey", category: "clinicalEvidence" },
+  { name: "PubMed", category: "clinicalEvidence" },
+  { name: "Read by QxMD", category: "clinicalEvidence" },
 ];
 
 export interface AppRatItem {
