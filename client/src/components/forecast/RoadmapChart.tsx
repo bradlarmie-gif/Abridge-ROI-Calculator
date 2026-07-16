@@ -57,6 +57,11 @@ export default function RoadmapChart({ items, termYears, abridgePrice = 0 }: { i
           <div className="text-[11px] text-[#8C7E6E] font-semibold mt-1.5">
             {rm.netSavings < 0 ? "net cost / yr" : (rm.abridgePrice > 0 ? "net savings / yr, after Abridge" : "net savings / yr")}
           </div>
+          {rm.abridgePrice > 0 && (
+            <div className="text-[10.5px] text-[#B4A99B] mt-1 tabular-nums">
+              {fmtM(rm.totalRetired)} sunset · {fmtM(rm.abridgePrice)} Abridge price
+            </div>
+          )}
         </div>
       </div>
 
