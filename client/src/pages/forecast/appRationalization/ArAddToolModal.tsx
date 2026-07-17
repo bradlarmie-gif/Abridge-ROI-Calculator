@@ -3,7 +3,13 @@
 // (no blank $0 rows). One modal for all entry points; inline row editing handles
 // tweaks afterward. Spend routes through the shared NumberField (live thousands
 // separators). Copy: "When does it sunset?", single "Add to stack".
+//
+// Custom path (unknown vendor / "not on the list"): a "What kind of tool is it?"
+// picker leads, defaulting to "Other" so we never mislabel it. Picking a real
+// capability categorizes the tool properly (right icon, sensible default displace),
+// which keeps the consolidation story intact.
 import { useEffect, useMemo, useState } from "react";
+import { ChevronDown } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Slider } from "@/components/ui/slider";
 import { NumberField } from "@/components/NumberField";
@@ -23,11 +29,11 @@ export default function ArAddToolModal({
   category: AppRatCategoryId | null;
   vendorName?: string;
   onOpenChange: (open: boolean) => void;
-  onConfirm: (init: Partial<AppRatItem>) => void;
+  onConfirm: (category: AppRatCategoryId, init: Partial<AppRatItem>) => void;
 }) {
-  const cat = useMemo(() => (category ? APP_RAT_CATEGORIES.find((c) => c.id === category) ?? null : null), [category]);
-  const seed = useMemo(() => (category ? makeItem("seed", category) : null), [category]);
-
+  // The custom path lets them re-categorize inside the modal; known paths are fixed.
+  const isCustomEntry = category === "custom";
+  const [activeCategory, setActiveCategory] = useState<AppRatCategoryId>(category ?? "custom");
   const [vendor, setVendor] = useState("");
   const [spend, setSpend] = useState(0);
   const [pct, setPct] = useState(100);
@@ -35,18 +41,30 @@ export default function ArAddToolModal({
 
   // reset the form each time a new tool is opened
   useEffect(() => {
-    if (open && seed) {
+    if (open && category) {
+      const s = makeItem("seed", category);
+      setActiveCategory(category);
       setVendor(vendorName ?? "");
       setSpend(0);
-      setPct(seed.coveragePct);
-      setWhen(seed.when);
+      setPct(s.coveragePct);
+      setWhen(s.when);
     }
-  }, [open, category, vendorName, seed]);
+  }, [open, category, vendorName]);
 
-  if (!cat) return null;
+  const cat = useMemo(() => APP_RAT_CATEGORIES.find((c) => c.id === activeCategory) ?? null, [activeCategory]);
+
+  // picking a capability re-seeds the default displace % for that capability
+  const changeCategory = (id: AppRatCategoryId) => {
+    setActiveCategory(id);
+    setPct(makeItem("seed", id).coveragePct);
+  };
+
+  if (!category || !cat) return null;
   const retired = Math.round(spend * pct / 100);
   const stays = Math.max(0, spend - retired);
   const canAdd = spend > 0;
+  const title = activeCategory === "custom" ? "Add an application" : cat.label;
+  const vendorPlaceholder = activeCategory === "custom" ? "e.g. the tool's name" : `e.g. ${cat.hint}`;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -60,20 +78,41 @@ export default function ArAddToolModal({
           </div>
           <div>
             <div className="font-abridge uppercase tracking-[0.15em] text-[9.5px] text-[#B4A99B]">Add to your stack</div>
-            <DialogTitle className="font-abridge text-[23px] tracking-[-0.01em] leading-none mt-1 text-[#1A1A1A]">{cat.label}</DialogTitle>
+            <DialogTitle className="font-abridge text-[23px] tracking-[-0.01em] leading-none mt-1 text-[#1A1A1A]">{title}</DialogTitle>
           </div>
         </div>
 
         {/* body */}
         <div className="px-6 pb-1">
-          <div>
+          {/* capability picker — custom path only */}
+          {isCustomEntry && (
+            <div className="mb-1">
+              <div className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#8C7E6E] mb-1.5">What kind of tool is it?</div>
+              <div className="relative">
+                <select
+                  value={activeCategory}
+                  onChange={(e) => changeCategory(e.target.value as AppRatCategoryId)}
+                  className="w-full h-11 appearance-none bg-white border border-[#E8E2DA] rounded-[11px] pl-3.5 pr-9 text-sm text-[#1A1A1A] outline-none focus:border-[#EA2C00] cursor-pointer"
+                  data-testid="ar-add-capability"
+                >
+                  {APP_RAT_CATEGORIES.filter((c) => c.id !== "custom").map((c) => (
+                    <option key={c.id} value={c.id}>{c.label}</option>
+                  ))}
+                  <option value="custom">Other</option>
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8C7E6E]" strokeWidth={2.25} />
+              </div>
+            </div>
+          )}
+
+          <div className={isCustomEntry ? "mt-4" : ""}>
             <div className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#8C7E6E] mb-1.5">
               Vendor <span className="font-semibold tracking-normal normal-case text-[#B4A99B]">optional</span>
             </div>
             <input
               value={vendor}
               onChange={(e) => setVendor(e.target.value)}
-              placeholder={`e.g. ${cat.hint}`}
+              placeholder={vendorPlaceholder}
               className="w-full h-11 border border-[#E8E2DA] rounded-[11px] px-3.5 text-sm text-[#1A1A1A] outline-none focus:border-[#EA2C00] placeholder:text-[#B4A99B]"
               data-testid="ar-add-vendor"
             />
@@ -139,7 +178,7 @@ export default function ArAddToolModal({
         <div className="px-6 pt-4 pb-6 mt-3 border-t border-[#F2ECE4]">
           <button
             disabled={!canAdd}
-            onClick={() => onConfirm({ vendorName: vendor.trim() || undefined, annualSpend: spend, coveragePct: pct, when })}
+            onClick={() => onConfirm(activeCategory, { vendorName: vendor.trim() || undefined, annualSpend: spend, coveragePct: pct, when })}
             className="w-full h-11 rounded-xl bg-[#EA2C00] text-white text-sm font-bold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#d92800] transition-opacity"
             data-testid="ar-add-confirm"
           >

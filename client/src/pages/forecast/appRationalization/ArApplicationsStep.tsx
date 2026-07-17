@@ -186,7 +186,7 @@ export default function ArApplicationsStep({
         category={pick?.category ?? null}
         vendorName={pick?.vendorName}
         onOpenChange={(o) => { if (!o) setPick(null); }}
-        onConfirm={(init) => { if (pick) onAdd(pick.category, init); setPick(null); }}
+        onConfirm={(category, init) => { onAdd(category, init); setPick(null); }}
       />
     </div>
   );
