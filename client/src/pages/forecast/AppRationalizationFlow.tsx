@@ -84,7 +84,6 @@ export default function AppRationalizationFlow({ onBack, onHome }: AppRationaliz
 
         {step === "consolidation" && (() => {
           const net = computeNet(items, abridgePrice);
-          const futureSpend = net.abridgePrice + net.stays;
           return (
           <div data-testid="ar-step-consolidation" className="max-w-[1120px] mx-auto px-6 py-8">
             {/* Page header, matching the Applications screen */}
@@ -116,17 +115,17 @@ export default function AppRationalizationFlow({ onBack, onHome }: AppRationaliz
                       data-testid="ar-net-hero"
                     />
                     <div className="text-[12px] text-[#8C7E6E] tabular-nums mt-1.5">
-                      {fmtM(net.stackTotal)} today → {fmtM(futureSpend)} on Abridge
+                      {fmtM(net.stackTotal)} across these tools today · {fmtM(net.stays)} stays
                     </div>
                   </div>
                 </div>
               )}
             </div>
 
-            <ConsolidationWaterfall items={items} termYears={termYears} onTermChange={setTermYears} />
+            <ConsolidationWaterfall items={items} />
 
-            {/* Calm beat: how the stack phases in, on their timeline. Reassurance, not a second chart. */}
-            <RolloutBeat items={items} termYears={termYears} abridgePrice={abridgePrice} />
+            {/* Calm beat: how the stack phases in, on their timeline. The single timing section. */}
+            <RolloutBeat items={items} termYears={termYears} abridgePrice={abridgePrice} onTermChange={setTermYears} />
 
             {/* On-demand "why" proof, on the way. Placeholder until the team lands the rationale copy. */}
             <div className="mt-6 flex items-center gap-3 rounded-xl border border-[#E8E2DA] bg-white/60 px-5 py-4" data-testid="ar-why-coming-soon">

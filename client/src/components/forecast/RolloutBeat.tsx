@@ -3,7 +3,10 @@
 // the phases sit quietly on the right, ending in the full run-rate you arrive at.
 // Phases and run-rate derive from the same tool data the waterfall uses.
 import { useMemo } from "react";
+import { ChevronDown } from "lucide-react";
 import { buildRollout, type AppRatItem } from "@/lib/appRationalizationCalc";
+
+const TERM_OPTIONS = [2, 3, 4, 5];
 
 function fmtM(n: number): string {
   const a = Math.abs(n);
@@ -20,8 +23,8 @@ function reachedPhrase(year: number): string {
 }
 
 export default function RolloutBeat({
-  items, termYears, abridgePrice,
-}: { items: AppRatItem[]; termYears: number; abridgePrice: number }) {
+  items, termYears, abridgePrice, onTermChange,
+}: { items: AppRatItem[]; termYears: number; abridgePrice: number; onTermChange: (y: number) => void }) {
   const rollout = useMemo(() => buildRollout(items, termYears, abridgePrice), [items, termYears, abridgePrice]);
 
   if (!rollout.hasRollout) return null;
@@ -32,7 +35,24 @@ export default function RolloutBeat({
 
   return (
     <div className="mt-6 pt-6 border-t border-[#E8E2DA]" data-testid="ar-rollout">
-      <div className="font-abridge uppercase tracking-[0.17em] text-[10.5px] text-[#B4A99B] mb-4">How it rolls out</div>
+      <div className="flex items-center justify-between flex-wrap gap-2 mb-4">
+        <span className="font-abridge uppercase tracking-[0.17em] text-[10.5px] text-[#B4A99B]">How it rolls out</span>
+        <div className="flex items-center gap-2 text-[11px] text-[#8C7E6E]">
+          <span>over a</span>
+          <div className="relative">
+            <select
+              value={termYears}
+              onChange={(e) => onTermChange(Number(e.target.value))}
+              className="h-8 appearance-none bg-white border border-[#E8E2DA] rounded-lg pl-2.5 pr-7 text-[12px] text-[#1A1A1A] outline-none focus:border-[#1A1A1A] cursor-pointer"
+              data-testid="ar-term-select"
+            >
+              {TERM_OPTIONS.map((y) => <option key={y} value={y}>{y}-year</option>)}
+            </select>
+            <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#8C7E6E]" strokeWidth={2.25} />
+          </div>
+          <span>term</span>
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-[1.1fr_0.9fr] gap-8 md:gap-14 items-start">
         {/* message leads */}
