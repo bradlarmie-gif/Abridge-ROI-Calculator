@@ -4,6 +4,7 @@ import { type AppRatItem, type AppRatCategoryId, makeItem, computeNet } from "@/
 import { AnimatedValue } from "@/components/explore/AnimatedValue";
 import ArApplicationsStep from "./appRationalization/ArApplicationsStep";
 import ConsolidationWaterfall from "@/components/forecast/ConsolidationWaterfall";
+import RolloutBeat from "@/components/forecast/RolloutBeat";
 
 function fmtM(n: number): string {
   const a = Math.abs(n);
@@ -100,6 +101,9 @@ export default function AppRationalizationFlow({ onBack, onHome }: AppRationaliz
             </div>
 
             <ConsolidationWaterfall items={items} termYears={termYears} onTermChange={setTermYears} />
+
+            {/* Calm beat: how the stack phases in, on their timeline. Reassurance, not a second chart. */}
+            <RolloutBeat items={items} termYears={termYears} abridgePrice={abridgePrice} />
 
             {/* On-demand "why" proof, on the way. Placeholder until the team lands the rationale copy. */}
             <div className="mt-6 flex items-center gap-3 rounded-xl border border-[#E8E2DA] bg-white/60 px-5 py-4" data-testid="ar-why-coming-soon">

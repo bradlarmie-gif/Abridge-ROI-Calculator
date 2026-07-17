@@ -268,3 +268,53 @@ export function retirementYear(item: AppRatItem, termYears: number): number {
   const raw = WHEN_TO_YEAR[item.when ?? "notSure"](term);
   return Math.min(term, Math.max(1, raw));
 }
+
+// -------- Rollout (the calm "how it phases in" beat under the waterfall) --------
+
+export interface RolloutPhase {
+  year: number;      // contract year the tools in this phase come off (1..term)
+  label: string;     // human phase label ("This year", "Next year", "Year 3")
+  tools: string[];   // display names of the tools coming off in this phase
+}
+
+export interface Rollout {
+  phases: RolloutPhase[];
+  runRate: number;      // net savings / yr you arrive at (matches the waterfall hero)
+  reachedYear: number;  // the year the last tool comes off (0 if nothing sunsets)
+  hasRollout: boolean;  // at least one tool actually sunsets
+}
+
+/** Human label for a contract year in the rollout timeline. */
+export function rolloutYearLabel(year: number): string {
+  if (year <= 1) return "This year";
+  if (year === 2) return "Next year";
+  return `Year ${year}`;
+}
+
+/**
+ * Groups the sunsetting tools into contract-year phases for the rollout beat,
+ * and reports the run-rate (net savings) you reach once the last one comes off.
+ * Only tools that actually sunset (itemRetired > 0) appear; order within a phase
+ * follows the input order. The run-rate is the same net figure the waterfall shows.
+ */
+export function buildRollout(items: AppRatItem[], termYears: number, abridgePrice: number): Rollout {
+  const term = Math.max(1, Math.floor(termYears));
+  const byYear = new Map<number, string[]>();
+  for (const item of items) {
+    if (itemRetired(item) <= 0) continue;
+    const year = retirementYear(item, term);
+    const arr = byYear.get(year) ?? [];
+    arr.push(itemDisplayName(item));
+    byYear.set(year, arr);
+  }
+  const phases: RolloutPhase[] = Array.from(byYear.keys())
+    .sort((a, b) => a - b)
+    .map((year) => ({ year, label: rolloutYearLabel(year), tools: byYear.get(year)! }));
+  const reachedYear = phases.length ? phases[phases.length - 1].year : 0;
+  return {
+    phases,
+    runRate: computeNet(items, abridgePrice).netSavings,
+    reachedYear,
+    hasRollout: phases.length > 0,
+  };
+}
