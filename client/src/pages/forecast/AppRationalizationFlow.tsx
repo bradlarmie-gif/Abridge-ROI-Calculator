@@ -31,8 +31,8 @@ export default function AppRationalizationFlow({ onBack, onHome }: AppRationaliz
   const [items, setItems] = useState<AppRatItem[]>([]);
   const nextId = useRef(0);
 
-  const addItem = (category: AppRatCategoryId, vendorName?: string) =>
-    setItems((prev) => [...prev, { ...makeItem(`ar-${nextId.current++}`, category), vendorName }]);
+  const addItem = (category: AppRatCategoryId, init?: Partial<AppRatItem>) =>
+    setItems((prev) => [...prev, { ...makeItem(`ar-${nextId.current++}`, category), ...init }]);
   const updateItem = (id: string, patch: Partial<AppRatItem>) =>
     setItems((prev) => prev.map((i) => (i.id === id ? { ...i, ...patch } : i)));
   const removeItem = (id: string) => setItems((prev) => prev.filter((i) => i.id !== id));
