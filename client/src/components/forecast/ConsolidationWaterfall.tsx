@@ -30,7 +30,7 @@ function fmtM(n: number): string {
 export default function ConsolidationWaterfall({
   items, termYears, onTermChange,
 }: { items: AppRatItem[]; termYears: number; onTermChange: (y: number) => void }) {
-  const [hover, setHover] = useState<{ id: string; label: string; value: string; leftPct: number; topPct: number } | null>(null);
+  const [hover, setHover] = useState<{ id: string; label: string; value: string; sub?: string; leftPct: number; topPct: number } | null>(null);
   const bars = useMemo(() => buildStackBars(items), [items]);
   const roadmap = useMemo(() => computeRoadmap(items, termYears), [items, termYears]);
 
@@ -45,7 +45,7 @@ export default function ConsolidationWaterfall({
       .map((t) => {
         const before = running;
         running -= t.sunset;
-        return { id: t.id, name: t.name, amount: t.sunset, before, after: running };
+        return { id: t.id, name: t.name, amount: t.sunset, stays: t.stays, spend: t.spend, before, after: running };
       });
 
     const n = 2 + steps.length;
@@ -58,7 +58,7 @@ export default function ConsolidationWaterfall({
     const todaySegs = bars.tools.map((t) => {
       const topV = cursorV, botV = cursorV - t.spend;
       cursorV = botV;
-      return { id: t.id, name: t.name, spend: t.spend, yTop: yOf(topV), yBot: yOf(botV) };
+      return { id: t.id, name: t.name, spend: t.spend, sunset: t.sunset, stays: t.stays, yTop: yOf(topV), yBot: yOf(botV) };
     });
 
     return { steps, todaySegs, n, barW, centerX, yOf, stays: bars.stays, stackTotal: bars.stackTotal, sunset: bars.sunset };
@@ -90,6 +90,7 @@ export default function ConsolidationWaterfall({
             <div className="bg-[#1A1A1A] text-white rounded-lg px-3 py-1.5 shadow-[0_8px_20px_rgba(0,0,0,0.18)] whitespace-nowrap">
               <div className="text-[11px] font-semibold leading-tight">{hover.label}</div>
               <div className="text-[11px] text-white/70 tabular-nums leading-tight">{hover.value}</div>
+              {hover.sub && <div className="text-[10.5px] text-white/50 tabular-nums leading-tight mt-0.5">{hover.sub}</div>}
             </div>
           </div>
         )}
@@ -112,7 +113,7 @@ export default function ConsolidationWaterfall({
               x={centerX(0) - half} y={s.yTop} width={barW} height={Math.max(1, s.yBot - s.yTop)}
               fill={TODAY_COLOR} opacity={dim(s.id) ? 0.35 : 1}
               stroke="#FDFBF8" strokeWidth={2}
-              onMouseEnter={() => setHover({ id: s.id, label: s.name, value: `${fmtM(s.spend)} / yr`, leftPct: pctX(centerX(0)), topPct: pctY(s.yTop) })}
+              onMouseEnter={() => setHover({ id: s.id, label: s.name, value: `${fmtM(s.spend)} / yr`, sub: s.sunset > 0 ? `${fmtM(s.sunset)} sunsets · ${fmtM(s.stays)} stays` : undefined, leftPct: pctX(centerX(0)), topPct: pctY(s.yTop) })}
               onMouseLeave={() => setHover(null)}
             />
           ))}
@@ -127,7 +128,7 @@ export default function ConsolidationWaterfall({
                 style={{ ["--wf-from" as string]: TODAY_COLOR, animationDelay: `${0.15 + j * 0.16}s` }}
                 x={centerX(1 + j) - half} y={yTop} width={barW} height={Math.max(2, yOf(s.after) - yTop)} rx={3}
                 fill="#EA2C00" opacity={dim(s.id) ? 0.28 : 1}
-                onMouseEnter={() => setHover({ id: s.id, label: s.name, value: `${fmtM(s.amount)} sunsets onto Abridge`, leftPct: pctX(centerX(1 + j)), topPct: pctY(yTop) })}
+                onMouseEnter={() => setHover({ id: s.id, label: s.name, value: `${fmtM(s.amount)} sunsets onto Abridge`, sub: s.stays > 0 ? `${fmtM(s.stays)} stays · ${Math.round((s.stays / Math.max(1, s.spend)) * 100)}%` : undefined, leftPct: pctX(centerX(1 + j)), topPct: pctY(yTop) })}
                 onMouseLeave={() => setHover(null)}
               />
             );
