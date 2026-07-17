@@ -12,7 +12,7 @@ function fmtM(n: number): string {
   return `$${Math.round(a)}`;
 }
 
-const COL_HEADERS = ["Application", "Annual spend", "How much could you displace?", "Over", "Displaceable"];
+const COL_HEADERS = ["Application", "Annual spend", "How much could you displace?", "Comes off", "Displaceable"];
 
 export default function ArApplicationsStep({
   items, orgName, onOrgNameChange, abridgePrice, onAbridgePriceChange, onAdd, onUpdate, onRemove, onContinue,

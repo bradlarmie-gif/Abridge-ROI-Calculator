@@ -74,7 +74,7 @@ export default function ArStackRow({
         <select
           value={item.when ?? "thisYear"}
           onChange={(e) => onChange({ when: e.target.value as AppRatWhen })}
-          aria-label="Over what time period"
+          aria-label="When this tool comes off"
           className="w-full h-10 appearance-none bg-white border border-[#E8E2DA] rounded-[10px] pl-3 pr-8 text-[12.5px] text-[#1A1A1A] outline-none focus:border-[#EA2C00] cursor-pointer"
           data-testid={`ar-row-when-${item.id}`}
         >
