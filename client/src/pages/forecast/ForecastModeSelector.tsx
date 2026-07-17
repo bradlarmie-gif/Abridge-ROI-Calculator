@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Layers, BarChart3, TrendingUp, Boxes, ChevronRight } from "lucide-react";
+import { Layers, BarChart3, Boxes, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GlobalHeader } from "@/components/GlobalHeader";
 
@@ -14,7 +14,7 @@ interface ForecastModeSelectorProps {
 export default function ForecastModeSelector({
   onSelectNewDeal,
   onSelectPricingComparison,
-  onSelectPartnerModel,
+  // onSelectPartnerModel — Partner ROI Model path hidden for now (flow/route kept)
   onSelectAppRationalization,
   onHome,
 }: ForecastModeSelectorProps) {
@@ -44,7 +44,7 @@ export default function ForecastModeSelector({
           </h1>
         </motion.section>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6 max-w-4xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-6 max-w-5xl mx-auto">
 
           <motion.div
             initial={{ opacity: 0, y: 24 }}
@@ -84,37 +84,6 @@ export default function ForecastModeSelector({
             whileHover={{ y: -4 }}
             role="button"
             tabIndex={0}
-            onKeyDown={(e) => handleCardKey(e, onSelectPartnerModel)}
-            className="group relative flex flex-col cursor-pointer transition-all duration-300 ease-out rounded-xl p-8 min-h-[300px] bg-[#F5F0EB] hover:bg-[#EDE7E0] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#EA2C00] focus-visible:ring-offset-2"
-            onClick={onSelectPartnerModel}
-            data-testid="card-forecast-partner"
-          >
-            <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center mb-5">
-              <TrendingUp className="w-6 h-6 text-[#EA2C00]" />
-            </div>
-            <p className="text-[13px] text-[#EA2C00] font-medium mb-1.5">Existing partner</p>
-            <h3 className="text-2xl font-bold text-[#1A1A1A] mb-2.5">Partner ROI Model</h3>
-            <p className="text-sm text-[#666666] leading-relaxed flex-1 mb-6">
-              Enter an existing partner's live data across care settings and model their realized and projected ROI.
-            </p>
-            <Button
-              className="w-full bg-[#EA2C00] text-white border-[#EA2C00]"
-              size="lg"
-              onClick={(e) => { e.stopPropagation(); onSelectPartnerModel(); }}
-              data-testid="card-forecast-partner-button"
-            >
-              Start Modeling
-              <ChevronRight className="w-4 h-4 ml-1" />
-            </Button>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
-            whileHover={{ y: -4 }}
-            role="button"
-            tabIndex={0}
             onKeyDown={(e) => handleCardKey(e, onSelectAppRationalization)}
             className="group relative flex flex-col cursor-pointer transition-all duration-300 ease-out rounded-xl p-8 min-h-[300px] bg-[#F5F0EB] hover:bg-[#EDE7E0] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#EA2C00] focus-visible:ring-offset-2"
             onClick={onSelectAppRationalization}
@@ -142,7 +111,7 @@ export default function ForecastModeSelector({
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.45, ease: [0.25, 0.46, 0.45, 0.94] }}
+            transition={{ duration: 0.5, delay: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
             whileHover={{ y: -4 }}
             role="button"
             tabIndex={0}
