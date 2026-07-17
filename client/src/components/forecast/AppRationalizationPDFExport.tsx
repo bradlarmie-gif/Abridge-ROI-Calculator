@@ -52,7 +52,7 @@ const s = StyleSheet.create({
   rollEyebrow: { position: "absolute", top: 20, left: 0, fontSize: 8, fontWeight: 700, color: C.t3, letterSpacing: 2, textTransform: "uppercase" },
   rollLeft: { width: "55%", paddingRight: 30, paddingTop: 20, justifyContent: "center" },
   rollRight: { width: "45%", paddingTop: 20 },
-  stmt: { fontFamily: "Manrope", fontSize: 11, color: C.statement, lineHeight: 1.6, marginBottom: 10 },
+  stmt: { fontFamily: "Manrope", fontSize: 11, color: "#5E574D", lineHeight: 1.6, marginBottom: 10 },
   steps: { position: "relative", paddingLeft: 17 },
   stepLine: { position: "absolute", left: 4, top: 5, width: 1.5, backgroundColor: C.hair },
   step: { position: "relative", height: 34 },
@@ -153,7 +153,7 @@ type Part = { t: string; em?: boolean };
 function Para({ parts, last }: { parts: Part[]; last?: boolean }) {
   return (
     <Text style={last ? [s.stmt, { marginBottom: 0 }] : s.stmt}>
-      {parts.map((p, i) => (p.em ? <Text key={i} style={{ color: C.ink, fontWeight: 700 }}>{p.t}</Text> : <Text key={i}>{p.t}</Text>))}
+      {parts.map((p, i) => (p.em ? <Text key={i} style={{ color: C.ink }}>{p.t}</Text> : <Text key={i}>{p.t}</Text>))}
     </Text>
   );
 }
