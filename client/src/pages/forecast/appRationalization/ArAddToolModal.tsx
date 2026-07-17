@@ -32,8 +32,10 @@ export default function ArAddToolModal({
   onConfirm: (category: AppRatCategoryId, init: Partial<AppRatItem>) => void;
 }) {
   // The custom path lets them re-categorize inside the modal; known paths are fixed.
-  const isCustomEntry = category === "custom";
+  // activeCategory / entryIsCustom persist through close so the content stays
+  // mounted and Radix can play its fade-out (category prop goes null on close).
   const [activeCategory, setActiveCategory] = useState<AppRatCategoryId>(category ?? "custom");
+  const [entryIsCustom, setEntryIsCustom] = useState(false);
   const [vendor, setVendor] = useState("");
   const [spend, setSpend] = useState(0);
   const [pct, setPct] = useState(100);
@@ -44,6 +46,7 @@ export default function ArAddToolModal({
     if (open && category) {
       const s = makeItem("seed", category);
       setActiveCategory(category);
+      setEntryIsCustom(category === "custom");
       setVendor(vendorName ?? "");
       setSpend(0);
       setPct(s.coveragePct);
@@ -59,7 +62,9 @@ export default function ArAddToolModal({
     setPct(makeItem("seed", id).coveragePct);
   };
 
-  if (!category || !cat) return null;
+  // Keep rendering through the close (open=false) so Radix animates the exit;
+  // only bail before the modal has ever had a category to show.
+  if (!cat) return null;
   const retired = Math.round(spend * pct / 100);
   const stays = Math.max(0, spend - retired);
   const canAdd = spend > 0;
@@ -85,7 +90,7 @@ export default function ArAddToolModal({
         {/* body */}
         <div className="px-6 pb-1">
           {/* capability picker — custom path only */}
-          {isCustomEntry && (
+          {entryIsCustom && (
             <div className="mb-1">
               <div className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#8C7E6E] mb-1.5">What kind of tool is it?</div>
               <div className="relative">
@@ -105,7 +110,7 @@ export default function ArAddToolModal({
             </div>
           )}
 
-          <div className={isCustomEntry ? "mt-4" : ""}>
+          <div className={entryIsCustom ? "mt-4" : ""}>
             <div className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#8C7E6E] mb-1.5">
               Vendor <span className="font-semibold tracking-normal normal-case text-[#B4A99B]">optional</span>
             </div>
