@@ -5,6 +5,7 @@ import { AnimatedValue } from "@/components/explore/AnimatedValue";
 import ArApplicationsStep from "./appRationalization/ArApplicationsStep";
 import ConsolidationWaterfall from "@/components/forecast/ConsolidationWaterfall";
 import RolloutBeat from "@/components/forecast/RolloutBeat";
+import { Download } from "lucide-react";
 
 function fmtM(n: number): string {
   const a = Math.abs(n);
@@ -29,7 +30,18 @@ export default function AppRationalizationFlow({ onBack, onHome }: AppRationaliz
   const [abridgePrice, setAbridgePrice] = useState(0);
   const [termYears, setTermYears] = useState(3);
   const [items, setItems] = useState<AppRatItem[]>([]);
+  const [exporting, setExporting] = useState(false);
   const nextId = useRef(0);
+
+  const handleExportPdf = async () => {
+    setExporting(true);
+    try {
+      const mod = await import("@/components/forecast/AppRationalizationPDFExport");
+      await mod.generateAppRationalizationPDF(items, orgName, abridgePrice, termYears);
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const addItem = (category: AppRatCategoryId, init?: Partial<AppRatItem>) =>
     setItems((prev) => [...prev, { ...makeItem(`ar-${nextId.current++}`, category), ...init }]);
@@ -82,19 +94,30 @@ export default function AppRationalizationFlow({ onBack, onHome }: AppRationaliz
                 <p className="text-sm text-[#6B6B6B] mt-2.5">How much of your stack sunsets onto Abridge, and what you keep.</p>
               </div>
               {net.stackTotal > 0 && (
-                <div className="text-right shrink-0 leading-none">
-                  <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#8C7E6E] mb-1.5">
-                    {net.isNetCost ? "Net cost / yr" : "Net savings / yr"}
-                  </div>
-                  <AnimatedValue
-                    value={Math.abs(net.netSavings)}
-                    format={fmtM}
-                    className={`text-[34px] font-extrabold tabular-nums ${net.isNetCost ? "text-[#1A1A1A]" : "text-[#EA2C00]"}`}
-                    style={{ letterSpacing: "-0.01em" }}
-                    data-testid="ar-net-hero"
-                  />
-                  <div className="text-[12px] text-[#8C7E6E] tabular-nums mt-1.5">
-                    {fmtM(net.stackTotal)} today → {fmtM(futureSpend)} on Abridge
+                <div className="flex flex-col items-end gap-3 shrink-0">
+                  <button
+                    onClick={handleExportPdf}
+                    disabled={exporting}
+                    className="flex items-center gap-1.5 h-9 px-3.5 rounded-lg border border-[#E8E2DA] bg-white text-[12px] font-bold text-[#1A1A1A] hover:border-[#1A1A1A] disabled:opacity-50 transition-colors"
+                    data-testid="ar-export-pdf"
+                  >
+                    <Download className="w-3.5 h-3.5" strokeWidth={2.25} />
+                    {exporting ? "Preparing…" : "Export PDF"}
+                  </button>
+                  <div className="text-right leading-none">
+                    <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#8C7E6E] mb-1.5">
+                      {net.isNetCost ? "Net cost / yr" : "Net savings / yr"}
+                    </div>
+                    <AnimatedValue
+                      value={Math.abs(net.netSavings)}
+                      format={fmtM}
+                      className={`text-[34px] font-extrabold tabular-nums ${net.isNetCost ? "text-[#1A1A1A]" : "text-[#EA2C00]"}`}
+                      style={{ letterSpacing: "-0.01em" }}
+                      data-testid="ar-net-hero"
+                    />
+                    <div className="text-[12px] text-[#8C7E6E] tabular-nums mt-1.5">
+                      {fmtM(net.stackTotal)} today → {fmtM(futureSpend)} on Abridge
+                    </div>
                   </div>
                 </div>
               )}
