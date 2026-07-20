@@ -118,7 +118,7 @@ export default function ConsolidationTiming({
         </div>
         <div className="absolute" style={{ left: `${pctX(X(horizon) + 14)}%`, top: `${pctY(Y(cs.planTotal))}%`, transform: "translateY(-50%)" }}>
           <div className="text-[8px] font-extrabold uppercase tracking-[0.13em] text-[#B4A99B]">Your plan</div>
-          <AnimatedValue value={cs.planTotal} format={fmtM} duration={2200} fromZero className="text-[21px] font-extrabold tabular-nums text-[#EA2C00] leading-none block mt-0.5" style={{ letterSpacing: "-0.01em" }} />
+          <AnimatedValue value={cs.planTotal} format={fmtM} duration={3000} fromZero className="text-[21px] font-extrabold tabular-nums text-[#EA2C00] leading-none block mt-0.5" style={{ letterSpacing: "-0.01em" }} />
           <div className="text-[10px] text-[#6B7280] mt-0.5">captured over {horizonYears} yrs</div>
         </div>
       </div>
@@ -201,7 +201,7 @@ export default function ConsolidationTiming({
 
       <style>{`
         @media (prefers-reduced-motion: no-preference){
-          .ar-reveal-rect{ transform: scaleX(0); transform-origin: left center; transform-box: fill-box; animation: arReveal 2.2s cubic-bezier(0.33,0,0.2,1) forwards; }
+          .ar-reveal-rect{ transform: scaleX(0); transform-origin: left center; transform-box: fill-box; animation: arReveal 3s cubic-bezier(0.33,0,0.2,1) forwards; }
           @keyframes arReveal{ to{ transform: scaleX(1); } }
         }
       `}</style>
