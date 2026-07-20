@@ -67,7 +67,7 @@ export default function ConsolidationTiming({
     <div className="rounded-[20px] p-6 md:p-8" style={{ background: "linear-gradient(160deg,#FDFBF8,#F6F1EA)", border: "1px solid #E8E2DA" }} data-testid="ar-timing">
       {/* header: eyebrow + horizon selector */}
       <div className="flex items-center justify-between flex-wrap gap-2 mb-4">
-        <span className="font-abridge uppercase tracking-[0.16em] text-[11px] text-[#B4A99B]">Cumulative savings, over time</span>
+        <span className="uppercase tracking-[0.16em] text-[10.5px] font-bold text-[#B4A99B]">Cumulative savings, over time</span>
         <div className="flex items-center gap-2 text-[11px] text-[#8C7E6E]">
           <span>over a</span>
           <div className="relative">

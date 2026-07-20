@@ -77,7 +77,7 @@ export default function ConsolidationWaterfall({
 
   return (
     <div className="rounded-[20px] p-6 md:p-8" style={{ background: "linear-gradient(160deg,#FDFBF8,#F6F1EA)", border: "1px solid #E8E2DA" }} data-testid="ar-waterfall">
-      <div className="font-abridge uppercase tracking-[0.16em] text-[11px] text-[#B4A99B] mb-5 px-0.5">Your stack, consolidated</div>
+      <div className="uppercase tracking-[0.16em] text-[10.5px] font-bold text-[#B4A99B] mb-5 px-0.5">Your stack, consolidated</div>
 
       <div className="relative">
         {/* hover tooltip */}
