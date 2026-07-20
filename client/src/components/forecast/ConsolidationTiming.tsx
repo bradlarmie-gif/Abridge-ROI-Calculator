@@ -88,13 +88,21 @@ export default function ConsolidationTiming({
       {/* the aggregate curve */}
       <div className="relative" data-testid="ar-timing-chart">
         <svg viewBox={`0 0 ${VB_W} ${VB_H}`} width="100%" className="block">
+          <defs>
+            <clipPath id="ar-reveal">
+              {/* wipes left to right so both lines and the fill draw in "over time" */}
+              <rect className="ar-reveal-rect" x={PL} y={0} width={PR + 170 - PL} height={VB_H} />
+            </clipPath>
+          </defs>
           <line x1={PL} y1={PB} x2={PR + 170} y2={PB} stroke="#DDD5C8" />
           {yearMarks.map((m) => <line key={m} x1={X(m)} y1={PT} x2={X(m)} y2={PB} stroke="#EFE7DC" strokeDasharray="2 4" />)}
-          <path d={`${planD} L ${X(horizon)} ${PB} L ${X(0)} ${PB} Z`} fill="rgba(234,44,0,0.09)" />
-          <path d={nowD} fill="none" stroke="#B4A99B" strokeWidth={2} strokeDasharray="6 5" strokeLinecap="round" />
-          <path className="ar-plan" d={planD} fill="none" stroke="#EA2C00" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round" />
-          <circle cx={X(horizon)} cy={Y(cs.planTotal)} r={6} fill="#EA2C00" />
-          <circle cx={X(horizon)} cy={Y(cs.nowTotal)} r={5} fill="#B4A99B" />
+          <g clipPath="url(#ar-reveal)">
+            <path d={`${planD} L ${X(horizon)} ${PB} L ${X(0)} ${PB} Z`} fill="rgba(234,44,0,0.09)" />
+            <path d={nowD} fill="none" stroke="#B4A99B" strokeWidth={2} strokeDasharray="6 5" strokeLinecap="round" />
+            <path d={planD} fill="none" stroke="#EA2C00" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round" />
+            <circle cx={X(horizon)} cy={Y(cs.planTotal)} r={6} fill="#EA2C00" />
+            <circle cx={X(horizon)} cy={Y(cs.nowTotal)} r={5} fill="#B4A99B" />
+          </g>
         </svg>
 
         {/* x labels */}
@@ -110,7 +118,7 @@ export default function ConsolidationTiming({
         </div>
         <div className="absolute" style={{ left: `${pctX(X(horizon) + 14)}%`, top: `${pctY(Y(cs.planTotal))}%`, transform: "translateY(-50%)" }}>
           <div className="text-[8px] font-extrabold uppercase tracking-[0.13em] text-[#B4A99B]">Your plan</div>
-          <AnimatedValue value={cs.planTotal} format={fmtM} className="text-[21px] font-extrabold tabular-nums text-[#EA2C00] leading-none block mt-0.5" style={{ letterSpacing: "-0.01em" }} />
+          <AnimatedValue value={cs.planTotal} format={fmtM} duration={2200} fromZero className="text-[21px] font-extrabold tabular-nums text-[#EA2C00] leading-none block mt-0.5" style={{ letterSpacing: "-0.01em" }} />
           <div className="text-[10px] text-[#6B7280] mt-0.5">captured over {horizonYears} yrs</div>
         </div>
       </div>
@@ -193,8 +201,8 @@ export default function ConsolidationTiming({
 
       <style>{`
         @media (prefers-reduced-motion: no-preference){
-          .ar-plan{ stroke-dasharray: 2400; stroke-dashoffset: 2400; animation: arPlanDraw 1s ease-out forwards; }
-          @keyframes arPlanDraw{ to{ stroke-dashoffset: 0; } }
+          .ar-reveal-rect{ transform: scaleX(0); transform-origin: left center; transform-box: fill-box; animation: arReveal 2.2s cubic-bezier(0.33,0,0.2,1) forwards; }
+          @keyframes arReveal{ to{ transform: scaleX(1); } }
         }
       `}</style>
     </div>
