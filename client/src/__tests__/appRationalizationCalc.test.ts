@@ -34,8 +34,8 @@ describe("appRationalizationCalc", () => {
   it("computeTotals is zero-safe on an empty stack", () => {
     expect(computeTotals([])).toEqual({ stackTotal: 0, toAbridge: 0, stays: 0, pctToAbridge: 0 });
   });
-  it("makeItem uses a per-category default displace share, This year, and the given category", () => {
-    expect(makeItem("id1", "cds")).toMatchObject({ id: "id1", category: "cds", coveragePct: 90, annualSpend: 0, when: "thisYear" });
+  it("makeItem uses a per-category default displace share, a 12-month contract, and the given category", () => {
+    expect(makeItem("id1", "cds")).toMatchObject({ id: "id1", category: "cds", coveragePct: 90, annualSpend: 0, contractMonths: 12, sunsetMonths: 12 });
     expect(makeItem("id2", "ambientDoc").coveragePct).toBe(100);
     expect(makeItem("id3", "dictation").coveragePct).toBe(80);
     expect(makeItem("id4", "preChartRisk").coveragePct).toBe(60);

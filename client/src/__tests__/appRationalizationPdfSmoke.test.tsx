@@ -1,12 +1,12 @@
 import { describe, it, expect } from "vitest";
 import { buildAppRationalizationPDFDocument } from "@/components/forecast/AppRationalizationPDFExport";
-import { makeItem, type AppRatItem, type AppRatCategoryId, type AppRatWhen } from "@/lib/appRationalizationCalc";
+import { makeItem, type AppRatItem, type AppRatCategoryId } from "@/lib/appRationalizationCalc";
 
 // @react-pdf primitives are string-typed elements ("DOCUMENT"/"PAGE"/"TEXT"/…);
 // custom presentation components are functions (none use hooks). Recursively
 // invoke the function components so the page's render logic (waterfall geometry,
-// buildRollout, buildStackBars, the table) actually executes — this catches
-// render-time throws that tsc can't, and lets us assert the printed copy.
+// buildCumulativeSavings, buildStackBars, the table) actually executes — this
+// catches render-time throws that tsc can't, and lets us assert the printed copy.
 function collectText(node: unknown, out: string[]): void {
   if (node == null || node === false || node === true) return;
   if (typeof node === "string" || typeof node === "number") { out.push(String(node)); return; }
@@ -20,14 +20,14 @@ function collectText(node: unknown, out: string[]): void {
   collectText(el.props?.children, out);
 }
 
-const tool = (id: string, cat: AppRatCategoryId, spend: number, pct: number, when: AppRatWhen, vendor: string): AppRatItem =>
-  ({ ...makeItem(id, cat), annualSpend: spend, coveragePct: pct, when, vendorName: vendor });
+const tool = (id: string, cat: AppRatCategoryId, spend: number, pct: number, contractMonths: number, sunsetMonths: number, vendor: string): AppRatItem =>
+  ({ ...makeItem(id, cat), annualSpend: spend, coveragePct: pct, contractMonths, sunsetMonths, vendorName: vendor });
 
 const sample: AppRatItem[] = [
-  tool("a", "dictation", 400_000, 80, "thisYear", "Dragon"),
-  tool("b", "scribe", 110_000, 80, "nextYear", "ScribeAmerica"),
-  tool("c", "cds", 60_000, 90, "thisYear", "UpToDate"),
-  tool("d", "postChartCoding", 50_000, 60, "year3", "Solventum"),
+  tool("a", "dictation", 400_000, 80, 12, 12, "Dragon"),
+  tool("b", "scribe", 110_000, 80, 24, 24, "ScribeAmerica"),
+  tool("c", "cds", 60_000, 90, 12, 6, "UpToDate"),
+  tool("d", "postChartCoding", 50_000, 60, 36, 36, "Solventum"),
 ];
 
 function renderText(items: AppRatItem[], org: string, price: number, term: number): string {
@@ -46,9 +46,10 @@ describe("App Rationalization PDF (smoke)", () => {
     expect(text).toContain("Your stack, consolidated onto Abridge");
     expect(text).toContain("sunsets onto Abridge");
     expect(text).toContain("$492K"); // net savings (price 0) short form
-    // rollout beat
-    expect(text).toContain("How it rolls out");
-    expect(text).toContain("Full run-rate");
+    // cumulative savings (the "when" curve)
+    expect(text).toContain("Cumulative savings, over time");
+    expect(text).toContain("If you moved now");
+    expect(text).toContain("Your plan");
     // stack table
     expect(text).toContain("Sunset value");
     expect(text).toContain("Dragon");
@@ -61,10 +62,10 @@ describe("App Rationalization PDF (smoke)", () => {
     expect(text).toContain("Net cost / yr");
   });
 
-  it("does not render the rollout when nothing sunsets", () => {
-    const noSunset = [tool("a", "dictation", 400_000, 0, "thisYear", "Dragon")];
+  it("does not render the cumulative section when nothing sunsets", () => {
+    const noSunset = [tool("a", "dictation", 400_000, 0, 12, 12, "Dragon")];
     const text = renderText(noSunset, "Acme", 0, 3);
-    expect(text).not.toContain("How it rolls out");
+    expect(text).not.toContain("Cumulative savings, over time");
     // still renders the page + table
     expect(text).toContain("Your stack, consolidated onto Abridge");
     expect(text).toContain("Dragon");

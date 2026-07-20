@@ -1,15 +1,15 @@
-// App Rationalization leave-behind PDF: two pages — the shared cover, then one
+// App Rationalization leave-behind PDF: two pages, the shared cover, then one
 // complete page (the consolidation waterfall, the "how it rolls out" beat, and
 // the itemized stack). Built with @react-pdf/renderer to match the other ROI PDFs.
 // The cover is the shared PDFCoverPage (importing it also registers Abridge).
-import { Document, Page, Text, View, StyleSheet, Svg, Rect, Line, Font, pdf } from "@react-pdf/renderer";
+import { Document, Page, Text, View, StyleSheet, Svg, Rect, Line, Path, Font, pdf } from "@react-pdf/renderer";
 import { PDFCoverPage } from "@/components/pdf/PDFCoverPage";
 import { savePdfBlob } from "@/lib/pdf-save";
 import manropeRegular from "../../assets/fonts/manrope-regular.ttf";
 import manropeBold from "../../assets/fonts/manrope-bold.ttf";
 import {
-  buildStackBars, computeNet, buildRollout, itemDisplayName, categoryLabel, itemRetired,
-  AR_WHEN_OPTIONS, type AppRatItem,
+  buildStackBars, computeNet, buildCumulativeSavings, cumulativeSavedAt, sunsetDateLabel,
+  itemDisplayName, categoryLabel, itemRetired, type AppRatItem,
 } from "@/lib/appRationalizationCalc";
 
 Font.registerHyphenationCallback((word) => [word]);
@@ -20,8 +20,6 @@ const C = {
   today: "#7E7263", stays: "#C6B9A2", statement: "#3A342E",
   light: "#F5F4F3", mid: "#E5E4E3", hair: "#E4DBCC", connector: "#C9BCA9", white: "#FFFFFF",
 };
-
-const WHEN_LABEL: Record<string, string> = Object.fromEntries(AR_WHEN_OPTIONS.map((o) => [o.value, o.label]));
 
 const money = (n: number) => `$${Math.round(n).toLocaleString("en-US")}`;
 const short = (n: number) => {
@@ -48,20 +46,12 @@ const s = StyleSheet.create({
   wfColStep: { fontSize: 8, fontWeight: 700, color: C.coral, textAlign: "center" },
   wfColCap: { fontSize: 7, color: C.t3, textAlign: "center", textTransform: "uppercase", letterSpacing: 0.3, marginTop: 1 },
 
-  roll: { marginTop: 24, paddingTop: 20, borderTopWidth: 1, borderTopColor: C.mid, flexDirection: "row" },
-  rollEyebrow: { position: "absolute", top: 20, left: 0, fontSize: 8, fontWeight: 700, color: C.t3, letterSpacing: 2, textTransform: "uppercase" },
-  rollLeft: { width: "55%", paddingRight: 30, paddingTop: 20, justifyContent: "center" },
-  rollRight: { width: "45%", paddingTop: 20 },
-  stmt: { fontFamily: "Manrope", fontSize: 11, color: "#5E574D", lineHeight: 1.6, marginBottom: 10 },
-  steps: { position: "relative", paddingLeft: 17 },
-  stepLine: { position: "absolute", left: 4, top: 5, width: 1.5, backgroundColor: C.hair },
-  step: { position: "relative", height: 34 },
-  dot: { position: "absolute", left: -17, top: 2, width: 8, height: 8, borderRadius: 4, backgroundColor: C.white, borderWidth: 2, borderColor: C.today },
-  dotGoal: { borderColor: C.coral, backgroundColor: C.coral },
-  stepW: { fontSize: 7, fontWeight: 700, color: C.t2, letterSpacing: 1, textTransform: "uppercase" },
-  stepWGoal: { color: C.coral },
-  stepT: { fontSize: 11, fontWeight: 600, color: C.ink, marginTop: 2 },
-  stepRR: { fontSize: 9.5, fontWeight: 400, color: C.t2 },
+  coiWrap: { marginTop: 24, paddingTop: 20, borderTopWidth: 1, borderTopColor: C.mid },
+  coiEyebrow: { fontSize: 8, fontWeight: 700, color: C.t3, letterSpacing: 2, textTransform: "uppercase", marginBottom: 10 },
+  coiEnds: { flexDirection: "row", gap: 24, marginTop: 8 },
+  coiEndK: { fontSize: 7, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase" },
+  coiEndV: { fontSize: 11.5, fontWeight: 700, marginTop: 1 },
+  coiEndNote: { fontSize: 8, fontWeight: 400, color: C.t2, marginTop: 1 },
 
   sec: { fontSize: 8, fontWeight: 700, color: C.t3, letterSpacing: 2, textTransform: "uppercase", marginTop: 26, marginBottom: 10 },
   tHead: { flexDirection: "row", borderBottomWidth: 1, borderBottomColor: C.mid, paddingBottom: 8, paddingHorizontal: 4 },
@@ -149,72 +139,39 @@ function Waterfall({ items }: { items: AppRatItem[] }) {
   );
 }
 
-type Part = { t: string; em?: boolean };
-function Para({ parts, last }: { parts: Part[]; last?: boolean }) {
+// The "when" story as a quiet static curve: cumulative savings under the plan
+// against the ceiling if every tool moved today. Mirrors the on-screen timing view.
+function CumulativeSavings({ items, termYears }: { items: AppRatItem[]; termYears: number }) {
+  const horizon = termYears * 12;
+  const cs = buildCumulativeSavings(items, horizon);
+  if (!cs.hasCurve) return null;
+  const W = 516, H = 124, TOP = 8, BASE = 104, LEFT = 6, RIGHT = 430; // right gutter for labels
+  const maxY = Math.max(1, cs.nowTotal) * 1.06;
+  const X = (m: number) => LEFT + (m / horizon) * (RIGHT - LEFT);
+  const Y = (v: number) => BASE - (v / maxY) * (BASE - TOP);
+  const d = (mode: "plan" | "now") => {
+    let p = "";
+    for (let m = 0; m <= horizon; m++) p += `${m ? "L" : "M"} ${X(m).toFixed(1)} ${Y(cumulativeSavedAt(cs.tools, m, mode)).toFixed(1)} `;
+    return p.trim();
+  };
   return (
-    <Text style={last ? [s.stmt, { marginBottom: 0 }] : s.stmt}>
-      {parts.map((p, i) => (p.em ? <Text key={i} style={{ color: C.ink }}>{p.t}</Text> : <Text key={i}>{p.t}</Text>))}
-    </Text>
-  );
-}
-
-function Rollout({ items, termYears, abridgePrice }: { items: AppRatItem[]; termYears: number; abridgePrice: number }) {
-  const r = buildRollout(items, termYears, abridgePrice);
-  if (!r.hasRollout) return null;
-  const { phases, runRate, reachedYear } = r;
-  const reached = phases[phases.length - 1].label;
-  const staged = phases.length > 1;
-  const hasSavings = runRate > 0;
-
-  const reachedTail: Part[] = reached === "This year"
-    ? [{ t: "The " }, { t: "full run-rate", em: true }, { t: " is in effect this year, and it holds every year after." }]
-    : reached === "Next year"
-    ? [{ t: "By next year the " }, { t: "full run-rate", em: true }, { t: " is in effect, and it holds every year after." }]
-    : [{ t: `By ${reached} the ` }, { t: "full run-rate", em: true }, { t: " is in effect, and it holds every year after." }];
-
-  const p1: Part[] = staged
-    ? [
-        { t: "Most of your stack " }, { t: "consolidates onto Abridge", em: true },
-        { t: ", and the shift runs on " }, { t: "your own contract calendar", em: true },
-        { t: " rather than a single cutover. Whatever you are free to leave moves now; the rest comes off as each agreement renews." },
-      ]
-    : [
-        { t: "Your whole stack can consolidate onto Abridge together, " }, { t: phases[0].label.toLowerCase(), em: true },
-        { t: ", with no staged migration to manage." },
-      ];
-  const p2: Part[] = [
-    { t: "Each tool's savings begin " }, { t: "the moment it retires", em: true },
-    { t: ", so the total builds as the sequence plays out. " }, ...reachedTail,
-  ];
-
-  const reachedPhrase = reachedYear <= 1 ? "reached this year" : reachedYear === 2 ? "reached next year" : `reached in Year ${reachedYear}`;
-  const lineH = phases.length * 34; // first dot to the goal dot
-
-  return (
-    <View style={s.roll}>
-      <Text style={s.rollEyebrow}>How it rolls out</Text>
-      <View style={s.rollLeft}>
-        <Para parts={p1} />
-        <Para parts={p2} last />
-      </View>
-      <View style={s.rollRight}>
-        <View style={s.steps}>
-          <View style={[s.stepLine, { height: lineH }]} />
-          {phases.map((p) => (
-            <View key={p.year} style={s.step}>
-              <View style={s.dot} />
-              <Text style={s.stepW}>{p.label}</Text>
-              <Text style={s.stepT}>{p.tools.join(", ")}</Text>
-            </View>
-          ))}
-          <View style={s.step}>
-            <View style={[s.dot, s.dotGoal]} />
-            <Text style={[s.stepW, s.stepWGoal]}>{hasSavings ? "Full run-rate" : "Fully consolidated"}</Text>
-            <Text style={s.stepT}>
-              {hasSavings ? `${short(runRate)}/yr ` : ""}
-              <Text style={s.stepRR}>{reachedPhrase}</Text>
-            </Text>
-          </View>
+    <View style={s.coiWrap}>
+      <Text style={s.coiEyebrow}>Cumulative savings, over time</Text>
+      <Svg width={W} height={H} viewBox={`0 0 ${W} ${H}`}>
+        <Line x1={LEFT} y1={BASE} x2={RIGHT + 80} y2={BASE} stroke={C.hair} strokeWidth={1} />
+        <Path d={`${d("plan")} L ${X(horizon).toFixed(1)} ${BASE} L ${X(0).toFixed(1)} ${BASE} Z`} fill="rgba(234,44,0,0.08)" />
+        <Path d={d("now")} stroke={C.stays} strokeWidth={1.5} strokeDasharray="4 4" fill="none" />
+        <Path d={d("plan")} stroke={C.coral} strokeWidth={2} fill="none" />
+      </Svg>
+      <View style={s.coiEnds}>
+        <View>
+          <Text style={[s.coiEndK, { color: C.t3 }]}>If you moved now</Text>
+          <Text style={[s.coiEndV, { color: C.t3 }]}>{short(cs.nowTotal)}</Text>
+        </View>
+        <View>
+          <Text style={[s.coiEndK, { color: C.coral }]}>Your plan</Text>
+          <Text style={[s.coiEndV, { color: C.coral }]}>{short(cs.planTotal)}</Text>
+          <Text style={s.coiEndNote}>{`captured over ${termYears} yrs`}</Text>
         </View>
       </View>
     </View>
@@ -243,7 +200,7 @@ function ContentPage({ items, orgName, abridgePrice, termYears, dateStr }: {
 
       <Waterfall items={items} />
 
-      <Rollout items={items} termYears={termYears} abridgePrice={abridgePrice} />
+      <CumulativeSavings items={items} termYears={termYears} />
 
       <Text style={s.sec}>Your stack</Text>
       <View style={s.tHead}>
@@ -262,7 +219,7 @@ function ContentPage({ items, orgName, abridgePrice, termYears, dateStr }: {
           <Text style={[s.tCell, { width: COL.spend, textAlign: "right" }]}>{money(it.annualSpend)}</Text>
           <Text style={[s.tCell, { width: COL.disp, textAlign: "right", color: C.t2 }]}>{`${it.coveragePct}%`}</Text>
           <Text style={[s.tCoral, { width: COL.value, textAlign: "right" }]}>{money(itemRetired(it))}</Text>
-          <Text style={[s.tWhen, { width: COL.time, paddingLeft: 18 }]}>{WHEN_LABEL[it.when] ?? ""}</Text>
+          <Text style={[s.tWhen, { width: COL.time, paddingLeft: 18 }]}>{sunsetDateLabel(it.sunsetMonths)}</Text>
         </View>
       ))}
       <View style={s.tFoot}>
@@ -287,7 +244,7 @@ export function buildAppRationalizationPDFDocument(
 ): JSX.Element {
   const dateStr = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
   return (
-    <Document title={`App Rationalization${orgName ? ` — ${orgName}` : ""}`}>
+    <Document title={`App Rationalization${orgName ? ` · ${orgName}` : ""}`}>
       <PDFCoverPage
         reportLabel="App Rationalization"
         title="Consolidation Analysis"

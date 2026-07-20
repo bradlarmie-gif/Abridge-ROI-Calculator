@@ -1,11 +1,10 @@
 import { useMemo } from "react";
-import { ChevronDown } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { NumberField } from "@/components/NumberField";
 import { CategoryIcon } from "./CategoryIcon";
 import {
-  itemRetired, itemStays, APP_RAT_CATEGORIES, AR_WHEN_OPTIONS,
-  type AppRatItem, type AppRatWhen,
+  itemRetired, itemStays, APP_RAT_CATEGORIES,
+  type AppRatItem,
 } from "@/lib/appRationalizationCalc";
 
 function fmtM(n: number): string {
@@ -23,7 +22,7 @@ export default function ArStackRow({
 
   return (
     <div
-      className="ar-row grid grid-cols-1 md:grid-cols-[1fr_120px_190px_150px_120px] gap-3.5 items-center bg-white border border-[#E8E2DA] rounded-2xl px-4 py-3.5 mb-2.5"
+      className="ar-row grid grid-cols-1 md:grid-cols-[1fr_120px_220px_130px] gap-3.5 items-center bg-white border border-[#E8E2DA] rounded-2xl px-4 py-3.5 mb-2.5"
       data-testid={`ar-row-${item.id}`}
     >
       {/* Application: icon + editable vendor name + category */}
@@ -67,20 +66,6 @@ export default function ArStackRow({
           data-testid={`ar-row-displace-${item.id}`}
         />
         <span className="text-[13px] font-extrabold text-[#EA2C00] tabular-nums w-9 text-right">{item.coveragePct}%</span>
-      </div>
-
-      {/* Over (when) */}
-      <div className="relative">
-        <select
-          value={item.when ?? "thisYear"}
-          onChange={(e) => onChange({ when: e.target.value as AppRatWhen })}
-          aria-label="When this tool comes off"
-          className="w-full h-10 appearance-none bg-white border border-[#E8E2DA] rounded-[10px] pl-3 pr-8 text-[12.5px] text-[#1A1A1A] outline-none focus:border-[#EA2C00] cursor-pointer"
-          data-testid={`ar-row-when-${item.id}`}
-        >
-          {AR_WHEN_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-        </select>
-        <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#8C7E6E]" strokeWidth={2.25} />
       </div>
 
       {/* Displaceable result + remove */}

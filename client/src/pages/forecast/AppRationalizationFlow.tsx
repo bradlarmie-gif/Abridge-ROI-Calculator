@@ -4,7 +4,7 @@ import { type AppRatItem, type AppRatCategoryId, makeItem, computeNet } from "@/
 import { AnimatedValue } from "@/components/explore/AnimatedValue";
 import ArApplicationsStep from "./appRationalization/ArApplicationsStep";
 import ConsolidationWaterfall from "@/components/forecast/ConsolidationWaterfall";
-import RolloutBeat from "@/components/forecast/RolloutBeat";
+import ConsolidationTiming from "@/components/forecast/ConsolidationTiming";
 import { Download } from "lucide-react";
 
 function fmtM(n: number): string {
@@ -30,6 +30,7 @@ export default function AppRationalizationFlow({ onBack, onHome }: AppRationaliz
   const [abridgePrice, setAbridgePrice] = useState(0);
   const [termYears, setTermYears] = useState(3);
   const [items, setItems] = useState<AppRatItem[]>([]);
+  const [conView, setConView] = useState<"waterfall" | "timing">("waterfall");
   const [exporting, setExporting] = useState(false);
   const nextId = useRef(0);
 
@@ -122,10 +123,29 @@ export default function AppRationalizationFlow({ onBack, onHome }: AppRationaliz
               )}
             </div>
 
-            <ConsolidationWaterfall items={items} />
+            {/* Toggle: what (waterfall, default) vs when (cumulative savings) */}
+            <div className="flex justify-center mb-5">
+              <div className="relative inline-grid grid-cols-2 w-[340px] bg-[#EFE7DC] rounded-[10px] p-[3px]" data-testid="ar-view-toggle">
+                <span
+                  className="absolute top-[3px] bottom-[3px] rounded-lg bg-white shadow-[0_1px_3px_rgba(0,0,0,0.10)] transition-[left,right] duration-200 ease-out"
+                  style={{ left: conView === "waterfall" ? "3px" : "50%", right: conView === "waterfall" ? "50%" : "3px" }}
+                />
+                {([["waterfall", "The consolidation"], ["timing", "Cumulative savings"]] as const).map(([v, label]) => (
+                  <button
+                    key={v}
+                    onClick={() => setConView(v)}
+                    className={`relative z-10 py-2 text-[12px] font-bold rounded-lg text-center transition-colors ${conView === v ? "text-[#EA2C00]" : "text-[#8C7E6E]"}`}
+                    data-testid={`ar-view-${v}`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-            {/* Calm beat: how the stack phases in, on their timeline. The single timing section. */}
-            <RolloutBeat items={items} termYears={termYears} abridgePrice={abridgePrice} onTermChange={setTermYears} />
+            {conView === "waterfall"
+              ? <ConsolidationWaterfall items={items} />
+              : <ConsolidationTiming items={items} horizonYears={termYears} onHorizonChange={setTermYears} onUpdateItem={updateItem} />}
 
             {/* On-demand "why" proof, on the way. Placeholder until the team lands the rationale copy. */}
             <div className="mt-6 flex items-center gap-3 rounded-xl border border-[#E8E2DA] bg-white/60 px-5 py-4" data-testid="ar-why-coming-soon">

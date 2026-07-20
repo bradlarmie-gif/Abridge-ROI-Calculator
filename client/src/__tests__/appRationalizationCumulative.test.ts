@@ -1,0 +1,74 @@
+import { describe, it, expect } from "vitest";
+import {
+  makeItem, toolMonthlySaving, buildCumulativeSavings, cumulativeSavedAt, sunsetDateLabel,
+  type AppRatItem,
+} from "@/lib/appRationalizationCalc";
+
+const tool = (id: string, spend: number, pct: number, contractMonths: number, sunsetMonths: number): AppRatItem =>
+  ({ ...makeItem(id, "ambientDoc"), annualSpend: spend, coveragePct: pct, contractMonths, sunsetMonths });
+
+describe("timing defaults", () => {
+  it("makeItem seeds a 12-month contract sunsetting at renewal", () => {
+    const i = makeItem("a", "cds");
+    expect(i.contractMonths).toBe(12);
+    expect(i.sunsetMonths).toBe(12);
+  });
+});
+
+describe("toolMonthlySaving", () => {
+  it("spreads the annual sunset value over 12 months", () => {
+    // 120000 spend * 100% displace = 120000/yr sunset -> 10000/mo
+    expect(toolMonthlySaving(tool("a", 120_000, 100, 12, 12))).toBe(10_000);
+  });
+});
+
+describe("buildCumulativeSavings", () => {
+  it("computes plan/now totals, gap, and early-exit deltas over the horizon", () => {
+    // one tool: 120k/yr sunset = 10k/mo, contract 12mo, sunset pulled to 6mo, horizon 36mo
+    const cs = buildCumulativeSavings([tool("a", 120_000, 100, 12, 6)], 36);
+    expect(cs.hasCurve).toBe(true);
+    expect(cs.tools).toHaveLength(1);
+    // plan: saves for (36-6)=30 months * 10k = 300k
+    expect(cs.planTotal).toBe(300_000);
+    // now: saves for 36 months * 10k = 360k
+    expect(cs.nowTotal).toBe(360_000);
+    expect(cs.gap).toBe(60_000);
+    // early: pulled 12-6=6 months early -> 6*10k = 60k captured sooner
+    expect(cs.tools[0].earlyMonths).toBe(6);
+    expect(cs.tools[0].earlySaving).toBe(60_000);
+  });
+
+  it("excludes tools that never sunset (monthlySaving === 0)", () => {
+    const cs = buildCumulativeSavings([tool("a", 100_000, 0, 12, 12)], 36);
+    expect(cs.hasCurve).toBe(false);
+    expect(cs.tools).toHaveLength(0);
+  });
+
+  it("clamps sunsetMonths into [0, contractMonths]", () => {
+    // sunset 99 but contract 12 -> treated as 12
+    const cs = buildCumulativeSavings([tool("a", 120_000, 100, 12, 99)], 36);
+    // saves for (36-12)=24 months * 10k = 240k
+    expect(cs.planTotal).toBe(240_000);
+    expect(cs.tools[0].sunsetMonths).toBe(12);
+  });
+});
+
+describe("cumulativeSavedAt", () => {
+  it("is zero before sunset and linear after, per mode", () => {
+    const cs = buildCumulativeSavings([tool("a", 120_000, 100, 12, 6)], 36);
+    expect(cumulativeSavedAt(cs.tools, 6, "plan")).toBe(0);
+    expect(cumulativeSavedAt(cs.tools, 12, "plan")).toBe(60_000); // 6 months * 10k
+    expect(cumulativeSavedAt(cs.tools, 12, "now")).toBe(120_000); // 12 months * 10k
+  });
+});
+
+describe("sunsetDateLabel", () => {
+  const from = new Date(2026, 6, 1); // Jul 2026 (month index 6)
+  it("returns 'now' at month 0", () => {
+    expect(sunsetDateLabel(0, from)).toBe("now");
+  });
+  it("returns a MMM YYYY date derived from months-from-now", () => {
+    expect(sunsetDateLabel(6, from)).toBe("Jan 2027");
+    expect(sunsetDateLabel(12, from)).toBe("Jul 2027");
+  });
+});

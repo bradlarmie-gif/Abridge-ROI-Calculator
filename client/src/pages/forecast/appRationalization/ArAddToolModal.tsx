@@ -1,8 +1,8 @@
 // Guided "add a tool" popup: pick a capability (card or search) -> capture
-// vendor / spend / displace % / sunset timing here, so the row lands COMPLETE
-// (no blank $0 rows). One modal for all entry points; inline row editing handles
-// tweaks afterward. Spend routes through the shared NumberField (live thousands
-// separators). Copy: "When does it sunset?", single "Add to stack".
+// vendor / spend / displace % here, so the row lands COMPLETE (no blank $0 rows).
+// One modal for all entry points; inline row editing handles tweaks afterward.
+// Spend routes through the shared NumberField (live thousands separators). Timing
+// (contract runway / sunset) is set later on the Consolidation screen.
 //
 // Custom path (unknown vendor / "not on the list"): a "What kind of tool is it?"
 // picker leads, defaulting to "Other" so we never mislabel it. Picking a real
@@ -15,11 +15,9 @@ import { Slider } from "@/components/ui/slider";
 import { NumberField } from "@/components/NumberField";
 import { CategoryIcon } from "./CategoryIcon";
 import {
-  APP_RAT_CATEGORIES, AR_WHEN_OPTIONS, makeItem,
-  type AppRatCategoryId, type AppRatItem, type AppRatWhen,
+  APP_RAT_CATEGORIES, makeItem,
+  type AppRatCategoryId, type AppRatItem,
 } from "@/lib/appRationalizationCalc";
-import { cn } from "@/lib/utils";
-
 const fmt = (n: number) => "$" + Math.round(n).toLocaleString("en-US");
 
 export default function ArAddToolModal({
@@ -39,7 +37,6 @@ export default function ArAddToolModal({
   const [vendor, setVendor] = useState("");
   const [spend, setSpend] = useState(0);
   const [pct, setPct] = useState(100);
-  const [when, setWhen] = useState<AppRatWhen>("thisYear");
 
   // reset the form each time a new tool is opened
   useEffect(() => {
@@ -50,7 +47,6 @@ export default function ArAddToolModal({
       setVendor(vendorName ?? "");
       setSpend(0);
       setPct(s.coveragePct);
-      setWhen(s.when);
     }
   }, [open, category, vendorName]);
 
@@ -89,7 +85,7 @@ export default function ArAddToolModal({
 
         {/* body */}
         <div className="px-6 pb-1">
-          {/* capability picker — custom path only */}
+          {/* capability picker: custom path only */}
           {entryIsCustom && (
             <div className="mb-1">
               <div className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#8C7E6E] mb-1.5">What kind of tool is it?</div>
@@ -145,25 +141,6 @@ export default function ArAddToolModal({
             </div>
           </div>
 
-          <div className="mt-4">
-            <div className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#8C7E6E] mb-2">When does it sunset?</div>
-            <div className="grid grid-cols-4 gap-1 bg-[#F1EBE3] border border-[#E4DDD2] rounded-[11px] p-[3px]">
-              {AR_WHEN_OPTIONS.map((o) => (
-                <button
-                  key={o.value}
-                  onClick={() => setWhen(o.value)}
-                  className={cn(
-                    "text-[11.5px] font-bold rounded-lg py-2 transition-colors",
-                    when === o.value ? "bg-[#1A1A1A] text-white shadow-sm" : "text-[#8C7E6E] hover:text-[#1A1A1A]",
-                  )}
-                  data-testid={`ar-add-when-${o.value}`}
-                >
-                  {o.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
           <div className="mt-5 min-h-[58px] flex items-center px-4 py-3.5 bg-[#FAF7F2] border border-[#EFE7DC] rounded-xl">
             {canAdd ? (
               <div className="flex items-baseline justify-between w-full">
@@ -183,7 +160,7 @@ export default function ArAddToolModal({
         <div className="px-6 pt-4 pb-6 mt-3 border-t border-[#F2ECE4]">
           <button
             disabled={!canAdd}
-            onClick={() => onConfirm(activeCategory, { vendorName: vendor.trim() || undefined, annualSpend: spend, coveragePct: pct, when })}
+            onClick={() => onConfirm(activeCategory, { vendorName: vendor.trim() || undefined, annualSpend: spend, coveragePct: pct })}
             className="w-full h-11 rounded-xl bg-[#EA2C00] text-white text-sm font-bold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#d92800] transition-opacity"
             data-testid="ar-add-confirm"
           >

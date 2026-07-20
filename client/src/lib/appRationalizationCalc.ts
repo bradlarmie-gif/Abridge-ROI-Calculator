@@ -9,15 +9,6 @@ export type AppRatIconKey =
 
 export type AppRatCategoryId = AppRatIconKey;
 
-export type AppRatWhen = "thisYear" | "nextYear" | "year3" | "notSure";
-
-export const AR_WHEN_OPTIONS: { value: AppRatWhen; label: string }[] = [
-  { value: "thisYear", label: "This year" },
-  { value: "nextYear", label: "Next year" },
-  { value: "year3",    label: "Year 3" },
-  { value: "notSure",  label: "Not sure" },
-];
-
 export interface AppRatCategory {
   id: AppRatCategoryId;
   label: string;
@@ -128,7 +119,8 @@ export interface AppRatItem {
   annualSpend: number;
   coveragePct: number;      // 0-100; the share of THIS tool's spend Abridge can take on
   abridgeProduct?: string;  // "Covered by"; defaults to the category label when empty
-  when: AppRatWhen;         // contract-year bucket for when the displacement lands
+  contractMonths: number;   // months from today until the contract ends (the runway)
+  sunsetMonths: number;     // months from today until they sunset it; 0..contractMonths
 }
 
 const CATEGORY_BY_ID: Record<AppRatCategoryId, AppRatCategory> =
@@ -154,7 +146,7 @@ const CATEGORY_DEFAULT_COVERAGE: Record<AppRatCategoryId, number> = {
 };
 
 export function makeItem(id: string, category: AppRatCategoryId): AppRatItem {
-  return { id, category, annualSpend: 0, coveragePct: CATEGORY_DEFAULT_COVERAGE[category] ?? 80, when: "thisYear" };
+  return { id, category, annualSpend: 0, coveragePct: CATEGORY_DEFAULT_COVERAGE[category] ?? 80, contractMonths: 12, sunsetMonths: 12 };
 }
 
 export function itemDisplayName(item: AppRatItem): string {
@@ -251,70 +243,87 @@ export function searchApplications(query: string): { vendors: KnownVendor[]; cat
   return { vendors, categories };
 }
 
-const WHEN_TO_YEAR: Record<AppRatWhen, (term: number) => number> = {
-  thisYear: () => 1,
-  nextYear: () => 2,
-  year3:    () => 3,
-  notSure:  (term) => term,
-};
+// -------- Timing: cumulative savings over the horizon (the "when" view) --------
 
-/**
- * The contract year (1..termYears) in which a tool's displacement lands, from
- * its "when" bucket. "Not sure" holds to the last year (conservative). The
- * result is clamped to [1, termYears].
- */
-export function retirementYear(item: AppRatItem, termYears: number): number {
-  const term = Math.max(1, Math.floor(termYears));
-  const raw = WHEN_TO_YEAR[item.when ?? "notSure"](term);
-  return Math.min(term, Math.max(1, raw));
+/** Monthly dollars a tool saves once it has sunset: its annual sunset value / 12. */
+export function toolMonthlySaving(item: AppRatItem): number {
+  return itemRetired(item) / 12;
 }
 
-// -------- Rollout (the calm "how it phases in" beat under the waterfall) --------
-
-export interface RolloutPhase {
-  year: number;      // contract year the tools in this phase come off (1..term)
-  label: string;     // human phase label ("This year", "Next year", "Year 3")
-  tools: string[];   // display names of the tools coming off in this phase
+export interface CumulativeTool {
+  id: string;
+  name: string;
+  capability: string;
+  spend: number;
+  monthlySaving: number;
+  contractMonths: number;
+  sunsetMonths: number;   // clamped to [0, contractMonths]
+  earlyMonths: number;    // contractMonths - sunsetMonths (months pulled forward)
+  earlySaving: number;    // earlyMonths * monthlySaving (captured sooner by acting early)
 }
 
-export interface Rollout {
-  phases: RolloutPhase[];
-  runRate: number;      // net savings / yr you arrive at (matches the waterfall hero)
-  reachedYear: number;  // the year the last tool comes off (0 if nothing sunsets)
-  hasRollout: boolean;  // at least one tool actually sunsets
-}
-
-/** Human label for a contract year in the rollout timeline. */
-export function rolloutYearLabel(year: number): string {
-  if (year <= 1) return "This year";
-  if (year === 2) return "Next year";
-  return `Year ${year}`;
+export interface CumulativeSavings {
+  horizonMonths: number;
+  tools: CumulativeTool[]; // only tools that actually save (monthlySaving > 0)
+  planTotal: number;       // cumulative saved by the horizon under the current sunset plan
+  nowTotal: number;        // cumulative saved by the horizon if every tool sunset today (the ceiling)
+  gap: number;             // nowTotal - planTotal: what waiting leaves on the table
+  hasCurve: boolean;       // at least one tool saves
 }
 
 /**
- * Groups the sunsetting tools into contract-year phases for the rollout beat,
- * and reports the run-rate (net savings) you reach once the last one comes off.
- * Only tools that actually sunset (itemRetired > 0) appear; order within a phase
- * follows the input order. The run-rate is the same net figure the waterfall shows.
+ * Per-tool monthly savings and the aggregate plan-vs-now curve totals over a
+ * horizon (in months). "Plan" starts each tool saving at its sunsetMonths;
+ * "now" is the ceiling where every tool sunsets at month 0. sunsetMonths is
+ * clamped to [0, contractMonths]; contractMonths is floored at 0.
  */
-export function buildRollout(items: AppRatItem[], termYears: number, abridgePrice: number): Rollout {
-  const term = Math.max(1, Math.floor(termYears));
-  const byYear = new Map<number, string[]>();
-  for (const item of items) {
-    if (itemRetired(item) <= 0) continue;
-    const year = retirementYear(item, term);
-    const arr = byYear.get(year) ?? [];
-    arr.push(itemDisplayName(item));
-    byYear.set(year, arr);
-  }
-  const phases: RolloutPhase[] = Array.from(byYear.keys())
-    .sort((a, b) => a - b)
-    .map((year) => ({ year, label: rolloutYearLabel(year), tools: byYear.get(year)! }));
-  const reachedYear = phases.length ? phases[phases.length - 1].year : 0;
+export function buildCumulativeSavings(items: AppRatItem[], horizonMonths: number): CumulativeSavings {
+  const horizon = Math.max(0, Math.round(horizonMonths));
+  const tools: CumulativeTool[] = items
+    .map((i) => {
+      const monthlySaving = toolMonthlySaving(i);
+      const contractMonths = Math.max(0, Math.round(i.contractMonths ?? 0));
+      const sunsetMonths = Math.min(contractMonths, Math.max(0, Math.round(i.sunsetMonths ?? 0)));
+      const earlyMonths = Math.max(0, contractMonths - sunsetMonths);
+      return {
+        id: i.id,
+        name: itemDisplayName(i),
+        capability: categoryLabel(i.category),
+        spend: i.annualSpend || 0,
+        monthlySaving,
+        contractMonths,
+        sunsetMonths,
+        earlyMonths,
+        earlySaving: earlyMonths * monthlySaving,
+      };
+    })
+    .filter((t) => t.monthlySaving > 0);
+
+  const planTotal = cumulativeSavedAt(tools, horizon, "plan");
+  const nowTotal = cumulativeSavedAt(tools, horizon, "now");
   return {
-    phases,
-    runRate: computeNet(items, abridgePrice).netSavings,
-    reachedYear,
-    hasRollout: phases.length > 0,
+    horizonMonths: horizon,
+    tools,
+    planTotal,
+    nowTotal,
+    gap: Math.max(0, nowTotal - planTotal),
+    hasCurve: tools.length > 0,
   };
+}
+
+/** Cumulative dollars saved by `month`. "plan" uses each tool's sunsetMonths; "now" uses 0. */
+export function cumulativeSavedAt(tools: CumulativeTool[], month: number, mode: "plan" | "now"): number {
+  return tools.reduce((sum, t) => {
+    const start = mode === "now" ? 0 : t.sunsetMonths;
+    return sum + Math.max(0, month - start) * t.monthlySaving;
+  }, 0);
+}
+
+const MONTH_FMT = new Intl.DateTimeFormat("en-US", { month: "short", year: "numeric" });
+
+/** "now" at 0, else the MMM YYYY date `monthsFromNow` after `from` (default today). */
+export function sunsetDateLabel(monthsFromNow: number, from: Date = new Date()): string {
+  const m = Math.max(0, Math.round(monthsFromNow));
+  if (m === 0) return "now";
+  return MONTH_FMT.format(new Date(from.getFullYear(), from.getMonth() + m, 1));
 }

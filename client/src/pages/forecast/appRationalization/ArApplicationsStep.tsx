@@ -14,7 +14,7 @@ function fmtM(n: number): string {
   return `$${Math.round(a)}`;
 }
 
-const COL_HEADERS = ["Application", "Annual spend", "How much could you displace?", "Comes off", "Displaceable"];
+const COL_HEADERS = ["Application", "Annual spend", "How much could you displace?", "Displaceable"];
 
 // The browsable capability cards, reused by the empty state and the on-demand
 // "+ Add application" panel. Clicking a card opens the add-tool modal.
@@ -97,7 +97,7 @@ export default function ArApplicationsStep({
                 data-testid="ar-abridge-price"
               />
             </div>
-            <p className="text-[9.5px] leading-tight text-[#B4A99B] max-w-[168px]">Leave $0 if they already have Abridge — savings is the tools they retire.</p>
+            <p className="text-[9.5px] leading-tight text-[#B4A99B] max-w-[168px]">Leave $0 if they already have Abridge; savings is the tools they retire.</p>
           </div>
         </div>
       </div>
@@ -128,7 +128,7 @@ export default function ArApplicationsStep({
           )}
 
           {/* Column headers */}
-          <div className="hidden md:grid grid-cols-[1fr_120px_190px_150px_120px] gap-3.5 px-4 pb-2">
+          <div className="hidden md:grid grid-cols-[1fr_120px_220px_130px] gap-3.5 px-4 pb-2">
             {COL_HEADERS.map((h, i) => (
               <span key={h} className={`text-[9px] font-bold uppercase tracking-[0.13em] text-[#B4A99B] ${i === COL_HEADERS.length - 1 ? "text-right" : ""}`}>{h}</span>
             ))}
