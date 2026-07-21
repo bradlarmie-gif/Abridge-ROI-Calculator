@@ -349,9 +349,10 @@ export function computeWorkforceChain(
   const backfill = computeWorkforceBackfill(setting, survey.impactPpAfterSurvey, values);
   const sustain = computeWorkforceSustain(backfill.impactPpAfterBackfill, values);
   const payoff = computeWorkforcePayoff(scope, sustain.compositeImpactPct);
+  const unitNoun = setting === "nursing" ? "nurses" : "providers";
 
   const scopeFormula = scope.providersInScope > 0
-    ? `${fmtInt(scope.providersInScope)} providers in scope, at ${fmtPp(scope.turnoverRatePct)}% voluntary turnover and $${fmtInt(scope.replacementCost)} per avoided departure.`
+    ? `${fmtInt(scope.providersInScope)} ${unitNoun} in scope, at ${fmtPp(scope.turnoverRatePct)}% voluntary turnover and $${fmtInt(scope.replacementCost)} per avoided departure.`
     : NO_MOVE_FORMULA;
 
   const protectFormula = protect.impactPp > 0
@@ -371,7 +372,7 @@ export function computeWorkforceChain(
     : NO_MOVE_FORMULA;
 
   const payoffFormula = payoff.value > 0
-    ? `${fmtInt(scope.providersInScope)} providers × ${fmtPp(scope.turnoverRatePct)}% turnover × ${fmtPp(scope.burnoutSharePct)}% burnout share × ${fmtPp(sustain.compositeImpactPct)}% impact = ${payoff.departuresAvoided.toFixed(1)} departures avoided × $${fmtInt(scope.replacementCost)}/departure = ~${fmtMoneyCompact(payoff.value)}.`
+    ? `${fmtInt(scope.providersInScope)} ${unitNoun} × ${fmtPp(scope.turnoverRatePct)}% turnover × ${fmtPp(scope.burnoutSharePct)}% burnout share × ${fmtPp(sustain.compositeImpactPct)}% impact = ${payoff.departuresAvoided.toFixed(1)} departures avoided × $${fmtInt(scope.replacementCost)}/departure = ~${fmtMoneyCompact(payoff.value)}.`
     : NO_MOVE_FORMULA;
 
   return {
