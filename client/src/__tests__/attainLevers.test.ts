@@ -15,6 +15,8 @@ import {
   computeAccessPayoff,
   computeAccessChain,
   computeAccessContributions,
+  DEFAULT_MINUTES_SAVED_PER_NOTE,
+  DEFAULT_VISIT_LENGTH_MIN,
 } from "@/lib/attain/attainAccess";
 import type { AttainSetting, GoalId } from "@/lib/attain/attainTypes";
 
@@ -191,6 +193,12 @@ describe("computeLeverContributions", () => {
     const values: LeverValues = {
       accessProviders: 40,
       accessFreedShare: 50,
+      // Minutes saved is explicitly set here rather than left to the D3
+      // default: this test's $400K-$1M band was calibrated against a
+      // "typical" 12 min/note assumption, a separate concern from what
+      // DEFAULT_MINUTES_SAVED_PER_NOTE (now 2, the conservative default -
+      // see the dedicated default-value test above) should be.
+      accessMinutesSaved: 12,
       accessDemandBacklog: 500,
       accessDemandSameDayPct: 5,
       accessDemandNoShowPct: 5,
@@ -264,6 +272,42 @@ describe("ACCESS decision chain (attainAccess.ts)", () => {
   it("D3: zero freed-time share means zero capacity, even with providers in scope", () => {
     const capacity = computeAccessCapacity(baseline, { providersInScope: 40, lines: [], enterprise: false }, 12, 0);
     expect(capacity.capacityVisits).toBe(0);
+  });
+
+  it("D3: minutes saved per note default is 2 (conservative, matches Abridge's 2-4 min/encounter evidence)", () => {
+    expect(DEFAULT_MINUTES_SAVED_PER_NOTE).toBe(2);
+  });
+
+  it("D3: visit length defaults to ~20 minutes when not overridden", () => {
+    expect(DEFAULT_VISIT_LENGTH_MIN).toBe(20);
+  });
+
+  it("D3: capacity is a real, editable input - a shorter visit length converts the same freed hours into more visits", () => {
+    const scope = { providersInScope: 40, lines: [], enterprise: false };
+    const longVisit = computeAccessCapacity(baseline, scope, 12, 50, 30);
+    const defaultVisit = computeAccessCapacity(baseline, scope, 12, 50, 20);
+    const shortVisit = computeAccessCapacity(baseline, scope, 12, 50, 15);
+    expect(shortVisit.capacityVisits).toBeGreaterThan(defaultVisit.capacityVisits);
+    expect(defaultVisit.capacityVisits).toBeGreaterThan(longVisit.capacityVisits);
+    // Capacity is exactly inverse to visit length, at a fixed freed-hours
+    // input: halving the visit length must exactly double the visits it
+    // buys, since capacityVisits = freedHoursToAccess / (visitLength/60).
+    expect(shortVisit.capacityVisits).toBeCloseTo(longVisit.capacityVisits * 2, 0);
+  });
+
+  it("D3: omitting visitLengthMinutes falls back to the ~20 minute default, unchanged from before this was editable", () => {
+    const scope = { providersInScope: 40, lines: [], enterprise: false };
+    const noArg = computeAccessCapacity(baseline, scope, 12, 50);
+    const explicitDefault = computeAccessCapacity(baseline, scope, 12, 50, DEFAULT_VISIT_LENGTH_MIN);
+    expect(noArg.capacityVisits).toBeCloseTo(explicitDefault.capacityVisits, 5);
+  });
+
+  it("D3 (whole chain): accessVisitLength threads from the flat LeverValues bag into capacity - a shorter visit length yields more realized capacity from the identical freed hours", () => {
+    const baseValues: LeverValues = { accessProviders: 40, accessFreedShare: 50 };
+    const defaultChain = computeAccessChain(baseline, baseValues);
+    const shortChain = computeAccessChain(baseline, { ...baseValues, accessVisitLength: 10 });
+    expect(shortChain.capacity.capacityVisits).toBeGreaterThan(defaultChain.capacity.capacityVisits);
+    expect(shortChain.capacity.capacityVisits).toBeCloseTo(defaultChain.capacity.capacityVisits * 2, 0);
   });
 
   it("D4: demand ceiling is the sum of every demand source", () => {

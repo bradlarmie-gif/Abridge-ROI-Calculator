@@ -36,24 +36,32 @@ import type { AttainBaseline, LeverContribution, LeverContributionsResult, Lever
  * (`exploreDriverCalcs.ts`) already prices freed time with — freed hours
  * per provider, a visit length in hours, and a reinvestment share — so this
  * chain is a faithful decomposition of that same mechanism into an ordered,
- * demand-gated sequence, not a second, disconnected model. Visit length is
- * pinned at the ~20 minute benchmark this task specifies; Explore's own
- * card lets a partner edit that assumption at 30 minutes by default, which
- * is why the two dollar figures are close but not identical by design (this
- * chain is demand-gated, Explore's headline driver is not).
+ * demand-gated sequence, not a second, disconnected model. Visit length
+ * defaults to the ~20 minute benchmark this task specifies but is a real,
+ * editable D3 input (`accessVisitLength`), not a hardcoded constant -
+ * `computeAccessCapacity` divides the freed hours committed to access by
+ * this exact value, so a shorter visit converts the same freed hours into
+ * more capacity. Explore's own card lets a partner edit that assumption at
+ * 30 minutes by default, which is why the two dollar figures are close but
+ * not identical by design (this chain is demand-gated, Explore's headline
+ * driver is not).
  */
 
 // ────────────────────────────────────────────────────────────────────────
 // Constants
 // ────────────────────────────────────────────────────────────────────────
 
-/** Benchmark minutes saved per note, editable in D3. */
-export const DEFAULT_MINUTES_SAVED_PER_NOTE = 12;
+/** Benchmark minutes saved per note, editable in D3. Conservative default,
+ * matching Abridge's own 2-4 min/encounter evidence rather than an
+ * optimistic headline figure. */
+export const DEFAULT_MINUTES_SAVED_PER_NOTE = 2;
 
-/** The visit-length assumption this chain prices capacity against, per the
- * task's explicit "visitLength (~20min)" primitive. */
-export const ACCESS_VISIT_LENGTH_MIN = 20;
-const ACCESS_VISIT_LENGTH_HRS = ACCESS_VISIT_LENGTH_MIN / 60;
+/** The visit-length assumption this chain prices capacity against by
+ * default, editable in D3 (`accessVisitLength`) rather than a fixed
+ * constant - a shorter visit converts the identical freed hours into more
+ * visits, so this has to be a real input the capacity math reads, not a
+ * hardcoded number. ~20 minutes is the starting benchmark. */
+export const DEFAULT_VISIT_LENGTH_MIN = 20;
 
 /** Sensible per-line contribution-margin-per-visit defaults (D2), editable.
  * "Contribution margin, not charges" — these are illustrative starting
@@ -188,6 +196,10 @@ export interface AccessCapacity {
    * cross-goal (access/retention) scaling — see `computeAccessChain`. */
   effectiveSharePct: number;
   minutesSavedPerNote: number;
+  /** The average visit length (minutes) capacity is priced against - a
+   * real, editable D3 input (`accessVisitLength`), defaulting to
+   * `DEFAULT_VISIT_LENGTH_MIN`. */
+  visitLengthMinutes: number;
 }
 
 /**
@@ -197,22 +209,44 @@ export interface AccessCapacity {
  * committed time divided by the visit length — the ONLY place new visit
  * capacity is created in this chain. There is no second "open slots"
  * mechanism; a slot that isn't backed by freed time doesn't exist here.
+ *
+ * `visitLengthMinutes` is a real input, not a hardcoded constant: a shorter
+ * average visit converts the identical freed hours into more visits, so
+ * capacity scales inversely with it. Defaults to `DEFAULT_VISIT_LENGTH_MIN`
+ * (~20 min) when the partner hasn't overridden it yet.
  */
 export function computeAccessCapacity(
   baseline: AttainBaseline,
   scope: AccessScope,
   minutesSavedPerNote: number,
   effectiveSharePct: number,
+  visitLengthMinutes: number = DEFAULT_VISIT_LENGTH_MIN,
 ): AccessCapacity {
+  const safeVisitLengthMinutes = visitLengthMinutes > 0 ? visitLengthMinutes : DEFAULT_VISIT_LENGTH_MIN;
   if (scope.providersInScope <= 0) {
-    return { freedHoursTotal: 0, freedHoursToAccess: 0, capacityVisits: 0, effectiveSharePct: 0, minutesSavedPerNote };
+    return {
+      freedHoursTotal: 0,
+      freedHoursToAccess: 0,
+      capacityVisits: 0,
+      effectiveSharePct: 0,
+      minutesSavedPerNote,
+      visitLengthMinutes: safeVisitLengthMinutes,
+    };
   }
   const notesPerProvider = perProviderEncounters(baseline) * utilizationFraction(baseline);
   const freedHoursTotal = scope.providersInScope * notesPerProvider * (minutesSavedPerNote / 60);
   const share = clampShare(effectiveSharePct / 100);
   const freedHoursToAccess = freedHoursTotal * share;
-  const capacityVisits = freedHoursToAccess / ACCESS_VISIT_LENGTH_HRS;
-  return { freedHoursTotal, freedHoursToAccess, capacityVisits, effectiveSharePct, minutesSavedPerNote };
+  const visitLengthHrs = safeVisitLengthMinutes / 60;
+  const capacityVisits = freedHoursToAccess / visitLengthHrs;
+  return {
+    freedHoursTotal,
+    freedHoursToAccess,
+    capacityVisits,
+    effectiveSharePct,
+    minutesSavedPerNote,
+    visitLengthMinutes: safeVisitLengthMinutes,
+  };
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -348,8 +382,9 @@ export function computeAccessChain(
   const rawSharePct = clampPct(asNum(values.accessFreedShare));
   const effectiveSharePct = rawSharePct * clampShare(crossGoalShareMultiplier);
   const minutesSavedPerNote = asNum(values.accessMinutesSaved) > 0 ? asNum(values.accessMinutesSaved) : DEFAULT_MINUTES_SAVED_PER_NOTE;
+  const visitLengthMinutes = asNum(values.accessVisitLength) > 0 ? asNum(values.accessVisitLength) : DEFAULT_VISIT_LENGTH_MIN;
 
-  const capacity = computeAccessCapacity(baseline, scope, minutesSavedPerNote, effectiveSharePct);
+  const capacity = computeAccessCapacity(baseline, scope, minutesSavedPerNote, effectiveSharePct, visitLengthMinutes);
   const demand = computeAccessDemand(baseline, scope, values);
   const payoff = computeAccessPayoff(scope, values, capacity.capacityVisits, demand.demandCeiling);
 
@@ -358,7 +393,7 @@ export function computeAccessChain(
     : NO_MOVE_FORMULA;
 
   const capacityFormula = capacity.capacityVisits > 0
-    ? `${scope.providersInScope} providers × ${Math.round(capacity.freedHoursTotal / Math.max(1, scope.providersInScope))} freed hrs/provider/yr × ${Math.round(capacity.effectiveSharePct)}% to access ÷ ${ACCESS_VISIT_LENGTH_MIN} min/visit = ${Math.round(capacity.capacityVisits).toLocaleString()} visits/yr capacity.`
+    ? `${scope.providersInScope} providers × ${Math.round(capacity.freedHoursTotal / Math.max(1, scope.providersInScope))} freed hrs/provider/yr × ${Math.round(capacity.effectiveSharePct)}% to access ÷ ${capacity.visitLengthMinutes} min/visit = ${Math.round(capacity.capacityVisits).toLocaleString()} visits/yr capacity.`
     : NO_MOVE_FORMULA;
 
   const demandFormula = demand.demandCeiling > 0
