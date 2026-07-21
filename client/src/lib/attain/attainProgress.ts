@@ -174,8 +174,9 @@ export type Cadence = "weekly" | "biweekly" | "monthly" | "quarterly";
 
 const CADENCE_DAYS: Record<Cadence, number> = { weekly: 7, biweekly: 14, monthly: 30, quarterly: 91 };
 
-/** When a signal's next check falls due, off its OWN cadence and its own
- * last-logged date — never a single plan-wide review date. */
+/** When a signal's next check falls due, off its own last-logged date and
+ * the single plan-wide cadence every signal in the plan now shares (see
+ * AttainFlow's `planCadence`). */
 export function nextCheckDueDate(lastDateISO: string, cadence: Cadence): string {
   const d = new Date(`${lastDateISO}T00:00:00`);
   d.setDate(d.getDate() + CADENCE_DAYS[cadence]);
