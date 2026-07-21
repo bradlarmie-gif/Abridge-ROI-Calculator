@@ -150,6 +150,7 @@ function DecisionsTable({
               <td className="py-3 px-2 border-b border-[#F0ECE5] align-top text-[10.5px] text-[#3A3A3A] whitespace-nowrap">{owner}</td>
               <td className="py-3 px-2 border-b border-[#F0ECE5] align-top text-[10.5px] text-[#3A3A3A] whitespace-nowrap">{due}</td>
               <td className="py-3 px-2 border-b border-[#F0ECE5] align-top text-right whitespace-nowrap">
+                {/* Fine to show per-decision here, but never sum marginalMargin across a chain; use the chain's totalMargin. */}
                 <p className="text-[11px] font-bold text-[#EA2C00]">{formatCompact(contribution?.marginalMargin ?? 0)}</p>
                 <p className="text-[9px] text-[#8C8C8C]">{Math.round((contribution?.pctOfTotal ?? 0) * 100)}% of its priority</p>
               </td>
@@ -575,6 +576,7 @@ export default function StepAttainment({
     const commitment = commitments[key] ?? defaultCommitmentFor(goal, lever, setting);
     const chosenValue = (valuesByGoal[goal] ?? defaultLeverValues(goal, setting))[lever.id];
     const targetValue = leverNumericValue(chosenValue);
+    // Per-decision only, for splitting across its own signals below — never sum marginalMargin across a chain; use the chain's totalMargin.
     const worthTotal = Math.max(0, contribution?.marginalMargin ?? 0);
     const signals = commitment.signals.length > 0 ? commitment.signals : defaultCommitmentFor(goal, lever, setting).signals;
     const worthPerSignal = perSignalWorth(worthTotal, signals.length);
@@ -913,7 +915,11 @@ export default function StepAttainment({
                 {goalDefs.map((g) => {
                   const rows = allCommitted.filter((c) => c.goal === g.id);
                   if (rows.length === 0) return null;
-                  const groupWorth = rows.reduce((sum, r) => sum + (r.contribution?.marginalMargin ?? 0), 0);
+                  // Never sum marginalMargin across a chain; use the chain's totalMargin.
+                  // Leave-one-out marginalMargin values overlap (retention/quality/ED-access)
+                  // and do not sum to the chain's real total, so this must read the same
+                  // byGoal[g.id].totalMargin the breakdown cards (~:872) and PDF already use.
+                  const groupWorth = combined.byGoal[g.id]?.totalMargin ?? 0;
                   return (
                     <div key={g.id} className="mb-8" data-testid={`group-attain-plan-decisions-${g.id}`}>
                       <div className="flex items-center justify-between mb-2.5">

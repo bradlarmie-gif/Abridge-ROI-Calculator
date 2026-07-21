@@ -618,6 +618,91 @@ describe("computeMultiGoalContributions", () => {
     const combined = computeMultiGoalContributions(["access", "retention"], "outpatient", baseline, valuesByGoal, 50);
     expect(combined.combinedMargin).toBeLessThan(naiveDoubleCounted);
   });
+
+  // C1 regression — StepAttainment's "The Plan" per-priority group heading
+  // (the multi-goal branch, ~StepAttainment.tsx:916) used to compute its
+  // subtotal by SUMMING every committed decision's `marginalMargin`
+  // (leave-one-out) within that priority. Retention (and, per the review,
+  // Quality/ED-access) are ordered decision CHAINS (D1..D5 / D1..D4), not
+  // independent per-lever channels — see this file's header comment and
+  // each chain's own "... decision chain" describe block. Retention's D5
+  // ("Sustain it") is a hard GATE on the whole chain: resetting it alone to
+  // 0 collapses the composite impact (and therefore totalMargin) to 0, so
+  // its own leave-one-out `marginalMargin` equals the ENTIRE chain total,
+  // while D2 ("Protect the relief")/D3/D4 each ALSO claim their own share on
+  // top of that - summing every row therefore double- (here, ~2x-) counts
+  // the same dollar. That is what inflated a priority's printed subtotal
+  // past its true share and made the group subtotals disagree with (and
+  // exceed) the combined total printed right below them. The fix reads
+  // `byGoal[g.id].totalMargin` directly instead - the exact value the
+  // "value by domain" breakdown cards and the PDF already use. This test
+  // locks in the "parts equal the whole" invariant the fix now relies on:
+  // never sum marginalMargin across a chain; use the chain's totalMargin.
+  it("C1: multi-goal per-priority subtotals (byGoal[g].totalMargin) sum to exactly the combined total, while naively summing marginalMargin overstates it", () => {
+    const baseline = BASELINE_FOR.quality; // nursing: { staffedBeds: 40, nursingFtes: 40, dailyCensus: 34, adoptionPct: 100 }
+    const setting: AttainSetting = "nursing";
+    // Nursing legally pairs quality + retention (see SETTING_GOAL_MATRIX) and
+    // neither is outpatient access, so no freed-time split engages - a
+    // clean two-chain plan, each goal's own chain computed independently.
+    const valuesByGoal: Partial<Record<GoalId, LeverValues>> = {
+      quality: {
+        qualityLines: ["Med-Surg", "ICU"],
+        qualityBeds: 40,
+        qualityEventTypes: ["HAPI", "CLABSI", "Falls", "Sepsis"],
+        qualityRealTime: 90,
+        qualityResponse: 2,
+        qualityBundle: 70,
+      },
+      retention: {
+        retentionLines: ["Med-Surg", "ICU"],
+        retentionProviders: 40,
+        retentionProtect: 60,
+        retentionSurveyCadence: 2,
+        retentionBackfill: 2,
+        retentionSustain: 6,
+      },
+    };
+    const goals: GoalId[] = ["quality", "retention"];
+    const combined = computeMultiGoalContributions(goals, setting, baseline, valuesByGoal);
+
+    // Each priority's committed decisions, mirroring what StepAttainment's
+    // `allCommitted` filters into per-goal rows, then the buggy formula
+    // being regression-tested: summing every row's leave-one-out
+    // marginalMargin instead of reading the chain's own totalMargin.
+    const naiveGroupWorth: Record<string, number> = {};
+    for (const g of goals) {
+      const perLever = combined.byGoal[g]?.perLever ?? [];
+      naiveGroupWorth[g] = perLever.reduce((sum, l) => sum + Math.max(0, l.marginalMargin), 0);
+    }
+    const naiveSumOfSubtotals = goals.reduce((sum, g) => sum + naiveGroupWorth[g], 0);
+
+    // The correct per-priority subtotal per goal - what the fixed component
+    // now reads.
+    const correctSubtotals = goals.map((g) => combined.byGoal[g]?.totalMargin ?? 0);
+    const sumOfCorrectSubtotals = correctSubtotals.reduce((a, b) => a + b, 0);
+
+    // Sanity: this fixture actually produces real, nonzero dollars for both
+    // goals, so the invariant below isn't vacuously true at $0.
+    expect(combined.byGoal.quality?.totalMargin ?? 0).toBeGreaterThan(0);
+    expect(combined.byGoal.retention?.totalMargin ?? 0).toBeGreaterThan(0);
+
+    // Parts equal the whole: the corrected per-priority subtotals sum to
+    // exactly the combined total shown directly below them on screen.
+    expect(sumOfCorrectSubtotals).toBeCloseTo(combined.combinedMargin, 5);
+    // And each individual subtotal is exactly its chain's own totalMargin.
+    goals.forEach((g, i) => {
+      expect(correctSubtotals[i]).toBeCloseTo(combined.byGoal[g]?.totalMargin ?? 0, 5);
+    });
+
+    // The bug this guards against: naively summing leave-one-out
+    // marginalMargin across retention's chain overstates retention's OWN
+    // totalMargin (D5's gate alone claims the full total, on top of
+    // D2-D4's own shares) - and that overstatement alone is already enough
+    // to push the naive COMBINED figure strictly above the real combined
+    // total, exactly the inflation the review caught.
+    expect(naiveGroupWorth.retention).toBeGreaterThan(combined.byGoal.retention?.totalMargin ?? 0);
+    expect(naiveSumOfSubtotals).toBeGreaterThan(combined.combinedMargin);
+  });
 });
 
 // ────────────────────────────────────────────────────────────────────────
