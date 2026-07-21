@@ -729,7 +729,7 @@ const edAccess: SettingGoalContent = {
     "Ambient documentation gives that time back at the bedside. Whether it becomes a faster door-to-provider time or just a calmer end of shift is a choice, not an automatic outcome. That choice is what this plan is built around.",
   goodHead: 'What "good" looks like, 6 months out',
   goodCells: [
-    { n: "-3", k: "LWBS rate, pts" },
+    { n: "40%", k: "Of the LWBS pool recovered" },
     { n: "1,200", k: "Recovered visits / year" },
     { n: "$540K", coral: true, k: "Contribution margin" },
     { n: "<35m", k: "Door-to-provider" },
