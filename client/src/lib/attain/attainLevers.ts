@@ -131,6 +131,11 @@ export interface Lever {
   realityStart: number | string[];
   ownerRole: string;
   defaultDue: string;
+  /** The one number this decision's owner should watch to know if it is
+   * actually moving — pre-fills Commit's "Signal to watch" field. Plain and
+   * specific, not the dollar figure itself (that is the payoff, not the
+   * signal that predicts it). */
+  signal: string;
 }
 
 export type LeverValues = Record<string, number | string[]>;
@@ -223,6 +228,7 @@ export const LEVERS: Record<GoalId, Lever[]> = {
       realityStart: 0,
       ownerRole: "Service-line chief",
       defaultDue: "Month 1",
+      signal: "Providers actually converting freed time into access, of those pointed at it",
     },
     {
       id: "accessMargin",
@@ -236,6 +242,7 @@ export const LEVERS: Record<GoalId, Lever[]> = {
       realityStart: 0,
       ownerRole: "Partner finance",
       defaultDue: "Month 1",
+      signal: "Contribution margin booked per visit, this line",
     },
     {
       id: "accessFreedShare",
@@ -249,6 +256,7 @@ export const LEVERS: Record<GoalId, Lever[]> = {
       realityStart: 0,
       ownerRole: "Ambulatory operations",
       defaultDue: "Month 2",
+      signal: "Share of freed documentation time routed to the schedule",
     },
     {
       id: "accessDemandBacklog",
@@ -262,6 +270,7 @@ export const LEVERS: Record<GoalId, Lever[]> = {
       realityStart: 0,
       ownerRole: "Access / referral ops",
       defaultDue: "Month 3",
+      signal: "Referral backlog size",
     },
     {
       id: "accessDemandSameDayPct",
@@ -275,6 +284,7 @@ export const LEVERS: Record<GoalId, Lever[]> = {
       realityStart: 0,
       ownerRole: "Access / referral ops",
       defaultDue: "Month 3",
+      signal: "Share of encounters booking same-day or urgent",
     },
     {
       id: "accessDemandNoShowPct",
@@ -288,6 +298,7 @@ export const LEVERS: Record<GoalId, Lever[]> = {
       realityStart: 0,
       ownerRole: "Ops / staffing",
       defaultDue: "Month 3",
+      signal: "No-show recovery rate",
     },
     {
       id: "accessDemandNewReferrals",
@@ -301,6 +312,7 @@ export const LEVERS: Record<GoalId, Lever[]> = {
       realityStart: 0,
       ownerRole: "Access / referral ops",
       defaultDue: "Month 3",
+      signal: "New referrals arriving per month",
     },
   ],
   retention: [
@@ -316,6 +328,7 @@ export const LEVERS: Record<GoalId, Lever[]> = {
       realityStart: [],
       ownerRole: "Department leadership",
       defaultDue: "Month 1",
+      signal: "Departments actively brought into the plan",
     },
     {
       id: "retentionFloor",
@@ -329,6 +342,7 @@ export const LEVERS: Record<GoalId, Lever[]> = {
       realityStart: 0,
       ownerRole: "Department leadership",
       defaultDue: "Month 2",
+      signal: "After-hours documentation load against the floor",
     },
     {
       id: "retentionBackfill",
@@ -342,6 +356,7 @@ export const LEVERS: Record<GoalId, Lever[]> = {
       realityStart: 0,
       ownerRole: "Ops / staffing",
       defaultDue: "Month 2",
+      signal: "Coverage-gap backfill level",
     },
     {
       id: "retentionSustain",
@@ -355,6 +370,7 @@ export const LEVERS: Record<GoalId, Lever[]> = {
       realityStart: 0,
       ownerRole: "Department chiefs",
       defaultDue: "Month 3",
+      signal: "Months the relief floor has held",
     },
   ],
   revenue: [
@@ -370,6 +386,7 @@ export const LEVERS: Record<GoalId, Lever[]> = {
       realityStart: [],
       ownerRole: "Revenue cycle / coding",
       defaultDue: "Month 1",
+      signal: "Specialties actively brought into the plan",
     },
     {
       id: "revenueUptake",
@@ -383,6 +400,7 @@ export const LEVERS: Record<GoalId, Lever[]> = {
       realityStart: 30,
       ownerRole: "Revenue cycle / coding",
       defaultDue: "Month 2",
+      signal: "Share of documented complexity coding acts on",
     },
     {
       id: "revenueQueryDays",
@@ -396,6 +414,7 @@ export const LEVERS: Record<GoalId, Lever[]> = {
       realityStart: 14,
       ownerRole: "CDI + providers",
       defaultDue: "Month 2",
+      signal: "Provider query turnaround, in days",
     },
     {
       id: "revenueProtect",
@@ -409,6 +428,7 @@ export const LEVERS: Record<GoalId, Lever[]> = {
       realityStart: 0,
       ownerRole: "Billing",
       defaultDue: "Month 3",
+      signal: "Share of captured levels protected from downcoding",
     },
   ],
   quality: [
@@ -424,6 +444,7 @@ export const LEVERS: Record<GoalId, Lever[]> = {
       realityStart: [],
       ownerRole: "Unit leadership",
       defaultDue: "Month 1",
+      signal: "Units actively brought into the plan",
     },
     {
       id: "qualityRealTime",
@@ -437,6 +458,7 @@ export const LEVERS: Record<GoalId, Lever[]> = {
       realityStart: 55,
       ownerRole: "Charge nurses / unit leads",
       defaultDue: "Month 2",
+      signal: "Share of bundle gaps closed in real time, during the shift",
     },
     {
       id: "qualityResponse",
@@ -450,6 +472,7 @@ export const LEVERS: Record<GoalId, Lever[]> = {
       realityStart: 0,
       ownerRole: "Rapid response / unit",
       defaultDue: "Month 2",
+      signal: "Deterioration-response level",
     },
     {
       id: "qualityBundle",
@@ -463,6 +486,7 @@ export const LEVERS: Record<GoalId, Lever[]> = {
       realityStart: 0,
       ownerRole: "Unit leadership",
       defaultDue: "Month 3",
+      signal: "Audited bundle compliance rate",
     },
   ],
 };
