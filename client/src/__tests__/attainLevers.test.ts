@@ -706,6 +706,140 @@ describe("computeMultiGoalContributions", () => {
 });
 
 // ────────────────────────────────────────────────────────────────────────
+// Realization rate — attribution, on top of the engine's own dollar. A
+// partner may run other efforts against the same outcome, so each
+// priority carries its own realizationPct (default 100, only ever scales
+// DOWN) applied in exactly ONE place, `applyRealization` inside
+// `computeMultiGoalContributions`, so nothing downstream can drift: the
+// per-priority totalMargin/totalCount AND every row's own
+// marginalMargin/marginalCount scale by the same factor, so "parts equal
+// the whole" (the C1 invariant above) still holds after scaling.
+// ────────────────────────────────────────────────────────────────────────
+describe("computeMultiGoalContributions — realization rate", () => {
+  const retentionValues = (): LeverValues => ({
+    retentionLines: ["Primary Care", "Cardiology"],
+    retentionProviders: 40,
+    retentionTurnoverRate: 14,
+    retentionReplacementCost: 375_000,
+    retentionProtect: 60,
+    retentionSurveyCadence: 1,
+    retentionBackfill: 2,
+    retentionSustain: 6,
+  });
+
+  it("omitting realizationByGoal (and passing an explicit 100) leaves every figure exactly what it was before this feature existed", () => {
+    const baseline = BASELINE_FOR.retention;
+    const valuesByGoal: Partial<Record<GoalId, LeverValues>> = { retention: retentionValues() };
+
+    const withoutArg = computeMultiGoalContributions(["retention"], "outpatient", baseline, valuesByGoal, 50);
+    const withExplicit100 = computeMultiGoalContributions(["retention"], "outpatient", baseline, valuesByGoal, 50, { retention: 100 });
+
+    expect(withExplicit100.combinedMargin).toBe(withoutArg.combinedMargin);
+    expect(withExplicit100.combinedCount).toBe(withoutArg.combinedCount);
+    expect(withExplicit100.byGoal.retention?.totalMargin).toBe(withoutArg.byGoal.retention?.totalMargin);
+    const a = withoutArg.byGoal.retention!.perLever;
+    const b = withExplicit100.byGoal.retention!.perLever;
+    for (let i = 0; i < a.length; i++) {
+      expect(b[i].marginalMargin).toBe(a[i].marginalMargin);
+      expect(b[i].formula).toBe(a[i].formula);
+    }
+  });
+
+  it("realization 50 exactly halves a goal's totalMargin, totalCount, and every row's marginalMargin/marginalCount", () => {
+    const baseline = BASELINE_FOR.retention;
+    const valuesByGoal: Partial<Record<GoalId, LeverValues>> = { retention: retentionValues() };
+
+    const full = computeMultiGoalContributions(["retention"], "outpatient", baseline, valuesByGoal, 50, { retention: 100 });
+    const halved = computeMultiGoalContributions(["retention"], "outpatient", baseline, valuesByGoal, 50, { retention: 50 });
+
+    expect(full.byGoal.retention!.totalMargin).toBeGreaterThan(0);
+    expect(halved.byGoal.retention!.totalMargin).toBeCloseTo(full.byGoal.retention!.totalMargin * 0.5, 5);
+    expect(halved.byGoal.retention!.totalCount).toBeCloseTo(full.byGoal.retention!.totalCount * 0.5, 5);
+    expect(halved.combinedMargin).toBeCloseTo(full.combinedMargin * 0.5, 5);
+
+    const fullRows = full.byGoal.retention!.perLever;
+    const halvedRows = halved.byGoal.retention!.perLever;
+    for (let i = 0; i < fullRows.length; i++) {
+      expect(halvedRows[i].marginalMargin).toBeCloseTo(fullRows[i].marginalMargin * 0.5, 5);
+      expect(halvedRows[i].marginalCount).toBeCloseTo(fullRows[i].marginalCount * 0.5, 5);
+      // pctOfTotal is a SHARE within the goal, unaffected by a uniform scale.
+      expect(halvedRows[i].pctOfTotal).toBeCloseTo(fullRows[i].pctOfTotal, 5);
+    }
+  });
+
+  it("multi-goal with a different realization per goal sums to the exact weighted total, and per-priority subtotals still sum to the combined total", () => {
+    const baseline = BASELINE_FOR.quality; // nursing baseline, legally pairs quality + retention
+    const setting: AttainSetting = "nursing";
+    const valuesByGoal: Partial<Record<GoalId, LeverValues>> = {
+      quality: {
+        qualityLines: ["Med-Surg", "ICU"],
+        qualityBeds: 40,
+        qualityEventTypes: ["HAPI", "CLABSI", "Falls", "Sepsis"],
+        qualityRealTime: 90,
+        qualityResponse: 2,
+        qualityBundle: 70,
+      },
+      retention: {
+        retentionLines: ["Med-Surg", "ICU"],
+        retentionProviders: 40,
+        retentionProtect: 60,
+        retentionSurveyCadence: 2,
+        retentionBackfill: 2,
+        retentionSustain: 6,
+      },
+    };
+    const goals: GoalId[] = ["quality", "retention"];
+
+    const qualityFull = computeMultiGoalContributions(["quality"], setting, baseline, valuesByGoal).byGoal.quality!.totalMargin;
+    const retentionFull = computeMultiGoalContributions(["retention"], setting, baseline, valuesByGoal).byGoal.retention!.totalMargin;
+    expect(qualityFull).toBeGreaterThan(0);
+    expect(retentionFull).toBeGreaterThan(0);
+
+    const combined = computeMultiGoalContributions(goals, setting, baseline, valuesByGoal, 50, { quality: 80, retention: 60 });
+
+    expect(combined.byGoal.quality!.totalMargin).toBeCloseTo(qualityFull * 0.8, 5);
+    expect(combined.byGoal.retention!.totalMargin).toBeCloseTo(retentionFull * 0.6, 5);
+    expect(combined.combinedMargin).toBeCloseTo(qualityFull * 0.8 + retentionFull * 0.6, 5);
+
+    // Parts equal the whole, exactly the C1 invariant above, now proven to
+    // survive per-goal realization scaling too.
+    const sumOfSubtotals = goals.reduce((sum, g) => sum + (combined.byGoal[g]?.totalMargin ?? 0), 0);
+    expect(sumOfSubtotals).toBeCloseTo(combined.combinedMargin, 5);
+  });
+
+  it("realization never scales UP: a value above 100 clamps to 100 (no-op), and a negative value clamps to 0", () => {
+    const baseline = BASELINE_FOR.retention;
+    const valuesByGoal: Partial<Record<GoalId, LeverValues>> = { retention: retentionValues() };
+    const full = computeMultiGoalContributions(["retention"], "outpatient", baseline, valuesByGoal, 50, { retention: 100 });
+
+    const over = computeMultiGoalContributions(["retention"], "outpatient", baseline, valuesByGoal, 50, { retention: 140 });
+    expect(over.byGoal.retention!.totalMargin).toBeCloseTo(full.byGoal.retention!.totalMargin, 5);
+
+    const under = computeMultiGoalContributions(["retention"], "outpatient", baseline, valuesByGoal, 50, { retention: -20 });
+    expect(under.byGoal.retention!.totalMargin).toBe(0);
+  });
+
+  it("a moved decision's own THE MATH formula gets a trailing '% realization' factor only when realization is below 100", () => {
+    const baseline = BASELINE_FOR.retention;
+    const valuesByGoal: Partial<Record<GoalId, LeverValues>> = { retention: retentionValues() };
+
+    const full = computeMultiGoalContributions(["retention"], "outpatient", baseline, valuesByGoal, 50, { retention: 100 });
+    const partial = computeMultiGoalContributions(["retention"], "outpatient", baseline, valuesByGoal, 50, { retention: 70 });
+
+    const fullMoved = full.byGoal.retention!.perLever.filter((l) => l.marginalMargin !== 0);
+    const partialMoved = partial.byGoal.retention!.perLever.filter((l) => l.marginalMargin !== 0);
+    expect(fullMoved.length).toBeGreaterThan(0);
+    for (const row of fullMoved) expect(row.formula).not.toContain("% realization");
+    for (const row of partialMoved) expect(row.formula).toContain("70% realization");
+
+    // Untouched (marginalMargin === 0) rows never get the suffix, at any
+    // realization - there's no dollar to attribute, so no clutter.
+    const untouched = partial.byGoal.retention!.perLever.filter((l) => l.marginalMargin === 0);
+    for (const row of untouched) expect(row.formula).not.toContain("% realization");
+  });
+});
+
+// ────────────────────────────────────────────────────────────────────────
 // Blank starting-point baseline — "Your starting point" now loads with
 // every field genuinely empty (see AttainFlow's `baseline` state, `{}`),
 // not a prefilled benchmark. Every lever, and the access chain, must stay

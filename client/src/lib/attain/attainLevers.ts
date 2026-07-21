@@ -1186,6 +1186,107 @@ export interface MultiGoalContributionsResult {
   combinedCount: number;
 }
 
+// ────────────────────────────────────────────────────────────────────────
+// Realization rate — attribution, layered on top of the engine's own
+// dollar. Attain deliberately reads the full derived dollar for a
+// committed decision chain (unlike Explore, it does not apply a
+// realization haircut, because each decision already caps itself). But a
+// partner may be running MULTIPLE efforts against the same outcome (their
+// own initiative, a different vendor, a parallel program), so this is the
+// dial that lets them credit only the share of a priority's outcome that
+// actually belongs to THIS plan. Default 100 (full credit, identical to
+// today's number); a partner only ever dials it DOWN, never up.
+//
+// `applyRealization` is the ONE place this scaling happens, called once
+// per goal inside `computeMultiGoalContributions` below, immediately after
+// that goal's raw (unscaled) chain result is computed and before it is
+// folded into `byGoal`/`combinedMargin`/`combinedCount`. Every downstream
+// consumer (AttainLivePanel's "Plan so far", StepCommit's "worth",
+// StepAttainment's Strategy/Progress tabs, attain-pdf.tsx) reads only
+// `combined.byGoal[goal]` / `combined.combinedMargin` — never a goal's raw
+// chain result directly — so this single application point is enough to
+// keep every one of those surfaces reconciled with no second place the
+// scaling could drift.
+//
+// Both `totalMargin` and every row's `marginalMargin`/`marginalCount` scale
+// by the identical factor, so the "parts equal the whole" invariant
+// (`byGoal[g].totalMargin` summed across goals equals `combinedMargin`,
+// see the C1 regression test) survives scaling. `pctOfTotal` is a SHARE
+// within the goal (this row's dollar / the goal's own marginal-dollar
+// sum) — a uniform scale multiplies both the numerator and denominator by
+// the same factor, so it is left untouched.
+// ────────────────────────────────────────────────────────────────────────
+
+export type RealizationByGoal = Partial<Record<GoalId, number>>;
+
+function clampRealizationPct(pct: number): number {
+  return Math.min(100, Math.max(0, pct));
+}
+
+function fmtMoneyCompactRealization(n: number): string {
+  const sign = n < 0 ? "-" : "";
+  const abs = Math.abs(n);
+  if (abs >= 1_000_000) return `${sign}$${(abs / 1_000_000).toFixed(abs % 1_000_000 === 0 ? 0 : 1)}M`;
+  if (abs >= 1_000) return `${sign}$${Math.round(abs / 1_000)}K`;
+  return `${sign}$${Math.round(abs)}`;
+}
+
+/** Scales one number by a realization percent (0-100, clamped, defaults to
+ * a no-op at 100). Exported so the Build-the-case decision-chain
+ * components — which compute their own live preview chain directly, for
+ * the same reason documented in `channelValue`'s comment above — can apply
+ * the exact same scaling to their own local display, instead of a second,
+ * hand-rolled multiply that could drift from this one. */
+export function realizedValue(value: number, realizationPct: number): number {
+  return value * (clampRealizationPct(realizationPct) / 100);
+}
+
+/** Appends a trailing "× N% realization = ~$X" clause to a THE MATH
+ * formula string — but only when `realizationPct` is below 100, so the
+ * default (full credit) never clutters the math. Returns `formula`
+ * unchanged at 100%. `scaledValue` is the already-realized dollar this
+ * row/chain now carries (see `realizedValue` above) — passed in rather
+ * than recomputed here so the printed number can never disagree with the
+ * one actually used for the row's own `marginalMargin`. */
+export function formulaWithRealization(formula: string, realizationPct: number, scaledValue: number): string {
+  const pct = clampRealizationPct(realizationPct);
+  if (pct >= 100) return formula;
+  const base = formula.endsWith(".") ? formula.slice(0, -1) : formula;
+  return `${base} × ${Math.round(pct)}% realization = ~${fmtMoneyCompactRealization(scaledValue)}.`;
+}
+
+/**
+ * The ONE place a goal's `LeverContributionsResult` gets scaled down for
+ * attribution. At `realizationPct >= 100` this is an exact no-op (returns
+ * `result` itself, not a copy) — so "at realization 100 the numbers equal
+ * today's" holds by construction, not by coincidence of the arithmetic.
+ * Below 100, every row's `marginalMargin`/`marginalCount` (and the goal's
+ * own `totalMargin`/`totalCount`) scale by the identical factor, and any
+ * row that actually carries a nonzero raw dollar (`marginalMargin !== 0`
+ * before scaling — the same convention every chain module already uses to
+ * mark "this is the row the dollar is attributed to", see attainAccess.ts's
+ * module header) gets the trailing realization clause appended to its own
+ * formula. Rows with no dollar to attribute (D1-D4 scope/context rows)
+ * never get the suffix, at any realization percent — there's nothing to
+ * scale, so nothing to caption.
+ */
+export function applyRealization(result: LeverContributionsResult, realizationPct: number): LeverContributionsResult {
+  const pct = clampRealizationPct(realizationPct);
+  if (pct >= 100) return result;
+  const scale = pct / 100;
+  const perLever: LeverContribution[] = result.perLever.map((lever) => {
+    const scaledMargin = lever.marginalMargin * scale;
+    const scaledCount = lever.marginalCount * scale;
+    return {
+      ...lever,
+      marginalMargin: scaledMargin,
+      marginalCount: scaledCount,
+      formula: lever.marginalMargin !== 0 ? formulaWithRealization(lever.formula, pct, scaledMargin) : lever.formula,
+    };
+  });
+  return { perLever, totalMargin: result.totalMargin * scale, totalCount: result.totalCount * scale };
+}
+
 /**
  * Combines any number of goals into one plan.
  *
@@ -1233,6 +1334,7 @@ export function computeMultiGoalContributions(
   baseline: AttainBaseline,
   valuesByGoal: Partial<Record<GoalId, LeverValues>>,
   freedTimeSplit: number = 50,
+  realizationByGoal: RealizationByGoal = {},
 ): MultiGoalContributionsResult {
   const uniqueGoals = Array.from(new Set(goals));
   // The shared-hour conflict is outpatient access's own mechanism (D3
@@ -1248,38 +1350,37 @@ export function computeMultiGoalContributions(
   let combinedMargin = 0;
   let combinedCount = 0;
 
+  // Realization is applied once, right here, to every goal's raw chain
+  // result before it is stored/summed — see `applyRealization`'s comment
+  // above for why this single call site is enough to keep every consumer
+  // (Strategy, Commit, Progress, the PDF) reconciled.
+  const record = (goal: GoalId, raw: LeverContributionsResult) => {
+    const realized = applyRealization(raw, realizationByGoal[goal] ?? 100);
+    byGoal[goal] = realized;
+    combinedMargin += realized.totalMargin;
+    combinedCount += realized.totalCount;
+  };
+
   for (const goal of uniqueGoals) {
     const values = valuesByGoal[goal] ?? defaultLeverValues(goal, setting);
 
     if (goal === "access") {
       if (setting === "ed") {
-        const result = computeEdAccessContributions(baseline, values);
-        byGoal.access = result;
-        combinedMargin += result.totalMargin;
-        combinedCount += result.totalCount;
+        record(goal, computeEdAccessContributions(baseline, values));
         continue;
       }
       const shareMultiplier = hasFreedTimeConflict ? accessShare : 1;
-      const result = computeAccessContributions(baseline, values, shareMultiplier);
-      byGoal.access = result;
-      combinedMargin += result.totalMargin;
-      combinedCount += result.totalCount;
+      record(goal, computeAccessContributions(baseline, values, shareMultiplier));
       continue;
     }
 
     if (goal === "retention") {
       const shareMultiplier = hasFreedTimeConflict ? retentionShare : 1;
-      const result = computeWorkforceContributions(baseline, setting, values, shareMultiplier);
-      byGoal.retention = result;
-      combinedMargin += result.totalMargin;
-      combinedCount += result.totalCount;
+      record(goal, computeWorkforceContributions(baseline, setting, values, shareMultiplier));
       continue;
     }
 
-    const base = computeLeverContributions(goal, setting, baseline, values);
-    byGoal[goal] = base;
-    combinedMargin += base.totalMargin;
-    combinedCount += base.totalCount;
+    record(goal, computeLeverContributions(goal, setting, baseline, values));
   }
 
   return { byGoal, combinedMargin, combinedCount };
