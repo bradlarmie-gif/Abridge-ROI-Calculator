@@ -24,20 +24,22 @@ import type { AttainSetting, GoalId } from "@/lib/attain/attainTypes";
 const GOAL_IDS: GoalId[] = ["access", "retention", "revenue", "quality"];
 
 // Every goal is now a bespoke ordered decision CHAIN, not an
-// independent-channel lever set: Access (attainAccess.ts, scope -> margin
-// -> capacity -> demand), Revenue at outpatient/ED (attainRevenue.ts, three
-// paths), Retention/Workforce (attainWorkforce.ts, D1-D5), and Quality
-// (attainQuality.ts, D1 scope+event-types -> D2 real-time -> D3 response ->
-// D4 bundle compliance). Moving only ONE decision in any of these chains
-// alone is EXPECTED to still net ~$0 in most cases (that is the whole point
-// of gating dollars until every decision behind them is real), so none of
-// them go through the generic leave-one-out sweep below; each has its own
+// independent-channel lever set: Access (attainAccess.ts / attainEdAccess.ts,
+// scope -> margin -> capacity -> demand, or scope -> worth -> pool -> payoff
+// for ED), Revenue at outpatient/ED (attainRevenue.ts, three paths) and at
+// inpatient (attainInpatientRevenue.ts, its OWN three paths - a genuinely
+// different DRG/CDI/obs-defense mechanism), Retention/Workforce
+// (attainWorkforce.ts, D1-D5), and Quality (attainQuality.ts, D1
+// scope+event-types -> D2 real-time -> D3 response -> D4 bundle
+// compliance). Moving only ONE decision in any of these chains alone is
+// EXPECTED to still net ~$0 in most cases (that is the whole point of
+// gating dollars until every decision behind them is real), so none of them
+// go through the generic leave-one-out sweep below; each has its own
 // dedicated "... decision chain" describe block (below, or in
-// attainRevenue.test.ts / attainWorkforce.test.ts / attainQuality.test.ts).
-// Revenue at INPATIENT is the one exception: it is unaffected by the
-// three-path rebuild and still runs this leave-one-out architecture
-// (against `REVENUE_IP_LEVERS`); see the inpatient regression test in
-// attainRevenue.test.ts.
+// attainRevenue.test.ts / attainInpatientRevenue.test.ts /
+// attainWorkforce.test.ts / attainQuality.test.ts). No goal currently
+// reaches the generic leave-one-out architecture at all - it is kept only as
+// a fallback shape for a future goal that doesn't get its own bespoke chain.
 const GOAL_IDS_CHANNEL: GoalId[] = [];
 
 // One valid (setting, goal) pair per goal, used for the generic property

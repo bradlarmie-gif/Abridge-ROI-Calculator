@@ -14,7 +14,6 @@ import {
 } from "@/lib/attain/attainRevenue";
 import {
   LEVERS,
-  REVENUE_IP_LEVERS,
   leversFor,
   defaultLeverValues,
   computeLeverContributions,
@@ -306,43 +305,26 @@ describe("computeMultiGoalContributions with revenue (outpatient)", () => {
 });
 
 // ────────────────────────────────────────────────────────────────────────
-// INPATIENT REGRESSION - revenue at inpatient must stay on its original,
-// untouched flat-lever model (REVENUE_IP_LEVERS / ipRevenueChannel), never
-// routed through the new three-path chain.
+// INPATIENT REGRESSION - revenue at inpatient is now its OWN, genuinely
+// different three-path decision chain (`attainInpatientRevenue.ts`,
+// DRG accuracy / CDI query efficiency / observation-IP status defense),
+// never the outpatient/ED HCC/E-M/denials chain this file otherwise
+// exercises. Full coverage of that chain lives in
+// attainInpatientRevenue.test.ts; this block only proves the two never
+// cross-contaminate.
 // ────────────────────────────────────────────────────────────────────────
-describe("inpatient revenue regression (unchanged model)", () => {
-  const ipBaseline: AttainBaseline = { providers: 45, annualEncounters: 45 * 400, utilizationPct: 100 };
-
-  it("leversFor(revenue, inpatient) returns the old 4-lever DRG/CDI catalog, not the new 7-row chain catalog", () => {
-    const levers = leversFor("revenue", "inpatient");
-    expect(levers).toBe(REVENUE_IP_LEVERS);
-    expect(levers.map((l) => l.id).sort()).toEqual(["revenueLines", "revenueProtect", "revenueQueryDays", "revenueUptake"].sort());
-  });
-
-  it("leversFor(revenue, outpatient/ED) returns the new chain catalog", () => {
+describe("inpatient revenue is a different chain, not the outpatient/ED one", () => {
+  it("leversFor(revenue, inpatient) is a distinct catalog from outpatient/ED's chain catalog", () => {
+    const ipLevers = leversFor("revenue", "inpatient");
     expect(leversFor("revenue", "outpatient")).toBe(LEVERS.revenue);
     expect(leversFor("revenue", "ed")).toBe(LEVERS.revenue);
+    expect(ipLevers).not.toBe(LEVERS.revenue);
+    expect(ipLevers.map((l) => l.id)).not.toEqual(LEVERS.revenue.map((l) => l.id));
   });
 
-  it("computeLeverContributions still runs the leave-one-out channel architecture for inpatient revenue, and moving a lever still increases totalMargin", () => {
-    const values: LeverValues = {
-      ...defaultLeverValues("revenue", "inpatient"),
-      revenueLines: ["Med-Surg", "ICU"],
-      revenueUptake: 70,
-      revenueQueryDays: 5,
-      revenueProtect: 60,
-    };
-    const result = computeLeverContributions("revenue", "inpatient", ipBaseline, values);
-    expect(result.totalMargin).toBeGreaterThan(0);
-    expect(result.perLever.map((p) => p.id).sort()).toEqual(["revenueLines", "revenueProtect", "revenueQueryDays", "revenueUptake"].sort());
-    for (const lever of REVENUE_IP_LEVERS) {
-      const contribution = result.perLever.find((p) => p.id === lever.id)!;
-      expect(contribution.marginalMargin).toBeGreaterThanOrEqual(0);
-    }
-  });
-
-  it("doing nothing new at inpatient revenue nets ~$0", () => {
+  it("doing nothing new at inpatient revenue nets exactly $0", () => {
+    const ipBaseline: AttainBaseline = { providers: 45, annualEncounters: 45 * 400, utilizationPct: 100 };
     const result = computeLeverContributions("revenue", "inpatient", ipBaseline, defaultLeverValues("revenue", "inpatient"));
-    expect(Math.abs(result.totalMargin)).toBeLessThan(1_000);
+    expect(result.totalMargin).toBe(0);
   });
 });

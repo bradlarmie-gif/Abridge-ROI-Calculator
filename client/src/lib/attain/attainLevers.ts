@@ -1,12 +1,8 @@
-import { computeAllDriverValues, computeAllDriverCalcSummaries } from "@/lib/exploreDriverCalcs";
-import {
-  DEFAULT_EXPLORE_STATE,
-  type ExploreState,
-} from "@/pages/explore/ExploreFlow";
 import type { AttainSetting, GoalId } from "./attainTypes";
 import { computeAccessContributions } from "./attainAccess";
 import { computeEdAccessContributions } from "./attainEdAccess";
 import { computeRevenueContributions } from "./attainRevenue";
+import { computeIpRevenueContributions } from "./attainInpatientRevenue";
 import { computeWorkforceContributions } from "./attainWorkforce";
 import { computeQualityContributions } from "./attainQuality";
 
@@ -121,15 +117,19 @@ import { computeQualityContributions } from "./attainQuality";
  *    `computeRevenueContributions` there; see that module's header for the
  *    full chain and its reconciliation to Explore's `hccPlans`/`wrvu`/
  *    `denials` primitives.
- *  - revenue (inpatient): UNCHANGED — DRG/CDI/obs-defense is a different
- *    mechanism, out of scope for the three-path rebuild above, so it stays
- *    on its original flat, independent-channel model (`REVENUE_IP_LEVERS`
- *    below, dispatched through `ipRevenueChannel`). "act on documented
- *    complexity" sweeps
- *    `ipDrgCustomPercent`; "close queries fast" sweeps `ipCdiRealization`
- *    (the CDI query-cost-avoidance channel, the inpatient analog of a
- *    query); "protect against downcoding" sweeps `ipDrgRealization`
- *    (protecting the captured DRG weight from audit downgrade).
+ *  - revenue (inpatient): its OWN, GENUINELY DIFFERENT three-path decision
+ *    chain, in `attainInpatientRevenue.ts` (`IP_REVENUE_LEVERS` below).
+ *    Inpatient reimbursement is DRG-weight / case-mix based, not
+ *    visit-level E/M coding, so none of outpatient/ED revenue's paths
+ *    (HCC, wRVU, denials) apply here. A partner picks one or more of Case
+ *    Mix / DRG Accuracy (CC/MCC capture), CDI Query Efficiency, and
+ *    Observation / IP Status Defense; each path's own dollar is derived
+ *    from its own gated decisions and reconciles exactly to Explore's
+ *    `ipDrg`/`ipCdi`/`ipObsDefense` primitives, and the three paths simply
+ *    SUM (each is a genuinely separate claim). `computeLeverContributions`
+ *    delegates the whole `goal === "revenue" && setting === "inpatient"`
+ *    case to `computeIpRevenueContributions` there; see that module's
+ *    header for the full chain.
  *  - quality (nursing): rebuilt as an ORDERED DECISION CHAIN (D1 scope +
  *    event-type selection -> D2 close real-time gaps -> D3 tie
  *    deterioration signals to a response -> D4 lift bundle compliance ->
@@ -492,8 +492,9 @@ export const LEVERS: Record<GoalId, Lever[]> = {
   // SCOPE choices (`revenuePaths`, `revenueHccPopulations`) are UI-only, not
   // separately tracked here, the same way access's `accessLines` isn't. See
   // `attainRevenue.ts`'s `REVENUE_LEVER_IDS` and `computeRevenueContributions`
-  // for the engine. Inpatient revenue keeps its own, unrelated catalog -
-  // see `REVENUE_IP_LEVERS` below and `leversFor`.
+  // for the engine. Inpatient revenue is its OWN three-path chain on a
+  // different mechanism (DRG/CDI/obs-defense, not HCC/wRVU/denials) - see
+  // `IP_REVENUE_LEVERS` below and `attainInpatientRevenue.ts`.
   revenue: [
     {
       id: "revenueHccRecapture",
@@ -669,71 +670,161 @@ export const LEVERS: Record<GoalId, Lever[]> = {
 };
 
 /**
- * Inpatient revenue's own, unrelated catalog - DRG accuracy / CDI query
- * reduction, a genuinely different mechanism (documentation-driven case
- * weight and query cost avoidance, not HCC/wRVU/denials) left UNCHANGED on
- * its original flat, independent-channel model. These are the exact same
- * four levers `LEVERS.revenue` held before the outpatient/ED three-path
- * rebuild; only outpatient/ED moved. See `leversFor` for how a caller picks
- * between this and `LEVERS.revenue`, and `ipRevenueChannel` in this file
- * for the engine dispatch.
+ * Inpatient revenue's own, unrelated catalog - Case Mix/DRG Accuracy, CDI
+ * Query Efficiency, and Observation/IP Status Defense, a genuinely
+ * different mechanism from outpatient/ED (documentation-driven case weight
+ * and query/downgrade cost avoidance, not HCC/wRVU/denials). Rebuilt as its
+ * own THREE-PATH decision chain, rendered bespoke on Build the case
+ * (`InpatientRevenueDecisionChain.tsx`), not through the generic lever
+ * renderer - same convention as outpatient/ED revenue. This catalog entry
+ * exists so Commit and the Attainment hub, which walk every goal's
+ * `leversFor` generically, keep working: one row per decision, ids matching
+ * the flat `LeverValues` keys `attainInpatientRevenue.ts` reads directly.
+ * Path SCOPE choice (`ipRevenuePaths`) is UI-only, not separately tracked
+ * here, the same way outpatient revenue's `revenuePaths` isn't. See
+ * `attainInpatientRevenue.ts`'s `IP_REVENUE_LEVER_IDS` and
+ * `computeIpRevenueContributions` for the engine.
  */
-export const REVENUE_IP_LEVERS: Lever[] = [
+export const IP_REVENUE_LEVERS: Lever[] = [
   {
-    id: "revenueLines",
-    label: "Specialties in scope",
-    help: "Each specialty brought into the plan adds its encounter volume to the pool of visits with documented complexity not yet coded.",
-    control: "lines",
-    unit: "specialties",
-    min: 0,
-    max: 4,
-    step: 1,
-    realityStart: [],
-    ownerRole: "Revenue cycle / coding",
-    defaultDue: "Month 1",
-    signal: "Specialties actively brought into the plan",
-  },
-  {
-    id: "revenueUptake",
-    label: "Act on documented complexity in coding",
-    help: "Complexity that is documented but never coded is not revenue. This is the share of the documented detail coding actually acts on.",
+    id: "ipDrgAtRiskRate",
+    label: "Count your current at-risk DRG rate",
+    help: "The share of admissions with documentation gaps large enough to risk grouping at a lower-weight DRG. Your own number, not a benchmark you never checked.",
     control: "percent",
     unit: "%",
     min: 0,
-    max: 100,
-    step: 5,
-    realityStart: 30,
-    ownerRole: "Revenue cycle / coding",
-    defaultDue: "Month 2",
-    signal: "Share of documented complexity coding acts on",
-  },
-  {
-    id: "revenueQueryDays",
-    label: "Close provider queries fast",
-    help: "A query that ages past a week gets answered from memory or dropped. This is the target turnaround, in days.",
-    control: "countPerUnit",
-    unit: "days",
-    min: 1,
-    max: 21,
+    max: 60,
     step: 1,
-    realityStart: 14,
-    ownerRole: "CDI + providers",
-    defaultDue: "Month 2",
-    signal: "Provider query turnaround, in days",
+    realityStart: 0,
+    ownerRole: "CDI / coding leadership",
+    defaultDue: "Month 1",
+    signal: "At-risk DRG rate, measured against this baseline",
   },
   {
-    id: "revenueProtect",
-    label: "Protect against downcoding",
-    help: "A captured level that gets downgraded on appeal never reaches the bank. This is the share of captured levels protected from downcoding.",
+    id: "ipDrgCapture",
+    label: "Set the CC/MCC capture improvement you are committing to",
+    help: "A comorbidity or complication that is documented but never coded specifically enough is not a captured DRG. This is the improvement above today's capture rate this plan commits to.",
+    control: "percent",
+    unit: "pp",
+    min: 0,
+    max: 30,
+    step: 1,
+    realityStart: 0,
+    ownerRole: "CDI + hospitalists",
+    defaultDue: "Month 2",
+    signal: "Case mix index / CC-MCC capture rate",
+  },
+  {
+    id: "ipDrgWeightIncrease",
+    label: "Set the average DRG weight lift",
+    help: "The average DRG weight difference a captured comorbidity or complication actually adds, once coded and accepted.",
+    control: "countPerUnit",
+    unit: "DRG weight",
+    min: 0,
+    max: 1,
+    step: 0.05,
+    realityStart: 0,
+    ownerRole: "Revenue cycle / coding",
+    defaultDue: "Month 1",
+    signal: "Average DRG weight per captured case",
+  },
+  {
+    id: "ipDrgBasePayment",
+    label: "Set the base DRG payment per case",
+    help: "The base payment per case the weight lift above is actually multiplied against, your own contracted rate.",
+    control: "countPerUnit",
+    unit: "$/case",
+    min: 0,
+    max: 20_000,
+    step: 250,
+    realityStart: 0,
+    ownerRole: "Partner finance",
+    defaultDue: "Month 1",
+    signal: "Base DRG payment per case",
+  },
+  {
+    id: "ipCdiQueryRate",
+    label: "Count your current CDI query rate",
+    help: "The share of eligible admissions that generate a physician query today. Your own number, not an assumed one.",
+    control: "percent",
+    unit: "%",
+    min: 0,
+    max: 60,
+    step: 1,
+    realityStart: 0,
+    ownerRole: "CDI leadership",
+    defaultDue: "Month 1",
+    signal: "CDI query volume, measured against this baseline",
+  },
+  {
+    id: "ipCdiReduction",
+    label: "Set the query-closure improvement you are targeting",
+    help: "A query that ages past discharge gets answered from memory or dropped. This is the share of today's queries this plan commits to closing before that happens.",
     control: "percent",
     unit: "%",
     min: 0,
     max: 100,
     step: 5,
     realityStart: 0,
-    ownerRole: "Billing",
-    defaultDue: "Month 3",
-    signal: "Share of captured levels protected from downcoding",
+    ownerRole: "CDI + providers",
+    defaultDue: "Month 2",
+    signal: "CDI query rate",
+  },
+  {
+    id: "ipCdiCostPerQuery",
+    label: "Set the avoided cost per query",
+    help: "The dollar every avoided or resolved query actually protects, your own number.",
+    control: "countPerUnit",
+    unit: "$/query",
+    min: 0,
+    max: 500,
+    step: 10,
+    realityStart: 0,
+    ownerRole: "Revenue cycle",
+    defaultDue: "Month 1",
+    signal: "Cost avoided per closed query",
+  },
+  {
+    id: "ipObsDenialRate",
+    label: "Count your current observation downgrade rate",
+    help: "The share of eligible admissions downgraded from inpatient to observation status today. Your own number, not a benchmark you never checked.",
+    control: "percent",
+    unit: "%",
+    min: 0,
+    max: 30,
+    step: 1,
+    realityStart: 0,
+    ownerRole: "Case management / utilization review",
+    defaultDue: "Month 1",
+    signal: "Observation downgrade volume, measured against this baseline",
+  },
+  {
+    id: "ipObsPreventable",
+    label: "Set the preventable share you are targeting",
+    help: "A downgrade driven by documentation that under-specified severity of illness is preventable. This is the share cleaner documentation actually prevents, above today's zero.",
+    control: "percent",
+    unit: "%",
+    min: 0,
+    max: 100,
+    step: 5,
+    realityStart: 0,
+    ownerRole: "Case management / CDI",
+    defaultDue: "Month 2",
+    signal: "Observation downgrade rate",
+  },
+  {
+    id: "ipObsRevenueDelta",
+    label: "Set the revenue delta per defended case",
+    help: "The dollar an inpatient status successfully defended is worth over an observation stay, your own contracted rate.",
+    control: "countPerUnit",
+    unit: "$/case",
+    min: 0,
+    max: 20_000,
+    step: 250,
+    realityStart: 0,
+    ownerRole: "Partner finance",
+    defaultDue: "Month 1",
+    signal: "Revenue delta per defended case",
   },
 ];
 
@@ -854,13 +945,14 @@ export const ED_ACCESS_LEVERS: Lever[] = [
  * at ED is a genuinely different LWBS/throughput mechanism
  * (`ED_ACCESS_LEVERS`) from outpatient's schedule-capacity model
  * (`LEVERS.access`); revenue's outpatient/ED get the three-path chain
- * (`LEVERS.revenue`), inpatient keeps its own untouched DRG/CDI model
- * (`REVENUE_IP_LEVERS`). `setting` is optional so every existing
- * non-setting-aware call site keeps compiling; omitting it for access or
- * revenue defaults to the (more common) outpatient catalog. */
+ * (`LEVERS.revenue`), inpatient gets its OWN three-path chain
+ * (`IP_REVENUE_LEVERS`) — a different mechanism, not the same catalog. See
+ * `attainInpatientRevenue.ts`'s module header. `setting` is optional so
+ * every existing non-setting-aware call site keeps compiling; omitting it
+ * for access or revenue defaults to the (more common) outpatient catalog. */
 export function leversFor(goal: GoalId, setting?: AttainSetting): Lever[] {
   if (goal === "access" && setting === "ed") return ED_ACCESS_LEVERS;
-  if (goal === "revenue" && setting === "inpatient") return REVENUE_IP_LEVERS;
+  if (goal === "revenue" && setting === "inpatient") return IP_REVENUE_LEVERS;
   return LEVERS[goal];
 }
 
@@ -913,17 +1005,11 @@ export function lineOptions(goal: GoalId, setting: AttainSetting): string[] {
   return presetsFor(setting, goal);
 }
 
-function linesFraction(setting: AttainSetting, goal: GoalId, selected: string[]): number {
-  const presets = presetsFor(setting, goal);
-  if (presets.length === 0) return 0;
-  const valid = selected.filter((s) => presets.includes(s));
-  return Math.min(1, valid.length / presets.length);
-}
-
 // ────────────────────────────────────────────────────────────────────────
 // Baseline helpers - turn the partner's operational baseline into the
-// numbers each channel needs, falling back to the original illustrative
-// constants whenever a field is missing.
+// numbers the (now-unreachable, see `channelValue` below) generic channel
+// architecture needs, falling back to the original illustrative constants
+// whenever a field is missing.
 // ────────────────────────────────────────────────────────────────────────
 
 /** How many providers/beds/FTEs are "in scope" for a given (setting, goal)
@@ -938,85 +1024,7 @@ function baselineUnits(setting: AttainSetting, goal: GoalId, baseline: AttainBas
   return Math.max(0, Math.round(baseline.providers ?? 0));
 }
 
-/** Real encounters-per-unit ratio from the partner's own baseline
- * (annualEncounters / providers), or the fallback illustrative rate this
- * channel used before baseline entry existed. */
-function effectiveEncountersPerUnit(baseline: AttainBaseline, fallback: number): number {
-  const providers = baseline.providers ?? 0;
-  const encounters = baseline.annualEncounters ?? 0;
-  return providers > 0 && encounters > 0 ? encounters / providers : fallback;
-}
-
-/** Fraction of encounters/patient-days actually reachable today, from the
- * partner's own utilization/adoption entry. Defaults to 100% (no
- * reduction) when the partner hasn't entered one, so a lever never
- * silently shrinks before the Scope step is filled in. */
-function utilizationFraction(baseline: AttainBaseline, fallbackPct = 100): number {
-  const pct = baseline.utilizationPct ?? fallbackPct;
-  return Math.min(1, Math.max(0, pct / 100));
-}
-
-/** Compact "$480K" style money for embedding at the end of a formula
- * string. Local to this module so a formula never depends on a UI
- * formatter living elsewhere. */
-function fmtMoneyCompact(n: number): string {
-  const sign = n < 0 ? "-" : "";
-  const abs = Math.abs(n);
-  if (abs >= 1_000_000) return `${sign}$${(abs / 1_000_000).toFixed(abs % 1_000_000 === 0 ? 0 : 1)}M`;
-  if (abs >= 1_000) return `${sign}$${Math.round(abs / 1_000)}K`;
-  return `${sign}$${Math.round(abs)}`;
-}
-
 const NO_MOVE_FORMULA = "Move this decision above reality to see the math.";
-
-/** Builds the printed formula for a driver field from the same
- * `computeAllDriverCalcSummaries` helper the rest of the app already uses
- * for its "THE MATH" panels, appending the resulting dollar figure so the
- * printed line always reads as a complete derivation, not just factors. */
-function formulaFor(summaries: Record<string, string>, key: string, margin: number): string {
-  const base = summaries[key];
-  if (!base || margin <= 0) return NO_MOVE_FORMULA;
-  return `${base} = ~${fmtMoneyCompact(margin)}`;
-}
-
-// ────────────────────────────────────────────────────────────────────────
-// Shared helpers
-// ────────────────────────────────────────────────────────────────────────
-
-function asNum(raw: number | string[] | undefined): number {
-  return typeof raw === "number" ? raw : 0;
-}
-
-/** Rounds to one decimal. Several levers compute a percent-of-a-percent
- * (e.g. a 0-100% slider scaled against a setting's ceiling) which is prone
- * to binary floating-point noise (0.6 * 9 = 5.399999999999999...). Since
- * this value gets printed verbatim in the lever's "THE MATH" formula, it is
- * rounded once, right where it's derived, rather than let the noise reach
- * the printed line. */
-function round1(n: number): number {
-  return Math.round(n * 10) / 10;
-}
-
-function asLines(raw: number | string[] | undefined): string[] {
-  return Array.isArray(raw) ? raw : [];
-}
-
-function mkState(setting: AttainSetting): ExploreState {
-  return {
-    ...DEFAULT_EXPLORE_STATE,
-    careSetting: setting,
-    timeDriverInputs: { ...DEFAULT_EXPLORE_STATE.timeDriverInputs },
-    docQualityInputs: { ...DEFAULT_EXPLORE_STATE.docQualityInputs },
-  };
-}
-
-/** Days -> realization %. Fewer days (faster query turnaround) survives as
- * a higher realization of the coded/DRG lift; this is the one lever whose
- * raw value improves by going DOWN, so the mapping is inverted here. */
-function realizationFromDays(days: number): number {
-  const clamped = Math.min(21, Math.max(1, days));
-  return Math.max(0, Math.min(100, 100 - clamped * 4));
-}
 
 interface ChannelValue {
   margin: number;
@@ -1040,127 +1048,43 @@ const ZERO: ChannelValue = { margin: 0, count: 0, formula: NO_MOVE_FORMULA };
 // for the same reason ACCESS is excluded (see above): D2-D5 combine through
 // a joint composite impact, not independent parallel channels.
 
-// ────────────────────────────────────────────────────────────────────────
-// REVENUE channels — INPATIENT ONLY. Outpatient/ED revenue is now the
-// three-path decision chain in `attainRevenue.ts` (`computeRevenueContributions`),
-// dispatched directly from `computeLeverContributions` above, so it never
-// reaches this leave-one-out architecture at all. What remains here
-// (`drgValue`/`cdiValue`/`ipRevenueChannel`) is inpatient's own, untouched
-// DRG/CDI model.
-// ────────────────────────────────────────────────────────────────────────
-
-function drgValue(eff: number, protectPct: number, realizationPct: number, baseline: AttainBaseline): ChannelValue {
-  if (eff <= 0 || protectPct <= 0 || realizationPct <= 0) return ZERO;
-  const perUnitEncounters = effectiveEncountersPerUnit(baseline, 180);
-  const util = utilizationFraction(baseline);
-  const annualEncounters = Math.round(eff * perUnitEncounters * util);
-  const state: ExploreState = {
-    ...mkState("inpatient"),
-    numberOfProviders: eff,
-    annualEncounters,
-    utilizationPercent: 100,
-    docQualityInputs: {
-      ...DEFAULT_EXPLORE_STATE.docQualityInputs,
-      ipDrgEnabled: true,
-      ipDrgScenario: "custom",
-      ipDrgCustomPercent: protectPct,
-      ipDrgAtRiskRate: 35,
-      ipDrgWeightIncrease: 0.35,
-      ipDrgBasePayment: 6_500,
-      ipDrgRealization: realizationPct,
-    },
-  };
-  const values = computeAllDriverValues(state, 0);
-  const summaries = computeAllDriverCalcSummaries(state, 0);
-  const atRisk = annualEncounters * 0.35;
-  const cases = Math.round(atRisk * (protectPct / 100));
-  const margin = values.drgAccuracy ?? 0;
-  return { margin, count: cases, formula: formulaFor(summaries, "drgAccuracy", margin) };
-}
-
-function cdiValue(eff: number, cdiPct: number, realizationPct: number, baseline: AttainBaseline): ChannelValue {
-  if (eff <= 0 || cdiPct <= 0 || realizationPct <= 0) return ZERO;
-  const perUnitEncounters = effectiveEncountersPerUnit(baseline, 180);
-  const util = utilizationFraction(baseline);
-  const annualEncounters = Math.round(eff * perUnitEncounters * util);
-  const state: ExploreState = {
-    ...mkState("inpatient"),
-    numberOfProviders: eff,
-    annualEncounters,
-    utilizationPercent: 100,
-    docQualityInputs: {
-      ...DEFAULT_EXPLORE_STATE.docQualityInputs,
-      ipCdiEnabled: true,
-      ipCdiScenario: "custom",
-      ipCdiCustomPercent: cdiPct,
-      ipCdiQueryRate: 30,
-      ipCdiCostPerQuery: 50,
-      ipCdiRealization: realizationPct,
-    },
-  };
-  const values = computeAllDriverValues(state, 0);
-  const summaries = computeAllDriverCalcSummaries(state, 0);
-  const queries = annualEncounters * 0.3;
-  const closed = Math.round(queries * (cdiPct / 100));
-  const margin = values.cdiQueryReduction ?? 0;
-  return { margin, count: closed, formula: formulaFor(summaries, "cdiQueryReduction", margin) };
-}
-
-function ipRevenueChannel(units: number, leverId: string, raw: number | string[] | undefined, baseline: AttainBaseline): ChannelValue {
-  switch (leverId) {
-    case "revenueLines": {
-      const fraction = linesFraction("inpatient", "revenue", asLines(raw));
-      return drgValue(Math.round(units * fraction), 15, 50, baseline);
-    }
-    case "revenueUptake":
-      return drgValue(Math.round(units * 0.5), round1((asNum(raw) / 100) * 25), 50, baseline);
-    case "revenueQueryDays":
-      return cdiValue(Math.round(units * 0.5), 25, realizationFromDays(asNum(raw)), baseline);
-    case "revenueProtect":
-      return drgValue(Math.round(units * 0.5), 15, asNum(raw), baseline);
-    default:
-      return ZERO;
-  }
-}
-
-/** Only ever called for setting === "inpatient" — see `computeLeverContributions`'s
- * early return for revenue at outpatient/ED, which never reaches
- * `channelValue`/this dispatcher at all. */
-function revenueChannel(
-  setting: AttainSetting,
-  units: number,
-  leverId: string,
-  raw: number | string[] | undefined,
-  baseline: AttainBaseline,
-): ChannelValue {
-  return setting === "inpatient" ? ipRevenueChannel(units, leverId, raw, baseline) : ZERO;
-}
+// REVENUE (every setting) no longer runs through this leave-one-out channel
+// architecture either — outpatient/ED delegate whole to
+// `computeRevenueContributions` (`attainRevenue.ts`) and inpatient delegates
+// whole to `computeIpRevenueContributions` (`attainInpatientRevenue.ts`),
+// both dispatched directly from `computeLeverContributions` below, for the
+// same reason ACCESS/RETENTION are excluded above: each is a gated decision
+// chain (or, for revenue, several chosen paths summed), not independent
+// parallel percent/count channels.
 
 // QUALITY is no longer an independent-channel goal - it is a decision chain,
 // computed by `computeQualityContributions` in `attainQuality.ts` and wired
 // directly into `computeLeverContributions` below, for the same reason
-// access/retention/revenue(outpatient/ED) are excluded (see above): the
-// targeted event types are selected in D1 and their dollars are summed, not
-// swept as independent parallel channels.
+// access/retention/revenue are excluded (see above): the targeted event
+// types are selected in D1 and their dollars are summed, not swept as
+// independent parallel channels.
 
 // ────────────────────────────────────────────────────────────────────────
 // Combined contribution math
 // ────────────────────────────────────────────────────────────────────────
 
+/** Every current goal is dispatched to its own bespoke decision-chain
+ * module before reaching `computeLeverContributions`'s generic branch below
+ * (see that function's own comment), so no goal currently routes through
+ * this independent-channel architecture. Kept as a `ZERO`-returning stub,
+ * along with the generic `engineValue` sweep below, only so a future goal
+ * added without its own bespoke chain has a fallback shape that compiles
+ * and behaves sanely (every lever contributing exactly $0) rather than
+ * missing entirely. */
 function channelValue(
-  goal: GoalId,
-  setting: AttainSetting,
-  units: number,
-  leverId: string,
-  raw: number | string[] | undefined,
-  baseline: AttainBaseline,
+  _goal: GoalId,
+  _setting: AttainSetting,
+  _units: number,
+  _leverId: string,
+  _raw: number | string[] | undefined,
+  _baseline: AttainBaseline,
 ): ChannelValue {
-  switch (goal) {
-    case "revenue":
-      return revenueChannel(setting, units, leverId, raw, baseline);
-    default:
-      return ZERO;
-  }
+  return ZERO;
 }
 
 /**
@@ -1176,12 +1100,14 @@ function channelValue(
  * demand, and margin are jointly dependent through a MIN, not independent
  * parallel channels a leave-one-out subtraction could isolate cleanly.
  *
- * REVENUE at outpatient/ED is the second goal excluded - it delegates whole
- * to `computeRevenueContributions` (`attainRevenue.ts`), because its three
- * paths (Risk Adjustment / E/M / Denials) are each their own gated
- * sub-chain, not single independent percent/count channels. Revenue at
- * INPATIENT is unaffected and still runs the leave-one-out architecture
- * below, against `REVENUE_IP_LEVERS` (via `leversFor`).
+ * REVENUE is the second goal excluded, at EVERY setting - outpatient/ED
+ * delegates whole to `computeRevenueContributions` (`attainRevenue.ts`,
+ * three paths: Risk Adjustment / E/M / Denials); inpatient delegates whole
+ * to `computeIpRevenueContributions` (`attainInpatientRevenue.ts`, its own
+ * three paths: Case Mix/DRG Accuracy / CDI Query Efficiency / Observation-
+ * IP Status Defense, a genuinely different mechanism). Both are gated
+ * decision chains whose chosen paths simply sum, not independent percent/
+ * count channels a leave-one-out subtraction could isolate cleanly.
  *
  * RETENTION / WORKFORCE (every setting) is the third goal excluded - it
  * delegates whole to `computeWorkforceContributions` (`attainWorkforce.ts`),
@@ -1202,7 +1128,7 @@ export function computeLeverContributions(
   values: LeverValues,
 ): LeverContributionsResult {
   if (goal === "access") return setting === "ed" ? computeEdAccessContributions(baseline, values) : computeAccessContributions(baseline, values);
-  if (goal === "revenue" && setting !== "inpatient") return computeRevenueContributions(baseline, setting, values);
+  if (goal === "revenue") return setting === "inpatient" ? computeIpRevenueContributions(baseline, values) : computeRevenueContributions(baseline, setting, values);
   if (goal === "retention") return computeWorkforceContributions(baseline, setting, values);
   if (goal === "quality") return computeQualityContributions(baseline, values);
 
