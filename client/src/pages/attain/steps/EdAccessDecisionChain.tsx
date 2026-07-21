@@ -7,16 +7,27 @@ import { realizedValue, formulaWithRealization, type LeverValues } from "@/lib/a
 import type { AttainBaseline } from "@/lib/attain/attainLevers";
 import {
   computeEdAccessChain,
-  revenuePerVisitFor,
+  marginPerVisitFor,
   admissionMarginFor,
-  edAccessCeilingPlainPhrase,
+  admissionRealizationFor,
+  edAccessBindingPlainPhrase,
   DEFAULT_ED_ACCESS_MINUTES_SAVED_PER_NOTE,
   DEFAULT_ED_ACCESS_LWBS_RATE,
+  DEFAULT_ED_ACCESS_HOURS_PER_RECOVERY,
 } from "@/lib/attain/attainEdAccess";
 import type { AttainSetting } from "@/lib/attain/attainTypes";
 
 function asNum(raw: number | string[] | undefined): number {
   return typeof raw === "number" ? raw : 0;
+}
+
+/** Unlike `asNum` (which collapses "unset" and "explicitly 0" to the same
+ * displayed 0), minutes-saved needs to distinguish the two so a partner who
+ * deliberately types 0 sees 0, not a silent snap back to the benchmark -
+ * see attainEdAccess.ts's `computeEdAccessChain` for the matching engine
+ * fix (the counterfactual this preserves). */
+function numOrDefault(raw: number | string[] | undefined, fallback: number): number {
+  return typeof raw === "number" ? raw : fallback;
 }
 
 function fmtInt(n: number): string {
@@ -84,10 +95,10 @@ function CountOutput({ label, value, unit, testid }: { label: string; value: str
   );
 }
 
-/** One stat in the D4 plain-language result block - pool, target, or
- * realized, side by side. Never a dollar figure (D1-D4 rule); `emphasize`
- * marks the realized figure, the actual answer to "how many patients do we
- * get back." Mirrors AccessDecisionChain.tsx's `ResultStat`. */
+/** One stat in the D4 plain-language result block - the pool, the freed-time
+ * capacity, or realized, side by side. Never a dollar figure (D1-D4 rule);
+ * `emphasize` marks the realized figure, the actual answer to "how many
+ * patients do we get back." Mirrors AccessDecisionChain.tsx's `ResultStat`. */
 function ResultStat({
   label,
   hint,
@@ -151,18 +162,20 @@ function MathBox({ formula, testid }: { formula: string; testid: string }) {
 
 /**
  * Build the case, ED ACCESS - a bespoke ordered decision chain, matching
- * outpatient access's chain bar (`AccessDecisionChain.tsx`) rather than the
- * generic flat lever renderer, but a GENUINELY DIFFERENT mechanism: ED
- * access is about recovering patients who left without being seen (LWBS)
- * and capturing the downstream admissions some of them become, not opening
- * new schedule capacity. Money is realized recovered visits x revenue/visit
- * plus captured admissions x admission margin, and realized recovery is
- * capped to the recoverable LWBS pool (the ceiling), so no dollar figure
- * can exist until scope (D1), worth (D2), AND the pool/reduction target
- * (D3/D4) are all real - D1-D4 below show providers, visits, or patients,
- * never a dollar. D5 is the one place a dollar first appears, derived from
- * the other three, never invented. See `attainEdAccess.ts`'s module header
- * for the full chain and its reconciliation to Explore's
+ * outpatient access's chain bar (`AccessDecisionChain.tsx`) in SHAPE (a
+ * mechanically derived capacity vs. an independently sourced ceiling, MIN'd
+ * together) but priced on a genuinely different mechanism: ED access is
+ * about recovering patients who left without being seen (LWBS) and
+ * capturing the downstream admissions some of them become, not opening new
+ * schedule capacity. D3 mechanically converts freed charting time into a
+ * throughput commitment (never a free-typed outcome); D4 pits that
+ * mechanical number against the recoverable LWBS pool - a genuinely
+ * independent ceiling, MIN'd the same way outpatient MINs capacity against
+ * demand - then applies the admission share and its own bed/payer
+ * realization cap. D1-D4 below show providers, hours, or patients, never a
+ * dollar. D5 is the one place a dollar first appears, derived from the
+ * other three, never invented. See `attainEdAccess.ts`'s module header for
+ * the full chain, its CHANGELOG, and its reconciliation to Explore's
  * `edLwbs`/`admissionCapture` primitives.
  */
 export default function EdAccessDecisionChain({ setting, baseline, values, onChangeValue, realizationPct }: EdAccessDecisionChainProps) {
@@ -170,7 +183,7 @@ export default function EdAccessDecisionChain({ setting, baseline, values, onCha
   const requestedProviders = asNum(values.edAccessProviders);
 
   const chain = computeEdAccessChain(baseline, values);
-  const { scope, pool, recovery, payoff, formulas } = chain;
+  const { scope, mechanism, pool, recovery, payoff, formulas } = chain;
   const realizedPayoffValue = realizedValue(payoff.value, realizationPct);
   const payoffFormulaDisplay = payoff.value > 0
     ? formulaWithRealization(formulas.payoff, realizationPct, realizedPayoffValue)
@@ -211,26 +224,26 @@ export default function EdAccessDecisionChain({ setting, baseline, values, onCha
       <DecisionCard
         step="D2"
         title="What an ED visit, and a downstream admission, are worth"
-        help="Two different dollars: the visit itself, and whatever a recovered patient becomes if they are admitted. Priced separately because they are not the same claim. Still no dollar total, there is no recovery decided yet."
+        help="Contribution margin, not charges - what a recovered visit is actually worth on an already-staffed shift, and separately, whatever a recovered patient becomes if they are admitted. Priced separately because they are not the same claim. Still no dollar total, there is no recovery decided yet."
         testid="card-ed-access-d2"
       >
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <FieldLabel
-              tip="Revenue booked per recovered ED visit. Benchmarked, but your own number, not an assumed one."
-              testid="tooltip-ed-access-revenue-per-visit"
+              tip="Contribution margin booked per recovered ED visit - revenue minus the variable cost of delivering it, not gross charges. Benchmarked, but your own number."
+              testid="tooltip-ed-access-margin-per-visit"
             >
-              Revenue per recovered visit
+              Contribution margin per recovered visit
             </FieldLabel>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8C8C8C] text-sm pointer-events-none">$</span>
               <NumberField
-                value={revenuePerVisitFor(values)}
-                onValueChange={(v) => onChangeValue("edAccessRevenuePerVisit", v)}
+                value={marginPerVisitFor(values)}
+                onValueChange={(v) => onChangeValue("edAccessMarginPerVisit", v)}
                 min={0}
                 decimal={false}
                 className="h-11 w-full rounded-md border border-[#E5E5E5] bg-white pl-7 pr-3 text-sm"
-                data-testid="input-ed-access-revenue-per-visit"
+                data-testid="input-ed-access-margin-per-visit"
               />
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8C8C8C] text-xs pointer-events-none">/visit</span>
             </div>
@@ -261,19 +274,19 @@ export default function EdAccessDecisionChain({ setting, baseline, values, onCha
       <DecisionCard
         step="D3"
         title="Convert freed time to faster throughput"
-        help="Minutes saved on the note buys a faster door-to-provider time, which is what actually keeps a patient from leaving before being seen. Set your current LWBS rate and the reduction this plan targets. Output is in recovered patients, still no dollars."
+        help="Freed documentation time is the only thing that mechanically buys a faster door-to-provider time here. A share of it is committed to throughput; the rest stays protected relief. Output is in patients, still no dollars."
         testid="card-ed-access-d3"
       >
         <div className="flex flex-wrap gap-6 mb-4">
           <div className="w-[160px]">
             <FieldLabel
-              tip="How many minutes of documentation Abridge saves on the average note. Context for the door-to-provider story, not itself a multiplier in the payoff below."
+              tip="How many minutes of documentation Abridge saves on the average ED note. A real, editable input - zero here mechanically zeroes recovery below, at any throughput share."
               testid="tooltip-ed-access-minutes-saved"
             >
               Minutes saved per note
             </FieldLabel>
             <NumberField
-              value={asNum(values.edAccessMinutesSaved) > 0 ? asNum(values.edAccessMinutesSaved) : DEFAULT_ED_ACCESS_MINUTES_SAVED_PER_NOTE}
+              value={numOrDefault(values.edAccessMinutesSaved, DEFAULT_ED_ACCESS_MINUTES_SAVED_PER_NOTE)}
               onValueChange={(v) => onChangeValue("edAccessMinutesSaved", v)}
               min={0}
               max={60}
@@ -282,84 +295,103 @@ export default function EdAccessDecisionChain({ setting, baseline, values, onCha
               data-testid="input-ed-access-minutes-saved"
             />
           </div>
-          <div className="w-[200px]">
+          <div className="w-[220px]">
             <FieldLabel
-              tip="The rate the recoverable pool is measured against. Your own number, not a benchmark you never checked."
-              testid="tooltip-ed-access-lwbs-rate"
+              tip="How many provider-hours of committed, expedited attention it typically takes to bring back one patient who would otherwise have left. A real, editable assumption - shorten it and the same freed hours convert to more recovered patients."
+              testid="tooltip-ed-access-hours-per-recovery"
             >
-              Your current LWBS rate
+              Hours of throughput time / recovered patient
             </FieldLabel>
-            <div className="relative">
-              <NumberField
-                value={asNum(values.edAccessLwbsRate) > 0 ? asNum(values.edAccessLwbsRate) : DEFAULT_ED_ACCESS_LWBS_RATE}
-                onValueChange={(v) => onChangeValue("edAccessLwbsRate", v)}
-                min={0}
-                max={50}
-                decimal={false}
-                className="h-11 w-full rounded-md border border-[#E5E5E5] bg-white px-3 pr-9 text-sm"
-                data-testid="input-ed-access-lwbs-rate"
-              />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8C8C8C] text-sm pointer-events-none">%</span>
-            </div>
+            <NumberField
+              value={asNum(values.edAccessHoursPerRecovery) > 0 ? asNum(values.edAccessHoursPerRecovery) : DEFAULT_ED_ACCESS_HOURS_PER_RECOVERY}
+              onValueChange={(v) => onChangeValue("edAccessHoursPerRecovery", v)}
+              min={0.25}
+              max={8}
+              decimal={true}
+              className="h-11 w-full rounded-md border border-[#E5E5E5] bg-white px-3 text-sm"
+              data-testid="input-ed-access-hours-per-recovery"
+            />
           </div>
         </div>
 
         <div className="mb-4">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm text-[#8C8C8C] flex items-center gap-1.5">
-              LWBS reduction this plan targets
+              Share of freed time committed to throughput (vs relief)
               <InfoTip
-                text="The share of the recoverable pool this plan commits to bringing back, driven by how much faster door-to-provider time the freed minutes above buy. This is the one decision that turns freed time into recovered patients."
-                testid="tooltip-ed-access-reduction"
+                text="The portion of the time Abridge frees up that gets committed to faster door-to-provider throughput, instead of staying as protected relief for the provider. This is the one decision that mechanically turns freed time into recovered patients - not a target typed directly."
+                testid="tooltip-ed-access-throughput-share"
               />
             </span>
-            <span className="text-sm font-semibold text-[#1A1A1A]" data-testid="text-ed-access-reduction-value">
-              {Math.round(recovery.reductionPct)}%
+            <span className="text-sm font-semibold text-[#1A1A1A]" data-testid="text-ed-access-throughput-share-value">
+              {Math.round(asNum(values.edAccessThroughputShare))}%
             </span>
           </div>
           <Slider
-            value={[recovery.reductionPct]}
-            onValueChange={(v) => onChangeValue("edAccessLwbsReduction", v[0])}
+            value={[asNum(values.edAccessThroughputShare)]}
+            onValueChange={(v) => onChangeValue("edAccessThroughputShare", v[0])}
             min={0}
             max={100}
             step={5}
             accent="coral"
             className="w-full"
-            data-testid="slider-ed-access-reduction"
+            data-testid="slider-ed-access-throughput-share"
           />
         </div>
 
-        <CountOutput label="Targeted recovered patients" value={fmtInt(recovery.targetedRecovered)} unit="patients/yr" testid="text-ed-access-d3-output" />
+        <CountOutput label="Mechanically enabled recovery" value={fmtInt(mechanism.mechanicallyEnabledRecovered)} unit="patients/yr" testid="text-ed-access-d3-output" />
+        <MathBox formula={formulas.mechanism} testid="text-ed-access-d3-formula" />
         <p className="text-[11px] text-[#8C8C8C] mt-2">
-          ~{fmtInt(recovery.freedHoursTotal)} freed provider-hours/yr behind that door-to-provider story, at {recovery.minutesSavedPerNote} min saved/note.
+          ~{fmtInt(mechanism.freedHoursTotal)} freed provider-hours/yr at {mechanism.minutesSavedPerNote} min saved/note, {Math.round(mechanism.throughputSharePct)}% committed to throughput.
         </p>
       </DecisionCard>
 
       <DecisionCard
         step="D4"
         title="The recoverable pool, the ceiling"
-        help="Your current LWBS rate times ED volume in scope is the pool of patients who actually left without being seen. Realistic recovery can never exceed it. A share of what is recovered becomes a downstream admission."
+        help="Your current LWBS rate times ED volume in scope is the pool of patients who actually left without being seen - a measured fact, completely independent of D3's freed-time math. Realized recovery is the smaller of the pool and what freed time mechanically affords. A share of what is recovered becomes a downstream admission, capped again for bed and payer availability."
         testid="card-ed-access-d4"
       >
+        <div className="mb-4 max-w-[220px]">
+          <FieldLabel
+            tip="The rate the recoverable pool is measured against. Your own number, not a benchmark you never checked."
+            testid="tooltip-ed-access-lwbs-rate"
+          >
+            Your current LWBS rate
+          </FieldLabel>
+          <div className="relative">
+            <NumberField
+              value={asNum(values.edAccessLwbsRate) > 0 ? asNum(values.edAccessLwbsRate) : DEFAULT_ED_ACCESS_LWBS_RATE}
+              onValueChange={(v) => onChangeValue("edAccessLwbsRate", v)}
+              min={0}
+              max={50}
+              decimal={false}
+              className="h-11 w-full rounded-md border border-[#E5E5E5] bg-white px-3 pr-9 text-sm"
+              data-testid="input-ed-access-lwbs-rate"
+            />
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8C8C8C] text-sm pointer-events-none">%</span>
+          </div>
+        </div>
+
         <div className="rounded-lg bg-[#F8F5F1] p-4 mb-4" data-testid="panel-ed-access-d4-result">
           <p className="text-[10px] font-bold uppercase tracking-wide text-[#8C8C8C] mb-3">The result</p>
           <div className="grid grid-cols-3 gap-3 mb-4">
             <ResultStat label="The recoverable pool" hint="Current rate × visits in scope" value={fmtInt(pool.poolVisits)} unit="patients/yr" testid="text-ed-access-d4-pool" />
-            <ResultStat label="Targeted recovery" hint="From D3" value={fmtInt(recovery.targetedRecovered)} unit="patients/yr" testid="text-ed-access-d4-target" />
+            <ResultStat label="Freed-time capacity" hint="From D3" value={fmtInt(mechanism.mechanicallyEnabledRecovered)} unit="patients/yr" testid="text-ed-access-d4-mechanical" />
             <ResultStat
               label="Realized recovered visits"
-              hint="Never above the pool"
+              hint="The smaller of the two"
               value={fmtInt(recovery.realizedRecovered)}
               unit="visits/yr"
               emphasize
               testid="text-ed-access-d4-realized"
             />
           </div>
-          <p className="text-[13.5px] text-[#1A1A1A] font-semibold flex items-center gap-1.5" data-testid="text-ed-access-d4-ceiling-phrase">
-            {edAccessCeilingPlainPhrase(pool.poolVisits, recovery.targetedRecovered, recovery.realizedRecovered)}
+          <p className="text-[13.5px] text-[#1A1A1A] font-semibold flex items-center gap-1.5" data-testid="text-ed-access-d4-binding">
+            {edAccessBindingPlainPhrase(recovery.binding)}
             <InfoTip
-              text="Realized recovery can never be more than the pool. A reduction target beyond 100% of the pool is not possible, and the pool itself is the hard ceiling on every patient this plan can bring back."
-              testid="tooltip-ed-access-d4-ceiling"
+              text="Realized recovery can never be more than either side. The pool is a measured fact, independent of the freed-time math above - whichever number is smaller sets the real ceiling, the same MIN discipline outpatient access uses for capacity vs. demand."
+              testid="tooltip-ed-access-d4-binding"
             />
           </p>
         </div>
@@ -367,8 +399,8 @@ export default function EdAccessDecisionChain({ setting, baseline, values, onCha
         <div className="mb-4">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm text-[#8C8C8C] flex items-center gap-1.5">
-              Share of recovered patients who become admissions
-              <InfoTip text="Not every recovered patient is admitted. This is the share of realized recovery, not of the pool, that converts to a downstream admission." testid="tooltip-ed-access-admission-rate" />
+              Share of recovered patients who attempt an admission
+              <InfoTip text="Not every recovered patient is admitted. This is the share of realized recovery, not of the pool, that attempts a downstream admission." testid="tooltip-ed-access-admission-rate" />
             </span>
             <span className="text-sm font-semibold text-[#1A1A1A]" data-testid="text-ed-access-admission-rate-value">
               {Math.round(recovery.admissionRatePct)}%
@@ -386,6 +418,31 @@ export default function EdAccessDecisionChain({ setting, baseline, values, onCha
           />
         </div>
 
+        <div className="mb-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm text-[#8C8C8C] flex items-center gap-1.5">
+              Admission realization (bed / payer availability)
+              <InfoTip
+                text="Not every admission attempt finds an empty bed or a payer-accepted stay. This is the honest cap on the admission leg - bed availability, payer mix - benchmarked but editable to your own number."
+                testid="tooltip-ed-access-admission-realization"
+              />
+            </span>
+            <span className="text-sm font-semibold text-[#1A1A1A]" data-testid="text-ed-access-admission-realization-value">
+              {Math.round(admissionRealizationFor(values))}%
+            </span>
+          </div>
+          <Slider
+            value={[admissionRealizationFor(values)]}
+            onValueChange={(v) => onChangeValue("edAccessAdmissionRealization", v[0])}
+            min={0}
+            max={100}
+            step={5}
+            accent="coral"
+            className="w-full"
+            data-testid="slider-ed-access-admission-realization"
+          />
+        </div>
+
         <CountOutput label="Captured admissions" value={fmtInt(recovery.capturedAdmissions)} unit="admissions/yr" testid="text-ed-access-d4-admissions" />
         <MathBox formula={formulas.recovery} testid="text-ed-access-d4-formula" />
       </DecisionCard>
@@ -399,14 +456,16 @@ export default function EdAccessDecisionChain({ setting, baseline, values, onCha
         <p className="text-[11px] font-bold uppercase tracking-[2px] text-white/50 mb-1.5">D5</p>
         <h3 className="text-lg font-bold text-white mb-2 font-abridge">The payoff</h3>
         <p className="text-[15px] text-white/50 leading-relaxed mb-5 max-w-[620px]">
-          Realized recovered visits x revenue per visit, plus captured admissions x margin per admission. This is the
-          first dollar figure in this chain, derived from the three decisions above, never invented.
+          Realized recovered visits × contribution margin per visit, plus realized captured admissions × margin per
+          admission. Both legs are contribution margin, so this total is honest contribution margin, not a mix of
+          gross revenue and margin. This is the first dollar figure in this chain, derived from the three decisions
+          above, never invented.
         </p>
         <p className="font-abridge text-5xl text-[#EA2C00]" data-testid="text-ed-access-d5-value">
           {fmtMoneyCompact(realizedPayoffValue)}
         </p>
         <p className="text-[15px] text-white/60 mt-2">
-          {fmtInt(recovery.realizedRecovered)} recovered visits × ~${fmtInt(payoff.revenuePerVisit)}/visit + {fmtInt(recovery.capturedAdmissions)} admissions × ~${fmtInt(payoff.admissionMargin)}/admission
+          {fmtInt(recovery.realizedRecovered)} recovered visits × ~${fmtInt(payoff.marginPerVisit)}/visit margin + {fmtInt(recovery.capturedAdmissions)} admissions × ~${fmtInt(payoff.admissionMargin)}/admission margin
         </p>
         <div className="mt-4 bg-white/5 border-l-[3px] border-[#EA2C00] rounded-r-md p-3">
           <p className="text-[10px] font-bold uppercase tracking-wide text-[#EA2C00] mb-1">The math</p>
