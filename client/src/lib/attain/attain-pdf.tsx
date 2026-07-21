@@ -321,7 +321,7 @@ export function buildAttainPdfData(input: AttainPdfInput): AttainPdfData {
     ? [singleContent.thesis1, singleContent.thesis2]
     : [`One plan, built from every decision moved across ${goalDefs.map((g) => g.label).join(", ")}.`];
 
-  const hasFreedTimeConflict = setting === "outpatient" && goals.includes("access") && goals.includes("retention");
+  const hasFreedTimeConflict = (setting === "outpatient" || setting === "ed") && goals.includes("access") && goals.includes("retention");
 
   const priorities: AttainPdfPriority[] = goals.map((goal) => {
     const goalDef = GOAL_CATALOG[goal];
