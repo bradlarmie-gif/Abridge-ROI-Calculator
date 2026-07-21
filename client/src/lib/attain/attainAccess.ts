@@ -427,7 +427,7 @@ export const ACCESS_LEVER_IDS = [
 /**
  * Adapts the D1-D5 chain into the same `LeverContributionsResult` shape
  * every other goal's `computeLeverContributions` returns, so
- * `computeMultiGoalContributions`, `StepCommit`, and `StepPlan` keep
+ * `computeMultiGoalContributions`, `StepCommit`, and `StepAttainment` keep
  * working against access unmodified.
  *
  * Every row's `marginalMargin` is 0 except ONE: whichever decision is the

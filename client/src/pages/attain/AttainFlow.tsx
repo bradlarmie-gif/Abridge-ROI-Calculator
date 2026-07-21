@@ -4,8 +4,8 @@ import StepSetting from "./steps/StepSetting";
 import StepVision from "./steps/StepVision";
 import StepScope from "./steps/StepScope";
 import StepBuildCase from "./steps/StepBuildCase";
-import StepCommit, { type Commitment } from "./steps/StepCommit";
-import StepPlan from "./steps/StepPlan";
+import StepCommit, { type Commitment, type GoalOwner } from "./steps/StepCommit";
+import StepAttainment from "./steps/StepAttainment";
 import AttainLivePanel from "./AttainLivePanel";
 import {
   DEFAULT_ATTAIN_STATE,
@@ -25,6 +25,7 @@ import {
   type LeverValues,
   type MultiGoalContributionsResult,
 } from "@/lib/attain/attainLevers";
+import { leverNumericValue } from "@/lib/attain/attainProgress";
 import type { GoalTargetResult, AttainmentResult } from "@/lib/attain/attainCalc";
 
 /**
@@ -68,7 +69,7 @@ function stepLabelFor(step: AttainStepId, goals: GoalId[]): string {
     case "vision": return "Vision";
     case "scope": return "Starting point";
     case "commit": return "Commit";
-    case "plan": return "Your Plan";
+    case "plan": return "Attainment";
     default: return "";
   }
 }
@@ -132,6 +133,23 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
   const [goals, setGoals] = useState<GoalId[]>([]);
   const [valuesByGoal, setValuesByGoal] = useState<Partial<Record<GoalId, LeverValues>>>({});
   const [commitments, setCommitments] = useState<Record<string, Commitment>>({});
+  // The executive sponsor for EACH selected priority's outcome - collected
+  // once per priority on Commit, above that priority's decisions, since
+  // every decision-owner answers to this person for whether the outcome
+  // lands. Local state, same reasoning as `commitments` below: this is
+  // plan-authoring bookkeeping, not part of the locked `attainTypes.ts`
+  // engine shapes.
+  const [goalOwnerByPriority, setGoalOwnerByPriority] = useState<Partial<Record<GoalId, GoalOwner>>>({});
+  // Attainment hub "Progress" tab state: the partner's own edited current
+  // value per committed decision (key = `${goal}:${leverId}`), and when
+  // each was last touched. This is intentionally LOCAL/SESSION state only -
+  // reloading the page or returning tomorrow resets every current value
+  // back to its baseline. True cross-session persistence (so the hub
+  // remembers progress between visits) needs the save/backend layer, which
+  // is out of scope for this task; when that lands, this is the state to
+  // lift into it.
+  const [progressCurrent, setProgressCurrent] = useState<Record<string, number>>({});
+  const [progressUpdatedAt, setProgressUpdatedAt] = useState<Record<string, number>>({});
   // The partner's real operational baseline (providers/encounters/
   // utilization, or beds/FTEs/census/adoption for nursing) — collected once
   // on the Scope step and threaded into every lever's engine call from
@@ -179,6 +197,9 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
     setGoals([]);
     setValuesByGoal({});
     setCommitments({});
+    setGoalOwnerByPriority({});
+    setProgressCurrent({});
+    setProgressUpdatedAt({});
     setBaseline(defaultBaseline(setting));
     setFreedTimeSplit(DEFAULT_FREED_TIME_SPLIT);
     setState((prev) => ({
@@ -226,12 +247,31 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
     setCommitments((prev) => {
       const key = commitmentKey(goal, leverId);
       const lever = LEVERS[goal].find((l) => l.id === leverId);
+      // `owner` deliberately defaults to "" (not the lever's role) - the
+      // role is only ever a placeholder hint on Commit's owner input, never
+      // a value that reads as if a real name were already typed. Every
+      // downstream display falls back to the role itself when this is
+      // blank.
       const base: Commitment = prev[key] ?? {
-        owner: lever?.ownerRole ?? "",
+        owner: "",
         due: lever?.defaultDue ?? "Month 1",
+        signal: lever?.signal ?? "",
+        baseline: leverNumericValue(lever?.realityStart),
       };
       return { ...prev, [key]: { ...base, ...patch } };
     });
+  }, []);
+
+  const handleChangeGoalOwner = useCallback((goal: GoalId, patch: Partial<GoalOwner>) => {
+    setGoalOwnerByPriority((prev) => ({
+      ...prev,
+      [goal]: { ...(prev[goal] ?? { name: "", title: "" }), ...patch },
+    }));
+  }, []);
+
+  const handleChangeProgressCurrent = useCallback((key: string, value: number) => {
+    setProgressCurrent((prev) => ({ ...prev, [key]: value }));
+    setProgressUpdatedAt((prev) => ({ ...prev, [key]: Date.now() }));
   }, []);
 
   const handleMonthsElapsedChange = useCallback((months: number) => {
@@ -268,7 +308,7 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
   }, [state.setting, baseline]);
 
   // Keeps the legacy `AttainState.scope.unitCount` field (still read by
-  // StepPlan's per-priority "scoped to N providers" line) in sync with the
+  // StepAttainment's per-priority "scoped to N providers" line) in sync with the
   // real baseline, without threading a second unit-count input anywhere -
   // providers for physician settings, staffed beds for nursing.
   useEffect(() => {
@@ -377,7 +417,7 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
       case "scope":
         return { disabled: !isBaselineValid, label: "Continue" };
       case "commit":
-        return { disabled: false, label: "Continue to your plan" };
+        return { disabled: false, label: "Continue to attainment" };
       default:
         return { disabled: false, label: "Continue" };
     }
@@ -439,13 +479,15 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
                 combined={combined}
                 commitments={commitments}
                 onChangeCommitment={handleChangeCommitment}
+                goalOwnerByPriority={goalOwnerByPriority}
+                onChangeGoalOwner={handleChangeGoalOwner}
                 stepNumber={stepIndex + 1}
               />
             )}
 
             {step === "plan" && (
               goals.length > 0 && state.setting && builtTarget && combined ? (
-                <StepPlan
+                <StepAttainment
                   state={state}
                   setting={state.setting}
                   goals={goals}
@@ -454,7 +496,11 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
                   valuesByGoal={valuesByGoal}
                   combined={combined}
                   commitments={commitments}
+                  goalOwnerByPriority={goalOwnerByPriority}
                   freedTimeSplit={freedTimeSplit}
+                  progressCurrent={progressCurrent}
+                  progressUpdatedAt={progressUpdatedAt}
+                  onChangeProgressCurrent={handleChangeProgressCurrent}
                   onMonthsElapsedChange={handleMonthsElapsedChange}
                   stepNumber={stepIndex + 1}
                 />
