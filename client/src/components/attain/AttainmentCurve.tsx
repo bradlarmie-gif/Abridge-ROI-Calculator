@@ -160,7 +160,11 @@ export function AttainmentCurve({
             <circle cx={X1} cy={yGoalCoral} r={7.5} fill="#EA2C00" data-testid="marker-goal" />
             <circle cx={X1} cy={yUsualFinal} r={5} fill="#fff" stroke="#B4B4B4" strokeWidth={2} />
 
-            <text x={Math.min(xToday - 10, X1 - 30)} y={yTodayCoral - 10} textAnchor="end" style={{ font: "600 12px Inter", fill: "#1A1A1A" }}>
+            {/* Right-anchored, so on day one (today essentially equal to the
+                start point — the common Progress-tab case right after
+                committing) it needs a floor, not just a ceiling, or its
+                right-anchored text runs off the left edge of the viewBox. */}
+            <text x={Math.max(120, Math.min(xToday - 10, X1 - 30))} y={yTodayCoral - 10} textAnchor="end" style={{ font: "600 12px Inter", fill: "#1A1A1A" }}>
               Today · {Math.round(hasActual ? lastActual!.pct : pct)}%
             </text>
             <text x={X1 - 10} y={yGoalCoral - 14} textAnchor="end" style={{ font: "700 12px Inter", fill: "#EA2C00" }}>
