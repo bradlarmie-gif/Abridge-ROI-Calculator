@@ -71,6 +71,7 @@ export const DEFAULT_LINE_MARGIN_PER_VISIT: Record<string, number> = {
   Orthopedics: 260,
   "Primary Care": 150,
   Endocrinology: 190,
+  Neurology: 270,
   "Specialty Clinics": 220,
   "General ED": 380,
   "Fast Track": 220,

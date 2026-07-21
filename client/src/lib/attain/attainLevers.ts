@@ -974,7 +974,7 @@ export function defaultLeverValues(goal: GoalId, setting?: AttainSetting): Lever
 
 const LINE_PRESETS: Record<AttainSetting, Partial<Record<GoalId, string[]>>> = {
   outpatient: {
-    access: ["Cardiology", "Orthopedics", "Primary Care", "Endocrinology"],
+    access: ["Primary Care", "Cardiology", "Endocrinology", "Neurology"],
     retention: ["Primary Care", "Cardiology", "Endocrinology", "Specialty Clinics"],
     revenue: ["Cardiology", "Endocrinology", "Primary Care"],
   },
