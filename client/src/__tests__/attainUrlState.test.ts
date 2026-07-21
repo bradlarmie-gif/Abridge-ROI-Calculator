@@ -139,5 +139,51 @@ describe("attainUrlState", () => {
       expect(() => decodeAttain(futurePayload)).not.toThrow();
       expect(decodeAttain(futurePayload)).toBeNull();
     });
+
+    it("returns null for a malformed-but-nonempty v3 commitment (missing requiredSignal), never throwing", () => {
+      const plan = buildSamplePlan();
+      const corrupted = {
+        ...plan,
+        commitments: {
+          ...plan.commitments,
+          // A structurally-valid-but-corrupt commitment - object present,
+          // but its required signal (the field StepAttainment/AttainFlow
+          // read without a fallback) is missing entirely.
+          "access:schedulingWindow": { owner: "Dr. Patel", due: "Month 3", optionalSignals: [] },
+        },
+      };
+      const encoded = LZString.compressToEncodedURIComponent(JSON.stringify(corrupted));
+      expect(() => decodeAttain(encoded)).not.toThrow();
+      expect(decodeAttain(encoded)).toBeNull();
+    });
+
+    it("returns null for a malformed-but-nonempty v3 commitment (requiredSignal missing a field, optionalSignals not an array), never throwing", () => {
+      const plan = buildSamplePlan();
+      const corrupted = {
+        ...plan,
+        commitments: {
+          ...plan.commitments,
+          "retention:turnoverLines": {
+            owner: "",
+            due: "Month 6",
+            // `unit` dropped - a hand-edited or truncated link is still
+            // valid JSON but no longer a well-formed CommitmentSignal.
+            requiredSignal: { id: "retention:turnoverLines:required", label: "Voluntary departures", baseline: "4" },
+            optionalSignals: "not-an-array",
+          },
+        },
+      };
+      const encoded = LZString.compressToEncodedURIComponent(JSON.stringify(corrupted));
+      expect(() => decodeAttain(encoded)).not.toThrow();
+      expect(decodeAttain(encoded)).toBeNull();
+    });
+
+    it("still restores a valid plan's commitments (requiredSignal + optionalSignals) after the deep-validation gate", () => {
+      const plan = buildSamplePlan();
+      const decoded = decodeAttain(encodeAttain(plan));
+      expect(decoded).toEqual(plan);
+      expect(decoded?.commitments["access:schedulingWindow"].requiredSignal.label).toBe("Days to third next available");
+      expect(decoded?.commitments["access:schedulingWindow"].optionalSignals).toHaveLength(1);
+    });
   });
 });

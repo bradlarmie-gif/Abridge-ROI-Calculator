@@ -419,9 +419,16 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
         if (!isLeverMoved(values[lever.id], lever.realityStart)) continue;
         const declKey = commitmentKey(g, lever.id);
         const commitment = commitments[declKey] ?? fallbackCommitment(g, lever.id);
-        const signals = [commitment.requiredSignal, ...commitment.optionalSignals];
+        // Falls back to this decision's own default signal if a corrupt/
+        // legacy save link produced a commitment missing (or malformed)
+        // `requiredSignal` — see attainUrlState.ts's `isWellFormedCommitment`,
+        // which is the real gate, but this stays defensive too.
+        const fallbackSignal = fallbackCommitment(g, lever.id).requiredSignal;
+        const optionalSignals = Array.isArray(commitment.optionalSignals) ? commitment.optionalSignals : [];
+        const signals = [commitment.requiredSignal ?? fallbackSignal, ...optionalSignals];
         for (const sig of signals) {
-          out.push({ key: `${declKey}:${sig.id}`, baseline: parseSignalBaseline(sig.baseline) });
+          const safeSig = sig ?? fallbackSignal;
+          out.push({ key: `${declKey}:${safeSig.id}`, baseline: parseSignalBaseline(safeSig.baseline) });
         }
       }
     }

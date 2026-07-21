@@ -720,15 +720,21 @@ export default function StepAttainment({
     // The required signal is always present; optional signals are whatever
     // the partner has added on top (Commit redesign) — together these are
     // every signal Progress tracks for this decision, with the required one
-    // flagged so it renders as the primary tracked row.
+    // flagged so it renders as the primary tracked row. Falls back to the
+    // decision's own default signal if a corrupt/legacy save link produced a
+    // commitment missing (or malformed) `requiredSignal` — see
+    // attainUrlState.ts's `isWellFormedCommitment`, which is the real gate,
+    // but this stays defensive too rather than trusting the shape blind.
+    const fallbackSignal = defaultCommitmentFor(goal, lever, setting).requiredSignal;
+    const optionalSignals = Array.isArray(commitment.optionalSignals) ? commitment.optionalSignals : [];
     const signals = [
-      { sig: commitment.requiredSignal, required: true },
-      ...commitment.optionalSignals.map((sig) => ({ sig, required: false })),
+      { sig: commitment.requiredSignal ?? fallbackSignal, required: true },
+      ...optionalSignals.map((sig) => ({ sig: sig ?? fallbackSignal, required: false })),
     ];
     const worthPerSignal = perSignalWorth(worthTotal, signals.length);
     return signals.map(({ sig, required }) => {
-      const signalKey = `${key}:${sig.id}`;
-      const baseline = parseSignalBaseline(sig.baseline);
+      const signalKey = `${key}:${sig?.id ?? fallbackSignal.id}`;
+      const baseline = parseSignalBaseline(sig?.baseline);
       const entries = progressEntries[signalKey] ?? [{ date: todayISODate(), value: baseline }];
       return {
         key: signalKey,
@@ -737,8 +743,8 @@ export default function StepAttainment({
         lever,
         owner,
         due,
-        signalLabel: sig.label.trim() || lever.signal,
-        unit: sig.unit.trim() || lever.unit,
+        signalLabel: sig?.label?.trim() || lever.signal,
+        unit: sig?.unit?.trim() || lever.unit,
         baseline,
         target: targetValue,
         worth: worthPerSignal,

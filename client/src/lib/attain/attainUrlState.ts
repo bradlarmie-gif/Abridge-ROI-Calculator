@@ -1,7 +1,7 @@
 import LZString from "lz-string";
 import type { AttainState, AttainSetting, GoalId } from "./attainTypes";
 import type { AttainBaseline, LeverValues, RealizationByGoal } from "./attainLevers";
-import type { Commitment, GoalOwner, SignalCadence } from "@/pages/attain/steps/StepCommit";
+import type { Commitment, CommitmentSignal, GoalOwner, SignalCadence } from "@/pages/attain/steps/StepCommit";
 import type { ProgressEntry } from "./attainProgress";
 
 /**
@@ -97,6 +97,36 @@ function isPlainObject(v: unknown): v is Record<string, unknown> {
   return typeof v === "object" && v !== null && !Array.isArray(v);
 }
 
+/** One `CommitmentSignal` (required or optional) — every field StepAttainment
+ * and AttainFlow read off a signal without a fallback (`sig.label.trim()`,
+ * `sig.id`, `sig.baseline`, `sig.unit`), so a signal missing any of these
+ * would crash the hub rather than just rendering blank. */
+function isWellFormedCommitmentSignal(v: unknown): v is CommitmentSignal {
+  return (
+    isPlainObject(v) &&
+    typeof v.id === "string" &&
+    typeof v.label === "string" &&
+    typeof v.baseline === "string" &&
+    typeof v.unit === "string"
+  );
+}
+
+/** One committed decision — its own required signal (always present, never
+ * optional on `Commitment`'s type) plus a well-formed `optionalSignals`
+ * array. A commitment missing `requiredSignal` or carrying a malformed one
+ * is exactly the shape that used to reach StepAttainment/AttainFlow's
+ * unguarded `commitment.requiredSignal` reads and crash the hub. */
+function isWellFormedCommitment(v: unknown): v is Commitment {
+  return (
+    isPlainObject(v) &&
+    typeof v.owner === "string" &&
+    typeof v.due === "string" &&
+    isWellFormedCommitmentSignal(v.requiredSignal) &&
+    Array.isArray(v.optionalSignals) &&
+    v.optionalSignals.every(isWellFormedCommitmentSignal)
+  );
+}
+
 /** Structural validation only — this never throws, and never trusts a field
  * whose shape doesn't match what AttainFlow expects, even if the JSON
  * parsed cleanly (a hand-edited or truncated URL param is still valid
@@ -115,7 +145,12 @@ function isWellFormedSaveState(v: unknown): v is AttainSaveState {
   if (typeof v.state.progressRatio !== "number") return false;
   if (!Array.isArray(v.goals) || !v.goals.every(isValidGoal)) return false;
   if (!isPlainObject(v.valuesByGoal)) return false;
-  if (!isPlainObject(v.commitments)) return false;
+  // Deep-validated (not just "is an object") — see `isWellFormedCommitment`'s
+  // doc: the Commit redesign's required-signal/optional-signals shape is
+  // exactly what a hand-edited or truncated v3 link corrupts most easily,
+  // and every downstream read of it (StepAttainment, AttainFlow) trusts the
+  // shape rather than guarding every field itself.
+  if (!isPlainObject(v.commitments) || !Object.values(v.commitments).every(isWellFormedCommitment)) return false;
   if (!isPlainObject(v.goalOwnerByPriority)) return false;
   if (!isPlainObject(v.progressEntries)) return false;
   if (!isPlainObject(v.baseline)) return false;
