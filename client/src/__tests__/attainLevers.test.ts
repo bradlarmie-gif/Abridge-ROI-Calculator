@@ -3,6 +3,7 @@ import {
   LEVERS,
   defaultLeverValues,
   computeLeverContributions,
+  computeMultiGoalContributions,
   type LeverValues,
 } from "@/lib/attain/attainLevers";
 import type { AttainScope, AttainSetting, GoalId } from "@/lib/attain/attainTypes";
@@ -131,5 +132,91 @@ describe("computeLeverContributions", () => {
     const result = computeLeverContributions("access", "outpatient", scope, values);
     expect(result.totalMargin).toBeGreaterThanOrEqual(400_000);
     expect(result.totalMargin).toBeLessThanOrEqual(1_000_000);
+  });
+});
+
+describe("computeMultiGoalContributions", () => {
+  it("combining two independent goals (retention + revenue, no access) equals the exact sum of their singles", () => {
+    const valuesByGoal: Partial<Record<GoalId, LeverValues>> = {
+      retention: { ...defaultLeverValues("retention"), ...IMPROVED_VALUE.retention },
+      revenue: { ...defaultLeverValues("revenue"), ...IMPROVED_VALUE.revenue },
+    };
+    const retentionAlone = computeLeverContributions("retention", "outpatient", scope, valuesByGoal.retention!);
+    const revenueAlone = computeLeverContributions("revenue", "outpatient", scope, valuesByGoal.revenue!);
+
+    const combined = computeMultiGoalContributions(["retention", "revenue"], "outpatient", scope, valuesByGoal);
+
+    expect(combined.combinedMargin).toBeCloseTo(retentionAlone.totalMargin + revenueAlone.totalMargin, 5);
+    expect(combined.combinedCount).toBe(retentionAlone.totalCount + revenueAlone.totalCount);
+    // Neither goal's per-lever figures were touched, since neither owns the
+    // contended freed-time lever without the other goal being access.
+    expect(combined.byGoal.retention?.totalMargin).toBeCloseTo(retentionAlone.totalMargin, 5);
+    expect(combined.byGoal.revenue?.totalMargin).toBeCloseTo(revenueAlone.totalMargin, 5);
+  });
+
+  it("access + retention with a 50/50 split never double-counts the freed-time lever", () => {
+    const valuesByGoal: Partial<Record<GoalId, LeverValues>> = {
+      access: { ...defaultLeverValues("access"), accessReinvest: 60 },
+      retention: { ...defaultLeverValues("retention"), retentionFloor: 60 },
+    };
+    const accessAlone = computeLeverContributions("access", "outpatient", scope, valuesByGoal.access!);
+    const retentionAlone = computeLeverContributions("retention", "outpatient", scope, valuesByGoal.retention!);
+    const accessFreedAlone = accessAlone.perLever.find((p) => p.id === "accessReinvest")!.marginalMargin;
+    const retentionFreedAlone = retentionAlone.perLever.find((p) => p.id === "retentionFloor")!.marginalMargin;
+
+    const combined = computeMultiGoalContributions(["access", "retention"], "outpatient", scope, valuesByGoal, 50);
+    const accessFreedScaled = combined.byGoal.access?.perLever.find((p) => p.id === "accessReinvest")!.marginalMargin ?? 0;
+    const retentionFreedScaled = combined.byGoal.retention?.perLever.find((p) => p.id === "retentionFloor")!.marginalMargin ?? 0;
+
+    // The split hour, however divided, never exceeds what each side would
+    // have gotten alone at full credit - it is shared, not cloned.
+    expect(accessFreedScaled + retentionFreedScaled).toBeLessThanOrEqual(accessFreedAlone + retentionFreedAlone + 1e-6);
+    expect(accessFreedScaled).toBeLessThanOrEqual(accessFreedAlone + 1e-6);
+    expect(retentionFreedScaled).toBeLessThanOrEqual(retentionFreedAlone + 1e-6);
+  });
+
+  it("split at 100 gives access the full freed-time share and retention zero", () => {
+    const valuesByGoal: Partial<Record<GoalId, LeverValues>> = {
+      access: { ...defaultLeverValues("access"), accessReinvest: 60 },
+      retention: { ...defaultLeverValues("retention"), retentionFloor: 60 },
+    };
+    const accessAlone = computeLeverContributions("access", "outpatient", scope, valuesByGoal.access!);
+    const accessFreedAlone = accessAlone.perLever.find((p) => p.id === "accessReinvest")!.marginalMargin;
+
+    const combined = computeMultiGoalContributions(["access", "retention"], "outpatient", scope, valuesByGoal, 100);
+    const accessFreedScaled = combined.byGoal.access?.perLever.find((p) => p.id === "accessReinvest")!.marginalMargin ?? 0;
+    const retentionFreedScaled = combined.byGoal.retention?.perLever.find((p) => p.id === "retentionFloor")!.marginalMargin ?? 0;
+
+    expect(accessFreedScaled).toBeCloseTo(accessFreedAlone, 5);
+    expect(retentionFreedScaled).toBe(0);
+  });
+
+  it("split at 0 gives retention the full freed-time share and access zero", () => {
+    const valuesByGoal: Partial<Record<GoalId, LeverValues>> = {
+      access: { ...defaultLeverValues("access"), accessReinvest: 60 },
+      retention: { ...defaultLeverValues("retention"), retentionFloor: 60 },
+    };
+    const retentionAlone = computeLeverContributions("retention", "outpatient", scope, valuesByGoal.retention!);
+    const retentionFreedAlone = retentionAlone.perLever.find((p) => p.id === "retentionFloor")!.marginalMargin;
+
+    const combined = computeMultiGoalContributions(["access", "retention"], "outpatient", scope, valuesByGoal, 0);
+    const accessFreedScaled = combined.byGoal.access?.perLever.find((p) => p.id === "accessReinvest")!.marginalMargin ?? 0;
+    const retentionFreedScaled = combined.byGoal.retention?.perLever.find((p) => p.id === "retentionFloor")!.marginalMargin ?? 0;
+
+    expect(accessFreedScaled).toBe(0);
+    expect(retentionFreedScaled).toBeCloseTo(retentionFreedAlone, 5);
+  });
+
+  it("combinedMargin with access + retention is strictly less than the naive (double-counted) sum of both alone, when the freed-time lever is moved", () => {
+    const valuesByGoal: Partial<Record<GoalId, LeverValues>> = {
+      access: { ...defaultLeverValues("access"), accessReinvest: 60 },
+      retention: { ...defaultLeverValues("retention"), retentionFloor: 60 },
+    };
+    const accessAlone = computeLeverContributions("access", "outpatient", scope, valuesByGoal.access!);
+    const retentionAlone = computeLeverContributions("retention", "outpatient", scope, valuesByGoal.retention!);
+    const naiveDoubleCounted = accessAlone.totalMargin + retentionAlone.totalMargin;
+
+    const combined = computeMultiGoalContributions(["access", "retention"], "outpatient", scope, valuesByGoal, 50);
+    expect(combined.combinedMargin).toBeLessThan(naiveDoubleCounted);
   });
 });

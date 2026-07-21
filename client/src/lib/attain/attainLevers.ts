@@ -945,3 +945,122 @@ export function computeLeverContributions(
 
   return { perLever, totalMargin: chosen.margin, totalCount: chosen.count };
 }
+
+// ────────────────────────────────────────────────────────────────────────
+// Multi-goal combine
+// ────────────────────────────────────────────────────────────────────────
+
+export interface MultiGoalContributionsResult {
+  byGoal: Partial<Record<GoalId, LeverContributionsResult>>;
+  combinedMargin: number;
+  combinedCount: number;
+}
+
+/** The one freed-time lever each of the two contending goals owns. Access
+ * routes freed documentation time into the schedule; retention routes the
+ * same freed hour into protected relief. They are mechanically the same
+ * hour, so when both goals are in play the hour cannot be booked to both in
+ * full without double-counting it. */
+const FREED_TIME_LEVER: Partial<Record<GoalId, string>> = {
+  access: "accessReinvest",
+  retention: "retentionFloor",
+};
+
+/**
+ * Combines any number of goals into one plan.
+ *
+ * MOST priorities are genuinely additive: a health system chasing Revenue
+ * and Quality together is drawing on two different mechanisms (coding
+ * accuracy, bedside bundle compliance), so their dollar contributions are
+ * computed independently, each via `computeLeverContributions`, and simply
+ * summed. `combinedMargin`/`combinedCount` for those goals are exact sums,
+ * with no adjustment - see the "independent goals" test below.
+ *
+ * ACCESS and RETENTION are the one pair that is not independent. Both
+ * levers (`accessReinvest`, `retentionFloor`) are priced off the same
+ * freed-documentation hour: access books it as new visits, retention books
+ * it as protected relief. If both goals are selected and each is credited
+ * for the FULL hour, the plan double-books a single hour of freed time as
+ * two dollars of value.
+ *
+ * The fix: when (and only when) both `access` and `retention` are selected,
+ * `freedTimeSplit` (0-100, default 50) is the percentage of the freed hour
+ * a partner has decided to route to opening access (schedule). The
+ * remainder routes to protecting relief. Before summing, each goal's
+ * `computeLeverContributions` result is recomputed with ONLY its own
+ * freed-time lever's marginal (and total) contribution scaled by its share
+ * of the split - every other lever in both goals is untouched, because
+ * every other lever draws on its own, separate mechanism (opening slots,
+ * backfilling coverage, etc.) and was never double-booked in the first
+ * place. Because `computeLeverContributions` models every lever as an
+ * independent channel with no cross terms (see the module header), a
+ * goal's `totalMargin` is always exactly the sum of its own `perLever`
+ * marginal deltas, so scaling just the one shared lever and re-summing is
+ * mathematically exact, not an approximation layered on top.
+ *
+ * At split = 100, access gets the full freed-time contribution and
+ * retention's freed-time lever contributes exactly 0 (and vice versa at
+ * split = 0). At any split, the two scaled shares always sum to <= the
+ * hour's full value once, never more - the hour is split, not cloned.
+ */
+export function computeMultiGoalContributions(
+  goals: GoalId[],
+  setting: AttainSetting,
+  scope: AttainScope,
+  valuesByGoal: Partial<Record<GoalId, LeverValues>>,
+  freedTimeSplit: number = 50,
+): MultiGoalContributionsResult {
+  const uniqueGoals = Array.from(new Set(goals));
+  const hasFreedTimeConflict = uniqueGoals.includes("access") && uniqueGoals.includes("retention");
+  const accessShare = Math.min(1, Math.max(0, freedTimeSplit / 100));
+  const retentionShare = 1 - accessShare;
+
+  const byGoal: Partial<Record<GoalId, LeverContributionsResult>> = {};
+  let combinedMargin = 0;
+  let combinedCount = 0;
+
+  for (const goal of uniqueGoals) {
+    const values = valuesByGoal[goal] ?? defaultLeverValues(goal);
+    const base = computeLeverContributions(goal, setting, scope, values);
+    const freedLeverId = hasFreedTimeConflict ? FREED_TIME_LEVER[goal] : undefined;
+
+    if (!freedLeverId) {
+      byGoal[goal] = base;
+      combinedMargin += base.totalMargin;
+      combinedCount += base.totalCount;
+      continue;
+    }
+
+    const share = goal === "access" ? accessShare : retentionShare;
+    const freedBase = base.perLever.find((p) => p.id === freedLeverId);
+    const freedBaseMargin = freedBase?.marginalMargin ?? 0;
+    const freedBaseCount = freedBase?.marginalCount ?? 0;
+    const freedScaledMargin = freedBaseMargin * share;
+    const freedScaledCount = freedBaseCount * share;
+
+    const scaledPerLeverRaw = base.perLever.map((p) =>
+      p.id === freedLeverId
+        ? { ...p, marginalMargin: freedScaledMargin, marginalCount: Math.round(freedScaledCount) }
+        : p,
+    );
+    // Every goal's totalMargin is exactly the sum of its own perLever
+    // marginal deltas (see the module header on independence / no cross
+    // terms), so re-deriving the scaled total from the scaled per-lever
+    // deltas keeps this exact rather than approximated.
+    const scaledMarginalSum = scaledPerLeverRaw.reduce((sum, l) => sum + Math.max(0, l.marginalMargin), 0);
+    const scaled: LeverContributionsResult = {
+      perLever: scaledPerLeverRaw.map((l) => ({
+        ...l,
+        pctOfTotal: scaledMarginalSum > 0 ? Math.max(0, l.marginalMargin) / scaledMarginalSum : 0,
+      })),
+      totalMargin: base.totalMargin - freedBaseMargin + freedScaledMargin,
+      totalCount: base.totalCount - freedBaseCount + freedScaledCount,
+    };
+
+    byGoal[goal] = scaled;
+    combinedMargin += scaled.totalMargin;
+    combinedCount += scaled.totalCount;
+  }
+
+  return { byGoal, combinedMargin, combinedCount };
+}
