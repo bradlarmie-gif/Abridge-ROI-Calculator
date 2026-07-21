@@ -5,6 +5,7 @@ import {
 } from "@/pages/explore/ExploreFlow";
 import type { AttainSetting, GoalId } from "./attainTypes";
 import { computeAccessContributions } from "./attainAccess";
+import { computeEdAccessContributions } from "./attainEdAccess";
 import { computeRevenueContributions } from "./attainRevenue";
 import { computeWorkforceContributions } from "./attainWorkforce";
 import { computeQualityContributions } from "./attainQuality";
@@ -77,14 +78,25 @@ import { computeQualityContributions } from "./attainQuality";
  *
  * Per-goal driver mappings (documented per the plan's mapping-decision
  * requirement):
- *  - access (outpatient + ED): rebuilt as an ORDERED DECISION CHAIN, not an
+ *  - access, OUTPATIENT: rebuilt as an ORDERED DECISION CHAIN, not an
  *    independent-channel lever set, in `attainAccess.ts`. Money is volume x
  *    margin, and volume itself is MIN(capacity, demand), so a dollar figure
  *    cannot exist until scope, margin, capacity, AND demand are all real.
- *    `computeLeverContributions` delegates the whole `goal === "access"`
- *    case to `computeAccessContributions` there; see that module's header
- *    for the full chain and its reconciliation to Explore's `patientAccess`
- *    primitives (freed hours, visit length, margin/visit).
+ *    `computeLeverContributions` delegates `goal === "access" && setting
+ *    !== "ed"` to `computeAccessContributions` there; see that module's
+ *    header for the full chain and its reconciliation to Explore's
+ *    `patientAccess` primitives (freed hours, visit length, margin/visit).
+ *  - access, ED: a GENUINELY DIFFERENT mechanism — recovering patients who
+ *    left without being seen (LWBS) and capturing the downstream
+ *    admissions some of them become, not opening new schedule capacity.
+ *    Rebuilt as its own ORDERED DECISION CHAIN in `attainEdAccess.ts`
+ *    (D1 scope -> D2 worth -> D3/D4 the recoverable LWBS pool, the ceiling
+ *    -> D5 payoff). `computeLeverContributions` delegates `goal ===
+ *    "access" && setting === "ed"` to `computeEdAccessContributions` there;
+ *    see that module's header for the full chain, why it does not compete
+ *    with retention for the same freed hour the way outpatient access
+ *    does, and its reconciliation to Explore's `edLwbs`/`admissionCapture`
+ *    primitives.
  *  - retention / WORKFORCE (all settings): rebuilt as an ORDERED DECISION
  *    CHAIN (D1 scope/turnover/replacement cost -> D2 protect the recovered
  *    relief -> D3 survey cadence -> D4 backfill coverage gaps -> D5 sustain
@@ -725,15 +737,129 @@ export const REVENUE_IP_LEVERS: Lever[] = [
   },
 ];
 
+/**
+ * ED access's own, unrelated catalog — recovering LWBS patients and
+ * capturing downstream admissions, a genuinely different mechanism from
+ * outpatient's schedule-capacity model (`LEVERS.access`). Rendered bespoke
+ * on Build the case (`EdAccessDecisionChain.tsx`), not through the generic
+ * lever renderer. Ids match the flat `LeverValues` keys `attainEdAccess.ts`
+ * reads directly. See `attainEdAccess.ts`'s `ED_ACCESS_LEVER_IDS` and
+ * `computeEdAccessContributions` for the engine.
+ */
+export const ED_ACCESS_LEVERS: Lever[] = [
+  {
+    id: "edAccessProviders",
+    label: "Point ED providers at recovery",
+    help: "Providers actually committed to converting freed charting time into faster throughput are the scope every decision below is built from.",
+    control: "countPerUnit",
+    unit: "providers",
+    min: 0,
+    max: 500,
+    step: 1,
+    realityStart: 0,
+    ownerRole: "ED medical director",
+    defaultDue: "Month 1",
+    signal: "Providers actually converting freed charting time into faster throughput, of those pointed at it",
+  },
+  {
+    id: "edAccessRevenuePerVisit",
+    label: "Set revenue per recovered visit",
+    help: "The dollar every recovered ED visit is actually worth. Benchmarked, but your own number, not an assumed one.",
+    control: "countPerUnit",
+    unit: "$/visit",
+    min: 0,
+    max: 2_000,
+    step: 10,
+    realityStart: 0,
+    ownerRole: "Partner finance",
+    defaultDue: "Month 1",
+    signal: "Revenue booked per recovered ED visit",
+  },
+  {
+    id: "edAccessAdmissionMargin",
+    label: "Set margin per downstream admission",
+    help: "A recovered visit and the admission it sometimes becomes are not the same claim. This is what one more admission is worth.",
+    control: "countPerUnit",
+    unit: "$/admission",
+    min: 0,
+    max: 20_000,
+    step: 250,
+    realityStart: 0,
+    ownerRole: "Partner finance",
+    defaultDue: "Month 1",
+    signal: "Margin booked per captured admission",
+  },
+  {
+    id: "edAccessMinutesSaved",
+    label: "Convert freed time to faster throughput",
+    help: "Minutes saved on the note is what buys a faster door-to-provider time. This is the context the LWBS reduction target below is actually built on.",
+    control: "countPerUnit",
+    unit: "min/note",
+    min: 0,
+    max: 60,
+    step: 1,
+    realityStart: 0,
+    ownerRole: "ED operations",
+    defaultDue: "Month 1",
+    signal: "Door-to-provider time, median",
+  },
+  {
+    id: "edAccessLwbsRate",
+    label: "Count your current LWBS rate",
+    help: "The rate the recoverable pool, and everything downstream of it, is measured against. Your own number, not a benchmark you never checked.",
+    control: "percent",
+    unit: "%",
+    min: 0,
+    max: 50,
+    step: 1,
+    realityStart: 0,
+    ownerRole: "ED operations / quality",
+    defaultDue: "Month 1",
+    signal: "LWBS rate, measured against this baseline",
+  },
+  {
+    id: "edAccessLwbsReduction",
+    label: "Set the LWBS reduction you are targeting",
+    help: "The share of the recoverable pool this plan commits to bringing back, driven by how much faster door-to-provider time the freed minutes above buy.",
+    control: "percent",
+    unit: "%",
+    min: 0,
+    max: 100,
+    step: 5,
+    realityStart: 0,
+    ownerRole: "ED medical director",
+    defaultDue: "Month 2",
+    signal: "LWBS reduction achieved against your current rate",
+  },
+  {
+    id: "edAccessAdmissionRate",
+    label: "Set the share who become admissions",
+    help: "Not every recovered patient is admitted. This is the share of realized recovery that converts to a downstream admission.",
+    control: "percent",
+    unit: "%",
+    min: 0,
+    max: 100,
+    step: 5,
+    realityStart: 0,
+    ownerRole: "ED operations / case management",
+    defaultDue: "Month 2",
+    signal: "Share of recovered patients captured as admissions",
+  },
+];
+
 /** The real lever catalog for a (goal, setting) pair. Every goal except
- * revenue is setting-independent (retention/quality vary their line PRESETS
- * by setting, never their catalog shape). Revenue is the one goal whose
- * catalog structurally differs by setting: outpatient/ED get the
- * three-path chain (`LEVERS.revenue`), inpatient keeps its own untouched
- * DRG/CDI model (`REVENUE_IP_LEVERS`). `setting` is optional so every
- * existing non-setting-aware call site keeps compiling; omitting it for
- * revenue defaults to the (more common) outpatient/ED catalog. */
+ * access and revenue is setting-independent (retention/quality vary their
+ * line PRESETS by setting, never their catalog shape). Access and revenue
+ * are the two goals whose catalog structurally differs by setting: access
+ * at ED is a genuinely different LWBS/throughput mechanism
+ * (`ED_ACCESS_LEVERS`) from outpatient's schedule-capacity model
+ * (`LEVERS.access`); revenue's outpatient/ED get the three-path chain
+ * (`LEVERS.revenue`), inpatient keeps its own untouched DRG/CDI model
+ * (`REVENUE_IP_LEVERS`). `setting` is optional so every existing
+ * non-setting-aware call site keeps compiling; omitting it for access or
+ * revenue defaults to the (more common) outpatient catalog. */
 export function leversFor(goal: GoalId, setting?: AttainSetting): Lever[] {
+  if (goal === "access" && setting === "ed") return ED_ACCESS_LEVERS;
   if (goal === "revenue" && setting === "inpatient") return REVENUE_IP_LEVERS;
   return LEVERS[goal];
 }
@@ -1075,7 +1201,7 @@ export function computeLeverContributions(
   baseline: AttainBaseline,
   values: LeverValues,
 ): LeverContributionsResult {
-  if (goal === "access") return computeAccessContributions(baseline, values);
+  if (goal === "access") return setting === "ed" ? computeEdAccessContributions(baseline, values) : computeAccessContributions(baseline, values);
   if (goal === "revenue" && setting !== "inpatient") return computeRevenueContributions(baseline, setting, values);
   if (goal === "retention") return computeWorkforceContributions(baseline, setting, values);
   if (goal === "quality") return computeQualityContributions(baseline, values);
@@ -1152,10 +1278,14 @@ export interface MultiGoalContributionsResult {
  * each is credited for the FULL hour, the plan double-books a single hour
  * of freed time as two dollars of value.
  *
- * The fix: when (and only when) both `access` and `retention` are selected,
- * `freedTimeSplit` (0-100, default 50) is the percentage of the freed hour
- * a partner has decided to route to opening access (schedule). The
- * remainder routes to protecting relief.
+ * The fix: when (and only when) both `access` and `retention` are selected
+ * AT OUTPATIENT, `freedTimeSplit` (0-100, default 50) is the percentage of
+ * the freed hour a partner has decided to route to opening access
+ * (schedule). The remainder routes to protecting relief. ED access does
+ * NOT compete for this hour - see `attainEdAccess.ts`'s module header for
+ * why its dollar math never mechanically consumes a share of freed hours -
+ * so at setting `"ed"` this split never engages and both goals get full,
+ * unscaled credit even when both are selected.
  *
  * BOTH sides of the fix use the exact same convention, because both are
  * decision CHAINS, not independent channels: scaling an already-computed
@@ -1179,7 +1309,12 @@ export function computeMultiGoalContributions(
   freedTimeSplit: number = 50,
 ): MultiGoalContributionsResult {
   const uniqueGoals = Array.from(new Set(goals));
-  const hasFreedTimeConflict = uniqueGoals.includes("access") && uniqueGoals.includes("retention");
+  // The shared-hour conflict is outpatient access's own mechanism (D3
+  // mechanically divides freed hours by a visit length) - ED access's
+  // dollar math never does that division (see attainEdAccess.ts's module
+  // header), so it never contends for the hour and the split must not
+  // engage at setting "ed".
+  const hasFreedTimeConflict = setting === "outpatient" && uniqueGoals.includes("access") && uniqueGoals.includes("retention");
   const accessShare = Math.min(1, Math.max(0, freedTimeSplit / 100));
   const retentionShare = 1 - accessShare;
 
@@ -1191,6 +1326,13 @@ export function computeMultiGoalContributions(
     const values = valuesByGoal[goal] ?? defaultLeverValues(goal);
 
     if (goal === "access") {
+      if (setting === "ed") {
+        const result = computeEdAccessContributions(baseline, values);
+        byGoal.access = result;
+        combinedMargin += result.totalMargin;
+        combinedCount += result.totalCount;
+        continue;
+      }
       const shareMultiplier = hasFreedTimeConflict ? accessShare : 1;
       const result = computeAccessContributions(baseline, values, shareMultiplier);
       byGoal.access = result;
