@@ -128,6 +128,7 @@ export default function ConsolidationTiming({
         <span className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#B4A99B]">Your tools · drag when each comes off</span>
         <div className="flex items-center gap-4 text-[10.5px] text-[#6B7280]">
           <span className="flex items-center gap-1.5"><span className="inline-block w-4 h-1.5 rounded-[3px] bg-[#9C8F7D]" /> Still paying</span>
+          <span className="flex items-center gap-1.5"><span className="inline-block w-4 h-1.5 rounded-[3px]" style={{ background: "rgba(234,44,0,0.2)" }} /> Saving</span>
           <span className="flex items-center gap-1.5"><span className="inline-block w-2.5 h-2.5 rounded-full bg-[#EA2C00] border-2 border-[#FDFBF8]" /> Sunsets</span>
         </div>
       </div>
@@ -135,10 +136,13 @@ export default function ConsolidationTiming({
       <div className="mt-1">
         {cs.tools.map((t) => {
           const item = items.find((i) => i.id === t.id)!;
-          const sliderMax = Math.min(t.contractMonths, horizon);
-          const runwayRightPct = 100 - xPct(Math.min(t.sunsetMonths, horizon), horizon);
-          const tickLeftPct = xPct(Math.min(t.contractMonths, horizon), horizon);
-          const thumbLeftPct = xPct(Math.min(t.sunsetMonths, horizon), horizon);
+          const sD = Math.min(t.sunsetMonths, horizon);   // sunset, clamped to view
+          const cD = Math.min(t.contractMonths, horizon); // contract end, clamped to view
+          const L0 = xPct(0, horizon);
+          const xS = xPct(sD, horizon);
+          const xC = xPct(cD, horizon);
+          const xEnd = xPct(horizon, horizon);
+          const sliderMax = cD;
           const contractDate = sunsetDateLabel(t.contractMonths);
           return (
             <div key={t.id} className="py-4 border-t border-[#EFE7DC] first:border-t-0" data-testid={`ar-timing-row-${t.id}`}>
@@ -175,17 +179,25 @@ export default function ConsolidationTiming({
               </div>
 
               <div className="relative h-[26px]">
-                <div className="absolute top-1/2 -translate-y-1/2 h-1 rounded-[2px] bg-[#E4DBCC] opacity-60" style={{ left: `${xPct(0, horizon)}%`, right: `${100 - xPct(horizon, horizon)}%` }} />
-                <div className="absolute top-1/2 -translate-y-1/2 h-1.5 rounded-[3px] bg-[#9C8F7D]" style={{ left: `${xPct(0, horizon)}%`, right: `${runwayRightPct}%` }} />
-                <div className="absolute top-1/2 w-0.5 h-4 rounded-[1px] bg-[#B4A99B]" style={{ left: `${tickLeftPct}%`, transform: "translate(-50%,-50%)" }} />
-                <div className="absolute text-[8.5px] font-semibold text-[#9CA3AF] whitespace-nowrap" style={{ left: `${tickLeftPct}%`, top: "100%", transform: "translateX(-50%)" }}>contract ends</div>
-                <div className="absolute top-1/2 w-[15px] h-[15px] rounded-full bg-[#EA2C00] border-[2.5px] border-[#FDFBF8] shadow-[0_1px_4px_rgba(234,44,0,0.35)] pointer-events-none" style={{ left: `${thumbLeftPct}%`, transform: "translate(-50%,-50%)" }} />
+                {/* faint base rail, full Today -> horizon */}
+                <div className="absolute top-1/2 -translate-y-1/2 h-1.5 rounded-[3px] bg-[#EAE3D8]" style={{ left: `${L0}%`, right: `${100 - xEnd}%` }} />
+                {/* saving you get regardless (after the contract would have ended) */}
+                {xEnd > xC && <div className="absolute top-1/2 -translate-y-1/2 h-1.5 rounded-[2px]" style={{ left: `${xC}%`, width: `${xEnd - xC}%`, background: "rgba(234,44,0,0.13)" }} />}
+                {/* saving pulled forward by exiting early (sunset -> contract end), hatched */}
+                {xC > xS && <div className="absolute top-1/2 -translate-y-1/2 h-1.5 rounded-[2px]" style={{ left: `${xS}%`, width: `${xC - xS}%`, backgroundImage: "repeating-linear-gradient(45deg, rgba(234,44,0,0.5) 0, rgba(234,44,0,0.5) 1.5px, rgba(234,44,0,0.15) 1.5px, rgba(234,44,0,0.15) 5px)" }} />}
+                {/* still paying (Today -> sunset) */}
+                <div className="absolute top-1/2 -translate-y-1/2 h-1.5 rounded-[3px] bg-[#9C8F7D]" style={{ left: `${L0}%`, width: `${xS - L0}%` }} />
+                {/* contract-ends tick + label */}
+                <div className="absolute top-1/2 w-0.5 h-4 rounded-[1px] bg-[#B4A99B]" style={{ left: `${xC}%`, transform: "translate(-50%,-50%)" }} />
+                <div className="absolute text-[8.5px] font-semibold text-[#9CA3AF] whitespace-nowrap" style={{ left: `${xC}%`, top: "100%", transform: "translateX(-50%)" }}>contract ends</div>
+                {/* sunset thumb */}
+                <div className="absolute top-1/2 w-[15px] h-[15px] rounded-full bg-[#EA2C00] border-[2.5px] border-[#FDFBF8] shadow-[0_1px_4px_rgba(234,44,0,0.35)] pointer-events-none" style={{ left: `${xS}%`, transform: "translate(-50%,-50%)" }} />
                 <input
                   type="range" min={0} max={sliderMax} step={1}
                   value={Math.min(t.sunsetMonths, sliderMax)}
                   onChange={(e) => onUpdateItem(t.id, { sunsetMonths: Number(e.target.value) })}
                   className="absolute top-1/2 -translate-y-1/2 h-[22px] m-0 opacity-0 cursor-pointer"
-                  style={{ left: `${xPct(0, horizon)}%`, width: `${xPct(sliderMax, horizon) - xPct(0, horizon)}%` }}
+                  style={{ left: `${L0}%`, width: `${xC - L0}%` }}
                   aria-label={`When ${t.name} sunsets`}
                   data-testid={`ar-timing-slider-${t.id}`}
                 />
