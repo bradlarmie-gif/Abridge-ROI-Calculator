@@ -1,7 +1,8 @@
 import { Target } from "lucide-react";
 import AttainmentCurve, { USUAL_CEILING_PCT } from "@/components/attain/AttainmentCurve";
-import { LEVERS, type LeverValues, type LeverContributionsResult } from "@/lib/attain/attainLevers";
-import type { AttainState, GoalDef, SettingGoalContent } from "@/lib/attain/attainTypes";
+import { LEVERS, defaultLeverValues, type LeverValues, type MultiGoalContributionsResult } from "@/lib/attain/attainLevers";
+import { GOAL_CATALOG } from "@/lib/attain/attainGoals";
+import type { AttainState, GoalId, SettingGoalContent } from "@/lib/attain/attainTypes";
 import type { GoalTargetResult, AttainmentResult } from "@/lib/attain/attainCalc";
 import type { AttainStepId } from "./AttainFlow";
 
@@ -20,19 +21,34 @@ const SETTING_LABELS: Record<string, string> = { outpatient: "Outpatient", ed: "
 
 interface AttainLivePanelProps {
   state: AttainState;
-  goal: GoalDef | null;
+  goals: GoalId[];
   content: SettingGoalContent | undefined;
   target: GoalTargetResult | null;
   attainment: AttainmentResult;
   step: AttainStepId;
-  leverValues: LeverValues;
-  contributions: LeverContributionsResult | null;
+  valuesByGoal: Partial<Record<GoalId, LeverValues>>;
+  combined: MultiGoalContributionsResult | null;
 }
 
-export default function AttainLivePanel({ state, goal, content, target, attainment, step, leverValues, contributions }: AttainLivePanelProps) {
+export default function AttainLivePanel({ state, goals, content, target, attainment, step, valuesByGoal, combined }: AttainLivePanelProps) {
   const settingLabel = state.setting ? SETTING_LABELS[state.setting] : null;
-  const showBuiltTarget = goal && contributions && (step === "buildCase" || step === "commit");
-  const movedLevers = goal ? LEVERS[goal.id].filter((l) => isLeverMoved(leverValues[l.id], l.realityStart)) : [];
+  const showBuiltTarget = goals.length > 0 && combined && (step === "buildCase" || step === "commit");
+
+  // Every moved decision across every selected goal, prefixed so a partner
+  // with two priorities can tell at a glance which one a given decision
+  // belongs to.
+  const movedDecisions = goals.flatMap((goal) => {
+    const values = valuesByGoal[goal] ?? defaultLeverValues(goal);
+    const perLever = combined?.byGoal[goal]?.perLever;
+    return LEVERS[goal]
+      .filter((l) => isLeverMoved(values[l.id], l.realityStart))
+      .map((l) => ({
+        key: `${goal}:${l.id}`,
+        goal,
+        label: l.label,
+        marginalMargin: perLever?.find((p) => p.id === l.id)?.marginalMargin ?? 0,
+      }));
+  });
 
   return (
     <div className="bg-[#1A1A1A] rounded-2xl overflow-hidden" data-testid="panel-attain-live">
@@ -62,12 +78,19 @@ export default function AttainLivePanel({ state, goal, content, target, attainme
           </div>
         )}
 
-        {goal && (
-          <div className="flex justify-between items-center gap-2" data-testid="text-attain-panel-goal">
-            <span className="text-sm text-white/50">Goal</span>
-            <span className="text-sm font-semibold text-white flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full" style={{ background: goal.pillBg }} />
-              {goal.label}
+        {goals.length > 0 && (
+          <div className="flex justify-between items-start gap-2" data-testid="text-attain-panel-goal">
+            <span className="text-sm text-white/50 flex-shrink-0">{goals.length === 1 ? "Goal" : "Goals"}</span>
+            <span className="flex flex-wrap justify-end gap-1.5">
+              {goals.map((g) => {
+                const goalDef = GOAL_CATALOG[g];
+                return (
+                  <span key={g} className="text-sm font-semibold text-white flex items-center gap-1.5" data-testid={`text-attain-panel-goal-${g}`}>
+                    <span className="w-2 h-2 rounded-full" style={{ background: goalDef.pillBg }} />
+                    {goalDef.label}
+                  </span>
+                );
+              })}
             </span>
           </div>
         )}
@@ -79,28 +102,30 @@ export default function AttainLivePanel({ state, goal, content, target, attainme
           </div>
         )}
 
-        {showBuiltTarget && (
+        {showBuiltTarget && combined && (
           <div className="pt-3 border-t border-white/10" data-testid="text-attain-panel-target">
-            <p className="text-[10px] uppercase tracking-widest text-white/40 mb-1">Built from your decisions</p>
-            <p className="font-abridge text-3xl text-[#EA2C00]">{formatCompact(contributions.totalMargin)}</p>
+            <p className="text-[10px] uppercase tracking-widest text-white/40 mb-1">
+              {goals.length > 1 ? "Built from your decisions, combined" : "Built from your decisions"}
+            </p>
+            <p className="font-abridge text-3xl text-[#EA2C00]">{formatCompact(combined.combinedMargin)}</p>
             <p className="text-xs text-white/50 mt-1">
-              {contributions.totalMargin > 0 ? "Growing as you commit" : "Move a decision below to start building it"}
+              {combined.combinedMargin > 0 ? "Growing as you commit" : "Move a decision below to start building it"}
             </p>
           </div>
         )}
 
-        {showBuiltTarget && movedLevers.length > 0 && (
+        {showBuiltTarget && movedDecisions.length > 0 && (
           <div className="pt-3 border-t border-white/10 space-y-2" data-testid="list-attain-panel-decisions">
             <p className="text-[10px] uppercase tracking-widest text-white/40 mb-1">Decisions so far</p>
-            {movedLevers.map((l) => {
-              const pl = contributions?.perLever.find((p) => p.id === l.id);
-              return (
-                <div key={l.id} className="flex justify-between items-center gap-2 text-xs" data-testid={`row-attain-panel-decision-${l.id}`}>
-                  <span className="text-white/70 truncate">{l.label}</span>
-                  <span className="text-white font-semibold flex-shrink-0">{formatCompact(pl?.marginalMargin ?? 0)}</span>
-                </div>
-              );
-            })}
+            {movedDecisions.map((d) => (
+              <div key={d.key} className="flex justify-between items-center gap-2 text-xs" data-testid={`row-attain-panel-decision-${d.key}`}>
+                <span className="text-white/70 truncate">
+                  {goals.length > 1 && <span className="text-white/40">{GOAL_CATALOG[d.goal].pill} · </span>}
+                  {d.label}
+                </span>
+                <span className="text-white font-semibold flex-shrink-0">{formatCompact(d.marginalMargin)}</span>
+              </div>
+            ))}
           </div>
         )}
 

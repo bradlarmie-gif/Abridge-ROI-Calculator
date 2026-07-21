@@ -2,8 +2,9 @@ import { ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
-import { LEVERS, lineOptions, type Lever, type LeverValues } from "@/lib/attain/attainLevers";
-import type { LeverContributionsResult } from "@/lib/attain/attainLevers";
+import { LEVERS, lineOptions, defaultLeverValues, type Lever, type LeverValues } from "@/lib/attain/attainLevers";
+import type { MultiGoalContributionsResult } from "@/lib/attain/attainLevers";
+import { GOAL_CATALOG } from "@/lib/attain/attainGoals";
 import type { AttainSetting, GoalId } from "@/lib/attain/attainTypes";
 
 function formatCompact(n: number): string {
@@ -37,16 +38,26 @@ function formatLeverValue(lever: Lever, value: number | string[] | undefined): s
 
 interface StepBuildCaseProps {
   setting: AttainSetting;
-  goal: GoalId;
-  values: LeverValues;
-  contributions: LeverContributionsResult | null;
-  onChange: (leverId: string, value: number | string[]) => void;
+  goals: GoalId[];
+  valuesByGoal: Partial<Record<GoalId, LeverValues>>;
+  combined: MultiGoalContributionsResult | null;
+  freedTimeSplit: number;
+  onChangeFreedTimeSplit: (split: number) => void;
+  onChangeLeverValue: (goal: GoalId, leverId: string, value: number | string[]) => void;
   onNext: () => void;
 }
 
-export default function StepBuildCase({ setting, goal, values, contributions, onChange, onNext }: StepBuildCaseProps) {
-  const levers = LEVERS[goal];
-  const contributionFor = (id: string) => contributions?.perLever.find((p) => p.id === id);
+export default function StepBuildCase({
+  setting,
+  goals,
+  valuesByGoal,
+  combined,
+  freedTimeSplit,
+  onChangeFreedTimeSplit,
+  onChangeLeverValue,
+  onNext,
+}: StepBuildCaseProps) {
+  const hasFreedTimeConflict = goals.includes("access") && goals.includes("retention");
 
   return (
     <div>
@@ -59,8 +70,10 @@ export default function StepBuildCase({ setting, goal, values, contributions, on
         </h1>
         <p className="text-sm text-[#666666] leading-relaxed max-w-[620px]" data-testid="text-step-teach">
           Every decision below starts at your reality, where it stands today. Doing nothing new adds nothing. Move a
-          decision and watch its own contribution appear, and the plan below grow by exactly that much. Nothing here
-          is a preset tier; it's the sum of the decisions you actually make.
+          decision and watch its own contribution appear, and the plan below grow by exactly that much.{" "}
+          {goals.length > 1
+            ? "Each priority you picked gets its own section below, and everything rolls up into one combined total."
+            : "Nothing here is a preset tier; it's the sum of the decisions you actually make."}
         </p>
       </motion.div>
 
@@ -74,50 +87,134 @@ export default function StepBuildCase({ setting, goal, values, contributions, on
           Your plan, built from your decisions
         </p>
         <p className="font-abridge text-4xl text-[#EA2C00]" data-testid="text-attain-buildcase-total">
-          {formatCompact(contributions?.totalMargin ?? 0)}
+          {formatCompact(combined?.combinedMargin ?? 0)}
         </p>
         <p className="text-xs text-white/50 mt-1">
-          {(contributions?.totalCount ?? 0).toLocaleString()} units of value, contribution margin, from the decisions
-          moved below.
+          {(combined?.combinedCount ?? 0).toLocaleString()} units of value, contribution margin, across{" "}
+          {goals.length} {goals.length === 1 ? "priority" : "priorities"}.
         </p>
       </motion.div>
 
-      <div className="space-y-4 mb-8">
-        {levers.map((lever, i) => {
-          const contribution = contributionFor(lever.id);
-          const moved = isMoved(values[lever.id], lever.realityStart);
-          return (
-            <motion.div
-              key={lever.id}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.04 * i }}
-              className={`rounded-xl border p-5 ${moved ? "border-[#EA2C00] bg-[#FFF6F3]" : "border-[#E5E5E5] bg-white"}`}
-              data-testid={`card-attain-lever-${lever.id}`}
-            >
-              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-3">
-                <div className="min-w-0">
-                  <h3 className="text-sm font-bold text-[#1A1A1A]" data-testid={`text-attain-lever-label-${lever.id}`}>
-                    {lever.label}
-                  </h3>
-                  <p className="text-xs text-[#8C8C8C] mt-1 leading-relaxed max-w-[440px]">{lever.help}</p>
-                </div>
-                <div className="text-right flex-shrink-0" data-testid={`text-attain-lever-contribution-${lever.id}`}>
-                  <p className={`font-abridge text-xl ${moved ? "text-[#EA2C00]" : "text-[#B4B4B4]"}`}>
-                    {moved ? `adds ~${formatCompact(contribution?.marginalMargin ?? 0)}` : "adds ~$0"}
-                  </p>
-                  <p className="text-[10px] text-[#8C8C8C]">
-                    {(contribution?.marginalCount ?? 0).toLocaleString()} units ·{" "}
-                    {Math.round((contribution?.pctOfTotal ?? 0) * 100)}% of your plan
-                  </p>
-                </div>
-              </div>
+      {hasFreedTimeConflict && (
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-xl border-2 border-[#EA2C00] bg-[#FFF6F3] p-5 mb-8"
+          data-testid="panel-attain-freed-time-split"
+        >
+          <p className="text-[10px] font-semibold uppercase tracking-[2px] text-[#EA2C00] mb-1.5">
+            One hour, one split
+          </p>
+          <p className="text-xs text-[#3A3A3A] leading-relaxed mb-4 max-w-[600px]">
+            Access and Retention both price the same freed documentation hour. This is the one decision that keeps it
+            from being counted twice: how much of that hour routes to opening access on the schedule, versus how
+            much stays as protected relief. Every dollar below already reflects this split.
+          </p>
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-semibold text-[#1A1A1A]" data-testid="text-attain-freed-time-split-access">
+              {freedTimeSplit}% to opening access
+            </span>
+            <span className="text-xs font-semibold text-[#1A1A1A]" data-testid="text-attain-freed-time-split-retention">
+              {100 - freedTimeSplit}% to protecting relief
+            </span>
+          </div>
+          <Slider
+            value={[freedTimeSplit]}
+            onValueChange={(v) => onChangeFreedTimeSplit(v[0])}
+            min={0}
+            max={100}
+            step={5}
+            accent="coral"
+            className="w-full"
+            data-testid="slider-attain-freed-time-split"
+          />
+          <p className="text-[10px] text-[#8C8C8C] mt-2">
+            How you split the freed hour: {freedTimeSplit}% to opening access, {100 - freedTimeSplit}% to protecting
+            relief.
+          </p>
+        </motion.div>
+      )}
 
-              <LeverControl setting={setting} goal={goal} lever={lever} value={values[lever.id]} onChange={(v) => onChange(lever.id, v)} />
-            </motion.div>
-          );
-        })}
-      </div>
+      {goals.map((goal, goalIdx) => {
+        const goalDef = GOAL_CATALOG[goal];
+        const levers = LEVERS[goal];
+        const values = valuesByGoal[goal] ?? defaultLeverValues(goal);
+        const result = combined?.byGoal[goal];
+        const contributionFor = (id: string) => result?.perLever.find((p) => p.id === id);
+
+        return (
+          <div key={goal} className="mb-10" data-testid={`section-attain-buildcase-goal-${goal}`}>
+            <div className="flex items-center gap-3 mb-1">
+              <span
+                className="inline-block text-[9px] font-bold uppercase tracking-[1.5px] text-white px-3 py-1 rounded-full"
+                style={{ background: goalDef.pillBg }}
+              >
+                {goalDef.pill}
+              </span>
+              <h2 className="text-lg font-bold text-[#1A1A1A]" data-testid={`text-attain-buildcase-goal-title-${goal}`}>
+                {goalDef.label}
+              </h2>
+              <span className="text-xs text-[#8C8C8C] ml-auto" data-testid={`text-attain-buildcase-goal-total-${goal}`}>
+                {formatCompact(result?.totalMargin ?? 0)} of this plan
+              </span>
+            </div>
+            {goals.length > 1 && (
+              <p className="text-[11px] text-[#8C8C8C] mb-4">
+                Priority {goalIdx + 1} of {goals.length} · {goalDef.domainSub}
+              </p>
+            )}
+
+            <div className="space-y-4">
+              {levers.map((lever, i) => {
+                const contribution = contributionFor(lever.id);
+                const moved = isMoved(values[lever.id], lever.realityStart);
+                const isSharedFreedTime = hasFreedTimeConflict && (lever.id === "accessReinvest" || lever.id === "retentionFloor");
+                return (
+                  <motion.div
+                    key={lever.id}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.04 * i }}
+                    className={`rounded-xl border p-5 ${moved ? "border-[#EA2C00] bg-[#FFF6F3]" : "border-[#E5E5E5] bg-white"}`}
+                    data-testid={`card-attain-lever-${goal}-${lever.id}`}
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-3">
+                      <div className="min-w-0">
+                        <h3 className="text-sm font-bold text-[#1A1A1A]" data-testid={`text-attain-lever-label-${goal}-${lever.id}`}>
+                          {lever.label}
+                        </h3>
+                        <p className="text-xs text-[#8C8C8C] mt-1 leading-relaxed max-w-[440px]">{lever.help}</p>
+                        {isSharedFreedTime && (
+                          <p className="text-[10px] text-[#EA2C00] mt-1.5 font-medium">
+                            Scaled by the freed-time split above.
+                          </p>
+                        )}
+                      </div>
+                      <div className="text-right flex-shrink-0" data-testid={`text-attain-lever-contribution-${goal}-${lever.id}`}>
+                        <p className={`font-abridge text-xl ${moved ? "text-[#EA2C00]" : "text-[#B4B4B4]"}`}>
+                          {moved ? `adds ~${formatCompact(contribution?.marginalMargin ?? 0)}` : "adds ~$0"}
+                        </p>
+                        <p className="text-[10px] text-[#8C8C8C]">
+                          {(contribution?.marginalCount ?? 0).toLocaleString()} units ·{" "}
+                          {Math.round((contribution?.pctOfTotal ?? 0) * 100)}% of this priority
+                        </p>
+                      </div>
+                    </div>
+
+                    <LeverControl
+                      setting={setting}
+                      goal={goal}
+                      lever={lever}
+                      value={values[lever.id]}
+                      onChange={(v) => onChangeLeverValue(goal, lever.id, v)}
+                    />
+                  </motion.div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
 
       <Button
         onClick={onNext}
@@ -158,7 +255,7 @@ function LeverControl({ setting, goal, lever, value, onChange }: LeverControlPro
               className={`px-3 py-2 rounded-md text-sm border transition-all ${
                 active ? "border-[#EA2C00] bg-[#FFF6F3] text-[#EA2C00] font-medium" : "border-[#E5E5E5] bg-white text-[#3A3A3A] hover:border-[#D8CFC4]"
               }`}
-              data-testid={`chip-attain-lever-${lever.id}-${line.toLowerCase().replace(/\s+/g, "-")}`}
+              data-testid={`chip-attain-lever-${goal}-${lever.id}-${line.toLowerCase().replace(/\s+/g, "-")}`}
             >
               {line}
             </button>
@@ -180,7 +277,7 @@ function LeverControl({ setting, goal, lever, value, onChange }: LeverControlPro
             className={`px-4 h-10 text-xs font-medium transition-colors ${
               level === i ? "bg-[#1A1A1A] text-white" : "bg-white text-[#8C8C8C] hover:bg-[#F5F0EB]"
             }`}
-            data-testid={`button-attain-lever-${lever.id}-${label.toLowerCase()}`}
+            data-testid={`button-attain-lever-${goal}-${lever.id}-${label.toLowerCase()}`}
           >
             {label}
           </button>
@@ -197,7 +294,7 @@ function LeverControl({ setting, goal, lever, value, onChange }: LeverControlPro
         <span className="text-xs text-[#8C8C8C]">
           Reality today: {formatLeverValue(lever, lever.realityStart)}
         </span>
-        <span className="text-sm font-semibold text-[#1A1A1A]" data-testid={`text-attain-lever-value-${lever.id}`}>
+        <span className="text-sm font-semibold text-[#1A1A1A]" data-testid={`text-attain-lever-value-${goal}-${lever.id}`}>
           {formatLeverValue(lever, n)}
         </span>
       </div>
@@ -209,7 +306,7 @@ function LeverControl({ setting, goal, lever, value, onChange }: LeverControlPro
         step={lever.step}
         accent="coral"
         className="w-full"
-        data-testid={`slider-attain-lever-${lever.id}`}
+        data-testid={`slider-attain-lever-${goal}-${lever.id}`}
       />
     </div>
   );

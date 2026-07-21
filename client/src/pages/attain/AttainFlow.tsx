@@ -15,8 +15,14 @@ import {
   type AttainScope,
   type GoalId,
 } from "@/lib/attain/attainTypes";
-import { GOAL_CATALOG, getContent } from "@/lib/attain/attainGoals";
-import { LEVERS, defaultLeverValues, computeLeverContributions, type LeverValues } from "@/lib/attain/attainLevers";
+import { getContent } from "@/lib/attain/attainGoals";
+import {
+  LEVERS,
+  defaultLeverValues,
+  computeMultiGoalContributions,
+  type LeverValues,
+  type MultiGoalContributionsResult,
+} from "@/lib/attain/attainLevers";
 import type { GoalTargetResult, AttainmentResult } from "@/lib/attain/attainCalc";
 
 export type AttainStepId = "setting" | "vision" | "scope" | "buildCase" | "commit" | "plan";
@@ -32,6 +38,7 @@ const STEP_LABELS: Record<AttainStepId, string> = {
 };
 
 const DEFAULT_TOTAL_MONTHS = 9;
+export const DEFAULT_FREED_TIME_SPLIT = 50;
 
 function parseTotalMonths(goodHead: string | undefined): number {
   if (!goodHead) return DEFAULT_TOTAL_MONTHS;
@@ -47,9 +54,8 @@ function isLeverMoved(value: number | string[] | undefined, realityStart: number
   return typeof value === "number" && value !== realityStart;
 }
 
-/** Presentation-only unit label for the built target's count figure — the
- * number itself always comes from `computeLeverContributions`, this just
- * names its unit for the given goal/setting. */
+/** Presentation-only unit label for a single goal's built count figure — the
+ * number itself always comes from the engine, this just names its unit. */
 function countLabel(goal: GoalId, setting: AttainSetting): string {
   switch (goal) {
     case "access":
@@ -70,6 +76,12 @@ function dueMonthNumber(due: string): number {
   return m ? parseInt(m[1], 10) : 1;
 }
 
+/** Stable key for a commitment that spans multiple goals — a lever id alone
+ * is not unique once two goals are both in play. */
+export function commitmentKey(goal: GoalId, leverId: string): string {
+  return `${goal}:${leverId}`;
+}
+
 interface AttainFlowProps {
   onBackToJourney?: () => void;
 }
@@ -77,9 +89,19 @@ interface AttainFlowProps {
 export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
   const [stepIndex, setStepIndex] = useState(0);
   const [state, setState] = useState<AttainState>(DEFAULT_ATTAIN_STATE);
-  const [leverValues, setLeverValues] = useState<LeverValues>({});
+  // One or more goals can be in play at once (the whole point of this
+  // task). `valuesByGoal` and `commitments` are keyed per goal so two
+  // goals' decisions never collide, even when (as with access/retention)
+  // they share a lever id naming convention.
+  const [goals, setGoals] = useState<GoalId[]>([]);
+  const [valuesByGoal, setValuesByGoal] = useState<Partial<Record<GoalId, LeverValues>>>({});
   const [commitments, setCommitments] = useState<Record<string, Commitment>>({});
   const [baselineOverrides, setBaselineOverrides] = useState<Record<number, string>>({});
+  // Only meaningful when both access and retention are selected — the % of
+  // the one shared freed documentation hour routed to opening access
+  // (schedule); the rest routes to protecting relief. See attainLevers.ts
+  // computeMultiGoalContributions for why this prevents double-counting.
+  const [freedTimeSplit, setFreedTimeSplit] = useState<number>(DEFAULT_FREED_TIME_SPLIT);
 
   const step = STEP_ORDER[stepIndex];
 
@@ -87,13 +109,20 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
     setState((prev) => ({ ...prev, ...updates }));
   }, []);
 
-  const goal = state.goal ? GOAL_CATALOG[state.goal] : null;
-  const content = state.setting && state.goal ? getContent(state.setting, state.goal) : undefined;
+  // `state.goal` (singular, from attainTypes.ts, left unmodified) tracks the
+  // FIRST selected goal only, kept in sync below purely so the existing
+  // single-goal-shaped pieces of state (Setting/Scope content preview) keep
+  // working unchanged. `goals` (plural, local to this component) is the
+  // real source of truth for everything downstream of Vision.
+  const primaryGoal = goals[0] ?? null;
+  const content = state.setting && primaryGoal ? getContent(state.setting, primaryGoal) : undefined;
 
   const handleSelectSetting = useCallback((setting: AttainSetting) => {
-    setLeverValues({});
+    setGoals([]);
+    setValuesByGoal({});
     setCommitments({});
     setBaselineOverrides({});
+    setFreedTimeSplit(DEFAULT_FREED_TIME_SPLIT);
     setState((prev) => ({
       ...prev,
       setting,
@@ -105,22 +134,24 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
     }));
   }, []);
 
-  const handleSelectGoal = useCallback((goalId: GoalId) => {
-    setLeverValues(defaultLeverValues(goalId));
-    setCommitments({});
-    setBaselineOverrides({});
+  const handleToggleGoal = useCallback((goalId: GoalId) => {
+    const next = goals.includes(goalId) ? goals.filter((g) => g !== goalId) : [...goals, goalId];
+    setGoals(next);
+    setValuesByGoal((prev) => (prev[goalId] ? prev : { ...prev, [goalId]: defaultLeverValues(goalId) }));
     setState((prev) => {
-      const c = prev.setting ? getContent(prev.setting, goalId) : undefined;
-      const totalMonths = parseTotalMonths(c?.goodHead);
+      const contents = next.map((g) => (prev.setting ? getContent(prev.setting, g) : undefined));
+      const totalMonths = contents.length > 0
+        ? Math.max(...contents.map((c) => parseTotalMonths(c?.goodHead)))
+        : DEFAULT_TOTAL_MONTHS;
       return {
         ...prev,
-        goal: goalId,
+        goal: next[0] ?? null,
         totalMonths,
         monthsElapsed: Math.round(totalMonths * 0.6),
         progressRatio: 1,
       };
     });
-  }, []);
+  }, [goals]);
 
   const handleChangeScope = useCallback((scope: AttainScope) => {
     updateState({ scope });
@@ -130,72 +161,91 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
     setBaselineOverrides((prev) => ({ ...prev, [index]: value }));
   }, []);
 
-  const handleChangeLeverValue = useCallback((leverId: string, value: number | string[]) => {
-    setLeverValues((prev) => ({ ...prev, [leverId]: value }));
+  const handleChangeLeverValue = useCallback((goal: GoalId, leverId: string, value: number | string[]) => {
+    setValuesByGoal((prev) => ({
+      ...prev,
+      [goal]: { ...(prev[goal] ?? defaultLeverValues(goal)), [leverId]: value },
+    }));
   }, []);
 
-  const handleChangeCommitment = useCallback((leverId: string, patch: Partial<Commitment>) => {
+  const handleChangeCommitment = useCallback((goal: GoalId, leverId: string, patch: Partial<Commitment>) => {
     setCommitments((prev) => {
-      const lever = state.goal ? LEVERS[state.goal].find((l) => l.id === leverId) : undefined;
-      const base: Commitment = prev[leverId] ?? {
+      const key = commitmentKey(goal, leverId);
+      const lever = LEVERS[goal].find((l) => l.id === leverId);
+      const base: Commitment = prev[key] ?? {
         owner: lever?.ownerRole ?? "",
         due: lever?.defaultDue ?? "Month 1",
       };
-      return { ...prev, [leverId]: { ...base, ...patch } };
+      return { ...prev, [key]: { ...base, ...patch } };
     });
-  }, [state.goal]);
+  }, []);
 
   const handleMonthsElapsedChange = useCallback((months: number) => {
     updateState({ monthsElapsed: months });
   }, [updateState]);
 
-  // Every dollar figure downstream comes from this one computation: the sum
-  // of each lever's delta off its own realityStart. See attainLevers.ts for
-  // the contribution model.
-  const contributions = useMemo(() => {
-    if (!state.goal || !state.setting) return null;
-    return computeLeverContributions(state.goal, state.setting, state.scope, leverValues);
-  }, [state.goal, state.setting, state.scope, leverValues]);
+  const handleFreedTimeSplitChange = useCallback((split: number) => {
+    setFreedTimeSplit(Math.min(100, Math.max(0, split)));
+  }, []);
+
+  // Every dollar figure downstream comes from this one computation: each
+  // goal's own delta off its own realityStart, combined once with the
+  // freed-time hour split (not double-counted) when access+retention are
+  // both in play. See attainLevers.ts computeMultiGoalContributions.
+  const combined: MultiGoalContributionsResult | null = useMemo(() => {
+    if (goals.length === 0 || !state.setting) return null;
+    return computeMultiGoalContributions(goals, state.setting, state.scope, valuesByGoal, freedTimeSplit);
+  }, [goals, state.setting, state.scope, valuesByGoal, freedTimeSplit]);
 
   const builtTarget: GoalTargetResult | null = useMemo(() => {
-    if (!state.goal || !state.setting || !contributions) return null;
-    return {
-      margin: contributions.totalMargin,
-      count: contributions.totalCount,
-      label: `${contributions.totalCount.toLocaleString()} ${countLabel(state.goal, state.setting)}`,
-    };
-  }, [state.goal, state.setting, contributions]);
+    if (goals.length === 0 || !state.setting || !combined) return null;
+    const label = goals.length === 1
+      ? `${combined.combinedCount.toLocaleString()} ${countLabel(goals[0], state.setting)}`
+      : `${combined.combinedCount.toLocaleString()} units of value across ${goals.length} priorities`;
+    return { margin: combined.combinedMargin, count: combined.combinedCount, label };
+  }, [goals, state.setting, combined]);
 
-  const movedLeverIds = useMemo(() => {
-    if (!state.goal) return [] as string[];
-    return LEVERS[state.goal].filter((l) => isLeverMoved(leverValues[l.id], l.realityStart)).map((l) => l.id);
-  }, [state.goal, leverValues]);
+  const movedLeverKeys = useMemo(() => {
+    const out: string[] = [];
+    for (const g of goals) {
+      const values = valuesByGoal[g] ?? defaultLeverValues(g);
+      for (const lever of LEVERS[g]) {
+        if (isLeverMoved(values[lever.id], lever.realityStart)) out.push(commitmentKey(g, lever.id));
+      }
+    }
+    return out;
+  }, [goals, valuesByGoal]);
 
-  // Progress ratio (Task 4-7 replacement): instead of "fragile chain links
-  // marked on track," the curve now steers against how much of the built
+  // Progress ratio: the curve steers against how much of the COMBINED built
   // target has a commitment (owner + month) whose month has actually
-  // arrived. A plan with nothing committed yet, or nothing due yet, drifts
-  // toward "what usually happens"; as committed decisions come due, the
-  // curve climbs back toward the plan's own line.
+  // arrived, weighted per-lever against the combined total (not each
+  // goal's own total), so a plan with two priorities does not overstate
+  // progress just because one priority's decisions are all committed.
   useEffect(() => {
-    if (!state.goal || !contributions) return;
-    if (movedLeverIds.length === 0) {
+    if (goals.length === 0 || !combined) return;
+    if (movedLeverKeys.length === 0) {
       if (state.progressRatio !== 1) updateState({ progressRatio: 1 });
       return;
     }
-    const levers = LEVERS[state.goal];
-    const realizedWeight = contributions.perLever
-      .filter((p) => movedLeverIds.includes(p.id))
-      .reduce((sum, p) => {
-        const lever = levers.find((l) => l.id === p.id);
-        const due = commitments[p.id]?.due ?? lever?.defaultDue ?? "Month 1";
-        return dueMonthNumber(due) <= state.monthsElapsed ? sum + p.pctOfTotal : sum;
-      }, 0);
+    let realizedWeight = 0;
+    for (const g of goals) {
+      const res = combined.byGoal[g];
+      if (!res) continue;
+      for (const lever of LEVERS[g]) {
+        const key = commitmentKey(g, lever.id);
+        if (!movedLeverKeys.includes(key)) continue;
+        const contribution = res.perLever.find((p) => p.id === lever.id);
+        if (!contribution) continue;
+        const due = commitments[key]?.due ?? lever.defaultDue;
+        const weight = combined.combinedMargin > 0 ? Math.max(0, contribution.marginalMargin) / combined.combinedMargin : 0;
+        if (dueMonthNumber(due) <= state.monthsElapsed) realizedWeight += weight;
+      }
+    }
     const ratio = 0.4 + 0.6 * Math.min(1, Math.max(0, realizedWeight));
     if (Math.abs(ratio - state.progressRatio) > 0.001) {
       updateState({ progressRatio: ratio });
     }
-  }, [state.goal, state.monthsElapsed, state.progressRatio, contributions, movedLeverIds, commitments, updateState]);
+  }, [goals, state.monthsElapsed, state.progressRatio, combined, movedLeverKeys, commitments, updateState]);
 
   const attainment: AttainmentResult = useMemo(() => {
     if (!builtTarget || builtTarget.margin <= 0) return { pct: 0, onPacePct: 0, marginToDate: 0 };
@@ -242,7 +292,7 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
             )}
 
             {step === "vision" && state.setting && (
-              <StepVision setting={state.setting} selectedGoal={state.goal} onSelect={handleSelectGoal} onNext={goNext} />
+              <StepVision setting={state.setting} selectedGoals={goals} onToggle={handleToggleGoal} onNext={goNext} />
             )}
 
             {step === "scope" && state.setting && (
@@ -257,22 +307,24 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
               />
             )}
 
-            {step === "buildCase" && state.setting && state.goal && (
+            {step === "buildCase" && state.setting && goals.length > 0 && (
               <StepBuildCase
                 setting={state.setting}
-                goal={state.goal}
-                values={leverValues}
-                contributions={contributions}
-                onChange={handleChangeLeverValue}
+                goals={goals}
+                valuesByGoal={valuesByGoal}
+                combined={combined}
+                freedTimeSplit={freedTimeSplit}
+                onChangeFreedTimeSplit={handleFreedTimeSplitChange}
+                onChangeLeverValue={handleChangeLeverValue}
                 onNext={goNext}
               />
             )}
 
-            {step === "commit" && state.goal && (
+            {step === "commit" && goals.length > 0 && (
               <StepCommit
-                goal={state.goal}
-                values={leverValues}
-                contributions={contributions}
+                goals={goals}
+                valuesByGoal={valuesByGoal}
+                combined={combined}
                 commitments={commitments}
                 onChangeCommitment={handleChangeCommitment}
                 onNext={goNext}
@@ -280,16 +332,18 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
             )}
 
             {step === "plan" && (
-              goal && content && state.setting && builtTarget ? (
+              goals.length > 0 && state.setting && builtTarget && combined ? (
                 <StepPlan
                   state={state}
-                  goal={goal}
-                  content={content}
+                  setting={state.setting}
+                  goals={goals}
                   target={builtTarget}
                   attainment={attainment}
-                  leverValues={leverValues}
+                  valuesByGoal={valuesByGoal}
+                  combined={combined}
                   commitments={commitments}
                   baselineOverrides={baselineOverrides}
+                  freedTimeSplit={freedTimeSplit}
                   onMonthsElapsedChange={handleMonthsElapsedChange}
                 />
               ) : (
@@ -307,13 +361,13 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
               <div className="lg:sticky lg:top-24">
                 <AttainLivePanel
                   state={state}
-                  goal={goal}
+                  goals={goals}
                   content={content}
                   target={builtTarget}
                   attainment={attainment}
                   step={step}
-                  leverValues={leverValues}
-                  contributions={contributions}
+                  valuesByGoal={valuesByGoal}
+                  combined={combined}
                 />
               </div>
             </div>
