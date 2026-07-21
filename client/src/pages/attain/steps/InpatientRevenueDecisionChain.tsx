@@ -22,6 +22,7 @@ import {
   DEFAULT_IP_DRG_BASE_PAYMENT,
   DEFAULT_IP_CDI_QUERY_RATE,
   DEFAULT_IP_CDI_COST_PER_QUERY,
+  MAX_IP_CDI_COST_PER_QUERY,
   DEFAULT_IP_OBS_DENIAL_RATE,
   DEFAULT_IP_OBS_REVENUE_DELTA,
   IP_REVENUE_PATH_IDS,
@@ -244,8 +245,24 @@ export default function InpatientRevenueDecisionChain({ baseline, values, onChan
       </motion.div>
 
       {chosen.includes("drg") && <DrgPathSection baseline={baseline} values={values} onChangeValue={onChangeValue} realizationPct={realizationPct} />}
-      {chosen.includes("cdi") && <CdiPathSection baseline={baseline} values={values} onChangeValue={onChangeValue} realizationPct={realizationPct} />}
-      {chosen.includes("obs") && <ObsPathSection baseline={baseline} values={values} onChangeValue={onChangeValue} realizationPct={realizationPct} />}
+      {chosen.includes("cdi") && (
+        <CdiPathSection
+          baseline={baseline}
+          values={values}
+          onChangeValue={onChangeValue}
+          realizationPct={realizationPct}
+          drgAlsoSelected={chosen.includes("drg")}
+        />
+      )}
+      {chosen.includes("obs") && (
+        <ObsPathSection
+          baseline={baseline}
+          values={values}
+          onChangeValue={onChangeValue}
+          realizationPct={realizationPct}
+          drgAlsoSelected={chosen.includes("drg")}
+        />
+      )}
 
       {chosen.length > 1 && (
         <motion.div
@@ -320,20 +337,20 @@ function DrgPathSection({
       <DecisionCard
         step="D2"
         title="Set the CC/MCC capture improvement"
-        help="A comorbidity documented but never coded specifically enough is not a captured DRG. This is the improvement above today's capture rate this plan commits to, zero here captures nothing new."
+        help="A comorbidity documented but never coded specifically enough is not a captured DRG. This is the share of your AT-RISK admissions (from D1) this plan newly captures, zero here captures nothing new."
         testid="card-ip-revenue-drg-d2"
       >
         <div className="mb-2">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm text-[#8C8C8C] flex items-center gap-1.5">
-              CC/MCC capture improvement above today
+              Share of at-risk admissions newly captured
               <InfoTip
-                text="How much higher than today's CC/MCC capture rate you are actually committing to reach. This is the gate, zero here captures nothing."
+                text="A share of the AT-RISK admissions above (D1), not of your overall CC/MCC capture rate. Industry benchmarks that frame this as '62% to 72%' describe a broader, hospital-wide metric; this decision is scoped to the at-risk pool this plan can actually act on. This is the gate, zero here captures nothing."
                 testid="tooltip-ip-revenue-drg-capture"
               />
             </span>
             <span className="text-sm font-semibold text-[#1A1A1A]" data-testid="text-ip-revenue-drg-capture-value">
-              +{fmtInt(asNum(values.ipDrgCapture))}pp
+              +{fmtInt(asNum(values.ipDrgCapture))}%
             </span>
           </div>
           <Slider
@@ -415,11 +432,13 @@ function CdiPathSection({
   values,
   onChangeValue,
   realizationPct,
+  drgAlsoSelected,
 }: {
   baseline: AttainBaseline;
   values: LeverValues;
   onChangeValue: (leverId: string, value: number | string[]) => void;
   realizationPct: number;
+  drgAlsoSelected: boolean;
 }) {
   const chain = computeIpCdiChain(baseline, values);
 
@@ -430,7 +449,7 @@ function CdiPathSection({
       <DecisionCard
         step="D1"
         title="Your current CDI query rate"
-        help="The share of eligible admissions that generate a physician query today, the rate the closure improvement below is measured against."
+        help="The share of eligible admissions that generate a physician query today, the rate the volume-reduction improvement below is measured against."
         testid="card-ip-revenue-cdi-d1"
       >
         <div className="max-w-[200px]">
@@ -455,16 +474,16 @@ function CdiPathSection({
 
       <DecisionCard
         step="D2"
-        title="Set the query-closure improvement"
-        help="A query that ages past discharge gets answered from memory or dropped. This is the share of today's queries this plan commits to closing before that happens, zero here closes nothing new."
+        title="Set the query-volume reduction"
+        help="The real lever here is fewer queries needed in the first place: a complete ambient note already carries the specificity a physician query would otherwise have to chase. This is the share of today's query volume this plan avoids generating at all, zero here avoids nothing new."
         testid="card-ip-revenue-cdi-d2"
       >
         <div className="mb-2">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm text-[#8C8C8C] flex items-center gap-1.5">
-              Queries closed before discharge
+              Fewer queries needed
               <InfoTip
-                text="The share of today's CDI queries this plan commits to closing before discharge, instead of aging out. This is the gate, zero here closes nothing."
+                text="The share of today's CDI query volume this plan commits to avoiding entirely, because the note is complete enough up front that CDI never has to generate the query. This is the gate, zero here avoids nothing."
                 testid="tooltip-ip-revenue-cdi-reduction"
               />
             </span>
@@ -483,38 +502,52 @@ function CdiPathSection({
             data-testid="slider-ip-revenue-cdi-reduction"
           />
         </div>
-        <CountOutput label="Queries closed" value={fmtInt(chain.closed)} unit="queries/yr" testid="text-ip-revenue-cdi-d2-output" />
+        <CountOutput label="Queries avoided" value={fmtInt(chain.avoided)} unit="queries/yr" testid="text-ip-revenue-cdi-d2-output" />
         <MathBox formula={ipCdiCountFormula(chain)} testid="text-ip-revenue-cdi-d2-formula" />
       </DecisionCard>
 
       <DecisionCard
         step="D3"
-        title="Price the avoided query cost"
-        help="The dollar every avoided or resolved query above actually protects. Still no total, that comes next."
+        title="Price the administrative cost avoided"
+        help="The CDI-staff time every avoided query no longer costs to generate, track, and chase. Admin cost only, capped well below a DRG reimbursement so it can never restate that dollar. Still no total, that comes next."
         testid="card-ip-revenue-cdi-d3"
       >
         <div className="max-w-[200px]">
-          <FieldLabel tip="The dollar every avoided or resolved CDI query actually protects, your own number.">Avoided cost per query</FieldLabel>
+          <FieldLabel tip={`The CDI-staff/admin time an avoided query no longer costs, your own number. Capped at $${fmtInt(MAX_IP_CDI_COST_PER_QUERY)}/query on purpose - this must exclude the DRG reimbursement a captured comorbidity earns, which is already booked in the DRG path.`}>
+            Admin cost avoided per query
+          </FieldLabel>
           <div className="relative">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8C8C8C] text-sm pointer-events-none">$</span>
             <NumberField
               value={asNum(values.ipCdiCostPerQuery) > 0 ? asNum(values.ipCdiCostPerQuery) : DEFAULT_IP_CDI_COST_PER_QUERY}
               onValueChange={(v) => onChangeValue("ipCdiCostPerQuery", v)}
               min={0}
+              max={MAX_IP_CDI_COST_PER_QUERY}
               decimal={false}
               className="h-11 w-full rounded-md border border-[#E5E5E5] bg-white pl-7 pr-3 text-sm"
               data-testid="input-ip-revenue-cdi-cost-per-query"
             />
             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8C8C8C] text-xs pointer-events-none">/query</span>
           </div>
-          <p className="text-[11px] text-[#8C8C8C] mt-1">Defaults to ${fmtInt(DEFAULT_IP_CDI_COST_PER_QUERY)}/query until you set your own.</p>
+          <p className="text-[11px] text-[#8C8C8C] mt-1">
+            Defaults to ${fmtInt(DEFAULT_IP_CDI_COST_PER_QUERY)}/query, capped at ${fmtInt(MAX_IP_CDI_COST_PER_QUERY)}/query - admin cost only.
+          </p>
         </div>
+        {drgAlsoSelected && (
+          <p
+            className="text-[12px] text-[#EA2C00] bg-[#FFF6F3] border border-[#EA2C00] rounded-md px-3 py-2 mt-3 leading-relaxed font-medium"
+            data-testid="note-ip-revenue-cdi-drg-doublecount"
+          >
+            DRG + CDI are both selected. This price must stay administrative cost only (CDI specialist time), never the
+            DRG reimbursement itself, that dollar is already counted in the Case Mix / DRG Accuracy path above.
+          </p>
+        )}
       </DecisionCard>
 
       <PayoffCard
         pill="CDI Query Efficiency"
         value={chain.value}
-        caption={`${fmtInt(chain.closed)} queries closed x ~$${fmtInt(chain.costPerQuery)}/query`}
+        caption={`${fmtInt(chain.avoided)} queries avoided x ~$${fmtInt(chain.costPerQuery)}/query admin cost`}
         formula={ipCdiPayoffFormula(chain)}
         testid="text-ip-revenue-cdi-payoff"
         realizationPct={realizationPct}
@@ -532,11 +565,13 @@ function ObsPathSection({
   values,
   onChangeValue,
   realizationPct,
+  drgAlsoSelected,
 }: {
   baseline: AttainBaseline;
   values: LeverValues;
   onChangeValue: (leverId: string, value: number | string[]) => void;
   realizationPct: number;
+  drgAlsoSelected: boolean;
 }) {
   const chain = computeIpObsChain(baseline, values);
 
@@ -550,6 +585,16 @@ function ObsPathSection({
         help="The share of eligible admissions downgraded from inpatient to observation status today, the rate the preventable share below is measured against. A downgrade is a genuinely separate claim from a DRG-weight gap: the whole admission moves status, not just the weight within it."
         testid="card-ip-revenue-obs-d1"
       >
+        {drgAlsoSelected && (
+          <p
+            className="text-[12px] text-[#3A3A3A] bg-[#F8F5F1] border border-[#E7E0D6] rounded-md px-3 py-2 mb-4 leading-relaxed"
+            data-testid="note-ip-revenue-drg-obs-shared-pool"
+          >
+            DRG + Observation Defense are both selected and price off the same eligible-admissions pool. A single
+            admission can sit in both, but they are different claim events, a DRG-weight change and a status change,
+            never the same claim, so summing them is not a double-count.
+          </p>
+        )}
         <div className="max-w-[200px]">
           <FieldLabel tip="Share of eligible admissions downgraded from inpatient to observation status today.">
             Downgrade rate, today

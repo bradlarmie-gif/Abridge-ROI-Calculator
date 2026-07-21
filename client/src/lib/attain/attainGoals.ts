@@ -929,9 +929,9 @@ const inpatientRevenue: SettingGoalContent = {
   p1Lead:
     "Meridian's hospitalists are managing patients with real complexity and comorbidity burden, but the daily progress notes and discharge summaries often do not carry enough specificity for coding to assign the DRG the admission actually earned. A patient managed through three active comorbidities gets grouped as if they had one. The clinical acuity was real. Whether it is reflected in the DRG weight depends on documentation specificity that mostly goes unwatched until the retrospective audit.",
   worldCards: [
-    { k: "CC/MCC capture rate", n: "62%", coral: true, f: "Benchmark: 72%" },
-    { k: "CDI query rate", n: "28%", f: "Of eligible admissions" },
-    { k: "Eligible admissions", n: "8,200", f: "Per year, in scope" },
+    { k: "CC/MCC capture rate", n: "62%", coral: true, f: "Industry benchmark: 72%" },
+    { k: "CDI query rate", n: "30%", f: "Of eligible admissions" },
+    { k: "Eligible admissions", n: "12,600", f: "Per year, in scope" },
     { k: "In scope", n: "45", f: "Hospitalists · Med-Surg & ICU" },
   ],
   opportunity:
@@ -947,7 +947,7 @@ const inpatientRevenue: SettingGoalContent = {
     "Ambient captures the comorbidity and severity detail in the note at the point of care. Whether that specificity survives into the DRG assignment depends on the CDI and coding workflow downstream. That handoff is what this plan is built around.",
   goodHead: 'What "good" looks like, 9 months out',
   goodCells: [
-    { n: "+10 pts", k: "CC/MCC capture rate" },
+    { n: "+10%", k: "Of at-risk admissions newly captured" },
     { n: "0.12", k: "Avg case-mix index lift" },
     { n: "$1.6M", coral: true, k: "Protected margin" },
     { n: "-9 pts", k: "CDI query rate" },

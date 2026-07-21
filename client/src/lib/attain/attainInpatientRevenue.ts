@@ -21,12 +21,30 @@ import { DEFAULT_EXPLORE_STATE, type ExploreState } from "@/pages/explore/Explor
  *      note gets the admission grouped at a lower DRG weight than it
  *      earned. Priced as at-risk admissions × capture improvement × the
  *      DRG weight lift × the base payment per case — the exact
- *      `ipDrg` formula in `exploreDriverCalcs.ts`.
- *   2. CDI Query Efficiency — a physician query that ages past discharge
- *      gets answered from memory or dropped, so the specificity never
- *      reaches the coder. Priced as queries generated × the closure/
- *      reduction rate this plan targets × the cost avoided per closed
- *      query — the exact `ipCdi` formula.
+ *      `ipDrg` formula in `exploreDriverCalcs.ts`. UNIT NOTE: the capture
+ *      improvement (`ipDrgCapture`) is a % SHARE OF THE AT-RISK SUBSET newly
+ *      captured, not a percentage-point move on the hospital's overall
+ *      CC/MCC capture rate (62% → 72% in the industry-benchmark sense) - see
+ *      `ipDrgCountFormula`'s wording and `IpDrgChain`'s own comment below.
+ *      All three paths below now display this share consistently as "%",
+ *      matching CDI's and Obs's own units (previously DRG alone showed
+ *      "pp", which read as a headline-capture-rate point move it is not).
+ *   2. CDI Query Efficiency — the real Abridge lever here is FEWER QUERIES
+ *      NEEDED in the first place: a complete ambient note carries the
+ *      specificity a physician query would otherwise have to chase, so CDI
+ *      staff spend less time generating and following up queries at all.
+ *      This is query-VOLUME reduction / CDI-staff efficiency, not "closing
+ *      a query before discharge faster" - a query that still gets generated
+ *      and later closed still cost the CDI team the time to generate and
+ *      chase it. Priced as queries generated × the volume-reduction rate
+ *      this plan targets × the ADMINISTRATIVE cost avoided per query no
+ *      longer needed — the exact `ipCdi` formula. DOUBLE-COUNT GUARD: the
+ *      cost-per-query price here is admin/CDI-staff time ONLY and must
+ *      EXCLUDE the DRG reimbursement itself - that dollar is already booked
+ *      in path 1 above whenever DRG is also selected. `computeIpCdiChain`
+ *      clamps the price to `MAX_IP_CDI_COST_PER_QUERY` for exactly this
+ *      reason (see that constant's own comment), and the UI shows an
+ *      explicit note whenever both DRG and CDI are chosen together.
  *   3. Observation / IP Status Defense — a status downgrade driven by
  *      under-specified severity-of-illness documentation is a genuinely
  *      separate claim from a DRG-weight gap: it is the whole admission
@@ -42,7 +60,14 @@ import { DEFAULT_EXPLORE_STATE, type ExploreState } from "@/pages/explore/Explor
  * decisions behind it are real. The three paths are NOT jointly dependent
  * on each other (a captured DRG weight, an avoided query, and a defended
  * IP stay are three different claims), so their dollar contributions are
- * computed independently and simply SUMMED.
+ * computed independently and simply SUMMED. DRG and CDI price the SAME
+ * underlying documentation-completeness improvement from two different
+ * angles (the weight it earns vs the admin time it saves chasing the
+ * query), which is exactly why the double-count guard above exists - see
+ * `MAX_IP_CDI_COST_PER_QUERY`. DRG and Obs also draw from the same eligible-
+ * admissions pool but are genuinely different CLAIM EVENTS (a weight change
+ * vs a status change on possibly the same admission), which is why they
+ * simply sum with no such guard needed.
  *
  * SCOPE: this module only ever runs for setting === "inpatient". Outpatient
  * and ED revenue keep their own three-path chain in `attainRevenue.ts`,
@@ -161,8 +186,16 @@ export interface IpDrgChain {
   eligibleEncounters: number;
   atRiskRate: number;
   atRisk: number;
-  /** The gate — capture improvement above today's CC/MCC capture rate,
-   * realityStart 0. Doing nothing new captures nothing. */
+  /** The gate — the SHARE OF THE AT-RISK SUBSET (`atRisk`, not the full
+   * eligible-admissions pool) this plan commits to newly capturing,
+   * realityStart 0. Doing nothing new captures nothing. UNIT NOTE: this is
+   * a plain "%" of the at-risk pool, e.g. "10% of at-risk admissions newly
+   * captured" - it is NOT a percentage-point move on the hospital's overall
+   * CC/MCC capture rate (the 62% → 72% industry-benchmark framing the
+   * narrative content cites is a different, broader metric describing
+   * today's state, not what this slider directly moves). Displayed as "%"
+   * everywhere (D2 slider, THE MATH, Commit), matching CDI's and Obs's own
+   * unit, not "pp". */
   capturePct: number;
   capturedCases: number;
   weightIncrease: number;
@@ -201,7 +234,7 @@ export function computeIpDrgChain(baseline: AttainBaseline, values: LeverValues)
  * chain's discipline of deriving a count before any dollar exists. */
 export function ipDrgCountFormula(chain: IpDrgChain): string {
   if (chain.capturedCases <= 0) return NO_MOVE_FORMULA;
-  return `${fmtInt(chain.atRisk)} at-risk admissions × ${fmtInt(chain.capturePct)}pp CC/MCC capture improvement = ${fmtInt(chain.capturedCases)} additional captured cases.`;
+  return `${fmtInt(chain.atRisk)} at-risk admissions × ${fmtInt(chain.capturePct)}% of the at-risk pool newly captured = ${fmtInt(chain.capturedCases)} additional captured cases.`;
 }
 
 /** The payoff formula - the first (and only) place a dollar appears in this
@@ -218,25 +251,48 @@ export function ipDrgPayoffFormula(chain: IpDrgChain): string {
 /** Benchmark query rate, matching the live engine's own default
  * (`ipCdiQueryRate`). */
 export const DEFAULT_IP_CDI_QUERY_RATE = 30;
-/** Benchmark cost avoided per closed query, matching the live engine's own
- * default (`ipCdiCostPerQuery`). */
+/** Benchmark administrative cost avoided per query no longer needed,
+ * matching the live engine's own default (`ipCdiCostPerQuery`). */
 export const DEFAULT_IP_CDI_COST_PER_QUERY = 50;
+/** DOUBLE-COUNT GUARD (I3, premium audit): this price is CDI-staff/admin
+ * time only (generating, tracking, and following up a query) - it must
+ * EXCLUDE the DRG reimbursement the closed query may go on to earn, because
+ * that dollar is already booked whole in path 1's DRG chain above whenever
+ * DRG is also selected. A real admin-cost-per-query benchmark is well under
+ * $200 (specialist review time, not a claim payment); this ceiling makes
+ * the double-count structurally hard to create by accident rather than
+ * relying on the $50 default alone to keep a partner from re-pricing a
+ * query at DRG-reimbursement-sized dollars ($400-500+). See the UI's own
+ * explicit note when both DRG and CDI are chosen together
+ * (`InpatientRevenueDecisionChain.tsx`). */
+export const MAX_IP_CDI_COST_PER_QUERY = 200;
 
 export interface IpCdiChain {
   eligibleEncounters: number;
   queryRate: number;
   queries: number;
-  /** The gate — the closure/reduction target this plan commits to, above
-   * today's zero. */
+  /** The gate — the QUERY-VOLUME REDUCTION this plan commits to: the share
+   * of today's queries that never need to be generated in the first place
+   * because the ambient note already carries the specificity a query would
+   * otherwise chase, above today's zero. */
   reductionPct: number;
-  closed: number;
+  /** Queries no longer needed - avoided at the source, not "closed faster
+   * before discharge" (a query that still gets generated still costs CDI
+   * staff time to chase and answer, whether or not it closes in time). */
+  avoided: number;
+  /** Administrative cost avoided per query no longer needed - CDI-staff
+   * time only. Clamped to `MAX_IP_CDI_COST_PER_QUERY`; see that constant's
+   * comment for the double-count guard this enforces against the DRG
+   * path's reimbursement dollar. */
   costPerQuery: number;
   value: number;
 }
 
 /** `queryRate` is descriptive context; `reductionPct` is the genuine
- * decision (realityStart 0); `costPerQuery` is price. Reconciles exactly to
- * `exploreDriverCalcs.ts`'s `ipCdi` block: queries × pct × costPerQuery. */
+ * decision (realityStart 0); `costPerQuery` is admin-cost price, clamped to
+ * `MAX_IP_CDI_COST_PER_QUERY` (double-count guard, see that constant's
+ * comment). Reconciles exactly to `exploreDriverCalcs.ts`'s `ipCdi` block:
+ * queries × pct × costPerQuery. */
 export function computeIpCdiChain(baseline: AttainBaseline, values: LeverValues): IpCdiChain {
   const eligibleEncounters = eligibleAdmissions(baseline);
 
@@ -245,24 +301,27 @@ export function computeIpCdiChain(baseline: AttainBaseline, values: LeverValues)
   const queries = eligibleEncounters * (queryRate / 100);
 
   const reductionPct = clampPct(Math.max(0, asNum(values.ipCdiReduction)));
-  const closed = queries * (reductionPct / 100);
+  const avoided = queries * (reductionPct / 100);
 
   const costPerQueryRaw = asNum(values.ipCdiCostPerQuery);
-  const costPerQuery = costPerQueryRaw > 0 ? costPerQueryRaw : DEFAULT_IP_CDI_COST_PER_QUERY;
+  const costPerQuery = Math.min(
+    MAX_IP_CDI_COST_PER_QUERY,
+    costPerQueryRaw > 0 ? costPerQueryRaw : DEFAULT_IP_CDI_COST_PER_QUERY,
+  );
 
-  const value = Math.round(closed * costPerQuery);
+  const value = Math.round(avoided * costPerQuery);
 
-  return { eligibleEncounters, queryRate, queries, reductionPct, closed, costPerQuery, value };
+  return { eligibleEncounters, queryRate, queries, reductionPct, avoided, costPerQuery, value };
 }
 
 export function ipCdiCountFormula(chain: IpCdiChain): string {
-  if (chain.closed <= 0) return NO_MOVE_FORMULA;
-  return `${fmtInt(chain.queries)} CDI queries generated × ${fmtInt(chain.reductionPct)}% closed before discharge = ${fmtInt(chain.closed)} queries closed.`;
+  if (chain.avoided <= 0) return NO_MOVE_FORMULA;
+  return `${fmtInt(chain.queries)} CDI queries generated today × ${fmtInt(chain.reductionPct)}% fewer needed = ${fmtInt(chain.avoided)} queries avoided.`;
 }
 
 export function ipCdiPayoffFormula(chain: IpCdiChain): string {
   if (chain.value <= 0) return NO_MOVE_FORMULA;
-  return `${fmtInt(chain.closed)} queries closed × $${fmtInt(chain.costPerQuery)}/query avoided = ~${fmtMoneyCompact(chain.value)}.`;
+  return `${fmtInt(chain.avoided)} queries avoided × $${fmtInt(chain.costPerQuery)}/query admin cost = ~${fmtMoneyCompact(chain.value)}.`;
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -473,7 +532,7 @@ export function computeIpRevenueContributions(baseline: AttainBaseline, values: 
     },
     {
       id: "ipCdiReduction",
-      count: chain.cdi ? Math.round(chain.cdi.chain.closed) : 0,
+      count: chain.cdi ? Math.round(chain.cdi.chain.avoided) : 0,
       margin: chain.cdi?.chain.value ?? 0,
       formula: chain.cdi?.payoffFormula ?? NO_MOVE_FORMULA,
     },
@@ -481,7 +540,7 @@ export function computeIpRevenueContributions(baseline: AttainBaseline, values: 
       id: "ipCdiCostPerQuery",
       count: 0,
       margin: 0,
-      formula: chain.cdi ? `$${fmtInt(chain.cdi.chain.costPerQuery)} avoided per closed query, applied to the closures above.` : NO_MOVE_FORMULA,
+      formula: chain.cdi ? `$${fmtInt(chain.cdi.chain.costPerQuery)} admin cost avoided per query no longer needed, applied to the queries avoided above.` : NO_MOVE_FORMULA,
     },
     {
       id: "ipObsDenialRate",

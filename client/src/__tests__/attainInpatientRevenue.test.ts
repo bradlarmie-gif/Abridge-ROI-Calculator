@@ -16,6 +16,7 @@ import {
   DEFAULT_IP_DRG_BASE_PAYMENT,
   DEFAULT_IP_CDI_QUERY_RATE,
   DEFAULT_IP_CDI_COST_PER_QUERY,
+  MAX_IP_CDI_COST_PER_QUERY,
   DEFAULT_IP_OBS_DENIAL_RATE,
   DEFAULT_IP_OBS_REVENUE_DELTA,
 } from "@/lib/attain/attainInpatientRevenue";
@@ -127,16 +128,16 @@ describe("PATH 2 - CDI query efficiency", () => {
     expect(chain.queryRate).toBe(DEFAULT_IP_CDI_QUERY_RATE);
   });
 
-  it("the closure/reduction target is the gate - zero at reality closes nothing", () => {
+  it("the query-volume-reduction target is the gate - zero at reality avoids nothing", () => {
     const chain = computeIpCdiChain(BASELINE, { ipCdiQueryRate: 30 });
     expect(chain.reductionPct).toBe(0);
-    expect(chain.closed).toBe(0);
+    expect(chain.avoided).toBe(0);
     expect(chain.value).toBe(0);
   });
 
-  it("closed queries = queries generated x reduction pct", () => {
+  it("queries avoided = queries generated x reduction pct", () => {
     const chain = computeIpCdiChain(BASELINE, { ipCdiQueryRate: 30, ipCdiReduction: 25 });
-    expect(chain.closed).toBeCloseTo(chain.queries * 0.25, 3);
+    expect(chain.avoided).toBeCloseTo(chain.queries * 0.25, 3);
   });
 
   it("cost per query defaults to the engine benchmark ($50) when unset", () => {
@@ -144,10 +145,16 @@ describe("PATH 2 - CDI query efficiency", () => {
     expect(chain.costPerQuery).toBe(DEFAULT_IP_CDI_COST_PER_QUERY);
   });
 
-  it("value = closed queries x cost per query", () => {
+  it("value = queries avoided x admin cost per query", () => {
     const chain = computeIpCdiChain(BASELINE, { ipCdiQueryRate: 30, ipCdiReduction: 25, ipCdiCostPerQuery: 50 });
-    expect(chain.value).toBe(Math.round(chain.closed * 50));
+    expect(chain.value).toBe(Math.round(chain.avoided * 50));
     expect(chain.value).toBeGreaterThan(0);
+  });
+
+  it("cost per query is clamped to the double-count guard ceiling ($200), even if a partner tries to set it higher", () => {
+    const chain = computeIpCdiChain(BASELINE, { ipCdiQueryRate: 30, ipCdiReduction: 25, ipCdiCostPerQuery: 450 });
+    expect(chain.costPerQuery).toBe(MAX_IP_CDI_COST_PER_QUERY);
+    expect(chain.costPerQuery).toBeLessThan(450);
   });
 });
 
