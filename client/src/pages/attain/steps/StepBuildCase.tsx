@@ -1,10 +1,11 @@
 import { motion } from "framer-motion";
 import { Slider } from "@/components/ui/slider";
-import { LEVERS, lineOptions, type AttainBaseline, type Lever, type LeverValues } from "@/lib/attain/attainLevers";
+import { leversFor, lineOptions, type AttainBaseline, type Lever, type LeverValues } from "@/lib/attain/attainLevers";
 import type { MultiGoalContributionsResult } from "@/lib/attain/attainLevers";
 import { GOAL_CATALOG } from "@/lib/attain/attainGoals";
 import type { AttainSetting, GoalId } from "@/lib/attain/attainTypes";
 import AccessDecisionChain from "./AccessDecisionChain";
+import RevenueDecisionChain from "./RevenueDecisionChain";
 
 function formatCompact(n: number): string {
   const sign = n < 0 ? "-" : "";
@@ -94,7 +95,8 @@ export default function StepBuildCase({
   const hasFreedTimeConflict = goals.includes("access") && goals.includes("retention");
   const showFreedTimeSplit = hasFreedTimeConflict && (goal === "access" || goal === "retention");
   const goalDef = GOAL_CATALOG[goal];
-  const levers = LEVERS[goal];
+  const levers = leversFor(goal, setting);
+  const isRevenueChain = goal === "revenue" && setting !== "inpatient";
   const result = combined?.byGoal[goal];
   const contributionFor = (id: string) => result?.perLever.find((p) => p.id === id);
 
@@ -193,6 +195,13 @@ export default function StepBuildCase({
             baseline={baseline}
             values={values}
             onChangeValue={(leverId, value) => onChangeLeverValue("access", leverId, value)}
+          />
+        ) : isRevenueChain ? (
+          <RevenueDecisionChain
+            setting={setting}
+            baseline={baseline}
+            values={values}
+            onChangeValue={(leverId, value) => onChangeLeverValue("revenue", leverId, value)}
           />
         ) : (
           <div className="space-y-4">
