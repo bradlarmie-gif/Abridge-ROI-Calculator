@@ -105,6 +105,24 @@ interface CommittedLever {
   due: string;
 }
 
+/** One priority's shared payload for Strategy's narrative arc — built once
+ * (see `priorityData` in the main component) and handed to both "Your
+ * Starting Point" near the top and "How this works" near the bottom, so a
+ * multi-priority plan's two mentions of the same priority never disagree. */
+interface PriorityData {
+  goal: GoalId;
+  index: number;
+  total: number;
+  goalDef: GoalDef;
+  content: SettingGoalContent;
+  committedLevers: CommittedLever[];
+  goalMargin: number;
+  goalCount: number;
+  goalOwner: GoalOwner | undefined;
+  isFreedTimeGoal: boolean;
+  barAcc: number;
+}
+
 function committedLeversFor(
   goal: GoalId,
   setting: AttainSetting,
@@ -740,6 +758,36 @@ export default function StepAttainment({
   const goalDefs = goals.map((g) => GOAL_CATALOG[g]);
   const planTitle = goalDefs.length === 1 ? goalDefs[0].label : goalDefs.map((g) => g.label).join(" + ");
 
+  // One shared per-priority payload for both "Your Starting Point" (near the
+  // top of Strategy's narrative) and the "How this works" deep-dive reveal
+  // (tucked near the bottom) — computed once so neither can drift from the
+  // other or from the combined engine result.
+  const priorityData: PriorityData[] = goals
+    .map((goal, idx) => {
+      const content = getContent(setting, goal);
+      if (!content) return null;
+      const goalDef = GOAL_CATALOG[goal];
+      const values = valuesByGoal[goal] ?? defaultLeverValues(goal, setting);
+      const result = combined.byGoal[goal];
+      const committedLevers = committedLeversFor(goal, setting, values, result?.perLever, commitments);
+      const isFreedTimeGoal = hasFreedTimeConflict && (goal === "access" || goal === "retention");
+      const liveBarAcc = goal === "access" ? freedTimeSplit : 100 - freedTimeSplit;
+      return {
+        goal,
+        index: idx,
+        total: goals.length,
+        goalDef,
+        content,
+        committedLevers,
+        goalMargin: result?.totalMargin ?? 0,
+        goalCount: result?.totalCount ?? 0,
+        goalOwner: goalOwnerByPriority[goal],
+        isFreedTimeGoal,
+        barAcc: isFreedTimeGoal ? liveBarAcc : content.barAcc,
+      };
+    })
+    .filter((d): d is PriorityData => d !== null);
+
   return (
     <div>
       {/* Toolbar */}
@@ -924,8 +972,8 @@ export default function StepAttainment({
 
       {tab === "strategy" && (
         <>
-          {/* ============ SECTION 1 · COVER SUMMARY (combined) ============ */}
-          <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-20" data-testid="section-attain-cover">
+          {/* ============ HEADER — slim: title, prepared-for/by, goal + scope, a small value chip. Not the hero. ============ */}
+          <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-16" data-testid="section-attain-cover">
             <p className="text-[11px] font-semibold uppercase tracking-[3.2px] text-[#8C8C8C] mb-2">Attainment</p>
             <div className="flex items-center gap-2 flex-wrap mb-3">
               {goalDefs.map((g) => (
@@ -939,20 +987,20 @@ export default function StepAttainment({
                 </span>
               ))}
             </div>
-            <h2 className="font-abridge text-5xl md:text-6xl text-[#1A1A1A] mb-3" data-testid="text-attain-plan-title">
+            <h2 className="font-abridge text-4xl md:text-5xl text-[#1A1A1A] mb-3" data-testid="text-attain-plan-title">
               {planTitle}
             </h2>
             <div className="w-[100px] h-1 bg-[#EA2C00] mb-4" />
             <p className="text-base text-[#8C8C8C] mb-4">
               {goalDefs.length === 1 ? getContent(setting, goals[0])?.subtitle : `${goalDefs.length} priorities, one combined plan`}
             </p>
-            <p className="text-[16.5px] leading-relaxed text-[#3A3A3A] max-w-[560px] mb-6">
+            <p className="text-[15px] leading-relaxed text-[#3A3A3A] max-w-[640px] mb-6">
               One plan, built from every decision you moved across{" "}
               <b className="text-[#EA2C00]">{goalDefs.map((g) => g.label).join(", ")}</b>. Every dollar below rolls up
               from the same engine, counted once.
             </p>
 
-            <div className="flex flex-wrap gap-6 mb-6">
+            <div className="flex flex-wrap items-start gap-6">
               <div>
                 <p className="text-[10.5px] font-semibold uppercase tracking-[2.5px] text-[#B4B4B4] mb-1">Prepared for</p>
                 <input
@@ -970,101 +1018,25 @@ export default function StepAttainment({
                 <p className="text-[10.5px] font-semibold uppercase tracking-[2.5px] text-[#B4B4B4] mb-1">Horizon</p>
                 <p className="text-[16.5px] text-[#3A3A3A]">{state.totalMonths} months · {allCommitted.length} decisions committed</p>
               </div>
-            </div>
 
-            {/* ONE combined headline number, full stop. Only when a plan
-                actually holds 2+ priorities do we break that number out — as
-                a row of compact per-priority cards below it, never a second
-                copy of the same figure sitting right next to the first. */}
-            <div className="bg-[#1A1A1A] rounded-lg p-8 md:p-10 mb-4" data-testid="card-attain-plan-combined-hero">
-              <p className="text-[10px] font-semibold uppercase tracking-[1.8px] text-white/55 mb-2">Combined contribution margin</p>
-              <p className="font-abridge text-5xl md:text-6xl text-[#EA2C00]" data-testid="text-attain-plan-combined-value">
-                {formatCompact(target.margin)}
-              </p>
-              <p className="text-[13px] text-white/50 mt-2">
-                Across {goalDefs.length} {goalDefs.length === 1 ? "priority" : "priorities"} · {allCommitted.length} decision{allCommitted.length === 1 ? "" : "s"} committed
-              </p>
-            </div>
-
-            {goalDefs.length > 1 && (
-              <div className="flex flex-wrap gap-3 mb-4" data-testid="grid-attain-plan-priority-breakdown">
-                {goalDefs.map((g) => {
-                  const goalMargin = combined.byGoal[g.id]?.totalMargin ?? 0;
-                  const share = target.margin > 0 ? Math.round((goalMargin / target.margin) * 100) : 0;
-                  return <PriorityBreakdownCard key={g.id} goalDef={g} margin={goalMargin} share={share} />;
-                })}
+              {/* A preview, not the payoff — the full combined figure lands
+                  as the climax further down, not here at the open. */}
+              <div
+                className="ml-auto flex items-center gap-2.5 bg-[#F8F5F1] border border-[#E7E0D6] rounded-full pl-4 pr-5 py-2 self-center"
+                data-testid="chip-attain-plan-combined-preview"
+              >
+                <span className="text-[9.5px] font-semibold uppercase tracking-[1.4px] text-[#8C8C8C] whitespace-nowrap">Combined margin</span>
+                <span className="font-abridge text-xl text-[#EA2C00] whitespace-nowrap">{formatCompact(target.margin)}</span>
               </div>
-            )}
-
-            <p className="text-[12.5px] text-[#B4B4B4] leading-relaxed max-w-[600px] border-t border-[#E5E5E5] pt-3">
-              A value attainment plan is a shared commitment, co-authored at kickoff and steered monthly. Figures are
-              illustrative and valued at contribution margin, and every priority's freed-time lever is counted once,
-              never split across two goals' totals.
-            </p>
+            </div>
           </motion.section>
 
-          {/* ============ SECTION 2 · THE PLAN (decisions -> priority -> who -> when -> worth) ============ */}
-          <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-20" data-testid="section-attain-checklist">
-            <p className="text-[11px] font-semibold uppercase tracking-[3.2px] text-[#EA2C00] mb-1">What Has To Happen</p>
-            <h2 className="font-abridge text-[32px] text-[#1A1A1A] mb-4">The Plan</h2>
-            <p className="text-[15px] leading-relaxed text-[#3A3A3A] mb-5 max-w-[720px]">
-              To attain <b className="text-[#1A1A1A]">{formatCompact(target.margin)}</b> across {goalDefs.length}{" "}
-              {goalDefs.length === 1 ? "priority" : "priorities"}, here is what has to happen. Every row below is a
-              decision you moved above your reality, with a real owner and a real month attached to it. This is the
-              checklist to come back to, not the number that started it.
-            </p>
+          {/* ============ YOUR STARTING POINT — their operation today, and what good looks like, one block per priority ============ */}
+          {priorityData.map((d) => (
+            <StartingPointSection key={d.goal} {...d} unitCount={state.scope.unitCount} unitLabel={unitLabel} />
+          ))}
 
-            {allCommitted.length === 0 ? (
-              <div className="bg-[#F4F0EA] border-l-[3px] border-[#EA2C00] rounded-r-md p-4" data-testid="text-attain-plan-empty">
-                <p className="text-[15px] text-[#3A3A3A] leading-relaxed">
-                  No decisions are committed yet. Go back to Build the case and Commit to turn this into a real plan.
-                </p>
-              </div>
-            ) : goalDefs.length === 1 ? (
-              <>
-                <DecisionsTable rows={allCommitted} testId="table-attain-plan-decisions" />
-                <div className="flex items-center justify-between pt-3 mt-1 border-t border-[#E7E0D6]">
-                  <span className="text-[11.5px] font-bold text-[#1A1A1A]">Total, contribution margin</span>
-                  <span className="font-abridge text-xl text-[#EA2C00]" data-testid="text-attain-plan-total-reconciled">{formatCompact(target.margin)}</span>
-                </div>
-              </>
-            ) : (
-              <>
-                {goalDefs.map((g) => {
-                  const rows = allCommitted.filter((c) => c.goal === g.id);
-                  if (rows.length === 0) return null;
-                  // Never sum marginalMargin across a chain; use the chain's totalMargin.
-                  // Leave-one-out marginalMargin values overlap (retention/quality/ED-access)
-                  // and do not sum to the chain's real total, so this must read the same
-                  // byGoal[g.id].totalMargin the breakdown cards (~:872) and PDF already use.
-                  const groupWorth = combined.byGoal[g.id]?.totalMargin ?? 0;
-                  return (
-                    <div key={g.id} className="mb-8" data-testid={`group-attain-plan-decisions-${g.id}`}>
-                      <div className="flex items-center justify-between mb-2.5">
-                        <div className="flex items-center gap-2.5">
-                          <span
-                            className="inline-block text-[9px] font-bold uppercase tracking-[1.2px] text-white px-2 py-0.5 rounded-full"
-                            style={{ background: g.pillBg }}
-                          >
-                            {g.pill}
-                          </span>
-                          <span className="text-[13px] font-bold text-[#1A1A1A]">{g.label}</span>
-                        </div>
-                        <span className="text-[12.5px] font-bold text-[#EA2C00]">{formatCompact(groupWorth)}</span>
-                      </div>
-                      <DecisionsTable rows={rows} testId={`table-attain-plan-decisions-${g.id}`} />
-                    </div>
-                  );
-                })}
-                <div className="flex items-center justify-between pt-3 border-t border-[#E7E0D6]">
-                  <span className="text-[11.5px] font-bold text-[#1A1A1A]">Total, contribution margin, combined</span>
-                  <span className="font-abridge text-xl text-[#EA2C00]" data-testid="text-attain-plan-total-reconciled">{formatCompact(target.margin)}</span>
-                </div>
-              </>
-            )}
-          </motion.section>
-
-          {/* ============ SECTION 3 · CLOSING THE GAP (combined) ============ */}
+          {/* ============ CLOSING THE GAP (combined) ============ */}
           <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-20" data-testid="section-attain-curve">
             <p className="text-[11px] font-semibold uppercase tracking-[3.2px] text-[#EA2C00] mb-1">The Trajectory</p>
             <h2 className="font-abridge text-[32px] text-[#1A1A1A] mb-4">Closing the Gap</h2>
@@ -1118,81 +1090,134 @@ export default function StepAttainment({
             </div>
           </motion.section>
 
-          {/* ============ PER-PRIORITY DEEP DIVES ============ */}
-          {goals.map((goal, idx) => (
-            <PriorityDeepDive
-              key={goal}
-              setting={setting}
-              goal={goal}
-              goalDef={GOAL_CATALOG[goal]}
-              content={getContent(setting, goal)}
-              index={idx}
-              total={goals.length}
-              values={valuesByGoal[goal] ?? defaultLeverValues(goal, setting)}
-              result={combined.byGoal[goal]}
-              commitments={commitments}
-              goalOwner={goalOwnerByPriority[goal]}
-              unitCount={state.scope.unitCount}
-              unitLabel={unitLabel}
-              hasFreedTimeConflict={hasFreedTimeConflict}
-              freedTimeSplit={freedTimeSplit}
-            />
-          ))}
+          {/* ============ THE PLAN (decisions -> priority -> who -> when -> worth) ============ */}
+          <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-20" data-testid="section-attain-checklist">
+            <p className="text-[11px] font-semibold uppercase tracking-[3.2px] text-[#EA2C00] mb-1">What Has To Happen</p>
+            <h2 className="font-abridge text-[32px] text-[#1A1A1A] mb-4">The Plan</h2>
+            <p className="text-[15px] leading-relaxed text-[#3A3A3A] mb-5 max-w-[720px]">
+              To attain <b className="text-[#1A1A1A]">{formatCompact(target.margin)}</b> across {goalDefs.length}{" "}
+              {goalDefs.length === 1 ? "priority" : "priorities"}, here is what has to happen. Every row below is a
+              decision you moved above your reality, with a real owner and a real month attached to it. This is the
+              checklist to come back to, not the number that started it.
+            </p>
+
+            {allCommitted.length === 0 ? (
+              <div className="bg-[#F4F0EA] border-l-[3px] border-[#EA2C00] rounded-r-md p-4" data-testid="text-attain-plan-empty">
+                <p className="text-[15px] text-[#3A3A3A] leading-relaxed">
+                  No decisions are committed yet. Go back to Build the case and Commit to turn this into a real plan.
+                </p>
+              </div>
+            ) : goalDefs.length === 1 ? (
+              <>
+                <DecisionsTable rows={allCommitted} testId="table-attain-plan-decisions" />
+                <div className="flex items-center justify-between pt-3 mt-1 border-t border-[#E7E0D6]">
+                  <span className="text-[11.5px] font-bold text-[#1A1A1A]">Total, contribution margin</span>
+                  <span className="font-abridge text-xl text-[#EA2C00]" data-testid="text-attain-plan-total-reconciled">{formatCompact(target.margin)}</span>
+                </div>
+              </>
+            ) : (
+              <>
+                {goalDefs.map((g) => {
+                  const rows = allCommitted.filter((c) => c.goal === g.id);
+                  if (rows.length === 0) return null;
+                  // Never sum marginalMargin across a chain; use the chain's totalMargin.
+                  // Leave-one-out marginalMargin values overlap (retention/quality/ED-access)
+                  // and do not sum to the chain's real total, so this must read the same
+                  // byGoal[g.id].totalMargin the breakdown cards below and PDF already use.
+                  const groupWorth = combined.byGoal[g.id]?.totalMargin ?? 0;
+                  return (
+                    <div key={g.id} className="mb-8" data-testid={`group-attain-plan-decisions-${g.id}`}>
+                      <div className="flex items-center justify-between mb-2.5">
+                        <div className="flex items-center gap-2.5">
+                          <span
+                            className="inline-block text-[9px] font-bold uppercase tracking-[1.2px] text-white px-2 py-0.5 rounded-full"
+                            style={{ background: g.pillBg }}
+                          >
+                            {g.pill}
+                          </span>
+                          <span className="text-[13px] font-bold text-[#1A1A1A]">{g.label}</span>
+                        </div>
+                        <span className="text-[12.5px] font-bold text-[#EA2C00]">{formatCompact(groupWorth)}</span>
+                      </div>
+                      <DecisionsTable rows={rows} testId={`table-attain-plan-decisions-${g.id}`} />
+                    </div>
+                  );
+                })}
+                <div className="flex items-center justify-between pt-3 border-t border-[#E7E0D6]">
+                  <span className="text-[11.5px] font-bold text-[#1A1A1A]">Total, contribution margin, combined</span>
+                  <span className="font-abridge text-xl text-[#EA2C00]" data-testid="text-attain-plan-total-reconciled">{formatCompact(target.margin)}</span>
+                </div>
+              </>
+            )}
+          </motion.section>
+
+          {/* ============ THE PAYOFF — the combined value hero + the per-priority breakdown. The climax, not the opener. ============ */}
+          <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-16" data-testid="section-attain-payoff">
+            <p className="text-[11px] font-semibold uppercase tracking-[3.2px] text-[#EA2C00] mb-1">What It's Worth</p>
+            <h2 className="font-abridge text-[32px] text-[#1A1A1A] mb-4">The Payoff</h2>
+            <p className="text-[15px] leading-relaxed text-[#3A3A3A] mb-5 max-w-[720px]">
+              Everything above, the starting point, the gap, the plan, adds up to this. One combined number, built the
+              same way every figure on this plan was: from the decisions you actually committed to.
+            </p>
+
+            {/* ONE combined headline number, full stop. Only when a plan
+                actually holds 2+ priorities do we break that number out — as
+                a row of compact per-priority cards below it, never a second
+                copy of the same figure sitting right next to the first. */}
+            <div className="bg-[#1A1A1A] rounded-lg p-8 md:p-10 mb-4" data-testid="card-attain-plan-combined-hero">
+              <p className="text-[10px] font-semibold uppercase tracking-[1.8px] text-white/55 mb-2">Combined contribution margin</p>
+              <p className="font-abridge text-5xl md:text-6xl text-[#EA2C00]" data-testid="text-attain-plan-combined-value">
+                {formatCompact(target.margin)}
+              </p>
+              <p className="text-[13px] text-white/50 mt-2">
+                Across {goalDefs.length} {goalDefs.length === 1 ? "priority" : "priorities"} · {allCommitted.length} decision{allCommitted.length === 1 ? "" : "s"} committed
+              </p>
+            </div>
+
+            {goalDefs.length > 1 && (
+              <div className="flex flex-wrap gap-3 mb-4" data-testid="grid-attain-plan-priority-breakdown">
+                {goalDefs.map((g) => {
+                  const goalMargin = combined.byGoal[g.id]?.totalMargin ?? 0;
+                  const share = target.margin > 0 ? Math.round((goalMargin / target.margin) * 100) : 0;
+                  return <PriorityBreakdownCard key={g.id} goalDef={g} margin={goalMargin} share={share} />;
+                })}
+              </div>
+            )}
+
+            <p className="text-[12.5px] text-[#B4B4B4] leading-relaxed max-w-[600px] border-t border-[#E5E5E5] pt-3">
+              A value attainment plan is a shared commitment, co-authored at kickoff and steered monthly. Figures are
+              illustrative and valued at contribution margin, and every priority's freed-time lever is counted once,
+              never split across two goals' totals.
+            </p>
+          </motion.section>
+
+          {/* ============ HOW THIS WORKS — the deep methodology, tucked one click away ============ */}
+          <HowThisWorksReveal priorityData={priorityData} setting={setting} freedTimeSplit={freedTimeSplit} />
         </>
       )}
     </div>
   );
 }
 
-interface PriorityDeepDiveProps {
-  setting: AttainSetting;
-  goal: GoalId;
-  goalDef: GoalDef;
-  content: SettingGoalContent | undefined;
-  index: number;
-  total: number;
-  values: LeverValues;
-  result: { perLever: LeverContribution[]; totalMargin: number; totalCount: number } | undefined;
-  commitments: Record<string, Commitment>;
-  goalOwner: GoalOwner | undefined;
-  unitCount: number;
-  unitLabel: string;
-  hasFreedTimeConflict: boolean;
-  freedTimeSplit: number;
-}
-
-function PriorityDeepDive({
-  setting,
+/** Item (2) of Strategy's narrative arc — their operation today, then what
+ * good looks like, for one priority. Rendered once per priority right after
+ * the slim header and before "Closing the Gap", so the partner sees
+ * themselves in the plan before any curve or number shows up. */
+function StartingPointSection({
   goal,
-  goalDef,
-  content,
   index,
   total,
-  values,
-  result,
-  commitments,
+  goalDef,
+  content,
+  committedLevers,
+  goalMargin,
+  goalCount,
   goalOwner,
   unitCount,
   unitLabel,
-  hasFreedTimeConflict,
-  freedTimeSplit,
-}: PriorityDeepDiveProps) {
-  if (!content) return null;
-
-  const committedLevers = committedLeversFor(goal, setting, values, result?.perLever, commitments);
-  const goalMargin = result?.totalMargin ?? 0;
-  const goalCount = result?.totalCount ?? 0;
+}: PriorityData & { unitCount: number; unitLabel: string }) {
   const goalOwnerName = goalOwner?.name?.trim();
   const goalOwnerTitle = goalOwner?.title?.trim();
-
-  // Only access/retention share the freed-time hour, and only when both are
-  // in the plan. When that conflict is live, the "where is it going" bar
-  // reflects the ACTUAL chosen split live, not the setting's illustrative
-  // static default, so this section never contradicts the split control on
-  // Build the case.
-  const isFreedTimeGoal = hasFreedTimeConflict && (goal === "access" || goal === "retention");
-  const liveBarAcc = goal === "access" ? freedTimeSplit : 100 - freedTimeSplit;
-  const barAcc = isFreedTimeGoal ? liveBarAcc : content.barAcc;
 
   return (
     <div data-testid={`section-attain-plan-priority-${goal}`}>
@@ -1208,7 +1233,6 @@ function PriorityDeepDive({
         </p>
       </div>
 
-      {/* ============ Your Starting Point ============ */}
       <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-20" data-testid={`section-attain-starting-point-${goal}`}>
         <p className="text-[11px] font-semibold uppercase tracking-[3.2px] text-[#EA2C00] mb-1">Where You Are Today</p>
         <h2 className="font-abridge text-[32px] text-[#1A1A1A] mb-4">Your Starting Point</h2>
@@ -1269,9 +1293,88 @@ function PriorityDeepDive({
           </p>
         )}
       </motion.section>
+    </div>
+  );
+}
+
+/** The "How this works" progressive disclosure (Change 1) — the 7-link value
+ * chain table and the hardest-link mechanisms (plus the cadence that steers
+ * them) tucked one click away, so the default read stays tight and
+ * scannable while the full depth is still here for whoever wants it. One
+ * toggle for the whole plan; every committed priority renders inside it. */
+function HowThisWorksReveal({
+  priorityData,
+  setting,
+  freedTimeSplit,
+}: {
+  priorityData: PriorityData[];
+  setting: AttainSetting;
+  freedTimeSplit: number;
+}) {
+  const [open, setOpen] = useState(false);
+  if (priorityData.length === 0) return null;
+
+  return (
+    <section className="mb-10 pt-8 border-t border-[#E7E0D6]" data-testid="section-attain-how-it-works">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex items-center gap-2.5 group"
+        data-testid="button-attain-how-it-works-toggle"
+      >
+        <span className="font-abridge text-2xl text-[#1A1A1A] group-hover:text-[#EA2C00]">How this works</span>
+        {open ? <ChevronUp className="w-5 h-5 text-[#8C8C8C]" /> : <ChevronDown className="w-5 h-5 text-[#8C8C8C]" />}
+      </button>
+      <p className="text-[13px] text-[#8C8C8C] mt-2 max-w-[640px]">
+        The seven-link value chain behind each priority's number, the hardest link to hold, and the monthly cadence
+        that keeps it on track. Same math as the plan above, one click deeper.
+      </p>
+
+      {open && (
+        <div className="mt-8" data-testid="panel-attain-how-it-works">
+          {priorityData.map((d) => (
+            <PriorityMechanics key={d.goal} {...d} setting={setting} freedTimeSplit={freedTimeSplit} />
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
+/** The deep methodology for one priority, tucked inside "How this works":
+ * the Value Chain (the seven links, who typically holds them, the fragile
+ * middle), the Hardest Link (its mechanisms, the split, the freed-hour bar),
+ * and the Cadence (the bends, the monthly check, who owns what, at
+ * renewal). Content is unchanged from before Change 1 - only its position
+ * (behind the reveal, not in the default scroll) moved. */
+function PriorityMechanics({
+  goal,
+  index,
+  total,
+  goalDef,
+  content,
+  committedLevers,
+  isFreedTimeGoal,
+  barAcc,
+  setting,
+  freedTimeSplit,
+}: PriorityData & { setting: AttainSetting; freedTimeSplit: number }) {
+  return (
+    <div className="mb-16 last:mb-0" data-testid={`section-attain-how-it-works-priority-${goal}`}>
+      <div className="flex items-center gap-3 mb-6">
+        <span
+          className="inline-block text-[10px] font-bold uppercase tracking-[1.5px] text-white px-3 py-1 rounded-full"
+          style={{ background: goalDef.pillBg }}
+        >
+          {goalDef.pill}
+        </span>
+        <p className="text-[11px] font-semibold uppercase tracking-[3px] text-[#8C8C8C]">
+          Priority {index + 1} of {total} · {goalDef.label}
+        </p>
+      </div>
 
       {/* ============ The Value Chain ============ */}
-      <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-20" data-testid={`section-attain-chain-${goal}`}>
+      <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-14" data-testid={`section-attain-chain-${goal}`}>
         <div className="flex items-center gap-3 mb-2">
           <span className="inline-block text-[10px] font-bold uppercase tracking-[1.5px] text-white px-3 py-1 rounded-full" style={{ background: goalDef.pillBg }}>
             {goalDef.pill}
@@ -1335,7 +1438,7 @@ function PriorityDeepDive({
       </motion.section>
 
       {/* ============ The Hardest Link ============ */}
-      <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-20" data-testid={`section-attain-hardest-link-${goal}`}>
+      <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-14" data-testid={`section-attain-hardest-link-${goal}`}>
         <p className="text-[11px] font-semibold uppercase tracking-[3.2px] text-[#EA2C00] mb-1">The Hardest Link</p>
         <h2 className="font-abridge text-[32px] text-[#1A1A1A] mb-4">
           {content.hardestTitle} <span className="text-[#EA2C00]">{content.hardestArrow === "↑" ? "↗" : "↘"}</span>
@@ -1395,7 +1498,7 @@ function PriorityDeepDive({
       </motion.section>
 
       {/* ============ The Cadence ============ */}
-      <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-20" data-testid={`section-attain-cadence-${goal}`}>
+      <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-14 last:mb-0" data-testid={`section-attain-cadence-${goal}`}>
         <p className="text-[11px] font-semibold uppercase tracking-[3.2px] text-[#EA2C00] mb-1">How This Gets Steered</p>
         <h2 className="font-abridge text-[32px] text-[#1A1A1A] mb-4">The Cadence, {goalDef.label}</h2>
         <p className="text-[15px] leading-relaxed text-[#3A3A3A] mb-5 max-w-[720px]">{content.bendsLead}</p>
