@@ -26,6 +26,18 @@ interface AttainmentCurveProps {
   goalLabel: string;
   /** e.g. "~$300K" */
   usualLabel: string;
+  /** Label for the x-axis's left anchor — "Deal signed" on Strategy's
+   * projected curve, "Committed" on Progress's real one. */
+  startLabel?: string;
+  /**
+   * The REAL, dated climb (from `attainProgress.ts`'s
+   * `computeActualTrajectory`) — when present (Progress tab only), the
+   * solid coral line plots these actual logged points instead of the
+   * synthetic 3-point plan line, then continues to the Goal marker as a
+   * thin dashed coral projection (not yet observed). Absent on the
+   * Strategy tab, which keeps showing the projected pace line only.
+   */
+  actualPoints?: { monthsFromStart: number; pct: number }[];
 }
 
 const VB_W = 720;
@@ -54,17 +66,41 @@ function buildPath(points: Point[]): string {
   return d;
 }
 
-export function AttainmentCurve({ pct, onPacePct, monthsElapsed, totalMonths, goalLabel, usualLabel }: AttainmentCurveProps) {
-  const todayFrac = totalMonths > 0 ? monthsElapsed / totalMonths : 0;
+export function AttainmentCurve({
+  pct,
+  onPacePct,
+  monthsElapsed,
+  totalMonths,
+  goalLabel,
+  usualLabel,
+  startLabel = "Deal signed",
+  actualPoints,
+}: AttainmentCurveProps) {
+  const hasActual = !!actualPoints && actualPoints.length > 0;
+  const lastActual = hasActual ? actualPoints![actualPoints!.length - 1] : null;
+  // With real dated entries, "today" on this chart's x-axis is the last
+  // actual point's own position, not the Strategy tab's manually-set
+  // monthsElapsed slider — the whole point of Change 2 is that this curve
+  // is driven by what was actually logged, not a synthetic input.
+  const todayFrac = hasActual
+    ? totalMonths > 0 ? lastActual!.monthsFromStart / totalMonths : 0
+    : totalMonths > 0 ? monthsElapsed / totalMonths : 0;
   const xToday = Math.max(X0 + 4, xAt(todayFrac));
 
-  const yTodayCoral = yAt(pct);
+  const yTodayCoral = hasActual ? yAt(lastActual!.pct) : yAt(pct);
   const yGoalCoral = yAt(100);
-  const coralPoints: Point[] = [
-    { x: X0, y: Y_BASE },
-    { x: xToday, y: yTodayCoral },
-    { x: X1, y: yGoalCoral },
-  ];
+
+  // The solid coral line: the REAL dated climb when we have one (every
+  // logged point, baseline through today), else the synthetic 3-point plan
+  // line Strategy still shows. Either way it ends at the same (xToday,
+  // yTodayCoral) the gap-shading and markers below already anchor on.
+  const solidCoralPoints: Point[] = hasActual
+    ? actualPoints!.map((p) => ({ x: xAt(totalMonths > 0 ? p.monthsFromStart / totalMonths : 0), y: yAt(p.pct) }))
+    : [{ x: X0, y: Y_BASE }, { x: xToday, y: yTodayCoral }];
+  // From today onward to the Goal marker is never observed yet — always a
+  // thin dashed coral projection, distinct from the solid observed line.
+  const projectedCoralPoints: Point[] = [{ x: xToday, y: yTodayCoral }, { x: X1, y: yGoalCoral }];
+  const coralPoints: Point[] = [...solidCoralPoints, { x: X1, y: yGoalCoral }];
 
   const usualTodayPct = USUAL_CEILING_PCT * Math.max(0, Math.min(1, todayFrac));
   const yUsualToday = yAt(usualTodayPct);
@@ -103,17 +139,29 @@ export function AttainmentCurve({ pct, onPacePct, monthsElapsed, totalMonths, go
             <line x1={X0} y1={Y_BASE} x2={X1} y2={Y_BASE} stroke="#E7E0D6" strokeWidth={1.5} />
             <line x1={xToday} y1={Y_BASE} x2={xToday} y2={yTodayCoral} stroke="#D8CFC4" strokeWidth={1} strokeDasharray="3 3" />
             <path d={buildPath(grayPoints)} fill="none" stroke="#B4B4B4" strokeWidth={2} strokeDasharray="6 4" />
-            <path d={buildPath(coralPoints)} fill="none" stroke="#EA2C00" strokeWidth={2.5} />
+            {/* Solid = observed (the real dated climb, or the whole plan
+                line when there is no dated log). Dashed = not yet observed,
+                only ever drawn when we have real entries to fall short of. */}
+            <path d={buildPath(solidCoralPoints)} fill="none" stroke="#EA2C00" strokeWidth={2.5} data-testid="path-attainment-actual" />
+            {hasActual && (
+              <path d={buildPath(projectedCoralPoints)} fill="none" stroke="#EA2C00" strokeWidth={1.5} strokeDasharray="5 4" opacity="0.55" data-testid="path-attainment-projected" />
+            )}
 
             <circle cx={X0} cy={Y_BASE} r={4} fill="#1A1A1A" />
             {/* faint on-pace tick: where the plan expected attainment today */}
             <circle cx={xToday} cy={yOnPaceToday} r={4} fill="#fff" stroke="#8C8C8C" strokeWidth={1.5} data-testid="marker-onpace" />
+            {/* every intermediate logged point along the real climb, so the
+                "and then what" of each update reads as a mark on the line,
+                not just a smoothed curve through two facts */}
+            {hasActual && solidCoralPoints.slice(1, -1).map((p, i) => (
+              <circle key={i} cx={p.x} cy={p.y} r={3.5} fill="#fff" stroke="#EA2C00" strokeWidth={2} data-testid={`marker-actual-${i}`} />
+            ))}
             <circle cx={xToday} cy={yTodayCoral} r={6.5} fill="#EA2C00" data-testid="marker-today" />
             <circle cx={X1} cy={yGoalCoral} r={7.5} fill="#EA2C00" data-testid="marker-goal" />
             <circle cx={X1} cy={yUsualFinal} r={5} fill="#fff" stroke="#B4B4B4" strokeWidth={2} />
 
             <text x={Math.min(xToday - 10, X1 - 30)} y={yTodayCoral - 10} textAnchor="end" style={{ font: "600 12px Inter", fill: "#1A1A1A" }}>
-              Today · {Math.round(pct)}%
+              Today · {Math.round(hasActual ? lastActual!.pct : pct)}%
             </text>
             <text x={X1 - 10} y={yGoalCoral - 14} textAnchor="end" style={{ font: "700 12px Inter", fill: "#EA2C00" }}>
               Goal · {goalLabel}
@@ -126,8 +174,8 @@ export function AttainmentCurve({ pct, onPacePct, monthsElapsed, totalMonths, go
             </text>
           </svg>
           <div className="flex justify-between text-[8.5px] font-semibold uppercase tracking-[1.5px] text-[#666666] mt-1 ml-[34px]">
-            <span>Deal signed</span>
-            <span className="text-[#EA2C00]">Month {Math.round(monthsElapsed)} · Today</span>
+            <span>{startLabel}</span>
+            <span className="text-[#EA2C00]">Month {Math.round(hasActual ? lastActual!.monthsFromStart : monthsElapsed)} · Today</span>
             <span>Month {Math.round(totalMonths)} · Goal</span>
           </div>
         </div>

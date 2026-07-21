@@ -29,6 +29,7 @@ import {
   type LeverValues,
   type MultiGoalContributionsResult,
 } from "@/lib/attain/attainLevers";
+import { parseSignalBaseline, todayISODate, type ProgressEntry } from "@/lib/attain/attainProgress";
 import type { GoalTargetResult, AttainmentResult } from "@/lib/attain/attainCalc";
 
 /**
@@ -143,16 +144,21 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
   // plan-authoring bookkeeping, not part of the locked `attainTypes.ts`
   // engine shapes.
   const [goalOwnerByPriority, setGoalOwnerByPriority] = useState<Partial<Record<GoalId, GoalOwner>>>({});
-  // Attainment hub "Progress" tab state: the partner's own edited current
-  // value per committed decision (key = `${goal}:${leverId}`), and when
-  // each was last touched. This is intentionally LOCAL/SESSION state only -
-  // reloading the page or returning tomorrow resets every current value
-  // back to its baseline. True cross-session persistence (so the hub
-  // remembers progress between visits) needs the save/backend layer, which
-  // is out of scope for this task; when that lands, this is the state to
-  // lift into it.
-  const [progressCurrent, setProgressCurrent] = useState<Record<string, number>>({});
-  const [progressUpdatedAt, setProgressUpdatedAt] = useState<Record<string, number>>({});
+  // Attainment hub "Progress" tab state: a dated log per committed SIGNAL
+  // (key = `${goal}:${leverId}:${signalId}`) — one seed entry carrying the
+  // baseline, dated the day the decision was first committed, then one more
+  // appended every time the partner "logs an update" (see
+  // `handleLogProgressUpdate`). `current` for any signal is always the
+  // latest entry's value (see attainProgress.ts's `currentValueFromEntries`)
+  // — there is no separately-edited "current" field anymore.
+  //
+  // This is intentionally LOCAL/SESSION state only - reloading the page or
+  // returning tomorrow resets every log back to empty (which reseeds from
+  // the baseline again, see the effect below). True cross-session
+  // persistence (so a dated entry logged today is still there next month,
+  // for the EBR) needs the save/backend layer, which is out of scope for
+  // this task; when that lands, this is the state to lift into it.
+  const [progressEntries, setProgressEntries] = useState<Record<string, ProgressEntry[]>>({});
   // The partner's real operational baseline (providers/encounters/
   // utilization, or beds/FTEs/census/adoption for nursing) — collected once
   // on the Scope step and threaded into every lever's engine call from
@@ -208,8 +214,7 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
     setValuesByGoal({});
     setCommitments({});
     setGoalOwnerByPriority({});
-    setProgressCurrent({});
-    setProgressUpdatedAt({});
+    setProgressEntries({});
     setBaseline({});
     setFreedTimeSplit(DEFAULT_FREED_TIME_SPLIT);
     setState((prev) => ({
@@ -323,9 +328,59 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
     }));
   }, []);
 
-  const handleChangeProgressCurrent = useCallback((key: string, value: number) => {
-    setProgressCurrent((prev) => ({ ...prev, [key]: value }));
-    setProgressUpdatedAt((prev) => ({ ...prev, [key]: Date.now() }));
+  // Every committed SIGNAL's key + its baseline, so the effect below can
+  // seed a dated log for each one the first time it shows up as committed —
+  // mirrors `movedLeverKeys` above but at signal (not decision) granularity,
+  // since the entries log lives per signal.
+  const committedSignalSeeds = useMemo(() => {
+    const out: { key: string; baseline: number }[] = [];
+    for (const g of goals) {
+      const values = valuesByGoal[g] ?? defaultLeverValues(g);
+      for (const lever of LEVERS[g]) {
+        if (!isLeverMoved(values[lever.id], lever.realityStart)) continue;
+        const declKey = commitmentKey(g, lever.id);
+        const commitment = commitments[declKey] ?? fallbackCommitment(g, lever.id);
+        const signals = commitment.signals.length > 0 ? commitment.signals : fallbackCommitment(g, lever.id).signals;
+        for (const sig of signals) {
+          out.push({ key: `${declKey}:${sig.id}`, baseline: parseSignalBaseline(sig.baseline) });
+        }
+      }
+    }
+    return out;
+  }, [goals, valuesByGoal, commitments, fallbackCommitment]);
+
+  // Seeds a signal's dated log the first time it appears as committed: one
+  // entry carrying its baseline, dated today. Today is the best honest
+  // stand-in for "the day this decision was committed" available without a
+  // real commit-timestamp field (this session's visit to Progress IS the
+  // first time this signal's log can exist) — see the persistence note on
+  // `progressEntries` above. Never re-seeds or overwrites a log that
+  // already has entries, so a real logged update is never clobbered.
+  useEffect(() => {
+    if (committedSignalSeeds.length === 0) return;
+    setProgressEntries((prev) => {
+      let changed = false;
+      const next = { ...prev };
+      for (const { key, baseline } of committedSignalSeeds) {
+        if (!next[key] || next[key].length === 0) {
+          next[key] = [{ date: todayISODate(), value: baseline }];
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
+    });
+  }, [committedSignalSeeds]);
+
+  // "Log an update" — the one write path for Progress: appends a dated
+  // entry (today, the new value, an optional one-line note) to a signal's
+  // log. Never mutates or removes a past entry, so the history this builds
+  // is an honest, append-only record for the EBR.
+  const handleLogProgressUpdate = useCallback((signalKey: string, value: number, note?: string) => {
+    setProgressEntries((prev) => {
+      const existing = prev[signalKey] ?? [];
+      const entry: ProgressEntry = { date: todayISODate(), value, note: note?.trim() ? note.trim() : undefined };
+      return { ...prev, [signalKey]: [...existing, entry] };
+    });
   }, []);
 
   const handleMonthsElapsedChange = useCallback((months: number) => {
@@ -555,9 +610,8 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
                   commitments={commitments}
                   goalOwnerByPriority={goalOwnerByPriority}
                   freedTimeSplit={freedTimeSplit}
-                  progressCurrent={progressCurrent}
-                  progressUpdatedAt={progressUpdatedAt}
-                  onChangeProgressCurrent={handleChangeProgressCurrent}
+                  progressEntries={progressEntries}
+                  onLogProgressUpdate={handleLogProgressUpdate}
                   onMonthsElapsedChange={handleMonthsElapsedChange}
                   stepNumber={stepIndex + 1}
                 />
