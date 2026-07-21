@@ -7,6 +7,7 @@ import type { AttainSetting, GoalId } from "@/lib/attain/attainTypes";
 import AccessDecisionChain from "./AccessDecisionChain";
 import EdAccessDecisionChain from "./EdAccessDecisionChain";
 import RevenueDecisionChain from "./RevenueDecisionChain";
+import InpatientRevenueDecisionChain from "./InpatientRevenueDecisionChain";
 import WorkforceDecisionChain from "./WorkforceDecisionChain";
 import QualityDecisionChain from "./QualityDecisionChain";
 
@@ -107,6 +108,7 @@ export default function StepBuildCase({
   const goalDef = GOAL_CATALOG[goal];
   const levers = leversFor(goal, setting);
   const isRevenueChain = goal === "revenue" && setting !== "inpatient";
+  const isIpRevenueChain = goal === "revenue" && setting === "inpatient";
   const result = combined?.byGoal[goal];
   const contributionFor = (id: string) => result?.perLever.find((p) => p.id === id);
 
@@ -216,6 +218,12 @@ export default function StepBuildCase({
         ) : isRevenueChain ? (
           <RevenueDecisionChain
             setting={setting}
+            baseline={baseline}
+            values={values}
+            onChangeValue={(leverId, value) => onChangeLeverValue("revenue", leverId, value)}
+          />
+        ) : isIpRevenueChain ? (
+          <InpatientRevenueDecisionChain
             baseline={baseline}
             values={values}
             onChangeValue={(leverId, value) => onChangeLeverValue("revenue", leverId, value)}
