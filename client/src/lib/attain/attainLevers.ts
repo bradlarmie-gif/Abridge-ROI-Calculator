@@ -173,6 +173,20 @@ export interface Lever {
    * specific, not the dollar figure itself (that is the payoff, not the
    * signal that predicts it). */
   signal: string;
+  /** Curated owner-ROLE suggestions for Commit's Owner select (Change 2):
+   * who else plausibly owns this exact decision at a partner site, 2-5
+   * entries, always headed by `ownerRole` itself at index 0 so the select's
+   * pre-selected value matches the existing default exactly. The partner
+   * confirms one of these or picks "Custom..." to type a specific person or
+   * title — we suggest, they decide. Curated per decision, not a generic
+   * list reused across every lever. */
+  ownerRoleOptions: string[];
+  /** Curated signal suggestions for Commit's Signal-to-watch select(s)
+   * (Change 3): what else a real owner of this decision might plausibly
+   * track, 2-4 entries, always headed by `signal` itself at index 0. Same
+   * "we suggest, they confirm or override with Custom..." pattern as
+   * `ownerRoleOptions`. */
+  signalOptions: string[];
 }
 
 export type LeverValues = Record<string, number | string[]>;
@@ -274,6 +288,8 @@ export const LEVERS: Record<GoalId, Lever[]> = {
       ownerRole: "Service-line chief",
       defaultDue: "Month 1",
       signal: "Providers actually converting freed time into access, of those pointed at it",
+      ownerRoleOptions: ["Service-line chief", "Ambulatory operations", "Practice manager", "Department chair"],
+      signalOptions: ["Providers actually converting freed time into access, of those pointed at it", "Scheduled hours committed per provider", "Providers pointed at access vs enrolled"],
     },
     {
       id: "accessMargin",
@@ -288,6 +304,8 @@ export const LEVERS: Record<GoalId, Lever[]> = {
       ownerRole: "Partner finance",
       defaultDue: "Month 1",
       signal: "Contribution margin booked per visit, this line",
+      ownerRoleOptions: ["Partner finance", "Revenue cycle / coding", "Service-line chief", "Managed care contracting"],
+      signalOptions: ["Contribution margin booked per visit, this line", "Payer mix shift by line", "Average reimbursement per visit"],
     },
     {
       id: "accessFreedShare",
@@ -302,6 +320,8 @@ export const LEVERS: Record<GoalId, Lever[]> = {
       ownerRole: "Ambulatory operations",
       defaultDue: "Month 2",
       signal: "Share of freed documentation time routed to the schedule",
+      ownerRoleOptions: ["Ambulatory operations", "Service-line chief", "Practice manager", "Department leadership"],
+      signalOptions: ["Share of freed documentation time routed to the schedule", "After-hours documentation time, per provider", "Scheduling template slots added"],
     },
     {
       id: "accessDemandBacklog",
@@ -316,6 +336,8 @@ export const LEVERS: Record<GoalId, Lever[]> = {
       ownerRole: "Access / referral ops",
       defaultDue: "Month 3",
       signal: "Referral backlog size",
+      ownerRoleOptions: ["Access / referral ops", "Practice manager", "Ambulatory operations", "Call center / scheduling"],
+      signalOptions: ["Referral backlog size", "Days to third-next-available appointment", "Referral-to-scheduled conversion rate"],
     },
     {
       id: "accessDemandSameDayPct",
@@ -330,6 +352,8 @@ export const LEVERS: Record<GoalId, Lever[]> = {
       ownerRole: "Access / referral ops",
       defaultDue: "Month 3",
       signal: "Share of encounters booking same-day or urgent",
+      ownerRoleOptions: ["Access / referral ops", "Ambulatory operations", "Call center / scheduling", "Practice manager"],
+      signalOptions: ["Share of encounters booking same-day or urgent", "Same-day slot utilization", "Urgent-visit turnaway rate"],
     },
     {
       id: "accessDemandNoShowPct",
@@ -344,6 +368,8 @@ export const LEVERS: Record<GoalId, Lever[]> = {
       ownerRole: "Ops / staffing",
       defaultDue: "Month 3",
       signal: "No-show recovery rate",
+      ownerRoleOptions: ["Ops / staffing", "Access / referral ops", "Practice manager", "Call center / scheduling"],
+      signalOptions: ["No-show recovery rate", "No-show rate against booked slots", "Same-day rebooking rate"],
     },
     {
       id: "accessDemandNewReferrals",
@@ -358,6 +384,8 @@ export const LEVERS: Record<GoalId, Lever[]> = {
       ownerRole: "Access / referral ops",
       defaultDue: "Month 3",
       signal: "New referrals arriving per month",
+      ownerRoleOptions: ["Access / referral ops", "Practice manager", "Ambulatory operations", "Business development / outreach"],
+      signalOptions: ["New referrals arriving per month", "Referral source volume by month", "Referral-to-scheduled conversion rate"],
     },
   ],
   // Retention (Workforce) is a D1-D5 DECISION CHAIN, rendered bespoke on
@@ -382,6 +410,8 @@ export const LEVERS: Record<GoalId, Lever[]> = {
       ownerRole: "Department leadership",
       defaultDue: "Month 1",
       signal: "Departments actively brought into the plan",
+      ownerRoleOptions: ["Department leadership", "HR / workforce analytics", "Department chiefs", "Ops / staffing"],
+      signalOptions: ["Departments actively brought into the plan", "Departments named in scope vs committed", "Headcount covered by department"],
     },
     {
       id: "retentionProviders",
@@ -396,6 +426,8 @@ export const LEVERS: Record<GoalId, Lever[]> = {
       ownerRole: "Department leadership",
       defaultDue: "Month 1",
       signal: "Providers actually covered by the plan, of those named in scope",
+      ownerRoleOptions: ["Department leadership", "HR / workforce analytics", "Department chiefs", "Finance / HR"],
+      signalOptions: ["Providers actually covered by the plan, of those named in scope", "Headcount in scope vs baseline census", "FTE coverage ratio"],
     },
     {
       id: "retentionTurnoverRate",
@@ -410,6 +442,8 @@ export const LEVERS: Record<GoalId, Lever[]> = {
       ownerRole: "HR / workforce analytics",
       defaultDue: "Month 1",
       signal: "Voluntary turnover rate against this baseline",
+      ownerRoleOptions: ["HR / workforce analytics", "Department leadership", "Finance / HR", "HR / people analytics"],
+      signalOptions: ["Voluntary turnover rate against this baseline", "Departures per month against this baseline", "Exit-survey burnout mentions"],
     },
     {
       id: "retentionReplacementCost",
@@ -424,6 +458,8 @@ export const LEVERS: Record<GoalId, Lever[]> = {
       ownerRole: "Finance / HR",
       defaultDue: "Month 1",
       signal: "Replacement cost booked per avoided departure",
+      ownerRoleOptions: ["Finance / HR", "Partner finance", "HR / workforce analytics", "Department leadership"],
+      signalOptions: ["Replacement cost booked per avoided departure", "Time-to-fill per open role", "Recruiting and onboarding spend per hire"],
     },
     {
       id: "retentionProtect",
@@ -438,6 +474,8 @@ export const LEVERS: Record<GoalId, Lever[]> = {
       ownerRole: "Department leadership",
       defaultDue: "Month 2",
       signal: "After-hours documentation load against the floor",
+      ownerRoleOptions: ["Department leadership", "Ops / staffing", "HR / people analytics", "Department chiefs"],
+      signalOptions: ["After-hours documentation load against the floor", "Panel size or shift load vs floor", "Freed time reinvested into relief"],
     },
     {
       id: "retentionSurveyCadence",
@@ -452,6 +490,8 @@ export const LEVERS: Record<GoalId, Lever[]> = {
       ownerRole: "HR / people analytics",
       defaultDue: "Month 2",
       signal: "Likelihood-to-stay and burnout pulse score, checked at this cadence",
+      ownerRoleOptions: ["HR / people analytics", "Department leadership", "HR / workforce analytics", "Department chiefs"],
+      signalOptions: ["Likelihood-to-stay and burnout pulse score, checked at this cadence", "Survey response rate", "Burnout flag rate among respondents"],
     },
     {
       id: "retentionBackfill",
@@ -466,6 +506,8 @@ export const LEVERS: Record<GoalId, Lever[]> = {
       ownerRole: "Ops / staffing",
       defaultDue: "Month 2",
       signal: "Coverage-gap backfill level",
+      ownerRoleOptions: ["Ops / staffing", "Department leadership", "HR / workforce analytics", "Department chiefs"],
+      signalOptions: ["Coverage-gap backfill level", "Open shifts covered within target window", "Coverage-gap hours per month"],
     },
     {
       id: "retentionSustain",
@@ -480,6 +522,8 @@ export const LEVERS: Record<GoalId, Lever[]> = {
       ownerRole: "Department chiefs",
       defaultDue: "Month 3",
       signal: "Months the relief floor has held",
+      ownerRoleOptions: ["Department chiefs", "Department leadership", "HR / workforce analytics", "Ops / staffing"],
+      signalOptions: ["Months the relief floor has held", "Consecutive months relief floor held", "Departure rate trend vs baseline"],
     },
   ],
   // Revenue is a THREE-PATH decision chain for outpatient/ED (Risk
@@ -509,6 +553,8 @@ export const LEVERS: Record<GoalId, Lever[]> = {
       ownerRole: "Risk adjustment / coding",
       defaultDue: "Month 2",
       signal: "Recapture rate on the risk-adjustment gap",
+      ownerRoleOptions: ["Risk adjustment / coding", "CDI + providers", "Partner finance", "Revenue cycle / coding"],
+      signalOptions: ["Recapture rate on the risk-adjustment gap", "Chart-level HCC drop rate", "RAF score trend vs prior period"],
     },
     {
       id: "revenueHccNetNew",
@@ -523,6 +569,8 @@ export const LEVERS: Record<GoalId, Lever[]> = {
       ownerRole: "Risk adjustment / coding",
       defaultDue: "Month 2",
       signal: "Suspected-HCC discovery rate",
+      ownerRoleOptions: ["Risk adjustment / coding", "CDI + providers", "Revenue cycle / coding", "Partner finance"],
+      signalOptions: ["Suspected-HCC discovery rate", "New conditions surfaced per ambient note", "Provider acceptance rate on surfaced suggestions"],
     },
     {
       id: "revenueHccValuePerHcc",
@@ -537,6 +585,8 @@ export const LEVERS: Record<GoalId, Lever[]> = {
       ownerRole: "Partner finance",
       defaultDue: "Month 1",
       signal: "Value booked per captured HCC",
+      ownerRoleOptions: ["Partner finance", "Risk adjustment / coding", "Managed care contracting", "Revenue cycle / coding"],
+      signalOptions: ["Value booked per captured HCC", "Payer mix across the risk-adjusted panel", "Realized RAF-to-dollar conversion"],
     },
     {
       id: "revenueEmLift",
@@ -551,6 +601,8 @@ export const LEVERS: Record<GoalId, Lever[]> = {
       ownerRole: "Revenue cycle / coding",
       defaultDue: "Month 2",
       signal: "Average E/M level or wRVU per visit",
+      ownerRoleOptions: ["Revenue cycle / coding", "CDI + providers", "Billing", "Partner finance"],
+      signalOptions: ["Average E/M level or wRVU per visit", "Coding-level distribution vs documented complexity", "Chart audit pass rate"],
     },
     {
       id: "revenueEmConversionFactor",
@@ -565,6 +617,8 @@ export const LEVERS: Record<GoalId, Lever[]> = {
       ownerRole: "Partner finance",
       defaultDue: "Month 1",
       signal: "Conversion factor booked per wRVU",
+      ownerRoleOptions: ["Partner finance", "Revenue cycle / coding", "Managed care contracting", "Billing"],
+      signalOptions: ["Conversion factor booked per wRVU", "Payer-negotiated rate changes", "Realized wRVU-to-dollar conversion"],
     },
     {
       id: "revenueDenialsPreventable",
@@ -579,6 +633,8 @@ export const LEVERS: Record<GoalId, Lever[]> = {
       ownerRole: "Billing",
       defaultDue: "Month 3",
       signal: "First-pass rate / denial rate on medical-necessity claims",
+      ownerRoleOptions: ["Billing", "Revenue cycle / coding", "Case management / utilization review", "Partner finance"],
+      signalOptions: ["First-pass rate / denial rate on medical-necessity claims", "Denial appeal win rate", "Days in A/R on denied claims"],
     },
     {
       id: "revenueDenialsAvgClaimValue",
@@ -593,6 +649,8 @@ export const LEVERS: Record<GoalId, Lever[]> = {
       ownerRole: "Partner finance",
       defaultDue: "Month 1",
       signal: "Average claim value protected",
+      ownerRoleOptions: ["Partner finance", "Billing", "Revenue cycle / coding", "Managed care contracting"],
+      signalOptions: ["Average claim value protected", "Payer mix on denied claims", "Average claim value overall"],
     },
   ],
   quality: [
@@ -609,6 +667,8 @@ export const LEVERS: Record<GoalId, Lever[]> = {
       ownerRole: "Unit leadership",
       defaultDue: "Month 1",
       signal: "Units actively brought into the plan",
+      ownerRoleOptions: ["Unit leadership", "Charge nurses / unit leads", "Quality / patient safety", "Rapid response / unit"],
+      signalOptions: ["Units actively brought into the plan", "Units named in scope vs committed", "Patient-days covered by unit"],
     },
     {
       id: "qualityBeds",
@@ -623,6 +683,8 @@ export const LEVERS: Record<GoalId, Lever[]> = {
       ownerRole: "Unit leadership",
       defaultDue: "Month 1",
       signal: "Beds actually covered by the plan, of those named in scope",
+      ownerRoleOptions: ["Unit leadership", "Charge nurses / unit leads", "Quality / patient safety", "Nursing administration"],
+      signalOptions: ["Beds actually covered by the plan, of those named in scope", "Bed coverage vs baseline census", "Patient-days in scope per month"],
     },
     {
       id: "qualityRealTime",
@@ -637,6 +699,8 @@ export const LEVERS: Record<GoalId, Lever[]> = {
       ownerRole: "Charge nurses / unit leads",
       defaultDue: "Month 2",
       signal: "Share of bundle gaps closed in real time, during the shift",
+      ownerRoleOptions: ["Charge nurses / unit leads", "Unit leadership", "Rapid response / unit", "Quality / patient safety"],
+      signalOptions: ["Share of bundle gaps closed in real time, during the shift", "Bundle gaps caught vs closed same-shift", "Time from gap flagged to closed"],
     },
     {
       id: "qualityResponse",
@@ -651,6 +715,8 @@ export const LEVERS: Record<GoalId, Lever[]> = {
       ownerRole: "Rapid response / unit",
       defaultDue: "Month 2",
       signal: "Deterioration-response level",
+      ownerRoleOptions: ["Rapid response / unit", "Charge nurses / unit leads", "Unit leadership", "Quality / patient safety"],
+      signalOptions: ["Deterioration-response level", "Deterioration alerts with a documented response", "Median time from signal to response"],
     },
     {
       id: "qualityBundle",
@@ -665,6 +731,8 @@ export const LEVERS: Record<GoalId, Lever[]> = {
       ownerRole: "Unit leadership",
       defaultDue: "Month 3",
       signal: "Audited bundle compliance rate",
+      ownerRoleOptions: ["Unit leadership", "Charge nurses / unit leads", "Quality / patient safety", "Rapid response / unit"],
+      signalOptions: ["Audited bundle compliance rate", "Bundle audit pass rate by unit", "Compliance trend vs prior quarter"],
     },
   ],
 };
@@ -699,6 +767,8 @@ export const IP_REVENUE_LEVERS: Lever[] = [
     ownerRole: "CDI / coding leadership",
     defaultDue: "Month 1",
     signal: "At-risk DRG rate, measured against this baseline",
+    ownerRoleOptions: ["CDI / coding leadership", "CDI + hospitalists", "Revenue cycle / coding", "Case management / utilization review"],
+    signalOptions: ["At-risk DRG rate, measured against this baseline", "Charts flagged for documentation gaps", "CC/MCC capture rate trend"],
   },
   {
     id: "ipDrgCapture",
@@ -713,6 +783,8 @@ export const IP_REVENUE_LEVERS: Lever[] = [
     ownerRole: "CDI + hospitalists",
     defaultDue: "Month 2",
     signal: "Case mix index / CC-MCC capture rate",
+    ownerRoleOptions: ["CDI + hospitalists", "CDI / coding leadership", "Revenue cycle / coding", "CDI + providers"],
+    signalOptions: ["Case mix index / CC-MCC capture rate", "Query response rate from hospitalists", "Case mix index trend"],
   },
   {
     id: "ipDrgWeightIncrease",
@@ -727,6 +799,8 @@ export const IP_REVENUE_LEVERS: Lever[] = [
     ownerRole: "Revenue cycle / coding",
     defaultDue: "Month 1",
     signal: "Average DRG weight per captured case",
+    ownerRoleOptions: ["Revenue cycle / coding", "CDI / coding leadership", "Partner finance", "CDI + hospitalists"],
+    signalOptions: ["Average DRG weight per captured case", "DRG weight distribution vs prior period", "Coding audit accuracy rate"],
   },
   {
     id: "ipDrgBasePayment",
@@ -741,6 +815,8 @@ export const IP_REVENUE_LEVERS: Lever[] = [
     ownerRole: "Partner finance",
     defaultDue: "Month 1",
     signal: "Base DRG payment per case",
+    ownerRoleOptions: ["Partner finance", "Revenue cycle / coding", "Managed care contracting", "CDI / coding leadership"],
+    signalOptions: ["Base DRG payment per case", "Payer mix across DRG-weighted cases", "Contracted rate changes by payer"],
   },
   {
     id: "ipCdiQueryRate",
@@ -755,6 +831,8 @@ export const IP_REVENUE_LEVERS: Lever[] = [
     ownerRole: "CDI leadership",
     defaultDue: "Month 1",
     signal: "CDI query volume, measured against this baseline",
+    ownerRoleOptions: ["CDI leadership", "CDI + providers", "CDI / coding leadership", "Revenue cycle"],
+    signalOptions: ["CDI query volume, measured against this baseline", "Query volume per eligible admission", "Query response time"],
   },
   {
     id: "ipCdiReduction",
@@ -769,6 +847,8 @@ export const IP_REVENUE_LEVERS: Lever[] = [
     ownerRole: "CDI + providers",
     defaultDue: "Month 2",
     signal: "CDI query rate",
+    ownerRoleOptions: ["CDI + providers", "CDI leadership", "CDI / coding leadership", "Hospitalists"],
+    signalOptions: ["CDI query rate", "Query closure rate before discharge", "Query aging past discharge"],
   },
   {
     id: "ipCdiCostPerQuery",
@@ -783,6 +863,8 @@ export const IP_REVENUE_LEVERS: Lever[] = [
     ownerRole: "Revenue cycle",
     defaultDue: "Month 1",
     signal: "Cost avoided per closed query",
+    ownerRoleOptions: ["Revenue cycle", "Partner finance", "CDI leadership", "CDI / coding leadership"],
+    signalOptions: ["Cost avoided per closed query", "Queries closed vs escalated", "Cost avoided per resolved query trend"],
   },
   {
     id: "ipObsDenialRate",
@@ -797,6 +879,8 @@ export const IP_REVENUE_LEVERS: Lever[] = [
     ownerRole: "Case management / utilization review",
     defaultDue: "Month 1",
     signal: "Observation downgrade volume, measured against this baseline",
+    ownerRoleOptions: ["Case management / utilization review", "CDI leadership", "Case management / CDI", "Revenue cycle / coding"],
+    signalOptions: ["Observation downgrade volume, measured against this baseline", "Status downgrade volume by month", "Payer denial rate on observation stays"],
   },
   {
     id: "ipObsPreventable",
@@ -811,6 +895,8 @@ export const IP_REVENUE_LEVERS: Lever[] = [
     ownerRole: "Case management / CDI",
     defaultDue: "Month 2",
     signal: "Observation downgrade rate",
+    ownerRoleOptions: ["Case management / CDI", "Case management / utilization review", "CDI leadership", "CDI + providers"],
+    signalOptions: ["Observation downgrade rate", "Severity-of-illness documentation completeness", "Downgrade appeal win rate"],
   },
   {
     id: "ipObsRevenueDelta",
@@ -825,6 +911,8 @@ export const IP_REVENUE_LEVERS: Lever[] = [
     ownerRole: "Partner finance",
     defaultDue: "Month 1",
     signal: "Revenue delta per defended case",
+    ownerRoleOptions: ["Partner finance", "Case management / utilization review", "Revenue cycle / coding", "Managed care contracting"],
+    signalOptions: ["Revenue delta per defended case", "Payer mix on defended cases", "Average revenue delta trend"],
   },
 ];
 
@@ -851,6 +939,8 @@ export const ED_ACCESS_LEVERS: Lever[] = [
     ownerRole: "ED medical director",
     defaultDue: "Month 1",
     signal: "Providers actually converting freed charting time into faster throughput, of those pointed at it",
+    ownerRoleOptions: ["ED medical director", "ED operations", "ED operations / quality", "Department chair"],
+    signalOptions: ["Providers actually converting freed charting time into faster throughput, of those pointed at it", "Scheduled charting time committed per provider", "Providers pointed at recovery vs enrolled"],
   },
   {
     id: "edAccessRevenuePerVisit",
@@ -865,6 +955,8 @@ export const ED_ACCESS_LEVERS: Lever[] = [
     ownerRole: "Partner finance",
     defaultDue: "Month 1",
     signal: "Revenue booked per recovered ED visit",
+    ownerRoleOptions: ["Partner finance", "ED operations", "Managed care contracting", "Revenue cycle / coding"],
+    signalOptions: ["Revenue booked per recovered ED visit", "Payer mix on recovered ED visits", "Average reimbursement per ED visit"],
   },
   {
     id: "edAccessAdmissionMargin",
@@ -879,6 +971,8 @@ export const ED_ACCESS_LEVERS: Lever[] = [
     ownerRole: "Partner finance",
     defaultDue: "Month 1",
     signal: "Margin booked per captured admission",
+    ownerRoleOptions: ["Partner finance", "ED operations / case management", "Managed care contracting", "Revenue cycle / coding"],
+    signalOptions: ["Margin booked per captured admission", "Payer mix on captured admissions", "Admission conversion margin trend"],
   },
   {
     id: "edAccessMinutesSaved",
@@ -893,6 +987,8 @@ export const ED_ACCESS_LEVERS: Lever[] = [
     ownerRole: "ED operations",
     defaultDue: "Month 1",
     signal: "Door-to-provider time, median",
+    ownerRoleOptions: ["ED operations", "ED medical director", "ED operations / quality", "Charge nurses / unit leads"],
+    signalOptions: ["Door-to-provider time, median", "Charting minutes per note, median", "Provider time to disposition"],
   },
   {
     id: "edAccessLwbsRate",
@@ -907,6 +1003,8 @@ export const ED_ACCESS_LEVERS: Lever[] = [
     ownerRole: "ED operations / quality",
     defaultDue: "Month 1",
     signal: "LWBS rate, measured against this baseline",
+    ownerRoleOptions: ["ED operations / quality", "ED medical director", "ED operations", "ED operations / case management"],
+    signalOptions: ["LWBS rate, measured against this baseline", "LWBS volume by shift", "Door-to-provider time trend"],
   },
   {
     id: "edAccessLwbsReduction",
@@ -921,6 +1019,8 @@ export const ED_ACCESS_LEVERS: Lever[] = [
     ownerRole: "ED medical director",
     defaultDue: "Month 2",
     signal: "LWBS reduction achieved against your current rate",
+    ownerRoleOptions: ["ED medical director", "ED operations / quality", "ED operations", "ED operations / case management"],
+    signalOptions: ["LWBS reduction achieved against your current rate", "Recovered LWBS pool realized vs targeted", "Door-to-provider time trend"],
   },
   {
     id: "edAccessAdmissionRate",
@@ -935,6 +1035,8 @@ export const ED_ACCESS_LEVERS: Lever[] = [
     ownerRole: "ED operations / case management",
     defaultDue: "Month 2",
     signal: "Share of recovered patients captured as admissions",
+    ownerRoleOptions: ["ED operations / case management", "ED medical director", "ED operations / quality", "ED operations"],
+    signalOptions: ["Share of recovered patients captured as admissions", "Admission conversion rate by shift", "Recovered-visit acuity mix"],
   },
 ];
 
