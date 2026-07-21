@@ -1008,35 +1008,98 @@ export default function StepAttainment({
 
       {tab === "strategy" && (
         <>
-          {/* ============ HEADER — slim: title, prepared-for/by, goal + scope, a small value chip. Not the hero. ============ */}
-          <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-16" data-testid="section-attain-cover">
-            <p className="text-[11px] font-semibold uppercase tracking-[3.2px] text-[#8C8C8C] mb-2">Attainment</p>
-            <div className="flex items-center gap-2 flex-wrap mb-3">
-              {goalDefs.map((g) => (
-                <span
-                  key={g.id}
-                  className="inline-block text-[10px] font-bold uppercase tracking-[1.5px] text-white px-3 py-1 rounded-full"
-                  style={{ background: g.pillBg }}
-                  data-testid={`pill-attain-plan-goal-${g.id}`}
-                >
-                  {g.pill}
-                </span>
-              ))}
+          {/* ============ HEADER + AT A GLANCE — the whole plan grasped in
+              five seconds: goal, combined value, attainment, and the moves.
+              A bounded card so it reads as the anchor of the page, not more
+              scroll; everything below it is the supporting story. ============ */}
+          <motion.section
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-8 bg-white border border-[#E7E0D6] rounded-2xl shadow-sm p-8 md:p-10"
+            data-testid="section-attain-cover"
+          >
+            <div className="pb-6 mb-6 border-b border-[#F0ECE5]">
+              <p className="text-[11px] font-semibold uppercase tracking-[3.2px] text-[#8C8C8C] mb-2">Attainment</p>
+              <div className="flex items-center gap-2 flex-wrap mb-3">
+                {goalDefs.map((g) => (
+                  <span
+                    key={g.id}
+                    className="inline-block text-[10px] font-bold uppercase tracking-[1.5px] text-white px-3 py-1 rounded-full"
+                    style={{ background: g.pillBg }}
+                    data-testid={`pill-attain-plan-goal-${g.id}`}
+                  >
+                    {g.pill}
+                  </span>
+                ))}
+              </div>
+              <h2 className="font-abridge text-4xl md:text-5xl text-[#1A1A1A] mb-3" data-testid="text-attain-plan-title">
+                {planTitle}
+              </h2>
+              <div className="w-[100px] h-1 bg-[#EA2C00] mb-4" />
+              <p className="text-base text-[#8C8C8C]">
+                {goalDefs.length === 1 ? getContent(setting, goals[0])?.subtitle : `${goalDefs.length} priorities, one combined plan`}
+              </p>
             </div>
-            <h2 className="font-abridge text-4xl md:text-5xl text-[#1A1A1A] mb-3" data-testid="text-attain-plan-title">
-              {planTitle}
-            </h2>
-            <div className="w-[100px] h-1 bg-[#EA2C00] mb-4" />
-            <p className="text-base text-[#8C8C8C] mb-4">
-              {goalDefs.length === 1 ? getContent(setting, goals[0])?.subtitle : `${goalDefs.length} priorities, one combined plan`}
-            </p>
-            <p className="text-[15px] leading-relaxed text-[#3A3A3A] max-w-[640px] mb-6">
+
+            {/* AT A GLANCE — the goal is above, this is the value, the
+                attainment, and the moves, all in one scan. */}
+            <div data-testid="panel-attain-glance" className="mb-6">
+              <p className="text-[10px] font-semibold uppercase tracking-[2.5px] text-[#8C8C8C] mb-3">At a glance</p>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+                <div
+                  className="border border-[#1A1A1A] bg-[#1A1A1A] rounded-lg p-4"
+                  data-testid="chip-attain-plan-combined-preview"
+                >
+                  <p className="text-[9.5px] font-semibold uppercase tracking-[1.4px] text-white/55 mb-1.5">Combined margin</p>
+                  <p className="font-abridge text-3xl text-[#EA2C00]" data-testid="text-attain-glance-value">
+                    {formatCompact(target.margin)}
+                  </p>
+                </div>
+                <div className="border border-[#E7E0D6] bg-[#F8F5F1] rounded-lg p-4">
+                  <p className="text-[9.5px] font-semibold uppercase tracking-[1.4px] text-[#8C8C8C] mb-1.5">Attainment today</p>
+                  <p className="font-abridge text-3xl text-[#1A1A1A]" data-testid="text-attain-glance-attainment">
+                    {attainment.pct}%
+                  </p>
+                </div>
+                <div className="border border-[#E7E0D6] bg-[#F8F5F1] rounded-lg p-4">
+                  <p className="text-[9.5px] font-semibold uppercase tracking-[1.4px] text-[#8C8C8C] mb-1.5">The moves</p>
+                  <p className="font-abridge text-3xl text-[#1A1A1A]" data-testid="text-attain-glance-moves-count">
+                    {allCommitted.length}{" "}
+                    <span className="text-base font-semibold text-[#8C8C8C]">decision{allCommitted.length === 1 ? "" : "s"}</span>
+                  </p>
+                </div>
+              </div>
+              {allCommitted.length > 0 && (
+                <div className="flex flex-wrap gap-2" data-testid="list-attain-glance-moves">
+                  {allCommitted.slice(0, 4).map(({ goal, lever, owner }) => (
+                    <span
+                      key={`${goal}:${lever.id}`}
+                      className="inline-flex items-center gap-1.5 text-[11px] bg-[#F8F5F1] border border-[#E7E0D6] rounded-full pl-2 pr-3 py-1"
+                      data-testid={`chip-attain-glance-move-${goal}-${lever.id}`}
+                    >
+                      <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: GOAL_CATALOG[goal].pillBg }} />
+                      <b className="text-[#1A1A1A]">{lever.label}</b>
+                      <span className="text-[#8C8C8C]">· {owner}</span>
+                    </span>
+                  ))}
+                  {allCommitted.length > 4 && (
+                    <span className="text-[11px] text-[#8C8C8C] self-center" data-testid="text-attain-glance-moves-more">
+                      +{allCommitted.length - 4} more
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Supporting detail — attribution and metadata, secondary to
+                the at-a-glance summary above. */}
+            <p className="text-[13px] leading-relaxed text-[#8C8C8C] max-w-[640px] mb-5">
               One plan, built from every decision you moved across{" "}
-              <b className="text-[#EA2C00]">{goalDefs.map((g) => g.label).join(", ")}</b>. Every dollar below rolls up
+              <b className="text-[#3A3A3A]">{goalDefs.map((g) => g.label).join(", ")}</b>. Every dollar below rolls up
               from the same engine, counted once.
             </p>
 
-            <div className="flex flex-wrap items-start gap-6">
+            <div className="flex flex-wrap items-start gap-6 pt-5 border-t border-[#F0ECE5]">
               <div>
                 <p className="text-[10.5px] font-semibold uppercase tracking-[2.5px] text-[#B4B4B4] mb-1">Prepared for</p>
                 <input
@@ -1054,16 +1117,6 @@ export default function StepAttainment({
                 <p className="text-[10.5px] font-semibold uppercase tracking-[2.5px] text-[#B4B4B4] mb-1">Horizon</p>
                 <p className="text-[16.5px] text-[#3A3A3A]">{state.totalMonths} months · {allCommitted.length} decisions committed</p>
               </div>
-
-              {/* A preview, not the payoff — the full combined figure lands
-                  as the climax further down, not here at the open. */}
-              <div
-                className="ml-auto flex items-center gap-2.5 bg-[#F8F5F1] border border-[#E7E0D6] rounded-full pl-4 pr-5 py-2 self-center"
-                data-testid="chip-attain-plan-combined-preview"
-              >
-                <span className="text-[9.5px] font-semibold uppercase tracking-[1.4px] text-[#8C8C8C] whitespace-nowrap">Combined margin</span>
-                <span className="font-abridge text-xl text-[#EA2C00] whitespace-nowrap">{formatCompact(target.margin)}</span>
-              </div>
             </div>
           </motion.section>
 
@@ -1073,9 +1126,16 @@ export default function StepAttainment({
           ))}
 
           {/* ============ CLOSING THE GAP (combined) ============ */}
-          <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-20" data-testid="section-attain-curve">
-            <p className="text-[11px] font-semibold uppercase tracking-[3.2px] text-[#EA2C00] mb-1">The Trajectory</p>
-            <h2 className="font-abridge text-[32px] text-[#1A1A1A] mb-4">Closing the Gap</h2>
+          <motion.section
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-8 bg-white border border-[#E7E0D6] rounded-2xl shadow-sm p-8 md:p-10"
+            data-testid="section-attain-curve"
+          >
+            <div className="pb-5 mb-5 border-b border-[#F0ECE5]">
+              <p className="text-[11px] font-semibold uppercase tracking-[3.2px] text-[#EA2C00] mb-1">The Trajectory</p>
+              <h2 className="font-abridge text-[32px] text-[#1A1A1A]">Closing the Gap</h2>
+            </div>
             <p className="text-[15px] leading-relaxed text-[#3A3A3A] mb-5 max-w-[720px]">
               Most deployments drift: time gets freed, but the fragile middle links never get steered, and realized
               value settles well below what the model promised. That is the dashed line below, combined across every
@@ -1127,9 +1187,16 @@ export default function StepAttainment({
           </motion.section>
 
           {/* ============ THE PLAN (decisions -> priority -> who -> when -> worth) ============ */}
-          <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-20" data-testid="section-attain-checklist">
-            <p className="text-[11px] font-semibold uppercase tracking-[3.2px] text-[#EA2C00] mb-1">What Has To Happen</p>
-            <h2 className="font-abridge text-[32px] text-[#1A1A1A] mb-4">The Plan</h2>
+          <motion.section
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-8 bg-white border border-[#E7E0D6] rounded-2xl shadow-sm p-8 md:p-10"
+            data-testid="section-attain-checklist"
+          >
+            <div className="pb-5 mb-5 border-b border-[#F0ECE5]">
+              <p className="text-[11px] font-semibold uppercase tracking-[3.2px] text-[#EA2C00] mb-1">What Has To Happen</p>
+              <h2 className="font-abridge text-[32px] text-[#1A1A1A]">The Plan</h2>
+            </div>
             <p className="text-[15px] leading-relaxed text-[#3A3A3A] mb-5 max-w-[720px]">
               To attain <b className="text-[#1A1A1A]">{formatCompact(target.margin)}</b> across {goalDefs.length}{" "}
               {goalDefs.length === 1 ? "priority" : "priorities"}, here is what has to happen. Every row below is a
@@ -1188,9 +1255,16 @@ export default function StepAttainment({
           </motion.section>
 
           {/* ============ THE PAYOFF — the combined value hero + the per-priority breakdown. The climax, not the opener. ============ */}
-          <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-16" data-testid="section-attain-payoff">
-            <p className="text-[11px] font-semibold uppercase tracking-[3.2px] text-[#EA2C00] mb-1">What It's Worth</p>
-            <h2 className="font-abridge text-[32px] text-[#1A1A1A] mb-4">The Payoff</h2>
+          <motion.section
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-8 bg-white border border-[#E7E0D6] rounded-2xl shadow-sm p-8 md:p-10"
+            data-testid="section-attain-payoff"
+          >
+            <div className="pb-5 mb-5 border-b border-[#F0ECE5]">
+              <p className="text-[11px] font-semibold uppercase tracking-[3.2px] text-[#EA2C00] mb-1">What It's Worth</p>
+              <h2 className="font-abridge text-[32px] text-[#1A1A1A]">The Payoff</h2>
+            </div>
             <p className="text-[15px] leading-relaxed text-[#3A3A3A] mb-5 max-w-[720px]">
               Everything above, the starting point, the gap, the plan, adds up to this. One combined number, built the
               same way every figure on this plan was: from the decisions you actually committed to.
@@ -1256,8 +1330,11 @@ function StartingPointSection({
   const goalOwnerTitle = goalOwner?.title?.trim();
 
   return (
-    <div data-testid={`section-attain-plan-priority-${goal}`}>
-      <div className="flex items-center gap-3 mb-6">
+    <div
+      className="mb-8 bg-white border border-[#E7E0D6] rounded-2xl shadow-sm p-8 md:p-10"
+      data-testid={`section-attain-plan-priority-${goal}`}
+    >
+      <div className="flex items-center gap-3 mb-5">
         <span
           className="inline-block text-[10px] font-bold uppercase tracking-[1.5px] text-white px-3 py-1 rounded-full"
           style={{ background: goalDef.pillBg }}
@@ -1269,14 +1346,24 @@ function StartingPointSection({
         </p>
       </div>
 
-      <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-20" data-testid={`section-attain-starting-point-${goal}`}>
-        <p className="text-[11px] font-semibold uppercase tracking-[3.2px] text-[#EA2C00] mb-1">Where You Are Today</p>
-        <h2 className="font-abridge text-[32px] text-[#1A1A1A] mb-4">Your Starting Point</h2>
+      <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} data-testid={`section-attain-starting-point-${goal}`}>
+        <div className="pb-5 mb-5 border-b border-[#F0ECE5]">
+          <p className="text-[11px] font-semibold uppercase tracking-[3.2px] text-[#EA2C00] mb-1">Where You Are Today</p>
+          <h2 className="font-abridge text-[32px] text-[#1A1A1A]">Your Starting Point</h2>
+        </div>
         <p className="text-[15px] leading-relaxed text-[#3A3A3A] mb-5 max-w-[720px]">{content.p1Lead}</p>
 
-        <div className="flex flex-wrap gap-3 mb-5">
+        {/* The at-a-glance shape of the demand this priority is built
+            against — kept front and center in the default view; the
+            teaching prose about the opportunity and how it gets trapped now
+            lives one click away, in "How this works". */}
+        <div className="flex flex-wrap gap-3 mb-6">
           {content.worldCards.map((card, i) => (
-            <div key={card.k} className="flex-1 min-w-[150px] bg-[#F4F0EA] rounded-md p-4" data-testid={`card-attain-plan-world-${goal}-${i}`}>
+            <div
+              key={card.k}
+              className="flex-1 min-w-[150px] bg-[#F4F0EA] border border-[#E7E0D6] shadow-sm rounded-md p-4"
+              data-testid={`card-attain-plan-world-${goal}-${i}`}
+            >
               <p className="text-[9.5px] font-semibold uppercase tracking-[1.4px] text-[#8C8C8C]">{card.k}</p>
               <p className={`font-abridge text-3xl mt-2 mb-1 ${card.coral ? "text-[#EA2C00]" : "text-[#1A1A1A]"}`}>
                 {card.n}
@@ -1284,24 +1371,6 @@ function StartingPointSection({
               <p className="text-[10px] text-[#8C8C8C]">{card.f}</p>
             </div>
           ))}
-        </div>
-
-        <div className="bg-[#F4F0EA] border-l-[3px] border-[#EA2C00] rounded-r-md p-4 mb-5">
-          <p className="text-[10px] font-bold uppercase tracking-wide text-[#EA2C00] mb-1.5">The opportunity, in one line</p>
-          <p className="text-[15px] text-[#3A3A3A] leading-relaxed">{content.opportunity}</p>
-        </div>
-
-        <div className="mb-6">
-          <p className="text-[11px] font-semibold uppercase tracking-[2px] text-[#EA2C00] mb-2">{content.trappedLabel}</p>
-          <div className="flex flex-wrap items-center gap-2 mb-2">
-            {content.trappedSteps.map((step, i) => (
-              <span key={i} className="flex items-center gap-2">
-                <span className="text-[11px] px-3 py-2 rounded-md bg-[#F4F0EA] text-[#3A3A3A]">{step}</span>
-                {i < content.trappedSteps.length - 1 && <span className="text-[#B4B4B4]">→</span>}
-              </span>
-            ))}
-          </div>
-          <p className="text-[11.5px] text-[#3A3A3A] leading-relaxed">{content.trappedCap}</p>
         </div>
 
         <p className="text-[16.5px] font-semibold text-[#1A1A1A] mb-3">{content.goodHead}</p>
@@ -1409,6 +1478,28 @@ function PriorityMechanics({
         </p>
       </div>
 
+      {/* ============ The opportunity, and how it gets trapped — moved
+          here from the main Strategy scroll (Change: at-a-glance rework) so
+          the default view stays scannable while this reasoning stays one
+          click away. Content unchanged. ============ */}
+      <div className="bg-[#F4F0EA] border border-[#E7E0D6] border-l-[3px] border-l-[#EA2C00] shadow-sm rounded-r-md p-4 mb-5">
+        <p className="text-[10px] font-bold uppercase tracking-wide text-[#EA2C00] mb-1.5">The opportunity, in one line</p>
+        <p className="text-[15px] text-[#3A3A3A] leading-relaxed">{content.opportunity}</p>
+      </div>
+
+      <div className="mb-10">
+        <p className="text-[11px] font-semibold uppercase tracking-[2px] text-[#EA2C00] mb-2">{content.trappedLabel}</p>
+        <div className="flex flex-wrap items-center gap-2 mb-2">
+          {content.trappedSteps.map((step, i) => (
+            <span key={i} className="flex items-center gap-2">
+              <span className="text-[11px] px-3 py-2 rounded-md bg-[#F4F0EA] border border-[#E7E0D6] text-[#3A3A3A]">{step}</span>
+              {i < content.trappedSteps.length - 1 && <span className="text-[#B4B4B4]">→</span>}
+            </span>
+          ))}
+        </div>
+        <p className="text-[11.5px] text-[#3A3A3A] leading-relaxed">{content.trappedCap}</p>
+      </div>
+
       {/* ============ The Value Chain ============ */}
       <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-14" data-testid={`section-attain-chain-${goal}`}>
         <div className="flex items-center gap-3 mb-2">
@@ -1464,7 +1555,7 @@ function PriorityMechanics({
           </table>
         </div>
 
-        <div className="bg-[#F4F0EA] border-l-[3px] border-[#EA2C00] rounded-r-md p-4">
+        <div className="bg-[#F4F0EA] border border-[#E7E0D6] border-l-[3px] border-l-[#EA2C00] shadow-sm rounded-r-md p-4">
           <p className="text-[10px] font-bold uppercase tracking-wide text-[#EA2C00] mb-1.5">The fragile middle</p>
           <p className="text-[15px] text-[#3A3A3A] leading-relaxed">{content.fragile}</p>
           <p className="text-[11px] text-[#8C8C8C] mt-2">
@@ -1578,7 +1669,7 @@ function PriorityMechanics({
           </div>
         </div>
 
-        <div className="bg-[#F4F0EA] border-l-[3px] border-[#EA2C00] rounded-r-md p-4">
+        <div className="bg-[#F4F0EA] border border-[#E7E0D6] border-l-[3px] border-l-[#EA2C00] shadow-sm rounded-r-md p-4">
           <p className="text-[10px] font-bold uppercase tracking-wide text-[#8C8C8C] mb-1.5">At renewal</p>
           <p className="text-[15px] text-[#1A1A1A] leading-relaxed">{content.renewal}</p>
         </div>
