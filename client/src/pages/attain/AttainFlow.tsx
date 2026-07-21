@@ -28,6 +28,7 @@ import {
   type AttainBaseline,
   type LeverValues,
   type MultiGoalContributionsResult,
+  type RealizationByGoal,
 } from "@/lib/attain/attainLevers";
 import { parseSignalBaseline, todayISODate, type ProgressEntry } from "@/lib/attain/attainProgress";
 import type { GoalTargetResult, AttainmentResult } from "@/lib/attain/attainCalc";
@@ -210,6 +211,16 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
   const [freedTimeSplit, setFreedTimeSplit] = useState<number>(
     () => initialSaveState?.freedTimeSplit ?? DEFAULT_FREED_TIME_SPLIT,
   );
+  // Per-priority attribution — the share of THIS priority's outcome, 0-100,
+  // that belongs to this plan rather than some other effort a partner may
+  // be running against the same number. Default 100 (full credit) whenever
+  // a key is missing, so a goal never needs to be eagerly seeded here the
+  // moment it's picked — see every read site below's `?? 100` fallback.
+  // Threaded into `computeMultiGoalContributions` (attainLevers.ts), the
+  // ONE place the actual scaling happens; see that function's comment.
+  const [realizationByGoal, setRealizationByGoal] = useState<RealizationByGoal>(
+    () => initialSaveState?.realizationByGoal ?? {},
+  );
 
   // Save-and-return's other half: the offer to pick a plan back up when
   // returning to Attain WITHOUT a link (see App.tsx's deep-link handling
@@ -260,6 +271,7 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
     setProgressEntries({});
     setBaseline({});
     setFreedTimeSplit(DEFAULT_FREED_TIME_SPLIT);
+    setRealizationByGoal({});
     setState((prev) => ({
       ...prev,
       setting,
@@ -434,6 +446,13 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
     setFreedTimeSplit(Math.min(100, Math.max(0, split)));
   }, []);
 
+  // Build the case's "Realization rate" control - the one place a priority's
+  // attribution percent changes. Clamped here (not just at the engine layer)
+  // so the slider/number input can never even display an out-of-range value.
+  const handleChangeRealization = useCallback((goal: GoalId, pct: number) => {
+    setRealizationByGoal((prev) => ({ ...prev, [goal]: Math.min(100, Math.max(0, pct)) }));
+  }, []);
+
   // Resume prompt's "Resume this plan" action — rehydrates every piece of
   // state from a stored save (the local draft here; a `?attain=` link goes
   // through the same shape via `initialSaveState` at mount instead) and
@@ -450,6 +469,7 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
     setProgressEntries(saved.progressEntries);
     setBaseline(saved.baseline);
     setFreedTimeSplit(saved.freedTimeSplit);
+    setRealizationByGoal(saved.realizationByGoal);
     setStepIndex(stepOrderFor(saved.goals).length - 1);
     setResumeDraft(null);
   }, []);
@@ -491,13 +511,14 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
       progressEntries,
       baseline,
       freedTimeSplit,
+      realizationByGoal,
     };
     writeAttainDraft(saveState);
     const encoded = encodeAttain(saveState);
     const url = `${window.location.origin}${window.location.pathname}?attain=${encoded}`;
     await copyToClipboard(url);
     return url;
-  }, [state, goals, valuesByGoal, commitments, goalOwnerByPriority, progressEntries, baseline, freedTimeSplit]);
+  }, [state, goals, valuesByGoal, commitments, goalOwnerByPriority, progressEntries, baseline, freedTimeSplit, realizationByGoal]);
 
   // Every dollar figure downstream comes from this one computation: each
   // goal's own delta off its own realityStart, combined once with the
@@ -505,8 +526,8 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
   // both in play. See attainLevers.ts computeMultiGoalContributions.
   const combined: MultiGoalContributionsResult | null = useMemo(() => {
     if (goals.length === 0 || !state.setting) return null;
-    return computeMultiGoalContributions(goals, state.setting, baseline, valuesByGoal, freedTimeSplit);
-  }, [goals, state.setting, baseline, valuesByGoal, freedTimeSplit]);
+    return computeMultiGoalContributions(goals, state.setting, baseline, valuesByGoal, freedTimeSplit, realizationByGoal);
+  }, [goals, state.setting, baseline, valuesByGoal, freedTimeSplit, realizationByGoal]);
 
   // Whether every field the Scope step asks for has a real value, so the
   // panel's Continue button on that step can only advance once the
@@ -686,6 +707,8 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
                 combined={combined}
                 freedTimeSplit={freedTimeSplit}
                 onChangeFreedTimeSplit={handleFreedTimeSplitChange}
+                realizationPct={realizationByGoal[activeBuildCaseGoal] ?? 100}
+                onChangeRealization={handleChangeRealization}
                 onChangeLeverValue={handleChangeLeverValue}
                 stepNumber={stepIndex + 1}
                 totalSteps={stepOrder.length}
@@ -722,6 +745,7 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
                   commitments={commitments}
                   goalOwnerByPriority={goalOwnerByPriority}
                   freedTimeSplit={freedTimeSplit}
+                  realizationByGoal={realizationByGoal}
                   progressEntries={progressEntries}
                   onLogProgressUpdate={handleLogProgressUpdate}
                   onMonthsElapsedChange={handleMonthsElapsedChange}
