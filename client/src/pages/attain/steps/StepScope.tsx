@@ -1,36 +1,57 @@
-import { ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
 import { NumberField } from "@/components/NumberField";
-import type { AttainScope, AttainSetting, SettingGoalContent } from "@/lib/attain/attainTypes";
+import type { AttainBaseline } from "@/lib/attain/attainLevers";
+import type { AttainSetting } from "@/lib/attain/attainTypes";
 
-const UNIT_LABEL: Record<AttainSetting, string> = {
+const PROVIDER_LABEL: Record<AttainSetting, string> = {
   outpatient: "Providers",
-  ed: "Providers",
+  ed: "ED providers",
   inpatient: "Hospitalists",
-  nursing: "Staffed beds",
+  nursing: "",
+};
+
+const PROVIDER_HELP: Record<AttainSetting, string> = {
+  outpatient: "Full-time equivalent providers whose documentation this plan covers.",
+  ed: "Full-time equivalent ED physicians whose documentation this plan covers.",
+  inpatient: "Full-time equivalent hospitalists whose documentation this plan covers.",
+  nursing: "",
+};
+
+const ENCOUNTER_LABEL: Record<AttainSetting, string> = {
+  outpatient: "Annual encounters",
+  ed: "Annual encounters",
+  inpatient: "Annual discharges",
+  nursing: "",
+};
+
+const ENCOUNTER_HELP: Record<AttainSetting, string> = {
+  outpatient: "Total visits per year across those providers.",
+  ed: "Total ED visits per year across those physicians.",
+  inpatient: "Total admissions per year across those hospitalists.",
+  nursing: "",
 };
 
 interface StepScopeProps {
   setting: AttainSetting;
-  scope: AttainScope;
-  onChange: (scope: AttainScope) => void;
-  content: SettingGoalContent | undefined;
-  overrides: Record<number, string>;
-  onChangeOverride: (index: number, value: string) => void;
-  onNext: () => void;
+  baseline: AttainBaseline;
+  onChangeBaseline: (patch: Partial<AttainBaseline>) => void;
 }
 
 /**
- * "Your starting point" — the scope of the plan (how many units it covers)
- * plus a light snapshot of current reality, folded in from what used to be
- * a separate "confirm the baseline" step. Which specific service lines are
- * in scope is now a decision made on the Build the Case step (a "lines"
- * lever), not collected twice here.
+ * "Your starting point" - the partner's real operational baseline, the
+ * stage every driver in this plan stands on. This replaced an earlier
+ * version of this step that mixed in a soft "where things stand today"
+ * snapshot (third-next-available, referral backlog, freed time per
+ * provider) as static, non-editable illustrative facts. Those numbers
+ * belonged to the goal's narrative, not to the plan's foundation, and
+ * "referral backlog" in particular is a demand DECISION ("Fill the new
+ * slots" on Build the case), not a starting fact - counting it here as a
+ * fact would have double-counted it as a decision later. This step now
+ * collects only the handful of real numbers every lever's math is built
+ * from, per the shared `AttainBaseline` engine input.
  */
-export default function StepScope({ setting, scope, onChange, content, overrides, onChangeOverride, onNext }: StepScopeProps) {
-  const unitLabel = UNIT_LABEL[setting];
-  const isValid = scope.unitCount > 0;
+export default function StepScope({ setting, baseline, onChangeBaseline }: StepScopeProps) {
+  const isNursing = setting === "nursing";
 
   return (
     <div>
@@ -41,70 +62,137 @@ export default function StepScope({ setting, scope, onChange, content, overrides
         <h1 className="text-2xl md:text-4xl font-bold text-black mb-3 font-abridge uppercase tracking-tight" data-testid="text-step-title">
           Your starting point
         </h1>
-        <p className="text-sm text-[#666666] leading-relaxed max-w-[560px]" data-testid="text-step-teach">
-          Every decision on the next page is measured as a move away from where you already are. Set how many{" "}
-          {unitLabel.toLowerCase()} this plan covers, and confirm the handful of numbers that describe today, so
-          "adds ~$X" always means added on top of reality, not invented from nothing.
+        <p className="text-sm text-[#666666] leading-relaxed max-w-[600px]" data-testid="text-step-teach">
+          Every decision on the next page is measured as a move away from where you actually are today, not from an
+          assumed number. Enter your real operation here, and every "adds ~$X" on the next page is built from these
+          numbers, not from a benchmark that isn't yours.
         </p>
       </motion.div>
 
-      <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="bg-[#F5F0EB] rounded-xl p-6 mb-6">
-        <label className="text-sm font-medium text-black block mb-2" htmlFor="attain-unit-count">
-          {unitLabel} in scope
-        </label>
-        <NumberField
-          id="attain-unit-count"
-          value={scope.unitCount}
-          onValueChange={(v) => onChange({ ...scope, unitCount: v })}
-          min={0}
-          decimal={false}
-          className="h-12 w-full max-w-[220px] rounded-md border border-[#E5E5E5] bg-white px-3 text-base"
-          placeholder="e.g., 40"
-          data-testid="input-attain-unit-count"
-        />
-        <p className="text-xs text-[#8C8C8C] mt-2">
-          {setting === "nursing"
-            ? "Staffed beds across the units in scope."
-            : `Full-time equivalent ${unitLabel.toLowerCase()} whose documentation this plan covers.`}
-        </p>
-      </motion.div>
-
-      {content && content.worldCards.length > 0 && (
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="mb-6">
-          <label className="text-sm font-medium text-black block mb-2">Where things stand today</label>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {content.worldCards.map((card, i) => (
-              <div key={card.k} className="bg-[#F4F0EA] rounded-lg p-5" data-testid={`card-attain-scope-world-${i}`}>
-                <p className="text-[8.5px] font-semibold uppercase tracking-[1.4px] text-[#8C8C8C] mb-2">{card.k}</p>
-                <input
-                  type="text"
-                  value={overrides[i] ?? card.n}
-                  onChange={(e) => onChangeOverride(i, e.target.value)}
-                  className={`font-abridge text-2xl bg-transparent border-b border-dashed border-[#D8CFC4] focus:border-[#EA2C00] outline-none w-full ${card.coral ? "text-[#EA2C00]" : "text-[#1A1A1A]"}`}
-                  data-testid={`input-attain-scope-baseline-${i}`}
-                />
-                <p className="text-[9px] text-[#8C8C8C] mt-2">{card.f}</p>
-              </div>
-            ))}
-          </div>
-          <p className="text-xs text-[#8C8C8C] mt-2 max-w-[560px]">
-            These prefill with typical benchmarks for this setting and goal. Edit any of them with your organization's
-            real numbers, or leave them as illustrative defaults and move on, either way the plan renders.
-          </p>
-        </motion.div>
-      )}
-
-      <Button
-        onClick={onNext}
-        disabled={!isValid}
-        className={`h-12 px-6 font-semibold rounded-full transition-all ${
-          isValid ? "bg-black hover:bg-black/90 text-white" : "bg-slate-200 text-slate-400 cursor-not-allowed"
-        }`}
-        data-testid="button-attain-scope-continue"
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-[#F5F0EB] rounded-xl p-6 sm:p-8 mb-6"
+        data-testid="panel-attain-scope-baseline"
       >
-        Continue
-        <ArrowRight className="w-4 h-4 ml-2" />
-      </Button>
+        <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+          {isNursing ? "YOUR NURSING PROGRAM" : "YOUR OPERATION"}
+        </p>
+        <div className="h-px bg-[#D1D5DB] mb-6" />
+
+        {isNursing ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <NumberBaselineField
+              label="Staffed beds"
+              testid="staffed-beds"
+              value={baseline.staffedBeds ?? 0}
+              onChange={(v) => onChangeBaseline({ staffedBeds: v })}
+              placeholder="e.g., 120"
+              help="Licensed beds with active nursing staff, across the units in scope."
+            />
+            <NumberBaselineField
+              label="Nursing FTEs"
+              testid="nursing-ftes"
+              value={baseline.nursingFtes ?? 0}
+              onChange={(v) => onChangeBaseline({ nursingFtes: v })}
+              placeholder="e.g., 180"
+              help="Full-time equivalent nurses whose documentation this plan covers."
+            />
+            <NumberBaselineField
+              label="Daily census"
+              testid="daily-census"
+              value={baseline.dailyCensus ?? 0}
+              onChange={(v) => onChangeBaseline({ dailyCensus: v })}
+              placeholder="e.g., 102"
+              help="Average patients occupying those beds on a typical day. This becomes your occupancy rate."
+            />
+            <NumberBaselineField
+              label="Adoption rate"
+              testid="adoption-pct"
+              value={baseline.adoptionPct ?? 0}
+              onChange={(v) => onChangeBaseline({ adoptionPct: v })}
+              placeholder="e.g., 50"
+              suffix="%"
+              max={100}
+              help="Share of nurses actively documenting with Abridge today. Most deployments reach 40 to 60% within six months."
+            />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <NumberBaselineField
+              label={PROVIDER_LABEL[setting]}
+              testid="providers"
+              value={baseline.providers ?? 0}
+              onChange={(v) => onChangeBaseline({ providers: v })}
+              placeholder="e.g., 40"
+              help={PROVIDER_HELP[setting]}
+            />
+            <NumberBaselineField
+              label={ENCOUNTER_LABEL[setting]}
+              testid="annual-encounters"
+              value={baseline.annualEncounters ?? 0}
+              onChange={(v) => onChangeBaseline({ annualEncounters: v })}
+              placeholder="e.g., 140,000"
+              help={ENCOUNTER_HELP[setting]}
+            />
+            <NumberBaselineField
+              label="Utilization rate"
+              testid="utilization-pct"
+              value={baseline.utilizationPct ?? 0}
+              onChange={(v) => onChangeBaseline({ utilizationPct: v })}
+              placeholder="e.g., 70"
+              suffix="%"
+              max={100}
+              help="Share of those encounters this plan can realistically reach. Most deployments start near 50 to 60% and grow from there."
+            />
+          </div>
+        )}
+      </motion.div>
+
+      <p className="text-xs text-[#8C8C8C] max-w-[600px]" data-testid="text-attain-scope-footnote">
+        These numbers are the stage every decision on the next page stands on. Nothing about your demand, backlog,
+        or referral queue belongs here, those are decisions you make on Build the case, not facts about today.
+      </p>
+    </div>
+  );
+}
+
+interface NumberBaselineFieldProps {
+  label: string;
+  testid: string;
+  value: number;
+  onChange: (value: number) => void;
+  placeholder: string;
+  help: string;
+  suffix?: string;
+  max?: number;
+}
+
+function NumberBaselineField({ label, testid, value, onChange, placeholder, help, suffix, max }: NumberBaselineFieldProps) {
+  return (
+    <div className="space-y-2.5">
+      <label className="text-sm font-medium text-black" htmlFor={`attain-baseline-${testid}`}>
+        {label}
+      </label>
+      <div className="relative">
+        <NumberField
+          id={`attain-baseline-${testid}`}
+          value={value}
+          onValueChange={onChange}
+          min={0}
+          max={max}
+          decimal={false}
+          className={`h-12 w-full rounded-md border border-[#E5E5E5] bg-white px-3 text-base ${suffix ? "pr-9" : ""}`}
+          placeholder={placeholder}
+          data-testid={`input-attain-baseline-${testid}`}
+        />
+        {suffix && (
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#888888] text-sm pointer-events-none">
+            {suffix}
+          </span>
+        )}
+      </div>
+      <p className="text-xs text-[#888888] leading-relaxed">{help}</p>
     </div>
   );
 }
