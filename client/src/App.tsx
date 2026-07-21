@@ -40,6 +40,7 @@ import ForecastModeSelector from "@/pages/forecast/ForecastModeSelector";
 import PricingComparisonFlow from "@/pages/forecast/PricingComparisonFlow";
 import AppRationalizationFlow from "@/pages/forecast/AppRationalizationFlow";
 import { ExploreFlow, type ExploreState, type ExploreCareSetting, type ExplorePhase } from "@/pages/explore";
+import AttainFlow from "@/pages/attain/AttainFlow";
 import ExploreIntakeForm from "@/pages/intake/ExploreIntakeForm";
 import MeasureDataRequest from "@/pages/intake/MeasureDataRequest";
 import ExploreIntakeReceipt from "@/pages/intake/ExploreIntakeReceipt";
@@ -55,7 +56,7 @@ import { mergeExploreEditIntoSetting } from "@/lib/proformaCalculations";
 import { type CareSettingType } from "@/lib/SETTING_CONFIG";
 import { type RoiInputs } from "@/lib/roi-types";
 
-type AppView = "splash" | "journey" | "explore" | "baseline-setup" | "model-builder" | "investment" | "calculator" | "expand" | "switch" | "learn" | "measure" | "forecast" | "forecast-mode" | "forecast-pricing" | "proforma-hub" | "proforma-view" | "explore-intake" | "measure-data-request" | "explore-intake-receipt" | "measure-data-receipt" | "data-request-builder" | "forecast-app-rationalization";
+type AppView = "splash" | "journey" | "explore" | "baseline-setup" | "model-builder" | "investment" | "calculator" | "expand" | "switch" | "learn" | "measure" | "forecast" | "forecast-mode" | "forecast-pricing" | "proforma-hub" | "proforma-view" | "explore-intake" | "measure-data-request" | "explore-intake-receipt" | "measure-data-receipt" | "data-request-builder" | "forecast-app-rationalization" | "attain";
 
 interface SelectionState {
   selectedSettings: CareSettingType[];
@@ -409,6 +410,7 @@ export default function App() {
                 }}
                 onSelectExpand={() => navigateTo("measure")}
                 onSelectSwitch={() => navigateTo("switch")}
+                onSelectAttain={() => navigateTo("attain")}
                 onSelectForecast={() => navigateTo("forecast-mode")}
                 onSelectLearn={() => {
                   setLearnInitialScreen(undefined);
@@ -430,6 +432,10 @@ export default function App() {
                 disabledCareSettings={proformaSettings.map(s => s.careSetting as ExploreCareSetting)}
                 onDataRequest={() => navigateTo("data-request-builder")}
               />
+            )}
+
+            {currentView === "attain" && (
+              <AttainFlow onBackToJourney={handleBackToJourney} />
             )}
 
             {currentView === "explore-intake" && (

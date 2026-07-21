@@ -1,4 +1,4 @@
-import { Compass, TrendingUp, ClipboardCheck, BookOpen, ChevronRight, ArrowRight, Layers, LineChart, FileSpreadsheet } from "lucide-react";
+import { Compass, TrendingUp, ClipboardCheck, BookOpen, ChevronRight, ArrowRight, Layers, LineChart, FileSpreadsheet, Target } from "lucide-react";
 
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -10,13 +10,14 @@ interface JourneySelectorProps {
   onSelectExpand: () => void;
   onSelectSwitch: () => void;
   onSelectLearn: () => void;
+  onSelectAttain: () => void;
   onSelectForecast?: () => void;
   onSelectDataRequest?: () => void;
   proformaCount?: number;
   onOpenProforma?: () => void;
 }
 
-export default function JourneySelector({ onSelectExplore, onSelectExpand, onSelectSwitch, onSelectLearn, onSelectForecast, onSelectDataRequest, proformaCount, onOpenProforma }: JourneySelectorProps) {
+export default function JourneySelector({ onSelectExplore, onSelectExpand, onSelectSwitch, onSelectLearn, onSelectAttain, onSelectForecast, onSelectDataRequest, proformaCount, onOpenProforma }: JourneySelectorProps) {
   // Temporarily hide the "Assess" path from the home page. Set back to true to restore it.
   const SHOW_ASSESS = false;
 
@@ -134,6 +135,47 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
                 data-testid="card-explore-button"
               >
                 Start Exploring
+                <ChevronRight className="w-4 h-4 ml-1" />
+              </Button>
+            </motion.div>
+
+            {/* CARD: ATTAIN — sits between Explore and Measure */}
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
+              whileHover={{ y: -4 }}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => handleCardKey(e, onSelectAttain)}
+              className="group relative flex flex-col cursor-pointer transition-all duration-300 ease-out rounded-xl p-8 min-h-[320px] bg-[#F5F0EB] hover:bg-[#EDE7E0] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#EA2C00] focus-visible:ring-offset-2"
+              onClick={onSelectAttain}
+              data-testid="card-attain"
+            >
+              <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center mb-5">
+                <Target className="w-6 h-6 text-[#EA2C00]" />
+              </div>
+
+              <p className="text-[13px] text-[#EA2C00] font-medium mb-1.5" data-testid="text-attain-tagline">
+                Committed to a goal?
+              </p>
+              <h3 className="text-2xl font-bold text-[#1A1A1A] mb-2.5" data-testid="text-attain-title">
+                Attain
+              </h3>
+              <p className="text-sm text-[#666666] leading-relaxed flex-1 mb-6" data-testid="text-attain-description">
+                Pick the outcome you're chasing and build the step-by-step plan to reach it, together.
+              </p>
+
+              <Button
+                className="w-full bg-[#EA2C00] text-white border-[#EA2C00]"
+                size="lg"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSelectAttain();
+                }}
+                data-testid="card-attain-button"
+              >
+                Build the Plan
                 <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
             </motion.div>
