@@ -8,6 +8,7 @@ import {
   computeWorkforcePayoff,
   computeWorkforceChain,
   computeWorkforceContributions,
+  computeWorkforceCeiling,
   exploreStateForReconciliation,
   computeAllDriverValues,
   WORKFORCE_LEVER_IDS,
@@ -16,6 +17,7 @@ import {
   WORKFORCE_BURNOUT_SHARE_PCT,
   WORKFORCE_IMPACT_CEILING_PP,
 } from "@/lib/attain/attainWorkforce";
+import { CONTENT } from "@/lib/attain/attainGoals";
 import {
   LEVERS,
   leversFor,
@@ -436,5 +438,116 @@ describe("no em dash anywhere in the catalog copy for retention", () => {
     for (const lever of LEVERS.retention) {
       expect(lever.signal.length).toBeGreaterThan(0);
     }
+  });
+});
+
+describe("units honesty - the composite impact is a share of burnout departures, never 'pp of turnover' (Wave A fix)", () => {
+  it("none of the chain's formula strings claim 'pp of turnover' - that reads as points off the turnover RATE, which this number is not", () => {
+    const chain = computeWorkforceChain(OP_BASELINE, "outpatient", fullValues());
+    for (const formula of Object.values(chain.formulas)) {
+      expect(formula).not.toContain("pp of turnover");
+      expect(formula).not.toMatch(/pp ceiling/);
+    }
+  });
+
+  it("the D2-D5 formula strings instead say '% of burnout departures avoided', matching how the number is actually used in the payoff", () => {
+    const chain = computeWorkforceChain(OP_BASELINE, "outpatient", fullValues());
+    expect(chain.formulas.protect).toContain("% of burnout departures avoided");
+    expect(chain.formulas.sustain).toContain("% of burnout departures avoided");
+  });
+
+  it("the payoff carries a HONEST resulting turnover-rate-points figure, far smaller than the composite impact percent", () => {
+    const scope = computeWorkforceScope("outpatient", OP_BASELINE, fullValues());
+    const payoff = computeWorkforcePayoff(scope, 15); // a maxed-out 15% composite
+    // 15% of burnout departures avoided is NOT 15 points off the turnover
+    // rate - the real rate effect is turnover x burnout share x 15%, an
+    // order of magnitude smaller.
+    expect(payoff.turnoverPointsReduced).toBeGreaterThan(0);
+    expect(payoff.turnoverPointsReduced).toBeLessThan(15);
+    expect(payoff.turnoverPointsReduced).toBeCloseTo(
+      scope.turnoverRatePct * (scope.burnoutSharePct / 100) * (15 / 100),
+      6,
+    );
+  });
+
+  it("the payoff formula string surfaces the resulting turnover-points figure, not just the composite percent", () => {
+    const chain = computeWorkforceChain(OP_BASELINE, "outpatient", fullValues());
+    expect(chain.formulas.payoff).toContain("pts off your turnover rate");
+  });
+});
+
+describe("computeWorkforceCeiling - the chain's own achievable maximum at a stated scale (Wave A fix)", () => {
+  it("maxing every D2-D5 decision reaches EXACTLY the setting's ceiling composite, matching computeWorkforceCeiling", () => {
+    const maxedValues = fullValues({
+      retentionProviders: 120,
+      retentionProtect: 100,
+      retentionSurveyCadence: 2,
+      retentionBackfill: 2,
+      retentionSustain: 12,
+    });
+    const baseline: AttainBaseline = { providers: 120, annualEncounters: 120 * 3_500, utilizationPct: 100 };
+    const chain = computeWorkforceChain(baseline, "outpatient", maxedValues);
+    const ceiling = computeWorkforceCeiling("outpatient", 120);
+
+    expect(chain.sustain.compositeImpactPct).toBeCloseTo(WORKFORCE_IMPACT_CEILING_PP.outpatient, 6);
+    expect(chain.payoff.value).toBe(ceiling.value);
+    expect(chain.payoff.departuresAvoided).toBeCloseTo(ceiling.departuresAvoided, 6);
+  });
+
+  it("the ceiling scales with headcount and never exceeds what providers x turnover x burnout x ceiling% implies", () => {
+    for (const setting of ["outpatient", "ed", "inpatient", "nursing"] as AttainSetting[]) {
+      const ceiling = computeWorkforceCeiling(setting, 100);
+      const expectedMax =
+        100 * (WORKFORCE_TURNOVER_DEFAULT_PCT[setting] / 100) * (WORKFORCE_BURNOUT_SHARE_PCT[setting] / 100) *
+        (WORKFORCE_IMPACT_CEILING_PP[setting] / 100);
+      expect(ceiling.departuresAvoided).toBeCloseTo(expectedMax, 6);
+    }
+  });
+});
+
+describe("retention story-page 'prize' copy agrees with the chain's own ceiling (Wave A fix for the ~4-8x ambition gap)", () => {
+  const cases: { setting: AttainSetting; statedScale: number }[] = [
+    { setting: "outpatient", statedScale: 120 },
+    { setting: "ed", statedScale: 55 },
+    { setting: "inpatient", statedScale: 45 },
+    { setting: "nursing", statedScale: 480 },
+  ];
+
+  it.each(cases)(
+    "$setting: the 'ambitious' ambition tier's goalMargin equals the chain's own ceiling value at the stated scale, never a number beyond it",
+    ({ setting, statedScale }) => {
+      const content = CONTENT[setting]?.retention;
+      expect(content).toBeDefined();
+      const ambitious = content!.ambition.find((a) => a.key === "ambitious");
+      expect(ambitious).toBeDefined();
+
+      const ceiling = computeWorkforceCeiling(setting, statedScale);
+      expect(ambitious!.goalMargin).toBe(ceiling.value);
+    },
+  );
+
+  it.each(cases)(
+    "$setting: every ambition tier's goalMargin is at or under the chain's own achievable ceiling - the prize can never promise more than the chain can build",
+    ({ setting, statedScale }) => {
+      const content = CONTENT[setting]?.retention;
+      const ceiling = computeWorkforceCeiling(setting, statedScale);
+      for (const tier of content!.ambition) {
+        expect(tier.goalMargin).toBeLessThanOrEqual(ceiling.value);
+      }
+    },
+  );
+});
+
+describe("nursing burnout share is one consistent value across the engine and the story copy (Wave A fix)", () => {
+  it("the engine's nursing burnout share matches computeAllDriverValues' own hardcoded nursingRetention burnout share (40%)", () => {
+    expect(WORKFORCE_BURNOUT_SHARE_PCT.nursing).toBe(40);
+  });
+
+  it("the nursing retention world-card copy quotes the same 40%, not a different hand-picked number", () => {
+    const content = CONTENT.nursing?.retention;
+    expect(content).toBeDefined();
+    const burnoutCard = content!.worldCards.find((c) => c.k === "Attributed to burnout");
+    expect(burnoutCard).toBeDefined();
+    expect(burnoutCard!.n).toBe(`~${WORKFORCE_BURNOUT_SHARE_PCT.nursing}%`);
   });
 });
