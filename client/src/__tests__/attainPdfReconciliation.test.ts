@@ -220,6 +220,61 @@ describe("Attain PDF reconciliation — engine math vs. printed headline", () =>
     expect(text).toContain("Revenue Capture");
   });
 
+  it("realization: prints an 'Attributed at N% realization' footnote on a priority's Starting Point page only when that priority's rate is below 100, and the headline stays the already-realized figure", () => {
+    const goals: GoalId[] = ["access"];
+    const valuesByGoal = { access: accessValues() };
+
+    const fullCombined = computeMultiGoalContributions(goals, "outpatient", baseline, valuesByGoal, 50, { access: 100 });
+    const partialCombined = computeMultiGoalContributions(goals, "outpatient", baseline, valuesByGoal, 50, { access: 70 });
+    // Sanity: realization actually changed the number this test depends on.
+    expect(partialCombined.combinedMargin).toBeCloseTo(fullCombined.combinedMargin * 0.7, 0);
+
+    const fullData = buildAttainPdfData({
+      state: baseState,
+      setting: "outpatient",
+      goals,
+      target: { ...target, margin: fullCombined.combinedMargin, count: fullCombined.combinedCount },
+      attainment,
+      valuesByGoal,
+      combined: fullCombined,
+      commitments,
+      goalOwnerByPriority,
+      freedTimeSplit: 50,
+      realizationByGoal: { access: 100 },
+      orgName: "Meridian Health System",
+    });
+    const partialData = buildAttainPdfData({
+      state: baseState,
+      setting: "outpatient",
+      goals,
+      target: { ...target, margin: partialCombined.combinedMargin, count: partialCombined.combinedCount },
+      attainment,
+      valuesByGoal,
+      combined: partialCombined,
+      commitments,
+      goalOwnerByPriority,
+      freedTimeSplit: 50,
+      realizationByGoal: { access: 70 },
+      orgName: "Meridian Health System",
+    });
+
+    // The headline is already the realized figure - no separate scaling
+    // needed inside the PDF, it just reads combined straight through.
+    expect(partialData.combinedMargin).toBeCloseTo(fullData.combinedMargin * 0.7, 0);
+    expect(partialData.priorities[0].realizationPct).toBe(70);
+    expect(fullData.priorities[0].realizationPct).toBe(100);
+
+    const fullOut: string[] = [];
+    collectText(AttainPDFDocument({ data: fullData }), fullOut);
+    const fullText = fullOut.join(" | ");
+    expect(fullText).not.toContain("realization");
+
+    const partialOut: string[] = [];
+    collectText(AttainPDFDocument({ data: partialData }), partialOut);
+    const partialText = partialOut.join(" | ");
+    expect(partialText).toContain("Attributed at 70% realization");
+  });
+
   it("degrades gracefully when a priority has no setting/goal content (e.g. an unsupported combination)", () => {
     const goals: GoalId[] = ["access"];
     const valuesByGoal = { access: accessValues() };
