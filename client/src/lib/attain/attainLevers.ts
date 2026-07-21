@@ -1,5 +1,4 @@
 import { computeAllDriverValues, computeAllDriverCalcSummaries } from "@/lib/exploreDriverCalcs";
-import { calcHapi, calcFalls, calcSepsis } from "@/lib/nursingQualityCalcs";
 import {
   DEFAULT_EXPLORE_STATE,
   type ExploreState,
@@ -8,6 +7,7 @@ import type { AttainSetting, GoalId } from "./attainTypes";
 import { computeAccessContributions } from "./attainAccess";
 import { computeRevenueContributions } from "./attainRevenue";
 import { computeWorkforceContributions } from "./attainWorkforce";
+import { computeQualityContributions } from "./attainQuality";
 
 /**
  * Attain - lever layer.
@@ -118,13 +118,21 @@ import { computeWorkforceContributions } from "./attainWorkforce";
  *    (the CDI query-cost-avoidance channel, the inpatient analog of a
  *    query); "protect against downcoding" sweeps `ipDrgRealization`
  *    (protecting the captured DRG weight from audit downgrade).
- *  - quality (nursing): "close real-time gaps" sweeps
- *    `nursingHapiPreventionRate`; "tie deterioration signals to a response"
- *    sweeps `nursingSepsisRealization` (the SEP-1 early-warning bundle is
- *    the natural home for "deterioration signal -> response"); "lift bundle
- *    compliance" sweeps `nursingFallsPreventionRate` (the mobility/turning
- *    bundle). Three genuinely distinct, already-wired nursing-quality
- *    drivers, one per lever, so no double count.
+ *  - quality (nursing): rebuilt as an ORDERED DECISION CHAIN (D1 scope +
+ *    event-type selection -> D2 close real-time gaps -> D3 tie
+ *    deterioration signals to a response -> D4 lift bundle compliance ->
+ *    the payoff), not an independent-channel lever set, in
+ *    `attainQuality.ts`. The partner picks one or more targeted event types
+ *    (HAPI, CLABSI, Falls, Sepsis); each selected type's own dollar is
+ *    prevented events x cost per event, read straight off its own
+ *    `calc*` helper in `nursingQualityCalcs.ts`, and the types simply SUM
+ *    (each is its own genuinely separate harm event, never double-counted).
+ *    `computeLeverContributions` delegates the whole `goal === "quality"`
+ *    case to `computeQualityContributions` there; see that module's header
+ *    for the full chain, why Sepsis's own richer `calcSepsis` model is
+ *    reconciled through D3 alone rather than folded into the shared D2/D4
+ *    composite, and the reconciliation to Explore's
+ *    `nursingHapi`/`nursingClabsi`/`nursingFalls`/`nursingSepsis` primitives.
  *
  * Every "lines" lever (scope) uses a per-(setting, goal) preset list in
  * `LINE_PRESETS` below; `realityStart: []` means no lines are committed to
@@ -590,6 +598,20 @@ export const LEVERS: Record<GoalId, Lever[]> = {
       signal: "Units actively brought into the plan",
     },
     {
+      id: "qualityBeds",
+      label: "How many beds are in scope",
+      help: "The real bed count this plan is built against, capped to your Starting-point baseline. No dollar figure yet, there is no prevention rate decided.",
+      control: "countPerUnit",
+      unit: "beds",
+      min: 0,
+      max: 2_000,
+      step: 1,
+      realityStart: 0,
+      ownerRole: "Unit leadership",
+      defaultDue: "Month 1",
+      signal: "Beds actually covered by the plan, of those named in scope",
+    },
+    {
       id: "qualityRealTime",
       label: "Close real-time gaps during the shift",
       help: "A missed bundle step closed during the shift prevents an event before it happens. This is the share of gaps closed in real time, above where you are today.",
@@ -808,19 +830,6 @@ function utilizationFraction(baseline: AttainBaseline, fallbackPct = 100): numbe
   return Math.min(1, Math.max(0, pct / 100));
 }
 
-function adoptionFraction(baseline: AttainBaseline, fallbackPct = 100): number {
-  const pct = baseline.adoptionPct ?? fallbackPct;
-  return Math.min(1, Math.max(0, pct / 100));
-}
-
-/** Real occupancy (daily census / staffed beds) from the partner's own
- * baseline, or the original 85% illustrative default. */
-function nursingOccupancyFraction(baseline: AttainBaseline, fallback = 0.85): number {
-  const beds = baseline.staffedBeds ?? 0;
-  const census = baseline.dailyCensus ?? 0;
-  return beds > 0 && census > 0 ? Math.min(1, census / beds) : fallback;
-}
-
 /** Compact "$480K" style money for embedding at the end of a formula
  * string. Local to this module so a formula never depends on a UI
  * formatter living elsewhere. */
@@ -1001,117 +1010,12 @@ function revenueChannel(
   return setting === "inpatient" ? ipRevenueChannel(units, leverId, raw, baseline) : ZERO;
 }
 
-// ────────────────────────────────────────────────────────────────────────
-// QUALITY channels (nursing only, per SETTING_GOAL_MATRIX)
-// ────────────────────────────────────────────────────────────────────────
-
-function bedsToPatientDays(beds: number, occupancyFraction: number): number {
-  return beds * occupancyFraction * 365;
-}
-
-function hapiValue(eff: number, preventionPct: number, baseline: AttainBaseline): ChannelValue {
-  if (eff <= 0 || preventionPct <= 0) return ZERO;
-  const occupancy = nursingOccupancyFraction(baseline);
-  const adopted = Math.round(eff * adoptionFraction(baseline));
-  if (adopted <= 0) return ZERO;
-  const occupancyPct = Math.round(occupancy * 100);
-  const state: ExploreState = {
-    ...mkState("nursing"),
-    nursingStaffedBeds: adopted,
-    nursingOccupancyRate: occupancyPct,
-    docQualityInputs: {
-      ...DEFAULT_EXPLORE_STATE.docQualityInputs,
-      nursingHapiEnabled: true,
-      nursingHapiRate: 2.8,
-      nursingHapiPreventionRate: preventionPct,
-      nursingHapiCost: 18_000,
-    },
-  };
-  const values = computeAllDriverValues(state, 0);
-  const summaries = computeAllDriverCalcSummaries(state, 0);
-  const hapi = calcHapi({ patientDays: bedsToPatientDays(adopted, occupancy), rate: 2.8, preventionPct, cost: 18_000 });
-  const margin = values.nursingHapi ?? 0;
-  return { margin, count: Math.round(hapi.prevented), formula: formulaFor(summaries, "nursingHapi", margin) };
-}
-
-function sepsisValue(eff: number, realizationPct: number, baseline: AttainBaseline): ChannelValue {
-  if (eff <= 0 || realizationPct <= 0) return ZERO;
-  const occupancy = nursingOccupancyFraction(baseline);
-  const adopted = Math.round(eff * adoptionFraction(baseline));
-  if (adopted <= 0) return ZERO;
-  const occupancyPct = Math.round(occupancy * 100);
-  const state: ExploreState = {
-    ...mkState("nursing"),
-    nursingStaffedBeds: adopted,
-    nursingOccupancyRate: occupancyPct,
-    docQualityInputs: {
-      ...DEFAULT_EXPLORE_STATE.docQualityInputs,
-      nursingSepsisEnabled: true,
-      nursingSepsisRatePerThousand: 2.0,
-      nursingSepsisCurrentCompliance: 75,
-      nursingSepsisDocLagPercent: 30,
-      nursingSepsisExcessCostPerCase: 3_500,
-      nursingSepsisRealization: realizationPct,
-    },
-  };
-  const values = computeAllDriverValues(state, 0);
-  const summaries = computeAllDriverCalcSummaries(state, 0);
-  const sepsis = calcSepsis({
-    patientDays: bedsToPatientDays(adopted, occupancy),
-    ratePerThousand: 2.0,
-    currentCompliancePct: 75,
-    docLagPct: 30,
-    excessCostPerCase: 3_500,
-    realizationPct,
-  });
-  const margin = values.nursingSepsis ?? 0;
-  return { margin, count: Math.round(sepsis.prevented), formula: formulaFor(summaries, "nursingSepsis", margin) };
-}
-
-function fallsValue(eff: number, preventionPct: number, baseline: AttainBaseline): ChannelValue {
-  if (eff <= 0 || preventionPct <= 0) return ZERO;
-  const occupancy = nursingOccupancyFraction(baseline);
-  const adopted = Math.round(eff * adoptionFraction(baseline));
-  if (adopted <= 0) return ZERO;
-  const occupancyPct = Math.round(occupancy * 100);
-  const state: ExploreState = {
-    ...mkState("nursing"),
-    nursingStaffedBeds: adopted,
-    nursingOccupancyRate: occupancyPct,
-    docQualityInputs: {
-      ...DEFAULT_EXPLORE_STATE.docQualityInputs,
-      nursingFallsEnabled: true,
-      nursingFallsRate: 3.5,
-      nursingFallsPreventionRate: preventionPct,
-      nursingFallsCost: 6_500,
-    },
-  };
-  const values = computeAllDriverValues(state, 0);
-  const summaries = computeAllDriverCalcSummaries(state, 0);
-  const falls = calcFalls({ patientDays: bedsToPatientDays(adopted, occupancy), rate: 3.5, preventionPct, cost: 6_500 });
-  const margin = values.nursingFalls ?? 0;
-  return { margin, count: Math.round(falls.prevented), formula: formulaFor(summaries, "nursingFalls", margin) };
-}
-
-function qualityChannel(units: number, leverId: string, raw: number | string[] | undefined, baseline: AttainBaseline): ChannelValue {
-  switch (leverId) {
-    case "qualityLines": {
-      const fraction = linesFraction("nursing", "quality", asLines(raw));
-      return hapiValue(Math.round(units * fraction), 20, baseline);
-    }
-    case "qualityRealTime":
-      return hapiValue(Math.round(units * 0.5), asNum(raw), baseline);
-    case "qualityResponse": {
-      const level = Math.min(2, Math.max(0, Math.round(asNum(raw))));
-      const realizationPct = [0, 55, 80][level];
-      return sepsisValue(Math.round(units * 0.5), realizationPct, baseline);
-    }
-    case "qualityBundle":
-      return fallsValue(Math.round(units * 0.5), asNum(raw), baseline);
-    default:
-      return ZERO;
-  }
-}
+// QUALITY is no longer an independent-channel goal - it is a decision chain,
+// computed by `computeQualityContributions` in `attainQuality.ts` and wired
+// directly into `computeLeverContributions` below, for the same reason
+// access/retention/revenue(outpatient/ED) are excluded (see above): the
+// targeted event types are selected in D1 and their dollars are summed, not
+// swept as independent parallel channels.
 
 // ────────────────────────────────────────────────────────────────────────
 // Combined contribution math
@@ -1128,8 +1032,6 @@ function channelValue(
   switch (goal) {
     case "revenue":
       return revenueChannel(setting, units, leverId, raw, baseline);
-    case "quality":
-      return qualityChannel(units, leverId, raw, baseline);
     default:
       return ZERO;
   }
@@ -1160,6 +1062,12 @@ function channelValue(
  * its D2 (protect) -> D3 (survey) -> D4 (backfill) -> D5 (sustain) decisions
  * combine multiplicatively/additively into one composite impact percent
  * before the payoff, not independent parallel channels.
+ *
+ * QUALITY (nursing) is the fourth goal excluded - it delegates whole to
+ * `computeQualityContributions` (`attainQuality.ts`), because the partner's
+ * D1 event-type selection determines WHICH `calc*` helpers even run, and
+ * each selected type's own prevented-events dollar is summed, not swept as
+ * independent parallel percent/count channels.
  */
 export function computeLeverContributions(
   goal: GoalId,
@@ -1170,6 +1078,7 @@ export function computeLeverContributions(
   if (goal === "access") return computeAccessContributions(baseline, values);
   if (goal === "revenue" && setting !== "inpatient") return computeRevenueContributions(baseline, setting, values);
   if (goal === "retention") return computeWorkforceContributions(baseline, setting, values);
+  if (goal === "quality") return computeQualityContributions(baseline, values);
 
   const levers = leversFor(goal, setting);
   const units = baselineUnits(setting, goal, baseline);

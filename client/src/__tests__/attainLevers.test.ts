@@ -23,25 +23,22 @@ import type { AttainSetting, GoalId } from "@/lib/attain/attainTypes";
 
 const GOAL_IDS: GoalId[] = ["access", "retention", "revenue", "quality"];
 
-// Quality is the one remaining independent-channel goal: sweeping ONE lever
-// alone (holding the others at realityStart) still produces a positive
-// marginal effect, because `computeLeverContributions`'s leave-one-out
-// architecture applies. Access is a decision CHAIN (attainAccess.ts) -
-// moving only one of scope/margin/capacity/demand alone is EXPECTED to
-// still net ~$0 (that is rule 2, "demand is a ceiling"), so access is
-// deliberately excluded from that generic sweep and covered by its own
-// "ACCESS decision chain" describe block below. Revenue at outpatient/ED is
-// now ALSO a decision chain (attainRevenue.ts, three paths) for the same
-// reason - see the dedicated "REVENUE decision chain" describe block in
-// attainRevenue.test.ts. Revenue at INPATIENT is unaffected and still runs
-// this leave-one-out architecture (against `REVENUE_IP_LEVERS`); see the
-// inpatient regression test in attainRevenue.test.ts. Retention/Workforce
-// is now ALSO a decision chain (attainWorkforce.ts, D1-D5) - moving only D2
-// (protect) alone with D5 (sustain) still at 0 months nets ~$0 by design
-// (0 months held is 0 departures avoided), so it is excluded here too and
-// covered by the dedicated "WORKFORCE decision chain" describe block in
-// attainWorkforce.test.ts.
-const GOAL_IDS_CHANNEL: GoalId[] = ["quality"];
+// Every goal is now a bespoke ordered decision CHAIN, not an
+// independent-channel lever set: Access (attainAccess.ts, scope -> margin
+// -> capacity -> demand), Revenue at outpatient/ED (attainRevenue.ts, three
+// paths), Retention/Workforce (attainWorkforce.ts, D1-D5), and Quality
+// (attainQuality.ts, D1 scope+event-types -> D2 real-time -> D3 response ->
+// D4 bundle compliance). Moving only ONE decision in any of these chains
+// alone is EXPECTED to still net ~$0 in most cases (that is the whole point
+// of gating dollars until every decision behind them is real), so none of
+// them go through the generic leave-one-out sweep below; each has its own
+// dedicated "... decision chain" describe block (below, or in
+// attainRevenue.test.ts / attainWorkforce.test.ts / attainQuality.test.ts).
+// Revenue at INPATIENT is the one exception: it is unaffected by the
+// three-path rebuild and still runs this leave-one-out architecture
+// (against `REVENUE_IP_LEVERS`); see the inpatient regression test in
+// attainRevenue.test.ts.
+const GOAL_IDS_CHANNEL: GoalId[] = [];
 
 // One valid (setting, goal) pair per goal, used for the generic property
 // tests below (SETTING_GOAL_MATRIX in attainGoals.ts confirms each is legal).
@@ -114,8 +111,17 @@ const IMPROVED_VALUE: Record<GoalId, Record<string, number | string[]>> = {
     revenueEmConversionFactor: 40,
     revenueDenialsPreventable: 60,
   },
+  // Quality is now a D1-D4 decision chain (attainQuality.ts), not
+  // independent channels - this fixture is unused by the generic "moving
+  // any single lever" sweep (GOAL_IDS_CHANNEL is now empty, see above) but
+  // kept here, with a real event-type selection and every decision set, so
+  // the type stays a total Record<GoalId,...> and the multi-goal fixtures
+  // below see a realistic, fully-decided quality plan rather than an empty
+  // one.
   quality: {
     qualityLines: ["Med-Surg", "ICU"],
+    qualityBeds: 40,
+    qualityEventTypes: ["HAPI", "CLABSI", "Falls", "Sepsis"],
     qualityRealTime: 85,
     qualityResponse: 2,
     qualityBundle: 60,
@@ -675,11 +681,10 @@ describe("blank starting-point baseline ({}), no NaN / no crash", () => {
     expect(chain.scope.providersInScope).toBe(40);
   });
 
-  it("computeMultiGoalContributions: revenue/quality net exactly $0 against a blank baseline (access AND retention excluded - both have their own D1 fallback tests, see below/attainWorkforce.test.ts)", () => {
-    const goals: GoalId[] = ["revenue", "quality"];
+  it("computeMultiGoalContributions: revenue nets exactly $0 against a blank baseline (access, retention, AND quality excluded - all three have their own D1 fallback tests, see below/attainWorkforce.test.ts/attainQuality.test.ts)", () => {
+    const goals: GoalId[] = ["revenue"];
     const valuesByGoal: Partial<Record<GoalId, LeverValues>> = {
       revenue: { ...IMPROVED_VALUE.revenue },
-      quality: { ...IMPROVED_VALUE.quality },
     };
     const combined = computeMultiGoalContributions(goals, "outpatient", BLANK, valuesByGoal, 50);
     expect(Number.isNaN(combined.combinedMargin)).toBe(false);
@@ -693,6 +698,17 @@ describe("blank starting-point baseline ({}), no NaN / no crash", () => {
     // expected to net $0 the way the generic sweep above assumes; it is
     // expected to stay a well-formed, finite, non-negative number.
     const result = computeLeverContributions("retention", "outpatient", BLANK, IMPROVED_VALUE.retention);
+    expect(Number.isNaN(result.totalMargin)).toBe(false);
+    expect(Number.isFinite(result.totalMargin)).toBe(true);
+    expect(result.totalMargin).toBeGreaterThan(0);
+  });
+
+  it("quality: D1's own requested bed count is honored even when the Starting-point baseline stays blank (same convention as access's/retention's D1 fallback, see attainQuality.test.ts for the dedicated chain tests)", () => {
+    // qualityBeds (40, from IMPROVED_VALUE.quality) is honored even though
+    // BLANK has no `staffedBeds` to cap it against - so this is NOT expected
+    // to net $0; it is expected to stay a well-formed, finite, non-negative
+    // number.
+    const result = computeLeverContributions("quality", "nursing", BLANK, IMPROVED_VALUE.quality);
     expect(Number.isNaN(result.totalMargin)).toBe(false);
     expect(Number.isFinite(result.totalMargin)).toBe(true);
     expect(result.totalMargin).toBeGreaterThan(0);
