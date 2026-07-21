@@ -46,10 +46,28 @@ export const brand = {
   qualitativeBg: "#ECEFF1",
   qualitativeText: "#78909C",
   qualitativeBorder: "#CFD8DC",
-  
+
   connectedBg: "#E3F2FD",
   connectedText: "#1565C0",
   connectedBorder: "#BBDEFB",
+
+  // ── Value Attainment plan palette (Attain path) ──────────────────────────
+  // Additive only — every other PDF keeps using the keys above unchanged.
+  // Sourced from the locked mockup (value-attainment-patient-access.html):
+  // warm cream/tan surfaces instead of pure gray, and the four domain-pill
+  // colors used consistently across the Attain app screens and this PDF.
+  cream: "#F4F0EA",
+  cream2: "#F8F5F1",
+  tan: "#E7E0D6",
+  hairline: "#E5E5E5",
+  muted: "#8C8C8C",
+  faint: "#B4B4B4",
+  bodyText: "#3A3A3A",
+  // Domain pill background colors (never green/amber/RAG)
+  pillCapacity: "#1A1A1A",
+  pillWorkforce: "#574A43",
+  pillRevenue: "#EA2C00",
+  pillQuality: "#6B7280",
 };
 
 // ============================================================================
