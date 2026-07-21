@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { HelpCircle } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { NumberField } from "@/components/NumberField";
 import { lineOptions, type LeverValues } from "@/lib/attain/attainLevers";
 import type { AttainBaseline } from "@/lib/attain/attainLevers";
@@ -10,7 +12,7 @@ import {
   marginPerVisitFor,
   blendedMarginPerVisit,
   DEFAULT_MINUTES_SAVED_PER_NOTE,
-  ACCESS_VISIT_LENGTH_MIN,
+  DEFAULT_VISIT_LENGTH_MIN,
 } from "@/lib/attain/attainAccess";
 import type { AttainSetting } from "@/lib/attain/attainTypes";
 
@@ -81,6 +83,39 @@ function CountOutput({ label, value, unit, testid }: { label: string; value: str
         {value} <span className="text-xs font-normal text-[#8C8C8C]">{unit}</span>
       </span>
     </div>
+  );
+}
+
+/** A small, quiet info tooltip for a term next to a label - hover/tap only,
+ * never inline clutter. Reuses the house `Tooltip` primitive (the same one
+ * `TermTooltip` and BaselineSetup's field labels build on) rather than a
+ * bespoke popover. */
+function InfoTip({ text, testid }: { text: string; testid: string }) {
+  return (
+    <Tooltip delayDuration={200}>
+      <TooltipTrigger asChild>
+        <span
+          className="text-[#B4B4B4] hover:text-[#8C8C8C] transition-colors cursor-help inline-flex"
+          data-testid={testid}
+        >
+          <HelpCircle className="w-3.5 h-3.5" />
+        </span>
+      </TooltipTrigger>
+      <TooltipContent side="top" className="max-w-[240px] text-xs leading-relaxed">
+        <p>{text}</p>
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
+/** A field label with an optional info tooltip, so every D-step label stays
+ * the same shape whether or not it carries a definition. */
+function FieldLabel({ children, tip, testid }: { children: React.ReactNode; tip?: string; testid?: string }) {
+  return (
+    <label className="text-xs font-medium text-[#3A3A3A] mb-1.5 flex items-center gap-1.5">
+      {children}
+      {tip && testid && <InfoTip text={tip} testid={testid} />}
+    </label>
   );
 }
 
@@ -274,7 +309,12 @@ export default function AccessDecisionChain({ setting, baseline, values, onChang
           </div>
         ) : (
           <div className="max-w-[240px]">
-            <label className="text-xs font-medium text-[#3A3A3A] mb-1.5 block">Blended margin per visit</label>
+            <FieldLabel
+              tip="Revenue minus the variable cost of delivering the visit, not gross charges. This is what one extra visit is actually worth to the bottom line."
+              testid="tooltip-access-margin-blended"
+            >
+              Blended margin per visit
+            </FieldLabel>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8C8C8C] text-sm pointer-events-none">$</span>
               <NumberField
@@ -302,7 +342,12 @@ export default function AccessDecisionChain({ setting, baseline, values, onChang
       >
         <div className="flex flex-wrap gap-6 mb-4">
           <div className="w-[160px]">
-            <label className="text-xs font-medium text-[#3A3A3A] mb-1.5 block">Minutes saved per note</label>
+            <FieldLabel
+              tip="How many minutes of documentation Abridge saves on the average note. This is a real, editable input, not an assumed number."
+              testid="tooltip-access-minutes-saved"
+            >
+              Minutes saved per note
+            </FieldLabel>
             <NumberField
               value={asNum(values.accessMinutesSaved) > 0 ? asNum(values.accessMinutesSaved) : DEFAULT_MINUTES_SAVED_PER_NOTE}
               onValueChange={(v) => onChangeValue("accessMinutesSaved", v)}
@@ -313,11 +358,34 @@ export default function AccessDecisionChain({ setting, baseline, values, onChang
               data-testid="input-access-minutes-saved"
             />
           </div>
+          <div className="w-[200px]">
+            <FieldLabel
+              tip="The average length of one visit, in minutes. A shorter visit converts the same freed hours into more visits, so this directly sets how the freed time turns into capacity."
+              testid="tooltip-access-visit-length"
+            >
+              Average visit length (minutes)
+            </FieldLabel>
+            <NumberField
+              value={asNum(values.accessVisitLength) > 0 ? asNum(values.accessVisitLength) : DEFAULT_VISIT_LENGTH_MIN}
+              onValueChange={(v) => onChangeValue("accessVisitLength", v)}
+              min={1}
+              max={180}
+              decimal={false}
+              className="h-11 w-full rounded-md border border-[#E5E5E5] bg-white px-3 text-sm"
+              data-testid="input-access-visit-length"
+            />
+          </div>
         </div>
 
         <div className="mb-4">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-[#8C8C8C]">Share of freed time directed to access (vs relief)</span>
+            <span className="text-xs text-[#8C8C8C] flex items-center gap-1.5">
+              Share of freed time directed to access (vs relief)
+              <InfoTip
+                text="The portion of the time Abridge frees up that gets committed to opening new appointment slots, instead of staying as protected relief for the provider. This is the one decision that turns freed time into capacity."
+                testid="tooltip-access-freed-share"
+              />
+            </span>
             <span className="text-sm font-semibold text-[#1A1A1A]" data-testid="text-access-freed-share-value">
               {Math.round(asNum(values.accessFreedShare))}%
             </span>
@@ -342,8 +410,8 @@ export default function AccessDecisionChain({ setting, baseline, values, onChang
         />
         <MathBox formula={formulas.capacity} testid="text-access-d3-formula" />
         <p className="text-[10px] text-[#8C8C8C] mt-2">
-          Visits priced at a ~{ACCESS_VISIT_LENGTH_MIN} minute visit length. There is no second capacity mechanism,
-          freed time is the only source.
+          Visits priced at a ~{capacity.visitLengthMinutes} minute visit length. There is no second capacity
+          mechanism, freed time is the only source.
         </p>
       </DecisionCard>
 
@@ -355,7 +423,12 @@ export default function AccessDecisionChain({ setting, baseline, values, onChang
       >
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
           <div>
-            <label className="text-xs font-medium text-[#3A3A3A] mb-1.5 block">Referral backlog (patients waiting)</label>
+            <FieldLabel
+              tip="Patients already referred and waiting to be scheduled."
+              testid="tooltip-access-demand-backlog"
+            >
+              Referral backlog (patients waiting)
+            </FieldLabel>
             <NumberField
               value={asNum(values.accessDemandBacklog)}
               onValueChange={(v) => onChangeValue("accessDemandBacklog", v)}
@@ -366,7 +439,12 @@ export default function AccessDecisionChain({ setting, baseline, values, onChang
             />
           </div>
           <div>
-            <label className="text-xs font-medium text-[#3A3A3A] mb-1.5 block">New referrals per month</label>
+            <FieldLabel
+              tip="New referrals coming in each month that you can route into open slots."
+              testid="tooltip-access-demand-new-referrals"
+            >
+              New referrals per month
+            </FieldLabel>
             <NumberField
               value={asNum(values.accessDemandNewReferrals)}
               onValueChange={(v) => onChangeValue("accessDemandNewReferrals", v)}
@@ -377,7 +455,12 @@ export default function AccessDecisionChain({ setting, baseline, values, onChang
             />
           </div>
           <div>
-            <label className="text-xs font-medium text-[#3A3A3A] mb-1.5 block">Same-day / urgent demand</label>
+            <FieldLabel
+              tip="Share of your encounters that are same-day or urgent requests you cannot fit today."
+              testid="tooltip-access-demand-sameday"
+            >
+              Same-day / urgent demand
+            </FieldLabel>
             <div className="relative">
               <NumberField
                 value={asNum(values.accessDemandSameDayPct)}
@@ -392,7 +475,12 @@ export default function AccessDecisionChain({ setting, baseline, values, onChang
             </div>
           </div>
           <div>
-            <label className="text-xs font-medium text-[#3A3A3A] mb-1.5 block">No-show recovery</label>
+            <FieldLabel
+              tip="Share of no-show or cancelled slots you can refill with waiting patients."
+              testid="tooltip-access-demand-noshow"
+            >
+              No-show recovery
+            </FieldLabel>
             <div className="relative">
               <NumberField
                 value={asNum(values.accessDemandNoShowPct)}
