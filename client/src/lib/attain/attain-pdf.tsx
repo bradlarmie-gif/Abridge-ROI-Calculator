@@ -51,6 +51,7 @@ import {
   type LeverValues,
   type LeverContribution,
   type MultiGoalContributionsResult,
+  type RealizationByGoal,
 } from "./attainLevers";
 import type { AttainState, AttainSetting, GoalId, GoalDef, SettingGoalContent } from "./attainTypes";
 import type { GoalTargetResult, AttainmentResult } from "./attainCalc";
@@ -167,6 +168,13 @@ export interface AttainPdfInput {
   commitments: Record<string, AttainPdfCommitment>;
   goalOwnerByPriority: Partial<Record<GoalId, AttainPdfGoalOwner>>;
   freedTimeSplit: number;
+  /** Per-priority realization/attribution rate (0-100, default 100 when a
+   * goal is missing). Every dollar figure this PDF prints already reflects
+   * it (`combined` is already scaled, see attainLevers.ts's
+   * `applyRealization`) - this is only read to decide whether a priority's
+   * Starting Point page names the rate in a footnote (see `isFreedTimeGoal`'s
+   * sibling `realizationPct` below). */
+  realizationByGoal: RealizationByGoal;
   orgName: string;
 }
 
@@ -191,6 +199,11 @@ export interface AttainPdfPriority {
   goalOwnerTitle: string;
   isFreedTimeGoal: boolean;
   barAcc: number;
+  /** This priority's own realization/attribution rate (0-100, default 100).
+   * `margin`/`count` above already have it baked in (they come straight off
+   * `combined.byGoal[goal]`, already scaled) - this is only carried so the
+   * Starting Point page can name it in a footnote when it's below 100. */
+  realizationPct: number;
 }
 
 export interface AttainPdfCurve {
@@ -261,6 +274,10 @@ function committedDecisionsFor(
 
 export function buildAttainPdfData(input: AttainPdfInput): AttainPdfData {
   const { state, setting, goals, target, attainment, valuesByGoal, combined, commitments, goalOwnerByPriority, freedTimeSplit, orgName } = input;
+  // Defaults to `{}` (100% realization for every goal) rather than trusting
+  // every caller to pass it - matches this file's own "never crash on a
+  // missing/legacy field" discipline (see the module header's ceiling note).
+  const realizationByGoal = input.realizationByGoal ?? {};
 
   // Every dollar figure below traces back to `combined` — the exact same
   // `computeMultiGoalContributions` result AttainFlow.tsx computes and
@@ -305,6 +322,7 @@ export function buildAttainPdfData(input: AttainPdfInput): AttainPdfData {
       goalOwnerTitle: owner?.title?.trim() ?? "",
       isFreedTimeGoal,
       barAcc,
+      realizationPct: realizationByGoal[goal] ?? 100,
     };
   });
 
@@ -795,6 +813,11 @@ function StartingPointPage({ data, priority }: { data: AttainPdfData; priority: 
       {(priority.goalOwnerName || priority.goalOwnerTitle) && (
         <Text style={s.footnote}>
           {`Outcome owner: ${[priority.goalOwnerName, priority.goalOwnerTitle].filter(Boolean).join(" · ")}`}
+        </Text>
+      )}
+      {priority.realizationPct < 100 && (
+        <Text style={s.footnote} data-testid={`pdf-realization-note-${priority.goal}`}>
+          {`Attributed at ${Math.round(priority.realizationPct)}% realization to this plan - the share of this outcome credited here, when other efforts also move this number.`}
         </Text>
       )}
 

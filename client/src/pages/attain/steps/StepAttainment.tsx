@@ -4,7 +4,15 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { NumberField } from "@/components/NumberField";
 import AttainmentCurve, { USUAL_CEILING_PCT } from "@/components/attain/AttainmentCurve";
-import { leversFor, defaultLeverValues, type Lever, type LeverValues, type LeverContribution, type MultiGoalContributionsResult } from "@/lib/attain/attainLevers";
+import {
+  leversFor,
+  defaultLeverValues,
+  type Lever,
+  type LeverValues,
+  type LeverContribution,
+  type MultiGoalContributionsResult,
+  type RealizationByGoal,
+} from "@/lib/attain/attainLevers";
 import {
   leverNumericValue,
   decisionAttainmentFraction,
@@ -464,6 +472,13 @@ interface StepAttainmentProps {
   commitments: Record<string, Commitment>;
   goalOwnerByPriority: Partial<Record<GoalId, GoalOwner>>;
   freedTimeSplit: number;
+  /** Per-priority realization/attribution rate (0-100, default 100 when a
+   * goal is missing) - set on Build the case's "Realization rate" control.
+   * Every dollar figure this component renders already reflects it (see
+   * `combined`, already scaled by attainLevers.ts's `applyRealization`);
+   * this is only threaded through to hand `generateAttainPdf` the same
+   * value so the PDF's footnote can name it. */
+  realizationByGoal: RealizationByGoal;
   /** Every committed signal's dated log (key = `${goal}:${leverId}:${signalId}`)
    * — the Progress tab's real memory. See the persistence note on this state
    * in AttainFlow: session-local until the save/backend layer lands. */
@@ -495,6 +510,7 @@ export default function StepAttainment({
   commitments,
   goalOwnerByPriority,
   freedTimeSplit,
+  realizationByGoal,
   progressEntries,
   onLogProgressUpdate,
   onMonthsElapsedChange,
@@ -538,6 +554,7 @@ export default function StepAttainment({
         commitments,
         goalOwnerByPriority,
         freedTimeSplit,
+        realizationByGoal,
         orgName,
       });
     } catch (err) {
