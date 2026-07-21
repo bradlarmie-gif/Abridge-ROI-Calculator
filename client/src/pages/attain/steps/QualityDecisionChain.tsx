@@ -1,6 +1,5 @@
 import { motion } from "framer-motion";
-import { HelpCircle } from "lucide-react";
-import { Slider } from "@/components/ui/slider";
+import { HelpCircle, Check } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { NumberField } from "@/components/NumberField";
 import { lineOptions, realizedValue, formulaWithRealization, type LeverValues } from "@/lib/attain/attainLevers";
@@ -10,10 +9,10 @@ import {
   selectedEventTypes,
   QUALITY_EVENT_IDS,
   QUALITY_EVENT_LABELS,
-  QUALITY_REALTIME_BASELINE_PCT,
-  QUALITY_PREVENTION_CEILING_PCT,
-  RESPONSE_LEVEL_LABELS,
+  QUALITY_SIGNAL_PRIMARY,
+  QUALITY_SIGNAL_SECONDARY,
   type QualityEventId,
+  type QualityEventIntervention,
 } from "@/lib/attain/attainQuality";
 import type { AttainSetting } from "@/lib/attain/attainTypes";
 
@@ -22,6 +21,9 @@ function asLines(raw: number | string[] | undefined): string[] {
 }
 function asNum(raw: number | string[] | undefined): number {
   return typeof raw === "number" ? raw : 0;
+}
+function asBool(raw: number | string[] | undefined): boolean {
+  return asNum(raw) === 1;
 }
 function fmtInt(n: number): string {
   return Math.round(n).toLocaleString();
@@ -124,32 +126,83 @@ function MathBox({ formula, testid }: { formula: string; testid: string }) {
   );
 }
 
-function LevelToggle({
-  labels,
-  level,
-  onChange,
-  testidPrefix,
+/** One named, checkable clinical intervention - a real, binary commitment
+ * a unit either has in place or does not (never a rate to dial). Checking
+ * it adds that intervention's own fixed pp toward its event's own
+ * prevention ceiling (see attainQuality.ts's module header). */
+function InterventionRow({
+  label,
+  checked,
+  onToggle,
+  testid,
 }: {
-  labels: string[];
-  level: number;
-  onChange: (level: number) => void;
-  testidPrefix: string;
+  label: string;
+  checked: boolean;
+  onToggle: () => void;
+  testid: string;
 }) {
   return (
-    <div className="flex rounded-md border border-[#E5E5E5] overflow-hidden w-fit">
-      {labels.map((label, i) => (
-        <button
-          key={label}
-          type="button"
-          onClick={() => onChange(i)}
-          className={`px-4 h-10 text-xs font-medium transition-colors ${
-            level === i ? "bg-[#1A1A1A] text-white" : "bg-white text-[#8C8C8C] hover:bg-[#F5F0EB]"
-          }`}
-          data-testid={`${testidPrefix}-${i}`}
-        >
-          {label}
-        </button>
-      ))}
+    <button
+      type="button"
+      onClick={onToggle}
+      className={`flex items-center gap-2.5 w-full text-left px-3 py-2.5 rounded-md border transition-all ${
+        checked ? "border-[#EA2C00] bg-[#FFF6F3]" : "border-[#E5E5E5] bg-white hover:border-[#D8CFC4]"
+      }`}
+      data-testid={testid}
+    >
+      <span
+        className={`flex-shrink-0 w-4 h-4 rounded-[3px] border flex items-center justify-center ${
+          checked ? "bg-[#EA2C00] border-[#EA2C00]" : "border-[#C9C2B8] bg-white"
+        }`}
+      >
+        {checked && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
+      </span>
+      <span className={`text-[13.5px] leading-snug ${checked ? "text-[#EA2C00] font-medium" : "text-[#3A3A3A]"}`}>{label}</span>
+    </button>
+  );
+}
+
+/** D2's one sub-panel per SELECTED event type - the headline fix (C1): each
+ * event type gets its OWN named, trackable interventions and its OWN
+ * signal(s), never a generic slider shared across every event. */
+function EventInterventionPanel({
+  ei,
+  values,
+  onChangeValue,
+}: {
+  ei: QualityEventIntervention;
+  values: LeverValues;
+  onChangeValue: (leverId: string, value: number | string[]) => void;
+}) {
+  return (
+    <div className="rounded-lg border border-[#E7E0D6] bg-[#FBF9F6] p-5 mb-4" data-testid={`panel-quality-interventions-${ei.id}`}>
+      <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
+        <h4 className="text-[13px] font-bold uppercase tracking-wide text-[#1A1A1A] font-abridge">{ei.label} interventions</h4>
+        <span className="text-[11px] text-[#8C8C8C]" data-testid={`text-quality-signal-${ei.id}`}>
+          Signal: {QUALITY_SIGNAL_PRIMARY[ei.id]}
+        </span>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
+        {ei.interventions.map((iv) => (
+          <InterventionRow
+            key={iv.id}
+            label={iv.label}
+            checked={asBool(values[iv.id])}
+            onToggle={() => onChangeValue(iv.id, asBool(values[iv.id]) ? 0 : 1)}
+            testid={`checkbox-quality-${iv.id}`}
+          />
+        ))}
+      </div>
+      <CountOutput
+        label={`${ei.label} prevention building`}
+        value={fmtPct(ei.committedPct)}
+        unit={`% of the ${ei.ceilingPct}pp ceiling`}
+        testid={`text-quality-intervention-output-${ei.id}`}
+      />
+      <MathBox formula={ei.formula} testid={`text-quality-intervention-formula-${ei.id}`} />
+      <p className="text-[11px] text-[#8C8C8C] mt-2">
+        Secondary signal: {QUALITY_SIGNAL_SECONDARY[ei.id]}.
+      </p>
     </div>
   );
 }
@@ -159,10 +212,12 @@ function LevelToggle({
  * chain, matching Access's/Revenue's/Workforce's chain bar rather than the
  * generic flat lever renderer. Quality is about PREVENTED HARM EVENTS: the
  * value is prevented events x cost per event, one term per targeted event
- * type (HAPI, CLABSI, Falls, Sepsis), summed. D1-D4 below show patient-days,
- * pp of the prevention ceiling, or a realization %, never a dollar; THE
- * PAYOFF at the bottom is the one place a dollar first appears, derived from
- * all four decisions above and broken out per event type, never invented.
+ * type (HAPI, CLABSI, CAUTI, Falls, Sepsis), summed. D1 shows patient-days
+ * only, D2 shows every selected event type's own named interventions and
+ * how much of that event's own prevention ceiling is committed to so far -
+ * never a dollar. THE PAYOFF at the bottom is the one place a dollar first
+ * appears, derived from every event's own committed interventions, never
+ * invented.
  */
 export default function QualityDecisionChain({ setting, baseline, values, onChangeValue, realizationPct }: QualityDecisionChainProps) {
   const presetLines = lineOptions("quality", setting);
@@ -173,7 +228,7 @@ export default function QualityDecisionChain({ setting, baseline, values, onChan
   const chosenEventIds = selectedEventTypes(values);
 
   const chain = computeQualityChain(baseline, values);
-  const { scope, realTime, response, bundle, payoff, formulas } = chain;
+  const { scope, eventInterventions, payoff, formulas } = chain;
   const realizedPayoffValue = realizedValue(payoff.totalValue, realizationPct);
   const payoffFormulaDisplay = payoff.totalValue > 0
     ? formulaWithRealization(formulas.payoff, realizationPct, realizedPayoffValue)
@@ -189,9 +244,6 @@ export default function QualityDecisionChain({ setting, baseline, values, onChan
     const next = chosenEventLabels.includes(label) ? chosenEventLabels.filter((l) => l !== label) : [...chosenEventLabels, label];
     onChangeValue("qualityEventTypes", next);
   };
-
-  const sepsisSelected = chosenEventIds.includes("sepsis");
-  const bundleEventsSelected = chosenEventIds.some((id) => id !== "sepsis");
 
   return (
     <div data-testid="section-attain-quality-chain">
@@ -276,110 +328,17 @@ export default function QualityDecisionChain({ setting, baseline, values, onChan
 
       <DecisionCard
         step="D2"
-        title="Close real-time gaps during the shift"
-        help="The core lever. A missed bundle step closed while there is still time to act prevents an event before it happens. This is the share of gaps closed in real time, above your reality today, and it drives HAPI/CLABSI/Falls's prevention rate."
+        title="Commit to the interventions that actually prevent each event"
+        help="Reducing a harm event is a bundle of specific, trackable clinical practices, not one generic slider. Each event type you picked above gets its own named interventions below, and each one you commit to adds toward that event's own prevention ceiling, never another event's. This is the program-level prevention a strong intervention program can defensibly reach; the Realization rate control above attributes the share of that outcome that belongs to this plan."
         testid="card-quality-d2"
       >
-        <div className="mb-4">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-[#8C8C8C] flex items-center gap-1.5">
-              Share of bundle gaps closed in real time, during the shift
-              <InfoTip
-                text={`Reality today: ${QUALITY_REALTIME_BASELINE_PCT}%. Only the movement above that baseline is a new decision, and it is what this plan is credited for.`}
-                testid="tooltip-quality-realtime"
-              />
-            </span>
-            <span className="text-sm font-semibold text-[#1A1A1A]" data-testid="text-quality-realtime-value">
-              {fmtPct(realTime.requestedPct)}%
-            </span>
-          </div>
-          <Slider
-            value={[realTime.requestedPct]}
-            onValueChange={(v) => onChangeValue("qualityRealTime", v[0])}
-            min={0}
-            max={100}
-            step={5}
-            accent="coral"
-            className="w-full"
-            data-testid="slider-quality-realtime"
-          />
-          <p className="text-[11px] text-[#8C8C8C] mt-1">Reality today: {QUALITY_REALTIME_BASELINE_PCT}%.</p>
-        </div>
-
-        <CountOutput
-          label="Prevention building, HAPI/CLABSI/Falls"
-          value={fmtPct(realTime.impactPp)}
-          unit={`pp of the ${QUALITY_PREVENTION_CEILING_PCT}pp ceiling`}
-          testid="text-quality-d2-output"
-        />
-        <MathBox formula={formulas.realTime} testid="text-quality-d2-formula" />
-      </DecisionCard>
-
-      <DecisionCard
-        step="D3"
-        title="Tie deterioration signals to a response"
-        help="Especially Sepsis and other early-warning signals: a deterioration flag with no named responder is just a note. This sets how reliably a signal turns into an actual bedside intervention, and it raises Sepsis's own prevention effect specifically."
-        testid="card-quality-d3"
-      >
-        <LevelToggle
-          labels={RESPONSE_LEVEL_LABELS}
-          level={response.level}
-          onChange={(level) => onChangeValue("qualityResponse", level)}
-          testidPrefix="button-quality-response"
-        />
-
-        <div className="mt-4">
-          {sepsisSelected ? (
-            <>
-              <CountOutput label="Sepsis realization" value={fmtPct(response.realizationPct)} unit="% of the addressable gap" testid="text-quality-d3-output" />
-              <MathBox formula={formulas.response} testid="text-quality-d3-formula" />
-            </>
-          ) : (
-            <p className="text-[14px] text-[#B4B4B4] italic" data-testid="text-quality-d3-not-applicable">
-              Add Sepsis to the event types on D1 to put this decision to work.
-            </p>
-          )}
-        </div>
-      </DecisionCard>
-
-      <DecisionCard
-        step="D4"
-        title="Lift bundle compliance"
-        help="An audited compliance target, above today's rate. Bundle compliance is a separate mechanism from real-time closure (D2): a step can be closed live and still miss the bundle checklist, so this adds to D2's contribution rather than replacing it."
-        testid="card-quality-d4"
-      >
-        <div className="mb-4">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-[#8C8C8C]">Audited bundle compliance target</span>
-            <span className="text-sm font-semibold text-[#1A1A1A]" data-testid="text-quality-bundle-value">
-              {fmtPct(bundle.compliancePct)}%
-            </span>
-          </div>
-          <Slider
-            value={[bundle.compliancePct]}
-            onValueChange={(v) => onChangeValue("qualityBundle", v[0])}
-            min={0}
-            max={100}
-            step={5}
-            accent="coral"
-            className="w-full"
-            data-testid="slider-quality-bundle"
-          />
-        </div>
-
-        {bundleEventsSelected ? (
-          <>
-            <CountOutput
-              label="Composite prevention rate, HAPI/CLABSI/Falls"
-              value={fmtPct(bundle.compositePreventionPct)}
-              unit={`% of the ${QUALITY_PREVENTION_CEILING_PCT}pp ceiling`}
-              testid="text-quality-d4-output"
-            />
-            <MathBox formula={formulas.bundle} testid="text-quality-d4-formula" />
-          </>
+        {eventInterventions.length > 0 ? (
+          eventInterventions.map((ei) => (
+            <EventInterventionPanel key={ei.id} ei={ei} values={values} onChangeValue={onChangeValue} />
+          ))
         ) : (
-          <p className="text-[14px] text-[#B4B4B4] italic" data-testid="text-quality-d4-not-applicable">
-            Add HAPI, CLABSI, or Falls to the event types on D1 to put this decision to work.
+          <p className="text-[14px] text-[#B4B4B4] italic" data-testid="text-quality-d2-not-applicable">
+            Pick at least one event type on D1 to see its own interventions here.
           </p>
         )}
       </DecisionCard>
@@ -394,7 +353,8 @@ export default function QualityDecisionChain({ setting, baseline, values, onChan
         <h3 className="text-lg font-bold text-white mb-2 font-abridge">Prevented events x cost per event</h3>
         <p className="text-[15px] text-white/50 leading-relaxed mb-5 max-w-[620px]">
           Every targeted event type's own prevented-events count, priced at its own cost per event, summed. This is
-          the first dollar figure in this chain, derived from the four decisions above, never invented.
+          the first dollar figure in this chain, derived from every event's own committed interventions above, never
+          invented.
         </p>
         <p className="font-abridge text-5xl text-[#EA2C00]" data-testid="text-quality-payoff-value">
           {fmtMoneyCompact(realizedPayoffValue)}
