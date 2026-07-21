@@ -37,6 +37,9 @@ function formatLeverValue(lever: Lever, value: number | string[] | undefined): s
     const level = typeof value === "number" ? Math.min(2, Math.max(0, Math.round(value))) : 0;
     return TOGGLE_LABELS[level];
   }
+  if (lever.control === "toggle") {
+    return typeof value === "number" && value === 1 ? "Committed" : "Not yet";
+  }
   const n = typeof value === "number" ? value : 0;
   const decimals = lever.step < 1 ? 1 : 0;
   return `${n.toFixed(decimals)} ${lever.unit}`;
@@ -479,6 +482,22 @@ function LeverControl({ setting, goal, lever, value, onChange }: LeverControlPro
           </button>
         ))}
       </div>
+    );
+  }
+
+  if (lever.control === "toggle") {
+    const committed = typeof value === "number" && value === 1;
+    return (
+      <button
+        type="button"
+        onClick={() => onChange(committed ? 0 : 1)}
+        className={`px-4 h-10 rounded-md text-xs font-medium border transition-colors ${
+          committed ? "bg-[#1A1A1A] text-white border-[#1A1A1A]" : "bg-white text-[#8C8C8C] border-[#E5E5E5] hover:bg-[#F5F0EB]"
+        }`}
+        data-testid={`button-attain-lever-${goal}-${lever.id}-toggle`}
+      >
+        {committed ? "Committed" : "Not yet"}
+      </button>
     );
   }
 

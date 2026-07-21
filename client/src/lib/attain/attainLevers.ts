@@ -4,7 +4,16 @@ import { computeEdAccessContributions } from "./attainEdAccess";
 import { computeRevenueContributions } from "./attainRevenue";
 import { computeIpRevenueContributions } from "./attainInpatientRevenue";
 import { computeWorkforceContributions } from "./attainWorkforce";
-import { computeQualityContributions } from "./attainQuality";
+import {
+  computeQualityContributions,
+  QUALITY_EVENT_IDS,
+  QUALITY_EVENT_LABELS,
+  QUALITY_INTERVENTIONS,
+  QUALITY_CEILING_PCT,
+  QUALITY_SIGNAL_PRIMARY,
+  QUALITY_SIGNAL_SECONDARY,
+  type QualityEventId,
+} from "./attainQuality";
 
 /**
  * Attain - lever layer.
@@ -131,20 +140,25 @@ import { computeQualityContributions } from "./attainQuality";
  *    case to `computeIpRevenueContributions` there; see that module's
  *    header for the full chain.
  *  - quality (nursing): rebuilt as an ORDERED DECISION CHAIN (D1 scope +
- *    event-type selection -> D2 close real-time gaps -> D3 tie
- *    deterioration signals to a response -> D4 lift bundle compliance ->
- *    the payoff), not an independent-channel lever set, in
- *    `attainQuality.ts`. The partner picks one or more targeted event types
- *    (HAPI, CLABSI, Falls, Sepsis); each selected type's own dollar is
- *    prevented events x cost per event, read straight off its own
+ *    event-type selection -> D2 commit to the named interventions that
+ *    actually prevent EACH selected event type -> the payoff), not an
+ *    independent-channel lever set, in `attainQuality.ts`. The partner
+ *    picks one or more targeted event types (HAPI, CLABSI, CAUTI, Falls,
+ *    Sepsis); each gets its OWN sub-panel of real, trackable clinical
+ *    interventions (hourly rounding for Falls, a daily line-necessity
+ *    review for CLABSI, and so on - never one generic slider shared across
+ *    every event type), each contributing a fixed pp toward THAT event's
+ *    own literature-grounded prevention ceiling. Each selected type's own
+ *    dollar is prevented events x cost per event, read straight off its own
  *    `calc*` helper in `nursingQualityCalcs.ts`, and the types simply SUM
  *    (each is its own genuinely separate harm event, never double-counted).
  *    `computeLeverContributions` delegates the whole `goal === "quality"`
  *    case to `computeQualityContributions` there; see that module's header
- *    for the full chain, why Sepsis's own richer `calcSepsis` model is
- *    reconciled through D3 alone rather than folded into the shared D2/D4
- *    composite, and the reconciliation to Explore's
- *    `nursingHapi`/`nursingClabsi`/`nursingFalls`/`nursingSepsis` primitives.
+ *    for the full chain, the per-event ceilings and their literature
+ *    rationale, why Sepsis's own richer `calcSepsis` model feeds a
+ *    realization ceiling rather than a share of all sepsis cases, and the
+ *    reconciliation to Explore's `nursingHapi`/`nursingClabsi`/
+ *    `nursingCauti`/`nursingFalls`/`nursingSepsis` primitives.
  *
  * Every "lines" lever (scope) uses a per-(setting, goal) preset list in
  * `LINE_PRESETS` below; `realityStart: []` means no lines are committed to
@@ -160,7 +174,7 @@ export interface Lever {
   id: string;
   label: string; // the decision, phrased as an action the partner takes
   help: string; // one plain sentence teaching how it moves the bottom line
-  control: "percent" | "countPerUnit" | "lines" | "toggleLevel";
+  control: "percent" | "countPerUnit" | "lines" | "toggleLevel" | "toggle";
   unit: string;
   min: number;
   max: number;
@@ -259,6 +273,70 @@ export function defaultBaseline(setting: AttainSetting): AttainBaseline {
       return {};
   }
 }
+
+/** Owner/cadence per event type for quality's per-event intervention
+ * checklists (C1's headline fix) - curated per event, reusing the same role
+ * vocabulary the rest of Quality's catalog already uses (Charge nurses /
+ * unit leads, Unit leadership, Quality / patient safety, Nursing
+ * administration, Rapid response / unit), never a generic list. */
+const QUALITY_EVENT_OWNER: Record<QualityEventId, { ownerRole: string; ownerRoleOptions: string[]; defaultDue: string }> = {
+  hapi: {
+    ownerRole: "Charge nurses / unit leads",
+    ownerRoleOptions: ["Charge nurses / unit leads", "Unit leadership", "Quality / patient safety", "Nursing administration"],
+    defaultDue: "Month 2",
+  },
+  clabsi: {
+    ownerRole: "Charge nurses / unit leads",
+    ownerRoleOptions: ["Charge nurses / unit leads", "Unit leadership", "Quality / patient safety", "Nursing administration"],
+    defaultDue: "Month 2",
+  },
+  cauti: {
+    ownerRole: "Charge nurses / unit leads",
+    ownerRoleOptions: ["Charge nurses / unit leads", "Unit leadership", "Quality / patient safety", "Nursing administration"],
+    defaultDue: "Month 2",
+  },
+  falls: {
+    ownerRole: "Charge nurses / unit leads",
+    ownerRoleOptions: ["Charge nurses / unit leads", "Unit leadership", "Rapid response / unit", "Quality / patient safety"],
+    defaultDue: "Month 2",
+  },
+  sepsis: {
+    ownerRole: "Rapid response / unit",
+    ownerRoleOptions: ["Rapid response / unit", "Charge nurses / unit leads", "Unit leadership", "Quality / patient safety"],
+    defaultDue: "Month 2",
+  },
+};
+
+/** Quality's per-event intervention catalog entries (C1's headline fix,
+ * see `attainQuality.ts`'s module header) - built directly off
+ * `QUALITY_INTERVENTIONS` so the catalog can never drift out of sync with
+ * the engine's own intervention ids, labels, and weights. Each entry is a
+ * `"toggle"` control (0 = not committed, 1 = committed), never a slider -
+ * these are real, binary, trackable commitments a unit either has in place
+ * or does not, not a rate to dial. */
+const QUALITY_INTERVENTION_LEVERS: Lever[] = QUALITY_EVENT_IDS.flatMap((id) => {
+  const owner = QUALITY_EVENT_OWNER[id];
+  const eventLabel = QUALITY_EVENT_LABELS[id];
+  const signal = QUALITY_SIGNAL_PRIMARY[id];
+  const signalOptions = [signal, QUALITY_SIGNAL_SECONDARY[id], "Intervention audit pass rate, by unit"];
+  const defs = QUALITY_INTERVENTIONS[id];
+  return defs.map((iv) => ({
+    id: iv.id,
+    label: iv.label,
+    help: `One of ${defs.length} named ${eventLabel} interventions. Committing to it adds ${iv.weightPp}pp toward ${eventLabel}'s own ${QUALITY_CEILING_PCT[id]}pp prevention ceiling, never another event type's.`,
+    control: "toggle" as const,
+    unit: "committed",
+    min: 0,
+    max: 1,
+    step: 1,
+    realityStart: 0,
+    ownerRole: owner.ownerRole,
+    defaultDue: owner.defaultDue,
+    signal,
+    ownerRoleOptions: owner.ownerRoleOptions,
+    signalOptions,
+  }));
+});
 
 // ────────────────────────────────────────────────────────────────────────
 // LEVERS catalog
@@ -686,54 +764,7 @@ export const LEVERS: Record<GoalId, Lever[]> = {
       ownerRoleOptions: ["Unit leadership", "Charge nurses / unit leads", "Quality / patient safety", "Nursing administration"],
       signalOptions: ["Beds actually covered by the plan, of those named in scope", "Bed coverage vs baseline census", "Patient-days in scope per month"],
     },
-    {
-      id: "qualityRealTime",
-      label: "Close real-time gaps during the shift",
-      help: "A missed bundle step closed during the shift prevents an event before it happens. This is the share of gaps closed in real time, above where you are today.",
-      control: "percent",
-      unit: "%",
-      min: 0,
-      max: 100,
-      step: 5,
-      realityStart: 55,
-      ownerRole: "Charge nurses / unit leads",
-      defaultDue: "Month 2",
-      signal: "Share of bundle gaps closed in real time, during the shift",
-      ownerRoleOptions: ["Charge nurses / unit leads", "Unit leadership", "Rapid response / unit", "Quality / patient safety"],
-      signalOptions: ["Share of bundle gaps closed in real time, during the shift", "Bundle gaps caught vs closed same-shift", "Time from gap flagged to closed"],
-    },
-    {
-      id: "qualityResponse",
-      label: "Tie deterioration signals to a response",
-      help: "An early-warning signal with no named responder is just a note. This sets how reliably a signal turns into an actual intervention.",
-      control: "toggleLevel",
-      unit: "response level",
-      min: 0,
-      max: 2,
-      step: 1,
-      realityStart: 0,
-      ownerRole: "Rapid response / unit",
-      defaultDue: "Month 2",
-      signal: "Deterioration-response level",
-      ownerRoleOptions: ["Rapid response / unit", "Charge nurses / unit leads", "Unit leadership", "Quality / patient safety"],
-      signalOptions: ["Deterioration-response level", "Deterioration alerts with a documented response", "Median time from signal to response"],
-    },
-    {
-      id: "qualityBundle",
-      label: "Lift bundle compliance",
-      help: "Bundle compliance above today's audited rate is what turns a documented step into a prevented event.",
-      control: "percent",
-      unit: "%",
-      min: 0,
-      max: 100,
-      step: 5,
-      realityStart: 0,
-      ownerRole: "Unit leadership",
-      defaultDue: "Month 3",
-      signal: "Audited bundle compliance rate",
-      ownerRoleOptions: ["Unit leadership", "Charge nurses / unit leads", "Quality / patient safety", "Rapid response / unit"],
-      signalOptions: ["Audited bundle compliance rate", "Bundle audit pass rate by unit", "Compliance trend vs prior quarter"],
-    },
+    ...QUALITY_INTERVENTION_LEVERS,
   ],
 };
 

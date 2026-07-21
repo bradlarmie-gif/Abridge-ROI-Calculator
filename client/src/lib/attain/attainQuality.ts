@@ -1,5 +1,5 @@
 import type { AttainBaseline, LeverContribution, LeverContributionsResult, LeverValues } from "./attainLevers";
-import { calcHapi, calcFalls, calcClabsi, calcSepsis } from "@/lib/nursingQualityCalcs";
+import { calcHapi, calcFalls, calcClabsi, calcCauti, calcSepsis } from "@/lib/nursingQualityCalcs";
 import { computeAllDriverValues, computeAllDriverCalcSummaries } from "@/lib/exploreDriverCalcs";
 import { DEFAULT_EXPLORE_STATE, type ExploreState } from "@/pages/explore/ExploreFlow";
 import type { AttainSetting } from "./attainTypes";
@@ -16,58 +16,98 @@ import type { AttainSetting } from "./attainTypes";
  *   D1 SCOPE — which units are in scope, how many staffed beds that
  *      represents (capped to the partner's own Starting-point baseline,
  *      same convention as Workforce's D1), and which event type(s) this
- *      plan targets (HAPI, CLABSI, Falls, Sepsis — one or more). Patient
- *      days = beds in scope × occupancy (from the Starting-point's own
- *      daily census ÷ staffed beds) × 365. No dollar yet, and no event
+ *      plan targets (HAPI, CLABSI, CAUTI, Falls, Sepsis — one or more).
+ *      Patient days = beds in scope × occupancy (from the Starting-point's
+ *      own daily census ÷ staffed beds) × 365. No dollar yet, and no event
  *      count yet either — this is volume, not rate.
- *   D2 CLOSE REAL-TIME GAPS DURING THE SHIFT — the core Abridge-driven
- *      lever. Point-of-care documentation means a missed bundle step is
- *      visible while there is still time to act on it. This is the share
- *      of gaps closed in real time, ABOVE today's baseline (55%, the same
- *      descriptive "reality" the pre-rebuild flat lever used) — moving the
- *      slider back down to 55% credits nothing, since that is not a new
- *      decision. Drives `compositePreventionPct`, the prevention rate fed
- *      into HAPI/CLABSI/Falls's own `calc*` helper as `preventionPct`.
- *      Output in prevented events, no dollar yet.
- *   D3 TIE DETERIORATION SIGNALS TO A RESPONSE — a response-level decision
- *      (none / partial / reliable) that is deliberately scoped to Sepsis
- *      specifically, not blended into the shared composite above. A
- *      deterioration signal with no named responder is just a note; this is
- *      how reliably a signal turns into an actual bedside intervention. It
- *      feeds `realizationPct` in `calcSepsis` directly, reusing the exact
- *      0/55/80 level mapping the pre-rebuild flat lever already used.
- *   D4 LIFT BUNDLE COMPLIANCE — an audited compliance target, additive on
- *      top of D2's contribution to `compositePreventionPct` (bundle
- *      compliance is a separate mechanism from real-time gap closure: a
- *      nurse can close a gap in the moment and still miss a bundle step
- *      that was never on the checklist, and vice versa).
+ *   D2 COMMIT TO THE INTERVENTIONS THAT ACTUALLY PREVENT EACH EVENT — the
+ *      headline fix (a "logic bug, wrong shape" per the audit this rebuild
+ *      answers): reducing a harm event is a bundle of specific, trackable
+ *      clinical interventions, not one generic slider shared across every
+ *      event type. Each SELECTED event type gets its own sub-panel of the
+ *      real interventions a unit commits to (see `QUALITY_INTERVENTIONS`
+ *      below) — hourly rounding for Falls is a genuinely different
+ *      commitment from a daily line-necessity review for CLABSI, and a
+ *      partner has to be able to steer one without touching the other.
+ *      Each checked intervention adds its own fixed weight (pp) toward
+ *      THAT event's own prevention ceiling (or, for Sepsis, its own
+ *      realization ceiling — see below); nothing here is shared across
+ *      event types, so committing to Falls interventions can never move
+ *      HAPI's number and vice versa. Output is still in pp of that event's
+ *      own ceiling, no dollar yet — the dollar only appears once an event
+ *      type's own interventions are actually committed to.
  *   THE PAYOFF — for every SELECTED event type, prevented events × cost per
  *      event, read straight off that type's own `calc*` helper, summed.
  *      "Selecting more event types increases the total" holds by
  *      construction: each additional type adds its own nonnegative term.
  *
- * WHY SEPSIS IS NOT FOLDED INTO THE SHARED COMPOSITE (a deliberate,
- * documented deviation from a fully-unified model): `calcSepsis`'s own
- * shape is a genuinely different mechanism from HAPI/CLABSI/Falls's simple
- * `(patientDays, rate, preventionPct, cost)` — it prices the ADDRESSABLE GAP
- * (100% − `currentCompliancePct`) × the share of that gap attributable to
+ * PROGRAM-LEVEL PREVENTION vs ABRIDGE'S OWN SHARE — a deliberate two-layer
+ * split, not one number trying to do both jobs. Each event's own committed-
+ * intervention percentage (D2, capped at that event's own ceiling — see
+ * "PER-EVENT CEILINGS" below) models what a STRONG CLINICAL PROGRAM,
+ * running every one of its named interventions, can defensibly prevent.
+ * It is not an Abridge-only claim. The separate, pre-existing "Realization
+ * rate" control on Build the case's own page (one per priority, see
+ * `RealizationRateControl` in `StepBuildCase.tsx`) is the ONE place that
+ * attributes the share of THAT program-level outcome which belongs to this
+ * plan specifically — the same dial every other goal already uses to avoid
+ * over-claiming when other efforts are also moving the number. The two
+ * never collapse into each other: a partner cannot inflate Abridge's share
+ * by checking more intervention boxes, because the interventions only ever
+ * move the clinical program's own ceiling, and the realization dial still
+ * has the final, independent say over what fraction of that is credited
+ * here.
+ *
+ * PER-EVENT CEILINGS (C2 recalibration) — the old model let one shared
+ * composite reach 60% (documented at the time as "6-12pp of illustrative,
+ * documentation-attributable prevention, at Explore's own default rates" —
+ * 3-6x higher than the literature this module cites). Each event type now
+ * carries its OWN literature-grounded ceiling for a STRONG, fully-committed
+ * intervention program (not a documentation-only effect), split evenly
+ * across that event's own named interventions since there is no granular
+ * evidence to weight one sub-practice over another within the same bundle:
+ *   - Falls: 21% (7 interventions × 3pp). Multicomponent fall-prevention
+ *     bundles (rounding + alarms + toileting + footwear + med review +
+ *     mobility + hazard checks) report ~20-30% relative reduction in
+ *     hospital QI literature; anchored to the conservative end.
+ *   - HAPI: 20% (4 interventions × 5pp). Turn/reposition + support-surface
+ *     + Braden assessment + nutrition bundles report ~20-25% reduction in
+ *     strong implementations; conservative relative to higher claims in
+ *     some single-site studies.
+ *   - CLABSI: 30% (3 interventions × 10pp). Central-line insertion bundles
+ *     are among the best-evidenced HAI interventions (some large
+ *     collaboratives report considerably higher reductions); capped well
+ *     below that literature to stay conservative and defensible.
+ *   - CAUTI: 24% (4 interventions × 6pp). Catheter-necessity review +
+ *     aseptic insertion + perineal care + early removal bundles are
+ *     evidenced but adherence is typically weaker than CLABSI bundles in
+ *     practice, so this sits a bit below CLABSI's ceiling.
+ *   - Sepsis: kept as its own, already-narrow mechanism (see "WHY SEPSIS
+ *     IS NOT FOLDED IN" below) — its ceiling is a REALIZATION ceiling (75%,
+ *     3 interventions × 25pp) on an already-small addressable pool
+ *     (non-compliant cases × doc-lag share), not a share of all sepsis
+ *     cases, so it is structurally conservative regardless of the number.
+ *
+ * WHY SEPSIS IS NOT FOLDED INTO THE SHARED PREVENTION MECHANISM (a
+ * deliberate, documented deviation): `calcSepsis`'s own shape is a
+ * genuinely different mechanism from HAPI/CLABSI/Falls/CAUTI's simple
+ * `(days, rate, preventionPct, cost)` — it prices the ADDRESSABLE GAP (100%
+ * − `currentCompliancePct`) × the share of that gap attributable to
  * documentation lag (`docLagPct`) × how much of THAT is actually realized
- * (`realizationPct`). Feeding D4's compliance TARGET into
- * `currentCompliancePct` would SHRINK the addressable gap the higher the
- * target goes (a smaller gap means fewer preventable cases in that specific
- * formula), which directly contradicts "higher compliance increases
- * prevented events." So `currentCompliancePct` and `docLagPct` stay at their
- * descriptive baseline defaults (75% / 30%, matching the pre-rebuild flat
- * lever's own hardcoded values) and D3 (response level) is sepsis's one real
- * lever, reusing the exact realization mapping that already existed.
+ * (`realizationPct`). Sepsis's own three named interventions (early-warning
+ * screening, a time-to-antibiotics target, SEP-1 bundle compliance) feed
+ * `realizationPct` directly instead, reusing the exact mechanism that
+ * already existed, just replacing a single abstract "response level" with
+ * three real, separately-trackable commitments.
  *
  * RECONCILIATION: every selected event type's `value` is read straight off
- * its own `calcHapi`/`calcClabsi`/`calcFalls`/`calcSepsis` helper (the
- * single source of truth shared with Explore's live engine, UI, and PDF —
- * see `nursingQualityCalcs.ts`'s own header), AND cross-checked against
- * `computeAllDriverValues`'s `nursingHapi`/`nursingClabsi`/`nursingFalls`/
- * `nursingSepsis` fields via `exploreStateForReconciliation` below, never a
- * second, hand-rolled formula.
+ * its own `calcHapi`/`calcClabsi`/`calcCauti`/`calcFalls`/`calcSepsis`
+ * helper (the single source of truth shared with Explore's live engine, UI,
+ * and PDF — see `nursingQualityCalcs.ts`'s own header), AND cross-checked
+ * against `computeAllDriverValues`'s `nursingHapi`/`nursingClabsi`/
+ * `nursingCauti`/`nursingFalls`/`nursingSepsis` fields via
+ * `exploreStateForReconciliation` below, never a second, hand-rolled
+ * formula.
  */
 
 // ────────────────────────────────────────────────────────────────────────
@@ -78,14 +118,11 @@ import type { AttainSetting } from "./attainTypes";
 function asNum(raw: number | string[] | undefined): number {
   return typeof raw === "number" ? raw : 0;
 }
+function asBool(raw: number | string[] | undefined): boolean {
+  return asNum(raw) === 1;
+}
 function asLines(raw: number | string[] | undefined): string[] {
   return Array.isArray(raw) ? raw : [];
-}
-function clampPct(n: number): number {
-  return Math.min(100, Math.max(0, n));
-}
-function clampLevel(n: number): number {
-  return Math.min(2, Math.max(0, Math.round(n)));
 }
 function fmtInt(n: number): string {
   return Math.round(n).toLocaleString();
@@ -113,18 +150,19 @@ function mkState(setting: AttainSetting): ExploreState {
 const NO_MOVE_FORMULA = "Move this decision above reality to see the math.";
 
 // ────────────────────────────────────────────────────────────────────────
-// Event-type identity — the four choices on the D1 event-type chooser.
+// Event-type identity — the five choices on the D1 event-type chooser.
 // ────────────────────────────────────────────────────────────────────────
 
 export const QUALITY_EVENT_LABELS = {
   hapi: "HAPI",
   clabsi: "CLABSI",
+  cauti: "CAUTI",
   falls: "Falls",
   sepsis: "Sepsis",
 } as const;
 
 export type QualityEventId = keyof typeof QUALITY_EVENT_LABELS;
-export const QUALITY_EVENT_IDS: QualityEventId[] = ["hapi", "clabsi", "falls", "sepsis"];
+export const QUALITY_EVENT_IDS: QualityEventId[] = ["hapi", "clabsi", "cauti", "falls", "sepsis"];
 
 export function selectedEventTypes(values: LeverValues): QualityEventId[] {
   const raw = asLines(values.qualityEventTypes);
@@ -133,10 +171,9 @@ export function selectedEventTypes(values: LeverValues): QualityEventId[] {
 
 // ────────────────────────────────────────────────────────────────────────
 // Descriptive defaults per event type — matching the pre-rebuild flat
-// lever's own illustrative constants (HAPI/Falls/Sepsis, in the old
-// `hapiValue`/`fallsValue`/`sepsisValue` in attainLevers.ts) and, for
-// CLABSI (new to this chain), Explore's own `DEFAULT_EXPLORE_STATE`
-// defaults verbatim — never invented numbers.
+// lever's own illustrative constants (HAPI/Falls/Sepsis) and Explore's own
+// `DEFAULT_EXPLORE_STATE` defaults verbatim for CLABSI/CAUTI (both new to
+// this chain) — never invented numbers.
 // ────────────────────────────────────────────────────────────────────────
 
 export const HAPI_RATE_PER_1000 = 2.8;
@@ -146,6 +183,9 @@ export const FALLS_COST_PER_EVENT = 6_500;
 export const CLABSI_UTILIZATION_PCT = 20; // central-line days as % of patient days
 export const CLABSI_RATE_PER_1000_LINE_DAYS = 0.8;
 export const CLABSI_COST_PER_EVENT = 20_000;
+export const CAUTI_UTILIZATION_PCT = 30; // catheter days as % of patient days
+export const CAUTI_RATE_PER_1000_CATHETER_DAYS = 1.8;
+export const CAUTI_COST_PER_EVENT = 13_000;
 export const SEPSIS_RATE_PER_1000 = 2.0;
 export const SEPSIS_COMPLIANCE_BASELINE_PCT = 75;
 export const SEPSIS_DOC_LAG_PCT = 30;
@@ -177,8 +217,8 @@ function occupancyFractionFor(baseline: AttainBaseline, fallback = 0.85): number
 }
 
 /** D1: reads unit scope, requested beds count (capped to the Starting-point
- * baseline, same convention as Workforce's `computeWorkforceScope`), and the
- * targeted event type(s) off the flat `LeverValues` bag. */
+ * baseline, same convention as Workforce's D1), and the targeted event
+ * type(s) off the flat `LeverValues` bag. */
 export function computeQualityScope(baseline: AttainBaseline, values: LeverValues): QualityScope {
   const totalBeds = totalBedsFor(baseline);
   const units = asLines(values.qualityLines);
@@ -191,82 +231,142 @@ export function computeQualityScope(baseline: AttainBaseline, values: LeverValue
 }
 
 // ────────────────────────────────────────────────────────────────────────
-// D2 — CLOSE REAL-TIME GAPS DURING THE SHIFT (the core lever, shared by
-// HAPI/CLABSI/Falls's composite prevention rate).
+// D2 — COMMIT TO THE INTERVENTIONS THAT ACTUALLY PREVENT EACH EVENT.
+// One named, checkable intervention set PER event type, each intervention
+// worth a fixed pp of that event's own ceiling. See the module header for
+// the literature rationale behind each ceiling.
 // ────────────────────────────────────────────────────────────────────────
 
-/** The ceiling any single event type's prevention rate can reach — even
- * excellent real-time closure and bundle compliance cannot prevent every
- * HAI/fall, so this stops short of 100%, matching the realistic range
- * nursing-quality literature and Explore's own illustrative prevention
- * rates (6-12%) sit well under. */
-export const QUALITY_PREVENTION_CEILING_PCT = 60;
-
-/** "Reality today" for D2 — matches the pre-rebuild flat lever's own
- * `realityStart: 55` for `qualityRealTime`; moving the slider back down to
- * this value (or leaving it there) credits nothing, since it is not a new
- * decision. */
-export const QUALITY_REALTIME_BASELINE_PCT = 55;
-
-/** D2's own weight of the ceiling — the core Abridge-driven lever, so it
- * carries the larger share (mirrors Workforce's `PROTECT_WEIGHT = 0.55` for
- * its own core lever). */
-export const REALTIME_WEIGHT = 0.6;
-/** D4's remaining weight of the ceiling (0.6 + 0.4 = 1.0 at both maxed). */
-export const BUNDLE_WEIGHT = 0.4;
-
-export interface QualityRealTime {
-  requestedPct: number;
-  effectiveLiftPct: number;
-  impactPp: number;
+export interface QualityInterventionDef {
+  /** Matches a `LeverValues` key (0/1) and a `LEVERS.quality[].id`. */
+  id: string;
+  /** The decision, phrased as the concrete thing a unit commits to. */
+  label: string;
+  /** pp of this event's own ceiling this one intervention is worth when
+   * committed to (`values[id] === 1`). Every event's own set sums exactly
+   * to that event's ceiling, so checking every box reaches, and never
+   * exceeds, the ceiling. */
+  weightPp: number;
 }
 
-export function computeQualityRealTime(values: LeverValues): QualityRealTime {
-  const requestedPct = clampPct(asNum(values.qualityRealTime));
-  const effectiveLiftPct = Math.max(0, requestedPct - QUALITY_REALTIME_BASELINE_PCT);
-  const liftRoom = 100 - QUALITY_REALTIME_BASELINE_PCT; // 45pp of room above reality
-  const impactPp = QUALITY_PREVENTION_CEILING_PCT * REALTIME_WEIGHT * (effectiveLiftPct / liftRoom);
-  return { requestedPct, effectiveLiftPct, impactPp };
+export const FALLS_CEILING_PCT = 21;
+export const FALLS_INTERVENTIONS: QualityInterventionDef[] = [
+  { id: "qualityFallsRounding", label: "Commit to hourly rounding compliance", weightPp: 3 },
+  { id: "qualityFallsAlarms", label: "Turn on bed/chair alarms for at-risk patients", weightPp: 3 },
+  { id: "qualityFallsToileting", label: "Run scheduled toileting for high-risk patients", weightPp: 3 },
+  { id: "qualityFallsFootwear", label: "Provide non-slip footwear", weightPp: 3 },
+  { id: "qualityFallsMedReview", label: "Review sedating and high-risk medications", weightPp: 3 },
+  { id: "qualityFallsMobility", label: "Place PT and mobility orders", weightPp: 3 },
+  { id: "qualityFallsHazards", label: "Run environmental hazard checks", weightPp: 3 },
+];
+
+export const HAPI_CEILING_PCT = 20;
+export const HAPI_INTERVENTIONS: QualityInterventionDef[] = [
+  { id: "qualityHapiReposition", label: "Commit to the turn and reposition schedule", weightPp: 5 },
+  { id: "qualityHapiSupportSurface", label: "Allocate the right support surface", weightPp: 5 },
+  { id: "qualityHapiSkinAssessment", label: "Run a Braden skin assessment every shift", weightPp: 5 },
+  { id: "qualityHapiNutrition", label: "Get a nutrition and hydration consult", weightPp: 5 },
+];
+
+export const CLABSI_CEILING_PCT = 30;
+export const CLABSI_INTERVENTIONS: QualityInterventionDef[] = [
+  { id: "qualityClabsiInsertionBundle", label: "Commit to the insertion-bundle checklist", weightPp: 10 },
+  { id: "qualityClabsiDailyReview", label: "Review line necessity daily", weightPp: 10 },
+  { id: "qualityClabsiSiteCare", label: "Use chlorhexidine dressing and site care", weightPp: 10 },
+];
+
+export const CAUTI_CEILING_PCT = 24;
+export const CAUTI_INTERVENTIONS: QualityInterventionDef[] = [
+  { id: "qualityCautiNecessity", label: "Review indwelling catheter necessity daily", weightPp: 6 },
+  { id: "qualityCautiAsepticInsertion", label: "Use aseptic insertion technique", weightPp: 6 },
+  { id: "qualityCautiPerinealCare", label: "Perform routine perineal care", weightPp: 6 },
+  { id: "qualityCautiEarlyRemoval", label: "Remove the catheter as soon as it is not needed", weightPp: 6 },
+];
+
+/** Sepsis's own ceiling is a REALIZATION ceiling (see module header), not a
+ * share of all sepsis cases — feeds `calcSepsis`'s `realizationPct`. */
+export const SEPSIS_REALIZATION_CEILING_PCT = 75;
+export const SEPSIS_INTERVENTIONS: QualityInterventionDef[] = [
+  { id: "qualitySepsisScreening", label: "Run early-warning screening (SIRS, qSOFA, or MEWS)", weightPp: 25 },
+  { id: "qualitySepsisTimeToAbx", label: "Commit to a time-to-antibiotics target", weightPp: 25 },
+  { id: "qualitySepsisBundle", label: "Audit SEP-1 bundle compliance", weightPp: 25 },
+];
+
+export const QUALITY_INTERVENTIONS: Record<QualityEventId, QualityInterventionDef[]> = {
+  hapi: HAPI_INTERVENTIONS,
+  clabsi: CLABSI_INTERVENTIONS,
+  cauti: CAUTI_INTERVENTIONS,
+  falls: FALLS_INTERVENTIONS,
+  sepsis: SEPSIS_INTERVENTIONS,
+};
+
+export const QUALITY_CEILING_PCT: Record<QualityEventId, number> = {
+  hapi: HAPI_CEILING_PCT,
+  clabsi: CLABSI_CEILING_PCT,
+  cauti: CAUTI_CEILING_PCT,
+  falls: FALLS_CEILING_PCT,
+  sepsis: SEPSIS_REALIZATION_CEILING_PCT,
+};
+
+/** The one outcome signal, and one process signal, Commit pre-fills for
+ * every intervention under a given event type (Change 2/3's curated
+ * Select+Custom pattern lives on the matching `LEVERS.quality` catalog
+ * entries in attainLevers.ts — these are the plain strings that data uses). */
+export const QUALITY_SIGNAL_PRIMARY: Record<QualityEventId, string> = {
+  hapi: "HAPI rate per 1,000 patient-days",
+  clabsi: "CLABSI per 1,000 line-days",
+  cauti: "CAUTI per 1,000 catheter-days",
+  falls: "Fall rate per 1,000 patient-days",
+  sepsis: "SEP-1 bundle compliance %",
+};
+
+export const QUALITY_SIGNAL_SECONDARY: Record<QualityEventId, string> = {
+  hapi: "Repositioning compliance %, by unit",
+  clabsi: "Share of lines reviewed daily for necessity",
+  cauti: "Share of catheters reviewed daily for necessity",
+  falls: "Rounding compliance %, by unit",
+  sepsis: "Median time-to-antibiotics (minutes)",
+};
+
+/** Sum of the checked interventions' own weight, capped at this event's
+ * ceiling (the cap never actually binds below "every box checked," since
+ * each event's own weights are designed to sum exactly to its ceiling — see
+ * `QualityInterventionDef.weightPp`'s own doc comment). */
+export function committedPct(id: QualityEventId, values: LeverValues): number {
+  const sum = QUALITY_INTERVENTIONS[id].reduce((s, iv) => s + (asBool(values[iv.id]) ? iv.weightPp : 0), 0);
+  return Math.min(QUALITY_CEILING_PCT[id], sum);
 }
 
-// ────────────────────────────────────────────────────────────────────────
-// D3 — TIE DETERIORATION SIGNALS TO A RESPONSE (Sepsis-specific).
-// ────────────────────────────────────────────────────────────────────────
-
-export const RESPONSE_LEVEL_LABELS = ["No named responder", "Partial coverage", "Reliable response"];
-/** Reuses the exact 0/55/80 level → realization mapping the pre-rebuild
- * flat lever (`sepsisValue` in attainLevers.ts) already used. */
-export const RESPONSE_REALIZATION_PCT = [0, 55, 80];
-
-export interface QualityResponse {
-  level: number;
-  realizationPct: number;
+export interface QualityEventIntervention {
+  id: QualityEventId;
+  label: string;
+  interventions: QualityInterventionDef[];
+  checkedIds: string[];
+  /** preventionPct for HAPI/CLABSI/CAUTI/Falls, realizationPct for Sepsis —
+   * see the module header for why Sepsis's ceiling means something
+   * different from the other four. */
+  committedPct: number;
+  ceilingPct: number;
+  formula: string;
 }
 
-export function computeQualityResponse(values: LeverValues): QualityResponse {
-  const level = clampLevel(asNum(values.qualityResponse));
-  return { level, realizationPct: RESPONSE_REALIZATION_PCT[level] };
-}
-
-// ────────────────────────────────────────────────────────────────────────
-// D4 — LIFT BUNDLE COMPLIANCE (additive on top of D2, for HAPI/CLABSI/Falls).
-// ────────────────────────────────────────────────────────────────────────
-
-export interface QualityBundle {
-  compliancePct: number;
-  bonusPp: number;
-  compositePreventionPct: number;
-}
-
-/** D4: bundle compliance is a separate mechanism from real-time closure
- * (D2), so it ADDS to D2's contribution rather than multiplying it, capped
- * at the shared ceiling — same additive-bonus convention Workforce's D4
- * (`computeWorkforceBackfill`) uses on top of its own D2/D3. */
-export function computeQualityBundle(realTimeImpactPp: number, values: LeverValues): QualityBundle {
-  const compliancePct = clampPct(asNum(values.qualityBundle));
-  const bonusPp = QUALITY_PREVENTION_CEILING_PCT * BUNDLE_WEIGHT * (compliancePct / 100);
-  const compositePreventionPct = Math.min(QUALITY_PREVENTION_CEILING_PCT, realTimeImpactPp + bonusPp);
-  return { compliancePct, bonusPp, compositePreventionPct };
+/** D2, one sub-panel per SELECTED event type (never rendered, and never
+ * contributing a dollar, for an event type that was not picked on D1 — the
+ * structural fix to the old model's phantom "prevention building" output
+ * when nothing was gating it). */
+export function computeQualityInterventions(scope: QualityScope, values: LeverValues): QualityEventIntervention[] {
+  return scope.eventTypes.map((id) => {
+    const defs = QUALITY_INTERVENTIONS[id];
+    const checkedIds = defs.filter((d) => asBool(values[d.id])).map((d) => d.id);
+    const pct = committedPct(id, values);
+    const ceilingPct = QUALITY_CEILING_PCT[id];
+    const label = QUALITY_EVENT_LABELS[id];
+    const weightPp = defs[0]?.weightPp ?? 0;
+    const formula = pct > 0
+      ? `${checkedIds.length} of ${defs.length} ${label} intervention${defs.length === 1 ? "" : "s"} committed × ${fmtPct(weightPp)}pp each = ${fmtPct(pct)}% of the ${ceilingPct}pp ceiling.`
+      : NO_MOVE_FORMULA;
+    return { id, label, interventions: defs, checkedIds, committedPct: pct, ceilingPct, formula };
+  });
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -283,13 +383,10 @@ export interface QualityEventResult {
   formula: string;
 }
 
-function eventResultFor(
-  id: QualityEventId,
-  scope: QualityScope,
-  compositePreventionPct: number,
-  response: QualityResponse,
-): QualityEventResult {
+function eventResultFor(id: QualityEventId, scope: QualityScope, pct: number): QualityEventResult {
   const label = QUALITY_EVENT_LABELS[id];
+  const ceilingPct = QUALITY_CEILING_PCT[id];
+
   if (id === "sepsis") {
     const r = calcSepsis({
       patientDays: scope.patientDays,
@@ -297,29 +394,41 @@ function eventResultFor(
       currentCompliancePct: SEPSIS_COMPLIANCE_BASELINE_PCT,
       docLagPct: SEPSIS_DOC_LAG_PCT,
       excessCostPerCase: SEPSIS_EXCESS_COST_PER_CASE,
-      realizationPct: response.realizationPct,
+      realizationPct: pct,
     });
     const value = Math.round(r.value);
+    // Addressable cases are shown BEFORE realization, then realization
+    // shrinks that pool to the actual prevented count, then × cost = value
+    // — every multiplicand appears exactly once, so this can never disagree
+    // with `value` the way printing "prevented" (already post-realization)
+    // as a mid-string factor AND multiplying by realization again would.
     const formula = value > 0
-      ? `${fmtInt(scope.patientDays)} patient-days × ${SEPSIS_RATE_PER_1000}/1k sepsis × ${fmtPct(r.complianceGapPct)}% non-compliance × ${SEPSIS_DOC_LAG_PCT}% doc lag × ${fmtInt(r.prevented)} prevented × $${fmtInt(SEPSIS_EXCESS_COST_PER_CASE)}/case × ${response.realizationPct}% realization = ~${fmtMoneyCompact(value)}.`
+      ? `${fmtInt(scope.patientDays)} patient-days × ${SEPSIS_RATE_PER_1000}/1k sepsis × ${fmtPct(r.complianceGapPct)}% non-compliance × ${SEPSIS_DOC_LAG_PCT}% doc lag = ${fmtInt(r.docLagCases)} addressable cases × ${fmtPct(pct)}% realization (of a ${ceilingPct}pp ceiling) = ${fmtInt(r.prevented)} prevented × $${fmtInt(SEPSIS_EXCESS_COST_PER_CASE)}/case = ~${fmtMoneyCompact(value)}.`
       : NO_MOVE_FORMULA;
     return { id, label, events: r.events, prevented: r.prevented, value, costPerEvent: SEPSIS_EXCESS_COST_PER_CASE, formula };
   }
 
-  const rate = id === "hapi" ? HAPI_RATE_PER_1000 : id === "falls" ? FALLS_RATE_PER_1000 : CLABSI_RATE_PER_1000_LINE_DAYS;
-  const cost = id === "hapi" ? HAPI_COST_PER_EVENT : id === "falls" ? FALLS_COST_PER_EVENT : CLABSI_COST_PER_EVENT;
+  const rate =
+    id === "hapi" ? HAPI_RATE_PER_1000 : id === "falls" ? FALLS_RATE_PER_1000 : id === "cauti" ? CAUTI_RATE_PER_1000_CATHETER_DAYS : CLABSI_RATE_PER_1000_LINE_DAYS;
+  const cost =
+    id === "hapi" ? HAPI_COST_PER_EVENT : id === "falls" ? FALLS_COST_PER_EVENT : id === "cauti" ? CAUTI_COST_PER_EVENT : CLABSI_COST_PER_EVENT;
 
   const r =
     id === "hapi"
-      ? calcHapi({ patientDays: scope.patientDays, rate, preventionPct: compositePreventionPct, cost })
+      ? calcHapi({ patientDays: scope.patientDays, rate, preventionPct: pct, cost })
       : id === "falls"
-        ? calcFalls({ patientDays: scope.patientDays, rate, preventionPct: compositePreventionPct, cost })
-        : calcClabsi({ patientDays: scope.patientDays, utilizationPct: CLABSI_UTILIZATION_PCT, rate, preventionPct: compositePreventionPct, cost });
+        ? calcFalls({ patientDays: scope.patientDays, rate, preventionPct: pct, cost })
+        : id === "cauti"
+          ? calcCauti({ patientDays: scope.patientDays, utilizationPct: CAUTI_UTILIZATION_PCT, rate, preventionPct: pct, cost })
+          : calcClabsi({ patientDays: scope.patientDays, utilizationPct: CLABSI_UTILIZATION_PCT, rate, preventionPct: pct, cost });
 
   const value = Math.round(r.value);
-  const dayNoun = id === "clabsi" ? `${fmtInt((r as any).lineDays)} line-days` : `${fmtInt(scope.patientDays)} patient-days`;
+  const dayNoun =
+    id === "clabsi" ? `${fmtInt((r as any).lineDays)} line-days`
+    : id === "cauti" ? `${fmtInt((r as any).catheterDays)} catheter-days`
+    : `${fmtInt(scope.patientDays)} patient-days`;
   const formula = value > 0
-    ? `${dayNoun} × ${rate}/1k ${label} × ${fmtPct(compositePreventionPct)}% prevention × $${fmtInt(cost)}/case = ~${fmtMoneyCompact(value)}.`
+    ? `${dayNoun} × ${rate}/1k ${label} × ${fmtPct(pct)}% prevention (of a ${ceilingPct}pp ceiling) × $${fmtInt(cost)}/case = ~${fmtMoneyCompact(value)}.`
     : NO_MOVE_FORMULA;
 
   return { id, label, events: r.events, prevented: r.prevented, value, costPerEvent: cost, formula };
@@ -331,12 +440,9 @@ export interface QualityPayoff {
   totalValue: number;
 }
 
-export function computeQualityPayoff(
-  scope: QualityScope,
-  compositePreventionPct: number,
-  response: QualityResponse,
-): QualityPayoff {
-  const events = scope.eventTypes.map((id) => eventResultFor(id, scope, compositePreventionPct, response));
+export function computeQualityPayoff(scope: QualityScope, eventInterventions: QualityEventIntervention[]): QualityPayoff {
+  const pctById = new Map(eventInterventions.map((ei) => [ei.id, ei.committedPct]));
+  const events = scope.eventTypes.map((id) => eventResultFor(id, scope, pctById.get(id) ?? 0));
   const totalPrevented = events.reduce((sum, e) => sum + e.prevented, 0);
   const totalValue = events.reduce((sum, e) => sum + e.value, 0);
   return { events, totalPrevented, totalValue };
@@ -348,54 +454,33 @@ export function computeQualityPayoff(
 
 export interface QualityChainResult {
   scope: QualityScope;
-  realTime: QualityRealTime;
-  response: QualityResponse;
-  bundle: QualityBundle;
+  eventInterventions: QualityEventIntervention[];
   payoff: QualityPayoff;
   formulas: {
     scope: string;
-    realTime: string;
-    response: string;
-    bundle: string;
     payoff: string;
   };
 }
 
 export function computeQualityChain(baseline: AttainBaseline, values: LeverValues): QualityChainResult {
   const scope = computeQualityScope(baseline, values);
-  const realTime = computeQualityRealTime(values);
-  const response = computeQualityResponse(values);
-  const bundle = computeQualityBundle(realTime.impactPp, values);
-  const payoff = computeQualityPayoff(scope, bundle.compositePreventionPct, response);
+  const eventInterventions = computeQualityInterventions(scope, values);
+  const payoff = computeQualityPayoff(scope, eventInterventions);
 
   const scopeFormula = scope.patientDays > 0
     ? `${fmtInt(scope.bedsInScope)} beds in scope × ${fmtPct(scope.occupancyFraction * 100)}% occupancy × 365 days = ${fmtInt(scope.patientDays)} patient-days/yr. Targeting: ${scope.eventTypes.length > 0 ? scope.eventTypes.map((id) => QUALITY_EVENT_LABELS[id]).join(", ") : "no event types picked yet"}.`
     : NO_MOVE_FORMULA;
 
-  const realTimeFormula = realTime.impactPp > 0
-    ? `${fmtPct(realTime.effectiveLiftPct)}pp above your ${QUALITY_REALTIME_BASELINE_PCT}% reality × ${fmtPct(REALTIME_WEIGHT * 100)}% weight × ${QUALITY_PREVENTION_CEILING_PCT}pp ceiling = ${fmtPct(realTime.impactPp)}pp of prevention building.`
-    : NO_MOVE_FORMULA;
-
-  const responseFormula = response.realizationPct > 0
-    ? `${RESPONSE_LEVEL_LABELS[response.level]} realizes ${response.realizationPct}% of the addressable documentation-lag opportunity for Sepsis specifically.`
-    : "Move this decision above reality to see the math. Applies to Sepsis only.";
-
-  const bundleFormula = bundle.compositePreventionPct > 0
-    ? `${fmtPct(bundle.compliancePct)}% bundle compliance target × ${fmtPct(BUNDLE_WEIGHT * 100)}% weight × ${QUALITY_PREVENTION_CEILING_PCT}pp ceiling = +${fmtPct(bundle.bonusPp)}pp. Composite prevention rate for HAPI/CLABSI/Falls: ${fmtPct(bundle.compositePreventionPct)}%.`
-    : NO_MOVE_FORMULA;
-
+  const payoffTerms = payoff.events.map((e) => `${fmtInt(e.prevented)} ${e.label} prevented × $${fmtInt(e.costPerEvent)}/case = ~${fmtMoneyCompact(e.value)}`);
+  // A single targeted event type already ends with its own "= ~$X"; only a
+  // multi-event sum needs the trailing "= ~$total" to show the addition.
   const payoffFormula = payoff.totalValue > 0
-    ? `${payoff.events.map((e) => `${fmtInt(e.prevented)} ${e.label} prevented × $${fmtInt(e.costPerEvent)}/case = ~${fmtMoneyCompact(e.value)}`).join(" + ")} = ~${fmtMoneyCompact(payoff.totalValue)}.`
+    ? payoffTerms.length > 1
+      ? `${payoffTerms.join(" + ")} = ~${fmtMoneyCompact(payoff.totalValue)}.`
+      : `${payoffTerms[0]}.`
     : NO_MOVE_FORMULA;
 
-  return {
-    scope,
-    realTime,
-    response,
-    bundle,
-    payoff,
-    formulas: { scope: scopeFormula, realTime: realTimeFormula, response: responseFormula, bundle: bundleFormula, payoff: payoffFormula },
-  };
+  return { scope, eventInterventions, payoff, formulas: { scope: scopeFormula, payoff: payoffFormula } };
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -411,25 +496,33 @@ export function exploreStateForReconciliation(baseline: AttainBaseline, values: 
   state.nursingStaffedBeds = chain.scope.bedsInScope;
   state.nursingOccupancyRate = Math.round(chain.scope.occupancyFraction * 100);
 
+  const pctById = new Map(chain.eventInterventions.map((ei) => [ei.id, ei.committedPct]));
   const dq = state.docQualityInputs as any;
   if (chain.scope.eventTypes.includes("hapi")) {
     dq.nursingHapiEnabled = true;
     dq.nursingHapiRate = HAPI_RATE_PER_1000;
-    dq.nursingHapiPreventionRate = chain.bundle.compositePreventionPct;
+    dq.nursingHapiPreventionRate = pctById.get("hapi") ?? 0;
     dq.nursingHapiCost = HAPI_COST_PER_EVENT;
   }
   if (chain.scope.eventTypes.includes("falls")) {
     dq.nursingFallsEnabled = true;
     dq.nursingFallsRate = FALLS_RATE_PER_1000;
-    dq.nursingFallsPreventionRate = chain.bundle.compositePreventionPct;
+    dq.nursingFallsPreventionRate = pctById.get("falls") ?? 0;
     dq.nursingFallsCost = FALLS_COST_PER_EVENT;
   }
   if (chain.scope.eventTypes.includes("clabsi")) {
     dq.nursingClabsiEnabled = true;
     dq.nursingClabsiUtilizationRatio = CLABSI_UTILIZATION_PCT;
     dq.nursingClabsiRate = CLABSI_RATE_PER_1000_LINE_DAYS;
-    dq.nursingClabsiPreventionRate = chain.bundle.compositePreventionPct;
+    dq.nursingClabsiPreventionRate = pctById.get("clabsi") ?? 0;
     dq.nursingClabsiCost = CLABSI_COST_PER_EVENT;
+  }
+  if (chain.scope.eventTypes.includes("cauti")) {
+    dq.nursingCautiEnabled = true;
+    dq.nursingCautiUtilizationRatio = CAUTI_UTILIZATION_PCT;
+    dq.nursingCautiRate = CAUTI_RATE_PER_1000_CATHETER_DAYS;
+    dq.nursingCautiPreventionRate = pctById.get("cauti") ?? 0;
+    dq.nursingCautiCost = CAUTI_COST_PER_EVENT;
   }
   if (chain.scope.eventTypes.includes("sepsis")) {
     dq.nursingSepsisEnabled = true;
@@ -437,7 +530,7 @@ export function exploreStateForReconciliation(baseline: AttainBaseline, values: 
     dq.nursingSepsisCurrentCompliance = SEPSIS_COMPLIANCE_BASELINE_PCT;
     dq.nursingSepsisDocLagPercent = SEPSIS_DOC_LAG_PCT;
     dq.nursingSepsisExcessCostPerCase = SEPSIS_EXCESS_COST_PER_CASE;
-    dq.nursingSepsisRealization = chain.response.realizationPct;
+    dq.nursingSepsisRealization = pctById.get("sepsis") ?? 0;
   }
   return state;
 }
@@ -453,45 +546,55 @@ export { computeAllDriverValues, computeAllDriverCalcSummaries };
  * attainLevers.ts — each id here must match a `LEVERS.quality[].id`.
  * `qualityEventTypes` is UI-only scope state (like Revenue's `revenuePaths`)
  * and is deliberately not tracked as its own committable decision. */
-export const QUALITY_LEVER_IDS = ["qualityLines", "qualityBeds", "qualityRealTime", "qualityResponse", "qualityBundle"] as const;
+export const QUALITY_LEVER_IDS: string[] = [
+  "qualityLines",
+  "qualityBeds",
+  ...QUALITY_EVENT_IDS.flatMap((id) => QUALITY_INTERVENTIONS[id].map((iv) => iv.id)),
+];
 
 /**
- * Adapts the D1-D4 chain into the same `LeverContributionsResult` shape
- * every other goal's `computeLeverContributions` returns. D2/D3/D4 each get
- * a LEAVE-ONE-OUT marginal (this decision reset to its own realityStart,
- * chain re-run, subtracted from the chosen payoff) — the same convention
- * Workforce's D2-D5 use, applied here to the one shared composite plus
- * Sepsis's own separate response lever.
+ * Adapts the D1-D2 chain into the same `LeverContributionsResult` shape
+ * every other goal's `computeLeverContributions` returns. Because every
+ * intervention adds a fixed, independent weight to its OWN event's own
+ * ceiling (never another event's, and the weights are designed to never
+ * overshoot that ceiling — see `QualityInterventionDef.weightPp`), a clean
+ * leave-one-out marginal (this ONE intervention reset to "not committed,"
+ * chain re-run, subtracted from the chosen payoff) isolates exactly that
+ * intervention's own dollar with no cross terms and no smearing — a
+ * genuine improvement over the old shared-composite model, which had to
+ * leave-one-out an entire generic slider at once.
  */
 export function computeQualityContributions(baseline: AttainBaseline, values: LeverValues): LeverContributionsResult {
   const chosen = computeQualityChain(baseline, values);
-  const { scope, payoff, formulas } = chosen;
+  const { scope, payoff, eventInterventions, formulas } = chosen;
 
-  const withoutLever = (leverId: string, resetTo: number): QualityPayoff => {
-    const swapped: LeverValues = { ...values, [leverId]: resetTo };
-    return computeQualityChain(baseline, swapped).payoff;
+  const withInterventionOff = (leverId: string): QualityPayoff => {
+    const swapped: LeverValues = { ...values, [leverId]: 0 };
+    const swappedChain = computeQualityChain(baseline, swapped);
+    return swappedChain.payoff;
   };
 
-  const decisionRows: { id: string; resetTo: number; formula: string }[] = [
-    { id: "qualityRealTime", resetTo: QUALITY_REALTIME_BASELINE_PCT, formula: formulas.realTime },
-    { id: "qualityResponse", resetTo: 0, formula: formulas.response },
-    { id: "qualityBundle", resetTo: 0, formula: formulas.bundle },
-  ];
-
-  const perLeverDecisions: LeverContribution[] = decisionRows.map((r) => {
-    const without = withoutLever(r.id, r.resetTo);
-    const marginalMargin = payoff.totalValue - without.totalValue;
-    const marginalCount = payoff.totalPrevented - without.totalPrevented;
-    return { id: r.id, marginalMargin, marginalCount, pctOfTotal: 0, formula: r.formula };
-  });
+  const decisionRows: LeverContribution[] = [];
+  for (const ei of eventInterventions) {
+    for (const iv of ei.interventions) {
+      const checked = ei.checkedIds.includes(iv.id);
+      const without = withInterventionOff(iv.id);
+      const marginalMargin = payoff.totalValue - without.totalValue;
+      const marginalCount = payoff.totalPrevented - without.totalPrevented;
+      const formula = checked
+        ? `${iv.label} for ${ei.label} adds ${fmtPct(iv.weightPp)}pp toward its ${ei.ceilingPct}pp prevention ceiling.`
+        : NO_MOVE_FORMULA;
+      decisionRows.push({ id: iv.id, marginalMargin, marginalCount, pctOfTotal: 0, formula });
+    }
+  }
 
   const d1Rows: LeverContribution[] = [
     { id: "qualityLines", marginalMargin: 0, marginalCount: scope.units.length, pctOfTotal: 0, formula: formulas.scope },
     { id: "qualityBeds", marginalMargin: 0, marginalCount: scope.bedsInScope, pctOfTotal: 0, formula: formulas.scope },
   ];
 
-  const marginSum = perLeverDecisions.reduce((sum, l) => sum + Math.max(0, l.marginalMargin), 0);
-  const perLever: LeverContribution[] = [...d1Rows, ...perLeverDecisions].map((l) => ({
+  const marginSum = decisionRows.reduce((sum, l) => sum + Math.max(0, l.marginalMargin), 0);
+  const perLever: LeverContribution[] = [...d1Rows, ...decisionRows].map((l) => ({
     ...l,
     pctOfTotal: marginSum > 0 ? Math.max(0, l.marginalMargin) / marginSum : 0,
   }));
