@@ -1249,7 +1249,7 @@ export function computeMultiGoalContributions(
   let combinedCount = 0;
 
   for (const goal of uniqueGoals) {
-    const values = valuesByGoal[goal] ?? defaultLeverValues(goal);
+    const values = valuesByGoal[goal] ?? defaultLeverValues(goal, setting);
 
     if (goal === "access") {
       if (setting === "ed") {
