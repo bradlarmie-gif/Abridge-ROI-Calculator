@@ -20,7 +20,7 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
   // Temporarily hide the "Assess" path from the home page. Set back to true to restore it.
   const SHOW_ASSESS = false;
   // Temporarily hide the "Measure" path from the home page. Set back to true to restore it.
-  const SHOW_MEASURE = false;
+  const SHOW_MEASURE = true;
 
   const handleCardKey = (e: React.KeyboardEvent, handler: () => void) => {
     if (e.key === 'Enter' || e.key === ' ') {
