@@ -69,7 +69,6 @@ interface StepPlanProps {
   valuesByGoal: Partial<Record<GoalId, LeverValues>>;
   combined: MultiGoalContributionsResult;
   commitments: Record<string, Commitment>;
-  baselineOverrides: Record<number, string>;
   freedTimeSplit: number;
   onMonthsElapsedChange: (months: number) => void;
 }
@@ -83,7 +82,6 @@ export default function StepPlan({
   valuesByGoal,
   combined,
   commitments,
-  baselineOverrides,
   freedTimeSplit,
   onMonthsElapsedChange,
 }: StepPlanProps) {
@@ -342,7 +340,6 @@ export default function StepPlan({
           values={valuesByGoal[goal] ?? defaultLeverValues(goal)}
           result={combined.byGoal[goal]}
           commitments={commitments}
-          baselineOverrides={idx === 0 ? baselineOverrides : {}}
           unitCount={state.scope.unitCount}
           unitLabel={unitLabel}
           hasFreedTimeConflict={hasFreedTimeConflict}
@@ -363,7 +360,6 @@ interface PriorityDeepDiveProps {
   values: LeverValues;
   result: { perLever: LeverContribution[]; totalMargin: number; totalCount: number } | undefined;
   commitments: Record<string, Commitment>;
-  baselineOverrides: Record<number, string>;
   unitCount: number;
   unitLabel: string;
   hasFreedTimeConflict: boolean;
@@ -380,7 +376,6 @@ function PriorityDeepDive({
   values,
   result,
   commitments,
-  baselineOverrides,
   unitCount,
   unitLabel,
   hasFreedTimeConflict,
@@ -426,7 +421,7 @@ function PriorityDeepDive({
             <div key={card.k} className="flex-1 min-w-[150px] bg-[#F4F0EA] rounded-md p-4" data-testid={`card-attain-plan-world-${goal}-${i}`}>
               <p className="text-[8.5px] font-semibold uppercase tracking-[1.4px] text-[#8C8C8C]">{card.k}</p>
               <p className={`font-abridge text-2xl mt-2 mb-1 ${card.coral ? "text-[#EA2C00]" : "text-[#1A1A1A]"}`}>
-                {baselineOverrides[i] ?? card.n}
+                {card.n}
               </p>
               <p className="text-[9px] text-[#8C8C8C]">{card.f}</p>
             </div>

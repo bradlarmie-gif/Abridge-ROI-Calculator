@@ -1,6 +1,4 @@
-import { ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LEVERS, defaultLeverValues, type LeverValues } from "@/lib/attain/attainLevers";
 import type { MultiGoalContributionsResult } from "@/lib/attain/attainLevers";
@@ -48,10 +46,9 @@ interface StepCommitProps {
   combined: MultiGoalContributionsResult | null;
   commitments: Record<string, Commitment>;
   onChangeCommitment: (goal: GoalId, leverId: string, patch: Partial<Commitment>) => void;
-  onNext: () => void;
 }
 
-export default function StepCommit({ goals, valuesByGoal, combined, commitments, onChangeCommitment, onNext }: StepCommitProps) {
+export default function StepCommit({ goals, valuesByGoal, combined, commitments, onChangeCommitment }: StepCommitProps) {
   const groups = goals.map((goal) => {
     const values = valuesByGoal[goal] ?? defaultLeverValues(goal);
     const movedLevers = LEVERS[goal].filter((l) => isMoved(values[l.id], l.realityStart));
@@ -178,15 +175,6 @@ export default function StepCommit({ goals, valuesByGoal, combined, commitments,
           Month 2 is expected to be showing up by Month 2, not sitting untouched at the goal-owner review in Month 9.
         </p>
       </div>
-
-      <Button
-        onClick={onNext}
-        className="h-12 px-6 font-semibold rounded-full bg-black hover:bg-black/90 text-white"
-        data-testid="button-attain-commit-continue"
-      >
-        Continue to your plan
-        <ArrowRight className="w-4 h-4 ml-2" />
-      </Button>
     </div>
   );
 }

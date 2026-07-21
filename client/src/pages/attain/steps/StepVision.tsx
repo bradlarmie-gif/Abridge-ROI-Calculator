@@ -1,6 +1,5 @@
-import { ArrowRight, Check } from "lucide-react";
+import { Check } from "lucide-react";
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
 import { goalsForSetting, getContent } from "@/lib/attain/attainGoals";
 import type { AttainSetting, GoalId } from "@/lib/attain/attainTypes";
 
@@ -8,10 +7,9 @@ interface StepVisionProps {
   setting: AttainSetting;
   selectedGoals: GoalId[];
   onToggle: (goal: GoalId) => void;
-  onNext: () => void;
 }
 
-export default function StepVision({ setting, selectedGoals, onToggle, onNext }: StepVisionProps) {
+export default function StepVision({ setting, selectedGoals, onToggle }: StepVisionProps) {
   const goals = goalsForSetting(setting);
 
   return (
@@ -89,18 +87,6 @@ export default function StepVision({ setting, selectedGoals, onToggle, onNext }:
           </p>
         </div>
       )}
-
-      <Button
-        onClick={onNext}
-        disabled={selectedGoals.length === 0}
-        className={`h-12 px-6 font-semibold rounded-full transition-all ${
-          selectedGoals.length > 0 ? "bg-black hover:bg-black/90 text-white" : "bg-slate-200 text-slate-400 cursor-not-allowed"
-        }`}
-        data-testid="button-attain-vision-continue"
-      >
-        Continue
-        <ArrowRight className="w-4 h-4 ml-2" />
-      </Button>
     </div>
   );
 }

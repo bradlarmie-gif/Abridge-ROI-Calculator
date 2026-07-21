@@ -1,6 +1,5 @@
-import { Stethoscope, Zap, ClipboardList, HeartPulse, ArrowRight, Check } from "lucide-react";
+import { Stethoscope, Zap, ClipboardList, HeartPulse, Check } from "lucide-react";
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
 import type { AttainSetting } from "@/lib/attain/attainTypes";
 
 interface SettingOption {
@@ -45,10 +44,9 @@ const SETTINGS: SettingOption[] = [
 interface StepSettingProps {
   selected: AttainSetting | null;
   onSelect: (setting: AttainSetting) => void;
-  onNext: () => void;
 }
 
-export default function StepSetting({ selected, onSelect, onNext }: StepSettingProps) {
+export default function StepSetting({ selected, onSelect }: StepSettingProps) {
   return (
     <div>
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
@@ -95,18 +93,6 @@ export default function StepSetting({ selected, onSelect, onNext }: StepSettingP
           );
         })}
       </div>
-
-      <Button
-        onClick={onNext}
-        disabled={!selected}
-        className={`h-12 px-6 font-semibold rounded-full transition-all ${
-          selected ? "bg-black hover:bg-black/90 text-white" : "bg-slate-200 text-slate-400 cursor-not-allowed"
-        }`}
-        data-testid="button-attain-setting-continue"
-      >
-        Continue
-        <ArrowRight className="w-4 h-4 ml-2" />
-      </Button>
     </div>
   );
 }
