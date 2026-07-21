@@ -11,6 +11,7 @@ import {
   computeAccessChain,
   marginPerVisitFor,
   blendedMarginPerVisit,
+  bindingPlainPhrase,
   DEFAULT_MINUTES_SAVED_PER_NOTE,
   DEFAULT_VISIT_LENGTH_MIN,
 } from "@/lib/attain/attainAccess";
@@ -82,6 +83,40 @@ function CountOutput({ label, value, unit, testid }: { label: string; value: str
       <span className="text-lg font-bold text-[#1A1A1A] font-abridge">
         {value} <span className="text-xs font-normal text-[#8C8C8C]">{unit}</span>
       </span>
+    </div>
+  );
+}
+
+/** One stat in the D4 plain-language result block - capacity, demand, or
+ * realized, side by side so an exec reads all three at a glance instead of
+ * two separately-labeled count rows. Never a dollar figure (D1-D4 rule);
+ * `emphasize` marks the realized figure, the actual answer to "how many
+ * visits do we get." */
+function ResultStat({
+  label,
+  hint,
+  value,
+  unit,
+  testid,
+  emphasize,
+}: {
+  label: string;
+  hint?: string;
+  value: string;
+  unit: string;
+  testid: string;
+  emphasize?: boolean;
+}) {
+  return (
+    <div>
+      <p className="text-[10px] text-[#8C8C8C] mb-1 leading-snug">{label}</p>
+      <p
+        className={`text-lg font-bold font-abridge ${emphasize ? "text-[#EA2C00]" : "text-[#1A1A1A]"}`}
+        data-testid={testid}
+      >
+        {value} <span className="text-xs font-normal text-[#8C8C8C]">{unit}</span>
+      </p>
+      {hint && <p className="text-[9.5px] text-[#B4B4B4] mt-0.5">{hint}</p>}
     </div>
   );
 }
@@ -166,13 +201,6 @@ export default function AccessDecisionChain({ setting, baseline, values, onChang
   };
 
   const removeLine = (line: string) => onChangeValue("accessLines", selectedLines.filter((l) => l !== line));
-
-  const bindingLabel =
-    payoff.binding === "capacity"
-      ? "Capacity-limited: your schedule can offer more than your demand sources can fill."
-      : payoff.binding === "demand"
-        ? "Demand-limited: demand outstrips the capacity you have converted so far."
-        : "Set both capacity and demand to see which one is the ceiling.";
 
   return (
     <div data-testid="section-attain-access-chain">
@@ -496,23 +524,40 @@ export default function AccessDecisionChain({ setting, baseline, values, onChang
           </div>
         </div>
 
-        <CountOutput
-          label="Demand ceiling"
-          value={fmtInt(demand.demandCeiling)}
-          unit="visits/yr"
-          testid="text-access-d4-demand-output"
-        />
-        <div className="mt-3">
-          <CountOutput
-            label="Realized new visits = MIN(capacity, demand)"
-            value={fmtInt(payoff.realizedVisits)}
-            unit="visits/yr"
-            testid="text-access-d4-realized-output"
-          />
+        <div className="rounded-lg bg-[#F8F5F1] p-4" data-testid="panel-access-d4-result">
+          <p className="text-[9px] font-bold uppercase tracking-wide text-[#8C8C8C] mb-3">The result</p>
+          <div className="grid grid-cols-3 gap-3 mb-4">
+            <ResultStat
+              label="Capacity you created"
+              hint="From D3"
+              value={fmtInt(capacity.capacityVisits)}
+              unit="visits/yr"
+              testid="text-access-d4-capacity"
+            />
+            <ResultStat
+              label="Demand available to fill it"
+              hint="From your sources above"
+              value={fmtInt(demand.demandCeiling)}
+              unit="visits/yr"
+              testid="text-access-d4-demand-output"
+            />
+            <ResultStat
+              label="Realized visits"
+              hint="The smaller of the two"
+              value={fmtInt(payoff.realizedVisits)}
+              unit="visits/yr"
+              emphasize
+              testid="text-access-d4-realized-output"
+            />
+          </div>
+          <p className="text-[12px] text-[#1A1A1A] font-semibold flex items-center gap-1.5" data-testid="text-access-d4-binding">
+            {bindingPlainPhrase(payoff.binding)}
+            <InfoTip
+              text="Realized visits can never be more than either side. An open slot with nobody to fill it is worth nothing, and demand your schedule cannot yet absorb doesn't turn into a visit either - whichever number above is smaller sets the ceiling."
+              testid="tooltip-access-d4-binding"
+            />
+          </p>
         </div>
-        <p className="text-[11px] text-[#3A3A3A] mt-2 font-medium" data-testid="text-access-d4-binding">
-          {bindingLabel}
-        </p>
         <MathBox formula={formulas.demand} testid="text-access-d4-formula" />
       </DecisionCard>
 

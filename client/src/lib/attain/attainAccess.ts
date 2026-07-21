@@ -312,6 +312,22 @@ export interface AccessPayoff {
  * at the one blended margin instead. This is the only function in the
  * chain that produces a dollar.
  */
+/** The D4 result, in plain language: a short phrase naming whichever side
+ * (capacity or demand) is actually the ceiling on realized visits, for an
+ * exec reading the result, never printed as "MIN(capacity, demand)". Pure
+ * and independently testable since the wording is content, not math - the
+ * math itself (`binding`) is already computed by `computeAccessPayoff`. */
+export function bindingPlainPhrase(binding: AccessPayoff["binding"]): string {
+  switch (binding) {
+    case "capacity":
+      return "Capacity is the limiter here.";
+    case "demand":
+      return "Demand is the limiter here.";
+    default:
+      return "Set your capacity and demand above to see which one limits you.";
+  }
+}
+
 export function computeAccessPayoff(
   scope: AccessScope,
   values: LeverValues,
@@ -401,7 +417,7 @@ export function computeAccessChain(
     : NO_MOVE_FORMULA;
 
   const payoffFormula = payoff.value > 0
-    ? `MIN(${Math.round(capacity.capacityVisits).toLocaleString()} capacity, ${demand.demandCeiling.toLocaleString()} demand) = ${payoff.realizedVisits.toLocaleString()} realized visits × ~$${Math.round(payoff.blendedMarginUsed).toLocaleString()}/visit = ~${fmtMoneyCompact(payoff.value)}.`
+    ? `${payoff.realizedVisits.toLocaleString()} realized visits (the smaller of ${Math.round(capacity.capacityVisits).toLocaleString()} capacity and ${demand.demandCeiling.toLocaleString()} demand) × ~$${Math.round(payoff.blendedMarginUsed).toLocaleString()}/visit = ~${fmtMoneyCompact(payoff.value)}.`
     : NO_MOVE_FORMULA;
 
   return { scope, capacity, demand, payoff, formulas: { scope: scopeFormula, capacity: capacityFormula, demand: demandFormula, payoff: payoffFormula } };

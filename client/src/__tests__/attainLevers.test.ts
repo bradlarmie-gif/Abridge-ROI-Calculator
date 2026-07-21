@@ -15,6 +15,7 @@ import {
   computeAccessPayoff,
   computeAccessChain,
   computeAccessContributions,
+  bindingPlainPhrase,
   DEFAULT_MINUTES_SAVED_PER_NOTE,
   DEFAULT_VISIT_LENGTH_MIN,
 } from "@/lib/attain/attainAccess";
@@ -334,6 +335,47 @@ describe("ACCESS decision chain (attainAccess.ts)", () => {
     expect(payoff.realizedVisits).toBe(demand.demandCeiling);
     expect(payoff.realizedVisits).toBeLessThanOrEqual(capacity.capacityVisits);
     expect(payoff.binding).toBe("demand");
+  });
+
+  it("D4 plain-language: bindingPlainPhrase names the limiter in plain words, never MIN( notation", () => {
+    expect(bindingPlainPhrase("capacity")).toBe("Capacity is the limiter here.");
+    expect(bindingPlainPhrase("demand")).toBe("Demand is the limiter here.");
+    expect(bindingPlainPhrase("none")).not.toContain("MIN(");
+    for (const binding of ["capacity", "demand", "none"] as const) {
+      expect(bindingPlainPhrase(binding)).not.toContain("MIN(");
+    }
+  });
+
+  it("D4/D5 plain-language: bindingPlainPhrase agrees with the chain's own computed binding constraint", () => {
+    // Demand-limited case (from the MIN test above).
+    const demandLimited = computeAccessChain(baseline, {
+      accessProviders: 40,
+      accessFreedShare: 100,
+      accessDemandBacklog: 10,
+    });
+    expect(demandLimited.payoff.binding).toBe("demand");
+    expect(bindingPlainPhrase(demandLimited.payoff.binding)).toBe("Demand is the limiter here.");
+
+    // Capacity-limited case: huge demand, small capacity.
+    const capacityLimited = computeAccessChain(baseline, {
+      accessProviders: 5,
+      accessFreedShare: 10,
+      accessDemandNewReferrals: 10_000,
+    });
+    expect(capacityLimited.payoff.binding).toBe("capacity");
+    expect(bindingPlainPhrase(capacityLimited.payoff.binding)).toBe("Capacity is the limiter here.");
+  });
+
+  it("D5's printed formula never prints literal MIN( notation, even though it still derives the real numbers", () => {
+    const chain = computeAccessChain(baseline, {
+      accessProviders: 40,
+      accessMargin: 220,
+      accessFreedShare: 50,
+      accessDemandBacklog: 100,
+    });
+    expect(chain.formulas.payoff).not.toContain("MIN(");
+    expect(chain.formulas.demand).not.toContain("MIN(");
+    expect(chain.formulas.capacity).not.toContain("MIN(");
   });
 
   it("D5: zero demand realizes zero value, even with a fully committed capacity decision", () => {
