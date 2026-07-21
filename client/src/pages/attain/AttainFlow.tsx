@@ -677,8 +677,27 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
         {resumeDraft && (
           <AttainResumePrompt draft={resumeDraft} onResume={handleResumeDraft} onDismiss={handleDismissResumeDraft} />
         )}
-        <div className="flex flex-col lg:flex-row gap-10">
-          <div className={`flex-1 min-w-0 ${step === "plan" ? "max-w-[820px]" : "max-w-[700px]"}`}>
+        {/*
+          The Attainment hub ("plan" step) never gets a live side panel — see
+          the `step !== "plan"` guard below — so its content column must not
+          inherit the OTHER steps' `flex-1` left-pinned-in-a-flex-row shape.
+          Left pinned inside the max-w-[1200px] frame, with nothing on its
+          right, that shape reads as a narrow form stuck to the left edge of
+          a wide, half-empty canvas — the exact readability complaint this
+          pass fixes. Centering it instead at a generous 1040px (`mx-auto`
+          on a flex item centers it along the row's main axis, a standard
+          flexbox technique, since it does not also carry `flex-1`) lets it
+          read as a document with balanced margins on a wide desktop, while
+          `max-w-[1040px]` still comfortably fits the 1280px laptop floor
+          this flow has to support (1200px frame - 48px padding = 1152px of
+          room to center within).
+        */}
+        <div className={`flex flex-col lg:flex-row gap-10 ${step === "plan" ? "justify-center" : ""}`}>
+          <div
+            className={
+              step === "plan" ? "w-full max-w-[1040px] mx-auto" : "flex-1 min-w-0 max-w-[700px]"
+            }
+          >
             {step === "setting" && (
               <StepSetting selected={state.setting} onSelect={handleSelectSetting} />
             )}
