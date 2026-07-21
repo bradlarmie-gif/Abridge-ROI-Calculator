@@ -118,6 +118,15 @@ const SETTING_LABEL: Record<AttainSetting, string> = {
 export function formatCompact(n: number): string {
   const sign = n < 0 ? "-" : "";
   const abs = Math.abs(n);
+  // A 4+ digit number in front of "M" ($1150.6M) reads as a typo, not a
+  // premium figure — add the billions step so an extreme combined plan
+  // (many priorities, a huge baseline) still prints a normal-looking
+  // number. Same `formatCompact` convention as StepAttainment.tsx /
+  // StepCommit.tsx's own local copies (see this file's header comment);
+  // those have the identical 4-digit-before-M gap at $1B+ and would
+  // benefit from the same fix, tracked separately since they are outside
+  // this file.
+  if (abs >= 1_000_000_000) return `${sign}$${(abs / 1_000_000_000).toFixed(abs % 1_000_000_000 === 0 ? 0 : 2)}B`;
   if (abs >= 1_000_000) return `${sign}$${(abs / 1_000_000).toFixed(abs % 1_000_000 === 0 ? 0 : 1)}M`;
   if (abs >= 1_000) return `${sign}$${Math.round(abs / 1_000)}K`;
   return `${sign}$${Math.round(abs)}`;
@@ -395,10 +404,10 @@ const s = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingBottom: 10,
+    paddingBottom: 8,
     borderBottomWidth: 1,
     borderBottomColor: C.hairline,
-    marginBottom: 16,
+    marginBottom: 13,
   },
   topWordmark: { fontFamily: "Abridge", fontSize: 13, color: C.coral, letterSpacing: 0.5 },
   topLabel: { fontSize: 8, fontWeight: 700, color: C.muted, letterSpacing: 2, textTransform: "uppercase" },
@@ -422,7 +431,7 @@ const s = StyleSheet.create({
   eyebrowCoral: { fontSize: 8.5, fontWeight: 700, color: C.coral, letterSpacing: 2.5, textTransform: "uppercase", marginBottom: 3 },
   h2: { fontFamily: "Abridge", fontSize: 24, color: C.ink, marginBottom: 10, lineHeight: 1.1 },
   lead: { fontSize: 10.5, lineHeight: 1.5, color: C.body, marginBottom: 10, maxWidth: CW },
-  body: { fontSize: 9.5, lineHeight: 1.45, color: C.body, marginBottom: 7, maxWidth: CW },
+  body: { fontSize: 9.5, lineHeight: 1.45, color: C.body, marginBottom: 6, maxWidth: CW },
   bodySmall: { fontSize: 9, lineHeight: 1.4, color: C.body, marginBottom: 5, maxWidth: CW },
   subEyebrow: { fontSize: 8, fontWeight: 700, color: C.muted, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 4 },
   subEyebrowCoral: { fontSize: 8, fontWeight: 700, color: C.coral, letterSpacing: 1.8, textTransform: "uppercase", marginBottom: 5, marginTop: 3 },
@@ -436,7 +445,7 @@ const s = StyleSheet.create({
   pillSub: { fontSize: 9, color: C.muted },
 
   // Flow chips
-  flowRow: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", marginBottom: 8, gap: 5 },
+  flowRow: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", marginBottom: 6, gap: 5 },
   flowItem: { flexDirection: "row", alignItems: "center", gap: 5 },
   flowChip: { fontSize: 8, paddingVertical: 5, paddingHorizontal: 9, borderRadius: 4, borderWidth: 1, borderColor: C.tan, backgroundColor: C.cream2, color: C.body },
   flowArrow: { fontSize: 9, color: C.faint },
@@ -457,16 +466,38 @@ const s = StyleSheet.create({
   // Hero band (dark)
   goodHead: { fontSize: 12.5, fontWeight: 700, color: C.ink, marginBottom: 8 },
   heroBand: { backgroundColor: C.ink, borderRadius: 6, flexDirection: "row", paddingVertical: 14, marginBottom: 6 },
-  heroCell: { flex: 1, paddingHorizontal: 10, borderRightWidth: 1, borderRightColor: "rgba(255,255,255,0.14)" },
+  // Solid pre-blended gray, NOT `rgba(255,255,255,0.14)` over `C.ink` — this
+  // react-pdf/pdfkit version's `_normalizeColor` only bit-shifts a hex
+  // string as 24-bit RGB (see @react-pdf/pdfkit's color mixin); a
+  // fractional-alpha color that `@react-pdf/stylesheet` transforms into an
+  // 8-digit RGBA hex ("#FFFFFF24") gets its alpha byte silently folded into
+  // the blue channel by that bit-shift, rendering as a bright, very-much-
+  // not-brand green line (confirmed by pixel-sampling the rendered PDF —
+  // this was shipping on every hero band before this fix). Text `color`
+  // with the same rgba syntax is unaffected (a different, opacity-aware
+  // draw path), but `border*Color` is not — never use a fractional-alpha
+  // color on a border in this file. #3A3A3A is white at 14% opacity
+  // pre-blended over `C.ink` (#1A1A1A), computed once, not live.
+  heroCell: { flex: 1, paddingHorizontal: 10, borderRightWidth: 1, borderRightColor: "#3A3A3A" },
   heroCellLast: { borderRightWidth: 0 },
   heroN: { fontFamily: "Abridge", fontSize: 21, color: C.white },
   heroK: { fontSize: 7, fontWeight: 700, color: "rgba(255,255,255,0.55)", letterSpacing: 1, textTransform: "uppercase", marginTop: 6 },
 
-  // Table (decisions)
-  hr: { borderTopWidth: 1, borderTopColor: C.tan, marginVertical: 8 },
-  tableHead: { flexDirection: "row", borderBottomWidth: 1, borderBottomColor: C.tan, paddingBottom: 6, marginBottom: 2 },
+  // Table (decisions). Row/section spacing here is deliberately tight
+  // (every value below trimmed by 1-4pt from an earlier draft) — a
+  // priority with 6-7 committed decisions (the realistic max for
+  // access/revenue) plus the trailing "fragile middle" callout otherwise
+  // just misses fitting on one page, stranding the callout alone on an
+  // orphan page 2 with the footer at the bottom and nothing else — a real
+  // defect this exact trim closes for the common case. `tableTotal` and
+  // `calloutBox` are additionally grouped into one `wrap={false}` unit on
+  // the page itself (see `ValueChainPage`) so that on a genuinely long
+  // table (many decisions), if a page break still happens, the total and
+  // the callout land TOGETHER, never the callout alone.
+  hr: { borderTopWidth: 1, borderTopColor: C.tan, marginVertical: 6 },
+  tableHead: { flexDirection: "row", borderBottomWidth: 1, borderBottomColor: C.tan, paddingBottom: 5, marginBottom: 1 },
   th: { fontSize: 7.5, fontWeight: 700, color: C.muted, letterSpacing: 1, textTransform: "uppercase" },
-  tableRow: { flexDirection: "row", paddingVertical: 5, borderBottomWidth: 1, borderBottomColor: "#F0ECE5" },
+  tableRow: { flexDirection: "row", paddingVertical: 4, borderBottomWidth: 1, borderBottomColor: "#F0ECE5" },
   tableRowAlt: { backgroundColor: C.cream2 },
   tRowName: { fontSize: 9.5, fontWeight: 700, color: C.ink },
   tRowSignal: { fontSize: 8, color: C.muted, marginTop: 2 },
@@ -474,7 +505,7 @@ const s = StyleSheet.create({
   tRowDue: { fontSize: 8, color: C.faint, marginTop: 1 },
   tRowWorth: { fontSize: 9.5, fontWeight: 700, color: C.coral, textAlign: "right" },
   tRowPct: { fontSize: 7.5, color: C.muted, textAlign: "right", marginTop: 1 },
-  tableTotal: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingTop: 9, marginTop: 2, borderTopWidth: 1, borderTopColor: C.tan },
+  tableTotal: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingTop: 7, marginTop: 1, borderTopWidth: 1, borderTopColor: C.tan },
   tTotalLabel: { fontSize: 9.5, fontWeight: 700, color: C.ink },
   tTotalValue: { fontFamily: "Abridge", fontSize: 15, color: C.coral },
 
@@ -521,7 +552,14 @@ const s = StyleSheet.create({
   teachBox: { marginTop: 4 },
 
   // Cover
-  coverPage: { padding: 0, backgroundColor: C.white, position: "relative" },
+  // `fontFamily: "Manrope"` here (not inherited from `s.page`, since this
+  // is a separate style object, not an extension of it) — without it, the
+  // cover's eyebrow/subtitle/thesis/meta/disclosure text silently falls
+  // back to react-pdf's core Helvetica, the one off-brand font mismatch in
+  // an otherwise all-Manrope document (confirmed by inspecting the
+  // rendered PDF's embedded font list — only page 1, the cover, ever uses
+  // Helvetica). `coverWordmark`/`coverTitle` still override to "Abridge".
+  coverPage: { padding: 0, backgroundColor: C.white, position: "relative", fontFamily: "Manrope" },
   coverWordmark: { position: "absolute", top: 52, left: 52, fontFamily: "Abridge", fontSize: 17, color: C.coral, letterSpacing: 1 },
   coverWatermark: { position: "absolute", right: -70, bottom: -140, fontFamily: "Abridge", fontSize: 460, color: "#F3F3F3" },
   coverBlock: { position: "absolute", top: 236, left: 52, right: 52 },
@@ -551,6 +589,20 @@ const FLOW_STYLE = StyleSheet.create({
 // dynamic page numbering that excludes the unnumbered cover page).
 // ────────────────────────────────────────────────────────────────────────
 
+// react-pdf v4's <Text> has no `numberOfLines` prop (verified against this
+// version's typings), so a long org name in the footer's center slot would
+// otherwise wrap to 2 lines — breaking the 3-slot single-line footer
+// contract (pdf_layout_guidelines.md section 1a) and, at font-size 7.5 in a
+// ~300pt-wide flex:1 slot, risking a real collision with the fixed-width
+// left/right slots on a third line. Truncate deterministically instead of
+// hoping every partner's real organization name stays short.
+const FOOTER_ORG_NAME_MAX = 60;
+function truncateOrgName(name: string): string {
+  const trimmed = name.trim();
+  if (trimmed.length <= FOOTER_ORG_NAME_MAX) return trimmed;
+  return `${trimmed.slice(0, FOOTER_ORG_NAME_MAX - 1).trimEnd()}…`;
+}
+
 function InteriorHeader() {
   return (
     <View style={s.top} fixed>
@@ -564,11 +616,12 @@ function InteriorFooter({ orgName }: { orgName: string }) {
   return (
     <View style={s.footer} fixed>
       <Text style={s.footerLeft}>ABRIDGE</Text>
-      {/* No `numberOfLines` prop exists on react-pdf v4's <Text> — the
-          center slot's `flex: 1` sizing plus the fixed-width left/right
-          slots (rule 1a) is the only truncation guard available; org names
-          are short in practice (see visual review). */}
-      <Text style={s.footerCenter}>{orgName}</Text>
+      {/* No `numberOfLines` prop exists on react-pdf v4's <Text> — a long
+          org name is truncated with an ellipsis (`truncateOrgName`) rather
+          than left to wrap, which is what actually happens with an
+          unconstrained `flex: 1` center slot on a real long organization
+          name (confirmed by rendering one — see the matrix stress test). */}
+      <Text style={s.footerCenter}>{truncateOrgName(orgName)}</Text>
       <Text style={s.footerRight} render={({ pageNumber, totalPages }) => `Page ${pageNumber - 1} of ${totalPages - 1}`} />
     </View>
   );
@@ -673,6 +726,25 @@ function PdfAttainmentCurve({
 
   const yOnPaceToday = cyAt(onPacePct);
   const todayLabelX = Math.max(120, Math.min(xToday - 6, CX1 - 40));
+  // Behind-pace plans (onPacePct > pct, the common case) put the hollow
+  // "on-pace" marker ABOVE the coral "today" dot on the same vertical line.
+  // The label's default position (14pt above the coral dot) only clears a
+  // marker that is comfortably higher still — when on-pace is close to
+  // today's actual pct, the label's own box and the on-pace circle (r 3.25)
+  // land on top of each other. Push the label further up whenever the
+  // on-pace marker is close enough to risk that, rather than assuming it is
+  // always safely out of the way.
+  const todayLabelY = onPacePct > pct ? Math.min(yTodayCoral - 14, yOnPaceToday - 17) : yTodayCoral - 14;
+  // A plan that is fully on-pace AND fully time-elapsed (today == goal, on
+  // both axes) puts the "Today" dot directly under the "Goal" label's own
+  // box — their default label positions (Today to the upper-left of its
+  // dot, Goal right-aligned ending at the goal's x) then overlap and render
+  // as one smashed line. Detect that specific box collision and drop
+  // "Today" BELOW its dot instead, centered under it, rather than
+  // presuming today is always comfortably left of the goal.
+  const goalLabelX = CX1 - 200;
+  const goalLabelY = Math.max(0, yGoalCoral - 18);
+  const todayNearGoal = todayLabelX + 90 > goalLabelX && todayLabelY < goalLabelY + 16 && todayLabelY + 16 > goalLabelY;
 
   return (
     <View style={{ position: "relative", marginBottom: 4 }} data-testid="pdf-attainment-curve">
@@ -689,7 +761,13 @@ function PdfAttainmentCurve({
         <Circle cx={CX1} cy={yUsualFinal} r={4} fill={C.white} stroke={C.faint} strokeWidth={1.5} />
       </Svg>
 
-      <Text style={{ position: "absolute", left: todayLabelX, top: yTodayCoral - 14, width: 90, textAlign: "right", fontSize: 8.5, fontWeight: 700, color: C.ink }}>
+      <Text
+        style={
+          todayNearGoal
+            ? { position: "absolute", left: Math.max(CX0, xToday - 45), top: yTodayCoral + 10, width: 90, textAlign: "center", fontSize: 8.5, fontWeight: 700, color: C.ink }
+            : { position: "absolute", left: todayLabelX, top: todayLabelY, width: 90, textAlign: "right", fontSize: 8.5, fontWeight: 700, color: C.ink }
+        }
+      >
         {`Today · ${Math.round(pct)}%`}
       </Text>
       <Text style={{ position: "absolute", left: CX1 - 200, top: Math.max(0, yGoalCoral - 18), width: 200, textAlign: "right", fontSize: 8.5, fontWeight: 700, color: C.coral }}>
@@ -937,21 +1015,31 @@ function ValueChainPage({ data, priority }: { data: AttainPdfData; priority: Att
               </View>
             </View>
           ))}
-          <View style={s.tableTotal} wrap={false}>
-            <Text style={s.tTotalLabel}>Total, contribution margin, this priority</Text>
-            <Text style={s.tTotalValue}>{formatCompact(priority.margin)}</Text>
-          </View>
         </>
       )}
 
-      <View style={s.calloutBox} wrap={false}>
-        <Text style={s.calloutLabel}>The fragile middle</Text>
-        <Text style={s.calloutText}>
-          {c?.fragile ?? "Value leaks in the fragile middle links between what Abridge delivers and the outcome. Every link there is owned by your operations, not the software."}
-        </Text>
-        <Text style={s.footnoteMuted}>
-          {`${priority.decisions.length} of ${priority.availableDecisionCount} available decisions committed to this priority today.`}
-        </Text>
+      {/* Total + the fragile-middle callout move together as ONE atomic
+          unit (pdf_layout_guidelines.md rule 3's "closing sequence"
+          pattern) — on a long decisions table, if this tail does not fit
+          on the current page, both land on the next page TOGETHER rather
+          than stranding the callout alone below an otherwise-finished
+          table (the orphan this exact grouping exists to prevent). */}
+      <View wrap={false}>
+        {priority.decisions.length > 0 && (
+          <View style={s.tableTotal}>
+            <Text style={s.tTotalLabel}>Total, contribution margin, this priority</Text>
+            <Text style={s.tTotalValue}>{formatCompact(priority.margin)}</Text>
+          </View>
+        )}
+        <View style={s.calloutBox}>
+          <Text style={s.calloutLabel}>The fragile middle</Text>
+          <Text style={s.calloutText}>
+            {c?.fragile ?? "Value leaks in the fragile middle links between what Abridge delivers and the outcome. Every link there is owned by your operations, not the software."}
+          </Text>
+          <Text style={s.footnoteMuted}>
+            {`${priority.decisions.length} of ${priority.availableDecisionCount} available decisions committed to this priority today.`}
+          </Text>
+        </View>
       </View>
 
       <InteriorFooter orgName={data.orgName} />
