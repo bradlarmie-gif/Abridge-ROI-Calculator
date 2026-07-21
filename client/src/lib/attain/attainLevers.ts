@@ -390,6 +390,14 @@ function presetsFor(setting: AttainSetting, goal: GoalId): string[] {
   return LINE_PRESETS[setting]?.[goal] ?? [];
 }
 
+/** Every line/department/unit option a "lines" lever can select from for
+ * this (goal, setting), or [] if this combination has no lines lever. Used
+ * by the Build the Case step to render the multi-select chips; this is the
+ * one export the UI layer needs on top of the LINE_PRESETS table above. */
+export function lineOptions(goal: GoalId, setting: AttainSetting): string[] {
+  return presetsFor(setting, goal);
+}
+
 function linesFraction(setting: AttainSetting, goal: GoalId, selected: string[]): number {
   const presets = presetsFor(setting, goal);
   if (presets.length === 0) return 0;
