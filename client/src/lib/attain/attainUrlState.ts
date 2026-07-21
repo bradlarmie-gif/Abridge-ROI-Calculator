@@ -1,0 +1,164 @@
+import LZString from "lz-string";
+import type { AttainState, AttainSetting, GoalId } from "./attainTypes";
+import type { AttainBaseline, LeverValues } from "./attainLevers";
+import type { Commitment, GoalOwner } from "@/pages/attain/steps/StepCommit";
+import type { ProgressEntry } from "./attainProgress";
+
+/**
+ * Save-and-return for the Attain flow.
+ *
+ * This is a SHAREABLE-LINK + LOCAL-DRAFT layer only. It encodes the full
+ * client-side plan (every field a partner built across Setting -> Vision ->
+ * Scope -> Build the case -> Commit -> Attainment) into one compressed,
+ * URL-safe string, the same lz-string pattern `intakeUrlState.ts` and
+ * `dataRequestUrlState.ts` already use for Explore/Measure deep links. A
+ * copied link (or a localStorage draft written under the same shape, see
+ * `ATTAIN_DRAFT_STORAGE_KEY`) is what makes a plan resumable on this device
+ * or any device that opens the link.
+ *
+ * True multi-user, cross-session persistence (a partner's plan tied to a
+ * real account, editable from any device, never expiring, with real access
+ * control) needs a backend + accounts layer. That is a future task; this
+ * file is deliberately just the client-side encode/decode + local-draft
+ * half of "save and return", matching the ceiling every other Attain data
+ * module (attainLevers.ts's AttainBaseline, attainProgress.ts's
+ * ProgressEntry) already sits under.
+ */
+
+/** Bump this whenever `AttainSaveState`'s shape changes in a way an older
+ * encoded link cannot safely decode into (a renamed/removed required field).
+ * `decodeAttain` refuses anything with a different version rather than
+ * guessing at a migration, so a stale link degrades to "start fresh" instead
+ * of rehydrating a corrupt plan. */
+export const ATTAIN_SAVE_VERSION = 1;
+
+/** The full local state AttainFlow.tsx holds for one in-progress or
+ * completed plan — everything needed to redraw every step (including the
+ * Attainment hub's Strategy and Progress tabs) exactly as the partner left
+ * it. Deliberately flat and additive to the existing locked engine types
+ * (`AttainState`, `AttainBaseline`, `LeverValues`) rather than changing any
+ * of them. */
+export interface AttainSaveState {
+  version: number;
+  /** ISO timestamp of when this was saved — shown on the resume prompt so a
+   * returning partner can tell how stale a draft is. */
+  savedAt: string;
+  state: AttainState;
+  goals: GoalId[];
+  valuesByGoal: Partial<Record<GoalId, LeverValues>>;
+  commitments: Record<string, Commitment>;
+  goalOwnerByPriority: Partial<Record<GoalId, GoalOwner>>;
+  /** Every committed signal's dated log (key = `${goal}:${leverId}:${signalId}`)
+   * — persisted so a returned plan shows its real history, not just its
+   * current numbers. */
+  progressEntries: Record<string, ProgressEntry[]>;
+  baseline: AttainBaseline;
+  freedTimeSplit: number;
+}
+
+const VALID_SETTINGS: AttainSetting[] = ["outpatient", "ed", "inpatient", "nursing"];
+const VALID_GOALS: GoalId[] = ["access", "retention", "revenue", "quality"];
+
+function isValidSetting(v: unknown): v is AttainSetting {
+  return typeof v === "string" && (VALID_SETTINGS as string[]).includes(v);
+}
+
+function isValidGoal(v: unknown): v is GoalId {
+  return typeof v === "string" && (VALID_GOALS as string[]).includes(v);
+}
+
+function isPlainObject(v: unknown): v is Record<string, unknown> {
+  return typeof v === "object" && v !== null && !Array.isArray(v);
+}
+
+/** Structural validation only — this never throws, and never trusts a field
+ * whose shape doesn't match what AttainFlow expects, even if the JSON
+ * parsed cleanly (a hand-edited or truncated URL param is still valid
+ * JSON). Anything that fails a check here means `decodeAttain` returns null
+ * rather than handing AttainFlow a plan that could NaN or crash downstream. */
+function isWellFormedSaveState(v: unknown): v is AttainSaveState {
+  if (!isPlainObject(v)) return false;
+  if (typeof v.version !== "number" || v.version !== ATTAIN_SAVE_VERSION) return false;
+  if (typeof v.savedAt !== "string") return false;
+  if (!isPlainObject(v.state)) return false;
+  if (v.state.setting !== null && !isValidSetting(v.state.setting)) return false;
+  if (v.state.goal !== null && !isValidGoal(v.state.goal)) return false;
+  if (!isPlainObject(v.state.scope)) return false;
+  if (typeof v.state.monthsElapsed !== "number") return false;
+  if (typeof v.state.totalMonths !== "number") return false;
+  if (typeof v.state.progressRatio !== "number") return false;
+  if (!Array.isArray(v.goals) || !v.goals.every(isValidGoal)) return false;
+  if (!isPlainObject(v.valuesByGoal)) return false;
+  if (!isPlainObject(v.commitments)) return false;
+  if (!isPlainObject(v.goalOwnerByPriority)) return false;
+  if (!isPlainObject(v.progressEntries)) return false;
+  if (!isPlainObject(v.baseline)) return false;
+  if (typeof v.freedTimeSplit !== "number") return false;
+  return true;
+}
+
+/** Encodes a full plan into a compressed, URL-safe string — the payload
+ * that goes after `?attain=` in a shareable link, and the value written to
+ * the localStorage draft key below. */
+export function encodeAttain(saveState: AttainSaveState): string {
+  return LZString.compressToEncodedURIComponent(JSON.stringify(saveState));
+}
+
+/** Decodes a `?attain=` param (or a localStorage draft) back into a full
+ * plan. Defensive at every step — malformed, truncated, non-JSON, or
+ * shape-mismatched input, and a version mismatch from an older/newer link,
+ * all resolve to `null` rather than throwing or handing back a corrupt
+ * plan. Callers should treat `null` as "nothing to restore, start fresh". */
+export function decodeAttain(encoded: string): AttainSaveState | null {
+  if (!encoded) return null;
+  try {
+    const decompressed = LZString.decompressFromEncodedURIComponent(encoded);
+    if (!decompressed) return null;
+    const parsed = JSON.parse(decompressed);
+    if (!isWellFormedSaveState(parsed)) return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+/** Stable localStorage key for the one in-progress draft this browser is
+ * mid-way through — deliberately singular (not a list) since a partner
+ * building a plan has exactly one "in progress right now" plan to resume,
+ * matching how `abridge_partner_session` etc. in App.tsx are single stable
+ * keys, not a per-plan namespace. */
+export const ATTAIN_DRAFT_STORAGE_KEY = "abridge_attain_draft";
+
+/** Writes (or overwrites) the local draft. Called on every Save click so
+ * the most recent Save is always what a fresh visit offers to resume.
+ * Swallows storage errors (private browsing, quota) — a failed local save
+ * should never block the copy-link half of Save. */
+export function writeAttainDraft(saveState: AttainSaveState): void {
+  try {
+    localStorage.setItem(ATTAIN_DRAFT_STORAGE_KEY, encodeAttain(saveState));
+  } catch {
+    /* ignore — private browsing or storage quota; the shareable link still worked */
+  }
+}
+
+/** Reads back the local draft, or null if there isn't one / it is corrupt.
+ * Never throws. */
+export function readAttainDraft(): AttainSaveState | null {
+  try {
+    const raw = localStorage.getItem(ATTAIN_DRAFT_STORAGE_KEY);
+    if (!raw) return null;
+    return decodeAttain(raw);
+  } catch {
+    return null;
+  }
+}
+
+/** Clears the local draft — used once a partner explicitly dismisses the
+ * resume prompt for good, or (future) once a plan is considered "done". */
+export function clearAttainDraft(): void {
+  try {
+    localStorage.removeItem(ATTAIN_DRAFT_STORAGE_KEY);
+  } catch {
+    /* ignore */
+  }
+}
