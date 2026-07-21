@@ -1,4 +1,5 @@
-import { Target } from "lucide-react";
+import { Target, ArrowRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import AttainmentCurve, { USUAL_CEILING_PCT } from "@/components/attain/AttainmentCurve";
 import { LEVERS, defaultLeverValues, type LeverValues, type MultiGoalContributionsResult } from "@/lib/attain/attainLevers";
 import { GOAL_CATALOG } from "@/lib/attain/attainGoals";
@@ -28,9 +29,28 @@ interface AttainLivePanelProps {
   step: AttainStepId;
   valuesByGoal: Partial<Record<GoalId, LeverValues>>;
   combined: MultiGoalContributionsResult | null;
+  /** The primary action for this step lives at the foot of this panel,
+   * bottom-right, in Abridge coral, rather than a black pill at the bottom
+   * of the page — one consistent home for "Continue" across the whole
+   * flow. */
+  onNext: () => void;
+  nextDisabled?: boolean;
+  nextLabel?: string;
 }
 
-export default function AttainLivePanel({ state, goals, content, target, attainment, step, valuesByGoal, combined }: AttainLivePanelProps) {
+export default function AttainLivePanel({
+  state,
+  goals,
+  content,
+  target,
+  attainment,
+  step,
+  valuesByGoal,
+  combined,
+  onNext,
+  nextDisabled = false,
+  nextLabel = "Continue",
+}: AttainLivePanelProps) {
   const settingLabel = state.setting ? SETTING_LABELS[state.setting] : null;
   const showBuiltTarget = goals.length > 0 && combined && (step === "buildCase" || step === "commit");
 
@@ -105,9 +125,9 @@ export default function AttainLivePanel({ state, goals, content, target, attainm
         {showBuiltTarget && combined && (
           <div className="pt-3 border-t border-white/10" data-testid="text-attain-panel-target">
             <p className="text-[10px] uppercase tracking-widest text-white/40 mb-1">
-              {goals.length > 1 ? "Built from your decisions, combined" : "Built from your decisions"}
+              {goals.length > 1 ? "Plan so far, combined" : "Plan so far"}
             </p>
-            <p className="font-abridge text-3xl text-[#EA2C00]">{formatCompact(combined.combinedMargin)}</p>
+            <p className="font-abridge text-2xl text-[#EA2C00]">{formatCompact(combined.combinedMargin)}</p>
             <p className="text-xs text-white/50 mt-1">
               {combined.combinedMargin > 0 ? "Growing as you commit" : "Move a decision below to start building it"}
             </p>
@@ -151,6 +171,25 @@ export default function AttainLivePanel({ state, goals, content, target, attainm
             <p className="text-[11px] text-white/60 leading-relaxed">{content.thesis1} {content.thesis2}</p>
           </div>
         )}
+      </div>
+
+      {/* Primary action lives at the foot of this panel, bottom-right, in
+          Abridge coral — the one consistent home for "Continue" across
+          every step of the flow. */}
+      <div className="px-6 py-5 border-t border-white/10 flex justify-end">
+        <Button
+          onClick={onNext}
+          disabled={nextDisabled}
+          className={`h-11 px-6 rounded-full font-semibold text-sm transition-all ${
+            nextDisabled
+              ? "bg-white/10 text-white/30 cursor-not-allowed"
+              : "bg-[#EA2C00] hover:bg-[#D42600] text-white"
+          }`}
+          data-testid="button-attain-continue"
+        >
+          {nextLabel}
+          <ArrowRight className="w-4 h-4 ml-2" />
+        </Button>
       </div>
     </div>
   );

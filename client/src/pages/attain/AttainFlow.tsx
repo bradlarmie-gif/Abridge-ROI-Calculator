@@ -19,7 +19,9 @@ import { getContent } from "@/lib/attain/attainGoals";
 import {
   LEVERS,
   defaultLeverValues,
+  defaultBaseline,
   computeMultiGoalContributions,
+  type AttainBaseline,
   type LeverValues,
   type MultiGoalContributionsResult,
 } from "@/lib/attain/attainLevers";
@@ -96,7 +98,13 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
   const [goals, setGoals] = useState<GoalId[]>([]);
   const [valuesByGoal, setValuesByGoal] = useState<Partial<Record<GoalId, LeverValues>>>({});
   const [commitments, setCommitments] = useState<Record<string, Commitment>>({});
-  const [baselineOverrides, setBaselineOverrides] = useState<Record<number, string>>({});
+  // The partner's real operational baseline (providers/encounters/
+  // utilization, or beds/FTEs/census/adoption for nursing) — collected once
+  // on the Scope step and threaded into every lever's engine call from
+  // here down. This is local state, not part of `AttainState`
+  // (attainTypes.ts intentionally untouched), because it is purely an
+  // engine input, not part of the plan's identity/progress bookkeeping.
+  const [baseline, setBaseline] = useState<AttainBaseline>(defaultBaseline("outpatient"));
   // Only meaningful when both access and retention are selected — the % of
   // the one shared freed documentation hour routed to opening access
   // (schedule); the rest routes to protecting relief. See attainLevers.ts
@@ -121,7 +129,7 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
     setGoals([]);
     setValuesByGoal({});
     setCommitments({});
-    setBaselineOverrides({});
+    setBaseline(defaultBaseline(setting));
     setFreedTimeSplit(DEFAULT_FREED_TIME_SPLIT);
     setState((prev) => ({
       ...prev,
@@ -153,12 +161,8 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
     });
   }, [goals]);
 
-  const handleChangeScope = useCallback((scope: AttainScope) => {
-    updateState({ scope });
-  }, [updateState]);
-
-  const handleChangeBaselineOverride = useCallback((index: number, value: string) => {
-    setBaselineOverrides((prev) => ({ ...prev, [index]: value }));
+  const handleChangeBaseline = useCallback((patch: Partial<AttainBaseline>) => {
+    setBaseline((prev) => ({ ...prev, ...patch }));
   }, []);
 
   const handleChangeLeverValue = useCallback((goal: GoalId, leverId: string, value: number | string[]) => {
@@ -194,8 +198,36 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
   // both in play. See attainLevers.ts computeMultiGoalContributions.
   const combined: MultiGoalContributionsResult | null = useMemo(() => {
     if (goals.length === 0 || !state.setting) return null;
-    return computeMultiGoalContributions(goals, state.setting, state.scope, valuesByGoal, freedTimeSplit);
-  }, [goals, state.setting, state.scope, valuesByGoal, freedTimeSplit]);
+    return computeMultiGoalContributions(goals, state.setting, baseline, valuesByGoal, freedTimeSplit);
+  }, [goals, state.setting, baseline, valuesByGoal, freedTimeSplit]);
+
+  // Whether every field the Scope step asks for has a real value, so the
+  // panel's Continue button on that step can only advance once the
+  // baseline every downstream lever depends on is actually filled in.
+  const isBaselineValid = useMemo(() => {
+    if (!state.setting) return false;
+    if (state.setting === "nursing") {
+      return (
+        (baseline.staffedBeds ?? 0) > 0 &&
+        (baseline.nursingFtes ?? 0) > 0 &&
+        (baseline.dailyCensus ?? 0) > 0 &&
+        (baseline.adoptionPct ?? 0) > 0
+      );
+    }
+    return (baseline.providers ?? 0) > 0 && (baseline.annualEncounters ?? 0) > 0 && (baseline.utilizationPct ?? 0) > 0;
+  }, [state.setting, baseline]);
+
+  // Keeps the legacy `AttainState.scope.unitCount` field (still read by
+  // StepPlan's per-priority "scoped to N providers" line) in sync with the
+  // real baseline, without threading a second unit-count input anywhere -
+  // providers for physician settings, staffed beds for nursing.
+  useEffect(() => {
+    if (!state.setting) return;
+    const unitCount = state.setting === "nursing" ? (baseline.staffedBeds ?? 0) : (baseline.providers ?? 0);
+    if (state.scope.unitCount !== unitCount) {
+      updateState({ scope: { ...state.scope, unitCount } });
+    }
+  }, [state.setting, state.scope, baseline, updateState]);
 
   const builtTarget: GoalTargetResult | null = useMemo(() => {
     if (goals.length === 0 || !state.setting || !combined) return null;
@@ -272,6 +304,26 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [stepIndex, onBackToJourney]);
 
+  // The one Continue action for the current step, always rendered at the
+  // foot of the side panel (see AttainLivePanel) rather than as a
+  // per-step button, so its placement never drifts step to step.
+  const panelNext = useMemo((): { disabled: boolean; label: string } => {
+    switch (step) {
+      case "setting":
+        return { disabled: !state.setting, label: "Continue" };
+      case "vision":
+        return { disabled: goals.length === 0, label: "Continue" };
+      case "scope":
+        return { disabled: !isBaselineValid, label: "Continue" };
+      case "buildCase":
+        return { disabled: false, label: "Continue to commit" };
+      case "commit":
+        return { disabled: false, label: "Continue to your plan" };
+      default:
+        return { disabled: false, label: "Continue" };
+    }
+  }, [step, state.setting, goals.length, isBaselineValid]);
+
   return (
     <div className="min-h-screen bg-white">
       <UnifiedHeader
@@ -288,22 +340,18 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
         <div className="flex flex-col lg:flex-row gap-10">
           <div className={`flex-1 min-w-0 ${step === "plan" ? "max-w-[820px]" : "max-w-[700px]"}`}>
             {step === "setting" && (
-              <StepSetting selected={state.setting} onSelect={handleSelectSetting} onNext={goNext} />
+              <StepSetting selected={state.setting} onSelect={handleSelectSetting} />
             )}
 
             {step === "vision" && state.setting && (
-              <StepVision setting={state.setting} selectedGoals={goals} onToggle={handleToggleGoal} onNext={goNext} />
+              <StepVision setting={state.setting} selectedGoals={goals} onToggle={handleToggleGoal} />
             )}
 
             {step === "scope" && state.setting && (
               <StepScope
                 setting={state.setting}
-                scope={state.scope}
-                onChange={handleChangeScope}
-                content={content}
-                overrides={baselineOverrides}
-                onChangeOverride={handleChangeBaselineOverride}
-                onNext={goNext}
+                baseline={baseline}
+                onChangeBaseline={handleChangeBaseline}
               />
             )}
 
@@ -316,7 +364,6 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
                 freedTimeSplit={freedTimeSplit}
                 onChangeFreedTimeSplit={handleFreedTimeSplitChange}
                 onChangeLeverValue={handleChangeLeverValue}
-                onNext={goNext}
               />
             )}
 
@@ -327,7 +374,6 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
                 combined={combined}
                 commitments={commitments}
                 onChangeCommitment={handleChangeCommitment}
-                onNext={goNext}
               />
             )}
 
@@ -342,7 +388,6 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
                   valuesByGoal={valuesByGoal}
                   combined={combined}
                   commitments={commitments}
-                  baselineOverrides={baselineOverrides}
                   freedTimeSplit={freedTimeSplit}
                   onMonthsElapsedChange={handleMonthsElapsedChange}
                 />
@@ -368,6 +413,9 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
                   step={step}
                   valuesByGoal={valuesByGoal}
                   combined={combined}
+                  onNext={goNext}
+                  nextDisabled={panelNext.disabled}
+                  nextLabel={panelNext.label}
                 />
               </div>
             </div>
