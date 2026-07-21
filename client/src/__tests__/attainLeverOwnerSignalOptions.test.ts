@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { LEVERS, IP_REVENUE_LEVERS, ED_ACCESS_LEVERS, type Lever } from "@/lib/attain/attainLevers";
+import { LEVERS, IP_REVENUE_LEVERS, ED_ACCESS_LEVERS, requiredSignalLabel, type Lever } from "@/lib/attain/attainLevers";
 import type { GoalId } from "@/lib/attain/attainTypes";
 
 /**
@@ -57,5 +57,36 @@ describe("Lever.ownerRoleOptions / Lever.signalOptions (Commit curated Select+Cu
   it("every lever id across every catalog is unique (sanity check on the fixture itself)", () => {
     const ids = ALL_LEVERS.map((l) => l.id);
     expect(new Set(ids).size).toBe(ids.length);
+  });
+});
+
+/**
+ * Guardrail for the Commit redesign's "one required signal by default, the
+ * rest optional behind + Add a signal" (the room's fix for the old wall of
+ * near-identical boxes). `requiredSignalIndex` is how a decision DESIGNATES
+ * which of its curated `signalOptions` is that required "track this"
+ * proof-signal; every lever must resolve to exactly one, real, non-blank
+ * required signal that is genuinely one of its own curated options.
+ */
+describe("Lever.requiredSignalIndex / requiredSignalLabel (Commit's one required signal by default)", () => {
+  it("every lever resolves to exactly one required signal, drawn from its own signalOptions", () => {
+    for (const lever of ALL_LEVERS) {
+      const required = requiredSignalLabel(lever);
+      expect(typeof required, lever.id).toBe("string");
+      expect(required.trim().length, `${lever.id} blank required signal`).toBeGreaterThan(0);
+      expect(lever.signalOptions, `${lever.id} required signal not a curated option`).toContain(required);
+    }
+  });
+
+  it("defaults to the decision's own signal (index 0) when requiredSignalIndex is not set", () => {
+    for (const lever of ALL_LEVERS) {
+      if (lever.requiredSignalIndex !== undefined) continue;
+      expect(requiredSignalLabel(lever), lever.id).toBe(lever.signal);
+    }
+  });
+
+  it("honors an explicit requiredSignalIndex override when a lever sets one", () => {
+    const overridden: Lever = { ...ALL_LEVERS[0], requiredSignalIndex: 1 };
+    expect(requiredSignalLabel(overridden)).toBe(overridden.signalOptions[1]);
   });
 });

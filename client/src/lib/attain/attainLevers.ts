@@ -201,9 +201,30 @@ export interface Lever {
    * "we suggest, they confirm or override with Custom..." pattern as
    * `ownerRoleOptions`. */
   signalOptions: string[];
+  /** Index into `signalOptions` naming the REQUIRED "track this" signal —
+   * the single best proof that this decision is actually working, the one
+   * Commit shows by default with its own baseline-today capture. Every
+   * OTHER curated option (and any custom signal a partner adds) is optional,
+   * behind Commit's "+ Add a signal" affordance, never shown by default.
+   * Omitted means index 0: this decision's own `signal`, which was already
+   * curated as "the one number this decision's owner should watch" (see
+   * that field's own doc) — the natural required default for nearly every
+   * decision. Set explicitly only when a different curated option is
+   * genuinely the better required default for a specific decision. */
+  requiredSignalIndex?: number;
 }
 
 export type LeverValues = Record<string, number | string[]>;
+
+/** The single required "track this" signal for a decision — see
+ * `Lever.requiredSignalIndex`'s doc for why index 0 (the lever's own
+ * `signal`) is the sensible default across nearly every decision in the
+ * catalog. Falls back to `lever.signal` itself if the index is somehow out
+ * of range, so this can never return a blank string. */
+export function requiredSignalLabel(lever: Lever): string {
+  const idx = lever.requiredSignalIndex ?? 0;
+  return lever.signalOptions[idx] ?? lever.signal;
+}
 
 export interface LeverContribution {
   id: string;
