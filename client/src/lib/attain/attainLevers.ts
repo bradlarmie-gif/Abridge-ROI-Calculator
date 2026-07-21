@@ -5,6 +5,7 @@ import {
   type ExploreState,
 } from "@/pages/explore/ExploreFlow";
 import type { AttainSetting, GoalId } from "./attainTypes";
+import { computeAccessContributions } from "./attainAccess";
 
 /**
  * Attain - lever layer.
@@ -74,16 +75,14 @@ import type { AttainSetting, GoalId } from "./attainTypes";
  *
  * Per-goal driver mappings (documented per the plan's mapping-decision
  * requirement):
- *  - access (outpatient): all 4 levers feed the single `patientAccess`
- *    field via `accessProviders` (scope) and `capacityRealizationPercent`
- *    (reinvestment). "Open slots on the template" and "Fill the new slots"
- *    have no dedicated fields in the engine, so they are modeled as an
- *    equivalent reinvestment percentage (slots/4 * 100%, then scaled by
- *    fill%), an explicit simplification, not a literal slot/fill driver.
- *  - access (ED): "reinvest" maps to `edLwbsReduction` (converting freed
- *    charting time into recovered walk-outs), "open slots"/"fill" map to
- *    `edAdmissionRate`/`edAdmissionRealization` (the admission-capture leg),
- *    reusing `lwbsRecovery` + `admissionCapture`.
+ *  - access (outpatient + ED): rebuilt as an ORDERED DECISION CHAIN, not an
+ *    independent-channel lever set, in `attainAccess.ts`. Money is volume x
+ *    margin, and volume itself is MIN(capacity, demand), so a dollar figure
+ *    cannot exist until scope, margin, capacity, AND demand are all real.
+ *    `computeLeverContributions` delegates the whole `goal === "access"`
+ *    case to `computeAccessContributions` there; see that module's header
+ *    for the full chain and its reconciliation to Explore's `patientAccess`
+ *    primitives (freed hours, visit length, margin/visit).
  *  - retention (all settings): all 4 levers sweep the existing
  *    `retentionImpactScenario: 'custom'` + `retentionCustomPercent` knob,
  *    scaled against each setting's optimistic-scenario ceiling (15pp
@@ -202,56 +201,104 @@ export function defaultBaseline(setting: AttainSetting): AttainBaseline {
 // ────────────────────────────────────────────────────────────────────────
 
 export const LEVERS: Record<GoalId, Lever[]> = {
+  // Access is a decision CHAIN (D1 scope -> D2 margin -> D3 capacity -> D4
+  // demand -> D5 payoff), rendered bespoke on Build the case
+  // (`AccessDecisionChain.tsx`), not through the generic lever renderer.
+  // This catalog entry exists so Commit and Your Plan, which walk every
+  // goal's `LEVERS[goal]` generically, keep working: one row per decision,
+  // ids matching the flat `LeverValues` keys `attainAccess.ts` reads
+  // directly (`accessProviders`, `accessMargin`, `accessFreedShare`, and
+  // the four `accessDemand*` sources). See `attainAccess.ts`'s
+  // `ACCESS_LEVER_IDS` and `computeAccessContributions` for the engine.
   access: [
     {
-      id: "accessLines",
-      label: "Which service lines you open access in",
-      help: "Committing a service line to the plan puts its provider capacity in scope for every decision below it.",
-      control: "lines",
-      unit: "service lines",
+      id: "accessProviders",
+      label: "Point providers at access",
+      help: "Providers actually committed to converting freed time into access are the scope every decision below is built from.",
+      control: "countPerUnit",
+      unit: "providers",
       min: 0,
-      max: 4,
+      max: 500,
       step: 1,
-      realityStart: [],
+      realityStart: 0,
       ownerRole: "Service-line chief",
       defaultDue: "Month 1",
     },
     {
-      id: "accessReinvest",
-      label: "Reinvest freed time into visits",
-      help: "Every point of freed time committed to the schedule instead of relief becomes a fraction of a visit, priced at your revenue per visit.",
-      control: "percent",
-      unit: "%",
-      min: 0,
-      max: 100,
-      step: 5,
-      realityStart: 0,
-      ownerRole: "Ambulatory operations",
-      defaultDue: "Month 2",
-    },
-    {
-      id: "accessSlots",
-      label: "Open slots on the template",
-      help: "Each added slot per provider per week is new capacity on the schedule itself, on top of whatever freed time gets reinvested.",
+      id: "accessMargin",
+      label: "Set the margin per visit",
+      help: "Contribution margin, not charges. Cardiology and primary care are not worth the same visit, so this is priced per line.",
       control: "countPerUnit",
-      unit: "slots/provider/wk",
+      unit: "$/visit",
       min: 0,
-      max: 4,
-      step: 0.5,
+      max: 2_000,
+      step: 10,
       realityStart: 0,
-      ownerRole: "Ambulatory operations",
-      defaultDue: "Month 2",
+      ownerRole: "Partner finance",
+      defaultDue: "Month 1",
     },
     {
-      id: "accessFill",
-      label: "Fill the new slots",
-      help: "An open slot only pays back once a referral or backlog patient is actually scheduled into it. This is the fill rate above where you are today.",
+      id: "accessFreedShare",
+      label: "Convert freed time to capacity",
+      help: "The share of freed documentation time committed to the schedule, instead of relief, becomes new visit capacity. This is the only source of new capacity.",
       control: "percent",
       unit: "%",
       min: 0,
       max: 100,
       step: 5,
-      realityStart: 60,
+      realityStart: 0,
+      ownerRole: "Ambulatory operations",
+      defaultDue: "Month 2",
+    },
+    {
+      id: "accessDemandBacklog",
+      label: "Count the referral backlog",
+      help: "Patients already waiting to be seen are demand you already have, not demand you need to go find.",
+      control: "countPerUnit",
+      unit: "patients",
+      min: 0,
+      max: 10_000,
+      step: 10,
+      realityStart: 0,
+      ownerRole: "Access / referral ops",
+      defaultDue: "Month 3",
+    },
+    {
+      id: "accessDemandSameDayPct",
+      label: "Add same-day and urgent demand",
+      help: "Share of encounters that would book same-day or urgent if an open slot existed for them today.",
+      control: "percent",
+      unit: "%",
+      min: 0,
+      max: 100,
+      step: 5,
+      realityStart: 0,
+      ownerRole: "Access / referral ops",
+      defaultDue: "Month 3",
+    },
+    {
+      id: "accessDemandNoShowPct",
+      label: "Recover no-shows",
+      help: "Share of encounters recoverable by filling a no-show slot instead of losing it outright.",
+      control: "percent",
+      unit: "%",
+      min: 0,
+      max: 100,
+      step: 5,
+      realityStart: 0,
+      ownerRole: "Ops / staffing",
+      defaultDue: "Month 3",
+    },
+    {
+      id: "accessDemandNewReferrals",
+      label: "Count new referrals",
+      help: "New referrals arriving every month that a fuller schedule could absorb instead of routing elsewhere.",
+      control: "countPerUnit",
+      unit: "referrals/mo",
+      min: 0,
+      max: 1_000,
+      step: 5,
+      realityStart: 0,
       ownerRole: "Access / referral ops",
       defaultDue: "Month 3",
     },
@@ -595,135 +642,12 @@ interface ChannelValue {
 
 const ZERO: ChannelValue = { margin: 0, count: 0, formula: NO_MOVE_FORMULA };
 
-// ────────────────────────────────────────────────────────────────────────
-// ACCESS channels
-// ────────────────────────────────────────────────────────────────────────
-
-function opPatientAccessValue(eff: number, reinvestPct: number, baseline: AttainBaseline): ChannelValue {
-  if (eff <= 0 || reinvestPct <= 0) return ZERO;
-  const perUnitEncounters = effectiveEncountersPerUnit(baseline, 600);
-  const util = utilizationFraction(baseline);
-  const annualEncounters = Math.round(eff * perUnitEncounters * util);
-  const minutesSavedPerEncounter = 12;
-  const totalHoursSaved = Math.round((annualEncounters * minutesSavedPerEncounter) / 60);
-  const state: ExploreState = {
-    ...mkState("outpatient"),
-    numberOfProviders: eff,
-    annualEncounters,
-    utilizationPercent: 100,
-    minutesSavedPerEncounter,
-    timeDriverInputs: {
-      ...DEFAULT_EXPLORE_STATE.timeDriverInputs,
-      patientAccessEnabled: true,
-      accessProviders: eff,
-      capacityRealizationPercent: reinvestPct,
-      visitDuration: 30,
-      revenuePerVisit: 200,
-    },
-  };
-  const values = computeAllDriverValues(state, totalHoursSaved);
-  const summaries = computeAllDriverCalcSummaries(state, totalHoursSaved);
-  const hrsPerProvWk = totalHoursSaved / eff / 48;
-  const reinvest = reinvestPct / 100;
-  const visitHrs = 30 / 60;
-  const visitsPerWk = Math.round(((hrsPerProvWk * reinvest) / visitHrs) * 10) / 10;
-  const netNewVisits = Math.round(visitsPerWk * eff * 48);
-  const margin = values.patientAccess ?? 0;
-  return { margin, count: netNewVisits, formula: formulaFor(summaries, "patientAccess", margin) };
-}
-
-function opAccessChannel(units: number, leverId: string, raw: number | string[] | undefined, baseline: AttainBaseline): ChannelValue {
-  switch (leverId) {
-    case "accessLines": {
-      const fraction = linesFraction("outpatient", "access", asLines(raw));
-      return opPatientAccessValue(Math.round(units * fraction), 20, baseline);
-    }
-    case "accessReinvest":
-      return opPatientAccessValue(Math.round(units * 0.5), asNum(raw), baseline);
-    case "accessSlots": {
-      const pctEq = Math.min(100, round1((asNum(raw) / 4) * 100));
-      return opPatientAccessValue(Math.round(units * 0.5), pctEq, baseline);
-    }
-    case "accessFill": {
-      const basePct = 25; // reference "1 slot/provider/wk already on template"
-      return opPatientAccessValue(Math.round(units * 0.5), round1(basePct * (asNum(raw) / 100)), baseline);
-    }
-    default:
-      return ZERO;
-  }
-}
-
-function edLwbsValue(
-  eff: number,
-  reductionPct: number,
-  admitRatePct: number,
-  admitRealizationPct: number,
-  baseline: AttainBaseline,
-): ChannelValue {
-  if (eff <= 0 || reductionPct <= 0) return ZERO;
-  const perUnitEncounters = effectiveEncountersPerUnit(baseline, 2_200);
-  const util = utilizationFraction(baseline);
-  const annualEncounters = Math.round(eff * perUnitEncounters * util);
-  const state: ExploreState = {
-    ...mkState("ed"),
-    numberOfProviders: eff,
-    annualEncounters,
-    utilizationPercent: 100,
-    timeDriverInputs: {
-      ...DEFAULT_EXPLORE_STATE.timeDriverInputs,
-      edLwbsEnabled: true,
-      edLwbsRate: 8,
-      edLwbsReduction: reductionPct,
-      edRevenuePerVisit: 450,
-      edLwbsRealization: 70,
-      edThroughputEnabled: true,
-      edAdmissionRate: admitRatePct,
-      edAdmissionRevenue: 4_000,
-      edAdmissionRealization: admitRealizationPct,
-    },
-  };
-  const values = computeAllDriverValues(state, 0);
-  const summaries = computeAllDriverCalcSummaries(state, 0);
-  const recovered = Math.round(annualEncounters * (8 / 100) * (reductionPct / 100));
-  const lwbsMargin = values.lwbsRecovery ?? 0;
-  const admitMargin = values.admissionCapture ?? 0;
-  const margin = lwbsMargin + admitMargin;
-  const lwbsFormula = formulaFor(summaries, "lwbsRecovery", lwbsMargin);
-  const admitFormula = admitMargin > 0 ? formulaFor(summaries, "admissionCapture", admitMargin) : null;
-  const formula = margin > 0
-    ? (admitFormula ? `${lwbsFormula.replace(/ = ~\$.*$/, "")} + ${admitFormula.replace(/^/, "")} = ~${fmtMoneyCompact(margin)}` : lwbsFormula)
-    : NO_MOVE_FORMULA;
-  return { margin, count: recovered, formula };
-}
-
-function edAccessChannel(units: number, leverId: string, raw: number | string[] | undefined, baseline: AttainBaseline): ChannelValue {
-  switch (leverId) {
-    case "accessLines": {
-      const fraction = linesFraction("ed", "access", asLines(raw));
-      return edLwbsValue(Math.round(units * fraction), 25, 20, 70, baseline);
-    }
-    case "accessReinvest":
-      return edLwbsValue(Math.round(units * 0.5), asNum(raw), 20, 70, baseline);
-    case "accessSlots": {
-      const admitRate = Math.min(100, asNum(raw) * 5); // 0-4 slots -> 0-20% admit rate
-      return edLwbsValue(Math.round(units * 0.5), 25, admitRate, 70, baseline);
-    }
-    case "accessFill":
-      return edLwbsValue(Math.round(units * 0.5), 25, 20, asNum(raw), baseline);
-    default:
-      return ZERO;
-  }
-}
-
-function accessChannel(
-  setting: AttainSetting,
-  units: number,
-  leverId: string,
-  raw: number | string[] | undefined,
-  baseline: AttainBaseline,
-): ChannelValue {
-  return setting === "ed" ? edAccessChannel(units, leverId, raw, baseline) : opAccessChannel(units, leverId, raw, baseline);
-}
+// ACCESS is no longer an independent-channel goal - it is a decision chain,
+// computed by `computeAccessContributions` in `attainAccess.ts` and wired
+// directly into `computeLeverContributions` and `computeMultiGoalContributions`
+// below, bypassing this leave-one-out channel architecture entirely (see
+// both functions' comments for why: capacity, demand, and margin are
+// jointly dependent through a MIN, not independent parallel channels).
 
 // ────────────────────────────────────────────────────────────────────────
 // RETENTION channels
@@ -1103,8 +1027,6 @@ function channelValue(
   baseline: AttainBaseline,
 ): ChannelValue {
   switch (goal) {
-    case "access":
-      return accessChannel(setting, units, leverId, raw, baseline);
     case "retention":
       return retentionChannel(setting, units, leverId, raw);
     case "revenue":
@@ -1122,6 +1044,12 @@ function channelValue(
  * synthesized from the partner's own `AttainBaseline` rather than an
  * assumed constant. See the module header for the contribution model and
  * per-goal driver mappings.
+ *
+ * ACCESS is the one goal that does NOT go through the independent-channel
+ * / leave-one-out architecture below - it delegates whole to
+ * `computeAccessContributions` (`attainAccess.ts`), because capacity,
+ * demand, and margin are jointly dependent through a MIN, not independent
+ * parallel channels a leave-one-out subtraction could isolate cleanly.
  */
 export function computeLeverContributions(
   goal: GoalId,
@@ -1129,6 +1057,8 @@ export function computeLeverContributions(
   baseline: AttainBaseline,
   values: LeverValues,
 ): LeverContributionsResult {
+  if (goal === "access") return computeAccessContributions(baseline, values);
+
   const levers = LEVERS[goal];
   const units = baselineUnits(setting, goal, baseline);
 
@@ -1183,13 +1113,12 @@ export interface MultiGoalContributionsResult {
   combinedCount: number;
 }
 
-/** The one freed-time lever each of the two contending goals owns. Access
- * routes freed documentation time into the schedule; retention routes the
- * same freed hour into protected relief. They are mechanically the same
- * hour, so when both goals are in play the hour cannot be booked to both in
- * full without double-counting it. */
+/** The one freed-time lever retention owns. Access's own share of the same
+ * freed hour is handled directly inside `computeMultiGoalContributions`
+ * below (by re-running the whole access chain with a scaled share, not by
+ * post-hoc-scaling a dollar figure - see that function's comment), so
+ * access is deliberately absent from this map. */
 const FREED_TIME_LEVER: Partial<Record<GoalId, string>> = {
-  access: "accessReinvest",
   retention: "retentionFloor",
 };
 
@@ -1203,32 +1132,37 @@ const FREED_TIME_LEVER: Partial<Record<GoalId, string>> = {
  * summed. `combinedMargin`/`combinedCount` for those goals are exact sums,
  * with no adjustment - see the "independent goals" test below.
  *
- * ACCESS and RETENTION are the one pair that is not independent. Both
- * levers (`accessReinvest`, `retentionFloor`) are priced off the same
- * freed-documentation hour: access books it as new visits, retention books
- * it as protected relief. If both goals are selected and each is credited
- * for the FULL hour, the plan double-books a single hour of freed time as
- * two dollars of value.
+ * ACCESS and RETENTION are the one pair that is not independent. Both draw
+ * on the same freed-documentation hour: access books its D3 share
+ * (`accessFreedShare`, in `attainAccess.ts`) as new visit capacity,
+ * retention books its own `retentionFloor` share as protected relief. If
+ * both goals are selected and each is credited for the FULL hour, the plan
+ * double-books a single hour of freed time as two dollars of value.
  *
  * The fix: when (and only when) both `access` and `retention` are selected,
  * `freedTimeSplit` (0-100, default 50) is the percentage of the freed hour
  * a partner has decided to route to opening access (schedule). The
- * remainder routes to protecting relief. Before summing, each goal's
- * `computeLeverContributions` result is recomputed with ONLY its own
- * freed-time lever's marginal (and total) contribution scaled by its share
- * of the split - every other lever in both goals is untouched, because
- * every other lever draws on its own, separate mechanism (opening slots,
- * backfilling coverage, etc.) and was never double-booked in the first
- * place. Because `computeLeverContributions` models every lever as an
- * independent channel with no cross terms (see the module header), a
- * goal's `totalMargin` is always exactly the sum of its own `perLever`
- * marginal deltas, so scaling just the one shared lever and re-summing is
- * mathematically exact, not an approximation layered on top.
+ * remainder routes to protecting relief.
  *
- * At split = 100, access gets the full freed-time contribution and
- * retention's freed-time lever contributes exactly 0 (and vice versa at
- * split = 0). At any split, the two scaled shares always sum to <= the
- * hour's full value once, never more - the hour is split, not cloned.
+ * RETENTION's side of the fix is unchanged from before: its
+ * `computeLeverContributions` result is recomputed with ONLY its
+ * `retentionFloor` lever's marginal (and total) contribution scaled by
+ * `1 - accessShare` - every other retention lever is untouched, because it
+ * draws on its own, separate mechanism and was never double-booked.
+ *
+ * ACCESS's side is different because access is a decision CHAIN, not an
+ * independent channel: scaling an already-computed dollar figure after the
+ * fact would scale whichever row happens to be attributed the payoff
+ * (which may be a demand row, not the capacity row at all - see
+ * `computeAccessContributions`'s binding-constraint attribution), which
+ * would silently do nothing whenever demand, not capacity, is the binding
+ * constraint. Instead, the WHOLE access chain is re-run with
+ * `accessShare` passed in as `computeAccessChain`'s
+ * `crossGoalShareMultiplier`, which scales D3's share BEFORE capacity (and
+ * therefore the MIN, and therefore the dollar) is computed. This is exact,
+ * not an approximation: at split = 100, access's share multiplier is 1 (no
+ * reduction); at split = 0, its multiplier is 0, so capacity - and every
+ * dollar downstream of it - is exactly 0.
  */
 export function computeMultiGoalContributions(
   goals: GoalId[],
@@ -1248,6 +1182,16 @@ export function computeMultiGoalContributions(
 
   for (const goal of uniqueGoals) {
     const values = valuesByGoal[goal] ?? defaultLeverValues(goal);
+
+    if (goal === "access") {
+      const shareMultiplier = hasFreedTimeConflict ? accessShare : 1;
+      const result = computeAccessContributions(baseline, values, shareMultiplier);
+      byGoal.access = result;
+      combinedMargin += result.totalMargin;
+      combinedCount += result.totalCount;
+      continue;
+    }
+
     const base = computeLeverContributions(goal, setting, baseline, values);
     const freedLeverId = hasFreedTimeConflict ? FREED_TIME_LEVER[goal] : undefined;
 
@@ -1258,7 +1202,7 @@ export function computeMultiGoalContributions(
       continue;
     }
 
-    const share = goal === "access" ? accessShare : retentionShare;
+    const share = retentionShare;
     const freedBase = base.perLever.find((p) => p.id === freedLeverId);
     const freedBaseMargin = freedBase?.marginalMargin ?? 0;
     const freedBaseCount = freedBase?.marginalCount ?? 0;
