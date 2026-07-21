@@ -58,6 +58,7 @@ function buildSamplePlan(): AttainSaveState {
     },
     baseline: { providers: 40, annualEncounters: 140000, utilizationPct: 78 },
     freedTimeSplit: 65,
+    realizationByGoal: { access: 70, retention: 100 },
   };
 }
 
@@ -85,6 +86,7 @@ describe("attainUrlState", () => {
         progressEntries: {},
         baseline: { staffedBeds: 120, nursingFtes: 90, dailyCensus: 96, adoptionPct: 55 },
         freedTimeSplit: 50,
+        realizationByGoal: {},
       };
       const decoded = decodeAttain(encodeAttain(plan));
       expect(decoded).toEqual(plan);

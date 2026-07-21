@@ -1,6 +1,6 @@
 import LZString from "lz-string";
 import type { AttainState, AttainSetting, GoalId } from "./attainTypes";
-import type { AttainBaseline, LeverValues } from "./attainLevers";
+import type { AttainBaseline, LeverValues, RealizationByGoal } from "./attainLevers";
 import type { Commitment, GoalOwner } from "@/pages/attain/steps/StepCommit";
 import type { ProgressEntry } from "./attainProgress";
 
@@ -29,8 +29,14 @@ import type { ProgressEntry } from "./attainProgress";
  * encoded link cannot safely decode into (a renamed/removed required field).
  * `decodeAttain` refuses anything with a different version rather than
  * guessing at a migration, so a stale link degrades to "start fresh" instead
- * of rehydrating a corrupt plan. */
-export const ATTAIN_SAVE_VERSION = 1;
+ * of rehydrating a corrupt plan.
+ *
+ * Bumped 1 -> 2 when `realizationByGoal` (the per-priority realization/
+ * attribution rate) was added as a new required field - an older link never
+ * carried it, so it cannot be safely decoded into the current shape; per
+ * this file's own policy, that link degrades to "start fresh" rather than
+ * guessing a default. */
+export const ATTAIN_SAVE_VERSION = 2;
 
 /** The full local state AttainFlow.tsx holds for one in-progress or
  * completed plan — everything needed to redraw every step (including the
@@ -54,6 +60,10 @@ export interface AttainSaveState {
   progressEntries: Record<string, ProgressEntry[]>;
   baseline: AttainBaseline;
   freedTimeSplit: number;
+  /** Per-priority realization/attribution rate (0-100, default 100) - see
+   * attainLevers.ts's `applyRealization`. Keyed by `GoalId`, same convention
+   * as `valuesByGoal`/`goalOwnerByPriority` above. */
+  realizationByGoal: RealizationByGoal;
 }
 
 const VALID_SETTINGS: AttainSetting[] = ["outpatient", "ed", "inpatient", "nursing"];
@@ -94,6 +104,7 @@ function isWellFormedSaveState(v: unknown): v is AttainSaveState {
   if (!isPlainObject(v.progressEntries)) return false;
   if (!isPlainObject(v.baseline)) return false;
   if (typeof v.freedTimeSplit !== "number") return false;
+  if (!isPlainObject(v.realizationByGoal)) return false;
   return true;
 }
 
