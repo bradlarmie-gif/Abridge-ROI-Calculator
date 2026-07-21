@@ -372,14 +372,32 @@ describe("ACCESS decision chain (attainAccess.ts)", () => {
     const demand = computeAccessDemand(baseline, scope, {
       accessDemandBacklog: 500,
       accessDemandSameDayPct: 5,
+      accessDemandNoShowRate: 20,
       accessDemandNoShowPct: 5,
       accessDemandNewReferrals: 50,
     });
     expect(demand.backlogVisits).toBe(500);
     expect(demand.sameDayVisits).toBe(1_200); // 40*600*5%
-    expect(demand.noShowVisits).toBe(1_200);
+    // No-show recovery is TWO steps, not one: 40*600 = 24,000 encounters x
+    // 20% no-show rate = 4,800 no-show pool, x 5% recovered = 240 - NOT
+    // 24,000 x 5% (1,200), which would overstate recovery by treating the
+    // recovery rate as a share of every encounter instead of the pool.
+    expect(demand.noShowPool).toBe(4_800);
+    expect(demand.noShowVisits).toBe(240);
     expect(demand.newReferralVisits).toBe(600); // 50/mo * 12
-    expect(demand.demandCeiling).toBe(500 + 1_200 + 1_200 + 600);
+    expect(demand.demandCeiling).toBe(500 + 1_200 + 240 + 600);
+  });
+
+  it("D4: no-show recovery defaults its rate to the ~12% benchmark when the partner hasn't set their own", () => {
+    const scope = { providersInScope: 40, lines: [], enterprise: false };
+    const demand = computeAccessDemand(baseline, scope, { accessDemandNoShowPct: 60 });
+    // 24,000 encounters x 12% default no-show rate = 2,880 pool, x 60%
+    // recovered = 1,728 - not 24,000 x 60% (14,400), the ~8x overstatement
+    // the un-pooled model previously produced.
+    expect(demand.noShowRatePct).toBe(12);
+    expect(demand.noShowPool).toBe(2_880);
+    expect(demand.noShowVisits).toBe(Math.round(2_880 * 0.6));
+    expect(demand.noShowVisits).toBeLessThan(demand.encountersInScope * 0.6);
   });
 
   it("D4: demand ceiling is exactly backlog + monthlyReferrals x 12 + sameDay + noShow, for representative real-world inputs", () => {

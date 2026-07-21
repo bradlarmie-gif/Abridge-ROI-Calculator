@@ -436,7 +436,7 @@ export const LEVERS: Record<GoalId, Lever[]> = {
     {
       id: "accessDemandNoShowPct",
       label: "Recover no-shows",
-      help: "Share of encounters recoverable by filling a no-show slot instead of losing it outright.",
+      help: "Share of your no-show POOL (not of every encounter) recoverable by filling that slot with a waiting patient instead of losing it outright. Your typical no-show rate sizes the pool this share applies to.",
       control: "percent",
       unit: "%",
       min: 0,
@@ -717,7 +717,7 @@ export const LEVERS: Record<GoalId, Lever[]> = {
     {
       id: "revenueDenialsAvgClaimValue",
       label: "Set the average claim value",
-      help: "The dollar every prevented medical-necessity denial actually protects.",
+      help: "The dollar every prevented medical-necessity denial actually protects. Priced at claim value, not contribution margin, on purpose: the care was already delivered before the denial, so there is no new variable cost to net out, unlike a brand-new visit.",
       control: "countPerUnit",
       unit: "$/claim",
       min: 0,

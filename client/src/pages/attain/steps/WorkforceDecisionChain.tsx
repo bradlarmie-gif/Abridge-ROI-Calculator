@@ -44,6 +44,13 @@ interface WorkforceDecisionChainProps {
   /** This priority's realization/attribution rate, 0-100, default 100 - see
    * AccessDecisionChain.tsx's matching prop for the full explanation. */
   realizationPct: number;
+  /** The access/retention shared-freed-hour split (0-1), 1 when Access is
+   * not also selected - see AccessDecisionChain.tsx's matching prop and
+   * StepBuildCase.tsx's `crossGoalShareMultiplier` for the full explanation
+   * (C1 in the premium audit: this D5 payoff preview must read the exact
+   * same split-adjusted dollar every other surface on this page already
+   * does). */
+  crossGoalShareMultiplier: number;
 }
 
 /** A card shell shared by every D1-D5 step - same local convention
@@ -165,14 +172,14 @@ function LevelToggle({
  * the bottom is the one place a dollar first appears, derived from all five
  * decisions above, never invented.
  */
-export default function WorkforceDecisionChain({ setting, baseline, values, onChangeValue, realizationPct }: WorkforceDecisionChainProps) {
+export default function WorkforceDecisionChain({ setting, baseline, values, onChangeValue, realizationPct, crossGoalShareMultiplier }: WorkforceDecisionChainProps) {
   const presetLines = lineOptions("retention", setting);
   const selectedLines = asLines(values.retentionLines);
   const totalUnits = Math.max(0, Math.round((setting === "nursing" ? baseline.nursingFtes : baseline.providers) ?? 0));
   const requestedProviders = asNum(values.retentionProviders);
   const unitNoun = setting === "nursing" ? "nurses" : "providers";
 
-  const chain = computeWorkforceChain(baseline, setting, values);
+  const chain = computeWorkforceChain(baseline, setting, values, crossGoalShareMultiplier);
   const { scope, protect, survey, backfill, sustain, payoff, formulas } = chain;
   const realizedPayoffValue = realizedValue(payoff.value, realizationPct);
   const payoffFormulaDisplay = payoff.value > 0
@@ -276,6 +283,16 @@ export default function WorkforceDecisionChain({ setting, baseline, values, onCh
         </div>
 
         <CountOutput label="In scope for the retention plan" value={fmtInt(scope.providersInScope)} unit={unitNoun} testid="text-workforce-d1-output" />
+        <div className="mt-3 flex items-center gap-1.5" data-testid="text-workforce-d1-burnout-share">
+          <span className="text-[11px] text-[#8C8C8C]">
+            {fmtPp(scope.burnoutSharePct)}% of that turnover is attributed to burnout, a fixed benchmark this plan
+            builds on, not a decision below.
+          </span>
+          <InfoTip
+            text="A fixed share of voluntary turnover this setting attributes to burnout (not editable here), matching the engine's own benchmark. It directly scales the payoff at the bottom, so it is surfaced here up front rather than only in the final caption."
+            testid="tooltip-workforce-burnout-share"
+          />
+        </div>
       </DecisionCard>
 
       <DecisionCard

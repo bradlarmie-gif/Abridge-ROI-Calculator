@@ -14,6 +14,7 @@ import {
   bindingPlainPhrase,
   DEFAULT_MINUTES_SAVED_PER_NOTE,
   DEFAULT_VISIT_LENGTH_MIN,
+  DEFAULT_NO_SHOW_RATE_PCT,
 } from "@/lib/attain/attainAccess";
 import type { AttainSetting } from "@/lib/attain/attainTypes";
 
@@ -46,6 +47,15 @@ interface AccessDecisionChainProps {
    * `formulaWithRealization` helpers attainLevers.ts's `applyRealization`
    * uses, so this live preview can never disagree with the real figure. */
   realizationPct: number;
+  /** The access/retention shared-freed-hour split (0-1), 1 when Retention is
+   * not also selected - see StepBuildCase.tsx's `crossGoalShareMultiplier`
+   * and attainLevers.ts's `computeMultiGoalContributions`. MUST be passed
+   * into `computeAccessChain` below so this D5 live preview reads the exact
+   * same split-adjusted dollar as "This priority's worth," the side panel,
+   * Commit, and the PDF - the split previously only applied to those other
+   * surfaces, so this page could show two different dollars for one
+   * priority when Access and Retention were both selected. */
+  crossGoalShareMultiplier: number;
 }
 
 /** A card shell shared by every D1-D5 step: eyebrow + title, a light rule,
@@ -180,7 +190,7 @@ function MathBox({ formula, testid }: { formula: string; testid: string }) {
  * never a dollar. D5 is the one place a dollar first appears, derived from
  * the other four, never invented.
  */
-export default function AccessDecisionChain({ setting, baseline, values, onChangeValue, realizationPct }: AccessDecisionChainProps) {
+export default function AccessDecisionChain({ setting, baseline, values, onChangeValue, realizationPct, crossGoalShareMultiplier }: AccessDecisionChainProps) {
   const [customLineDraft, setCustomLineDraft] = useState("");
 
   const presetLines = lineOptions("access", setting);
@@ -196,7 +206,7 @@ export default function AccessDecisionChain({ setting, baseline, values, onChang
     ? totalProviders
     : asNum(values.accessProviders);
 
-  const chain = computeAccessChain(baseline, values);
+  const chain = computeAccessChain(baseline, values, crossGoalShareMultiplier);
   const { scope, capacity, demand, payoff, formulas } = chain;
   const realizedPayoffValue = realizedValue(payoff.value, realizationPct);
   const payoffFormulaDisplay = payoff.value > 0
@@ -517,10 +527,31 @@ export default function AccessDecisionChain({ setting, baseline, values, onChang
           </div>
           <div>
             <FieldLabel
-              tip="Share of no-show or cancelled slots you can refill with waiting patients."
+              tip="Your typical no-show or late-cancellation rate: the share of in-scope encounters that are a no-show in the first place. This sizes the pool the recovery rate below is a share OF, not of every encounter."
+              testid="tooltip-access-demand-noshow-rate"
+            >
+              Typical no-show rate
+            </FieldLabel>
+            <div className="relative">
+              <NumberField
+                value={asNum(values.accessDemandNoShowRate) > 0 ? asNum(values.accessDemandNoShowRate) : DEFAULT_NO_SHOW_RATE_PCT}
+                onValueChange={(v) => onChangeValue("accessDemandNoShowRate", v)}
+                min={0}
+                max={100}
+                decimal={false}
+                className="h-11 w-full rounded-md border border-[#E5E5E5] bg-white px-3 pr-9 text-sm"
+                data-testid="input-access-demand-noshow-rate"
+              />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8C8C8C] text-sm pointer-events-none">%</span>
+            </div>
+            <p className="text-[11px] text-[#8C8C8C] mt-1">Defaults to {DEFAULT_NO_SHOW_RATE_PCT}% until you set your own.</p>
+          </div>
+          <div>
+            <FieldLabel
+              tip="Share of THAT no-show pool (not of every encounter) you can actually refill with a waiting patient. Entering 60% here means recovering 60% of your no-shows, not 60% of your entire schedule."
               testid="tooltip-access-demand-noshow"
             >
-              No-show recovery
+              No-show recovery rate
             </FieldLabel>
             <div className="relative">
               <NumberField
@@ -549,9 +580,9 @@ export default function AccessDecisionChain({ setting, baseline, values, onChang
             />
             <ResultStat
               label="Demand available to fill it"
-              hint="From your sources above"
+              hint="Backlog counted once, the rest per year"
               value={fmtInt(demand.demandCeiling)}
-              unit="visits/yr"
+              unit="visits"
               testid="text-access-d4-demand-output"
             />
             <ResultStat

@@ -49,6 +49,10 @@ interface EdAccessDecisionChainProps {
   /** This priority's realization/attribution rate, 0-100, default 100 - see
    * AccessDecisionChain.tsx's matching prop for the full explanation. */
   realizationPct: number;
+  /** The access/retention shared-freed-hour split (0-1), 1 when Retention is
+   * not also selected - see AccessDecisionChain.tsx's matching prop and
+   * StepBuildCase.tsx's `crossGoalShareMultiplier` for the full explanation. */
+  crossGoalShareMultiplier: number;
 }
 
 /** A card shell shared by every D-step - same local convention every other
@@ -178,11 +182,11 @@ function MathBox({ formula, testid }: { formula: string; testid: string }) {
  * the full chain, its CHANGELOG, and its reconciliation to Explore's
  * `edLwbs`/`admissionCapture` primitives.
  */
-export default function EdAccessDecisionChain({ setting, baseline, values, onChangeValue, realizationPct }: EdAccessDecisionChainProps) {
+export default function EdAccessDecisionChain({ setting, baseline, values, onChangeValue, realizationPct, crossGoalShareMultiplier }: EdAccessDecisionChainProps) {
   const totalProviders = Math.max(0, Math.round(baseline.providers ?? 0));
   const requestedProviders = asNum(values.edAccessProviders);
 
-  const chain = computeEdAccessChain(baseline, values);
+  const chain = computeEdAccessChain(baseline, values, crossGoalShareMultiplier);
   const { scope, mechanism, pool, recovery, payoff, formulas } = chain;
   const realizedPayoffValue = realizedValue(payoff.value, realizationPct);
   const payoffFormulaDisplay = payoff.value > 0

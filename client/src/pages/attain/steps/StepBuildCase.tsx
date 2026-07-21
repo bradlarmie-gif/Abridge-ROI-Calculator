@@ -205,6 +205,17 @@ export default function StepBuildCase({
   // engine-side gate.
   const hasFreedTimeConflict = (setting === "outpatient" || setting === "ed") && goals.includes("access") && goals.includes("retention");
   const showFreedTimeSplit = hasFreedTimeConflict && (goal === "access" || goal === "retention");
+  // The SAME split, computed the SAME way `computeMultiGoalContributions`
+  // computes it (attainLevers.ts), passed straight into this goal's own
+  // bespoke decision chain below so the D5/payoff live preview reads the
+  // exact split-adjusted dollar every other surface on this page already
+  // does (RealizationRateControl's "worth" above, the side panel, Commit,
+  // the PDF) - see C1 in the premium audit: previously only those other
+  // surfaces applied the split, so Access's/Retention's own D5 hero showed
+  // the full, UNSPLIT dollar when both goals were selected together.
+  const accessShare = Math.min(1, Math.max(0, freedTimeSplit / 100));
+  const retentionShare = 1 - accessShare;
+  const crossGoalShareMultiplier = !hasFreedTimeConflict ? 1 : goal === "access" ? accessShare : goal === "retention" ? retentionShare : 1;
   // ED's mechanism is throughput, not a schedule - the split copy should
   // name the actual mechanism each setting's access chain uses.
   const accessSplitLabel = setting === "ed" ? "faster throughput" : "opening access on the schedule";
@@ -318,6 +329,7 @@ export default function StepBuildCase({
             values={values}
             onChangeValue={(leverId, value) => onChangeLeverValue("access", leverId, value)}
             realizationPct={realizationPct}
+            crossGoalShareMultiplier={crossGoalShareMultiplier}
           />
         ) : goal === "access" ? (
           <AccessDecisionChain
@@ -326,6 +338,7 @@ export default function StepBuildCase({
             values={values}
             onChangeValue={(leverId, value) => onChangeLeverValue("access", leverId, value)}
             realizationPct={realizationPct}
+            crossGoalShareMultiplier={crossGoalShareMultiplier}
           />
         ) : isRevenueChain ? (
           <RevenueDecisionChain
@@ -349,6 +362,7 @@ export default function StepBuildCase({
             values={values}
             onChangeValue={(leverId, value) => onChangeLeverValue("retention", leverId, value)}
             realizationPct={realizationPct}
+            crossGoalShareMultiplier={crossGoalShareMultiplier}
           />
         ) : goal === "quality" ? (
           <QualityDecisionChain

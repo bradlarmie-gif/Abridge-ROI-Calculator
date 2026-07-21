@@ -85,7 +85,10 @@ function perProviderEncounters(baseline: AttainBaseline, fallback: number): numb
   const encounters = baseline.annualEncounters ?? 0;
   return providers > 0 && encounters > 0 ? encounters / providers : fallback;
 }
-function utilizationFraction(baseline: AttainBaseline, fallbackPct = 100): number {
+// Falls back to 70% - the same "typical" utilization `defaultBaseline`
+// documents app-wide (attainLevers.ts), not an optimistic 100% - so a blank
+// Scope step never silently assumes every provider runs at full capacity.
+function utilizationFraction(baseline: AttainBaseline, fallbackPct = 70): number {
   const pct = baseline.utilizationPct ?? fallbackPct;
   return Math.min(1, Math.max(0, pct / 100));
 }
@@ -347,7 +350,7 @@ export interface RevenueEmChain {
 export function computeEmChain(baseline: AttainBaseline, setting: AttainSetting, values: LeverValues): RevenueEmChain {
   const isED = setting === "ed";
   const providers = Math.max(0, Math.round(baseline.providers ?? 0));
-  const perUnit = perProviderEncounters(baseline, isED ? 1_700 : 2_300);
+  const perUnit = perProviderEncounters(baseline, isED ? 1_800 : 3_500);
   const util = utilizationFraction(baseline);
   const eligibleEncounters = Math.round(providers * perUnit * util);
 
@@ -382,6 +385,20 @@ export function emFormula(chain: RevenueEmChain): string {
 
 // ────────────────────────────────────────────────────────────────────────
 // PATH 3 — Medical Necessity Denials, outpatient + ED
+//
+// MARGIN NOTE: Access prices a NEW visit at contribution margin, not gross
+// charges, because a new visit carries new variable cost (staff time,
+// supplies) that has to be netted out before the dollar is honest. A
+// prevented denial is a DIFFERENT economic event: the care was already
+// delivered before the claim was ever denied, so there is no new
+// incremental cost to net out - the only thing at stake is whether the
+// claim that already-rendered care earns gets PAID. Booking a prevented
+// denial at the average CLAIM value (not a margin-per-claim) is therefore
+// the economically correct frame here, not a lapse from the app's
+// margin-not-charges discipline - see `revenueDenialsAvgClaimValue`'s lever
+// help in attainLevers.ts for the partner-facing version of this same
+// justification. This also reconciles exactly to Explore's own
+// `denialPrevention` driver, which prices the identical way.
 // ────────────────────────────────────────────────────────────────────────
 
 export const DEFAULT_DENIAL_RATE = 3;
@@ -398,11 +415,15 @@ export interface RevenueDenialsChain {
 }
 
 /** `preventablePct` is the gate (realityStart 0); `denialRate` and
- * `avgClaimValue` are real, editable descriptive/pricing inputs. */
+ * `avgClaimValue` are real, editable descriptive/pricing inputs. Priced at
+ * the full average CLAIM value, not a contribution margin - see the module
+ * section header just above for why that is the economically correct frame
+ * for an already-delivered, already-denied claim (no new variable cost to
+ * net out), not an inconsistency with Access's margin-per-visit pricing. */
 export function computeDenialsChain(baseline: AttainBaseline, setting: AttainSetting, values: LeverValues): RevenueDenialsChain {
   const isED = setting === "ed";
   const providers = Math.max(0, Math.round(baseline.providers ?? 0));
-  const perUnit = perProviderEncounters(baseline, isED ? 1_700 : 2_300);
+  const perUnit = perProviderEncounters(baseline, isED ? 1_800 : 3_500);
   const util = utilizationFraction(baseline);
   const eligibleEncounters = Math.round(providers * perUnit * util);
 

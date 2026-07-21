@@ -1,4 +1,6 @@
 import type { AttainBaseline, LeverContribution, LeverContributionsResult, LeverValues } from "./attainLevers";
+import { computeAllDriverValues, computeAllDriverCalcSummaries } from "@/lib/exploreDriverCalcs";
+import { DEFAULT_EXPLORE_STATE, type ExploreState } from "@/pages/explore/ExploreFlow";
 
 /**
  * Attain — ACCESS decision chain engine.
@@ -32,19 +34,29 @@ import type { AttainBaseline, LeverContribution, LeverContributionsResult, Lever
  * before the chain is actually complete.
  *
  * Reconciliation with the existing engine: `computeAccessCapacity` uses the
- * exact same primitives Explore's `patientAccess` driver
+ * exact same PRIMITIVES Explore's `patientAccess` driver
  * (`exploreDriverCalcs.ts`) already prices freed time with — freed hours
  * per provider, a visit length in hours, and a reinvestment share — so this
- * chain is a faithful decomposition of that same mechanism into an ordered,
- * demand-gated sequence, not a second, disconnected model. Visit length
- * defaults to the ~20 minute benchmark this task specifies but is a real,
- * editable D3 input (`accessVisitLength`), not a hardcoded constant -
- * `computeAccessCapacity` divides the freed hours committed to access by
- * this exact value, so a shorter visit converts the same freed hours into
- * more capacity. Explore's own card lets a partner edit that assumption at
- * 30 minutes by default, which is why the two dollar figures are close but
- * not identical by design (this chain is demand-gated, Explore's headline
- * driver is not).
+ * chain is a decomposition of that same MECHANISM into an ordered,
+ * demand-gated sequence, not a second, disconnected model. `exploreStateForReconciliation`
+ * below proves that formula-level tie, mirroring `attainRevenue.ts`'s /
+ * `attainWorkforce.ts`'s own reconciliation harnesses (see attainAccess.test.ts).
+ *
+ * That said, this chain's own DEFAULTS are deliberately more conservative
+ * than either Explore's headline defaults OR this feature's own narrative
+ * copy, on purpose, not by drift: `DEFAULT_MINUTES_SAVED_PER_NOTE` (2 min)
+ * is far below Explore's typical per-encounter time-saved assumption, and
+ * `DEFAULT_VISIT_LENGTH_MIN` (20 min) differs from Explore's own 30-minute
+ * default. Visit length is a real, editable D3 input (`accessVisitLength`),
+ * not a hardcoded constant - `computeAccessCapacity` divides the freed hours
+ * committed to access by this exact value, so a shorter visit converts the
+ * same freed hours into more capacity. So "faithful" here means the chain
+ * reuses Explore's exact FORMULA and can be proven to reconcile at matching
+ * inputs (the test file does exactly that) - it does NOT mean the two
+ * screens land on the same dollar at their respective DEFAULT inputs, which
+ * they deliberately do not (this chain is also demand-gated; Explore's
+ * headline driver is not). See attainGoals.ts's outpatient-access narrative
+ * for the copy that is kept in sync with this chain's 2-minute default.
  */
 
 // ────────────────────────────────────────────────────────────────────────
@@ -78,6 +90,17 @@ export const DEFAULT_LINE_MARGIN_PER_VISIT: Record<string, number> = {
   "Observation Unit": 340,
   "Behavioral Health": 260,
 };
+
+/** Benchmark share of in-scope encounters that are typical no-shows or late
+ * cancellations - a descriptive fact about today's operation, editable in
+ * D4 (`accessDemandNoShowRate`) but not itself the gate. This is the POOL
+ * the recovery-rate decision (`accessDemandNoShowPct`) is a share OF, per
+ * the product owner's fix: "recoveryRate x (noShowRate x encounters)", not
+ * a recovery rate applied straight against every in-scope encounter. ~12%
+ * is a conservative, commonly-cited outpatient no-show benchmark; flagged
+ * for the partner's own number to replace it, same convention every other
+ * descriptive-default in this chain uses. */
+export const DEFAULT_NO_SHOW_RATE_PCT = 12;
 
 /** Fallback margin per visit when no specific line is in scope yet
  * (Enterprise toggle, or nothing selected), or for a custom line with no
@@ -116,7 +139,10 @@ function perProviderEncounters(baseline: AttainBaseline, fallback = 3_500): numb
   return providers > 0 && encounters > 0 ? encounters / providers : fallback;
 }
 
-function utilizationFraction(baseline: AttainBaseline, fallbackPct = 100): number {
+// Falls back to 70% - the same "typical" utilization `defaultBaseline`
+// documents app-wide (attainLevers.ts), not an optimistic 100% - so a blank
+// Scope step never silently assumes every provider runs at full capacity.
+function utilizationFraction(baseline: AttainBaseline, fallbackPct = 70): number {
   const pct = baseline.utilizationPct ?? fallbackPct;
   return clampShare(pct / 100);
 }
@@ -269,8 +295,20 @@ export interface AccessDemand {
    * bare annualized number. */
   sameDayPct: number;
   noShowVisits: number;
-  /** The no-show-recovery % input this term was computed from, same reason
-   * as `sameDayPct` above. */
+  /** The typical no-show RATE this term's pool was computed from - the
+   * share of in-scope encounters that are a no-show or late cancellation in
+   * the first place, defaulting to `DEFAULT_NO_SHOW_RATE_PCT`. Kept on the
+   * result for the same THE MATH derivation reason as `sameDayPct` below. */
+  noShowRatePct: number;
+  /** The no-show POOL this recovery rate is applied against -
+   * `encountersInScope x (noShowRatePct / 100)` - kept on the result so THE
+   * MATH can show the two-step derivation (rate -> pool -> recovery) instead
+   * of collapsing straight to a bare recovered-visit count. */
+  noShowPool: number;
+  /** The recovery-rate % input this term was computed from - share of the
+   * no-show POOL above (not of all in-scope encounters) a partner can
+   * actually refill with a waiting patient. Same reason as `sameDayPct`
+   * above for keeping the raw input alongside the derived count. */
   noShowPct: number;
   newReferralVisits: number;
   /** The raw monthly referral rate this term was annualized from, kept on
@@ -288,11 +326,18 @@ export interface AccessDemand {
 
 /** D4: four demand sources, summed into one ceiling. Referral backlog is a
  * direct, one-time visit count (patients already waiting, not a rate);
- * same-day/urgent and no-show recovery are percentages of the in-scope
- * encounter volume; new referrals is a monthly rate, annualized (x12). This
- * is the ceiling — capacity above this line is simply unfillable and worth
- * nothing (rule 2). Every raw input this function annualizes or applies a
- * percentage to (`newReferralsPerMonth`, `sameDayPct`, `noShowPct`,
+ * same-day/urgent is a percentage of the in-scope encounter volume; new
+ * referrals is a monthly rate, annualized (x12). No-show recovery is a
+ * TWO-STEP percentage, not one: `noShowRatePct` first sizes the no-show POOL
+ * out of in-scope encounters (a typical no-show/cancellation rate, ~12%
+ * benchmark), then `noShowPct` (the partner's actual decision) is the share
+ * of THAT pool a waiting patient actually refills - recoveryRate x
+ * (noShowRate x encounters), never recoveryRate x encounters directly, which
+ * would silently treat "recover 60% of no-shows" as "60% of every encounter
+ * is a recovered no-show." This is the ceiling — capacity above this line is
+ * simply unfillable and worth nothing (rule 2). Every raw input this
+ * function annualizes or applies a percentage to (`newReferralsPerMonth`,
+ * `sameDayPct`, `noShowRatePct`, `noShowPool`, `noShowPct`,
  * `encountersInScope`) is kept on the returned object, not just the derived
  * totals, so the caller's THE MATH string can show its own derivation
  * instead of a bare annualized number that looks like it "jumped." */
@@ -300,10 +345,18 @@ export function computeAccessDemand(baseline: AttainBaseline, scope: AccessScope
   const encountersInScope = scope.providersInScope * perProviderEncounters(baseline) * utilizationFraction(baseline);
   const backlogVisits = Math.max(0, Math.round(asNum(values.accessDemandBacklog)));
   const sameDayPct = clampPct(asNum(values.accessDemandSameDayPct));
+  const noShowRateRaw = asNum(values.accessDemandNoShowRate);
+  const noShowRatePct = clampPct(noShowRateRaw > 0 ? noShowRateRaw : DEFAULT_NO_SHOW_RATE_PCT);
   const noShowPct = clampPct(asNum(values.accessDemandNoShowPct));
   const newReferralsPerMonth = Math.max(0, asNum(values.accessDemandNewReferrals));
   const sameDayVisits = Math.round(encountersInScope * (sameDayPct / 100));
-  const noShowVisits = Math.round(encountersInScope * (noShowPct / 100));
+  // No-show recovery is a share of the NO-SHOW POOL, not of every in-scope
+  // encounter: recoveryRate x (noShowRate x encounters). Entering "60%"
+  // means "we refill 60% of our no-shows," not "60% of every encounter is a
+  // recovered no-show" - the latter reading previously overstated demand by
+  // 20-50x whenever the true no-show rate was a small share of volume.
+  const noShowPool = encountersInScope * (noShowRatePct / 100);
+  const noShowVisits = Math.round(noShowPool * (noShowPct / 100));
   const newReferralVisits = Math.round(newReferralsPerMonth * 12);
   const demandCeiling = backlogVisits + sameDayVisits + noShowVisits + newReferralVisits;
   return {
@@ -311,6 +364,8 @@ export function computeAccessDemand(baseline: AttainBaseline, scope: AccessScope
     sameDayVisits,
     sameDayPct,
     noShowVisits,
+    noShowRatePct,
+    noShowPool,
     noShowPct,
     newReferralVisits,
     newReferralsPerMonth,
@@ -424,10 +479,10 @@ function buildDemandFormula(demand: AccessDemand): string {
     : "0 same-day";
 
   const noShowTerm = demand.noShowVisits > 0
-    ? `(${Math.round(demand.noShowPct)}% of ${Math.round(demand.encountersInScope).toLocaleString()} encounters = ${demand.noShowVisits.toLocaleString()}/yr) no-show`
-    : "0 no-show";
+    ? `(${Math.round(demand.noShowRatePct)}% no-show rate of ${Math.round(demand.encountersInScope).toLocaleString()} encounters = ${Math.round(demand.noShowPool).toLocaleString()} no-show pool, x ${Math.round(demand.noShowPct)}% recovered = ${demand.noShowVisits.toLocaleString()}/yr) no-show recovery`
+    : "0 no-show recovery";
 
-  return `${backlogTerm} + ${referralsTerm} + ${sameDayTerm} + ${noShowTerm} = ${demand.demandCeiling.toLocaleString()}/yr demand ceiling.`;
+  return `${backlogTerm} + ${referralsTerm} + ${sameDayTerm} + ${noShowTerm} = ${demand.demandCeiling.toLocaleString()} demand ceiling (backlog counted once, the rest per year).`;
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -488,6 +543,66 @@ export function computeAccessChain(
 
   return { scope, capacity, demand, payoff, formulas: { scope: scopeFormula, capacity: capacityFormula, demand: demandFormula, payoff: payoffFormula } };
 }
+
+// ────────────────────────────────────────────────────────────────────────
+// Reconciliation harness — proves the chain ties to Explore's own engine,
+// the same way attainRevenue.ts / attainWorkforce.ts / attainInpatientRevenue.ts
+// already do (this module was previously the one exception, asserting
+// "faithful decomposition" only in prose - see the module header). Not used
+// by the app itself, only by tests (attainAccess.test.ts).
+// ────────────────────────────────────────────────────────────────────────
+
+function mkState(): ExploreState {
+  return {
+    ...DEFAULT_EXPLORE_STATE,
+    careSetting: "outpatient",
+    timeDriverInputs: { ...DEFAULT_EXPLORE_STATE.timeDriverInputs },
+    docQualityInputs: { ...DEFAULT_EXPLORE_STATE.docQualityInputs },
+  };
+}
+
+/**
+ * The exact `ExploreState` this chain's D1-D3 decisions correspond to, built
+ * so `computeAllDriverValues`'s `patientAccess` driver can be fed the SAME
+ * freed-hours-per-provider, reinvestment share, visit length, and blended
+ * margin this chain itself derives — never a second, hand-rolled formula
+ * that could drift from the Explore engine. `totalHoursSaved` (Explore's own
+ * second argument to `computeAllDriverValues`, computed by
+ * `ExploreFlow.tsx`'s own `totalHoursSaved` memo as `annualEncounters x
+ * utilizationPercent/100 x minutesSavedPerEncounter / 60`) is reproduced the
+ * same way by the caller, not by this function, to keep this helper a pure
+ * state-builder like its sibling chains' own reconciliation helpers.
+ *
+ * Reconciliation only holds when access is CAPACITY-bound (demand ceiling at
+ * or above capacity) and priced at the blended margin (no per-line split,
+ * which Explore's single `revenuePerVisit` cannot represent) - see the
+ * module header for why the two chains are demand-gated vs not by design,
+ * and attainAccess.test.ts for the passing scenario.
+ */
+export function exploreStateForReconciliation(
+  baseline: AttainBaseline,
+  values: LeverValues,
+  crossGoalShareMultiplier = 1,
+): ExploreState {
+  const chain = computeAccessChain(baseline, values, crossGoalShareMultiplier);
+  const { scope, capacity, payoff } = chain;
+  const state = mkState();
+  state.numberOfProviders = scope.providersInScope;
+  state.annualEncounters = Math.round(scope.providersInScope * perProviderEncounters(baseline) * utilizationFraction(baseline));
+  state.utilizationPercent = 100; // utilization already folded into annualEncounters above
+  state.minutesSavedPerEncounter = capacity.minutesSavedPerNote;
+
+  const td = state.timeDriverInputs as any;
+  td.patientAccessEnabled = true;
+  td.accessProviders = scope.providersInScope;
+  td.capacityRealizationPercent = capacity.effectiveSharePct;
+  td.visitDuration = capacity.visitLengthMinutes;
+  td.revenuePerVisit = payoff.blendedMarginUsed > 0 ? payoff.blendedMarginUsed : blendedMarginPerVisit(values);
+
+  return state;
+}
+
+export { computeAllDriverValues, computeAllDriverCalcSummaries };
 
 // ────────────────────────────────────────────────────────────────────────
 // Compatibility adapter — LeverContributionsResult shape

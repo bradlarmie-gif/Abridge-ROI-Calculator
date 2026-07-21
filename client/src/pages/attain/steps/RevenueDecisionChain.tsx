@@ -723,7 +723,7 @@ function DenialsPathSection({
         testid="card-revenue-denials-d3"
       >
         <div className="max-w-[200px]">
-          <FieldLabel tip="Average dollar value of a medical-necessity claim you protect by preventing its denial.">Average claim value</FieldLabel>
+          <FieldLabel tip="Average dollar value of a medical-necessity claim you protect by preventing its denial. Priced at claim value, not contribution margin: the care was already delivered before the denial, so there is no new variable cost to subtract, unlike a brand-new visit.">Average claim value</FieldLabel>
           <div className="relative">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8C8C8C] text-sm pointer-events-none">$</span>
             <NumberField

@@ -494,7 +494,7 @@ const outpatientAccess: SettingGoalContent = {
   worldCards: [
     { k: "3rd-Next-Available", n: "18 days", coral: true, f: "Benchmark for active attention: 14+" },
     { k: "Referral backlog", n: "~1,900", f: "Patients waiting to be seen" },
-    { k: "Freed / provider", n: "2.5 hrs/wk", f: "From 12 min saved per note" },
+    { k: "Freed / provider", n: "2.5 hrs/wk", f: "From 2 min saved per note" },
     { k: "In scope", n: "40", f: "Providers · Cardiology & Ortho" },
   ],
   opportunity:
