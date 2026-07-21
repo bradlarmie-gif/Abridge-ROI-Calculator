@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   computeEdAccessScope,
   computeEdAccessPool,
+  computeEdAccessMechanism,
   computeEdAccessRecovery,
   computeEdAccessRealized,
   computeEdAccessPayoff,
@@ -9,13 +10,14 @@ import {
   computeEdAccessContributions,
   exploreStateForEdAccessReconciliation,
   computeAllDriverValues,
-  edAccessCeilingPlainPhrase,
+  edAccessBindingPlainPhrase,
   ED_ACCESS_LEVER_IDS,
   DEFAULT_ED_ACCESS_MINUTES_SAVED_PER_NOTE,
   DEFAULT_ED_ACCESS_LWBS_RATE,
-  DEFAULT_ED_ACCESS_REVENUE_PER_VISIT,
-  DEFAULT_ED_ACCESS_ADMISSION_RATE,
+  DEFAULT_ED_ACCESS_MARGIN_PER_VISIT,
   DEFAULT_ED_ACCESS_ADMISSION_MARGIN,
+  DEFAULT_ED_ACCESS_ADMISSION_REALIZATION,
+  DEFAULT_ED_ACCESS_HOURS_PER_RECOVERY,
 } from "@/lib/attain/attainEdAccess";
 import { computeLeverContributions, computeMultiGoalContributions, LEVERS, leversFor, type AttainBaseline, type LeverValues } from "@/lib/attain/attainLevers";
 
@@ -24,6 +26,26 @@ import { computeLeverContributions, computeMultiGoalContributions, LEVERS, lever
 // 1:1 to the live exploreDriverCalcs engine (same convention
 // attainQuality.test.ts uses: qualityBeds === the full staffed-bed baseline).
 const BASELINE: AttainBaseline = { providers: 55, annualEncounters: 55 * 1_800, utilizationPct: 100 };
+
+/** A "full chain" fixture with every real decision moved off reality, tuned
+ * so the freed-time mechanism (D3) and the recoverable pool (D4) are close
+ * enough in magnitude that either side can plausibly bind, depending on the
+ * exact numbers a given test uses - see the "genuine either-side ceiling"
+ * describe block below for cases that deliberately push it one way. */
+function fullValues(overrides: Partial<LeverValues> = {}): LeverValues {
+  return {
+    edAccessProviders: 55,
+    edAccessMarginPerVisit: 380,
+    edAccessAdmissionMargin: 8_000,
+    edAccessMinutesSaved: 9,
+    edAccessHoursPerRecovery: 1.5,
+    edAccessThroughputShare: 50,
+    edAccessLwbsRate: 8,
+    edAccessAdmissionRate: 18,
+    edAccessAdmissionRealization: 60,
+    ...overrides,
+  };
+}
 
 describe("D1 scope", () => {
   it("providers in scope is capped to the Starting-point baseline", () => {
@@ -47,27 +69,80 @@ describe("D1 scope", () => {
   });
 });
 
-describe("D2 - worth", () => {
+describe("D2 - worth (contribution margin, not charges)", () => {
   it("no dollars yet - worth alone (no scope, no recovery decision) is not itself a dollar figure", () => {
-    // D2's own helpers just return a per-unit rate, never a total - proven by
-    // the full chain test further down showing $0 when only D2 is set.
-    const chain = computeEdAccessChain(BASELINE, { edAccessRevenuePerVisit: 600, edAccessAdmissionMargin: 12_000 });
+    const chain = computeEdAccessChain(BASELINE, { edAccessMarginPerVisit: 600, edAccessAdmissionMargin: 12_000 });
     expect(chain.payoff.value).toBe(0);
   });
 
-  it("revenue per visit and admission margin default to sensible benchmarks when unset", () => {
-    const chain = computeEdAccessChain(BASELINE, {
-      edAccessProviders: 55,
-      edAccessLwbsRate: 8,
-      edAccessLwbsReduction: 20,
-      edAccessAdmissionRate: 18,
-    });
-    expect(chain.payoff.revenuePerVisit).toBe(DEFAULT_ED_ACCESS_REVENUE_PER_VISIT);
+  it("margin per visit and admission margin default to sensible benchmarks when unset", () => {
+    const chain = computeEdAccessChain(BASELINE, fullValues({ edAccessMarginPerVisit: undefined, edAccessAdmissionMargin: undefined }));
+    expect(chain.payoff.marginPerVisit).toBe(DEFAULT_ED_ACCESS_MARGIN_PER_VISIT);
     expect(chain.payoff.admissionMargin).toBe(DEFAULT_ED_ACCESS_ADMISSION_MARGIN);
+  });
+
+  it("margin per visit is a CONTRIBUTION MARGIN benchmark, not the old gross-charge figure", () => {
+    // The pre-audit default was $480 (gross ED revenue per visit). The
+    // fixed default reuses attainAccess.ts's own audited "General ED"
+    // contribution-margin preset ($380), a materially different, more
+    // conservative number - this test pins that the fix actually landed.
+    expect(DEFAULT_ED_ACCESS_MARGIN_PER_VISIT).toBe(380);
+    expect(DEFAULT_ED_ACCESS_MARGIN_PER_VISIT).not.toBe(480);
+  });
+
+  it("admission realization defaults to the live engine's own bed/payer benchmark (60%) when unset", () => {
+    expect(DEFAULT_ED_ACCESS_ADMISSION_REALIZATION).toBe(60);
   });
 });
 
-describe("D3/D4 - the recoverable pool (the ceiling)", () => {
+describe("D3 - convert freed time to throughput (the one capacity mechanism)", () => {
+  it("freed hours = providers x notes/provider/yr x minutes saved, and mechanical recovery = (freed hours x throughput share) / hours per recovery", () => {
+    const scope = { providersInScope: 55, visitsInScope: 55 * 1_800 };
+    const mech = computeEdAccessMechanism(BASELINE, scope, 9, 50, 1.5);
+    const expectedFreedHours = 55 * 1_800 * (9 / 60);
+    expect(mech.freedHoursTotal).toBeCloseTo(expectedFreedHours, 1);
+    expect(mech.freedHoursToThroughput).toBeCloseTo(expectedFreedHours * 0.5, 1);
+    expect(mech.mechanicallyEnabledRecovered).toBeCloseTo((expectedFreedHours * 0.5) / 1.5, 1);
+  });
+
+  it("COUNTERFACTUAL: zero minutes saved per note mechanically zeroes recovery, regardless of throughput share", () => {
+    const scope = { providersInScope: 55, visitsInScope: 55 * 1_800 };
+    const mech = computeEdAccessMechanism(BASELINE, scope, 0, 100, 1.5);
+    expect(mech.freedHoursTotal).toBe(0);
+    expect(mech.mechanicallyEnabledRecovered).toBe(0);
+
+    const chain = computeEdAccessChain(BASELINE, fullValues({ edAccessMinutesSaved: 0, edAccessThroughputShare: 100 }));
+    expect(chain.mechanism.mechanicallyEnabledRecovered).toBe(0);
+    expect(chain.recovery.realizedRecovered).toBe(0);
+    expect(chain.payoff.value).toBe(0);
+  });
+
+  it("COUNTERFACTUAL: zero throughput share mechanically zeroes recovery, regardless of minutes saved", () => {
+    const chain = computeEdAccessChain(BASELINE, fullValues({ edAccessThroughputShare: 0, edAccessMinutesSaved: 30 }));
+    expect(chain.mechanism.mechanicallyEnabledRecovered).toBe(0);
+    expect(chain.recovery.realizedRecovered).toBe(0);
+    expect(chain.payoff.value).toBe(0);
+  });
+
+  it("a shorter hours-per-recovery assumption converts the identical freed hours into MORE mechanically enabled recovery", () => {
+    const scope = { providersInScope: 55, visitsInScope: 55 * 1_800 };
+    const short = computeEdAccessMechanism(BASELINE, scope, 9, 50, 1);
+    const long = computeEdAccessMechanism(BASELINE, scope, 9, 50, 3);
+    expect(short.mechanicallyEnabledRecovered).toBeGreaterThan(long.mechanicallyEnabledRecovered);
+  });
+
+  it("hours per recovery defaults to the benchmark of 1.5 when unset", () => {
+    expect(DEFAULT_ED_ACCESS_HOURS_PER_RECOVERY).toBe(1.5);
+  });
+
+  it("zero providers in scope means zero freed hours and zero mechanical recovery, even with real minutes/share", () => {
+    const mech = computeEdAccessMechanism(BASELINE, { providersInScope: 0, visitsInScope: 0 }, 9, 100, 1.5);
+    expect(mech.freedHoursTotal).toBe(0);
+    expect(mech.mechanicallyEnabledRecovered).toBe(0);
+  });
+});
+
+describe("D4 - the recoverable pool (a genuine, independent ceiling)", () => {
   it("pool = visits in scope x current LWBS rate", () => {
     const scope = { providersInScope: 55, visitsInScope: 55 * 1_800 };
     const pool = computeEdAccessPool(scope, { edAccessLwbsRate: 8 });
@@ -87,52 +162,77 @@ describe("D3/D4 - the recoverable pool (the ceiling)", () => {
     expect(pool.poolVisits).toBe(0);
   });
 
-  it("computeEdAccessRealized never exceeds the pool, even when the targeted number is far larger (the MIN/ceiling discipline)", () => {
+  it("computeEdAccessRealized is a genuine MIN of two independent sides", () => {
     expect(computeEdAccessRealized(100, 500)).toBe(100);
     expect(computeEdAccessRealized(100, 40)).toBe(40);
     expect(computeEdAccessRealized(0, 40)).toBe(0);
     expect(computeEdAccessRealized(100, -10)).toBe(0);
   });
 
-  it("computeEdAccessRecovery: realized recovered visits never exceed the pool, and admissions are a share of realized recovery, not of the pool", () => {
-    const recovery = computeEdAccessRecovery(1_000, 30, { edAccessAdmissionRate: 20 });
-    expect(recovery.targetedRecovered).toBeCloseTo(300, 3);
-    expect(recovery.realizedRecovered).toBeCloseTo(300, 3);
-    expect(recovery.realizedRecovered).toBeLessThanOrEqual(1_000);
-    expect(recovery.capturedAdmissions).toBeCloseTo(60, 3); // 300 * 20%
+  it("GENUINE CEILING: the pool binds when mechanical recovery is deliberately much larger than the pool", () => {
+    // Large mechanical number (freed-time capacity), small pool - unlike
+    // the pre-audit tautological ceiling (target defined as a percent OF
+    // the pool, so it could never exceed it), this MIN can and does bind
+    // on the POOL side here, proving the two sides are truly independent.
+    const recovery = computeEdAccessRecovery(100, 5_000, { edAccessAdmissionRate: 20 });
+    expect(recovery.realizedRecovered).toBe(100);
+    expect(recovery.binding).toBe("pool");
   });
 
-  it("a reduction target of 0 (reality, nothing new) recovers nothing and captures no admissions", () => {
+  it("GENUINE CEILING: freed-time (throughput) capacity binds when the pool is deliberately much larger", () => {
+    const recovery = computeEdAccessRecovery(5_000, 100, { edAccessAdmissionRate: 20 });
+    expect(recovery.realizedRecovered).toBe(100);
+    expect(recovery.binding).toBe("throughput");
+  });
+
+  it("computeEdAccessRecovery: admissions are a share of REALIZED recovery, then capped again by admission realization", () => {
+    const recovery = computeEdAccessRecovery(1_000, 300, { edAccessAdmissionRate: 20, edAccessAdmissionRealization: 50 });
+    expect(recovery.realizedRecovered).toBeCloseTo(300, 3);
+    expect(recovery.capturedAdmissionsRaw).toBeCloseTo(60, 3); // 300 * 20%
+    expect(recovery.admissionRealizationPct).toBe(50);
+    expect(recovery.capturedAdmissions).toBeCloseTo(30, 3); // 60 * 50%
+  });
+
+  it("admission realization defaults to the bed/payer benchmark (60%) when unset, capping admissions even with no partner override", () => {
+    const recovery = computeEdAccessRecovery(1_000, 300, { edAccessAdmissionRate: 20 });
+    expect(recovery.admissionRealizationPct).toBe(DEFAULT_ED_ACCESS_ADMISSION_REALIZATION);
+    expect(recovery.capturedAdmissions).toBeCloseTo(60 * 0.6, 3);
+    expect(recovery.capturedAdmissions).toBeLessThan(recovery.capturedAdmissionsRaw);
+  });
+
+  it("zero mechanical recovery (D3) recovers nothing and captures no admissions, even with a real pool", () => {
     const recovery = computeEdAccessRecovery(1_000, 0, { edAccessAdmissionRate: 20 });
-    expect(recovery.targetedRecovered).toBe(0);
     expect(recovery.realizedRecovered).toBe(0);
     expect(recovery.capturedAdmissions).toBe(0);
+    expect(recovery.binding).toBe("none");
   });
 
   it("admission share at reality (unset/0) captures exactly zero admissions, even with real recovered visits - it is a genuine decision, not a benchmark default", () => {
-    const recovery = computeEdAccessRecovery(1_000, 40, {});
+    const recovery = computeEdAccessRecovery(1_000, 400, {});
     expect(recovery.realizedRecovered).toBeGreaterThan(0);
     expect(recovery.admissionRatePct).toBe(0);
     expect(recovery.capturedAdmissions).toBe(0);
   });
 
-  it("edAccessCeilingPlainPhrase teaches the pool/target relationship in plain language, never printing MIN(", () => {
-    expect(edAccessCeilingPlainPhrase(0, 0, 0)).not.toContain("MIN(");
-    expect(edAccessCeilingPlainPhrase(1_000, 300, 300)).not.toContain("MIN(");
-    expect(edAccessCeilingPlainPhrase(100, 500, 100).toLowerCase()).toContain("capped");
+  it("edAccessBindingPlainPhrase teaches which side binds in plain language, never printing MIN(", () => {
+    expect(edAccessBindingPlainPhrase("none")).not.toContain("MIN(");
+    expect(edAccessBindingPlainPhrase("pool")).not.toContain("MIN(");
+    expect(edAccessBindingPlainPhrase("throughput")).not.toContain("MIN(");
+    expect(edAccessBindingPlainPhrase("pool").toLowerCase()).toContain("pool");
+    expect(edAccessBindingPlainPhrase("throughput").toLowerCase()).toContain("throughput");
   });
 });
 
-describe("D5 - the payoff (dollars, derived)", () => {
-  it("value = realized recovered visits x revenue/visit + captured admissions x admission margin", () => {
-    const payoff = computeEdAccessPayoff(300, 60, { edAccessRevenuePerVisit: 480, edAccessAdmissionMargin: 8_000 });
-    expect(payoff.visitValue).toBe(Math.round(300 * 480));
-    expect(payoff.admissionValue).toBe(Math.round(60 * 8_000));
+describe("D5 - the payoff (dollars, derived, honest contribution margin)", () => {
+  it("value = realized recovered visits x margin/visit + REALIZED captured admissions x admission margin", () => {
+    const payoff = computeEdAccessPayoff(300, 30, { edAccessMarginPerVisit: 380, edAccessAdmissionMargin: 8_000 });
+    expect(payoff.visitValue).toBe(Math.round(300 * 380));
+    expect(payoff.admissionValue).toBe(Math.round(30 * 8_000));
     expect(payoff.value).toBe(payoff.visitValue + payoff.admissionValue);
   });
 
   it("zero realized recovery means zero dollars, even with a real admission share and real worth set", () => {
-    const payoff = computeEdAccessPayoff(0, 0, { edAccessRevenuePerVisit: 480, edAccessAdmissionMargin: 8_000 });
+    const payoff = computeEdAccessPayoff(0, 0, { edAccessMarginPerVisit: 380, edAccessAdmissionMargin: 8_000 });
     expect(payoff.value).toBe(0);
   });
 });
@@ -143,50 +243,39 @@ describe("the full D1-D5 chain - dollars are gated until every decision is real"
     expect(chain.payoff.value).toBe(0);
   });
 
-  it("scope alone (D1), with no recovery decision, nets $0", () => {
+  it("scope alone (D1), with no throughput commitment, nets $0", () => {
     const chain = computeEdAccessChain(BASELINE, { edAccessProviders: 55 });
     expect(chain.payoff.value).toBe(0);
   });
 
-  it("a reduction target alone (D3), with no providers in scope, nets $0 - no pool to draw from", () => {
-    const chain = computeEdAccessChain(BASELINE, { edAccessLwbsReduction: 40, edAccessLwbsRate: 8 });
+  it("a throughput share alone (D3), with no providers in scope, nets $0 - no freed time to draw from", () => {
+    const chain = computeEdAccessChain(BASELINE, { edAccessThroughputShare: 100, edAccessLwbsRate: 8 });
     expect(chain.scope.providersInScope).toBe(0);
-    expect(chain.pool.poolVisits).toBe(0);
+    expect(chain.mechanism.mechanicallyEnabledRecovered).toBe(0);
     expect(chain.payoff.value).toBe(0);
   });
 
-  it("the full chain (scope + rate + reduction target + admission share) realizes real recovered visits, admissions, and dollars", () => {
-    const chain = computeEdAccessChain(BASELINE, {
-      edAccessProviders: 55,
-      edAccessLwbsRate: 8,
-      edAccessLwbsReduction: 25,
-      edAccessAdmissionRate: 18,
-    });
+  it("the full chain (scope + freed time + pool + admission decisions) realizes real recovered visits, admissions, and dollars", () => {
+    const chain = computeEdAccessChain(BASELINE, fullValues());
     expect(chain.recovery.realizedRecovered).toBeGreaterThan(0);
-    expect(chain.recovery.realizedRecovered).toBeLessThanOrEqual(chain.pool.poolVisits);
+    expect(chain.recovery.realizedRecovered).toBeLessThanOrEqual(chain.pool.poolVisits + 1e-6);
+    expect(chain.recovery.realizedRecovered).toBeLessThanOrEqual(chain.mechanism.mechanicallyEnabledRecovered + 1e-6);
     expect(chain.recovery.capturedAdmissions).toBeGreaterThan(0);
     expect(chain.payoff.value).toBeGreaterThan(0);
   });
 
-  it("realized recovered visits never exceed the recoverable pool, across a range of aggressive reduction targets", () => {
-    for (const reductionPct of [10, 40, 70, 100]) {
-      const chain = computeEdAccessChain(BASELINE, {
-        edAccessProviders: 55,
-        edAccessLwbsRate: 8,
-        edAccessLwbsReduction: reductionPct,
-      });
+  it("realized recovered visits never exceed either the pool or the mechanical freed-time capacity, across a range of throughput shares", () => {
+    for (const throughputShare of [10, 40, 70, 100]) {
+      const chain = computeEdAccessChain(BASELINE, fullValues({ edAccessThroughputShare: throughputShare }));
       expect(chain.recovery.realizedRecovered).toBeLessThanOrEqual(chain.pool.poolVisits + 1e-6);
+      expect(chain.recovery.realizedRecovered).toBeLessThanOrEqual(chain.mechanism.mechanicallyEnabledRecovered + 1e-6);
     }
   });
 
   it("printed formulas never contain literal MIN( notation", () => {
-    const chain = computeEdAccessChain(BASELINE, {
-      edAccessProviders: 55,
-      edAccessLwbsRate: 8,
-      edAccessLwbsReduction: 25,
-      edAccessAdmissionRate: 18,
-    });
+    const chain = computeEdAccessChain(BASELINE, fullValues());
     expect(chain.formulas.scope).not.toContain("MIN(");
+    expect(chain.formulas.mechanism).not.toContain("MIN(");
     expect(chain.formulas.pool).not.toContain("MIN(");
     expect(chain.formulas.recovery).not.toContain("MIN(");
     expect(chain.formulas.payoff).not.toContain("MIN(");
@@ -195,20 +284,19 @@ describe("the full D1-D5 chain - dollars are gated until every decision is real"
   it("minutes saved per note defaults to the ED benchmark of 9 (matches the authored ED narrative)", () => {
     expect(DEFAULT_ED_ACCESS_MINUTES_SAVED_PER_NOTE).toBe(9);
     const chain = computeEdAccessChain(BASELINE, { edAccessProviders: 55 });
-    expect(chain.recovery.minutesSavedPerNote).toBe(9);
+    expect(chain.mechanism.minutesSavedPerNote).toBe(9);
+  });
+
+  it("PAYOFF IS HONEST CONTRIBUTION MARGIN: the visit leg is priced at margin, not the old $480 gross-revenue default", () => {
+    const chain = computeEdAccessChain(BASELINE, fullValues({ edAccessMarginPerVisit: undefined }));
+    expect(chain.payoff.marginPerVisit).toBe(380);
+    expect(chain.payoff.marginPerVisit).not.toBe(480);
   });
 });
 
 describe("reconciliation to the live edLwbs / admissionCapture engine (exploreDriverCalcs.ts)", () => {
   it("recovered-visit value reconciles to computeAllDriverValues's lwbsRecovery within tolerance", () => {
-    const values: LeverValues = {
-      edAccessProviders: 55,
-      edAccessLwbsRate: 8,
-      edAccessLwbsReduction: 25,
-      edAccessRevenuePerVisit: 480,
-      edAccessAdmissionRate: 18,
-      edAccessAdmissionMargin: 8_000,
-    };
+    const values = fullValues();
     const chain = computeEdAccessChain(BASELINE, values);
     const state = exploreStateForEdAccessReconciliation(BASELINE, values);
     const engineValues = computeAllDriverValues(state, 0);
@@ -218,14 +306,15 @@ describe("reconciliation to the live edLwbs / admissionCapture engine (exploreDr
   });
 
   it("reconciles across a second, different set of real numbers (not curve-fit to one fixture)", () => {
-    const values: LeverValues = {
-      edAccessProviders: 55,
+    const values = fullValues({
       edAccessLwbsRate: 5,
-      edAccessLwbsReduction: 40,
-      edAccessRevenuePerVisit: 520,
+      edAccessThroughputShare: 80,
+      edAccessHoursPerRecovery: 2,
+      edAccessMarginPerVisit: 520,
       edAccessAdmissionRate: 22,
       edAccessAdmissionMargin: 9_500,
-    };
+      edAccessAdmissionRealization: 45,
+    });
     const chain = computeEdAccessChain(BASELINE, values);
     const state = exploreStateForEdAccessReconciliation(BASELINE, values);
     const engineValues = computeAllDriverValues(state, 0);
@@ -233,19 +322,19 @@ describe("reconciliation to the live edLwbs / admissionCapture engine (exploreDr
     expect(engineValues.lwbsRecovery).toBeCloseTo(chain.payoff.visitValue, 0);
     expect(engineValues.admissionCapture).toBeCloseTo(chain.payoff.admissionValue, 0);
   });
+
+  it("the admission-realization fix (I1) actually changes the reconciled engine dollar - hardcoding it to 100% would not reconcile", () => {
+    const values = fullValues({ edAccessAdmissionRealization: 30 });
+    const chain = computeEdAccessChain(BASELINE, values);
+    const state = exploreStateForEdAccessReconciliation(BASELINE, values);
+    expect(state.timeDriverInputs.edAdmissionRealization).toBe(30);
+    expect(state.timeDriverInputs.edAdmissionRealization).not.toBe(100);
+    const engineValues = computeAllDriverValues(state, 0);
+    expect(engineValues.admissionCapture).toBeCloseTo(chain.payoff.admissionValue, 0);
+  });
 });
 
 describe("computeEdAccessContributions adapter", () => {
-  const fullValues = (): LeverValues => ({
-    edAccessProviders: 55,
-    edAccessRevenuePerVisit: 480,
-    edAccessAdmissionMargin: 8_000,
-    edAccessMinutesSaved: 9,
-    edAccessLwbsRate: 8,
-    edAccessLwbsReduction: 25,
-    edAccessAdmissionRate: 18,
-  });
-
   it("returns the LeverContributionsResult shape with every catalog lever id represented", () => {
     const result = computeEdAccessContributions(BASELINE, fullValues());
     expect(result.totalMargin).toBeGreaterThan(0);
@@ -264,34 +353,38 @@ describe("computeEdAccessContributions adapter", () => {
     expect(result.totalCount).toBe(0);
   });
 
-  it("leave-one-out marginals are exact, not inflated by a hidden benchmark default: removing admissionRate zeroes exactly the admission dollar, removing the reduction target zeroes the whole payoff", () => {
+  it("M1 FIX: the visit leg and admission leg are attributed directly and non-overlapping - the two decision rows sum to EXACTLY the total payoff, never more", () => {
     const values = fullValues();
     const chosen = computeEdAccessChain(BASELINE, values);
     const result = computeEdAccessContributions(BASELINE, values);
 
+    const throughputRow = result.perLever.find((l) => l.id === "edAccessThroughputShare")!;
     const admissionRow = result.perLever.find((l) => l.id === "edAccessAdmissionRate")!;
-    const reductionRow = result.perLever.find((l) => l.id === "edAccessLwbsReduction")!;
 
-    // Removing admissionRate alone must remove EXACTLY today's admission
-    // dollar (chosen.payoff.admissionValue) - not more, not less - proving
-    // the leave-one-out reset-to-0 does not silently re-trigger a
-    // benchmark default for this row.
+    expect(throughputRow.marginalMargin).toBeCloseTo(chosen.payoff.visitValue, 0);
     expect(admissionRow.marginalMargin).toBeCloseTo(chosen.payoff.admissionValue, 0);
-    // Removing the reduction target alone collapses realized recovery (and
-    // therefore admissions too) to exactly 0, so its marginal is the WHOLE
-    // payoff.
-    expect(reductionRow.marginalMargin).toBeCloseTo(chosen.payoff.value, 0);
+    // The old nested leave-one-out bug (M1) double-counted the admission
+    // dollar: resetting the throughput decision to 0 collapsed BOTH legs,
+    // so its marginal absorbed the whole payoff while the admission row
+    // separately claimed its own leg too, and the two summed to MORE than
+    // the total. Direct leg attribution cannot do that by construction.
+    expect(throughputRow.marginalMargin + admissionRow.marginalMargin).toBeCloseTo(chosen.payoff.value, 0);
+    expect(throughputRow.pctOfTotal + admissionRow.pctOfTotal).toBeCloseTo(1, 5);
+  });
+
+  it("structural/context rows (D1-D3 facts) carry zero marginal margin, never smearing the dollar across rows that didn't produce it", () => {
+    const result = computeEdAccessContributions(BASELINE, fullValues());
+    for (const id of ["edAccessProviders", "edAccessMarginPerVisit", "edAccessAdmissionMargin", "edAccessMinutesSaved", "edAccessHoursPerRecovery", "edAccessLwbsRate", "edAccessAdmissionRealization"]) {
+      const row = result.perLever.find((l) => l.id === id)!;
+      expect(row.marginalMargin).toBe(0);
+      expect(row.pctOfTotal).toBe(0);
+    }
   });
 });
 
 describe("wiring - computeLeverContributions / computeMultiGoalContributions dispatch access by setting", () => {
   it("goal access at setting ed uses the ED chain, not the outpatient scheduling chain", () => {
-    const values: LeverValues = {
-      edAccessProviders: 55,
-      edAccessLwbsRate: 8,
-      edAccessLwbsReduction: 25,
-      edAccessAdmissionRate: 18,
-    };
+    const values = fullValues();
     const viaLevers = computeLeverContributions("access", "ed", BASELINE, values);
     const direct = computeEdAccessContributions(BASELINE, values);
     expect(viaLevers.totalMargin).toBe(direct.totalMargin);
@@ -316,51 +409,55 @@ describe("wiring - computeLeverContributions / computeMultiGoalContributions dis
     expect(LEVERS.access).toBe(opLevers);
   });
 
-  it("computeMultiGoalContributions dispatches ED access through its own chain when combined with retention, without crashing or double-counting a freed hour it does not mechanically consume", () => {
+  it("I6 FIX: computeMultiGoalContributions now SPLITS the shared freed hour between ED access and ED retention, the same way it already does at outpatient", () => {
     const baseline: AttainBaseline = { providers: 55, annualEncounters: 55 * 1_800, utilizationPct: 100 };
     const valuesByGoal = {
-      access: {
-        edAccessProviders: 55,
-        edAccessLwbsRate: 8,
-        edAccessLwbsReduction: 25,
-        edAccessAdmissionRate: 18,
-      },
+      access: fullValues(),
       retention: {
         retentionProviders: 55,
         retentionProtect: 60,
         retentionSustain: 6,
       },
     };
-    const combined = computeMultiGoalContributions(["access", "retention"], "ed", baseline, valuesByGoal, 50);
     const accessAlone = computeEdAccessContributions(baseline, valuesByGoal.access);
     const retentionAlone = computeLeverContributions("retention", "ed", baseline, valuesByGoal.retention);
 
-    // ED access does not mechanically consume the shared freed-time hour (its
-    // dollar math is pool x reduction%, not freed-hours-driven), so it gets
-    // full, unscaled credit even with retention also selected - unlike
-    // outpatient access, which DOES split the hour with retention.
-    expect(combined.byGoal.access?.totalMargin).toBeCloseTo(accessAlone.totalMargin, 5);
-    // Retention's own D2 (retentionProtect) is likewise NOT scaled down for
-    // ED, since ED access isn't contending for the same hour.
-    expect(combined.byGoal.retention?.totalMargin).toBeCloseTo(retentionAlone.totalMargin, 5);
+    const split50 = computeMultiGoalContributions(["access", "retention"], "ed", baseline, valuesByGoal, 50);
+    // At a 50/50 split, ED access gets roughly HALF its unscaled credit
+    // (its D3 throughput share is scaled by the access side of the split
+    // before the mechanical recovery, and therefore the dollar, is
+    // computed) - strictly less than the full, unscaled figure either
+    // goal would get alone, proving the hour is no longer double-narrated.
+    expect(split50.byGoal.access!.totalMargin).toBeLessThan(accessAlone.totalMargin);
+    expect(split50.byGoal.access!.totalMargin).toBeGreaterThan(0);
+
+    const split100 = computeMultiGoalContributions(["access", "retention"], "ed", baseline, valuesByGoal, 100);
+    expect(split100.byGoal.access!.totalMargin).toBeCloseTo(accessAlone.totalMargin, 5);
+
+    const split0 = computeMultiGoalContributions(["access", "retention"], "ed", baseline, valuesByGoal, 0);
+    expect(split0.byGoal.access!.totalMargin).toBeCloseTo(0, 5);
+    expect(split0.byGoal.retention!.totalMargin).toBeCloseTo(retentionAlone.totalMargin, 5);
+  });
+
+  it("the split does NOT engage for ED access + a goal other than retention (e.g. revenue) - full, unscaled credit", () => {
+    const baseline: AttainBaseline = { providers: 55, annualEncounters: 55 * 1_800, utilizationPct: 100 };
+    const valuesByGoal = { access: fullValues() };
+    const combined = computeMultiGoalContributions(["access"], "ed", baseline, valuesByGoal, 50);
+    const accessAlone = computeEdAccessContributions(baseline, valuesByGoal.access);
+    expect(combined.byGoal.access!.totalMargin).toBeCloseTo(accessAlone.totalMargin, 5);
   });
 });
 
 describe("blank starting-point baseline ({}), no NaN / no crash", () => {
   it("every function stays finite and non-negative against a blank baseline", () => {
-    const chain = computeEdAccessChain({}, {
-      edAccessProviders: 55,
-      edAccessLwbsRate: 8,
-      edAccessLwbsReduction: 25,
-      edAccessAdmissionRate: 18,
-    });
+    const chain = computeEdAccessChain({}, fullValues());
     expect(Number.isNaN(chain.payoff.value)).toBe(false);
     expect(Number.isFinite(chain.payoff.value)).toBe(true);
     expect(chain.payoff.value).toBeGreaterThanOrEqual(0);
   });
 
   it("computeEdAccessContributions nets exactly $0 against a blank baseline with no providers requested", () => {
-    const result = computeEdAccessContributions({}, { edAccessLwbsRate: 8, edAccessLwbsReduction: 25 });
+    const result = computeEdAccessContributions({}, { edAccessLwbsRate: 8, edAccessThroughputShare: 25 });
     expect(result.totalMargin).toBe(0);
     expect(result.totalCount).toBe(0);
   });
