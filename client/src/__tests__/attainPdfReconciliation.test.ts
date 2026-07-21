@@ -55,10 +55,11 @@ function collectText(node: unknown, out: string[]): void {
  * into a number, so the printed hero figure can be reconciled against the
  * engine's raw dollar value. */
 function parseCompactDollar(text: string): number {
-  const m = text.match(/\$([\d,.]+)\s*(K|M)?/i);
+  const m = text.match(/\$([\d,.]+)\s*(K|M|B)?/i);
   if (!m) throw new Error(`parseCompactDollar: no dollar figure found in "${text}"`);
   const n = Number(m[1].replace(/,/g, ""));
   const suffix = m[2]?.toUpperCase();
+  if (suffix === "B") return n * 1_000_000_000;
   if (suffix === "M") return n * 1_000_000;
   if (suffix === "K") return n * 1_000;
   return n;
@@ -173,6 +174,61 @@ describe("Attain PDF reconciliation — engine math vs. printed headline", () =>
     expect(
       diff <= tolerance(combined.combinedMargin),
       `Attain PDF headline no longer reconciles to the engine:\n` +
+        `  printed:  ${data.combinedMarginLabel} (${printed})\n` +
+        `  engine:   ${combined.combinedMargin}\n` +
+        `  abs diff: ${diff}`,
+    ).toBe(true);
+  });
+
+  it("billion-scale plan: the printed headline is a normal-looking '$X.XXB' figure, not a 4+ digit number in front of 'M', and still reconciles to the engine", () => {
+    // A huge baseline (deliberately unrealistic, matching the matrix stress
+    // test's "very LARGE dollar figures" case) pushes the combined margin
+    // past $1B — `formatCompact`'s billions branch exists so this prints
+    // "$X.XXB", not the "$1150.6M"-style 4-digit-before-the-suffix figure
+    // that shipped before this fix.
+    const hugeBaseline: AttainBaseline = { providers: 2_000, annualEncounters: 2_000 * 5_200, utilizationPct: 95 };
+    const goals: GoalId[] = ["access"];
+    const valuesByGoal = {
+      access: {
+        ...defaultLeverValues("access", "outpatient"),
+        accessProviders: 2_000,
+        accessMargin: 2_000,
+        accessFreedShare: 100,
+        accessDemandBacklog: 10_000,
+        accessDemandSameDayPct: 100,
+        accessDemandNoShowPct: 100,
+        accessDemandNewReferrals: 1_000,
+      },
+    };
+    const combined = computeMultiGoalContributions(goals, "outpatient", hugeBaseline, valuesByGoal, 50);
+    expect(combined.combinedMargin).toBeGreaterThan(1_000_000_000); // sanity: this fixture really is billion-scale
+
+    const data = buildAttainPdfData({
+      state: baseState,
+      setting: "outpatient",
+      goals,
+      target: { ...target, margin: combined.combinedMargin, count: combined.combinedCount },
+      attainment,
+      valuesByGoal,
+      combined,
+      commitments,
+      goalOwnerByPriority,
+      freedTimeSplit: 50,
+      orgName: "Meridian Health System",
+    });
+
+    expect(data.combinedMarginLabel).toMatch(/^\$\d+(\.\d{1,2})?B$/);
+
+    const out: string[] = [];
+    collectText(AttainPDFDocument({ data }), out);
+    const text = out.join(" | ");
+    expect(text).toContain(data.combinedMarginLabel);
+
+    const printed = parseCompactDollar(data.combinedMarginLabel);
+    const diff = Math.abs(printed - combined.combinedMargin);
+    expect(
+      diff <= tolerance(combined.combinedMargin),
+      `Attain PDF billion-scale headline no longer reconciles:\n` +
         `  printed:  ${data.combinedMarginLabel} (${printed})\n` +
         `  engine:   ${combined.combinedMargin}\n` +
         `  abs diff: ${diff}`,
