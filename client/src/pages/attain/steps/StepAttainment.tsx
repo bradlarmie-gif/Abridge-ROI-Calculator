@@ -24,7 +24,6 @@ import {
   currentValueFromEntries,
   nextCheckDueDate,
   computeActualTrajectory,
-  computeSparklineGeometry,
   todayISODate,
   type AttainmentStatus,
   type ProgressEntry,
@@ -194,30 +193,6 @@ function PriorityBreakdownCard({ goalDef, margin, share }: { goalDef: GoalDef; m
   );
 }
 
-/** A signal's baseline -> ... -> current sparkline, scaled against its own
- * target so the line's rise (or fall) toward the reference line reads at a
- * glance. Bespoke inline SVG, not a chart-library default — geometry comes
- * from the tested `computeSparklineGeometry` helper. */
-function SignalSparkline({ entries, target }: { entries: ProgressEntry[]; target: number }) {
-  const W = 96;
-  const H = 28;
-  const values = entries.map((e) => e.value);
-  const geo = computeSparklineGeometry(values, target, W, H);
-  if (geo.points.length === 0) return null;
-  const path = geo.points.map((p, i) => `${i === 0 ? "M" : "L"}${p.x},${p.y}`).join(" ");
-  const last = geo.points[geo.points.length - 1];
-  return (
-    <svg viewBox={`0 0 ${W} ${H}`} width={W} height={H} data-testid="svg-attain-signal-sparkline">
-      <line x1={0} y1={geo.targetY} x2={W} y2={geo.targetY} stroke="#D8CFC4" strokeWidth={1} strokeDasharray="2 2" />
-      <path d={path} fill="none" stroke="#EA2C00" strokeWidth={1.75} />
-      {geo.points.slice(0, -1).map((p, i) => (
-        <circle key={i} cx={p.x} cy={p.y} r={1.75} fill="#fff" stroke="#EA2C00" strokeWidth={1.25} />
-      ))}
-      <circle cx={last.x} cy={last.y} r={2.75} fill="#EA2C00" />
-    </svg>
-  );
-}
-
 /** The dated, expandable history list under a signal — "how it moved and
  * why", most recent first. */
 function SignalHistoryList({ entries, unit }: { entries: ProgressEntry[]; unit: string }) {
@@ -237,30 +212,160 @@ function SignalHistoryList({ entries, unit }: { entries: ProgressEntry[]; unit: 
   );
 }
 
-/** One signal's row inside a decision's progress card: the baseline -> current
- * -> target track, its trend, when it was last checked and when it's due
- * again, the "Log an update" action (the "and then what" after typing a
- * number), and its own expandable dated history. */
-function SignalProgressRow({
-  signalKey,
-  signalLabel,
-  unit,
-  cadence,
-  baseline,
-  target,
-  entries,
-  onLogProgressUpdate,
-}: {
-  signalKey: string;
+interface ProgressSignalRowData {
+  key: string;
+  decisionKey: string;
+  goal: GoalId;
+  lever: Lever;
+  owner: string;
+  due: string;
   signalLabel: string;
   unit: string;
   cadence: SignalCadence;
   baseline: number;
   target: number;
+  worth: number;
   entries: ProgressEntry[];
+  current: number;
+}
+
+// ────────────────────────────────────────────────────────────────────────
+// Change 2 — the horizontal, shared-time-axis tracker. Months run left to
+// right (Committed -> Today -> Goal), the same convention the "Closing the
+// Gap" curve already draws its x-axis on, so a signal's dots and the curve
+// above it read as one continuous timeline rather than two unrelated
+// widgets. Column widths are shared between the header ruler and every row
+// via one constant, so a dot at a given left% always lines up under the
+// same point on the ruler no matter which row it is in.
+// ────────────────────────────────────────────────────────────────────────
+
+const TRACKER_GRID_COLUMNS = "minmax(200px,1.3fr) 116px minmax(220px,2fr) 92px 138px 118px";
+
+/** Clamped 0-1 fraction of the shared axis a given "months since committed"
+ * figure sits at — pure display math, never fed back into any attainment
+ * calculation. */
+function monthsToFrac(months: number, totalMonths: number): number {
+  return totalMonths > 0 ? Math.max(0, Math.min(1, months / totalMonths)) : 0;
+}
+
+/** The ruler every row's dots line up under: Committed at the left, Today
+ * wherever the real logged history has actually reached, Goal at the right
+ * — the same three anchors the curve above already plots. */
+function ProgressAxisHeader({ totalMonths, todayFrac, startLabel }: { totalMonths: number; todayFrac: number; startLabel: string }) {
+  return (
+    <div
+      className="grid gap-4 pb-6 mb-2 border-b border-[#E7E0D6]"
+      style={{ gridTemplateColumns: TRACKER_GRID_COLUMNS }}
+      data-testid="row-attain-tracker-axis-header"
+    >
+      <span className="text-[9px] font-semibold uppercase tracking-[1.4px] text-[#8C8C8C] self-end">Signal</span>
+      <span className="text-[9px] font-semibold uppercase tracking-[1.4px] text-[#8C8C8C] self-end">Now</span>
+      <div className="relative h-3 self-end">
+        <div className="absolute left-0 right-0 top-0 h-[1.5px] bg-[#E7E0D6]" />
+        <div className="absolute top-0 h-2 w-2 -translate-y-1/2 -translate-x-1/2 rounded-full bg-[#1A1A1A]" style={{ left: "0%" }} />
+        <div
+          className="absolute top-0 h-2 w-2 -translate-y-1/2 -translate-x-1/2 rounded-full bg-[#EA2C00]"
+          style={{ left: `${todayFrac * 100}%` }}
+          data-testid="marker-attain-tracker-today"
+        />
+        <div className="absolute top-0 h-2 w-2 -translate-y-1/2 -translate-x-1/2 rounded-full bg-[#EA2C00]" style={{ left: "100%" }} />
+        {/* A plan logged the same day it was committed puts Today's dot
+            right on top of Committed's — two separately-positioned labels
+            would print on top of each other, so that case collapses to one
+            merged caption instead of the normal three-label spread. */}
+        {todayFrac < 0.08 ? (
+          <span className="absolute top-3 left-0 text-[9px] font-semibold uppercase tracking-wide text-[#EA2C00] whitespace-nowrap">
+            {startLabel} · Today
+          </span>
+        ) : (
+          <>
+            <span className="absolute top-3 left-0 text-[9px] font-semibold uppercase tracking-wide text-[#8C8C8C] whitespace-nowrap">{startLabel}</span>
+            <span
+              className="absolute top-3 text-[9px] font-semibold uppercase tracking-wide text-[#EA2C00] whitespace-nowrap"
+              style={{
+                left: `${todayFrac * 100}%`,
+                transform: todayFrac > 0.9 ? "translateX(calc(-100% - 4px))" : "translateX(-50%)",
+              }}
+            >
+              Today
+            </span>
+          </>
+        )}
+        <span className="absolute top-3 right-0 text-[9px] font-semibold uppercase tracking-wide text-[#EA2C00] whitespace-nowrap">
+          Goal · Mo. {Math.round(totalMonths)}
+        </span>
+      </div>
+      <span className="text-[9px] font-semibold uppercase tracking-[1.4px] text-[#8C8C8C] self-end">Status</span>
+      <span className="text-[9px] font-semibold uppercase tracking-[1.4px] text-[#8C8C8C] self-end">Checked</span>
+      <span className="text-[9px] font-semibold uppercase tracking-[1.4px] text-[#8C8C8C] self-end">Update</span>
+    </div>
+  );
+}
+
+/** One signal's real, dated climb — every logged point placed at its true
+ * position on the shared month axis (not evenly spaced by count, the way a
+ * sparkline would), so a signal checked weekly and one checked quarterly
+ * both read at their true pace against the same ruler. Fixed-size circular
+ * HTML markers, not SVG, so a wide "Timeline" column never stretches a dot
+ * into an ellipse. */
+function SignalTimelineTrack({
+  entries,
+  dateToMonths,
+  totalMonths,
+  todayFrac,
+}: {
+  entries: ProgressEntry[];
+  dateToMonths: Map<string, number>;
+  totalMonths: number;
+  todayFrac: number;
+}) {
+  const points = entries.map((e) => ({ frac: monthsToFrac(dateToMonths.get(e.date) ?? 0, totalMonths), entry: e }));
+  const last = points[points.length - 1];
+  return (
+    <div className="relative h-6" data-testid="track-attain-progress-timeline">
+      <div className="absolute left-0 right-0 top-1/2 h-[1.5px] -translate-y-1/2 bg-[#F0ECE5]" />
+      <div className="absolute top-0 bottom-0 w-0 border-l border-dashed border-[#D8CFC4]" style={{ left: `${todayFrac * 100}%` }} />
+      {points.slice(0, -1).map((p, i) => (
+        <div
+          key={i}
+          className="absolute top-1/2 h-2 w-2 -translate-y-1/2 -translate-x-1/2 rounded-full bg-white border border-[#EA2C00]"
+          style={{ left: `${p.frac * 100}%` }}
+          title={`${formatDate(p.entry.date)} · ${p.entry.value.toLocaleString()}`}
+          data-testid={`point-attain-progress-entry-${i}`}
+        />
+      ))}
+      {last && (
+        <div
+          className="absolute top-1/2 h-3 w-3 -translate-y-1/2 -translate-x-1/2 rounded-full bg-[#EA2C00]"
+          style={{ left: `${last.frac * 100}%` }}
+          title={`${formatDate(last.entry.date)} · ${last.entry.value.toLocaleString()}`}
+          data-testid="point-attain-progress-entry-latest"
+        />
+      )}
+    </div>
+  );
+}
+
+/** One committed signal's row in the horizontal tracker: its identity and
+ * owner, its baseline -> current -> target, its dated climb on the shared
+ * axis, a status pill, when it was last checked and next due, and the
+ * "Log an update" action with its own expandable dated history — replaces
+ * the old vertically-stacked decision cards with one scannable row per
+ * signal, all aligned to the same ruler. */
+function SignalTrackerRow({
+  row,
+  dateToMonths,
+  totalMonths,
+  todayFrac,
+  onLogProgressUpdate,
+}: {
+  row: ProgressSignalRowData;
+  dateToMonths: Map<string, number>;
+  totalMonths: number;
+  todayFrac: number;
   onLogProgressUpdate: (signalKey: string, value: number, note?: string) => void;
 }) {
-  const current = currentValueFromEntries(entries, baseline);
+  const { key: signalKey, signalLabel, lever, owner, unit, cadence, baseline, target, entries, current } = row;
   const [loggingOpen, setLoggingOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [draftValue, setDraftValue] = useState(current);
@@ -283,57 +388,59 @@ function SignalProgressRow({
   }
 
   return (
-    <div className="border-t border-[#F0ECE5] pt-3 mt-3 first:border-t-0 first:pt-0 first:mt-0" data-testid={`row-attain-progress-signal-${signalKey}`}>
-      <div className="flex flex-wrap items-start justify-between gap-3">
+    <div className="border-b border-[#F0ECE5] py-3.5 last:border-b-0" data-testid={`row-attain-progress-signal-${signalKey}`}>
+      <div className="grid items-center gap-4" style={{ gridTemplateColumns: TRACKER_GRID_COLUMNS }}>
         <div className="min-w-0">
-          <p className="text-[11.5px] font-bold text-[#1A1A1A]">{signalLabel}</p>
-          <p className="text-[10px] text-[#8C8C8C] capitalize">Checked {cadence}</p>
+          <p className="text-[12px] font-bold text-[#1A1A1A] truncate">{signalLabel}</p>
+          <p className="text-[10px] text-[#8C8C8C] truncate">{lever.label} · {owner}</p>
         </div>
-        <StatusPill status={status} testId={`badge-attain-progress-status-${signalKey}`} />
-      </div>
 
-      <div className="flex flex-wrap items-center gap-4 mt-2.5">
-        <div className="flex items-baseline gap-2 text-[11.5px] whitespace-nowrap">
-          <span className="text-[#8C8C8C]">{baseline.toLocaleString()}</span>
-          <span className="text-[#B4B4B4]">&rarr;</span>
-          <span className="font-abridge text-xl text-[#EA2C00]" data-testid={`text-attain-progress-current-${signalKey}`}>
+        <div className="text-[11px] leading-snug whitespace-nowrap">
+          <p className="font-abridge text-base text-[#EA2C00]" data-testid={`text-attain-progress-current-${signalKey}`}>
             {current.toLocaleString()}
-          </span>
-          <span className="text-[#B4B4B4]">&rarr;</span>
-          <span className="font-semibold text-[#1A1A1A]">{target.toLocaleString()}</span>
-          <span className="text-[#8C8C8C]">{unit}</span>
+          </p>
+          <p className="text-[#8C8C8C]">{baseline.toLocaleString()} &rarr; {target.toLocaleString()} {unit}</p>
         </div>
-        <SignalSparkline entries={entries} target={target} />
-      </div>
 
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2.5 text-[10.5px] text-[#8C8C8C]">
-        <span data-testid={`text-attain-progress-last-updated-${signalKey}`}>Last logged {formatDate(last?.date)}</span>
-        <span className={isOverdue ? "text-[#EA2C00] font-semibold" : ""} data-testid={`text-attain-progress-next-due-${signalKey}`}>
-          Next check due {formatDate(nextDue)}
-          {isOverdue ? " · overdue" : ""}
-        </span>
-        <button
-          type="button"
-          onClick={() => setHistoryOpen((v) => !v)}
-          className="flex items-center gap-1 font-semibold text-[#1A1A1A] hover:text-[#EA2C00]"
-          data-testid={`button-attain-progress-history-toggle-${signalKey}`}
-        >
-          {entries.length} logged entr{entries.length === 1 ? "y" : "ies"}
-          {historyOpen ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-        </button>
-        {!loggingOpen && (
+        <SignalTimelineTrack entries={entries} dateToMonths={dateToMonths} totalMonths={totalMonths} todayFrac={todayFrac} />
+
+        <StatusPill status={status} testId={`badge-attain-progress-status-${signalKey}`} />
+
+        <div className="text-[10px] text-[#8C8C8C] leading-snug">
+          <p data-testid={`text-attain-progress-last-updated-${signalKey}`}>Logged {formatDate(last?.date)}</p>
+          <p className={isOverdue ? "text-[#EA2C00] font-semibold" : ""} data-testid={`text-attain-progress-next-due-${signalKey}`}>
+            Due {formatDate(nextDue)}{isOverdue ? " · overdue" : ""}
+          </p>
+        </div>
+
+        <div className="flex flex-col items-start gap-1">
           <button
             type="button"
-            onClick={() => setLoggingOpen(true)}
-            className="text-[#EA2C00] font-semibold hover:underline"
-            data-testid={`button-attain-progress-log-open-${signalKey}`}
+            onClick={() => setHistoryOpen((v) => !v)}
+            className="flex items-center gap-1 text-[10.5px] font-semibold text-[#1A1A1A] hover:text-[#EA2C00]"
+            data-testid={`button-attain-progress-history-toggle-${signalKey}`}
           >
-            + Log an update
+            {entries.length} logged
+            {historyOpen ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
           </button>
-        )}
+          {!loggingOpen && (
+            <button
+              type="button"
+              onClick={() => setLoggingOpen(true)}
+              className="text-[10.5px] text-[#EA2C00] font-semibold hover:underline"
+              data-testid={`button-attain-progress-log-open-${signalKey}`}
+            >
+              + Log update
+            </button>
+          )}
+        </div>
       </div>
 
-      {historyOpen && <SignalHistoryList entries={entries} unit={unit} />}
+      {historyOpen && (
+        <div className="mt-1 pl-1" data-testid={`region-attain-progress-history-${signalKey}`}>
+          <SignalHistoryList entries={entries} unit={unit} />
+        </div>
+      )}
 
       {loggingOpen && (
         <div className="mt-3 bg-[#F8F5F1] border border-[#E7E0D6] rounded-md p-3" data-testid={`form-attain-progress-log-${signalKey}`}>
@@ -381,78 +488,48 @@ function SignalProgressRow({
   );
 }
 
-interface ProgressSignalRowData {
-  key: string;
-  decisionKey: string;
-  goal: GoalId;
-  lever: Lever;
-  owner: string;
-  due: string;
-  signalLabel: string;
-  unit: string;
-  cadence: SignalCadence;
-  baseline: number;
-  target: number;
-  worth: number;
-  entries: ProgressEntry[];
-  current: number;
-}
-
-/** One committed decision's card on the Progress tab: the decision, its
- * owner, every signal it watches (each with its own baseline -> current ->
- * target track, trend, and Log-update action), rolled up to one status. A
- * decision only reads as "Landed" once EVERY signal it watches has - a
- * decision with two signals, one landed and one still moving, is honestly
- * "In motion", not landed on the strength of its easier signal alone. */
-function DecisionProgressCard({
-  rows,
-  showPriority,
+/** Every committed signal in one priority, grouped under that priority's
+ * pill — Change 2 groups the tracker by priority, not by decision, so a
+ * multi-priority plan reads as clearly-separated bands on the same shared
+ * axis rather than one long undifferentiated list. */
+function PriorityTrackerGroup({
   goalDef,
+  showPriority,
+  rows,
+  dateToMonths,
+  totalMonths,
+  todayFrac,
   onLogProgressUpdate,
 }: {
-  rows: ProgressSignalRowData[];
-  showPriority: boolean;
   goalDef: GoalDef;
+  showPriority: boolean;
+  rows: ProgressSignalRowData[];
+  dateToMonths: Map<string, number>;
+  totalMonths: number;
+  todayFrac: number;
   onLogProgressUpdate: (signalKey: string, value: number, note?: string) => void;
 }) {
-  const first = rows[0];
-  const fractions = rows.map((r) => decisionAttainmentFraction(r.baseline, r.current, r.target));
-  const minFraction = Math.min(...fractions);
-  const status = decisionStatus(minFraction);
-
   return (
-    <div className="border border-[#E7E0D6] rounded-lg bg-white p-4 mb-3" data-testid={`card-attain-progress-decision-${first.decisionKey}`}>
-      <div className="flex flex-wrap items-start justify-between gap-3 mb-1">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            {showPriority && (
-              <span
-                className="inline-block text-[9px] font-bold uppercase tracking-[1.2px] text-white px-2 py-0.5 rounded-full whitespace-nowrap"
-                style={{ background: goalDef.pillBg }}
-              >
-                {goalDef.pill}
-              </span>
-            )}
-            <p className="text-[14px] font-bold text-[#1A1A1A]">{first.lever.label}</p>
-          </div>
-          <p className="text-[11px] text-[#8C8C8C]">
-            {first.owner} · due {first.due}
-          </p>
+    <div className="mb-1" data-testid={`group-attain-progress-tracker-${goalDef.id}`}>
+      {showPriority && (
+        <div className="flex items-center gap-2 mb-2 mt-5 first:mt-0">
+          <span
+            className="inline-block text-[9px] font-bold uppercase tracking-[1.2px] text-white px-2 py-0.5 rounded-full"
+            style={{ background: goalDef.pillBg }}
+          >
+            {goalDef.pill}
+          </span>
+          <span className="text-[12px] font-bold text-[#1A1A1A]">{goalDef.label}</span>
         </div>
-        <StatusPill status={status} testId={`badge-attain-progress-decision-status-${first.decisionKey}`} />
-      </div>
-
+      )}
       <div>
         {rows.map((row) => (
-          <SignalProgressRow
+          <SignalTrackerRow
             key={row.key}
-            signalKey={row.key}
-            signalLabel={row.signalLabel}
-            unit={row.unit}
-            cadence={row.cadence}
-            baseline={row.baseline}
-            target={row.target}
-            entries={row.entries}
+            row={row}
+            dateToMonths={dateToMonths}
+            totalMonths={totalMonths}
+            todayFrac={todayFrac}
             onLogProgressUpdate={onLogProgressUpdate}
           />
         ))}
@@ -643,14 +720,22 @@ export default function StepAttainment({
   const trajectory = computeActualTrajectory(trajectorySignals, todayISODate());
   const trajectoryPct = trajectory.length > 0 ? trajectory[trajectory.length - 1].pct : progressPct;
 
-  // Signal rows grouped back into one card per DECISION (Change 2) — a
-  // decision with two signals reads as one card watching two things, not
-  // two unrelated rows.
-  const decisionKeysOrdered = Array.from(new Set(progressRows.map((r) => r.decisionKey)));
-  const decisionCards = decisionKeysOrdered.map((decisionKey) => ({
-    decisionKey,
-    rows: progressRows.filter((r) => r.decisionKey === decisionKey),
-  }));
+  // Signal rows grouped by PRIORITY for the horizontal tracker (Change 2) —
+  // every committed signal is its own row, banded under its priority's
+  // pill, in the same `goals` order the rest of the plan uses.
+  const priorityRowGroups = goals
+    .map((goal) => ({ goal, goalDef: GOAL_CATALOG[goal], rows: progressRows.filter((r) => r.goal === goal) }))
+    .filter((g) => g.rows.length > 0);
+
+  // Every entry's real position on the shared month axis, read straight off
+  // the trajectory's own dated points (one per distinct entry date across
+  // every signal, already computed above) — never a second, competing date
+  // calculation.
+  const dateToMonths = new Map(trajectory.map((p) => [p.date, p.monthsFromStart]));
+  const axisTodayFrac = monthsToFrac(
+    trajectory.length > 0 ? trajectory[trajectory.length - 1].monthsFromStart : state.monthsElapsed,
+    state.totalMonths,
+  );
 
   const goalDefs = goals.map((g) => GOAL_CATALOG[g]);
   const planTitle = goalDefs.length === 1 ? goalDefs[0].label : goalDefs.map((g) => g.label).join(" + ");
@@ -793,18 +878,34 @@ export default function StepAttainment({
                   <p className="font-abridge text-3xl text-[#1A1A1A] mt-2 mb-1">{attainment.onPacePct}%</p>
                   <p className="text-[10px] text-[#8C8C8C]">Where the plan expected this month</p>
                 </div>
+                <div className="flex-1 min-w-[160px] border border-[#E7E0D6] bg-[#F8F5F1] rounded-md p-4" data-testid="card-attain-progress-stat-runway">
+                  <p className="text-[9.5px] font-semibold uppercase tracking-[1.4px] text-[#8C8C8C]">Runway to goal</p>
+                  <p className="font-abridge text-3xl text-[#1A1A1A] mt-2 mb-1">{remainingMonths} mo</p>
+                  <p className="text-[10px] text-[#8C8C8C]">~{formatCompact(remainingMargin)} margin remaining</p>
+                </div>
               </div>
 
-              <div data-testid="list-attain-progress-decisions">
-                {decisionCards.map(({ decisionKey, rows }) => (
-                  <DecisionProgressCard
-                    key={decisionKey}
-                    rows={rows}
-                    showPriority={goalDefs.length > 1}
-                    goalDef={GOAL_CATALOG[rows[0].goal]}
-                    onLogProgressUpdate={onLogProgressUpdate}
-                  />
-                ))}
+              {/* The horizontal tracker — one shared month axis (Committed
+                  -> Today -> Goal), every committed signal a row banded by
+                  priority, its dated log a march of dots across that same
+                  ruler. Replaces the old vertical stack of decision cards
+                  so a plan with many signals still reads at a glance. */}
+              <div className="border border-[#E7E0D6] rounded-lg bg-white p-5 md:p-6" data-testid="panel-attain-progress-tracker">
+                <ProgressAxisHeader totalMonths={state.totalMonths} todayFrac={axisTodayFrac} startLabel="Committed" />
+                <div data-testid="list-attain-progress-decisions">
+                  {priorityRowGroups.map(({ goal, goalDef, rows }) => (
+                    <PriorityTrackerGroup
+                      key={goal}
+                      goalDef={goalDef}
+                      showPriority={goalDefs.length > 1}
+                      rows={rows}
+                      dateToMonths={dateToMonths}
+                      totalMonths={state.totalMonths}
+                      todayFrac={axisTodayFrac}
+                      onLogProgressUpdate={onLogProgressUpdate}
+                    />
+                  ))}
+                </div>
               </div>
             </>
           )}
