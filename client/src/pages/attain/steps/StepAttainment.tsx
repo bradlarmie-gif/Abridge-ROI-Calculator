@@ -499,7 +499,10 @@ export default function StepAttainment({
   const [tab, setTab] = useState<"strategy" | "progress">("strategy");
   const today = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
 
-  const hasFreedTimeConflict = goals.includes("access") && goals.includes("retention");
+  // ED access does not compete with retention for the same freed hour - see
+  // attainLevers.ts's computeMultiGoalContributions and
+  // attainEdAccess.ts's module header - so this conflict is outpatient-only.
+  const hasFreedTimeConflict = setting === "outpatient" && goals.includes("access") && goals.includes("retention");
   const usualMargin = target.margin * (USUAL_CEILING_PCT / 100);
   const curveGoalLabel = `${formatCompact(target.margin)} · ${target.label}`;
   const curveUsualLabel = `~${formatCompact(usualMargin)}`;

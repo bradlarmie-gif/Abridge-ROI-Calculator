@@ -5,6 +5,7 @@ import type { MultiGoalContributionsResult } from "@/lib/attain/attainLevers";
 import { GOAL_CATALOG } from "@/lib/attain/attainGoals";
 import type { AttainSetting, GoalId } from "@/lib/attain/attainTypes";
 import AccessDecisionChain from "./AccessDecisionChain";
+import EdAccessDecisionChain from "./EdAccessDecisionChain";
 import RevenueDecisionChain from "./RevenueDecisionChain";
 import WorkforceDecisionChain from "./WorkforceDecisionChain";
 import QualityDecisionChain from "./QualityDecisionChain";
@@ -94,7 +95,14 @@ export default function StepBuildCase({
   stepNumber,
   totalSteps,
 }: StepBuildCaseProps) {
-  const hasFreedTimeConflict = goals.includes("access") && goals.includes("retention");
+  // Outpatient access's D3 mechanically divides freed hours by a visit
+  // length to create schedule capacity, which is the exact same hour
+  // retention's D2 protects - hence the split control. ED access's dollar
+  // math (attainEdAccess.ts) never does that division, so it never
+  // contends for the hour and this split does not apply at setting "ed" -
+  // see attainLevers.ts's computeMultiGoalContributions for the matching
+  // engine-side gate.
+  const hasFreedTimeConflict = setting === "outpatient" && goals.includes("access") && goals.includes("retention");
   const showFreedTimeSplit = hasFreedTimeConflict && (goal === "access" || goal === "retention");
   const goalDef = GOAL_CATALOG[goal];
   const levers = leversFor(goal, setting);
@@ -191,7 +199,14 @@ export default function StepBuildCase({
       )}
 
       <div data-testid={`section-attain-buildcase-goal-${goal}`}>
-        {goal === "access" ? (
+        {goal === "access" && setting === "ed" ? (
+          <EdAccessDecisionChain
+            setting={setting}
+            baseline={baseline}
+            values={values}
+            onChangeValue={(leverId, value) => onChangeLeverValue("access", leverId, value)}
+          />
+        ) : goal === "access" ? (
           <AccessDecisionChain
             setting={setting}
             baseline={baseline}
