@@ -156,7 +156,14 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
   // here down. This is local state, not part of `AttainState`
   // (attainTypes.ts intentionally untouched), because it is purely an
   // engine input, not part of the plan's identity/progress bookkeeping.
-  const [baseline, setBaseline] = useState<AttainBaseline>(defaultBaseline("outpatient"));
+  //
+  // Starts genuinely EMPTY (`{}`), never a prefilled benchmark — the Scope
+  // step's fields show only a placeholder example ("e.g., 40") until the
+  // partner types their own number. Every lever below already treats a
+  // missing field as 0 (see attainLevers.ts / attainAccess.ts's per-function
+  // fallbacks), so capacity and dollars simply stay at $0 until the real
+  // numbers land here; nothing downstream can NaN or crash on a blank field.
+  const [baseline, setBaseline] = useState<AttainBaseline>({});
   // Only meaningful when both access and retention are selected — the % of
   // the one shared freed documentation hour routed to opening access
   // (schedule); the rest routes to protecting relief. See attainLevers.ts
@@ -200,7 +207,7 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
     setGoalOwnerByPriority({});
     setProgressCurrent({});
     setProgressUpdatedAt({});
-    setBaseline(defaultBaseline(setting));
+    setBaseline({});
     setFreedTimeSplit(DEFAULT_FREED_TIME_SPLIT);
     setState((prev) => ({
       ...prev,

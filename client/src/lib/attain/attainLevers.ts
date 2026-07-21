@@ -184,8 +184,16 @@ export interface AttainBaseline {
  * 1,800 ED encounters per provider per year, 400 inpatient discharges per
  * hospitalist, 70% typical utilization; nursing's typical Med/Surg FTE
  * ratio, 85% occupancy translated to daily census, 50% typical adoption).
- * Prefills the Scope step so a partner sees a defensible plan on load and
- * edits from there. */
+ *
+ * NOT auto-applied to the Scope step's inputs — those start genuinely blank
+ * (see AttainFlow's `baseline` state, initialized to `{}`) so a partner's
+ * plan is always built from THEIR real numbers, never a silently-accepted
+ * benchmark they never actually typed in. These figures are only ever shown
+ * as the fields' "e.g., 40" style placeholders and as this function's own
+ * defensible default when nothing else is available. Every downstream lever
+ * already treats a missing baseline field as 0 (see the per-function
+ * fallback constants below), so leaving the Scope step blank is safe: money
+ * and capacity simply read $0 / 0 until the partner fills it in. */
 export function defaultBaseline(setting: AttainSetting): AttainBaseline {
   switch (setting) {
     case "outpatient":

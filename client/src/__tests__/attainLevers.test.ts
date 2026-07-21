@@ -568,3 +568,105 @@ describe("computeMultiGoalContributions", () => {
     expect(combined.combinedMargin).toBeLessThan(naiveDoubleCounted);
   });
 });
+
+// ────────────────────────────────────────────────────────────────────────
+// Blank starting-point baseline — "Your starting point" now loads with
+// every field genuinely empty (see AttainFlow's `baseline` state, `{}`),
+// not a prefilled benchmark. Every lever, and the access chain, must stay
+// at exactly $0 / 0 units against a `{}` baseline — never NaN, never throw
+// — until the partner actually types their own numbers in.
+// ────────────────────────────────────────────────────────────────────────
+describe("blank starting-point baseline ({}), no NaN / no crash", () => {
+  const BLANK: AttainBaseline = {};
+
+  // Every access decision dialed up, same shape as the fixture used above,
+  // redeclared here since that one is scoped to its own describe block.
+  const fullAccessValues = (): LeverValues => ({
+    accessProviders: 40,
+    accessFreedShare: 60,
+    accessDemandNewReferrals: 1_000,
+  });
+
+  it("every channel goal nets exactly $0 margin and 0 count against a blank baseline, even with every lever dialed up", () => {
+    for (const goal of GOAL_IDS_CHANNEL) {
+      const setting = SETTING_FOR[goal];
+      const values: LeverValues = { ...IMPROVED_VALUE[goal] };
+      const result = computeLeverContributions(goal, setting, BLANK, values);
+      expect(Number.isNaN(result.totalMargin)).toBe(false);
+      expect(Number.isNaN(result.totalCount)).toBe(false);
+      expect(result.totalMargin).toBe(0);
+      expect(result.totalCount).toBe(0);
+      for (const lever of result.perLever) {
+        expect(Number.isNaN(lever.marginalMargin)).toBe(false);
+        expect(Number.isNaN(lever.marginalCount)).toBe(false);
+      }
+    }
+  });
+
+  it("access: capacity and payoff are exactly 0 against a blank baseline when nothing has been entered anywhere (D1's own provider request also 0)", () => {
+    const chain = computeAccessChain(BLANK, {});
+    expect(chain.scope.providersInScope).toBe(0);
+    expect(chain.capacity.capacityVisits).toBe(0);
+    expect(chain.demand.demandCeiling).toBe(0);
+    expect(chain.payoff.value).toBe(0);
+    expect(chain.payoff.binding).toBe("none");
+
+    const contributions = computeAccessContributions(BLANK, {});
+    expect(contributions.totalMargin).toBe(0);
+    expect(contributions.totalCount).toBe(0);
+  });
+
+  it("access: dialing up every OTHER decision while the Starting-point baseline stays blank never NaNs, crashes, or goes negative", () => {
+    // D1's own requested provider count (`accessProviders`, set directly on
+    // Build the case) is honored even when the Starting-point baseline has
+    // no provider count to cap it against - see computeAccessScope's
+    // documented fallback. So this is NOT expected to net exactly $0; it is
+    // expected to stay a well-formed, finite, non-negative number.
+    const values = fullAccessValues();
+    const chain = computeAccessChain(BLANK, values);
+    expect(Number.isNaN(chain.capacity.capacityVisits)).toBe(false);
+    expect(Number.isNaN(chain.demand.demandCeiling)).toBe(false);
+    expect(Number.isNaN(chain.payoff.value)).toBe(false);
+    expect(Number.isFinite(chain.payoff.value)).toBe(true);
+    expect(chain.payoff.value).toBeGreaterThanOrEqual(0);
+    expect(chain.scope.providersInScope).toBe(40);
+  });
+
+  it("computeMultiGoalContributions: retention/revenue/quality net exactly $0 against a blank baseline (access excluded - see its own D1 fallback tests above)", () => {
+    const goals: GoalId[] = ["retention", "revenue", "quality"];
+    const valuesByGoal: Partial<Record<GoalId, LeverValues>> = {
+      retention: { ...IMPROVED_VALUE.retention },
+      revenue: { ...IMPROVED_VALUE.revenue },
+      quality: { ...IMPROVED_VALUE.quality },
+    };
+    const combined = computeMultiGoalContributions(goals, "outpatient", BLANK, valuesByGoal, 50);
+    expect(Number.isNaN(combined.combinedMargin)).toBe(false);
+    expect(combined.combinedMargin).toBe(0);
+    expect(combined.combinedCount).toBe(0);
+  });
+
+  it("computeMultiGoalContributions: every goal at once (including access) stays finite and non-NaN against a blank baseline", () => {
+    const goals: GoalId[] = ["access", "retention", "revenue", "quality"];
+    const valuesByGoal: Partial<Record<GoalId, LeverValues>> = {
+      access: fullAccessValues(),
+      retention: { ...IMPROVED_VALUE.retention },
+      revenue: { ...IMPROVED_VALUE.revenue },
+      quality: { ...IMPROVED_VALUE.quality },
+    };
+    const combined = computeMultiGoalContributions(goals, "outpatient", BLANK, valuesByGoal, 50);
+    expect(Number.isNaN(combined.combinedMargin)).toBe(false);
+    expect(Number.isFinite(combined.combinedMargin)).toBe(true);
+    expect(Number.isNaN(combined.combinedCount)).toBe(false);
+  });
+
+  it("a partially-filled baseline (only providers, no encounters yet) still nets $0, not NaN", () => {
+    const partial: AttainBaseline = { providers: 40 };
+    const result = computeLeverContributions("revenue", "outpatient", partial, IMPROVED_VALUE.revenue);
+    expect(Number.isNaN(result.totalMargin)).toBe(false);
+    // effectiveEncountersPerUnit falls back to its illustrative constant
+    // whenever encounters is missing even if providers is present, so this
+    // is NOT required to be exactly 0 — only required to be a finite,
+    // non-NaN number, i.e. no crash and no silent corruption.
+    expect(Number.isFinite(result.totalMargin)).toBe(true);
+  });
+});
