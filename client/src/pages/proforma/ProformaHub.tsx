@@ -135,7 +135,7 @@ const QUADRANT_COLORS: Record<string, string> = {
 
 const DISPLACEMENT_COLOR = "#2D6F6B";
 
-function ValueCompositionBar({ setting }: { setting: ProformaSettingSnapshot }) {
+function ValueCompositionBar({ setting, scale = 1 }: { setting: ProformaSettingSnapshot; scale?: number }) {
   const total = setting.annualValue;
   if (total <= 0) return null;
   const cap = setting.capacityValue ?? 0;
@@ -156,7 +156,7 @@ function ValueCompositionBar({ setting }: { setting: ProformaSettingSnapshot }) 
           <div
             key={s.key}
             style={{ width: `${(s.value / total) * 100}%`, backgroundColor: QUADRANT_COLORS[s.key] }}
-            title={`${s.key}: ${fmt(s.value)}`}
+            title={`${s.key}: ${fmt(s.value * scale)}`}
           />
         ))}
       </div>
@@ -164,7 +164,7 @@ function ValueCompositionBar({ setting }: { setting: ProformaSettingSnapshot }) 
         {segments.map(s => (
           <span key={s.key} className="text-[9px] text-[#A39888]">
             <span className="inline-block w-1.5 h-1.5 rounded-full mr-1" style={{ backgroundColor: QUADRANT_COLORS[s.key] }} />
-            {s.key} {fmt(s.value)}
+            {s.key} {fmt(s.value * scale)}
           </span>
         ))}
       </div>
@@ -921,6 +921,9 @@ export default function ProformaHub({
               const yu = setting.yearlyUtilization ?? defaultUtil;
               const contractYears = Math.ceil(config.contractTermMonths / 12);
               const totals = perSettingTotals[setting.id] ?? { contractValue: 0, contractInvestment: 0 };
+              // Breakdown (composition bar + driver chips) reads the whole-term total, not the
+              // annual run-rate, so it reconciles to the N-Year headline and moves with the term.
+              const termFactor = setting.annualValue > 0 ? totals.contractValue / setting.annualValue : 0;
               return (
                 <motion.div
                   key={setting.id}
@@ -968,7 +971,12 @@ export default function ProformaHub({
                                     // In quarterly mode the ramp starts at Q1 (not the yearly Y1/Q4
                                     // value) and tops out at Q12 — mirror what the engine actually models.
                                     const startProv = setting.quarterlyProviders ? setting.quarterlyProviders.q1 : setting.providerCount;
-                                    const endProv = setting.quarterlyProviders ? setting.quarterlyProviders.q12 : setting.fullScaleProviders;
+                                    // Terminal providers must follow the contract term, not the fixed
+                                    // 3-year full-scale, so a 2-year deal reads its Y2 end (matches the value).
+                                    const yp = setting.yearlyProviders;
+                                    const endProv = setting.quarterlyProviders ? setting.quarterlyProviders.q12
+                                      : yp ? (contractYears >= 3 ? (yp.year3 ?? yp.year2 ?? yp.year1) : contractYears === 2 ? (yp.year2 ?? yp.year1) : yp.year1)
+                                      : setting.fullScaleProviders;
                                     const atScaleUtil = setting.quarterlyUtilization
                                       ? setting.quarterlyUtilization.q12
                                       : (contractYears >= 3 ? yu.year3 : contractYears === 2 ? yu.year2 : yu.year1);
@@ -1036,13 +1044,13 @@ export default function ProformaHub({
                         </div>
                       </div>
 
-                      <ValueCompositionBar setting={setting} />
+                      <ValueCompositionBar setting={setting} scale={termFactor} />
 
                       <div className="flex items-start justify-between gap-3 mt-3">
                         <div className="flex flex-wrap gap-1.5 flex-1">
                           {setting.drivers.slice(0, 4).map(d => (
                             <span key={d.id} className="text-[12px] bg-[#F5F0EB] px-2 py-0.5 rounded-full text-[#6B5E4F] border border-[#E8E2DA]">
-                              {d.name}: {fmt(d.value)}
+                              {d.name}: {fmt(d.value * termFactor)}
                             </span>
                           ))}
                           {setting.drivers.length > 4 && (
