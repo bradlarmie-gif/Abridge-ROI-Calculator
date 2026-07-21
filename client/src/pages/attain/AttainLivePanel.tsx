@@ -1,5 +1,6 @@
 import { Target } from "lucide-react";
 import AttainmentCurve, { USUAL_CEILING_PCT } from "@/components/attain/AttainmentCurve";
+import { LEVERS, type LeverValues, type LeverContributionsResult } from "@/lib/attain/attainLevers";
 import type { AttainState, GoalDef, SettingGoalContent } from "@/lib/attain/attainTypes";
 import type { GoalTargetResult, AttainmentResult } from "@/lib/attain/attainCalc";
 import type { AttainStepId } from "./AttainFlow";
@@ -10,8 +11,12 @@ function formatCompact(n: number): string {
   return `$${Math.round(n)}`;
 }
 
+function isLeverMoved(value: number | string[] | undefined, realityStart: number | string[]): boolean {
+  if (Array.isArray(realityStart)) return Array.isArray(value) && value.length > 0;
+  return typeof value === "number" && value !== realityStart;
+}
+
 const SETTING_LABELS: Record<string, string> = { outpatient: "Outpatient", ed: "Emergency", inpatient: "Inpatient", nursing: "Nursing" };
-const AMBITION_LABELS: Record<string, string> = { conservative: "Conservative", typical: "Typical", ambitious: "Ambitious" };
 
 interface AttainLivePanelProps {
   state: AttainState;
@@ -20,11 +25,14 @@ interface AttainLivePanelProps {
   target: GoalTargetResult | null;
   attainment: AttainmentResult;
   step: AttainStepId;
+  leverValues: LeverValues;
+  contributions: LeverContributionsResult | null;
 }
 
-export default function AttainLivePanel({ state, goal, content, target, attainment, step }: AttainLivePanelProps) {
+export default function AttainLivePanel({ state, goal, content, target, attainment, step, leverValues, contributions }: AttainLivePanelProps) {
   const settingLabel = state.setting ? SETTING_LABELS[state.setting] : null;
-  const ambitionLabel = state.ambitionKey ? AMBITION_LABELS[state.ambitionKey] : null;
+  const showBuiltTarget = goal && contributions && (step === "buildCase" || step === "commit");
+  const movedLevers = goal ? LEVERS[goal.id].filter((l) => isLeverMoved(leverValues[l.id], l.realityStart)) : [];
 
   return (
     <div className="bg-[#1A1A1A] rounded-2xl overflow-hidden" data-testid="panel-attain-live">
@@ -71,22 +79,32 @@ export default function AttainLivePanel({ state, goal, content, target, attainme
           </div>
         )}
 
-        {ambitionLabel && (
-          <div className="flex justify-between items-center gap-2" data-testid="text-attain-panel-ambition">
-            <span className="text-sm text-white/50">Ambition</span>
-            <span className="text-sm font-semibold text-white">{ambitionLabel}</span>
-          </div>
-        )}
-
-        {target && target.margin > 0 && (
+        {showBuiltTarget && (
           <div className="pt-3 border-t border-white/10" data-testid="text-attain-panel-target">
-            <p className="text-[10px] uppercase tracking-widest text-white/40 mb-1">The goal</p>
-            <p className="font-abridge text-3xl text-[#EA2C00]">{formatCompact(target.margin)}</p>
-            <p className="text-xs text-white/50 mt-1">{target.label}</p>
+            <p className="text-[10px] uppercase tracking-widest text-white/40 mb-1">Built from your decisions</p>
+            <p className="font-abridge text-3xl text-[#EA2C00]">{formatCompact(contributions.totalMargin)}</p>
+            <p className="text-xs text-white/50 mt-1">
+              {contributions.totalMargin > 0 ? "Growing as you commit" : "Move a decision below to start building it"}
+            </p>
           </div>
         )}
 
-        {(step === "path" || step === "baseline" || step === "plan") && target && target.margin > 0 && (
+        {showBuiltTarget && movedLevers.length > 0 && (
+          <div className="pt-3 border-t border-white/10 space-y-2" data-testid="list-attain-panel-decisions">
+            <p className="text-[10px] uppercase tracking-widest text-white/40 mb-1">Decisions so far</p>
+            {movedLevers.map((l) => {
+              const pl = contributions?.perLever.find((p) => p.id === l.id);
+              return (
+                <div key={l.id} className="flex justify-between items-center gap-2 text-xs" data-testid={`row-attain-panel-decision-${l.id}`}>
+                  <span className="text-white/70 truncate">{l.label}</span>
+                  <span className="text-white font-semibold flex-shrink-0">{formatCompact(pl?.marginalMargin ?? 0)}</span>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {(step === "commit" || step === "plan") && target && target.margin > 0 && (
           <div className="pt-3 border-t border-white/10" data-testid="text-attain-panel-curve">
             <p className="text-[10px] uppercase tracking-widest text-white/40 mb-2">Closing the gap</p>
             <div className="bg-white rounded-lg p-2">

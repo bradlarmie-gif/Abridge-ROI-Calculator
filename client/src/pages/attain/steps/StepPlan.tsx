@@ -3,9 +3,10 @@ import { Download, Save } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import AttainmentCurve, { USUAL_CEILING_PCT } from "@/components/attain/AttainmentCurve";
+import { LEVERS, computeLeverContributions, type LeverValues } from "@/lib/attain/attainLevers";
 import type { AttainState, GoalDef, SettingGoalContent } from "@/lib/attain/attainTypes";
 import type { GoalTargetResult, AttainmentResult } from "@/lib/attain/attainCalc";
-import type { ChainLinkEdit } from "../AttainFlow";
+import type { Commitment } from "./StepCommit";
 
 function formatCompact(n: number): string {
   const sign = n < 0 ? "-" : "";
@@ -15,7 +16,12 @@ function formatCompact(n: number): string {
   return `${sign}$${Math.round(abs)}`;
 }
 
-const AMBITION_LABELS: Record<string, string> = { conservative: "Conservative", typical: "Typical", ambitious: "Ambitious" };
+const UNIT_LABEL: Record<string, string> = {
+  outpatient: "providers",
+  ed: "providers",
+  inpatient: "hospitalists",
+  nursing: "staffed beds",
+};
 
 const FLOW_CLASS: Record<string, string> = {
   start: "bg-[#EA2C00] text-white border-[#EA2C00] font-semibold",
@@ -24,18 +30,24 @@ const FLOW_CLASS: Record<string, string> = {
   end: "bg-white text-[#EA2C00] border-[#EA2C00] border-2 font-semibold",
 };
 
+function isMoved(value: number | string[] | undefined, realityStart: number | string[]): boolean {
+  if (Array.isArray(realityStart)) return Array.isArray(value) && value.length > 0;
+  return typeof value === "number" && value !== realityStart;
+}
+
 interface StepPlanProps {
   state: AttainState;
   goal: GoalDef;
   content: SettingGoalContent;
   target: GoalTargetResult;
   attainment: AttainmentResult;
-  chainEdits: Record<number, ChainLinkEdit>;
+  leverValues: LeverValues;
+  commitments: Record<string, Commitment>;
   baselineOverrides: Record<number, string>;
   onMonthsElapsedChange: (months: number) => void;
 }
 
-export default function StepPlan({ state, goal, content, target, attainment, chainEdits, baselineOverrides, onMonthsElapsedChange }: StepPlanProps) {
+export default function StepPlan({ state, goal, content, target, attainment, leverValues, commitments, baselineOverrides, onMonthsElapsedChange }: StepPlanProps) {
   const [orgName, setOrgName] = useState("");
   const today = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
 
@@ -44,21 +56,22 @@ export default function StepPlan({ state, goal, content, target, attainment, cha
   const curveUsualLabel = `~${formatCompact(usualMargin)}`;
   const remainingMonths = Math.max(0, state.totalMonths - state.monthsElapsed);
   const remainingMargin = Math.max(0, target.margin - attainment.marginToDate);
-  const ambitionLabel = state.ambitionKey ? AMBITION_LABELS[state.ambitionKey] : "";
+  const unitLabel = state.setting ? UNIT_LABEL[state.setting] : "units";
 
-  const fragileOnTrackCount = goal.chain.filter((l) => l.fragile && chainEdits[l.n]?.status === "onTrack").length;
-  const fragileCount = goal.chain.filter((l) => l.fragile).length;
-
-  const statusLabelFor = (n: number, isAbridge: boolean, fragile: boolean) => {
-    if (fragile) return chainEdits[n]?.status === "onTrack" ? "On track" : "Needs action";
-    if (isAbridge) return "On track";
-    if (n === 6) return "In progress";
-    if (n === 7) return "Validates later";
-    return "On track";
-  };
-
-  const ownerFor = (n: number, fallback: string) => chainEdits[n]?.owner ?? fallback;
-  const horizonFor = (n: number, fallback: string) => chainEdits[n]?.horizon ?? fallback;
+  // The centerpiece: every decision the partner actually committed to,
+  // sourced live from the same engine that built the target above, never
+  // invented. Sorted biggest-worth-first so the plan reads like a priority
+  // list, not an arbitrary table.
+  const contributions = state.setting ? computeLeverContributions(goal.id, state.setting, state.scope, leverValues) : null;
+  const committedLevers = LEVERS[goal.id]
+    .filter((l) => isMoved(leverValues[l.id], l.realityStart))
+    .map((l) => ({
+      lever: l,
+      contribution: contributions?.perLever.find((p) => p.id === l.id),
+      owner: commitments[l.id]?.owner ?? l.ownerRole,
+      due: commitments[l.id]?.due ?? l.defaultDue,
+    }))
+    .sort((a, b) => (b.contribution?.marginalMargin ?? 0) - (a.contribution?.marginalMargin ?? 0));
 
   return (
     <div>
@@ -66,7 +79,7 @@ export default function StepPlan({ state, goal, content, target, attainment, cha
       <div className="flex items-center justify-between mb-8">
         <div>
           <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-1" data-testid="text-step-eyebrow">
-            Step 7 · Your plan
+            Step 6 · Your plan
           </p>
           <h1 className="text-2xl md:text-3xl font-bold text-black font-abridge uppercase tracking-tight" data-testid="text-step-title">
             The Value Attainment Plan
@@ -114,8 +127,8 @@ export default function StepPlan({ state, goal, content, target, attainment, cha
             <p className="text-[15px] text-[#3A3A3A]">Abridge Partner Success · {today}</p>
           </div>
           <div>
-            <p className="text-[9.5px] font-semibold uppercase tracking-[2.5px] text-[#B4B4B4] mb-1">Ambition</p>
-            <p className="text-[15px] text-[#3A3A3A]">{ambitionLabel} · {state.totalMonths} months</p>
+            <p className="text-[9.5px] font-semibold uppercase tracking-[2.5px] text-[#B4B4B4] mb-1">Horizon</p>
+            <p className="text-[15px] text-[#3A3A3A]">{state.totalMonths} months · {committedLevers.length} decisions committed</p>
           </div>
         </div>
         <p className="text-[11px] text-[#B4B4B4] leading-relaxed max-w-[600px] border-t border-[#E5E5E5] pt-3">
@@ -124,7 +137,63 @@ export default function StepPlan({ state, goal, content, target, attainment, cha
         </p>
       </motion.section>
 
-      {/* ============ SECTION 2 · YOUR STARTING POINT ============ */}
+      {/* ============ SECTION 2 · THE PLAN (decisions -> who -> when -> worth) ============ */}
+      <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-14" data-testid="section-attain-checklist">
+        <p className="text-[10px] font-semibold uppercase tracking-[3.2px] text-[#EA2C00] mb-1">What Has To Happen</p>
+        <h2 className="font-abridge text-[28px] text-[#1A1A1A] mb-4">The Plan</h2>
+        <p className="text-[13px] leading-relaxed text-[#3A3A3A] mb-5 max-w-[720px]">
+          To attain <b className="text-[#1A1A1A]">{formatCompact(target.margin)}</b>, here is what has to happen. Every
+          row below is a decision you moved above your reality, with a real owner and a real month attached to it.
+          This is the checklist to come back to, not the number that started it.
+        </p>
+
+        {committedLevers.length === 0 ? (
+          <div className="bg-[#F4F0EA] border-l-[3px] border-[#EA2C00] rounded-r-md p-4" data-testid="text-attain-plan-empty">
+            <p className="text-xs text-[#3A3A3A] leading-relaxed">
+              No decisions are committed yet. Go back to Build the case and Commit to turn this into a real plan.
+            </p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse" data-testid="table-attain-plan-decisions">
+              <thead>
+                <tr>
+                  <th className="text-[8.5px] font-semibold uppercase tracking-wide text-[#8C8C8C] pb-2 border-b border-[#E7E0D6]">Decision</th>
+                  <th className="text-[8.5px] font-semibold uppercase tracking-wide text-[#8C8C8C] pb-2 border-b border-[#E7E0D6]">Owner</th>
+                  <th className="text-[8.5px] font-semibold uppercase tracking-wide text-[#8C8C8C] pb-2 border-b border-[#E7E0D6]">By when</th>
+                  <th className="text-[8.5px] font-semibold uppercase tracking-wide text-[#8C8C8C] pb-2 border-b border-[#E7E0D6] text-right">Worth</th>
+                </tr>
+              </thead>
+              <tbody>
+                {committedLevers.map(({ lever, contribution, owner, due }) => (
+                  <tr key={lever.id} data-testid={`row-attain-plan-decision-${lever.id}`}>
+                    <td className="py-3 px-2 border-b border-[#F0ECE5] align-top max-w-[280px]">
+                      <p className="text-[11px] font-bold text-[#1A1A1A]">{lever.label}</p>
+                      <p className="text-[9.5px] text-[#8C8C8C] mt-0.5 leading-relaxed">{lever.help}</p>
+                    </td>
+                    <td className="py-3 px-2 border-b border-[#F0ECE5] align-top text-[10.5px] text-[#3A3A3A]">{owner}</td>
+                    <td className="py-3 px-2 border-b border-[#F0ECE5] align-top text-[10.5px] text-[#3A3A3A] whitespace-nowrap">{due}</td>
+                    <td className="py-3 px-2 border-b border-[#F0ECE5] align-top text-right whitespace-nowrap">
+                      <p className="text-[11px] font-bold text-[#EA2C00]">{formatCompact(contribution?.marginalMargin ?? 0)}</p>
+                      <p className="text-[9px] text-[#8C8C8C]">{Math.round((contribution?.pctOfTotal ?? 0) * 100)}% of plan</p>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td className="py-3 px-2 text-[10.5px] font-bold text-[#1A1A1A]" colSpan={3}>Total, contribution margin</td>
+                  <td className="py-3 px-2 text-right">
+                    <p className="font-abridge text-lg text-[#EA2C00]">{formatCompact(target.margin)}</p>
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        )}
+      </motion.section>
+
+      {/* ============ SECTION 3 · YOUR STARTING POINT ============ */}
       <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-14" data-testid="section-attain-starting-point">
         <p className="text-[10px] font-semibold uppercase tracking-[3.2px] text-[#EA2C00] mb-1">Where You Are Today</p>
         <h2 className="font-abridge text-[28px] text-[#1A1A1A] mb-4">Your Starting Point</h2>
@@ -181,12 +250,12 @@ export default function StepPlan({ state, goal, content, target, attainment, cha
             ))}
         </div>
         <p className="text-[10px] text-[#8C8C8C]">
-          At {ambitionLabel.toLowerCase()} ambition, scoped to {state.scope.unitCount.toLocaleString()} in scope
-          {state.scope.serviceLines.length > 0 ? ` · ${state.scope.serviceLines.join(", ")}` : ""}.
+          Scoped to {state.scope.unitCount.toLocaleString()} {unitLabel}, built from {committedLevers.length} committed
+          decision{committedLevers.length === 1 ? "" : "s"}.
         </p>
       </motion.section>
 
-      {/* ============ SECTION 3 · CLOSING THE GAP ============ */}
+      {/* ============ SECTION 4 · CLOSING THE GAP ============ */}
       <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-14" data-testid="section-attain-curve">
         <p className="text-[10px] font-semibold uppercase tracking-[3.2px] text-[#EA2C00] mb-1">The Trajectory</p>
         <h2 className="font-abridge text-[28px] text-[#1A1A1A] mb-4">Closing the Gap</h2>
@@ -220,7 +289,7 @@ export default function StepPlan({ state, goal, content, target, attainment, cha
           <div className="flex-1 min-w-[160px] border border-[#E7E0D6] bg-[#F8F5F1] rounded-md p-4" data-testid="card-attain-stat-attainment">
             <p className="text-[8.5px] font-semibold uppercase tracking-[1.4px] text-[#8C8C8C]">Attainment today</p>
             <p className="font-abridge text-2xl text-[#EA2C00] mt-2 mb-1">{attainment.pct}%</p>
-            <p className="text-[9px] text-[#8C8C8C]">Of the {ambitionLabel.toLowerCase()} target</p>
+            <p className="text-[9px] text-[#8C8C8C]">Of your built plan</p>
           </div>
           <div className="flex-1 min-w-[160px] border border-[#E7E0D6] bg-[#F8F5F1] rounded-md p-4" data-testid="card-attain-stat-onpace">
             <p className="text-[8.5px] font-semibold uppercase tracking-[1.4px] text-[#8C8C8C]">On-pace target</p>
@@ -249,7 +318,7 @@ export default function StepPlan({ state, goal, content, target, attainment, cha
         </div>
       </motion.section>
 
-      {/* ============ SECTION 4 · THE VALUE CHAIN ============ */}
+      {/* ============ SECTION 5 · THE VALUE CHAIN ============ */}
       <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-14" data-testid="section-attain-chain">
         <div className="flex items-center gap-3 mb-2">
           <span className="inline-block text-[9px] font-bold uppercase tracking-[1.5px] text-white px-3 py-1 rounded-full" style={{ background: goal.pillBg }}>
@@ -264,7 +333,7 @@ export default function StepPlan({ state, goal, content, target, attainment, cha
         <p className="text-[11.5px] leading-relaxed text-[#3A3A3A] mb-4 max-w-[720px]">
           {goal.label} is the end of a chain of links that must all fire. Abridge reliably delivers the first two,
           and the last two are the readout. <b className="text-[#1A1A1A]">Value leaks in the fragile middle, and
-          every link there is owned by you.</b> This is the map we steer against together.
+          every link there is owned by you.</b> This is the map the decisions on this plan are steering.
         </p>
 
         <p className="text-[10px] font-semibold uppercase tracking-wide text-[#8C8C8C] mb-2">How value moves through the chain</p>
@@ -279,14 +348,13 @@ export default function StepPlan({ state, goal, content, target, attainment, cha
 
         <hr className="border-t border-[#E7E0D6] mb-5" />
 
-        <p className="text-[10px] font-semibold uppercase tracking-wide text-[#8C8C8C] mb-2">The seven links, signal, owner, and status</p>
+        <p className="text-[10px] font-semibold uppercase tracking-wide text-[#8C8C8C] mb-2">The seven links and who typically holds them</p>
         <div className="overflow-x-auto mb-5">
           <table className="w-full text-left border-collapse" data-testid="table-attain-plan-chain">
             <thead>
               <tr>
                 <th className="text-[8.5px] font-semibold uppercase tracking-wide text-[#8C8C8C] pb-2 border-b border-[#E7E0D6]">Link</th>
-                <th className="text-[8.5px] font-semibold uppercase tracking-wide text-[#8C8C8C] pb-2 border-b border-[#E7E0D6]">Owner · Horizon</th>
-                <th className="text-[8.5px] font-semibold uppercase tracking-wide text-[#8C8C8C] pb-2 border-b border-[#E7E0D6] text-right">Status</th>
+                <th className="text-[8.5px] font-semibold uppercase tracking-wide text-[#8C8C8C] pb-2 border-b border-[#E7E0D6] text-right">Typically owned by</th>
               </tr>
             </thead>
             <tbody>
@@ -296,15 +364,8 @@ export default function StepPlan({ state, goal, content, target, attainment, cha
                     <p className="text-[11px] font-bold text-[#1A1A1A]">{link.n} · {link.name}</p>
                     <p className="text-[9.5px] text-[#8C8C8C] mt-0.5">{link.signal}</p>
                   </td>
-                  <td className="py-2 px-2 border-b border-[#F0ECE5] align-top text-[10px] text-[#3A3A3A]">
-                    {ownerFor(link.n, link.ownerRole)}
-                    <br />
-                    <span className="text-[#B4B4B4]">{horizonFor(link.n, "")}</span>
-                  </td>
-                  <td className="py-2 px-2 border-b border-[#F0ECE5] align-top text-right">
-                    <span className={`text-[8.5px] font-bold uppercase tracking-wide ${link.fragile && chainEdits[link.n]?.status !== "onTrack" ? "text-[#EA2C00]" : "text-[#8C8C8C]"}`}>
-                      {statusLabelFor(link.n, link.isAbridge, link.fragile)}
-                    </span>
+                  <td className="py-2 px-2 border-b border-[#F0ECE5] align-top text-[10px] text-[#3A3A3A] text-right">
+                    {link.ownerRole}
                   </td>
                 </tr>
               ))}
@@ -316,12 +377,12 @@ export default function StepPlan({ state, goal, content, target, attainment, cha
           <p className="text-[9px] font-bold uppercase tracking-wide text-[#EA2C00] mb-1.5">The fragile middle</p>
           <p className="text-xs text-[#3A3A3A] leading-relaxed">{content.fragile}</p>
           <p className="text-[10px] text-[#8C8C8C] mt-2">
-            {fragileOnTrackCount} of {fragileCount} fragile links on track today.
+            {committedLevers.length} of {LEVERS[goal.id].length} available decisions committed to this plan today.
           </p>
         </div>
       </motion.section>
 
-      {/* ============ SECTION 5 · THE HARDEST LINK ============ */}
+      {/* ============ SECTION 6 · THE HARDEST LINK ============ */}
       <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-14" data-testid="section-attain-hardest-link">
         <p className="text-[10px] font-semibold uppercase tracking-[3.2px] text-[#EA2C00] mb-1">The Hardest Link</p>
         <h2 className="font-abridge text-[28px] text-[#1A1A1A] mb-4">
@@ -372,7 +433,7 @@ export default function StepPlan({ state, goal, content, target, attainment, cha
         </div>
       </motion.section>
 
-      {/* ============ SECTION 6 · THE CADENCE ============ */}
+      {/* ============ SECTION 7 · THE CADENCE ============ */}
       <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-8" data-testid="section-attain-cadence">
         <p className="text-[10px] font-semibold uppercase tracking-[3.2px] text-[#EA2C00] mb-1">How This Gets Steered</p>
         <h2 className="font-abridge text-[28px] text-[#1A1A1A] mb-4">The Cadence</h2>
@@ -385,7 +446,7 @@ export default function StepPlan({ state, goal, content, target, attainment, cha
           <div className="space-y-4">
             <p className="text-[11px] leading-relaxed text-[#3A3A3A]">
               <b className="text-[#1A1A1A]">Goal-owner.</b> An executive co-signs this plan at kickoff, so the goal
-              sits on a scorecard beyond just this one, and the middle-link owners have someone to answer to.
+              sits on a scorecard beyond just this one, and the decision owners above have someone to answer to.
             </p>
             <p className="text-[11px] leading-relaxed text-[#3A3A3A]">
               <b className="text-[#1A1A1A]">Cadence.</b> {content.cadenceLead}
@@ -407,8 +468,8 @@ export default function StepPlan({ state, goal, content, target, attainment, cha
         <div className="mb-6">
           <p className="text-[10px] font-semibold uppercase tracking-[2px] text-[#EA2C00] mb-2">The monthly check</p>
           <p className="text-[11px] leading-relaxed text-[#3A3A3A] mb-3">
-            Same five questions every month. Five minutes. This is what keeps a bleeding link from becoming a lost
-            quarter.
+            Same five questions every month. Five minutes. This is what keeps a bleeding decision from becoming a
+            lost quarter.
           </p>
           <div className="flex flex-col gap-3">
             {content.monthly.map((q, i) => (
@@ -428,15 +489,13 @@ export default function StepPlan({ state, goal, content, target, attainment, cha
               <p className="text-[11px] font-bold text-[#1A1A1A] mt-1">{orgName ? `${orgName} executive sponsor` : "Executive sponsor"}</p>
               <p className="text-[9px] text-[#8C8C8C]">Owns the outcome</p>
             </div>
-            {goal.chain
-              .filter((l) => l.fragile || l.n === 5)
-              .map((l) => (
-                <div key={l.n} className="flex-1 min-w-[150px] border border-[#E7E0D6] bg-[#F8F5F1] rounded-md p-3" data-testid={`card-attain-owner-${l.n}`}>
-                  <p className="text-[8px] font-bold uppercase tracking-wide text-[#8C8C8C]">Link {l.n} · {l.name}</p>
-                  <p className="text-[11px] font-bold text-[#1A1A1A] mt-1">{ownerFor(l.n, l.ownerRole)}</p>
-                  <p className="text-[9px] text-[#8C8C8C]">{horizonFor(l.n, "")}</p>
-                </div>
-              ))}
+            {committedLevers.map(({ lever, owner, due }) => (
+              <div key={lever.id} className="flex-1 min-w-[150px] border border-[#E7E0D6] bg-[#F8F5F1] rounded-md p-3" data-testid={`card-attain-owner-${lever.id}`}>
+                <p className="text-[8px] font-bold uppercase tracking-wide text-[#8C8C8C]">{lever.label}</p>
+                <p className="text-[11px] font-bold text-[#1A1A1A] mt-1">{owner}</p>
+                <p className="text-[9px] text-[#8C8C8C]">{due}</p>
+              </div>
+            ))}
           </div>
         </div>
 

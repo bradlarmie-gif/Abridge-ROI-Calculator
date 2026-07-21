@@ -3,9 +3,8 @@ import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import StepSetting from "./steps/StepSetting";
 import StepVision from "./steps/StepVision";
 import StepScope from "./steps/StepScope";
-import StepAmbition from "./steps/StepAmbition";
-import StepPath from "./steps/StepPath";
-import StepBaseline from "./steps/StepBaseline";
+import StepBuildCase from "./steps/StepBuildCase";
+import StepCommit, { type Commitment } from "./steps/StepCommit";
 import StepPlan from "./steps/StepPlan";
 import AttainLivePanel from "./AttainLivePanel";
 import {
@@ -15,28 +14,20 @@ import {
   type AttainSetting,
   type AttainScope,
   type GoalId,
-  type AmbitionKey,
 } from "@/lib/attain/attainTypes";
 import { GOAL_CATALOG, getContent } from "@/lib/attain/attainGoals";
-import { computeGoalTarget, computeAttainment } from "@/lib/attain/attainCalc";
+import { LEVERS, defaultLeverValues, computeLeverContributions, type LeverValues } from "@/lib/attain/attainLevers";
+import type { GoalTargetResult, AttainmentResult } from "@/lib/attain/attainCalc";
 
-export type AttainStepId = "setting" | "vision" | "scope" | "ambition" | "path" | "baseline" | "plan";
+export type AttainStepId = "setting" | "vision" | "scope" | "buildCase" | "commit" | "plan";
 
-export type LinkStatus = "onTrack" | "needsAction";
-export interface ChainLinkEdit {
-  owner: string;
-  horizon: string;
-  status: LinkStatus;
-}
-
-const STEP_ORDER: AttainStepId[] = ["setting", "vision", "scope", "ambition", "path", "baseline", "plan"];
+const STEP_ORDER: AttainStepId[] = ["setting", "vision", "scope", "buildCase", "commit", "plan"];
 const STEP_LABELS: Record<AttainStepId, string> = {
   setting: "Setting",
   vision: "Vision",
-  scope: "Scope",
-  ambition: "Ambition",
-  path: "The Path",
-  baseline: "Baseline",
+  scope: "Starting point",
+  buildCase: "Build the case",
+  commit: "Commit",
   plan: "Your Plan",
 };
 
@@ -48,6 +39,37 @@ function parseTotalMonths(goodHead: string | undefined): number {
   return match ? parseInt(match[1], 10) : DEFAULT_TOTAL_MONTHS;
 }
 
+/** A decision counts as "moved" once it differs from its realityStart — a
+ * lines lever with at least one line picked, or a numeric lever dialed away
+ * from where the partner already stands today. */
+function isLeverMoved(value: number | string[] | undefined, realityStart: number | string[]): boolean {
+  if (Array.isArray(realityStart)) return Array.isArray(value) && value.length > 0;
+  return typeof value === "number" && value !== realityStart;
+}
+
+/** Presentation-only unit label for the built target's count figure — the
+ * number itself always comes from `computeLeverContributions`, this just
+ * names its unit for the given goal/setting. */
+function countLabel(goal: GoalId, setting: AttainSetting): string {
+  switch (goal) {
+    case "access":
+      return setting === "ed" ? "recovered visits/year" : "net-new visits/year";
+    case "retention":
+      return "departures avoided/year";
+    case "revenue":
+      return setting === "inpatient" ? "cases/queries addressed/year" : "wRVUs captured/year";
+    case "quality":
+      return "events prevented/year";
+    default:
+      return "";
+  }
+}
+
+function dueMonthNumber(due: string): number {
+  const m = due.match(/(\d+)/);
+  return m ? parseInt(m[1], 10) : 1;
+}
+
 interface AttainFlowProps {
   onBackToJourney?: () => void;
 }
@@ -55,7 +77,8 @@ interface AttainFlowProps {
 export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
   const [stepIndex, setStepIndex] = useState(0);
   const [state, setState] = useState<AttainState>(DEFAULT_ATTAIN_STATE);
-  const [chainEdits, setChainEdits] = useState<Record<number, ChainLinkEdit>>({});
+  const [leverValues, setLeverValues] = useState<LeverValues>({});
+  const [commitments, setCommitments] = useState<Record<string, Commitment>>({});
   const [baselineOverrides, setBaselineOverrides] = useState<Record<number, string>>({});
 
   const step = STEP_ORDER[stepIndex];
@@ -68,14 +91,14 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
   const content = state.setting && state.goal ? getContent(state.setting, state.goal) : undefined;
 
   const handleSelectSetting = useCallback((setting: AttainSetting) => {
-    setChainEdits({});
+    setLeverValues({});
+    setCommitments({});
     setBaselineOverrides({});
     setState((prev) => ({
       ...prev,
       setting,
       goal: null,
       scope: { ...DEFAULT_ATTAIN_SCOPE },
-      ambitionKey: null,
       monthsElapsed: 0,
       totalMonths: DEFAULT_TOTAL_MONTHS,
       progressRatio: 1,
@@ -83,69 +106,107 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
   }, []);
 
   const handleSelectGoal = useCallback((goalId: GoalId) => {
-    setChainEdits({});
+    setLeverValues(defaultLeverValues(goalId));
+    setCommitments({});
     setBaselineOverrides({});
-    setState((prev) => ({
-      ...prev,
-      goal: goalId,
-      ambitionKey: null,
-      monthsElapsed: 0,
-      totalMonths: DEFAULT_TOTAL_MONTHS,
-      progressRatio: 1,
-    }));
+    setState((prev) => {
+      const c = prev.setting ? getContent(prev.setting, goalId) : undefined;
+      const totalMonths = parseTotalMonths(c?.goodHead);
+      return {
+        ...prev,
+        goal: goalId,
+        totalMonths,
+        monthsElapsed: Math.round(totalMonths * 0.6),
+        progressRatio: 1,
+      };
+    });
   }, []);
 
   const handleChangeScope = useCallback((scope: AttainScope) => {
     updateState({ scope });
   }, [updateState]);
 
-  const handleSelectAmbition = useCallback((key: AmbitionKey) => {
-    const c = state.setting && state.goal ? getContent(state.setting, state.goal) : undefined;
-    const totalMonths = parseTotalMonths(c?.goodHead);
-    updateState({ ambitionKey: key, totalMonths, monthsElapsed: Math.round(totalMonths * 0.6) });
-  }, [state.setting, state.goal, updateState]);
-
-  const handleChangeChainEdit = useCallback((n: number, edit: Partial<ChainLinkEdit>) => {
-    setChainEdits((prev) => {
-      const link = goal?.chain.find((l) => l.n === n);
-      const base: ChainLinkEdit = prev[n] ?? {
-        owner: link?.ownerRole ?? "",
-        horizon: "Month 1-2",
-        status: "needsAction",
-      };
-      return { ...prev, [n]: { ...base, ...edit } };
-    });
-  }, [goal]);
-
   const handleChangeBaselineOverride = useCallback((index: number, value: string) => {
     setBaselineOverrides((prev) => ({ ...prev, [index]: value }));
   }, []);
+
+  const handleChangeLeverValue = useCallback((leverId: string, value: number | string[]) => {
+    setLeverValues((prev) => ({ ...prev, [leverId]: value }));
+  }, []);
+
+  const handleChangeCommitment = useCallback((leverId: string, patch: Partial<Commitment>) => {
+    setCommitments((prev) => {
+      const lever = state.goal ? LEVERS[state.goal].find((l) => l.id === leverId) : undefined;
+      const base: Commitment = prev[leverId] ?? {
+        owner: lever?.ownerRole ?? "",
+        due: lever?.defaultDue ?? "Month 1",
+      };
+      return { ...prev, [leverId]: { ...base, ...patch } };
+    });
+  }, [state.goal]);
 
   const handleMonthsElapsedChange = useCallback((months: number) => {
     updateState({ monthsElapsed: months });
   }, [updateState]);
 
-  // Progress ratio is driven by how many of the goal's fragile-middle links
-  // the partner has marked "on track" on the Path step (Task 6). 0 fragile
-  // links on track drifts the curve toward "what usually happens"; all of
-  // them on track keeps it on the plan's own pace.
+  // Every dollar figure downstream comes from this one computation: the sum
+  // of each lever's delta off its own realityStart. See attainLevers.ts for
+  // the contribution model.
+  const contributions = useMemo(() => {
+    if (!state.goal || !state.setting) return null;
+    return computeLeverContributions(state.goal, state.setting, state.scope, leverValues);
+  }, [state.goal, state.setting, state.scope, leverValues]);
+
+  const builtTarget: GoalTargetResult | null = useMemo(() => {
+    if (!state.goal || !state.setting || !contributions) return null;
+    return {
+      margin: contributions.totalMargin,
+      count: contributions.totalCount,
+      label: `${contributions.totalCount.toLocaleString()} ${countLabel(state.goal, state.setting)}`,
+    };
+  }, [state.goal, state.setting, contributions]);
+
+  const movedLeverIds = useMemo(() => {
+    if (!state.goal) return [] as string[];
+    return LEVERS[state.goal].filter((l) => isLeverMoved(leverValues[l.id], l.realityStart)).map((l) => l.id);
+  }, [state.goal, leverValues]);
+
+  // Progress ratio (Task 4-7 replacement): instead of "fragile chain links
+  // marked on track," the curve now steers against how much of the built
+  // target has a commitment (owner + month) whose month has actually
+  // arrived. A plan with nothing committed yet, or nothing due yet, drifts
+  // toward "what usually happens"; as committed decisions come due, the
+  // curve climbs back toward the plan's own line.
   useEffect(() => {
-    if (!goal) return;
-    const fragileLinks = goal.chain.filter((l) => l.fragile);
-    if (fragileLinks.length === 0) return;
-    const onTrack = fragileLinks.filter((l) => (chainEdits[l.n]?.status ?? "needsAction") === "onTrack").length;
-    const ratio = 0.35 + (0.65 * onTrack) / fragileLinks.length;
+    if (!state.goal || !contributions) return;
+    if (movedLeverIds.length === 0) {
+      if (state.progressRatio !== 1) updateState({ progressRatio: 1 });
+      return;
+    }
+    const levers = LEVERS[state.goal];
+    const realizedWeight = contributions.perLever
+      .filter((p) => movedLeverIds.includes(p.id))
+      .reduce((sum, p) => {
+        const lever = levers.find((l) => l.id === p.id);
+        const due = commitments[p.id]?.due ?? lever?.defaultDue ?? "Month 1";
+        return dueMonthNumber(due) <= state.monthsElapsed ? sum + p.pctOfTotal : sum;
+      }, 0);
+    const ratio = 0.4 + 0.6 * Math.min(1, Math.max(0, realizedWeight));
     if (Math.abs(ratio - state.progressRatio) > 0.001) {
       updateState({ progressRatio: ratio });
     }
-  }, [goal, chainEdits, state.progressRatio, updateState]);
+  }, [state.goal, state.monthsElapsed, state.progressRatio, contributions, movedLeverIds, commitments, updateState]);
 
-  const target = useMemo(() => {
-    if (!state.goal || !state.setting || !state.ambitionKey) return null;
-    return computeGoalTarget(state.goal, state.setting, state.scope, state.ambitionKey);
-  }, [state.goal, state.setting, state.scope, state.ambitionKey]);
-
-  const attainment = useMemo(() => computeAttainment(state), [state]);
+  const attainment: AttainmentResult = useMemo(() => {
+    if (!builtTarget || builtTarget.margin <= 0) return { pct: 0, onPacePct: 0, marginToDate: 0 };
+    const totalMonths = Math.max(1, state.totalMonths);
+    const t = Math.min(1, Math.max(0, state.monthsElapsed / totalMonths));
+    const onPacePct = Math.round(100 * Math.pow(t, 0.85));
+    const ratio = Math.min(1, Math.max(0, state.progressRatio));
+    const pct = Math.round(onPacePct * ratio);
+    const marginToDate = Math.round(builtTarget.margin * (pct / 100));
+    return { pct, onPacePct, marginToDate };
+  }, [builtTarget, state.totalMonths, state.monthsElapsed, state.progressRatio]);
 
   const goNext = useCallback(() => {
     setStepIndex((i) => Math.min(STEP_ORDER.length - 1, i + 1));
@@ -185,26 +246,10 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
             )}
 
             {step === "scope" && state.setting && (
-              <StepScope setting={state.setting} scope={state.scope} onChange={handleChangeScope} onNext={goNext} />
-            )}
-
-            {step === "ambition" && state.setting && state.goal && (
-              <StepAmbition
+              <StepScope
                 setting={state.setting}
-                goal={state.goal}
                 scope={state.scope}
-                ambitionKey={state.ambitionKey}
-                onSelect={handleSelectAmbition}
-                onNext={goNext}
-              />
-            )}
-
-            {step === "path" && goal && (
-              <StepPath goal={goal} edits={chainEdits} onChangeEdit={handleChangeChainEdit} onNext={goNext} />
-            )}
-
-            {step === "baseline" && (
-              <StepBaseline
+                onChange={handleChangeScope}
                 content={content}
                 overrides={baselineOverrides}
                 onChangeOverride={handleChangeBaselineOverride}
@@ -212,22 +257,45 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
               />
             )}
 
+            {step === "buildCase" && state.setting && state.goal && (
+              <StepBuildCase
+                setting={state.setting}
+                goal={state.goal}
+                values={leverValues}
+                contributions={contributions}
+                onChange={handleChangeLeverValue}
+                onNext={goNext}
+              />
+            )}
+
+            {step === "commit" && state.goal && (
+              <StepCommit
+                goal={state.goal}
+                values={leverValues}
+                contributions={contributions}
+                commitments={commitments}
+                onChangeCommitment={handleChangeCommitment}
+                onNext={goNext}
+              />
+            )}
+
             {step === "plan" && (
-              goal && content && target ? (
+              goal && content && state.setting && builtTarget ? (
                 <StepPlan
                   state={state}
                   goal={goal}
                   content={content}
-                  target={target}
+                  target={builtTarget}
                   attainment={attainment}
-                  chainEdits={chainEdits}
+                  leverValues={leverValues}
+                  commitments={commitments}
                   baselineOverrides={baselineOverrides}
                   onMonthsElapsedChange={handleMonthsElapsedChange}
                 />
               ) : (
                 <div>
                   <p className="text-sm text-[#888888] italic mb-4">
-                    Something upstream is missing. Go back and finish setting, goal, and ambition first.
+                    Something upstream is missing. Go back and finish setting, goal, and scope first.
                   </p>
                 </div>
               )
@@ -237,7 +305,16 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
           {step !== "plan" && (
             <div className="w-full lg:w-80 flex-shrink-0">
               <div className="lg:sticky lg:top-24">
-                <AttainLivePanel state={state} goal={goal} content={content} target={target} attainment={attainment} step={step} />
+                <AttainLivePanel
+                  state={state}
+                  goal={goal}
+                  content={content}
+                  target={builtTarget}
+                  attainment={attainment}
+                  step={step}
+                  leverValues={leverValues}
+                  contributions={contributions}
+                />
               </div>
             </div>
           )}
