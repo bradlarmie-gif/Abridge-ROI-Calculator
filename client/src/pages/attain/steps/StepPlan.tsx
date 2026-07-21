@@ -71,6 +71,10 @@ interface StepPlanProps {
   commitments: Record<string, Commitment>;
   freedTimeSplit: number;
   onMonthsElapsedChange: (months: number) => void;
+  /** The real step number in the current (dynamic) sequence - one build-case
+   * page per selected goal means Your Plan's position shifts with goal
+   * count. */
+  stepNumber: number;
 }
 
 export default function StepPlan({
@@ -84,6 +88,7 @@ export default function StepPlan({
   commitments,
   freedTimeSplit,
   onMonthsElapsedChange,
+  stepNumber,
 }: StepPlanProps) {
   const [orgName, setOrgName] = useState("");
   const today = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
@@ -113,7 +118,7 @@ export default function StepPlan({
       <div className="flex items-center justify-between mb-8">
         <div>
           <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-1" data-testid="text-step-eyebrow">
-            Step 6 · Your plan
+            Step {stepNumber} · Your plan
           </p>
           <h1 className="text-2xl md:text-3xl font-bold text-black font-abridge uppercase tracking-tight" data-testid="text-step-title">
             The Value Attainment Plan

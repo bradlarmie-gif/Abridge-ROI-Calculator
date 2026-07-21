@@ -52,7 +52,8 @@ export default function AttainLivePanel({
   nextLabel = "Continue",
 }: AttainLivePanelProps) {
   const settingLabel = state.setting ? SETTING_LABELS[state.setting] : null;
-  const showBuiltTarget = goals.length > 0 && combined && (step === "buildCase" || step === "commit");
+  const isBuildCaseStep = step.startsWith("buildCase:");
+  const showBuiltTarget = goals.length > 0 && combined && (isBuildCaseStep || step === "commit");
 
   // Every moved decision across every selected goal, prefixed so a partner
   // with two priorities can tell at a glance which one a given decision

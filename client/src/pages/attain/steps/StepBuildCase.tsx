@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Slider } from "@/components/ui/slider";
-import { LEVERS, lineOptions, defaultLeverValues, type AttainBaseline, type Lever, type LeverValues } from "@/lib/attain/attainLevers";
+import { LEVERS, lineOptions, type AttainBaseline, type Lever, type LeverValues } from "@/lib/attain/attainLevers";
 import type { MultiGoalContributionsResult } from "@/lib/attain/attainLevers";
 import { GOAL_CATALOG } from "@/lib/attain/attainGoals";
 import type { AttainSetting, GoalId } from "@/lib/attain/attainTypes";
@@ -38,48 +38,73 @@ function formatLeverValue(lever: Lever, value: number | string[] | undefined): s
 interface StepBuildCaseProps {
   setting: AttainSetting;
   baseline: AttainBaseline;
+  /** The ONE goal this page builds the case for. Each selected goal gets
+   * its own "Build the case" page in sequence (see AttainFlow's dynamic
+   * stepOrder) rather than every goal stacked on one page. */
+  goal: GoalId;
+  goalIndex: number;
+  totalGoals: number;
+  /** The full selected-goals list, needed only to detect the access +
+   * retention freed-time conflict and decide whether the split control
+   * belongs on THIS page - never used to render another goal's decisions. */
   goals: GoalId[];
-  valuesByGoal: Partial<Record<GoalId, LeverValues>>;
+  values: LeverValues;
   combined: MultiGoalContributionsResult | null;
   freedTimeSplit: number;
   onChangeFreedTimeSplit: (split: number) => void;
   onChangeLeverValue: (goal: GoalId, leverId: string, value: number | string[]) => void;
+  stepNumber: number;
+  totalSteps: number;
 }
 
 /**
- * "Build the case" — the strategy hub. The hero here is the STRATEGY (the
- * goal and the decisions that reach it), not a big dollar figure: Attain is
- * the plan to CAPTURE the prize Explore already sized, and a page that
- * leads with money is just a weaker Explore. Every decision card shows its
- * own live derivation directly underneath the control ("THE MATH", built
- * from the partner's own baseline, never invented), with a small, quiet
- * "adds ~$X" readout beneath that, never a headline. The one running total
- * lives quietly in the side panel's "Plan so far" line, not here.
+ * "Build the case" — the strategy hub, one page per selected priority. The
+ * hero here is the STRATEGY (the goal and the decisions that reach it), not
+ * a big dollar figure: Attain is the plan to CAPTURE the prize Explore
+ * already sized, and a page that leads with money is just a weaker
+ * Explore. Every decision card shows its own live derivation directly
+ * underneath the control ("THE MATH", built from the partner's own
+ * baseline, never invented), with a small, quiet "adds ~$X" readout
+ * beneath that, never a headline. The one running total, COMBINED across
+ * every priority (including ones on pages already passed), lives quietly
+ * in the side panel's "Plan so far" line, not here.
+ *
+ * When both Access and Retention are selected, they share one freed
+ * documentation hour (see attainLevers.ts computeMultiGoalContributions),
+ * so the split control that prevents double-counting it is surfaced on
+ * BOTH goals' own pages — whichever one the partner lands on first, they
+ * see and can set it, and it stays in sync (shared state) on the other's
+ * page too.
  */
 export default function StepBuildCase({
   setting,
   baseline,
+  goal,
+  goalIndex,
+  totalGoals,
   goals,
-  valuesByGoal,
+  values,
   combined,
   freedTimeSplit,
   onChangeFreedTimeSplit,
   onChangeLeverValue,
+  stepNumber,
+  totalSteps,
 }: StepBuildCaseProps) {
   const hasFreedTimeConflict = goals.includes("access") && goals.includes("retention");
-  const goalNames = goals.map((g) => GOAL_CATALOG[g].label).join(" + ");
+  const showFreedTimeSplit = hasFreedTimeConflict && (goal === "access" || goal === "retention");
+  const goalDef = GOAL_CATALOG[goal];
+  const levers = LEVERS[goal];
+  const result = combined?.byGoal[goal];
+  const contributionFor = (id: string) => result?.perLever.find((p) => p.id === id);
 
-  const totalLevers = goals.reduce((sum, g) => sum + LEVERS[g].length, 0);
-  const movedCount = goals.reduce((sum, g) => {
-    const values = valuesByGoal[g] ?? defaultLeverValues(g);
-    return sum + LEVERS[g].filter((l) => isMoved(values[l.id], l.realityStart)).length;
-  }, 0);
+  const movedCount = levers.filter((l) => isMoved(values[l.id], l.realityStart)).length;
 
   return (
     <div>
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
         <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-3" data-testid="text-step-eyebrow">
-          Step 4 · What are you actually going to do?
+          Step {stepNumber} of {totalSteps} · What are you actually going to do?
         </p>
         <h1 className="text-2xl md:text-4xl font-bold text-black mb-3 font-abridge uppercase tracking-tight" data-testid="text-step-title">
           Build your strategy
@@ -88,8 +113,8 @@ export default function StepBuildCase({
           Every decision below starts at your reality, where it stands today. Doing nothing new adds nothing. Move a
           decision and its own derivation appears underneath it, built from the operation you entered on the last
           page.{" "}
-          {goals.length > 1
-            ? "Each priority you picked gets its own section below, and everything rolls up into one quiet total in the panel to the right."
+          {totalGoals > 1
+            ? `This is priority ${goalIndex + 1} of ${totalGoals}. Each priority you picked gets its own page like this one, and everything rolls up into one quiet total in the panel to the right.`
             : "The dollar figure is proof of the decision, not the point of this page."}
         </p>
       </motion.div>
@@ -100,17 +125,27 @@ export default function StepBuildCase({
         className="bg-[#1A1A1A] rounded-2xl p-6 mb-8"
         data-testid="panel-attain-buildcase-strategy"
       >
-        <p className="text-[10px] font-semibold uppercase tracking-[2.5px] text-white/50 mb-2">The strategy</p>
-        <h2 className="font-abridge text-2xl text-white mb-1" data-testid="text-attain-buildcase-strategy-title">
-          {goalNames}
-        </h2>
-        <p className="text-xs text-white/50" data-testid="text-attain-buildcase-strategy-progress">
-          {movedCount} of {totalLevers} decisions moved. Move the ones your organization is actually ready to commit
-          to, the rest can wait for a later plan.
+        <p className="text-[10px] font-semibold uppercase tracking-[2.5px] text-white/50 mb-2" data-testid="text-attain-buildcase-priority-index">
+          {totalGoals > 1 ? `Priority ${goalIndex + 1} of ${totalGoals}` : "The strategy"}
+        </p>
+        <div className="flex items-center gap-3 mb-1">
+          <span
+            className="inline-block text-[9px] font-bold uppercase tracking-[1.5px] text-white px-3 py-1 rounded-full"
+            style={{ background: goalDef.pillBg }}
+          >
+            {goalDef.pill}
+          </span>
+          <h2 className="font-abridge text-2xl text-white" data-testid="text-attain-buildcase-strategy-title">
+            {goalDef.label}
+          </h2>
+        </div>
+        <p className="text-xs text-white/50 mt-2" data-testid="text-attain-buildcase-strategy-progress">
+          {movedCount} of {levers.length} decisions moved. Move the ones your organization is actually ready to
+          commit to, the rest can wait for a later plan.
         </p>
       </motion.div>
 
-      {hasFreedTimeConflict && (
+      {showFreedTimeSplit && (
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -123,7 +158,8 @@ export default function StepBuildCase({
           <p className="text-xs text-[#3A3A3A] leading-relaxed mb-4 max-w-[600px]">
             Access and Retention both price the same freed documentation hour. This is the one decision that keeps it
             from being counted twice: how much of that hour routes to opening access on the schedule, versus how
-            much stays as protected relief. Every dollar below already reflects this split.
+            much stays as protected relief. Every dollar on both of those priorities' pages already reflects this
+            split.
           </p>
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-semibold text-[#1A1A1A]" data-testid="text-attain-freed-time-split-access">
@@ -150,109 +186,82 @@ export default function StepBuildCase({
         </motion.div>
       )}
 
-      {goals.map((goal, goalIdx) => {
-        const goalDef = GOAL_CATALOG[goal];
-        const levers = LEVERS[goal];
-        const values = valuesByGoal[goal] ?? defaultLeverValues(goal);
-        const result = combined?.byGoal[goal];
-        const contributionFor = (id: string) => result?.perLever.find((p) => p.id === id);
-
-        return (
-          <div key={goal} className="mb-10" data-testid={`section-attain-buildcase-goal-${goal}`}>
-            <div className="flex items-center gap-3 mb-1">
-              <span
-                className="inline-block text-[9px] font-bold uppercase tracking-[1.5px] text-white px-3 py-1 rounded-full"
-                style={{ background: goalDef.pillBg }}
-              >
-                {goalDef.pill}
-              </span>
-              <h2 className="text-lg font-bold text-[#1A1A1A]" data-testid={`text-attain-buildcase-goal-title-${goal}`}>
-                {goalDef.label}
-              </h2>
-            </div>
-            {goals.length > 1 && (
-              <p className="text-[11px] text-[#8C8C8C] mb-4">
-                Priority {goalIdx + 1} of {goals.length} · {goalDef.domainSub}
-              </p>
-            )}
-
-            {goal === "access" ? (
-              <AccessDecisionChain
-                setting={setting}
-                baseline={baseline}
-                values={values}
-                onChangeValue={(leverId, value) => onChangeLeverValue("access", leverId, value)}
-              />
-            ) : (
-            <div className="space-y-4">
-              {levers.map((lever, i) => {
-                const contribution = contributionFor(lever.id);
-                const moved = isMoved(values[lever.id], lever.realityStart);
-                const isSharedFreedTime = hasFreedTimeConflict && lever.id === "retentionFloor";
-                return (
-                  <motion.div
-                    key={lever.id}
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.04 * i }}
-                    className={`rounded-xl border p-5 ${moved ? "border-[#EA2C00] bg-[#FFF6F3]" : "border-[#E5E5E5] bg-white"}`}
-                    data-testid={`card-attain-lever-${goal}-${lever.id}`}
-                  >
-                    <div className="mb-3">
-                      <h3 className="text-sm font-bold text-[#1A1A1A]" data-testid={`text-attain-lever-label-${goal}-${lever.id}`}>
-                        {lever.label}
-                      </h3>
-                      <p className="text-xs text-[#8C8C8C] mt-1 leading-relaxed max-w-[520px]">{lever.help}</p>
-                      {isSharedFreedTime && (
-                        <p className="text-[10px] text-[#EA2C00] mt-1.5 font-medium">
-                          Scaled by the freed-time split above.
-                        </p>
-                      )}
-                    </div>
-
-                    <LeverControl
-                      setting={setting}
-                      goal={goal}
-                      lever={lever}
-                      value={values[lever.id]}
-                      onChange={(v) => onChangeLeverValue(goal, lever.id, v)}
-                    />
-
-                    {/* THE MATH — the live derivation, always visible so a
-                        partner can see what moving this decision would
-                        even mean before they move it. Mirrors the coral
-                        left-border "THE MATH" treatment used on Explore. */}
-                    <div
-                      className="mt-4 bg-[#F8F5F1] border-l-[3px] border-[#EA2C00] rounded-r-md p-3"
-                      data-testid={`box-attain-lever-formula-${goal}-${lever.id}`}
-                    >
-                      <p className="text-[9px] font-bold uppercase tracking-wide text-[#EA2C00] mb-1">The math</p>
-                      <p className="text-[11px] text-[#3A3A3A] leading-relaxed" data-testid={`text-attain-lever-formula-${goal}-${lever.id}`}>
-                        {contribution?.formula ?? "Move this decision above reality to see the math."}
+      <div data-testid={`section-attain-buildcase-goal-${goal}`}>
+        {goal === "access" ? (
+          <AccessDecisionChain
+            setting={setting}
+            baseline={baseline}
+            values={values}
+            onChangeValue={(leverId, value) => onChangeLeverValue("access", leverId, value)}
+          />
+        ) : (
+          <div className="space-y-4">
+            {levers.map((lever, i) => {
+              const contribution = contributionFor(lever.id);
+              const moved = isMoved(values[lever.id], lever.realityStart);
+              const isSharedFreedTime = hasFreedTimeConflict && lever.id === "retentionFloor";
+              return (
+                <motion.div
+                  key={lever.id}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.04 * i }}
+                  className={`rounded-xl border p-5 ${moved ? "border-[#EA2C00] bg-[#FFF6F3]" : "border-[#E5E5E5] bg-white"}`}
+                  data-testid={`card-attain-lever-${goal}-${lever.id}`}
+                >
+                  <div className="mb-3">
+                    <h3 className="text-sm font-bold text-[#1A1A1A]" data-testid={`text-attain-lever-label-${goal}-${lever.id}`}>
+                      {lever.label}
+                    </h3>
+                    <p className="text-xs text-[#8C8C8C] mt-1 leading-relaxed max-w-[520px]">{lever.help}</p>
+                    {isSharedFreedTime && (
+                      <p className="text-[10px] text-[#EA2C00] mt-1.5 font-medium">
+                        Scaled by the freed-time split above.
                       </p>
-                    </div>
+                    )}
+                  </div>
 
-                    {/* The dollar figure is quiet proof underneath the
-                        decision, never the headline of the card. */}
-                    <p className="text-[10.5px] text-[#8C8C8C] mt-2" data-testid={`text-attain-lever-contribution-${goal}-${lever.id}`}>
-                      {moved ? (
-                        <span className="font-semibold text-[#EA2C00]">adds ~{formatCompact(contribution?.marginalMargin ?? 0)}</span>
-                      ) : (
-                        "adds ~$0"
-                      )}
-                      {" · "}
-                      {(contribution?.marginalCount ?? 0).toLocaleString()} units
-                      {" · "}
-                      {Math.round((contribution?.pctOfTotal ?? 0) * 100)}% of this priority
+                  <LeverControl
+                    setting={setting}
+                    goal={goal}
+                    lever={lever}
+                    value={values[lever.id]}
+                    onChange={(v) => onChangeLeverValue(goal, lever.id, v)}
+                  />
+
+                  {/* THE MATH — the live derivation, always visible so a
+                      partner can see what moving this decision would
+                      even mean before they move it. Mirrors the coral
+                      left-border "THE MATH" treatment used on Explore. */}
+                  <div
+                    className="mt-4 bg-[#F8F5F1] border-l-[3px] border-[#EA2C00] rounded-r-md p-3"
+                    data-testid={`box-attain-lever-formula-${goal}-${lever.id}`}
+                  >
+                    <p className="text-[9px] font-bold uppercase tracking-wide text-[#EA2C00] mb-1">The math</p>
+                    <p className="text-[11px] text-[#3A3A3A] leading-relaxed" data-testid={`text-attain-lever-formula-${goal}-${lever.id}`}>
+                      {contribution?.formula ?? "Move this decision above reality to see the math."}
                     </p>
-                  </motion.div>
-                );
-              })}
-            </div>
-            )}
+                  </div>
+
+                  {/* The dollar figure is quiet proof underneath the
+                      decision, never the headline of the card. */}
+                  <p className="text-[10.5px] text-[#8C8C8C] mt-2" data-testid={`text-attain-lever-contribution-${goal}-${lever.id}`}>
+                    {moved ? (
+                      <span className="font-semibold text-[#EA2C00]">adds ~{formatCompact(contribution?.marginalMargin ?? 0)}</span>
+                    ) : (
+                      "adds ~$0"
+                    )}
+                    {" · "}
+                    {(contribution?.marginalCount ?? 0).toLocaleString()} units
+                    {" · "}
+                    {Math.round((contribution?.pctOfTotal ?? 0) * 100)}% of this priority
+                  </p>
+                </motion.div>
+              );
+            })}
           </div>
-        );
-      })}
+        )}
+      </div>
     </div>
   );
 }

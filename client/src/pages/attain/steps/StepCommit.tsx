@@ -46,9 +46,12 @@ interface StepCommitProps {
   combined: MultiGoalContributionsResult | null;
   commitments: Record<string, Commitment>;
   onChangeCommitment: (goal: GoalId, leverId: string, patch: Partial<Commitment>) => void;
+  /** The real step number in the current (dynamic) sequence - one build-case
+   * page per selected goal means Commit's position shifts with goal count. */
+  stepNumber: number;
 }
 
-export default function StepCommit({ goals, valuesByGoal, combined, commitments, onChangeCommitment }: StepCommitProps) {
+export default function StepCommit({ goals, valuesByGoal, combined, commitments, onChangeCommitment, stepNumber }: StepCommitProps) {
   const groups = goals.map((goal) => {
     const values = valuesByGoal[goal] ?? defaultLeverValues(goal);
     const movedLevers = LEVERS[goal].filter((l) => isMoved(values[l.id], l.realityStart));
@@ -61,7 +64,7 @@ export default function StepCommit({ goals, valuesByGoal, combined, commitments,
     <div>
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
         <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-3" data-testid="text-step-eyebrow">
-          Step 5 · Who holds each decision?
+          Step {stepNumber} · Who holds each decision?
         </p>
         <h1 className="text-2xl md:text-4xl font-bold text-black mb-3 font-abridge uppercase tracking-tight" data-testid="text-step-title">
           Commit

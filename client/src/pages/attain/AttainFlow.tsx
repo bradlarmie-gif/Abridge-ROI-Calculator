@@ -15,7 +15,7 @@ import {
   type AttainScope,
   type GoalId,
 } from "@/lib/attain/attainTypes";
-import { getContent } from "@/lib/attain/attainGoals";
+import { getContent, GOAL_CATALOG } from "@/lib/attain/attainGoals";
 import {
   LEVERS,
   defaultLeverValues,
@@ -27,17 +27,51 @@ import {
 } from "@/lib/attain/attainLevers";
 import type { GoalTargetResult, AttainmentResult } from "@/lib/attain/attainCalc";
 
-export type AttainStepId = "setting" | "vision" | "scope" | "buildCase" | "commit" | "plan";
+/**
+ * Every selected goal gets its own "Build the case" page (`buildCase:<goal>`)
+ * rather than one page that stacks every goal's section — see
+ * `stepOrderFor` below. The step sequence is therefore dynamic: picking two
+ * goals on Vision inserts two build-case pages between Starting point and
+ * Commit, picking three inserts three, and so on.
+ */
+export type AttainStepId = "setting" | "vision" | "scope" | "commit" | "plan" | `buildCase:${GoalId}`;
 
-const STEP_ORDER: AttainStepId[] = ["setting", "vision", "scope", "buildCase", "commit", "plan"];
-const STEP_LABELS: Record<AttainStepId, string> = {
-  setting: "Setting",
-  vision: "Vision",
-  scope: "Starting point",
-  buildCase: "Build the case",
-  commit: "Commit",
-  plan: "Your Plan",
-};
+const BUILD_CASE_PREFIX = "buildCase:";
+
+function buildCaseStepId(goal: GoalId): AttainStepId {
+  return `${BUILD_CASE_PREFIX}${goal}` as AttainStepId;
+}
+
+/** The goal a build-case step page belongs to, or null for every other step. */
+function goalOfStep(step: AttainStepId): GoalId | null {
+  return step.startsWith(BUILD_CASE_PREFIX) ? (step.slice(BUILD_CASE_PREFIX.length) as GoalId) : null;
+}
+
+/** The real step sequence for this plan: fixed setting/vision/scope, one
+ * build-case page per selected goal in the order the partner picked them,
+ * then fixed commit/plan. Recomputed whenever `goals` changes (only
+ * possible from the Vision step, before any build-case page is reached). */
+function stepOrderFor(goals: GoalId[]): AttainStepId[] {
+  return ["setting", "vision", "scope", ...goals.map(buildCaseStepId), "commit", "plan"];
+}
+
+/** Header "step name" for the current step, including which priority a
+ * build-case page belongs to when there is more than one. */
+function stepLabelFor(step: AttainStepId, goals: GoalId[]): string {
+  const goal = goalOfStep(step);
+  if (goal) {
+    const label = GOAL_CATALOG[goal].label;
+    return goals.length > 1 ? `Build the case · ${label}` : "Build the case";
+  }
+  switch (step) {
+    case "setting": return "Setting";
+    case "vision": return "Vision";
+    case "scope": return "Starting point";
+    case "commit": return "Commit";
+    case "plan": return "Your Plan";
+    default: return "";
+  }
+}
 
 const DEFAULT_TOTAL_MONTHS = 9;
 export const DEFAULT_FREED_TIME_SPLIT = 50;
@@ -111,7 +145,18 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
   // computeMultiGoalContributions for why this prevents double-counting.
   const [freedTimeSplit, setFreedTimeSplit] = useState<number>(DEFAULT_FREED_TIME_SPLIT);
 
-  const step = STEP_ORDER[stepIndex];
+  // The real step sequence, recomputed whenever the selected goals change —
+  // one build-case page per goal, in pick order. See `stepOrderFor` above.
+  const stepOrder = useMemo(() => stepOrderFor(goals), [goals]);
+  // Defensive clamp: goals can only change from the Vision step (index 1),
+  // where every stepOrder shares the same first three entries regardless of
+  // goal count, so this never fires in normal use — it just guarantees
+  // stepIndex can never point past the end of a shorter sequence.
+  useEffect(() => {
+    if (stepIndex > stepOrder.length - 1) setStepIndex(stepOrder.length - 1);
+  }, [stepOrder, stepIndex]);
+  const step = stepOrder[stepIndex] ?? "setting";
+  const activeBuildCaseGoal = goalOfStep(step);
 
   const updateState = useCallback((updates: Partial<AttainState>) => {
     setState((prev) => ({ ...prev, ...updates }));
@@ -123,7 +168,12 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
   // working unchanged. `goals` (plural, local to this component) is the
   // real source of truth for everything downstream of Vision.
   const primaryGoal = goals[0] ?? null;
-  const content = state.setting && primaryGoal ? getContent(state.setting, primaryGoal) : undefined;
+  // The panel's "Why this plan works" thesis follows whichever goal is
+  // actually on screen on a build-case page, so it never contradicts the
+  // domain the partner is looking at; everywhere else it falls back to the
+  // first selected goal.
+  const panelContentGoal = activeBuildCaseGoal ?? primaryGoal;
+  const content = state.setting && panelContentGoal ? getContent(state.setting, panelContentGoal) : undefined;
 
   const handleSelectSetting = useCallback((setting: AttainSetting) => {
     setGoals([]);
@@ -291,9 +341,9 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
   }, [builtTarget, state.totalMonths, state.monthsElapsed, state.progressRatio]);
 
   const goNext = useCallback(() => {
-    setStepIndex((i) => Math.min(STEP_ORDER.length - 1, i + 1));
+    setStepIndex((i) => Math.min(stepOrder.length - 1, i + 1));
     window.scrollTo({ top: 0, behavior: "smooth" });
-  }, []);
+  }, [stepOrder.length]);
 
   const goBack = useCallback(() => {
     if (stepIndex === 0) {
@@ -306,8 +356,19 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
 
   // The one Continue action for the current step, always rendered at the
   // foot of the side panel (see AttainLivePanel) rather than as a
-  // per-step button, so its placement never drifts step to step.
+  // per-step button, so its placement never drifts step to step. On a
+  // build-case page the label names whichever priority comes next — the
+  // next build-case page's goal, or Commit once every priority has had its
+  // own page.
   const panelNext = useMemo((): { disabled: boolean; label: string } => {
+    if (activeBuildCaseGoal) {
+      const nextStep = stepOrder[stepIndex + 1];
+      const nextGoal = nextStep ? goalOfStep(nextStep) : null;
+      return {
+        disabled: false,
+        label: nextGoal ? `Continue to ${GOAL_CATALOG[nextGoal].label}` : "Continue to commit",
+      };
+    }
     switch (step) {
       case "setting":
         return { disabled: !state.setting, label: "Continue" };
@@ -315,22 +376,20 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
         return { disabled: goals.length === 0, label: "Continue" };
       case "scope":
         return { disabled: !isBaselineValid, label: "Continue" };
-      case "buildCase":
-        return { disabled: false, label: "Continue to commit" };
       case "commit":
         return { disabled: false, label: "Continue to your plan" };
       default:
         return { disabled: false, label: "Continue" };
     }
-  }, [step, state.setting, goals.length, isBaselineValid]);
+  }, [step, activeBuildCaseGoal, stepOrder, stepIndex, state.setting, goals.length, isBaselineValid]);
 
   return (
     <div className="min-h-screen bg-white">
       <UnifiedHeader
         pathType="attain"
         currentStep={stepIndex + 1}
-        totalSteps={STEP_ORDER.length}
-        stepName={STEP_LABELS[step]}
+        totalSteps={stepOrder.length}
+        stepName={stepLabelFor(step, goals)}
         onBack={goBack}
         onHome={onBackToJourney}
       />
@@ -355,16 +414,21 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
               />
             )}
 
-            {step === "buildCase" && state.setting && goals.length > 0 && (
+            {activeBuildCaseGoal && state.setting && (
               <StepBuildCase
                 setting={state.setting}
                 baseline={baseline}
+                goal={activeBuildCaseGoal}
+                goalIndex={goals.indexOf(activeBuildCaseGoal)}
+                totalGoals={goals.length}
                 goals={goals}
-                valuesByGoal={valuesByGoal}
+                values={valuesByGoal[activeBuildCaseGoal] ?? defaultLeverValues(activeBuildCaseGoal)}
                 combined={combined}
                 freedTimeSplit={freedTimeSplit}
                 onChangeFreedTimeSplit={handleFreedTimeSplitChange}
                 onChangeLeverValue={handleChangeLeverValue}
+                stepNumber={stepIndex + 1}
+                totalSteps={stepOrder.length}
               />
             )}
 
@@ -375,6 +439,7 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
                 combined={combined}
                 commitments={commitments}
                 onChangeCommitment={handleChangeCommitment}
+                stepNumber={stepIndex + 1}
               />
             )}
 
@@ -391,6 +456,7 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
                   commitments={commitments}
                   freedTimeSplit={freedTimeSplit}
                   onMonthsElapsedChange={handleMonthsElapsedChange}
+                  stepNumber={stepIndex + 1}
                 />
               ) : (
                 <div>
