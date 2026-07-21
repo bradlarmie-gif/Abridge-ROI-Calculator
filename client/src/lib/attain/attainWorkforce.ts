@@ -303,17 +303,63 @@ export function computeWorkforceSustain(impactPpAfterBackfill: number, values: L
 export interface WorkforcePayoff {
   departuresAvoided: number;
   value: number;
+  /** The HONEST resulting effect on the headline turnover RATE, in
+   * percentage points (e.g. 0.8, not the composite's 0-15/25 "impact"
+   * scale) — turnoverRatePct × burnoutSharePct/100 × compositeImpactPct/100.
+   * Surfaced so a CFO reading the payoff never mistakes the composite
+   * impact number for a drop in the turnover rate itself (see the module
+   * header's units note above `computeWorkforceProtect`). */
+  turnoverPointsReduced: number;
 }
 
 /** Departures avoided = providers × turnover × burnout share × the
  * composite impact the decisions above produce; value = departures
  * avoided × replacement cost — reads EXACTLY like `computeAllDriverValues`'s
- * `providerWellbeing`/`nursingRetention` block, see the module header. */
+ * `providerWellbeing`/`nursingRetention` block, see the module header.
+ *
+ * UNITS NOTE: `compositeImpactPct` (the D2-D5 composite, 0 to this setting's
+ * ceiling) is a SHARE OF BURNOUT-RELATED DEPARTURES avoided, not
+ * percentage points off the turnover rate. A composite of 15 means "15% of
+ * the burnout-attributable departures in this pool are avoided," which is a
+ * far smaller effect on the headline turnover rate than "15pp of turnover"
+ * would imply — see `turnoverPointsReduced` for the actual rate effect. */
 export function computeWorkforcePayoff(scope: WorkforceScope, compositeImpactPct: number): WorkforcePayoff {
   const departuresAvoided =
     scope.providersInScope * (scope.turnoverRatePct / 100) * (scope.burnoutSharePct / 100) * (compositeImpactPct / 100);
   const value = Math.round(departuresAvoided * scope.replacementCost);
-  return { departuresAvoided, value };
+  const turnoverPointsReduced = scope.turnoverRatePct * (scope.burnoutSharePct / 100) * (compositeImpactPct / 100);
+  return { departuresAvoided, value, turnoverPointsReduced };
+}
+
+// ────────────────────────────────────────────────────────────────────────
+// THE CHAIN'S OWN CEILING — the honest maximum this chain can ever build to
+// at a given headcount, used so the story-page "prize" copy
+// (attainGoals.ts's retention goodCells/ambition tiers) is DERIVED from this
+// same formula rather than a second, hand-picked number. Every D2-D5
+// decision maxed (protect 100%, monthly pulse, full backfill, all 12
+// months sustained) drives the composite impact to EXACTLY this setting's
+// ceiling — see computeWorkforceBackfill's Math.min cap and
+// computeWorkforceSustain's fraction=1 at 12 months — so the ceiling
+// composite really is `WORKFORCE_IMPACT_CEILING_PP[setting]`, not an
+// estimate.
+// ────────────────────────────────────────────────────────────────────────
+
+export interface WorkforceCeiling {
+  departuresAvoided: number;
+  value: number;
+  turnoverPointsReduced: number;
+}
+
+export function computeWorkforceCeiling(setting: AttainSetting, providersInScope: number): WorkforceCeiling {
+  const scope: WorkforceScope = {
+    departments: [],
+    providersInScope,
+    turnoverRatePct: WORKFORCE_TURNOVER_DEFAULT_PCT[setting],
+    replacementCost: WORKFORCE_REPLACEMENT_COST_DEFAULT[setting],
+    burnoutSharePct: WORKFORCE_BURNOUT_SHARE_PCT[setting],
+  };
+  const payoff = computeWorkforcePayoff(scope, WORKFORCE_IMPACT_CEILING_PP[setting]);
+  return { departuresAvoided: payoff.departuresAvoided, value: payoff.value, turnoverPointsReduced: payoff.turnoverPointsReduced };
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -356,23 +402,23 @@ export function computeWorkforceChain(
     : NO_MOVE_FORMULA;
 
   const protectFormula = protect.impactPp > 0
-    ? `${fmtPp(protect.effectiveSharePct)}% of the recovered relief protected × ${fmtPp(PROTECT_WEIGHT * 100)}% weight × ${fmtPp(WORKFORCE_IMPACT_CEILING_PP[setting])}pp ceiling = ${fmtPp(protect.impactPp)}pp of turnover impact.`
+    ? `${fmtPp(protect.effectiveSharePct)}% of the recovered relief protected × ${fmtPp(PROTECT_WEIGHT * 100)}% weight × ${fmtPp(WORKFORCE_IMPACT_CEILING_PP[setting])}% ceiling = ${fmtPp(protect.impactPp)}% of burnout departures avoided.`
     : NO_MOVE_FORMULA;
 
   const surveyFormula = survey.cadenceLevel > 0
-    ? `${fmtPp(protect.impactPp)}pp × ${fmtPp(survey.multiplier * 100)}% realized (the ${SURVEY_CADENCE_LABELS[survey.cadenceLevel].toLowerCase()} catches erosion early) = ${fmtPp(survey.impactPpAfterSurvey)}pp.`
+    ? `${fmtPp(protect.impactPp)}% × ${fmtPp(survey.multiplier * 100)}% realized (the ${SURVEY_CADENCE_LABELS[survey.cadenceLevel].toLowerCase()} catches erosion early) = ${fmtPp(survey.impactPpAfterSurvey)}%.`
     : NO_MOVE_FORMULA;
 
   const backfillFormula = backfill.bonusPp > 0
-    ? `${fmtPp(survey.impactPpAfterSurvey)}pp + ${fmtPp(backfill.bonusPp)}pp from ${BACKFILL_LEVEL_LABELS[backfill.level].toLowerCase()} coverage backfill = ${fmtPp(backfill.impactPpAfterBackfill)}pp.`
+    ? `${fmtPp(survey.impactPpAfterSurvey)}% + ${fmtPp(backfill.bonusPp)}% from ${BACKFILL_LEVEL_LABELS[backfill.level].toLowerCase()} coverage backfill = ${fmtPp(backfill.impactPpAfterBackfill)}%.`
     : NO_MOVE_FORMULA;
 
   const sustainFormula = sustain.compositeImpactPct > 0
-    ? `${fmtPp(backfill.impactPpAfterBackfill)}pp × ${sustain.months}/12 months sustained = ${fmtPp(sustain.compositeImpactPct)}pp realized impact.`
+    ? `${fmtPp(backfill.impactPpAfterBackfill)}% × ${sustain.months}/12 months sustained = ${fmtPp(sustain.compositeImpactPct)}% of burnout departures avoided.`
     : NO_MOVE_FORMULA;
 
   const payoffFormula = payoff.value > 0
-    ? `${fmtInt(scope.providersInScope)} ${unitNoun} × ${fmtPp(scope.turnoverRatePct)}% turnover × ${fmtPp(scope.burnoutSharePct)}% burnout share × ${fmtPp(sustain.compositeImpactPct)}% impact = ${payoff.departuresAvoided.toFixed(1)} departures avoided × $${fmtInt(scope.replacementCost)}/departure = ~${fmtMoneyCompact(payoff.value)}.`
+    ? `${fmtInt(scope.providersInScope)} ${unitNoun} × ${fmtPp(scope.turnoverRatePct)}% turnover × ${fmtPp(scope.burnoutSharePct)}% burnout share × ${fmtPp(sustain.compositeImpactPct)}% of burnout departures avoided = ${payoff.departuresAvoided.toFixed(1)} departures avoided (about ${fmtPp(payoff.turnoverPointsReduced)} pts off your turnover rate) × $${fmtInt(scope.replacementCost)}/departure = ~${fmtMoneyCompact(payoff.value)}.`
     : NO_MOVE_FORMULA;
 
   return {

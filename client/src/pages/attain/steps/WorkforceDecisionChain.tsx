@@ -77,9 +77,9 @@ function DecisionCard({
   );
 }
 
-/** A quiet, count-only output row - pp of turnover impact, or providers,
- * NEVER a dollar figure. D1-D5 all use this; THE PAYOFF is the one place a
- * dollar appears. */
+/** A quiet, count-only output row - % of burnout departures avoided, or
+ * providers, NEVER a dollar figure. D1-D5 all use this; THE PAYOFF is the
+ * one place a dollar appears. */
 function CountOutput({ label, value, unit, testid }: { label: string; value: string; unit: string; testid: string }) {
   return (
     <div className="bg-[#F8F5F1] rounded-lg px-4 py-3 flex items-baseline justify-between gap-3" data-testid={testid}>
@@ -309,7 +309,7 @@ export default function WorkforceDecisionChain({ setting, baseline, values, onCh
           />
         </div>
 
-        <CountOutput label="Retention impact building" value={fmtPp(protect.impactPp)} unit="pp of turnover" testid="text-workforce-d2-output" />
+        <CountOutput label="Retention impact building" value={fmtPp(protect.impactPp)} unit="% of burnout departures avoided" testid="text-workforce-d2-output" />
         <MathBox formula={formulas.protect} testid="text-workforce-d2-formula" />
       </DecisionCard>
 
@@ -327,7 +327,7 @@ export default function WorkforceDecisionChain({ setting, baseline, values, onCh
         />
 
         <div className="mt-4">
-          <CountOutput label="Impact after the pulse" value={fmtPp(survey.impactPpAfterSurvey)} unit="pp of turnover" testid="text-workforce-d3-output" />
+          <CountOutput label="Impact after the pulse" value={fmtPp(survey.impactPpAfterSurvey)} unit="% of burnout departures avoided" testid="text-workforce-d3-output" />
           <MathBox formula={formulas.survey} testid="text-workforce-d3-formula" />
         </div>
       </DecisionCard>
@@ -346,7 +346,7 @@ export default function WorkforceDecisionChain({ setting, baseline, values, onCh
         />
 
         <div className="mt-4">
-          <CountOutput label="Impact after backfill" value={fmtPp(backfill.impactPpAfterBackfill)} unit="pp of turnover" testid="text-workforce-d4-output" />
+          <CountOutput label="Impact after backfill" value={fmtPp(backfill.impactPpAfterBackfill)} unit="% of burnout departures avoided" testid="text-workforce-d4-output" />
           <MathBox formula={formulas.backfill} testid="text-workforce-d4-formula" />
         </div>
       </DecisionCard>
@@ -370,7 +370,12 @@ export default function WorkforceDecisionChain({ setting, baseline, values, onCh
           />
         </div>
 
-        <CountOutput label="Realized retention impact" value={fmtPp(sustain.compositeImpactPct)} unit={`pp of ${ceiling}pp ceiling`} testid="text-workforce-d5-output" />
+        <CountOutput
+          label="Realized retention impact"
+          value={fmtPp(sustain.compositeImpactPct)}
+          unit={`% of burnout departures avoided (of a ${ceiling}% ceiling)`}
+          testid="text-workforce-d5-output"
+        />
         <MathBox formula={formulas.sustain} testid="text-workforce-d5-formula" />
       </DecisionCard>
 
@@ -390,7 +395,8 @@ export default function WorkforceDecisionChain({ setting, baseline, values, onCh
           {fmtMoneyCompact(realizedPayoffValue)}
         </p>
         <p className="text-[15px] text-white/60 mt-2" data-testid="text-workforce-payoff-caption">
-          {payoff.departuresAvoided.toFixed(1)} departures avoided/yr x ~${fmtInt(scope.replacementCost)}/departure. Burnout
+          {payoff.departuresAvoided.toFixed(1)} departures avoided/yr x ~${fmtInt(scope.replacementCost)}/departure, about{" "}
+          {fmtPp(payoff.turnoverPointsReduced)} pts off your {fmtPp(scope.turnoverRatePct)}% turnover rate. Burnout
           attributed to {fmtPp(WORKFORCE_BURNOUT_SHARE_PCT[setting])}% of that turnover.
         </p>
         <div className="mt-4 bg-white/5 border-l-[3px] border-[#EA2C00] rounded-r-md p-3">
