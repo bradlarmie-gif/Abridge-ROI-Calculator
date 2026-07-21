@@ -1,6 +1,4 @@
-import { ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { LEVERS, lineOptions, defaultLeverValues, type Lever, type LeverValues } from "@/lib/attain/attainLevers";
 import type { MultiGoalContributionsResult } from "@/lib/attain/attainLevers";
@@ -44,9 +42,18 @@ interface StepBuildCaseProps {
   freedTimeSplit: number;
   onChangeFreedTimeSplit: (split: number) => void;
   onChangeLeverValue: (goal: GoalId, leverId: string, value: number | string[]) => void;
-  onNext: () => void;
 }
 
+/**
+ * "Build the case" — the strategy hub. The hero here is the STRATEGY (the
+ * goal and the decisions that reach it), not a big dollar figure: Attain is
+ * the plan to CAPTURE the prize Explore already sized, and a page that
+ * leads with money is just a weaker Explore. Every decision card shows its
+ * own live derivation directly underneath the control ("THE MATH", built
+ * from the partner's own baseline, never invented), with a small, quiet
+ * "adds ~$X" readout beneath that, never a headline. The one running total
+ * lives quietly in the side panel's "Plan so far" line, not here.
+ */
 export default function StepBuildCase({
   setting,
   goals,
@@ -55,9 +62,15 @@ export default function StepBuildCase({
   freedTimeSplit,
   onChangeFreedTimeSplit,
   onChangeLeverValue,
-  onNext,
 }: StepBuildCaseProps) {
   const hasFreedTimeConflict = goals.includes("access") && goals.includes("retention");
+  const goalNames = goals.map((g) => GOAL_CATALOG[g].label).join(" + ");
+
+  const totalLevers = goals.reduce((sum, g) => sum + LEVERS[g].length, 0);
+  const movedCount = goals.reduce((sum, g) => {
+    const values = valuesByGoal[g] ?? defaultLeverValues(g);
+    return sum + LEVERS[g].filter((l) => isMoved(values[l.id], l.realityStart)).length;
+  }, 0);
 
   return (
     <div>
@@ -66,32 +79,31 @@ export default function StepBuildCase({
           Step 4 · What are you actually going to do?
         </p>
         <h1 className="text-2xl md:text-4xl font-bold text-black mb-3 font-abridge uppercase tracking-tight" data-testid="text-step-title">
-          Build the case
+          Build your strategy
         </h1>
         <p className="text-sm text-[#666666] leading-relaxed max-w-[620px]" data-testid="text-step-teach">
           Every decision below starts at your reality, where it stands today. Doing nothing new adds nothing. Move a
-          decision and watch its own contribution appear, and the plan below grow by exactly that much.{" "}
+          decision and its own derivation appears underneath it, built from the operation you entered on the last
+          page.{" "}
           {goals.length > 1
-            ? "Each priority you picked gets its own section below, and everything rolls up into one combined total."
-            : "Nothing here is a preset tier; it's the sum of the decisions you actually make."}
+            ? "Each priority you picked gets its own section below, and everything rolls up into one quiet total in the panel to the right."
+            : "The dollar figure is proof of the decision, not the point of this page."}
         </p>
       </motion.div>
 
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-[#1A1A1A] rounded-2xl p-6 mb-8 sticky top-24 z-10"
-        data-testid="panel-attain-buildcase-total"
+        className="bg-[#1A1A1A] rounded-2xl p-6 mb-8"
+        data-testid="panel-attain-buildcase-strategy"
       >
-        <p className="text-[10px] font-semibold uppercase tracking-[2.5px] text-white/50 mb-2">
-          Your plan, built from your decisions
-        </p>
-        <p className="font-abridge text-4xl text-[#EA2C00]" data-testid="text-attain-buildcase-total">
-          {formatCompact(combined?.combinedMargin ?? 0)}
-        </p>
-        <p className="text-xs text-white/50 mt-1">
-          {(combined?.combinedCount ?? 0).toLocaleString()} units of value, contribution margin, across{" "}
-          {goals.length} {goals.length === 1 ? "priority" : "priorities"}.
+        <p className="text-[10px] font-semibold uppercase tracking-[2.5px] text-white/50 mb-2">The strategy</p>
+        <h2 className="font-abridge text-2xl text-white mb-1" data-testid="text-attain-buildcase-strategy-title">
+          {goalNames}
+        </h2>
+        <p className="text-xs text-white/50" data-testid="text-attain-buildcase-strategy-progress">
+          {movedCount} of {totalLevers} decisions moved. Move the ones your organization is actually ready to commit
+          to, the rest can wait for a later plan.
         </p>
       </motion.div>
 
@@ -154,9 +166,6 @@ export default function StepBuildCase({
               <h2 className="text-lg font-bold text-[#1A1A1A]" data-testid={`text-attain-buildcase-goal-title-${goal}`}>
                 {goalDef.label}
               </h2>
-              <span className="text-xs text-[#8C8C8C] ml-auto" data-testid={`text-attain-buildcase-goal-total-${goal}`}>
-                {formatCompact(result?.totalMargin ?? 0)} of this plan
-              </span>
             </div>
             {goals.length > 1 && (
               <p className="text-[11px] text-[#8C8C8C] mb-4">
@@ -178,27 +187,16 @@ export default function StepBuildCase({
                     className={`rounded-xl border p-5 ${moved ? "border-[#EA2C00] bg-[#FFF6F3]" : "border-[#E5E5E5] bg-white"}`}
                     data-testid={`card-attain-lever-${goal}-${lever.id}`}
                   >
-                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-3">
-                      <div className="min-w-0">
-                        <h3 className="text-sm font-bold text-[#1A1A1A]" data-testid={`text-attain-lever-label-${goal}-${lever.id}`}>
-                          {lever.label}
-                        </h3>
-                        <p className="text-xs text-[#8C8C8C] mt-1 leading-relaxed max-w-[440px]">{lever.help}</p>
-                        {isSharedFreedTime && (
-                          <p className="text-[10px] text-[#EA2C00] mt-1.5 font-medium">
-                            Scaled by the freed-time split above.
-                          </p>
-                        )}
-                      </div>
-                      <div className="text-right flex-shrink-0" data-testid={`text-attain-lever-contribution-${goal}-${lever.id}`}>
-                        <p className={`font-abridge text-xl ${moved ? "text-[#EA2C00]" : "text-[#B4B4B4]"}`}>
-                          {moved ? `adds ~${formatCompact(contribution?.marginalMargin ?? 0)}` : "adds ~$0"}
+                    <div className="mb-3">
+                      <h3 className="text-sm font-bold text-[#1A1A1A]" data-testid={`text-attain-lever-label-${goal}-${lever.id}`}>
+                        {lever.label}
+                      </h3>
+                      <p className="text-xs text-[#8C8C8C] mt-1 leading-relaxed max-w-[520px]">{lever.help}</p>
+                      {isSharedFreedTime && (
+                        <p className="text-[10px] text-[#EA2C00] mt-1.5 font-medium">
+                          Scaled by the freed-time split above.
                         </p>
-                        <p className="text-[10px] text-[#8C8C8C]">
-                          {(contribution?.marginalCount ?? 0).toLocaleString()} units ·{" "}
-                          {Math.round((contribution?.pctOfTotal ?? 0) * 100)}% of this priority
-                        </p>
-                      </div>
+                      )}
                     </div>
 
                     <LeverControl
@@ -208,6 +206,34 @@ export default function StepBuildCase({
                       value={values[lever.id]}
                       onChange={(v) => onChangeLeverValue(goal, lever.id, v)}
                     />
+
+                    {/* THE MATH — the live derivation, always visible so a
+                        partner can see what moving this decision would
+                        even mean before they move it. Mirrors the coral
+                        left-border "THE MATH" treatment used on Explore. */}
+                    <div
+                      className="mt-4 bg-[#F8F5F1] border-l-[3px] border-[#EA2C00] rounded-r-md p-3"
+                      data-testid={`box-attain-lever-formula-${goal}-${lever.id}`}
+                    >
+                      <p className="text-[9px] font-bold uppercase tracking-wide text-[#EA2C00] mb-1">The math</p>
+                      <p className="text-[11px] text-[#3A3A3A] leading-relaxed" data-testid={`text-attain-lever-formula-${goal}-${lever.id}`}>
+                        {contribution?.formula ?? "Move this decision above reality to see the math."}
+                      </p>
+                    </div>
+
+                    {/* The dollar figure is quiet proof underneath the
+                        decision, never the headline of the card. */}
+                    <p className="text-[10.5px] text-[#8C8C8C] mt-2" data-testid={`text-attain-lever-contribution-${goal}-${lever.id}`}>
+                      {moved ? (
+                        <span className="font-semibold text-[#EA2C00]">adds ~{formatCompact(contribution?.marginalMargin ?? 0)}</span>
+                      ) : (
+                        "adds ~$0"
+                      )}
+                      {" · "}
+                      {(contribution?.marginalCount ?? 0).toLocaleString()} units
+                      {" · "}
+                      {Math.round((contribution?.pctOfTotal ?? 0) * 100)}% of this priority
+                    </p>
                   </motion.div>
                 );
               })}
@@ -215,15 +241,6 @@ export default function StepBuildCase({
           </div>
         );
       })}
-
-      <Button
-        onClick={onNext}
-        className="h-12 px-6 font-semibold rounded-full bg-black hover:bg-black/90 text-white"
-        data-testid="button-attain-buildcase-continue"
-      >
-        Continue to commit
-        <ArrowRight className="w-4 h-4 ml-2" />
-      </Button>
     </div>
   );
 }
