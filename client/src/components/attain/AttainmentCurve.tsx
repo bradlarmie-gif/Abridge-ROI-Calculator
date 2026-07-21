@@ -66,6 +66,45 @@ function buildPath(points: Point[]): string {
   return d;
 }
 
+// ── Label collision avoidance ──────────────────────────────────────────
+// Every other label on this chart sits at a fixed spot relative to its own
+// marker, but the "Today" marker moves across the full width of the curve
+// as the slider (or the real dated log) moves — so it's the one label that
+// can end up sharing canvas with a fixed one: "the gap" near the start,
+// "Goal" near the end. Rather than hand-tune thresholds for those two
+// spots, estimate each label's actual footprint from its own text (so a
+// long dollar figure is protected exactly like a short one) and only move
+// "Today" when its default position truly overlaps a neighbor.
+interface LabelBox {
+  left: number;
+  right: number;
+  top: number;
+  bottom: number;
+}
+
+function estimateLabelWidth(text: string, fontSizePx: number, weight: number): number {
+  const perChar = weight >= 700 ? 0.6 : weight >= 600 ? 0.56 : 0.52;
+  return text.length * fontSizePx * perChar;
+}
+
+function labelBox(
+  anchorX: number,
+  baselineY: number,
+  text: string,
+  fontSizePx: number,
+  weight: number,
+  anchor: "start" | "end",
+): LabelBox {
+  const width = estimateLabelWidth(text, fontSizePx, weight);
+  const left = anchor === "end" ? anchorX - width : anchorX;
+  const right = anchor === "end" ? anchorX : anchorX + width;
+  return { left, right, top: baselineY - fontSizePx * 0.82, bottom: baselineY + fontSizePx * 0.3 };
+}
+
+function boxesCollide(a: LabelBox, b: LabelBox, padX = 6, padY = 3): boolean {
+  return a.left - padX < b.right && b.left - padX < a.right && a.top - padY < b.bottom && b.top - padY < a.bottom;
+}
+
 export function AttainmentCurve({
   pct,
   onPacePct,
@@ -124,6 +163,54 @@ export function AttainmentCurve({
   const gapGrayY = (Y_BASE + yUsualToday) / 2;
   const gapLabelY = Math.max(Y_TOP + 10, Math.min(Y_BASE - 10, (gapCoralY + gapGrayY) / 2));
 
+  // Fixed labels first — Goal and "what usually happens" never move; only
+  // "Today" adapts around them.
+  const todayPctValue = Math.round(hasActual ? lastActual!.pct : pct);
+  const todayText = `Today · ${todayPctValue}%`;
+  const goalText = `Goal · ${goalLabel}`;
+  const usualText = `What usually happens · ${usualLabel}`;
+  const gapText = "the gap";
+
+  const goalTextX = X1 - 10;
+  const goalTextY = yGoalCoral - 14;
+  const usualTextX = X1 - 10;
+  const usualTextY = yUsualFinal + 22;
+  const goalBox = labelBox(goalTextX, goalTextY, goalText, 13, 700, "end");
+  const usualBox = labelBox(usualTextX, usualTextY, usualText, 12, 500, "end");
+  const gapBox = labelBox(gapLabelX, gapLabelY, gapText, 13, 600, "start");
+
+  // Right-anchored, so on day one (today essentially equal to the start
+  // point — the common Progress-tab case right after committing) it needs
+  // a floor, not just a ceiling, or its right-anchored text runs off the
+  // left edge of the viewBox.
+  const todayX = Math.max(120, Math.min(xToday - 10, X1 - 30));
+  const todayAboveY = yTodayCoral - 10;
+  const todayAboveBox = labelBox(todayX, todayAboveY, todayText, 13, 600, "end");
+  // Today's default sits just above its own dot. That collides with "Goal"
+  // when today is parked at or near the goal (the right-edge case this fix
+  // targets), and with "the gap" when today is at or near the start (the
+  // gap is still razor-thin there, so its label crowds the same corner).
+  // Either way, drop Today below its dot instead of touching the label
+  // it collided with.
+  const todayBelowY = yTodayCoral + 22;
+  const needsFlip = boxesCollide(todayAboveBox, goalBox) || boxesCollide(todayAboveBox, gapBox);
+  let todayTextY = needsFlip ? todayBelowY : todayAboveY;
+  let todayTextX = todayX;
+  // Belt-and-suspenders: if the chosen position still grazes "what usually
+  // happens" (an extreme, heavily compressed totalMonths could do this),
+  // nudge Today further left rather than let it collide silently.
+  const settledBox = labelBox(todayTextX, todayTextY, todayText, 13, 600, "end");
+  if (boxesCollide(settledBox, usualBox)) {
+    const overlap = settledBox.right - usualBox.left;
+    todayTextX = Math.max(120, todayTextX - overlap - 8);
+  }
+
+  // The Today and Goal dots sit at the exact same point when today has
+  // reached the goal — draw Today on top with a thin white ring so both
+  // remain visible as a "bullseye" instead of Goal's larger dot fully
+  // hiding Today's.
+  const todayAtGoal = Math.hypot(X1 - xToday, yGoalCoral - yTodayCoral) < 14;
+
   return (
     <div data-testid="attainment-curve">
       <div className="flex gap-1.5">
@@ -156,25 +243,36 @@ export function AttainmentCurve({
             {hasActual && solidCoralPoints.slice(1, -1).map((p, i) => (
               <circle key={i} cx={p.x} cy={p.y} r={3.5} fill="#fff" stroke="#EA2C00" strokeWidth={2} data-testid={`marker-actual-${i}`} />
             ))}
-            <circle cx={xToday} cy={yTodayCoral} r={6.5} fill="#EA2C00" data-testid="marker-today" />
             <circle cx={X1} cy={yGoalCoral} r={7.5} fill="#EA2C00" data-testid="marker-goal" />
+            {/* Drawn after Goal, so when the two coincide (today has
+                reached the goal) Today's dot still shows as a distinct
+                ring on top rather than being fully hidden underneath. */}
+            <circle
+              cx={xToday}
+              cy={yTodayCoral}
+              r={6.5}
+              fill="#EA2C00"
+              stroke={todayAtGoal ? "#fff" : "none"}
+              strokeWidth={todayAtGoal ? 1.5 : 0}
+              data-testid="marker-today"
+            />
             <circle cx={X1} cy={yUsualFinal} r={5} fill="#fff" stroke="#B4B4B4" strokeWidth={2} />
 
-            {/* Right-anchored, so on day one (today essentially equal to the
-                start point — the common Progress-tab case right after
-                committing) it needs a floor, not just a ceiling, or its
-                right-anchored text runs off the left edge of the viewBox. */}
-            <text x={Math.max(120, Math.min(xToday - 10, X1 - 30))} y={yTodayCoral - 10} textAnchor="end" style={{ font: "600 13px Inter", fill: "#1A1A1A" }}>
-              Today · {Math.round(hasActual ? lastActual!.pct : pct)}%
+            {/* Position resolved above: sits just above the dot by default,
+                and drops below it whenever that default would collide with
+                "Goal" (today at/near the goal) or "the gap" (today at/near
+                the start) — see the collision-avoidance block above. */}
+            <text x={todayTextX} y={todayTextY} textAnchor="end" style={{ font: "600 13px Inter", fill: "#1A1A1A" }} data-testid="text-attainment-today">
+              {todayText}
             </text>
-            <text x={X1 - 10} y={yGoalCoral - 14} textAnchor="end" style={{ font: "700 13px Inter", fill: "#EA2C00" }}>
-              Goal · {goalLabel}
+            <text x={goalTextX} y={goalTextY} textAnchor="end" style={{ font: "700 13px Inter", fill: "#EA2C00" }} data-testid="text-attainment-goal">
+              {goalText}
             </text>
-            <text x={X1 - 10} y={yUsualFinal + 22} textAnchor="end" style={{ font: "500 12px Inter", fill: "#8C8C8C" }}>
-              What usually happens · {usualLabel}
+            <text x={usualTextX} y={usualTextY} textAnchor="end" style={{ font: "500 12px Inter", fill: "#8C8C8C" }}>
+              {usualText}
             </text>
             <text x={gapLabelX} y={gapLabelY} style={{ font: "italic 600 13px Inter", fill: "#B4B4B4" }}>
-              the gap
+              {gapText}
             </text>
           </svg>
           <div className="flex justify-between text-[9.5px] font-semibold uppercase tracking-[1.5px] text-[#666666] mt-1 ml-[34px]">
