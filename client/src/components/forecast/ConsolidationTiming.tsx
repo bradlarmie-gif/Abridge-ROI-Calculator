@@ -62,6 +62,11 @@ export default function ConsolidationTiming({
   const pctX = (x: number) => (x / VB_W) * 100;
   const pctY = (y: number) => (y / VB_H) * 100;
   const yearMarks = Array.from({ length: horizonYears }, (_, i) => (i + 1) * 12);
+  // Keep the two endpoint labels from colliding when the lines converge (tools
+  // sunset early -> plan approaches the ceiling). "now" stays on its dot; the
+  // "plan" label is pushed down to a minimum gap below it.
+  const yNow = Y(cs.nowTotal);
+  const yPlanLabel = Math.max(Y(cs.planTotal), yNow + 46);
 
   return (
     <div className="rounded-[20px] p-6 md:p-8" style={{ background: "linear-gradient(160deg,#FDFBF8,#F6F1EA)", border: "1px solid #E8E2DA" }} data-testid="ar-timing">
@@ -100,6 +105,10 @@ export default function ConsolidationTiming({
             <path d={`${planD} L ${X(horizon)} ${PB} L ${X(0)} ${PB} Z`} fill="rgba(234,44,0,0.09)" />
             <path d={nowD} fill="none" stroke="#B4A99B" strokeWidth={2} strokeDasharray="6 5" strokeLinecap="round" />
             <path d={planD} fill="none" stroke="#EA2C00" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round" />
+            {/* a dot where each tool sunsets: the bend where its savings switch on */}
+            {cs.tools.map((t) => (t.sunsetMonths > 0 && t.sunsetMonths < horizon) ? (
+              <circle key={t.id} cx={X(t.sunsetMonths)} cy={Y(cumulativeSavedAt(cs.tools, t.sunsetMonths, "plan"))} r={3.2} fill="#EA2C00" stroke="#FDFBF8" strokeWidth={1.5} />
+            ) : null)}
             <circle cx={X(horizon)} cy={Y(cs.planTotal)} r={6} fill="#EA2C00" />
             <circle cx={X(horizon)} cy={Y(cs.nowTotal)} r={5} fill="#B4A99B" />
           </g>
@@ -112,11 +121,11 @@ export default function ConsolidationTiming({
         ))}
 
         {/* endpoint labels */}
-        <div className="absolute" style={{ left: `${pctX(X(horizon) + 14)}%`, top: `${pctY(Y(cs.nowTotal))}%`, transform: "translateY(-50%)" }}>
+        <div className="absolute" style={{ left: `${pctX(X(horizon) + 14)}%`, top: `${pctY(yNow)}%`, transform: "translateY(-50%)" }}>
           <div className="text-[8px] font-extrabold uppercase tracking-[0.13em] text-[#B4A99B]">If you moved now</div>
           <div className="text-[14px] font-extrabold tabular-nums text-[#B4A99B] leading-none mt-0.5">{fmtM(cs.nowTotal)}</div>
         </div>
-        <div className="absolute" style={{ left: `${pctX(X(horizon) + 14)}%`, top: `${pctY(Y(cs.planTotal))}%`, transform: "translateY(-50%)" }}>
+        <div className="absolute" style={{ left: `${pctX(X(horizon) + 14)}%`, top: `${pctY(yPlanLabel)}%`, transform: "translateY(-50%)" }}>
           <div className="text-[8px] font-extrabold uppercase tracking-[0.13em] text-[#B4A99B]">Your plan</div>
           <AnimatedValue value={cs.planTotal} format={fmtM} duration={3000} fromZero className="text-[21px] font-extrabold tabular-nums text-[#EA2C00] leading-none block mt-0.5" style={{ letterSpacing: "-0.01em" }} />
           <div className="text-[10px] text-[#6B7280] mt-0.5">captured over {horizonYears} yrs</div>
@@ -160,7 +169,10 @@ export default function ConsolidationTiming({
                         value={item.contractMonths}
                         onValueChange={(v) => {
                           const c = Math.max(0, Math.min(120, v));
-                          onUpdateItem(t.id, { contractMonths: c, sunsetMonths: Math.min(item.sunsetMonths, c) });
+                          // Sunset follows the contract end unless you've dragged it earlier
+                          // (an explicit early exit), which we preserve.
+                          const pinned = item.sunsetMonths >= item.contractMonths;
+                          onUpdateItem(t.id, { contractMonths: c, sunsetMonths: pinned ? c : Math.min(item.sunsetMonths, c) });
                         }}
                         min={0}
                         className="w-full bg-transparent text-center text-[12.5px] font-bold text-[#1A1A1A] outline-none tabular-nums"
