@@ -4,6 +4,8 @@ import {
   decisionAttainmentFraction,
   decisionStatus,
   computeProgressAttainmentPct,
+  parseSignalBaseline,
+  perSignalWorth,
   type DecisionProgressInput,
 } from "@/lib/attain/attainProgress";
 
@@ -129,5 +131,100 @@ describe("computeProgressAttainmentPct", () => {
     ];
     expect(computeProgressAttainmentPct(decisions)).toBeGreaterThanOrEqual(0);
     expect(computeProgressAttainmentPct(decisions)).toBeLessThanOrEqual(100);
+  });
+});
+
+// ────────────────────────────────────────────────────────────────────────
+// Multi-signal Commit (Change 3): each committed decision now carries a
+// LIST of signals to watch, each with its own free-text "baseline today"
+// capture (e.g. "18 days", "62%") rather than one NumberField per decision.
+// `parseSignalBaseline` turns that free text into the number the fraction
+// math above needs, and `perSignalWorth` spreads a decision's total worth
+// evenly across however many signals it has, so a decision broken into two
+// signal rows doesn't out-weigh a decision left at one.
+// ────────────────────────────────────────────────────────────────────────
+describe("parseSignalBaseline", () => {
+  it("reads the leading number out of a free-text capture", () => {
+    expect(parseSignalBaseline("18 days")).toBe(18);
+    expect(parseSignalBaseline("62%")).toBe(62);
+    expect(parseSignalBaseline("1,900")).toBe(1); // no thousands-separator parsing - digits up to the comma
+  });
+
+  it("reads a bare number with no unit", () => {
+    expect(parseSignalBaseline("18")).toBe(18);
+    expect(parseSignalBaseline("0")).toBe(0);
+    expect(parseSignalBaseline("4.5")).toBe(4.5);
+  });
+
+  it("reads a leading negative number", () => {
+    expect(parseSignalBaseline("-3 pts")).toBe(-3);
+  });
+
+  it("returns 0 for blank, undefined, or non-numeric text, never NaN", () => {
+    expect(parseSignalBaseline("")).toBe(0);
+    expect(parseSignalBaseline(undefined)).toBe(0);
+    expect(parseSignalBaseline("not captured yet")).toBe(0);
+    expect(Number.isNaN(parseSignalBaseline("???"))).toBe(false);
+  });
+});
+
+describe("perSignalWorth", () => {
+  it("splits a decision's worth evenly across its signals", () => {
+    expect(perSignalWorth(1_000, 2)).toBe(500);
+    expect(perSignalWorth(900, 3)).toBe(300);
+  });
+
+  it("returns the full worth when there is exactly one signal", () => {
+    expect(perSignalWorth(750, 1)).toBe(750);
+  });
+
+  it("is 0 when there are no signals, never divides by zero into NaN/Infinity", () => {
+    expect(perSignalWorth(750, 0)).toBe(0);
+  });
+
+  it("never returns a negative share, even for negative worth", () => {
+    expect(perSignalWorth(-100, 2)).toBe(0);
+  });
+
+  it("summed back across every signal reconstructs the decision's original worth", () => {
+    const total = 1_200;
+    const signalCount = 4;
+    const perSignal = perSignalWorth(total, signalCount);
+    expect(perSignal * signalCount).toBeCloseTo(total, 5);
+  });
+});
+
+describe("multi-signal attainment aggregation (end to end)", () => {
+  it("a decision split into two signals contributes the SAME combined weight as it would as a single signal", () => {
+    // One decision, one signal, fully landed, worth 1000 - should be 100%.
+    const single: DecisionProgressInput[] = [{ key: "d1", baseline: 0, current: 100, target: 100, worth: 1_000 }];
+    expect(computeProgressAttainmentPct(single)).toBe(100);
+
+    // Same decision, same total worth, now split into two signal rows -
+    // both fully landed - should still read 100%, not 200% or halved.
+    const perSignal = perSignalWorth(1_000, 2);
+    const split: DecisionProgressInput[] = [
+      { key: "d1:s0", baseline: 0, current: 100, target: 100, worth: perSignal },
+      { key: "d1:s1", baseline: 0, current: 50, target: 50, worth: perSignal },
+    ];
+    expect(computeProgressAttainmentPct(split)).toBe(100);
+  });
+
+  it("one signal landed and one not-started, evenly weighted, nets 50%", () => {
+    const perSignal = perSignalWorth(1_000, 2);
+    const rows: DecisionProgressInput[] = [
+      { key: "d1:s0", baseline: 0, current: 100, target: 100, worth: perSignal },
+      { key: "d1:s1", baseline: 0, current: 0, target: 100, worth: perSignal },
+    ];
+    expect(computeProgressAttainmentPct(rows)).toBe(50);
+  });
+
+  it("parses free-text baselines end to end through the fraction/aggregation math", () => {
+    const rows: DecisionProgressInput[] = [
+      { key: "d1:s0", baseline: parseSignalBaseline("18 days"), current: parseSignalBaseline("10 days"), target: 5, worth: 500 },
+      { key: "d1:s1", baseline: parseSignalBaseline("not captured yet"), current: 0, target: 20, worth: 500 },
+    ];
+    // s0: (18-10)/(18-5) = 8/13 ~ 0.615; s1: 0/20 = 0. Weighted 50/50 -> ~31%.
+    expect(computeProgressAttainmentPct(rows)).toBe(Math.round((8 / 13 / 2) * 100));
   });
 });

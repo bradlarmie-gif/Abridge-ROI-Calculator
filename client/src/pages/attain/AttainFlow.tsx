@@ -4,7 +4,12 @@ import StepSetting from "./steps/StepSetting";
 import StepVision from "./steps/StepVision";
 import StepScope from "./steps/StepScope";
 import StepBuildCase from "./steps/StepBuildCase";
-import StepCommit, { type Commitment, type GoalOwner } from "./steps/StepCommit";
+import StepCommit, {
+  defaultCommitmentFor,
+  type Commitment,
+  type CommitmentSignal,
+  type GoalOwner,
+} from "./steps/StepCommit";
 import StepAttainment from "./steps/StepAttainment";
 import AttainLivePanel from "./AttainLivePanel";
 import {
@@ -19,13 +24,11 @@ import { getContent, GOAL_CATALOG } from "@/lib/attain/attainGoals";
 import {
   LEVERS,
   defaultLeverValues,
-  defaultBaseline,
   computeMultiGoalContributions,
   type AttainBaseline,
   type LeverValues,
   type MultiGoalContributionsResult,
 } from "@/lib/attain/attainLevers";
-import { leverNumericValue } from "@/lib/attain/attainProgress";
 import type { GoalTargetResult, AttainmentResult } from "@/lib/attain/attainCalc";
 
 /**
@@ -250,24 +253,68 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
     }));
   }, []);
 
-  const handleChangeCommitment = useCallback((goal: GoalId, leverId: string, patch: Partial<Commitment>) => {
+  // `owner`/`due` deliberately default to "" / the lever's own `defaultDue`
+  // via `defaultCommitmentFor` (not a placeholder-looking real value) - the
+  // owner ROLE is only ever a placeholder hint on Commit's owner input,
+  // never a value that reads as if a real name were already typed. Every
+  // handler below materializes a decision's full commitment (owner, due,
+  // AND its pre-filled signals) the first time it is touched, from that one
+  // shared default builder, so every screen that reads `commitments[key]`
+  // sees the same shape whether or not the partner has edited it yet.
+  const fallbackCommitment = useCallback((goal: GoalId, leverId: string): Commitment => {
+    const lever = LEVERS[goal].find((l) => l.id === leverId);
+    return lever ? defaultCommitmentFor(goal, lever) : { owner: "", due: "Month 1", signals: [] };
+  }, []);
+
+  const handleChangeCommitment = useCallback((goal: GoalId, leverId: string, patch: Partial<Pick<Commitment, "owner" | "due">>) => {
     setCommitments((prev) => {
       const key = commitmentKey(goal, leverId);
-      const lever = LEVERS[goal].find((l) => l.id === leverId);
-      // `owner` deliberately defaults to "" (not the lever's role) - the
-      // role is only ever a placeholder hint on Commit's owner input, never
-      // a value that reads as if a real name were already typed. Every
-      // downstream display falls back to the role itself when this is
-      // blank.
-      const base: Commitment = prev[key] ?? {
-        owner: "",
-        due: lever?.defaultDue ?? "Month 1",
-        signal: lever?.signal ?? "",
-        baseline: leverNumericValue(lever?.realityStart),
-      };
+      const base = prev[key] ?? fallbackCommitment(goal, leverId);
       return { ...prev, [key]: { ...base, ...patch } };
     });
-  }, []);
+  }, [fallbackCommitment]);
+
+  const handleAddSignal = useCallback((goal: GoalId, leverId: string) => {
+    setCommitments((prev) => {
+      const key = commitmentKey(goal, leverId);
+      const base = prev[key] ?? fallbackCommitment(goal, leverId);
+      const lever = LEVERS[goal].find((l) => l.id === leverId);
+      // A genuinely unique id, safe here because this only runs once per
+      // click (an imperative event handler), never once per render - see
+      // `defaultSignalsForLever`'s comment on why ITS ids must stay
+      // deterministic instead.
+      const newSignal: CommitmentSignal = {
+        id: `${key}:added-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        label: "",
+        baseline: "",
+        unit: lever?.unit ?? "",
+        cadence: "monthly",
+      };
+      return { ...prev, [key]: { ...base, signals: [...base.signals, newSignal] } };
+    });
+  }, [fallbackCommitment]);
+
+  const handleRemoveSignal = useCallback((goal: GoalId, leverId: string, signalId: string) => {
+    setCommitments((prev) => {
+      const key = commitmentKey(goal, leverId);
+      const base = prev[key] ?? fallbackCommitment(goal, leverId);
+      // Never let a decision drop to zero signals - the row above already
+      // disables the remove button at 1, this is the state-layer backstop.
+      if (base.signals.length <= 1) return prev;
+      return { ...prev, [key]: { ...base, signals: base.signals.filter((s) => s.id !== signalId) } };
+    });
+  }, [fallbackCommitment]);
+
+  const handleChangeSignal = useCallback((goal: GoalId, leverId: string, signalId: string, patch: Partial<CommitmentSignal>) => {
+    setCommitments((prev) => {
+      const key = commitmentKey(goal, leverId);
+      const base = prev[key] ?? fallbackCommitment(goal, leverId);
+      return {
+        ...prev,
+        [key]: { ...base, signals: base.signals.map((s) => (s.id === signalId ? { ...s, ...patch } : s)) },
+      };
+    });
+  }, [fallbackCommitment]);
 
   const handleChangeGoalOwner = useCallback((goal: GoalId, patch: Partial<GoalOwner>) => {
     setGoalOwnerByPriority((prev) => ({
@@ -486,6 +533,9 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
                 combined={combined}
                 commitments={commitments}
                 onChangeCommitment={handleChangeCommitment}
+                onAddSignal={handleAddSignal}
+                onRemoveSignal={handleRemoveSignal}
+                onChangeSignal={handleChangeSignal}
                 goalOwnerByPriority={goalOwnerByPriority}
                 onChangeGoalOwner={handleChangeGoalOwner}
                 stepNumber={stepIndex + 1}

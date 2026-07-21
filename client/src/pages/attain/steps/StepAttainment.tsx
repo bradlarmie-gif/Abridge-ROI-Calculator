@@ -10,12 +10,14 @@ import {
   decisionAttainmentFraction,
   decisionStatus,
   computeProgressAttainmentPct,
+  parseSignalBaseline,
+  perSignalWorth,
   type AttainmentStatus,
 } from "@/lib/attain/attainProgress";
 import { GOAL_CATALOG, getContent } from "@/lib/attain/attainGoals";
 import type { AttainState, AttainSetting, GoalId, GoalDef, SettingGoalContent } from "@/lib/attain/attainTypes";
 import type { GoalTargetResult, AttainmentResult } from "@/lib/attain/attainCalc";
-import type { Commitment, GoalOwner } from "./StepCommit";
+import { defaultCommitmentFor, type Commitment, type GoalOwner } from "./StepCommit";
 
 function formatCompact(n: number): string {
   const sign = n < 0 ? "-" : "";
@@ -167,21 +169,44 @@ export default function StepAttainment({
     return committedLeversFor(goal, values, result?.perLever, commitments).map((c) => ({ ...c, goal }));
   }).sort((a, b) => (b.contribution?.marginalMargin ?? 0) - (a.contribution?.marginalMargin ?? 0));
 
-  // The Progress tab's per-decision baseline -> current -> target track.
-  // `target` is the lever's CHOSEN value from Build the case (never a
-  // second, invented number); `baseline` is whatever the partner captured
-  // on Commit as "today"; `current` defaults to that same baseline until
-  // edited. See attainProgress.ts for the math this feeds.
-  const progressRows = allCommitted.map(({ goal, lever, contribution, owner }) => {
+  // The Progress tab's per-SIGNAL baseline -> current -> target track
+  // (Change 3: a decision can watch more than one signal, so Progress now
+  // tracks each signal, not each decision as a single row). `target` is
+  // still the lever's own CHOSEN value from Build the case, shared by every
+  // signal under that decision — there is only one real engine-derived
+  // target per decision, not one per signal. Each signal's own free-text
+  // "baseline today" capture is parsed back into a number via
+  // `parseSignalBaseline`; a decision's worth is split evenly across its
+  // signals via `perSignalWorth`, so a decision broken into two signal rows
+  // never out-weighs one left at a single signal in the combined percent.
+  // See attainProgress.ts for the math this feeds.
+  const progressRows = allCommitted.flatMap(({ goal, lever, contribution, owner }) => {
     const key = `${goal}:${lever.id}`;
-    const commitment = commitments[key];
+    const commitment = commitments[key] ?? defaultCommitmentFor(goal, lever);
     const chosenValue = (valuesByGoal[goal] ?? defaultLeverValues(goal))[lever.id];
-    const baseline = commitment?.baseline ?? leverNumericValue(lever.realityStart);
     const targetValue = leverNumericValue(chosenValue);
-    const current = progressCurrent[key] ?? baseline;
-    const signal = commitment?.signal ?? lever.signal;
-    const worth = Math.max(0, contribution?.marginalMargin ?? 0);
-    return { key, goal, lever, owner, signal, baseline, current, target: targetValue, worth };
+    const worthTotal = Math.max(0, contribution?.marginalMargin ?? 0);
+    const signals = commitment.signals.length > 0 ? commitment.signals : defaultCommitmentFor(goal, lever).signals;
+    const worthPerSignal = perSignalWorth(worthTotal, signals.length);
+    return signals.map((sig) => {
+      const signalKey = `${key}:${sig.id}`;
+      const baseline = parseSignalBaseline(sig.baseline);
+      const current = progressCurrent[signalKey] ?? baseline;
+      return {
+        key: signalKey,
+        decisionKey: key,
+        goal,
+        lever,
+        owner,
+        signalLabel: sig.label.trim() || lever.signal,
+        unit: sig.unit.trim() || lever.unit,
+        cadence: sig.cadence,
+        baseline,
+        current,
+        target: targetValue,
+        worth: worthPerSignal,
+      };
+    });
   });
   const progressPct = computeProgressAttainmentPct(progressRows);
 
@@ -285,6 +310,7 @@ export default function StepAttainment({
                     <th className="text-[8.5px] font-semibold uppercase tracking-wide text-[#8C8C8C] pb-2 border-b border-[#E7E0D6]">Decision</th>
                     <th className="text-[8.5px] font-semibold uppercase tracking-wide text-[#8C8C8C] pb-2 border-b border-[#E7E0D6]">Owner</th>
                     <th className="text-[8.5px] font-semibold uppercase tracking-wide text-[#8C8C8C] pb-2 border-b border-[#E7E0D6]">Signal</th>
+                    <th className="text-[8.5px] font-semibold uppercase tracking-wide text-[#8C8C8C] pb-2 border-b border-[#E7E0D6]">Checked</th>
                     <th className="text-[8.5px] font-semibold uppercase tracking-wide text-[#8C8C8C] pb-2 border-b border-[#E7E0D6] text-right">Baseline</th>
                     <th className="text-[8.5px] font-semibold uppercase tracking-wide text-[#8C8C8C] pb-2 border-b border-[#E7E0D6]">Current</th>
                     <th className="text-[8.5px] font-semibold uppercase tracking-wide text-[#8C8C8C] pb-2 border-b border-[#E7E0D6] text-right">Target</th>
@@ -293,28 +319,40 @@ export default function StepAttainment({
                   </tr>
                 </thead>
                 <tbody>
-                  {progressRows.map((row) => {
+                  {progressRows.map((row, i) => {
                     const fraction = decisionAttainmentFraction(row.baseline, row.current, row.target);
                     const status = decisionStatus(fraction);
+                    // A decision's name (and owner/priority pill) prints
+                    // once, on the first of its signal rows - every
+                    // subsequent signal under the SAME decision only adds a
+                    // new "Signal" row underneath it, so a two-signal
+                    // decision reads as one decision with two things
+                    // watched, not two unrelated rows.
+                    const isFirstSignalForDecision = i === 0 || progressRows[i - 1].decisionKey !== row.decisionKey;
                     return (
                       <tr key={row.key} data-testid={`row-attain-progress-${row.key}`}>
                         {goalDefs.length > 1 && (
                           <td className="py-3 px-2 border-b border-[#F0ECE5] align-top">
-                            <span
-                              className="inline-block text-[8px] font-bold uppercase tracking-[1.2px] text-white px-2 py-0.5 rounded-full whitespace-nowrap"
-                              style={{ background: GOAL_CATALOG[row.goal].pillBg }}
-                            >
-                              {GOAL_CATALOG[row.goal].pill}
-                            </span>
+                            {isFirstSignalForDecision && (
+                              <span
+                                className="inline-block text-[8px] font-bold uppercase tracking-[1.2px] text-white px-2 py-0.5 rounded-full whitespace-nowrap"
+                                style={{ background: GOAL_CATALOG[row.goal].pillBg }}
+                              >
+                                {GOAL_CATALOG[row.goal].pill}
+                              </span>
+                            )}
                           </td>
                         )}
                         <td className="py-3 px-2 border-b border-[#F0ECE5] align-top max-w-[220px]">
-                          <p className="text-[11px] font-bold text-[#1A1A1A]">{row.lever.label}</p>
+                          {isFirstSignalForDecision && <p className="text-[11px] font-bold text-[#1A1A1A]">{row.lever.label}</p>}
                         </td>
-                        <td className="py-3 px-2 border-b border-[#F0ECE5] align-top text-[10.5px] text-[#3A3A3A]">{row.owner}</td>
-                        <td className="py-3 px-2 border-b border-[#F0ECE5] align-top text-[9.5px] text-[#8C8C8C] max-w-[200px]">{row.signal}</td>
+                        <td className="py-3 px-2 border-b border-[#F0ECE5] align-top text-[10.5px] text-[#3A3A3A]">
+                          {isFirstSignalForDecision && row.owner}
+                        </td>
+                        <td className="py-3 px-2 border-b border-[#F0ECE5] align-top text-[9.5px] text-[#8C8C8C] max-w-[200px]">{row.signalLabel}</td>
+                        <td className="py-3 px-2 border-b border-[#F0ECE5] align-top text-[9.5px] text-[#8C8C8C] capitalize whitespace-nowrap">{row.cadence}</td>
                         <td className="py-3 px-2 border-b border-[#F0ECE5] align-top text-right text-[10.5px] text-[#8C8C8C] whitespace-nowrap">
-                          {row.baseline.toLocaleString()} {row.lever.unit}
+                          {row.baseline.toLocaleString()} {row.unit}
                         </td>
                         <td className="py-3 px-2 border-b border-[#F0ECE5] align-top">
                           <div className="flex items-center gap-1.5">
@@ -325,7 +363,7 @@ export default function StepAttainment({
                               className="h-8 w-20 rounded-md border border-[#D8CFC4] bg-white px-2 text-xs text-[#1A1A1A] outline-none focus:border-[#EA2C00]"
                               data-testid={`input-attain-progress-current-${row.key}`}
                             />
-                            <span className="text-[9px] text-[#8C8C8C] whitespace-nowrap">{row.lever.unit}</span>
+                            <span className="text-[9px] text-[#8C8C8C] whitespace-nowrap">{row.unit}</span>
                           </div>
                         </td>
                         <td className="py-3 px-2 border-b border-[#F0ECE5] align-top text-right text-[10.5px] font-semibold text-[#1A1A1A] whitespace-nowrap">

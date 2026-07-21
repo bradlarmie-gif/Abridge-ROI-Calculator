@@ -70,6 +70,42 @@ export function decisionStatus(fraction: number): AttainmentStatus {
  * a real, moving percent instead of being stuck at 0. Returns 0 for an
  * empty decision list.
  */
+/**
+ * Multi-signal Commit (Change 3) — each committed decision now carries a
+ * LIST of signals to watch rather than one. `parseSignalBaseline` and
+ * `perSignalWorth` are the two small, pure helpers that let the Progress
+ * tab fan a decision out into one `DecisionProgressInput` row per signal
+ * and still feed `computeProgressAttainmentPct` above unchanged.
+ */
+
+/** Reads the leading number out of a free-text "baseline today" capture
+ * like "18 days" or "62%" -> 18 / 62. Signals are captured as free text
+ * (not a NumberField) so a partner can write "18 days" in one field rather
+ * than juggling a separate value + unit pair while typing; this is the one
+ * place that text gets turned back into the number the fraction math above
+ * needs. Returns 0 for blank, undefined, or non-numeric text — never NaN,
+ * matching the same "not-yet-entered reads as 0" rule the Starting-point
+ * baseline follows. */
+export function parseSignalBaseline(raw: string | undefined): number {
+  if (!raw) return 0;
+  const match = raw.match(/-?\d+(\.\d+)?/);
+  if (!match) return 0;
+  const n = parseFloat(match[0]);
+  return Number.isFinite(n) ? n : 0;
+}
+
+/** Splits a decision's total worth (its own `marginalMargin`, already shown
+ * on Commit) evenly across however many signals it has, so breaking a
+ * decision out into two signal rows for the combined attainment percent
+ * never gives it more pull than a decision left at one signal — the two
+ * signals' worths still sum back to exactly the decision's own worth.
+ * Negative worth and a zero signal count both resolve to 0, never a
+ * negative share or a divide-by-zero NaN/Infinity. */
+export function perSignalWorth(decisionWorth: number, signalCount: number): number {
+  if (signalCount <= 0) return 0;
+  return Math.max(0, decisionWorth) / signalCount;
+}
+
 export function computeProgressAttainmentPct(decisions: DecisionProgressInput[]): number {
   if (decisions.length === 0) return 0;
 

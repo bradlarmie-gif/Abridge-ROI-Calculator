@@ -1,10 +1,7 @@
-import { useState } from "react";
 import { motion } from "framer-motion";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { NumberField } from "@/components/NumberField";
-import { LEVERS, defaultLeverValues, type LeverValues } from "@/lib/attain/attainLevers";
+import { LEVERS, defaultLeverValues, type Lever, type LeverValues } from "@/lib/attain/attainLevers";
 import type { MultiGoalContributionsResult } from "@/lib/attain/attainLevers";
-import { leverNumericValue } from "@/lib/attain/attainProgress";
 import { GOAL_CATALOG } from "@/lib/attain/attainGoals";
 import type { GoalId } from "@/lib/attain/attainTypes";
 
@@ -18,7 +15,26 @@ function formatCompact(n: number): string {
 
 const DUE_OPTIONS = ["Month 1", "Month 2", "Month 3", "Month 4", "Month 6", "Month 9", "Month 12"];
 
-const CADENCE_OPTIONS = ["Weekly", "Biweekly", "Monthly"];
+/** Every cadence a single signal can be checked on. Cadence now lives per
+ * SIGNAL (Change 3), never as one global control for the whole plan — a
+ * decision can watch one signal weekly and another quarterly at the same
+ * time, which a single "these get checked monthly" control could never
+ * express. */
+export type SignalCadence = "weekly" | "biweekly" | "monthly" | "quarterly";
+
+export const CADENCE_OPTIONS: { value: SignalCadence; label: string }[] = [
+  { value: "weekly", label: "Weekly" },
+  { value: "biweekly", label: "Biweekly" },
+  { value: "monthly", label: "Monthly" },
+  { value: "quarterly", label: "Quarterly" },
+];
+
+const CADENCE_LABEL: Record<SignalCadence, string> = {
+  weekly: "weekly",
+  biweekly: "biweekly",
+  monthly: "monthly",
+  quarterly: "quarterly",
+};
 
 function isMoved(value: number | string[] | undefined, realityStart: number | string[]): boolean {
   if (Array.isArray(realityStart)) return Array.isArray(value) && value.length > 0;
@@ -32,16 +48,106 @@ export interface GoalOwner {
   title: string;
 }
 
-/** One committed decision's owner, date, signal, and starting point. `owner`
- * is intentionally allowed to be "" (no name typed yet, `lever.ownerRole` is
- * only ever shown as a placeholder hint) — every OTHER screen that reads a
- * commitment falls back to `lever.ownerRole` for display, so a blank name
- * never renders as blank there. */
+/** One signal a decision's owner watches to know if it is actually moving.
+ * `label` is plain and specific (pre-filled from the lever's own signal, or
+ * a fragile-link signal off the goal's value chain — see
+ * `defaultSignalsForLever` below), never invented from nothing. `baseline`
+ * is captured as free text ("18 days", "62%") rather than a NumberField, so
+ * a partner can write the value AND its unit in one natural pass; `unit` is
+ * kept as its own field only so every other screen (the Progress tab) can
+ * print "62%" instead of "62 " with a dangling space. `cadence` is this
+ * signal's own check frequency — there is no plan-wide cadence anymore. */
+export interface CommitmentSignal {
+  id: string;
+  label: string;
+  baseline: string;
+  unit: string;
+  cadence: SignalCadence;
+}
+
+/** One committed decision's owner, date, and the signal(s) that tell its
+ * owner whether it is actually moving. `owner` is intentionally allowed to
+ * be "" (no name typed yet, `lever.ownerRole` is only ever shown as a
+ * placeholder hint) — every OTHER screen that reads a commitment falls back
+ * to `lever.ownerRole` for display, so a blank name never renders as blank
+ * there. */
 export interface Commitment {
   owner: string;
   due: string;
-  signal: string;
-  baseline: number;
+  signals: CommitmentSignal[];
+}
+
+/** Deterministic ids for a decision's PRE-FILLED default signals, so the
+ * fallback shown before any real state exists never regenerates fresh ids
+ * on every render (which would thrash React's reconciliation and drop
+ * focus mid-keystroke). Signals added later via "+ Add a signal" get a
+ * genuinely unique id instead — see AttainFlow's `handleAddSignal`, which
+ * only runs once per click, not once per render. */
+function defaultSignalId(goal: GoalId, leverId: string, index: number): string {
+  return `${goal}:${leverId}:s${index}`;
+}
+
+/** 1-2 signals to pre-fill a freshly-committed decision with: the lever's
+ * own specific signal (always), plus one signal off the goal's value chain
+ * — the links the partner's own operations hold (everything past the two
+ * Abridge-delivered links, see attainTypes.ts's `isAbridge`) are the
+ * natural second thing to watch. Cycles through those partner-owned links
+ * one per decision (round-robin by the lever's position in its goal's
+ * list) so decisions in the same goal watch a variety of chain signals
+ * rather than all repeating the same one. Never invents text — every
+ * string here is read straight off `LEVERS` / `GOAL_CATALOG`. */
+export function defaultSignalsForLever(goal: GoalId, lever: Lever): CommitmentSignal[] {
+  const primary: CommitmentSignal = {
+    id: defaultSignalId(goal, lever.id, 0),
+    label: lever.signal,
+    baseline: "",
+    unit: lever.unit,
+    cadence: "monthly",
+  };
+
+  const levers = LEVERS[goal];
+  const leverIndex = Math.max(0, levers.findIndex((l) => l.id === lever.id));
+  const partnerLinks = GOAL_CATALOG[goal].chain.filter((l) => !l.isAbridge);
+  const pick = partnerLinks.length > 0 ? partnerLinks[leverIndex % partnerLinks.length] : undefined;
+
+  if (!pick || pick.signal === primary.label) return [primary];
+
+  const secondary: CommitmentSignal = {
+    id: defaultSignalId(goal, lever.id, 1),
+    label: pick.signal,
+    baseline: "",
+    unit: "",
+    cadence: "monthly",
+  };
+  return [primary, secondary];
+}
+
+/** The full default commitment for a decision that has never been edited —
+ * shared by AttainFlow (so every "materialize on first edit" handler starts
+ * from the same shape) and this component's render fallback. */
+export function defaultCommitmentFor(goal: GoalId, lever: Lever): Commitment {
+  return { owner: "", due: lever.defaultDue, signals: defaultSignalsForLever(goal, lever) };
+}
+
+/** The plain-language "story" sentence a decision's card ends on:
+ * "[Owner] owns this, due [month]. We watch [signal 1] (today: X, checked
+ * monthly) and [signal 2] (today: Y, checked quarterly)." Every value
+ * comes straight off the decision's own state — nothing here is invented. */
+export function buildDecisionStory(ownerDisplay: string, due: string, signals: CommitmentSignal[]): string {
+  const phrases = signals.map((sig) => {
+    const label = sig.label.trim() || "a signal";
+    const value = sig.baseline.trim();
+    const unit = sig.unit.trim();
+    const today = value ? `${value}${unit ? ` ${unit}` : ""}` : "not captured yet";
+    return `${label} (today: ${today}, checked ${CADENCE_LABEL[sig.cadence]})`;
+  });
+  const joined =
+    phrases.length === 0
+      ? "nothing yet"
+      : phrases.length === 1
+        ? phrases[0]
+        : `${phrases.slice(0, -1).join(", ")} and ${phrases[phrases.length - 1]}`;
+  return `${ownerDisplay} owns this, due ${due}. We watch ${joined}.`;
 }
 
 interface StepCommitProps {
@@ -49,7 +155,10 @@ interface StepCommitProps {
   valuesByGoal: Partial<Record<GoalId, LeverValues>>;
   combined: MultiGoalContributionsResult | null;
   commitments: Record<string, Commitment>;
-  onChangeCommitment: (goal: GoalId, leverId: string, patch: Partial<Commitment>) => void;
+  onChangeCommitment: (goal: GoalId, leverId: string, patch: Partial<Pick<Commitment, "owner" | "due">>) => void;
+  onAddSignal: (goal: GoalId, leverId: string) => void;
+  onRemoveSignal: (goal: GoalId, leverId: string, signalId: string) => void;
+  onChangeSignal: (goal: GoalId, leverId: string, signalId: string, patch: Partial<CommitmentSignal>) => void;
   goalOwnerByPriority: Partial<Record<GoalId, GoalOwner>>;
   onChangeGoalOwner: (goal: GoalId, patch: Partial<GoalOwner>) => void;
   /** The real step number in the current (dynamic) sequence - one build-case
@@ -58,11 +167,11 @@ interface StepCommitProps {
 }
 
 /** Small uppercase-label field wrapper, shared by every control in a
- * decision row so the four fields (owner, when, signal, baseline) read as
- * one consistent mini-form rather than four differently-styled controls. */
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+ * decision row so every field reads as one consistent mini-form rather
+ * than differently-styled controls. */
+function Field({ label, children, className }: { label: string; children: React.ReactNode; className?: string }) {
   return (
-    <div>
+    <div className={className}>
       <p className="text-[8px] font-bold uppercase tracking-wide text-[#8C8C8C] mb-1">{label}</p>
       {children}
     </div>
@@ -75,12 +184,13 @@ export default function StepCommit({
   combined,
   commitments,
   onChangeCommitment,
+  onAddSignal,
+  onRemoveSignal,
+  onChangeSignal,
   goalOwnerByPriority,
   onChangeGoalOwner,
   stepNumber,
 }: StepCommitProps) {
-  const [cadence, setCadence] = useState("Monthly");
-
   const groups = goals.map((goal) => {
     const values = valuesByGoal[goal] ?? defaultLeverValues(goal);
     const movedLevers = LEVERS[goal].filter((l) => isMoved(values[l.id], l.realityStart));
@@ -89,6 +199,9 @@ export default function StepCommit({
   });
   const totalMoved = groups.reduce((sum, g) => sum + g.movedLevers.length, 0);
 
+  const commitmentFor = (goal: GoalId, lever: Lever): Commitment =>
+    commitments[`${goal}:${lever.id}`] ?? defaultCommitmentFor(goal, lever);
+
   // Every distinct owner across every committed decision, falling back to
   // the lever's suggested role whenever no real name has been typed yet -
   // the seal always names someone, even before the partner has personalized
@@ -96,10 +209,7 @@ export default function StepCommit({
   const ownerLabels = Array.from(
     new Set(
       groups.flatMap(({ goal, movedLevers }) =>
-        movedLevers.map((lever) => {
-          const commitment = commitments[`${goal}:${lever.id}`];
-          return commitment?.owner?.trim() || lever.ownerRole;
-        }),
+        movedLevers.map((lever) => commitmentFor(goal, lever).owner.trim() || lever.ownerRole),
       ),
     ),
   );
@@ -109,6 +219,14 @@ export default function StepCommit({
       : ownerLabels.length <= 3
         ? ownerLabels.join(", ")
         : `${ownerLabels.slice(0, 3).join(", ")}, & ${ownerLabels.length - 3} more`;
+
+  // Total signals being watched across every committed decision - stands in
+  // for the old single global cadence in the seal's closing sentence, since
+  // cadence is no longer one plan-wide number.
+  const totalSignals = groups.reduce(
+    (sum, { goal, movedLevers }) => sum + movedLevers.reduce((s, lever) => s + commitmentFor(goal, lever).signals.length, 0),
+    0,
+  );
 
   const activeGoals = groups.filter((g) => g.movedLevers.length > 0).map((g) => g.goal);
   const goalOwnerLabels = activeGoals.map((goal) => {
@@ -133,8 +251,9 @@ export default function StepCommit({
         </h1>
         <p className="text-sm text-[#666666] leading-relaxed max-w-[620px]" data-testid="text-step-teach">
           A decision without a name and a date is a hope. Every decision you moved on the last page shows up below,
-          grouped by priority. Give each one a real owner, a real month, a signal to watch, and where that signal
-          stands today, so the plan you're building is a set of commitments, not just a number.
+          grouped by priority. Give each one a real owner, a real month, and the signal (or two) that tells that
+          owner whether it is actually moving, along with where each signal stands today and how often it gets
+          checked, so the plan you're building is a set of commitments, not just a number.
         </p>
       </motion.div>
 
@@ -197,15 +316,16 @@ export default function StepCommit({
                 </div>
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {movedLevers.map((lever, i) => {
                   const contribution = contributionFor(lever.id);
-                  const commitment = commitments[`${goal}:${lever.id}`];
-                  const ownerName = commitment?.owner ?? "";
-                  const due = commitment?.due ?? lever.defaultDue;
-                  const signal = commitment?.signal ?? lever.signal;
-                  const baseline = commitment?.baseline ?? leverNumericValue(lever.realityStart);
+                  const commitment = commitmentFor(goal, lever);
+                  const ownerName = commitment.owner;
+                  const due = commitment.due;
+                  const signals = commitment.signals;
                   const dueOptions = Array.from(new Set([lever.defaultDue, ...DUE_OPTIONS]));
+                  const ownerDisplay = ownerName.trim() || lever.ownerRole;
+                  const story = buildDecisionStory(ownerDisplay, due, signals);
 
                   return (
                     <motion.div
@@ -213,10 +333,10 @@ export default function StepCommit({
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.03 * i }}
-                      className="rounded-lg border border-[#EA2C00] bg-[#FFF6F3] p-4"
+                      className="rounded-lg border border-[#EA2C00] bg-[#FFF6F3] p-5"
                       data-testid={`row-attain-commit-${goal}-${lever.id}`}
                     >
-                      <div className="mb-3">
+                      <div className="mb-4">
                         <span className="text-sm font-bold text-[#1A1A1A]">{lever.label}</span>
                         <p className="text-xs text-[#8C8C8C] mt-1">
                           Worth{" "}
@@ -226,7 +346,8 @@ export default function StepCommit({
                         </p>
                       </div>
 
-                      <div className="grid grid-cols-2 sm:grid-cols-[1fr_112px_1.6fr_150px] gap-3">
+                      {/* 1. Owner + by-when. */}
+                      <div className="grid grid-cols-2 sm:grid-cols-[1fr_150px] gap-3 mb-4">
                         <Field label="Owner">
                           <input
                             value={ownerName}
@@ -251,29 +372,105 @@ export default function StepCommit({
                             </SelectContent>
                           </Select>
                         </Field>
-
-                        <Field label="Signal to watch">
-                          <input
-                            value={signal}
-                            onChange={(e) => onChangeCommitment(goal, lever.id, { signal: e.target.value })}
-                            className="h-9 w-full rounded-md border border-[#D8CFC4] bg-white px-2.5 text-xs text-[#1A1A1A] outline-none focus:border-[#EA2C00]"
-                            data-testid={`input-attain-commit-signal-${goal}-${lever.id}`}
-                          />
-                        </Field>
-
-                        <Field label="Baseline today">
-                          <div className="flex items-center gap-1.5">
-                            <NumberField
-                              value={baseline}
-                              onValueChange={(v) => onChangeCommitment(goal, lever.id, { baseline: v })}
-                              min={0}
-                              className="h-9 w-full min-w-0 rounded-md border border-[#D8CFC4] bg-white px-2.5 text-xs text-[#1A1A1A] outline-none focus:border-[#EA2C00]"
-                              data-testid={`input-attain-commit-baseline-${goal}-${lever.id}`}
-                            />
-                            <span className="text-[9.5px] text-[#8C8C8C] whitespace-nowrap">{lever.unit}</span>
-                          </div>
-                        </Field>
                       </div>
+
+                      {/* 2 & 3. Signals to watch - a LIST, each with its own
+                          baseline today and check cadence. */}
+                      <div className="border-t border-[#F3C9BE] pt-3">
+                        <div className="flex items-center justify-between mb-2.5">
+                          <p className="text-[9px] font-bold uppercase tracking-wide text-[#8C8C8C]">Signals to watch</p>
+                          <button
+                            type="button"
+                            onClick={() => onAddSignal(goal, lever.id)}
+                            className="text-[10px] font-semibold text-[#EA2C00] hover:underline"
+                            data-testid={`button-attain-commit-add-signal-${goal}-${lever.id}`}
+                          >
+                            + Add a signal
+                          </button>
+                        </div>
+
+                        <div className="space-y-2">
+                          {signals.map((sig) => (
+                            <div
+                              key={sig.id}
+                              className="grid grid-cols-2 sm:grid-cols-[1.5fr_0.85fr_0.65fr_0.85fr_24px] gap-2 items-end bg-white rounded-md border border-[#E7E0D6] p-2.5"
+                              data-testid={`row-attain-commit-signal-${goal}-${lever.id}-${sig.id}`}
+                            >
+                              <Field label="Signal">
+                                <input
+                                  value={sig.label}
+                                  onChange={(e) => onChangeSignal(goal, lever.id, sig.id, { label: e.target.value })}
+                                  placeholder="What tells you it's moving"
+                                  className="h-9 w-full rounded-md border border-[#D8CFC4] bg-white px-2 text-[11px] text-[#1A1A1A] outline-none focus:border-[#EA2C00]"
+                                  data-testid={`input-attain-commit-signal-label-${goal}-${lever.id}-${sig.id}`}
+                                />
+                              </Field>
+
+                              <Field label="Baseline today">
+                                <input
+                                  value={sig.baseline}
+                                  onChange={(e) => onChangeSignal(goal, lever.id, sig.id, { baseline: e.target.value })}
+                                  placeholder="e.g., 18"
+                                  className="h-9 w-full rounded-md border border-[#D8CFC4] bg-white px-2 text-[11px] text-[#1A1A1A] outline-none focus:border-[#EA2C00]"
+                                  data-testid={`input-attain-commit-signal-baseline-${goal}-${lever.id}-${sig.id}`}
+                                />
+                              </Field>
+
+                              <Field label="Unit">
+                                <input
+                                  value={sig.unit}
+                                  onChange={(e) => onChangeSignal(goal, lever.id, sig.id, { unit: e.target.value })}
+                                  placeholder="e.g., days"
+                                  className="h-9 w-full rounded-md border border-[#D8CFC4] bg-white px-2 text-[11px] text-[#1A1A1A] outline-none focus:border-[#EA2C00]"
+                                  data-testid={`input-attain-commit-signal-unit-${goal}-${lever.id}-${sig.id}`}
+                                />
+                              </Field>
+
+                              <Field label="Checked">
+                                <Select
+                                  value={sig.cadence}
+                                  onValueChange={(v) => onChangeSignal(goal, lever.id, sig.id, { cadence: v as SignalCadence })}
+                                >
+                                  <SelectTrigger
+                                    className="h-9 w-full text-[11px] bg-white"
+                                    data-testid={`select-attain-commit-signal-cadence-${goal}-${lever.id}-${sig.id}`}
+                                  >
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {CADENCE_OPTIONS.map((c) => (
+                                      <SelectItem key={c.value} value={c.value} className="text-xs">
+                                        {c.label}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </Field>
+
+                              <button
+                                type="button"
+                                onClick={() => onRemoveSignal(goal, lever.id, sig.id)}
+                                disabled={signals.length <= 1}
+                                title={signals.length <= 1 ? "Every decision needs at least one signal" : "Remove this signal"}
+                                className="h-9 w-6 flex items-center justify-center text-[#B4B4B4] hover:text-[#EA2C00] disabled:opacity-30 disabled:cursor-not-allowed"
+                                data-testid={`button-attain-commit-remove-signal-${goal}-${lever.id}-${sig.id}`}
+                              >
+                                ×
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* The story - the whole row read back as one plain
+                          sentence, the "premium, story-like" payoff of the
+                          structured fields above. */}
+                      <p
+                        className="text-[11px] text-[#3A3A3A] leading-relaxed mt-4 pt-3 border-t border-[#F3C9BE]"
+                        data-testid={`text-attain-commit-story-${goal}-${lever.id}`}
+                      >
+                        {story}
+                      </p>
                     </motion.div>
                   );
                 })}
@@ -285,30 +482,13 @@ export default function StepCommit({
 
       {totalMoved > 0 && (
         <>
-          <div className="flex flex-wrap items-center gap-3 mb-6" data-testid="text-attain-commit-cadence">
-            <p className="text-sm text-[#3A3A3A]">
-              These get checked <b className="text-[#1A1A1A]">{cadence.toLowerCase()}</b>.
-            </p>
-            <Select value={cadence} onValueChange={setCadence}>
-              <SelectTrigger className="h-8 w-[130px] text-xs bg-white" data-testid="select-attain-commit-cadence">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {CADENCE_OPTIONS.map((c) => (
-                  <SelectItem key={c} value={c} className="text-xs">
-                    {c}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
           <div className="bg-[#F5F0EB] border-l-[3px] border-[#EA2C00] rounded-r-md p-4 mb-6 max-w-[620px]">
             <p className="text-[9px] font-bold uppercase tracking-wide text-[#EA2C00] mb-1">Why this matters</p>
             <p className="text-xs text-[#3A3A3A] leading-relaxed">
               The month you pick here is what the attainment curve on the next page steers against. A decision due in
               Month 2 is expected to be showing up by Month 2, not sitting untouched at the goal-owner review in
-              Month 9.
+              Month 9. Each signal's own cadence is when its owner actually looks, not when the whole plan gets
+              reviewed.
             </p>
           </div>
 
@@ -320,8 +500,9 @@ export default function StepCommit({
             <p className="text-[15px] text-white leading-relaxed" data-testid="text-attain-commit-seal">
               You're committing to <b className="text-[#EA2C00]">{totalMoved} decision{totalMoved === 1 ? "" : "s"}</b>,
               worth about <b className="text-[#EA2C00]">{formatCompact(combined?.combinedMargin ?? 0)}</b>, owned by{" "}
-              <b className="text-white">{ownerNames}</b>, reviewed <b className="text-white">{cadence.toLowerCase()}</b>,
-              under <b className="text-white">{goalOwnerNames}</b>.
+              <b className="text-white">{ownerNames}</b>, watched across{" "}
+              <b className="text-white">{totalSignals} signal{totalSignals === 1 ? "" : "s"}</b>, under{" "}
+              <b className="text-white">{goalOwnerNames}</b>.
             </p>
           </div>
         </>
