@@ -78,7 +78,12 @@ export interface ClabsiResult extends QualityDriverResult {
 
 export interface SepsisResult extends QualityDriverResult {
   nonCompliant: number;   // events × (100 - compliance) / 100
-  docLagCases: number;    // = prevented (kept for clarity at call sites)
+  docLagCases: number;    // the addressable documentation-lag pool, BEFORE
+                           // the realization haircut - `prevented` is this
+                           // pool AFTER realization, so `prevented` and
+                           // `value` (which is prevented x cost) can never
+                           // disagree, and a $0 realization always shows 0
+                           // prevented, never a positive count next to $0.
   complianceGapPct: number;
 }
 
@@ -113,13 +118,16 @@ export const calcSepsis = (i: SepsisInputs): SepsisResult => {
   const complianceGapPct = Math.max(0, 100 - i.currentCompliancePct);
   const nonCompliant = events * (complianceGapPct / 100);
   const docLagCases = nonCompliant * (i.docLagPct / 100);
-  const value =
-    docLagCases * i.excessCostPerCase * (i.realizationPct / 100);
+  // `prevented` is the addressable doc-lag pool AFTER the realization
+  // haircut, so value === prevented x cost exactly - the count and the
+  // dollar can never disagree, and 0% realization always shows 0 prevented.
+  const prevented = docLagCases * (i.realizationPct / 100);
+  const value = prevented * i.excessCostPerCase;
   return {
     events,
     nonCompliant,
     docLagCases,
-    prevented: docLagCases,
+    prevented,
     complianceGapPct,
     value,
   };
