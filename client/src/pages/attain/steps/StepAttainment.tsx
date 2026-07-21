@@ -33,7 +33,7 @@ import {
 import { GOAL_CATALOG, getContent } from "@/lib/attain/attainGoals";
 import type { AttainState, AttainSetting, GoalId, GoalDef, SettingGoalContent } from "@/lib/attain/attainTypes";
 import type { GoalTargetResult, AttainmentResult } from "@/lib/attain/attainCalc";
-import { defaultCommitmentFor, type Commitment, type GoalOwner, type SignalCadence } from "./StepCommit";
+import { defaultCommitmentFor, CADENCE_LABEL, type Commitment, type GoalOwner, type SignalCadence } from "./StepCommit";
 import { generateAttainPdf } from "@/lib/attain/attain-pdf";
 
 function formatCompact(n: number): string {
@@ -239,12 +239,15 @@ interface ProgressSignalRowData {
   due: string;
   signalLabel: string;
   unit: string;
-  cadence: SignalCadence;
   baseline: number;
   target: number;
   worth: number;
   entries: ProgressEntry[];
   current: number;
+  /** True for the decision's ONE required signal (Commit's "Track this"
+   * default), false for any optional signal the partner added on top — the
+   * required row is always the primary tracked row for its decision. */
+  required: boolean;
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -375,15 +378,17 @@ function SignalTrackerRow({
   dateToMonths,
   totalMonths,
   todayFrac,
+  planCadence,
   onLogProgressUpdate,
 }: {
   row: ProgressSignalRowData;
   dateToMonths: Map<string, number>;
   totalMonths: number;
   todayFrac: number;
+  planCadence: SignalCadence;
   onLogProgressUpdate: (signalKey: string, value: number, note?: string) => void;
 }) {
-  const { key: signalKey, signalLabel, lever, owner, unit, cadence, baseline, target, entries, current } = row;
+  const { key: signalKey, signalLabel, lever, owner, unit, baseline, target, entries, current, required } = row;
   const [loggingOpen, setLoggingOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [draftValue, setDraftValue] = useState(current);
@@ -396,7 +401,9 @@ function SignalTrackerRow({
   const fraction = decisionAttainmentFraction(baseline, current, target);
   const status = decisionStatus(fraction);
   const last = latestEntry(entries);
-  const nextDue = last ? nextCheckDueDate(last.date, cadence) : undefined;
+  // Every signal now shares the SAME plan-wide cadence (Commit redesign) —
+  // never a per-row setting.
+  const nextDue = last ? nextCheckDueDate(last.date, planCadence) : undefined;
   const isOverdue = !!nextDue && nextDue < todayISODate();
 
   function handleSave() {
@@ -409,7 +416,17 @@ function SignalTrackerRow({
     <div className="border-b border-[#F0ECE5] py-3.5 last:border-b-0" data-testid={`row-attain-progress-signal-${signalKey}`}>
       <div className="grid items-center gap-4" style={{ gridTemplateColumns: TRACKER_GRID_COLUMNS }}>
         <div className="min-w-0">
-          <p className="text-[12px] font-bold text-[#1A1A1A] truncate">{signalLabel}</p>
+          <div className="flex items-center gap-1.5">
+            {required && (
+              <span
+                className="inline-block text-[7.5px] font-bold uppercase tracking-wide text-white bg-[#EA2C00] px-1.5 py-[1px] rounded-full flex-shrink-0"
+                data-testid={`badge-attain-progress-required-${signalKey}`}
+              >
+                Required
+              </span>
+            )}
+            <p className="text-[12px] font-bold text-[#1A1A1A] truncate">{signalLabel}</p>
+          </div>
           <p className="text-[10px] text-[#8C8C8C] truncate">{lever.label} · {owner}</p>
         </div>
 
@@ -517,6 +534,7 @@ function PriorityTrackerGroup({
   dateToMonths,
   totalMonths,
   todayFrac,
+  planCadence,
   onLogProgressUpdate,
 }: {
   goalDef: GoalDef;
@@ -525,6 +543,7 @@ function PriorityTrackerGroup({
   dateToMonths: Map<string, number>;
   totalMonths: number;
   todayFrac: number;
+  planCadence: SignalCadence;
   onLogProgressUpdate: (signalKey: string, value: number, note?: string) => void;
 }) {
   return (
@@ -548,6 +567,7 @@ function PriorityTrackerGroup({
             dateToMonths={dateToMonths}
             totalMonths={totalMonths}
             todayFrac={todayFrac}
+            planCadence={planCadence}
             onLogProgressUpdate={onLogProgressUpdate}
           />
         ))}
@@ -566,6 +586,10 @@ interface StepAttainmentProps {
   combined: MultiGoalContributionsResult;
   commitments: Record<string, Commitment>;
   goalOwnerByPriority: Partial<Record<GoalId, GoalOwner>>;
+  /** ONE plan-wide review cadence (Commit redesign) — every committed
+   * signal's "next check due" below is derived off this single value,
+   * never a per-signal setting. */
+  planCadence: SignalCadence;
   freedTimeSplit: number;
   /** Per-priority realization/attribution rate (0-100, default 100 when a
    * goal is missing) - set on Build the case's "Realization rate" control.
@@ -604,6 +628,7 @@ export default function StepAttainment({
   combined,
   commitments,
   goalOwnerByPriority,
+  planCadence,
   freedTimeSplit,
   realizationByGoal,
   progressEntries,
@@ -648,6 +673,7 @@ export default function StepAttainment({
         combined,
         commitments,
         goalOwnerByPriority,
+        planCadence,
         freedTimeSplit,
         realizationByGoal,
         orgName,
@@ -691,9 +717,16 @@ export default function StepAttainment({
     const targetValue = leverNumericValue(chosenValue);
     // Per-decision only, for splitting across its own signals below — never sum marginalMargin across a chain; use the chain's totalMargin.
     const worthTotal = Math.max(0, contribution?.marginalMargin ?? 0);
-    const signals = commitment.signals.length > 0 ? commitment.signals : defaultCommitmentFor(goal, lever, setting).signals;
+    // The required signal is always present; optional signals are whatever
+    // the partner has added on top (Commit redesign) — together these are
+    // every signal Progress tracks for this decision, with the required one
+    // flagged so it renders as the primary tracked row.
+    const signals = [
+      { sig: commitment.requiredSignal, required: true },
+      ...commitment.optionalSignals.map((sig) => ({ sig, required: false })),
+    ];
     const worthPerSignal = perSignalWorth(worthTotal, signals.length);
-    return signals.map((sig) => {
+    return signals.map(({ sig, required }) => {
       const signalKey = `${key}:${sig.id}`;
       const baseline = parseSignalBaseline(sig.baseline);
       const entries = progressEntries[signalKey] ?? [{ date: todayISODate(), value: baseline }];
@@ -706,12 +739,12 @@ export default function StepAttainment({
         due,
         signalLabel: sig.label.trim() || lever.signal,
         unit: sig.unit.trim() || lever.unit,
-        cadence: sig.cadence,
         baseline,
         target: targetValue,
         worth: worthPerSignal,
         entries,
         current: currentValueFromEntries(entries, baseline),
+        required,
       };
     });
   });
@@ -891,10 +924,11 @@ export default function StepAttainment({
         <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} data-testid="panel-attain-progress">
           <p className="text-[11px] font-semibold uppercase tracking-[3.2px] text-[#EA2C00] mb-1">Where This Stands</p>
           <h2 className="font-abridge text-[32px] text-[#1A1A1A] mb-4">Progress</h2>
-          <p className="text-[15px] leading-relaxed text-[#3A3A3A] mb-5 max-w-[720px]">
-            This is the surface to come back to. On a cadence, log the real number for each signal below — the date
-            stamps itself, the trend and the curve climb with it, and the history builds a dated record for the next
-            review. Nothing here is projected. It only moves when someone logs that something actually moved.
+          <p className="text-[15px] leading-relaxed text-[#3A3A3A] mb-5 max-w-[720px]" data-testid="text-attain-progress-cadence-lead">
+            This is the surface to come back to, reviewed <b>{CADENCE_LABEL[planCadence]}</b>. Log the real number for
+            each signal below — the date stamps itself, the trend and the curve climb with it, and the history builds
+            a dated record for the next review. Nothing here is projected. It only moves when someone logs that
+            something actually moved.
           </p>
 
           {progressRows.length === 0 ? (
@@ -951,6 +985,7 @@ export default function StepAttainment({
                       dateToMonths={dateToMonths}
                       totalMonths={state.totalMonths}
                       todayFrac={axisTodayFrac}
+                      planCadence={planCadence}
                       onLogProgressUpdate={onLogProgressUpdate}
                     />
                   ))}

@@ -6,9 +6,11 @@ import StepScope from "./steps/StepScope";
 import StepBuildCase from "./steps/StepBuildCase";
 import StepCommit, {
   defaultCommitmentFor,
+  DEFAULT_PLAN_CADENCE,
   type Commitment,
   type CommitmentSignal,
   type GoalOwner,
+  type SignalCadence,
 } from "./steps/StepCommit";
 import StepAttainment from "./steps/StepAttainment";
 import AttainLivePanel from "./AttainLivePanel";
@@ -188,6 +190,13 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
   const [progressEntries, setProgressEntries] = useState<Record<string, ProgressEntry[]>>(
     () => initialSaveState?.progressEntries ?? {},
   );
+  // ONE plan-wide review cadence (Commit redesign) — replaces what used to
+  // be a cadence picked per SIGNAL. Every committed signal's "next check
+  // due" (Progress tab, PDF) is derived off this single value now, never a
+  // per-row setting. Defaults to monthly, editable once on Commit.
+  const [planCadence, setPlanCadence] = useState<SignalCadence>(
+    () => initialSaveState?.planCadence ?? DEFAULT_PLAN_CADENCE,
+  );
   // The partner's real operational baseline (providers/encounters/
   // utilization, or beds/FTEs/census/adoption for nursing) — collected once
   // on the Scope step and threaded into every lever's engine call from
@@ -272,6 +281,7 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
     setBaseline({});
     setFreedTimeSplit(DEFAULT_FREED_TIME_SPLIT);
     setRealizationByGoal({});
+    setPlanCadence(DEFAULT_PLAN_CADENCE);
     setState((prev) => ({
       ...prev,
       setting,
@@ -323,7 +333,9 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
   // sees the same shape whether or not the partner has edited it yet.
   const fallbackCommitment = useCallback((goal: GoalId, leverId: string): Commitment => {
     const lever = leversFor(goal, state.setting ?? undefined).find((l) => l.id === leverId);
-    return lever ? defaultCommitmentFor(goal, lever, state.setting ?? undefined) : { owner: "", due: "Month 1", signals: [] };
+    return lever
+      ? defaultCommitmentFor(goal, lever, state.setting ?? undefined)
+      : { owner: "", due: "Month 1", requiredSignal: { id: "fallback", label: "", baseline: "", unit: "" }, optionalSignals: [] };
   }, [state.setting]);
 
   const handleChangeCommitment = useCallback((goal: GoalId, leverId: string, patch: Partial<Pick<Commitment, "owner" | "due">>) => {
@@ -334,47 +346,59 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
     });
   }, [fallbackCommitment]);
 
-  const handleAddSignal = useCallback((goal: GoalId, leverId: string) => {
+  // Edits the ONE required signal's baseline/unit only — its label is
+  // pinned to the decision's designated proof-signal (never re-picked from
+  // a Select here, see StepCommit's `requiredSignalLabel` usage), so this
+  // never needs to accept a `label` patch.
+  const handleChangeRequiredSignal = useCallback((goal: GoalId, leverId: string, patch: Partial<Pick<CommitmentSignal, "baseline" | "unit">>) => {
+    setCommitments((prev) => {
+      const key = commitmentKey(goal, leverId);
+      const base = prev[key] ?? fallbackCommitment(goal, leverId);
+      return { ...prev, [key]: { ...base, requiredSignal: { ...base.requiredSignal, ...patch } } };
+    });
+  }, [fallbackCommitment]);
+
+  const handleAddOptionalSignal = useCallback((goal: GoalId, leverId: string) => {
     setCommitments((prev) => {
       const key = commitmentKey(goal, leverId);
       const base = prev[key] ?? fallbackCommitment(goal, leverId);
       const lever = leversFor(goal, state.setting ?? undefined).find((l) => l.id === leverId);
       // A genuinely unique id, safe here because this only runs once per
       // click (an imperative event handler), never once per render - see
-      // `defaultSignalsForLever`'s comment on why ITS ids must stay
-      // deterministic instead.
+      // `defaultCommitmentFor`'s comment on why the required signal's id
+      // must stay deterministic instead.
       const newSignal: CommitmentSignal = {
-        id: `${key}:added-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        id: `${key}:optional-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
         label: "",
         baseline: "",
         unit: lever?.unit ?? "",
-        cadence: "monthly",
       };
-      return { ...prev, [key]: { ...base, signals: [...base.signals, newSignal] } };
+      return { ...prev, [key]: { ...base, optionalSignals: [...base.optionalSignals, newSignal] } };
     });
   }, [fallbackCommitment, state.setting]);
 
-  const handleRemoveSignal = useCallback((goal: GoalId, leverId: string, signalId: string) => {
+  const handleRemoveOptionalSignal = useCallback((goal: GoalId, leverId: string, signalId: string) => {
     setCommitments((prev) => {
       const key = commitmentKey(goal, leverId);
       const base = prev[key] ?? fallbackCommitment(goal, leverId);
-      // Never let a decision drop to zero signals - the row above already
-      // disables the remove button at 1, this is the state-layer backstop.
-      if (base.signals.length <= 1) return prev;
-      return { ...prev, [key]: { ...base, signals: base.signals.filter((s) => s.id !== signalId) } };
+      return { ...prev, [key]: { ...base, optionalSignals: base.optionalSignals.filter((s) => s.id !== signalId) } };
     });
   }, [fallbackCommitment]);
 
-  const handleChangeSignal = useCallback((goal: GoalId, leverId: string, signalId: string, patch: Partial<CommitmentSignal>) => {
+  const handleChangeOptionalSignal = useCallback((goal: GoalId, leverId: string, signalId: string, patch: Partial<CommitmentSignal>) => {
     setCommitments((prev) => {
       const key = commitmentKey(goal, leverId);
       const base = prev[key] ?? fallbackCommitment(goal, leverId);
       return {
         ...prev,
-        [key]: { ...base, signals: base.signals.map((s) => (s.id === signalId ? { ...s, ...patch } : s)) },
+        [key]: { ...base, optionalSignals: base.optionalSignals.map((s) => (s.id === signalId ? { ...s, ...patch } : s)) },
       };
     });
   }, [fallbackCommitment]);
+
+  const handleChangePlanCadence = useCallback((cadence: SignalCadence) => {
+    setPlanCadence(cadence);
+  }, []);
 
   const handleChangeGoalOwner = useCallback((goal: GoalId, patch: Partial<GoalOwner>) => {
     setGoalOwnerByPriority((prev) => ({
@@ -395,7 +419,7 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
         if (!isLeverMoved(values[lever.id], lever.realityStart)) continue;
         const declKey = commitmentKey(g, lever.id);
         const commitment = commitments[declKey] ?? fallbackCommitment(g, lever.id);
-        const signals = commitment.signals.length > 0 ? commitment.signals : fallbackCommitment(g, lever.id).signals;
+        const signals = [commitment.requiredSignal, ...commitment.optionalSignals];
         for (const sig of signals) {
           out.push({ key: `${declKey}:${sig.id}`, baseline: parseSignalBaseline(sig.baseline) });
         }
@@ -470,6 +494,7 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
     setBaseline(saved.baseline);
     setFreedTimeSplit(saved.freedTimeSplit);
     setRealizationByGoal(saved.realizationByGoal);
+    setPlanCadence(saved.planCadence);
     setStepIndex(stepOrderFor(saved.goals).length - 1);
     setResumeDraft(null);
   }, []);
@@ -512,13 +537,14 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
       baseline,
       freedTimeSplit,
       realizationByGoal,
+      planCadence,
     };
     writeAttainDraft(saveState);
     const encoded = encodeAttain(saveState);
     const url = `${window.location.origin}${window.location.pathname}?attain=${encoded}`;
     await copyToClipboard(url);
     return url;
-  }, [state, goals, valuesByGoal, commitments, goalOwnerByPriority, progressEntries, baseline, freedTimeSplit, realizationByGoal]);
+  }, [state, goals, valuesByGoal, commitments, goalOwnerByPriority, progressEntries, baseline, freedTimeSplit, realizationByGoal, planCadence]);
 
   // Every dollar figure downstream comes from this one computation: each
   // goal's own delta off its own realityStart, combined once with the
@@ -742,11 +768,14 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
                 combined={combined}
                 commitments={commitments}
                 onChangeCommitment={handleChangeCommitment}
-                onAddSignal={handleAddSignal}
-                onRemoveSignal={handleRemoveSignal}
-                onChangeSignal={handleChangeSignal}
+                onChangeRequiredSignal={handleChangeRequiredSignal}
+                onAddOptionalSignal={handleAddOptionalSignal}
+                onRemoveOptionalSignal={handleRemoveOptionalSignal}
+                onChangeOptionalSignal={handleChangeOptionalSignal}
                 goalOwnerByPriority={goalOwnerByPriority}
                 onChangeGoalOwner={handleChangeGoalOwner}
+                planCadence={planCadence}
+                onChangePlanCadence={handleChangePlanCadence}
                 stepNumber={stepIndex + 1}
               />
             )}
@@ -766,6 +795,7 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
                   freedTimeSplit={freedTimeSplit}
                   realizationByGoal={realizationByGoal}
                   progressEntries={progressEntries}
+                  planCadence={planCadence}
                   onLogProgressUpdate={handleLogProgressUpdate}
                   onMonthsElapsedChange={handleMonthsElapsedChange}
                   stepNumber={stepIndex + 1}

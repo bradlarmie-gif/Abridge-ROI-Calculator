@@ -156,7 +156,12 @@ export interface AttainPdfCommitmentSignal {
 export interface AttainPdfCommitment {
   owner: string;
   due: string;
-  signals: AttainPdfCommitmentSignal[];
+  /** The decision's ONE required signal (Commit redesign) — the PDF only
+   * ever prints this one per decision, the same simplification it already
+   * made when Commit still carried a `signals` list (it only ever read
+   * `signals[0]`). Optional signals a partner adds on top are Commit/
+   * Progress-only detail, not printed in the plan document. */
+  requiredSignal?: AttainPdfCommitmentSignal;
 }
 
 export interface AttainPdfGoalOwner {
@@ -176,6 +181,11 @@ export interface AttainPdfInput {
   combined: MultiGoalContributionsResult;
   commitments: Record<string, AttainPdfCommitment>;
   goalOwnerByPriority: Partial<Record<GoalId, AttainPdfGoalOwner>>;
+  /** ONE plan-wide review cadence (Commit redesign), e.g. "monthly" —
+   * structural string, not `SignalCadence` (this module deliberately does
+   * not import from StepCommit.tsx, see the header above). Defaults to
+   * "monthly" when omitted, matching `DEFAULT_PLAN_CADENCE`. */
+  planCadence?: string;
   freedTimeSplit: number;
   /** Per-priority realization/attribution rate (0-100, default 100 when a
    * goal is missing). Every dollar figure this PDF prints already reflects
@@ -242,6 +252,9 @@ export interface AttainPdfData {
   combinedCount: number;
   decisionCount: number;
   freedTimeSplit: number;
+  /** ONE plan-wide review cadence, resolved to a real value ("monthly" when
+   * the input omits it) — see `AttainPdfInput.planCadence`'s doc. */
+  planCadence: string;
   curve: AttainPdfCurve;
   priorities: AttainPdfPriority[];
 }
@@ -268,7 +281,7 @@ function committedDecisionsFor(
     .filter((l) => isLeverMoved(values[l.id], l.realityStart))
     .map((l) => {
       const commitment = commitments[`${goal}:${l.id}`];
-      const primarySignal = commitment?.signals?.[0];
+      const primarySignal = commitment?.requiredSignal;
       return {
         lever: l,
         contribution: perLever?.find((p) => p.id === l.id),
@@ -287,6 +300,7 @@ export function buildAttainPdfData(input: AttainPdfInput): AttainPdfData {
   // every caller to pass it - matches this file's own "never crash on a
   // missing/legacy field" discipline (see the module header's ceiling note).
   const realizationByGoal = input.realizationByGoal ?? {};
+  const planCadence = input.planCadence ?? "monthly";
 
   // Every dollar figure below traces back to `combined` — the exact same
   // `computeMultiGoalContributions` result AttainFlow.tsx computes and
@@ -361,6 +375,7 @@ export function buildAttainPdfData(input: AttainPdfInput): AttainPdfData {
     combinedCount,
     decisionCount,
     freedTimeSplit,
+    planCadence,
     curve: {
       pct: attainment.pct,
       onPacePct: attainment.onPacePct,
@@ -1136,6 +1151,7 @@ function CadencePage({ data, priority }: { data: AttainPdfData; priority: Attain
       <InteriorHeader />
       <Text style={s.eyebrowCoral}>How This Gets Steered</Text>
       <Text style={s.h2} minPresenceAhead={60}>{`The Cadence, ${g.label}`}</Text>
+      <Text style={s.footnote}>{`Reviewed ${data.planCadence}, plan-wide.`}</Text>
       <Text style={s.body}>
         {c?.bendsLead ?? "A plan only closes the gap if someone steers it between the big reviews, and none of it depends on Abridge having authority we do not have."}
       </Text>
@@ -1151,9 +1167,9 @@ function CadencePage({ data, priority }: { data: AttainPdfData; priority: Attain
 
       {c && c.monthly.length > 0 && (
         <View wrap={false}>
-          <Text style={s.subEyebrowCoral}>The monthly check</Text>
+          <Text style={s.subEyebrowCoral}>{`The ${data.planCadence} check`}</Text>
           <Text style={s.bodySmall}>
-            Same questions every month. This is what keeps a bleeding decision from becoming a lost quarter.
+            {`Same questions every ${data.planCadence} review. This is what keeps a bleeding decision from becoming a lost quarter.`}
           </Text>
           {c.monthly.map((q, i) => (
             <NumberedItem key={i} n={String(i + 1).padStart(2, "0")} text={q} />

@@ -30,35 +30,35 @@ function buildSamplePlan(): AttainSaveState {
       "access:schedulingWindow": {
         owner: "Dr. Patel",
         due: "Month 3",
-        signals: [
-          { id: "access:schedulingWindow:s0", label: "Days to third next available", baseline: "18 days", unit: "days", cadence: "monthly" },
-          { id: "access:schedulingWindow:s1", label: "New patient volume", baseline: "62", unit: "visits/mo", cadence: "quarterly" },
+        requiredSignal: { id: "access:schedulingWindow:required", label: "Days to third next available", baseline: "18 days", unit: "days" },
+        optionalSignals: [
+          { id: "access:schedulingWindow:optional-1", label: "New patient volume", baseline: "62", unit: "visits/mo" },
         ],
       },
       "retention:turnoverLines": {
         owner: "",
         due: "Month 6",
-        signals: [
-          { id: "retention:turnoverLines:s0", label: "Voluntary departures", baseline: "4", unit: "per quarter", cadence: "quarterly" },
-        ],
+        requiredSignal: { id: "retention:turnoverLines:required", label: "Voluntary departures", baseline: "4", unit: "per quarter" },
+        optionalSignals: [],
       },
     },
     goalOwnerByPriority: {
       access: { name: "Jamie Rivera", title: "VP Ambulatory Ops" },
     },
     progressEntries: {
-      "access:schedulingWindow:s0": [
+      "access:schedulingWindow:required": [
         { date: "2026-04-01", value: 18 },
         { date: "2026-05-01", value: 15, note: "New EHR order set went live" },
         { date: "2026-06-01", value: 11 },
       ],
-      "retention:turnoverLines:s0": [
+      "retention:turnoverLines:required": [
         { date: "2026-04-01", value: 4 },
       ],
     },
     baseline: { providers: 40, annualEncounters: 140000, utilizationPct: 78 },
     freedTimeSplit: 65,
     realizationByGoal: { access: 70, retention: 100 },
+    planCadence: "monthly",
   };
 }
 
@@ -87,6 +87,7 @@ describe("attainUrlState", () => {
         baseline: { staffedBeds: 120, nursingFtes: 90, dailyCensus: 96, adoptionPct: 55 },
         freedTimeSplit: 50,
         realizationByGoal: {},
+        planCadence: "quarterly",
       };
       const decoded = decodeAttain(encodeAttain(plan));
       expect(decoded).toEqual(plan);
@@ -117,6 +118,17 @@ describe("attainUrlState", () => {
         JSON.stringify({ version: ATTAIN_SAVE_VERSION, state: {} }),
       );
       expect(decodeAttain(badPayload)).toBeNull();
+    });
+
+    it("returns null when planCadence is missing or not a real cadence value", () => {
+      const plan = buildSamplePlan();
+      const { planCadence: _planCadence, ...withoutCadence } = plan;
+      expect(decodeAttain(encodeAttain(withoutCadence as unknown as AttainSaveState))).toBeNull();
+
+      const badCadence = LZString.compressToEncodedURIComponent(
+        JSON.stringify({ ...plan, planCadence: "hourly" }),
+      );
+      expect(decodeAttain(badCadence)).toBeNull();
     });
 
     it("degrades gracefully on a version mismatch instead of throwing or returning a corrupt plan", () => {

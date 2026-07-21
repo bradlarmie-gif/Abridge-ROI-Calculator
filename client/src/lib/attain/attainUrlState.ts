@@ -1,7 +1,7 @@
 import LZString from "lz-string";
 import type { AttainState, AttainSetting, GoalId } from "./attainTypes";
 import type { AttainBaseline, LeverValues, RealizationByGoal } from "./attainLevers";
-import type { Commitment, GoalOwner } from "@/pages/attain/steps/StepCommit";
+import type { Commitment, GoalOwner, SignalCadence } from "@/pages/attain/steps/StepCommit";
 import type { ProgressEntry } from "./attainProgress";
 
 /**
@@ -35,8 +35,15 @@ import type { ProgressEntry } from "./attainProgress";
  * attribution rate) was added as a new required field - an older link never
  * carried it, so it cannot be safely decoded into the current shape; per
  * this file's own policy, that link degrades to "start fresh" rather than
- * guessing a default. */
-export const ATTAIN_SAVE_VERSION = 2;
+ * guessing a default.
+ *
+ * Bumped 2 -> 3 for the Commit redesign: each `Commitment` now carries one
+ * required signal + a list of optional signals (was one flat `signals`
+ * list, each with its own cadence) and this save state gained the new
+ * plan-wide `planCadence` field. An older link's `commitments` shape and
+ * missing `planCadence` cannot be safely decoded into the current shape,
+ * so it degrades to "start fresh" too. */
+export const ATTAIN_SAVE_VERSION = 3;
 
 /** The full local state AttainFlow.tsx holds for one in-progress or
  * completed plan — everything needed to redraw every step (including the
@@ -64,10 +71,19 @@ export interface AttainSaveState {
    * attainLevers.ts's `applyRealization`. Keyed by `GoalId`, same convention
    * as `valuesByGoal`/`goalOwnerByPriority` above. */
   realizationByGoal: RealizationByGoal;
+  /** ONE plan-wide review cadence (Commit redesign) - replaces what used to
+   * be a cadence chosen per signal. Every committed signal's "next check
+   * due" (Progress tab, PDF) derives off this single value. */
+  planCadence: SignalCadence;
 }
 
 const VALID_SETTINGS: AttainSetting[] = ["outpatient", "ed", "inpatient", "nursing"];
 const VALID_GOALS: GoalId[] = ["access", "retention", "revenue", "quality"];
+const VALID_CADENCES: SignalCadence[] = ["weekly", "biweekly", "monthly", "quarterly"];
+
+function isValidCadence(v: unknown): v is SignalCadence {
+  return typeof v === "string" && (VALID_CADENCES as string[]).includes(v);
+}
 
 function isValidSetting(v: unknown): v is AttainSetting {
   return typeof v === "string" && (VALID_SETTINGS as string[]).includes(v);
@@ -105,6 +121,7 @@ function isWellFormedSaveState(v: unknown): v is AttainSaveState {
   if (!isPlainObject(v.baseline)) return false;
   if (typeof v.freedTimeSplit !== "number") return false;
   if (!isPlainObject(v.realizationByGoal)) return false;
+  if (!isValidCadence(v.planCadence)) return false;
   return true;
 }
 
