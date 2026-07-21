@@ -63,10 +63,13 @@ export default function ConsolidationTiming({
   const pctY = (y: number) => (y / VB_H) * 100;
   const yearMarks = Array.from({ length: horizonYears }, (_, i) => (i + 1) * 12);
   // Keep the two endpoint labels from colliding when the lines converge (tools
-  // sunset early -> plan approaches the ceiling). "now" stays on its dot; the
-  // "plan" label is pushed down to a minimum gap below it.
-  const yNow = Y(cs.nowTotal);
-  const yPlanLabel = Math.max(Y(cs.planTotal), yNow + 46);
+  // sunset early -> plan approaches the ceiling). When close, nudge "now" up and
+  // push the taller "plan" block well below it so they never overlap.
+  const yNowRaw = Y(cs.nowTotal);
+  const yPlanRaw = Y(cs.planTotal);
+  const LABEL_GAP = 62;
+  const yNow = (yPlanRaw - yNowRaw < LABEL_GAP) ? yNowRaw - 10 : yNowRaw;
+  const yPlanLabel = Math.max(yPlanRaw, yNow + LABEL_GAP);
 
   return (
     <div className="rounded-[20px] p-6 md:p-8" style={{ background: "linear-gradient(160deg,#FDFBF8,#F6F1EA)", border: "1px solid #E8E2DA" }} data-testid="ar-timing">
@@ -169,10 +172,9 @@ export default function ConsolidationTiming({
                         value={item.contractMonths}
                         onValueChange={(v) => {
                           const c = Math.max(0, Math.min(120, v));
-                          // Sunset follows the contract end unless you've dragged it earlier
-                          // (an explicit early exit), which we preserve.
-                          const pinned = item.sunsetMonths >= item.contractMonths;
-                          onUpdateItem(t.id, { contractMonths: c, sunsetMonths: pinned ? c : Math.min(item.sunsetMonths, c) });
+                          // The contract end IS when the tool sunsets (they cancel then), so editing
+                          // the term moves the sunset and the curve. Drag the dot to model exiting early.
+                          onUpdateItem(t.id, { contractMonths: c, sunsetMonths: c });
                         }}
                         min={0}
                         className="w-full bg-transparent text-center text-[12.5px] font-bold text-[#1A1A1A] outline-none tabular-nums"
