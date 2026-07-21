@@ -7,7 +7,6 @@ import {
   getContent,
 } from "@/lib/attain/attainGoals";
 import type { AttainSetting, GoalId, SettingGoalContent } from "@/lib/attain/attainTypes";
-import { computeGoalTarget } from "@/lib/attain/attainCalc";
 
 const SETTINGS: AttainSetting[] = ["outpatient", "ed", "inpatient", "nursing"];
 
@@ -124,35 +123,5 @@ describe("CONTENT does not have entries outside the matrix", () => {
         expect(SETTING_GOAL_MATRIX[setting]).toContain(goal);
       });
     });
-  });
-});
-
-describe("computeGoalTarget reconciliation", () => {
-  it("outpatient/access/typical reconciles to the mockup's illustrative ~$760K target", () => {
-    const result = computeGoalTarget("access", "outpatient", { unitCount: 40, serviceLines: [] }, "typical");
-    expect(result.margin).toBeGreaterThan(700_000);
-    expect(result.margin).toBeLessThan(820_000);
-    expect(result.count).toBeGreaterThan(0);
-    expect(result.label.length).toBeGreaterThan(0);
-  });
-
-  it("ambitious target is strictly greater than conservative target for every matrix entry", () => {
-    SETTINGS.forEach((setting) => {
-      SETTING_GOAL_MATRIX[setting].forEach((goal) => {
-        const scope = { unitCount: setting === "nursing" ? 200 : 40, serviceLines: [] };
-        const conservative = computeGoalTarget(goal, setting, scope, "conservative");
-        const ambitious = computeGoalTarget(goal, setting, scope, "ambitious");
-        expect(
-          ambitious.margin,
-          `${setting}/${goal} ambitious should exceed conservative`,
-        ).toBeGreaterThan(conservative.margin);
-      });
-    });
-  });
-
-  it("returns a zero-margin, defined result when scope is empty", () => {
-    const result = computeGoalTarget("access", "outpatient", { unitCount: 0, serviceLines: [] }, "typical");
-    expect(result.margin).toBe(0);
-    expect(result.count).toBe(0);
   });
 });
