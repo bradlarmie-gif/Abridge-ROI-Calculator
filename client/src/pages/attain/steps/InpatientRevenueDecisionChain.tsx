@@ -3,7 +3,7 @@ import { Slider } from "@/components/ui/slider";
 import { HelpCircle } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { NumberField } from "@/components/NumberField";
-import type { LeverValues } from "@/lib/attain/attainLevers";
+import { realizedValue, formulaWithRealization, type LeverValues } from "@/lib/attain/attainLevers";
 import type { AttainBaseline } from "@/lib/attain/attainLevers";
 import {
   computeIpDrgChain,
@@ -49,6 +49,11 @@ interface InpatientRevenueDecisionChainProps {
   baseline: AttainBaseline;
   values: LeverValues;
   onChangeValue: (leverId: string, value: number | string[]) => void;
+  /** This priority's realization/attribution rate, 0-100, default 100 - see
+   * AccessDecisionChain.tsx's matching prop for the full explanation. Passed
+   * through to every path's own `PayoffCard` below AND to the outer
+   * "all paths, combined" card, so no path's own dollar is missed. */
+  realizationPct: number;
 }
 
 /** A card shell shared by every path's own D-steps - deliberately local,
@@ -137,24 +142,28 @@ function PayoffCard({
   caption,
   formula,
   testid,
+  realizationPct,
 }: {
   pill: string;
   value: number;
   caption: string;
   formula: string;
   testid: string;
+  realizationPct: number;
 }) {
+  const displayValue = realizedValue(value, realizationPct);
+  const displayFormula = value > 0 ? formulaWithRealization(formula, realizationPct, displayValue) : formula;
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="rounded-xl bg-[#1A1A1A] p-6 mb-8" data-testid={testid}>
       <p className="text-[10px] font-bold uppercase tracking-[2px] text-white/50 mb-1.5">{pill} · the payoff</p>
       <p className="font-abridge text-4xl text-[#EA2C00]" data-testid={`${testid}-value`}>
-        {fmtMoneyCompact(value)}
+        {fmtMoneyCompact(displayValue)}
       </p>
       <p className="text-xs text-white/60 mt-2">{caption}</p>
       <div className="mt-4 bg-white/5 border-l-[3px] border-[#EA2C00] rounded-r-md p-3">
         <p className="text-[9px] font-bold uppercase tracking-wide text-[#EA2C00] mb-1">The math</p>
         <p className="text-[11px] text-white/70 leading-relaxed" data-testid={`${testid}-formula`}>
-          {formula}
+          {displayFormula}
         </p>
       </div>
     </motion.div>
@@ -177,7 +186,7 @@ function PayoffCard({
  * `attainInpatientRevenue.ts`'s module header for the full chain and its
  * reconciliation to Explore's `ipDrg`/`ipCdi`/`ipObsDefense` primitives.
  */
-export default function InpatientRevenueDecisionChain({ baseline, values, onChangeValue }: InpatientRevenueDecisionChainProps) {
+export default function InpatientRevenueDecisionChain({ baseline, values, onChangeValue, realizationPct }: InpatientRevenueDecisionChainProps) {
   const chosen = selectedIpRevenuePaths(values);
   const rawPaths = asLines(values.ipRevenuePaths);
 
@@ -234,9 +243,9 @@ export default function InpatientRevenueDecisionChain({ baseline, values, onChan
         )}
       </motion.div>
 
-      {chosen.includes("drg") && <DrgPathSection baseline={baseline} values={values} onChangeValue={onChangeValue} />}
-      {chosen.includes("cdi") && <CdiPathSection baseline={baseline} values={values} onChangeValue={onChangeValue} />}
-      {chosen.includes("obs") && <ObsPathSection baseline={baseline} values={values} onChangeValue={onChangeValue} />}
+      {chosen.includes("drg") && <DrgPathSection baseline={baseline} values={values} onChangeValue={onChangeValue} realizationPct={realizationPct} />}
+      {chosen.includes("cdi") && <CdiPathSection baseline={baseline} values={values} onChangeValue={onChangeValue} realizationPct={realizationPct} />}
+      {chosen.includes("obs") && <ObsPathSection baseline={baseline} values={values} onChangeValue={onChangeValue} realizationPct={realizationPct} />}
 
       {chosen.length > 1 && (
         <motion.div
@@ -247,10 +256,11 @@ export default function InpatientRevenueDecisionChain({ baseline, values, onChan
         >
           <p className="text-[10px] font-bold uppercase tracking-[2px] text-white/50 mb-1.5">All paths, combined</p>
           <p className="font-abridge text-4xl text-[#EA2C00]" data-testid="text-ip-revenue-combined-value">
-            {fmtMoneyCompact(combinedValue)}
+            {fmtMoneyCompact(realizedValue(combinedValue, realizationPct))}
           </p>
           <p className="text-xs text-white/60 mt-2">
             {chosen.length} paths chosen, each its own mechanism, summed once, never double-counted.
+            {realizationPct < 100 ? ` Attributed at ${Math.round(realizationPct)}% realization to this plan.` : ""}
           </p>
         </motion.div>
       )}
@@ -266,10 +276,12 @@ function DrgPathSection({
   baseline,
   values,
   onChangeValue,
+  realizationPct,
 }: {
   baseline: AttainBaseline;
   values: LeverValues;
   onChangeValue: (leverId: string, value: number | string[]) => void;
+  realizationPct: number;
 }) {
   const chain = computeIpDrgChain(baseline, values);
 
@@ -388,6 +400,7 @@ function DrgPathSection({
         caption={`${fmtInt(chain.capturedCases)} captured cases x ${chain.weightIncrease} avg weight x ~$${fmtInt(chain.basePayment)}/case`}
         formula={ipDrgPayoffFormula(chain)}
         testid="text-ip-revenue-drg-payoff"
+        realizationPct={realizationPct}
       />
     </div>
   );
@@ -401,10 +414,12 @@ function CdiPathSection({
   baseline,
   values,
   onChangeValue,
+  realizationPct,
 }: {
   baseline: AttainBaseline;
   values: LeverValues;
   onChangeValue: (leverId: string, value: number | string[]) => void;
+  realizationPct: number;
 }) {
   const chain = computeIpCdiChain(baseline, values);
 
@@ -502,6 +517,7 @@ function CdiPathSection({
         caption={`${fmtInt(chain.closed)} queries closed x ~$${fmtInt(chain.costPerQuery)}/query`}
         formula={ipCdiPayoffFormula(chain)}
         testid="text-ip-revenue-cdi-payoff"
+        realizationPct={realizationPct}
       />
     </div>
   );
@@ -515,10 +531,12 @@ function ObsPathSection({
   baseline,
   values,
   onChangeValue,
+  realizationPct,
 }: {
   baseline: AttainBaseline;
   values: LeverValues;
   onChangeValue: (leverId: string, value: number | string[]) => void;
+  realizationPct: number;
 }) {
   const chain = computeIpObsChain(baseline, values);
 
@@ -620,6 +638,7 @@ function ObsPathSection({
         caption={`${fmtInt(chain.preventable)} defended cases x ~$${fmtInt(chain.revenueDelta)}/case`}
         formula={ipObsPayoffFormula(chain)}
         testid="text-ip-revenue-obs-payoff"
+        realizationPct={realizationPct}
       />
     </div>
   );

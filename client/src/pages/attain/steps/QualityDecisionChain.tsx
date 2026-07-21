@@ -3,7 +3,7 @@ import { HelpCircle } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { NumberField } from "@/components/NumberField";
-import { lineOptions, type LeverValues } from "@/lib/attain/attainLevers";
+import { lineOptions, realizedValue, formulaWithRealization, type LeverValues } from "@/lib/attain/attainLevers";
 import type { AttainBaseline } from "@/lib/attain/attainLevers";
 import {
   computeQualityChain,
@@ -42,6 +42,9 @@ interface QualityDecisionChainProps {
   baseline: AttainBaseline;
   values: LeverValues;
   onChangeValue: (leverId: string, value: number | string[]) => void;
+  /** This priority's realization/attribution rate, 0-100, default 100 - see
+   * AccessDecisionChain.tsx's matching prop for the full explanation. */
+  realizationPct: number;
 }
 
 /** A card shell shared by every D-step - same local convention
@@ -161,7 +164,7 @@ function LevelToggle({
  * PAYOFF at the bottom is the one place a dollar first appears, derived from
  * all four decisions above and broken out per event type, never invented.
  */
-export default function QualityDecisionChain({ setting, baseline, values, onChangeValue }: QualityDecisionChainProps) {
+export default function QualityDecisionChain({ setting, baseline, values, onChangeValue, realizationPct }: QualityDecisionChainProps) {
   const presetLines = lineOptions("quality", setting);
   const selectedLines = asLines(values.qualityLines);
   const totalBeds = Math.max(0, Math.round(baseline.staffedBeds ?? 0));
@@ -171,6 +174,10 @@ export default function QualityDecisionChain({ setting, baseline, values, onChan
 
   const chain = computeQualityChain(baseline, values);
   const { scope, realTime, response, bundle, payoff, formulas } = chain;
+  const realizedPayoffValue = realizedValue(payoff.totalValue, realizationPct);
+  const payoffFormulaDisplay = payoff.totalValue > 0
+    ? formulaWithRealization(formulas.payoff, realizationPct, realizedPayoffValue)
+    : formulas.payoff;
 
   const toggleLine = (line: string) => {
     const next = selectedLines.includes(line) ? selectedLines.filter((l) => l !== line) : [...selectedLines, line];
@@ -390,7 +397,7 @@ export default function QualityDecisionChain({ setting, baseline, values, onChan
           the first dollar figure in this chain, derived from the four decisions above, never invented.
         </p>
         <p className="font-abridge text-4xl text-[#EA2C00]" data-testid="text-quality-payoff-value">
-          {fmtMoneyCompact(payoff.totalValue)}
+          {fmtMoneyCompact(realizedPayoffValue)}
         </p>
         <p className="text-xs text-white/60 mt-2" data-testid="text-quality-payoff-caption">
           {fmtInt(payoff.totalPrevented)} events prevented/yr across {payoff.events.length} targeted event type
@@ -402,7 +409,7 @@ export default function QualityDecisionChain({ setting, baseline, values, onChan
             {payoff.events.map((e) => (
               <div key={e.id} data-testid={`text-quality-payoff-event-${e.id}`}>
                 <p className="text-[10px] text-white/50 mb-1 leading-snug">{e.label}</p>
-                <p className="text-lg font-bold font-abridge text-[#EA2C00]">{fmtMoneyCompact(e.value)}</p>
+                <p className="text-lg font-bold font-abridge text-[#EA2C00]">{fmtMoneyCompact(realizedValue(e.value, realizationPct))}</p>
                 <p className="text-[10px] text-white/50 mt-0.5">{fmtInt(e.prevented)} prevented/yr</p>
               </div>
             ))}
@@ -412,7 +419,7 @@ export default function QualityDecisionChain({ setting, baseline, values, onChan
         <div className="mt-4 bg-white/5 border-l-[3px] border-[#EA2C00] rounded-r-md p-3">
           <p className="text-[9px] font-bold uppercase tracking-wide text-[#EA2C00] mb-1">The math</p>
           <p className="text-[11px] text-white/70 leading-relaxed" data-testid="text-quality-payoff-formula">
-            {formulas.payoff}
+            {payoffFormulaDisplay}
           </p>
         </div>
       </motion.div>

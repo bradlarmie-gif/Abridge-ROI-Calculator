@@ -3,7 +3,7 @@ import { HelpCircle } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { NumberField } from "@/components/NumberField";
-import type { LeverValues } from "@/lib/attain/attainLevers";
+import { realizedValue, formulaWithRealization, type LeverValues } from "@/lib/attain/attainLevers";
 import type { AttainBaseline } from "@/lib/attain/attainLevers";
 import {
   computeEdAccessChain,
@@ -35,6 +35,9 @@ interface EdAccessDecisionChainProps {
   baseline: AttainBaseline;
   values: LeverValues;
   onChangeValue: (leverId: string, value: number | string[]) => void;
+  /** This priority's realization/attribution rate, 0-100, default 100 - see
+   * AccessDecisionChain.tsx's matching prop for the full explanation. */
+  realizationPct: number;
 }
 
 /** A card shell shared by every D-step - same local convention every other
@@ -162,12 +165,16 @@ function MathBox({ formula, testid }: { formula: string; testid: string }) {
  * for the full chain and its reconciliation to Explore's
  * `edLwbs`/`admissionCapture` primitives.
  */
-export default function EdAccessDecisionChain({ setting, baseline, values, onChangeValue }: EdAccessDecisionChainProps) {
+export default function EdAccessDecisionChain({ setting, baseline, values, onChangeValue, realizationPct }: EdAccessDecisionChainProps) {
   const totalProviders = Math.max(0, Math.round(baseline.providers ?? 0));
   const requestedProviders = asNum(values.edAccessProviders);
 
   const chain = computeEdAccessChain(baseline, values);
   const { scope, pool, recovery, payoff, formulas } = chain;
+  const realizedPayoffValue = realizedValue(payoff.value, realizationPct);
+  const payoffFormulaDisplay = payoff.value > 0
+    ? formulaWithRealization(formulas.payoff, realizationPct, realizedPayoffValue)
+    : formulas.payoff;
 
   return (
     <div data-testid="section-attain-ed-access-chain">
@@ -396,7 +403,7 @@ export default function EdAccessDecisionChain({ setting, baseline, values, onCha
           first dollar figure in this chain, derived from the three decisions above, never invented.
         </p>
         <p className="font-abridge text-4xl text-[#EA2C00]" data-testid="text-ed-access-d5-value">
-          {fmtMoneyCompact(payoff.value)}
+          {fmtMoneyCompact(realizedPayoffValue)}
         </p>
         <p className="text-xs text-white/60 mt-2">
           {fmtInt(recovery.realizedRecovered)} recovered visits × ~${fmtInt(payoff.revenuePerVisit)}/visit + {fmtInt(recovery.capturedAdmissions)} admissions × ~${fmtInt(payoff.admissionMargin)}/admission
@@ -404,7 +411,7 @@ export default function EdAccessDecisionChain({ setting, baseline, values, onCha
         <div className="mt-4 bg-white/5 border-l-[3px] border-[#EA2C00] rounded-r-md p-3">
           <p className="text-[9px] font-bold uppercase tracking-wide text-[#EA2C00] mb-1">The math</p>
           <p className="text-[11px] text-white/70 leading-relaxed" data-testid="text-ed-access-d5-formula">
-            {formulas.payoff}
+            {payoffFormulaDisplay}
           </p>
         </div>
       </motion.div>

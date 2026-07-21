@@ -3,7 +3,7 @@ import { Slider } from "@/components/ui/slider";
 import { HelpCircle } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { NumberField } from "@/components/NumberField";
-import type { LeverValues } from "@/lib/attain/attainLevers";
+import { realizedValue, formulaWithRealization, type LeverValues } from "@/lib/attain/attainLevers";
 import type { AttainBaseline } from "@/lib/attain/attainLevers";
 import {
   computeHccChain,
@@ -55,6 +55,11 @@ interface RevenueDecisionChainProps {
   baseline: AttainBaseline;
   values: LeverValues;
   onChangeValue: (leverId: string, value: number | string[]) => void;
+  /** This priority's realization/attribution rate, 0-100, default 100 - see
+   * AccessDecisionChain.tsx's matching prop for the full explanation. Passed
+   * through to every path's own `PayoffCard` below AND to the outer
+   * "all paths, combined" card, so no path's own dollar is missed. */
+  realizationPct: number;
 }
 
 /** A card shell shared by every path's own D-steps - deliberately local,
@@ -153,6 +158,7 @@ function PayoffCard({
   caption,
   formula,
   testid,
+  realizationPct,
   children,
 }: {
   pill: string;
@@ -160,20 +166,23 @@ function PayoffCard({
   caption: string;
   formula: string;
   testid: string;
+  realizationPct: number;
   children?: React.ReactNode;
 }) {
+  const displayValue = realizedValue(value, realizationPct);
+  const displayFormula = value > 0 ? formulaWithRealization(formula, realizationPct, displayValue) : formula;
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="rounded-xl bg-[#1A1A1A] p-6 mb-8" data-testid={testid}>
       <p className="text-[10px] font-bold uppercase tracking-[2px] text-white/50 mb-1.5">{pill} · the payoff</p>
       <p className="font-abridge text-4xl text-[#EA2C00]" data-testid={`${testid}-value`}>
-        {fmtMoneyCompact(value)}
+        {fmtMoneyCompact(displayValue)}
       </p>
       <p className="text-xs text-white/60 mt-2">{caption}</p>
       {children}
       <div className="mt-4 bg-white/5 border-l-[3px] border-[#EA2C00] rounded-r-md p-3">
         <p className="text-[9px] font-bold uppercase tracking-wide text-[#EA2C00] mb-1">The math</p>
         <p className="text-[11px] text-white/70 leading-relaxed" data-testid={`${testid}-formula`}>
-          {formula}
+          {displayFormula}
         </p>
       </div>
     </motion.div>
@@ -190,7 +199,7 @@ function PayoffCard({
  * mechanisms (see `attainRevenue.ts`'s header), so their dollars simply SUM
  * into one combined total at the bottom.
  */
-export default function RevenueDecisionChain({ setting, baseline, values, onChangeValue }: RevenueDecisionChainProps) {
+export default function RevenueDecisionChain({ setting, baseline, values, onChangeValue, realizationPct }: RevenueDecisionChainProps) {
   const available = pathsAvailableFor(setting);
   const chosen = selectedPaths(values).filter((p) => available.includes(p));
   const rawPaths = asLines(values.revenuePaths);
@@ -249,13 +258,13 @@ export default function RevenueDecisionChain({ setting, baseline, values, onChan
       </motion.div>
 
       {chosen.includes("hcc") && setting === "outpatient" && (
-        <HccPathSection baseline={baseline} values={values} onChangeValue={onChangeValue} />
+        <HccPathSection baseline={baseline} values={values} onChangeValue={onChangeValue} realizationPct={realizationPct} />
       )}
       {chosen.includes("em") && (
-        <EmPathSection setting={setting} baseline={baseline} values={values} onChangeValue={onChangeValue} />
+        <EmPathSection setting={setting} baseline={baseline} values={values} onChangeValue={onChangeValue} realizationPct={realizationPct} />
       )}
       {chosen.includes("denials") && (
-        <DenialsPathSection setting={setting} baseline={baseline} values={values} onChangeValue={onChangeValue} />
+        <DenialsPathSection setting={setting} baseline={baseline} values={values} onChangeValue={onChangeValue} realizationPct={realizationPct} />
       )}
 
       {chosen.length > 1 && (
@@ -267,10 +276,11 @@ export default function RevenueDecisionChain({ setting, baseline, values, onChan
         >
           <p className="text-[10px] font-bold uppercase tracking-[2px] text-white/50 mb-1.5">All paths, combined</p>
           <p className="font-abridge text-4xl text-[#EA2C00]" data-testid="text-revenue-combined-value">
-            {fmtMoneyCompact(combinedValue)}
+            {fmtMoneyCompact(realizedValue(combinedValue, realizationPct))}
           </p>
           <p className="text-xs text-white/60 mt-2">
             {chosen.length} paths chosen, each its own mechanism, summed once, never double-counted.
+            {realizationPct < 100 ? ` Attributed at ${Math.round(realizationPct)}% realization to this plan.` : ""}
           </p>
         </motion.div>
       )}
@@ -286,10 +296,12 @@ function HccPathSection({
   baseline,
   values,
   onChangeValue,
+  realizationPct,
 }: {
   baseline: AttainBaseline;
   values: LeverValues;
   onChangeValue: (leverId: string, value: number | string[]) => void;
+  realizationPct: number;
 }) {
   const selected = selectedPopulations(values);
   const togglePopulation = (name: string) => {
@@ -506,10 +518,11 @@ function HccPathSection({
         caption={`${fmtInt(recapture.recapturedHccs + netNew.netNewHccs)} HCCs captured x ~$${fmtInt(payoff.valuePerHcc)}/HCC`}
         formula={formulas.payoff}
         testid="text-revenue-hcc-payoff"
+        realizationPct={realizationPct}
       >
         <div className="grid grid-cols-2 gap-3 mt-3">
-          <ResultStat label="From recapture" value={fmtMoneyCompact(payoff.recaptureValue)} unit="" testid="text-revenue-hcc-payoff-recapture" />
-          <ResultStat label="From net-new discovery" value={fmtMoneyCompact(payoff.netNewValue)} unit="" testid="text-revenue-hcc-payoff-netnew" />
+          <ResultStat label="From recapture" value={fmtMoneyCompact(realizedValue(payoff.recaptureValue, realizationPct))} unit="" testid="text-revenue-hcc-payoff-recapture" />
+          <ResultStat label="From net-new discovery" value={fmtMoneyCompact(realizedValue(payoff.netNewValue, realizationPct))} unit="" testid="text-revenue-hcc-payoff-netnew" />
         </div>
       </PayoffCard>
     </div>
@@ -525,11 +538,13 @@ function EmPathSection({
   baseline,
   values,
   onChangeValue,
+  realizationPct,
 }: {
   setting: AttainSetting;
   baseline: AttainBaseline;
   values: LeverValues;
   onChangeValue: (leverId: string, value: number | string[]) => void;
+  realizationPct: number;
 }) {
   const chain = computeEmChain(baseline, setting, values);
 
@@ -618,6 +633,7 @@ function EmPathSection({
         caption={`${fmtInt(chain.wrvusCaptured)} extra wRVUs x ~$${fmtInt(chain.conversionFactor)}/wRVU`}
         formula={emFormula(chain)}
         testid="text-revenue-em-payoff"
+        realizationPct={realizationPct}
       />
     </div>
   );
@@ -632,11 +648,13 @@ function DenialsPathSection({
   baseline,
   values,
   onChangeValue,
+  realizationPct,
 }: {
   setting: AttainSetting;
   baseline: AttainBaseline;
   values: LeverValues;
   onChangeValue: (leverId: string, value: number | string[]) => void;
+  realizationPct: number;
 }) {
   const chain = computeDenialsChain(baseline, setting, values);
 
@@ -728,6 +746,7 @@ function DenialsPathSection({
         caption={`${fmtInt(chain.prevented)} denials prevented x ~$${fmtInt(chain.avgClaimValue)}/claim`}
         formula={denialsFormula(chain)}
         testid="text-revenue-denials-payoff"
+        realizationPct={realizationPct}
       />
     </div>
   );

@@ -5,7 +5,7 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { NumberField } from "@/components/NumberField";
-import { lineOptions, type LeverValues } from "@/lib/attain/attainLevers";
+import { lineOptions, realizedValue, formulaWithRealization, type LeverValues } from "@/lib/attain/attainLevers";
 import type { AttainBaseline } from "@/lib/attain/attainLevers";
 import {
   computeAccessChain,
@@ -40,6 +40,12 @@ interface AccessDecisionChainProps {
   baseline: AttainBaseline;
   values: LeverValues;
   onChangeValue: (leverId: string, value: number | string[]) => void;
+  /** This priority's realization/attribution rate, 0-100, default 100 - set
+   * on Build the case's own "Realization rate" control (StepBuildCase.tsx).
+   * Scales only the D5 payoff shown below, via the same `realizedValue`/
+   * `formulaWithRealization` helpers attainLevers.ts's `applyRealization`
+   * uses, so this live preview can never disagree with the real figure. */
+  realizationPct: number;
 }
 
 /** A card shell shared by every D1-D5 step: eyebrow + title, a light rule,
@@ -174,7 +180,7 @@ function MathBox({ formula, testid }: { formula: string; testid: string }) {
  * never a dollar. D5 is the one place a dollar first appears, derived from
  * the other four, never invented.
  */
-export default function AccessDecisionChain({ setting, baseline, values, onChangeValue }: AccessDecisionChainProps) {
+export default function AccessDecisionChain({ setting, baseline, values, onChangeValue, realizationPct }: AccessDecisionChainProps) {
   const [customLineDraft, setCustomLineDraft] = useState("");
 
   const presetLines = lineOptions("access", setting);
@@ -185,6 +191,10 @@ export default function AccessDecisionChain({ setting, baseline, values, onChang
 
   const chain = computeAccessChain(baseline, values);
   const { scope, capacity, demand, payoff, formulas } = chain;
+  const realizedPayoffValue = realizedValue(payoff.value, realizationPct);
+  const payoffFormulaDisplay = payoff.value > 0
+    ? formulaWithRealization(formulas.payoff, realizationPct, realizedPayoffValue)
+    : formulas.payoff;
 
   const activeLines = !enterprise && selectedLines.length > 0 ? selectedLines : [];
 
@@ -574,7 +584,7 @@ export default function AccessDecisionChain({ setting, baseline, values, onChang
           decisions above, never invented.
         </p>
         <p className="font-abridge text-4xl text-[#EA2C00]" data-testid="text-access-d5-value">
-          {fmtMoneyCompact(payoff.value)}
+          {fmtMoneyCompact(realizedPayoffValue)}
         </p>
         <p className="text-xs text-white/60 mt-2">
           {fmtInt(payoff.realizedVisits)} realized visits x ~${fmtInt(payoff.blendedMarginUsed)}/visit
@@ -582,7 +592,7 @@ export default function AccessDecisionChain({ setting, baseline, values, onChang
         <div className="mt-4 bg-white/5 border-l-[3px] border-[#EA2C00] rounded-r-md p-3">
           <p className="text-[9px] font-bold uppercase tracking-wide text-[#EA2C00] mb-1">The math</p>
           <p className="text-[11px] text-white/70 leading-relaxed" data-testid="text-access-d5-formula">
-            {formulas.payoff}
+            {payoffFormulaDisplay}
           </p>
         </div>
       </motion.div>

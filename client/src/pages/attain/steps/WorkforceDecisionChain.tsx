@@ -3,7 +3,7 @@ import { HelpCircle } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { NumberField } from "@/components/NumberField";
-import { lineOptions, type LeverValues } from "@/lib/attain/attainLevers";
+import { lineOptions, realizedValue, formulaWithRealization, type LeverValues } from "@/lib/attain/attainLevers";
 import type { AttainBaseline } from "@/lib/attain/attainLevers";
 import {
   computeWorkforceChain,
@@ -41,6 +41,9 @@ interface WorkforceDecisionChainProps {
   baseline: AttainBaseline;
   values: LeverValues;
   onChangeValue: (leverId: string, value: number | string[]) => void;
+  /** This priority's realization/attribution rate, 0-100, default 100 - see
+   * AccessDecisionChain.tsx's matching prop for the full explanation. */
+  realizationPct: number;
 }
 
 /** A card shell shared by every D1-D5 step - same local convention
@@ -162,7 +165,7 @@ function LevelToggle({
  * the bottom is the one place a dollar first appears, derived from all five
  * decisions above, never invented.
  */
-export default function WorkforceDecisionChain({ setting, baseline, values, onChangeValue }: WorkforceDecisionChainProps) {
+export default function WorkforceDecisionChain({ setting, baseline, values, onChangeValue, realizationPct }: WorkforceDecisionChainProps) {
   const presetLines = lineOptions("retention", setting);
   const selectedLines = asLines(values.retentionLines);
   const totalUnits = Math.max(0, Math.round((setting === "nursing" ? baseline.nursingFtes : baseline.providers) ?? 0));
@@ -171,6 +174,10 @@ export default function WorkforceDecisionChain({ setting, baseline, values, onCh
 
   const chain = computeWorkforceChain(baseline, setting, values);
   const { scope, protect, survey, backfill, sustain, payoff, formulas } = chain;
+  const realizedPayoffValue = realizedValue(payoff.value, realizationPct);
+  const payoffFormulaDisplay = payoff.value > 0
+    ? formulaWithRealization(formulas.payoff, realizationPct, realizedPayoffValue)
+    : formulas.payoff;
 
   const toggleLine = (line: string) => {
     const next = selectedLines.includes(line) ? selectedLines.filter((l) => l !== line) : [...selectedLines, line];
@@ -380,7 +387,7 @@ export default function WorkforceDecisionChain({ setting, baseline, values, onCh
           dollar figure in this chain, derived from the decisions above, never invented.
         </p>
         <p className="font-abridge text-4xl text-[#EA2C00]" data-testid="text-workforce-payoff-value">
-          {fmtMoneyCompact(payoff.value)}
+          {fmtMoneyCompact(realizedPayoffValue)}
         </p>
         <p className="text-xs text-white/60 mt-2" data-testid="text-workforce-payoff-caption">
           {payoff.departuresAvoided.toFixed(1)} departures avoided/yr x ~${fmtInt(scope.replacementCost)}/departure. Burnout
@@ -389,7 +396,7 @@ export default function WorkforceDecisionChain({ setting, baseline, values, onCh
         <div className="mt-4 bg-white/5 border-l-[3px] border-[#EA2C00] rounded-r-md p-3">
           <p className="text-[9px] font-bold uppercase tracking-wide text-[#EA2C00] mb-1">The math</p>
           <p className="text-[11px] text-white/70 leading-relaxed" data-testid="text-workforce-payoff-formula">
-            {formulas.payoff}
+            {payoffFormulaDisplay}
           </p>
         </div>
       </motion.div>
