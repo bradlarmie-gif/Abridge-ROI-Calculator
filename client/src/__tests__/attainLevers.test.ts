@@ -23,20 +23,25 @@ import type { AttainSetting, GoalId } from "@/lib/attain/attainTypes";
 
 const GOAL_IDS: GoalId[] = ["access", "retention", "revenue", "quality"];
 
-// Retention/quality are independent-channel goals: sweeping ONE lever alone
-// (holding the others at realityStart) still produces a positive marginal
-// effect, because `computeLeverContributions`'s leave-one-out architecture
-// applies. Access is a decision CHAIN (attainAccess.ts) - moving only one
-// of scope/margin/capacity/demand alone is EXPECTED to still net ~$0 (that
-// is rule 2, "demand is a ceiling"), so access is deliberately excluded
-// from that generic sweep and covered by its own "ACCESS decision chain"
-// describe block below. Revenue at outpatient/ED is now ALSO a decision
-// chain (attainRevenue.ts, three paths) for the same reason - see the
-// dedicated "REVENUE decision chain" describe block in
+// Quality is the one remaining independent-channel goal: sweeping ONE lever
+// alone (holding the others at realityStart) still produces a positive
+// marginal effect, because `computeLeverContributions`'s leave-one-out
+// architecture applies. Access is a decision CHAIN (attainAccess.ts) -
+// moving only one of scope/margin/capacity/demand alone is EXPECTED to
+// still net ~$0 (that is rule 2, "demand is a ceiling"), so access is
+// deliberately excluded from that generic sweep and covered by its own
+// "ACCESS decision chain" describe block below. Revenue at outpatient/ED is
+// now ALSO a decision chain (attainRevenue.ts, three paths) for the same
+// reason - see the dedicated "REVENUE decision chain" describe block in
 // attainRevenue.test.ts. Revenue at INPATIENT is unaffected and still runs
 // this leave-one-out architecture (against `REVENUE_IP_LEVERS`); see the
-// inpatient regression test in attainRevenue.test.ts.
-const GOAL_IDS_CHANNEL: GoalId[] = ["retention", "quality"];
+// inpatient regression test in attainRevenue.test.ts. Retention/Workforce
+// is now ALSO a decision chain (attainWorkforce.ts, D1-D5) - moving only D2
+// (protect) alone with D5 (sustain) still at 0 months nets ~$0 by design
+// (0 months held is 0 departures avoided), so it is excluded here too and
+// covered by the dedicated "WORKFORCE decision chain" describe block in
+// attainWorkforce.test.ts.
+const GOAL_IDS_CHANNEL: GoalId[] = ["quality"];
 
 // One valid (setting, goal) pair per goal, used for the generic property
 // tests below (SETTING_GOAL_MATRIX in attainGoals.ts confirms each is legal).
@@ -77,9 +82,21 @@ const IMPROVED_VALUE: Record<GoalId, Record<string, number | string[]>> = {
     accessDemandNoShowPct: 5,
     accessDemandNewReferrals: 50,
   },
+  // Retention/Workforce is now a D1-D5 decision chain (attainWorkforce.ts),
+  // not independent channels - this fixture is unused by the generic
+  // "moving any single lever" sweep (see GOAL_IDS_CHANNEL above) but kept
+  // here, with every decision in the chain set to a real value (including
+  // D5's sustain, without which the whole composite impact - and therefore
+  // every dollar - reads exactly 0 by design), so the type stays a total
+  // Record<GoalId,...> and the multi-goal fixtures below see a realistic,
+  // fully-decided retention plan rather than a partial one.
   retention: {
     retentionLines: ["Primary Care", "Cardiology"],
-    retentionFloor: 40,
+    retentionProviders: 40,
+    retentionTurnoverRate: 14,
+    retentionReplacementCost: 375_000,
+    retentionProtect: 60,
+    retentionSurveyCadence: 1,
     retentionBackfill: 2,
     retentionSustain: 6,
   },
@@ -509,42 +526,56 @@ describe("computeMultiGoalContributions", () => {
     accessDemandNewReferrals: 1_000, // 12,000 visits/yr ceiling, never the binding constraint here
   });
 
+  // Retention's D2 (`retentionProtect`) is the lever that shares the same
+  // freed hour with access's D3. D5 (`retentionSustain`) must ALSO be real -
+  // the whole point of the decision-chain rebuild is that 0 months
+  // sustained nets $0 no matter how strong D2 is - so a "fully-decided but
+  // only-the-shared-lever-matters" fixture sets D2 and D5, and leaves D3
+  // (survey) / D4 (backfill) at their realityStart of 0, so the WHOLE
+  // retention total scales linearly with the D2 share multiplier alone.
+  const retentionFullChainValues = (): LeverValues => ({
+    retentionProviders: 40,
+    retentionProtect: 60,
+    retentionSustain: 6,
+  });
+
   it("access + retention with a 50/50 split never double-counts the freed-time hour", () => {
     const baseline = BASELINE_FOR.access;
     const valuesByGoal: Partial<Record<GoalId, LeverValues>> = {
       access: accessFullChainValues(),
-      retention: { ...defaultLeverValues("retention"), retentionFloor: 60 },
+      retention: retentionFullChainValues(),
     };
     const accessAlone = computeAccessContributions(baseline, valuesByGoal.access!); // multiplier = 1 (full credit)
-    const retentionAlone = computeLeverContributions("retention", "outpatient", baseline, valuesByGoal.retention!);
-    const retentionFreedAlone = retentionAlone.perLever.find((p) => p.id === "retentionFloor")!.marginalMargin;
+    const retentionAlone = computeLeverContributions("retention", "outpatient", baseline, valuesByGoal.retention!); // multiplier = 1 (full credit)
 
     const combined = computeMultiGoalContributions(["access", "retention"], "outpatient", baseline, valuesByGoal, 50);
     const accessScaled = combined.byGoal.access?.totalMargin ?? 0;
-    const retentionScaled = combined.byGoal.retention?.perLever.find((p) => p.id === "retentionFloor")!.marginalMargin ?? 0;
+    const retentionScaled = combined.byGoal.retention?.totalMargin ?? 0;
 
     // The split hour, however divided, never exceeds what each side would
     // have gotten alone at full credit - it is shared, not cloned.
-    expect(accessScaled + retentionScaled).toBeLessThanOrEqual(accessAlone.totalMargin + retentionFreedAlone + 1e-6);
+    expect(accessScaled + retentionScaled).toBeLessThanOrEqual(accessAlone.totalMargin + retentionAlone.totalMargin + 1e-6);
     expect(accessScaled).toBeLessThanOrEqual(accessAlone.totalMargin + 1e-6);
-    expect(retentionScaled).toBeLessThanOrEqual(retentionFreedAlone + 1e-6);
+    expect(retentionScaled).toBeLessThanOrEqual(retentionAlone.totalMargin + 1e-6);
     // At an even 50/50 split, capacity - and therefore the realized dollar,
     // since capacity is the binding constraint in this fixture - is
-    // exactly halved, not approximately.
+    // exactly halved, not approximately. Retention's D2 share is likewise
+    // scaled exactly in half before its composite impact is computed.
     expect(accessScaled).toBeCloseTo(accessAlone.totalMargin * 0.5, -1);
+    expect(retentionScaled).toBeCloseTo(retentionAlone.totalMargin * 0.5, -1);
   });
 
   it("split at 100 gives access the full freed-time share and retention zero", () => {
     const baseline = BASELINE_FOR.access;
     const valuesByGoal: Partial<Record<GoalId, LeverValues>> = {
       access: accessFullChainValues(),
-      retention: { ...defaultLeverValues("retention"), retentionFloor: 60 },
+      retention: retentionFullChainValues(),
     };
     const accessAlone = computeAccessContributions(baseline, valuesByGoal.access!);
 
     const combined = computeMultiGoalContributions(["access", "retention"], "outpatient", baseline, valuesByGoal, 100);
     const accessScaled = combined.byGoal.access?.totalMargin ?? 0;
-    const retentionScaled = combined.byGoal.retention?.perLever.find((p) => p.id === "retentionFloor")!.marginalMargin ?? 0;
+    const retentionScaled = combined.byGoal.retention?.totalMargin ?? 0;
 
     expect(accessScaled).toBeCloseTo(accessAlone.totalMargin, 5);
     expect(retentionScaled).toBe(0);
@@ -554,17 +585,16 @@ describe("computeMultiGoalContributions", () => {
     const baseline = BASELINE_FOR.access;
     const valuesByGoal: Partial<Record<GoalId, LeverValues>> = {
       access: accessFullChainValues(),
-      retention: { ...defaultLeverValues("retention"), retentionFloor: 60 },
+      retention: retentionFullChainValues(),
     };
     const retentionAlone = computeLeverContributions("retention", "outpatient", baseline, valuesByGoal.retention!);
-    const retentionFreedAlone = retentionAlone.perLever.find((p) => p.id === "retentionFloor")!.marginalMargin;
 
     const combined = computeMultiGoalContributions(["access", "retention"], "outpatient", baseline, valuesByGoal, 0);
     const accessScaled = combined.byGoal.access?.totalMargin ?? 0;
-    const retentionScaled = combined.byGoal.retention?.perLever.find((p) => p.id === "retentionFloor")!.marginalMargin ?? 0;
+    const retentionScaled = combined.byGoal.retention?.totalMargin ?? 0;
 
     expect(accessScaled).toBe(0);
-    expect(retentionScaled).toBeCloseTo(retentionFreedAlone, 5);
+    expect(retentionScaled).toBeCloseTo(retentionAlone.totalMargin, 5);
   });
 
   it("combinedMargin with access + retention is strictly less than the naive (double-counted) sum of both alone, when the shared hour is contended", () => {
@@ -645,10 +675,9 @@ describe("blank starting-point baseline ({}), no NaN / no crash", () => {
     expect(chain.scope.providersInScope).toBe(40);
   });
 
-  it("computeMultiGoalContributions: retention/revenue/quality net exactly $0 against a blank baseline (access excluded - see its own D1 fallback tests above)", () => {
-    const goals: GoalId[] = ["retention", "revenue", "quality"];
+  it("computeMultiGoalContributions: revenue/quality net exactly $0 against a blank baseline (access AND retention excluded - both have their own D1 fallback tests, see below/attainWorkforce.test.ts)", () => {
+    const goals: GoalId[] = ["revenue", "quality"];
     const valuesByGoal: Partial<Record<GoalId, LeverValues>> = {
-      retention: { ...IMPROVED_VALUE.retention },
       revenue: { ...IMPROVED_VALUE.revenue },
       quality: { ...IMPROVED_VALUE.quality },
     };
@@ -656,6 +685,17 @@ describe("blank starting-point baseline ({}), no NaN / no crash", () => {
     expect(Number.isNaN(combined.combinedMargin)).toBe(false);
     expect(combined.combinedMargin).toBe(0);
     expect(combined.combinedCount).toBe(0);
+  });
+
+  it("retention: D1's own requested provider count is honored even when the Starting-point baseline stays blank (same convention as access's D1 fallback)", () => {
+    // retentionProviders (40, from IMPROVED_VALUE.retention) is honored even
+    // though BLANK has no `providers` to cap it against - so this is NOT
+    // expected to net $0 the way the generic sweep above assumes; it is
+    // expected to stay a well-formed, finite, non-negative number.
+    const result = computeLeverContributions("retention", "outpatient", BLANK, IMPROVED_VALUE.retention);
+    expect(Number.isNaN(result.totalMargin)).toBe(false);
+    expect(Number.isFinite(result.totalMargin)).toBe(true);
+    expect(result.totalMargin).toBeGreaterThan(0);
   });
 
   it("computeMultiGoalContributions: every goal at once (including access) stays finite and non-NaN against a blank baseline", () => {

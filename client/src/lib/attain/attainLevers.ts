@@ -7,6 +7,7 @@ import {
 import type { AttainSetting, GoalId } from "./attainTypes";
 import { computeAccessContributions } from "./attainAccess";
 import { computeRevenueContributions } from "./attainRevenue";
+import { computeWorkforceContributions } from "./attainWorkforce";
 
 /**
  * Attain - lever layer.
@@ -84,12 +85,18 @@ import { computeRevenueContributions } from "./attainRevenue";
  *    case to `computeAccessContributions` there; see that module's header
  *    for the full chain and its reconciliation to Explore's `patientAccess`
  *    primitives (freed hours, visit length, margin/visit).
- *  - retention (all settings): all 4 levers sweep the existing
- *    `retentionImpactScenario: 'custom'` + `retentionCustomPercent` knob,
- *    scaled against each setting's optimistic-scenario ceiling (15pp
- *    physician, 25pp nursing), "backfill coverage gaps" and "sustain it"
- *    have no dedicated fields, so they are modeled as fractions of that same
- *    ceiling (documented simplification).
+ *  - retention / WORKFORCE (all settings): rebuilt as an ORDERED DECISION
+ *    CHAIN (D1 scope/turnover/replacement cost -> D2 protect the recovered
+ *    relief -> D3 survey cadence -> D4 backfill coverage gaps -> D5 sustain
+ *    -> the payoff), not an independent-channel lever set, in
+ *    `attainWorkforce.ts`. Departures avoided = providers x turnover x
+ *    burnout share x the composite impact D2-D5 produce, reconciled to the
+ *    same `retentionImpactScenario: 'custom'` + `retentionCustomPercent`
+ *    knob (`providerWellbeing`/`nursingRetention`) the old flat-lever model
+ *    used. `computeLeverContributions` delegates the whole `goal ===
+ *    "retention"` case to `computeWorkforceContributions` there for every
+ *    setting; see that module's header for the full chain and the
+ *    access/retention shared-freed-hour split.
  *  - revenue (outpatient/ED): rebuilt as a THREE-PATH decision chain, not an
  *    independent-channel lever set, in `attainRevenue.ts`. A partner picks
  *    one or more of Risk Adjustment (HCC capture, outpatient only), E/M
@@ -333,11 +340,19 @@ export const LEVERS: Record<GoalId, Lever[]> = {
       signal: "New referrals arriving per month",
     },
   ],
+  // Retention (Workforce) is a D1-D5 DECISION CHAIN, rendered bespoke on
+  // Build the case (`WorkforceDecisionChain.tsx`), not through the generic
+  // lever renderer - same convention as access/revenue. This catalog entry
+  // exists so Commit and the Attainment hub, which walk every goal's
+  // `LEVERS[goal]` generically, keep working: one row per decision, ids
+  // matching the flat `LeverValues` keys `attainWorkforce.ts` reads
+  // directly. See `attainWorkforce.ts`'s `WORKFORCE_LEVER_IDS` and
+  // `computeWorkforceContributions` for the engine.
   retention: [
     {
       id: "retentionLines",
-      label: "Departments in scope",
-      help: "Each department brought into the plan adds its provider count to the pool this plan is working to keep from leaving.",
+      label: "Departments or cohort in scope",
+      help: "Each department brought into the plan names which cohort this plan is working to keep from leaving.",
       control: "lines",
       unit: "departments",
       min: 0,
@@ -349,9 +364,51 @@ export const LEVERS: Record<GoalId, Lever[]> = {
       signal: "Departments actively brought into the plan",
     },
     {
-      id: "retentionFloor",
-      label: "Hold an after-hours relief floor",
-      help: "A protected floor on after-hours documentation is what keeps freed time from being quietly absorbed back into a bigger panel.",
+      id: "retentionProviders",
+      label: "How many providers are in scope",
+      help: "The real headcount this plan is built against, capped to your Starting-point baseline. No dollar figure yet, there is no impact decided.",
+      control: "countPerUnit",
+      unit: "providers",
+      min: 0,
+      max: 2_000,
+      step: 1,
+      realityStart: 0,
+      ownerRole: "Department leadership",
+      defaultDue: "Month 1",
+      signal: "Providers actually covered by the plan, of those named in scope",
+    },
+    {
+      id: "retentionTurnoverRate",
+      label: "Your current voluntary turnover rate",
+      help: "The rate departures avoided is measured against, your own number, not an assumed benchmark.",
+      control: "percent",
+      unit: "%",
+      min: 0,
+      max: 40,
+      step: 1,
+      realityStart: 0,
+      ownerRole: "HR / workforce analytics",
+      defaultDue: "Month 1",
+      signal: "Voluntary turnover rate against this baseline",
+    },
+    {
+      id: "retentionReplacementCost",
+      label: "Set the replacement cost per departure",
+      help: "The dollar every avoided departure is actually worth, your own number. Benchmarked but never assumed: physicians run $250K-$500K, nurses lower.",
+      control: "countPerUnit",
+      unit: "$/departure",
+      min: 0,
+      max: 600_000,
+      step: 5_000,
+      realityStart: 0,
+      ownerRole: "Finance / HR",
+      defaultDue: "Month 1",
+      signal: "Replacement cost booked per avoided departure",
+    },
+    {
+      id: "retentionProtect",
+      label: "Protect the recovered relief",
+      help: "The share of freed documentation time held down and not refilled by a bigger panel or a covering shift. This is the core lever that moves likelihood-to-stay.",
       control: "percent",
       unit: "%",
       min: 0,
@@ -363,9 +420,23 @@ export const LEVERS: Record<GoalId, Lever[]> = {
       signal: "After-hours documentation load against the floor",
     },
     {
+      id: "retentionSurveyCadence",
+      label: "Run a likelihood-to-stay and burnout pulse",
+      help: "A short pulse, not the annual engagement survey, is both the intervention that catches erosion early and the signal this plan watches later.",
+      control: "toggleLevel",
+      unit: "cadence",
+      min: 0,
+      max: 2,
+      step: 1,
+      realityStart: 0,
+      ownerRole: "HR / people analytics",
+      defaultDue: "Month 2",
+      signal: "Likelihood-to-stay and burnout pulse score, checked at this cadence",
+    },
+    {
       id: "retentionBackfill",
       label: "Backfill coverage gaps",
-      help: "Backfilling an open shift or panel before the remaining staff absorb it is what keeps relief from being clawed back.",
+      help: "Backfilling an open shift or panel before the remaining staff absorb it is what keeps the recovered relief from being clawed back.",
       control: "toggleLevel",
       unit: "coverage level",
       min: 0,
@@ -379,7 +450,7 @@ export const LEVERS: Record<GoalId, Lever[]> = {
     {
       id: "retentionSustain",
       label: "Sustain it",
-      help: "Relief that holds for more months compounds into a larger share of the departures this plan is working to avoid.",
+      help: "Relief that holds for more months compounds into a larger share of the departures this plan is working to avoid. Zero months held is zero departures avoided.",
       control: "countPerUnit",
       unit: "months sustained",
       min: 0,
@@ -827,84 +898,12 @@ const ZERO: ChannelValue = { margin: 0, count: 0, formula: NO_MOVE_FORMULA };
 // both functions' comments for why: capacity, demand, and margin are
 // jointly dependent through a MIN, not independent parallel channels).
 
-// ────────────────────────────────────────────────────────────────────────
-// RETENTION channels
-// ────────────────────────────────────────────────────────────────────────
-
-function retentionValue(setting: AttainSetting, eff: number, impactCustomPct: number): ChannelValue {
-  if (eff <= 0 || impactCustomPct <= 0) return ZERO;
-  if (setting === "nursing") {
-    const turnoverRate = 19;
-    const replacementCost = 55_000;
-    const state: ExploreState = {
-      ...mkState("nursing"),
-      numberOfProviders: eff,
-      timeDriverInputs: {
-        ...DEFAULT_EXPLORE_STATE.timeDriverInputs,
-        nursingRetentionEnabled: true,
-        nursingTurnoverRate: turnoverRate,
-        nursingReplacementCost: replacementCost,
-        retentionImpactScenario: "custom",
-        retentionCustomPercent: impactCustomPct,
-      },
-    };
-    const values = computeAllDriverValues(state, 0);
-    const summaries = computeAllDriverCalcSummaries(state, 0);
-    const retained = eff * (turnoverRate / 100) * 0.4 * (impactCustomPct / 100);
-    const margin = values.nursingRetention ?? 0;
-    return { margin, count: Math.round(retained), formula: formulaFor(summaries, "nursingRetention", margin) };
-  }
-
-  const isIP = setting === "inpatient";
-  const turnoverRate = isIP ? 16 : setting === "ed" ? 18 : 14;
-  const burnoutShare = isIP ? 45 : setting === "ed" ? 50 : 40;
-  const replacementCost = isIP ? 375_000 : setting === "ed" ? 450_000 : 375_000;
-  const state: ExploreState = {
-    ...mkState(setting),
-    numberOfProviders: eff,
-    timeDriverInputs: {
-      ...DEFAULT_EXPLORE_STATE.timeDriverInputs,
-      wellbeingEnabled: true,
-      calculateRetentionValue: true,
-      annualTurnoverRate: turnoverRate,
-      burnoutRelatedTurnover: burnoutShare,
-      replacementCost,
-      ipAnnualTurnoverRate: turnoverRate,
-      ipBurnoutRelatedTurnover: burnoutShare,
-      ipReplacementCost: replacementCost,
-      retentionImpactScenario: "custom",
-      retentionCustomPercent: impactCustomPct,
-    },
-  };
-  const values = computeAllDriverValues(state, 0);
-  const summaries = computeAllDriverCalcSummaries(state, 0);
-  const retained = eff * (turnoverRate / 100) * (burnoutShare / 100) * (impactCustomPct / 100);
-  const margin = values.providerWellbeing ?? 0;
-  return { margin, count: Math.round(retained), formula: formulaFor(summaries, "providerWellbeing", margin) };
-}
-
-function retentionChannel(setting: AttainSetting, units: number, leverId: string, raw: number | string[] | undefined): ChannelValue {
-  const ceiling = setting === "nursing" ? 25 : 15; // matches each setting's optimistic-scenario ceiling
-  switch (leverId) {
-    case "retentionLines": {
-      const fraction = linesFraction(setting, "retention", asLines(raw));
-      return retentionValue(setting, Math.round(units * fraction), 8);
-    }
-    case "retentionFloor":
-      return retentionValue(setting, Math.round(units * 0.5), round1((asNum(raw) / 100) * ceiling));
-    case "retentionBackfill": {
-      const level = Math.min(2, Math.max(0, Math.round(asNum(raw))));
-      const impactPct = [0, ceiling * 0.4, ceiling * 0.8][level];
-      return retentionValue(setting, Math.round(units * 0.5), impactPct);
-    }
-    case "retentionSustain": {
-      const months = Math.min(12, Math.max(0, asNum(raw)));
-      return retentionValue(setting, Math.round(units * 0.5), round1(ceiling * (months / 12)));
-    }
-    default:
-      return ZERO;
-  }
-}
+// RETENTION / WORKFORCE no longer runs through this leave-one-out channel
+// architecture - it is a decision chain, computed by
+// `computeWorkforceContributions` in `attainWorkforce.ts` and wired directly
+// into `computeLeverContributions` and `computeMultiGoalContributions` below,
+// for the same reason ACCESS is excluded (see above): D2-D5 combine through
+// a joint composite impact, not independent parallel channels.
 
 // ────────────────────────────────────────────────────────────────────────
 // REVENUE channels — INPATIENT ONLY. Outpatient/ED revenue is now the
@@ -1127,8 +1126,6 @@ function channelValue(
   baseline: AttainBaseline,
 ): ChannelValue {
   switch (goal) {
-    case "retention":
-      return retentionChannel(setting, units, leverId, raw);
     case "revenue":
       return revenueChannel(setting, units, leverId, raw, baseline);
     case "quality":
@@ -1157,6 +1154,12 @@ function channelValue(
  * sub-chain, not single independent percent/count channels. Revenue at
  * INPATIENT is unaffected and still runs the leave-one-out architecture
  * below, against `REVENUE_IP_LEVERS` (via `leversFor`).
+ *
+ * RETENTION / WORKFORCE (every setting) is the third goal excluded - it
+ * delegates whole to `computeWorkforceContributions` (`attainWorkforce.ts`),
+ * its D2 (protect) -> D3 (survey) -> D4 (backfill) -> D5 (sustain) decisions
+ * combine multiplicatively/additively into one composite impact percent
+ * before the payoff, not independent parallel channels.
  */
 export function computeLeverContributions(
   goal: GoalId,
@@ -1166,6 +1169,7 @@ export function computeLeverContributions(
 ): LeverContributionsResult {
   if (goal === "access") return computeAccessContributions(baseline, values);
   if (goal === "revenue" && setting !== "inpatient") return computeRevenueContributions(baseline, setting, values);
+  if (goal === "retention") return computeWorkforceContributions(baseline, setting, values);
 
   const levers = leversFor(goal, setting);
   const units = baselineUnits(setting, goal, baseline);
@@ -1221,15 +1225,6 @@ export interface MultiGoalContributionsResult {
   combinedCount: number;
 }
 
-/** The one freed-time lever retention owns. Access's own share of the same
- * freed hour is handled directly inside `computeMultiGoalContributions`
- * below (by re-running the whole access chain with a scaled share, not by
- * post-hoc-scaling a dollar figure - see that function's comment), so
- * access is deliberately absent from this map. */
-const FREED_TIME_LEVER: Partial<Record<GoalId, string>> = {
-  retention: "retentionFloor",
-};
-
 /**
  * Combines any number of goals into one plan.
  *
@@ -1243,34 +1238,29 @@ const FREED_TIME_LEVER: Partial<Record<GoalId, string>> = {
  * ACCESS and RETENTION are the one pair that is not independent. Both draw
  * on the same freed-documentation hour: access books its D3 share
  * (`accessFreedShare`, in `attainAccess.ts`) as new visit capacity,
- * retention books its own `retentionFloor` share as protected relief. If
- * both goals are selected and each is credited for the FULL hour, the plan
- * double-books a single hour of freed time as two dollars of value.
+ * retention books its own D2 share (`retentionProtect`, in
+ * `attainWorkforce.ts`) as protected relief. If both goals are selected and
+ * each is credited for the FULL hour, the plan double-books a single hour
+ * of freed time as two dollars of value.
  *
  * The fix: when (and only when) both `access` and `retention` are selected,
  * `freedTimeSplit` (0-100, default 50) is the percentage of the freed hour
  * a partner has decided to route to opening access (schedule). The
  * remainder routes to protecting relief.
  *
- * RETENTION's side of the fix is unchanged from before: its
- * `computeLeverContributions` result is recomputed with ONLY its
- * `retentionFloor` lever's marginal (and total) contribution scaled by
- * `1 - accessShare` - every other retention lever is untouched, because it
- * draws on its own, separate mechanism and was never double-booked.
- *
- * ACCESS's side is different because access is a decision CHAIN, not an
- * independent channel: scaling an already-computed dollar figure after the
- * fact would scale whichever row happens to be attributed the payoff
- * (which may be a demand row, not the capacity row at all - see
- * `computeAccessContributions`'s binding-constraint attribution), which
- * would silently do nothing whenever demand, not capacity, is the binding
- * constraint. Instead, the WHOLE access chain is re-run with
- * `accessShare` passed in as `computeAccessChain`'s
- * `crossGoalShareMultiplier`, which scales D3's share BEFORE capacity (and
- * therefore the MIN, and therefore the dollar) is computed. This is exact,
- * not an approximation: at split = 100, access's share multiplier is 1 (no
- * reduction); at split = 0, its multiplier is 0, so capacity - and every
- * dollar downstream of it - is exactly 0.
+ * BOTH sides of the fix use the exact same convention, because both are
+ * decision CHAINS, not independent channels: scaling an already-computed
+ * dollar figure after the fact would scale whichever row happens to carry
+ * the marginal dollar (access's binding constraint, or one of retention's
+ * D2-D5 leave-one-out rows), which is not necessarily the actual share
+ * being split and could silently do nothing. Instead, the WHOLE chain is
+ * re-run for each goal with its own share passed in as a
+ * `crossGoalShareMultiplier` - `computeAccessChain`'s D3 share, or
+ * `computeWorkforceChain`'s D2 share - which scales that decision BEFORE
+ * the rest of the chain (and therefore the dollar) is computed. This is
+ * exact, not an approximation: at split = 100, access's multiplier is 1 (no
+ * reduction) and retention's is 0 (zeroing D2, and therefore its composite
+ * impact and payoff); at split = 0, the reverse.
  */
 export function computeMultiGoalContributions(
   goals: GoalId[],
@@ -1300,45 +1290,19 @@ export function computeMultiGoalContributions(
       continue;
     }
 
-    const base = computeLeverContributions(goal, setting, baseline, values);
-    const freedLeverId = hasFreedTimeConflict ? FREED_TIME_LEVER[goal] : undefined;
-
-    if (!freedLeverId) {
-      byGoal[goal] = base;
-      combinedMargin += base.totalMargin;
-      combinedCount += base.totalCount;
+    if (goal === "retention") {
+      const shareMultiplier = hasFreedTimeConflict ? retentionShare : 1;
+      const result = computeWorkforceContributions(baseline, setting, values, shareMultiplier);
+      byGoal.retention = result;
+      combinedMargin += result.totalMargin;
+      combinedCount += result.totalCount;
       continue;
     }
 
-    const share = retentionShare;
-    const freedBase = base.perLever.find((p) => p.id === freedLeverId);
-    const freedBaseMargin = freedBase?.marginalMargin ?? 0;
-    const freedBaseCount = freedBase?.marginalCount ?? 0;
-    const freedScaledMargin = freedBaseMargin * share;
-    const freedScaledCount = freedBaseCount * share;
-
-    const scaledPerLeverRaw = base.perLever.map((p) =>
-      p.id === freedLeverId
-        ? { ...p, marginalMargin: freedScaledMargin, marginalCount: Math.round(freedScaledCount) }
-        : p,
-    );
-    // Every goal's totalMargin is exactly the sum of its own perLever
-    // marginal deltas (see the module header on independence / no cross
-    // terms), so re-deriving the scaled total from the scaled per-lever
-    // deltas keeps this exact rather than approximated.
-    const scaledMarginalSum = scaledPerLeverRaw.reduce((sum, l) => sum + Math.max(0, l.marginalMargin), 0);
-    const scaled: LeverContributionsResult = {
-      perLever: scaledPerLeverRaw.map((l) => ({
-        ...l,
-        pctOfTotal: scaledMarginalSum > 0 ? Math.max(0, l.marginalMargin) / scaledMarginalSum : 0,
-      })),
-      totalMargin: base.totalMargin - freedBaseMargin + freedScaledMargin,
-      totalCount: base.totalCount - freedBaseCount + freedScaledCount,
-    };
-
-    byGoal[goal] = scaled;
-    combinedMargin += scaled.totalMargin;
-    combinedCount += scaled.totalCount;
+    const base = computeLeverContributions(goal, setting, baseline, values);
+    byGoal[goal] = base;
+    combinedMargin += base.totalMargin;
+    combinedCount += base.totalCount;
   }
 
   return { byGoal, combinedMargin, combinedCount };

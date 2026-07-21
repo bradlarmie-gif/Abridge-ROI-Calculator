@@ -6,6 +6,7 @@ import { GOAL_CATALOG } from "@/lib/attain/attainGoals";
 import type { AttainSetting, GoalId } from "@/lib/attain/attainTypes";
 import AccessDecisionChain from "./AccessDecisionChain";
 import RevenueDecisionChain from "./RevenueDecisionChain";
+import WorkforceDecisionChain from "./WorkforceDecisionChain";
 
 function formatCompact(n: number): string {
   const sign = n < 0 ? "-" : "";
@@ -203,12 +204,21 @@ export default function StepBuildCase({
             values={values}
             onChangeValue={(leverId, value) => onChangeLeverValue("revenue", leverId, value)}
           />
+        ) : goal === "retention" ? (
+          <WorkforceDecisionChain
+            setting={setting}
+            baseline={baseline}
+            values={values}
+            onChangeValue={(leverId, value) => onChangeLeverValue("retention", leverId, value)}
+          />
         ) : (
+          // Only "quality" reaches this generic renderer now - access,
+          // revenue (outpatient/ED), and retention are all bespoke decision
+          // chains handled above.
           <div className="space-y-4">
             {levers.map((lever, i) => {
               const contribution = contributionFor(lever.id);
               const moved = isMoved(values[lever.id], lever.realityStart);
-              const isSharedFreedTime = hasFreedTimeConflict && lever.id === "retentionFloor";
               return (
                 <motion.div
                   key={lever.id}
@@ -223,11 +233,6 @@ export default function StepBuildCase({
                       {lever.label}
                     </h3>
                     <p className="text-xs text-[#8C8C8C] mt-1 leading-relaxed max-w-[520px]">{lever.help}</p>
-                    {isSharedFreedTime && (
-                      <p className="text-[10px] text-[#EA2C00] mt-1.5 font-medium">
-                        Scaled by the freed-time split above.
-                      </p>
-                    )}
                   </div>
 
                   <LeverControl
