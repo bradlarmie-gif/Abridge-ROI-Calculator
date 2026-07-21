@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { leversFor, defaultLeverValues, type Lever, type LeverValues } from "@/lib/attain/attainLevers";
@@ -184,6 +185,90 @@ function Field({ label, children, className }: { label: string; children: React.
   );
 }
 
+/** Sentinel Select value for "Custom..." - never a real owner-role or signal
+ * string, so it can't collide with a curated option or with free text a
+ * partner actually types. */
+const CUSTOM_VALUE = "__custom__";
+
+/** We suggest, they confirm or override - the shared control behind both
+ * Change 2 (Owner) and Change 3 (Signal). Shows a Select pre-loaded with
+ * this decision's own curated options (always headed by its default, so the
+ * pre-selected value matches what used to be a placeholder hint), plus a
+ * "Custom..." item that reveals a free-text input below for a specific
+ * person, title, or signal the curated list doesn't cover. `value` stays a
+ * plain string the whole time (the stored shape never changes) - "custom
+ * mode" is purely local UI state, re-derived correctly on mount from
+ * whether `value` already matches one of `options` (so a saved plan with a
+ * custom owner/signal reopens straight into the right mode). Switching back
+ * to a curated option from custom mode hides the text input again and
+ * writes that option's text straight into `value`. */
+function CuratedSelectField({
+  value,
+  options,
+  onChange,
+  customPlaceholder,
+  triggerClassName,
+  triggerTestId,
+  customOptionTestId,
+  customInputTestId,
+}: {
+  value: string;
+  options: string[];
+  onChange: (v: string) => void;
+  customPlaceholder: string;
+  triggerClassName?: string;
+  triggerTestId: string;
+  customOptionTestId: string;
+  customInputTestId: string;
+}) {
+  const trimmed = value.trim();
+  const [custom, setCustom] = useState(() => trimmed !== "" && !options.includes(trimmed));
+  const selectValue = custom ? CUSTOM_VALUE : trimmed || options[0];
+
+  return (
+    <div className="min-w-0">
+      <Select
+        value={selectValue}
+        onValueChange={(v) => {
+          if (v === CUSTOM_VALUE) {
+            setCustom(true);
+            return;
+          }
+          setCustom(false);
+          onChange(v);
+        }}
+      >
+        <SelectTrigger className={triggerClassName ?? "h-9 w-full text-xs bg-white"} data-testid={triggerTestId}>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {options.map((opt) => (
+            <SelectItem key={opt} value={opt} className="text-xs whitespace-normal break-words max-w-[360px]">
+              {opt}
+            </SelectItem>
+          ))}
+          <SelectItem
+            value={CUSTOM_VALUE}
+            className="text-xs font-semibold text-[#EA2C00]"
+            data-testid={customOptionTestId}
+          >
+            Custom...
+          </SelectItem>
+        </SelectContent>
+      </Select>
+      {custom && (
+        <input
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={customPlaceholder}
+          className="mt-2 h-9 w-full min-w-0 rounded-md border border-[#D8CFC4] bg-white px-2.5 text-xs text-[#1A1A1A] outline-none focus:border-[#EA2C00]"
+          data-testid={customInputTestId}
+        />
+      )}
+    </div>
+  );
+}
+
 export default function StepCommit({
   goals,
   setting,
@@ -353,15 +438,20 @@ export default function StepCommit({
                         </p>
                       </div>
 
-                      {/* 1. Owner + by-when. */}
-                      <div className="grid grid-cols-2 sm:grid-cols-[1fr_150px] gap-3 mb-4">
+                      {/* 1. Owner + by-when. Owner is a curated Select of
+                          plausible roles for THIS decision (we suggest, the
+                          partner confirms or overrides with Custom...), not
+                          a raw free-text field - see `CuratedSelectField`. */}
+                      <div className="grid grid-cols-2 sm:grid-cols-[1fr_150px] gap-3 items-start mb-4">
                         <Field label="Owner">
-                          <input
+                          <CuratedSelectField
                             value={ownerName}
-                            onChange={(e) => onChangeCommitment(goal, lever.id, { owner: e.target.value })}
-                            placeholder={lever.ownerRole}
-                            className="h-9 w-full rounded-md border border-[#D8CFC4] bg-white px-2.5 text-xs text-[#1A1A1A] outline-none focus:border-[#EA2C00]"
-                            data-testid={`input-attain-commit-owner-${goal}-${lever.id}`}
+                            options={lever.ownerRoleOptions}
+                            onChange={(v) => onChangeCommitment(goal, lever.id, { owner: v })}
+                            customPlaceholder="Name or specific title, e.g. Dr. A. Rivera"
+                            triggerTestId={`select-attain-commit-owner-${goal}-${lever.id}`}
+                            customOptionTestId={`option-attain-commit-owner-custom-${goal}-${lever.id}`}
+                            customInputTestId={`input-attain-commit-owner-custom-${goal}-${lever.id}`}
                           />
                         </Field>
 
@@ -396,74 +486,89 @@ export default function StepCommit({
                           </button>
                         </div>
 
-                        <div className="space-y-2">
+                        <div className="space-y-2.5">
                           {signals.map((sig) => (
                             <div
                               key={sig.id}
-                              className="grid grid-cols-2 sm:grid-cols-[1.5fr_0.85fr_0.65fr_0.85fr_24px] gap-2 items-end bg-white rounded-md border border-[#E7E0D6] p-2.5"
+                              className="bg-white rounded-md border border-[#E7E0D6] p-3"
                               data-testid={`row-attain-commit-signal-${goal}-${lever.id}-${sig.id}`}
                             >
-                              <Field label="Signal">
-                                <input
-                                  value={sig.label}
-                                  onChange={(e) => onChangeSignal(goal, lever.id, sig.id, { label: e.target.value })}
-                                  placeholder="What tells you it's moving"
-                                  className="h-9 w-full rounded-md border border-[#D8CFC4] bg-white px-2 text-[11px] text-[#1A1A1A] outline-none focus:border-[#EA2C00]"
-                                  data-testid={`input-attain-commit-signal-label-${goal}-${lever.id}-${sig.id}`}
-                                />
-                              </Field>
+                              {/* Signal - a curated Select of the signals we
+                                  already know for this decision, plus
+                                  Custom... - never a raw free-text field
+                                  that silently clips a long, specific
+                                  signal description (Change 1 + 3). */}
+                              <div className="flex items-start gap-2 mb-2.5">
+                                <Field label="Signal" className="flex-1 min-w-0">
+                                  <CuratedSelectField
+                                    value={sig.label}
+                                    options={lever.signalOptions}
+                                    onChange={(v) => onChangeSignal(goal, lever.id, sig.id, { label: v })}
+                                    customPlaceholder="What tells you it's moving"
+                                    triggerTestId={`select-attain-commit-signal-${goal}-${lever.id}-${sig.id}`}
+                                    customOptionTestId={`option-attain-commit-signal-custom-${goal}-${lever.id}-${sig.id}`}
+                                    customInputTestId={`input-attain-commit-signal-custom-${goal}-${lever.id}-${sig.id}`}
+                                  />
+                                </Field>
 
-                              <Field label="Baseline today">
-                                <input
-                                  value={sig.baseline}
-                                  onChange={(e) => onChangeSignal(goal, lever.id, sig.id, { baseline: e.target.value })}
-                                  placeholder="e.g., 18"
-                                  className="h-9 w-full rounded-md border border-[#D8CFC4] bg-white px-2 text-[11px] text-[#1A1A1A] outline-none focus:border-[#EA2C00]"
-                                  data-testid={`input-attain-commit-signal-baseline-${goal}-${lever.id}-${sig.id}`}
-                                />
-                              </Field>
-
-                              <Field label="Unit">
-                                <input
-                                  value={sig.unit}
-                                  onChange={(e) => onChangeSignal(goal, lever.id, sig.id, { unit: e.target.value })}
-                                  placeholder="e.g., days"
-                                  className="h-9 w-full rounded-md border border-[#D8CFC4] bg-white px-2 text-[11px] text-[#1A1A1A] outline-none focus:border-[#EA2C00]"
-                                  data-testid={`input-attain-commit-signal-unit-${goal}-${lever.id}-${sig.id}`}
-                                />
-                              </Field>
-
-                              <Field label="Checked">
-                                <Select
-                                  value={sig.cadence}
-                                  onValueChange={(v) => onChangeSignal(goal, lever.id, sig.id, { cadence: v as SignalCadence })}
+                                <button
+                                  type="button"
+                                  onClick={() => onRemoveSignal(goal, lever.id, sig.id)}
+                                  disabled={signals.length <= 1}
+                                  title={signals.length <= 1 ? "Every decision needs at least one signal" : "Remove this signal"}
+                                  className="h-9 w-6 flex-shrink-0 flex items-center justify-center text-[#B4B4B4] hover:text-[#EA2C00] disabled:opacity-30 disabled:cursor-not-allowed"
+                                  data-testid={`button-attain-commit-remove-signal-${goal}-${lever.id}-${sig.id}`}
                                 >
-                                  <SelectTrigger
-                                    className="h-9 w-full text-[11px] bg-white"
-                                    data-testid={`select-attain-commit-signal-cadence-${goal}-${lever.id}-${sig.id}`}
-                                  >
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {CADENCE_OPTIONS.map((c) => (
-                                      <SelectItem key={c.value} value={c.value} className="text-xs">
-                                        {c.label}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                              </Field>
+                                  ×
+                                </button>
+                              </div>
 
-                              <button
-                                type="button"
-                                onClick={() => onRemoveSignal(goal, lever.id, sig.id)}
-                                disabled={signals.length <= 1}
-                                title={signals.length <= 1 ? "Every decision needs at least one signal" : "Remove this signal"}
-                                className="h-9 w-6 flex items-center justify-center text-[#B4B4B4] hover:text-[#EA2C00] disabled:opacity-30 disabled:cursor-not-allowed"
-                                data-testid={`button-attain-commit-remove-signal-${goal}-${lever.id}-${sig.id}`}
-                              >
-                                ×
-                              </button>
+                              {/* Baseline today, unit, and this signal's own
+                                  cadence - unchanged fields, just given
+                                  their own row so the Signal select above
+                                  always gets full width. */}
+                              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                <Field label="Baseline today">
+                                  <input
+                                    value={sig.baseline}
+                                    onChange={(e) => onChangeSignal(goal, lever.id, sig.id, { baseline: e.target.value })}
+                                    placeholder="e.g., 18"
+                                    className="h-9 w-full min-w-0 rounded-md border border-[#D8CFC4] bg-white px-2 text-[11px] text-[#1A1A1A] outline-none focus:border-[#EA2C00]"
+                                    data-testid={`input-attain-commit-signal-baseline-${goal}-${lever.id}-${sig.id}`}
+                                  />
+                                </Field>
+
+                                <Field label="Unit">
+                                  <input
+                                    value={sig.unit}
+                                    onChange={(e) => onChangeSignal(goal, lever.id, sig.id, { unit: e.target.value })}
+                                    placeholder="e.g., days"
+                                    className="h-9 w-full min-w-0 rounded-md border border-[#D8CFC4] bg-white px-2 text-[11px] text-[#1A1A1A] outline-none focus:border-[#EA2C00]"
+                                    data-testid={`input-attain-commit-signal-unit-${goal}-${lever.id}-${sig.id}`}
+                                  />
+                                </Field>
+
+                                <Field label="Checked">
+                                  <Select
+                                    value={sig.cadence}
+                                    onValueChange={(v) => onChangeSignal(goal, lever.id, sig.id, { cadence: v as SignalCadence })}
+                                  >
+                                    <SelectTrigger
+                                      className="h-9 w-full text-[11px] bg-white"
+                                      data-testid={`select-attain-commit-signal-cadence-${goal}-${lever.id}-${sig.id}`}
+                                    >
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {CADENCE_OPTIONS.map((c) => (
+                                        <SelectItem key={c.value} value={c.value} className="text-xs">
+                                          {c.label}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </Field>
+                              </div>
                             </div>
                           ))}
                         </div>
