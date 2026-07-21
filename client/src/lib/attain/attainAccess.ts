@@ -264,28 +264,59 @@ export function computeAccessCapacity(
 export interface AccessDemand {
   backlogVisits: number;
   sameDayVisits: number;
+  /** The same-day/urgent % input this term was computed from, kept on the
+   * result so THE MATH can print "(X% of E encounters = N/yr)" instead of a
+   * bare annualized number. */
+  sameDayPct: number;
   noShowVisits: number;
+  /** The no-show-recovery % input this term was computed from, same reason
+   * as `sameDayPct` above. */
+  noShowPct: number;
   newReferralVisits: number;
+  /** The raw monthly referral rate this term was annualized from, kept on
+   * the result so THE MATH can show its own derivation ("850/mo x 12 =
+   * 10,200/yr") instead of silently printing only the annualized number -
+   * without this a partner sees their 850/mo input "become" 10,200 with no
+   * visible arithmetic. */
+  newReferralsPerMonth: number;
+  /** In-scope encounter volume the same-day/no-show percentages were
+   * applied to, kept for the same reason. */
+  encountersInScope: number;
   /** Sum of every demand source — the hard ceiling on realized visits. */
   demandCeiling: number;
 }
 
 /** D4: four demand sources, summed into one ceiling. Referral backlog is a
- * direct visit count; same-day/urgent and no-show recovery are percentages
- * of the in-scope encounter volume; new referrals is a monthly rate,
- * annualized. This is the ceiling — capacity above this line is simply
- * unfillable and worth nothing (rule 2). */
+ * direct, one-time visit count (patients already waiting, not a rate);
+ * same-day/urgent and no-show recovery are percentages of the in-scope
+ * encounter volume; new referrals is a monthly rate, annualized (x12). This
+ * is the ceiling — capacity above this line is simply unfillable and worth
+ * nothing (rule 2). Every raw input this function annualizes or applies a
+ * percentage to (`newReferralsPerMonth`, `sameDayPct`, `noShowPct`,
+ * `encountersInScope`) is kept on the returned object, not just the derived
+ * totals, so the caller's THE MATH string can show its own derivation
+ * instead of a bare annualized number that looks like it "jumped." */
 export function computeAccessDemand(baseline: AttainBaseline, scope: AccessScope, values: LeverValues): AccessDemand {
-  const encounters = scope.providersInScope * perProviderEncounters(baseline) * utilizationFraction(baseline);
+  const encountersInScope = scope.providersInScope * perProviderEncounters(baseline) * utilizationFraction(baseline);
   const backlogVisits = Math.max(0, Math.round(asNum(values.accessDemandBacklog)));
   const sameDayPct = clampPct(asNum(values.accessDemandSameDayPct));
   const noShowPct = clampPct(asNum(values.accessDemandNoShowPct));
   const newReferralsPerMonth = Math.max(0, asNum(values.accessDemandNewReferrals));
-  const sameDayVisits = Math.round(encounters * (sameDayPct / 100));
-  const noShowVisits = Math.round(encounters * (noShowPct / 100));
+  const sameDayVisits = Math.round(encountersInScope * (sameDayPct / 100));
+  const noShowVisits = Math.round(encountersInScope * (noShowPct / 100));
   const newReferralVisits = Math.round(newReferralsPerMonth * 12);
   const demandCeiling = backlogVisits + sameDayVisits + noShowVisits + newReferralVisits;
-  return { backlogVisits, sameDayVisits, noShowVisits, newReferralVisits, demandCeiling };
+  return {
+    backlogVisits,
+    sameDayVisits,
+    sameDayPct,
+    noShowVisits,
+    noShowPct,
+    newReferralVisits,
+    newReferralsPerMonth,
+    encountersInScope,
+    demandCeiling,
+  };
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -370,6 +401,35 @@ export function computeAccessPayoff(
   return { realizedVisits, binding, value, blendedMarginUsed, perLine };
 }
 
+/**
+ * Builds THE MATH line for D4, term by term, so every source shows its own
+ * derivation and unit instead of a silently-annualized total that looks
+ * like it "jumped" (850/mo becoming 10,200/yr with no visible arithmetic).
+ * Backlog is always labeled "(one-time)" — it is a count of patients
+ * waiting right now, not a rate. New referrals shows "(X/mo x 12 = Y/yr)"
+ * whenever the monthly rate is nonzero; same-day and no-show each show
+ * "(X% of E encounters = Y/yr)" whenever their term is nonzero. Any term
+ * that is exactly 0 prints plainly ("0 same-day"), not a derivation of
+ * nothing, matching the shape of the other three when they're unset.
+ */
+function buildDemandFormula(demand: AccessDemand): string {
+  const backlogTerm = `${demand.backlogVisits.toLocaleString()} backlog (one-time)`;
+
+  const referralsTerm = demand.newReferralsPerMonth > 0
+    ? `(${demand.newReferralsPerMonth.toLocaleString()}/mo x 12 = ${demand.newReferralVisits.toLocaleString()}/yr) new referrals`
+    : "0 new referrals";
+
+  const sameDayTerm = demand.sameDayVisits > 0
+    ? `(${Math.round(demand.sameDayPct)}% of ${Math.round(demand.encountersInScope).toLocaleString()} encounters = ${demand.sameDayVisits.toLocaleString()}/yr) same-day`
+    : "0 same-day";
+
+  const noShowTerm = demand.noShowVisits > 0
+    ? `(${Math.round(demand.noShowPct)}% of ${Math.round(demand.encountersInScope).toLocaleString()} encounters = ${demand.noShowVisits.toLocaleString()}/yr) no-show`
+    : "0 no-show";
+
+  return `${backlogTerm} + ${referralsTerm} + ${sameDayTerm} + ${noShowTerm} = ${demand.demandCeiling.toLocaleString()}/yr demand ceiling.`;
+}
+
 // ────────────────────────────────────────────────────────────────────────
 // The full chain + THE MATH strings
 // ────────────────────────────────────────────────────────────────────────
@@ -420,9 +480,7 @@ export function computeAccessChain(
     ? `${scope.providersInScope} providers × ${Math.round(capacity.freedHoursTotal / Math.max(1, scope.providersInScope))} freed hrs/provider/yr × ${Math.round(capacity.effectiveSharePct)}% to access ÷ ${capacity.visitLengthMinutes} min/visit = ${Math.round(capacity.capacityVisits).toLocaleString()} visits/yr capacity.`
     : NO_MOVE_FORMULA;
 
-  const demandFormula = demand.demandCeiling > 0
-    ? `${demand.backlogVisits.toLocaleString()} backlog + ${demand.sameDayVisits.toLocaleString()} same-day + ${demand.noShowVisits.toLocaleString()} no-show + ${demand.newReferralVisits.toLocaleString()} new referrals = ${demand.demandCeiling.toLocaleString()} visits/yr demand ceiling.`
-    : NO_MOVE_FORMULA;
+  const demandFormula = demand.demandCeiling > 0 ? buildDemandFormula(demand) : NO_MOVE_FORMULA;
 
   const payoffFormula = payoff.value > 0
     ? `${payoff.realizedVisits.toLocaleString()} realized visits (the smaller of ${Math.round(capacity.capacityVisits).toLocaleString()} capacity and ${demand.demandCeiling.toLocaleString()} demand) × ~$${Math.round(payoff.blendedMarginUsed).toLocaleString()}/visit = ~${fmtMoneyCompact(payoff.value)}.`

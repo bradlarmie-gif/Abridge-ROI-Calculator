@@ -465,10 +465,10 @@ export default function AccessDecisionChain({ setting, baseline, values, onChang
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
           <div>
             <FieldLabel
-              tip="Patients already referred and waiting to be scheduled."
+              tip="The total number of patients already referred and waiting to be scheduled, right now - a one-time count, not a monthly rate."
               testid="tooltip-access-demand-backlog"
             >
-              Referral backlog (patients waiting)
+              Referral backlog (total patients waiting now)
             </FieldLabel>
             <NumberField
               value={asNum(values.accessDemandBacklog)}
@@ -481,10 +481,10 @@ export default function AccessDecisionChain({ setting, baseline, values, onChang
           </div>
           <div>
             <FieldLabel
-              tip="New referrals coming in each month that you can route into open slots."
+              tip="New referrals arriving each month, not a one-time count. THE MATH below annualizes this figure (x 12) into the demand ceiling."
               testid="tooltip-access-demand-new-referrals"
             >
-              New referrals per month
+              New referrals (per month)
             </FieldLabel>
             <NumberField
               value={asNum(values.accessDemandNewReferrals)}

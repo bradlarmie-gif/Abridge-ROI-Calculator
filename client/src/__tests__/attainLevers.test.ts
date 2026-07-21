@@ -370,6 +370,55 @@ describe("ACCESS decision chain (attainAccess.ts)", () => {
     expect(demand.demandCeiling).toBe(500 + 1_200 + 1_200 + 600);
   });
 
+  it("D4: demand ceiling is exactly backlog + monthlyReferrals x 12 + sameDay + noShow, for representative real-world inputs", () => {
+    const scope = { providersInScope: 40, lines: [], enterprise: false };
+    const demand = computeAccessDemand(baseline, scope, {
+      accessDemandBacklog: 5_000,
+      accessDemandNewReferrals: 850,
+      accessDemandSameDayPct: 0,
+      accessDemandNoShowPct: 0,
+    });
+    expect(demand.newReferralVisits).toBe(850 * 12);
+    expect(demand.demandCeiling).toBe(5_000 + 850 * 12 + 0 + 0);
+    expect(demand.demandCeiling).toBe(15_200);
+  });
+
+  it("D4 THE MATH: the printed demand formula shows the referral annualization derivation (x 12), not a bare annualized number", () => {
+    const chain = computeAccessChain(baseline, {
+      accessProviders: 40,
+      accessDemandBacklog: 5_000,
+      accessDemandNewReferrals: 850,
+    });
+    expect(chain.demand.newReferralVisits).toBe(10_200);
+    expect(chain.demand.demandCeiling).toBe(15_200);
+    expect(chain.formulas.demand).toContain("x 12");
+    expect(chain.formulas.demand).toContain("850/mo");
+    expect(chain.formulas.demand).toContain("10,200/yr");
+    expect(chain.formulas.demand).toContain("15,200");
+    expect(chain.formulas.demand).toContain("one-time");
+  });
+
+  it("D4 THE MATH: same-day and no-show terms show their percent-of-encounters derivation when nonzero", () => {
+    const chain = computeAccessChain(baseline, {
+      accessProviders: 40,
+      accessDemandSameDayPct: 5,
+      accessDemandNoShowPct: 5,
+    });
+    // 40 providers x 600 encounters/provider (baseline) x 100% utilization = 24,000 encounters in scope.
+    expect(chain.formulas.demand).toContain("5% of 24,000 encounters");
+    expect(chain.formulas.demand).toContain("1,200/yr");
+  });
+
+  it("D4 THE MATH: zero-value terms print plainly (0 same-day / 0 no-show), not a derivation of nothing", () => {
+    const chain = computeAccessChain(baseline, {
+      accessProviders: 40,
+      accessDemandBacklog: 5_000,
+      accessDemandNewReferrals: 850,
+    });
+    expect(chain.formulas.demand).toContain("0 same-day");
+    expect(chain.formulas.demand).toContain("0 no-show");
+  });
+
   it("D5: realized visits never exceed the demand ceiling, even when capacity is much larger (the MIN holds)", () => {
     const scope = { providersInScope: 40, lines: [], enterprise: false };
     const capacity = computeAccessCapacity(baseline, scope, 12, 100); // max possible capacity
