@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Download, Save, ChevronDown, ChevronUp } from "lucide-react";
+import { Download, Save, ChevronDown, ChevronUp, X, Check } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { NumberField } from "@/components/NumberField";
@@ -475,6 +475,12 @@ interface StepAttainmentProps {
    * page per selected goal means Attainment's position shifts with goal
    * count. */
   stepNumber: number;
+  /** Save-and-return: encodes the full plan (including commitments and
+   * progress history), writes it to the local draft, copies a shareable
+   * `?attain=` link to the clipboard, and resolves with that link — or
+   * `null` if there is nothing yet worth saving (no setting/goal chosen).
+   * See AttainFlow.tsx's `handleSave` and attainUrlState.ts. */
+  onSave: () => Promise<string | null>;
 }
 
 export default function StepAttainment({
@@ -492,6 +498,7 @@ export default function StepAttainment({
   onLogProgressUpdate,
   onMonthsElapsedChange,
   stepNumber,
+  onSave,
 }: StepAttainmentProps) {
   // A clean, real, editable field rather than a dangling empty placeholder —
   // starts on a sensible default name the partner can overwrite with their
@@ -499,7 +506,22 @@ export default function StepAttainment({
   const [orgName, setOrgName] = useState("Your organization");
   const [tab, setTab] = useState<"strategy" | "progress">("strategy");
   const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  // The copied-link confirmation — holds the actual link so a partner can
+  // read/copy it again by hand if the clipboard write silently failed
+  // (Safari/permissions), not just a bare "saved" message.
+  const [savedLink, setSavedLink] = useState<string | null>(null);
   const today = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+
+  const handleSaveClick = async () => {
+    setIsSaving(true);
+    try {
+      const url = await onSave();
+      setSavedLink(url);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const handleDownloadPdf = async () => {
     setIsDownloadingPdf(true);
@@ -627,9 +649,15 @@ export default function StepAttainment({
           </h1>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
-          <Button variant="outline" className="h-10 gap-2" data-testid="button-attain-save" onClick={() => { /* Save/share ships in a later task */ }}>
+          <Button
+            variant="outline"
+            className="h-10 gap-2 border-[#EA2C00] text-[#EA2C00] hover:bg-[#FFF6F3] hover:text-[#EA2C00]"
+            data-testid="button-attain-save"
+            disabled={isSaving}
+            onClick={handleSaveClick}
+          >
             <Save className="w-4 h-4" />
-            Save
+            {isSaving ? "Saving…" : "Save"}
           </Button>
           <Button
             className="h-10 gap-2 bg-black hover:bg-black/90 text-white"
@@ -642,6 +670,45 @@ export default function StepAttainment({
           </Button>
         </div>
       </div>
+
+      {/* Save confirmation — a link was just copied to the clipboard and
+          written to this browser's local draft. Shows the real link (not
+          just a bare "saved" message) so a partner whose clipboard write
+          silently failed can still copy it by hand. Dismissable, never
+          auto-hides mid-read. */}
+      {savedLink && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="fixed bottom-6 right-6 z-50 max-w-md bg-[#1A1A1A] border border-[#EA2C00] rounded-lg shadow-lg p-4 flex items-start gap-3"
+          data-testid="toast-attain-save-confirmation"
+        >
+          <div className="w-6 h-6 rounded-full bg-[#EA2C00] flex items-center justify-center flex-shrink-0 mt-0.5">
+            <Check className="w-3.5 h-3.5 text-white" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-abridge text-sm text-white mb-1">Plan saved</p>
+            <p className="text-[11px] text-white/70 leading-relaxed mb-2">
+              A shareable link is copied to your clipboard. Open it anytime, on any device, to pick up exactly where
+              you left off, decisions, commitments, and progress history included.
+            </p>
+            <p
+              className="text-[10px] text-white/90 font-mono bg-white/10 rounded px-2 py-1.5 break-all"
+              data-testid="text-attain-save-link"
+            >
+              {savedLink}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setSavedLink(null)}
+            className="text-white/50 hover:text-white flex-shrink-0"
+            data-testid="button-attain-save-confirmation-dismiss"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </motion.div>
+      )}
 
       {/* Strategy / Progress — the hub's two faces. Strategy is the plan as
           authored; Progress is the surface the partner actually returns to
@@ -724,12 +791,13 @@ export default function StepAttainment({
           )}
 
           <p className="text-[10px] text-[#B4B4B4] leading-relaxed max-w-[600px] mt-6 border-t border-[#E5E5E5] pt-3">
-            {/* Persistence note: entries live in local/session state for now
-                (see AttainFlow.tsx's `progressEntries`). Coming back to this
-                exact dated history tomorrow, from another device, needs the
-                save/backend layer — out of scope for this pass. */}
-            Progress logged here lives in this session only. Coming back to this exact history tomorrow, from another
-            device, needs the save/backend layer — out of scope for this pass.
+            {/* Persistence note: Save writes this history into a shareable
+                link and a local draft (see attainUrlState.ts). That covers
+                "come back to this on this device, or from the link" - a real
+                account tied to this organization, editable from any device
+                without the link, is a future backend layer. */}
+            Click Save above to copy a link back to this exact history, decisions included. Reopening that link,
+            on this device or any other, picks this plan up exactly where it stands today.
           </p>
         </motion.section>
       )}

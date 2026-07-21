@@ -31,6 +31,15 @@ import {
 } from "@/lib/attain/attainLevers";
 import { parseSignalBaseline, todayISODate, type ProgressEntry } from "@/lib/attain/attainProgress";
 import type { GoalTargetResult, AttainmentResult } from "@/lib/attain/attainCalc";
+import {
+  ATTAIN_SAVE_VERSION,
+  encodeAttain,
+  readAttainDraft,
+  writeAttainDraft,
+  type AttainSaveState,
+} from "@/lib/attain/attainUrlState";
+import { copyToClipboard } from "@/lib/clipboard";
+import AttainResumePrompt from "./AttainResumePrompt";
 
 /**
  * Every selected goal gets its own "Build the case" page (`buildCase:<goal>`)
@@ -128,25 +137,39 @@ export function commitmentKey(goal: GoalId, leverId: string): string {
 
 interface AttainFlowProps {
   onBackToJourney?: () => void;
+  /** A fully decoded plan from a `?attain=` deep link (see App.tsx's
+   * `getInitialDeepLink` and attainUrlState.ts's `decodeAttain`). When
+   * present, every piece of local state below hydrates from it instead of
+   * its usual empty default, and the flow opens straight at the
+   * Attainment hub (the last step) rather than Setting — this is the
+   * "open a saved link" half of save-and-return. `undefined` (a fresh
+   * Attain entry) is the normal case and behaves exactly as before. */
+  initialSaveState?: AttainSaveState;
 }
 
-export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
-  const [stepIndex, setStepIndex] = useState(0);
-  const [state, setState] = useState<AttainState>(DEFAULT_ATTAIN_STATE);
+export default function AttainFlow({ onBackToJourney, initialSaveState }: AttainFlowProps) {
+  const [stepIndex, setStepIndex] = useState(() =>
+    initialSaveState ? stepOrderFor(initialSaveState.goals).length - 1 : 0,
+  );
+  const [state, setState] = useState<AttainState>(() => initialSaveState?.state ?? DEFAULT_ATTAIN_STATE);
   // One or more goals can be in play at once (the whole point of this
   // task). `valuesByGoal` and `commitments` are keyed per goal so two
   // goals' decisions never collide, even when (as with access/retention)
   // they share a lever id naming convention.
-  const [goals, setGoals] = useState<GoalId[]>([]);
-  const [valuesByGoal, setValuesByGoal] = useState<Partial<Record<GoalId, LeverValues>>>({});
-  const [commitments, setCommitments] = useState<Record<string, Commitment>>({});
+  const [goals, setGoals] = useState<GoalId[]>(() => initialSaveState?.goals ?? []);
+  const [valuesByGoal, setValuesByGoal] = useState<Partial<Record<GoalId, LeverValues>>>(
+    () => initialSaveState?.valuesByGoal ?? {},
+  );
+  const [commitments, setCommitments] = useState<Record<string, Commitment>>(() => initialSaveState?.commitments ?? {});
   // The executive sponsor for EACH selected priority's outcome - collected
   // once per priority on Commit, above that priority's decisions, since
   // every decision-owner answers to this person for whether the outcome
   // lands. Local state, same reasoning as `commitments` below: this is
   // plan-authoring bookkeeping, not part of the locked `attainTypes.ts`
   // engine shapes.
-  const [goalOwnerByPriority, setGoalOwnerByPriority] = useState<Partial<Record<GoalId, GoalOwner>>>({});
+  const [goalOwnerByPriority, setGoalOwnerByPriority] = useState<Partial<Record<GoalId, GoalOwner>>>(
+    () => initialSaveState?.goalOwnerByPriority ?? {},
+  );
   // Attainment hub "Progress" tab state: a dated log per committed SIGNAL
   // (key = `${goal}:${leverId}:${signalId}`) — one seed entry carrying the
   // baseline, dated the day the decision was first committed, then one more
@@ -155,13 +178,15 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
   // latest entry's value (see attainProgress.ts's `currentValueFromEntries`)
   // — there is no separately-edited "current" field anymore.
   //
-  // This is intentionally LOCAL/SESSION state only - reloading the page or
-  // returning tomorrow resets every log back to empty (which reseeds from
-  // the baseline again, see the effect below). True cross-session
-  // persistence (so a dated entry logged today is still there next month,
-  // for the EBR) needs the save/backend layer, which is out of scope for
-  // this task; when that lands, this is the state to lift into it.
-  const [progressEntries, setProgressEntries] = useState<Record<string, ProgressEntry[]>>({});
+  // Clicking Save (see `handleSave` below) snapshots this whole log into a
+  // shareable link and a local draft (attainUrlState.ts), so a returned
+  // plan shows its real dated history, not a reseeded blank one. What is
+  // still missing is a real backend: an account tied to this organization
+  // that any device can sync to without the link itself. That is a future
+  // layer; this state is exactly what would lift into it.
+  const [progressEntries, setProgressEntries] = useState<Record<string, ProgressEntry[]>>(
+    () => initialSaveState?.progressEntries ?? {},
+  );
   // The partner's real operational baseline (providers/encounters/
   // utilization, or beds/FTEs/census/adoption for nursing) — collected once
   // on the Scope step and threaded into every lever's engine call from
@@ -169,18 +194,33 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
   // (attainTypes.ts intentionally untouched), because it is purely an
   // engine input, not part of the plan's identity/progress bookkeeping.
   //
-  // Starts genuinely EMPTY (`{}`), never a prefilled benchmark — the Scope
-  // step's fields show only a placeholder example ("e.g., 40") until the
-  // partner types their own number. Every lever below already treats a
-  // missing field as 0 (see attainLevers.ts / attainAccess.ts's per-function
-  // fallbacks), so capacity and dollars simply stay at $0 until the real
-  // numbers land here; nothing downstream can NaN or crash on a blank field.
-  const [baseline, setBaseline] = useState<AttainBaseline>({});
+  // Starts genuinely EMPTY (`{}`) on a fresh entry, never a prefilled
+  // benchmark — the Scope step's fields show only a placeholder example
+  // ("e.g., 40") until the partner types their own number. Every lever
+  // below already treats a missing field as 0 (see attainLevers.ts /
+  // attainAccess.ts's per-function fallbacks), so capacity and dollars
+  // simply stay at $0 until the real numbers land here; nothing downstream
+  // can NaN or crash on a blank field. A restored save (`initialSaveState`)
+  // is the one exception — it already carries the partner's real numbers.
+  const [baseline, setBaseline] = useState<AttainBaseline>(() => initialSaveState?.baseline ?? {});
   // Only meaningful when both access and retention are selected — the % of
   // the one shared freed documentation hour routed to opening access
   // (schedule); the rest routes to protecting relief. See attainLevers.ts
   // computeMultiGoalContributions for why this prevents double-counting.
-  const [freedTimeSplit, setFreedTimeSplit] = useState<number>(DEFAULT_FREED_TIME_SPLIT);
+  const [freedTimeSplit, setFreedTimeSplit] = useState<number>(
+    () => initialSaveState?.freedTimeSplit ?? DEFAULT_FREED_TIME_SPLIT,
+  );
+
+  // Save-and-return's other half: the offer to pick a plan back up when
+  // returning to Attain WITHOUT a link (see App.tsx's deep-link handling
+  // for the WITH-a-link case). Only ever checked once, on first mount, and
+  // only when this visit did not already arrive with a decoded save state
+  // — a partner who just opened a shared link does not also need to be
+  // asked about a stale local draft. Non-destructive: dismissing just hides
+  // the prompt, it never deletes the draft out from under a later visit.
+  const [resumeDraft, setResumeDraft] = useState<AttainSaveState | null>(() =>
+    initialSaveState ? null : readAttainDraft(),
+  );
 
   // The real step sequence, recomputed whenever the selected goals change —
   // one build-case page per goal, in pick order. See `stepOrderFor` above.
@@ -394,6 +434,71 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
     setFreedTimeSplit(Math.min(100, Math.max(0, split)));
   }, []);
 
+  // Resume prompt's "Resume this plan" action — rehydrates every piece of
+  // state from a stored save (the local draft here; a `?attain=` link goes
+  // through the same shape via `initialSaveState` at mount instead) and
+  // jumps straight to the Attainment hub, mirroring where a deep-linked
+  // plan opens. Overwrites whatever is currently on screen, which is safe
+  // here because this only ever runs from the fresh, still-blank Setting
+  // step this prompt is scoped to.
+  const applySaveState = useCallback((saved: AttainSaveState) => {
+    setState(saved.state);
+    setGoals(saved.goals);
+    setValuesByGoal(saved.valuesByGoal);
+    setCommitments(saved.commitments);
+    setGoalOwnerByPriority(saved.goalOwnerByPriority);
+    setProgressEntries(saved.progressEntries);
+    setBaseline(saved.baseline);
+    setFreedTimeSplit(saved.freedTimeSplit);
+    setStepIndex(stepOrderFor(saved.goals).length - 1);
+    setResumeDraft(null);
+  }, []);
+
+  const handleResumeDraft = useCallback(() => {
+    if (resumeDraft) applySaveState(resumeDraft);
+  }, [resumeDraft, applySaveState]);
+
+  // Dismissing never deletes the draft — a partner who says "not now" can
+  // still get prompted again on their next fresh visit. The draft itself
+  // is only ever replaced (by the next Save) or left alone.
+  const handleDismissResumeDraft = useCallback(() => {
+    setResumeDraft(null);
+  }, []);
+
+  // The Save button's one job: snapshot everything this plan holds right
+  // now into a versioned save state, write it to the local draft (so a
+  // fresh visit to Attain can offer to resume it, see `resumeDraft` above),
+  // copy a shareable `?attain=` link to the clipboard, and hand that link
+  // back so the caller can show its own confirmation. Returns `null` (and
+  // saves nothing) before a setting/goal has even been picked — there is
+  // nothing yet worth a link.
+  //
+  // This is the shareable-link + local-draft half of "save and return".
+  // True multi-user, cross-session persistence tied to a real account
+  // (so a plan is reachable without the link, from any device, and never
+  // expires) needs a backend + accounts layer — a future task, not this
+  // one.
+  const handleSave = useCallback(async (): Promise<string | null> => {
+    if (!state.setting || goals.length === 0) return null;
+    const saveState: AttainSaveState = {
+      version: ATTAIN_SAVE_VERSION,
+      savedAt: new Date().toISOString(),
+      state,
+      goals,
+      valuesByGoal,
+      commitments,
+      goalOwnerByPriority,
+      progressEntries,
+      baseline,
+      freedTimeSplit,
+    };
+    writeAttainDraft(saveState);
+    const encoded = encodeAttain(saveState);
+    const url = `${window.location.origin}${window.location.pathname}?attain=${encoded}`;
+    await copyToClipboard(url);
+    return url;
+  }, [state, goals, valuesByGoal, commitments, goalOwnerByPriority, progressEntries, baseline, freedTimeSplit]);
+
   // Every dollar figure downstream comes from this one computation: each
   // goal's own delta off its own realityStart, combined once with the
   // freed-time hour split (not double-counted) when access+retention are
@@ -548,6 +653,9 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
       <UnifiedHeaderSpacer />
 
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-8 md:py-12">
+        {resumeDraft && (
+          <AttainResumePrompt draft={resumeDraft} onResume={handleResumeDraft} onDismiss={handleDismissResumeDraft} />
+        )}
         <div className="flex flex-col lg:flex-row gap-10">
           <div className={`flex-1 min-w-0 ${step === "plan" ? "max-w-[820px]" : "max-w-[700px]"}`}>
             {step === "setting" && (
@@ -618,6 +726,7 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
                   onLogProgressUpdate={handleLogProgressUpdate}
                   onMonthsElapsedChange={handleMonthsElapsedChange}
                   stepNumber={stepIndex + 1}
+                  onSave={handleSave}
                 />
               ) : (
                 <div>

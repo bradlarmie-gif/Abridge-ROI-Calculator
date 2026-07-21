@@ -47,6 +47,7 @@ import ExploreIntakeReceipt from "@/pages/intake/ExploreIntakeReceipt";
 import MeasureDataReceipt from "@/pages/intake/MeasureDataReceipt";
 import { type IntakeFormPreseed, type ExploreIntakeResponse, decodeIntakePreseed, decodeIntake } from "@/lib/intakeUrlState";
 import { type DataFormPreseed, type MeasureDataRequestResponse, decodeDataFormPreseed, decodeDataRequest } from "@/lib/dataRequestUrlState";
+import { type AttainSaveState, decodeAttain } from "@/lib/attain/attainUrlState";
 import ProformaHub from "@/pages/proforma/ProformaHub";
 import DataRequestBuilder from "@/pages/data-request/DataRequestBuilder";
 import type { ProformaSettingSnapshot, ProformaConfig } from "@/pages/proforma/proformaTypes";
@@ -71,6 +72,7 @@ type InitialDeepLink =
   | { type: 'measure_data_receipt'; data: MeasureDataRequestResponse }
   | { type: 'learn'; screen: LearnScreen }
   | { type: 'forecast' }
+  | { type: 'attain'; saveState: AttainSaveState }
   | { type: 'none' };
 
 const PARTNER_SESSION_KEY = 'abridge_partner_session';
@@ -149,6 +151,19 @@ function getInitialDeepLink(): InitialDeepLink {
     return { type: 'measure_data_form', preseed: decoded ?? { settings: ['outpatient'] }, fingerprint: fp };
   }
 
+  // Save-and-return's "open a shared link" half — see attainUrlState.ts and
+  // AttainFlow.tsx's `initialSaveState` prop. The query param is stripped
+  // either way (valid or not) so re-sharing the same browser tab's URL
+  // never re-triggers this; an invalid/corrupt payload just falls through
+  // to the checks below (effectively "start fresh" at the journey splash),
+  // it never throws.
+  const attainParam = params.get('attain');
+  if (attainParam) {
+    window.history.replaceState({}, '', pathname);
+    const saveState = decodeAttain(attainParam);
+    if (saveState) return { type: 'attain', saveState };
+  }
+
   const exploreSetting = params.get('explore');
   if (exploreSetting) {
     const validSettings: ExploreCareSetting[] = ['outpatient', 'ed', 'inpatient', 'nursing'];
@@ -220,6 +235,10 @@ export default function App() {
     if (INITIAL_DEEP_LINK.type === 'measure_data_receipt') return INITIAL_DEEP_LINK.data;
     return null;
   });
+  const [attainSaveState] = useState<AttainSaveState | null>(() => {
+    if (INITIAL_DEEP_LINK.type === 'attain') return INITIAL_DEEP_LINK.saveState;
+    return null;
+  });
 
   const [currentView, setCurrentView] = useState<AppView>(() => {
     if (INITIAL_DEEP_LINK.type === 'explore_intake_receipt') return "explore-intake-receipt";
@@ -229,6 +248,7 @@ export default function App() {
     if (INITIAL_DEEP_LINK.type === 'explore') return "explore";
     if (INITIAL_DEEP_LINK.type === 'learn') return "learn";
     if (INITIAL_DEEP_LINK.type === 'forecast') return "forecast";
+    if (INITIAL_DEEP_LINK.type === 'attain') return "attain";
     return "splash";
   });
   
@@ -435,7 +455,7 @@ export default function App() {
             )}
 
             {currentView === "attain" && (
-              <AttainFlow onBackToJourney={handleBackToJourney} />
+              <AttainFlow onBackToJourney={handleBackToJourney} initialSaveState={attainSaveState ?? undefined} />
             )}
 
             {currentView === "explore-intake" && (
