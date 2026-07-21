@@ -1,10 +1,10 @@
-import { computeAllDriverValues } from "@/lib/exploreDriverCalcs";
+import { computeAllDriverValues, computeAllDriverCalcSummaries } from "@/lib/exploreDriverCalcs";
 import { calcHapi, calcFalls, calcSepsis } from "@/lib/nursingQualityCalcs";
 import {
   DEFAULT_EXPLORE_STATE,
   type ExploreState,
 } from "@/pages/explore/ExploreFlow";
-import type { AttainScope, AttainSetting, GoalId } from "./attainTypes";
+import type { AttainSetting, GoalId } from "./attainTypes";
 
 /**
  * Attain - lever layer.
@@ -17,6 +17,22 @@ import type { AttainScope, AttainSetting, GoalId } from "./attainTypes";
  * `computeAllDriverValues` engine the rest of the Attain path
  * (`attainCalc.ts`) already uses. That is what keeps the figures reconciled
  * with the rest of the app rather than inventing a separate math model.
+ *
+ * THE PARTNER'S OPERATIONAL BASELINE
+ * -----------------------------------
+ * `AttainBaseline` is the handful of numbers a partner enters once, on the
+ * "Your starting point" step, that describe their actual operation: how
+ * many providers/beds are in scope, how many encounters they see, how much
+ * of the org has adopted Abridge. Every lever's synthesized `ExploreState`
+ * below is built FROM this baseline (via `effectiveEncountersPerUnit`,
+ * `utilizationFraction`, `adoptionFraction`, `nursingOccupancyFraction`, and
+ * `baselineUnits`), not from an assumed constant. A partner with 80
+ * providers and a partner with 40 providers dial the exact same lever and
+ * get a proportionally different dollar figure, because the figure is
+ * always "their baseline x this decision," never a flat assumption. When a
+ * baseline field is missing, each helper falls back to the same illustrative
+ * constant the original model used, so a lever never breaks before the
+ * partner has filled in every field.
  *
  * CONTRIBUTION MODEL - how the levers combine
  * --------------------------------------------
@@ -48,6 +64,13 @@ import type { AttainScope, AttainSetting, GoalId } from "./attainTypes";
  * where you are today adds ~$X" figure per lever, while every channel is
  * still computed by the same `computeAllDriverValues` engine used
  * everywhere else in the app.
+ *
+ * Every lever also carries a live `formula` string: the exact "THE MATH"
+ * breakdown `computeAllDriverCalcSummaries` already generates for the
+ * matching Explore driver, run against this lever's own synthesized state,
+ * with the resulting dollar figure appended. Reusing that function (instead
+ * of hand-writing a second formula generator) is what guarantees the
+ * printed math and the engine's dollar figure can never disagree.
  *
  * Per-goal driver mappings (documented per the plan's mapping-decision
  * requirement):
@@ -89,8 +112,8 @@ import type { AttainScope, AttainSetting, GoalId } from "./attainTypes";
  *
  * Every "lines" lever (scope) uses a per-(setting, goal) preset list in
  * `LINE_PRESETS` below; `realityStart: []` means no lines are committed to
- * the plan yet, distinct from the deal's total addressable scope collected
- * earlier in the Scope step.
+ * the plan yet, distinct from the partner's operational baseline collected
+ * on the Scope step.
  */
 
 // ────────────────────────────────────────────────────────────────────────
@@ -118,12 +141,60 @@ export interface LeverContribution {
   marginalMargin: number;
   marginalCount: number;
   pctOfTotal: number;
+  /** The live "THE MATH" derivation for this lever's CHOSEN value, e.g.
+   * "40 providers x 2.5 visits/wk x 48 wks x $200/visit = ~$480K" - built
+   * from the partner's own baseline, never invented. */
+  formula: string;
 }
 
 export interface LeverContributionsResult {
   perLever: LeverContribution[];
   totalMargin: number;
   totalCount: number;
+}
+
+/**
+ * The partner's operational baseline - the handful of real-world numbers
+ * every lever's dollar figure is computed against. Collected once on the
+ * "Your starting point" step, per care setting:
+ *  - outpatient / ED / inpatient: providers, annual encounters, utilization
+ *  - nursing: staffed beds, nursing FTEs, daily census, adoption rate
+ *
+ * All fields are optional so a lever never throws before every field is
+ * filled in; missing fields fall back to the same illustrative constants
+ * the model used before baseline entry existed (see the per-function
+ * fallback values below).
+ */
+export interface AttainBaseline {
+  providers?: number;
+  annualEncounters?: number;
+  utilizationPct?: number;
+  staffedBeds?: number;
+  nursingFtes?: number;
+  dailyCensus?: number;
+  adoptionPct?: number;
+}
+
+/** Sensible benchmark defaults, one per care setting, matching the same
+ * "typical" presets Explore's Opportunity step offers (3,500 outpatient /
+ * 1,800 ED encounters per provider per year, 400 inpatient discharges per
+ * hospitalist, 70% typical utilization; nursing's typical Med/Surg FTE
+ * ratio, 85% occupancy translated to daily census, 50% typical adoption).
+ * Prefills the Scope step so a partner sees a defensible plan on load and
+ * edits from there. */
+export function defaultBaseline(setting: AttainSetting): AttainBaseline {
+  switch (setting) {
+    case "outpatient":
+      return { providers: 40, annualEncounters: 40 * 3_500, utilizationPct: 70 };
+    case "ed":
+      return { providers: 55, annualEncounters: 55 * 1_800, utilizationPct: 70 };
+    case "inpatient":
+      return { providers: 45, annualEncounters: 45 * 400, utilizationPct: 70 };
+    case "nursing":
+      return { staffedBeds: 120, nursingFtes: 180, dailyCensus: 102, adoptionPct: 50 };
+    default:
+      return {};
+  }
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -406,15 +477,93 @@ function linesFraction(setting: AttainSetting, goal: GoalId, selected: string[])
 }
 
 // ────────────────────────────────────────────────────────────────────────
+// Baseline helpers - turn the partner's operational baseline into the
+// numbers each channel needs, falling back to the original illustrative
+// constants whenever a field is missing.
+// ────────────────────────────────────────────────────────────────────────
+
+/** How many providers/beds/FTEs are "in scope" for a given (setting, goal)
+ * pair. Nursing splits by goal because quality levers work off staffed
+ * beds while retention works off nursing FTEs - two different real
+ * headcounts a partner enters separately on the Scope step. */
+function baselineUnits(setting: AttainSetting, goal: GoalId, baseline: AttainBaseline): number {
+  if (setting === "nursing") {
+    const n = goal === "quality" ? baseline.staffedBeds : baseline.nursingFtes;
+    return Math.max(0, Math.round(n ?? 0));
+  }
+  return Math.max(0, Math.round(baseline.providers ?? 0));
+}
+
+/** Real encounters-per-unit ratio from the partner's own baseline
+ * (annualEncounters / providers), or the fallback illustrative rate this
+ * channel used before baseline entry existed. */
+function effectiveEncountersPerUnit(baseline: AttainBaseline, fallback: number): number {
+  const providers = baseline.providers ?? 0;
+  const encounters = baseline.annualEncounters ?? 0;
+  return providers > 0 && encounters > 0 ? encounters / providers : fallback;
+}
+
+/** Fraction of encounters/patient-days actually reachable today, from the
+ * partner's own utilization/adoption entry. Defaults to 100% (no
+ * reduction) when the partner hasn't entered one, so a lever never
+ * silently shrinks before the Scope step is filled in. */
+function utilizationFraction(baseline: AttainBaseline, fallbackPct = 100): number {
+  const pct = baseline.utilizationPct ?? fallbackPct;
+  return Math.min(1, Math.max(0, pct / 100));
+}
+
+function adoptionFraction(baseline: AttainBaseline, fallbackPct = 100): number {
+  const pct = baseline.adoptionPct ?? fallbackPct;
+  return Math.min(1, Math.max(0, pct / 100));
+}
+
+/** Real occupancy (daily census / staffed beds) from the partner's own
+ * baseline, or the original 85% illustrative default. */
+function nursingOccupancyFraction(baseline: AttainBaseline, fallback = 0.85): number {
+  const beds = baseline.staffedBeds ?? 0;
+  const census = baseline.dailyCensus ?? 0;
+  return beds > 0 && census > 0 ? Math.min(1, census / beds) : fallback;
+}
+
+/** Compact "$480K" style money for embedding at the end of a formula
+ * string. Local to this module so a formula never depends on a UI
+ * formatter living elsewhere. */
+function fmtMoneyCompact(n: number): string {
+  const sign = n < 0 ? "-" : "";
+  const abs = Math.abs(n);
+  if (abs >= 1_000_000) return `${sign}$${(abs / 1_000_000).toFixed(abs % 1_000_000 === 0 ? 0 : 1)}M`;
+  if (abs >= 1_000) return `${sign}$${Math.round(abs / 1_000)}K`;
+  return `${sign}$${Math.round(abs)}`;
+}
+
+const NO_MOVE_FORMULA = "Move this decision above reality to see the math.";
+
+/** Builds the printed formula for a driver field from the same
+ * `computeAllDriverCalcSummaries` helper the rest of the app already uses
+ * for its "THE MATH" panels, appending the resulting dollar figure so the
+ * printed line always reads as a complete derivation, not just factors. */
+function formulaFor(summaries: Record<string, string>, key: string, margin: number): string {
+  const base = summaries[key];
+  if (!base || margin <= 0) return NO_MOVE_FORMULA;
+  return `${base} = ~${fmtMoneyCompact(margin)}`;
+}
+
+// ────────────────────────────────────────────────────────────────────────
 // Shared helpers
 // ────────────────────────────────────────────────────────────────────────
 
-function clampUnits(scope: AttainScope): number {
-  return Math.max(0, Math.round(scope.unitCount || 0));
-}
-
 function asNum(raw: number | string[] | undefined): number {
   return typeof raw === "number" ? raw : 0;
+}
+
+/** Rounds to one decimal. Several levers compute a percent-of-a-percent
+ * (e.g. a 0-100% slider scaled against a setting's ceiling) which is prone
+ * to binary floating-point noise (0.6 * 9 = 5.399999999999999...). Since
+ * this value gets printed verbatim in the lever's "THE MATH" formula, it is
+ * rounded once, right where it's derived, rather than let the noise reach
+ * the printed line. */
+function round1(n: number): number {
+  return Math.round(n * 10) / 10;
 }
 
 function asLines(raw: number | string[] | undefined): string[] {
@@ -441,17 +590,20 @@ function realizationFromDays(days: number): number {
 interface ChannelValue {
   margin: number;
   count: number;
+  formula: string;
 }
 
-const ZERO: ChannelValue = { margin: 0, count: 0 };
+const ZERO: ChannelValue = { margin: 0, count: 0, formula: NO_MOVE_FORMULA };
 
 // ────────────────────────────────────────────────────────────────────────
 // ACCESS channels
 // ────────────────────────────────────────────────────────────────────────
 
-function opPatientAccessValue(eff: number, reinvestPct: number): ChannelValue {
+function opPatientAccessValue(eff: number, reinvestPct: number, baseline: AttainBaseline): ChannelValue {
   if (eff <= 0 || reinvestPct <= 0) return ZERO;
-  const annualEncounters = eff * 600;
+  const perUnitEncounters = effectiveEncountersPerUnit(baseline, 600);
+  const util = utilizationFraction(baseline);
+  const annualEncounters = Math.round(eff * perUnitEncounters * util);
   const minutesSavedPerEncounter = 12;
   const totalHoursSaved = Math.round((annualEncounters * minutesSavedPerEncounter) / 60);
   const state: ExploreState = {
@@ -470,29 +622,31 @@ function opPatientAccessValue(eff: number, reinvestPct: number): ChannelValue {
     },
   };
   const values = computeAllDriverValues(state, totalHoursSaved);
+  const summaries = computeAllDriverCalcSummaries(state, totalHoursSaved);
   const hrsPerProvWk = totalHoursSaved / eff / 48;
   const reinvest = reinvestPct / 100;
   const visitHrs = 30 / 60;
   const visitsPerWk = Math.round(((hrsPerProvWk * reinvest) / visitHrs) * 10) / 10;
   const netNewVisits = Math.round(visitsPerWk * eff * 48);
-  return { margin: values.patientAccess ?? 0, count: netNewVisits };
+  const margin = values.patientAccess ?? 0;
+  return { margin, count: netNewVisits, formula: formulaFor(summaries, "patientAccess", margin) };
 }
 
-function opAccessChannel(units: number, leverId: string, raw: number | string[] | undefined): ChannelValue {
+function opAccessChannel(units: number, leverId: string, raw: number | string[] | undefined, baseline: AttainBaseline): ChannelValue {
   switch (leverId) {
     case "accessLines": {
       const fraction = linesFraction("outpatient", "access", asLines(raw));
-      return opPatientAccessValue(Math.round(units * fraction), 20);
+      return opPatientAccessValue(Math.round(units * fraction), 20, baseline);
     }
     case "accessReinvest":
-      return opPatientAccessValue(Math.round(units * 0.5), asNum(raw));
+      return opPatientAccessValue(Math.round(units * 0.5), asNum(raw), baseline);
     case "accessSlots": {
-      const pctEq = Math.min(100, (asNum(raw) / 4) * 100);
-      return opPatientAccessValue(Math.round(units * 0.5), pctEq);
+      const pctEq = Math.min(100, round1((asNum(raw) / 4) * 100));
+      return opPatientAccessValue(Math.round(units * 0.5), pctEq, baseline);
     }
     case "accessFill": {
       const basePct = 25; // reference "1 slot/provider/wk already on template"
-      return opPatientAccessValue(Math.round(units * 0.5), basePct * (asNum(raw) / 100));
+      return opPatientAccessValue(Math.round(units * 0.5), round1(basePct * (asNum(raw) / 100)), baseline);
     }
     default:
       return ZERO;
@@ -504,9 +658,12 @@ function edLwbsValue(
   reductionPct: number,
   admitRatePct: number,
   admitRealizationPct: number,
+  baseline: AttainBaseline,
 ): ChannelValue {
   if (eff <= 0 || reductionPct <= 0) return ZERO;
-  const annualEncounters = eff * 2_200;
+  const perUnitEncounters = effectiveEncountersPerUnit(baseline, 2_200);
+  const util = utilizationFraction(baseline);
+  const annualEncounters = Math.round(eff * perUnitEncounters * util);
   const state: ExploreState = {
     ...mkState("ed"),
     numberOfProviders: eff,
@@ -526,32 +683,46 @@ function edLwbsValue(
     },
   };
   const values = computeAllDriverValues(state, 0);
+  const summaries = computeAllDriverCalcSummaries(state, 0);
   const recovered = Math.round(annualEncounters * (8 / 100) * (reductionPct / 100));
-  const margin = (values.lwbsRecovery ?? 0) + (values.admissionCapture ?? 0);
-  return { margin, count: recovered };
+  const lwbsMargin = values.lwbsRecovery ?? 0;
+  const admitMargin = values.admissionCapture ?? 0;
+  const margin = lwbsMargin + admitMargin;
+  const lwbsFormula = formulaFor(summaries, "lwbsRecovery", lwbsMargin);
+  const admitFormula = admitMargin > 0 ? formulaFor(summaries, "admissionCapture", admitMargin) : null;
+  const formula = margin > 0
+    ? (admitFormula ? `${lwbsFormula.replace(/ = ~\$.*$/, "")} + ${admitFormula.replace(/^/, "")} = ~${fmtMoneyCompact(margin)}` : lwbsFormula)
+    : NO_MOVE_FORMULA;
+  return { margin, count: recovered, formula };
 }
 
-function edAccessChannel(units: number, leverId: string, raw: number | string[] | undefined): ChannelValue {
+function edAccessChannel(units: number, leverId: string, raw: number | string[] | undefined, baseline: AttainBaseline): ChannelValue {
   switch (leverId) {
     case "accessLines": {
       const fraction = linesFraction("ed", "access", asLines(raw));
-      return edLwbsValue(Math.round(units * fraction), 25, 20, 70);
+      return edLwbsValue(Math.round(units * fraction), 25, 20, 70, baseline);
     }
     case "accessReinvest":
-      return edLwbsValue(Math.round(units * 0.5), asNum(raw), 20, 70);
+      return edLwbsValue(Math.round(units * 0.5), asNum(raw), 20, 70, baseline);
     case "accessSlots": {
       const admitRate = Math.min(100, asNum(raw) * 5); // 0-4 slots -> 0-20% admit rate
-      return edLwbsValue(Math.round(units * 0.5), 25, admitRate, 70);
+      return edLwbsValue(Math.round(units * 0.5), 25, admitRate, 70, baseline);
     }
     case "accessFill":
-      return edLwbsValue(Math.round(units * 0.5), 25, 20, asNum(raw));
+      return edLwbsValue(Math.round(units * 0.5), 25, 20, asNum(raw), baseline);
     default:
       return ZERO;
   }
 }
 
-function accessChannel(setting: AttainSetting, units: number, leverId: string, raw: number | string[] | undefined): ChannelValue {
-  return setting === "ed" ? edAccessChannel(units, leverId, raw) : opAccessChannel(units, leverId, raw);
+function accessChannel(
+  setting: AttainSetting,
+  units: number,
+  leverId: string,
+  raw: number | string[] | undefined,
+  baseline: AttainBaseline,
+): ChannelValue {
+  return setting === "ed" ? edAccessChannel(units, leverId, raw, baseline) : opAccessChannel(units, leverId, raw, baseline);
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -576,8 +747,10 @@ function retentionValue(setting: AttainSetting, eff: number, impactCustomPct: nu
       },
     };
     const values = computeAllDriverValues(state, 0);
+    const summaries = computeAllDriverCalcSummaries(state, 0);
     const retained = eff * (turnoverRate / 100) * 0.4 * (impactCustomPct / 100);
-    return { margin: values.nursingRetention ?? 0, count: Math.round(retained) };
+    const margin = values.nursingRetention ?? 0;
+    return { margin, count: Math.round(retained), formula: formulaFor(summaries, "nursingRetention", margin) };
   }
 
   const isIP = setting === "inpatient";
@@ -602,8 +775,10 @@ function retentionValue(setting: AttainSetting, eff: number, impactCustomPct: nu
     },
   };
   const values = computeAllDriverValues(state, 0);
+  const summaries = computeAllDriverCalcSummaries(state, 0);
   const retained = eff * (turnoverRate / 100) * (burnoutShare / 100) * (impactCustomPct / 100);
-  return { margin: values.providerWellbeing ?? 0, count: Math.round(retained) };
+  const margin = values.providerWellbeing ?? 0;
+  return { margin, count: Math.round(retained), formula: formulaFor(summaries, "providerWellbeing", margin) };
 }
 
 function retentionChannel(setting: AttainSetting, units: number, leverId: string, raw: number | string[] | undefined): ChannelValue {
@@ -614,7 +789,7 @@ function retentionChannel(setting: AttainSetting, units: number, leverId: string
       return retentionValue(setting, Math.round(units * fraction), 8);
     }
     case "retentionFloor":
-      return retentionValue(setting, Math.round(units * 0.5), (asNum(raw) / 100) * ceiling);
+      return retentionValue(setting, Math.round(units * 0.5), round1((asNum(raw) / 100) * ceiling));
     case "retentionBackfill": {
       const level = Math.min(2, Math.max(0, Math.round(asNum(raw))));
       const impactPct = [0, ceiling * 0.4, ceiling * 0.8][level];
@@ -622,7 +797,7 @@ function retentionChannel(setting: AttainSetting, units: number, leverId: string
     }
     case "retentionSustain": {
       const months = Math.min(12, Math.max(0, asNum(raw)));
-      return retentionValue(setting, Math.round(units * 0.5), ceiling * (months / 12));
+      return retentionValue(setting, Math.round(units * 0.5), round1(ceiling * (months / 12)));
     }
     default:
       return ZERO;
@@ -633,10 +808,12 @@ function retentionChannel(setting: AttainSetting, units: number, leverId: string
 // REVENUE channels
 // ────────────────────────────────────────────────────────────────────────
 
-function wrvuValue(setting: AttainSetting, eff: number, liftPct: number, realizationPct: number): ChannelValue {
+function wrvuValue(setting: AttainSetting, eff: number, liftPct: number, realizationPct: number, baseline: AttainBaseline): ChannelValue {
   if (eff <= 0 || liftPct <= 0 || realizationPct <= 0) return ZERO;
   const isED = setting === "ed";
-  const annualEncounters = eff * (isED ? 1_700 : 2_300);
+  const perUnitEncounters = effectiveEncountersPerUnit(baseline, isED ? 1_700 : 2_300);
+  const util = utilizationFraction(baseline);
+  const annualEncounters = Math.round(eff * perUnitEncounters * util);
   const currentWrvu = isED ? 1.9 : 1.4;
   const conversionFactor = 36;
   const state: ExploreState = {
@@ -655,15 +832,20 @@ function wrvuValue(setting: AttainSetting, eff: number, liftPct: number, realiza
     },
   };
   const values = computeAllDriverValues(state, 0);
+  const summaries = computeAllDriverCalcSummaries(state, 0);
   const lift = (currentWrvu * liftPct) / 100;
   const wrvusCaptured = Math.round(annualEncounters * lift);
-  return { margin: isED ? values.edEmLevel ?? 0 : values.wrvu ?? 0, count: wrvusCaptured };
+  const key = isED ? "edEmLevel" : "wrvu";
+  const margin = values[key] ?? 0;
+  return { margin, count: wrvusCaptured, formula: formulaFor(summaries, key, margin) };
 }
 
-function denialsValue(setting: AttainSetting, eff: number, realizationPct: number): ChannelValue {
+function denialsValue(setting: AttainSetting, eff: number, realizationPct: number, baseline: AttainBaseline): ChannelValue {
   if (eff <= 0 || realizationPct <= 0) return ZERO;
   const isED = setting === "ed";
-  const annualEncounters = eff * (isED ? 1_700 : 2_300);
+  const perUnitEncounters = effectiveEncountersPerUnit(baseline, isED ? 1_700 : 2_300);
+  const util = utilizationFraction(baseline);
+  const annualEncounters = Math.round(eff * perUnitEncounters * util);
   const state: ExploreState = {
     ...mkState(setting),
     numberOfProviders: eff,
@@ -679,32 +861,42 @@ function denialsValue(setting: AttainSetting, eff: number, realizationPct: numbe
     },
   };
   const values = computeAllDriverValues(state, 0);
+  const summaries = computeAllDriverCalcSummaries(state, 0);
   const prevented = Math.round(annualEncounters * 0.05 * (isED ? 0.3 : 0.5));
-  return { margin: values.denialPrevention ?? 0, count: prevented };
+  const margin = values.denialPrevention ?? 0;
+  return { margin, count: prevented, formula: formulaFor(summaries, "denialPrevention", margin) };
 }
 
-function opEdRevenueChannel(setting: AttainSetting, units: number, leverId: string, raw: number | string[] | undefined): ChannelValue {
+function opEdRevenueChannel(
+  setting: AttainSetting,
+  units: number,
+  leverId: string,
+  raw: number | string[] | undefined,
+  baseline: AttainBaseline,
+): ChannelValue {
   const isED = setting === "ed";
   const maxLift = isED ? 6 : 9;
   switch (leverId) {
     case "revenueLines": {
       const fraction = linesFraction(setting, "revenue", asLines(raw));
-      return wrvuValue(setting, Math.round(units * fraction), 3, 50);
+      return wrvuValue(setting, Math.round(units * fraction), 3, 50, baseline);
     }
     case "revenueUptake":
-      return wrvuValue(setting, Math.round(units * 0.5), (asNum(raw) / 100) * maxLift, 50);
+      return wrvuValue(setting, Math.round(units * 0.5), round1((asNum(raw) / 100) * maxLift), 50, baseline);
     case "revenueQueryDays":
-      return wrvuValue(setting, Math.round(units * 0.5), 3, realizationFromDays(asNum(raw)));
+      return wrvuValue(setting, Math.round(units * 0.5), 3, realizationFromDays(asNum(raw)), baseline);
     case "revenueProtect":
-      return denialsValue(setting, Math.round(units * 0.5), asNum(raw));
+      return denialsValue(setting, Math.round(units * 0.5), asNum(raw), baseline);
     default:
       return ZERO;
   }
 }
 
-function drgValue(eff: number, protectPct: number, realizationPct: number): ChannelValue {
+function drgValue(eff: number, protectPct: number, realizationPct: number, baseline: AttainBaseline): ChannelValue {
   if (eff <= 0 || protectPct <= 0 || realizationPct <= 0) return ZERO;
-  const annualEncounters = eff * 180;
+  const perUnitEncounters = effectiveEncountersPerUnit(baseline, 180);
+  const util = utilizationFraction(baseline);
+  const annualEncounters = Math.round(eff * perUnitEncounters * util);
   const state: ExploreState = {
     ...mkState("inpatient"),
     numberOfProviders: eff,
@@ -722,14 +914,18 @@ function drgValue(eff: number, protectPct: number, realizationPct: number): Chan
     },
   };
   const values = computeAllDriverValues(state, 0);
+  const summaries = computeAllDriverCalcSummaries(state, 0);
   const atRisk = annualEncounters * 0.35;
   const cases = Math.round(atRisk * (protectPct / 100));
-  return { margin: values.drgAccuracy ?? 0, count: cases };
+  const margin = values.drgAccuracy ?? 0;
+  return { margin, count: cases, formula: formulaFor(summaries, "drgAccuracy", margin) };
 }
 
-function cdiValue(eff: number, cdiPct: number, realizationPct: number): ChannelValue {
+function cdiValue(eff: number, cdiPct: number, realizationPct: number, baseline: AttainBaseline): ChannelValue {
   if (eff <= 0 || cdiPct <= 0 || realizationPct <= 0) return ZERO;
-  const annualEncounters = eff * 180;
+  const perUnitEncounters = effectiveEncountersPerUnit(baseline, 180);
+  const util = utilizationFraction(baseline);
+  const annualEncounters = Math.round(eff * perUnitEncounters * util);
   const state: ExploreState = {
     ...mkState("inpatient"),
     numberOfProviders: eff,
@@ -746,48 +942,60 @@ function cdiValue(eff: number, cdiPct: number, realizationPct: number): ChannelV
     },
   };
   const values = computeAllDriverValues(state, 0);
+  const summaries = computeAllDriverCalcSummaries(state, 0);
   const queries = annualEncounters * 0.3;
   const closed = Math.round(queries * (cdiPct / 100));
-  return { margin: values.cdiQueryReduction ?? 0, count: closed };
+  const margin = values.cdiQueryReduction ?? 0;
+  return { margin, count: closed, formula: formulaFor(summaries, "cdiQueryReduction", margin) };
 }
 
-function ipRevenueChannel(units: number, leverId: string, raw: number | string[] | undefined): ChannelValue {
+function ipRevenueChannel(units: number, leverId: string, raw: number | string[] | undefined, baseline: AttainBaseline): ChannelValue {
   switch (leverId) {
     case "revenueLines": {
       const fraction = linesFraction("inpatient", "revenue", asLines(raw));
-      return drgValue(Math.round(units * fraction), 15, 50);
+      return drgValue(Math.round(units * fraction), 15, 50, baseline);
     }
     case "revenueUptake":
-      return drgValue(Math.round(units * 0.5), (asNum(raw) / 100) * 25, 50);
+      return drgValue(Math.round(units * 0.5), round1((asNum(raw) / 100) * 25), 50, baseline);
     case "revenueQueryDays":
-      return cdiValue(Math.round(units * 0.5), 25, realizationFromDays(asNum(raw)));
+      return cdiValue(Math.round(units * 0.5), 25, realizationFromDays(asNum(raw)), baseline);
     case "revenueProtect":
-      return drgValue(Math.round(units * 0.5), 15, asNum(raw));
+      return drgValue(Math.round(units * 0.5), 15, asNum(raw), baseline);
     default:
       return ZERO;
   }
 }
 
-function revenueChannel(setting: AttainSetting, units: number, leverId: string, raw: number | string[] | undefined): ChannelValue {
+function revenueChannel(
+  setting: AttainSetting,
+  units: number,
+  leverId: string,
+  raw: number | string[] | undefined,
+  baseline: AttainBaseline,
+): ChannelValue {
   return setting === "inpatient"
-    ? ipRevenueChannel(units, leverId, raw)
-    : opEdRevenueChannel(setting, units, leverId, raw);
+    ? ipRevenueChannel(units, leverId, raw, baseline)
+    : opEdRevenueChannel(setting, units, leverId, raw, baseline);
 }
 
 // ────────────────────────────────────────────────────────────────────────
 // QUALITY channels (nursing only, per SETTING_GOAL_MATRIX)
 // ────────────────────────────────────────────────────────────────────────
 
-function bedsToPatientDays(beds: number): number {
-  return beds * 0.85 * 365;
+function bedsToPatientDays(beds: number, occupancyFraction: number): number {
+  return beds * occupancyFraction * 365;
 }
 
-function hapiValue(eff: number, preventionPct: number): ChannelValue {
+function hapiValue(eff: number, preventionPct: number, baseline: AttainBaseline): ChannelValue {
   if (eff <= 0 || preventionPct <= 0) return ZERO;
+  const occupancy = nursingOccupancyFraction(baseline);
+  const adopted = Math.round(eff * adoptionFraction(baseline));
+  if (adopted <= 0) return ZERO;
+  const occupancyPct = Math.round(occupancy * 100);
   const state: ExploreState = {
     ...mkState("nursing"),
-    nursingStaffedBeds: eff,
-    nursingOccupancyRate: 85,
+    nursingStaffedBeds: adopted,
+    nursingOccupancyRate: occupancyPct,
     docQualityInputs: {
       ...DEFAULT_EXPLORE_STATE.docQualityInputs,
       nursingHapiEnabled: true,
@@ -797,16 +1005,22 @@ function hapiValue(eff: number, preventionPct: number): ChannelValue {
     },
   };
   const values = computeAllDriverValues(state, 0);
-  const hapi = calcHapi({ patientDays: bedsToPatientDays(eff), rate: 2.8, preventionPct, cost: 18_000 });
-  return { margin: values.nursingHapi ?? 0, count: Math.round(hapi.prevented) };
+  const summaries = computeAllDriverCalcSummaries(state, 0);
+  const hapi = calcHapi({ patientDays: bedsToPatientDays(adopted, occupancy), rate: 2.8, preventionPct, cost: 18_000 });
+  const margin = values.nursingHapi ?? 0;
+  return { margin, count: Math.round(hapi.prevented), formula: formulaFor(summaries, "nursingHapi", margin) };
 }
 
-function sepsisValue(eff: number, realizationPct: number): ChannelValue {
+function sepsisValue(eff: number, realizationPct: number, baseline: AttainBaseline): ChannelValue {
   if (eff <= 0 || realizationPct <= 0) return ZERO;
+  const occupancy = nursingOccupancyFraction(baseline);
+  const adopted = Math.round(eff * adoptionFraction(baseline));
+  if (adopted <= 0) return ZERO;
+  const occupancyPct = Math.round(occupancy * 100);
   const state: ExploreState = {
     ...mkState("nursing"),
-    nursingStaffedBeds: eff,
-    nursingOccupancyRate: 85,
+    nursingStaffedBeds: adopted,
+    nursingOccupancyRate: occupancyPct,
     docQualityInputs: {
       ...DEFAULT_EXPLORE_STATE.docQualityInputs,
       nursingSepsisEnabled: true,
@@ -818,23 +1032,29 @@ function sepsisValue(eff: number, realizationPct: number): ChannelValue {
     },
   };
   const values = computeAllDriverValues(state, 0);
+  const summaries = computeAllDriverCalcSummaries(state, 0);
   const sepsis = calcSepsis({
-    patientDays: bedsToPatientDays(eff),
+    patientDays: bedsToPatientDays(adopted, occupancy),
     ratePerThousand: 2.0,
     currentCompliancePct: 75,
     docLagPct: 30,
     excessCostPerCase: 3_500,
     realizationPct,
   });
-  return { margin: values.nursingSepsis ?? 0, count: Math.round(sepsis.prevented) };
+  const margin = values.nursingSepsis ?? 0;
+  return { margin, count: Math.round(sepsis.prevented), formula: formulaFor(summaries, "nursingSepsis", margin) };
 }
 
-function fallsValue(eff: number, preventionPct: number): ChannelValue {
+function fallsValue(eff: number, preventionPct: number, baseline: AttainBaseline): ChannelValue {
   if (eff <= 0 || preventionPct <= 0) return ZERO;
+  const occupancy = nursingOccupancyFraction(baseline);
+  const adopted = Math.round(eff * adoptionFraction(baseline));
+  if (adopted <= 0) return ZERO;
+  const occupancyPct = Math.round(occupancy * 100);
   const state: ExploreState = {
     ...mkState("nursing"),
-    nursingStaffedBeds: eff,
-    nursingOccupancyRate: 85,
+    nursingStaffedBeds: adopted,
+    nursingOccupancyRate: occupancyPct,
     docQualityInputs: {
       ...DEFAULT_EXPLORE_STATE.docQualityInputs,
       nursingFallsEnabled: true,
@@ -844,25 +1064,27 @@ function fallsValue(eff: number, preventionPct: number): ChannelValue {
     },
   };
   const values = computeAllDriverValues(state, 0);
-  const falls = calcFalls({ patientDays: bedsToPatientDays(eff), rate: 3.5, preventionPct, cost: 6_500 });
-  return { margin: values.nursingFalls ?? 0, count: Math.round(falls.prevented) };
+  const summaries = computeAllDriverCalcSummaries(state, 0);
+  const falls = calcFalls({ patientDays: bedsToPatientDays(adopted, occupancy), rate: 3.5, preventionPct, cost: 6_500 });
+  const margin = values.nursingFalls ?? 0;
+  return { margin, count: Math.round(falls.prevented), formula: formulaFor(summaries, "nursingFalls", margin) };
 }
 
-function qualityChannel(units: number, leverId: string, raw: number | string[] | undefined): ChannelValue {
+function qualityChannel(units: number, leverId: string, raw: number | string[] | undefined, baseline: AttainBaseline): ChannelValue {
   switch (leverId) {
     case "qualityLines": {
       const fraction = linesFraction("nursing", "quality", asLines(raw));
-      return hapiValue(Math.round(units * fraction), 20);
+      return hapiValue(Math.round(units * fraction), 20, baseline);
     }
     case "qualityRealTime":
-      return hapiValue(Math.round(units * 0.5), asNum(raw));
+      return hapiValue(Math.round(units * 0.5), asNum(raw), baseline);
     case "qualityResponse": {
       const level = Math.min(2, Math.max(0, Math.round(asNum(raw))));
       const realizationPct = [0, 55, 80][level];
-      return sepsisValue(Math.round(units * 0.5), realizationPct);
+      return sepsisValue(Math.round(units * 0.5), realizationPct, baseline);
     }
     case "qualityBundle":
-      return fallsValue(Math.round(units * 0.5), asNum(raw));
+      return fallsValue(Math.round(units * 0.5), asNum(raw), baseline);
     default:
       return ZERO;
   }
@@ -878,34 +1100,37 @@ function channelValue(
   units: number,
   leverId: string,
   raw: number | string[] | undefined,
+  baseline: AttainBaseline,
 ): ChannelValue {
   switch (goal) {
     case "access":
-      return accessChannel(setting, units, leverId, raw);
+      return accessChannel(setting, units, leverId, raw, baseline);
     case "retention":
       return retentionChannel(setting, units, leverId, raw);
     case "revenue":
-      return revenueChannel(setting, units, leverId, raw);
+      return revenueChannel(setting, units, leverId, raw, baseline);
     case "quality":
-      return qualityChannel(units, leverId, raw);
+      return qualityChannel(units, leverId, raw, baseline);
     default:
       return ZERO;
   }
 }
 
 /**
- * Every lever's live dollar/count contribution for a goal, reconciled
- * through the same engine `computeGoalTarget` uses. See the module header
- * for the contribution model and per-goal driver mappings.
+ * Every lever's live dollar/count/formula contribution for a goal,
+ * reconciled through the same engine `computeAllDriverValues` uses, and
+ * synthesized from the partner's own `AttainBaseline` rather than an
+ * assumed constant. See the module header for the contribution model and
+ * per-goal driver mappings.
  */
 export function computeLeverContributions(
   goal: GoalId,
   setting: AttainSetting,
-  scope: AttainScope,
+  baseline: AttainBaseline,
   values: LeverValues,
 ): LeverContributionsResult {
   const levers = LEVERS[goal];
-  const units = clampUnits(scope);
+  const units = baselineUnits(setting, goal, baseline);
 
   // Each lever's contribution is the delta between its chosen value and its
   // OWN realityStart, not its raw channel value. Several levers have a
@@ -915,14 +1140,14 @@ export function computeLeverContributions(
   // nothing." Subtracting each lever's own baseline here is what makes that
   // property hold while still letting every lever's marginalMargin (the
   // leave-one-out subtraction below) isolate exactly that lever's delta.
-  const engineValue = (vals: LeverValues): ChannelValue => {
+  const engineValue = (vals: LeverValues): { margin: number; count: number } => {
     let margin = 0;
     let count = 0;
     for (const lever of levers) {
-      const chosen = channelValue(goal, setting, units, lever.id, vals[lever.id]);
-      const baseline = channelValue(goal, setting, units, lever.id, lever.realityStart);
-      margin += chosen.margin - baseline.margin;
-      count += chosen.count - baseline.count;
+      const chosen = channelValue(goal, setting, units, lever.id, vals[lever.id], baseline);
+      const baselineChannel = channelValue(goal, setting, units, lever.id, lever.realityStart, baseline);
+      margin += chosen.margin - baselineChannel.margin;
+      count += chosen.count - baselineChannel.count;
     }
     return { margin, count };
   };
@@ -930,10 +1155,12 @@ export function computeLeverContributions(
   const chosen = engineValue(values);
   const rawPerLever = levers.map((lever) => {
     const withoutLever = engineValue({ ...values, [lever.id]: lever.realityStart });
+    const chosenChannel = channelValue(goal, setting, units, lever.id, values[lever.id], baseline);
     return {
       id: lever.id,
       marginalMargin: chosen.margin - withoutLever.margin,
       marginalCount: chosen.count - withoutLever.count,
+      formula: chosenChannel.formula,
     };
   });
 
@@ -1006,7 +1233,7 @@ const FREED_TIME_LEVER: Partial<Record<GoalId, string>> = {
 export function computeMultiGoalContributions(
   goals: GoalId[],
   setting: AttainSetting,
-  scope: AttainScope,
+  baseline: AttainBaseline,
   valuesByGoal: Partial<Record<GoalId, LeverValues>>,
   freedTimeSplit: number = 50,
 ): MultiGoalContributionsResult {
@@ -1021,7 +1248,7 @@ export function computeMultiGoalContributions(
 
   for (const goal of uniqueGoals) {
     const values = valuesByGoal[goal] ?? defaultLeverValues(goal);
-    const base = computeLeverContributions(goal, setting, scope, values);
+    const base = computeLeverContributions(goal, setting, baseline, values);
     const freedLeverId = hasFreedTimeConflict ? FREED_TIME_LEVER[goal] : undefined;
 
     if (!freedLeverId) {
