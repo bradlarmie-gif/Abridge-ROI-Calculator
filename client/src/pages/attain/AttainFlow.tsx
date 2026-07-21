@@ -22,7 +22,7 @@ import {
 } from "@/lib/attain/attainTypes";
 import { getContent, GOAL_CATALOG } from "@/lib/attain/attainGoals";
 import {
-  LEVERS,
+  leversFor,
   defaultLeverValues,
   computeMultiGoalContributions,
   type AttainBaseline,
@@ -104,7 +104,10 @@ function countLabel(goal: GoalId, setting: AttainSetting): string {
     case "retention":
       return "departures avoided/year";
     case "revenue":
-      return setting === "inpatient" ? "cases/queries addressed/year" : "wRVUs captured/year";
+      // Outpatient/ED revenue is a THREE-PATH chain (HCCs, wRVUs, and
+      // prevented denials are different units), so this label stays
+      // deliberately generic rather than naming just one path's unit.
+      return setting === "inpatient" ? "cases/queries addressed/year" : "capture actions/year";
     case "quality":
       return "events prevented/year";
     default:
@@ -231,7 +234,7 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
   const handleToggleGoal = useCallback((goalId: GoalId) => {
     const next = goals.includes(goalId) ? goals.filter((g) => g !== goalId) : [...goals, goalId];
     setGoals(next);
-    setValuesByGoal((prev) => (prev[goalId] ? prev : { ...prev, [goalId]: defaultLeverValues(goalId) }));
+    setValuesByGoal((prev) => (prev[goalId] ? prev : { ...prev, [goalId]: defaultLeverValues(goalId, state.setting ?? undefined) }));
     setState((prev) => {
       const contents = next.map((g) => (prev.setting ? getContent(prev.setting, g) : undefined));
       const totalMonths = contents.length > 0
@@ -245,7 +248,7 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
         progressRatio: 1,
       };
     });
-  }, [goals]);
+  }, [goals, state.setting]);
 
   const handleChangeBaseline = useCallback((patch: Partial<AttainBaseline>) => {
     setBaseline((prev) => ({ ...prev, ...patch }));
@@ -254,9 +257,9 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
   const handleChangeLeverValue = useCallback((goal: GoalId, leverId: string, value: number | string[]) => {
     setValuesByGoal((prev) => ({
       ...prev,
-      [goal]: { ...(prev[goal] ?? defaultLeverValues(goal)), [leverId]: value },
+      [goal]: { ...(prev[goal] ?? defaultLeverValues(goal, state.setting ?? undefined)), [leverId]: value },
     }));
-  }, []);
+  }, [state.setting]);
 
   // `owner`/`due` deliberately default to "" / the lever's own `defaultDue`
   // via `defaultCommitmentFor` (not a placeholder-looking real value) - the
@@ -267,9 +270,9 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
   // shared default builder, so every screen that reads `commitments[key]`
   // sees the same shape whether or not the partner has edited it yet.
   const fallbackCommitment = useCallback((goal: GoalId, leverId: string): Commitment => {
-    const lever = LEVERS[goal].find((l) => l.id === leverId);
-    return lever ? defaultCommitmentFor(goal, lever) : { owner: "", due: "Month 1", signals: [] };
-  }, []);
+    const lever = leversFor(goal, state.setting ?? undefined).find((l) => l.id === leverId);
+    return lever ? defaultCommitmentFor(goal, lever, state.setting ?? undefined) : { owner: "", due: "Month 1", signals: [] };
+  }, [state.setting]);
 
   const handleChangeCommitment = useCallback((goal: GoalId, leverId: string, patch: Partial<Pick<Commitment, "owner" | "due">>) => {
     setCommitments((prev) => {
@@ -283,7 +286,7 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
     setCommitments((prev) => {
       const key = commitmentKey(goal, leverId);
       const base = prev[key] ?? fallbackCommitment(goal, leverId);
-      const lever = LEVERS[goal].find((l) => l.id === leverId);
+      const lever = leversFor(goal, state.setting ?? undefined).find((l) => l.id === leverId);
       // A genuinely unique id, safe here because this only runs once per
       // click (an imperative event handler), never once per render - see
       // `defaultSignalsForLever`'s comment on why ITS ids must stay
@@ -297,7 +300,7 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
       };
       return { ...prev, [key]: { ...base, signals: [...base.signals, newSignal] } };
     });
-  }, [fallbackCommitment]);
+  }, [fallbackCommitment, state.setting]);
 
   const handleRemoveSignal = useCallback((goal: GoalId, leverId: string, signalId: string) => {
     setCommitments((prev) => {
@@ -335,8 +338,8 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
   const committedSignalSeeds = useMemo(() => {
     const out: { key: string; baseline: number }[] = [];
     for (const g of goals) {
-      const values = valuesByGoal[g] ?? defaultLeverValues(g);
-      for (const lever of LEVERS[g]) {
+      const values = valuesByGoal[g] ?? defaultLeverValues(g, state.setting ?? undefined);
+      for (const lever of leversFor(g, state.setting ?? undefined)) {
         if (!isLeverMoved(values[lever.id], lever.realityStart)) continue;
         const declKey = commitmentKey(g, lever.id);
         const commitment = commitments[declKey] ?? fallbackCommitment(g, lever.id);
@@ -347,7 +350,7 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
       }
     }
     return out;
-  }, [goals, valuesByGoal, commitments, fallbackCommitment]);
+  }, [goals, valuesByGoal, commitments, fallbackCommitment, state.setting]);
 
   // Seeds a signal's dated log the first time it appears as committed: one
   // entry carrying its baseline, dated today. Today is the best honest
@@ -439,13 +442,13 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
   const movedLeverKeys = useMemo(() => {
     const out: string[] = [];
     for (const g of goals) {
-      const values = valuesByGoal[g] ?? defaultLeverValues(g);
-      for (const lever of LEVERS[g]) {
+      const values = valuesByGoal[g] ?? defaultLeverValues(g, state.setting ?? undefined);
+      for (const lever of leversFor(g, state.setting ?? undefined)) {
         if (isLeverMoved(values[lever.id], lever.realityStart)) out.push(commitmentKey(g, lever.id));
       }
     }
     return out;
-  }, [goals, valuesByGoal]);
+  }, [goals, valuesByGoal, state.setting]);
 
   // Progress ratio: the curve steers against how much of the COMBINED built
   // target has a commitment (owner + month) whose month has actually
@@ -462,7 +465,7 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
     for (const g of goals) {
       const res = combined.byGoal[g];
       if (!res) continue;
-      for (const lever of LEVERS[g]) {
+      for (const lever of leversFor(g, state.setting ?? undefined)) {
         const key = commitmentKey(g, lever.id);
         if (!movedLeverKeys.includes(key)) continue;
         const contribution = res.perLever.find((p) => p.id === lever.id);
@@ -476,7 +479,7 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
     if (Math.abs(ratio - state.progressRatio) > 0.001) {
       updateState({ progressRatio: ratio });
     }
-  }, [goals, state.monthsElapsed, state.progressRatio, combined, movedLeverKeys, commitments, updateState]);
+  }, [goals, state.monthsElapsed, state.progressRatio, state.setting, combined, movedLeverKeys, commitments, updateState]);
 
   const attainment: AttainmentResult = useMemo(() => {
     if (!builtTarget || builtTarget.margin <= 0) return { pct: 0, onPacePct: 0, marginToDate: 0 };
@@ -571,7 +574,7 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
                 goalIndex={goals.indexOf(activeBuildCaseGoal)}
                 totalGoals={goals.length}
                 goals={goals}
-                values={valuesByGoal[activeBuildCaseGoal] ?? defaultLeverValues(activeBuildCaseGoal)}
+                values={valuesByGoal[activeBuildCaseGoal] ?? defaultLeverValues(activeBuildCaseGoal, state.setting ?? undefined)}
                 combined={combined}
                 freedTimeSplit={freedTimeSplit}
                 onChangeFreedTimeSplit={handleFreedTimeSplitChange}
@@ -584,6 +587,7 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
             {step === "commit" && goals.length > 0 && (
               <StepCommit
                 goals={goals}
+                setting={state.setting ?? "outpatient"}
                 valuesByGoal={valuesByGoal}
                 combined={combined}
                 commitments={commitments}

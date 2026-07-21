@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { NumberField } from "@/components/NumberField";
 import AttainmentCurve, { USUAL_CEILING_PCT } from "@/components/attain/AttainmentCurve";
-import { LEVERS, defaultLeverValues, type Lever, type LeverValues, type LeverContribution, type MultiGoalContributionsResult } from "@/lib/attain/attainLevers";
+import { leversFor, defaultLeverValues, type Lever, type LeverValues, type LeverContribution, type MultiGoalContributionsResult } from "@/lib/attain/attainLevers";
 import {
   leverNumericValue,
   decisionAttainmentFraction,
@@ -99,11 +99,12 @@ interface CommittedLever {
 
 function committedLeversFor(
   goal: GoalId,
+  setting: AttainSetting,
   values: LeverValues,
   perLever: LeverContribution[] | undefined,
   commitments: Record<string, Commitment>,
 ): CommittedLever[] {
-  return LEVERS[goal]
+  return leversFor(goal, setting)
     .filter((l) => isMoved(values[l.id], l.realityStart))
     .map((l) => ({
       lever: l,
@@ -509,9 +510,9 @@ export default function StepAttainment({
   // Every committed decision, per goal, sourced live from the same combined
   // engine result that built the total above — nothing here is invented.
   const allCommitted = goals.flatMap((goal) => {
-    const values = valuesByGoal[goal] ?? defaultLeverValues(goal);
+    const values = valuesByGoal[goal] ?? defaultLeverValues(goal, setting);
     const result = combined.byGoal[goal];
-    return committedLeversFor(goal, values, result?.perLever, commitments).map((c) => ({ ...c, goal }));
+    return committedLeversFor(goal, setting, values, result?.perLever, commitments).map((c) => ({ ...c, goal }));
   }).sort((a, b) => (b.contribution?.marginalMargin ?? 0) - (a.contribution?.marginalMargin ?? 0));
 
   // The Progress tab's per-SIGNAL rows, now sourced from each signal's dated
@@ -521,11 +522,11 @@ export default function StepAttainment({
   // see the fallback below, which matches what that effect would seed).
   const progressRows: ProgressSignalRowData[] = allCommitted.flatMap(({ goal, lever, contribution, owner, due }) => {
     const key = `${goal}:${lever.id}`;
-    const commitment = commitments[key] ?? defaultCommitmentFor(goal, lever);
-    const chosenValue = (valuesByGoal[goal] ?? defaultLeverValues(goal))[lever.id];
+    const commitment = commitments[key] ?? defaultCommitmentFor(goal, lever, setting);
+    const chosenValue = (valuesByGoal[goal] ?? defaultLeverValues(goal, setting))[lever.id];
     const targetValue = leverNumericValue(chosenValue);
     const worthTotal = Math.max(0, contribution?.marginalMargin ?? 0);
-    const signals = commitment.signals.length > 0 ? commitment.signals : defaultCommitmentFor(goal, lever).signals;
+    const signals = commitment.signals.length > 0 ? commitment.signals : defaultCommitmentFor(goal, lever, setting).signals;
     const worthPerSignal = perSignalWorth(worthTotal, signals.length);
     return signals.map((sig) => {
       const signalKey = `${key}:${sig.id}`;
@@ -902,7 +903,7 @@ export default function StepAttainment({
               content={getContent(setting, goal)}
               index={idx}
               total={goals.length}
-              values={valuesByGoal[goal] ?? defaultLeverValues(goal)}
+              values={valuesByGoal[goal] ?? defaultLeverValues(goal, setting)}
               result={combined.byGoal[goal]}
               commitments={commitments}
               goalOwner={goalOwnerByPriority[goal]}
@@ -953,7 +954,7 @@ function PriorityDeepDive({
 }: PriorityDeepDiveProps) {
   if (!content) return null;
 
-  const committedLevers = committedLeversFor(goal, values, result?.perLever, commitments);
+  const committedLevers = committedLeversFor(goal, setting, values, result?.perLever, commitments);
   const goalMargin = result?.totalMargin ?? 0;
   const goalCount = result?.totalCount ?? 0;
   const goalOwnerName = goalOwner?.name?.trim();
@@ -1103,7 +1104,7 @@ function PriorityDeepDive({
           <p className="text-[9px] font-bold uppercase tracking-wide text-[#EA2C00] mb-1.5">The fragile middle</p>
           <p className="text-xs text-[#3A3A3A] leading-relaxed">{content.fragile}</p>
           <p className="text-[10px] text-[#8C8C8C] mt-2">
-            {committedLevers.length} of {LEVERS[goal].length} available decisions committed to this priority today.
+            {committedLevers.length} of {leversFor(goal, setting).length} available decisions committed to this priority today.
           </p>
         </div>
       </motion.section>

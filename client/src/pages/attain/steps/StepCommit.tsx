@@ -1,9 +1,9 @@
 import { motion } from "framer-motion";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { LEVERS, defaultLeverValues, type Lever, type LeverValues } from "@/lib/attain/attainLevers";
+import { leversFor, defaultLeverValues, type Lever, type LeverValues } from "@/lib/attain/attainLevers";
 import type { MultiGoalContributionsResult } from "@/lib/attain/attainLevers";
 import { GOAL_CATALOG } from "@/lib/attain/attainGoals";
-import type { GoalId } from "@/lib/attain/attainTypes";
+import type { AttainSetting, GoalId } from "@/lib/attain/attainTypes";
 
 function formatCompact(n: number): string {
   const sign = n < 0 ? "-" : "";
@@ -95,8 +95,11 @@ function defaultSignalId(goal: GoalId, leverId: string, index: number): string {
  * one per decision (round-robin by the lever's position in its goal's
  * list) so decisions in the same goal watch a variety of chain signals
  * rather than all repeating the same one. Never invents text — every
- * string here is read straight off `LEVERS` / `GOAL_CATALOG`. */
-export function defaultSignalsForLever(goal: GoalId, lever: Lever): CommitmentSignal[] {
+ * string here is read straight off `LEVERS` / `GOAL_CATALOG`. `setting` is
+ * optional and only ever matters for revenue (inpatient's catalog differs
+ * from outpatient/ED's, see `leversFor`) - every other goal's index lookup
+ * is unaffected by it. */
+export function defaultSignalsForLever(goal: GoalId, lever: Lever, setting?: AttainSetting): CommitmentSignal[] {
   const primary: CommitmentSignal = {
     id: defaultSignalId(goal, lever.id, 0),
     label: lever.signal,
@@ -105,7 +108,7 @@ export function defaultSignalsForLever(goal: GoalId, lever: Lever): CommitmentSi
     cadence: "monthly",
   };
 
-  const levers = LEVERS[goal];
+  const levers = leversFor(goal, setting);
   const leverIndex = Math.max(0, levers.findIndex((l) => l.id === lever.id));
   const partnerLinks = GOAL_CATALOG[goal].chain.filter((l) => !l.isAbridge);
   const pick = partnerLinks.length > 0 ? partnerLinks[leverIndex % partnerLinks.length] : undefined;
@@ -125,8 +128,8 @@ export function defaultSignalsForLever(goal: GoalId, lever: Lever): CommitmentSi
 /** The full default commitment for a decision that has never been edited —
  * shared by AttainFlow (so every "materialize on first edit" handler starts
  * from the same shape) and this component's render fallback. */
-export function defaultCommitmentFor(goal: GoalId, lever: Lever): Commitment {
-  return { owner: "", due: lever.defaultDue, signals: defaultSignalsForLever(goal, lever) };
+export function defaultCommitmentFor(goal: GoalId, lever: Lever, setting?: AttainSetting): Commitment {
+  return { owner: "", due: lever.defaultDue, signals: defaultSignalsForLever(goal, lever, setting) };
 }
 
 /** The plain-language "story" sentence a decision's card ends on:
@@ -152,6 +155,9 @@ export function buildDecisionStory(ownerDisplay: string, due: string, signals: C
 
 interface StepCommitProps {
   goals: GoalId[];
+  /** Needed only because revenue's catalog differs by setting (outpatient/ED
+   * three-path chain vs inpatient's own DRG/CDI model) - see `leversFor`. */
+  setting: AttainSetting;
   valuesByGoal: Partial<Record<GoalId, LeverValues>>;
   combined: MultiGoalContributionsResult | null;
   commitments: Record<string, Commitment>;
@@ -180,6 +186,7 @@ function Field({ label, children, className }: { label: string; children: React.
 
 export default function StepCommit({
   goals,
+  setting,
   valuesByGoal,
   combined,
   commitments,
@@ -192,15 +199,15 @@ export default function StepCommit({
   stepNumber,
 }: StepCommitProps) {
   const groups = goals.map((goal) => {
-    const values = valuesByGoal[goal] ?? defaultLeverValues(goal);
-    const movedLevers = LEVERS[goal].filter((l) => isMoved(values[l.id], l.realityStart));
+    const values = valuesByGoal[goal] ?? defaultLeverValues(goal, setting);
+    const movedLevers = leversFor(goal, setting).filter((l) => isMoved(values[l.id], l.realityStart));
     const result = combined?.byGoal[goal];
     return { goal, movedLevers, result };
   });
   const totalMoved = groups.reduce((sum, g) => sum + g.movedLevers.length, 0);
 
   const commitmentFor = (goal: GoalId, lever: Lever): Commitment =>
-    commitments[`${goal}:${lever.id}`] ?? defaultCommitmentFor(goal, lever);
+    commitments[`${goal}:${lever.id}`] ?? defaultCommitmentFor(goal, lever, setting);
 
   // Every distinct owner across every committed decision, falling back to
   // the lever's suggested role whenever no real name has been typed yet -

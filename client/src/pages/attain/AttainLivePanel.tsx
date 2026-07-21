@@ -1,7 +1,7 @@
 import { Target, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AttainmentCurve, { USUAL_CEILING_PCT } from "@/components/attain/AttainmentCurve";
-import { LEVERS, defaultLeverValues, type LeverValues, type MultiGoalContributionsResult } from "@/lib/attain/attainLevers";
+import { leversFor, defaultLeverValues, type LeverValues, type MultiGoalContributionsResult } from "@/lib/attain/attainLevers";
 import { GOAL_CATALOG } from "@/lib/attain/attainGoals";
 import type { AttainState, GoalId, SettingGoalContent } from "@/lib/attain/attainTypes";
 import type { GoalTargetResult, AttainmentResult } from "@/lib/attain/attainCalc";
@@ -59,9 +59,9 @@ export default function AttainLivePanel({
   // with two priorities can tell at a glance which one a given decision
   // belongs to.
   const movedDecisions = goals.flatMap((goal) => {
-    const values = valuesByGoal[goal] ?? defaultLeverValues(goal);
+    const values = valuesByGoal[goal] ?? defaultLeverValues(goal, state.setting ?? undefined);
     const perLever = combined?.byGoal[goal]?.perLever;
-    return LEVERS[goal]
+    return leversFor(goal, state.setting ?? undefined)
       .filter((l) => isLeverMoved(values[l.id], l.realityStart))
       .map((l) => ({
         key: `${goal}:${l.id}`,
