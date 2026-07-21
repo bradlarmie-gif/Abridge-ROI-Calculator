@@ -4,14 +4,38 @@ import {
   type AppRatItem,
 } from "@/lib/appRationalizationCalc";
 
-const tool = (id: string, spend: number, pct: number, contractMonths: number, sunsetMonths: number): AppRatItem =>
-  ({ ...makeItem(id, "ambientDoc"), annualSpend: spend, coveragePct: pct, contractMonths, sunsetMonths });
+const tool = (id: string, spend: number, pct: number, contractMonths: number, sunsetMonths: number, rampMonths = 0): AppRatItem =>
+  ({ ...makeItem(id, "ambientDoc"), annualSpend: spend, coveragePct: pct, contractMonths, sunsetMonths, rampMonths });
 
 describe("timing defaults", () => {
-  it("makeItem seeds a 12-month contract sunsetting at renewal", () => {
+  it("makeItem seeds a 12-month contract sunsetting at renewal, with a 3-month displacement ramp", () => {
     const i = makeItem("a", "cds");
     expect(i.contractMonths).toBe(12);
     expect(i.sunsetMonths).toBe(12);
+    expect(i.rampMonths).toBe(3);
+  });
+});
+
+describe("displacement ramp (speed)", () => {
+  it("a slower ramp lowers the plan total and widens the gap vs the instant ceiling", () => {
+    // 120k/yr sunset = 10k/mo; contract & sunset at 6mo; horizon 36mo
+    const instant = buildCumulativeSavings([tool("a", 120_000, 100, 6, 6, 0)], 36);
+    const ramped = buildCumulativeSavings([tool("a", 120_000, 100, 6, 6, 6)], 36);
+    // instant plan: (36-6)*10k = 300k. ramped plan: (36-6 - 6/2)*10k = 270k.
+    expect(instant.planTotal).toBe(300_000);
+    expect(ramped.planTotal).toBe(270_000);
+    // the ceiling ("now") stays instant, so a slower ramp only widens the gap.
+    expect(ramped.nowTotal).toBe(instant.nowTotal);
+    expect(ramped.gap).toBeGreaterThan(instant.gap);
+    expect(ramped.tools[0].rampMonths).toBe(6);
+  });
+
+  it("cumulativeSavedAt ramps the plan (triangular) but keeps the now ceiling instant", () => {
+    const cs = buildCumulativeSavings([tool("a", 120_000, 100, 6, 6, 6)], 36);
+    // plan at month 9 (t=3 into a 6mo ramp): 10k * 3^2/(2*6) = 7.5k
+    expect(cumulativeSavedAt(cs.tools, 9, "plan")).toBe(7_500);
+    // now (instant from month 0) at month 9: 9 * 10k = 90k
+    expect(cumulativeSavedAt(cs.tools, 9, "now")).toBe(90_000);
   });
 });
 

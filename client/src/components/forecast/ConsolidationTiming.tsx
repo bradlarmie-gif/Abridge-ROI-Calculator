@@ -156,6 +156,11 @@ export default function ConsolidationTiming({
           const xEnd = xPct(horizon, horizon);
           const sliderMax = cD;
           const contractDate = sunsetDateLabel(t.contractMonths);
+          // displacement ramp: savings climb 0 -> full over rampMonths after the sunset
+          const rampM = Math.max(0, Math.round(item.rampMonths ?? 0));
+          const savingMonths = Math.max(0, horizon - sD);
+          const rampPct = savingMonths > 0 ? Math.min(100, (rampM / savingMonths) * 100) : 0;
+          const xR = xPct(Math.min(sD + rampM, horizon), horizon);
           return (
             <div key={t.id} className="py-4 border-t border-[#EFE7DC] first:border-t-0" data-testid={`ar-timing-row-${t.id}`}>
               <div className="flex items-baseline justify-between mb-3.5 gap-3 flex-wrap">
@@ -164,7 +169,7 @@ export default function ConsolidationTiming({
                   <span className="text-[12px] font-bold text-[#EA2C00] tabular-nums ml-2">{fmtM(t.spend)}/yr</span>
                   <span className="text-[11px] font-medium text-[#9CA3AF] ml-2">{t.capability}</span>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 flex-wrap justify-end">
                   <div className="flex items-center gap-1.5 text-[11px] text-[#6B7280]">
                     <span>Contract ends in</span>
                     <div className="flex items-center h-7 w-11 bg-white border border-[#E8E2DA] rounded-md px-1.5 focus-within:border-[#EA2C00]">
@@ -185,6 +190,19 @@ export default function ConsolidationTiming({
                     <span className="text-[#C4B8A8]">·</span>
                     <span className="text-[10.5px] text-[#9CA3AF]">{contractDate}</span>
                   </div>
+                  <div className="flex items-center gap-1.5 text-[11px] text-[#6B7280]">
+                    <span>displaces over</span>
+                    <div className="flex items-center h-7 w-11 bg-white border border-[#E8E2DA] rounded-md px-1.5 focus-within:border-[#EA2C00]">
+                      <NumberField
+                        value={item.rampMonths}
+                        onValueChange={(v) => onUpdateItem(t.id, { rampMonths: Math.max(0, Math.min(36, v)) })}
+                        min={0}
+                        className="w-full bg-transparent text-center text-[12.5px] font-bold text-[#1A1A1A] outline-none tabular-nums"
+                        data-testid={`ar-timing-ramp-${t.id}`}
+                      />
+                    </div>
+                    <span>mo</span>
+                  </div>
                   <div className="flex items-baseline gap-1.5 min-w-[140px] justify-end">
                     <span className="text-[8.5px] font-extrabold uppercase tracking-[0.11em] text-[#B4A99B]">Sunsets</span>
                     <span className="text-[13.5px] font-extrabold text-[#1A1A1A] tabular-nums" data-testid={`ar-timing-sunset-${t.id}`}>{sunsetDateLabel(t.sunsetMonths)}</span>
@@ -195,10 +213,10 @@ export default function ConsolidationTiming({
               <div className="relative h-[26px]">
                 {/* faint base rail, full Today -> horizon */}
                 <div className="absolute top-1/2 -translate-y-1/2 h-1.5 rounded-[3px] bg-[#EAE3D8]" style={{ left: `${L0}%`, right: `${100 - xEnd}%` }} />
-                {/* saving you get regardless (after the contract would have ended) */}
-                {xEnd > xC && <div className="absolute top-1/2 -translate-y-1/2 h-1.5 rounded-[2px]" style={{ left: `${xC}%`, width: `${xEnd - xC}%`, background: "rgba(234,44,0,0.13)" }} />}
-                {/* saving pulled forward by exiting early (sunset -> contract end), hatched */}
-                {xC > xS && <div className="absolute top-1/2 -translate-y-1/2 h-1.5 rounded-[2px]" style={{ left: `${xS}%`, width: `${xC - xS}%`, backgroundImage: "repeating-linear-gradient(45deg, rgba(234,44,0,0.5) 0, rgba(234,44,0,0.5) 1.5px, rgba(234,44,0,0.15) 1.5px, rgba(234,44,0,0.15) 5px)" }} />}
+                {/* saving region (sunset -> horizon), ramping 0 -> full over the displacement window */}
+                {xEnd > xS && <div className="absolute top-1/2 -translate-y-1/2 h-1.5 rounded-[2px]" style={{ left: `${xS}%`, width: `${xEnd - xS}%`, backgroundImage: `linear-gradient(to right, rgba(234,44,0,0.05) 0%, rgba(234,44,0,0.22) ${rampPct}%, rgba(234,44,0,0.22) 100%)` }} />}
+                {/* fully-displaced marker at the end of the ramp */}
+                {rampM > 0 && xR < xEnd - 0.4 && <div className="absolute top-1/2 w-px h-2.5 bg-[#EA2C00] opacity-50" style={{ left: `${xR}%`, transform: "translate(-50%,-50%)" }} />}
                 {/* still paying (Today -> sunset) */}
                 <div className="absolute top-1/2 -translate-y-1/2 h-1.5 rounded-[3px] bg-[#9C8F7D]" style={{ left: `${L0}%`, width: `${xS - L0}%` }} />
                 {/* contract-ends tick + label */}

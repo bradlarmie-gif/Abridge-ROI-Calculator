@@ -121,6 +121,7 @@ export interface AppRatItem {
   abridgeProduct?: string;  // "Covered by"; defaults to the category label when empty
   contractMonths: number;   // months from today until the contract ends (the runway)
   sunsetMonths: number;     // months from today until they sunset it; 0..contractMonths
+  rampMonths: number;       // displacement speed: months to ramp savings 0->100% after the sunset (0 = instant)
 }
 
 const CATEGORY_BY_ID: Record<AppRatCategoryId, AppRatCategory> =
@@ -146,7 +147,7 @@ const CATEGORY_DEFAULT_COVERAGE: Record<AppRatCategoryId, number> = {
 };
 
 export function makeItem(id: string, category: AppRatCategoryId): AppRatItem {
-  return { id, category, annualSpend: 0, coveragePct: CATEGORY_DEFAULT_COVERAGE[category] ?? 80, contractMonths: 12, sunsetMonths: 12 };
+  return { id, category, annualSpend: 0, coveragePct: CATEGORY_DEFAULT_COVERAGE[category] ?? 80, contractMonths: 12, sunsetMonths: 12, rampMonths: 3 };
 }
 
 export function itemDisplayName(item: AppRatItem): string {
@@ -258,6 +259,7 @@ export interface CumulativeTool {
   monthlySaving: number;
   contractMonths: number;
   sunsetMonths: number;   // clamped to [0, contractMonths]
+  rampMonths: number;     // months to ramp savings 0->100% after the sunset (0 = instant)
   earlyMonths: number;    // contractMonths - sunsetMonths (months pulled forward)
   earlySaving: number;    // earlyMonths * monthlySaving (captured sooner by acting early)
 }
@@ -293,6 +295,7 @@ export function buildCumulativeSavings(items: AppRatItem[], horizonMonths: numbe
         monthlySaving,
         contractMonths,
         sunsetMonths,
+        rampMonths: Math.max(0, Math.round(i.rampMonths ?? 0)),
         earlyMonths,
         earlySaving: earlyMonths * monthlySaving,
       };
@@ -311,11 +314,30 @@ export function buildCumulativeSavings(items: AppRatItem[], horizonMonths: numbe
   };
 }
 
-/** Cumulative dollars saved by `month`. "plan" uses each tool's sunsetMonths; "now" uses 0. */
+/**
+ * Effective full-saving-months accrued by `month` for a tool that starts at
+ * `start` and ramps 0->100% over `ramp` months (linear). ramp=0 is an instant
+ * step. During the ramp the accrual is the triangular area; after it, full rate.
+ */
+function realizedMonths(month: number, start: number, ramp: number): number {
+  const t = month - start;
+  if (t <= 0) return 0;
+  if (ramp <= 0) return t;
+  if (t <= ramp) return (t * t) / (2 * ramp);
+  return t - ramp / 2;
+}
+
+/**
+ * Cumulative dollars saved by `month`. "plan" starts each tool at its sunsetMonths
+ * and ramps in over its rampMonths (displacement speed). "now" is the instant
+ * ceiling: every tool fully displaced from month 0, so a slower ramp on the plan
+ * widens the gap (the cost of inaction).
+ */
 export function cumulativeSavedAt(tools: CumulativeTool[], month: number, mode: "plan" | "now"): number {
   return tools.reduce((sum, t) => {
     const start = mode === "now" ? 0 : t.sunsetMonths;
-    return sum + Math.max(0, month - start) * t.monthlySaving;
+    const ramp = mode === "now" ? 0 : t.rampMonths;
+    return sum + t.monthlySaving * realizedMonths(month, start, ramp);
   }, 0);
 }
 
