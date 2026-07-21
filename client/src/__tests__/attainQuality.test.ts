@@ -1,45 +1,67 @@
 import { describe, it, expect } from "vitest";
 import {
   computeQualityScope,
-  computeQualityRealTime,
-  computeQualityResponse,
-  computeQualityBundle,
-  computeQualityPayoff,
+  computeQualityInterventions,
   computeQualityChain,
   computeQualityContributions,
+  committedPct,
   exploreStateForReconciliation,
   computeAllDriverValues,
   selectedEventTypes,
   QUALITY_EVENT_LABELS,
-  QUALITY_REALTIME_BASELINE_PCT,
-  QUALITY_PREVENTION_CEILING_PCT,
+  QUALITY_EVENT_IDS,
+  QUALITY_INTERVENTIONS,
+  QUALITY_CEILING_PCT,
   HAPI_RATE_PER_1000,
   HAPI_COST_PER_EVENT,
+  HAPI_CEILING_PCT,
   FALLS_RATE_PER_1000,
   FALLS_COST_PER_EVENT,
+  FALLS_CEILING_PCT,
   CLABSI_UTILIZATION_PCT,
   CLABSI_RATE_PER_1000_LINE_DAYS,
   CLABSI_COST_PER_EVENT,
+  CLABSI_CEILING_PCT,
+  CAUTI_UTILIZATION_PCT,
+  CAUTI_RATE_PER_1000_CATHETER_DAYS,
+  CAUTI_COST_PER_EVENT,
+  CAUTI_CEILING_PCT,
   SEPSIS_RATE_PER_1000,
   SEPSIS_COMPLIANCE_BASELINE_PCT,
   SEPSIS_DOC_LAG_PCT,
   SEPSIS_EXCESS_COST_PER_CASE,
+  SEPSIS_REALIZATION_CEILING_PCT,
 } from "@/lib/attain/attainQuality";
-import { calcHapi, calcFalls, calcClabsi, calcSepsis } from "@/lib/nursingQualityCalcs";
+import { calcHapi, calcFalls, calcClabsi, calcCauti, calcSepsis } from "@/lib/nursingQualityCalcs";
 import { computeLeverContributions, type AttainBaseline, type LeverValues } from "@/lib/attain/attainLevers";
 
 const BASELINE: AttainBaseline = { staffedBeds: 120, nursingFtes: 180, dailyCensus: 102, adoptionPct: 100 };
 
 const ALL_EVENT_LABELS = Object.values(QUALITY_EVENT_LABELS);
 
+/** Every intervention across every event type, checked (1) - a fully
+ * committed program across all five event types. */
+function allInterventionsChecked(): LeverValues {
+  const out: LeverValues = {};
+  for (const id of QUALITY_EVENT_IDS) {
+    for (const iv of QUALITY_INTERVENTIONS[id]) out[iv.id] = 1;
+  }
+  return out;
+}
+
+/** Only the named interventions for ONE event type, checked. */
+function interventionsFor(id: (typeof QUALITY_EVENT_IDS)[number], checked = true): LeverValues {
+  const out: LeverValues = {};
+  for (const iv of QUALITY_INTERVENTIONS[id]) out[iv.id] = checked ? 1 : 0;
+  return out;
+}
+
 function fullValues(overrides: Partial<LeverValues> = {}): LeverValues {
   return {
     qualityLines: ["Med-Surg", "ICU"],
     qualityBeds: 120,
     qualityEventTypes: [...ALL_EVENT_LABELS],
-    qualityRealTime: 90,
-    qualityResponse: 2,
-    qualityBundle: 70,
+    ...allInterventionsChecked(),
     ...overrides,
   };
 }
@@ -63,48 +85,91 @@ describe("D1 scope", () => {
     expect(scope.occupancyFraction).toBeCloseTo(0.85, 5);
   });
 
-  it("selectedEventTypes reads only the recognized labels, in canonical order", () => {
-    const types = selectedEventTypes({ qualityEventTypes: ["Sepsis", "HAPI", "Not A Real Type"] });
-    expect(types).toEqual(["hapi", "sepsis"]);
+  it("selectedEventTypes reads only the recognized labels, in canonical order, and includes CAUTI (M1)", () => {
+    const types = selectedEventTypes({ qualityEventTypes: ["Sepsis", "HAPI", "CAUTI", "Not A Real Type"] });
+    expect(types).toEqual(["hapi", "cauti", "sepsis"]);
+    expect(QUALITY_EVENT_IDS).toContain("cauti");
   });
 
-  it("no event types selected means no events in the payoff, even with beds and rates dialed up", () => {
+  it("no event types selected means no events in the payoff, even with every intervention checked", () => {
     const chain = computeQualityChain(BASELINE, fullValues({ qualityEventTypes: [] }));
     expect(chain.payoff.events).toHaveLength(0);
     expect(chain.payoff.totalValue).toBe(0);
+    expect(chain.eventInterventions).toHaveLength(0);
   });
 });
 
-describe("D2/D3/D4 gating - dollars are 0 until decisions are set", () => {
-  it("at reality (D2 at its 55% baseline, D3 none, D4 at 0) every selected event type nets $0", () => {
+describe("D2 - per-event intervention checklists (C1)", () => {
+  it("each event type carries its own, genuinely different named interventions", () => {
+    const falls = new Set(QUALITY_INTERVENTIONS.falls.map((iv) => iv.id));
+    const hapi = new Set(QUALITY_INTERVENTIONS.hapi.map((iv) => iv.id));
+    const clabsi = new Set(QUALITY_INTERVENTIONS.clabsi.map((iv) => iv.id));
+    const cauti = new Set(QUALITY_INTERVENTIONS.cauti.map((iv) => iv.id));
+    const sepsis = new Set(QUALITY_INTERVENTIONS.sepsis.map((iv) => iv.id));
+    const all = [...falls, ...hapi, ...clabsi, ...cauti, ...sepsis];
+    expect(new Set(all).size).toBe(all.length); // no id shared across events
+    expect(falls.size).toBeGreaterThanOrEqual(4);
+    expect(hapi.size).toBeGreaterThanOrEqual(3);
+    expect(clabsi.size).toBeGreaterThanOrEqual(3);
+    expect(cauti.size).toBeGreaterThanOrEqual(3);
+    expect(sepsis.size).toBeGreaterThanOrEqual(3);
+  });
+
+  it("every event's own interventions sum exactly to that event's own ceiling", () => {
+    for (const id of QUALITY_EVENT_IDS) {
+      const sum = QUALITY_INTERVENTIONS[id].reduce((s, iv) => s + iv.weightPp, 0);
+      expect(sum).toBe(QUALITY_CEILING_PCT[id]);
+    }
+  });
+
+  it("committedPct sums only the checked interventions for that event, capped at its own ceiling", () => {
+    const noneChecked = committedPct("falls", {});
+    expect(noneChecked).toBe(0);
+
+    const oneChecked = committedPct("falls", { [QUALITY_INTERVENTIONS.falls[0].id]: 1 });
+    expect(oneChecked).toBeCloseTo(QUALITY_INTERVENTIONS.falls[0].weightPp, 5);
+
+    const allChecked = committedPct("falls", interventionsFor("falls"));
+    expect(allChecked).toBe(FALLS_CEILING_PCT);
+  });
+
+  it("checking a Falls intervention never moves HAPI's (or any other event's) committed pct", () => {
+    const values = { ...interventionsFor("falls"), qualityEventTypes: ["Falls", "HAPI"], qualityBeds: 120 };
+    const scope = computeQualityScope(BASELINE, values);
+    const eventInterventions = computeQualityInterventions(scope, values);
+    const falls = eventInterventions.find((e) => e.id === "falls")!;
+    const hapi = eventInterventions.find((e) => e.id === "hapi")!;
+    expect(falls.committedPct).toBeGreaterThan(0);
+    expect(hapi.committedPct).toBe(0);
+  });
+
+  it("computeQualityInterventions only produces a sub-panel for a SELECTED event type (I2's structural fix)", () => {
+    const values = { ...allInterventionsChecked(), qualityEventTypes: ["Falls"], qualityBeds: 120 };
+    const scope = computeQualityScope(BASELINE, values);
+    const eventInterventions = computeQualityInterventions(scope, values);
+    expect(eventInterventions.map((e) => e.id)).toEqual(["falls"]);
+  });
+});
+
+describe("D2 gating - dollars are 0 until an event's own interventions are committed (I2)", () => {
+  it("no interventions checked (D1 only) nets $0 for every selected event type, even fully scoped", () => {
     const values: LeverValues = {
       qualityLines: ["Med-Surg"],
       qualityBeds: 120,
       qualityEventTypes: [...ALL_EVENT_LABELS],
-      qualityRealTime: QUALITY_REALTIME_BASELINE_PCT,
-      qualityResponse: 0,
-      qualityBundle: 0,
     };
     const chain = computeQualityChain(BASELINE, values);
-    expect(chain.bundle.compositePreventionPct).toBe(0);
-    expect(chain.response.realizationPct).toBe(0);
+    for (const ei of chain.eventInterventions) {
+      expect(ei.committedPct).toBe(0);
+    }
     for (const e of chain.payoff.events) {
-      // Every event type's DOLLAR is 0 - the gating property this test is
-      // actually about. Sepsis's own `prevented` count (calcSepsis's
-      // `docLagCases`) is the addressable documentation-lag opportunity,
-      // which is a function of the descriptive baseline compliance/doc-lag
-      // rate, not of D3's realization - so it is not itself required to be
-      // 0 here, only the dollar it produces is (realizationPct is what
-      // gates the value, per calcSepsis's own formula).
       expect(e.value).toBe(0);
-      if (e.id !== "sepsis") {
-        expect(e.prevented).toBeCloseTo(0, 5);
-      }
+      if (e.id !== "sepsis") expect(e.prevented).toBeCloseTo(0, 5);
     }
     expect(chain.payoff.totalValue).toBe(0);
   });
 
-  it("beds/units alone (D1), with no D2/D3/D4 movement, still nets $0", () => {
+  it("beds/units alone (D1), with no interventions committed, still nets $0", () => {
     const chain = computeQualityChain(BASELINE, {
       qualityLines: ["Med-Surg", "ICU"],
       qualityBeds: 120,
@@ -113,59 +178,83 @@ describe("D2/D3/D4 gating - dollars are 0 until decisions are set", () => {
     expect(chain.payoff.totalValue).toBe(0);
   });
 
-  it("D2 moved above reality alone (D4 still 0) produces a positive composite prevention rate for HAPI/CLABSI/Falls", () => {
-    const rt = computeQualityRealTime({ qualityRealTime: 85 });
-    expect(rt.effectiveLiftPct).toBeCloseTo(30, 5);
-    expect(rt.impactPp).toBeGreaterThan(0);
-    const bundle = computeQualityBundle(rt.impactPp, { qualityBundle: 0 });
-    expect(bundle.compositePreventionPct).toBeGreaterThan(0);
+  it("checking one Falls intervention alone (D4-style partial commit) produces a positive Falls prevention rate", () => {
+    const values = { ...interventionsFor("falls", true), qualityEventTypes: ["Falls"], qualityBeds: 120 };
+    const chain = computeQualityChain(BASELINE, values);
+    const falls = chain.eventInterventions.find((e) => e.id === "falls")!;
+    expect(falls.committedPct).toBeGreaterThan(0);
+    expect(chain.payoff.totalValue).toBeGreaterThan(0);
   });
 });
 
-describe("D2/D4 monotonicity - more real-time closure / higher compliance increases prevented events", () => {
-  it("increasing D2 (real-time gap closure) increases the composite prevention rate and total prevented events", () => {
-    const low = computeQualityChain(BASELINE, fullValues({ qualityRealTime: 65, qualityBundle: 20 }));
-    const high = computeQualityChain(BASELINE, fullValues({ qualityRealTime: 95, qualityBundle: 20 }));
-    expect(high.bundle.compositePreventionPct).toBeGreaterThan(low.bundle.compositePreventionPct);
-    expect(high.payoff.totalPrevented).toBeGreaterThan(low.payoff.totalPrevented);
+describe("monotonicity - committing more of an event's own interventions increases its prevented events", () => {
+  it("checking every Falls intervention prevents strictly more than checking only one", () => {
+    const oneChecked: LeverValues = { [QUALITY_INTERVENTIONS.falls[0].id]: 1, qualityEventTypes: ["Falls"], qualityBeds: 120 };
+    const allChecked: LeverValues = { ...interventionsFor("falls"), qualityEventTypes: ["Falls"], qualityBeds: 120 };
+    const low = computeQualityChain(BASELINE, oneChecked);
+    const high = computeQualityChain(BASELINE, allChecked);
     expect(high.payoff.totalValue).toBeGreaterThan(low.payoff.totalValue);
+    expect(high.payoff.totalPrevented).toBeGreaterThan(low.payoff.totalPrevented);
   });
 
-  it("increasing D4 (bundle compliance) increases the composite prevention rate and total prevented events", () => {
-    const low = computeQualityChain(BASELINE, fullValues({ qualityRealTime: 70, qualityBundle: 10 }));
-    const high = computeQualityChain(BASELINE, fullValues({ qualityRealTime: 70, qualityBundle: 80 }));
-    expect(high.bundle.compositePreventionPct).toBeGreaterThan(low.bundle.compositePreventionPct);
-    expect(high.payoff.totalPrevented).toBeGreaterThan(low.payoff.totalPrevented);
-    expect(high.payoff.totalValue).toBeGreaterThan(low.payoff.totalValue);
-  });
-
-  it("the composite prevention rate never exceeds the ceiling, even at max D2 + D4", () => {
-    const chain = computeQualityChain(BASELINE, fullValues({ qualityRealTime: 100, qualityBundle: 100 }));
-    expect(chain.bundle.compositePreventionPct).toBeLessThanOrEqual(QUALITY_PREVENTION_CEILING_PCT);
+  it("the committed pct never exceeds the event's own ceiling, even with every box checked", () => {
+    for (const id of QUALITY_EVENT_IDS) {
+      const pct = committedPct(id, interventionsFor(id));
+      expect(pct).toBeLessThanOrEqual(QUALITY_CEILING_PCT[id]);
+    }
   });
 });
 
-describe("D3 - deterioration response raises Sepsis's prevention effect specifically", () => {
-  it("a higher response level increases Sepsis's prevented count and value, sepsis-only", () => {
-    const none = computeQualityChain(BASELINE, fullValues({ qualityEventTypes: ["Sepsis"], qualityResponse: 0 }));
-    const partial = computeQualityChain(BASELINE, fullValues({ qualityEventTypes: ["Sepsis"], qualityResponse: 1 }));
-    const full = computeQualityChain(BASELINE, fullValues({ qualityEventTypes: ["Sepsis"], qualityResponse: 2 }));
+describe("Sepsis - its own interventions feed realizationPct, not a share of all sepsis cases", () => {
+  it("checking more sepsis interventions increases Sepsis's prevented count and value", () => {
+    const none = computeQualityChain(BASELINE, { qualityEventTypes: ["Sepsis"], qualityBeds: 120 });
+    const one = computeQualityChain(BASELINE, {
+      qualityEventTypes: ["Sepsis"],
+      qualityBeds: 120,
+      [QUALITY_INTERVENTIONS.sepsis[0].id]: 1,
+    });
+    const all = computeQualityChain(BASELINE, { ...interventionsFor("sepsis"), qualityEventTypes: ["Sepsis"], qualityBeds: 120 });
     expect(none.payoff.totalValue).toBe(0);
-    expect(partial.payoff.totalValue).toBeGreaterThan(none.payoff.totalValue);
-    expect(full.payoff.totalValue).toBeGreaterThan(partial.payoff.totalValue);
+    expect(one.payoff.totalValue).toBeGreaterThan(none.payoff.totalValue);
+    expect(all.payoff.totalValue).toBeGreaterThan(one.payoff.totalValue);
+  });
+
+  it("I1: Sepsis's prevented count equals docLagCases x realization/100, exactly consistent with value", () => {
+    const values = { ...interventionsFor("sepsis"), qualityEventTypes: ["Sepsis"], qualityBeds: 120 };
+    const chain = computeQualityChain(BASELINE, values);
+    const sepsis = chain.payoff.events.find((e) => e.id === "sepsis")!;
+    const direct = calcSepsis({
+      patientDays: chain.scope.patientDays,
+      ratePerThousand: SEPSIS_RATE_PER_1000,
+      currentCompliancePct: SEPSIS_COMPLIANCE_BASELINE_PCT,
+      docLagPct: SEPSIS_DOC_LAG_PCT,
+      excessCostPerCase: SEPSIS_EXCESS_COST_PER_CASE,
+      realizationPct: SEPSIS_REALIZATION_CEILING_PCT,
+    });
+    expect(sepsis.prevented).toBeCloseTo(direct.docLagCases * (SEPSIS_REALIZATION_CEILING_PCT / 100), 5);
+    // The count and the dollar must agree: value === prevented x cost.
+    expect(sepsis.value).toBeCloseTo(sepsis.prevented * SEPSIS_EXCESS_COST_PER_CASE, 0);
+  });
+
+  it("I1: at $0 realization (no sepsis interventions committed), prevented is exactly 0, never a positive count beside $0", () => {
+    const chain = computeQualityChain(BASELINE, { qualityEventTypes: ["Sepsis"], qualityBeds: 120 });
+    const sepsis = chain.payoff.events.find((e) => e.id === "sepsis")!;
+    expect(sepsis.value).toBe(0);
+    expect(sepsis.prevented).toBe(0);
   });
 });
 
-describe("selecting more event types increases the total", () => {
-  it("adding event types one at a time strictly increases totalValue and totalPrevented", () => {
-    const values = fullValues();
+describe("selecting more event types increases the total, and CAUTI is a real, selectable type (M1)", () => {
+  it("adding event types one at a time (with their own interventions committed) strictly increases totalValue and totalPrevented", () => {
     let prevValue = -1;
     let prevCount = -1;
-    const order: (keyof typeof QUALITY_EVENT_LABELS)[] = ["hapi", "falls", "clabsi", "sepsis"];
+    const order: (typeof QUALITY_EVENT_IDS)[number][] = ["hapi", "falls", "clabsi", "cauti", "sepsis"];
     const picked: string[] = [];
+    let values: LeverValues = { qualityBeds: 120 };
     for (const id of order) {
       picked.push(QUALITY_EVENT_LABELS[id]);
-      const chain = computeQualityChain(BASELINE, { ...values, qualityEventTypes: [...picked] });
+      values = { ...values, ...interventionsFor(id), qualityEventTypes: [...picked] };
+      const chain = computeQualityChain(BASELINE, values);
       expect(chain.payoff.totalValue).toBeGreaterThan(prevValue);
       expect(chain.payoff.totalPrevented).toBeGreaterThan(prevCount);
       prevValue = chain.payoff.totalValue;
@@ -176,12 +265,13 @@ describe("selecting more event types increases the total", () => {
 
 describe("reconciliation to the calc* helpers", () => {
   it("HAPI's contribution reconciles to calcHapi within tolerance", () => {
-    const chain = computeQualityChain(BASELINE, fullValues({ qualityEventTypes: ["HAPI"] }));
+    const values = { ...interventionsFor("hapi"), qualityEventTypes: ["HAPI"], qualityBeds: 120 };
+    const chain = computeQualityChain(BASELINE, values);
     const hapi = chain.payoff.events.find((e) => e.id === "hapi")!;
     const direct = calcHapi({
       patientDays: chain.scope.patientDays,
       rate: HAPI_RATE_PER_1000,
-      preventionPct: chain.bundle.compositePreventionPct,
+      preventionPct: HAPI_CEILING_PCT,
       cost: HAPI_COST_PER_EVENT,
     });
     expect(hapi.value).toBeCloseTo(Math.round(direct.value), 0);
@@ -189,12 +279,13 @@ describe("reconciliation to the calc* helpers", () => {
   });
 
   it("Falls's contribution reconciles to calcFalls within tolerance", () => {
-    const chain = computeQualityChain(BASELINE, fullValues({ qualityEventTypes: ["Falls"] }));
+    const values = { ...interventionsFor("falls"), qualityEventTypes: ["Falls"], qualityBeds: 120 };
+    const chain = computeQualityChain(BASELINE, values);
     const falls = chain.payoff.events.find((e) => e.id === "falls")!;
     const direct = calcFalls({
       patientDays: chain.scope.patientDays,
       rate: FALLS_RATE_PER_1000,
-      preventionPct: chain.bundle.compositePreventionPct,
+      preventionPct: FALLS_CEILING_PCT,
       cost: FALLS_COST_PER_EVENT,
     });
     expect(falls.value).toBeCloseTo(Math.round(direct.value), 0);
@@ -202,21 +293,38 @@ describe("reconciliation to the calc* helpers", () => {
   });
 
   it("CLABSI's contribution reconciles to calcClabsi within tolerance", () => {
-    const chain = computeQualityChain(BASELINE, fullValues({ qualityEventTypes: ["CLABSI"] }));
+    const values = { ...interventionsFor("clabsi"), qualityEventTypes: ["CLABSI"], qualityBeds: 120 };
+    const chain = computeQualityChain(BASELINE, values);
     const clabsi = chain.payoff.events.find((e) => e.id === "clabsi")!;
     const direct = calcClabsi({
       patientDays: chain.scope.patientDays,
       utilizationPct: CLABSI_UTILIZATION_PCT,
       rate: CLABSI_RATE_PER_1000_LINE_DAYS,
-      preventionPct: chain.bundle.compositePreventionPct,
+      preventionPct: CLABSI_CEILING_PCT,
       cost: CLABSI_COST_PER_EVENT,
     });
     expect(clabsi.value).toBeCloseTo(Math.round(direct.value), 0);
     expect(clabsi.prevented).toBeCloseTo(direct.prevented, 5);
   });
 
+  it("CAUTI's contribution reconciles to calcCauti within tolerance (M1)", () => {
+    const values = { ...interventionsFor("cauti"), qualityEventTypes: ["CAUTI"], qualityBeds: 120 };
+    const chain = computeQualityChain(BASELINE, values);
+    const cauti = chain.payoff.events.find((e) => e.id === "cauti")!;
+    const direct = calcCauti({
+      patientDays: chain.scope.patientDays,
+      utilizationPct: CAUTI_UTILIZATION_PCT,
+      rate: CAUTI_RATE_PER_1000_CATHETER_DAYS,
+      preventionPct: CAUTI_CEILING_PCT,
+      cost: CAUTI_COST_PER_EVENT,
+    });
+    expect(cauti.value).toBeCloseTo(Math.round(direct.value), 0);
+    expect(cauti.prevented).toBeCloseTo(direct.prevented, 5);
+  });
+
   it("Sepsis's contribution reconciles to calcSepsis within tolerance", () => {
-    const chain = computeQualityChain(BASELINE, fullValues({ qualityEventTypes: ["Sepsis"] }));
+    const values = { ...interventionsFor("sepsis"), qualityEventTypes: ["Sepsis"], qualityBeds: 120 };
+    const chain = computeQualityChain(BASELINE, values);
     const sepsis = chain.payoff.events.find((e) => e.id === "sepsis")!;
     const direct = calcSepsis({
       patientDays: chain.scope.patientDays,
@@ -224,13 +332,13 @@ describe("reconciliation to the calc* helpers", () => {
       currentCompliancePct: SEPSIS_COMPLIANCE_BASELINE_PCT,
       docLagPct: SEPSIS_DOC_LAG_PCT,
       excessCostPerCase: SEPSIS_EXCESS_COST_PER_CASE,
-      realizationPct: chain.response.realizationPct,
+      realizationPct: SEPSIS_REALIZATION_CEILING_PCT,
     });
     expect(sepsis.value).toBeCloseTo(Math.round(direct.value), 0);
     expect(sepsis.prevented).toBeCloseTo(direct.prevented, 5);
   });
 
-  it("every selected event type's value reconciles to computeAllDriverValues (the live engine), via exploreStateForReconciliation", () => {
+  it("every selected event type's value reconciles to computeAllDriverValues (the live engine), via exploreStateForReconciliation, including CAUTI", () => {
     const values = fullValues();
     const chain = computeQualityChain(BASELINE, values);
     const state = exploreStateForReconciliation(BASELINE, values);
@@ -239,11 +347,13 @@ describe("reconciliation to the calc* helpers", () => {
     const hapi = chain.payoff.events.find((e) => e.id === "hapi")!;
     const falls = chain.payoff.events.find((e) => e.id === "falls")!;
     const clabsi = chain.payoff.events.find((e) => e.id === "clabsi")!;
+    const cauti = chain.payoff.events.find((e) => e.id === "cauti")!;
     const sepsis = chain.payoff.events.find((e) => e.id === "sepsis")!;
 
     expect(engineValues.nursingHapi).toBeCloseTo(hapi.value, 0);
     expect(engineValues.nursingFalls).toBeCloseTo(falls.value, 0);
     expect(engineValues.nursingClabsi).toBeCloseTo(clabsi.value, 0);
+    expect(engineValues.nursingCauti).toBeCloseTo(cauti.value, 0);
     expect(engineValues.nursingSepsis).toBeCloseTo(sepsis.value, 0);
   });
 
@@ -254,16 +364,66 @@ describe("reconciliation to the calc* helpers", () => {
   });
 });
 
+describe("C2 - per-event prevention ceilings stay in the conservative, defensible band", () => {
+  it("every event's ceiling is well under 100% and matches its documented constant", () => {
+    expect(QUALITY_CEILING_PCT.hapi).toBe(HAPI_CEILING_PCT);
+    expect(QUALITY_CEILING_PCT.falls).toBe(FALLS_CEILING_PCT);
+    expect(QUALITY_CEILING_PCT.clabsi).toBe(CLABSI_CEILING_PCT);
+    expect(QUALITY_CEILING_PCT.cauti).toBe(CAUTI_CEILING_PCT);
+    expect(QUALITY_CEILING_PCT.sepsis).toBe(SEPSIS_REALIZATION_CEILING_PCT);
+    // HAPI/CLABSI/CAUTI/Falls ceilings are a share of ALL events of that
+    // type, so they stay in a tight, conservative band. Sepsis's own
+    // ceiling is a REALIZATION ceiling on an already-narrow addressable
+    // pool (non-compliant cases x doc-lag share), a structurally different
+    // and already-conservative quantity - see the module header - so it is
+    // checked separately, not against the same band.
+    for (const id of QUALITY_EVENT_IDS) {
+      if (id === "sepsis") continue;
+      expect(QUALITY_CEILING_PCT[id]).toBeLessThanOrEqual(35);
+      expect(QUALITY_CEILING_PCT[id]).toBeGreaterThan(0);
+    }
+    expect(QUALITY_CEILING_PCT.sepsis).toBeLessThanOrEqual(80);
+    expect(QUALITY_CEILING_PCT.sepsis).toBeGreaterThan(0);
+  });
+
+  it("HAPI at the default baseline, fully committed, no longer produces the old ~60%-ceiling inflated figure", () => {
+    // Regression guard for C2: at the OLD 60% ceiling, HAPI alone at this
+    // baseline priced to roughly $1.1M (see the audit's own worked example).
+    // The new, literature-grounded ceiling must land well under that.
+    const values = { ...interventionsFor("hapi"), qualityEventTypes: ["HAPI"], qualityBeds: 120 };
+    const chain = computeQualityChain(BASELINE, values);
+    const hapi = chain.payoff.events.find((e) => e.id === "hapi")!;
+    expect(hapi.value).toBeLessThan(500_000);
+  });
+});
+
 describe("computeQualityContributions adapter", () => {
-  it("returns the LeverContributionsResult shape, with every catalog lever id represented", () => {
+  it("returns the LeverContributionsResult shape, with every catalog lever id represented for the selected events", () => {
     const result = computeQualityContributions(BASELINE, fullValues());
     expect(result.totalMargin).toBeGreaterThan(0);
     const ids = result.perLever.map((l) => l.id);
-    expect(ids).toEqual(expect.arrayContaining(["qualityLines", "qualityBeds", "qualityRealTime", "qualityResponse", "qualityBundle"]));
+    expect(ids).toContain("qualityLines");
+    expect(ids).toContain("qualityBeds");
+    for (const id of QUALITY_EVENT_IDS) {
+      for (const iv of QUALITY_INTERVENTIONS[id]) {
+        expect(ids).toContain(iv.id);
+      }
+    }
     for (const l of result.perLever) {
       expect(Number.isFinite(l.pctOfTotal)).toBe(true);
       expect(l.formula.length).toBeGreaterThan(0);
     }
+  });
+
+  it("an unselected event type's interventions never appear as rows (I2's gating generalized)", () => {
+    const result = computeQualityContributions(BASELINE, {
+      ...interventionsFor("falls"),
+      qualityEventTypes: ["Falls"],
+      qualityBeds: 120,
+    });
+    const ids = result.perLever.map((l) => l.id);
+    for (const iv of QUALITY_INTERVENTIONS.hapi) expect(ids).not.toContain(iv.id);
+    for (const iv of QUALITY_INTERVENTIONS.sepsis) expect(ids).not.toContain(iv.id);
   });
 
   it("doing nothing new (defaults) nets exactly $0 through computeLeverContributions's quality dispatch", () => {
@@ -271,9 +431,6 @@ describe("computeQualityContributions adapter", () => {
       qualityLines: [],
       qualityBeds: 0,
       qualityEventTypes: [],
-      qualityRealTime: QUALITY_REALTIME_BASELINE_PCT,
-      qualityResponse: 0,
-      qualityBundle: 0,
     };
     const result = computeLeverContributions("quality", "nursing", BASELINE, values);
     expect(result.totalMargin).toBe(0);
@@ -287,10 +444,23 @@ describe("computeQualityContributions adapter", () => {
     expect(viaLevers.totalMargin).toBe(direct.totalMargin);
     expect(viaLevers.totalMargin).toBeGreaterThan(0);
   });
+
+  it("leave-one-out isolates exactly one intervention's own dollar, with no cross terms", () => {
+    const values = { ...interventionsFor("falls"), qualityEventTypes: ["Falls"], qualityBeds: 120 };
+    const result = computeQualityContributions(BASELINE, values);
+    const oneId = QUALITY_INTERVENTIONS.falls[0].id;
+    const row = result.perLever.find((l) => l.id === oneId)!;
+    expect(row.marginalMargin).toBeGreaterThan(0);
+    // Unchecking every OTHER Falls intervention should reduce the row's own
+    // marginal by nothing (it is still isolating just this one checkbox).
+    const withoutOne = computeQualityChain(BASELINE, { ...values, [oneId]: 0 }).payoff.totalValue;
+    const withOne = computeQualityChain(BASELINE, values).payoff.totalValue;
+    expect(row.marginalMargin).toBeCloseTo(withOne - withoutOne, 5);
+  });
 });
 
 describe("blank / partial baseline safety", () => {
-  it("a blank baseline with no beds requested nets exactly $0, even with every rate decision dialed up", () => {
+  it("a blank baseline with no beds requested nets exactly $0, even with every intervention checked", () => {
     const result = computeQualityContributions({}, fullValues({ qualityBeds: 0 }));
     expect(Number.isNaN(result.totalMargin)).toBe(false);
     expect(Number.isNaN(result.totalCount)).toBe(false);

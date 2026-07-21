@@ -19,7 +19,26 @@ import {
   DEFAULT_MINUTES_SAVED_PER_NOTE,
   DEFAULT_VISIT_LENGTH_MIN,
 } from "@/lib/attain/attainAccess";
+import { QUALITY_EVENT_IDS, QUALITY_EVENT_LABELS, QUALITY_INTERVENTIONS } from "@/lib/attain/attainQuality";
 import type { AttainSetting, GoalId } from "@/lib/attain/attainTypes";
+
+/** A fully-committed quality plan: every event type selected, every named
+ * intervention across every event checked - the "real, fully-decided
+ * quality plan" fixture the multi-goal tests below need, built directly off
+ * the engine's own intervention catalog so it can never drift out of sync
+ * with attainQuality.ts's own ids (C1's per-event rebuild). */
+function fullQualityValues(): LeverValues {
+  const checked: LeverValues = {};
+  for (const id of QUALITY_EVENT_IDS) {
+    for (const iv of QUALITY_INTERVENTIONS[id]) checked[iv.id] = 1;
+  }
+  return {
+    qualityLines: ["Med-Surg", "ICU"],
+    qualityBeds: 40,
+    qualityEventTypes: QUALITY_EVENT_IDS.map((id) => QUALITY_EVENT_LABELS[id]),
+    ...checked,
+  };
+}
 
 const GOAL_IDS: GoalId[] = ["access", "retention", "revenue", "quality"];
 
@@ -30,8 +49,8 @@ const GOAL_IDS: GoalId[] = ["access", "retention", "revenue", "quality"];
 // inpatient (attainInpatientRevenue.ts, its OWN three paths - a genuinely
 // different DRG/CDI/obs-defense mechanism), Retention/Workforce
 // (attainWorkforce.ts, D1-D5), and Quality (attainQuality.ts, D1
-// scope+event-types -> D2 real-time -> D3 response -> D4 bundle
-// compliance). Moving only ONE decision in any of these chains alone is
+// scope+event-types -> D2 commit to each selected event's own named
+// interventions). Moving only ONE decision in any of these chains alone is
 // EXPECTED to still net ~$0 in most cases (that is the whole point of
 // gating dollars until every decision behind them is real), so none of them
 // go through the generic leave-one-out sweep below; each has its own
@@ -113,21 +132,14 @@ const IMPROVED_VALUE: Record<GoalId, Record<string, number | string[]>> = {
     revenueEmConversionFactor: 40,
     revenueDenialsPreventable: 60,
   },
-  // Quality is now a D1-D4 decision chain (attainQuality.ts), not
+  // Quality is now a D1-D2 decision chain (attainQuality.ts), not
   // independent channels - this fixture is unused by the generic "moving
   // any single lever" sweep (GOAL_IDS_CHANNEL is now empty, see above) but
-  // kept here, with a real event-type selection and every decision set, so
-  // the type stays a total Record<GoalId,...> and the multi-goal fixtures
-  // below see a realistic, fully-decided quality plan rather than an empty
-  // one.
-  quality: {
-    qualityLines: ["Med-Surg", "ICU"],
-    qualityBeds: 40,
-    qualityEventTypes: ["HAPI", "CLABSI", "Falls", "Sepsis"],
-    qualityRealTime: 85,
-    qualityResponse: 2,
-    qualityBundle: 60,
-  },
+  // kept here, with a real event-type selection and every named
+  // intervention committed, so the type stays a total Record<GoalId,...>
+  // and the multi-goal fixtures below see a realistic, fully-decided
+  // quality plan rather than an empty one.
+  quality: fullQualityValues(),
 };
 
 describe("LEVERS catalog", () => {
@@ -700,14 +712,7 @@ describe("computeMultiGoalContributions", () => {
     // neither is outpatient access, so no freed-time split engages - a
     // clean two-chain plan, each goal's own chain computed independently.
     const valuesByGoal: Partial<Record<GoalId, LeverValues>> = {
-      quality: {
-        qualityLines: ["Med-Surg", "ICU"],
-        qualityBeds: 40,
-        qualityEventTypes: ["HAPI", "CLABSI", "Falls", "Sepsis"],
-        qualityRealTime: 90,
-        qualityResponse: 2,
-        qualityBundle: 70,
-      },
+      quality: fullQualityValues(),
       retention: {
         retentionLines: ["Med-Surg", "ICU"],
         retentionProviders: 40,
@@ -826,14 +831,7 @@ describe("computeMultiGoalContributions — realization rate", () => {
     const baseline = BASELINE_FOR.quality; // nursing baseline, legally pairs quality + retention
     const setting: AttainSetting = "nursing";
     const valuesByGoal: Partial<Record<GoalId, LeverValues>> = {
-      quality: {
-        qualityLines: ["Med-Surg", "ICU"],
-        qualityBeds: 40,
-        qualityEventTypes: ["HAPI", "CLABSI", "Falls", "Sepsis"],
-        qualityRealTime: 90,
-        qualityResponse: 2,
-        qualityBundle: 70,
-      },
+      quality: fullQualityValues(),
       retention: {
         retentionLines: ["Med-Surg", "ICU"],
         retentionProviders: 40,
