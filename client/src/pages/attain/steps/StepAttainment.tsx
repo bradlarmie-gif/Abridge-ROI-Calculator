@@ -659,10 +659,11 @@ export default function StepAttainment({
     }
   };
 
-  // ED access does not compete with retention for the same freed hour - see
-  // attainLevers.ts's computeMultiGoalContributions and
-  // attainEdAccess.ts's module header - so this conflict is outpatient-only.
-  const hasFreedTimeConflict = setting === "outpatient" && goals.includes("access") && goals.includes("retention");
+  // Both outpatient and ED access mechanically divide freed hours by a
+  // conversion constant to create capacity/throughput, so both compete with
+  // retention for the same freed hour - see attainLevers.ts's
+  // computeMultiGoalContributions and attainEdAccess.ts's module header.
+  const hasFreedTimeConflict = (setting === "outpatient" || setting === "ed") && goals.includes("access") && goals.includes("retention");
   const usualMargin = target.margin * (USUAL_CEILING_PCT / 100);
   const curveGoalLabel = `${formatCompact(target.margin)} · ${target.label}`;
   const curveUsualLabel = `~${formatCompact(usualMargin)}`;

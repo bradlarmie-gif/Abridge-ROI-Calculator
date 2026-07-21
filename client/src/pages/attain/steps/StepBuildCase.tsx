@@ -197,14 +197,17 @@ export default function StepBuildCase({
   totalSteps,
 }: StepBuildCaseProps) {
   // Outpatient access's D3 mechanically divides freed hours by a visit
-  // length to create schedule capacity, which is the exact same hour
-  // retention's D2 protects - hence the split control. ED access's dollar
-  // math (attainEdAccess.ts) never does that division, so it never
-  // contends for the hour and this split does not apply at setting "ed" -
-  // see attainLevers.ts's computeMultiGoalContributions for the matching
+  // length to create schedule capacity, and ED access's own D3 does the
+  // same thing with its own hours-per-recovery constant
+  // (attainEdAccess.ts) - both are the exact same hour retention's D2
+  // protects, hence the split control applying at both settings - see
+  // attainLevers.ts's computeMultiGoalContributions for the matching
   // engine-side gate.
-  const hasFreedTimeConflict = setting === "outpatient" && goals.includes("access") && goals.includes("retention");
+  const hasFreedTimeConflict = (setting === "outpatient" || setting === "ed") && goals.includes("access") && goals.includes("retention");
   const showFreedTimeSplit = hasFreedTimeConflict && (goal === "access" || goal === "retention");
+  // ED's mechanism is throughput, not a schedule - the split copy should
+  // name the actual mechanism each setting's access chain uses.
+  const accessSplitLabel = setting === "ed" ? "faster throughput" : "opening access on the schedule";
   const goalDef = GOAL_CATALOG[goal];
   const levers = leversFor(goal, setting);
   const isRevenueChain = goal === "revenue" && setting !== "inpatient";
@@ -279,13 +282,12 @@ export default function StepBuildCase({
           </p>
           <p className="text-[15px] text-[#3A3A3A] leading-relaxed mb-5 max-w-[620px]">
             Access and Retention both price the same freed documentation hour. This is the one decision that keeps it
-            from being counted twice: how much of that hour routes to opening access on the schedule, versus how
-            much stays as protected relief. Every dollar on both of those priorities' pages already reflects this
-            split.
+            from being counted twice: how much of that hour routes to {accessSplitLabel}, versus how much stays as
+            protected relief. Every dollar on both of those priorities' pages already reflects this split.
           </p>
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-semibold text-[#1A1A1A]" data-testid="text-attain-freed-time-split-access">
-              {freedTimeSplit}% to opening access
+              {freedTimeSplit}% to {accessSplitLabel}
             </span>
             <span className="text-xs font-semibold text-[#1A1A1A]" data-testid="text-attain-freed-time-split-retention">
               {100 - freedTimeSplit}% to protecting relief
@@ -302,8 +304,8 @@ export default function StepBuildCase({
             data-testid="slider-attain-freed-time-split"
           />
           <p className="text-[11px] text-[#8C8C8C] mt-2">
-            How you split the freed hour: {freedTimeSplit}% to opening access, {100 - freedTimeSplit}% to protecting
-            relief.
+            How you split the freed hour: {freedTimeSplit}% to {accessSplitLabel}, {100 - freedTimeSplit}% to
+            protecting relief.
           </p>
         </motion.div>
       )}

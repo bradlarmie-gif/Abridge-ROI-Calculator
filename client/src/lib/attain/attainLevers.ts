@@ -974,9 +974,9 @@ export const ED_ACCESS_LEVERS: Lever[] = [
     signalOptions: ["Providers actually converting freed charting time into faster throughput, of those pointed at it", "Scheduled charting time committed per provider", "Providers pointed at recovery vs enrolled"],
   },
   {
-    id: "edAccessRevenuePerVisit",
-    label: "Set revenue per recovered visit",
-    help: "The dollar every recovered ED visit is actually worth. Benchmarked, but your own number, not an assumed one.",
+    id: "edAccessMarginPerVisit",
+    label: "Set contribution margin per recovered visit",
+    help: "Contribution margin, not charges. This is what one more ED visit is actually worth to the bottom line on an already-staffed shift, benchmarked but your own number.",
     control: "countPerUnit",
     unit: "$/visit",
     min: 0,
@@ -985,9 +985,9 @@ export const ED_ACCESS_LEVERS: Lever[] = [
     realityStart: 0,
     ownerRole: "Partner finance",
     defaultDue: "Month 1",
-    signal: "Revenue booked per recovered ED visit",
+    signal: "Contribution margin booked per recovered ED visit",
     ownerRoleOptions: ["Partner finance", "ED operations", "Managed care contracting", "Revenue cycle / coding"],
-    signalOptions: ["Revenue booked per recovered ED visit", "Payer mix on recovered ED visits", "Average reimbursement per ED visit"],
+    signalOptions: ["Contribution margin booked per recovered ED visit", "Payer mix on recovered ED visits", "Average reimbursement per ED visit"],
   },
   {
     id: "edAccessAdmissionMargin",
@@ -1007,8 +1007,8 @@ export const ED_ACCESS_LEVERS: Lever[] = [
   },
   {
     id: "edAccessMinutesSaved",
-    label: "Convert freed time to faster throughput",
-    help: "Minutes saved on the note is what buys a faster door-to-provider time. This is the context the LWBS reduction target below is actually built on.",
+    label: "Set minutes saved per note",
+    help: "How much documentation time Abridge saves on the average ED note. The freed time this creates is what the throughput commitment below actually converts into recovered patients.",
     control: "countPerUnit",
     unit: "min/note",
     min: 0,
@@ -1017,9 +1017,41 @@ export const ED_ACCESS_LEVERS: Lever[] = [
     realityStart: 0,
     ownerRole: "ED operations",
     defaultDue: "Month 1",
-    signal: "Door-to-provider time, median",
+    signal: "Charting minutes per note, median",
     ownerRoleOptions: ["ED operations", "ED medical director", "ED operations / quality", "Charge nurses / unit leads"],
-    signalOptions: ["Door-to-provider time, median", "Charting minutes per note, median", "Provider time to disposition"],
+    signalOptions: ["Charting minutes per note, median", "Door-to-provider time, median", "Provider time to disposition"],
+  },
+  {
+    id: "edAccessHoursPerRecovery",
+    label: "Set hours of throughput time per recovered patient",
+    help: "How many provider-hours of committed, expedited attention it typically takes to bring back one patient who would otherwise have left. A real assumption, editable, not a hidden constant.",
+    control: "countPerUnit",
+    unit: "hrs/patient",
+    min: 0.25,
+    max: 8,
+    step: 0.25,
+    realityStart: 0,
+    ownerRole: "ED operations",
+    defaultDue: "Month 1",
+    signal: "Provider-hours of expedited throughput time per recovered patient, measured",
+    ownerRoleOptions: ["ED operations", "ED medical director", "ED operations / quality", "Charge nurses / unit leads"],
+    signalOptions: ["Provider-hours of expedited throughput time per recovered patient, measured", "Fast-track cycle time, median", "Door-to-provider time trend"],
+  },
+  {
+    id: "edAccessThroughputShare",
+    label: "Commit freed time to faster throughput",
+    help: "The share of freed charting time committed to faster door-to-provider throughput, instead of staying as protected relief. This is the one decision that mechanically turns freed time into recovered patients.",
+    control: "percent",
+    unit: "%",
+    min: 0,
+    max: 100,
+    step: 5,
+    realityStart: 0,
+    ownerRole: "ED medical director",
+    defaultDue: "Month 2",
+    signal: "Freed charting time actually committed to throughput, of the hour freed",
+    ownerRoleOptions: ["ED medical director", "ED operations / quality", "ED operations", "ED operations / case management"],
+    signalOptions: ["Freed charting time actually committed to throughput, of the hour freed", "Recovered LWBS pool realized vs mechanically enabled", "Door-to-provider time trend"],
   },
   {
     id: "edAccessLwbsRate",
@@ -1038,25 +1070,9 @@ export const ED_ACCESS_LEVERS: Lever[] = [
     signalOptions: ["LWBS rate, measured against this baseline", "LWBS volume by shift", "Door-to-provider time trend"],
   },
   {
-    id: "edAccessLwbsReduction",
-    label: "Set the LWBS reduction you are targeting",
-    help: "The share of the recoverable pool this plan commits to bringing back, driven by how much faster door-to-provider time the freed minutes above buy.",
-    control: "percent",
-    unit: "%",
-    min: 0,
-    max: 100,
-    step: 5,
-    realityStart: 0,
-    ownerRole: "ED medical director",
-    defaultDue: "Month 2",
-    signal: "LWBS reduction achieved against your current rate",
-    ownerRoleOptions: ["ED medical director", "ED operations / quality", "ED operations", "ED operations / case management"],
-    signalOptions: ["LWBS reduction achieved against your current rate", "Recovered LWBS pool realized vs targeted", "Door-to-provider time trend"],
-  },
-  {
     id: "edAccessAdmissionRate",
     label: "Set the share who become admissions",
-    help: "Not every recovered patient is admitted. This is the share of realized recovery that converts to a downstream admission.",
+    help: "Not every recovered patient is admitted. This is the share of realized recovery that converts to a downstream admission attempt.",
     control: "percent",
     unit: "%",
     min: 0,
@@ -1065,9 +1081,25 @@ export const ED_ACCESS_LEVERS: Lever[] = [
     realityStart: 0,
     ownerRole: "ED operations / case management",
     defaultDue: "Month 2",
-    signal: "Share of recovered patients captured as admissions",
+    signal: "Share of recovered patients captured as admission attempts",
     ownerRoleOptions: ["ED operations / case management", "ED medical director", "ED operations / quality", "ED operations"],
-    signalOptions: ["Share of recovered patients captured as admissions", "Admission conversion rate by shift", "Recovered-visit acuity mix"],
+    signalOptions: ["Share of recovered patients captured as admission attempts", "Admission conversion rate by shift", "Recovered-visit acuity mix"],
+  },
+  {
+    id: "edAccessAdmissionRealization",
+    label: "Set the admission realization rate",
+    help: "Not every admission attempt finds an empty bed or a payer-accepted stay. This is the honest cap on the admission leg, bed availability and payer mix.",
+    control: "percent",
+    unit: "%",
+    min: 0,
+    max: 100,
+    step: 5,
+    realityStart: 0,
+    ownerRole: "ED operations / case management",
+    defaultDue: "Month 2",
+    signal: "Admission attempts that actually realize as a booked stay",
+    ownerRoleOptions: ["ED operations / case management", "Partner finance", "Managed care contracting", "ED operations"],
+    signalOptions: ["Admission attempts that actually realize as a booked stay", "Bed availability at admission attempt", "Payer mix on captured admissions"],
   },
 ];
 
@@ -1438,14 +1470,19 @@ export function applyRealization(result: LeverContributionsResult, realizationPc
  * each is credited for the FULL hour, the plan double-books a single hour
  * of freed time as two dollars of value.
  *
- * The fix: when (and only when) both `access` and `retention` are selected
- * AT OUTPATIENT, `freedTimeSplit` (0-100, default 50) is the percentage of
- * the freed hour a partner has decided to route to opening access
- * (schedule). The remainder routes to protecting relief. ED access does
- * NOT compete for this hour - see `attainEdAccess.ts`'s module header for
- * why its dollar math never mechanically consumes a share of freed hours -
- * so at setting `"ed"` this split never engages and both goals get full,
- * unscaled credit even when both are selected.
+ * The fix: when (and only when) both `access` and `retention` are selected,
+ * `freedTimeSplit` (0-100, default 50) is the percentage of the freed hour
+ * a partner has decided to route to opening access/throughput. The
+ * remainder routes to protecting relief. This now applies at BOTH
+ * `"outpatient"` (access's D3 mechanically divides freed hours by a visit
+ * length) AND `"ed"` (ED access's D3 mechanically divides freed hours by
+ * its own hours-per-recovery constant - see `attainEdAccess.ts`'s module
+ * header) - the premium audit that rebuilt ED access's freed-time mechanism
+ * found the two goals narrating the same freed charting hour with no split
+ * at ED (finding I6), which this fix closes the same way outpatient's was
+ * already closed. `"inpatient"` and `"nursing"` access chains still do not
+ * mechanically consume a share of freed hours, so the split never engages
+ * there.
  *
  * BOTH sides of the fix use the exact same convention, because both are
  * decision CHAINS, not independent channels: scaling an already-computed
@@ -1470,12 +1507,13 @@ export function computeMultiGoalContributions(
   realizationByGoal: RealizationByGoal = {},
 ): MultiGoalContributionsResult {
   const uniqueGoals = Array.from(new Set(goals));
-  // The shared-hour conflict is outpatient access's own mechanism (D3
-  // mechanically divides freed hours by a visit length) - ED access's
-  // dollar math never does that division (see attainEdAccess.ts's module
-  // header), so it never contends for the hour and the split must not
-  // engage at setting "ed".
-  const hasFreedTimeConflict = setting === "outpatient" && uniqueGoals.includes("access") && uniqueGoals.includes("retention");
+  // The shared-hour conflict exists at both outpatient AND ed, since both
+  // settings' access chains mechanically divide freed hours by a
+  // conversion constant to create their own capacity/throughput (see
+  // attainAccess.ts's D3 and attainEdAccess.ts's D3, and the module-header
+  // comment above this function) - inpatient/nursing access chains have no
+  // such mechanism, so the split never engages there.
+  const hasFreedTimeConflict = (setting === "outpatient" || setting === "ed") && uniqueGoals.includes("access") && uniqueGoals.includes("retention");
   const accessShare = Math.min(1, Math.max(0, freedTimeSplit / 100));
   const retentionShare = 1 - accessShare;
 
@@ -1498,11 +1536,11 @@ export function computeMultiGoalContributions(
     const values = valuesByGoal[goal] ?? defaultLeverValues(goal, setting);
 
     if (goal === "access") {
+      const shareMultiplier = hasFreedTimeConflict ? accessShare : 1;
       if (setting === "ed") {
-        record(goal, computeEdAccessContributions(baseline, values));
+        record(goal, computeEdAccessContributions(baseline, values, shareMultiplier));
         continue;
       }
-      const shareMultiplier = hasFreedTimeConflict ? accessShare : 1;
       record(goal, computeAccessContributions(baseline, values, shareMultiplier));
       continue;
     }
