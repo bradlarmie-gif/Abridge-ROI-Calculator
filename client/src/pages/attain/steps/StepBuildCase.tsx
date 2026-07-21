@@ -1,9 +1,10 @@
 import { motion } from "framer-motion";
 import { Slider } from "@/components/ui/slider";
-import { LEVERS, lineOptions, defaultLeverValues, type Lever, type LeverValues } from "@/lib/attain/attainLevers";
+import { LEVERS, lineOptions, defaultLeverValues, type AttainBaseline, type Lever, type LeverValues } from "@/lib/attain/attainLevers";
 import type { MultiGoalContributionsResult } from "@/lib/attain/attainLevers";
 import { GOAL_CATALOG } from "@/lib/attain/attainGoals";
 import type { AttainSetting, GoalId } from "@/lib/attain/attainTypes";
+import AccessDecisionChain from "./AccessDecisionChain";
 
 function formatCompact(n: number): string {
   const sign = n < 0 ? "-" : "";
@@ -36,6 +37,7 @@ function formatLeverValue(lever: Lever, value: number | string[] | undefined): s
 
 interface StepBuildCaseProps {
   setting: AttainSetting;
+  baseline: AttainBaseline;
   goals: GoalId[];
   valuesByGoal: Partial<Record<GoalId, LeverValues>>;
   combined: MultiGoalContributionsResult | null;
@@ -56,6 +58,7 @@ interface StepBuildCaseProps {
  */
 export default function StepBuildCase({
   setting,
+  baseline,
   goals,
   valuesByGoal,
   combined,
@@ -173,11 +176,19 @@ export default function StepBuildCase({
               </p>
             )}
 
+            {goal === "access" ? (
+              <AccessDecisionChain
+                setting={setting}
+                baseline={baseline}
+                values={values}
+                onChangeValue={(leverId, value) => onChangeLeverValue("access", leverId, value)}
+              />
+            ) : (
             <div className="space-y-4">
               {levers.map((lever, i) => {
                 const contribution = contributionFor(lever.id);
                 const moved = isMoved(values[lever.id], lever.realityStart);
-                const isSharedFreedTime = hasFreedTimeConflict && (lever.id === "accessReinvest" || lever.id === "retentionFloor");
+                const isSharedFreedTime = hasFreedTimeConflict && lever.id === "retentionFloor";
                 return (
                   <motion.div
                     key={lever.id}
@@ -238,6 +249,7 @@ export default function StepBuildCase({
                 );
               })}
             </div>
+            )}
           </div>
         );
       })}

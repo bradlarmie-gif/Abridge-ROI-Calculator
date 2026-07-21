@@ -358,6 +358,7 @@ export default function AttainFlow({ onBackToJourney }: AttainFlowProps) {
             {step === "buildCase" && state.setting && goals.length > 0 && (
               <StepBuildCase
                 setting={state.setting}
+                baseline={baseline}
                 goals={goals}
                 valuesByGoal={valuesByGoal}
                 combined={combined}

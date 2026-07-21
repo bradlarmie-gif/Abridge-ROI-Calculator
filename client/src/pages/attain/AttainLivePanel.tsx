@@ -115,10 +115,17 @@ export default function AttainLivePanel({
           </div>
         )}
 
-        {state.scope.unitCount > 0 && (
+        {/* "In scope" only ever shows the partner's REAL baseline once a
+            decision has actually put it in scope on Build the case - never
+            merely because a setting was picked and a Starting-point
+            default was prefilled. Before that, it reads as a plain
+            placeholder, never a number nobody chose. */}
+        {settingLabel && goals.length > 0 && (
           <div className="flex justify-between items-center gap-2" data-testid="text-attain-panel-scope">
             <span className="text-sm text-white/50">In scope</span>
-            <span className="text-sm font-semibold text-white">{state.scope.unitCount.toLocaleString()}</span>
+            <span className="text-sm font-semibold text-white" data-testid="text-attain-panel-scope-value">
+              {movedDecisions.length > 0 && state.scope.unitCount > 0 ? state.scope.unitCount.toLocaleString() : "Not set yet"}
+            </span>
           </div>
         )}
 
@@ -127,9 +134,20 @@ export default function AttainLivePanel({
             <p className="text-[10px] uppercase tracking-widest text-white/40 mb-1">
               {goals.length > 1 ? "Plan so far, combined" : "Plan so far"}
             </p>
-            <p className="font-abridge text-2xl text-[#EA2C00]">{formatCompact(combined.combinedMargin)}</p>
+            {/* A dollar figure only ever appears once at least one decision
+                has actually been moved - a genuine $0 (e.g. capacity set
+                but demand not yet, for Access) still prints as $0, since
+                that is honestly what the chain has realized so far; only
+                the "nothing touched yet" state gets the placeholder. */}
+            <p className="font-abridge text-2xl text-[#EA2C00]" data-testid="text-attain-panel-target-value">
+              {movedDecisions.length > 0 ? formatCompact(combined.combinedMargin) : "Not set yet"}
+            </p>
             <p className="text-xs text-white/50 mt-1">
-              {combined.combinedMargin > 0 ? "Growing as you commit" : "Move a decision below to start building it"}
+              {movedDecisions.length === 0
+                ? "Move a decision below to start building it"
+                : combined.combinedMargin > 0
+                  ? "Growing as you commit"
+                  : "Every decision counts, keep going, the dollar appears once the chain is complete"}
             </p>
           </div>
         )}
