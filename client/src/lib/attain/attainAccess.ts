@@ -134,8 +134,10 @@ function fmtMoneyCompact(n: number): string {
 // ────────────────────────────────────────────────────────────────────────
 
 export interface AccessScope {
-  /** Providers actually in scope for access, capped to the partner's own
-   * Starting-point provider count (or, for Enterprise, exactly that count). */
+  /** Providers actually in scope for access, always capped to the
+   * partner's own Starting-point provider count. Enterprise defaults this
+   * to the full count as a convenience, but does NOT force it — a partner
+   * can still lower it to a subset. */
   providersInScope: number;
   /** Selected service lines (presets + any custom-added lines). Empty when
    * Enterprise is on, or when nothing has been picked yet. */
@@ -146,20 +148,25 @@ export interface AccessScope {
 /** D1: reads the partner's line selection, Enterprise toggle, and requested
  * provider count off the flat `LeverValues` bag (`accessLines`,
  * `accessEnterprise`, `accessProviders`), and resolves the real providers
- * in scope against the Starting-point baseline. Enterprise always resolves
- * to every provider in the baseline; otherwise the requested count is
- * capped so a partner can never scope in more providers than they told the
+ * in scope against the Starting-point baseline. Enterprise means "not
+ * broken out by a specific service line," NOT "every provider" — it
+ * defaults the requested count to every provider in the baseline only as a
+ * convenience when nothing has been requested yet, and a partner can still
+ * lower it to a subset. Either way the requested count is capped so a
+ * partner can never scope in more providers than they told the
  * Starting-point step they have. */
 export function computeAccessScope(baseline: AttainBaseline, values: LeverValues): AccessScope {
   const totalProviders = Math.max(0, Math.round(baseline.providers ?? 0));
   const enterprise = asNum(values.accessEnterprise) === 1;
   const lines = asLines(values.accessLines);
-  const requested = Math.max(0, Math.round(asNum(values.accessProviders)));
-  const providersInScope = enterprise
-    ? totalProviders
-    : totalProviders > 0
-      ? Math.min(requested, totalProviders)
-      : requested;
+  const rawRequested = Math.max(0, Math.round(asNum(values.accessProviders)));
+  // Enterprise means "not broken out by a specific service line," NOT
+  // "every single provider." It defaults the requested count to the full
+  // Starting-point count as a convenience only when nothing has been
+  // requested yet — a partner can still scope Enterprise access to a
+  // subset of providers by lowering this same field.
+  const requested = enterprise && rawRequested <= 0 ? totalProviders : rawRequested;
+  const providersInScope = totalProviders > 0 ? Math.min(requested, totalProviders) : requested;
   return { providersInScope, lines, enterprise };
 }
 

@@ -282,12 +282,18 @@ describe("computeLeverContributions", () => {
 describe("ACCESS decision chain (attainAccess.ts)", () => {
   const baseline: AttainBaseline = { providers: 40, annualEncounters: 40 * 600, utilizationPct: 100 };
 
-  it("D1: providers in scope is capped to the Starting-point baseline, and Enterprise resolves to every provider", () => {
+  it("D1: providers in scope is capped to the Starting-point baseline; Enterprise defaults to every provider as a convenience but does NOT force it", () => {
     const capped = computeAccessScope(baseline, { accessProviders: 999 });
     expect(capped.providersInScope).toBe(40);
 
-    const enterprise = computeAccessScope(baseline, { accessEnterprise: 1, accessProviders: 5 });
-    expect(enterprise.providersInScope).toBe(40);
+    // Enterprise with no explicit count yet defaults to every provider.
+    const enterpriseDefault = computeAccessScope(baseline, { accessEnterprise: 1 });
+    expect(enterpriseDefault.providersInScope).toBe(40);
+
+    // Enterprise means "not broken out by a specific service line," NOT
+    // "every provider" - a partner can still lower this to a subset.
+    const enterpriseSubset = computeAccessScope(baseline, { accessEnterprise: 1, accessProviders: 5 });
+    expect(enterpriseSubset.providersInScope).toBe(5);
 
     const partial = computeAccessScope(baseline, { accessProviders: 12 });
     expect(partial.providersInScope).toBe(12);

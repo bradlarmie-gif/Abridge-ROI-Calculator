@@ -187,7 +187,14 @@ export default function AccessDecisionChain({ setting, baseline, values, onChang
   const selectedLines = asLines(values.accessLines);
   const enterprise = asNum(values.accessEnterprise) === 1;
   const totalProviders = Math.max(0, Math.round(baseline.providers ?? 0));
-  const requestedProviders = asNum(values.accessProviders);
+  // Under Enterprise, default the requested count to every Starting-point
+  // provider as a convenience - NOT a lock. Enterprise means "not broken out
+  // by a specific service line," not "every single provider is in scope";
+  // a partner running access enterprise-wide across a subset of providers
+  // is a real, valid case this field has to allow.
+  const requestedProviders = enterprise && asNum(values.accessProviders) <= 0
+    ? totalProviders
+    : asNum(values.accessProviders);
 
   const chain = computeAccessChain(baseline, values);
   const { scope, capacity, demand, payoff, formulas } = chain;
@@ -289,25 +296,21 @@ export default function AccessDecisionChain({ setting, baseline, values, onChang
           <label className="text-xs font-medium text-[#3A3A3A] mb-1.5 block" htmlFor="access-providers">
             How many providers focus on access
           </label>
-          {enterprise ? (
-            <div className="h-11 rounded-md border border-[#E5E5E5] bg-[#F5F0EB] px-3 flex items-center text-sm text-[#8C8C8C]">
-              All {totalProviders.toLocaleString()} providers (Enterprise)
-            </div>
-          ) : (
-            <NumberField
-              id="access-providers"
-              value={requestedProviders}
-              onValueChange={(v) => onChangeValue("accessProviders", v)}
-              min={0}
-              max={totalProviders || undefined}
-              decimal={false}
-              className="h-11 w-full rounded-md border border-[#E5E5E5] bg-white px-3 text-sm"
-              placeholder={totalProviders > 0 ? `e.g., up to ${totalProviders}` : "e.g., 20"}
-              data-testid="input-access-providers"
-            />
-          )}
+          <NumberField
+            id="access-providers"
+            value={requestedProviders}
+            onValueChange={(v) => onChangeValue("accessProviders", v)}
+            min={0}
+            max={totalProviders || undefined}
+            decimal={false}
+            className="h-11 w-full rounded-md border border-[#E5E5E5] bg-white px-3 text-sm"
+            placeholder={totalProviders > 0 ? `e.g., up to ${totalProviders}` : "e.g., 20"}
+            data-testid="input-access-providers"
+          />
           <p className="text-[10px] text-[#8C8C8C] mt-1">
-            Capped at your Starting-point count{totalProviders > 0 ? ` of ${totalProviders.toLocaleString()}` : ""}.
+            {enterprise
+              ? `Defaults to all ${totalProviders.toLocaleString()} providers under Enterprise, but you can lower this to a subset, capped at your Starting-point count. Enterprise means not broken out by a specific service line, not every provider.`
+              : `Capped at your Starting-point count${totalProviders > 0 ? ` of ${totalProviders.toLocaleString()}` : ""}.`}
           </p>
         </div>
 
