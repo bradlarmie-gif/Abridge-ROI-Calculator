@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Download, Save } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Download, Save, ChevronDown, ChevronUp } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { NumberField } from "@/components/NumberField";
@@ -12,12 +12,21 @@ import {
   computeProgressAttainmentPct,
   parseSignalBaseline,
   perSignalWorth,
+  latestEntry,
+  currentValueFromEntries,
+  nextCheckDueDate,
+  computeActualTrajectory,
+  computeSparklineGeometry,
+  todayISODate,
   type AttainmentStatus,
+  type ProgressEntry,
+  type DecisionProgressInput,
+  type SignalProgressInput,
 } from "@/lib/attain/attainProgress";
 import { GOAL_CATALOG, getContent } from "@/lib/attain/attainGoals";
 import type { AttainState, AttainSetting, GoalId, GoalDef, SettingGoalContent } from "@/lib/attain/attainTypes";
 import type { GoalTargetResult, AttainmentResult } from "@/lib/attain/attainCalc";
-import { defaultCommitmentFor, type Commitment, type GoalOwner } from "./StepCommit";
+import { defaultCommitmentFor, type Commitment, type GoalOwner, type SignalCadence } from "./StepCommit";
 
 function formatCompact(n: number): string {
   const sign = n < 0 ? "-" : "";
@@ -25,6 +34,17 @@ function formatCompact(n: number): string {
   if (abs >= 1_000_000) return `${sign}$${(abs / 1_000_000).toFixed(abs % 1_000_000 === 0 ? 0 : 1)}M`;
   if (abs >= 1_000) return `${sign}$${Math.round(abs / 1_000)}K`;
   return `${sign}$${Math.round(abs)}`;
+}
+
+/** "Jul 14, 2026" — every date on the Progress tab prints as a real,
+ * absolute date (never a relative "just now"/"3d ago"), since the whole
+ * point of Change 2 is a dated record that still reads correctly the next
+ * time someone opens this for an EBR, not just in the moment it was typed. */
+function formatDate(iso: string | undefined): string {
+  if (!iso) return "Not logged yet";
+  const d = new Date(`${iso}T00:00:00`);
+  if (Number.isNaN(d.getTime())) return "Not logged yet";
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
 const UNIT_LABEL: Record<string, string> = {
@@ -65,19 +85,6 @@ function StatusPill({ status, testId }: { status: AttainmentStatus; testId: stri
   );
 }
 
-/** "Just now" / "12m ago" style relative time. Progress edits are session-
- * local (see the persistence note on `progressUpdatedAt` in AttainFlow), so
- * this is always describing something that happened in the current visit. */
-function formatUpdated(ts: number | undefined): string {
-  if (!ts) return "Not started yet";
-  const diffMin = Math.max(0, Math.round((Date.now() - ts) / 60_000));
-  if (diffMin < 1) return "Just now";
-  if (diffMin < 60) return `${diffMin}m ago`;
-  const diffHr = Math.round(diffMin / 60);
-  if (diffHr < 24) return `${diffHr}h ago`;
-  return `${Math.round(diffHr / 24)}d ago`;
-}
-
 function isMoved(value: number | string[] | undefined, realityStart: number | string[]): boolean {
   if (Array.isArray(realityStart)) return Array.isArray(value) && value.length > 0;
   return typeof value === "number" && value !== realityStart;
@@ -107,6 +114,342 @@ function committedLeversFor(
     .sort((a, b) => (b.contribution?.marginalMargin ?? 0) - (a.contribution?.marginalMargin ?? 0));
 }
 
+/**
+ * The decisions checklist, as one clean table — extracted so a multi-priority
+ * plan can render one of these per priority (grouped, Change 1) while a
+ * single-priority plan still gets exactly one, with no repeated "Priority"
+ * column that was mostly blank alignment noise before.
+ */
+function DecisionsTable({
+  rows,
+  testId,
+}: {
+  rows: Array<CommittedLever & { goal: GoalId }>;
+  testId: string;
+}) {
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-left border-collapse" data-testid={testId}>
+        <thead>
+          <tr>
+            <th className="text-[8.5px] font-semibold uppercase tracking-wide text-[#8C8C8C] pb-2 border-b border-[#E7E0D6]">Decision</th>
+            <th className="text-[8.5px] font-semibold uppercase tracking-wide text-[#8C8C8C] pb-2 border-b border-[#E7E0D6]">Owner</th>
+            <th className="text-[8.5px] font-semibold uppercase tracking-wide text-[#8C8C8C] pb-2 border-b border-[#E7E0D6]">By when</th>
+            <th className="text-[8.5px] font-semibold uppercase tracking-wide text-[#8C8C8C] pb-2 border-b border-[#E7E0D6] text-right">Worth</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map(({ goal, lever, contribution, owner, due }) => (
+            <tr key={`${goal}:${lever.id}`} data-testid={`row-attain-plan-decision-${goal}-${lever.id}`}>
+              <td className="py-3 px-2 border-b border-[#F0ECE5] align-top max-w-[320px]">
+                <p className="text-[11px] font-bold text-[#1A1A1A]">{lever.label}</p>
+                <p className="text-[9.5px] text-[#8C8C8C] mt-0.5 leading-relaxed">{lever.help}</p>
+              </td>
+              <td className="py-3 px-2 border-b border-[#F0ECE5] align-top text-[10.5px] text-[#3A3A3A] whitespace-nowrap">{owner}</td>
+              <td className="py-3 px-2 border-b border-[#F0ECE5] align-top text-[10.5px] text-[#3A3A3A] whitespace-nowrap">{due}</td>
+              <td className="py-3 px-2 border-b border-[#F0ECE5] align-top text-right whitespace-nowrap">
+                <p className="text-[11px] font-bold text-[#EA2C00]">{formatCompact(contribution?.marginalMargin ?? 0)}</p>
+                <p className="text-[9px] text-[#8C8C8C]">{Math.round((contribution?.pctOfTotal ?? 0) * 100)}% of its priority</p>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+/**
+ * One priority's card in the "value by domain" composition (Change 1) —
+ * only rendered when a plan has 2+ priorities, so a single-priority plan
+ * never shows this alongside the combined headline it would just repeat.
+ */
+function PriorityBreakdownCard({ goalDef, margin, share }: { goalDef: GoalDef; margin: number; share: number }) {
+  return (
+    <div className="flex-1 min-w-[150px] bg-[#F8F5F1] border border-[#E7E0D6] rounded-md p-4" data-testid={`card-attain-plan-priority-${goalDef.id}`}>
+      <span
+        className="inline-block text-[8px] font-bold uppercase tracking-[1.2px] text-white px-2 py-0.5 rounded-full mb-2.5"
+        style={{ background: goalDef.pillBg }}
+      >
+        {goalDef.pill}
+      </span>
+      <p className="font-abridge text-2xl text-[#1A1A1A]" data-testid={`text-attain-plan-priority-value-${goalDef.id}`}>
+        {formatCompact(margin)}
+      </p>
+      <p className="text-[9px] text-[#8C8C8C] mt-1">
+        <b className="text-[#3A3A3A]">{share}%</b> of combined · {goalDef.label}
+      </p>
+    </div>
+  );
+}
+
+/** A signal's baseline -> ... -> current sparkline, scaled against its own
+ * target so the line's rise (or fall) toward the reference line reads at a
+ * glance. Bespoke inline SVG, not a chart-library default — geometry comes
+ * from the tested `computeSparklineGeometry` helper. */
+function SignalSparkline({ entries, target }: { entries: ProgressEntry[]; target: number }) {
+  const W = 96;
+  const H = 28;
+  const values = entries.map((e) => e.value);
+  const geo = computeSparklineGeometry(values, target, W, H);
+  if (geo.points.length === 0) return null;
+  const path = geo.points.map((p, i) => `${i === 0 ? "M" : "L"}${p.x},${p.y}`).join(" ");
+  const last = geo.points[geo.points.length - 1];
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} width={W} height={H} data-testid="svg-attain-signal-sparkline">
+      <line x1={0} y1={geo.targetY} x2={W} y2={geo.targetY} stroke="#D8CFC4" strokeWidth={1} strokeDasharray="2 2" />
+      <path d={path} fill="none" stroke="#EA2C00" strokeWidth={1.75} />
+      {geo.points.slice(0, -1).map((p, i) => (
+        <circle key={i} cx={p.x} cy={p.y} r={1.75} fill="#fff" stroke="#EA2C00" strokeWidth={1.25} />
+      ))}
+      <circle cx={last.x} cy={last.y} r={2.75} fill="#EA2C00" />
+    </svg>
+  );
+}
+
+/** The dated, expandable history list under a signal — "how it moved and
+ * why", most recent first. */
+function SignalHistoryList({ entries, unit }: { entries: ProgressEntry[]; unit: string }) {
+  const reversed = [...entries].reverse();
+  return (
+    <div className="mt-2 space-y-1.5" data-testid="list-attain-signal-history">
+      {reversed.map((e, i) => (
+        <div key={i} className="flex items-baseline gap-3 text-[10px]">
+          <span className="text-[#8C8C8C] whitespace-nowrap w-[76px] flex-shrink-0">{formatDate(e.date)}</span>
+          <span className="font-semibold text-[#1A1A1A] whitespace-nowrap">
+            {e.value.toLocaleString()} {unit}
+          </span>
+          {e.note && <span className="text-[#8C8C8C] italic truncate">{e.note}</span>}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/** One signal's row inside a decision's progress card: the baseline -> current
+ * -> target track, its trend, when it was last checked and when it's due
+ * again, the "Log an update" action (the "and then what" after typing a
+ * number), and its own expandable dated history. */
+function SignalProgressRow({
+  signalKey,
+  signalLabel,
+  unit,
+  cadence,
+  baseline,
+  target,
+  entries,
+  onLogProgressUpdate,
+}: {
+  signalKey: string;
+  signalLabel: string;
+  unit: string;
+  cadence: SignalCadence;
+  baseline: number;
+  target: number;
+  entries: ProgressEntry[];
+  onLogProgressUpdate: (signalKey: string, value: number, note?: string) => void;
+}) {
+  const current = currentValueFromEntries(entries, baseline);
+  const [loggingOpen, setLoggingOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [draftValue, setDraftValue] = useState(current);
+  const [draftNote, setDraftNote] = useState("");
+
+  useEffect(() => {
+    if (!loggingOpen) setDraftValue(current);
+  }, [current, loggingOpen]);
+
+  const fraction = decisionAttainmentFraction(baseline, current, target);
+  const status = decisionStatus(fraction);
+  const last = latestEntry(entries);
+  const nextDue = last ? nextCheckDueDate(last.date, cadence) : undefined;
+  const isOverdue = !!nextDue && nextDue < todayISODate();
+
+  function handleSave() {
+    onLogProgressUpdate(signalKey, draftValue, draftNote);
+    setDraftNote("");
+    setLoggingOpen(false);
+  }
+
+  return (
+    <div className="border-t border-[#F0ECE5] pt-3 mt-3 first:border-t-0 first:pt-0 first:mt-0" data-testid={`row-attain-progress-signal-${signalKey}`}>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-[10.5px] font-bold text-[#1A1A1A]">{signalLabel}</p>
+          <p className="text-[9px] text-[#8C8C8C] capitalize">Checked {cadence}</p>
+        </div>
+        <StatusPill status={status} testId={`badge-attain-progress-status-${signalKey}`} />
+      </div>
+
+      <div className="flex flex-wrap items-center gap-4 mt-2.5">
+        <div className="flex items-baseline gap-2 text-[10.5px] whitespace-nowrap">
+          <span className="text-[#8C8C8C]">{baseline.toLocaleString()}</span>
+          <span className="text-[#B4B4B4]">&rarr;</span>
+          <span className="font-abridge text-lg text-[#EA2C00]" data-testid={`text-attain-progress-current-${signalKey}`}>
+            {current.toLocaleString()}
+          </span>
+          <span className="text-[#B4B4B4]">&rarr;</span>
+          <span className="font-semibold text-[#1A1A1A]">{target.toLocaleString()}</span>
+          <span className="text-[#8C8C8C]">{unit}</span>
+        </div>
+        <SignalSparkline entries={entries} target={target} />
+      </div>
+
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2.5 text-[9.5px] text-[#8C8C8C]">
+        <span data-testid={`text-attain-progress-last-updated-${signalKey}`}>Last logged {formatDate(last?.date)}</span>
+        <span className={isOverdue ? "text-[#EA2C00] font-semibold" : ""} data-testid={`text-attain-progress-next-due-${signalKey}`}>
+          Next check due {formatDate(nextDue)}
+          {isOverdue ? " · overdue" : ""}
+        </span>
+        <button
+          type="button"
+          onClick={() => setHistoryOpen((v) => !v)}
+          className="flex items-center gap-1 font-semibold text-[#1A1A1A] hover:text-[#EA2C00]"
+          data-testid={`button-attain-progress-history-toggle-${signalKey}`}
+        >
+          {entries.length} logged entr{entries.length === 1 ? "y" : "ies"}
+          {historyOpen ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+        </button>
+        {!loggingOpen && (
+          <button
+            type="button"
+            onClick={() => setLoggingOpen(true)}
+            className="text-[#EA2C00] font-semibold hover:underline"
+            data-testid={`button-attain-progress-log-open-${signalKey}`}
+          >
+            + Log an update
+          </button>
+        )}
+      </div>
+
+      {historyOpen && <SignalHistoryList entries={entries} unit={unit} />}
+
+      {loggingOpen && (
+        <div className="mt-3 bg-[#F8F5F1] border border-[#E7E0D6] rounded-md p-3" data-testid={`form-attain-progress-log-${signalKey}`}>
+          <div className="flex flex-wrap items-end gap-2.5">
+            <div>
+              <p className="text-[8px] font-bold uppercase tracking-wide text-[#8C8C8C] mb-1">New value ({unit})</p>
+              <NumberField
+                value={draftValue}
+                onValueChange={setDraftValue}
+                min={0}
+                className="h-9 w-24 rounded-md border border-[#D8CFC4] bg-white px-2 text-xs text-[#1A1A1A] outline-none focus:border-[#EA2C00]"
+                data-testid={`input-attain-progress-log-value-${signalKey}`}
+              />
+            </div>
+            <div className="flex-1 min-w-[180px]">
+              <p className="text-[8px] font-bold uppercase tracking-wide text-[#8C8C8C] mb-1">What changed (optional)</p>
+              <input
+                value={draftNote}
+                onChange={(e) => setDraftNote(e.target.value)}
+                placeholder="e.g., new EHR order set went live"
+                className="h-9 w-full rounded-md border border-[#D8CFC4] bg-white px-2.5 text-xs text-[#1A1A1A] outline-none focus:border-[#EA2C00]"
+                data-testid={`input-attain-progress-log-note-${signalKey}`}
+              />
+            </div>
+            <Button
+              onClick={handleSave}
+              className="h-9 px-4 bg-[#EA2C00] hover:bg-[#D42600] text-white text-xs"
+              data-testid={`button-attain-progress-log-save-${signalKey}`}
+            >
+              Save
+            </Button>
+            <button
+              type="button"
+              onClick={() => setLoggingOpen(false)}
+              className="h-9 px-2 text-xs text-[#8C8C8C] hover:text-[#1A1A1A]"
+              data-testid={`button-attain-progress-log-cancel-${signalKey}`}
+            >
+              Cancel
+            </button>
+          </div>
+          <p className="text-[9px] text-[#B4B4B4] mt-2">Dated today, {formatDate(todayISODate())}, and added to this signal's history below.</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+interface ProgressSignalRowData {
+  key: string;
+  decisionKey: string;
+  goal: GoalId;
+  lever: Lever;
+  owner: string;
+  due: string;
+  signalLabel: string;
+  unit: string;
+  cadence: SignalCadence;
+  baseline: number;
+  target: number;
+  worth: number;
+  entries: ProgressEntry[];
+  current: number;
+}
+
+/** One committed decision's card on the Progress tab: the decision, its
+ * owner, every signal it watches (each with its own baseline -> current ->
+ * target track, trend, and Log-update action), rolled up to one status. A
+ * decision only reads as "Landed" once EVERY signal it watches has - a
+ * decision with two signals, one landed and one still moving, is honestly
+ * "In motion", not landed on the strength of its easier signal alone. */
+function DecisionProgressCard({
+  rows,
+  showPriority,
+  goalDef,
+  onLogProgressUpdate,
+}: {
+  rows: ProgressSignalRowData[];
+  showPriority: boolean;
+  goalDef: GoalDef;
+  onLogProgressUpdate: (signalKey: string, value: number, note?: string) => void;
+}) {
+  const first = rows[0];
+  const fractions = rows.map((r) => decisionAttainmentFraction(r.baseline, r.current, r.target));
+  const minFraction = Math.min(...fractions);
+  const status = decisionStatus(minFraction);
+
+  return (
+    <div className="border border-[#E7E0D6] rounded-lg bg-white p-4 mb-3" data-testid={`card-attain-progress-decision-${first.decisionKey}`}>
+      <div className="flex flex-wrap items-start justify-between gap-3 mb-1">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 mb-1">
+            {showPriority && (
+              <span
+                className="inline-block text-[8px] font-bold uppercase tracking-[1.2px] text-white px-2 py-0.5 rounded-full whitespace-nowrap"
+                style={{ background: goalDef.pillBg }}
+              >
+                {goalDef.pill}
+              </span>
+            )}
+            <p className="text-[12.5px] font-bold text-[#1A1A1A]">{first.lever.label}</p>
+          </div>
+          <p className="text-[10px] text-[#8C8C8C]">
+            {first.owner} · due {first.due}
+          </p>
+        </div>
+        <StatusPill status={status} testId={`badge-attain-progress-decision-status-${first.decisionKey}`} />
+      </div>
+
+      <div>
+        {rows.map((row) => (
+          <SignalProgressRow
+            key={row.key}
+            signalKey={row.key}
+            signalLabel={row.signalLabel}
+            unit={row.unit}
+            cadence={row.cadence}
+            baseline={row.baseline}
+            target={row.target}
+            entries={row.entries}
+            onLogProgressUpdate={onLogProgressUpdate}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 interface StepAttainmentProps {
   state: AttainState;
   setting: AttainSetting;
@@ -118,13 +461,13 @@ interface StepAttainmentProps {
   commitments: Record<string, Commitment>;
   goalOwnerByPriority: Partial<Record<GoalId, GoalOwner>>;
   freedTimeSplit: number;
-  /** Current value per committed decision (key = `${goal}:${leverId}`), the
-   * Progress tab's editable "where this signal actually stands today". */
-  progressCurrent: Record<string, number>;
-  /** When each decision's current value was last touched, session-local -
-   * see the persistence note on this state in AttainFlow. */
-  progressUpdatedAt: Record<string, number>;
-  onChangeProgressCurrent: (key: string, value: number) => void;
+  /** Every committed signal's dated log (key = `${goal}:${leverId}:${signalId}`)
+   * — the Progress tab's real memory. See the persistence note on this state
+   * in AttainFlow: session-local until the save/backend layer lands. */
+  progressEntries: Record<string, ProgressEntry[]>;
+  /** Appends a dated entry (today, a new value, an optional note) to one
+   * signal's log — the one write path "Log an update" uses. */
+  onLogProgressUpdate: (signalKey: string, value: number, note?: string) => void;
   onMonthsElapsedChange: (months: number) => void;
   /** The real step number in the current (dynamic) sequence - one build-case
    * page per selected goal means Attainment's position shifts with goal
@@ -143,13 +486,15 @@ export default function StepAttainment({
   commitments,
   goalOwnerByPriority,
   freedTimeSplit,
-  progressCurrent,
-  progressUpdatedAt,
-  onChangeProgressCurrent,
+  progressEntries,
+  onLogProgressUpdate,
   onMonthsElapsedChange,
   stepNumber,
 }: StepAttainmentProps) {
-  const [orgName, setOrgName] = useState("");
+  // A clean, real, editable field rather than a dangling empty placeholder —
+  // starts on a sensible default name the partner can overwrite with their
+  // own organization's name.
+  const [orgName, setOrgName] = useState("Your organization");
   const [tab, setTab] = useState<"strategy" | "progress">("strategy");
   const today = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
 
@@ -169,18 +514,12 @@ export default function StepAttainment({
     return committedLeversFor(goal, values, result?.perLever, commitments).map((c) => ({ ...c, goal }));
   }).sort((a, b) => (b.contribution?.marginalMargin ?? 0) - (a.contribution?.marginalMargin ?? 0));
 
-  // The Progress tab's per-SIGNAL baseline -> current -> target track
-  // (Change 3: a decision can watch more than one signal, so Progress now
-  // tracks each signal, not each decision as a single row). `target` is
-  // still the lever's own CHOSEN value from Build the case, shared by every
-  // signal under that decision — there is only one real engine-derived
-  // target per decision, not one per signal. Each signal's own free-text
-  // "baseline today" capture is parsed back into a number via
-  // `parseSignalBaseline`; a decision's worth is split evenly across its
-  // signals via `perSignalWorth`, so a decision broken into two signal rows
-  // never out-weighs one left at a single signal in the combined percent.
-  // See attainProgress.ts for the math this feeds.
-  const progressRows = allCommitted.flatMap(({ goal, lever, contribution, owner }) => {
+  // The Progress tab's per-SIGNAL rows, now sourced from each signal's dated
+  // log (Change 2) rather than one editable "current" field. `current` is
+  // always the latest logged entry (or the baseline itself, before the
+  // seeding effect in AttainFlow has had a chance to run once on mount —
+  // see the fallback below, which matches what that effect would seed).
+  const progressRows: ProgressSignalRowData[] = allCommitted.flatMap(({ goal, lever, contribution, owner, due }) => {
     const key = `${goal}:${lever.id}`;
     const commitment = commitments[key] ?? defaultCommitmentFor(goal, lever);
     const chosenValue = (valuesByGoal[goal] ?? defaultLeverValues(goal))[lever.id];
@@ -191,24 +530,57 @@ export default function StepAttainment({
     return signals.map((sig) => {
       const signalKey = `${key}:${sig.id}`;
       const baseline = parseSignalBaseline(sig.baseline);
-      const current = progressCurrent[signalKey] ?? baseline;
+      const entries = progressEntries[signalKey] ?? [{ date: todayISODate(), value: baseline }];
       return {
         key: signalKey,
         decisionKey: key,
         goal,
         lever,
         owner,
+        due,
         signalLabel: sig.label.trim() || lever.signal,
         unit: sig.unit.trim() || lever.unit,
         cadence: sig.cadence,
         baseline,
-        current,
         target: targetValue,
         worth: worthPerSignal,
+        entries,
+        current: currentValueFromEntries(entries, baseline),
       };
     });
   });
-  const progressPct = computeProgressAttainmentPct(progressRows);
+
+  const progressDecisionInputs: DecisionProgressInput[] = progressRows.map((r) => ({
+    key: r.key,
+    baseline: r.baseline,
+    current: r.current,
+    target: r.target,
+    worth: r.worth,
+  }));
+  const progressPct = computeProgressAttainmentPct(progressDecisionInputs);
+
+  // The REAL, dated climb this plan has actually made — every signal's log,
+  // carried forward date by date, weighted by worth exactly like the percent
+  // above. This is what the curve plots below; it is never a synthetic
+  // 3-point line on the Progress tab.
+  const trajectorySignals: SignalProgressInput[] = progressRows.map((r) => ({
+    key: r.key,
+    baseline: r.baseline,
+    target: r.target,
+    worth: r.worth,
+    entries: r.entries,
+  }));
+  const trajectory = computeActualTrajectory(trajectorySignals, todayISODate());
+  const trajectoryPct = trajectory.length > 0 ? trajectory[trajectory.length - 1].pct : progressPct;
+
+  // Signal rows grouped back into one card per DECISION (Change 2) — a
+  // decision with two signals reads as one card watching two things, not
+  // two unrelated rows.
+  const decisionKeysOrdered = Array.from(new Set(progressRows.map((r) => r.decisionKey)));
+  const decisionCards = decisionKeysOrdered.map((decisionKey) => ({
+    decisionKey,
+    rows: progressRows.filter((r) => r.decisionKey === decisionKey),
+  }));
 
   const goalDefs = goals.map((g) => GOAL_CATALOG[g]);
   const planTitle = goalDefs.length === 1 ? goalDefs[0].label : goalDefs.map((g) => g.label).join(" + ");
@@ -266,32 +638,10 @@ export default function StepAttainment({
           <p className="text-[10px] font-semibold uppercase tracking-[3.2px] text-[#EA2C00] mb-1">Where This Stands</p>
           <h2 className="font-abridge text-[28px] text-[#1A1A1A] mb-4">Progress</h2>
           <p className="text-[13px] leading-relaxed text-[#3A3A3A] mb-5 max-w-[720px]">
-            This is the surface to come back to. Move a decision's current value toward its target as the real
-            number changes in your operation, and the percent below, and the curve, climb with it. Nothing here is
-            projected. It only moves when someone tells it something actually moved.
+            This is the surface to come back to. On a cadence, log the real number for each signal below — the date
+            stamps itself, the trend and the curve climb with it, and the history builds a dated record for the next
+            review. Nothing here is projected. It only moves when someone logs that something actually moved.
           </p>
-
-          <AttainmentCurve
-            pct={progressPct}
-            onPacePct={attainment.onPacePct}
-            monthsElapsed={state.monthsElapsed}
-            totalMonths={state.totalMonths}
-            goalLabel={curveGoalLabel}
-            usualLabel={curveUsualLabel}
-          />
-
-          <div className="flex flex-wrap gap-3 my-6">
-            <div className="flex-1 min-w-[160px] border border-[#E7E0D6] bg-[#F8F5F1] rounded-md p-4" data-testid="card-attain-progress-stat-attainment">
-              <p className="text-[8.5px] font-semibold uppercase tracking-[1.4px] text-[#8C8C8C]">Attainment, from real progress</p>
-              <p className="font-abridge text-2xl text-[#EA2C00] mt-2 mb-1" data-testid="text-attain-progress-pct">{progressPct}%</p>
-              <p className="text-[9px] text-[#8C8C8C]">Weighted by each decision's worth</p>
-            </div>
-            <div className="flex-1 min-w-[160px] border border-[#E7E0D6] bg-[#F8F5F1] rounded-md p-4" data-testid="card-attain-progress-stat-onpace">
-              <p className="text-[8.5px] font-semibold uppercase tracking-[1.4px] text-[#8C8C8C]">On-pace target</p>
-              <p className="font-abridge text-2xl text-[#1A1A1A] mt-2 mb-1">{attainment.onPacePct}%</p>
-              <p className="text-[9px] text-[#8C8C8C]">Where the plan expected this month</p>
-            </div>
-          </div>
 
           {progressRows.length === 0 ? (
             <div className="bg-[#F4F0EA] border-l-[3px] border-[#EA2C00] rounded-r-md p-4" data-testid="text-attain-progress-empty">
@@ -300,91 +650,51 @@ export default function StepAttainment({
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse" data-testid="table-attain-progress">
-                <thead>
-                  <tr>
-                    {goalDefs.length > 1 && (
-                      <th className="text-[8.5px] font-semibold uppercase tracking-wide text-[#8C8C8C] pb-2 border-b border-[#E7E0D6]">Priority</th>
-                    )}
-                    <th className="text-[8.5px] font-semibold uppercase tracking-wide text-[#8C8C8C] pb-2 border-b border-[#E7E0D6]">Decision</th>
-                    <th className="text-[8.5px] font-semibold uppercase tracking-wide text-[#8C8C8C] pb-2 border-b border-[#E7E0D6]">Owner</th>
-                    <th className="text-[8.5px] font-semibold uppercase tracking-wide text-[#8C8C8C] pb-2 border-b border-[#E7E0D6]">Signal</th>
-                    <th className="text-[8.5px] font-semibold uppercase tracking-wide text-[#8C8C8C] pb-2 border-b border-[#E7E0D6]">Checked</th>
-                    <th className="text-[8.5px] font-semibold uppercase tracking-wide text-[#8C8C8C] pb-2 border-b border-[#E7E0D6] text-right">Baseline</th>
-                    <th className="text-[8.5px] font-semibold uppercase tracking-wide text-[#8C8C8C] pb-2 border-b border-[#E7E0D6]">Current</th>
-                    <th className="text-[8.5px] font-semibold uppercase tracking-wide text-[#8C8C8C] pb-2 border-b border-[#E7E0D6] text-right">Target</th>
-                    <th className="text-[8.5px] font-semibold uppercase tracking-wide text-[#8C8C8C] pb-2 border-b border-[#E7E0D6]">Status</th>
-                    <th className="text-[8.5px] font-semibold uppercase tracking-wide text-[#8C8C8C] pb-2 border-b border-[#E7E0D6]">Updated</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {progressRows.map((row, i) => {
-                    const fraction = decisionAttainmentFraction(row.baseline, row.current, row.target);
-                    const status = decisionStatus(fraction);
-                    // A decision's name (and owner/priority pill) prints
-                    // once, on the first of its signal rows - every
-                    // subsequent signal under the SAME decision only adds a
-                    // new "Signal" row underneath it, so a two-signal
-                    // decision reads as one decision with two things
-                    // watched, not two unrelated rows.
-                    const isFirstSignalForDecision = i === 0 || progressRows[i - 1].decisionKey !== row.decisionKey;
-                    return (
-                      <tr key={row.key} data-testid={`row-attain-progress-${row.key}`}>
-                        {goalDefs.length > 1 && (
-                          <td className="py-3 px-2 border-b border-[#F0ECE5] align-top">
-                            {isFirstSignalForDecision && (
-                              <span
-                                className="inline-block text-[8px] font-bold uppercase tracking-[1.2px] text-white px-2 py-0.5 rounded-full whitespace-nowrap"
-                                style={{ background: GOAL_CATALOG[row.goal].pillBg }}
-                              >
-                                {GOAL_CATALOG[row.goal].pill}
-                              </span>
-                            )}
-                          </td>
-                        )}
-                        <td className="py-3 px-2 border-b border-[#F0ECE5] align-top max-w-[220px]">
-                          {isFirstSignalForDecision && <p className="text-[11px] font-bold text-[#1A1A1A]">{row.lever.label}</p>}
-                        </td>
-                        <td className="py-3 px-2 border-b border-[#F0ECE5] align-top text-[10.5px] text-[#3A3A3A]">
-                          {isFirstSignalForDecision && row.owner}
-                        </td>
-                        <td className="py-3 px-2 border-b border-[#F0ECE5] align-top text-[9.5px] text-[#8C8C8C] max-w-[200px]">{row.signalLabel}</td>
-                        <td className="py-3 px-2 border-b border-[#F0ECE5] align-top text-[9.5px] text-[#8C8C8C] capitalize whitespace-nowrap">{row.cadence}</td>
-                        <td className="py-3 px-2 border-b border-[#F0ECE5] align-top text-right text-[10.5px] text-[#8C8C8C] whitespace-nowrap">
-                          {row.baseline.toLocaleString()} {row.unit}
-                        </td>
-                        <td className="py-3 px-2 border-b border-[#F0ECE5] align-top">
-                          <div className="flex items-center gap-1.5">
-                            <NumberField
-                              value={row.current}
-                              onValueChange={(v) => onChangeProgressCurrent(row.key, v)}
-                              min={0}
-                              className="h-8 w-20 rounded-md border border-[#D8CFC4] bg-white px-2 text-xs text-[#1A1A1A] outline-none focus:border-[#EA2C00]"
-                              data-testid={`input-attain-progress-current-${row.key}`}
-                            />
-                            <span className="text-[9px] text-[#8C8C8C] whitespace-nowrap">{row.unit}</span>
-                          </div>
-                        </td>
-                        <td className="py-3 px-2 border-b border-[#F0ECE5] align-top text-right text-[10.5px] font-semibold text-[#1A1A1A] whitespace-nowrap">
-                          {row.target.toLocaleString()} {row.lever.unit}
-                        </td>
-                        <td className="py-3 px-2 border-b border-[#F0ECE5] align-top">
-                          <StatusPill status={status} testId={`badge-attain-progress-status-${row.key}`} />
-                        </td>
-                        <td className="py-3 px-2 border-b border-[#F0ECE5] align-top text-[9.5px] text-[#8C8C8C] whitespace-nowrap">
-                          {formatUpdated(progressUpdatedAt[row.key])}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+            <>
+              <AttainmentCurve
+                pct={trajectoryPct}
+                onPacePct={attainment.onPacePct}
+                monthsElapsed={state.monthsElapsed}
+                totalMonths={state.totalMonths}
+                goalLabel={curveGoalLabel}
+                usualLabel={curveUsualLabel}
+                startLabel="Committed"
+                actualPoints={trajectory}
+              />
+
+              <div className="flex flex-wrap gap-3 my-6">
+                <div className="flex-1 min-w-[160px] border border-[#E7E0D6] bg-[#F8F5F1] rounded-md p-4" data-testid="card-attain-progress-stat-attainment">
+                  <p className="text-[8.5px] font-semibold uppercase tracking-[1.4px] text-[#8C8C8C]">Attainment, from real progress</p>
+                  <p className="font-abridge text-2xl text-[#EA2C00] mt-2 mb-1" data-testid="text-attain-progress-pct">{progressPct}%</p>
+                  <p className="text-[9px] text-[#8C8C8C]">Weighted by each decision's worth</p>
+                </div>
+                <div className="flex-1 min-w-[160px] border border-[#E7E0D6] bg-[#F8F5F1] rounded-md p-4" data-testid="card-attain-progress-stat-onpace">
+                  <p className="text-[8.5px] font-semibold uppercase tracking-[1.4px] text-[#8C8C8C]">On-pace target</p>
+                  <p className="font-abridge text-2xl text-[#1A1A1A] mt-2 mb-1">{attainment.onPacePct}%</p>
+                  <p className="text-[9px] text-[#8C8C8C]">Where the plan expected this month</p>
+                </div>
+              </div>
+
+              <div data-testid="list-attain-progress-decisions">
+                {decisionCards.map(({ decisionKey, rows }) => (
+                  <DecisionProgressCard
+                    key={decisionKey}
+                    rows={rows}
+                    showPriority={goalDefs.length > 1}
+                    goalDef={GOAL_CATALOG[rows[0].goal]}
+                    onLogProgressUpdate={onLogProgressUpdate}
+                  />
+                ))}
+              </div>
+            </>
           )}
 
           <p className="text-[10px] text-[#B4B4B4] leading-relaxed max-w-[600px] mt-6 border-t border-[#E5E5E5] pt-3">
-            Progress edits here live in this session only. Coming back to this exact percent tomorrow, from another
+            {/* Persistence note: entries live in local/session state for now
+                (see AttainFlow.tsx's `progressEntries`). Coming back to this
+                exact dated history tomorrow, from another device, needs the
+                save/backend layer — out of scope for this pass. */}
+            Progress logged here lives in this session only. Coming back to this exact history tomorrow, from another
             device, needs the save/backend layer — out of scope for this pass.
           </p>
         </motion.section>
@@ -420,13 +730,12 @@ export default function StepAttainment({
               from the same engine, counted once.
             </p>
 
-            <div className="flex flex-wrap gap-6 mb-4">
+            <div className="flex flex-wrap gap-6 mb-6">
               <div>
                 <p className="text-[9.5px] font-semibold uppercase tracking-[2.5px] text-[#B4B4B4] mb-1">Prepared for</p>
                 <input
                   value={orgName}
                   onChange={(e) => setOrgName(e.target.value)}
-                  placeholder="Your organization"
                   className="text-[15px] font-bold text-[#1A1A1A] bg-transparent border-b border-dashed border-[#D8CFC4] focus:border-[#EA2C00] outline-none"
                   data-testid="input-attain-org-name"
                 />
@@ -441,21 +750,29 @@ export default function StepAttainment({
               </div>
             </div>
 
-            <div className="bg-[#1A1A1A] rounded-lg flex flex-wrap p-6 mb-4" data-testid="card-attain-plan-combined-hero">
-              <div className="flex-1 min-w-[140px] px-3">
-                <p className="font-abridge text-3xl text-[#EA2C00]">{formatCompact(target.margin)}</p>
-                <p className="text-[8px] font-semibold uppercase tracking-[1.8px] text-white/55 mt-2">Combined contribution margin</p>
-              </div>
-              {goalDefs.map((g) => {
-                const goalMargin = combined.byGoal[g.id]?.totalMargin ?? 0;
-                return (
-                  <div key={g.id} className="flex-1 min-w-[140px] px-3">
-                    <p className="font-abridge text-3xl text-white">{formatCompact(goalMargin)}</p>
-                    <p className="text-[8px] font-semibold uppercase tracking-[1.8px] text-white/55 mt-2">{g.label}</p>
-                  </div>
-                );
-              })}
+            {/* ONE combined headline number, full stop. Only when a plan
+                actually holds 2+ priorities do we break that number out — as
+                a row of compact per-priority cards below it, never a second
+                copy of the same figure sitting right next to the first. */}
+            <div className="bg-[#1A1A1A] rounded-lg p-6 md:p-8 mb-4" data-testid="card-attain-plan-combined-hero">
+              <p className="text-[9px] font-semibold uppercase tracking-[1.8px] text-white/55 mb-2">Combined contribution margin</p>
+              <p className="font-abridge text-4xl md:text-5xl text-[#EA2C00]" data-testid="text-attain-plan-combined-value">
+                {formatCompact(target.margin)}
+              </p>
+              <p className="text-xs text-white/50 mt-2">
+                Across {goalDefs.length} {goalDefs.length === 1 ? "priority" : "priorities"} · {allCommitted.length} decision{allCommitted.length === 1 ? "" : "s"} committed
+              </p>
             </div>
+
+            {goalDefs.length > 1 && (
+              <div className="flex flex-wrap gap-3 mb-4" data-testid="grid-attain-plan-priority-breakdown">
+                {goalDefs.map((g) => {
+                  const goalMargin = combined.byGoal[g.id]?.totalMargin ?? 0;
+                  const share = target.margin > 0 ? Math.round((goalMargin / target.margin) * 100) : 0;
+                  return <PriorityBreakdownCard key={g.id} goalDef={g} margin={goalMargin} share={share} />;
+                })}
+              </div>
+            )}
 
             <p className="text-[11px] text-[#B4B4B4] leading-relaxed max-w-[600px] border-t border-[#E5E5E5] pt-3">
               A value attainment plan is a shared commitment, co-authored at kickoff and steered monthly. Figures are
@@ -481,56 +798,43 @@ export default function StepAttainment({
                   No decisions are committed yet. Go back to Build the case and Commit to turn this into a real plan.
                 </p>
               </div>
+            ) : goalDefs.length === 1 ? (
+              <>
+                <DecisionsTable rows={allCommitted} testId="table-attain-plan-decisions" />
+                <div className="flex items-center justify-between pt-3 mt-1 border-t border-[#E7E0D6]">
+                  <span className="text-[10.5px] font-bold text-[#1A1A1A]">Total, contribution margin</span>
+                  <span className="font-abridge text-lg text-[#EA2C00]" data-testid="text-attain-plan-total-reconciled">{formatCompact(target.margin)}</span>
+                </div>
+              </>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse" data-testid="table-attain-plan-decisions">
-                  <thead>
-                    <tr>
-                      {goalDefs.length > 1 && (
-                        <th className="text-[8.5px] font-semibold uppercase tracking-wide text-[#8C8C8C] pb-2 border-b border-[#E7E0D6]">Priority</th>
-                      )}
-                      <th className="text-[8.5px] font-semibold uppercase tracking-wide text-[#8C8C8C] pb-2 border-b border-[#E7E0D6]">Decision</th>
-                      <th className="text-[8.5px] font-semibold uppercase tracking-wide text-[#8C8C8C] pb-2 border-b border-[#E7E0D6]">Owner</th>
-                      <th className="text-[8.5px] font-semibold uppercase tracking-wide text-[#8C8C8C] pb-2 border-b border-[#E7E0D6]">By when</th>
-                      <th className="text-[8.5px] font-semibold uppercase tracking-wide text-[#8C8C8C] pb-2 border-b border-[#E7E0D6] text-right">Worth</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {allCommitted.map(({ goal, lever, contribution, owner, due }) => (
-                      <tr key={`${goal}:${lever.id}`} data-testid={`row-attain-plan-decision-${goal}-${lever.id}`}>
-                        {goalDefs.length > 1 && (
-                          <td className="py-3 px-2 border-b border-[#F0ECE5] align-top">
-                            <span
-                              className="inline-block text-[8px] font-bold uppercase tracking-[1.2px] text-white px-2 py-0.5 rounded-full whitespace-nowrap"
-                              style={{ background: GOAL_CATALOG[goal].pillBg }}
-                            >
-                              {GOAL_CATALOG[goal].pill}
-                            </span>
-                          </td>
-                        )}
-                        <td className="py-3 px-2 border-b border-[#F0ECE5] align-top max-w-[280px]">
-                          <p className="text-[11px] font-bold text-[#1A1A1A]">{lever.label}</p>
-                          <p className="text-[9.5px] text-[#8C8C8C] mt-0.5 leading-relaxed">{lever.help}</p>
-                        </td>
-                        <td className="py-3 px-2 border-b border-[#F0ECE5] align-top text-[10.5px] text-[#3A3A3A]">{owner}</td>
-                        <td className="py-3 px-2 border-b border-[#F0ECE5] align-top text-[10.5px] text-[#3A3A3A] whitespace-nowrap">{due}</td>
-                        <td className="py-3 px-2 border-b border-[#F0ECE5] align-top text-right whitespace-nowrap">
-                          <p className="text-[11px] font-bold text-[#EA2C00]">{formatCompact(contribution?.marginalMargin ?? 0)}</p>
-                          <p className="text-[9px] text-[#8C8C8C]">{Math.round((contribution?.pctOfTotal ?? 0) * 100)}% of its priority</p>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                  <tfoot>
-                    <tr>
-                      <td className="py-3 px-2 text-[10.5px] font-bold text-[#1A1A1A]" colSpan={goalDefs.length > 1 ? 4 : 3}>Total, contribution margin</td>
-                      <td className="py-3 px-2 text-right">
-                        <p className="font-abridge text-lg text-[#EA2C00]" data-testid="text-attain-plan-total-reconciled">{formatCompact(target.margin)}</p>
-                      </td>
-                    </tr>
-                  </tfoot>
-                </table>
-              </div>
+              <>
+                {goalDefs.map((g) => {
+                  const rows = allCommitted.filter((c) => c.goal === g.id);
+                  if (rows.length === 0) return null;
+                  const groupWorth = rows.reduce((sum, r) => sum + (r.contribution?.marginalMargin ?? 0), 0);
+                  return (
+                    <div key={g.id} className="mb-8" data-testid={`group-attain-plan-decisions-${g.id}`}>
+                      <div className="flex items-center justify-between mb-2.5">
+                        <div className="flex items-center gap-2.5">
+                          <span
+                            className="inline-block text-[8px] font-bold uppercase tracking-[1.2px] text-white px-2 py-0.5 rounded-full"
+                            style={{ background: g.pillBg }}
+                          >
+                            {g.pill}
+                          </span>
+                          <span className="text-[11.5px] font-bold text-[#1A1A1A]">{g.label}</span>
+                        </div>
+                        <span className="text-[11px] font-bold text-[#EA2C00]">{formatCompact(groupWorth)}</span>
+                      </div>
+                      <DecisionsTable rows={rows} testId={`table-attain-plan-decisions-${g.id}`} />
+                    </div>
+                  );
+                })}
+                <div className="flex items-center justify-between pt-3 border-t border-[#E7E0D6]">
+                  <span className="text-[10.5px] font-bold text-[#1A1A1A]">Total, contribution margin, combined</span>
+                  <span className="font-abridge text-lg text-[#EA2C00]" data-testid="text-attain-plan-total-reconciled">{formatCompact(target.margin)}</span>
+                </div>
+              </>
             )}
           </motion.section>
 
