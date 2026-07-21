@@ -4,6 +4,7 @@ import type {
   GoalDef,
   SettingGoalContent,
 } from "./attainTypes";
+import { computeWorkforceCeiling } from "./attainWorkforce";
 
 /**
  * Attain goal catalog.
@@ -32,6 +33,72 @@ import type {
  *    following the same voice rules (teach the mechanism, no em dashes, no
  *    "causes" claims, contribution margin, no double count).
  */
+
+// ────────────────────────────────────────────────────────────────────────
+// Retention "prize" copy - DERIVED, never hand-picked.
+//
+// The retention story pages (goodCells + the ambition tiers below) used to
+// hardcode a departures-avoided/dollar figure that could drift arbitrarily
+// far from what the interactive Build-the-case chain can actually build
+// (see `attainWorkforce.ts`'s D2-D5 chain and its
+// `WORKFORCE_IMPACT_CEILING_PP` cap). `retentionPrize` fixes that by reading
+// the SAME formula the chain's own payoff uses
+// (`computeWorkforceCeiling`) at this setting's stated scale (the headcount
+// each retention page's own subtitle/worldCards already quote), with every
+// D2-D5 decision maxed. "Ambitious" is therefore the chain's true ceiling,
+// never a number beyond it; "typical" and "conservative" keep the exact
+// same 1:2:3 ratio the original illustrative copy used, now anchored under
+// that ceiling instead of floating above it.
+// ────────────────────────────────────────────────────────────────────────
+
+function fmtMoneyCompact(n: number): string {
+  const abs = Math.abs(n);
+  if (abs >= 1_000_000) return `$${(abs / 1_000_000).toFixed(abs % 1_000_000 === 0 ? 0 : 1)}M`;
+  if (abs >= 1_000) return `$${Math.round(abs / 1_000)}K`;
+  return `$${Math.round(abs)}`;
+}
+
+function fmtOneDecimal(n: number): string {
+  return (Math.round(n * 10) / 10).toString();
+}
+
+interface RetentionPrizeTier {
+  value: number;
+  departures: number;
+  turnoverPts: number;
+}
+
+interface RetentionPrize {
+  conservative: RetentionPrizeTier;
+  typical: RetentionPrizeTier;
+  ambitious: RetentionPrizeTier;
+}
+
+/** `statedScale` is the headcount this setting's retention story is written
+ * against (the same number its own subtitle/worldCards quote — 120
+ * outpatient providers, 55 ED providers, 45 hospitalists, 480 bedside
+ * nurses), not the app's blank-Scope-step fallback default. */
+function retentionPrize(setting: AttainSetting, statedScale: number): RetentionPrize {
+  const ceiling = computeWorkforceCeiling(setting, statedScale);
+  const unit = {
+    value: ceiling.value / 3,
+    departures: ceiling.departuresAvoided / 3,
+    turnoverPts: ceiling.turnoverPointsReduced / 3,
+  };
+  return {
+    conservative: { value: unit.value, departures: unit.departures, turnoverPts: unit.turnoverPts },
+    typical: { value: unit.value * 2, departures: unit.departures * 2, turnoverPts: unit.turnoverPts * 2 },
+    ambitious: { value: ceiling.value, departures: ceiling.departuresAvoided, turnoverPts: ceiling.turnoverPointsReduced },
+  };
+}
+
+/** ~1/3 of the goal, matching the original illustrative copy's "what
+ * usually happens" cushion under every ambition tier. Illustrative only —
+ * it is not derived from the engine because "what usually happens" is a
+ * narrative device, not a chain output. */
+function usualFraction(value: number): number {
+  return Math.round(value / 3);
+}
 
 // ────────────────────────────────────────────────────────────────────────
 // GOAL_CATALOG - structural templates, one per goal id
@@ -491,6 +558,8 @@ const outpatientAccess: SettingGoalContent = {
   ],
 };
 
+const outpatientRetentionPrize = retentionPrize("outpatient", 120);
+
 const outpatientRetention: SettingGoalContent = {
   subtitle: "Primary Care & Specialty Clinics · 120 providers · Outpatient",
   thesis1: "The relief is real.",
@@ -516,9 +585,9 @@ const outpatientRetention: SettingGoalContent = {
     "Ambient cuts the after-hours load at the point of care. Whether that relief holds long enough to change the departure decision is a choice about how the recovered time gets protected. That choice is what this plan is built around.",
   goodHead: 'What "good" looks like, 12 months out',
   goodCells: [
-    { n: "-6 pts", k: "Voluntary turnover" },
-    { n: "4", k: "Departures avoided / year" },
-    { n: "$1.4M", coral: true, k: "Replacement cost avoided" },
+    { n: `-${fmtOneDecimal(outpatientRetentionPrize.typical.turnoverPts)} pts`, k: "Voluntary turnover" },
+    { n: fmtOneDecimal(outpatientRetentionPrize.typical.departures), k: "Departures avoided / year" },
+    { n: fmtMoneyCompact(outpatientRetentionPrize.typical.value), coral: true, k: "Replacement cost avoided" },
     { n: "<0.5h", k: "After-hours documentation" },
   ],
   curveIntro:
@@ -557,9 +626,9 @@ const outpatientRetention: SettingGoalContent = {
   renewal:
     'The conversation is no longer "was it worth the price." It is "we set out to avoid four departures, we are 58% there and holding the relief, here is the runway on the rest." The relief was always real. This is the plan that made it stick. Price becomes progress.',
   ambition: [
-    { key: "conservative", label: "Conservative", goalLabel: "Goal · $700K · 2 departures avoided", usualLabel: "What usually happens · ~$200K", goalMargin: 700_000 },
-    { key: "typical", label: "Typical", goalLabel: "Goal · $1.4M · 4 departures avoided", usualLabel: "What usually happens · ~$400K", goalMargin: 1_400_000 },
-    { key: "ambitious", label: "Ambitious", goalLabel: "Goal · $2.1M · 6 departures avoided", usualLabel: "What usually happens · ~$600K", goalMargin: 2_100_000 },
+    { key: "conservative", label: "Conservative", goalLabel: `Goal · ${fmtMoneyCompact(outpatientRetentionPrize.conservative.value)} · ${fmtOneDecimal(outpatientRetentionPrize.conservative.departures)} departures avoided`, usualLabel: `What usually happens · ~${fmtMoneyCompact(usualFraction(outpatientRetentionPrize.conservative.value))}`, goalMargin: outpatientRetentionPrize.conservative.value },
+    { key: "typical", label: "Typical", goalLabel: `Goal · ${fmtMoneyCompact(outpatientRetentionPrize.typical.value)} · ${fmtOneDecimal(outpatientRetentionPrize.typical.departures)} departures avoided`, usualLabel: `What usually happens · ~${fmtMoneyCompact(usualFraction(outpatientRetentionPrize.typical.value))}`, goalMargin: outpatientRetentionPrize.typical.value },
+    { key: "ambitious", label: "Ambitious", goalLabel: `Goal · ${fmtMoneyCompact(outpatientRetentionPrize.ambitious.value)} · ${fmtOneDecimal(outpatientRetentionPrize.ambitious.departures)} departures avoided`, usualLabel: `What usually happens · ~${fmtMoneyCompact(usualFraction(outpatientRetentionPrize.ambitious.value))}`, goalMargin: outpatientRetentionPrize.ambitious.value },
   ],
 };
 
@@ -707,6 +776,8 @@ const edAccess: SettingGoalContent = {
   ],
 };
 
+const edRetentionPrize = retentionPrize("ed", 55);
+
 const edRetention: SettingGoalContent = {
   subtitle: "Emergency Department · 55 providers · 24/7 coverage",
   thesis1: "The relief is real.",
@@ -732,9 +803,9 @@ const edRetention: SettingGoalContent = {
     "Ambient cuts the after-shift load at the point of care. Whether that relief holds long enough to change the departure decision is a choice about how the recovered time gets protected. That choice is what this plan is built around.",
   goodHead: 'What "good" looks like, 12 months out',
   goodCells: [
-    { n: "-8 pts", k: "Voluntary turnover" },
-    { n: "3", k: "Departures avoided / year" },
-    { n: "$1.2M", coral: true, k: "Replacement cost avoided" },
+    { n: `-${fmtOneDecimal(edRetentionPrize.typical.turnoverPts)} pts`, k: "Voluntary turnover" },
+    { n: fmtOneDecimal(edRetentionPrize.typical.departures), k: "Departures avoided / year" },
+    { n: fmtMoneyCompact(edRetentionPrize.typical.value), coral: true, k: "Replacement cost avoided" },
     { n: "<0.5h", k: "After-shift documentation" },
   ],
   curveIntro:
@@ -773,9 +844,9 @@ const edRetention: SettingGoalContent = {
   renewal:
     'The conversation is no longer "was it worth the price." It is "we set out to avoid three departures, we are well on the way and holding the relief, here is the runway on the rest." The relief was always real. This is the plan that made it stick. Price becomes progress.',
   ambition: [
-    { key: "conservative", label: "Conservative", goalLabel: "Goal · $600K · 2 departures avoided", usualLabel: "What usually happens · ~$220K", goalMargin: 600_000 },
-    { key: "typical", label: "Typical", goalLabel: "Goal · $1.2M · 3 departures avoided", usualLabel: "What usually happens · ~$440K", goalMargin: 1_200_000 },
-    { key: "ambitious", label: "Ambitious", goalLabel: "Goal · $1.8M · 5 departures avoided", usualLabel: "What usually happens · ~$660K", goalMargin: 1_800_000 },
+    { key: "conservative", label: "Conservative", goalLabel: `Goal · ${fmtMoneyCompact(edRetentionPrize.conservative.value)} · ${fmtOneDecimal(edRetentionPrize.conservative.departures)} departures avoided`, usualLabel: `What usually happens · ~${fmtMoneyCompact(usualFraction(edRetentionPrize.conservative.value))}`, goalMargin: edRetentionPrize.conservative.value },
+    { key: "typical", label: "Typical", goalLabel: `Goal · ${fmtMoneyCompact(edRetentionPrize.typical.value)} · ${fmtOneDecimal(edRetentionPrize.typical.departures)} departures avoided`, usualLabel: `What usually happens · ~${fmtMoneyCompact(usualFraction(edRetentionPrize.typical.value))}`, goalMargin: edRetentionPrize.typical.value },
+    { key: "ambitious", label: "Ambitious", goalLabel: `Goal · ${fmtMoneyCompact(edRetentionPrize.ambitious.value)} · ${fmtOneDecimal(edRetentionPrize.ambitious.departures)} departures avoided`, usualLabel: `What usually happens · ~${fmtMoneyCompact(usualFraction(edRetentionPrize.ambitious.value))}`, goalMargin: edRetentionPrize.ambitious.value },
   ],
 };
 
@@ -923,6 +994,8 @@ const inpatientRevenue: SettingGoalContent = {
   ],
 };
 
+const inpatientRetentionPrize = retentionPrize("inpatient", 45);
+
 const inpatientRetention: SettingGoalContent = {
   subtitle: "Hospital Medicine · 45 hospitalists · Med-Surg & ICU",
   thesis1: "The relief is real.",
@@ -948,9 +1021,9 @@ const inpatientRetention: SettingGoalContent = {
     "Ambient cuts the after-hours load at the point of care. Whether that relief holds long enough to change the departure decision is a choice about how the recovered time gets protected. That choice is what this plan is built around.",
   goodHead: 'What "good" looks like, 12 months out',
   goodCells: [
-    { n: "-6 pts", k: "Voluntary turnover" },
-    { n: "4", k: "Departures avoided / year" },
-    { n: "$1.4M", coral: true, k: "Replacement cost avoided" },
+    { n: `-${fmtOneDecimal(inpatientRetentionPrize.typical.turnoverPts)} pts`, k: "Voluntary turnover" },
+    { n: fmtOneDecimal(inpatientRetentionPrize.typical.departures), k: "Departures avoided / year" },
+    { n: fmtMoneyCompact(inpatientRetentionPrize.typical.value), coral: true, k: "Replacement cost avoided" },
     { n: "<0.5h", k: "After-hours documentation" },
   ],
   curveIntro:
@@ -989,9 +1062,9 @@ const inpatientRetention: SettingGoalContent = {
   renewal:
     'The conversation is no longer "was it worth the price." It is "we set out to avoid four departures, we are 58% there and holding the relief, here is the runway on the rest." The relief was always real. This is the plan that made it stick. Price becomes progress.',
   ambition: [
-    { key: "conservative", label: "Conservative", goalLabel: "Goal · $700K · 2 departures avoided", usualLabel: "What usually happens · ~$200K", goalMargin: 700_000 },
-    { key: "typical", label: "Typical", goalLabel: "Goal · $1.4M · 4 departures avoided", usualLabel: "What usually happens · ~$400K", goalMargin: 1_400_000 },
-    { key: "ambitious", label: "Ambitious", goalLabel: "Goal · $2.1M · 6 departures avoided", usualLabel: "What usually happens · ~$600K", goalMargin: 2_100_000 },
+    { key: "conservative", label: "Conservative", goalLabel: `Goal · ${fmtMoneyCompact(inpatientRetentionPrize.conservative.value)} · ${fmtOneDecimal(inpatientRetentionPrize.conservative.departures)} departures avoided`, usualLabel: `What usually happens · ~${fmtMoneyCompact(usualFraction(inpatientRetentionPrize.conservative.value))}`, goalMargin: inpatientRetentionPrize.conservative.value },
+    { key: "typical", label: "Typical", goalLabel: `Goal · ${fmtMoneyCompact(inpatientRetentionPrize.typical.value)} · ${fmtOneDecimal(inpatientRetentionPrize.typical.departures)} departures avoided`, usualLabel: `What usually happens · ~${fmtMoneyCompact(usualFraction(inpatientRetentionPrize.typical.value))}`, goalMargin: inpatientRetentionPrize.typical.value },
+    { key: "ambitious", label: "Ambitious", goalLabel: `Goal · ${fmtMoneyCompact(inpatientRetentionPrize.ambitious.value)} · ${fmtOneDecimal(inpatientRetentionPrize.ambitious.departures)} departures avoided`, usualLabel: `What usually happens · ~${fmtMoneyCompact(usualFraction(inpatientRetentionPrize.ambitious.value))}`, goalMargin: inpatientRetentionPrize.ambitious.value },
   ],
 };
 
@@ -1067,6 +1140,8 @@ const nursingQuality: SettingGoalContent = {
   ],
 };
 
+const nursingRetentionPrize = retentionPrize("nursing", 480);
+
 const nursingRetention: SettingGoalContent = {
   subtitle: "Med-Surg & ICU · 400 staffed beds · 480 bedside nurses",
   thesis1: "The relief is real.",
@@ -1075,7 +1150,7 @@ const nursingRetention: SettingGoalContent = {
     "Meridian's med-surg and ICU nurses are staying late to finish charting, and exit interviews name documentation burden alongside staffing ratios as a leading reason nurses leave the bedside. The relief Abridge creates at the point of care is real and immediate. Whether it lasts, or gets quietly refilled by heavier assignments and unfilled shifts, is the difference between a number that holds and one that fades by month twelve.",
   worldCards: [
     { k: "Annual RN turnover", n: "19%", coral: true, f: "Benchmark: 14 to 16%" },
-    { k: "Attributed to burnout", n: "~45%", f: "Share of voluntary exits" },
+    { k: "Attributed to burnout", n: "~40%", f: "Share of voluntary exits" },
     { k: "Charting after shift", n: "35 min/shift", f: "Time to complete the record" },
     { k: "In scope", n: "480", f: "Bedside nurses · Med-surg & ICU" },
   ],
@@ -1092,9 +1167,9 @@ const nursingRetention: SettingGoalContent = {
     "Ambient documentation moves charting closer to the bedside, cutting the late finish. Whether that relief holds long enough to change the departure decision is a choice about how the recovered time gets protected on the unit. That choice is what this plan is built around.",
   goodHead: 'What "good" looks like, 12 months out',
   goodCells: [
-    { n: "-5 pts", k: "Voluntary RN turnover" },
-    { n: "9", k: "Departures avoided / year" },
-    { n: "$490K", coral: true, k: "Replacement cost avoided" },
+    { n: `-${fmtOneDecimal(nursingRetentionPrize.typical.turnoverPts)} pts`, k: "Voluntary RN turnover" },
+    { n: fmtOneDecimal(nursingRetentionPrize.typical.departures), k: "Departures avoided / year" },
+    { n: fmtMoneyCompact(nursingRetentionPrize.typical.value), coral: true, k: "Replacement cost avoided" },
     { n: "<10m", k: "Charting after shift" },
   ],
   curveIntro:
@@ -1133,9 +1208,9 @@ const nursingRetention: SettingGoalContent = {
   renewal:
     'The conversation is no longer "was it worth the price." It is "we set out to avoid nine departures, we are well on the way and holding the relief, here is the runway on the rest." The relief was always real. This is the plan that made it stick. Price becomes progress.',
   ambition: [
-    { key: "conservative", label: "Conservative", goalLabel: "Goal · $250K · 4 departures avoided", usualLabel: "What usually happens · ~$90K", goalMargin: 250_000 },
-    { key: "typical", label: "Typical", goalLabel: "Goal · $490K · 9 departures avoided", usualLabel: "What usually happens · ~$170K", goalMargin: 490_000 },
-    { key: "ambitious", label: "Ambitious", goalLabel: "Goal · $720K · 13 departures avoided", usualLabel: "What usually happens · ~$250K", goalMargin: 720_000 },
+    { key: "conservative", label: "Conservative", goalLabel: `Goal · ${fmtMoneyCompact(nursingRetentionPrize.conservative.value)} · ${fmtOneDecimal(nursingRetentionPrize.conservative.departures)} departures avoided`, usualLabel: `What usually happens · ~${fmtMoneyCompact(usualFraction(nursingRetentionPrize.conservative.value))}`, goalMargin: nursingRetentionPrize.conservative.value },
+    { key: "typical", label: "Typical", goalLabel: `Goal · ${fmtMoneyCompact(nursingRetentionPrize.typical.value)} · ${fmtOneDecimal(nursingRetentionPrize.typical.departures)} departures avoided`, usualLabel: `What usually happens · ~${fmtMoneyCompact(usualFraction(nursingRetentionPrize.typical.value))}`, goalMargin: nursingRetentionPrize.typical.value },
+    { key: "ambitious", label: "Ambitious", goalLabel: `Goal · ${fmtMoneyCompact(nursingRetentionPrize.ambitious.value)} · ${fmtOneDecimal(nursingRetentionPrize.ambitious.departures)} departures avoided`, usualLabel: `What usually happens · ~${fmtMoneyCompact(usualFraction(nursingRetentionPrize.ambitious.value))}`, goalMargin: nursingRetentionPrize.ambitious.value },
   ],
 };
 
