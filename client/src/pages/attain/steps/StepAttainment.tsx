@@ -27,6 +27,7 @@ import { GOAL_CATALOG, getContent } from "@/lib/attain/attainGoals";
 import type { AttainState, AttainSetting, GoalId, GoalDef, SettingGoalContent } from "@/lib/attain/attainTypes";
 import type { GoalTargetResult, AttainmentResult } from "@/lib/attain/attainCalc";
 import { defaultCommitmentFor, type Commitment, type GoalOwner, type SignalCadence } from "./StepCommit";
+import { generateAttainPdf } from "@/lib/attain/attain-pdf";
 
 function formatCompact(n: number): string {
   const sign = n < 0 ? "-" : "";
@@ -497,7 +498,31 @@ export default function StepAttainment({
   // own organization's name.
   const [orgName, setOrgName] = useState("Your organization");
   const [tab, setTab] = useState<"strategy" | "progress">("strategy");
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
   const today = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+
+  const handleDownloadPdf = async () => {
+    setIsDownloadingPdf(true);
+    try {
+      await generateAttainPdf({
+        state,
+        setting,
+        goals,
+        target,
+        attainment,
+        valuesByGoal,
+        combined,
+        commitments,
+        goalOwnerByPriority,
+        freedTimeSplit,
+        orgName,
+      });
+    } catch (err) {
+      console.error("Attain PDF export failed", err);
+    } finally {
+      setIsDownloadingPdf(false);
+    }
+  };
 
   // ED access does not compete with retention for the same freed hour - see
   // attainLevers.ts's computeMultiGoalContributions and
@@ -606,9 +631,14 @@ export default function StepAttainment({
             <Save className="w-4 h-4" />
             Save
           </Button>
-          <Button className="h-10 gap-2 bg-black hover:bg-black/90 text-white" data-testid="button-attain-download-pdf" onClick={() => { /* PDF export ships in a later task */ }}>
+          <Button
+            className="h-10 gap-2 bg-black hover:bg-black/90 text-white"
+            data-testid="button-attain-download-pdf"
+            disabled={isDownloadingPdf}
+            onClick={handleDownloadPdf}
+          >
             <Download className="w-4 h-4" />
-            Download PDF
+            {isDownloadingPdf ? "Preparing…" : "Download PDF"}
           </Button>
         </div>
       </div>
