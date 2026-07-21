@@ -60,12 +60,12 @@ function DecisionCard({
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-xl border border-[#E7E0D6] bg-white p-6 mb-5"
+      className="rounded-xl border border-[#E7E0D6] bg-white p-7 mb-6"
       data-testid={testid}
     >
-      <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#EA2C00] mb-1.5">{step}</p>
-      <h3 className="text-base font-bold text-[#1A1A1A] mb-1.5 font-abridge">{title}</h3>
-      <p className="text-xs text-[#8C8C8C] leading-relaxed mb-4 max-w-[560px]">{help}</p>
+      <p className="text-[11px] font-bold uppercase tracking-[2px] text-[#EA2C00] mb-1.5">{step}</p>
+      <h3 className="text-lg font-bold text-[#1A1A1A] mb-2 font-abridge">{title}</h3>
+      <p className="text-[15px] text-[#8C8C8C] leading-relaxed mb-5 max-w-[620px]">{help}</p>
       {children}
     </motion.div>
   );
@@ -76,8 +76,8 @@ function DecisionCard({
 function CountOutput({ label, value, unit, testid }: { label: string; value: string; unit: string; testid: string }) {
   return (
     <div className="bg-[#F8F5F1] rounded-lg px-4 py-3 flex items-baseline justify-between gap-3" data-testid={testid}>
-      <span className="text-xs text-[#8C8C8C]">{label}</span>
-      <span className="text-lg font-bold text-[#1A1A1A] font-abridge">
+      <span className="text-sm text-[#8C8C8C]">{label}</span>
+      <span className="text-xl font-bold text-[#1A1A1A] font-abridge">
         {value} <span className="text-xs font-normal text-[#8C8C8C]">{unit}</span>
       </span>
     </div>
@@ -105,11 +105,11 @@ function ResultStat({
 }) {
   return (
     <div>
-      <p className="text-[10px] text-[#8C8C8C] mb-1 leading-snug">{label}</p>
-      <p className={`text-lg font-bold font-abridge ${emphasize ? "text-[#EA2C00]" : "text-[#1A1A1A]"}`} data-testid={testid}>
+      <p className="text-[11px] text-[#8C8C8C] mb-1 leading-snug">{label}</p>
+      <p className={`text-xl font-bold font-abridge ${emphasize ? "text-[#EA2C00]" : "text-[#1A1A1A]"}`} data-testid={testid}>
         {value} <span className="text-xs font-normal text-[#8C8C8C]">{unit}</span>
       </p>
-      {hint && <p className="text-[9.5px] text-[#B4B4B4] mt-0.5">{hint}</p>}
+      {hint && <p className="text-[10.5px] text-[#B4B4B4] mt-0.5">{hint}</p>}
     </div>
   );
 }
@@ -131,7 +131,7 @@ function InfoTip({ text, testid }: { text: string; testid: string }) {
 
 function FieldLabel({ children, tip, testid }: { children: React.ReactNode; tip?: string; testid?: string }) {
   return (
-    <label className="text-xs font-medium text-[#3A3A3A] mb-1.5 flex items-center gap-1.5">
+    <label className="text-sm font-medium text-[#3A3A3A] mb-2 flex items-center gap-1.5">
       {children}
       {tip && testid && <InfoTip text={tip} testid={testid} />}
     </label>
@@ -141,8 +141,8 @@ function FieldLabel({ children, tip, testid }: { children: React.ReactNode; tip?
 function MathBox({ formula, testid }: { formula: string; testid: string }) {
   return (
     <div className="mt-3 bg-[#F8F5F1] border-l-[3px] border-[#EA2C00] rounded-r-md p-3">
-      <p className="text-[9px] font-bold uppercase tracking-wide text-[#EA2C00] mb-1">The math</p>
-      <p className="text-[11px] text-[#3A3A3A] leading-relaxed" data-testid={testid}>
+      <p className="text-[10px] font-bold uppercase tracking-wide text-[#EA2C00] mb-1">The math</p>
+      <p className="text-[12.5px] text-[#3A3A3A] leading-relaxed" data-testid={testid}>
         {formula}
       </p>
     </div>
@@ -196,7 +196,7 @@ export default function EdAccessDecisionChain({ setting, baseline, values, onCha
             placeholder={totalProviders > 0 ? `e.g., up to ${totalProviders}` : "e.g., 55"}
             data-testid="input-ed-access-providers"
           />
-          <p className="text-[10px] text-[#8C8C8C] mt-1">
+          <p className="text-[11px] text-[#8C8C8C] mt-1">
             Capped at your Starting-point count{totalProviders > 0 ? ` of ${totalProviders.toLocaleString()}` : ""}.
           </p>
         </div>
@@ -306,7 +306,7 @@ export default function EdAccessDecisionChain({ setting, baseline, values, onCha
 
         <div className="mb-4">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-[#8C8C8C] flex items-center gap-1.5">
+            <span className="text-sm text-[#8C8C8C] flex items-center gap-1.5">
               LWBS reduction this plan targets
               <InfoTip
                 text="The share of the recoverable pool this plan commits to bringing back, driven by how much faster door-to-provider time the freed minutes above buy. This is the one decision that turns freed time into recovered patients."
@@ -330,7 +330,7 @@ export default function EdAccessDecisionChain({ setting, baseline, values, onCha
         </div>
 
         <CountOutput label="Targeted recovered patients" value={fmtInt(recovery.targetedRecovered)} unit="patients/yr" testid="text-ed-access-d3-output" />
-        <p className="text-[10px] text-[#8C8C8C] mt-2">
+        <p className="text-[11px] text-[#8C8C8C] mt-2">
           ~{fmtInt(recovery.freedHoursTotal)} freed provider-hours/yr behind that door-to-provider story, at {recovery.minutesSavedPerNote} min saved/note.
         </p>
       </DecisionCard>
@@ -342,7 +342,7 @@ export default function EdAccessDecisionChain({ setting, baseline, values, onCha
         testid="card-ed-access-d4"
       >
         <div className="rounded-lg bg-[#F8F5F1] p-4 mb-4" data-testid="panel-ed-access-d4-result">
-          <p className="text-[9px] font-bold uppercase tracking-wide text-[#8C8C8C] mb-3">The result</p>
+          <p className="text-[10px] font-bold uppercase tracking-wide text-[#8C8C8C] mb-3">The result</p>
           <div className="grid grid-cols-3 gap-3 mb-4">
             <ResultStat label="The recoverable pool" hint="Current rate × visits in scope" value={fmtInt(pool.poolVisits)} unit="patients/yr" testid="text-ed-access-d4-pool" />
             <ResultStat label="Targeted recovery" hint="From D3" value={fmtInt(recovery.targetedRecovered)} unit="patients/yr" testid="text-ed-access-d4-target" />
@@ -355,7 +355,7 @@ export default function EdAccessDecisionChain({ setting, baseline, values, onCha
               testid="text-ed-access-d4-realized"
             />
           </div>
-          <p className="text-[12px] text-[#1A1A1A] font-semibold flex items-center gap-1.5" data-testid="text-ed-access-d4-ceiling-phrase">
+          <p className="text-[13.5px] text-[#1A1A1A] font-semibold flex items-center gap-1.5" data-testid="text-ed-access-d4-ceiling-phrase">
             {edAccessCeilingPlainPhrase(pool.poolVisits, recovery.targetedRecovered, recovery.realizedRecovered)}
             <InfoTip
               text="Realized recovery can never be more than the pool. A reduction target beyond 100% of the pool is not possible, and the pool itself is the hard ceiling on every patient this plan can bring back."
@@ -366,7 +366,7 @@ export default function EdAccessDecisionChain({ setting, baseline, values, onCha
 
         <div className="mb-4">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-[#8C8C8C] flex items-center gap-1.5">
+            <span className="text-sm text-[#8C8C8C] flex items-center gap-1.5">
               Share of recovered patients who become admissions
               <InfoTip text="Not every recovered patient is admitted. This is the share of realized recovery, not of the pool, that converts to a downstream admission." testid="tooltip-ed-access-admission-rate" />
             </span>
@@ -396,21 +396,21 @@ export default function EdAccessDecisionChain({ setting, baseline, values, onCha
         className="rounded-xl bg-[#1A1A1A] p-6"
         data-testid="card-ed-access-d5"
       >
-        <p className="text-[10px] font-bold uppercase tracking-[2px] text-white/50 mb-1.5">D5</p>
-        <h3 className="text-base font-bold text-white mb-1.5 font-abridge">The payoff</h3>
-        <p className="text-xs text-white/50 leading-relaxed mb-4 max-w-[560px]">
+        <p className="text-[11px] font-bold uppercase tracking-[2px] text-white/50 mb-1.5">D5</p>
+        <h3 className="text-lg font-bold text-white mb-2 font-abridge">The payoff</h3>
+        <p className="text-[15px] text-white/50 leading-relaxed mb-5 max-w-[620px]">
           Realized recovered visits x revenue per visit, plus captured admissions x margin per admission. This is the
           first dollar figure in this chain, derived from the three decisions above, never invented.
         </p>
-        <p className="font-abridge text-4xl text-[#EA2C00]" data-testid="text-ed-access-d5-value">
+        <p className="font-abridge text-5xl text-[#EA2C00]" data-testid="text-ed-access-d5-value">
           {fmtMoneyCompact(realizedPayoffValue)}
         </p>
-        <p className="text-xs text-white/60 mt-2">
+        <p className="text-[15px] text-white/60 mt-2">
           {fmtInt(recovery.realizedRecovered)} recovered visits × ~${fmtInt(payoff.revenuePerVisit)}/visit + {fmtInt(recovery.capturedAdmissions)} admissions × ~${fmtInt(payoff.admissionMargin)}/admission
         </p>
         <div className="mt-4 bg-white/5 border-l-[3px] border-[#EA2C00] rounded-r-md p-3">
-          <p className="text-[9px] font-bold uppercase tracking-wide text-[#EA2C00] mb-1">The math</p>
-          <p className="text-[11px] text-white/70 leading-relaxed" data-testid="text-ed-access-d5-formula">
+          <p className="text-[10px] font-bold uppercase tracking-wide text-[#EA2C00] mb-1">The math</p>
+          <p className="text-[12.5px] text-white/70 leading-relaxed" data-testid="text-ed-access-d5-formula">
             {payoffFormulaDisplay}
           </p>
         </div>

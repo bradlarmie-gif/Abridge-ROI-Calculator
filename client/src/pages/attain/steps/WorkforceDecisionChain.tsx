@@ -66,12 +66,12 @@ function DecisionCard({
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-xl border border-[#E7E0D6] bg-white p-6 mb-5"
+      className="rounded-xl border border-[#E7E0D6] bg-white p-7 mb-6"
       data-testid={testid}
     >
-      <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#EA2C00] mb-1.5">{step}</p>
-      <h3 className="text-base font-bold text-[#1A1A1A] mb-1.5 font-abridge">{title}</h3>
-      <p className="text-xs text-[#8C8C8C] leading-relaxed mb-4 max-w-[560px]">{help}</p>
+      <p className="text-[11px] font-bold uppercase tracking-[2px] text-[#EA2C00] mb-1.5">{step}</p>
+      <h3 className="text-lg font-bold text-[#1A1A1A] mb-2 font-abridge">{title}</h3>
+      <p className="text-[15px] text-[#8C8C8C] leading-relaxed mb-5 max-w-[620px]">{help}</p>
       {children}
     </motion.div>
   );
@@ -83,8 +83,8 @@ function DecisionCard({
 function CountOutput({ label, value, unit, testid }: { label: string; value: string; unit: string; testid: string }) {
   return (
     <div className="bg-[#F8F5F1] rounded-lg px-4 py-3 flex items-baseline justify-between gap-3" data-testid={testid}>
-      <span className="text-xs text-[#8C8C8C]">{label}</span>
-      <span className="text-lg font-bold text-[#1A1A1A] font-abridge">
+      <span className="text-sm text-[#8C8C8C]">{label}</span>
+      <span className="text-xl font-bold text-[#1A1A1A] font-abridge">
         {value} <span className="text-xs font-normal text-[#8C8C8C]">{unit}</span>
       </span>
     </div>
@@ -108,7 +108,7 @@ function InfoTip({ text, testid }: { text: string; testid: string }) {
 
 function FieldLabel({ children, tip, testid }: { children: React.ReactNode; tip?: string; testid?: string }) {
   return (
-    <label className="text-xs font-medium text-[#3A3A3A] mb-1.5 flex items-center gap-1.5">
+    <label className="text-sm font-medium text-[#3A3A3A] mb-2 flex items-center gap-1.5">
       {children}
       {tip && testid && <InfoTip text={tip} testid={testid} />}
     </label>
@@ -118,8 +118,8 @@ function FieldLabel({ children, tip, testid }: { children: React.ReactNode; tip?
 function MathBox({ formula, testid }: { formula: string; testid: string }) {
   return (
     <div className="mt-3 bg-[#F8F5F1] border-l-[3px] border-[#EA2C00] rounded-r-md p-3">
-      <p className="text-[9px] font-bold uppercase tracking-wide text-[#EA2C00] mb-1">The math</p>
-      <p className="text-[11px] text-[#3A3A3A] leading-relaxed" data-testid={testid}>
+      <p className="text-[10px] font-bold uppercase tracking-wide text-[#EA2C00] mb-1">The math</p>
+      <p className="text-[12.5px] text-[#3A3A3A] leading-relaxed" data-testid={testid}>
         {formula}
       </p>
     </div>
@@ -230,7 +230,7 @@ export default function WorkforceDecisionChain({ setting, baseline, values, onCh
               placeholder={totalUnits > 0 ? `e.g., up to ${totalUnits}` : "e.g., 40"}
               data-testid="input-workforce-providers"
             />
-            <p className="text-[10px] text-[#8C8C8C] mt-1">
+            <p className="text-[11px] text-[#8C8C8C] mt-1">
               Capped at your Starting-point count{totalUnits > 0 ? ` of ${totalUnits.toLocaleString()}` : ""}.
             </p>
           </div>
@@ -251,7 +251,7 @@ export default function WorkforceDecisionChain({ setting, baseline, values, onCh
               />
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8C8C8C] text-sm pointer-events-none">%</span>
             </div>
-            <p className="text-[10px] text-[#8C8C8C] mt-1">Defaults to {WORKFORCE_TURNOVER_DEFAULT_PCT[setting]}% until you set your own.</p>
+            <p className="text-[11px] text-[#8C8C8C] mt-1">Defaults to {WORKFORCE_TURNOVER_DEFAULT_PCT[setting]}% until you set your own.</p>
           </div>
 
           <div>
@@ -269,7 +269,7 @@ export default function WorkforceDecisionChain({ setting, baseline, values, onCh
                 data-testid="input-workforce-replacement-cost"
               />
             </div>
-            <p className="text-[10px] text-[#8C8C8C] mt-1">
+            <p className="text-[11px] text-[#8C8C8C] mt-1">
               Defaults to ${fmtInt(WORKFORCE_REPLACEMENT_COST_DEFAULT[setting])}. {setting === "nursing" ? "Nurses run lower than physicians." : "Physicians typically run $250K-$500K."}
             </p>
           </div>
@@ -286,7 +286,7 @@ export default function WorkforceDecisionChain({ setting, baseline, values, onCh
       >
         <div className="mb-4">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-[#8C8C8C] flex items-center gap-1.5">
+            <span className="text-sm text-[#8C8C8C] flex items-center gap-1.5">
               Share of freed time protected as relief (not refilled)
               <InfoTip
                 text="The portion of the time Abridge frees up that stays as protected relief, instead of being absorbed by a bigger panel or a covering shift. This is the primary driver of the retention impact."
@@ -380,22 +380,22 @@ export default function WorkforceDecisionChain({ setting, baseline, values, onCh
         className="rounded-xl bg-[#1A1A1A] p-6"
         data-testid="card-workforce-payoff"
       >
-        <p className="text-[10px] font-bold uppercase tracking-[2px] text-white/50 mb-1.5">The payoff</p>
-        <h3 className="text-base font-bold text-white mb-1.5 font-abridge">Departures avoided x replacement cost</h3>
-        <p className="text-xs text-white/50 leading-relaxed mb-4 max-w-[560px]">
+        <p className="text-[11px] font-bold uppercase tracking-[2px] text-white/50 mb-1.5">The payoff</p>
+        <h3 className="text-lg font-bold text-white mb-2 font-abridge">Departures avoided x replacement cost</h3>
+        <p className="text-[15px] text-white/50 leading-relaxed mb-5 max-w-[620px]">
           Providers x turnover x burnout share x the impact the five decisions above produce. This is the first
           dollar figure in this chain, derived from the decisions above, never invented.
         </p>
-        <p className="font-abridge text-4xl text-[#EA2C00]" data-testid="text-workforce-payoff-value">
+        <p className="font-abridge text-5xl text-[#EA2C00]" data-testid="text-workforce-payoff-value">
           {fmtMoneyCompact(realizedPayoffValue)}
         </p>
-        <p className="text-xs text-white/60 mt-2" data-testid="text-workforce-payoff-caption">
+        <p className="text-[15px] text-white/60 mt-2" data-testid="text-workforce-payoff-caption">
           {payoff.departuresAvoided.toFixed(1)} departures avoided/yr x ~${fmtInt(scope.replacementCost)}/departure. Burnout
           attributed to {fmtPp(WORKFORCE_BURNOUT_SHARE_PCT[setting])}% of that turnover.
         </p>
         <div className="mt-4 bg-white/5 border-l-[3px] border-[#EA2C00] rounded-r-md p-3">
-          <p className="text-[9px] font-bold uppercase tracking-wide text-[#EA2C00] mb-1">The math</p>
-          <p className="text-[11px] text-white/70 leading-relaxed" data-testid="text-workforce-payoff-formula">
+          <p className="text-[10px] font-bold uppercase tracking-wide text-[#EA2C00] mb-1">The math</p>
+          <p className="text-[12.5px] text-white/70 leading-relaxed" data-testid="text-workforce-payoff-formula">
             {payoffFormulaDisplay}
           </p>
         </div>

@@ -128,7 +128,7 @@ export function AttainmentCurve({
     <div data-testid="attainment-curve">
       <div className="flex gap-1.5">
         <div
-          className="text-[8.5px] font-semibold uppercase tracking-[2px] text-[#B4B4B4] flex items-center justify-center"
+          className="text-[9.5px] font-semibold uppercase tracking-[2px] text-[#B4B4B4] flex items-center justify-center"
           style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}
         >
           Value Realized
@@ -164,20 +164,20 @@ export function AttainmentCurve({
                 start point — the common Progress-tab case right after
                 committing) it needs a floor, not just a ceiling, or its
                 right-anchored text runs off the left edge of the viewBox. */}
-            <text x={Math.max(120, Math.min(xToday - 10, X1 - 30))} y={yTodayCoral - 10} textAnchor="end" style={{ font: "600 12px Inter", fill: "#1A1A1A" }}>
+            <text x={Math.max(120, Math.min(xToday - 10, X1 - 30))} y={yTodayCoral - 10} textAnchor="end" style={{ font: "600 13px Inter", fill: "#1A1A1A" }}>
               Today · {Math.round(hasActual ? lastActual!.pct : pct)}%
             </text>
-            <text x={X1 - 10} y={yGoalCoral - 14} textAnchor="end" style={{ font: "700 12px Inter", fill: "#EA2C00" }}>
+            <text x={X1 - 10} y={yGoalCoral - 14} textAnchor="end" style={{ font: "700 13px Inter", fill: "#EA2C00" }}>
               Goal · {goalLabel}
             </text>
-            <text x={X1 - 10} y={yUsualFinal + 22} textAnchor="end" style={{ font: "500 11px Inter", fill: "#8C8C8C" }}>
+            <text x={X1 - 10} y={yUsualFinal + 22} textAnchor="end" style={{ font: "500 12px Inter", fill: "#8C8C8C" }}>
               What usually happens · {usualLabel}
             </text>
-            <text x={gapLabelX} y={gapLabelY} style={{ font: "italic 600 12px Inter", fill: "#B4B4B4" }}>
+            <text x={gapLabelX} y={gapLabelY} style={{ font: "italic 600 13px Inter", fill: "#B4B4B4" }}>
               the gap
             </text>
           </svg>
-          <div className="flex justify-between text-[8.5px] font-semibold uppercase tracking-[1.5px] text-[#666666] mt-1 ml-[34px]">
+          <div className="flex justify-between text-[9.5px] font-semibold uppercase tracking-[1.5px] text-[#666666] mt-1 ml-[34px]">
             <span>{startLabel}</span>
             <span className="text-[#EA2C00]">Month {Math.round(hasActual ? lastActual!.monthsFromStart : monthsElapsed)} · Today</span>
             <span>Month {Math.round(totalMonths)} · Goal</span>

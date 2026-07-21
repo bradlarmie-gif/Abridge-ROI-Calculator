@@ -69,12 +69,12 @@ function DecisionCard({
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-xl border border-[#E7E0D6] bg-white p-6 mb-5"
+      className="rounded-xl border border-[#E7E0D6] bg-white p-7 mb-6"
       data-testid={testid}
     >
-      <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#EA2C00] mb-1.5">{step}</p>
-      <h3 className="text-base font-bold text-[#1A1A1A] mb-1.5 font-abridge">{title}</h3>
-      <p className="text-xs text-[#8C8C8C] leading-relaxed mb-4 max-w-[560px]">{help}</p>
+      <p className="text-[11px] font-bold uppercase tracking-[2px] text-[#EA2C00] mb-1.5">{step}</p>
+      <h3 className="text-lg font-bold text-[#1A1A1A] mb-2 font-abridge">{title}</h3>
+      <p className="text-[15px] text-[#8C8C8C] leading-relaxed mb-5 max-w-[620px]">{help}</p>
       {children}
     </motion.div>
   );
@@ -85,8 +85,8 @@ function DecisionCard({
 function CountOutput({ label, value, unit, testid }: { label: string; value: string; unit: string; testid: string }) {
   return (
     <div className="bg-[#F8F5F1] rounded-lg px-4 py-3 flex items-baseline justify-between gap-3" data-testid={testid}>
-      <span className="text-xs text-[#8C8C8C]">{label}</span>
-      <span className="text-lg font-bold text-[#1A1A1A] font-abridge">
+      <span className="text-sm text-[#8C8C8C]">{label}</span>
+      <span className="text-xl font-bold text-[#1A1A1A] font-abridge">
         {value} <span className="text-xs font-normal text-[#8C8C8C]">{unit}</span>
       </span>
     </div>
@@ -115,14 +115,14 @@ function ResultStat({
 }) {
   return (
     <div>
-      <p className="text-[10px] text-[#8C8C8C] mb-1 leading-snug">{label}</p>
+      <p className="text-[11px] text-[#8C8C8C] mb-1 leading-snug">{label}</p>
       <p
-        className={`text-lg font-bold font-abridge ${emphasize ? "text-[#EA2C00]" : "text-[#1A1A1A]"}`}
+        className={`text-xl font-bold font-abridge ${emphasize ? "text-[#EA2C00]" : "text-[#1A1A1A]"}`}
         data-testid={testid}
       >
         {value} <span className="text-xs font-normal text-[#8C8C8C]">{unit}</span>
       </p>
-      {hint && <p className="text-[9.5px] text-[#B4B4B4] mt-0.5">{hint}</p>}
+      {hint && <p className="text-[10.5px] text-[#B4B4B4] mt-0.5">{hint}</p>}
     </div>
   );
 }
@@ -153,7 +153,7 @@ function InfoTip({ text, testid }: { text: string; testid: string }) {
  * the same shape whether or not it carries a definition. */
 function FieldLabel({ children, tip, testid }: { children: React.ReactNode; tip?: string; testid?: string }) {
   return (
-    <label className="text-xs font-medium text-[#3A3A3A] mb-1.5 flex items-center gap-1.5">
+    <label className="text-sm font-medium text-[#3A3A3A] mb-2 flex items-center gap-1.5">
       {children}
       {tip && testid && <InfoTip text={tip} testid={testid} />}
     </label>
@@ -163,8 +163,8 @@ function FieldLabel({ children, tip, testid }: { children: React.ReactNode; tip?
 function MathBox({ formula, testid }: { formula: string; testid: string }) {
   return (
     <div className="mt-3 bg-[#F8F5F1] border-l-[3px] border-[#EA2C00] rounded-r-md p-3">
-      <p className="text-[9px] font-bold uppercase tracking-wide text-[#EA2C00] mb-1">The math</p>
-      <p className="text-[11px] text-[#3A3A3A] leading-relaxed" data-testid={testid}>
+      <p className="text-[10px] font-bold uppercase tracking-wide text-[#EA2C00] mb-1">The math</p>
+      <p className="text-[12.5px] text-[#3A3A3A] leading-relaxed" data-testid={testid}>
         {formula}
       </p>
     </div>
@@ -293,7 +293,7 @@ export default function AccessDecisionChain({ setting, baseline, values, onChang
         </div>
 
         <div className="mb-4 max-w-[280px]">
-          <label className="text-xs font-medium text-[#3A3A3A] mb-1.5 block" htmlFor="access-providers">
+          <label className="text-sm font-medium text-[#3A3A3A] mb-2 block" htmlFor="access-providers">
             How many providers focus on access
           </label>
           <NumberField
@@ -307,7 +307,7 @@ export default function AccessDecisionChain({ setting, baseline, values, onChang
             placeholder={totalProviders > 0 ? `e.g., up to ${totalProviders}` : "e.g., 20"}
             data-testid="input-access-providers"
           />
-          <p className="text-[10px] text-[#8C8C8C] mt-1">
+          <p className="text-[11px] text-[#8C8C8C] mt-1">
             {enterprise
               ? `Defaults to all ${totalProviders.toLocaleString()} providers under Enterprise, but you can lower this to a subset, capped at your Starting-point count. Enterprise means not broken out by a specific service line, not every provider.`
               : `Capped at your Starting-point count${totalProviders > 0 ? ` of ${totalProviders.toLocaleString()}` : ""}.`}
@@ -332,7 +332,7 @@ export default function AccessDecisionChain({ setting, baseline, values, onChang
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {activeLines.map((line) => (
               <div key={line}>
-                <label className="text-xs font-medium text-[#3A3A3A] mb-1.5 block">{line}</label>
+                <label className="text-sm font-medium text-[#3A3A3A] mb-2 block">{line}</label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8C8C8C] text-sm pointer-events-none">$</span>
                   <NumberField
@@ -368,7 +368,7 @@ export default function AccessDecisionChain({ setting, baseline, values, onChang
               />
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8C8C8C] text-xs pointer-events-none">/visit</span>
             </div>
-            <p className="text-[10px] text-[#8C8C8C] mt-1">
+            <p className="text-[11px] text-[#8C8C8C] mt-1">
               {enterprise ? "Enterprise uses one blended rate across every line." : "Pick a line above in D1 to price it individually."}
             </p>
           </div>
@@ -420,7 +420,7 @@ export default function AccessDecisionChain({ setting, baseline, values, onChang
 
         <div className="mb-4">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-[#8C8C8C] flex items-center gap-1.5">
+            <span className="text-sm text-[#8C8C8C] flex items-center gap-1.5">
               Share of freed time directed to access (vs relief)
               <InfoTip
                 text="The portion of the time Abridge frees up that gets committed to opening new appointment slots, instead of staying as protected relief for the provider. This is the one decision that turns freed time into capacity."
@@ -450,7 +450,7 @@ export default function AccessDecisionChain({ setting, baseline, values, onChang
           testid="text-access-d3-output"
         />
         <MathBox formula={formulas.capacity} testid="text-access-d3-formula" />
-        <p className="text-[10px] text-[#8C8C8C] mt-2">
+        <p className="text-[11px] text-[#8C8C8C] mt-2">
           Visits priced at a ~{capacity.visitLengthMinutes} minute visit length. There is no second capacity
           mechanism, freed time is the only source.
         </p>
@@ -538,7 +538,7 @@ export default function AccessDecisionChain({ setting, baseline, values, onChang
         </div>
 
         <div className="rounded-lg bg-[#F8F5F1] p-4" data-testid="panel-access-d4-result">
-          <p className="text-[9px] font-bold uppercase tracking-wide text-[#8C8C8C] mb-3">The result</p>
+          <p className="text-[10px] font-bold uppercase tracking-wide text-[#8C8C8C] mb-3">The result</p>
           <div className="grid grid-cols-3 gap-3 mb-4">
             <ResultStat
               label="Capacity you created"
@@ -563,7 +563,7 @@ export default function AccessDecisionChain({ setting, baseline, values, onChang
               testid="text-access-d4-realized-output"
             />
           </div>
-          <p className="text-[12px] text-[#1A1A1A] font-semibold flex items-center gap-1.5" data-testid="text-access-d4-binding">
+          <p className="text-[13.5px] text-[#1A1A1A] font-semibold flex items-center gap-1.5" data-testid="text-access-d4-binding">
             {bindingPlainPhrase(payoff.binding)}
             <InfoTip
               text="Realized visits can never be more than either side. An open slot with nobody to fill it is worth nothing, and demand your schedule cannot yet absorb doesn't turn into a visit either - whichever number above is smaller sets the ceiling."
@@ -580,21 +580,21 @@ export default function AccessDecisionChain({ setting, baseline, values, onChang
         className="rounded-xl bg-[#1A1A1A] p-6"
         data-testid="card-access-d5"
       >
-        <p className="text-[10px] font-bold uppercase tracking-[2px] text-white/50 mb-1.5">D5</p>
-        <h3 className="text-base font-bold text-white mb-1.5 font-abridge">The payoff</h3>
-        <p className="text-xs text-white/50 leading-relaxed mb-4 max-w-[560px]">
+        <p className="text-[11px] font-bold uppercase tracking-[2px] text-white/50 mb-1.5">D5</p>
+        <h3 className="text-lg font-bold text-white mb-2 font-abridge">The payoff</h3>
+        <p className="text-[15px] text-white/50 leading-relaxed mb-5 max-w-[620px]">
           Realized visits x margin per visit. This is the first dollar figure in this chain, derived from the four
           decisions above, never invented.
         </p>
-        <p className="font-abridge text-4xl text-[#EA2C00]" data-testid="text-access-d5-value">
+        <p className="font-abridge text-5xl text-[#EA2C00]" data-testid="text-access-d5-value">
           {fmtMoneyCompact(realizedPayoffValue)}
         </p>
-        <p className="text-xs text-white/60 mt-2">
+        <p className="text-[15px] text-white/60 mt-2">
           {fmtInt(payoff.realizedVisits)} realized visits x ~${fmtInt(payoff.blendedMarginUsed)}/visit
         </p>
         <div className="mt-4 bg-white/5 border-l-[3px] border-[#EA2C00] rounded-r-md p-3">
-          <p className="text-[9px] font-bold uppercase tracking-wide text-[#EA2C00] mb-1">The math</p>
-          <p className="text-[11px] text-white/70 leading-relaxed" data-testid="text-access-d5-formula">
+          <p className="text-[10px] font-bold uppercase tracking-wide text-[#EA2C00] mb-1">The math</p>
+          <p className="text-[12.5px] text-white/70 leading-relaxed" data-testid="text-access-d5-formula">
             {payoffFormulaDisplay}
           </p>
         </div>

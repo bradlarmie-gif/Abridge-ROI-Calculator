@@ -121,17 +121,17 @@ function RealizationRateControl({
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-xl border border-[#E7E0D6] bg-[#F8F5F1] p-5 mb-8"
+      className="rounded-xl border border-[#E7E0D6] bg-[#F8F5F1] p-6 mb-8"
       data-testid={`panel-attain-realization-${goal}`}
     >
       <div className="flex items-center gap-1.5 mb-1.5">
-        <p className="text-[10px] font-semibold uppercase tracking-[2px] text-[#EA2C00]">Realization rate</p>
+        <p className="text-[11px] font-semibold uppercase tracking-[2px] text-[#EA2C00]">Realization rate</p>
         <InfoTip
           text="The share of this outcome you attribute to this plan. Lower it when other efforts also move the number."
           testid={`tooltip-attain-realization-${goal}`}
         />
       </div>
-      <p className="text-xs text-[#8C8C8C] leading-relaxed mb-4 max-w-[560px]">
+      <p className="text-[15px] text-[#8C8C8C] leading-relaxed mb-5 max-w-[620px]">
         {goalLabel} may be moving for reasons beyond this plan. Dial down the share that belongs to this plan alone.
         This never adds credit, it only ever removes it.
       </p>
@@ -220,7 +220,7 @@ export default function StepBuildCase({
         <h1 className="text-2xl md:text-4xl font-bold text-black mb-3 font-abridge uppercase tracking-tight" data-testid="text-step-title">
           Build your strategy
         </h1>
-        <p className="text-sm text-[#666666] leading-relaxed max-w-[620px]" data-testid="text-step-teach">
+        <p className="text-[15px] text-[#666666] leading-relaxed max-w-[620px]" data-testid="text-step-teach">
           Every decision below starts at your reality, where it stands today. Doing nothing new adds nothing. Move a
           decision and its own derivation appears underneath it, built from the operation you entered on the last
           page.{" "}
@@ -233,24 +233,24 @@ export default function StepBuildCase({
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-[#1A1A1A] rounded-2xl p-6 mb-8"
+        className="bg-[#1A1A1A] rounded-2xl p-7 mb-8"
         data-testid="panel-attain-buildcase-strategy"
       >
-        <p className="text-[10px] font-semibold uppercase tracking-[2.5px] text-white/50 mb-2" data-testid="text-attain-buildcase-priority-index">
+        <p className="text-[11px] font-semibold uppercase tracking-[2.5px] text-white/50 mb-2" data-testid="text-attain-buildcase-priority-index">
           {totalGoals > 1 ? `Priority ${goalIndex + 1} of ${totalGoals}` : "The strategy"}
         </p>
         <div className="flex items-center gap-3 mb-1">
           <span
-            className="inline-block text-[9px] font-bold uppercase tracking-[1.5px] text-white px-3 py-1 rounded-full"
+            className="inline-block text-[10px] font-bold uppercase tracking-[1.5px] text-white px-3 py-1 rounded-full"
             style={{ background: goalDef.pillBg }}
           >
             {goalDef.pill}
           </span>
-          <h2 className="font-abridge text-2xl text-white" data-testid="text-attain-buildcase-strategy-title">
+          <h2 className="font-abridge text-3xl text-white" data-testid="text-attain-buildcase-strategy-title">
             {goalDef.label}
           </h2>
         </div>
-        <p className="text-xs text-white/50 mt-2" data-testid="text-attain-buildcase-strategy-progress">
+        <p className="text-[13px] text-white/50 mt-2" data-testid="text-attain-buildcase-strategy-progress">
           {movedCount} of {levers.length} decisions moved. Move the ones your organization is actually ready to
           commit to, the rest can wait for a later plan.
         </p>
@@ -268,13 +268,13 @@ export default function StepBuildCase({
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-xl border-2 border-[#EA2C00] bg-[#FFF6F3] p-5 mb-8"
+          className="rounded-xl border-2 border-[#EA2C00] bg-[#FFF6F3] p-6 mb-8"
           data-testid="panel-attain-freed-time-split"
         >
-          <p className="text-[10px] font-semibold uppercase tracking-[2px] text-[#EA2C00] mb-1.5">
+          <p className="text-[11px] font-semibold uppercase tracking-[2px] text-[#EA2C00] mb-1.5">
             One hour, one split
           </p>
-          <p className="text-xs text-[#3A3A3A] leading-relaxed mb-4 max-w-[600px]">
+          <p className="text-[15px] text-[#3A3A3A] leading-relaxed mb-5 max-w-[620px]">
             Access and Retention both price the same freed documentation hour. This is the one decision that keeps it
             from being counted twice: how much of that hour routes to opening access on the schedule, versus how
             much stays as protected relief. Every dollar on both of those priorities' pages already reflects this
@@ -298,7 +298,7 @@ export default function StepBuildCase({
             className="w-full"
             data-testid="slider-attain-freed-time-split"
           />
-          <p className="text-[10px] text-[#8C8C8C] mt-2">
+          <p className="text-[11px] text-[#8C8C8C] mt-2">
             How you split the freed hour: {freedTimeSplit}% to opening access, {100 - freedTimeSplit}% to protecting
             relief.
           </p>
@@ -376,7 +376,7 @@ export default function StepBuildCase({
                     <h3 className="text-sm font-bold text-[#1A1A1A]" data-testid={`text-attain-lever-label-${goal}-${lever.id}`}>
                       {lever.label}
                     </h3>
-                    <p className="text-xs text-[#8C8C8C] mt-1 leading-relaxed max-w-[520px]">{lever.help}</p>
+                    <p className="text-[15px] text-[#8C8C8C] mt-1 leading-relaxed max-w-[620px]">{lever.help}</p>
                   </div>
 
                   <LeverControl
@@ -395,15 +395,15 @@ export default function StepBuildCase({
                     className="mt-4 bg-[#F8F5F1] border-l-[3px] border-[#EA2C00] rounded-r-md p-3"
                     data-testid={`box-attain-lever-formula-${goal}-${lever.id}`}
                   >
-                    <p className="text-[9px] font-bold uppercase tracking-wide text-[#EA2C00] mb-1">The math</p>
-                    <p className="text-[11px] text-[#3A3A3A] leading-relaxed" data-testid={`text-attain-lever-formula-${goal}-${lever.id}`}>
+                    <p className="text-[10px] font-bold uppercase tracking-wide text-[#EA2C00] mb-1">The math</p>
+                    <p className="text-[12.5px] text-[#3A3A3A] leading-relaxed" data-testid={`text-attain-lever-formula-${goal}-${lever.id}`}>
                       {contribution?.formula ?? "Move this decision above reality to see the math."}
                     </p>
                   </div>
 
                   {/* The dollar figure is quiet proof underneath the
                       decision, never the headline of the card. */}
-                  <p className="text-[10.5px] text-[#8C8C8C] mt-2" data-testid={`text-attain-lever-contribution-${goal}-${lever.id}`}>
+                  <p className="text-[11.5px] text-[#8C8C8C] mt-2" data-testid={`text-attain-lever-contribution-${goal}-${lever.id}`}>
                     {moved ? (
                       <span className="font-semibold text-[#EA2C00]">adds ~{formatCompact(contribution?.marginalMargin ?? 0)}</span>
                     ) : (
@@ -437,7 +437,7 @@ function LeverControl({ setting, goal, lever, value, onChange }: LeverControlPro
     const options = lineOptions(goal, setting);
     const selected = Array.isArray(value) ? value : [];
     if (options.length === 0) {
-      return <p className="text-xs text-[#B4B4B4] italic">No line options configured for this combination yet.</p>;
+      return <p className="text-[14px] text-[#B4B4B4] italic">No line options configured for this combination yet.</p>;
     }
     return (
       <div className="flex flex-wrap gap-2">

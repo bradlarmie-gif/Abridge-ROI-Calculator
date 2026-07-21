@@ -82,12 +82,12 @@ function DecisionCard({
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-xl border border-[#E7E0D6] bg-white p-6 mb-5"
+      className="rounded-xl border border-[#E7E0D6] bg-white p-7 mb-6"
       data-testid={testid}
     >
-      <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#EA2C00] mb-1.5">{step}</p>
-      <h3 className="text-base font-bold text-[#1A1A1A] mb-1.5 font-abridge">{title}</h3>
-      <p className="text-xs text-[#8C8C8C] leading-relaxed mb-4 max-w-[560px]">{help}</p>
+      <p className="text-[11px] font-bold uppercase tracking-[2px] text-[#EA2C00] mb-1.5">{step}</p>
+      <h3 className="text-lg font-bold text-[#1A1A1A] mb-2 font-abridge">{title}</h3>
+      <p className="text-[15px] text-[#8C8C8C] leading-relaxed mb-5 max-w-[620px]">{help}</p>
       {children}
     </motion.div>
   );
@@ -96,8 +96,8 @@ function DecisionCard({
 function CountOutput({ label, value, unit, testid }: { label: string; value: string; unit: string; testid: string }) {
   return (
     <div className="bg-[#F8F5F1] rounded-lg px-4 py-3 flex items-baseline justify-between gap-3" data-testid={testid}>
-      <span className="text-xs text-[#8C8C8C]">{label}</span>
-      <span className="text-lg font-bold text-[#1A1A1A] font-abridge">
+      <span className="text-sm text-[#8C8C8C]">{label}</span>
+      <span className="text-xl font-bold text-[#1A1A1A] font-abridge">
         {value} <span className="text-xs font-normal text-[#8C8C8C]">{unit}</span>
       </span>
     </div>
@@ -107,8 +107,8 @@ function CountOutput({ label, value, unit, testid }: { label: string; value: str
 function ResultStat({ label, value, unit, testid }: { label: string; value: string; unit: string; testid: string }) {
   return (
     <div>
-      <p className="text-[10px] text-white/50 mb-1 leading-snug">{label}</p>
-      <p className="text-lg font-bold font-abridge text-[#EA2C00]" data-testid={testid}>
+      <p className="text-[11px] text-white/50 mb-1 leading-snug">{label}</p>
+      <p className="text-xl font-bold font-abridge text-[#EA2C00]" data-testid={testid}>
         {value} <span className="text-xs font-normal text-white/50">{unit}</span>
       </p>
     </div>
@@ -132,7 +132,7 @@ function InfoTip({ text, testid }: { text: string; testid: string }) {
 
 function FieldLabel({ children, tip, testid }: { children: React.ReactNode; tip?: string; testid?: string }) {
   return (
-    <label className="text-xs font-medium text-[#3A3A3A] mb-1.5 flex items-center gap-1.5">
+    <label className="text-sm font-medium text-[#3A3A3A] mb-2 flex items-center gap-1.5">
       {children}
       {tip && testid && <InfoTip text={tip} testid={testid} />}
     </label>
@@ -142,8 +142,8 @@ function FieldLabel({ children, tip, testid }: { children: React.ReactNode; tip?
 function MathBox({ formula, testid }: { formula: string; testid: string }) {
   return (
     <div className="mt-3 bg-[#F8F5F1] border-l-[3px] border-[#EA2C00] rounded-r-md p-3">
-      <p className="text-[9px] font-bold uppercase tracking-wide text-[#EA2C00] mb-1">The math</p>
-      <p className="text-[11px] text-[#3A3A3A] leading-relaxed" data-testid={testid}>
+      <p className="text-[10px] font-bold uppercase tracking-wide text-[#EA2C00] mb-1">The math</p>
+      <p className="text-[12.5px] text-[#3A3A3A] leading-relaxed" data-testid={testid}>
         {formula}
       </p>
     </div>
@@ -173,15 +173,15 @@ function PayoffCard({
   const displayFormula = value > 0 ? formulaWithRealization(formula, realizationPct, displayValue) : formula;
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="rounded-xl bg-[#1A1A1A] p-6 mb-8" data-testid={testid}>
-      <p className="text-[10px] font-bold uppercase tracking-[2px] text-white/50 mb-1.5">{pill} · the payoff</p>
-      <p className="font-abridge text-4xl text-[#EA2C00]" data-testid={`${testid}-value`}>
+      <p className="text-[11px] font-bold uppercase tracking-[2px] text-white/50 mb-1.5">{pill} · the payoff</p>
+      <p className="font-abridge text-5xl text-[#EA2C00]" data-testid={`${testid}-value`}>
         {fmtMoneyCompact(displayValue)}
       </p>
-      <p className="text-xs text-white/60 mt-2">{caption}</p>
+      <p className="text-[15px] text-white/60 mt-2">{caption}</p>
       {children}
       <div className="mt-4 bg-white/5 border-l-[3px] border-[#EA2C00] rounded-r-md p-3">
-        <p className="text-[9px] font-bold uppercase tracking-wide text-[#EA2C00] mb-1">The math</p>
-        <p className="text-[11px] text-white/70 leading-relaxed" data-testid={`${testid}-formula`}>
+        <p className="text-[10px] font-bold uppercase tracking-wide text-[#EA2C00] mb-1">The math</p>
+        <p className="text-[12.5px] text-white/70 leading-relaxed" data-testid={`${testid}-formula`}>
           {displayFormula}
         </p>
       </div>
@@ -222,12 +222,12 @@ export default function RevenueDecisionChain({ setting, baseline, values, onChan
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        className="rounded-xl border border-[#E7E0D6] bg-white p-6 mb-5"
+        className="rounded-xl border border-[#E7E0D6] bg-white p-7 mb-6"
         data-testid="card-revenue-path-chooser"
       >
-        <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#EA2C00] mb-1.5">Choose your path(s)</p>
-        <h3 className="text-base font-bold text-[#1A1A1A] mb-1.5 font-abridge">How does this revenue get captured</h3>
-        <p className="text-xs text-[#8C8C8C] leading-relaxed mb-4 max-w-[560px]">
+        <p className="text-[11px] font-bold uppercase tracking-[2px] text-[#EA2C00] mb-1.5">Choose your path(s)</p>
+        <h3 className="text-lg font-bold text-[#1A1A1A] mb-2 font-abridge">How does this revenue get captured</h3>
+        <p className="text-[15px] text-[#8C8C8C] leading-relaxed mb-5 max-w-[620px]">
           Pick one or more. Each is a genuinely different mechanism, a captured HCC, a coded level, and a prevented
           denial are never the same dollar, so they add rather than compete. Only the paths you pick get decisions
           below, and no dollar appears until that path's own chain is complete.
@@ -251,7 +251,7 @@ export default function RevenueDecisionChain({ setting, baseline, values, onChan
           })}
         </div>
         {chosen.length === 0 && (
-          <p className="text-xs text-[#B4B4B4] italic mt-4" data-testid="text-revenue-no-path">
+          <p className="text-[14px] text-[#B4B4B4] italic mt-4" data-testid="text-revenue-no-path">
             Pick at least one path above to start building the case.
           </p>
         )}
@@ -274,11 +274,11 @@ export default function RevenueDecisionChain({ setting, baseline, values, onChan
           className="rounded-xl bg-[#1A1A1A] p-6"
           data-testid="card-revenue-combined-payoff"
         >
-          <p className="text-[10px] font-bold uppercase tracking-[2px] text-white/50 mb-1.5">All paths, combined</p>
-          <p className="font-abridge text-4xl text-[#EA2C00]" data-testid="text-revenue-combined-value">
+          <p className="text-[11px] font-bold uppercase tracking-[2px] text-white/50 mb-1.5">All paths, combined</p>
+          <p className="font-abridge text-5xl text-[#EA2C00]" data-testid="text-revenue-combined-value">
             {fmtMoneyCompact(realizedValue(combinedValue, realizationPct))}
           </p>
-          <p className="text-xs text-white/60 mt-2">
+          <p className="text-[15px] text-white/60 mt-2">
             {chosen.length} paths chosen, each its own mechanism, summed once, never double-counted.
             {realizationPct < 100 ? ` Attributed at ${Math.round(realizationPct)}% realization to this plan.` : ""}
           </p>
@@ -314,7 +314,7 @@ function HccPathSection({
 
   return (
     <div data-testid="section-revenue-path-hcc" className="mb-8">
-      <p className="text-xs font-bold uppercase tracking-[1.5px] text-[#EA2C00] mb-3">Risk Adjustment</p>
+      <p className="text-[13px] font-bold uppercase tracking-[1.5px] text-[#EA2C00] mb-3">Risk Adjustment</p>
 
       <DecisionCard
         step="D1"
@@ -420,7 +420,7 @@ function HccPathSection({
 
         <div className="mb-2">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-[#8C8C8C] flex items-center gap-1.5">
+            <span className="text-sm text-[#8C8C8C] flex items-center gap-1.5">
               Recapture uplift you are committing to
               <InfoTip text="How much higher than today's recapture rate you are actually committing to reach. This is the gate, zero here recaptures nothing." testid="tooltip-revenue-hcc-recapture" />
             </span>
@@ -452,7 +452,7 @@ function HccPathSection({
       >
         <div className="mb-4">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-[#8C8C8C] flex items-center gap-1.5">
+            <span className="text-sm text-[#8C8C8C] flex items-center gap-1.5">
               Suspected-HCC discovery rate
               <InfoTip text="Share of the panel where ambient documentation surfaces a condition never coded before. This is the gate, zero here discovers nothing new." testid="tooltip-revenue-hcc-discovery" />
             </span>
@@ -508,7 +508,7 @@ function HccPathSection({
             />
             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8C8C8C] text-xs pointer-events-none">/HCC</span>
           </div>
-          <p className="text-[10px] text-[#8C8C8C] mt-1">Defaults to ${fmtInt(DEFAULT_VALUE_PER_HCC)}/HCC until you set your own.</p>
+          <p className="text-[11px] text-[#8C8C8C] mt-1">Defaults to ${fmtInt(DEFAULT_VALUE_PER_HCC)}/HCC until you set your own.</p>
         </div>
       </DecisionCard>
 
@@ -550,7 +550,7 @@ function EmPathSection({
 
   return (
     <div data-testid="section-revenue-path-em" className="mb-8">
-      <p className="text-xs font-bold uppercase tracking-[1.5px] text-[#EA2C00] mb-3">E/M Level Accuracy</p>
+      <p className="text-[13px] font-bold uppercase tracking-[1.5px] text-[#EA2C00] mb-3">E/M Level Accuracy</p>
 
       <DecisionCard
         step="D1"
@@ -570,7 +570,7 @@ function EmPathSection({
             data-testid="input-revenue-em-current-wrvu"
           />
         </div>
-        <p className="text-[10px] text-[#8C8C8C] mt-2">
+        <p className="text-[11px] text-[#8C8C8C] mt-2">
           Priced against {fmtInt(chain.eligibleEncounters)} eligible encounters/yr from your Starting-point baseline.
         </p>
       </DecisionCard>
@@ -583,7 +583,7 @@ function EmPathSection({
       >
         <div className="mb-2">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-[#8C8C8C]">wRVU lift above today's average</span>
+            <span className="text-sm text-[#8C8C8C]">wRVU lift above today's average</span>
             <span className="text-sm font-semibold text-[#1A1A1A]" data-testid="text-revenue-em-lift-value">
               +{fmtInt(asNum(values.revenueEmLift))}%
             </span>
@@ -623,7 +623,7 @@ function EmPathSection({
             />
             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8C8C8C] text-xs pointer-events-none">/wRVU</span>
           </div>
-          <p className="text-[10px] text-[#8C8C8C] mt-1">Defaults to ${fmtInt(DEFAULT_CONVERSION_FACTOR)}/wRVU until you set your own.</p>
+          <p className="text-[11px] text-[#8C8C8C] mt-1">Defaults to ${fmtInt(DEFAULT_CONVERSION_FACTOR)}/wRVU until you set your own.</p>
         </div>
       </DecisionCard>
 
@@ -660,7 +660,7 @@ function DenialsPathSection({
 
   return (
     <div data-testid="section-revenue-path-denials" className="mb-8">
-      <p className="text-xs font-bold uppercase tracking-[1.5px] text-[#EA2C00] mb-3">Medical Necessity Denials</p>
+      <p className="text-[13px] font-bold uppercase tracking-[1.5px] text-[#EA2C00] mb-3">Medical Necessity Denials</p>
 
       <DecisionCard
         step="D1"
@@ -683,7 +683,7 @@ function DenialsPathSection({
             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8C8C8C] text-sm pointer-events-none">%</span>
           </div>
         </div>
-        <p className="text-[10px] text-[#8C8C8C] mt-2">
+        <p className="text-[11px] text-[#8C8C8C] mt-2">
           Applied against {fmtInt(chain.eligibleEncounters)} eligible encounters/yr from your Starting-point baseline.
         </p>
       </DecisionCard>
@@ -696,7 +696,7 @@ function DenialsPathSection({
       >
         <div className="mb-2">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-[#8C8C8C]">Share preventable with cleaner documentation</span>
+            <span className="text-sm text-[#8C8C8C]">Share preventable with cleaner documentation</span>
             <span className="text-sm font-semibold text-[#1A1A1A]" data-testid="text-revenue-denials-preventable-value">
               {fmtInt(asNum(values.revenueDenialsPreventable))}%
             </span>
@@ -736,7 +736,7 @@ function DenialsPathSection({
             />
             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8C8C8C] text-xs pointer-events-none">/claim</span>
           </div>
-          <p className="text-[10px] text-[#8C8C8C] mt-1">Defaults to ${fmtInt(DEFAULT_AVG_CLAIM_VALUE)}/claim until you set your own.</p>
+          <p className="text-[11px] text-[#8C8C8C] mt-1">Defaults to ${fmtInt(DEFAULT_AVG_CLAIM_VALUE)}/claim until you set your own.</p>
         </div>
       </DecisionCard>
 

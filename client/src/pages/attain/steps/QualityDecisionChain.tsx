@@ -67,12 +67,12 @@ function DecisionCard({
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-xl border border-[#E7E0D6] bg-white p-6 mb-5"
+      className="rounded-xl border border-[#E7E0D6] bg-white p-7 mb-6"
       data-testid={testid}
     >
-      <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#EA2C00] mb-1.5">{step}</p>
-      <h3 className="text-base font-bold text-[#1A1A1A] mb-1.5 font-abridge">{title}</h3>
-      <p className="text-xs text-[#8C8C8C] leading-relaxed mb-4 max-w-[560px]">{help}</p>
+      <p className="text-[11px] font-bold uppercase tracking-[2px] text-[#EA2C00] mb-1.5">{step}</p>
+      <h3 className="text-lg font-bold text-[#1A1A1A] mb-2 font-abridge">{title}</h3>
+      <p className="text-[15px] text-[#8C8C8C] leading-relaxed mb-5 max-w-[620px]">{help}</p>
       {children}
     </motion.div>
   );
@@ -81,8 +81,8 @@ function DecisionCard({
 function CountOutput({ label, value, unit, testid }: { label: string; value: string; unit: string; testid: string }) {
   return (
     <div className="bg-[#F8F5F1] rounded-lg px-4 py-3 flex items-baseline justify-between gap-3" data-testid={testid}>
-      <span className="text-xs text-[#8C8C8C]">{label}</span>
-      <span className="text-lg font-bold text-[#1A1A1A] font-abridge">
+      <span className="text-sm text-[#8C8C8C]">{label}</span>
+      <span className="text-xl font-bold text-[#1A1A1A] font-abridge">
         {value} <span className="text-xs font-normal text-[#8C8C8C]">{unit}</span>
       </span>
     </div>
@@ -106,7 +106,7 @@ function InfoTip({ text, testid }: { text: string; testid: string }) {
 
 function FieldLabel({ children, tip, testid }: { children: React.ReactNode; tip?: string; testid?: string }) {
   return (
-    <label className="text-xs font-medium text-[#3A3A3A] mb-1.5 flex items-center gap-1.5">
+    <label className="text-sm font-medium text-[#3A3A3A] mb-2 flex items-center gap-1.5">
       {children}
       {tip && testid && <InfoTip text={tip} testid={testid} />}
     </label>
@@ -116,8 +116,8 @@ function FieldLabel({ children, tip, testid }: { children: React.ReactNode; tip?
 function MathBox({ formula, testid }: { formula: string; testid: string }) {
   return (
     <div className="mt-3 bg-[#F8F5F1] border-l-[3px] border-[#EA2C00] rounded-r-md p-3">
-      <p className="text-[9px] font-bold uppercase tracking-wide text-[#EA2C00] mb-1">The math</p>
-      <p className="text-[11px] text-[#3A3A3A] leading-relaxed" data-testid={testid}>
+      <p className="text-[10px] font-bold uppercase tracking-wide text-[#EA2C00] mb-1">The math</p>
+      <p className="text-[12.5px] text-[#3A3A3A] leading-relaxed" data-testid={testid}>
         {formula}
       </p>
     </div>
@@ -236,7 +236,7 @@ export default function QualityDecisionChain({ setting, baseline, values, onChan
             placeholder={totalBeds > 0 ? `e.g., up to ${totalBeds}` : "e.g., 120"}
             data-testid="input-quality-beds"
           />
-          <p className="text-[10px] text-[#8C8C8C] mt-1">
+          <p className="text-[11px] text-[#8C8C8C] mt-1">
             Capped at your Starting-point count{totalBeds > 0 ? ` of ${totalBeds.toLocaleString()}` : ""}.
           </p>
         </div>
@@ -264,7 +264,7 @@ export default function QualityDecisionChain({ setting, baseline, values, onChan
             })}
           </div>
           {chosenEventIds.length === 0 && (
-            <p className="text-xs text-[#B4B4B4] italic mt-3" data-testid="text-quality-no-event-type">
+            <p className="text-[14px] text-[#B4B4B4] italic mt-3" data-testid="text-quality-no-event-type">
               Pick at least one event type above to start building the case.
             </p>
           )}
@@ -282,7 +282,7 @@ export default function QualityDecisionChain({ setting, baseline, values, onChan
       >
         <div className="mb-4">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-[#8C8C8C] flex items-center gap-1.5">
+            <span className="text-sm text-[#8C8C8C] flex items-center gap-1.5">
               Share of bundle gaps closed in real time, during the shift
               <InfoTip
                 text={`Reality today: ${QUALITY_REALTIME_BASELINE_PCT}%. Only the movement above that baseline is a new decision, and it is what this plan is credited for.`}
@@ -303,7 +303,7 @@ export default function QualityDecisionChain({ setting, baseline, values, onChan
             className="w-full"
             data-testid="slider-quality-realtime"
           />
-          <p className="text-[10px] text-[#8C8C8C] mt-1">Reality today: {QUALITY_REALTIME_BASELINE_PCT}%.</p>
+          <p className="text-[11px] text-[#8C8C8C] mt-1">Reality today: {QUALITY_REALTIME_BASELINE_PCT}%.</p>
         </div>
 
         <CountOutput
@@ -335,7 +335,7 @@ export default function QualityDecisionChain({ setting, baseline, values, onChan
               <MathBox formula={formulas.response} testid="text-quality-d3-formula" />
             </>
           ) : (
-            <p className="text-xs text-[#B4B4B4] italic" data-testid="text-quality-d3-not-applicable">
+            <p className="text-[14px] text-[#B4B4B4] italic" data-testid="text-quality-d3-not-applicable">
               Add Sepsis to the event types on D1 to put this decision to work.
             </p>
           )}
@@ -350,7 +350,7 @@ export default function QualityDecisionChain({ setting, baseline, values, onChan
       >
         <div className="mb-4">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-[#8C8C8C]">Audited bundle compliance target</span>
+            <span className="text-sm text-[#8C8C8C]">Audited bundle compliance target</span>
             <span className="text-sm font-semibold text-[#1A1A1A]" data-testid="text-quality-bundle-value">
               {fmtPct(bundle.compliancePct)}%
             </span>
@@ -378,7 +378,7 @@ export default function QualityDecisionChain({ setting, baseline, values, onChan
             <MathBox formula={formulas.bundle} testid="text-quality-d4-formula" />
           </>
         ) : (
-          <p className="text-xs text-[#B4B4B4] italic" data-testid="text-quality-d4-not-applicable">
+          <p className="text-[14px] text-[#B4B4B4] italic" data-testid="text-quality-d4-not-applicable">
             Add HAPI, CLABSI, or Falls to the event types on D1 to put this decision to work.
           </p>
         )}
@@ -390,16 +390,16 @@ export default function QualityDecisionChain({ setting, baseline, values, onChan
         className="rounded-xl bg-[#1A1A1A] p-6"
         data-testid="card-quality-payoff"
       >
-        <p className="text-[10px] font-bold uppercase tracking-[2px] text-white/50 mb-1.5">The payoff</p>
-        <h3 className="text-base font-bold text-white mb-1.5 font-abridge">Prevented events x cost per event</h3>
-        <p className="text-xs text-white/50 leading-relaxed mb-4 max-w-[560px]">
+        <p className="text-[11px] font-bold uppercase tracking-[2px] text-white/50 mb-1.5">The payoff</p>
+        <h3 className="text-lg font-bold text-white mb-2 font-abridge">Prevented events x cost per event</h3>
+        <p className="text-[15px] text-white/50 leading-relaxed mb-5 max-w-[620px]">
           Every targeted event type's own prevented-events count, priced at its own cost per event, summed. This is
           the first dollar figure in this chain, derived from the four decisions above, never invented.
         </p>
-        <p className="font-abridge text-4xl text-[#EA2C00]" data-testid="text-quality-payoff-value">
+        <p className="font-abridge text-5xl text-[#EA2C00]" data-testid="text-quality-payoff-value">
           {fmtMoneyCompact(realizedPayoffValue)}
         </p>
-        <p className="text-xs text-white/60 mt-2" data-testid="text-quality-payoff-caption">
+        <p className="text-[15px] text-white/60 mt-2" data-testid="text-quality-payoff-caption">
           {fmtInt(payoff.totalPrevented)} events prevented/yr across {payoff.events.length} targeted event type
           {payoff.events.length === 1 ? "" : "s"}.
         </p>
@@ -408,17 +408,17 @@ export default function QualityDecisionChain({ setting, baseline, values, onChan
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
             {payoff.events.map((e) => (
               <div key={e.id} data-testid={`text-quality-payoff-event-${e.id}`}>
-                <p className="text-[10px] text-white/50 mb-1 leading-snug">{e.label}</p>
-                <p className="text-lg font-bold font-abridge text-[#EA2C00]">{fmtMoneyCompact(realizedValue(e.value, realizationPct))}</p>
-                <p className="text-[10px] text-white/50 mt-0.5">{fmtInt(e.prevented)} prevented/yr</p>
+                <p className="text-[11px] text-white/50 mb-1 leading-snug">{e.label}</p>
+                <p className="text-xl font-bold font-abridge text-[#EA2C00]">{fmtMoneyCompact(realizedValue(e.value, realizationPct))}</p>
+                <p className="text-[11px] text-white/50 mt-0.5">{fmtInt(e.prevented)} prevented/yr</p>
               </div>
             ))}
           </div>
         )}
 
         <div className="mt-4 bg-white/5 border-l-[3px] border-[#EA2C00] rounded-r-md p-3">
-          <p className="text-[9px] font-bold uppercase tracking-wide text-[#EA2C00] mb-1">The math</p>
-          <p className="text-[11px] text-white/70 leading-relaxed" data-testid="text-quality-payoff-formula">
+          <p className="text-[10px] font-bold uppercase tracking-wide text-[#EA2C00] mb-1">The math</p>
+          <p className="text-[12.5px] text-white/70 leading-relaxed" data-testid="text-quality-payoff-formula">
             {payoffFormulaDisplay}
           </p>
         </div>

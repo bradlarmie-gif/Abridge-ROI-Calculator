@@ -62,7 +62,7 @@ export default function StepScope({ setting, baseline, onChangeBaseline }: StepS
         <h1 className="text-2xl md:text-4xl font-bold text-black mb-3 font-abridge uppercase tracking-tight" data-testid="text-step-title">
           Your starting point
         </h1>
-        <p className="text-sm text-[#666666] leading-relaxed max-w-[600px]" data-testid="text-step-teach">
+        <p className="text-[15px] text-[#666666] leading-relaxed max-w-[600px]" data-testid="text-step-teach">
           Every decision on the next page is measured as a move away from where you actually are today, not from an
           assumed number. Enter your real operation here, and every "adds ~$X" on the next page is built from these
           numbers, not from a benchmark that isn't yours.
@@ -72,7 +72,7 @@ export default function StepScope({ setting, baseline, onChangeBaseline }: StepS
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-[#F5F0EB] rounded-xl p-6 sm:p-8 mb-6"
+        className="bg-[#F5F0EB] rounded-xl p-8 sm:p-10 mb-6"
         data-testid="panel-attain-scope-baseline"
       >
         <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
@@ -81,7 +81,7 @@ export default function StepScope({ setting, baseline, onChangeBaseline }: StepS
         <div className="h-px bg-[#D1D5DB] mb-6" />
 
         {isNursing ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
             <NumberBaselineField
               label="Staffed beds"
               testid="staffed-beds"
@@ -118,7 +118,7 @@ export default function StepScope({ setting, baseline, onChangeBaseline }: StepS
             />
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
             <NumberBaselineField
               label={PROVIDER_LABEL[setting]}
               testid="providers"
@@ -149,7 +149,7 @@ export default function StepScope({ setting, baseline, onChangeBaseline }: StepS
         )}
       </motion.div>
 
-      <p className="text-xs text-[#8C8C8C] max-w-[600px]" data-testid="text-attain-scope-footnote">
+      <p className="text-[14px] text-[#8C8C8C] leading-relaxed max-w-[600px]" data-testid="text-attain-scope-footnote">
         These numbers are the stage every decision on the next page stands on. Nothing about your demand, backlog,
         or referral queue belongs here, those are decisions you make on Build the case, not facts about today.
       </p>
@@ -170,8 +170,8 @@ interface NumberBaselineFieldProps {
 
 function NumberBaselineField({ label, testid, value, onChange, placeholder, help, suffix, max }: NumberBaselineFieldProps) {
   return (
-    <div className="space-y-2.5">
-      <label className="text-sm font-medium text-black" htmlFor={`attain-baseline-${testid}`}>
+    <div className="space-y-3">
+      <label className="text-base font-medium text-black" htmlFor={`attain-baseline-${testid}`}>
         {label}
       </label>
       <div className="relative">
@@ -192,7 +192,7 @@ function NumberBaselineField({ label, testid, value, onChange, placeholder, help
           </span>
         )}
       </div>
-      <p className="text-xs text-[#888888] leading-relaxed">{help}</p>
+      <p className="text-[14px] text-[#888888] leading-relaxed">{help}</p>
     </div>
   );
 }
