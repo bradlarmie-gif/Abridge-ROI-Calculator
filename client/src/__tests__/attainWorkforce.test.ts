@@ -117,8 +117,69 @@ describe("D2 - protect the recovered relief (the shared freed-time lever)", () =
     expect(zero.impactPp).toBe(0);
   });
 
-  it("nursing's impact ceiling (25pp) is higher than physician settings (15pp)", () => {
-    expect(WORKFORCE_IMPACT_CEILING_PP.nursing).toBeGreaterThan(WORKFORCE_IMPACT_CEILING_PP.outpatient);
+  it("every setting shares the 50% product ceiling: at most half of the burnout-related departures can be avoided", () => {
+    for (const setting of ["outpatient", "ed", "inpatient", "nursing"] as AttainSetting[]) {
+      expect(WORKFORCE_IMPACT_CEILING_PP[setting]).toBe(50);
+    }
+  });
+});
+
+describe("the composite is a fraction of the 50% ceiling: full commitment reaches 50%, a sensible default lands at a meaningful mid-point", () => {
+  // The representative default plan the app is driven to on Build the case:
+  // 60% of freed relief protected, a quarterly pulse, partial coverage
+  // backfill, and the floor held for 9 of the next 12 months, on the
+  // 40-provider outpatient baseline.
+  const DEFAULT_PLAN = (): LeverValues => ({
+    retentionProviders: 40,
+    retentionTurnoverRate: 14,
+    retentionReplacementCost: 375_000,
+    retentionProtect: 60,
+    retentionSurveyCadence: 1,
+    retentionBackfill: 1,
+    retentionSustain: 9,
+  });
+
+  // A fully committed plan: every lever maxed.
+  const MAX_PLAN = (): LeverValues => ({
+    retentionProviders: 40,
+    retentionTurnoverRate: 14,
+    retentionReplacementCost: 375_000,
+    retentionProtect: 100,
+    retentionSurveyCadence: 2,
+    retentionBackfill: 2,
+    retentionSustain: 12,
+  });
+
+  it("a fully committed plan reaches the full 50% ceiling, never more", () => {
+    const chain = computeWorkforceChain(OP_BASELINE, "outpatient", MAX_PLAN());
+    expect(chain.sustain.compositeImpactPct).toBeCloseTo(50, 6);
+    expect(chain.sustain.compositeImpactPct).toBeLessThanOrEqual(50);
+  });
+
+  it("the default plan lands at a meaningful mid-point (roughly 20-25%, about half the ceiling), not the old ~4%", () => {
+    const chain = computeWorkforceChain(OP_BASELINE, "outpatient", DEFAULT_PLAN());
+    expect(chain.sustain.compositeImpactPct).toBeGreaterThanOrEqual(20);
+    expect(chain.sustain.compositeImpactPct).toBeLessThanOrEqual(25);
+  });
+
+  it("the composite is monotonic in commitment: the default is above nothing-committed and below the full ceiling", () => {
+    const nothing = computeWorkforceChain(OP_BASELINE, "outpatient", {
+      retentionProviders: 40,
+      retentionTurnoverRate: 14,
+      retentionReplacementCost: 375_000,
+    });
+    const dflt = computeWorkforceChain(OP_BASELINE, "outpatient", DEFAULT_PLAN());
+    const max = computeWorkforceChain(OP_BASELINE, "outpatient", MAX_PLAN());
+    expect(dflt.sustain.compositeImpactPct).toBeGreaterThan(nothing.sustain.compositeImpactPct);
+    expect(dflt.sustain.compositeImpactPct).toBeLessThan(max.sustain.compositeImpactPct);
+  });
+
+  it("the default plan's dollar payoff reconciles to the engine's providerWellbeing exactly at the new ceiling", () => {
+    const values = DEFAULT_PLAN();
+    const chain = computeWorkforceChain(OP_BASELINE, "outpatient", values);
+    const state = exploreStateForReconciliation(OP_BASELINE, "outpatient", values);
+    const engineValues = computeAllDriverValues(state, 0);
+    expect(chain.payoff.value).toBe(engineValues.providerWellbeing);
   });
 });
 
@@ -458,14 +519,14 @@ describe("units honesty - the composite impact is a share of burnout departures,
 
   it("the payoff carries a HONEST resulting turnover-rate-points figure, far smaller than the composite impact percent", () => {
     const scope = computeWorkforceScope("outpatient", OP_BASELINE, fullValues());
-    const payoff = computeWorkforcePayoff(scope, 15); // a maxed-out 15% composite
-    // 15% of burnout departures avoided is NOT 15 points off the turnover
-    // rate - the real rate effect is turnover x burnout share x 15%, an
+    const payoff = computeWorkforcePayoff(scope, 50); // the maxed-out 50% composite
+    // Avoiding half the burnout departures is NOT 50 points off the turnover
+    // rate - the real rate effect is turnover x burnout share x 50%, an
     // order of magnitude smaller.
     expect(payoff.turnoverPointsReduced).toBeGreaterThan(0);
-    expect(payoff.turnoverPointsReduced).toBeLessThan(15);
+    expect(payoff.turnoverPointsReduced).toBeLessThan(50);
     expect(payoff.turnoverPointsReduced).toBeCloseTo(
-      scope.turnoverRatePct * (scope.burnoutSharePct / 100) * (15 / 100),
+      scope.turnoverRatePct * (scope.burnoutSharePct / 100) * (50 / 100),
       6,
     );
   });
