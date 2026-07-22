@@ -47,6 +47,7 @@ import { brand } from "@/lib/pdf-theme";
 import { GOAL_CATALOG, getContent } from "./attainGoals";
 import {
   leversFor,
+  defaultRealizationPct,
   type Lever,
   type LeverValues,
   type LeverContribution,
@@ -187,12 +188,13 @@ export interface AttainPdfInput {
    * "monthly" when omitted, matching `DEFAULT_PLAN_CADENCE`. */
   planCadence?: string;
   freedTimeSplit: number;
-  /** Per-priority realization/attribution rate (0-100, default 100 when a
-   * goal is missing). Every dollar figure this PDF prints already reflects
-   * it (`combined` is already scaled, see attainLevers.ts's
-   * `applyRealization`) - this is only read to decide whether a priority's
-   * Starting Point page names the rate in a footnote (see `isFreedTimeGoal`'s
-   * sibling `realizationPct` below). */
+  /** Per-priority realization/attribution rate (0-100, defaults to
+   * `defaultRealizationPct(goal)` when a goal is missing - 100 for every
+   * goal except nursing quality, which defaults to 30). Every dollar figure
+   * this PDF prints already reflects it (`combined` is already scaled, see
+   * attainLevers.ts's `applyRealization`) - this is only read to decide
+   * whether a priority's Starting Point page names the rate in a footnote
+   * (see `isFreedTimeGoal`'s sibling `realizationPct` below). */
   realizationByGoal: RealizationByGoal;
   orgName: string;
 }
@@ -221,10 +223,12 @@ export interface AttainPdfPriority {
   /** Service lines the partner actually selected for this goal (may be empty),
    * read off the goal's "lines" lever - never a hardcoded specialty. */
   selectedLines: string[];
-  /** This priority's own realization/attribution rate (0-100, default 100).
-   * `margin`/`count` above already have it baked in (they come straight off
-   * `combined.byGoal[goal]`, already scaled) - this is only carried so the
-   * Starting Point page can name it in a footnote when it's below 100. */
+  /** This priority's own realization/attribution rate (0-100, defaults to
+   * `defaultRealizationPct(goal)` - 100 for every goal except nursing
+   * quality, which defaults to 30). `margin`/`count` above already have it
+   * baked in (they come straight off `combined.byGoal[goal]`, already
+   * scaled) - this is only carried so the Starting Point page can name it
+   * in a footnote when it's below 100. */
   realizationPct: number;
 }
 
@@ -299,9 +303,10 @@ function committedDecisionsFor(
 
 export function buildAttainPdfData(input: AttainPdfInput): AttainPdfData {
   const { state, setting, goals, target, attainment, valuesByGoal, combined, commitments, goalOwnerByPriority, freedTimeSplit, orgName } = input;
-  // Defaults to `{}` (100% realization for every goal) rather than trusting
-  // every caller to pass it - matches this file's own "never crash on a
-  // missing/legacy field" discipline (see the module header's ceiling note).
+  // Defaults to `{}` (each goal's own `defaultRealizationPct`, see the read
+  // site below) rather than trusting every caller to pass it - matches this
+  // file's own "never crash on a missing/legacy field" discipline (see the
+  // module header's ceiling note).
   const realizationByGoal = input.realizationByGoal ?? {};
   const planCadence = input.planCadence ?? "monthly";
 
@@ -374,7 +379,7 @@ export function buildAttainPdfData(input: AttainPdfInput): AttainPdfData {
         const v = linesLever ? values[linesLever.id] : undefined;
         return Array.isArray(v) ? v : [];
       })(),
-      realizationPct: realizationByGoal[goal] ?? 100,
+      realizationPct: realizationByGoal[goal] ?? defaultRealizationPct(goal),
     };
   });
 
@@ -956,7 +961,9 @@ function StartingPointPage({ data, priority }: { data: AttainPdfData; priority: 
       )}
       {priority.realizationPct < 100 && (
         <Text style={s.footnote} data-testid={`pdf-realization-note-${priority.goal}`}>
-          {`Attributed at ${Math.round(priority.realizationPct)}% realization to this plan - the share of this outcome credited here, when other efforts also move this number.`}
+          {priority.goal === "quality"
+            ? `Attributed at ${Math.round(priority.realizationPct)}% realization to this plan - in quality, Abridge surfaces the risk earlier, and the unit runs the bundle that prevents the event, so this is the share honestly attributable to Abridge.`
+            : `Attributed at ${Math.round(priority.realizationPct)}% realization to this plan - the share of this outcome credited here, when other efforts also move this number.`}
         </Text>
       )}
 

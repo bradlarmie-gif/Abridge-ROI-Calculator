@@ -47,16 +47,31 @@ import type { AttainSetting } from "./attainTypes";
  * "PER-EVENT CEILINGS" below) models what a STRONG CLINICAL PROGRAM,
  * running every one of its named interventions, can defensibly prevent.
  * It is not an Abridge-only claim. The separate, pre-existing "Realization
- * rate" control on Build the case's own page (one per priority, see
- * `RealizationRateControl` in `StepBuildCase.tsx`) is the ONE place that
- * attributes the share of THAT program-level outcome which belongs to this
- * plan specifically — the same dial every other goal already uses to avoid
- * over-claiming when other efforts are also moving the number. The two
- * never collapse into each other: a partner cannot inflate Abridge's share
- * by checking more intervention boxes, because the interventions only ever
- * move the clinical program's own ceiling, and the realization dial still
- * has the final, independent say over what fraction of that is credited
- * here.
+ * rate" / "Attributed to this plan" control (one per priority, seeded in
+ * `AttainLivePanel.tsx`'s "Attributed to this plan" panel, read here via
+ * `deriveQualityLadder`'s own `realizationPct` argument) is the ONE place
+ * that attributes the share of THAT program-level outcome which belongs to
+ * this plan specifically — the same dial every other goal already uses to
+ * avoid over-claiming when other efforts are also moving the number. The
+ * two never collapse into each other: a partner cannot inflate Abridge's
+ * share by checking more intervention boxes, because the interventions only
+ * ever move the clinical program's own ceiling, and the realization dial
+ * still has the final, independent say over what fraction of that is
+ * credited here.
+ *
+ * QUALITY'S OWN DEFAULT (30%, not the other goals' 100%) — every other
+ * goal's realization dial DEFAULTS to 100% (full credit) because Abridge's
+ * own decision chain is the mechanism that produces the whole outcome. In
+ * quality, that is not true: Abridge surfaces the risk earlier (the freed,
+ * earlier signal), but the bedside unit still has to run the prevention
+ * bundle for the event to actually not happen. Defaulting this dial to
+ * 100% would credit Abridge for the unit's own clinical work, so
+ * `defaultRealizationPct` in `attainLevers.ts` special-cases `"quality"` to
+ * start at 30% instead — still a fully adjustable 0-100 dial, only the
+ * starting position differs. Combined with each event's own literature-
+ * grounded ceiling below (20-30pp), a fully committed bundle nets ~6-9%
+ * documentation-attributable prevention of that event's own gross rate,
+ * the defensible band this default is anchored to.
  *
  * PER-EVENT CEILINGS (C2 recalibration) — the old model let one shared
  * composite reach 60% (documented at the time as "6-12pp of illustrative,

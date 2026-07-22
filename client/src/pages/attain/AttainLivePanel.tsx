@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import AttainmentCurve, { USUAL_CEILING_PCT } from "@/components/attain/AttainmentCurve";
-import { leversFor, defaultLeverValues, type LeverValues, type MultiGoalContributionsResult } from "@/lib/attain/attainLevers";
+import { leversFor, defaultLeverValues, defaultRealizationPct, type LeverValues, type MultiGoalContributionsResult } from "@/lib/attain/attainLevers";
 import { GOAL_CATALOG } from "@/lib/attain/attainGoals";
 import type { AttainState, GoalId, SettingGoalContent } from "@/lib/attain/attainTypes";
 import type { GoalTargetResult, AttainmentResult } from "@/lib/attain/attainCalc";
@@ -55,9 +55,11 @@ interface AttainLivePanelProps {
    * so it sits quietly under this priority's own running total instead of
    * looming as its own card in the decision flow. */
   activeGoal?: GoalId | null;
-  /** This priority's realization/attribution rate, 0-100, default 100 -
-   * only meaningful while `activeGoal` is set. See attainLevers.ts's
-   * `applyRealization`. */
+  /** This priority's realization/attribution rate, 0-100 - only meaningful
+   * while `activeGoal` is set. AttainFlow always passes the resolved value
+   * (`realizationByGoal[goal] ?? defaultRealizationPct(goal)`) explicitly;
+   * the fallback below only guards a caller that omits it. See
+   * attainLevers.ts's `applyRealization` and `defaultRealizationPct`. */
   realizationPct?: number;
   onChangeRealization?: (pct: number) => void;
   /** The primary action for this step lives at the foot of this panel,
@@ -79,7 +81,7 @@ export default function AttainLivePanel({
   valuesByGoal,
   combined,
   activeGoal = null,
-  realizationPct = 100,
+  realizationPct = activeGoal ? defaultRealizationPct(activeGoal) : 100,
   onChangeRealization,
   onNext,
   nextDisabled = false,
@@ -241,7 +243,11 @@ export default function AttainLivePanel({
               <span className="text-[10px] uppercase tracking-widest text-white/40 flex items-center gap-1.5">
                 Attributed to this plan
                 <InfoTip
-                  text="The share of this outcome you attribute to this plan. Lower it when other efforts also move the number - it never adds credit, only removes it."
+                  text={
+                    activeGoal === "quality"
+                      ? "In quality, Abridge surfaces the risk earlier, but the unit runs the bundle and prevents the event. This share is the portion honestly attributable to Abridge. Lower it further if other efforts also move the number - it never adds credit, only removes it."
+                      : "The share of this outcome you attribute to this plan. Lower it when other efforts also move the number - it never adds credit, only removes it."
+                  }
                   testid={`tooltip-attain-realization-${activeGoal}`}
                 />
               </span>
@@ -260,7 +266,9 @@ export default function AttainLivePanel({
               data-testid={`slider-attain-realization-${activeGoal}`}
             />
             <p className="text-[11px] text-white/40 mt-2" data-testid={`text-attain-realization-worth-${activeGoal}`}>
-              Dial down when other efforts also move this number.
+              {activeGoal === "quality"
+                ? "Abridge surfaces the risk earlier, the unit runs the bundle and prevents. Starts at 30%, the honestly attributable share."
+                : "Dial down when other efforts also move this number."}
             </p>
           </div>
         )}

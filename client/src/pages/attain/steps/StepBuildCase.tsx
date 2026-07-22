@@ -61,11 +61,15 @@ interface StepBuildCaseProps {
   combined: MultiGoalContributionsResult | null;
   freedTimeSplit: number;
   onChangeFreedTimeSplit: (split: number) => void;
-  /** This priority's realization/attribution rate, 0-100, default 100 - the
-   * share of this outcome attributed to this plan. The control that sets it
-   * now lives in the side panel (`AttainLivePanel.tsx`'s "Attributed to
-   * this plan"); this page only reads the value to scale each decision
-   * chain's own live derivation. See attainLevers.ts's `applyRealization`. */
+  /** This priority's realization/attribution rate, 0-100 - the share of
+   * this outcome attributed to this plan. Defaults to
+   * `defaultRealizationPct(goal)` (100 for every goal except nursing
+   * quality, which starts at 30 - Abridge only surfaces the risk earlier
+   * there, the unit runs the bundle that actually prevents). The control
+   * that sets it now lives in the side panel (`AttainLivePanel.tsx`'s
+   * "Attributed to this plan"); this page only reads the value to scale
+   * each decision chain's own live derivation. See attainLevers.ts's
+   * `applyRealization`. */
   realizationPct: number;
   onChangeLeverValue: (goal: GoalId, leverId: string, value: number | string[]) => void;
   stepNumber: number;

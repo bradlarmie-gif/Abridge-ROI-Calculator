@@ -33,6 +33,7 @@ import {
   leversFor,
   defaultLeverValues,
   computeMultiGoalContributions,
+  defaultRealizationPct,
   type AttainBaseline,
   type LeverValues,
   type MultiGoalContributionsResult,
@@ -240,11 +241,13 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
   );
   // Per-priority attribution — the share of THIS priority's outcome, 0-100,
   // that belongs to this plan rather than some other effort a partner may
-  // be running against the same number. Default 100 (full credit) whenever
-  // a key is missing, so a goal never needs to be eagerly seeded here the
-  // moment it's picked — see every read site below's `?? 100` fallback.
-  // Threaded into `computeMultiGoalContributions` (attainLevers.ts), the
-  // ONE place the actual scaling happens; see that function's comment.
+  // be running against the same number. Falls back to `defaultRealizationPct`
+  // whenever a key is missing, so a goal never needs to be eagerly seeded
+  // here the moment it's picked — see every read site below's
+  // `?? defaultRealizationPct(goal)` fallback (100 for every goal except
+  // nursing quality, which starts at 30 - see that function's comment for
+  // why). Threaded into `computeMultiGoalContributions` (attainLevers.ts),
+  // the ONE place the actual scaling happens; see that function's comment.
   const [realizationByGoal, setRealizationByGoal] = useState<RealizationByGoal>(
     () => initialSaveState?.realizationByGoal ?? {},
   );
@@ -847,7 +850,7 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
                 combined={combined}
                 freedTimeSplit={freedTimeSplit}
                 onChangeFreedTimeSplit={handleFreedTimeSplitChange}
-                realizationPct={realizationByGoal[activeBuildCaseGoal] ?? 100}
+                realizationPct={realizationByGoal[activeBuildCaseGoal] ?? defaultRealizationPct(activeBuildCaseGoal)}
                 onChangeLeverValue={handleChangeLeverValue}
                 stepNumber={stepIndex + 1}
                 totalSteps={stepOrder.length}
@@ -1086,7 +1089,7 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
                   valuesByGoal={valuesByGoal}
                   combined={combined}
                   activeGoal={activeBuildCaseGoal}
-                  realizationPct={activeBuildCaseGoal ? (realizationByGoal[activeBuildCaseGoal] ?? 100) : 100}
+                  realizationPct={activeBuildCaseGoal ? (realizationByGoal[activeBuildCaseGoal] ?? defaultRealizationPct(activeBuildCaseGoal)) : 100}
                   onChangeRealization={(pct) => {
                     if (activeBuildCaseGoal) handleChangeRealization(activeBuildCaseGoal, pct);
                   }}

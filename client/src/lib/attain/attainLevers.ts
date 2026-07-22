@@ -1508,7 +1508,9 @@ export interface MultiGoalContributionsResult {
 // own initiative, a different vendor, a parallel program), so this is the
 // dial that lets them credit only the share of a priority's outcome that
 // actually belongs to THIS plan. Default 100 (full credit, identical to
-// today's number); a partner only ever dials it DOWN, never up.
+// today's number) for every goal EXCEPT nursing quality — see
+// `defaultRealizationPct` below — and a partner only ever dials it DOWN
+// from its default, never up past 100.
 //
 // `applyRealization` is the ONE place this scaling happens, called once
 // per goal inside `computeMultiGoalContributions` below, immediately after
@@ -1531,6 +1533,31 @@ export interface MultiGoalContributionsResult {
 // ────────────────────────────────────────────────────────────────────────
 
 export type RealizationByGoal = Partial<Record<GoalId, number>>;
+
+/**
+ * The realization/attribution dial's STARTING position for a goal, 0-100 —
+ * read only when a partner has not yet touched the dial for that goal (see
+ * every `realizationByGoal[goal] ?? defaultRealizationPct(goal)` read site).
+ * Still a fully adjustable 0-100 dial for every goal; this only changes
+ * where it starts.
+ *
+ * Every goal defaults to 100 (full credit) EXCEPT nursing quality, which
+ * defaults to 30. In quality, Abridge's own mechanism is narrower than the
+ * other goals': Abridge surfaces the risk earlier (the freed/earlier
+ * signal), but the bedside unit runs the prevention bundle and is what
+ * actually stops the event from happening. Crediting Abridge the full 100%
+ * of a strong clinical program's own prevented-harm dollar would overclaim
+ * a share that mostly belongs to the unit's own bedside work. 30% is the
+ * documented, defensible share: combined with each event's own literature-
+ * grounded prevention ceiling (20-30pp, see attainQuality.ts's module
+ * header), a fully committed bundle nets ~6-9% documentation-attributable
+ * prevention of that event's own gross rate (e.g. HAPI 20% ceiling x 30%
+ * realization = 6%; CLABSI 30% ceiling x 30% realization = 9%) — the
+ * defensible band this default is anchored to.
+ */
+export function defaultRealizationPct(goal: GoalId): number {
+  return goal === "quality" ? 30 : 100;
+}
 
 function clampRealizationPct(pct: number): number {
   return Math.min(100, Math.max(0, pct));
@@ -1674,7 +1701,7 @@ export function computeMultiGoalContributions(
   // above for why this single call site is enough to keep every consumer
   // (Strategy, Commit, Progress, the PDF) reconciled.
   const record = (goal: GoalId, raw: LeverContributionsResult) => {
-    const realized = applyRealization(raw, realizationByGoal[goal] ?? 100);
+    const realized = applyRealization(raw, realizationByGoal[goal] ?? defaultRealizationPct(goal));
     byGoal[goal] = realized;
     combinedMargin += realized.totalMargin;
     combinedCount += realized.totalCount;
