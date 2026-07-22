@@ -396,33 +396,27 @@ export default function WorkforceDecisionChain({ setting, baseline, values, onCh
         <MathBox formula={formulas.sustain} testid="text-workforce-d5-formula" />
       </DecisionCard>
 
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="rounded-xl bg-[#1A1A1A] p-6"
-        data-testid="card-workforce-payoff"
+      {/* This used to be a full-bleed dark hero card - the exact dollar the
+          side panel's "Plan so far" already shows, stranded at the bottom
+          of the page. It's now a quiet inline line, same card shell as
+          D1-D5 above, so the panel stays the one place that total actually
+          lives. */}
+      <DecisionCard
+        step="The payoff"
+        title="Departures avoided x replacement cost"
+        help="Providers x turnover x burnout share x the impact the five decisions above produce. Already counted in the running total in the panel to the right."
+        testid="card-workforce-payoff"
       >
-        <p className="text-[11px] font-bold uppercase tracking-[2px] text-white/50 mb-1.5">The payoff</p>
-        <h3 className="text-lg font-bold text-white mb-2 font-abridge">Departures avoided x replacement cost</h3>
-        <p className="text-[15px] text-white/50 leading-relaxed mb-5 max-w-[620px]">
-          Providers x turnover x burnout share x the impact the five decisions above produce. This is the first
-          dollar figure in this chain, derived from the decisions above, never invented.
-        </p>
-        <p className="font-abridge text-5xl text-[#EA2C00]" data-testid="text-workforce-payoff-value">
-          {fmtMoneyCompact(realizedPayoffValue)}
-        </p>
-        <p className="text-[15px] text-white/60 mt-2" data-testid="text-workforce-payoff-caption">
-          {payoff.departuresAvoided.toFixed(1)} departures avoided/yr x ~${fmtInt(scope.replacementCost)}/departure, about{" "}
+        <p className="text-[15px] text-[#1A1A1A]" data-testid="text-workforce-payoff-caption">
+          <span className="font-abridge text-2xl text-[#EA2C00] font-bold" data-testid="text-workforce-payoff-value">
+            {fmtMoneyCompact(realizedPayoffValue)}
+          </span>{" "}
+          from {payoff.departuresAvoided.toFixed(1)} departures avoided/yr x ~${fmtInt(scope.replacementCost)}/departure, about{" "}
           {fmtPp(payoff.turnoverPointsReduced)} pts off your {fmtPp(scope.turnoverRatePct)}% turnover rate. Burnout
           attributed to {fmtPp(WORKFORCE_BURNOUT_SHARE_PCT[setting])}% of that turnover.
         </p>
-        <div className="mt-4 bg-white/5 border-l-[3px] border-[#EA2C00] rounded-r-md p-3">
-          <p className="text-[10px] font-bold uppercase tracking-wide text-[#EA2C00] mb-1">The math</p>
-          <p className="text-[12.5px] text-white/70 leading-relaxed" data-testid="text-workforce-payoff-formula">
-            {payoffFormulaDisplay}
-          </p>
-        </div>
-      </motion.div>
+        <MathBox formula={payoffFormulaDisplay} testid="text-workforce-payoff-formula" />
+      </DecisionCard>
     </div>
   );
 }

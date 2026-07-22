@@ -343,24 +343,22 @@ export default function QualityDecisionChain({ setting, baseline, values, onChan
         )}
       </DecisionCard>
 
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="rounded-xl bg-[#1A1A1A] p-6"
-        data-testid="card-quality-payoff"
+      {/* This used to be a full-bleed dark hero card - the exact dollar the
+          side panel's "Plan so far" already shows, stranded at the bottom
+          of the page. It's now a quiet inline line, same card shell as
+          D1-D2 above, so the panel stays the one place that total actually
+          lives. */}
+      <DecisionCard
+        step="The payoff"
+        title="Prevented events x cost per event"
+        help="Every targeted event type's own prevented-events count, priced at its own cost per event, summed. Already counted in the running total in the panel to the right."
+        testid="card-quality-payoff"
       >
-        <p className="text-[11px] font-bold uppercase tracking-[2px] text-white/50 mb-1.5">The payoff</p>
-        <h3 className="text-lg font-bold text-white mb-2 font-abridge">Prevented events x cost per event</h3>
-        <p className="text-[15px] text-white/50 leading-relaxed mb-5 max-w-[620px]">
-          Every targeted event type's own prevented-events count, priced at its own cost per event, summed. This is
-          the first dollar figure in this chain, derived from every event's own committed interventions above, never
-          invented.
-        </p>
-        <p className="font-abridge text-5xl text-[#EA2C00]" data-testid="text-quality-payoff-value">
-          {fmtMoneyCompact(realizedPayoffValue)}
-        </p>
-        <p className="text-[15px] text-white/60 mt-2" data-testid="text-quality-payoff-caption">
-          {fmtInt(payoff.totalPrevented)} events prevented/yr across {payoff.events.length} targeted event type
+        <p className="text-[15px] text-[#1A1A1A]" data-testid="text-quality-payoff-caption">
+          <span className="font-abridge text-2xl text-[#EA2C00] font-bold" data-testid="text-quality-payoff-value">
+            {fmtMoneyCompact(realizedPayoffValue)}
+          </span>{" "}
+          from {fmtInt(payoff.totalPrevented)} events prevented/yr across {payoff.events.length} targeted event type
           {payoff.events.length === 1 ? "" : "s"}.
         </p>
 
@@ -368,21 +366,16 @@ export default function QualityDecisionChain({ setting, baseline, values, onChan
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
             {payoff.events.map((e) => (
               <div key={e.id} data-testid={`text-quality-payoff-event-${e.id}`}>
-                <p className="text-[11px] text-white/50 mb-1 leading-snug">{e.label}</p>
-                <p className="text-xl font-bold font-abridge text-[#EA2C00]">{fmtMoneyCompact(realizedValue(e.value, realizationPct))}</p>
-                <p className="text-[11px] text-white/50 mt-0.5">{fmtInt(e.prevented)} prevented/yr</p>
+                <p className="text-[11px] text-[#8C8C8C] mb-1 leading-snug">{e.label}</p>
+                <p className="text-lg font-bold font-abridge text-[#EA2C00]">{fmtMoneyCompact(realizedValue(e.value, realizationPct))}</p>
+                <p className="text-[11px] text-[#8C8C8C] mt-0.5">{fmtInt(e.prevented)} prevented/yr</p>
               </div>
             ))}
           </div>
         )}
 
-        <div className="mt-4 bg-white/5 border-l-[3px] border-[#EA2C00] rounded-r-md p-3">
-          <p className="text-[10px] font-bold uppercase tracking-wide text-[#EA2C00] mb-1">The math</p>
-          <p className="text-[12.5px] text-white/70 leading-relaxed" data-testid="text-quality-payoff-formula">
-            {payoffFormulaDisplay}
-          </p>
-        </div>
-      </motion.div>
+        <MathBox formula={payoffFormulaDisplay} testid="text-quality-payoff-formula" />
+      </DecisionCard>
     </div>
   );
 }

@@ -135,8 +135,11 @@ function MathBox({ formula, testid }: { formula: string; testid: string }) {
   );
 }
 
-/** Dark payoff card, one per path - the first (and only) place that path's
- * dollar appears, same discipline as outpatient revenue's / Access's D5. */
+/** Quiet payoff line, one per path - the first (and only) place that path's
+ * dollar appears, same discipline as outpatient revenue's / Access's D5. No
+ * longer a full-bleed dark hero card - that dollar is already counted in
+ * the side panel's "Plan so far," so this stays a minimal line in the same
+ * card shell as every decision above it. */
 function PayoffCard({
   pill,
   value,
@@ -155,15 +158,17 @@ function PayoffCard({
   const displayValue = realizedValue(value, realizationPct);
   const displayFormula = value > 0 ? formulaWithRealization(formula, realizationPct, displayValue) : formula;
   return (
-    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="rounded-xl bg-[#1A1A1A] p-6 mb-8" data-testid={testid}>
-      <p className="text-[11px] font-bold uppercase tracking-[2px] text-white/50 mb-1.5">{pill} · the payoff</p>
-      <p className="font-abridge text-5xl text-[#EA2C00]" data-testid={`${testid}-value`}>
-        {fmtMoneyCompact(displayValue)}
+    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="rounded-xl border border-[#E7E0D6] bg-[#F8F5F1] p-5 mb-8" data-testid={testid}>
+      <p className="text-[11px] font-bold uppercase tracking-[2px] text-[#EA2C00] mb-1.5">{pill} · the payoff</p>
+      <p className="text-[15px] text-[#1A1A1A]">
+        <span className="font-abridge text-2xl text-[#EA2C00] font-bold" data-testid={`${testid}-value`}>
+          {fmtMoneyCompact(displayValue)}
+        </span>{" "}
+        from {caption}. Already counted in the running total in the panel to the right.
       </p>
-      <p className="text-[15px] text-white/60 mt-2">{caption}</p>
-      <div className="mt-4 bg-white/5 border-l-[3px] border-[#EA2C00] rounded-r-md p-3">
+      <div className="mt-4 bg-white border-l-[3px] border-[#EA2C00] rounded-r-md p-3">
         <p className="text-[10px] font-bold uppercase tracking-wide text-[#EA2C00] mb-1">The math</p>
-        <p className="text-[12.5px] text-white/70 leading-relaxed" data-testid={`${testid}-formula`}>
+        <p className="text-[12.5px] text-[#3A3A3A] leading-relaxed" data-testid={`${testid}-formula`}>
           {displayFormula}
         </p>
       </div>
@@ -268,16 +273,17 @@ export default function InpatientRevenueDecisionChain({ baseline, values, onChan
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-xl bg-[#1A1A1A] p-6"
+          className="rounded-xl border border-[#E7E0D6] bg-[#F8F5F1] p-5"
           data-testid="card-ip-revenue-combined-payoff"
         >
-          <p className="text-[11px] font-bold uppercase tracking-[2px] text-white/50 mb-1.5">All paths, combined</p>
-          <p className="font-abridge text-5xl text-[#EA2C00]" data-testid="text-ip-revenue-combined-value">
-            {fmtMoneyCompact(realizedValue(combinedValue, realizationPct))}
-          </p>
-          <p className="text-[15px] text-white/60 mt-2">
-            {chosen.length} paths chosen, each its own mechanism, summed once, never double-counted.
-            {realizationPct < 100 ? ` Attributed at ${Math.round(realizationPct)}% realization to this plan.` : ""}
+          <p className="text-[11px] font-bold uppercase tracking-[2px] text-[#EA2C00] mb-1.5">All paths, combined</p>
+          <p className="text-[15px] text-[#1A1A1A]">
+            <span className="font-abridge text-2xl text-[#EA2C00] font-bold" data-testid="text-ip-revenue-combined-value">
+              {fmtMoneyCompact(realizedValue(combinedValue, realizationPct))}
+            </span>{" "}
+            from {chosen.length} paths chosen, each its own mechanism, summed once, never double-counted.
+            {realizationPct < 100 ? ` Attributed at ${Math.round(realizationPct)}% realization to this plan.` : ""} Already
+            counted in the running total in the panel to the right.
           </p>
         </motion.div>
       )}
