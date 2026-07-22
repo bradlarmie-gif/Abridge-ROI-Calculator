@@ -283,7 +283,8 @@ export interface RetentionLadderModel {
   /** Burnout comes down: the composite impact, a share of burnout-related
    * departures avoided, capped at the reachable ceiling. */
   compositeImpactPct: number;
-  /** The reachable ceiling for this setting (15% outpatient). */
+  /** The reachable ceiling for this setting (50% of burnout-related
+   * departures, for every setting). */
   impactCeilingPct: number;
   turnoverRatePct: number;
   burnoutSharePct: number;

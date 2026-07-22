@@ -95,15 +95,22 @@ export const WORKFORCE_BURNOUT_SHARE_PCT: Record<AttainSetting, number> = {
   nursing: 40,
 };
 
-/** The optimistic-scenario ceiling (percentage points of turnover impact)
- * this chain's composite impact can reach — matches the RETENTION_SCENARIOS
- * tables' own "optimistic" value per setting family (15pp physician, 25pp
- * nursing) in exploreDriverCalcs.ts. */
+/** The ceiling this chain's composite impact can reach: the maximum SHARE
+ * of a setting's burnout-related departures Abridge can realistically help a
+ * partner avoid. Set by product decision at 50% of the burnout-related
+ * departures for every setting that has a retention story (physician settings
+ * and nursing alike) — a fully committed plan avoids at most half of the
+ * departures burnout actually causes, never all of them. The name keeps the
+ * `_PP` suffix for backward compatibility, but the unit is a percent-of-pool,
+ * not points off the turnover rate (see the UNITS NOTE above
+ * `computeWorkforcePayoff`). This ceiling is fed straight into the engine as
+ * the "custom" retention scenario percent, so it is the one number the story
+ * pages' prize copy and the payoff both derive from. */
 export const WORKFORCE_IMPACT_CEILING_PP: Record<AttainSetting, number> = {
-  outpatient: 15,
-  ed: 15,
-  inpatient: 15,
-  nursing: 25,
+  outpatient: 50,
+  ed: 50,
+  inpatient: 50,
+  nursing: 50,
 };
 
 export const SURVEY_CADENCE_LABELS = ["Not yet", "Quarterly pulse", "Monthly pulse"];
@@ -239,7 +246,7 @@ export interface WorkforceSurvey {
   impactPpAfterSurvey: number;
 }
 
-const SURVEY_MULTIPLIER = [1, 1.15, 1.3];
+const SURVEY_MULTIPLIER = [1, 1.25, 1.4];
 
 /** D3: a likelihood-to-stay + burnout pulse catches erosion in what D2
  * already protects, before it becomes a resignation — so it multiplies
@@ -262,7 +269,7 @@ export interface WorkforceBackfill {
   impactPpAfterBackfill: number;
 }
 
-const BACKFILL_BONUS_FRACTION = [0, 0.15, 0.3];
+const BACKFILL_BONUS_FRACTION = [0, 0.2, 0.3];
 
 /** D4: backfilling an open shift or panel before the remaining staff absorb
  * it is a genuinely separate mechanism from protecting relief (it is a
@@ -304,7 +311,7 @@ export interface WorkforcePayoff {
   departuresAvoided: number;
   value: number;
   /** The HONEST resulting effect on the headline turnover RATE, in
-   * percentage points (e.g. 0.8, not the composite's 0-15/25 "impact"
+   * percentage points (e.g. 0.8, not the composite's 0-to-50 "impact"
    * scale) — turnoverRatePct × burnoutSharePct/100 × compositeImpactPct/100.
    * Surfaced so a CFO reading the payoff never mistakes the composite
    * impact number for a drop in the turnover rate itself (see the module
@@ -318,11 +325,11 @@ export interface WorkforcePayoff {
  * `providerWellbeing`/`nursingRetention` block, see the module header.
  *
  * UNITS NOTE: `compositeImpactPct` (the D2-D5 composite, 0 to this setting's
- * ceiling) is a SHARE OF BURNOUT-RELATED DEPARTURES avoided, not
- * percentage points off the turnover rate. A composite of 15 means "15% of
+ * 50% ceiling) is a SHARE OF BURNOUT-RELATED DEPARTURES avoided, not
+ * percentage points off the turnover rate. A composite of 50 means "half of
  * the burnout-attributable departures in this pool are avoided," which is a
- * far smaller effect on the headline turnover rate than "15pp of turnover"
- * would imply — see `turnoverPointsReduced` for the actual rate effect. */
+ * far smaller effect on the headline turnover rate than fifty points off the
+ * rate would imply — see `turnoverPointsReduced` for the actual rate effect. */
 export function computeWorkforcePayoff(scope: WorkforceScope, compositeImpactPct: number): WorkforcePayoff {
   const departuresAvoided =
     scope.providersInScope * (scope.turnoverRatePct / 100) * (scope.burnoutSharePct / 100) * (compositeImpactPct / 100);
