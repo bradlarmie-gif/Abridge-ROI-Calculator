@@ -113,14 +113,18 @@ export default function AttainLivePanel({
         label: l.label,
         marginalMargin: perLever?.find((p) => p.id === l.id)?.marginalMargin ?? 0,
       }));
-    // Retention is a composite single-number ladder: its D2-D5 rows each carry
-    // a leave-one-out marginal, but those OVERLAP (they combine multiplicatively
-    // toward one composite impact), so they do not sum to the total and a
-    // per-decision dollar would mislead. Treat it like access, plain steps, with
-    // the running total above carrying the one dollar. Revenue/quality stay
-    // genuinely additive, so a per-path dollar is honest there.
+    // Access and retention are single converged gated ladders, so they read as
+    // plain STEPS with the running total above carrying the one dollar.
+    // Outpatient access carries the whole total on its one binding rung; ED
+    // access splits one converged prize across a visit leg and an admission leg
+    // that are MIN-gated together (not independent), so a per-decision dollar
+    // there would read as two separate additive wins when they are one. And
+    // retention's rows overlap multiplicatively toward one composite impact.
+    // Only revenue's genuinely parallel, independently additive paths (and
+    // quality's per-event lines) keep an honest per-decision dollar.
     const dollarBearing = rows.filter((r) => r.marginalMargin !== 0).length;
-    const showDollar = goal !== "retention" && dollarBearing > 1;
+    const isGatedLadder = goal === "access" || goal === "retention";
+    const showDollar = !isGatedLadder && dollarBearing > 1;
     return rows.map((r) => ({ ...r, showDollar }));
   });
 
