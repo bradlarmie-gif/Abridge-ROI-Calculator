@@ -36,6 +36,57 @@ function fmtMoneyCompact(n: number): string {
   return `${sign}$${Math.round(abs)}`;
 }
 
+/** D4's four demand sources, in the order they're shown - each an optional,
+ * addable source of real, countable patients per year (backlog is a
+ * one-time count; the rest are annual). Kept as plain data so the
+ * add/remove row renderer below is one small loop, not four near-identical
+ * hand-written blocks. */
+type DemandSourceKey = "backlog" | "referrals" | "sameDay" | "noShow";
+
+interface DemandSourceSpec {
+  key: DemandSourceKey;
+  valueKey: string;
+  label: string;
+  unitLabel: string;
+  tip: string;
+  testid: string;
+}
+
+const DEMAND_SOURCES: DemandSourceSpec[] = [
+  {
+    key: "backlog",
+    valueKey: "accessDemandBacklog",
+    label: "Referral backlog",
+    unitLabel: "patients waiting now, one-time",
+    tip: "The total number of patients already referred and waiting to be scheduled, right now - a one-time count, not a rate.",
+    testid: "backlog",
+  },
+  {
+    key: "referrals",
+    valueKey: "accessDemandNewReferrals",
+    label: "New referrals",
+    unitLabel: "patients/mo",
+    tip: "New referrals arriving each month, not a one-time count. THE MATH below annualizes this figure (x 12) into the demand ceiling.",
+    testid: "new-referrals",
+  },
+  {
+    key: "sameDay",
+    valueKey: "accessDemandSameDayCount",
+    label: "Same-day / urgent demand",
+    unitLabel: "patients/yr",
+    tip: "Patients per year who would book same-day or urgent care if an open slot existed for them today - a real count of patients, never a percent of your schedule.",
+    testid: "sameday",
+  },
+  {
+    key: "noShow",
+    valueKey: "accessDemandNoShowCount",
+    label: "No-shows you can recover",
+    unitLabel: "patients/yr",
+    tip: "Patients per year you can recover by filling a no-show slot with someone waiting, instead of losing it outright - a real count. Don't know your count offhand? Use the rate helper below.",
+    testid: "noshow",
+  },
+];
+
 interface AccessDecisionChainProps {
   setting: AttainSetting;
   baseline: AttainBaseline;
@@ -192,6 +243,39 @@ function MathBox({ formula, testid }: { formula: string; testid: string }) {
  */
 export default function AccessDecisionChain({ setting, baseline, values, onChangeValue, realizationPct, crossGoalShareMultiplier }: AccessDecisionChainProps) {
   const [customLineDraft, setCustomLineDraft] = useState("");
+
+  // D4's pick-what-applies state: which demand sources are currently
+  // expanded for editing. Seeded once from whatever already has a nonzero
+  // count (so a resumed plan reopens exactly what the partner already
+  // filled in), plus backlog always starts open - patients already waiting
+  // is the single most universal source, so it's prompted rather than
+  // hidden behind an extra click. Nothing else opens itself; a partner has
+  // to actively add same-day, no-show, or new-referral demand, so it's
+  // never ambiguous whether zero of them, one of them, or all of them is
+  // the expected amount to fill in.
+  const [addedSources, setAddedSources] = useState<Set<DemandSourceKey>>(() => {
+    const initial = new Set<DemandSourceKey>(["backlog"]);
+    for (const source of DEMAND_SOURCES) {
+      if (asNum(values[source.valueKey]) > 0) initial.add(source.key);
+    }
+    return initial;
+  });
+
+  const toggleDemandSource = (source: DemandSourceSpec) => {
+    setAddedSources((prev) => {
+      const next = new Set(prev);
+      if (next.has(source.key)) {
+        next.delete(source.key);
+        // Removing a source clears its count too - a collapsed source
+        // must actually stop counting toward the demand ceiling, not just
+        // hide while still contributing a stale number underneath.
+        onChangeValue(source.valueKey, 0);
+      } else {
+        next.add(source.key);
+      }
+      return next;
+    });
+  };
 
   const presetLines = lineOptions("access", setting);
   const selectedLines = asLines(values.accessLines);
@@ -482,103 +566,109 @@ export default function AccessDecisionChain({ setting, baseline, values, onChang
       <DecisionCard
         step="D4"
         title="Where the demand comes from"
-        help="Demand is a ceiling, not a percent. An open slot with nobody to fill it is worth nothing, so every source below is a real, countable patient, not a rate applied to capacity."
+        help="Demand is a ceiling, not a percent. Every source below is a real, countable number of patients per year (backlog counts once, the rest are annual). Add only the ones you actually have - filling in all four, one, or none is equally valid."
         testid="card-access-d4"
       >
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-          <div>
-            <FieldLabel
-              tip="The total number of patients already referred and waiting to be scheduled, right now - a one-time count, not a monthly rate."
-              testid="tooltip-access-demand-backlog"
-            >
-              Referral backlog (total patients waiting now)
-            </FieldLabel>
-            <NumberField
-              value={asNum(values.accessDemandBacklog)}
-              onValueChange={(v) => onChangeValue("accessDemandBacklog", v)}
-              min={0}
-              decimal={false}
-              className="h-11 w-full rounded-md border border-[#E5E5E5] bg-white px-3 text-sm"
-              data-testid="input-access-demand-backlog"
-            />
-          </div>
-          <div>
-            <FieldLabel
-              tip="New referrals arriving each month, not a one-time count. THE MATH below annualizes this figure (x 12) into the demand ceiling."
-              testid="tooltip-access-demand-new-referrals"
-            >
-              New referrals (per month)
-            </FieldLabel>
-            <NumberField
-              value={asNum(values.accessDemandNewReferrals)}
-              onValueChange={(v) => onChangeValue("accessDemandNewReferrals", v)}
-              min={0}
-              decimal={false}
-              className="h-11 w-full rounded-md border border-[#E5E5E5] bg-white px-3 text-sm"
-              data-testid="input-access-demand-new-referrals"
-            />
-          </div>
-          <div>
-            <FieldLabel
-              tip="Share of your encounters that are same-day or urgent requests you cannot fit today."
-              testid="tooltip-access-demand-sameday"
-            >
-              Same-day / urgent demand
-            </FieldLabel>
-            <div className="relative">
-              <NumberField
-                value={asNum(values.accessDemandSameDayPct)}
-                onValueChange={(v) => onChangeValue("accessDemandSameDayPct", v)}
-                min={0}
-                max={100}
-                decimal={false}
-                className="h-11 w-full rounded-md border border-[#E5E5E5] bg-white px-3 pr-9 text-sm"
-                data-testid="input-access-demand-sameday"
-              />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8C8C8C] text-sm pointer-events-none">%</span>
-            </div>
-          </div>
-          <div>
-            <FieldLabel
-              tip="Your typical no-show or late-cancellation rate: the share of in-scope encounters that are a no-show in the first place. This sizes the pool the recovery rate below is a share OF, not of every encounter."
-              testid="tooltip-access-demand-noshow-rate"
-            >
-              Typical no-show rate
-            </FieldLabel>
-            <div className="relative">
-              <NumberField
-                value={asNum(values.accessDemandNoShowRate) > 0 ? asNum(values.accessDemandNoShowRate) : DEFAULT_NO_SHOW_RATE_PCT}
-                onValueChange={(v) => onChangeValue("accessDemandNoShowRate", v)}
-                min={0}
-                max={100}
-                decimal={false}
-                className="h-11 w-full rounded-md border border-[#E5E5E5] bg-white px-3 pr-9 text-sm"
-                data-testid="input-access-demand-noshow-rate"
-              />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8C8C8C] text-sm pointer-events-none">%</span>
-            </div>
-            <p className="text-[11px] text-[#8C8C8C] mt-1">Defaults to {DEFAULT_NO_SHOW_RATE_PCT}% until you set your own.</p>
-          </div>
-          <div>
-            <FieldLabel
-              tip="Share of THAT no-show pool (not of every encounter) you can actually refill with a waiting patient. Entering 60% here means recovering 60% of your no-shows, not 60% of your entire schedule."
-              testid="tooltip-access-demand-noshow"
-            >
-              No-show recovery rate
-            </FieldLabel>
-            <div className="relative">
-              <NumberField
-                value={asNum(values.accessDemandNoShowPct)}
-                onValueChange={(v) => onChangeValue("accessDemandNoShowPct", v)}
-                min={0}
-                max={100}
-                decimal={false}
-                className="h-11 w-full rounded-md border border-[#E5E5E5] bg-white px-3 pr-9 text-sm"
-                data-testid="input-access-demand-noshow"
-              />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8C8C8C] text-sm pointer-events-none">%</span>
-            </div>
-          </div>
+        <div className="rounded-lg border border-[#E7E0D6] divide-y divide-[#E7E0D6] overflow-hidden mb-5">
+          {DEMAND_SOURCES.map((source) => {
+            const added = addedSources.has(source.key);
+            return (
+              <div key={source.key} className="p-4" data-testid={`row-access-demand-${source.testid}`}>
+                <div className="flex items-center justify-between gap-3">
+                  <label className="flex items-center gap-2.5 cursor-pointer select-none">
+                    <Switch
+                      checked={added}
+                      onCheckedChange={() => toggleDemandSource(source)}
+                      className="data-[state=checked]:bg-[#EA2C00]"
+                      data-testid={`switch-access-demand-${source.testid}`}
+                    />
+                    <span className="text-sm font-medium text-[#1A1A1A]">{source.label}</span>
+                    <InfoTip text={source.tip} testid={`tooltip-access-demand-${source.testid}`} />
+                  </label>
+                  {!added && <span className="text-xs text-[#B4B4B4]">Not used</span>}
+                </div>
+
+                {added && source.key !== "noShow" && (
+                  <div className="mt-3 pl-[42px] flex items-center gap-3">
+                    <NumberField
+                      value={asNum(values[source.valueKey])}
+                      onValueChange={(v) => onChangeValue(source.valueKey, v)}
+                      min={0}
+                      decimal={false}
+                      placeholder="0"
+                      className="h-10 w-[150px] rounded-md border border-[#E5E5E5] bg-white px-3 text-sm"
+                      data-testid={`input-access-demand-${source.testid}`}
+                    />
+                    <span className="text-xs text-[#8C8C8C]">{source.unitLabel}</span>
+                  </div>
+                )}
+
+                {added && source.key === "noShow" && (
+                  <div className="mt-3 pl-[42px]">
+                    <div className="flex items-center gap-3 mb-2">
+                      <NumberField
+                        value={asNum(values.accessDemandNoShowCount)}
+                        onValueChange={(v) => onChangeValue("accessDemandNoShowCount", v)}
+                        min={0}
+                        decimal={false}
+                        placeholder="0"
+                        className="h-10 w-[150px] rounded-md border border-[#E5E5E5] bg-white px-3 text-sm"
+                        data-testid="input-access-demand-noshow"
+                      />
+                      <span className="text-xs text-[#8C8C8C]">{source.unitLabel}</span>
+                    </div>
+                    <details className="group max-w-[440px]">
+                      <summary className="text-xs text-[#8C8C8C] cursor-pointer hover:text-[#3A3A3A] select-none list-none flex items-center gap-1">
+                        <span className="inline-block transition-transform group-open:rotate-90">›</span>
+                        Estimate from your no-show rate instead
+                      </summary>
+                      <div className="mt-2 flex flex-wrap items-end gap-3 bg-[#F8F5F1] rounded-md border border-[#E7E0D6] p-3">
+                        <div className="w-[110px]">
+                          <label className="text-[11px] text-[#8C8C8C] block mb-1">Typical no-show rate</label>
+                          <div className="relative">
+                            <NumberField
+                              value={asNum(values.accessDemandNoShowRate) > 0 ? asNum(values.accessDemandNoShowRate) : DEFAULT_NO_SHOW_RATE_PCT}
+                              onValueChange={(v) => onChangeValue("accessDemandNoShowRate", v)}
+                              min={0}
+                              max={100}
+                              decimal={false}
+                              className="h-9 w-full rounded-md border border-[#E5E5E5] bg-white px-2 pr-6 text-sm"
+                              data-testid="input-access-demand-noshow-rate"
+                            />
+                            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[#8C8C8C] text-xs pointer-events-none">%</span>
+                          </div>
+                        </div>
+                        <div className="w-[110px]">
+                          <label className="text-[11px] text-[#8C8C8C] block mb-1">Recoverable share</label>
+                          <div className="relative">
+                            <NumberField
+                              value={asNum(values.accessDemandNoShowPct)}
+                              onValueChange={(v) => onChangeValue("accessDemandNoShowPct", v)}
+                              min={0}
+                              max={100}
+                              decimal={false}
+                              className="h-9 w-full rounded-md border border-[#E5E5E5] bg-white px-2 pr-6 text-sm"
+                              data-testid="input-access-demand-noshow-recovery"
+                            />
+                            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[#8C8C8C] text-xs pointer-events-none">%</span>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => onChangeValue("accessDemandNoShowCount", demand.noShowHelperEstimate)}
+                          disabled={demand.noShowHelperEstimate <= 0}
+                          className="h-9 px-3 rounded-md text-xs font-semibold text-white bg-[#1A1A1A] disabled:opacity-30 whitespace-nowrap"
+                          data-testid="button-access-demand-noshow-use-estimate"
+                        >
+                          Use estimate: {fmtInt(demand.noShowHelperEstimate)}/yr
+                        </button>
+                      </div>
+                    </details>
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
 
         <div className="rounded-lg bg-[#F8F5F1] p-4" data-testid="panel-access-d4-result">
