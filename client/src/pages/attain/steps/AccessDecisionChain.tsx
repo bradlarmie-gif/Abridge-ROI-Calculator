@@ -562,20 +562,21 @@ export default function AccessDecisionChain({ setting, baseline, values, onChang
           {DEMAND_SOURCES.map((source) => {
             const added = addedSources.has(source.key);
             return (
-              <div key={source.key} className="p-4" data-testid={`row-access-demand-${source.testid}`}>
-                <div className="flex items-center justify-between gap-3">
-                  <label className="flex items-center gap-2.5 cursor-pointer select-none">
-                    <Switch
-                      checked={added}
-                      onCheckedChange={() => toggleDemandSource(source)}
-                      className="data-[state=checked]:bg-[#EA2C00]"
-                      data-testid={`switch-access-demand-${source.testid}`}
-                    />
-                    <span className="text-sm font-medium text-[#1A1A1A]">{source.label}</span>
-                    <InfoTip text={source.tip} testid={`tooltip-access-demand-${source.testid}`} />
-                  </label>
-                  {!added && <span className="text-xs text-[#B4B4B4]">Not used</span>}
-                </div>
+              <div
+                key={source.key}
+                className={`p-4 transition-colors ${added ? "bg-white" : "bg-[#FBF9F6]"}`}
+                data-testid={`row-access-demand-${source.testid}`}
+              >
+                <label className="flex items-center gap-2.5 cursor-pointer select-none">
+                  <Switch
+                    checked={added}
+                    onCheckedChange={() => toggleDemandSource(source)}
+                    className="data-[state=checked]:bg-[#EA2C00]"
+                    data-testid={`switch-access-demand-${source.testid}`}
+                  />
+                  <span className={`text-sm font-medium ${added ? "text-[#1A1A1A]" : "text-[#8C8C8C]"}`}>{source.label}</span>
+                  <InfoTip text={source.tip} testid={`tooltip-access-demand-${source.testid}`} />
+                </label>
 
                 {added && source.key !== "noShow" && (
                   <div className="mt-3 pl-[42px] flex items-center gap-3">
@@ -672,9 +673,11 @@ export default function AccessDecisionChain({ setting, baseline, values, onChang
           binding={ladder.binding}
           bothSet={capacity.capacityVisits > 0 && demand.demandCeiling > 0}
           emptyHint={
-            capacity.capacityVisits <= 0
-              ? "Direct some freed time to access in Rung 3 to open capacity, then add your demand above."
-              : "Add your backlog and referral demand above to see how much of the capacity converts."
+            scope.providersInScope <= 0
+              ? "Add the providers you are pointing at access in Rung 1 to open capacity, then add your demand above."
+              : capacity.capacityVisits <= 0
+                ? "Direct some freed time to access in Rung 3 to open capacity, then add your demand above."
+                : "Add your backlog and referral demand above to see how much of the capacity converts."
           }
         />
         <MathBox formula={formulas.demand} testid="text-access-d4-formula" />
