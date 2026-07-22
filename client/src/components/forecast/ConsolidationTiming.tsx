@@ -209,23 +209,29 @@ export default function ConsolidationTiming({
                 </div>
               </div>
 
-              <div className="relative h-[26px]">
-                {/* faint base rail, full Today -> horizon */}
-                <div className="absolute top-1/2 -translate-y-1/2 h-1.5 rounded-[3px] bg-[#EAE3D8]" style={{ left: `${L0}%`, right: `${100 - xEnd}%` }} />
-                {/* saving region (sunset -> horizon), ramping 0 -> full over the displacement window */}
-                {xEnd > xS && <div className="absolute top-1/2 -translate-y-1/2 h-1.5 rounded-[2px]" style={{ left: `${xS}%`, width: `${xEnd - xS}%`, backgroundImage: `linear-gradient(to right, rgba(234,44,0,0.05) 0%, rgba(234,44,0,0.22) ${rampPct}%, rgba(234,44,0,0.22) 100%)` }} />}
-                {/* still paying (Today -> sunset) */}
-                <div className="absolute top-1/2 -translate-y-1/2 h-1.5 rounded-[3px] bg-[#9C8F7D]" style={{ left: `${L0}%`, width: `${xS - L0}%` }} />
+              <div className="relative h-[30px]">
+                {/* base rail, full Today -> horizon */}
+                <div className="absolute top-1/2 -translate-y-1/2 h-4 rounded-[5px] bg-[#EAE3D8]" style={{ left: `${L0}%`, right: `${100 - xEnd}%` }} />
+                {/* SAVING zone (sunset -> horizon), ramping in over the displacement window, labeled on the bar */}
+                {xEnd > xS && (
+                  <div className="absolute top-1/2 -translate-y-1/2 h-4 rounded-[5px] flex items-center overflow-hidden" style={{ left: `${xS}%`, width: `${xEnd - xS}%`, backgroundImage: `linear-gradient(to right, rgba(234,44,0,0.07) 0%, rgba(234,44,0,0.2) ${rampPct}%, rgba(234,44,0,0.2) 100%)` }}>
+                    {xEnd - xS > 10 && <span className="pl-3 text-[8.5px] font-bold uppercase tracking-[0.08em] text-[#C0350F] whitespace-nowrap">Saving</span>}
+                  </div>
+                )}
+                {/* STILL PAYING zone (Today -> sunset), labeled on the bar */}
+                <div className="absolute top-1/2 -translate-y-1/2 h-4 rounded-[5px] bg-[#9C8F7D] flex items-center overflow-hidden" style={{ left: `${L0}%`, width: `${xS - L0}%` }}>
+                  {xS - L0 > 14 && <span className="pl-3 text-[8.5px] font-bold uppercase tracking-[0.08em] text-white whitespace-nowrap">Still paying</span>}
+                </div>
                 {/* contract-ends tick + label */}
-                <div className="absolute top-1/2 w-0.5 h-4 rounded-[1px] bg-[#B4A99B]" style={{ left: `${xC}%`, transform: "translate(-50%,-50%)" }} />
+                <div className="absolute top-1/2 w-0.5 h-[26px] rounded-[1px] bg-[#B4A99B]" style={{ left: `${xC}%`, transform: "translate(-50%,-50%)" }} />
                 <div className="absolute text-[8.5px] font-semibold text-[#9CA3AF] whitespace-nowrap" style={{ left: `${xC}%`, top: "100%", transform: "translateX(-50%)" }}>contract ends</div>
-                {/* sunset thumb */}
-                <div className="absolute top-1/2 w-[15px] h-[15px] rounded-full bg-[#EA2C00] border-[2.5px] border-[#FDFBF8] shadow-[0_1px_4px_rgba(234,44,0,0.35)] pointer-events-none" style={{ left: `${xS}%`, transform: "translate(-50%,-50%)" }} />
+                {/* sunset thumb = the cut point you drag (sits at the paying -> saving hand-off) */}
+                <div className="absolute top-1/2 w-[18px] h-[18px] rounded-full bg-[#EA2C00] border-[3px] border-white shadow-[0_2px_6px_rgba(234,44,0,0.4)] pointer-events-none" style={{ left: `${xS}%`, transform: "translate(-50%,-50%)" }} />
                 <input
                   type="range" min={0} max={sliderMax} step={1}
                   value={Math.min(t.sunsetMonths, sliderMax)}
                   onChange={(e) => onUpdateItem(t.id, { sunsetMonths: Number(e.target.value) })}
-                  className="absolute top-1/2 -translate-y-1/2 h-[22px] m-0 opacity-0 cursor-pointer"
+                  className="absolute top-1/2 -translate-y-1/2 h-[24px] m-0 opacity-0 cursor-pointer"
                   style={{ left: `${L0}%`, width: `${xC - L0}%` }}
                   aria-label={`When ${t.name} sunsets`}
                   data-testid={`ar-timing-slider-${t.id}`}
