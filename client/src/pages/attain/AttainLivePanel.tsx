@@ -123,7 +123,11 @@ export default function AttainLivePanel({
     // Only revenue's genuinely parallel, independently additive paths (and
     // quality's per-event lines) keep an honest per-decision dollar.
     const dollarBearing = rows.filter((r) => r.marginalMargin !== 0).length;
-    const isGatedLadder = goal === "access" || goal === "retention";
+    // Capacity (nursing overtime) is a single converged gated ladder like
+    // access/retention: the whole realized dollar sits on its one binding rung
+    // (the conversion decision) and $0 on the rest, so it reads as plain STEPS
+    // with the running total above carrying the one dollar.
+    const isGatedLadder = goal === "access" || goal === "retention" || goal === "capacity";
     const showDollar = !isGatedLadder && dollarBearing > 1;
     return rows.map((r) => ({ ...r, showDollar }));
   });

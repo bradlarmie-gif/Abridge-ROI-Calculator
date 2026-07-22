@@ -128,6 +128,8 @@ function countLabel(goal: GoalId, setting: AttainSetting): string {
       return setting === "inpatient" ? "cases/queries addressed/year" : "capture actions/year";
     case "quality":
       return "events prevented/year";
+    case "capacity":
+      return "overtime hours avoided/year";
     default:
       return "";
   }
@@ -299,7 +301,12 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
   // same StepPlanning shell driven by the shared, converging quality ladder
   // (goal="quality"). Every other combo still renders StepCommit.
   const isNursingQualityPlan = state.setting === "nursing" && goals.length === 1 && goals[0] === "quality";
-  const isPhasedPlan = isOutpatientAccessPlan || isOutpatientRetentionPlan || isOutpatientRevenuePlan || isEdAccessPlan || isNursingQualityPlan;
+  // Nursing capacity (overtime) is the sixth combo the phased Planning view is
+  // rebuilt for (a single selected capacity goal in the nursing setting). It
+  // renders the same StepPlanning shell driven by the shared nursing capacity
+  // ladder (goal="capacity"). Every other combo still renders StepCommit.
+  const isNursingCapacityPlan = state.setting === "nursing" && goals.length === 1 && goals[0] === "capacity";
+  const isPhasedPlan = isOutpatientAccessPlan || isOutpatientRetentionPlan || isOutpatientRevenuePlan || isEdAccessPlan || isNursingQualityPlan || isNursingCapacityPlan;
 
   const updateState = useCallback((updates: Partial<AttainState>) => {
     setState((prev) => ({ ...prev, ...updates }));
@@ -920,6 +927,26 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
                 combined={combined}
                 goalOwner={goalOwnerByPriority.quality ?? { name: "", title: "" }}
                 onChangeGoalOwner={(patch) => handleChangeGoalOwner("quality", patch)}
+                planning={planning}
+                onChangePhaseOwner={handleChangePhaseOwner}
+                onChangePhaseSignalTarget={handleChangePhaseSignalTarget}
+                onChangePartnerRisk={handleChangePartnerRisk}
+                planCadence={planCadence}
+                onChangePlanCadence={handleChangePlanCadence}
+                totalMonths={state.totalMonths}
+                stepNumber={stepIndex + 1}
+              />
+            )}
+
+            {step === "commit" && isNursingCapacityPlan && (
+              <StepPlanning
+                setting="nursing"
+                baseline={baseline}
+                goal="capacity"
+                values={valuesByGoal.capacity ?? defaultLeverValues("capacity", "nursing")}
+                combined={combined}
+                goalOwner={goalOwnerByPriority.capacity ?? { name: "", title: "" }}
+                onChangeGoalOwner={(patch) => handleChangeGoalOwner("capacity", patch)}
                 planning={planning}
                 onChangePhaseOwner={handleChangePhaseOwner}
                 onChangePhaseSignalTarget={handleChangePhaseSignalTarget}

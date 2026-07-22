@@ -12,6 +12,7 @@ import InpatientRevenueDecisionChain from "./InpatientRevenueDecisionChain";
 import WorkforceDecisionChain from "./WorkforceDecisionChain";
 import WorkforceLadderChain from "./WorkforceLadderChain";
 import QualityLadderChain from "./QualityLadderChain";
+import CapacityLadderChain from "./CapacityLadderChain";
 
 function formatCompact(n: number): string {
   const sign = n < 0 ? "-" : "";
@@ -171,7 +172,15 @@ export default function StepBuildCase({
   // QualityLadderChain + attainQuality.ts's deriveQualityLadder /
   // accessLadder.ts's QualityEventGate). Same multi-path SHAPE as revenue.
   const isQualityLadder = goal === "quality" && setting === "nursing";
-  const isLadder = isAccessLadder || isEdAccessLadder || isRetentionLadder || isRevenueLadder || isQualityLadder;
+  // Nursing capacity is the sixth ladder: it assembles the same step-down
+  // story (first domino -> the overtime run now -> the documentation-
+  // attributable gate -> overtime hours avoided -> the prize) that Planning
+  // reads back, via the shared nursing capacity ladder (see CapacityLadderChain
+  // + accessLadder.tsx's deriveNursingCapacityLadder / NursingCapacityGate). A
+  // single gated ladder like access, reconciled to Explore's own
+  // `nursingOvertime` driver.
+  const isCapacityLadder = goal === "capacity" && setting === "nursing";
+  const isLadder = isAccessLadder || isEdAccessLadder || isRetentionLadder || isRevenueLadder || isQualityLadder || isCapacityLadder;
 
   return (
     <div>
@@ -193,7 +202,9 @@ export default function StepBuildCase({
                   ? "One lever starts it, complete documentation at the point of care, and it feeds several revenue paths. For each path you pick, the documentation decides how much you can actually capture. The paths add into one prize."
                   : isQualityLadder
                     ? "One lever starts it, earlier and more complete risk documentation. It feeds several harm events. For each event you pick, only a defensible share is preventable, and the bundle you commit to earns it. The events add into one prize."
-                    : "These decisions start from where you are today, move the ones you're ready to commit to."}
+                    : isCapacityLadder
+                      ? "One number starts it, minutes saved per note, so nurses chart in the moment. Work down: your overtime now, the share charting actually causes, and the hours you take out of it."
+                      : "These decisions start from where you are today, move the ones you're ready to commit to."}
         </p>
       </motion.div>
 
@@ -234,7 +245,9 @@ export default function StepBuildCase({
                   ? "One lever, several paths, one converged prize. Pick the paths you are chasing and set each one to your real numbers."
                   : isQualityLadder
                     ? "One lever, several harm events, one converged prize. Pick the events you are preventing and commit each one's bundle to your real numbers."
-                    : `${movedCount} of ${levers.length} decisions moved. Move the ones your organization is actually ready to commit to, the rest can wait for a later plan.`}
+                    : isCapacityLadder
+                      ? "This is the full step-down, top to bottom. Set each rung to your real overtime, and only the overtime charting causes counts."
+                      : `${movedCount} of ${levers.length} decisions moved. Move the ones your organization is actually ready to commit to, the rest can wait for a later plan.`}
         </p>
       </motion.div>
 
@@ -344,6 +357,14 @@ export default function StepBuildCase({
             baseline={baseline}
             values={values}
             onChangeValue={(leverId, value) => onChangeLeverValue("quality", leverId, value)}
+            realizationPct={realizationPct}
+          />
+        ) : goal === "capacity" ? (
+          <CapacityLadderChain
+            setting={setting}
+            baseline={baseline}
+            values={values}
+            onChangeValue={(leverId, value) => onChangeLeverValue("capacity", leverId, value)}
             realizationPct={realizationPct}
           />
         ) : (

@@ -20,6 +20,7 @@ import {
   type QualityEventId,
   type QualityEventLadder,
 } from "@/lib/attain/attainQuality";
+import { computeCapacityChain } from "@/lib/attain/attainCapacity";
 import type { AttainBaseline, LeverValues, MultiGoalContributionsResult } from "@/lib/attain/attainLevers";
 import { GOAL_CATALOG } from "@/lib/attain/attainGoals";
 import type { AttainSetting, GoalId } from "@/lib/attain/attainTypes";
@@ -49,14 +50,17 @@ import {
   RevenuePathGate,
   EdAccessDiagnosisGate,
   QualityEventGate,
+  NursingCapacityGate,
+  deriveNursingCapacityLadder,
   ED_ACCESS_WHO_ACTS,
 } from "./accessLadder";
+import { NURSING_CAPACITY_WHO_ACTS } from "@/lib/attain/attainCapacity";
 
 /** The two goals Planning renders as the shared step-down ladder on the hook.
  * Outpatient access is the locked exemplar; outpatient retention is the
  * second, built from the same abstraction so the two cannot diverge. Every
  * other setting/goal still renders the original StepCommit. */
-export type PlanningGoal = "access" | "retention" | "revenue" | "quality";
+export type PlanningGoal = "access" | "retention" | "revenue" | "quality" | "capacity";
 
 function asLines(raw: number | string[] | undefined): string[] {
   return Array.isArray(raw) ? raw : [];
@@ -153,6 +157,30 @@ const PHASE_META_ED_ACCESS: Record<PlanPhaseId, PhaseMeta> = {
     label: "Steady",
     intent: "Full coverage. The recovered visits and the admissions they become are landing and holding.",
     signalLabel: "Recovered visits per year",
+  },
+};
+
+/** Nursing capacity (overtime) phases. Phase 1 opens on the first domino
+ * (after-shift charting / overtime hours per nurse falling); later phases move
+ * down toward on-time shift completion, the outcome the freed minute is
+ * supposed to buy. The metric menu is the spec's: overtime hours per nurse,
+ * share of overtime that is documentation-attributable, on-time shift
+ * completion, missed-lunch rate. */
+const PHASE_META_CAPACITY: Record<PlanPhaseId, PhaseMeta> = {
+  start: {
+    label: "Start",
+    intent: "Start on one unit. Prove after-shift charting is falling and overtime per nurse is coming down before anything scales.",
+    signalLabel: "Overtime hours per nurse per week, falling",
+  },
+  expand: {
+    label: "Expand",
+    intent: "The overtime moved. Widen to more units, and hold the documentation-attributable share separate from staffing and census.",
+    signalLabel: "Share of overtime that is documentation-attributable, falling",
+  },
+  steady: {
+    label: "Steady",
+    intent: "Full scope. The freed minute is closing the shift on time and the overtime is holding lower.",
+    signalLabel: "On-time shift completion %, rising",
   },
 };
 
@@ -258,6 +286,7 @@ export default function StepPlanning({
   const isRetention = goal === "retention";
   const isRevenue = goal === "revenue";
   const isQuality = goal === "quality";
+  const isCapacity = goal === "capacity";
   // ED access is a variant of the access goal at the ED setting: a genuinely
   // different LWBS-recovery + diagnosis mechanism, so it reads from its own
   // shared ladder (deriveEdAccessLadder) rather than the outpatient scheduling
@@ -341,6 +370,21 @@ export default function StepPlanning({
   const qualityRealizationPct = qualityRaw > 0 ? (qualityRealized / qualityRaw) * 100 : 100;
   const qualityLadder = deriveQualityLadder(baseline, values, qualityRealizationPct);
   const qualityEventsSel = selectedEventTypes(values);
+
+  // ── CAPACITY ladder (nursing overtime) ────────────────────────────────
+  // A single gated ladder like access: operational rungs off the raw capacity
+  // chain (the overtime pool, the documentation-attributable ceiling, the
+  // realized hours avoided), with the realized COUNT read off the raw chain so
+  // Planning matches Build exactly, and only the dollar PRIZE off the combined
+  // result to pick up this priority's realization.
+  const capacityChain = isCapacity ? computeCapacityChain(baseline, values) : null;
+  const capacityResult = combined?.byGoal.capacity;
+  const capacityLadder = capacityChain
+    ? deriveNursingCapacityLadder(capacityChain, {
+        realizedOtHoursAvoided: capacityChain.realizedOtHoursAvoided,
+        prize: capacityResult?.totalMargin ?? capacityChain.prize,
+      })
+    : null;
   const orderedQualityEvents = QUALITY_DOC_CAUSED_ORDER.filter((e) => qualityEventsSel.includes(e));
   const primaryQualityEvent: QualityEventId = orderedQualityEvents[0] ?? "clabsi";
   const qualityPhaseSignals = QUALITY_EVENT_PHASE_SIGNALS[primaryQualityEvent];
@@ -354,6 +398,8 @@ export default function StepPlanning({
     ? revenueLadder.convergedPrize
     : isQuality
     ? qualityLadder.convergedPrize
+    : isCapacity
+    ? capacityLadder!.prize
     : isRetention
     ? retentionLadder.prize
     : accessLadder.prize;
@@ -413,6 +459,7 @@ export default function StepPlanning({
   const accessLines = !accessChain.scope.enterprise ? asLines(values.accessLines) : [];
   const retentionLines = asLines(values.retentionLines);
   const retentionProviders = retentionLadder.providersInScope;
+  const capacityLines = asLines(values.capacityLines);
 
   const signalDefault: Record<PlanPhaseId, string> = isEdAccess
     ? {
@@ -434,6 +481,18 @@ export default function StepPlanning({
         start: "improving vs baseline",
         expand: "improving vs baseline",
         steady: prize > 0 ? `${fmtMoneyCompact(prize)} of harm avoided per year` : "the full prevented amount",
+      }
+    : isCapacity
+    ? {
+        start:
+          capacityLadder!.otHoursPerNurseWeek > 0
+            ? `under ${fmtHoursShort(capacityLadder!.otHoursPerNurseWeek)} OT hrs/nurse/wk`
+            : "overtime per nurse falling",
+        expand: "improving vs baseline",
+        steady:
+          capacityLadder!.realizedOtHoursAvoided > 0
+            ? `${fmtInt(capacityLadder!.realizedOtHoursAvoided)} overtime hrs avoided per year`
+            : "overtime holding lower",
       }
     : isRetention
     ? {
@@ -482,6 +541,29 @@ export default function StepPlanning({
           orderedQualityEvents.length > 0
             ? `All events: ${orderedQualityEvents.map((e) => QUALITY_EVENT_SHORT[e]).join(", ")}`
             : "Full scope",
+      }
+    : isCapacity
+    ? {
+        start:
+          capacityLines.length > 0
+            ? `${capacityLines[0]} first`
+            : capacityLadder!.nursesInScope > 0
+              ? `A first cohort of the ${fmtInt(capacityLadder!.nursesInScope)} nurses`
+              : "A first unit",
+        expand:
+          capacityLines.length > 1
+            ? `Add ${capacityLines.slice(1).join(", ")}`
+            : capacityLines.length === 1
+              ? `Widen beyond ${capacityLines[0]}`
+              : capacityLadder!.nursesInScope > 0
+                ? `Widen to more of the ${fmtInt(capacityLadder!.nursesInScope)} nurses`
+                : "Widen the scope",
+        steady:
+          capacityLines.length > 0
+            ? `All units: ${capacityLines.join(", ")}`
+            : capacityLadder!.nursesInScope > 0
+              ? `All ${fmtInt(capacityLadder!.nursesInScope)} nurses`
+              : "Full scope",
       }
     : isRetention
     ? {
@@ -535,6 +617,8 @@ export default function StepPlanning({
     ? PHASE_META_REVENUE
     : isQuality
     ? PHASE_META_QUALITY
+    : isCapacity
+    ? PHASE_META_CAPACITY
     : isRetention
     ? PHASE_META_RETENTION
     : PHASE_META_ACCESS;
@@ -545,6 +629,8 @@ export default function StepPlanning({
     ? "One lever does the work here: complete, specific documentation at the point of care. It feeds several revenue paths, and for each one the documentation is the ceiling on what you can capture. Below is the promise, the paths that converge under it, and the phased plan that gets there."
     : isQuality
     ? "One lever does the work here: earlier, more complete risk documentation at the point of care. Abridge surfaces the risk, the unit runs the bundle and prevents. It feeds several harm events, and for each one only a defensible share is preventable. Below is the promise, the events that converge under it, and the phased plan that gets there."
+    : isCapacity
+    ? "One number does the work here: the minutes saved per note, so nurses chart in the moment instead of after the shift. That closes the shift on time and takes out the overtime charting caused. Only the documentation-driven share is yours to cut. Below is the promise, the chain of logic under it, and the phased plan that gets there."
     : isRetention
     ? "You want lower voluntary turnover and a better clinician experience. It starts on one number: the minutes saved per note. That freed time, kept as relief, comes off after-hours charting, and each rung below multiplies on top of it toward the departures you avoid and the dollar that saves. Below is the promise, the chain of logic under it, and the phased plan that gets there."
     : "One number does the work here: the minutes saved per note. It is the first domino. Freed hours, new capacity, realized visits, and the dollar prize are all multiplication on top of it. Below is the promise, the chain of logic under it, and the phased plan that gets there.";
@@ -555,6 +641,8 @@ export default function StepPlanning({
     ? "Read it top to bottom. Complete documentation is the one lever every path shares. For each path, the documentation-caused leak is the ceiling that decides how much you can capture, and what converts becomes dollars. The paths add into one prize."
     : isQuality
     ? "Read it top to bottom. Earlier risk documentation is the one lever every event shares. For each event, only a defensible share is preventable, the honest ceiling, and the bundle you commit to earns a slice of it. The events add into one prize; part of the value is the safety itself, which does not price."
+    : isCapacity
+    ? "Read it top to bottom. Charting in the moment closes the shift on time. Your overtime now is the pool, then the documentation-attributable share is the ceiling on what charting can move, and the share you remove becomes overtime hours avoided and dollars. Overtime from staffing or census stays out of the number."
     : isRetention
     ? "Read it top to bottom. The first rungs multiply: minutes saved become freed hours, and the hours you keep as relief come off after-hours charting. Then burnout is the ceiling that decides how many of your departures you can actually avoid, and those avoided departures become dollars."
     : "Read it top to bottom. The first rungs multiply: minutes saved become freed hours, and the freed hours you direct to access become new capacity. Then demand is the ceiling that decides how much of that capacity actually converts to visits, and those visits become dollars.";
@@ -628,6 +716,8 @@ export default function StepPlanning({
             ? `How complete documentation becomes ${prize > 0 ? fmtMoneyCompact(prize) : "the prize"}`
             : isQuality
             ? `How earlier risk documentation becomes ${prize > 0 ? fmtMoneyCompact(prize) : "the prize"}`
+            : isCapacity
+            ? `How charting in the moment becomes ${prize > 0 ? fmtMoneyCompact(prize) : "the prize"}`
             : `How ${fmtInt(firstDominoMinutes)} minutes per note becomes ${prize > 0 ? fmtMoneyCompact(prize) : "the prize"}`}
         </h2>
         <p className="text-[12px] text-[#8C8C8C] mb-4 max-w-[560px] leading-relaxed">{spineIntro}</p>
@@ -822,6 +912,55 @@ export default function StepPlanning({
                 emptyHint="The prize appears once at least one event's bundle is committed."
               />
             </>
+          ) : isCapacity ? (
+            <>
+              <SpineRung
+                anchor
+                isSet
+                value="In the moment"
+                unit="not after the shift"
+                label="Nurses chart in the moment"
+                caption="The first domino. Ambient documentation lets the record get done at the point of care, so the shift can close on time and the overtime charting caused does not accrue."
+                emptyHint=""
+              />
+              <div className="flex justify-center"><ArrowDown className="w-4 h-4 text-[#B4B4B4]" /></div>
+              <SpineRung
+                isSet={capacityLadder!.totalOtHoursYr > 0}
+                value={fmtInt(capacityLadder!.totalOtHoursYr)}
+                unit="overtime hrs / yr"
+                label="The overtime you run now"
+                caption={`${fmtInt(capacityLadder!.nursesInScope)} nurses at about ${fmtHoursShort(capacityLadder!.otHoursPerNurseWeek)} overtime hours a week each, across the year. This is the pool, before the diagnosis.`}
+                emptyHint="Set your nurses in scope and overtime per nurse on Build the case to size the pool."
+              />
+              <div className="flex justify-center"><ArrowDown className="w-4 h-4 text-[#B4B4B4]" /></div>
+              <NursingCapacityGate
+                totalOtHoursYr={capacityLadder!.totalOtHoursYr}
+                docAttributableSharePct={capacityLadder!.docAttributableSharePct}
+                docAttributableOtHoursYr={capacityLadder!.docAttributableOtHoursYr}
+                realizedOtHoursAvoided={capacityLadder!.realizedOtHoursAvoided}
+                whoActs={NURSING_CAPACITY_WHO_ACTS}
+                bothSet={capacityLadder!.docAttributableOtHoursYr > 0 && capacityLadder!.realizedOtHoursAvoided > 0}
+                emptyHint={
+                  capacityLadder!.docAttributableOtHoursYr <= 0
+                    ? "Diagnose the documentation-driven share of your overtime on Build the case to size the ceiling, then commit to the share you will remove."
+                    : "Commit to the share of that overtime you will remove on Build the case to see how much converts."
+                }
+              />
+              <div className="flex justify-center"><ArrowDown className="w-4 h-4 text-[#B4B4B4]" /></div>
+              <SpineRung
+                payoff
+                isSet={prize > 0}
+                value={fmtMoneyCompact(prize)}
+                unit="overtime wages avoided / yr"
+                label="The prize"
+                caption={
+                  prize > 0
+                    ? `${fmtInt(capacityLadder!.realizedOtHoursAvoided)} overtime hours avoided at about $${fmtInt(capacityLadder!.otHourlyRate)} each. Wages you stop paying now, counted once, separate from the replacement cost retention books.`
+                    : "Finish the chain above and the prize appears here."
+                }
+                emptyHint="The prize appears once the chain above is complete."
+              />
+            </>
           ) : isRetention ? (
             <>
               <SpineRung
@@ -954,6 +1093,8 @@ export default function StepPlanning({
             ? "Start with the path whose leak is clearest, prove complete notes move the coding, then widen to the other paths. The value climbs as the paths converge."
             : isQuality
             ? "Start with the event whose prevention is most defensibly the documentation, prove earlier risk surfacing moves the bundle, then widen to the other events. The value climbs as the events converge."
+            : isCapacity
+            ? "Start on one unit and prove after-shift charting and overtime are falling, widen once it holds, then run at full scope. The value climbs with the scope."
             : isRetention
             ? "Start with one department and prove the relief is real, widen once it holds, then run at full scope. The value climbs with the scope."
             : "Start small and prove the signal, widen once it holds, then run at full scope. The value climbs with the scope."}
@@ -1094,6 +1235,8 @@ export default function StepPlanning({
               ? "e.g. the coding team is mid-transition to a new vendor until Q3"
               : isQuality
               ? "e.g. the wound-care nurse is out on leave until the Q3 backfill"
+              : isCapacity
+              ? "e.g. a census surge is driving overtime that charting cannot touch until the Q3 hiring class fills"
               : isRetention
               ? "e.g. a covering-shift policy refills the freed time until the Q3 staffing review"
               : isEdAccess

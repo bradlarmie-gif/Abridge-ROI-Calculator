@@ -5,6 +5,8 @@ import { WORKFORCE_IMPACT_CEILING_PP } from "@/lib/attain/attainWorkforce";
 import type { AttainBaseline } from "@/lib/attain/attainLevers";
 import type { AttainSetting } from "@/lib/attain/attainTypes";
 import type { EdAccessChainResult, EdAccessBinding } from "@/lib/attain/attainEdAccess";
+import type { CapacityChainResult } from "@/lib/attain/attainCapacity";
+import { NURSING_CAPACITY_WHO_ACTS } from "@/lib/attain/attainCapacity";
 
 /**
  * THE SHARED ACCESS LADDER.
@@ -701,6 +703,138 @@ export function QualityEventGate({
               {fmtRevenueCount(capturedCount)} <span className="text-[11px] font-normal text-[#8C8C8C]">{capturedUnit}</span>
             </p>
             <p className="text-[11px] text-[#8C8C8C] mt-1 leading-relaxed" data-testid="text-planning-quality-gate-explain">{explain}</p>
+          </div>
+        </>
+      ) : (
+        <p className="text-[11px] text-[#8C8C8C] leading-relaxed">{emptyHint}</p>
+      )}
+    </div>
+  );
+}
+
+/**
+ * THE SHARED NURSING CAPACITY (OVERTIME) LADDER, built beside the others so
+ * nursing capacity tells the SAME step-down story from one abstraction, and
+ * Build the case and Planning can never diverge on its numbers.
+ *
+ * Capacity for nurses is OVERTIME reduction. It is a single gated ladder, the
+ * same shape as access: a first domino (minutes saved per note, so nurses
+ * chart in the moment instead of after the shift) that carries no dollar,
+ * then the overtime run now (the pool), THE GATE (the documentation-
+ * attributable share of that overtime, the ceiling on what charting can move,
+ * versus overtime from short staffing or census that Abridge cannot touch),
+ * the realized overtime hours avoided, and the prize (hours avoided × loaded
+ * overtime rate). Every number reconciles to Explore's own `nursingOvertime`
+ * driver via `computeCapacityChain` (attainCapacity.ts). The realized COUNT
+ * and the dollar PRIZE are passed in so each surface can supply its own
+ * realization-applied figures, exactly as `deriveAccessLadder` does.
+ */
+export interface NursingCapacityLadderModel {
+  nursesInScope: number;
+  otHoursPerNurseWeek: number;
+  otHourlyRate: number;
+  /** The pool: overtime hours a year now. */
+  totalOtHoursYr: number;
+  /** THE GATE ceiling: the documentation-attributable share of overtime. */
+  docAttributableSharePct: number;
+  docAttributableOtHoursYr: number;
+  conversionPct: number;
+  /** REALIZED: overtime hours avoided. */
+  realizedOtHoursAvoided: number;
+  /** The derived dollar prize. */
+  prize: number;
+  whoActs: string;
+}
+
+/** Derives the shared nursing capacity ladder model. Operational rungs come
+ * off the raw chain; the realized COUNT and the dollar PRIZE are passed in so
+ * each surface supplies its own realization-applied figures, exactly as
+ * `deriveAccessLadder` does. */
+export function deriveNursingCapacityLadder(
+  chain: CapacityChainResult,
+  opts: { realizedOtHoursAvoided: number; prize: number },
+): NursingCapacityLadderModel {
+  return {
+    nursesInScope: chain.scope.nursesInScope,
+    otHoursPerNurseWeek: chain.otHoursPerNurseWeek,
+    otHourlyRate: chain.otHourlyRate,
+    totalOtHoursYr: chain.totalOtHoursYr,
+    docAttributableSharePct: chain.docAttributableSharePct,
+    docAttributableOtHoursYr: chain.docAttributableOtHoursYr,
+    conversionPct: chain.conversionPct,
+    realizedOtHoursAvoided: opts.realizedOtHoursAvoided,
+    prize: opts.prize,
+    whoActs: NURSING_CAPACITY_WHO_ACTS,
+  };
+}
+
+/**
+ * THE NURSING CAPACITY DIAGNOSIS GATE, the overtime analog of
+ * `EdAccessDiagnosisGate`, shared verbatim between Build the case and Planning.
+ * Two facts side by side: the documentation-attributable overtime the plan can
+ * move (the ceiling), and who has to act. Then the realized overtime hours
+ * avoided, the conservative share of that ceiling actually removed. The
+ * diagnosis is stated out loud so the CFO sees exactly what stays OUT of the
+ * number: overtime from short staffing or a census surge, which Abridge cannot
+ * touch.
+ */
+export function NursingCapacityGate({
+  totalOtHoursYr,
+  docAttributableSharePct,
+  docAttributableOtHoursYr,
+  realizedOtHoursAvoided,
+  whoActs,
+  bothSet,
+  emptyHint,
+  showHeader = true,
+}: {
+  totalOtHoursYr: number;
+  docAttributableSharePct: number;
+  docAttributableOtHoursYr: number;
+  realizedOtHoursAvoided: number;
+  whoActs: string;
+  bothSet: boolean;
+  emptyHint: string;
+  showHeader?: boolean;
+}) {
+  const staffingShare = Math.max(0, 100 - Math.round(docAttributableSharePct));
+  const explain =
+    realizedOtHoursAvoided > 0
+      ? `Of the ${fmtInt(docAttributableOtHoursYr)} overtime hours charting can move, this plan removes ${fmtInt(realizedOtHoursAvoided)}. The other ${staffingShare}% of overtime is short staffing or census, which this plan cannot touch, so it stays out of the number.`
+      : "You can only cut the overtime charting causes. Set the documentation-attributable share, then commit to the share you will actually remove.";
+
+  return (
+    <div className="rounded-lg border border-[#E7E0D6] bg-[#F4F0EA] p-4" data-testid="rung-planning-capacity-gate">
+      {showHeader && (
+        <div className="flex items-center gap-2 mb-3">
+          <span className="inline-block text-[8px] font-bold uppercase tracking-wide text-white bg-[#1A1A1A] px-2 py-0.5 rounded-full">
+            The gate
+          </span>
+          <p className="text-[12px] font-semibold text-[#1A1A1A]">Diagnose the leak: which overtime is charting's to fix?</p>
+        </div>
+      )}
+
+      {bothSet ? (
+        <>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <LadderFieldLabel>Overtime charting can move</LadderFieldLabel>
+              <p className="font-abridge text-2xl font-bold text-[#1A1A1A]" data-testid="text-planning-capacity-gate-ceiling">
+                {fmtInt(docAttributableOtHoursYr)} <span className="text-[11px] font-normal text-[#8C8C8C]">of {fmtInt(totalOtHoursYr)} OT hrs</span>
+              </p>
+              <p className="text-[10.5px] text-[#8C8C8C] mt-0.5">{Math.round(docAttributableSharePct)}% documentation-attributable, the rest is staffing or census</p>
+            </div>
+            <div>
+              <LadderFieldLabel>Who has to act</LadderFieldLabel>
+              <p className="text-[13px] font-semibold text-[#1A1A1A] leading-snug" data-testid="text-planning-capacity-gate-owner">{whoActs}</p>
+            </div>
+          </div>
+          <div className="mt-3 pt-3 border-t border-[#E0D9CE]">
+            <LadderFieldLabel>Overtime hours avoided, the share you remove</LadderFieldLabel>
+            <p className="font-abridge text-2xl font-bold text-[#EA2C00]" data-testid="text-planning-capacity-gate-realized">
+              {fmtInt(realizedOtHoursAvoided)} <span className="text-[11px] font-normal text-[#8C8C8C]">overtime hrs avoided / yr</span>
+            </p>
+            <p className="text-[11px] text-[#8C8C8C] mt-1 leading-relaxed" data-testid="text-planning-capacity-gate-explain">{explain}</p>
           </div>
         </>
       ) : (
