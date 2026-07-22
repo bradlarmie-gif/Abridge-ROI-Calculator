@@ -12,6 +12,14 @@ import {
   type RevenuePathId,
   type RevenuePathLadder,
 } from "@/lib/attain/attainRevenue";
+import {
+  computeQualityChain,
+  deriveQualityLadder,
+  selectedEventTypes,
+  QUALITY_EVENT_LABELS,
+  type QualityEventId,
+  type QualityEventLadder,
+} from "@/lib/attain/attainQuality";
 import type { AttainBaseline, LeverValues, MultiGoalContributionsResult } from "@/lib/attain/attainLevers";
 import { GOAL_CATALOG } from "@/lib/attain/attainGoals";
 import type { AttainSetting, GoalId } from "@/lib/attain/attainTypes";
@@ -40,6 +48,7 @@ import {
   BurnoutPoolGate,
   RevenuePathGate,
   EdAccessDiagnosisGate,
+  QualityEventGate,
   ED_ACCESS_WHO_ACTS,
 } from "./accessLadder";
 
@@ -47,7 +56,7 @@ import {
  * Outpatient access is the locked exemplar; outpatient retention is the
  * second, built from the same abstraction so the two cannot diverge. Every
  * other setting/goal still renders the original StepCommit. */
-export type PlanningGoal = "access" | "retention" | "revenue";
+export type PlanningGoal = "access" | "retention" | "revenue" | "quality";
 
 function asLines(raw: number | string[] | undefined): string[] {
   return Array.isArray(raw) ? raw : [];
@@ -180,6 +189,54 @@ const REVENUE_PATH_SHORT: Record<RevenuePathId, string> = {
   denials: "medical-necessity denials",
 };
 
+/** Real, trackable leading signals per harm event (the spec's metric menu:
+ * event rate per 1,000, bundle/intervention compliance %, real-time gap
+ * closure %). Phase 1 opens on the process signal closest to the first
+ * domino (risk documentation driving bundle compliance); later phases move
+ * down toward the event-rate outcome. */
+const QUALITY_EVENT_PHASE_SIGNALS: Record<QualityEventId, [string, string, string]> = {
+  falls: [
+    "Rounding compliance %, rising",
+    "Real-time fall-risk gap closure %, rising",
+    "Fall rate per 1,000 patient-days, falling",
+  ],
+  hapi: [
+    "Repositioning compliance %, rising",
+    "Shift skin-assessment completion %, rising",
+    "HAPI rate per 1,000 patient-days, falling",
+  ],
+  clabsi: [
+    "Share of lines reviewed daily for necessity, rising",
+    "Insertion-bundle compliance %, rising",
+    "CLABSI per 1,000 line-days, falling",
+  ],
+  cauti: [
+    "Share of catheters reviewed daily, rising",
+    "Aseptic-insertion compliance %, rising",
+    "CAUTI per 1,000 catheter-days, falling",
+  ],
+  sepsis: [
+    "SEP-1 bundle compliance %, rising",
+    "Early-warning screening rate %, rising",
+    "Median time-to-antibiotics, falling",
+  ],
+};
+
+/** Harm events ranked by how defensibly their prevention is
+ * documentation-attributable, so the phased plan starts on the event where
+ * earlier risk surfacing most clearly drives prevention (Sepsis and CLABSI,
+ * pure timeliness / bundle-compliance mechanisms), then the bedside-routine
+ * events. */
+const QUALITY_DOC_CAUSED_ORDER: QualityEventId[] = ["sepsis", "clabsi", "cauti", "hapi", "falls"];
+
+const QUALITY_EVENT_SHORT: Record<QualityEventId, string> = {
+  falls: "falls",
+  hapi: "pressure injury (HAPI)",
+  clabsi: "line infection (CLABSI)",
+  cauti: "catheter infection (CAUTI)",
+  sepsis: "sepsis",
+};
+
 export default function StepPlanning({
   setting,
   baseline,
@@ -200,6 +257,7 @@ export default function StepPlanning({
   const goalDef = GOAL_CATALOG[goal as GoalId];
   const isRetention = goal === "retention";
   const isRevenue = goal === "revenue";
+  const isQuality = goal === "quality";
   // ED access is a variant of the access goal at the ED setting: a genuinely
   // different LWBS-recovery + diagnosis mechanism, so it reads from its own
   // shared ladder (deriveEdAccessLadder) rather than the outpatient scheduling
@@ -271,6 +329,22 @@ export default function StepPlanning({
   const revenueLadder = deriveRevenueLadder(baseline, setting, values, revenueRealizationPct);
   const revenuePathsSel = selectedPaths(values).filter((p) => setting !== "ed" || p !== "hcc");
 
+  // ── QUALITY ladder ──────────────────────────────────────────────────────
+  // Same SHAPE as revenue: one shared lever (earlier risk documentation)
+  // feeding several parallel per-event sub-ladders that converge into one
+  // prevented-harm prize. The per-event dollars are scaled by the realization
+  // factor implied by the combined engine result (qualityRealized /
+  // qualityRaw), so Planning's per-event dollars and the converged prize match
+  // Build the case exactly.
+  const qualityRaw = isQuality ? computeQualityChain(baseline, values).payoff.totalValue : 0;
+  const qualityRealized = combined?.byGoal.quality?.totalMargin ?? qualityRaw;
+  const qualityRealizationPct = qualityRaw > 0 ? (qualityRealized / qualityRaw) * 100 : 100;
+  const qualityLadder = deriveQualityLadder(baseline, values, qualityRealizationPct);
+  const qualityEventsSel = selectedEventTypes(values);
+  const orderedQualityEvents = QUALITY_DOC_CAUSED_ORDER.filter((e) => qualityEventsSel.includes(e));
+  const primaryQualityEvent: QualityEventId = orderedQualityEvents[0] ?? "clabsi";
+  const qualityPhaseSignals = QUALITY_EVENT_PHASE_SIGNALS[primaryQualityEvent];
+
   // The prize + the first-domino minutes are shared framing across the
   // minutes-based goals (access and retention both open on minutes saved per
   // note). Revenue opens on the documentation lever instead.
@@ -278,6 +352,8 @@ export default function StepPlanning({
     ? edAccessLadder!.prize
     : isRevenue
     ? revenueLadder.convergedPrize
+    : isQuality
+    ? qualityLadder.convergedPrize
     : isRetention
     ? retentionLadder.prize
     : accessLadder.prize;
@@ -312,6 +388,27 @@ export default function StepPlanning({
     },
   };
 
+  const PHASE_META_QUALITY: Record<PlanPhaseId, PhaseMeta> = {
+    start: {
+      label: "Start",
+      intent: `Start with ${QUALITY_EVENT_SHORT[primaryQualityEvent]}, the event whose prevention is most defensibly the documentation. Prove earlier risk surfacing actually moves the bundle compliance before anything widens.`,
+      signalLabel: qualityPhaseSignals[0],
+    },
+    expand: {
+      label: "Expand",
+      intent:
+        orderedQualityEvents.length > 1
+          ? "The first event held. Widen to the other harm events you picked and watch their rates start to fall."
+          : "The signal held. Widen across more units and watch the rate start to fall.",
+      signalLabel: qualityPhaseSignals[1],
+    },
+    steady: {
+      label: "Steady",
+      intent: "Full scope across every event. The prevented harm is holding and the rates are lower.",
+      signalLabel: qualityPhaseSignals[2],
+    },
+  };
+
   // Derived, editable default target per phase's leading signal.
   const accessLines = !accessChain.scope.enterprise ? asLines(values.accessLines) : [];
   const retentionLines = asLines(values.retentionLines);
@@ -331,6 +428,12 @@ export default function StepPlanning({
         start: "improving vs baseline",
         expand: "improving vs baseline",
         steady: prize > 0 ? `${fmtMoneyCompact(prize)} captured per year` : "the full captured amount",
+      }
+    : isQuality
+    ? {
+        start: "improving vs baseline",
+        expand: "improving vs baseline",
+        steady: prize > 0 ? `${fmtMoneyCompact(prize)} of harm avoided per year` : "the full prevented amount",
       }
     : isRetention
     ? {
@@ -366,6 +469,18 @@ export default function StepPlanning({
         steady:
           orderedRevenuePaths.length > 0
             ? `All paths: ${orderedRevenuePaths.map(revenuePathLabel).join(", ")}`
+            : "Full scope",
+      }
+    : isQuality
+    ? {
+        start: orderedQualityEvents.length > 0 ? `${QUALITY_EVENT_SHORT[primaryQualityEvent]} first` : "A first harm event",
+        expand:
+          orderedQualityEvents.length > 1
+            ? `Add ${orderedQualityEvents.slice(1).map((e) => QUALITY_EVENT_SHORT[e]).join(", ")}`
+            : "Widen to more units",
+        steady:
+          orderedQualityEvents.length > 0
+            ? `All events: ${orderedQualityEvents.map((e) => QUALITY_EVENT_SHORT[e]).join(", ")}`
             : "Full scope",
       }
     : isRetention
@@ -418,6 +533,8 @@ export default function StepPlanning({
     ? PHASE_META_ED_ACCESS
     : isRevenue
     ? PHASE_META_REVENUE
+    : isQuality
+    ? PHASE_META_QUALITY
     : isRetention
     ? PHASE_META_RETENTION
     : PHASE_META_ACCESS;
@@ -426,6 +543,8 @@ export default function StepPlanning({
     ? "One number does the work here: the minutes saved per note. Freed charting time buys a faster door-to-provider, and only the LWBS your charting delays cause is yours to recover. Below is the promise, the chain of logic under it, and the phased plan that gets there."
     : isRevenue
     ? "One lever does the work here: complete, specific documentation at the point of care. It feeds several revenue paths, and for each one the documentation is the ceiling on what you can capture. Below is the promise, the paths that converge under it, and the phased plan that gets there."
+    : isQuality
+    ? "One lever does the work here: earlier, more complete risk documentation at the point of care. Abridge surfaces the risk, the unit runs the bundle and prevents. It feeds several harm events, and for each one only a defensible share is preventable. Below is the promise, the events that converge under it, and the phased plan that gets there."
     : isRetention
     ? "You want lower voluntary turnover and a better clinician experience. It starts on one number: the minutes saved per note. That freed time, kept as relief, comes off after-hours charting, and each rung below multiplies on top of it toward the departures you avoid and the dollar that saves. Below is the promise, the chain of logic under it, and the phased plan that gets there."
     : "One number does the work here: the minutes saved per note. It is the first domino. Freed hours, new capacity, realized visits, and the dollar prize are all multiplication on top of it. Below is the promise, the chain of logic under it, and the phased plan that gets there.";
@@ -434,6 +553,8 @@ export default function StepPlanning({
     ? "Read it top to bottom. The first rungs multiply: minutes saved become freed hours, and the hours you commit to throughput become recovery capacity. Then the diagnosis is the ceiling, only the LWBS your charting delays cause is yours to recover, and what converts becomes recovered visits, admissions, and dollars."
     : isRevenue
     ? "Read it top to bottom. Complete documentation is the one lever every path shares. For each path, the documentation-caused leak is the ceiling that decides how much you can capture, and what converts becomes dollars. The paths add into one prize."
+    : isQuality
+    ? "Read it top to bottom. Earlier risk documentation is the one lever every event shares. For each event, only a defensible share is preventable, the honest ceiling, and the bundle you commit to earns a slice of it. The events add into one prize; part of the value is the safety itself, which does not price."
     : isRetention
     ? "Read it top to bottom. The first rungs multiply: minutes saved become freed hours, and the hours you keep as relief come off after-hours charting. Then burnout is the ceiling that decides how many of your departures you can actually avoid, and those avoided departures become dollars."
     : "Read it top to bottom. The first rungs multiply: minutes saved become freed hours, and the freed hours you direct to access become new capacity. Then demand is the ceiling that decides how much of that capacity actually converts to visits, and those visits become dollars.";
@@ -505,6 +626,8 @@ export default function StepPlanning({
         <h2 className="text-sm font-bold text-[#1A1A1A] mb-1">
           {isRevenue
             ? `How complete documentation becomes ${prize > 0 ? fmtMoneyCompact(prize) : "the prize"}`
+            : isQuality
+            ? `How earlier risk documentation becomes ${prize > 0 ? fmtMoneyCompact(prize) : "the prize"}`
             : `How ${fmtInt(firstDominoMinutes)} minutes per note becomes ${prize > 0 ? fmtMoneyCompact(prize) : "the prize"}`}
         </h2>
         <p className="text-[12px] text-[#8C8C8C] mb-4 max-w-[560px] leading-relaxed">{spineIntro}</p>
@@ -640,6 +763,65 @@ export default function StepPlanning({
                 emptyHint="The prize appears once at least one path's chain is complete."
               />
             </>
+          ) : isQuality ? (
+            <>
+              <SpineRung
+                anchor
+                isSet
+                value="1"
+                unit="lever, shared by every event"
+                label="Earlier, more complete risk documentation at the point of care"
+                caption="The one thing Abridge moves, and where every harm event converges. Abridge surfaces the risk earlier; the unit runs the bundle and prevents."
+                emptyHint=""
+              />
+              {qualityLadder.events.map((e: QualityEventLadder) => (
+                <div key={e.id}>
+                  <div className="flex justify-center"><ArrowDown className="w-4 h-4 text-[#B4B4B4]" /></div>
+                  <p className="text-[11px] font-bold uppercase tracking-[1.5px] text-[#EA2C00] mb-2 mt-1">{e.label}</p>
+                  <QualityEventGate
+                    ceilingLabel={e.ceilingLabel}
+                    ceilingCount={e.ceilingCount}
+                    ceilingUnit={e.ceilingUnit}
+                    capturedLabel={e.capturedLabel}
+                    capturedCount={e.capturedCount}
+                    capturedUnit={e.capturedUnit}
+                    whoActs={e.whoActs}
+                    bothSet={e.ceilingCount > 0 && e.capturedCount > 0}
+                    emptyHint="Set this event's rate and commit its bundle on Build the case to size the preventable pool and see how much converts."
+                  />
+                  <div className="mt-2 rounded-lg border border-[#E7E0D6] bg-white px-4 py-2.5 flex items-baseline justify-between gap-3">
+                    <span className="text-[12px] font-semibold text-[#3A3A3A]">{e.label}, cost of harm avoided</span>
+                    {e.hasValue ? (
+                      <span className="font-abridge text-xl font-bold text-[#EA2C00]">{fmtMoneyCompact(e.value)} <span className="text-[11px] font-normal text-[#8C8C8C]">/ yr</span></span>
+                    ) : (
+                      <span className="text-[11px] font-semibold text-[#B4B4B4]">Not set yet</span>
+                    )}
+                  </div>
+                </div>
+              ))}
+              {qualityLadder.events.length === 0 && (
+                <>
+                  <div className="flex justify-center"><ArrowDown className="w-4 h-4 text-[#B4B4B4]" /></div>
+                  <div className="rounded-lg border border-[#E7E0D6] bg-white p-4">
+                    <p className="text-[11px] text-[#8C8C8C] leading-relaxed">Pick at least one harm event on Build the case to see the ladder.</p>
+                  </div>
+                </>
+              )}
+              <div className="flex justify-center"><ArrowDown className="w-4 h-4 text-[#B4B4B4]" /></div>
+              <SpineRung
+                payoff
+                isSet={prize > 0}
+                value={fmtMoneyCompact(prize)}
+                unit="cost of harm avoided / yr"
+                label="The converged prize"
+                caption={
+                  prize > 0
+                    ? `${qualityLadder.events.filter((e) => e.hasValue).length} events, each its own harm pool, summed once and never double-counted. Part of the value is the safety itself, which does not price.`
+                    : "Finish an event above and the converged prize appears here."
+                }
+                emptyHint="The prize appears once at least one event's bundle is committed."
+              />
+            </>
           ) : isRetention ? (
             <>
               <SpineRung
@@ -770,6 +952,8 @@ export default function StepPlanning({
         <p className="text-[12px] text-[#8C8C8C] mb-4 max-w-[560px] leading-relaxed">
           {isRevenue
             ? "Start with the path whose leak is clearest, prove complete notes move the coding, then widen to the other paths. The value climbs as the paths converge."
+            : isQuality
+            ? "Start with the event whose prevention is most defensibly the documentation, prove earlier risk surfacing moves the bundle, then widen to the other events. The value climbs as the events converge."
             : isRetention
             ? "Start with one department and prove the relief is real, widen once it holds, then run at full scope. The value climbs with the scope."
             : "Start small and prove the signal, widen once it holds, then run at full scope. The value climbs with the scope."}
@@ -908,6 +1092,8 @@ export default function StepPlanning({
           placeholder={
             isRevenue
               ? "e.g. the coding team is mid-transition to a new vendor until Q3"
+              : isQuality
+              ? "e.g. the wound-care nurse is out on leave until the Q3 backfill"
               : isRetention
               ? "e.g. a covering-shift policy refills the freed time until the Q3 staffing review"
               : isEdAccess

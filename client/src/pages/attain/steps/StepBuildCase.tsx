@@ -11,7 +11,7 @@ import RevenueLadderChain from "./RevenueLadderChain";
 import InpatientRevenueDecisionChain from "./InpatientRevenueDecisionChain";
 import WorkforceDecisionChain from "./WorkforceDecisionChain";
 import WorkforceLadderChain from "./WorkforceLadderChain";
-import QualityDecisionChain from "./QualityDecisionChain";
+import QualityLadderChain from "./QualityLadderChain";
 
 function formatCompact(n: number): string {
   const sign = n < 0 ? "-" : "";
@@ -164,7 +164,14 @@ export default function StepBuildCase({
   // shared retention ladder (see WorkforceLadderChain + accessLadder.ts's
   // deriveRetentionLadder). Other settings' retention keeps the D1-D5 chain.
   const isRetentionLadder = goal === "retention" && setting === "outpatient";
-  const isLadder = isAccessLadder || isEdAccessLadder || isRetentionLadder || isRevenueLadder;
+  // Nursing quality is the fifth ladder: it assembles the same step-down
+  // story (first domino -> shared scope -> the event selector -> per-event
+  // ground / diagnosis gate / bundle -> the converged prize) that Planning
+  // reads back, via the shared converging quality ladder (see
+  // QualityLadderChain + attainQuality.ts's deriveQualityLadder /
+  // accessLadder.ts's QualityEventGate). Same multi-path SHAPE as revenue.
+  const isQualityLadder = goal === "quality" && setting === "nursing";
+  const isLadder = isAccessLadder || isEdAccessLadder || isRetentionLadder || isRevenueLadder || isQualityLadder;
 
   return (
     <div>
@@ -184,7 +191,9 @@ export default function StepBuildCase({
                 ? "You want lower voluntary turnover and a better clinician experience. Work backward: one number starts it, each rung multiplies, and burnout decides how much you can avoid."
                 : isRevenueLadder
                   ? "One lever starts it, complete documentation at the point of care, and it feeds several revenue paths. For each path you pick, the documentation decides how much you can actually capture. The paths add into one prize."
-                  : "These decisions start from where you are today, move the ones you're ready to commit to."}
+                  : isQualityLadder
+                    ? "One lever starts it, earlier and more complete risk documentation. It feeds several harm events. For each event you pick, only a defensible share is preventable, and the bundle you commit to earns it. The events add into one prize."
+                    : "These decisions start from where you are today, move the ones you're ready to commit to."}
         </p>
       </motion.div>
 
@@ -223,7 +232,9 @@ export default function StepBuildCase({
                 ? "Lower voluntary turnover and a better clinician experience. This is the full step-down, top to bottom; set each rung to your real numbers."
                 : isRevenueLadder
                   ? "One lever, several paths, one converged prize. Pick the paths you are chasing and set each one to your real numbers."
-                  : `${movedCount} of ${levers.length} decisions moved. Move the ones your organization is actually ready to commit to, the rest can wait for a later plan.`}
+                  : isQualityLadder
+                    ? "One lever, several harm events, one converged prize. Pick the events you are preventing and commit each one's bundle to your real numbers."
+                    : `${movedCount} of ${levers.length} decisions moved. Move the ones your organization is actually ready to commit to, the rest can wait for a later plan.`}
         </p>
       </motion.div>
 
@@ -328,7 +339,7 @@ export default function StepBuildCase({
             crossGoalShareMultiplier={crossGoalShareMultiplier}
           />
         ) : goal === "quality" ? (
-          <QualityDecisionChain
+          <QualityLadderChain
             setting={setting}
             baseline={baseline}
             values={values}
