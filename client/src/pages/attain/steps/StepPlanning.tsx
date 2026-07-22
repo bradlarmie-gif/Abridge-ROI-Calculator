@@ -35,6 +35,7 @@ import {
   phaseValueRamp,
   phaseOwner as resolvePhaseOwner,
   phaseSignalTarget as resolvePhaseSignalTarget,
+  phaseSignalLabel as resolvePhaseSignalLabel,
   type AttainPlanning,
   type PlanPhaseId,
 } from "@/lib/attain/attainPlanning";
@@ -93,6 +94,9 @@ interface StepPlanningProps {
   planning: AttainPlanning;
   onChangePhaseOwner: (phase: PlanPhaseId, name: string) => void;
   onChangePhaseSignalTarget: (phase: PlanPhaseId, target: string) => void;
+  /** The partner's chosen leading-signal metric for a phase, from the goal's
+   * metric menu. Persisted like the target; falls back to the derived default. */
+  onChangePhaseSignalLabel: (phase: PlanPhaseId, label: string) => void;
   onChangePartnerRisk: (text: string) => void;
   planCadence: SignalCadence;
   onChangePlanCadence: (cadence: SignalCadence) => void;
@@ -322,6 +326,7 @@ export default function StepPlanning({
   planning,
   onChangePhaseOwner,
   onChangePhaseSignalTarget,
+  onChangePhaseSignalLabel,
   onChangePartnerRisk,
   planCadence,
   onChangePlanCadence,
@@ -695,6 +700,65 @@ export default function StepPlanning({
     : isRetention
     ? phaseMetaRetention(retentionCharting)
     : PHASE_META_ACCESS;
+
+  // The dropdown menu of REAL, trackable leading-signal metrics for this
+  // goal/setting (the spec's per-domain menus). The three phase defaults are
+  // always members, so an untouched plan keeps rendering exactly the phase
+  // labels it did before the dropdowns shipped. For multi-path revenue and
+  // multi-event quality the menu reflects the paths/events actually selected,
+  // so the partner only sees metrics that matter for the plan they built.
+  const signalMenu: string[] = (() => {
+    const uniq = (arr: string[]) => Array.from(new Set(arr.filter((s) => s.trim().length > 0)));
+    if (isEdAccess) {
+      return uniq([
+        "Minutes saved per note",
+        PHASE_META.start.signalLabel, // Door-to-provider time, falling
+        PHASE_META.expand.signalLabel, // LWBS rate, falling
+        "Captured admissions per year",
+        PHASE_META.steady.signalLabel, // Recovered visits per year
+      ]);
+    }
+    if (isRevenue) {
+      const tuples = isIpRevenue
+        ? (orderedIpRevenuePaths.length > 0 ? orderedIpRevenuePaths : [primaryIpRevenuePath]).map(
+            (p) => IP_REVENUE_PATH_PHASE_SIGNALS[p],
+          )
+        : (orderedRevenuePaths.length > 0 ? orderedRevenuePaths : [primaryRevenuePath]).map(
+            (p) => REVENUE_PATH_PHASE_SIGNALS[p],
+          );
+      return uniq(tuples.flat());
+    }
+    if (isQuality) {
+      const events = orderedQualityEvents.length > 0 ? orderedQualityEvents : [primaryQualityEvent];
+      return uniq(events.map((e) => QUALITY_EVENT_PHASE_SIGNALS[e]).flat());
+    }
+    if (isCapacity) {
+      return uniq([
+        PHASE_META.start.signalLabel, // Overtime hours per nurse per week, falling
+        PHASE_META.expand.signalLabel, // Share of overtime that is documentation-attributable, falling
+        PHASE_META.steady.signalLabel, // On-time shift completion %, rising
+        "Missed-lunch rate, falling",
+      ]);
+    }
+    if (isRetention) {
+      return uniq([
+        PHASE_META.start.signalLabel, // <Charting> time, falling
+        PHASE_META.expand.signalLabel, // Burnout assessment score, improving
+        "Likelihood-to-stay, rising",
+        PHASE_META.steady.signalLabel, // Voluntary turnover, falling
+        "Minutes saved per note",
+      ]);
+    }
+    // Outpatient access (the exemplar).
+    return uniq([
+      PHASE_META.start.signalLabel, // Minutes saved per note
+      PHASE_META.expand.signalLabel, // Third-next-available dropping
+      "Referral backlog",
+      "New-patient wait",
+      "No-show rate",
+      PHASE_META.steady.signalLabel, // Realized visits per year
+    ]);
+  })();
 
   const teach = isEdAccess
     ? "One number does the work here: the minutes saved per note. Freed charting time buys a faster door-to-provider, and only the LWBS your charting delays cause is yours to recover. Below is the promise, the chain of logic under it, and the phased plan that gets there."
@@ -1181,6 +1245,11 @@ export default function StepPlanning({
             const [from, to] = boundaries[phaseId];
             const owner = resolvePhaseOwner(planning, phaseId, ownerName);
             const target = resolvePhaseSignalTarget(planning, phaseId, signalDefault[phaseId]);
+            const signalLabel = resolvePhaseSignalLabel(planning, phaseId, meta.signalLabel);
+            // A restored choice from an earlier scope (paths/events since
+            // changed) may not be in the current menu; keep it visible so the
+            // dropdown never shows a blank selection.
+            const menuForPhase = signalMenu.includes(signalLabel) ? signalMenu : [...signalMenu, signalLabel];
             const value = ramp[phaseId];
             return (
               <motion.div
@@ -1236,21 +1305,41 @@ export default function StepPlanning({
 
                 <div className="rounded-md bg-[#FFF6F3] border border-[#F3C9BE] p-3">
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="inline-block text-[8px] font-bold uppercase tracking-wide text-white bg-[#EA2C00] px-2 py-0.5 rounded-full">
+                    <span className="inline-block flex-shrink-0 text-[8px] font-bold uppercase tracking-wide text-white bg-[#EA2C00] px-2 py-0.5 rounded-full">
                       Leading signal
                     </span>
-                    <p className="text-[12px] font-semibold text-[#1A1A1A]" data-testid={`text-planning-phase-signal-${phaseId}`}>
-                      {meta.signalLabel}
-                    </p>
+                    <span className="text-[10px] text-[#8C8C8C]">The metric is the proof. Pick the one to track.</span>
                   </div>
-                  <FieldLabel>Target</FieldLabel>
-                  <input
-                    value={target}
-                    onChange={(e) => onChangePhaseSignalTarget(phaseId, e.target.value)}
-                    placeholder={signalDefault[phaseId]}
-                    className="h-9 w-full max-w-[280px] rounded-md border border-[#D8CFC4] bg-white px-2.5 text-[12px] text-[#1A1A1A] outline-none focus:border-[#EA2C00]"
-                    data-testid={`input-planning-phase-signal-target-${phaseId}`}
-                  />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <FieldLabel>Metric to track</FieldLabel>
+                      <Select value={signalLabel} onValueChange={(v) => onChangePhaseSignalLabel(phaseId, v)}>
+                        <SelectTrigger
+                          className="h-9 w-full border-[#D8CFC4] bg-white text-[12px] font-semibold text-[#1A1A1A] focus:ring-0 focus:border-[#EA2C00]"
+                          data-testid={`select-planning-phase-signal-${phaseId}`}
+                        >
+                          <SelectValue data-testid={`text-planning-phase-signal-${phaseId}`} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {menuForPhase.map((m) => (
+                            <SelectItem key={m} value={m} className="text-[12px]">
+                              {m}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <FieldLabel>Target</FieldLabel>
+                      <input
+                        value={target}
+                        onChange={(e) => onChangePhaseSignalTarget(phaseId, e.target.value)}
+                        placeholder={signalDefault[phaseId]}
+                        className="h-9 w-full rounded-md border border-[#D8CFC4] bg-white px-2.5 text-[12px] text-[#1A1A1A] outline-none focus:border-[#EA2C00]"
+                        data-testid={`input-planning-phase-signal-target-${phaseId}`}
+                      />
+                    </div>
+                  </div>
                 </div>
               </motion.div>
             );
