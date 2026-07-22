@@ -14,15 +14,20 @@
  * no override simply falls back to the goal owner / the derived target.
  */
 
+import type { GoalId } from "./attainTypes";
+
 export type PlanPhaseId = "start" | "expand" | "steady";
 
 export const PLAN_PHASE_IDS: PlanPhaseId[] = ["start", "expand", "steady"];
 
-/** The partner-editable layer on top of the derived phased plan: a per-phase
- * owner override (falls back to the goal owner), a per-phase leading-signal
- * target (falls back to a derived default), and one optional partner-
- * disclosed risk that only renders when it is actually filled in. */
-export interface AttainPlanning {
+/** The per-phase editable layer that belongs to ONE priority's phased plan:
+ * a per-phase owner override (falls back to the goal/plan owner), the chosen
+ * leading-signal metric per phase, and the per-phase target. Factored out of
+ * `AttainPlanning` so a MULTI-priority plan can key one of these per priority
+ * (`AttainPlanning.byGoal`) while a single-goal plan keeps carrying it at the
+ * top level, unchanged. Every field is optional, so an unset phase simply
+ * falls back to its derived default downstream. */
+export interface PlanningPhaseLayer {
   phaseOwners?: Partial<Record<PlanPhaseId, string>>;
   /** Which leading-signal metric the partner chose to track per phase (a
    * member of the goal's metric menu). Falls back to the phase's derived
@@ -30,10 +35,42 @@ export interface AttainPlanning {
    * did before the dropdowns shipped. */
   phaseSignalLabels?: Partial<Record<PlanPhaseId, string>>;
   phaseSignalTargets?: Partial<Record<PlanPhaseId, string>>;
+}
+
+/** The partner-editable layer on top of the derived phased plan.
+ *
+ * A SINGLE-goal plan carries its one priority's phase overrides at the top
+ * level (the `PlanningPhaseLayer` fields it extends) plus one optional
+ * partner-disclosed risk — exactly the shape it has always had, so older
+ * single-goal saved links decode unchanged.
+ *
+ * A MULTI-priority plan additionally carries `planExecOwner` (one accountable
+ * owner for the whole plan) and `byGoal` (each selected priority's own phase
+ * layer). Both are additive and optional: a link that never carried them
+ * decodes cleanly, and a plan with no per-priority overrides simply falls
+ * back to the derived defaults. */
+export interface AttainPlanning extends PlanningPhaseLayer {
   partnerRisk?: string;
+  /** One accountable exec owner for a MULTI-priority plan, shown once in the
+   * combined header. Single-goal plans use `goalOwnerByPriority` instead and
+   * never set this. */
+  planExecOwner?: { name: string; title: string };
+  /** Per-priority phase layers for a MULTI-priority plan, keyed by goal.
+   * Single-goal plans keep using the top-level `PlanningPhaseLayer` fields and
+   * never set this. */
+  byGoal?: Partial<Record<GoalId, PlanningPhaseLayer>>;
 }
 
 export const DEFAULT_ATTAIN_PLANNING: AttainPlanning = {};
+
+/** The phase-override layer to read/write for one priority. A multi-priority
+ * plan keys it per goal (`byGoal[goal]`); a single-goal plan (no `goal`
+ * passed) uses the top-level fields, so single-goal behavior is untouched. */
+export function planningLayerFor(planning: AttainPlanning | undefined, goal?: GoalId): PlanningPhaseLayer {
+  if (!planning) return {};
+  if (goal) return planning.byGoal?.[goal] ?? {};
+  return planning;
+}
 
 /** Three equal thirds of the plan horizon. For the outpatient-access default
  * of 9 months this is 0-3, 3-6, 6-9; it stays honest if the horizon changes.
@@ -62,7 +99,7 @@ export function phaseValueRamp(prize: number): Record<PlanPhaseId, number> {
 
 /** Read a phase's owner, falling back to the goal owner's name (or "" when
  * neither is set — the view shows a prompt in that case, never a fake name). */
-export function phaseOwner(planning: AttainPlanning | undefined, phase: PlanPhaseId, goalOwnerName: string): string {
+export function phaseOwner(planning: PlanningPhaseLayer | undefined, phase: PlanPhaseId, goalOwnerName: string): string {
   const override = planning?.phaseOwners?.[phase]?.trim();
   if (override) return override;
   return goalOwnerName.trim();
@@ -72,7 +109,7 @@ export function phaseOwner(planning: AttainPlanning | undefined, phase: PlanPhas
  * the caller supplies (e.g. the committed minutes/note, or the realized
  * visit count). */
 export function phaseSignalTarget(
-  planning: AttainPlanning | undefined,
+  planning: PlanningPhaseLayer | undefined,
   phase: PlanPhaseId,
   derivedDefault: string,
 ): string {
@@ -85,7 +122,7 @@ export function phaseSignalTarget(
  * blank choice means "use the default", so an untouched plan reads exactly as
  * it did before the dropdowns shipped. */
 export function phaseSignalLabel(
-  planning: AttainPlanning | undefined,
+  planning: PlanningPhaseLayer | undefined,
   phase: PlanPhaseId,
   derivedDefault: string,
 ): string {

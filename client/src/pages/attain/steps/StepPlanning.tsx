@@ -37,6 +37,7 @@ import {
   phaseSignalTarget as resolvePhaseSignalTarget,
   phaseSignalLabel as resolvePhaseSignalLabel,
   type AttainPlanning,
+  type PlanningPhaseLayer,
   type PlanPhaseId,
 } from "@/lib/attain/attainPlanning";
 import { CADENCE_OPTIONS, CADENCE_LABEL, type GoalOwner, type SignalCadence } from "./StepCommit";
@@ -77,7 +78,13 @@ function asNum(raw: number | string[] | undefined): number {
   return typeof raw === "number" ? raw : 0;
 }
 
-interface StepPlanningProps {
+/** The reusable per-priority block: one priority's promise line, its read-only
+ * step-down ladder, and its three phases (Start/Expand/Steady). Both the
+ * single-goal Planning page and the multi-priority Planning view render this,
+ * so the two can never diverge. Plan-level furniture (the eyebrow/title, the
+ * checkpoint cadence, the optional risk) lives OUTSIDE this block in whichever
+ * shell wraps it. */
+interface PlanningPriorityBlockProps {
   setting: AttainSetting;
   baseline: AttainBaseline;
   /** Which goal is on the hook. Access is the exemplar; retention reuses the
@@ -89,21 +96,40 @@ interface StepPlanningProps {
    * applied prize and realized COUNT (`byGoal[goal]`). Every other rung comes
    * straight off the raw chain below. */
   combined: MultiGoalContributionsResult | null;
-  goalOwner: GoalOwner;
-  onChangeGoalOwner: (patch: Partial<GoalOwner>) => void;
-  planning: AttainPlanning;
+  /** When access and retention both share the one freed documentation hour
+   * (multi-goal only), the share of that hour THIS priority's chain is
+   * credited (accessShare, or 1-accessShare); 1 in every other case. Threaded
+   * into the access/ED-access/retention chains so this block's ladder rungs
+   * and prize reconcile with the split combined result. */
+  crossGoalShareMultiplier: number;
+  /** This priority's phase-override layer — the top-level layer for a
+   * single-goal plan, or `planning.byGoal[goal]` for a multi-priority plan. */
+  planningLayer: PlanningPhaseLayer | undefined;
+  /** The accountable owner's name, for the phase-owner fallback and the
+   * promise line (this goal's owner in single-goal, the plan exec owner in
+   * multi). */
+  ownerName: string;
   onChangePhaseOwner: (phase: PlanPhaseId, name: string) => void;
   onChangePhaseSignalTarget: (phase: PlanPhaseId, target: string) => void;
   /** The partner's chosen leading-signal metric for a phase, from the goal's
    * metric menu. Persisted like the target; falls back to the derived default. */
   onChangePhaseSignalLabel: (phase: PlanPhaseId, label: string) => void;
-  onChangePartnerRisk: (text: string) => void;
-  planCadence: SignalCadence;
-  onChangePlanCadence: (cadence: SignalCadence) => void;
   /** The plan horizon in months. The target month and the three phase
    * boundaries are all derived from this. */
   totalMonths: number;
-  stepNumber: number;
+  /** Render the goal-specific teaching paragraph above the promise (the
+   * single-goal page intro). Off in multi, where one plan teach sits up top. */
+  showTeach: boolean;
+  /** Render the editable exec-owner inputs inside the promise card
+   * (single-goal). Off in multi, where one plan exec owner is edited once in
+   * the combined header. */
+  showOwnerInputs: boolean;
+  goalOwner?: GoalOwner;
+  onChangeGoalOwner?: (patch: Partial<GoalOwner>) => void;
+  /** Appended to this block's data-testids so stacked multi-priority blocks
+   * never collide (e.g. "-revenue"). Empty for single-goal, so its testids are
+   * unchanged. */
+  testIdSuffix?: string;
 }
 
 /** Small uppercase field label, matched to StepCommit's own `Field`. */
@@ -315,24 +341,26 @@ const QUALITY_EVENT_SHORT: Record<QualityEventId, string> = {
   sepsis: "sepsis",
 };
 
-export default function StepPlanning({
+export function PlanningPriorityBlock({
   setting,
   baseline,
   goal,
   values,
   combined,
-  goalOwner,
-  onChangeGoalOwner,
-  planning,
+  crossGoalShareMultiplier,
+  planningLayer,
+  ownerName: ownerNameRaw,
   onChangePhaseOwner,
   onChangePhaseSignalTarget,
   onChangePhaseSignalLabel,
-  onChangePartnerRisk,
-  planCadence,
-  onChangePlanCadence,
   totalMonths,
-  stepNumber,
-}: StepPlanningProps) {
+  showTeach,
+  showOwnerInputs,
+  goalOwner,
+  onChangeGoalOwner,
+  testIdSuffix = "",
+}: PlanningPriorityBlockProps) {
+  const tid = (base: string) => `${base}${testIdSuffix}`;
   const goalDef = GOAL_CATALOG[goal as GoalId];
   const isRetention = goal === "retention";
   const isRevenue = goal === "revenue";
@@ -356,15 +384,14 @@ export default function StepPlanning({
   const retentionCharting = retentionChartingTerm(setting);
 
   const targetMonth = totalMonths > 0 ? Math.round(totalMonths) : 9;
-  const ownerName = goalOwner.name.trim();
-  const partnerRisk = planning.partnerRisk ?? "";
+  const ownerName = ownerNameRaw.trim();
 
   // ── ACCESS ladder (the exemplar) ──────────────────────────────────────
   // Every operational rung comes off the raw access chain (a real, honest
   // capacity/demand number); only the realized COUNT and the dollar PRIZE
   // read from the combined result, so they reflect this priority's
   // realization the same way every other surface does.
-  const accessChain = computeAccessChain(baseline, values, 1);
+  const accessChain = computeAccessChain(baseline, values, crossGoalShareMultiplier);
   const accessResult = combined?.byGoal.access;
   const accessLadder = deriveAccessLadder(accessChain, {
     realizedVisits: accessResult?.totalCount ?? accessChain.payoff.realizedVisits,
@@ -379,7 +406,7 @@ export default function StepPlanning({
   // would introduce at a single-department scale) and only the dollar PRIZE
   // off the combined result, to pick up this priority's realization exactly as
   // Build does.
-  const edAccessChain = isEdAccess ? computeEdAccessChain(baseline, values, 1) : null;
+  const edAccessChain = isEdAccess ? computeEdAccessChain(baseline, values, crossGoalShareMultiplier) : null;
   const edAccessLadder = edAccessChain
     ? deriveEdAccessLadder(edAccessChain, {
         realizedRecovered: edAccessChain.recovery.realizedRecovered,
@@ -393,7 +420,7 @@ export default function StepPlanning({
   // departures-avoided COUNT and the dollar PRIZE off the combined result.
   // Retention-only, so no cross-goal split (multiplier 1).
   const minutes = asNum(values.retentionMinutesSaved) > 0 ? asNum(values.retentionMinutesSaved) : DEFAULT_MINUTES_SAVED_PER_NOTE;
-  const workforceChain = computeWorkforceChain(baseline, setting, values, 1);
+  const workforceChain = computeWorkforceChain(baseline, setting, values, crossGoalShareMultiplier);
   const retentionResult = combined?.byGoal.retention;
   const retentionLadder = deriveRetentionLadder(workforceChain, setting, baseline, {
     minutes,
@@ -786,21 +813,17 @@ export default function StepPlanning({
 
   return (
     <div>
-      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-        <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-3" data-testid="text-step-eyebrow">
-          Step {stepNumber} · The plan to attain it
-        </p>
-        <h1 className="text-2xl md:text-4xl font-bold text-black mb-3 font-abridge uppercase tracking-tight" data-testid="text-step-title">
-          Planning
-        </h1>
-        <p className="text-sm text-[#666666] leading-relaxed max-w-[620px]" data-testid="text-step-teach">
-          {teach}
-        </p>
-      </motion.div>
+      {showTeach && (
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
+          <p className="text-sm text-[#666666] leading-relaxed max-w-[620px]" data-testid={tid("text-step-teach")}>
+            {teach}
+          </p>
+        </motion.div>
+      )}
 
       {/* 1 — The line of truth. The goal, the exec owner, the full prize, and
           the month it is due, read as one promise on the hook. */}
-      <div className="rounded-2xl border border-[#E7E0D6] bg-[#F4F0EA] p-6 mb-8" data-testid="card-planning-promise">
+      <div className="rounded-2xl border border-[#E7E0D6] bg-[#F4F0EA] p-6 mb-8" data-testid={tid("card-planning-promise")}>
         <div className="flex items-center gap-3 mb-3">
           <span
             className="inline-block text-[9px] font-bold uppercase tracking-[1.5px] text-white px-3 py-1 rounded-full"
@@ -810,38 +833,40 @@ export default function StepPlanning({
           </span>
           <p className="text-[9px] font-bold uppercase tracking-wide text-[#8C8C8C]">The promise</p>
         </div>
-        <p className="text-lg md:text-[22px] leading-snug text-[#1A1A1A] font-semibold" data-testid="text-planning-promise-line">
+        <p className="text-lg md:text-[22px] leading-snug text-[#1A1A1A] font-semibold" data-testid={tid("text-planning-promise-line")}>
           {isRetention ? "Lower voluntary turnover, better clinician experience" : isEdAccess ? "ED Access" : goalDef.label}
           <span className="text-[#B4B4B4] font-normal"> · </span>
-          Owned by {ownerName ? <span>{ownerName}</span> : <span className="text-[#EA2C00]">name the exec below</span>}
+          Owned by {ownerName ? <span>{ownerName}</span> : <span className="text-[#EA2C00]">{showOwnerInputs ? "name the exec below" : "name the plan owner above"}</span>}
           <span className="text-[#B4B4B4] font-normal"> · </span>
           {prize > 0 ? (
-            <span className="text-[#EA2C00]" data-testid="text-planning-promise-prize">{fmtMoneyCompact(prize)}</span>
+            <span className="text-[#EA2C00]" data-testid={tid("text-planning-promise-prize")}>{fmtMoneyCompact(prize)}</span>
           ) : (
             <span className="text-[#8C8C8C]">value pending</span>
           )}{" "}
           by month {targetMonth}
         </p>
 
-        <div className="mt-4 pt-4 border-t border-[#E0D9CE]">
-          <FieldLabel>Exec owner (who answers for whether this lands)</FieldLabel>
-          <div className="flex flex-wrap gap-3">
-            <input
-              value={goalOwner.name}
-              onChange={(e) => onChangeGoalOwner({ name: e.target.value })}
-              placeholder="Name, e.g. Dr. A. Rivera"
-              className="h-9 min-w-[200px] flex-1 rounded-md border border-[#D8CFC4] bg-white px-3 text-sm text-[#1A1A1A] outline-none focus:border-[#EA2C00]"
-              data-testid="input-planning-goal-owner-name"
-            />
-            <input
-              value={goalOwner.title}
-              onChange={(e) => onChangeGoalOwner({ title: e.target.value })}
-              placeholder="Title / role, e.g. VP Ambulatory Ops"
-              className="h-9 min-w-[200px] flex-1 rounded-md border border-[#D8CFC4] bg-white px-3 text-sm text-[#1A1A1A] outline-none focus:border-[#EA2C00]"
-              data-testid="input-planning-goal-owner-title"
-            />
+        {showOwnerInputs && (
+          <div className="mt-4 pt-4 border-t border-[#E0D9CE]">
+            <FieldLabel>Exec owner (who answers for whether this lands)</FieldLabel>
+            <div className="flex flex-wrap gap-3">
+              <input
+                value={goalOwner?.name ?? ""}
+                onChange={(e) => onChangeGoalOwner?.({ name: e.target.value })}
+                placeholder="Name, e.g. Dr. A. Rivera"
+                className="h-9 min-w-[200px] flex-1 rounded-md border border-[#D8CFC4] bg-white px-3 text-sm text-[#1A1A1A] outline-none focus:border-[#EA2C00]"
+                data-testid={tid("input-planning-goal-owner-name")}
+              />
+              <input
+                value={goalOwner?.title ?? ""}
+                onChange={(e) => onChangeGoalOwner?.({ title: e.target.value })}
+                placeholder="Title / role, e.g. VP Ambulatory Ops"
+                className="h-9 min-w-[200px] flex-1 rounded-md border border-[#D8CFC4] bg-white px-3 text-sm text-[#1A1A1A] outline-none focus:border-[#EA2C00]"
+                data-testid={tid("input-planning-goal-owner-title")}
+              />
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* 2 — The step-down spine, rooted in minutes per note. Each rung is a
@@ -859,7 +884,7 @@ export default function StepPlanning({
         </h2>
         <p className="text-[12px] text-[#8C8C8C] mb-4 max-w-[560px] leading-relaxed">{spineIntro}</p>
 
-        <div className="space-y-2" data-testid="section-planning-spine">
+        <div className="space-y-2" data-testid={tid("section-planning-spine")}>
           {isEdAccess ? (
             <>
               <SpineRung
@@ -1239,13 +1264,13 @@ export default function StepPlanning({
             : "Start small and prove the signal, widen once it holds, then run at full scope. The value climbs with the scope."}
         </p>
 
-        <div className="space-y-4" data-testid="section-planning-phases">
+        <div className="space-y-4" data-testid={tid("section-planning-phases")}>
           {PLAN_PHASE_IDS.map((phaseId, i) => {
             const meta = PHASE_META[phaseId];
             const [from, to] = boundaries[phaseId];
-            const owner = resolvePhaseOwner(planning, phaseId, ownerName);
-            const target = resolvePhaseSignalTarget(planning, phaseId, signalDefault[phaseId]);
-            const signalLabel = resolvePhaseSignalLabel(planning, phaseId, meta.signalLabel);
+            const owner = resolvePhaseOwner(planningLayer, phaseId, ownerName);
+            const target = resolvePhaseSignalTarget(planningLayer, phaseId, signalDefault[phaseId]);
+            const signalLabel = resolvePhaseSignalLabel(planningLayer, phaseId, meta.signalLabel);
             // A restored choice from an earlier scope (paths/events since
             // changed) may not be in the current menu; keep it visible so the
             // dropdown never shows a blank selection.
@@ -1258,7 +1283,7 @@ export default function StepPlanning({
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.04 * i }}
                 className="rounded-xl border border-[#E7E0D6] bg-white p-5"
-                data-testid={`card-planning-phase-${phaseId}`}
+                data-testid={tid(`card-planning-phase-${phaseId}`)}
               >
                 <div className="flex items-center justify-between gap-3 mb-3">
                   <div className="flex items-center gap-2.5">
@@ -1273,7 +1298,7 @@ export default function StepPlanning({
                   <div className="text-right">
                     <p className="text-[8px] font-bold uppercase tracking-wide text-[#8C8C8C]">Value by end of phase</p>
                     {prize > 0 ? (
-                      <p className="font-abridge text-xl font-bold text-[#EA2C00]" data-testid={`text-planning-phase-value-${phaseId}`}>
+                      <p className="font-abridge text-xl font-bold text-[#EA2C00]" data-testid={tid(`text-planning-phase-value-${phaseId}`)}>
                         {fmtMoneyCompact(value)}
                       </p>
                     ) : (
@@ -1287,7 +1312,7 @@ export default function StepPlanning({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
                   <div>
                     <FieldLabel>Scope</FieldLabel>
-                    <p className="text-[13px] text-[#1A1A1A] font-medium" data-testid={`text-planning-phase-scope-${phaseId}`}>
+                    <p className="text-[13px] text-[#1A1A1A] font-medium" data-testid={tid(`text-planning-phase-scope-${phaseId}`)}>
                       {phaseScope[phaseId]}
                     </p>
                   </div>
@@ -1298,7 +1323,7 @@ export default function StepPlanning({
                       onChange={(e) => onChangePhaseOwner(phaseId, e.target.value)}
                       placeholder={ownerName || "Name the owner"}
                       className="h-9 w-full rounded-md border border-[#D8CFC4] bg-white px-2.5 text-[13px] text-[#1A1A1A] outline-none focus:border-[#EA2C00]"
-                      data-testid={`input-planning-phase-owner-${phaseId}`}
+                      data-testid={tid(`input-planning-phase-owner-${phaseId}`)}
                     />
                   </div>
                 </div>
@@ -1316,9 +1341,9 @@ export default function StepPlanning({
                       <Select value={signalLabel} onValueChange={(v) => onChangePhaseSignalLabel(phaseId, v)}>
                         <SelectTrigger
                           className="h-9 w-full border-[#D8CFC4] bg-white text-[12px] font-semibold text-[#1A1A1A] focus:ring-0 focus:border-[#EA2C00]"
-                          data-testid={`select-planning-phase-signal-${phaseId}`}
+                          data-testid={tid(`select-planning-phase-signal-${phaseId}`)}
                         >
-                          <SelectValue data-testid={`text-planning-phase-signal-${phaseId}`} />
+                          <SelectValue data-testid={tid(`text-planning-phase-signal-${phaseId}`)} />
                         </SelectTrigger>
                         <SelectContent>
                           {menuForPhase.map((m) => (
@@ -1336,7 +1361,7 @@ export default function StepPlanning({
                         onChange={(e) => onChangePhaseSignalTarget(phaseId, e.target.value)}
                         placeholder={signalDefault[phaseId]}
                         className="h-9 w-full rounded-md border border-[#D8CFC4] bg-white px-2.5 text-[12px] text-[#1A1A1A] outline-none focus:border-[#EA2C00]"
-                        data-testid={`input-planning-phase-signal-target-${phaseId}`}
+                        data-testid={tid(`input-planning-phase-signal-target-${phaseId}`)}
                       />
                     </div>
                   </div>
@@ -1347,76 +1372,188 @@ export default function StepPlanning({
         </div>
       </div>
 
-      {/* 4 — The monthly checkpoint rhythm, one line, ending on attainment. */}
-      <div className="rounded-xl border border-[#E7E0D6] bg-[#F4F0EA] p-5 mb-8" data-testid="card-planning-cadence">
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
-          <p className="text-[9px] font-bold uppercase tracking-wide text-[#8C8C8C]">The checkpoint rhythm</p>
-          <div className="flex items-center gap-2">
-            <label htmlFor="select-planning-cadence" className="text-[9px] font-bold uppercase tracking-wide text-[#8C8C8C]">
-              Reviewed
-            </label>
-            <Select value={planCadence} onValueChange={(v) => onChangePlanCadence(v as SignalCadence)}>
-              <SelectTrigger id="select-planning-cadence" className="h-8 w-[122px] text-xs bg-white" data-testid="select-planning-cadence">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {CADENCE_OPTIONS.map((c) => (
-                  <SelectItem key={c.value} value={c.value} className="text-xs">
-                    {c.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-        <div className="flex items-center gap-1.5 flex-wrap" data-testid="row-planning-cadence-months">
-          {Array.from({ length: targetMonth }, (_, m) => m + 1).map((m) => (
-            <div key={m} className="flex items-center gap-1.5">
-              <span className="text-[10px] font-semibold text-[#8C8C8C] whitespace-nowrap">Mo {m}</span>
-              {m < targetMonth && <span className="text-[#D8CFC4]">·</span>}
-            </div>
-          ))}
-          <span className="text-[#B4B4B4] mx-1">→</span>
-          <span className="text-[11px] font-bold text-[#EA2C00] whitespace-nowrap" data-testid="text-planning-cadence-end">
-            100% attained
-          </span>
-        </div>
-        <p className="text-[11px] text-[#8C8C8C] mt-3 leading-relaxed">
-          Checked {CADENCE_LABEL[planCadence]}. Each checkpoint asks the same thing: did the leading signal move, and is
-          attainment where the plan expected it to be by now.
-        </p>
-      </div>
+    </div>
+  );
+}
 
-      {/* 5 — Optional partner-disclosed risk. Only becomes part of the plan
-          once it is filled in; we never invent a weak link. */}
-      <div className="rounded-xl border border-dashed border-[#D8CFC4] bg-white p-5 mb-4" data-testid="card-planning-risk">
-        <FieldLabel>Anything the partner has flagged that could slow this down? (optional)</FieldLabel>
-        <input
-          value={partnerRisk}
-          onChange={(e) => onChangePartnerRisk(e.target.value)}
-          placeholder={
-            isRevenue
-              ? "e.g. the coding team is mid-transition to a new vendor until Q3"
-              : isQuality
-              ? "e.g. the wound-care nurse is out on leave until the Q3 backfill"
-              : isCapacity
-              ? "e.g. a census surge is driving overtime that charting cannot touch until the Q3 hiring class fills"
-              : isRetention
-              ? "e.g. a covering-shift policy refills the freed time until the Q3 staffing review"
-              : isEdAccess
-              ? "e.g. triage staffing is short until the Q3 hiring class fills"
-              : "e.g. new scheduling template is blocked until the EHR upgrade in Q3"
-          }
-          className="h-10 w-full rounded-md border border-[#D8CFC4] bg-white px-3 text-sm text-[#1A1A1A] outline-none focus:border-[#EA2C00]"
-          data-testid="input-planning-partner-risk"
-        />
-        {partnerRisk.trim() && (
-          <div className="mt-3 bg-[#FFF6F3] border-l-[3px] border-[#EA2C00] rounded-r-md p-3" data-testid="callout-planning-risk">
-            <p className="text-[9px] font-bold uppercase tracking-wide text-[#EA2C00] mb-1">Flagged by the partner</p>
-            <p className="text-[13px] text-[#1A1A1A] leading-relaxed">{partnerRisk.trim()}</p>
-          </div>
-        )}
+/** The plan-wide checkpoint rhythm, one line ending on 100% attained. Shown
+ * once per plan (single-goal: below the one priority block; multi: below every
+ * priority block), never per priority — the cadence is one plan-level value. */
+export function PlanningCadenceCard({
+  totalMonths,
+  planCadence,
+  onChangePlanCadence,
+}: {
+  totalMonths: number;
+  planCadence: SignalCadence;
+  onChangePlanCadence: (cadence: SignalCadence) => void;
+}) {
+  const targetMonth = totalMonths > 0 ? Math.round(totalMonths) : 9;
+  return (
+    <div className="rounded-xl border border-[#E7E0D6] bg-[#F4F0EA] p-5 mb-8" data-testid="card-planning-cadence">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+        <p className="text-[9px] font-bold uppercase tracking-wide text-[#8C8C8C]">The checkpoint rhythm</p>
+        <div className="flex items-center gap-2">
+          <label htmlFor="select-planning-cadence" className="text-[9px] font-bold uppercase tracking-wide text-[#8C8C8C]">
+            Reviewed
+          </label>
+          <Select value={planCadence} onValueChange={(v) => onChangePlanCadence(v as SignalCadence)}>
+            <SelectTrigger id="select-planning-cadence" className="h-8 w-[122px] text-xs bg-white" data-testid="select-planning-cadence">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {CADENCE_OPTIONS.map((c) => (
+                <SelectItem key={c.value} value={c.value} className="text-xs">
+                  {c.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
+      <div className="flex items-center gap-1.5 flex-wrap" data-testid="row-planning-cadence-months">
+        {Array.from({ length: targetMonth }, (_, m) => m + 1).map((m) => (
+          <div key={m} className="flex items-center gap-1.5">
+            <span className="text-[10px] font-semibold text-[#8C8C8C] whitespace-nowrap">Mo {m}</span>
+            {m < targetMonth && <span className="text-[#D8CFC4]">·</span>}
+          </div>
+        ))}
+        <span className="text-[#B4B4B4] mx-1">→</span>
+        <span className="text-[11px] font-bold text-[#EA2C00] whitespace-nowrap" data-testid="text-planning-cadence-end">
+          100% attained
+        </span>
+      </div>
+      <p className="text-[11px] text-[#8C8C8C] mt-3 leading-relaxed">
+        Checked {CADENCE_LABEL[planCadence]}. Each checkpoint asks the same thing: did the leading signal move, and is
+        attainment where the plan expected it to be by now.
+      </p>
+    </div>
+  );
+}
+
+/** A goal-flavored example for the optional partner-risk field. A multi-
+ * priority plan carries one plan-wide risk, so it uses a deliberately generic
+ * example rather than any single priority's wording. */
+export function riskPlaceholderFor(goal: PlanningGoal | null, setting: AttainSetting): string {
+  if (goal === null) return "e.g. a hiring freeze slows one of these priorities until the Q3 review";
+  if (goal === "revenue") return "e.g. the coding team is mid-transition to a new vendor until Q3";
+  if (goal === "quality") return "e.g. the wound-care nurse is out on leave until the Q3 backfill";
+  if (goal === "capacity") return "e.g. a census surge is driving overtime that charting cannot touch until the Q3 hiring class fills";
+  if (goal === "retention") return "e.g. a covering-shift policy refills the freed time until the Q3 staffing review";
+  if (goal === "access" && setting === "ed") return "e.g. triage staffing is short until the Q3 hiring class fills";
+  return "e.g. new scheduling template is blocked until the EHR upgrade in Q3";
+}
+
+/** The optional partner-disclosed risk, one per plan. Only becomes part of the
+ * plan once it is filled in; we never invent a weak link. */
+export function PlanningRiskCard({
+  partnerRisk,
+  onChangePartnerRisk,
+  placeholder,
+}: {
+  partnerRisk: string;
+  onChangePartnerRisk: (text: string) => void;
+  placeholder: string;
+}) {
+  return (
+    <div className="rounded-xl border border-dashed border-[#D8CFC4] bg-white p-5 mb-4" data-testid="card-planning-risk">
+      <FieldLabel>Anything the partner has flagged that could slow this down? (optional)</FieldLabel>
+      <input
+        value={partnerRisk}
+        onChange={(e) => onChangePartnerRisk(e.target.value)}
+        placeholder={placeholder}
+        className="h-10 w-full rounded-md border border-[#D8CFC4] bg-white px-3 text-sm text-[#1A1A1A] outline-none focus:border-[#EA2C00]"
+        data-testid="input-planning-partner-risk"
+      />
+      {partnerRisk.trim() && (
+        <div className="mt-3 bg-[#FFF6F3] border-l-[3px] border-[#EA2C00] rounded-r-md p-3" data-testid="callout-planning-risk">
+          <p className="text-[9px] font-bold uppercase tracking-wide text-[#EA2C00] mb-1">Flagged by the partner</p>
+          <p className="text-[13px] text-[#1A1A1A] leading-relaxed">{partnerRisk.trim()}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Single-goal Planning: the step eyebrow/title, one priority block (with its
+ * teaching intro and its editable exec owner in the promise card), then the
+ * one plan-wide cadence and optional risk. The multi-priority view
+ * (StepMultiPlanning) reuses the exact same PlanningPriorityBlock, so the two
+ * can never drift. */
+interface StepPlanningProps {
+  setting: AttainSetting;
+  baseline: AttainBaseline;
+  goal: PlanningGoal;
+  values: LeverValues;
+  combined: MultiGoalContributionsResult | null;
+  goalOwner: GoalOwner;
+  onChangeGoalOwner: (patch: Partial<GoalOwner>) => void;
+  planning: AttainPlanning;
+  onChangePhaseOwner: (phase: PlanPhaseId, name: string) => void;
+  onChangePhaseSignalTarget: (phase: PlanPhaseId, target: string) => void;
+  onChangePhaseSignalLabel: (phase: PlanPhaseId, label: string) => void;
+  onChangePartnerRisk: (text: string) => void;
+  planCadence: SignalCadence;
+  onChangePlanCadence: (cadence: SignalCadence) => void;
+  totalMonths: number;
+  stepNumber: number;
+}
+
+export default function StepPlanning({
+  setting,
+  baseline,
+  goal,
+  values,
+  combined,
+  goalOwner,
+  onChangeGoalOwner,
+  planning,
+  onChangePhaseOwner,
+  onChangePhaseSignalTarget,
+  onChangePhaseSignalLabel,
+  onChangePartnerRisk,
+  planCadence,
+  onChangePlanCadence,
+  totalMonths,
+  stepNumber,
+}: StepPlanningProps) {
+  return (
+    <div>
+      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
+        <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-3" data-testid="text-step-eyebrow">
+          Step {stepNumber} · The plan to attain it
+        </p>
+        <h1 className="text-2xl md:text-4xl font-bold text-black mb-3 font-abridge uppercase tracking-tight" data-testid="text-step-title">
+          Planning
+        </h1>
+      </motion.div>
+
+      <PlanningPriorityBlock
+        setting={setting}
+        baseline={baseline}
+        goal={goal}
+        values={values}
+        combined={combined}
+        crossGoalShareMultiplier={1}
+        planningLayer={planning}
+        ownerName={goalOwner.name}
+        onChangePhaseOwner={onChangePhaseOwner}
+        onChangePhaseSignalTarget={onChangePhaseSignalTarget}
+        onChangePhaseSignalLabel={onChangePhaseSignalLabel}
+        totalMonths={totalMonths}
+        showTeach
+        showOwnerInputs
+        goalOwner={goalOwner}
+        onChangeGoalOwner={onChangeGoalOwner}
+      />
+
+      <PlanningCadenceCard totalMonths={totalMonths} planCadence={planCadence} onChangePlanCadence={onChangePlanCadence} />
+
+      <PlanningRiskCard
+        partnerRisk={planning.partnerRisk ?? ""}
+        onChangePartnerRisk={onChangePartnerRisk}
+        placeholder={riskPlaceholderFor(goal, setting)}
+      />
     </div>
   );
 }

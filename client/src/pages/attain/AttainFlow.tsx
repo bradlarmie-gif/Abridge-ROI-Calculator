@@ -13,6 +13,7 @@ import StepCommit, {
   type SignalCadence,
 } from "./steps/StepCommit";
 import StepPlanning from "./steps/StepPlanning";
+import StepMultiPlanning from "./steps/StepMultiPlanning";
 import StepAttainment from "./steps/StepAttainment";
 import AttainLivePanel from "./AttainLivePanel";
 import {
@@ -481,6 +482,39 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
 
   const handleChangePartnerRisk = useCallback((text: string) => {
     setPlanning((prev) => ({ ...prev, partnerRisk: text }));
+  }, []);
+
+  // Multi-priority Planning edits — the same three per-phase overrides, but
+  // keyed per priority in `planning.byGoal[goal]` so two priorities' phase
+  // choices never collide. Additive and backward-compatible: an untouched
+  // priority simply has no `byGoal` entry and falls back to its derived
+  // defaults (see attainPlanning.ts's `planningLayerFor` + the resolvers).
+  const handleChangePhaseOwnerForGoal = useCallback((goal: GoalId, phase: PlanPhaseId, name: string) => {
+    setPlanning((prev) => {
+      const layer = prev.byGoal?.[goal] ?? {};
+      return { ...prev, byGoal: { ...prev.byGoal, [goal]: { ...layer, phaseOwners: { ...layer.phaseOwners, [phase]: name } } } };
+    });
+  }, []);
+
+  const handleChangePhaseSignalTargetForGoal = useCallback((goal: GoalId, phase: PlanPhaseId, target: string) => {
+    setPlanning((prev) => {
+      const layer = prev.byGoal?.[goal] ?? {};
+      return { ...prev, byGoal: { ...prev.byGoal, [goal]: { ...layer, phaseSignalTargets: { ...layer.phaseSignalTargets, [phase]: target } } } };
+    });
+  }, []);
+
+  const handleChangePhaseSignalLabelForGoal = useCallback((goal: GoalId, phase: PlanPhaseId, label: string) => {
+    setPlanning((prev) => {
+      const layer = prev.byGoal?.[goal] ?? {};
+      return { ...prev, byGoal: { ...prev.byGoal, [goal]: { ...layer, phaseSignalLabels: { ...layer.phaseSignalLabels, [phase]: label } } } };
+    });
+  }, []);
+
+  // The one accountable exec owner for a MULTI-priority plan, shown once in the
+  // combined header. Stored on `planning.planExecOwner` (additive), separate
+  // from the per-goal `goalOwnerByPriority` a single-goal plan uses.
+  const handleChangePlanExecOwner = useCallback((patch: Partial<GoalOwner>) => {
+    setPlanning((prev) => ({ ...prev, planExecOwner: { name: "", title: "", ...prev.planExecOwner, ...patch } }));
   }, []);
 
   const handleChangeGoalOwner = useCallback((goal: GoalId, patch: Partial<GoalOwner>) => {
@@ -1019,22 +1053,29 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
               />
             )}
 
-            {step === "commit" && !isPhasedPlan && goals.length > 0 && (
-              <StepCommit
+            {/* Every MULTI-priority plan (2+ selected goals) now renders the
+                same phased step-down Planning, once per priority, instead of
+                the old dense StepCommit form. The per-priority block is shared
+                with the single-goal StepPlanning above, so the two can never
+                diverge. StepCommit is kept only for its exported types/
+                constants (Commitment, GoalOwner, cadence), no longer rendered. */}
+            {step === "commit" && !isPhasedPlan && goals.length > 1 && state.setting && (
+              <StepMultiPlanning
+                setting={state.setting}
+                baseline={baseline}
                 goals={goals}
-                setting={state.setting ?? "outpatient"}
                 valuesByGoal={valuesByGoal}
                 combined={combined}
-                commitments={commitments}
-                onChangeCommitment={handleChangeCommitment}
-                onChangeRequiredSignal={handleChangeRequiredSignal}
-                onAddOptionalSignal={handleAddOptionalSignal}
-                onRemoveOptionalSignal={handleRemoveOptionalSignal}
-                onChangeOptionalSignal={handleChangeOptionalSignal}
-                goalOwnerByPriority={goalOwnerByPriority}
-                onChangeGoalOwner={handleChangeGoalOwner}
+                planning={planning}
+                onChangePhaseOwner={handleChangePhaseOwnerForGoal}
+                onChangePhaseSignalTarget={handleChangePhaseSignalTargetForGoal}
+                onChangePhaseSignalLabel={handleChangePhaseSignalLabelForGoal}
+                onChangePlanExecOwner={handleChangePlanExecOwner}
+                onChangePartnerRisk={handleChangePartnerRisk}
                 planCadence={planCadence}
                 onChangePlanCadence={handleChangePlanCadence}
+                freedTimeSplit={freedTimeSplit}
+                totalMonths={state.totalMonths}
                 stepNumber={stepIndex + 1}
               />
             )}

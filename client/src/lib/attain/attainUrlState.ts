@@ -137,15 +137,31 @@ function isWellFormedCommitment(v: unknown): v is Commitment {
 
 /** The Planning step's editable layer — every field optional, each a plain
  * string map or a single string, so a partial or absent blob is valid; only
- * an actively wrong-typed value fails. */
+ * an actively wrong-typed value fails. Multi-priority plans add `planExecOwner`
+ * (one plan-wide owner) and `byGoal` (each priority's own phase layer); both
+ * are additive and only shape-checked when present, so an older single-goal
+ * link that never carried them still decodes. */
 function isWellFormedPlanning(v: unknown): v is AttainPlanning {
   if (!isPlainObject(v)) return false;
   const stringRecordOk = (r: unknown): boolean =>
     r === undefined || (isPlainObject(r) && Object.values(r).every((x) => typeof x === "string"));
+  const phaseLayerOk = (r: unknown): boolean => {
+    if (r === undefined) return true;
+    if (!isPlainObject(r)) return false;
+    return stringRecordOk(r.phaseOwners) && stringRecordOk(r.phaseSignalLabels) && stringRecordOk(r.phaseSignalTargets);
+  };
   if (!stringRecordOk(v.phaseOwners)) return false;
   if (!stringRecordOk(v.phaseSignalLabels)) return false;
   if (!stringRecordOk(v.phaseSignalTargets)) return false;
   if (v.partnerRisk !== undefined && typeof v.partnerRisk !== "string") return false;
+  if (v.planExecOwner !== undefined) {
+    if (!isPlainObject(v.planExecOwner) || typeof v.planExecOwner.name !== "string" || typeof v.planExecOwner.title !== "string") {
+      return false;
+    }
+  }
+  if (v.byGoal !== undefined) {
+    if (!isPlainObject(v.byGoal) || !Object.values(v.byGoal).every(phaseLayerOk)) return false;
+  }
   return true;
 }
 
