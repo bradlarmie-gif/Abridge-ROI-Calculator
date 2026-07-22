@@ -140,6 +140,12 @@ export default function StepBuildCase({
 
   const movedCount = levers.filter((l) => isMoved(values[l.id], l.realityStart)).length;
 
+  // Outpatient access is the ladder exemplar: it assembles the exact
+  // step-down story Planning reads back (see AccessDecisionChain +
+  // accessLadder.ts), so it drops the generic "N of M decisions moved"
+  // framing for a single crisp teaching line about the ladder.
+  const isAccessLadder = goal === "access" && setting === "outpatient";
+
   return (
     <div>
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
@@ -150,7 +156,9 @@ export default function StepBuildCase({
           Build your strategy
         </h1>
         <p className="text-[15px] text-[#666666] leading-relaxed max-w-[620px]" data-testid="text-step-teach">
-          These decisions start from where you are today, move the ones you're ready to commit to.
+          {isAccessLadder
+            ? "Assemble the ladder from the top down. One number starts it, each rung multiplies, and demand decides how much converts."
+            : "These decisions start from where you are today, move the ones you're ready to commit to."}
         </p>
       </motion.div>
 
@@ -181,8 +189,9 @@ export default function StepBuildCase({
           </h2>
         </div>
         <p className="text-[13px] text-white/50 mt-2" data-testid="text-attain-buildcase-strategy-progress">
-          {movedCount} of {levers.length} decisions moved. Move the ones your organization is actually ready to
-          commit to, the rest can wait for a later plan.
+          {isAccessLadder
+            ? "Set each rung to what your organization is actually ready to commit to. Leave a rung where it is and it simply stays out of the plan."
+            : `${movedCount} of ${levers.length} decisions moved. Move the ones your organization is actually ready to commit to, the rest can wait for a later plan.`}
         </p>
       </motion.div>
 

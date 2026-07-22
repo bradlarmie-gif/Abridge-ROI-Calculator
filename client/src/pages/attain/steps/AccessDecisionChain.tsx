@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { HelpCircle } from "lucide-react";
+import { HelpCircle, ArrowDown } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -11,12 +11,12 @@ import {
   computeAccessChain,
   marginPerVisitFor,
   blendedMarginPerVisit,
-  bindingPlainPhrase,
   DEFAULT_MINUTES_SAVED_PER_NOTE,
   DEFAULT_VISIT_LENGTH_MIN,
   DEFAULT_NO_SHOW_RATE_PCT,
 } from "@/lib/attain/attainAccess";
 import type { AttainSetting } from "@/lib/attain/attainTypes";
+import { fmtInt, fmtMoneyCompact, deriveAccessLadder, CapacityDemandGate } from "./accessLadder";
 
 function asLines(raw: number | string[] | undefined): string[] {
   return Array.isArray(raw) ? raw : [];
@@ -25,18 +25,7 @@ function asNum(raw: number | string[] | undefined): number {
   return typeof raw === "number" ? raw : 0;
 }
 
-function fmtInt(n: number): string {
-  return Math.round(n).toLocaleString();
-}
-function fmtMoneyCompact(n: number): string {
-  const sign = n < 0 ? "-" : "";
-  const abs = Math.abs(n);
-  if (abs >= 1_000_000) return `${sign}$${(abs / 1_000_000).toFixed(abs % 1_000_000 === 0 ? 0 : 1)}M`;
-  if (abs >= 1_000) return `${sign}$${Math.round(abs / 1_000)}K`;
-  return `${sign}$${Math.round(abs)}`;
-}
-
-/** D4's four demand sources, in the order they're shown - each an optional,
+/** D4's demand sources, in the order they're shown - each an optional,
  * addable source of real, countable patients per year (backlog is a
  * one-time count; the rest are annual). Kept as plain data so the
  * add/remove row renderer below is one small loop, not four near-identical
@@ -93,47 +82,45 @@ interface AccessDecisionChainProps {
   values: LeverValues;
   onChangeValue: (leverId: string, value: number | string[]) => void;
   /** This priority's realization/attribution rate, 0-100, default 100 - set
-   * on Build the case's own "Realization rate" control (StepBuildCase.tsx).
-   * Scales only the D5 payoff shown below, via the same `realizedValue`/
-   * `formulaWithRealization` helpers attainLevers.ts's `applyRealization`
-   * uses, so this live preview can never disagree with the real figure. */
+   * in the side panel's "Attributed to this plan" control. Scales only the
+   * derived prize shown below, via the same `realizedValue`/
+   * `formulaWithRealization` helpers `applyRealization` uses, so this live
+   * preview can never disagree with the real figure. */
   realizationPct: number;
   /** The access/retention shared-freed-hour split (0-1), 1 when Retention is
-   * not also selected - see StepBuildCase.tsx's `crossGoalShareMultiplier`
-   * and attainLevers.ts's `computeMultiGoalContributions`. MUST be passed
-   * into `computeAccessChain` below so this D5 live preview reads the exact
-   * same split-adjusted dollar as "This priority's worth," the side panel,
-   * Commit, and the PDF - the split previously only applied to those other
-   * surfaces, so this page could show two different dollars for one
-   * priority when Access and Retention were both selected. */
+   * not also selected. MUST be passed into `computeAccessChain` below so the
+   * derived prize reads the exact same split-adjusted dollar as the side
+   * panel, Commit, and the PDF. */
   crossGoalShareMultiplier: number;
 }
 
-/** A card shell shared by every D1-D5 step: eyebrow + title, a light rule,
- * then whatever the step needs. Kept local since these five cards share
- * nothing with the generic lever card (that renderer is bypassed for
- * access entirely - see StepBuildCase.tsx). */
-function DecisionCard({
-  step,
+/** A ladder rung shell: an eyebrow, a title, a teaching line, then the rung's
+ * editable controls. The first domino carries the same coral anchor
+ * treatment Planning's read-only spine uses, so the two pages open on the
+ * identical first move. */
+function LadderRung({
+  eyebrow,
   title,
   help,
   testid,
+  anchor,
   children,
 }: {
-  step: string;
+  eyebrow: string;
   title: string;
   help: string;
   testid: string;
+  anchor?: boolean;
   children: React.ReactNode;
 }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-xl border border-[#E7E0D6] bg-white p-7 mb-6"
+      className={`rounded-xl border p-7 ${anchor ? "bg-[#FFF6F3] border-[#EA2C00]" : "bg-white border-[#E7E0D6]"}`}
       data-testid={testid}
     >
-      <p className="text-[11px] font-bold uppercase tracking-[2px] text-[#EA2C00] mb-1.5">{step}</p>
+      <p className="text-[11px] font-bold uppercase tracking-[2px] text-[#EA2C00] mb-1.5">{eyebrow}</p>
       <h3 className="text-lg font-bold text-[#1A1A1A] mb-2 font-abridge">{title}</h3>
       <p className="text-[15px] text-[#8C8C8C] leading-relaxed mb-5 max-w-[620px]">{help}</p>
       {children}
@@ -141,8 +128,19 @@ function DecisionCard({
   );
 }
 
+/** The down-arrow that visually links one rung to the next, the same spine
+ * connector Planning draws between its read-only rungs. */
+function Connector() {
+  return (
+    <div className="flex justify-center py-1.5">
+      <ArrowDown className="w-4 h-4 text-[#B4B4B4]" />
+    </div>
+  );
+}
+
 /** A quiet, count-only output row - visits or providers, NEVER a dollar
- * figure. D1-D4 all use this; D5 is the one place a dollar appears. */
+ * figure. The multiplying rungs use this; the prize is the one place a dollar
+ * appears. */
 function CountOutput({ label, value, unit, testid }: { label: string; value: string; unit: string; testid: string }) {
   return (
     <div className="bg-[#F8F5F1] rounded-lg px-4 py-3 flex items-baseline justify-between gap-3" data-testid={testid}>
@@ -154,44 +152,8 @@ function CountOutput({ label, value, unit, testid }: { label: string; value: str
   );
 }
 
-/** One stat in the D4 plain-language result block - capacity, demand, or
- * realized, side by side so an exec reads all three at a glance instead of
- * two separately-labeled count rows. Never a dollar figure (D1-D4 rule);
- * `emphasize` marks the realized figure, the actual answer to "how many
- * visits do we get." */
-function ResultStat({
-  label,
-  hint,
-  value,
-  unit,
-  testid,
-  emphasize,
-}: {
-  label: string;
-  hint?: string;
-  value: string;
-  unit: string;
-  testid: string;
-  emphasize?: boolean;
-}) {
-  return (
-    <div>
-      <p className="text-[11px] text-[#8C8C8C] mb-1 leading-snug">{label}</p>
-      <p
-        className={`text-xl font-bold font-abridge ${emphasize ? "text-[#EA2C00]" : "text-[#1A1A1A]"}`}
-        data-testid={testid}
-      >
-        {value} <span className="text-xs font-normal text-[#8C8C8C]">{unit}</span>
-      </p>
-      {hint && <p className="text-[10.5px] text-[#B4B4B4] mt-0.5">{hint}</p>}
-    </div>
-  );
-}
-
 /** A small, quiet info tooltip for a term next to a label - hover/tap only,
- * never inline clutter. Reuses the house `Tooltip` primitive (the same one
- * `TermTooltip` and BaselineSetup's field labels build on) rather than a
- * bespoke popover. */
+ * never inline clutter. Reuses the house `Tooltip` primitive. */
 function InfoTip({ text, testid }: { text: string; testid: string }) {
   return (
     <Tooltip delayDuration={200}>
@@ -210,8 +172,8 @@ function InfoTip({ text, testid }: { text: string; testid: string }) {
   );
 }
 
-/** A field label with an optional info tooltip, so every D-step label stays
- * the same shape whether or not it carries a definition. */
+/** A field label with an optional info tooltip, so every rung label stays the
+ * same shape whether or not it carries a definition. */
 function FieldLabel({ children, tip, testid }: { children: React.ReactNode; tip?: string; testid?: string }) {
   return (
     <label className="text-sm font-medium text-[#3A3A3A] mb-2 flex items-center gap-1.5">
@@ -233,26 +195,28 @@ function MathBox({ formula, testid }: { formula: string; testid: string }) {
 }
 
 /**
- * Build the case, ACCESS - a bespoke ordered decision chain, not the
- * generic flat lever renderer every other goal still uses. Money is
- * volume x margin, and volume itself is MIN(capacity, demand), so no
- * dollar figure can exist until scope (D1), margin (D2), capacity (D3),
- * AND demand (D4) are all real - D1-D4 below show visits and providers,
- * never a dollar. D5 is the one place a dollar first appears, derived from
- * the other four, never invented.
+ * Build the case, ACCESS - the assembled, editable version of the SAME
+ * step-down ladder Planning shows read-only on the hook (see accessLadder.ts,
+ * the one source of the order, the first domino, the gate, and the numbers).
+ * Top to bottom: the first domino (minutes saved per note, the target we
+ * prove first), then who is in scope, what a visit is worth, the directed
+ * share that turns freed time into capacity, THE GATE (real countable demand,
+ * the ceiling on how much converts), and the derived prize. Money is
+ * volume x margin and volume is MIN(capacity, demand), so no dollar can exist
+ * until every rung above the gate is real - the running total lives in the
+ * side panel, building live as each rung is set.
  */
 export default function AccessDecisionChain({ setting, baseline, values, onChangeValue, realizationPct, crossGoalShareMultiplier }: AccessDecisionChainProps) {
   const [customLineDraft, setCustomLineDraft] = useState("");
 
-  // D4's pick-what-applies state: which demand sources are currently
-  // expanded for editing. Seeded once from whatever already has a nonzero
-  // count (so a resumed plan reopens exactly what the partner already
-  // filled in), plus backlog always starts open - patients already waiting
-  // is the single most universal source, so it's prompted rather than
-  // hidden behind an extra click. Nothing else opens itself; a partner has
-  // to actively add same-day, no-show, or new-referral demand, so it's
-  // never ambiguous whether zero of them, one of them, or all of them is
-  // the expected amount to fill in.
+  // D4's pick-what-applies state: which demand sources are currently expanded
+  // for editing. Seeded once from whatever already has a nonzero count (so a
+  // resumed plan reopens exactly what the partner already filled in), plus
+  // backlog always starts open - patients already waiting is the single most
+  // universal source, so it is prompted rather than hidden behind an extra
+  // click. Nothing else opens itself; a partner has to actively add same-day,
+  // no-show, or new-referral demand, so it is never ambiguous whether zero,
+  // one, or all of them is the expected amount to fill in.
   const [addedSources, setAddedSources] = useState<Set<DemandSourceKey>>(() => {
     const initial = new Set<DemandSourceKey>(["backlog"]);
     for (const source of DEMAND_SOURCES) {
@@ -266,9 +230,9 @@ export default function AccessDecisionChain({ setting, baseline, values, onChang
       const next = new Set(prev);
       if (next.has(source.key)) {
         next.delete(source.key);
-        // Removing a source clears its count too - a collapsed source
-        // must actually stop counting toward the demand ceiling, not just
-        // hide while still contributing a stale number underneath.
+        // Removing a source clears its count too - a collapsed source must
+        // actually stop counting toward the demand ceiling, not just hide
+        // while still contributing a stale number underneath.
         onChangeValue(source.valueKey, 0);
       } else {
         next.add(source.key);
@@ -283,9 +247,7 @@ export default function AccessDecisionChain({ setting, baseline, values, onChang
   const totalProviders = Math.max(0, Math.round(baseline.providers ?? 0));
   // Under Enterprise, default the requested count to every Starting-point
   // provider as a convenience - NOT a lock. Enterprise means "not broken out
-  // by a specific service line," not "every single provider is in scope";
-  // a partner running access enterprise-wide across a subset of providers
-  // is a real, valid case this field has to allow.
+  // by a specific service line," not "every single provider is in scope."
   const requestedProviders = enterprise && asNum(values.accessProviders) <= 0
     ? totalProviders
     : asNum(values.accessProviders);
@@ -296,6 +258,10 @@ export default function AccessDecisionChain({ setting, baseline, values, onChang
   const payoffFormulaDisplay = payoff.value > 0
     ? formulaWithRealization(formulas.payoff, realizationPct, realizedPayoffValue)
     : formulas.payoff;
+
+  // The same shared ladder derivation Planning consumes, so the gate triad
+  // and the prize read the identical numbers on both pages.
+  const ladder = deriveAccessLadder(chain, { realizedVisits: payoff.realizedVisits, prize: realizedPayoffValue });
 
   const activeLines = !enterprise && selectedLines.length > 0 ? selectedLines : [];
 
@@ -315,16 +281,50 @@ export default function AccessDecisionChain({ setting, baseline, values, onChang
 
   return (
     <div data-testid="section-attain-access-chain">
-      <DecisionCard
-        step="D1"
-        title="Who you point at access"
-        help="Committing a line and a provider count puts real capacity in scope. There's no dollar figure yet, margin and volume come next."
+      {/* THE FIRST DOMINO. Minutes saved per note is elevated to the top and
+          framed as the target we prove first, not a number the partner
+          already knows. Every rung below multiplies on top of it. Same anchor
+          treatment Planning's read-only spine opens on. */}
+      <LadderRung
+        anchor
+        eyebrow="The first domino"
+        title="Minutes saved per note"
+        help="This is the one number we prove first. Ambient documentation gives each provider back a few minutes on every note, and every rung below multiplies on top of it. Start conservative; raise it once you have your own measured result."
         testid="card-access-d1"
       >
-        {/* Enterprise sits right in the line-selection row, as the
-            not-broken-out-by-line alternative to picking specific lines -
-            not floating off beside the Add button, where it read as an
-            unrelated setting. */}
+        <div className="max-w-[220px]">
+          <FieldLabel
+            tip="A planning assumption for this priority, not yet a measured result. Benchmark: ambient typically saves ~2 to 4 minutes per note - start conservative and raise it once you have your own results."
+            testid="tooltip-access-minutes-saved"
+          >
+            Target: minutes saved per note
+          </FieldLabel>
+          <div className="relative">
+            <NumberField
+              value={asNum(values.accessMinutesSaved) > 0 ? asNum(values.accessMinutesSaved) : DEFAULT_MINUTES_SAVED_PER_NOTE}
+              onValueChange={(v) => onChangeValue("accessMinutesSaved", v)}
+              min={0}
+              max={60}
+              decimal={false}
+              className="h-11 w-full rounded-md border border-[#E5E5E5] bg-white px-3 pr-16 text-sm"
+              data-testid="input-access-minutes-saved"
+            />
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8C8C8C] text-xs pointer-events-none">min / note</span>
+          </div>
+        </div>
+      </LadderRung>
+
+      <Connector />
+
+      {/* Rung 1: scope. Who is pointed at access, and how many. The
+          enterprise-wide alternative lives right in the line row, not floating
+          off as an unrelated setting. */}
+      <LadderRung
+        eyebrow="Rung 1 · Scope"
+        title="Who you point at access"
+        help="Pick the service lines (or go enterprise-wide) and the number of providers converting freed time into access. This is the scope every rung below is built from. Still no dollar figure; margin and volume come next."
+        testid="card-access-d2"
+      >
         <div className="flex flex-wrap items-center gap-2 mb-3">
           {presetLines.map((line) => {
             const active = selectedLines.includes(line);
@@ -420,13 +420,16 @@ export default function AccessDecisionChain({ setting, baseline, values, onChang
           unit="providers"
           testid="text-access-d1-output"
         />
-      </DecisionCard>
+      </LadderRung>
 
-      <DecisionCard
-        step="D2"
+      <Connector />
+
+      {/* Rung 2: what a visit is worth. Contribution margin, per line. */}
+      <LadderRung
+        eyebrow="Rung 2 · Worth"
         title="What a visit is worth"
-        help="Contribution margin, not charges. Cardiology and primary care are not worth the same visit, so price each line you selected on its own. Still no dollar total, volume comes next."
-        testid="card-access-d2"
+        help="Contribution margin, not charges. Cardiology and primary care are not worth the same visit, so price each line you selected on its own. Still no dollar total; volume comes next."
+        testid="card-access-d3"
       >
         {activeLines.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -469,67 +472,48 @@ export default function AccessDecisionChain({ setting, baseline, values, onChang
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8C8C8C] text-xs pointer-events-none">/visit</span>
             </div>
             <p className="text-[11px] text-[#8C8C8C] mt-1">
-              {enterprise ? "Enterprise uses one blended rate across every line." : "Pick a line above in D1 to price it individually."}
+              {enterprise ? "Enterprise uses one blended rate across every line." : "Pick a line above to price it individually."}
             </p>
           </div>
         )}
-      </DecisionCard>
+      </LadderRung>
 
-      <DecisionCard
-        step="D3"
-        title="Convert freed time to capacity"
-        help="Freed documentation time is the only thing that creates new capacity here. A share of it is committed to the schedule; the rest stays protected relief. Output is in visits, still no dollars."
-        testid="card-access-d3"
+      <Connector />
+
+      {/* Rung 3: turn freed time into capacity. Freed hours from the first
+          domino, the share directed to the schedule, and the visit length
+          together set new capacity. Freed time is the only source. */}
+      <LadderRung
+        eyebrow="Rung 3 · Capacity"
+        title="Turn freed time into capacity"
+        help="The freed time from the first domino becomes new visits only where you direct it to the schedule instead of protected relief. A shorter visit turns the same freed hours into more visits. Output is in visits, still no dollars."
+        testid="card-access-d4"
       >
         <div className="flex flex-col lg:flex-row lg:items-start gap-6 lg:gap-10 mb-4">
-          <div className="flex gap-4 shrink-0">
-            <div className="w-[150px]">
-              <FieldLabel
-                tip="A planning assumption for this priority, not yet a measured result. Benchmark: ambient typically saves ~2 to 4 minutes per note - start conservative and raise it once you have your own results."
-                testid="tooltip-access-minutes-saved"
-              >
-                Target: minutes saved per note
-              </FieldLabel>
-              <NumberField
-                value={asNum(values.accessMinutesSaved) > 0 ? asNum(values.accessMinutesSaved) : DEFAULT_MINUTES_SAVED_PER_NOTE}
-                onValueChange={(v) => onChangeValue("accessMinutesSaved", v)}
-                min={0}
-                max={60}
-                decimal={false}
-                className="h-11 w-full rounded-md border border-[#E5E5E5] bg-white px-3 text-sm"
-                data-testid="input-access-minutes-saved"
-              />
-            </div>
-            <div className="w-[170px]">
-              <FieldLabel
-                tip="The average length of one visit, in minutes. A shorter visit converts the same freed hours into more visits, so this directly sets how the freed time turns into capacity."
-                testid="tooltip-access-visit-length"
-              >
-                Average visit length (minutes)
-              </FieldLabel>
-              <NumberField
-                value={asNum(values.accessVisitLength) > 0 ? asNum(values.accessVisitLength) : DEFAULT_VISIT_LENGTH_MIN}
-                onValueChange={(v) => onChangeValue("accessVisitLength", v)}
-                min={1}
-                max={180}
-                decimal={false}
-                className="h-11 w-full rounded-md border border-[#E5E5E5] bg-white px-3 text-sm"
-                data-testid="input-access-visit-length"
-              />
-            </div>
+          <div className="w-[170px] shrink-0">
+            <FieldLabel
+              tip="The average length of one visit, in minutes. A shorter visit converts the same freed hours into more visits, so this directly sets how the freed time turns into capacity."
+              testid="tooltip-access-visit-length"
+            >
+              Average visit length (minutes)
+            </FieldLabel>
+            <NumberField
+              value={asNum(values.accessVisitLength) > 0 ? asNum(values.accessVisitLength) : DEFAULT_VISIT_LENGTH_MIN}
+              onValueChange={(v) => onChangeValue("accessVisitLength", v)}
+              min={1}
+              max={180}
+              decimal={false}
+              className="h-11 w-full rounded-md border border-[#E5E5E5] bg-white px-3 text-sm"
+              data-testid="input-access-visit-length"
+            />
           </div>
 
-          {/* The slider that actually converts freed time into capacity gets
-              the rest of the row - previously it sat in its own full-width
-              block below the two compact inputs, leaving a wide dead gap to
-              their right. Giving it flex-1 here uses that same width instead
-              of stacking everything hard-left. */}
           <div className="flex-1 min-w-[220px]">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm text-[#8C8C8C] flex items-center gap-1.5">
                 Share of freed time directed to access (vs relief)
                 <InfoTip
-                  text="The portion of the time Abridge frees up that gets committed to opening new appointment slots, instead of staying as protected relief for the provider. This is the one decision that turns freed time into capacity."
+                  text="The portion of the time Abridge frees up that gets committed to opening new appointment slots, instead of staying as protected relief for the provider. This is the one decision that turns freed time into new visits."
                   testid="tooltip-access-freed-share"
                 />
               </span>
@@ -558,16 +542,21 @@ export default function AccessDecisionChain({ setting, baseline, values, onChang
         />
         <MathBox formula={formulas.capacity} testid="text-access-d3-formula" />
         <p className="text-[11px] text-[#8C8C8C] mt-2">
-          Visits priced at a ~{capacity.visitLengthMinutes} minute visit length. There is no second capacity
-          mechanism, freed time is the only source.
+          Priced at a ~{capacity.visitLengthMinutes} minute visit. Freed time is the only source of new visits here.
         </p>
-      </DecisionCard>
+      </LadderRung>
 
-      <DecisionCard
-        step="D4"
-        title="Where the demand comes from"
-        help="Demand is a ceiling, not a percent. Every source below is a real, countable number of patients per year (backlog counts once, the rest are annual). Add only the ones you actually have - filling in all four, one, or none is equally valid."
-        testid="card-access-d4"
+      <Connector />
+
+      {/* THE GATE. Demand is a ceiling, not a percent. Real countable
+          sources; filling all, one, or none is valid. Whatever demand is
+          waiting caps how much of the capacity above actually converts. Same
+          gate framing and triad Planning shows read-only. */}
+      <LadderRung
+        eyebrow="The gate"
+        title="Demand decides how much converts"
+        help="Capacity only turns into visits where there are real patients to fill it. Every source below is a countable number of patients (backlog counts once, the rest are annual), never a percent of your schedule. Add only the ones you actually have; filling all, one, or none is equally valid."
+        testid="card-access-d5"
       >
         <div className="rounded-lg border border-[#E7E0D6] divide-y divide-[#E7E0D6] overflow-hidden mb-5">
           {DEMAND_SOURCES.map((source) => {
@@ -671,62 +660,52 @@ export default function AccessDecisionChain({ setting, baseline, values, onChang
           })}
         </div>
 
-        <div className="rounded-lg bg-[#F8F5F1] p-4" data-testid="panel-access-d4-result">
-          <p className="text-[10px] font-bold uppercase tracking-wide text-[#8C8C8C] mb-3">The result</p>
-          <div className="grid grid-cols-3 gap-3 mb-4">
-            <ResultStat
-              label="Capacity you created"
-              hint="From D3"
-              value={fmtInt(capacity.capacityVisits)}
-              unit="visits/yr"
-              testid="text-access-d4-capacity"
-            />
-            <ResultStat
-              label="Demand available to fill it"
-              hint="Backlog counted once, the rest per year"
-              value={fmtInt(demand.demandCeiling)}
-              unit="visits"
-              testid="text-access-d4-demand-output"
-            />
-            <ResultStat
-              label="Realized visits"
-              hint="The smaller of the two"
-              value={fmtInt(payoff.realizedVisits)}
-              unit="visits/yr"
-              emphasize
-              testid="text-access-d4-realized-output"
-            />
-          </div>
-          <p className="text-[13.5px] text-[#1A1A1A] font-semibold flex items-center gap-1.5" data-testid="text-access-d4-binding">
-            {bindingPlainPhrase(payoff.binding)}
-            <InfoTip
-              text="Realized visits can never be more than either side. An open slot with nobody to fill it is worth nothing, and demand your schedule cannot yet absorb doesn't turn into a visit either - whichever number above is smaller sets the ceiling."
-              testid="tooltip-access-d4-binding"
-            />
-          </p>
-        </div>
+        {/* The gate itself: capacity meets demand, realized is the smaller of
+            the two. Rendered from the SHARED ladder so this triad is
+            byte-for-byte the same the partner sees on Planning. The rung
+            eyebrow already says "The gate," so the banner is off here. */}
+        <CapacityDemandGate
+          showHeader={false}
+          capacityVisits={capacity.capacityVisits}
+          demandCeiling={demand.demandCeiling}
+          realizedVisits={ladder.realizedVisits}
+          binding={ladder.binding}
+          bothSet={capacity.capacityVisits > 0 && demand.demandCeiling > 0}
+          emptyHint={
+            capacity.capacityVisits <= 0
+              ? "Direct some freed time to access in Rung 3 to open capacity, then add your demand above."
+              : "Add your backlog and referral demand above to see how much of the capacity converts."
+          }
+        />
         <MathBox formula={formulas.demand} testid="text-access-d4-formula" />
-      </DecisionCard>
+      </LadderRung>
 
-      {/* D5 used to be a full-bleed dark hero card - the exact dollar the
-          side panel's "Plan so far" already shows, stranded at the bottom
-          of the page. It's now a quiet inline line, same card shell as
-          D1-D4, so the panel stays the one place that total actually
-          lives. */}
-      <DecisionCard
-        step="D5"
-        title="The payoff"
-        help="Realized visits x margin per visit, the first dollar figure in this chain, derived from the four decisions above. Already counted in the running total in the panel to the right."
-        testid="card-access-d5"
+      <Connector />
+
+      {/* THE PRIZE. The one place a dollar appears, derived from the rungs
+          above (realized visits x margin). The live running total lives in the
+          side panel and builds as each rung is set; here it is a quiet line
+          plus the transparent math, never a big stranded hero figure. */}
+      <LadderRung
+        eyebrow="The prize"
+        title="What it is worth"
+        help="Realized visits times contribution margin per visit, the first and only dollar in this ladder, derived from the rungs above. It is already counted in your plan, forming, on the right."
+        testid="card-access-d5-prize"
       >
-        <p className="text-[15px] text-[#1A1A1A]" data-testid="text-access-d5-caption">
-          <span className="font-abridge text-2xl text-[#EA2C00] font-bold" data-testid="text-access-d5-value">
-            {fmtMoneyCompact(realizedPayoffValue)}
-          </span>{" "}
-          from {fmtInt(payoff.realizedVisits)} realized visits x ~${fmtInt(payoff.blendedMarginUsed)}/visit
-        </p>
+        {payoff.value > 0 ? (
+          <p className="text-[15px] text-[#1A1A1A]" data-testid="text-access-d5-caption">
+            <span className="font-semibold text-[#EA2C00]" data-testid="text-access-d5-value">{fmtMoneyCompact(realizedPayoffValue)}</span>
+            {" / yr, from "}
+            {fmtInt(payoff.realizedVisits)} realized visits x ~${fmtInt(ladder.marginPerVisit)}/visit.
+            {" Tracked live in your plan on the right."}
+          </p>
+        ) : (
+          <p className="text-[13.5px] text-[#8C8C8C]" data-testid="text-access-d5-empty">
+            Finish the rungs above and the prize appears here and in your plan on the right.
+          </p>
+        )}
         <MathBox formula={payoffFormulaDisplay} testid="text-access-d5-formula" />
-      </DecisionCard>
+      </LadderRung>
     </div>
   );
 }
