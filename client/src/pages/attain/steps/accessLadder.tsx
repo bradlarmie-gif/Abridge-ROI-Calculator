@@ -1,4 +1,9 @@
 import type { AccessChainResult } from "@/lib/attain/attainAccess";
+import { computeAccessCapacity, DEFAULT_MINUTES_SAVED_PER_NOTE } from "@/lib/attain/attainAccess";
+import type { WorkforceChainResult } from "@/lib/attain/attainWorkforce";
+import { WORKFORCE_IMPACT_CEILING_PP } from "@/lib/attain/attainWorkforce";
+import type { AttainBaseline } from "@/lib/attain/attainLevers";
+import type { AttainSetting } from "@/lib/attain/attainTypes";
 
 /**
  * THE SHARED ACCESS LADDER.
@@ -226,6 +231,193 @@ export function CapacityDemandGate({
             <LadderFieldLabel>Realized visits, the smaller of the two</LadderFieldLabel>
             <p className="font-abridge text-2xl font-bold text-[#EA2C00]" data-testid="text-planning-gate-realized">
               {fmtInt(realizedVisits)} <span className="text-[11px] font-normal text-[#8C8C8C]">realized visits / yr</span>
+            </p>
+            <p className="text-[11px] text-[#8C8C8C] mt-1 leading-relaxed" data-testid="text-planning-gate-explain">{explain}</p>
+          </div>
+        </>
+      ) : (
+        <p className="text-[11px] text-[#8C8C8C] leading-relaxed">{emptyHint}</p>
+      )}
+    </div>
+  );
+}
+
+/**
+ * THE SHARED RETENTION (WORKFORCE) LADDER, built beside the access one so the
+ * two goals tell the SAME step-down story from one abstraction.
+ *
+ * Retention starts on the identical first domino as access, minutes saved per
+ * note, but reads them the other way: the freed time that is NOT handed to the
+ * schedule stays with the clinician and comes off the evening's after-hours
+ * charting. Less work outside of work is a better experience, which lowers
+ * burnout, which raises likelihood-to-stay, which avoids voluntary departures,
+ * whose replacement cost is the CFO dollar. The step-down:
+ *
+ *   minutes saved / note  (first domino, same as access)
+ *     -> freed hours per provider per week          (same computation as access)
+ *     -> protected relief (the share that stays with the clinician)
+ *     -> burnout comes down (the composite impact, capped at the ceiling)
+ *   THE GATE: burnout-related departures = providers x turnover x burnout share
+ *     -> departures avoided = pool x the impact captured
+ *   THE PRIZE: departures avoided x replacement cost.
+ *
+ * Every number reconciles to `computeWorkforceChain` (attainWorkforce.ts): the
+ * burnout pool is `providers x turnover% x burnoutShare%`, the impact captured
+ * is the chain's own composite `sustain.compositeImpactPct`, and their product
+ * is exactly `payoff.departuresAvoided`. The freed-hours rung reuses access's
+ * own `computeAccessCapacity` primitive so "freed hours" means the same thing
+ * on both goals' ladders. The prize and departures-avoided COUNT are passed in
+ * (so each surface supplies its own realization/split-applied figures, exactly
+ * like `deriveAccessLadder`), never recomputed differently.
+ */
+export interface RetentionLadderModel {
+  /** The first domino: minutes saved per note, shared with access. */
+  minutes: number;
+  providersInScope: number;
+  /** Freed hours per provider per week, the same computation as access. */
+  freedHrsPerProviderWk: number;
+  /** The share of that freed time the plan keeps as protected relief. */
+  protectedSharePct: number;
+  /** Freed hours per provider per week that stay with the clinician. */
+  protectedHrsPerProviderWk: number;
+  /** Burnout comes down: the composite impact, a share of burnout-related
+   * departures avoided, capped at the reachable ceiling. */
+  compositeImpactPct: number;
+  /** The reachable ceiling for this setting (15% outpatient). */
+  impactCeilingPct: number;
+  turnoverRatePct: number;
+  burnoutSharePct: number;
+  /** THE GATE: burnout-related departures a year = the ceiling on how many
+   * departures this plan could ever avoid. */
+  burnoutPool: number;
+  /** Realized: departures avoided = pool x compositeImpact. */
+  departuresAvoided: number;
+  replacementCost: number;
+  /** The derived dollar prize. */
+  prize: number;
+}
+
+/** Derives the shared retention ladder model. Operational rungs (freed hours,
+ * protected relief, composite impact, the burnout pool) come off the raw
+ * workforce chain; the departures-avoided COUNT and the dollar PRIZE are
+ * passed in so each surface can supply its own realization/split-applied
+ * figures, exactly as `deriveAccessLadder` does. */
+export function deriveRetentionLadder(
+  chain: WorkforceChainResult,
+  setting: AttainSetting,
+  baseline: AttainBaseline,
+  opts: { minutes: number; departuresAvoided: number; prize: number },
+): RetentionLadderModel {
+  const providersInScope = chain.scope.providersInScope;
+  const minutes = opts.minutes > 0 ? opts.minutes : DEFAULT_MINUTES_SAVED_PER_NOTE;
+
+  // Reuse access's own freed-time primitive so "freed hours" is the identical
+  // number on both ladders. Effective share is irrelevant to freedHoursTotal
+  // (100 here), and visit length never enters the freed-hours figure.
+  const freedHoursTotal =
+    providersInScope > 0
+      ? computeAccessCapacity(baseline, { providersInScope, lines: [], enterprise: false }, minutes, 100).freedHoursTotal
+      : 0;
+  const freedHrsPerProviderWk = providersInScope > 0 ? freedHoursTotal / providersInScope / 52 : 0;
+
+  const protectedSharePct = chain.protect.effectiveSharePct;
+  const protectedHrsPerProviderWk = freedHrsPerProviderWk * (protectedSharePct / 100);
+
+  const burnoutPool =
+    providersInScope * (chain.scope.turnoverRatePct / 100) * (chain.scope.burnoutSharePct / 100);
+
+  return {
+    minutes,
+    providersInScope,
+    freedHrsPerProviderWk,
+    protectedSharePct,
+    protectedHrsPerProviderWk,
+    compositeImpactPct: chain.sustain.compositeImpactPct,
+    impactCeilingPct: WORKFORCE_IMPACT_CEILING_PP[setting],
+    turnoverRatePct: chain.scope.turnoverRatePct,
+    burnoutSharePct: chain.scope.burnoutSharePct,
+    burnoutPool,
+    departuresAvoided: opts.departuresAvoided,
+    replacementCost: chain.scope.replacementCost,
+    prize: opts.prize,
+  };
+}
+
+/** Format a small hours figure (one decimal). */
+export function fmtHoursShort(n: number): string {
+  return (Math.round(n * 10) / 10).toLocaleString();
+}
+
+/** Format a departures-avoided count (one decimal, since it is usually a
+ * fraction of a person per year at a single-department scale). */
+export function fmtDepartures(n: number): string {
+  return (Math.round(n * 10) / 10).toLocaleString();
+}
+
+/**
+ * THE RETENTION GATE, the burnout-pool analog of `CapacityDemandGate`, shared
+ * verbatim between Build the case and Planning. You can only avoid the
+ * departures burnout actually causes, so the pool (providers x turnover x
+ * burnout share) is the ceiling, and the composite impact captures a slice of
+ * it. It shows the pool and the captured share side by side, then the realized
+ * departures avoided, so a large pool collapsing to a small realized count
+ * reads as a ceiling, not a cliff.
+ */
+export function BurnoutPoolGate({
+  burnoutPool,
+  compositeImpactPct,
+  departuresAvoided,
+  turnoverRatePct,
+  burnoutSharePct,
+  bothSet,
+  emptyHint,
+  showHeader = true,
+}: {
+  burnoutPool: number;
+  compositeImpactPct: number;
+  departuresAvoided: number;
+  turnoverRatePct: number;
+  burnoutSharePct: number;
+  bothSet: boolean;
+  emptyHint: string;
+  showHeader?: boolean;
+}) {
+  const explain =
+    departuresAvoided > 0
+      ? `Of the ${fmtDepartures(burnoutPool)} burnout-related departures a year, this plan avoids ${fmtDepartures(departuresAvoided)}. The pool is the ceiling, so the rest are departures burnout still causes.`
+      : "You can only avoid departures burnout actually causes. Set your scope and protect some relief to capture a slice of this pool.";
+
+  return (
+    <div className="rounded-lg border border-[#E7E0D6] bg-[#F4F0EA] p-4" data-testid="rung-planning-gate">
+      {showHeader && (
+        <div className="flex items-center gap-2 mb-3">
+          <span className="inline-block text-[8px] font-bold uppercase tracking-wide text-white bg-[#1A1A1A] px-2 py-0.5 rounded-full">
+            The gate
+          </span>
+          <p className="text-[12px] font-semibold text-[#1A1A1A]">Burnout sets the ceiling on what you can avoid</p>
+        </div>
+      )}
+
+      {bothSet ? (
+        <>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <LadderFieldLabel>Burnout-related departures / yr</LadderFieldLabel>
+              <p className="font-abridge text-2xl font-bold text-[#1A1A1A]" data-testid="text-planning-gate-pool">
+                {fmtDepartures(burnoutPool)} <span className="text-[11px] font-normal text-[#8C8C8C]">of a departure pool</span>
+              </p>
+            </div>
+            <div>
+              <LadderFieldLabel>Share this plan captures</LadderFieldLabel>
+              <p className="font-abridge text-2xl font-bold text-[#1A1A1A]" data-testid="text-planning-gate-impact">
+                {fmtHoursShort(compositeImpactPct)}% <span className="text-[11px] font-normal text-[#8C8C8C]">of that pool</span>
+              </p>
+            </div>
+          </div>
+          <div className="mt-3 pt-3 border-t border-[#E0D9CE]">
+            <LadderFieldLabel>Departures avoided, the slice you capture</LadderFieldLabel>
+            <p className="font-abridge text-2xl font-bold text-[#EA2C00]" data-testid="text-planning-gate-realized">
+              {fmtDepartures(departuresAvoided)} <span className="text-[11px] font-normal text-[#8C8C8C]">departures avoided / yr</span>
             </p>
             <p className="text-[11px] text-[#8C8C8C] mt-1 leading-relaxed" data-testid="text-planning-gate-explain">{explain}</p>
           </div>
