@@ -33,17 +33,22 @@ import { DEFAULT_EXPLORE_STATE, type ExploreState } from "@/pages/explore/Explor
  *      this plan can MECHANICALLY afford to bring back. Zero minutes saved,
  *      or zero share committed, mechanically zeroes this number — there is
  *      no way to book a dollar by typing a target with no time behind it.
- *   D4 THE RECOVERABLE POOL (a genuine, independent ceiling) — the
- *      partner's own current LWBS rate x the ED volume in scope is the pool
- *      of patients who actually left without being seen — a measured fact,
- *      computed from a completely different set of inputs than D3's
- *      freed-time mechanism. Realized recovery is `MIN(pool, mechanically
- *      enabled recovery)` — the exact "MIN discipline" outpatient's D4 uses
- *      for `MIN(capacity, demand)`, and for the same reason: this MIN can
- *      genuinely bind on EITHER side, because the two numbers being
- *      compared are independently sourced (unlike the old model, where the
- *      "target" was defined as a percentage OF the pool and so could never
- *      exceed it — see CHANGELOG below). A share of realized recovery
+ *   D4 THE GATE — DIAGNOSE THE LEAK (the load-bearing rung) — the partner's
+ *      own current LWBS rate x the ED volume in scope is the full pool of
+ *      patients who left without being seen. But not all of that leak is
+ *      Abridge's to fix: some patients leave because charting time chokes
+ *      throughput (Abridge can move that), and some leave because the ED is
+ *      short-staffed or out of beds (Abridge cannot touch that). The
+ *      documentation-caused SHARE of the pool (`edAccessDocCausedShare`, a
+ *      genuine diagnosis decision, not a benchmark) is the recoverable pool,
+ *      the real ceiling on what this plan can ever reach. Realized recovery
+ *      is `MIN(recoverable pool, mechanically enabled recovery)` — the exact
+ *      "MIN discipline" outpatient's D4 uses for `MIN(capacity, demand)`, and
+ *      for the same reason: the two numbers are independently sourced (the
+ *      diagnosis-limited pool from D4, the freed-time capacity from D3), so
+ *      this MIN genuinely binds on EITHER side (unlike the old model, where
+ *      the "target" was defined as a percentage OF the pool and so could
+ *      never exceed it — see CHANGELOG below). A share of realized recovery
  *      becomes admissions, and that admission leg is capped too: not every
  *      captured admission finds a bed or a payer-accepted stay
  *      (`edAccessAdmissionRealization`).
@@ -119,6 +124,17 @@ export const DEFAULT_ED_ACCESS_MINUTES_SAVED_PER_NOTE = 9;
 /** Benchmark current LWBS rate, matching the authored ED narrative's own
  * "LWBS rate 8%" world card. A real, editable D4 input, not assumed. */
 export const DEFAULT_ED_ACCESS_LWBS_RATE = 8;
+
+/** Documented reference point only for the DIAGNOSIS gate (the load-bearing
+ * rung) - NOT auto-applied when `edAccessDocCausedShare` is unset. Like the
+ * admission share, the documentation-caused share of LWBS is a genuine
+ * diagnosis DECISION (realityStart 0, no default masking it): the partner
+ * has to confirm out loud how much of their LWBS leaves because charting
+ * chokes throughput (Abridge can move that) versus short staffing or no beds
+ * (Abridge cannot touch that). Only the charting-caused share is recoverable,
+ * so an unset diagnosis correctly recovers nothing. 60% is an illustrative
+ * mid-point for a busy ED where documentation is a real throughput drag. */
+export const DEFAULT_ED_ACCESS_DOC_CAUSED_SHARE = 60;
 
 /** Benchmark CONTRIBUTION MARGIN per recovered ED visit — deliberately NOT
  * the $480 gross-charge figure the pre-audit version used. Matches
@@ -350,20 +366,36 @@ export function computeEdAccessMechanism(
 
 export interface EdAccessPool {
   lwbsRatePct: number;
-  /** The other side of the ceiling: how many patients actually left
-   * without being seen, this year, at this scope. A measured fact, computed
-   * from a completely different set of inputs than D3's freed-time
-   * mechanism — that independence is what makes the MIN below a genuine
-   * ceiling, not a tautology. */
+  /** How many patients actually left without being seen, this year, at this
+   * scope. A measured fact (rate x volume), the full leak before diagnosis. */
   poolVisits: number;
+  /** THE DIAGNOSIS (the load-bearing rung): the share of that LWBS pool that
+   * leaves because charting time chokes throughput (Abridge can move it),
+   * versus short staffing or no beds (Abridge cannot). A genuine decision,
+   * realityStart 0, no benchmark masking it. */
+  docCausedSharePct: number;
+  /** The recoverable pool: `poolVisits x docCausedSharePct`. The real
+   * ceiling on what this plan can ever reach, computed from a completely
+   * different set of inputs than D3's freed-time mechanism — that
+   * independence is what makes the MIN below a genuine ceiling, not a
+   * tautology. */
+  recoverablePool: number;
 }
 
-/** D4a: the current, measured LWBS rate x the ED volume in scope. */
+/** D4a: the current, measured LWBS rate x the ED volume in scope, then the
+ * documentation-caused SHARE of that pool (the diagnosis) - only that share
+ * is Abridge's to fix, so only it is recoverable. */
 export function computeEdAccessPool(scope: EdAccessScope, values: LeverValues): EdAccessPool {
   const raw = values.edAccessLwbsRate;
   const lwbsRatePct = typeof raw === "number" && raw > 0 ? raw : DEFAULT_ED_ACCESS_LWBS_RATE;
   const poolVisits = scope.visitsInScope * (lwbsRatePct / 100);
-  return { lwbsRatePct, poolVisits };
+  // The diagnosis is a genuine decision (realityStart 0), same discipline as
+  // the admission share: unset means literally 0% charting-caused, which
+  // correctly recovers nothing. No benchmark default masks an un-made
+  // diagnosis into booked dollars.
+  const docCausedSharePct = clampPct(asNum(values.edAccessDocCausedShare));
+  const recoverablePool = poolVisits * (docCausedSharePct / 100);
+  return { lwbsRatePct, poolVisits, docCausedSharePct, recoverablePool };
 }
 
 /** D4b: `MIN(poolVisits, mechanicallyEnabledRecovered)` — the exact "MIN
@@ -374,8 +406,8 @@ export function computeEdAccessPool(scope: EdAccessScope, values: LeverValues): 
  * "target" was defined as a percent of the pool and so the pool side could
  * never bind. Exported and independently testable so that "genuinely
  * either side can be the ceiling" is provable with hand-picked numbers. */
-export function computeEdAccessRealized(poolVisits: number, mechanicallyEnabledRecovered: number): number {
-  return Math.max(0, Math.min(Math.max(0, poolVisits), Math.max(0, mechanicallyEnabledRecovered)));
+export function computeEdAccessRealized(recoverablePool: number, mechanicallyEnabledRecovered: number): number {
+  return Math.max(0, Math.min(Math.max(0, recoverablePool), Math.max(0, mechanicallyEnabledRecovered)));
 }
 
 export type EdAccessBinding = "pool" | "throughput" | "none";
@@ -398,18 +430,19 @@ export interface EdAccessRecovery {
   capturedAdmissions: number;
 }
 
-/** D4, whole: realized recovery is the MIN of the pool and the
- * mechanically-enabled recovery from D3, then the admission-rate decision
+/** D4, whole: realized recovery is the MIN of the recoverable (diagnosis-
+ * limited) pool and the mechanically-enabled recovery from D3, then the
+ * admission-rate decision
  * (`edAccessAdmissionRate`) applied to the REALIZED recovery (not the
  * mechanical number, and not the pool) to get an admission attempt count,
  * then the bed/payer realization cap (`edAccessAdmissionRealization`)
  * applied to THAT to get the admissions this chain actually prices. */
-export function computeEdAccessRecovery(poolVisits: number, mechanicallyEnabledRecovered: number, values: LeverValues): EdAccessRecovery {
-  const realizedRecovered = computeEdAccessRealized(poolVisits, mechanicallyEnabledRecovered);
+export function computeEdAccessRecovery(recoverablePool: number, mechanicallyEnabledRecovered: number, values: LeverValues): EdAccessRecovery {
+  const realizedRecovered = computeEdAccessRealized(recoverablePool, mechanicallyEnabledRecovered);
   const binding: EdAccessBinding =
     realizedRecovered <= 0
       ? "none"
-      : Math.max(0, poolVisits) <= Math.max(0, mechanicallyEnabledRecovered)
+      : Math.max(0, recoverablePool) <= Math.max(0, mechanicallyEnabledRecovered)
         ? "pool"
         : "throughput";
 
@@ -443,11 +476,11 @@ export function computeEdAccessRecovery(poolVisits: number, mechanicallyEnabledR
 export function edAccessBindingPlainPhrase(binding: EdAccessBinding): string {
   switch (binding) {
     case "pool":
-      return "The recoverable pool is the limiter here. Every LWBS patient this plan can reach is already being reached.";
+      return "The charting-caused pool is the limiter here. Every LWBS patient documentation delays can reach is already being reached; the rest leaves for staffing or beds, which this plan cannot move.";
     case "throughput":
-      return "Freed throughput time is the limiter here. The pool has more patients than this plan's committed time can reach yet.";
+      return "Freed throughput time is the limiter here. Charting delays cause more LWBS than this plan's committed time can reach yet.";
     default:
-      return "Set your minutes saved, throughput share, and current LWBS rate above to see which one limits you.";
+      return "Set your minutes saved, throughput share, current LWBS rate, and the charting-caused share above to see which one limits you.";
   }
 }
 
@@ -530,7 +563,7 @@ export function computeEdAccessChain(baseline: AttainBaseline, values: LeverValu
   const hoursPerRecovery = typeof rawHoursPerRecovery === "number" && rawHoursPerRecovery > 0 ? rawHoursPerRecovery : DEFAULT_ED_ACCESS_HOURS_PER_RECOVERY;
 
   const mechanism = computeEdAccessMechanism(baseline, scope, minutesSavedPerNote, effectiveThroughputSharePct, hoursPerRecovery);
-  const recovery = computeEdAccessRecovery(pool.poolVisits, mechanism.mechanicallyEnabledRecovered, values);
+  const recovery = computeEdAccessRecovery(pool.recoverablePool, mechanism.mechanicallyEnabledRecovered, values);
   const payoff = computeEdAccessPayoff(recovery.realizedRecovered, recovery.capturedAdmissions, values);
 
   const scopeFormula = scope.providersInScope > 0
@@ -541,12 +574,12 @@ export function computeEdAccessChain(baseline: AttainBaseline, values: LeverValu
     ? `${fmtInt(scope.providersInScope)} providers × ${fmtInt(mechanism.freedHoursTotal / Math.max(1, scope.providersInScope))} freed hrs/provider/yr × ${Math.round(mechanism.throughputSharePct)}% to throughput = ${fmtInt(mechanism.freedHoursToThroughput)} hrs ÷ ${fmt1(mechanism.hoursPerRecovery)} hrs/recovered patient = ${fmtInt(mechanism.mechanicallyEnabledRecovered)} patients/yr this plan can mechanically afford to bring back.`
     : NO_MOVE_FORMULA;
 
-  const poolFormula = pool.poolVisits > 0
-    ? `${fmtInt(scope.visitsInScope)} ED visits/yr × ${pool.lwbsRatePct}% LWBS rate = ${fmtInt(pool.poolVisits)} patients who left without being seen (the pool).`
+  const poolFormula = pool.recoverablePool > 0
+    ? `${fmtInt(scope.visitsInScope)} ED visits/yr × ${pool.lwbsRatePct}% LWBS = ${fmtInt(pool.poolVisits)} who left without being seen. ${Math.round(pool.docCausedSharePct)}% of that leaves because charting chokes throughput (Abridge can move it) = ${fmtInt(pool.recoverablePool)} recoverable; the rest is short staffing or beds.`
     : NO_MOVE_FORMULA;
 
   const recoveryFormula = recovery.realizedRecovered > 0
-    ? `${fmtInt(pool.poolVisits)} pool vs ${fmtInt(mechanism.mechanicallyEnabledRecovered)} freed-time capacity = ${fmtInt(recovery.realizedRecovered)} realized recovered visits (the smaller of the two) × ${Math.round(recovery.admissionRatePct)}% admission share = ${fmtInt(recovery.capturedAdmissionsRaw)} admission attempts × ${Math.round(recovery.admissionRealizationPct)}% bed/payer realization = ${fmtInt(recovery.capturedAdmissions)} captured admissions.`
+    ? `${fmtInt(pool.recoverablePool)} recoverable vs ${fmtInt(mechanism.mechanicallyEnabledRecovered)} freed-time capacity = ${fmtInt(recovery.realizedRecovered)} realized recovered visits (the smaller of the two) × ${Math.round(recovery.admissionRatePct)}% admission share = ${fmtInt(recovery.capturedAdmissionsRaw)} admission attempts × ${Math.round(recovery.admissionRealizationPct)}% bed/payer realization = ${fmtInt(recovery.capturedAdmissions)} captured admissions.`
     : NO_MOVE_FORMULA;
 
   const payoffFormula = payoff.value > 0
@@ -620,6 +653,7 @@ export const ED_ACCESS_LEVER_IDS = [
   "edAccessHoursPerRecovery",
   "edAccessThroughputShare",
   "edAccessLwbsRate",
+  "edAccessDocCausedShare",
   "edAccessAdmissionRate",
   "edAccessAdmissionRealization",
 ] as const;
@@ -687,20 +721,27 @@ export function computeEdAccessContributions(baseline: AttainBaseline, values: L
     { id: "edAccessMinutesSaved", marginalMargin: 0, marginalCount: Math.round(mechanism.minutesSavedPerNote), pctOfTotal: 0, formula: formulas.mechanism },
     { id: "edAccessHoursPerRecovery", marginalMargin: 0, marginalCount: Math.round(mechanism.hoursPerRecovery * 10) / 10, pctOfTotal: 0, formula: formulas.mechanism },
     { id: "edAccessLwbsRate", marginalMargin: 0, marginalCount: Math.round(pool.poolVisits), pctOfTotal: 0, formula: formulas.pool },
+    { id: "edAccessDocCausedShare", marginalMargin: 0, marginalCount: Math.round(pool.recoverablePool), pctOfTotal: 0, formula: formulas.pool },
     { id: "edAccessAdmissionRealization", marginalMargin: 0, marginalCount: Math.round(recovery.admissionRealizationPct), pctOfTotal: 0, formula: formulas.recovery },
   ];
 
   const marginSum = payoff.visitValue + payoff.admissionValue;
+  // Chain order: scope, worth (x2), minutes, hours/recovery, then the
+  // throughput commitment (visit leg), the LWBS rate and the diagnosis that
+  // set the recoverable pool, then the admission decision (admission leg) and
+  // its realization cap. The two decision rows still carry the whole dollar
+  // (M1 fix); every structural/context row is marginalMargin 0.
   const orderedRows = [
-    structuralRows[0],
-    structuralRows[1],
-    structuralRows[2],
-    structuralRows[3],
-    structuralRows[4],
-    decisionRows[0],
-    structuralRows[5],
-    decisionRows[1],
-    structuralRows[6],
+    structuralRows[0], // edAccessProviders
+    structuralRows[1], // edAccessMarginPerVisit
+    structuralRows[2], // edAccessAdmissionMargin
+    structuralRows[3], // edAccessMinutesSaved
+    structuralRows[4], // edAccessHoursPerRecovery
+    decisionRows[0], // edAccessThroughputShare (visit leg)
+    structuralRows[5], // edAccessLwbsRate
+    structuralRows[6], // edAccessDocCausedShare (the diagnosis)
+    decisionRows[1], // edAccessAdmissionRate (admission leg)
+    structuralRows[7], // edAccessAdmissionRealization
   ];
   const perLever: LeverContribution[] = orderedRows.map((l) => ({
     ...l,

@@ -41,6 +41,7 @@ function fullValues(overrides: Partial<LeverValues> = {}): LeverValues {
     edAccessHoursPerRecovery: 1.5,
     edAccessThroughputShare: 50,
     edAccessLwbsRate: 8,
+    edAccessDocCausedShare: 60,
     edAccessAdmissionRate: 18,
     edAccessAdmissionRealization: 60,
     ...overrides,
@@ -223,6 +224,61 @@ describe("D4 - the recoverable pool (a genuine, independent ceiling)", () => {
   });
 });
 
+describe("D4 - the diagnosis gate (the load-bearing rung: is the leak Abridge's to fix)", () => {
+  it("recoverable pool = full LWBS pool x the documentation-caused share", () => {
+    const scope = { providersInScope: 55, visitsInScope: 55 * 1_800 };
+    const pool = computeEdAccessPool(scope, { edAccessLwbsRate: 8, edAccessDocCausedShare: 60 });
+    expect(pool.poolVisits).toBeCloseTo(55 * 1_800 * 0.08, 3);
+    expect(pool.docCausedSharePct).toBe(60);
+    expect(pool.recoverablePool).toBeCloseTo(pool.poolVisits * 0.6, 3);
+    expect(pool.recoverablePool).toBeLessThan(pool.poolVisits);
+  });
+
+  it("LOAD-BEARING: an un-made diagnosis (doc-caused share unset/0) recovers nothing and nets $0, even with full throughput and a real LWBS pool", () => {
+    const chain = computeEdAccessChain(BASELINE, fullValues({ edAccessDocCausedShare: 0, edAccessThroughputShare: 100 }));
+    expect(chain.pool.poolVisits).toBeGreaterThan(0);
+    expect(chain.pool.recoverablePool).toBe(0);
+    expect(chain.recovery.realizedRecovered).toBe(0);
+    expect(chain.recovery.binding).toBe("none");
+    expect(chain.payoff.value).toBe(0);
+  });
+
+  it("DIAGNOSIS CEILING BINDS: a small charting-caused share caps recovery below what freed time affords", () => {
+    // Full throughput so freed-time capacity is large; a small diagnosis makes
+    // the recoverable pool the limiter, and realized recovery equals it.
+    const chain = computeEdAccessChain(BASELINE, fullValues({ edAccessDocCausedShare: 5, edAccessThroughputShare: 100, edAccessHoursPerRecovery: 0.5 }));
+    expect(chain.recovery.realizedRecovered).toBeCloseTo(chain.pool.recoverablePool, 6);
+    expect(chain.recovery.realizedRecovered).toBeLessThan(chain.mechanism.mechanicallyEnabledRecovered);
+    expect(chain.recovery.binding).toBe("pool");
+  });
+
+  it("only Abridge's share counts: lowering the charting-caused diagnosis strictly lowers realized recovery and the prize", () => {
+    // Force the pool side to bind in both cases (large freed-time capacity), so
+    // the diagnosis is what moves the number.
+    const high = computeEdAccessChain(BASELINE, fullValues({ edAccessDocCausedShare: 80, edAccessThroughputShare: 100, edAccessHoursPerRecovery: 0.5 }));
+    const low = computeEdAccessChain(BASELINE, fullValues({ edAccessDocCausedShare: 30, edAccessThroughputShare: 100, edAccessHoursPerRecovery: 0.5 }));
+    expect(low.recovery.realizedRecovered).toBeLessThan(high.recovery.realizedRecovered);
+    expect(low.payoff.value).toBeLessThan(high.payoff.value);
+  });
+
+  it("realized recovery never exceeds the recoverable (diagnosis-limited) pool, across a range of diagnoses", () => {
+    for (const docShare of [10, 40, 70, 100]) {
+      const chain = computeEdAccessChain(BASELINE, fullValues({ edAccessDocCausedShare: docShare }));
+      expect(chain.recovery.realizedRecovered).toBeLessThanOrEqual(chain.pool.recoverablePool + 1e-6);
+      expect(chain.recovery.realizedRecovered).toBeLessThanOrEqual(chain.mechanism.mechanicallyEnabledRecovered + 1e-6);
+    }
+  });
+
+  it("the diagnosis flows into reconciliation: the engine's recovered term still lands on this chain's realized recovery", () => {
+    const values = fullValues({ edAccessDocCausedShare: 45 });
+    const chain = computeEdAccessChain(BASELINE, values);
+    const state = exploreStateForEdAccessReconciliation(BASELINE, values);
+    const engineValues = computeAllDriverValues(state, 0);
+    expect(engineValues.lwbsRecovery).toBeCloseTo(chain.payoff.visitValue, 0);
+    expect(engineValues.admissionCapture).toBeCloseTo(chain.payoff.admissionValue, 0);
+  });
+});
+
 describe("D5 - the payoff (dollars, derived, honest contribution margin)", () => {
   it("value = realized recovered visits x margin/visit + REALIZED captured admissions x admission margin", () => {
     const payoff = computeEdAccessPayoff(300, 30, { edAccessMarginPerVisit: 380, edAccessAdmissionMargin: 8_000 });
@@ -374,7 +430,7 @@ describe("computeEdAccessContributions adapter", () => {
 
   it("structural/context rows (D1-D3 facts) carry zero marginal margin, never smearing the dollar across rows that didn't produce it", () => {
     const result = computeEdAccessContributions(BASELINE, fullValues());
-    for (const id of ["edAccessProviders", "edAccessMarginPerVisit", "edAccessAdmissionMargin", "edAccessMinutesSaved", "edAccessHoursPerRecovery", "edAccessLwbsRate", "edAccessAdmissionRealization"]) {
+    for (const id of ["edAccessProviders", "edAccessMarginPerVisit", "edAccessAdmissionMargin", "edAccessMinutesSaved", "edAccessHoursPerRecovery", "edAccessLwbsRate", "edAccessDocCausedShare", "edAccessAdmissionRealization"]) {
       const row = result.perLever.find((l) => l.id === id)!;
       expect(row.marginalMargin).toBe(0);
       expect(row.pctOfTotal).toBe(0);
