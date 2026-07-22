@@ -86,7 +86,7 @@ export interface AttainSaveState {
 }
 
 const VALID_SETTINGS: AttainSetting[] = ["outpatient", "ed", "inpatient", "nursing"];
-const VALID_GOALS: GoalId[] = ["access", "retention", "revenue", "quality"];
+const VALID_GOALS: GoalId[] = ["access", "retention", "revenue", "quality", "capacity"];
 const VALID_CADENCES: SignalCadence[] = ["weekly", "biweekly", "monthly", "quarterly"];
 
 function isValidCadence(v: unknown): v is SignalCadence {

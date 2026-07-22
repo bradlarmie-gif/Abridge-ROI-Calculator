@@ -7,7 +7,7 @@
  */
 
 export type AttainSetting = "outpatient" | "ed" | "inpatient" | "nursing";
-export type GoalId = "access" | "retention" | "revenue" | "quality";
+export type GoalId = "access" | "retention" | "revenue" | "quality" | "capacity";
 export type DomainPillKey = "Capacity" | "Workforce" | "Revenue" | "Quality";
 export type AmbitionKey = "conservative" | "typical" | "ambitious";
 

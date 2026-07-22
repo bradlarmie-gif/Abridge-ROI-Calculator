@@ -28,7 +28,7 @@ describe("SETTING_GOAL_MATRIX", () => {
     expect(SETTING_GOAL_MATRIX.outpatient).toEqual(["access", "retention", "revenue"]);
     expect(SETTING_GOAL_MATRIX.ed).toEqual(["access", "retention", "revenue"]);
     expect(SETTING_GOAL_MATRIX.inpatient).toEqual(["revenue", "retention"]);
-    expect(SETTING_GOAL_MATRIX.nursing).toEqual(["quality", "retention"]);
+    expect(SETTING_GOAL_MATRIX.nursing).toEqual(["quality", "retention", "capacity"]);
   });
 
   it("resolves getContent(setting, goal) to a defined object for every listed goal", () => {

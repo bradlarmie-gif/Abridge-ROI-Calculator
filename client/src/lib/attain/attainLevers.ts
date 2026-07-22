@@ -14,6 +14,7 @@ import {
   QUALITY_SIGNAL_SECONDARY,
   type QualityEventId,
 } from "./attainQuality";
+import { computeCapacityContributions } from "./attainCapacity";
 
 /**
  * Attain - lever layer.
@@ -787,6 +788,113 @@ export const LEVERS: Record<GoalId, Lever[]> = {
     },
     ...QUALITY_INTERVENTION_LEVERS,
   ],
+  // Capacity (nursing) = OVERTIME reduction, a single gated ladder rendered
+  // bespoke on Build the case (`CapacityLadderChain.tsx`), not through the
+  // generic lever renderer - same convention as access/quality. This catalog
+  // entry exists so Commit and the Attainment hub, which walk every goal's
+  // `LEVERS[goal]` generically, keep working: one row per decision, ids
+  // matching the flat `LeverValues` keys `attainCapacity.ts` reads directly.
+  // See `attainCapacity.ts`'s `CAPACITY_LEVER_IDS` and
+  // `computeCapacityContributions` for the engine, which reconciles to
+  // Explore's own `nursingOvertime` driver.
+  capacity: [
+    {
+      id: "capacityLines",
+      label: "Units in scope",
+      help: "Each unit brought into the plan adds its nurses to the overtime this plan is working to bring down.",
+      control: "lines",
+      unit: "units",
+      min: 0,
+      max: 4,
+      step: 1,
+      realityStart: [],
+      ownerRole: "Nursing operations",
+      defaultDue: "Month 1",
+      signal: "Units actively brought into the plan",
+      ownerRoleOptions: ["Nursing operations", "Charge nurses / unit leads", "Unit leadership", "Nursing administration"],
+      signalOptions: ["Units actively brought into the plan", "Units named in scope vs committed", "Nurses covered by unit"],
+    },
+    {
+      id: "capacityNurses",
+      label: "How many nurses are in scope",
+      help: "The real nurse count this plan is built against, capped to your Starting-point baseline. No dollar figure yet, there is no overtime decided.",
+      control: "countPerUnit",
+      unit: "nurses",
+      min: 0,
+      max: 4_000,
+      step: 1,
+      realityStart: 0,
+      ownerRole: "Nursing operations",
+      defaultDue: "Month 1",
+      signal: "Nurses actually covered by the plan, of those named in scope",
+      ownerRoleOptions: ["Nursing operations", "Charge nurses / unit leads", "Unit leadership", "Nursing administration"],
+      signalOptions: ["Nurses actually covered by the plan, of those named in scope", "Headcount in scope vs baseline FTEs", "Nurse coverage ratio"],
+    },
+    {
+      id: "capacityOtHoursPerWeek",
+      label: "Overtime hours per nurse per week",
+      help: "Your own current overtime, per nurse, per week. This is the pool the documentation-attributable share is measured against, not a benchmark you never checked.",
+      control: "countPerUnit",
+      unit: "OT hrs/wk",
+      min: 0,
+      max: 20,
+      step: 0.5,
+      realityStart: 0,
+      ownerRole: "HR / nursing operations",
+      defaultDue: "Month 1",
+      signal: "Overtime hours per nurse per week, against this baseline",
+      ownerRoleOptions: ["HR / nursing operations", "Nursing operations", "Finance / nursing", "Nursing administration"],
+      signalOptions: ["Overtime hours per nurse per week, against this baseline", "Total overtime hours per month", "Late shift finishes per week"],
+    },
+    {
+      id: "capacityOtRate",
+      label: "Set the loaded overtime rate",
+      help: "The fully loaded overtime hourly rate, base pay plus the overtime premium, your own number. Every overtime hour avoided is worth this.",
+      control: "countPerUnit",
+      unit: "$/hr",
+      min: 0,
+      max: 300,
+      step: 5,
+      realityStart: 0,
+      ownerRole: "Finance / nursing",
+      defaultDue: "Month 1",
+      signal: "Loaded overtime rate booked per hour",
+      ownerRoleOptions: ["Finance / nursing", "HR / nursing operations", "Partner finance", "Nursing administration"],
+      signalOptions: ["Loaded overtime rate booked per hour", "Overtime premium multiplier", "Blended overtime cost per hour"],
+    },
+    {
+      id: "capacityDocShare",
+      label: "Diagnose the leak: the documentation-driven share of overtime",
+      help: "Of your overtime, the share driven by charting after the shift, batching notes, and missed lunches, versus short staffing or a census surge, which Abridge cannot touch. Only the documentation-driven share is yours to cut, so it is the ceiling.",
+      control: "percent",
+      unit: "%",
+      min: 0,
+      max: 100,
+      step: 5,
+      realityStart: 0,
+      ownerRole: "Nursing operations",
+      defaultDue: "Month 1",
+      signal: "Share of overtime attributable to documentation",
+      ownerRoleOptions: ["Nursing operations", "Charge nurses / unit leads", "HR / nursing operations", "Nursing administration"],
+      signalOptions: ["Share of overtime attributable to documentation", "Overtime reason-code mix, charting vs staffing or census", "After-shift charting time per nurse"],
+    },
+    {
+      id: "capacityConversion",
+      label: "Commit to the share of that overtime you remove",
+      help: "The conservative share of the documentation-driven overtime this plan actually removes, once the freed minute lands on the shift. This is the one decision that turns the ceiling into overtime hours avoided.",
+      control: "percent",
+      unit: "%",
+      min: 0,
+      max: 100,
+      step: 5,
+      realityStart: 0,
+      ownerRole: "Nursing operations",
+      defaultDue: "Month 2",
+      signal: "On-time shift completion %",
+      ownerRoleOptions: ["Nursing operations", "Charge nurses / unit leads", "Unit leadership", "Nursing administration"],
+      signalOptions: ["On-time shift completion %", "Overtime hours avoided vs the documentation-attributable pool", "Missed-lunch rate"],
+    },
+  ],
 };
 
 /**
@@ -1192,6 +1300,7 @@ const LINE_PRESETS: Record<AttainSetting, Partial<Record<GoalId, string[]>>> = {
   nursing: {
     quality: ["Med-Surg", "ICU", "Step-Down"],
     retention: ["Med-Surg", "ICU", "Step-Down"],
+    capacity: ["Med-Surg", "ICU", "Step-Down"],
   },
 };
 
@@ -1333,6 +1442,7 @@ export function computeLeverContributions(
   if (goal === "revenue") return setting === "inpatient" ? computeIpRevenueContributions(baseline, values) : computeRevenueContributions(baseline, setting, values);
   if (goal === "retention") return computeWorkforceContributions(baseline, setting, values);
   if (goal === "quality") return computeQualityContributions(baseline, values);
+  if (goal === "capacity") return computeCapacityContributions(baseline, values);
 
   const levers = leversFor(goal, setting);
   const units = baselineUnits(setting, goal, baseline);

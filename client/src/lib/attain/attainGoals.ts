@@ -468,6 +468,97 @@ export const GOAL_CATALOG: Record<GoalId, GoalDef> = {
       { label: "Events ↓", kind: "end" },
     ],
   },
+
+  capacity: {
+    id: "capacity",
+    label: "Nursing Capacity",
+    pill: "Capacity",
+    pillBg: "#1A1A1A",
+    domainSub: "Overtime & After-Shift Charting",
+    chainTitle: "How Overtime Comes Down",
+    chainArrow: "↓",
+    quadrant: "Capacity",
+    chain: [
+      {
+        n: 1,
+        name: "Abridge adopted",
+        signal: "% nurses documenting via Abridge",
+        ownerRole: "Abridge CSM + unit champion",
+        fragile: false,
+        isAbridge: true,
+      },
+      {
+        n: 2,
+        name: "Charting moves into the shift",
+        signal: "Share of notes finished at the point of care",
+        ownerRole: "Abridge",
+        fragile: false,
+        isAbridge: true,
+      },
+      {
+        n: 3,
+        name: "Freed minutes land during the shift",
+        signal: "After-shift charting time per nurse",
+        ownerRole: "Nursing operations",
+        fragile: true,
+        isAbridge: false,
+      },
+      {
+        n: 4,
+        name: "Overtime not backfilled by new tasks",
+        signal: "Late finishes, missed lunches",
+        ownerRole: "Charge nurses / unit leads",
+        fragile: true,
+        isAbridge: false,
+      },
+      {
+        n: 5,
+        name: "On-time shift completion up",
+        signal: "On-time shift completion %",
+        ownerRole: "Nursing operations",
+        fragile: false,
+        isAbridge: false,
+      },
+      {
+        n: 6,
+        name: "Documentation-driven overtime removed",
+        signal: "Overtime hours per nurse per week",
+        ownerRole: "Joint / nursing ops",
+        fragile: false,
+        isAbridge: false,
+      },
+      {
+        n: 7,
+        name: "Overtime wages avoided",
+        signal: "Loaded overtime spend vs baseline",
+        ownerRole: "Finance / nursing",
+        fragile: false,
+        isAbridge: false,
+      },
+    ],
+    mechanisms: [
+      {
+        heading: "Make the freed minute land during the shift",
+        body: "Charting in the moment only cuts overtime if the recovered minute stays on the shift, not turned into a new task. The freed time has to close the shift on time.",
+      },
+      {
+        heading: "Only the overtime charting causes",
+        body: "Overtime from short staffing or a census surge is not Abridge's to fix. The documentation-attributable share is the ceiling, so the number never claims overtime charting did not cause.",
+      },
+      {
+        heading: "Counted once, not twice",
+        body: "Overtime avoided is wages you stop paying now. Retention is the replacement cost of a nurse who would have quit. Same root, different dollars, so the plan books each once.",
+      },
+    ],
+    flow: [
+      { label: "Abridge Ambient", kind: "start" },
+      { label: "Chart in the moment", kind: "mid" },
+      { label: "Freed time lands on shift", kind: "risk" },
+      { label: "Not refilled by new tasks", kind: "risk" },
+      { label: "On-time completion ↑", kind: "mid" },
+      { label: "Overtime ↓", kind: "end" },
+    ],
+  },
 };
 
 // ────────────────────────────────────────────────────────────────────────
@@ -478,7 +569,7 @@ export const SETTING_GOAL_MATRIX: Record<AttainSetting, GoalId[]> = {
   outpatient: ["access", "retention", "revenue"],
   ed: ["access", "retention", "revenue"],
   inpatient: ["revenue", "retention"],
-  nursing: ["quality", "retention"],
+  nursing: ["quality", "retention", "capacity"],
 };
 
 // ────────────────────────────────────────────────────────────────────────
@@ -1214,6 +1305,78 @@ const nursingRetention: SettingGoalContent = {
   ],
 };
 
+const nursingCapacity: SettingGoalContent = {
+  subtitle: "Med-Surg & ICU · 300 bedside nurses · Nursing",
+  thesis1: "The overtime is real.",
+  thesis2: "This is the plan to take out the share charting causes.",
+  p1Lead:
+    "Meridian's med-surg and ICU nurses are staying past the end of the shift to finish charting, batching notes and catching up late, sometimes working through lunch to get the record done. Some of that overtime is short staffing and census, which no documentation tool can move. But a real share of it is the charting itself. Ambient documentation lets nurses chart in the moment, so the shift can close on time. Whether that freed minute lands on the shift, or turns into a new task, is the difference between overtime that comes down and overtime that holds.",
+  worldCards: [
+    { k: "Overtime / nurse", n: "2.5 hrs/wk", coral: true, f: "Mostly after-shift charting" },
+    { k: "Documentation-driven", n: "~55%", f: "Share charting causes" },
+    { k: "Loaded OT rate", n: "$75/hr", f: "Base pay plus premium" },
+    { k: "In scope", n: "300", f: "Bedside nurses · Med-surg & ICU" },
+  ],
+  opportunity:
+    "You can only cut the overtime charting causes, and that share is the ceiling. When after-shift charting falls and the shift closes on time, the documentation-driven overtime comes off the payroll. Each overtime hour avoided is loaded overtime wages you stop paying now. The plan takes out that share and leaves the staffing and census overtime honestly out of the number.",
+  trappedLabel: "How the overtime accrues",
+  trappedSteps: [
+    "Charting stacks up during the shift",
+    "Notes get batched and caught up late",
+    "The shift runs past its end",
+    "Time is paid as overtime",
+  ],
+  trappedCap:
+    "Ambient moves charting to the point of care, so the shift can close on time. Whether that freed minute stays on the shift or becomes a new task is a choice about the unit workflow. That choice is what this plan is built around.",
+  goodHead: 'What "good" looks like, 9 months out',
+  goodCells: [
+    { n: "-1.4", k: "Overtime hrs / nurse / week" },
+    { n: "6,900", k: "Overtime hours avoided / year" },
+    { n: "$520K", coral: true, k: "Overtime wages avoided" },
+    { n: ">90%", k: "On-time shift completion" },
+  ],
+  curveIntro:
+    "Most overtime pushes drift. Charting gets easier, but the freed minute is quietly refilled by a new task and the shift still runs late, so the overtime holds where it was. That is the dashed line. Your plan is the line above it: freed time that actually closes the shift on time, unit by unit, month by month.",
+  bendsLead:
+    "The dashed path is not Abridge failing to save time. Charting moves into the shift on nearly every deployment. Overtime comes down only when that freed minute lands on the shift instead of becoming a new task. Three things bend it back down, and all three live on the unit, not in the software:",
+  bends: [
+    "The freed minute closes the shift on time, instead of being refilled by a new task.",
+    "Late finishes and missed lunches are tracked and worked down, not absorbed.",
+    "Nursing operations holds the share of overtime that is documentation-driven, separate from staffing and census.",
+  ],
+  bendsCloser: "Right now Meridian is behind on the first. That is why the next page gives every link an owner and a date.",
+  fragile:
+    "Links 3 and 4 are flagged because the freed minute is easy to give and easy to refill. A new task or a heavier assignment quietly fills the recovered time, and the shift still runs late, so the overtime never comes off. Making that minute close the shift on time is the one thing this plan holds. And to stay honest, overtime avoided is counted once: it is wages you stop paying now, separate from the replacement cost retention books.",
+  hardestTitle: "Landing the Freed Minute on the Shift",
+  hardestArrow: "↓",
+  hardestLead:
+    "A faster note does not cut overtime on its own. It gives the minute back, but a person still has to let the shift close on time instead of filling that minute with a new task. Unless the unit workflow protects the recovered minute, the shift still runs late and the overtime holds. Overtime only comes down if the freed minute lands on the shift. We hold it three ways.",
+  splitLabel: "Where the freed minute can go",
+  splitLeft: ["Refilled", "A new task or a heavier assignment fills the recovered minute. The shift still runs late, and the overtime is exactly where it was."],
+  splitRight: ["On the shift", "The recovered minute closes the shift on time. The documentation-driven overtime comes off the payroll. This is overtime wages avoided."],
+  splitCloser: "Both start from the same recovered minute. Only one takes out overtime. Closing the shift on time has to be a commitment, not a hope.",
+  barHead: "Where the freed minute is going now",
+  barAcc: 55,
+  barTarget: 80,
+  barAccLbl: "closing the shift on time",
+  barRelLbl: "refilled by a new task",
+  cadenceLead: "Overtime shows up on a lag in the payroll data, so the plan is steered monthly on overtime hours per nurse and on-time shift completion, not on the booked overtime spend.",
+  monthly: [
+    "Is after-shift charting still falling?",
+    "What share of shifts are closing on time?",
+    "How did overtime hours per nurse move on each unit?",
+    "What is the one ask this month, and who owns it?",
+    "Did last month's ask get done? If yes, expand. If no, escalate to the goal-owner.",
+  ],
+  renewal:
+    'The conversation is no longer "was it worth the price." It is "we set out to take out $520K of documentation-driven overtime, we are well on the way, here is the runway on the rest." The overtime was always partly the charting. This is the plan that took out that share. Price becomes progress.',
+  ambition: [
+    { key: "conservative", label: "Conservative", goalLabel: "Goal · $290K · 3,900 OT hrs avoided", usualLabel: "What usually happens · ~$100K", goalMargin: 290_000 },
+    { key: "typical", label: "Typical", goalLabel: "Goal · $520K · 6,900 OT hrs avoided", usualLabel: "What usually happens · ~$170K", goalMargin: 520_000 },
+    { key: "ambitious", label: "Ambitious", goalLabel: "Goal · $760K · 10,100 OT hrs avoided", usualLabel: "What usually happens · ~$250K", goalMargin: 760_000 },
+  ],
+};
+
 export const CONTENT: Record<AttainSetting, Partial<Record<GoalId, SettingGoalContent>>> = {
   outpatient: {
     access: outpatientAccess,
@@ -1232,6 +1395,7 @@ export const CONTENT: Record<AttainSetting, Partial<Record<GoalId, SettingGoalCo
   nursing: {
     quality: nursingQuality,
     retention: nursingRetention,
+    capacity: nursingCapacity,
   },
 };
 
