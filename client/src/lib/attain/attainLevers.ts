@@ -489,8 +489,9 @@ export const LEVERS: Record<GoalId, Lever[]> = {
     },
   ],
   // Retention (Workforce) is a D1-D5 DECISION CHAIN, rendered bespoke on
-  // Build the case (`WorkforceDecisionChain.tsx`), not through the generic
-  // lever renderer - same convention as access/revenue. This catalog entry
+  // Build the case as the shared step-down ladder (`WorkforceLadderChain.tsx`,
+  // every setting), not through the generic lever renderer - same convention
+  // as access/revenue. This catalog entry
   // exists so Commit and the Attainment hub, which walk every goal's
   // `LEVERS[goal]` generically, keep working: one row per decision, ids
   // matching the flat `LeverValues` keys `attainWorkforce.ts` reads

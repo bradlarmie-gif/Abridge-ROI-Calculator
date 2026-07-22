@@ -9,7 +9,6 @@ import EdAccessDecisionChain from "./EdAccessDecisionChain";
 import RevenueDecisionChain from "./RevenueDecisionChain";
 import RevenueLadderChain from "./RevenueLadderChain";
 import InpatientRevenueDecisionChain from "./InpatientRevenueDecisionChain";
-import WorkforceDecisionChain from "./WorkforceDecisionChain";
 import WorkforceLadderChain from "./WorkforceLadderChain";
 import QualityLadderChain from "./QualityLadderChain";
 import CapacityLadderChain from "./CapacityLadderChain";
@@ -159,12 +158,17 @@ export default function StepBuildCase({
   // drag framing for the one crisp ladder teaching line, exactly like
   // outpatient access.
   const isEdAccessLadder = goal === "access" && setting === "ed";
-  // Outpatient retention is the second ladder: it assembles the same step-down
+  // Retention is a ladder in EVERY setting: it assembles the same step-down
   // story (freed time -> protected relief -> burnout down -> the burnout-pool
   // gate -> departures avoided -> the prize) that Planning reads back, via the
   // shared retention ladder (see WorkforceLadderChain + accessLadder.ts's
-  // deriveRetentionLadder). Other settings' retention keeps the D1-D5 chain.
-  const isRetentionLadder = goal === "retention" && setting === "outpatient";
+  // deriveRetentionLadder). The ladder is fully setting-aware (nurses vs
+  // providers scope units, per-setting turnover / replacement / burnout share,
+  // 50% ceiling), so ED, inpatient, and nursing retention read the same story
+  // outpatient does. The freed-hour split still only applies where BOTH access
+  // and retention are selectable (outpatient and ED); inpatient and nursing
+  // have no access goal, so crossGoalShareMultiplier stays 1 there.
+  const isRetentionLadder = goal === "retention";
   // Nursing quality is the fifth ladder: it assembles the same step-down
   // story (first domino -> shared scope -> the event selector -> per-event
   // ground / diagnosis gate / bundle -> the converged prize) that Planning
@@ -335,15 +339,6 @@ export default function StepBuildCase({
           />
         ) : isRetentionLadder ? (
           <WorkforceLadderChain
-            setting={setting}
-            baseline={baseline}
-            values={values}
-            onChangeValue={(leverId, value) => onChangeLeverValue("retention", leverId, value)}
-            realizationPct={realizationPct}
-            crossGoalShareMultiplier={crossGoalShareMultiplier}
-          />
-        ) : goal === "retention" ? (
-          <WorkforceDecisionChain
             setting={setting}
             baseline={baseline}
             values={values}

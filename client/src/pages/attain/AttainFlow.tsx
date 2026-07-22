@@ -280,11 +280,12 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
   // content. This is the one branch the task asks for; the underlying step id
   // stays "commit" so nav, progress dots, and the save shape are untouched.
   const isOutpatientAccessPlan = state.setting === "outpatient" && goals.length === 1 && goals[0] === "access";
-  // Outpatient retention is the second combo the phased Planning view is
-  // rebuilt for (a single selected retention goal in the outpatient setting).
-  // It renders the same StepPlanning shell, driven by the shared retention
-  // ladder (goal="retention"). Every other combo still renders StepCommit.
-  const isOutpatientRetentionPlan = state.setting === "outpatient" && goals.length === 1 && goals[0] === "retention";
+  // Retention (single-goal) is a phased Planning view in EVERY setting: it
+  // renders the same StepPlanning shell, driven by the shared, setting-aware
+  // retention ladder (goal="retention"). ED, inpatient, and nursing retention
+  // all reach it, so retention tells the same step-down story everywhere. A
+  // multi-goal plan that also includes retention still renders StepCommit.
+  const isRetentionPlan = goals.length === 1 && goals[0] === "retention";
   // Outpatient revenue is the third combo the phased Planning view is rebuilt
   // for (a single selected revenue goal in the outpatient setting). It renders
   // the same StepPlanning shell driven by the shared, converging revenue
@@ -306,7 +307,7 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
   // renders the same StepPlanning shell driven by the shared nursing capacity
   // ladder (goal="capacity"). Every other combo still renders StepCommit.
   const isNursingCapacityPlan = state.setting === "nursing" && goals.length === 1 && goals[0] === "capacity";
-  const isPhasedPlan = isOutpatientAccessPlan || isOutpatientRetentionPlan || isOutpatientRevenuePlan || isEdAccessPlan || isNursingQualityPlan || isNursingCapacityPlan;
+  const isPhasedPlan = isOutpatientAccessPlan || isRetentionPlan || isOutpatientRevenuePlan || isEdAccessPlan || isNursingQualityPlan || isNursingCapacityPlan;
 
   const updateState = useCallback((updates: Partial<AttainState>) => {
     setState((prev) => ({ ...prev, ...updates }));
@@ -858,12 +859,12 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
               />
             )}
 
-            {step === "commit" && isOutpatientRetentionPlan && (
+            {step === "commit" && isRetentionPlan && state.setting && (
               <StepPlanning
-                setting="outpatient"
+                setting={state.setting}
                 baseline={baseline}
                 goal="retention"
-                values={valuesByGoal.retention ?? defaultLeverValues("retention", "outpatient")}
+                values={valuesByGoal.retention ?? defaultLeverValues("retention", state.setting)}
                 combined={combined}
                 goalOwner={goalOwnerByPriority.retention ?? { name: "", title: "" }}
                 onChangeGoalOwner={(patch) => handleChangeGoalOwner("retention", patch)}
