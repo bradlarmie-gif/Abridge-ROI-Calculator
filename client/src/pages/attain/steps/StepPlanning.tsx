@@ -2,9 +2,11 @@ import { motion } from "framer-motion";
 import { ArrowDown } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { computeAccessChain } from "@/lib/attain/attainAccess";
+import { computeWorkforceChain } from "@/lib/attain/attainWorkforce";
+import { DEFAULT_MINUTES_SAVED_PER_NOTE } from "@/lib/attain/attainAccess";
 import type { AttainBaseline, LeverValues, MultiGoalContributionsResult } from "@/lib/attain/attainLevers";
 import { GOAL_CATALOG } from "@/lib/attain/attainGoals";
-import type { AttainSetting } from "@/lib/attain/attainTypes";
+import type { AttainSetting, GoalId } from "@/lib/attain/attainTypes";
 import {
   PLAN_PHASE_IDS,
   phaseBoundaries,
@@ -18,24 +20,40 @@ import { CADENCE_OPTIONS, CADENCE_LABEL, type GoalOwner, type SignalCadence } fr
 import {
   fmtInt,
   fmtHours,
+  fmtHoursShort,
+  fmtDepartures,
   fmtMoneyCompact,
   deriveAccessLadder,
+  deriveRetentionLadder,
   SpineRung,
   CapacityDemandGate,
+  BurnoutPoolGate,
 } from "./accessLadder";
+
+/** The two goals Planning renders as the shared step-down ladder on the hook.
+ * Outpatient access is the locked exemplar; outpatient retention is the
+ * second, built from the same abstraction so the two cannot diverge. Every
+ * other setting/goal still renders the original StepCommit. */
+export type PlanningGoal = "access" | "retention";
 
 function asLines(raw: number | string[] | undefined): string[] {
   return Array.isArray(raw) ? raw : [];
+}
+function asNum(raw: number | string[] | undefined): number {
+  return typeof raw === "number" ? raw : 0;
 }
 
 interface StepPlanningProps {
   setting: AttainSetting;
   baseline: AttainBaseline;
-  /** The access goal's own lever values (the D1-D5 chain inputs). */
+  /** Which goal is on the hook. Access is the exemplar; retention reuses the
+   * same shell via the shared retention ladder. */
+  goal: PlanningGoal;
+  /** This goal's own lever values. */
   values: LeverValues;
   /** The combined engine result, used only for this priority's realization-
-   * applied prize and realized-visit count (`byGoal.access`). Every other
-   * rung comes straight off the raw access chain below. */
+   * applied prize and realized COUNT (`byGoal[goal]`). Every other rung comes
+   * straight off the raw chain below. */
   combined: MultiGoalContributionsResult | null;
   goalOwner: GoalOwner;
   onChangeGoalOwner: (patch: Partial<GoalOwner>) => void;
@@ -45,8 +63,8 @@ interface StepPlanningProps {
   onChangePartnerRisk: (text: string) => void;
   planCadence: SignalCadence;
   onChangePlanCadence: (cadence: SignalCadence) => void;
-  /** The plan horizon in months (outpatient access is 9). The target month
-   * and the three phase boundaries are all derived from this. */
+  /** The plan horizon in months. The target month and the three phase
+   * boundaries are all derived from this. */
   totalMonths: number;
   stepNumber: number;
 }
@@ -56,7 +74,13 @@ function FieldLabel({ children }: { children: React.ReactNode }) {
   return <p className="text-[8px] font-bold uppercase tracking-wide text-[#8C8C8C] mb-1">{children}</p>;
 }
 
-const PHASE_META: Record<PlanPhaseId, { label: string; intent: string; signalLabel: string }> = {
+interface PhaseMeta {
+  label: string;
+  intent: string;
+  signalLabel: string;
+}
+
+const PHASE_META_ACCESS: Record<PlanPhaseId, PhaseMeta> = {
   start: {
     label: "Start",
     intent: "Start small. One line first, and prove the minutes are real before anything scales.",
@@ -74,9 +98,28 @@ const PHASE_META: Record<PlanPhaseId, { label: string; intent: string; signalLab
   },
 };
 
+const PHASE_META_RETENTION: Record<PlanPhaseId, PhaseMeta> = {
+  start: {
+    label: "Start",
+    intent: "Start with one department. Prove the minutes are real and after-hours charting actually falls before anything scales.",
+    signalLabel: "After-hours charting time, falling",
+  },
+  expand: {
+    label: "Expand",
+    intent: "The relief held. Widen the scope, and watch the burnout assessment improve and likelihood-to-stay rise.",
+    signalLabel: "Burnout assessment score, improving",
+  },
+  steady: {
+    label: "Steady",
+    intent: "Full scope. The relief is protected, and voluntary turnover is holding lower.",
+    signalLabel: "Voluntary turnover, falling",
+  },
+};
+
 export default function StepPlanning({
   setting,
   baseline,
+  goal,
   values,
   combined,
   goalOwner,
@@ -90,80 +133,127 @@ export default function StepPlanning({
   totalMonths,
   stepNumber,
 }: StepPlanningProps) {
-  const goalDef = GOAL_CATALOG.access;
+  const goalDef = GOAL_CATALOG[goal as GoalId];
+  const isRetention = goal === "retention";
 
-  // Every operational rung comes off the raw access chain (a real, honest
-  // capacity/demand number, never attribution-scaled). Only the prize and
-  // the realized-visit COUNT read from the combined result, so they reflect
-  // this priority's realization the same way every other surface does.
-  const chain = computeAccessChain(baseline, values, 1);
-  const access = combined?.byGoal.access;
-
-  // The whole spine, derived once from the SHARED ladder (see accessLadder.ts)
-  // so Planning shows the exact same rung order, first domino, gate, and
-  // numbers Build the case assembles. Only the realized-visit COUNT and the
-  // dollar PRIZE read from the combined engine result (this priority's
-  // realization-applied figures); every other rung comes straight off the raw
-  // access chain, exactly as Build the case's live chain does.
-  const ladder = deriveAccessLadder(chain, {
-    realizedVisits: access?.totalCount ?? chain.payoff.realizedVisits,
-    prize: access?.totalMargin ?? 0,
-  });
-  const {
-    providersInScope,
-    minutes,
-    visitLen,
-    freedHrsPerProviderWk,
-    capacityVisits,
-    directedSharePct,
-    demandCeiling,
-    realizedVisits,
-    binding,
-    prize,
-    marginPerVisit,
-  } = ladder;
-
-  const lines = !chain.scope.enterprise ? asLines(values.accessLines) : [];
   const targetMonth = totalMonths > 0 ? Math.round(totalMonths) : 9;
+  const ownerName = goalOwner.name.trim();
+  const partnerRisk = planning.partnerRisk ?? "";
+  const PHASE_META = isRetention ? PHASE_META_RETENTION : PHASE_META_ACCESS;
+
+  // ── ACCESS ladder (the exemplar) ──────────────────────────────────────
+  // Every operational rung comes off the raw access chain (a real, honest
+  // capacity/demand number); only the realized COUNT and the dollar PRIZE
+  // read from the combined result, so they reflect this priority's
+  // realization the same way every other surface does.
+  const accessChain = computeAccessChain(baseline, values, 1);
+  const accessResult = combined?.byGoal.access;
+  const accessLadder = deriveAccessLadder(accessChain, {
+    realizedVisits: accessResult?.totalCount ?? accessChain.payoff.realizedVisits,
+    prize: accessResult?.totalMargin ?? 0,
+  });
+
+  // ── RETENTION ladder ──────────────────────────────────────────────────
+  // Same discipline: operational rungs off the raw workforce chain, the
+  // departures-avoided COUNT and the dollar PRIZE off the combined result.
+  // Retention-only, so no cross-goal split (multiplier 1).
+  const minutes = asNum(values.retentionMinutesSaved) > 0 ? asNum(values.retentionMinutesSaved) : DEFAULT_MINUTES_SAVED_PER_NOTE;
+  const workforceChain = computeWorkforceChain(baseline, setting, values, 1);
+  const retentionResult = combined?.byGoal.retention;
+  const retentionLadder = deriveRetentionLadder(workforceChain, setting, baseline, {
+    minutes,
+    // The COUNT reads off the raw chain, not the combined result, so it stays
+    // identical to Build the case (whose live chain shows the same unrounded
+    // figure). The combined totalCount is rounded to a whole person, which at a
+    // single-department scale collapses a real 0.1 departures/yr to 0 and would
+    // make Planning disagree with Build. Retention Planning is always a single
+    // goal, so no cross-goal split applies (multiplier 1); only the PRIZE reads
+    // from combined, to pick up this priority's realization exactly as Build does.
+    departuresAvoided: workforceChain.payoff.departuresAvoided,
+    prize: retentionResult?.totalMargin ?? workforceChain.payoff.value,
+  });
+
+  // The prize + the first-domino minutes are shared framing across both goals
+  // (both open on minutes saved per note).
+  const prize = isRetention ? retentionLadder.prize : accessLadder.prize;
+  const firstDominoMinutes = isRetention ? retentionLadder.minutes : accessLadder.minutes;
 
   const boundaries = phaseBoundaries(targetMonth);
   const ramp = phaseValueRamp(prize);
-  const ownerName = goalOwner.name.trim();
 
-  // Derived, editable default target per phase's leading signal — never a
-  // fabricated figure: minutes/note is the committed anchor, realized visits
-  // is the chain's own output, and the middle signal has no partner input to
-  // derive from so it defaults to a benchmark the partner edits.
-  const signalDefault: Record<PlanPhaseId, string> = {
-    start: `${fmtInt(minutes)} min per note`,
-    expand: "under 14 days",
-    steady: realizedVisits > 0 ? `${fmtInt(realizedVisits)} per year` : "the full realized count",
-  };
+  // Derived, editable default target per phase's leading signal.
+  const accessLines = !accessChain.scope.enterprise ? asLines(values.accessLines) : [];
+  const retentionLines = asLines(values.retentionLines);
+  const retentionProviders = retentionLadder.providersInScope;
 
-  const phaseScope: Record<PlanPhaseId, string> = {
-    start:
-      lines.length > 0
-        ? `${lines[0]} first`
-        : providersInScope > 0
-          ? `A first cohort of the ${fmtInt(providersInScope)} providers`
-          : "A first service line",
-    expand:
-      lines.length > 1
-        ? `Add ${lines.slice(1).join(", ")}`
-        : lines.length === 1
-          ? `Widen beyond ${lines[0]}`
-          : providersInScope > 0
-            ? `Widen to more of the ${fmtInt(providersInScope)} providers`
-            : "Widen the scope",
-    steady:
-      lines.length > 0
-        ? `All lines: ${lines.join(", ")}`
-        : providersInScope > 0
-          ? `All ${fmtInt(providersInScope)} providers`
-          : "Full scope",
-  };
+  const signalDefault: Record<PlanPhaseId, string> = isRetention
+    ? {
+        start: `${fmtInt(minutes)} min saved per note`,
+        expand: "improving vs baseline",
+        steady:
+          retentionLadder.departuresAvoided > 0
+            ? `${fmtDepartures(retentionLadder.departuresAvoided)} avoided per year`
+            : "voluntary turnover holding lower",
+      }
+    : {
+        start: `${fmtInt(accessLadder.minutes)} min per note`,
+        expand: "under 14 days",
+        steady: accessLadder.realizedVisits > 0 ? `${fmtInt(accessLadder.realizedVisits)} per year` : "the full realized count",
+      };
 
-  const partnerRisk = planning.partnerRisk ?? "";
+  const phaseScope: Record<PlanPhaseId, string> = isRetention
+    ? {
+        start:
+          retentionLines.length > 0
+            ? `${retentionLines[0]} first`
+            : retentionProviders > 0
+              ? `A first cohort of the ${fmtInt(retentionProviders)} providers`
+              : "A first department",
+        expand:
+          retentionLines.length > 1
+            ? `Add ${retentionLines.slice(1).join(", ")}`
+            : retentionLines.length === 1
+              ? `Widen beyond ${retentionLines[0]}`
+              : retentionProviders > 0
+                ? `Widen to more of the ${fmtInt(retentionProviders)} providers`
+                : "Widen the scope",
+        steady:
+          retentionLines.length > 0
+            ? `All departments: ${retentionLines.join(", ")}`
+            : retentionProviders > 0
+              ? `All ${fmtInt(retentionProviders)} providers`
+              : "Full scope",
+      }
+    : {
+        start:
+          accessLines.length > 0
+            ? `${accessLines[0]} first`
+            : accessLadder.providersInScope > 0
+              ? `A first cohort of the ${fmtInt(accessLadder.providersInScope)} providers`
+              : "A first service line",
+        expand:
+          accessLines.length > 1
+            ? `Add ${accessLines.slice(1).join(", ")}`
+            : accessLines.length === 1
+              ? `Widen beyond ${accessLines[0]}`
+              : accessLadder.providersInScope > 0
+                ? `Widen to more of the ${fmtInt(accessLadder.providersInScope)} providers`
+                : "Widen the scope",
+        steady:
+          accessLines.length > 0
+            ? `All lines: ${accessLines.join(", ")}`
+            : accessLadder.providersInScope > 0
+              ? `All ${fmtInt(accessLadder.providersInScope)} providers`
+              : "Full scope",
+      };
+
+  const teach = isRetention
+    ? "You want lower voluntary turnover and a better clinician experience. It starts on one number: the minutes saved per note. That freed time, kept as relief, comes off after-hours charting, and each rung below multiplies on top of it toward the departures you avoid and the dollar that saves. Below is the promise, the chain of logic under it, and the phased plan that gets there."
+    : "One number does the work here: the minutes saved per note. It is the first domino. Freed hours, new capacity, realized visits, and the dollar prize are all multiplication on top of it. Below is the promise, the chain of logic under it, and the phased plan that gets there.";
+
+  const spineIntro = isRetention
+    ? "Read it top to bottom. The first rungs multiply: minutes saved become freed hours, and the hours you keep as relief come off after-hours charting. Then burnout is the ceiling that decides how many of your departures you can actually avoid, and those avoided departures become dollars."
+    : "Read it top to bottom. The first rungs multiply: minutes saved become freed hours, and the freed hours you direct to access become new capacity. Then demand is the ceiling that decides how much of that capacity actually converts to visits, and those visits become dollars.";
 
   return (
     <div>
@@ -175,9 +265,7 @@ export default function StepPlanning({
           Planning
         </h1>
         <p className="text-sm text-[#666666] leading-relaxed max-w-[620px]" data-testid="text-step-teach">
-          One number does the work here: the minutes saved per note. It is the first domino. Freed hours, new capacity,
-          realized visits, and the dollar prize are all multiplication on top of it. Below is the promise, the chain of
-          logic under it, and the phased plan that gets there.
+          {teach}
         </p>
       </motion.div>
 
@@ -194,7 +282,7 @@ export default function StepPlanning({
           <p className="text-[9px] font-bold uppercase tracking-wide text-[#8C8C8C]">The promise</p>
         </div>
         <p className="text-lg md:text-[22px] leading-snug text-[#1A1A1A] font-semibold" data-testid="text-planning-promise-line">
-          {goalDef.label}
+          {isRetention ? "Lower voluntary turnover, better clinician experience" : goalDef.label}
           <span className="text-[#B4B4B4] font-normal"> · </span>
           Owned by {ownerName ? <span>{ownerName}</span> : <span className="text-[#EA2C00]">name the exec below</span>}
           <span className="text-[#B4B4B4] font-normal"> · </span>
@@ -206,8 +294,6 @@ export default function StepPlanning({
           by month {targetMonth}
         </p>
 
-        {/* Exec owner, editable right here. When no name is set the promise
-            above points down to this prompt. */}
         <div className="mt-4 pt-4 border-t border-[#E0D9CE]">
           <FieldLabel>Exec owner (who answers for whether this lands)</FieldLabel>
           <div className="flex flex-wrap gap-3">
@@ -233,74 +319,143 @@ export default function StepPlanning({
           derived number; the anchor at the top is the one we commit to and
           verify first. */}
       <div className="mb-10">
-        <h2 className="text-sm font-bold text-[#1A1A1A] mb-1">How {fmtInt(minutes)} minutes per note becomes {prize > 0 ? fmtMoneyCompact(prize) : "the prize"}</h2>
-        <p className="text-[12px] text-[#8C8C8C] mb-4 max-w-[560px] leading-relaxed">
-          Read it top to bottom. The first rungs multiply: minutes saved become freed hours, and the freed hours you
-          direct to access become new capacity. Then demand is the ceiling that decides how much of that capacity
-          actually converts to visits, and those visits become dollars.
-        </p>
+        <h2 className="text-sm font-bold text-[#1A1A1A] mb-1">
+          How {fmtInt(firstDominoMinutes)} minutes per note becomes {prize > 0 ? fmtMoneyCompact(prize) : "the prize"}
+        </h2>
+        <p className="text-[12px] text-[#8C8C8C] mb-4 max-w-[560px] leading-relaxed">{spineIntro}</p>
 
         <div className="space-y-2" data-testid="section-planning-spine">
-          <SpineRung
-            anchor
-            isSet
-            value={fmtInt(minutes)}
-            unit="min / note"
-            label="Minutes saved per note"
-            caption="The target we commit to and verify first. The partner does not know it yet, so this is the anchor we prove before scaling."
-            emptyHint=""
-          />
-          <div className="flex justify-center"><ArrowDown className="w-4 h-4 text-[#B4B4B4]" /></div>
-          <SpineRung
-            isSet={freedHrsPerProviderWk > 0}
-            value={fmtHours(freedHrsPerProviderWk)}
-            unit="hrs / provider / wk"
-            label="Freed time"
-            caption="That time saved, added up across every note a provider writes in a week."
-            emptyHint="Set your providers and encounters on Starting point to see the freed hours."
-          />
-          <div className="flex justify-center"><ArrowDown className="w-4 h-4 text-[#B4B4B4]" /></div>
-          <SpineRung
-            isSet={capacityVisits > 0}
-            value={fmtInt(capacityVisits)}
-            unit="visits / yr"
-            label="New capacity"
-            caption={`${fmtInt(directedSharePct)}% of the freed time is directed to access, the rest stays as relief, at about ${fmtInt(visitLen)} minutes a visit.`}
-            emptyHint="Direct some freed time to access on Build the case to open capacity."
-          />
-          <div className="flex justify-center"><ArrowDown className="w-4 h-4 text-[#B4B4B4]" /></div>
-          <CapacityDemandGate
-            capacityVisits={capacityVisits}
-            demandCeiling={demandCeiling}
-            realizedVisits={realizedVisits}
-            binding={binding}
-            bothSet={capacityVisits > 0 && demandCeiling > 0}
-            emptyHint={
-              capacityVisits <= 0
-                ? "Direct some freed time to access on Build the case to open capacity, then add your demand."
-                : "Add your backlog and referral demand on Build the case to see how much of the capacity converts."
-            }
-          />
-          <div className="flex justify-center"><ArrowDown className="w-4 h-4 text-[#B4B4B4]" /></div>
-          <SpineRung
-            payoff
-            isSet={prize > 0}
-            value={fmtMoneyCompact(prize)}
-            unit="contribution margin / yr"
-            label="The prize"
-            caption={prize > 0 ? `${fmtInt(realizedVisits)} realized visits at about $${fmtInt(marginPerVisit)} of margin each.` : "Finish the chain above and the prize appears here."}
-            emptyHint="The prize appears once the chain above is complete."
-          />
+          {isRetention ? (
+            <>
+              <SpineRung
+                anchor
+                isSet
+                value={fmtInt(retentionLadder.minutes)}
+                unit="min / note"
+                label="Minutes saved per note"
+                caption="The target we commit to and verify first. The share you keep as relief comes off after-hours charting, the work outside of work that drives burnout."
+                emptyHint=""
+              />
+              <div className="flex justify-center"><ArrowDown className="w-4 h-4 text-[#B4B4B4]" /></div>
+              <SpineRung
+                isSet={retentionLadder.freedHrsPerProviderWk > 0}
+                value={fmtHoursShort(retentionLadder.freedHrsPerProviderWk)}
+                unit="hrs / provider / wk"
+                label="Freed time"
+                caption="That time saved, added up across every note a provider writes in a week."
+                emptyHint="Set your providers on Build the case to see the freed hours."
+              />
+              <div className="flex justify-center"><ArrowDown className="w-4 h-4 text-[#B4B4B4]" /></div>
+              <SpineRung
+                isSet={retentionLadder.protectedHrsPerProviderWk > 0}
+                value={fmtHoursShort(retentionLadder.protectedHrsPerProviderWk)}
+                unit="hrs / provider / wk"
+                label="Protected relief"
+                caption={`${fmtInt(retentionLadder.protectedSharePct)}% of the freed time stays with the clinician, off after-hours charting. The rest is free to go to the schedule.`}
+                emptyHint="Protect some freed time as relief on Build the case."
+              />
+              <div className="flex justify-center"><ArrowDown className="w-4 h-4 text-[#B4B4B4]" /></div>
+              <SpineRung
+                isSet={retentionLadder.compositeImpactPct > 0}
+                value={fmtHoursShort(retentionLadder.compositeImpactPct)}
+                unit="% of burnout departures"
+                label="Burnout comes down"
+                caption={`The protected relief lowers burnout, capped at a reachable ${retentionLadder.impactCeilingPct}% of the burnout-related departures in your pool.`}
+                emptyHint="Protect relief and make it hold on Build the case to bring burnout down."
+              />
+              <div className="flex justify-center"><ArrowDown className="w-4 h-4 text-[#B4B4B4]" /></div>
+              <BurnoutPoolGate
+                burnoutPool={retentionLadder.burnoutPool}
+                compositeImpactPct={retentionLadder.compositeImpactPct}
+                departuresAvoided={retentionLadder.departuresAvoided}
+                turnoverRatePct={retentionLadder.turnoverRatePct}
+                burnoutSharePct={retentionLadder.burnoutSharePct}
+                bothSet={retentionLadder.burnoutPool > 0 && retentionLadder.compositeImpactPct > 0}
+                emptyHint={
+                  retentionLadder.burnoutPool <= 0
+                    ? "Set your scope, turnover, and burnout share on Build the case to size the departure pool, then protect some relief."
+                    : "Protect some relief and make it hold on Build the case to capture a slice of this pool."
+                }
+              />
+              <div className="flex justify-center"><ArrowDown className="w-4 h-4 text-[#B4B4B4]" /></div>
+              <SpineRung
+                payoff
+                isSet={prize > 0}
+                value={fmtMoneyCompact(prize)}
+                unit="replacement cost saved / yr"
+                label="The prize"
+                caption={
+                  prize > 0
+                    ? `${fmtDepartures(retentionLadder.departuresAvoided)} departures avoided at about $${fmtInt(retentionLadder.replacementCost)} each.`
+                    : "Finish the chain above and the prize appears here."
+                }
+                emptyHint="The prize appears once the chain above is complete."
+              />
+            </>
+          ) : (
+            <>
+              <SpineRung
+                anchor
+                isSet
+                value={fmtInt(accessLadder.minutes)}
+                unit="min / note"
+                label="Minutes saved per note"
+                caption="The target we commit to and verify first. The partner does not know it yet, so this is the anchor we prove before scaling."
+                emptyHint=""
+              />
+              <div className="flex justify-center"><ArrowDown className="w-4 h-4 text-[#B4B4B4]" /></div>
+              <SpineRung
+                isSet={accessLadder.freedHrsPerProviderWk > 0}
+                value={fmtHours(accessLadder.freedHrsPerProviderWk)}
+                unit="hrs / provider / wk"
+                label="Freed time"
+                caption="That time saved, added up across every note a provider writes in a week."
+                emptyHint="Set your providers and encounters on Starting point to see the freed hours."
+              />
+              <div className="flex justify-center"><ArrowDown className="w-4 h-4 text-[#B4B4B4]" /></div>
+              <SpineRung
+                isSet={accessLadder.capacityVisits > 0}
+                value={fmtInt(accessLadder.capacityVisits)}
+                unit="visits / yr"
+                label="New capacity"
+                caption={`${fmtInt(accessLadder.directedSharePct)}% of the freed time is directed to access, the rest stays as relief, at about ${fmtInt(accessLadder.visitLen)} minutes a visit.`}
+                emptyHint="Direct some freed time to access on Build the case to open capacity."
+              />
+              <div className="flex justify-center"><ArrowDown className="w-4 h-4 text-[#B4B4B4]" /></div>
+              <CapacityDemandGate
+                capacityVisits={accessLadder.capacityVisits}
+                demandCeiling={accessLadder.demandCeiling}
+                realizedVisits={accessLadder.realizedVisits}
+                binding={accessLadder.binding}
+                bothSet={accessLadder.capacityVisits > 0 && accessLadder.demandCeiling > 0}
+                emptyHint={
+                  accessLadder.capacityVisits <= 0
+                    ? "Direct some freed time to access on Build the case to open capacity, then add your demand."
+                    : "Add your backlog and referral demand on Build the case to see how much of the capacity converts."
+                }
+              />
+              <div className="flex justify-center"><ArrowDown className="w-4 h-4 text-[#B4B4B4]" /></div>
+              <SpineRung
+                payoff
+                isSet={prize > 0}
+                value={fmtMoneyCompact(prize)}
+                unit="contribution margin / yr"
+                label="The prize"
+                caption={prize > 0 ? `${fmtInt(accessLadder.realizedVisits)} realized visits at about $${fmtInt(accessLadder.marginPerVisit)} of margin each.` : "Finish the chain above and the prize appears here."}
+                emptyHint="The prize appears once the chain above is complete."
+              />
+            </>
+          )}
         </div>
       </div>
 
-      {/* 3 — Three phases across the horizon. Each shows only scope, owner,
-          the one leading signal and its target, and the value realized by the
-          end of the phase (a derived ramp climbing to the full prize). */}
+      {/* 3 — Three phases across the horizon. */}
       <div className="mb-10">
         <h2 className="text-sm font-bold text-[#1A1A1A] mb-1">The phased plan, across {targetMonth} months</h2>
         <p className="text-[12px] text-[#8C8C8C] mb-4 max-w-[560px] leading-relaxed">
-          Start small and prove the signal, widen once it holds, then run at full scope. The value climbs with the scope.
+          {isRetention
+            ? "Start with one department and prove the relief is real, widen once it holds, then run at full scope. The value climbs with the scope."
+            : "Start small and prove the signal, widen once it holds, then run at full scope. The value climbs with the scope."}
         </p>
 
         <div className="space-y-4" data-testid="section-planning-phases">
@@ -433,7 +588,11 @@ export default function StepPlanning({
         <input
           value={partnerRisk}
           onChange={(e) => onChangePartnerRisk(e.target.value)}
-          placeholder="e.g. new scheduling template is blocked until the EHR upgrade in Q3"
+          placeholder={
+            isRetention
+              ? "e.g. a covering-shift policy refills the freed time until the Q3 staffing review"
+              : "e.g. new scheduling template is blocked until the EHR upgrade in Q3"
+          }
           className="h-10 w-full rounded-md border border-[#D8CFC4] bg-white px-3 text-sm text-[#1A1A1A] outline-none focus:border-[#EA2C00]"
           data-testid="input-planning-partner-risk"
         />

@@ -278,6 +278,12 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
   // content. This is the one branch the task asks for; the underlying step id
   // stays "commit" so nav, progress dots, and the save shape are untouched.
   const isOutpatientAccessPlan = state.setting === "outpatient" && goals.length === 1 && goals[0] === "access";
+  // Outpatient retention is the second combo the phased Planning view is
+  // rebuilt for (a single selected retention goal in the outpatient setting).
+  // It renders the same StepPlanning shell, driven by the shared retention
+  // ladder (goal="retention"). Every other combo still renders StepCommit.
+  const isOutpatientRetentionPlan = state.setting === "outpatient" && goals.length === 1 && goals[0] === "retention";
+  const isPhasedPlan = isOutpatientAccessPlan || isOutpatientRetentionPlan;
 
   const updateState = useCallback((updates: Partial<AttainState>) => {
     setState((prev) => ({ ...prev, ...updates }));
@@ -813,6 +819,7 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
               <StepPlanning
                 setting="outpatient"
                 baseline={baseline}
+                goal="access"
                 values={valuesByGoal.access ?? defaultLeverValues("access", "outpatient")}
                 combined={combined}
                 goalOwner={goalOwnerByPriority.access ?? { name: "", title: "" }}
@@ -828,7 +835,27 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
               />
             )}
 
-            {step === "commit" && !isOutpatientAccessPlan && goals.length > 0 && (
+            {step === "commit" && isOutpatientRetentionPlan && (
+              <StepPlanning
+                setting="outpatient"
+                baseline={baseline}
+                goal="retention"
+                values={valuesByGoal.retention ?? defaultLeverValues("retention", "outpatient")}
+                combined={combined}
+                goalOwner={goalOwnerByPriority.retention ?? { name: "", title: "" }}
+                onChangeGoalOwner={(patch) => handleChangeGoalOwner("retention", patch)}
+                planning={planning}
+                onChangePhaseOwner={handleChangePhaseOwner}
+                onChangePhaseSignalTarget={handleChangePhaseSignalTarget}
+                onChangePartnerRisk={handleChangePartnerRisk}
+                planCadence={planCadence}
+                onChangePlanCadence={handleChangePlanCadence}
+                totalMonths={state.totalMonths}
+                stepNumber={stepIndex + 1}
+              />
+            )}
+
+            {step === "commit" && !isPhasedPlan && goals.length > 0 && (
               <StepCommit
                 goals={goals}
                 setting={state.setting ?? "outpatient"}
