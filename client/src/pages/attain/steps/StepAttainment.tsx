@@ -3,7 +3,7 @@ import { Download, Save, ChevronDown, ChevronUp, X, Check } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { NumberField } from "@/components/NumberField";
-import AttainmentCurve, { USUAL_CEILING_PCT } from "@/components/attain/AttainmentCurve";
+import AttainmentCurve from "@/components/attain/AttainmentCurve";
 import {
   leversFor,
   defaultLeverValues,
@@ -742,9 +742,7 @@ export default function StepAttainment({
   // retention for the same freed hour - see attainLevers.ts's
   // computeMultiGoalContributions and attainEdAccess.ts's module header.
   const hasFreedTimeConflict = (setting === "outpatient" || setting === "ed") && goals.includes("access") && goals.includes("retention");
-  const usualMargin = target.margin * (USUAL_CEILING_PCT / 100);
   const curveGoalLabel = `${formatCompact(target.margin)} · ${target.label}`;
-  const curveUsualLabel = `~${formatCompact(usualMargin)}`;
   const remainingMonths = Math.max(0, state.totalMonths - state.monthsElapsed);
   const remainingMargin = Math.max(0, target.margin - attainment.marginToDate);
   const unitLabel = UNIT_LABEL[setting] ?? "units";
@@ -1004,16 +1002,15 @@ export default function StepAttainment({
                 monthsElapsed={state.monthsElapsed}
                 totalMonths={state.totalMonths}
                 goalLabel={curveGoalLabel}
-                usualLabel={curveUsualLabel}
                 startLabel="Committed"
                 actualPoints={trajectory}
               />
 
               <div className="flex flex-wrap gap-3 my-6">
                 <div className="flex-1 min-w-[160px] border border-[#E7E0D6] bg-[#F8F5F1] rounded-md p-4" data-testid="card-attain-progress-stat-attainment">
-                  <p className="text-[9.5px] font-semibold uppercase tracking-[1.4px] text-[#8C8C8C]">Attainment, from real progress</p>
+                  <p className="text-[9.5px] font-semibold uppercase tracking-[1.4px] text-[#8C8C8C]">Attainment, measured</p>
                   <p className="font-abridge text-3xl text-[#EA2C00] mt-2 mb-1" data-testid="text-attain-progress-pct">{progressPct}%</p>
-                  <p className="text-[10px] text-[#8C8C8C]">Weighted by each decision's worth</p>
+                  <p className="text-[10px] text-[#8C8C8C]">From logged updates, weighted by each decision's worth</p>
                 </div>
                 <div className="flex-1 min-w-[160px] border border-[#E7E0D6] bg-[#F8F5F1] rounded-md p-4" data-testid="card-attain-progress-stat-onpace">
                   <p className="text-[9.5px] font-semibold uppercase tracking-[1.4px] text-[#8C8C8C]">On-pace target</p>
@@ -1117,7 +1114,7 @@ export default function StepAttainment({
                   </p>
                 </div>
                 <div className="border border-[#E7E0D6] bg-[#F8F5F1] rounded-lg p-4">
-                  <p className="text-[9.5px] font-semibold uppercase tracking-[1.4px] text-[#8C8C8C] mb-1.5">Attainment today</p>
+                  <p className="text-[9.5px] font-semibold uppercase tracking-[1.4px] text-[#8C8C8C] mb-1.5">Projected, on-pace</p>
                   <p className="font-abridge text-3xl text-[#1A1A1A]" data-testid="text-attain-glance-attainment">
                     {attainment.pct}%
                   </p>
@@ -1198,10 +1195,10 @@ export default function StepAttainment({
               <h2 className="font-abridge text-[32px] text-[#1A1A1A]">Closing the Gap</h2>
             </div>
             <p className="text-[15px] leading-relaxed text-[#3A3A3A] mb-5 max-w-[720px]">
-              Most deployments drift: time gets freed, but the fragile middle links never get steered, and realized
-              value settles well below what the model promised. That is the dashed line below, combined across every
-              priority in this plan. Your plan is the line above it. The distance between them is whether the middle of
-              each chain gets steered, month by month, to a named owner.
+              The line below is your plan: the target trajectory from today to the goal, combined across every priority
+              in this plan. The number at Today is where a fully on-pace plan would sit this month, a projection, not
+              measured. Once you log real progress on the Progress tab, that tab plots your actual climb against this
+              same target, so you can see exactly where you stand.
             </p>
 
             <AttainmentCurve
@@ -1210,7 +1207,6 @@ export default function StepAttainment({
               monthsElapsed={state.monthsElapsed}
               totalMonths={state.totalMonths}
               goalLabel={curveGoalLabel}
-              usualLabel={curveUsualLabel}
             />
 
             <div className="flex items-center gap-3 mt-3 mb-6 max-w-[420px]">
@@ -1230,9 +1226,9 @@ export default function StepAttainment({
 
             <div className="flex flex-wrap gap-3 mb-2">
               <div className="flex-1 min-w-[160px] border border-[#E7E0D6] bg-[#F8F5F1] rounded-md p-4" data-testid="card-attain-stat-attainment">
-                <p className="text-[9.5px] font-semibold uppercase tracking-[1.4px] text-[#8C8C8C]">Attainment today</p>
+                <p className="text-[9.5px] font-semibold uppercase tracking-[1.4px] text-[#8C8C8C]">Projected, on-pace</p>
                 <p className="font-abridge text-3xl text-[#EA2C00] mt-2 mb-1">{attainment.pct}%</p>
-                <p className="text-[10px] text-[#8C8C8C]">Of your built plan</p>
+                <p className="text-[10px] text-[#8C8C8C]">A projection, not measured. Measured attainment is tracked on the Progress tab.</p>
               </div>
               <div className="flex-1 min-w-[160px] border border-[#E7E0D6] bg-[#F8F5F1] rounded-md p-4" data-testid="card-attain-stat-onpace">
                 <p className="text-[9.5px] font-semibold uppercase tracking-[1.4px] text-[#8C8C8C]">On-pace target</p>

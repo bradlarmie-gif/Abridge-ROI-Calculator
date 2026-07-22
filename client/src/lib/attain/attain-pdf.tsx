@@ -92,12 +92,6 @@ const C = {
   riskBg: "#FFF6F3",
 };
 
-// Illustrative ceiling for "what usually happens" — mirrors
-// `AttainmentCurve.tsx`'s `USUAL_CEILING_PCT` (duplicated here rather than
-// imported, so this lib module has no dependency on a live UI component;
-// keep the two in sync if that constant ever changes).
-const USUAL_CEILING_PCT = 39;
-
 const UNIT_LABEL: Record<AttainSetting, string> = {
   outpatient: "providers",
   ed: "providers",
@@ -239,7 +233,6 @@ export interface AttainPdfCurve {
   monthsElapsed: number;
   totalMonths: number;
   goalLabel: string;
-  usualLabel: string;
   remainingMonths: number;
   remainingMargin: number;
 }
@@ -381,7 +374,6 @@ export function buildAttainPdfData(input: AttainPdfInput): AttainPdfData {
 
   const decisionCount = priorities.reduce((sum, p) => sum + p.decisions.length, 0);
 
-  const usualMargin = combinedMargin * (USUAL_CEILING_PCT / 100);
   const remainingMonths = Math.max(0, state.totalMonths - state.monthsElapsed);
   const remainingMargin = Math.max(0, combinedMargin - attainment.marginToDate);
 
@@ -412,7 +404,6 @@ export function buildAttainPdfData(input: AttainPdfInput): AttainPdfData {
       monthsElapsed: state.monthsElapsed,
       totalMonths: state.totalMonths,
       goalLabel: `${formatCompact(combinedMargin)} · ${target.label || `${combinedCount.toLocaleString()} units of value`}`,
-      usualLabel: `~${formatCompact(usualMargin)}`,
       remainingMonths,
       remainingMargin,
     },
@@ -713,8 +704,9 @@ function CoverPage({ data }: { data: AttainPdfData }) {
 // the same convention `AppRationalizationPDFExport.tsx` /
 // `ForecastPDFExport.tsx` already use for chart labels in this codebase
 // (react-pdf's <Svg> does not render its own <Text> children reliably).
-// Geometry mirrors `AttainmentCurve.tsx`'s smoothed 3-point plan line, the
-// dashed "what usually happens" line, and the shaded gap between them.
+// Geometry mirrors `AttainmentCurve.tsx`'s smoothed plan line with the area
+// beneath it shaded. There is no "drift" line: the only comparison drawn is
+// the plan/target versus where you actually are.
 // ────────────────────────────────────────────────────────────────────────
 
 const CURVE_W = 480;
@@ -746,14 +738,12 @@ function PdfAttainmentCurve({
   monthsElapsed,
   totalMonths,
   goalLabel,
-  usualLabel,
 }: {
   pct: number;
   onPacePct: number;
   monthsElapsed: number;
   totalMonths: number;
   goalLabel: string;
-  usualLabel: string;
 }) {
   const todayFrac = totalMonths > 0 ? monthsElapsed / totalMonths : 0;
   const xToday = Math.max(CX0 + 4, cxAt(todayFrac));
@@ -761,14 +751,9 @@ function PdfAttainmentCurve({
   const yGoalCoral = cyAt(100);
   const coralPoints = [{ x: CX0, y: CY_BASE }, { x: xToday, y: yTodayCoral }, { x: CX1, y: yGoalCoral }];
 
-  const usualTodayPct = USUAL_CEILING_PCT * Math.max(0, Math.min(1, todayFrac));
-  const yUsualToday = cyAt(usualTodayPct);
-  const yUsualFinal = cyAt(USUAL_CEILING_PCT);
-  const grayPoints = [{ x: CX0, y: CY_BASE }, { x: xToday, y: yUsualToday }, { x: CX1, y: yUsualFinal }];
-  const reversedGray = [...grayPoints].reverse();
-  let backPath = "";
-  for (let i = 1; i < reversedGray.length; i++) backPath += ` ${smoothSeg(reversedGray[i - 1], reversedGray[i])}`;
-  const gapPath = `${buildCurvePath(coralPoints)} L${reversedGray[0].x},${reversedGray[0].y}${backPath} Z`;
+  // The shaded area sits beneath the plan line — down to the baseline and
+  // back to the start. No second "drift" line to shade a gap against.
+  const areaPath = `${buildCurvePath(coralPoints)} L${CX1},${CY_BASE} L${CX0},${CY_BASE} Z`;
 
   const yOnPaceToday = cyAt(onPacePct);
   const todayLabelX = Math.max(120, Math.min(xToday - 6, CX1 - 40));
@@ -795,16 +780,14 @@ function PdfAttainmentCurve({
   return (
     <View style={{ position: "relative", marginBottom: 4 }} data-testid="pdf-attainment-curve">
       <Svg width={CURVE_W} height={CURVE_H} viewBox={`0 0 ${CURVE_W} ${CURVE_H}`}>
-        <Path d={gapPath} fill={C.coral} opacity={0.06} />
+        <Path d={areaPath} fill={C.coral} opacity={0.06} />
         <Line x1={CX0} y1={CY_BASE} x2={CX1} y2={CY_BASE} stroke={C.tan} strokeWidth={1.25} />
         <Line x1={xToday} y1={CY_BASE} x2={xToday} y2={yTodayCoral} stroke={C.tan} strokeWidth={1} />
-        <Path d={buildCurvePath(grayPoints)} fill="none" stroke={C.faint} strokeWidth={1.75} strokeDasharray="6 4" />
         <Path d={buildCurvePath(coralPoints)} fill="none" stroke={C.coral} strokeWidth={2.25} />
         <Circle cx={CX0} cy={CY_BASE} r={3} fill={C.ink} />
         <Circle cx={xToday} cy={yOnPaceToday} r={3.25} fill={C.white} stroke={C.muted} strokeWidth={1.25} />
         <Circle cx={xToday} cy={yTodayCoral} r={5.25} fill={C.coral} />
         <Circle cx={CX1} cy={yGoalCoral} r={6} fill={C.coral} />
-        <Circle cx={CX1} cy={yUsualFinal} r={4} fill={C.white} stroke={C.faint} strokeWidth={1.5} />
       </Svg>
 
       <Text
@@ -814,20 +797,10 @@ function PdfAttainmentCurve({
             : { position: "absolute", left: todayLabelX, top: todayLabelY, width: 90, textAlign: "right", fontSize: 8.5, fontWeight: 700, color: C.ink }
         }
       >
-        {`Today · ${Math.round(pct)}%`}
+        {`On-pace · ${Math.round(pct)}%`}
       </Text>
       <Text style={{ position: "absolute", left: CX1 - 200, top: Math.max(0, yGoalCoral - 18), width: 200, textAlign: "right", fontSize: 8.5, fontWeight: 700, color: C.coral }}>
         {`Goal · ${goalLabel}`}
-      </Text>
-      <Text style={{ position: "absolute", left: CX1 - 220, top: yUsualFinal + 8, width: 220, textAlign: "right", fontSize: 7.5, color: C.muted }}>
-        {`What usually happens · ${usualLabel}`}
-      </Text>
-      {/* Anchored low and early (near the deal-signed baseline) rather than
-          at the geometric midpoint of the coral line — the wedge is widest
-          there, so the label sits safely inside the shaded gap without
-          risking a collision with a steep early rise in the coral line. */}
-      <Text style={{ position: "absolute", left: CX0 + (xToday - CX0) * 0.2, top: CY_BASE - 32, fontSize: 7.5, fontWeight: 700, letterSpacing: 0.5, color: C.faint }}>
-        the gap
       </Text>
 
       <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 6 }}>
@@ -981,7 +954,7 @@ function ClosingGapPage({ data }: { data: AttainPdfData }) {
       <Text style={s.eyebrowCoral}>The Trajectory</Text>
       <Text style={s.h2} minPresenceAhead={60}>Closing the Gap</Text>
       <Text style={s.lead}>
-        {`Most deployments drift. Time gets freed, but the fragile middle links never get steered, and realized value settles well below what the model promised. That is the dashed line below${combinedNote}. Your plan is the line above it. The distance between them is whether the middle of the chain gets steered, month by month, to a named owner.`}
+        {`The line below is your plan: the target trajectory from today to the goal${combinedNote}. The number at Today is where a fully on-pace plan would sit this month, a projection, not measured. As the team logs real progress, the plan is steered against this same target, month by month, to a named owner.`}
       </Text>
 
       <PdfAttainmentCurve
@@ -990,21 +963,20 @@ function ClosingGapPage({ data }: { data: AttainPdfData }) {
         monthsElapsed={cv.monthsElapsed}
         totalMonths={cv.totalMonths}
         goalLabel={cv.goalLabel}
-        usualLabel={cv.usualLabel}
       />
 
       <View style={s.statsRow} wrap={false}>
-        <StatCard k="Attainment today" n={`${cv.pct}%`} f="Of your built plan" coral />
+        <StatCard k="Projected, on-pace" n={`${cv.pct}%`} f="A projection, not measured" coral />
         <StatCard k="On-pace target" n={`${cv.onPacePct}%`} f="Where the plan expected this month" />
         <StatCard k="Runway to goal" n={`${cv.remainingMonths} mo`} f={`~${formatCompact(cv.remainingMargin)} margin remaining`} />
       </View>
 
       <View style={s.teachBox} wrap={false}>
-        <Text style={s.subEyebrowCoral}>What bends the line</Text>
+        <Text style={s.subEyebrowCoral}>What keeps the plan on the line</Text>
         <Text style={s.bodySmall}>
-          The dashed path is not Abridge underdelivering. Adoption and time saved hit target on nearly every
-          deployment. The line drifts only when the fragile middle links never get steered, month by month, to a
-          named owner. The following pages give every link exactly that: an owner and a date.
+          Adoption and time saved hit target on nearly every deployment. Realized value tracks the plan only when the
+          fragile middle links get steered, month by month, to a named owner. The following pages give every link
+          exactly that: an owner and a date.
         </Text>
       </View>
 
