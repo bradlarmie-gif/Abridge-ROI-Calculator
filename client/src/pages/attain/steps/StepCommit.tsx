@@ -311,36 +311,6 @@ export default function StepCommit({
         </p>
       </motion.div>
 
-      {/* ONE plan-wide review cadence — replaces what used to be a cadence
-          Select repeated on every single signal. Progress's "next check
-          due" is derived straight off this value, for every signal on
-          every decision, not a separate number per row. */}
-      <div
-        className="flex flex-wrap items-center justify-between gap-4 rounded-lg border border-[#E7E0D6] bg-[#F8F5F1] p-4 mb-8 max-w-[620px]"
-        data-testid="card-attain-commit-plan-cadence"
-      >
-        <div className="min-w-0">
-          <p className="text-[9px] font-bold uppercase tracking-wide text-[#8C8C8C] mb-1">Plan review cadence</p>
-          <p className="text-xs text-[#3A3A3A] leading-relaxed max-w-[400px]">
-            How often the whole plan gets checked. Every signal below is checked on this same cadence.
-          </p>
-        </div>
-        <div className="w-[150px] flex-shrink-0">
-          <Select value={planCadence} onValueChange={(v) => onChangePlanCadence(v as SignalCadence)}>
-            <SelectTrigger className="h-9 w-full text-xs bg-white" data-testid="select-attain-commit-plan-cadence">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {CADENCE_OPTIONS.map((c) => (
-                <SelectItem key={c.value} value={c.value} className="text-xs">
-                  {c.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
       {totalMoved === 0 ? (
         <div className="bg-[#F5F0EB] rounded-xl p-6 mb-8 max-w-[560px]" data-testid="text-attain-commit-empty">
           <p className="text-sm text-[#3A3A3A] leading-relaxed">
@@ -371,17 +341,52 @@ export default function StepCommit({
 
               {/* Goal-owner - the exec sponsor for this outcome. Sits above
                   the decisions because every decision-owner below answers
-                  to this person for whether the outcome lands. The room
-                  liked this card as-is; unchanged. */}
+                  to this person for whether the outcome lands. How often
+                  the whole plan gets reviewed is THIS person's call, so
+                  the plan-wide cadence control sits right next to their
+                  name here rather than in a separate card lower on the
+                  page - "who owns this outcome, and how often we check
+                  on it" reads as one decision. The cadence itself is
+                  still a single plan-wide value (see AttainFlow's
+                  `planCadence`); this is the same control, just relocated,
+                  and repeated per priority only so it reads next to
+                  whichever owner is on screen. */}
               <div
                 className="rounded-lg border border-[#E7E0D6] bg-white p-4 mb-4"
                 data-testid={`card-attain-goal-owner-${goal}`}
               >
-                <p className="text-[9px] font-bold uppercase tracking-wide text-[#8C8C8C] mb-1">
-                  Who owns this outcome
-                </p>
+                <div className="flex flex-wrap items-start justify-between gap-3 mb-1">
+                  <p className="text-[9px] font-bold uppercase tracking-wide text-[#8C8C8C]">
+                    Who owns this outcome
+                  </p>
+                  <div className="flex items-center gap-2 flex-shrink-0" data-testid={`card-attain-commit-plan-cadence-${goal}`}>
+                    <label
+                      htmlFor={`select-attain-commit-plan-cadence-${goal}`}
+                      className="text-[9px] font-bold uppercase tracking-wide text-[#8C8C8C] whitespace-nowrap"
+                    >
+                      Reviewed
+                    </label>
+                    <Select value={planCadence} onValueChange={(v) => onChangePlanCadence(v as SignalCadence)}>
+                      <SelectTrigger
+                        id={`select-attain-commit-plan-cadence-${goal}`}
+                        className="h-8 w-[122px] text-xs bg-white"
+                        data-testid={`select-attain-commit-plan-cadence-${goal}`}
+                      >
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {CADENCE_OPTIONS.map((c) => (
+                          <SelectItem key={c.value} value={c.value} className="text-xs">
+                            {c.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
                 <p className="text-[10.5px] text-[#8C8C8C] mb-3 leading-relaxed max-w-[520px]">
-                  The decision-owners below answer to this person for whether {goalDef.label} actually lands.
+                  The decision-owners below answer to this person for whether {goalDef.label} actually lands, on the
+                  cadence this owner sets.
                 </p>
                 <div className="flex flex-wrap gap-3">
                   <input
@@ -612,7 +617,7 @@ export default function StepCommit({
             <p className="text-xs text-[#3A3A3A] leading-relaxed">
               The month you pick here is what the attainment curve on the next page steers against. A decision due in
               Month 2 is expected to be showing up by Month 2, not sitting untouched at the goal-owner review in
-              Month 9. Every signal is checked on the plan cadence above, not on its own schedule.
+              Month 9. Every signal is checked on the cadence its goal-owner set above, not on its own schedule.
             </p>
           </div>
 
