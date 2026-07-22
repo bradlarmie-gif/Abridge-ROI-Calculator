@@ -6,7 +6,6 @@ import { GOAL_CATALOG } from "@/lib/attain/attainGoals";
 import type { AttainSetting, GoalId } from "@/lib/attain/attainTypes";
 import AccessDecisionChain from "./AccessDecisionChain";
 import EdAccessDecisionChain from "./EdAccessDecisionChain";
-import RevenueDecisionChain from "./RevenueDecisionChain";
 import RevenueLadderChain from "./RevenueLadderChain";
 import InpatientRevenueDecisionChain from "./InpatientRevenueDecisionChain";
 import WorkforceLadderChain from "./WorkforceLadderChain";
@@ -135,10 +134,11 @@ export default function StepBuildCase({
   const accessSplitLabel = setting === "ed" ? "faster throughput" : "opening access on the schedule";
   const goalDef = GOAL_CATALOG[goal];
   const levers = leversFor(goal, setting);
-  // Outpatient revenue is the ladder exemplar (converging multi-path, see
-  // RevenueLadderChain); ED revenue keeps its current three-path screen.
-  const isRevenueLadder = goal === "revenue" && setting === "outpatient";
-  const isRevenueChain = goal === "revenue" && setting === "ed";
+  // Outpatient AND ED revenue both run the converging multi-path ladder (see
+  // RevenueLadderChain). ED offers a smaller path set (E/M + denials, no risk
+  // adjustment) via `pathsAvailableFor`, but the same shape and shared
+  // engine. Inpatient revenue is its own separate mechanism.
+  const isRevenueLadder = goal === "revenue" && (setting === "outpatient" || setting === "ed");
   const isIpRevenueChain = goal === "revenue" && setting === "inpatient";
   const result = combined?.byGoal[goal];
   const contributionFor = (id: string) => result?.perLever.find((p) => p.id === id);
@@ -316,14 +316,6 @@ export default function StepBuildCase({
           />
         ) : isRevenueLadder ? (
           <RevenueLadderChain
-            setting={setting}
-            baseline={baseline}
-            values={values}
-            onChangeValue={(leverId, value) => onChangeLeverValue("revenue", leverId, value)}
-            realizationPct={realizationPct}
-          />
-        ) : isRevenueChain ? (
-          <RevenueDecisionChain
             setting={setting}
             baseline={baseline}
             values={values}

@@ -291,9 +291,11 @@ function EmPath({
   onChangeValue: (leverId: string, value: number | string[]) => void;
   realizationPct: number;
 }) {
+  const isED = setting === "ed";
   const chain = computeEmChain(baseline, setting, values);
   const realized = Math.round(realizedValue(chain.value, realizationPct));
   const prizeFormula = realized > 0 ? formulaWithRealization(emFormula(chain), realizationPct, realized) : emFormula(chain);
+  const emWhoActs = isED ? "ED providers and the coding team" : "Providers and the coding team";
 
   return (
     <div data-testid="section-revenue-path-em">
@@ -302,31 +304,37 @@ function EmPath({
       {/* BEAT 1 — ground the reality */}
       <LadderRung
         eyebrow="Ground it"
-        title="Whose visits, and how many are E&M visits"
-        help="wRVU gains only accrue where providers are on productivity pay, so employed share sizes the path. And only office / E&M visits carry an E/M level, so that share scopes the volume this path is measured against."
+        title={isED ? "How many ED visits carry an E/M level" : "Whose visits, and how many are E&M visits"}
+        help={
+          isED
+            ? "Your ED providers and encounter volume come from your starting point. Only the visits that are billable E/M visits carry an E/M level, so that share scopes the volume this path is measured against."
+            : "wRVU gains only accrue where providers are on productivity pay, so employed share sizes the path. And only office / E&M visits carry an E/M level, so that share scopes the volume this path is measured against."
+        }
         testid="card-revenue-em-ground"
       >
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-          <div>
-            <FieldLabel tip="Share of your providers who are employed or on productivity / wRVU pay. Where they are not, a captured wRVU does not turn into revenue for you.">
-              Providers employed / on productivity pay
-            </FieldLabel>
-            <div className="relative">
-              <NumberField
-                value={asNum(values.revenueEmEmployedShare) > 0 ? asNum(values.revenueEmEmployedShare) : DEFAULT_EM_EMPLOYED_SHARE}
-                onValueChange={(v) => onChangeValue("revenueEmEmployedShare", v)}
-                min={0}
-                max={100}
-                decimal={false}
-                className="h-11 w-full rounded-md border border-[#E5E5E5] bg-white px-3 pr-9 text-sm"
-                data-testid="input-revenue-em-employed-share"
-              />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8C8C8C] text-sm pointer-events-none">%</span>
+        <div className={`grid grid-cols-1 ${isED ? "sm:max-w-[320px]" : "sm:grid-cols-2"} gap-4 mb-4`}>
+          {!isED && (
+            <div>
+              <FieldLabel tip="Share of your providers who are employed or on productivity / wRVU pay. Where they are not, a captured wRVU does not turn into revenue for you.">
+                Providers employed / on productivity pay
+              </FieldLabel>
+              <div className="relative">
+                <NumberField
+                  value={asNum(values.revenueEmEmployedShare) > 0 ? asNum(values.revenueEmEmployedShare) : DEFAULT_EM_EMPLOYED_SHARE}
+                  onValueChange={(v) => onChangeValue("revenueEmEmployedShare", v)}
+                  min={0}
+                  max={100}
+                  decimal={false}
+                  className="h-11 w-full rounded-md border border-[#E5E5E5] bg-white px-3 pr-9 text-sm"
+                  data-testid="input-revenue-em-employed-share"
+                />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8C8C8C] text-sm pointer-events-none">%</span>
+              </div>
             </div>
-          </div>
+          )}
           <div>
-            <FieldLabel tip="Share of your visits that are office / E&M visits, the ones that carry an E/M level. Procedures and other visit types are out of scope for this path.">
-              Visits that are office / E&M visits
+            <FieldLabel tip={isED ? "Share of your ED visits that are billable E/M visits, the ones that carry an E/M level. Purely procedural or non-billable visits are out of scope for this path." : "Share of your visits that are office / E&M visits, the ones that carry an E/M level. Procedures and other visit types are out of scope for this path."}>
+              {isED ? "ED visits that are billable E/M visits" : "Visits that are office / E&M visits"}
             </FieldLabel>
             <div className="relative">
               <NumberField
@@ -342,7 +350,7 @@ function EmPath({
             </div>
           </div>
         </div>
-        <CountOutput label="Office / E&M visits in scope" value={fmtInt(chain.eligibleEncounters)} unit="visits / yr" testid="text-revenue-em-ground-output" />
+        <CountOutput label={isED ? "ED E/M visits in scope" : "Office / E&M visits in scope"} value={fmtInt(chain.eligibleEncounters)} unit="visits / yr" testid="text-revenue-em-ground-output" />
       </LadderRung>
 
       <Connector />
@@ -350,14 +358,18 @@ function EmPath({
       {/* BEAT 2 — diagnose the leak (the gate) */}
       <LadderRung
         eyebrow="The gate · diagnose the leak"
-        title="How often the claim goes out below the care delivered"
-        help="On those visits, how often does the claim go out at a lower level than the care you actually delivered, because the note did not capture the full picture? That documentation-caused share is the ceiling Abridge can move. Then commit to the share of it you will actually close."
+        title={isED ? "How often the claim goes out below the acuity delivered" : "How often the claim goes out below the care delivered"}
+        help={
+          isED
+            ? "On those ED visits, how often does the claim go out below the acuity you actually delivered, because the note did not capture it? That documentation-caused share is the ceiling Abridge can move. Then commit to the share of it you will actually close."
+            : "On those visits, how often does the claim go out at a lower level than the care you actually delivered, because the note did not capture the full picture? That documentation-caused share is the ceiling Abridge can move. Then commit to the share of it you will actually close."
+        }
         testid="card-revenue-em-gate"
       >
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
           <div>
-            <FieldLabel tip="Share of your E/M visits where the claim goes out below the care delivered because the note fell short. This is today's leak, the ceiling on what better documentation can move.">
-              Claims going out below the care delivered
+            <FieldLabel tip={isED ? "Share of your ED E/M visits where the claim goes out below the acuity delivered because the note fell short. This is today's leak, the ceiling on what better documentation can move." : "Share of your E/M visits where the claim goes out below the care delivered because the note fell short. This is today's leak, the ceiling on what better documentation can move."}>
+              {isED ? "Claims going out below the acuity delivered" : "Claims going out below the care delivered"}
             </FieldLabel>
             <div className="relative">
               <NumberField
@@ -415,14 +427,14 @@ function EmPath({
           ceilingLabel="Claims going out low, the documentation leak"
           ceilingCount={chain.docCausedVisits}
           ceilingUnit="claims / yr"
-          capturedLabel="Claims corrected to the supported level"
+          capturedLabel={isED ? "Claims corrected to the acuity you delivered" : "Claims corrected to the supported level"}
           capturedCount={chain.correctedVisits}
           capturedUnit="claims / yr"
-          whoActs="Providers and the coding team"
+          whoActs={emWhoActs}
           bothSet={chain.docCausedVisits > 0 && chain.capturePct > 0}
           emptyHint={
             chain.docCausedVisits <= 0
-              ? "Set the office / E&M visits in scope above and today's documentation leak to size the pool, then commit to a share of it."
+              ? `Set the ${isED ? "ED E/M visits" : "office / E&M visits"} in scope above and today's documentation leak to size the pool, then commit to a share of it.`
               : "Commit to a share of the documentation gap to see how many claims get corrected."
           }
         />
@@ -712,6 +724,7 @@ function DenialsPath({
   onChangeValue: (leverId: string, value: number | string[]) => void;
   realizationPct: number;
 }) {
+  const isED = setting === "ed";
   const chain = computeDenialsChain(baseline, setting, values);
   const realized = Math.round(realizedValue(chain.value, realizationPct));
 
@@ -722,8 +735,12 @@ function DenialsPath({
       {/* BEAT 1 — ground */}
       <LadderRung
         eyebrow="Ground it"
-        title="Your denial volume and what a claim is worth"
-        help="Set today's medical-necessity denial rate against your eligible encounters, and the average value of a claim you protect by preventing its denial. That sizes the pool this path is measured against, before any dollar."
+        title={isED ? "Your ED denial volume and what a claim is worth" : "Your denial volume and what a claim is worth"}
+        help={
+          isED
+            ? "Set today's medical-necessity denial rate against your ED encounters, and the average value of an ED claim you protect by preventing its denial. That sizes the pool this path is measured against, before any dollar."
+            : "Set today's medical-necessity denial rate against your eligible encounters, and the average value of a claim you protect by preventing its denial. That sizes the pool this path is measured against, before any dollar."
+        }
         testid="card-revenue-denials-ground"
       >
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
@@ -769,7 +786,11 @@ function DenialsPath({
       <LadderRung
         eyebrow="The gate · diagnose the leak"
         title="Which denials the note can actually prevent"
-        help="Of your denials, how many are because the note did not establish why the care was needed, versus payer rules and authorization you cannot document your way out of? Only the documentation-related share is Abridge's to move. That share is the ceiling, and it is what you commit to prevent."
+        help={
+          isED
+            ? "Of your ED denials, how many are because the note did not establish why the care was needed, versus payer rules and authorization you cannot document your way out of? Only the documentation-related share is Abridge's to move. That share is the ceiling, and it is what you commit to prevent."
+            : "Of your denials, how many are because the note did not establish why the care was needed, versus payer rules and authorization you cannot document your way out of? Only the documentation-related share is Abridge's to move. That share is the ceiling, and it is what you commit to prevent."
+        }
         testid="card-revenue-denials-gate"
       >
         <div className="mb-4">
