@@ -1,4 +1,5 @@
 import type { AttainBaseline, LeverContribution, LeverContributionsResult, LeverValues } from "./attainLevers";
+import { realizedValue, formulaWithRealization } from "./attainLevers";
 import { computeAllDriverValues, computeAllDriverCalcSummaries } from "@/lib/exploreDriverCalcs";
 import { DEFAULT_EXPLORE_STATE, type ExploreState } from "@/pages/explore/ExploreFlow";
 
@@ -264,7 +265,7 @@ export const DEFAULT_IP_CDI_COST_PER_QUERY = 50;
  * relying on the $50 default alone to keep a partner from re-pricing a
  * query at DRG-reimbursement-sized dollars ($400-500+). See the UI's own
  * explicit note when both DRG and CDI are chosen together
- * (`InpatientRevenueDecisionChain.tsx`). */
+ * (`InpatientRevenueLadderChain.tsx`). */
 export const MAX_IP_CDI_COST_PER_QUERY = 200;
 
 export interface IpCdiChain {
@@ -573,4 +574,163 @@ export function computeIpRevenueContributions(baseline: AttainBaseline, values: 
 
   const totalCount = rows.reduce((sum, r) => sum + r.count, 0);
   return { perLever, totalMargin: chain.totalValue, totalCount };
+}
+
+// ────────────────────────────────────────────────────────────────────────
+// THE SHARED INPATIENT-REVENUE LADDER — the converging, multi-path analog of
+// the outpatient/ED revenue ladder (attainRevenue.ts's `deriveRevenueLadder`).
+//
+// Inpatient revenue has the SAME converging shape as outpatient/ED revenue:
+// one lever (complete, specific documentation at the point of care) feeding
+// several parallel per-path payoffs that converge into one captured-revenue
+// prize. What differs are the MECHANISMS: DRG-weight capture, CDI query
+// efficiency (labor, not reimbursement), and observation-status defense. So
+// the shared model here is a set of per-path sub-ladders, each running the
+// same four-beat conversation (GROUND the reality -> DIAGNOSE the
+// documentation-caused ceiling Abridge can move -> name WHO ACTS -> the
+// number falls out), plus the one converged prize that sums them. Build the
+// case assembles it (editable rungs) and Planning reads it back (the spine on
+// the hook); both render from this one derivation so they can never drift.
+//
+// Every number reconciles to the engine: each path's `value` is exactly its
+// own `computeIpDrgChain`/`computeIpCdiChain`/`computeIpObsChain` payoff
+// (which in turn reconcile to `computeAllDriverValues`), scaled once by this
+// priority's realization percent, so the per-path dollars match Build <->
+// Planning and sum to the same converged prize the side panel shows. The
+// three dollars are genuinely DISTINCT claims (a captured DRG weight, CDI
+// staff time no longer spent, and a defended inpatient status), so summing is
+// honest, never a double-count — see the module header for the DRG/CDI guard
+// and the DRG/Obs shared-pool note.
+// ────────────────────────────────────────────────────────────────────────
+
+export interface IpRevenuePathLadder {
+  id: IpRevenuePathId;
+  label: string;
+  /** Beat 1, GROUND: the operational fact that sizes or scopes the path. */
+  groundLabel: string;
+  groundValue: string;
+  groundSet: boolean;
+  /** Beat 2, DIAGNOSE: the documentation-caused ceiling Abridge can move,
+   * separated from what Abridge cannot touch. The load-bearing rung. */
+  ceilingLabel: string;
+  ceilingCount: number;
+  ceilingUnit: string;
+  /** What actually converts out of that ceiling once the plan commits. */
+  capturedLabel: string;
+  capturedCount: number;
+  capturedUnit: string;
+  /** Beat 3, WHO ACTS: the partner-owned team that has to move. */
+  whoActs: string;
+  /** Beat 4, THE NUMBER: the realized dollar and its transparent math. */
+  priceLabel: string;
+  value: number;
+  formula: string;
+  hasValue: boolean;
+}
+
+export interface IpRevenueLadderModel {
+  paths: IpRevenuePathLadder[];
+  /** The one converged prize: every selected path summed, each an honestly
+   * distinct claim, never double-counted. */
+  convergedPrize: number;
+  anyPathSelected: boolean;
+}
+
+/** Who has to act, per path, shared verbatim between Build the case and
+ * Planning. DRG capture only lands if the query closes before discharge, so
+ * the weight is on the claim — that query-closure is the DRG path's own
+ * conversion condition, which is why CDI and coding own it. */
+export const IP_REVENUE_PATH_WHO_ACTS: Record<IpRevenuePathId, string> = {
+  drg: "CDI and coding, closing the query before discharge",
+  cdi: "The CDI team",
+  obs: "Utilization management / physician advisor",
+};
+
+/**
+ * Derives the shared, converging inpatient-revenue ladder. `realizationPct`
+ * scales every path's dollar (and the converged prize) exactly once, the same
+ * way `applyRealization` scales the engine result the side panel reads, so
+ * Build the case (which passes its own live slider) and Planning (which passes
+ * the factor implied by the combined engine result) show identical per-path
+ * dollars and the same converged prize.
+ */
+export function deriveIpRevenueLadder(
+  baseline: AttainBaseline,
+  values: LeverValues,
+  realizationPct = 100,
+): IpRevenueLadderModel {
+  const chain = computeIpRevenueChain(baseline, values);
+  const paths: IpRevenuePathLadder[] = [];
+
+  if (chain.drg) {
+    const c = chain.drg.chain;
+    const value = Math.round(realizedValue(c.value, realizationPct));
+    paths.push({
+      id: "drg",
+      label: IP_REVENUE_PATH_LABELS.drg,
+      groundLabel: "Eligible admissions in scope",
+      groundValue: c.eligibleEncounters > 0 ? `${fmtInt(c.eligibleEncounters)} admissions / yr` : "Not set yet",
+      groundSet: c.eligibleEncounters > 0,
+      ceilingLabel: "Admissions with a CC or MCC present but under-documented",
+      ceilingCount: c.atRisk,
+      ceilingUnit: "admissions / yr",
+      capturedLabel: "Cases captured at the DRG weight they earned",
+      capturedCount: c.capturedCases,
+      capturedUnit: "cases / yr",
+      whoActs: IP_REVENUE_PATH_WHO_ACTS.drg,
+      priceLabel: `${c.weightIncrease} weight × $${fmtInt(c.basePayment)} / case`,
+      value,
+      formula: value > 0 ? formulaWithRealization(chain.drg.payoffFormula, realizationPct, value) : chain.drg.payoffFormula,
+      hasValue: value > 0,
+    });
+  }
+
+  if (chain.cdi) {
+    const c = chain.cdi.chain;
+    const value = Math.round(realizedValue(c.value, realizationPct));
+    paths.push({
+      id: "cdi",
+      label: IP_REVENUE_PATH_LABELS.cdi,
+      groundLabel: "CDI queries generated today",
+      groundValue: c.queries > 0 ? `${fmtInt(c.queries)} queries / yr` : "Not set yet",
+      groundSet: c.queries > 0,
+      ceilingLabel: "Queries that exist only because the note lacked specificity",
+      ceilingCount: c.queries,
+      ceilingUnit: "queries / yr",
+      capturedLabel: "Queries no longer needed, CDI staff time saved",
+      capturedCount: c.avoided,
+      capturedUnit: "queries / yr",
+      whoActs: IP_REVENUE_PATH_WHO_ACTS.cdi,
+      priceLabel: `$${fmtInt(c.costPerQuery)} admin cost / query`,
+      value,
+      formula: value > 0 ? formulaWithRealization(chain.cdi.payoffFormula, realizationPct, value) : chain.cdi.payoffFormula,
+      hasValue: value > 0,
+    });
+  }
+
+  if (chain.obs) {
+    const c = chain.obs.chain;
+    const value = Math.round(realizedValue(c.value, realizationPct));
+    paths.push({
+      id: "obs",
+      label: IP_REVENUE_PATH_LABELS.obs,
+      groundLabel: "Observation stays or status downgrades a year",
+      groundValue: c.downgrades > 0 ? `${fmtInt(c.downgrades)} stays / yr` : "Not set yet",
+      groundSet: c.downgrades > 0,
+      ceilingLabel: "Stays the note can defend as inpatient, not genuinely observation-appropriate",
+      ceilingCount: c.downgrades,
+      ceilingUnit: "stays / yr",
+      capturedLabel: "Inpatient stays defended",
+      capturedCount: c.preventable,
+      capturedUnit: "stays / yr",
+      whoActs: IP_REVENUE_PATH_WHO_ACTS.obs,
+      priceLabel: `$${fmtInt(c.revenueDelta)} margin / stay`,
+      value,
+      formula: value > 0 ? formulaWithRealization(chain.obs.payoffFormula, realizationPct, value) : chain.obs.payoffFormula,
+      hasValue: value > 0,
+    });
+  }
+
+  const convergedPrize = paths.reduce((sum, p) => sum + p.value, 0);
+  return { paths, convergedPrize, anyPathSelected: chain.paths.length > 0 };
 }
