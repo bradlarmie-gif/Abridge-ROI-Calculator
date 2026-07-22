@@ -289,7 +289,12 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
   // ladder (goal="revenue"). ED/inpatient revenue and every other combo still
   // render StepCommit.
   const isOutpatientRevenuePlan = state.setting === "outpatient" && goals.length === 1 && goals[0] === "revenue";
-  const isPhasedPlan = isOutpatientAccessPlan || isOutpatientRetentionPlan || isOutpatientRevenuePlan;
+  // ED access is the fourth combo the phased Planning view is rebuilt for (a
+  // single selected access goal in the ED setting). It renders the same
+  // StepPlanning shell driven by the shared ED access ladder, including its
+  // load-bearing diagnosis gate. Every other combo still renders StepCommit.
+  const isEdAccessPlan = state.setting === "ed" && goals.length === 1 && goals[0] === "access";
+  const isPhasedPlan = isOutpatientAccessPlan || isOutpatientRetentionPlan || isOutpatientRevenuePlan || isEdAccessPlan;
 
   const updateState = useCallback((updates: Partial<AttainState>) => {
     setState((prev) => ({ ...prev, ...updates }));
@@ -870,6 +875,26 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
                 combined={combined}
                 goalOwner={goalOwnerByPriority.revenue ?? { name: "", title: "" }}
                 onChangeGoalOwner={(patch) => handleChangeGoalOwner("revenue", patch)}
+                planning={planning}
+                onChangePhaseOwner={handleChangePhaseOwner}
+                onChangePhaseSignalTarget={handleChangePhaseSignalTarget}
+                onChangePartnerRisk={handleChangePartnerRisk}
+                planCadence={planCadence}
+                onChangePlanCadence={handleChangePlanCadence}
+                totalMonths={state.totalMonths}
+                stepNumber={stepIndex + 1}
+              />
+            )}
+
+            {step === "commit" && isEdAccessPlan && (
+              <StepPlanning
+                setting="ed"
+                baseline={baseline}
+                goal="access"
+                values={valuesByGoal.access ?? defaultLeverValues("access", "ed")}
+                combined={combined}
+                goalOwner={goalOwnerByPriority.access ?? { name: "", title: "" }}
+                onChangeGoalOwner={(patch) => handleChangeGoalOwner("access", patch)}
                 planning={planning}
                 onChangePhaseOwner={handleChangePhaseOwner}
                 onChangePhaseSignalTarget={handleChangePhaseSignalTarget}

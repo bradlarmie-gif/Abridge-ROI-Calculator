@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { ArrowDown } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { computeAccessChain } from "@/lib/attain/attainAccess";
+import { computeEdAccessChain } from "@/lib/attain/attainEdAccess";
 import { computeWorkforceChain } from "@/lib/attain/attainWorkforce";
 import { DEFAULT_MINUTES_SAVED_PER_NOTE } from "@/lib/attain/attainAccess";
 import {
@@ -33,10 +34,13 @@ import {
   fmtRevenueCount,
   deriveAccessLadder,
   deriveRetentionLadder,
+  deriveEdAccessLadder,
   SpineRung,
   CapacityDemandGate,
   BurnoutPoolGate,
   RevenuePathGate,
+  EdAccessDiagnosisGate,
+  ED_ACCESS_WHO_ACTS,
 } from "./accessLadder";
 
 /** The two goals Planning renders as the shared step-down ladder on the hook.
@@ -125,6 +129,24 @@ const PHASE_META_RETENTION: Record<PlanPhaseId, PhaseMeta> = {
   },
 };
 
+const PHASE_META_ED_ACCESS: Record<PlanPhaseId, PhaseMeta> = {
+  start: {
+    label: "Start",
+    intent: "Start on one shift pattern. Prove the minutes are real and door-to-provider actually drops before anything scales.",
+    signalLabel: "Door-to-provider time, falling",
+  },
+  expand: {
+    label: "Expand",
+    intent: "The freed time held and throughput moved. Widen the coverage, and watch the LWBS rate start to fall.",
+    signalLabel: "LWBS rate, falling",
+  },
+  steady: {
+    label: "Steady",
+    intent: "Full coverage. The recovered visits and the admissions they become are landing and holding.",
+    signalLabel: "Recovered visits per year",
+  },
+};
+
 /** Real, trackable leading signals per revenue path (the spec's metric
  * menu). Phase 1 opens on the documentation-completeness signal (closest to
  * the first domino); later phases move down toward the outcome metric. */
@@ -178,6 +200,11 @@ export default function StepPlanning({
   const goalDef = GOAL_CATALOG[goal as GoalId];
   const isRetention = goal === "retention";
   const isRevenue = goal === "revenue";
+  // ED access is a variant of the access goal at the ED setting: a genuinely
+  // different LWBS-recovery + diagnosis mechanism, so it reads from its own
+  // shared ladder (deriveEdAccessLadder) rather than the outpatient scheduling
+  // ladder. Every other access plan stays on the outpatient exemplar below.
+  const isEdAccess = goal === "access" && setting === "ed";
 
   const targetMonth = totalMonths > 0 ? Math.round(totalMonths) : 9;
   const ownerName = goalOwner.name.trim();
@@ -194,6 +221,23 @@ export default function StepPlanning({
     realizedVisits: accessResult?.totalCount ?? accessChain.payoff.realizedVisits,
     prize: accessResult?.totalMargin ?? 0,
   });
+
+  // ── ED ACCESS ladder ──────────────────────────────────────────────────
+  // Same discipline: operational rungs off the raw ED chain (mechanical
+  // freed-time capacity, the LWBS pool, the diagnosis, the recoverable pool),
+  // with the realized COUNTS read off the raw chain (so Planning matches Build
+  // exactly, avoiding the whole-number rounding collapse the combined result
+  // would introduce at a single-department scale) and only the dollar PRIZE
+  // off the combined result, to pick up this priority's realization exactly as
+  // Build does.
+  const edAccessChain = isEdAccess ? computeEdAccessChain(baseline, values, 1) : null;
+  const edAccessLadder = edAccessChain
+    ? deriveEdAccessLadder(edAccessChain, {
+        realizedRecovered: edAccessChain.recovery.realizedRecovered,
+        capturedAdmissions: edAccessChain.recovery.capturedAdmissions,
+        prize: accessResult?.totalMargin ?? edAccessChain.payoff.value,
+      })
+    : null;
 
   // ── RETENTION ladder ──────────────────────────────────────────────────
   // Same discipline: operational rungs off the raw workforce chain, the
@@ -230,8 +274,14 @@ export default function StepPlanning({
   // The prize + the first-domino minutes are shared framing across the
   // minutes-based goals (access and retention both open on minutes saved per
   // note). Revenue opens on the documentation lever instead.
-  const prize = isRevenue ? revenueLadder.convergedPrize : isRetention ? retentionLadder.prize : accessLadder.prize;
-  const firstDominoMinutes = isRetention ? retentionLadder.minutes : accessLadder.minutes;
+  const prize = isEdAccess
+    ? edAccessLadder!.prize
+    : isRevenue
+    ? revenueLadder.convergedPrize
+    : isRetention
+    ? retentionLadder.prize
+    : accessLadder.prize;
+  const firstDominoMinutes = isEdAccess ? edAccessLadder!.minutes : isRetention ? retentionLadder.minutes : accessLadder.minutes;
 
   const boundaries = phaseBoundaries(targetMonth);
   const ramp = phaseValueRamp(prize);
@@ -267,7 +317,16 @@ export default function StepPlanning({
   const retentionLines = asLines(values.retentionLines);
   const retentionProviders = retentionLadder.providersInScope;
 
-  const signalDefault: Record<PlanPhaseId, string> = isRevenue
+  const signalDefault: Record<PlanPhaseId, string> = isEdAccess
+    ? {
+        start: `${fmtInt(edAccessLadder!.minutes)} min per note`,
+        expand: "under 35 min",
+        steady:
+          edAccessLadder!.realizedRecovered > 0
+            ? `${fmtInt(edAccessLadder!.realizedRecovered)} recovered per year`
+            : "the full recovered count",
+      }
+    : isRevenue
     ? {
         start: "improving vs baseline",
         expand: "improving vs baseline",
@@ -288,8 +347,16 @@ export default function StepPlanning({
         steady: accessLadder.realizedVisits > 0 ? `${fmtInt(accessLadder.realizedVisits)} per year` : "the full realized count",
       };
 
+  const edAccessProviders = edAccessLadder?.providersInScope ?? 0;
   const revenuePathLabel = (p: RevenuePathId) => REVENUE_PATH_SHORT[p];
-  const phaseScope: Record<PlanPhaseId, string> = isRevenue
+  const phaseScope: Record<PlanPhaseId, string> = isEdAccess
+    ? {
+        start: "One shift pattern first",
+        expand:
+          edAccessProviders > 0 ? `Widen across the ${fmtInt(edAccessProviders)} ED providers` : "Widen the ED coverage",
+        steady: edAccessProviders > 0 ? `All ${fmtInt(edAccessProviders)} ED providers` : "Full ED coverage",
+      }
+    : isRevenue
     ? {
         start: orderedRevenuePaths.length > 0 ? `${revenuePathLabel(primaryRevenuePath)} first` : "A first revenue path",
         expand:
@@ -347,15 +414,25 @@ export default function StepPlanning({
               : "Full scope",
       };
 
-  const PHASE_META = isRevenue ? PHASE_META_REVENUE : isRetention ? PHASE_META_RETENTION : PHASE_META_ACCESS;
+  const PHASE_META = isEdAccess
+    ? PHASE_META_ED_ACCESS
+    : isRevenue
+    ? PHASE_META_REVENUE
+    : isRetention
+    ? PHASE_META_RETENTION
+    : PHASE_META_ACCESS;
 
-  const teach = isRevenue
+  const teach = isEdAccess
+    ? "One number does the work here: the minutes saved per note. Freed charting time buys a faster door-to-provider, and only the LWBS your charting delays cause is yours to recover. Below is the promise, the chain of logic under it, and the phased plan that gets there."
+    : isRevenue
     ? "One lever does the work here: complete, specific documentation at the point of care. It feeds several revenue paths, and for each one the documentation is the ceiling on what you can capture. Below is the promise, the paths that converge under it, and the phased plan that gets there."
     : isRetention
     ? "You want lower voluntary turnover and a better clinician experience. It starts on one number: the minutes saved per note. That freed time, kept as relief, comes off after-hours charting, and each rung below multiplies on top of it toward the departures you avoid and the dollar that saves. Below is the promise, the chain of logic under it, and the phased plan that gets there."
     : "One number does the work here: the minutes saved per note. It is the first domino. Freed hours, new capacity, realized visits, and the dollar prize are all multiplication on top of it. Below is the promise, the chain of logic under it, and the phased plan that gets there.";
 
-  const spineIntro = isRevenue
+  const spineIntro = isEdAccess
+    ? "Read it top to bottom. The first rungs multiply: minutes saved become freed hours, and the hours you commit to throughput become recovery capacity. Then the diagnosis is the ceiling, only the LWBS your charting delays cause is yours to recover, and what converts becomes recovered visits, admissions, and dollars."
+    : isRevenue
     ? "Read it top to bottom. Complete documentation is the one lever every path shares. For each path, the documentation-caused leak is the ceiling that decides how much you can capture, and what converts becomes dollars. The paths add into one prize."
     : isRetention
     ? "Read it top to bottom. The first rungs multiply: minutes saved become freed hours, and the hours you keep as relief come off after-hours charting. Then burnout is the ceiling that decides how many of your departures you can actually avoid, and those avoided departures become dollars."
@@ -388,7 +465,7 @@ export default function StepPlanning({
           <p className="text-[9px] font-bold uppercase tracking-wide text-[#8C8C8C]">The promise</p>
         </div>
         <p className="text-lg md:text-[22px] leading-snug text-[#1A1A1A] font-semibold" data-testid="text-planning-promise-line">
-          {isRetention ? "Lower voluntary turnover, better clinician experience" : goalDef.label}
+          {isRetention ? "Lower voluntary turnover, better clinician experience" : isEdAccess ? "ED Access" : goalDef.label}
           <span className="text-[#B4B4B4] font-normal"> · </span>
           Owned by {ownerName ? <span>{ownerName}</span> : <span className="text-[#EA2C00]">name the exec below</span>}
           <span className="text-[#B4B4B4] font-normal"> · </span>
@@ -433,7 +510,78 @@ export default function StepPlanning({
         <p className="text-[12px] text-[#8C8C8C] mb-4 max-w-[560px] leading-relaxed">{spineIntro}</p>
 
         <div className="space-y-2" data-testid="section-planning-spine">
-          {isRevenue ? (
+          {isEdAccess ? (
+            <>
+              <SpineRung
+                anchor
+                isSet
+                value={fmtInt(edAccessLadder!.minutes)}
+                unit="min / note"
+                label="Minutes saved per note"
+                caption="The target we commit to and verify first. Freed charting time is the only thing that mechanically buys a faster door-to-provider here."
+                emptyHint=""
+              />
+              <div className="flex justify-center"><ArrowDown className="w-4 h-4 text-[#B4B4B4]" /></div>
+              <SpineRung
+                isSet={edAccessLadder!.freedHrsPerProviderWk > 0}
+                value={fmtHoursShort(edAccessLadder!.freedHrsPerProviderWk)}
+                unit="hrs / provider / wk"
+                label="Freed time"
+                caption="That time saved, added up across every note a provider writes in a week."
+                emptyHint="Set your ED providers on Build the case to see the freed hours."
+              />
+              <div className="flex justify-center"><ArrowDown className="w-4 h-4 text-[#B4B4B4]" /></div>
+              <SpineRung
+                isSet={edAccessLadder!.mechanicalCapacity > 0}
+                value={fmtInt(edAccessLadder!.mechanicalCapacity)}
+                unit="patients / yr"
+                label="Freed-time capacity"
+                caption={`${fmtInt(edAccessLadder!.throughputSharePct)}% of the freed time is committed to throughput, the rest stays as relief, at about ${fmtHoursShort(edAccessLadder!.hoursPerRecovery)} hours of expedited attention per recovered patient.`}
+                emptyHint="Commit some freed time to throughput on Build the case to open recovery capacity."
+              />
+              <div className="flex justify-center"><ArrowDown className="w-4 h-4 text-[#B4B4B4]" /></div>
+              <EdAccessDiagnosisGate
+                fullPool={edAccessLadder!.fullPool}
+                docCausedSharePct={edAccessLadder!.docCausedSharePct}
+                recoverablePool={edAccessLadder!.recoverablePool}
+                mechanicalCapacity={edAccessLadder!.mechanicalCapacity}
+                realizedRecovered={edAccessLadder!.realizedRecovered}
+                binding={edAccessLadder!.binding}
+                whoActs={ED_ACCESS_WHO_ACTS}
+                bothSet={edAccessLadder!.recoverablePool > 0 && edAccessLadder!.mechanicalCapacity > 0}
+                emptyHint={
+                  edAccessLadder!.recoverablePool <= 0
+                    ? "Diagnose the charting-caused share of your LWBS on Build the case to size the recoverable pool, then commit freed time to throughput."
+                    : "Commit some freed time to throughput on Build the case to see how much of the recoverable pool converts."
+                }
+              />
+              {edAccessLadder!.capturedAdmissions > 0 && (
+                <>
+                  <div className="flex justify-center"><ArrowDown className="w-4 h-4 text-[#B4B4B4]" /></div>
+                  <div className="rounded-lg border border-[#E7E0D6] bg-white px-4 py-2.5 flex items-baseline justify-between gap-3">
+                    <span className="text-[12px] font-semibold text-[#3A3A3A]">Downstream admissions captured</span>
+                    <span className="font-abridge text-xl font-bold text-[#1A1A1A]">
+                      {fmtInt(edAccessLadder!.capturedAdmissions)} <span className="text-[11px] font-normal text-[#8C8C8C]">admissions / yr</span>
+                    </span>
+                  </div>
+                </>
+              )}
+              <div className="flex justify-center"><ArrowDown className="w-4 h-4 text-[#B4B4B4]" /></div>
+              <SpineRung
+                payoff
+                isSet={prize > 0}
+                value={fmtMoneyCompact(prize)}
+                unit="contribution margin / yr"
+                label="The prize"
+                caption={
+                  prize > 0
+                    ? `${fmtInt(edAccessLadder!.realizedRecovered)} recovered visits at about $${fmtInt(edAccessLadder!.marginPerVisit)} of margin each, plus ${fmtInt(edAccessLadder!.capturedAdmissions)} captured admissions at about $${fmtInt(edAccessLadder!.admissionMargin)} each. Both legs on margin, never gross revenue.`
+                    : "Finish the chain above and the prize appears here."
+                }
+                emptyHint="The prize appears once the chain above is complete."
+              />
+            </>
+          ) : isRevenue ? (
             <>
               <SpineRung
                 anchor
@@ -762,6 +910,8 @@ export default function StepPlanning({
               ? "e.g. the coding team is mid-transition to a new vendor until Q3"
               : isRetention
               ? "e.g. a covering-shift policy refills the freed time until the Q3 staffing review"
+              : isEdAccess
+              ? "e.g. triage staffing is short until the Q3 hiring class fills"
               : "e.g. new scheduling template is blocked until the EHR upgrade in Q3"
           }
           className="h-10 w-full rounded-md border border-[#D8CFC4] bg-white px-3 text-sm text-[#1A1A1A] outline-none focus:border-[#EA2C00]"
