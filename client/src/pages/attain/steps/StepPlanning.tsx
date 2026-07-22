@@ -4,6 +4,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { computeAccessChain } from "@/lib/attain/attainAccess";
 import { computeWorkforceChain } from "@/lib/attain/attainWorkforce";
 import { DEFAULT_MINUTES_SAVED_PER_NOTE } from "@/lib/attain/attainAccess";
+import {
+  computeRevenueChain,
+  deriveRevenueLadder,
+  selectedPaths,
+  type RevenuePathId,
+  type RevenuePathLadder,
+} from "@/lib/attain/attainRevenue";
 import type { AttainBaseline, LeverValues, MultiGoalContributionsResult } from "@/lib/attain/attainLevers";
 import { GOAL_CATALOG } from "@/lib/attain/attainGoals";
 import type { AttainSetting, GoalId } from "@/lib/attain/attainTypes";
@@ -23,18 +30,20 @@ import {
   fmtHoursShort,
   fmtDepartures,
   fmtMoneyCompact,
+  fmtRevenueCount,
   deriveAccessLadder,
   deriveRetentionLadder,
   SpineRung,
   CapacityDemandGate,
   BurnoutPoolGate,
+  RevenuePathGate,
 } from "./accessLadder";
 
 /** The two goals Planning renders as the shared step-down ladder on the hook.
  * Outpatient access is the locked exemplar; outpatient retention is the
  * second, built from the same abstraction so the two cannot diverge. Every
  * other setting/goal still renders the original StepCommit. */
-export type PlanningGoal = "access" | "retention";
+export type PlanningGoal = "access" | "retention" | "revenue";
 
 function asLines(raw: number | string[] | undefined): string[] {
   return Array.isArray(raw) ? raw : [];
@@ -116,6 +125,39 @@ const PHASE_META_RETENTION: Record<PlanPhaseId, PhaseMeta> = {
   },
 };
 
+/** Real, trackable leading signals per revenue path (the spec's metric
+ * menu). Phase 1 opens on the documentation-completeness signal (closest to
+ * the first domino); later phases move down toward the outcome metric. */
+const REVENUE_PATH_PHASE_SIGNALS: Record<RevenuePathId, [string, string, string]> = {
+  em: [
+    "% of visits coded below the supported level, falling",
+    "Average level of service, rising",
+    "wRVUs per provider vs baseline",
+  ],
+  hcc: [
+    "Suspected-condition close rate, rising",
+    "Recapture rate on the risk gap, rising",
+    "Average conditions per patient (RAF), rising",
+  ],
+  denials: [
+    "Documentation-related denial share, falling",
+    "Medical-necessity denial rate, falling",
+    "Appeal overturn rate, holding",
+  ],
+};
+
+/** Paths ranked by how clearly their leak is documentation-caused, so the
+ * phased plan can start with the most defensible one (E/M, where the claim
+ * plainly goes out below the care delivered), then denials, then risk
+ * adjustment. */
+const REVENUE_DOC_CAUSED_ORDER: RevenuePathId[] = ["em", "denials", "hcc"];
+
+const REVENUE_PATH_SHORT: Record<RevenuePathId, string> = {
+  em: "E/M level accuracy",
+  hcc: "risk adjustment",
+  denials: "medical-necessity denials",
+};
+
 export default function StepPlanning({
   setting,
   baseline,
@@ -135,11 +177,11 @@ export default function StepPlanning({
 }: StepPlanningProps) {
   const goalDef = GOAL_CATALOG[goal as GoalId];
   const isRetention = goal === "retention";
+  const isRevenue = goal === "revenue";
 
   const targetMonth = totalMonths > 0 ? Math.round(totalMonths) : 9;
   const ownerName = goalOwner.name.trim();
   const partnerRisk = planning.partnerRisk ?? "";
-  const PHASE_META = isRetention ? PHASE_META_RETENTION : PHASE_META_ACCESS;
 
   // ── ACCESS ladder (the exemplar) ──────────────────────────────────────
   // Every operational rung comes off the raw access chain (a real, honest
@@ -173,20 +215,65 @@ export default function StepPlanning({
     prize: retentionResult?.totalMargin ?? workforceChain.payoff.value,
   });
 
-  // The prize + the first-domino minutes are shared framing across both goals
-  // (both open on minutes saved per note).
-  const prize = isRetention ? retentionLadder.prize : accessLadder.prize;
+  // ── REVENUE ladder ────────────────────────────────────────────────────
+  // Revenue has a different SHAPE: one lever (complete documentation) feeding
+  // several parallel paths that converge into one prize. The per-path dollars
+  // are scaled by the realization factor implied by the combined engine result
+  // (revenueRealized / revenueRaw), so Planning's per-path dollars and the
+  // converged prize match Build the case exactly.
+  const revenueRaw = isRevenue ? computeRevenueChain(baseline, setting, values).totalValue : 0;
+  const revenueRealized = combined?.byGoal.revenue?.totalMargin ?? revenueRaw;
+  const revenueRealizationPct = revenueRaw > 0 ? (revenueRealized / revenueRaw) * 100 : 100;
+  const revenueLadder = deriveRevenueLadder(baseline, setting, values, revenueRealizationPct);
+  const revenuePathsSel = selectedPaths(values).filter((p) => setting !== "ed" || p !== "hcc");
+
+  // The prize + the first-domino minutes are shared framing across the
+  // minutes-based goals (access and retention both open on minutes saved per
+  // note). Revenue opens on the documentation lever instead.
+  const prize = isRevenue ? revenueLadder.convergedPrize : isRetention ? retentionLadder.prize : accessLadder.prize;
   const firstDominoMinutes = isRetention ? retentionLadder.minutes : accessLadder.minutes;
 
   const boundaries = phaseBoundaries(targetMonth);
   const ramp = phaseValueRamp(prize);
+
+  // Revenue paths ordered most-documentation-caused first, so the phased plan
+  // starts on the path whose leak is clearest (E/M), then widens.
+  const orderedRevenuePaths = REVENUE_DOC_CAUSED_ORDER.filter((p) => revenuePathsSel.includes(p));
+  const primaryRevenuePath: RevenuePathId = orderedRevenuePaths[0] ?? "em";
+  const revenuePhaseSignals = REVENUE_PATH_PHASE_SIGNALS[primaryRevenuePath];
+  const PHASE_META_REVENUE: Record<PlanPhaseId, PhaseMeta> = {
+    start: {
+      label: "Start",
+      intent: `Start with ${REVENUE_PATH_SHORT[primaryRevenuePath]}, the path whose leak is most clearly the documentation. Prove complete notes actually move the coding before anything widens.`,
+      signalLabel: revenuePhaseSignals[0],
+    },
+    expand: {
+      label: "Expand",
+      intent:
+        orderedRevenuePaths.length > 1
+          ? "The first path held. Widen to the other revenue paths you picked and watch the capture rate rise."
+          : "The signal held. Widen the scope across more providers and watch the capture rate rise.",
+      signalLabel: revenuePhaseSignals[1],
+    },
+    steady: {
+      label: "Steady",
+      intent: "Full scope across every path. The captured revenue is landing on the claim and holding.",
+      signalLabel: revenuePhaseSignals[2],
+    },
+  };
 
   // Derived, editable default target per phase's leading signal.
   const accessLines = !accessChain.scope.enterprise ? asLines(values.accessLines) : [];
   const retentionLines = asLines(values.retentionLines);
   const retentionProviders = retentionLadder.providersInScope;
 
-  const signalDefault: Record<PlanPhaseId, string> = isRetention
+  const signalDefault: Record<PlanPhaseId, string> = isRevenue
+    ? {
+        start: "improving vs baseline",
+        expand: "improving vs baseline",
+        steady: prize > 0 ? `${fmtMoneyCompact(prize)} captured per year` : "the full captured amount",
+      }
+    : isRetention
     ? {
         start: `${fmtInt(minutes)} min saved per note`,
         expand: "improving vs baseline",
@@ -201,7 +288,20 @@ export default function StepPlanning({
         steady: accessLadder.realizedVisits > 0 ? `${fmtInt(accessLadder.realizedVisits)} per year` : "the full realized count",
       };
 
-  const phaseScope: Record<PlanPhaseId, string> = isRetention
+  const revenuePathLabel = (p: RevenuePathId) => REVENUE_PATH_SHORT[p];
+  const phaseScope: Record<PlanPhaseId, string> = isRevenue
+    ? {
+        start: orderedRevenuePaths.length > 0 ? `${revenuePathLabel(primaryRevenuePath)} first` : "A first revenue path",
+        expand:
+          orderedRevenuePaths.length > 1
+            ? `Add ${orderedRevenuePaths.slice(1).map(revenuePathLabel).join(", ")}`
+            : "Widen to more providers",
+        steady:
+          orderedRevenuePaths.length > 0
+            ? `All paths: ${orderedRevenuePaths.map(revenuePathLabel).join(", ")}`
+            : "Full scope",
+      }
+    : isRetention
     ? {
         start:
           retentionLines.length > 0
@@ -247,11 +347,17 @@ export default function StepPlanning({
               : "Full scope",
       };
 
-  const teach = isRetention
+  const PHASE_META = isRevenue ? PHASE_META_REVENUE : isRetention ? PHASE_META_RETENTION : PHASE_META_ACCESS;
+
+  const teach = isRevenue
+    ? "One lever does the work here: complete, specific documentation at the point of care. It feeds several revenue paths, and for each one the documentation is the ceiling on what you can capture. Below is the promise, the paths that converge under it, and the phased plan that gets there."
+    : isRetention
     ? "You want lower voluntary turnover and a better clinician experience. It starts on one number: the minutes saved per note. That freed time, kept as relief, comes off after-hours charting, and each rung below multiplies on top of it toward the departures you avoid and the dollar that saves. Below is the promise, the chain of logic under it, and the phased plan that gets there."
     : "One number does the work here: the minutes saved per note. It is the first domino. Freed hours, new capacity, realized visits, and the dollar prize are all multiplication on top of it. Below is the promise, the chain of logic under it, and the phased plan that gets there.";
 
-  const spineIntro = isRetention
+  const spineIntro = isRevenue
+    ? "Read it top to bottom. Complete documentation is the one lever every path shares. For each path, the documentation-caused leak is the ceiling that decides how much you can capture, and what converts becomes dollars. The paths add into one prize."
+    : isRetention
     ? "Read it top to bottom. The first rungs multiply: minutes saved become freed hours, and the hours you keep as relief come off after-hours charting. Then burnout is the ceiling that decides how many of your departures you can actually avoid, and those avoided departures become dollars."
     : "Read it top to bottom. The first rungs multiply: minutes saved become freed hours, and the freed hours you direct to access become new capacity. Then demand is the ceiling that decides how much of that capacity actually converts to visits, and those visits become dollars.";
 
@@ -320,12 +426,73 @@ export default function StepPlanning({
           verify first. */}
       <div className="mb-10">
         <h2 className="text-sm font-bold text-[#1A1A1A] mb-1">
-          How {fmtInt(firstDominoMinutes)} minutes per note becomes {prize > 0 ? fmtMoneyCompact(prize) : "the prize"}
+          {isRevenue
+            ? `How complete documentation becomes ${prize > 0 ? fmtMoneyCompact(prize) : "the prize"}`
+            : `How ${fmtInt(firstDominoMinutes)} minutes per note becomes ${prize > 0 ? fmtMoneyCompact(prize) : "the prize"}`}
         </h2>
         <p className="text-[12px] text-[#8C8C8C] mb-4 max-w-[560px] leading-relaxed">{spineIntro}</p>
 
         <div className="space-y-2" data-testid="section-planning-spine">
-          {isRetention ? (
+          {isRevenue ? (
+            <>
+              <SpineRung
+                anchor
+                isSet
+                value="1"
+                unit="lever, shared by every path"
+                label="Complete, specific documentation at the point of care"
+                caption="The one thing Abridge moves, and where every revenue path converges. When the note carries the full picture, the claim can reflect the care that was actually delivered."
+                emptyHint=""
+              />
+              {revenueLadder.paths.map((p: RevenuePathLadder) => (
+                <div key={p.id}>
+                  <div className="flex justify-center"><ArrowDown className="w-4 h-4 text-[#B4B4B4]" /></div>
+                  <p className="text-[11px] font-bold uppercase tracking-[1.5px] text-[#EA2C00] mb-2 mt-1">{p.label}</p>
+                  <RevenuePathGate
+                    ceilingLabel={p.ceilingLabel}
+                    ceilingCount={p.ceilingCount}
+                    ceilingUnit={p.ceilingUnit}
+                    capturedLabel={p.capturedLabel}
+                    capturedCount={p.capturedCount}
+                    capturedUnit={p.capturedUnit}
+                    whoActs={p.whoActs}
+                    bothSet={p.ceilingCount > 0 && p.capturedCount > 0}
+                    emptyHint="Set this path's ground and diagnosis on Build the case to size the leak, then commit to a share of it."
+                  />
+                  <div className="mt-2 rounded-lg border border-[#E7E0D6] bg-white px-4 py-2.5 flex items-baseline justify-between gap-3">
+                    <span className="text-[12px] font-semibold text-[#3A3A3A]">{p.label} captures</span>
+                    {p.hasValue ? (
+                      <span className="font-abridge text-xl font-bold text-[#EA2C00]">{fmtMoneyCompact(p.value)} <span className="text-[11px] font-normal text-[#8C8C8C]">/ yr</span></span>
+                    ) : (
+                      <span className="text-[11px] font-semibold text-[#B4B4B4]">Not set yet</span>
+                    )}
+                  </div>
+                </div>
+              ))}
+              {revenueLadder.paths.length === 0 && (
+                <>
+                  <div className="flex justify-center"><ArrowDown className="w-4 h-4 text-[#B4B4B4]" /></div>
+                  <div className="rounded-lg border border-[#E7E0D6] bg-white p-4">
+                    <p className="text-[11px] text-[#8C8C8C] leading-relaxed">Pick at least one revenue path on Build the case to see the ladder.</p>
+                  </div>
+                </>
+              )}
+              <div className="flex justify-center"><ArrowDown className="w-4 h-4 text-[#B4B4B4]" /></div>
+              <SpineRung
+                payoff
+                isSet={prize > 0}
+                value={fmtMoneyCompact(prize)}
+                unit="captured / yr, all paths"
+                label="The converged prize"
+                caption={
+                  prize > 0
+                    ? `${revenueLadder.paths.filter((p) => p.hasValue).length} paths, each its own claim pool, summed once and never double-counted.`
+                    : "Finish a path above and the converged prize appears here."
+                }
+                emptyHint="The prize appears once at least one path's chain is complete."
+              />
+            </>
+          ) : isRetention ? (
             <>
               <SpineRung
                 anchor
@@ -453,7 +620,9 @@ export default function StepPlanning({
       <div className="mb-10">
         <h2 className="text-sm font-bold text-[#1A1A1A] mb-1">The phased plan, across {targetMonth} months</h2>
         <p className="text-[12px] text-[#8C8C8C] mb-4 max-w-[560px] leading-relaxed">
-          {isRetention
+          {isRevenue
+            ? "Start with the path whose leak is clearest, prove complete notes move the coding, then widen to the other paths. The value climbs as the paths converge."
+            : isRetention
             ? "Start with one department and prove the relief is real, widen once it holds, then run at full scope. The value climbs with the scope."
             : "Start small and prove the signal, widen once it holds, then run at full scope. The value climbs with the scope."}
         </p>
@@ -589,7 +758,9 @@ export default function StepPlanning({
           value={partnerRisk}
           onChange={(e) => onChangePartnerRisk(e.target.value)}
           placeholder={
-            isRetention
+            isRevenue
+              ? "e.g. the coding team is mid-transition to a new vendor until Q3"
+              : isRetention
               ? "e.g. a covering-shift policy refills the freed time until the Q3 staffing review"
               : "e.g. new scheduling template is blocked until the EHR upgrade in Q3"
           }

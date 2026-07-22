@@ -283,7 +283,13 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
   // It renders the same StepPlanning shell, driven by the shared retention
   // ladder (goal="retention"). Every other combo still renders StepCommit.
   const isOutpatientRetentionPlan = state.setting === "outpatient" && goals.length === 1 && goals[0] === "retention";
-  const isPhasedPlan = isOutpatientAccessPlan || isOutpatientRetentionPlan;
+  // Outpatient revenue is the third combo the phased Planning view is rebuilt
+  // for (a single selected revenue goal in the outpatient setting). It renders
+  // the same StepPlanning shell driven by the shared, converging revenue
+  // ladder (goal="revenue"). ED/inpatient revenue and every other combo still
+  // render StepCommit.
+  const isOutpatientRevenuePlan = state.setting === "outpatient" && goals.length === 1 && goals[0] === "revenue";
+  const isPhasedPlan = isOutpatientAccessPlan || isOutpatientRetentionPlan || isOutpatientRevenuePlan;
 
   const updateState = useCallback((updates: Partial<AttainState>) => {
     setState((prev) => ({ ...prev, ...updates }));
@@ -844,6 +850,26 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
                 combined={combined}
                 goalOwner={goalOwnerByPriority.retention ?? { name: "", title: "" }}
                 onChangeGoalOwner={(patch) => handleChangeGoalOwner("retention", patch)}
+                planning={planning}
+                onChangePhaseOwner={handleChangePhaseOwner}
+                onChangePhaseSignalTarget={handleChangePhaseSignalTarget}
+                onChangePartnerRisk={handleChangePartnerRisk}
+                planCadence={planCadence}
+                onChangePlanCadence={handleChangePlanCadence}
+                totalMonths={state.totalMonths}
+                stepNumber={stepIndex + 1}
+              />
+            )}
+
+            {step === "commit" && isOutpatientRevenuePlan && (
+              <StepPlanning
+                setting="outpatient"
+                baseline={baseline}
+                goal="revenue"
+                values={valuesByGoal.revenue ?? defaultLeverValues("revenue", "outpatient")}
+                combined={combined}
+                goalOwner={goalOwnerByPriority.revenue ?? { name: "", title: "" }}
+                onChangeGoalOwner={(patch) => handleChangeGoalOwner("revenue", patch)}
                 planning={planning}
                 onChangePhaseOwner={handleChangePhaseOwner}
                 onChangePhaseSignalTarget={handleChangePhaseSignalTarget}
