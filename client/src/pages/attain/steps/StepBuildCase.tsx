@@ -7,6 +7,7 @@ import type { AttainSetting, GoalId } from "@/lib/attain/attainTypes";
 import AccessDecisionChain from "./AccessDecisionChain";
 import EdAccessDecisionChain from "./EdAccessDecisionChain";
 import RevenueDecisionChain from "./RevenueDecisionChain";
+import RevenueLadderChain from "./RevenueLadderChain";
 import InpatientRevenueDecisionChain from "./InpatientRevenueDecisionChain";
 import WorkforceDecisionChain from "./WorkforceDecisionChain";
 import WorkforceLadderChain from "./WorkforceLadderChain";
@@ -134,7 +135,10 @@ export default function StepBuildCase({
   const accessSplitLabel = setting === "ed" ? "faster throughput" : "opening access on the schedule";
   const goalDef = GOAL_CATALOG[goal];
   const levers = leversFor(goal, setting);
-  const isRevenueChain = goal === "revenue" && setting !== "inpatient";
+  // Outpatient revenue is the ladder exemplar (converging multi-path, see
+  // RevenueLadderChain); ED revenue keeps its current three-path screen.
+  const isRevenueLadder = goal === "revenue" && setting === "outpatient";
+  const isRevenueChain = goal === "revenue" && setting === "ed";
   const isIpRevenueChain = goal === "revenue" && setting === "inpatient";
   const result = combined?.byGoal[goal];
   const contributionFor = (id: string) => result?.perLever.find((p) => p.id === id);
@@ -152,7 +156,7 @@ export default function StepBuildCase({
   // shared retention ladder (see WorkforceLadderChain + accessLadder.ts's
   // deriveRetentionLadder). Other settings' retention keeps the D1-D5 chain.
   const isRetentionLadder = goal === "retention" && setting === "outpatient";
-  const isLadder = isAccessLadder || isRetentionLadder;
+  const isLadder = isAccessLadder || isRetentionLadder || isRevenueLadder;
 
   return (
     <div>
@@ -168,7 +172,9 @@ export default function StepBuildCase({
             ? "Assemble the ladder from the top down. One number starts it, each rung multiplies, and demand decides how much converts."
             : isRetentionLadder
               ? "You want lower voluntary turnover and a better clinician experience. Work backward: one number starts it, each rung multiplies, and burnout decides how much you can avoid."
-              : "These decisions start from where you are today, move the ones you're ready to commit to."}
+              : isRevenueLadder
+                ? "One lever starts it, complete documentation at the point of care, and it feeds several revenue paths. For each path you pick, the documentation decides how much you can actually capture. The paths add into one prize."
+                : "These decisions start from where you are today, move the ones you're ready to commit to."}
         </p>
       </motion.div>
 
@@ -203,7 +209,9 @@ export default function StepBuildCase({
             ? "This is the full step-down, top to bottom. Every rung is part of the plan; set each one to your real numbers."
             : isRetentionLadder
               ? "Lower voluntary turnover and a better clinician experience. This is the full step-down, top to bottom; set each rung to your real numbers."
-              : `${movedCount} of ${levers.length} decisions moved. Move the ones your organization is actually ready to commit to, the rest can wait for a later plan.`}
+              : isRevenueLadder
+                ? "One lever, several paths, one converged prize. Pick the paths you are chasing and set each one to your real numbers."
+                : `${movedCount} of ${levers.length} decisions moved. Move the ones your organization is actually ready to commit to, the rest can wait for a later plan.`}
         </p>
       </motion.div>
 
@@ -265,6 +273,14 @@ export default function StepBuildCase({
             onChangeValue={(leverId, value) => onChangeLeverValue("access", leverId, value)}
             realizationPct={realizationPct}
             crossGoalShareMultiplier={crossGoalShareMultiplier}
+          />
+        ) : isRevenueLadder ? (
+          <RevenueLadderChain
+            setting={setting}
+            baseline={baseline}
+            values={values}
+            onChangeValue={(leverId, value) => onChangeLeverValue("revenue", leverId, value)}
+            realizationPct={realizationPct}
           />
         ) : isRevenueChain ? (
           <RevenueDecisionChain
