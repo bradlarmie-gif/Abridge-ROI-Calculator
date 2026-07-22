@@ -53,6 +53,8 @@ import {
   NursingCapacityGate,
   deriveNursingCapacityLadder,
   ED_ACCESS_WHO_ACTS,
+  retentionUnitNoun,
+  retentionChartingTerm,
 } from "./accessLadder";
 import { NURSING_CAPACITY_WHO_ACTS } from "@/lib/attain/attainCapacity";
 
@@ -124,23 +126,29 @@ const PHASE_META_ACCESS: Record<PlanPhaseId, PhaseMeta> = {
   },
 };
 
-const PHASE_META_RETENTION: Record<PlanPhaseId, PhaseMeta> = {
-  start: {
-    label: "Start",
-    intent: "Start with one department. Prove the minutes are real and after-hours charting actually falls before anything scales.",
-    signalLabel: "After-hours charting time, falling",
-  },
-  expand: {
-    label: "Expand",
-    intent: "The relief held. Widen the scope, and watch the burnout assessment improve and likelihood-to-stay rise.",
-    signalLabel: "Burnout assessment score, improving",
-  },
-  steady: {
-    label: "Steady",
-    intent: "Full scope. The relief is protected, and voluntary turnover is holding lower.",
-    signalLabel: "Voluntary turnover, falling",
-  },
-};
+/** Retention phase metadata, built per setting so the phase-1 leading signal
+ * and intent name the right charting lever (nurses: post-shift; providers:
+ * after-hours). The later phases are the same in every setting. */
+function phaseMetaRetention(chartingTerm: string): Record<PlanPhaseId, PhaseMeta> {
+  const Charting = chartingTerm.charAt(0).toUpperCase() + chartingTerm.slice(1);
+  return {
+    start: {
+      label: "Start",
+      intent: `Start with one department. Prove the minutes are real and ${chartingTerm} actually falls before anything scales.`,
+      signalLabel: `${Charting} time, falling`,
+    },
+    expand: {
+      label: "Expand",
+      intent: "The relief held. Widen the scope, and watch the burnout assessment improve and likelihood-to-stay rise.",
+      signalLabel: "Burnout assessment score, improving",
+    },
+    steady: {
+      label: "Steady",
+      intent: "Full scope. The relief is protected, and voluntary turnover is holding lower.",
+      signalLabel: "Voluntary turnover, falling",
+    },
+  };
+}
 
 const PHASE_META_ED_ACCESS: Record<PlanPhaseId, PhaseMeta> = {
   start: {
@@ -292,6 +300,12 @@ export default function StepPlanning({
   // shared ladder (deriveEdAccessLadder) rather than the outpatient scheduling
   // ladder. Every other access plan stays on the outpatient exemplar below.
   const isEdAccess = goal === "access" && setting === "ed";
+  // Retention is setting-aware: nursing counts NURSES/FTEs, physician settings
+  // count PROVIDERS, and the concrete lever is worded for who does the charting
+  // (nurses: post-shift; providers/hospitalists: after-hours). Shared with
+  // Build the case so the two surfaces never disagree on the unit word.
+  const retentionUnits = retentionUnitNoun(setting);
+  const retentionCharting = retentionChartingTerm(setting);
 
   const targetMonth = totalMonths > 0 ? Math.round(totalMonths) : 9;
   const ownerName = goalOwner.name.trim();
@@ -571,7 +585,7 @@ export default function StepPlanning({
           retentionLines.length > 0
             ? `${retentionLines[0]} first`
             : retentionProviders > 0
-              ? `A first cohort of the ${fmtInt(retentionProviders)} providers`
+              ? `A first cohort of the ${fmtInt(retentionProviders)} ${retentionUnits.plural}`
               : "A first department",
         expand:
           retentionLines.length > 1
@@ -579,13 +593,13 @@ export default function StepPlanning({
             : retentionLines.length === 1
               ? `Widen beyond ${retentionLines[0]}`
               : retentionProviders > 0
-                ? `Widen to more of the ${fmtInt(retentionProviders)} providers`
+                ? `Widen to more of the ${fmtInt(retentionProviders)} ${retentionUnits.plural}`
                 : "Widen the scope",
         steady:
           retentionLines.length > 0
             ? `All departments: ${retentionLines.join(", ")}`
             : retentionProviders > 0
-              ? `All ${fmtInt(retentionProviders)} providers`
+              ? `All ${fmtInt(retentionProviders)} ${retentionUnits.plural}`
               : "Full scope",
       }
     : {
@@ -620,7 +634,7 @@ export default function StepPlanning({
     : isCapacity
     ? PHASE_META_CAPACITY
     : isRetention
-    ? PHASE_META_RETENTION
+    ? phaseMetaRetention(retentionCharting)
     : PHASE_META_ACCESS;
 
   const teach = isEdAccess
@@ -632,7 +646,7 @@ export default function StepPlanning({
     : isCapacity
     ? "One number does the work here: the minutes saved per note, so nurses chart in the moment instead of after the shift. That closes the shift on time and takes out the overtime charting caused. Only the documentation-driven share is yours to cut. Below is the promise, the chain of logic under it, and the phased plan that gets there."
     : isRetention
-    ? "You want lower voluntary turnover and a better clinician experience. It starts on one number: the minutes saved per note. That freed time, kept as relief, comes off after-hours charting, and each rung below multiplies on top of it toward the departures you avoid and the dollar that saves. Below is the promise, the chain of logic under it, and the phased plan that gets there."
+    ? `You want lower voluntary turnover and a better clinician experience. It starts on one number: the minutes saved per note. That freed time, kept as relief, comes off ${retentionCharting}, and each rung below multiplies on top of it toward the departures you avoid and the dollar that saves. Below is the promise, the chain of logic under it, and the phased plan that gets there.`
     : "One number does the work here: the minutes saved per note. It is the first domino. Freed hours, new capacity, realized visits, and the dollar prize are all multiplication on top of it. Below is the promise, the chain of logic under it, and the phased plan that gets there.";
 
   const spineIntro = isEdAccess
@@ -644,7 +658,7 @@ export default function StepPlanning({
     : isCapacity
     ? "Read it top to bottom. Charting in the moment closes the shift on time. Your overtime now is the pool, then the documentation-attributable share is the ceiling on what charting can move, and the share you remove becomes overtime hours avoided and dollars. Overtime from staffing or census stays out of the number."
     : isRetention
-    ? "Read it top to bottom. The first rungs multiply: minutes saved become freed hours, and the hours you keep as relief come off after-hours charting. Then burnout is the ceiling that decides how many of your departures you can actually avoid, and those avoided departures become dollars."
+    ? `Read it top to bottom. The first rungs multiply: minutes saved become freed hours, and the hours you keep as relief come off ${retentionCharting}. Then burnout is the ceiling that decides how many of your departures you can actually avoid, and those avoided departures become dollars.`
     : "Read it top to bottom. The first rungs multiply: minutes saved become freed hours, and the freed hours you direct to access become new capacity. Then demand is the ceiling that decides how much of that capacity actually converts to visits, and those visits become dollars.";
 
   return (
@@ -969,25 +983,25 @@ export default function StepPlanning({
                 value={fmtInt(retentionLadder.minutes)}
                 unit="min / note"
                 label="Minutes saved per note"
-                caption="The target we commit to and verify first. The share you keep as relief comes off after-hours charting, the work outside of work that drives burnout."
+                caption={`The target we commit to and verify first. The share you keep as relief comes off ${retentionCharting}, the work outside of work that drives burnout.`}
                 emptyHint=""
               />
               <div className="flex justify-center"><ArrowDown className="w-4 h-4 text-[#B4B4B4]" /></div>
               <SpineRung
                 isSet={retentionLadder.freedHrsPerProviderWk > 0}
                 value={fmtHoursShort(retentionLadder.freedHrsPerProviderWk)}
-                unit="hrs / provider / wk"
+                unit={`hrs / ${retentionUnits.singular} / wk`}
                 label="Freed time"
-                caption="That time saved, added up across every note a provider writes in a week."
-                emptyHint="Set your providers on Build the case to see the freed hours."
+                caption={`That time saved, added up across every note a ${retentionUnits.singular} writes in a week.`}
+                emptyHint={`Set your ${retentionUnits.plural} on Build the case to see the freed hours.`}
               />
               <div className="flex justify-center"><ArrowDown className="w-4 h-4 text-[#B4B4B4]" /></div>
               <SpineRung
                 isSet={retentionLadder.protectedHrsPerProviderWk > 0}
                 value={fmtHoursShort(retentionLadder.protectedHrsPerProviderWk)}
-                unit="hrs / provider / wk"
+                unit={`hrs / ${retentionUnits.singular} / wk`}
                 label="Protected relief"
-                caption={`${fmtInt(retentionLadder.protectedSharePct)}% of the freed time stays with the clinician, off after-hours charting. The rest is free to go to the schedule.`}
+                caption={`${fmtInt(retentionLadder.protectedSharePct)}% of the freed time stays with the clinician, off ${retentionCharting}. The rest is free to go to the schedule.`}
                 emptyHint="Protect some freed time as relief on Build the case."
               />
               <div className="flex justify-center"><ArrowDown className="w-4 h-4 text-[#B4B4B4]" /></div>

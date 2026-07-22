@@ -15,7 +15,7 @@ import {
   BACKFILL_LEVEL_LABELS,
 } from "@/lib/attain/attainWorkforce";
 import type { AttainSetting } from "@/lib/attain/attainTypes";
-import { fmtInt, fmtMoneyCompact, fmtHoursShort, fmtDepartures, deriveRetentionLadder, BurnoutPoolGate } from "./accessLadder";
+import { fmtInt, fmtMoneyCompact, fmtHoursShort, fmtDepartures, deriveRetentionLadder, BurnoutPoolGate, retentionUnitNoun, retentionChartingTerm } from "./accessLadder";
 
 function asLines(raw: number | string[] | undefined): string[] {
   return Array.isArray(raw) ? raw : [];
@@ -180,7 +180,10 @@ export default function WorkforceLadderChain({ setting, baseline, values, onChan
   const selectedLines = asLines(values.retentionLines);
   const totalUnits = Math.max(0, Math.round((setting === "nursing" ? baseline.nursingFtes : baseline.providers) ?? 0));
   const requestedProviders = asNum(values.retentionProviders);
-  const unitNoun = setting === "nursing" ? "nurses" : "providers";
+  const units = retentionUnitNoun(setting);
+  const unitNoun = units.plural;
+  const unitNounSingular = units.singular;
+  const chartingTerm = retentionChartingTerm(setting);
   const ceiling = WORKFORCE_IMPACT_CEILING_PP[setting];
   const minutes = asNum(values.retentionMinutesSaved) > 0 ? asNum(values.retentionMinutesSaved) : DEFAULT_MINUTES_SAVED_PER_NOTE;
 
@@ -214,7 +217,7 @@ export default function WorkforceLadderChain({ setting, baseline, values, onChan
         anchor
         eyebrow="The first domino"
         title="Minutes saved per note"
-        help="This is the one number we prove first. Ambient documentation gives each provider back a few minutes on every note. The share you do not route to the schedule stays with the clinician and comes straight off their after-hours charting, the work outside of work that drives burnout."
+        help={`This is the one number we prove first. Ambient documentation gives each ${unitNounSingular} back a few minutes on every note. The share you do not route to the schedule stays with the clinician and comes straight off their ${chartingTerm}, the work outside of work that drives burnout.`}
         testid="card-workforce-d1-domino"
       >
         <div className="max-w-[220px]">
@@ -245,7 +248,7 @@ export default function WorkforceLadderChain({ setting, baseline, values, onChan
       <LadderRung
         eyebrow="Rung 1 · Scope"
         title="Who is in scope, and what a departure costs"
-        help="Pick the departments, the number of providers in scope, your own voluntary turnover rate, and your replacement cost per departure. This is the cohort every rung below is built from. Still no dollar figure; the impact and the pool come next."
+        help={`Pick the departments, the number of ${unitNoun} in scope, your own voluntary turnover rate, and your replacement cost per departure. This is the cohort every rung below is built from. Still no dollar figure; the impact and the pool come next.`}
         testid="card-workforce-d1"
       >
         {presetLines.length > 0 && (
@@ -349,7 +352,7 @@ export default function WorkforceLadderChain({ setting, baseline, values, onChan
       <LadderRung
         eyebrow="Rung 2 · Protected relief"
         title="Give the freed hour back to the clinician"
-        help="The freed time from the first domino lowers burnout only where it stays as protected relief, coming off after-hours charting, instead of being refilled by a bigger panel or a covering shift. This is the core decision, and it is the same freed hour access spends on the schedule when both are in your plan."
+        help={`The freed time from the first domino lowers burnout only where it stays as protected relief, coming off ${chartingTerm}, instead of being refilled by a bigger panel or a covering shift. This is the core decision, and it is the same freed hour access spends on the schedule when both are in your plan.`}
         testid="card-workforce-d2"
       >
         <div className="mb-4">
@@ -357,7 +360,7 @@ export default function WorkforceLadderChain({ setting, baseline, values, onChan
             <span className="text-sm text-[#8C8C8C] flex items-center gap-1.5">
               Share of freed time protected as relief (not refilled)
               <InfoTip
-                text="The portion of the time Abridge frees up that stays with the clinician as protected relief, reducing after-hours charting, instead of being absorbed by a bigger panel or a covering shift."
+                text={`The portion of the time Abridge frees up that stays with the clinician as protected relief, reducing ${chartingTerm}, instead of being absorbed by a bigger panel or a covering shift.`}
                 testid="tooltip-workforce-protect"
               />
             </span>
@@ -381,13 +384,13 @@ export default function WorkforceLadderChain({ setting, baseline, values, onChan
           <CountOutput
             label="Freed time from the first domino"
             value={fmtHoursShort(ladder.freedHrsPerProviderWk)}
-            unit="hrs / provider / wk"
+            unit={`hrs / ${unitNounSingular} / wk`}
             testid="text-workforce-freed-output"
           />
           <CountOutput
-            label="Protected relief, off after-hours charting"
+            label={`Protected relief, off ${chartingTerm}`}
             value={fmtHoursShort(ladder.protectedHrsPerProviderWk)}
-            unit="hrs / provider / wk"
+            unit={`hrs / ${unitNounSingular} / wk`}
             testid="text-workforce-d2-output"
           />
         </div>
@@ -466,7 +469,7 @@ export default function WorkforceLadderChain({ setting, baseline, values, onChan
       <LadderRung
         eyebrow="The gate"
         title="Burnout sets the ceiling on what you can avoid"
-        help="Protecting relief only avoids the departures burnout actually causes. That pool, your providers times turnover times the burnout share, is the ceiling. The impact you built above captures a slice of it. Output is in departures, still no dollars."
+        help={`Protecting relief only avoids the departures burnout actually causes. That pool, your ${unitNoun} times turnover times the burnout share, is the ceiling. The impact you built above captures a slice of it. Output is in departures, still no dollars.`}
         testid="card-workforce-gate"
       >
         <BurnoutPoolGate

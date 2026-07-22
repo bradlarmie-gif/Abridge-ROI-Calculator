@@ -489,6 +489,24 @@ export function EdAccessDiagnosisGate({
   );
 }
 
+/** The scope unit a setting's retention plan counts in. Nursing counts
+ * NURSES/FTEs (its starting point is beds/FTEs, not providers); every
+ * physician setting counts PROVIDERS. Returned as { plural, singular } so a
+ * rung can read "42 nurses" or "hrs / nurse / wk" from one source. Shared so
+ * Build the case and Planning never disagree on the unit word. */
+export function retentionUnitNoun(setting: AttainSetting): { plural: string; singular: string } {
+  return setting === "nursing" ? { plural: "nurses", singular: "nurse" } : { plural: "providers", singular: "provider" };
+}
+
+/** The concrete after-hours-charting lever, named for who does it: nurses
+ * chart AFTER THE SHIFT (post-shift charting); hospitalists and providers
+ * chart in the evening (after-hours / pajama-time charting). Kept as the same
+ * mechanism in every setting, just worded for the clinician who lives it, so
+ * the retention story reads true whether it is a nurse or a physician. */
+export function retentionChartingTerm(setting: AttainSetting): string {
+  return setting === "nursing" ? "post-shift charting" : "after-hours charting";
+}
+
 /** Derives the shared retention ladder model. Operational rungs (freed hours,
  * protected relief, composite impact, the burnout pool) come off the raw
  * workforce chain; the departures-avoided COUNT and the dollar PRIZE are
