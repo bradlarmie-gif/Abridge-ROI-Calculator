@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { HelpCircle } from "lucide-react";
+import { HelpCircle, ArrowDown } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { NumberField } from "@/components/NumberField";
@@ -15,7 +15,7 @@ import {
   DEFAULT_ED_ACCESS_HOURS_PER_RECOVERY,
 } from "@/lib/attain/attainEdAccess";
 import type { AttainSetting } from "@/lib/attain/attainTypes";
-import { deriveEdAccessLadder, EdAccessDiagnosisGate, ED_ACCESS_WHO_ACTS } from "./accessLadder";
+import { fmtInt, fmtMoneyCompact, deriveEdAccessLadder, EdAccessDiagnosisGate, ED_ACCESS_WHO_ACTS } from "./accessLadder";
 
 function asNum(raw: number | string[] | undefined): number {
   return typeof raw === "number" ? raw : 0;
@@ -28,17 +28,6 @@ function asNum(raw: number | string[] | undefined): number {
  * fix (the counterfactual this preserves). */
 function numOrDefault(raw: number | string[] | undefined, fallback: number): number {
   return typeof raw === "number" ? raw : fallback;
-}
-
-function fmtInt(n: number): string {
-  return Math.round(n).toLocaleString();
-}
-function fmtMoneyCompact(n: number): string {
-  const sign = n < 0 ? "-" : "";
-  const abs = Math.abs(n);
-  if (abs >= 1_000_000) return `${sign}$${(abs / 1_000_000).toFixed(abs % 1_000_000 === 0 ? 0 : 1)}M`;
-  if (abs >= 1_000) return `${sign}$${Math.round(abs / 1_000)}K`;
-  return `${sign}$${Math.round(abs)}`;
 }
 
 interface EdAccessDecisionChainProps {
@@ -55,30 +44,34 @@ interface EdAccessDecisionChainProps {
   crossGoalShareMultiplier: number;
 }
 
-/** A card shell shared by every D-step - same local convention every other
- * bespoke chain (Access/Revenue/Workforce/Quality) uses, deliberately not
- * shared with the generic lever card (bypassed entirely for ED access). */
-function DecisionCard({
-  step,
+/** A ladder rung shell: an eyebrow, a title, a teaching line, then the rung's
+ * editable controls. Identical to AccessDecisionChain.tsx's `LadderRung`, so
+ * ED access assembles the same visual ladder as the outpatient exemplar. The
+ * first domino carries the coral anchor treatment Planning's read-only spine
+ * opens on. */
+function LadderRung({
+  eyebrow,
   title,
   help,
   testid,
+  anchor,
   children,
 }: {
-  step: string;
+  eyebrow: string;
   title: string;
   help: string;
   testid: string;
+  anchor?: boolean;
   children: React.ReactNode;
 }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-xl border border-[#E7E0D6] bg-white p-7 mb-6"
+      className={`rounded-xl border p-7 ${anchor ? "bg-[#FFF6F3] border-[#EA2C00]" : "bg-white border-[#E7E0D6]"}`}
       data-testid={testid}
     >
-      <p className="text-[11px] font-bold uppercase tracking-[2px] text-[#EA2C00] mb-1.5">{step}</p>
+      <p className="text-[11px] font-bold uppercase tracking-[2px] text-[#EA2C00] mb-1.5">{eyebrow}</p>
       <h3 className="text-lg font-bold text-[#1A1A1A] mb-2 font-abridge">{title}</h3>
       <p className="text-[15px] text-[#8C8C8C] leading-relaxed mb-5 max-w-[620px]">{help}</p>
       {children}
@@ -86,8 +79,19 @@ function DecisionCard({
   );
 }
 
+/** The down-arrow that visually links one rung to the next, the same spine
+ * connector Planning draws between its read-only rungs. */
+function Connector() {
+  return (
+    <div className="flex justify-center py-1.5">
+      <ArrowDown className="w-4 h-4 text-[#B4B4B4]" />
+    </div>
+  );
+}
+
 /** A quiet, count-only output row - visits, providers, or patients, NEVER a
- * dollar figure. D1-D4 all use this; D5 is the one place a dollar appears. */
+ * dollar figure. The multiplying rungs use this; the prize is the one place a
+ * dollar appears. */
 function CountOutput({ label, value, unit, testid }: { label: string; value: string; unit: string; testid: string }) {
   return (
     <div className="bg-[#F8F5F1] rounded-lg px-4 py-3 flex items-baseline justify-between gap-3" data-testid={testid}>
@@ -135,24 +139,20 @@ function MathBox({ formula, testid }: { formula: string; testid: string }) {
 }
 
 /**
- * Build the case, ED ACCESS - a bespoke ordered decision chain, matching
- * outpatient access's chain bar (`AccessDecisionChain.tsx`) in SHAPE (a
- * mechanically derived capacity vs. an independently sourced ceiling, MIN'd
- * together) but priced on a genuinely different mechanism: ED access is
- * about recovering patients who left without being seen (LWBS) and
- * capturing the downstream admissions some of them become, not opening new
- * schedule capacity. D3 mechanically converts freed charting time into a
- * throughput commitment (never a free-typed outcome); D4 pits that
- * mechanical number against the recoverable LWBS pool - a genuinely
- * independent ceiling, MIN'd the same way outpatient MINs capacity against
- * demand - then applies the admission share and its own bed/payer
- * realization cap. D1-D4 below show providers, hours, or patients, never a
- * dollar. D5 is the one place a dollar first appears, derived from the
- * other three, never invented. See `attainEdAccess.ts`'s module header for
- * the full chain, its CHANGELOG, and its reconciliation to Explore's
- * `edLwbs`/`admissionCapture` primitives.
+ * Build the case, ED ACCESS - the assembled, editable version of the SAME
+ * step-down ladder Planning shows read-only on the hook, and the same ladder
+ * shell the outpatient access exemplar uses (see AccessDecisionChain.tsx +
+ * accessLadder.ts). Top to bottom: the first domino (minutes saved become
+ * faster throughput, the target we prove first), then who is in scope, what a
+ * recovered visit and an admission are worth, THE GATE (diagnose the leak, the
+ * charting-caused share of LWBS is the ceiling, MIN'd against the freed-time
+ * capacity), and the derived prize. Money is volume x margin and volume is
+ * MIN(recoverable pool, freed-time capacity), so no dollar can exist until the
+ * chain is real - the running total lives in the side panel, building live as
+ * each rung is set. Every number reconciles to Explore's edLwbs/admissionCapture
+ * primitives (see attainEdAccess.ts's module header).
  */
-export default function EdAccessDecisionChain({ setting, baseline, values, onChangeValue, realizationPct, crossGoalShareMultiplier }: EdAccessDecisionChainProps) {
+export default function EdAccessDecisionChain({ setting: _setting, baseline, values, onChangeValue, realizationPct, crossGoalShareMultiplier }: EdAccessDecisionChainProps) {
   const totalProviders = Math.max(0, Math.round(baseline.providers ?? 0));
   const requestedProviders = asNum(values.edAccessProviders);
 
@@ -174,91 +174,17 @@ export default function EdAccessDecisionChain({ setting, baseline, values, onCha
 
   return (
     <div data-testid="section-attain-ed-access-chain">
-      <DecisionCard
-        step="D1"
-        title="Who you point at ED access"
-        help="Providers actually committed to converting freed charting time into faster throughput are the scope every decision below is built from. No dollar figure yet, there is no worth or recovery decided."
-        testid="card-ed-access-d1"
-      >
-        <div className="mb-4 max-w-[280px]">
-          <FieldLabel>How many ED providers are in scope</FieldLabel>
-          <NumberField
-            value={requestedProviders}
-            onValueChange={(v) => onChangeValue("edAccessProviders", v)}
-            min={0}
-            max={totalProviders || undefined}
-            decimal={false}
-            className="h-11 w-full rounded-md border border-[#E5E5E5] bg-white px-3 text-sm"
-            placeholder={totalProviders > 0 ? `e.g., up to ${totalProviders}` : "e.g., 55"}
-            data-testid="input-ed-access-providers"
-          />
-          <p className="text-[11px] text-[#8C8C8C] mt-1">
-            Capped at your Starting-point count{totalProviders > 0 ? ` of ${totalProviders.toLocaleString()}` : ""}.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <CountOutput label="In scope for ED access" value={fmtInt(scope.providersInScope)} unit="providers" testid="text-ed-access-d1-providers" />
-          <CountOutput label="Annual ED visits in scope" value={fmtInt(scope.visitsInScope)} unit="visits/yr" testid="text-ed-access-d1-visits" />
-        </div>
-        <MathBox formula={formulas.scope} testid="text-ed-access-d1-formula" />
-      </DecisionCard>
-
-      <DecisionCard
-        step="D2"
-        title="What an ED visit, and a downstream admission, are worth"
-        help="Contribution margin, not charges - what a recovered visit is actually worth on an already-staffed shift, and separately, whatever a recovered patient becomes if they are admitted. Priced separately because they are not the same claim. Still no dollar total, there is no recovery decided yet."
-        testid="card-ed-access-d2"
-      >
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <FieldLabel
-              tip="Contribution margin booked per recovered ED visit - revenue minus the variable cost of delivering it, not gross charges. Benchmarked, but your own number."
-              testid="tooltip-ed-access-margin-per-visit"
-            >
-              Contribution margin per recovered visit
-            </FieldLabel>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8C8C8C] text-sm pointer-events-none">$</span>
-              <NumberField
-                value={marginPerVisitFor(values)}
-                onValueChange={(v) => onChangeValue("edAccessMarginPerVisit", v)}
-                min={0}
-                decimal={false}
-                className="h-11 w-full rounded-md border border-[#E5E5E5] bg-white pl-7 pr-3 text-sm"
-                data-testid="input-ed-access-margin-per-visit"
-              />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8C8C8C] text-xs pointer-events-none">/visit</span>
-            </div>
-          </div>
-          <div>
-            <FieldLabel
-              tip="Margin booked per downstream admission. A recovered visit and the admission it sometimes becomes are not the same claim."
-              testid="tooltip-ed-access-admission-margin"
-            >
-              Margin per downstream admission
-            </FieldLabel>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8C8C8C] text-sm pointer-events-none">$</span>
-              <NumberField
-                value={admissionMarginFor(values)}
-                onValueChange={(v) => onChangeValue("edAccessAdmissionMargin", v)}
-                min={0}
-                decimal={false}
-                className="h-11 w-full rounded-md border border-[#E5E5E5] bg-white pl-7 pr-3 text-sm"
-                data-testid="input-ed-access-admission-margin"
-              />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8C8C8C] text-xs pointer-events-none">/admission</span>
-            </div>
-          </div>
-        </div>
-      </DecisionCard>
-
-      <DecisionCard
-        step="D3 · The first domino"
+      {/* THE FIRST DOMINO. Minutes saved per note is elevated to the top and
+          framed as the target we prove first: freed charting time is the only
+          thing that mechanically buys a faster door-to-provider. Every rung
+          below multiplies on top of it. Same anchor treatment Planning's
+          read-only spine opens on. */}
+      <LadderRung
+        anchor
+        eyebrow="The first domino"
         title="Minutes saved become faster throughput"
-        help="This is the one number we prove first. Ambient documentation gives each provider back minutes on every ED note, and that freed time is the only thing that mechanically buys a faster door-to-provider. A share of it is committed to throughput; the rest stays protected relief. Output is in patients, still no dollars."
-        testid="card-ed-access-d3"
+        help="This is the one number we prove first. Ambient documentation gives each provider back minutes on every ED note, and that freed time is the only thing that mechanically buys a faster door-to-provider. Commit a share of it to throughput; the rest stays as protected relief. Output is in patients, still no dollars."
+        testid="card-ed-access-first-domino"
       >
         <div className="flex flex-wrap gap-6 mb-4">
           <div className="w-[160px]">
@@ -302,7 +228,7 @@ export default function EdAccessDecisionChain({ setting, baseline, values, onCha
             <span className="text-sm text-[#8C8C8C] flex items-center gap-1.5">
               Share of freed time committed to throughput (vs relief)
               <InfoTip
-                text="The portion of the time Abridge frees up that gets committed to faster door-to-provider throughput, instead of staying as protected relief for the provider. This is the one decision that mechanically turns freed time into recovered patients - not a target typed directly."
+                text="The portion of the time Abridge frees up that gets committed to faster door-to-provider throughput, instead of staying as protected relief for the provider. This is the one decision that mechanically turns freed time into recovered patients, not a target typed directly."
                 testid="tooltip-ed-access-throughput-share"
               />
             </span>
@@ -322,18 +248,112 @@ export default function EdAccessDecisionChain({ setting, baseline, values, onCha
           />
         </div>
 
-        <CountOutput label="Mechanically enabled recovery" value={fmtInt(mechanism.mechanicallyEnabledRecovered)} unit="patients/yr" testid="text-ed-access-d3-output" />
-        <MathBox formula={formulas.mechanism} testid="text-ed-access-d3-formula" />
+        <CountOutput label="Freed-time capacity" value={fmtInt(mechanism.mechanicallyEnabledRecovered)} unit="patients/yr" testid="text-ed-access-first-domino-output" />
+        <MathBox formula={formulas.mechanism} testid="text-ed-access-first-domino-formula" />
         <p className="text-[11px] text-[#8C8C8C] mt-2">
-          ~{fmtInt(mechanism.freedHoursTotal)} freed provider-hours/yr at {mechanism.minutesSavedPerNote} min saved/note, {Math.round(mechanism.throughputSharePct)}% committed to throughput.
+          ~{fmtInt(mechanism.freedHoursTotal)} freed provider-hours/yr at {mechanism.minutesSavedPerNote} min saved/note, {Math.round(mechanism.throughputSharePct)}% committed to throughput. Fills in once you set your scope below.
         </p>
-      </DecisionCard>
+      </LadderRung>
 
-      <DecisionCard
-        step="D4 · The gate"
+      <Connector />
+
+      {/* Rung 1: scope. Who is pointed at ED access, and how many ED visits
+          that represents. The scope every rung below is built from. */}
+      <LadderRung
+        eyebrow="Rung 1 · Scope"
+        title="Who you point at ED access"
+        help="The providers actually committed to converting freed charting time into faster throughput, and the annual ED visits that scope represents. This is the scope every rung below is built from. Still no dollar figure; worth and the diagnosis come next."
+        testid="card-ed-access-scope"
+      >
+        <div className="mb-4 max-w-[280px]">
+          <FieldLabel>How many ED providers are in scope</FieldLabel>
+          <NumberField
+            value={requestedProviders}
+            onValueChange={(v) => onChangeValue("edAccessProviders", v)}
+            min={0}
+            max={totalProviders || undefined}
+            decimal={false}
+            className="h-11 w-full rounded-md border border-[#E5E5E5] bg-white px-3 text-sm"
+            placeholder={totalProviders > 0 ? `e.g., up to ${totalProviders}` : "e.g., 55"}
+            data-testid="input-ed-access-providers"
+          />
+          <p className="text-[11px] text-[#8C8C8C] mt-1">
+            Capped at your Starting-point count{totalProviders > 0 ? ` of ${totalProviders.toLocaleString()}` : ""}.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <CountOutput label="In scope for ED access" value={fmtInt(scope.providersInScope)} unit="providers" testid="text-ed-access-scope-providers" />
+          <CountOutput label="Annual ED visits in scope" value={fmtInt(scope.visitsInScope)} unit="visits/yr" testid="text-ed-access-scope-visits" />
+        </div>
+        <MathBox formula={formulas.scope} testid="text-ed-access-scope-formula" />
+      </LadderRung>
+
+      <Connector />
+
+      {/* Rung 2: what a recovered visit, and a downstream admission, are worth.
+          Contribution margin, not charges, priced separately. */}
+      <LadderRung
+        eyebrow="Rung 2 · Worth"
+        title="What a recovered visit, and an admission, are worth"
+        help="Contribution margin, not charges - what a recovered visit is actually worth on an already-staffed shift, and separately, whatever a recovered patient becomes if they are admitted. Priced separately because they are not the same claim. Still no dollar total; the diagnosis comes next."
+        testid="card-ed-access-worth"
+      >
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <FieldLabel
+              tip="Contribution margin booked per recovered ED visit - revenue minus the variable cost of delivering it, not gross charges. Benchmarked, but your own number."
+              testid="tooltip-ed-access-margin-per-visit"
+            >
+              Contribution margin per recovered visit
+            </FieldLabel>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8C8C8C] text-sm pointer-events-none">$</span>
+              <NumberField
+                value={marginPerVisitFor(values)}
+                onValueChange={(v) => onChangeValue("edAccessMarginPerVisit", v)}
+                min={0}
+                decimal={false}
+                className="h-11 w-full rounded-md border border-[#E5E5E5] bg-white pl-7 pr-3 text-sm"
+                data-testid="input-ed-access-margin-per-visit"
+              />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8C8C8C] text-xs pointer-events-none">/visit</span>
+            </div>
+          </div>
+          <div>
+            <FieldLabel
+              tip="Margin booked per downstream admission. A recovered visit and the admission it sometimes becomes are not the same claim."
+              testid="tooltip-ed-access-admission-margin"
+            >
+              Margin per downstream admission
+            </FieldLabel>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8C8C8C] text-sm pointer-events-none">$</span>
+              <NumberField
+                value={admissionMarginFor(values)}
+                onValueChange={(v) => onChangeValue("edAccessAdmissionMargin", v)}
+                min={0}
+                decimal={false}
+                className="h-11 w-full rounded-md border border-[#E5E5E5] bg-white pl-7 pr-3 text-sm"
+                data-testid="input-ed-access-admission-margin"
+              />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8C8C8C] text-xs pointer-events-none">/admission</span>
+            </div>
+          </div>
+        </div>
+      </LadderRung>
+
+      <Connector />
+
+      {/* THE GATE. The load-bearing rung: diagnose the leak. The full LWBS pool
+          times the charting-caused share is the recoverable pool, MIN'd against
+          the freed-time capacity above. Same gate framing and triad Planning
+          shows read-only. */}
+      <LadderRung
+        eyebrow="The gate"
         title="Diagnose the leak: is it Abridge's to fix?"
         help="Your current LWBS rate times ED volume in scope is the full pool of patients who left without being seen. But not all of that is Abridge's to move: some leave because charting time chokes throughput (Abridge can move that), and some leave because you are short-staffed or out of beds (Abridge cannot touch that). Only the charting-caused share is recoverable, and realized recovery is the smaller of that recoverable pool and what freed time affords."
-        testid="card-ed-access-d4"
+        testid="card-ed-access-gate"
       >
         <div className="mb-4 max-w-[220px]">
           <FieldLabel
@@ -388,7 +408,12 @@ export default function EdAccessDecisionChain({ setting, baseline, values, onCha
           />
         </div>
 
-        <div className="mb-4" data-testid="panel-ed-access-d4-result">
+        {/* The gate itself: the recoverable (diagnosis-limited) pool meets the
+            freed-time capacity, realized is the smaller of the two. Rendered
+            from the SHARED ladder so this triad is byte-for-byte the same the
+            partner sees on Planning. The rung eyebrow already says "The gate,"
+            so the banner is off here. */}
+        <div className="mb-4" data-testid="panel-ed-access-gate-result">
           <EdAccessDiagnosisGate
             showHeader={false}
             fullPool={ladder.fullPool}
@@ -401,8 +426,8 @@ export default function EdAccessDecisionChain({ setting, baseline, values, onCha
             bothSet={ladder.recoverablePool > 0 && ladder.mechanicalCapacity > 0}
             emptyHint={
               ladder.recoverablePool <= 0
-                ? "Diagnose the charting-caused share above to size the recoverable pool, then commit freed time to throughput in D3."
-                : "Commit freed time to throughput in D3 to see how much of the recoverable pool actually converts."
+                ? "Diagnose the charting-caused share above to size the recoverable pool, then commit freed time to throughput in the first domino."
+                : "Commit freed time to throughput in the first domino to see how much of the recoverable pool actually converts."
             }
           />
         </div>
@@ -454,29 +479,37 @@ export default function EdAccessDecisionChain({ setting, baseline, values, onCha
           />
         </div>
 
-        <CountOutput label="Captured admissions" value={fmtInt(recovery.capturedAdmissions)} unit="admissions/yr" testid="text-ed-access-d4-admissions" />
-        <MathBox formula={formulas.recovery} testid="text-ed-access-d4-formula" />
-      </DecisionCard>
+        <CountOutput label="Captured admissions" value={fmtInt(recovery.capturedAdmissions)} unit="admissions/yr" testid="text-ed-access-gate-admissions" />
+        <MathBox formula={formulas.recovery} testid="text-ed-access-gate-formula" />
+      </LadderRung>
 
-      {/* D5 used to be a full-bleed dark hero card - the exact dollar the
-          side panel's "Plan so far" already shows, stranded at the bottom
-          of the page. It's now a quiet inline line, same card shell as
-          D1-D4, so the panel stays the one place that total actually
-          lives. */}
-      <DecisionCard
-        step="D5"
-        title="The payoff"
-        help="Realized recovered visits x contribution margin per visit, plus realized captured admissions x margin per admission. Both legs are contribution margin, an honest total, not a mix of gross revenue and margin. Already counted in the running total in the panel to the right."
-        testid="card-ed-access-d5"
+      <Connector />
+
+      {/* THE PRIZE. The one place a dollar appears, derived from the rungs
+          above (recovered visits x margin + captured admissions x margin). The
+          live running total lives in the side panel and builds as each rung is
+          set; here it is a quiet line plus the transparent math, both legs on
+          contribution margin. */}
+      <LadderRung
+        eyebrow="The prize"
+        title="What it is worth"
+        help="Realized recovered visits times contribution margin per visit, plus the bed/payer-capped captured admissions times margin per admission. Both legs are contribution margin, an honest total, not a mix of gross revenue and margin. It is already counted in your plan, forming, on the right."
+        testid="card-ed-access-prize"
       >
-        <p className="text-[15px] text-[#1A1A1A]" data-testid="text-ed-access-d5-caption">
-          <span className="font-abridge text-2xl text-[#EA2C00] font-bold" data-testid="text-ed-access-d5-value">
-            {fmtMoneyCompact(realizedPayoffValue)}
-          </span>{" "}
-          from {fmtInt(recovery.realizedRecovered)} recovered visits x ~${fmtInt(payoff.marginPerVisit)}/visit margin + {fmtInt(recovery.capturedAdmissions)} admissions x ~${fmtInt(payoff.admissionMargin)}/admission margin
-        </p>
-        <MathBox formula={payoffFormulaDisplay} testid="text-ed-access-d5-formula" />
-      </DecisionCard>
+        {payoff.value > 0 ? (
+          <p className="text-[15px] text-[#1A1A1A]" data-testid="text-ed-access-prize-caption">
+            <span className="font-semibold text-[#EA2C00]" data-testid="text-ed-access-prize-value">{fmtMoneyCompact(realizedPayoffValue)}</span>
+            {" / yr, from "}
+            {fmtInt(recovery.realizedRecovered)} recovered visits x ~${fmtInt(payoff.marginPerVisit)}/visit margin + {fmtInt(recovery.capturedAdmissions)} admissions x ~${fmtInt(payoff.admissionMargin)}/admission margin.
+            {" Tracked live in your plan on the right."}
+          </p>
+        ) : (
+          <p className="text-[13.5px] text-[#8C8C8C]" data-testid="text-ed-access-prize-empty">
+            Finish the rungs above and the prize appears here and in your plan on the right.
+          </p>
+        )}
+        <MathBox formula={payoffFormulaDisplay} testid="text-ed-access-prize-formula" />
+      </LadderRung>
     </div>
   );
 }
