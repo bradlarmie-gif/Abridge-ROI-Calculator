@@ -218,6 +218,9 @@ export interface AttainPdfPriority {
   goalOwnerTitle: string;
   isFreedTimeGoal: boolean;
   barAcc: number;
+  /** Service lines the partner actually selected for this goal (may be empty),
+   * read off the goal's "lines" lever - never a hardcoded specialty. */
+  selectedLines: string[];
   /** This priority's own realization/attribution rate (0-100, default 100).
    * `margin`/`count` above already have it baked in (they come straight off
    * `combined.byGoal[goal]`, already scaled) - this is only carried so the
@@ -315,8 +318,29 @@ export function buildAttainPdfData(input: AttainPdfInput): AttainPdfData {
   const unitLabel = UNIT_LABEL[setting] ?? "units";
   const singleContent = goalDefs.length === 1 ? getContent(setting, goals[0]) : undefined;
 
-  const scopeSubtitle = singleContent?.subtitle
-    ?? `${goalDefs.length} priorities · ${(state.scope.unitCount || 0).toLocaleString()} ${unitLabel} · ${SETTING_LABEL[setting]}`;
+  // Scope subtitle is DERIVED from the partner's real plan (selected lines +
+  // the unit count from Baseline), never the old hardcoded
+  // "Cardiology & Orthopedics · 40 providers" that contradicted the actual
+  // scope. Blank inputs collapse to the care setting alone.
+  const singleSelectedLines: string[] =
+    goalDefs.length === 1
+      ? (() => {
+          const ll = leversFor(goals[0], setting).find((l) => l.control === "lines");
+          const v = ll ? (valuesByGoal[goals[0]] ?? {})[ll.id] : undefined;
+          return Array.isArray(v) ? v : [];
+        })()
+      : [];
+  const unitCountForScope = state.scope.unitCount || 0;
+  const scopeSubtitle =
+    goalDefs.length === 1
+      ? [
+          singleSelectedLines.length > 0 ? singleSelectedLines.join(", ") : null,
+          unitCountForScope > 0 ? `${unitCountForScope.toLocaleString()} ${unitLabel}` : null,
+          SETTING_LABEL[setting],
+        ]
+          .filter(Boolean)
+          .join(" · ")
+      : `${goalDefs.length} priorities · ${unitCountForScope.toLocaleString()} ${unitLabel} · ${SETTING_LABEL[setting]}`;
   const coverThesisLines = singleContent
     ? [singleContent.thesis1, singleContent.thesis2]
     : [`One plan, built from every decision moved across ${goalDefs.map((g) => g.label).join(", ")}.`];
@@ -345,6 +369,11 @@ export function buildAttainPdfData(input: AttainPdfInput): AttainPdfData {
       goalOwnerTitle: owner?.title?.trim() ?? "",
       isFreedTimeGoal,
       barAcc,
+      selectedLines: (() => {
+        const linesLever = leversFor(goal, setting).find((l) => l.control === "lines");
+        const v = linesLever ? values[linesLever.id] : undefined;
+        return Array.isArray(v) ? v : [];
+      })(),
       realizationPct: realizationByGoal[goal] ?? 100,
     };
   });
@@ -471,6 +500,7 @@ const s = StyleSheet.create({
   worldK: { fontSize: 7.5, fontWeight: 700, color: C.muted, letterSpacing: 1, textTransform: "uppercase" },
   worldN: { fontFamily: "Abridge", fontSize: 18, color: C.ink, marginTop: 5, marginBottom: 2 },
   worldF: { fontSize: 7.5, color: C.muted },
+  worldTag: { fontSize: 6, fontWeight: 700, color: C.muted, letterSpacing: 1, textTransform: "uppercase", marginBottom: 3 },
 
   // Callouts
   calloutBox: { backgroundColor: C.cream, borderLeftWidth: 2.5, borderLeftColor: C.coral, borderRadius: 4, padding: 9, marginBottom: 8 },
@@ -856,8 +886,24 @@ function StartingPointPage({ data, priority }: { data: AttainPdfData; priority: 
           <Text style={s.lead}>{c.p1Lead}</Text>
 
           <View style={s.worldRow} wrap={false}>
+            {/* Derived scope card: the partner's real number, matching the
+                "Built from N in scope" footnote. No benchmark tag. */}
+            <View style={s.worldCard}>
+              <Text style={s.worldK}>In scope</Text>
+              <Text style={s.worldN}>{data.unitCount > 0 ? data.unitCount.toLocaleString() : "Not set yet"}</Text>
+              <Text style={s.worldF}>
+                {data.unitCount > 0
+                  ? priority.selectedLines.length > 0
+                    ? `${data.unitLabel} · ${priority.selectedLines.join(", ")}`
+                    : data.unitLabel
+                  : "Set on the Baseline step"}
+              </Text>
+            </View>
+            {/* Industry benchmarks, each tagged so a benchmark is never read
+                as the partner's own measured number. */}
             {c.worldCards.map((card, i) => (
               <View key={i} style={s.worldCard}>
+                {card.benchmark && <Text style={s.worldTag}>Benchmark</Text>}
                 <Text style={s.worldK}>{card.k}</Text>
                 <Text style={[s.worldN, card.coral ? { color: C.coral } : {}]}>{card.n}</Text>
                 <Text style={s.worldF}>{card.f}</Text>
