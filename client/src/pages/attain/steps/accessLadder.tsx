@@ -348,6 +348,93 @@ export function fmtHoursShort(n: number): string {
   return (Math.round(n * 10) / 10).toLocaleString();
 }
 
+/** Format a revenue count: whole numbers for large pools, one decimal for
+ * the small fractional condition counts a single department can produce, so
+ * a real 0.6 conditions never collapses to a fabricated 0 or 1. */
+export function fmtRevenueCount(n: number): string {
+  if (n > 0 && n < 10) return (Math.round(n * 10) / 10).toLocaleString();
+  return Math.round(n).toLocaleString();
+}
+
+/**
+ * THE REVENUE DIAGNOSIS GATE, the documentation-caused-share analog of
+ * `CapacityDemandGate` / `BurnoutPoolGate`, shared verbatim between Build the
+ * case and Planning for one revenue path. This is the load-bearing rung of
+ * the revenue conversation: it separates the leak Abridge can actually move
+ * (claims going out below the care delivered, undocumented conditions, denials
+ * the note can prevent) from what Abridge cannot touch (payer rules,
+ * authorization, care that genuinely was not delivered). The
+ * documentation-caused pool is the ceiling; what converts is a slice of it,
+ * never more.
+ */
+export function RevenuePathGate({
+  ceilingLabel,
+  ceilingCount,
+  ceilingUnit,
+  capturedLabel,
+  capturedCount,
+  capturedUnit,
+  whoActs,
+  bothSet,
+  emptyHint,
+  showHeader = true,
+}: {
+  ceilingLabel: string;
+  ceilingCount: number;
+  ceilingUnit: string;
+  capturedLabel: string;
+  capturedCount: number;
+  capturedUnit: string;
+  whoActs: string;
+  bothSet: boolean;
+  emptyHint: string;
+  showHeader?: boolean;
+}) {
+  const explain =
+    capturedCount > 0
+      ? `Of the ${fmtRevenueCount(ceilingCount)} the note can move, this plan converts ${fmtRevenueCount(capturedCount)}. The rest is the leak Abridge cannot touch, payer rules and authorization, so it stays out of the number.`
+      : "Abridge can only move the leak the documentation causes. Set the ceiling and commit to a share of it to see how much converts.";
+
+  return (
+    <div className="rounded-lg border border-[#E7E0D6] bg-[#F4F0EA] p-4" data-testid="rung-planning-revenue-gate">
+      {showHeader && (
+        <div className="flex items-center gap-2 mb-3">
+          <span className="inline-block text-[8px] font-bold uppercase tracking-wide text-white bg-[#1A1A1A] px-2 py-0.5 rounded-full">
+            The gate
+          </span>
+          <p className="text-[12px] font-semibold text-[#1A1A1A]">The documentation sets the ceiling on what you capture</p>
+        </div>
+      )}
+
+      {bothSet ? (
+        <>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <LadderFieldLabel>{ceilingLabel}</LadderFieldLabel>
+              <p className="font-abridge text-2xl font-bold text-[#1A1A1A]" data-testid="text-planning-revenue-gate-ceiling">
+                {fmtRevenueCount(ceilingCount)} <span className="text-[11px] font-normal text-[#8C8C8C]">{ceilingUnit}</span>
+              </p>
+            </div>
+            <div>
+              <LadderFieldLabel>Who has to act</LadderFieldLabel>
+              <p className="text-[13px] font-semibold text-[#1A1A1A] leading-snug" data-testid="text-planning-revenue-gate-owner">{whoActs}</p>
+            </div>
+          </div>
+          <div className="mt-3 pt-3 border-t border-[#E0D9CE]">
+            <LadderFieldLabel>{capturedLabel}</LadderFieldLabel>
+            <p className="font-abridge text-2xl font-bold text-[#EA2C00]" data-testid="text-planning-revenue-gate-captured">
+              {fmtRevenueCount(capturedCount)} <span className="text-[11px] font-normal text-[#8C8C8C]">{capturedUnit}</span>
+            </p>
+            <p className="text-[11px] text-[#8C8C8C] mt-1 leading-relaxed" data-testid="text-planning-revenue-gate-explain">{explain}</p>
+          </div>
+        </>
+      ) : (
+        <p className="text-[11px] text-[#8C8C8C] leading-relaxed">{emptyHint}</p>
+      )}
+    </div>
+  );
+}
+
 /** Format a departures-avoided count (one decimal, since it is usually a
  * fraction of a person per year at a single-department scale). */
 export function fmtDepartures(n: number): string {

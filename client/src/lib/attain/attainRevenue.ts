@@ -1,4 +1,5 @@
 import type { AttainBaseline, LeverContribution, LeverContributionsResult, LeverValues } from "./attainLevers";
+import { realizedValue, formulaWithRealization } from "./attainLevers";
 import { computeAllDriverValues, computeAllDriverCalcSummaries } from "@/lib/exploreDriverCalcs";
 import { DEFAULT_EXPLORE_STATE, type ExploreState, type HccPlan } from "@/pages/explore/ExploreFlow";
 import type { AttainSetting } from "./attainTypes";
@@ -331,6 +332,16 @@ export function computeHccChain(baseline: AttainBaseline, values: LeverValues): 
 export const DEFAULT_CURRENT_WRVU = 1.8;
 export const DEFAULT_CONVERSION_FACTOR = 33;
 
+// Outpatient E/M grounding + diagnosis defaults (the owner-approved
+// question sequence, 2026-07-22). These size or scope the path; the one
+// gate that turns them into a dollar is the capture commitment
+// (`revenueEmLift`, reinterpreted here as "the share of the
+// documentation-caused gap you commit to close", realityStart 0).
+export const DEFAULT_EM_EMPLOYED_SHARE = 100; // % of providers on productivity / wRVU pay
+export const DEFAULT_EM_VISIT_SHARE = 100; // % of visits that are office / E&M visits
+export const DEFAULT_EM_DOC_CAUSED_SHARE = 20; // % of E/M visits whose claim goes out below the care delivered because the note fell short
+export const DEFAULT_EM_WRVU_GAIN = 0.4; // avg wRVU recovered when one of those claims is corrected to the supported level
+
 export interface RevenueEmChain {
   currentWrvu: number;
   liftPct: number;
@@ -338,48 +349,115 @@ export interface RevenueEmChain {
   eligibleEncounters: number;
   wrvusCaptured: number;
   value: number;
+  /** Outpatient-only grounding + diagnosis rungs (ED leaves these at their
+   * neutral values and prices off the raw wRVU lift instead). */
+  isOutpatient: boolean;
+  employedSharePct: number;
+  visitSharePct: number;
+  docCausedSharePct: number;
+  /** The ceiling count: E/M visits whose claim goes out below the care
+   * delivered because the note fell short. Abridge can only move this pool. */
+  docCausedVisits: number;
+  /** The commitment: share of that documentation-caused pool you close. */
+  capturePct: number;
+  correctedVisits: number;
+  wrvuGain: number;
 }
 
 /**
- * D1-D3 + payoff, all in one function since E/M has no separate "scope"
- * step (its scope IS the Starting-point baseline's providers/encounters).
- * `liftPct` is the gate (realityStart 0); `currentWrvu` and
- * `conversionFactor` are real, editable, but not themselves gating (same
- * "descriptive default" convention as the HCC path and Access's D2).
+ * The outpatient/ED E/M path. Both settings reconcile to Explore's
+ * `wrvu`/`edEmLevel` driver (eligible encounters × current wRVU × lift ×
+ * conversion factor), so the ONE thing that changes between them is how the
+ * lift is arrived at:
+ *
+ *  - OUTPATIENT (the ladder exemplar) runs the owner-approved question
+ *    sequence. GROUND: what share of providers are employed / on
+ *    productivity pay (wRVU gains only accrue there) and what share of
+ *    visits are office / E&M visits (that scopes the volume). DIAGNOSE: of
+ *    those visits, how often does the claim go out below the care actually
+ *    delivered because the note did not capture the full picture, the
+ *    documentation-caused share that is the ceiling Abridge can move.
+ *    COMMIT: the share of that pool you close (`revenueEmLift`, realityStart
+ *    0). The captured wRVUs are correctedVisits × wRVU recovered per
+ *    corrected claim, and the effective lift-vs-average is derived from that
+ *    so the engine reconciliation is exact.
+ *  - ED keeps the original blunt wRVU-lift slider (`revenueEmLift` as a raw
+ *    percent) unchanged, since ED revenue keeps its current screen.
  */
 export function computeEmChain(baseline: AttainBaseline, setting: AttainSetting, values: LeverValues): RevenueEmChain {
   const isED = setting === "ed";
+  const isOutpatient = !isED;
   const providers = Math.max(0, Math.round(baseline.providers ?? 0));
   const perUnit = perProviderEncounters(baseline, isED ? 1_800 : 3_500);
   const util = utilizationFraction(baseline);
-  const eligibleEncounters = Math.round(providers * perUnit * util);
+  const baseEligible = Math.round(providers * perUnit * util);
 
   const currentWrvuRaw = asNum(values.revenueEmCurrentWrvu);
   const currentWrvu = currentWrvuRaw > 0 ? currentWrvuRaw : DEFAULT_CURRENT_WRVU;
-  const liftPct = Math.max(0, asNum(values.revenueEmLift));
   const conversionFactorRaw = asNum(values.revenueEmConversionFactor);
   const conversionFactor = conversionFactorRaw > 0 ? conversionFactorRaw : DEFAULT_CONVERSION_FACTOR;
 
-  const lift = (currentWrvu * liftPct) / 100;
-  const wrvusCaptured = eligibleEncounters * lift;
+  if (!isOutpatient) {
+    // ED: legacy raw wRVU-lift path, untouched.
+    const liftPct = Math.max(0, asNum(values.revenueEmLift));
+    const lift = (currentWrvu * liftPct) / 100;
+    const wrvusCaptured = baseEligible * lift;
+    const value = Math.round(wrvusCaptured * conversionFactor);
+    return {
+      currentWrvu, liftPct, conversionFactor, eligibleEncounters: baseEligible, wrvusCaptured, value,
+      isOutpatient: false, employedSharePct: 100, visitSharePct: 100, docCausedSharePct: 0,
+      docCausedVisits: 0, capturePct: 0, correctedVisits: 0, wrvuGain: 0,
+    };
+  }
+
+  // Outpatient: the grounding + diagnosis question sequence.
+  const employedRaw = asNum(values.revenueEmEmployedShare);
+  const employedSharePct = clampPct(employedRaw > 0 ? employedRaw : DEFAULT_EM_EMPLOYED_SHARE);
+  const visitRaw = asNum(values.revenueEmVisitShare);
+  const visitSharePct = clampPct(visitRaw > 0 ? visitRaw : DEFAULT_EM_VISIT_SHARE);
+  const docCausedRaw = asNum(values.revenueEmDocCausedShare);
+  const docCausedSharePct = clampPct(docCausedRaw > 0 ? docCausedRaw : DEFAULT_EM_DOC_CAUSED_SHARE);
+  const wrvuGainRaw = asNum(values.revenueEmWrvuGain);
+  const wrvuGain = wrvuGainRaw > 0 ? wrvuGainRaw : DEFAULT_EM_WRVU_GAIN;
+  // The one gate (realityStart 0): the share of the documentation-caused
+  // pool you commit to close. Nothing captured until you commit to it.
+  const capturePct = clampPct(Math.max(0, asNum(values.revenueEmLift)));
+
+  const eligibleEncounters = Math.round(baseEligible * (employedSharePct / 100) * (visitSharePct / 100));
+  const docCausedVisits = eligibleEncounters * (docCausedSharePct / 100);
+  const correctedVisits = docCausedVisits * (capturePct / 100);
+  const wrvusCaptured = correctedVisits * wrvuGain;
+  // Back out the effective lift-vs-average so the reconciliation ExploreState
+  // (annualEncounters = eligibleEncounters, wrvuCustomPercent = liftPct)
+  // reproduces this exact wRVU total off the Explore engine.
+  const liftPct = eligibleEncounters > 0 && currentWrvu > 0 ? (wrvusCaptured / (eligibleEncounters * currentWrvu)) * 100 : 0;
   const value = Math.round(wrvusCaptured * conversionFactor);
 
-  return { currentWrvu, liftPct, conversionFactor, eligibleEncounters, wrvusCaptured, value };
+  return {
+    currentWrvu, liftPct, conversionFactor, eligibleEncounters, wrvusCaptured, value,
+    isOutpatient: true, employedSharePct, visitSharePct, docCausedSharePct,
+    docCausedVisits, capturePct, correctedVisits, wrvuGain,
+  };
 }
 
 /** D2's count-only derivation (no price yet) - "how many extra wRVUs this
- * lift captures", mirroring Access's D3/D4 discipline of deriving a count
+ * capture recovers", mirroring Access's D3/D4 discipline of deriving a count
  * before any dollar exists. */
 export function emCountFormula(chain: RevenueEmChain): string {
   if (chain.wrvusCaptured <= 0) return NO_MOVE_FORMULA;
+  if (chain.isOutpatient) {
+    return `${fmtInt(chain.docCausedVisits)} claims a year go out below the care delivered × ${fmtInt(chain.capturePct)}% closed × ${chain.wrvuGain} wRVU recovered each = ${Math.round(chain.wrvusCaptured).toLocaleString()} wRVUs captured.`;
+  }
   return `${fmtInt(chain.eligibleEncounters)} eligible encounters × ${chain.currentWrvu} current wRVU × ${fmtInt(chain.liftPct)}% lift = ${Math.round(chain.wrvusCaptured).toLocaleString()} extra wRVUs captured.`;
 }
 
 /** The payoff formula - the first (and only) place a dollar appears in
- * this path, reconciling exactly to Explore's `wrvu`/`edEmLevel` driver:
- * current wRVU × lift × conversion factor × eligible encounters. */
+ * this path, reconciling exactly to Explore's `wrvu`/`edEmLevel` driver. */
 export function emFormula(chain: RevenueEmChain): string {
   if (chain.value <= 0) return NO_MOVE_FORMULA;
+  if (chain.isOutpatient) {
+    return `${fmtInt(chain.docCausedVisits)} documentation-caused claims × ${fmtInt(chain.capturePct)}% closed × ${chain.wrvuGain} wRVU each × $${fmtInt(chain.conversionFactor)}/wRVU = ~${fmtMoneyCompact(chain.value)}.`;
+  }
   return `${fmtInt(chain.eligibleEncounters)} eligible encounters × ${chain.currentWrvu} current wRVU × ${fmtInt(chain.liftPct)}% lift × $${fmtInt(chain.conversionFactor)}/wRVU = ~${fmtMoneyCompact(chain.value)}.`;
 }
 
@@ -624,4 +702,157 @@ export function computeRevenueContributions(baseline: AttainBaseline, setting: A
 
   const totalCount = rows.reduce((sum, r) => sum + r.count, 0);
   return { perLever, totalMargin: chain.totalValue, totalCount };
+}
+
+// ────────────────────────────────────────────────────────────────────────
+// THE SHARED REVENUE LADDER — the converging, multi-path analog of the
+// access / retention ladders (accessLadder.tsx).
+//
+// Access and Retention are ONE lever with ONE gated payoff. Revenue is
+// different in SHAPE: it is one lever (complete, specific documentation at
+// the point of care) feeding SEVERAL parallel payoffs that then CONVERGE
+// into one captured-revenue prize. So the shared model here is a set of
+// per-path sub-ladders, each running the same four-beat conversation
+// (GROUND the reality -> DIAGNOSE the documentation-caused ceiling Abridge
+// can move -> name WHO ACTS -> the number falls out), plus the one converged
+// prize that sums them. Build the case assembles it (editable rungs) and
+// Planning reads it back (the spine on the hook); both render from this one
+// derivation so they can never drift.
+//
+// Every number reconciles to the engine: each path's `value` is exactly its
+// own `computeHccChain`/`computeEmChain`/`computeDenialsChain` payoff (which
+// in turn reconcile to `computeAllDriverValues`), scaled once by this
+// priority's realization percent so the per-path dollars match Build <->
+// Planning and sum to the same converged prize the side panel shows.
+// ────────────────────────────────────────────────────────────────────────
+
+export interface RevenuePathLadder {
+  id: RevenuePathId;
+  label: string;
+  /** Beat 1, GROUND: the operational fact that sizes or scopes the path. */
+  groundLabel: string;
+  groundValue: string;
+  groundSet: boolean;
+  /** Beat 2, DIAGNOSE: the documentation-caused ceiling Abridge can move,
+   * separated from what Abridge cannot touch. The load-bearing rung. */
+  ceilingLabel: string;
+  ceilingCount: number;
+  ceilingUnit: string;
+  /** What actually converts out of that ceiling once the plan commits. */
+  capturedLabel: string;
+  capturedCount: number;
+  capturedUnit: string;
+  /** Beat 3, WHO ACTS: the partner-owned team that has to move. */
+  whoActs: string;
+  /** Beat 4, THE NUMBER: the realized dollar and its transparent math. */
+  priceLabel: string;
+  value: number;
+  formula: string;
+  hasValue: boolean;
+}
+
+export interface RevenueLadderModel {
+  paths: RevenuePathLadder[];
+  /** The one converged prize: every selected path summed, each an honestly
+   * distinct claim pool, never double-counted. */
+  convergedPrize: number;
+  anyPathSelected: boolean;
+}
+
+const REVENUE_PATH_WHO_ACTS: Record<RevenuePathId, string> = {
+  hcc: "Risk adjustment / coding team",
+  em: "Providers and the coding team",
+  denials: "Denial prevention / billing team",
+};
+
+/**
+ * Derives the shared, converging revenue ladder. `realizationPct` scales
+ * every path's dollar (and the converged prize) exactly once, the same way
+ * `applyRealization` scales the engine result the side panel reads, so Build
+ * the case (which passes its own live slider) and Planning (which passes the
+ * factor implied by the combined engine result) show identical per-path
+ * dollars and the same converged prize.
+ */
+export function deriveRevenueLadder(
+  baseline: AttainBaseline,
+  setting: AttainSetting,
+  values: LeverValues,
+  realizationPct = 100,
+): RevenueLadderModel {
+  const chain = computeRevenueChain(baseline, setting, values);
+  const paths: RevenuePathLadder[] = [];
+
+  if (chain.hcc) {
+    const { scope, recapture, netNew, payoff } = chain.hcc;
+    const gapConditions = recapture.gapPatients * recapture.avgHccs;
+    const capturedConditions = recapture.recapturedHccs + netNew.netNewHccs;
+    const value = Math.round(realizedValue(payoff.value, realizationPct));
+    paths.push({
+      id: "hcc",
+      label: REVENUE_PATH_LABELS.hcc,
+      groundLabel: "Risk-based patients in scope",
+      groundValue: scope.totalPatients > 0 ? `${fmtInt(scope.totalPatients)} patients` : "Not set yet",
+      groundSet: scope.totalPatients > 0,
+      ceilingLabel: "Conditions your patients have that never reach the claim",
+      ceilingCount: gapConditions,
+      ceilingUnit: "conditions / yr",
+      capturedLabel: "Conditions captured back onto the claim",
+      capturedCount: capturedConditions,
+      capturedUnit: "conditions / yr",
+      whoActs: REVENUE_PATH_WHO_ACTS.hcc,
+      priceLabel: `$${fmtInt(payoff.valuePerHcc)} / condition`,
+      value,
+      formula: value > 0 ? formulaWithRealization(chain.hcc.formulas.payoff, realizationPct, value) : chain.hcc.formulas.payoff,
+      hasValue: value > 0,
+    });
+  }
+
+  if (chain.em) {
+    const c = chain.em.chain;
+    const value = Math.round(realizedValue(c.value, realizationPct));
+    paths.push({
+      id: "em",
+      label: REVENUE_PATH_LABELS.em,
+      groundLabel: "Office / E&M visits in scope",
+      groundValue: c.eligibleEncounters > 0 ? `${fmtInt(c.eligibleEncounters)} visits / yr` : "Not set yet",
+      groundSet: c.eligibleEncounters > 0,
+      ceilingLabel: "Claims going out below the care delivered, because the note fell short",
+      ceilingCount: c.docCausedVisits,
+      ceilingUnit: "claims / yr",
+      capturedLabel: "Claims corrected to the level you supported",
+      capturedCount: c.correctedVisits,
+      capturedUnit: "claims / yr",
+      whoActs: REVENUE_PATH_WHO_ACTS.em,
+      priceLabel: `${c.wrvuGain} wRVU × $${fmtInt(c.conversionFactor)} / wRVU`,
+      value,
+      formula: value > 0 ? formulaWithRealization(chain.em.formula, realizationPct, value) : chain.em.formula,
+      hasValue: value > 0,
+    });
+  }
+
+  if (chain.denials) {
+    const c = chain.denials.chain;
+    const value = Math.round(realizedValue(c.value, realizationPct));
+    paths.push({
+      id: "denials",
+      label: REVENUE_PATH_LABELS.denials,
+      groundLabel: "Medical-necessity denials a year",
+      groundValue: c.deniedEncounters > 0 ? `${fmtInt(c.deniedEncounters)} denials / yr` : "Not set yet",
+      groundSet: c.deniedEncounters > 0,
+      ceilingLabel: "Denials the note can prevent, not payer rules or authorization",
+      ceilingCount: c.deniedEncounters,
+      ceilingUnit: "denials / yr",
+      capturedLabel: "Denials prevented with complete documentation",
+      capturedCount: c.prevented,
+      capturedUnit: "denials / yr",
+      whoActs: REVENUE_PATH_WHO_ACTS.denials,
+      priceLabel: `$${fmtInt(c.avgClaimValue)} / claim`,
+      value,
+      formula: value > 0 ? formulaWithRealization(chain.denials.formula, realizationPct, value) : chain.denials.formula,
+      hasValue: value > 0,
+    });
+  }
+
+  const convergedPrize = paths.reduce((sum, p) => sum + p.value, 0);
+  return { paths, convergedPrize, anyPathSelected: chain.paths.length > 0 };
 }
