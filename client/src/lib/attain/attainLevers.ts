@@ -1028,8 +1028,8 @@ export const ED_ACCESS_LEVERS: Lever[] = [
   },
   {
     id: "edAccessMinutesSaved",
-    label: "Set minutes saved per note",
-    help: "How much documentation time Abridge saves on the average ED note. The freed time this creates is what the throughput commitment below actually converts into recovered patients.",
+    label: "Set target minutes saved per note",
+    help: "How much documentation time Abridge is expected to save on the average ED note, a planning target rather than a measured result. The freed time this creates is what the throughput commitment below actually converts into recovered patients.",
     control: "countPerUnit",
     unit: "min/note",
     min: 0,

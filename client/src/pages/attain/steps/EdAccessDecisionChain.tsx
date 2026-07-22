@@ -284,10 +284,10 @@ export default function EdAccessDecisionChain({ setting, baseline, values, onCha
         <div className="flex flex-wrap gap-6 mb-4">
           <div className="w-[160px]">
             <FieldLabel
-              tip="How many minutes of documentation Abridge saves on the average ED note. A real, editable input - zero here mechanically zeroes recovery below, at any throughput share."
+              tip="A planning assumption for this priority, not yet a measured result. ED benchmark: ambient saves ~9 minutes per note given how much heavier ED documentation runs - start conservative and raise it once you have your own results. Zero here mechanically zeroes recovery below, at any throughput share."
               testid="tooltip-ed-access-minutes-saved"
             >
-              Minutes saved per note
+              Target: minutes saved per note
             </FieldLabel>
             <NumberField
               value={numOrDefault(values.edAccessMinutesSaved, DEFAULT_ED_ACCESS_MINUTES_SAVED_PER_NOTE)}
