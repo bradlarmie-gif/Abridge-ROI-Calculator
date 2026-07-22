@@ -92,8 +92,8 @@ function accessValues(): LeverValues {
     accessMargin: 220,
     accessFreedShare: 55,
     accessDemandBacklog: 1_900,
-    accessDemandSameDayPct: 15,
-    accessDemandNoShowPct: 10,
+    accessDemandSameDayCount: 800,
+    accessDemandNoShowCount: 300,
     accessDemandNewReferrals: 120,
   };
 }
@@ -195,8 +195,12 @@ describe("Attain PDF reconciliation — engine math vs. printed headline", () =>
         accessMargin: 2_000,
         accessFreedShare: 100,
         accessDemandBacklog: 10_000,
-        accessDemandSameDayPct: 100,
-        accessDemandNoShowPct: 100,
+        // Same-day/no-show are now direct countable patients/yr numbers,
+        // not a percent of encounters - large counts here keep demand far
+        // above this huge baseline's capacity, same intent the old 100%
+        // figures served (demand is not this fixture's bottleneck).
+        accessDemandSameDayCount: 600_000,
+        accessDemandNoShowCount: 600_000,
         accessDemandNewReferrals: 1_000,
       },
     };

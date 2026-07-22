@@ -96,8 +96,8 @@ const IMPROVED_VALUE: Record<GoalId, Record<string, number | string[]>> = {
     accessMargin: 200,
     accessFreedShare: 50,
     accessDemandBacklog: 500,
-    accessDemandSameDayPct: 5,
-    accessDemandNoShowPct: 5,
+    accessDemandSameDayCount: 50,
+    accessDemandNoShowCount: 50,
     accessDemandNewReferrals: 50,
   },
   // Retention/Workforce is now a D1-D5 decision chain (attainWorkforce.ts),
@@ -251,8 +251,14 @@ describe("computeLeverContributions", () => {
       // see the dedicated default-value test above) should be.
       accessMinutesSaved: 12,
       accessDemandBacklog: 500,
-      accessDemandSameDayPct: 5,
-      accessDemandNoShowPct: 5,
+      // Same-day/no-show are now direct, countable patients/yr numbers, not
+      // a percent of encounters - these two values are the SAME counts the
+      // old 5%-of-24,000-encounters and pooled-no-show-recovery formulas
+      // used to derive (1,200 and 144 respectively), kept identical here so
+      // this test's calibrated $400K-$1M band still reflects the same
+      // demand ceiling as before the D4 rebuild, not a different scenario.
+      accessDemandSameDayCount: 1_200,
+      accessDemandNoShowCount: 144,
       accessDemandNewReferrals: 50,
     };
     const result = computeLeverContributions("access", "outpatient", BASELINE_FOR.access, values);
@@ -264,7 +270,11 @@ describe("computeLeverContributions", () => {
     // Enterprise scope + demand set far above capacity so capacity is the
     // binding constraint at both baselines - isolates the "does the engine
     // read the baseline" property from the demand ceiling.
-    const values: LeverValues = { accessEnterprise: 1, accessFreedShare: 40, accessDemandSameDayPct: 100 };
+    // Same-day is now a direct countable patients/yr number, not a percent
+    // of encounters - 100,000 patients/yr comfortably clears capacity at
+    // both baselines below, keeping demand far above capacity so capacity
+    // stays the binding constraint this test isolates.
+    const values: LeverValues = { accessEnterprise: 1, accessFreedShare: 40, accessDemandSameDayCount: 100_000 };
     const small: AttainBaseline = { providers: 40, annualEncounters: 40 * 600, utilizationPct: 100 };
     const big: AttainBaseline = { providers: 80, annualEncounters: 80 * 600, utilizationPct: 100 };
 
@@ -280,7 +290,11 @@ describe("computeLeverContributions", () => {
   });
 
   it("a lower utilizationPct in the baseline yields a smaller contribution than 100% utilization, all else equal", () => {
-    const values: LeverValues = { accessEnterprise: 1, accessFreedShare: 40, accessDemandSameDayPct: 100 };
+    // Same-day is now a direct countable patients/yr number, not a percent
+    // of encounters - 100,000 patients/yr comfortably clears capacity at
+    // both baselines below, keeping demand far above capacity so capacity
+    // stays the binding constraint this test isolates.
+    const values: LeverValues = { accessEnterprise: 1, accessFreedShare: 40, accessDemandSameDayCount: 100_000 };
     const fullUtil: AttainBaseline = { providers: 40, annualEncounters: 40 * 600, utilizationPct: 100 };
     const halfUtil: AttainBaseline = { providers: 40, annualEncounters: 40 * 600, utilizationPct: 50 };
 
@@ -367,37 +381,26 @@ describe("ACCESS decision chain (attainAccess.ts)", () => {
     expect(shortChain.capacity.capacityVisits).toBeCloseTo(defaultChain.capacity.capacityVisits * 2, 0);
   });
 
-  it("D4: demand ceiling is the sum of every demand source", () => {
+  // The exhaustive D4 demand-source math (every source a countable
+  // patients/yr number, pick-what-applies, the optional no-show rate-helper)
+  // now lives in attainAccess.test.ts, this module's own dedicated home -
+  // see that file's "D4 rebuild" and "D4 no-show helper" describe blocks.
+  // Kept here is one light structural sanity check that the ceiling really
+  // is a plain sum of the four countable sources, so this generic sweep
+  // still exercises `computeAccessDemand` directly at least once.
+  it("D4: demand ceiling is the plain sum of every countable demand source (no rate math, no double-counting)", () => {
     const scope = { providersInScope: 40, lines: [], enterprise: false };
     const demand = computeAccessDemand(baseline, scope, {
       accessDemandBacklog: 500,
-      accessDemandSameDayPct: 5,
-      accessDemandNoShowRate: 20,
-      accessDemandNoShowPct: 5,
+      accessDemandSameDayCount: 1_200,
+      accessDemandNoShowCount: 240,
       accessDemandNewReferrals: 50,
     });
     expect(demand.backlogVisits).toBe(500);
-    expect(demand.sameDayVisits).toBe(1_200); // 40*600*5%
-    // No-show recovery is TWO steps, not one: 40*600 = 24,000 encounters x
-    // 20% no-show rate = 4,800 no-show pool, x 5% recovered = 240 - NOT
-    // 24,000 x 5% (1,200), which would overstate recovery by treating the
-    // recovery rate as a share of every encounter instead of the pool.
-    expect(demand.noShowPool).toBe(4_800);
+    expect(demand.sameDayVisits).toBe(1_200);
     expect(demand.noShowVisits).toBe(240);
     expect(demand.newReferralVisits).toBe(600); // 50/mo * 12
     expect(demand.demandCeiling).toBe(500 + 1_200 + 240 + 600);
-  });
-
-  it("D4: no-show recovery defaults its rate to the ~12% benchmark when the partner hasn't set their own", () => {
-    const scope = { providersInScope: 40, lines: [], enterprise: false };
-    const demand = computeAccessDemand(baseline, scope, { accessDemandNoShowPct: 60 });
-    // 24,000 encounters x 12% default no-show rate = 2,880 pool, x 60%
-    // recovered = 1,728 - not 24,000 x 60% (14,400), the ~8x overstatement
-    // the un-pooled model previously produced.
-    expect(demand.noShowRatePct).toBe(12);
-    expect(demand.noShowPool).toBe(2_880);
-    expect(demand.noShowVisits).toBe(Math.round(2_880 * 0.6));
-    expect(demand.noShowVisits).toBeLessThan(demand.encountersInScope * 0.6);
   });
 
   it("D4: demand ceiling is exactly backlog + monthlyReferrals x 12 + sameDay + noShow, for representative real-world inputs", () => {
@@ -405,8 +408,8 @@ describe("ACCESS decision chain (attainAccess.ts)", () => {
     const demand = computeAccessDemand(baseline, scope, {
       accessDemandBacklog: 5_000,
       accessDemandNewReferrals: 850,
-      accessDemandSameDayPct: 0,
-      accessDemandNoShowPct: 0,
+      accessDemandSameDayCount: 0,
+      accessDemandNoShowCount: 0,
     });
     expect(demand.newReferralVisits).toBe(850 * 12);
     expect(demand.demandCeiling).toBe(5_000 + 850 * 12 + 0 + 0);
@@ -428,15 +431,15 @@ describe("ACCESS decision chain (attainAccess.ts)", () => {
     expect(chain.formulas.demand).toContain("one-time");
   });
 
-  it("D4 THE MATH: same-day and no-show terms show their percent-of-encounters derivation when nonzero", () => {
+  it("D4 THE MATH: same-day and no-show print as plain countable patients/yr terms, never a percent-of-encounters derivation", () => {
     const chain = computeAccessChain(baseline, {
       accessProviders: 40,
-      accessDemandSameDayPct: 5,
-      accessDemandNoShowPct: 5,
+      accessDemandSameDayCount: 1_200,
+      accessDemandNoShowCount: 240,
     });
-    // 40 providers x 600 encounters/provider (baseline) x 100% utilization = 24,000 encounters in scope.
-    expect(chain.formulas.demand).toContain("5% of 24,000 encounters");
-    expect(chain.formulas.demand).toContain("1,200/yr");
+    expect(chain.formulas.demand).toContain("1,200/yr same-day");
+    expect(chain.formulas.demand).toContain("240/yr no-show recovery");
+    expect(chain.formulas.demand).not.toContain("%");
   });
 
   it("D4 THE MATH: zero-value terms print plainly (0 same-day / 0 no-show), not a derivation of nothing", () => {
@@ -572,8 +575,8 @@ describe("ACCESS decision chain (attainAccess.ts)", () => {
       accessProviders: 40,
       accessFreedShare: 50,
       accessDemandBacklog: 500,
-      accessDemandSameDayPct: 5,
-      accessDemandNoShowPct: 5,
+      accessDemandSameDayCount: 50,
+      accessDemandNoShowCount: 50,
       accessDemandNewReferrals: 50,
     };
     const result = computeAccessContributions(baseline, values);
