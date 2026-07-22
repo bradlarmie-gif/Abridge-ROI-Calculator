@@ -122,6 +122,29 @@ export interface AppRatItem {
   contractMonths: number;   // months from today until the contract ends (the runway)
   sunsetMonths: number;     // months from today until they sunset it; 0..contractMonths
   rampMonths: number;       // displacement speed: months to ramp savings 0->100% after the sunset (0 = instant)
+  // How the rep entered the price. "flat" = a lump annual fee (also the
+  // enterprise / unknown-headcount case); "perUser" = userCount x perUserCost,
+  // which we auto-multiply into annualSpend. annualSpend stays the single source
+  // everything downstream reads, so these are just how it was captured.
+  pricingModel?: ArPricingModel;
+  userCount?: number;       // seats, when priced per user
+  perUserCost?: number;     // $/user/yr, when priced per user
+}
+
+export type ArPricingModel = "flat" | "perUser";
+
+/** The effective annual spend from either pricing mode. Per-user multiplies
+ *  seats x rate; flat takes the lump fee. Never negative. */
+export function resolveAnnualSpend(
+  model: ArPricingModel,
+  flatSpend: number,
+  userCount: number,
+  perUserCost: number,
+): number {
+  if (model === "perUser") {
+    return Math.round(Math.max(0, userCount || 0) * Math.max(0, perUserCost || 0));
+  }
+  return Math.max(0, Math.round(flatSpend || 0));
 }
 
 const CATEGORY_BY_ID: Record<AppRatCategoryId, AppRatCategory> =

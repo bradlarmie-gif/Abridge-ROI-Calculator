@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   makeItem, toolMonthlySaving, buildCumulativeSavings, cumulativeSavedAt, sunsetDateLabel,
+  resolveAnnualSpend,
   type AppRatItem,
 } from "@/lib/appRationalizationCalc";
 
@@ -36,6 +37,19 @@ describe("displacement ramp (speed)", () => {
     expect(cumulativeSavedAt(cs.tools, 9, "plan")).toBe(7_500);
     // now (instant from month 0) at month 9: 9 * 10k = 90k
     expect(cumulativeSavedAt(cs.tools, 9, "now")).toBe(90_000);
+  });
+});
+
+describe("resolveAnnualSpend", () => {
+  it("takes the lump fee in flat mode (ignores seat inputs)", () => {
+    expect(resolveAnnualSpend("flat", 250_000, 999, 999)).toBe(250_000);
+  });
+  it("multiplies seats x rate in per-user mode (ignores the flat field)", () => {
+    expect(resolveAnnualSpend("perUser", 999_999, 120, 2_000)).toBe(240_000);
+  });
+  it("never goes negative and rounds", () => {
+    expect(resolveAnnualSpend("flat", -50, 0, 0)).toBe(0);
+    expect(resolveAnnualSpend("perUser", 0, 10, 33.3)).toBe(333);
   });
 });
 

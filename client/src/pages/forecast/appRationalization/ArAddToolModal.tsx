@@ -15,8 +15,8 @@ import { Slider } from "@/components/ui/slider";
 import { NumberField } from "@/components/NumberField";
 import { CategoryIcon } from "./CategoryIcon";
 import {
-  APP_RAT_CATEGORIES, makeItem,
-  type AppRatCategoryId, type AppRatItem,
+  APP_RAT_CATEGORIES, makeItem, resolveAnnualSpend,
+  type AppRatCategoryId, type AppRatItem, type ArPricingModel,
 } from "@/lib/appRationalizationCalc";
 const fmt = (n: number) => "$" + Math.round(n).toLocaleString("en-US");
 
@@ -35,7 +35,10 @@ export default function ArAddToolModal({
   const [activeCategory, setActiveCategory] = useState<AppRatCategoryId>(category ?? "custom");
   const [entryIsCustom, setEntryIsCustom] = useState(false);
   const [vendor, setVendor] = useState("");
-  const [spend, setSpend] = useState(0);
+  const [pricingModel, setPricingModel] = useState<ArPricingModel>("flat");
+  const [flatSpend, setFlatSpend] = useState(0);
+  const [users, setUsers] = useState(0);
+  const [perUser, setPerUser] = useState(0);
   const [pct, setPct] = useState(100);
 
   // reset the form each time a new tool is opened
@@ -45,7 +48,10 @@ export default function ArAddToolModal({
       setActiveCategory(category);
       setEntryIsCustom(category === "custom");
       setVendor(vendorName ?? "");
-      setSpend(0);
+      setPricingModel("flat");
+      setFlatSpend(0);
+      setUsers(0);
+      setPerUser(0);
       setPct(s.coveragePct);
     }
   }, [open, category, vendorName]);
@@ -61,6 +67,7 @@ export default function ArAddToolModal({
   // Keep rendering through the close (open=false) so Radix animates the exit;
   // only bail before the modal has ever had a category to show.
   if (!cat) return null;
+  const spend = resolveAnnualSpend(pricingModel, flatSpend, users, perUser);
   const retired = Math.round(spend * pct / 100);
   const stays = Math.max(0, spend - retired);
   const canAdd = spend > 0;
@@ -120,17 +127,67 @@ export default function ArAddToolModal({
           </div>
 
           <div className="mt-4">
-            <div className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#8C7E6E] mb-1.5">Annual spend</div>
-            <div className="flex items-center h-11 bg-white border border-[#E8E2DA] rounded-[11px] px-3.5 gap-1.5 focus-within:border-[#EA2C00]">
-              <span className="text-[#8C7E6E] text-sm">$</span>
-              <NumberField
-                value={spend}
-                onValueChange={setSpend}
-                min={0}
-                className="flex-1 min-w-0 bg-transparent text-sm text-[#1A1A1A] outline-none tabular-nums"
-                data-testid="ar-add-spend"
-              />
+            <div className="flex items-center justify-between mb-1.5">
+              <div className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#8C7E6E]">Price</div>
+              <div className="flex items-center gap-0.5 p-0.5 bg-[#F5F0EB] rounded-[9px]">
+                {([["flat", "Annual fee"], ["perUser", "Per user"]] as const).map(([m, label]) => (
+                  <button
+                    key={m}
+                    type="button"
+                    onClick={() => setPricingModel(m)}
+                    className={`h-7 px-2.5 rounded-[7px] text-[11px] font-bold transition-colors ${pricingModel === m ? "bg-white text-[#EA2C00] shadow-sm" : "text-[#8C7E6E] hover:text-[#1A1A1A]"}`}
+                    data-testid={`ar-add-pricing-${m}`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
             </div>
+
+            {pricingModel === "flat" ? (
+              <>
+                <div className="flex items-center h-11 bg-white border border-[#E8E2DA] rounded-[11px] px-3.5 gap-1.5 focus-within:border-[#EA2C00]">
+                  <span className="text-[#8C7E6E] text-sm">$</span>
+                  <NumberField
+                    value={flatSpend}
+                    onValueChange={setFlatSpend}
+                    min={0}
+                    className="flex-1 min-w-0 bg-transparent text-sm text-[#1A1A1A] outline-none tabular-nums"
+                    data-testid="ar-add-spend"
+                  />
+                  <span className="text-[#B4A99B] text-[12px]">/ yr</span>
+                </div>
+                <p className="text-[10px] leading-tight text-[#B4A99B] mt-1.5">Use this for an enterprise or flat contract, or if you don't know the user count.</p>
+              </>
+            ) : (
+              <>
+                <div className="flex items-stretch gap-2">
+                  <div className="flex-1 flex items-center h-11 bg-white border border-[#E8E2DA] rounded-[11px] px-3.5 gap-1.5 focus-within:border-[#EA2C00]">
+                    <NumberField
+                      value={users}
+                      onValueChange={setUsers}
+                      min={0}
+                      className="flex-1 min-w-0 bg-transparent text-sm text-[#1A1A1A] outline-none tabular-nums"
+                      data-testid="ar-add-users"
+                    />
+                    <span className="text-[#B4A99B] text-[12px]">users</span>
+                  </div>
+                  <div className="flex items-center text-[#B4A99B] text-sm">×</div>
+                  <div className="flex-1 flex items-center h-11 bg-white border border-[#E8E2DA] rounded-[11px] px-3.5 gap-1.5 focus-within:border-[#EA2C00]">
+                    <span className="text-[#8C7E6E] text-sm">$</span>
+                    <NumberField
+                      value={perUser}
+                      onValueChange={setPerUser}
+                      min={0}
+                      className="flex-1 min-w-0 bg-transparent text-sm text-[#1A1A1A] outline-none tabular-nums"
+                      data-testid="ar-add-peruser"
+                    />
+                    <span className="text-[#B4A99B] text-[12px]">/ user</span>
+                  </div>
+                </div>
+                <p className="text-[10.5px] leading-tight text-[#8C7E6E] mt-1.5 tabular-nums">= <b className="text-[#1A1A1A]">{fmt(spend)}</b> / yr</p>
+              </>
+            )}
           </div>
 
           <div className="mt-4">
@@ -160,7 +217,14 @@ export default function ArAddToolModal({
         <div className="px-6 pt-4 pb-6 mt-3 border-t border-[#F2ECE4]">
           <button
             disabled={!canAdd}
-            onClick={() => onConfirm(activeCategory, { vendorName: vendor.trim() || undefined, annualSpend: spend, coveragePct: pct })}
+            onClick={() => onConfirm(activeCategory, {
+              vendorName: vendor.trim() || undefined,
+              annualSpend: spend,
+              coveragePct: pct,
+              pricingModel,
+              userCount: pricingModel === "perUser" ? users : undefined,
+              perUserCost: pricingModel === "perUser" ? perUser : undefined,
+            })}
             className="w-full h-11 rounded-xl bg-[#EA2C00] text-white text-sm font-bold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#d92800] transition-opacity"
             data-testid="ar-add-confirm"
           >
