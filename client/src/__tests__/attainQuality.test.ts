@@ -4,6 +4,9 @@ import {
   computeQualityInterventions,
   computeQualityChain,
   computeQualityContributions,
+  deriveQualityLadder,
+  qualityRateKey,
+  qualityCostKey,
   committedPct,
   exploreStateForReconciliation,
   computeAllDriverValues,
@@ -456,6 +459,113 @@ describe("computeQualityContributions adapter", () => {
     const withoutOne = computeQualityChain(BASELINE, { ...values, [oneId]: 0 }).payoff.totalValue;
     const withOne = computeQualityChain(BASELINE, values).payoff.totalValue;
     expect(row.marginalMargin).toBeCloseTo(withOne - withoutOne, 5);
+  });
+});
+
+describe("deriveQualityLadder - the converging multi-event ladder (Build <-> Planning)", () => {
+  it("the converged prize is exactly the sum of each selected event's own dollar (no double count)", () => {
+    const values = fullValues();
+    const ladder = deriveQualityLadder(BASELINE, values, 100);
+    expect(ladder.events).toHaveLength(ALL_EVENT_LABELS.length);
+    const sum = ladder.events.reduce((s, e) => s + e.value, 0);
+    expect(ladder.convergedPrize).toBe(sum);
+    // and it equals the chain's own realization-100 total (rounded per event).
+    const chain = computeQualityChain(BASELINE, values);
+    const chainSum = chain.payoff.events.reduce((s, e) => s + Math.round(e.value), 0);
+    expect(ladder.convergedPrize).toBe(chainSum);
+  });
+
+  it("per-event interventions drive each event's own prevention: committing a bundle raises that event's captured and value", () => {
+    const none = deriveQualityLadder(BASELINE, { qualityEventTypes: ["Falls"], qualityBeds: 120 }, 100);
+    const full = deriveQualityLadder(BASELINE, { ...interventionsFor("falls"), qualityEventTypes: ["Falls"], qualityBeds: 120 }, 100);
+    const fallsNone = none.events.find((e) => e.id === "falls")!;
+    const fallsFull = full.events.find((e) => e.id === "falls")!;
+    expect(fallsNone.capturedCount).toBe(0);
+    expect(fallsNone.value).toBe(0);
+    expect(fallsFull.capturedCount).toBeGreaterThan(0);
+    expect(fallsFull.value).toBeGreaterThan(0);
+  });
+
+  it("the diagnose ceiling is a defensible, conservative share: captured <= ceiling <= events, and the ceiling stays far below the old 60% band", () => {
+    const ladder = deriveQualityLadder(BASELINE, fullValues(), 100);
+    for (const e of ladder.events) {
+      // prevented can never exceed the honest preventable ceiling.
+      expect(e.capturedCount).toBeLessThanOrEqual(e.ceilingCount + 1e-6);
+      if (e.id !== "sepsis") {
+        // ceiling is a share of ALL events; it must sit well under the old
+        // inflated 60% ceiling the audit flagged (C2). The documentation-
+        // attributable share the plan is actually credited lands lower still
+        // once the side-panel realization dial attributes the Abridge share.
+        const shareOfEvents = e.groundEvents > 0 ? e.ceilingCount / e.groundEvents : 0;
+        expect(shareOfEvents).toBeGreaterThan(0);
+        expect(shareOfEvents).toBeLessThanOrEqual(0.31);
+      }
+    }
+  });
+
+  it("prevented count is post-realization and consistent with the dollar (I1), for Sepsis at partial attribution", () => {
+    const values = { ...interventionsFor("sepsis"), qualityEventTypes: ["Sepsis"], qualityBeds: 120 };
+    const full = deriveQualityLadder(BASELINE, values, 100);
+    const half = deriveQualityLadder(BASELINE, values, 50);
+    const sFull = full.events.find((e) => e.id === "sepsis")!;
+    const sHalf = half.events.find((e) => e.id === "sepsis")!;
+    // realization scales the dollar exactly once; the prevented COUNT shown on
+    // the gate is already post-(sepsis realization ceiling), and never a
+    // positive count beside a $0.
+    expect(sHalf.value).toBeCloseTo(sFull.value * 0.5, -1);
+    expect(sFull.capturedCount).toBeGreaterThan(0);
+    expect(sFull.value).toBeGreaterThan(0);
+  });
+
+  it("realization scales the converged prize and every event dollar by the same factor", () => {
+    const values = fullValues();
+    const full = deriveQualityLadder(BASELINE, values, 100);
+    const half = deriveQualityLadder(BASELINE, values, 50);
+    expect(half.convergedPrize).toBeCloseTo(full.convergedPrize * 0.5, -1);
+    for (const e of half.events) {
+      const f = full.events.find((q) => q.id === e.id)!;
+      expect(e.value).toBeCloseTo(f.value * 0.5, -1);
+    }
+  });
+
+  it("unselected events contribute nothing: only picked events appear in the ladder", () => {
+    const ladder = deriveQualityLadder(BASELINE, { ...interventionsFor("falls"), qualityEventTypes: ["Falls"], qualityBeds: 120 }, 100);
+    expect(ladder.events.map((e) => e.id)).toEqual(["falls"]);
+  });
+
+  it("no event selected nets a clean empty ladder, zero prize", () => {
+    const ladder = deriveQualityLadder(BASELINE, { qualityEventTypes: [], qualityBeds: 120 }, 100);
+    expect(ladder.events).toHaveLength(0);
+    expect(ladder.convergedPrize).toBe(0);
+    expect(ladder.anySelected).toBe(false);
+  });
+
+  it("editable rate and cost flow through the ladder and still reconcile to the engine", () => {
+    const values = {
+      ...interventionsFor("hapi"),
+      qualityEventTypes: ["HAPI"],
+      qualityBeds: 120,
+      [qualityRateKey("hapi")]: 4.0, // partner's own rate, above the default 2.8
+      [qualityCostKey("hapi")]: 25_000, // partner's own cost, above the default
+    };
+    const ladder = deriveQualityLadder(BASELINE, values, 100);
+    const hapi = ladder.events.find((e) => e.id === "hapi")!;
+    expect(hapi.rate).toBe(4.0);
+    expect(hapi.costPerEvent).toBe(25_000);
+    // reconciles to the live engine with the partner's own rate/cost.
+    const state = exploreStateForReconciliation(BASELINE, values);
+    const engine = computeAllDriverValues(state, 0);
+    expect(engine.nursingHapi).toBeCloseTo(hapi.value, 0);
+  });
+
+  it("no user-facing string in the ladder carries an em dash or an en dash", () => {
+    const ladder = deriveQualityLadder(BASELINE, fullValues(), 100);
+    for (const e of ladder.events) {
+      for (const s of [e.groundLabel, e.groundValue, e.groundDetail, e.ceilingLabel, e.capturedLabel, e.whoActs, e.priceLabel, e.formula]) {
+        expect(s).not.toContain("—");
+        expect(s).not.toContain("–");
+      }
+    }
   });
 });
 

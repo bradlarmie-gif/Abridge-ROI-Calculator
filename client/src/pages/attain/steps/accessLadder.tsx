@@ -632,6 +632,85 @@ export function fmtDepartures(n: number): string {
 }
 
 /**
+ * THE QUALITY DIAGNOSE GATE, the harm-event analog of `RevenuePathGate`,
+ * shared verbatim between Build the case and Planning for one harm event.
+ * This is the load-bearing honesty rung of the quality conversation: most
+ * harm events occur despite best practice, and only a modest, defensible
+ * share is preventable through earlier risk surfacing plus bundle compliance.
+ * That preventable share is the ceiling; what this plan's committed
+ * interventions actually reach is a slice of it, never more. The framing is
+ * deliberate: Abridge SURFACES the risk signal earlier, the unit RUNS the
+ * bundle and prevents.
+ */
+export function QualityEventGate({
+  ceilingLabel,
+  ceilingCount,
+  ceilingUnit,
+  capturedLabel,
+  capturedCount,
+  capturedUnit,
+  whoActs,
+  bothSet,
+  emptyHint,
+  showHeader = true,
+}: {
+  ceilingLabel: string;
+  ceilingCount: number;
+  ceilingUnit: string;
+  capturedLabel: string;
+  capturedCount: number;
+  capturedUnit: string;
+  whoActs: string;
+  bothSet: boolean;
+  emptyHint: string;
+  showHeader?: boolean;
+}) {
+  const explain =
+    capturedCount > 0
+      ? `Of the ${fmtRevenueCount(ceilingCount)} the documentation can move, this plan prevents ${fmtRevenueCount(capturedCount)}. The rest occur despite best practice, so they stay out of the number. Abridge surfaces the risk earlier; the unit runs the bundle and prevents.`
+      : "Most harm events occur despite best practice. Abridge surfaces the risk earlier; commit the bundle below to prevent a defensible share of what is left.";
+
+  return (
+    <div className="rounded-lg border border-[#E7E0D6] bg-[#F4F0EA] p-4" data-testid="rung-planning-quality-gate">
+      {showHeader && (
+        <div className="flex items-center gap-2 mb-3">
+          <span className="inline-block text-[8px] font-bold uppercase tracking-wide text-white bg-[#1A1A1A] px-2 py-0.5 rounded-full">
+            The gate
+          </span>
+          <p className="text-[12px] font-semibold text-[#1A1A1A]">Diagnose the leak: what share is really preventable?</p>
+        </div>
+      )}
+
+      {bothSet ? (
+        <>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <LadderFieldLabel>{ceilingLabel}</LadderFieldLabel>
+              <p className="font-abridge text-2xl font-bold text-[#1A1A1A]" data-testid="text-planning-quality-gate-ceiling">
+                {fmtRevenueCount(ceilingCount)} <span className="text-[11px] font-normal text-[#8C8C8C]">{ceilingUnit}</span>
+              </p>
+            </div>
+            <div>
+              <LadderFieldLabel>Who has to act</LadderFieldLabel>
+              <p className="text-[13px] font-semibold text-[#1A1A1A] leading-snug" data-testid="text-planning-quality-gate-owner">{whoActs}</p>
+            </div>
+          </div>
+          <div className="mt-3 pt-3 border-t border-[#E0D9CE]">
+            <LadderFieldLabel>{capturedLabel}</LadderFieldLabel>
+            <p className="font-abridge text-2xl font-bold text-[#EA2C00]" data-testid="text-planning-quality-gate-captured">
+              {fmtRevenueCount(capturedCount)} <span className="text-[11px] font-normal text-[#8C8C8C]">{capturedUnit}</span>
+            </p>
+            <p className="text-[11px] text-[#8C8C8C] mt-1 leading-relaxed" data-testid="text-planning-quality-gate-explain">{explain}</p>
+          </div>
+        </>
+      ) : (
+        <p className="text-[11px] text-[#8C8C8C] leading-relaxed">{emptyHint}</p>
+      )}
+    </div>
+  );
+}
+
+/**
  * THE RETENTION GATE, the burnout-pool analog of `CapacityDemandGate`, shared
  * verbatim between Build the case and Planning. You can only avoid the
  * departures burnout actually causes, so the pool (providers x turnover x

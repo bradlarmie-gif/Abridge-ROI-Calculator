@@ -138,6 +138,24 @@ function fmtMoneyCompact(n: number): string {
   return `${sign}$${Math.round(abs)}`;
 }
 
+/** Local copies of attainLevers' `realizedValue` / `formulaWithRealization`,
+ * inlined deliberately to avoid a runtime import CYCLE: attainLevers imports
+ * this module's `QUALITY_EVENT_IDS` at load time, so this module must not
+ * import any VALUE back from attainLevers (only erased types). Behaviour is
+ * identical to the shared helpers. */
+function clampPct(pct: number): number {
+  return Math.max(0, Math.min(100, pct));
+}
+function realizedValue(value: number, realizationPct: number): number {
+  return value * (clampPct(realizationPct) / 100);
+}
+function formulaWithRealization(formula: string, realizationPct: number, scaledValue: number): string {
+  const pct = clampPct(realizationPct);
+  if (pct >= 100) return formula;
+  const base = formula.endsWith(".") ? formula.slice(0, -1) : formula;
+  return `${base} × ${Math.round(pct)}% realization = ~${fmtMoneyCompact(scaledValue)}.`;
+}
+
 function mkState(setting: AttainSetting): ExploreState {
   return {
     ...DEFAULT_EXPLORE_STATE,
@@ -190,6 +208,87 @@ export const SEPSIS_RATE_PER_1000 = 2.0;
 export const SEPSIS_COMPLIANCE_BASELINE_PCT = 75;
 export const SEPSIS_DOC_LAG_PCT = 30;
 export const SEPSIS_EXCESS_COST_PER_CASE = 3_500;
+
+// ────────────────────────────────────────────────────────────────────────
+// GROUND IT — the event rate and cost per event are the partner's own facts,
+// so they are editable off the flat `LeverValues` bag with the canonical
+// Explore default as the fallback. A blank value falls straight back to the
+// same constant `exploreStateForReconciliation` feeds the live engine, so a
+// partner who never touches them can never drift the reconciliation, and a
+// partner who sets their own rate/cost moves Build, Planning, and the engine
+// together. Utilization / SEP-1 compliance / doc-lag stay fixed constants,
+// deliberately, to keep the editable surface to the two facts a CFO actually
+// carries into the room (the rate and the cost).
+// ────────────────────────────────────────────────────────────────────────
+
+const QUALITY_RATE_KEY: Record<QualityEventId, string> = {
+  hapi: "qualityHapiRate",
+  clabsi: "qualityClabsiRate",
+  cauti: "qualityCautiRate",
+  falls: "qualityFallsRate",
+  sepsis: "qualitySepsisRate",
+};
+const QUALITY_COST_KEY: Record<QualityEventId, string> = {
+  hapi: "qualityHapiCost",
+  clabsi: "qualityClabsiCost",
+  cauti: "qualityCautiCost",
+  falls: "qualityFallsCost",
+  sepsis: "qualitySepsisCost",
+};
+export const QUALITY_DEFAULT_RATE: Record<QualityEventId, number> = {
+  hapi: HAPI_RATE_PER_1000,
+  clabsi: CLABSI_RATE_PER_1000_LINE_DAYS,
+  cauti: CAUTI_RATE_PER_1000_CATHETER_DAYS,
+  falls: FALLS_RATE_PER_1000,
+  sepsis: SEPSIS_RATE_PER_1000,
+};
+export const QUALITY_DEFAULT_COST: Record<QualityEventId, number> = {
+  hapi: HAPI_COST_PER_EVENT,
+  clabsi: CLABSI_COST_PER_EVENT,
+  cauti: CAUTI_COST_PER_EVENT,
+  falls: FALLS_COST_PER_EVENT,
+  sepsis: SEPSIS_EXCESS_COST_PER_CASE,
+};
+
+/** The event rate this plan is grounded on: the partner's own figure if set,
+ * else the canonical Explore default. */
+export function qualityRateFor(id: QualityEventId, values: LeverValues): number {
+  const v = asNum(values[QUALITY_RATE_KEY[id]]);
+  return v > 0 ? v : QUALITY_DEFAULT_RATE[id];
+}
+/** The cost per event this plan prices harm at: the partner's own figure if
+ * set, else the canonical Explore default. */
+export function qualityCostFor(id: QualityEventId, values: LeverValues): number {
+  const v = asNum(values[QUALITY_COST_KEY[id]]);
+  return v > 0 ? v : QUALITY_DEFAULT_COST[id];
+}
+export function qualityRateKey(id: QualityEventId): string {
+  return QUALITY_RATE_KEY[id];
+}
+export function qualityCostKey(id: QualityEventId): string {
+  return QUALITY_COST_KEY[id];
+}
+
+/** The unit denominator each event's rate is measured against, for plain
+ * "events a year" grounding copy. */
+export const QUALITY_RATE_UNIT: Record<QualityEventId, string> = {
+  hapi: "patient-days",
+  clabsi: "line-days",
+  cauti: "catheter-days",
+  falls: "patient-days",
+  sepsis: "patient-days",
+};
+
+/** WHO ACTS, per event: the freed risk signal only prevents an event if the
+ * unit runs the bundle. Abridge surfaces the risk earlier; these owners hold
+ * the bedside routine that actually prevents. */
+export const QUALITY_WHO_ACTS: Record<QualityEventId, string> = {
+  hapi: "Bedside nurses and wound care",
+  clabsi: "Bedside nurses and the line team",
+  cauti: "Bedside nurses and the charge nurse",
+  falls: "Bedside nurses and the charge nurse",
+  sepsis: "Bedside nurses and the rapid-response team",
+};
 
 // ────────────────────────────────────────────────────────────────────────
 // D1 — SCOPE (units, beds, event types → patient days). No dollar yet.
@@ -380,20 +479,34 @@ export interface QualityEventResult {
   prevented: number;
   value: number;
   costPerEvent: number;
+  /** The event rate this plan is grounded on (per 1,000 of its own
+   * denominator). */
+  rate: number;
+  /** The denominator that sizes the events: patient-days, or line-days /
+   * catheter-days for CLABSI / CAUTI. */
+  sizingDays: number;
+  sizingUnit: string;
+  /** THE DIAGNOSE (honesty) ceiling: the most events a fully committed
+   * prevention program could ever reach at this event's own defensible
+   * ceiling. For Sepsis, the addressable documentation-lag pool. Prevented
+   * can never exceed this. */
+  ceilingCount: number;
   formula: string;
 }
 
-function eventResultFor(id: QualityEventId, scope: QualityScope, pct: number): QualityEventResult {
+function eventResultFor(id: QualityEventId, scope: QualityScope, pct: number, values: LeverValues): QualityEventResult {
   const label = QUALITY_EVENT_LABELS[id];
   const ceilingPct = QUALITY_CEILING_PCT[id];
+  const rate = qualityRateFor(id, values);
+  const cost = qualityCostFor(id, values);
 
   if (id === "sepsis") {
     const r = calcSepsis({
       patientDays: scope.patientDays,
-      ratePerThousand: SEPSIS_RATE_PER_1000,
+      ratePerThousand: rate,
       currentCompliancePct: SEPSIS_COMPLIANCE_BASELINE_PCT,
       docLagPct: SEPSIS_DOC_LAG_PCT,
-      excessCostPerCase: SEPSIS_EXCESS_COST_PER_CASE,
+      excessCostPerCase: cost,
       realizationPct: pct,
     });
     const value = Math.round(r.value);
@@ -403,15 +516,14 @@ function eventResultFor(id: QualityEventId, scope: QualityScope, pct: number): Q
     // with `value` the way printing "prevented" (already post-realization)
     // as a mid-string factor AND multiplying by realization again would.
     const formula = value > 0
-      ? `${fmtInt(scope.patientDays)} patient-days × ${SEPSIS_RATE_PER_1000}/1k sepsis × ${fmtPct(r.complianceGapPct)}% non-compliance × ${SEPSIS_DOC_LAG_PCT}% doc lag = ${fmtInt(r.docLagCases)} addressable cases × ${fmtPct(pct)}% realization (of a ${ceilingPct}pp ceiling) = ${fmtInt(r.prevented)} prevented × $${fmtInt(SEPSIS_EXCESS_COST_PER_CASE)}/case = ~${fmtMoneyCompact(value)}.`
+      ? `${fmtInt(scope.patientDays)} patient-days × ${rate}/1k sepsis × ${fmtPct(r.complianceGapPct)}% non-compliance × ${SEPSIS_DOC_LAG_PCT}% doc lag = ${fmtInt(r.docLagCases)} addressable cases × ${fmtPct(pct)}% realization (of a ${ceilingPct}pp ceiling) = ${fmtInt(r.prevented)} prevented × $${fmtInt(cost)}/case = ~${fmtMoneyCompact(value)}.`
       : NO_MOVE_FORMULA;
-    return { id, label, events: r.events, prevented: r.prevented, value, costPerEvent: SEPSIS_EXCESS_COST_PER_CASE, formula };
+    return {
+      id, label, events: r.events, prevented: r.prevented, value, costPerEvent: cost,
+      rate, sizingDays: scope.patientDays, sizingUnit: QUALITY_RATE_UNIT[id],
+      ceilingCount: r.docLagCases, formula,
+    };
   }
-
-  const rate =
-    id === "hapi" ? HAPI_RATE_PER_1000 : id === "falls" ? FALLS_RATE_PER_1000 : id === "cauti" ? CAUTI_RATE_PER_1000_CATHETER_DAYS : CLABSI_RATE_PER_1000_LINE_DAYS;
-  const cost =
-    id === "hapi" ? HAPI_COST_PER_EVENT : id === "falls" ? FALLS_COST_PER_EVENT : id === "cauti" ? CAUTI_COST_PER_EVENT : CLABSI_COST_PER_EVENT;
 
   const r =
     id === "hapi"
@@ -423,15 +535,18 @@ function eventResultFor(id: QualityEventId, scope: QualityScope, pct: number): Q
           : calcClabsi({ patientDays: scope.patientDays, utilizationPct: CLABSI_UTILIZATION_PCT, rate, preventionPct: pct, cost });
 
   const value = Math.round(r.value);
-  const dayNoun =
-    id === "clabsi" ? `${fmtInt((r as any).lineDays)} line-days`
-    : id === "cauti" ? `${fmtInt((r as any).catheterDays)} catheter-days`
-    : `${fmtInt(scope.patientDays)} patient-days`;
+  const sizingDays =
+    id === "clabsi" ? (r as any).lineDays : id === "cauti" ? (r as any).catheterDays : scope.patientDays;
+  const dayNoun = `${fmtInt(sizingDays)} ${QUALITY_RATE_UNIT[id]}`;
   const formula = value > 0
     ? `${dayNoun} × ${rate}/1k ${label} × ${fmtPct(pct)}% prevention (of a ${ceilingPct}pp ceiling) × $${fmtInt(cost)}/case = ~${fmtMoneyCompact(value)}.`
     : NO_MOVE_FORMULA;
 
-  return { id, label, events: r.events, prevented: r.prevented, value, costPerEvent: cost, formula };
+  return {
+    id, label, events: r.events, prevented: r.prevented, value, costPerEvent: cost,
+    rate, sizingDays, sizingUnit: QUALITY_RATE_UNIT[id],
+    ceilingCount: r.events * (ceilingPct / 100), formula,
+  };
 }
 
 export interface QualityPayoff {
@@ -440,9 +555,9 @@ export interface QualityPayoff {
   totalValue: number;
 }
 
-export function computeQualityPayoff(scope: QualityScope, eventInterventions: QualityEventIntervention[]): QualityPayoff {
+export function computeQualityPayoff(scope: QualityScope, eventInterventions: QualityEventIntervention[], values: LeverValues): QualityPayoff {
   const pctById = new Map(eventInterventions.map((ei) => [ei.id, ei.committedPct]));
-  const events = scope.eventTypes.map((id) => eventResultFor(id, scope, pctById.get(id) ?? 0));
+  const events = scope.eventTypes.map((id) => eventResultFor(id, scope, pctById.get(id) ?? 0, values));
   const totalPrevented = events.reduce((sum, e) => sum + e.prevented, 0);
   const totalValue = events.reduce((sum, e) => sum + e.value, 0);
   return { events, totalPrevented, totalValue };
@@ -465,7 +580,7 @@ export interface QualityChainResult {
 export function computeQualityChain(baseline: AttainBaseline, values: LeverValues): QualityChainResult {
   const scope = computeQualityScope(baseline, values);
   const eventInterventions = computeQualityInterventions(scope, values);
-  const payoff = computeQualityPayoff(scope, eventInterventions);
+  const payoff = computeQualityPayoff(scope, eventInterventions, values);
 
   const scopeFormula = scope.patientDays > 0
     ? `${fmtInt(scope.bedsInScope)} beds in scope × ${fmtPct(scope.occupancyFraction * 100)}% occupancy × 365 days = ${fmtInt(scope.patientDays)} patient-days/yr. Targeting: ${scope.eventTypes.length > 0 ? scope.eventTypes.map((id) => QUALITY_EVENT_LABELS[id]).join(", ") : "no event types picked yet"}.`
@@ -481,6 +596,111 @@ export function computeQualityChain(baseline: AttainBaseline, values: LeverValue
     : NO_MOVE_FORMULA;
 
   return { scope, eventInterventions, payoff, formulas: { scope: scopeFormula, payoff: payoffFormula } };
+}
+
+// ────────────────────────────────────────────────────────────────────────
+// THE SHARED, CONVERGING QUALITY LADDER — the one derivation both Build the
+// case (QualityLadderChain) and Planning read, so their per-event gates and
+// their one converged prize can never diverge. Same SHAPE as the revenue
+// ladder (`deriveRevenueLadder`): one shared first domino (earlier, more
+// complete risk documentation at the point of care) feeding several parallel
+// per-event sub-ladders that converge into one prevented-harm prize, each
+// event an honestly distinct harm pool, summed once and never double-counted.
+//
+// `realizationPct` scales every event's dollar (and the converged prize)
+// exactly once, the same way `applyRealization` scales the engine result the
+// side panel reads, so Build the case (which passes its own live slider) and
+// Planning (which passes the factor implied by the combined engine result)
+// show identical per-event dollars and the same converged prize.
+// ────────────────────────────────────────────────────────────────────────
+
+export interface QualityEventLadder {
+  id: QualityEventId;
+  label: string;
+  /** Beat 1, GROUND: the events a year this rate and this unit size produce. */
+  groundLabel: string;
+  groundValue: string;
+  groundDetail: string;
+  groundSet: boolean;
+  /** The events a year this rate and unit size produce, before any
+   * prevention. The denominator of the whole event. */
+  groundEvents: number;
+  rate: number;
+  costPerEvent: number;
+  /** Beat 2, DIAGNOSE (the honesty rung): the most events a fully committed
+   * prevention program could reach, the defensible ceiling. What is left
+   * occurs despite best practice, so it stays out of the number. */
+  ceilingLabel: string;
+  ceilingCount: number;
+  ceilingUnit: string;
+  /** What this plan's committed interventions actually prevent, out of that
+   * ceiling. */
+  capturedLabel: string;
+  capturedCount: number;
+  capturedUnit: string;
+  /** Beat 3, WHO ACTS: Abridge surfaces the risk signal earlier, this owner
+   * runs the bundle that prevents. */
+  whoActs: string;
+  /** Beat 4, THE NUMBER: the realized cost-of-harm-avoided dollar. */
+  priceLabel: string;
+  value: number;
+  formula: string;
+  hasValue: boolean;
+}
+
+export interface QualityLadderModel {
+  scope: QualityScope;
+  events: QualityEventLadder[];
+  /** The one converged prize: every selected event's cost-of-harm-avoided
+   * summed, each a distinct harm pool, never double-counted. */
+  convergedPrize: number;
+  anySelected: boolean;
+}
+
+export function deriveQualityLadder(baseline: AttainBaseline, values: LeverValues, realizationPct = 100): QualityLadderModel {
+  const chain = computeQualityChain(baseline, values);
+  const events: QualityEventLadder[] = chain.payoff.events.map((e) => {
+    const value = Math.round(realizedValue(e.value, realizationPct));
+    const eventsSet = e.events > 0;
+    return {
+      id: e.id,
+      label: e.label,
+      groundLabel: "Events a year at your rate",
+      groundValue: eventsSet ? `${fmtEventCount(e.events)} events / yr` : "Not set yet",
+      groundDetail: eventsSet
+        ? `${fmtInt(e.sizingDays)} ${e.sizingUnit} × ${e.rate} per 1,000`
+        : "Set your beds in scope to size this event.",
+      groundSet: eventsSet,
+      groundEvents: e.events,
+      rate: e.rate,
+      costPerEvent: e.costPerEvent,
+      ceilingLabel:
+        e.id === "sepsis"
+          ? "Cases the documentation can move, the rest occur despite best practice"
+          : "Events a fully committed program can prevent, the rest occur despite best practice",
+      ceilingCount: e.ceilingCount,
+      ceilingUnit: e.id === "sepsis" ? "cases / yr" : "events / yr",
+      capturedLabel: "Events this plan's committed interventions prevent",
+      capturedCount: e.prevented,
+      capturedUnit: e.id === "sepsis" ? "cases / yr" : "events / yr",
+      whoActs: QUALITY_WHO_ACTS[e.id],
+      priceLabel: `$${fmtInt(e.costPerEvent)} / event`,
+      value,
+      formula: value > 0 ? formulaWithRealization(e.formula, realizationPct, value) : e.formula,
+      hasValue: value > 0,
+    };
+  });
+  const convergedPrize = events.reduce((sum, e) => sum + e.value, 0);
+  return { scope: chain.scope, events, convergedPrize, anySelected: chain.scope.eventTypes.length > 0 };
+}
+
+/** A prevented / event count: whole numbers for large pools, one decimal for
+ * the small fractional counts a single unit can produce, so a real 0.6
+ * prevented never collapses to a fabricated 0 or 1 (mirrors revenue's
+ * `fmtRevenueCount`). */
+function fmtEventCount(n: number): string {
+  if (n > 0 && n < 10) return (Math.round(n * 10) / 10).toLocaleString();
+  return Math.round(n).toLocaleString();
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -500,36 +720,36 @@ export function exploreStateForReconciliation(baseline: AttainBaseline, values: 
   const dq = state.docQualityInputs as any;
   if (chain.scope.eventTypes.includes("hapi")) {
     dq.nursingHapiEnabled = true;
-    dq.nursingHapiRate = HAPI_RATE_PER_1000;
+    dq.nursingHapiRate = qualityRateFor("hapi", values);
     dq.nursingHapiPreventionRate = pctById.get("hapi") ?? 0;
-    dq.nursingHapiCost = HAPI_COST_PER_EVENT;
+    dq.nursingHapiCost = qualityCostFor("hapi", values);
   }
   if (chain.scope.eventTypes.includes("falls")) {
     dq.nursingFallsEnabled = true;
-    dq.nursingFallsRate = FALLS_RATE_PER_1000;
+    dq.nursingFallsRate = qualityRateFor("falls", values);
     dq.nursingFallsPreventionRate = pctById.get("falls") ?? 0;
-    dq.nursingFallsCost = FALLS_COST_PER_EVENT;
+    dq.nursingFallsCost = qualityCostFor("falls", values);
   }
   if (chain.scope.eventTypes.includes("clabsi")) {
     dq.nursingClabsiEnabled = true;
     dq.nursingClabsiUtilizationRatio = CLABSI_UTILIZATION_PCT;
-    dq.nursingClabsiRate = CLABSI_RATE_PER_1000_LINE_DAYS;
+    dq.nursingClabsiRate = qualityRateFor("clabsi", values);
     dq.nursingClabsiPreventionRate = pctById.get("clabsi") ?? 0;
-    dq.nursingClabsiCost = CLABSI_COST_PER_EVENT;
+    dq.nursingClabsiCost = qualityCostFor("clabsi", values);
   }
   if (chain.scope.eventTypes.includes("cauti")) {
     dq.nursingCautiEnabled = true;
     dq.nursingCautiUtilizationRatio = CAUTI_UTILIZATION_PCT;
-    dq.nursingCautiRate = CAUTI_RATE_PER_1000_CATHETER_DAYS;
+    dq.nursingCautiRate = qualityRateFor("cauti", values);
     dq.nursingCautiPreventionRate = pctById.get("cauti") ?? 0;
-    dq.nursingCautiCost = CAUTI_COST_PER_EVENT;
+    dq.nursingCautiCost = qualityCostFor("cauti", values);
   }
   if (chain.scope.eventTypes.includes("sepsis")) {
     dq.nursingSepsisEnabled = true;
-    dq.nursingSepsisRatePerThousand = SEPSIS_RATE_PER_1000;
+    dq.nursingSepsisRatePerThousand = qualityRateFor("sepsis", values);
     dq.nursingSepsisCurrentCompliance = SEPSIS_COMPLIANCE_BASELINE_PCT;
     dq.nursingSepsisDocLagPercent = SEPSIS_DOC_LAG_PCT;
-    dq.nursingSepsisExcessCostPerCase = SEPSIS_EXCESS_COST_PER_CASE;
+    dq.nursingSepsisExcessCostPerCase = qualityCostFor("sepsis", values);
     dq.nursingSepsisRealization = pctById.get("sepsis") ?? 0;
   }
   return state;
