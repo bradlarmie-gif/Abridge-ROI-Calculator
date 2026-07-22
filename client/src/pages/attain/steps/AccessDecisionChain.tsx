@@ -234,10 +234,14 @@ export default function AccessDecisionChain({ setting, baseline, values, onChang
       <DecisionCard
         step="D1"
         title="Who you point at access"
-        help="Committing a line and a provider count puts real capacity in scope. No dollar figure yet, there is no margin or volume decided."
+        help="Committing a line and a provider count puts real capacity in scope. There's no dollar figure yet, margin and volume come next."
         testid="card-access-d1"
       >
-        <div className="flex flex-wrap gap-2 mb-3">
+        {/* Enterprise sits right in the line-selection row, as the
+            not-broken-out-by-line alternative to picking specific lines -
+            not floating off beside the Add button, where it read as an
+            unrelated setting. */}
+        <div className="flex flex-wrap items-center gap-2 mb-3">
           {presetLines.map((line) => {
             const active = selectedLines.includes(line);
             return (
@@ -267,6 +271,20 @@ export default function AccessDecisionChain({ setting, baseline, values, onChang
               {line} ×
             </button>
           ))}
+          <span className="text-xs text-[#B4B4B4] px-1">or,</span>
+          <label
+            className={`flex items-center gap-2 pl-1 pr-3 py-1.5 rounded-md text-sm border transition-all cursor-pointer ${
+              enterprise ? "border-[#EA2C00] bg-[#FFF6F3] text-[#EA2C00] font-medium" : "border-[#E5E5E5] bg-white text-[#3A3A3A] hover:border-[#D8CFC4]"
+            }`}
+          >
+            <Switch
+              checked={enterprise}
+              onCheckedChange={(checked) => onChangeValue("accessEnterprise", checked ? 1 : 0)}
+              className="data-[state=checked]:bg-[#EA2C00]"
+              data-testid="switch-access-enterprise"
+            />
+            enterprise-wide (all providers)
+          </label>
         </div>
 
         <div className="flex items-center gap-2 mb-4">
@@ -288,18 +306,6 @@ export default function AccessDecisionChain({ setting, baseline, values, onChang
           >
             Add
           </button>
-
-          <div className="flex-1" />
-
-          <label className="flex items-center gap-2 text-xs font-medium text-[#3A3A3A] cursor-pointer">
-            <Switch
-              checked={enterprise}
-              onCheckedChange={(checked) => onChangeValue("accessEnterprise", checked ? 1 : 0)}
-              className="data-[state=checked]:bg-[#EA2C00]"
-              data-testid="switch-access-enterprise"
-            />
-            Enterprise (all, non-specific)
-          </label>
         </div>
 
         <div className="mb-4 max-w-[280px]">
@@ -335,7 +341,7 @@ export default function AccessDecisionChain({ setting, baseline, values, onChang
       <DecisionCard
         step="D2"
         title="What a visit is worth"
-        help="Contribution margin, not charges. Cardiology and primary care are not worth the same visit, so price each line you selected on its own. Still no dollar total, there is no volume yet."
+        help="Contribution margin, not charges. Cardiology and primary care are not worth the same visit, so price each line you selected on its own. Still no dollar total, volume comes next."
         testid="card-access-d2"
       >
         {activeLines.length > 0 ? (
@@ -605,31 +611,25 @@ export default function AccessDecisionChain({ setting, baseline, values, onChang
         <MathBox formula={formulas.demand} testid="text-access-d4-formula" />
       </DecisionCard>
 
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="rounded-xl bg-[#1A1A1A] p-6"
-        data-testid="card-access-d5"
+      {/* D5 used to be a full-bleed dark hero card - the exact dollar the
+          side panel's "Plan so far" already shows, stranded at the bottom
+          of the page. It's now a quiet inline line, same card shell as
+          D1-D4, so the panel stays the one place that total actually
+          lives. */}
+      <DecisionCard
+        step="D5"
+        title="The payoff"
+        help="Realized visits x margin per visit, the first dollar figure in this chain, derived from the four decisions above. Already counted in the running total in the panel to the right."
+        testid="card-access-d5"
       >
-        <p className="text-[11px] font-bold uppercase tracking-[2px] text-white/50 mb-1.5">D5</p>
-        <h3 className="text-lg font-bold text-white mb-2 font-abridge">The payoff</h3>
-        <p className="text-[15px] text-white/50 leading-relaxed mb-5 max-w-[620px]">
-          Realized visits x margin per visit. This is the first dollar figure in this chain, derived from the four
-          decisions above, never invented.
+        <p className="text-[15px] text-[#1A1A1A]" data-testid="text-access-d5-caption">
+          <span className="font-abridge text-2xl text-[#EA2C00] font-bold" data-testid="text-access-d5-value">
+            {fmtMoneyCompact(realizedPayoffValue)}
+          </span>{" "}
+          from {fmtInt(payoff.realizedVisits)} realized visits x ~${fmtInt(payoff.blendedMarginUsed)}/visit
         </p>
-        <p className="font-abridge text-5xl text-[#EA2C00]" data-testid="text-access-d5-value">
-          {fmtMoneyCompact(realizedPayoffValue)}
-        </p>
-        <p className="text-[15px] text-white/60 mt-2">
-          {fmtInt(payoff.realizedVisits)} realized visits x ~${fmtInt(payoff.blendedMarginUsed)}/visit
-        </p>
-        <div className="mt-4 bg-white/5 border-l-[3px] border-[#EA2C00] rounded-r-md p-3">
-          <p className="text-[10px] font-bold uppercase tracking-wide text-[#EA2C00] mb-1">The math</p>
-          <p className="text-[12.5px] text-white/70 leading-relaxed" data-testid="text-access-d5-formula">
-            {payoffFormulaDisplay}
-          </p>
-        </div>
-      </motion.div>
+        <MathBox formula={payoffFormulaDisplay} testid="text-access-d5-formula" />
+      </DecisionCard>
     </div>
   );
 }
