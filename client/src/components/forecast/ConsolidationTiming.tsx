@@ -160,7 +160,6 @@ export default function ConsolidationTiming({
           const rampM = Math.max(0, Math.round(item.rampMonths ?? 0));
           const savingMonths = Math.max(0, horizon - sD);
           const rampPct = savingMonths > 0 ? Math.min(100, (rampM / savingMonths) * 100) : 0;
-          const xR = xPct(Math.min(sD + rampM, horizon), horizon);
           return (
             <div key={t.id} className="py-4 border-t border-[#EFE7DC] first:border-t-0" data-testid={`ar-timing-row-${t.id}`}>
               <div className="flex items-baseline justify-between mb-3.5 gap-3 flex-wrap">
@@ -215,8 +214,6 @@ export default function ConsolidationTiming({
                 <div className="absolute top-1/2 -translate-y-1/2 h-1.5 rounded-[3px] bg-[#EAE3D8]" style={{ left: `${L0}%`, right: `${100 - xEnd}%` }} />
                 {/* saving region (sunset -> horizon), ramping 0 -> full over the displacement window */}
                 {xEnd > xS && <div className="absolute top-1/2 -translate-y-1/2 h-1.5 rounded-[2px]" style={{ left: `${xS}%`, width: `${xEnd - xS}%`, backgroundImage: `linear-gradient(to right, rgba(234,44,0,0.05) 0%, rgba(234,44,0,0.22) ${rampPct}%, rgba(234,44,0,0.22) 100%)` }} />}
-                {/* fully-displaced marker at the end of the ramp */}
-                {rampM > 0 && xR < xEnd - 0.4 && <div className="absolute top-1/2 w-px h-2.5 bg-[#EA2C00] opacity-50" style={{ left: `${xR}%`, transform: "translate(-50%,-50%)" }} />}
                 {/* still paying (Today -> sunset) */}
                 <div className="absolute top-1/2 -translate-y-1/2 h-1.5 rounded-[3px] bg-[#9C8F7D]" style={{ left: `${L0}%`, width: `${xS - L0}%` }} />
                 {/* contract-ends tick + label */}
