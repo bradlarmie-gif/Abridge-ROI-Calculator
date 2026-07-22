@@ -126,6 +126,73 @@ function FieldLabel({ children }: { children: React.ReactNode }) {
   return <p className="text-[8px] font-bold uppercase tracking-wide text-[#8C8C8C] mb-1">{children}</p>;
 }
 
+/** The one rung on the spine that is NOT a multiplication: capacity meets
+ * demand, and realized visits is the SMALLER of the two, never the sum. It
+ * shows both facts side by side, then the slice that actually converts, so a
+ * large capacity collapsing to a small realized count reads as a ceiling, not
+ * a cliff or a lost multiplication. */
+function CapacityDemandGate({
+  capacityVisits,
+  demandCeiling,
+  realizedVisits,
+  binding,
+  bothSet,
+  emptyHint,
+}: {
+  capacityVisits: number;
+  demandCeiling: number;
+  realizedVisits: number;
+  binding: "capacity" | "demand" | "none";
+  bothSet: boolean;
+  emptyHint: string;
+}) {
+  const explain =
+    binding === "demand"
+      ? `Only ${fmtInt(realizedVisits)} of the ${fmtInt(capacityVisits)} capacity has demand behind it. Demand is the ceiling, so the rest books nothing yet.`
+      : binding === "capacity"
+        ? `Demand outruns the capacity you have, so every one of the ${fmtInt(realizedVisits)} visits you can staff converts. Capacity is the limiter here.`
+        : "Set both capacity and demand to see how much actually converts.";
+
+  return (
+    <div className="rounded-lg border border-[#E7E0D6] bg-[#F4F0EA] p-4" data-testid="rung-planning-gate">
+      <div className="flex items-center gap-2 mb-3">
+        <span className="inline-block text-[8px] font-bold uppercase tracking-wide text-white bg-[#1A1A1A] px-2 py-0.5 rounded-full">
+          The gate
+        </span>
+        <p className="text-[12px] font-semibold text-[#1A1A1A]">Demand decides how much converts</p>
+      </div>
+
+      {bothSet ? (
+        <>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <FieldLabel>Capacity you created</FieldLabel>
+              <p className="font-abridge text-2xl font-bold text-[#1A1A1A]" data-testid="text-planning-gate-capacity">
+                {fmtInt(capacityVisits)} <span className="text-[11px] font-normal text-[#8C8C8C]">visits / yr</span>
+              </p>
+            </div>
+            <div>
+              <FieldLabel>Real demand waiting</FieldLabel>
+              <p className="font-abridge text-2xl font-bold text-[#1A1A1A]" data-testid="text-planning-gate-demand">
+                {fmtInt(demandCeiling)} <span className="text-[11px] font-normal text-[#8C8C8C]">visits</span>
+              </p>
+            </div>
+          </div>
+          <div className="mt-3 pt-3 border-t border-[#E0D9CE]">
+            <FieldLabel>Realized visits, the smaller of the two</FieldLabel>
+            <p className="font-abridge text-2xl font-bold text-[#EA2C00]" data-testid="text-planning-gate-realized">
+              {fmtInt(realizedVisits)} <span className="text-[11px] font-normal text-[#8C8C8C]">realized visits / yr</span>
+            </p>
+            <p className="text-[11px] text-[#8C8C8C] mt-1 leading-relaxed" data-testid="text-planning-gate-explain">{explain}</p>
+          </div>
+        </>
+      ) : (
+        <p className="text-[11px] text-[#8C8C8C] leading-relaxed">{emptyHint}</p>
+      )}
+    </div>
+  );
+}
+
 const PHASE_META: Record<PlanPhaseId, { label: string; intent: string; signalLabel: string }> = {
   start: {
     label: "Start",
@@ -173,9 +240,18 @@ export default function StepPlanning({
   const minutes = chain.capacity.minutesSavedPerNote;
   const visitLen = chain.capacity.visitLengthMinutes;
   const freedHrsPerProviderWk = providersInScope > 0 ? chain.capacity.freedHoursTotal / providersInScope / 52 : 0;
+  // Capacity is ALREADY directed-share adjusted: computeAccessCapacity prices
+  // capacity off freedHoursToAccess = freedHoursTotal * (share directed to
+  // access), never gross freed hours. `directedSharePct` is that same D3 share
+  // (after any cross-goal scaling), surfaced so the rung can name it out loud
+  // and the number can never look like "all freed time converted".
   const capacityVisits = chain.capacity.capacityVisits;
+  const directedSharePct = chain.capacity.effectiveSharePct;
   const demandCeiling = chain.demand.demandCeiling;
   const realizedVisits = access?.totalCount ?? chain.payoff.realizedVisits;
+  // Which side of the ceiling actually limits the outcome, straight off the
+  // chain, so the gate rung and the payoff can never disagree.
+  const binding = chain.payoff.binding;
   const prize = access?.totalMargin ?? 0;
   const marginPerVisit = realizedVisits > 0 ? prize / realizedVisits : chain.payoff.blendedMarginUsed;
 
@@ -291,7 +367,9 @@ export default function StepPlanning({
       <div className="mb-10">
         <h2 className="text-sm font-bold text-[#1A1A1A] mb-1">How {fmtInt(minutes)} minutes per note becomes {prize > 0 ? fmtMoneyCompact(prize) : "the prize"}</h2>
         <p className="text-[12px] text-[#8C8C8C] mb-4 max-w-[560px] leading-relaxed">
-          Read it top to bottom. Every rung is the one above it, multiplied. Prove the top and the rest follows.
+          Read it top to bottom. The first rungs multiply: minutes saved become freed hours, and the freed hours you
+          direct to access become new capacity. Then demand is the ceiling that decides how much of that capacity
+          actually converts to visits, and those visits become dollars.
         </p>
 
         <div className="space-y-2" data-testid="section-planning-spine">
@@ -319,26 +397,21 @@ export default function StepPlanning({
             value={fmtInt(capacityVisits)}
             unit="visits / yr"
             label="New capacity"
-            caption={`The share of freed time committed to the schedule, at about ${fmtInt(visitLen)} minutes a visit.`}
-            emptyHint="Commit some freed time to access on Build the case to open capacity."
+            caption={`${fmtInt(directedSharePct)}% of the freed time is directed to access, the rest stays as relief, at about ${fmtInt(visitLen)} minutes a visit.`}
+            emptyHint="Direct some freed time to access on Build the case to open capacity."
           />
           <div className="flex justify-center"><ArrowDown className="w-4 h-4 text-[#B4B4B4]" /></div>
-          <SpineRung
-            isSet={demandCeiling > 0}
-            value={fmtInt(demandCeiling)}
-            unit="visits of demand"
-            label="Meets real demand"
-            caption="Backlog and referrals already waiting. Capacity is only worth what demand can fill."
-            emptyHint="Add your backlog and referral demand on Build the case."
-          />
-          <div className="flex justify-center"><ArrowDown className="w-4 h-4 text-[#B4B4B4]" /></div>
-          <SpineRung
-            isSet={realizedVisits > 0}
-            value={fmtInt(realizedVisits)}
-            unit="realized visits / yr"
-            label="Realized visits"
-            caption="The smaller of capacity and demand. You only book what the schedule can actually absorb."
-            emptyHint="Realized visits appear once both capacity and demand are set."
+          <CapacityDemandGate
+            capacityVisits={capacityVisits}
+            demandCeiling={demandCeiling}
+            realizedVisits={realizedVisits}
+            binding={binding}
+            bothSet={capacityVisits > 0 && demandCeiling > 0}
+            emptyHint={
+              capacityVisits <= 0
+                ? "Direct some freed time to access on Build the case to open capacity, then add your demand."
+                : "Add your backlog and referral demand on Build the case to see how much of the capacity converts."
+            }
           />
           <div className="flex justify-center"><ArrowDown className="w-4 h-4 text-[#B4B4B4]" /></div>
           <SpineRung
