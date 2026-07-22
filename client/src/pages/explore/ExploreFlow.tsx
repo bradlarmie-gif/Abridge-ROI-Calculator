@@ -16,6 +16,7 @@ import {
   type PriorQuadrantEntry,
 } from "@/lib/exploreQuadrantValues";
 import { computeExploreTotals, wrvuScenariosFor, denialsScenariosFor } from "@/lib/exploreDriverCalcs";
+import { physicianRetentionRates, nursingRetentionRates } from "@/lib/retentionScenarios";
 
 export type ExploreCareSetting = 'outpatient' | 'ed' | 'nursing' | 'inpatient';
 
@@ -1103,7 +1104,7 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
         total += grossValue * (timeDriverInputs.edAdmissionRealization / 100);
       }
       if (timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue) {
-        const retentionScenarios: Record<string, number> = { conservative: 20, typical: 30, optimistic: 40, custom: timeDriverInputs.retentionCustomPercent ?? 10 };
+        const retentionScenarios: Record<string, number> = physicianRetentionRates(timeDriverInputs.retentionCustomPercent ?? 10);
         const turnoverRate = timeDriverInputs.annualTurnoverRate / 100;
         const burnoutRate = timeDriverInputs.burnoutRelatedTurnover / 100;
         const impactRate = retentionScenarios[timeDriverInputs.retentionImpactScenario] / 100;
@@ -1113,7 +1114,7 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
         total += retained * timeDriverInputs.replacementCost;
       }
       if (timeDriverInputs.physicianAgencyEnabled && timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue) {
-        const retentionScenarios: Record<string, number> = { conservative: 20, typical: 30, optimistic: 40, custom: timeDriverInputs.retentionCustomPercent ?? 10 };
+        const retentionScenarios: Record<string, number> = physicianRetentionRates(timeDriverInputs.retentionCustomPercent ?? 10);
         const turnoverRate = timeDriverInputs.annualTurnoverRate / 100;
         const burnoutRate = timeDriverInputs.burnoutRelatedTurnover / 100;
         const impactRate = retentionScenarios[timeDriverInputs.retentionImpactScenario] / 100;
@@ -1130,7 +1131,7 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
         total += timeDriverInputs.estimatedCostReduction;
       }
       if (timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue) {
-        const retentionScenarios: Record<string, number> = { conservative: 20, typical: 30, optimistic: 40, custom: timeDriverInputs.retentionCustomPercent ?? 10 };
+        const retentionScenarios: Record<string, number> = physicianRetentionRates(timeDriverInputs.retentionCustomPercent ?? 10);
         const turnoverRate = timeDriverInputs.annualTurnoverRate / 100;
         const burnoutRate = timeDriverInputs.burnoutRelatedTurnover / 100;
         const impactRate = retentionScenarios[timeDriverInputs.retentionImpactScenario] / 100;
@@ -1140,7 +1141,7 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
         total += retained * timeDriverInputs.replacementCost;
       }
       if (timeDriverInputs.physicianAgencyEnabled && timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue) {
-        const retentionScenarios: Record<string, number> = { conservative: 20, typical: 30, optimistic: 40, custom: timeDriverInputs.retentionCustomPercent ?? 10 };
+        const retentionScenarios: Record<string, number> = physicianRetentionRates(timeDriverInputs.retentionCustomPercent ?? 10);
         const turnoverRate = timeDriverInputs.annualTurnoverRate / 100;
         const burnoutRate = timeDriverInputs.burnoutRelatedTurnover / 100;
         const impactRate = retentionScenarios[timeDriverInputs.retentionImpactScenario] / 100;
@@ -1163,7 +1164,7 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
       }
       // Nursing: Retention (40% burnout-related × impact scenario 10/15/25%)
       if (timeDriverInputs.nursingRetentionEnabled) {
-        const retentionImpactRates: Record<string, number> = { conservative: 20, typical: 30, optimistic: 40, custom: timeDriverInputs.retentionCustomPercent ?? 10 };
+        const retentionImpactRates: Record<string, number> = nursingRetentionRates(timeDriverInputs.retentionCustomPercent ?? 10);
         const leavingPerYear = numberOfProviders * (timeDriverInputs.nursingTurnoverRate / 100);
         const burnoutDepartures = leavingPerYear * 0.40;
         const impactRate = (retentionImpactRates[timeDriverInputs.retentionImpactScenario] || 15) / 100;
@@ -1191,7 +1192,7 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
         total += annualVisits * timeDriverInputs.revenuePerVisit;
       }
       if (timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue) {
-        const retentionScenarios: Record<string, number> = { conservative: 20, typical: 30, optimistic: 40, custom: timeDriverInputs.retentionCustomPercent ?? 10 };
+        const retentionScenarios: Record<string, number> = physicianRetentionRates(timeDriverInputs.retentionCustomPercent ?? 10);
         const turnoverRate = timeDriverInputs.annualTurnoverRate / 100;
         const burnoutRate = timeDriverInputs.burnoutRelatedTurnover / 100;
         const impactRate = retentionScenarios[timeDriverInputs.retentionImpactScenario] / 100;
@@ -1201,7 +1202,7 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
         total += retained * timeDriverInputs.replacementCost;
       }
       if (timeDriverInputs.physicianAgencyEnabled && timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue) {
-        const retentionScenarios: Record<string, number> = { conservative: 20, typical: 30, optimistic: 40, custom: timeDriverInputs.retentionCustomPercent ?? 10 };
+        const retentionScenarios: Record<string, number> = physicianRetentionRates(timeDriverInputs.retentionCustomPercent ?? 10);
         const turnoverRate = timeDriverInputs.annualTurnoverRate / 100;
         const burnoutRate = timeDriverInputs.burnoutRelatedTurnover / 100;
         const impactRate = retentionScenarios[timeDriverInputs.retentionImpactScenario] / 100;

@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import type { ExploreCalcComponentProps } from "@/lib/exploreDrivers";
+import { nursingRetentionRates, NURSING_RETENTION_SCENARIOS } from "@/lib/retentionScenarios";
 
 type Props = ExploreCalcComponentProps;
 type RetentionScenario = 'conservative' | 'typical' | 'optimistic' | 'custom';
@@ -10,12 +11,7 @@ export default function NursingRetentionCalc({ state, updateTimeDriverInputs }: 
   const [customMode, setCustomMode] = useState(timeDriverInputs.retentionImpactScenario === 'custom');
   const [customDisplay, setCustomDisplay] = useState(String(timeDriverInputs.retentionCustomPercent ?? 10));
 
-  const nursingRetentionImpactRates: Record<RetentionScenario, number> = {
-    conservative: 20,
-    typical: 30,
-    optimistic: 40,
-    custom: timeDriverInputs.retentionCustomPercent ?? 10,
-  };
+  const nursingRetentionImpactRates: Record<RetentionScenario, number> = nursingRetentionRates(timeDriverInputs.retentionCustomPercent ?? 10);
 
   const calc = useMemo(() => {
     const nurses = state.numberOfProviders;
@@ -76,9 +72,9 @@ export default function NursingRetentionCalc({ state, updateTimeDriverInputs }: 
       <p className="text-sm text-[#888888] mb-3">How much could reducing documentation burden impact burnout-driven departures?</p>
       <div className="flex gap-2 mb-2">
         {([
-          { label: 'Conservative', value: 'conservative' as RetentionScenario, pct: 20 },
-          { label: 'Typical', value: 'typical' as RetentionScenario, pct: 30 },
-          { label: 'Optimistic', value: 'optimistic' as RetentionScenario, pct: 40 },
+          { label: 'Conservative', value: 'conservative' as RetentionScenario, pct: NURSING_RETENTION_SCENARIOS.conservative },
+          { label: 'Typical', value: 'typical' as RetentionScenario, pct: NURSING_RETENTION_SCENARIOS.typical },
+          { label: 'Optimistic', value: 'optimistic' as RetentionScenario, pct: NURSING_RETENTION_SCENARIOS.optimistic },
         ]).map((preset) => (
           <button
             key={preset.value}

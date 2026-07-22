@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { Check, AlertTriangle } from "lucide-react";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import type { ExploreCalcComponentProps } from "@/lib/exploreDrivers";
+import { physicianRetentionRates, PHYSICIAN_RETENTION_SCENARIOS } from "@/lib/retentionScenarios";
 
 type Props = ExploreCalcComponentProps;
 type RetentionScenario = 'conservative' | 'typical' | 'optimistic' | 'custom';
@@ -20,12 +21,7 @@ export default function ProviderWellbeingCalc({ state, updateTimeDriverInputs, t
   const updateBurnout = (v: number) => updateTimeDriverInputs(isInpatient ? { ipBurnoutRelatedTurnover: v } : { burnoutRelatedTurnover: v });
   const updateReplacement = (v: number) => updateTimeDriverInputs(isInpatient ? { ipReplacementCost: v } : { replacementCost: v });
 
-  const retentionScenarios: Record<RetentionScenario, number> = {
-    conservative: 20,
-    typical: 30,
-    optimistic: 40,
-    custom: td.retentionCustomPercent ?? 10,
-  };
+  const retentionScenarios: Record<RetentionScenario, number> = physicianRetentionRates(td.retentionCustomPercent ?? 10);
 
   const hoursPerProviderPerWeek = state.numberOfProviders > 0
     ? (totalHoursSaved / state.numberOfProviders / 48).toFixed(1)
@@ -164,9 +160,9 @@ export default function ProviderWellbeingCalc({ state, updateTimeDriverInputs, t
 
           <div className="flex gap-2 mb-4">
             {([
-              { label: 'Conservative', value: 'conservative' as const, pct: 20 },
-              { label: 'Typical', value: 'typical' as const, pct: 30 },
-              { label: 'Optimistic', value: 'optimistic' as const, pct: 40 },
+              { label: 'Conservative', value: 'conservative' as const, pct: PHYSICIAN_RETENTION_SCENARIOS.conservative },
+              { label: 'Typical', value: 'typical' as const, pct: PHYSICIAN_RETENTION_SCENARIOS.typical },
+              { label: 'Optimistic', value: 'optimistic' as const, pct: PHYSICIAN_RETENTION_SCENARIOS.optimistic },
             ]).map((preset) => (
               <button
                 key={preset.value}

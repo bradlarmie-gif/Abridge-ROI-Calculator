@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { AlertTriangle } from "lucide-react";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import type { ExploreCalcComponentProps } from "@/lib/exploreDrivers";
+import { physicianRetentionRates } from "@/lib/retentionScenarios";
 
 type Props = ExploreCalcComponentProps;
 type RetentionScenario = 'conservative' | 'typical' | 'optimistic' | 'custom';
@@ -9,12 +10,7 @@ type RetentionScenario = 'conservative' | 'typical' | 'optimistic' | 'custom';
 export default function PhysicianLocumAgencyCalc({ state, updateTimeDriverInputs }: Props) {
   const { timeDriverInputs } = state;
 
-  const retentionScenarios: Record<RetentionScenario, number> = {
-    conservative: 20,
-    typical: 30,
-    optimistic: 40,
-    custom: timeDriverInputs.retentionCustomPercent ?? 10,
-  };
+  const retentionScenarios: Record<RetentionScenario, number> = physicianRetentionRates(timeDriverInputs.retentionCustomPercent ?? 10);
 
   const calc = useMemo(() => {
     const providers = state.numberOfProviders;

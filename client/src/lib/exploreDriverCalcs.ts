@@ -7,6 +7,7 @@ import {
 } from "@/lib/nursingQualityCalcs";
 import type { ExploreState } from "@/pages/explore/ExploreFlow";
 import { EXPLORE_DRIVERS, type ExploreQuadrant } from "@/lib/exploreDrivers";
+import { physicianRetentionRates, nursingRetentionRates } from "@/lib/retentionScenarios";
 
 /**
  * Pure helpers that compute every quantified Explore driver's:
@@ -31,18 +32,6 @@ import { EXPLORE_DRIVERS, type ExploreQuadrant } from "@/lib/exploreDrivers";
  * to mirror the original ExploreModel logic exactly.
  */
 
-const RETENTION_SCENARIOS_PHYSICIAN_BASE: Record<string, number> = {
-  conservative: 20,
-  typical: 30,
-  optimistic: 40,
-};
-const RETENTION_SCENARIOS_NURSING_BASE: Record<string, number> = {
-  conservative: 20,
-  typical: 30,
-  optimistic: 40,
-};
-const retentionPhysician = (customPct: number): Record<string, number> => ({ ...RETENTION_SCENARIOS_PHYSICIAN_BASE, custom: customPct });
-const retentionNursing = (customPct: number): Record<string, number> => ({ ...RETENTION_SCENARIOS_NURSING_BASE, custom: customPct });
 const IP_DRG_PROTECT_SCENARIOS: Record<string, number> = {
   conservative: 15,
   typical: 20,
@@ -122,8 +111,8 @@ export function computeAllDriverValues(
     }
   }
   // ─── Workforce ───
-  const RETENTION_SCENARIOS_PHYSICIAN = retentionPhysician(td.retentionCustomPercent ?? 10);
-  const RETENTION_SCENARIOS_NURSING = retentionNursing(td.retentionCustomPercent ?? 10);
+  const RETENTION_SCENARIOS_PHYSICIAN = physicianRetentionRates(td.retentionCustomPercent ?? 10);
+  const RETENTION_SCENARIOS_NURSING = nursingRetentionRates(td.retentionCustomPercent ?? 10);
   if (isPhysician && td.wellbeingEnabled && td.calculateRetentionValue) {
     // Inpatient uses hospitalist-specific turnover/replacement inputs (the
     // fields the IP wellbeing card lets the user edit); other physician
@@ -349,8 +338,8 @@ export function computeAllDriverCalcSummaries(
   }
 
   // Workforce
-  const CS_RETENTION_PHYSICIAN = retentionPhysician(td.retentionCustomPercent ?? 10);
-  const CS_RETENTION_NURSING = retentionNursing(td.retentionCustomPercent ?? 10);
+  const CS_RETENTION_PHYSICIAN = physicianRetentionRates(td.retentionCustomPercent ?? 10);
+  const CS_RETENTION_NURSING = nursingRetentionRates(td.retentionCustomPercent ?? 10);
   if (isPhysician && td.wellbeingEnabled && td.calculateRetentionValue) {
     const impactPct =
       CS_RETENTION_PHYSICIAN[td.retentionImpactScenario] ?? 0;

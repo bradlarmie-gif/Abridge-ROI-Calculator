@@ -13,6 +13,7 @@ import {
 } from "@/lib/proformaCalculations";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { computeAllDriverValues } from "@/lib/exploreDriverCalcs";
+import { physicianRetentionRates, nursingRetentionRates } from "@/lib/retentionScenarios";
 
 export const DOMAIN_PILL_COLORS: Record<string, string> = {
   Capacity:  "#EA2C00",
@@ -97,14 +98,14 @@ export function recomputeDriverFromExploreState(driverId: string, state: Explore
     case 'retention': {
       const isNursing = careSetting === 'nursing';
       if (isNursing) {
-        const rates: Record<string, number> = { conservative: 20, typical: 30, optimistic: 40, custom: ti.retentionCustomPercent ?? 10 };
+        const rates: Record<string, number> = nursingRetentionRates(ti.retentionCustomPercent ?? 10);
         const leaving = numberOfProviders * (ti.nursingTurnoverRate / 100);
         const retained = leaving * 0.40 * ((rates[ti.retentionImpactScenario] ?? 30) / 100);
         let total = Math.round(retained * ti.nursingReplacementCost);
         if (ti.nursingAgencyEnabled) total += Math.round(retained * (ti.nursingAgencyWeeksPerVacancy || 12) * (ti.nursingAgencyWeeklyPremium || 2500));
         return total;
       } else {
-        const rates: Record<string, number> = { conservative: 20, typical: 30, optimistic: 40, custom: ti.retentionCustomPercent ?? 10 };
+        const rates: Record<string, number> = physicianRetentionRates(ti.retentionCustomPercent ?? 10);
         const leaving = numberOfProviders * (ti.annualTurnoverRate / 100);
         const retained = leaving * (ti.burnoutRelatedTurnover / 100) * ((rates[ti.retentionImpactScenario] ?? 30) / 100);
         let total = Math.round(retained * ti.replacementCost);
