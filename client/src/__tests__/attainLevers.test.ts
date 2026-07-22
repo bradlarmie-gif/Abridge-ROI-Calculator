@@ -5,6 +5,7 @@ import {
   defaultBaseline,
   computeLeverContributions,
   computeMultiGoalContributions,
+  defaultRealizationPct,
   type AttainBaseline,
   type LeverValues,
 } from "@/lib/attain/attainLevers";
@@ -864,7 +865,12 @@ describe("computeMultiGoalContributions — realization rate", () => {
     };
     const goals: GoalId[] = ["quality", "retention"];
 
-    const qualityFull = computeMultiGoalContributions(["quality"], setting, baseline, valuesByGoal).byGoal.quality!.totalMargin;
+    // Quality's own realization DEFAULT is 30 (not the other goals' 100 -
+    // see `defaultRealizationPct`), so the "full" baseline used below to
+    // prove the weighted-scaling math must ask for 100 explicitly rather
+    // than relying on the default, which would otherwise silently bake an
+    // extra x0.3 into `qualityFull` and break the `* 0.8` assertion below.
+    const qualityFull = computeMultiGoalContributions(["quality"], setting, baseline, valuesByGoal, 50, { quality: 100 }).byGoal.quality!.totalMargin;
     const retentionFull = computeMultiGoalContributions(["retention"], setting, baseline, valuesByGoal).byGoal.retention!.totalMargin;
     expect(qualityFull).toBeGreaterThan(0);
     expect(retentionFull).toBeGreaterThan(0);
@@ -910,6 +916,44 @@ describe("computeMultiGoalContributions — realization rate", () => {
     // realization - there's no dollar to attribute, so no clutter.
     const untouched = partial.byGoal.retention!.perLever.filter((l) => l.marginalMargin === 0);
     for (const row of untouched) expect(row.formula).not.toContain("% realization");
+  });
+
+  // Nursing quality's own realization dial DEFAULTS to 30, not the other
+  // goals' 100 - Abridge only surfaces the risk earlier in quality, the
+  // bedside unit runs the bundle that actually prevents the event, so 100%
+  // credit would overclaim. Still a fully adjustable 0-100 dial; only the
+  // starting position differs. See `defaultRealizationPct` in
+  // attainLevers.ts and the module header in attainQuality.ts.
+  it("defaultRealizationPct: quality defaults to 30, every other goal defaults to 100", () => {
+    expect(defaultRealizationPct("quality")).toBe(30);
+    expect(defaultRealizationPct("access")).toBe(100);
+    expect(defaultRealizationPct("retention")).toBe(100);
+    expect(defaultRealizationPct("revenue")).toBe(100);
+    expect(defaultRealizationPct("capacity")).toBe(100);
+  });
+
+  it("omitting realizationByGoal for quality nets exactly 30% of the raw chain, while every other goal still nets the full 100%", () => {
+    const baseline = BASELINE_FOR.quality;
+    const setting: AttainSetting = "nursing";
+    const valuesByGoal: Partial<Record<GoalId, LeverValues>> = { quality: fullQualityValues() };
+
+    // No realizationByGoal argument at all - exercising the real default a
+    // freshly-picked priority gets before a partner ever touches the dial.
+    const defaulted = computeMultiGoalContributions(["quality"], setting, baseline, valuesByGoal);
+    const explicit30 = computeMultiGoalContributions(["quality"], setting, baseline, valuesByGoal, 50, { quality: 30 });
+    const explicit100 = computeMultiGoalContributions(["quality"], setting, baseline, valuesByGoal, 50, { quality: 100 });
+
+    expect(explicit100.byGoal.quality!.totalMargin).toBeGreaterThan(0);
+    expect(defaulted.byGoal.quality!.totalMargin).toBeCloseTo(explicit30.byGoal.quality!.totalMargin, 5);
+    expect(defaulted.byGoal.quality!.totalMargin).toBeCloseTo(explicit100.byGoal.quality!.totalMargin * 0.3, 5);
+
+    // Retention (an arbitrary other goal) still defaults to full credit when
+    // its own key is omitted from realizationByGoal.
+    const retentionBaseline = BASELINE_FOR.retention;
+    const retentionValuesByGoal: Partial<Record<GoalId, LeverValues>> = { retention: retentionValues() };
+    const retentionDefaulted = computeMultiGoalContributions(["retention"], "outpatient", retentionBaseline, retentionValuesByGoal);
+    const retentionExplicit100 = computeMultiGoalContributions(["retention"], "outpatient", retentionBaseline, retentionValuesByGoal, 50, { retention: 100 });
+    expect(retentionDefaulted.byGoal.retention!.totalMargin).toBeCloseTo(retentionExplicit100.byGoal.retention!.totalMargin, 5);
   });
 });
 
