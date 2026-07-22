@@ -15,22 +15,14 @@ import {
   type PlanPhaseId,
 } from "@/lib/attain/attainPlanning";
 import { CADENCE_OPTIONS, CADENCE_LABEL, type GoalOwner, type SignalCadence } from "./StepCommit";
-
-function fmtMoneyCompact(n: number): string {
-  const sign = n < 0 ? "-" : "";
-  const abs = Math.abs(n);
-  if (abs >= 1_000_000) return `${sign}$${(abs / 1_000_000).toFixed(abs % 1_000_000 === 0 ? 0 : 1)}M`;
-  if (abs >= 1_000) return `${sign}$${Math.round(abs / 1_000)}K`;
-  return `${sign}$${Math.round(abs)}`;
-}
-
-function fmtInt(n: number): string {
-  return Math.round(n).toLocaleString();
-}
-
-function fmtHours(n: number): string {
-  return (Math.round(n * 10) / 10).toLocaleString();
-}
+import {
+  fmtInt,
+  fmtHours,
+  fmtMoneyCompact,
+  deriveAccessLadder,
+  SpineRung,
+  CapacityDemandGate,
+} from "./accessLadder";
 
 function asLines(raw: number | string[] | undefined): string[] {
   return Array.isArray(raw) ? raw : [];
@@ -59,138 +51,9 @@ interface StepPlanningProps {
   stepNumber: number;
 }
 
-/** One rung on the step-down spine. A rung with no real value yet reads as a
- * clean "Not set yet" prompt, never a fabricated number. */
-function SpineRung({
-  value,
-  unit,
-  label,
-  caption,
-  isSet,
-  emptyHint,
-  anchor,
-  payoff,
-}: {
-  value: string;
-  unit: string;
-  label: string;
-  caption: string;
-  isSet: boolean;
-  emptyHint: string;
-  anchor?: boolean;
-  payoff?: boolean;
-}) {
-  if (payoff) {
-    return (
-      <div className="rounded-xl bg-[#1A1A1A] p-5" data-testid="rung-planning-payoff">
-        <p className="text-[9px] font-bold uppercase tracking-[2px] text-white/40 mb-1">{label}</p>
-        {isSet ? (
-          <p className="font-abridge text-3xl md:text-4xl text-[#EA2C00] font-bold" data-testid="text-planning-prize">
-            {value} <span className="text-sm font-normal text-white/50">{unit}</span>
-          </p>
-        ) : (
-          <p className="text-sm text-white/60" data-testid="text-planning-prize-empty">{emptyHint}</p>
-        )}
-        <p className="text-[11px] text-white/50 mt-2 leading-relaxed">{caption}</p>
-      </div>
-    );
-  }
-
-  return (
-    <div
-      className={`rounded-lg p-4 border ${anchor ? "bg-[#FFF6F3] border-[#EA2C00]" : "bg-white border-[#E7E0D6]"}`}
-      data-testid={anchor ? "rung-planning-anchor" : undefined}
-    >
-      {anchor && (
-        <span className="inline-block text-[8px] font-bold uppercase tracking-wide text-white bg-[#EA2C00] px-2 py-0.5 rounded-full mb-2">
-          The first domino
-        </span>
-      )}
-      <div className="flex items-baseline justify-between gap-3">
-        <p className="text-[12px] font-semibold text-[#3A3A3A]">{label}</p>
-        {isSet ? (
-          <p className={`font-abridge text-2xl font-bold ${anchor ? "text-[#EA2C00]" : "text-[#1A1A1A]"}`}>
-            {value} <span className="text-[11px] font-normal text-[#8C8C8C]">{unit}</span>
-          </p>
-        ) : (
-          <p className="text-[11px] font-semibold text-[#B4B4B4]">Not set yet</p>
-        )}
-      </div>
-      <p className="text-[11px] text-[#8C8C8C] mt-1 leading-relaxed">{isSet ? caption : emptyHint}</p>
-    </div>
-  );
-}
-
 /** Small uppercase field label, matched to StepCommit's own `Field`. */
 function FieldLabel({ children }: { children: React.ReactNode }) {
   return <p className="text-[8px] font-bold uppercase tracking-wide text-[#8C8C8C] mb-1">{children}</p>;
-}
-
-/** The one rung on the spine that is NOT a multiplication: capacity meets
- * demand, and realized visits is the SMALLER of the two, never the sum. It
- * shows both facts side by side, then the slice that actually converts, so a
- * large capacity collapsing to a small realized count reads as a ceiling, not
- * a cliff or a lost multiplication. */
-function CapacityDemandGate({
-  capacityVisits,
-  demandCeiling,
-  realizedVisits,
-  binding,
-  bothSet,
-  emptyHint,
-}: {
-  capacityVisits: number;
-  demandCeiling: number;
-  realizedVisits: number;
-  binding: "capacity" | "demand" | "none";
-  bothSet: boolean;
-  emptyHint: string;
-}) {
-  const explain =
-    binding === "demand"
-      ? `Only ${fmtInt(realizedVisits)} of the ${fmtInt(capacityVisits)} capacity has demand behind it. Demand is the ceiling, so the rest books nothing yet.`
-      : binding === "capacity"
-        ? `Demand outruns the capacity you have, so every one of the ${fmtInt(realizedVisits)} visits you can staff converts. Capacity is the limiter here.`
-        : "Set both capacity and demand to see how much actually converts.";
-
-  return (
-    <div className="rounded-lg border border-[#E7E0D6] bg-[#F4F0EA] p-4" data-testid="rung-planning-gate">
-      <div className="flex items-center gap-2 mb-3">
-        <span className="inline-block text-[8px] font-bold uppercase tracking-wide text-white bg-[#1A1A1A] px-2 py-0.5 rounded-full">
-          The gate
-        </span>
-        <p className="text-[12px] font-semibold text-[#1A1A1A]">Demand decides how much converts</p>
-      </div>
-
-      {bothSet ? (
-        <>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <FieldLabel>Capacity you created</FieldLabel>
-              <p className="font-abridge text-2xl font-bold text-[#1A1A1A]" data-testid="text-planning-gate-capacity">
-                {fmtInt(capacityVisits)} <span className="text-[11px] font-normal text-[#8C8C8C]">visits / yr</span>
-              </p>
-            </div>
-            <div>
-              <FieldLabel>Real demand waiting</FieldLabel>
-              <p className="font-abridge text-2xl font-bold text-[#1A1A1A]" data-testid="text-planning-gate-demand">
-                {fmtInt(demandCeiling)} <span className="text-[11px] font-normal text-[#8C8C8C]">visits</span>
-              </p>
-            </div>
-          </div>
-          <div className="mt-3 pt-3 border-t border-[#E0D9CE]">
-            <FieldLabel>Realized visits, the smaller of the two</FieldLabel>
-            <p className="font-abridge text-2xl font-bold text-[#EA2C00]" data-testid="text-planning-gate-realized">
-              {fmtInt(realizedVisits)} <span className="text-[11px] font-normal text-[#8C8C8C]">realized visits / yr</span>
-            </p>
-            <p className="text-[11px] text-[#8C8C8C] mt-1 leading-relaxed" data-testid="text-planning-gate-explain">{explain}</p>
-          </div>
-        </>
-      ) : (
-        <p className="text-[11px] text-[#8C8C8C] leading-relaxed">{emptyHint}</p>
-      )}
-    </div>
-  );
 }
 
 const PHASE_META: Record<PlanPhaseId, { label: string; intent: string; signalLabel: string }> = {
@@ -236,24 +99,29 @@ export default function StepPlanning({
   const chain = computeAccessChain(baseline, values, 1);
   const access = combined?.byGoal.access;
 
-  const providersInScope = chain.scope.providersInScope;
-  const minutes = chain.capacity.minutesSavedPerNote;
-  const visitLen = chain.capacity.visitLengthMinutes;
-  const freedHrsPerProviderWk = providersInScope > 0 ? chain.capacity.freedHoursTotal / providersInScope / 52 : 0;
-  // Capacity is ALREADY directed-share adjusted: computeAccessCapacity prices
-  // capacity off freedHoursToAccess = freedHoursTotal * (share directed to
-  // access), never gross freed hours. `directedSharePct` is that same D3 share
-  // (after any cross-goal scaling), surfaced so the rung can name it out loud
-  // and the number can never look like "all freed time converted".
-  const capacityVisits = chain.capacity.capacityVisits;
-  const directedSharePct = chain.capacity.effectiveSharePct;
-  const demandCeiling = chain.demand.demandCeiling;
-  const realizedVisits = access?.totalCount ?? chain.payoff.realizedVisits;
-  // Which side of the ceiling actually limits the outcome, straight off the
-  // chain, so the gate rung and the payoff can never disagree.
-  const binding = chain.payoff.binding;
-  const prize = access?.totalMargin ?? 0;
-  const marginPerVisit = realizedVisits > 0 ? prize / realizedVisits : chain.payoff.blendedMarginUsed;
+  // The whole spine, derived once from the SHARED ladder (see accessLadder.ts)
+  // so Planning shows the exact same rung order, first domino, gate, and
+  // numbers Build the case assembles. Only the realized-visit COUNT and the
+  // dollar PRIZE read from the combined engine result (this priority's
+  // realization-applied figures); every other rung comes straight off the raw
+  // access chain, exactly as Build the case's live chain does.
+  const ladder = deriveAccessLadder(chain, {
+    realizedVisits: access?.totalCount ?? chain.payoff.realizedVisits,
+    prize: access?.totalMargin ?? 0,
+  });
+  const {
+    providersInScope,
+    minutes,
+    visitLen,
+    freedHrsPerProviderWk,
+    capacityVisits,
+    directedSharePct,
+    demandCeiling,
+    realizedVisits,
+    binding,
+    prize,
+    marginPerVisit,
+  } = ladder;
 
   const lines = !chain.scope.enterprise ? asLines(values.accessLines) : [];
   const targetMonth = totalMonths > 0 ? Math.round(totalMonths) : 9;
