@@ -3,6 +3,7 @@ import type { AttainState, AttainSetting, GoalId } from "./attainTypes";
 import type { AttainBaseline, LeverValues, RealizationByGoal } from "./attainLevers";
 import type { Commitment, CommitmentSignal, GoalOwner, SignalCadence } from "@/pages/attain/steps/StepCommit";
 import type { ProgressEntry } from "./attainProgress";
+import type { AttainPlanning } from "./attainPlanning";
 
 /**
  * Save-and-return for the Attain flow.
@@ -75,6 +76,13 @@ export interface AttainSaveState {
    * be a cadence chosen per signal. Every committed signal's "next check
    * due" (Progress tab, PDF) derives off this single value. */
   planCadence: SignalCadence;
+  /** The rebuilt "Planning" step's editable layer for the outpatient Access
+   * plan (per-phase owners/signal-targets and one optional partner risk).
+   * OPTIONAL and additive: an older v3 link never carried it and still
+   * decodes cleanly (see `isWellFormedSaveState`), so no version bump is
+   * needed. `undefined` simply means "no phase overrides", which every
+   * downstream resolver already treats as fall-back-to-derived. */
+  planning?: AttainPlanning;
 }
 
 const VALID_SETTINGS: AttainSetting[] = ["outpatient", "ed", "inpatient", "nursing"];
@@ -127,6 +135,19 @@ function isWellFormedCommitment(v: unknown): v is Commitment {
   );
 }
 
+/** The Planning step's editable layer — every field optional, each a plain
+ * string map or a single string, so a partial or absent blob is valid; only
+ * an actively wrong-typed value fails. */
+function isWellFormedPlanning(v: unknown): v is AttainPlanning {
+  if (!isPlainObject(v)) return false;
+  const stringRecordOk = (r: unknown): boolean =>
+    r === undefined || (isPlainObject(r) && Object.values(r).every((x) => typeof x === "string"));
+  if (!stringRecordOk(v.phaseOwners)) return false;
+  if (!stringRecordOk(v.phaseSignalTargets)) return false;
+  if (v.partnerRisk !== undefined && typeof v.partnerRisk !== "string") return false;
+  return true;
+}
+
 /** Structural validation only — this never throws, and never trusts a field
  * whose shape doesn't match what AttainFlow expects, even if the JSON
  * parsed cleanly (a hand-edited or truncated URL param is still valid
@@ -157,6 +178,11 @@ function isWellFormedSaveState(v: unknown): v is AttainSaveState {
   if (typeof v.freedTimeSplit !== "number") return false;
   if (!isPlainObject(v.realizationByGoal)) return false;
   if (!isValidCadence(v.planCadence)) return false;
+  // `planning` is optional and additive — only shape-checked when present, so
+  // an older v3 link (which never carried it) still decodes. A malformed
+  // `planning` blob degrades to "start fresh", the same policy as every other
+  // field, rather than being trusted blind.
+  if (v.planning !== undefined && !isWellFormedPlanning(v.planning)) return false;
   return true;
 }
 
