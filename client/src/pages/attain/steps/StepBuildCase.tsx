@@ -7,7 +7,7 @@ import type { AttainSetting, GoalId } from "@/lib/attain/attainTypes";
 import AccessDecisionChain from "./AccessDecisionChain";
 import EdAccessDecisionChain from "./EdAccessDecisionChain";
 import RevenueLadderChain from "./RevenueLadderChain";
-import InpatientRevenueDecisionChain from "./InpatientRevenueDecisionChain";
+import InpatientRevenueLadderChain from "./InpatientRevenueLadderChain";
 import WorkforceLadderChain from "./WorkforceLadderChain";
 import QualityLadderChain from "./QualityLadderChain";
 import CapacityLadderChain from "./CapacityLadderChain";
@@ -139,7 +139,11 @@ export default function StepBuildCase({
   // adjustment) via `pathsAvailableFor`, but the same shape and shared
   // engine. Inpatient revenue is its own separate mechanism.
   const isRevenueLadder = goal === "revenue" && (setting === "outpatient" || setting === "ed");
-  const isIpRevenueChain = goal === "revenue" && setting === "inpatient";
+  // Inpatient revenue rides the SAME converging revenue ladder shape, on its
+  // own genuinely different mechanisms (DRG capture, CDI query efficiency,
+  // observation-status defense) via InpatientRevenueLadderChain. It is a ladder
+  // for the teach/progress framing below, exactly like outpatient/ED revenue.
+  const isIpRevenueLadder = goal === "revenue" && setting === "inpatient";
   const result = combined?.byGoal[goal];
   const contributionFor = (id: string) => result?.perLever.find((p) => p.id === id);
 
@@ -184,7 +188,7 @@ export default function StepBuildCase({
   // single gated ladder like access, reconciled to Explore's own
   // `nursingOvertime` driver.
   const isCapacityLadder = goal === "capacity" && setting === "nursing";
-  const isLadder = isAccessLadder || isEdAccessLadder || isRetentionLadder || isRevenueLadder || isQualityLadder || isCapacityLadder;
+  const isLadder = isAccessLadder || isEdAccessLadder || isRetentionLadder || isRevenueLadder || isIpRevenueLadder || isQualityLadder || isCapacityLadder;
 
   return (
     <div>
@@ -202,7 +206,7 @@ export default function StepBuildCase({
               ? "Assemble the ladder from the top down. One number starts it, freed time becomes throughput, and the diagnosis decides how much of the leak is yours to recover."
               : isRetentionLadder
                 ? "You want lower voluntary turnover and a better clinician experience. Work backward: one number starts it, each rung multiplies, and burnout decides how much you can avoid."
-                : isRevenueLadder
+                : isRevenueLadder || isIpRevenueLadder
                   ? "One lever starts it, complete documentation at the point of care, and it feeds several revenue paths. For each path you pick, the documentation decides how much you can actually capture. The paths add into one prize."
                   : isQualityLadder
                     ? "One lever starts it, earlier and more complete risk documentation. It feeds several harm events. For each event you pick, only a defensible share is preventable, and the bundle you commit to earns it. The events add into one prize."
@@ -245,7 +249,7 @@ export default function StepBuildCase({
               ? "This is the full step-down, top to bottom. Every rung is part of the plan; set each one to your real numbers."
               : isRetentionLadder
                 ? "Lower voluntary turnover and a better clinician experience. This is the full step-down, top to bottom; set each rung to your real numbers."
-                : isRevenueLadder
+                : isRevenueLadder || isIpRevenueLadder
                   ? "One lever, several paths, one converged prize. Pick the paths you are chasing and set each one to your real numbers."
                   : isQualityLadder
                     ? "One lever, several harm events, one converged prize. Pick the events you are preventing and commit each one's bundle to your real numbers."
@@ -322,8 +326,8 @@ export default function StepBuildCase({
             onChangeValue={(leverId, value) => onChangeLeverValue("revenue", leverId, value)}
             realizationPct={realizationPct}
           />
-        ) : isIpRevenueChain ? (
-          <InpatientRevenueDecisionChain
+        ) : isIpRevenueLadder ? (
+          <InpatientRevenueLadderChain
             baseline={baseline}
             values={values}
             onChangeValue={(leverId, value) => onChangeLeverValue("revenue", leverId, value)}

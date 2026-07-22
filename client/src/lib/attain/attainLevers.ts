@@ -903,8 +903,8 @@ export const LEVERS: Record<GoalId, Lever[]> = {
  * Query Efficiency, and Observation/IP Status Defense, a genuinely
  * different mechanism from outpatient/ED (documentation-driven case weight
  * and query/downgrade cost avoidance, not HCC/wRVU/denials). Rebuilt as its
- * own THREE-PATH decision chain, rendered bespoke on Build the case
- * (`InpatientRevenueDecisionChain.tsx`), not through the generic lever
+ * own THREE-PATH converging ladder, rendered bespoke on Build the case
+ * (`InpatientRevenueLadderChain.tsx`), not through the generic lever
  * renderer - same convention as outpatient/ED revenue. This catalog entry
  * exists so Commit and the Attainment hub, which walk every goal's
  * `leversFor` generically, keep working: one row per decision, ids matching
