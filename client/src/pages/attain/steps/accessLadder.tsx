@@ -4,6 +4,7 @@ import type { WorkforceChainResult } from "@/lib/attain/attainWorkforce";
 import { WORKFORCE_IMPACT_CEILING_PP } from "@/lib/attain/attainWorkforce";
 import type { AttainBaseline } from "@/lib/attain/attainLevers";
 import type { AttainSetting } from "@/lib/attain/attainTypes";
+import type { EdAccessChainResult, EdAccessBinding } from "@/lib/attain/attainEdAccess";
 
 /**
  * THE SHARED ACCESS LADDER.
@@ -296,6 +297,194 @@ export interface RetentionLadderModel {
   replacementCost: number;
   /** The derived dollar prize. */
   prize: number;
+}
+
+/**
+ * THE SHARED ED ACCESS LADDER, built beside the others so ED access tells the
+ * SAME step-down story from one abstraction, and Build the case and Planning
+ * can never diverge on its numbers.
+ *
+ * ED access is the ARCHETYPE for the diagnosis rung. It opens on the same
+ * first domino as every access/retention ladder, minutes saved per note, but
+ * reads them into the ED's own mechanism: freed charting time buys a faster
+ * door-to-provider, and a share of it committed to throughput mechanically
+ * affords a number of LWBS patients this plan can bring back. THE GATE is the
+ * load-bearing rung: of the patients who leave without being seen, only the
+ * share whose leak is documentation-choked throughput (Abridge can move that)
+ * is recoverable; the share that leaves for short staffing or no beds is not
+ * Abridge's to fix. Realized recovery is the smaller of that recoverable pool
+ * and the freed-time capacity. The prize prices both legs on contribution
+ * margin: recovered visits x margin/visit, plus bed/payer-capped captured
+ * admissions x margin/admission.
+ *
+ * Every number reconciles to `computeEdAccessChain` (attainEdAccess.ts), which
+ * reconciles in turn to Explore's own `edLwbs`/`admissionCapture` drivers. The
+ * realized COUNTS and the dollar PRIZE are passed in so each surface can supply
+ * its own realization-applied figures, exactly like `deriveAccessLadder`.
+ */
+export interface EdAccessLadderModel {
+  /** The first domino: minutes saved per note, shared with every ladder. */
+  minutes: number;
+  providersInScope: number;
+  visitsInScope: number;
+  /** Freed hours per provider per week, the same computation as access. */
+  freedHrsPerProviderWk: number;
+  /** The share of that freed hour committed to faster throughput. */
+  throughputSharePct: number;
+  hoursPerRecovery: number;
+  /** Visits/yr the committed freed time can mechanically afford to recover. */
+  mechanicalCapacity: number;
+  lwbsRatePct: number;
+  /** The full LWBS pool, before the diagnosis. */
+  fullPool: number;
+  /** THE DIAGNOSIS: the documentation/throughput-caused share of that pool. */
+  docCausedSharePct: number;
+  /** The recoverable pool = fullPool x docCausedShare. The gate's ceiling. */
+  recoverablePool: number;
+  /** MIN(recoverablePool, mechanicalCapacity), the visits that convert. */
+  realizedRecovered: number;
+  binding: EdAccessBinding;
+  admissionRatePct: number;
+  admissionRealizationPct: number;
+  capturedAdmissions: number;
+  marginPerVisit: number;
+  admissionMargin: number;
+  visitValue: number;
+  admissionValue: number;
+  /** The derived dollar prize, both legs on contribution margin. */
+  prize: number;
+  /** Who has to act for the freed time to actually shorten door-to-provider. */
+  whoActs: string;
+}
+
+/** Who has to act on ED access, shared verbatim across Build and Planning: the
+ * freed time only recovers a patient if it actually shortens the walk from
+ * door to provider, which is ED operations' to hold, not Abridge's. */
+export const ED_ACCESS_WHO_ACTS = "ED operations, triage-to-provider flow";
+
+/** Derives the shared ED access ladder model. Operational rungs come off the
+ * raw chain; the realized COUNTS and the dollar PRIZE are passed in so each
+ * surface supplies its own realization-applied figures, exactly as
+ * `deriveAccessLadder` does. */
+export function deriveEdAccessLadder(
+  chain: EdAccessChainResult,
+  opts: { realizedRecovered: number; capturedAdmissions: number; prize: number },
+): EdAccessLadderModel {
+  const providersInScope = chain.scope.providersInScope;
+  const freedHrsPerProviderWk =
+    providersInScope > 0 ? chain.mechanism.freedHoursTotal / providersInScope / 52 : 0;
+  return {
+    minutes: chain.mechanism.minutesSavedPerNote,
+    providersInScope,
+    visitsInScope: chain.scope.visitsInScope,
+    freedHrsPerProviderWk,
+    throughputSharePct: chain.mechanism.throughputSharePct,
+    hoursPerRecovery: chain.mechanism.hoursPerRecovery,
+    mechanicalCapacity: chain.mechanism.mechanicallyEnabledRecovered,
+    lwbsRatePct: chain.pool.lwbsRatePct,
+    fullPool: chain.pool.poolVisits,
+    docCausedSharePct: chain.pool.docCausedSharePct,
+    recoverablePool: chain.pool.recoverablePool,
+    realizedRecovered: opts.realizedRecovered,
+    binding: chain.recovery.binding,
+    admissionRatePct: chain.recovery.admissionRatePct,
+    admissionRealizationPct: chain.recovery.admissionRealizationPct,
+    capturedAdmissions: opts.capturedAdmissions,
+    marginPerVisit: chain.payoff.marginPerVisit,
+    admissionMargin: chain.payoff.admissionMargin,
+    visitValue: chain.payoff.visitValue,
+    admissionValue: chain.payoff.admissionValue,
+    prize: opts.prize,
+    whoActs: ED_ACCESS_WHO_ACTS,
+  };
+}
+
+/**
+ * THE ED ACCESS DIAGNOSIS GATE, the load-bearing rung, shared verbatim between
+ * Build the case and Planning. It is the ED analog of `CapacityDemandGate`:
+ * two independently-sourced ceilings side by side (the documentation-caused
+ * recoverable pool from the diagnosis, and the freed-time capacity from the
+ * first domino), then the realized recovery, the smaller of the two. The
+ * diagnosis is stated out loud so the CFO sees exactly what stays OUT of the
+ * number: the LWBS that leaves for staffing or beds, which Abridge cannot
+ * touch.
+ */
+export function EdAccessDiagnosisGate({
+  fullPool,
+  docCausedSharePct,
+  recoverablePool,
+  mechanicalCapacity,
+  realizedRecovered,
+  binding,
+  whoActs,
+  bothSet,
+  emptyHint,
+  showHeader = true,
+}: {
+  fullPool: number;
+  docCausedSharePct: number;
+  recoverablePool: number;
+  mechanicalCapacity: number;
+  realizedRecovered: number;
+  binding: EdAccessBinding;
+  whoActs: string;
+  bothSet: boolean;
+  emptyHint: string;
+  showHeader?: boolean;
+}) {
+  const staffingShare = Math.max(0, 100 - Math.round(docCausedSharePct));
+  const explain =
+    binding === "pool"
+      ? `The charting-caused pool is the limiter. Every LWBS patient documentation delays can reach is reached; the other ${staffingShare}% leaves for staffing or beds, which this plan cannot move, so it stays out of the number.`
+      : binding === "throughput"
+        ? `Freed throughput time is the limiter. Charting delays cause more LWBS than this plan's committed time can reach yet, so ${fmtInt(recoverablePool)} recoverable collapses to ${fmtInt(realizedRecovered)}.`
+        : "Diagnose the leak and commit freed time to throughput to see how much actually converts.";
+
+  return (
+    <div className="rounded-lg border border-[#E7E0D6] bg-[#F4F0EA] p-4" data-testid="rung-planning-ed-gate">
+      {showHeader && (
+        <div className="flex items-center gap-2 mb-3">
+          <span className="inline-block text-[8px] font-bold uppercase tracking-wide text-white bg-[#1A1A1A] px-2 py-0.5 rounded-full">
+            The gate
+          </span>
+          <p className="text-[12px] font-semibold text-[#1A1A1A]">Diagnose the leak: is it Abridge's to fix?</p>
+        </div>
+      )}
+
+      {bothSet ? (
+        <>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <LadderFieldLabel>LWBS charting can move</LadderFieldLabel>
+              <p className="font-abridge text-2xl font-bold text-[#1A1A1A]" data-testid="text-planning-ed-gate-recoverable">
+                {fmtInt(recoverablePool)} <span className="text-[11px] font-normal text-[#8C8C8C]">of {fmtInt(fullPool)} LWBS</span>
+              </p>
+              <p className="text-[10.5px] text-[#8C8C8C] mt-0.5">{Math.round(docCausedSharePct)}% charting-caused, the rest is staffing or beds</p>
+            </div>
+            <div>
+              <LadderFieldLabel>Freed-time capacity</LadderFieldLabel>
+              <p className="font-abridge text-2xl font-bold text-[#1A1A1A]" data-testid="text-planning-ed-gate-capacity">
+                {fmtInt(mechanicalCapacity)} <span className="text-[11px] font-normal text-[#8C8C8C]">patients / yr</span>
+              </p>
+              <p className="text-[10.5px] text-[#8C8C8C] mt-0.5">what the committed freed time affords</p>
+            </div>
+          </div>
+          <div className="mt-3 pt-3 border-t border-[#E0D9CE]">
+            <LadderFieldLabel>Realized recovered visits, the smaller of the two</LadderFieldLabel>
+            <p className="font-abridge text-2xl font-bold text-[#EA2C00]" data-testid="text-planning-ed-gate-realized">
+              {fmtInt(realizedRecovered)} <span className="text-[11px] font-normal text-[#8C8C8C]">recovered visits / yr</span>
+            </p>
+            <p className="text-[11px] text-[#8C8C8C] mt-1 leading-relaxed" data-testid="text-planning-ed-gate-explain">{explain}</p>
+            <p className="text-[11px] text-[#8C8C8C] mt-2 leading-relaxed">
+              <span className="font-semibold text-[#3A3A3A]">Who acts:</span> {whoActs}. The freed time has to actually shorten door-to-provider.
+            </p>
+          </div>
+        </>
+      ) : (
+        <p className="text-[11px] text-[#8C8C8C] leading-relaxed">{emptyHint}</p>
+      )}
+    </div>
+  );
 }
 
 /** Derives the shared retention ladder model. Operational rungs (freed hours,
