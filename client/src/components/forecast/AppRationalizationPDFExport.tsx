@@ -337,15 +337,15 @@ function ConsolidationPage({ items, orgName, abridgePrice, totalPages }: {
       <PageHeader meta={`Consolidation · ${orgName || "Prospective partner"}`} />
       <Text style={s.eyebrow}>The consolidation</Text>
       <Text style={s.title}>Your stack, consolidated onto Abridge</Text>
-      <Text style={s.intro}>{`${n} documentation-adjacent tools cost ${short(net.stackTotal)} a year today. Most of that work overlaps what Abridge already does, so it consolidates onto one platform.`}</Text>
+      <Text style={s.intro}>{`You're spending ${short(net.stackTotal)} a year on ${n} documentation tools. Most of what they do overlaps what Abridge already does, so ${short(net.sunset)} of that spend can retire onto one platform.`}</Text>
 
       <HeroBand metrics={metrics} />
       <Waterfall items={items} />
 
       <Insight label="What changes">
-        {`${n} vendors, ${n} contracts, and ${n} renewal cycles become `}
-        <Text style={s.insightEm}>one platform on a single agreement</Text>
-        {". Fewer integrations to maintain, one roadmap to plan against, and one team to hold accountable."}
+        {"This isn't a discount you negotiate for. It's "}
+        <Text style={s.insightEm}>spend you stop carrying</Text>
+        {`: ${n} contracts, ${n} renewals, and ${n} integrations collapse into one platform on one agreement.`}
       </Insight>
 
       <Text style={s.sechead}>Your stack</Text>
@@ -372,15 +372,15 @@ function TimingPage({ items, orgName, termYears, totalPages }: {
       <PageHeader meta={`The timing · ${orgName || "Prospective partner"}`} />
       <Text style={s.eyebrow}>The timing</Text>
       <Text style={s.title}>Cumulative savings, over time</Text>
-      <Text style={s.intro}>Each tool starts saving the moment it sunsets. The earlier a contract comes off, the more you capture over the next three years.</Text>
+      <Text style={s.intro}>Savings don't begin the day you decide; they begin when each tool actually comes off. The sooner you retire them, the more you capture.</Text>
 
       <HeroBand metrics={metrics} />
       <CumulativeCurve items={items} termYears={termYears} />
 
       <Insight label="The read">
-        {`Moving the earliest renewals forward captures about `}
-        <Text style={s.insightEm}>{`${short(cs.gap)} more`}</Text>
-        {` over ${termYears} years. The plan follows your own contract calendar, so nothing has to move all at once.`}
+        {`Every month a tool stays live is margin you don't get back. Pulling your earliest renewals forward is worth about `}
+        <Text style={s.insightEm}>{short(cs.gap)}</Text>
+        {` over ${termYears} years, and it follows your own contract calendar, so nothing moves all at once.`}
       </Insight>
 
       <Text style={s.sechead}>Why each capability consolidates onto Abridge</Text>
