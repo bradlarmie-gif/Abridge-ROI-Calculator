@@ -35,10 +35,10 @@ describe("appRationalizationCalc", () => {
     expect(computeTotals([])).toEqual({ stackTotal: 0, toAbridge: 0, stays: 0, pctToAbridge: 0 });
   });
   it("makeItem uses a per-category default displace share, a 12-month contract, and the given category", () => {
-    expect(makeItem("id1", "cds")).toMatchObject({ id: "id1", category: "cds", coveragePct: 90, annualSpend: 0, contractMonths: 12, sunsetMonths: 12 });
-    expect(makeItem("id2", "ambientDoc").coveragePct).toBe(100);
+    expect(makeItem("id1", "cds")).toMatchObject({ id: "id1", category: "cds", coveragePct: 40, annualSpend: 0, contractMonths: 12, sunsetMonths: 12 });
+    expect(makeItem("id2", "ambientDoc").coveragePct).toBe(90);
     expect(makeItem("id3", "dictation").coveragePct).toBe(80);
-    expect(makeItem("id4", "preChartRisk").coveragePct).toBe(60);
+    expect(makeItem("id4", "preChartRisk").coveragePct).toBe(45);
   });
   it("categoryLabel resolves known ids", () => {
     expect(categoryLabel("cds")).toBe("Clinical decision support");

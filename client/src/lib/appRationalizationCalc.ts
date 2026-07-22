@@ -133,17 +133,22 @@ export function categoryLabel(id: AppRatCategoryId): string {
 
 // Starting displace share per capability: how much of that tool's spend Abridge
 // can typically take on. The rep can still adjust per tool.
+// Conservative starting shares: a defensible floor a prospect won't argue down,
+// which the rep can raise per tool. Dictation is held at 80 per internal guidance.
+// Reference tools (CDS, clinical evidence) are deliberately low since Abridge
+// surfaces context rather than replacing a knowledge base. Validate against the
+// per-capability rationale before treating these as fact.
 const CATEGORY_DEFAULT_COVERAGE: Record<AppRatCategoryId, number> = {
-  ambientDoc:       100,
+  ambientDoc:       90,
   dictation:        80,
-  scribe:           90,
-  cds:              90,
-  clinicalEvidence: 90,
-  transcription:    80,
-  preChartRisk:     60,
-  inEncounterCdi:   60,
-  postChartCoding:  60,
-  custom:           80,
+  scribe:           75,
+  cds:              40,
+  clinicalEvidence: 40,
+  transcription:    75,
+  preChartRisk:     45,
+  inEncounterCdi:   45,
+  postChartCoding:  45,
+  custom:           50,
 };
 
 export function makeItem(id: string, category: AppRatCategoryId): AppRatItem {

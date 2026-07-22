@@ -74,8 +74,8 @@ describe("Applications → popup → stack: end-to-end data flow", () => {
   });
 
   it("makeItem seeds the per-capability default displace and a 12-month contract", () => {
-    // ambient defaults to 100%, dictation to 80% (the modal seeds these before the rep touches the slider)
-    expect(makeItem("a", "ambientDoc").coveragePct).toBe(100);
+    // ambient defaults to 90%, dictation to 80% (conservative seeds before the rep touches the slider)
+    expect(makeItem("a", "ambientDoc").coveragePct).toBe(90);
     expect(makeItem("b", "dictation").coveragePct).toBe(80);
     expect(makeItem("c", "custom").sunsetMonths).toBe(12);
   });

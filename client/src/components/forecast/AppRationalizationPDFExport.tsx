@@ -378,9 +378,9 @@ function TimingPage({ items, orgName, termYears, totalPages }: {
       <CumulativeCurve items={items} termYears={termYears} />
 
       <Insight label="The read">
-        {`Every month a tool stays live is margin you don't get back. Pulling your earliest renewals forward is worth about `}
+        {`Each tool's savings begin the month it comes off, so the sequence sets the total. Taking your earliest renewals first is worth about `}
         <Text style={s.insightEm}>{short(cs.gap)}</Text>
-        {` over ${termYears} years, and it follows your own contract calendar, so nothing moves all at once.`}
+        {` over ${termYears} years, on your own contract calendar, so nothing moves all at once.`}
       </Insight>
 
       <Text style={s.sechead}>Why each capability consolidates onto Abridge</Text>
