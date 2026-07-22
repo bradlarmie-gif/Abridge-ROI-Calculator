@@ -607,7 +607,7 @@ describe("nursing burnout share is one consistent value across the engine and th
   it("the nursing retention world-card copy quotes the same 40%, not a different hand-picked number", () => {
     const content = CONTENT.nursing?.retention;
     expect(content).toBeDefined();
-    const burnoutCard = content!.worldCards.find((c) => c.k === "Attributed to burnout");
+    const burnoutCard = content!.worldCards.find((c) => c.k === "Burnout share of exits");
     expect(burnoutCard).toBeDefined();
     expect(burnoutCard!.n).toBe(`~${WORKFORCE_BURNOUT_SHARE_PCT.nursing}%`);
   });

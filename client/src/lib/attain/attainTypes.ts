@@ -49,7 +49,13 @@ export interface SettingGoalContent {
   thesis1: string;
   thesis2: string;
   p1Lead: string;
-  worldCards: { k: string; n: string; coral?: boolean; f: string }[];
+  /** `benchmark: true` marks a card whose number is an industry/typical
+   * benchmark, not the partner's own measured value (the app collects no
+   * baseline metric for these). The UI renders a visible "Benchmark" tag so
+   * a benchmark is never mistaken for a derived partner figure. The one
+   * derived card, scope, is injected by the renderer from the actual plan,
+   * not carried here. */
+  worldCards: { k: string; n: string; coral?: boolean; benchmark?: boolean; f: string }[];
   opportunity: string;
   trappedLabel: string;
   trappedSteps: string[];

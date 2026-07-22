@@ -577,16 +577,14 @@ export const SETTING_GOAL_MATRIX: Record<AttainSetting, GoalId[]> = {
 // ────────────────────────────────────────────────────────────────────────
 
 const outpatientAccess: SettingGoalContent = {
-  subtitle: "Cardiology & Orthopedics · 40 providers · Outpatient",
+  subtitle: "Outpatient",
   thesis1: "The capacity is already here.",
   thesis2: "This is the plan to convert it.",
   p1Lead:
-    "Meridian's cardiology and orthopedic providers are booking patients three weeks out while finishing each day with roughly two and a half hours of documentation. The demand is real and the backlog is real. The capacity to meet it already exists. Right now it is trapped in the note, and it leaves the building every evening as unpaid charting instead of as an open appointment.",
+    "Providers in this scope are booking patients weeks out while finishing each day with hours of documentation still to write. The demand is real and the backlog is real. The capacity to meet it already exists. Right now it is trapped in the note, and it leaves the building every evening as unpaid charting instead of as an open appointment.",
   worldCards: [
-    { k: "3rd-Next-Available", n: "18 days", coral: true, f: "Benchmark for active attention: 14+" },
-    { k: "Referral backlog", n: "~1,900", f: "Patients waiting to be seen" },
-    { k: "Freed / provider", n: "2.5 hrs/wk", f: "From 2 min saved per note" },
-    { k: "In scope", n: "40", f: "Providers · Cardiology & Ortho" },
+    { k: "3rd-next-available", n: "14+ days", benchmark: true, f: "Benchmark threshold for active attention" },
+    { k: "Time saved / note", n: "~2 min", benchmark: true, f: "Typical with ambient documentation" },
   ],
   opportunity:
     "You have the capacity. The schedule has not caught up yet. Converting even part of the freed time into open appointments turns a three-week wait and a 1,900-patient backlog into visits your providers can actually deliver. This plan is how that conversion happens, and how we hold it.",
@@ -615,7 +613,7 @@ const outpatientAccess: SettingGoalContent = {
     "Slots are actually opened on the template.",
     "Referrals and backlog are routed to fill them.",
   ],
-  bendsCloser: "Right now Meridian is behind on the first two. That is why the next page gives every link an owner and a date.",
+  bendsCloser: "The first two links are where plans like this usually slip, so every link below gets an owner and a date.",
   fragile:
     "Links 3 and 4 are flagged because they are where every access deal quietly dies. Relief is the default; access is a deliberate weekly decision. Freed time drifts to finish on time unless someone actively converts it into open slots. That conversion is yours, and it is the one thing this plan holds.",
   hardestTitle: "Routing Freed Time",
@@ -641,7 +639,7 @@ const outpatientAccess: SettingGoalContent = {
     "Did last month's ask get done? If yes, expand it. If no, escalate to the goal-owner.",
   ],
   renewal:
-    'The conversation is no longer "was it worth the price." It is "we set a 3,800-visit access goal together, we are 61% there and climbing, here is the runway on the rest." The capacity was always there. This is the plan that converted it. Price becomes progress.',
+    'The conversation is no longer "was it worth the price." It is "we set an access goal together, we are on our way and climbing, here is the runway on the rest." The capacity was always there. This is the plan that converted it. Price becomes progress.',
   ambition: [
     { key: "conservative", label: "Conservative", goalLabel: "Goal · $460K · 2,300 visits", usualLabel: "What usually happens · ~$180K", goalMargin: 460_000 },
     { key: "typical", label: "Typical", goalLabel: "Goal · $760K · 3,800 visits", usualLabel: "What usually happens · ~$300K", goalMargin: 760_000 },
@@ -652,16 +650,15 @@ const outpatientAccess: SettingGoalContent = {
 const outpatientRetentionPrize = retentionPrize("outpatient", 120);
 
 const outpatientRetention: SettingGoalContent = {
-  subtitle: "Primary Care & Specialty Clinics · 120 providers · Outpatient",
+  subtitle: "Outpatient",
   thesis1: "The relief is real.",
   thesis2: "This is the plan to make it stick.",
   p1Lead:
-    "Meridian's primary care and specialty providers are documenting one to two hours after every shift, most of it from home. Exit interviews name charting burden as a leading reason people leave. The relief Abridge creates is real and immediate. Whether it lasts, or gets quietly refilled by bigger panels and coverage gaps, is the difference between a number that holds and one that fades by month nine.",
+    "Providers in this scope are documenting for hours after every shift, most of it from home. Exit interviews name charting burden as a leading reason people leave. The relief Abridge creates is real and immediate. Whether it lasts, or gets quietly refilled by bigger panels and coverage gaps, is the difference between a number that holds and one that fades by month nine.",
   worldCards: [
-    { k: "Annual turnover", n: "14%", coral: true, f: "Benchmark: 10 to 12%" },
-    { k: "Attributed to burnout", n: "~40%", f: "Share of voluntary exits" },
-    { k: "After-hours doc", n: "1.8 hrs/day", f: "Evening & weekend charting" },
-    { k: "In scope", n: "120", f: "Providers · Primary & specialty care" },
+    { k: "Annual turnover", n: "10 to 12%", benchmark: true, f: "Benchmark range" },
+    { k: "Burnout share of exits", n: "~40%", benchmark: true, f: "Typical share attributed to burnout" },
+    { k: "Replacement cost / provider", n: "$250K to $500K", benchmark: true, f: "Typical cost to rehire" },
   ],
   opportunity:
     "The recovered time is worth more than a nicer evening. When after-hours charting falls and stays down, likelihood-to-stay rises and fewer providers reach the decision to leave. Each avoided departure is $250K to $500K you do not spend rehiring. The plan protects the relief so it converts into retention, not just a quieter month.",
@@ -690,7 +687,7 @@ const outpatientRetention: SettingGoalContent = {
     "Coverage gaps are backfilled so the burden does not quietly return.",
     "Likelihood-to-stay is pulsed in a short check, not once a year.",
   ],
-  bendsCloser: "Right now Meridian is slipping on the first. That is why the next page gives every link an owner and a date.",
+  bendsCloser: "The first link is where relief like this usually slips, so every link below gets an owner and a date.",
   fragile:
     "Links 3 and 4 are flagged because relief is easy to give and easy to take back. Bigger panels and unfilled shifts quietly refill the evening, and the retention gain evaporates before it ever shows up in turnover. Protecting the recovered time is the one thing this plan holds.",
   hardestTitle: "Protecting the Relief",
@@ -715,7 +712,7 @@ const outpatientRetention: SettingGoalContent = {
     "Did last month's ask get done? If yes, hold. If no, escalate to the goal-owner.",
   ],
   renewal:
-    'The conversation is no longer "was it worth the price." It is "we set out to avoid four departures, we are 58% there and holding the relief, here is the runway on the rest." The relief was always real. This is the plan that made it stick. Price becomes progress.',
+    'The conversation is no longer "was it worth the price." It is "we set out to avoid the departures burnout was driving, we are on our way and holding the relief, here is the runway on the rest." The relief was always real. This is the plan that made it stick. Price becomes progress.',
   ambition: [
     { key: "conservative", label: "Conservative", goalLabel: `Goal · ${fmtMoneyCompact(outpatientRetentionPrize.conservative.value)} · ${fmtOneDecimal(outpatientRetentionPrize.conservative.departures)} departures avoided`, usualLabel: `What usually happens · ~${fmtMoneyCompact(usualFraction(outpatientRetentionPrize.conservative.value))}`, goalMargin: outpatientRetentionPrize.conservative.value },
     { key: "typical", label: "Typical", goalLabel: `Goal · ${fmtMoneyCompact(outpatientRetentionPrize.typical.value)} · ${fmtOneDecimal(outpatientRetentionPrize.typical.departures)} departures avoided`, usualLabel: `What usually happens · ~${fmtMoneyCompact(usualFraction(outpatientRetentionPrize.typical.value))}`, goalMargin: outpatientRetentionPrize.typical.value },
@@ -724,16 +721,14 @@ const outpatientRetention: SettingGoalContent = {
 };
 
 const outpatientRevenue: SettingGoalContent = {
-  subtitle: "Cardiology · Endocrinology · Primary Care · 90 providers",
+  subtitle: "Outpatient",
   thesis1: "The work was already done.",
   thesis2: "This is the plan to capture it.",
   p1Lead:
-    "Meridian's providers are delivering complex care and documenting less of it than they perform. A visit that addressed three active problems gets coded as if it addressed one, because the note did not carry the detail the coder needed. The clinical work already happened. Whether it shows up on the claim is a documentation-to-coding handoff that mostly does not get watched.",
+    "Providers in this scope are delivering complex care and documenting less of it than they perform. A visit that addressed three active problems gets coded as if it addressed one, because the note did not carry the detail the coder needed. The clinical work already happened. Whether it shows up on the claim is a documentation-to-coding handoff that mostly does not get watched.",
   worldCards: [
-    { k: "Avg E/M level", n: "3.4", coral: true, f: "Specialty benchmark: 3.8" },
-    { k: "First-pass acceptance", n: "91%", f: "Clean-claim rate" },
-    { k: "Eligible encounters", n: "210K", f: "Per year, in scope" },
-    { k: "In scope", n: "90", f: "Providers · 3 specialties" },
+    { k: "Avg E/M level", n: "3.8", benchmark: true, f: "Specialty benchmark" },
+    { k: "First-pass acceptance", n: "95%+", benchmark: true, f: "Clean-claim benchmark" },
   ],
   opportunity:
     "This is not about coding more aggressively. It is about coding accurately for care that was delivered and is now documented. When the note carries the complexity, the coder can support the level and the claim reflects the visit. That gap, closed, is captured margin, counted once.",
@@ -762,7 +757,7 @@ const outpatientRevenue: SettingGoalContent = {
     "Provider queries close quickly rather than aging out.",
     "The captured level clears first-pass and is not downcoded on appeal.",
   ],
-  bendsCloser: "Right now Meridian is behind on the first two. That is why the next page gives every link an owner and a date.",
+  bendsCloser: "The first two links are where plans like this usually slip, so every link below gets an owner and a date.",
   fragile:
     "Links 3 and 4 are flagged because they are where completeness stops being revenue. Coders default to prior-year patterns and queries age out, so the documented complexity never reaches the claim. Acting on the fuller note is the one thing this plan holds. And to stay honest, the value is counted once: E/M level and wRVU lift monetize the same encounter, so only one is booked.",
   hardestTitle: "Getting the Coding to Act",
@@ -787,7 +782,7 @@ const outpatientRevenue: SettingGoalContent = {
     "Did last month's ask get done? If yes, expand. If no, escalate to the goal-owner.",
   ],
   renewal:
-    'The conversation is no longer "was it worth the price." It is "we set out to capture $2.1M in accurately coded care, we are 64% there, here is the runway on the rest." The work was always being done. This is the plan that captured it. Price becomes progress.',
+    'The conversation is no longer "was it worth the price." It is "we set out to capture the care that was already documented, we are on our way, here is the runway on the rest." The work was always being done. This is the plan that captured it. Price becomes progress.',
   ambition: [
     { key: "conservative", label: "Conservative", goalLabel: "Goal · $1.1M captured", usualLabel: "What usually happens · ~$380K", goalMargin: 1_100_000 },
     { key: "typical", label: "Typical", goalLabel: "Goal · $2.1M captured", usualLabel: "What usually happens · ~$700K", goalMargin: 2_100_000 },
@@ -796,16 +791,14 @@ const outpatientRevenue: SettingGoalContent = {
 };
 
 const edAccess: SettingGoalContent = {
-  subtitle: "Emergency Department · 55 providers · 24/7 coverage",
+  subtitle: "Emergency Department · 24/7 coverage",
   thesis1: "The beds are already turning.",
   thesis2: "This is the plan to stop losing patients at the door.",
   p1Lead:
-    "Meridian's ED providers are finishing charting well after the patient leaves, and the queue behind triage keeps growing while that note gets written. Patients who could have been seen leave without being seen instead. The capacity to see them exists in the same shift. Right now it leaves as after-encounter charting instead of as a patient actually brought back.",
+    "Providers in this scope are finishing charting well after the patient leaves, and the queue behind triage keeps growing while that note gets written. Patients who could have been seen leave without being seen instead. The capacity to see them exists in the same shift. Right now it leaves as after-encounter charting instead of as a patient actually brought back.",
   worldCards: [
-    { k: "LWBS rate", n: "8%", coral: true, f: "Benchmark for active attention: <5%" },
-    { k: "Door-to-provider", n: "48 min", f: "Median, all acuities" },
-    { k: "Freed / provider", n: "1.9 hrs/wk", f: "From 9 min saved per encounter" },
-    { k: "In scope", n: "55", f: "Providers · Emergency Department" },
+    { k: "LWBS rate", n: "<5%", benchmark: true, f: "Benchmark threshold for active attention" },
+    { k: "Door-to-provider", n: "<30 min", benchmark: true, f: "Typical median target" },
   ],
   opportunity:
     "You already have the shift coverage. The queue has not caught up yet. Converting even part of the freed charting time into faster throughput turns a rising left-without-being-seen rate into patients your team can actually treat. This plan is how that conversion happens, and how we hold it.",
@@ -834,7 +827,7 @@ const edAccess: SettingGoalContent = {
     "Fast-track or a second provider lane is actually opened during peak hours.",
     "Triage protocols route recoverable LWBS patients back before they leave.",
   ],
-  bendsCloser: "Right now Meridian is behind on the first two. That is why the next page gives every link an owner and a date.",
+  bendsCloser: "The first two links are where plans like this usually slip, so every link below gets an owner and a date.",
   fragile:
     "Links 3 and 4 are flagged because they are where every ED throughput plan quietly dies. A calmer shift is the default; faster throughput is a deliberate hourly decision. Freed time drifts to catching up on the queue unless someone actively converts it into an open lane. That conversion is yours, and it is the one thing this plan holds.",
   hardestTitle: "Routing Freed Time to Throughput",
@@ -870,16 +863,15 @@ const edAccess: SettingGoalContent = {
 const edRetentionPrize = retentionPrize("ed", 55);
 
 const edRetention: SettingGoalContent = {
-  subtitle: "Emergency Department · 55 providers · 24/7 coverage",
+  subtitle: "Emergency Department · 24/7 coverage",
   thesis1: "The relief is real.",
   thesis2: "This is the plan to make it stick.",
   p1Lead:
-    "Meridian's ED providers are finishing charts hours after the shift ends, often from the parking lot or from home. Exit interviews name charting burden and shift intensity as leading reasons people leave emergency medicine. The relief Abridge creates is real and immediate. Whether it lasts, or gets quietly refilled by heavier shift loads, is the difference between a number that holds and one that fades by month nine.",
+    "Providers in this scope are finishing charts hours after the shift ends, often from the parking lot or from home. Exit interviews name charting burden and shift intensity as leading reasons people leave emergency medicine. The relief Abridge creates is real and immediate. Whether it lasts, or gets quietly refilled by heavier shift loads, is the difference between a number that holds and one that fades by month nine.",
   worldCards: [
-    { k: "Annual turnover", n: "18%", coral: true, f: "Benchmark: 12 to 15%" },
-    { k: "Attributed to burnout", n: "~50%", f: "Share of voluntary exits" },
-    { k: "After-shift doc", n: "1.5 hrs/shift", f: "Post-shift charting" },
-    { k: "In scope", n: "55", f: "Providers · Emergency Department" },
+    { k: "Annual turnover", n: "12 to 15%", benchmark: true, f: "Benchmark range" },
+    { k: "Burnout share of exits", n: "~50%", benchmark: true, f: "Typical share attributed to burnout" },
+    { k: "Replacement cost / provider", n: "$300K to $600K", benchmark: true, f: "Typical to rehire and cover" },
   ],
   opportunity:
     "The recovered time is worth more than a shorter drive home. When after-shift charting falls and stays down, likelihood-to-stay rises and fewer providers reach the decision to leave emergency medicine. Each avoided departure is $300K to $600K you do not spend rehiring and covering with locums. The plan protects the relief so it converts into retention, not just a quieter month.",
@@ -908,7 +900,7 @@ const edRetention: SettingGoalContent = {
     "Coverage gaps are backfilled with locums or float staff so the burden does not quietly return.",
     "Likelihood-to-stay is pulsed in a short check, not once a year.",
   ],
-  bendsCloser: "Right now Meridian is slipping on the first. That is why the next page gives every link an owner and a date.",
+  bendsCloser: "The first link is where relief like this usually slips, so every link below gets an owner and a date.",
   fragile:
     "Links 3 and 4 are flagged because relief is easy to give and easy to take back. Heavier shift assignments and unfilled lines quietly refill the after-shift load, and the retention gain evaporates before it ever shows up in turnover. Protecting the recovered time is the one thing this plan holds.",
   hardestTitle: "Protecting the Relief",
@@ -942,16 +934,14 @@ const edRetention: SettingGoalContent = {
 };
 
 const edRevenue: SettingGoalContent = {
-  subtitle: "Emergency Department · 55 providers · 24/7 coverage",
+  subtitle: "Emergency Department · 24/7 coverage",
   thesis1: "The work was already done.",
   thesis2: "This is the plan to capture it.",
   p1Lead:
-    "Meridian's ED providers are managing multiple concurrent problems per encounter and documenting less of that complexity than they actually perform, especially on high-acuity charts written between patients. A visit that involved a real medical-decision-making workup gets coded lower because the note did not carry the detail the coder needed. The clinical work already happened. Whether it shows up on the claim is a documentation-to-coding handoff that mostly does not get watched.",
+    "Providers in this scope are managing multiple concurrent problems per encounter and documenting less of that complexity than they actually perform, especially on high-acuity charts written between patients. A visit that involved a real medical-decision-making workup gets coded lower because the note did not carry the detail the coder needed. The clinical work already happened. Whether it shows up on the claim is a documentation-to-coding handoff that mostly does not get watched.",
   worldCards: [
-    { k: "Avg E/M level", n: "3.1", coral: true, f: "ED benchmark: 3.5" },
-    { k: "First-pass acceptance", n: "89%", f: "Clean-claim rate" },
-    { k: "Eligible encounters", n: "95K", f: "Per year, in scope" },
-    { k: "In scope", n: "55", f: "Providers · Emergency Department" },
+    { k: "Avg E/M level", n: "3.5", benchmark: true, f: "ED benchmark" },
+    { k: "First-pass acceptance", n: "94%+", benchmark: true, f: "Clean-claim benchmark" },
   ],
   opportunity:
     "This is not about coding more aggressively. It is about coding accurately for care that was delivered and is now documented. When the note carries the complexity of the workup, the coder can support the level and the claim reflects the encounter. That gap, closed, is captured margin, counted once.",
@@ -980,7 +970,7 @@ const edRevenue: SettingGoalContent = {
     "Provider queries close quickly rather than aging out.",
     "The captured level clears first-pass and is not downcoded on appeal.",
   ],
-  bendsCloser: "Right now Meridian is behind on the first two. That is why the next page gives every link an owner and a date.",
+  bendsCloser: "The first two links are where plans like this usually slip, so every link below gets an owner and a date.",
   fragile:
     "Links 3 and 4 are flagged because they are where completeness stops being revenue. Coders default to prior-year patterns and queries age out, so the documented complexity never reaches the claim. Acting on the fuller note is the one thing this plan holds. And to stay honest, the value is counted once: E/M level and wRVU lift monetize the same encounter, so only one is booked.",
   hardestTitle: "Getting the Coding to Act",
@@ -1014,16 +1004,14 @@ const edRevenue: SettingGoalContent = {
 };
 
 const inpatientRevenue: SettingGoalContent = {
-  subtitle: "Hospital Medicine · 45 hospitalists · Med-Surg & ICU",
+  subtitle: "Hospital Medicine · Med-Surg & ICU",
   thesis1: "The acuity was already documented.",
   thesis2: "This is the plan to let the DRG reflect it.",
   p1Lead:
-    "Meridian's hospitalists are managing patients with real complexity and comorbidity burden, but the daily progress notes and discharge summaries often do not carry enough specificity for coding to assign the DRG the admission actually earned. A patient managed through three active comorbidities gets grouped as if they had one. The clinical acuity was real. Whether it is reflected in the DRG weight depends on documentation specificity that mostly goes unwatched until the retrospective audit.",
+    "Hospitalists in this scope are managing patients with real complexity and comorbidity burden, but the daily progress notes and discharge summaries often do not carry enough specificity for coding to assign the DRG the admission actually earned. A patient managed through three active comorbidities gets grouped as if they had one. The clinical acuity was real. Whether it is reflected in the DRG weight depends on documentation specificity that mostly goes unwatched until the retrospective audit.",
   worldCards: [
-    { k: "CC/MCC capture rate", n: "62%", coral: true, f: "Industry benchmark: 72%" },
-    { k: "CDI query rate", n: "30%", f: "Of eligible admissions" },
-    { k: "Eligible admissions", n: "12,600", f: "Per year, in scope" },
-    { k: "In scope", n: "45", f: "Hospitalists · Med-Surg & ICU" },
+    { k: "CC/MCC capture rate", n: "72%", benchmark: true, f: "Industry benchmark" },
+    { k: "CDI query rate", n: "~30%", benchmark: true, f: "Typical of eligible admissions" },
   ],
   opportunity:
     "This is not about upcoding. It is about the documentation carrying the comorbidity and severity detail that was actually managed, so coding can assign the DRG weight the admission earned. When the note specifies the complication or comorbidity, the claim reflects the acuity. That gap, closed, is protected margin, counted once.",
@@ -1052,7 +1040,7 @@ const inpatientRevenue: SettingGoalContent = {
     "Physician queries close within the stay, not after discharge.",
     "The captured DRG weight clears the payer audit and is not downgraded on appeal.",
   ],
-  bendsCloser: "Right now Meridian is behind on the first two. That is why the next page gives every link an owner and a date.",
+  bendsCloser: "The first two links are where plans like this usually slip, so every link below gets an owner and a date.",
   fragile:
     "Links 3 and 4 are flagged because they are where specificity stops being a captured DRG. CDI and coding default to prior patterns and queries age past discharge, so the documented acuity never reaches the claim. Acting on the fuller note before discharge is the one thing this plan holds. And to stay honest, the value is counted once: DRG-weight lift and CDI-query-avoidance cost are booked as separate mechanisms, never blended into one inflated number.",
   hardestTitle: "Closing the Query Before Discharge",
@@ -1088,16 +1076,15 @@ const inpatientRevenue: SettingGoalContent = {
 const inpatientRetentionPrize = retentionPrize("inpatient", 45);
 
 const inpatientRetention: SettingGoalContent = {
-  subtitle: "Hospital Medicine · 45 hospitalists · Med-Surg & ICU",
+  subtitle: "Hospital Medicine · Med-Surg & ICU",
   thesis1: "The relief is real.",
   thesis2: "This is the plan to make it stick.",
   p1Lead:
-    "Meridian's hospitalists are documenting one to two hours after every shift, most of it from home, on top of a rounding load that already runs long. Exit interviews name charting burden as a leading reason people leave hospital medicine. The relief Abridge creates is real and immediate. Whether it lasts, or gets quietly refilled by bigger panels and coverage gaps, is the difference between a number that holds and one that fades by month nine.",
+    "Hospitalists in this scope are documenting for hours after every shift, most of it from home, on top of a rounding load that already runs long. Exit interviews name charting burden as a leading reason people leave hospital medicine. The relief Abridge creates is real and immediate. Whether it lasts, or gets quietly refilled by bigger panels and coverage gaps, is the difference between a number that holds and one that fades by month nine.",
   worldCards: [
-    { k: "Annual turnover", n: "16%", coral: true, f: "Benchmark: 10 to 12%" },
-    { k: "Attributed to burnout", n: "~45%", f: "Share of voluntary exits" },
-    { k: "After-hours doc", n: "1.8 hrs/day", f: "Evening & weekend charting" },
-    { k: "In scope", n: "45", f: "Hospitalists · Med-Surg & ICU" },
+    { k: "Annual turnover", n: "10 to 12%", benchmark: true, f: "Benchmark range" },
+    { k: "Burnout share of exits", n: "~45%", benchmark: true, f: "Typical share attributed to burnout" },
+    { k: "Replacement cost / hospitalist", n: "$250K to $500K", benchmark: true, f: "Typical to rehire and cover" },
   ],
   opportunity:
     "The recovered time is worth more than a nicer evening. When after-hours charting falls and stays down, likelihood-to-stay rises and fewer hospitalists reach the decision to leave. Each avoided departure is $250K to $500K you do not spend rehiring and covering with locums. The plan protects the relief so it converts into retention, not just a quieter month.",
@@ -1126,7 +1113,7 @@ const inpatientRetention: SettingGoalContent = {
     "Coverage gaps are backfilled so the burden does not quietly return.",
     "Likelihood-to-stay is pulsed in a short check, not once a year.",
   ],
-  bendsCloser: "Right now Meridian is slipping on the first. That is why the next page gives every link an owner and a date.",
+  bendsCloser: "The first link is where relief like this usually slips, so every link below gets an owner and a date.",
   fragile:
     "Links 3 and 4 are flagged because relief is easy to give and easy to take back. Bigger panels and unfilled shifts quietly refill the evening, and the retention gain evaporates before it ever shows up in turnover. Protecting the recovered time is the one thing this plan holds.",
   hardestTitle: "Protecting the Relief",
@@ -1151,7 +1138,7 @@ const inpatientRetention: SettingGoalContent = {
     "Did last month's ask get done? If yes, hold. If no, escalate to the goal-owner.",
   ],
   renewal:
-    'The conversation is no longer "was it worth the price." It is "we set out to avoid four departures, we are 58% there and holding the relief, here is the runway on the rest." The relief was always real. This is the plan that made it stick. Price becomes progress.',
+    'The conversation is no longer "was it worth the price." It is "we set out to avoid the departures burnout was driving, we are on our way and holding the relief, here is the runway on the rest." The relief was always real. This is the plan that made it stick. Price becomes progress.',
   ambition: [
     { key: "conservative", label: "Conservative", goalLabel: `Goal · ${fmtMoneyCompact(inpatientRetentionPrize.conservative.value)} · ${fmtOneDecimal(inpatientRetentionPrize.conservative.departures)} departures avoided`, usualLabel: `What usually happens · ~${fmtMoneyCompact(usualFraction(inpatientRetentionPrize.conservative.value))}`, goalMargin: inpatientRetentionPrize.conservative.value },
     { key: "typical", label: "Typical", goalLabel: `Goal · ${fmtMoneyCompact(inpatientRetentionPrize.typical.value)} · ${fmtOneDecimal(inpatientRetentionPrize.typical.departures)} departures avoided`, usualLabel: `What usually happens · ~${fmtMoneyCompact(usualFraction(inpatientRetentionPrize.typical.value))}`, goalMargin: inpatientRetentionPrize.typical.value },
@@ -1160,16 +1147,15 @@ const inpatientRetention: SettingGoalContent = {
 };
 
 const nursingQuality: SettingGoalContent = {
-  subtitle: "Med-Surg & ICU · 400 staffed beds · Nursing",
+  subtitle: "Med-Surg & ICU · Nursing",
   thesis1: "The documentation is timelier.",
   thesis2: "This is the plan to turn it into fewer events.",
   p1Lead:
-    "Meridian's med-surg and ICU nurses are charting closer to the point of care and less at the end of the shift. Timely documentation is the leading edge of safer care: bundles get charted when they are done, deterioration gets flagged when it appears. But timelier notes only prevent harm if the routine at the bedside changes with them. That is the link that usually goes unwatched.",
+    "Nurses in this scope are charting closer to the point of care and less at the end of the shift. Timely documentation is the leading edge of safer care: bundles get charted when they are done, deterioration gets flagged when it appears. But timelier notes only prevent harm if the routine at the bedside changes with them. That is the link that usually goes unwatched.",
   worldCards: [
-    { k: "HAPI rate", n: "2.8 /1k", coral: true, f: "Per 1,000 pt-days · benchmark 2.0" },
-    { k: "CLABSI rate", n: "1.1 /1k", f: "Per 1,000 line-days" },
-    { k: "Bundle compliance", n: "82%", f: "Audited, across units" },
-    { k: "In scope", n: "400", f: "Beds · Med-surg & ICU" },
+    { k: "HAPI rate", n: "2.0 / 1k", benchmark: true, f: "Benchmark, per 1,000 patient-days" },
+    { k: "Bundle compliance", n: "95%+", benchmark: true, f: "Typical target" },
+    { k: "Cost / prevented event", n: "$20K to $50K", benchmark: true, f: "Typical avoided cost" },
   ],
   opportunity:
     "Ambient frees nurses from end-of-shift batch charting, so documentation happens with the care event, not hours later. That timeliness is what makes bundle compliance real and deterioration visible early. Each prevented pressure injury or bloodstream infection is $20K to $50K in avoided cost, and harm a patient never experiences. The plan turns timelier notes into that outcome.",
@@ -1198,7 +1184,7 @@ const nursingQuality: SettingGoalContent = {
     "Early deterioration signals trigger a response, not just a note.",
     "Unit leadership reviews the misses weekly and closes the loop with staff.",
   ],
-  bendsCloser: "Right now Meridian is behind on the first two. That is why the next page gives every link an owner and a date.",
+  bendsCloser: "The first two links are where plans like this usually slip, so every link below gets an owner and a date.",
   fragile:
     "Links 3 and 4 are flagged because timely charting only prevents harm if someone acts on what it shows. A gap visible on the screen still needs a nurse to close it at the bedside. Changing that routine is the one thing this plan holds. Value is counted as cost per prevented event, so it never inflates.",
   hardestTitle: "Changing the Bedside Routine",
@@ -1223,7 +1209,7 @@ const nursingQuality: SettingGoalContent = {
     "Did last month's ask get done? If yes, expand. If no, escalate to the goal-owner.",
   ],
   renewal:
-    'The conversation is no longer "was it worth the price." It is "we set out to prevent 22 harm events, we are 55% there, here is the runway on the rest." The documentation was always getting timelier. This is the plan that turned it into fewer events. Price becomes progress.',
+    'The conversation is no longer "was it worth the price." It is "we set out to prevent the harm this documentation makes visible, we are on our way, here is the runway on the rest." The documentation was always getting timelier. This is the plan that turned it into fewer events. Price becomes progress.',
   ambition: [
     { key: "conservative", label: "Conservative", goalLabel: "Goal · $900K · 12 events prevented", usualLabel: "What usually happens · ~$260K", goalMargin: 900_000 },
     { key: "typical", label: "Typical", goalLabel: "Goal · $1.6M · 22 events prevented", usualLabel: "What usually happens · ~$450K", goalMargin: 1_600_000 },
@@ -1234,16 +1220,15 @@ const nursingQuality: SettingGoalContent = {
 const nursingRetentionPrize = retentionPrize("nursing", 480);
 
 const nursingRetention: SettingGoalContent = {
-  subtitle: "Med-Surg & ICU · 400 staffed beds · 480 bedside nurses",
+  subtitle: "Med-Surg & ICU · Nursing",
   thesis1: "The relief is real.",
   thesis2: "This is the plan to make it stick.",
   p1Lead:
-    "Meridian's med-surg and ICU nurses are staying late to finish charting, and exit interviews name documentation burden alongside staffing ratios as a leading reason nurses leave the bedside. The relief Abridge creates at the point of care is real and immediate. Whether it lasts, or gets quietly refilled by heavier assignments and unfilled shifts, is the difference between a number that holds and one that fades by month twelve.",
+    "Nurses in this scope are staying late to finish charting, and exit interviews name documentation burden alongside staffing ratios as a leading reason nurses leave the bedside. The relief Abridge creates at the point of care is real and immediate. Whether it lasts, or gets quietly refilled by heavier assignments and unfilled shifts, is the difference between a number that holds and one that fades by month twelve.",
   worldCards: [
-    { k: "Annual RN turnover", n: "19%", coral: true, f: "Benchmark: 14 to 16%" },
-    { k: "Attributed to burnout", n: "~40%", f: "Share of voluntary exits" },
-    { k: "Charting after shift", n: "35 min/shift", f: "Time to complete the record" },
-    { k: "In scope", n: "480", f: "Bedside nurses · Med-surg & ICU" },
+    { k: "Annual RN turnover", n: "14 to 16%", benchmark: true, f: "Benchmark range" },
+    { k: "Burnout share of exits", n: "~40%", benchmark: true, f: "Typical share attributed to burnout" },
+    { k: "Replacement cost / RN", n: "$40K to $65K", benchmark: true, f: "Typical to rehire and orient" },
   ],
   opportunity:
     "The recovered time is worth more than a shorter handoff. When charting-after-shift falls and stays down, likelihood-to-stay rises and fewer nurses reach the decision to leave the unit. Each avoided departure is $40K to $65K you do not spend on hiring, orientation, and interim agency coverage. The plan protects the relief so it converts into retention, not just a quieter shift.",
@@ -1272,7 +1257,7 @@ const nursingRetention: SettingGoalContent = {
     "Open shifts are backfilled so the burden does not quietly return to the remaining nurses.",
     "Likelihood-to-stay is pulsed each quarter, not once a year.",
   ],
-  bendsCloser: "Right now Meridian is slipping on the first. That is why the next page gives every link an owner and a date.",
+  bendsCloser: "The first link is where relief like this usually slips, so every link below gets an owner and a date.",
   fragile:
     "Links 3 and 4 are flagged because relief is easy to give and easy to take back. Heavier assignments and unfilled shifts quietly refill the after-shift charting, and the retention gain evaporates before it ever shows up in turnover. Protecting the recovered time is the one thing this plan holds.",
   hardestTitle: "Protecting the Relief",
@@ -1306,16 +1291,14 @@ const nursingRetention: SettingGoalContent = {
 };
 
 const nursingCapacity: SettingGoalContent = {
-  subtitle: "Med-Surg & ICU · 300 bedside nurses · Nursing",
+  subtitle: "Med-Surg & ICU · Nursing",
   thesis1: "The overtime is real.",
   thesis2: "This is the plan to take out the share charting causes.",
   p1Lead:
-    "Meridian's med-surg and ICU nurses are staying past the end of the shift to finish charting, batching notes and catching up late, sometimes working through lunch to get the record done. Some of that overtime is short staffing and census, which no documentation tool can move. But a real share of it is the charting itself. Ambient documentation lets nurses chart in the moment, so the shift can close on time. Whether that freed minute lands on the shift, or turns into a new task, is the difference between overtime that comes down and overtime that holds.",
+    "Nurses in this scope are staying past the end of the shift to finish charting, batching notes and catching up late, sometimes working through lunch to get the record done. Some of that overtime is short staffing and census, which no documentation tool can move. But a real share of it is the charting itself. Ambient documentation lets nurses chart in the moment, so the shift can close on time. Whether that freed minute lands on the shift, or turns into a new task, is the difference between overtime that comes down and overtime that holds.",
   worldCards: [
-    { k: "Overtime / nurse", n: "2.5 hrs/wk", coral: true, f: "Mostly after-shift charting" },
-    { k: "Documentation-driven", n: "~55%", f: "Share charting causes" },
-    { k: "Loaded OT rate", n: "$75/hr", f: "Base pay plus premium" },
-    { k: "In scope", n: "300", f: "Bedside nurses · Med-surg & ICU" },
+    { k: "Documentation-driven OT", n: "~55%", benchmark: true, f: "Typical share of overtime" },
+    { k: "Loaded OT rate", n: "$75/hr", benchmark: true, f: "Typical base plus premium" },
   ],
   opportunity:
     "You can only cut the overtime charting causes, and that share is the ceiling. When after-shift charting falls and the shift closes on time, the documentation-driven overtime comes off the payroll. Each overtime hour avoided is loaded overtime wages you stop paying now. The plan takes out that share and leaves the staffing and census overtime honestly out of the number.",
@@ -1344,7 +1327,7 @@ const nursingCapacity: SettingGoalContent = {
     "Late finishes and missed lunches are tracked and worked down, not absorbed.",
     "Nursing operations holds the share of overtime that is documentation-driven, separate from staffing and census.",
   ],
-  bendsCloser: "Right now Meridian is behind on the first. That is why the next page gives every link an owner and a date.",
+  bendsCloser: "The first link is where plans like this usually slip, so every link below gets an owner and a date.",
   fragile:
     "Links 3 and 4 are flagged because the freed minute is easy to give and easy to refill. A new task or a heavier assignment quietly fills the recovered time, and the shift still runs late, so the overtime never comes off. Making that minute close the shift on time is the one thing this plan holds. And to stay honest, overtime avoided is counted once: it is wages you stop paying now, separate from the replacement cost retention books.",
   hardestTitle: "Landing the Freed Minute on the Shift",

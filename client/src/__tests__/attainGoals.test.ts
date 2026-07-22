@@ -91,8 +91,16 @@ describe("SettingGoalContent integrity", () => {
   });
 
   entries.forEach(({ setting, goal, content }) => {
-    it(`${setting}/${goal}: worldCards has length 4`, () => {
-      expect(content.worldCards).toHaveLength(4);
+    it(`${setting}/${goal}: every worldCard is a labeled benchmark`, () => {
+      // The starting-point section carries only labeled benchmarks in
+      // content; the one derived card (scope) is injected by the renderer
+      // from the partner's real plan, never hardcoded here. So every card
+      // present in content must be flagged `benchmark` - no unlabeled
+      // illustrative partner numbers are allowed to leak back in.
+      expect(content.worldCards.length).toBeGreaterThanOrEqual(2);
+      content.worldCards.forEach((card) => {
+        expect(card.benchmark, `${card.k} in ${setting}/${goal} must be flagged benchmark`).toBe(true);
+      });
     });
 
     it(`${setting}/${goal}: goodCells has length 4`, () => {
