@@ -190,7 +190,7 @@ export default function StepBuildCase({
         </div>
         <p className="text-[13px] text-white/50 mt-2" data-testid="text-attain-buildcase-strategy-progress">
           {isAccessLadder
-            ? "Set each rung to what your organization is actually ready to commit to. Leave a rung where it is and it simply stays out of the plan."
+            ? "This is the full step-down, top to bottom. Every rung is part of the plan; set each one to your real numbers."
             : `${movedCount} of ${levers.length} decisions moved. Move the ones your organization is actually ready to commit to, the rest can wait for a later plan.`}
         </p>
       </motion.div>
