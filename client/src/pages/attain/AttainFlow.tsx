@@ -294,7 +294,12 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
   // StepPlanning shell driven by the shared ED access ladder, including its
   // load-bearing diagnosis gate. Every other combo still renders StepCommit.
   const isEdAccessPlan = state.setting === "ed" && goals.length === 1 && goals[0] === "access";
-  const isPhasedPlan = isOutpatientAccessPlan || isOutpatientRetentionPlan || isOutpatientRevenuePlan || isEdAccessPlan;
+  // Nursing quality is the fifth combo the phased Planning view is rebuilt for
+  // (a single selected quality goal in the nursing setting). It renders the
+  // same StepPlanning shell driven by the shared, converging quality ladder
+  // (goal="quality"). Every other combo still renders StepCommit.
+  const isNursingQualityPlan = state.setting === "nursing" && goals.length === 1 && goals[0] === "quality";
+  const isPhasedPlan = isOutpatientAccessPlan || isOutpatientRetentionPlan || isOutpatientRevenuePlan || isEdAccessPlan || isNursingQualityPlan;
 
   const updateState = useCallback((updates: Partial<AttainState>) => {
     setState((prev) => ({ ...prev, ...updates }));
@@ -895,6 +900,26 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
                 combined={combined}
                 goalOwner={goalOwnerByPriority.access ?? { name: "", title: "" }}
                 onChangeGoalOwner={(patch) => handleChangeGoalOwner("access", patch)}
+                planning={planning}
+                onChangePhaseOwner={handleChangePhaseOwner}
+                onChangePhaseSignalTarget={handleChangePhaseSignalTarget}
+                onChangePartnerRisk={handleChangePartnerRisk}
+                planCadence={planCadence}
+                onChangePlanCadence={handleChangePlanCadence}
+                totalMonths={state.totalMonths}
+                stepNumber={stepIndex + 1}
+              />
+            )}
+
+            {step === "commit" && isNursingQualityPlan && (
+              <StepPlanning
+                setting="nursing"
+                baseline={baseline}
+                goal="quality"
+                values={valuesByGoal.quality ?? defaultLeverValues("quality", "nursing")}
+                combined={combined}
+                goalOwner={goalOwnerByPriority.quality ?? { name: "", title: "" }}
+                onChangeGoalOwner={(patch) => handleChangeGoalOwner("quality", patch)}
                 planning={planning}
                 onChangePhaseOwner={handleChangePhaseOwner}
                 onChangePhaseSignalTarget={handleChangePhaseSignalTarget}
