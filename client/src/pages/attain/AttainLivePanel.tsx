@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import AttainmentCurve, { USUAL_CEILING_PCT } from "@/components/attain/AttainmentCurve";
-import { leversFor, defaultLeverValues, defaultRealizationPct, type LeverValues, type MultiGoalContributionsResult } from "@/lib/attain/attainLevers";
+import { leversFor, defaultLeverValues, defaultRealizationPct, isDecisionCommitted, type LeverValues, type MultiGoalContributionsResult } from "@/lib/attain/attainLevers";
 import { GOAL_CATALOG } from "@/lib/attain/attainGoals";
 import type { AttainState, GoalId, SettingGoalContent } from "@/lib/attain/attainTypes";
 import type { GoalTargetResult, AttainmentResult } from "@/lib/attain/attainCalc";
@@ -13,11 +13,6 @@ function formatCompact(n: number): string {
   if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(n % 1_000_000 === 0 ? 0 : 1)}M`;
   if (n >= 1_000) return `$${Math.round(n / 1_000)}K`;
   return `$${Math.round(n)}`;
-}
-
-function isLeverMoved(value: number | string[] | undefined, realityStart: number | string[]): boolean {
-  if (Array.isArray(realityStart)) return Array.isArray(value) && value.length > 0;
-  return typeof value === "number" && value !== realityStart;
 }
 
 /** A small, quiet info tooltip - same house `Tooltip` primitive every other
@@ -108,7 +103,7 @@ export default function AttainLivePanel({
     const values = valuesByGoal[goal] ?? defaultLeverValues(goal, state.setting ?? undefined);
     const perLever = combined?.byGoal[goal]?.perLever;
     const rows = leversFor(goal, state.setting ?? undefined)
-      .filter((l) => isLeverMoved(values[l.id], l.realityStart))
+      .filter((l) => isDecisionCommitted(goal, state.setting ?? undefined, values, l))
       .map((l) => ({
         key: `${goal}:${l.id}`,
         goal,

@@ -1,8 +1,8 @@
 import type { AttainSetting, GoalId } from "./attainTypes";
 import { computeAccessContributions } from "./attainAccess";
 import { computeEdAccessContributions } from "./attainEdAccess";
-import { computeRevenueContributions } from "./attainRevenue";
-import { computeIpRevenueContributions } from "./attainInpatientRevenue";
+import { computeRevenueContributions, selectedPaths, type RevenuePathId } from "./attainRevenue";
+import { computeIpRevenueContributions, selectedIpRevenuePaths, type IpRevenuePathId } from "./attainInpatientRevenue";
 import { computeWorkforceContributions } from "./attainWorkforce";
 import {
   computeQualityContributions,
@@ -213,6 +213,21 @@ export interface Lever {
    * decision. Set explicitly only when a different curated option is
    * genuinely the better required default for a specific decision. */
   requiredSignalIndex?: number;
+  /** The value a NEW plan lands on for this lever, when it differs from
+   * `realityStart`. `realityStart` is the "doing nothing new" baseline every
+   * dollar delta is measured against (and must stay $0 for the leave-one-out
+   * attribution to isolate each decision), so it is NOT the right value to
+   * SHOW a partner on arrival: a conversion/commit slider parked at 0% reads
+   * as a dead rung. `defaultStart` is that arrival value, set ONLY on genuine
+   * DECISION/conversion sliders (the share you direct, commit, or diagnose),
+   * never on a partner FACT (a backlog, a headcount, a denial volume), so the
+   * rung is alive the moment the partner lands without ever fabricating one of
+   * their numbers. Omitted means "start at realityStart," the correct default
+   * for every fact and for any decision whose honest starting point is zero.
+   * `defaultLeverValues` reads `defaultStart ?? realityStart`; the math is
+   * unchanged because the engine still derives every dollar from the chosen
+   * value against a realityStart that stays 0. */
+  defaultStart?: number;
 }
 
 export type LeverValues = Record<string, number | string[]>;
@@ -417,6 +432,10 @@ export const LEVERS: Record<GoalId, Lever[]> = {
       max: 100,
       step: 5,
       realityStart: 0,
+      // A DECISION, so it lands on a sensible non-zero share, never at a dead
+      // 0%. When Retention is also selected the shared freed hour is divided
+      // first by the freed-time split, so this share never double-allocates it.
+      defaultStart: 25,
       ownerRole: "Ambulatory operations",
       defaultDue: "Month 2",
       signal: "Share of freed documentation time routed to the schedule",
@@ -651,6 +670,9 @@ export const LEVERS: Record<GoalId, Lever[]> = {
       max: 15,
       step: 1,
       realityStart: 0,
+      // A DECISION (the recapture uplift you commit to), so it lands alive on a
+      // conservative non-zero starting point rather than a dead 0pp.
+      defaultStart: 5,
       ownerRole: "Risk adjustment / coding",
       defaultDue: "Month 2",
       signal: "Recapture rate on the risk-adjustment gap",
@@ -692,13 +714,19 @@ export const LEVERS: Record<GoalId, Lever[]> = {
     {
       id: "revenueEmLift",
       label: "Lift E/M level and wRVU accuracy",
-      help: "Documented complexity that never reaches the coded level is not revenue. This is the wRVU lift you are committing to, above today's average level.",
+      help: "Documented complexity that never reaches the coded level is not revenue. This is the share of that documentation gap you commit to close, above today's average level.",
       control: "percent",
-      unit: "% lift",
+      // Bounds match the live slider (RevenueLadderChain), which reads this as
+      // "the share of the documentation gap you commit to close," 0-100, not
+      // the old blunt "% lift" the stale 0-15 bound described.
+      unit: "%",
       min: 0,
-      max: 15,
-      step: 1,
+      max: 100,
+      step: 5,
       realityStart: 0,
+      // A DECISION (the share of the documentation gap you commit to close),
+      // so the rung lands alive on a sensible commitment, not a dead 0%.
+      defaultStart: 40,
       ownerRole: "Revenue cycle / coding",
       defaultDue: "Month 2",
       signal: "Average E/M level or wRVU per visit",
@@ -731,6 +759,9 @@ export const LEVERS: Record<GoalId, Lever[]> = {
       max: 100,
       step: 5,
       realityStart: 0,
+      // A DECISION (the documentation-related share you commit to prevent), so
+      // the rung lands alive on a sensible share, not a dead 0%.
+      defaultStart: 40,
       ownerRole: "Billing",
       defaultDue: "Month 3",
       signal: "First-pass rate / denial rate on medical-necessity claims",
@@ -873,6 +904,9 @@ export const LEVERS: Record<GoalId, Lever[]> = {
       max: 100,
       step: 5,
       realityStart: 0,
+      // A DECISION (the diagnosis: how much of overtime charting actually
+      // drives), so the gate ceiling lands alive on a sensible mid-share.
+      defaultStart: 50,
       ownerRole: "Nursing operations",
       defaultDue: "Month 1",
       signal: "Share of overtime attributable to documentation",
@@ -889,6 +923,9 @@ export const LEVERS: Record<GoalId, Lever[]> = {
       max: 100,
       step: 5,
       realityStart: 0,
+      // A DECISION (the conservative share you commit to remove), so it lands
+      // alive on a conservative non-zero starting point rather than a dead 0%.
+      defaultStart: 25,
       ownerRole: "Nursing operations",
       defaultDue: "Month 2",
       signal: "On-time shift completion %",
@@ -941,6 +978,9 @@ export const IP_REVENUE_LEVERS: Lever[] = [
     max: 30,
     step: 1,
     realityStart: 0,
+    // A DECISION (the capture share you commit to), so the rung lands alive on
+    // a sensible commitment rather than a dead 0%.
+    defaultStart: 15,
     ownerRole: "CDI + hospitalists",
     defaultDue: "Month 2",
     signal: "Case mix index / CC-MCC capture rate",
@@ -1005,6 +1045,9 @@ export const IP_REVENUE_LEVERS: Lever[] = [
     max: 100,
     step: 5,
     realityStart: 0,
+    // A DECISION (the reduction you commit to), so the rung lands alive on a
+    // sensible share rather than a dead 0%.
+    defaultStart: 30,
     ownerRole: "CDI + providers",
     defaultDue: "Month 2",
     signal: "CDI query rate",
@@ -1053,6 +1096,9 @@ export const IP_REVENUE_LEVERS: Lever[] = [
     max: 100,
     step: 5,
     realityStart: 0,
+    // A DECISION (the preventable share you commit to), so the rung lands alive
+    // on a sensible share rather than a dead 0%.
+    defaultStart: 40,
     ownerRole: "Case management / CDI",
     defaultDue: "Month 2",
     signal: "Observation downgrade rate",
@@ -1177,6 +1223,10 @@ export const ED_ACCESS_LEVERS: Lever[] = [
     max: 100,
     step: 5,
     realityStart: 0,
+    // A DECISION, so it lands alive on a sensible share. When Retention is also
+    // selected the shared freed hour is divided by the freed-time split first,
+    // so this share never double-allocates the same hour.
+    defaultStart: 25,
     ownerRole: "ED medical director",
     defaultDue: "Month 2",
     signal: "Freed charting time actually committed to throughput, of the hour freed",
@@ -1209,6 +1259,9 @@ export const ED_ACCESS_LEVERS: Lever[] = [
     max: 100,
     step: 5,
     realityStart: 0,
+    // A DECISION (the diagnosis), so the gate ceiling lands alive on a sensible
+    // share rather than a dead 0%. Confirmed against LWBS reason codes.
+    defaultStart: 60,
     ownerRole: "ED operations / quality",
     defaultDue: "Month 1",
     signal: "Share of LWBS attributable to documentation-choked throughput",
@@ -1225,6 +1278,9 @@ export const ED_ACCESS_LEVERS: Lever[] = [
     max: 100,
     step: 5,
     realityStart: 0,
+    // A DECISION (the admission-conversion share), so the admission leg lands
+    // alive on a sensible share rather than a dead 0%.
+    defaultStart: 18,
     ownerRole: "ED operations / case management",
     defaultDue: "Month 2",
     signal: "Share of recovered patients captured as admission attempts",
@@ -1267,14 +1323,73 @@ export function leversFor(goal: GoalId, setting?: AttainSetting): Lever[] {
   return LEVERS[goal];
 }
 
-/** All levers at their `realityStart`, the plan before the partner has
- * decided to do anything new. */
+/** The plan a partner LANDS on: every DECISION/conversion slider seeded to a
+ * sensible non-zero starting value (`defaultStart`) so its rung is alive on
+ * arrival, and every partner FACT left blank at its `realityStart` so we never
+ * fabricate one of their numbers. The dollar math is unchanged: `realityStart`
+ * (still 0 on every decision) remains the "doing nothing new" baseline every
+ * delta is measured against, and the engine derives each dollar from the chosen
+ * value, not from this default. */
 export function defaultLeverValues(goal: GoalId, setting?: AttainSetting): LeverValues {
   const values: LeverValues = {};
   for (const lever of leversFor(goal, setting)) {
-    values[lever.id] = lever.realityStart;
+    values[lever.id] = lever.defaultStart ?? lever.realityStart;
   }
   return values;
+}
+
+// ────────────────────────────────────────────────────────────────────────
+// Which decisions are actually "on the plan" — a moved value inside an OPEN
+// path. Revenue (outpatient/ED) and inpatient revenue are path-gated: their
+// levers live inside a chosen path, so a lever now carries a live non-zero
+// default (see `defaultStart`) whether or not its path is selected. A partner
+// who opens only the E/M path should never see the HCC or Denials decisions
+// listed on their plan just because those sliders carry a sensible default.
+// This maps each path-gated lever to its owning path so the listing/commit/
+// PDF surfaces can filter to decisions whose path the partner actually opened.
+// ────────────────────────────────────────────────────────────────────────
+
+const REVENUE_PATH_LEVERS: Record<RevenuePathId, string[]> = {
+  hcc: ["revenueHccRecapture", "revenueHccNetNew", "revenueHccValuePerHcc"],
+  em: ["revenueEmLift", "revenueEmConversionFactor"],
+  denials: ["revenueDenialsPreventable", "revenueDenialsAvgClaimValue"],
+};
+
+const IP_REVENUE_PATH_LEVERS: Record<IpRevenuePathId, string[]> = {
+  drg: ["ipDrgAtRiskRate", "ipDrgCapture", "ipDrgWeightIncrease", "ipDrgBasePayment"],
+  cdi: ["ipCdiQueryRate", "ipCdiReduction", "ipCdiCostPerQuery"],
+  obs: ["ipObsDenialRate", "ipObsPreventable", "ipObsRevenueDelta"],
+};
+
+/** The value-only "has this lever been moved off its baseline" test, shared so
+ * every listing site (the live panel, Commit, the PDF, the progress builder)
+ * uses one definition instead of a hand-rolled copy each. */
+export function isLeverMoved(value: number | string[] | undefined, realityStart: number | string[]): boolean {
+  if (Array.isArray(realityStart)) return Array.isArray(value) && value.length > 0;
+  return typeof value === "number" && value !== realityStart;
+}
+
+/** Whether a lever's own path is currently open. For path-gated revenue /
+ * inpatient revenue, a lever inside an unselected path is out of scope even if
+ * it carries a live default; every other goal has no path gating. */
+export function isLeverInScope(goal: GoalId, setting: AttainSetting | undefined, values: LeverValues, leverId: string): boolean {
+  if (goal === "revenue" && setting !== "inpatient") {
+    const owning = (Object.keys(REVENUE_PATH_LEVERS) as RevenuePathId[]).find((p) => REVENUE_PATH_LEVERS[p].includes(leverId));
+    return owning ? selectedPaths(values).includes(owning) : true;
+  }
+  if (goal === "revenue" && setting === "inpatient") {
+    const owning = (Object.keys(IP_REVENUE_PATH_LEVERS) as IpRevenuePathId[]).find((p) => IP_REVENUE_PATH_LEVERS[p].includes(leverId));
+    return owning ? selectedIpRevenuePaths(values).includes(owning) : true;
+  }
+  return true;
+}
+
+/** A decision counts toward the plan (listable, committable, printable) only
+ * when it has been moved off its baseline AND its path is open. Centralizes
+ * what used to be a bare `isLeverMoved` check at every listing site, so a live
+ * default on an unopened revenue path never reads as a phantom decision. */
+export function isDecisionCommitted(goal: GoalId, setting: AttainSetting | undefined, values: LeverValues, lever: Lever): boolean {
+  return isLeverMoved(values[lever.id], lever.realityStart) && isLeverInScope(goal, setting, values, lever.id);
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -1336,7 +1451,7 @@ function baselineUnits(setting: AttainSetting, goal: GoalId, baseline: AttainBas
   return Math.max(0, Math.round(baseline.providers ?? 0));
 }
 
-const NO_MOVE_FORMULA = "Move this decision above reality to see the math.";
+const NO_MOVE_FORMULA = "Set the numbers above and the math appears here.";
 
 interface ChannelValue {
   margin: number;

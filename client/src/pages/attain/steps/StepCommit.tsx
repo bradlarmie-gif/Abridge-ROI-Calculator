@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { leversFor, defaultLeverValues, requiredSignalLabel, type Lever, type LeverValues } from "@/lib/attain/attainLevers";
+import { leversFor, defaultLeverValues, requiredSignalLabel, isDecisionCommitted, type Lever, type LeverValues } from "@/lib/attain/attainLevers";
 import type { MultiGoalContributionsResult } from "@/lib/attain/attainLevers";
 import { GOAL_CATALOG } from "@/lib/attain/attainGoals";
 import type { AttainSetting, GoalId } from "@/lib/attain/attainTypes";
@@ -39,11 +39,6 @@ export const CADENCE_LABEL: Record<SignalCadence, string> = {
   monthly: "monthly",
   quarterly: "quarterly",
 };
-
-function isMoved(value: number | string[] | undefined, realityStart: number | string[]): boolean {
-  if (Array.isArray(realityStart)) return Array.isArray(value) && value.length > 0;
-  return typeof value === "number" && value !== realityStart;
-}
 
 /** The exec sponsor who owns a priority's outcome — sits above the decision
  * owners because they answer to this person for whether the outcome lands. */
@@ -260,7 +255,7 @@ export default function StepCommit({
 }: StepCommitProps) {
   const groups = goals.map((goal) => {
     const values = valuesByGoal[goal] ?? defaultLeverValues(goal, setting);
-    const movedLevers = leversFor(goal, setting).filter((l) => isMoved(values[l.id], l.realityStart));
+    const movedLevers = leversFor(goal, setting).filter((l) => isDecisionCommitted(goal, setting, values, l));
     const result = combined?.byGoal[goal];
     return { goal, movedLevers, result };
   });

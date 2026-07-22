@@ -48,6 +48,7 @@ import { GOAL_CATALOG, getContent } from "./attainGoals";
 import {
   leversFor,
   defaultRealizationPct,
+  isDecisionCommitted,
   type Lever,
   type LeverValues,
   type LeverContribution,
@@ -272,11 +273,6 @@ export interface AttainPdfData {
 // the `AttainPdfData` this returns.
 // ────────────────────────────────────────────────────────────────────────
 
-function isLeverMoved(value: number | string[] | undefined, realityStart: number | string[]): boolean {
-  if (Array.isArray(realityStart)) return Array.isArray(value) && value.length > 0;
-  return typeof value === "number" && value !== realityStart;
-}
-
 function committedDecisionsFor(
   goal: GoalId,
   setting: AttainSetting,
@@ -285,7 +281,7 @@ function committedDecisionsFor(
   commitments: Record<string, AttainPdfCommitment>,
 ): AttainPdfDecision[] {
   return leversFor(goal, setting)
-    .filter((l) => isLeverMoved(values[l.id], l.realityStart))
+    .filter((l) => isDecisionCommitted(goal, setting, values, l))
     .map((l) => {
       const commitment = commitments[`${goal}:${l.id}`];
       const primarySignal = commitment?.requiredSignal;

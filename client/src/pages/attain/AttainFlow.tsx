@@ -34,6 +34,7 @@ import {
   defaultLeverValues,
   computeMultiGoalContributions,
   defaultRealizationPct,
+  isDecisionCommitted,
   type AttainBaseline,
   type LeverValues,
   type MultiGoalContributionsResult,
@@ -106,13 +107,6 @@ function parseTotalMonths(goodHead: string | undefined): number {
   return match ? parseInt(match[1], 10) : DEFAULT_TOTAL_MONTHS;
 }
 
-/** A decision counts as "moved" once it differs from its realityStart — a
- * lines lever with at least one line picked, or a numeric lever dialed away
- * from where the partner already stands today. */
-function isLeverMoved(value: number | string[] | undefined, realityStart: number | string[]): boolean {
-  if (Array.isArray(realityStart)) return Array.isArray(value) && value.length > 0;
-  return typeof value === "number" && value !== realityStart;
-}
 
 /** Presentation-only unit label for a single goal's built count figure — the
  * number itself always comes from the engine, this just names its unit. */
@@ -505,7 +499,7 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
     for (const g of goals) {
       const values = valuesByGoal[g] ?? defaultLeverValues(g, state.setting ?? undefined);
       for (const lever of leversFor(g, state.setting ?? undefined)) {
-        if (!isLeverMoved(values[lever.id], lever.realityStart)) continue;
+        if (!isDecisionCommitted(g, state.setting ?? undefined, values, lever)) continue;
         const declKey = commitmentKey(g, lever.id);
         const commitment = commitments[declKey] ?? fallbackCommitment(g, lever.id);
         // Falls back to this decision's own default signal if a corrupt/
@@ -694,7 +688,7 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
     for (const g of goals) {
       const values = valuesByGoal[g] ?? defaultLeverValues(g, state.setting ?? undefined);
       for (const lever of leversFor(g, state.setting ?? undefined)) {
-        if (isLeverMoved(values[lever.id], lever.realityStart)) out.push(commitmentKey(g, lever.id));
+        if (isDecisionCommitted(g, state.setting ?? undefined, values, lever)) out.push(commitmentKey(g, lever.id));
       }
     }
     return out;

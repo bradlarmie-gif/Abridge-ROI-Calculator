@@ -168,13 +168,49 @@ describe("LEVERS catalog", () => {
 });
 
 describe("defaultLeverValues", () => {
-  it("returns realityStart for every lever of every goal", () => {
+  it("seeds every lever to its defaultStart when set, else its realityStart", () => {
     for (const goal of GOAL_IDS) {
       const values = defaultLeverValues(goal);
       for (const lever of LEVERS[goal]) {
-        expect(values[lever.id]).toEqual(lever.realityStart);
+        expect(values[lever.id]).toEqual(lever.defaultStart ?? lever.realityStart);
       }
     }
+  });
+
+  it("every defaultStart stays within the lever's own [min, max] bounds", () => {
+    for (const goal of GOAL_IDS) {
+      for (const lever of LEVERS[goal]) {
+        if (typeof lever.defaultStart === "number") {
+          expect(lever.defaultStart).toBeGreaterThanOrEqual(lever.min);
+          expect(lever.defaultStart).toBeLessThanOrEqual(lever.max);
+        }
+      }
+    }
+  });
+
+  // The PO fix: a DECISION/conversion slider must land alive on a sensible
+  // non-zero share so its rung teaches the mechanism the moment the partner
+  // arrives, instead of reading as a dead 0%.
+  it("the access freed-time-directed DECISION slider defaults non-zero", () => {
+    expect(defaultLeverValues("access", "outpatient").accessFreedShare).toBeGreaterThan(0);
+  });
+
+  it("the revenue commit-share DECISION slider defaults non-zero", () => {
+    expect(defaultLeverValues("revenue", "outpatient").revenueEmLift).toBeGreaterThan(0);
+  });
+
+  // The other half of the fix: a partner FACT must NEVER be pre-filled, so we
+  // never fabricate one of their numbers. These stay blank at realityStart.
+  it("partner FACT inputs default blank (never fabricated)", () => {
+    const access = defaultLeverValues("access", "outpatient");
+    // Scope headcount, per-visit margin, and every countable demand source are
+    // the partner's own facts, not decisions.
+    expect(access.accessProviders).toBe(0);
+    expect(access.accessMargin).toBe(0);
+    expect(access.accessDemandBacklog).toBe(0);
+    expect(access.accessDemandSameDayCount).toBe(0);
+    expect(access.accessDemandNoShowCount).toBe(0);
+    expect(access.accessDemandNewReferrals).toBe(0);
   });
 });
 
@@ -199,9 +235,16 @@ describe("defaultBaseline", () => {
 
 describe("computeLeverContributions", () => {
   it("doing nothing new (all levers at realityStart) adds ~0 margin", () => {
+    // Built explicitly from each lever's realityStart, NOT defaultLeverValues:
+    // defaultLeverValues now seeds the DECISION sliders to a live non-zero
+    // starting share (so their rungs teach on arrival), while realityStart is
+    // the untouched "doing nothing new" baseline every dollar delta is measured
+    // against. This test guards that baseline invariant, which the default
+    // seeding does not change.
     for (const goal of GOAL_IDS) {
       const setting = SETTING_FOR[goal];
-      const values = defaultLeverValues(goal);
+      const values: LeverValues = {};
+      for (const lever of LEVERS[goal]) values[lever.id] = lever.realityStart;
       const result = computeLeverContributions(goal, setting, BASELINE_FOR[goal], values);
       expect(Math.abs(result.totalMargin)).toBeLessThan(1_000);
     }
