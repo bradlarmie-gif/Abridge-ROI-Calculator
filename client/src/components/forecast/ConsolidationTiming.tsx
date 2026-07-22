@@ -209,30 +209,27 @@ export default function ConsolidationTiming({
                 </div>
               </div>
 
-              <div className="relative h-[30px]">
-                {/* base rail, full Today -> horizon */}
-                <div className="absolute top-1/2 -translate-y-1/2 h-4 rounded-[5px] bg-[#EAE3D8]" style={{ left: `${L0}%`, right: `${100 - xEnd}%` }} />
-                {/* SAVING zone (sunset -> horizon), ramping in over the displacement window, labeled on the bar */}
-                {xEnd > xS && (
-                  <div className="absolute top-1/2 -translate-y-1/2 h-4 rounded-[5px] flex items-center overflow-hidden" style={{ left: `${xS}%`, width: `${xEnd - xS}%`, backgroundImage: `linear-gradient(to right, rgba(234,44,0,0.07) 0%, rgba(234,44,0,0.2) ${rampPct}%, rgba(234,44,0,0.2) 100%)` }}>
-                    {xEnd - xS > 10 && <span className="pl-3 text-[8.5px] font-bold uppercase tracking-[0.08em] text-[#C0350F] whitespace-nowrap">Saving</span>}
-                  </div>
-                )}
-                {/* STILL PAYING zone (Today -> sunset), labeled on the bar */}
-                <div className="absolute top-1/2 -translate-y-1/2 h-4 rounded-[5px] bg-[#9C8F7D] flex items-center overflow-hidden" style={{ left: `${L0}%`, width: `${xS - L0}%` }}>
-                  {xS - L0 > 14 && <span className="pl-3 text-[8.5px] font-bold uppercase tracking-[0.08em] text-white whitespace-nowrap">Still paying</span>}
-                </div>
+              <div className="relative h-[36px]">
+                {/* quiet phase labels above the bar (editorial, not crammed inside it) */}
+                {xS - L0 > 10 && <div className="absolute top-0 text-[8px] font-bold uppercase tracking-[0.16em] whitespace-nowrap" style={{ left: `${(L0 + xS) / 2}%`, transform: "translateX(-50%)", color: "#A79A88" }}>Still paying</div>}
+                {xEnd - xS > 10 && <div className="absolute top-0 text-[8px] font-bold uppercase tracking-[0.16em] whitespace-nowrap" style={{ left: `${(xS + xEnd) / 2}%`, transform: "translateX(-50%)", color: "#C0350F" }}>Saving</div>}
+                {/* slim base rail, full Today -> horizon */}
+                <div className="absolute rounded-[3px] bg-[#EAE3D8]" style={{ top: "22px", transform: "translateY(-50%)", height: "5px", left: `${L0}%`, right: `${100 - xEnd}%` }} />
+                {/* saving (ramps to solid coral over the displacement window) */}
+                {xEnd > xS && <div className="absolute rounded-[3px]" style={{ top: "22px", transform: "translateY(-50%)", height: "5px", left: `${xS}%`, width: `${xEnd - xS}%`, backgroundImage: `linear-gradient(to right, rgba(234,44,0,0.16) 0%, #EA2C00 ${rampPct}%, #EA2C00 100%)` }} />}
+                {/* still paying (Today -> sunset) */}
+                <div className="absolute rounded-[3px] bg-[#9C8F7D]" style={{ top: "22px", transform: "translateY(-50%)", height: "5px", left: `${L0}%`, width: `${xS - L0}%` }} />
                 {/* contract-ends tick + label */}
-                <div className="absolute top-1/2 w-0.5 h-[26px] rounded-[1px] bg-[#B4A99B]" style={{ left: `${xC}%`, transform: "translate(-50%,-50%)" }} />
-                <div className="absolute text-[8.5px] font-semibold text-[#9CA3AF] whitespace-nowrap" style={{ left: `${xC}%`, top: "100%", transform: "translateX(-50%)" }}>contract ends</div>
-                {/* sunset thumb = the cut point you drag (sits at the paying -> saving hand-off) */}
-                <div className="absolute top-1/2 w-[18px] h-[18px] rounded-full bg-[#EA2C00] border-[3px] border-white shadow-[0_2px_6px_rgba(234,44,0,0.4)] pointer-events-none" style={{ left: `${xS}%`, transform: "translate(-50%,-50%)" }} />
+                <div className="absolute rounded-[1px] bg-[#C4B8A8]" style={{ top: "22px", transform: "translate(-50%,-50%)", width: "1.5px", height: "13px", left: `${xC}%` }} />
+                <div className="absolute text-[8px] font-semibold text-[#9CA3AF] whitespace-nowrap" style={{ top: "32px", left: `${xC}%`, transform: "translateX(-50%)" }}>contract ends</div>
+                {/* sunset dot = the cut point you drag (sits at the paying -> saving hand-off) */}
+                <div className="absolute rounded-full bg-[#EA2C00] border-[2.5px] border-[#FDFBF8] shadow-[0_1px_5px_rgba(234,44,0,0.4)] pointer-events-none" style={{ top: "22px", transform: "translate(-50%,-50%)", width: "15px", height: "15px", left: `${xS}%` }} />
                 <input
                   type="range" min={0} max={sliderMax} step={1}
                   value={Math.min(t.sunsetMonths, sliderMax)}
                   onChange={(e) => onUpdateItem(t.id, { sunsetMonths: Number(e.target.value) })}
-                  className="absolute top-1/2 -translate-y-1/2 h-[24px] m-0 opacity-0 cursor-pointer"
-                  style={{ left: `${L0}%`, width: `${xC - L0}%` }}
+                  className="absolute m-0 opacity-0 cursor-pointer"
+                  style={{ top: "22px", transform: "translateY(-50%)", height: "22px", left: `${L0}%`, width: `${xC - L0}%` }}
                   aria-label={`When ${t.name} sunsets`}
                   data-testid={`ar-timing-slider-${t.id}`}
                 />
