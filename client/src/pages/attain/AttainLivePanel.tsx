@@ -2,7 +2,7 @@ import { Target, ArrowRight, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import AttainmentCurve, { USUAL_CEILING_PCT } from "@/components/attain/AttainmentCurve";
+import AttainmentCurve from "@/components/attain/AttainmentCurve";
 import { leversFor, defaultLeverValues, defaultRealizationPct, isDecisionCommitted, type LeverValues, type MultiGoalContributionsResult } from "@/lib/attain/attainLevers";
 import { GOAL_CATALOG } from "@/lib/attain/attainGoals";
 import type { AttainState, GoalId, SettingGoalContent } from "@/lib/attain/attainTypes";
@@ -299,7 +299,6 @@ export default function AttainLivePanel({
                 monthsElapsed={state.monthsElapsed}
                 totalMonths={state.totalMonths}
                 goalLabel={formatCompact(target.margin)}
-                usualLabel={`~${formatCompact(target.margin * (USUAL_CEILING_PCT / 100))}`}
               />
             </div>
           </div>

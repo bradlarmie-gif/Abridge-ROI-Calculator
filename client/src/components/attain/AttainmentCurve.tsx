@@ -1,13 +1,14 @@
 /**
- * The "Closing the Gap" attainment curve — an inline SVG reproducing the
- * locked mockup (`value-attainment-patient-access.html`, page 2): a coral
- * "plan" line from deal-signed through Today to the Goal (always 100%), a
- * dashed gray "what usually happens" line most deployments drift onto, and
- * the shaded gap between them.
+ * The "Closing the Gap" attainment curve — an inline SVG: a coral "plan"
+ * line from the start point through Today to the Goal (always 100%), with the
+ * area beneath the plan shaded. On the Progress tab it plots the real, dated
+ * climb (see `actualPoints`) instead of the synthetic plan line, so the only
+ * comparison it ever draws is the plan/target versus where you actually are.
+ * There is no illustrative "drift" line: on a tracking view the honest
+ * comparison is plan versus actual, never a fabricated typical-outcome line.
  *
  * Geometry is parametric (driven by `pct`/`monthsElapsed`/`totalMonths`) so
- * it renders correctly for any goal/setting/ambition combination, not just
- * the one scenario baked into the mockup.
+ * it renders correctly for any goal/setting/ambition combination.
  */
 
 interface Point {
@@ -24,8 +25,6 @@ interface AttainmentCurveProps {
   totalMonths: number;
   /** e.g. "$760K · 3,800 visits" */
   goalLabel: string;
-  /** e.g. "~$300K" */
-  usualLabel: string;
   /** Label for the x-axis's left anchor — "Deal signed" on Strategy's
    * projected curve, "Committed" on Progress's real one. */
   startLabel?: string;
@@ -46,11 +45,6 @@ const X0 = 60;
 const X1 = 700;
 const Y_BASE = 250; // 0%
 const Y_TOP = 62; // 100%
-// Illustrative ceiling for "what usually happens" — drift settles around here
-// across the goal catalog's usual-vs-goal ratios (~38-42% of the plan).
-// Exported so callers can derive a matching dollar figure for the "usual"
-// label without re-deriving this assumption themselves.
-export const USUAL_CEILING_PCT = 39;
 
 const xAt = (frac: number) => X0 + Math.max(0, Math.min(1, frac)) * (X1 - X0);
 const yAt = (pct: number) => Y_BASE - (Math.max(0, Math.min(100, pct)) / 100) * (Y_BASE - Y_TOP);
@@ -70,11 +64,11 @@ function buildPath(points: Point[]): string {
 // Every other label on this chart sits at a fixed spot relative to its own
 // marker, but the "Today" marker moves across the full width of the curve
 // as the slider (or the real dated log) moves — so it's the one label that
-// can end up sharing canvas with a fixed one: "the gap" near the start,
-// "Goal" near the end. Rather than hand-tune thresholds for those two
-// spots, estimate each label's actual footprint from its own text (so a
-// long dollar figure is protected exactly like a short one) and only move
-// "Today" when its default position truly overlaps a neighbor.
+// can end up sharing canvas with the fixed "Goal" label near the end.
+// Rather than hand-tune thresholds, estimate each label's actual footprint
+// from its own text (so a long dollar figure is protected exactly like a
+// short one) and only move "Today" when its default position truly overlaps
+// a neighbor.
 interface LabelBox {
   left: number;
   right: number;
@@ -111,7 +105,6 @@ export function AttainmentCurve({
   monthsElapsed,
   totalMonths,
   goalLabel,
-  usualLabel,
   startLabel = "Deal signed",
   actualPoints,
 }: AttainmentCurveProps) {
@@ -141,43 +134,25 @@ export function AttainmentCurve({
   const projectedCoralPoints: Point[] = [{ x: xToday, y: yTodayCoral }, { x: X1, y: yGoalCoral }];
   const coralPoints: Point[] = [...solidCoralPoints, { x: X1, y: yGoalCoral }];
 
-  const usualTodayPct = USUAL_CEILING_PCT * Math.max(0, Math.min(1, todayFrac));
-  const yUsualToday = yAt(usualTodayPct);
-  const yUsualFinal = yAt(USUAL_CEILING_PCT);
-  const grayPoints: Point[] = [
-    { x: X0, y: Y_BASE },
-    { x: xToday, y: yUsualToday },
-    { x: X1, y: yUsualFinal },
-  ];
-
-  const reversedGray = [...grayPoints].reverse();
-  let backPath = "";
-  for (let i = 1; i < reversedGray.length; i++) backPath += ` ${smoothSegment(reversedGray[i - 1], reversedGray[i])}`;
-  const gapPath = `${buildPath(coralPoints)} L${reversedGray[0].x},${reversedGray[0].y}${backPath} Z`;
+  // The shaded area sits BENEATH the plan line — from the plan line down to
+  // the baseline and back to the start. There is no second "drift" line to
+  // shade a gap against; the only comparison this curve draws is the
+  // plan/target versus where you actually are.
+  const areaPath = `${buildPath(coralPoints)} L${X1},${Y_BASE} L${coralPoints[0].x},${Y_BASE} Z`;
 
   const yOnPaceToday = yAt(onPacePct);
-  // "the gap" label sits roughly halfway between deal-signed and Today,
-  // vertically centered between the coral and gray lines at that point.
-  const gapLabelX = X0 + (xToday - X0) * 0.55;
-  const gapCoralY = (Y_BASE + yTodayCoral) / 2;
-  const gapGrayY = (Y_BASE + yUsualToday) / 2;
-  const gapLabelY = Math.max(Y_TOP + 10, Math.min(Y_BASE - 10, (gapCoralY + gapGrayY) / 2));
 
-  // Fixed labels first — Goal and "what usually happens" never move; only
-  // "Today" adapts around them.
+  // Fixed label first — Goal never moves; only "Today" adapts around it. On
+  // the Progress tab (real dated log) the moving marker reads "Today" against
+  // the measured climb; on the Strategy tab it is an on-pace projection, not
+  // measured, so it reads "On-pace" to keep the two unmistakably distinct.
   const todayPctValue = Math.round(hasActual ? lastActual!.pct : pct);
-  const todayText = `Today · ${todayPctValue}%`;
+  const todayText = hasActual ? `Today · ${todayPctValue}%` : `On-pace · ${todayPctValue}%`;
   const goalText = `Goal · ${goalLabel}`;
-  const usualText = `What usually happens · ${usualLabel}`;
-  const gapText = "the gap";
 
   const goalTextX = X1 - 10;
   const goalTextY = yGoalCoral - 14;
-  const usualTextX = X1 - 10;
-  const usualTextY = yUsualFinal + 22;
   const goalBox = labelBox(goalTextX, goalTextY, goalText, 13, 700, "end");
-  const usualBox = labelBox(usualTextX, usualTextY, usualText, 12, 500, "end");
-  const gapBox = labelBox(gapLabelX, gapLabelY, gapText, 13, 600, "start");
 
   // Right-anchored, so on day one (today essentially equal to the start
   // point — the common Progress-tab case right after committing) it needs
@@ -187,23 +162,12 @@ export function AttainmentCurve({
   const todayAboveY = yTodayCoral - 10;
   const todayAboveBox = labelBox(todayX, todayAboveY, todayText, 13, 600, "end");
   // Today's default sits just above its own dot. That collides with "Goal"
-  // when today is parked at or near the goal (the right-edge case this fix
-  // targets), and with "the gap" when today is at or near the start (the
-  // gap is still razor-thin there, so its label crowds the same corner).
-  // Either way, drop Today below its dot instead of touching the label
-  // it collided with.
+  // when today is parked at or near the goal (the right-edge case). Drop
+  // Today below its dot instead of touching the label it collided with.
   const todayBelowY = yTodayCoral + 22;
-  const needsFlip = boxesCollide(todayAboveBox, goalBox) || boxesCollide(todayAboveBox, gapBox);
-  let todayTextY = needsFlip ? todayBelowY : todayAboveY;
-  let todayTextX = todayX;
-  // Belt-and-suspenders: if the chosen position still grazes "what usually
-  // happens" (an extreme, heavily compressed totalMonths could do this),
-  // nudge Today further left rather than let it collide silently.
-  const settledBox = labelBox(todayTextX, todayTextY, todayText, 13, 600, "end");
-  if (boxesCollide(settledBox, usualBox)) {
-    const overlap = settledBox.right - usualBox.left;
-    todayTextX = Math.max(120, todayTextX - overlap - 8);
-  }
+  const needsFlip = boxesCollide(todayAboveBox, goalBox);
+  const todayTextY = needsFlip ? todayBelowY : todayAboveY;
+  const todayTextX = todayX;
 
   // The Today and Goal dots sit at the exact same point when today has
   // reached the goal — draw Today on top with a thin white ring so both
@@ -222,10 +186,9 @@ export function AttainmentCurve({
         </div>
         <div className="flex-1">
           <svg viewBox={`0 0 ${VB_W} ${VB_H}`} className="w-full h-auto block" data-testid="svg-attainment-curve">
-            <path d={gapPath} fill="#EA2C00" opacity="0.05" />
+            <path d={areaPath} fill="#EA2C00" opacity="0.05" />
             <line x1={X0} y1={Y_BASE} x2={X1} y2={Y_BASE} stroke="#E7E0D6" strokeWidth={1.5} />
             <line x1={xToday} y1={Y_BASE} x2={xToday} y2={yTodayCoral} stroke="#D8CFC4" strokeWidth={1} strokeDasharray="3 3" />
-            <path d={buildPath(grayPoints)} fill="none" stroke="#B4B4B4" strokeWidth={2} strokeDasharray="6 4" />
             {/* Solid = observed (the real dated climb, or the whole plan
                 line when there is no dated log). Dashed = not yet observed,
                 only ever drawn when we have real entries to fall short of. */}
@@ -256,23 +219,16 @@ export function AttainmentCurve({
               strokeWidth={todayAtGoal ? 1.5 : 0}
               data-testid="marker-today"
             />
-            <circle cx={X1} cy={yUsualFinal} r={5} fill="#fff" stroke="#B4B4B4" strokeWidth={2} />
 
             {/* Position resolved above: sits just above the dot by default,
                 and drops below it whenever that default would collide with
-                "Goal" (today at/near the goal) or "the gap" (today at/near
-                the start) — see the collision-avoidance block above. */}
+                "Goal" (today at/near the goal) — see the collision-avoidance
+                block above. */}
             <text x={todayTextX} y={todayTextY} textAnchor="end" style={{ font: "600 13px Inter", fill: "#1A1A1A" }} data-testid="text-attainment-today">
               {todayText}
             </text>
             <text x={goalTextX} y={goalTextY} textAnchor="end" style={{ font: "700 13px Inter", fill: "#EA2C00" }} data-testid="text-attainment-goal">
               {goalText}
-            </text>
-            <text x={usualTextX} y={usualTextY} textAnchor="end" style={{ font: "500 12px Inter", fill: "#8C8C8C" }}>
-              {usualText}
-            </text>
-            <text x={gapLabelX} y={gapLabelY} style={{ font: "italic 600 13px Inter", fill: "#B4B4B4" }}>
-              {gapText}
             </text>
           </svg>
           <div className="flex justify-between text-[9.5px] font-semibold uppercase tracking-[1.5px] text-[#666666] mt-1 ml-[34px]">

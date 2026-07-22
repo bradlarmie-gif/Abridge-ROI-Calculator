@@ -86,7 +86,6 @@ export interface SettingGoalContent {
     key: AmbitionKey;
     label: string;
     goalLabel: string;
-    usualLabel: string;
     goalMargin: number;
   }[];
 }

@@ -92,14 +92,6 @@ function retentionPrize(setting: AttainSetting, statedScale: number): RetentionP
   };
 }
 
-/** ~1/3 of the goal, matching the original illustrative copy's "what
- * usually happens" cushion under every ambition tier. Illustrative only —
- * it is not derived from the engine because "what usually happens" is a
- * narrative device, not a chain output. */
-function usualFraction(value: number): number {
-  return Math.round(value / 3);
-}
-
 // ────────────────────────────────────────────────────────────────────────
 // GOAL_CATALOG - structural templates, one per goal id
 // ────────────────────────────────────────────────────────────────────────
@@ -641,9 +633,9 @@ const outpatientAccess: SettingGoalContent = {
   renewal:
     'The conversation is no longer "was it worth the price." It is "we set an access goal together, we are on our way and climbing, here is the runway on the rest." The capacity was always there. This is the plan that converted it. Price becomes progress.',
   ambition: [
-    { key: "conservative", label: "Conservative", goalLabel: "Goal · $460K · 2,300 visits", usualLabel: "What usually happens · ~$180K", goalMargin: 460_000 },
-    { key: "typical", label: "Typical", goalLabel: "Goal · $760K · 3,800 visits", usualLabel: "What usually happens · ~$300K", goalMargin: 760_000 },
-    { key: "ambitious", label: "Ambitious", goalLabel: "Goal · $1.06M · 5,300 visits", usualLabel: "What usually happens · ~$420K", goalMargin: 1_060_000 },
+    { key: "conservative", label: "Conservative", goalLabel: "Goal · $460K · 2,300 visits", goalMargin: 460_000 },
+    { key: "typical", label: "Typical", goalLabel: "Goal · $760K · 3,800 visits", goalMargin: 760_000 },
+    { key: "ambitious", label: "Ambitious", goalLabel: "Goal · $1.06M · 5,300 visits", goalMargin: 1_060_000 },
   ],
 };
 
@@ -714,9 +706,9 @@ const outpatientRetention: SettingGoalContent = {
   renewal:
     'The conversation is no longer "was it worth the price." It is "we set out to avoid the departures burnout was driving, we are on our way and holding the relief, here is the runway on the rest." The relief was always real. This is the plan that made it stick. Price becomes progress.',
   ambition: [
-    { key: "conservative", label: "Conservative", goalLabel: `Goal · ${fmtMoneyCompact(outpatientRetentionPrize.conservative.value)} · ${fmtOneDecimal(outpatientRetentionPrize.conservative.departures)} departures avoided`, usualLabel: `What usually happens · ~${fmtMoneyCompact(usualFraction(outpatientRetentionPrize.conservative.value))}`, goalMargin: outpatientRetentionPrize.conservative.value },
-    { key: "typical", label: "Typical", goalLabel: `Goal · ${fmtMoneyCompact(outpatientRetentionPrize.typical.value)} · ${fmtOneDecimal(outpatientRetentionPrize.typical.departures)} departures avoided`, usualLabel: `What usually happens · ~${fmtMoneyCompact(usualFraction(outpatientRetentionPrize.typical.value))}`, goalMargin: outpatientRetentionPrize.typical.value },
-    { key: "ambitious", label: "Ambitious", goalLabel: `Goal · ${fmtMoneyCompact(outpatientRetentionPrize.ambitious.value)} · ${fmtOneDecimal(outpatientRetentionPrize.ambitious.departures)} departures avoided`, usualLabel: `What usually happens · ~${fmtMoneyCompact(usualFraction(outpatientRetentionPrize.ambitious.value))}`, goalMargin: outpatientRetentionPrize.ambitious.value },
+    { key: "conservative", label: "Conservative", goalLabel: `Goal · ${fmtMoneyCompact(outpatientRetentionPrize.conservative.value)} · ${fmtOneDecimal(outpatientRetentionPrize.conservative.departures)} departures avoided`, goalMargin: outpatientRetentionPrize.conservative.value },
+    { key: "typical", label: "Typical", goalLabel: `Goal · ${fmtMoneyCompact(outpatientRetentionPrize.typical.value)} · ${fmtOneDecimal(outpatientRetentionPrize.typical.departures)} departures avoided`, goalMargin: outpatientRetentionPrize.typical.value },
+    { key: "ambitious", label: "Ambitious", goalLabel: `Goal · ${fmtMoneyCompact(outpatientRetentionPrize.ambitious.value)} · ${fmtOneDecimal(outpatientRetentionPrize.ambitious.departures)} departures avoided`, goalMargin: outpatientRetentionPrize.ambitious.value },
   ],
 };
 
@@ -784,9 +776,9 @@ const outpatientRevenue: SettingGoalContent = {
   renewal:
     'The conversation is no longer "was it worth the price." It is "we set out to capture the care that was already documented, we are on our way, here is the runway on the rest." The work was always being done. This is the plan that captured it. Price becomes progress.',
   ambition: [
-    { key: "conservative", label: "Conservative", goalLabel: "Goal · $1.1M captured", usualLabel: "What usually happens · ~$380K", goalMargin: 1_100_000 },
-    { key: "typical", label: "Typical", goalLabel: "Goal · $2.1M captured", usualLabel: "What usually happens · ~$700K", goalMargin: 2_100_000 },
-    { key: "ambitious", label: "Ambitious", goalLabel: "Goal · $3.2M captured", usualLabel: "What usually happens · ~$1.0M", goalMargin: 3_200_000 },
+    { key: "conservative", label: "Conservative", goalLabel: "Goal · $1.1M captured", goalMargin: 1_100_000 },
+    { key: "typical", label: "Typical", goalLabel: "Goal · $2.1M captured", goalMargin: 2_100_000 },
+    { key: "ambitious", label: "Ambitious", goalLabel: "Goal · $3.2M captured", goalMargin: 3_200_000 },
   ],
 };
 
@@ -854,9 +846,9 @@ const edAccess: SettingGoalContent = {
   renewal:
     'The conversation is no longer "was it worth the price." It is "we set a 1,200-visit recovery goal together, we are most of the way there and climbing, here is the runway on the rest." The coverage was always there. This is the plan that converted it. Price becomes progress.',
   ambition: [
-    { key: "conservative", label: "Conservative", goalLabel: "Goal · $320K · 700 visits recovered", usualLabel: "What usually happens · ~$130K", goalMargin: 320_000 },
-    { key: "typical", label: "Typical", goalLabel: "Goal · $540K · 1,200 visits recovered", usualLabel: "What usually happens · ~$220K", goalMargin: 540_000 },
-    { key: "ambitious", label: "Ambitious", goalLabel: "Goal · $780K · 1,700 visits recovered", usualLabel: "What usually happens · ~$310K", goalMargin: 780_000 },
+    { key: "conservative", label: "Conservative", goalLabel: "Goal · $320K · 700 visits recovered", goalMargin: 320_000 },
+    { key: "typical", label: "Typical", goalLabel: "Goal · $540K · 1,200 visits recovered", goalMargin: 540_000 },
+    { key: "ambitious", label: "Ambitious", goalLabel: "Goal · $780K · 1,700 visits recovered", goalMargin: 780_000 },
   ],
 };
 
@@ -927,9 +919,9 @@ const edRetention: SettingGoalContent = {
   renewal:
     'The conversation is no longer "was it worth the price." It is "we set out to avoid three departures, we are well on the way and holding the relief, here is the runway on the rest." The relief was always real. This is the plan that made it stick. Price becomes progress.',
   ambition: [
-    { key: "conservative", label: "Conservative", goalLabel: `Goal · ${fmtMoneyCompact(edRetentionPrize.conservative.value)} · ${fmtOneDecimal(edRetentionPrize.conservative.departures)} departures avoided`, usualLabel: `What usually happens · ~${fmtMoneyCompact(usualFraction(edRetentionPrize.conservative.value))}`, goalMargin: edRetentionPrize.conservative.value },
-    { key: "typical", label: "Typical", goalLabel: `Goal · ${fmtMoneyCompact(edRetentionPrize.typical.value)} · ${fmtOneDecimal(edRetentionPrize.typical.departures)} departures avoided`, usualLabel: `What usually happens · ~${fmtMoneyCompact(usualFraction(edRetentionPrize.typical.value))}`, goalMargin: edRetentionPrize.typical.value },
-    { key: "ambitious", label: "Ambitious", goalLabel: `Goal · ${fmtMoneyCompact(edRetentionPrize.ambitious.value)} · ${fmtOneDecimal(edRetentionPrize.ambitious.departures)} departures avoided`, usualLabel: `What usually happens · ~${fmtMoneyCompact(usualFraction(edRetentionPrize.ambitious.value))}`, goalMargin: edRetentionPrize.ambitious.value },
+    { key: "conservative", label: "Conservative", goalLabel: `Goal · ${fmtMoneyCompact(edRetentionPrize.conservative.value)} · ${fmtOneDecimal(edRetentionPrize.conservative.departures)} departures avoided`, goalMargin: edRetentionPrize.conservative.value },
+    { key: "typical", label: "Typical", goalLabel: `Goal · ${fmtMoneyCompact(edRetentionPrize.typical.value)} · ${fmtOneDecimal(edRetentionPrize.typical.departures)} departures avoided`, goalMargin: edRetentionPrize.typical.value },
+    { key: "ambitious", label: "Ambitious", goalLabel: `Goal · ${fmtMoneyCompact(edRetentionPrize.ambitious.value)} · ${fmtOneDecimal(edRetentionPrize.ambitious.departures)} departures avoided`, goalMargin: edRetentionPrize.ambitious.value },
   ],
 };
 
@@ -997,9 +989,9 @@ const edRevenue: SettingGoalContent = {
   renewal:
     'The conversation is no longer "was it worth the price." It is "we set out to capture $980K in accurately coded care, we are well on the way, here is the runway on the rest." The work was always being done. This is the plan that captured it. Price becomes progress.',
   ambition: [
-    { key: "conservative", label: "Conservative", goalLabel: "Goal · $520K captured", usualLabel: "What usually happens · ~$190K", goalMargin: 520_000 },
-    { key: "typical", label: "Typical", goalLabel: "Goal · $980K captured", usualLabel: "What usually happens · ~$340K", goalMargin: 980_000 },
-    { key: "ambitious", label: "Ambitious", goalLabel: "Goal · $1.5M captured", usualLabel: "What usually happens · ~$520K", goalMargin: 1_500_000 },
+    { key: "conservative", label: "Conservative", goalLabel: "Goal · $520K captured", goalMargin: 520_000 },
+    { key: "typical", label: "Typical", goalLabel: "Goal · $980K captured", goalMargin: 980_000 },
+    { key: "ambitious", label: "Ambitious", goalLabel: "Goal · $1.5M captured", goalMargin: 1_500_000 },
   ],
 };
 
@@ -1067,9 +1059,9 @@ const inpatientRevenue: SettingGoalContent = {
   renewal:
     'The conversation is no longer "was it worth the price." It is "we set out to protect $1.6M in DRG weight the acuity already earned, here is where we are and the runway on the rest." The acuity was always being managed. This is the plan that let the DRG reflect it. Price becomes progress.',
   ambition: [
-    { key: "conservative", label: "Conservative", goalLabel: "Goal · $850K protected", usualLabel: "What usually happens · ~$300K", goalMargin: 850_000 },
-    { key: "typical", label: "Typical", goalLabel: "Goal · $1.6M protected", usualLabel: "What usually happens · ~$560K", goalMargin: 1_600_000 },
-    { key: "ambitious", label: "Ambitious", goalLabel: "Goal · $2.4M protected", usualLabel: "What usually happens · ~$840K", goalMargin: 2_400_000 },
+    { key: "conservative", label: "Conservative", goalLabel: "Goal · $850K protected", goalMargin: 850_000 },
+    { key: "typical", label: "Typical", goalLabel: "Goal · $1.6M protected", goalMargin: 1_600_000 },
+    { key: "ambitious", label: "Ambitious", goalLabel: "Goal · $2.4M protected", goalMargin: 2_400_000 },
   ],
 };
 
@@ -1140,9 +1132,9 @@ const inpatientRetention: SettingGoalContent = {
   renewal:
     'The conversation is no longer "was it worth the price." It is "we set out to avoid the departures burnout was driving, we are on our way and holding the relief, here is the runway on the rest." The relief was always real. This is the plan that made it stick. Price becomes progress.',
   ambition: [
-    { key: "conservative", label: "Conservative", goalLabel: `Goal · ${fmtMoneyCompact(inpatientRetentionPrize.conservative.value)} · ${fmtOneDecimal(inpatientRetentionPrize.conservative.departures)} departures avoided`, usualLabel: `What usually happens · ~${fmtMoneyCompact(usualFraction(inpatientRetentionPrize.conservative.value))}`, goalMargin: inpatientRetentionPrize.conservative.value },
-    { key: "typical", label: "Typical", goalLabel: `Goal · ${fmtMoneyCompact(inpatientRetentionPrize.typical.value)} · ${fmtOneDecimal(inpatientRetentionPrize.typical.departures)} departures avoided`, usualLabel: `What usually happens · ~${fmtMoneyCompact(usualFraction(inpatientRetentionPrize.typical.value))}`, goalMargin: inpatientRetentionPrize.typical.value },
-    { key: "ambitious", label: "Ambitious", goalLabel: `Goal · ${fmtMoneyCompact(inpatientRetentionPrize.ambitious.value)} · ${fmtOneDecimal(inpatientRetentionPrize.ambitious.departures)} departures avoided`, usualLabel: `What usually happens · ~${fmtMoneyCompact(usualFraction(inpatientRetentionPrize.ambitious.value))}`, goalMargin: inpatientRetentionPrize.ambitious.value },
+    { key: "conservative", label: "Conservative", goalLabel: `Goal · ${fmtMoneyCompact(inpatientRetentionPrize.conservative.value)} · ${fmtOneDecimal(inpatientRetentionPrize.conservative.departures)} departures avoided`, goalMargin: inpatientRetentionPrize.conservative.value },
+    { key: "typical", label: "Typical", goalLabel: `Goal · ${fmtMoneyCompact(inpatientRetentionPrize.typical.value)} · ${fmtOneDecimal(inpatientRetentionPrize.typical.departures)} departures avoided`, goalMargin: inpatientRetentionPrize.typical.value },
+    { key: "ambitious", label: "Ambitious", goalLabel: `Goal · ${fmtMoneyCompact(inpatientRetentionPrize.ambitious.value)} · ${fmtOneDecimal(inpatientRetentionPrize.ambitious.departures)} departures avoided`, goalMargin: inpatientRetentionPrize.ambitious.value },
   ],
 };
 
@@ -1211,9 +1203,9 @@ const nursingQuality: SettingGoalContent = {
   renewal:
     'The conversation is no longer "was it worth the price." It is "we set out to prevent the harm this documentation makes visible, we are on our way, here is the runway on the rest." The documentation was always getting timelier. This is the plan that turned it into fewer events. Price becomes progress.',
   ambition: [
-    { key: "conservative", label: "Conservative", goalLabel: "Goal · $900K · 12 events prevented", usualLabel: "What usually happens · ~$260K", goalMargin: 900_000 },
-    { key: "typical", label: "Typical", goalLabel: "Goal · $1.6M · 22 events prevented", usualLabel: "What usually happens · ~$450K", goalMargin: 1_600_000 },
-    { key: "ambitious", label: "Ambitious", goalLabel: "Goal · $2.3M · 32 events prevented", usualLabel: "What usually happens · ~$650K", goalMargin: 2_300_000 },
+    { key: "conservative", label: "Conservative", goalLabel: "Goal · $900K · 12 events prevented", goalMargin: 900_000 },
+    { key: "typical", label: "Typical", goalLabel: "Goal · $1.6M · 22 events prevented", goalMargin: 1_600_000 },
+    { key: "ambitious", label: "Ambitious", goalLabel: "Goal · $2.3M · 32 events prevented", goalMargin: 2_300_000 },
   ],
 };
 
@@ -1284,9 +1276,9 @@ const nursingRetention: SettingGoalContent = {
   renewal:
     'The conversation is no longer "was it worth the price." It is "we set out to avoid nine departures, we are well on the way and holding the relief, here is the runway on the rest." The relief was always real. This is the plan that made it stick. Price becomes progress.',
   ambition: [
-    { key: "conservative", label: "Conservative", goalLabel: `Goal · ${fmtMoneyCompact(nursingRetentionPrize.conservative.value)} · ${fmtOneDecimal(nursingRetentionPrize.conservative.departures)} departures avoided`, usualLabel: `What usually happens · ~${fmtMoneyCompact(usualFraction(nursingRetentionPrize.conservative.value))}`, goalMargin: nursingRetentionPrize.conservative.value },
-    { key: "typical", label: "Typical", goalLabel: `Goal · ${fmtMoneyCompact(nursingRetentionPrize.typical.value)} · ${fmtOneDecimal(nursingRetentionPrize.typical.departures)} departures avoided`, usualLabel: `What usually happens · ~${fmtMoneyCompact(usualFraction(nursingRetentionPrize.typical.value))}`, goalMargin: nursingRetentionPrize.typical.value },
-    { key: "ambitious", label: "Ambitious", goalLabel: `Goal · ${fmtMoneyCompact(nursingRetentionPrize.ambitious.value)} · ${fmtOneDecimal(nursingRetentionPrize.ambitious.departures)} departures avoided`, usualLabel: `What usually happens · ~${fmtMoneyCompact(usualFraction(nursingRetentionPrize.ambitious.value))}`, goalMargin: nursingRetentionPrize.ambitious.value },
+    { key: "conservative", label: "Conservative", goalLabel: `Goal · ${fmtMoneyCompact(nursingRetentionPrize.conservative.value)} · ${fmtOneDecimal(nursingRetentionPrize.conservative.departures)} departures avoided`, goalMargin: nursingRetentionPrize.conservative.value },
+    { key: "typical", label: "Typical", goalLabel: `Goal · ${fmtMoneyCompact(nursingRetentionPrize.typical.value)} · ${fmtOneDecimal(nursingRetentionPrize.typical.departures)} departures avoided`, goalMargin: nursingRetentionPrize.typical.value },
+    { key: "ambitious", label: "Ambitious", goalLabel: `Goal · ${fmtMoneyCompact(nursingRetentionPrize.ambitious.value)} · ${fmtOneDecimal(nursingRetentionPrize.ambitious.departures)} departures avoided`, goalMargin: nursingRetentionPrize.ambitious.value },
   ],
 };
 
@@ -1354,9 +1346,9 @@ const nursingCapacity: SettingGoalContent = {
   renewal:
     'The conversation is no longer "was it worth the price." It is "we set out to take out $520K of documentation-driven overtime, we are well on the way, here is the runway on the rest." The overtime was always partly the charting. This is the plan that took out that share. Price becomes progress.',
   ambition: [
-    { key: "conservative", label: "Conservative", goalLabel: "Goal · $290K · 3,900 OT hrs avoided", usualLabel: "What usually happens · ~$100K", goalMargin: 290_000 },
-    { key: "typical", label: "Typical", goalLabel: "Goal · $520K · 6,900 OT hrs avoided", usualLabel: "What usually happens · ~$170K", goalMargin: 520_000 },
-    { key: "ambitious", label: "Ambitious", goalLabel: "Goal · $760K · 10,100 OT hrs avoided", usualLabel: "What usually happens · ~$250K", goalMargin: 760_000 },
+    { key: "conservative", label: "Conservative", goalLabel: "Goal · $290K · 3,900 OT hrs avoided", goalMargin: 290_000 },
+    { key: "typical", label: "Typical", goalLabel: "Goal · $520K · 6,900 OT hrs avoided", goalMargin: 520_000 },
+    { key: "ambitious", label: "Ambitious", goalLabel: "Goal · $760K · 10,100 OT hrs avoided", goalMargin: 760_000 },
   ],
 };
 
