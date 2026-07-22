@@ -94,7 +94,7 @@ export default function AttainLivePanel({
   // belongs to.
   //
   // `showDollar` decides whether a per-decision dollar is honest to show. A
-  // gated ladder (access, retention, quality) produces ONE number: the rungs
+  // gated ladder (access, retention, capacity) produces ONE number: the rungs
   // MULTIPLY, so no single rung is independently "worth $X" - the engine
   // attributes the whole total to the one binding decision and $0 to the
   // rest, which would read as real decisions being worthless. So a goal whose

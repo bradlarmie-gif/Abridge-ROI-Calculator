@@ -332,7 +332,7 @@ export const GOAL_CATALOG: Record<GoalId, GoalDef> = {
       {
         n: 5,
         name: "Claims clear first-pass",
-        signal: "First-pass rate, downcode rate",
+        signal: "First-pass rate, share paid below the coded level",
         ownerRole: "Billing",
         fragile: false,
         isAbridge: false,
@@ -755,7 +755,7 @@ const outpatientRevenue: SettingGoalContent = {
   bends: [
     "Coders and CDI act on the fuller documentation instead of defaulting to prior patterns.",
     "Provider queries close quickly rather than aging out.",
-    "The captured level clears first-pass and is not downcoded on appeal.",
+    "The captured level clears first-pass and holds up on appeal, instead of going out below the care that was delivered.",
   ],
   bendsCloser: "The first two links are where plans like this usually slip, so every link below gets an owner and a date.",
   fragile:
@@ -968,7 +968,7 @@ const edRevenue: SettingGoalContent = {
   bends: [
     "Coders act on the fuller medical-decision-making documentation instead of defaulting to prior patterns.",
     "Provider queries close quickly rather than aging out.",
-    "The captured level clears first-pass and is not downcoded on appeal.",
+    "The captured level clears first-pass and holds up on appeal, instead of going out below the care that was delivered.",
   ],
   bendsCloser: "The first two links are where plans like this usually slip, so every link below gets an owner and a date.",
   fragile:

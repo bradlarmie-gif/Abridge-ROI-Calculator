@@ -192,7 +192,7 @@ function DecisionsTable({
   rows: Array<CommittedLever & { goal: GoalId }>;
   testId: string;
 }) {
-  // A gated ladder (access/retention/quality) attributes its whole total to
+  // A gated ladder (access/retention/capacity) attributes its whole total to
   // the single binding rung and $0 to the rest, so a per-row Worth would read
   // "$0 / 0% of its priority" on real decisions - the rungs multiply, no rung
   // is independently worth $X. So the Worth column only appears when two or
