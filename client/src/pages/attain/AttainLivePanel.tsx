@@ -1,5 +1,7 @@
-import { Target, ArrowRight } from "lucide-react";
+import { Target, ArrowRight, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import AttainmentCurve, { USUAL_CEILING_PCT } from "@/components/attain/AttainmentCurve";
 import { leversFor, defaultLeverValues, type LeverValues, type MultiGoalContributionsResult } from "@/lib/attain/attainLevers";
 import { GOAL_CATALOG } from "@/lib/attain/attainGoals";
@@ -18,6 +20,23 @@ function isLeverMoved(value: number | string[] | undefined, realityStart: number
   return typeof value === "number" && value !== realityStart;
 }
 
+/** A small, quiet info tooltip - same house `Tooltip` primitive every other
+ * Attain info-tip builds on (`AccessDecisionChain.tsx`'s `InfoTip`, etc.). */
+function InfoTip({ text, testid }: { text: string; testid: string }) {
+  return (
+    <Tooltip delayDuration={200}>
+      <TooltipTrigger asChild>
+        <span className="text-white/40 hover:text-white/70 transition-colors cursor-help inline-flex" data-testid={testid}>
+          <HelpCircle className="w-3 h-3" />
+        </span>
+      </TooltipTrigger>
+      <TooltipContent side="top" className="max-w-[240px] text-xs leading-relaxed">
+        <p>{text}</p>
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
 const SETTING_LABELS: Record<string, string> = { outpatient: "Outpatient", ed: "Emergency", inpatient: "Inpatient", nursing: "Nursing" };
 
 interface AttainLivePanelProps {
@@ -29,6 +48,18 @@ interface AttainLivePanelProps {
   step: AttainStepId;
   valuesByGoal: Partial<Record<GoalId, LeverValues>>;
   combined: MultiGoalContributionsResult | null;
+  /** The goal whose Build-the-case page is currently on screen, null on
+   * every other step - this is the priority the compact "Attributed to
+   * this plan" control below applies to. Moved here from Build the case's
+   * own column (see StepBuildCase.tsx's former `RealizationRateControl`)
+   * so it sits quietly under this priority's own running total instead of
+   * looming as its own card in the decision flow. */
+  activeGoal?: GoalId | null;
+  /** This priority's realization/attribution rate, 0-100, default 100 -
+   * only meaningful while `activeGoal` is set. See attainLevers.ts's
+   * `applyRealization`. */
+  realizationPct?: number;
+  onChangeRealization?: (pct: number) => void;
   /** The primary action for this step lives at the foot of this panel,
    * bottom-right, in Abridge coral, rather than a black pill at the bottom
    * of the page — one consistent home for "Continue" across the whole
@@ -47,6 +78,9 @@ export default function AttainLivePanel({
   step,
   valuesByGoal,
   combined,
+  activeGoal = null,
+  realizationPct = 100,
+  onChangeRealization,
   onNext,
   nextDisabled = false,
   nextLabel = "Continue",
@@ -149,6 +183,57 @@ export default function AttainLivePanel({
                 : combined.combinedMargin > 0
                   ? "Growing as you commit"
                   : "Every decision counts, keep going, the dollar appears once the chain is complete"}
+            </p>
+
+            {/* This priority's OWN share of the combined total above - only
+                worth calling out separately once there is more than one
+                priority to tell apart; with a single goal this number is
+                already the one printed above. */}
+            {activeGoal && goals.length > 1 && (
+              <div className="flex justify-between items-center gap-2 mt-3" data-testid={`text-attain-panel-priority-worth-${activeGoal}`}>
+                <span className="text-xs text-white/50">{GOAL_CATALOG[activeGoal].label}, this priority</span>
+                <span className="text-sm font-semibold text-white" data-testid={`text-attain-panel-priority-worth-value-${activeGoal}`}>
+                  {movedDecisions.some((d) => d.goal === activeGoal)
+                    ? formatCompact(combined.byGoal[activeGoal]?.totalMargin ?? 0)
+                    : "Not set yet"}
+                </span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Realization / attribution - the share of this priority's outcome
+            credited to this plan, only ever dialed DOWN from full credit.
+            Homed here (moved off Build the case's own column, see
+            StepBuildCase.tsx) so it sits quietly right under this
+            priority's own running total rather than looming as its own
+            card in the decision flow. */}
+        {isBuildCaseStep && activeGoal && combined && onChangeRealization && (
+          <div className="pt-3 border-t border-white/10" data-testid={`panel-attain-realization-${activeGoal}`}>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] uppercase tracking-widest text-white/40 flex items-center gap-1.5">
+                Attributed to this plan
+                <InfoTip
+                  text="The share of this outcome you attribute to this plan. Lower it when other efforts also move the number - it never adds credit, only removes it."
+                  testid={`tooltip-attain-realization-${activeGoal}`}
+                />
+              </span>
+              <span className="text-xs font-semibold text-white" data-testid={`text-attain-realization-value-${activeGoal}`}>
+                {realizationPct}%
+              </span>
+            </div>
+            <Slider
+              value={[realizationPct]}
+              onValueChange={(v) => onChangeRealization(v[0])}
+              min={0}
+              max={100}
+              step={5}
+              accent="coral"
+              className="w-full"
+              data-testid={`slider-attain-realization-${activeGoal}`}
+            />
+            <p className="text-[11px] text-white/40 mt-2" data-testid={`text-attain-realization-worth-${activeGoal}`}>
+              Dial down when other efforts also move this number.
             </p>
           </div>
         )}

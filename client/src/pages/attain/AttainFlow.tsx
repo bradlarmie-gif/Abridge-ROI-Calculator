@@ -760,7 +760,6 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
                 freedTimeSplit={freedTimeSplit}
                 onChangeFreedTimeSplit={handleFreedTimeSplitChange}
                 realizationPct={realizationByGoal[activeBuildCaseGoal] ?? 100}
-                onChangeRealization={handleChangeRealization}
                 onChangeLeverValue={handleChangeLeverValue}
                 stepNumber={stepIndex + 1}
                 totalSteps={stepOrder.length}
@@ -830,6 +829,11 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
                   step={step}
                   valuesByGoal={valuesByGoal}
                   combined={combined}
+                  activeGoal={activeBuildCaseGoal}
+                  realizationPct={activeBuildCaseGoal ? (realizationByGoal[activeBuildCaseGoal] ?? 100) : 100}
+                  onChangeRealization={(pct) => {
+                    if (activeBuildCaseGoal) handleChangeRealization(activeBuildCaseGoal, pct);
+                  }}
                   onNext={goNext}
                   nextDisabled={panelNext.disabled}
                   nextLabel={panelNext.label}

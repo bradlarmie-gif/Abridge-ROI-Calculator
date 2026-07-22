@@ -1,7 +1,5 @@
 import { motion } from "framer-motion";
-import { HelpCircle } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { leversFor, lineOptions, type AttainBaseline, type Lever, type LeverValues } from "@/lib/attain/attainLevers";
 import type { MultiGoalContributionsResult } from "@/lib/attain/attainLevers";
 import { GOAL_CATALOG } from "@/lib/attain/attainGoals";
@@ -63,101 +61,14 @@ interface StepBuildCaseProps {
   freedTimeSplit: number;
   onChangeFreedTimeSplit: (split: number) => void;
   /** This priority's realization/attribution rate, 0-100, default 100 - the
-   * share of this outcome attributed to this plan. See `RealizationRateControl`
-   * below and attainLevers.ts's `applyRealization`. */
+   * share of this outcome attributed to this plan. The control that sets it
+   * now lives in the side panel (`AttainLivePanel.tsx`'s "Attributed to
+   * this plan"); this page only reads the value to scale each decision
+   * chain's own live derivation. See attainLevers.ts's `applyRealization`. */
   realizationPct: number;
-  onChangeRealization: (goal: GoalId, pct: number) => void;
   onChangeLeverValue: (goal: GoalId, leverId: string, value: number | string[]) => void;
   stepNumber: number;
   totalSteps: number;
-}
-
-/** A small, quiet info tooltip - same house `Tooltip` primitive every other
- * Attain info-tip already builds on (`AccessDecisionChain.tsx`'s `InfoTip`,
- * etc.), duplicated locally rather than shared since none of those live in
- * an importable spot yet. */
-function InfoTip({ text, testid }: { text: string; testid: string }) {
-  return (
-    <Tooltip delayDuration={200}>
-      <TooltipTrigger asChild>
-        <span className="text-[#B4B4B4] hover:text-[#8C8C8C] transition-colors cursor-help inline-flex" data-testid={testid}>
-          <HelpCircle className="w-3.5 h-3.5" />
-        </span>
-      </TooltipTrigger>
-      <TooltipContent side="top" className="max-w-[240px] text-xs leading-relaxed">
-        <p>{text}</p>
-      </TooltipContent>
-    </Tooltip>
-  );
-}
-
-/**
- * The Realization rate control - ONE per priority (not one per decision),
- * placed once at the top of that priority's Build-the-case page, near this
- * priority's own running total. Attain deliberately reads the full derived
- * dollar for a committed decision chain, unlike Explore, which does not
- * apply a realization haircut. But a partner may be running other efforts
- * against the same outcome, so this is the dial that credits only the
- * share of THIS priority's outcome that belongs to THIS plan - default
- * 100% (full credit), only ever dialed down.
- *
- * `worth` is this priority's own already-realized total
- * (`combined.byGoal[goal].totalMargin`, see attainLevers.ts's
- * `applyRealization`) - the same figure the side panel's "Plan so far" and
- * every other screen (Commit, Strategy, the PDF) reads, so this control's
- * own live readout can never disagree with the rest of the plan.
- */
-function RealizationRateControl({
-  goal,
-  goalLabel,
-  realizationPct,
-  onChange,
-  worth,
-}: {
-  goal: GoalId;
-  goalLabel: string;
-  realizationPct: number;
-  onChange: (pct: number) => void;
-  worth: number;
-}) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="rounded-xl border border-[#E7E0D6] bg-[#F8F5F1] p-6 mb-8"
-      data-testid={`panel-attain-realization-${goal}`}
-    >
-      <div className="flex items-center gap-1.5 mb-1.5">
-        <p className="text-[11px] font-semibold uppercase tracking-[2px] text-[#EA2C00]">Realization rate</p>
-        <InfoTip
-          text="The share of this outcome you attribute to this plan. Lower it when other efforts also move the number."
-          testid={`tooltip-attain-realization-${goal}`}
-        />
-      </div>
-      <p className="text-[15px] text-[#8C8C8C] leading-relaxed mb-5 max-w-[620px]">
-        {goalLabel} may be moving for reasons beyond this plan. Dial down the share that belongs to this plan alone.
-        This never adds credit, it only ever removes it.
-      </p>
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-sm font-semibold text-[#1A1A1A]" data-testid={`text-attain-realization-value-${goal}`}>
-          {realizationPct}% attributed to this plan
-        </span>
-        <span className="text-xs text-[#8C8C8C]" data-testid={`text-attain-realization-worth-${goal}`}>
-          {realizationPct < 100 ? `This priority's worth, at ${realizationPct}%: ${formatCompact(worth)}` : `This priority's worth: ${formatCompact(worth)}`}
-        </span>
-      </div>
-      <Slider
-        value={[realizationPct]}
-        onValueChange={(v) => onChange(v[0])}
-        min={0}
-        max={100}
-        step={5}
-        accent="coral"
-        className="w-full"
-        data-testid={`slider-attain-realization-${goal}`}
-      />
-    </motion.div>
-  );
 }
 
 /**
@@ -169,8 +80,10 @@ function RealizationRateControl({
  * underneath the control ("THE MATH", built from the partner's own
  * baseline, never invented), with a small, quiet "adds ~$X" readout
  * beneath that, never a headline. The one running total, COMBINED across
- * every priority (including ones on pages already passed), lives quietly
- * in the side panel's "Plan so far" line, not here.
+ * every priority (including ones on pages already passed), and the
+ * Realization/attribution control that scales THIS priority's own total,
+ * both live quietly in the side panel (`AttainLivePanel.tsx`), not here —
+ * see that file's "Attributed to this plan" control.
  *
  * When both Access and Retention are selected, they share one freed
  * documentation hour (see attainLevers.ts computeMultiGoalContributions),
@@ -191,7 +104,6 @@ export default function StepBuildCase({
   freedTimeSplit,
   onChangeFreedTimeSplit,
   realizationPct,
-  onChangeRealization,
   onChangeLeverValue,
   stepNumber,
   totalSteps,
@@ -209,10 +121,10 @@ export default function StepBuildCase({
   // computes it (attainLevers.ts), passed straight into this goal's own
   // bespoke decision chain below so the D5/payoff live preview reads the
   // exact split-adjusted dollar every other surface on this page already
-  // does (RealizationRateControl's "worth" above, the side panel, Commit,
-  // the PDF) - see C1 in the premium audit: previously only those other
-  // surfaces applied the split, so Access's/Retention's own D5 hero showed
-  // the full, UNSPLIT dollar when both goals were selected together.
+  // does (the side panel's "this priority's worth," Commit, the PDF) - see
+  // C1 in the premium audit: previously only those other surfaces applied
+  // the split, so Access's/Retention's own D5 hero showed the full,
+  // UNSPLIT dollar when both goals were selected together.
   const accessShare = Math.min(1, Math.max(0, freedTimeSplit / 100));
   const retentionShare = 1 - accessShare;
   const crossGoalShareMultiplier = !hasFreedTimeConflict ? 1 : goal === "access" ? accessShare : goal === "retention" ? retentionShare : 1;
@@ -238,12 +150,7 @@ export default function StepBuildCase({
           Build your strategy
         </h1>
         <p className="text-[15px] text-[#666666] leading-relaxed max-w-[620px]" data-testid="text-step-teach">
-          Every decision below starts at your reality, where it stands today. Doing nothing new adds nothing. Move a
-          decision and its own derivation appears underneath it, built from the operation you entered on the last
-          page.{" "}
-          {totalGoals > 1
-            ? `This is priority ${goalIndex + 1} of ${totalGoals}. Each priority you picked gets its own page like this one, and everything rolls up into one quiet total in the panel to the right.`
-            : "The dollar figure is proof of the decision, not the point of this page."}
+          These decisions start from where you are today, move the ones you're ready to commit to.
         </p>
       </motion.div>
 
@@ -257,9 +164,15 @@ export default function StepBuildCase({
           {totalGoals > 1 ? `Priority ${goalIndex + 1} of ${totalGoals}` : "The strategy"}
         </p>
         <div className="flex items-center gap-3 mb-1">
+          {/* A clean domain tag, not a floating word - a light outline keeps
+              it legible as its own pill even for the one domain (Capacity)
+              whose pillBg is the exact same #1A1A1A as this card, which
+              otherwise makes the pill's own background disappear into the
+              card behind it. */}
           <span
-            className="inline-block text-[10px] font-bold uppercase tracking-[1.5px] text-white px-3 py-1 rounded-full"
+            className="inline-block text-[10px] font-bold uppercase tracking-[1.5px] text-white px-3 py-1 rounded-full border border-white/15"
             style={{ background: goalDef.pillBg }}
+            data-testid="text-attain-buildcase-strategy-pill"
           >
             {goalDef.pill}
           </span>
@@ -272,14 +185,6 @@ export default function StepBuildCase({
           commit to, the rest can wait for a later plan.
         </p>
       </motion.div>
-
-      <RealizationRateControl
-        goal={goal}
-        goalLabel={goalDef.label}
-        realizationPct={realizationPct}
-        onChange={(pct) => onChangeRealization(goal, pct)}
-        worth={result?.totalMargin ?? 0}
-      />
 
       {showFreedTimeSplit && (
         <motion.div
