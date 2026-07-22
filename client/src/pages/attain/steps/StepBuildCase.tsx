@@ -9,6 +9,7 @@ import EdAccessDecisionChain from "./EdAccessDecisionChain";
 import RevenueDecisionChain from "./RevenueDecisionChain";
 import InpatientRevenueDecisionChain from "./InpatientRevenueDecisionChain";
 import WorkforceDecisionChain from "./WorkforceDecisionChain";
+import WorkforceLadderChain from "./WorkforceLadderChain";
 import QualityDecisionChain from "./QualityDecisionChain";
 
 function formatCompact(n: number): string {
@@ -145,6 +146,13 @@ export default function StepBuildCase({
   // accessLadder.ts), so it drops the generic "N of M decisions moved"
   // framing for a single crisp teaching line about the ladder.
   const isAccessLadder = goal === "access" && setting === "outpatient";
+  // Outpatient retention is the second ladder: it assembles the same step-down
+  // story (freed time -> protected relief -> burnout down -> the burnout-pool
+  // gate -> departures avoided -> the prize) that Planning reads back, via the
+  // shared retention ladder (see WorkforceLadderChain + accessLadder.ts's
+  // deriveRetentionLadder). Other settings' retention keeps the D1-D5 chain.
+  const isRetentionLadder = goal === "retention" && setting === "outpatient";
+  const isLadder = isAccessLadder || isRetentionLadder;
 
   return (
     <div>
@@ -158,7 +166,9 @@ export default function StepBuildCase({
         <p className="text-[15px] text-[#666666] leading-relaxed max-w-[620px]" data-testid="text-step-teach">
           {isAccessLadder
             ? "Assemble the ladder from the top down. One number starts it, each rung multiplies, and demand decides how much converts."
-            : "These decisions start from where you are today, move the ones you're ready to commit to."}
+            : isRetentionLadder
+              ? "You want lower voluntary turnover and a better clinician experience. Work backward: one number starts it, each rung multiplies, and burnout decides how much you can avoid."
+              : "These decisions start from where you are today, move the ones you're ready to commit to."}
         </p>
       </motion.div>
 
@@ -191,7 +201,9 @@ export default function StepBuildCase({
         <p className="text-[13px] text-white/50 mt-2" data-testid="text-attain-buildcase-strategy-progress">
           {isAccessLadder
             ? "This is the full step-down, top to bottom. Every rung is part of the plan; set each one to your real numbers."
-            : `${movedCount} of ${levers.length} decisions moved. Move the ones your organization is actually ready to commit to, the rest can wait for a later plan.`}
+            : isRetentionLadder
+              ? "Lower voluntary turnover and a better clinician experience. This is the full step-down, top to bottom; set each rung to your real numbers."
+              : `${movedCount} of ${levers.length} decisions moved. Move the ones your organization is actually ready to commit to, the rest can wait for a later plan.`}
         </p>
       </motion.div>
 
@@ -268,6 +280,15 @@ export default function StepBuildCase({
             values={values}
             onChangeValue={(leverId, value) => onChangeLeverValue("revenue", leverId, value)}
             realizationPct={realizationPct}
+          />
+        ) : isRetentionLadder ? (
+          <WorkforceLadderChain
+            setting={setting}
+            baseline={baseline}
+            values={values}
+            onChangeValue={(leverId, value) => onChangeLeverValue("retention", leverId, value)}
+            realizationPct={realizationPct}
+            crossGoalShareMultiplier={crossGoalShareMultiplier}
           />
         ) : goal === "retention" ? (
           <WorkforceDecisionChain
