@@ -397,66 +397,73 @@ export default function AccessDecisionChain({ setting, baseline, values, onChang
         help="Freed documentation time is the only thing that creates new capacity here. A share of it is committed to the schedule; the rest stays protected relief. Output is in visits, still no dollars."
         testid="card-access-d3"
       >
-        <div className="flex flex-wrap gap-6 mb-4">
-          <div className="w-[160px]">
-            <FieldLabel
-              tip="How many minutes of documentation Abridge saves on the average note. This is a real, editable input, not an assumed number."
-              testid="tooltip-access-minutes-saved"
-            >
-              Minutes saved per note
-            </FieldLabel>
-            <NumberField
-              value={asNum(values.accessMinutesSaved) > 0 ? asNum(values.accessMinutesSaved) : DEFAULT_MINUTES_SAVED_PER_NOTE}
-              onValueChange={(v) => onChangeValue("accessMinutesSaved", v)}
-              min={0}
-              max={60}
-              decimal={false}
-              className="h-11 w-full rounded-md border border-[#E5E5E5] bg-white px-3 text-sm"
-              data-testid="input-access-minutes-saved"
-            />
-          </div>
-          <div className="w-[200px]">
-            <FieldLabel
-              tip="The average length of one visit, in minutes. A shorter visit converts the same freed hours into more visits, so this directly sets how the freed time turns into capacity."
-              testid="tooltip-access-visit-length"
-            >
-              Average visit length (minutes)
-            </FieldLabel>
-            <NumberField
-              value={asNum(values.accessVisitLength) > 0 ? asNum(values.accessVisitLength) : DEFAULT_VISIT_LENGTH_MIN}
-              onValueChange={(v) => onChangeValue("accessVisitLength", v)}
-              min={1}
-              max={180}
-              decimal={false}
-              className="h-11 w-full rounded-md border border-[#E5E5E5] bg-white px-3 text-sm"
-              data-testid="input-access-visit-length"
-            />
-          </div>
-        </div>
-
-        <div className="mb-4">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-[#8C8C8C] flex items-center gap-1.5">
-              Share of freed time directed to access (vs relief)
-              <InfoTip
-                text="The portion of the time Abridge frees up that gets committed to opening new appointment slots, instead of staying as protected relief for the provider. This is the one decision that turns freed time into capacity."
-                testid="tooltip-access-freed-share"
+        <div className="flex flex-col lg:flex-row lg:items-start gap-6 lg:gap-10 mb-4">
+          <div className="flex gap-4 shrink-0">
+            <div className="w-[150px]">
+              <FieldLabel
+                tip="A planning assumption for this priority, not yet a measured result. Benchmark: ambient typically saves ~2 to 4 minutes per note - start conservative and raise it once you have your own results."
+                testid="tooltip-access-minutes-saved"
+              >
+                Target: minutes saved per note
+              </FieldLabel>
+              <NumberField
+                value={asNum(values.accessMinutesSaved) > 0 ? asNum(values.accessMinutesSaved) : DEFAULT_MINUTES_SAVED_PER_NOTE}
+                onValueChange={(v) => onChangeValue("accessMinutesSaved", v)}
+                min={0}
+                max={60}
+                decimal={false}
+                className="h-11 w-full rounded-md border border-[#E5E5E5] bg-white px-3 text-sm"
+                data-testid="input-access-minutes-saved"
               />
-            </span>
-            <span className="text-sm font-semibold text-[#1A1A1A]" data-testid="text-access-freed-share-value">
-              {Math.round(asNum(values.accessFreedShare))}%
-            </span>
+            </div>
+            <div className="w-[170px]">
+              <FieldLabel
+                tip="The average length of one visit, in minutes. A shorter visit converts the same freed hours into more visits, so this directly sets how the freed time turns into capacity."
+                testid="tooltip-access-visit-length"
+              >
+                Average visit length (minutes)
+              </FieldLabel>
+              <NumberField
+                value={asNum(values.accessVisitLength) > 0 ? asNum(values.accessVisitLength) : DEFAULT_VISIT_LENGTH_MIN}
+                onValueChange={(v) => onChangeValue("accessVisitLength", v)}
+                min={1}
+                max={180}
+                decimal={false}
+                className="h-11 w-full rounded-md border border-[#E5E5E5] bg-white px-3 text-sm"
+                data-testid="input-access-visit-length"
+              />
+            </div>
           </div>
-          <Slider
-            value={[asNum(values.accessFreedShare)]}
-            onValueChange={(v) => onChangeValue("accessFreedShare", v[0])}
-            min={0}
-            max={100}
-            step={5}
-            accent="coral"
-            className="w-full"
-            data-testid="slider-access-freed-share"
-          />
+
+          {/* The slider that actually converts freed time into capacity gets
+              the rest of the row - previously it sat in its own full-width
+              block below the two compact inputs, leaving a wide dead gap to
+              their right. Giving it flex-1 here uses that same width instead
+              of stacking everything hard-left. */}
+          <div className="flex-1 min-w-[220px]">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm text-[#8C8C8C] flex items-center gap-1.5">
+                Share of freed time directed to access (vs relief)
+                <InfoTip
+                  text="The portion of the time Abridge frees up that gets committed to opening new appointment slots, instead of staying as protected relief for the provider. This is the one decision that turns freed time into capacity."
+                  testid="tooltip-access-freed-share"
+                />
+              </span>
+              <span className="text-sm font-semibold text-[#1A1A1A]" data-testid="text-access-freed-share-value">
+                {Math.round(asNum(values.accessFreedShare))}%
+              </span>
+            </div>
+            <Slider
+              value={[asNum(values.accessFreedShare)]}
+              onValueChange={(v) => onChangeValue("accessFreedShare", v[0])}
+              min={0}
+              max={100}
+              step={5}
+              accent="coral"
+              className="w-full"
+              data-testid="slider-access-freed-share"
+            />
+          </div>
         </div>
 
         <CountOutput
