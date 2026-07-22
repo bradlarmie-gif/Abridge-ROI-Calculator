@@ -5,8 +5,11 @@ import {
   phaseValueRamp,
   phaseOwner,
   phaseSignalTarget,
+  phaseSignalLabel,
   type AttainPlanning,
 } from "@/lib/attain/attainPlanning";
+import { encodeAttain, decodeAttain, ATTAIN_SAVE_VERSION, type AttainSaveState } from "@/lib/attain/attainUrlState";
+import { DEFAULT_ATTAIN_STATE } from "@/lib/attain/attainTypes";
 
 describe("attainPlanning — phase boundaries", () => {
   it("splits a 9-month horizon into 0-3, 3-6, 6-9", () => {
@@ -76,5 +79,76 @@ describe("attainPlanning — resolvers", () => {
 
   it("covers exactly three phases", () => {
     expect(PLAN_PHASE_IDS).toEqual(["start", "expand", "steady"]);
+  });
+});
+
+describe("attainPlanning — leading-signal metric choice", () => {
+  it("phaseSignalLabel uses the chosen metric, else the derived default", () => {
+    const planning: AttainPlanning = { phaseSignalLabels: { expand: "No-show rate" } };
+    expect(phaseSignalLabel(planning, "expand", "Third-next-available dropping")).toBe("No-show rate");
+    expect(phaseSignalLabel(planning, "start", "Minutes saved per note")).toBe("Minutes saved per note");
+    expect(phaseSignalLabel(undefined, "start", "Minutes saved per note")).toBe("Minutes saved per note");
+  });
+
+  it("treats a blank choice as unset (falls back to the default)", () => {
+    const blank: AttainPlanning = { phaseSignalLabels: { start: "   " } };
+    expect(phaseSignalLabel(blank, "start", "Minutes saved per note")).toBe("Minutes saved per note");
+  });
+
+  it("an untouched plan defaults to exactly the prior fixed phase labels", () => {
+    // Before the dropdowns shipped, each phase rendered a fixed label. With no
+    // choice stored, the resolver must return that same label unchanged, so an
+    // untouched plan reads exactly as it did before.
+    const priorFixedLabels: Record<(typeof PLAN_PHASE_IDS)[number], string> = {
+      start: "Minutes saved per note",
+      expand: "Third-next-available dropping",
+      steady: "Realized visits per year",
+    };
+    for (const phase of PLAN_PHASE_IDS) {
+      expect(phaseSignalLabel({}, phase, priorFixedLabels[phase])).toBe(priorFixedLabels[phase]);
+      expect(phaseSignalLabel(undefined, phase, priorFixedLabels[phase])).toBe(priorFixedLabels[phase]);
+    }
+  });
+});
+
+describe("attainPlanning — phase-signal choice persists through save/load", () => {
+  function buildPlanWithSignalChoices(planning: AttainPlanning): AttainSaveState {
+    return {
+      version: ATTAIN_SAVE_VERSION,
+      savedAt: "2026-07-22T12:00:00.000Z",
+      state: { ...DEFAULT_ATTAIN_STATE, setting: "outpatient", goal: "access", totalMonths: 9 },
+      goals: ["access"],
+      valuesByGoal: { access: {} },
+      commitments: {},
+      goalOwnerByPriority: {},
+      progressEntries: {},
+      baseline: { providers: 40, annualEncounters: 140000, utilizationPct: 78 },
+      freedTimeSplit: 50,
+      realizationByGoal: {},
+      planCadence: "monthly",
+      planning,
+    };
+  }
+
+  it("round-trips a chosen leading-signal metric per phase", () => {
+    const planning: AttainPlanning = {
+      phaseSignalLabels: { start: "Referral backlog", expand: "No-show rate", steady: "Realized visits per year" },
+      phaseSignalTargets: { start: "under 40" },
+      phaseOwners: { expand: "Dr. Rivera" },
+    };
+    const decoded = decodeAttain(encodeAttain(buildPlanWithSignalChoices(planning)));
+    expect(decoded?.planning?.phaseSignalLabels).toEqual(planning.phaseSignalLabels);
+    expect(decoded?.planning?.phaseSignalTargets).toEqual(planning.phaseSignalTargets);
+    // The restored choice drives the resolver exactly as it did before saving.
+    expect(phaseSignalLabel(decoded?.planning, "expand", "Third-next-available dropping")).toBe("No-show rate");
+  });
+
+  it("an older saved plan with no signal choices still decodes and falls back to defaults", () => {
+    // Backward-compat: a plan that predates the dropdowns carries no
+    // phaseSignalLabels; it must decode cleanly and read the derived defaults.
+    const decoded = decodeAttain(encodeAttain(buildPlanWithSignalChoices({})));
+    expect(decoded).not.toBeNull();
+    expect(decoded?.planning?.phaseSignalLabels).toBeUndefined();
+    expect(phaseSignalLabel(decoded?.planning, "start", "Minutes saved per note")).toBe("Minutes saved per note");
   });
 });
