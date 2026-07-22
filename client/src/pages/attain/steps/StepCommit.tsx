@@ -301,7 +301,7 @@ export default function StepCommit({
           Step {stepNumber} · Who holds each decision?
         </p>
         <h1 className="text-2xl md:text-4xl font-bold text-black mb-3 font-abridge uppercase tracking-tight" data-testid="text-step-title">
-          Commit
+          Planning
         </h1>
         <p className="text-sm text-[#666666] leading-relaxed max-w-[620px]" data-testid="text-step-teach">
           A decision without a name and a date is a hope. Every decision you moved on the last page shows up below,

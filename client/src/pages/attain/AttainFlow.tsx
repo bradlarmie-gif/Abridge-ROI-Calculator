@@ -12,8 +12,14 @@ import StepCommit, {
   type GoalOwner,
   type SignalCadence,
 } from "./steps/StepCommit";
+import StepPlanning from "./steps/StepPlanning";
 import StepAttainment from "./steps/StepAttainment";
 import AttainLivePanel from "./AttainLivePanel";
+import {
+  DEFAULT_ATTAIN_PLANNING,
+  type AttainPlanning,
+  type PlanPhaseId,
+} from "@/lib/attain/attainPlanning";
 import {
   DEFAULT_ATTAIN_STATE,
   DEFAULT_ATTAIN_SCOPE,
@@ -84,7 +90,7 @@ function stepLabelFor(step: AttainStepId, goals: GoalId[]): string {
     case "setting": return "Setting";
     case "vision": return "Vision";
     case "scope": return "Starting point";
-    case "commit": return "Commit";
+    case "commit": return "Planning";
     case "plan": return "Attainment";
     default: return "";
   }
@@ -197,6 +203,16 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
   const [planCadence, setPlanCadence] = useState<SignalCadence>(
     () => initialSaveState?.planCadence ?? DEFAULT_PLAN_CADENCE,
   );
+  // The rebuilt "Planning" step's own editable layer — per-phase owner
+  // overrides, per-phase leading-signal targets, and one optional partner-
+  // disclosed risk. Only meaningful for the outpatient Access plan (the one
+  // combo Planning is rebuilt for, see `isOutpatientAccessPlan` below); every
+  // other combo still renders the original StepCommit and never touches this.
+  // Additive local state, exactly like `commitments`/`goalOwnerByPriority`:
+  // it is plan-authoring bookkeeping, not part of the locked engine shapes.
+  const [planning, setPlanning] = useState<AttainPlanning>(
+    () => initialSaveState?.planning ?? DEFAULT_ATTAIN_PLANNING,
+  );
   // The partner's real operational baseline (providers/encounters/
   // utilization, or beds/FTEs/census/adoption for nursing) — collected once
   // on the Scope step and threaded into every lever's engine call from
@@ -255,6 +271,14 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
   const step = stepOrder[stepIndex] ?? "setting";
   const activeBuildCaseGoal = goalOfStep(step);
 
+  // The rebuilt, phased "Planning" view is scoped to the OUTPATIENT PATIENT
+  // ACCESS plan only (a single selected access goal in the outpatient
+  // setting). Every other setting/goal combo — and any multi-goal plan that
+  // also happens to include access — still renders the original StepCommit
+  // content. This is the one branch the task asks for; the underlying step id
+  // stays "commit" so nav, progress dots, and the save shape are untouched.
+  const isOutpatientAccessPlan = state.setting === "outpatient" && goals.length === 1 && goals[0] === "access";
+
   const updateState = useCallback((updates: Partial<AttainState>) => {
     setState((prev) => ({ ...prev, ...updates }));
   }, []);
@@ -282,6 +306,7 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
     setFreedTimeSplit(DEFAULT_FREED_TIME_SPLIT);
     setRealizationByGoal({});
     setPlanCadence(DEFAULT_PLAN_CADENCE);
+    setPlanning(DEFAULT_ATTAIN_PLANNING);
     setState((prev) => ({
       ...prev,
       setting,
@@ -400,6 +425,22 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
     setPlanCadence(cadence);
   }, []);
 
+  // Planning step (outpatient Access) edits — a per-phase owner override, a
+  // per-phase leading-signal target, and the one optional partner-disclosed
+  // risk. Each merges shallowly so an unset phase simply falls back to its
+  // derived default downstream (see attainPlanning.ts's resolver helpers).
+  const handleChangePhaseOwner = useCallback((phase: PlanPhaseId, name: string) => {
+    setPlanning((prev) => ({ ...prev, phaseOwners: { ...prev.phaseOwners, [phase]: name } }));
+  }, []);
+
+  const handleChangePhaseSignalTarget = useCallback((phase: PlanPhaseId, target: string) => {
+    setPlanning((prev) => ({ ...prev, phaseSignalTargets: { ...prev.phaseSignalTargets, [phase]: target } }));
+  }, []);
+
+  const handleChangePartnerRisk = useCallback((text: string) => {
+    setPlanning((prev) => ({ ...prev, partnerRisk: text }));
+  }, []);
+
   const handleChangeGoalOwner = useCallback((goal: GoalId, patch: Partial<GoalOwner>) => {
     setGoalOwnerByPriority((prev) => ({
       ...prev,
@@ -502,6 +543,7 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
     setFreedTimeSplit(saved.freedTimeSplit);
     setRealizationByGoal(saved.realizationByGoal);
     setPlanCadence(saved.planCadence);
+    setPlanning(saved.planning ?? DEFAULT_ATTAIN_PLANNING);
     setStepIndex(stepOrderFor(saved.goals).length - 1);
     setResumeDraft(null);
   }, []);
@@ -545,13 +587,14 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
       freedTimeSplit,
       realizationByGoal,
       planCadence,
+      planning,
     };
     writeAttainDraft(saveState);
     const encoded = encodeAttain(saveState);
     const url = `${window.location.origin}${window.location.pathname}?attain=${encoded}`;
     await copyToClipboard(url);
     return url;
-  }, [state, goals, valuesByGoal, commitments, goalOwnerByPriority, progressEntries, baseline, freedTimeSplit, realizationByGoal, planCadence]);
+  }, [state, goals, valuesByGoal, commitments, goalOwnerByPriority, progressEntries, baseline, freedTimeSplit, realizationByGoal, planCadence, planning]);
 
   // Every dollar figure downstream comes from this one computation: each
   // goal's own delta off its own realityStart, combined once with the
@@ -677,7 +720,7 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
       const nextGoal = nextStep ? goalOfStep(nextStep) : null;
       return {
         disabled: false,
-        label: nextGoal ? `Continue to ${GOAL_CATALOG[nextGoal].label}` : "Continue to commit",
+        label: nextGoal ? `Continue to ${GOAL_CATALOG[nextGoal].label}` : "Continue to planning",
       };
     }
     switch (step) {
@@ -766,7 +809,26 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
               />
             )}
 
-            {step === "commit" && goals.length > 0 && (
+            {step === "commit" && isOutpatientAccessPlan && (
+              <StepPlanning
+                setting="outpatient"
+                baseline={baseline}
+                values={valuesByGoal.access ?? defaultLeverValues("access", "outpatient")}
+                combined={combined}
+                goalOwner={goalOwnerByPriority.access ?? { name: "", title: "" }}
+                onChangeGoalOwner={(patch) => handleChangeGoalOwner("access", patch)}
+                planning={planning}
+                onChangePhaseOwner={handleChangePhaseOwner}
+                onChangePhaseSignalTarget={handleChangePhaseSignalTarget}
+                onChangePartnerRisk={handleChangePartnerRisk}
+                planCadence={planCadence}
+                onChangePlanCadence={handleChangePlanCadence}
+                totalMonths={state.totalMonths}
+                stepNumber={stepIndex + 1}
+              />
+            )}
+
+            {step === "commit" && !isOutpatientAccessPlan && goals.length > 0 && (
               <StepCommit
                 goals={goals}
                 setting={state.setting ?? "outpatient"}

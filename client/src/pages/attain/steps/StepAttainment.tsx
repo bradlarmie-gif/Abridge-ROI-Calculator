@@ -940,7 +940,7 @@ export default function StepAttainment({
           {progressRows.length === 0 ? (
             <div className="bg-[#F4F0EA] border-l-[3px] border-[#EA2C00] rounded-r-md p-4" data-testid="text-attain-progress-empty">
               <p className="text-[15px] text-[#3A3A3A] leading-relaxed">
-                No decisions are committed yet. Go back to Commit and give at least one decision an owner and a date.
+                No decisions are committed yet. Go back to Planning and give at least one decision an owner and a date.
               </p>
             </div>
           ) : (
