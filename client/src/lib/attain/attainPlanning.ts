@@ -24,6 +24,11 @@ export const PLAN_PHASE_IDS: PlanPhaseId[] = ["start", "expand", "steady"];
  * disclosed risk that only renders when it is actually filled in. */
 export interface AttainPlanning {
   phaseOwners?: Partial<Record<PlanPhaseId, string>>;
+  /** Which leading-signal metric the partner chose to track per phase (a
+   * member of the goal's metric menu). Falls back to the phase's derived
+   * default, so an older saved plan that never carried it reads exactly as it
+   * did before the dropdowns shipped. */
+  phaseSignalLabels?: Partial<Record<PlanPhaseId, string>>;
   phaseSignalTargets?: Partial<Record<PlanPhaseId, string>>;
   partnerRisk?: string;
 }
@@ -72,5 +77,18 @@ export function phaseSignalTarget(
   derivedDefault: string,
 ): string {
   const override = planning?.phaseSignalTargets?.[phase]?.trim();
+  return override ? override : derivedDefault;
+}
+
+/** Read a phase's chosen leading-signal metric, falling back to the phase's
+ * derived default label (the first-domino-to-outcome sequence). An unset or
+ * blank choice means "use the default", so an untouched plan reads exactly as
+ * it did before the dropdowns shipped. */
+export function phaseSignalLabel(
+  planning: AttainPlanning | undefined,
+  phase: PlanPhaseId,
+  derivedDefault: string,
+): string {
+  const override = planning?.phaseSignalLabels?.[phase]?.trim();
   return override ? override : derivedDefault;
 }

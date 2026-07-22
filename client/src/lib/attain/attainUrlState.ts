@@ -143,6 +143,7 @@ function isWellFormedPlanning(v: unknown): v is AttainPlanning {
   const stringRecordOk = (r: unknown): boolean =>
     r === undefined || (isPlainObject(r) && Object.values(r).every((x) => typeof x === "string"));
   if (!stringRecordOk(v.phaseOwners)) return false;
+  if (!stringRecordOk(v.phaseSignalLabels)) return false;
   if (!stringRecordOk(v.phaseSignalTargets)) return false;
   if (v.partnerRisk !== undefined && typeof v.partnerRisk !== "string") return false;
   return true;

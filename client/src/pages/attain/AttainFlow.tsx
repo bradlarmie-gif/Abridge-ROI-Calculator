@@ -478,6 +478,10 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
     setPlanning((prev) => ({ ...prev, phaseSignalTargets: { ...prev.phaseSignalTargets, [phase]: target } }));
   }, []);
 
+  const handleChangePhaseSignalLabel = useCallback((phase: PlanPhaseId, label: string) => {
+    setPlanning((prev) => ({ ...prev, phaseSignalLabels: { ...prev.phaseSignalLabels, [phase]: label } }));
+  }, []);
+
   const handleChangePartnerRisk = useCallback((text: string) => {
     setPlanning((prev) => ({ ...prev, partnerRisk: text }));
   }, []);
@@ -862,6 +866,7 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
                 planning={planning}
                 onChangePhaseOwner={handleChangePhaseOwner}
                 onChangePhaseSignalTarget={handleChangePhaseSignalTarget}
+                onChangePhaseSignalLabel={handleChangePhaseSignalLabel}
                 onChangePartnerRisk={handleChangePartnerRisk}
                 planCadence={planCadence}
                 onChangePlanCadence={handleChangePlanCadence}
@@ -882,6 +887,7 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
                 planning={planning}
                 onChangePhaseOwner={handleChangePhaseOwner}
                 onChangePhaseSignalTarget={handleChangePhaseSignalTarget}
+                onChangePhaseSignalLabel={handleChangePhaseSignalLabel}
                 onChangePartnerRisk={handleChangePartnerRisk}
                 planCadence={planCadence}
                 onChangePlanCadence={handleChangePlanCadence}
@@ -902,6 +908,7 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
                 planning={planning}
                 onChangePhaseOwner={handleChangePhaseOwner}
                 onChangePhaseSignalTarget={handleChangePhaseSignalTarget}
+                onChangePhaseSignalLabel={handleChangePhaseSignalLabel}
                 onChangePartnerRisk={handleChangePartnerRisk}
                 planCadence={planCadence}
                 onChangePlanCadence={handleChangePlanCadence}
@@ -922,6 +929,7 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
                 planning={planning}
                 onChangePhaseOwner={handleChangePhaseOwner}
                 onChangePhaseSignalTarget={handleChangePhaseSignalTarget}
+                onChangePhaseSignalLabel={handleChangePhaseSignalLabel}
                 onChangePartnerRisk={handleChangePartnerRisk}
                 planCadence={planCadence}
                 onChangePlanCadence={handleChangePlanCadence}
@@ -942,6 +950,7 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
                 planning={planning}
                 onChangePhaseOwner={handleChangePhaseOwner}
                 onChangePhaseSignalTarget={handleChangePhaseSignalTarget}
+                onChangePhaseSignalLabel={handleChangePhaseSignalLabel}
                 onChangePartnerRisk={handleChangePartnerRisk}
                 planCadence={planCadence}
                 onChangePlanCadence={handleChangePlanCadence}
@@ -962,6 +971,7 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
                 planning={planning}
                 onChangePhaseOwner={handleChangePhaseOwner}
                 onChangePhaseSignalTarget={handleChangePhaseSignalTarget}
+                onChangePhaseSignalLabel={handleChangePhaseSignalLabel}
                 onChangePartnerRisk={handleChangePartnerRisk}
                 planCadence={planCadence}
                 onChangePlanCadence={handleChangePlanCadence}
@@ -982,6 +992,7 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
                 planning={planning}
                 onChangePhaseOwner={handleChangePhaseOwner}
                 onChangePhaseSignalTarget={handleChangePhaseSignalTarget}
+                onChangePhaseSignalLabel={handleChangePhaseSignalLabel}
                 onChangePartnerRisk={handleChangePartnerRisk}
                 planCadence={planCadence}
                 onChangePlanCadence={handleChangePlanCadence}
@@ -1002,6 +1013,7 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
                 planning={planning}
                 onChangePhaseOwner={handleChangePhaseOwner}
                 onChangePhaseSignalTarget={handleChangePhaseSignalTarget}
+                onChangePhaseSignalLabel={handleChangePhaseSignalLabel}
                 onChangePartnerRisk={handleChangePartnerRisk}
                 planCadence={planCadence}
                 onChangePlanCadence={handleChangePlanCadence}
