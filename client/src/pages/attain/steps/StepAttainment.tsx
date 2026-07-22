@@ -62,6 +62,41 @@ const UNIT_LABEL: Record<string, string> = {
   nursing: "staffed beds",
 };
 
+const SETTING_LABEL: Record<string, string> = {
+  outpatient: "Outpatient",
+  ed: "Emergency Department",
+  inpatient: "Inpatient",
+  nursing: "Nursing",
+};
+
+/** The plan's real scope, as a one-line summary, built only from the
+ * partner's own inputs: the service lines they selected and the unit count
+ * derived on the Baseline step. Blank inputs collapse cleanly to the care
+ * setting alone, never an invented specialty or count. Used for the plan
+ * header subtitle so it can never contradict the "Scoped to N" figure. */
+function scopeSummaryLine(
+  setting: AttainSetting,
+  unitCount: number,
+  unitLabel: string,
+  selectedLines: string[],
+): string {
+  const parts: string[] = [];
+  if (selectedLines.length > 0) parts.push(selectedLines.join(", "));
+  if (unitCount > 0) parts.push(`${unitCount.toLocaleString()} ${unitLabel}`);
+  parts.push(SETTING_LABEL[setting] ?? setting);
+  return parts.join(" · ");
+}
+
+/** The lines/departments the partner actually selected for a goal, read off
+ * the goal's "lines" lever value. Empty until they pick some, so the
+ * starting-point copy stays generic rather than naming invented specialties. */
+function selectedLinesFor(goal: GoalId, setting: AttainSetting, values: LeverValues): string[] {
+  const linesLever = leversFor(goal, setting).find((l) => l.control === "lines");
+  if (!linesLever) return [];
+  const v = values[linesLever.id];
+  return Array.isArray(v) ? v : [];
+}
+
 const FLOW_CLASS: Record<string, string> = {
   start: "bg-[#EA2C00] text-white border-[#EA2C00] font-semibold",
   mid: "bg-[#F8F5F1] text-[#3A3A3A] border-[#E7E0D6]",
@@ -121,6 +156,9 @@ interface PriorityData {
   goalOwner: GoalOwner | undefined;
   isFreedTimeGoal: boolean;
   barAcc: number;
+  /** Service lines the partner actually selected for this goal (may be empty).
+   * Derived from the goal's "lines" lever, never a hardcoded specialty. */
+  selectedLines: string[];
 }
 
 function committedLeversFor(
@@ -838,6 +876,7 @@ export default function StepAttainment({
         goalOwner: goalOwnerByPriority[goal],
         isFreedTimeGoal,
         barAcc: isFreedTimeGoal ? liveBarAcc : content.barAcc,
+        selectedLines: selectedLinesFor(goal, setting, values),
       };
     })
     .filter((d): d is PriorityData => d !== null);
@@ -1057,7 +1096,9 @@ export default function StepAttainment({
               </h2>
               <div className="w-[100px] h-1 bg-[#EA2C00] mb-4" />
               <p className="text-base text-[#8C8C8C]">
-                {goalDefs.length === 1 ? getContent(setting, goals[0])?.subtitle : `${goalDefs.length} priorities, one combined plan`}
+                {goalDefs.length === 1
+                  ? scopeSummaryLine(setting, state.scope.unitCount, unitLabel, priorityData[0]?.selectedLines ?? [])
+                  : `${goalDefs.length} priorities, one combined plan`}
               </p>
             </div>
 
@@ -1343,11 +1384,21 @@ function StartingPointSection({
   goalMargin,
   goalCount,
   goalOwner,
+  selectedLines,
   unitCount,
   unitLabel,
 }: PriorityData & { unitCount: number; unitLabel: string }) {
   const goalOwnerName = goalOwner?.name?.trim();
   const goalOwnerTitle = goalOwner?.title?.trim();
+  // The scope card's footnote and the "Scoped to N" line below both read the
+  // same unitCount, so they can never disagree the way the old hardcoded
+  // "In scope 40" card did with a "Scoped to 50" footnote.
+  const scopeFootnote =
+    unitCount > 0
+      ? selectedLines.length > 0
+        ? `${unitLabel} · ${selectedLines.join(", ")}`
+        : unitLabel
+      : "Set on the Baseline step";
 
   return (
     <div
@@ -1378,13 +1429,36 @@ function StartingPointSection({
             teaching prose about the opportunity and how it gets trapped now
             lives one click away, in "How this works". */}
         <div className="flex flex-wrap gap-3 mb-6">
+          {/* The one derived card: the plan's real scope, from the partner's
+              own inputs. No benchmark tag because it is their number, not a
+              typical. */}
+          <div
+            className="flex-1 min-w-[150px] bg-[#F4F0EA] border border-[#E7E0D6] shadow-sm rounded-md p-4"
+            data-testid={`card-attain-plan-world-${goal}-scope`}
+          >
+            <p className="text-[9.5px] font-semibold uppercase tracking-[1.4px] text-[#8C8C8C]">In scope</p>
+            <p className="font-abridge text-3xl mt-2 mb-1 text-[#1A1A1A]">
+              {unitCount > 0 ? unitCount.toLocaleString() : "Not set yet"}
+            </p>
+            <p className="text-[10px] text-[#8C8C8C]">{scopeFootnote}</p>
+          </div>
+          {/* The rest are industry benchmarks, each tagged so a benchmark is
+              never read as the partner's own measured number. */}
           {content.worldCards.map((card, i) => (
             <div
               key={card.k}
-              className="flex-1 min-w-[150px] bg-[#F4F0EA] border border-[#E7E0D6] shadow-sm rounded-md p-4"
+              className="relative flex-1 min-w-[150px] bg-[#F4F0EA] border border-[#E7E0D6] shadow-sm rounded-md p-4"
               data-testid={`card-attain-plan-world-${goal}-${i}`}
             >
-              <p className="text-[9.5px] font-semibold uppercase tracking-[1.4px] text-[#8C8C8C]">{card.k}</p>
+              {card.benchmark && (
+                <span
+                  className="absolute top-3 right-3 text-[8px] font-bold uppercase tracking-[1px] text-[#8C8C8C] bg-white border border-[#E7E0D6] rounded-full px-1.5 py-0.5"
+                  data-testid={`tag-attain-plan-world-benchmark-${goal}-${i}`}
+                >
+                  Benchmark
+                </span>
+              )}
+              <p className="text-[9.5px] font-semibold uppercase tracking-[1.4px] text-[#8C8C8C] pr-16">{card.k}</p>
               <p className={`font-abridge text-3xl mt-2 mb-1 ${card.coral ? "text-[#EA2C00]" : "text-[#1A1A1A]"}`}>
                 {card.n}
               </p>
