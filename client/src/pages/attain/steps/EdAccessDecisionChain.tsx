@@ -10,12 +10,12 @@ import {
   marginPerVisitFor,
   admissionMarginFor,
   admissionRealizationFor,
-  edAccessBindingPlainPhrase,
   DEFAULT_ED_ACCESS_MINUTES_SAVED_PER_NOTE,
   DEFAULT_ED_ACCESS_LWBS_RATE,
   DEFAULT_ED_ACCESS_HOURS_PER_RECOVERY,
 } from "@/lib/attain/attainEdAccess";
 import type { AttainSetting } from "@/lib/attain/attainTypes";
+import { deriveEdAccessLadder, EdAccessDiagnosisGate, ED_ACCESS_WHO_ACTS } from "./accessLadder";
 
 function asNum(raw: number | string[] | undefined): number {
   return typeof raw === "number" ? raw : 0;
@@ -99,36 +99,6 @@ function CountOutput({ label, value, unit, testid }: { label: string; value: str
   );
 }
 
-/** One stat in the D4 plain-language result block - the pool, the freed-time
- * capacity, or realized, side by side. Never a dollar figure (D1-D4 rule);
- * `emphasize` marks the realized figure, the actual answer to "how many
- * patients do we get back." Mirrors AccessDecisionChain.tsx's `ResultStat`. */
-function ResultStat({
-  label,
-  hint,
-  value,
-  unit,
-  testid,
-  emphasize,
-}: {
-  label: string;
-  hint?: string;
-  value: string;
-  unit: string;
-  testid: string;
-  emphasize?: boolean;
-}) {
-  return (
-    <div>
-      <p className="text-[11px] text-[#8C8C8C] mb-1 leading-snug">{label}</p>
-      <p className={`text-xl font-bold font-abridge ${emphasize ? "text-[#EA2C00]" : "text-[#1A1A1A]"}`} data-testid={testid}>
-        {value} <span className="text-xs font-normal text-[#8C8C8C]">{unit}</span>
-      </p>
-      {hint && <p className="text-[10.5px] text-[#B4B4B4] mt-0.5">{hint}</p>}
-    </div>
-  );
-}
-
 function InfoTip({ text, testid }: { text: string; testid: string }) {
   return (
     <Tooltip delayDuration={200}>
@@ -192,6 +162,15 @@ export default function EdAccessDecisionChain({ setting, baseline, values, onCha
   const payoffFormulaDisplay = payoff.value > 0
     ? formulaWithRealization(formulas.payoff, realizationPct, realizedPayoffValue)
     : formulas.payoff;
+
+  // The SAME shared ladder derivation Planning consumes, so the diagnosis
+  // gate triad reads identical numbers on both pages. The prize passed in is
+  // this priority's realization-applied dollar, matching the side panel.
+  const ladder = deriveEdAccessLadder(chain, {
+    realizedRecovered: recovery.realizedRecovered,
+    capturedAdmissions: recovery.capturedAdmissions,
+    prize: realizedPayoffValue,
+  });
 
   return (
     <div data-testid="section-attain-ed-access-chain">
@@ -276,9 +255,9 @@ export default function EdAccessDecisionChain({ setting, baseline, values, onCha
       </DecisionCard>
 
       <DecisionCard
-        step="D3"
-        title="Convert freed time to faster throughput"
-        help="Freed documentation time is the only thing that mechanically buys a faster door-to-provider time here. A share of it is committed to throughput; the rest stays protected relief. Output is in patients, still no dollars."
+        step="D3 · The first domino"
+        title="Minutes saved become faster throughput"
+        help="This is the one number we prove first. Ambient documentation gives each provider back minutes on every ED note, and that freed time is the only thing that mechanically buys a faster door-to-provider. A share of it is committed to throughput; the rest stays protected relief. Output is in patients, still no dollars."
         testid="card-ed-access-d3"
       >
         <div className="flex flex-wrap gap-6 mb-4">
@@ -351,14 +330,14 @@ export default function EdAccessDecisionChain({ setting, baseline, values, onCha
       </DecisionCard>
 
       <DecisionCard
-        step="D4"
-        title="The recoverable pool, the ceiling"
-        help="Your current LWBS rate times ED volume in scope is the pool of patients who actually left without being seen - a measured fact, completely independent of D3's freed-time math. Realized recovery is the smaller of the pool and what freed time mechanically affords. A share of what is recovered becomes a downstream admission, capped again for bed and payer availability."
+        step="D4 · The gate"
+        title="Diagnose the leak: is it Abridge's to fix?"
+        help="Your current LWBS rate times ED volume in scope is the full pool of patients who left without being seen. But not all of that is Abridge's to move: some leave because charting time chokes throughput (Abridge can move that), and some leave because you are short-staffed or out of beds (Abridge cannot touch that). Only the charting-caused share is recoverable, and realized recovery is the smaller of that recoverable pool and what freed time affords."
         testid="card-ed-access-d4"
       >
         <div className="mb-4 max-w-[220px]">
           <FieldLabel
-            tip="The rate the recoverable pool is measured against. Your own number, not a benchmark you never checked."
+            tip="The rate the LWBS pool is measured against. Your own number, not a benchmark you never checked."
             testid="tooltip-ed-access-lwbs-rate"
           >
             Your current LWBS rate
@@ -375,29 +354,57 @@ export default function EdAccessDecisionChain({ setting, baseline, values, onCha
             />
             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8C8C8C] text-sm pointer-events-none">%</span>
           </div>
+          <p className="text-[11px] text-[#8C8C8C] mt-1">
+            {fmtInt(pool.poolVisits)} left without being seen, before diagnosis.
+          </p>
         </div>
 
-        <div className="rounded-lg bg-[#F8F5F1] p-4 mb-4" data-testid="panel-ed-access-d4-result">
-          <p className="text-[10px] font-bold uppercase tracking-wide text-[#8C8C8C] mb-3">The result</p>
-          <div className="grid grid-cols-3 gap-3 mb-4">
-            <ResultStat label="The recoverable pool" hint="Current rate × visits in scope" value={fmtInt(pool.poolVisits)} unit="patients/yr" testid="text-ed-access-d4-pool" />
-            <ResultStat label="Freed-time capacity" hint="From D3" value={fmtInt(mechanism.mechanicallyEnabledRecovered)} unit="patients/yr" testid="text-ed-access-d4-mechanical" />
-            <ResultStat
-              label="Realized recovered visits"
-              hint="The smaller of the two"
-              value={fmtInt(recovery.realizedRecovered)}
-              unit="visits/yr"
-              emphasize
-              testid="text-ed-access-d4-realized"
-            />
+        {/* THE DIAGNOSIS, the load-bearing rung. Of the LWBS pool, the share
+            whose leak is charting-choked throughput (Abridge can move it) vs
+            short staffing or no beds (it cannot). Only this share is
+            recoverable. A genuine decision, not a benchmark. */}
+        <div className="mb-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm text-[#8C8C8C] flex items-center gap-1.5">
+              Share of LWBS caused by charting-choked throughput
+              <InfoTip
+                text="Of the patients who leave without being seen, how many leave because charting time chokes throughput, which Abridge can move, versus short staffing or no beds, which it cannot. Only this charting-caused share is recoverable. Confirm it from your own LWBS reason codes, do not assume it."
+                testid="tooltip-ed-access-doc-caused-share"
+              />
+            </span>
+            <span className="text-sm font-semibold text-[#1A1A1A]" data-testid="text-ed-access-doc-caused-share-value">
+              {Math.round(pool.docCausedSharePct)}%
+            </span>
           </div>
-          <p className="text-[13.5px] text-[#1A1A1A] font-semibold flex items-center gap-1.5" data-testid="text-ed-access-d4-binding">
-            {edAccessBindingPlainPhrase(recovery.binding)}
-            <InfoTip
-              text="Realized recovery can never be more than either side. The pool is a measured fact, independent of the freed-time math above - whichever number is smaller sets the real ceiling, the same MIN discipline outpatient access uses for capacity vs. demand."
-              testid="tooltip-ed-access-d4-binding"
-            />
-          </p>
+          <Slider
+            value={[pool.docCausedSharePct]}
+            onValueChange={(v) => onChangeValue("edAccessDocCausedShare", v[0])}
+            min={0}
+            max={100}
+            step={5}
+            accent="coral"
+            className="w-full"
+            data-testid="slider-ed-access-doc-caused-share"
+          />
+        </div>
+
+        <div className="mb-4" data-testid="panel-ed-access-d4-result">
+          <EdAccessDiagnosisGate
+            showHeader={false}
+            fullPool={ladder.fullPool}
+            docCausedSharePct={ladder.docCausedSharePct}
+            recoverablePool={ladder.recoverablePool}
+            mechanicalCapacity={ladder.mechanicalCapacity}
+            realizedRecovered={ladder.realizedRecovered}
+            binding={ladder.binding}
+            whoActs={ED_ACCESS_WHO_ACTS}
+            bothSet={ladder.recoverablePool > 0 && ladder.mechanicalCapacity > 0}
+            emptyHint={
+              ladder.recoverablePool <= 0
+                ? "Diagnose the charting-caused share above to size the recoverable pool, then commit freed time to throughput in D3."
+                : "Commit freed time to throughput in D3 to see how much of the recoverable pool actually converts."
+            }
+          />
         </div>
 
         <div className="mb-4">
