@@ -10,9 +10,9 @@ export default function NursingAgencyCalc({ state, updateTimeDriverInputs }: Pro
   const { timeDriverInputs } = state;
 
   const nursingRetentionImpactRates: Record<RetentionScenario, number> = {
-    conservative: 10,
-    typical: 15,
-    optimistic: 25,
+    conservative: 20,
+    typical: 30,
+    optimistic: 40,
     custom: timeDriverInputs.retentionCustomPercent ?? 10,
   };
 

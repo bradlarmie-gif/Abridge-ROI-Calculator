@@ -1351,7 +1351,7 @@ function buildDriverFormula(
     case "providerWellbeing": {
       const turnover    = tdi.annualTurnoverRate || 0;
       const burnout     = tdi.burnoutRelatedTurnover || 0;
-      const retScenarios: Record<string, number> = { conservative: 5, typical: 10, optimistic: 15, custom: tdi.retentionCustomPercent ?? 10 };
+      const retScenarios: Record<string, number> = { conservative: 20, typical: 30, optimistic: 40, custom: tdi.retentionCustomPercent ?? 10 };
       const impPct      = retScenarios[tdi.retentionImpactScenario || 'typical'] ?? 10;
       const replaceCost = tdi.replacementCost || 200000;
       const unitWord    = setting.careSetting === 'inpatient' ? 'physician' : setting.careSetting === 'ed' ? 'physician' : 'provider';
@@ -1386,7 +1386,7 @@ function buildDriverFormula(
       const occupancy     = Math.round((es.nursingOccupancyRate || 0.85) * 100);
       const estNurses     = Math.round(beds * (occupancy / 100) * 2.5);
       const atRisk        = Math.round(estNurses * (turnoverRate / 100));
-      const nursingRates: Record<string, number> = { conservative: 10, typical: 15, optimistic: 25, custom: tdi.retentionCustomPercent ?? 10 };
+      const nursingRates: Record<string, number> = { conservative: 20, typical: 30, optimistic: 40, custom: tdi.retentionCustomPercent ?? 10 };
       const impPct        = nursingRates[tdi.retentionImpactScenario || 'typical'] ?? 15;
       const retained      = (atRisk * (impPct / 100)).toFixed(1);
       return [

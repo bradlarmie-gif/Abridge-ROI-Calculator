@@ -97,16 +97,16 @@ export function recomputeDriverFromExploreState(driverId: string, state: Explore
     case 'retention': {
       const isNursing = careSetting === 'nursing';
       if (isNursing) {
-        const rates: Record<string, number> = { conservative: 10, typical: 15, optimistic: 25, custom: ti.retentionCustomPercent ?? 10 };
+        const rates: Record<string, number> = { conservative: 20, typical: 30, optimistic: 40, custom: ti.retentionCustomPercent ?? 10 };
         const leaving = numberOfProviders * (ti.nursingTurnoverRate / 100);
-        const retained = leaving * 0.40 * ((rates[ti.retentionImpactScenario] ?? 15) / 100);
+        const retained = leaving * 0.40 * ((rates[ti.retentionImpactScenario] ?? 30) / 100);
         let total = Math.round(retained * ti.nursingReplacementCost);
         if (ti.nursingAgencyEnabled) total += Math.round(retained * (ti.nursingAgencyWeeksPerVacancy || 12) * (ti.nursingAgencyWeeklyPremium || 2500));
         return total;
       } else {
-        const rates: Record<string, number> = { conservative: 5, typical: 10, optimistic: 15, custom: ti.retentionCustomPercent ?? 10 };
+        const rates: Record<string, number> = { conservative: 20, typical: 30, optimistic: 40, custom: ti.retentionCustomPercent ?? 10 };
         const leaving = numberOfProviders * (ti.annualTurnoverRate / 100);
-        const retained = leaving * (ti.burnoutRelatedTurnover / 100) * ((rates[ti.retentionImpactScenario] ?? 10) / 100);
+        const retained = leaving * (ti.burnoutRelatedTurnover / 100) * ((rates[ti.retentionImpactScenario] ?? 30) / 100);
         let total = Math.round(retained * ti.replacementCost);
         if (ti.physicianAgencyEnabled) total += Math.round(retained * (ti.physicianAgencyWeeksPerVacancy || 16) * (ti.physicianAgencyWeeklyPremium || 5000));
         return total;

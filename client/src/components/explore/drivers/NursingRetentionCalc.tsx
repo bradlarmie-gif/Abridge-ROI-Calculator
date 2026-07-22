@@ -11,9 +11,9 @@ export default function NursingRetentionCalc({ state, updateTimeDriverInputs }: 
   const [customDisplay, setCustomDisplay] = useState(String(timeDriverInputs.retentionCustomPercent ?? 10));
 
   const nursingRetentionImpactRates: Record<RetentionScenario, number> = {
-    conservative: 10,
-    typical: 15,
-    optimistic: 25,
+    conservative: 20,
+    typical: 30,
+    optimistic: 40,
     custom: timeDriverInputs.retentionCustomPercent ?? 10,
   };
 
@@ -76,9 +76,9 @@ export default function NursingRetentionCalc({ state, updateTimeDriverInputs }: 
       <p className="text-sm text-[#888888] mb-3">How much could reducing documentation burden impact burnout-driven departures?</p>
       <div className="flex gap-2 mb-2">
         {([
-          { label: 'Conservative', value: 'conservative' as RetentionScenario, pct: 10 },
-          { label: 'Typical', value: 'typical' as RetentionScenario, pct: 15 },
-          { label: 'Optimistic', value: 'optimistic' as RetentionScenario, pct: 25 },
+          { label: 'Conservative', value: 'conservative' as RetentionScenario, pct: 20 },
+          { label: 'Typical', value: 'typical' as RetentionScenario, pct: 30 },
+          { label: 'Optimistic', value: 'optimistic' as RetentionScenario, pct: 40 },
         ]).map((preset) => (
           <button
             key={preset.value}

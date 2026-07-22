@@ -10,9 +10,9 @@ export default function PhysicianLocumAgencyCalc({ state, updateTimeDriverInputs
   const { timeDriverInputs } = state;
 
   const retentionScenarios: Record<RetentionScenario, number> = {
-    conservative: 5,
-    typical: 10,
-    optimistic: 15,
+    conservative: 20,
+    typical: 30,
+    optimistic: 40,
     custom: timeDriverInputs.retentionCustomPercent ?? 10,
   };
 

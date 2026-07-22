@@ -32,14 +32,14 @@ import { EXPLORE_DRIVERS, type ExploreQuadrant } from "@/lib/exploreDrivers";
  */
 
 const RETENTION_SCENARIOS_PHYSICIAN_BASE: Record<string, number> = {
-  conservative: 5,
-  typical: 10,
-  optimistic: 15,
+  conservative: 20,
+  typical: 30,
+  optimistic: 40,
 };
 const RETENTION_SCENARIOS_NURSING_BASE: Record<string, number> = {
-  conservative: 10,
-  typical: 15,
-  optimistic: 25,
+  conservative: 20,
+  typical: 30,
+  optimistic: 40,
 };
 const retentionPhysician = (customPct: number): Record<string, number> => ({ ...RETENTION_SCENARIOS_PHYSICIAN_BASE, custom: customPct });
 const retentionNursing = (customPct: number): Record<string, number> => ({ ...RETENTION_SCENARIOS_NURSING_BASE, custom: customPct });

@@ -242,7 +242,7 @@ export default function ExploreModel({
   // Inpatient-specific calculations
   const isInpatient = state.careSetting === 'inpatient';
 
-  const retentionScenarios: Record<string, number> = { conservative: 5, typical: 10, optimistic: 15, custom: timeDriverInputs.retentionCustomPercent ?? 10 };
+  const retentionScenarios: Record<string, number> = { conservative: 20, typical: 30, optimistic: 40, custom: timeDriverInputs.retentionCustomPercent ?? 10 };
 
   const clinicianRetentionValue = useMemo(() => {
     if (!timeDriverInputs.wellbeingEnabled || !timeDriverInputs.calculateRetentionValue) return 0;
@@ -297,7 +297,7 @@ export default function ExploreModel({
     return Math.round(otHoursEliminated * state.timeDriverInputs.nursingOtHourlyRate);
   }, [isNursing, state.numberOfProviders, state.timeDriverInputs]);
 
-  const nursingRetentionImpactRates: Record<string, number> = { conservative: 10, typical: 15, optimistic: 25, custom: state.timeDriverInputs.retentionCustomPercent ?? 10 };
+  const nursingRetentionImpactRates: Record<string, number> = { conservative: 20, typical: 30, optimistic: 40, custom: state.timeDriverInputs.retentionCustomPercent ?? 10 };
 
   const nursingRetainedCount = useMemo(() => {
     if (!isNursing || !state.timeDriverInputs.nursingRetentionEnabled) return 0;
@@ -1025,7 +1025,7 @@ export default function ExploreModel({
               value: allDriverValues.nursingRetention || 0,
               turnoverPct: td.nursingTurnoverRate,
               replacementCost: td.nursingReplacementCost,
-              impactPct: ({ conservative: 10, typical: 15, optimistic: 25, custom: td.retentionCustomPercent ?? 10 } as Record<string, number>)[td.retentionImpactScenario] || 15,
+              impactPct: ({ conservative: 20, typical: 30, optimistic: 40, custom: td.retentionCustomPercent ?? 10 } as Record<string, number>)[td.retentionImpactScenario] || 30,
               burnoutRelatedPct: 40,
             },
             agency: {

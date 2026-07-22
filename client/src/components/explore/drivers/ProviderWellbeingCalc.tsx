@@ -21,9 +21,9 @@ export default function ProviderWellbeingCalc({ state, updateTimeDriverInputs, t
   const updateReplacement = (v: number) => updateTimeDriverInputs(isInpatient ? { ipReplacementCost: v } : { replacementCost: v });
 
   const retentionScenarios: Record<RetentionScenario, number> = {
-    conservative: 5,
-    typical: 10,
-    optimistic: 15,
+    conservative: 20,
+    typical: 30,
+    optimistic: 40,
     custom: td.retentionCustomPercent ?? 10,
   };
 
@@ -164,9 +164,9 @@ export default function ProviderWellbeingCalc({ state, updateTimeDriverInputs, t
 
           <div className="flex gap-2 mb-4">
             {([
-              { label: 'Conservative', value: 'conservative' as const, pct: 5 },
-              { label: 'Typical', value: 'typical' as const, pct: 10 },
-              { label: 'Optimistic', value: 'optimistic' as const, pct: 15 },
+              { label: 'Conservative', value: 'conservative' as const, pct: 20 },
+              { label: 'Typical', value: 'typical' as const, pct: 30 },
+              { label: 'Optimistic', value: 'optimistic' as const, pct: 40 },
             ]).map((preset) => (
               <button
                 key={preset.value}
@@ -236,9 +236,9 @@ export default function ProviderWellbeingCalc({ state, updateTimeDriverInputs, t
           )}
 
           <div className="text-[13px] text-[#666666] leading-relaxed space-y-2 mt-4">
-            <p><strong>Conservative (5%):</strong> Documentation burden is one of several burnout factors. Modest impact on departure decisions.</p>
-            <p><strong>Typical (10%):</strong> Documentation relief is a meaningful contributor in an org with high admin burden and strong Abridge adoption.</p>
-            <p><strong>Optimistic (15%):</strong> High documentation burden is a primary stated reason for departures. Validate with exit interview data.</p>
+            <p><strong>Conservative (20%):</strong> Documentation burden is one of several burnout factors. Modest impact on departure decisions.</p>
+            <p><strong>Typical (30%):</strong> Documentation relief is a meaningful contributor in an org with high admin burden and strong Abridge adoption.</p>
+            <p><strong>Optimistic (40%):</strong> High documentation burden is a primary stated reason for departures. Validate with exit interview data.</p>
             <p className="text-xs text-[#AAAAAA] mt-2 italic">These rates represent Abridge{"'"}s estimated contribution to burnout-related departure prevention {"—"} not total retention program impact.</p>
           </div>
 
