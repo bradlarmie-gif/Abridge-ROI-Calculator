@@ -92,10 +92,20 @@ export default function AttainLivePanel({
   // Every moved decision across every selected goal, prefixed so a partner
   // with two priorities can tell at a glance which one a given decision
   // belongs to.
+  //
+  // `showDollar` decides whether a per-decision dollar is honest to show. A
+  // gated ladder (access, retention, quality) produces ONE number: the rungs
+  // MULTIPLY, so no single rung is independently "worth $X" - the engine
+  // attributes the whole total to the one binding decision and $0 to the
+  // rest, which would read as real decisions being worthless. So a goal whose
+  // moved decisions carry the total on a single row is listed as plain STEPS,
+  // with only the running total (above) carrying the dollar. A goal with two
+  // or more dollar-bearing decisions is genuinely additive (revenue's
+  // parallel paths), where a per-path dollar stays honest, so those keep it.
   const movedDecisions = goals.flatMap((goal) => {
     const values = valuesByGoal[goal] ?? defaultLeverValues(goal, state.setting ?? undefined);
     const perLever = combined?.byGoal[goal]?.perLever;
-    return leversFor(goal, state.setting ?? undefined)
+    const rows = leversFor(goal, state.setting ?? undefined)
       .filter((l) => isLeverMoved(values[l.id], l.realityStart))
       .map((l) => ({
         key: `${goal}:${l.id}`,
@@ -103,6 +113,9 @@ export default function AttainLivePanel({
         label: l.label,
         marginalMargin: perLever?.find((p) => p.id === l.id)?.marginalMargin ?? 0,
       }));
+    const dollarBearing = rows.filter((r) => r.marginalMargin !== 0).length;
+    const showDollar = dollarBearing > 1;
+    return rows.map((r) => ({ ...r, showDollar }));
   });
 
   return (
@@ -247,7 +260,13 @@ export default function AttainLivePanel({
                   {goals.length > 1 && <span className="text-white/40">{GOAL_CATALOG[d.goal].pill} · </span>}
                   {d.label}
                 </span>
-                <span className="text-white font-semibold flex-shrink-0">{formatCompact(d.marginalMargin)}</span>
+                {/* A per-decision dollar only where it is honest (see
+                    `showDollar` above). For a single-number ladder the rungs
+                    read as plain steps; the running total above carries the
+                    one dollar. */}
+                {d.showDollar && (
+                  <span className="text-white font-semibold flex-shrink-0">{formatCompact(d.marginalMargin)}</span>
+                )}
               </div>
             ))}
           </div>
