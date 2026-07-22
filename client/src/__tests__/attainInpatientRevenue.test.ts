@@ -5,6 +5,9 @@ import {
   computeIpObsChain,
   computeIpRevenueChain,
   computeIpRevenueContributions,
+  deriveIpRevenueLadder,
+  ipDrgCountFormula,
+  IP_REVENUE_PATH_WHO_ACTS,
   exploreStateForIpRevenueReconciliation,
   computeAllDriverValues,
   selectedIpRevenuePaths,
@@ -399,6 +402,89 @@ describe("wiring - computeLeverContributions / computeMultiGoalContributions dis
     const combined = computeMultiGoalContributions(["revenue", "retention"], "inpatient", BASELINE, valuesByGoal);
     const revenueAlone = computeIpRevenueContributions(BASELINE, valuesByGoal.revenue);
     expect(combined.byGoal.revenue?.totalMargin).toBeCloseTo(revenueAlone.totalMargin, 5);
+  });
+});
+
+describe("the shared inpatient-revenue ladder (Build the case <-> Planning)", () => {
+  it("derives one sub-ladder per selected path, in DRG/CDI/Obs order", () => {
+    const ladder = deriveIpRevenueLadder(BASELINE, fullValues());
+    expect(ladder.paths.map((p) => p.id)).toEqual(["drg", "cdi", "obs"]);
+    expect(ladder.anyPathSelected).toBe(true);
+  });
+
+  it("no paths selected => empty ladder, converged prize 0, clean empty state", () => {
+    const ladder = deriveIpRevenueLadder(BASELINE, {});
+    expect(ladder.paths).toEqual([]);
+    expect(ladder.convergedPrize).toBe(0);
+    expect(ladder.anyPathSelected).toBe(false);
+  });
+
+  it("each path's ladder value reconciles exactly to its own engine chain", () => {
+    const values = fullValues();
+    const ladder = deriveIpRevenueLadder(BASELINE, values, 100);
+    const drg = ladder.paths.find((p) => p.id === "drg")!;
+    const cdi = ladder.paths.find((p) => p.id === "cdi")!;
+    const obs = ladder.paths.find((p) => p.id === "obs")!;
+    expect(drg.value).toBe(computeIpDrgChain(BASELINE, values).value);
+    expect(cdi.value).toBe(computeIpCdiChain(BASELINE, values).value);
+    expect(obs.value).toBe(computeIpObsChain(BASELINE, values).value);
+  });
+
+  it("DRG ladder uses share-of-eligible units: the ceiling is the at-risk SUBSET of eligible admissions, and the captured count is a plain % of it (not pp-of-subset)", () => {
+    const values = fullValues();
+    const drgChain = computeIpDrgChain(BASELINE, values);
+    const drg = deriveIpRevenueLadder(BASELINE, values).paths.find((p) => p.id === "drg")!;
+    // Ceiling is the at-risk pool (a subset of eligible admissions), not the
+    // full eligible pool - the documentation-caused share is the ceiling.
+    expect(drg.ceilingCount).toBeCloseTo(drgChain.atRisk, 3);
+    expect(drg.ceilingCount).toBeLessThan(drgChain.eligibleEncounters);
+    // Captured = at-risk x capturePct/100 (a plain share of the pool).
+    expect(drg.capturedCount).toBeCloseTo(drgChain.atRisk * (drgChain.capturePct / 100), 3);
+    // The unit shown is a plain "%" of the at-risk pool, never "pp" of a subset.
+    const countFormula = ipDrgCountFormula(drgChain);
+    expect(countFormula).toContain("%");
+    expect(countFormula).toContain("at-risk pool");
+    expect(countFormula).not.toContain("pp");
+  });
+
+  it("CDI ladder is LABOR savings, not reimbursement: it prices avoided queries at an admin cost clamped well below a DRG payment, so it can never restate the DRG dollar", () => {
+    const values = { ...fullValues(), ipCdiCostPerQuery: 5_000 }; // partner tries a DRG-sized $/query
+    const cdiChain = computeIpCdiChain(BASELINE, values);
+    // The admin-cost price is clamped to the double-count guard ceiling, which
+    // is far below any DRG base payment, so CDI cannot re-book DRG reimbursement.
+    expect(cdiChain.costPerQuery).toBe(MAX_IP_CDI_COST_PER_QUERY);
+    expect(cdiChain.costPerQuery).toBeLessThan(DEFAULT_IP_DRG_BASE_PAYMENT);
+    const cdi = deriveIpRevenueLadder(BASELINE, values).paths.find((p) => p.id === "cdi")!;
+    // The CDI value is exactly avoided queries x the clamped admin cost - the
+    // DRG weight/base-payment factors never enter this path.
+    expect(cdi.value).toBe(Math.round(cdiChain.avoided * MAX_IP_CDI_COST_PER_QUERY));
+    expect(cdi.priceLabel).toContain("admin cost");
+    expect(IP_REVENUE_PATH_WHO_ACTS.cdi).toContain("CDI");
+  });
+
+  it("convergence sums THREE DISTINCT dollars: DRG reimbursement + CDI labor + Obs status margin, never blended or double-counted", () => {
+    const values = fullValues();
+    const ladder = deriveIpRevenueLadder(BASELINE, values, 100);
+    const drg = ladder.paths.find((p) => p.id === "drg")!.value;
+    const cdi = ladder.paths.find((p) => p.id === "cdi")!.value;
+    const obs = ladder.paths.find((p) => p.id === "obs")!.value;
+    // Three genuinely different mechanisms => three different dollar amounts.
+    expect(new Set([drg, cdi, obs]).size).toBe(3);
+    // The converged prize is exactly their sum, and equals the engine total.
+    expect(ladder.convergedPrize).toBe(drg + cdi + obs);
+    expect(ladder.convergedPrize).toBe(computeIpRevenueChain(BASELINE, values).totalValue);
+  });
+
+  it("realization scales every path's dollar and the converged prize by the same factor, once", () => {
+    const values = fullValues();
+    const full = deriveIpRevenueLadder(BASELINE, values, 100);
+    const half = deriveIpRevenueLadder(BASELINE, values, 50);
+    expect(half.convergedPrize).toBeCloseTo(Math.round(full.convergedPrize / 2), -2);
+    for (const id of ["drg", "cdi", "obs"] as const) {
+      const f = full.paths.find((p) => p.id === id)!.value;
+      const h = half.paths.find((p) => p.id === id)!.value;
+      expect(h).toBeCloseTo(Math.round(f / 2), -1);
+    }
   });
 });
 
