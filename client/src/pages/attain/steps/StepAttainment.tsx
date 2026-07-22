@@ -154,6 +154,16 @@ function DecisionsTable({
   rows: Array<CommittedLever & { goal: GoalId }>;
   testId: string;
 }) {
+  // A gated ladder (access/retention/quality) attributes its whole total to
+  // the single binding rung and $0 to the rest, so a per-row Worth would read
+  // "$0 / 0% of its priority" on real decisions - the rungs multiply, no rung
+  // is independently worth $X. So the Worth column only appears when two or
+  // more rows genuinely carry a dollar (revenue's additive parallel paths).
+  // For a single-number ladder the priority total shown right beside this
+  // table (below it for one priority, in the group header for several) is the
+  // one honest figure, so no per-row worth is needed or invented here.
+  const dollarBearing = rows.filter((r) => (r.contribution?.marginalMargin ?? 0) !== 0).length;
+  const showWorth = dollarBearing > 1;
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-left border-collapse" data-testid={testId}>
@@ -162,7 +172,9 @@ function DecisionsTable({
             <th className="text-[9.5px] font-semibold uppercase tracking-wide text-[#8C8C8C] pb-2 border-b border-[#E7E0D6]">Decision</th>
             <th className="text-[9.5px] font-semibold uppercase tracking-wide text-[#8C8C8C] pb-2 border-b border-[#E7E0D6]">Owner</th>
             <th className="text-[9.5px] font-semibold uppercase tracking-wide text-[#8C8C8C] pb-2 border-b border-[#E7E0D6]">By when</th>
-            <th className="text-[9.5px] font-semibold uppercase tracking-wide text-[#8C8C8C] pb-2 border-b border-[#E7E0D6] text-right">Worth</th>
+            {showWorth && (
+              <th className="text-[9.5px] font-semibold uppercase tracking-wide text-[#8C8C8C] pb-2 border-b border-[#E7E0D6] text-right">Worth</th>
+            )}
           </tr>
         </thead>
         <tbody>
@@ -174,11 +186,13 @@ function DecisionsTable({
               </td>
               <td className="py-3 px-2 border-b border-[#F0ECE5] align-top text-[11.5px] text-[#3A3A3A] whitespace-nowrap">{owner}</td>
               <td className="py-3 px-2 border-b border-[#F0ECE5] align-top text-[11.5px] text-[#3A3A3A] whitespace-nowrap">{due}</td>
-              <td className="py-3 px-2 border-b border-[#F0ECE5] align-top text-right whitespace-nowrap">
-                {/* Fine to show per-decision here, but never sum marginalMargin across a chain; use the chain's totalMargin. */}
-                <p className="text-[12.5px] font-bold text-[#EA2C00]">{formatCompact(contribution?.marginalMargin ?? 0)}</p>
-                <p className="text-[10px] text-[#8C8C8C]">{Math.round((contribution?.pctOfTotal ?? 0) * 100)}% of its priority</p>
-              </td>
+              {showWorth && (
+                <td className="py-3 px-2 border-b border-[#F0ECE5] align-top text-right whitespace-nowrap">
+                  {/* Only additive multi-path goals reach here; never sum marginalMargin across a chain, use the chain's totalMargin. */}
+                  <p className="text-[12.5px] font-bold text-[#EA2C00]">{formatCompact(contribution?.marginalMargin ?? 0)}</p>
+                  <p className="text-[10px] text-[#8C8C8C]">{Math.round((contribution?.pctOfTotal ?? 0) * 100)}% of its priority</p>
+                </td>
+              )}
             </tr>
           ))}
         </tbody>
