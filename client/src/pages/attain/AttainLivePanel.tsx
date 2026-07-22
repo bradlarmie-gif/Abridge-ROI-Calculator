@@ -113,8 +113,14 @@ export default function AttainLivePanel({
         label: l.label,
         marginalMargin: perLever?.find((p) => p.id === l.id)?.marginalMargin ?? 0,
       }));
+    // Retention is a composite single-number ladder: its D2-D5 rows each carry
+    // a leave-one-out marginal, but those OVERLAP (they combine multiplicatively
+    // toward one composite impact), so they do not sum to the total and a
+    // per-decision dollar would mislead. Treat it like access, plain steps, with
+    // the running total above carrying the one dollar. Revenue/quality stay
+    // genuinely additive, so a per-path dollar is honest there.
     const dollarBearing = rows.filter((r) => r.marginalMargin !== 0).length;
-    const showDollar = dollarBearing > 1;
+    const showDollar = goal !== "retention" && dollarBearing > 1;
     return rows.map((r) => ({ ...r, showDollar }));
   });
 
