@@ -116,7 +116,7 @@ export const WORKFORCE_IMPACT_CEILING_PP: Record<AttainSetting, number> = {
 export const SURVEY_CADENCE_LABELS = ["Not yet", "Quarterly pulse", "Monthly pulse"];
 export const BACKFILL_LEVEL_LABELS = ["None", "Partial", "Full"];
 
-const NO_MOVE_FORMULA = "Move this decision above reality to see the math.";
+const NO_MOVE_FORMULA = "Set the numbers above and the math appears here.";
 
 // ────────────────────────────────────────────────────────────────────────
 // Local helpers (deliberately not shared with attainLevers.ts, same

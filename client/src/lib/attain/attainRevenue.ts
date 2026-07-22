@@ -103,7 +103,7 @@ function mkState(setting: AttainSetting): ExploreState {
   };
 }
 
-const NO_MOVE_FORMULA = "Move this decision above reality to see the math.";
+const NO_MOVE_FORMULA = "Set the numbers above and the math appears here.";
 
 // ────────────────────────────────────────────────────────────────────────
 // Path identity — the three choices on the path chooser.

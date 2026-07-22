@@ -404,7 +404,7 @@ export default function StepBuildCase({
                   >
                     <p className="text-[10px] font-bold uppercase tracking-wide text-[#EA2C00] mb-1">The math</p>
                     <p className="text-[12.5px] text-[#3A3A3A] leading-relaxed" data-testid={`text-attain-lever-formula-${goal}-${lever.id}`}>
-                      {contribution?.formula ?? "Move this decision above reality to see the math."}
+                      {contribution?.formula ?? "Set the numbers above and the math appears here."}
                     </p>
                   </div>
 

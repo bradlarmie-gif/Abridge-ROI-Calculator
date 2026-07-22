@@ -66,7 +66,7 @@ export const NURSING_CAPACITY_WHO_ACTS = "Nursing operations, the chart-in-the-m
 export const NURSING_CAPACITY_NO_DOUBLE_COUNT =
   "Counted once. Overtime avoided is wages you stop paying now. Retention is the replacement cost of a nurse who would have quit. Different dollars, same root of less after-hours charting, so the plan never credits the same relief twice.";
 
-const NO_MOVE_FORMULA = "Move this decision above reality to see the math.";
+const NO_MOVE_FORMULA = "Set the numbers above and the math appears here.";
 
 // ────────────────────────────────────────────────────────────────────────
 // Local helpers (self-contained, same convention as attainAccess.ts)

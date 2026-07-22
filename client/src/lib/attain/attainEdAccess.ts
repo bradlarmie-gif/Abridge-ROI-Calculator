@@ -184,7 +184,7 @@ export const DEFAULT_ED_ACCESS_ADMISSION_REALIZATION = 60;
  */
 export const DEFAULT_ED_ACCESS_HOURS_PER_RECOVERY = 1.5;
 
-const NO_MOVE_FORMULA = "Move this decision above reality to see the math.";
+const NO_MOVE_FORMULA = "Set the numbers above and the math appears here.";
 
 // ────────────────────────────────────────────────────────────────────────
 // Small local helpers (deliberately not shared with attainAccess.ts /

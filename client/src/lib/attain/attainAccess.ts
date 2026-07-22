@@ -108,7 +108,7 @@ export const DEFAULT_NO_SHOW_RATE_PCT = 12;
  * preset. Matches Explore's own `revenuePerVisit` default. */
 export const DEFAULT_BLENDED_MARGIN_PER_VISIT = 200;
 
-const NO_MOVE_FORMULA = "Move this decision above reality to see the math.";
+const NO_MOVE_FORMULA = "Set the numbers above and the math appears here.";
 
 // ────────────────────────────────────────────────────────────────────────
 // Small local helpers (deliberately not shared with attainLevers.ts, to
