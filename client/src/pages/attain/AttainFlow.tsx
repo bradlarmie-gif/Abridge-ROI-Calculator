@@ -297,6 +297,12 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
   // adjustment). A single selected revenue goal in the ED setting renders the
   // same StepPlanning shell, setting-aware via the shared revenue ladder.
   const isEdRevenuePlan = state.setting === "ed" && goals.length === 1 && goals[0] === "revenue";
+  // Inpatient revenue rides the SAME converging revenue ladder Planning view,
+  // on its own genuinely different mechanisms (DRG capture, CDI query
+  // efficiency, observation-status defense). A single selected revenue goal in
+  // the inpatient setting renders the same StepPlanning shell, setting-aware via
+  // the shared inpatient-revenue ladder (deriveIpRevenueLadder).
+  const isInpatientRevenuePlan = state.setting === "inpatient" && goals.length === 1 && goals[0] === "revenue";
   // ED access is the fourth combo the phased Planning view is rebuilt for (a
   // single selected access goal in the ED setting). It renders the same
   // StepPlanning shell driven by the shared ED access ladder, including its
@@ -312,7 +318,7 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
   // renders the same StepPlanning shell driven by the shared nursing capacity
   // ladder (goal="capacity"). Every other combo still renders StepCommit.
   const isNursingCapacityPlan = state.setting === "nursing" && goals.length === 1 && goals[0] === "capacity";
-  const isPhasedPlan = isOutpatientAccessPlan || isRetentionPlan || isOutpatientRevenuePlan || isEdRevenuePlan || isEdAccessPlan || isNursingQualityPlan || isNursingCapacityPlan;
+  const isPhasedPlan = isOutpatientAccessPlan || isRetentionPlan || isOutpatientRevenuePlan || isEdRevenuePlan || isInpatientRevenuePlan || isEdAccessPlan || isNursingQualityPlan || isNursingCapacityPlan;
 
   const updateState = useCallback((updates: Partial<AttainState>) => {
     setState((prev) => ({ ...prev, ...updates }));
@@ -910,6 +916,26 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
                 baseline={baseline}
                 goal="revenue"
                 values={valuesByGoal.revenue ?? defaultLeverValues("revenue", "ed")}
+                combined={combined}
+                goalOwner={goalOwnerByPriority.revenue ?? { name: "", title: "" }}
+                onChangeGoalOwner={(patch) => handleChangeGoalOwner("revenue", patch)}
+                planning={planning}
+                onChangePhaseOwner={handleChangePhaseOwner}
+                onChangePhaseSignalTarget={handleChangePhaseSignalTarget}
+                onChangePartnerRisk={handleChangePartnerRisk}
+                planCadence={planCadence}
+                onChangePlanCadence={handleChangePlanCadence}
+                totalMonths={state.totalMonths}
+                stepNumber={stepIndex + 1}
+              />
+            )}
+
+            {step === "commit" && isInpatientRevenuePlan && (
+              <StepPlanning
+                setting="inpatient"
+                baseline={baseline}
+                goal="revenue"
+                values={valuesByGoal.revenue ?? defaultLeverValues("revenue", "inpatient")}
                 combined={combined}
                 goalOwner={goalOwnerByPriority.revenue ?? { name: "", title: "" }}
                 onChangeGoalOwner={(patch) => handleChangeGoalOwner("revenue", patch)}

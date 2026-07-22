@@ -10,8 +10,13 @@ import {
   deriveRevenueLadder,
   selectedPaths,
   type RevenuePathId,
-  type RevenuePathLadder,
 } from "@/lib/attain/attainRevenue";
+import {
+  computeIpRevenueChain,
+  deriveIpRevenueLadder,
+  selectedIpRevenuePaths,
+  type IpRevenuePathId,
+} from "@/lib/attain/attainInpatientRevenue";
 import {
   computeQualityChain,
   deriveQualityLadder,
@@ -225,6 +230,39 @@ const REVENUE_PATH_SHORT: Record<RevenuePathId, string> = {
   denials: "medical-necessity denials",
 };
 
+/** Real, trackable leading signals per INPATIENT revenue path (the spec's
+ * metric menu). Phase 1 opens on the signal closest to the documentation lever;
+ * later phases move down toward the outcome metric. */
+const IP_REVENUE_PATH_PHASE_SIGNALS: Record<IpRevenuePathId, [string, string, string]> = {
+  drg: [
+    "Query turnaround before discharge, falling",
+    "CC/MCC capture rate, rising",
+    "Case mix index vs baseline, rising",
+  ],
+  cdi: [
+    "Share of queries that were avoidable, falling",
+    "CDI query volume per 100 admissions, falling",
+    "CDI review hours per case, falling",
+  ],
+  obs: [
+    "Observation rate, falling",
+    "Status-denial overturn rate, rising",
+    "Inpatient status upheld on audit, holding",
+  ],
+};
+
+/** Inpatient revenue paths ranked by how clearly their leak is
+ * documentation-caused, so the phased plan starts with the most defensible one:
+ * DRG capture (a CC/MCC clinically present but not documented specifically
+ * enough is plainly the note), then CDI efficiency, then observation defense. */
+const IP_REVENUE_DOC_CAUSED_ORDER: IpRevenuePathId[] = ["drg", "cdi", "obs"];
+
+const IP_REVENUE_PATH_SHORT: Record<IpRevenuePathId, string> = {
+  drg: "DRG capture",
+  cdi: "CDI efficiency",
+  obs: "observation-status defense",
+};
+
 /** Real, trackable leading signals per harm event (the spec's metric menu:
  * event rate per 1,000, bundle/intervention compliance %, real-time gap
  * closure %). Phase 1 opens on the process signal closest to the first
@@ -293,6 +331,11 @@ export default function StepPlanning({
   const goalDef = GOAL_CATALOG[goal as GoalId];
   const isRetention = goal === "retention";
   const isRevenue = goal === "revenue";
+  // Inpatient revenue rides the same converging revenue ladder shape as
+  // outpatient/ED revenue, on its own genuinely different mechanisms (DRG
+  // capture, CDI query efficiency, observation-status defense). Everything the
+  // revenue branch below reads is normalized so the one block serves both.
+  const isIpRevenue = isRevenue && setting === "inpatient";
   const isQuality = goal === "quality";
   const isCapacity = goal === "capacity";
   // ED access is a variant of the access goal at the ED setting: a genuinely
@@ -366,11 +409,18 @@ export default function StepPlanning({
   // are scaled by the realization factor implied by the combined engine result
   // (revenueRealized / revenueRaw), so Planning's per-path dollars and the
   // converged prize match Build the case exactly.
-  const revenueRaw = isRevenue ? computeRevenueChain(baseline, setting, values).totalValue : 0;
+  const revenueRaw = !isRevenue
+    ? 0
+    : isIpRevenue
+    ? computeIpRevenueChain(baseline, values).totalValue
+    : computeRevenueChain(baseline, setting, values).totalValue;
   const revenueRealized = combined?.byGoal.revenue?.totalMargin ?? revenueRaw;
   const revenueRealizationPct = revenueRaw > 0 ? (revenueRealized / revenueRaw) * 100 : 100;
-  const revenueLadder = deriveRevenueLadder(baseline, setting, values, revenueRealizationPct);
-  const revenuePathsSel = selectedPaths(values).filter((p) => setting !== "ed" || p !== "hcc");
+  const revenueLadder = isIpRevenue
+    ? deriveIpRevenueLadder(baseline, values, revenueRealizationPct)
+    : deriveRevenueLadder(baseline, setting, values, revenueRealizationPct);
+  const revenuePathsSel = isIpRevenue ? [] : selectedPaths(values).filter((p) => setting !== "ed" || p !== "hcc");
+  const ipRevenuePathsSel = isIpRevenue ? selectedIpRevenuePaths(values) : [];
 
   // ── QUALITY ladder ──────────────────────────────────────────────────────
   // Same SHAPE as revenue: one shared lever (earlier risk documentation)
@@ -425,20 +475,30 @@ export default function StepPlanning({
   // Revenue paths ordered most-documentation-caused first, so the phased plan
   // starts on the path whose leak is clearest (E/M), then widens.
   const orderedRevenuePaths = REVENUE_DOC_CAUSED_ORDER.filter((p) => revenuePathsSel.includes(p));
+  const orderedIpRevenuePaths = IP_REVENUE_DOC_CAUSED_ORDER.filter((p) => ipRevenuePathsSel.includes(p));
   const primaryRevenuePath: RevenuePathId = orderedRevenuePaths[0] ?? "em";
-  const revenuePhaseSignals = REVENUE_PATH_PHASE_SIGNALS[primaryRevenuePath];
+  const primaryIpRevenuePath: IpRevenuePathId = orderedIpRevenuePaths[0] ?? "drg";
+  // Normalized, setting-agnostic scaffolding so the one revenue phase block
+  // reads the same whether the paths are outpatient/ED or inpatient.
+  const orderedRevenueShort: string[] = isIpRevenue
+    ? orderedIpRevenuePaths.map((p) => IP_REVENUE_PATH_SHORT[p])
+    : orderedRevenuePaths.map((p) => REVENUE_PATH_SHORT[p]);
+  const primaryRevenueShort = isIpRevenue ? IP_REVENUE_PATH_SHORT[primaryIpRevenuePath] : REVENUE_PATH_SHORT[primaryRevenuePath];
+  const revenuePhaseSignals = isIpRevenue
+    ? IP_REVENUE_PATH_PHASE_SIGNALS[primaryIpRevenuePath]
+    : REVENUE_PATH_PHASE_SIGNALS[primaryRevenuePath];
   const PHASE_META_REVENUE: Record<PlanPhaseId, PhaseMeta> = {
     start: {
       label: "Start",
-      intent: `Start with ${REVENUE_PATH_SHORT[primaryRevenuePath]}, the path whose leak is most clearly the documentation. Prove complete notes actually move the coding before anything widens.`,
+      intent: `Start with ${primaryRevenueShort}, the path whose leak is most clearly the documentation. Prove complete notes actually move the capture before anything widens.`,
       signalLabel: revenuePhaseSignals[0],
     },
     expand: {
       label: "Expand",
       intent:
-        orderedRevenuePaths.length > 1
+        orderedRevenueShort.length > 1
           ? "The first path held. Widen to the other revenue paths you picked and watch the capture rate rise."
-          : "The signal held. Widen the scope across more providers and watch the capture rate rise.",
+          : "The signal held. Widen the scope across more of the service and watch the capture rate rise.",
       signalLabel: revenuePhaseSignals[1],
     },
     steady: {
@@ -524,7 +584,6 @@ export default function StepPlanning({
       };
 
   const edAccessProviders = edAccessLadder?.providersInScope ?? 0;
-  const revenuePathLabel = (p: RevenuePathId) => REVENUE_PATH_SHORT[p];
   const phaseScope: Record<PlanPhaseId, string> = isEdAccess
     ? {
         start: "One shift pattern first",
@@ -534,14 +593,14 @@ export default function StepPlanning({
       }
     : isRevenue
     ? {
-        start: orderedRevenuePaths.length > 0 ? `${revenuePathLabel(primaryRevenuePath)} first` : "A first revenue path",
+        start: orderedRevenueShort.length > 0 ? `${primaryRevenueShort} first` : "A first revenue path",
         expand:
-          orderedRevenuePaths.length > 1
-            ? `Add ${orderedRevenuePaths.slice(1).map(revenuePathLabel).join(", ")}`
-            : "Widen to more providers",
+          orderedRevenueShort.length > 1
+            ? `Add ${orderedRevenueShort.slice(1).join(", ")}`
+            : "Widen to more of the service",
         steady:
-          orderedRevenuePaths.length > 0
-            ? `All paths: ${orderedRevenuePaths.map(revenuePathLabel).join(", ")}`
+          orderedRevenueShort.length > 0
+            ? `All paths: ${orderedRevenueShort.join(", ")}`
             : "Full scope",
       }
     : isQuality
@@ -819,7 +878,7 @@ export default function StepPlanning({
                 caption="The one thing Abridge moves, and where every revenue path converges. When the note carries the full picture, the claim can reflect the care that was actually delivered."
                 emptyHint=""
               />
-              {revenueLadder.paths.map((p: RevenuePathLadder) => (
+              {revenueLadder.paths.map((p) => (
                 <div key={p.id}>
                   <div className="flex justify-center"><ArrowDown className="w-4 h-4 text-[#B4B4B4]" /></div>
                   <p className="text-[11px] font-bold uppercase tracking-[1.5px] text-[#EA2C00] mb-2 mt-1">{p.label}</p>
@@ -861,7 +920,9 @@ export default function StepPlanning({
                 label="The converged prize"
                 caption={
                   prize > 0
-                    ? `${revenueLadder.paths.filter((p) => p.hasValue).length} paths, each its own claim pool, summed once and never double-counted.`
+                    ? isIpRevenue
+                      ? `${revenueLadder.paths.filter((p) => p.hasValue).length} paths: DRG reimbursement, CDI labor, and status margin are three distinct dollars, summed once and never double-counted.`
+                      : `${revenueLadder.paths.filter((p) => p.hasValue).length} paths, each its own claim pool, summed once and never double-counted.`
                     : "Finish a path above and the converged prize appears here."
                 }
                 emptyHint="The prize appears once at least one path's chain is complete."
