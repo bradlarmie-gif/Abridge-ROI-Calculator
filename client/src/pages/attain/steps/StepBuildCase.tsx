@@ -147,8 +147,6 @@ export default function StepBuildCase({
   const result = combined?.byGoal[goal];
   const contributionFor = (id: string) => result?.perLever.find((p) => p.id === id);
 
-  const movedCount = levers.filter((l) => isMoved(values[l.id], l.realityStart)).length;
-
   // Outpatient access is the ladder exemplar: it assembles the exact
   // step-down story Planning reads back (see AccessDecisionChain +
   // accessLadder.ts), so it drops the generic "N of M decisions moved"
@@ -212,7 +210,7 @@ export default function StepBuildCase({
                     ? "One lever starts it, earlier and more complete risk documentation. It feeds several harm events. For each event you pick, only a defensible share is preventable, and the bundle you commit to earns it. The events add into one prize."
                     : isCapacityLadder
                       ? "One number starts it, minutes saved per note, so nurses chart in the moment. Work down: your overtime now, the share charting actually causes, and the hours you take out of it."
-                      : "These decisions start from where you are today, move the ones you're ready to commit to."}
+                      : "Assemble the ladder from the top down. One number starts it, and each rung is part of the plan."}
         </p>
       </motion.div>
 
@@ -255,7 +253,7 @@ export default function StepBuildCase({
                     ? "One lever, several harm events, one converged prize. Pick the events you are preventing and commit each one's bundle to your real numbers."
                     : isCapacityLadder
                       ? "This is the full step-down, top to bottom. Set each rung to your real overtime, and only the overtime charting causes counts."
-                      : `${movedCount} of ${levers.length} decisions moved. Move the ones your organization is actually ready to commit to, the rest can wait for a later plan.`}
+                      : "This is the full step-down, top to bottom. Set each rung to your real numbers."}
         </p>
       </motion.div>
 

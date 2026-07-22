@@ -629,7 +629,7 @@ export const LEVERS: Record<GoalId, Lever[]> = {
   ],
   // Revenue is a THREE-PATH decision chain for outpatient/ED (Risk
   // Adjustment / E/M Level Accuracy / Medical Necessity Denials), rendered
-  // bespoke on Build the case (`RevenueDecisionChain.tsx`), not through the
+  // bespoke on Build the case (`RevenueLadderChain.tsx`), not through the
   // generic lever renderer - same convention as access. This catalog entry
   // exists so Commit and Your Plan, which walk every goal's `leversFor`
   // generically, keep working: one row per decision, ids matching the flat
