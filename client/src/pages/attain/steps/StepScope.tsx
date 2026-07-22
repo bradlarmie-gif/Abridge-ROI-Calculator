@@ -1,5 +1,7 @@
 import { motion } from "framer-motion";
+import { HelpCircle } from "lucide-react";
 import { NumberField } from "@/components/NumberField";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { AttainBaseline } from "@/lib/attain/attainLevers";
 import type { AttainSetting } from "@/lib/attain/attainTypes";
 
@@ -11,9 +13,9 @@ const PROVIDER_LABEL: Record<AttainSetting, string> = {
 };
 
 const PROVIDER_HELP: Record<AttainSetting, string> = {
-  outpatient: "Full-time equivalent providers whose documentation this plan covers.",
-  ed: "Full-time equivalent ED physicians whose documentation this plan covers.",
-  inpatient: "Full-time equivalent hospitalists whose documentation this plan covers.",
+  outpatient: "FTE providers this plan covers.",
+  ed: "FTE ED physicians this plan covers.",
+  inpatient: "FTE hospitalists this plan covers.",
   nursing: "",
 };
 
@@ -25,11 +27,15 @@ const ENCOUNTER_LABEL: Record<AttainSetting, string> = {
 };
 
 const ENCOUNTER_HELP: Record<AttainSetting, string> = {
-  outpatient: "Total visits per year across those providers.",
-  ed: "Total ED visits per year across those physicians.",
-  inpatient: "Total admissions per year across those hospitalists.",
+  outpatient: "Total visits per year across them.",
+  ed: "Total ED visits per year across them.",
+  inpatient: "Total admissions per year across them.",
   nursing: "",
 };
+
+/** The nuance behind the utilization benchmark, one hover away from the
+ * label instead of stretching the inline helper to two lines. */
+const UTILIZATION_BENCHMARK_TIP = "Most deployments start near 50 to 60% and grow from there.";
 
 interface StepScopeProps {
   setting: AttainSetting;
@@ -143,15 +149,16 @@ export default function StepScope({ setting, baseline, onChangeBaseline }: StepS
               placeholder="e.g., 70"
               suffix="%"
               max={100}
-              help="Share of those encounters this plan can realistically reach. Most deployments start near 50 to 60% and grow from there."
+              help="Share of those encounters this plan can realistically reach."
+              tip={UTILIZATION_BENCHMARK_TIP}
             />
           </div>
         )}
       </motion.div>
 
       <p className="text-[14px] text-[#8C8C8C] leading-relaxed max-w-[600px]" data-testid="text-attain-scope-footnote">
-        These numbers are the stage every decision on the next page stands on. Nothing about your demand, backlog,
-        or referral queue belongs here, those are decisions you make on Build the case, not facts about today.
+        These numbers are the stage every decision on the next page stands on. Demand and backlog come later, on
+        Build the case, not here.
       </p>
     </div>
   );
@@ -166,13 +173,20 @@ interface NumberBaselineFieldProps {
   help: string;
   suffix?: string;
   max?: number;
+  /** Extra benchmark nuance that doesn't need to live inline, one hover
+   * away from the label instead. */
+  tip?: string;
 }
 
-function NumberBaselineField({ label, testid, value, onChange, placeholder, help, suffix, max }: NumberBaselineFieldProps) {
+function NumberBaselineField({ label, testid, value, onChange, placeholder, help, suffix, max, tip }: NumberBaselineFieldProps) {
   return (
     <div className="space-y-3">
-      <label className="text-base font-medium text-black" htmlFor={`attain-baseline-${testid}`}>
+      <label
+        className="text-base font-medium text-black flex items-center gap-1.5"
+        htmlFor={`attain-baseline-${testid}`}
+      >
         {label}
+        {tip && <InfoTip text={tip} testid={`tooltip-attain-baseline-${testid}`} />}
       </label>
       <div className="relative">
         <NumberField
@@ -194,5 +208,27 @@ function NumberBaselineField({ label, testid, value, onChange, placeholder, help
       </div>
       <p className="text-[14px] text-[#888888] leading-relaxed">{help}</p>
     </div>
+  );
+}
+
+/** A small, quiet info tooltip for a field label - hover/tap only, never
+ * inline clutter. Same house pattern as the `InfoTip` in the D-step
+ * decision chains, kept local here since this step doesn't share their
+ * module. */
+function InfoTip({ text, testid }: { text: string; testid: string }) {
+  return (
+    <Tooltip delayDuration={200}>
+      <TooltipTrigger asChild>
+        <span
+          className="text-[#B4B4B4] hover:text-[#8C8C8C] transition-colors cursor-help inline-flex"
+          data-testid={testid}
+        >
+          <HelpCircle className="w-3.5 h-3.5" />
+        </span>
+      </TooltipTrigger>
+      <TooltipContent side="top" className="max-w-[240px] text-xs leading-relaxed">
+        <p>{text}</p>
+      </TooltipContent>
+    </Tooltip>
   );
 }
