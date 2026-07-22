@@ -8,6 +8,7 @@ import {
   computeAccessContributions,
   exploreStateForReconciliation,
   computeAllDriverValues,
+  estimateNoShowRecoveryCount,
   DEFAULT_MINUTES_SAVED_PER_NOTE,
   DEFAULT_VISIT_LENGTH_MIN,
   DEFAULT_NO_SHOW_RATE_PCT,
@@ -26,56 +27,134 @@ import { type AttainBaseline, type LeverValues } from "@/lib/attain/attainLevers
 
 const BASELINE: AttainBaseline = { providers: 40, annualEncounters: 40 * 3_600, utilizationPct: 100 };
 
-describe("C2 fix - no-show recovery is a share of the no-show POOL, not of every encounter", () => {
-  it("entering a 60% recovery rate recovers ~60% of the no-show pool, not 60% of all encounters", () => {
+describe("D4 rebuild - every demand source is a countable number of patients, not a rate", () => {
+  it("demand ceiling is the sum of the four countable sources: backlog (one-time) + referrals x 12 + same-day count + no-show count", () => {
     const scope = computeAccessScope(BASELINE, { accessProviders: 40 });
     const demand = computeAccessDemand(BASELINE, scope, {
-      accessDemandNoShowPct: 60,
-      // no accessDemandNoShowRate set - defaults to DEFAULT_NO_SHOW_RATE_PCT (12%)
+      accessDemandBacklog: 500,
+      accessDemandNewReferrals: 50, // /mo
+      accessDemandSameDayCount: 300, // patients/yr, a direct count now
+      accessDemandNoShowCount: 200, // patients/yr, a direct count now
     });
-    // 40 providers x 3,600 encounters/provider x 100% utilization = 144,000
-    // encounters in scope. A partner reading the tooltip and entering "60%"
-    // means "recover 60% of our no-shows" - at a ~12% typical no-show rate,
-    // that pool is 17,280, so recovery should land near 10,368, nowhere
-    // near 60% of the full 144,000-encounter volume (86,400) the old,
-    // un-pooled model would have booked - an ~8.3x overstatement.
-    expect(demand.encountersInScope).toBe(144_000);
-    expect(demand.noShowRatePct).toBe(DEFAULT_NO_SHOW_RATE_PCT);
-    expect(demand.noShowPool).toBeCloseTo(144_000 * 0.12, 3);
-    expect(demand.noShowVisits).toBe(Math.round(demand.noShowPool * 0.6));
-    expect(demand.noShowVisits).toBeLessThan(demand.encountersInScope * 0.6);
-    // The recovered count should be a small fraction of total encounters,
-    // consistent with "recovering most of a small no-show pool", not "most
-    // of the whole schedule".
-    expect(demand.noShowVisits / demand.encountersInScope).toBeLessThan(0.1);
+    expect(demand.backlogVisits).toBe(500);
+    expect(demand.newReferralVisits).toBe(600); // 50/mo x 12
+    expect(demand.sameDayVisits).toBe(300);
+    expect(demand.noShowVisits).toBe(200);
+    expect(demand.demandCeiling).toBe(500 + 600 + 300 + 200);
   });
 
-  it("a higher typical no-show rate (accessDemandNoShowRate) grows the pool, and therefore the recovered count, at a fixed recovery rate", () => {
-    const scope = computeAccessScope(BASELINE, { accessProviders: 40 });
-    const lowRate = computeAccessDemand(BASELINE, scope, { accessDemandNoShowRate: 5, accessDemandNoShowPct: 50 });
-    const highRate = computeAccessDemand(BASELINE, scope, { accessDemandNoShowRate: 25, accessDemandNoShowPct: 50 });
-    expect(highRate.noShowPool).toBeGreaterThan(lowRate.noShowPool);
-    expect(highRate.noShowVisits).toBeGreaterThan(lowRate.noShowVisits);
-    // Exactly 5x the pool (25% / 5%) at the identical recovery rate.
-    expect(highRate.noShowPool).toBeCloseTo(lowRate.noShowPool * 5, 3);
+  it("same-day and no-show are never treated as a percent of encounters - a huge encounter volume does not inflate a small count", () => {
+    const bigBaseline: AttainBaseline = { providers: 400, annualEncounters: 400 * 10_000, utilizationPct: 100 };
+    const scope = computeAccessScope(bigBaseline, { accessProviders: 400 });
+    const demand = computeAccessDemand(bigBaseline, scope, {
+      accessDemandSameDayCount: 50,
+      accessDemandNoShowCount: 25,
+    });
+    // Regardless of the (very large) encounter volume in scope, the counts
+    // entered are exactly what land on the ceiling - no hidden multiplication
+    // by encountersInScope anywhere in this path.
+    expect(demand.encountersInScope).toBeGreaterThan(1_000_000);
+    expect(demand.sameDayVisits).toBe(50);
+    expect(demand.noShowVisits).toBe(25);
+    expect(demand.demandCeiling).toBe(75);
   });
 
-  it("zero recovery rate recovers nothing, even with a large no-show pool", () => {
+  it("pick-what-applies: adding only ONE source works, every other source contributes exactly 0", () => {
     const scope = computeAccessScope(BASELINE, { accessProviders: 40 });
-    const demand = computeAccessDemand(BASELINE, scope, { accessDemandNoShowRate: 30, accessDemandNoShowPct: 0 });
-    expect(demand.noShowPool).toBeGreaterThan(0);
+    const backlogOnly = computeAccessDemand(BASELINE, scope, { accessDemandBacklog: 1_200 });
+    expect(backlogOnly.newReferralVisits).toBe(0);
+    expect(backlogOnly.sameDayVisits).toBe(0);
+    expect(backlogOnly.noShowVisits).toBe(0);
+    expect(backlogOnly.demandCeiling).toBe(1_200);
+
+    const sameDayOnly = computeAccessDemand(BASELINE, scope, { accessDemandSameDayCount: 400 });
+    expect(sameDayOnly.backlogVisits).toBe(0);
+    expect(sameDayOnly.newReferralVisits).toBe(0);
+    expect(sameDayOnly.noShowVisits).toBe(0);
+    expect(sameDayOnly.demandCeiling).toBe(400);
+  });
+
+  it("NONE of the sources filled in produces a demand ceiling of exactly 0, never a hidden default", () => {
+    const scope = computeAccessScope(BASELINE, { accessProviders: 40 });
+    const demand = computeAccessDemand(BASELINE, scope, {});
+    expect(demand.demandCeiling).toBe(0);
+  });
+
+  it("ALL four sources filled in sums cleanly (no double-counting, no interaction between terms)", () => {
+    const scope = computeAccessScope(BASELINE, { accessProviders: 40 });
+    const demand = computeAccessDemand(BASELINE, scope, {
+      accessDemandBacklog: 5_000,
+      accessDemandNewReferrals: 850,
+      accessDemandSameDayCount: 900,
+      accessDemandNoShowCount: 600,
+    });
+    expect(demand.demandCeiling).toBe(5_000 + 850 * 12 + 900 + 600);
+  });
+});
+
+describe("D4 no-show helper - an OPTIONAL rate-based estimate, for partners who only know rates", () => {
+  it("estimateNoShowRecoveryCount derives a count from (no-show rate x encounters x recovery rate), pure and directly testable", () => {
+    // 24,000 encounters x 12% no-show rate = 2,880 no-show pool, x 60%
+    // recovered = 1,728.
+    expect(estimateNoShowRecoveryCount(24_000, 12, 60)).toBe(1_728);
+    expect(estimateNoShowRecoveryCount(24_000, 0, 60)).toBe(0);
+    expect(estimateNoShowRecoveryCount(24_000, 12, 0)).toBe(0);
+  });
+
+  it("computeAccessDemand exposes the helper's own estimate on the result, without it silently becoming the ceiling", () => {
+    const scope = computeAccessScope(BASELINE, { accessProviders: 40 });
+    const demand = computeAccessDemand(BASELINE, scope, {
+      accessDemandNoShowRate: 20,
+      accessDemandNoShowPct: 50,
+      // accessDemandNoShowCount deliberately left unset - the partner has
+      // not copied the helper's estimate into the real count field yet.
+    });
+    expect(demand.encountersInScope).toBe(144_000); // 40 x 3,600 x 100%
+    expect(demand.noShowHelperRatePct).toBe(20);
+    expect(demand.noShowHelperRecoveryPct).toBe(50);
+    expect(demand.noShowHelperEstimate).toBe(Math.round(144_000 * 0.2 * 0.5));
+    // The helper's estimate does NOT feed the ceiling on its own - only the
+    // actual count field does, and it is still 0 here.
     expect(demand.noShowVisits).toBe(0);
+    expect(demand.demandCeiling).toBe(0);
   });
 
-  it("THE MATH shows the two-step derivation (rate -> pool -> recovered), not a single bare percent", () => {
-    const chain = computeAccessChain(BASELINE, {
+  it("copying the helper's estimate into the count field is what actually counts toward the ceiling", () => {
+    const scope = computeAccessScope(BASELINE, { accessProviders: 40 });
+    const withHelper = computeAccessDemand(BASELINE, scope, { accessDemandNoShowRate: 20, accessDemandNoShowPct: 50 });
+    const applied = computeAccessDemand(BASELINE, scope, {
+      accessDemandNoShowRate: 20,
+      accessDemandNoShowPct: 50,
+      accessDemandNoShowCount: withHelper.noShowHelperEstimate,
+    });
+    expect(applied.noShowVisits).toBe(withHelper.noShowHelperEstimate);
+    expect(applied.demandCeiling).toBe(withHelper.noShowHelperEstimate);
+  });
+
+  it("the helper's rate input defaults to the ~12% benchmark when the partner hasn't set their own", () => {
+    const scope = computeAccessScope(BASELINE, { accessProviders: 40 });
+    const demand = computeAccessDemand(BASELINE, scope, { accessDemandNoShowPct: 60 });
+    expect(demand.noShowHelperRatePct).toBe(DEFAULT_NO_SHOW_RATE_PCT);
+    expect(demand.noShowHelperEstimate).toBe(Math.round(demand.encountersInScope * 0.12 * 0.6));
+  });
+
+  it("THE MATH shows the helper's own derivation only when the count in play actually came from it, not a bare count", () => {
+    const helperDriven = computeAccessChain(BASELINE, {
       accessProviders: 40,
       accessDemandNoShowRate: 12,
       accessDemandNoShowPct: 60,
+      accessDemandNoShowCount: Math.round(144_000 * 0.12 * 0.6),
     });
-    expect(chain.formulas.demand).toContain("no-show rate");
-    expect(chain.formulas.demand).toContain("no-show pool");
-    expect(chain.formulas.demand).toContain("% recovered");
+    expect(helperDriven.formulas.demand).toContain("estimated");
+    expect(helperDriven.formulas.demand).toContain("no-show rate");
+    expect(helperDriven.formulas.demand).toContain("recovered");
+
+    const manualCount = computeAccessChain(BASELINE, {
+      accessProviders: 40,
+      accessDemandNoShowCount: 250,
+    });
+    expect(manualCount.formulas.demand).not.toContain("estimated");
+    expect(manualCount.formulas.demand).toContain("250");
   });
 });
 

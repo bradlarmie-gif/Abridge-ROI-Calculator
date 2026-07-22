@@ -92,14 +92,15 @@ export const DEFAULT_LINE_MARGIN_PER_VISIT: Record<string, number> = {
 };
 
 /** Benchmark share of in-scope encounters that are typical no-shows or late
- * cancellations - a descriptive fact about today's operation, editable in
- * D4 (`accessDemandNoShowRate`) but not itself the gate. This is the POOL
- * the recovery-rate decision (`accessDemandNoShowPct`) is a share OF, per
- * the product owner's fix: "recoveryRate x (noShowRate x encounters)", not
- * a recovery rate applied straight against every in-scope encounter. ~12%
- * is a conservative, commonly-cited outpatient no-show benchmark; flagged
- * for the partner's own number to replace it, same convention every other
- * descriptive-default in this chain uses. */
+ * cancellations - a descriptive fact about today's operation, used ONLY by
+ * the optional D4 no-show HELPER (`accessDemandNoShowRate`), never as a
+ * direct ceiling driver itself. The helper estimates a suggested patient
+ * COUNT as `recoveryRate x (noShowRate x encounters)` for a partner who only
+ * knows their rates; the actual ceiling is always the countable
+ * `accessDemandNoShowCount` field, whether typed directly or copied in from
+ * the helper's estimate. ~12% is a conservative, commonly-cited outpatient
+ * no-show benchmark; flagged for the partner's own number to replace it,
+ * same convention every other descriptive-default in this chain uses. */
 export const DEFAULT_NO_SHOW_RATE_PCT = 12;
 
 /** Fallback margin per visit when no specific line is in scope yet
@@ -288,88 +289,109 @@ export function computeAccessCapacity(
 // ────────────────────────────────────────────────────────────────────────
 
 export interface AccessDemand {
+  /** Total patients already referred and waiting, right now - a one-time
+   * count, never annualized. */
   backlogVisits: number;
-  sameDayVisits: number;
-  /** The same-day/urgent % input this term was computed from, kept on the
-   * result so THE MATH can print "(X% of E encounters = N/yr)" instead of a
-   * bare annualized number. */
-  sameDayPct: number;
-  noShowVisits: number;
-  /** The typical no-show RATE this term's pool was computed from - the
-   * share of in-scope encounters that are a no-show or late cancellation in
-   * the first place, defaulting to `DEFAULT_NO_SHOW_RATE_PCT`. Kept on the
-   * result for the same THE MATH derivation reason as `sameDayPct` below. */
-  noShowRatePct: number;
-  /** The no-show POOL this recovery rate is applied against -
-   * `encountersInScope x (noShowRatePct / 100)` - kept on the result so THE
-   * MATH can show the two-step derivation (rate -> pool -> recovery) instead
-   * of collapsing straight to a bare recovered-visit count. */
-  noShowPool: number;
-  /** The recovery-rate % input this term was computed from - share of the
-   * no-show POOL above (not of all in-scope encounters) a partner can
-   * actually refill with a waiting patient. Same reason as `sameDayPct`
-   * above for keeping the raw input alongside the derived count. */
-  noShowPct: number;
-  newReferralVisits: number;
   /** The raw monthly referral rate this term was annualized from, kept on
    * the result so THE MATH can show its own derivation ("850/mo x 12 =
    * 10,200/yr") instead of silently printing only the annualized number -
    * without this a partner sees their 850/mo input "become" 10,200 with no
    * visible arithmetic. */
   newReferralsPerMonth: number;
-  /** In-scope encounter volume the same-day/no-show percentages were
-   * applied to, kept for the same reason. */
+  /** `newReferralsPerMonth x 12`. */
+  newReferralVisits: number;
+  /** Same-day/urgent demand the schedule cannot fit today - a direct,
+   * countable patients/yr number the partner enters, never a percent of
+   * encounters (rule 2's "real, countable patient, not a rate"). */
+  sameDayVisits: number;
+  /** No-shows recoverable by filling that slot with a waiting patient - a
+   * direct, countable patients/yr number, same as `sameDayVisits`. This is
+   * the value that actually counts toward `demandCeiling`, whether the
+   * partner typed it directly or copied in the optional rate-helper's
+   * estimate below. */
+  noShowVisits: number;
+  /** In-scope encounter volume, kept only so the optional no-show helper
+   * below has a real number to estimate against - no percentage here is
+   * ever multiplied directly into `demandCeiling`. */
   encountersInScope: number;
-  /** Sum of every demand source — the hard ceiling on realized visits. */
+  /** The no-show HELPER's own "typical no-show rate" input (share of
+   * in-scope encounters that are a no-show or late cancellation in the
+   * first place), defaulting to `DEFAULT_NO_SHOW_RATE_PCT`. Purely a
+   * suggestion input - see `noShowHelperEstimate`. */
+  noShowHelperRatePct: number;
+  /** The no-show HELPER's own "recoverable share" input - the share of that
+   * no-show pool a waiting patient could actually refill. Purely a
+   * suggestion input - see `noShowHelperEstimate`. */
+  noShowHelperRecoveryPct: number;
+  /** The helper's derived suggestion - `encountersInScope x
+   * noShowHelperRatePct x noShowHelperRecoveryPct`, via
+   * `estimateNoShowRecoveryCount` - for a partner who only knows their rates
+   * and wants a starting count. Never feeds `demandCeiling` on its own; a
+   * partner has to copy it into `accessDemandNoShowCount` (the UI's "use
+   * estimate" action) for it to count. */
+  noShowHelperEstimate: number;
+  /** Sum of the four countable sources — the hard ceiling on realized
+   * visits. Any source left blank simply contributes 0; there is no
+   * requirement to fill all, one, or none of them. */
   demandCeiling: number;
 }
 
-/** D4: four demand sources, summed into one ceiling. Referral backlog is a
- * direct, one-time visit count (patients already waiting, not a rate);
- * same-day/urgent is a percentage of the in-scope encounter volume; new
- * referrals is a monthly rate, annualized (x12). No-show recovery is a
- * TWO-STEP percentage, not one: `noShowRatePct` first sizes the no-show POOL
- * out of in-scope encounters (a typical no-show/cancellation rate, ~12%
- * benchmark), then `noShowPct` (the partner's actual decision) is the share
- * of THAT pool a waiting patient actually refills - recoveryRate x
- * (noShowRate x encounters), never recoveryRate x encounters directly, which
- * would silently treat "recover 60% of no-shows" as "60% of every encounter
- * is a recovered no-show." This is the ceiling — capacity above this line is
- * simply unfillable and worth nothing (rule 2). Every raw input this
- * function annualizes or applies a percentage to (`newReferralsPerMonth`,
- * `sameDayPct`, `noShowRatePct`, `noShowPool`, `noShowPct`,
- * `encountersInScope`) is kept on the returned object, not just the derived
- * totals, so the caller's THE MATH string can show its own derivation
- * instead of a bare annualized number that looks like it "jumped." */
+/** The no-show rate-helper's own math, exported standalone so it is directly
+ * testable and reusable by the D4 UI's "estimate from your no-show rate"
+ * action without going through the full demand chain: a typical no-show
+ * RATE first sizes the no-show POOL out of total encounters, then the
+ * RECOVERY share is applied to that pool, never to every encounter directly
+ * - recoveryRate x (noShowRate x encounters), never recoveryRate x
+ * encounters, which would silently treat "recover 60% of no-shows" as "60%
+ * of every encounter is a recovered no-show." The result is a suggested
+ * COUNT, not itself a rate - it is meant to be copied into the real,
+ * countable no-show field, never applied automatically. */
+export function estimateNoShowRecoveryCount(encountersInScope: number, noShowRatePct: number, recoveryPct: number): number {
+  const rate = clampPct(noShowRatePct) / 100;
+  const recovery = clampPct(recoveryPct) / 100;
+  return Math.max(0, Math.round(encountersInScope * rate * recovery));
+}
+
+/** D4: four demand sources, summed into one ceiling. Every source is a
+ * real, countable number of patients, never a rate applied to capacity
+ * (the product owner's fix for D4's confusing mixed percent/count model):
+ * referral backlog is a one-time count of patients already waiting;
+ * same-day/urgent and no-show recovery are each a direct patients/yr count;
+ * new referrals is a patients/mo count, annualized (x12) below. None of the
+ * four is required - a source left at 0 simply contributes 0, so filling in
+ * all, one, or none of them is equally valid.
+ *
+ * The no-show source additionally carries an OPTIONAL rate-based helper
+ * (`accessDemandNoShowRate`, `accessDemandNoShowPct`) for a partner who only
+ * knows their no-show rate and recovery rate, not a patient count outright -
+ * `estimateNoShowRecoveryCount` derives a suggested count from those two
+ * rates, exposed here as `noShowHelperEstimate`, but it never feeds
+ * `demandCeiling` by itself; only the actual `noShowVisits` count does,
+ * whether typed directly or copied in from the helper's suggestion. */
 export function computeAccessDemand(baseline: AttainBaseline, scope: AccessScope, values: LeverValues): AccessDemand {
   const encountersInScope = scope.providersInScope * perProviderEncounters(baseline) * utilizationFraction(baseline);
   const backlogVisits = Math.max(0, Math.round(asNum(values.accessDemandBacklog)));
-  const sameDayPct = clampPct(asNum(values.accessDemandSameDayPct));
-  const noShowRateRaw = asNum(values.accessDemandNoShowRate);
-  const noShowRatePct = clampPct(noShowRateRaw > 0 ? noShowRateRaw : DEFAULT_NO_SHOW_RATE_PCT);
-  const noShowPct = clampPct(asNum(values.accessDemandNoShowPct));
   const newReferralsPerMonth = Math.max(0, asNum(values.accessDemandNewReferrals));
-  const sameDayVisits = Math.round(encountersInScope * (sameDayPct / 100));
-  // No-show recovery is a share of the NO-SHOW POOL, not of every in-scope
-  // encounter: recoveryRate x (noShowRate x encounters). Entering "60%"
-  // means "we refill 60% of our no-shows," not "60% of every encounter is a
-  // recovered no-show" - the latter reading previously overstated demand by
-  // 20-50x whenever the true no-show rate was a small share of volume.
-  const noShowPool = encountersInScope * (noShowRatePct / 100);
-  const noShowVisits = Math.round(noShowPool * (noShowPct / 100));
   const newReferralVisits = Math.round(newReferralsPerMonth * 12);
-  const demandCeiling = backlogVisits + sameDayVisits + noShowVisits + newReferralVisits;
+  const sameDayVisits = Math.max(0, Math.round(asNum(values.accessDemandSameDayCount)));
+  const noShowVisits = Math.max(0, Math.round(asNum(values.accessDemandNoShowCount)));
+
+  const rawHelperRate = asNum(values.accessDemandNoShowRate);
+  const noShowHelperRatePct = clampPct(rawHelperRate > 0 ? rawHelperRate : DEFAULT_NO_SHOW_RATE_PCT);
+  const noShowHelperRecoveryPct = clampPct(asNum(values.accessDemandNoShowPct));
+  const noShowHelperEstimate = estimateNoShowRecoveryCount(encountersInScope, noShowHelperRatePct, noShowHelperRecoveryPct);
+
+  const demandCeiling = backlogVisits + newReferralVisits + sameDayVisits + noShowVisits;
   return {
     backlogVisits,
-    sameDayVisits,
-    sameDayPct,
-    noShowVisits,
-    noShowRatePct,
-    noShowPool,
-    noShowPct,
-    newReferralVisits,
     newReferralsPerMonth,
+    newReferralVisits,
+    sameDayVisits,
+    noShowVisits,
     encountersInScope,
+    noShowHelperRatePct,
+    noShowHelperRecoveryPct,
+    noShowHelperEstimate,
     demandCeiling,
   };
 }
@@ -462,10 +484,13 @@ export function computeAccessPayoff(
  * like it "jumped" (850/mo becoming 10,200/yr with no visible arithmetic).
  * Backlog is always labeled "(one-time)" — it is a count of patients
  * waiting right now, not a rate. New referrals shows "(X/mo x 12 = Y/yr)"
- * whenever the monthly rate is nonzero; same-day and no-show each show
- * "(X% of E encounters = Y/yr)" whenever their term is nonzero. Any term
- * that is exactly 0 prints plainly ("0 same-day"), not a derivation of
- * nothing, matching the shape of the other three when they're unset.
+ * whenever the monthly rate is nonzero. Same-day and no-show are each
+ * already a direct count, so they print plainly ("X/yr same-day"), UNLESS
+ * the no-show count in play is exactly the rate-helper's own estimate, in
+ * which case it shows that helper's derivation instead ("estimated: X% no-
+ * show rate x Y% recovered of E encounters") so a partner who used the
+ * helper can see where the number came from. Any term that is exactly 0
+ * prints plainly ("0 same-day"), not a derivation of nothing.
  */
 function buildDemandFormula(demand: AccessDemand): string {
   const backlogTerm = `${demand.backlogVisits.toLocaleString()} backlog (one-time)`;
@@ -475,11 +500,14 @@ function buildDemandFormula(demand: AccessDemand): string {
     : "0 new referrals";
 
   const sameDayTerm = demand.sameDayVisits > 0
-    ? `(${Math.round(demand.sameDayPct)}% of ${Math.round(demand.encountersInScope).toLocaleString()} encounters = ${demand.sameDayVisits.toLocaleString()}/yr) same-day`
+    ? `${demand.sameDayVisits.toLocaleString()}/yr same-day / urgent`
     : "0 same-day";
 
+  const usedHelper = demand.noShowVisits > 0 && demand.noShowHelperEstimate > 0 && demand.noShowVisits === demand.noShowHelperEstimate;
   const noShowTerm = demand.noShowVisits > 0
-    ? `(${Math.round(demand.noShowRatePct)}% no-show rate of ${Math.round(demand.encountersInScope).toLocaleString()} encounters = ${Math.round(demand.noShowPool).toLocaleString()} no-show pool, x ${Math.round(demand.noShowPct)}% recovered = ${demand.noShowVisits.toLocaleString()}/yr) no-show recovery`
+    ? usedHelper
+      ? `${demand.noShowVisits.toLocaleString()}/yr no-show recovery (estimated: ${Math.round(demand.noShowHelperRatePct)}% no-show rate x ${Math.round(demand.noShowHelperRecoveryPct)}% recovered of ${Math.round(demand.encountersInScope).toLocaleString()} encounters)`
+      : `${demand.noShowVisits.toLocaleString()}/yr no-show recovery`
     : "0 no-show recovery";
 
   return `${backlogTerm} + ${referralsTerm} + ${sameDayTerm} + ${noShowTerm} = ${demand.demandCeiling.toLocaleString()} demand ceiling (backlog counted once, the rest per year).`;
@@ -616,8 +644,8 @@ export const ACCESS_LEVER_IDS = [
   "accessMargin",
   "accessFreedShare",
   "accessDemandBacklog",
-  "accessDemandSameDayPct",
-  "accessDemandNoShowPct",
+  "accessDemandSameDayCount",
+  "accessDemandNoShowCount",
   "accessDemandNewReferrals",
 ] as const;
 
@@ -661,12 +689,12 @@ export function computeAccessContributions(
       formula: demand.backlogVisits > 0 ? `${demand.backlogVisits.toLocaleString()} patients waiting in the referral backlog.` : NO_MOVE_FORMULA,
     },
     {
-      id: "accessDemandSameDayPct",
+      id: "accessDemandSameDayCount",
       count: demand.sameDayVisits,
       formula: demand.sameDayVisits > 0 ? `${demand.sameDayVisits.toLocaleString()} visits/yr from same-day and urgent demand.` : NO_MOVE_FORMULA,
     },
     {
-      id: "accessDemandNoShowPct",
+      id: "accessDemandNoShowCount",
       count: demand.noShowVisits,
       formula: demand.noShowVisits > 0 ? `${demand.noShowVisits.toLocaleString()} visits/yr recovered from no-shows.` : NO_MOVE_FORMULA,
     },
@@ -684,8 +712,8 @@ export function computeAccessContributions(
     } else {
       const demandRows = [
         { id: "accessDemandBacklog", n: demand.backlogVisits },
-        { id: "accessDemandSameDayPct", n: demand.sameDayVisits },
-        { id: "accessDemandNoShowPct", n: demand.noShowVisits },
+        { id: "accessDemandSameDayCount", n: demand.sameDayVisits },
+        { id: "accessDemandNoShowCount", n: demand.noShowVisits },
         { id: "accessDemandNewReferrals", n: demand.newReferralVisits },
       ].sort((a, b) => b.n - a.n);
       attributedId = demandRows[0].n > 0 ? demandRows[0].id : "accessFreedShare";
