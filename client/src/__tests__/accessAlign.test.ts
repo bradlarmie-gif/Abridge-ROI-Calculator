@@ -283,9 +283,13 @@ describe("the number is proof, not the goal: it only appears once the meaning is
     expect(proof.emptyHint.toLowerCase()).toContain("limiting access");
   });
 
-  it("bodies-bound -> not ready, the hint says Abridge cannot add bodies or space", () => {
+  it("bodies-bound -> not ready, the hint honestly says freed time cannot add staff/rooms/space (no casual Abridge claim)", () => {
     const proof = deriveAccessAlignProof(benchmarkChoices({ accessAlignGate: ["bodies"] }), ctxFor(OP_BASELINE));
     expect(proof.ready).toBe(false);
-    expect(proof.emptyHint.toLowerCase()).toContain("bodies or space");
+    const h = proof.emptyHint.toLowerCase();
+    expect(h).toContain("staff, rooms, or space");
+    expect(h).toContain("stays at zero");
+    // Legal/defensible: never a casual "Abridge does X" claim in the copy.
+    expect(h).not.toContain("abridge");
   });
 });

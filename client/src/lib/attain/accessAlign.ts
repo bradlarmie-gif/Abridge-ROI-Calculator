@@ -259,18 +259,18 @@ export function deriveAccessAlignProof(values: LeverValues, ctx: AlignContext): 
 
   const math = ready
     ? formulaWithRealization(chain.formulas.payoff, realizationPct, realized)
-    : "The number appears once you set who this is for, the honest limit, and where the demand comes from.";
+    : "The number appears once you set who this is for, what's limiting access, and where the demand comes from.";
 
   const emptyHint = !who
     ? "Pick who this is for to start the number."
     : !gate
-      ? "Say what's limiting access today, so we size only what Abridge can honestly move."
+      ? "Tell us what's limiting access today, so we only size what freed-up time could realistically move."
       : gate === "bodies"
-        ? "You told us the limit is people, rooms, or staff. Abridge frees documentation time, but it cannot add bodies or space, so no new capacity opens. The honest number here is zero."
+        ? "You said the limit is staff, rooms, or space. Freeing up documentation time can't add any of those, so no new capacity opens and the number here stays at zero."
         : gate === "demand" && demand.demandCeiling <= 0
-          ? "You told us demand is the limit. Abridge can free the time, but there is nothing to fill unless real patients are waiting. Add a demand source above with a real count and the number follows."
+          ? "You said demand is the limit. Freed-up time only helps if patients are waiting to be seen. Add a demand source above with a real count and the number follows."
           : selectedDemand.length === 0
-            ? "Add where the demand comes from above, so the freed capacity has real patients to fill."
+            ? "Add where the demand comes from above, so the new capacity has real patients to fill."
             : "Set your choices above and the number appears here.";
 
   const headlineSub = ready
@@ -300,19 +300,19 @@ export const accessAlignConfig: AlignConfig = {
       id: "outcome",
       storeKey: K_OUTCOME,
       prompt: "What are you trying to accomplish?",
-      helper: "All three run on the same freed time. This shapes how you describe it, not the number.",
+      helper: "These are three ways to describe the same goal. Pick the one that matches how your leadership talks about it.",
       mode: "single",
       options: [
         { id: "backlog", label: "Reduce the referral backlog", helper: "Work through the patients already referred and waiting to be seen." },
-        { id: "wait", label: "Shorten the wait for a new appointment", helper: "Get a new patient in sooner, so the time to the next open slot drops." },
-        { id: "grow", label: "Add capacity to see more patients", helper: "Create durable new capacity to take on more patients over time." },
+        { id: "wait", label: "Shorten the wait for a new appointment", helper: "Get a new patient in sooner, so the time to the next open slot comes down." },
+        { id: "grow", label: "Add capacity to see more patients", helper: "Add lasting capacity so you can take on more patients over time." },
       ],
     },
     {
       id: "who",
       storeKey: K_WHO,
       prompt: "Who is this for?",
-      helper: "Your provider count carries over from Starting Point. Pick the cut.",
+      helper: "We'll use the provider count from your Starting Point. Which providers should this cover?",
       mode: "single",
       options: [
         {
@@ -335,7 +335,7 @@ export const accessAlignConfig: AlignConfig = {
             label: "Roughly how many providers? (optional)",
             unit: "providers",
             placeholder: "e.g., 12",
-            benchmarkNote: "Leave this blank and we use a conservative benchmark: about half your providers.",
+            benchmarkNote: "Leave it blank and we'll estimate about half your providers for now.",
             decimal: false,
           },
         },
@@ -345,23 +345,23 @@ export const accessAlignConfig: AlignConfig = {
       id: "gate",
       storeKey: K_GATE,
       prompt: "What's limiting access today?",
-      helper: "The honest gate. Abridge frees documentation time, so it moves the first case, not the rest. It cannot add people or space, or create demand that is not there.",
+      helper: "The idea here is simple: when documentation takes less time, that freed time can be turned into open access. So the real question is whether charting is what's holding access back today, or something else. Answer honestly and we'll size it to match.",
       mode: "single",
       options: [
         {
           id: "documentation",
           label: "Providers are maxed and buried in documentation",
-          helper: "The people are here, but the day is full of charting. This is the load Abridge frees.",
+          helper: "The people are here, but their day is full of charting. That's the time this is meant to help give back.",
         },
         {
           id: "bodies",
           label: "Not enough providers, rooms, or staff",
-          helper: "The limit is physical capacity. Freeing time cannot add bodies or space.",
+          helper: "The real limit is staff, rooms, or space. Freeing up documentation time won't change that.",
         },
         {
           id: "demand",
           label: "Not enough demand",
-          helper: "Slots would sit empty. Abridge can free the time, but there has to be a patient to fill it.",
+          helper: "There aren't enough patients waiting to fill new slots. Freed-up time only helps if someone is there to book.",
         },
       ],
     },
@@ -369,7 +369,7 @@ export const accessAlignConfig: AlignConfig = {
       id: "demand",
       storeKey: K_DEMAND,
       prompt: "Where does the demand come from?",
-      helper: "Pick the sources you actually have. A number sharpens each one; leave it blank and we use a conservative labeled benchmark instead.",
+      helper: "Pick the sources you actually have. Add a real number if you know it, or leave it blank and we'll use a conservative estimate.",
       mode: "multi",
       options: [
         {
@@ -381,20 +381,20 @@ export const accessAlignConfig: AlignConfig = {
             label: "How many are waiting now? (optional)",
             unit: "patients",
             placeholder: "e.g., 500",
-            benchmarkNote: "Blank uses a conservative benchmark: a small share of your in-scope volume, waiting now.",
+            benchmarkNote: "Leave it blank and we'll estimate a small share of your patient volume.",
             decimal: false,
           },
         },
         {
           id: "referrals",
           label: "New referrals",
-          helper: "New referrals arriving each month, annualized into the ceiling.",
+          helper: "New referrals arriving each month.",
           sharpener: {
             storeKey: "accessAlignReferralsCount",
             label: "How many per month? (optional)",
             unit: "/ mo",
             placeholder: "e.g., 50",
-            benchmarkNote: "Blank uses a conservative benchmark share of your in-scope volume, per month.",
+            benchmarkNote: "Leave it blank and we'll estimate a small monthly share of your patient volume.",
             decimal: false,
           },
         },
@@ -407,7 +407,7 @@ export const accessAlignConfig: AlignConfig = {
             label: "How many per year? (optional)",
             unit: "/ yr",
             placeholder: "e.g., 300",
-            benchmarkNote: "Blank uses a conservative benchmark share of your in-scope volume, per year.",
+            benchmarkNote: "Leave it blank and we'll estimate a small yearly share of your patient volume.",
             decimal: false,
           },
         },
