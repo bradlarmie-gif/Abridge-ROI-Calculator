@@ -216,21 +216,32 @@ export function deriveCapacityAlignProof(values: LeverValues, ctx: AlignContext)
     },
   ];
 
+  // When the honest gate zeroes the number (short staffing or census surges,
+  // neither of which freeing charting time can move), the specific honest
+  // explanation belongs in the most-read math slot where the derived number
+  // normally sits, not only in the quieter empty hint.
+  const honestZeroNote =
+    gate === "staffing"
+      ? "You told us the overtime is short staffing. Abridge frees documentation time, but it cannot add nurses, so no overtime comes out. The honest number here is zero."
+      : gate === "census"
+        ? "You told us the overtime is census surges. Abridge frees documentation time, but it cannot flatten census, so no overtime comes out. The honest number here is zero."
+        : null;
+
   const math = ready
     ? formulaWithRealization(chain.formulas.payoff, realizationPct, realized)
-    : "The number appears once you set who this is for, why the overtime is there, and where it shows up.";
+    : honestZeroNote
+      ? honestZeroNote
+      : "The number appears once you set who this is for, why the overtime is there, and where it shows up.";
 
   const emptyHint = !who
     ? "Pick who this is for to start the number."
     : !gate
       ? "Say why the overtime is there, so we size only what Abridge can honestly move."
-      : gate === "staffing"
-        ? "You told us the overtime is short staffing. Abridge frees documentation time, but it cannot add nurses, so no overtime comes out. The honest number here is zero."
-        : gate === "census"
-          ? "You told us the overtime is census surges. Abridge frees documentation time, but it cannot flatten census, so no overtime comes out. The honest number here is zero."
-          : !where
-            ? "Say where the overtime shows up, so the share charting causes is real."
-            : "Set your choices above and the number appears here.";
+      : honestZeroNote
+        ? honestZeroNote
+        : !where
+          ? "Say where the overtime shows up, so the share charting causes is real."
+          : "Set your choices above and the number appears here.";
 
   const headlineSub = ready
     ? `about ${fmtInt(chain.realizedOtHoursAvoided)} overtime hours a year off your team, at a ${Math.round(chain.docAttributableSharePct)}% documentation-attributable ceiling`

@@ -269,3 +269,26 @@ describe("no double-count with retention, stated plainly in the proof footnote",
     expect(proof.footnote!).not.toMatch(/[—–]/);
   });
 });
+
+describe("capacity Align proof — honest zero lands in the math slot", () => {
+  it("puts the short-staffing explanation in the math slot, not only the empty hint", () => {
+    const proof = deriveCapacityAlignProof(alignedChoices({ capacityAlignGate: ["staffing"] }), ctxFor(NURSING_BASELINE));
+    expect(proof.ready).toBe(false);
+    expect(proof.headlineValue).toBe(0);
+    expect(proof.math).toMatch(/short staffing/i);
+    expect(proof.math).toMatch(/honest number here is zero/i);
+    expect(proof.math).not.toMatch(/appears once you set/i);
+  });
+
+  it("puts the census-surge explanation in the math slot", () => {
+    const proof = deriveCapacityAlignProof(alignedChoices({ capacityAlignGate: ["census"] }), ctxFor(NURSING_BASELINE));
+    expect(proof.math).toMatch(/census surges/i);
+    expect(proof.math).toMatch(/honest number here is zero/i);
+  });
+
+  it("still shows the derived formula in the math slot on the documentation path", () => {
+    const proof = deriveCapacityAlignProof(alignedChoices(), ctxFor(NURSING_BASELINE));
+    expect(proof.ready).toBe(true);
+    expect(proof.math).not.toMatch(/honest number here is zero/i);
+  });
+});
