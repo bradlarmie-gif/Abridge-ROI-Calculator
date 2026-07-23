@@ -1297,6 +1297,11 @@ function buildDriverFormula(
   const providerScaleFactor = providers > pilotProviders ? providers / pilotProviders : 1;
   const annEnc = Math.round((es.annualEncounters || 0) * providerScaleFactor);
   const encPerProv = providers > 0 ? Math.round(annEnc / providers) : 0;
+  // Abridge-covered ("eligible") encounters = total × utilization. Drivers whose
+  // engine value is computed on eligible encounters (Patient Access, E/M, denials,
+  // DRG, CDI) must use this, not the raw total, or the steps won't tie to the value.
+  const utilPct = es.utilizationPercent ?? 100;
+  const abridgeEnc = Math.round(annEnc * (utilPct / 100));
 
   switch (driverId) {
 
@@ -1307,11 +1312,12 @@ function buildDriverFormula(
       const realPct   = tdi.capacityRealizationPercent || 50;
       const rev       = tdi.revenuePerVisit || 200;
       const visitDur  = tdi.visitDuration || 20;
-      const totalHrs  = Math.round((minSaved * annEnc) / 60);
+      const totalHrs  = Math.round((minSaved * abridgeEnc) / 60);
       const convertedHrs = Math.round(totalHrs * (realPct / 100));
       const extraVisits  = Math.round((convertedHrs * 60) / visitDur);
       return [
-        { label: `${minSaved} min saved/enc  ×  ${n(annEnc)} enc/yr  ÷  60`, value: `${n(totalHrs)} provider-hours freed/yr` },
+        { label: `${n(annEnc)} total enc/yr  ×  ${p(utilPct)} Abridge utilization`, value: `${n(abridgeEnc)} Abridge encounters/yr` },
+        { label: `${minSaved} min saved/enc  ×  ${n(abridgeEnc)} enc/yr  ÷  60`, value: `${n(totalHrs)} provider-hours freed/yr` },
         { label: `${n(totalHrs)} hrs  ×  ${p(realPct)} capacity conversion  ÷  ${visitDur}-min appts`, value: `${n(extraVisits)} additional visits/yr` },
         { label: `${n(extraVisits)} visits  ×  ${d(rev)}/visit`, value: fmt(driverValue), isResult: true },
       ];
@@ -1444,10 +1450,11 @@ function buildDriverFormula(
       const convFactor = dqi?.conversionFactor || 55;
       const totalEnc   = annEnc || providers * encPerProv;
       // Derive actual wRVUs from the dollar value to stay consistent with calculation engine
-      const wrvuGained = convFactor > 0 ? Math.round(driverValue / convFactor) : Math.round(totalEnc * (wrvuPct / 100));
+      const wrvuGained = convFactor > 0 ? Math.round(driverValue / convFactor) : Math.round(abridgeEnc * (wrvuPct / 100));
       return [
         { label: `${n(providers)} providers  ×  ${n(encPerProv)} encounters/provider/yr`, value: `${n(Math.round(totalEnc))} total encounters` },
-        { label: `Problems addressed, data reviewed, and risk documented — complexity delivered, note didn't show it  →  ${wrvuPct > 0 ? wrvuPct.toFixed(1) : "~2–4"}% wRVU lift`, value: `${n(wrvuGained > 0 ? wrvuGained : Math.round(totalEnc * 0.03))} wRVUs recovered` },
+        { label: `${n(Math.round(totalEnc))} total  ×  ${p(utilPct)} Abridge utilization`, value: `${n(abridgeEnc)} Abridge encounters` },
+        { label: `Problems addressed, data reviewed, and risk documented — complexity delivered, note didn't show it  →  ${wrvuPct > 0 ? wrvuPct.toFixed(1) : "~2–4"}% wRVU lift`, value: `${n(wrvuGained > 0 ? wrvuGained : Math.round(abridgeEnc * 0.03))} wRVUs recovered` },
         { label: `wRVUs recovered  ×  ${d(convFactor)} conversion factor`, value: fmt(driverValue), isResult: true },
       ];
     }
@@ -1489,9 +1496,10 @@ function buildDriverFormula(
       const dqi        = es.docQualityInputs ?? {};
       const denialRate = dqi.medNecessityDenialRate || dqi.denialRate || 0;
       const claimVal   = dqi.avgClaimValue || 0;
-      const eligible   = Math.round(annEnc * (denialRate / 100));
+      const eligible   = Math.round(abridgeEnc * (denialRate / 100));
       return [
-        { label: `${n(annEnc)} encounters  ×  ${p(denialRate)} medical necessity denial rate`, value: `${n(eligible)} claims at risk` },
+        { label: `${n(annEnc)} total enc/yr  ×  ${p(utilPct)} Abridge utilization`, value: `${n(abridgeEnc)} Abridge encounters` },
+        { label: `${n(abridgeEnc)} encounters  ×  ${p(denialRate)} medical necessity denial rate`, value: `${n(eligible)} claims at risk` },
         { label: `Physician reasoned correctly, note didn't capture it  ×  ${d(claimVal)} avg claim`, value: `targeted for reduction` },
         { label: `Denials targeted for reduction  ×  avg claim value  ×  realization`, value: fmt(driverValue), isResult: true },
       ];
@@ -1501,8 +1509,7 @@ function buildDriverFormula(
     case "drgAccuracy": {
       const dqi     = es.docQualityInputs ?? {};
       const drgRate = dqi.drgImprovementRate || 0;
-      const totalEnc = annEnc || providers * encPerProv;
-      const casesDelta = Math.round(totalEnc * (drgRate > 0 ? drgRate / 100 : 0.03));
+      const casesDelta = Math.round(abridgeEnc * (drgRate > 0 ? drgRate / 100 : 0.03));
       return [
         { label: `CCs/MCCs mentioned at bedside, not in note — conditions that may shift DRG weight $2–4K per stay  ×  ${drgRate > 0 ? drgRate.toFixed(1) + "%" : "~2–4%"} documentation lift`, value: `${n(casesDelta)} cases more accurately coded` },
         { label: `${n(casesDelta)} cases  ×  avg DRG payment delta from accurate complexity documentation`, value: fmt(driverValue), isResult: true },
@@ -1513,7 +1520,7 @@ function buildDriverFormula(
     case "cdiQueryReduction": {
       const dqi      = es.docQualityInputs ?? {};
       const queryVol = dqi.cdiQueriesPerMonth || 0;
-      const annualQueries = queryVol > 0 ? queryVol * 12 : Math.round(annEnc * 0.08);
+      const annualQueries = queryVol > 0 ? queryVol * 12 : Math.round(abridgeEnc * 0.08);
       const reduced   = Math.round(annualQueries * 0.35);
       return [
         { label: `${n(annualQueries)} CDI queries/yr — conditions named at bedside, note said "elevated BMP"  →  documentation captured at point of care can reduce queries`, value: `${n(reduced)} queries potentially avoided` },
@@ -1525,8 +1532,7 @@ function buildDriverFormula(
       const dqi     = es.docQualityInputs ?? {};
       const obsRate = dqi.obsDefenseRate || 0;
       const avgDelta = dqi.obsInpatientRevDelta || 2800;
-      const totalEnc  = annEnc || providers * encPerProv;
-      const defended  = obsRate > 0 ? Math.round(totalEnc * (obsRate / 100)) : Math.round(driverValue / avgDelta);
+      const defended  = obsRate > 0 ? Math.round(abridgeEnc * (obsRate / 100)) : Math.round(driverValue / avgDelta);
       return [
         { label: `Admission reasoning captured at point of care — two-midnight clinical expectation documented before audit`, value: `inpatient status defended` },
         { label: `${n(defended)} cases defended  ×  ${d(avgDelta)} avg inpatient vs. observation revenue delta`, value: fmt(driverValue), isResult: true },
