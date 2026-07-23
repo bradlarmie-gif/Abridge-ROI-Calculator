@@ -200,31 +200,16 @@ export default function StepBuildCase({
   const isAlign = isRetentionAlign || isAccessAlign || isEdAccessAlign || goal === "revenue" || isQualityAlign || isCapacityAlign;
   const isLadder = isAccessAlign || isEdAccessAlign || isRetentionAlign || isRevenueLadder || isIpRevenueLadder || isQualityAlign || isCapacityAlign;
 
-  // The one teach line under the goal. The goal-specific "proof" explains the
-  // mechanic; the "tagline" is this goal's honest scoping ("only X counts").
-  // For access/retention/capacity the two say different things, so the tagline
-  // leads and the mechanic follows. For revenue and quality the proof already
-  // carries the framing, so the tagline would just repeat it: use the proof
-  // alone. (This is the no-repetition rule that governs the Starting Point copy
-  // too.)
-  const proofText =
-    isRevenueLadder || isIpRevenueLadder
-      ? "One lever starts every path: complete documentation at the point of care. For each path you pick, the documentation sets how much you can capture. The paths add into one prize."
-      : isQualityAlign
-        ? "One question at a time, you choose what you mean. Your facts carry over from Starting Point. Events prevented and experience lead; the dollar stays a soft footnote."
-        : isAlign
-          ? "One question at a time, you choose what you mean. Your facts carry over from Starting Point; the number at the end is the proof."
-          : "Assemble the ladder from the top down. One number starts it, and each rung is part of the plan.";
-  const taglineText = isAccessAlign
-    ? "Only the access that freed documentation time can open counts."
-    : isEdAccessAlign
-      ? "Only the left-without-being-seen that charting delay causes counts."
-      : isRetentionAlign
-        ? "Only the burnout-and-workload share Abridge can reach counts."
-        : isCapacityAlign
-          ? "Only the overtime that after-shift charting causes counts."
-          : "";
-  const teachText = taglineText ? `${taglineText} ${proofText}` : proofText;
+  // One short, plain teach line under the goal. The eyebrow already says "get
+  // aligned on what you mean", so this never repeats that; it adds the one
+  // useful thing per goal instead. No preachy "one question at a time" filler.
+  const teachText = isQualityAlign
+    ? "Safety and experience lead here, not a dollar. Your Starting Point numbers carry over."
+    : isRevenueLadder || isIpRevenueLadder
+      ? "Pick the revenue paths you want to capture. Your Starting Point numbers carry over."
+      : isAlign
+        ? "Just a few quick picks. Your Starting Point numbers carry over."
+        : "Assemble the ladder from the top down. Each rung is part of the plan.";
 
   return (
     <div>

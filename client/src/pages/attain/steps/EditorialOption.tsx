@@ -37,10 +37,12 @@ export function EditorialOptionRow({
       type="button"
       onClick={onClick}
       aria-pressed={selected}
-      className="group relative w-full text-left pl-5 pr-3 py-4 border-b border-[#EFEAE1] transition-colors duration-200 hover:bg-[#FBFAF7]"
+      className="group relative w-full text-left pl-5 pr-3 py-4 border-b border-[#EFEAE1] transition-colors duration-150 hover:bg-[#F2EDE5]"
       data-testid={testId}
       data-selected={selected}
     >
+      {/* The coral bar marks a SELECTED row only. Hover feedback is the darker
+          wash alone, never the bar. */}
       {selected && (
         <span className="absolute left-0 top-2 bottom-2 w-[3px] rounded-full bg-[#EA2C00]" aria-hidden />
       )}
