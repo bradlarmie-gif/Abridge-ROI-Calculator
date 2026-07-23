@@ -156,6 +156,13 @@ export default function ConsolidationTiming({
           const xEnd = xPct(horizon, horizon);
           const sliderMax = cD;
           const contractDate = sunsetDateLabel(t.contractMonths);
+          // Map a pointer x onto a sunset month (linear, matches the dot's xPct).
+          // Click-anywhere or drag; the whole runway is the target, not a thumb.
+          const setSunsetFromX = (clientX: number, rect: DOMRect) => {
+            const f = rect.width > 0 ? (clientX - rect.left) / rect.width : 0;
+            const month = Math.round(Math.max(0, Math.min(1, f)) * sliderMax);
+            onUpdateItem(t.id, { sunsetMonths: month });
+          };
           // displacement ramp: savings climb 0 -> full over rampMonths after the sunset
           const rampM = Math.max(0, Math.round(item.rampMonths ?? 0));
           const savingMonths = Math.max(0, horizon - sD);
@@ -222,17 +229,36 @@ export default function ConsolidationTiming({
                 {/* contract-ends tick + label */}
                 <div className="absolute rounded-[1px] bg-[#C4B8A8]" style={{ top: "22px", transform: "translate(-50%,-50%)", width: "1.5px", height: "13px", left: `${xC}%` }} />
                 <div className="absolute text-[8px] font-semibold text-[#9CA3AF] whitespace-nowrap" style={{ top: "32px", left: `${xC}%`, transform: "translateX(-50%)" }}>contract ends</div>
-                {/* sunset dot = the cut point you drag (sits at the paying -> saving hand-off) */}
-                <div className="absolute rounded-full bg-[#EA2C00] border-[2.5px] border-[#FDFBF8] shadow-[0_1px_5px_rgba(234,44,0,0.4)] pointer-events-none" style={{ top: "22px", transform: "translate(-50%,-50%)", width: "15px", height: "15px", left: `${xS}%` }} />
-                <input
-                  type="range" min={0} max={sliderMax} step={1}
-                  value={Math.min(t.sunsetMonths, sliderMax)}
-                  onChange={(e) => onUpdateItem(t.id, { sunsetMonths: Number(e.target.value) })}
-                  className="absolute m-0 opacity-0 cursor-pointer"
-                  style={{ top: "22px", transform: "translateY(-50%)", height: "22px", left: `${L0}%`, width: `${xC - L0}%` }}
+                {/* Big, forgiving drag zone across the whole runway: click anywhere to
+                    set, or drag. Replaces the thin invisible native range that was
+                    fiddly to grab. `peer` so the dot can react to hovering it. */}
+                <div
+                  role="slider"
+                  tabIndex={0}
                   aria-label={`When ${t.name} sunsets`}
+                  aria-valuemin={0}
+                  aria-valuemax={sliderMax}
+                  aria-valuenow={Math.min(t.sunsetMonths, sliderMax)}
+                  onPointerDown={(e) => {
+                    e.currentTarget.setPointerCapture(e.pointerId);
+                    setSunsetFromX(e.clientX, e.currentTarget.getBoundingClientRect());
+                  }}
+                  onPointerMove={(e) => {
+                    if (e.buttons === 1) setSunsetFromX(e.clientX, e.currentTarget.getBoundingClientRect());
+                  }}
+                  onKeyDown={(e) => {
+                    const cur = Math.min(t.sunsetMonths, sliderMax);
+                    if (e.key === "ArrowLeft" || e.key === "ArrowDown") { e.preventDefault(); onUpdateItem(t.id, { sunsetMonths: Math.max(0, cur - 1) }); }
+                    else if (e.key === "ArrowRight" || e.key === "ArrowUp") { e.preventDefault(); onUpdateItem(t.id, { sunsetMonths: Math.min(sliderMax, cur + 1) }); }
+                  }}
+                  className="absolute m-0 cursor-grab active:cursor-grabbing touch-none rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EA2C00]/40"
+                  style={{ top: "22px", transform: "translateY(-50%)", height: "32px", left: `${L0}%`, width: `${xC - L0}%` }}
                   data-testid={`ar-timing-slider-${t.id}`}
                 />
+                {/* sunset dot = the cut point you drag (sits at the paying -> saving
+                    hand-off). After the zone in the DOM + pointer-events-none, so it
+                    sits on top visually but the zone still gets every pointer event. */}
+                <div className="absolute rounded-full bg-[#EA2C00] border-[2.5px] border-[#FDFBF8] shadow-[0_1px_5px_rgba(234,44,0,0.4)] pointer-events-none" style={{ top: "22px", transform: "translate(-50%,-50%)", width: "16px", height: "16px", left: `${xS}%` }} />
               </div>
 
               <div className="text-[10px] font-bold text-[#EA2C00] mt-4 min-h-[12px]">
