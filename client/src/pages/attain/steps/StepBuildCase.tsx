@@ -4,13 +4,7 @@ import { leversFor, lineOptions, type AttainBaseline, type Lever, type LeverValu
 import type { MultiGoalContributionsResult } from "@/lib/attain/attainLevers";
 import { GOAL_CATALOG } from "@/lib/attain/attainGoals";
 import type { AttainSetting, GoalId } from "@/lib/attain/attainTypes";
-import EdAccessDecisionChain from "./EdAccessDecisionChain";
-import AlignStep from "./AlignStep";
-import { workforceAlignConfig } from "@/lib/attain/workforceAlign";
-import { accessAlignConfig } from "@/lib/attain/accessAlign";
-import { revenueAlignConfigFor } from "@/lib/attain/revenueAlign";
-import { qualityAlignConfigFor } from "@/lib/attain/qualityAlign";
-import { capacityAlignConfig } from "@/lib/attain/capacityAlign";
+import AlignSurface, { hasAlignSurface } from "./AlignSurface";
 
 function formatCompact(n: number): string {
   const sign = n < 0 ? "-" : "";
@@ -315,88 +309,21 @@ export default function StepBuildCase({
       )}
 
       <div data-testid={`section-attain-buildcase-goal-${goal}`}>
-        {goal === "access" && setting === "ed" ? (
-          <EdAccessDecisionChain
+        {hasAlignSurface(goal, setting) ? (
+          // The Align body for this goal (ED access assembles its own step-down
+          // chain; every other goal renders the shared, config-driven
+          // AlignStep). Shared with the stacked multi-goal surface via
+          // AlignSurface, so a single-goal block and a multi-goal block are the
+          // exact same Align and can never diverge. The choices map onto the
+          // exact same LeverValues each chain always read, so the derived
+          // number still reconciles to computeAllDriverValues. Engine math
+          // unchanged.
+          <AlignSurface
+            goal={goal}
             setting={setting}
             baseline={baseline}
             values={values}
-            onChangeValue={(leverId, value) => onChangeLeverValue("access", leverId, value)}
-            realizationPct={realizationPct}
-            crossGoalShareMultiplier={crossGoalShareMultiplier}
-          />
-        ) : goal === "access" ? (
-          <AlignStep
-            config={accessAlignConfig}
-            setting={setting}
-            baseline={baseline}
-            values={values}
-            onChangeValue={(leverId, value) => onChangeLeverValue("access", leverId, value)}
-            realizationPct={realizationPct}
-            crossGoalShareMultiplier={crossGoalShareMultiplier}
-          />
-        ) : goal === "revenue" ? (
-          // Revenue is now an ALIGN surface too (all three settings), the
-          // MULTI-PATH driver: Q1 selects paths, and the per-path who/gate/
-          // where questions stack into one clean section each (see AlignStep +
-          // revenueAlign.ts). The choices map to the exact same LeverValues the
-          // revenue chains always read (revenuePaths / ipRevenuePaths, the HCC
-          // populations, the per-path gates), so the converged number still
-          // runs through deriveRevenueLadder / deriveIpRevenueLadder and
-          // reconciles to computeAllDriverValues. Engine math unchanged.
-          <AlignStep
-            config={revenueAlignConfigFor(setting)}
-            setting={setting}
-            baseline={baseline}
-            values={values}
-            onChangeValue={(leverId, value) => onChangeLeverValue("revenue", leverId, value)}
-            realizationPct={realizationPct}
-            crossGoalShareMultiplier={crossGoalShareMultiplier}
-          />
-        ) : isRetentionAlign ? (
-          <AlignStep
-            config={workforceAlignConfig}
-            setting={setting}
-            baseline={baseline}
-            values={values}
-            onChangeValue={(leverId, value) => onChangeLeverValue("retention", leverId, value)}
-            realizationPct={realizationPct}
-            crossGoalShareMultiplier={crossGoalShareMultiplier}
-          />
-        ) : goal === "quality" ? (
-          // Quality is now an ALIGN surface too, the MULTI-EVENT honest
-          // exception (safety and experience first, dollar soft). Q1 selects the
-          // harm events (plus HCAHPS) and the per-event gate + "what will you
-          // change" conversions stack into one clean section each (see AlignStep
-          // + qualityAlign.ts). The choices map to the exact same LeverValues the
-          // quality chain always read (qualityEventTypes, qualityBeds, each
-          // event's own intervention keys), so the number still runs through
-          // deriveQualityLadder and reconciles to computeAllDriverValues, with
-          // the per-event ceilings and the 30% attribution default intact.
-          <AlignStep
-            config={qualityAlignConfigFor(setting)}
-            setting={setting}
-            baseline={baseline}
-            values={values}
-            onChangeValue={(leverId, value) => onChangeLeverValue("quality", leverId, value)}
-            realizationPct={realizationPct}
-            crossGoalShareMultiplier={crossGoalShareMultiplier}
-          />
-        ) : goal === "capacity" ? (
-          // Capacity (nursing overtime) is now an ALIGN surface too, the SINGLE
-          // GATED driver (like Access and Retention). Q3 is the honest gate:
-          // only documentation-driven overtime is Abridge's to move, short
-          // staffing and census collapse the number to zero. The choices map to
-          // the exact same LeverValues the capacity chain always read
-          // (capacityNurses, the documentation-attributable share, the
-          // conversion), so the derived number still runs through
-          // computeCapacityChain and reconciles to Explore's `nursingOvertime`.
-          // Engine math unchanged; overtime facts are inherited benchmarks.
-          <AlignStep
-            config={capacityAlignConfig}
-            setting={setting}
-            baseline={baseline}
-            values={values}
-            onChangeValue={(leverId, value) => onChangeLeverValue("capacity", leverId, value)}
+            onChangeValue={(leverId, value) => onChangeLeverValue(goal, leverId, value)}
             realizationPct={realizationPct}
             crossGoalShareMultiplier={crossGoalShareMultiplier}
           />
