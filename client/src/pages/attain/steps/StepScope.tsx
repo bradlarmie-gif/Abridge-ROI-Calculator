@@ -37,6 +37,30 @@ const ENCOUNTER_HELP: Record<AttainSetting, string> = {
  * label instead of stretching the inline helper to two lines. */
 const UTILIZATION_BENCHMARK_TIP = "Most deployments start near 50 to 60% and grow from there.";
 
+/** Above this many discharges per hospitalist a year, the count is almost
+ * certainly a whole-system figure rather than the hospitalists in scope. A
+ * busy hospitalist carries a few hundred a year, so this ceiling only trips on
+ * an implausible entry, never a realistic one. */
+const INPATIENT_DISCHARGES_PER_HOSPITALIST_CEILING = 1500;
+
+/**
+ * A gentle plausibility hint for inpatient discharges: the driver math divides
+ * discharges by hospitalists, so a whole-system discharge count against a small
+ * hospitalist headcount silently inflates admissions per hospitalist and the
+ * prize with it. Returns a soft note (never a hard block) only when the ratio is
+ * implausibly high, so a fat-finger gets a nudge to double-check. Pure and
+ * exported so it is unit-testable.
+ */
+export function inpatientDischargesWarning(setting: AttainSetting, baseline: AttainBaseline): string | null {
+  if (setting !== "inpatient") return null;
+  const providers = baseline.providers ?? 0;
+  const discharges = baseline.annualEncounters ?? 0;
+  if (providers <= 0 || discharges <= 0) return null;
+  const perProvider = discharges / providers;
+  if (perProvider <= INPATIENT_DISCHARGES_PER_HOSPITALIST_CEILING) return null;
+  return `That is about ${Math.round(perProvider).toLocaleString()} discharges per hospitalist a year. Most hospitalists carry closer to 400 to 700, so double-check that this count covers only the hospitalists in scope and not the whole system.`;
+}
+
 interface StepScopeProps {
   setting: AttainSetting;
   baseline: AttainBaseline;
@@ -140,6 +164,7 @@ export default function StepScope({ setting, baseline, onChangeBaseline }: StepS
               onChange={(v) => onChangeBaseline({ annualEncounters: v })}
               placeholder="e.g., 140,000"
               help={ENCOUNTER_HELP[setting]}
+              warn={inpatientDischargesWarning(setting, baseline)}
             />
             <NumberBaselineField
               label="Utilization rate"
@@ -176,9 +201,12 @@ interface NumberBaselineFieldProps {
   /** Extra benchmark nuance that doesn't need to live inline, one hover
    * away from the label instead. */
   tip?: string;
+  /** A soft plausibility hint shown under the field when the entered number
+   * looks implausible. Never blocks; just nudges a double-check. */
+  warn?: string | null;
 }
 
-function NumberBaselineField({ label, testid, value, onChange, placeholder, help, suffix, max, tip }: NumberBaselineFieldProps) {
+function NumberBaselineField({ label, testid, value, onChange, placeholder, help, suffix, max, tip, warn }: NumberBaselineFieldProps) {
   return (
     <div className="space-y-3">
       <label
@@ -207,6 +235,14 @@ function NumberBaselineField({ label, testid, value, onChange, placeholder, help
         )}
       </div>
       <p className="text-[14px] text-[#888888] leading-relaxed">{help}</p>
+      {warn && (
+        <p
+          className="text-[13px] text-[#EA2C00] leading-relaxed"
+          data-testid={`text-attain-baseline-${testid}-warn`}
+        >
+          {warn}
+        </p>
+      )}
     </div>
   );
 }
