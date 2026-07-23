@@ -200,66 +200,62 @@ export default function StepBuildCase({
   const isAlign = isRetentionAlign || isAccessAlign || isEdAccessAlign || goal === "revenue" || isQualityAlign || isCapacityAlign;
   const isLadder = isAccessAlign || isEdAccessAlign || isRetentionAlign || isRevenueLadder || isIpRevenueLadder || isQualityAlign || isCapacityAlign;
 
+  // The one teach line under the goal. The goal-specific "proof" explains the
+  // mechanic; the "tagline" is this goal's honest scoping ("only X counts").
+  // For access/retention/capacity the two say different things, so the tagline
+  // leads and the mechanic follows. For revenue and quality the proof already
+  // carries the framing, so the tagline would just repeat it: use the proof
+  // alone. (This is the no-repetition rule that governs the Starting Point copy
+  // too.)
+  const proofText =
+    isRevenueLadder || isIpRevenueLadder
+      ? "One lever starts every path: complete documentation at the point of care. For each path you pick, the documentation sets how much you can capture. The paths add into one prize."
+      : isQualityAlign
+        ? "One question at a time, you choose what you mean. Your facts carry over from Starting Point. Events prevented and experience lead; the dollar stays a soft footnote."
+        : isAlign
+          ? "One question at a time, you choose what you mean. Your facts carry over from Starting Point; the number at the end is the proof."
+          : "Assemble the ladder from the top down. One number starts it, and each rung is part of the plan.";
+  const taglineText = isAccessAlign
+    ? "Only the access that freed documentation time can open counts."
+    : isEdAccessAlign
+      ? "Only the left-without-being-seen that charting delay causes counts."
+      : isRetentionAlign
+        ? "Only the burnout-and-workload share Abridge can reach counts."
+        : isCapacityAlign
+          ? "Only the overtime that after-shift charting causes counts."
+          : "";
+  const teachText = taglineText ? `${taglineText} ${proofText}` : proofText;
+
   return (
     <div>
-      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
+      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
         <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-3" data-testid="text-step-eyebrow">
           Step {stepNumber} of {totalSteps} · {isAlign ? "Get aligned on what you mean" : "What are you actually going to do?"}
         </p>
         <h1 className="text-2xl md:text-4xl font-bold text-black mb-3 font-abridge uppercase tracking-tight" data-testid="text-step-title">
           Align
         </h1>
-        <p className="text-[15px] text-[#666666] leading-relaxed max-w-[620px]" data-testid="text-step-teach">
-          {isRevenueLadder || isIpRevenueLadder
-            ? "One lever starts every path: complete documentation at the point of care. For each path you pick, the documentation sets how much you can capture. The paths add into one prize."
-            : isQualityAlign
-              ? "One question at a time, you choose what you mean. Your facts carry over from Starting Point. Events prevented and experience lead; the dollar stays a soft footnote."
-              : isAlign
-                ? "One question at a time, you choose what you mean. Your facts carry over from Starting Point; the number at the end is the proof."
-                : "Assemble the ladder from the top down. One number starts it, and each rung is part of the plan."}
-        </p>
-      </motion.div>
-
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-[#1A1A1A] rounded-2xl p-7 mb-8"
-        data-testid="panel-attain-buildcase-strategy"
-      >
-        <p className="text-[11px] font-semibold uppercase tracking-[2.5px] text-white/50 mb-2" data-testid="text-attain-buildcase-priority-index">
-          {totalGoals > 1 ? `Priority ${goalIndex + 1} of ${totalGoals}` : "The strategy"}
-        </p>
-        <div className="flex items-center gap-3 mb-1">
-          {/* A clean domain tag, not a floating word - a light outline keeps
-              it legible as its own pill even for the one domain (Capacity)
-              whose pillBg is the exact same #1A1A1A as this card, which
-              otherwise makes the pill's own background disappear into the
-              card behind it. */}
+        {/* The goal as one quiet line beneath the title, borderless, so it never
+            competes with the ALIGN header the way the old black card did. */}
+        <div className="flex items-center flex-wrap gap-2.5 mb-4" data-testid="panel-attain-buildcase-strategy">
           <span
-            className="inline-block text-[10px] font-bold uppercase tracking-[1.5px] text-white px-3 py-1 rounded-full border border-white/15"
+            className="inline-block text-[10px] font-bold uppercase tracking-[1.5px] text-white px-3 py-1 rounded-full"
             style={{ background: goalDef.pillBg }}
             data-testid="text-attain-buildcase-strategy-pill"
           >
             {goalDef.pill}
           </span>
-          <h2 className="font-abridge text-3xl text-white" data-testid="text-attain-buildcase-strategy-title">
+          <span className="font-abridge text-2xl md:text-[28px] text-[#1A1A1A]" data-testid="text-attain-buildcase-strategy-title">
             {goalDef.label}
-          </h2>
+          </span>
+          {totalGoals > 1 && (
+            <span className="text-[13px] text-[#8C8C8C]" data-testid="text-attain-buildcase-priority-index">
+              · Priority {goalIndex + 1} of {totalGoals}
+            </span>
+          )}
         </div>
-        <p className="text-[13px] text-white/50 mt-2" data-testid="text-attain-buildcase-strategy-progress">
-          {isAccessAlign
-            ? "Only the access that freed documentation time can open counts."
-            : isEdAccessAlign
-              ? "Only the left-without-being-seen that charting delay causes counts."
-              : isRetentionAlign
-                ? "Only the burnout-and-workload share Abridge can reach counts."
-                : isRevenueLadder || isIpRevenueLadder
-                  ? "One lever, several paths, one converged prize."
-                  : isQualityAlign
-                    ? "Safety and experience lead; the dollar stays a soft footnote."
-                    : isCapacityAlign
-                      ? "Only the overtime that after-shift charting causes counts."
-                      : "The full step-down, top to bottom. Set each rung to your real numbers."}
+        <p className="text-[15px] text-[#666666] leading-relaxed max-w-[620px]" data-testid="text-step-teach">
+          {teachText}
         </p>
       </motion.div>
 
