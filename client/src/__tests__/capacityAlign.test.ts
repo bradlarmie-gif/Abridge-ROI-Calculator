@@ -243,10 +243,10 @@ describe("the number is proof, not the goal: it only appears once the meaning is
     expect(proof.emptyHint.toLowerCase()).toContain("who");
   });
 
-  it("who set but the honest gate not yet -> still not ready, hint moves on to why the overtime is there", () => {
+  it("who set but the honest gate not yet -> still not ready, hint moves on to what's driving the overtime", () => {
     const proof = deriveCapacityAlignProof({ capacityAlignWho: ["all"] }, ctxFor(NURSING_BASELINE));
     expect(proof.ready).toBe(false);
-    expect(proof.emptyHint.toLowerCase()).toContain("why the overtime");
+    expect(proof.emptyHint.toLowerCase()).toContain("driving the overtime");
   });
 
   it("documentation gate but no where yet -> still not ready, hint asks where the overtime shows up", () => {

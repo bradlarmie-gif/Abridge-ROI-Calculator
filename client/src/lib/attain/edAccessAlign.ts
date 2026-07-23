@@ -20,7 +20,7 @@
  *      Point (never re-asked); they pick "all providers" or "a focused set",
  *      with an OPTIONAL provider number that sharpens the cut. Maps to
  *      `edAccessProviders` (capped to the baseline by the engine).
- *   Q3 Gate (THE HONEST GATE) — why do patients leave without being seen. ONLY
+ *   Q3 Gate (THE HONEST GATE) — what's limiting ED throughput today. ONLY
  *      the documentation-bound answer lets Abridge move it: freeing charting
  *      time speeds door-to-provider throughput, so it maps to a real
  *      documentation-caused share of the LWBS pool (`edAccessDocCausedShare`)
@@ -228,12 +228,12 @@ export function deriveEdAccessAlignProof(values: LeverValues, ctx: AlignContext)
 
   const math = ready
     ? formulaWithRealization(chain.formulas.payoff, realizationPct, realized)
-    : "The number appears once you set who this is for, why patients leave, and where the loss shows up.";
+    : "The number appears once you set who this is for, what's limiting throughput, and where the loss shows up.";
 
   const emptyHint = !who
     ? "Pick who this is for to start the number."
     : !gate
-      ? "Say why patients leave without being seen, so we size only what Abridge can honestly move."
+      ? "Say what's limiting ED throughput today, so we size only what Abridge can honestly move."
       : gate === "staffing"
         ? "You told us the limit is staffing or beds. Abridge frees documentation time, but it cannot add staff or open beds, so no left-without-being-seen visit becomes recoverable. The honest number here is zero."
         : gate === "lowdemand" && pool.recoverablePool <= 0
@@ -326,7 +326,7 @@ export const edAccessAlignConfig: AlignConfig = {
     {
       id: "gate",
       storeKey: K_GATE,
-      prompt: "Why do patients leave without being seen?",
+      prompt: "What's limiting ED throughput today?",
       helper: "The honest gate. Abridge frees documentation time, so it moves the throughput charting chokes, nothing more. It cannot add staff or open beds, or create demand that is not there.",
       mode: "single",
       options: [

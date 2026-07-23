@@ -280,7 +280,7 @@ describe("the number is proof, not the goal: it only appears once the meaning is
   it("who set but the honest gate not yet -> still not ready, hint moves on to the limit", () => {
     const proof = deriveAccessAlignProof({ accessAlignWho: ["all"] }, ctxFor(OP_BASELINE));
     expect(proof.ready).toBe(false);
-    expect(proof.emptyHint.toLowerCase()).toContain("see more patients");
+    expect(proof.emptyHint.toLowerCase()).toContain("limiting access");
   });
 
   it("bodies-bound -> not ready, the hint says Abridge cannot add bodies or space", () => {

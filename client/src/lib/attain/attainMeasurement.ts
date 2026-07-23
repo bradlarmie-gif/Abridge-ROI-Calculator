@@ -281,7 +281,7 @@ export function deriveAccessMeasurementPlan(
   const emptyHint = !who
     ? "Pick who this is for on the Align step, then the measurement chain builds itself from what you aligned on."
     : !gate
-      ? "Say why you cannot see more patients today on the Align step, so the chain measures only what Abridge can honestly move."
+      ? "Say what's limiting access today on the Align step, so the chain measures only what Abridge can honestly move."
       : "Set your Align choices and the chain builds itself here.";
 
   const proofHas = (metricId: string) => proof.some((p) => PROOF_TO_METRIC[p] === metricId);
@@ -1766,7 +1766,7 @@ export function deriveCapacityMeasurementPlan(
   const emptyHint = !who
     ? "Pick who this is for on the Align step, then the measurement chain builds itself from what you aligned on."
     : !gate
-      ? "Say why the overtime is there on the Align step, so the chain measures only what Abridge can honestly move."
+      ? "Say what's driving the overtime on the Align step, so the chain measures only what Abridge can honestly move."
       : "Set your Align choices and the chain builds itself here.";
 
   const proofHas = (metricId: string) => proof.some((p) => CAPACITY_PROOF_TO_METRIC[p] === metricId);
@@ -2042,7 +2042,7 @@ export function deriveEdAccessMeasurementPlan(
   const emptyHint = !who
     ? "Pick who this is for on the Align step, then the measurement chain builds itself from what you aligned on."
     : !gate
-      ? "Say why patients leave without being seen on the Align step, so the chain measures only what Abridge can honestly move."
+      ? "Say what's limiting ED throughput today on the Align step, so the chain measures only what Abridge can honestly move."
       : "Set your Align choices and the chain builds itself here.";
 
   const proofHas = (metricId: string) => proof.some((p) => ED_ACCESS_PROOF_TO_METRIC[p] === metricId);

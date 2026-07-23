@@ -223,10 +223,10 @@ describe("the number is proof, not the goal: it only appears once the meaning is
     expect(proof.emptyHint.toLowerCase()).toContain("who");
   });
 
-  it("who set but the honest gate not yet -> still not ready, hint moves on to why patients leave", () => {
+  it("who set but the honest gate not yet -> still not ready, hint moves on to what's limiting throughput", () => {
     const proof = deriveEdAccessAlignProof({ edAccessAlignWho: ["all"] }, ctxFor(BASELINE));
     expect(proof.ready).toBe(false);
-    expect(proof.emptyHint.toLowerCase()).toContain("leave without being seen");
+    expect(proof.emptyHint.toLowerCase()).toContain("limiting ed throughput");
   });
 
   it("staffing-bound -> not ready, the hint says Abridge cannot add staff or open beds", () => {

@@ -16,8 +16,8 @@
  *      Starting Point (never re-asked); they pick "all lines and providers" or
  *      "a focused set", with an OPTIONAL provider number that sharpens the cut.
  *      Maps to accessEnterprise + accessProviders.
- *   Q3 Gate (NEW, the honest gate access lacked) — why can't you see more
- *      patients today. ONLY the documentation-bound answer lets Abridge move
+ *   Q3 Gate (NEW, the honest gate access lacked) — what's limiting access
+ *      today. ONLY the documentation-bound answer lets Abridge move
  *      it: it frees the documentation time that becomes capacity, so it maps to
  *      a conservative directed share (accessFreedShare). "Not enough providers,
  *      rooms, staff" maps the share to 0 — Abridge cannot add bodies or space,
@@ -264,7 +264,7 @@ export function deriveAccessAlignProof(values: LeverValues, ctx: AlignContext): 
   const emptyHint = !who
     ? "Pick who this is for to start the number."
     : !gate
-      ? "Say why you cannot see more patients today, so we size only what Abridge can honestly move."
+      ? "Say what's limiting access today, so we size only what Abridge can honestly move."
       : gate === "bodies"
         ? "You told us the limit is people, rooms, or staff. Abridge frees documentation time, but it cannot add bodies or space, so no new capacity opens. The honest number here is zero."
         : gate === "demand" && demand.demandCeiling <= 0
@@ -344,7 +344,7 @@ export const accessAlignConfig: AlignConfig = {
     {
       id: "gate",
       storeKey: K_GATE,
-      prompt: "Why can't you see more patients today?",
+      prompt: "What's limiting access today?",
       helper: "The honest gate. Abridge frees documentation time, so it moves the first case, not the rest. It cannot add people or space, or create demand that is not there.",
       mode: "single",
       options: [

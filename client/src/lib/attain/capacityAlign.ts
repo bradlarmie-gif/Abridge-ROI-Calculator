@@ -18,7 +18,7 @@
  *      Point (never re-asked); they pick "all units and nurses" or "a focused
  *      unit", with an OPTIONAL nurse number that sharpens the cut. Maps to
  *      capacityNurses.
- *   Q3 Gate (THE HONEST GATE) — why is there overtime. ONLY the documentation
+ *   Q3 Gate (THE HONEST GATE) — what's driving the overtime. ONLY the documentation
  *      answer lets Abridge move it: it frees the post-shift charting time that
  *      becomes overtime, so it opens the documentation-attributable share
  *      (capacityDocShare). "Short staffing" and "census surges" collapse that
@@ -231,12 +231,12 @@ export function deriveCapacityAlignProof(values: LeverValues, ctx: AlignContext)
     ? formulaWithRealization(chain.formulas.payoff, realizationPct, realized)
     : honestZeroNote
       ? honestZeroNote
-      : "The number appears once you set who this is for, why the overtime is there, and where it shows up.";
+      : "The number appears once you set who this is for, what's driving the overtime, and where it shows up.";
 
   const emptyHint = !who
     ? "Pick who this is for to start the number."
     : !gate
-      ? "Say why the overtime is there, so we size only what Abridge can honestly move."
+      ? "Say what's driving the overtime, so we size only what Abridge can honestly move."
       : honestZeroNote
         ? honestZeroNote
         : !where
@@ -317,7 +317,7 @@ export const capacityAlignConfig: AlignConfig = {
     {
       id: "gate",
       storeKey: K_GATE,
-      prompt: "Why is there overtime?",
+      prompt: "What's driving the overtime?",
       helper: "The honest gate. Abridge frees the time nurses spend charting after the shift. It cannot add nurses or flatten census. Only the overtime charting causes counts.",
       mode: "single",
       options: [
