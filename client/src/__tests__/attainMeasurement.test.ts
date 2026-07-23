@@ -119,7 +119,7 @@ describe("measurement plan — a different Align produces a different chain", ()
 
   it("names link 3 after the Align outcome", () => {
     expect(modelFor({ ...FULL_CHOICES, accessAlignOutcome: ["backlog"] }).links[2].title).toMatch(/backlog/i);
-    expect(modelFor({ ...FULL_CHOICES, accessAlignOutcome: ["grow"] }).links[2].title).toMatch(/grow/i);
+    expect(modelFor({ ...FULL_CHOICES, accessAlignOutcome: ["grow"] }).links[2].title).toMatch(/capacity/i);
     expect(modelFor({ ...FULL_CHOICES, accessAlignOutcome: ["wait"] }).links[2].title).toMatch(/wait/i);
   });
 

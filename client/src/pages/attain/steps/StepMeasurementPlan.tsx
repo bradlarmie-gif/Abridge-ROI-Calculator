@@ -66,7 +66,7 @@ export default function StepMeasurementPlan({
           Measurement plan
         </h1>
         <p className="text-sm text-[#666666] leading-relaxed max-w-[620px]" data-testid="text-measure-teach">
-          You aligned on where you are going and the number fell out of it. This is where you decide what you will
+          You aligned on where you are going and the number came from that. This is where you decide what you will
           measure to get there, and how you will know you are getting closer. Whatever you pick here becomes your
           scorecard.
         </p>

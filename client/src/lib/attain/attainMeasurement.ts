@@ -20,8 +20,8 @@
  *     because freeing documentation time cannot add capacity there;
  *   - the demand sources (Q4) and the proof (Q5) shape link 3's metric menu and
  *     pre-select the metrics the partner already said would convince them;
- *   - the outcome (Q1) names link 3 (burn down the backlog / cut the wait /
- *     open room to grow);
+ *   - the outcome (Q1) names link 3 (reduce the backlog / shorten the wait /
+ *     add capacity);
  *   - the scope (Q2) and their Starting-Point providers/encounters set the
  *     baselines on links 1, 2, and 4.
  *
@@ -229,12 +229,12 @@ function waitLinkCopy(outcome: string | undefined): { title: string; teach: stri
   switch (outcome) {
     case "backlog":
       return {
-        title: "The backlog burns down",
+        title: "The referral backlog comes down",
         teach: "The new slots go to the patients already referred and waiting, so the count in the queue actually comes down.",
       };
     case "grow":
       return {
-        title: "The room to grow opens",
+        title: "New capacity opens up",
         teach: "The new slots absorb more patients over time, so the access measure holds even as volume climbs.",
       };
     case "wait":
@@ -288,8 +288,8 @@ export function deriveAccessMeasurementPlan(
   const minutesLink: MeasurementLink = {
     id: "minutes",
     n: 1,
-    title: "The minutes land",
-    teach: "The first thing to prove: the note actually takes less time. Everything downstream is multiplication on top of this one number.",
+    title: "The note takes less time",
+    teach: "The first thing to prove: the note actually takes less time. Everything downstream builds on this one number.",
     blocked: false,
     metrics: [
       {
@@ -327,7 +327,7 @@ export function deriveAccessMeasurementPlan(
     id: "schedule",
     n: 2,
     title: "The freed time hits the schedule",
-    teach: "Freed time only opens access if it is directed to the schedule as bookable slots. This is the link the plan lives or dies on.",
+    teach: "Freed time only opens access if it is directed to the schedule as bookable slots. This is the link the plan depends on most.",
     blocked: scheduleBlocked,
     blockedReason: scheduleBlocked
       ? "You told us on Align the limit is people, rooms, or staff. Freeing documentation time cannot add capacity here, so there are no new slots to measure. The honest number stays at zero until that limit changes."
@@ -437,7 +437,7 @@ export function deriveAccessMeasurementPlan(
   const visitsLink: MeasurementLink = {
     id: "visits",
     n: 4,
-    title: "The visits land",
+    title: "The visits are booked",
     teach: "The payoff: visits that actually book, and the contribution margin they carry. This is the number the promise is priced on.",
     blocked: false,
     metrics: [
@@ -489,9 +489,9 @@ export function deriveAccessMeasurementPlan(
     realizedVisits: ladder.realizedVisits,
     prize: ladder.prize,
     commitment: {
-      title: "The one thing this plan lives or dies on",
+      title: "The one thing this plan depends on",
       teach:
-        "Freed documentation time only opens access if it is directed to the schedule as bookable slots. If it quietly refills with other work, the minutes are real but the visits never land. Someone has to own protecting that freed time and pointing it at the schedule.",
+        "Freed documentation time only opens access if it is directed to the schedule as bookable slots. If it quietly refills with other work, the minutes are real but the visits never happen. Someone has to own protecting that freed time and directing it to the schedule.",
       ownerLabel: "Who owns directing the freed time",
     },
     monthlyCheckTeach:
@@ -749,7 +749,7 @@ export function deriveRetentionMeasurementPlan(
     realizedVisits: ladder.departuresAvoided,
     prize: ladder.prize,
     commitment: {
-      title: "The one thing this plan lives or dies on",
+      title: "The one thing this plan depends on",
       teach: `Freed ${chartingTerm} time only holds people if it stays with the clinician as relief. If it quietly refills with other work, the minutes are real but the day never gets lighter and no one stays for it. Someone has to own protecting that freed time as relief.`,
       ownerLabel: "Who owns protecting the relief",
     },
@@ -909,7 +909,7 @@ export function deriveRevenueMeasurementPlan(
     realizedVisits: 0,
     prize: ladder.convergedPrize,
     commitment: {
-      title: "The one thing this plan lives or dies on",
+      title: "The one thing this plan depends on",
       teach:
         "Complete documentation only becomes revenue if the people who touch the claim act on it. The note can carry every condition and the full acuity, but if coders keep to prior-year patterns, queries age out, or the billing team never sees the fuller picture, the completeness never reaches the claim and none of this lands. Someone has to own the coders and providers actually acting on the better documentation.",
       ownerLabel: "Who owns the coders and providers acting on it",
@@ -1618,7 +1618,7 @@ export function deriveQualityMeasurementPlan(
     prize: softDollar,
     safetyHeadline: { heroValue, softDollarNote },
     commitment: {
-      title: "The one thing this plan lives or dies on",
+      title: "The one thing this plan depends on",
       teach:
         "Abridge frees the time and surfaces the risk earlier, but it does not prevent anything on its own. The unit has to run the changes you committed to: redeploy the freed minutes into rounding and presence, act on the risk the note surfaces earlier, and tighten handoffs on the fuller notes. If the freed time quietly refills with other tasks, the signal is real but nothing downstream moves. Someone has to own making those conversions happen at the bedside.",
       ownerLabel: "Who owns making the conversions happen",
@@ -1768,7 +1768,7 @@ export function deriveCapacityMeasurementPlan(
     id: "finish",
     n: 2,
     title: "Nurses finish on time",
-    teach: "Freed charting time only cuts overtime if the shift actually closes on time instead of running late. This is the link the plan lives or dies on.",
+    teach: "Freed charting time only cuts overtime if the shift actually closes on time instead of running late. This is the link the plan depends on most.",
     blocked: finishBlocked,
     blockedReason: finishBlocked
       ? `You told us on Align the overtime is ${gateWord}. Freeing documentation time cannot ${gateVerb}, so the shift does not close on time from this and no overtime comes out. The honest number stays at zero until that limit changes.`
@@ -1877,7 +1877,7 @@ export function deriveCapacityMeasurementPlan(
     realizedVisits: ladder.realizedOtHoursAvoided,
     prize: ladder.prize,
     commitment: {
-      title: "The one thing this plan lives or dies on",
+      title: "The one thing this plan depends on",
       teach: `Freed charting time only cuts overtime if it becomes leaving on time, not more tasks. If the minutes quietly refill with other work, the charting comes off but the shift still runs late and no overtime comes out. Someone has to own protecting that freed time as time back, so nurses actually leave on time. ${NURSING_CAPACITY_NO_DOUBLE_COUNT}`,
       ownerLabel: "Who owns protecting the freed time as leaving on time",
     },
@@ -2006,7 +2006,7 @@ export function deriveEdAccessMeasurementPlan(
     id: "throughput",
     n: 1,
     title: "The minutes free the throughput",
-    teach: "The first thing to prove: the note takes less time, and that freed time is the only thing that mechanically buys a faster door-to-provider. Everything downstream is multiplication on top of this one number.",
+    teach: "The first thing to prove: the note takes less time, and that freed time is the only thing that mechanically buys a faster door-to-provider. Everything downstream builds on this one number.",
     blocked: false,
     metrics: [
       {
@@ -2039,7 +2039,7 @@ export function deriveEdAccessMeasurementPlan(
     id: "door",
     n: 2,
     title: "Door-to-provider falls",
-    teach: "Freed time only recovers a patient if it actually shortens the walk from the door to a provider. This is the link the plan lives or dies on.",
+    teach: "Freed time only recovers a patient if it actually shortens the walk from the door to a provider. This is the link the plan depends on most.",
     blocked: doorBlocked,
     blockedReason: doorBlocked
       ? "You told us on Align the limit is staffing or beds. Freeing documentation time cannot add staff or open beds, so the door-to-provider walk does not shorten from this and no left-without-being-seen visit becomes recoverable. The honest number stays at zero until that limit changes."
@@ -2113,7 +2113,7 @@ export function deriveEdAccessMeasurementPlan(
   const recoveredLink: MeasurementLink = {
     id: "recovered",
     n: 4,
-    title: "Recovered visits and admissions land",
+    title: "Recovered visits and admissions are captured",
     teach: "The payoff: patients who would have left but were seen instead, the admissions some of them become, and the contribution margin they carry. This is the number the promise is priced on.",
     blocked: false,
     metrics: [
@@ -2168,7 +2168,7 @@ export function deriveEdAccessMeasurementPlan(
     realizedVisits: ladder.realizedRecovered,
     prize: ladder.prize,
     commitment: {
-      title: "The one thing this plan lives or dies on",
+      title: "The one thing this plan depends on",
       teach:
         "Freed documentation time only recovers a patient if it actually shortens the walk from the door to a provider. If the minutes quietly refill with other work, the charting comes off but the door stays slow and no patient is recovered. Someone in ED operations has to own directing that freed time to faster triage-to-provider flow.",
       ownerLabel: "Who owns directing the freed time to faster throughput",
