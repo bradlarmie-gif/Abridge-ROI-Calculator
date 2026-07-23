@@ -1198,6 +1198,7 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
                   step={step}
                   valuesByGoal={valuesByGoal}
                   combined={combined}
+                  baseline={baseline}
                   activeGoal={activeBuildCaseGoal}
                   realizationPct={activeBuildCaseGoal ? (realizationByGoal[activeBuildCaseGoal] ?? defaultRealizationPct(activeBuildCaseGoal)) : 100}
                   onChangeRealization={(pct) => {

@@ -3,9 +3,18 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import AttainmentCurve from "@/components/attain/AttainmentCurve";
-import { leversFor, defaultLeverValues, defaultRealizationPct, isDecisionCommitted, type LeverValues, type MultiGoalContributionsResult } from "@/lib/attain/attainLevers";
+import {
+  leversFor,
+  defaultLeverValues,
+  defaultRealizationPct,
+  isDecisionCommitted,
+  type AttainBaseline,
+  type LeverValues,
+  type MultiGoalContributionsResult,
+} from "@/lib/attain/attainLevers";
 import { alignDecisionLabelForLever } from "@/lib/attain/alignDecisionLabels";
 import { alignConfigFor } from "./steps/AlignSurface";
+import { deriveMeasurementModelFor } from "./steps/MeasurementPlanSurface";
 import { GOAL_CATALOG } from "@/lib/attain/attainGoals";
 import type { AttainState, GoalId, SettingGoalContent } from "@/lib/attain/attainTypes";
 import type { GoalTargetResult, AttainmentResult } from "@/lib/attain/attainCalc";
@@ -45,6 +54,10 @@ interface AttainLivePanelProps {
   step: AttainStepId;
   valuesByGoal: Partial<Record<GoalId, LeverValues>>;
   combined: MultiGoalContributionsResult | null;
+  /** The partner's operational baseline - only needed to re-derive nursing
+   * quality's honest COUNT (harm events prevented) for this panel's headline,
+   * the same way `MeasurementPlanSurface` derives it (see `deriveMeasurementModelFor`). */
+  baseline: AttainBaseline;
   /** The goal whose Build-the-case page is currently on screen, null on
    * every other step - this is the priority the compact "Attributed to
    * this plan" control below applies to. Moved here from Build the case's
@@ -77,6 +90,7 @@ export default function AttainLivePanel({
   step,
   valuesByGoal,
   combined,
+  baseline,
   activeGoal = null,
   realizationPct = activeGoal ? defaultRealizationPct(activeGoal) : 100,
   onChangeRealization,
@@ -92,6 +106,26 @@ export default function AttainLivePanel({
   // hidden (it is rendered inline in each block on that page instead).
   const isBuildCaseStep = step.startsWith("buildCase:") || step === "align";
   const showBuiltTarget = goals.length > 0 && combined && (isBuildCaseStep || step === "commit");
+
+  // ── Honesty: quality leads with a COUNT here too, consistent with the
+  // measurement-plan surface (MeasurementPlanSurface's promise header leads
+  // with harm events prevented, the dollar drops to a soft footnote — see
+  // that component's `safetyHeadline`). This panel used to lead with the
+  // attributed dollar for nursing quality, the one place in the app that
+  // still put quality's dollar first. Re-derives the same
+  // `deriveMeasurementModelFor` model that surface uses, off the same Align
+  // state and the same combined engine result, so the count/dollar shown
+  // here can never disagree with the surface. Single-goal quality plans use
+  // it for the main headline below; a multi-goal plan viewing quality's own
+  // Build-the-case page uses it for the per-priority "this priority, worth"
+  // line instead.
+  const hasQualityGoal = goals.includes("quality");
+  const isSingleGoalQuality = hasQualityGoal && goals.length === 1;
+  const qualityValuesForPanel = valuesByGoal.quality ?? defaultLeverValues("quality", state.setting ?? undefined);
+  const qualityPanelModel =
+    hasQualityGoal && state.setting && combined
+      ? deriveMeasurementModelFor("quality", state.setting, baseline, qualityValuesForPanel, combined, 1)
+      : null;
 
   // Every moved decision across every selected goal, prefixed so a partner
   // with two priorities can tell at a glance which one a given decision
@@ -215,28 +249,50 @@ export default function AttainLivePanel({
                 has actually been moved - a genuine $0 (e.g. capacity set
                 but demand not yet, for Access) still prints as $0, since
                 that is honestly what the chain has realized so far; only
-                the "nothing touched yet" state gets the placeholder. */}
-            <p className="font-abridge text-2xl text-[#EA2C00]" data-testid="text-attain-panel-target-value">
-              {movedDecisions.length > 0 ? formatCompact(combined.combinedMargin) : "Not set yet"}
-            </p>
-            <p className="text-xs text-white/50 mt-1">
-              {movedDecisions.length === 0
-                ? "Move a decision below to start building it"
-                : combined.combinedMargin > 0
-                  ? "Growing as you commit"
-                  : "Every decision counts, keep going, the dollar appears once the chain is complete"}
-            </p>
+                the "nothing touched yet" state gets the placeholder.
+                Nursing quality is the exception: a single-goal quality plan
+                leads with the COUNT (harm events prevented), never the
+                attributed dollar first, consistent with the measurement-plan
+                surface's own promise header. */}
+            {isSingleGoalQuality ? (
+              <>
+                <p className="font-abridge text-2xl text-[#EA2C00]" data-testid="text-attain-panel-target-value">
+                  {movedDecisions.length > 0 ? qualityPanelModel?.safetyHeadline?.heroValue ?? "count pending" : "Not set yet"}
+                </p>
+                <p className="text-xs text-white/50 mt-1" data-testid="text-attain-panel-target-soft-dollar">
+                  {movedDecisions.length === 0
+                    ? "Move a decision below to start building it"
+                    : qualityPanelModel?.safetyHeadline?.softDollarNote ?? "This plan leads with safety, not a dollar."}
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="font-abridge text-2xl text-[#EA2C00]" data-testid="text-attain-panel-target-value">
+                  {movedDecisions.length > 0 ? formatCompact(combined.combinedMargin) : "Not set yet"}
+                </p>
+                <p className="text-xs text-white/50 mt-1">
+                  {movedDecisions.length === 0
+                    ? "Move a decision below to start building it"
+                    : combined.combinedMargin > 0
+                      ? "Growing as you commit"
+                      : "Every decision counts, keep going, the dollar appears once the chain is complete"}
+                </p>
+              </>
+            )}
 
             {/* This priority's OWN share of the combined total above - only
                 worth calling out separately once there is more than one
                 priority to tell apart; with a single goal this number is
-                already the one printed above. */}
+                already the one printed above. Nursing quality still leads
+                with its count here too, not the attributed dollar. */}
             {activeGoal && goals.length > 1 && (
               <div className="flex justify-between items-center gap-2 mt-3" data-testid={`text-attain-panel-priority-worth-${activeGoal}`}>
                 <span className="text-xs text-white/50">{GOAL_CATALOG[activeGoal].label}, this priority</span>
-                <span className="text-sm font-semibold text-white" data-testid={`text-attain-panel-priority-worth-value-${activeGoal}`}>
+                <span className="text-sm font-semibold text-white text-right" data-testid={`text-attain-panel-priority-worth-value-${activeGoal}`}>
                   {movedDecisions.some((d) => d.goal === activeGoal)
-                    ? formatCompact(combined.byGoal[activeGoal]?.totalMargin ?? 0)
+                    ? activeGoal === "quality"
+                      ? qualityPanelModel?.safetyHeadline?.heroValue ?? "count pending"
+                      : formatCompact(combined.byGoal[activeGoal]?.totalMargin ?? 0)
                     : "Not set yet"}
                 </span>
               </div>
