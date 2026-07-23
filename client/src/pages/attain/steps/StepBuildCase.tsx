@@ -8,9 +8,10 @@ import AccessDecisionChain from "./AccessDecisionChain";
 import EdAccessDecisionChain from "./EdAccessDecisionChain";
 import RevenueLadderChain from "./RevenueLadderChain";
 import InpatientRevenueLadderChain from "./InpatientRevenueLadderChain";
-import WorkforceLadderChain from "./WorkforceLadderChain";
 import QualityLadderChain from "./QualityLadderChain";
 import CapacityLadderChain from "./CapacityLadderChain";
+import AlignStep from "./AlignStep";
+import { workforceAlignConfig } from "@/lib/attain/workforceAlign";
 
 function formatCompact(n: number): string {
   const sign = n < 0 ? "-" : "";
@@ -164,17 +165,16 @@ export default function StepBuildCase({
   // drag framing for the one crisp ladder teaching line, exactly like
   // outpatient access.
   const isEdAccessLadder = goal === "access" && setting === "ed";
-  // Retention is a ladder in EVERY setting: it assembles the same step-down
-  // story (freed time -> protected relief -> burnout down -> the burnout-pool
-  // gate -> departures avoided -> the prize) that Planning reads back, via the
-  // shared retention ladder (see WorkforceLadderChain + accessLadder.ts's
-  // deriveRetentionLadder). The ladder is fully setting-aware (nurses vs
-  // providers scope units, per-setting turnover / replacement / burnout share,
-  // 50% ceiling), so ED, inpatient, and nursing retention read the same story
-  // outpatient does. The freed-hour split still only applies where BOTH access
-  // and retention are selectable (outpatient and ED); inpatient and nursing
-  // have no access goal, so crossGoalShareMultiplier stays 1 there.
-  const isRetentionLadder = goal === "retention";
+  // Retention is the ALIGN exemplar in EVERY setting: instead of the old
+  // slider/toggle ladder it now asks a small set of "choose your meaning"
+  // questions (see AlignStep + workforceAlign.ts) and derives the SAME number
+  // underneath (computeWorkforceChain), reconciled to Explore's
+  // providerWellbeing / nursingRetention. The choices map to the exact
+  // LeverValues the chain always read, so the engine math is unchanged. The
+  // freed-hour split still only applies where BOTH access and retention are
+  // selectable (outpatient and ED); inpatient and nursing have no access goal,
+  // so crossGoalShareMultiplier stays 1 there.
+  const isRetentionAlign = goal === "retention";
   // Nursing quality is the fifth ladder: it assembles the same step-down
   // story (first domino -> shared scope -> the event selector -> per-event
   // ground / diagnosis gate / bundle -> the converged prize) that Planning
@@ -190,24 +190,24 @@ export default function StepBuildCase({
   // single gated ladder like access, reconciled to Explore's own
   // `nursingOvertime` driver.
   const isCapacityLadder = goal === "capacity" && setting === "nursing";
-  const isLadder = isAccessLadder || isEdAccessLadder || isRetentionLadder || isRevenueLadder || isIpRevenueLadder || isQualityLadder || isCapacityLadder;
+  const isLadder = isAccessLadder || isEdAccessLadder || isRetentionAlign || isRevenueLadder || isIpRevenueLadder || isQualityLadder || isCapacityLadder;
 
   return (
     <div>
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
         <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-3" data-testid="text-step-eyebrow">
-          Step {stepNumber} of {totalSteps} · What are you actually going to do?
+          Step {stepNumber} of {totalSteps} · {isRetentionAlign ? "Get aligned on what you mean" : "What are you actually going to do?"}
         </p>
         <h1 className="text-2xl md:text-4xl font-bold text-black mb-3 font-abridge uppercase tracking-tight" data-testid="text-step-title">
-          Build your strategy
+          Align
         </h1>
         <p className="text-[15px] text-[#666666] leading-relaxed max-w-[620px]" data-testid="text-step-teach">
           {isAccessLadder
             ? "Assemble the ladder from the top down. One number starts it, each rung multiplies, and demand decides how much converts."
             : isEdAccessLadder
               ? "Assemble the ladder from the top down. One number starts it, freed time becomes throughput, and the diagnosis decides how much of the leak is yours to recover."
-              : isRetentionLadder
-                ? "You want lower voluntary turnover and a better clinician experience. Work backward: one number starts it, each rung multiplies, and burnout decides how much you can avoid."
+              : isRetentionAlign
+                ? "Let us agree on what you mean by keeping your people, one question at a time. Your facts carry over from your starting point, so you only choose the meaning. The number at the end is the proof of what you aligned on."
                 : isRevenueLadder || isIpRevenueLadder
                   ? "One lever starts it, complete documentation at the point of care, and it feeds several revenue paths. For each path you pick, the documentation decides how much you can actually capture. The paths add into one prize."
                   : isQualityLadder
@@ -249,8 +249,8 @@ export default function StepBuildCase({
             ? "This is the full step-down, top to bottom. Every rung is part of the plan; set each one to your real numbers."
             : isEdAccessLadder
               ? "This is the full step-down, top to bottom. Every rung is part of the plan; set each one to your real numbers."
-              : isRetentionLadder
-                ? "Lower voluntary turnover and a better clinician experience. This is the full step-down, top to bottom; set each rung to your real numbers."
+              : isRetentionAlign
+                ? "A short, shared conversation about what you mean by keeping your people. Choose the meaning; the number is the proof."
                 : isRevenueLadder || isIpRevenueLadder
                   ? "One lever, several paths, one converged prize. Pick the paths you are chasing and set each one to your real numbers."
                   : isQualityLadder
@@ -335,8 +335,9 @@ export default function StepBuildCase({
             onChangeValue={(leverId, value) => onChangeLeverValue("revenue", leverId, value)}
             realizationPct={realizationPct}
           />
-        ) : isRetentionLadder ? (
-          <WorkforceLadderChain
+        ) : isRetentionAlign ? (
+          <AlignStep
+            config={workforceAlignConfig}
             setting={setting}
             baseline={baseline}
             values={values}

@@ -87,7 +87,7 @@ function stepLabelFor(step: AttainStepId, goals: GoalId[]): string {
   const goal = goalOfStep(step);
   if (goal) {
     const label = GOAL_CATALOG[goal].label;
-    return goals.length > 1 ? `Build the case · ${label}` : "Build the case";
+    return goals.length > 1 ? `Align · ${label}` : "Align";
   }
   switch (step) {
     case "setting": return "Setting";
