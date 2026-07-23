@@ -61,11 +61,14 @@ import type { AttainSetting } from "./attainTypes";
  */
 
 // ────────────────────────────────────────────────────────────────────────
-// Setting-level defaults — match the benchmarks already in
-// attainGoals.ts's per-setting retention copy and the engine's own
+// Setting-level defaults, so this chain never invents a second set of
+// numbers. The turnover rate below is the SINGLE SOURCE OF TRUTH for both
+// the dollar and the "Where you are today" turnover card: attainGoals.ts
+// imports WORKFORCE_TURNOVER_DEFAULT_PCT and renders the exact same value it
+// is figured on, so the card and the money can never quote two different
+// "today" rates. Burnout share and replacement cost track the engine's own
 // pre-existing illustrative constants (exploreDriverCalcs.ts /
-// attainCalc.ts's retentionTarget), so this chain never invents a second
-// set of numbers.
+// attainCalc.ts's retentionTarget).
 // ────────────────────────────────────────────────────────────────────────
 
 export const WORKFORCE_TURNOVER_DEFAULT_PCT: Record<AttainSetting, number> = {

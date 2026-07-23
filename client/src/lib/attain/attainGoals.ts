@@ -4,7 +4,7 @@ import type {
   GoalDef,
   SettingGoalContent,
 } from "./attainTypes";
-import { computeWorkforceCeiling } from "./attainWorkforce";
+import { computeWorkforceCeiling, WORKFORCE_TURNOVER_DEFAULT_PCT } from "./attainWorkforce";
 
 /**
  * Attain goal catalog.
@@ -648,7 +648,7 @@ const outpatientRetention: SettingGoalContent = {
   p1Lead:
     "Providers in this scope are documenting for hours after every shift, most of it from home. Exit interviews name charting burden as a leading reason people leave. The relief Abridge creates is real and immediate. Whether it lasts, or gets quietly refilled by bigger panels and coverage gaps, is the difference between a number that holds and one that fades by month nine.",
   worldCards: [
-    { k: "Annual turnover", n: "10 to 12%", benchmark: true, f: "Benchmark range" },
+    { k: "Annual turnover", n: `${WORKFORCE_TURNOVER_DEFAULT_PCT.outpatient}%`, benchmark: true, f: "Starting voluntary turnover this plan uses" },
     { k: "Burnout share of exits", n: "~40%", benchmark: true, f: "Typical share attributed to burnout" },
     { k: "Replacement cost / provider", n: "$250K to $500K", benchmark: true, f: "Typical cost to rehire" },
   ],
@@ -861,7 +861,7 @@ const edRetention: SettingGoalContent = {
   p1Lead:
     "Providers in this scope are finishing charts hours after the shift ends, often from the parking lot or from home. Exit interviews name charting burden and shift intensity as leading reasons people leave emergency medicine. The relief Abridge creates is real and immediate. Whether it lasts, or gets quietly refilled by heavier shift loads, is the difference between a number that holds and one that fades by month nine.",
   worldCards: [
-    { k: "Annual turnover", n: "12 to 15%", benchmark: true, f: "Benchmark range" },
+    { k: "Annual turnover", n: `${WORKFORCE_TURNOVER_DEFAULT_PCT.ed}%`, benchmark: true, f: "Starting voluntary turnover this plan uses" },
     { k: "Burnout share of exits", n: "~50%", benchmark: true, f: "Typical share attributed to burnout" },
     { k: "Replacement cost / provider", n: "$300K to $600K", benchmark: true, f: "Typical to rehire and cover" },
   ],
@@ -1074,7 +1074,7 @@ const inpatientRetention: SettingGoalContent = {
   p1Lead:
     "Hospitalists in this scope are documenting for hours after every shift, most of it from home, on top of a rounding load that already runs long. Exit interviews name charting burden as a leading reason people leave hospital medicine. The relief Abridge creates is real and immediate. Whether it lasts, or gets quietly refilled by bigger panels and coverage gaps, is the difference between a number that holds and one that fades by month nine.",
   worldCards: [
-    { k: "Annual turnover", n: "10 to 12%", benchmark: true, f: "Benchmark range" },
+    { k: "Annual turnover", n: `${WORKFORCE_TURNOVER_DEFAULT_PCT.inpatient}%`, benchmark: true, f: "Starting voluntary turnover this plan uses" },
     { k: "Burnout share of exits", n: "~45%", benchmark: true, f: "Typical share attributed to burnout" },
     { k: "Replacement cost / hospitalist", n: "$250K to $500K", benchmark: true, f: "Typical to rehire and cover" },
   ],
@@ -1218,7 +1218,7 @@ const nursingRetention: SettingGoalContent = {
   p1Lead:
     "Nurses in this scope are staying late to finish charting, and exit interviews name documentation burden alongside staffing ratios as a leading reason nurses leave the bedside. The relief Abridge creates at the point of care is real and immediate. Whether it lasts, or gets quietly refilled by heavier assignments and unfilled shifts, is the difference between a number that holds and one that fades by month twelve.",
   worldCards: [
-    { k: "Annual RN turnover", n: "14 to 16%", benchmark: true, f: "Benchmark range" },
+    { k: "Annual RN turnover", n: `${WORKFORCE_TURNOVER_DEFAULT_PCT.nursing}%`, benchmark: true, f: "Starting voluntary RN turnover this plan uses" },
     { k: "Burnout share of exits", n: "~40%", benchmark: true, f: "Typical share attributed to burnout" },
     { k: "Replacement cost / RN", n: "$40K to $65K", benchmark: true, f: "Typical to rehire and orient" },
   ],

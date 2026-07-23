@@ -612,3 +612,16 @@ describe("nursing burnout share is one consistent value across the engine and th
     expect(burnoutCard!.n).toBe(`~${WORKFORCE_BURNOUT_SHARE_PCT.nursing}%`);
   });
 });
+
+describe("retention turnover rate is one source of truth: the 'Where you are today' card shows the exact rate the dollar is computed on (QA fix)", () => {
+  const settings = ["outpatient", "ed", "inpatient", "nursing"] as const;
+  it.each(settings)("%s retention world-card turnover == WORKFORCE_TURNOVER_DEFAULT_PCT (never a wider benchmark range that contradicts the money)", (setting) => {
+    const content = CONTENT[setting]?.retention;
+    expect(content).toBeDefined();
+    const turnoverCard = content!.worldCards.find((c) => c.k.includes("turnover"));
+    expect(turnoverCard, `retention turnover card for ${setting}`).toBeDefined();
+    expect(turnoverCard!.n).toBe(`${WORKFORCE_TURNOVER_DEFAULT_PCT[setting]}%`);
+    // The card must show a single exact rate, not a "X to Y%" benchmark range.
+    expect(turnoverCard!.n).not.toContain(" to ");
+  });
+});
