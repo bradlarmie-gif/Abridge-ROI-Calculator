@@ -5,12 +5,12 @@ import type { MultiGoalContributionsResult } from "@/lib/attain/attainLevers";
 import { GOAL_CATALOG } from "@/lib/attain/attainGoals";
 import type { AttainSetting, GoalId } from "@/lib/attain/attainTypes";
 import EdAccessDecisionChain from "./EdAccessDecisionChain";
-import QualityLadderChain from "./QualityLadderChain";
 import CapacityLadderChain from "./CapacityLadderChain";
 import AlignStep from "./AlignStep";
 import { workforceAlignConfig } from "@/lib/attain/workforceAlign";
 import { accessAlignConfig } from "@/lib/attain/accessAlign";
 import { revenueAlignConfigFor } from "@/lib/attain/revenueAlign";
+import { qualityAlignConfigFor } from "@/lib/attain/qualityAlign";
 
 function formatCompact(n: number): string {
   const sign = n < 0 ? "-" : "";
@@ -177,13 +177,18 @@ export default function StepBuildCase({
   // selectable (outpatient and ED); inpatient and nursing have no access goal,
   // so crossGoalShareMultiplier stays 1 there.
   const isRetentionAlign = goal === "retention";
-  // Nursing quality is the fifth ladder: it assembles the same step-down
-  // story (first domino -> shared scope -> the event selector -> per-event
-  // ground / diagnosis gate / bundle -> the converged prize) that Planning
-  // reads back, via the shared converging quality ladder (see
-  // QualityLadderChain + attainQuality.ts's deriveQualityLadder /
-  // accessLadder.ts's QualityEventGate). Same multi-path SHAPE as revenue.
-  const isQualityLadder = goal === "quality" && setting === "nursing";
+  // Nursing quality is now an ALIGN surface too, the MULTI-EVENT driver and the
+  // honest exception: safety and experience lead, the dollar is a soft footnote,
+  // and every "what will you change" option is a conversion of Abridge's freed
+  // time / earlier documentation (never a generic clinical bundle). Q1 selects
+  // the harm events (plus HCAHPS), and the per-event gate + change questions
+  // stack into one clean section each (see AlignStep + qualityAlign.ts). The
+  // choices map to the exact same LeverValues the quality chain always read
+  // (qualityEventTypes, qualityBeds, and each event's own intervention keys),
+  // so the derived number still runs through deriveQualityLadder and reconciles
+  // to computeAllDriverValues. Quality keeps its per-event ceilings and its 30%
+  // attribution default. Engine math unchanged.
+  const isQualityAlign = goal === "quality" && setting === "nursing";
   // Nursing capacity is the sixth ladder: it assembles the same step-down
   // story (first domino -> the overtime run now -> the documentation-
   // attributable gate -> overtime hours avoided -> the prize) that Planning
@@ -195,8 +200,8 @@ export default function StepBuildCase({
   // Every Align surface (Retention everywhere, outpatient Access, and Revenue
   // in all three settings) and every remaining ladder drops the generic
   // "N of M decisions moved" drag framing.
-  const isAlign = isRetentionAlign || isAccessAlign || goal === "revenue";
-  const isLadder = isAccessAlign || isEdAccessLadder || isRetentionAlign || isRevenueLadder || isIpRevenueLadder || isQualityLadder || isCapacityLadder;
+  const isAlign = isRetentionAlign || isAccessAlign || goal === "revenue" || isQualityAlign;
+  const isLadder = isAccessAlign || isEdAccessLadder || isRetentionAlign || isRevenueLadder || isIpRevenueLadder || isQualityAlign || isCapacityLadder;
 
   return (
     <div>
@@ -216,8 +221,8 @@ export default function StepBuildCase({
                 ? "Let us agree on what you mean by keeping your people, one question at a time. Your facts carry over from your starting point, so you only choose the meaning. The number at the end is the proof of what you aligned on."
                 : isRevenueLadder || isIpRevenueLadder
                   ? "One lever starts it, complete documentation at the point of care, and it feeds several revenue paths. For each path you pick, the documentation decides how much you can actually capture. The paths add into one prize."
-                  : isQualityLadder
-                    ? "One lever starts it, earlier and more complete risk documentation. It feeds several harm events. For each event you pick, only a defensible share is preventable, and the bundle you commit to earns it. The events add into one prize."
+                  : isQualityAlign
+                    ? "Let us agree on what you mean by safer care, one question at a time. Pick what you are preventing, agree how much you can catch earlier, and commit the change you will make with the time and the signal Abridge frees. We lead with events prevented and experience; the dollar is a soft footnote."
                     : isCapacityLadder
                       ? "One number starts it, minutes saved per note, so nurses chart in the moment. Work down: your overtime now, the share charting actually causes, and the hours you take out of it."
                       : "Assemble the ladder from the top down. One number starts it, and each rung is part of the plan."}
@@ -259,8 +264,8 @@ export default function StepBuildCase({
                 ? "A short, shared conversation about what you mean by keeping your people. Choose the meaning; the number is the proof."
                 : isRevenueLadder || isIpRevenueLadder
                   ? "One lever, several paths, one converged prize. Pick the paths you are chasing and set each one to your real numbers."
-                  : isQualityLadder
-                    ? "One lever, several harm events, one converged prize. Pick the events you are preventing and commit each one's bundle to your real numbers."
+                  : isQualityAlign
+                    ? "A short, shared conversation about safer care. Choose the meaning; safety and experience lead, and the dollar stays a soft footnote."
                     : isCapacityLadder
                       ? "This is the full step-down, top to bottom. Set each rung to your real overtime, and only the overtime charting causes counts."
                       : "This is the full step-down, top to bottom. Set each rung to your real numbers."}
@@ -356,12 +361,23 @@ export default function StepBuildCase({
             crossGoalShareMultiplier={crossGoalShareMultiplier}
           />
         ) : goal === "quality" ? (
-          <QualityLadderChain
+          // Quality is now an ALIGN surface too, the MULTI-EVENT honest
+          // exception (safety and experience first, dollar soft). Q1 selects the
+          // harm events (plus HCAHPS) and the per-event gate + "what will you
+          // change" conversions stack into one clean section each (see AlignStep
+          // + qualityAlign.ts). The choices map to the exact same LeverValues the
+          // quality chain always read (qualityEventTypes, qualityBeds, each
+          // event's own intervention keys), so the number still runs through
+          // deriveQualityLadder and reconciles to computeAllDriverValues, with
+          // the per-event ceilings and the 30% attribution default intact.
+          <AlignStep
+            config={qualityAlignConfigFor(setting)}
             setting={setting}
             baseline={baseline}
             values={values}
             onChangeValue={(leverId, value) => onChangeLeverValue("quality", leverId, value)}
             realizationPct={realizationPct}
+            crossGoalShareMultiplier={crossGoalShareMultiplier}
           />
         ) : goal === "capacity" ? (
           <CapacityLadderChain
