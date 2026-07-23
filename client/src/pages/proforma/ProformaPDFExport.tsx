@@ -1396,7 +1396,9 @@ function buildDriverFormula(
     case "nursingRetention": {
       const turnoverRate  = tdi.nursingTurnoverRate || 0;
       const replaceCost   = tdi.nursingReplacementCost || 50000;
-      const beds          = es.nursingStaffedBeds || providers;
+      // Prefer the proforma's terminal-year bed count so this matches the Volumes
+      // tab and the care-setting table; fall back to the Explore snapshot.
+      const beds          = providers || es.nursingStaffedBeds || 0;
       const occupancy     = Math.round((es.nursingOccupancyRate || 0.85) * 100);
       const estNurses     = Math.round(beds * (occupancy / 100) * 2.5);
       const atRisk        = Math.round(estNurses * (turnoverRate / 100));
@@ -1425,7 +1427,7 @@ function buildDriverFormula(
       const hoursPerWk   = tdi.nursingOtHoursPerNurseWeek || 0;
       const reductionPct = tdi.nursingOtReductionPercent || 0;
       const hourlyRate   = tdi.nursingOtHourlyRate || 0;
-      const beds         = es.nursingStaffedBeds || providers;
+      const beds         = providers || es.nursingStaffedBeds || 0;
       const nurses       = Math.round(beds * (es.nursingOccupancyRate || 0.85) * 2.5);
       const totalOtHrs   = Math.round(nurses * hoursPerWk * 52);
       const savedHrs     = Math.round(totalOtHrs * (reductionPct / 100));
