@@ -34,6 +34,7 @@ import {
 import type { AttainBaseline, LeverValues, MultiGoalContributionsResult } from "@/lib/attain/attainLevers";
 import { GOAL_CATALOG } from "@/lib/attain/attainGoals";
 import { CADENCE_OPTIONS, CADENCE_LABEL, type GoalOwner, type SignalCadence } from "./StepCommit";
+import { attainTextInput, attainDateInput } from "../attainInput";
 
 /**
  * MeasurementPlanSurface — the per-goal MEASUREMENT PLAN body, shared by the
@@ -303,7 +304,7 @@ export default function MeasurementPlanSurface({
               value={goalOwner.name}
               onChange={(e) => onChangeGoalOwner({ name: e.target.value })}
               placeholder="Name, e.g. Dr. A. Rivera"
-              className="h-9 w-full rounded-md border border-[#D8CFC4] bg-white px-3 text-sm text-[#1A1A1A] outline-none focus:border-[#EA2C00]"
+              className={attainTextInput}
               data-testid={`input-measure-owner-name-${goal}`}
             />
           </div>
@@ -313,7 +314,7 @@ export default function MeasurementPlanSurface({
               value={goalOwner.title}
               onChange={(e) => onChangeGoalOwner({ title: e.target.value })}
               placeholder="e.g. VP Ambulatory Ops"
-              className="h-9 w-full rounded-md border border-[#D8CFC4] bg-white px-3 text-sm text-[#1A1A1A] outline-none focus:border-[#EA2C00]"
+              className={attainTextInput}
               data-testid={`input-measure-owner-title-${goal}`}
             />
           </div>
@@ -323,7 +324,7 @@ export default function MeasurementPlanSurface({
               type="date"
               value={promiseByWhen}
               onChange={(e) => onChangePromiseByWhen(e.target.value)}
-              className="h-9 w-full rounded-md border border-[#D8CFC4] bg-white px-3 text-sm text-[#1A1A1A] outline-none focus:border-[#EA2C00]"
+              className={attainDateInput}
               data-testid={`input-measure-promise-date-${goal}`}
             />
           </div>
@@ -395,7 +396,7 @@ export default function MeasurementPlanSurface({
               value={commitmentOwner}
               onChange={(e) => onChangeCommitment({ commitmentOwner: e.target.value })}
               placeholder="Name the owner"
-              className="h-9 w-full rounded-md border border-[#D8CFC4] bg-white px-3 text-sm text-[#1A1A1A] outline-none focus:border-[#EA2C00]"
+              className={attainTextInput}
               data-testid={`input-measure-commitment-owner-${goal}`}
             />
           </div>
@@ -405,7 +406,7 @@ export default function MeasurementPlanSurface({
               type="date"
               value={commitmentByWhen}
               onChange={(e) => onChangeCommitment({ commitmentByWhen: e.target.value })}
-              className="h-9 w-full rounded-md border border-[#D8CFC4] bg-white px-3 text-sm text-[#1A1A1A] outline-none focus:border-[#EA2C00]"
+              className={attainDateInput}
               data-testid={`input-measure-commitment-date-${goal}`}
             />
           </div>
@@ -572,31 +573,31 @@ function MetricOptionCard({
       type="button"
       onClick={onClick}
       aria-pressed={selected}
-      className={`group text-left rounded-xl border-2 p-3.5 transition-all duration-200 ${
+      className={`group text-left rounded-[11px] p-3.5 transition-all duration-200 ${
         selected
-          ? "border-[#EA2C00] bg-[#FFF6F3]"
-          : "border-[#E7E0D6] bg-white hover:border-[#C4B8A8] hover:bg-[#FBFAF7]"
+          ? "border-[1.5px] border-[#EA2C00] bg-[#FEF6F3]"
+          : "border border-[#E7E0D6] bg-white hover:border-[#D2C8B9] hover:bg-[#FBFAF7]"
       }`}
       data-testid={`option-measure-metric-${linkId}-${metric.id}`}
       data-selected={selected}
     >
       <div className="flex items-start justify-between gap-2.5">
         <div className="min-w-0">
-          <p className={`text-[13.5px] font-semibold leading-snug ${selected ? "text-[#EA2C00]" : "text-[#1A1A1A]"}`}>
+          <p className={`text-[13.5px] leading-snug ${selected ? "font-semibold text-[#EA2C00]" : "font-medium text-[#1A1A1A]"}`}>
             {metric.label}
           </p>
-          <p className="text-[11.5px] text-[#8C8C8C] leading-relaxed mt-0.5">{metric.helper}</p>
+          <p className="text-[11.5px] text-[#8C8C8C] leading-snug mt-0.5">{metric.helper}</p>
           {metric.fromProof && (
             <p className="text-[10px] font-semibold text-[#8C8C8C] mt-1.5">From what you told us on Align</p>
           )}
         </div>
         <span
-          className={`mt-0.5 flex-shrink-0 w-[18px] h-[18px] rounded-full flex items-center justify-center transition-all ${
-            selected ? "bg-[#EA2C00]" : "border-2 border-[#D8CFC4] group-hover:border-[#B4A896]"
+          className={`mt-px flex-shrink-0 w-4 h-4 rounded-full flex items-center justify-center transition-all ${
+            selected ? "bg-[#EA2C00]" : "border border-transparent group-hover:border-[#D8CFC4]"
           }`}
           aria-hidden
         >
-          {selected && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
+          {selected && <Check className="w-[10px] h-[10px] text-white" strokeWidth={2.75} />}
         </span>
       </div>
     </button>
@@ -649,7 +650,7 @@ function MetricDetail({
             value={target}
             onChange={(e) => onChangeMetricField(metric.id, { target: e.target.value })}
             placeholder={metric.defaultTarget}
-            className="h-9 w-full rounded-md border border-[#D8CFC4] bg-white px-2.5 text-[13px] text-[#1A1A1A] outline-none focus:border-[#EA2C00]"
+            className={attainTextInput}
             data-testid={`input-measure-target-${metric.id}`}
           />
         </div>
@@ -659,7 +660,7 @@ function MetricDetail({
             value={owner}
             onChange={(e) => onChangeMetricField(metric.id, { owner: e.target.value })}
             placeholder={ownerName || "Name the owner"}
-            className="h-9 w-full rounded-md border border-[#D8CFC4] bg-white px-2.5 text-[13px] text-[#1A1A1A] outline-none focus:border-[#EA2C00]"
+            className={attainTextInput}
             data-testid={`input-measure-owner-${metric.id}`}
           />
         </div>
@@ -669,7 +670,7 @@ function MetricDetail({
             type="date"
             value={byWhen}
             onChange={(e) => onChangeMetricField(metric.id, { byWhen: e.target.value })}
-            className="h-9 w-full rounded-md border border-[#D8CFC4] bg-white px-2.5 text-[13px] text-[#1A1A1A] outline-none focus:border-[#EA2C00]"
+            className={attainDateInput}
             data-testid={`input-measure-bywhen-${metric.id}`}
           />
         </div>

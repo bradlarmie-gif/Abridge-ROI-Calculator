@@ -1,4 +1,5 @@
 import type { AttainSetting } from "@/lib/attain/attainTypes";
+import { attainTextInput } from "../attainInput";
 
 /**
  * The optional partner-disclosed risk card, shared by the single-goal and
@@ -48,7 +49,7 @@ export function PlanningRiskCard({
         value={partnerRisk}
         onChange={(e) => onChangePartnerRisk(e.target.value)}
         placeholder={placeholder}
-        className="h-10 w-full rounded-md border border-[#D8CFC4] bg-white px-3 text-sm text-[#1A1A1A] outline-none focus:border-[#EA2C00]"
+        className={attainTextInput}
         data-testid="input-planning-partner-risk"
       />
       {partnerRisk.trim() && (

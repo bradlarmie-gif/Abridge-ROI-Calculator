@@ -128,28 +128,28 @@ function OptionCard({
       type="button"
       onClick={onClick}
       aria-pressed={selected}
-      className={`group h-full text-left rounded-2xl border-2 p-5 transition-all duration-200 ${
+      className={`group h-full text-left rounded-[11px] p-4 transition-all duration-200 ${
         selected
-          ? "border-[#EA2C00] bg-[#FFF6F3] shadow-[0_1px_0_rgba(234,44,0,0.08)]"
-          : "border-[#E7E0D6] bg-white hover:border-[#C4B8A8] hover:bg-[#FBFAF7]"
+          ? "border-[1.5px] border-[#EA2C00] bg-[#FEF6F3]"
+          : "border border-[#E7E0D6] bg-white hover:border-[#D2C8B9] hover:bg-[#FBFAF7]"
       }`}
       data-testid={`align-option-${questionId}-${option.id}`}
       data-selected={selected}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className={`text-[15.5px] font-semibold leading-snug ${selected ? "text-[#EA2C00]" : "text-[#1A1A1A]"}`}>
+          <p className={`text-[15px] leading-snug ${selected ? "font-semibold text-[#EA2C00]" : "font-medium text-[#1A1A1A]"}`}>
             {option.label}
           </p>
-          <p className="text-[13px] text-[#8C8C8C] leading-relaxed mt-1">{helper}</p>
+          <p className="text-[13px] text-[#8C8C8C] leading-snug mt-1">{helper}</p>
         </div>
         <span
-          className={`mt-0.5 flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center transition-all ${
-            selected ? "bg-[#EA2C00]" : "border-2 border-[#D8CFC4] group-hover:border-[#B4A896]"
+          className={`mt-px flex-shrink-0 w-[18px] h-[18px] rounded-full flex items-center justify-center transition-all ${
+            selected ? "bg-[#EA2C00]" : "border border-transparent group-hover:border-[#D8CFC4]"
           }`}
           aria-hidden
         >
-          {selected && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
+          {selected && <Check className="w-[11px] h-[11px] text-white" strokeWidth={2.75} />}
         </span>
       </div>
     </button>
@@ -192,7 +192,7 @@ function Sharpener({
             max={sharpener.max}
             decimal={sharpener.decimal ?? false}
             placeholder={sharpener.placeholder}
-            className={`h-11 w-full rounded-md border border-[#E5E5E5] bg-white text-sm ${
+            className={`attain-input h-11 w-full text-sm ${
               sharpener.prefix ? "pl-7" : "px-3"
             } ${sharpener.unit ? "pr-14" : "pr-3"}`}
             data-testid={`align-sharpener-input-${questionId}-${option.id}`}
