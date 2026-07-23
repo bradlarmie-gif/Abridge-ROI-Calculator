@@ -41,6 +41,7 @@ import PricingComparisonFlow from "@/pages/forecast/PricingComparisonFlow";
 import AppRationalizationFlow from "@/pages/forecast/AppRationalizationFlow";
 import { ExploreFlow, type ExploreState, type ExploreCareSetting, type ExplorePhase } from "@/pages/explore";
 import AttainFlow from "@/pages/attain/AttainFlow";
+import AlignStylePreview from "@/pages/attain/AlignStylePreview";
 import ExploreIntakeForm from "@/pages/intake/ExploreIntakeForm";
 import MeasureDataRequest from "@/pages/intake/MeasureDataRequest";
 import ExploreIntakeReceipt from "@/pages/intake/ExploreIntakeReceipt";
@@ -194,7 +195,14 @@ const INITIAL_DEEP_LINK = getInitialDeepLink();
 
 export default function App() {
   usePreventNumberInputScroll();
-  
+
+  // THROWAWAY: Align option-style comparison page, reachable at ?alignpreview=1.
+  // Rendered before anything else so it never needs auth/DB. Delete after the
+  // owner picks a style (see AlignStylePreview.tsx).
+  if (typeof window !== "undefined" && new URLSearchParams(window.location.search).has("alignpreview")) {
+    return <AlignStylePreview />;
+  }
+
   // State for deep link settings
   const [exploreInitialSettings, setExploreInitialSettings] = useState<{
     careSetting?: ExploreCareSetting;
