@@ -32,9 +32,11 @@
 
 import { computeAccessChain, type AccessChainResult } from "./attainAccess";
 import { computeWorkforceChain } from "./attainWorkforce";
+import { computeCapacityChain, NURSING_CAPACITY_NO_DOUBLE_COUNT } from "./attainCapacity";
+import { capacityAlignToLeverValues } from "./capacityAlign";
 import type { AttainBaseline, LeverValues } from "./attainLevers";
 import type { AttainSetting } from "./attainTypes";
-import { deriveAccessLadder, deriveRetentionLadder, retentionChartingTerm } from "@/pages/attain/steps/accessLadder";
+import { deriveAccessLadder, deriveRetentionLadder, deriveNursingCapacityLadder, retentionChartingTerm } from "@/pages/attain/steps/accessLadder";
 import { firstSelected, selectedOptionIds, sharpenerNumber } from "./alignFramework";
 import {
   deriveRevenueLadder,
@@ -90,6 +92,18 @@ export const RETENTION_MEASURE_BENCH = {
   burnoutTargetPct: 35,
   intentToStayPct: 70, // share saying they are likely to stay a year out
   intentToStayTargetPct: 80,
+} as const;
+
+// ── CAPACITY (nursing overtime) labeled benchmarks, used ONLY when the partner
+// has no measured figure. Surfaced with a "Benchmark" tag so they are never
+// mistaken for the partner's own numbers. Deliberately typical, defensible
+// starting points a partner replaces with their own timed sample. ────────────
+export const CAPACITY_MEASURE_BENCH = {
+  minutesSavedPerNote: 2, // min/note the freed-time story assumes when unset
+  postShiftChartingMinutesPerShift: 45,
+  postShiftChartingTargetMinutesPerShift: 20,
+  onTimeShiftCompletionPct: 60, // share of shifts closing on time today
+  onTimeShiftCompletionTargetPct: 85,
 } as const;
 
 export type MeasurementBaselineTag = "data" | "inherited" | "benchmark";
@@ -1609,5 +1623,263 @@ export function deriveQualityMeasurementPlan(
     },
     monthlyCheckTeach:
       "Walk the chain in order. The freed time and the earlier signal move first, then the changes at the bedside, then the compliance and the near-miss catches; the event rate and the count of events prevented move last, and on a lag. Lead your review with the counts and the experience scores, never the dollar. Attainment is not a number you assert. It is whether each metric moved toward its target on the schedule you set.",
+  };
+}
+
+// ── CAPACITY (nursing overtime) measurement plan ─────────────────────────────
+//
+// Capacity for nurses is OVERTIME reduction, a SINGLE-GATED ladder like access
+// and workforce: the rungs multiply, so no rung is independently "worth $X" and
+// the whole realized dollar rides on one honest gate. The surface and the
+// discipline are identical to every other plan: every baseline is the partner's
+// own figure or a labeled benchmark, every owner and date starts BLANK, targets
+// default to the derived figure so the gap shows, and the whole thing is
+// DYNAMIC to the capacity Align choices.
+//
+// The chain is the order overtime actually comes down in:
+//   1. the post-shift charting falls   (the load that turns into overtime comes off)
+//   2. nurses finish on time           (the make-or-break: freed time becomes leaving on time)
+//   3. overtime hours fall             (the outcome the prize is priced on)
+//
+// DYNAMIC to Align:
+//   - the honest gate (Q3) closes link 2 when the overtime is short staffing or
+//     census, because freeing documentation time cannot add nurses or flatten
+//     census, so the shift never closes on time from this and the honest number
+//     stays at zero (the same zero the Align number already reflects);
+//   - the "where it shows up" answer (Q4) pre-selects and badges the post-shift
+//     charting metric on link 1;
+//   - the proof (Q5) pre-selects the matching signals on links 2 and 3 (on-time
+//     completion, overtime per nurse, the overtime dollars), and Love Stories
+//     adds the qualitative proof on link 3;
+//   - the scope + Starting-Point numbers (nurses, OT hrs/wk, OT rate) set the
+//     baselines and the derived targets straight off the shared capacity ladder.
+//
+// COMMITMENT (make-or-break): the freed time becomes leaving on time, not more
+// tasks. It also states plainly there is NO double count with retention: the
+// overtime avoided is wages you stop paying now, retention is the replacement
+// cost of a nurse who would have quit, different dollars off the same root.
+
+/** The capacity Align proof option ids -> the measurement metric each maps onto,
+ * so the proof a partner already named on Align pre-selects the matching metric. */
+const CAPACITY_PROOF_TO_METRIC: Record<string, string> = {
+  othours: "ot-hours-per-nurse-week",
+  ontime: "on-time-shift-completion",
+  budget: "ot-dollars-saved",
+};
+
+/**
+ * Derives the CAPACITY (nursing overtime) measurement plan from the Align state.
+ *
+ * Re-merges the Align choices onto the engine levers exactly as
+ * `capacityAlignToLeverValues` does (idempotent, so it is correct whether the
+ * caller passes the merged values the app persists or the raw choices), then
+ * reads the SAME `computeCapacityChain` / `deriveNursingCapacityLadder` every
+ * other capacity surface reads, which reconciles to Explore's own
+ * `nursingOvertime` driver. `opts.realizedOtHoursAvoided` and `opts.prize` are
+ * passed in so the caller supplies the same realization-applied figures off the
+ * combined engine result, keeping link-3's targets and the promise prize
+ * reconciled with Align exactly, as `deriveNursingCapacityLadder` takes them.
+ */
+export function deriveCapacityMeasurementPlan(
+  baseline: AttainBaseline,
+  values: LeverValues,
+  opts: { realizedOtHoursAvoided: number; prize: number },
+): MeasurementPlanModel {
+  const merged: LeverValues = {
+    ...values,
+    ...capacityAlignToLeverValues(values, {
+      baseline,
+      setting: "nursing",
+      realizationPct: 100,
+      crossGoalShareMultiplier: 1,
+    }),
+  };
+  const chain = computeCapacityChain(baseline, merged);
+  const ladder = deriveNursingCapacityLadder(chain, {
+    realizedOtHoursAvoided: opts.realizedOtHoursAvoided,
+    prize: opts.prize,
+  });
+
+  const who = firstSelected(values, "capacityAlignWho");
+  const gate = firstSelected(values, "capacityAlignGate");
+  const where = firstSelected(values, "capacityAlignWhere");
+  const outcome = firstSelected(values, "capacityAlignOutcome");
+  const proof = selectedOptionIds(values, "capacityAlignProof");
+
+  const ready = Boolean(who) && Boolean(gate);
+  const emptyHint = !who
+    ? "Pick who this is for on the Align step, then the measurement chain builds itself from what you aligned on."
+    : !gate
+      ? "Say why the overtime is there on the Align step, so the chain measures only what Abridge can honestly move."
+      : "Set your Align choices and the chain builds itself here.";
+
+  const proofHas = (metricId: string) => proof.some((p) => CAPACITY_PROOF_TO_METRIC[p] === metricId);
+
+  // The honest gate: only documentation lets freed charting time become nurses
+  // finishing on time. Short staffing or census surges cannot be solved by
+  // freeing the record, so the make-or-break link (link 2) closes and the honest
+  // number stays at zero, exactly the zero the Align number already reflects.
+  const finishBlocked = gate === "staffing" || gate === "census";
+  const gateWord = gate === "staffing" ? "short staffing" : "census surges";
+  const gateVerb = gate === "staffing" ? "add nurses" : "flatten census";
+
+  // ── Link 1 — the post-shift charting falls ────────────────────────────────
+  // Baseline is "0 today" for minutes saved (nothing saved before Abridge); the
+  // post-shift charting minutes is a labeled benchmark until the partner drops
+  // in their own timed figure. The "where it shows up" answer pre-selects the
+  // post-shift metric, the way the retention burden pre-selects after-hours.
+  const whereChosen = Boolean(where);
+  const chartingLink: MeasurementLink = {
+    id: "charting",
+    n: 1,
+    title: "The post-shift charting falls",
+    teach: "The first thing to prove: the note comes off the end of the shift. Post-shift charting is the load that turns into overtime, and everything downstream depends on it actually coming down.",
+    blocked: false,
+    metrics: [
+      {
+        id: "minutes-saved-per-note",
+        label: "Minutes saved per note",
+        unit: "min / note",
+        helper: "Charting time that comes off each note, measured against a timed sample before go-live.",
+        baseline: "0 today",
+        baselineTag: "data",
+        defaultTarget: `${fmtInt(CAPACITY_MEASURE_BENCH.minutesSavedPerNote)} min`,
+        fromProof: false,
+      },
+      {
+        id: "post-shift-charting-minutes",
+        label: "Post-shift charting minutes per shift",
+        unit: "min / shift",
+        helper: "The charting that happens after the shift ends, the work that pushes into overtime. Benchmark until you drop in your own timed figure.",
+        baseline: `${CAPACITY_MEASURE_BENCH.postShiftChartingMinutesPerShift} min / shift`,
+        baselineTag: "benchmark",
+        defaultTarget: `under ${CAPACITY_MEASURE_BENCH.postShiftChartingTargetMinutesPerShift} min / shift`,
+        fromProof: whereChosen,
+      },
+    ],
+    defaultChosen: whereChosen ? ["post-shift-charting-minutes"] : ["minutes-saved-per-note"],
+  };
+
+  // ── Link 2 — nurses finish on time (THE make-or-break, gated) ─────────────
+  const onTimeFromProof = proofHas("on-time-shift-completion");
+  const finishLink: MeasurementLink = {
+    id: "finish",
+    n: 2,
+    title: "Nurses finish on time",
+    teach: "Freed charting time only cuts overtime if the shift actually closes on time instead of running late. This is the link the plan lives or dies on.",
+    blocked: finishBlocked,
+    blockedReason: finishBlocked
+      ? `You told us on Align the overtime is ${gateWord}. Freeing documentation time cannot ${gateVerb}, so the shift does not close on time from this and no overtime comes out. The honest number stays at zero until that limit changes.`
+      : undefined,
+    metrics: finishBlocked
+      ? []
+      : [
+          {
+            id: "on-time-shift-completion",
+            label: "On-time shift completion",
+            unit: "%",
+            helper: "The share of shifts that close on time instead of running into overtime. Benchmark until you drop in your own.",
+            baseline: `${CAPACITY_MEASURE_BENCH.onTimeShiftCompletionPct}%`,
+            baselineTag: "benchmark",
+            defaultTarget: `over ${CAPACITY_MEASURE_BENCH.onTimeShiftCompletionTargetPct}%`,
+            fromProof: onTimeFromProof,
+          },
+          {
+            id: "doc-attributable-share",
+            label: "Documentation-attributable share of overtime",
+            unit: "%",
+            helper: "The share of your overtime that post-shift charting drives, the ceiling on what this plan can move, holding as you measure it.",
+            baseline: chain.docAttributableSharePct > 0 ? `${fmtPct(chain.docAttributableSharePct)}%` : "set where it shows up on Align",
+            baselineTag: "benchmark",
+            defaultTarget: "holds against baseline",
+            fromProof: false,
+          },
+        ],
+    defaultChosen: finishBlocked ? [] : ["on-time-shift-completion"],
+  };
+
+  // ── Link 3 — overtime hours fall (the outcome the prize is priced on) ─────
+  // The OT hours per nurse and rate are FACTS (labeled benchmarks, they are not
+  // re-asked on capacity Align). The hours avoided and dollars are "0 today"
+  // data baselines with the derived figures as targets, so the gap is real. When
+  // the gate closed link 2, these read an honest zero, never a stray number.
+  const avoidedSet = ladder.realizedOtHoursAvoided > 0;
+  const prizeSet = ladder.prize > 0;
+  const honestZero = finishBlocked;
+  const otHoursPerNurseFromProof = proofHas("ot-hours-per-nurse-week");
+  const dollarsFromProof = proofHas("ot-dollars-saved");
+  const overtimeLink: MeasurementLink = {
+    id: "overtime",
+    n: 3,
+    title: "Overtime hours fall",
+    teach: "The payoff: fewer overtime hours on the schedule, and the loaded overtime dollars that come out of the nursing budget. This is the number the promise is priced on.",
+    blocked: false,
+    metrics: [
+      {
+        id: "ot-hours-per-nurse-week",
+        label: "Overtime hours per nurse per week",
+        unit: "hrs / nurse / wk",
+        helper: "The overtime each nurse works in a week, trending down against this baseline.",
+        baseline: `${fmtHours1(ladder.otHoursPerNurseWeek)} hrs / wk`,
+        baselineTag: "benchmark",
+        defaultTarget: "lower than today",
+        fromProof: otHoursPerNurseFromProof,
+      },
+      {
+        id: "ot-hours-avoided",
+        label: "Overtime hours avoided",
+        unit: "hrs / yr",
+        helper: "Total overtime hours a year the freed charting time takes off the schedule, the honest count behind the dollar.",
+        baseline: "0 today",
+        baselineTag: "data",
+        defaultTarget: honestZero ? "an honest zero here" : avoidedSet ? `${fmtInt(ladder.realizedOtHoursAvoided)} / yr` : "finish the Align chain",
+        fromProof: false,
+      },
+      {
+        id: "ot-dollars-saved",
+        label: "Overtime dollars saved",
+        unit: "$ / yr",
+        helper: "The overtime hours avoided priced at your loaded overtime rate. This is the CFO number.",
+        baseline: "$0 today",
+        baselineTag: "data",
+        defaultTarget: honestZero ? "an honest zero here" : prizeSet ? `${fmtMoneyCompact(ladder.prize)} / yr` : "finish the Align chain",
+        fromProof: dollarsFromProof,
+      },
+    ],
+    defaultChosen: [],
+  };
+  const overtimeProofChosen = overtimeLink.metrics.filter((m) => m.fromProof).map((m) => m.id);
+  overtimeLink.defaultChosen = overtimeProofChosen.length > 0 ? overtimeProofChosen : ["ot-hours-avoided"];
+  // Love Stories is a qualitative proof carried alongside the overtime number
+  // when the partner named it on Align.
+  if (proof.includes("lovestories")) {
+    overtimeLink.metrics.push({
+      id: "love-stories",
+      label: "Love Stories",
+      unit: "collected",
+      helper: "Nurses telling you, in their own words, that the shift got better and they left on time.",
+      baseline: "none collected yet",
+      baselineTag: "data",
+      defaultTarget: "collected each quarter",
+      fromProof: true,
+    });
+    overtimeLink.defaultChosen = [...overtimeLink.defaultChosen, "love-stories"];
+  }
+
+  return {
+    ready,
+    emptyHint,
+    links: [chartingLink, finishLink, overtimeLink],
+    gate,
+    outcome,
+    realizedVisits: ladder.realizedOtHoursAvoided,
+    prize: ladder.prize,
+    commitment: {
+      title: "The one thing this plan lives or dies on",
+      teach: `Freed charting time only cuts overtime if it becomes leaving on time, not more tasks. If the minutes quietly refill with other work, the charting comes off but the shift still runs late and no overtime comes out. Someone has to own protecting that freed time as time back, so nurses actually leave on time. ${NURSING_CAPACITY_NO_DOUBLE_COUNT}`,
+      ownerLabel: "Who owns protecting the freed time as leaving on time",
+    },
+    monthlyCheckTeach:
+      "Walk the chain in order. The post-shift charting falls first, the overtime dollars move last, so early links should turn before the later ones. Attainment is not a number you assert. It is whether each metric moved toward its target on the schedule you set.",
   };
 }
