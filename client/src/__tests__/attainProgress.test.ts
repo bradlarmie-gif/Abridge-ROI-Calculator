@@ -155,7 +155,8 @@ describe("parseSignalBaseline", () => {
   it("reads the leading number out of a free-text capture", () => {
     expect(parseSignalBaseline("18 days")).toBe(18);
     expect(parseSignalBaseline("62%")).toBe(62);
-    expect(parseSignalBaseline("1,900")).toBe(1); // no thousands-separator parsing - digits up to the comma
+    expect(parseSignalBaseline("1,900")).toBe(1900); // digit-grouping commas are stripped, so a grouped baseline reads on its real scale
+    expect(parseSignalBaseline("4,900 / yr")).toBe(4900);
   });
 
   it("reads a bare number with no unit", () => {

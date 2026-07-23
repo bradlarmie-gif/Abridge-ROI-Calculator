@@ -67,7 +67,10 @@ export function crossGoalShareMultiplierFor(
  * can track those metrics honestly without a fabricated numeric fraction. */
 export function parseLeadingNumber(raw: string | undefined): number | null {
   if (!raw) return null;
-  const match = raw.match(/-?\d+(\.\d+)?/);
+  // Strip digit-grouping commas first so a real target like "4,900 / yr" reads
+  // as 4900, not 4 (a truncated target would make any small logged value read
+  // as fully landed). The K/M scale suffix is intentionally left to the reader.
+  const match = raw.replace(/,/g, "").match(/-?\d+(\.\d+)?/);
   if (!match) return null;
   const n = parseFloat(match[0]);
   return Number.isFinite(n) ? n : null;

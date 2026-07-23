@@ -88,7 +88,10 @@ export function decisionStatus(fraction: number): AttainmentStatus {
  * baseline follows. */
 export function parseSignalBaseline(raw: string | undefined): number {
   if (!raw) return 0;
-  const match = raw.match(/-?\d+(\.\d+)?/);
+  // Strip digit-grouping commas first so "1,200 / yr" reads as 1200, not 1,
+  // matching parseLeadingNumber's target parsing so a baseline and target on the
+  // same scale can never be read on two different scales.
+  const match = raw.replace(/,/g, "").match(/-?\d+(\.\d+)?/);
   if (!match) return 0;
   const n = parseFloat(match[0]);
   return Number.isFinite(n) ? n : 0;

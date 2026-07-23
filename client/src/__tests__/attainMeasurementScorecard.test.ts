@@ -13,6 +13,7 @@ import {
 } from "@/lib/attain/attainLevers";
 import { accessAlignConfig } from "@/lib/attain/accessAlign";
 import { workforceAlignConfig } from "@/lib/attain/workforceAlign";
+import { edAccessAlignConfig } from "@/lib/attain/edAccessAlign";
 import type { AttainPlanning } from "@/lib/attain/attainPlanning";
 import {
   computeProgressAttainmentPct,
@@ -59,6 +60,10 @@ describe("parseLeadingNumber — numeric vs qualitative targets", () => {
     expect(parseLeadingNumber("over 80%")).toBe(80);
     expect(parseLeadingNumber("$760K / yr")).toBe(760);
     expect(parseLeadingNumber("2 min")).toBe(2);
+    // Digit-grouping commas are stripped, so a grouped target reads on its real
+    // scale (was truncated to the first group, e.g. "4,900 / yr" -> 4).
+    expect(parseLeadingNumber("4,900 / yr")).toBe(4900);
+    expect(parseLeadingNumber("3,326 / yr")).toBe(3326);
   });
   it("returns null for a directional/qualitative target that carries no number", () => {
     expect(parseLeadingNumber("cleared")).toBeNull();
@@ -218,5 +223,41 @@ describe("closed loop — multi-goal groups per goal, read from measurementByGoa
     // A single-goal plan (or any other pairing) is never split.
     expect(crossGoalShareMultiplierFor(["access"], "outpatient", 70, "access")).toBe(1);
     expect(crossGoalShareMultiplierFor(["revenue", "quality"], "outpatient", 70, "revenue")).toBe(1);
+  });
+});
+
+describe("ED measured attainment is 0% before any dated update is logged (QA I1)", () => {
+  const edSetting: AttainSetting = "ed";
+  const edBaseline = defaultBaseline(edSetting);
+  function edMerged(config: AlignConfig): LeverValues {
+    const sel: LeverValues = {};
+    for (const q of config.questions) {
+      if (q.stacksOnQuestionId) continue;
+      sel[q.storeKey] = q.mode === "single" ? [q.options[0].id] : q.options.map((o) => o.id);
+    }
+    const ctx: AlignContext = { baseline: edBaseline, setting: edSetting, realizationPct: 100, crossGoalShareMultiplier: 1 };
+    return { ...sel, ...config.toLeverValues(sel, ctx) };
+  }
+
+  it("every numeric ED-access metric, seeded once at its LIVE baseline, contributes 0 - no phantom attainment at t0", () => {
+    const vals = edMerged(edAccessAlignConfig);
+    const combined = computeMultiGoalContributions(["access"], edSetting, edBaseline, { access: vals }, 50);
+    const rows = trackedMetricsForGoal({
+      goal: "access", setting: edSetting, baseline: edBaseline, values: vals, combined, multiplier: 1, planning: {}, isMulti: false,
+    });
+    const numeric = rows.filter((r) => r.targetNum !== null);
+    expect(numeric.length).toBeGreaterThan(0);
+    // Exactly what the hub seeds before a real update is logged: one entry per
+    // metric, dated today, carrying the metric's LIVE baseline. Measured
+    // attainment must read 0 - a stale seed drifting from the live baseline was
+    // the QA phantom (ED read ~30% at t0).
+    const inputs = numeric.map((r) => ({
+      key: r.key,
+      baseline: r.baselineNum,
+      current: currentValueFromEntries([{ date: todayISODate(), value: r.baselineNum }], r.baselineNum),
+      target: r.targetNum as number,
+      worth: 1,
+    }));
+    expect(computeProgressAttainmentPct(inputs)).toBe(0);
   });
 });
