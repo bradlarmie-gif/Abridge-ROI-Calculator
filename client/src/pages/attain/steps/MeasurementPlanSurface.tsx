@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
-import { ArrowDown, Check, Lock } from "lucide-react";
+import { ArrowDown, Lock } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { EditorialOptionList, EditorialOptionRow } from "./EditorialOption";
 import { computeAccessChain, DEFAULT_MINUTES_SAVED_PER_NOTE } from "@/lib/attain/attainAccess";
 import { computeWorkforceChain } from "@/lib/attain/attainWorkforce";
 import { deriveAccessLadder } from "./accessLadder";
@@ -524,17 +525,25 @@ function LinkCard({
             </span>
             <span className="text-[10px] text-[#B4B4B4]">pick any that apply</span>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <EditorialOptionList>
             {link.metrics.map((metric) => (
-              <MetricOptionCard
+              <EditorialOptionRow
                 key={metric.id}
-                metric={metric}
-                linkId={link.id}
+                title={metric.label}
+                description={metric.helper}
                 selected={chosen.includes(metric.id)}
                 onClick={() => onToggle(metric.id)}
+                note={
+                  metric.fromProof ? (
+                    <p className="text-[10px] font-semibold text-[#8C8C8C] mt-1.5">
+                      From what you told us on Align
+                    </p>
+                  ) : undefined
+                }
+                testId={`option-measure-metric-${link.id}-${metric.id}`}
               />
             ))}
-          </div>
+          </EditorialOptionList>
 
           {/* The expanded editable row for every chosen metric. */}
           {link.metrics
@@ -552,55 +561,6 @@ function LinkCard({
         </>
       )}
     </motion.div>
-  );
-}
-
-/** A selectable metric card, ChooseQuestion-style: coral when picked, its
- * baseline and a "from what you told us" note when it came from Align proof. */
-function MetricOptionCard({
-  metric,
-  linkId,
-  selected,
-  onClick,
-}: {
-  metric: MeasurementMetricOption;
-  linkId: string;
-  selected: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={selected}
-      className={`group text-left rounded-[11px] p-3.5 transition-all duration-200 ${
-        selected
-          ? "border-[1.5px] border-[#EA2C00] bg-[#FEF6F3]"
-          : "border border-[#E7E0D6] bg-white hover:border-[#D2C8B9] hover:bg-[#FBFAF7]"
-      }`}
-      data-testid={`option-measure-metric-${linkId}-${metric.id}`}
-      data-selected={selected}
-    >
-      <div className="flex items-start justify-between gap-2.5">
-        <div className="min-w-0">
-          <p className={`text-[13.5px] leading-snug ${selected ? "font-semibold text-[#EA2C00]" : "font-medium text-[#1A1A1A]"}`}>
-            {metric.label}
-          </p>
-          <p className="text-[11.5px] text-[#8C8C8C] leading-snug mt-0.5">{metric.helper}</p>
-          {metric.fromProof && (
-            <p className="text-[10px] font-semibold text-[#8C8C8C] mt-1.5">From what you told us on Align</p>
-          )}
-        </div>
-        <span
-          className={`mt-px flex-shrink-0 w-4 h-4 rounded-full flex items-center justify-center transition-all ${
-            selected ? "bg-[#EA2C00]" : "border border-transparent group-hover:border-[#D8CFC4]"
-          }`}
-          aria-hidden
-        >
-          {selected && <Check className="w-[10px] h-[10px] text-white" strokeWidth={2.75} />}
-        </span>
-      </div>
-    </button>
   );
 }
 
