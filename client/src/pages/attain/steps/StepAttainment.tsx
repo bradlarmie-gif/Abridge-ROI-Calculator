@@ -760,7 +760,19 @@ export default function StepAttainment({
   });
 
   const attachProgress = (m: TrackedMetric): MetricRowData => {
-    const entries = progressEntries[m.key] ?? [{ date: todayISODate(), value: m.baselineNum }];
+    // A metric's log holds exactly one entry until a real update is logged: the
+    // seed baseline, dated the day tracking started. That seed is written once
+    // and never re-touched, so if the metric's LIVE baseline later shifts (e.g.
+    // an ED LWBS rate that starts at a benchmark and is then typed on Align),
+    // the stored seed value goes stale and would read as movement no one logged.
+    // While only that seed exists (length <= 1), pin the baseline point to the
+    // metric's live baseline, so measured attainment is honestly 0% until a real
+    // dated update is appended. A logged update (length > 1) is used verbatim.
+    const stored = progressEntries[m.key];
+    const hasRealLog = (stored?.length ?? 0) > 1;
+    const entries: ProgressEntry[] = hasRealLog
+      ? (stored as ProgressEntry[])
+      : [{ date: stored?.[0]?.date ?? todayISODate(), value: m.baselineNum }];
     return { ...m, entries, current: currentValueFromEntries(entries, m.baselineNum) };
   };
 
@@ -854,12 +866,18 @@ export default function StepAttainment({
   // exactly as before, since that math is unchanged by this fix.
   const hasQualityGoal = goals.includes("quality");
   const isMultiGoalWithQuality = hasQualityGoal && goalDefs.length > 1;
+  // A quality-only plan: the headline leads with the COUNT (events prevented),
+  // never the soft cost-of-harm dollar. Same safety-first posture Align, Plan,
+  // and the multi-goal hero already hold — applied here on the Attainment hub.
+  const isQualityOnly = hasQualityGoal && goalDefs.length === 1;
   const qualityMargin = combined.byGoal.quality?.totalMargin ?? 0;
   const hardContributionMargin = target.margin - qualityMargin;
   const qualityValuesForPayoff = valuesByGoal.quality ?? defaultLeverValues("quality", setting);
-  const qualityPayoffModel = isMultiGoalWithQuality
+  const qualityPayoffModel = hasQualityGoal
     ? deriveMeasurementModelFor("quality", setting, baseline, qualityValuesForPayoff, combined, 1)
     : null;
+  const qualityHeroCount = qualityPayoffModel?.safetyHeadline?.heroValue ?? "count pending";
+  const qualitySoftDollarNote = qualityPayoffModel?.safetyHeadline?.softDollarNote ?? "This plan leads with safety, not a dollar.";
 
   return (
     <div>
@@ -1089,10 +1107,25 @@ export default function StepAttainment({
                   className="border border-[#1A1A1A] bg-[#1A1A1A] rounded-lg p-4"
                   data-testid="chip-attain-plan-combined-preview"
                 >
-                  <p className="text-[9.5px] font-semibold uppercase tracking-[1.4px] text-white/55 mb-1.5">Combined margin</p>
-                  <p className="font-abridge text-3xl text-[#EA2C00]" data-testid="text-attain-glance-value">
-                    {formatCompact(target.margin)}
-                  </p>
+                  {isQualityOnly ? (
+                    <>
+                      <p className="text-[9.5px] font-semibold uppercase tracking-[1.4px] text-white/55 mb-1.5">Harm events prevented</p>
+                      <p className="font-abridge text-2xl text-[#EA2C00]" data-testid="text-attain-glance-value">
+                        {qualityHeroCount}
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-[9.5px] font-semibold uppercase tracking-[1.4px] text-white/55 mb-1.5">Combined margin</p>
+                      <p className="font-abridge text-3xl text-[#EA2C00]" data-testid="text-attain-glance-value">
+                        {isMultiGoalWithQuality
+                          ? hardContributionMargin > 0
+                            ? formatCompact(hardContributionMargin)
+                            : "value pending"
+                          : formatCompact(target.margin)}
+                      </p>
+                    </>
+                  )}
                 </div>
                 <div className="border border-[#E7E0D6] bg-[#F8F5F1] rounded-lg p-4">
                   <p className="text-[9.5px] font-semibold uppercase tracking-[1.4px] text-[#8C8C8C] mb-1.5">Projected, on-pace</p>
@@ -1127,6 +1160,11 @@ export default function StepAttainment({
                     </span>
                   )}
                 </div>
+              )}
+              {hasQualityGoal && (
+                <p className="text-[11px] text-[#8C8C8C] leading-relaxed max-w-[560px] mt-3" data-testid="text-attain-glance-quality-soft">
+                  <b className="text-[#3A3A3A]">Safety value, not contribution margin.</b> {qualitySoftDollarNote}
+                </p>
               )}
             </div>
 
@@ -1301,31 +1339,53 @@ export default function StepAttainment({
                 never folded into the number labeled "contribution margin".
                 It gets its own count-first line below instead. */}
             <div className="bg-[#1A1A1A] rounded-lg p-8 md:p-10 mb-4" data-testid="card-attain-plan-combined-hero">
-              <p className="text-[10px] font-semibold uppercase tracking-[1.8px] text-white/55 mb-2">Combined contribution margin</p>
-              <p className="font-abridge text-5xl md:text-6xl text-[#EA2C00]" data-testid="text-attain-plan-combined-value">
-                {isMultiGoalWithQuality
-                  ? hardContributionMargin > 0
-                    ? formatCompact(hardContributionMargin)
-                    : "value pending"
-                  : formatCompact(target.margin)}
-              </p>
-              <p className="text-[13px] text-white/50 mt-2">
-                Across {goalDefs.length} {goalDefs.length === 1 ? "priority" : "priorities"} · {metricRows.length} metric{metricRows.length === 1 ? "" : "s"} tracked
-                {isMultiGoalWithQuality ? ", nursing quality tracked separately below" : ""}
-              </p>
+              {isQualityOnly ? (
+                <>
+                  <p className="text-[10px] font-semibold uppercase tracking-[1.8px] text-white/55 mb-2">Harm events prevented per year</p>
+                  <p className="font-abridge text-5xl md:text-6xl text-[#EA2C00]" data-testid="text-attain-plan-combined-value">
+                    {qualityHeroCount}
+                  </p>
+                  <p className="text-[13px] text-white/50 mt-2">
+                    Across 1 priority · {metricRows.length} metric{metricRows.length === 1 ? "" : "s"} tracked · lead with the count, not the dollar
+                  </p>
+                  <div className="mt-4 pt-4 border-t border-white/10" data-testid="text-attain-plan-quality-soft">
+                    <p className="text-[10px] font-semibold uppercase tracking-[1.5px] text-white/40 mb-1.5">
+                      Safety value, not contribution margin
+                    </p>
+                    <p className="text-[11.5px] text-white/55 leading-relaxed max-w-[520px]" data-testid="text-attain-plan-quality-soft-dollar">
+                      {qualitySoftDollarNote}
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p className="text-[10px] font-semibold uppercase tracking-[1.8px] text-white/55 mb-2">Combined contribution margin</p>
+                  <p className="font-abridge text-5xl md:text-6xl text-[#EA2C00]" data-testid="text-attain-plan-combined-value">
+                    {isMultiGoalWithQuality
+                      ? hardContributionMargin > 0
+                        ? formatCompact(hardContributionMargin)
+                        : "value pending"
+                      : formatCompact(target.margin)}
+                  </p>
+                  <p className="text-[13px] text-white/50 mt-2">
+                    Across {goalDefs.length} {goalDefs.length === 1 ? "priority" : "priorities"} · {metricRows.length} metric{metricRows.length === 1 ? "" : "s"} tracked
+                    {isMultiGoalWithQuality ? ", nursing quality tracked separately below" : ""}
+                  </p>
 
-              {isMultiGoalWithQuality && qualityPayoffModel && (
-                <div className="mt-4 pt-4 border-t border-white/10" data-testid="text-attain-plan-quality-soft">
-                  <p className="text-[10px] font-semibold uppercase tracking-[1.5px] text-white/40 mb-1.5">
-                    Nursing quality · safety value, not contribution margin
-                  </p>
-                  <p className="text-[15px] font-semibold text-white" data-testid="text-attain-plan-quality-soft-count">
-                    {qualityPayoffModel.safetyHeadline?.heroValue ?? "count pending"}
-                  </p>
-                  <p className="text-[11.5px] text-white/55 mt-1 leading-relaxed max-w-[520px]" data-testid="text-attain-plan-quality-soft-dollar">
-                    {qualityPayoffModel.safetyHeadline?.softDollarNote ?? "This plan leads with safety, not a dollar."}
-                  </p>
-                </div>
+                  {isMultiGoalWithQuality && qualityPayoffModel && (
+                    <div className="mt-4 pt-4 border-t border-white/10" data-testid="text-attain-plan-quality-soft">
+                      <p className="text-[10px] font-semibold uppercase tracking-[1.5px] text-white/40 mb-1.5">
+                        Nursing quality · safety value, not contribution margin
+                      </p>
+                      <p className="text-[15px] font-semibold text-white" data-testid="text-attain-plan-quality-soft-count">
+                        {qualityHeroCount}
+                      </p>
+                      <p className="text-[11.5px] text-white/55 mt-1 leading-relaxed max-w-[520px]" data-testid="text-attain-plan-quality-soft-dollar">
+                        {qualitySoftDollarNote}
+                      </p>
+                    </div>
+                  )}
+                </>
               )}
             </div>
 

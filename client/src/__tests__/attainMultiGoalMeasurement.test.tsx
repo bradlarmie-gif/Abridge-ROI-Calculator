@@ -2,7 +2,9 @@ import { describe, it, expect } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { createElement } from "react";
 import StepMultiMeasurementPlan, { type MeasurementGoal } from "@/pages/attain/steps/StepMultiMeasurementPlan";
+import StepAttainment from "@/pages/attain/steps/StepAttainment";
 import { deriveMeasurementModelFor } from "@/pages/attain/steps/MeasurementPlanSurface";
+import { DEFAULT_ATTAIN_STATE } from "@/lib/attain/attainTypes";
 import {
   computeMultiGoalContributions,
   defaultBaseline,
@@ -289,5 +291,60 @@ describe("multi-goal Plan header — quality's soft dollar is never folded into 
     // chosen event (the bug this test is guarding against).
     expect(model.safetyHeadline?.heroValue).toMatch(/harm events \/ yr/);
     expect(html).toContain(model.safetyHeadline!.heroValue);
+  });
+});
+
+describe("Attainment hub — a quality-only plan leads with the COUNT, soft dollar stays out of any hard total (QA fix)", () => {
+  const setting: AttainSetting = "nursing";
+  const baseline = defaultBaseline(setting);
+  const qualityVals = fullQualityValues(baseline, setting);
+  const goals: MeasurementGoal[] = ["quality"];
+  const valuesByGoal = { quality: qualityVals };
+  const combined = computeMultiGoalContributions([...goals], setting, baseline, valuesByGoal, 100);
+  const qualityMargin = combined.byGoal.quality?.totalMargin ?? 0;
+  const qualityCount = combined.byGoal.quality?.totalCount ?? 0;
+  const model = deriveMeasurementModelFor("quality", setting, baseline, qualityVals, combined, 1);
+
+  it("fixture is real: quality carries a genuine nonzero soft dollar and a real harm-events count", () => {
+    expect(qualityMargin).toBeGreaterThan(0);
+    expect(qualityCount).toBeGreaterThan(0);
+    expect(model.safetyHeadline?.heroValue).toMatch(/harm events \/ yr/);
+  });
+
+  const props = {
+    state: { ...DEFAULT_ATTAIN_STATE, setting, goal: "quality", scope: { unitCount: 180, serviceLines: [] }, totalMonths: 9, monthsElapsed: 3 },
+    setting,
+    goals: [...goals],
+    baseline,
+    planning: {} as AttainPlanning,
+    target: { count: qualityCount, margin: qualityMargin, label: "harm events prevented" },
+    attainment: { pct: 0, onPacePct: 0, marginToDate: 0 },
+    valuesByGoal,
+    combined,
+    commitments: {},
+    goalOwnerByPriority: {},
+    planCadence: DEFAULT_PLAN_CADENCE,
+    freedTimeSplit: 100,
+    realizationByGoal: {},
+    progressEntries: {},
+    onLogProgressUpdate: noop,
+    onMonthsElapsedChange: noop,
+    stepNumber: 5,
+    onSave: async () => null,
+  };
+  const html = renderToStaticMarkup(createElement(StepAttainment as never, props as never));
+
+  it("the at-a-glance headline leads with the harm-events COUNT, labeled as events, never the soft dollar as 'combined margin'", () => {
+    expect(html).toContain('data-testid="text-attain-glance-value"');
+    expect(html).toContain("Harm events prevented");
+    expect(html).toContain(model.safetyHeadline!.heroValue);
+  });
+
+  it("the soft dollar renders in its own clearly-labeled block, and the hard total excludes it entirely", () => {
+    expect(html).toContain('data-testid="text-attain-glance-quality-soft"');
+    expect(html).toContain("Safety value, not contribution margin");
+    // The hard contribution margin for a quality-only plan is target.margin minus
+    // quality's soft dollar == 0: the soft dollar is never folded into a hard total.
+    expect(combined.combinedMargin - qualityMargin).toBeCloseTo(0, 6);
   });
 });
