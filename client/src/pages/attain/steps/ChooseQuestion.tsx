@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { NumberField } from "@/components/NumberField";
 import {
   asStringArray,
+  resolveOptions,
   sharpenerNumber,
   type AlignContext,
   type AlignOption,
@@ -50,6 +51,9 @@ export default function ChooseQuestion({
   const testidBase = instanceKey ? `${question.id}-${instanceKey}` : question.id;
   const selected = asStringArray(values[storeKey]);
   const isSelected = (id: string) => selected.includes(id);
+  // Dynamic when the question defines it (e.g. revenue paths reshaping to the
+  // payer/contract book), else the static options.
+  const options = resolveOptions(question, values, ctx);
 
   return (
     <motion.div
@@ -79,7 +83,7 @@ export default function ChooseQuestion({
           (Q4/Q5): each selected row is marked independently with a coral
           left-bar, coral title, and a coral check on the right. */}
       <EditorialOptionList>
-        {question.options.map((option) => (
+        {options.map((option) => (
           <EditorialOptionRow
             key={option.id}
             title={option.label}
@@ -93,7 +97,7 @@ export default function ChooseQuestion({
 
       {/* Optional number sharpener — reveals only under a chosen option that
           carries one. Blank shows the benchmark note, never a fake number. */}
-      {question.options.map((option) =>
+      {options.map((option) =>
         option.sharpener && isSelected(option.id) ? (
           <Sharpener
             key={`${option.id}-sharpener`}

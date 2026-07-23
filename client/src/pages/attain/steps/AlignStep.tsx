@@ -3,6 +3,7 @@ import { AnimatedValue } from "@/components/explore/AnimatedValue";
 import ChooseQuestion from "./ChooseQuestion";
 import {
   asStringArray,
+  resolveOptions,
   type AlignConfig,
   type AlignContext,
   type AlignQuestion,
@@ -126,10 +127,12 @@ export default function AlignStep({
   const parentId = stackedQuestions[0]?.stacksOnQuestionId;
   const parent = parentId ? config.questions.find((q) => q.id === parentId) : undefined;
   const chosenPathIds = parent ? asStringArray(values[parent.storeKey]) : [];
-  // Render chosen paths in the parent's own option order (stable, premium).
-  const orderedChosenPaths = parent
-    ? parent.options.map((o) => o.id).filter((id) => chosenPathIds.includes(id))
-    : [];
+  // Render chosen paths in the parent's own option order (stable, premium),
+  // resolved through the parent's dynamic options so a path filtered out by an
+  // earlier answer (e.g. a revenue path the payer book does not pay) drops its
+  // whole section, never a stale card for a path that is no longer offered.
+  const parentOptions = parent ? resolveOptions(parent, values, ctx) : [];
+  const orderedChosenPaths = parentOptions.map((o) => o.id).filter((id) => chosenPathIds.includes(id));
 
   return (
     <div data-testid="section-attain-align">

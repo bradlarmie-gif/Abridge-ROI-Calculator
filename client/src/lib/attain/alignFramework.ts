@@ -92,6 +92,23 @@ export interface AlignQuestion {
    * 2). Falls back to the question's own position when unset, so Workforce /
    * Access keep numbering by position exactly as before. */
   dimension?: number;
+  /** DYNAMIC OPTIONS: when set, the rendered (and, for a stacking parent, the
+   * section-driving) option list is this instead of the static `options`, so a
+   * question can reshape to earlier answers. Revenue uses it to show only the
+   * capture paths the partner's payer/contract book actually pays. Configs that
+   * do not set it render `options` exactly as before. */
+  availableOptions?: (values: LeverValues, ctx: AlignContext) => AlignOption[];
+}
+
+/** The option list to render/act on for a question: the dynamic set when the
+ * question defines one, else its static options. One resolver so the renderer
+ * and the stacking parent can never disagree about which options exist. */
+export function resolveOptions(
+  question: AlignQuestion,
+  values: LeverValues,
+  ctx: AlignContext,
+): AlignOption[] {
+  return question.availableOptions ? question.availableOptions(values, ctx) : question.options;
 }
 
 export interface AlignProofFigure {

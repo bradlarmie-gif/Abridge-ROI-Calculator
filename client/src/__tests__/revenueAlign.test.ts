@@ -36,8 +36,10 @@ function ctxFor(baseline: AttainBaseline, setting: AttainSetting, overrides: Par
 // All three outpatient paths, fully aligned with the "note is the leak" gate.
 function opAllThree(overrides: LeverValues = {}): LeverValues {
   return {
+    // A book that pays every path (FFS opens E/M, MA opens HCC) so all three
+    // are allowed; the book's risk id also derives the HCC population.
+    revenueAlignBook: ["ffs", "ma"],
     revenueAlignPaths: ["hcc", "em", "denials"],
-    "revenueAlignWhoHcc__hcc": ["ma"],
     "revenueAlignGateHcc__hcc": ["gap"],
     "revenueAlignWhoEm__em": ["most"],
     "revenueAlignGateEm__em": ["note"],
@@ -59,12 +61,25 @@ function allStrings(config: AlignConfig): string[] {
 }
 
 describe("revenue Align config shape (multi-path selector + per-path stacking)", () => {
-  it("outpatient offers all three paths on the multi-select selector", () => {
+  it("outpatient leads with the payer book, then the three paths reshape to it", () => {
     const cfg = revenueAlignConfigFor("outpatient");
+    const book = cfg.questions.find((q) => q.id === "book")!;
+    expect(book.dimension).toBe(1);
+    expect(book.mode).toBe("multi");
+    expect(book.options.map((o) => o.id)).toEqual(["ffs", "ma", "medicaid", "aca"]);
     const selector = cfg.questions.find((q) => q.id === "outcome")!;
     expect(selector.mode).toBe("multi");
-    expect(selector.dimension).toBe(1);
+    expect(selector.dimension).toBe(2);
     expect(selector.options.map((o) => o.id)).toEqual(["hcc", "em", "denials"]);
+    expect(typeof selector.availableOptions).toBe("function");
+    // FFS book -> E/M + denials, no HCC. A risk book -> HCC surfaces.
+    const ctx = ctxFor(OP, "outpatient");
+    const ffsOnly = selector.availableOptions!({ revenueAlignBook: ["ffs"] }, ctx).map((o) => o.id);
+    expect(ffsOnly).toEqual(["em", "denials"]);
+    const riskOnly = selector.availableOptions!({ revenueAlignBook: ["ma"] }, ctx).map((o) => o.id);
+    expect(riskOnly).toEqual(["hcc", "denials"]);
+    const noBook = selector.availableOptions!({}, ctx);
+    expect(noBook).toEqual([]);
     expect(cfg.dimensionTotal).toBe(5);
   });
 
@@ -85,8 +100,8 @@ describe("revenue Align config shape (multi-path selector + per-path stacking)",
 
   it("every per-path question stacks on the selector and is scoped to its own path", () => {
     const cfg = revenueAlignConfigFor("outpatient");
+    // whoHcc is folded into the book; the framing-only "where" is dropped.
     const scoped = [
-      ["whoHcc", "hcc"],
       ["gateHcc", "hcc"],
       ["whoEm", "em"],
       ["gateEm", "em"],
@@ -98,9 +113,11 @@ describe("revenue Align config shape (multi-path selector + per-path stacking)",
       expect(q.stacksOnQuestionId).toBe("outcome");
       expect(q.appliesToChoices).toEqual([path]);
     }
-    // The shared where/proof questions are not path-scoped.
-    expect(cfg.questions.find((q) => q.id === "where")!.stacksOnQuestionId).toBe("outcome");
-    expect(cfg.questions.find((q) => q.id === "where")!.appliesToChoices).toBeUndefined();
+    // The redundant HCC-populations question and the framing-only "where" are gone.
+    expect(cfg.questions.find((q) => q.id === "whoHcc")).toBeUndefined();
+    expect(cfg.questions.find((q) => q.id === "where")).toBeUndefined();
+    // The book leads and is not path-scoped; proof is not path-scoped.
+    expect(cfg.questions.find((q) => q.id === "book")!.stacksOnQuestionId).toBeUndefined();
     expect(cfg.questions.find((q) => q.id === "proof")!.stacksOnQuestionId).toBeUndefined();
   });
 
@@ -291,8 +308,36 @@ describe("the number is proof, not the goal: it only appears once the meaning is
   });
 
   it("a path picked but no gate set -> still not ready", () => {
-    const proof = deriveRevenueAlignProof({ revenueAlignPaths: ["em"], "revenueAlignWhoEm__em": ["most"] }, ctxFor(OP, "outpatient"));
+    const proof = deriveRevenueAlignProof(
+      { revenueAlignBook: ["ffs"], revenueAlignPaths: ["em"], "revenueAlignWhoEm__em": ["most"] },
+      ctxFor(OP, "outpatient"),
+    );
     expect(proof.ready).toBe(false);
     expect(proof.headlineValue).toBe(0);
+  });
+
+  it("a path the book does not pay contributes nothing, even if it is selected", () => {
+    // FFS-only book: HCC is not paid, so a stray HCC selection books no RAF.
+    const ffsWithStrayHcc = deriveRevenueAlignProof(
+      {
+        revenueAlignBook: ["ffs"],
+        revenueAlignPaths: ["em", "hcc"],
+        "revenueAlignWhoEm__em": ["most"],
+        "revenueAlignGateEm__em": ["note"],
+        "revenueAlignGateHcc__hcc": ["gap"],
+      },
+      ctxFor(OP, "outpatient"),
+    );
+    const lv = revenueAlignToLeverValues(
+      {
+        revenueAlignBook: ["ffs"],
+        revenueAlignPaths: ["em", "hcc"],
+        "revenueAlignGateHcc__hcc": ["gap"],
+      },
+      ctxFor(OP, "outpatient"),
+    );
+    expect(lv.revenuePaths).toEqual([REVENUE_PATH_LABELS.em]); // HCC filtered out by the book
+    expect(lv.revenueHccPopulations ?? []).toEqual([]);
+    expect(ffsWithStrayHcc.ready).toBe(true); // E/M still lands
   });
 });

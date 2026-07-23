@@ -77,9 +77,13 @@ function fmtMoneyCompact(n: number): string {
 //    round-trip through the existing per-goal persistence) ────────────────────
 
 export const K_PATHS = "revenueAlignPaths";
+/** Outpatient only: the payer/contract book, asked FIRST. It grounds revenue
+ * the way demand grounds access, reshapes which paths even show, and (its risk
+ * ids being the exact HCC population ids) folds in the old "which risk
+ * populations" question so nothing is asked twice. */
+export const K_BOOK = "revenueAlignBook";
 const K_WHO_EM = "revenueAlignWhoEm";
 const K_EM_VISIT_COUNT = "revenueAlignEmVisitCount";
-const K_WHO_HCC = "revenueAlignWhoHcc";
 const K_WHO_DENIALS = "revenueAlignWhoDenials";
 const K_GATE_EM = "revenueAlignGateEm";
 const K_GATE_HCC = "revenueAlignGateHcc";
@@ -175,12 +179,31 @@ export const IP_OBS_GATE_PREVENTABLE_PCT: Record<string, number> = {
 export const EM_CAPTURE_STARTER_PCT = 40;
 
 /** HCC population option id -> the exact engine population label the HCC chain
- * reads out of `revenueHccPopulations`. */
+ * reads out of `revenueHccPopulations`. The ids are also the book's risk ids,
+ * so the book selection derives the populations directly (no separate ask). */
 export const HCC_POPULATION_LABEL: Record<string, string> = {
   ma: "Medicare Advantage",
   medicaid: "Medicaid MCO",
   aca: "ACA / Exchange",
 };
+
+/** The book-of-business ids that are risk-adjusted (i.e. open the HCC path and
+ * map to an HCC population). "ffs" is the non-risk book and opens E/M instead. */
+export const BOOK_RISK_IDS = ["ma", "medicaid", "aca"] as const;
+
+/** The paths an outpatient partner's book actually pays: E/M only where they
+ * carry fee-for-service, HCC only where they carry a risk book, denials always.
+ * Empty until the book is answered, so the paths reshape to their contracts
+ * instead of showing everyone the same three. */
+function outpatientPathsForBook(values: LeverValues): AlignOption[] {
+  const book = selectedOptionIds(values, K_BOOK);
+  if (book.length === 0) return [];
+  const hasFFS = book.includes("ffs");
+  const hasRisk = book.some((b) => (BOOK_RISK_IDS as readonly string[]).includes(b));
+  return outpatientPathOptions().filter((o) =>
+    o.id === "denials" ? true : o.id === "em" ? hasFFS : o.id === "hcc" ? hasRisk : true,
+  );
+}
 
 // ── The base-eligible volume (mirrors computeEmChain's own scope math) so an
 //    optional typed E/M visit count can sharpen the visit share ──────────────
@@ -202,7 +225,21 @@ export function revenueAlignToLeverValues(values: LeverValues, ctx: AlignContext
   if (setting === "inpatient") return ipRevenueAlignToLeverValues(values);
 
   const available = pathsAvailableFor(setting);
-  const chosen = (selectedOptionIds(values, K_PATHS) as RevenuePathId[]).filter((id) => available.includes(id));
+  // Outpatient grounds revenue in the payer/contract book: a path only counts
+  // if the book actually pays it (E/M under FFS, HCC under a risk book), so a
+  // mostly-FFS group never books phantom RAF and a risk group never books
+  // phantom E/M. ED/inpatient have no book and are unchanged.
+  const book = setting === "outpatient" ? selectedOptionIds(values, K_BOOK) : [];
+  const hasFFS = book.includes("ffs");
+  const riskPops = book.filter((b) => (BOOK_RISK_IDS as readonly string[]).includes(b));
+  const hasRisk = riskPops.length > 0;
+  const bookAllows = (id: RevenuePathId): boolean => {
+    if (setting !== "outpatient") return true;
+    return id === "em" ? hasFFS : id === "hcc" ? hasRisk : true;
+  };
+  const chosen = (selectedOptionIds(values, K_PATHS) as RevenuePathId[]).filter(
+    (id) => available.includes(id) && bookAllows(id),
+  );
   const out: LeverValues = { revenuePaths: chosen.map((id) => REVENUE_PATH_LABELS[id]) };
 
   if (chosen.includes("em")) {
@@ -226,8 +263,10 @@ export function revenueAlignToLeverValues(values: LeverValues, ctx: AlignContext
   }
 
   if (chosen.includes("hcc")) {
-    const pops = pathChoices(values, K_WHO_HCC, "hcc");
-    out.revenueHccPopulations = pops.map((id) => HCC_POPULATION_LABEL[id]).filter(Boolean);
+    // Populations come straight from the book's risk ids (they ARE the HCC
+    // population ids), so the partner never answers "which risk populations"
+    // twice.
+    out.revenueHccPopulations = riskPops.map((id) => HCC_POPULATION_LABEL[id]).filter(Boolean);
     const gate = pathChoice(values, K_GATE_HCC, "hcc");
     out.revenueHccRecapture = gate ? (HCC_GATE_UPLIFT_PP[gate] ?? 0) : 0;
     out.revenueHccNetNew = gate ? (HCC_GATE_NETNEW_PCT[gate] ?? 0) : 0;
@@ -329,6 +368,35 @@ export function deriveRevenueAlignProof(values: LeverValues, ctx: AlignContext):
 
 /** Q1, the path SELECTOR (multi). Its option ids drive the per-path stacking
  * and map, in `toLeverValues`, onto `revenuePaths` / `ipRevenuePaths`. */
+/** The outpatient revenue paths (one source, shared by the selector and the
+ * book-driven `availableOptions` filter so they can never disagree). */
+function outpatientPathOptions(): AlignOption[] {
+  return [
+    { id: "hcc", label: "Risk adjustment (HCC)", helper: "Conditions your risk-based patients have that never reach the claim." },
+    { id: "em", label: "E/M level accuracy", helper: "Visits coded below the level delivered, because the note did not carry the decision-making." },
+    { id: "denials", label: "Medical-necessity denials", helper: "Denials driven by a note that did not establish why the care was needed." },
+  ];
+}
+
+/** Q1 for outpatient: the payer/contract book. Grounds revenue in what
+ * actually pays this group (the way access grounds in demand), reshapes the
+ * path menu below, and folds in the old HCC-populations question. */
+const bookQuestion: AlignQuestion = {
+  id: "book",
+  storeKey: K_BOOK,
+  dimension: 1,
+  prompt: "How are you paid for this scope?",
+  helper:
+    "Pick the contracts you carry. Only the revenue those contracts actually pay shows up below, so nothing here is noise for your book.",
+  mode: "multi",
+  options: [
+    { id: "ffs", label: "Fee-for-service", helper: "Commercial and Medicare FFS, paid per visit and service. This is where E/M level accuracy pays." },
+    { id: "ma", label: "Medicare Advantage", helper: "Risk-adjusted premium, the richest risk-adjustment book for most groups." },
+    { id: "medicaid", label: "Medicaid managed care", helper: "Managed Medicaid lives, risk-adjusted by the plan." },
+    { id: "aca", label: "ACA / Exchange", helper: "Marketplace lives with their own risk model." },
+  ],
+};
+
 function pathSelectorQuestion(setting: AttainSetting): AlignQuestion {
   const options: AlignOption[] =
     setting === "inpatient"
@@ -337,20 +405,21 @@ function pathSelectorQuestion(setting: AttainSetting): AlignQuestion {
           { id: "cdi", label: "CDI query efficiency", helper: "Queries your CDI team only has to write because the note lacked the specificity up front." },
           { id: "obs", label: "Observation status defense", helper: "Stays downgraded to observation when the severity was real but under-documented." },
         ]
-      : [
-          ...(setting === "outpatient"
-            ? [{ id: "hcc", label: "Risk adjustment (HCC)", helper: "Conditions your risk-based patients have that never reach the claim." } as AlignOption]
-            : []),
-          { id: "em", label: "E/M level accuracy", helper: "Claims that go out below the care actually delivered, because the note fell short." },
-          { id: "denials", label: "Medical-necessity denials", helper: "Denials driven by a note that did not establish why the care was needed." },
-        ];
+      : setting === "outpatient"
+        ? outpatientPathOptions()
+        : [
+            { id: "em", label: "E/M level accuracy", helper: "Claims that go out below the care actually delivered, because the note fell short." },
+            { id: "denials", label: "Medical-necessity denials", helper: "Denials driven by a note that did not establish why the care was needed." },
+          ];
   return {
     id: "outcome",
     storeKey: K_PATHS,
     dimension: 1,
     prompt: "What revenue are you going after?",
     helper:
-      "Pick one or more. Each is a genuinely different claim, so they add rather than compete. Only the paths you pick open their own questions below.",
+      setting === "outpatient"
+        ? "Only the revenue your book pays shows here. Pick one or more; each is a genuinely different claim, so they add rather than compete."
+        : "Pick one or more. Each is a genuinely different claim, so they add rather than compete. Only the paths you pick open their own questions below.",
     mode: "multi",
     options,
   };
@@ -461,22 +530,6 @@ function whoEmQuestion(setting: AttainSetting): AlignQuestion {
   };
 }
 
-const whoHccQuestion: AlignQuestion = {
-  id: "whoHcc",
-  storeKey: K_WHO_HCC,
-  dimension: 2,
-  stacksOnQuestionId: "outcome",
-  appliesToChoices: ["hcc"],
-  prompt: "Which risk-based populations is this for?",
-  helper: "Value only accrues where reimbursement is risk-adjusted. Pick the plans you carry; the panel sizes carry over as a benchmark.",
-  mode: "multi",
-  options: [
-    { id: "ma", label: "Medicare Advantage", helper: "The richest risk-adjustment population for most groups." },
-    { id: "medicaid", label: "Medicaid managed care", helper: "Managed Medicaid lives, risk-adjusted by the plan." },
-    { id: "aca", label: "ACA / Exchange", helper: "Marketplace lives with their own risk model." },
-  ],
-};
-
 const whoDenialsQuestion: AlignQuestion = {
   id: "whoDenials",
   storeKey: K_WHO_DENIALS,
@@ -504,15 +557,22 @@ function gateEmQuestion(setting: AttainSetting): AlignQuestion {
     dimension: 3,
     stacksOnQuestionId: "outcome",
     appliesToChoices: ["em"],
-    prompt: isED ? "Why do ED claims go out below the acuity delivered?" : "Why do claims go out below the care delivered?",
-    helper:
-      "The honest gate. Abridge moves the part where the note did not carry the full picture. It cannot raise a visit that was genuinely lower acuity. Only what the documentation can move is sized.",
+    prompt: isED ? "Why do ED claims go out below the acuity delivered?" : "Why do visits code below the level delivered?",
+    helper: isED
+      ? "The honest gate. Abridge moves the part where the note did not carry the full picture. It cannot raise a visit that was genuinely lower acuity. Only what the documentation can move is sized."
+      : "The honest gate. Abridge carries the medical decision-making the note left out, so a 99214-level visit stops going out as a 99213. It cannot raise a visit that was genuinely a 99213. Only the documentation gap is sized.",
     mode: "single",
-    options: [
-      { id: "note", label: "The note did not capture it", helper: "The care was there, but the claim went out low because the note fell short." },
-      { id: "some", label: "A meaningful share is the note", helper: "Some of the gap is documentation, some is genuinely lower acuity." },
-      { id: "acuity", label: "Mostly genuinely lower acuity", helper: "The claims reflect the care, so there is little for the note to move." },
-    ],
+    options: isED
+      ? [
+          { id: "note", label: "The note did not capture it", helper: "The care was there, but the claim went out low because the note fell short." },
+          { id: "some", label: "A meaningful share is the note", helper: "Some of the gap is documentation, some is genuinely lower acuity." },
+          { id: "acuity", label: "Mostly genuinely lower acuity", helper: "The claims reflect the care, so there is little for the note to move." },
+        ]
+      : [
+          { id: "note", label: "The note undersold the visit", helper: "A 99214-level workup, chronic conditions managed and data reviewed, coded 99213 because the decision-making was not documented." },
+          { id: "some", label: "A meaningful share is the note", helper: "Some visits are undercoded documentation, some are genuinely lower level." },
+          { id: "acuity", label: "Mostly genuine lower-level visits", helper: "The codes reflect the care delivered, so there is little for the note to move." },
+        ],
   };
 }
 
@@ -614,17 +674,32 @@ export function revenueAlignConfigFor(setting: AttainSetting): AlignConfig {
           whereQuestion(setting),
           proofQuestion(setting),
         ]
-      : [
-          pathSelectorQuestion(setting),
-          ...(setting === "outpatient" ? [whoHccQuestion] : []),
-          whoEmQuestion(setting),
-          whoDenialsQuestion,
-          ...(setting === "outpatient" ? [gateHccQuestion] : []),
-          gateEmQuestion(setting),
-          gateDenialsQuestion,
-          whereQuestion(setting),
-          proofQuestion(setting),
-        ];
+      : setting === "outpatient"
+        ? // Outpatient is contract-first and dynamic: the book (dim 1) reshapes
+          // the path menu (dim 2); the framing-only "where" is dropped and the
+          // old "which risk populations" is folded into the book, so it stays at
+          // 5 dimensions. Dimensions are overridden here because the shared
+          // who/gate question objects (also used by ED) hardcode the pre-book
+          // numbering.
+          [
+            bookQuestion,
+            { ...pathSelectorQuestion(setting), dimension: 2, availableOptions: (v: LeverValues) => outpatientPathsForBook(v) },
+            { ...whoEmQuestion(setting), dimension: 3 },
+            { ...whoDenialsQuestion, dimension: 3 },
+            { ...gateHccQuestion, dimension: 4 },
+            { ...gateEmQuestion(setting), dimension: 4 },
+            { ...gateDenialsQuestion, dimension: 4 },
+            proofQuestion(setting),
+          ]
+        : [
+            pathSelectorQuestion(setting),
+            whoEmQuestion(setting),
+            whoDenialsQuestion,
+            gateEmQuestion(setting),
+            gateDenialsQuestion,
+            whereQuestion(setting),
+            proofQuestion(setting),
+          ];
 
   return {
     goal: "revenue",

@@ -30,17 +30,24 @@ function alignValues(choices: LeverValues, setting: AttainSetting, baseline: Att
 }
 
 function modelFor(choices: LeverValues, setting: AttainSetting = "outpatient", baseline: AttainBaseline = OP_BASELINE) {
-  const values = alignValues(choices, setting, baseline);
+  // Outpatient revenue is now book-gated: default a book that pays every path
+  // (FFS opens E/M, MA opens HCC) unless the test sets its own, so the per-path
+  // assertions below stay about the paths, not the book.
+  const withBook =
+    setting === "outpatient" && choices.revenueAlignBook === undefined
+      ? { revenueAlignBook: ["ffs", "ma"], ...choices }
+      : choices;
+  const values = alignValues(withBook, setting, baseline);
   return deriveRevenueMeasurementPlan(baseline, setting, values, { realizationPct: 100 });
 }
 
 // Outpatient: E/M + Risk Adjustment (HCC), each with its own who + gate, plus
 // the two proofs that badge the matching signals.
 const OP_CHOICES: LeverValues = {
+  revenueAlignBook: ["ffs", "ma"],
   revenueAlignPaths: ["em", "hcc"],
   revenueAlignWhoEm__em: ["most"],
   revenueAlignGateEm__em: ["note"],
-  revenueAlignWhoHcc__hcc: ["ma"],
   revenueAlignGateHcc__hcc: ["gap"],
   revenueAlignProof: ["losmix", "recapture"],
 };
