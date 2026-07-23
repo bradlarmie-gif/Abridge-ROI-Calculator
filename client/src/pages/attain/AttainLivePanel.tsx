@@ -83,7 +83,12 @@ export default function AttainLivePanel({
   nextLabel = "Continue",
 }: AttainLivePanelProps) {
   const settingLabel = state.setting ? SETTING_LABELS[state.setting] : null;
-  const isBuildCaseStep = step.startsWith("buildCase:");
+  // Both the single-goal Build-the-case page (`buildCase:<goal>`) and the
+  // stacked multi-goal Align page (`"align"`) are the Align stage, so both
+  // surface the running combined total here. On the multi-goal page there is
+  // no single `activeGoal`, so the per-goal realization control below stays
+  // hidden (it is rendered inline in each block on that page instead).
+  const isBuildCaseStep = step.startsWith("buildCase:") || step === "align";
   const showBuiltTarget = goals.length > 0 && combined && (isBuildCaseStep || step === "commit");
 
   // Every moved decision across every selected goal, prefixed so a partner

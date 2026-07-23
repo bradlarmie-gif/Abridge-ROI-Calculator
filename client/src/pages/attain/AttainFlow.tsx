@@ -4,6 +4,7 @@ import StepSetting from "./steps/StepSetting";
 import StepVision from "./steps/StepVision";
 import StepScope from "./steps/StepScope";
 import StepBuildCase from "./steps/StepBuildCase";
+import StepMultiBuildCase from "./steps/StepMultiBuildCase";
 import StepCommit, {
   defaultCommitmentFor,
   DEFAULT_PLAN_CADENCE,
@@ -60,7 +61,7 @@ import AttainResumePrompt from "./AttainResumePrompt";
  * goals on Vision inserts two build-case pages between Starting point and
  * Commit, picking three inserts three, and so on.
  */
-export type AttainStepId = "setting" | "vision" | "scope" | "commit" | "plan" | `buildCase:${GoalId}`;
+export type AttainStepId = "setting" | "vision" | "scope" | "align" | "commit" | "plan" | `buildCase:${GoalId}`;
 
 const BUILD_CASE_PREFIX = "buildCase:";
 
@@ -73,11 +74,18 @@ function goalOfStep(step: AttainStepId): GoalId | null {
   return step.startsWith(BUILD_CASE_PREFIX) ? (step.slice(BUILD_CASE_PREFIX.length) as GoalId) : null;
 }
 
-/** The real step sequence for this plan: fixed setting/vision/scope, one
- * build-case page per selected goal in the order the partner picked them,
- * then fixed commit/plan. Recomputed whenever `goals` changes (only
- * possible from the Vision step, before any build-case page is reached). */
+/** The real step sequence for this plan: fixed setting/vision/scope, then the
+ * Align stage, then fixed commit/plan. A SINGLE-goal plan gets one
+ * `buildCase:<goal>` Align page. A MULTI-goal plan collapses to ONE stacked
+ * `"align"` page that stacks every selected goal's Align under a combined
+ * header (see StepMultiBuildCase), exactly the way a multi-goal plan's
+ * Planning collapses to one stacked StepMultiPlanning page. Recomputed
+ * whenever `goals` changes (only possible from the Vision step, before any
+ * Align page is reached). */
 function stepOrderFor(goals: GoalId[]): AttainStepId[] {
+  if (goals.length > 1) {
+    return ["setting", "vision", "scope", "align", "commit", "plan"];
+  }
   return ["setting", "vision", "scope", ...goals.map(buildCaseStepId), "commit", "plan"];
 }
 
@@ -93,6 +101,7 @@ function stepLabelFor(step: AttainStepId, goals: GoalId[]): string {
     case "setting": return "Setting";
     case "vision": return "Vision";
     case "scope": return "Starting point";
+    case "align": return "Align";
     case "commit": return "Planning";
     case "plan": return "Attainment";
     default: return "";
@@ -806,6 +815,10 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
         return { disabled: goals.length === 0, label: "Continue" };
       case "scope":
         return { disabled: !isBaselineValid, label: "Continue" };
+      case "align":
+        // The single, stacked multi-goal Align page — its next step is
+        // always Planning.
+        return { disabled: false, label: "Continue to planning" };
       case "commit":
         return { disabled: false, label: "Continue to attainment" };
       default:
@@ -879,6 +892,31 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
                 freedTimeSplit={freedTimeSplit}
                 onChangeFreedTimeSplit={handleFreedTimeSplitChange}
                 realizationPct={realizationByGoal[activeBuildCaseGoal] ?? defaultRealizationPct(activeBuildCaseGoal)}
+                onChangeLeverValue={handleChangeLeverValue}
+                stepNumber={stepIndex + 1}
+                totalSteps={stepOrder.length}
+              />
+            )}
+
+            {/* Every MULTI-goal plan (2+ selected goals) renders the SAME
+                config-driven Align the single-goal page uses, once per goal,
+                stacked under one combined header (see StepMultiBuildCase),
+                instead of a page per goal. The per-goal block reuses
+                AlignSurface with the single-goal page, so the two can never
+                diverge. The combined prize is the engine's `combinedMargin`,
+                counted once, and access + retention share the one freed hour
+                via the same split the engine already books. */}
+            {step === "align" && state.setting && (
+              <StepMultiBuildCase
+                setting={state.setting}
+                baseline={baseline}
+                goals={goals}
+                valuesByGoal={valuesByGoal}
+                combined={combined}
+                freedTimeSplit={freedTimeSplit}
+                onChangeFreedTimeSplit={handleFreedTimeSplitChange}
+                realizationByGoal={realizationByGoal}
+                onChangeRealization={handleChangeRealization}
                 onChangeLeverValue={handleChangeLeverValue}
                 stepNumber={stepIndex + 1}
                 totalSteps={stepOrder.length}
