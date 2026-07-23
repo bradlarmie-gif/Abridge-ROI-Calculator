@@ -14,6 +14,7 @@ import StepCommit, {
   type SignalCadence,
 } from "./steps/StepCommit";
 import StepPlanning from "./steps/StepPlanning";
+import StepMeasurementPlan from "./steps/StepMeasurementPlan";
 import StepMultiPlanning from "./steps/StepMultiPlanning";
 import StepAttainment from "./steps/StepAttainment";
 import AttainLivePanel from "./AttainLivePanel";
@@ -493,6 +494,40 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
     setPlanning((prev) => ({ ...prev, partnerRisk: text }));
   }, []);
 
+  // Measurement-plan edits (outpatient Access, the rebuilt Plan step). All land
+  // on the additive `planning.measurement` layer so an untouched plan falls
+  // back to derived defaults and every other goal's Plan is untouched. The
+  // chosen metrics persist here so the Attainment step can track exactly these
+  // later (see attainMeasurement.ts + StepMeasurementPlan.tsx).
+  const handleSetChosenMetrics = useCallback((linkId: string, metricIds: string[]) => {
+    setPlanning((prev) => {
+      const m = prev.measurement ?? {};
+      return { ...prev, measurement: { ...m, chosen: { ...m.chosen, [linkId]: metricIds } } };
+    });
+  }, []);
+
+  const handleChangeMetricField = useCallback(
+    (metricId: string, patch: { target?: string; owner?: string; byWhen?: string }) => {
+      setPlanning((prev) => {
+        const m = prev.measurement ?? {};
+        const entries = m.entries ?? {};
+        return {
+          ...prev,
+          measurement: { ...m, entries: { ...entries, [metricId]: { ...entries[metricId], ...patch } } },
+        };
+      });
+    },
+    [],
+  );
+
+  const handleChangePromiseByWhen = useCallback((value: string) => {
+    setPlanning((prev) => ({ ...prev, measurement: { ...prev.measurement, promiseByWhen: value } }));
+  }, []);
+
+  const handleChangeMeasureCommitment = useCallback((patch: { commitmentOwner?: string; commitmentByWhen?: string }) => {
+    setPlanning((prev) => ({ ...prev, measurement: { ...prev.measurement, ...patch } }));
+  }, []);
+
   // Multi-priority Planning edits — the same three per-phase overrides, but
   // keyed per priority in `planning.byGoal[goal]` so two priorities' phase
   // choices never collide. Additive and backward-compatible: an untouched
@@ -923,23 +958,26 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
               />
             )}
 
+            {/* OUTPATIENT ACCESS is the exemplar for the rebuilt Plan step: a
+                MEASUREMENT PLAN (StepMeasurementPlan), where the partner builds
+                the scorecard they will track, generated from their Align
+                choices. Every other goal keeps the phased StepPlanning below,
+                until each is cloned onto this pattern. */}
             {step === "commit" && isOutpatientAccessPlan && (
-              <StepPlanning
-                setting="outpatient"
+              <StepMeasurementPlan
                 baseline={baseline}
-                goal="access"
                 values={valuesByGoal.access ?? defaultLeverValues("access", "outpatient")}
                 combined={combined}
                 goalOwner={goalOwnerByPriority.access ?? { name: "", title: "" }}
                 onChangeGoalOwner={(patch) => handleChangeGoalOwner("access", patch)}
                 planning={planning}
-                onChangePhaseOwner={handleChangePhaseOwner}
-                onChangePhaseSignalTarget={handleChangePhaseSignalTarget}
-                onChangePhaseSignalLabel={handleChangePhaseSignalLabel}
+                onSetChosenMetrics={handleSetChosenMetrics}
+                onChangeMetricField={handleChangeMetricField}
+                onChangePromiseByWhen={handleChangePromiseByWhen}
+                onChangeCommitment={handleChangeMeasureCommitment}
                 onChangePartnerRisk={handleChangePartnerRisk}
                 planCadence={planCadence}
                 onChangePlanCadence={handleChangePlanCadence}
-                totalMonths={state.totalMonths}
                 stepNumber={stepIndex + 1}
               />
             )}
