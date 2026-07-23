@@ -133,9 +133,14 @@ export default function AlignStep({
 
   return (
     <div data-testid="section-attain-align">
-      <p className="text-[15px] text-[#3A3A3A] leading-relaxed max-w-[620px] mb-8" data-testid="text-align-intro">
-        {config.intro}
-      </p>
+      {/* The framing is stated ONCE, up in the step header. This surface goes
+          straight to the questions, so an optional per-driver intro renders
+          only when a config sets a genuinely additive one (empty by default). */}
+      {config.intro && (
+        <p className="text-[15px] text-[#3A3A3A] leading-relaxed max-w-[620px] mb-8" data-testid="text-align-intro">
+          {config.intro}
+        </p>
+      )}
 
       {leadQuestions.map((question) =>
         renderFlat(question, config.questions.indexOf(question)),

@@ -49,7 +49,6 @@ export default function ChooseQuestion({
   const testidBase = instanceKey ? `${question.id}-${instanceKey}` : question.id;
   const selected = asStringArray(values[storeKey]);
   const isSelected = (id: string) => selected.includes(id);
-  const cols = question.options.length >= 3 ? "sm:grid-cols-3" : "sm:grid-cols-2";
 
   return (
     <motion.div
@@ -74,7 +73,13 @@ export default function ChooseQuestion({
         <p className="text-[14px] text-[#8C8C8C] leading-relaxed mb-4 max-w-[600px]">{question.helper}</p>
       )}
 
-      <div className={`grid grid-cols-1 ${cols} gap-3`}>
+      {/* UNIFORM grid: always three equal columns on sm+, so a 2-option
+          question's cards are the exact same width as a 3-option question's
+          (never stretched wide). `items-stretch` + `h-full` on the card give
+          equal heights across every option in a row, every question, every
+          driver. Four or five options wrap into further rows at the same
+          column width. */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-stretch">
         {question.options.map((option) => (
           <OptionCard
             key={option.id}
@@ -123,7 +128,7 @@ function OptionCard({
       type="button"
       onClick={onClick}
       aria-pressed={selected}
-      className={`group text-left rounded-2xl border-2 p-5 transition-all duration-200 ${
+      className={`group h-full text-left rounded-2xl border-2 p-5 transition-all duration-200 ${
         selected
           ? "border-[#EA2C00] bg-[#FFF6F3] shadow-[0_1px_0_rgba(234,44,0,0.08)]"
           : "border-[#E7E0D6] bg-white hover:border-[#C4B8A8] hover:bg-[#FBFAF7]"
