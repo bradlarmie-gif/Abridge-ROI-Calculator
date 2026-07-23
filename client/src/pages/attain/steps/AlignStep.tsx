@@ -80,6 +80,10 @@ export default function AlignStep({
   };
 
   const proof = config.deriveProof(values, ctx);
+  // Financial drivers render the hero as a compact dollar; the safety-first
+  // Quality driver overrides this with a plain count so its hero is harm events
+  // prevented, never a dollar.
+  const fmtHead = proof.headlineFormatter ?? fmtMoneyCompact;
 
   // "Question N of M" is numbered by CONCEPTUAL DIMENSION, not rendered
   // position, so the per-path questions that repeat a dimension (every path's
@@ -201,7 +205,7 @@ export default function AlignStep({
               <p className="text-sm text-white/60 mb-1">{proof.headlineLabel}</p>
               <AnimatedValue
                 value={proof.headlineValue}
-                format={fmtMoneyCompact}
+                format={fmtHead}
                 className="font-abridge text-5xl md:text-6xl text-[#EA2C00] block leading-none"
                 data-testid="text-align-proof-value"
               />
@@ -211,7 +215,7 @@ export default function AlignStep({
             </>
           ) : (
             <>
-              <p className="font-abridge text-4xl text-white/25 block leading-none">$0</p>
+              <p className="font-abridge text-4xl text-white/25 block leading-none">{fmtHead(0)}</p>
               <p className="text-[13px] text-white/45 mt-3 max-w-[480px]" data-testid="text-align-proof-empty">
                 {proof.emptyHint}
               </p>

@@ -108,8 +108,14 @@ export interface AlignProofFigure {
 export interface AlignProof {
   ready: boolean;
   headlineLabel: string;
-  /** The realized dollar, for the count-up. 0 until the choices produce one. */
+  /** The realized dollar, for the count-up. 0 until the choices produce one.
+   * For the safety-first Quality driver this is a COUNT (harm events prevented)
+   * rather than a dollar, formatted by `headlineFormatter`. */
   headlineValue: number;
+  /** How the count-up hero renders `headlineValue`. Defaults to a compact
+   * money format, so every financial driver is unchanged; Quality overrides it
+   * with a plain count so its hero is events prevented, not a dollar. */
+  headlineFormatter?: (n: number) => string;
   headlineSub: string;
   emptyHint: string;
   figures: AlignProofFigure[];
