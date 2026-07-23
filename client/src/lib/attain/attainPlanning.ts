@@ -121,6 +121,19 @@ export interface MeasurementPlanState {
   /** Per-metric target/owner/by-when overrides, keyed by the globally-unique
    * metric id. */
   entries?: Record<string, MeasurementMetricEntry>;
+  /** Metrics the partner added themselves, keyed by chain-link id. A custom
+   * metric is a SIGNAL TO WATCH, not a new dollar: it rides the scorecard and
+   * the Attainment progress log (baseline/target/owner/date live in `entries`
+   * under its id), but it is never in the engine chain, so it can never inflate
+   * the derived number. */
+  custom?: Record<string, MeasurementCustomMetric[]>;
+}
+
+/** One partner-added metric on a chain link: a stable id and the label they
+ * typed. Its baseline/target/owner/date live in `entries[id]` like any metric. */
+export interface MeasurementCustomMetric {
+  id: string;
+  label: string;
 }
 
 export const DEFAULT_MEASUREMENT_PLAN: MeasurementPlanState = {};
@@ -264,4 +277,9 @@ export function measurementOwner(planning: AttainPlanning | undefined, metricId:
 /** A picked metric's rough by-when, falling back to BLANK (never invented). */
 export function measurementByWhen(planning: AttainPlanning | undefined, metricId: string): string {
   return planning?.measurement?.entries?.[metricId]?.byWhen ?? "";
+}
+
+/** The partner-added custom metrics for one chain link (empty when none). */
+export function measurementCustom(planning: AttainPlanning | undefined, linkId: string): MeasurementCustomMetric[] {
+  return planning?.measurement?.custom?.[linkId] ?? [];
 }

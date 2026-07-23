@@ -27,11 +27,13 @@ import type { AttainSetting, GoalId } from "@/lib/attain/attainTypes";
 import {
   measurementChosen,
   measurementBaseline,
+  measurementCustom,
   measurementTarget,
   measurementOwner,
   measurementByWhen,
   type AttainPlanning,
   type MeasurementMetricEntry,
+  type MeasurementCustomMetric,
 } from "@/lib/attain/attainPlanning";
 import type { AttainBaseline, LeverValues, MultiGoalContributionsResult } from "@/lib/attain/attainLevers";
 import { GOAL_CATALOG } from "@/lib/attain/attainGoals";
@@ -77,6 +79,22 @@ function fmtMoneyCompact(n: number): string {
 const EDITORIAL_LABEL = "text-[10px] font-semibold uppercase tracking-[1.6px] text-[#8C8C8C] mb-2";
 const EDITORIAL_FIELD =
   "w-full bg-transparent border-0 border-b border-[#E0D9CE] rounded-none px-0 pb-1 text-[15px] text-[#1A1A1A] outline-none transition-colors focus:border-[#EA2C00] placeholder:text-[#C4BCB0]";
+
+/** A partner-added custom metric rendered as a metric option (its baseline is
+ * blank/their-own, it carries no engine default target). Used so the scorecard
+ * and the tracked set can treat it exactly like a built-in metric. */
+function customToOption(c: MeasurementCustomMetric): MeasurementMetricOption {
+  return {
+    id: c.id,
+    label: c.label.trim() || "Custom metric",
+    unit: "",
+    helper: "",
+    baseline: "",
+    baselineTag: "data",
+    defaultTarget: "",
+    fromProof: false,
+  };
+}
 
 /** The small tag that keeps a baseline honest: their own figure, a fact carried
  * from Starting Point, or a labeled benchmark. Neutral grays only, no color
@@ -211,6 +229,11 @@ interface MeasurementPlanSurfaceProps {
   planning: AttainPlanning;
   onSetChosenMetrics: (linkId: string, metricIds: string[]) => void;
   onChangeMetricField: (metricId: string, patch: Partial<MeasurementMetricEntry>) => void;
+  /** Custom-metric edits (a tracked signal the partner adds to a link, never
+   * priced). Optional so a caller that has not wired them yet still compiles. */
+  onAddCustomMetric?: (linkId: string) => void;
+  onRemoveCustomMetric?: (linkId: string, id: string) => void;
+  onChangeCustomMetricLabel?: (linkId: string, id: string, label: string) => void;
   onChangePromiseByWhen: (value: string) => void;
   onChangeCommitment: (patch: { commitmentOwner?: string; commitmentByWhen?: string }) => void;
   planCadence: SignalCadence;
@@ -233,6 +256,9 @@ export default function MeasurementPlanSurface({
   planning,
   onSetChosenMetrics,
   onChangeMetricField,
+  onAddCustomMetric,
+  onRemoveCustomMetric,
+  onChangeCustomMetricLabel,
   onChangePromiseByWhen,
   onChangeCommitment,
   planCadence,
@@ -255,14 +281,18 @@ export default function MeasurementPlanSurface({
   };
 
   // Every metric the partner is actually tracking, in chain order, for the
-  // scorecard the monthly check walks. Blocked links contribute nothing.
+  // scorecard the monthly check walks. Blocked links contribute nothing. Custom
+  // metrics (partner-added signals) ride here too, as synthetic options.
   const trackedRows = model.links.flatMap((link) =>
     link.blocked
       ? []
-      : measurementChosen(planning, link.id, link.defaultChosen)
-          .map((id) => link.metrics.find((m) => m.id === id))
-          .filter((m): m is MeasurementMetricOption => Boolean(m))
-          .map((m) => ({ link, metric: m })),
+      : [
+          ...measurementChosen(planning, link.id, link.defaultChosen)
+            .map((id) => link.metrics.find((m) => m.id === id))
+            .filter((m): m is MeasurementMetricOption => Boolean(m))
+            .map((m) => ({ link, metric: m })),
+          ...measurementCustom(planning, link.id).map((c) => ({ link, metric: customToOption(c) })),
+        ],
   );
 
   return (
@@ -375,6 +405,9 @@ export default function MeasurementPlanSurface({
                   ownerName={ownerName}
                   onToggle={(metricId) => toggleMetric(link, metricId)}
                   onChangeMetricField={onChangeMetricField}
+                  onAddCustom={onAddCustomMetric}
+                  onRemoveCustom={onRemoveCustomMetric}
+                  onChangeCustomLabel={onChangeCustomMetricLabel}
                 />
               </div>
               );
@@ -510,6 +543,9 @@ function LinkCard({
   ownerName,
   onToggle,
   onChangeMetricField,
+  onAddCustom,
+  onRemoveCustom,
+  onChangeCustomLabel,
 }: {
   link: MeasurementLink;
   chosen: string[];
@@ -517,7 +553,12 @@ function LinkCard({
   ownerName: string;
   onToggle: (metricId: string) => void;
   onChangeMetricField: (metricId: string, patch: Partial<MeasurementMetricEntry>) => void;
+  onAddCustom?: (linkId: string) => void;
+  onRemoveCustom?: (linkId: string, id: string) => void;
+  onChangeCustomLabel?: (linkId: string, id: string, label: string) => void;
 }) {
+  const chosenMetrics = link.metrics.filter((m) => chosen.includes(m.id));
+  const customs = measurementCustom(planning, link.id);
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
@@ -569,23 +610,45 @@ function LinkCard({
             ))}
           </EditorialOptionList>
 
-          {/* The expanded editable row for every chosen metric. The first sits
-              directly under the option list's own bottom hairline (no border of
-              its own, so there is no double line); a second stacked detail draws
-              a single hairline to separate it. */}
-          {link.metrics
-            .filter((m) => chosen.includes(m.id))
-            .map((metric, idx) => (
-              <MetricDetail
-                key={`${metric.id}-detail`}
-                metric={metric}
-                linkId={link.id}
-                planning={planning}
-                ownerName={ownerName}
-                onChangeMetricField={onChangeMetricField}
-                first={idx === 0}
-              />
-            ))}
+          {/* The expanded editable row for every chosen metric, each headed by
+              its metric name so several open at once stay unambiguous. The first
+              sits under the option list's own bottom hairline (no border of its
+              own); later ones draw a single separating hairline. */}
+          {chosenMetrics.map((metric, idx) => (
+            <MetricDetail
+              key={`${metric.id}-detail`}
+              metric={metric}
+              linkId={link.id}
+              planning={planning}
+              ownerName={ownerName}
+              onChangeMetricField={onChangeMetricField}
+              first={idx === 0}
+            />
+          ))}
+
+          {/* Partner-added custom metrics: a tracked signal, not priced. */}
+          {customs.map((c, cidx) => (
+            <CustomMetricRow
+              key={`${c.id}-custom`}
+              custom={c}
+              planning={planning}
+              onChangeMetricField={onChangeMetricField}
+              onChangeLabel={(label) => onChangeCustomLabel?.(link.id, c.id, label)}
+              onRemove={() => onRemoveCustom?.(link.id, c.id)}
+              first={chosenMetrics.length === 0 && cidx === 0}
+            />
+          ))}
+
+          {onAddCustom && (
+            <button
+              type="button"
+              onClick={() => onAddCustom(link.id)}
+              className="mt-4 text-[12.5px] font-semibold text-[#EA2C00] hover:underline"
+              data-testid={`button-measure-add-custom-${link.id}`}
+            >
+              + Add your own metric
+            </button>
+          )}
         </>
       )}
     </motion.div>
@@ -633,6 +696,12 @@ function MetricDetail({
       data-testid={`detail-measure-metric-${linkId}-${metric.id}`}
     >
       <div className={`pt-5 pb-2 pl-5 ${first ? "" : "mt-1 border-t border-[#EFEAE1]"}`}>
+        {/* Head each detail with its metric name, so several open at once never
+            leave the partner unsure which set of fields belongs to which. */}
+        <p className="text-[12.5px] font-semibold text-[#1A1A1A] mb-4">
+          {metric.label}
+          {metric.unit ? <span className="text-[11px] font-normal text-[#8C8C8C]"> · measured in {metric.unit}</span> : null}
+        </p>
         <div className="flex flex-wrap gap-x-10 gap-y-5">
           <div className="min-w-[130px]">
             <div className="flex items-center gap-1.5 mb-2">
@@ -682,8 +751,105 @@ function MetricDetail({
             />
           </div>
         </div>
-        <p className="text-[11px] text-[#B4B4B4] mt-3.5">Measured in {metric.unit}.</p>
       </div>
     </motion.div>
+  );
+}
+
+/** A partner-added custom metric: an editable name (tracked, not priced) plus
+ * the same baseline/target/owner/date fields as a built-in metric, in the
+ * editorial language. Removable. */
+function CustomMetricRow({
+  custom,
+  planning,
+  onChangeMetricField,
+  onChangeLabel,
+  onRemove,
+  first,
+}: {
+  custom: MeasurementCustomMetric;
+  planning: AttainPlanning;
+  onChangeMetricField: (metricId: string, patch: Partial<MeasurementMetricEntry>) => void;
+  onChangeLabel: (label: string) => void;
+  onRemove: () => void;
+  first?: boolean;
+}) {
+  const baselineInput = measurementBaseline(planning, custom.id, "");
+  const target = measurementTarget(planning, custom.id, "");
+  const owner = measurementOwner(planning, custom.id);
+  const byWhen = measurementByWhen(planning, custom.id);
+  const LBL = "text-[10px] font-semibold uppercase tracking-[1.6px] text-[#8C8C8C]";
+  const field =
+    "w-full bg-transparent border-0 border-b border-[#E0D9CE] rounded-none px-0 pb-1 text-[15px] text-[#1A1A1A] outline-none transition-colors focus:border-[#EA2C00] placeholder:text-[#C4BCB0]";
+  return (
+    <div
+      className={`pt-5 pb-2 pl-5 ${first ? "" : "mt-1 border-t border-[#EFEAE1]"}`}
+      data-testid={`detail-measure-custom-${custom.id}`}
+    >
+      <div className="flex items-center justify-between gap-3 mb-4">
+        <div className="flex-1 min-w-0">
+          <p className={`${LBL} mb-1.5`}>
+            Your metric <span className="text-[#B4B4B4] normal-case tracking-normal font-normal">· tracked, not priced</span>
+          </p>
+          <input
+            value={custom.label}
+            onChange={(e) => onChangeLabel(e.target.value)}
+            placeholder="Name the metric you want to watch"
+            className={`${field} text-[15px] font-semibold`}
+            data-testid={`input-measure-custom-label-${custom.id}`}
+          />
+        </div>
+        <button
+          type="button"
+          onClick={onRemove}
+          className="text-[11px] font-semibold text-[#8C8C8C] hover:text-[#EA2C00] flex-shrink-0 self-end pb-1"
+          data-testid={`button-measure-remove-custom-${custom.id}`}
+        >
+          Remove
+        </button>
+      </div>
+      <div className="flex flex-wrap gap-x-10 gap-y-5">
+        <div className="min-w-[130px]">
+          <p className={`${LBL} mb-2`}>Your baseline</p>
+          <input
+            value={baselineInput}
+            onChange={(e) => onChangeMetricField(custom.id, { baseline: e.target.value })}
+            placeholder="e.g., 12 today"
+            className={field}
+            data-testid={`input-measure-baseline-${custom.id}`}
+          />
+        </div>
+        <div className="min-w-[130px]">
+          <p className={`${LBL} mb-2`}>Target</p>
+          <input
+            value={target}
+            onChange={(e) => onChangeMetricField(custom.id, { target: e.target.value })}
+            placeholder="e.g., under 8"
+            className={`${field} text-[#EA2C00] font-semibold placeholder:text-[#EFB9AC] placeholder:font-normal`}
+            data-testid={`input-measure-target-${custom.id}`}
+          />
+        </div>
+        <div className="min-w-[150px] flex-1">
+          <p className={`${LBL} mb-2`}>Owner</p>
+          <input
+            value={owner}
+            onChange={(e) => onChangeMetricField(custom.id, { owner: e.target.value })}
+            placeholder="Name the owner"
+            className={field}
+            data-testid={`input-measure-owner-${custom.id}`}
+          />
+        </div>
+        <div className="min-w-[140px]">
+          <p className={`${LBL} mb-2`}>By when</p>
+          <input
+            type="date"
+            value={byWhen}
+            onChange={(e) => onChangeMetricField(custom.id, { byWhen: e.target.value })}
+            className={field}
+            data-testid={`input-measure-bywhen-${custom.id}`}
+          />
+        </div>
+      </div>
+    </div>
   );
 }

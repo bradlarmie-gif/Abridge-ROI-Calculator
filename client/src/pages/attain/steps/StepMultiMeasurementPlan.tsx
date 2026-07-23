@@ -65,6 +65,9 @@ interface StepMultiMeasurementPlanProps {
   onChangeGoalOwner: (goal: GoalId, patch: Partial<GoalOwner>) => void;
   onSetChosenMetrics: (goal: GoalId, linkId: string, metricIds: string[]) => void;
   onChangeMetricField: (goal: GoalId, metricId: string, patch: Partial<MeasurementMetricEntry>) => void;
+  onAddCustomMetric: (goal: GoalId, linkId: string) => void;
+  onRemoveCustomMetric: (goal: GoalId, linkId: string, id: string) => void;
+  onChangeCustomMetricLabel: (goal: GoalId, linkId: string, id: string, label: string) => void;
   onChangePromiseByWhen: (goal: GoalId, value: string) => void;
   onChangeCommitment: (goal: GoalId, patch: { commitmentOwner?: string; commitmentByWhen?: string }) => void;
   onChangePartnerRisk: (text: string) => void;
@@ -86,6 +89,9 @@ export default function StepMultiMeasurementPlan({
   onChangeGoalOwner,
   onSetChosenMetrics,
   onChangeMetricField,
+  onAddCustomMetric,
+  onRemoveCustomMetric,
+  onChangeCustomMetricLabel,
   onChangePromiseByWhen,
   onChangeCommitment,
   onChangePartnerRisk,
@@ -236,6 +242,9 @@ export default function StepMultiMeasurementPlan({
               planning={measurementPlanningFor(planning, goal)}
               onSetChosenMetrics={(linkId, ids) => onSetChosenMetrics(goal, linkId, ids)}
               onChangeMetricField={(metricId, patch) => onChangeMetricField(goal, metricId, patch)}
+              onAddCustomMetric={(linkId) => onAddCustomMetric(goal, linkId)}
+              onRemoveCustomMetric={(linkId, id) => onRemoveCustomMetric(goal, linkId, id)}
+              onChangeCustomMetricLabel={(linkId, id, label) => onChangeCustomMetricLabel(goal, linkId, id, label)}
               onChangePromiseByWhen={(value) => onChangePromiseByWhen(goal, value)}
               onChangeCommitment={(patch) => onChangeCommitment(goal, patch)}
               planCadence={planCadence}

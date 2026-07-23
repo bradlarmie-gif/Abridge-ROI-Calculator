@@ -30,6 +30,9 @@ interface StepMeasurementPlanProps {
   planning: AttainPlanning;
   onSetChosenMetrics: (linkId: string, metricIds: string[]) => void;
   onChangeMetricField: (metricId: string, patch: Partial<MeasurementMetricEntry>) => void;
+  onAddCustomMetric: (linkId: string) => void;
+  onRemoveCustomMetric: (linkId: string, id: string) => void;
+  onChangeCustomMetricLabel: (linkId: string, id: string, label: string) => void;
   onChangePromiseByWhen: (value: string) => void;
   onChangeCommitment: (patch: { commitmentOwner?: string; commitmentByWhen?: string }) => void;
   onChangePartnerRisk: (text: string) => void;
@@ -49,6 +52,9 @@ export default function StepMeasurementPlan({
   planning,
   onSetChosenMetrics,
   onChangeMetricField,
+  onAddCustomMetric,
+  onRemoveCustomMetric,
+  onChangeCustomMetricLabel,
   onChangePromiseByWhen,
   onChangeCommitment,
   onChangePartnerRisk,
@@ -84,6 +90,9 @@ export default function StepMeasurementPlan({
         planning={planning}
         onSetChosenMetrics={onSetChosenMetrics}
         onChangeMetricField={onChangeMetricField}
+        onAddCustomMetric={onAddCustomMetric}
+        onRemoveCustomMetric={onRemoveCustomMetric}
+        onChangeCustomMetricLabel={onChangeCustomMetricLabel}
         onChangePromiseByWhen={onChangePromiseByWhen}
         onChangeCommitment={onChangeCommitment}
         planCadence={planCadence}

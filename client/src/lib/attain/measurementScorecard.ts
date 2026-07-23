@@ -23,6 +23,7 @@ import {
   measurementChosen,
   measurementBaseline,
   measurementBaselineIsOwn,
+  measurementCustom,
   measurementTarget,
   measurementOwner,
   measurementByWhen,
@@ -111,6 +112,10 @@ export interface TrackedMetric {
   byWhen: string;
   /** True when the partner already named this metric as proof on Align. */
   fromProof: boolean;
+  /** True when the partner added this metric themselves. A custom metric is a
+   * tracked SIGNAL, never in the engine chain, so it never affects the derived
+   * number; it only rides the scorecard and the Attainment progress log. */
+  isCustom?: boolean;
 }
 
 /**
@@ -175,6 +180,33 @@ export function trackedMetricsForGoal(params: {
         owner: measurementOwner(slice, metric.id),
         byWhen: measurementByWhen(slice, metric.id),
         fromProof: metric.fromProof,
+      });
+    }
+    // Partner-added custom metrics for this link: tracked signals, never priced.
+    // Their baseline/target/owner/date live in `entries` under the custom id,
+    // exactly like a built-in, but they are not in the engine chain.
+    for (const c of measurementCustom(slice, link.id)) {
+      const baseText = measurementBaseline(slice, c.id, "");
+      const tgtText = measurementTarget(slice, c.id, "");
+      rows.push({
+        key: `${goal}:${c.id}`,
+        goal,
+        metricId: c.id,
+        linkId: link.id,
+        linkN: link.n,
+        linkTitle: link.title,
+        label: c.label.trim() || "Custom metric",
+        helper: "",
+        unit: "",
+        baselineText: baseText,
+        baselineNum: parseSignalBaseline(baseText),
+        baselineTag: "data",
+        targetText: tgtText,
+        targetNum: parseLeadingNumber(tgtText),
+        owner: measurementOwner(slice, c.id),
+        byWhen: measurementByWhen(slice, c.id),
+        fromProof: false,
+        isCustom: true,
       });
     }
   }

@@ -501,6 +501,36 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
     [],
   );
 
+  // Custom metrics (single-goal): a partner-added SIGNAL to watch, appended to
+  // `measurement.custom[linkId]`. Never priced (not in the engine chain), so it
+  // only rides the scorecard and the Attainment progress log. Its
+  // baseline/target/owner/date reuse `handleChangeMetricField` under its id.
+  const handleAddCustomMetric = useCallback((linkId: string) => {
+    setPlanning((prev) => {
+      const m = prev.measurement ?? {};
+      const custom = m.custom ?? {};
+      const list = custom[linkId] ?? [];
+      const id = `custom-${linkId}-${Date.now().toString(36)}${list.length}`;
+      return { ...prev, measurement: { ...m, custom: { ...custom, [linkId]: [...list, { id, label: "" }] } } };
+    });
+  }, []);
+  const handleRemoveCustomMetric = useCallback((linkId: string, id: string) => {
+    setPlanning((prev) => {
+      const m = prev.measurement ?? {};
+      const custom = m.custom ?? {};
+      const list = (custom[linkId] ?? []).filter((c) => c.id !== id);
+      return { ...prev, measurement: { ...m, custom: { ...custom, [linkId]: list } } };
+    });
+  }, []);
+  const handleChangeCustomMetricLabel = useCallback((linkId: string, id: string, label: string) => {
+    setPlanning((prev) => {
+      const m = prev.measurement ?? {};
+      const custom = m.custom ?? {};
+      const list = (custom[linkId] ?? []).map((c) => (c.id === id ? { ...c, label } : c));
+      return { ...prev, measurement: { ...m, custom: { ...custom, [linkId]: list } } };
+    });
+  }, []);
+
   const handleChangePromiseByWhen = useCallback((value: string) => {
     setPlanning((prev) => ({ ...prev, measurement: { ...prev.measurement, promiseByWhen: value } }));
   }, []);
@@ -538,6 +568,36 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
       patchMeasurementForGoal(goal, (m) => {
         const entries = m.entries ?? {};
         return { ...m, entries: { ...entries, [metricId]: { ...entries[metricId], ...patch } } };
+      });
+    },
+    [patchMeasurementForGoal],
+  );
+
+  const handleAddCustomMetricForGoal = useCallback(
+    (goal: GoalId, linkId: string) => {
+      patchMeasurementForGoal(goal, (m) => {
+        const custom = m.custom ?? {};
+        const list = custom[linkId] ?? [];
+        const id = `custom-${linkId}-${Date.now().toString(36)}${list.length}`;
+        return { ...m, custom: { ...custom, [linkId]: [...list, { id, label: "" }] } };
+      });
+    },
+    [patchMeasurementForGoal],
+  );
+  const handleRemoveCustomMetricForGoal = useCallback(
+    (goal: GoalId, linkId: string, id: string) => {
+      patchMeasurementForGoal(goal, (m) => {
+        const custom = m.custom ?? {};
+        return { ...m, custom: { ...custom, [linkId]: (custom[linkId] ?? []).filter((c) => c.id !== id) } };
+      });
+    },
+    [patchMeasurementForGoal],
+  );
+  const handleChangeCustomMetricLabelForGoal = useCallback(
+    (goal: GoalId, linkId: string, id: string, label: string) => {
+      patchMeasurementForGoal(goal, (m) => {
+        const custom = m.custom ?? {};
+        return { ...m, custom: { ...custom, [linkId]: (custom[linkId] ?? []).map((c) => (c.id === id ? { ...c, label } : c)) } };
       });
     },
     [patchMeasurementForGoal],
@@ -993,6 +1053,9 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
                 planning={planning}
                 onSetChosenMetrics={handleSetChosenMetrics}
                 onChangeMetricField={handleChangeMetricField}
+                onAddCustomMetric={handleAddCustomMetric}
+                onRemoveCustomMetric={handleRemoveCustomMetric}
+                onChangeCustomMetricLabel={handleChangeCustomMetricLabel}
                 onChangePromiseByWhen={handleChangePromiseByWhen}
                 onChangeCommitment={handleChangeMeasureCommitment}
                 onChangePartnerRisk={handleChangePartnerRisk}
@@ -1020,6 +1083,9 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
                 planning={planning}
                 onSetChosenMetrics={handleSetChosenMetrics}
                 onChangeMetricField={handleChangeMetricField}
+                onAddCustomMetric={handleAddCustomMetric}
+                onRemoveCustomMetric={handleRemoveCustomMetric}
+                onChangeCustomMetricLabel={handleChangeCustomMetricLabel}
                 onChangePromiseByWhen={handleChangePromiseByWhen}
                 onChangeCommitment={handleChangeMeasureCommitment}
                 onChangePartnerRisk={handleChangePartnerRisk}
@@ -1049,6 +1115,9 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
                 planning={planning}
                 onSetChosenMetrics={handleSetChosenMetrics}
                 onChangeMetricField={handleChangeMetricField}
+                onAddCustomMetric={handleAddCustomMetric}
+                onRemoveCustomMetric={handleRemoveCustomMetric}
+                onChangeCustomMetricLabel={handleChangeCustomMetricLabel}
                 onChangePromiseByWhen={handleChangePromiseByWhen}
                 onChangeCommitment={handleChangeMeasureCommitment}
                 onChangePartnerRisk={handleChangePartnerRisk}
@@ -1079,6 +1148,9 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
                 planning={planning}
                 onSetChosenMetrics={handleSetChosenMetrics}
                 onChangeMetricField={handleChangeMetricField}
+                onAddCustomMetric={handleAddCustomMetric}
+                onRemoveCustomMetric={handleRemoveCustomMetric}
+                onChangeCustomMetricLabel={handleChangeCustomMetricLabel}
                 onChangePromiseByWhen={handleChangePromiseByWhen}
                 onChangeCommitment={handleChangeMeasureCommitment}
                 onChangePartnerRisk={handleChangePartnerRisk}
@@ -1109,6 +1181,9 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
                 planning={planning}
                 onSetChosenMetrics={handleSetChosenMetrics}
                 onChangeMetricField={handleChangeMetricField}
+                onAddCustomMetric={handleAddCustomMetric}
+                onRemoveCustomMetric={handleRemoveCustomMetric}
+                onChangeCustomMetricLabel={handleChangeCustomMetricLabel}
                 onChangePromiseByWhen={handleChangePromiseByWhen}
                 onChangeCommitment={handleChangeMeasureCommitment}
                 onChangePartnerRisk={handleChangePartnerRisk}
@@ -1137,6 +1212,9 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
                 planning={planning}
                 onSetChosenMetrics={handleSetChosenMetrics}
                 onChangeMetricField={handleChangeMetricField}
+                onAddCustomMetric={handleAddCustomMetric}
+                onRemoveCustomMetric={handleRemoveCustomMetric}
+                onChangeCustomMetricLabel={handleChangeCustomMetricLabel}
                 onChangePromiseByWhen={handleChangePromiseByWhen}
                 onChangeCommitment={handleChangeMeasureCommitment}
                 onChangePartnerRisk={handleChangePartnerRisk}
@@ -1168,6 +1246,9 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
                 onChangeGoalOwner={handleChangeGoalOwner}
                 onSetChosenMetrics={handleSetChosenMetricsForGoal}
                 onChangeMetricField={handleChangeMetricFieldForGoal}
+                onAddCustomMetric={handleAddCustomMetricForGoal}
+                onRemoveCustomMetric={handleRemoveCustomMetricForGoal}
+                onChangeCustomMetricLabel={handleChangeCustomMetricLabelForGoal}
                 onChangePromiseByWhen={handleChangePromiseByWhenForGoal}
                 onChangeCommitment={handleChangeMeasureCommitmentForGoal}
                 onChangePartnerRisk={handleChangePartnerRisk}
