@@ -14,7 +14,7 @@ function fmtM(n: number): string {
   return `$${Math.round(a)}`;
 }
 
-const COL_HEADERS = ["Application", "Annual spend", "How much could you displace?", "Displaceable"];
+const COL_HEADERS = ["Application", "Price / yr", "How much could you displace?", "Displaceable"];
 
 // The browsable capability cards, reused by the empty state and the on-demand
 // "+ Add application" panel. Clicking a card opens the add-tool modal.

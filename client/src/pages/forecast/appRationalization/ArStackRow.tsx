@@ -1,10 +1,12 @@
 import { useMemo } from "react";
+import { ChevronDown } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
-import { NumberField } from "@/components/NumberField";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { CategoryIcon } from "./CategoryIcon";
+import ArPriceControl from "./ArPriceControl";
 import {
-  itemRetired, itemStays, APP_RAT_CATEGORIES,
-  type AppRatItem,
+  itemRetired, itemStays, resolveAnnualSpend, APP_RAT_CATEGORIES,
+  type AppRatItem, type ArPricingModel,
 } from "@/lib/appRationalizationCalc";
 
 function fmtM(n: number): string {
@@ -19,6 +21,25 @@ export default function ArStackRow({
   const cat = useMemo(() => APP_RAT_CATEGORIES.find((c) => c.id === item.category)!, [item.category]);
   const retired = itemRetired(item);
   const stays = itemStays(item);
+
+  // Pricing, derived from the item so the inline popover edits the same source of
+  // truth the modal wrote. annualSpend stays canonical: per-user edits recompute
+  // it from seats x rate; flat edits set it directly; a user count on a flat tool
+  // is plain context and never touches the price.
+  const model: ArPricingModel = item.pricingModel ?? "flat";
+  const users = item.userCount ?? 0;
+  const perUser = item.perUserCost ?? 0;
+  const setModel = (m: ArPricingModel) =>
+    m === "perUser"
+      ? onChange({ pricingModel: m, annualSpend: resolveAnnualSpend("perUser", 0, users, perUser) })
+      : onChange({ pricingModel: m });
+  const setFlat = (v: number) => onChange({ annualSpend: v });
+  const setUsers = (v: number) =>
+    model === "perUser"
+      ? onChange({ userCount: v, annualSpend: resolveAnnualSpend("perUser", 0, v, perUser) })
+      : onChange({ userCount: v > 0 ? v : undefined });
+  const setPerUser = (v: number) =>
+    onChange({ perUserCost: v, annualSpend: resolveAnnualSpend("perUser", 0, users, v) });
 
   return (
     <div
@@ -43,17 +64,35 @@ export default function ArStackRow({
         </div>
       </div>
 
-      {/* Annual spend */}
-      <div className="flex items-center h-10 bg-white border border-[#E8E2DA] rounded-[10px] px-3 gap-1 focus-within:border-[#EA2C00]">
-        <span className="text-[#8C7E6E] text-sm">$</span>
-        <NumberField
-          value={item.annualSpend}
-          onValueChange={(v) => onChange({ annualSpend: v })}
-          min={0}
-          className="flex-1 min-w-0 bg-transparent text-sm text-[#1A1A1A] outline-none tabular-nums"
-          data-testid={`ar-row-spend-${item.id}`}
-        />
-      </div>
+      {/* Price: click to edit inline (flat / per-user) */}
+      <Popover>
+        <PopoverTrigger asChild>
+          <button
+            className="flex items-center justify-between h-10 w-full bg-white border border-[#E8E2DA] rounded-[10px] px-3 text-left hover:border-[#1A1A1A] focus:border-[#EA2C00] outline-none transition-colors"
+            data-testid={`ar-row-price-${item.id}`}
+          >
+            <span className="min-w-0">
+              <span className="block text-sm text-[#1A1A1A] tabular-nums leading-none">{fmtM(item.annualSpend)}</span>
+              {users > 0 && (
+                <span className="block text-[9.5px] text-[#8C7E6E] tabular-nums leading-none mt-0.5 truncate">
+                  {users.toLocaleString()} users
+                </span>
+              )}
+            </span>
+            <ChevronDown className="w-3.5 h-3.5 text-[#B4A99B] flex-shrink-0" strokeWidth={2.25} />
+          </button>
+        </PopoverTrigger>
+        <PopoverContent align="start" sideOffset={6} className="w-[300px] p-4 rounded-2xl border-[#E8E2DA] shadow-[0_16px_40px_rgba(0,0,0,0.12)]">
+          <ArPriceControl
+            pricingModel={model} onPricingModel={setModel}
+            flatSpend={item.annualSpend} onFlatSpend={setFlat}
+            users={users} onUsers={setUsers}
+            perUser={perUser} onPerUser={setPerUser}
+            effectiveSpend={item.annualSpend}
+            idPrefix={`ar-row-price-${item.id}`}
+          />
+        </PopoverContent>
+      </Popover>
 
       {/* How much could you displace */}
       <div className="flex items-center gap-2.5">
