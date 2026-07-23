@@ -25,6 +25,7 @@ export default function ChooseQuestion({
   values,
   ctx,
   storeKeyOverride,
+  instanceKey,
   onToggleOption,
   onChangeSharpener,
 }: {
@@ -36,10 +37,16 @@ export default function ChooseQuestion({
   /** For the stacking scaffold: the concrete store key for THIS instance of a
    * repeated question. Defaults to the question's own storeKey. */
   storeKeyOverride?: string;
+  /** For the stacking scaffold: the chosen path/event id this instance belongs
+   * to. Suffixes the test ids so a question repeated across paths (e.g. the
+   * shared "where") never collides. Undefined for a single, non-stacked
+   * question, so Workforce / Access test ids are unchanged. */
+  instanceKey?: string;
   onToggleOption: (storeKey: string, mode: "single" | "multi", optionId: string) => void;
   onChangeSharpener: (sharpenerStoreKey: string, value: number) => void;
 }) {
   const storeKey = storeKeyOverride ?? question.storeKey;
+  const testidBase = instanceKey ? `${question.id}-${instanceKey}` : question.id;
   const selected = asStringArray(values[storeKey]);
   const isSelected = (id: string) => selected.includes(id);
   const cols = question.options.length >= 3 ? "sm:grid-cols-3" : "sm:grid-cols-2";
@@ -50,7 +57,7 @@ export default function ChooseQuestion({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, delay: Math.min(index * 0.05, 0.25) }}
       className="mb-9"
-      data-testid={`align-question-${question.id}`}
+      data-testid={`align-question-${testidBase}`}
     >
       <div className="flex items-baseline gap-2.5 mb-2">
         <span className="text-[11px] font-bold uppercase tracking-[2px] text-[#EA2C00]">
@@ -72,7 +79,7 @@ export default function ChooseQuestion({
           <OptionCard
             key={option.id}
             option={option}
-            questionId={question.id}
+            questionId={testidBase}
             selected={isSelected(option.id)}
             ctx={ctx}
             onClick={() => onToggleOption(storeKey, question.mode, option.id)}
@@ -86,7 +93,7 @@ export default function ChooseQuestion({
         option.sharpener && isSelected(option.id) ? (
           <Sharpener
             key={`${option.id}-sharpener`}
-            questionId={question.id}
+            questionId={testidBase}
             option={option}
             values={values}
             onChange={onChangeSharpener}

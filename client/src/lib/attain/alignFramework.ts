@@ -81,6 +81,17 @@ export interface AlignQuestion {
    * chosen option of the question with this id (per-path/per-event drivers use
    * it; Workforce does not stack, so it is left undefined here). */
   stacksOnQuestionId?: string;
+  /** For a stacked question that is only relevant to SOME of the parent's
+   * chosen options (e.g. the E/M "who" question only belongs in the E/M
+   * section, not HCC or Denials). Undefined -> the question renders once for
+   * EVERY chosen parent option (the original stacking behaviour). Non-stacking
+   * questions ignore this. */
+  appliesToChoices?: string[];
+  /** The displayed question number (the CONCEPTUAL dimension, 1-5). Multiple
+   * per-path questions can share a dimension (every path's "who" is dimension
+   * 2). Falls back to the question's own position when unset, so Workforce /
+   * Access keep numbering by position exactly as before. */
+  dimension?: number;
 }
 
 export interface AlignProofFigure {
@@ -111,6 +122,11 @@ export interface AlignConfig {
   eyebrow: string;
   intro: string;
   questions: AlignQuestion[];
+  /** The count shown as "Question N of M". Falls back to `questions.length`,
+   * so a non-stacking config (Workforce / Access) is unchanged. Multi-path
+   * drivers set this to the number of CONCEPTUAL dimensions (5), since the
+   * per-path questions repeat dimensions rather than adding new ones. */
+  dimensionTotal?: number;
   /** The ONLY choice -> engine mapping. Reads the selection/sharpener keys out
    * of `values` and returns the engine `LeverValues` to MERGE over them, so the
    * derived number stays reconciled to `computeAllDriverValues`. Conservative
