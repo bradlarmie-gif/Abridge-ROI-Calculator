@@ -9,7 +9,7 @@
  * `accessEnterprise`, `accessFreedShare`, and the four demand sources), and the
  * demand gate MIN(capacity, demand) still governs the realized visits.
  *
- *   Q1 Outcome  (burn down the backlog / cut the wait / open room to grow) —
+ *   Q1 Outcome  (reduce the backlog / shorten the wait / add capacity) —
  *      FRAMING. All three are the same freed-time-to-capacity mechanism here,
  *      so Q1 aligns the story, not the number.
  *   Q2 Who      — the population cut. The PROVIDER COUNT is inherited from
@@ -271,7 +271,7 @@ export function deriveAccessAlignProof(values: LeverValues, ctx: AlignContext): 
           ? "You told us demand is the limit. Abridge can free the time, but there is nothing to fill unless real patients are waiting. Add a demand source above with a real count and the number follows."
           : selectedDemand.length === 0
             ? "Add where the demand comes from above, so the freed capacity has real patients to fill."
-            : "Set your choices above and the number falls out here.";
+            : "Set your choices above and the number appears here.";
 
   const headlineSub = ready
     ? `about ${fmtInt(payoff.realizedVisits)} more visits a year. ${bindingPlainPhrase(payoff.binding)}`
@@ -299,13 +299,13 @@ export const accessAlignConfig: AlignConfig = {
     {
       id: "outcome",
       storeKey: K_OUTCOME,
-      prompt: "What are you really after?",
-      helper: "All three run on the same freed time. This sets the framing.",
+      prompt: "What are you trying to accomplish?",
+      helper: "All three run on the same freed time. This shapes how you describe it, not the number.",
       mode: "single",
       options: [
-        { id: "backlog", label: "Burn down the backlog", helper: "Work through the patients already referred and waiting to be seen." },
-        { id: "wait", label: "Cut the wait for a new appointment", helper: "Get a new patient in sooner, so the time to the next open slot drops." },
-        { id: "grow", label: "Open room to grow", helper: "Create durable new capacity to take on more patients over time." },
+        { id: "backlog", label: "Reduce the referral backlog", helper: "Work through the patients already referred and waiting to be seen." },
+        { id: "wait", label: "Shorten the wait for a new appointment", helper: "Get a new patient in sooner, so the time to the next open slot drops." },
+        { id: "grow", label: "Add capacity to see more patients", helper: "Create durable new capacity to take on more patients over time." },
       ],
     },
     {
@@ -429,7 +429,7 @@ export const accessAlignConfig: AlignConfig = {
     {
       id: "proof",
       storeKey: K_PROOF,
-      prompt: "What proof would convince you it worked?",
+      prompt: "What would tell you it's working?",
       helper: "Pick any that matter. These become the signals your plan tracks.",
       mode: "multi",
       options: [

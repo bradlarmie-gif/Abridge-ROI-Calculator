@@ -389,7 +389,7 @@ const proofQuestion = (setting: AttainSetting): AlignQuestion => ({
   id: "proof",
   storeKey: K_PROOF,
   dimension: setting === "inpatient" ? 4 : 5,
-  prompt: "What proof would convince you it worked?",
+  prompt: "What would tell you it's working?",
   helper: "Pick any that matter. These become the signals your plan tracks.",
   mode: "multi",
   options:

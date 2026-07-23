@@ -174,7 +174,7 @@ export default function StepMultiBuildCase({
           className="rounded-xl border-2 border-[#EA2C00] bg-[#FFF6F3] p-6 mb-10"
           data-testid="panel-attain-multi-freed-time-split"
         >
-          <p className="text-[11px] font-semibold uppercase tracking-[2px] text-[#EA2C00] mb-1.5">One hour, one split</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[2px] text-[#EA2C00] mb-1.5">One shared hour</p>
           <p className="text-[15px] text-[#3A3A3A] leading-relaxed mb-5 max-w-[620px]">
             Access and Retention both price the same freed documentation hour. This is the one decision that keeps it
             from being counted twice: how much of that hour routes to {accessSplitLabel}, versus how much stays as

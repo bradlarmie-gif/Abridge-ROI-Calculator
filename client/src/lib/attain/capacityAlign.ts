@@ -230,7 +230,7 @@ export function deriveCapacityAlignProof(values: LeverValues, ctx: AlignContext)
           ? "You told us the overtime is census surges. Abridge frees documentation time, but it cannot flatten census, so no overtime comes out. The honest number here is zero."
           : !where
             ? "Say where the overtime shows up, so the share charting causes is real."
-            : "Set your choices above and the number falls out here.";
+            : "Set your choices above and the number appears here.";
 
   const headlineSub = ready
     ? `about ${fmtInt(chain.realizedOtHoursAvoided)} overtime hours a year off your team, at a ${Math.round(chain.docAttributableSharePct)}% documentation-attributable ceiling`
@@ -261,8 +261,8 @@ export const capacityAlignConfig: AlignConfig = {
     {
       id: "outcome",
       storeKey: K_OUTCOME,
-      prompt: "What are you really after?",
-      helper: "Same freed time either way. This sets the framing.",
+      prompt: "What are you trying to accomplish?",
+      helper: "Same freed time either way. This shapes how you describe it, not the number.",
       mode: "single",
       options: [
         { id: "cost", label: "Cut the overtime cost", helper: "Take the overtime dollars out of the nursing budget." },
@@ -342,7 +342,7 @@ export const capacityAlignConfig: AlignConfig = {
     {
       id: "proof",
       storeKey: K_PROOF,
-      prompt: "What proof would convince you it worked?",
+      prompt: "What would tell you it's working?",
       helper: "Pick any that matter. These become the signals your plan tracks.",
       mode: "multi",
       options: [

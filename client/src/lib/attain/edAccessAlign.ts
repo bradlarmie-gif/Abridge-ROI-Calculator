@@ -238,7 +238,7 @@ export function deriveEdAccessAlignProof(values: LeverValues, ctx: AlignContext)
         ? "You told us the limit is staffing or beds. Abridge frees documentation time, but it cannot add staff or open beds, so no left-without-being-seen visit becomes recoverable. The honest number here is zero."
         : gate === "lowdemand" && pool.recoverablePool <= 0
           ? "You told us demand is low. Abridge can free the time, but few patients are leaving to recover. Add your real LWBS rate under where the loss shows up and the number follows."
-          : "Set your choices above and the number falls out here.";
+          : "Set your choices above and the number appears here.";
 
   const headlineSub = ready
     ? `about ${fmtInt(recovery.realizedRecovered)} recovered visits a year${
@@ -268,8 +268,8 @@ export const edAccessAlignConfig: AlignConfig = {
     {
       id: "outcome",
       storeKey: K_OUTCOME,
-      prompt: "What are you really after?",
-      helper: "The first two run on the same freed time; this sets the framing. Capturing admissions adds a second, separately priced leg.",
+      prompt: "What are you trying to accomplish?",
+      helper: "The first two run on the same freed time; this shapes how you describe it, not the number. Capturing admissions adds a second, separately priced leg.",
       mode: "multi",
       options: [
         { id: "lwbs", label: "Cut left-without-being-seen", helper: "Bring back patients who show up but leave the waiting room before a provider sees them." },
@@ -383,7 +383,7 @@ export const edAccessAlignConfig: AlignConfig = {
     {
       id: "proof",
       storeKey: K_PROOF,
-      prompt: "What proof would convince you it worked?",
+      prompt: "What would tell you it's working?",
       helper: "Pick any that matter. These become the signals your plan tracks.",
       mode: "multi",
       options: [

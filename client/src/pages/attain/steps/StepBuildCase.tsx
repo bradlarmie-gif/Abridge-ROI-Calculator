@@ -271,7 +271,7 @@ export default function StepBuildCase({
           data-testid="panel-attain-freed-time-split"
         >
           <p className="text-[11px] font-semibold uppercase tracking-[2px] text-[#EA2C00] mb-1.5">
-            One hour, one split
+            One shared hour
           </p>
           <p className="text-[15px] text-[#3A3A3A] leading-relaxed mb-5 max-w-[620px]">
             Access and Retention both price the same freed documentation hour. This is the one decision that keeps it

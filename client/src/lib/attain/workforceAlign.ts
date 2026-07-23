@@ -195,7 +195,7 @@ export function deriveWorkforceAlignProof(values: LeverValues, ctx: AlignContext
       ? "Say what is driving departures, so we size only what Abridge can honestly move."
       : !burden
         ? "Say where the burden hurts, so the relief that follows is real."
-        : "Set your choices above and the number falls out here.";
+        : "Set your choices above and the number appears here.";
 
   const headlineSub = ready
     ? `about ${fmtPp(payoff.turnoverPointsReduced)} points off your ${fmtPp(scope.turnoverRatePct)}% turnover rate, at a ${WORKFORCE_IMPACT_CEILING_PP[setting]}% reachable ceiling`
@@ -223,8 +223,8 @@ export const workforceAlignConfig: AlignConfig = {
     {
       id: "outcome",
       storeKey: K_OUTCOME,
-      prompt: "What are you really after?",
-      helper: "Same dollar either way. This sets the framing.",
+      prompt: "What are you trying to accomplish?",
+      helper: "Same dollar either way. This shapes how you describe it, not the number.",
       mode: "single",
       options: [
         { id: "keep", label: "Keep our people", helper: "Fewer of the clinicians you have today choosing to leave." },
@@ -293,7 +293,7 @@ export const workforceAlignConfig: AlignConfig = {
     {
       id: "proof",
       storeKey: K_PROOF,
-      prompt: "What proof would convince you it worked?",
+      prompt: "What would tell you it's working?",
       helper: "Pick any that matter. These become the signals your plan tracks.",
       mode: "multi",
       options: [
