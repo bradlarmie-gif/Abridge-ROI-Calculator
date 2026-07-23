@@ -77,14 +77,11 @@ function goalOfStep(step: AttainStepId): GoalId | null {
 }
 
 /** Whether a goal + setting renders its Plan through the shared MEASUREMENT
- * surface (MeasurementPlanSurface). Every goal a multi-goal plan can hold has
- * one EXCEPT ED access, whose single-goal Plan still uses the phased
- * StepPlanning (there is no ED-access measurement derivation yet). A multi-goal
- * plan routes to the stacked measurement surface only when every selected goal
- * has one; an ED plan that includes access stays on the phased
- * StepMultiPlanning, exactly as single-goal ED access stays on StepPlanning. */
-function hasMeasurementSurface(goal: GoalId, setting: AttainSetting): boolean {
-  if (goal === "access" && setting === "ed") return false;
+ * surface (MeasurementPlanSurface). Every goal a multi-goal plan can hold now
+ * has one, ED access included (deriveEdAccessMeasurementPlan). A multi-goal
+ * plan routes to the stacked measurement surface when every selected goal has
+ * one. `setting` is retained for a future goal/setting that might not. */
+function hasMeasurementSurface(goal: GoalId, _setting: AttainSetting): boolean {
   return goal === "access" || goal === "retention" || goal === "revenue" || goal === "quality" || goal === "capacity";
 }
 
@@ -1108,23 +1105,32 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
               />
             )}
 
+            {/* ED ACCESS is cloned onto the same MEASUREMENT PLAN surface as
+                every other combo: a SINGLE-GATED ladder (minutes free the
+                throughput, door-to-provider falls as the make-or-break closed
+                by the honest gate when the leak is staffing or beds, LWBS
+                falls, then recovered visits and captured admissions land). The
+                derivation differs (deriveEdAccessMeasurementPlan on the ED
+                access chain); the scorecard UI is shared. Single-goal only; a
+                multi-goal plan that includes ED access still stacks through
+                StepMultiMeasurementPlan. */}
             {step === "commit" && isEdAccessPlan && (
-              <StepPlanning
+              <StepMeasurementPlan
+                goal="access"
                 setting="ed"
                 baseline={baseline}
-                goal="access"
                 values={valuesByGoal.access ?? defaultLeverValues("access", "ed")}
                 combined={combined}
                 goalOwner={goalOwnerByPriority.access ?? { name: "", title: "" }}
                 onChangeGoalOwner={(patch) => handleChangeGoalOwner("access", patch)}
                 planning={planning}
-                onChangePhaseOwner={handleChangePhaseOwner}
-                onChangePhaseSignalTarget={handleChangePhaseSignalTarget}
-                onChangePhaseSignalLabel={handleChangePhaseSignalLabel}
+                onSetChosenMetrics={handleSetChosenMetrics}
+                onChangeMetricField={handleChangeMetricField}
+                onChangePromiseByWhen={handleChangePromiseByWhen}
+                onChangeCommitment={handleChangeMeasureCommitment}
                 onChangePartnerRisk={handleChangePartnerRisk}
                 planCadence={planCadence}
                 onChangePlanCadence={handleChangePlanCadence}
-                totalMonths={state.totalMonths}
                 stepNumber={stepIndex + 1}
               />
             )}

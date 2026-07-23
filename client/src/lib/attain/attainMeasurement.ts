@@ -31,12 +31,14 @@
  */
 
 import { computeAccessChain, type AccessChainResult } from "./attainAccess";
+import { computeEdAccessChain } from "./attainEdAccess";
+import { edAccessAlignToLeverValues } from "./edAccessAlign";
 import { computeWorkforceChain } from "./attainWorkforce";
 import { computeCapacityChain, NURSING_CAPACITY_NO_DOUBLE_COUNT } from "./attainCapacity";
 import { capacityAlignToLeverValues } from "./capacityAlign";
 import type { AttainBaseline, LeverValues } from "./attainLevers";
 import type { AttainSetting } from "./attainTypes";
-import { deriveAccessLadder, deriveRetentionLadder, deriveNursingCapacityLadder, retentionChartingTerm } from "@/pages/attain/steps/accessLadder";
+import { deriveAccessLadder, deriveEdAccessLadder, deriveRetentionLadder, deriveNursingCapacityLadder, retentionChartingTerm } from "@/pages/attain/steps/accessLadder";
 import { firstSelected, selectedOptionIds, sharpenerNumber } from "./alignFramework";
 import {
   deriveRevenueLadder,
@@ -1881,5 +1883,297 @@ export function deriveCapacityMeasurementPlan(
     },
     monthlyCheckTeach:
       "Walk the chain in order. The post-shift charting falls first, the overtime dollars move last, so early links should turn before the later ones. Attainment is not a number you assert. It is whether each metric moved toward its target on the schedule you set.",
+  };
+}
+
+// ── ED ACCESS measurement plan ───────────────────────────────────────────────
+//
+// ED access is a SINGLE-GATED ladder like outpatient access and nursing
+// overtime: the rungs multiply, so no rung is independently "worth $X" and the
+// whole realized dollar rides on one honest gate (the documentation-caused
+// share of the LWBS pool). The surface and the discipline are identical to
+// every other plan: every baseline is the partner's own figure or a labeled
+// benchmark, every owner and date starts BLANK, targets default to the derived
+// figure so the gap shows, and the whole thing is DYNAMIC to the ED access
+// Align choices, reconciling to the same ED access drivers.
+//
+// The chain is the order ED access actually moves in:
+//   1. the minutes free the throughput   (freed charting time buys faster flow)
+//   2. door-to-provider falls            (the make-or-break: the walk shortens)
+//   3. LWBS falls                        (fewer patients leave before being seen)
+//   4. recovered visits and captured admissions land (the prize is priced on it)
+//
+// DYNAMIC to Align:
+//   - the honest gate (Q3) closes link 2 when the leak is short staffing or
+//     beds, because freeing documentation time cannot add staff or open beds,
+//     so the door does not shorten and the honest number stays at zero (the
+//     same zero the Align number already reflects);
+//   - the "where the loss shows up" answer (Q4) pre-selects and badges the
+//     door-to-provider and LWBS-rate metrics;
+//   - the outcome (Q1) badges the door metric and, when admissions are in play,
+//     the captured-admissions metric;
+//   - the proof (Q5) pre-selects the matching signals (LWBS rate, door-to-
+//     provider time, recovered visits, captured admissions);
+//   - the scope + Starting-Point numbers set the baselines and the derived
+//     targets straight off the shared ED access ladder.
+//
+// COMMITMENT (make-or-break): the freed time actually shortens door-to-provider,
+// which is ED operations' to hold (triage-to-provider flow), not Abridge's.
+
+/** ED access labeled benchmarks, used ONLY when the partner has no measured
+ * figure. Surfaced with a "Benchmark" tag so they are never mistaken for the
+ * partner's own numbers. */
+export const ED_ACCESS_MEASURE_BENCH = {
+  minutesSavedPerNote: 9,
+  doorToProviderMin: 45,
+  doorToProviderTargetMin: 30,
+  lwbsRatePct: 8,
+  lwbsRateTargetPct: 4,
+} as const;
+
+/** The ED access Align proof option ids -> the measurement metric each maps
+ * onto, so the proof a partner already named on Align pre-selects the metric. */
+const ED_ACCESS_PROOF_TO_METRIC: Record<string, string> = {
+  lwbsrate: "lwbs-rate",
+  doortime: "door-to-provider-time",
+  recovered: "recovered-visits",
+  admissions: "captured-admissions",
+};
+
+/**
+ * Derives the ED ACCESS measurement plan from the Align state.
+ *
+ * Re-merges the Align choices onto the engine levers exactly as
+ * `edAccessAlignToLeverValues` does (idempotent, so it is correct whether the
+ * caller passes the merged values the app persists or the raw choices), then
+ * reads the SAME `computeEdAccessChain` / `deriveEdAccessLadder` every other ED
+ * access surface reads, which reconciles to Explore's edLwbs / admission-capture
+ * primitives. `opts.realizedRecovered`, `opts.capturedAdmissions`, and
+ * `opts.prize` are passed in so the caller supplies the same figures every
+ * other ED access surface uses off the combined engine result, keeping link-4's
+ * targets and the promise prize reconciled with Align exactly.
+ */
+export function deriveEdAccessMeasurementPlan(
+  baseline: AttainBaseline,
+  values: LeverValues,
+  crossGoalShareMultiplier: number,
+  opts: { realizedRecovered: number; capturedAdmissions: number; prize: number },
+): MeasurementPlanModel {
+  const merged: LeverValues = {
+    ...values,
+    ...edAccessAlignToLeverValues(values, {
+      baseline,
+      setting: "ed",
+      realizationPct: 100,
+      crossGoalShareMultiplier: 1,
+    }),
+  };
+  const chain = computeEdAccessChain(baseline, merged, crossGoalShareMultiplier);
+  const ladder = deriveEdAccessLadder(chain, {
+    realizedRecovered: opts.realizedRecovered,
+    capturedAdmissions: opts.capturedAdmissions,
+    prize: opts.prize,
+  });
+
+  const who = firstSelected(values, "edAccessAlignWho");
+  const gate = firstSelected(values, "edAccessAlignGate");
+  const outcomes = selectedOptionIds(values, "edAccessAlignOutcome");
+  const where = selectedOptionIds(values, "edAccessAlignWhere");
+  const proof = selectedOptionIds(values, "edAccessAlignProof");
+
+  const ready = Boolean(who) && Boolean(gate);
+  const emptyHint = !who
+    ? "Pick who this is for on the Align step, then the measurement chain builds itself from what you aligned on."
+    : !gate
+      ? "Say why patients leave without being seen on the Align step, so the chain measures only what Abridge can honestly move."
+      : "Set your Align choices and the chain builds itself here.";
+
+  const proofHas = (metricId: string) => proof.some((p) => ED_ACCESS_PROOF_TO_METRIC[p] === metricId);
+  const wantsAdmissions = outcomes.includes("admissions");
+  const lwbsTyped = sharpenerNumber(values, "edAccessAlignLwbsRate") > 0;
+
+  // The honest gate: only documentation-choked throughput lets freed charting
+  // time shorten the door-to-provider walk. Short staffing or no beds cannot be
+  // solved by freeing the record, so the make-or-break link (link 2) closes and
+  // the honest number stays at zero, exactly the zero the Align number reflects.
+  const doorBlocked = gate === "staffing";
+  const honestZero = doorBlocked;
+
+  // ── Link 1 — the minutes free the throughput ──────────────────────────────
+  const minutesTarget = ladder.minutes > 0 ? ladder.minutes : ED_ACCESS_MEASURE_BENCH.minutesSavedPerNote;
+  const freedSet = ladder.freedHrsPerProviderWk > 0;
+  const throughputLink: MeasurementLink = {
+    id: "throughput",
+    n: 1,
+    title: "The minutes free the throughput",
+    teach: "The first thing to prove: the note takes less time, and that freed time is the only thing that mechanically buys a faster door-to-provider. Everything downstream is multiplication on top of this one number.",
+    blocked: false,
+    metrics: [
+      {
+        id: "minutes-saved-per-note",
+        label: "Minutes saved per note",
+        unit: "min / note",
+        helper: "Charting time that comes off each ED note, measured against a timed sample before go-live.",
+        baseline: "0 today",
+        baselineTag: "data",
+        defaultTarget: `${fmtInt(minutesTarget)} min`,
+        fromProof: false,
+      },
+      {
+        id: "freed-throughput-hours",
+        label: "Freed hours committed to throughput",
+        unit: "hrs / provider / wk",
+        helper: "The freed minutes, added up across a week and directed to faster door-to-provider instead of staying as relief.",
+        baseline: "0 today",
+        baselineTag: "data",
+        defaultTarget: freedSet ? `${fmtHours1(ladder.freedHrsPerProviderWk)} hrs / wk` : "set your providers on Align",
+        fromProof: false,
+      },
+    ],
+    defaultChosen: ["minutes-saved-per-note"],
+  };
+
+  // ── Link 2 — door-to-provider falls (THE make-or-break, gated) ────────────
+  const doorFromProof = proofHas("door-to-provider-time") || where.includes("doortoprovider") || outcomes.includes("doortoprovider");
+  const doorLink: MeasurementLink = {
+    id: "door",
+    n: 2,
+    title: "Door-to-provider falls",
+    teach: "Freed time only recovers a patient if it actually shortens the walk from the door to a provider. This is the link the plan lives or dies on.",
+    blocked: doorBlocked,
+    blockedReason: doorBlocked
+      ? "You told us on Align the limit is staffing or beds. Freeing documentation time cannot add staff or open beds, so the door-to-provider walk does not shorten from this and no left-without-being-seen visit becomes recoverable. The honest number stays at zero until that limit changes."
+      : undefined,
+    metrics: doorBlocked
+      ? []
+      : [
+          {
+            id: "door-to-provider-time",
+            label: "Door-to-provider time",
+            unit: "min",
+            helper: "The minutes from arrival to a provider, coming down as the freed time speeds the front end. Benchmark until you drop in your own.",
+            baseline: `${ED_ACCESS_MEASURE_BENCH.doorToProviderMin} min`,
+            baselineTag: "benchmark",
+            defaultTarget: `under ${ED_ACCESS_MEASURE_BENCH.doorToProviderTargetMin} min`,
+            fromProof: doorFromProof,
+          },
+          {
+            id: "share-freed-time-throughput",
+            label: "Share of freed time committed to throughput",
+            unit: "%",
+            helper: "The portion of freed hours directed to faster door-to-provider, rather than staying as relief. This is the commitment, made visible.",
+            baseline: "0% today",
+            baselineTag: "data",
+            defaultTarget: ladder.throughputSharePct > 0 ? `${fmtInt(ladder.throughputSharePct)}%` : "set on Align",
+            fromProof: false,
+          },
+        ],
+    defaultChosen: doorBlocked ? [] : ["door-to-provider-time"],
+  };
+
+  // ── Link 3 — LWBS falls ───────────────────────────────────────────────────
+  const lwbsFromProof = proofHas("lwbs-rate") || where.includes("triage") || outcomes.includes("lwbs");
+  const lwbsLink: MeasurementLink = {
+    id: "lwbs",
+    n: 3,
+    title: "LWBS falls",
+    teach: "As the door shortens, fewer patients give up and leave before being seen. Only the charting-caused share of that leak is Abridge's to move; the rest leaves for staffing or beds.",
+    blocked: false,
+    metrics: [
+      {
+        id: "lwbs-rate",
+        label: "LWBS rate",
+        unit: "%",
+        helper: "The share of arrivals who leave before a provider sees them, trending down against this baseline.",
+        baseline: lwbsTyped ? `${fmtInt(ladder.lwbsRatePct)}%` : `${ED_ACCESS_MEASURE_BENCH.lwbsRatePct}%`,
+        baselineTag: lwbsTyped ? "data" : "benchmark",
+        defaultTarget: `under ${ED_ACCESS_MEASURE_BENCH.lwbsRateTargetPct}%`,
+        fromProof: lwbsFromProof,
+      },
+      {
+        id: "recoverable-pool",
+        label: "Recoverable LWBS pool",
+        unit: "patients / yr",
+        helper: "The patients who leave because charting chokes throughput, the honest ceiling on what this plan can reach. The rest leaves for staffing or beds and stays out.",
+        baseline: "0 today",
+        baselineTag: "data",
+        defaultTarget: ladder.recoverablePool > 0 ? `${fmtInt(ladder.recoverablePool)} / yr` : "set the gate on Align",
+        fromProof: false,
+      },
+    ],
+    defaultChosen: ["lwbs-rate"],
+  };
+
+  // ── Link 4 — recovered visits and captured admissions land (the outcome) ──
+  const recoveredSet = ladder.realizedRecovered > 0;
+  const admissionsSet = ladder.capturedAdmissions > 0;
+  const prizeSet = ladder.prize > 0;
+  const recoveredFromProof = proofHas("recovered-visits");
+  const admissionsFromProof = proofHas("captured-admissions") || wantsAdmissions;
+  const recoveredLink: MeasurementLink = {
+    id: "recovered",
+    n: 4,
+    title: "Recovered visits and admissions land",
+    teach: "The payoff: patients who would have left but were seen instead, the admissions some of them become, and the contribution margin they carry. This is the number the promise is priced on.",
+    blocked: false,
+    metrics: [
+      {
+        id: "recovered-visits",
+        label: "Recovered visits per year",
+        unit: "visits / yr",
+        helper: "Left-without-being-seen visits actually brought back, the smaller of the recoverable pool and what the freed time affords.",
+        baseline: "0 today",
+        baselineTag: "data",
+        defaultTarget: honestZero ? "an honest zero here" : recoveredSet ? `${fmtInt(ladder.realizedRecovered)} / yr` : "finish the Align chain",
+        fromProof: recoveredFromProof,
+      },
+      {
+        id: "captured-admissions",
+        label: "Captured admissions per year",
+        unit: "admissions / yr",
+        helper: "Recovered patients who needed admitting and were admitted, capped by bed and payer availability.",
+        baseline: "0 today",
+        baselineTag: "data",
+        defaultTarget: honestZero
+          ? "an honest zero here"
+          : !wantsAdmissions
+            ? "add admissions on Align"
+            : admissionsSet
+              ? `${fmtInt(ladder.capturedAdmissions)} / yr`
+              : "finish the Align chain",
+        fromProof: admissionsFromProof,
+      },
+      {
+        id: "recovered-margin",
+        label: "Recovered margin per year",
+        unit: "contribution margin / yr",
+        helper: "The recovered visits and captured admissions priced at contribution margin, never gross charges. This is the CFO number.",
+        baseline: "$0 today",
+        baselineTag: "data",
+        defaultTarget: honestZero ? "an honest zero here" : prizeSet ? `${fmtMoneyCompact(ladder.prize)} / yr` : "finish the Align chain",
+        fromProof: false,
+      },
+    ],
+    defaultChosen: [],
+  };
+  const recoveredProofChosen = recoveredLink.metrics.filter((m) => m.fromProof).map((m) => m.id);
+  recoveredLink.defaultChosen = recoveredProofChosen.length > 0 ? recoveredProofChosen : ["recovered-visits"];
+
+  return {
+    ready,
+    emptyHint,
+    links: [throughputLink, doorLink, lwbsLink, recoveredLink],
+    gate,
+    outcome: outcomes[0],
+    realizedVisits: ladder.realizedRecovered,
+    prize: ladder.prize,
+    commitment: {
+      title: "The one thing this plan lives or dies on",
+      teach:
+        "Freed documentation time only recovers a patient if it actually shortens the walk from the door to a provider. If the minutes quietly refill with other work, the charting comes off but the door stays slow and no patient is recovered. Someone in ED operations has to own directing that freed time to faster triage-to-provider flow.",
+      ownerLabel: "Who owns directing the freed time to faster throughput",
+    },
+    monthlyCheckTeach:
+      "Walk the chain in order. The minutes free first, the recovered visits and captured admissions land last, so early links should turn before the later ones. Attainment is not a number you assert. It is whether each metric moved toward its target on the schedule you set.",
   };
 }

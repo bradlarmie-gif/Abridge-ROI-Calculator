@@ -6,6 +6,7 @@ import { computeWorkforceChain } from "@/lib/attain/attainWorkforce";
 import { deriveAccessLadder } from "./accessLadder";
 import {
   deriveAccessMeasurementPlan,
+  deriveEdAccessMeasurementPlan,
   deriveRetentionMeasurementPlan,
   deriveRevenueMeasurementPlan,
   deriveQualityMeasurementPlan,
@@ -14,6 +15,7 @@ import {
   type MeasurementLink,
   type MeasurementMetricOption,
 } from "@/lib/attain/attainMeasurement";
+import { computeEdAccessChain } from "@/lib/attain/attainEdAccess";
 import { computeRevenueChain } from "@/lib/attain/attainRevenue";
 import { computeIpRevenueChain } from "@/lib/attain/attainInpatientRevenue";
 import { computeCapacityChain } from "@/lib/attain/attainCapacity";
@@ -154,7 +156,19 @@ export function deriveMeasurementModelFor(
       prize: capacityResult?.totalMargin ?? chain.prize,
     });
   }
-  // access
+  // access — ED access is a different mechanism (recover LWBS + capture
+  // admissions) on its own chain; outpatient/inpatient/nursing access is the
+  // schedule-capacity chain. Both derive from the SAME Align state their number
+  // came from and reconcile to the combined engine result.
+  if (setting === "ed") {
+    const edChain = computeEdAccessChain(baseline, values, crossGoalShareMultiplier);
+    const edResult = combined?.byGoal.access;
+    return deriveEdAccessMeasurementPlan(baseline, values, crossGoalShareMultiplier, {
+      realizedRecovered: edChain.recovery.realizedRecovered,
+      capturedAdmissions: edChain.recovery.capturedAdmissions,
+      prize: edResult?.totalMargin ?? edChain.payoff.value,
+    });
+  }
   const chain = computeAccessChain(baseline, values, crossGoalShareMultiplier);
   const accessResult = combined?.byGoal.access;
   const ladder = deriveAccessLadder(chain, {
