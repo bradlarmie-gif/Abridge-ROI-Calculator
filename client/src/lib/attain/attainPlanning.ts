@@ -72,14 +72,22 @@ export interface AttainPlanning extends PlanningPhaseLayer {
   measurementByGoal?: Partial<Record<GoalId, MeasurementPlanState>>;
 }
 
-/** One partner-editable metric row on the measurement plan: the target they
- * are aiming at (defaults to the derived/benchmark target downstream), the
- * owner who holds it, and a rough by-when. Every field is optional and BLANK
- * by default: an owner or a date is only ever the partner's own, never a
- * fabricated name or an invented month. The metric's BASELINE is not stored
- * here; it is always read live from the partner's Align/Starting-Point numbers
- * so it can never drift from the truth. */
+/** One partner-editable metric row on the measurement plan: the baseline they
+ * start from, the target they are aiming at (defaults to the derived/benchmark
+ * target downstream), the owner who holds it, and a rough by-when. Every field
+ * is optional and BLANK by default: an owner or a date is only ever the
+ * partner's own, never a fabricated name or an invented month.
+ *
+ * The BASELINE is the partner's own "today" number where they drop it in. When
+ * blank, the metric falls back to its derived baseline (a Starting-Point fact,
+ * an Align number, or a clearly-labeled industry benchmark). Typing one here
+ * flips that metric's baseline tag to the partner's own data, so a benchmark
+ * is never presented as their number and the counterfactual reads off the
+ * truth they gave us. */
 export interface MeasurementMetricEntry {
+  /** Overrides the derived baseline with the partner's own "today" number.
+   * Blank -> use the derived baseline (fact / Align number / labeled benchmark). */
+  baseline?: string;
   /** Overrides the derived/benchmark default target. Blank -> use the default. */
   target?: string;
   /** The person who owns moving this metric. Blank by default (never invented). */
@@ -217,6 +225,25 @@ export function measurementChosen(
 ): string[] {
   const stored = planning?.measurement?.chosen?.[linkId];
   return stored === undefined ? defaultIds : stored;
+}
+
+/** A picked metric's baseline, falling back to the derived baseline (a
+ * Starting-Point fact, an Align number, or a labeled benchmark). Trimmed to a
+ * non-empty string, so a blanked field cleanly reverts to the derived value. */
+export function measurementBaseline(
+  planning: AttainPlanning | undefined,
+  metricId: string,
+  derivedDefault: string,
+): string {
+  const override = planning?.measurement?.entries?.[metricId]?.baseline?.trim();
+  return override ? override : derivedDefault;
+}
+
+/** True when the partner typed their own baseline for this metric (so it is
+ * their data, not a derived/benchmark default). Drives the honest baseline
+ * label on the Plan and the scorecard. */
+export function measurementBaselineIsOwn(planning: AttainPlanning | undefined, metricId: string): boolean {
+  return !!planning?.measurement?.entries?.[metricId]?.baseline?.trim();
 }
 
 /** A picked metric's target, falling back to the derived/benchmark default. */

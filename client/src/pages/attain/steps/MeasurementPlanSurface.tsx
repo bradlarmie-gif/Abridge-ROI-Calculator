@@ -26,6 +26,7 @@ import { defaultRealizationPct } from "@/lib/attain/attainLevers";
 import type { AttainSetting, GoalId } from "@/lib/attain/attainTypes";
 import {
   measurementChosen,
+  measurementBaseline,
   measurementTarget,
   measurementOwner,
   measurementByWhen,
@@ -468,6 +469,7 @@ export default function MeasurementPlanSurface({
           <div className="rounded-xl border border-[#E7E0D6] bg-white overflow-hidden" data-testid={`section-measure-scorecard-${goal}`}>
             {trackedRows.map(({ link, metric }, idx) => {
               const target = measurementTarget(planning, metric.id, metric.defaultTarget);
+              const baseline = measurementBaseline(planning, metric.id, metric.baseline);
               const owner = measurementOwner(planning, metric.id);
               return (
                 <div
@@ -480,7 +482,7 @@ export default function MeasurementPlanSurface({
                   </span>
                   <span className="text-[13px] font-semibold text-[#1A1A1A] min-w-[160px] flex-1">{metric.label}</span>
                   <span className="text-[12px] text-[#8C8C8C]">
-                    {metric.baseline}
+                    {baseline}
                     <span className="text-[#B4B4B4]"> to </span>
                     <span className="text-[#EA2C00] font-semibold">{target}</span>
                   </span>
@@ -603,6 +605,10 @@ function MetricDetail({
   const target = measurementTarget(planning, metric.id, metric.defaultTarget);
   const owner = measurementOwner(planning, metric.id);
   const byWhen = measurementByWhen(planning, metric.id);
+  // The partner's own baseline where they typed one (blank -> show the derived
+  // baseline as the placeholder, tagged for what it is).
+  const baselineInput = measurementBaseline(planning, metric.id, "");
+  const baselineOwn = baselineInput.trim().length > 0;
   return (
     <motion.div
       initial={{ opacity: 0, height: 0 }}
@@ -618,11 +624,19 @@ function MetricDetail({
         <div>
           <div className="flex items-center gap-1.5 mb-1">
             <FieldLabel>Your baseline</FieldLabel>
-            <BaselineTag tag={metric.baselineTag} />
+            {/* Honest by construction: "Your number" only once the partner types
+                one, otherwise the derived tag (a Starting-Point fact, an Align
+                number, or a plainly-labeled Benchmark). Never calls a benchmark
+                their number. */}
+            <BaselineTag tag={baselineOwn ? "data" : metric.baselineTag} />
           </div>
-          <p className="h-9 flex items-center text-[13px] font-semibold text-[#1A1A1A]" data-testid={`text-measure-baseline-${metric.id}`}>
-            {metric.baseline}
-          </p>
+          <input
+            value={baselineInput}
+            onChange={(e) => onChangeMetricField(metric.id, { baseline: e.target.value })}
+            placeholder={metric.baseline}
+            className={attainTextInput}
+            data-testid={`input-measure-baseline-${metric.id}`}
+          />
         </div>
         <div>
           <FieldLabel>Target</FieldLabel>

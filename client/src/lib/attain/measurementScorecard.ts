@@ -21,6 +21,8 @@ import type { AttainBaseline, LeverValues, MultiGoalContributionsResult } from "
 import type { MeasurementBaselineTag } from "./attainMeasurement";
 import {
   measurementChosen,
+  measurementBaseline,
+  measurementBaselineIsOwn,
   measurementTarget,
   measurementOwner,
   measurementByWhen,
@@ -149,6 +151,12 @@ export function trackedMetricsForGoal(params: {
       const metric = link.metrics.find((m) => m.id === metricId);
       if (!metric) continue;
       const targetText = measurementTarget(slice, metric.id, metric.defaultTarget);
+      // The partner's own "today" number where they dropped one in on the Plan,
+      // else the derived baseline (a fact, an Align number, or a labeled
+      // benchmark). Typing one flips the tag to their data, so a benchmark is
+      // never shown as their number.
+      const baselineText = measurementBaseline(slice, metric.id, metric.baseline);
+      const baselineIsOwn = measurementBaselineIsOwn(slice, metric.id);
       rows.push({
         key: `${goal}:${metric.id}`,
         goal,
@@ -159,9 +167,9 @@ export function trackedMetricsForGoal(params: {
         label: metric.label,
         helper: metric.helper,
         unit: metric.unit,
-        baselineText: metric.baseline,
-        baselineNum: parseSignalBaseline(metric.baseline),
-        baselineTag: metric.baselineTag,
+        baselineText,
+        baselineNum: parseSignalBaseline(baselineText),
+        baselineTag: baselineIsOwn ? "data" : metric.baselineTag,
         targetText,
         targetNum: parseLeadingNumber(targetText),
         owner: measurementOwner(slice, metric.id),

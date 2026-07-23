@@ -622,7 +622,13 @@ function ScorecardTable({ rows, testId }: { rows: TrackedMetric[]; testId: strin
                 <p className="text-[10.5px] text-[#8C8C8C] mt-0.5 leading-relaxed">{m.linkTitle}</p>
               </td>
               <td className="py-3 px-2 border-b border-[#F0ECE5] align-top text-[11.5px] text-[#3A3A3A]">
-                {m.baselineText} <span className="text-[#B4B4B4]">&rarr;</span>{" "}
+                {m.baselineText}
+                {m.baselineTag === "benchmark" && (
+                  <span className="ml-1.5 text-[8px] font-bold uppercase tracking-[1px] text-[#8C8C8C] bg-[#F0ECE5] rounded px-1.5 py-0.5 align-middle">
+                    Benchmark
+                  </span>
+                )}{" "}
+                <span className="text-[#B4B4B4]">&rarr;</span>{" "}
                 <span className="text-[#EA2C00] font-semibold">{m.targetText}</span>
               </td>
               <td className="py-3 px-2 border-b border-[#F0ECE5] align-top text-[11.5px] text-[#3A3A3A] whitespace-nowrap">

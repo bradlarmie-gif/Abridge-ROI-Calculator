@@ -183,7 +183,7 @@ function isWellFormedPlanning(v: unknown): v is AttainPlanning {
     if (meas.entries !== undefined) {
       if (!isPlainObject(meas.entries)) return false;
       const entryOk = (e: unknown): boolean =>
-        isPlainObject(e) && ["target", "owner", "byWhen"].every((f) => e[f] === undefined || typeof e[f] === "string");
+        isPlainObject(e) && ["baseline", "target", "owner", "byWhen"].every((f) => e[f] === undefined || typeof e[f] === "string");
       if (!Object.values(meas.entries).every(entryOk)) return false;
     }
     return true;
