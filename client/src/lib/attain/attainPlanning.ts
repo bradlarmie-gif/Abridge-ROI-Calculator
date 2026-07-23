@@ -59,7 +59,57 @@ export interface AttainPlanning extends PlanningPhaseLayer {
    * Single-goal plans keep using the top-level `PlanningPhaseLayer` fields and
    * never set this. */
   byGoal?: Partial<Record<GoalId, PlanningPhaseLayer>>;
+  /** The MEASUREMENT-PLAN editable layer for the rebuilt outpatient-access
+   * Plan step (see attainMeasurement.ts + StepMeasurementPlan.tsx). Additive
+   * and fully optional, so every other goal's Plan (still on StepPlanning) and
+   * every older saved link decode unchanged and never touch it. */
+  measurement?: MeasurementPlanState;
 }
+
+/** One partner-editable metric row on the measurement plan: the target they
+ * are aiming at (defaults to the derived/benchmark target downstream), the
+ * owner who holds it, and a rough by-when. Every field is optional and BLANK
+ * by default: an owner or a date is only ever the partner's own, never a
+ * fabricated name or an invented month. The metric's BASELINE is not stored
+ * here; it is always read live from the partner's Align/Starting-Point numbers
+ * so it can never drift from the truth. */
+export interface MeasurementMetricEntry {
+  /** Overrides the derived/benchmark default target. Blank -> use the default. */
+  target?: string;
+  /** The person who owns moving this metric. Blank by default (never invented). */
+  owner?: string;
+  /** A rough by-when the partner sets. Blank by default (never pre-populated). */
+  byWhen?: string;
+}
+
+/** The whole measurement-plan editable layer. The DERIVED chain (which links
+ * exist, each link's metric menu, every baseline and default target) is not
+ * stored here; it is recomputed live from the Align state so it always tracks
+ * the partner's choices. This layer holds only what the partner CHOSE and
+ * TYPED on top of that: which metrics they picked per link, each picked
+ * metric's target/owner/by-when, the promise date, and the one make-or-break
+ * commitment. All optional, so an untouched plan falls back to derived
+ * defaults everywhere. */
+export interface MeasurementPlanState {
+  /** The date the partner set for the promise ("by [their date]"). Blank by
+   * default; the plan never invents a month. */
+  promiseByWhen?: string;
+  /** The owner of the make-or-break commitment (direct the freed time to the
+   * schedule). Blank by default. */
+  commitmentOwner?: string;
+  /** A rough by-when for the commitment. Blank by default. */
+  commitmentByWhen?: string;
+  /** Which metric ids the partner picked to own, keyed by chain-link id. An
+   * absent link entry means "use the derived default set" (the metrics they
+   * already named as proof on Align); a present entry (even an empty array)
+   * is the partner's own explicit pick and is honored as-is. */
+  chosen?: Record<string, string[]>;
+  /** Per-metric target/owner/by-when overrides, keyed by the globally-unique
+   * metric id. */
+  entries?: Record<string, MeasurementMetricEntry>;
+}
+
+export const DEFAULT_MEASUREMENT_PLAN: MeasurementPlanState = {};
 
 export const DEFAULT_ATTAIN_PLANNING: AttainPlanning = {};
 
@@ -128,4 +178,46 @@ export function phaseSignalLabel(
 ): string {
   const override = planning?.phaseSignalLabels?.[phase]?.trim();
   return override ? override : derivedDefault;
+}
+
+// ── Measurement-plan resolvers ──────────────────────────────────────────────
+//
+// The measurement plan's derived shape lives in attainMeasurement.ts; these
+// resolvers read the partner's editable layer off `AttainPlanning.measurement`,
+// falling back to the derived defaults so an untouched plan reads entirely off
+// the Align state. Owners and dates fall back to BLANK, never a fabricated
+// value.
+
+/** The metric ids the partner picked for one chain link, falling back to the
+ * derived default set (the metrics they already named as proof on Align). An
+ * unset link entry means "use the default"; a present entry (even empty) is an
+ * explicit partner pick and is returned as-is, so deselecting every metric on
+ * a link survives a reload instead of snapping back to the default. */
+export function measurementChosen(
+  planning: AttainPlanning | undefined,
+  linkId: string,
+  defaultIds: string[],
+): string[] {
+  const stored = planning?.measurement?.chosen?.[linkId];
+  return stored === undefined ? defaultIds : stored;
+}
+
+/** A picked metric's target, falling back to the derived/benchmark default. */
+export function measurementTarget(
+  planning: AttainPlanning | undefined,
+  metricId: string,
+  derivedDefault: string,
+): string {
+  const override = planning?.measurement?.entries?.[metricId]?.target?.trim();
+  return override ? override : derivedDefault;
+}
+
+/** A picked metric's owner, falling back to BLANK (never a fabricated name). */
+export function measurementOwner(planning: AttainPlanning | undefined, metricId: string): string {
+  return planning?.measurement?.entries?.[metricId]?.owner ?? "";
+}
+
+/** A picked metric's rough by-when, falling back to BLANK (never invented). */
+export function measurementByWhen(planning: AttainPlanning | undefined, metricId: string): string {
+  return planning?.measurement?.entries?.[metricId]?.byWhen ?? "";
 }
