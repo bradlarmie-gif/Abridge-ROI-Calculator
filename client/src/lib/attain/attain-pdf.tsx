@@ -931,8 +931,8 @@ function StartingPointPage({ data, priority }: { data: AttainPdfData; priority: 
       {priority.realizationPct < 100 && (
         <Text style={s.footnote} data-testid={`pdf-realization-note-${priority.goal}`}>
           {priority.goal === "quality"
-            ? `Attributed at ${Math.round(priority.realizationPct)}% realization to this plan - in quality, Abridge surfaces the risk earlier, and the unit runs the bundle that prevents the event, so this is the share honestly attributable to Abridge.`
-            : `Attributed at ${Math.round(priority.realizationPct)}% realization to this plan - the share of this outcome credited here, when other efforts also move this number.`}
+            ? `Attributed at ${Math.round(priority.realizationPct)}% realization to this plan. In quality, Abridge surfaces the risk earlier, and the unit runs the bundle that prevents the event, so this is the share honestly attributable to Abridge.`
+            : `Attributed at ${Math.round(priority.realizationPct)}% realization to this plan. This is the share of the outcome attributed here, for when other efforts also move this number.`}
         </Text>
       )}
 
@@ -1190,7 +1190,7 @@ function CadencePage({ data, priority }: { data: AttainPdfData; priority: Attain
         <View wrap={false}>
           <Text style={s.subEyebrowCoral}>{`The ${data.planCadence} check`}</Text>
           <Text style={s.bodySmall}>
-            {`Same questions every ${data.planCadence} review. This is what keeps a bleeding decision from becoming a lost quarter.`}
+            {`Same questions every ${data.planCadence} review. This is what catches a slipping decision before it becomes a lost quarter.`}
           </Text>
           {c.monthly.map((q, i) => (
             <NumberedItem key={i} n={String(i + 1).padStart(2, "0")} text={q} />
