@@ -9,12 +9,14 @@ import {
   deriveRetentionMeasurementPlan,
   deriveRevenueMeasurementPlan,
   deriveQualityMeasurementPlan,
+  deriveCapacityMeasurementPlan,
   type MeasurementPlanModel,
   type MeasurementLink,
   type MeasurementMetricOption,
 } from "@/lib/attain/attainMeasurement";
 import { computeRevenueChain } from "@/lib/attain/attainRevenue";
 import { computeIpRevenueChain } from "@/lib/attain/attainInpatientRevenue";
+import { computeCapacityChain } from "@/lib/attain/attainCapacity";
 import { deriveQualityLadder } from "@/lib/attain/attainQuality";
 import { qualityAlignToLeverValues } from "@/lib/attain/qualityAlign";
 import { defaultRealizationPct } from "@/lib/attain/attainLevers";
@@ -79,8 +81,9 @@ interface StepMeasurementPlanProps {
    * `deriveXMeasurementPlan`. Only the derivation differs; the scorecard UI is
    * shared. Revenue is multi-path and quality is multi-event, so both STACK per
    * path/event under grouped section headers. Quality is the safety-first
-   * exception: its promise leads with a COUNT, not a dollar. */
-  goal: Extract<GoalId, "access" | "retention" | "revenue" | "quality">;
+   * exception: its promise leads with a COUNT, not a dollar. Capacity (nursing
+   * overtime) is a single-gated ladder like access. */
+  goal: Extract<GoalId, "access" | "retention" | "revenue" | "quality" | "capacity">;
   /** The care setting, so retention counts the right unit (nurses vs providers)
    * and names the charting term, and the risk placeholder is setting-aware. */
   setting: AttainSetting;
@@ -166,6 +169,18 @@ export default function StepMeasurementPlan({
       minutes,
       departuresAvoided: workforceChain.payoff.departuresAvoided,
       prize: retentionResult?.totalMargin ?? workforceChain.payoff.value,
+    });
+  } else if (goal === "capacity") {
+    // Capacity (nursing overtime) is a single-gated ladder like access. The
+    // realized overtime hours avoided read off the raw chain to stay identical
+    // to Build (the combined totalCount would round the same figure); the PRIZE
+    // reads off the combined result to pick up this priority's realization, so
+    // the promise prize reconciles with Build and Align exactly.
+    const chain = computeCapacityChain(baseline, values);
+    const capacityResult = combined?.byGoal.capacity;
+    model = deriveCapacityMeasurementPlan(baseline, values, {
+      realizedOtHoursAvoided: capacityResult?.totalCount ?? chain.realizedOtHoursAvoided,
+      prize: capacityResult?.totalMargin ?? chain.prize,
     });
   } else {
     const chain = computeAccessChain(baseline, values, 1);

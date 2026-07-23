@@ -1091,23 +1091,30 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
               />
             )}
 
+            {/* CAPACITY (nursing overtime) is cloned onto the same MEASUREMENT
+                PLAN surface as access, as a SINGLE-GATED ladder: post-shift
+                charting falls, nurses finish on time (the make-or-break, closed
+                by the honest gate when the overtime is short staffing or
+                census), then overtime hours and dollars fall. The derivation
+                differs; the scorecard UI is shared. Single-goal only; a
+                multi-goal plan that includes capacity still renders StepCommit. */}
             {step === "commit" && isNursingCapacityPlan && (
-              <StepPlanning
+              <StepMeasurementPlan
+                goal="capacity"
                 setting="nursing"
                 baseline={baseline}
-                goal="capacity"
                 values={valuesByGoal.capacity ?? defaultLeverValues("capacity", "nursing")}
                 combined={combined}
                 goalOwner={goalOwnerByPriority.capacity ?? { name: "", title: "" }}
                 onChangeGoalOwner={(patch) => handleChangeGoalOwner("capacity", patch)}
                 planning={planning}
-                onChangePhaseOwner={handleChangePhaseOwner}
-                onChangePhaseSignalTarget={handleChangePhaseSignalTarget}
-                onChangePhaseSignalLabel={handleChangePhaseSignalLabel}
+                onSetChosenMetrics={handleSetChosenMetrics}
+                onChangeMetricField={handleChangeMetricField}
+                onChangePromiseByWhen={handleChangePromiseByWhen}
+                onChangeCommitment={handleChangeMeasureCommitment}
                 onChangePartnerRisk={handleChangePartnerRisk}
                 planCadence={planCadence}
                 onChangePlanCadence={handleChangePlanCadence}
-                totalMonths={state.totalMonths}
                 stepNumber={stepIndex + 1}
               />
             )}
