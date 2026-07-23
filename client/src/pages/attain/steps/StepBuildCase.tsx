@@ -4,7 +4,6 @@ import { leversFor, lineOptions, type AttainBaseline, type Lever, type LeverValu
 import type { MultiGoalContributionsResult } from "@/lib/attain/attainLevers";
 import { GOAL_CATALOG } from "@/lib/attain/attainGoals";
 import type { AttainSetting, GoalId } from "@/lib/attain/attainTypes";
-import AccessDecisionChain from "./AccessDecisionChain";
 import EdAccessDecisionChain from "./EdAccessDecisionChain";
 import RevenueLadderChain from "./RevenueLadderChain";
 import InpatientRevenueLadderChain from "./InpatientRevenueLadderChain";
@@ -12,6 +11,7 @@ import QualityLadderChain from "./QualityLadderChain";
 import CapacityLadderChain from "./CapacityLadderChain";
 import AlignStep from "./AlignStep";
 import { workforceAlignConfig } from "@/lib/attain/workforceAlign";
+import { accessAlignConfig } from "@/lib/attain/accessAlign";
 
 function formatCompact(n: number): string {
   const sign = n < 0 ? "-" : "";
@@ -152,11 +152,14 @@ export default function StepBuildCase({
   const result = combined?.byGoal[goal];
   const contributionFor = (id: string) => result?.perLever.find((p) => p.id === id);
 
-  // Outpatient access is the ladder exemplar: it assembles the exact
-  // step-down story Planning reads back (see AccessDecisionChain +
-  // accessLadder.ts), so it drops the generic "N of M decisions moved"
-  // framing for a single crisp teaching line about the ladder.
-  const isAccessLadder = goal === "access" && setting === "outpatient";
+  // Outpatient access is now an ALIGN surface, cloned from the Workforce
+  // exemplar: instead of the old step-down ladder it asks a small set of
+  // "choose your meaning" questions (see AlignStep + accessAlign.ts) and
+  // derives the SAME number underneath (computeAccessChain), reconciled to
+  // Explore's patientAccess driver. The choices map to the exact LeverValues
+  // the chain always read (scope, directed share, the demand sources), so the
+  // engine math and the demand gate MIN(capacity, demand) are unchanged.
+  const isAccessAlign = goal === "access" && setting === "outpatient";
   // ED access is the fourth ladder: it assembles the same step-down story
   // (first domino -> scope -> worth -> the diagnosis gate -> the prize) that
   // Planning reads back, via the shared ED access ladder (see
@@ -190,20 +193,23 @@ export default function StepBuildCase({
   // single gated ladder like access, reconciled to Explore's own
   // `nursingOvertime` driver.
   const isCapacityLadder = goal === "capacity" && setting === "nursing";
-  const isLadder = isAccessLadder || isEdAccessLadder || isRetentionAlign || isRevenueLadder || isIpRevenueLadder || isQualityLadder || isCapacityLadder;
+  // Both Align surfaces (Retention everywhere, outpatient Access) and every
+  // remaining ladder drop the generic "N of M decisions moved" drag framing.
+  const isAlign = isRetentionAlign || isAccessAlign;
+  const isLadder = isAccessAlign || isEdAccessLadder || isRetentionAlign || isRevenueLadder || isIpRevenueLadder || isQualityLadder || isCapacityLadder;
 
   return (
     <div>
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
         <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-3" data-testid="text-step-eyebrow">
-          Step {stepNumber} of {totalSteps} · {isRetentionAlign ? "Get aligned on what you mean" : "What are you actually going to do?"}
+          Step {stepNumber} of {totalSteps} · {isAlign ? "Get aligned on what you mean" : "What are you actually going to do?"}
         </p>
         <h1 className="text-2xl md:text-4xl font-bold text-black mb-3 font-abridge uppercase tracking-tight" data-testid="text-step-title">
           Align
         </h1>
         <p className="text-[15px] text-[#666666] leading-relaxed max-w-[620px]" data-testid="text-step-teach">
-          {isAccessLadder
-            ? "Assemble the ladder from the top down. One number starts it, each rung multiplies, and demand decides how much converts."
+          {isAccessAlign
+            ? "Let us agree on what you mean by opening access, one question at a time. Your facts carry over from your starting point, so you only choose the meaning. The number at the end is the proof of what you aligned on."
             : isEdAccessLadder
               ? "Assemble the ladder from the top down. One number starts it, freed time becomes throughput, and the diagnosis decides how much of the leak is yours to recover."
               : isRetentionAlign
@@ -245,8 +251,8 @@ export default function StepBuildCase({
           </h2>
         </div>
         <p className="text-[13px] text-white/50 mt-2" data-testid="text-attain-buildcase-strategy-progress">
-          {isAccessLadder
-            ? "This is the full step-down, top to bottom. Every rung is part of the plan; set each one to your real numbers."
+          {isAccessAlign
+            ? "A short, shared conversation about what you mean by opening access. Choose the meaning; the number is the proof."
             : isEdAccessLadder
               ? "This is the full step-down, top to bottom. Every rung is part of the plan; set each one to your real numbers."
               : isRetentionAlign
@@ -312,7 +318,8 @@ export default function StepBuildCase({
             crossGoalShareMultiplier={crossGoalShareMultiplier}
           />
         ) : goal === "access" ? (
-          <AccessDecisionChain
+          <AlignStep
+            config={accessAlignConfig}
             setting={setting}
             baseline={baseline}
             values={values}
