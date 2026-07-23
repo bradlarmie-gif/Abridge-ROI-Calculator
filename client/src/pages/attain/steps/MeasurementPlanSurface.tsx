@@ -567,10 +567,13 @@ function LinkCard({
             ))}
           </EditorialOptionList>
 
-          {/* The expanded editable row for every chosen metric. */}
+          {/* The expanded editable row for every chosen metric. The first sits
+              directly under the option list's own bottom hairline (no border of
+              its own, so there is no double line); a second stacked detail draws
+              a single hairline to separate it. */}
           {link.metrics
             .filter((m) => chosen.includes(m.id))
-            .map((metric) => (
+            .map((metric, idx) => (
               <MetricDetail
                 key={`${metric.id}-detail`}
                 metric={metric}
@@ -578,6 +581,7 @@ function LinkCard({
                 planning={planning}
                 ownerName={ownerName}
                 onChangeMetricField={onChangeMetricField}
+                first={idx === 0}
               />
             ))}
         </>
@@ -595,12 +599,16 @@ function MetricDetail({
   planning,
   ownerName,
   onChangeMetricField,
+  first,
 }: {
   metric: MeasurementMetricOption;
   linkId: string;
   planning: AttainPlanning;
   ownerName: string;
   onChangeMetricField: (metricId: string, patch: Partial<MeasurementMetricEntry>) => void;
+  /** The first detail under a link sits on the option list's own bottom
+   * hairline, so it draws no border of its own (avoids the double line). */
+  first?: boolean;
 }) {
   const target = measurementTarget(planning, metric.id, metric.defaultTarget);
   const owner = measurementOwner(planning, metric.id);
@@ -622,7 +630,7 @@ function MetricDetail({
       className="overflow-hidden"
       data-testid={`detail-measure-metric-${linkId}-${metric.id}`}
     >
-      <div className="mt-1 pt-5 pb-2 pl-5 border-t border-[#EFEAE1]">
+      <div className={`pt-5 pb-2 pl-5 ${first ? "" : "mt-1 border-t border-[#EFEAE1]"}`}>
         <div className="flex flex-wrap gap-x-10 gap-y-5">
           <div className="min-w-[130px]">
             <div className="flex items-center gap-1.5 mb-2">
