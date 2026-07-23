@@ -5,12 +5,12 @@ import type { MultiGoalContributionsResult } from "@/lib/attain/attainLevers";
 import { GOAL_CATALOG } from "@/lib/attain/attainGoals";
 import type { AttainSetting, GoalId } from "@/lib/attain/attainTypes";
 import EdAccessDecisionChain from "./EdAccessDecisionChain";
-import CapacityLadderChain from "./CapacityLadderChain";
 import AlignStep from "./AlignStep";
 import { workforceAlignConfig } from "@/lib/attain/workforceAlign";
 import { accessAlignConfig } from "@/lib/attain/accessAlign";
 import { revenueAlignConfigFor } from "@/lib/attain/revenueAlign";
 import { qualityAlignConfigFor } from "@/lib/attain/qualityAlign";
+import { capacityAlignConfig } from "@/lib/attain/capacityAlign";
 
 function formatCompact(n: number): string {
   const sign = n < 0 ? "-" : "";
@@ -189,19 +189,21 @@ export default function StepBuildCase({
   // to computeAllDriverValues. Quality keeps its per-event ceilings and its 30%
   // attribution default. Engine math unchanged.
   const isQualityAlign = goal === "quality" && setting === "nursing";
-  // Nursing capacity is the sixth ladder: it assembles the same step-down
-  // story (first domino -> the overtime run now -> the documentation-
-  // attributable gate -> overtime hours avoided -> the prize) that Planning
-  // reads back, via the shared nursing capacity ladder (see CapacityLadderChain
-  // + accessLadder.tsx's deriveNursingCapacityLadder / NursingCapacityGate). A
-  // single gated ladder like access, reconciled to Explore's own
-  // `nursingOvertime` driver.
-  const isCapacityLadder = goal === "capacity" && setting === "nursing";
-  // Every Align surface (Retention everywhere, outpatient Access, and Revenue
-  // in all three settings) and every remaining ladder drops the generic
-  // "N of M decisions moved" drag framing.
-  const isAlign = isRetentionAlign || isAccessAlign || goal === "revenue" || isQualityAlign;
-  const isLadder = isAccessAlign || isEdAccessLadder || isRetentionAlign || isRevenueLadder || isIpRevenueLadder || isQualityAlign || isCapacityLadder;
+  // Nursing capacity (overtime) is now an ALIGN surface too, the SINGLE GATED
+  // driver, cloned from the Access exemplar: instead of the old step-down
+  // ladder it asks a small set of "choose your meaning" questions (see AlignStep
+  // + capacityAlign.ts) and derives the SAME number underneath
+  // (computeCapacityChain), reconciled to Explore's `nursingOvertime` driver.
+  // The choices map to the exact LeverValues the chain always read
+  // (capacityNurses, the documentation-attributable share, the conversion), so
+  // the engine math and the honest gate are unchanged. The overtime facts (OT
+  // hrs/nurse/wk, loaded rate) are inherited, never re-asked.
+  const isCapacityAlign = goal === "capacity" && setting === "nursing";
+  // Every Align surface (Retention everywhere, outpatient Access, Revenue in all
+  // three settings, nursing Quality and Capacity) and every remaining ladder
+  // drops the generic "N of M decisions moved" drag framing.
+  const isAlign = isRetentionAlign || isAccessAlign || goal === "revenue" || isQualityAlign || isCapacityAlign;
+  const isLadder = isAccessAlign || isEdAccessLadder || isRetentionAlign || isRevenueLadder || isIpRevenueLadder || isQualityAlign || isCapacityAlign;
 
   return (
     <div>
@@ -223,8 +225,8 @@ export default function StepBuildCase({
                   ? "One lever starts it, complete documentation at the point of care, and it feeds several revenue paths. For each path you pick, the documentation decides how much you can actually capture. The paths add into one prize."
                   : isQualityAlign
                     ? "Let us agree on what you mean by safer care, one question at a time. Pick what you are preventing, agree how much you can catch earlier, and commit the change you will make with the time and the signal Abridge frees. We lead with events prevented and experience; the dollar is a soft footnote."
-                    : isCapacityLadder
-                      ? "One number starts it, minutes saved per note, so nurses chart in the moment. Work down: your overtime now, the share charting actually causes, and the hours you take out of it."
+                    : isCapacityAlign
+                      ? "Let us agree on what you mean by cutting the overtime, one question at a time. Your facts carry over from your starting point, so you only choose the meaning. The number at the end is the proof of what you aligned on."
                       : "Assemble the ladder from the top down. One number starts it, and each rung is part of the plan."}
         </p>
       </motion.div>
@@ -266,8 +268,8 @@ export default function StepBuildCase({
                   ? "One lever, several paths, one converged prize. Pick the paths you are chasing and set each one to your real numbers."
                   : isQualityAlign
                     ? "A short, shared conversation about safer care. Choose the meaning; safety and experience lead, and the dollar stays a soft footnote."
-                    : isCapacityLadder
-                      ? "This is the full step-down, top to bottom. Set each rung to your real overtime, and only the overtime charting causes counts."
+                    : isCapacityAlign
+                      ? "A short, shared conversation about what you mean by cutting the overtime. Choose the meaning; the number is the proof, and only the overtime charting causes counts."
                       : "This is the full step-down, top to bottom. Set each rung to your real numbers."}
         </p>
       </motion.div>
@@ -380,12 +382,23 @@ export default function StepBuildCase({
             crossGoalShareMultiplier={crossGoalShareMultiplier}
           />
         ) : goal === "capacity" ? (
-          <CapacityLadderChain
+          // Capacity (nursing overtime) is now an ALIGN surface too, the SINGLE
+          // GATED driver (like Access and Retention). Q3 is the honest gate:
+          // only documentation-driven overtime is Abridge's to move, short
+          // staffing and census collapse the number to zero. The choices map to
+          // the exact same LeverValues the capacity chain always read
+          // (capacityNurses, the documentation-attributable share, the
+          // conversion), so the derived number still runs through
+          // computeCapacityChain and reconciles to Explore's `nursingOvertime`.
+          // Engine math unchanged; overtime facts are inherited benchmarks.
+          <AlignStep
+            config={capacityAlignConfig}
             setting={setting}
             baseline={baseline}
             values={values}
             onChangeValue={(leverId, value) => onChangeLeverValue("capacity", leverId, value)}
             realizationPct={realizationPct}
+            crossGoalShareMultiplier={crossGoalShareMultiplier}
           />
         ) : (
           // No goal reaches this generic renderer anymore - access, revenue
