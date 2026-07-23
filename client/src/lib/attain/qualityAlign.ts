@@ -95,11 +95,11 @@ export function fmtEventCount(n: number): string {
 //    round-trip through the existing per-goal persistence) ────────────────────
 
 export const K_EVENTS = "qualityAlignEvents";
-const K_WHO = "qualityAlignWho";
+export const K_WHO = "qualityAlignWho";
 const K_WHO_BEDS = "qualityAlignWhoBeds";
-const K_GATE = "qualityAlignGate";
-const K_CHANGE = "qualityAlignChange";
-const K_PROOF = "qualityAlignProof";
+export const K_GATE = "qualityAlignGate";
+export const K_CHANGE = "qualityAlignChange";
+export const K_PROOF = "qualityAlignProof";
 
 /** Reads a stacked per-event single selection (`storeKey__eventId`). */
 function eventChoice(values: LeverValues, storeKey: string, eventId: string): string | undefined {

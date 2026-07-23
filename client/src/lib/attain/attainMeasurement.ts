@@ -48,6 +48,22 @@ import {
   type IpRevenuePathId,
   type IpRevenuePathLadder,
 } from "./attainInpatientRevenue";
+import {
+  deriveQualityLadder,
+  QUALITY_EVENT_LABELS,
+  type QualityEventId,
+} from "./attainQuality";
+import {
+  qualityAlignToLeverValues,
+  fmtEventCount,
+  CLINICAL_EVENT_IDS,
+  HCAHPS_ID,
+  K_EVENTS,
+  K_WHO,
+  K_GATE,
+  K_CHANGE,
+  K_PROOF,
+} from "./qualityAlign";
 
 // ── Labeled benchmarks, used ONLY when the partner has no measured figure ────
 // Every one of these is surfaced with a "Benchmark" tag in the UI, so it is
@@ -148,6 +164,16 @@ export interface MeasurementPlanModel {
   /** The monthly-check teaching line, naming this goal's first and last link so
    * the honest "early links turn first" order reads true for the chain shown. */
   monthlyCheckTeach: string;
+  /** SAFETY-FIRST goals only (quality). When set, the shared promise header
+   * leads with this COUNT (harm events prevented a year) instead of a coral
+   * dollar, and shows the dollar as a soft, clearly-labeled footnote. The
+   * financial goals leave it unset, so their header keeps the dollar hero. */
+  safetyHeadline?: {
+    /** The count phrase that leads the promise (e.g. "~12 harm events / yr"). */
+    heroValue: string;
+    /** The soft, labeled dollar footnote shown under the promise line. */
+    softDollarNote: string;
+  };
 }
 
 // ── Formatting (self-contained, same convention as accessLadder) ─────────────
@@ -1234,4 +1260,354 @@ function ipPathLinks(
   };
 
   return { capture, outcome };
+}
+
+// ── QUALITY & SAFETY (nursing) measurement plan — THE HONEST EXCEPTION ───────
+//
+// Quality does not price like the financial goals, so this plan is shaped for
+// safety and experience first. It is MULTI-EVENT: it STACKS PER EVENT the
+// partner picked on Align, exactly the way the revenue plan stacks per path.
+// The shape is:
+//
+//   SHARED ROOT: Abridge's two benefits made real, the earlier, more complete
+//     risk note and the freed bedside time. Every event downstream is built on
+//     these two being true.
+//   PER CHOSEN EVENT (only the ones they picked on Align):
+//     - a CONVERSIONS link, whose metric menu is bundle/intervention compliance
+//       and near-miss catches (the changes the freed time and earlier note let
+//       the unit run on top of its existing bundle);
+//     - an OUTCOME link that LEADS WITH A COUNT (events prevented a year) and
+//       the rate; the cost of harm avoided is a SOFT, clearly-labeled metric,
+//       never the hero, and it is not selected by default.
+//   For HCAHPS (patient experience): a PRESENCE link (protect the face-to-face
+//     time the freed minutes buy) then an EXPERIENCE link (HCAHPS domain scores
+//     rising). HCAHPS carries NO hard dollar.
+//
+// DYNAMIC to Align: only the picked events appear; the per-event honest gate
+// badges that event's compliance metric ("From what you told us on Align") and
+// the committed conversions badge the near-miss metric; the proof choices pre-
+// select the matching signals; the beds/census scope sets the per-event rates
+// and prevented counts straight off the shared quality ladder. The 30%
+// attribution posture is kept (the caller passes the reconciled realizationPct,
+// which scales only the soft dollar; the counts are attribution-independent).
+// The COMMITMENT is the make-or-break: the unit actually running the Abridge-
+// enabled conversions at the bedside, because Abridge frees the time and
+// surfaces the risk, but only the unit prevents.
+
+/** Section labels for the per-event scorecard (match the Align selector). */
+const QUALITY_EVENT_GROUP: Record<string, string> = {
+  falls: "Falls",
+  hapi: "Pressure injuries (HAPI)",
+  clabsi: "Central-line infections (CLABSI)",
+  cauti: "Catheter infections (CAUTI)",
+  sepsis: "Sepsis",
+  [HCAHPS_ID]: "Patient experience (HCAHPS)",
+};
+
+/** The plain noun each event's outcome link counts down, so the title reads
+ * "Fewer X happen" instead of an awkward "the falls rate falls". */
+const QUALITY_EVENT_NOUN: Record<QualityEventId, string> = {
+  falls: "falls",
+  hapi: "pressure injuries",
+  clabsi: "line infections",
+  cauti: "catheter infections",
+  sepsis: "sepsis cases",
+};
+
+/**
+ * Derives the multi-event QUALITY measurement plan from the Align state.
+ *
+ * Merges the Align choices onto their engine levers the same way
+ * `deriveQualityAlignProof` does, so the shared quality ladder produces the
+ * same per-event grounds, ceilings, prevented counts, and soft dollars the
+ * number was aligned on. `opts.realizationPct` is the reconciled attribution
+ * the caller derives off the combined engine result; it scales ONLY the soft
+ * dollar (the counts are attribution-independent), keeping the safety-first
+ * posture honest.
+ */
+export function deriveQualityMeasurementPlan(
+  baseline: AttainBaseline,
+  values: LeverValues,
+  opts: { realizationPct: number },
+): MeasurementPlanModel {
+  const ctx = { baseline, setting: "nursing" as AttainSetting, realizationPct: opts.realizationPct, crossGoalShareMultiplier: 1 };
+  const engine = qualityAlignToLeverValues(values, ctx);
+  const merged: LeverValues = { ...values, ...engine };
+  const ladder = deriveQualityLadder(baseline, merged, opts.realizationPct);
+
+  const chosenEvents = selectedOptionIds(values, K_EVENTS);
+  const clinicalChosen = CLINICAL_EVENT_IDS.filter((id) => chosenEvents.includes(id));
+  const hcahpsChosen = chosenEvents.includes(HCAHPS_ID);
+  const who = firstSelected(values, K_WHO);
+  const proof = selectedOptionIds(values, K_PROOF);
+
+  const prevented = ladder.events.reduce((s, e) => s + e.capturedCount, 0);
+  const softDollar = ladder.convergedPrize; // already attributed at realizationPct
+
+  const ready = chosenEvents.length > 0 && Boolean(who);
+  const emptyHint =
+    chosenEvents.length === 0
+      ? "Pick the outcomes you are working to prevent on the Align step, then the measurement chain builds itself per event from what you aligned on."
+      : !who
+        ? "Say which beds this is for on the Align step, so each event is sized on real patient-days."
+        : "Set your Align choices and the chain builds itself here.";
+
+  const links: MeasurementLink[] = [];
+  let n = 0;
+  const nextN = () => ++n;
+
+  // ── SHARED ROOT — Abridge's two benefits, the thing every event is built on ─
+  links.push({
+    id: "signal-and-time",
+    n: nextN(),
+    title: "The signal surfaces earlier and the time is freed",
+    teach:
+      "Two things start every event here: the note carries the risk earlier and more completely, and the minutes Abridge frees come back to the bedside. Everything each event prevents downstream is built on these two being real, so they are the first things to prove.",
+    blocked: false,
+    groupLabel: "The shared root",
+    metrics: [
+      {
+        id: "quality-adoption",
+        label: "Abridge adoption",
+        unit: "% of notes",
+        helper: "The share of notes written through Abridge. Nothing downstream moves on the notes it never touches.",
+        baseline: "0% today",
+        baselineTag: "data",
+        defaultTarget: "most notes",
+        fromProof: false,
+      },
+      {
+        id: "quality-freed-time-redeployed",
+        label: "Freed bedside time redeployed",
+        unit: "%",
+        helper: "The share of the minutes Abridge frees that goes back to rounding and presence at the bedside, not the next task. This is the commitment, made visible.",
+        baseline: "0% today",
+        baselineTag: "data",
+        defaultTarget: "most of it",
+        fromProof: false,
+      },
+      {
+        id: "quality-risk-documented-earlier",
+        label: "Risk documented earlier",
+        unit: "% of high-risk patients",
+        helper: "The share of high-risk patients whose risk is captured in the note in real time, early enough to act on. Benchmark until you drop in your own.",
+        baseline: "your current rate",
+        baselineTag: "benchmark",
+        defaultTarget: "rising against baseline",
+        fromProof: false,
+      },
+    ],
+    defaultChosen: ["quality-adoption"],
+  });
+
+  // ── PER CLINICAL EVENT — only the ones picked, in the ladder's order ────────
+  for (const e of ladder.events) {
+    const group = QUALITY_EVENT_GROUP[e.id] ?? e.label;
+    const noun = QUALITY_EVENT_NOUN[e.id] ?? "events";
+    const countUnit = e.id === "sepsis" ? "cases / yr" : "events / yr";
+    const gate = firstSelected(values, `${K_GATE}__${e.id}`);
+    const gateAnswered = Boolean(gate) && gate !== "despite";
+    const changes = selectedOptionIds(values, `${K_CHANGE}__${e.id}`);
+    const committedConversion = changes.includes("signal") || changes.includes("handoff") || changes.includes("rounding");
+
+    // Link A — the committed conversions actually happen at the bedside.
+    const complianceFromProof = proof.includes("compliance") || gateAnswered;
+    const nearMissFromProof = proof.includes("nearmiss") || committedConversion;
+    const conversionMetrics: MeasurementMetricOption[] = [
+      {
+        id: `${e.id}-bundle-compliance`,
+        label: "Bundle and intervention compliance",
+        unit: "%",
+        helper: "The share of at-risk patients getting every step the freed time and the earlier note let you add, on top of the care you already run. Benchmark until you drop in your own.",
+        baseline: "your current rate",
+        baselineTag: "benchmark",
+        defaultTarget: "rising against baseline",
+        fromProof: complianceFromProof,
+      },
+      {
+        id: `${e.id}-near-miss`,
+        label: "Near-miss catches",
+        unit: "catches / month",
+        helper: "Risks caught and acted on before they became an event, the earlier signal doing its job.",
+        baseline: "0 tracked today",
+        baselineTag: "data",
+        defaultTarget: "tracked each month",
+        fromProof: nearMissFromProof,
+      },
+    ];
+    const convProofChosen = conversionMetrics.filter((m) => m.fromProof).map((m) => m.id);
+    links.push({
+      id: `${e.id}-conversions`,
+      n: nextN(),
+      title: "The changes you committed happen",
+      teach:
+        "The first thing to prove for this event: the changes you committed to on Align actually happen at the bedside. Abridge frees the time and surfaces the risk earlier; whether the change happens is on the unit.",
+      blocked: false,
+      groupLabel: group,
+      metrics: conversionMetrics,
+      defaultChosen: convProofChosen.length > 0 ? [convProofChosen[0]] : [`${e.id}-bundle-compliance`],
+    });
+
+    // Link B — the outcome, COUNT FIRST, dollar soft and clearly labeled.
+    const preventedSet = e.capturedCount > 0;
+    const preventedTarget = preventedSet
+      ? `${fmtEventCount(e.capturedCount)} ${countUnit}`
+      : gate === "despite"
+        ? "an honest near-zero"
+        : "finish the Align chain";
+    const rateFromProof = proof.includes("rate");
+    const outcomeMetrics: MeasurementMetricOption[] = [
+      {
+        id: `${e.id}-events-prevented`,
+        label: "Events prevented per year",
+        unit: countUnit,
+        helper: "The count of harm events kept from happening a year. This is the honest hero for this event, the number you lead with, never a dollar.",
+        baseline: "0 today",
+        baselineTag: "data",
+        defaultTarget: preventedTarget,
+        fromProof: false,
+      },
+      {
+        id: `${e.id}-rate`,
+        label: "Event rate per 1,000 patient-days",
+        unit: "per 1,000",
+        helper: "The harm-event rate, trending down against your baseline. This is the standard safety measure the unit already tracks.",
+        baseline: e.rate > 0 ? `${e.rate} per 1,000` : "your current rate",
+        baselineTag: "benchmark",
+        defaultTarget: "lower than today",
+        fromProof: rateFromProof,
+      },
+      {
+        id: `${e.id}-cost-harm-avoided`,
+        label: "Cost of harm avoided (soft)",
+        unit: "$ / yr",
+        helper: "A soft, illustrative figure only: the events prevented priced at a typical cost of harm, attributed conservatively. It is a footnote, never the number you lead with.",
+        baseline: "$0 today",
+        baselineTag: "benchmark",
+        defaultTarget: e.value > 0 ? `~${fmtMoneyCompact(e.value)} / yr (soft)` : "soft, not priced",
+        fromProof: false,
+      },
+    ];
+    const outcomeDefault = [`${e.id}-events-prevented`];
+    if (rateFromProof) outcomeDefault.push(`${e.id}-rate`);
+    links.push({
+      id: `${e.id}-outcome`,
+      n: nextN(),
+      title: `Fewer ${noun} happen`,
+      teach:
+        "The payoff, and the honest exception: lead with the count of events kept from happening and the rate, not a dollar. Abridge enables the earlier signal and the freed time; your team converts it at the bedside; the outcome is both.",
+      blocked: false,
+      groupLabel: group,
+      metrics: outcomeMetrics,
+      defaultChosen: outcomeDefault,
+    });
+  }
+
+  // ── HCAHPS (patient experience) — presence, then the domain scores. No hard
+  //    dollar. The cleanest Abridge story: presence. ───────────────────────────
+  if (hcahpsChosen) {
+    const group = QUALITY_EVENT_GROUP[HCAHPS_ID];
+    const presenceChosen = selectedOptionIds(values, `${K_CHANGE}__${HCAHPS_ID}`).includes("presence");
+    links.push({
+      id: "hcahps-presence",
+      n: nextN(),
+      title: "The presence is protected",
+      teach:
+        "The cleanest Abridge story for experience: the minutes Abridge frees are spent at the bedside, with the patient, instead of the keyboard.",
+      blocked: false,
+      groupLabel: group,
+      metrics: [
+        {
+          id: "hcahps-presence-share",
+          label: "Freed time spent at the bedside",
+          unit: "%",
+          helper: "The share of the freed minutes that becomes face-to-face time with patients, not the next task.",
+          baseline: "0% today",
+          baselineTag: "data",
+          defaultTarget: "most of it",
+          fromProof: presenceChosen,
+        },
+      ],
+      defaultChosen: ["hcahps-presence-share"],
+    });
+    links.push({
+      id: "hcahps-outcome",
+      n: nextN(),
+      title: "The experience scores rise",
+      teach:
+        "The payoff for experience: your HCAHPS domains move. This carries no hard dollar here; the score itself is the outcome.",
+      blocked: false,
+      groupLabel: group,
+      metrics: [
+        {
+          id: "hcahps-domains",
+          label: "HCAHPS domain scores",
+          unit: "percentile",
+          helper: "The patient-experience domains most tied to nurse presence, nurse communication and responsiveness, rising against your baseline. Benchmark until you drop in your own.",
+          baseline: "your current percentile",
+          baselineTag: "benchmark",
+          defaultTarget: "rising against baseline",
+          fromProof: proof.includes("hcahps"),
+        },
+        {
+          id: "hcahps-overall",
+          label: "Overall rating of care",
+          unit: "% top-box",
+          helper: "The share of patients giving the top rating of their care, trending up.",
+          baseline: "your current top-box",
+          baselineTag: "benchmark",
+          defaultTarget: "above baseline",
+          fromProof: false,
+        },
+      ],
+      defaultChosen: ["hcahps-domains"],
+    });
+  }
+
+  // Love Stories is a qualitative proof carried on the last link when named.
+  if (proof.includes("lovestories") && links.length > 1) {
+    const last = links[links.length - 1];
+    last.metrics.push({
+      id: "quality-love-stories",
+      label: "Love Stories",
+      unit: "collected",
+      helper: "Nurses telling you, in their own words, about a patient the earlier signal or the freed time helped them catch.",
+      baseline: "none collected yet",
+      baselineTag: "data",
+      defaultTarget: "collected each quarter",
+      fromProof: true,
+    });
+    last.defaultChosen = [...last.defaultChosen, "quality-love-stories"];
+  }
+
+  // ── The safety-first header: a COUNT leads, the dollar is a soft footnote ───
+  const heroValue =
+    prevented > 0
+      ? `~${fmtEventCount(prevented)} harm events / yr`
+      : hcahpsChosen
+        ? "patient experience"
+        : "count pending";
+  const softDollarNote =
+    softDollar > 0
+      ? `Cost of harm avoided prices to a soft ~${fmtMoneyCompact(softDollar)} a year, attributed at ${Math.round(
+          opts.realizationPct,
+        )}% to this plan. Lead with the events and the experience, not the dollar.`
+      : "This plan leads with safety and experience. HCAHPS carries no hard dollar, so there is no figure to footnote here.";
+
+  return {
+    ready,
+    emptyHint,
+    links,
+    realizedVisits: prevented,
+    prize: softDollar,
+    safetyHeadline: { heroValue, softDollarNote },
+    commitment: {
+      title: "The one thing this plan lives or dies on",
+      teach:
+        "Abridge frees the time and surfaces the risk earlier, but it does not prevent anything on its own. The unit has to run the changes you committed to: redeploy the freed minutes into rounding and presence, act on the risk the note surfaces earlier, and tighten handoffs on the fuller notes. If the freed time quietly refills with other tasks, the signal is real but nothing downstream moves. Someone has to own making those conversions happen at the bedside.",
+      ownerLabel: "Who owns making the conversions happen",
+    },
+    monthlyCheckTeach:
+      "Walk the chain in order. The freed time and the earlier signal move first, then the changes at the bedside, then the compliance and the near-miss catches; the event rate and the count of events prevented move last, and on a lag. Lead your review with the counts and the experience scores, never the dollar. Attainment is not a number you assert. It is whether each metric moved toward its target on the schedule you set.",
+  };
 }
