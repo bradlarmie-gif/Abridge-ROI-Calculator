@@ -255,7 +255,7 @@ export default function StepMultiBuildCase({
                 />
                 <p className="text-[11px] text-[#8C8C8C] mt-2">
                   {goal === "quality"
-                    ? "Abridge surfaces the risk earlier, the unit runs the bundle and prevents. Starts at 30%, the honestly attributable share."
+                    ? "Abridge surfaces the risk earlier, the unit runs the bundle that prevents the event. Starts at 30%, the honestly attributable share."
                     : "Dial down when other efforts also move this number. It never adds credit, only removes it."}
                 </p>
               </div>

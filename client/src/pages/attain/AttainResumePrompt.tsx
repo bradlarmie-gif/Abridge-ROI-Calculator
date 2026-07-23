@@ -53,7 +53,7 @@ export default function AttainResumePrompt({ draft, onResume, onDismiss }: Attai
         <h3 className="font-abridge text-lg text-white mb-1.5">Resume your in-progress plan?</h3>
         <p className="text-[12px] text-white/70 leading-relaxed mb-4">
           You have a {settingLabel} plan{goalLabels ? ` for ${goalLabels}` : ""} saved on this device from{" "}
-          {formatSavedAt(draft.savedAt)}. Resuming rehydrates every decision, commitment, and progress entry exactly
+          {formatSavedAt(draft.savedAt)}. Resuming brings back every decision, commitment, and progress entry exactly
           as you left it.
         </p>
         <div className="flex items-center gap-3">

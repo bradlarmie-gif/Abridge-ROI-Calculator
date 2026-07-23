@@ -461,7 +461,7 @@ export const LEVERS: Record<GoalId, Lever[]> = {
     {
       id: "accessDemandSameDayCount",
       label: "Add same-day and urgent demand",
-      help: "Patients per year who would book same-day or urgent if an open slot existed for them today - a real count, not a percent of your schedule.",
+      help: "Patients per year who would book same-day or urgent if an open slot existed for them today. A real count, not a percent of your schedule.",
       control: "countPerUnit",
       unit: "patients/yr",
       min: 0,
@@ -477,7 +477,7 @@ export const LEVERS: Record<GoalId, Lever[]> = {
     {
       id: "accessDemandNoShowCount",
       label: "Recover no-shows",
-      help: "Patients per year recoverable by filling a no-show slot with a waiting patient instead of losing it outright - a real count. If you only know your no-show and recovery rates, D4's optional helper estimates a starting count for you.",
+      help: "Patients per year recoverable by filling a no-show slot with a waiting patient instead of losing it outright. A real count. If you only know your no-show and recovery rates, D4's optional helper estimates a starting count for you.",
       control: "countPerUnit",
       unit: "patients/yr",
       min: 0,

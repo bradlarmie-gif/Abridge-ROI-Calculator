@@ -687,7 +687,7 @@ export function QualityEventGate({
 }) {
   const explain =
     capturedCount > 0
-      ? `Of the ${fmtRevenueCount(ceilingCount)} the documentation can move, this plan prevents ${fmtRevenueCount(capturedCount)}. The rest occur despite best practice, so they stay out of the number. Abridge surfaces the risk earlier; the unit runs the bundle and prevents.`
+      ? `Of the ${fmtRevenueCount(ceilingCount)} the documentation can move, this plan prevents ${fmtRevenueCount(capturedCount)}. The rest occur despite best practice, so they stay out of the number. Abridge surfaces the risk earlier; the unit runs the bundle that prevents the event.`
       : "Most harm events occur despite best practice. Abridge surfaces the risk earlier; commit the bundle below to prevent a defensible share of what is left.";
 
   return (

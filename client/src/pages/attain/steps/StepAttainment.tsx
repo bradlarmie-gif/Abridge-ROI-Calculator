@@ -1727,8 +1727,8 @@ function PriorityMechanics({
         <div className="mb-6">
           <p className="text-[11px] font-semibold uppercase tracking-[2px] text-[#EA2C00] mb-2">The monthly check</p>
           <p className="text-[12.5px] leading-relaxed text-[#3A3A3A] mb-3">
-            Same five questions every month. Five minutes. This is what keeps a bleeding decision from becoming a
-            lost quarter.
+            Same five questions every month. Five minutes. This is what catches a slipping decision before it becomes
+            a lost quarter.
           </p>
           <div className="flex flex-col gap-3">
             {content.monthly.map((q, i) => (

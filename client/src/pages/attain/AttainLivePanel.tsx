@@ -275,7 +275,7 @@ export default function AttainLivePanel({
                     ? "Move a decision below to start building it"
                     : combined.combinedMargin > 0
                       ? "Growing as you commit"
-                      : "Every decision counts, keep going, the dollar appears once the chain is complete"}
+                      : "Each decision counts. The dollar appears once the chain is complete."}
                 </p>
               </>
             )}
@@ -314,8 +314,8 @@ export default function AttainLivePanel({
                 <InfoTip
                   text={
                     activeGoal === "quality"
-                      ? "In quality, Abridge surfaces the risk earlier, but the unit runs the bundle and prevents the event. This share is the portion honestly attributable to Abridge. Lower it further if other efforts also move the number - it never adds credit, only removes it."
-                      : "The share of this outcome you attribute to this plan. Lower it when other efforts also move the number - it never adds credit, only removes it."
+                      ? "In quality, Abridge surfaces the risk earlier, but the unit runs the bundle and prevents the event. This share is the portion honestly attributable to Abridge. Lower it further if other efforts also move the number. It never adds credit, only removes it."
+                      : "The share of this outcome you attribute to this plan. Lower it when other efforts also move the number. It never adds credit, only removes it."
                   }
                   testid={`tooltip-attain-realization-${activeGoal}`}
                 />
@@ -336,7 +336,7 @@ export default function AttainLivePanel({
             />
             <p className="text-[11px] text-white/40 mt-2" data-testid={`text-attain-realization-worth-${activeGoal}`}>
               {activeGoal === "quality"
-                ? "Abridge surfaces the risk earlier, the unit runs the bundle and prevents. Starts at 30%, the honestly attributable share."
+                ? "Abridge surfaces the risk earlier, the unit runs the bundle that prevents the event. Starts at 30%, the honestly attributable share."
                 : "Dial down when other efforts also move this number."}
             </p>
           </div>
