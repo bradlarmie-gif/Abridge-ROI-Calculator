@@ -1061,23 +1061,32 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
               />
             )}
 
+            {/* QUALITY (nursing) is cloned onto the same MEASUREMENT PLAN
+                surface as access, as the SAFETY-FIRST exception. It is MULTI-
+                EVENT, so its chain STACKS PER CHOSEN EVENT (shared root, then
+                each event's conversions + outcome links) under grouped section
+                headers, mirroring how the quality Align stacks per event. The
+                outcome leads with a COUNT (events prevented) and the dollar is a
+                soft, labeled footnote; HCAHPS carries no hard dollar. Single-
+                goal only; a multi-goal plan that includes quality still renders
+                StepCommit. */}
             {step === "commit" && isNursingQualityPlan && (
-              <StepPlanning
+              <StepMeasurementPlan
+                goal="quality"
                 setting="nursing"
                 baseline={baseline}
-                goal="quality"
                 values={valuesByGoal.quality ?? defaultLeverValues("quality", "nursing")}
                 combined={combined}
                 goalOwner={goalOwnerByPriority.quality ?? { name: "", title: "" }}
                 onChangeGoalOwner={(patch) => handleChangeGoalOwner("quality", patch)}
                 planning={planning}
-                onChangePhaseOwner={handleChangePhaseOwner}
-                onChangePhaseSignalTarget={handleChangePhaseSignalTarget}
-                onChangePhaseSignalLabel={handleChangePhaseSignalLabel}
+                onSetChosenMetrics={handleSetChosenMetrics}
+                onChangeMetricField={handleChangeMetricField}
+                onChangePromiseByWhen={handleChangePromiseByWhen}
+                onChangeCommitment={handleChangeMeasureCommitment}
                 onChangePartnerRisk={handleChangePartnerRisk}
                 planCadence={planCadence}
                 onChangePlanCadence={handleChangePlanCadence}
-                totalMonths={state.totalMonths}
                 stepNumber={stepIndex + 1}
               />
             )}

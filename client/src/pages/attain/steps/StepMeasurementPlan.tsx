@@ -8,12 +8,16 @@ import {
   deriveAccessMeasurementPlan,
   deriveRetentionMeasurementPlan,
   deriveRevenueMeasurementPlan,
+  deriveQualityMeasurementPlan,
   type MeasurementPlanModel,
   type MeasurementLink,
   type MeasurementMetricOption,
 } from "@/lib/attain/attainMeasurement";
 import { computeRevenueChain } from "@/lib/attain/attainRevenue";
 import { computeIpRevenueChain } from "@/lib/attain/attainInpatientRevenue";
+import { deriveQualityLadder } from "@/lib/attain/attainQuality";
+import { qualityAlignToLeverValues } from "@/lib/attain/qualityAlign";
+import { defaultRealizationPct } from "@/lib/attain/attainLevers";
 import type { AttainSetting, GoalId } from "@/lib/attain/attainTypes";
 import {
   measurementChosen,
@@ -70,11 +74,13 @@ function BaselineTag({ tag }: { tag: MeasurementMetricOption["baselineTag"] }) {
 }
 
 interface StepMeasurementPlanProps {
-  /** Which goal's measurement plan this is. Access is the exemplar; retention
-   * and revenue reuse this same surface via their own `deriveXMeasurementPlan`.
-   * Only the derivation differs; the scorecard UI is shared. Revenue is
-   * multi-path, so its chain STACKS PER PATH under grouped section headers. */
-  goal: Extract<GoalId, "access" | "retention" | "revenue">;
+  /** Which goal's measurement plan this is. Access is the exemplar; retention,
+   * revenue, and quality reuse this same surface via their own
+   * `deriveXMeasurementPlan`. Only the derivation differs; the scorecard UI is
+   * shared. Revenue is multi-path and quality is multi-event, so both STACK per
+   * path/event under grouped section headers. Quality is the safety-first
+   * exception: its promise leads with a COUNT, not a dollar. */
+  goal: Extract<GoalId, "access" | "retention" | "revenue" | "quality">;
   /** The care setting, so retention counts the right unit (nurses vs providers)
    * and names the charting term, and the risk placeholder is setting-aware. */
   setting: AttainSetting;
@@ -133,6 +139,20 @@ export default function StepMeasurementPlan({
     const revenueRealized = combined?.byGoal.revenue?.totalMargin ?? revenueRaw;
     const realizationPct = revenueRaw > 0 ? (revenueRealized / revenueRaw) * 100 : 100;
     model = deriveRevenueMeasurementPlan(baseline, setting, values, { realizationPct });
+  } else if (goal === "quality") {
+    // Quality is the safety-first, multi-event exception. Reconcile the SOFT
+    // dollar to the combined engine result exactly the way revenue does: derive
+    // the raw prize at 100% off the Align-merged levers, take the realized soft
+    // dollar off the combined result, and pass the implied realization so the
+    // footnote matches Build the case (the counts are attribution-independent).
+    const qualityMerged: LeverValues = {
+      ...values,
+      ...qualityAlignToLeverValues(values, { baseline, setting, realizationPct: 100, crossGoalShareMultiplier: 1 }),
+    };
+    const qualityRaw = deriveQualityLadder(baseline, qualityMerged, 100).convergedPrize;
+    const qualityRealized = combined?.byGoal.quality?.totalMargin ?? qualityRaw * (defaultRealizationPct("quality") / 100);
+    const realizationPct = qualityRaw > 0 ? (qualityRealized / qualityRaw) * 100 : defaultRealizationPct("quality");
+    model = deriveQualityMeasurementPlan(baseline, values, { realizationPct });
   } else if (goal === "retention") {
     const rawMinutes = typeof values.retentionMinutesSaved === "number" ? values.retentionMinutesSaved : 0;
     const minutes = rawMinutes > 0 ? rawMinutes : DEFAULT_MINUTES_SAVED_PER_NOTE;
@@ -216,13 +236,23 @@ export default function StepMeasurementPlan({
           <span className="text-[#B4B4B4] font-normal"> · </span>
           Owned by {ownerName ? <span>{ownerName}</span> : <span className="text-[#EA2C00]">name the exec below</span>}
           <span className="text-[#B4B4B4] font-normal"> · </span>
-          {prize > 0 ? (
+          {model.safetyHeadline ? (
+            /* SAFETY-FIRST (quality): the hero is a COUNT of harm events
+               prevented, never a coral dollar. The dollar drops to the soft
+               footnote below. */
+            <span className="text-[#EA2C00]" data-testid="text-measure-promise-count">{model.safetyHeadline.heroValue}</span>
+          ) : prize > 0 ? (
             <span className="text-[#EA2C00]" data-testid="text-measure-promise-prize">{fmtMoneyCompact(prize)}</span>
           ) : (
             <span className="text-[#8C8C8C]">value pending</span>
           )}{" "}
           by {promiseByWhen ? <span data-testid="text-measure-promise-date">{promiseByWhen}</span> : <span className="text-[#EA2C00]">the date you set below</span>}
         </p>
+        {model.safetyHeadline && (
+          <p className="mt-2 text-[11px] text-[#8C8C8C] leading-relaxed max-w-[600px]" data-testid="text-measure-soft-dollar">
+            {model.safetyHeadline.softDollarNote}
+          </p>
+        )}
 
         <div className="mt-4 pt-4 border-t border-[#E0D9CE] grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
