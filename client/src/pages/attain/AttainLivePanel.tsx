@@ -4,6 +4,8 @@ import { Slider } from "@/components/ui/slider";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import AttainmentCurve from "@/components/attain/AttainmentCurve";
 import { leversFor, defaultLeverValues, defaultRealizationPct, isDecisionCommitted, type LeverValues, type MultiGoalContributionsResult } from "@/lib/attain/attainLevers";
+import { alignDecisionLabelForLever } from "@/lib/attain/alignDecisionLabels";
+import { alignConfigFor } from "./steps/AlignSurface";
 import { GOAL_CATALOG } from "@/lib/attain/attainGoals";
 import type { AttainState, GoalId, SettingGoalContent } from "@/lib/attain/attainTypes";
 import type { GoalTargetResult, AttainmentResult } from "@/lib/attain/attainCalc";
@@ -16,7 +18,7 @@ function formatCompact(n: number): string {
 }
 
 /** A small, quiet info tooltip - same house `Tooltip` primitive every other
- * Attain info-tip builds on (`AccessDecisionChain.tsx`'s `InfoTip`, etc.). */
+ * Attain info-tip builds on. */
 function InfoTip({ text, testid }: { text: string; testid: string }) {
   return (
     <Tooltip delayDuration={200}>
@@ -93,7 +95,12 @@ export default function AttainLivePanel({
 
   // Every moved decision across every selected goal, prefixed so a partner
   // with two priorities can tell at a glance which one a given decision
-  // belongs to.
+  // belongs to. Each committed engine lever is relabeled into the language of
+  // the ALIGN CHOICE the partner actually made (see `alignDecisionLabelForLever`),
+  // so the panel narrates the plan in the same words on the Align cards, not the
+  // old lever-catalog vocabulary. Levers that map to the same Align choice or
+  // path COLLAPSE into one row, summing their marginal margin; this changes no
+  // dollar math (the engine's figures are only grouped for display).
   //
   // `showDollar` decides whether a per-decision dollar is honest to show. A
   // gated ladder (access, retention, capacity) produces ONE number: the rungs
@@ -102,19 +109,28 @@ export default function AttainLivePanel({
   // rest, which would read as real decisions being worthless. So a goal whose
   // moved decisions carry the total on a single row is listed as plain STEPS,
   // with only the running total (above) carrying the dollar. A goal with two
-  // or more dollar-bearing decisions is genuinely additive (revenue's
-  // parallel paths), where a per-path dollar stays honest, so those keep it.
+  // or more dollar-bearing paths is genuinely additive (revenue's parallel
+  // paths, quality's per-event lines), where a per-path dollar stays honest,
+  // so those keep it.
   const movedDecisions = goals.flatMap((goal) => {
-    const values = valuesByGoal[goal] ?? defaultLeverValues(goal, state.setting ?? undefined);
+    const setting = state.setting ?? undefined;
+    const values = valuesByGoal[goal] ?? defaultLeverValues(goal, setting);
     const perLever = combined?.byGoal[goal]?.perLever;
-    const rows = leversFor(goal, state.setting ?? undefined)
-      .filter((l) => isDecisionCommitted(goal, state.setting ?? undefined, values, l))
+    const config = setting ? alignConfigFor(goal, setting) : null;
+    const committed = leversFor(goal, setting)
+      .filter((l) => isDecisionCommitted(goal, setting, values, l))
       .map((l) => ({
-        key: `${goal}:${l.id}`,
-        goal,
-        label: l.label,
+        label: setting ? alignDecisionLabelForLever(goal, setting, values, l.id, config) ?? l.label : l.label,
         marginalMargin: perLever?.find((p) => p.id === l.id)?.marginalMargin ?? 0,
       }));
+    // Collapse levers that resolve to the same Align choice/path into one row,
+    // preserving first-seen order so the list reads in the order aligned on.
+    const grouped: { key: string; goal: GoalId; label: string; marginalMargin: number }[] = [];
+    for (const row of committed) {
+      const existing = grouped.find((g) => g.label === row.label);
+      if (existing) existing.marginalMargin += row.marginalMargin;
+      else grouped.push({ key: `${goal}:${grouped.length}:${row.label}`, goal, label: row.label, marginalMargin: row.marginalMargin });
+    }
     // Access and retention are single converged gated ladders, so they read as
     // plain STEPS with the running total above carrying the one dollar.
     // Outpatient access carries the whole total on its one binding rung; ED
@@ -122,16 +138,13 @@ export default function AttainLivePanel({
     // that are MIN-gated together (not independent), so a per-decision dollar
     // there would read as two separate additive wins when they are one. And
     // retention's rows overlap multiplicatively toward one composite impact.
+    // Capacity (nursing overtime) is the same single converged gated ladder.
     // Only revenue's genuinely parallel, independently additive paths (and
-    // quality's per-event lines) keep an honest per-decision dollar.
-    const dollarBearing = rows.filter((r) => r.marginalMargin !== 0).length;
-    // Capacity (nursing overtime) is a single converged gated ladder like
-    // access/retention: the whole realized dollar sits on its one binding rung
-    // (the conversion decision) and $0 on the rest, so it reads as plain STEPS
-    // with the running total above carrying the one dollar.
+    // quality's per-event lines) keep an honest per-path dollar.
+    const dollarBearing = grouped.filter((r) => r.marginalMargin !== 0).length;
     const isGatedLadder = goal === "access" || goal === "retention" || goal === "capacity";
     const showDollar = !isGatedLadder && dollarBearing > 1;
-    return rows.map((r) => ({ ...r, showDollar }));
+    return grouped.map((r) => ({ ...r, showDollar }));
   });
 
   return (
