@@ -153,14 +153,15 @@ export default function StepBuildCase({
   // the chain always read (scope, directed share, the demand sources), so the
   // engine math and the demand gate MIN(capacity, demand) are unchanged.
   const isAccessAlign = goal === "access" && setting === "outpatient";
-  // ED access is the fourth ladder: it assembles the same step-down story
-  // (first domino -> scope -> worth -> the diagnosis gate -> the prize) that
-  // Planning reads back, via the shared ED access ladder (see
-  // EdAccessDecisionChain + accessLadder.ts's deriveEdAccessLadder /
-  // EdAccessDiagnosisGate). So it drops the generic "N of M decisions moved"
-  // drag framing for the one crisp ladder teaching line, exactly like
-  // outpatient access.
-  const isEdAccessLadder = goal === "access" && setting === "ed";
+  // ED access is now an ALIGN surface too, cloned from the outpatient access
+  // exemplar: instead of the old bespoke step-down chain it asks a small set of
+  // "choose your meaning" questions (see AlignStep + edAccessAlign.ts) and
+  // derives the SAME number underneath (computeEdAccessChain), reconciled to
+  // Explore's edLwbs / admission-capture primitives. The choices map onto the
+  // exact LeverValues the chain always read (scope, throughput share, the
+  // documentation-caused diagnosis, the LWBS rate, the admission share), so the
+  // engine math and the recoverable-pool gate are unchanged.
+  const isEdAccessAlign = goal === "access" && setting === "ed";
   // Retention is the ALIGN exemplar in EVERY setting: instead of the old
   // slider/toggle ladder it now asks a small set of "choose your meaning"
   // questions (see AlignStep + workforceAlign.ts) and derives the SAME number
@@ -196,8 +197,8 @@ export default function StepBuildCase({
   // Every Align surface (Retention everywhere, outpatient Access, Revenue in all
   // three settings, nursing Quality and Capacity) and every remaining ladder
   // drops the generic "N of M decisions moved" drag framing.
-  const isAlign = isRetentionAlign || isAccessAlign || goal === "revenue" || isQualityAlign || isCapacityAlign;
-  const isLadder = isAccessAlign || isEdAccessLadder || isRetentionAlign || isRevenueLadder || isIpRevenueLadder || isQualityAlign || isCapacityAlign;
+  const isAlign = isRetentionAlign || isAccessAlign || isEdAccessAlign || goal === "revenue" || isQualityAlign || isCapacityAlign;
+  const isLadder = isAccessAlign || isEdAccessAlign || isRetentionAlign || isRevenueLadder || isIpRevenueLadder || isQualityAlign || isCapacityAlign;
 
   return (
     <div>
@@ -211,8 +212,8 @@ export default function StepBuildCase({
         <p className="text-[15px] text-[#666666] leading-relaxed max-w-[620px]" data-testid="text-step-teach">
           {isAccessAlign
             ? "Let us agree on what you mean by opening access, one question at a time. Your facts carry over from your starting point, so you only choose the meaning. The number at the end is the proof of what you aligned on."
-            : isEdAccessLadder
-              ? "Assemble the ladder from the top down. One number starts it, freed time becomes throughput, and the diagnosis decides how much of the leak is yours to recover."
+            : isEdAccessAlign
+              ? "Let us agree on what you mean by cutting left-without-being-seen, one question at a time. Your facts carry over from your starting point, so you only choose the meaning. The number at the end is the proof of what you aligned on."
               : isRetentionAlign
                 ? "Let us agree on what you mean by keeping your people, one question at a time. Your facts carry over from your starting point, so you only choose the meaning. The number at the end is the proof of what you aligned on."
                 : isRevenueLadder || isIpRevenueLadder
@@ -254,8 +255,8 @@ export default function StepBuildCase({
         <p className="text-[13px] text-white/50 mt-2" data-testid="text-attain-buildcase-strategy-progress">
           {isAccessAlign
             ? "A short, shared conversation about what you mean by opening access. Choose the meaning; the number is the proof."
-            : isEdAccessLadder
-              ? "This is the full step-down, top to bottom. Every rung is part of the plan; set each one to your real numbers."
+            : isEdAccessAlign
+              ? "A short, shared conversation about what you mean by cutting left-without-being-seen. Choose the meaning; the number is the proof, and only the LWBS that charting causes counts."
               : isRetentionAlign
                 ? "A short, shared conversation about what you mean by keeping your people. Choose the meaning; the number is the proof."
                 : isRevenueLadder || isIpRevenueLadder

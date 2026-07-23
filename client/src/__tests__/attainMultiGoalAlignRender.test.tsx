@@ -80,13 +80,14 @@ describe("StepMultiBuildCase — stacked multi-goal Align", () => {
     expect(alignSections).toBe(2);
   });
 
-  it("resolves an Align config for every non-ED goal (no goal falls back to the old ladder)", () => {
+  it("resolves an Align config for every goal + setting (no goal falls back to the old ladder)", () => {
     expect(alignConfigFor("access", "outpatient")).not.toBeNull();
     expect(alignConfigFor("revenue", "outpatient")).not.toBeNull();
     expect(alignConfigFor("retention", "nursing")).not.toBeNull();
     expect(alignConfigFor("quality", "nursing")).not.toBeNull();
     expect(alignConfigFor("capacity", "nursing")).not.toBeNull();
-    // ED access is the one bespoke chain (AlignSurface renders it directly).
-    expect(alignConfigFor("access", "ed")).toBeNull();
+    // ED access now has its own ED-flavored Align config on the shared AlignStep.
+    expect(alignConfigFor("access", "ed")).not.toBeNull();
+    expect(alignConfigFor("access", "ed")!.goal).toBe("access");
   });
 });
