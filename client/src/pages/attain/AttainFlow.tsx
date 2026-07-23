@@ -16,6 +16,7 @@ import StepCommit, {
 import StepPlanning from "./steps/StepPlanning";
 import StepMeasurementPlan from "./steps/StepMeasurementPlan";
 import StepMultiPlanning from "./steps/StepMultiPlanning";
+import StepMultiMeasurementPlan, { type MeasurementGoal } from "./steps/StepMultiMeasurementPlan";
 import StepAttainment from "./steps/StepAttainment";
 import AttainLivePanel from "./AttainLivePanel";
 import {
@@ -73,6 +74,18 @@ function buildCaseStepId(goal: GoalId): AttainStepId {
 /** The goal a build-case step page belongs to, or null for every other step. */
 function goalOfStep(step: AttainStepId): GoalId | null {
   return step.startsWith(BUILD_CASE_PREFIX) ? (step.slice(BUILD_CASE_PREFIX.length) as GoalId) : null;
+}
+
+/** Whether a goal + setting renders its Plan through the shared MEASUREMENT
+ * surface (MeasurementPlanSurface). Every goal a multi-goal plan can hold has
+ * one EXCEPT ED access, whose single-goal Plan still uses the phased
+ * StepPlanning (there is no ED-access measurement derivation yet). A multi-goal
+ * plan routes to the stacked measurement surface only when every selected goal
+ * has one; an ED plan that includes access stays on the phased
+ * StepMultiPlanning, exactly as single-goal ED access stays on StepPlanning. */
+function hasMeasurementSurface(goal: GoalId, setting: AttainSetting): boolean {
+  if (goal === "access" && setting === "ed") return false;
+  return goal === "access" || goal === "retention" || goal === "revenue" || goal === "quality" || goal === "capacity";
 }
 
 /** The real step sequence for this plan: fixed setting/vision/scope, then the
@@ -326,7 +339,14 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
   // renders the same StepPlanning shell driven by the shared nursing capacity
   // ladder (goal="capacity"). Every other combo still renders StepCommit.
   const isNursingCapacityPlan = state.setting === "nursing" && goals.length === 1 && goals[0] === "capacity";
-  const isPhasedPlan = isOutpatientAccessPlan || isRetentionPlan || isOutpatientRevenuePlan || isEdRevenuePlan || isInpatientRevenuePlan || isEdAccessPlan || isNursingQualityPlan || isNursingCapacityPlan;
+  // A MULTI-goal plan routes its Plan step to the stacked MEASUREMENT surface
+  // (StepMultiMeasurementPlan) when every selected goal has a measurement
+  // surface, mirroring how multi-goal Align stacks per goal. The one holdout is
+  // an ED plan that includes access (ED access has no measurement derivation
+  // yet), which stays on the phased StepMultiPlanning, exactly as single-goal ED
+  // access stays on StepPlanning.
+  const allGoalsHaveMeasurementSurface =
+    goals.length > 1 && Boolean(state.setting) && goals.every((g) => hasMeasurementSurface(g, state.setting!));
 
   const updateState = useCallback((updates: Partial<AttainState>) => {
     setState((prev) => ({ ...prev, ...updates }));
@@ -527,6 +547,54 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
   const handleChangeMeasureCommitment = useCallback((patch: { commitmentOwner?: string; commitmentByWhen?: string }) => {
     setPlanning((prev) => ({ ...prev, measurement: { ...prev.measurement, ...patch } }));
   }, []);
+
+  // Multi-goal measurement-plan edits — the same four measurement edits, but
+  // keyed per goal in `planning.measurementByGoal[goal]` so two goals' metric
+  // picks/targets/owners/dates never collide (access and retention even share
+  // metric ids like `minutes-saved-per-note`). Additive and backward-compatible:
+  // an untouched goal simply has no `measurementByGoal` entry and falls back to
+  // its derived defaults (see attainPlanning.ts's `measurementPlanningFor` +
+  // resolvers).
+  const patchMeasurementForGoal = useCallback(
+    (goal: GoalId, patch: (m: NonNullable<AttainPlanning["measurement"]>) => NonNullable<AttainPlanning["measurement"]>) => {
+      setPlanning((prev) => {
+        const layer = prev.measurementByGoal?.[goal] ?? {};
+        return { ...prev, measurementByGoal: { ...prev.measurementByGoal, [goal]: patch(layer) } };
+      });
+    },
+    [],
+  );
+
+  const handleSetChosenMetricsForGoal = useCallback(
+    (goal: GoalId, linkId: string, metricIds: string[]) => {
+      patchMeasurementForGoal(goal, (m) => ({ ...m, chosen: { ...m.chosen, [linkId]: metricIds } }));
+    },
+    [patchMeasurementForGoal],
+  );
+
+  const handleChangeMetricFieldForGoal = useCallback(
+    (goal: GoalId, metricId: string, patch: { target?: string; owner?: string; byWhen?: string }) => {
+      patchMeasurementForGoal(goal, (m) => {
+        const entries = m.entries ?? {};
+        return { ...m, entries: { ...entries, [metricId]: { ...entries[metricId], ...patch } } };
+      });
+    },
+    [patchMeasurementForGoal],
+  );
+
+  const handleChangePromiseByWhenForGoal = useCallback(
+    (goal: GoalId, value: string) => {
+      patchMeasurementForGoal(goal, (m) => ({ ...m, promiseByWhen: value }));
+    },
+    [patchMeasurementForGoal],
+  );
+
+  const handleChangeMeasureCommitmentForGoal = useCallback(
+    (goal: GoalId, patch: { commitmentOwner?: string; commitmentByWhen?: string }) => {
+      patchMeasurementForGoal(goal, (m) => ({ ...m, ...patch }));
+    },
+    [patchMeasurementForGoal],
+  );
 
   // Multi-priority Planning edits — the same three per-phase overrides, but
   // keyed per priority in `planning.byGoal[goal]` so two priorities' phase
@@ -1119,13 +1187,43 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
               />
             )}
 
-            {/* Every MULTI-priority plan (2+ selected goals) now renders the
-                same phased step-down Planning, once per priority, instead of
-                the old dense StepCommit form. The per-priority block is shared
-                with the single-goal StepPlanning above, so the two can never
-                diverge. StepCommit is kept only for its exported types/
-                constants (Commitment, GoalOwner, cadence), no longer rendered. */}
-            {step === "commit" && !isPhasedPlan && goals.length > 1 && state.setting && (
+            {/* Every MULTI-goal plan (2+ selected goals) whose goals all have a
+                measurement surface renders the SAME per-goal MeasurementPlanSurface
+                the single-goal Plan uses, once per goal, stacked under one
+                combined header (see StepMultiMeasurementPlan), mirroring how
+                multi-goal Align stacks per goal. The combined prize is the
+                engine's `combinedMargin`, counted once; access + retention share
+                the one freed hour via the same split the engine already books;
+                each goal's picks persist per goal on `planning.measurementByGoal`. */}
+            {step === "commit" && goals.length > 1 && state.setting && allGoalsHaveMeasurementSurface && (
+              <StepMultiMeasurementPlan
+                setting={state.setting}
+                baseline={baseline}
+                goals={goals as MeasurementGoal[]}
+                valuesByGoal={valuesByGoal}
+                combined={combined}
+                freedTimeSplit={freedTimeSplit}
+                onChangeFreedTimeSplit={handleFreedTimeSplitChange}
+                planning={planning}
+                goalOwnerByPriority={goalOwnerByPriority}
+                onChangeGoalOwner={handleChangeGoalOwner}
+                onSetChosenMetrics={handleSetChosenMetricsForGoal}
+                onChangeMetricField={handleChangeMetricFieldForGoal}
+                onChangePromiseByWhen={handleChangePromiseByWhenForGoal}
+                onChangeCommitment={handleChangeMeasureCommitmentForGoal}
+                onChangePartnerRisk={handleChangePartnerRisk}
+                planCadence={planCadence}
+                onChangePlanCadence={handleChangePlanCadence}
+                stepNumber={stepIndex + 1}
+              />
+            )}
+
+            {/* The one MULTI-goal holdout (an ED plan that includes access, no
+                measurement derivation yet) keeps the phased step-down Planning,
+                once per priority. The per-priority block is shared with the
+                single-goal StepPlanning, so the two can never diverge. StepCommit
+                is kept only for its exported types/constants. */}
+            {step === "commit" && goals.length > 1 && state.setting && !allGoalsHaveMeasurementSurface && (
               <StepMultiPlanning
                 setting={state.setting}
                 baseline={baseline}
