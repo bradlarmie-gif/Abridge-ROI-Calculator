@@ -4,7 +4,7 @@
  * Five "choose your meaning" questions that map onto the EXISTING nursing
  * capacity decision chain (`computeCapacityChain` in attainCapacity.ts), so the
  * derived number still reconciles to Explore's `nursingOvertime` driver exactly
- * as the single gated ladder (CapacityLadderChain / deriveNursingCapacityLadder)
+ * as the single gated ladder (deriveNursingCapacityLadder)
  * did. No engine/dollar-math changes: the choices simply feed the same
  * `LeverValues` the chain always read (`capacityNurses`, `capacityDocShare`,
  * `capacityConversion`), and the documentation-attributable gate still governs

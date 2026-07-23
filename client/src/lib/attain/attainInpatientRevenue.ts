@@ -265,7 +265,7 @@ export const DEFAULT_IP_CDI_COST_PER_QUERY = 50;
  * relying on the $50 default alone to keep a partner from re-pricing a
  * query at DRG-reimbursement-sized dollars ($400-500+). See the UI's own
  * explicit note when both DRG and CDI are chosen together
- * (`InpatientRevenueLadderChain.tsx`). */
+ * (the revenue Align surface, `revenueAlign.ts`). */
 export const MAX_IP_CDI_COST_PER_QUERY = 200;
 
 export interface IpCdiChain {

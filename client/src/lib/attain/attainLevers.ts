@@ -381,8 +381,8 @@ const QUALITY_INTERVENTION_LEVERS: Lever[] = QUALITY_EVENT_IDS.flatMap((id) => {
 
 export const LEVERS: Record<GoalId, Lever[]> = {
   // Access is a decision CHAIN (D1 scope -> D2 margin -> D3 capacity -> D4
-  // demand -> D5 payoff), rendered bespoke on Build the case
-  // (`AccessDecisionChain.tsx`), not through the generic lever renderer.
+  // demand -> D5 payoff), rendered on the Align step via its Align config
+  // (`accessAlign.ts`), not through the generic lever renderer.
   // This catalog entry exists so Commit and Your Plan, which walk every
   // goal's `LEVERS[goal]` generically, keep working: one row per decision,
   // ids matching the flat `LeverValues` keys `attainAccess.ts` reads
@@ -508,7 +508,7 @@ export const LEVERS: Record<GoalId, Lever[]> = {
     },
   ],
   // Retention (Workforce) is a D1-D5 DECISION CHAIN, rendered bespoke on
-  // Build the case as the shared step-down ladder (`WorkforceLadderChain.tsx`,
+  // the Align step's shared step-down ladder (`workforceAlign.ts`,
   // every setting), not through the generic lever renderer - same convention
   // as access/revenue. This catalog entry
   // exists so Commit and the Attainment hub, which walk every goal's
@@ -648,7 +648,7 @@ export const LEVERS: Record<GoalId, Lever[]> = {
   ],
   // Revenue is a THREE-PATH decision chain for outpatient/ED (Risk
   // Adjustment / E/M Level Accuracy / Medical Necessity Denials), rendered
-  // bespoke on Build the case (`RevenueLadderChain.tsx`), not through the
+  // on the Align step via its Align config (`revenueAlign.ts`), not through the
   // generic lever renderer - same convention as access. This catalog entry
   // exists so Commit and Your Plan, which walk every goal's `leversFor`
   // generically, keep working: one row per decision, ids matching the flat
@@ -716,7 +716,7 @@ export const LEVERS: Record<GoalId, Lever[]> = {
       label: "Lift E/M level and wRVU accuracy",
       help: "Documented complexity that never reaches the coded level is not revenue. This is the share of that documentation gap you commit to close, above today's average level.",
       control: "percent",
-      // Bounds match the live slider (RevenueLadderChain), which reads this as
+      // Bounds match the Align config (`revenueAlign.ts`), which reads this as
       // "the share of the documentation gap you commit to close," 0-100, not
       // the old blunt "% lift" the stale 0-15 bound described.
       unit: "%",
@@ -821,7 +821,7 @@ export const LEVERS: Record<GoalId, Lever[]> = {
     ...QUALITY_INTERVENTION_LEVERS,
   ],
   // Capacity (nursing) = OVERTIME reduction, a single gated ladder rendered
-  // bespoke on Build the case (`CapacityLadderChain.tsx`), not through the
+  // on the Align step via its Align config (`capacityAlign.ts`), not through the
   // generic lever renderer - same convention as access/quality. This catalog
   // entry exists so Commit and the Attainment hub, which walk every goal's
   // `LEVERS[goal]` generically, keep working: one row per decision, ids
@@ -940,8 +940,8 @@ export const LEVERS: Record<GoalId, Lever[]> = {
  * Query Efficiency, and Observation/IP Status Defense, a genuinely
  * different mechanism from outpatient/ED (documentation-driven case weight
  * and query/downgrade cost avoidance, not HCC/wRVU/denials). Rebuilt as its
- * own THREE-PATH converging ladder, rendered bespoke on Build the case
- * (`InpatientRevenueLadderChain.tsx`), not through the generic lever
+ * own THREE-PATH converging ladder, rendered on the Align step via its Align config
+ * (`revenueAlign.ts`), not through the generic lever
  * renderer - same convention as outpatient/ED revenue. This catalog entry
  * exists so Commit and the Attainment hub, which walk every goal's
  * `leversFor` generically, keep working: one row per decision, ids matching

@@ -614,8 +614,8 @@ export function computeQualityChain(baseline: AttainBaseline, values: LeverValue
 }
 
 // ────────────────────────────────────────────────────────────────────────
-// THE SHARED, CONVERGING QUALITY LADDER — the one derivation both Build the
-// case (QualityLadderChain) and Planning read, so their per-event gates and
+// THE SHARED, CONVERGING QUALITY LADDER — the one derivation both the Align
+// surface (`qualityAlign.ts`) and Planning read, so their per-event gates and
 // their one converged prize can never diverge. Same SHAPE as the revenue
 // ladder (`deriveRevenueLadder`): one shared first domino (earlier, more
 // complete risk documentation at the point of care) feeding several parallel

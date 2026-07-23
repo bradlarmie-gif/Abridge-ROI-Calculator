@@ -133,13 +133,13 @@ export default function StepBuildCase({
   const goalDef = GOAL_CATALOG[goal];
   const levers = leversFor(goal, setting);
   // Outpatient AND ED revenue both run the converging multi-path ladder (see
-  // RevenueLadderChain). ED offers a smaller path set (E/M + denials, no risk
+  // the revenue Align surface, revenueAlign.ts). ED offers a smaller path set (E/M + denials, no risk
   // adjustment) via `pathsAvailableFor`, but the same shape and shared
   // engine. Inpatient revenue is its own separate mechanism.
   const isRevenueLadder = goal === "revenue" && (setting === "outpatient" || setting === "ed");
   // Inpatient revenue rides the SAME converging revenue ladder shape, on its
   // own genuinely different mechanisms (DRG capture, CDI query efficiency,
-  // observation-status defense) via InpatientRevenueLadderChain. It is a ladder
+  // observation-status defense) via the revenue Align surface (revenueAlign.ts). It is a ladder
   // for the teach/progress framing below, exactly like outpatient/ED revenue.
   const isIpRevenueLadder = goal === "revenue" && setting === "inpatient";
   const result = combined?.byGoal[goal];
