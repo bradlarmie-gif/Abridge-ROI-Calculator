@@ -29,6 +29,7 @@ import {
   type SignalProgressInput,
 } from "@/lib/attain/attainProgress";
 import { trackedMetricsByGoal, type TrackedMetric } from "@/lib/attain/measurementScorecard";
+import { deriveMeasurementModelFor } from "./MeasurementPlanSurface";
 import type { AttainPlanning } from "@/lib/attain/attainPlanning";
 import { GOAL_CATALOG, getContent } from "@/lib/attain/attainGoals";
 import type { AttainState, AttainSetting, GoalId, GoalDef, SettingGoalContent } from "@/lib/attain/attainTypes";
@@ -842,6 +843,24 @@ export default function StepAttainment({
     })
     .filter((d): d is PriorityData => d !== null);
 
+  // ── Honesty: quality's soft dollar never sums into "contribution margin" ──
+  // Nursing quality's dollar is a cost-of-harm-avoided figure, attributed at a
+  // partial share (see attainLevers.ts's `defaultRealizationPct`) — a SOFT
+  // safety number, not hard contribution margin. In a multi-goal plan that
+  // also carries a financial priority, `target.margin` (== `combined.combinedMargin`)
+  // would otherwise fold that soft dollar into the one number labeled
+  // "contribution margin". Only the DISPLAY below is adjusted: `target.margin`
+  // itself still drives attainment tracking (curve, runway, "at a glance")
+  // exactly as before, since that math is unchanged by this fix.
+  const hasQualityGoal = goals.includes("quality");
+  const isMultiGoalWithQuality = hasQualityGoal && goalDefs.length > 1;
+  const qualityMargin = combined.byGoal.quality?.totalMargin ?? 0;
+  const hardContributionMargin = target.margin - qualityMargin;
+  const qualityValuesForPayoff = valuesByGoal.quality ?? defaultLeverValues("quality", setting);
+  const qualityPayoffModel = isMultiGoalWithQuality
+    ? deriveMeasurementModelFor("quality", setting, baseline, qualityValuesForPayoff, combined, 1)
+    : null;
+
   return (
     <div>
       {/* Toolbar */}
@@ -1275,24 +1294,51 @@ export default function StepAttainment({
             {/* ONE combined headline number, full stop. Only when a plan
                 actually holds 2+ priorities do we break that number out — as
                 a row of compact per-priority cards below it, never a second
-                copy of the same figure sitting right next to the first. */}
+                copy of the same figure sitting right next to the first.
+                When the plan also carries nursing quality, that number is the
+                HARD contribution margin only — quality's cost-of-harm-avoided
+                dollar is a soft, partially-attributed safety figure, so it is
+                never folded into the number labeled "contribution margin".
+                It gets its own count-first line below instead. */}
             <div className="bg-[#1A1A1A] rounded-lg p-8 md:p-10 mb-4" data-testid="card-attain-plan-combined-hero">
               <p className="text-[10px] font-semibold uppercase tracking-[1.8px] text-white/55 mb-2">Combined contribution margin</p>
               <p className="font-abridge text-5xl md:text-6xl text-[#EA2C00]" data-testid="text-attain-plan-combined-value">
-                {formatCompact(target.margin)}
+                {isMultiGoalWithQuality
+                  ? hardContributionMargin > 0
+                    ? formatCompact(hardContributionMargin)
+                    : "value pending"
+                  : formatCompact(target.margin)}
               </p>
               <p className="text-[13px] text-white/50 mt-2">
                 Across {goalDefs.length} {goalDefs.length === 1 ? "priority" : "priorities"} · {metricRows.length} metric{metricRows.length === 1 ? "" : "s"} tracked
+                {isMultiGoalWithQuality ? ", nursing quality tracked separately below" : ""}
               </p>
+
+              {isMultiGoalWithQuality && qualityPayoffModel && (
+                <div className="mt-4 pt-4 border-t border-white/10" data-testid="text-attain-plan-quality-soft">
+                  <p className="text-[10px] font-semibold uppercase tracking-[1.5px] text-white/40 mb-1.5">
+                    Nursing quality · safety value, not contribution margin
+                  </p>
+                  <p className="text-[15px] font-semibold text-white" data-testid="text-attain-plan-quality-soft-count">
+                    {qualityPayoffModel.safetyHeadline?.heroValue ?? "count pending"}
+                  </p>
+                  <p className="text-[11.5px] text-white/55 mt-1 leading-relaxed max-w-[520px]" data-testid="text-attain-plan-quality-soft-dollar">
+                    {qualityPayoffModel.safetyHeadline?.softDollarNote ?? "This plan leads with safety, not a dollar."}
+                  </p>
+                </div>
+              )}
             </div>
 
             {goalDefs.length > 1 && (
               <div className="flex flex-wrap gap-3 mb-4" data-testid="grid-attain-plan-priority-breakdown">
-                {goalDefs.map((g) => {
-                  const goalMargin = combined.byGoal[g.id]?.totalMargin ?? 0;
-                  const share = target.margin > 0 ? Math.round((goalMargin / target.margin) * 100) : 0;
-                  return <PriorityBreakdownCard key={g.id} goalDef={g} margin={goalMargin} share={share} />;
-                })}
+                {goalDefs
+                  .filter((g) => !isMultiGoalWithQuality || g.id !== "quality")
+                  .map((g) => {
+                    const goalMargin = combined.byGoal[g.id]?.totalMargin ?? 0;
+                    const shareBase = isMultiGoalWithQuality ? hardContributionMargin : target.margin;
+                    const share = shareBase > 0 ? Math.round((goalMargin / shareBase) * 100) : 0;
+                    return <PriorityBreakdownCard key={g.id} goalDef={g} margin={goalMargin} share={share} />;
+                  })}
               </div>
             )}
 
@@ -1300,6 +1346,9 @@ export default function StepAttainment({
               A value attainment plan is a shared commitment, co-authored at kickoff and steered monthly. Figures are
               illustrative and valued at contribution margin, and every priority's freed-time lever is counted once,
               never split across two goals' totals.
+              {isMultiGoalWithQuality
+                ? " Nursing quality's cost-of-harm-avoided dollar is a soft figure, attributed at a partial share, and is never counted in the contribution-margin total above."
+                : ""}
             </p>
           </motion.section>
 

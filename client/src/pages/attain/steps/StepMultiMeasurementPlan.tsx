@@ -14,7 +14,7 @@ import {
   type MeasurementMetricEntry,
 } from "@/lib/attain/attainPlanning";
 import { fmtMoneyCompact } from "./accessLadder";
-import MeasurementPlanSurface from "./MeasurementPlanSurface";
+import MeasurementPlanSurface, { deriveMeasurementModelFor } from "./MeasurementPlanSurface";
 import { PlanningRiskCard, riskPlaceholderFor } from "./planningRiskCard";
 import type { GoalOwner, SignalCadence } from "./StepCommit";
 
@@ -95,6 +95,22 @@ export default function StepMultiMeasurementPlan({
 }: StepMultiMeasurementPlanProps) {
   const combinedPrize = combined?.combinedMargin ?? 0;
 
+  // ── Honesty: quality's soft dollar never sums into "contribution margin" ──
+  // Nursing quality's dollar is a cost-of-harm-avoided figure, attributed at a
+  // partial share (attainLevers.ts's `defaultRealizationPct`) — a SOFT safety
+  // number, not hard contribution margin. `combined.combinedMargin` sums every
+  // selected goal's own dollar, so a plan that pairs quality with a financial
+  // goal would otherwise fold the soft dollar into the header's one number
+  // labeled "contribution margin". Only the DISPLAY below is adjusted; the
+  // engine's `combinedMargin` is untouched.
+  const hasQuality = goals.includes("quality");
+  const qualityMargin = combined?.byGoal.quality?.totalMargin ?? 0;
+  const hardContributionMargin = combinedPrize - qualityMargin;
+  const qualityValuesForHeader = valuesByGoal.quality ?? defaultLeverValues("quality", setting);
+  const qualityHeaderModel = hasQuality
+    ? deriveMeasurementModelFor("quality", setting, baseline, qualityValuesForHeader, combined, 1)
+    : null;
+
   // The one non-independent pair: access + retention share a single freed
   // documentation hour. When both are selected at outpatient/ED, `freedTimeSplit`
   // routes that hour and each block's surface is credited only its share, exactly
@@ -129,9 +145,9 @@ export default function StepMultiMeasurementPlan({
         <p className="text-[9px] font-bold uppercase tracking-[1.5px] text-white/40 mb-2">
           The combined prize · {goals.length} priorities
         </p>
-        {combinedPrize > 0 ? (
+        {hardContributionMargin > 0 ? (
           <p className="font-abridge text-3xl md:text-4xl font-bold text-[#EA2C00]" data-testid="text-multi-plan-combined-prize">
-            {fmtMoneyCompact(combinedPrize)}
+            {fmtMoneyCompact(hardContributionMargin)}
             <span className="text-sm font-normal text-white/50"> contribution margin / yr</span>
           </p>
         ) : (
@@ -140,9 +156,24 @@ export default function StepMultiMeasurementPlan({
           </p>
         )}
         <p className="text-[12px] text-white/60 mt-2 max-w-[520px]">
-          This is the sum of each priority's own measurement plan below, counted once. Build the scorecard in each
-          block; the number is the proof of what you will measure.
+          {hasQuality
+            ? "This is the sum of each financial priority's own measurement plan below, counted once. Nursing quality's safety value is tracked separately below, never folded into this margin."
+            : "This is the sum of each priority's own measurement plan below, counted once. Build the scorecard in each block; the number is the proof of what you will measure."}
         </p>
+
+        {hasQuality && qualityHeaderModel && (
+          <div className="mt-4 pt-4 border-t border-white/10" data-testid="text-multi-plan-quality-soft">
+            <p className="text-[9px] font-bold uppercase tracking-[1.5px] text-white/40 mb-1.5">
+              Nursing quality · safety value, not contribution margin
+            </p>
+            <p className="text-[15px] font-semibold text-white" data-testid="text-multi-plan-quality-soft-count">
+              {qualityHeaderModel.safetyHeadline?.heroValue ?? "count pending"}
+            </p>
+            <p className="text-[11px] text-white/55 mt-1 leading-relaxed max-w-[520px]" data-testid="text-multi-plan-quality-soft-dollar">
+              {qualityHeaderModel.safetyHeadline?.softDollarNote ?? "This plan leads with safety, not a dollar."}
+            </p>
+          </div>
+        )}
 
         {hasFreedTimeConflict && (
           <p className="text-[11px] text-white/55 mt-4 leading-relaxed" data-testid="text-multi-plan-split-note">

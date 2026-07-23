@@ -19,9 +19,47 @@ import {
 import { accessAlignConfig } from "@/lib/attain/accessAlign";
 import { workforceAlignConfig } from "@/lib/attain/workforceAlign";
 import { revenueAlignConfigFor } from "@/lib/attain/revenueAlign";
+import {
+  qualityAlignToLeverValues,
+  K_EVENTS,
+  K_WHO,
+  K_GATE,
+  K_CHANGE,
+  K_PROOF,
+  CLINICAL_EVENT_IDS,
+  HCAHPS_ID,
+  QUALITY_CONVERSIONS,
+} from "@/lib/attain/qualityAlign";
+import { fmtMoneyCompact } from "@/pages/attain/steps/accessLadder";
 import { DEFAULT_PLAN_CADENCE } from "@/pages/attain/steps/StepCommit";
 import type { AlignConfig, AlignContext } from "@/lib/attain/alignFramework";
+import type { AttainBaseline } from "@/lib/attain/attainLevers";
 import type { AttainSetting } from "@/lib/attain/attainTypes";
+
+/** A fully-committed quality plan: every clinical event + HCAHPS selected, the
+ * honest gate at "earlier" (full credit), and every named conversion
+ * committed - the real Align RAW-CHOICE shape (`qualityAlignEvents`,
+ * `qualityAlignGate__<id>`, `qualityAlignChange__<id>`, ...) merged with the
+ * engine fields `qualityAlignToLeverValues` derives from it, exactly the way
+ * `attainMeasurementQuality.test.ts`'s own `alignValues` helper does. Quality's
+ * COUNT (harm events prevented) only resolves off this raw-choice shape - the
+ * lower-level engine-only shape (intervention ids alone) leaves `chosenEvents`
+ * empty and the count reads as "count pending", so this fixture is required
+ * for the count-leads assertions below to be real. */
+function fullQualityValues(baseline: AttainBaseline, setting: AttainSetting): LeverValues {
+  const ctx: AlignContext = { baseline, setting, realizationPct: 100, crossGoalShareMultiplier: 1 };
+  const choices: LeverValues = {
+    [K_EVENTS]: [...CLINICAL_EVENT_IDS, HCAHPS_ID],
+    [K_WHO]: ["all"],
+    [K_PROOF]: ["rate", "compliance", "hcahps"],
+  };
+  for (const id of CLINICAL_EVENT_IDS) {
+    choices[`${K_GATE}__${id}`] = ["earlier"];
+    choices[`${K_CHANGE}__${id}`] = QUALITY_CONVERSIONS[id].map((c) => c.id);
+  }
+  choices[`${K_CHANGE}__${HCAHPS_ID}`] = QUALITY_CONVERSIONS[HCAHPS_ID].map((c) => c.id);
+  return { ...choices, ...qualityAlignToLeverValues(choices, ctx) };
+}
 
 /**
  * The stacked multi-goal Plan renders each selected goal's MEASUREMENT plan
@@ -184,5 +222,72 @@ describe("multi-goal measurement — per-goal selections persist without collidi
     const planning: AttainPlanning = { measurement: { chosen: { minutes: ["minutes-saved-per-note"] } } };
     const layer = measurementPlanningFor(planning);
     expect(measurementChosen(layer, "minutes", [])).toEqual(["minutes-saved-per-note"]);
+  });
+});
+
+describe("multi-goal Plan header — quality's soft dollar is never folded into the hard contribution-margin total", () => {
+  // Nursing legally pairs quality + retention (see SETTING_GOAL_MATRIX) - the
+  // same real-world combo attainLevers.test.ts's own multi-goal quality tests
+  // use. Quality is fully committed so its soft dollar is genuinely nonzero;
+  // if the header still summed it into "contribution margin", this fixture
+  // would catch it.
+  const setting: AttainSetting = "nursing";
+  const baseline = defaultBaseline(setting);
+  const retentionVals = mergedValues(workforceAlignConfig, baseline, setting);
+  const qualityVals = fullQualityValues(baseline, setting);
+  const goals: MeasurementGoal[] = ["retention", "quality"];
+  const valuesByGoal = { retention: retentionVals, quality: qualityVals };
+  const combined = computeMultiGoalContributions(goals, setting, baseline, valuesByGoal, 50);
+  const qualityMargin = combined.byGoal.quality?.totalMargin ?? 0;
+  const hardMargin = combined.combinedMargin - qualityMargin;
+
+  it("the fixture is real: quality contributes a genuine nonzero soft dollar, distinct from the hard total", () => {
+    expect(qualityMargin).toBeGreaterThan(0);
+    expect(hardMargin).toBeLessThan(combined.combinedMargin);
+    // Guards the DOM assertion below from being a false positive if the two
+    // figures ever happened to format to the same compact string.
+    expect(fmtMoneyCompact(hardMargin)).not.toBe(fmtMoneyCompact(combined.combinedMargin));
+  });
+
+  const html = renderToStaticMarkup(
+    createElement(StepMultiMeasurementPlan, {
+      setting,
+      baseline,
+      goals,
+      valuesByGoal,
+      combined,
+      freedTimeSplit: 50,
+      onChangeFreedTimeSplit: noop,
+      planning: {} as AttainPlanning,
+      goalOwnerByPriority: {},
+      onChangeGoalOwner: noop,
+      onSetChosenMetrics: noop,
+      onChangeMetricField: noop,
+      onChangePromiseByWhen: noop,
+      onChangeCommitment: noop,
+      onChangePartnerRisk: noop,
+      planCadence: DEFAULT_PLAN_CADENCE,
+      onChangePlanCadence: noop,
+      stepNumber: 5,
+    }),
+  );
+
+  it("the header's contribution-margin figure is the HARD margin (retention only), not the full combinedMargin", () => {
+    expect(html).toContain('data-testid="text-multi-plan-combined-prize"');
+    expect(html).toContain(fmtMoneyCompact(hardMargin));
+  });
+
+  it("quality's count + soft dollar render in their own labeled block, never claimed as contribution margin", () => {
+    expect(html).toContain('data-testid="text-multi-plan-quality-soft"');
+    expect(html).toContain('data-testid="text-multi-plan-quality-soft-count"');
+    expect(html).toContain('data-testid="text-multi-plan-quality-soft-dollar"');
+    expect(html).toContain("not contribution margin");
+    // The soft block leads with a COUNT (harm events), not a dollar sign.
+    const model = deriveMeasurementModelFor("quality", setting, baseline, qualityVals, combined, 1);
+    // A real count, e.g. "~12 harm events / yr" - never the "count pending"
+    // placeholder, which would mean this fixture failed to register any
+    // chosen event (the bug this test is guarding against).
+    expect(model.safetyHeadline?.heroValue).toMatch(/harm events \/ yr/);
+    expect(html).toContain(model.safetyHeadline!.heroValue);
   });
 });
