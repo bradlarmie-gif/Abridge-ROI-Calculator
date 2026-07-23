@@ -5,13 +5,12 @@ import type { MultiGoalContributionsResult } from "@/lib/attain/attainLevers";
 import { GOAL_CATALOG } from "@/lib/attain/attainGoals";
 import type { AttainSetting, GoalId } from "@/lib/attain/attainTypes";
 import EdAccessDecisionChain from "./EdAccessDecisionChain";
-import RevenueLadderChain from "./RevenueLadderChain";
-import InpatientRevenueLadderChain from "./InpatientRevenueLadderChain";
 import QualityLadderChain from "./QualityLadderChain";
 import CapacityLadderChain from "./CapacityLadderChain";
 import AlignStep from "./AlignStep";
 import { workforceAlignConfig } from "@/lib/attain/workforceAlign";
 import { accessAlignConfig } from "@/lib/attain/accessAlign";
+import { revenueAlignConfigFor } from "@/lib/attain/revenueAlign";
 
 function formatCompact(n: number): string {
   const sign = n < 0 ? "-" : "";
@@ -193,9 +192,10 @@ export default function StepBuildCase({
   // single gated ladder like access, reconciled to Explore's own
   // `nursingOvertime` driver.
   const isCapacityLadder = goal === "capacity" && setting === "nursing";
-  // Both Align surfaces (Retention everywhere, outpatient Access) and every
-  // remaining ladder drop the generic "N of M decisions moved" drag framing.
-  const isAlign = isRetentionAlign || isAccessAlign;
+  // Every Align surface (Retention everywhere, outpatient Access, and Revenue
+  // in all three settings) and every remaining ladder drops the generic
+  // "N of M decisions moved" drag framing.
+  const isAlign = isRetentionAlign || isAccessAlign || goal === "revenue";
   const isLadder = isAccessAlign || isEdAccessLadder || isRetentionAlign || isRevenueLadder || isIpRevenueLadder || isQualityLadder || isCapacityLadder;
 
   return (
@@ -327,20 +327,23 @@ export default function StepBuildCase({
             realizationPct={realizationPct}
             crossGoalShareMultiplier={crossGoalShareMultiplier}
           />
-        ) : isRevenueLadder ? (
-          <RevenueLadderChain
+        ) : goal === "revenue" ? (
+          // Revenue is now an ALIGN surface too (all three settings), the
+          // MULTI-PATH driver: Q1 selects paths, and the per-path who/gate/
+          // where questions stack into one clean section each (see AlignStep +
+          // revenueAlign.ts). The choices map to the exact same LeverValues the
+          // revenue chains always read (revenuePaths / ipRevenuePaths, the HCC
+          // populations, the per-path gates), so the converged number still
+          // runs through deriveRevenueLadder / deriveIpRevenueLadder and
+          // reconciles to computeAllDriverValues. Engine math unchanged.
+          <AlignStep
+            config={revenueAlignConfigFor(setting)}
             setting={setting}
             baseline={baseline}
             values={values}
             onChangeValue={(leverId, value) => onChangeLeverValue("revenue", leverId, value)}
             realizationPct={realizationPct}
-          />
-        ) : isIpRevenueLadder ? (
-          <InpatientRevenueLadderChain
-            baseline={baseline}
-            values={values}
-            onChangeValue={(leverId, value) => onChangeLeverValue("revenue", leverId, value)}
-            realizationPct={realizationPct}
+            crossGoalShareMultiplier={crossGoalShareMultiplier}
           />
         ) : isRetentionAlign ? (
           <AlignStep
