@@ -248,6 +248,11 @@ export default function AlignStep({
           <p className="text-[12.5px] text-white/70 leading-relaxed" data-testid="text-align-proof-math">
             {proof.math}
           </p>
+          {proof.footnote && (
+            <p className="text-[11.5px] text-white/45 leading-relaxed mt-3" data-testid="text-align-proof-footnote">
+              {proof.footnote}
+            </p>
+          )}
         </div>
       </motion.div>
     </div>

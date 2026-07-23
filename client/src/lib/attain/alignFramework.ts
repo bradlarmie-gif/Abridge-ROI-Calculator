@@ -121,6 +121,10 @@ export interface AlignProof {
   figures: AlignProofFigure[];
   /** The one live derivation line ("THE MATH"). */
   math: string;
+  /** An optional, always-shown honesty note under the math (e.g. capacity's
+   * no-double-count-with-retention line). Additive: configs that do not set it
+   * render exactly as before. */
+  footnote?: string;
 }
 
 export interface AlignConfig {
