@@ -83,6 +83,39 @@ interface StepScopeProps {
 export default function StepScope({ setting, baseline, onChangeBaseline }: StepScopeProps) {
   const isNursing = setting === "nursing";
 
+  // The live "stage" derived from what they have typed so far, read straight
+  // back to them so the step feels like it is building their foundation, not
+  // collecting a form. Non-nursing: the reachable encounters (encounters x
+  // utilization) every next-page dollar stands on. Nursing: today's occupancy
+  // and adoption. Everything degrades cleanly to a prompt while still blank.
+  const providers = baseline.providers ?? 0;
+  const encounters = baseline.annualEncounters ?? 0;
+  const util = baseline.utilizationPct ?? 0;
+  const reachable = encounters > 0 && util > 0 ? Math.round((encounters * util) / 100) : 0;
+
+  const beds = baseline.staffedBeds ?? 0;
+  const census = baseline.dailyCensus ?? 0;
+  const ftes = baseline.nursingFtes ?? 0;
+  const adoption = baseline.adoptionPct ?? 0;
+  const occupancy = beds > 0 && census > 0 ? Math.round((census / beds) * 100) : 0;
+
+  const providerWord = (PROVIDER_LABEL[setting] || "providers").toLowerCase();
+  const stage = isNursing
+    ? {
+        ready: occupancy > 0,
+        value: `${occupancy}%`,
+        label: "occupancy today",
+        sub: `${ftes.toLocaleString()} nurse${ftes === 1 ? "" : "s"} in scope${adoption > 0 ? `, ${adoption}% on Abridge today` : ""}`,
+        prompt: "Enter your program above to see today's occupancy.",
+      }
+    : {
+        ready: reachable > 0,
+        value: reachable.toLocaleString(),
+        label: "encounters within reach",
+        sub: `across ${providers.toLocaleString()} ${providerWord}`,
+        prompt: "Enter your numbers above to see what's within reach.",
+      };
+
   return (
     <div>
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
@@ -92,33 +125,32 @@ export default function StepScope({ setting, baseline, onChangeBaseline }: StepS
         <h1 className="text-2xl md:text-4xl font-bold text-black mb-3 font-abridge uppercase tracking-tight" data-testid="text-step-title">
           Your starting point
         </h1>
-        <p className="text-[15px] text-[#666666] leading-relaxed max-w-[600px]" data-testid="text-step-teach">
-          Every decision on the next page is measured as a move away from where you actually are today, not from an
-          assumed number. Enter your real operation here, and every "adds ~$X" on the next page is built from these
-          numbers, not from a benchmark that isn't yours.
+        <p className="text-[15px] text-[#666666] leading-relaxed max-w-[560px]" data-testid="text-step-teach">
+          Start with your real operation. Everything the next page calculates is built from these numbers, not a
+          benchmark.
         </p>
       </motion.div>
 
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-[#F5F0EB] rounded-xl p-8 sm:p-10 mb-6"
+        className="mb-8"
         data-testid="panel-attain-scope-baseline"
       >
-        <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
-          {isNursing ? "YOUR NURSING PROGRAM" : "YOUR OPERATION"}
+        <p className="text-[10px] font-semibold text-[#8C8C8C] uppercase tracking-[1.8px] mb-6">
+          {isNursing ? "Your nursing program" : "Your operation"}
         </p>
-        <div className="h-px bg-[#D1D5DB] mb-6" />
 
         {isNursing ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+          <div className="flex flex-wrap gap-x-12 gap-y-8">
             <NumberBaselineField
               label="Staffed beds"
               testid="staffed-beds"
               value={baseline.staffedBeds ?? 0}
               onChange={(v) => onChangeBaseline({ staffedBeds: v })}
               placeholder="e.g., 120"
-              help="Licensed beds with active nursing staff, across the units in scope."
+              help="Beds with active nursing staff, units in scope."
+              width="w-32"
             />
             <NumberBaselineField
               label="Nursing FTEs"
@@ -126,7 +158,8 @@ export default function StepScope({ setting, baseline, onChangeBaseline }: StepS
               value={baseline.nursingFtes ?? 0}
               onChange={(v) => onChangeBaseline({ nursingFtes: v })}
               placeholder="e.g., 180"
-              help="Full-time equivalent nurses whose documentation this plan covers."
+              help="Nurses whose documentation this plan covers."
+              width="w-32"
             />
             <NumberBaselineField
               label="Daily census"
@@ -134,7 +167,8 @@ export default function StepScope({ setting, baseline, onChangeBaseline }: StepS
               value={baseline.dailyCensus ?? 0}
               onChange={(v) => onChangeBaseline({ dailyCensus: v })}
               placeholder="e.g., 102"
-              help="Average patients occupying those beds on a typical day. This becomes your occupancy rate."
+              help="Patients in those beds on a typical day."
+              width="w-32"
             />
             <NumberBaselineField
               label="Adoption rate"
@@ -144,11 +178,12 @@ export default function StepScope({ setting, baseline, onChangeBaseline }: StepS
               placeholder="e.g., 50"
               suffix="%"
               max={100}
-              help="Share of nurses actively documenting with Abridge today. Most deployments reach 40 to 60% within six months."
+              help="Nurses documenting with Abridge today."
+              width="w-24"
             />
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
+          <div className="flex flex-wrap gap-x-14 gap-y-8">
             <NumberBaselineField
               label={PROVIDER_LABEL[setting]}
               testid="providers"
@@ -156,6 +191,7 @@ export default function StepScope({ setting, baseline, onChangeBaseline }: StepS
               onChange={(v) => onChangeBaseline({ providers: v })}
               placeholder="e.g., 40"
               help={PROVIDER_HELP[setting]}
+              width="w-28"
             />
             <NumberBaselineField
               label={ENCOUNTER_LABEL[setting]}
@@ -165,26 +201,49 @@ export default function StepScope({ setting, baseline, onChangeBaseline }: StepS
               placeholder="e.g., 140,000"
               help={ENCOUNTER_HELP[setting]}
               warn={inpatientDischargesWarning(setting, baseline)}
+              width="w-48"
             />
             <NumberBaselineField
-              label="Utilization rate"
+              label="Utilization"
               testid="utilization-pct"
               value={baseline.utilizationPct ?? 0}
               onChange={(v) => onChangeBaseline({ utilizationPct: v })}
               placeholder="e.g., 70"
               suffix="%"
               max={100}
-              help="Share of those encounters this plan can realistically reach."
+              help="Share you can realistically reach."
               tip={UTILIZATION_BENCHMARK_TIP}
+              width="w-28"
             />
           </div>
         )}
-      </motion.div>
 
-      <p className="text-[14px] text-[#8C8C8C] leading-relaxed max-w-[600px]" data-testid="text-attain-scope-footnote">
-        These numbers are the stage every decision on the next page stands on. Demand and backlog come later, on
-        the Align step, not here.
-      </p>
+        {/* The live stage, read back from their own numbers. The coral figure
+            echoes the Attainment output, so the foundation and the payoff speak
+            the same visual language. */}
+        <div className="mt-10" data-testid="panel-attain-scope-stage" aria-live="polite">
+          {stage.ready ? (
+            <div className="flex items-baseline gap-2.5 flex-wrap">
+              <motion.span
+                key={stage.value}
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="font-abridge text-3xl md:text-4xl text-[#EA2C00] leading-none"
+                data-testid="text-attain-scope-stage-value"
+              >
+                {stage.value}
+              </motion.span>
+              <span className="text-[14px] text-[#6B6B6B] leading-relaxed">
+                <span className="font-semibold text-[#3A3A3A]">{stage.label}</span>, {stage.sub}
+              </span>
+            </div>
+          ) : (
+            <p className="text-[13.5px] text-[#8C8C8C] leading-relaxed max-w-[560px]" data-testid="text-attain-scope-stage-prompt">
+              {stage.prompt}
+            </p>
+          )}
+        </div>
+      </motion.div>
     </div>
   );
 }
@@ -204,19 +263,22 @@ interface NumberBaselineFieldProps {
   /** A soft plausibility hint shown under the field when the entered number
    * looks implausible. Never blocks; just nudges a double-check. */
   warn?: string | null;
+  /** Field wrapper width (a Tailwind class like "w-28"), so the editorial
+   * underline fields sit at natural, non-bulky widths in a wrapping row. */
+  width?: string;
 }
 
-function NumberBaselineField({ label, testid, value, onChange, placeholder, help, suffix, max, tip, warn }: NumberBaselineFieldProps) {
+function NumberBaselineField({ label, testid, value, onChange, placeholder, help, suffix, max, tip, warn, width = "w-32" }: NumberBaselineFieldProps) {
   return (
-    <div className="space-y-3">
+    <div className={width}>
       <label
-        className="text-base font-medium text-black flex items-center gap-1.5"
+        className="text-[10px] font-semibold uppercase tracking-[1.6px] text-[#8C8C8C] flex items-center gap-1 mb-2"
         htmlFor={`attain-baseline-${testid}`}
       >
         {label}
         {tip && <InfoTip text={tip} testid={`tooltip-attain-baseline-${testid}`} />}
       </label>
-      <div className="relative">
+      <div className="flex items-baseline">
         <NumberField
           id={`attain-baseline-${testid}`}
           value={value}
@@ -224,20 +286,16 @@ function NumberBaselineField({ label, testid, value, onChange, placeholder, help
           min={0}
           max={max}
           decimal={false}
-          className={`h-12 w-full rounded-md border border-[#E5E5E5] bg-white px-3 text-base ${suffix ? "pr-9" : ""}`}
+          className={`${suffix ? "w-16" : "w-full"} bg-transparent border-0 border-b-2 border-[#E0D9CE] rounded-none px-0 pb-1 font-abridge text-3xl text-[#1A1A1A] outline-none transition-colors focus:border-[#EA2C00] placeholder:font-sans placeholder:text-[15px] placeholder:text-[#C4BCB0]`}
           placeholder={placeholder}
           data-testid={`input-attain-baseline-${testid}`}
         />
-        {suffix && (
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#888888] text-sm pointer-events-none">
-            {suffix}
-          </span>
-        )}
+        {suffix && <span className="font-abridge text-2xl text-[#B4B4B4] ml-1.5">{suffix}</span>}
       </div>
-      <p className="text-[14px] text-[#888888] leading-relaxed">{help}</p>
+      <p className="text-[12px] text-[#8C8C8C] leading-relaxed mt-2">{help}</p>
       {warn && (
         <p
-          className="text-[13px] text-[#EA2C00] leading-relaxed"
+          className="text-[12px] text-[#EA2C00] leading-relaxed mt-1.5 max-w-[220px]"
           data-testid={`text-attain-baseline-${testid}-warn`}
         >
           {warn}
