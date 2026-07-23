@@ -15,13 +15,12 @@ import {
 } from "@/lib/attain/attainPlanning";
 import { fmtMoneyCompact } from "./accessLadder";
 import MeasurementPlanSurface from "./MeasurementPlanSurface";
-import { PlanningRiskCard, riskPlaceholderFor } from "./StepPlanning";
+import { PlanningRiskCard, riskPlaceholderFor } from "./planningRiskCard";
 import type { GoalOwner, SignalCadence } from "./StepCommit";
 
 /** The goals that render through the shared measurement surface. Every goal a
- * multi-goal plan can hold has one EXCEPT ED access (its single-goal Plan still
- * uses the phased StepPlanning, so an ED plan that includes access stays on the
- * phased StepMultiPlanning) — see `allGoalsHaveMeasurementSurface` in AttainFlow. */
+ * multi-goal plan can hold has one, ED access included (deriveEdAccessMeasurementPlan)
+ * — see `allGoalsHaveMeasurementSurface` in AttainFlow. */
 export type MeasurementGoal = Extract<GoalId, "access" | "retention" | "revenue" | "quality" | "capacity">;
 
 /**

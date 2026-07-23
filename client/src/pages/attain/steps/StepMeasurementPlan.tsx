@@ -5,7 +5,7 @@ import type { AttainPlanning, MeasurementMetricEntry } from "@/lib/attain/attain
 import type { AttainBaseline, LeverValues, MultiGoalContributionsResult } from "@/lib/attain/attainLevers";
 import type { GoalOwner, SignalCadence } from "./StepCommit";
 import MeasurementPlanSurface from "./MeasurementPlanSurface";
-import { PlanningRiskCard, riskPlaceholderFor } from "./StepPlanning";
+import { PlanningRiskCard, riskPlaceholderFor } from "./planningRiskCard";
 
 /**
  * StepMeasurementPlan — the SINGLE-goal Plan step: the measurement plan the

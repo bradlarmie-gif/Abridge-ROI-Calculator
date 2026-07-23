@@ -19,8 +19,8 @@ import AlignSurface from "./AlignSurface";
  * A plan with two or more selected goals renders the SAME config-driven Align
  * the single-goal Build-the-case page uses (see `AlignSurface` + `AlignStep`),
  * once per goal, stacked under one combined header, exactly the way
- * multi-goal Planning stacks one phased block per priority (see
- * `StepMultiPlanning`). Each goal's block is its own full 5-question Align
+ * multi-goal Plan stacks one measurement block per priority (see
+ * `StepMultiMeasurementPlan`). Each goal's block is its own full 5-question Align
  * (revenue's paths and quality's events stack per path/event WITHIN their own
  * block); nothing about a single goal's Align rendering is duplicated here.
  *

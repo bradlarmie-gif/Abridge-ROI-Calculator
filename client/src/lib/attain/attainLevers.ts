@@ -1127,7 +1127,7 @@ export const IP_REVENUE_LEVERS: Lever[] = [
  * ED access's own, unrelated catalog — recovering LWBS patients and
  * capturing downstream admissions, a genuinely different mechanism from
  * outpatient's schedule-capacity model (`LEVERS.access`). Rendered bespoke
- * on Build the case (`EdAccessDecisionChain.tsx`), not through the generic
+ * on Build the case (the ED access align surface), not through the generic
  * lever renderer. Ids match the flat `LeverValues` keys `attainEdAccess.ts`
  * reads directly. See `attainEdAccess.ts`'s `ED_ACCESS_LEVER_IDS` and
  * `computeEdAccessContributions` for the engine.
