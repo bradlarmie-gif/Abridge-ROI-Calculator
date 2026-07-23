@@ -12,14 +12,12 @@ import {
   type LeverContribution,
   type MultiGoalContributionsResult,
   type RealizationByGoal,
+  type AttainBaseline,
 } from "@/lib/attain/attainLevers";
 import {
-  leverNumericValue,
   decisionAttainmentFraction,
   decisionStatus,
   computeProgressAttainmentPct,
-  parseSignalBaseline,
-  perSignalWorth,
   latestEntry,
   currentValueFromEntries,
   nextCheckDueDate,
@@ -30,10 +28,12 @@ import {
   type DecisionProgressInput,
   type SignalProgressInput,
 } from "@/lib/attain/attainProgress";
+import { trackedMetricsByGoal, type TrackedMetric } from "@/lib/attain/measurementScorecard";
+import type { AttainPlanning } from "@/lib/attain/attainPlanning";
 import { GOAL_CATALOG, getContent } from "@/lib/attain/attainGoals";
 import type { AttainState, AttainSetting, GoalId, GoalDef, SettingGoalContent } from "@/lib/attain/attainTypes";
 import type { GoalTargetResult, AttainmentResult } from "@/lib/attain/attainCalc";
-import { defaultCommitmentFor, CADENCE_LABEL, type Commitment, type GoalOwner, type SignalCadence } from "./StepCommit";
+import { CADENCE_LABEL, type Commitment, type GoalOwner, type SignalCadence } from "./StepCommit";
 import { generateAttainPdf } from "@/lib/attain/attain-pdf";
 
 function formatCompact(n: number): string {
@@ -180,66 +180,6 @@ function committedLeversFor(
 }
 
 /**
- * The decisions checklist, as one clean table — extracted so a multi-priority
- * plan can render one of these per priority (grouped, Change 1) while a
- * single-priority plan still gets exactly one, with no repeated "Priority"
- * column that was mostly blank alignment noise before.
- */
-function DecisionsTable({
-  rows,
-  testId,
-}: {
-  rows: Array<CommittedLever & { goal: GoalId }>;
-  testId: string;
-}) {
-  // A gated ladder (access/retention/capacity) attributes its whole total to
-  // the single binding rung and $0 to the rest, so a per-row Worth would read
-  // "$0 / 0% of its priority" on real decisions - the rungs multiply, no rung
-  // is independently worth $X. So the Worth column only appears when two or
-  // more rows genuinely carry a dollar (revenue's additive parallel paths).
-  // For a single-number ladder the priority total shown right beside this
-  // table (below it for one priority, in the group header for several) is the
-  // one honest figure, so no per-row worth is needed or invented here.
-  const dollarBearing = rows.filter((r) => (r.contribution?.marginalMargin ?? 0) !== 0).length;
-  const showWorth = dollarBearing > 1;
-  return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-left border-collapse" data-testid={testId}>
-        <thead>
-          <tr>
-            <th className="text-[9.5px] font-semibold uppercase tracking-wide text-[#8C8C8C] pb-2 border-b border-[#E7E0D6]">Decision</th>
-            <th className="text-[9.5px] font-semibold uppercase tracking-wide text-[#8C8C8C] pb-2 border-b border-[#E7E0D6]">Owner</th>
-            <th className="text-[9.5px] font-semibold uppercase tracking-wide text-[#8C8C8C] pb-2 border-b border-[#E7E0D6]">By when</th>
-            {showWorth && (
-              <th className="text-[9.5px] font-semibold uppercase tracking-wide text-[#8C8C8C] pb-2 border-b border-[#E7E0D6] text-right">Worth</th>
-            )}
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map(({ goal, lever, contribution, owner, due }) => (
-            <tr key={`${goal}:${lever.id}`} data-testid={`row-attain-plan-decision-${goal}-${lever.id}`}>
-              <td className="py-3 px-2 border-b border-[#F0ECE5] align-top max-w-[320px]">
-                <p className="text-[12.5px] font-bold text-[#1A1A1A]">{lever.label}</p>
-                <p className="text-[10.5px] text-[#8C8C8C] mt-0.5 leading-relaxed">{lever.help}</p>
-              </td>
-              <td className="py-3 px-2 border-b border-[#F0ECE5] align-top text-[11.5px] text-[#3A3A3A] whitespace-nowrap">{owner}</td>
-              <td className="py-3 px-2 border-b border-[#F0ECE5] align-top text-[11.5px] text-[#3A3A3A] whitespace-nowrap">{due}</td>
-              {showWorth && (
-                <td className="py-3 px-2 border-b border-[#F0ECE5] align-top text-right whitespace-nowrap">
-                  {/* Only additive multi-path goals reach here; never sum marginalMargin across a chain, use the chain's totalMargin. */}
-                  <p className="text-[12.5px] font-bold text-[#EA2C00]">{formatCompact(contribution?.marginalMargin ?? 0)}</p>
-                  <p className="text-[10px] text-[#8C8C8C]">{Math.round((contribution?.pctOfTotal ?? 0) * 100)}% of its priority</p>
-                </td>
-              )}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-/**
  * One priority's card in the "value by domain" composition (Change 1) —
  * only rendered when a plan has 2+ priorities, so a single-priority plan
  * never shows this alongside the combined headline it would just repeat.
@@ -282,24 +222,13 @@ function SignalHistoryList({ entries, unit }: { entries: ProgressEntry[]; unit: 
   );
 }
 
-interface ProgressSignalRowData {
-  key: string;
-  decisionKey: string;
-  goal: GoalId;
-  lever: Lever;
-  owner: string;
-  due: string;
-  signalLabel: string;
-  unit: string;
-  baseline: number;
-  target: number;
-  worth: number;
+/** One tracked metric on the Progress tab: exactly what the partner chose in
+ * the measurement Plan (its baseline, target, owner, and rough date), plus its
+ * own dated log and the latest logged value. The loop closes here: this is a
+ * `TrackedMetric` straight off `planning.measurement` with progress attached. */
+interface MetricRowData extends TrackedMetric {
   entries: ProgressEntry[];
   current: number;
-  /** True for the decision's ONE required signal (Commit's "Track this"
-   * default), false for any optional signal the partner added on top — the
-   * required row is always the primary tracked row for its decision. */
-  required: boolean;
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -419,13 +348,24 @@ function SignalTimelineTrack({
   );
 }
 
-/** One committed signal's row in the horizontal tracker: its identity and
- * owner, its baseline -> current -> target, its dated climb on the shared
- * axis, a status pill, when it was last checked and next due, and the
- * "Log an update" action with its own expandable dated history — replaces
- * the old vertically-stacked decision cards with one scannable row per
- * signal, all aligned to the same ruler. */
-function SignalTrackerRow({
+/** The measured status of one tracked metric. A numeric target reads honestly
+ * off how far the latest logged value has moved from baseline toward it; a
+ * directional/qualitative target (no number: "cleared", "collected each
+ * quarter") can only ever read "In motion" once something is logged past the
+ * baseline, never a fabricated "Landed" it has no number to prove. */
+function metricStatus(row: MetricRowData): AttainmentStatus {
+  if (row.targetNum !== null) {
+    return decisionStatus(decisionAttainmentFraction(row.baselineNum, row.current, row.targetNum));
+  }
+  return row.current !== row.baselineNum ? "in_motion" : "not_started";
+}
+
+/** One tracked metric's row in the horizontal tracker: exactly the metric the
+ * partner chose in Plan (its baseline -> target, its owner or an honest
+ * "Unassigned", its rough date or "Undated"), its dated climb on the shared
+ * axis, a status pill, when it was last logged and next due, and the "Log an
+ * update" action with its own expandable dated history. */
+function MetricTrackerRow({
   row,
   dateToMonths,
   totalMonths,
@@ -433,14 +373,14 @@ function SignalTrackerRow({
   planCadence,
   onLogProgressUpdate,
 }: {
-  row: ProgressSignalRowData;
+  row: MetricRowData;
   dateToMonths: Map<string, number>;
   totalMonths: number;
   todayFrac: number;
   planCadence: SignalCadence;
-  onLogProgressUpdate: (signalKey: string, value: number, note?: string) => void;
+  onLogProgressUpdate: (metricKey: string, value: number, note?: string) => void;
 }) {
-  const { key: signalKey, signalLabel, lever, owner, unit, baseline, target, entries, current, required } = row;
+  const { key: metricKey, label, linkTitle, owner, byWhen, fromProof, unit, baselineText, targetText, entries, current } = row;
   const [loggingOpen, setLoggingOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [draftValue, setDraftValue] = useState(current);
@@ -450,52 +390,54 @@ function SignalTrackerRow({
     if (!loggingOpen) setDraftValue(current);
   }, [current, loggingOpen]);
 
-  const fraction = decisionAttainmentFraction(baseline, current, target);
-  const status = decisionStatus(fraction);
+  const status = metricStatus(row);
   const last = latestEntry(entries);
-  // Every signal now shares the SAME plan-wide cadence (Commit redesign) —
-  // never a per-row setting.
+  // Every metric shares the SAME plan-wide review cadence — never per-row.
   const nextDue = last ? nextCheckDueDate(last.date, planCadence) : undefined;
   const isOverdue = !!nextDue && nextDue < todayISODate();
 
   function handleSave() {
-    onLogProgressUpdate(signalKey, draftValue, draftNote);
+    onLogProgressUpdate(metricKey, draftValue, draftNote);
     setDraftNote("");
     setLoggingOpen(false);
   }
 
   return (
-    <div className="border-b border-[#F0ECE5] py-3.5 last:border-b-0" data-testid={`row-attain-progress-signal-${signalKey}`}>
+    <div className="border-b border-[#F0ECE5] py-3.5 last:border-b-0" data-testid={`row-attain-progress-metric-${metricKey}`}>
       <div className="grid items-center gap-4" style={{ gridTemplateColumns: TRACKER_GRID_COLUMNS }}>
         <div className="min-w-0">
           <div className="flex items-center gap-1.5">
-            {required && (
+            {fromProof && (
               <span
-                className="inline-block text-[7.5px] font-bold uppercase tracking-wide text-white bg-[#EA2C00] px-1.5 py-[1px] rounded-full flex-shrink-0"
-                data-testid={`badge-attain-progress-required-${signalKey}`}
+                className="inline-block text-[7.5px] font-bold uppercase tracking-wide text-white bg-[#1A1A1A] px-1.5 py-[1px] rounded-full flex-shrink-0"
+                data-testid={`badge-attain-progress-fromproof-${metricKey}`}
               >
-                Required
+                From Align
               </span>
             )}
-            <p className="text-[12px] font-bold text-[#1A1A1A] truncate">{signalLabel}</p>
+            <p className="text-[12px] font-bold text-[#1A1A1A] truncate">{label}</p>
           </div>
-          <p className="text-[10px] text-[#8C8C8C] truncate">{lever.label} · {owner}</p>
+          <p className="text-[10px] text-[#8C8C8C] truncate">
+            {linkTitle} · {owner.trim() ? owner : <span className="italic text-[#B4B4B4]">Unassigned</span>}
+            {" · "}
+            {byWhen ? `by ${formatDate(byWhen)}` : <span className="italic text-[#B4B4B4]">Undated</span>}
+          </p>
         </div>
 
         <div className="text-[11px] leading-snug whitespace-nowrap">
-          <p className="font-abridge text-base text-[#EA2C00]" data-testid={`text-attain-progress-current-${signalKey}`}>
-            {current.toLocaleString()}
+          <p className="font-abridge text-base text-[#EA2C00]" data-testid={`text-attain-progress-current-${metricKey}`}>
+            {current.toLocaleString()} <span className="text-[9px] font-sans text-[#8C8C8C]">{unit}</span>
           </p>
-          <p className="text-[#8C8C8C]">{baseline.toLocaleString()} &rarr; {target.toLocaleString()} {unit}</p>
+          <p className="text-[#8C8C8C]">{baselineText} &rarr; <span className="text-[#EA2C00] font-semibold">{targetText}</span></p>
         </div>
 
         <SignalTimelineTrack entries={entries} dateToMonths={dateToMonths} totalMonths={totalMonths} todayFrac={todayFrac} />
 
-        <StatusPill status={status} testId={`badge-attain-progress-status-${signalKey}`} />
+        <StatusPill status={status} testId={`badge-attain-progress-status-${metricKey}`} />
 
         <div className="text-[10px] text-[#8C8C8C] leading-snug">
-          <p data-testid={`text-attain-progress-last-updated-${signalKey}`}>Logged {formatDate(last?.date)}</p>
-          <p className={isOverdue ? "text-[#EA2C00] font-semibold" : ""} data-testid={`text-attain-progress-next-due-${signalKey}`}>
+          <p data-testid={`text-attain-progress-last-updated-${metricKey}`}>Logged {formatDate(last?.date)}</p>
+          <p className={isOverdue ? "text-[#EA2C00] font-semibold" : ""} data-testid={`text-attain-progress-next-due-${metricKey}`}>
             Due {formatDate(nextDue)}{isOverdue ? " · overdue" : ""}
           </p>
         </div>
@@ -505,7 +447,7 @@ function SignalTrackerRow({
             type="button"
             onClick={() => setHistoryOpen((v) => !v)}
             className="flex items-center gap-1 text-[10.5px] font-semibold text-[#1A1A1A] hover:text-[#EA2C00]"
-            data-testid={`button-attain-progress-history-toggle-${signalKey}`}
+            data-testid={`button-attain-progress-history-toggle-${metricKey}`}
           >
             {entries.length} logged
             {historyOpen ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
@@ -515,7 +457,7 @@ function SignalTrackerRow({
               type="button"
               onClick={() => setLoggingOpen(true)}
               className="text-[10.5px] text-[#EA2C00] font-semibold hover:underline"
-              data-testid={`button-attain-progress-log-open-${signalKey}`}
+              data-testid={`button-attain-progress-log-open-${metricKey}`}
             >
               + Log update
             </button>
@@ -524,13 +466,13 @@ function SignalTrackerRow({
       </div>
 
       {historyOpen && (
-        <div className="mt-1 pl-1" data-testid={`region-attain-progress-history-${signalKey}`}>
+        <div className="mt-1 pl-1" data-testid={`region-attain-progress-history-${metricKey}`}>
           <SignalHistoryList entries={entries} unit={unit} />
         </div>
       )}
 
       {loggingOpen && (
-        <div className="mt-3 bg-[#F8F5F1] border border-[#E7E0D6] rounded-md p-3" data-testid={`form-attain-progress-log-${signalKey}`}>
+        <div className="mt-3 bg-[#F8F5F1] border border-[#E7E0D6] rounded-md p-3" data-testid={`form-attain-progress-log-${metricKey}`}>
           <div className="flex flex-wrap items-end gap-2.5">
             <div>
               <p className="text-[9px] font-bold uppercase tracking-wide text-[#8C8C8C] mb-1">New value ({unit})</p>
@@ -539,7 +481,7 @@ function SignalTrackerRow({
                 onValueChange={setDraftValue}
                 min={0}
                 className="h-9 w-24 rounded-md border border-[#D8CFC4] bg-white px-2 text-xs text-[#1A1A1A] outline-none focus:border-[#EA2C00]"
-                data-testid={`input-attain-progress-log-value-${signalKey}`}
+                data-testid={`input-attain-progress-log-value-${metricKey}`}
               />
             </div>
             <div className="flex-1 min-w-[180px]">
@@ -549,13 +491,13 @@ function SignalTrackerRow({
                 onChange={(e) => setDraftNote(e.target.value)}
                 placeholder="e.g., new EHR order set went live"
                 className="h-9 w-full rounded-md border border-[#D8CFC4] bg-white px-2.5 text-xs text-[#1A1A1A] outline-none focus:border-[#EA2C00]"
-                data-testid={`input-attain-progress-log-note-${signalKey}`}
+                data-testid={`input-attain-progress-log-note-${metricKey}`}
               />
             </div>
             <Button
               onClick={handleSave}
               className="h-9 px-4 bg-[#EA2C00] hover:bg-[#D42600] text-white text-xs"
-              data-testid={`button-attain-progress-log-save-${signalKey}`}
+              data-testid={`button-attain-progress-log-save-${metricKey}`}
             >
               Save
             </Button>
@@ -563,21 +505,20 @@ function SignalTrackerRow({
               type="button"
               onClick={() => setLoggingOpen(false)}
               className="h-9 px-2 text-xs text-[#8C8C8C] hover:text-[#1A1A1A]"
-              data-testid={`button-attain-progress-log-cancel-${signalKey}`}
+              data-testid={`button-attain-progress-log-cancel-${metricKey}`}
             >
               Cancel
             </button>
           </div>
-          <p className="text-[10px] text-[#B4B4B4] mt-2">Dated today, {formatDate(todayISODate())}, and added to this signal's history below.</p>
+          <p className="text-[10px] text-[#B4B4B4] mt-2">Dated today, {formatDate(todayISODate())}, and added to this metric's history below.</p>
         </div>
       )}
     </div>
   );
 }
 
-/** Every committed signal in one priority, grouped under that priority's
- * pill — Change 2 groups the tracker by priority, not by decision, so a
- * multi-priority plan reads as clearly-separated bands on the same shared
+/** Every tracked metric in one priority, grouped under that priority's pill,
+ * so a multi-priority plan reads as clearly-separated bands on the same shared
  * axis rather than one long undifferentiated list. */
 function PriorityTrackerGroup({
   goalDef,
@@ -591,12 +532,12 @@ function PriorityTrackerGroup({
 }: {
   goalDef: GoalDef;
   showPriority: boolean;
-  rows: ProgressSignalRowData[];
+  rows: MetricRowData[];
   dateToMonths: Map<string, number>;
   totalMonths: number;
   todayFrac: number;
   planCadence: SignalCadence;
-  onLogProgressUpdate: (signalKey: string, value: number, note?: string) => void;
+  onLogProgressUpdate: (metricKey: string, value: number, note?: string) => void;
 }) {
   return (
     <div className="mb-1" data-testid={`group-attain-progress-tracker-${goalDef.id}`}>
@@ -613,7 +554,7 @@ function PriorityTrackerGroup({
       )}
       <div>
         {rows.map((row) => (
-          <SignalTrackerRow
+          <MetricTrackerRow
             key={row.key}
             row={row}
             dateToMonths={dateToMonths}
@@ -628,10 +569,59 @@ function PriorityTrackerGroup({
   );
 }
 
+/** The measurement scorecard as one clean table — the exact metrics the
+ * partner chose in Plan, each with its baseline -> target, its owner (or an
+ * honest "Unassigned"), and its rough date (or "Undated"). This is the Strategy
+ * tab's readout of what Progress tracks, so both tabs read off one chosen set. */
+function ScorecardTable({ rows, testId }: { rows: TrackedMetric[]; testId: string }) {
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-left border-collapse" data-testid={testId}>
+        <thead>
+          <tr>
+            <th className="text-[9.5px] font-semibold uppercase tracking-wide text-[#8C8C8C] pb-2 border-b border-[#E7E0D6]">Metric</th>
+            <th className="text-[9.5px] font-semibold uppercase tracking-wide text-[#8C8C8C] pb-2 border-b border-[#E7E0D6]">Baseline &rarr; target</th>
+            <th className="text-[9.5px] font-semibold uppercase tracking-wide text-[#8C8C8C] pb-2 border-b border-[#E7E0D6]">Owner</th>
+            <th className="text-[9.5px] font-semibold uppercase tracking-wide text-[#8C8C8C] pb-2 border-b border-[#E7E0D6] text-right">By when</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((m) => (
+            <tr key={m.key} data-testid={`row-attain-scorecard-${m.goal}-${m.metricId}`}>
+              <td className="py-3 px-2 border-b border-[#F0ECE5] align-top max-w-[320px]">
+                <p className="text-[12.5px] font-bold text-[#1A1A1A]">{m.label}</p>
+                <p className="text-[10.5px] text-[#8C8C8C] mt-0.5 leading-relaxed">{m.linkTitle}</p>
+              </td>
+              <td className="py-3 px-2 border-b border-[#F0ECE5] align-top text-[11.5px] text-[#3A3A3A]">
+                {m.baselineText} <span className="text-[#B4B4B4]">&rarr;</span>{" "}
+                <span className="text-[#EA2C00] font-semibold">{m.targetText}</span>
+              </td>
+              <td className="py-3 px-2 border-b border-[#F0ECE5] align-top text-[11.5px] text-[#3A3A3A] whitespace-nowrap">
+                {m.owner.trim() ? m.owner : <span className="italic text-[#B4B4B4]">Unassigned</span>}
+              </td>
+              <td className="py-3 px-2 border-b border-[#F0ECE5] align-top text-[11.5px] text-[#3A3A3A] whitespace-nowrap text-right">
+                {m.byWhen ? formatDate(m.byWhen) : <span className="italic text-[#B4B4B4]">Undated</span>}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 interface StepAttainmentProps {
   state: AttainState;
   setting: AttainSetting;
   goals: GoalId[];
+  /** The partner's operational baseline, so the Attainment hub can re-derive
+   * the same measurement chain the Plan step built (deriveMeasurementModelFor
+   * needs it). */
+  baseline: AttainBaseline;
+  /** The whole editable plan layer, including `planning.measurement` /
+   * `measurementByGoal` — the metrics the partner chose to track. This is what
+   * closes the loop: the hub tracks exactly what Plan wrote here. */
+  planning: AttainPlanning;
   target: GoalTargetResult;
   attainment: AttainmentResult;
   valuesByGoal: Partial<Record<GoalId, LeverValues>>;
@@ -674,6 +664,8 @@ export default function StepAttainment({
   state,
   setting,
   goals,
+  baseline,
+  planning,
   target,
   attainment,
   valuesByGoal,
@@ -747,98 +739,69 @@ export default function StepAttainment({
   const remainingMargin = Math.max(0, target.margin - attainment.marginToDate);
   const unitLabel = UNIT_LABEL[setting] ?? "units";
 
-  // Every committed decision, per goal, sourced live from the same combined
-  // engine result that built the total above — nothing here is invented.
-  const allCommitted = goals.flatMap((goal) => {
-    const values = valuesByGoal[goal] ?? defaultLeverValues(goal, setting);
-    const result = combined.byGoal[goal];
-    return committedLeversFor(goal, setting, values, result?.perLever, commitments).map((c) => ({ ...c, goal }));
-  }).sort((a, b) => (b.contribution?.marginalMargin ?? 0) - (a.contribution?.marginalMargin ?? 0));
-
-  // The Progress tab's per-SIGNAL rows, now sourced from each signal's dated
-  // log (Change 2) rather than one editable "current" field. `current` is
-  // always the latest logged entry (or the baseline itself, before the
-  // seeding effect in AttainFlow has had a chance to run once on mount —
-  // see the fallback below, which matches what that effect would seed).
-  const progressRows: ProgressSignalRowData[] = allCommitted.flatMap(({ goal, lever, contribution, owner, due }) => {
-    const key = `${goal}:${lever.id}`;
-    const commitment = commitments[key] ?? defaultCommitmentFor(goal, lever, setting);
-    const chosenValue = (valuesByGoal[goal] ?? defaultLeverValues(goal, setting))[lever.id];
-    const targetValue = leverNumericValue(chosenValue);
-    // Per-decision only, for splitting across its own signals below — never sum marginalMargin across a chain; use the chain's totalMargin.
-    const worthTotal = Math.max(0, contribution?.marginalMargin ?? 0);
-    // The required signal is always present; optional signals are whatever
-    // the partner has added on top (Commit redesign) — together these are
-    // every signal Progress tracks for this decision, with the required one
-    // flagged so it renders as the primary tracked row. Falls back to the
-    // decision's own default signal if a corrupt/legacy save link produced a
-    // commitment missing (or malformed) `requiredSignal` — see
-    // attainUrlState.ts's `isWellFormedCommitment`, which is the real gate,
-    // but this stays defensive too rather than trusting the shape blind.
-    const fallbackSignal = defaultCommitmentFor(goal, lever, setting).requiredSignal;
-    const optionalSignals = Array.isArray(commitment.optionalSignals) ? commitment.optionalSignals : [];
-    const signals = [
-      { sig: commitment.requiredSignal ?? fallbackSignal, required: true },
-      ...optionalSignals.map((sig) => ({ sig: sig ?? fallbackSignal, required: false })),
-    ];
-    const worthPerSignal = perSignalWorth(worthTotal, signals.length);
-    return signals.map(({ sig, required }) => {
-      const signalKey = `${key}:${sig?.id ?? fallbackSignal.id}`;
-      const baseline = parseSignalBaseline(sig?.baseline);
-      const entries = progressEntries[signalKey] ?? [{ date: todayISODate(), value: baseline }];
-      return {
-        key: signalKey,
-        decisionKey: key,
-        goal,
-        lever,
-        owner,
-        due,
-        signalLabel: sig?.label?.trim() || lever.signal,
-        unit: sig?.unit?.trim() || lever.unit,
-        baseline,
-        target: targetValue,
-        worth: worthPerSignal,
-        entries,
-        current: currentValueFromEntries(entries, baseline),
-        required,
-      };
-    });
+  // ── CLOSING THE LOOP ──────────────────────────────────────────────────────
+  // The Progress tab tracks EXACTLY the metrics the partner chose in the
+  // measurement Plan (planning.measurement / measurementByGoal), re-derived
+  // here from the same Align state and the same picks the Plan step wrote, so
+  // the hub and the plan can never track a different set. Each metric carries
+  // its own dated log; `current` is the latest logged value (or its baseline
+  // before the seeding effect in AttainFlow has run once — matching what that
+  // effect seeds).
+  const trackedByGoal = trackedMetricsByGoal({
+    goals,
+    setting,
+    baseline,
+    valuesByGoal,
+    combined,
+    freedTimeSplit,
+    planning,
+    defaultValues: (g) => defaultLeverValues(g, setting),
   });
 
-  const progressDecisionInputs: DecisionProgressInput[] = progressRows.map((r) => ({
+  const attachProgress = (m: TrackedMetric): MetricRowData => {
+    const entries = progressEntries[m.key] ?? [{ date: todayISODate(), value: m.baselineNum }];
+    return { ...m, entries, current: currentValueFromEntries(entries, m.baselineNum) };
+  };
+
+  // Metric rows grouped by PRIORITY for the horizontal tracker, in `goals`
+  // order (empty goals already dropped by trackedMetricsByGoal).
+  const priorityRowGroups = trackedByGoal.map(({ goal, rows }) => ({
+    goal,
+    goalDef: GOAL_CATALOG[goal],
+    rows: rows.map(attachProgress),
+  }));
+  const metricRows: MetricRowData[] = priorityRowGroups.flatMap((g) => g.rows);
+
+  // Measured attainment: only metrics with a NUMERIC target can be scored
+  // against one; a directional/qualitative target ("cleared", "collected each
+  // quarter") is still tracked and loggable, but never fabricates a numeric
+  // percent. Every scored metric weighs equally, so the percent reads honestly
+  // as "how far, on average, the metrics you chose have moved toward target."
+  const numericRows = metricRows.filter((r) => r.targetNum !== null);
+  const progressDecisionInputs: DecisionProgressInput[] = numericRows.map((r) => ({
     key: r.key,
-    baseline: r.baseline,
+    baseline: r.baselineNum,
     current: r.current,
-    target: r.target,
-    worth: r.worth,
+    target: r.targetNum as number,
+    worth: 1,
   }));
   const progressPct = computeProgressAttainmentPct(progressDecisionInputs);
 
-  // The REAL, dated climb this plan has actually made — every signal's log,
-  // carried forward date by date, weighted by worth exactly like the percent
-  // above. This is what the curve plots below; it is never a synthetic
-  // 3-point line on the Progress tab.
-  const trajectorySignals: SignalProgressInput[] = progressRows.map((r) => ({
+  // The REAL, dated climb this plan has actually made — every scored metric's
+  // log, carried forward date by date. This is what the curve plots below; it
+  // is never a synthetic 3-point line on the Progress tab.
+  const trajectorySignals: SignalProgressInput[] = numericRows.map((r) => ({
     key: r.key,
-    baseline: r.baseline,
-    target: r.target,
-    worth: r.worth,
+    baseline: r.baselineNum,
+    target: r.targetNum as number,
+    worth: 1,
     entries: r.entries,
   }));
   const trajectory = computeActualTrajectory(trajectorySignals, todayISODate());
   const trajectoryPct = trajectory.length > 0 ? trajectory[trajectory.length - 1].pct : progressPct;
 
-  // Signal rows grouped by PRIORITY for the horizontal tracker (Change 2) —
-  // every committed signal is its own row, banded under its priority's
-  // pill, in the same `goals` order the rest of the plan uses.
-  const priorityRowGroups = goals
-    .map((goal) => ({ goal, goalDef: GOAL_CATALOG[goal], rows: progressRows.filter((r) => r.goal === goal) }))
-    .filter((g) => g.rows.length > 0);
-
   // Every entry's real position on the shared month axis, read straight off
-  // the trajectory's own dated points (one per distinct entry date across
-  // every signal, already computed above) — never a second, competing date
-  // calculation.
+  // the trajectory's own dated points — never a second, competing calculation.
   const dateToMonths = new Map(trajectory.map((p) => [p.date, p.monthsFromStart]));
   const axisTodayFrac = monthsToFrac(
     trajectory.length > 0 ? trajectory[trajectory.length - 1].monthsFromStart : state.monthsElapsed,
@@ -982,16 +945,16 @@ export default function StepAttainment({
           <p className="text-[11px] font-semibold uppercase tracking-[3.2px] text-[#EA2C00] mb-1">Where This Stands</p>
           <h2 className="font-abridge text-[32px] text-[#1A1A1A] mb-4">Progress</h2>
           <p className="text-[15px] leading-relaxed text-[#3A3A3A] mb-5 max-w-[720px]" data-testid="text-attain-progress-cadence-lead">
-            This is the surface to come back to, reviewed <b>{CADENCE_LABEL[planCadence]}</b>. Log the real number for
-            each signal below — the date stamps itself, the trend and the curve climb with it, and the history builds
-            a dated record for the next review. Nothing here is projected. It only moves when someone logs that
-            something actually moved.
+            These are the exact metrics you chose in your measurement plan, reviewed <b>{CADENCE_LABEL[planCadence]}</b>.
+            Log the real number for each one below. The date stamps itself, the trend and the curve climb with it, and
+            the history builds a dated record for the next review. Nothing here is projected. It only moves when someone
+            logs that something actually moved.
           </p>
 
-          {progressRows.length === 0 ? (
+          {metricRows.length === 0 ? (
             <div className="bg-[#F4F0EA] border-l-[3px] border-[#EA2C00] rounded-r-md p-4" data-testid="text-attain-progress-empty">
               <p className="text-[15px] text-[#3A3A3A] leading-relaxed">
-                No decisions are committed yet. Go back to Planning and give at least one decision an owner and a date.
+                No metrics are being tracked yet. Go back to your measurement plan and pick at least one metric to own.
               </p>
             </div>
           ) : (
@@ -1010,7 +973,7 @@ export default function StepAttainment({
                 <div className="flex-1 min-w-[160px] border border-[#E7E0D6] bg-[#F8F5F1] rounded-md p-4" data-testid="card-attain-progress-stat-attainment">
                   <p className="text-[9.5px] font-semibold uppercase tracking-[1.4px] text-[#8C8C8C]">Attainment, measured</p>
                   <p className="font-abridge text-3xl text-[#EA2C00] mt-2 mb-1" data-testid="text-attain-progress-pct">{progressPct}%</p>
-                  <p className="text-[10px] text-[#8C8C8C]">From logged updates, weighted by each decision's worth</p>
+                  <p className="text-[10px] text-[#8C8C8C]">Averaged across the metrics you chose to track, from their logged updates</p>
                 </div>
                 <div className="flex-1 min-w-[160px] border border-[#E7E0D6] bg-[#F8F5F1] rounded-md p-4" data-testid="card-attain-progress-stat-onpace">
                   <p className="text-[9.5px] font-semibold uppercase tracking-[1.4px] text-[#8C8C8C]">On-pace target</p>
@@ -1025,13 +988,12 @@ export default function StepAttainment({
               </div>
 
               {/* The horizontal tracker — one shared month axis (Committed
-                  -> Today -> Goal), every committed signal a row banded by
-                  priority, its dated log a march of dots across that same
-                  ruler. Replaces the old vertical stack of decision cards
-                  so a plan with many signals still reads at a glance. */}
+                  -> Today -> Goal), every metric the partner chose in Plan a
+                  row banded by priority, its dated log a march of dots across
+                  that same ruler. */}
               <div className="border border-[#E7E0D6] rounded-lg bg-white p-5 md:p-6" data-testid="panel-attain-progress-tracker">
                 <ProgressAxisHeader totalMonths={state.totalMonths} todayFrac={axisTodayFrac} startLabel="Committed" />
-                <div data-testid="list-attain-progress-decisions">
+                <div data-testid="list-attain-progress-metrics">
                   {priorityRowGroups.map(({ goal, goalDef, rows }) => (
                     <PriorityTrackerGroup
                       key={goal}
@@ -1056,8 +1018,8 @@ export default function StepAttainment({
                 "come back to this on this device, or from the link" - a real
                 account tied to this organization, editable from any device
                 without the link, is a future backend layer. */}
-            Click Save above to copy a link back to this exact history, decisions included. Reopening that link,
-            on this device or any other, picks this plan up exactly where it stands today.
+            Click Save above to copy a link back to this exact history, every tracked metric included. Reopening that
+            link, on this device or any other, picks this plan up exactly where it stands today.
           </p>
         </motion.section>
       )}
@@ -1120,29 +1082,29 @@ export default function StepAttainment({
                   </p>
                 </div>
                 <div className="border border-[#E7E0D6] bg-[#F8F5F1] rounded-lg p-4">
-                  <p className="text-[9.5px] font-semibold uppercase tracking-[1.4px] text-[#8C8C8C] mb-1.5">The moves</p>
+                  <p className="text-[9.5px] font-semibold uppercase tracking-[1.4px] text-[#8C8C8C] mb-1.5">Metrics tracked</p>
                   <p className="font-abridge text-3xl text-[#1A1A1A]" data-testid="text-attain-glance-moves-count">
-                    {allCommitted.length}{" "}
-                    <span className="text-base font-semibold text-[#8C8C8C]">decision{allCommitted.length === 1 ? "" : "s"}</span>
+                    {metricRows.length}{" "}
+                    <span className="text-base font-semibold text-[#8C8C8C]">metric{metricRows.length === 1 ? "" : "s"}</span>
                   </p>
                 </div>
               </div>
-              {allCommitted.length > 0 && (
+              {metricRows.length > 0 && (
                 <div className="flex flex-wrap gap-2" data-testid="list-attain-glance-moves">
-                  {allCommitted.slice(0, 4).map(({ goal, lever, owner }) => (
+                  {metricRows.slice(0, 4).map((m) => (
                     <span
-                      key={`${goal}:${lever.id}`}
+                      key={m.key}
                       className="inline-flex items-center gap-1.5 text-[11px] bg-[#F8F5F1] border border-[#E7E0D6] rounded-full pl-2 pr-3 py-1"
-                      data-testid={`chip-attain-glance-move-${goal}-${lever.id}`}
+                      data-testid={`chip-attain-glance-move-${m.goal}-${m.metricId}`}
                     >
-                      <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: GOAL_CATALOG[goal].pillBg }} />
-                      <b className="text-[#1A1A1A]">{lever.label}</b>
-                      <span className="text-[#8C8C8C]">· {owner}</span>
+                      <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: GOAL_CATALOG[m.goal].pillBg }} />
+                      <b className="text-[#1A1A1A]">{m.label}</b>
+                      <span className="text-[#8C8C8C]">· {m.owner.trim() ? m.owner : "Unassigned"}</span>
                     </span>
                   ))}
-                  {allCommitted.length > 4 && (
+                  {metricRows.length > 4 && (
                     <span className="text-[11px] text-[#8C8C8C] self-center" data-testid="text-attain-glance-moves-more">
-                      +{allCommitted.length - 4} more
+                      +{metricRows.length - 4} more
                     </span>
                   )}
                 </div>
@@ -1152,9 +1114,10 @@ export default function StepAttainment({
             {/* Supporting detail — attribution and metadata, secondary to
                 the at-a-glance summary above. */}
             <p className="text-[13px] leading-relaxed text-[#8C8C8C] max-w-[640px] mb-5">
-              One plan, built from every decision you moved across{" "}
-              <b className="text-[#3A3A3A]">{goalDefs.map((g) => g.label).join(", ")}</b>. Every dollar below rolls up
-              from the same engine, counted once.
+              One plan across{" "}
+              <b className="text-[#3A3A3A]">{goalDefs.map((g) => g.label).join(", ")}</b>. The value below rolls up from
+              the same engine, counted once; the metrics you chose to track are the scorecard the Progress tab measures
+              against.
             </p>
 
             <div className="flex flex-wrap items-start gap-6 pt-5 border-t border-[#F0ECE5]">
@@ -1173,7 +1136,7 @@ export default function StepAttainment({
               </div>
               <div>
                 <p className="text-[10.5px] font-semibold uppercase tracking-[2.5px] text-[#B4B4B4] mb-1">Horizon</p>
-                <p className="text-[16.5px] text-[#3A3A3A]">{state.totalMonths} months · {allCommitted.length} decisions committed</p>
+                <p className="text-[16.5px] text-[#3A3A3A]">{state.totalMonths} months · {metricRows.length} metric{metricRows.length === 1 ? "" : "s"} tracked</p>
               </div>
             </div>
           </motion.section>
@@ -1243,7 +1206,9 @@ export default function StepAttainment({
             </div>
           </motion.section>
 
-          {/* ============ THE PLAN (decisions -> priority -> who -> when -> worth) ============ */}
+          {/* ============ THE SCORECARD — the exact metrics chosen in Plan
+              (metric -> baseline/target -> owner -> when). This is what the
+              Progress tab measures against, so both tabs track one set. ============ */}
           <motion.section
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
@@ -1251,62 +1216,42 @@ export default function StepAttainment({
             data-testid="section-attain-checklist"
           >
             <div className="pb-5 mb-5 border-b border-[#F0ECE5]">
-              <p className="text-[11px] font-semibold uppercase tracking-[3.2px] text-[#EA2C00] mb-1">What Has To Happen</p>
-              <h2 className="font-abridge text-[32px] text-[#1A1A1A]">The Plan</h2>
+              <p className="text-[11px] font-semibold uppercase tracking-[3.2px] text-[#EA2C00] mb-1">What You Will Measure</p>
+              <h2 className="font-abridge text-[32px] text-[#1A1A1A]">The Scorecard</h2>
             </div>
             <p className="text-[15px] leading-relaxed text-[#3A3A3A] mb-5 max-w-[720px]">
-              To attain <b className="text-[#1A1A1A]">{formatCompact(target.margin)}</b> across {goalDefs.length}{" "}
-              {goalDefs.length === 1 ? "priority" : "priorities"}, here is what has to happen. Every row below is a
-              decision you moved above your reality, with a real owner and a real month attached to it. This is the
-              checklist to come back to, not the number that started it.
+              These are the exact metrics you chose in your measurement plan, each with the baseline you started from,
+              the target you set, an owner, and a rough date. This is the scorecard the Progress tab measures against,
+              update by dated update.
             </p>
 
-            {allCommitted.length === 0 ? (
+            {metricRows.length === 0 ? (
               <div className="bg-[#F4F0EA] border-l-[3px] border-[#EA2C00] rounded-r-md p-4" data-testid="text-attain-plan-empty">
                 <p className="text-[15px] text-[#3A3A3A] leading-relaxed">
-                  No decisions are committed yet. Go back to Align and Commit to turn this into a real plan.
+                  No metrics are being tracked yet. Go back to your measurement plan and pick at least one metric to own.
                 </p>
               </div>
             ) : goalDefs.length === 1 ? (
-              <>
-                <DecisionsTable rows={allCommitted} testId="table-attain-plan-decisions" />
-                <div className="flex items-center justify-between pt-3 mt-1 border-t border-[#E7E0D6]">
-                  <span className="text-[11.5px] font-bold text-[#1A1A1A]">Total, contribution margin</span>
-                  <span className="font-abridge text-xl text-[#EA2C00]" data-testid="text-attain-plan-total-reconciled">{formatCompact(target.margin)}</span>
-                </div>
-              </>
+              <ScorecardTable rows={trackedByGoal[0]?.rows ?? []} testId="table-attain-scorecard" />
             ) : (
               <>
-                {goalDefs.map((g) => {
-                  const rows = allCommitted.filter((c) => c.goal === g.id);
-                  if (rows.length === 0) return null;
-                  // Never sum marginalMargin across a chain; use the chain's totalMargin.
-                  // Leave-one-out marginalMargin values overlap (retention/quality/ED-access)
-                  // and do not sum to the chain's real total, so this must read the same
-                  // byGoal[g.id].totalMargin the breakdown cards below and PDF already use.
-                  const groupWorth = combined.byGoal[g.id]?.totalMargin ?? 0;
+                {trackedByGoal.map(({ goal, rows }) => {
+                  const g = GOAL_CATALOG[goal];
                   return (
-                    <div key={g.id} className="mb-8" data-testid={`group-attain-plan-decisions-${g.id}`}>
-                      <div className="flex items-center justify-between mb-2.5">
-                        <div className="flex items-center gap-2.5">
-                          <span
-                            className="inline-block text-[9px] font-bold uppercase tracking-[1.2px] text-white px-2 py-0.5 rounded-full"
-                            style={{ background: g.pillBg }}
-                          >
-                            {g.pill}
-                          </span>
-                          <span className="text-[13px] font-bold text-[#1A1A1A]">{g.label}</span>
-                        </div>
-                        <span className="text-[12.5px] font-bold text-[#EA2C00]">{formatCompact(groupWorth)}</span>
+                    <div key={goal} className="mb-8" data-testid={`group-attain-scorecard-${goal}`}>
+                      <div className="flex items-center gap-2.5 mb-2.5">
+                        <span
+                          className="inline-block text-[9px] font-bold uppercase tracking-[1.2px] text-white px-2 py-0.5 rounded-full"
+                          style={{ background: g.pillBg }}
+                        >
+                          {g.pill}
+                        </span>
+                        <span className="text-[13px] font-bold text-[#1A1A1A]">{g.label}</span>
                       </div>
-                      <DecisionsTable rows={rows} testId={`table-attain-plan-decisions-${g.id}`} />
+                      <ScorecardTable rows={rows} testId={`table-attain-scorecard-${goal}`} />
                     </div>
                   );
                 })}
-                <div className="flex items-center justify-between pt-3 border-t border-[#E7E0D6]">
-                  <span className="text-[11.5px] font-bold text-[#1A1A1A]">Total, contribution margin, combined</span>
-                  <span className="font-abridge text-xl text-[#EA2C00]" data-testid="text-attain-plan-total-reconciled">{formatCompact(target.margin)}</span>
-                </div>
               </>
             )}
           </motion.section>
@@ -1323,8 +1268,8 @@ export default function StepAttainment({
               <h2 className="font-abridge text-[32px] text-[#1A1A1A]">The Payoff</h2>
             </div>
             <p className="text-[15px] leading-relaxed text-[#3A3A3A] mb-5 max-w-[720px]">
-              Everything above, the starting point, the gap, the plan, adds up to this. One combined number, built the
-              same way every figure on this plan was: from the decisions you actually committed to.
+              Everything above, the starting point, the gap, the scorecard, adds up to this. One combined number, built
+              the same way every figure on this plan was: from your own Align inputs, counted once.
             </p>
 
             {/* ONE combined headline number, full stop. Only when a plan
@@ -1337,7 +1282,7 @@ export default function StepAttainment({
                 {formatCompact(target.margin)}
               </p>
               <p className="text-[13px] text-white/50 mt-2">
-                Across {goalDefs.length} {goalDefs.length === 1 ? "priority" : "priorities"} · {allCommitted.length} decision{allCommitted.length === 1 ? "" : "s"} committed
+                Across {goalDefs.length} {goalDefs.length === 1 ? "priority" : "priorities"} · {metricRows.length} metric{metricRows.length === 1 ? "" : "s"} tracked
               </p>
             </div>
 

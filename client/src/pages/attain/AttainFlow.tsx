@@ -13,16 +13,13 @@ import StepCommit, {
   type GoalOwner,
   type SignalCadence,
 } from "./steps/StepCommit";
-import StepPlanning from "./steps/StepPlanning";
 import StepMeasurementPlan from "./steps/StepMeasurementPlan";
-import StepMultiPlanning from "./steps/StepMultiPlanning";
 import StepMultiMeasurementPlan, { type MeasurementGoal } from "./steps/StepMultiMeasurementPlan";
 import StepAttainment from "./steps/StepAttainment";
 import AttainLivePanel from "./AttainLivePanel";
 import {
   DEFAULT_ATTAIN_PLANNING,
   type AttainPlanning,
-  type PlanPhaseId,
 } from "@/lib/attain/attainPlanning";
 import {
   DEFAULT_ATTAIN_STATE,
@@ -44,7 +41,8 @@ import {
   type MultiGoalContributionsResult,
   type RealizationByGoal,
 } from "@/lib/attain/attainLevers";
-import { parseSignalBaseline, todayISODate, type ProgressEntry } from "@/lib/attain/attainProgress";
+import { todayISODate, type ProgressEntry } from "@/lib/attain/attainProgress";
+import { trackedMetricsByGoal } from "@/lib/attain/measurementScorecard";
 import type { GoalTargetResult, AttainmentResult } from "@/lib/attain/attainCalc";
 import {
   ATTAIN_SAVE_VERSION,
@@ -89,8 +87,8 @@ function hasMeasurementSurface(goal: GoalId, _setting: AttainSetting): boolean {
  * Align stage, then fixed commit/plan. A SINGLE-goal plan gets one
  * `buildCase:<goal>` Align page. A MULTI-goal plan collapses to ONE stacked
  * `"align"` page that stacks every selected goal's Align under a combined
- * header (see StepMultiBuildCase), exactly the way a multi-goal plan's
- * Planning collapses to one stacked StepMultiPlanning page. Recomputed
+ * header (see StepMultiBuildCase), exactly the way a multi-goal plan's Plan
+ * step collapses to one stacked StepMultiMeasurementPlan page. Recomputed
  * whenever `goals` changes (only possible from the Vision step, before any
  * Align page is reached). */
 function stepOrderFor(goals: GoalId[]): AttainStepId[] {
@@ -292,56 +290,35 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
   const activeBuildCaseGoal = goalOfStep(step);
 
   // The rebuilt, phased "Planning" view is scoped to the OUTPATIENT PATIENT
-  // ACCESS plan only (a single selected access goal in the outpatient
-  // setting). Every other setting/goal combo — and any multi-goal plan that
-  // also happens to include access — still renders the original StepCommit
-  // content. This is the one branch the task asks for; the underlying step id
-  // stays "commit" so nav, progress dots, and the save shape are untouched.
+  // Every single-goal Plan now renders the shared MEASUREMENT plan surface
+  // (StepMeasurementPlan wrapping MeasurementPlanSurface). Only the derivation
+  // differs per goal/setting; the scorecard UI, and the metrics the partner
+  // picks, are shared. Each flag below routes one combo to that surface. The
+  // step id stays "commit" so nav, progress dots, and the save shape are
+  // untouched.
   const isOutpatientAccessPlan = state.setting === "outpatient" && goals.length === 1 && goals[0] === "access";
-  // Retention (single-goal) is a phased Planning view in EVERY setting: it
-  // renders the same StepPlanning shell, driven by the shared, setting-aware
-  // retention ladder (goal="retention"). ED, inpatient, and nursing retention
-  // all reach it, so retention tells the same step-down story everywhere. A
-  // multi-goal plan that also includes retention still renders StepCommit.
+  // Retention (single-goal) uses the measurement surface in EVERY setting,
+  // driven by the setting-aware retention derivation (goal="retention").
   const isRetentionPlan = goals.length === 1 && goals[0] === "retention";
-  // Outpatient revenue is the third combo the phased Planning view is rebuilt
-  // for (a single selected revenue goal in the outpatient setting). It renders
-  // the same StepPlanning shell driven by the shared, converging revenue
-  // ladder (goal="revenue"). ED/inpatient revenue and every other combo still
-  // render StepCommit.
+  // Revenue (single-goal) uses the measurement surface in every setting, its
+  // chain stacking per chosen revenue path.
   const isOutpatientRevenuePlan = state.setting === "outpatient" && goals.length === 1 && goals[0] === "revenue";
-  // ED revenue rides the SAME converging revenue ladder as outpatient, on a
-  // smaller path set (E/M level accuracy + medical-necessity denials, no risk
-  // adjustment). A single selected revenue goal in the ED setting renders the
-  // same StepPlanning shell, setting-aware via the shared revenue ladder.
   const isEdRevenuePlan = state.setting === "ed" && goals.length === 1 && goals[0] === "revenue";
-  // Inpatient revenue rides the SAME converging revenue ladder Planning view,
-  // on its own genuinely different mechanisms (DRG capture, CDI query
-  // efficiency, observation-status defense). A single selected revenue goal in
-  // the inpatient setting renders the same StepPlanning shell, setting-aware via
-  // the shared inpatient-revenue ladder (deriveIpRevenueLadder).
   const isInpatientRevenuePlan = state.setting === "inpatient" && goals.length === 1 && goals[0] === "revenue";
-  // ED access is the fourth combo the phased Planning view is rebuilt for (a
-  // single selected access goal in the ED setting). It renders the same
-  // StepPlanning shell driven by the shared ED access ladder, including its
-  // load-bearing diagnosis gate. Every other combo still renders StepCommit.
+  // ED access uses the measurement surface on its own ED access derivation,
+  // including its load-bearing diagnosis gate.
   const isEdAccessPlan = state.setting === "ed" && goals.length === 1 && goals[0] === "access";
-  // Nursing quality is the fifth combo the phased Planning view is rebuilt for
-  // (a single selected quality goal in the nursing setting). It renders the
-  // same StepPlanning shell driven by the shared, converging quality ladder
-  // (goal="quality"). Every other combo still renders StepCommit.
+  // Nursing quality is the safety-first exception on the same surface (its
+  // promise leads with a count, the dollar drops to a soft footnote).
   const isNursingQualityPlan = state.setting === "nursing" && goals.length === 1 && goals[0] === "quality";
-  // Nursing capacity (overtime) is the sixth combo the phased Planning view is
-  // rebuilt for (a single selected capacity goal in the nursing setting). It
-  // renders the same StepPlanning shell driven by the shared nursing capacity
-  // ladder (goal="capacity"). Every other combo still renders StepCommit.
+  // Nursing capacity (overtime) uses the measurement surface as a single-gated
+  // ladder.
   const isNursingCapacityPlan = state.setting === "nursing" && goals.length === 1 && goals[0] === "capacity";
   // A MULTI-goal plan routes its Plan step to the stacked MEASUREMENT surface
   // (StepMultiMeasurementPlan) when every selected goal has a measurement
-  // surface, mirroring how multi-goal Align stacks per goal. The one holdout is
-  // an ED plan that includes access (ED access has no measurement derivation
-  // yet), which stays on the phased StepMultiPlanning, exactly as single-goal ED
-  // access stays on StepPlanning.
+  // surface, mirroring how multi-goal Align stacks per goal. Every goal a plan
+  // can hold has one, so this is effectively true for any multi-goal plan; the
+  // flag is kept as the honest guard rather than an assumption.
   const allGoalsHaveMeasurementSurface =
     goals.length > 1 && Boolean(state.setting) && goals.every((g) => hasMeasurementSurface(g, state.setting!));
 
@@ -492,21 +469,8 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
   }, []);
 
   // Planning step (outpatient Access) edits — a per-phase owner override, a
-  // per-phase leading-signal target, and the one optional partner-disclosed
-  // risk. Each merges shallowly so an unset phase simply falls back to its
-  // derived default downstream (see attainPlanning.ts's resolver helpers).
-  const handleChangePhaseOwner = useCallback((phase: PlanPhaseId, name: string) => {
-    setPlanning((prev) => ({ ...prev, phaseOwners: { ...prev.phaseOwners, [phase]: name } }));
-  }, []);
-
-  const handleChangePhaseSignalTarget = useCallback((phase: PlanPhaseId, target: string) => {
-    setPlanning((prev) => ({ ...prev, phaseSignalTargets: { ...prev.phaseSignalTargets, [phase]: target } }));
-  }, []);
-
-  const handleChangePhaseSignalLabel = useCallback((phase: PlanPhaseId, label: string) => {
-    setPlanning((prev) => ({ ...prev, phaseSignalLabels: { ...prev.phaseSignalLabels, [phase]: label } }));
-  }, []);
-
+  // the one optional partner-disclosed risk, shared by the single- and
+  // multi-goal measurement Plan pages.
   const handleChangePartnerRisk = useCallback((text: string) => {
     setPlanning((prev) => ({ ...prev, partnerRisk: text }));
   }, []);
@@ -593,39 +557,6 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
     [patchMeasurementForGoal],
   );
 
-  // Multi-priority Planning edits — the same three per-phase overrides, but
-  // keyed per priority in `planning.byGoal[goal]` so two priorities' phase
-  // choices never collide. Additive and backward-compatible: an untouched
-  // priority simply has no `byGoal` entry and falls back to its derived
-  // defaults (see attainPlanning.ts's `planningLayerFor` + the resolvers).
-  const handleChangePhaseOwnerForGoal = useCallback((goal: GoalId, phase: PlanPhaseId, name: string) => {
-    setPlanning((prev) => {
-      const layer = prev.byGoal?.[goal] ?? {};
-      return { ...prev, byGoal: { ...prev.byGoal, [goal]: { ...layer, phaseOwners: { ...layer.phaseOwners, [phase]: name } } } };
-    });
-  }, []);
-
-  const handleChangePhaseSignalTargetForGoal = useCallback((goal: GoalId, phase: PlanPhaseId, target: string) => {
-    setPlanning((prev) => {
-      const layer = prev.byGoal?.[goal] ?? {};
-      return { ...prev, byGoal: { ...prev.byGoal, [goal]: { ...layer, phaseSignalTargets: { ...layer.phaseSignalTargets, [phase]: target } } } };
-    });
-  }, []);
-
-  const handleChangePhaseSignalLabelForGoal = useCallback((goal: GoalId, phase: PlanPhaseId, label: string) => {
-    setPlanning((prev) => {
-      const layer = prev.byGoal?.[goal] ?? {};
-      return { ...prev, byGoal: { ...prev.byGoal, [goal]: { ...layer, phaseSignalLabels: { ...layer.phaseSignalLabels, [phase]: label } } } };
-    });
-  }, []);
-
-  // The one accountable exec owner for a MULTI-priority plan, shown once in the
-  // combined header. Stored on `planning.planExecOwner` (additive), separate
-  // from the per-goal `goalOwnerByPriority` a single-goal plan uses.
-  const handleChangePlanExecOwner = useCallback((patch: Partial<GoalOwner>) => {
-    setPlanning((prev) => ({ ...prev, planExecOwner: { name: "", title: "", ...prev.planExecOwner, ...patch } }));
-  }, []);
-
   const handleChangeGoalOwner = useCallback((goal: GoalId, patch: Partial<GoalOwner>) => {
     setGoalOwnerByPriority((prev) => ({
       ...prev,
@@ -633,55 +564,10 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
     }));
   }, []);
 
-  // Every committed SIGNAL's key + its baseline, so the effect below can
-  // seed a dated log for each one the first time it shows up as committed —
-  // mirrors `movedLeverKeys` above but at signal (not decision) granularity,
-  // since the entries log lives per signal.
-  const committedSignalSeeds = useMemo(() => {
-    const out: { key: string; baseline: number }[] = [];
-    for (const g of goals) {
-      const values = valuesByGoal[g] ?? defaultLeverValues(g, state.setting ?? undefined);
-      for (const lever of leversFor(g, state.setting ?? undefined)) {
-        if (!isDecisionCommitted(g, state.setting ?? undefined, values, lever)) continue;
-        const declKey = commitmentKey(g, lever.id);
-        const commitment = commitments[declKey] ?? fallbackCommitment(g, lever.id);
-        // Falls back to this decision's own default signal if a corrupt/
-        // legacy save link produced a commitment missing (or malformed)
-        // `requiredSignal` — see attainUrlState.ts's `isWellFormedCommitment`,
-        // which is the real gate, but this stays defensive too.
-        const fallbackSignal = fallbackCommitment(g, lever.id).requiredSignal;
-        const optionalSignals = Array.isArray(commitment.optionalSignals) ? commitment.optionalSignals : [];
-        const signals = [commitment.requiredSignal ?? fallbackSignal, ...optionalSignals];
-        for (const sig of signals) {
-          const safeSig = sig ?? fallbackSignal;
-          out.push({ key: `${declKey}:${safeSig.id}`, baseline: parseSignalBaseline(safeSig.baseline) });
-        }
-      }
-    }
-    return out;
-  }, [goals, valuesByGoal, commitments, fallbackCommitment, state.setting]);
-
-  // Seeds a signal's dated log the first time it appears as committed: one
-  // entry carrying its baseline, dated today. Today is the best honest
-  // stand-in for "the day this decision was committed" available without a
-  // real commit-timestamp field (this session's visit to Progress IS the
-  // first time this signal's log can exist) — see the persistence note on
-  // `progressEntries` above. Never re-seeds or overwrites a log that
-  // already has entries, so a real logged update is never clobbered.
-  useEffect(() => {
-    if (committedSignalSeeds.length === 0) return;
-    setProgressEntries((prev) => {
-      let changed = false;
-      const next = { ...prev };
-      for (const { key, baseline } of committedSignalSeeds) {
-        if (!next[key] || next[key].length === 0) {
-          next[key] = [{ date: todayISODate(), value: baseline }];
-          changed = true;
-        }
-      }
-      return changed ? next : prev;
-    });
-  }, [committedSignalSeeds]);
+  // The progress-log seeding (one dated baseline entry per tracked metric, so
+  // the Progress tab and the curve have a real starting point) lives just below
+  // `combined`, since it derives the tracked metrics from the same measurement
+  // plan the Attainment hub reads. See `trackedMetricSeeds` after `combined`.
 
   // "Log an update" — the one write path for Progress: appends a dated
   // entry (today, the new value, an optional one-line note) to a signal's
@@ -789,6 +675,49 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
     if (goals.length === 0 || !state.setting) return null;
     return computeMultiGoalContributions(goals, state.setting, baseline, valuesByGoal, freedTimeSplit, realizationByGoal);
   }, [goals, state.setting, baseline, valuesByGoal, freedTimeSplit, realizationByGoal]);
+
+  // The CLOSED LOOP: every metric the partner chose in the measurement Plan
+  // (planning.measurement / measurementByGoal), keyed `${goal}:${metricId}` with
+  // its baseline number, so the Progress tab can seed a dated starting point for
+  // exactly those metrics and nothing else. This is the same derivation the
+  // Attainment hub renders from, so the two can never track different metrics.
+  const trackedMetricSeeds = useMemo(() => {
+    if (goals.length === 0 || !state.setting) return [] as { key: string; baseline: number }[];
+    const byGoal = trackedMetricsByGoal({
+      goals,
+      setting: state.setting,
+      baseline,
+      valuesByGoal,
+      combined,
+      freedTimeSplit,
+      planning,
+      defaultValues: (g) => defaultLeverValues(g, state.setting ?? undefined),
+    });
+    // Only numeric-baseline metrics need a seed value; a qualitative metric
+    // ("Love Stories", "cleared") still seeds at 0 so its log exists to append to.
+    return byGoal.flatMap(({ rows }) => rows.map((r) => ({ key: r.key, baseline: r.baselineNum })));
+  }, [goals, state.setting, baseline, valuesByGoal, combined, freedTimeSplit, planning]);
+
+  // Seeds a tracked metric's dated log the first time it appears: one entry
+  // carrying its baseline, dated today. Today is the honest stand-in for "when
+  // this metric started being tracked" (this session's visit to Progress IS the
+  // first time its log can exist) — see the persistence note on
+  // `progressEntries`. Never re-seeds or overwrites a log that already has
+  // entries, so a real logged update is never clobbered.
+  useEffect(() => {
+    if (trackedMetricSeeds.length === 0) return;
+    setProgressEntries((prev) => {
+      let changed = false;
+      const next = { ...prev };
+      for (const { key, baseline: base } of trackedMetricSeeds) {
+        if (!next[key] || next[key].length === 0) {
+          next[key] = [{ date: todayISODate(), value: base }];
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
+    });
+  }, [trackedMetricSeeds]);
 
   // Whether every field the Scope step asks for has a real value, so the
   // panel's Continue button on that step can only advance once the
@@ -1023,11 +952,11 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
               />
             )}
 
-            {/* OUTPATIENT ACCESS is the exemplar for the rebuilt Plan step: a
+            {/* OUTPATIENT ACCESS is the exemplar for the Plan step: a
                 MEASUREMENT PLAN (StepMeasurementPlan), where the partner builds
                 the scorecard they will track, generated from their Align
-                choices. Every other goal keeps the phased StepPlanning below,
-                until each is cloned onto this pattern. */}
+                choices. Every single-goal combo below renders this same shared
+                surface; only its derivation differs. */}
             {step === "commit" && isOutpatientAccessPlan && (
               <StepMeasurementPlan
                 goal="access"
@@ -1224,38 +1153,14 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
               />
             )}
 
-            {/* The one MULTI-goal holdout (an ED plan that includes access, no
-                measurement derivation yet) keeps the phased step-down Planning,
-                once per priority. The per-priority block is shared with the
-                single-goal StepPlanning, so the two can never diverge. StepCommit
-                is kept only for its exported types/constants. */}
-            {step === "commit" && goals.length > 1 && state.setting && !allGoalsHaveMeasurementSurface && (
-              <StepMultiPlanning
-                setting={state.setting}
-                baseline={baseline}
-                goals={goals}
-                valuesByGoal={valuesByGoal}
-                combined={combined}
-                planning={planning}
-                onChangePhaseOwner={handleChangePhaseOwnerForGoal}
-                onChangePhaseSignalTarget={handleChangePhaseSignalTargetForGoal}
-                onChangePhaseSignalLabel={handleChangePhaseSignalLabelForGoal}
-                onChangePlanExecOwner={handleChangePlanExecOwner}
-                onChangePartnerRisk={handleChangePartnerRisk}
-                planCadence={planCadence}
-                onChangePlanCadence={handleChangePlanCadence}
-                freedTimeSplit={freedTimeSplit}
-                totalMonths={state.totalMonths}
-                stepNumber={stepIndex + 1}
-              />
-            )}
-
             {step === "plan" && (
               goals.length > 0 && state.setting && builtTarget && combined ? (
                 <StepAttainment
                   state={state}
                   setting={state.setting}
                   goals={goals}
+                  baseline={baseline}
+                  planning={planning}
                   target={builtTarget}
                   attainment={attainment}
                   valuesByGoal={valuesByGoal}
