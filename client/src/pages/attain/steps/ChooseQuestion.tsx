@@ -1,5 +1,4 @@
 import { motion } from "framer-motion";
-import { Check } from "lucide-react";
 import { NumberField } from "@/components/NumberField";
 import {
   asStringArray,
@@ -9,14 +8,16 @@ import {
   type AlignQuestion,
 } from "@/lib/attain/alignFramework";
 import type { LeverValues } from "@/lib/attain/attainLevers";
+import { EditorialOptionList, EditorialOptionRow } from "./EditorialOption";
 
 /**
- * ChooseQuestion — one Align "choose your meaning" question, rendered as a set
- * of crafted selectable CARDS (never a default radio list). Single- or
- * multi-select per the config. An optional number sharpener reveals under a
- * chosen card. Coral #EA2C00 for selected, near-black #1A1A1A text, neutral
- * grays, cream on the reveal — the premium PDF aesthetic, one clear question
- * flowing down the page.
+ * ChooseQuestion: one Align "choose your meaning" question, rendered as a
+ * Style A editorial list (never a default radio list, never a grid of boxes).
+ * Single- or multi-select per the config: full-width rows on thin hairline
+ * dividers, a selected row marked with a coral #EA2C00 left-accent bar, a coral
+ * title, and a coral check on the right. An optional number sharpener reveals
+ * under a chosen row. Refined and quiet, the premium editorial aesthetic, one
+ * clear question flowing down the page.
  */
 export default function ChooseQuestion({
   question,
@@ -73,24 +74,22 @@ export default function ChooseQuestion({
         <p className="text-[14px] text-[#8C8C8C] leading-relaxed mb-4 max-w-[600px]">{question.helper}</p>
       )}
 
-      {/* UNIFORM grid: always three equal columns on sm+, so a 2-option
-          question's cards are the exact same width as a 3-option question's
-          (never stretched wide). `items-stretch` + `h-full` on the card give
-          equal heights across every option in a row, every question, every
-          driver. Four or five options wrap into further rows at the same
-          column width. */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-stretch">
+      {/* Style A editorial list: full-width rows on thin hairline dividers, no
+          per-option boxes. Identical for single-select (Q1-Q3) and multi-select
+          (Q4/Q5): each selected row is marked independently with a coral
+          left-bar, coral title, and a coral check on the right. */}
+      <EditorialOptionList>
         {question.options.map((option) => (
-          <OptionCard
+          <EditorialOptionRow
             key={option.id}
-            option={option}
-            questionId={testidBase}
+            title={option.label}
+            description={option.dynamicHelper ? option.dynamicHelper(ctx) : option.helper}
             selected={isSelected(option.id)}
-            ctx={ctx}
             onClick={() => onToggleOption(storeKey, question.mode, option.id)}
+            testId={`align-option-${testidBase}-${option.id}`}
           />
         ))}
-      </div>
+      </EditorialOptionList>
 
       {/* Optional number sharpener — reveals only under a chosen option that
           carries one. Blank shows the benchmark note, never a fake number. */}
@@ -106,53 +105,6 @@ export default function ChooseQuestion({
         ) : null,
       )}
     </motion.div>
-  );
-}
-
-function OptionCard({
-  option,
-  questionId,
-  selected,
-  ctx,
-  onClick,
-}: {
-  option: AlignOption;
-  questionId: string;
-  selected: boolean;
-  ctx: AlignContext;
-  onClick: () => void;
-}) {
-  const helper = option.dynamicHelper ? option.dynamicHelper(ctx) : option.helper;
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={selected}
-      className={`group h-full text-left rounded-[11px] p-4 transition-all duration-200 ${
-        selected
-          ? "border-[1.5px] border-[#EA2C00] bg-[#FEF6F3]"
-          : "border border-[#E7E0D6] bg-white hover:border-[#D2C8B9] hover:bg-[#FBFAF7]"
-      }`}
-      data-testid={`align-option-${questionId}-${option.id}`}
-      data-selected={selected}
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className={`text-[15px] leading-snug ${selected ? "font-semibold text-[#EA2C00]" : "font-medium text-[#1A1A1A]"}`}>
-            {option.label}
-          </p>
-          <p className="text-[13px] text-[#8C8C8C] leading-snug mt-1">{helper}</p>
-        </div>
-        <span
-          className={`mt-px flex-shrink-0 w-[18px] h-[18px] rounded-full flex items-center justify-center transition-all ${
-            selected ? "bg-[#EA2C00]" : "border border-transparent group-hover:border-[#D8CFC4]"
-          }`}
-          aria-hidden
-        >
-          {selected && <Check className="w-[11px] h-[11px] text-white" strokeWidth={2.75} />}
-        </span>
-      </div>
-    </button>
   );
 }
 
