@@ -163,7 +163,7 @@ export default function StepMultiPlanning({
         {hasFreedTimeConflict && (
           <p className="text-[11px] text-white/55 mt-4 leading-relaxed" data-testid="text-multi-planning-split-note">
             Patient Access and Provider Retention draw on the same freed documentation hour. You routed {Math.round(accessShare * 100)}% of it to
-            opening access and {Math.round((1 - accessShare) * 100)}% to protecting relief on Build the case, so the one hour is split, never
+            opening access and {Math.round((1 - accessShare) * 100)}% to protecting relief on the Align step, so the one hour is split, never
             counted twice. Each ladder below reflects its share.
           </p>
         )}

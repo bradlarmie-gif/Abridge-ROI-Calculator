@@ -903,7 +903,7 @@ export function PlanningPriorityBlock({
                 unit="hrs / provider / wk"
                 label="Freed time"
                 caption="That time saved, added up across every note a provider writes in a week."
-                emptyHint="Set your ED providers on Build the case to see the freed hours."
+                emptyHint="Set your ED providers on the Align step to see the freed hours."
               />
               <div className="flex justify-center"><ArrowDown className="w-4 h-4 text-[#B4B4B4]" /></div>
               <SpineRung
@@ -912,7 +912,7 @@ export function PlanningPriorityBlock({
                 unit="patients / yr"
                 label="Freed-time capacity"
                 caption={`${fmtInt(edAccessLadder!.throughputSharePct)}% of the freed time is committed to throughput, the rest stays as relief, at about ${fmtHoursShort(edAccessLadder!.hoursPerRecovery)} hours of expedited attention per recovered patient.`}
-                emptyHint="Commit some freed time to throughput on Build the case to open recovery capacity."
+                emptyHint="Commit some freed time to throughput on the Align step to open recovery capacity."
               />
               <div className="flex justify-center"><ArrowDown className="w-4 h-4 text-[#B4B4B4]" /></div>
               <EdAccessDiagnosisGate
@@ -926,8 +926,8 @@ export function PlanningPriorityBlock({
                 bothSet={edAccessLadder!.recoverablePool > 0 && edAccessLadder!.mechanicalCapacity > 0}
                 emptyHint={
                   edAccessLadder!.recoverablePool <= 0
-                    ? "Diagnose the charting-caused share of your LWBS on Build the case to size the recoverable pool, then commit freed time to throughput."
-                    : "Commit some freed time to throughput on Build the case to see how much of the recoverable pool converts."
+                    ? "Diagnose the charting-caused share of your LWBS on the Align step to size the recoverable pool, then commit freed time to throughput."
+                    : "Commit some freed time to throughput on the Align step to see how much of the recoverable pool converts."
                 }
               />
               {edAccessLadder!.capturedAdmissions > 0 && (
@@ -980,7 +980,7 @@ export function PlanningPriorityBlock({
                     capturedUnit={p.capturedUnit}
                     whoActs={p.whoActs}
                     bothSet={p.ceilingCount > 0 && p.capturedCount > 0}
-                    emptyHint="Set this path's ground and diagnosis on Build the case to size the leak, then commit to a share of it."
+                    emptyHint="Set this path's ground and diagnosis on the Align step to size the leak, then commit to a share of it."
                   />
                   <div className="mt-2 rounded-lg border border-[#E7E0D6] bg-white px-4 py-2.5 flex items-baseline justify-between gap-3">
                     <span className="text-[12px] font-semibold text-[#3A3A3A]">{p.label} captures</span>
@@ -996,7 +996,7 @@ export function PlanningPriorityBlock({
                 <>
                   <div className="flex justify-center"><ArrowDown className="w-4 h-4 text-[#B4B4B4]" /></div>
                   <div className="rounded-lg border border-[#E7E0D6] bg-white p-4">
-                    <p className="text-[11px] text-[#8C8C8C] leading-relaxed">Pick at least one revenue path on Build the case to see the ladder.</p>
+                    <p className="text-[11px] text-[#8C8C8C] leading-relaxed">Pick at least one revenue path on the Align step to see the ladder.</p>
                   </div>
                 </>
               )}
@@ -1041,7 +1041,7 @@ export function PlanningPriorityBlock({
                     capturedUnit={e.capturedUnit}
                     whoActs={e.whoActs}
                     bothSet={e.ceilingCount > 0 && e.capturedCount > 0}
-                    emptyHint="Set this event's rate and commit its bundle on Build the case to size the preventable pool and see how much converts."
+                    emptyHint="Set this event's rate and commit its bundle on the Align step to size the preventable pool and see how much converts."
                   />
                   <div className="mt-2 rounded-lg border border-[#E7E0D6] bg-white px-4 py-2.5 flex items-baseline justify-between gap-3">
                     <span className="text-[12px] font-semibold text-[#3A3A3A]">{e.label}, cost of harm avoided</span>
@@ -1057,7 +1057,7 @@ export function PlanningPriorityBlock({
                 <>
                   <div className="flex justify-center"><ArrowDown className="w-4 h-4 text-[#B4B4B4]" /></div>
                   <div className="rounded-lg border border-[#E7E0D6] bg-white p-4">
-                    <p className="text-[11px] text-[#8C8C8C] leading-relaxed">Pick at least one harm event on Build the case to see the ladder.</p>
+                    <p className="text-[11px] text-[#8C8C8C] leading-relaxed">Pick at least one harm event on the Align step to see the ladder.</p>
                   </div>
                 </>
               )}
@@ -1094,7 +1094,7 @@ export function PlanningPriorityBlock({
                 unit="overtime hrs / yr"
                 label="The overtime you run now"
                 caption={`${fmtInt(capacityLadder!.nursesInScope)} nurses at about ${fmtHoursShort(capacityLadder!.otHoursPerNurseWeek)} overtime hours a week each, across the year. This is the pool, before the diagnosis.`}
-                emptyHint="Set your nurses in scope and overtime per nurse on Build the case to size the pool."
+                emptyHint="Set your nurses in scope and overtime per nurse on the Align step to size the pool."
               />
               <div className="flex justify-center"><ArrowDown className="w-4 h-4 text-[#B4B4B4]" /></div>
               <NursingCapacityGate
@@ -1106,8 +1106,8 @@ export function PlanningPriorityBlock({
                 bothSet={capacityLadder!.docAttributableOtHoursYr > 0 && capacityLadder!.realizedOtHoursAvoided > 0}
                 emptyHint={
                   capacityLadder!.docAttributableOtHoursYr <= 0
-                    ? "Diagnose the documentation-driven share of your overtime on Build the case to size the ceiling, then commit to the share you will remove."
-                    : "Commit to the share of that overtime you will remove on Build the case to see how much converts."
+                    ? "Diagnose the documentation-driven share of your overtime on the Align step to size the ceiling, then commit to the share you will remove."
+                    : "Commit to the share of that overtime you will remove on the Align step to see how much converts."
                 }
               />
               <div className="flex justify-center"><ArrowDown className="w-4 h-4 text-[#B4B4B4]" /></div>
@@ -1143,7 +1143,7 @@ export function PlanningPriorityBlock({
                 unit={`hrs / ${retentionUnits.singular} / wk`}
                 label="Freed time"
                 caption={`That time saved, added up across every note a ${retentionUnits.singular} writes in a week.`}
-                emptyHint={`Set your ${retentionUnits.plural} on Build the case to see the freed hours.`}
+                emptyHint={`Set your ${retentionUnits.plural} on the Align step to see the freed hours.`}
               />
               <div className="flex justify-center"><ArrowDown className="w-4 h-4 text-[#B4B4B4]" /></div>
               <SpineRung
@@ -1152,7 +1152,7 @@ export function PlanningPriorityBlock({
                 unit={`hrs / ${retentionUnits.singular} / wk`}
                 label="Protected relief"
                 caption={`${fmtInt(retentionLadder.protectedSharePct)}% of the freed time stays with the clinician, off ${retentionCharting}. The rest is free to go to the schedule.`}
-                emptyHint="Protect some freed time as relief on Build the case."
+                emptyHint="Protect some freed time as relief on the Align step."
               />
               <div className="flex justify-center"><ArrowDown className="w-4 h-4 text-[#B4B4B4]" /></div>
               <SpineRung
@@ -1161,7 +1161,7 @@ export function PlanningPriorityBlock({
                 unit="% of burnout departures"
                 label="Burnout comes down"
                 caption={`The protected relief lowers burnout, capped at a reachable ${retentionLadder.impactCeilingPct}% of the burnout-related departures in your pool.`}
-                emptyHint="Protect relief and make it hold on Build the case to bring burnout down."
+                emptyHint="Protect relief and make it hold on the Align step to bring burnout down."
               />
               <div className="flex justify-center"><ArrowDown className="w-4 h-4 text-[#B4B4B4]" /></div>
               <BurnoutPoolGate
@@ -1173,8 +1173,8 @@ export function PlanningPriorityBlock({
                 bothSet={retentionLadder.burnoutPool > 0 && retentionLadder.compositeImpactPct > 0}
                 emptyHint={
                   retentionLadder.burnoutPool <= 0
-                    ? "Set your scope, turnover, and burnout share on Build the case to size the departure pool, then protect some relief."
-                    : "Protect some relief and make it hold on Build the case to capture a slice of this pool."
+                    ? "Set your scope, turnover, and burnout share on the Align step to size the departure pool, then protect some relief."
+                    : "Protect some relief and make it hold on the Align step to capture a slice of this pool."
                 }
               />
               <div className="flex justify-center"><ArrowDown className="w-4 h-4 text-[#B4B4B4]" /></div>
@@ -1219,7 +1219,7 @@ export function PlanningPriorityBlock({
                 unit="visits / yr"
                 label="New capacity"
                 caption={`${fmtInt(accessLadder.directedSharePct)}% of the freed time is directed to access, the rest stays as relief, at about ${fmtInt(accessLadder.visitLen)} minutes a visit.`}
-                emptyHint="Direct some freed time to access on Build the case to open capacity."
+                emptyHint="Direct some freed time to access on the Align step to open capacity."
               />
               <div className="flex justify-center"><ArrowDown className="w-4 h-4 text-[#B4B4B4]" /></div>
               <CapacityDemandGate
@@ -1230,8 +1230,8 @@ export function PlanningPriorityBlock({
                 bothSet={accessLadder.capacityVisits > 0 && accessLadder.demandCeiling > 0}
                 emptyHint={
                   accessLadder.capacityVisits <= 0
-                    ? "Direct some freed time to access on Build the case to open capacity, then add your demand."
-                    : "Add your backlog and referral demand on Build the case to see how much of the capacity converts."
+                    ? "Direct some freed time to access on the Align step to open capacity, then add your demand."
+                    : "Add your backlog and referral demand on the Align step to see how much of the capacity converts."
                 }
               />
               <div className="flex justify-center"><ArrowDown className="w-4 h-4 text-[#B4B4B4]" /></div>

@@ -158,7 +158,7 @@ export default function StepScope({ setting, baseline, onChangeBaseline }: StepS
 
       <p className="text-[14px] text-[#8C8C8C] leading-relaxed max-w-[600px]" data-testid="text-attain-scope-footnote">
         These numbers are the stage every decision on the next page stands on. Demand and backlog come later, on
-        Build the case, not here.
+        the Align step, not here.
       </p>
     </div>
   );

@@ -1264,7 +1264,7 @@ export default function StepAttainment({
             {allCommitted.length === 0 ? (
               <div className="bg-[#F4F0EA] border-l-[3px] border-[#EA2C00] rounded-r-md p-4" data-testid="text-attain-plan-empty">
                 <p className="text-[15px] text-[#3A3A3A] leading-relaxed">
-                  No decisions are committed yet. Go back to Build the case and Commit to turn this into a real plan.
+                  No decisions are committed yet. Go back to Align and Commit to turn this into a real plan.
                 </p>
               </div>
             ) : goalDefs.length === 1 ? (
@@ -1709,7 +1709,7 @@ function PriorityMechanics({
         </div>
         {isFreedTimeGoal && (
           <p className="text-[11px] text-[#8C8C8C] mt-2" data-testid={`text-attain-plan-freed-time-live-${goal}`}>
-            This reflects the live freed-time split from Build the case, {freedTimeSplit}% to access.
+            This reflects the live freed-time split from Align, {freedTimeSplit}% to access.
           </p>
         )}
       </motion.section>

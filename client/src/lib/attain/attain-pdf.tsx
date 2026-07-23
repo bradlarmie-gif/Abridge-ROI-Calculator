@@ -1146,7 +1146,7 @@ function HardestLinkPage({ data, priority }: { data: AttainPdfData; priority: At
             </View>
             {priority.isFreedTimeGoal && (
               <Text style={s.footnoteMuted}>
-                {`This reflects the live freed-time split from Build the case, ${data.freedTimeSplit}% to access.`}
+                {`This reflects the live freed-time split from Align, ${data.freedTimeSplit}% to access.`}
               </Text>
             )}
           </View>

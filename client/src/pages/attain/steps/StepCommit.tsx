@@ -309,7 +309,7 @@ export default function StepCommit({
       {totalMoved === 0 ? (
         <div className="bg-[#F5F0EB] rounded-xl p-6 mb-8 max-w-[560px]" data-testid="text-attain-commit-empty">
           <p className="text-sm text-[#3A3A3A] leading-relaxed">
-            You haven't moved any decisions yet, so there's nothing to commit to. Go back to Build the case and turn
+            You haven't moved any decisions yet, so there's nothing to commit to. Go back to Align and turn
             up one or two levers, then come back here to give them an owner and a date.
           </p>
         </div>
