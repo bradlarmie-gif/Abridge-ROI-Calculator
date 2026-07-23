@@ -13,7 +13,7 @@ import {
 } from "@/lib/proformaCalculations";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { computeAllDriverValues } from "@/lib/exploreDriverCalcs";
-import { physicianRetentionRates, nursingRetentionRates } from "@/lib/retentionScenarios";
+import { physicianRetentionRates, nursingRetentionRates, PHYSICIAN_RETENTION_SCENARIOS, NURSING_RETENTION_SCENARIOS } from "@/lib/retentionScenarios";
 
 export const DOMAIN_PILL_COLORS: Record<string, string> = {
   Capacity:  "#EA2C00",
@@ -466,9 +466,14 @@ export function ModelAssumptionRow({
       case 'retention': {
         const isNursing = es.careSetting === 'nursing';
         const customSub = ti.retentionImpactScenario === 'custom' ? `${ti.retentionCustomPercent ?? 10}%` : 'set %';
-        const opts = isNursing
-          ? [{ key: 'conservative', label: 'Conservative', sub: '10%' }, { key: 'typical', label: 'Typical', sub: '15%' }, { key: 'optimistic', label: 'Optimistic', sub: '25%' }, { key: 'custom', label: 'Custom', sub: customSub }]
-          : [{ key: 'conservative', label: 'Conservative', sub: '5%' }, { key: 'typical', label: 'Typical', sub: '10%' }, { key: 'optimistic', label: 'Optimistic', sub: '15%' }, { key: 'custom', label: 'Custom', sub: customSub }];
+        // Labels read from the single retention source so they can't drift from the math.
+        const RS = isNursing ? NURSING_RETENTION_SCENARIOS : PHYSICIAN_RETENTION_SCENARIOS;
+        const opts = [
+          { key: 'conservative', label: 'Conservative', sub: `${RS.conservative}%` },
+          { key: 'typical', label: 'Typical', sub: `${RS.typical}%` },
+          { key: 'optimistic', label: 'Optimistic', sub: `${RS.optimistic}%` },
+          { key: 'custom', label: 'Custom', sub: customSub },
+        ];
         const turnoverRate = isNursing ? ti.nursingTurnoverRate : ti.annualTurnoverRate;
         const replaceCost = isNursing ? ti.nursingReplacementCost : ti.replacementCost;
         return (

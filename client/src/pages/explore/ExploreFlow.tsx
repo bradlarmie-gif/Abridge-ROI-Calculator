@@ -1162,7 +1162,7 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
         );
         total += otHoursEliminated * timeDriverInputs.nursingOtHourlyRate;
       }
-      // Nursing: Retention (40% burnout-related × impact scenario 10/15/25%)
+      // Nursing: Retention (40% burnout-related × impact scenario 20/30/40%)
       if (timeDriverInputs.nursingRetentionEnabled) {
         const retentionImpactRates: Record<string, number> = nursingRetentionRates(timeDriverInputs.retentionCustomPercent ?? 10);
         const leavingPerYear = numberOfProviders * (timeDriverInputs.nursingTurnoverRate / 100);
