@@ -422,7 +422,7 @@ function whoEmQuestion(setting: AttainSetting): AlignQuestion {
       stacksOnQuestionId: "outcome",
       appliesToChoices: ["em"],
       prompt: "How many ED visits carry an E/M level?",
-      helper: "Only billable E/M visits carry a level, so that share scopes the volume this path is measured against. Your ED provider count carries over from your starting point.",
+      helper: "Only billable E/M visits carry a level, so that share scopes the volume this path is measured against. Your ED provider count carries over from Starting Point.",
       mode: "single",
       options: [
         { id: "most", label: "Most of them", helper: "Nearly all your ED visits are billable E/M visits." },
@@ -439,7 +439,7 @@ function whoEmQuestion(setting: AttainSetting): AlignQuestion {
     appliesToChoices: ["em"],
     prompt: "Which of your providers are on productivity pay?",
     helper:
-      "A captured wRVU only turns into revenue where the provider is paid on productivity. Your provider count carries over from your starting point, so you only pick the cut.",
+      "A captured wRVU only turns into revenue where the provider is paid on productivity. Your provider count carries over from Starting Point. Pick the cut.",
     mode: "single",
     options: [
       {
@@ -506,7 +506,7 @@ function gateEmQuestion(setting: AttainSetting): AlignQuestion {
     appliesToChoices: ["em"],
     prompt: isED ? "Why do ED claims go out below the acuity delivered?" : "Why do claims go out below the care delivered?",
     helper:
-      "This is the honest gate. Abridge moves the part where the note did not carry the full picture. It cannot raise a visit that was genuinely lower acuity, so we only size what the documentation can move.",
+      "The honest gate. Abridge moves the part where the note did not carry the full picture. It cannot raise a visit that was genuinely lower acuity. Only what the documentation can move is sized.",
     mode: "single",
     options: [
       { id: "note", label: "The note did not capture it", helper: "The care was there, but the claim went out low because the note fell short." },
@@ -524,7 +524,7 @@ const gateHccQuestion: AlignQuestion = {
   appliesToChoices: ["hcc"],
   prompt: "Why do conditions never reach the claim?",
   helper:
-    "This is the honest gate. Abridge surfaces conditions your patients have that the note missed. It never adds conditions a patient does not have, so we only size the documentation gap.",
+    "The honest gate. Abridge surfaces conditions your patients have that the note missed. It never adds conditions a patient does not have. Only the documentation gap is sized.",
   mode: "single",
   options: [
     { id: "gap", label: "The note missed them", helper: "Real conditions your patients have that were not documented specifically enough to code." },
@@ -541,7 +541,7 @@ const gateDenialsQuestion: AlignQuestion = {
   appliesToChoices: ["denials"],
   prompt: "Why do these denials happen?",
   helper:
-    "This is the honest gate. Abridge moves the denials driven by a note that did not establish medical necessity. It cannot document its way out of payer rules or authorization, so if it is mostly payer rules this path stays small, and we do not promise it.",
+    "The honest gate. Abridge moves the denials driven by a note that did not establish medical necessity. It cannot document its way out of payer rules or authorization. If it is mostly payer rules, this path stays small.",
   mode: "single",
   options: [
     { id: "note", label: "The note did not establish necessity", helper: "The care was needed, but the note did not show why, so the claim was denied." },
@@ -558,7 +558,7 @@ const gateDrgQuestion: AlignQuestion = {
   appliesToChoices: ["drg"],
   prompt: "Why do admissions group below the weight they earned?",
   helper:
-    "This is the honest gate. Abridge carries the specificity a managed comorbidity needs so coding can assign the DRG the admission earned. It cannot add a condition that is not there.",
+    "The honest gate. Abridge carries the specificity a managed comorbidity needs, so coding can assign the DRG the admission earned. It cannot add a condition that is not there.",
   mode: "single",
   options: [
     { id: "note", label: "A CC or MCC was under-documented", helper: "The condition was managed, but the note did not carry it specifically enough to code." },
@@ -575,7 +575,7 @@ const gateCdiQuestion: AlignQuestion = {
   appliesToChoices: ["cdi"],
   prompt: "Why does your CDI team write these queries?",
   helper:
-    "This is the honest gate, and this path is labor only: it prices the CDI-staff time saved when a complete note means a query never has to be written, not the reimbursement itself.",
+    "The honest gate. This path is labor only: it prices the CDI-staff time saved when a complete note means a query is never written, not the reimbursement itself.",
   mode: "single",
   options: [
     { id: "note", label: "The note lacked specificity", helper: "The query only exists because the note did not carry the detail up front." },
@@ -592,7 +592,7 @@ const gateObsQuestion: AlignQuestion = {
   appliesToChoices: ["obs"],
   prompt: "Why do these stays get downgraded to observation?",
   helper:
-    "This is the honest gate. Abridge carries the severity-of-illness detail that defends an inpatient stay. It cannot defend a stay that was genuinely observation-appropriate, or overturn a payer rule.",
+    "The honest gate. Abridge carries the severity-of-illness detail that defends an inpatient stay. It cannot defend a stay that was genuinely observation-appropriate, or overturn a payer rule.",
   mode: "single",
   options: [
     { id: "note", label: "Severity was under-documented", helper: "The stay was inpatient-appropriate, but the note did not carry the severity." },
@@ -629,8 +629,8 @@ export function revenueAlignConfigFor(setting: AttainSetting): AlignConfig {
   return {
     goal: "revenue",
     eyebrow: "Align on what you mean",
-    intro:
-      "One lever starts every path here: complete, specific documentation at the point of care. Pick the revenue you are going after, and for each path we agree on what is really behind the leak. The figure at the end is the proof of what you aligned on, not the goal.",
+    // Framing lives once in the step header; this surface goes straight to the questions.
+    intro: "",
     dimensionTotal: setting === "inpatient" ? 4 : 5,
     questions,
     toLeverValues: revenueAlignToLeverValues,

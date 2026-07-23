@@ -255,14 +255,14 @@ export function deriveCapacityAlignProof(values: LeverValues, ctx: AlignContext)
 export const capacityAlignConfig: AlignConfig = {
   goal: "capacity",
   eyebrow: "Align on what you mean",
-  intro:
-    "Answer these together, one at a time. Choose the meaning that fits; the figure at the end is the proof of what you aligned on, not the goal.",
+  // Framing lives once in the step header; this surface goes straight to the questions.
+  intro: "",
   questions: [
     {
       id: "outcome",
       storeKey: K_OUTCOME,
       prompt: "What are you really after?",
-      helper: "Both run on the same freed time here, so this just sets how we tell the story.",
+      helper: "Same freed time either way. This sets the framing.",
       mode: "single",
       options: [
         { id: "cost", label: "Cut the overtime cost", helper: "Take the overtime dollars out of the nursing budget." },
@@ -274,7 +274,7 @@ export const capacityAlignConfig: AlignConfig = {
       id: "who",
       storeKey: K_WHO,
       prompt: "Who is this for?",
-      helper: "We carry your nurse count over from your starting point, so you only pick the cut.",
+      helper: "Your nurse count carries over from Starting Point. Pick the cut.",
       mode: "single",
       options: [
         {
@@ -307,7 +307,7 @@ export const capacityAlignConfig: AlignConfig = {
       id: "gate",
       storeKey: K_GATE,
       prompt: "Why is there overtime?",
-      helper: "This is the honest gate. Abridge frees the documentation time nurses spend charting after the shift. It cannot add nurses or flatten census, so we only count the overtime charting causes.",
+      helper: "The honest gate. Abridge frees the time nurses spend charting after the shift. It cannot add nurses or flatten census. Only the overtime charting causes counts.",
       mode: "single",
       options: [
         {
@@ -318,7 +318,7 @@ export const capacityAlignConfig: AlignConfig = {
         {
           id: "staffing",
           label: "Short staffing",
-          helper: "There are not enough nurses for the work. Freeing time cannot add bodies, so we say so.",
+          helper: "There are not enough nurses for the work. Freeing time cannot add bodies.",
         },
         {
           id: "census",

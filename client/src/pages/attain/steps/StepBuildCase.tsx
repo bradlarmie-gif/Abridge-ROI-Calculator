@@ -210,19 +210,13 @@ export default function StepBuildCase({
           Align
         </h1>
         <p className="text-[15px] text-[#666666] leading-relaxed max-w-[620px]" data-testid="text-step-teach">
-          {isAccessAlign
-            ? "Let us agree on what you mean by opening access, one question at a time. Your facts carry over from your starting point, so you only choose the meaning. The number at the end is the proof of what you aligned on."
-            : isEdAccessAlign
-              ? "Let us agree on what you mean by cutting left-without-being-seen, one question at a time. Your facts carry over from your starting point, so you only choose the meaning. The number at the end is the proof of what you aligned on."
-              : isRetentionAlign
-                ? "Let us agree on what you mean by keeping your people, one question at a time. Your facts carry over from your starting point, so you only choose the meaning. The number at the end is the proof of what you aligned on."
-                : isRevenueLadder || isIpRevenueLadder
-                  ? "One lever starts it, complete documentation at the point of care, and it feeds several revenue paths. For each path you pick, the documentation decides how much you can actually capture. The paths add into one prize."
-                  : isQualityAlign
-                    ? "Let us agree on what you mean by safer care, one question at a time. Pick what you are preventing, agree how much you can catch earlier, and commit the change you will make with the time and the signal Abridge frees. We lead with events prevented and experience; the dollar is a soft footnote."
-                    : isCapacityAlign
-                      ? "Let us agree on what you mean by cutting the overtime, one question at a time. Your facts carry over from your starting point, so you only choose the meaning. The number at the end is the proof of what you aligned on."
-                      : "Assemble the ladder from the top down. One number starts it, and each rung is part of the plan."}
+          {isRevenueLadder || isIpRevenueLadder
+            ? "One lever starts every path: complete documentation at the point of care. For each path you pick, the documentation sets how much you can capture. The paths add into one prize."
+            : isQualityAlign
+              ? "One question at a time, you choose what you mean. Your facts carry over from Starting Point. Events prevented and experience lead; the dollar stays a soft footnote."
+              : isAlign
+                ? "One question at a time, you choose what you mean. Your facts carry over from Starting Point; the number at the end is the proof."
+                : "Assemble the ladder from the top down. One number starts it, and each rung is part of the plan."}
         </p>
       </motion.div>
 
@@ -254,18 +248,18 @@ export default function StepBuildCase({
         </div>
         <p className="text-[13px] text-white/50 mt-2" data-testid="text-attain-buildcase-strategy-progress">
           {isAccessAlign
-            ? "A short, shared conversation about what you mean by opening access. Choose the meaning; the number is the proof."
+            ? "Only the access that freed documentation time can open counts."
             : isEdAccessAlign
-              ? "A short, shared conversation about what you mean by cutting left-without-being-seen. Choose the meaning; the number is the proof, and only the LWBS that charting causes counts."
+              ? "Only the left-without-being-seen that charting delay causes counts."
               : isRetentionAlign
-                ? "A short, shared conversation about what you mean by keeping your people. Choose the meaning; the number is the proof."
+                ? "Only the burnout-and-workload share Abridge can reach counts."
                 : isRevenueLadder || isIpRevenueLadder
-                  ? "One lever, several paths, one converged prize. Pick the paths you are chasing and set each one to your real numbers."
+                  ? "One lever, several paths, one converged prize."
                   : isQualityAlign
-                    ? "A short, shared conversation about safer care. Choose the meaning; safety and experience lead, and the dollar stays a soft footnote."
+                    ? "Safety and experience lead; the dollar stays a soft footnote."
                     : isCapacityAlign
-                      ? "A short, shared conversation about what you mean by cutting the overtime. Choose the meaning; the number is the proof, and only the overtime charting causes counts."
-                      : "This is the full step-down, top to bottom. Set each rung to your real numbers."}
+                      ? "Only the overtime that after-shift charting causes counts."
+                      : "The full step-down, top to bottom. Set each rung to your real numbers."}
         </p>
       </motion.div>
 

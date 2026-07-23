@@ -217,14 +217,14 @@ export function deriveWorkforceAlignProof(values: LeverValues, ctx: AlignContext
 export const workforceAlignConfig: AlignConfig = {
   goal: "retention",
   eyebrow: "Align on what you mean",
-  intro:
-    "Answer these together, one at a time. Choose the meaning that fits; the figure at the end is the proof of what you aligned on, not the goal.",
+  // Framing lives once in the step header; this surface goes straight to the questions.
+  intro: "",
   questions: [
     {
       id: "outcome",
       storeKey: K_OUTCOME,
       prompt: "What are you really after?",
-      helper: "Both share the same dollar here, so this just sets how we tell the story.",
+      helper: "Same dollar either way. This sets the framing.",
       mode: "single",
       options: [
         { id: "keep", label: "Keep our people", helper: "Fewer of the clinicians you have today choosing to leave." },
@@ -236,7 +236,7 @@ export const workforceAlignConfig: AlignConfig = {
       id: "who",
       storeKey: K_WHO,
       prompt: "Who is this for?",
-      helper: "We carry your headcount over from your starting point, so you only pick the cut.",
+      helper: "Your headcount carries over from Starting Point. Pick the cut.",
       mode: "single",
       options: [
         {
@@ -270,7 +270,7 @@ export const workforceAlignConfig: AlignConfig = {
       id: "gate",
       storeKey: K_GATE,
       prompt: "What is driving your departures?",
-      helper: "This is the honest gate. Abridge can move the burnout-and-workload share, not pay or life decisions, so we only count what it can reach.",
+      helper: "The honest gate. Abridge moves the burnout-and-workload share, not pay or life decisions. Only that share counts.",
       mode: "single",
       options: [
         { id: "burnout", label: "Mostly burnout and workload", helper: "The day itself is the problem, and the documentation load is a big part of it." },

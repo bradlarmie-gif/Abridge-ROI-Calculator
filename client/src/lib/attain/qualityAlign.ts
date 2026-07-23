@@ -460,7 +460,7 @@ const whoQuestion: AlignQuestion = {
   storeKey: K_WHO,
   dimension: 2,
   prompt: "Which beds is this for?",
-  helper: "We carry your staffed-bed count over from your starting point, so you only pick the cut. The bed count sizes the patient-days every event is measured against.",
+  helper: "Your staffed-bed count carries over from Starting Point. Pick the cut; it sizes the patient-days every event is measured against.",
   mode: "single",
   options: [
     {
@@ -497,7 +497,7 @@ const gateQuestion: AlignQuestion = {
   appliesToChoices: [...CLINICAL_EVENT_IDS],
   prompt: "How much of this can you catch earlier?",
   helper:
-    "This is the honest gate. Some harm happens despite good care. Abridge helps by surfacing the risk sooner, so only the share you can catch earlier is really yours to move.",
+    "The honest gate. Some harm happens despite good care. Abridge surfaces the risk sooner, so only the share you can catch earlier is yours to move.",
   mode: "single",
   options: [
     { id: "earlier", label: "Mostly preventable by catching it earlier", helper: "An earlier, fuller risk signal would let the team step in before it happens." },
@@ -560,8 +560,8 @@ export function qualityAlignConfigFor(_setting: AttainSetting): AlignConfig {
   return {
     goal: "quality",
     eyebrow: "Align on what you mean",
-    intro:
-      "One thing starts every event here: earlier, more complete risk documentation, and the bedside time Abridge frees. Pick what you are working to prevent, agree on how much you can honestly catch earlier, and commit the change you will make with the time and the signal. This driver leads with safety and experience; the dollar is a soft footnote, never the point.",
+    // Framing lives once in the step header; this surface goes straight to the questions.
+    intro: "",
     dimensionTotal: 5,
     questions,
     toLeverValues: qualityAlignToLeverValues,

@@ -111,9 +111,9 @@ export default function StepMultiBuildCase({
           Align
         </h1>
         <p className="text-[15px] text-[#666666] leading-relaxed max-w-[620px]" data-testid="text-multi-align-teach">
-          You picked {goals.length} priorities. Each one gets its own short, shared conversation below about what you
-          actually mean, one question at a time. Your facts carry over from your starting point, so you only choose the
-          meaning. The combined prize is the sum of each priority's own proof, counted once.
+          You picked {goals.length} priorities. Each gets its own set of questions below: one at a time, you choose what
+          you mean. Your facts carry over from Starting Point. The combined prize is the sum of each priority's proof,
+          counted once.
         </p>
       </motion.div>
 

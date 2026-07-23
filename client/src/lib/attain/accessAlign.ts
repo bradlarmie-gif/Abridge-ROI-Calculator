@@ -293,14 +293,14 @@ export function deriveAccessAlignProof(values: LeverValues, ctx: AlignContext): 
 export const accessAlignConfig: AlignConfig = {
   goal: "access",
   eyebrow: "Align on what you mean",
-  intro:
-    "Answer these together, one at a time. Choose the meaning that fits; the figure at the end is the proof of what you aligned on, not the goal.",
+  // Framing lives once in the step header; this surface goes straight to the questions.
+  intro: "",
   questions: [
     {
       id: "outcome",
       storeKey: K_OUTCOME,
       prompt: "What are you really after?",
-      helper: "All three run on the same freed time here, so this just sets how we tell the story.",
+      helper: "All three run on the same freed time. This sets the framing.",
       mode: "single",
       options: [
         { id: "backlog", label: "Burn down the backlog", helper: "Work through the patients already referred and waiting to be seen." },
@@ -312,7 +312,7 @@ export const accessAlignConfig: AlignConfig = {
       id: "who",
       storeKey: K_WHO,
       prompt: "Who is this for?",
-      helper: "We carry your provider count over from your starting point, so you only pick the cut.",
+      helper: "Your provider count carries over from Starting Point. Pick the cut.",
       mode: "single",
       options: [
         {
@@ -345,7 +345,7 @@ export const accessAlignConfig: AlignConfig = {
       id: "gate",
       storeKey: K_GATE,
       prompt: "Why can't you see more patients today?",
-      helper: "This is the honest gate. Abridge frees documentation time, so it can only move the first case. It cannot add people or space, and it cannot create demand that is not there.",
+      helper: "The honest gate. Abridge frees documentation time, so it moves the first case, not the rest. It cannot add people or space, or create demand that is not there.",
       mode: "single",
       options: [
         {
@@ -356,7 +356,7 @@ export const accessAlignConfig: AlignConfig = {
         {
           id: "bodies",
           label: "Not enough providers, rooms, or staff",
-          helper: "The limit is physical capacity. Freeing time cannot add bodies or space, so we say so.",
+          helper: "The limit is physical capacity. Freeing time cannot add bodies or space.",
         },
         {
           id: "demand",

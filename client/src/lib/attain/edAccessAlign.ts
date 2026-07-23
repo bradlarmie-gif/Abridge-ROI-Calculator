@@ -262,14 +262,14 @@ export function deriveEdAccessAlignProof(values: LeverValues, ctx: AlignContext)
 export const edAccessAlignConfig: AlignConfig = {
   goal: "access",
   eyebrow: "Align on what you mean",
-  intro:
-    "Answer these together, one at a time. Choose the meaning that fits; the figure at the end is the proof of what you aligned on, not the goal.",
+  // Framing lives once in the step header; this surface goes straight to the questions.
+  intro: "",
   questions: [
     {
       id: "outcome",
       storeKey: K_OUTCOME,
       prompt: "What are you really after?",
-      helper: "The first two run on the same freed time here, so they set how we tell the story. Capturing admissions adds a second, separately priced leg.",
+      helper: "The first two run on the same freed time; this sets the framing. Capturing admissions adds a second, separately priced leg.",
       mode: "multi",
       options: [
         { id: "lwbs", label: "Cut left-without-being-seen", helper: "Bring back patients who show up but leave the waiting room before a provider sees them." },
@@ -294,7 +294,7 @@ export const edAccessAlignConfig: AlignConfig = {
       id: "who",
       storeKey: K_WHO,
       prompt: "Who is this for?",
-      helper: "We carry your ED provider count over from your starting point, so you only pick the cut.",
+      helper: "Your ED provider count carries over from Starting Point. Pick the cut.",
       mode: "single",
       options: [
         {
@@ -327,7 +327,7 @@ export const edAccessAlignConfig: AlignConfig = {
       id: "gate",
       storeKey: K_GATE,
       prompt: "Why do patients leave without being seen?",
-      helper: "This is the honest gate. Abridge frees documentation time, so it can only move the throughput that charting chokes. It cannot add staff or open beds, and it cannot create demand that is not there.",
+      helper: "The honest gate. Abridge frees documentation time, so it moves the throughput charting chokes, nothing more. It cannot add staff or open beds, or create demand that is not there.",
       mode: "single",
       options: [
         {
@@ -338,7 +338,7 @@ export const edAccessAlignConfig: AlignConfig = {
         {
           id: "staffing",
           label: "Short-staffed or out of beds",
-          helper: "The limit is people or physical capacity. Freeing time cannot add staff or open beds, so we say so.",
+          helper: "The limit is people or physical capacity. Freeing time cannot add staff or open beds.",
         },
         {
           id: "lowdemand",
