@@ -1264,15 +1264,12 @@ function buildDriverFormula(
   driverId: string,
   driverValue: number,
   setting: ProformaSettingSnapshot,
-  contractYears: number,
 ): FormulaStep[] {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const es = (setting.fullExploreState ?? (setting as any).exploreState) as any;
-  // Pull the contract's TERMINAL year (Y2 for a 2-year model), not a hardcoded Y3,
-  // so the "full scale" formulas match the engine and the Volumes tab.
-  const pickTermYear = (o?: { year1?: number; year2?: number; year3?: number }): number | undefined =>
-    !o ? undefined : contractYears >= 3 ? o.year3 : contractYears >= 2 ? o.year2 : o.year1;
-  const providers = pickTermYear(setting.yearlyProviders) ?? setting.fullScaleProviders ?? setting.providerCount;
+  // Fallback builder only — covered drivers now render the canonical Explore
+  // formula (computeSettingDriverFormulas), which reconciles by construction.
+  const providers = setting.fullScaleProviders || setting.providerCount;
   const n = (v: number) => Math.round(v).toLocaleString();
   const p = (v: number) => `${v}%`;
   const d = (v: number) => `$${Math.round(v).toLocaleString()}`;
@@ -1292,13 +1289,13 @@ function buildDriverFormula(
 
   if (!es) return [];
   const tdi = es.timeDriverInputs ?? {};
-  // Scale pilot encounters up to full-scale so formula steps match the scaled driverValue.
-  // The terminal year's encounters are the ground truth when the rep edited the box;
-  // otherwise derive by the same providerScaleFactor used in handleAddToProforma.
+  // Scale pilot encounters up to full-scale by the SAME provider factor the
+  // driverValue was scaled by (fullScaleProviders / pilot), so the steps reconcile.
+  // Do NOT read yearlyEncounters.year3: that is the wrong year for a sub-3-year
+  // term and does not track the value's scaling.
   const pilotProviders = setting.providerCount || 1;
   const providerScaleFactor = providers > pilotProviders ? providers / pilotProviders : 1;
-  const annEnc = pickTermYear(setting.yearlyEncounters)
-    ?? Math.round((es.annualEncounters || 0) * providerScaleFactor);
+  const annEnc = Math.round((es.annualEncounters || 0) * providerScaleFactor);
   const encPerProv = providers > 0 ? Math.round(annEnc / providers) : 0;
 
   switch (driverId) {
@@ -1623,7 +1620,6 @@ function getDriverFallback(driverId: string): string {
 }
 
 function ValueDriverDetailPage({ settings, config, preparedBy, totalPDFPages }: ProformaPDFProps) {
-  const contractYears = Math.ceil(config.contractTermMonths / 12);
   const activeSettings = settings.filter(s => s.drivers.some(d => d.value > 0));
   if (activeSettings.length === 0) return null;
 
@@ -1635,10 +1631,6 @@ function ValueDriverDetailPage({ settings, config, preparedBy, totalPDFPages }: 
       {activeSettings.map((s, si) => {
         const sc = s.color || brand.coral;
         const settingTotal = s.drivers.filter(d => d.value > 0).reduce((sum, d) => sum + d.value, 0);
-        // Terminal-year unit count (Y2 for a 2-year model), matching the driver formulas.
-        const yp = s.yearlyProviders;
-        const termUnitCount = (yp ? (contractYears >= 3 ? yp.year3 : contractYears >= 2 ? yp.year2 : yp.year1) : undefined)
-          ?? s.fullScaleProviders ?? s.providerCount;
         const byDomain = domains
           .map(domain => ({
             domain,
@@ -1678,7 +1670,7 @@ function ValueDriverDetailPage({ settings, config, preparedBy, totalPDFPages }: 
                   {SETTING_LABELS[s.careSetting] || s.label}
                 </Text>
                 <Text style={{ fontSize: 8.5, color: brand.textTertiary }}>
-                  {fmtNum(termUnitCount)} {unitLabel(s.careSetting).toLowerCase()} · run-rate at full utilization
+                  {fmtNum(s.fullScaleProviders || s.providerCount)} {unitLabel(s.careSetting).toLowerCase()} · run-rate at full utilization
                 </Text>
               </View>
               <Text style={{ fontSize: 18, fontWeight: 700, color: brand.textPrimary }}>{fmt(settingTotal)}/yr</Text>
@@ -1710,7 +1702,7 @@ function ValueDriverDetailPage({ settings, config, preparedBy, totalPDFPages }: 
 
                   {/* Driver rows */}
                   {drivers.map((driver, di) => {
-                    const formula = buildDriverFormula(driver.id, driver.value, s, contractYears);
+                    const formula = buildDriverFormula(driver.id, driver.value, s);
                     const fallback = getDriverFallback(driver.id);
                     return (
                       <View
