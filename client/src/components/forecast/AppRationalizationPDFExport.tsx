@@ -274,7 +274,10 @@ function StackTable({ items, net }: { items: AppRatItem[]; net: ReturnType<typeo
               <Text style={s.tcap}>{categoryLabel(it.category)}</Text>
             </View>
           </View>
-          <Text style={[s.tcell, { flex: COL.spend, textAlign: "right" }]}>{money(it.annualSpend)}</Text>
+          <View style={{ flex: COL.spend }}>
+            <Text style={[s.tcell, { textAlign: "right" }]}>{money(it.annualSpend)}</Text>
+            {it.userCount ? <Text style={[s.tcap, { textAlign: "right" }]}>{`${it.userCount.toLocaleString()} users`}</Text> : null}
+          </View>
           <Text style={[s.tcellMuted, { flex: COL.disp, textAlign: "right" }]}>{`${it.coveragePct}%`}</Text>
           <Text style={[s.tcellCoral, { flex: COL.value, textAlign: "right" }]}>{money(itemRetired(it))}</Text>
           <Text style={[s.tcellMuted, { flex: COL.time, textAlign: "right" }]}>{sunsetDateLabel(it.sunsetMonths)}</Text>
