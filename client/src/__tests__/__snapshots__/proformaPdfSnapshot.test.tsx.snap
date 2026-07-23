@@ -1584,7 +1584,15 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                             "children": [
                               {
                                 "kind": "text",
-                                "value": "Full Scale (Y3)",
+                                "value": "Full Scale (",
+                              },
+                              {
+                                "kind": "text",
+                                "value": "Y3",
+                              },
+                              {
+                                "kind": "text",
+                                "value": ")",
                               },
                             ],
                             "kind": "primitive",

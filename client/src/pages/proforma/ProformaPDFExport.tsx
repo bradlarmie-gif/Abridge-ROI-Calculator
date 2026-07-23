@@ -611,6 +611,13 @@ function InvestmentCasePage({ settings, config, summary, yearlyData, preparedBy,
   const termLabel     = contractTermLabel(config.contractTermMonths);
   const contractYears = Math.ceil(config.contractTermMonths / 12);
   const hasInvestment = summary.termInvestment > 0;
+  // The terminal ("full scale") year is the LAST year of the contract, not always
+  // Y3. Data only carries year1/2/3, so cap at 3. This mirrors the calc engine,
+  // which uses year2 for a sub-36-month term. A 2-year model reads Y2, not Y3.
+  const fullScaleYearNum = Math.min(contractYears, 3);
+  const fullScaleYearLabel = `Y${fullScaleYearNum}`;
+  const pickTermYear = (o?: { year1?: number; year2?: number; year3?: number }): number | undefined =>
+    !o ? undefined : contractYears >= 3 ? o.year3 : contractYears >= 2 ? o.year2 : o.year1;
 
   const totalCapacity  = settings.reduce((s, x) => s + x.drivers.filter(d => d.quadrant === "Capacity"  && d.value > 0).reduce((a, d) => a + d.value, 0), 0);
   const totalWorkforce = settings.reduce((s, x) => s + x.drivers.filter(d => d.quadrant === "Workforce" && d.value > 0).reduce((a, d) => a + d.value, 0), 0);
@@ -757,7 +764,7 @@ function InvestmentCasePage({ settings, config, summary, yearlyData, preparedBy,
           <View style={S.tableWrap}>
             <View style={S.tableHead}>
               <Text style={[S.tableHeadCell, { flex: 3 }]}>Setting</Text>
-              <Text style={[S.tableHeadCell, { flex: 3 }]}>Full Scale (Y3)</Text>
+              <Text style={[S.tableHeadCell, { flex: 3 }]}>Full Scale ({fullScaleYearLabel})</Text>
               <Text style={[S.tableHeadCell, { flex: 2, textAlign: "right" }]}>{isBanked ? "Y1 Investment *" : "Y1 Investment"}</Text>
               <Text style={[S.tableHeadCell, { flex: 2, textAlign: "right" }]}>Run-Rate Value</Text>
             </View>
@@ -780,13 +787,14 @@ function InvestmentCasePage({ settings, config, summary, yearlyData, preparedBy,
                 ? (s.annualLicenseFee ?? 0) + (s.bankedEncounters ? 0 : (s.platformEncRate ?? s.costPerEncounter ?? 0) * yr1AbridgeEnc)
                 : (s.yearlyPricing?.year1 ?? s.costPerUnit) * (yp?.year1 ?? s.providerCount) * 12;
               const encUnit = s.careSetting === "inpatient" ? "dc/yr" : "enc/yr";
-              const year3Enc = ye?.year3 ?? 0;
-              const year3Util = (s.yearlyUtilization?.year3 ?? s.yearlyUtilization?.year2 ?? s.yearlyUtilization?.year1 ?? s.utilizationPercent ?? 100) / 100;
-              const year3AbridgeEnc = Math.round(year3Enc * year3Util);
-              const year3Providers = yp?.year3 ?? s.fullScaleProviders ?? s.providerCount;
-              const scaleText = (isPerEnc || isPlatform) && year3AbridgeEnc > 0
-                ? `${fmtNum(year3AbridgeEnc)} ${encUnit}`
-                : `${fmtNum(year3Providers)} ${unitLabel(s.careSetting).toLowerCase()}`;
+              // Full-scale = the contract's terminal year (Y2 for a 2-year model), not a hardcoded Y3.
+              const termEnc = pickTermYear(ye) ?? 0;
+              const termUtil = (pickTermYear(s.yearlyUtilization) ?? s.utilizationPercent ?? 100) / 100;
+              const termAbridgeEnc = Math.round(termEnc * termUtil);
+              const termProviders = pickTermYear(yp) ?? s.fullScaleProviders ?? s.providerCount;
+              const scaleText = (isPerEnc || isPlatform) && termAbridgeEnc > 0
+                ? `${fmtNum(termAbridgeEnc)} ${encUnit}`
+                : `${fmtNum(termProviders)} ${unitLabel(s.careSetting).toLowerCase()}`;
               return (
                 <View key={s.id} style={[S.tableRow, si === settings.length - 1 ? S.tableRowLast : {}]}>
                   <View style={{ flex: 3, flexDirection: "row", alignItems: "center", gap: 6 }}>
@@ -1256,10 +1264,15 @@ function buildDriverFormula(
   driverId: string,
   driverValue: number,
   setting: ProformaSettingSnapshot,
+  contractYears: number,
 ): FormulaStep[] {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const es = (setting.fullExploreState ?? (setting as any).exploreState) as any;
-  const providers = setting.fullScaleProviders || setting.providerCount;
+  // Pull the contract's TERMINAL year (Y2 for a 2-year model), not a hardcoded Y3,
+  // so the "full scale" formulas match the engine and the Volumes tab.
+  const pickTermYear = (o?: { year1?: number; year2?: number; year3?: number }): number | undefined =>
+    !o ? undefined : contractYears >= 3 ? o.year3 : contractYears >= 2 ? o.year2 : o.year1;
+  const providers = pickTermYear(setting.yearlyProviders) ?? setting.fullScaleProviders ?? setting.providerCount;
   const n = (v: number) => Math.round(v).toLocaleString();
   const p = (v: number) => `${v}%`;
   const d = (v: number) => `$${Math.round(v).toLocaleString()}`;
@@ -1280,11 +1293,11 @@ function buildDriverFormula(
   if (!es) return [];
   const tdi = es.timeDriverInputs ?? {};
   // Scale pilot encounters up to full-scale so formula steps match the scaled driverValue.
-  // yearlyEncounters.year3 is the ground truth when the rep edited the box; otherwise
-  // derive it by applying the same providerScaleFactor used in handleAddToProforma.
+  // The terminal year's encounters are the ground truth when the rep edited the box;
+  // otherwise derive by the same providerScaleFactor used in handleAddToProforma.
   const pilotProviders = setting.providerCount || 1;
   const providerScaleFactor = providers > pilotProviders ? providers / pilotProviders : 1;
-  const annEnc = setting.yearlyEncounters?.year3
+  const annEnc = pickTermYear(setting.yearlyEncounters)
     ?? Math.round((es.annualEncounters || 0) * providerScaleFactor);
   const encPerProv = providers > 0 ? Math.round(annEnc / providers) : 0;
 
@@ -1443,15 +1456,32 @@ function buildDriverFormula(
 
     case "hcc":
     case "hccCapture": {
-      const hccPct  = es.hccPctRecaptured || 0;
+      // HCC is modeled per MA/risk plan (dq.hccPlans), not a single panel x MA%.
+      // Reconstruct the real mechanism so the steps reconcile with driverValue.
       const dqi     = es.docQualityInputs ?? {};
-      const panel   = dqi.panelSize || 0;
-      const maPct   = dqi.maPercent || 0;
-      const maPanel = Math.round(providers * panel * (maPct / 100));
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const plans: any[] = Array.isArray(dqi.hccPlans) ? dqi.hccPlans : [];
+      const avgHccs = dqi.avgHccs || 0;
+      const realization = dqi.hccRealization ?? 100;
+      const upliftMap: Record<string, number> = { conservative: 3, typical: 5, optimistic: 10 };
+      let totalPanel = 0;
+      let totalHccs = 0;
+      for (const pl of plans) {
+        const panelSize = pl.panelSize || 0;
+        totalPanel += panelSize;
+        const upliftPp = pl.uplift === "custom" ? (pl.upliftCustomPp ?? 5) : (upliftMap[pl.uplift] ?? 5);
+        const effectiveUplift = Math.min(upliftPp, Math.max(0, 90 - (pl.currentRecaptureRate || 0)));
+        totalHccs += providers * panelSize * ((pl.gapRate || 0) / 100) * (effectiveUplift / 100) * avgHccs;
+        if (pl.netNewEnabled) {
+          totalHccs += providers * panelSize * ((pl.netNewDiscoveryRate || 0) / 100) * (pl.netNewAvgConditions || 0);
+        }
+      }
+      const coveredLives = Math.round(providers * totalPanel);
+      const nPlans = plans.length;
       return [
-        { label: `${n(providers)} providers  ×  ${n(panel)} panel  ×  ${p(maPct)} MA patients`, value: `${n(maPanel)} MA lives` },
-        { label: `${hccPct > 0 ? hccPct.toFixed(1) : "~"}% of HCC gaps closed via complete documentation`, value: `RAF score lift per member` },
-        { label: `Risk score improvement  ×  annual payment per MA member`, value: fmt(driverValue), isResult: true },
+        { label: `${n(providers)} providers  ×  ${n(totalPanel)} panel${nPlans > 1 ? `  across ${nPlans} risk plans` : ""}`, value: `${n(coveredLives)} covered lives` },
+        { label: `Gaps closed at the point of care  ×  ${avgHccs} avg HCCs per patient`, value: `${n(totalHccs)} HCCs recaptured/yr` },
+        { label: `HCCs recaptured  ×  value per HCC  ×  ${p(realization)} realization`, value: fmt(driverValue), isResult: true },
       ];
     }
 
@@ -1591,6 +1621,7 @@ function getDriverFallback(driverId: string): string {
 }
 
 function ValueDriverDetailPage({ settings, config, preparedBy, totalPDFPages }: ProformaPDFProps) {
+  const contractYears = Math.ceil(config.contractTermMonths / 12);
   const activeSettings = settings.filter(s => s.drivers.some(d => d.value > 0));
   if (activeSettings.length === 0) return null;
 
@@ -1602,6 +1633,10 @@ function ValueDriverDetailPage({ settings, config, preparedBy, totalPDFPages }: 
       {activeSettings.map((s, si) => {
         const sc = s.color || brand.coral;
         const settingTotal = s.drivers.filter(d => d.value > 0).reduce((sum, d) => sum + d.value, 0);
+        // Terminal-year unit count (Y2 for a 2-year model), matching the driver formulas.
+        const yp = s.yearlyProviders;
+        const termUnitCount = (yp ? (contractYears >= 3 ? yp.year3 : contractYears >= 2 ? yp.year2 : yp.year1) : undefined)
+          ?? s.fullScaleProviders ?? s.providerCount;
         const byDomain = domains
           .map(domain => ({
             domain,
@@ -1641,7 +1676,7 @@ function ValueDriverDetailPage({ settings, config, preparedBy, totalPDFPages }: 
                   {SETTING_LABELS[s.careSetting] || s.label}
                 </Text>
                 <Text style={{ fontSize: 8.5, color: brand.textTertiary }}>
-                  {fmtNum(s.fullScaleProviders || s.providerCount)} {unitLabel(s.careSetting).toLowerCase()} · run-rate at full utilization
+                  {fmtNum(termUnitCount)} {unitLabel(s.careSetting).toLowerCase()} · run-rate at full utilization
                 </Text>
               </View>
               <Text style={{ fontSize: 18, fontWeight: 700, color: brand.textPrimary }}>{fmt(settingTotal)}/yr</Text>
@@ -1673,7 +1708,7 @@ function ValueDriverDetailPage({ settings, config, preparedBy, totalPDFPages }: 
 
                   {/* Driver rows */}
                   {drivers.map((driver, di) => {
-                    const formula = buildDriverFormula(driver.id, driver.value, s);
+                    const formula = buildDriverFormula(driver.id, driver.value, s, contractYears);
                     const fallback = getDriverFallback(driver.id);
                     return (
                       <View
