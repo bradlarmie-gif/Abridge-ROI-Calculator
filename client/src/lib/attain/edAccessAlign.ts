@@ -389,6 +389,7 @@ export const edAccessAlignConfig: AlignConfig = {
       options: [
         { id: "lwbsrate", label: "LWBS rate dropping", helper: "The share of arrivals who leave before being seen trending down against this baseline." },
         { id: "doortime", label: "Door-to-provider time dropping", helper: "The minutes from arrival to a provider coming down." },
+        { id: "boarding", label: "Boarding hours dropping", helper: "The hours admitted patients hold in the ED waiting for a bed coming down, so the front end backs up less." },
         { id: "recovered", label: "Recovered visits", helper: "Patients who would have left but were seen instead, actually landing on the schedule." },
         { id: "admissions", label: "Captured admissions", helper: "Recovered patients who needed admitting and were admitted, showing up in the census." },
       ],

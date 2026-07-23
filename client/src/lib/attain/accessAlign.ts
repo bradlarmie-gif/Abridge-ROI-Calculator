@@ -437,6 +437,7 @@ export const accessAlignConfig: AlignConfig = {
         { id: "tna", label: "Third-next-available dropping", helper: "The standard access measure improving against this baseline." },
         { id: "backlog", label: "Backlog shrinking", helper: "The count of patients waiting to be scheduled coming down." },
         { id: "visits", label: "More visits happening", helper: "Additional visits actually landing on the schedule." },
+        { id: "utilization", label: "Provider utilization rising", helper: "The share of bookable slots that actually get filled climbing against your starting-point rate." },
         { id: "lovestories", label: "Love Stories", helper: "Patients and staff telling you access got better in their own words." },
       ],
     },

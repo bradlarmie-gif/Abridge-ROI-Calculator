@@ -298,6 +298,7 @@ export const workforceAlignConfig: AlignConfig = {
       mode: "multi",
       options: [
         { id: "turnover", label: "The turnover number moving", helper: "Voluntary departures trending down against this baseline." },
+        { id: "vacancy", label: "Open roles filling faster", helper: "Fewer open positions and a shorter time to fill them, the companion to the turnover number." },
         { id: "lovestories", label: "Love Stories from clinicians", helper: "Clinicians telling you the day got better in their own words." },
         { id: "pulse", label: "A burnout pulse", helper: "A short likelihood-to-stay and burnout pulse improving over time." },
       ],

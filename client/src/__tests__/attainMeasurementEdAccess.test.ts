@@ -69,7 +69,7 @@ describe("ED access measurement plan — derives from the ED access Align state"
     const door = model.links.find((l) => l.id === "door")!;
     expect(door.metrics.map((m) => m.id)).toEqual(["door-to-provider-time", "share-freed-time-throughput"]);
     const lwbs = model.links.find((l) => l.id === "lwbs")!;
-    expect(lwbs.metrics.map((m) => m.id)).toEqual(["lwbs-rate", "recoverable-pool"]);
+    expect(lwbs.metrics.map((m) => m.id)).toEqual(["lwbs-rate", "recoverable-pool", "boarding-hours"]);
     const recovered = model.links.find((l) => l.id === "recovered")!;
     expect(recovered.metrics.map((m) => m.id)).toEqual(
       expect.arrayContaining(["recovered-visits", "captured-admissions", "recovered-margin"]),
@@ -238,5 +238,27 @@ describe("ED access measurement plan — persists through save and load", () => 
     expect(decoded?.planning?.measurement).toBeUndefined();
     expect(measurementChosen(decoded?.planning, "recovered", ["recovered-visits"])).toEqual(["recovered-visits"]);
     expect(measurementOwner(decoded?.planning, "recovered-visits")).toBe("");
+  });
+});
+
+describe("ED access measurement plan — boarding hours metric (would-want addition)", () => {
+  it("offers boarding hours on the LWBS link as a labeled benchmark, target lower", () => {
+    const lwbs = modelFor(FULL_CHOICES).links.find((l) => l.id === "lwbs")!;
+    const boarding = lwbs.metrics.find((m) => m.id === "boarding-hours")!;
+    expect(boarding).toBeTruthy();
+    expect(boarding.baseline).toBe("4 hrs");
+    expect(boarding.baselineTag).toBe("benchmark");
+    expect(boarding.defaultTarget).toBe("under 2 hrs");
+  });
+
+  it("is an optional pick: pre-selected when named as proof or as where the loss shows up", () => {
+    const noBoarding = modelFor(FULL_CHOICES).links.find((l) => l.id === "lwbs")!;
+    expect(noBoarding.metrics.find((m) => m.id === "boarding-hours")!.fromProof).toBe(false);
+    expect(noBoarding.defaultChosen).not.toContain("boarding-hours");
+    const proofPick = modelFor({ ...FULL_CHOICES, edAccessAlignProof: ["lwbsrate", "boarding"] }).links.find((l) => l.id === "lwbs")!;
+    expect(proofPick.metrics.find((m) => m.id === "boarding-hours")!.fromProof).toBe(true);
+    expect(proofPick.defaultChosen).toContain("boarding-hours");
+    const wherePick = modelFor({ ...FULL_CHOICES, edAccessAlignWhere: ["triage", "boarding"] }).links.find((l) => l.id === "lwbs")!;
+    expect(wherePick.metrics.find((m) => m.id === "boarding-hours")!.fromProof).toBe(true);
   });
 });

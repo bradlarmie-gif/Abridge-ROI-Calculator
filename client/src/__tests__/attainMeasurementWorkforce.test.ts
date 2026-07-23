@@ -232,3 +232,33 @@ describe("retention measurement plan — persists through save and load", () => 
     expect(measurementOwner(decoded?.planning, "voluntary-turnover-rate")).toBe("");
   });
 });
+
+describe("retention measurement plan — vacancy metrics (would-want addition)", () => {
+  it("offers vacancy rate and time-to-fill on the turnover link as labeled benchmarks, targets lower/shorter", () => {
+    const turnover = modelFor(FULL_CHOICES).links.find((l) => l.id === "turnover")!;
+    const vacancy = turnover.metrics.find((m) => m.id === "vacancy-rate")!;
+    const ttf = turnover.metrics.find((m) => m.id === "time-to-fill")!;
+    expect(vacancy).toBeTruthy();
+    expect(vacancy.baseline).toBe("10%");
+    expect(vacancy.baselineTag).toBe("benchmark");
+    expect(vacancy.defaultTarget).toBe("under 7%");
+    expect(ttf).toBeTruthy();
+    expect(ttf.baseline).toBe("60 days");
+    expect(ttf.defaultTarget).toBe("under 45 days");
+  });
+
+  it("is an optional pick: not pre-selected unless the partner names the vacancy proof", () => {
+    const withoutVacancy = modelFor(FULL_CHOICES).links.find((l) => l.id === "turnover")!;
+    expect(withoutVacancy.defaultChosen).not.toContain("vacancy-rate");
+    expect(withoutVacancy.defaultChosen).not.toContain("time-to-fill");
+    const withVacancy = modelFor({ ...FULL_CHOICES, retentionAlignProof: ["vacancy"] }).links.find((l) => l.id === "turnover")!;
+    expect(withVacancy.metrics.find((m) => m.id === "vacancy-rate")!.fromProof).toBe(true);
+    expect(withVacancy.metrics.find((m) => m.id === "time-to-fill")!.fromProof).toBe(true);
+    expect(withVacancy.defaultChosen).toEqual(expect.arrayContaining(["vacancy-rate", "time-to-fill"]));
+  });
+
+  it("offers the vacancy metrics in nursing as well as outpatient (all settings)", () => {
+    const nursing = modelFor({ ...FULL_CHOICES }, "nursing", NURSING_BASELINE).links.find((l) => l.id === "turnover")!;
+    expect(nursing.metrics.map((m) => m.id)).toEqual(expect.arrayContaining(["vacancy-rate", "time-to-fill"]));
+  });
+});

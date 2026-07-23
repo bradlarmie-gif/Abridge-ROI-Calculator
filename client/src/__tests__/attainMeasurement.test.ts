@@ -216,3 +216,61 @@ describe("measurement plan — persists through save and load", () => {
     expect(decodeAttain(encodeAttain(bad as unknown as AttainSaveState))).toBeNull();
   });
 });
+
+describe("access measurement plan — provider utilization metric (would-want addition)", () => {
+  const UTIL_BASELINE: AttainBaseline = { providers: 40, annualEncounters: 40 * 3_500, utilizationPct: 70 };
+  function modelUtil(choices: LeverValues) {
+    const values = { ...choices, ...accessAlignToLeverValues(choices, { baseline: UTIL_BASELINE, setting: "outpatient", realizationPct: 100, crossGoalShareMultiplier: 1 }) };
+    const chain = computeAccessChain(UTIL_BASELINE, values, 1);
+    return deriveAccessMeasurementPlan(UTIL_BASELINE, values, 1, { realizedVisits: chain.payoff.realizedVisits, prize: chain.payoff.value });
+  }
+  const CHOICES: LeverValues = { accessAlignWho: ["all"], accessAlignGate: ["documentation"], accessAlignDemand: ["backlog"] };
+
+  it("offers provider utilization on the schedule link, baselined off their Starting-Point rate, target higher", () => {
+    const schedule = modelUtil(CHOICES).links.find((l) => l.id === "schedule")!;
+    const util = schedule.metrics.find((m) => m.id === "provider-utilization")!;
+    expect(util).toBeTruthy();
+    expect(util.baseline).toBe("70%");
+    expect(util.baselineTag).toBe("inherited");
+    expect(util.defaultTarget).toBe("over 80%");
+  });
+
+  it("is an optional pick: not pre-selected unless named as proof, pre-selected when it is", () => {
+    const withoutProof = modelUtil(CHOICES).links.find((l) => l.id === "schedule")!;
+    expect(withoutProof.defaultChosen).not.toContain("provider-utilization");
+    const withProof = modelUtil({ ...CHOICES, accessAlignProof: ["utilization"] }).links.find((l) => l.id === "schedule")!;
+    expect(withProof.metrics.find((m) => m.id === "provider-utilization")!.fromProof).toBe(true);
+    expect(withProof.defaultChosen).toContain("provider-utilization");
+  });
+
+  it("falls back to a labeled benchmark when Starting Point has no utilization", () => {
+    const noUtil: AttainBaseline = { providers: 40, annualEncounters: 40 * 3_500 };
+    const values = { ...CHOICES, ...accessAlignToLeverValues(CHOICES, { baseline: noUtil, setting: "outpatient", realizationPct: 100, crossGoalShareMultiplier: 1 }) };
+    const chain = computeAccessChain(noUtil, values, 1);
+    const schedule = deriveAccessMeasurementPlan(noUtil, values, 1, { realizedVisits: chain.payoff.realizedVisits, prize: chain.payoff.value }).links.find((l) => l.id === "schedule")!;
+    const util = schedule.metrics.find((m) => m.id === "provider-utilization")!;
+    expect(util.baseline).toBe("70%");
+    expect(util.baselineTag).toBe("benchmark");
+  });
+
+  it("persists a utilization pick through the save link", () => {
+    const planning: AttainPlanning = { measurement: { chosen: { schedule: ["share-freed-time-scheduled", "provider-utilization"] }, entries: {} } };
+    const state: AttainSaveState = {
+      version: ATTAIN_SAVE_VERSION,
+      savedAt: "2026-07-22T12:00:00.000Z",
+      state: { ...DEFAULT_ATTAIN_STATE, setting: "outpatient", goal: "access" },
+      goals: ["access"],
+      valuesByGoal: { access: alignValues(FULL_CHOICES) },
+      commitments: {},
+      goalOwnerByPriority: {},
+      progressEntries: {},
+      baseline: OP_BASELINE,
+      freedTimeSplit: 50,
+      realizationByGoal: {},
+      planCadence: "monthly",
+      planning,
+    };
+    const decoded = decodeAttain(encodeAttain(state));
+    expect(measurementChosen(decoded?.planning, "schedule", [])).toContain("provider-utilization");
+  });
+});

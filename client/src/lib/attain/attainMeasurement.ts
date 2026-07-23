@@ -81,6 +81,9 @@ export const ACCESS_MEASURE_BENCH = {
   newPatientWaitTargetDays: 14,
   noShowRatePct: 12,
   noShowRateTargetPct: 8,
+  utilizationPct: 70, // schedule fill fallback when Starting Point has none
+  utilizationTargetGainPct: 10, // points added to the baseline for the target
+  utilizationTargetCapPct: 95, // a realistic ceiling on schedule fill
 } as const;
 
 // ── Retention (WORKFORCE) labeled benchmarks, used ONLY when the partner has
@@ -94,6 +97,10 @@ export const RETENTION_MEASURE_BENCH = {
   burnoutTargetPct: 35,
   intentToStayPct: 70, // share saying they are likely to stay a year out
   intentToStayTargetPct: 80,
+  vacancyRatePct: 10, // share of budgeted roles sitting open
+  vacancyRateTargetPct: 7,
+  timeToFillDays: 60, // days a role sits open before it is filled
+  timeToFillTargetDays: 45,
 } as const;
 
 // ── CAPACITY (nursing overtime) labeled benchmarks, used ONLY when the partner
@@ -221,6 +228,7 @@ const PROOF_TO_METRIC: Record<string, string> = {
   tna: "third-next-available",
   backlog: "referral-backlog",
   visits: "realized-visits",
+  utilization: "provider-utilization",
   lovestories: "love-stories",
 };
 
@@ -323,6 +331,17 @@ export function deriveAccessMeasurementPlan(
   // there (the honest zero the Align number already reflects).
   const scheduleBlocked = gate === "bodies";
   const capacitySet = ladder.capacityVisits > 0;
+  // Provider utilization (schedule fill): the check that the new slots are
+  // actually being used. Baseline is the partner's own Starting-Point rate when
+  // set, else a labeled benchmark; target is a few points higher, capped at a
+  // realistic ceiling. An optional pick, pre-selected only when named as proof.
+  const utilizationIsData = (baseline.utilizationPct ?? 0) > 0;
+  const utilizationBaselinePct = utilizationIsData ? Math.round(baseline.utilizationPct as number) : ACCESS_MEASURE_BENCH.utilizationPct;
+  const utilizationTargetPct = Math.min(
+    ACCESS_MEASURE_BENCH.utilizationTargetCapPct,
+    utilizationBaselinePct + ACCESS_MEASURE_BENCH.utilizationTargetGainPct,
+  );
+  const utilizationFromProof = proofHas("provider-utilization");
   const scheduleLink: MeasurementLink = {
     id: "schedule",
     n: 2,
@@ -355,8 +374,22 @@ export function deriveAccessMeasurementPlan(
             defaultTarget: capacitySet ? `${fmtInt(ladder.capacityVisits)} / yr` : "set on Align",
             fromProof: false,
           },
+          {
+            id: "provider-utilization",
+            label: "Provider utilization",
+            unit: "%",
+            helper: "The share of bookable slots that actually get filled, the proof the new capacity is being used and not sitting empty.",
+            baseline: `${utilizationBaselinePct}%`,
+            baselineTag: utilizationIsData ? "inherited" : "benchmark",
+            defaultTarget: `over ${utilizationTargetPct}%`,
+            fromProof: utilizationFromProof,
+          },
         ],
-    defaultChosen: scheduleBlocked ? [] : ["share-freed-time-scheduled"],
+    defaultChosen: scheduleBlocked
+      ? []
+      : utilizationFromProof
+        ? ["share-freed-time-scheduled", "provider-utilization"]
+        : ["share-freed-time-scheduled"],
   };
 
   // ── Link 3 — the wait falls / backlog burns / room to grow ────────────────
@@ -528,6 +561,7 @@ export function deriveAccessMeasurementPlan(
  * onto, so the answers a partner already gave pre-select the matching metric. */
 const RETENTION_PROOF_TO_METRICS: Record<string, string[]> = {
   turnover: ["voluntary-turnover-rate", "departures-avoided"],
+  vacancy: ["vacancy-rate", "time-to-fill"],
   pulse: ["burnout-score", "intent-to-stay"],
   lovestories: ["love-stories"],
 };
@@ -718,6 +752,26 @@ export function deriveRetentionMeasurementPlan(
         baselineTag: "data",
         defaultTarget: prizeSet ? `${fmtMoneyCompact(ladder.prize)} / yr` : "finish the Align chain",
         fromProof: false,
+      },
+      {
+        id: "vacancy-rate",
+        label: "Vacancy rate",
+        unit: "%",
+        helper: "The share of budgeted roles sitting open, the companion to turnover, coming down as fewer people leave. Benchmark until you drop in your own.",
+        baseline: `${RETENTION_MEASURE_BENCH.vacancyRatePct}%`,
+        baselineTag: "benchmark",
+        defaultTarget: `under ${RETENTION_MEASURE_BENCH.vacancyRateTargetPct}%`,
+        fromProof: proofHas("vacancy-rate"),
+      },
+      {
+        id: "time-to-fill",
+        label: "Time to fill a vacancy",
+        unit: "days",
+        helper: "The days a role sits open before it is filled, shortening as the team stabilizes and referrals rise. Benchmark until you drop in your own.",
+        baseline: `${RETENTION_MEASURE_BENCH.timeToFillDays} days`,
+        baselineTag: "benchmark",
+        defaultTarget: `under ${RETENTION_MEASURE_BENCH.timeToFillTargetDays} days`,
+        fromProof: proofHas("time-to-fill"),
       },
     ],
     defaultChosen: [],
@@ -1929,6 +1983,8 @@ export const ED_ACCESS_MEASURE_BENCH = {
   doorToProviderTargetMin: 30,
   lwbsRatePct: 8,
   lwbsRateTargetPct: 4,
+  boardingHours: 4, // hours an admitted patient holds in the ED before a bed
+  boardingHoursTarget: 2,
 } as const;
 
 /** The ED access Align proof option ids -> the measurement metric each maps
@@ -1936,6 +1992,7 @@ export const ED_ACCESS_MEASURE_BENCH = {
 const ED_ACCESS_PROOF_TO_METRIC: Record<string, string> = {
   lwbsrate: "lwbs-rate",
   doortime: "door-to-provider-time",
+  boarding: "boarding-hours",
   recovered: "recovered-visits",
   admissions: "captured-admissions",
 };
@@ -2073,6 +2130,11 @@ export function deriveEdAccessMeasurementPlan(
 
   // ── Link 3 — LWBS falls ───────────────────────────────────────────────────
   const lwbsFromProof = proofHas("lwbs-rate") || where.includes("triage") || outcomes.includes("lwbs");
+  // Boarding / admit-hold hours: named on the "where the loss shows up" question,
+  // now trackable. An optional pick, pre-selected only when named as proof or as
+  // a place the loss shows up. A labeled benchmark until the partner enters their
+  // own median boarding time; target lower.
+  const boardingFromProof = proofHas("boarding-hours") || where.includes("boarding");
   const lwbsLink: MeasurementLink = {
     id: "lwbs",
     n: 3,
@@ -2100,8 +2162,18 @@ export function deriveEdAccessMeasurementPlan(
         defaultTarget: ladder.recoverablePool > 0 ? `${fmtInt(ladder.recoverablePool)} / yr` : "set the gate on Align",
         fromProof: false,
       },
+      {
+        id: "boarding-hours",
+        label: "Boarding time",
+        unit: "hrs / admit",
+        helper: "The hours an admitted patient holds in the ED waiting for an inpatient bed, backing up the front end so more patients leave. Benchmark until you drop in your own median.",
+        baseline: `${ED_ACCESS_MEASURE_BENCH.boardingHours} hrs`,
+        baselineTag: "benchmark",
+        defaultTarget: `under ${ED_ACCESS_MEASURE_BENCH.boardingHoursTarget} hrs`,
+        fromProof: boardingFromProof,
+      },
     ],
-    defaultChosen: ["lwbs-rate"],
+    defaultChosen: boardingFromProof ? ["lwbs-rate", "boarding-hours"] : ["lwbs-rate"],
   };
 
   // ── Link 4 — recovered visits and captured admissions land (the outcome) ──
