@@ -1,6 +1,6 @@
 import type { AttainSetting, GoalId } from "./attainTypes";
 import { computeAccessContributions } from "./attainAccess";
-import { computeEdAccessContributions } from "./attainEdAccess";
+import { computeEdAccessContributions, DEFAULT_ED_ACCESS_MINUTES_SAVED_PER_NOTE } from "./attainEdAccess";
 import { computeRevenueContributions, selectedPaths, type RevenuePathId } from "./attainRevenue";
 import { computeIpRevenueContributions, selectedIpRevenuePaths, type IpRevenuePathId } from "./attainInpatientRevenue";
 import { computeWorkforceContributions } from "./attainWorkforce";
@@ -1191,6 +1191,12 @@ export const ED_ACCESS_LEVERS: Lever[] = [
     max: 60,
     step: 1,
     realityStart: 0,
+    // Arrives alive at the 9-minute benchmark so ED access derives a real
+    // value on landing, exactly as outpatient access falls back to its own
+    // minutes benchmark. realityStart stays 0 so the leave-one-out
+    // counterfactual ("0 minutes saved -> ~0 recovery") is still observable
+    // through this lever; only the seeded arrival value changes.
+    defaultStart: DEFAULT_ED_ACCESS_MINUTES_SAVED_PER_NOTE,
     ownerRole: "ED operations",
     defaultDue: "Month 1",
     signal: "Charting minutes per note, median",

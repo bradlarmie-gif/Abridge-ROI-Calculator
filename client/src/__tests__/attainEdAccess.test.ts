@@ -19,7 +19,7 @@ import {
   DEFAULT_ED_ACCESS_ADMISSION_REALIZATION,
   DEFAULT_ED_ACCESS_HOURS_PER_RECOVERY,
 } from "@/lib/attain/attainEdAccess";
-import { computeLeverContributions, computeMultiGoalContributions, LEVERS, leversFor, type AttainBaseline, type LeverValues } from "@/lib/attain/attainLevers";
+import { computeLeverContributions, computeMultiGoalContributions, defaultLeverValues, LEVERS, leversFor, type AttainBaseline, type LeverValues } from "@/lib/attain/attainLevers";
 
 // Full ED scope, 100% utilization - the fixture that lets visitsInScope equal
 // baseline.annualEncounters exactly, so recovered/admission math reconciles
@@ -386,6 +386,36 @@ describe("reconciliation to the live edLwbs / admissionCapture engine (exploreDr
     expect(state.timeDriverInputs.edAdmissionRealization).toBe(30);
     expect(state.timeDriverInputs.edAdmissionRealization).not.toBe(100);
     const engineValues = computeAllDriverValues(state, 0);
+    expect(engineValues.admissionCapture).toBeCloseTo(chain.payoff.admissionValue, 0);
+  });
+});
+
+describe("ED access arrives alive (regression C1: the chain used to be a permanent $0)", () => {
+  it("defaultLeverValues seeds edAccessMinutesSaved at the 9-min benchmark, not a dead numeric 0", () => {
+    const seeded = defaultLeverValues("access", "ed");
+    expect(seeded.edAccessMinutesSaved).toBe(DEFAULT_ED_ACCESS_MINUTES_SAVED_PER_NOTE);
+    expect(seeded.edAccessMinutesSaved as number).toBeGreaterThan(0);
+  });
+
+  it("the seeded minutes plus a real throughput commitment produce non-zero freed capacity and payoff; a seeded 0 would zero the whole chain", () => {
+    const seededMinutes = defaultLeverValues("access", "ed").edAccessMinutesSaved as number;
+    const alive = computeEdAccessChain(BASELINE, fullValues({ edAccessMinutesSaved: seededMinutes }));
+    expect(alive.mechanism.mechanicallyEnabledRecovered).toBeGreaterThan(0);
+    expect(alive.payoff.value).toBeGreaterThan(0);
+    // The exact counterfactual C1 was silently stuck on: 0 minutes saved ->
+    // 0 freed-time capacity -> MIN(pool, capacity) = 0 -> $0.
+    const dead = computeEdAccessChain(BASELINE, fullValues({ edAccessMinutesSaved: 0 }));
+    expect(dead.mechanism.mechanicallyEnabledRecovered).toBe(0);
+    expect(dead.payoff.value).toBe(0);
+  });
+
+  it("the seeded-minutes chain still reconciles to computeAllDriverValues", () => {
+    const seededMinutes = defaultLeverValues("access", "ed").edAccessMinutesSaved as number;
+    const values = fullValues({ edAccessMinutesSaved: seededMinutes });
+    const chain = computeEdAccessChain(BASELINE, values);
+    const state = exploreStateForEdAccessReconciliation(BASELINE, values);
+    const engineValues = computeAllDriverValues(state, 0);
+    expect(engineValues.lwbsRecovery).toBeCloseTo(chain.payoff.visitValue, 0);
     expect(engineValues.admissionCapture).toBeCloseTo(chain.payoff.admissionValue, 0);
   });
 });
