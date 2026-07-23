@@ -554,6 +554,7 @@ function LinkCard({
                 title={metric.label}
                 description={metric.helper}
                 selected={chosen.includes(metric.id)}
+                multi
                 onClick={() => onToggle(metric.id)}
                 note={
                   metric.fromProof ? (

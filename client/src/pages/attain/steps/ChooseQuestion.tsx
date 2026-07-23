@@ -89,6 +89,7 @@ export default function ChooseQuestion({
             title={option.label}
             description={option.dynamicHelper ? option.dynamicHelper(ctx) : option.helper}
             selected={isSelected(option.id)}
+            multi={question.mode === "multi"}
             onClick={() => onToggleOption(storeKey, question.mode, option.id)}
             testId={`align-option-${testidBase}-${option.id}`}
           />
