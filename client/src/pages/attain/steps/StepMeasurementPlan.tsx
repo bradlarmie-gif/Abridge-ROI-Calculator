@@ -1,13 +1,17 @@
 import { motion } from "framer-motion";
 import { ArrowDown, Check, Lock } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { computeAccessChain } from "@/lib/attain/attainAccess";
+import { computeAccessChain, DEFAULT_MINUTES_SAVED_PER_NOTE } from "@/lib/attain/attainAccess";
+import { computeWorkforceChain } from "@/lib/attain/attainWorkforce";
 import { deriveAccessLadder } from "./accessLadder";
 import {
   deriveAccessMeasurementPlan,
+  deriveRetentionMeasurementPlan,
+  type MeasurementPlanModel,
   type MeasurementLink,
   type MeasurementMetricOption,
 } from "@/lib/attain/attainMeasurement";
+import type { AttainSetting, GoalId } from "@/lib/attain/attainTypes";
 import {
   measurementChosen,
   measurementTarget,
@@ -63,6 +67,13 @@ function BaselineTag({ tag }: { tag: MeasurementMetricOption["baselineTag"] }) {
 }
 
 interface StepMeasurementPlanProps {
+  /** Which goal's measurement plan this is. Access is the exemplar; retention
+   * reuses this same surface via `deriveRetentionMeasurementPlan`. Only the
+   * derivation differs; the scorecard UI is shared. */
+  goal: Extract<GoalId, "access" | "retention">;
+  /** The care setting, so retention counts the right unit (nurses vs providers)
+   * and names the charting term, and the risk placeholder is setting-aware. */
+  setting: AttainSetting;
   baseline: AttainBaseline;
   values: LeverValues;
   combined: MultiGoalContributionsResult | null;
@@ -80,6 +91,8 @@ interface StepMeasurementPlanProps {
 }
 
 export default function StepMeasurementPlan({
+  goal,
+  setting,
   baseline,
   values,
   combined,
@@ -95,21 +108,40 @@ export default function StepMeasurementPlan({
   onChangePlanCadence,
   stepNumber,
 }: StepMeasurementPlanProps) {
-  const goalDef = GOAL_CATALOG.access;
+  const goalDef = GOAL_CATALOG[goal];
 
-  // The same realization/attribution-applied figures every access surface uses,
-  // so link 4's targets and the promise prize reconcile with Align exactly.
-  const chain = computeAccessChain(baseline, values, 1);
-  const accessResult = combined?.byGoal.access;
-  const ladder = deriveAccessLadder(chain, {
-    realizedVisits: accessResult?.totalCount ?? chain.payoff.realizedVisits,
-    prize: accessResult?.totalMargin ?? 0,
-  });
-
-  const model = deriveAccessMeasurementPlan(baseline, values, 1, {
-    realizedVisits: ladder.realizedVisits,
-    prize: ladder.prize,
-  });
+  // Derive the goal's measurement plan from the SAME Align state its number came
+  // from, feeding in the same realization/split-applied figures every other
+  // surface for this goal uses (off the combined engine result), so link-4's
+  // targets and the promise prize reconcile with Align exactly. Only the
+  // derivation differs by goal; the scorecard UI below is shared.
+  let model: MeasurementPlanModel;
+  if (goal === "retention") {
+    const rawMinutes = typeof values.retentionMinutesSaved === "number" ? values.retentionMinutesSaved : 0;
+    const minutes = rawMinutes > 0 ? rawMinutes : DEFAULT_MINUTES_SAVED_PER_NOTE;
+    // Retention Planning is always a single goal, so no cross-goal split
+    // (multiplier 1); the COUNT reads off the raw chain to stay identical to
+    // Build (the combined totalCount rounds a real 0.1/yr to 0), only the PRIZE
+    // reads off the combined result to pick up this priority's realization.
+    const workforceChain = computeWorkforceChain(baseline, setting, values, 1);
+    const retentionResult = combined?.byGoal.retention;
+    model = deriveRetentionMeasurementPlan(baseline, setting, values, 1, {
+      minutes,
+      departuresAvoided: workforceChain.payoff.departuresAvoided,
+      prize: retentionResult?.totalMargin ?? workforceChain.payoff.value,
+    });
+  } else {
+    const chain = computeAccessChain(baseline, values, 1);
+    const accessResult = combined?.byGoal.access;
+    const ladder = deriveAccessLadder(chain, {
+      realizedVisits: accessResult?.totalCount ?? chain.payoff.realizedVisits,
+      prize: accessResult?.totalMargin ?? 0,
+    });
+    model = deriveAccessMeasurementPlan(baseline, values, 1, {
+      realizedVisits: ladder.realizedVisits,
+      prize: ladder.prize,
+    });
+  }
 
   const prize = model.prize;
   const ownerName = goalOwner.name.trim();
@@ -251,16 +283,14 @@ export default function StepMeasurementPlan({
           <span className="inline-block text-[8px] font-bold uppercase tracking-wide text-white bg-[#EA2C00] px-2 py-0.5 rounded-full">
             The commitment
           </span>
-          <p className="text-[12px] font-semibold text-[#1A1A1A]">The one thing this plan lives or dies on</p>
+          <p className="text-[12px] font-semibold text-[#1A1A1A]">{model.commitment.title}</p>
         </div>
-        <p className="text-[13.5px] text-[#3A3A3A] leading-relaxed mb-4 max-w-[600px]">
-          Freed documentation time only opens access if it is directed to the schedule as bookable slots. If it quietly
-          refills with other work, the minutes are real but the visits never land. Someone has to own protecting that
-          freed time and pointing it at the schedule.
+        <p className="text-[13.5px] text-[#3A3A3A] leading-relaxed mb-4 max-w-[600px]" data-testid="text-measure-commitment-teach">
+          {model.commitment.teach}
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <FieldLabel>Who owns directing the freed time</FieldLabel>
+            <FieldLabel>{model.commitment.ownerLabel}</FieldLabel>
             <input
               value={commitmentOwner}
               onChange={(e) => onChangeCommitment({ commitmentOwner: e.target.value })}
@@ -304,10 +334,8 @@ export default function StepMeasurementPlan({
             </Select>
           </div>
         </div>
-        <p className="text-[12px] text-[#8C8C8C] mb-4 leading-relaxed max-w-[600px]">
-          Checked {CADENCE_LABEL[planCadence]}. Walk the chain in order. The minutes move first, the visits move last,
-          so early links should turn before the later ones. Attainment is not a number you assert. It is whether each
-          metric moved toward its target on the schedule you set.
+        <p className="text-[12px] text-[#8C8C8C] mb-4 leading-relaxed max-w-[600px]" data-testid="text-measure-monthly-teach">
+          Checked {CADENCE_LABEL[planCadence]}. {model.monthlyCheckTeach}
         </p>
 
         {trackedRows.length === 0 ? (
@@ -348,7 +376,7 @@ export default function StepMeasurementPlan({
       <PlanningRiskCard
         partnerRisk={planning.partnerRisk ?? ""}
         onChangePartnerRisk={onChangePartnerRisk}
-        placeholder={riskPlaceholderFor("access", "outpatient")}
+        placeholder={riskPlaceholderFor(goal, setting)}
       />
     </div>
   );

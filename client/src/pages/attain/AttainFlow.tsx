@@ -965,6 +965,8 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
                 until each is cloned onto this pattern. */}
             {step === "commit" && isOutpatientAccessPlan && (
               <StepMeasurementPlan
+                goal="access"
+                setting="outpatient"
                 baseline={baseline}
                 values={valuesByGoal.access ?? defaultLeverValues("access", "outpatient")}
                 combined={combined}
@@ -982,23 +984,29 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
               />
             )}
 
+            {/* WORKFORCE (retention) is cloned onto the same MEASUREMENT PLAN
+                surface as access, in EVERY setting: the derivation differs
+                (deriveRetentionMeasurementPlan is setting-aware, counting nurses
+                vs providers and naming post-shift vs after-hours charting), but
+                the scorecard UI is shared. Single-goal only; a multi-goal plan
+                that includes retention still renders StepCommit. */}
             {step === "commit" && isRetentionPlan && state.setting && (
-              <StepPlanning
+              <StepMeasurementPlan
+                goal="retention"
                 setting={state.setting}
                 baseline={baseline}
-                goal="retention"
                 values={valuesByGoal.retention ?? defaultLeverValues("retention", state.setting)}
                 combined={combined}
                 goalOwner={goalOwnerByPriority.retention ?? { name: "", title: "" }}
                 onChangeGoalOwner={(patch) => handleChangeGoalOwner("retention", patch)}
                 planning={planning}
-                onChangePhaseOwner={handleChangePhaseOwner}
-                onChangePhaseSignalTarget={handleChangePhaseSignalTarget}
-                onChangePhaseSignalLabel={handleChangePhaseSignalLabel}
+                onSetChosenMetrics={handleSetChosenMetrics}
+                onChangeMetricField={handleChangeMetricField}
+                onChangePromiseByWhen={handleChangePromiseByWhen}
+                onChangeCommitment={handleChangeMeasureCommitment}
                 onChangePartnerRisk={handleChangePartnerRisk}
                 planCadence={planCadence}
                 onChangePlanCadence={handleChangePlanCadence}
-                totalMonths={state.totalMonths}
                 stepNumber={stepIndex + 1}
               />
             )}
