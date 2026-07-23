@@ -334,10 +334,13 @@ describe("Attainment hub — a quality-only plan leads with the COUNT, soft doll
   };
   const html = renderToStaticMarkup(createElement(StepAttainment as never, props as never));
 
-  it("the at-a-glance headline leads with the harm-events COUNT, labeled as events, never the soft dollar as 'combined margin'", () => {
-    expect(html).toContain('data-testid="text-attain-glance-value"');
-    expect(html).toContain("Harm events prevented");
+  it("the outcome headline leads with the harm-events COUNT, never the soft dollar as a 'combined margin'", () => {
+    expect(html).toContain('data-testid="text-attain-glance-outcome"');
+    // The lead line is the safety count itself (e.g. "~22 harm events / yr"),
+    // not a dollar dressed up as a hard contribution-margin total.
     expect(html).toContain(model.safetyHeadline!.heroValue);
+    expect(html).not.toContain("Combined contribution margin");
+    expect(html).not.toContain("Combined margin");
   });
 
   it("the soft dollar renders in its own clearly-labeled block, and the hard total excludes it entirely", () => {

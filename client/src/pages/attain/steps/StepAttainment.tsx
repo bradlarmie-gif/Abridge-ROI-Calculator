@@ -45,6 +45,29 @@ function formatCompact(n: number): string {
   return `${sign}$${Math.round(abs)}`;
 }
 
+/** The realized COUNT as a plain whole number the CFO reads at a glance
+ * ("3,800", "6", "6,900"). Rounded because it is always framed as "about". */
+function formatCount(n: number): string {
+  return Math.round(n).toLocaleString();
+}
+
+/** The plan's lead outcome sentence: the goal's own template with the engine's
+ * count or dollar dropped in and the number itself in coral. This is the
+ * concrete thing the partner is buying, in their own unit, and it leads the
+ * whole output rather than a bare dollar handed to them cold. */
+function OutcomeSentence({ goalDef, count, dollar }: { goalDef: GoalDef; count: string; dollar: string }) {
+  const token = goalDef.valueUnit.heroIsDollar ? "{dollar}" : "{count}";
+  const value = goalDef.valueUnit.heroIsDollar ? dollar : count;
+  const [pre, post] = goalDef.valueUnit.outcomeTemplate.split(token);
+  return (
+    <>
+      {pre}
+      <span className="text-[#EA2C00]">{value}</span>
+      {post}
+    </>
+  );
+}
+
 /** "Jul 14, 2026" — every date on the Progress tab prints as a real,
  * absolute date (never a relative "just now"/"3d ago"), since the whole
  * point of Change 2 is a dated record that still reads correctly the next
@@ -185,7 +208,7 @@ function committedLeversFor(
  * only rendered when a plan has 2+ priorities, so a single-priority plan
  * never shows this alongside the combined headline it would just repeat.
  */
-function PriorityBreakdownCard({ goalDef, margin, share }: { goalDef: GoalDef; margin: number; share: number }) {
+function PriorityBreakdownCard({ goalDef, margin, count, share }: { goalDef: GoalDef; margin: number; count: number; share: number }) {
   return (
     <div className="flex-1 min-w-[150px] bg-[#F8F5F1] border border-[#E7E0D6] rounded-md p-4" data-testid={`card-attain-plan-priority-${goalDef.id}`}>
       <span
@@ -197,6 +220,11 @@ function PriorityBreakdownCard({ goalDef, margin, share }: { goalDef: GoalDef; m
       <p className="font-abridge text-3xl text-[#1A1A1A]" data-testid={`text-attain-plan-priority-value-${goalDef.id}`}>
         {formatCompact(margin)}
       </p>
+      {goalDef.valueUnit.countNoun && (
+        <p className="text-[11px] text-[#3A3A3A] mt-1" data-testid={`text-attain-plan-priority-count-${goalDef.id}`}>
+          {formatCount(count)} {goalDef.valueUnit.countNoun}
+        </p>
+      )}
       <p className="text-[10px] text-[#8C8C8C] mt-1">
         <b className="text-[#3A3A3A]">{share}%</b> of combined · {goalDef.label}
       </p>
@@ -879,6 +907,57 @@ export default function StepAttainment({
   const qualityHeroCount = qualityPayoffModel?.safetyHeadline?.heroValue ?? "count pending";
   const qualitySoftDollarNote = qualityPayoffModel?.safetyHeadline?.softDollarNote ?? "This plan leads with safety, not a dollar.";
 
+  // ── The concrete outcome, in their own unit ──────────────────────────────
+  // The output leads with the real thing the partner is buying (visits opened,
+  // departures avoided, overtime hours off the schedule, harm events prevented,
+  // or dollars of delivered care put back on the claim), never an abstract
+  // "units of value". The dollar is the translation underneath, not the hero.
+  const singleGoal = goalDefs.length === 1 ? goalDefs[0] : null;
+  const singleGoalId = goals.length === 1 ? goals[0] : null;
+  const singleGoalCount = singleGoalId ? combined.byGoal[singleGoalId]?.totalCount ?? 0 : 0;
+  const singleGoalMargin = singleGoalId ? combined.byGoal[singleGoalId]?.totalMargin ?? 0 : 0;
+  // Lead the payoff with the concrete count for a single count-goal; quality
+  // (soft dollar) and revenue (the money IS the delivered work) keep their own
+  // dollar-first / count-first heroes below.
+  const payoffLeadWithCount = !!singleGoal && !singleGoal.valueUnit.heroIsDollar && !isQualityOnly;
+
+  // The one metric that best expresses each priority's OUTCOME (its
+  // highest-link scored metric short of the money link), so "Your Starting
+  // Point" can open on the partner's own today -> target gap instead of a
+  // benchmark. Undefined when nothing scored is tracked for that priority.
+  const outcomeMetricByGoal: Partial<Record<GoalId, TrackedMetric>> = {};
+  for (const { goal, rows } of trackedByGoal) {
+    const scored = rows.filter((r) => r.targetNum !== null);
+    // Prefer a metric with a real operational "today" (a non-zero baseline like
+    // a 24-day wait), so the contrast reads "you are at X, this takes you to Y",
+    // not "0 -> target" which is a build-up, not a current-state gap. Fall back
+    // to the highest pre-money metric, then to anything scored.
+    const preMoney = scored.filter((r) => r.linkN < 7);
+    const operational = preMoney.filter((r) => r.baselineNum > 0);
+    const pool = operational.length ? operational : preMoney.length ? preMoney : scored;
+    const pick = [...pool].sort((a, b) => b.linkN - a.linkN)[0];
+    if (pick) outcomeMetricByGoal[goal] = pick;
+  }
+
+  // The support line under the outcome: the dollar, the pace, and the coverage,
+  // all demoted beneath the concrete outcome.
+  const paceTail = `On pace to ${attainment.pct}% this month, tracked across ${metricRows.length} metric${metricRows.length === 1 ? "" : "s"}.`;
+  let outcomeSupportLine: string;
+  if (isQualityOnly) {
+    outcomeSupportLine = `This plan leads with safety, not a dollar. ${paceTail}`;
+  } else if (singleGoal?.valueUnit.heroIsDollar) {
+    outcomeSupportLine = `That is contribution margin on care already delivered, counted once. ${paceTail}`;
+  } else if (singleGoal) {
+    outcomeSupportLine = `Worth about ${formatCompact(singleGoalMargin)} in contribution margin, counted once. ${paceTail}`;
+  } else {
+    const combinedStr = isMultiGoalWithQuality
+      ? hardContributionMargin > 0
+        ? formatCompact(hardContributionMargin)
+        : "value pending"
+      : formatCompact(target.margin);
+    outcomeSupportLine = `Worth about ${combinedStr} in combined contribution margin, counted once${isMultiGoalWithQuality ? ", with nursing quality tracked as safety below" : ""}. ${paceTail}`;
+  }
+
   return (
     <div>
       {/* Toolbar */}
@@ -1098,49 +1177,64 @@ export default function StepAttainment({
               </p>
             </div>
 
-            {/* AT A GLANCE — the goal is above, this is the value, the
-                attainment, and the moves, all in one scan. */}
+            {/* THE OUTCOME — lead with the concrete thing the partner is
+                buying, in their own unit. The dollar, the pace and the
+                coverage are demoted to the support line beneath it. */}
             <div data-testid="panel-attain-glance" className="mb-6">
-              <p className="text-[10px] font-semibold uppercase tracking-[2.5px] text-[#8C8C8C] mb-3">At a glance</p>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-                <div
-                  className="border border-[#1A1A1A] bg-[#1A1A1A] rounded-lg p-4"
-                  data-testid="chip-attain-plan-combined-preview"
+              <p className="text-[10px] font-semibold uppercase tracking-[2.5px] text-[#8C8C8C] mb-3">The outcome</p>
+
+              {isQualityOnly ? (
+                <p
+                  className="font-abridge text-[28px] md:text-[34px] leading-[1.2] text-[#EA2C00] max-w-[760px] mb-4"
+                  data-testid="text-attain-glance-outcome"
                 >
-                  {isQualityOnly ? (
-                    <>
-                      <p className="text-[9.5px] font-semibold uppercase tracking-[1.4px] text-white/55 mb-1.5">Harm events prevented</p>
-                      <p className="font-abridge text-2xl text-[#EA2C00]" data-testid="text-attain-glance-value">
-                        {qualityHeroCount}
-                      </p>
-                    </>
-                  ) : (
-                    <>
-                      <p className="text-[9.5px] font-semibold uppercase tracking-[1.4px] text-white/55 mb-1.5">Combined margin</p>
-                      <p className="font-abridge text-3xl text-[#EA2C00]" data-testid="text-attain-glance-value">
-                        {isMultiGoalWithQuality
-                          ? hardContributionMargin > 0
-                            ? formatCompact(hardContributionMargin)
-                            : "value pending"
-                          : formatCompact(target.margin)}
-                      </p>
-                    </>
-                  )}
-                </div>
-                <div className="border border-[#E7E0D6] bg-[#F8F5F1] rounded-lg p-4">
-                  <p className="text-[9.5px] font-semibold uppercase tracking-[1.4px] text-[#8C8C8C] mb-1.5">Projected, on-pace</p>
-                  <p className="font-abridge text-3xl text-[#1A1A1A]" data-testid="text-attain-glance-attainment">
-                    {attainment.pct}%
+                  {qualityHeroCount}
+                </p>
+              ) : singleGoal ? (
+                <p
+                  className="font-abridge text-[28px] md:text-[34px] leading-[1.2] text-[#1A1A1A] max-w-[760px] mb-4"
+                  data-testid="text-attain-glance-outcome"
+                >
+                  <OutcomeSentence
+                    goalDef={singleGoal}
+                    count={formatCount(singleGoalCount)}
+                    dollar={formatCompact(singleGoalMargin)}
+                  />
+                </p>
+              ) : (
+                <div className="mb-4">
+                  <p className="font-abridge text-[26px] md:text-[30px] leading-[1.2] text-[#1A1A1A] mb-3">
+                    One plan, {goalDefs.length} priorities.
                   </p>
+                  <div className="flex flex-col gap-2 max-w-[760px]">
+                    {priorityData.map((d) => (
+                      <p
+                        key={d.goal}
+                        className="text-[15.5px] leading-relaxed text-[#3A3A3A]"
+                        data-testid={`text-attain-glance-outcome-${d.goal}`}
+                      >
+                        <span
+                          className="inline-block w-1.5 h-1.5 rounded-full mr-2 align-middle"
+                          style={{ background: d.goalDef.pillBg }}
+                        />
+                        <OutcomeSentence
+                          goalDef={d.goalDef}
+                          count={formatCount(d.goalCount)}
+                          dollar={formatCompact(d.goalMargin)}
+                        />
+                      </p>
+                    ))}
+                  </div>
                 </div>
-                <div className="border border-[#E7E0D6] bg-[#F8F5F1] rounded-lg p-4">
-                  <p className="text-[9.5px] font-semibold uppercase tracking-[1.4px] text-[#8C8C8C] mb-1.5">Metrics tracked</p>
-                  <p className="font-abridge text-3xl text-[#1A1A1A]" data-testid="text-attain-glance-moves-count">
-                    {metricRows.length}{" "}
-                    <span className="text-base font-semibold text-[#8C8C8C]">metric{metricRows.length === 1 ? "" : "s"}</span>
-                  </p>
-                </div>
-              </div>
+              )}
+
+              <p
+                className="text-[13.5px] leading-relaxed text-[#8C8C8C] max-w-[680px] mb-5"
+                data-testid="text-attain-glance-support"
+              >
+                {outcomeSupportLine}
+              </p>
+
               {metricRows.length > 0 && (
                 <div className="flex flex-wrap gap-2" data-testid="list-attain-glance-moves">
                   {metricRows.slice(0, 4).map((m) => (
@@ -1168,15 +1262,6 @@ export default function StepAttainment({
               )}
             </div>
 
-            {/* Supporting detail — attribution and metadata, secondary to
-                the at-a-glance summary above. */}
-            <p className="text-[13px] leading-relaxed text-[#8C8C8C] max-w-[640px] mb-5">
-              One plan across{" "}
-              <b className="text-[#3A3A3A]">{goalDefs.map((g) => g.label).join(", ")}</b>. The value below rolls up from
-              the same engine, counted once; the metrics you chose to track are the scorecard the Progress tab measures
-              against.
-            </p>
-
             <div className="flex flex-wrap items-start gap-6 pt-5 border-t border-[#F0ECE5]">
               <div>
                 <p className="text-[10.5px] font-semibold uppercase tracking-[2.5px] text-[#B4B4B4] mb-1">Prepared for</p>
@@ -1200,7 +1285,13 @@ export default function StepAttainment({
 
           {/* ============ YOUR STARTING POINT — their operation today, and what good looks like, one block per priority ============ */}
           {priorityData.map((d) => (
-            <StartingPointSection key={d.goal} {...d} unitCount={state.scope.unitCount} unitLabel={unitLabel} />
+            <StartingPointSection
+              key={d.goal}
+              {...d}
+              unitCount={state.scope.unitCount}
+              unitLabel={unitLabel}
+              outcomeMetric={outcomeMetricByGoal[d.goal]}
+            />
           ))}
 
           {/* ============ CLOSING THE GAP (combined) ============ */}
@@ -1325,8 +1416,8 @@ export default function StepAttainment({
               <h2 className="font-abridge text-[32px] text-[#1A1A1A]">The Payoff</h2>
             </div>
             <p className="text-[15px] leading-relaxed text-[#3A3A3A] mb-5 max-w-[720px]">
-              Everything above, the starting point, the gap, the scorecard, adds up to this. One combined number, built
-              the same way every figure on this plan was: from your own Align inputs, counted once.
+              The starting point, the gap, and the scorecard all come down to this. Built the same way every figure on
+              this plan was: from your own Align inputs, counted once.
             </p>
 
             {/* ONE combined headline number, full stop. Only when a plan
@@ -1357,9 +1448,22 @@ export default function StepAttainment({
                     </p>
                   </div>
                 </>
+              ) : payoffLeadWithCount && singleGoal ? (
+                <>
+                  <p className="text-[10px] font-semibold uppercase tracking-[1.8px] text-white/55 mb-2">{singleGoal.valueUnit.countNoun}</p>
+                  <p className="font-abridge text-5xl md:text-6xl text-[#EA2C00]" data-testid="text-attain-plan-combined-value">
+                    {formatCount(singleGoalCount)}
+                  </p>
+                  <p className="text-[13px] text-white/50 mt-2">
+                    Worth about <b className="text-white/80">{formatCompact(singleGoalMargin)}</b> in contribution margin, counted once
+                    {" · "}{metricRows.length} metric{metricRows.length === 1 ? "" : "s"} tracked
+                  </p>
+                </>
               ) : (
                 <>
-                  <p className="text-[10px] font-semibold uppercase tracking-[1.8px] text-white/55 mb-2">Combined contribution margin</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-[1.8px] text-white/55 mb-2">
+                    {singleGoal?.valueUnit.heroIsDollar ? "Contribution margin captured" : "Combined contribution margin"}
+                  </p>
                   <p className="font-abridge text-5xl md:text-6xl text-[#EA2C00]" data-testid="text-attain-plan-combined-value">
                     {isMultiGoalWithQuality
                       ? hardContributionMargin > 0
@@ -1395,9 +1499,10 @@ export default function StepAttainment({
                   .filter((g) => !isMultiGoalWithQuality || g.id !== "quality")
                   .map((g) => {
                     const goalMargin = combined.byGoal[g.id]?.totalMargin ?? 0;
+                    const goalCountValue = combined.byGoal[g.id]?.totalCount ?? 0;
                     const shareBase = isMultiGoalWithQuality ? hardContributionMargin : target.margin;
                     const share = shareBase > 0 ? Math.round((goalMargin / shareBase) * 100) : 0;
-                    return <PriorityBreakdownCard key={g.id} goalDef={g} margin={goalMargin} share={share} />;
+                    return <PriorityBreakdownCard key={g.id} goalDef={g} margin={goalMargin} count={goalCountValue} share={share} />;
                   })}
               </div>
             )}
@@ -1437,9 +1542,12 @@ function StartingPointSection({
   selectedLines,
   unitCount,
   unitLabel,
-}: PriorityData & { unitCount: number; unitLabel: string }) {
+  outcomeMetric,
+}: PriorityData & { unitCount: number; unitLabel: string; outcomeMetric?: TrackedMetric }) {
   const goalOwnerName = goalOwner?.name?.trim();
   const goalOwnerTitle = goalOwner?.title?.trim();
+  const isRevenueHero = goalDef.valueUnit.heroIsDollar;
+  const isQualityPriority = goal === "quality";
   // The scope card's footnote and the "Scoped to N" line below both read the
   // same unitCount, so they can never disagree the way the old hardcoded
   // "In scope 40" card did with a "Scoped to 50" footnote.
@@ -1472,7 +1580,31 @@ function StartingPointSection({
           <p className="text-[11px] font-semibold uppercase tracking-[3.2px] text-[#EA2C00] mb-1">Where You Are Today</p>
           <h2 className="font-abridge text-[32px] text-[#1A1A1A]">Your Starting Point</h2>
         </div>
-        <p className="text-[15px] leading-relaxed text-[#3A3A3A] mb-5 max-w-[720px]">{content.p1Lead}</p>
+        {/* The counterfactual, in their own numbers: where the outcome metric
+            sits today versus where this plan takes it. Uses the partner's own
+            baseline where the plan captured one, and labels a benchmark plainly
+            when it did not, so a benchmark is never read as their measured
+            number. */}
+        {outcomeMetric && (
+          <div
+            className="mb-5 bg-[#F4F0EA] border border-[#E7E0D6] border-l-[3px] border-l-[#EA2C00] rounded-r-md p-4"
+            data-testid={`banner-attain-counterfactual-${goal}`}
+          >
+            <p className="text-[10px] font-bold uppercase tracking-wide text-[#EA2C00] mb-2">Today vs this plan</p>
+            <p className="text-[16.5px] leading-relaxed text-[#1A1A1A]">
+              {outcomeMetric.label}:{" "}
+              <b>{outcomeMetric.baselineText.replace(/\s*today\s*$/i, "").trim()}</b>
+              {outcomeMetric.baselineTag === "benchmark" && (
+                <span className="ml-1.5 text-[8px] font-bold uppercase tracking-[1px] text-[#8C8C8C] bg-white border border-[#E7E0D6] rounded-full px-1.5 py-0.5 align-middle">
+                  Benchmark
+                </span>
+              )}{" "}
+              today, <span className="text-[#EA2C00] font-semibold">{outcomeMetric.targetText}</span> on this plan.
+            </p>
+          </div>
+        )}
+
+        <p className="text-[13.5px] leading-relaxed text-[#8C8C8C] mb-5 max-w-[720px]">{content.p1Lead}</p>
 
         {/* The at-a-glance shape of the demand this priority is built
             against — kept front and center in the default view; the
@@ -1518,19 +1650,34 @@ function StartingPointSection({
         </div>
 
         <p className="text-[16.5px] font-semibold text-[#1A1A1A] mb-3">{content.goodHead}</p>
-        {/* Both figures below come straight from the engine (`result`), not
-            from static content copy - this is the fix for the mismatch a
-            prior pass flagged between a hardcoded "good" number and the
-            actual built total. */}
+        {/* Both figures come straight from the engine (`result`), never static
+            copy. The concrete outcome leads (visits opened, departures avoided,
+            overtime hours off the schedule, harm events prevented), in the
+            goal's own named unit, and the dollar sits beside it as the
+            translation. Revenue is the exception: the money IS the delivered
+            work, so it leads. */}
         <div className="bg-[#1A1A1A] rounded-lg flex flex-wrap p-6 mb-2" data-testid={`card-attain-plan-goal-hero-${goal}`}>
-          <div className="flex-1 min-w-[140px] px-3">
-            <p className="font-abridge text-4xl text-white" data-testid={`text-attain-plan-goal-margin-${goal}`}>{formatCompact(goalMargin)}</p>
-            <p className="text-[9px] font-semibold uppercase tracking-[1.8px] text-white/55 mt-2">Contribution margin, this priority</p>
-          </div>
-          <div className="flex-1 min-w-[140px] px-3">
-            <p className="font-abridge text-4xl text-white" data-testid={`text-attain-plan-goal-count-${goal}`}>{goalCount.toLocaleString()}</p>
-            <p className="text-[9px] font-semibold uppercase tracking-[1.8px] text-white/55 mt-2">Units of value built</p>
-          </div>
+          {isRevenueHero ? (
+            <div className="flex-1 min-w-[200px] px-3">
+              <p className="font-abridge text-4xl text-[#EA2C00]" data-testid={`text-attain-plan-goal-margin-${goal}`}>{formatCompact(goalMargin)}</p>
+              <p className="text-[9px] font-semibold uppercase tracking-[1.8px] text-white/55 mt-2">
+                contribution margin on care already delivered, counted once
+              </p>
+            </div>
+          ) : (
+            <>
+              <div className="flex-1 min-w-[140px] px-3">
+                <p className="font-abridge text-4xl text-[#EA2C00]" data-testid={`text-attain-plan-goal-count-${goal}`}>{formatCount(goalCount)}</p>
+                <p className="text-[9px] font-semibold uppercase tracking-[1.8px] text-white/55 mt-2">{goalDef.valueUnit.countNoun}</p>
+              </div>
+              <div className="flex-1 min-w-[140px] px-3">
+                <p className="font-abridge text-4xl text-white" data-testid={`text-attain-plan-goal-margin-${goal}`}>{formatCompact(goalMargin)}</p>
+                <p className="text-[9px] font-semibold uppercase tracking-[1.8px] text-white/55 mt-2">
+                  {isQualityPriority ? "cost & harm avoided, a soft safety figure" : "contribution margin, this priority"}
+                </p>
+              </div>
+            </>
+          )}
         </div>
         <p className="text-[11px] text-[#8C8C8C]">
           Scoped to {unitCount.toLocaleString()} {unitLabel}, built from {committedLevers.length} committed

@@ -40,6 +40,23 @@ export interface GoalDef {
   chain: ChainLink[]; // 7 links
   mechanisms: Mechanism[]; // 3, for the hardest-link page
   flow: { label: string; kind: "start" | "mid" | "risk" | "end" }[]; // pill-flow
+  /** How this goal's value reads back CONCRETELY on the Attainment output.
+   * The output leads with the real thing the partner is buying, in their own
+   * unit, not an abstract "units of value" or a dollar handed to them cold. */
+  valueUnit: {
+    /** Lowercase noun phrase for the realized count (what `totalCount` counts),
+     * e.g. "net-new visits a year". Used wherever the old "Units of value
+     * built" label was. Empty when the goal leads with the dollar (revenue). */
+    countNoun: string;
+    /** true => the headline hero is the dollar, because the money IS the work
+     * already delivered (revenue). false => the hero is the concrete count and
+     * the dollar supports it (access, retention, capacity, quality). */
+    heroIsDollar: boolean;
+    /** The one-line outcome sentence that leads the whole output. `{count}` and
+     * `{dollar}` tokens are filled from the engine at render, so it is always
+     * the partner's own derived figure, never a template number. */
+    outcomeTemplate: string;
+  };
 }
 
 /** Per (setting, goal) copy + defaults — everything that varies by care

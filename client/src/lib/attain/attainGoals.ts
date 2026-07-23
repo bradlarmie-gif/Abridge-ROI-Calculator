@@ -186,6 +186,11 @@ export const GOAL_CATALOG: Record<GoalId, GoalDef> = {
       { label: "Slots filled", kind: "mid" },
       { label: "Patient Access ↑", kind: "end" },
     ],
+    valueUnit: {
+      countNoun: "net-new visits a year",
+      heroIsDollar: false,
+      outcomeTemplate: "Open room for about {count} more visits a year.",
+    },
   },
 
   retention: {
@@ -277,6 +282,11 @@ export const GOAL_CATALOG: Record<GoalId, GoalDef> = {
       { label: "Likelihood-to-stay ↑", kind: "mid" },
       { label: "Retention ↑", kind: "end" },
     ],
+    valueUnit: {
+      countNoun: "departures avoided a year",
+      heroIsDollar: false,
+      outcomeTemplate: "Keep about {count} clinicians a year who would otherwise leave.",
+    },
   },
 
   revenue: {
@@ -368,6 +378,11 @@ export const GOAL_CATALOG: Record<GoalId, GoalDef> = {
       { label: "Claim clears", kind: "mid" },
       { label: "Revenue captured", kind: "end" },
     ],
+    valueUnit: {
+      countNoun: "",
+      heroIsDollar: true,
+      outcomeTemplate: "Put about {dollar} of care you already deliver back on the claim.",
+    },
   },
 
   quality: {
@@ -459,6 +474,11 @@ export const GOAL_CATALOG: Record<GoalId, GoalDef> = {
       { label: "Bundle compliance ↑", kind: "mid" },
       { label: "Events ↓", kind: "end" },
     ],
+    valueUnit: {
+      countNoun: "harm events prevented a year",
+      heroIsDollar: false,
+      outcomeTemplate: "Prevent about {count} harm events a year.",
+    },
   },
 
   capacity: {
@@ -550,6 +570,11 @@ export const GOAL_CATALOG: Record<GoalId, GoalDef> = {
       { label: "On-time completion ↑", kind: "mid" },
       { label: "Overtime ↓", kind: "end" },
     ],
+    valueUnit: {
+      countNoun: "overtime hours avoided a year",
+      heroIsDollar: false,
+      outcomeTemplate: "Take about {count} overtime hours a year off the schedule.",
+    },
   },
 };
 
