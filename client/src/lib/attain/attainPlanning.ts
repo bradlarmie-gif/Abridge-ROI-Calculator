@@ -59,11 +59,17 @@ export interface AttainPlanning extends PlanningPhaseLayer {
    * Single-goal plans keep using the top-level `PlanningPhaseLayer` fields and
    * never set this. */
   byGoal?: Partial<Record<GoalId, PlanningPhaseLayer>>;
-  /** The MEASUREMENT-PLAN editable layer for the rebuilt outpatient-access
+  /** The MEASUREMENT-PLAN editable layer for a SINGLE-goal plan on the rebuilt
    * Plan step (see attainMeasurement.ts + StepMeasurementPlan.tsx). Additive
-   * and fully optional, so every other goal's Plan (still on StepPlanning) and
-   * every older saved link decode unchanged and never touch it. */
+   * and fully optional, so every older saved link decodes unchanged and never
+   * touches it. */
   measurement?: MeasurementPlanState;
+  /** Per-goal MEASUREMENT-PLAN layers for a MULTI-goal plan, keyed by goal, so
+   * two goals' metric picks/targets/owners never collide (access and retention
+   * even share metric ids like `minutes-saved-per-note`). Single-goal plans
+   * keep using the top-level `measurement` field and never set this. Additive
+   * and optional, so an older link that never carried it decodes cleanly. */
+  measurementByGoal?: Partial<Record<GoalId, MeasurementPlanState>>;
 }
 
 /** One partner-editable metric row on the measurement plan: the target they
@@ -187,6 +193,17 @@ export function phaseSignalLabel(
 // falling back to the derived defaults so an untouched plan reads entirely off
 // the Align state. Owners and dates fall back to BLANK, never a fabricated
 // value.
+
+/** The measurement layer to read for one goal, wrapped as an `AttainPlanning`
+ * so the shared resolvers below (measurementChosen / Target / Owner / ByWhen)
+ * and the shared `MeasurementPlanSurface` read it unchanged. A SINGLE-goal plan
+ * (no `goal` passed) uses the top-level `measurement`; a MULTI-goal plan keys it
+ * per goal in `measurementByGoal[goal]`, so two goals' picks never collide. */
+export function measurementPlanningFor(planning: AttainPlanning | undefined, goal?: GoalId): AttainPlanning {
+  if (!planning) return {};
+  if (!goal) return planning;
+  return { measurement: planning.measurementByGoal?.[goal] };
+}
 
 /** The metric ids the partner picked for one chain link, falling back to the
  * derived default set (the metrics they already named as proof on Align). An

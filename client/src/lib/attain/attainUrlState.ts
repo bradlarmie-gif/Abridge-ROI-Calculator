@@ -162,12 +162,14 @@ function isWellFormedPlanning(v: unknown): v is AttainPlanning {
   if (v.byGoal !== undefined) {
     if (!isPlainObject(v.byGoal) || !Object.values(v.byGoal).every(phaseLayerOk)) return false;
   }
-  // The measurement-plan layer (outpatient Access), additive and optional: a
-  // string-map of chosen metric ids per link, a map of per-metric
-  // target/owner/by-when strings, and three plain string fields. Only
-  // shape-checked when present, so an older link that never carried it decodes.
-  if (v.measurement !== undefined) {
-    const meas = v.measurement;
+  // The measurement-plan layer, additive and optional: a string-map of chosen
+  // metric ids per link, a map of per-metric target/owner/by-when strings, and
+  // three plain string fields. A SINGLE-goal plan carries it at the top level
+  // (`measurement`); a MULTI-goal plan keys one per goal in `measurementByGoal`.
+  // Both only shape-checked when present, so an older link that never carried
+  // either decodes cleanly.
+  const measurementOk = (meas: unknown): boolean => {
+    if (meas === undefined) return true;
     if (!isPlainObject(meas)) return false;
     for (const k of ["promiseByWhen", "commitmentOwner", "commitmentByWhen"] as const) {
       if (meas[k] !== undefined && typeof meas[k] !== "string") return false;
@@ -184,6 +186,11 @@ function isWellFormedPlanning(v: unknown): v is AttainPlanning {
         isPlainObject(e) && ["target", "owner", "byWhen"].every((f) => e[f] === undefined || typeof e[f] === "string");
       if (!Object.values(meas.entries).every(entryOk)) return false;
     }
+    return true;
+  };
+  if (!measurementOk(v.measurement)) return false;
+  if (v.measurementByGoal !== undefined) {
+    if (!isPlainObject(v.measurementByGoal) || !Object.values(v.measurementByGoal).every(measurementOk)) return false;
   }
   return true;
 }
