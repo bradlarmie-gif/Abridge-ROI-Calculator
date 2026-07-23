@@ -31,8 +31,10 @@
  */
 
 import { computeAccessChain, type AccessChainResult } from "./attainAccess";
+import { computeWorkforceChain } from "./attainWorkforce";
 import type { AttainBaseline, LeverValues } from "./attainLevers";
-import { deriveAccessLadder } from "@/pages/attain/steps/accessLadder";
+import type { AttainSetting } from "./attainTypes";
+import { deriveAccessLadder, deriveRetentionLadder, retentionChartingTerm } from "@/pages/attain/steps/accessLadder";
 import { firstSelected, selectedOptionIds, sharpenerNumber } from "./alignFramework";
 
 // ── Labeled benchmarks, used ONLY when the partner has no measured figure ────
@@ -47,6 +49,19 @@ export const ACCESS_MEASURE_BENCH = {
   newPatientWaitTargetDays: 14,
   noShowRatePct: 12,
   noShowRateTargetPct: 8,
+} as const;
+
+// ── Retention (WORKFORCE) labeled benchmarks, used ONLY when the partner has
+// no measured figure. Surfaced with a "Benchmark" tag so they are never mistaken
+// for the partner's own numbers. Deliberately typical, defensible starting
+// points a partner replaces with their own pulse data. ─────────────────────
+export const RETENTION_MEASURE_BENCH = {
+  afterHoursMinutesPerDay: 60,
+  afterHoursTargetMinutesPerDay: 30,
+  burnoutPct: 50, // share of clinicians reporting burnout symptoms
+  burnoutTargetPct: 35,
+  intentToStayPct: 70, // share saying they are likely to stay a year out
+  intentToStayTargetPct: 80,
 } as const;
 
 export type MeasurementBaselineTag = "data" | "inherited" | "benchmark";
@@ -71,8 +86,19 @@ export interface MeasurementMetricOption {
   fromProof: boolean;
 }
 
+/** The make-or-break commitment copy, per goal. The one thing the plan lives
+ * or dies on: for access, directing freed time to the schedule; for retention,
+ * protecting the freed relief so the day actually gets lighter. */
+export interface MeasurementCommitment {
+  title: string;
+  teach: string;
+  ownerLabel: string;
+}
+
 export interface MeasurementLink {
-  id: "minutes" | "schedule" | "wait" | "visits";
+  /** Stable per-link id, the persistence key for the partner's chosen metrics.
+   * A string (not a fixed union) so each goal names its own chain links. */
+  id: string;
   /** The step number in the chain (1-based), for the ordered scorecard. */
   n: number;
   title: string;
@@ -99,6 +125,12 @@ export interface MeasurementPlanModel {
   outcome?: string;
   realizedVisits: number;
   prize: number;
+  /** The make-or-break commitment copy, per goal, so the UI surface is shared
+   * across goals and only the derivation supplies the goal-specific words. */
+  commitment: MeasurementCommitment;
+  /** The monthly-check teaching line, naming this goal's first and last link so
+   * the honest "early links turn first" order reads true for the chain shown. */
+  monthlyCheckTeach: string;
 }
 
 // ── Formatting (self-contained, same convention as accessLadder) ─────────────
@@ -107,6 +139,12 @@ function fmtInt(n: number): string {
   return Math.round(n).toLocaleString();
 }
 function fmtHours1(n: number): string {
+  return (Math.round(n * 10) / 10).toLocaleString();
+}
+function fmtPp(n: number): string {
+  return (Math.round(n * 10) / 10).toString();
+}
+function fmtDepartures(n: number): string {
   return (Math.round(n * 10) / 10).toLocaleString();
 }
 function fmtMoneyCompact(n: number): string {
@@ -391,5 +429,271 @@ export function deriveAccessMeasurementPlan(
     outcome,
     realizedVisits: ladder.realizedVisits,
     prize: ladder.prize,
+    commitment: {
+      title: "The one thing this plan lives or dies on",
+      teach:
+        "Freed documentation time only opens access if it is directed to the schedule as bookable slots. If it quietly refills with other work, the minutes are real but the visits never land. Someone has to own protecting that freed time and pointing it at the schedule.",
+      ownerLabel: "Who owns directing the freed time",
+    },
+    monthlyCheckTeach:
+      "Walk the chain in order. The minutes move first, the visits move last, so early links should turn before the later ones. Attainment is not a number you assert. It is whether each metric moved toward its target on the schedule you set.",
+  };
+}
+
+// ── WORKFORCE (retention) measurement plan ──────────────────────────────────
+//
+// Retention moves in a different causal order than access, so the chain and its
+// metric menus are its own, but the surface and the discipline are identical:
+// every baseline is the partner's own figure or a labeled benchmark, every
+// owner and date starts BLANK, targets default to the derived figure so the gap
+// shows, and the whole thing is DYNAMIC to the workforce Align choices.
+//
+// The chain is the order retention actually moves in:
+//   1. the after-hours charting falls   (the load that drives burnout comes off)
+//   2. burnout eases                     (a short pulse catches it before anyone quits)
+//   3. they intend to stay               (likelihood-to-stay is the earliest read)
+//   4. voluntary turnover falls          (the outcome the prize is priced on)
+//
+// DYNAMIC to Align:
+//   - the "what is driving departures" gate (Q3) names the burnout link as the
+//     one the partner already said Abridge can reach, so it is badged;
+//   - the "where the burden hurts" answer (Q4) pre-selects and badges the
+//     after-hours-charting metric when the burden is after hours;
+//   - the proof (Q5): "turnover number" badges the turnover/departures metrics,
+//     "a burnout pulse" badges the burnout and intent-to-stay metrics, and
+//     "Love Stories" adds the qualitative proof on link 4;
+//   - scope + Starting-Point numbers (their turnover rate, replacement cost,
+//     headcount) set the baselines and derived targets on link 4.
+
+/** The Align proof/gate/burden option ids -> the retention metric id each maps
+ * onto, so the answers a partner already gave pre-select the matching metric. */
+const RETENTION_PROOF_TO_METRICS: Record<string, string[]> = {
+  turnover: ["voluntary-turnover-rate", "departures-avoided"],
+  pulse: ["burnout-score", "intent-to-stay"],
+  lovestories: ["love-stories"],
+};
+
+/**
+ * Derives the WORKFORCE (retention) measurement plan from the Align state.
+ *
+ * `opts.minutes`, `opts.departuresAvoided`, and `opts.prize` are passed in so
+ * the caller supplies the same realization/split-applied figures every other
+ * retention surface uses (off the combined engine result), exactly as
+ * `deriveRetentionLadder` takes them, keeping link-4's targets reconciled with
+ * Align and the promise header.
+ */
+export function deriveRetentionMeasurementPlan(
+  baseline: AttainBaseline,
+  setting: AttainSetting,
+  values: LeverValues,
+  crossGoalShareMultiplier: number,
+  opts: { minutes: number; departuresAvoided: number; prize: number },
+): MeasurementPlanModel {
+  const chain = computeWorkforceChain(baseline, setting, values, crossGoalShareMultiplier);
+  const ladder = deriveRetentionLadder(chain, setting, baseline, {
+    minutes: opts.minutes,
+    departuresAvoided: opts.departuresAvoided,
+    prize: opts.prize,
+  });
+  const chartingTerm = retentionChartingTerm(setting);
+  const unitPlural = setting === "nursing" ? "nurses" : "clinicians";
+
+  const who = firstSelected(values, "retentionAlignWho");
+  const gate = firstSelected(values, "retentionAlignGate");
+  const outcome = firstSelected(values, "retentionAlignOutcome");
+  const burden = firstSelected(values, "retentionAlignBurden");
+  const proof = selectedOptionIds(values, "retentionAlignProof");
+
+  const ready = Boolean(who) && Boolean(gate);
+  const emptyHint = !who
+    ? "Pick who this is for on the Align step, then the measurement chain builds itself from what you aligned on."
+    : !gate
+      ? "Say what is driving departures on the Align step, so the chain measures only what Abridge can honestly move."
+      : "Set your Align choices and the chain builds itself here.";
+
+  const proofHas = (metricId: string) =>
+    proof.some((p) => (RETENTION_PROOF_TO_METRICS[p] ?? []).includes(metricId));
+  // The gate says burnout is a real driver, so the burnout pulse is the metric
+  // the partner already pointed at as within Abridge's reach.
+  const gateNamesBurnout = gate === "burnout" || gate === "meaningful";
+  const burdenIsAfterHours = burden === "afterhours" || burden === "both";
+
+  // ── Link 1 — the after-hours charting falls ───────────────────────────────
+  const minutesTarget = ladder.minutes > 0 ? ladder.minutes : opts.minutes;
+  const chartingFromProof = burdenIsAfterHours;
+  const chartingLink: MeasurementLink = {
+    id: "charting",
+    n: 1,
+    title: `The ${chartingTerm} falls`,
+    teach: `The first thing to prove: the note comes off the evening. ${chartingTerm[0].toUpperCase()}${chartingTerm.slice(1)} is the load that drives burnout, and everything downstream depends on it actually coming down.`,
+    blocked: false,
+    metrics: [
+      {
+        id: "minutes-saved-per-note",
+        label: "Minutes saved per note",
+        unit: "min / note",
+        helper: "Charting time that comes off each note, measured against a timed sample before go-live.",
+        baseline: "0 today",
+        baselineTag: "data",
+        defaultTarget: `${fmtInt(minutesTarget)} min`,
+        fromProof: false,
+      },
+      {
+        id: "after-hours-charting-minutes",
+        label: `${chartingTerm[0].toUpperCase()}${chartingTerm.slice(1)} minutes per day`,
+        unit: "min / day",
+        helper: `The charting that happens outside the shift, the work outside of work that drives burnout. Benchmark until you drop in your own pulse figure.`,
+        baseline: `${RETENTION_MEASURE_BENCH.afterHoursMinutesPerDay} min / day`,
+        baselineTag: "benchmark",
+        defaultTarget: `under ${RETENTION_MEASURE_BENCH.afterHoursTargetMinutesPerDay} min / day`,
+        fromProof: chartingFromProof,
+      },
+    ],
+    defaultChosen: chartingFromProof ? ["after-hours-charting-minutes"] : ["minutes-saved-per-note"],
+  };
+
+  // ── Link 2 — burnout eases ────────────────────────────────────────────────
+  const burnoutFromProof = proofHas("burnout-score") || gateNamesBurnout;
+  const burnoutLink: MeasurementLink = {
+    id: "burnout",
+    n: 2,
+    title: "Burnout eases",
+    teach:
+      "As the after-hours load comes off, the day gets more livable. A short pulse catches whether burnout is actually easing, before it becomes a resignation.",
+    blocked: false,
+    metrics: [
+      {
+        id: "burnout-score",
+        label: "Burnout assessment score",
+        unit: "% reporting burnout",
+        helper: "A standard burnout pulse (share reporting symptoms), trending down as the relief holds. Benchmark until you drop in your own.",
+        baseline: `${RETENTION_MEASURE_BENCH.burnoutPct}%`,
+        baselineTag: "benchmark",
+        defaultTarget: `under ${RETENTION_MEASURE_BENCH.burnoutTargetPct}%`,
+        fromProof: burnoutFromProof,
+      },
+    ],
+    defaultChosen: ["burnout-score"],
+  };
+
+  // ── Link 3 — they intend to stay ──────────────────────────────────────────
+  const stayFromProof = proofHas("intent-to-stay");
+  const stayLink: MeasurementLink = {
+    id: "stay",
+    n: 3,
+    title: "They intend to stay",
+    teach:
+      "Before a resignation shows up in the turnover number, it shows up as intent. Likelihood-to-stay is the earliest read that the relief is holding.",
+    blocked: false,
+    metrics: [
+      {
+        id: "intent-to-stay",
+        label: "Likelihood-to-stay",
+        unit: "% likely to stay",
+        helper: `The share of ${unitPlural} who say they are likely to still be here a year from now. Benchmark until you drop in your own pulse.`,
+        baseline: `${RETENTION_MEASURE_BENCH.intentToStayPct}%`,
+        baselineTag: "benchmark",
+        defaultTarget: `over ${RETENTION_MEASURE_BENCH.intentToStayTargetPct}%`,
+        fromProof: stayFromProof,
+      },
+      {
+        id: "intent-to-stay-index",
+        label: "Intent-to-stay index",
+        unit: "index",
+        helper: "A rolled-up intent-to-stay score off your engagement survey, if you already run one, trending up.",
+        baseline: "your current index",
+        baselineTag: "benchmark",
+        defaultTarget: "above baseline",
+        fromProof: false,
+      },
+    ],
+    defaultChosen: ["intent-to-stay"],
+  };
+
+  // ── Link 4 — voluntary turnover falls (the outcome the prize is priced on) ─
+  // The turnover-rate baseline is the partner's own figure when they entered one
+  // on Starting Point, else this setting's labeled benchmark, exactly the way
+  // the workforce scope resolves it. The target is that rate less the honest
+  // points the plan removes, so the gap is real, never invented.
+  const turnoverRaw = typeof values.retentionTurnoverRate === "number" ? values.retentionTurnoverRate : 0;
+  const turnoverIsData = turnoverRaw > 0;
+  const turnoverBaselinePct = ladder.turnoverRatePct;
+  const turnoverTargetPct = Math.max(0, turnoverBaselinePct - chain.payoff.turnoverPointsReduced);
+  const departuresSet = ladder.departuresAvoided > 0;
+  const prizeSet = ladder.prize > 0;
+  const turnoverFromProof = proofHas("voluntary-turnover-rate");
+  const departuresFromProof = proofHas("departures-avoided");
+  const turnoverLink: MeasurementLink = {
+    id: "turnover",
+    n: 4,
+    title: "Voluntary turnover falls",
+    teach: `The payoff: fewer of the ${unitPlural} you have today choosing to leave, and the replacement cost you avoid. This is the number the promise is priced on.`,
+    blocked: false,
+    metrics: [
+      {
+        id: "voluntary-turnover-rate",
+        label: "Voluntary turnover rate",
+        unit: "%",
+        helper: "The share of your team choosing to leave in a year, trending down against this baseline.",
+        baseline: `${fmtPp(turnoverBaselinePct)}%`,
+        baselineTag: turnoverIsData ? "data" : "benchmark",
+        defaultTarget: `under ${fmtPp(turnoverTargetPct)}%`,
+        fromProof: turnoverFromProof,
+      },
+      {
+        id: "departures-avoided",
+        label: "Departures avoided",
+        unit: `${unitPlural} / yr`,
+        helper: "Clinicians who stay because the day got better, the smaller, honest count behind the dollar.",
+        baseline: "0 today",
+        baselineTag: "data",
+        defaultTarget: departuresSet ? `${fmtDepartures(ladder.departuresAvoided)} / yr` : "finish the Align chain",
+        fromProof: departuresFromProof,
+      },
+      {
+        id: "replacement-cost-saved",
+        label: "Replacement cost saved",
+        unit: "$ / yr",
+        helper: "The departures avoided priced at your replacement cost per departure. This is the CFO number.",
+        baseline: "$0 today",
+        baselineTag: "data",
+        defaultTarget: prizeSet ? `${fmtMoneyCompact(ladder.prize)} / yr` : "finish the Align chain",
+        fromProof: false,
+      },
+    ],
+    defaultChosen: [],
+  };
+  const turnoverProofChosen = turnoverLink.metrics.filter((m) => m.fromProof).map((m) => m.id);
+  turnoverLink.defaultChosen = turnoverProofChosen.length > 0 ? turnoverProofChosen : ["voluntary-turnover-rate"];
+  // Love Stories is a qualitative proof the partner can carry alongside the
+  // turnover number when they named it on Align.
+  if (proofHas("love-stories")) {
+    turnoverLink.metrics.push({
+      id: "love-stories",
+      label: "Love Stories",
+      unit: "collected",
+      helper: `${setting === "nursing" ? "Nurses" : "Clinicians"} telling you, in their own words, that the day got better.`,
+      baseline: "none collected yet",
+      baselineTag: "data",
+      defaultTarget: "collected each quarter",
+      fromProof: true,
+    });
+    turnoverLink.defaultChosen = [...turnoverLink.defaultChosen, "love-stories"];
+  }
+
+  return {
+    ready,
+    emptyHint,
+    links: [chartingLink, burnoutLink, stayLink, turnoverLink],
+    gate,
+    outcome,
+    realizedVisits: ladder.departuresAvoided,
+    prize: ladder.prize,
+    commitment: {
+      title: "The one thing this plan lives or dies on",
+      teach: `Freed ${chartingTerm} time only holds people if it stays with the clinician as relief. If it quietly refills with other work, the minutes are real but the day never gets lighter and no one stays for it. Someone has to own protecting that freed time as relief.`,
+      ownerLabel: "Who owns protecting the relief",
+    },
+    monthlyCheckTeach: `Walk the chain in order. The ${chartingTerm} falls first, voluntary turnover moves last, so early links should turn before the later ones. Attainment is not a number you assert. It is whether each metric moved toward its target on the schedule you set.`,
   };
 }
