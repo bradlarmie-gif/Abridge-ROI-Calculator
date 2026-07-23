@@ -609,65 +609,70 @@ function MetricDetail({
   // baseline as the placeholder, tagged for what it is).
   const baselineInput = measurementBaseline(planning, metric.id, "");
   const baselineOwn = baselineInput.trim().length > 0;
+  // The editorial language ported from the Starting Point step: small-caps
+  // labels, borderless underline fields that turn coral on focus, coral only on
+  // the target value. No coral-tinted panel, no boxed inputs.
+  const LBL = "text-[10px] font-semibold uppercase tracking-[1.6px] text-[#8C8C8C]";
+  const field =
+    "w-full bg-transparent border-0 border-b border-[#E0D9CE] rounded-none px-0 pb-1 text-[15px] text-[#1A1A1A] outline-none transition-colors focus:border-[#EA2C00] placeholder:text-[#C4BCB0]";
   return (
     <motion.div
       initial={{ opacity: 0, height: 0 }}
       animate={{ opacity: 1, height: "auto" }}
-      className="mt-3 rounded-lg border border-[#F3C9BE] bg-[#FFF6F3] p-4"
+      className="overflow-hidden"
       data-testid={`detail-measure-metric-${linkId}-${metric.id}`}
     >
-      <div className="flex items-center gap-2 mb-3">
-        <span className="text-[13px] font-semibold text-[#1A1A1A]">{metric.label}</span>
-        <span className="text-[11px] text-[#8C8C8C]">measured in {metric.unit}</span>
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        <div>
-          <div className="flex items-center gap-1.5 mb-1">
-            <FieldLabel>Your baseline</FieldLabel>
-            {/* Honest by construction: "Your number" only once the partner types
-                one, otherwise the derived tag (a Starting-Point fact, an Align
-                number, or a plainly-labeled Benchmark). Never calls a benchmark
-                their number. */}
-            <BaselineTag tag={baselineOwn ? "data" : metric.baselineTag} />
+      <div className="mt-1 pt-5 pb-2 pl-5 border-t border-[#EFEAE1]">
+        <div className="flex flex-wrap gap-x-10 gap-y-5">
+          <div className="min-w-[130px]">
+            <div className="flex items-center gap-1.5 mb-2">
+              <span className={LBL}>Your baseline</span>
+              {/* Honest by construction: "Your number" only once the partner types
+                  one, otherwise the derived tag (a Starting-Point fact, an Align
+                  number, or a plainly-labeled Benchmark). Never calls a benchmark
+                  their number. */}
+              <BaselineTag tag={baselineOwn ? "data" : metric.baselineTag} />
+            </div>
+            <input
+              value={baselineInput}
+              onChange={(e) => onChangeMetricField(metric.id, { baseline: e.target.value })}
+              placeholder={metric.baseline}
+              className={field}
+              data-testid={`input-measure-baseline-${metric.id}`}
+            />
           </div>
-          <input
-            value={baselineInput}
-            onChange={(e) => onChangeMetricField(metric.id, { baseline: e.target.value })}
-            placeholder={metric.baseline}
-            className={attainTextInput}
-            data-testid={`input-measure-baseline-${metric.id}`}
-          />
+          <div className="min-w-[130px]">
+            <p className={`${LBL} mb-2`}>Target</p>
+            <input
+              value={target}
+              onChange={(e) => onChangeMetricField(metric.id, { target: e.target.value })}
+              placeholder={metric.defaultTarget}
+              className={`${field} text-[#EA2C00] font-semibold placeholder:text-[#EFB9AC] placeholder:font-normal`}
+              data-testid={`input-measure-target-${metric.id}`}
+            />
+          </div>
+          <div className="min-w-[150px] flex-1">
+            <p className={`${LBL} mb-2`}>Owner</p>
+            <input
+              value={owner}
+              onChange={(e) => onChangeMetricField(metric.id, { owner: e.target.value })}
+              placeholder={ownerName || "Name the owner"}
+              className={field}
+              data-testid={`input-measure-owner-${metric.id}`}
+            />
+          </div>
+          <div className="min-w-[140px]">
+            <p className={`${LBL} mb-2`}>By when</p>
+            <input
+              type="date"
+              value={byWhen}
+              onChange={(e) => onChangeMetricField(metric.id, { byWhen: e.target.value })}
+              className={field}
+              data-testid={`input-measure-bywhen-${metric.id}`}
+            />
+          </div>
         </div>
-        <div>
-          <FieldLabel>Target</FieldLabel>
-          <input
-            value={target}
-            onChange={(e) => onChangeMetricField(metric.id, { target: e.target.value })}
-            placeholder={metric.defaultTarget}
-            className={attainTextInput}
-            data-testid={`input-measure-target-${metric.id}`}
-          />
-        </div>
-        <div>
-          <FieldLabel>Owner</FieldLabel>
-          <input
-            value={owner}
-            onChange={(e) => onChangeMetricField(metric.id, { owner: e.target.value })}
-            placeholder={ownerName || "Name the owner"}
-            className={attainTextInput}
-            data-testid={`input-measure-owner-${metric.id}`}
-          />
-        </div>
-        <div>
-          <FieldLabel>By when</FieldLabel>
-          <input
-            type="date"
-            value={byWhen}
-            onChange={(e) => onChangeMetricField(metric.id, { byWhen: e.target.value })}
-            className={attainDateInput}
-            data-testid={`input-measure-bywhen-${metric.id}`}
-          />
-        </div>
+        <p className="text-[11px] text-[#B4B4B4] mt-3.5">Measured in {metric.unit}.</p>
       </div>
     </motion.div>
   );
