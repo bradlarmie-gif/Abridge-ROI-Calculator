@@ -414,11 +414,31 @@ export default function MeasurementPlanSurface({
         </div>
       </div>
 
-      {/* 4 — THE MONTHLY CHECK. Walk the chain, honestly. No fabricated 100%. */}
-      <div className="rounded-2xl border border-[#E7E0D6] bg-[#F4F0EA] p-6" data-testid={`card-measure-monthly-check-${goal}`}>
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
-          <h2 className="text-sm font-bold text-[#1A1A1A]">The monthly check</h2>
-          <div className="flex items-center gap-2">
+      {/* 4 — THE MONTHLY CHECK. The takeaway of the whole plan: the scorecard the
+          partner walks every review. Framed and weighted as the deliverable, not
+          a footnote. Walk the chain, honestly. No fabricated 100%. */}
+      <div className="rounded-2xl border-2 border-[#1A1A1A] bg-[#F4F0EA] p-6 md:p-8" data-testid={`card-measure-monthly-check-${goal}`}>
+        <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
+          <div className="min-w-0">
+            <p className="text-[10px] font-bold uppercase tracking-[1.5px] text-[#EA2C00] mb-2">The takeaway</p>
+            <div className="flex items-center gap-3 flex-wrap">
+              <h2 className="text-xl md:text-2xl font-bold text-[#1A1A1A] font-abridge uppercase tracking-tight" data-testid={`text-measure-monthly-title-${goal}`}>
+                The scorecard you walk each review
+              </h2>
+              {trackedRows.length > 0 && (
+                <span
+                  className="inline-flex items-center text-[11px] font-bold uppercase tracking-wide text-[#1A1A1A] bg-white border border-[#E7E0D6] px-2.5 py-1 rounded-full"
+                  data-testid={`text-measure-scorecard-count-${goal}`}
+                >
+                  {trackedRows.length} {trackedRows.length === 1 ? "metric" : "metrics"}
+                </span>
+              )}
+            </div>
+            <p className="text-[13px] text-[#3A3A3A] mt-2 leading-relaxed max-w-[560px]">
+              Everything you picked above gathers here. This is the one page you carry into every review.
+            </p>
+          </div>
+          <div className="flex items-center gap-2 flex-shrink-0">
             <label htmlFor={`select-measure-cadence-${goal}`} className="text-[9px] font-bold uppercase tracking-wide text-[#8C8C8C]">
               Reviewed
             </label>
