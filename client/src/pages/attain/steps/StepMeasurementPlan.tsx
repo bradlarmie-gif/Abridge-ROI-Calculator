@@ -7,10 +7,13 @@ import { deriveAccessLadder } from "./accessLadder";
 import {
   deriveAccessMeasurementPlan,
   deriveRetentionMeasurementPlan,
+  deriveRevenueMeasurementPlan,
   type MeasurementPlanModel,
   type MeasurementLink,
   type MeasurementMetricOption,
 } from "@/lib/attain/attainMeasurement";
+import { computeRevenueChain } from "@/lib/attain/attainRevenue";
+import { computeIpRevenueChain } from "@/lib/attain/attainInpatientRevenue";
 import type { AttainSetting, GoalId } from "@/lib/attain/attainTypes";
 import {
   measurementChosen,
@@ -68,9 +71,10 @@ function BaselineTag({ tag }: { tag: MeasurementMetricOption["baselineTag"] }) {
 
 interface StepMeasurementPlanProps {
   /** Which goal's measurement plan this is. Access is the exemplar; retention
-   * reuses this same surface via `deriveRetentionMeasurementPlan`. Only the
-   * derivation differs; the scorecard UI is shared. */
-  goal: Extract<GoalId, "access" | "retention">;
+   * and revenue reuse this same surface via their own `deriveXMeasurementPlan`.
+   * Only the derivation differs; the scorecard UI is shared. Revenue is
+   * multi-path, so its chain STACKS PER PATH under grouped section headers. */
+  goal: Extract<GoalId, "access" | "retention" | "revenue">;
   /** The care setting, so retention counts the right unit (nurses vs providers)
    * and names the charting term, and the risk placeholder is setting-aware. */
   setting: AttainSetting;
@@ -116,7 +120,20 @@ export default function StepMeasurementPlan({
   // targets and the promise prize reconcile with Align exactly. Only the
   // derivation differs by goal; the scorecard UI below is shared.
   let model: MeasurementPlanModel;
-  if (goal === "retention") {
+  if (goal === "revenue") {
+    // Revenue is multi-path: one lever (complete documentation) feeding several
+    // parallel paths that converge into one prize. The per-path dollars are
+    // scaled by the realization implied by the combined engine result
+    // (revenueRealized / revenueRaw), so the outcome targets and the promise
+    // prize match Build the case exactly, same as StepPlanning does.
+    const isIp = setting === "inpatient";
+    const revenueRaw = isIp
+      ? computeIpRevenueChain(baseline, values).totalValue
+      : computeRevenueChain(baseline, setting, values).totalValue;
+    const revenueRealized = combined?.byGoal.revenue?.totalMargin ?? revenueRaw;
+    const realizationPct = revenueRaw > 0 ? (revenueRealized / revenueRaw) * 100 : 100;
+    model = deriveRevenueMeasurementPlan(baseline, setting, values, { realizationPct });
+  } else if (goal === "retention") {
     const rawMinutes = typeof values.retentionMinutesSaved === "number" ? values.retentionMinutesSaved : 0;
     const minutes = rawMinutes > 0 ? rawMinutes : DEFAULT_MINUTES_SAVED_PER_NOTE;
     // Retention Planning is always a single goal, so no cross-goal split
@@ -245,7 +262,8 @@ export default function StepMeasurementPlan({
       <div className="mb-10">
         <h2 className="text-sm font-bold text-[#1A1A1A] mb-1">The measurement chain</h2>
         <p className="text-[12px] text-[#8C8C8C] mb-5 max-w-[600px] leading-relaxed">
-          Read it top to bottom. This is the causal order access moves in, built from what you aligned on. For each
+          Read it top to bottom. This is the causal order the value moves in, built from what you aligned on.
+          {goal === "revenue" ? " It starts from the one shared lever, then stacks the links for each revenue path you picked." : ""} For each
           link, pick the metric or metrics you will own. You see your baseline, you set the target, you name the owner
           and a rough date.
         </p>
@@ -256,11 +274,20 @@ export default function StepMeasurementPlan({
           </div>
         ) : (
           <div className="space-y-3" data-testid="section-measure-chain">
-            {model.links.map((link, i) => (
+            {model.links.map((link, i) => {
+              const prevGroup = i > 0 ? model.links[i - 1].groupLabel : undefined;
+              const startsGroup = Boolean(link.groupLabel) && link.groupLabel !== prevGroup;
+              return (
               <div key={link.id}>
-                {i > 0 && (
+                {i > 0 && !startsGroup && (
                   <div className="flex justify-center py-1">
                     <ArrowDown className="w-4 h-4 text-[#B4B4B4]" />
+                  </div>
+                )}
+                {startsGroup && (
+                  <div className="flex items-center gap-2 pt-4 pb-2" data-testid={`heading-measure-group-${link.groupLabel}`}>
+                    <span className="text-[10px] font-bold uppercase tracking-[1.5px] text-[#EA2C00]">{link.groupLabel}</span>
+                    <span className="flex-1 h-px bg-[#E7E0D6]" />
                   </div>
                 )}
                 <LinkCard
@@ -272,7 +299,8 @@ export default function StepMeasurementPlan({
                   onChangeMetricField={onChangeMetricField}
                 />
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

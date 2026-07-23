@@ -1011,65 +1011,31 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
               />
             )}
 
-            {step === "commit" && isOutpatientRevenuePlan && (
-              <StepPlanning
-                setting="outpatient"
-                baseline={baseline}
+            {/* REVENUE is cloned onto the same MEASUREMENT PLAN surface as
+                access, in EVERY setting. Revenue is MULTI-PATH, so its chain
+                STACKS PER CHOSEN PATH (shared documentation root, then each
+                path's capture + captured-revenue links) under grouped section
+                headers, mirroring how the revenue Align stacks per path. The
+                derivation differs by setting (outpatient/ED vs inpatient DRG/
+                CDI/Obs); the scorecard UI is shared. Single-goal only; a
+                multi-goal plan that includes revenue still renders StepCommit. */}
+            {step === "commit" && (isOutpatientRevenuePlan || isEdRevenuePlan || isInpatientRevenuePlan) && state.setting && (
+              <StepMeasurementPlan
                 goal="revenue"
-                values={valuesByGoal.revenue ?? defaultLeverValues("revenue", "outpatient")}
+                setting={state.setting}
+                baseline={baseline}
+                values={valuesByGoal.revenue ?? defaultLeverValues("revenue", state.setting)}
                 combined={combined}
                 goalOwner={goalOwnerByPriority.revenue ?? { name: "", title: "" }}
                 onChangeGoalOwner={(patch) => handleChangeGoalOwner("revenue", patch)}
                 planning={planning}
-                onChangePhaseOwner={handleChangePhaseOwner}
-                onChangePhaseSignalTarget={handleChangePhaseSignalTarget}
-                onChangePhaseSignalLabel={handleChangePhaseSignalLabel}
+                onSetChosenMetrics={handleSetChosenMetrics}
+                onChangeMetricField={handleChangeMetricField}
+                onChangePromiseByWhen={handleChangePromiseByWhen}
+                onChangeCommitment={handleChangeMeasureCommitment}
                 onChangePartnerRisk={handleChangePartnerRisk}
                 planCadence={planCadence}
                 onChangePlanCadence={handleChangePlanCadence}
-                totalMonths={state.totalMonths}
-                stepNumber={stepIndex + 1}
-              />
-            )}
-
-            {step === "commit" && isEdRevenuePlan && (
-              <StepPlanning
-                setting="ed"
-                baseline={baseline}
-                goal="revenue"
-                values={valuesByGoal.revenue ?? defaultLeverValues("revenue", "ed")}
-                combined={combined}
-                goalOwner={goalOwnerByPriority.revenue ?? { name: "", title: "" }}
-                onChangeGoalOwner={(patch) => handleChangeGoalOwner("revenue", patch)}
-                planning={planning}
-                onChangePhaseOwner={handleChangePhaseOwner}
-                onChangePhaseSignalTarget={handleChangePhaseSignalTarget}
-                onChangePhaseSignalLabel={handleChangePhaseSignalLabel}
-                onChangePartnerRisk={handleChangePartnerRisk}
-                planCadence={planCadence}
-                onChangePlanCadence={handleChangePlanCadence}
-                totalMonths={state.totalMonths}
-                stepNumber={stepIndex + 1}
-              />
-            )}
-
-            {step === "commit" && isInpatientRevenuePlan && (
-              <StepPlanning
-                setting="inpatient"
-                baseline={baseline}
-                goal="revenue"
-                values={valuesByGoal.revenue ?? defaultLeverValues("revenue", "inpatient")}
-                combined={combined}
-                goalOwner={goalOwnerByPriority.revenue ?? { name: "", title: "" }}
-                onChangeGoalOwner={(patch) => handleChangeGoalOwner("revenue", patch)}
-                planning={planning}
-                onChangePhaseOwner={handleChangePhaseOwner}
-                onChangePhaseSignalTarget={handleChangePhaseSignalTarget}
-                onChangePhaseSignalLabel={handleChangePhaseSignalLabel}
-                onChangePartnerRisk={handleChangePartnerRisk}
-                planCadence={planCadence}
-                onChangePlanCadence={handleChangePlanCadence}
-                totalMonths={state.totalMonths}
                 stepNumber={stepIndex + 1}
               />
             )}
