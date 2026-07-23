@@ -58,6 +58,12 @@ interface AttainLivePanelProps {
    * quality's honest COUNT (harm events prevented) for this panel's headline,
    * the same way `MeasurementPlanSurface` derives it (see `deriveMeasurementModelFor`). */
   baseline: AttainBaseline;
+  /** The compact scorecard preview for the Plan step: the SAME metrics the
+   * main-column monthly check renders (derived off the shared
+   * `trackedMetricsByGoal` in AttainFlow), reduced to goal + metric names for
+   * this narrow sidebar. Names only; the full editable table stays in the main
+   * column. Only read while `step === "commit"` (the measurement Plan step). */
+  planScorecard?: { goal: GoalId; names: string[] }[];
   /** The goal whose Build-the-case page is currently on screen, null on
    * every other step - this is the priority the compact "Attributed to
    * this plan" control below applies to. Moved here from Build the case's
@@ -91,6 +97,7 @@ export default function AttainLivePanel({
   valuesByGoal,
   combined,
   baseline,
+  planScorecard = [],
   activeGoal = null,
   realizationPct = activeGoal ? defaultRealizationPct(activeGoal) : 100,
   onChangeRealization,
@@ -180,6 +187,9 @@ export default function AttainLivePanel({
     const showDollar = !isGatedLadder && dollarBearing > 1;
     return grouped.map((r) => ({ ...r, showDollar }));
   });
+
+  // Total metrics gathered into the scorecard preview so far, across every goal.
+  const scorecardCount = planScorecard.reduce((sum, g) => sum + g.names.length, 0);
 
   return (
     <div className="bg-[#1A1A1A] rounded-2xl overflow-hidden" data-testid="panel-attain-live">
@@ -360,6 +370,47 @@ export default function AttainLivePanel({
                 )}
               </div>
             ))}
+          </div>
+        )}
+
+        {/* The compact scorecard preview, only on the measurement Plan step
+            (`commit`). Mirrors the main-column monthly check: as the partner
+            picks metrics, the running list gathers here, names only, so the
+            takeaway stays in view while they build. The full editable table
+            lives in the main column. */}
+        {step === "commit" && (
+          <div className="pt-3 border-t border-white/10" data-testid="panel-attain-scorecard">
+            <div className="flex items-center justify-between gap-2 mb-2">
+              <p className="text-[10px] uppercase tracking-widest text-white/40">Your scorecard</p>
+              {scorecardCount > 0 && (
+                <span className="text-[10px] font-semibold text-white/60" data-testid="text-attain-scorecard-count">
+                  {scorecardCount} {scorecardCount === 1 ? "metric" : "metrics"}
+                </span>
+              )}
+            </div>
+            {scorecardCount === 0 ? (
+              <p className="text-[11px] text-white/40 leading-relaxed" data-testid="text-attain-scorecard-empty">
+                Pick metrics below and they gather here as the scorecard you walk each review.
+              </p>
+            ) : (
+              <div className="space-y-1.5" data-testid="list-attain-scorecard">
+                {planScorecard.flatMap((group) =>
+                  group.names.map((name, i) => (
+                    <div
+                      key={`${group.goal}-${i}`}
+                      className="flex items-start gap-2 text-xs"
+                      data-testid={`row-attain-scorecard-${group.goal}-${i}`}
+                    >
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#EA2C00] mt-[6px] flex-shrink-0" />
+                      <span className="text-white/70 leading-snug">
+                        {goals.length > 1 && <span className="text-white/40">{GOAL_CATALOG[group.goal].pill} · </span>}
+                        {name}
+                      </span>
+                    </div>
+                  )),
+                )}
+              </div>
+            )}
           </div>
         )}
 

@@ -681,9 +681,9 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
   // its baseline number, so the Progress tab can seed a dated starting point for
   // exactly those metrics and nothing else. This is the same derivation the
   // Attainment hub renders from, so the two can never track different metrics.
-  const trackedMetricSeeds = useMemo(() => {
-    if (goals.length === 0 || !state.setting) return [] as { key: string; baseline: number }[];
-    const byGoal = trackedMetricsByGoal({
+  const trackedByGoal = useMemo(() => {
+    if (goals.length === 0 || !state.setting) return [] as ReturnType<typeof trackedMetricsByGoal>;
+    return trackedMetricsByGoal({
       goals,
       setting: state.setting,
       baseline,
@@ -693,9 +693,33 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
       planning,
       defaultValues: (g) => defaultLeverValues(g, state.setting ?? undefined),
     });
+  }, [goals, state.setting, baseline, valuesByGoal, combined, freedTimeSplit, planning]);
+
+  const trackedMetricSeeds = useMemo(() => {
     // Only numeric-baseline metrics need a seed value; a qualitative metric
     // ("Love Stories", "cleared") still seeds at 0 so its log exists to append to.
-    return byGoal.flatMap(({ rows }) => rows.map((r) => ({ key: r.key, baseline: r.baselineNum })));
+    return trackedByGoal.flatMap(({ rows }) => rows.map((r) => ({ key: r.key, baseline: r.baselineNum })));
+  }, [trackedByGoal]);
+
+  // The compact scorecard preview the live panel shows on the Plan step: the
+  // SAME chosen metrics the monthly check renders, reduced to goal + metric
+  // names for the narrow sidebar. `ignoreReady` so it mirrors the monthly check
+  // exactly (which shows the default picks before the Align gate settles too),
+  // so the sidebar and the main-column table can never disagree on screen.
+  // Names only; the full editable table stays in the main column.
+  const planScorecard = useMemo(() => {
+    if (goals.length === 0 || !state.setting) return [] as { goal: GoalId; names: string[] }[];
+    return trackedMetricsByGoal({
+      goals,
+      setting: state.setting,
+      baseline,
+      valuesByGoal,
+      combined,
+      freedTimeSplit,
+      planning,
+      defaultValues: (g) => defaultLeverValues(g, state.setting ?? undefined),
+      ignoreReady: true,
+    }).map(({ goal, rows }) => ({ goal, names: rows.map((r) => r.label) }));
   }, [goals, state.setting, baseline, valuesByGoal, combined, freedTimeSplit, planning]);
 
   // Seeds a tracked metric's dated log the first time it appears: one entry
@@ -1199,6 +1223,7 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
                   valuesByGoal={valuesByGoal}
                   combined={combined}
                   baseline={baseline}
+                  planScorecard={planScorecard}
                   activeGoal={activeBuildCaseGoal}
                   realizationPct={activeBuildCaseGoal ? (realizationByGoal[activeBuildCaseGoal] ?? defaultRealizationPct(activeBuildCaseGoal)) : 100}
                   onChangeRealization={(pct) => {

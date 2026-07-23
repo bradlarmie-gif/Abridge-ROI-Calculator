@@ -129,11 +129,17 @@ export function trackedMetricsForGoal(params: {
    * `planning.measurementByGoal[goal]`) or a single-goal plan (reads
    * `planning.measurement`). */
   isMulti: boolean;
+  /** When true, returns the chosen metrics even before the plan is "ready"
+   * (its Align gate settled), mirroring exactly what the Plan step's monthly
+   * check shows on screen. The Attainment hub leaves this false so it never
+   * tracks an unbuilt plan; the Plan-step scorecard preview sets it true so the
+   * sidebar and the main-column monthly check can never disagree. */
+  ignoreReady?: boolean;
 }): TrackedMetric[] {
-  const { goal, setting, baseline, values, combined, multiplier, planning, isMulti } = params;
+  const { goal, setting, baseline, values, combined, multiplier, planning, isMulti, ignoreReady = false } = params;
   const model = deriveMeasurementModelFor(goal, setting, baseline, values, combined, multiplier);
   const slice = measurementPlanningFor(planning, isMulti ? goal : undefined);
-  if (!model.ready) return [];
+  if (!ignoreReady && !model.ready) return [];
 
   const rows: TrackedMetric[] = [];
   for (const link of model.links) {
@@ -179,8 +185,11 @@ export function trackedMetricsByGoal(params: {
   freedTimeSplit: number;
   planning: AttainPlanning;
   defaultValues: (goal: GoalId) => LeverValues;
+  /** Passed through to `trackedMetricsForGoal`: true for the Plan-step preview
+   * so it mirrors the monthly check, false (default) for the Attainment hub. */
+  ignoreReady?: boolean;
 }): { goal: MeasurementGoalId; rows: TrackedMetric[] }[] {
-  const { goals, setting, baseline, valuesByGoal, combined, freedTimeSplit, planning, defaultValues } = params;
+  const { goals, setting, baseline, valuesByGoal, combined, freedTimeSplit, planning, defaultValues, ignoreReady = false } = params;
   const isMulti = goals.length > 1;
   const out: { goal: MeasurementGoalId; rows: TrackedMetric[] }[] = [];
   for (const goal of goals) {
@@ -194,6 +203,7 @@ export function trackedMetricsByGoal(params: {
       multiplier: crossGoalShareMultiplierFor(goals, setting, freedTimeSplit, goal),
       planning,
       isMulti,
+      ignoreReady,
     });
     if (rows.length > 0) out.push({ goal, rows });
   }
