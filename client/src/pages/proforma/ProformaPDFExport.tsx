@@ -1393,19 +1393,17 @@ function buildDriverFormula(
     case "nursingRetention": {
       const turnoverRate  = tdi.nursingTurnoverRate || 0;
       const replaceCost   = tdi.nursingReplacementCost || 50000;
-      // Prefer the proforma's terminal-year bed count so this matches the Volumes
-      // tab and the care-setting table; fall back to the Explore snapshot.
-      const beds          = providers || es.nursingStaffedBeds || 0;
-      const occupancy     = Math.round((es.nursingOccupancyRate || 0.85) * 100);
-      const estNurses     = Math.round(beds * (occupancy / 100) * 2.5);
-      const atRisk        = Math.round(estNurses * (turnoverRate / 100));
       const nursingRates: Record<string, number> = nursingRetentionRates(tdi.retentionCustomPercent ?? 10);
       const impPct        = nursingRates[tdi.retentionImpactScenario || 'typical'] ?? 30;
-      const retained      = (atRisk * (impPct / 100)).toFixed(1);
+      // Mirror the engine exactly so the steps reconcile to the value:
+      // nurses × turnover × 40% burnout-related × Abridge impact × replacement cost.
+      const nurses            = providers;
+      const burnoutDepartures = nurses * (turnoverRate / 100) * 0.4;
+      const retained          = burnoutDepartures * (impPct / 100);
       return [
-        { label: `${n(beds)} beds  ×  ${p(occupancy)} occupancy  →  ~${n(estNurses)} nurses  ×  ${p(turnoverRate)} turnover`, value: `${n(atRisk)} nurses/yr at risk` },
-        { label: `${n(atRisk)}  ×  ${p(impPct)} Abridge impact on burnout-driven departures`, value: `${retained} nurses retained/yr` },
-        { label: `${retained}  ×  ${d(replaceCost)} replacement cost per nurse`, value: fmt(driverValue), isResult: true },
+        { label: `${n(nurses)} nurses  ×  ${p(turnoverRate)} turnover  ×  40% burnout-related`, value: `${burnoutDepartures.toFixed(1)} at-risk departures/yr` },
+        { label: `${burnoutDepartures.toFixed(1)}  ×  ${p(impPct)} Abridge impact on burnout-driven departures`, value: `${retained.toFixed(1)} nurses retained/yr` },
+        { label: `${retained.toFixed(1)}  ×  ${d(replaceCost)} replacement cost per nurse`, value: fmt(driverValue), isResult: true },
       ];
     }
 
@@ -1424,12 +1422,13 @@ function buildDriverFormula(
       const hoursPerWk   = tdi.nursingOtHoursPerNurseWeek || 0;
       const reductionPct = tdi.nursingOtReductionPercent || 0;
       const hourlyRate   = tdi.nursingOtHourlyRate || 0;
-      const beds         = providers || es.nursingStaffedBeds || 0;
-      const nurses       = Math.round(beds * (es.nursingOccupancyRate || 0.85) * 2.5);
+      // Mirror the engine: the nurse count (providers) drives OT hours, so the
+      // steps reconcile to the value (no bed→nurse re-derivation).
+      const nurses       = providers;
       const totalOtHrs   = Math.round(nurses * hoursPerWk * 52);
       const savedHrs     = Math.round(totalOtHrs * (reductionPct / 100));
       return [
-        { label: `~${n(nurses)} nurses  ×  ${hoursPerWk} OT hrs/week  ×  52 weeks`, value: `${n(totalOtHrs)} OT hrs/yr (baseline)` },
+        { label: `${n(nurses)} nurses  ×  ${hoursPerWk} OT hrs/week  ×  52 weeks`, value: `${n(totalOtHrs)} OT hrs/yr (baseline)` },
         { label: `${n(totalOtHrs)}  ×  ${p(reductionPct)} reduction from documentation efficiency`, value: `${n(savedHrs)} OT hours eliminated` },
         { label: `${n(savedHrs)} hrs  ×  ${d(hourlyRate)} blended OT rate`, value: fmt(driverValue), isResult: true },
       ];
