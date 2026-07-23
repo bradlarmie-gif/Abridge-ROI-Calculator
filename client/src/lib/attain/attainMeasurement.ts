@@ -36,6 +36,18 @@ import type { AttainBaseline, LeverValues } from "./attainLevers";
 import type { AttainSetting } from "./attainTypes";
 import { deriveAccessLadder, deriveRetentionLadder, retentionChartingTerm } from "@/pages/attain/steps/accessLadder";
 import { firstSelected, selectedOptionIds, sharpenerNumber } from "./alignFramework";
+import {
+  deriveRevenueLadder,
+  computeRevenueChain,
+  type RevenuePathId,
+  type RevenuePathLadder,
+} from "./attainRevenue";
+import {
+  deriveIpRevenueLadder,
+  computeIpRevenueChain,
+  type IpRevenuePathId,
+  type IpRevenuePathLadder,
+} from "./attainInpatientRevenue";
 
 // ── Labeled benchmarks, used ONLY when the partner has no measured figure ────
 // Every one of these is surfaced with a "Benchmark" tag in the UI, so it is
@@ -103,6 +115,11 @@ export interface MeasurementLink {
   n: number;
   title: string;
   teach: string;
+  /** Optional section label. A single-mechanism goal (access, workforce) leaves
+   * this unset so its chain reads as one flat ladder. A MULTI-PATH goal
+   * (revenue) sets it so the shared surface can group each path's links under a
+   * clean section header, mirroring how the revenue Align stacks per path. */
+  groupLabel?: string;
   metrics: MeasurementMetricOption[];
   /** The metric ids selected by default (the ones the partner named as proof,
    * else the link's primary metric so the scorecard is never empty). */
@@ -696,4 +713,525 @@ export function deriveRetentionMeasurementPlan(
     },
     monthlyCheckTeach: `Walk the chain in order. The ${chartingTerm} falls first, voluntary turnover moves last, so early links should turn before the later ones. Attainment is not a number you assert. It is whether each metric moved toward its target on the schedule you set.`,
   };
+}
+
+// ── REVENUE (multi-path) measurement plan ───────────────────────────────────
+//
+// Revenue is not one mechanism. It is several genuinely distinct claim pools a
+// partner chases (one or more), so the plan is not one chain but a set of
+// chains that STACK PER CHOSEN PATH, exactly the way the revenue Align stacks
+// its who/gate/where per path. The shape is:
+//
+//   SHARED ROOT: complete, specific documentation at the point of care. Every
+//     path is built on this one lever being true.
+//   PER CHOSEN PATH (only the ones they picked on Align):
+//     - a CAPTURE link, whose metric menu is the path's real leading signals
+//       (E/M level mix, HCC recapture rate, denial rate, and so on);
+//     - an OUTCOME link, the captured revenue that path's slice of the prize is
+//       priced on, plus the count behind that dollar.
+//
+// DYNAMIC to Align: only the picked paths appear; the per-path gate answer
+// badges that path's honest ceiling metric and the proof choices pre-select and
+// badge the matching signal ("From what you told us on Align"); scope and
+// populations set the outcome baselines and targets straight off the ladder, so
+// nothing is faked. Every rate baseline is the partner's own figure when they
+// entered one, else a labeled benchmark; every captured-dollar baseline is "$0
+// today"; every owner and date starts BLANK. The COMMITMENT is the make-or-
+// break: the coders and providers actually acting on the better documentation,
+// because complete documentation only becomes revenue if someone acts on it.
+
+/** Short per-path section labels for the grouped scorecard. */
+const REVENUE_PATH_GROUP: Record<RevenuePathId, string> = {
+  em: "E/M level accuracy",
+  hcc: "Risk adjustment",
+  denials: "Medical-necessity denials",
+};
+const IP_REVENUE_PATH_GROUP: Record<IpRevenuePathId, string> = {
+  drg: "Case mix and DRG accuracy",
+  cdi: "CDI query efficiency",
+  obs: "Observation status defense",
+};
+
+/** The Align proof option ids -> the capture metric each pre-selects, so a
+ * proof the partner already named on Align badges the matching signal. */
+const REVENUE_PROOF_TO_METRIC: Record<string, string> = {
+  losmix: "em-level-mix",
+  recapture: "hcc-recapture-rate",
+  denialrate: "denials-mednec-rate",
+  cmi: "drg-cmi",
+  queryrate: "cdi-query-rate",
+  obsrate: "obs-rate",
+};
+
+/** Rounds a percentage for display. */
+function fmtPct(n: number): string {
+  return Math.round(n).toString();
+}
+
+/**
+ * Derives the multi-path REVENUE measurement plan from the Align state (all
+ * settings). Reads the same ladder every other revenue surface reads, scaled by
+ * the realization implied by the combined engine result, so the outcome targets
+ * and the promise prize reconcile with Align exactly.
+ */
+export function deriveRevenueMeasurementPlan(
+  baseline: AttainBaseline,
+  setting: AttainSetting,
+  values: LeverValues,
+  opts: { realizationPct: number },
+): MeasurementPlanModel {
+  const isIp = setting === "inpatient";
+  const ladder = isIp
+    ? deriveIpRevenueLadder(baseline, values, opts.realizationPct)
+    : deriveRevenueLadder(baseline, setting, values, opts.realizationPct);
+  const chain = isIp
+    ? computeIpRevenueChain(baseline, values)
+    : computeRevenueChain(baseline, setting, values);
+
+  const proof = selectedOptionIds(values, "revenueAlignProof");
+  const proofHas = (metricId: string) =>
+    proof.some((p) => REVENUE_PROOF_TO_METRIC[p] === metricId) ||
+    (proof.includes("captured") && metricId.endsWith("-captured-revenue"));
+
+  const ready = ladder.anyPathSelected && ladder.paths.length > 0;
+  const emptyHint = ready
+    ? "Set your Align choices and the chain builds itself here."
+    : "Pick the revenue you are going after on the Align step, then the measurement chain builds itself per path from what you aligned on.";
+
+  const links: MeasurementLink[] = [];
+  let n = 0;
+  const nextN = () => ++n;
+
+  // ── SHARED ROOT — the one lever every path is built on ────────────────────
+  links.push({
+    id: "documentation",
+    n: nextN(),
+    title: "The documentation is complete",
+    teach: "One lever starts every path: the note carries the full, specific picture of the care delivered. Everything each path captures downstream is built on this one thing being true, so it is the first thing to prove.",
+    blocked: false,
+    groupLabel: "The shared root",
+    metrics: [
+      {
+        id: "doc-completeness",
+        label: "Documentation completeness",
+        unit: "% of encounters",
+        helper: "The share of encounters where the note carries the specificity coding needs. Benchmark until you drop in your own.",
+        baseline: "your current rate",
+        baselineTag: "benchmark",
+        defaultTarget: "rising against baseline",
+        fromProof: false,
+      },
+      {
+        id: "doc-problems-per-encounter",
+        label: "Problems documented per encounter",
+        unit: "problems / encounter",
+        helper: "The complexity captured on each note, the raw material every downstream code is built from.",
+        baseline: "your current average",
+        baselineTag: "benchmark",
+        defaultTarget: "above baseline",
+        fromProof: false,
+      },
+      {
+        id: "doc-adoption",
+        label: "Abridge adoption",
+        unit: "% of notes",
+        helper: "The share of notes written through Abridge. Nothing downstream moves on the notes it never touches.",
+        baseline: "0% today",
+        baselineTag: "data",
+        defaultTarget: "most notes",
+        fromProof: false,
+      },
+    ],
+    defaultChosen: ["doc-completeness"],
+  });
+
+  // ── PER-PATH stacking ─────────────────────────────────────────────────────
+  if (isIp) {
+    for (const p of ladder.paths as IpRevenuePathLadder[]) {
+      const group = IP_REVENUE_PATH_GROUP[p.id];
+      const { capture, outcome } = ipPathLinks(p, chain as ReturnType<typeof computeIpRevenueChain>, values, proofHas, group, nextN);
+      links.push(capture, outcome);
+    }
+  } else {
+    for (const p of ladder.paths as RevenuePathLadder[]) {
+      const group = REVENUE_PATH_GROUP[p.id];
+      const { capture, outcome } = opPathLinks(p, chain as ReturnType<typeof computeRevenueChain>, values, proofHas, group, nextN);
+      links.push(capture, outcome);
+    }
+  }
+
+  return {
+    ready,
+    emptyHint,
+    links,
+    realizedVisits: 0,
+    prize: ladder.convergedPrize,
+    commitment: {
+      title: "The one thing this plan lives or dies on",
+      teach:
+        "Complete documentation only becomes revenue if the people who touch the claim act on it. The note can carry every condition and the full acuity, but if coders keep to prior-year patterns, queries age out, or the billing team never sees the fuller picture, the completeness never reaches the claim and none of this lands. Someone has to own the coders and providers actually acting on the better documentation.",
+      ownerLabel: "Who owns the coders and providers acting on it",
+    },
+    monthlyCheckTeach:
+      "Walk the chain in order. Complete documentation moves first; the captured revenue moves last and shows up on a lag in the claims data, so the early links should turn before the dollars do. Attainment is not a number you assert. It is whether each metric moved toward its target on the schedule you set.",
+  };
+}
+
+/** Builds the capture + outcome links for one outpatient/ED revenue path. */
+function opPathLinks(
+  p: RevenuePathLadder,
+  chain: ReturnType<typeof computeRevenueChain>,
+  values: LeverValues,
+  proofHas: (id: string) => boolean,
+  group: string,
+  nextN: () => number,
+): { capture: MeasurementLink; outcome: MeasurementLink } {
+  const capturedTarget = p.hasValue ? `${fmtInt(p.capturedCount)} ${p.capturedUnit}` : "finish the Align chain";
+  const valueTarget = p.hasValue ? `${fmtMoneyCompact(p.value)} / yr` : "finish the Align chain";
+
+  let captureMetrics: MeasurementMetricOption[] = [];
+  let captureDefault: string[] = [];
+  let captureTitle = "";
+  let captureTeach = "";
+
+  if (p.id === "em") {
+    const c = chain.em!.chain;
+    const docCaused = c.docCausedSharePct;
+    const remaining = Math.max(0, docCaused - (docCaused * c.capturePct) / 100);
+    const wrvuTyped = typeof values.revenueEmCurrentWrvu === "number" && values.revenueEmCurrentWrvu > 0;
+    const gateAnswered = docCaused > 0;
+    captureTitle = "The E/M level matches the care delivered";
+    captureTeach = "The leak this path measures: claims that go out below the care the note supports. As the note carries the full picture, the coded level rises to match what actually happened in the room.";
+    captureMetrics = [
+      {
+        id: "em-below-supported",
+        label: "Share of visits coded below the supported level",
+        unit: "%",
+        helper: "The share of E/M claims where the claim goes out below the care you delivered because the note fell short. This is the leak Abridge can close.",
+        baseline: `${fmtPct(docCaused)}% today`,
+        baselineTag: "benchmark",
+        defaultTarget: c.capturePct > 0 ? `under ${fmtPct(remaining)}%` : "lower than today",
+        fromProof: gateAnswered,
+      },
+      {
+        id: "em-level-mix",
+        label: "Distribution of levels of service",
+        unit: "level mix",
+        helper: "The spread of coded E/M levels shifting toward the care actually delivered.",
+        baseline: "your current mix",
+        baselineTag: "benchmark",
+        defaultTarget: "shifts toward the care delivered",
+        fromProof: proofHas("em-level-mix"),
+      },
+      {
+        id: "em-avg-los",
+        label: "Average level of service",
+        unit: "avg level",
+        helper: "The mean coded E/M level across your visits, rising against this baseline.",
+        baseline: "your current average",
+        baselineTag: "benchmark",
+        defaultTarget: "above baseline",
+        fromProof: false,
+      },
+      {
+        id: "em-wrvu-per-provider",
+        label: "wRVUs per provider",
+        unit: "wRVU / provider",
+        helper: `Work RVUs captured per provider, the productivity read on the lift${wrvuTyped ? "" : ", benchmark until you drop in your own"}.`,
+        baseline: wrvuTyped ? `${c.currentWrvu} avg wRVU` : "your current wRVUs",
+        baselineTag: wrvuTyped ? "data" : "benchmark",
+        defaultTarget: "above baseline",
+        fromProof: false,
+      },
+    ];
+  } else if (p.id === "hcc") {
+    const r = chain.hcc!.recapture;
+    const recaptureTyped = typeof values.revenueHccCurrentRecapture === "number" && values.revenueHccCurrentRecapture > 0;
+    const targetRate = Math.min(90, r.currentRecaptureRate + r.effectiveUpliftPp);
+    captureTitle = "The conditions reach the claim";
+    captureTeach = "The leak this path measures: conditions your risk-based patients have that never make it onto the claim. As the note documents them specifically, more of them get coded.";
+    captureMetrics = [
+      {
+        id: "hcc-recapture-rate",
+        label: "Recapture rate",
+        unit: "%",
+        helper: "The share of documented conditions that make it back onto the claim, rising from your current recapture rate.",
+        baseline: `${fmtPct(r.currentRecaptureRate)}%`,
+        baselineTag: recaptureTyped ? "data" : "benchmark",
+        defaultTarget: r.effectiveUpliftPp > 0 ? `over ${fmtPct(targetRate)}%` : "above baseline",
+        fromProof: proofHas("hcc-recapture-rate") || r.effectiveUpliftPp > 0,
+      },
+      {
+        id: "hcc-suspected-close",
+        label: "Suspected-condition close rate",
+        unit: "%",
+        helper: "The share of conditions Abridge surfaces for the first time that get confirmed and coded, never invented, only documented where they are real.",
+        baseline: "0% today",
+        baselineTag: "data",
+        defaultTarget: "rising against baseline",
+        fromProof: false,
+      },
+      {
+        id: "hcc-raf",
+        label: "Average conditions per patient (RAF)",
+        unit: "conditions / patient",
+        helper: "The average risk-adjusting conditions captured per risk-based patient, the RAF read.",
+        baseline: `${r.avgHccs} avg today`,
+        baselineTag: "benchmark",
+        defaultTarget: "above baseline",
+        fromProof: false,
+      },
+    ];
+  } else {
+    // denials
+    const c = chain.denials!.chain;
+    const rateTyped = typeof values.revenueDenialsRate === "number" && values.revenueDenialsRate > 0;
+    const gateAnswered = c.preventablePct > 0;
+    const remaining = Math.max(0, c.denialRate - (c.denialRate * c.preventablePct) / 100);
+    captureTitle = "The note establishes medical necessity";
+    captureTeach = "The leak this path measures: denials driven by a note that did not establish why the care was needed. As the note carries the necessity, fewer of those claims come back denied.";
+    captureMetrics = [
+      {
+        id: "denials-mednec-rate",
+        label: "Medical-necessity denial rate",
+        unit: "%",
+        helper: "The share of eligible claims denied for medical necessity, the denials a complete note can prevent, not payer rules or authorization.",
+        baseline: `${fmtPct(c.denialRate)}%`,
+        baselineTag: rateTyped ? "data" : "benchmark",
+        defaultTarget: c.preventablePct > 0 ? `under ${fmtPct(remaining)}%` : "lower than today",
+        fromProof: proofHas("denials-mednec-rate") || gateAnswered,
+      },
+      {
+        id: "denials-appeal-overturn",
+        label: "Appeal overturn rate",
+        unit: "%",
+        helper: "The share of appealed medical-necessity denials overturned once the documentation is complete.",
+        baseline: "your current rate",
+        baselineTag: "benchmark",
+        defaultTarget: "above baseline",
+        fromProof: false,
+      },
+      {
+        id: "denials-recovered",
+        label: "Denied dollars recovered",
+        unit: "$ / yr",
+        helper: "Dollars on claims that were denied and are now paid, the claim the care already earned, not new margin.",
+        baseline: "$0 today",
+        baselineTag: "data",
+        defaultTarget: "rising against baseline",
+        fromProof: false,
+      },
+    ];
+  }
+
+  const captureProofChosen = captureMetrics.filter((m) => m.fromProof).map((m) => m.id);
+  captureDefault = captureProofChosen.length > 0 ? [captureProofChosen[0]] : captureMetrics.length > 0 ? [captureMetrics[0].id] : [];
+
+  const capture: MeasurementLink = {
+    id: `${p.id}-capture`,
+    n: nextN(),
+    title: captureTitle,
+    teach: captureTeach,
+    blocked: false,
+    groupLabel: group,
+    metrics: captureMetrics,
+    defaultChosen: captureDefault,
+  };
+
+  const outcome: MeasurementLink = {
+    id: `${p.id}-outcome`,
+    n: nextN(),
+    title: `The ${group.toLowerCase()} revenue is captured`,
+    teach: "The payoff: the revenue this path actually captures, and the count behind it. This is the slice of the prize this path is priced on.",
+    blocked: false,
+    groupLabel: group,
+    metrics: [
+      {
+        id: `${p.id}-captured-revenue`,
+        label: "Captured revenue for this path",
+        unit: "$ / yr",
+        helper: "The captured claims priced at this path's own rate. This is the CFO number, counted once, not blended with the other paths.",
+        baseline: "$0 today",
+        baselineTag: "data",
+        defaultTarget: valueTarget,
+        fromProof: proofHas(`${p.id}-captured-revenue`),
+      },
+      {
+        id: `${p.id}-captured-count`,
+        label: p.capturedLabel,
+        unit: p.capturedUnit,
+        helper: "The honest count behind the dollar, so the number is never just an assertion.",
+        baseline: "0 today",
+        baselineTag: "data",
+        defaultTarget: capturedTarget,
+        fromProof: false,
+      },
+    ],
+    defaultChosen: [`${p.id}-captured-revenue`],
+  };
+
+  return { capture, outcome };
+}
+
+/** Builds the capture + outcome links for one inpatient revenue path. */
+function ipPathLinks(
+  p: IpRevenuePathLadder,
+  chain: ReturnType<typeof computeIpRevenueChain>,
+  values: LeverValues,
+  proofHas: (id: string) => boolean,
+  group: string,
+  nextN: () => number,
+): { capture: MeasurementLink; outcome: MeasurementLink } {
+  const capturedTarget = p.hasValue ? `${fmtInt(p.capturedCount)} ${p.capturedUnit}` : "finish the Align chain";
+  const valueTarget = p.hasValue ? `${fmtMoneyCompact(p.value)} / yr` : "finish the Align chain";
+
+  let captureMetrics: MeasurementMetricOption[] = [];
+  let captureTitle = "";
+  let captureTeach = "";
+
+  if (p.id === "drg") {
+    const c = chain.drg!.chain;
+    captureTitle = "The DRG reflects the acuity documented";
+    captureTeach = "The leak this path measures: admissions grouped below the weight they earned, because a managed condition was under-documented. As the note carries the specificity, coding can assign the DRG the admission earned.";
+    captureMetrics = [
+      {
+        id: "drg-capture-rate",
+        label: "CC/MCC capture rate",
+        unit: "%",
+        helper: "The share of at-risk admissions where the CC or MCC reaches the code, rising against this baseline.",
+        baseline: "your current rate",
+        baselineTag: "benchmark",
+        defaultTarget: c.capturePct > 0 ? "rising against baseline" : "above baseline",
+        fromProof: c.capturePct > 0,
+      },
+      {
+        id: "drg-cmi",
+        label: "Case mix index",
+        unit: "CMI",
+        helper: "The documented case-mix index rising as the fuller picture reaches the code.",
+        baseline: "your current CMI",
+        baselineTag: "benchmark",
+        defaultTarget: "above baseline",
+        fromProof: proofHas("drg-cmi"),
+      },
+      {
+        id: "drg-query-turnaround",
+        label: "Query turnaround time",
+        unit: "days",
+        helper: "Days to close the query that carries the weight, before discharge. The capture only lands if the query closes in time.",
+        baseline: "your current turnaround",
+        baselineTag: "benchmark",
+        defaultTarget: "faster than today",
+        fromProof: false,
+      },
+    ];
+  } else if (p.id === "cdi") {
+    const c = chain.cdi!.chain;
+    const remaining = Math.max(0, c.queryRate - (c.queryRate * c.reductionPct) / 100);
+    captureTitle = "The note carries the specificity up front";
+    captureTeach = "The leak this path measures: queries the CDI team only has to write because the note lacked the detail up front. As the note carries it, fewer queries need to be written at all.";
+    captureMetrics = [
+      {
+        id: "cdi-query-rate",
+        label: "Queries per admission",
+        unit: "%",
+        helper: "The share of admissions that generate a CDI query, coming down as the note carries the specificity a query would otherwise chase.",
+        baseline: `${fmtPct(c.queryRate)}%`,
+        baselineTag: "benchmark",
+        defaultTarget: c.reductionPct > 0 ? `under ${fmtPct(remaining)}%` : "lower than today",
+        fromProof: proofHas("cdi-query-rate") || c.reductionPct > 0,
+      },
+      {
+        id: "cdi-query-turnaround",
+        label: "Query turnaround time",
+        unit: "days",
+        helper: "Days to close the queries that still need to be written, trending down as the note carries more up front.",
+        baseline: "your current turnaround",
+        baselineTag: "benchmark",
+        defaultTarget: "faster than today",
+        fromProof: false,
+      },
+    ];
+  } else {
+    // obs
+    const c = chain.obs!.chain;
+    const remaining = Math.max(0, c.denialRate - (c.denialRate * c.preventablePct) / 100);
+    captureTitle = "The severity is documented to defend the stay";
+    captureTeach = "The leak this path measures: stays downgraded to observation when the severity was real but under-documented. As the note carries the severity-of-illness detail, more inpatient stays hold.";
+    captureMetrics = [
+      {
+        id: "obs-rate",
+        label: "Observation downgrade rate",
+        unit: "%",
+        helper: "The share of stays downgraded to observation, coming down as the note defends the inpatient severity, not stays that were genuinely observation-appropriate.",
+        baseline: `${fmtPct(c.denialRate)}%`,
+        baselineTag: "benchmark",
+        defaultTarget: c.preventablePct > 0 ? `under ${fmtPct(remaining)}%` : "lower than today",
+        fromProof: proofHas("obs-rate") || c.preventablePct > 0,
+      },
+      {
+        id: "obs-appeal-overturn",
+        label: "Status appeal overturn rate",
+        unit: "%",
+        helper: "The share of status downgrades overturned on appeal once the severity is documented.",
+        baseline: "your current rate",
+        baselineTag: "benchmark",
+        defaultTarget: "above baseline",
+        fromProof: false,
+      },
+    ];
+  }
+
+  const captureProofChosen = captureMetrics.filter((m) => m.fromProof).map((m) => m.id);
+  const captureDefault = captureProofChosen.length > 0 ? [captureProofChosen[0]] : captureMetrics.length > 0 ? [captureMetrics[0].id] : [];
+
+  const capture: MeasurementLink = {
+    id: `${p.id}-capture`,
+    n: nextN(),
+    title: captureTitle,
+    teach: captureTeach,
+    blocked: false,
+    groupLabel: group,
+    metrics: captureMetrics,
+    defaultChosen: captureDefault,
+  };
+
+  const isCdi = p.id === "cdi";
+  const outcome: MeasurementLink = {
+    id: `${p.id}-outcome`,
+    n: nextN(),
+    title: isCdi ? "The CDI time is saved" : `The ${group.toLowerCase()} revenue is captured`,
+    teach: isCdi
+      ? "The payoff: CDI staff time no longer spent generating and chasing queries the note now carries. Priced on admin time only, so the DRG dollar is never double counted."
+      : "The payoff: the revenue this path actually captures, and the count behind it. This is the slice of the prize this path is priced on.",
+    blocked: false,
+    groupLabel: group,
+    metrics: [
+      {
+        id: `${p.id}-captured-revenue`,
+        label: isCdi ? "CDI staff cost saved" : "Captured revenue for this path",
+        unit: "$ / yr",
+        helper: isCdi
+          ? "The queries no longer needed priced at CDI-staff admin time only. This is the CFO number for this path, counted once."
+          : "The captured claims priced at this path's own rate. This is the CFO number, counted once, not blended with the other paths.",
+        baseline: "$0 today",
+        baselineTag: "data",
+        defaultTarget: valueTarget,
+        fromProof: proofHas(`${p.id}-captured-revenue`),
+      },
+      {
+        id: `${p.id}-captured-count`,
+        label: p.capturedLabel,
+        unit: p.capturedUnit,
+        helper: "The honest count behind the dollar, so the number is never just an assertion.",
+        baseline: "0 today",
+        baselineTag: "data",
+        defaultTarget: capturedTarget,
+        fromProof: false,
+      },
+    ],
+    defaultChosen: [`${p.id}-captured-revenue`],
+  };
+
+  return { capture, outcome };
 }
