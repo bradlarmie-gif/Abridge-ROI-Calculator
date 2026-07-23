@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { ArrowDown, Lock } from "lucide-react";
+import { Lock } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { EditorialOptionList, EditorialOptionRow } from "./EditorialOption";
 import { computeAccessChain, DEFAULT_MINUTES_SAVED_PER_NOTE } from "@/lib/attain/attainAccess";
@@ -36,7 +36,6 @@ import {
 import type { AttainBaseline, LeverValues, MultiGoalContributionsResult } from "@/lib/attain/attainLevers";
 import { GOAL_CATALOG } from "@/lib/attain/attainGoals";
 import { CADENCE_OPTIONS, CADENCE_LABEL, type GoalOwner, type SignalCadence } from "./StepCommit";
-import { attainTextInput, attainDateInput } from "../attainInput";
 
 /**
  * MeasurementPlanSurface — the per-goal MEASUREMENT PLAN body, shared by the
@@ -71,9 +70,13 @@ function fmtMoneyCompact(n: number): string {
   return `${sign}$${Math.round(abs)}`;
 }
 
-function FieldLabel({ children }: { children: React.ReactNode }) {
-  return <p className="text-[8px] font-bold uppercase tracking-wide text-[#8C8C8C] mb-1">{children}</p>;
-}
+/** The editorial form language shared across the Plan (ported from the Starting
+ * Point step): small-caps labels and borderless underline fields that turn coral
+ * on focus. Replaces the boxed `attain-input` skin everywhere on this surface so
+ * the Plan reads as calm as the rest of the flow. */
+const EDITORIAL_LABEL = "text-[10px] font-semibold uppercase tracking-[1.6px] text-[#8C8C8C] mb-2";
+const EDITORIAL_FIELD =
+  "w-full bg-transparent border-0 border-b border-[#E0D9CE] rounded-none px-0 pb-1 text-[15px] text-[#1A1A1A] outline-none transition-colors focus:border-[#EA2C00] placeholder:text-[#C4BCB0]";
 
 /** The small tag that keeps a baseline honest: their own figure, a fact carried
  * from Starting Point, or a labeled benchmark. Neutral grays only, no color
@@ -265,8 +268,9 @@ export default function MeasurementPlanSurface({
   return (
     <div>
       {/* 1 — THE PROMISE, on the hook. Goal, exec owner, prize, and the date the
-          partner sets. No invented month. */}
-      <div className="rounded-2xl border border-[#E7E0D6] bg-[#F4F0EA] p-6 mb-10" data-testid={`card-measure-promise-${goal}`}>
+          partner sets. No invented month. Editorial (no filled card) so it
+          reads as calm as the Starting Point. */}
+      <div className="mb-10" data-testid={`card-measure-promise-${goal}`}>
         <div className="flex items-center gap-3 mb-3">
           <span
             className="inline-block text-[9px] font-bold uppercase tracking-[1.5px] text-white px-3 py-1 rounded-full"
@@ -299,34 +303,34 @@ export default function MeasurementPlanSurface({
           </p>
         )}
 
-        <div className="mt-4 pt-4 border-t border-[#E0D9CE] grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div>
-            <FieldLabel>Exec owner</FieldLabel>
+        <div className="mt-5 pt-5 border-t border-[#EFEAE1] flex flex-wrap gap-x-10 gap-y-5">
+          <div className="min-w-[200px] flex-1">
+            <p className={EDITORIAL_LABEL}>Exec owner</p>
             <input
               value={goalOwner.name}
               onChange={(e) => onChangeGoalOwner({ name: e.target.value })}
               placeholder="Name, e.g. Dr. A. Rivera"
-              className={attainTextInput}
+              className={EDITORIAL_FIELD}
               data-testid={`input-measure-owner-name-${goal}`}
             />
           </div>
-          <div>
-            <FieldLabel>Title / role</FieldLabel>
+          <div className="min-w-[180px] flex-1">
+            <p className={EDITORIAL_LABEL}>Title / role</p>
             <input
               value={goalOwner.title}
               onChange={(e) => onChangeGoalOwner({ title: e.target.value })}
               placeholder="e.g. VP Ambulatory Ops"
-              className={attainTextInput}
+              className={EDITORIAL_FIELD}
               data-testid={`input-measure-owner-title-${goal}`}
             />
           </div>
-          <div>
-            <FieldLabel>By when</FieldLabel>
+          <div className="min-w-[150px]">
+            <p className={EDITORIAL_LABEL}>By when</p>
             <input
               type="date"
               value={promiseByWhen}
               onChange={(e) => onChangePromiseByWhen(e.target.value)}
-              className={attainDateInput}
+              className={EDITORIAL_FIELD}
               data-testid={`input-measure-promise-date-${goal}`}
             />
           </div>
@@ -348,19 +352,18 @@ export default function MeasurementPlanSurface({
             <p className="text-[13px] text-[#8C8C8C] leading-relaxed">{model.emptyHint}</p>
           </div>
         ) : (
-          <div className="space-y-3" data-testid={`section-measure-chain-${goal}`}>
+          <div data-testid={`section-measure-chain-${goal}`}>
             {model.links.map((link, i) => {
               const prevGroup = i > 0 ? model.links[i - 1].groupLabel : undefined;
               const startsGroup = Boolean(link.groupLabel) && link.groupLabel !== prevGroup;
+              // Links are separated by a single hairline, never a boxed card or a
+              // dangling down-arrow. A group start draws its own coral heading
+              // rule instead.
+              const sep = i === 0 ? "" : startsGroup ? "" : "mt-8 pt-8 border-t border-[#EFEAE1]";
               return (
-              <div key={link.id}>
-                {i > 0 && !startsGroup && (
-                  <div className="flex justify-center py-1">
-                    <ArrowDown className="w-4 h-4 text-[#B4B4B4]" />
-                  </div>
-                )}
+              <div key={link.id} className={sep}>
                 {startsGroup && (
-                  <div className="flex items-center gap-2 pt-4 pb-2" data-testid={`heading-measure-group-${goal}-${link.groupLabel}`}>
+                  <div className="flex items-center gap-2 pt-8 pb-3 mt-4 first:mt-0 first:pt-0" data-testid={`heading-measure-group-${goal}-${link.groupLabel}`}>
                     <span className="text-[10px] font-bold uppercase tracking-[1.5px] text-[#EA2C00]">{link.groupLabel}</span>
                     <span className="flex-1 h-px bg-[#E7E0D6]" />
                   </div>
@@ -380,35 +383,33 @@ export default function MeasurementPlanSurface({
         )}
       </div>
 
-      {/* 3 — THE COMMITMENT the partner owns. The make-or-break. */}
-      <div className="rounded-2xl border-2 border-[#EA2C00] bg-[#FFF6F3] p-6 mb-10" data-testid={`card-measure-commitment-${goal}`}>
-        <div className="flex items-center gap-2 mb-2">
-          <span className="inline-block text-[8px] font-bold uppercase tracking-wide text-white bg-[#EA2C00] px-2 py-0.5 rounded-full">
-            The commitment
-          </span>
-          <p className="text-[12px] font-semibold text-[#1A1A1A]">{model.commitment.title}</p>
-        </div>
+      {/* 3 — THE COMMITMENT the partner owns. The make-or-break. A quiet
+          coral-tick block (the selected-row language), never a heavy filled box. */}
+      <div className="mb-10 pl-5 border-l-2 border-[#EA2C00]" data-testid={`card-measure-commitment-${goal}`}>
+        <p className="text-[10px] font-bold uppercase tracking-[1.6px] text-[#EA2C00] mb-1.5">
+          The commitment · {model.commitment.title}
+        </p>
         <p className="text-[13.5px] text-[#3A3A3A] leading-relaxed mb-4 max-w-[600px]" data-testid={`text-measure-commitment-teach-${goal}`}>
           {model.commitment.teach}
         </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <FieldLabel>{model.commitment.ownerLabel}</FieldLabel>
+        <div className="flex flex-wrap gap-x-10 gap-y-5">
+          <div className="min-w-[200px] flex-1">
+            <p className={EDITORIAL_LABEL}>{model.commitment.ownerLabel}</p>
             <input
               value={commitmentOwner}
               onChange={(e) => onChangeCommitment({ commitmentOwner: e.target.value })}
               placeholder="Name the owner"
-              className={attainTextInput}
+              className={EDITORIAL_FIELD}
               data-testid={`input-measure-commitment-owner-${goal}`}
             />
           </div>
-          <div>
-            <FieldLabel>In place by</FieldLabel>
+          <div className="min-w-[150px]">
+            <p className={EDITORIAL_LABEL}>In place by</p>
             <input
               type="date"
               value={commitmentByWhen}
               onChange={(e) => onChangeCommitment({ commitmentByWhen: e.target.value })}
-              className={attainDateInput}
+              className={EDITORIAL_FIELD}
               data-testid={`input-measure-commitment-date-${goal}`}
             />
           </div>
@@ -521,7 +522,7 @@ function LinkCard({
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`rounded-xl border p-5 ${link.blocked ? "border-[#E7E0D6] bg-[#FBFAF7]" : "border-[#E7E0D6] bg-white"}`}
+      className=""
       data-testid={`card-measure-link-${link.id}`}
     >
       <div className="flex items-start gap-2.5 mb-3">

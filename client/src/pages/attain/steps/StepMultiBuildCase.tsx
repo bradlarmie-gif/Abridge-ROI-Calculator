@@ -140,7 +140,7 @@ export default function StepMultiBuildCase({
         )}
         {hasQuality && qualityHeaderModel && (
           <p className="text-[13px] text-[#8C8C8C] leading-relaxed mt-2.5 max-w-[560px]" data-testid="text-multi-align-quality-soft">
-            <b className="text-[#3A3A3A]">Nursing quality, safety value:</b>{" "}
+            <b className="text-[#3A3A3A]">Nursing quality, safety value, not contribution margin:</b>{" "}
             <span data-testid="text-multi-align-quality-soft-count">{qualityHeaderModel.safetyHeadline?.heroValue ?? "count pending"}</span>.{" "}
             <span data-testid="text-multi-align-quality-soft-dollar">{qualityHeaderModel.safetyHeadline?.softDollarNote ?? "This plan leads with safety, not a dollar."}</span>
           </p>

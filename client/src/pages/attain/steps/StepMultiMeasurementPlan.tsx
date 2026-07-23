@@ -139,66 +139,43 @@ export default function StepMultiMeasurementPlan({
         </p>
       </motion.div>
 
-      {/* Combined header: the plan-level truth, once. The combined prize is the
-          exact sum of each priority's own measurement plan below, counted once. */}
-      <div className="rounded-2xl border border-[#1A1A1A] bg-[#1A1A1A] p-6 mb-8" data-testid="card-multi-plan-header">
-        <p className="text-[9px] font-bold uppercase tracking-[1.5px] text-white/40 mb-2">
+      {/* Combined prize as a SLIM editorial line, not a black hero, so it does
+          not duplicate each priority's own scorecard below. */}
+      <div className="mb-8" data-testid="card-multi-plan-header">
+        <p className="text-[10px] font-semibold uppercase tracking-[1.8px] text-[#8C8C8C] mb-2">
           The combined prize · {goals.length} priorities
         </p>
         {hardContributionMargin > 0 ? (
-          <p className="font-abridge text-3xl md:text-4xl font-bold text-[#EA2C00]" data-testid="text-multi-plan-combined-prize">
-            {fmtMoneyCompact(hardContributionMargin)}
-            <span className="text-sm font-normal text-white/50"> contribution margin / yr</span>
+          <p className="flex items-baseline gap-2.5 flex-wrap" data-testid="text-multi-plan-combined-prize">
+            <span className="font-abridge text-3xl md:text-4xl text-[#EA2C00] leading-none">
+              {fmtMoneyCompact(hardContributionMargin)}
+            </span>
+            <span className="text-[14px] text-[#6B6B6B]">
+              contribution margin a year, the sum of each priority's plan below, counted once
+            </span>
           </p>
         ) : (
-          <p className="font-abridge text-3xl font-bold text-white/40" data-testid="text-multi-plan-combined-prize">
-            value pending
+          <p className="text-[15px] text-[#8C8C8C]" data-testid="text-multi-plan-combined-prize">
+            The combined number builds here as you fill each priority's plan below.
           </p>
         )}
-        <p className="text-[12px] text-white/60 mt-2 max-w-[520px]">
-          {hasQuality
-            ? "This is the sum of each financial priority's own measurement plan below, counted once. Nursing quality's safety value is tracked separately below, never folded into this margin."
-            : "This is the sum of each priority's own measurement plan below, counted once. Build the scorecard in each block; the number is the proof of what you will measure."}
-        </p>
-
         {hasQuality && qualityHeaderModel && (
-          <div className="mt-4 pt-4 border-t border-white/10" data-testid="text-multi-plan-quality-soft">
-            <p className="text-[9px] font-bold uppercase tracking-[1.5px] text-white/40 mb-1.5">
-              Nursing quality · safety value, not contribution margin
-            </p>
-            <p className="text-[15px] font-semibold text-white" data-testid="text-multi-plan-quality-soft-count">
-              {qualityHeaderModel.safetyHeadline?.heroValue ?? "count pending"}
-            </p>
-            <p className="text-[11px] text-white/55 mt-1 leading-relaxed max-w-[520px]" data-testid="text-multi-plan-quality-soft-dollar">
-              {qualityHeaderModel.safetyHeadline?.softDollarNote ?? "This plan leads with safety, not a dollar."}
-            </p>
-          </div>
-        )}
-
-        {hasFreedTimeConflict && (
-          <p className="text-[11px] text-white/55 mt-4 leading-relaxed" data-testid="text-multi-plan-split-note">
-            Patient Access and Provider Retention draw on the same freed documentation hour. You routed {Math.round(accessShare * 100)}% of it to
-            {" "}{accessSplitLabel} and {Math.round((1 - accessShare) * 100)}% to protecting relief, so the one hour is split, never counted twice.
-            Each block below reflects its share.
+          <p className="text-[13px] text-[#8C8C8C] leading-relaxed mt-2.5 max-w-[560px]" data-testid="text-multi-plan-quality-soft">
+            <b className="text-[#3A3A3A]">Nursing quality, safety value, not contribution margin:</b>{" "}
+            <span data-testid="text-multi-plan-quality-soft-count">{qualityHeaderModel.safetyHeadline?.heroValue ?? "count pending"}</span>.{" "}
+            <span data-testid="text-multi-plan-quality-soft-dollar">{qualityHeaderModel.safetyHeadline?.softDollarNote ?? "This plan leads with safety, not a dollar."}</span>
           </p>
         )}
       </div>
 
       {/* One split decision, once, when access + retention are both in play.
-          The slider that keeps the shared freed hour from being counted twice
-          across the two blocks. */}
+          A quiet control on a hairline, never a filled coral box. */}
       {hasFreedTimeConflict && (
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="rounded-xl border-2 border-[#EA2C00] bg-[#FFF6F3] p-6 mb-10"
-          data-testid="panel-attain-multi-plan-freed-time-split"
-        >
-          <p className="text-[11px] font-semibold uppercase tracking-[2px] text-[#EA2C00] mb-1.5">One shared hour</p>
-          <p className="text-[15px] text-[#3A3A3A] leading-relaxed mb-5 max-w-[620px]">
-            Access and Retention both price the same freed documentation hour. This is the one decision that keeps it
-            from being counted twice: how much of that hour routes to {accessSplitLabel}, versus how much stays as
-            protected relief. Both blocks below already reflect this split.
+        <div className="mb-10 pt-6 border-t border-[#EFEAE1]" data-testid="panel-attain-multi-plan-freed-time-split">
+          <p className="text-[10px] font-semibold uppercase tracking-[1.8px] text-[#8C8C8C] mb-1.5">One shared hour</p>
+          <p className="text-[13.5px] text-[#6B6B6B] leading-relaxed mb-4 max-w-[600px]">
+            Access and Retention price the same freed hour. Split it once here so it is never counted twice; both blocks
+            below already reflect it.
           </p>
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-semibold text-[#1A1A1A]" data-testid="text-attain-multi-plan-freed-time-split-access">
@@ -218,7 +195,7 @@ export default function StepMultiMeasurementPlan({
             className="w-full"
             data-testid="slider-attain-multi-plan-freed-time-split"
           />
-        </motion.div>
+        </div>
       )}
 
       {/* Per priority: the SAME per-goal measurement surface, once each, under a
