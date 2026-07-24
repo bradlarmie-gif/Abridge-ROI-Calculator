@@ -1,0 +1,332 @@
+import { describe, it, expect } from "vitest";
+import { DEFAULT_EXPLORE_STATE, type ExploreState } from "@/pages/explore/ExploreFlow";
+import { computeAllDriverValues } from "@/lib/exploreDriverCalcs";
+import { EXPLORE_DRIVERS, type ExploreSetting } from "@/lib/exploreDrivers";
+import { engineKeyForDriver } from "@/lib/exploreDriverKeys";
+
+/**
+ * Coverage invariant (see
+ * docs/superpowers/plans/2026-07-23-explore-one-source-of-truth.md, Task 5).
+ *
+ * Task 1's resolver test (`exploreDriverKeys.test.ts`) proves every
+ * REGISTERED driver's engine key resolves to a real, positive value — i.e.
+ * no card can read `undefined`/stale math. This test closes the other
+ * direction: it proves the engine has no key that is computed but never
+ * claimed by the registry — the "computed but never surfaced" orphan class
+ * (the `cdiQueryReduction` bug this task is named for). Two assertions:
+ *
+ *   1. Forward — for a maximal, all-drivers-enabled `ExploreState` per care
+ *      setting, every key `computeAllDriverValues` emits maps back (via
+ *      `engineKeyForDriver`) to EXACTLY ONE `EXPLORE_DRIVERS` entry whose
+ *      `settings` includes that setting — except the documented exceptions
+ *      below.
+ *   2. Reverse — every `quantified` `EXPLORE_DRIVERS` entry resolves (via
+ *      `engineKeyForDriver`) to a key the engine actually emits for that
+ *      setting.
+ *
+ * No jsdom / React-render test infra exists in this repo (see Task 1's
+ * note), so this is a unit-level guard over the engine's output object and
+ * the registry data, not a rendered-card test.
+ */
+
+// ---------------------------------------------------------------------------
+// KNOWN, DOCUMENTED EXCEPTION — do not silently grow this set.
+// ---------------------------------------------------------------------------
+// `cdiQueryReduction` is emitted by the engine whenever `isIP && ipCdiEnabled`
+// (client/src/lib/exploreDriverCalcs.ts, the `if (isIP && dq.ipCdiEnabled)`
+// block around line 225), but there is NO `EXPLORE_DRIVERS` entry — of any
+// visibility — whose id resolves to `cdiQueryReduction` via
+// `engineKeyForDriver`. (The registry does have `ipCdiQueryTrend` and
+// `ipCdiQueryRate`, but those are unrelated *qualitative* signal drivers, not
+// a card for this dollar value.) The quantified Explore "IP CDI" card was
+// intentionally deleted; CDI query-reduction dollars are configured and
+// shown only in the proforma drawer, never on an Explore screen. This is a
+// deliberate, confirmed product decision — not an oversight — so it is
+// excluded from the forward assertion by explicit name below, never
+// silently. A NEW unmapped key (anything other than what's listed here)
+// must still fail the "exact exception set" test at the bottom of this
+// file loudly. Do not add another key to this set without confirming with
+// the product owner that the omission is intentional and recording why.
+const PROFORMA_ONLY_KEYS = new Set<string>([
+  "cdiQueryReduction", // no Explore card — configured in the proforma drawer only
+]);
+
+function quantifiedDriversFor(setting: ExploreSetting) {
+  return EXPLORE_DRIVERS.filter(
+    (d) => d.visibility === "quantified" && d.settings.includes(setting),
+  );
+}
+
+/** All EXPLORE_DRIVERS entries (any visibility) for `setting` whose engine key resolves to `key`. */
+function driversMappingTo(setting: ExploreSetting, key: string) {
+  return EXPLORE_DRIVERS.filter(
+    (d) => d.settings.includes(setting) && engineKeyForDriver(d.id, setting) === key,
+  );
+}
+
+// Maximal per-setting fixtures — every quantified driver for that setting
+// enabled with realistic non-zero inputs. Mirrors the fixtures in
+// exploreDriverKeys.test.ts (Task 1) so both tests exercise the same "every
+// driver on" state.
+
+const outpatientState = {
+  ...DEFAULT_EXPLORE_STATE,
+  careSetting: "outpatient",
+  numberOfProviders: 100,
+  annualEncounters: 200_000,
+  utilizationPercent: 80,
+  timeDriverInputs: {
+    ...DEFAULT_EXPLORE_STATE.timeDriverInputs,
+    patientAccessEnabled: true,
+    accessProviders: 100,
+    capacityRealizationPercent: 25,
+    visitDuration: 30,
+    revenuePerVisit: 200,
+    wellbeingEnabled: true,
+    calculateRetentionValue: true,
+    annualTurnoverRate: 6,
+    burnoutRelatedTurnover: 40,
+    replacementCost: 400_000,
+    retentionImpactScenario: "typical",
+    physicianAgencyEnabled: true,
+    physicianAgencyWeeksPerVacancy: 16,
+    physicianAgencyWeeklyPremium: 5_000,
+    scribeCostReductionEnabled: true,
+    scribeBillingMode: "position",
+    scribeHeadcount: 10,
+    scribePositionsEliminated: 5,
+    scribeCostPerPosition: 35_000,
+  },
+  docQualityInputs: {
+    ...DEFAULT_EXPLORE_STATE.docQualityInputs,
+    wrvuEnabled: true,
+    wrvuScenario: "typical",
+    currentWrvu: 1.8,
+    conversionFactor: 33,
+    wrvuRealization: 75,
+    hccEnabled: true,
+    denialsEnabled: true,
+    denialsScenario: "typical",
+    medNecessityDenialRate: 3,
+    avgClaimValue: 200,
+    denialsRealization: 60,
+  },
+} as ExploreState;
+
+const edState = {
+  ...DEFAULT_EXPLORE_STATE,
+  careSetting: "ed",
+  numberOfProviders: 60,
+  annualEncounters: 120_000,
+  utilizationPercent: 100,
+  timeDriverInputs: {
+    ...DEFAULT_EXPLORE_STATE.timeDriverInputs,
+    edLwbsEnabled: true,
+    edLwbsRate: 3,
+    edLwbsReduction: 20,
+    edRevenuePerVisit: 350,
+    edLwbsRealization: 85,
+    edThroughputEnabled: true,
+    edAdmissionRate: 15,
+    edAdmissionRevenue: 8_000,
+    edAdmissionRealization: 75,
+    wellbeingEnabled: true,
+    calculateRetentionValue: true,
+    annualTurnoverRate: 6,
+    burnoutRelatedTurnover: 40,
+    replacementCost: 400_000,
+    retentionImpactScenario: "typical",
+    physicianAgencyEnabled: true,
+    physicianAgencyWeeksPerVacancy: 16,
+    physicianAgencyWeeklyPremium: 5_000,
+    scribeCostReductionEnabled: true,
+    scribeBillingMode: "position",
+    scribeHeadcount: 10,
+    scribePositionsEliminated: 5,
+    scribeCostPerPosition: 35_000,
+  },
+  docQualityInputs: {
+    ...DEFAULT_EXPLORE_STATE.docQualityInputs,
+    wrvuEnabled: true,
+    wrvuScenario: "typical",
+    currentWrvu: 1.8,
+    conversionFactor: 33,
+    wrvuRealization: 75,
+    denialsEnabled: true,
+    denialsScenario: "typical",
+    medNecessityDenialRate: 3,
+    avgClaimValue: 200,
+    denialsRealization: 60,
+  },
+} as ExploreState;
+
+const inpatientState = {
+  ...DEFAULT_EXPLORE_STATE,
+  careSetting: "inpatient",
+  numberOfProviders: 40,
+  annualEncounters: 20_000,
+  utilizationPercent: 60,
+  timeDriverInputs: {
+    ...DEFAULT_EXPLORE_STATE.timeDriverInputs,
+    wellbeingEnabled: true,
+    calculateRetentionValue: true,
+    ipAnnualTurnoverRate: 10,
+    ipBurnoutRelatedTurnover: 45,
+    ipReplacementCost: 400_000,
+    retentionImpactScenario: "typical",
+    physicianAgencyEnabled: true,
+    physicianAgencyWeeksPerVacancy: 16,
+    physicianAgencyWeeklyPremium: 5_000,
+  },
+  docQualityInputs: {
+    ...DEFAULT_EXPLORE_STATE.docQualityInputs,
+    ipDrgEnabled: true,
+    ipDrgScenario: "typical",
+    ipDrgAtRiskRate: 8,
+    ipDrgWeightIncrease: 0.3,
+    ipDrgBasePayment: 12_000,
+    ipDrgRealization: 60,
+    // ipCdiEnabled IS part of a genuinely maximal inpatient state — the
+    // engine computes `cdiQueryReduction` when this is on. It is left
+    // enabled here on purpose so the forward assertion sees the orphan key
+    // and must explicitly skip it via PROFORMA_ONLY_KEYS above, rather than
+    // the test being unable to see the problem at all.
+    ipCdiEnabled: true,
+    ipCdiScenario: "typical",
+    ipCdiQueryRate: 10,
+    ipCdiCostPerQuery: 40,
+    ipCdiRealization: 70,
+    ipObsDefenseEnabled: true,
+    ipObsDefensePreventableScenario: "typical",
+    ipObsDefenseDenialRate: 6,
+    ipObsDefenseRevenueDelta: 3_000,
+    ipObsDefenseRealization: 65,
+  },
+} as ExploreState;
+
+const nursingState = {
+  ...DEFAULT_EXPLORE_STATE,
+  careSetting: "nursing",
+  numberOfProviders: 300,
+  nursingStaffedBeds: 300,
+  nursingOccupancyRate: 85,
+  timeDriverInputs: {
+    ...DEFAULT_EXPLORE_STATE.timeDriverInputs,
+    nursingRetentionEnabled: true,
+    nursingTurnoverRate: 30,
+    nursingReplacementCost: 60_000,
+    retentionImpactScenario: "typical",
+    nursingAgencyEnabled: true,
+    nursingAgencyWeeksPerVacancy: 12,
+    nursingAgencyWeeklyPremium: 2_500,
+    nursingOtEnabled: true,
+    nursingOtHoursPerNurseWeek: 4,
+    nursingOtReductionPercent: 15,
+    nursingOtHourlyRate: 62,
+  },
+  docQualityInputs: {
+    ...DEFAULT_EXPLORE_STATE.docQualityInputs,
+    nursingHapiEnabled: true,
+    nursingHapiRate: 2.5,
+    nursingHapiPreventionRate: 6.5,
+    nursingHapiCost: 25_000,
+    nursingFallsEnabled: true,
+    nursingFallsRate: 3.5,
+    nursingFallsPreventionRate: 10,
+    nursingFallsCost: 6_500,
+    nursingCautiEnabled: true,
+    nursingCautiUtilizationRatio: 30,
+    nursingCautiRate: 1.8,
+    nursingCautiPreventionRate: 12,
+    nursingCautiCost: 13_000,
+    nursingClabsiEnabled: true,
+    nursingClabsiUtilizationRatio: 20,
+    nursingClabsiRate: 0.8,
+    nursingClabsiPreventionRate: 8,
+    nursingClabsiCost: 20_000,
+    nursingSepsisEnabled: true,
+    nursingSepsisRatePerThousand: 2.0,
+    nursingSepsisCurrentCompliance: 75,
+    nursingSepsisDocLagPercent: 30,
+    nursingSepsisExcessCostPerCase: 3_500,
+    nursingSepsisRealization: 60,
+  },
+} as ExploreState;
+
+const FIXTURES: Record<ExploreSetting, { state: ExploreState; hours: number }> = {
+  outpatient: { state: outpatientState, hours: 8_000 },
+  ed: { state: edState, hours: 5_000 },
+  inpatient: { state: inpatientState, hours: 0 },
+  nursing: { state: nursingState, hours: 0 },
+};
+
+function assertForwardCoverage(setting: ExploreSetting) {
+  const { state, hours } = FIXTURES[setting];
+  const values = computeAllDriverValues(state, hours);
+  const emittedKeys = Object.keys(values);
+  expect(emittedKeys.length).toBeGreaterThan(0);
+  for (const key of emittedKeys) {
+    if (PROFORMA_ONLY_KEYS.has(key)) continue;
+    const matches = driversMappingTo(setting, key).filter((d) => d.visibility === "quantified");
+    expect(
+      matches.length,
+      `${setting}: engine emitted "${key}" (value ${values[key]}) but ${matches.length} ` +
+        `quantified EXPLORE_DRIVERS entries map to it (expected exactly 1): ` +
+        `[${matches.map((d) => d.id).join(", ")}]. If this is 0, it is a NEW orphan — ` +
+        `either register a driver whose engineKeyForDriver resolves to "${key}", or add ` +
+        `"${key}" to PROFORMA_ONLY_KEYS with a comment explaining why it has no Explore card.`,
+    ).toBe(1);
+  }
+}
+
+function assertReverseCoverage(setting: ExploreSetting) {
+  const { state, hours } = FIXTURES[setting];
+  const values = computeAllDriverValues(state, hours);
+  const drivers = quantifiedDriversFor(setting);
+  expect(drivers.length).toBeGreaterThan(0);
+  for (const driver of drivers) {
+    const key = engineKeyForDriver(driver.id, setting);
+    expect(
+      key in values,
+      `${setting}/${driver.id}: engineKeyForDriver resolved to "${key}", but the engine did ` +
+        `not emit that key at all for a maximal (all-drivers-enabled) state. A registered, ` +
+        `quantified driver must always resolve to a key the engine can produce.`,
+    ).toBe(true);
+  }
+}
+
+describe("Explore driver coverage invariant — forward: every engine key maps to exactly one registered driver", () => {
+  it("outpatient", () => assertForwardCoverage("outpatient"));
+  it("ed", () => assertForwardCoverage("ed"));
+  it("inpatient", () => assertForwardCoverage("inpatient"));
+  it("nursing", () => assertForwardCoverage("nursing"));
+});
+
+describe("Explore driver coverage invariant — reverse: every quantified driver resolves to a key the engine emits", () => {
+  it("outpatient", () => assertReverseCoverage("outpatient"));
+  it("ed", () => assertReverseCoverage("ed"));
+  it("inpatient", () => assertReverseCoverage("inpatient"));
+  it("nursing", () => assertReverseCoverage("nursing"));
+});
+
+describe("Explore driver coverage invariant — the documented exception set is exact", () => {
+  it("cdiQueryReduction is the ONLY engine key with no registered driver, across all four settings", () => {
+    const settings: ExploreSetting[] = ["outpatient", "ed", "inpatient", "nursing"];
+    const trulyUnmapped = new Set<string>();
+    for (const setting of settings) {
+      const { state, hours } = FIXTURES[setting];
+      const values = computeAllDriverValues(state, hours);
+      for (const key of Object.keys(values)) {
+        const matches = driversMappingTo(setting, key).filter((d) => d.visibility === "quantified");
+        if (matches.length === 0) trulyUnmapped.add(key);
+      }
+    }
+    // If this fails because trulyUnmapped is a superset of PROFORMA_ONLY_KEYS,
+    // a NEW accidental orphan has appeared — do not add it here without
+    // flagging it; register the missing EXPLORE_DRIVERS entry instead.
+    // If it fails because trulyUnmapped is now empty, cdiQueryReduction has
+    // been resolved (a card was added or the engine emission was gated) —
+    // shrink PROFORMA_ONLY_KEYS to match.
+    expect(trulyUnmapped).toEqual(PROFORMA_ONLY_KEYS);
+  });
+});
