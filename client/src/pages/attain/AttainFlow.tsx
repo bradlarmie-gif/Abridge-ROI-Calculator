@@ -20,6 +20,7 @@ import AttainLivePanel from "./AttainLivePanel";
 import {
   DEFAULT_ATTAIN_PLANNING,
   type AttainPlanning,
+  type MeasurementMetricEntry,
 } from "@/lib/attain/attainPlanning";
 import {
   DEFAULT_ATTAIN_STATE,
@@ -488,7 +489,7 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
   }, []);
 
   const handleChangeMetricField = useCallback(
-    (metricId: string, patch: { target?: string; owner?: string; byWhen?: string }) => {
+    (metricId: string, patch: Partial<MeasurementMetricEntry>) => {
       setPlanning((prev) => {
         const m = prev.measurement ?? {};
         const entries = m.entries ?? {};
@@ -564,7 +565,7 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
   );
 
   const handleChangeMetricFieldForGoal = useCallback(
-    (goal: GoalId, metricId: string, patch: { target?: string; owner?: string; byWhen?: string }) => {
+    (goal: GoalId, metricId: string, patch: Partial<MeasurementMetricEntry>) => {
       patchMeasurementForGoal(goal, (m) => {
         const entries = m.entries ?? {};
         return { ...m, entries: { ...entries, [metricId]: { ...entries[metricId], ...patch } } };

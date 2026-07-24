@@ -340,4 +340,19 @@ describe("the number is proof, not the goal: it only appears once the meaning is
     expect(lv.revenueHccPopulations ?? []).toEqual([]);
     expect(ffsWithStrayHcc.ready).toBe(true); // E/M still lands
   });
+
+  it("an empty book books nothing, even with a stray path left selected", () => {
+    // Book cleared to empty (it is multi-select) but a denials path is still in
+    // the raw selection: the engine must match the renderer and contribute $0.
+    const choices: LeverValues = {
+      revenueAlignBook: [],
+      revenueAlignPaths: ["denials"],
+      "revenueAlignGateDenials__denials": ["note"],
+    };
+    const lv = revenueAlignToLeverValues(choices, ctxFor(OP, "outpatient"));
+    expect(lv.revenuePaths).toEqual([]);
+    const proof = deriveRevenueAlignProof(choices, ctxFor(OP, "outpatient"));
+    expect(proof.ready).toBe(false);
+    expect(proof.headlineValue).toBe(0);
+  });
 });

@@ -235,6 +235,11 @@ export function revenueAlignToLeverValues(values: LeverValues, ctx: AlignContext
   const hasRisk = riskPops.length > 0;
   const bookAllows = (id: RevenuePathId): boolean => {
     if (setting !== "outpatient") return true;
+    // Empty book => no paths pay, so nothing contributes. Mirrors the renderer's
+    // `outpatientPathsForBook` guard so the engine and the UI never disagree
+    // (otherwise a stray path left in the selection after the book is cleared
+    // would still book a dollar the UI says shouldn't exist).
+    if (book.length === 0) return false;
     return id === "em" ? hasFFS : id === "hcc" ? hasRisk : true;
   };
   const chosen = (selectedOptionIds(values, K_PATHS) as RevenuePathId[]).filter(
