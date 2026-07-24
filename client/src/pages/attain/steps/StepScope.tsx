@@ -118,23 +118,23 @@ export default function StepScope({ setting, baseline, onChangeBaseline }: StepS
 
   return (
     <div>
-      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
+      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-10 max-w-[620px]">
         <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-3" data-testid="text-step-eyebrow">
           Step 3 · Where are you starting from?
         </p>
         <h1 className="text-2xl md:text-4xl font-bold text-black mb-3 font-abridge uppercase tracking-tight" data-testid="text-step-title">
           Your starting point
         </h1>
-        <p className="text-[15px] text-[#666666] leading-relaxed max-w-[560px]" data-testid="text-step-teach">
+        <p className="text-[15px] text-[#666666] leading-relaxed" data-testid="text-step-teach">
           Start with your real operation. Everything we calculate next is built from these numbers, not a
           benchmark.
         </p>
       </motion.div>
 
+      <div className="grid md:grid-cols-[minmax(0,1fr)_360px] gap-x-16 gap-y-10 items-start">
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mb-8"
         data-testid="panel-attain-scope-baseline"
       >
         <p className="text-[10px] font-semibold text-[#8C8C8C] uppercase tracking-[1.8px] mb-6">
@@ -217,33 +217,47 @@ export default function StepScope({ setting, baseline, onChangeBaseline }: StepS
             />
           </div>
         )}
-
-        {/* The live stage, read back from their own numbers. The coral figure
-            echoes the Attainment output, so the foundation and the payoff speak
-            the same visual language. */}
-        <div className="mt-10" data-testid="panel-attain-scope-stage" aria-live="polite">
-          {stage.ready ? (
-            <div className="flex items-baseline gap-2.5 flex-wrap">
-              <motion.span
-                key={stage.value}
-                initial={{ opacity: 0, y: 4 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="font-abridge text-3xl md:text-4xl text-[#EA2C00] leading-none"
-                data-testid="text-attain-scope-stage-value"
-              >
-                {stage.value}
-              </motion.span>
-              <span className="text-[14px] text-[#6B6B6B] leading-relaxed">
-                <span className="font-semibold text-[#3A3A3A]">{stage.label}</span>, {stage.sub}
-              </span>
-            </div>
-          ) : (
-            <p className="text-[13.5px] text-[#8C8C8C] leading-relaxed max-w-[560px]" data-testid="text-attain-scope-stage-prompt">
-              {stage.prompt}
-            </p>
-          )}
-        </div>
       </motion.div>
+
+      {/* The live "within reach" panel — anticipatory when blank, alive when they type.
+          Sits beside the inputs so the step reads as a foundation being built, not a
+          sparse form. The coral figure echoes the Attainment output downstream. */}
+      <motion.aside
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="rounded-2xl border border-[#EFEAE1] bg-[#FAF7F2] p-6 md:p-7 w-full"
+        data-testid="panel-attain-scope-stage"
+        aria-live="polite"
+      >
+        <p className="text-[10px] font-semibold text-[#8C8C8C] uppercase tracking-[1.8px] mb-5">Within reach</p>
+        {stage.ready ? (
+          <div>
+            <motion.p
+              key={stage.value}
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="font-abridge text-[52px] leading-none text-[#EA2C00] mb-3"
+              data-testid="text-attain-scope-stage-value"
+            >
+              {stage.value}
+            </motion.p>
+            <p className="text-[15px] text-[#1A1A1A] font-semibold leading-snug">{stage.label}</p>
+            <p className="text-[13px] text-[#8C8C8C] leading-relaxed mt-1">{stage.sub}</p>
+            <p className="text-[12.5px] text-[#8C8C8C] leading-relaxed mt-5 pt-5 border-t border-[#EFEAE1]">
+              Everything we calculate next is built from this, not a benchmark.
+            </p>
+          </div>
+        ) : (
+          <div data-testid="text-attain-scope-stage-prompt">
+            <p className="font-abridge text-[52px] leading-none text-[#D8CFC0] mb-3">&mdash;</p>
+            <p className="text-[13.5px] text-[#8C8C8C] leading-relaxed">{stage.prompt}</p>
+            <p className="text-[12.5px] text-[#B4A896] leading-relaxed mt-5 pt-5 border-t border-[#EFEAE1]">
+              This becomes the foundation every next-page number is built from.
+            </p>
+          </div>
+        )}
+      </motion.aside>
+      </div>
     </div>
   );
 }

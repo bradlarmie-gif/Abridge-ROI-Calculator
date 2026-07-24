@@ -117,7 +117,7 @@ export default function AttainFlowV2({ onBackToJourney }: { onBackToJourney?: ()
       {phase === "experience" ? (
         <><UnifiedHeaderSpacer /><AttainExperience key={partner} setting={SETTING_LABEL[setting!]} cells={cells} baseline={baseline} initial={buildSnapshot()} onPersist={onPersist} /></>
       ) : (
-        <><UnifiedHeaderSpacer /><div className="max-w-[760px] mx-auto px-6 py-8 md:py-12">
+        <><UnifiedHeaderSpacer /><div className={`${phase === "scope" ? "max-w-[1040px]" : "max-w-[760px]"} mx-auto px-6 py-8 md:py-12`}>
           {phase === "partner" && (
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#EA2C00] mb-2">Step 1 · Who's this for?</p>
