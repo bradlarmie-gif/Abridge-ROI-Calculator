@@ -1059,14 +1059,26 @@ export function VolumeAndPricingSection({
       {isAnnualFlat && (
         <div>
           <p className="text-[11px] text-neutral-500 mb-2">Annual License Fee</p>
-          <div className="relative">
-            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[11px] text-neutral-400">$</span>
-            <FormattedNumberInput
-              value={setting.annualLicenseFee || 0}
-              onChange={(v) => onUpdateSetting(setting.id, { annualLicenseFee: v, yearlyPricing: { year1: v, year2: v, year3: v } })}
-              className={inputCls + " pl-5"}
-            />
+          <div className={`grid ${colClass} gap-2`}>
+            {yearKeys.map((yk, i) => (
+              <div key={yk}>
+                <p className="text-[10px] text-neutral-400 mb-1">{yearLabel(i)}</p>
+                <div className="relative">
+                  <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[11px] text-neutral-400">$</span>
+                  <FormattedNumberInput
+                    value={yPricing[yk]}
+                    onChange={(v) => {
+                      const updated = { ...yPricing, [yk]: v };
+                      // Mirror year1 into annualLicenseFee for the base (non-scheduled) path.
+                      onUpdateSetting(setting.id, { yearlyPricing: updated, quarterlyPricing: undefined, annualLicenseFee: updated.year1 });
+                    }}
+                    className={inputCls + " text-right pl-5"}
+                  />
+                </div>
+              </div>
+            ))}
           </div>
+          {isExtendedTerm && <p className="text-[9px] text-neutral-400 mt-1.5">Y3+ fee held constant for years 4–{actualTermYears}</p>}
         </div>
       )}
 
