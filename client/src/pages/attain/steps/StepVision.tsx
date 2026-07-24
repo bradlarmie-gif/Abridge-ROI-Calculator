@@ -28,7 +28,9 @@ export default function StepVision({ setting, selectedGoals, onToggle }: StepVis
         </p>
       </motion.div>
 
-      <div className="grid grid-cols-1 gap-4 mb-8" data-testid="list-attain-vision-goals">
+      {/* Editorial rows, pill as an eyebrow, checkbox on the right, coral bar on
+          a selected row. Same affordance language as the Align/Plan option rows. */}
+      <div className="border-t border-[#EFEAE1] mb-8 max-w-[720px]" data-testid="list-attain-vision-goals">
         {goals.map((g, i) => {
           const content = getContent(setting, g.id);
           const isSelected = selectedGoals.includes(g.id);
@@ -41,34 +43,34 @@ export default function StepVision({ setting, selectedGoals, onToggle }: StepVis
               transition={{ delay: 0.05 * i }}
               onClick={() => onToggle(g.id)}
               aria-pressed={isSelected}
-              className={`text-left rounded-xl p-5 border-2 transition-all ${
-                isSelected ? "border-[#EA2C00] bg-[#FFF6F3]" : "border-[#E5E5E5] bg-white hover:border-[#D8CFC4]"
-              }`}
+              className="group relative w-full text-left flex items-start justify-between gap-4 pl-4 pr-3 py-4 border-b border-[#EFEAE1] hover:bg-[#F2EDE5] transition-colors"
               data-testid={`card-attain-goal-${g.id}`}
             >
-              <div className="flex items-center justify-between mb-2">
+              {isSelected && <span className="absolute left-0 top-2 bottom-2 w-[3px] rounded-full bg-[#EA2C00]" aria-hidden />}
+              <div className="min-w-0">
                 <span
-                  className="inline-block text-[9px] font-bold uppercase tracking-[1.5px] text-white px-3 py-1 rounded-full"
+                  className="inline-block text-[9px] font-bold uppercase tracking-[1.5px] text-white px-2.5 py-0.5 rounded-full"
                   style={{ background: g.pillBg }}
                 >
                   {g.pill}
                 </span>
-                <span
-                  className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${
-                    isSelected ? "border-[#EA2C00] bg-[#EA2C00]" : "border-[#D8CFC4] bg-white"
-                  }`}
-                  data-testid={`checkbox-attain-goal-${g.id}`}
-                >
-                  {isSelected && <Check className="w-3.5 h-3.5 text-white" />}
-                </span>
+                <h3 className={`text-[17px] leading-snug mt-2 ${isSelected ? "font-semibold text-[#EA2C00]" : "font-medium text-[#1A1A1A]"}`}>
+                  {g.label}
+                </h3>
+                {content && (
+                  <p className="text-[13px] text-[#8C8C8C] leading-snug mt-1 max-w-[520px]">
+                    {content.thesis1} {content.thesis2}
+                  </p>
+                )}
               </div>
-              <h3 className="text-lg font-bold text-[#1A1A1A] mb-1">{g.label}</h3>
-              <p className="text-xs text-[#8C8C8C] mb-2">{g.domainSub}</p>
-              {content && (
-                <p className="text-sm text-[#3A3A3A] leading-relaxed">
-                  {content.thesis1} {content.thesis2}
-                </p>
-              )}
+              <span
+                className={`mt-1 flex-shrink-0 grid place-items-center w-[18px] h-[18px] rounded-[5px] border-[1.5px] transition-colors ${
+                  isSelected ? "bg-[#EA2C00] border-[#EA2C00]" : "border-[#CFC6B8] bg-white group-hover:border-[#B4A896]"
+                }`}
+                data-testid={`checkbox-attain-goal-${g.id}`}
+              >
+                {isSelected && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
+              </span>
             </motion.button>
           );
         })}

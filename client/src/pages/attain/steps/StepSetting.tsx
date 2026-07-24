@@ -1,4 +1,4 @@
-import { Stethoscope, Zap, ClipboardList, HeartPulse, Check } from "lucide-react";
+import { Check } from "lucide-react";
 import { motion } from "framer-motion";
 import type { AttainSetting } from "@/lib/attain/attainTypes";
 
@@ -7,7 +7,6 @@ interface SettingOption {
   label: string;
   shortDesc: string;
   description: string;
-  icon: typeof Stethoscope;
 }
 
 const SETTINGS: SettingOption[] = [
@@ -16,28 +15,24 @@ const SETTINGS: SettingOption[] = [
     label: "Outpatient",
     shortDesc: "Primary care & specialty",
     description: "Panel access, wRVU capture, and provider retention across clinics.",
-    icon: Stethoscope,
   },
   {
     id: "ed",
     label: "Emergency",
     shortDesc: "Emergency department",
     description: "Throughput, LWBS recovery, coding accuracy, and provider retention.",
-    icon: Zap,
   },
   {
     id: "inpatient",
     label: "Inpatient",
     shortDesc: "Hospital medicine",
     description: "DRG accuracy, CDI turnaround, and hospitalist retention.",
-    icon: ClipboardList,
   },
   {
     id: "nursing",
     label: "Nursing",
     shortDesc: "Inpatient nursing",
     description: "Bundle compliance, preventable harm, and nurse retention.",
-    icon: HeartPulse,
   },
 ];
 
@@ -63,9 +58,9 @@ export default function StepSetting({ selected, onSelect }: StepSettingProps) {
         </p>
       </motion.div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+      {/* Editorial light cards: a hairline card, no icon, coral only on select. */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8 max-w-[720px]">
         {SETTINGS.map((s, i) => {
-          const Icon = s.icon;
           const isSelected = selected === s.id;
           return (
             <motion.button
@@ -75,20 +70,17 @@ export default function StepSetting({ selected, onSelect }: StepSettingProps) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.05 * i }}
               onClick={() => onSelect(s.id)}
-              className={`text-left rounded-xl p-5 border-2 transition-all ${
-                isSelected ? "border-[#EA2C00] bg-[#FFF6F3]" : "border-[#E5E5E5] bg-white hover:border-[#D8CFC4]"
+              className={`relative text-left rounded-lg border p-4 transition-colors ${
+                isSelected ? "border-[#EA2C00] bg-[#FFF9F7]" : "border-[#E7E0D6] bg-white hover:border-[#D8CFC4]"
               }`}
               data-testid={`card-attain-setting-${s.id}`}
             >
-              <div className="flex items-center justify-between mb-3">
-                <div className="w-10 h-10 rounded-full bg-[#F5F0EB] flex items-center justify-center">
-                  <Icon className="w-5 h-5 text-[#EA2C00]" />
-                </div>
-                {isSelected && <Check className="w-5 h-5 text-[#EA2C00]" />}
-              </div>
-              <h3 className="text-lg font-bold text-[#1A1A1A] mb-1">{s.label}</h3>
-              <p className="text-xs text-[#8C8C8C] mb-2">{s.shortDesc}</p>
-              <p className="text-sm text-[#3A3A3A] leading-relaxed">{s.description}</p>
+              {isSelected && <Check className="absolute top-3.5 right-3.5 w-4 h-4 text-[#EA2C00]" strokeWidth={2.75} />}
+              <h3 className={`text-[15px] font-semibold mb-0.5 ${isSelected ? "text-[#EA2C00]" : "text-[#1A1A1A]"}`}>
+                {s.label}
+              </h3>
+              <p className="text-[11px] text-[#8C8C8C] mb-1.5">{s.shortDesc}</p>
+              <p className="text-[12.5px] text-[#8C8C8C] leading-relaxed pr-4">{s.description}</p>
             </motion.button>
           );
         })}
