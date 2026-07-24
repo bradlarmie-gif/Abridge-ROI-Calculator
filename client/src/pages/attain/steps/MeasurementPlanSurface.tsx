@@ -79,6 +79,10 @@ function fmtMoneyCompact(n: number): string {
 const EDITORIAL_LABEL = "text-[10px] font-semibold uppercase tracking-[1.6px] text-[#8C8C8C] mb-2";
 const EDITORIAL_FIELD =
   "w-full bg-transparent border-0 border-b border-[#E0D9CE] rounded-none px-0 pb-1 text-[15px] text-[#1A1A1A] outline-none transition-colors focus:border-[#EA2C00] placeholder:text-[#C4BCB0]";
+/** An inline fill-in-the-blank field for the promise sentence: an underline
+ * blank that sits in the running text and turns coral on focus. */
+const PROMISE_BLANK =
+  "inline-block bg-transparent border-0 border-b-2 border-[#E0D9CE] rounded-none px-0 outline-none text-[#1A1A1A] font-semibold placeholder:text-[#C4BCB0] placeholder:font-normal focus:border-[#EA2C00] transition-colors align-baseline";
 
 /** A partner-added custom metric rendered as a metric option (its baseline is
  * blank/their-own, it carries no engine default target). Used so the scorecard
@@ -310,10 +314,19 @@ export default function MeasurementPlanSurface({
           </span>
           {showPromiseEyebrow && <p className="text-[9px] font-bold uppercase tracking-wide text-[#8C8C8C]">The promise</p>}
         </div>
-        <p className="text-lg md:text-[22px] leading-snug text-[#1A1A1A] font-semibold" data-testid={`text-measure-promise-line-${goal}`}>
+        {/* The promise as a fill-in-the-blank sentence: the owner name and the
+            date are inline blanks the partner completes, so it reads as one
+            clean line instead of pointing them to fields below. */}
+        <p className="text-lg md:text-[22px] leading-[1.9] text-[#1A1A1A] font-semibold" data-testid={`text-measure-promise-line-${goal}`}>
           {goalDef.label}
-          <span className="text-[#B4B4B4] font-normal"> · </span>
-          Owned by {ownerName ? <span>{ownerName}</span> : <span className="text-[#EA2C00]">name the exec below</span>}
+          <span className="text-[#B4B4B4] font-normal"> · owned by </span>
+          <input
+            value={goalOwner.name}
+            onChange={(e) => onChangeGoalOwner({ name: e.target.value })}
+            placeholder="add a name"
+            className={`${PROMISE_BLANK} min-w-[150px]`}
+            data-testid={`input-measure-owner-name-${goal}`}
+          />
           <span className="text-[#B4B4B4] font-normal"> · </span>
           {model.safetyHeadline ? (
             /* SAFETY-FIRST (quality): the hero is a COUNT of harm events
@@ -323,9 +336,16 @@ export default function MeasurementPlanSurface({
           ) : prize > 0 ? (
             <span className="text-[#EA2C00]" data-testid={`text-measure-promise-prize-${goal}`}>{fmtMoneyCompact(prize)}</span>
           ) : (
-            <span className="text-[#8C8C8C]">value pending</span>
-          )}{" "}
-          by {promiseByWhen ? <span data-testid={`text-measure-promise-date-${goal}`}>{promiseByWhen}</span> : <span className="text-[#EA2C00]">the date you set below</span>}
+            <span className="text-[#8C8C8C] font-normal">value builds as you go</span>
+          )}
+          <span className="text-[#B4B4B4] font-normal"> by </span>
+          <input
+            type="date"
+            value={promiseByWhen}
+            onChange={(e) => onChangePromiseByWhen(e.target.value)}
+            className={`${PROMISE_BLANK} min-w-[150px]`}
+            data-testid={`input-measure-promise-date-${goal}`}
+          />
         </p>
         {model.safetyHeadline && (
           <p className="mt-2 text-[11px] text-[#8C8C8C] leading-relaxed max-w-[600px]" data-testid={`text-measure-soft-dollar-${goal}`}>
@@ -333,48 +353,25 @@ export default function MeasurementPlanSurface({
           </p>
         )}
 
-        <div className="mt-5 pt-5 border-t border-[#EFEAE1] flex flex-wrap gap-x-10 gap-y-5">
-          <div className="min-w-[200px] flex-1">
-            <p className={EDITORIAL_LABEL}>Exec owner</p>
-            <input
-              value={goalOwner.name}
-              onChange={(e) => onChangeGoalOwner({ name: e.target.value })}
-              placeholder="Name, e.g. Dr. A. Rivera"
-              className={EDITORIAL_FIELD}
-              data-testid={`input-measure-owner-name-${goal}`}
-            />
-          </div>
-          <div className="min-w-[180px] flex-1">
-            <p className={EDITORIAL_LABEL}>Title / role</p>
-            <input
-              value={goalOwner.title}
-              onChange={(e) => onChangeGoalOwner({ title: e.target.value })}
-              placeholder="e.g. VP Ambulatory Ops"
-              className={EDITORIAL_FIELD}
-              data-testid={`input-measure-owner-title-${goal}`}
-            />
-          </div>
-          <div className="min-w-[150px]">
-            <p className={EDITORIAL_LABEL}>By when</p>
-            <input
-              type="date"
-              value={promiseByWhen}
-              onChange={(e) => onChangePromiseByWhen(e.target.value)}
-              className={EDITORIAL_FIELD}
-              data-testid={`input-measure-promise-date-${goal}`}
-            />
-          </div>
+        <div className="mt-5 max-w-[320px]">
+          <p className={EDITORIAL_LABEL}>Owner's title or role (optional)</p>
+          <input
+            value={goalOwner.title}
+            onChange={(e) => onChangeGoalOwner({ title: e.target.value })}
+            placeholder="e.g. VP Ambulatory Ops"
+            className={EDITORIAL_FIELD}
+            data-testid={`input-measure-owner-title-${goal}`}
+          />
         </div>
       </div>
 
       {/* 2 — THE MEASUREMENT CHAIN, built from the Align choices. */}
       <div className="mb-10">
-        <h2 className="text-sm font-bold text-[#1A1A1A] mb-1">The measurement chain</h2>
+        <h2 className="text-sm font-bold text-[#1A1A1A] mb-1">What you'll measure to get there</h2>
         <p className="text-[12px] text-[#8C8C8C] mb-5 max-w-[600px] leading-relaxed">
-          Read it top to bottom. This is the causal order the value moves in, built from what you aligned on.
-          {goal === "revenue" ? " It starts from the one shared lever, then stacks the links for each revenue path you picked." : ""} For each
-          link, pick the metric or metrics you will own. You see your baseline, you set the target, you name the owner
-          and a rough date.
+          Read it top to bottom. Each step is what has to happen for the value to show up, in the order it happens.
+          {goal === "revenue" ? " It starts with the one thing every path depends on, then adds the steps for each revenue path you picked." : ""} For each
+          one, pick what you'll measure, set the target, and name who owns it.
         </p>
 
         {!model.ready ? (
