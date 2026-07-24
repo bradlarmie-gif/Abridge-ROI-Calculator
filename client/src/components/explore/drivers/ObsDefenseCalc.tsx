@@ -53,7 +53,7 @@ export default function ObsDefenseCalc({ state, updateDocQualityInputs, totalHou
             </div>
             <span className="text-[#888888] text-xl hidden sm:block">×</span>
             <div className="flex-1">
-              <label className="text-[13px] text-[#666666] mb-1.5 block">IP-to-Obs Downgrade Rate</label>
+              <label className="text-[13px] text-[#666666] mb-1.5 block">Current IP-to-Obs Downgrade Rate</label>
               <div className="relative">
                 <NumberField
                   min={1}
