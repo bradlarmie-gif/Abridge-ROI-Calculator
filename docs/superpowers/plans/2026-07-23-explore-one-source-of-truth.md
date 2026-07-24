@@ -55,11 +55,18 @@
 
 ---
 
-## Task 1: Shared driver-id→engine-key resolver + card reconciliation guard (RED)
+## Task 1: Shared driver-id→engine-key resolver + resolver guard test
+
+> NOTE: the repo has NO jsdom / @testing-library (no test renders React). So the
+> guard is NOT a per-card render test — it's a unit test that every registered
+> driver's engine key is real. A card that reads
+> `computeAllDriverValues(...)[engineKeyForDriver(id, setting)]` cannot show a
+> wrong number as long as that key is valid, so the resolver test + per-card diff
+> review is the guard. No `data-testid`, no new test infra.
 
 **Files:**
 - Create: `client/src/lib/exploreDriverKeys.ts`
-- Create (test): `client/src/__tests__/exploreCardReconciliation.test.ts`
+- Create (test): `client/src/__tests__/exploreDriverKeys.test.ts`
 
 **Interfaces:**
 - Produces: `engineKeyForDriver(driverId: string, careSetting: string): string` — maps a registry id to the `computeAllDriverValues` result key (handles wrvu→edEmLevel for ED).
@@ -85,28 +92,16 @@ export function engineKeyForDriver(driverId: string, careSetting: string): strin
 }
 ```
 
-- [ ] **Step 2: Write the guard test (will FAIL until cards are readers)**
+- [ ] **Step 2: Write the resolver guard test.** Build a maximal `ExploreState` per care setting (every driver in that setting enabled + realistic non-zero inputs, mirroring the fixtures in `proformaDriverFormulaSteps.test.ts`), run `computeAllDriverValues`, and assert that for each `EXPLORE_DRIVERS` entry whose `settings` includes that care setting and which is quantified, `engineKeyForDriver(id, setting)` is a key present (value > 0) in the engine output. This proves every card will read a real, correct value.
 
-Build a synthetic `ExploreState` per care setting with every driver in that setting enabled + realistic inputs, render each card (`@testing-library/react`), and assert the card's displayed total equals `computeAllDriverValues(state, hours)[engineKeyForDriver(id, setting)]`. Because cards render prose + inputs, assert on the card's value element by `data-testid` — **add `data-testid={`driver-total-${driverId}`}` to the element each card shows its dollar total in** (Task 2 adds these as it converts each card).
+- [ ] **Step 3: Run — expect PASS** (`npx vitest run exploreDriverKeys`) once the map is right (fix the map if a key is missing). Then `npx tsc --noEmit && npm run build`.
 
-```ts
-// client/src/__tests__/exploreCardReconciliation.test.ts (skeleton — fill enabled-driver
-// fixtures per setting from DEFAULT_EXPLORE_STATE, mirroring proformaDriverFormulaSteps.test.ts)
-import { render, screen } from "@testing-library/react";
-import { DEFAULT_EXPLORE_STATE, type ExploreState } from "@/pages/explore/ExploreFlow";
-import { computeAllDriverValues } from "@/lib/exploreDriverCalcs";
-import { engineKeyForDriver } from "@/lib/exploreDriverKeys";
-import { EXPLORE_DRIVERS } from "@/lib/exploreDrivers";
-// helper: render a card, read `driver-total-${id}`, parse $ → number
-```
-
-- [ ] **Step 3: Run — expect FAIL** (`npx vitest run exploreCardReconciliation`) until Task 2 lands. Commit the resolver + a `.todo`/skipped test so the suite stays green:
+- [ ] **Step 4: Commit**
 
 ```bash
-git add client/src/lib/exploreDriverKeys.ts client/src/__tests__/exploreCardReconciliation.test.ts
-git commit -m "test(explore): driver-id→engine-key resolver + card reconciliation guard (skipped)"
+git add client/src/lib/exploreDriverKeys.ts client/src/__tests__/exploreDriverKeys.test.ts
+git commit -m "feat(explore): driver-id→engine-key resolver + guard that every key is real"
 ```
-(Mark the assertions `it.skip` here; un-skip per-card in Task 2 so the suite is green after every commit.)
 
 ---
 
@@ -123,12 +118,11 @@ Per card, the pattern (keep ALL input controls and qualitative copy; only the di
 ```ts
 const value = computeAllDriverValues(state, totalHoursSaved)[engineKeyForDriver("<driverId>", state.careSetting)] ?? 0;
 ```
-- [ ] **Step 2** — replace the locally re-derived total the card displays with `value`, and tag it: `<span data-testid={`driver-total-<driverId>`}>{formatCurrency(value)}</span>`. Leave intermediate/illustrative breakdown lines as-is (they're qualitative). For nursing-quality cards, delete the inline `(patientDays/1000)×rate×…` re-implementation and show `value`. For `PatientAccessCalc`, this removes the double-rounding divergence for free.
-- [ ] **Step 3** — un-skip that card's assertion in `exploreCardReconciliation.test.ts`.
-- [ ] **Step 4** — `npx tsc --noEmit && npx vitest run exploreCardReconciliation && npm run build`.
-- [ ] **Step 5** — commit: `git commit -m "refactor(explore): <Card> reads the engine value"`.
+- [ ] **Step 2** — replace the locally re-derived **total** the card displays with `value`. Leave intermediate/illustrative breakdown lines as-is (they're qualitative). Delete the now-dead local computation. For nursing-quality cards, delete the inline `(patientDays/1000)×rate×…` re-implementation and show `value`. For `PatientAccessCalc`, this removes the double-rounding divergence for free.
+- [ ] **Step 3** — `npx tsc --noEmit && npx vitest run && npm run build`. (The resolver guard from Task 1 already proves the key is valid; correctness of the read is by construction. Visual is verified by the user on Replit.)
+- [ ] **Step 4** — commit: `git commit -m "refactor(explore): <Card> reads the engine value"`.
 
-Repeat for all cards. (`PhysicianLocumAgencyCalc` already had its IP fields fixed in Tier 1; converting it to read the engine makes that guarantee structural.)
+Repeat for all cards. (`PhysicianLocumAgencyCalc` already had its IP fields fixed in Tier 1; converting it to read the engine makes that guarantee structural.) Group several small identical card conversions per commit if a reviewer would accept them together.
 
 ---
 
