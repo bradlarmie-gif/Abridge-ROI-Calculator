@@ -79,7 +79,7 @@ describe("quality measurement plan — stacks per chosen event from the Align st
     ]);
     // Sequential scorecard numbering across the whole stacked chain.
     expect(links.map((l) => l.n)).toEqual([1, 2, 3, 4, 5]);
-    expect(links[0].groupLabel).toBe("The shared root");
+    expect(links[0].groupLabel).toBe("Shared across every event");
     expect(links[1].groupLabel).toBe("Falls");
     expect(links[3].groupLabel).toBe("Patient experience (HCAHPS)");
   });

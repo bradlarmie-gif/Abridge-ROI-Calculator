@@ -143,7 +143,7 @@ describe("the gate collapses the derived value for short staffing / census (the 
     const ctx = ctxFor(NURSING_BASELINE);
     const staffing = deriveCapacityAlignProof(alignedChoices({ capacityAlignGate: ["staffing"] }), ctx);
     const census = deriveCapacityAlignProof(alignedChoices({ capacityAlignGate: ["census"] }), ctx);
-    expect(staffing.emptyHint.toLowerCase()).toContain("cannot add nurses");
+    expect(staffing.emptyHint.toLowerCase()).toContain("add nurses");
     expect(census.emptyHint.toLowerCase()).toContain("flatten census");
   });
 });
@@ -276,19 +276,19 @@ describe("capacity Align proof — honest zero lands in the math slot", () => {
     expect(proof.ready).toBe(false);
     expect(proof.headlineValue).toBe(0);
     expect(proof.math).toMatch(/short staffing/i);
-    expect(proof.math).toMatch(/honest number here is zero/i);
+    expect(proof.math).toMatch(/number here is zero/i);
     expect(proof.math).not.toMatch(/appears once you set/i);
   });
 
   it("puts the census-surge explanation in the math slot", () => {
     const proof = deriveCapacityAlignProof(alignedChoices({ capacityAlignGate: ["census"] }), ctxFor(NURSING_BASELINE));
     expect(proof.math).toMatch(/census surges/i);
-    expect(proof.math).toMatch(/honest number here is zero/i);
+    expect(proof.math).toMatch(/number here is zero/i);
   });
 
   it("still shows the derived formula in the math slot on the documentation path", () => {
     const proof = deriveCapacityAlignProof(alignedChoices(), ctxFor(NURSING_BASELINE));
     expect(proof.ready).toBe(true);
-    expect(proof.math).not.toMatch(/honest number here is zero/i);
+    expect(proof.math).not.toMatch(/number here is zero/i);
   });
 });

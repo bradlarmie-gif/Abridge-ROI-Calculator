@@ -349,7 +349,7 @@ export function deriveAccessMeasurementPlan(
     teach: "Freed time only opens access if it is directed to the schedule as bookable slots. This is the link the plan depends on most.",
     blocked: scheduleBlocked,
     blockedReason: scheduleBlocked
-      ? "You told us on Align the limit is people, rooms, or staff. Freeing documentation time cannot add capacity here, so there are no new slots to measure. The honest number stays at zero until that limit changes."
+      ? "You told us on Align the limit is people, rooms, or staff. Freeing documentation time cannot add capacity here, so there are no new slots to measure. The number stays at zero until that limit changes."
       : undefined,
     metrics: scheduleBlocked
       ? []
@@ -358,7 +358,7 @@ export function deriveAccessMeasurementPlan(
             id: "share-freed-time-scheduled",
             label: "Share of freed time directed to the schedule",
             unit: "%",
-            helper: "The portion of freed hours that becomes bookable slots, rather than staying as relief. This is the commitment, made visible.",
+            helper: "The portion of freed hours that becomes bookable slots, rather than staying as relief. This is where the commitment either holds or breaks.",
             baseline: "0% today",
             baselineTag: "data",
             defaultTarget: ladder.directedSharePct > 0 ? `${fmtInt(ladder.directedSharePct)}%` : "set on Align",
@@ -737,7 +737,7 @@ export function deriveRetentionMeasurementPlan(
         id: "departures-avoided",
         label: "Departures avoided",
         unit: `${unitPlural} / yr`,
-        helper: "Clinicians who stay because the day got better, the smaller, honest count behind the dollar.",
+        helper: "Clinicians who stay because the day got better, the smaller count behind the dollar.",
         baseline: "0 today",
         baselineTag: "data",
         defaultTarget: departuresSet ? `${fmtDepartures(ladder.departuresAvoided)} / yr` : "finish the Align chain",
@@ -905,7 +905,7 @@ export function deriveRevenueMeasurementPlan(
     title: "The documentation is complete",
     teach: "One lever starts every path: the note carries the full, specific picture of the care delivered. Everything each path captures downstream is built on this one thing being true, so it is the first thing to prove.",
     blocked: false,
-    groupLabel: "The shared root",
+    groupLabel: "Shared across every path",
     metrics: [
       {
         id: "doc-completeness",
@@ -997,7 +997,7 @@ function opPathLinks(
     const wrvuTyped = typeof values.revenueEmCurrentWrvu === "number" && values.revenueEmCurrentWrvu > 0;
     const gateAnswered = docCaused > 0;
     captureTitle = "The E/M level matches the care delivered";
-    captureTeach = "The leak this path measures: claims that go out below the care the note supports. As the note carries the full picture, the coded level rises to match what actually happened in the room.";
+    captureTeach = "The leak this path measures: claims that go out below the care the note supports. As the note carries the full picture, coding can support the level that matches what actually happened in the room.";
     captureMetrics = [
       {
         id: "em-below-supported",
@@ -1045,7 +1045,7 @@ function opPathLinks(
     const recaptureTyped = typeof values.revenueHccCurrentRecapture === "number" && values.revenueHccCurrentRecapture > 0;
     const targetRate = Math.min(90, r.currentRecaptureRate + r.effectiveUpliftPp);
     captureTitle = "The conditions reach the claim";
-    captureTeach = "The leak this path measures: conditions your risk-based patients have that never make it onto the claim. As the note documents them specifically, more of them get coded.";
+    captureTeach = "The leak this path measures: conditions your risk-based patients have that never make it onto the claim. As the note documents them specifically, more of them can be coded.";
     captureMetrics = [
       {
         id: "hcc-recapture-rate",
@@ -1061,7 +1061,7 @@ function opPathLinks(
         id: "hcc-suspected-close",
         label: "Suspected-condition close rate",
         unit: "%",
-        helper: "The share of conditions Abridge surfaces for the first time that get confirmed and coded, never invented, only documented where they are real.",
+        helper: "The share of newly surfaced conditions that get confirmed and coded, never invented, only documented where they are real.",
         baseline: "0% today",
         baselineTag: "data",
         defaultTarget: "rising against baseline",
@@ -1085,7 +1085,7 @@ function opPathLinks(
     const gateAnswered = c.preventablePct > 0;
     const remaining = Math.max(0, c.denialRate - (c.denialRate * c.preventablePct) / 100);
     captureTitle = "The note establishes medical necessity";
-    captureTeach = "The leak this path measures: denials driven by a note that did not establish why the care was needed. As the note carries the necessity, fewer of those claims come back denied.";
+    captureTeach = "The leak this path measures: denials driven by a note that did not establish why the care was needed. As the note carries the necessity, coding can defend more of those claims against denial.";
     captureMetrics = [
       {
         id: "denials-mednec-rate",
@@ -1156,7 +1156,7 @@ function opPathLinks(
         id: `${p.id}-captured-count`,
         label: p.capturedLabel,
         unit: p.capturedUnit,
-        helper: "The honest count behind the dollar, so the number is never just an assertion.",
+        helper: "The count behind the dollar, so the number is never just an assertion.",
         baseline: "0 today",
         baselineTag: "data",
         defaultTarget: capturedTarget,
@@ -1253,7 +1253,7 @@ function ipPathLinks(
     const c = chain.obs!.chain;
     const remaining = Math.max(0, c.denialRate - (c.denialRate * c.preventablePct) / 100);
     captureTitle = "The severity is documented to defend the stay";
-    captureTeach = "The leak this path measures: stays downgraded to observation when the severity was real but under-documented. As the note carries the severity-of-illness detail, more inpatient stays hold.";
+    captureTeach = "The leak this path measures: stays downgraded to observation when the severity was real but under-documented. As the note carries the severity-of-illness detail, more inpatient stays can hold.";
     captureMetrics = [
       {
         id: "obs-rate",
@@ -1319,7 +1319,7 @@ function ipPathLinks(
         id: `${p.id}-captured-count`,
         label: p.capturedLabel,
         unit: p.capturedUnit,
-        helper: "The honest count behind the dollar, so the number is never just an assertion.",
+        helper: "The count behind the dollar, so the number is never just an assertion.",
         baseline: "0 today",
         baselineTag: "data",
         defaultTarget: capturedTarget,
@@ -1432,9 +1432,9 @@ export function deriveQualityMeasurementPlan(
     n: nextN(),
     title: "The signal surfaces earlier and the time is freed",
     teach:
-      "Two things start every event here: the note carries the risk earlier and more completely, and the minutes Abridge frees come back to the bedside. Everything each event prevents downstream is built on these two being real, so they are the first things to prove.",
+      "Two things start every event here: the note carries the risk earlier and more completely, and the time freed by faster documentation can come back to the bedside. Whatever each event goes on to prevent depends on these two being real, so they are the first things to prove.",
     blocked: false,
-    groupLabel: "The shared root",
+    groupLabel: "Shared across every event",
     metrics: [
       {
         id: "quality-adoption",
@@ -1450,7 +1450,7 @@ export function deriveQualityMeasurementPlan(
         id: "quality-freed-time-redeployed",
         label: "Freed bedside time redeployed",
         unit: "%",
-        helper: "The share of the minutes Abridge frees that goes back to rounding and presence at the bedside, not the next task. This is the commitment, made visible.",
+        helper: "The share of freed minutes that goes back to rounding and presence at the bedside, instead of the next task. This is where the commitment either holds or breaks.",
         baseline: "0% today",
         baselineTag: "data",
         defaultTarget: "most of it",
@@ -1498,7 +1498,7 @@ export function deriveQualityMeasurementPlan(
         id: `${e.id}-near-miss`,
         label: "Near-miss catches",
         unit: "catches / month",
-        helper: "Risks caught and acted on before they became an event, the earlier signal doing its job.",
+        helper: "Risks caught and acted on before they became an event, proof the earlier signal worked.",
         baseline: "0 tracked today",
         baselineTag: "data",
         defaultTarget: "tracked each month",
@@ -1511,7 +1511,7 @@ export function deriveQualityMeasurementPlan(
       n: nextN(),
       title: "The changes you committed happen",
       teach:
-        "The first thing to prove for this event: the changes you committed to on Align actually happen at the bedside. Abridge frees the time and surfaces the risk earlier; whether the change happens is on the unit.",
+        "The first thing to prove for this event: the changes you committed to on Align actually happen at the bedside. Abridge can free up time and surface the risk earlier; whether that turns into a real change is on the unit.",
       blocked: false,
       groupLabel: group,
       metrics: conversionMetrics,
@@ -1531,7 +1531,7 @@ export function deriveQualityMeasurementPlan(
         id: `${e.id}-events-prevented`,
         label: "Events prevented per year",
         unit: countUnit,
-        helper: "The count of harm events kept from happening a year. This is the honest hero for this event, the number you lead with, never a dollar.",
+        helper: "The count of harm events kept from happening a year. This is the number you lead with for this event, never a dollar.",
         baseline: "0 today",
         baselineTag: "data",
         defaultTarget: preventedTarget,
@@ -1565,7 +1565,7 @@ export function deriveQualityMeasurementPlan(
       n: nextN(),
       title: `Fewer ${noun} happen`,
       teach:
-        "The payoff, and the honest exception: lead with the count of events kept from happening and the rate, not a dollar. Abridge enables the earlier signal and the freed time; your team converts it at the bedside; the outcome is both.",
+        "The payoff here: lead with the count of events kept from happening and the rate, not a dollar. Abridge can surface the risk earlier and free up time; your team converts that into fewer events at the bedside. The outcome is both.",
       blocked: false,
       groupLabel: group,
       metrics: outcomeMetrics,
@@ -1583,7 +1583,7 @@ export function deriveQualityMeasurementPlan(
       n: nextN(),
       title: "The presence is protected",
       teach:
-        "The cleanest Abridge story for experience: the minutes Abridge frees are spent at the bedside, with the patient, instead of the keyboard.",
+        "The clearest read on experience: freed minutes spent at the bedside, with the patient, instead of the keyboard.",
       blocked: false,
       groupLabel: group,
       metrics: [
@@ -1674,7 +1674,7 @@ export function deriveQualityMeasurementPlan(
     commitment: {
       title: "The one thing this plan depends on",
       teach:
-        "Abridge frees the time and surfaces the risk earlier, but it does not prevent anything on its own. The unit has to run the changes you committed to: redeploy the freed minutes into rounding and presence, act on the risk the note surfaces earlier, and tighten handoffs on the fuller notes. If the freed time quietly refills with other tasks, the signal is real but nothing downstream moves. Someone has to own making those conversions happen at the bedside.",
+        "Abridge can free up time and surface the risk earlier, but it does not prevent anything on its own. The unit has to run the changes you committed to: redeploy the freed minutes into rounding and presence, act on the risk the note surfaces earlier, and tighten handoffs on the fuller notes. If the freed time quietly refills with other tasks, the signal is real but nothing downstream moves. Someone has to own making those conversions happen at the bedside.",
       ownerLabel: "Who owns making the conversions happen",
     },
     monthlyCheckTeach:
@@ -1825,7 +1825,7 @@ export function deriveCapacityMeasurementPlan(
     teach: "Freed charting time only cuts overtime if the shift actually closes on time instead of running late. This is the link the plan depends on most.",
     blocked: finishBlocked,
     blockedReason: finishBlocked
-      ? `You told us on Align the overtime is ${gateWord}. Freeing documentation time cannot ${gateVerb}, so the shift does not close on time from this and no overtime comes out. The honest number stays at zero until that limit changes.`
+      ? `You told us on Align the overtime is ${gateWord}. Freeing documentation time cannot ${gateVerb}, so the shift does not close on time from this and no overtime comes out. The number stays at zero until that limit changes.`
       : undefined,
     metrics: finishBlocked
       ? []
@@ -1885,7 +1885,7 @@ export function deriveCapacityMeasurementPlan(
         id: "ot-hours-avoided",
         label: "Overtime hours avoided",
         unit: "hrs / yr",
-        helper: "Total overtime hours a year the freed charting time takes off the schedule, the honest count behind the dollar.",
+        helper: "Total overtime hours a year the freed charting time takes off the schedule, the count behind the dollar.",
         baseline: "0 today",
         baselineTag: "data",
         defaultTarget: honestZero ? "an honest zero here" : avoidedSet ? `${fmtInt(ladder.realizedOtHoursAvoided)} / yr` : "finish the Align chain",
@@ -2099,7 +2099,7 @@ export function deriveEdAccessMeasurementPlan(
     teach: "Freed time only recovers a patient if it actually shortens the walk from the door to a provider. This is the link the plan depends on most.",
     blocked: doorBlocked,
     blockedReason: doorBlocked
-      ? "You told us on Align the limit is staffing or beds. Freeing documentation time cannot add staff or open beds, so the door-to-provider walk does not shorten from this and no left-without-being-seen visit becomes recoverable. The honest number stays at zero until that limit changes."
+      ? "You told us on Align the limit is staffing or beds. Freeing documentation time cannot add staff or open beds, so the door-to-provider walk does not shorten from this and no left-without-being-seen visit becomes recoverable. The number stays at zero until that limit changes."
       : undefined,
     metrics: doorBlocked
       ? []
@@ -2118,7 +2118,7 @@ export function deriveEdAccessMeasurementPlan(
             id: "share-freed-time-throughput",
             label: "Share of freed time committed to throughput",
             unit: "%",
-            helper: "The portion of freed hours directed to faster door-to-provider, rather than staying as relief. This is the commitment, made visible.",
+            helper: "The portion of freed hours directed to faster door-to-provider, rather than staying as relief. This is where the commitment either holds or breaks.",
             baseline: "0% today",
             baselineTag: "data",
             defaultTarget: ladder.throughputSharePct > 0 ? `${fmtInt(ladder.throughputSharePct)}%` : "set on Align",
@@ -2156,7 +2156,7 @@ export function deriveEdAccessMeasurementPlan(
         id: "recoverable-pool",
         label: "Recoverable LWBS pool",
         unit: "patients / yr",
-        helper: "The patients who leave because charting chokes throughput, the honest ceiling on what this plan can reach. The rest leaves for staffing or beds and stays out.",
+        helper: "The patients who leave because charting chokes throughput, the ceiling on what this plan can reach. The rest leaves for staffing or beds and stays out.",
         baseline: "0 today",
         baselineTag: "data",
         defaultTarget: ladder.recoverablePool > 0 ? `${fmtInt(ladder.recoverablePool)} / yr` : "set the gate on Align",

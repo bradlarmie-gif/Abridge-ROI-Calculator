@@ -233,11 +233,11 @@ export function deriveEdAccessAlignProof(values: LeverValues, ctx: AlignContext)
   const emptyHint = !who
     ? "Pick who this is for to start the number."
     : !gate
-      ? "Say what's limiting ED throughput today, so we size only what Abridge can honestly move."
+      ? "Tell us what's limiting ED throughput today, so we only size what freed-up time could realistically move."
       : gate === "staffing"
-        ? "You told us the limit is staffing or beds. Abridge frees documentation time, but it cannot add staff or open beds, so no left-without-being-seen visit becomes recoverable. The honest number here is zero."
+        ? "You told us the limit is staffing or beds. Freeing up documentation time doesn't add staff or open beds, so no left-without-being-seen visit becomes recoverable. The number here is zero."
         : gate === "lowdemand" && pool.recoverablePool <= 0
-          ? "You told us demand is low. Abridge can free the time, but few patients are leaving to recover. Add your real LWBS rate under where the loss shows up and the number follows."
+          ? "You told us demand is low. Freeing up documentation time only helps if patients are leaving to recover. Add your real LWBS rate under where the loss shows up and the number follows."
           : "Set your choices above and the number appears here.";
 
   const headlineSub = ready
@@ -269,7 +269,7 @@ export const edAccessAlignConfig: AlignConfig = {
       id: "outcome",
       storeKey: K_OUTCOME,
       prompt: "What are you trying to accomplish?",
-      helper: "The first two run on the same freed time; this shapes how you describe it, not the number. Capturing admissions adds a second, separately priced leg.",
+      helper: "The first two describe the same outcome in different words. Capturing admissions is separate, a second piece priced on its own.",
       mode: "multi",
       options: [
         { id: "lwbs", label: "Cut left-without-being-seen", helper: "Bring back patients who show up but leave the waiting room before a provider sees them." },
@@ -294,7 +294,7 @@ export const edAccessAlignConfig: AlignConfig = {
       id: "who",
       storeKey: K_WHO,
       prompt: "Who is this for?",
-      helper: "Your ED provider count carries over from Starting Point. Pick the cut.",
+      helper: "We'll use the ED provider count from your Starting Point. Which providers should this cover?",
       mode: "single",
       options: [
         {
@@ -327,13 +327,13 @@ export const edAccessAlignConfig: AlignConfig = {
       id: "gate",
       storeKey: K_GATE,
       prompt: "What's limiting ED throughput today?",
-      helper: "The honest gate. Abridge frees documentation time, so it moves the throughput charting chokes, nothing more. It cannot add staff or open beds, or create demand that is not there.",
+      helper: "The idea here is simple: when documentation takes less time, that freed time can be turned into faster throughput, nothing more. So the real question is whether charting is what's choking throughput today, or something else. It can't add staff, open beds, or create demand that isn't there. Answer honestly and we'll size it to match.",
       mode: "single",
       options: [
         {
           id: "documentation",
           label: "Throughput is choked by charting",
-          helper: "Providers are here, but the day is full of charting, so the door-to-provider walk drags and patients give up. This is the load Abridge frees.",
+          helper: "Providers are here, but the day is full of charting, so the door-to-provider walk drags and patients give up. This is the load that freed-up documentation time can help relieve.",
         },
         {
           id: "staffing",
@@ -343,7 +343,7 @@ export const edAccessAlignConfig: AlignConfig = {
         {
           id: "lowdemand",
           label: "Low demand, few patients leaving",
-          helper: "Not many patients are leaving without being seen. Abridge can free the time, but there has to be a real leak to recover.",
+          helper: "Not many patients are leaving without being seen. Freeing up documentation time only helps if there's a real leak to recover.",
         },
       ],
     },

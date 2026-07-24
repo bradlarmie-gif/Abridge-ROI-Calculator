@@ -163,7 +163,7 @@ export const QUALITY_CONVERSIONS: Record<QualityAlignEventId, QualityConversion[
     {
       id: "rounding",
       label: "Redeploy freed charting time into more rounding",
-      helper: "Put the minutes Abridge frees back into more eyes on your high-risk patients, not the keyboard.",
+      helper: "When documentation takes less time, put those minutes back into more eyes on your high-risk patients, not the keyboard.",
       benefit: "time",
       engineKeys: ["qualityFallsRounding", "qualityFallsToileting"],
     },
@@ -186,7 +186,7 @@ export const QUALITY_CONVERSIONS: Record<QualityAlignEventId, QualityConversion[
     {
       id: "rounding",
       label: "Redeploy freed time into keeping the turn schedule",
-      helper: "Spend the minutes Abridge frees on repositioning at the bedside, on schedule, instead of catching up on notes.",
+      helper: "When documentation takes less time, spend those minutes on repositioning at the bedside, on schedule, instead of catching up on notes.",
       benefit: "time",
       engineKeys: ["qualityHapiReposition"],
     },
@@ -202,7 +202,7 @@ export const QUALITY_CONVERSIONS: Record<QualityAlignEventId, QualityConversion[
     {
       id: "rounding",
       label: "Redeploy freed time into daily line-necessity review",
-      helper: "Use the minutes Abridge frees to check every central line for necessity, every day.",
+      helper: "When documentation takes less time, use those minutes to check every central line for necessity, every day.",
       benefit: "time",
       engineKeys: ["qualityClabsiDailyReview"],
     },
@@ -250,7 +250,7 @@ export const QUALITY_CONVERSIONS: Record<QualityAlignEventId, QualityConversion[
     {
       id: "presence",
       label: "Protect the face-to-face presence the freed time buys",
-      helper: "Spend the minutes Abridge frees at the bedside, with the patient, instead of the keyboard. This is the cleanest Abridge story: presence.",
+      helper: "When documentation takes less time, spend those minutes at the bedside, with the patient, instead of the keyboard. That's presence.",
       benefit: "time",
       engineKeys: [], // Experience, not a harm event: no engine dollar.
     },
@@ -380,7 +380,7 @@ export function deriveQualityAlignProof(values: LeverValues, ctx: AlignContext):
   }
 
   const attributionLine =
-    "Abridge enables the earlier signal and the freed time; your team converts it at the bedside; the outcome is both.";
+    "Abridge can surface the risk earlier and free up time to act on it; your team is what turns that into the outcome.";
 
   const headlineLabel =
     prevented > 0 ? "Harm events prevented a year" : hcahpsCommitted ? "Patient experience" : "Harm events prevented a year";
@@ -438,7 +438,7 @@ const eventSelectorQuestion: AlignQuestion = {
   dimension: 1,
   prompt: "What are you working to prevent?",
   helper:
-    "Pick one or more. Each harm event is its own distinct pool, so they add rather than compete. HCAHPS is patient experience, the cleanest Abridge story. Only the outcomes you pick open their own questions below.",
+    "Pick one or more. Each harm event is its own distinct pool, so they add rather than compete. HCAHPS is patient experience, not a harm event. Only the outcomes you pick open their own questions below.",
   mode: "multi",
   options: [
     { id: "falls", label: "Falls", helper: "Patient falls, with and without injury, on the unit." },
@@ -460,7 +460,7 @@ const whoQuestion: AlignQuestion = {
   storeKey: K_WHO,
   dimension: 2,
   prompt: "Which beds is this for?",
-  helper: "Your staffed-bed count carries over from Starting Point. Pick the cut; it sizes the patient-days every event is measured against.",
+  helper: "We'll use the staffed-bed count from your Starting Point. Which beds should this cover? It sizes the patient-days every event is measured against.",
   mode: "single",
   options: [
     {
@@ -497,7 +497,7 @@ const gateQuestion: AlignQuestion = {
   appliesToChoices: [...CLINICAL_EVENT_IDS],
   prompt: "How much of this can you catch earlier?",
   helper:
-    "The honest gate. Some harm happens despite good care. Abridge surfaces the risk sooner, so only the share you can catch earlier is yours to move.",
+    "Some harm happens despite good care. Abridge can surface the risk earlier, but your team is what prevents the event. Only the share you can catch earlier and act on is yours to move here.",
   mode: "single",
   options: [
     { id: "earlier", label: "Mostly preventable by catching it earlier", helper: "An earlier, fuller risk signal would let the team step in before it happens." },
@@ -521,10 +521,10 @@ function changeQuestionFor(id: QualityAlignEventId): AlignQuestion {
     dimension: 4,
     stacksOnQuestionId: "outcome",
     appliesToChoices: [id],
-    prompt: isExperience ? "What will you protect with the freed time?" : "What will you change with what Abridge frees?",
+    prompt: isExperience ? "What will you protect with the time this frees up?" : "What will you change with the time this frees up?",
     helper: isExperience
-      ? "This is a conversion of the time Abridge frees. Presence is the whole story."
-      : "Pick the changes you will actually make. Each one is something the freed time or the earlier note lets you do on top of your existing bundle, never a new standalone purchase.",
+      ? "When documentation takes less time, that time can go toward presence with the patient. That's the whole story here."
+      : "Pick the changes you will actually make. Each one is something less time on documentation, or an earlier note, lets you do on top of your existing bundle, not a new standalone purchase.",
     mode: "multi",
     options,
   };

@@ -232,6 +232,6 @@ describe("the number is proof, not the goal: it only appears once the meaning is
   it("staffing-bound -> not ready, the hint says Abridge cannot add staff or open beds", () => {
     const proof = deriveEdAccessAlignProof(fullChoices({ edAccessAlignGate: ["staffing"] }), ctxFor(BASELINE));
     expect(proof.ready).toBe(false);
-    expect(proof.emptyHint.toLowerCase()).toContain("cannot add staff or open beds");
+    expect(proof.emptyHint.toLowerCase()).toContain("add staff or open beds");
   });
 });

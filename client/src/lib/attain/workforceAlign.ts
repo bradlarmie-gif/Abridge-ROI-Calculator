@@ -192,7 +192,7 @@ export function deriveWorkforceAlignProof(values: LeverValues, ctx: AlignContext
   const emptyHint = !who
     ? "Pick who this is for to start the number."
     : !gate
-      ? "Say what is driving departures, so we size only what Abridge can honestly move."
+      ? "Tell us what's driving departures, so we only size what freed-up time could realistically move."
       : !burden
         ? "Say where the burden hurts, so the relief that follows is real."
         : "Set your choices above and the number appears here.";
@@ -224,7 +224,7 @@ export const workforceAlignConfig: AlignConfig = {
       id: "outcome",
       storeKey: K_OUTCOME,
       prompt: "What are you trying to accomplish?",
-      helper: "Same dollar either way. This shapes how you describe it, not the number.",
+      helper: "These are three ways to describe the same goal. Pick the one that matches how your leadership talks about it.",
       mode: "single",
       options: [
         { id: "keep", label: "Keep our people", helper: "Fewer of the clinicians you have today choosing to leave." },
@@ -236,7 +236,7 @@ export const workforceAlignConfig: AlignConfig = {
       id: "who",
       storeKey: K_WHO,
       prompt: "Who is this for?",
-      helper: "Your headcount carries over from Starting Point. Pick the cut.",
+      helper: "We'll use the headcount from your Starting Point. Which group should this cover?",
       mode: "single",
       options: [
         {
@@ -254,7 +254,7 @@ export const workforceAlignConfig: AlignConfig = {
         {
           id: "focused",
           label: "A focused group",
-          helper: "A specific team or cohort you want to hold onto first.",
+          helper: "A specific team or group you want to hold onto first.",
           sharpener: {
             storeKey: K_WHO_COUNT,
             label: "Roughly how many? (optional)",
@@ -270,7 +270,7 @@ export const workforceAlignConfig: AlignConfig = {
       id: "gate",
       storeKey: K_GATE,
       prompt: "What is driving your departures?",
-      helper: "The honest gate. Abridge moves the burnout-and-workload share, not pay or life decisions. Only that share counts.",
+      helper: "The idea here is simple: when documentation takes less time, that freed time can support keeping people, but only for the burnout-and-workload share, not pay or life decisions. Answer honestly and we'll size it to match.",
       mode: "single",
       options: [
         { id: "burnout", label: "Mostly burnout and workload", helper: "The day itself is the problem, and the documentation load is a big part of it." },
@@ -282,7 +282,7 @@ export const workforceAlignConfig: AlignConfig = {
       id: "burden",
       storeKey: K_BURDEN,
       prompt: "Where does the burden hurt most?",
-      helper: "This shapes how durable the relief is. After-hours charting is the load Abridge most directly frees.",
+      helper: "This shapes how durable the relief is. After-hours charting is the load that freed-up documentation time most directly reaches.",
       mode: "single",
       options: [
         { id: "visit", label: "In the visit", helper: "Screen instead of patient, so the presence in the room suffers." },

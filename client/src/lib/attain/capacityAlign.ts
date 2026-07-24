@@ -222,9 +222,9 @@ export function deriveCapacityAlignProof(values: LeverValues, ctx: AlignContext)
   // normally sits, not only in the quieter empty hint.
   const honestZeroNote =
     gate === "staffing"
-      ? "You told us the overtime is short staffing. Abridge frees documentation time, but it cannot add nurses, so no overtime comes out. The honest number here is zero."
+      ? "You told us the overtime is short staffing. Freeing up documentation time doesn't add nurses, so no overtime comes out. The number here is zero."
       : gate === "census"
-        ? "You told us the overtime is census surges. Abridge frees documentation time, but it cannot flatten census, so no overtime comes out. The honest number here is zero."
+        ? "You told us the overtime is census surges. Freeing up documentation time doesn't flatten census, so no overtime comes out. The number here is zero."
         : null;
 
   const math = ready
@@ -236,7 +236,7 @@ export function deriveCapacityAlignProof(values: LeverValues, ctx: AlignContext)
   const emptyHint = !who
     ? "Pick who this is for to start the number."
     : !gate
-      ? "Say what's driving the overtime, so we size only what Abridge can honestly move."
+      ? "Tell us what's driving the overtime, so we only size what freed-up time could realistically move."
       : honestZeroNote
         ? honestZeroNote
         : !where
@@ -273,7 +273,7 @@ export const capacityAlignConfig: AlignConfig = {
       id: "outcome",
       storeKey: K_OUTCOME,
       prompt: "What are you trying to accomplish?",
-      helper: "Same freed time either way. This shapes how you describe it, not the number.",
+      helper: "These are three ways to describe the same goal. Pick the one that matches how your leadership talks about it.",
       mode: "single",
       options: [
         { id: "cost", label: "Cut the overtime cost", helper: "Take the overtime dollars out of the nursing budget." },
@@ -285,7 +285,7 @@ export const capacityAlignConfig: AlignConfig = {
       id: "who",
       storeKey: K_WHO,
       prompt: "Who is this for?",
-      helper: "Your nurse count carries over from Starting Point. Pick the cut.",
+      helper: "We'll use the nurse count from your Starting Point. Which nurses should this cover?",
       mode: "single",
       options: [
         {
@@ -318,13 +318,13 @@ export const capacityAlignConfig: AlignConfig = {
       id: "gate",
       storeKey: K_GATE,
       prompt: "What's driving the overtime?",
-      helper: "The honest gate. Abridge frees the time nurses spend charting after the shift. It cannot add nurses or flatten census. Only the overtime charting causes counts.",
+      helper: "The idea here is simple: when documentation takes less time, that freed time can be turned into fewer overtime hours. So the real question is whether charting after the shift is what's driving overtime today, or something else. It can't add nurses or flatten census. Answer honestly and we'll size it to match.",
       mode: "single",
       options: [
         {
           id: "documentation",
           label: "Documentation and post-shift charting",
-          helper: "Nurses finish the shift, then stay to chart. This is the load Abridge frees.",
+          helper: "Nurses finish the shift, then stay to chart. This is the load that freed-up documentation time can help relieve.",
         },
         {
           id: "staffing",
@@ -342,7 +342,7 @@ export const capacityAlignConfig: AlignConfig = {
       id: "where",
       storeKey: K_WHERE,
       prompt: "Where does the overtime show up?",
-      helper: "This shapes how much of your overtime charting actually drives, the share that is yours to cut.",
+      helper: "This shapes how much of your overtime the charting actually drives, the share that's yours to cut.",
       mode: "single",
       options: [
         { id: "postshift", label: "Post-shift charting", helper: "Charting after the shift ends, the most direct overtime the record drives." },

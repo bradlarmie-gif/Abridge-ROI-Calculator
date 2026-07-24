@@ -79,7 +79,7 @@ describe("revenue measurement plan — stacks per chosen path from the Align sta
     // Sequential scorecard numbering across the whole stacked chain.
     expect(links.map((l) => l.n)).toEqual([1, 2, 3, 4, 5]);
     // Each link carries a group label so the surface can section per path.
-    expect(links[0].groupLabel).toBe("The shared root");
+    expect(links[0].groupLabel).toBe("Shared across every path");
     expect(links[1].groupLabel).toBe("Risk adjustment");
     expect(links[3].groupLabel).toBe("E/M level accuracy");
   });

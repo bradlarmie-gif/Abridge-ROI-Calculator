@@ -350,7 +350,7 @@ export function deriveRevenueAlignProof(values: LeverValues, ctx: AlignContext):
       : "For each path, say what is behind the leak. We only size the share the documentation can move, so mostly payer rules or conditions your patients do not have keeps that path near zero.";
 
   const headlineSub = ready
-    ? `${withValue.length} ${withValue.length === 1 ? "path" : "paths"} converging into one prize, each counted once`
+    ? `${withValue.length} ${withValue.length === 1 ? "path" : "paths"} adding up to one number, each counted once`
     : "the proof of what you just aligned on";
 
   return {
@@ -447,7 +447,7 @@ function whereQuestion(setting: AttainSetting): AlignQuestion {
     dimension: setting === "inpatient" ? 3 : 4,
     stacksOnQuestionId: "outcome",
     prompt: "Where does the most revenue leak?",
-    helper: "Pick where you see it most. This shapes the story, not the number, and it tells your plan where to look first.",
+    helper: "Pick where you see it most. This won't change the number, but it tells your plan where to look first.",
     mode: "multi",
     options,
   };
@@ -508,7 +508,7 @@ function whoEmQuestion(setting: AttainSetting): AlignQuestion {
     appliesToChoices: ["em"],
     prompt: "Which of your providers are on productivity pay?",
     helper:
-      "A captured wRVU only turns into revenue where the provider is paid on productivity. Your provider count carries over from Starting Point. Pick the cut.",
+      "A wRVU gain only turns into revenue where the provider is paid on productivity. We'll use the provider count from your Starting Point. How much of that group is on productivity pay?",
     mode: "single",
     options: [
       {
@@ -537,7 +537,7 @@ const whoDenialsQuestion: AlignQuestion = {
   stacksOnQuestionId: "outcome",
   appliesToChoices: ["denials"],
   prompt: "Which lines see the most denials?",
-  helper: "Pick where medical-necessity denials concentrate. This frames the story; the pool is measured across your eligible encounters either way.",
+  helper: "Pick where medical-necessity denials concentrate most. It won't change the number, since the pool is measured across all your eligible encounters either way, but it tells your plan where to look first.",
   mode: "multi",
   options: [
     { id: "imaging", label: "Imaging and diagnostics", helper: "High-cost studies that draw medical-necessity scrutiny." },
@@ -559,8 +559,8 @@ function gateEmQuestion(setting: AttainSetting): AlignQuestion {
     appliesToChoices: ["em"],
     prompt: isED ? "Why do ED claims go out below the acuity delivered?" : "Why do visits code below the level delivered?",
     helper: isED
-      ? "The honest gate. Abridge moves the part where the note did not carry the full picture. It cannot raise a visit that was genuinely lower acuity. Only what the documentation can move is sized."
-      : "The honest gate. Abridge carries the medical decision-making the note left out, so a 99214-level visit stops going out as a 99213. It cannot raise a visit that was genuinely a 99213. Only the documentation gap is sized.",
+      ? "When the note carries the full picture, coding can support the level delivered. It can't raise a visit that was genuinely lower acuity, so only the documentation-caused share is sized here."
+      : "When the note carries the medical decision-making, a 99214-level visit can be coded at 99214 instead of dropping to 99213. It can't raise a visit that was genuinely a 99213, so only the documentation gap is sized here.",
     mode: "single",
     options: isED
       ? [
@@ -584,7 +584,7 @@ const gateHccQuestion: AlignQuestion = {
   appliesToChoices: ["hcc"],
   prompt: "Why do conditions never reach the claim?",
   helper:
-    "The honest gate. Abridge surfaces conditions your patients have that the note missed. It never adds conditions a patient does not have. Only the documentation gap is sized.",
+    "When the note documents a condition your patient actually has, it can be coded. It never adds a condition that isn't there, so only the documentation gap is sized here.",
   mode: "single",
   options: [
     { id: "gap", label: "The note missed them", helper: "Real conditions your patients have that were not documented specifically enough to code." },
@@ -601,7 +601,7 @@ const gateDenialsQuestion: AlignQuestion = {
   appliesToChoices: ["denials"],
   prompt: "Why do these denials happen?",
   helper:
-    "The honest gate. Abridge moves the denials driven by a note that did not establish medical necessity. It cannot document its way out of payer rules or authorization. If it is mostly payer rules, this path stays small.",
+    "When the note establishes medical necessity, the denials that documentation alone can prevent go away. It can't document its way out of payer rules or authorization, so if that's the real driver, this path stays small.",
   mode: "single",
   options: [
     { id: "note", label: "The note did not establish necessity", helper: "The care was needed, but the note did not show why, so the claim was denied." },
@@ -618,7 +618,7 @@ const gateDrgQuestion: AlignQuestion = {
   appliesToChoices: ["drg"],
   prompt: "Why do admissions group below the weight they earned?",
   helper:
-    "The honest gate. Abridge carries the specificity a managed comorbidity needs, so coding can assign the DRG the admission earned. It cannot add a condition that is not there.",
+    "When the note carries the specificity a managed comorbidity needs, coding can assign the DRG the admission earned. It can't add a condition that isn't there, so only the documentation gap is sized here.",
   mode: "single",
   options: [
     { id: "note", label: "A CC or MCC was under-documented", helper: "The condition was managed, but the note did not carry it specifically enough to code." },
@@ -635,7 +635,7 @@ const gateCdiQuestion: AlignQuestion = {
   appliesToChoices: ["cdi"],
   prompt: "Why does your CDI team write these queries?",
   helper:
-    "The honest gate. This path is labor only: it prices the CDI-staff time saved when a complete note means a query is never written, not the reimbursement itself.",
+    "This path prices labor only: the CDI-staff time saved when a complete note means a query never has to be written. It's not the reimbursement itself.",
   mode: "single",
   options: [
     { id: "note", label: "The note lacked specificity", helper: "The query only exists because the note did not carry the detail up front." },
@@ -652,7 +652,7 @@ const gateObsQuestion: AlignQuestion = {
   appliesToChoices: ["obs"],
   prompt: "Why do these stays get downgraded to observation?",
   helper:
-    "The honest gate. Abridge carries the severity-of-illness detail that defends an inpatient stay. It cannot defend a stay that was genuinely observation-appropriate, or overturn a payer rule.",
+    "When the note carries the severity-of-illness detail, it can defend an inpatient stay. It can't defend a stay that was genuinely observation-appropriate, or overturn a payer rule.",
   mode: "single",
   options: [
     { id: "note", label: "Severity was under-documented", helper: "The stay was inpatient-appropriate, but the note did not carry the severity." },
