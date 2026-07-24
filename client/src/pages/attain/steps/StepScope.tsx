@@ -126,7 +126,7 @@ export default function StepScope({ setting, baseline, onChangeBaseline }: StepS
           Your starting point
         </h1>
         <p className="text-[15px] text-[#666666] leading-relaxed max-w-[560px]" data-testid="text-step-teach">
-          Start with your real operation. Everything the next page calculates is built from these numbers, not a
+          Start with your real operation. Everything we calculate next is built from these numbers, not a
           benchmark.
         </p>
       </motion.div>

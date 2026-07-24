@@ -41,6 +41,12 @@ import PricingComparisonFlow from "@/pages/forecast/PricingComparisonFlow";
 import AppRationalizationFlow from "@/pages/forecast/AppRationalizationFlow";
 import { ExploreFlow, type ExploreState, type ExploreCareSetting, type ExplorePhase } from "@/pages/explore";
 import AttainFlow from "@/pages/attain/AttainFlow";
+import AttainConsultPreview from "@/pages/attain/AttainConsultPreview";
+import AttainPlanPreview from "@/pages/attain/AttainPlanPreview";
+import AttainMatrixPreview from "@/pages/attain/preview/AttainMatrixPreview";
+import MultiCategoryPreview from "@/pages/attain/preview/MultiCategoryPreview";
+import AttainFlowV2 from "@/pages/attain/AttainFlowV2";
+import AttainPdf from "@/pages/attain/pdf/AttainPdf";
 import ExploreIntakeForm from "@/pages/intake/ExploreIntakeForm";
 import MeasureDataRequest from "@/pages/intake/MeasureDataRequest";
 import ExploreIntakeReceipt from "@/pages/intake/ExploreIntakeReceipt";
@@ -194,6 +200,32 @@ const INITIAL_DEEP_LINK = getInitialDeepLink();
 
 export default function App() {
   usePreventNumberInputScroll();
+
+  // THROWAWAY: ?consultpreview=1 renders the reimagined Align mechanism prototype
+  // (one driver). Remove this and AttainConsultPreview.tsx once the direction settles.
+  if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("consultpreview") === "1") {
+    return <AttainConsultPreview />;
+  }
+  // THROWAWAY: ?planpreview=1 renders the Plan chapter prototype. Remove with AttainPlanPreview.tsx.
+  if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("planpreview") === "1") {
+    return <AttainPlanPreview />;
+  }
+  // THROWAWAY: ?attainpreview=1 renders the unified matrix preview (setting x category, Align + Plan).
+  if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("attainpreview") === "1") {
+    return <AttainMatrixPreview />;
+  }
+  // THROWAWAY: ?multipreview=1 renders the multi-category mock (one setting, several categories).
+  if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("multipreview") === "1") {
+    return <MultiCategoryPreview />;
+  }
+  // THROWAWAY: ?attainv2=1 = the graft target — real funnel + header + editorial experience.
+  if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("attainv2") === "1") {
+    return <AttainFlowV2 />;
+  }
+  // THROWAWAY: ?attainpdf=1 (kickoff) or ?attainpdf=review = the full Attain PDF.
+  if (typeof window !== "undefined" && ["1", "review"].includes(new URLSearchParams(window.location.search).get("attainpdf") ?? "")) {
+    return <AttainPdf />;
+  }
 
   // State for deep link settings
   const [exploreInitialSettings, setExploreInitialSettings] = useState<{
@@ -455,7 +487,7 @@ export default function App() {
             )}
 
             {currentView === "attain" && (
-              <AttainFlow onBackToJourney={handleBackToJourney} initialSaveState={attainSaveState ?? undefined} />
+              <AttainFlowV2 onBackToJourney={handleBackToJourney} />
             )}
 
             {currentView === "explore-intake" && (

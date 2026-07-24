@@ -1,0 +1,178 @@
+/**
+ * THROWAWAY. Per-category economics config for the Align "economics" beat.
+ * Each cell that has a model shows its own real-money FIELDS (blank, required — theirs)
+ * plus a small ASSUMPTIONS panel (seeded, visible, editable — never hidden). The number
+ * then assembles from the partner's inputs via attainEngineAdapter. Numbers are Brad's
+ * domain calls, confirmed 2026-07-24.
+ */
+
+const fmt$ = (n: number) => (n >= 1_000_000 ? `$${(n / 1_000_000).toFixed(1)}M` : n >= 1000 ? `$${Math.round(n / 1000)}K` : `$${Math.round(n)}`);
+const nn = (n: number) => Math.round(n).toLocaleString();
+
+export type EconField = {
+  key: string; // matches the key attainEngineAdapter reads
+  label: string;
+  prefix?: string;
+  suffix?: string;
+  placeholder: string;
+  hint?: string;
+};
+
+// A seeded assumption: same as a field but pre-filled with a conservative default, editable.
+export type Assumption = { key: string; label: string; default: string; prefix?: string; suffix?: string };
+
+export type EconInputs = { scope: number; econ: Record<string, number>; stancePct: number };
+
+export type EconModel = {
+  title: string;
+  helper: string;
+  fields: EconField[]; // real-money levers, blank + required
+  assumptions?: Assumption[]; // seeded, shown + editable in the Assumptions panel
+  stancePrompt: string;
+  stanceBands: number[];
+  stanceCap: number;
+  capNote: string;
+  math: (i: EconInputs) => string;
+};
+
+const BURNOUT = (def: string): Assumption => ({ key: "burnout", label: "Burnout-driven share of turnover", default: def, suffix: "%" });
+
+const workforceModel = (nounSingular: string, nounPlural: string, replacePlaceholder: string, turnoverPlaceholder: string, assumptions: Assumption[]): EconModel => ({
+  title: `What does losing one ${nounSingular} cost you?`,
+  helper: `Retention is a smaller, harder-won number than the rest, so we keep it honest. Set what one departure actually costs you and your real turnover rate. How much of the burnout-driven share Abridge can help prevent is yours to set below.`,
+  fields: [
+    { key: "replacementCost", label: `Cost to replace one ${nounSingular}`, prefix: "$", placeholder: replacePlaceholder, hint: "Recruiting, ramp, and lost production for one departure." },
+    { key: "turnover", label: "Annual turnover", suffix: "%", placeholder: turnoverPlaceholder, hint: "Your yearly rate across this group." },
+  ],
+  assumptions,
+  stancePrompt: "How much of the burnout-driven turnover do you expect to prevent?",
+  stanceBands: [20, 30, 40],
+  stanceCap: 50,
+  capNote: "We cap this at 50 percent. A lighter day moves the burnout-driven share of turnover, not the pay or life reasons behind the rest.",
+  math: (i) => `${nn(i.scope)} ${nounPlural} × ${i.econ.turnover}% turnover × ${i.econ.burnout ?? 40}% burnout-driven × ${i.stancePct}% prevented × ${fmt$(i.econ.replacementCost)}/replacement, plus the agency premium avoided.`,
+});
+
+export const ECON_MODELS: Record<string, EconModel> = {
+  // ---- Outpatient ----
+  "Outpatient|Patient Access": {
+    title: "What's a visit worth to you?",
+    helper: "This is where you set the dollar. Set the margin you actually keep on a visit, and how much of the freed-up headroom you expect to fill. Minutes saved per note we seed conservatively, then watch on Progress.",
+    fields: [{ key: "perVisit", label: "Margin per visit", prefix: "$", placeholder: "200", hint: "The contribution margin you keep, not gross charges." }],
+    assumptions: [
+      { key: "minSaved", label: "Minutes saved per note", default: "3", suffix: "min" },
+      { key: "visitMin", label: "Minutes per visit", default: "30", suffix: "min" },
+    ],
+    stancePrompt: "How much of the freed headroom do you expect to fill?",
+    stanceBands: [15, 25, 35],
+    stanceCap: 75,
+    capNote: "We cap this at 75 percent. You can never fill all the headroom, and a number that pretends you can will not survive a CFO.",
+    math: (i) => `${nn(i.scope)} providers × freed-time headroom × ${i.stancePct}% filled × ${fmt$(i.econ.perVisit)} margin/visit. Minutes saved is seeded here, then measured on Progress.`,
+  },
+  "Outpatient|Provider Retention": workforceModel("provider", "providers", "400,000", "6", [BURNOUT("40")]),
+  "Outpatient|Revenue Capture": {
+    title: "How much coding lift do you keep?",
+    helper: "Better documentation can support the level your visits code to, when the coding follows. Set your baseline wRVU per visit and your conversion factor. How much of that lift you actually capture and keep through billing is yours to set below. The size of the lift itself we seed conservatively.",
+    fields: [
+      { key: "wrvu", label: "Average wRVU per visit", placeholder: "1.5", hint: "Your current level, before any lift." },
+      { key: "cf", label: "Conversion factor", prefix: "$", placeholder: "33.40", hint: "Dollars per wRVU." },
+    ],
+    assumptions: [{ key: "uplift", label: "Coding lift from better notes", default: "5", suffix: "%" }],
+    stancePrompt: "How much of the documentation-driven coding lift do you capture and keep?",
+    stanceBands: [65, 75, 85],
+    stanceCap: 95,
+    capNote: "We cap this at 95 percent. A captured, defensible level is real money, but not every lift survives billing and audit.",
+    math: (i) => `Your visits × ${i.econ.wrvu} wRVU × ~${i.econ.uplift ?? 5}% documentation lift × ${fmt$(i.econ.cf)}/wRVU × ${i.stancePct}% captured and kept.`,
+  },
+
+  // ---- ED ----
+  "ED|Patient Access": {
+    title: "What's the throughput worth?",
+    helper: "A faster, better-documented visit can help fewer patients leave without being seen, and can make more admissions capturable when the front end moves. Set what those are worth to you, and how much of the throughput gain you expect to realize.",
+    fields: [
+      { key: "edVisit", label: "Margin per ED visit", prefix: "$", placeholder: "480", hint: "The contribution margin you keep on a treated visit." },
+      { key: "admitMargin", label: "Margin per admission", prefix: "$", placeholder: "4,000", hint: "What a captured admission is worth to you." },
+    ],
+    assumptions: [
+      { key: "lwbsRate", label: "Current left-without-being-seen rate", default: "3", suffix: "%" },
+      { key: "admitRate", label: "Admission rate", default: "18", suffix: "%" },
+    ],
+    stancePrompt: "How much of the throughput gain do you expect to realize?",
+    stanceBands: [15, 25, 35],
+    stanceCap: 60,
+    capNote: "We cap this at 60 percent. Throughput has many bottlenecks; documentation moves only its share.",
+    math: (i) => `Fewer left-without-being-seen and captured admissions across your ED volume × ${i.stancePct}% realized, at ${fmt$(i.econ.edVisit)}/visit and ${fmt$(i.econ.admitMargin)}/admission.`,
+  },
+  "ED|Provider Retention": workforceModel("provider", "ED providers", "400,000", "6", [BURNOUT("40")]),
+  "ED|Revenue Capture": {
+    title: "How much coding lift do you keep?",
+    helper: "A complete ED note can support coding to the level of work actually done. Set your baseline wRVU per visit and conversion factor; how much of the lift you capture and keep is yours to set below. The lift size we seed conservatively.",
+    fields: [
+      { key: "wrvu", label: "Average wRVU per ED visit", placeholder: "1.5", hint: "Your current level, before any lift." },
+      { key: "cf", label: "Conversion factor", prefix: "$", placeholder: "33.40", hint: "Dollars per wRVU." },
+    ],
+    assumptions: [{ key: "uplift", label: "E&M lift from better notes", default: "3", suffix: "%" }],
+    stancePrompt: "How much of the coding lift do you capture and keep?",
+    stanceBands: [65, 75, 85],
+    stanceCap: 95,
+    capNote: "We cap this at 95 percent. A defensible E&M level is real money, but not every lift survives billing and audit.",
+    math: (i) => `Your ED visits × ${i.econ.wrvu} wRVU × ~${i.econ.uplift ?? 3}% E&M lift × ${fmt$(i.econ.cf)}/wRVU × ${i.stancePct}% captured and kept.`,
+  },
+
+  // ---- Inpatient ----
+  "Inpatient|Revenue Capture": {
+    title: "How much of the coding do you capture?",
+    helper: "A complete inpatient note carries the severity that was actually treated, so the DRG can land where the documentation supports it. Set your average DRG base payment; how much of the documentation-driven accuracy you capture is yours to set below. This one is held lower for audit risk.",
+    fields: [{ key: "drgBase", label: "Average DRG base payment", prefix: "$", placeholder: "6,000", hint: "Your blended base rate per discharge." }],
+    assumptions: [
+      { key: "atRisk", label: "Discharges at risk of under-coding", default: "15", suffix: "%" },
+      { key: "weightInc", label: "DRG weight gained when corrected", default: "0.3" },
+    ],
+    stancePrompt: "How much of the documentation-driven coding do you capture and keep?",
+    stanceBands: [55, 65, 75],
+    stanceCap: 85,
+    capNote: "We cap this at 85 percent, below outpatient coding. Inpatient DRG carries the most audit and RADV exposure, so we stay the most conservative here.",
+    math: (i) => `Your at-risk discharges × documentation-driven DRG accuracy × ${i.stancePct}% captured at ${fmt$(i.econ.drgBase)}/DRG.`,
+  },
+  "Inpatient|Provider Retention": workforceModel("hospitalist", "hospitalists", "300,000", "8", [BURNOUT("45")]),
+
+  // ---- Nursing ----
+  "Nursing|Quality & Safety": {
+    title: "How much harm do you expect to prevent?",
+    helper: "The note surfaces early deterioration sooner: pressure injuries, falls, CLABSI, and sepsis caught before they progress. Your current event rates are yours to set in the assumptions; event costs we seed from published figures. How much of the preventable harm you actually prevent is yours to set below.",
+    fields: [],
+    assumptions: [
+      { key: "fallsRate", label: "Falls per 1,000 patient-days", default: "3.4" },
+      { key: "hapiRate", label: "Pressure injury rate", default: "2.1", suffix: "%" },
+      { key: "clabsiRate", label: "CLABSI per 1,000 line-days", default: "1.0" },
+      { key: "sepsisRate", label: "Sepsis cases per 1,000", default: "2.0" },
+    ],
+    stancePrompt: "How much of the preventable harm do you expect to prevent?",
+    stanceBands: [10, 20, 30],
+    stanceCap: 40,
+    capNote: "We cap this at 40 percent. Prevention is hard-won, and only some harm is documentation-preventable.",
+    math: (i) => `Preventable falls, pressure injuries, CLABSI and sepsis across ${nn(i.scope)} beds × ${i.stancePct}% prevented, at your rates and seeded cost per event.`,
+  },
+  "Nursing|Provider Retention": workforceModel("nurse", "nurses", "56,300", "18", [{ key: "agencyWk", label: "Agency premium per week", default: "2,500", prefix: "$" }]),
+  "Nursing|Nursing Capacity": {
+    title: "What's the overtime worth back?",
+    helper: "Lighter documentation can give shift time back, which can show up as less documentation-tied overtime. Set your overtime hourly rate; how much of that overtime you actually remove is yours to set below.",
+    fields: [{ key: "otRate", label: "Overtime hourly rate", prefix: "$", placeholder: "75", hint: "Your loaded overtime rate per nurse hour." }],
+    assumptions: [{ key: "otHours", label: "Overtime hours per nurse / week", default: "1.0" }],
+    stancePrompt: "How much of the documentation-tied overtime do you expect to remove?",
+    stanceBands: [20, 30, 40],
+    stanceCap: 50,
+    capNote: "We cap this at 50 percent. Overtime has many drivers; documentation load is only one of them.",
+    math: (i) => `${nn(i.scope)} nurses × documentation-tied overtime × ${i.stancePct}% removed at ${fmt$(i.econ.otRate)}/hour.`,
+  },
+};
+
+export function econModel(setting: string, category: string): EconModel | undefined {
+  return ECON_MODELS[`${setting}|${category}`];
+}
+
+/** The seeded assumption defaults for a cell, as the {key: "value"} map used to pre-fill state. */
+export function assumptionDefaults(setting: string, category: string): Record<string, string> {
+  const m = econModel(setting, category);
+  if (!m?.assumptions) return {};
+  return Object.fromEntries(m.assumptions.map((a) => [a.key, a.default]));
+}

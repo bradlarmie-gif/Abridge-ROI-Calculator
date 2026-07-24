@@ -1404,7 +1404,14 @@ export const CONTENT: Record<AttainSetting, Partial<Record<GoalId, SettingGoalCo
 // ────────────────────────────────────────────────────────────────────────
 
 export function goalsForSetting(setting: AttainSetting): GoalDef[] {
-  return SETTING_GOAL_MATRIX[setting].map((goalId) => GOAL_CATALOG[goalId]);
+  return SETTING_GOAL_MATRIX[setting].map((goalId) => {
+    const g = GOAL_CATALOG[goalId];
+    // nurses aren't "providers" — relabel the retention goal on the Nursing setting (id stays "retention")
+    if (setting === "nursing" && goalId === "retention") {
+      return { ...g, label: "Nurse Retention", domainSub: "Nurse Wellbeing & Retention" };
+    }
+    return g;
+  });
 }
 
 export function getContent(

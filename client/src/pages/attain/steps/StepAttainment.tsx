@@ -1810,7 +1810,7 @@ function PriorityMechanics({
           {goalDef.chainTitle} <span className="text-[#EA2C00]">{goalDef.chainArrow === "↑" ? "↗" : "↘"}</span>
         </h2>
         <p className="text-[15px] leading-relaxed text-[#3A3A3A] mb-4 max-w-[720px]">
-          {goalDef.label} is the end of a chain of links that must all fire. Abridge reliably delivers the first two,
+          {goalDef.label} is the end of a chain of links that must all fire. Abridge does the heavy lifting on the first two,
           and the last two are the readout. <b className="text-[#1A1A1A]">Value leaks in the fragile middle, and
           every link there is owned by you.</b> This is the map the decisions on this plan are steering.
         </p>
