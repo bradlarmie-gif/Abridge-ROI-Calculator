@@ -107,7 +107,22 @@ export function AttainExperience({ setting, cells, baseline, initial, onPersist 
       return [c.category, Object.fromEntries(ms.map((m) => [m.id, s?.[m.id] ?? { today: "", target: "", source: m.source }]))];
     })));
   const patchMetric = (cat: string) => (id: string, k: keyof MState, v: string) =>
-    setMetricsByCat((m) => ({ ...m, [cat]: { ...m[cat], [id]: { ...(m[cat]?.[id] ?? { today: "", target: "", source: "" }), [k]: v } } }));
+    setMetricsByCat((m) => {
+      const cur = m[cat]?.[id] ?? { today: "", target: "", source: "" };
+      const next: MState = { ...cur, [k]: v };
+      // Time in note is the proof of the minutes-saved assumption. When they enter Today and Target
+      // is still blank, suggest Today − (minutes saved) so the metric we track equals the assumption
+      // the dollar is built on. Only fires where a minSaved assumption exists (outpatient access);
+      // it is a suggestion — they can overwrite it, and we never touch a target they already set.
+      if (id === "tin" && k === "today" && !cur.target) {
+        const minSaved = pnum(alignInputsByCat[cat]?.econ?.minSaved ?? "");
+        const today = pnum(v);
+        if (Number.isFinite(minSaved) && minSaved > 0 && Number.isFinite(today) && today > minSaved) {
+          next.target = String(Math.round((today - minSaved) * 10) / 10);
+        }
+      }
+      return { ...m, [cat]: { ...m[cat], [id]: next } };
+    });
 
   // Progress: this review's readings per category, and the combined review log
   const [readingsByCat, setReadingsByCat] = useState<Record<string, Record<string, string>>>(() => Object.fromEntries(CELLS.map((c) => [c.category, snap?.readingsByCat?.[c.category] ?? {}])));
