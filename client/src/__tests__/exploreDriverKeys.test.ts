@@ -162,16 +162,6 @@ describe("engineKeyForDriver — every registered quantified driver resolves to 
         ipDrgWeightIncrease: 0.3,
         ipDrgBasePayment: 12_000,
         ipDrgRealization: 60,
-        // ipCdiEnabled is part of a maximal inpatient state (the engine
-        // computes `cdiQueryReduction` for it), but there is currently no
-        // `EXPLORE_DRIVERS` entry with a matching id — see the orphan note
-        // in the plan / task report. Left enabled here for a genuinely
-        // maximal fixture; it is not asserted on since it isn't registered.
-        ipCdiEnabled: true,
-        ipCdiScenario: "typical",
-        ipCdiQueryRate: 10,
-        ipCdiCostPerQuery: 40,
-        ipCdiRealization: 70,
         ipObsDefenseEnabled: true,
         ipObsDefensePreventableScenario: "typical",
         ipObsDefenseDenialRate: 6,

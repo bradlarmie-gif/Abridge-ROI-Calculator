@@ -1465,7 +1465,7 @@ function ModelConfidencePage({ settings, config, summary, yearlyData, sensitivit
   if (allDriverIds.has("wrvu"))             strongItems.push("wRVU lift is auditable against billing data within 90 days of go-live");
   if (allDriverIds.has("hccCapture"))       strongItems.push("HCC gap closure traces directly to claims — verifiable through coding records, no inference required");
   if (allDriverIds.has("denialPrevention")) strongItems.push("Denial prevention is measurable against payer adjudication records with direct attribution");
-  if (allDriverIds.has("drgAccuracy") || allDriverIds.has("cdiQueryReduction")) strongItems.push("DRG and CDI capture are verifiable through coding audit and query volume data");
+  if (allDriverIds.has("drgAccuracy"))      strongItems.push("DRG capture is verifiable through coding audit data");
   if (allDriverIds.has("nursingOvertime") || allDriverIds.has("nursingAgency"))  strongItems.push("Nursing overtime and agency costs are directly visible in payroll and staffing records");
   if (allDriverIds.has("lwbsRecovery"))     strongItems.push("LWBS recovery ties to documented patient arrival data — a hard operational metric");
 

@@ -5,7 +5,6 @@ import {
   computeAllDriverValues,
   HCC_UPLIFT_SCENARIOS,
   IP_DRG_PROTECT_SCENARIOS,
-  IP_CDI_SCENARIOS,
   IP_OBS_PREVENTABLE_SCENARIOS,
 } from "@/lib/exploreDriverCalcs";
 import { EXPLORE_DRIVERS } from "@/lib/exploreDrivers";
@@ -137,12 +136,6 @@ export function computeRevenueBreakdown(state: ExploreState, _totalHoursSaved: n
     const pct = (dq.ipDrgScenario === 'custom' ? (dq.ipDrgCustomPercent ?? 20) : IP_DRG_PROTECT_SCENARIOS[dq.ipDrgScenario]) / 100;
     const atRisk = eligibleEncounters * (dq.ipDrgAtRiskRate / 100);
     result.drgAccuracy = Math.round(atRisk * pct * dq.ipDrgWeightIncrease * dq.ipDrgBasePayment * (dq.ipDrgRealization / 100));
-  }
-  if (isIP && dq.ipCdiEnabled) {
-    const pct = (dq.ipCdiScenario === 'custom' ? (dq.ipCdiCustomPercent ?? 25) : IP_CDI_SCENARIOS[dq.ipCdiScenario]) / 100;
-    const totalQueries = eligibleEncounters * (dq.ipCdiQueryRate / 100);
-    const avoided = totalQueries * pct;
-    result.cdiQueryReduction = Math.round(avoided * dq.ipCdiCostPerQuery * (dq.ipCdiRealization / 100));
   }
   if (isIP && dq.ipObsDefenseEnabled) {
     const preventablePct = (dq.ipObsDefensePreventableScenario === 'custom' ? (dq.ipObsDefenseCustomPercent ?? 40) : (IP_OBS_PREVENTABLE_SCENARIOS[dq.ipObsDefensePreventableScenario] ?? 40)) / 100;

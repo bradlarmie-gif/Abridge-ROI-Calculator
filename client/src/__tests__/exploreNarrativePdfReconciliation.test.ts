@@ -432,27 +432,6 @@ describe("Explore OP/ED/IP PDF reconciliation — engine math vs. printed formul
       assertReconciles("drgAccuracy", values.drgAccuracy, summaries.drgAccuracy);
     });
 
-    it("Revenue / cdiQueryReduction: printed multiplicands reconcile to engine value", () => {
-      const state: ExploreState = {
-        ...ipBase,
-        docQualityInputs: {
-          ...ipBase.docQualityInputs,
-          ipCdiEnabled: true,
-          ipCdiScenario: "typical",
-          ipCdiQueryRate: 30,
-          ipCdiCostPerQuery: 150,
-          ipCdiRealization: 75,
-        },
-      };
-      const values = computeAllDriverValues(state, TOTAL_HOURS_SAVED);
-      const summaries = computeAllDriverCalcSummaries(state, TOTAL_HOURS_SAVED);
-      assertReconciles(
-        "cdiQueryReduction",
-        values.cdiQueryReduction,
-        summaries.cdiQueryReduction,
-      );
-    });
-
     it("Revenue / obsDefense: printed multiplicands reconcile to engine value", () => {
       const state: ExploreState = {
         ...ipBase,

@@ -615,15 +615,6 @@ describe("inpatient doc-quality drivers honor a persisted 'custom' scenario", ()
     expect(recomputeDriverFromExploreState("ipDrg", customState)).toBe(custom);
   });
 
-  it("ipCdi custom % flows through the engine (not a fallback)", () => {
-    const customState = ipBase({ ipCdiEnabled: true, ipCdiScenario: "custom", ipCdiCustomPercent: 50 });
-    const typicalState = ipBase({ ipCdiEnabled: true, ipCdiScenario: "typical" }); // typical = 25
-    const custom = computeAllDriverValues(customState, 0).cdiQueryReduction;
-    const typical = computeAllDriverValues(typicalState, 0).cdiQueryReduction;
-    expect(custom).toBeGreaterThan(0);
-    expect(custom).toBeCloseTo(typical * (50 / 25), -1);
-  });
-
   it("ipObsDefense custom % flows through the engine (not a fallback)", () => {
     const customState = ipBase({ ipObsDefenseEnabled: true, ipObsDefensePreventableScenario: "custom", ipObsDefenseCustomPercent: 80, ipObsDefenseDenialRate: 8, ipObsDefenseRevenueDelta: 6000 });
     const typicalState = ipBase({ ipObsDefenseEnabled: true, ipObsDefensePreventableScenario: "typical", ipObsDefenseDenialRate: 8, ipObsDefenseRevenueDelta: 6000 }); // typical = 40

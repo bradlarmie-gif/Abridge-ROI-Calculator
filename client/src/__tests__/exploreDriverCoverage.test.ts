@@ -12,14 +12,13 @@ import { engineKeyForDriver } from "@/lib/exploreDriverKeys";
  * REGISTERED driver's engine key resolves to a real, positive value — i.e.
  * no card can read `undefined`/stale math. This test closes the other
  * direction: it proves the engine has no key that is computed but never
- * claimed by the registry — the "computed but never surfaced" orphan class
- * (the `cdiQueryReduction` bug this task is named for). Two assertions:
+ * claimed by the registry — the "computed but never surfaced" orphan class.
+ * Two assertions:
  *
  *   1. Forward — for a maximal, all-drivers-enabled `ExploreState` per care
  *      setting, every key `computeAllDriverValues` emits maps back (via
  *      `engineKeyForDriver`) to EXACTLY ONE `EXPLORE_DRIVERS` entry whose
- *      `settings` includes that setting — except the documented exceptions
- *      below.
+ *      `settings` includes that setting.
  *   2. Reverse — every `quantified` `EXPLORE_DRIVERS` entry resolves (via
  *      `engineKeyForDriver`) to a key the engine actually emits for that
  *      setting.
@@ -27,29 +26,18 @@ import { engineKeyForDriver } from "@/lib/exploreDriverKeys";
  * No jsdom / React-render test infra exists in this repo (see Task 1's
  * note), so this is a unit-level guard over the engine's output object and
  * the registry data, not a rendered-card test.
+ *
+ * Note: the quantified inpatient CDI dollar driver (`ipCdi`, formerly keyed
+ * to an engine result of the same name as the fewer-queries-avoided figure)
+ * was removed as a product decision — avoided CDI queries aren't cash unless
+ * CDI staff headcount is cut, and it double-counted with `drgAccuracy`. The
+ * engine no longer emits that key at all, so there is no exception to carve
+ * out here; the invariant now holds with zero exceptions. The qualitative
+ * CDI signal drivers (`ipCdiQueryRate`/`ipCdiQueryTrend`, `opCdiQueryTrend`)
+ * are unaffected — they were never quantified dollar drivers and are not
+ * part of this coverage check.
  */
-
-// ---------------------------------------------------------------------------
-// KNOWN, DOCUMENTED EXCEPTION — do not silently grow this set.
-// ---------------------------------------------------------------------------
-// `cdiQueryReduction` is emitted by the engine whenever `isIP && ipCdiEnabled`
-// (client/src/lib/exploreDriverCalcs.ts, the `if (isIP && dq.ipCdiEnabled)`
-// block around line 225), but there is NO `EXPLORE_DRIVERS` entry — of any
-// visibility — whose id resolves to `cdiQueryReduction` via
-// `engineKeyForDriver`. (The registry does have `ipCdiQueryTrend` and
-// `ipCdiQueryRate`, but those are unrelated *qualitative* signal drivers, not
-// a card for this dollar value.) The quantified Explore "IP CDI" card was
-// intentionally deleted; CDI query-reduction dollars are configured and
-// shown only in the proforma drawer, never on an Explore screen. This is a
-// deliberate, confirmed product decision — not an oversight — so it is
-// excluded from the forward assertion by explicit name below, never
-// silently. A NEW unmapped key (anything other than what's listed here)
-// must still fail the "exact exception set" test at the bottom of this
-// file loudly. Do not add another key to this set without confirming with
-// the product owner that the omission is intentional and recording why.
-const PROFORMA_ONLY_KEYS = new Set<string>([
-  "cdiQueryReduction", // no Explore card — configured in the proforma drawer only
-]);
+const PROFORMA_ONLY_KEYS = new Set<string>();
 
 function quantifiedDriversFor(setting: ExploreSetting) {
   return EXPLORE_DRIVERS.filter(
@@ -186,16 +174,6 @@ const inpatientState = {
     ipDrgWeightIncrease: 0.3,
     ipDrgBasePayment: 12_000,
     ipDrgRealization: 60,
-    // ipCdiEnabled IS part of a genuinely maximal inpatient state — the
-    // engine computes `cdiQueryReduction` when this is on. It is left
-    // enabled here on purpose so the forward assertion sees the orphan key
-    // and must explicitly skip it via PROFORMA_ONLY_KEYS above, rather than
-    // the test being unable to see the problem at all.
-    ipCdiEnabled: true,
-    ipCdiScenario: "typical",
-    ipCdiQueryRate: 10,
-    ipCdiCostPerQuery: 40,
-    ipCdiRealization: 70,
     ipObsDefenseEnabled: true,
     ipObsDefensePreventableScenario: "typical",
     ipObsDefenseDenialRate: 6,
@@ -309,8 +287,8 @@ describe("Explore driver coverage invariant — reverse: every quantified driver
   it("nursing", () => assertReverseCoverage("nursing"));
 });
 
-describe("Explore driver coverage invariant — the documented exception set is exact", () => {
-  it("cdiQueryReduction is the ONLY engine key with no registered driver, across all four settings", () => {
+describe("Explore driver coverage invariant — the exception set is empty", () => {
+  it("there is NO engine key without a registered driver, across all four settings", () => {
     const settings: ExploreSetting[] = ["outpatient", "ed", "inpatient", "nursing"];
     const trulyUnmapped = new Set<string>();
     for (const setting of settings) {
@@ -321,12 +299,9 @@ describe("Explore driver coverage invariant — the documented exception set is 
         if (matches.length === 0) trulyUnmapped.add(key);
       }
     }
-    // If this fails because trulyUnmapped is a superset of PROFORMA_ONLY_KEYS,
-    // a NEW accidental orphan has appeared — do not add it here without
-    // flagging it; register the missing EXPLORE_DRIVERS entry instead.
-    // If it fails because trulyUnmapped is now empty, cdiQueryReduction has
-    // been resolved (a card was added or the engine emission was gated) —
-    // shrink PROFORMA_ONLY_KEYS to match.
+    // If this fails, a NEW accidental orphan has appeared — do not paper over
+    // it by re-adding an exception; register the missing EXPLORE_DRIVERS
+    // entry instead (or gate the engine emission).
     expect(trulyUnmapped).toEqual(PROFORMA_ONLY_KEYS);
   });
 });

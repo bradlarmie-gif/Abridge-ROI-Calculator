@@ -28,7 +28,6 @@ export function summaryKeyFor(driverId: string, careSetting: string): string | u
     hcc: "hccCapture",
     denials: "denialPrevention",
     ipDrg: "drgAccuracy",
-    ipCdi: "cdiQueryReduction",
     ipObsDefense: "obsDefense",
     nursingHapi: "nursingHapi",
     nursingFalls: "nursingFalls",

@@ -39,11 +39,6 @@ export const IP_DRG_PROTECT_SCENARIOS: Record<string, number> = {
   typical: 20,
   aggressive: 25,
 };
-export const IP_CDI_SCENARIOS: Record<string, number> = {
-  conservative: 15,
-  typical: 25,
-  aggressive: 35,
-};
 export const HCC_UPLIFT_SCENARIOS: Record<string, number> = {
   conservative: 3,
   typical: 5,
@@ -220,14 +215,6 @@ export function computeAllDriverValues(
         dq.ipDrgWeightIncrease *
         dq.ipDrgBasePayment *
         (dq.ipDrgRealization / 100),
-    );
-  }
-  if (isIP && dq.ipCdiEnabled) {
-    const cdiPct = dq.ipCdiScenario === 'custom' ? (dq.ipCdiCustomPercent ?? 25) : IP_CDI_SCENARIOS[dq.ipCdiScenario];
-    const pct = cdiPct / 100;
-    const queries = eligibleEncounters * (dq.ipCdiQueryRate / 100);
-    result.cdiQueryReduction = Math.round(
-      queries * pct * dq.ipCdiCostPerQuery * (dq.ipCdiRealization / 100),
     );
   }
   if (isIP && dq.ipObsDefenseEnabled) {
@@ -430,10 +417,6 @@ export function computeAllDriverCalcSummaries(
   if (isIP && dq.ipDrgEnabled) {
     const protectPct = dq.ipDrgScenario === 'custom' ? (dq.ipDrgCustomPercent ?? 20) : (IP_DRG_PROTECT_SCENARIOS[dq.ipDrgScenario] ?? 0);
     out.drgAccuracy = `${fmtN(eligibleEncounters)} encounters × ${dq.ipDrgAtRiskRate}% at-risk × ${protectPct}% protect × ${dq.ipDrgWeightIncrease} weight × ${fmt$(dq.ipDrgBasePayment)}/case × ${dq.ipDrgRealization}% realization`;
-  }
-  if (isIP && dq.ipCdiEnabled) {
-    const reductionPct = dq.ipCdiScenario === 'custom' ? (dq.ipCdiCustomPercent ?? 25) : (IP_CDI_SCENARIOS[dq.ipCdiScenario] ?? 0);
-    out.cdiQueryReduction = `${fmtN(eligibleEncounters)} encounters × ${dq.ipCdiQueryRate}% query rate × ${reductionPct}% reduction × ${fmt$(dq.ipCdiCostPerQuery)}/query × ${dq.ipCdiRealization}% realization`;
   }
   if (isIP && dq.ipObsDefenseEnabled) {
     const preventableScenarios = IP_OBS_PREVENTABLE_SCENARIOS;

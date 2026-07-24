@@ -8,7 +8,7 @@
  */
 import type { ProformaSettingSnapshot } from "@/pages/proforma/proformaTypes";
 import { nursingRetentionRates, physicianRetentionRates } from "@/lib/retentionScenarios";
-import { IP_DRG_PROTECT_SCENARIOS, IP_CDI_SCENARIOS, IP_OBS_PREVENTABLE_SCENARIOS } from "@/lib/exploreDriverCalcs";
+import { IP_DRG_PROTECT_SCENARIOS, IP_OBS_PREVENTABLE_SCENARIOS } from "@/lib/exploreDriverCalcs";
 
 function fmt(n: number): string {
   if (Math.abs(n) >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
@@ -283,22 +283,6 @@ export function buildDriverFormula(
         { label: `${n(abridgeEnc)} discharges  ×  ${p(atRiskRate)} at risk of DRG downgrade`, value: `${n(atRisk)} at-risk cases/yr` },
         { label: `${n(atRisk)}  ×  ${p(protectPct)} protected via complete documentation`, value: `${n(protectedCases)} cases protected/yr` },
         { label: `${n(protectedCases)}  ×  ${weight} DRG weight  ×  ${d(basePay)}/case  ×  ${p(drgReal)} realization`, value: fmt(driverValue), isResult: true },
-      ];
-    }
-
-    case "ipCdi":
-    case "cdiQueryReduction": {
-      const dqi        = es.docQualityInputs ?? {};
-      const queryRate  = dqi.ipCdiQueryRate ?? 0;
-      const cdiPct     = dqi.ipCdiScenario === "custom" ? (dqi.ipCdiCustomPercent ?? 25) : (IP_CDI_SCENARIOS[dqi.ipCdiScenario] ?? 0);
-      const costPerQ   = dqi.ipCdiCostPerQuery ?? 0;
-      const cdiReal    = dqi.ipCdiRealization ?? 100;
-      const queries    = Math.round(abridgeEnc * (queryRate / 100));
-      const reduced    = Math.round(queries * (cdiPct / 100));
-      return [
-        { label: `${n(abridgeEnc)} discharges  ×  ${p(queryRate)} CDI query rate`, value: `${n(queries)} CDI queries/yr` },
-        { label: `${n(queries)}  ×  ${p(cdiPct)} reduction from point-of-care documentation`, value: `${n(reduced)} queries avoided/yr` },
-        { label: `${n(reduced)}  ×  ${d(costPerQ)}/query  ×  ${p(cdiReal)} realization`, value: fmt(driverValue), isResult: true },
       ];
     }
 

@@ -55,7 +55,6 @@ export function recomputeDriverFromExploreState(driverId: string, state: Explore
     case 'hcc':           return v.hccCapture ?? -1;
     case 'denials':       return v.denialPrevention ?? -1;
     case 'ipDrg':         return v.drgAccuracy ?? -1;
-    case 'ipCdi':         return v.cdiQueryReduction ?? -1;
     case 'ipObsDefense':  return v.obsDefense ?? -1;
     case 'patientAccess': return v.patientAccess ?? -1;
     case 'nursingOt':     return v.nursingOvertime ?? -1;
@@ -357,41 +356,6 @@ export function ModelAssumptionRow({
               <div className="mt-2.5">
                 <p className="text-[9px] text-neutral-400 uppercase tracking-wider mb-1.5">Custom Protection</p>
                 <NumInput value={localCustomPct} onChange={handleDrgCustom} suffix="%" />
-              </div>
-            )}
-          </div>
-        );
-      }
-      case 'ipCdi': {
-        const isCdiCustom = useLocalCustom && driver.id === 'ipCdi';
-        const customSub = isCdiCustom ? `${localCustomPct}%` : 'set %';
-        const opts = [
-          { key: 'conservative', label: 'Conservative', sub: '15%' },
-          { key: 'typical', label: 'Typical', sub: '30%' },
-          { key: 'aggressive', label: 'Optimistic', sub: '50%' },
-          { key: 'custom', label: 'Custom', sub: customSub },
-        ];
-        const handleCdiChange = (k: string) => {
-          if (k === 'custom') { setUseLocalCustom(true); return; }
-          setUseLocalCustom(false);
-          updateDQ({ ipCdiScenario: k });
-        };
-        const handleCdiCustom = (v: number) => {
-          setLocalCustomPct(v);
-          if (!es) return;
-          const eligibleEnc = es.annualEncounters * (es.utilizationPercent / 100);
-          const queries = eligibleEnc * (dq!.ipCdiQueryRate / 100);
-          const newVal = Math.round(queries * (v / 100) * dq!.ipCdiCostPerQuery * (dq!.ipCdiRealization / 100));
-          onUpdate(settingId, driver.id, newVal, es);
-        };
-        return (
-          <div className="mt-2">
-            <p className="text-[9px] text-neutral-400 uppercase tracking-wider">CDI Query Reduction</p>
-            <ScenarioPills opts={opts} value={isCdiCustom ? 'custom' : dq.ipCdiScenario} onChange={handleCdiChange} />
-            {isCdiCustom && (
-              <div className="mt-2.5">
-                <p className="text-[9px] text-neutral-400 uppercase tracking-wider mb-1.5">Custom Reduction</p>
-                <NumInput value={localCustomPct} onChange={handleCdiCustom} suffix="%" />
               </div>
             )}
           </div>

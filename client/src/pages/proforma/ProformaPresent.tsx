@@ -64,7 +64,6 @@ const DRIVER_BLURB: Record<string, string> = {
   hcc: "Chronic conditions documented and risk-adjusted correctly",
   denials: "Denials avoided through cleaner, more defensible documentation",
   ipDrg: "Inpatient stays coded to the correct severity",
-  ipCdi: "Fewer documentation queries to chase down",
   ipObsDefense: "Observation-vs-inpatient status defended against downgrades",
   docQuality: "Cleaner documentation flowing through to reimbursement",
   retention: "Providers retained who would otherwise have left",

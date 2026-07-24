@@ -14,7 +14,6 @@ export function engineKeyForDriver(driverId: string, careSetting: string): strin
     edLwbs: "lwbsRecovery",
     edAdmission: "admissionCapture",
     ipDrg: "drgAccuracy",
-    ipCdi: "cdiQueryReduction",
     ipObsDefense: "obsDefense",
     nursingOt: "nursingOvertime",
     // Legacy Explore→Proforma snapshot ids (ExploreModel.buildExploreProformaDrivers)
