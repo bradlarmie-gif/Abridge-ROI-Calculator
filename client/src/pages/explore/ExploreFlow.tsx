@@ -145,7 +145,6 @@ export interface TimeDriverInputs {
   nursingHapiRate: number; // per 1,000 patient days
   nursingHapiPreventablePct: number; // % preventable with Abridge
   nursingCostPerHapi: number; // $ per HAPI
-  nursingCareQualityRealization: number; // % realization
   
   // Collapsible state for shared/other drivers
   costReductionExpanded: boolean;
@@ -538,8 +537,8 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     edLwbsRealization: 80, // 80% realization (not all recovered patients complete visits)
     edThroughputEnabled: false,
     edAdmissionRate: 18, // 18% of recovered patients get admitted
-    edAdmissionRevenue: 8000, // Average admission revenue
-    edAdmissionRealization: 60, // 60% realization (bed availability, payer mix)
+    edAdmissionRevenue: 4000, // Contribution margin per admission (net of cost of care), not gross/net revenue
+    edAdmissionRealization: 75, // 75% realization (mainly bed availability + conversion; collection is minor since admissions skew insured and margin already nets cost)
     // Inpatient-specific defaults
     ipRoundingEnabled: false,
     ipAnnualTurnoverRate: 8, // Hospitalist turnover: 8%
@@ -603,7 +602,6 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     nursingHapiRate: 2.5, // per 1,000 patient days
     nursingHapiPreventablePct: 6.5, // % preventable with timely assessments
     nursingCostPerHapi: 25000, // $ per HAPI
-    nursingCareQualityRealization: 85, // % realization rate
     // Collapsible state defaults
     costReductionExpanded: false,
     patientAccessExpanded: false,

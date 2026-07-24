@@ -97,7 +97,7 @@ function getEdFields(d: ExploreIntakeResponse): { section: string; fields: Field
       { label: "Current LWBS rate", value: fmt(d.edLwbsRate, { suffix: "%" }) },
       { label: "Revenue per ED visit", value: fmt(d.edRevenuePerVisit, { prefix: "$" }) },
       { label: "% LWBS patients admitted", value: fmt(d.edAdmissionRate, { suffix: "%" }) },
-      { label: "Revenue per admission", value: fmt(d.edAdmissionRevenue, { prefix: "$" }) },
+      { label: "Contribution margin per admission", value: fmt(d.edAdmissionRevenue, { prefix: "$" }) },
     ]},
     { section: "Claim Denials", fields: [
       { label: "Claim denial rate", value: fmt(d.edDenialRate, { suffix: "%" }) },

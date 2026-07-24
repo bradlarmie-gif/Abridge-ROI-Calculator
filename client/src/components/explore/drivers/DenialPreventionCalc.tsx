@@ -138,8 +138,8 @@ export default function DenialPreventionCalc({ state, updateDocQualityInputs, to
 
           <div className="flex justify-between items-start">
             <div>
-              <span className="text-[#666666]">× Avg denied claim value</span>
-              <p className="text-xs text-[#999999] mt-0.5">{isED ? 'Typical ED: $1,000–$1,500' : 'Typical: $300–$800'}</p>
+              <span className="text-[#666666]">× Net reimbursement per denied claim</span>
+              <p className="text-xs text-[#999999] mt-0.5">What the claim should collect when paid, not billed charges. {isED ? 'Typical ED: $1,000–$1,500' : 'Typical: $300–$800'}</p>
             </div>
             <div className="flex items-center gap-1">
               <span className="text-[#888888]">$</span>
@@ -160,7 +160,7 @@ export default function DenialPreventionCalc({ state, updateDocQualityInputs, to
           <div className="flex justify-between items-center">
             <div>
               <span className="text-[#666666]">× Realization rate <Info className="w-3.5 h-3.5 inline-block text-[#999999] -mt-0.5 cursor-help" /></span>
-              <p className="text-xs text-[#888888]">(collection timing, adjustments)</p>
+              <p className="text-xs text-[#888888]">(collection, and denials you'd recover on appeal anyway)</p>
             </div>
             <div className="flex items-center gap-1">
               <NumberField

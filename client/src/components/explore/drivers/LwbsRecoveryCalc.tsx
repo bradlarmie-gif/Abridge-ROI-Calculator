@@ -73,7 +73,7 @@ export default function LwbsRecoveryCalc({ state, updateTimeDriverInputs, totalH
           <p className="text-xs text-[#888888]">National average: 2-5%. High-volume urban EDs may exceed 5%.</p>
         </div>
         <div className="space-y-2.5">
-          <label className="text-sm text-[#888888]">Revenue per ED visit</label>
+          <label className="text-sm text-[#888888]">Net collected revenue per ED visit</label>
           <div className="relative">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">$</span>
             <FormattedNumberInput
@@ -84,6 +84,7 @@ export default function LwbsRecoveryCalc({ state, updateTimeDriverInputs, totalH
               data-testid="input-ed-revenue-per-visit"
             />
           </div>
+          <p className="text-xs text-[#888888]">Use what actually collects after insurance discounts and non-payment, not gross charges. ED collections typically run lower than other settings.</p>
         </div>
       </div>
 

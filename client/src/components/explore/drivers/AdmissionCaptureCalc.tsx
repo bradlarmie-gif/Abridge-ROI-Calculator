@@ -31,7 +31,7 @@ export default function AdmissionCaptureCalc({ state, updateTimeDriverInputs, to
       )}
 
       <p className="text-sm text-black mb-4">
-        Of the {formatNumber(Math.round(edRecoveredPatients))} recovered ED patients, some will require inpatient admission — generating additional DRG-based revenue.
+        Of the {formatNumber(Math.round(edRecoveredPatients))} recovered ED patients, some will require inpatient admission. Each one adds contribution margin: what the admission earns after the cost of caring for that patient.
       </p>
 
       <div className="bg-[#F5F0EB] rounded-lg p-4">
@@ -62,7 +62,10 @@ export default function AdmissionCaptureCalc({ state, updateTimeDriverInputs, to
           </div>
 
           <div className="flex justify-between items-center gap-2">
-            <span className="text-[#666666]">× Avg admission revenue</span>
+            <div>
+              <span className="text-[#666666]">× Contribution margin/admission</span>
+              <p className="text-xs text-[#888888]">Net of the cost of care, not charges. Finance has this per case.</p>
+            </div>
             <div className="flex items-center gap-1">
               <span className="text-sm text-[#888888]">$</span>
               <FormattedNumberInput
@@ -84,7 +87,7 @@ export default function AdmissionCaptureCalc({ state, updateTimeDriverInputs, to
           <div className="flex justify-between items-center gap-2">
             <div>
               <span className="text-[#666666]">× Realization rate</span>
-              <p className="text-xs text-[#888888]">(Bed availability, payer mix)</p>
+              <p className="text-xs text-[#888888]">(Bed availability and conversion)</p>
             </div>
             <div className="flex items-center gap-2">
               <FormattedNumberInput
