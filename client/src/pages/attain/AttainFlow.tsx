@@ -375,7 +375,9 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
         ...prev,
         goal: next[0] ?? null,
         totalMonths,
-        monthsElapsed: Math.round(totalMonths * 0.6),
+        // Always open at month 1 (a plan just kicked off), never mid-way. The
+        // partner drags "Today" forward themselves on the Attainment curve.
+        monthsElapsed: 1,
         progressRatio: 1,
       };
     });
