@@ -32,15 +32,22 @@ import { physicianRetentionRates, nursingRetentionRates } from "@/lib/retentionS
  * to mirror the original ExploreModel logic exactly.
  */
 
-const IP_DRG_PROTECT_SCENARIOS: Record<string, number> = {
+// Exported scenario constants — the single source every surface (engine, proforma
+// drawer recompute, cards) must import, so a hand-copied map can never drift again.
+export const IP_DRG_PROTECT_SCENARIOS: Record<string, number> = {
   conservative: 15,
   typical: 20,
   aggressive: 25,
 };
-const IP_CDI_SCENARIOS: Record<string, number> = {
+export const IP_CDI_SCENARIOS: Record<string, number> = {
   conservative: 15,
   typical: 25,
   aggressive: 35,
+};
+export const HCC_UPLIFT_SCENARIOS: Record<string, number> = {
+  conservative: 3,
+  typical: 5,
+  optimistic: 10,
 };
 
 // Canonical wRVU lift scenarios — single source of truth for both the headline
@@ -177,7 +184,7 @@ export function computeAllDriverValues(
     else result.wrvu = Math.round(value);
   }
   if (dq.hccEnabled && isOP) {
-    const upliftMap: Record<string, number> = { conservative: 3, typical: 5, optimistic: 10 };
+    const upliftMap = HCC_UPLIFT_SCENARIOS;
     let totalGross = 0;
     for (const plan of dq.hccPlans) {
       const upliftPp = plan.uplift === 'custom' ? (plan.upliftCustomPp ?? 5) : (upliftMap[plan.uplift] ?? 5);
@@ -388,7 +395,7 @@ export function computeAllDriverCalcSummaries(
     else out.wrvu = summary;
   }
   if (dq.hccEnabled && isOP) {
-    const upliftMap: Record<string, number> = { conservative: 3, typical: 5, optimistic: 10 };
+    const upliftMap = HCC_UPLIFT_SCENARIOS;
     if (dq.hccPlans.length === 1) {
       const p = dq.hccPlans[0];
       const upliftPp = p.uplift === 'custom' ? (p.upliftCustomPp ?? 5) : (upliftMap[p.uplift] ?? 5);

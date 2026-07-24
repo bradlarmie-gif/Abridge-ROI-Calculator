@@ -12,8 +12,8 @@ import {
   scaleSettingValue,
 } from "@/lib/proformaCalculations";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
-import { computeAllDriverValues } from "@/lib/exploreDriverCalcs";
-import { physicianRetentionRates, nursingRetentionRates, PHYSICIAN_RETENTION_SCENARIOS, NURSING_RETENTION_SCENARIOS } from "@/lib/retentionScenarios";
+import { computeAllDriverValues, HCC_UPLIFT_SCENARIOS } from "@/lib/exploreDriverCalcs";
+import { PHYSICIAN_RETENTION_SCENARIOS, NURSING_RETENTION_SCENARIOS } from "@/lib/retentionScenarios";
 
 export const DOMAIN_PILL_COLORS: Record<string, string> = {
   Capacity:  "#EA2C00",
@@ -38,108 +38,43 @@ export function fmtCompact(n: number): string {
 
 export function recomputeDriverFromExploreState(driverId: string, state: ExploreState): number {
   const ti = state.timeDriverInputs;
-  const dq = state.docQualityInputs;
-  const { annualEncounters, utilizationPercent, numberOfProviders, careSetting, minutesSavedPerEncounter } = state;
-  const eligible = annualEncounters * (utilizationPercent / 100);
+  const isED = state.careSetting === 'ed';
+  const isNursing = state.careSetting === 'nursing';
+  // Delegate every engine-backed driver to the ONE canonical engine so this
+  // recomputed value (the write path for driver.value) can never diverge from
+  // Explore. patientAccess is the only driver that needs totalHoursSaved; derive
+  // it exactly as Explore does (eligible encounters × minutes saved / 60).
+  const eligible = state.annualEncounters * (state.utilizationPercent / 100);
+  const hoursSaved = eligible * (state.minutesSavedPerEncounter || 0) / 60;
+  const v = computeAllDriverValues(state, hoursSaved);
 
   switch (driverId) {
-    case 'edLwbs': {
-      const recovered = annualEncounters * (ti.edLwbsRate / 100) * (ti.edLwbsReduction / 100);
-      return Math.round(recovered * ti.edRevenuePerVisit * (ti.edLwbsRealization / 100));
-    }
-    case 'edAdmission': {
-      const recovered = annualEncounters * (ti.edLwbsRate / 100) * (ti.edLwbsReduction / 100);
-      return Math.round(recovered * (ti.edAdmissionRate / 100) * ti.edAdmissionRevenue * (ti.edAdmissionRealization / 100));
-    }
-    case 'wrvu': {
-      const isED = careSetting === 'ed';
-      const scenarios: Record<string, number> = isED
-        ? { conservative: 1, typical: 3, aggressive: 6, custom: dq.wrvuCustomPercent ?? 5 }
-        : { conservative: 2, typical: 5, aggressive: 9, custom: dq.wrvuCustomPercent ?? 5 };
-      const liftPct = scenarios[dq.wrvuScenario] ?? scenarios.typical;
-      return Math.round(eligible * dq.currentWrvu * (liftPct / 100) * dq.conversionFactor * (dq.wrvuRealization / 100));
-    }
-    case 'hcc': {
-      const upliftMap: Record<string, number> = { conservative: 5, typical: 10, optimistic: 15 };
-      let totalGross = 0;
-      for (const plan of dq.hccPlans) {
-        const upliftPp = upliftMap[plan.uplift] ?? 10;
-        const effectiveUplift = Math.min(upliftPp, Math.max(0, 90 - plan.currentRecaptureRate));
-        const gapPts = numberOfProviders * plan.panelSize * (plan.gapRate / 100);
-        totalGross += gapPts * (effectiveUplift / 100) * dq.avgHccs * plan.valuePerHcc;
-        if (plan.netNewEnabled) {
-          const netNewPts = numberOfProviders * plan.panelSize * (plan.netNewDiscoveryRate / 100);
-          totalGross += netNewPts * plan.netNewAvgConditions * plan.valuePerHcc;
-        }
-      }
-      return Math.round(totalGross * (dq.hccRealization / 100));
-    }
-    case 'denials': {
-      const isED = careSetting === 'ed';
-      const pcts: Record<string, number> = isED
-        ? { conservative: 15, typical: 30, aggressive: 50, custom: dq.denialsCustomPercent ?? 15 }
-        : { conservative: 25, typical: 50, aggressive: 75, custom: dq.denialsCustomPercent ?? 15 };
-      const pct = pcts[dq.denialsScenario] ?? 50;
-      const prevented = eligible * (dq.medNecessityDenialRate / 100) * (pct / 100);
-      return Math.round(prevented * dq.avgClaimValue * (dq.denialsRealization / 100));
-    }
-    case 'ipDrg': {
-      const pcts: Record<string, number> = { conservative: 15, typical: 20, aggressive: 25, custom: dq.ipDrgCustomPercent ?? 20 };
-      const pct = pcts[dq.ipDrgScenario] ?? 20;
-      const atRisk = eligible * (dq.ipDrgAtRiskRate / 100);
-      return Math.round(atRisk * (pct / 100) * dq.ipDrgWeightIncrease * dq.ipDrgBasePayment * (dq.ipDrgRealization / 100));
-    }
-    case 'ipCdi': {
-      const pcts: Record<string, number> = { conservative: 15, typical: 30, aggressive: 50, custom: dq.ipCdiCustomPercent ?? 25 };
-      const pct = pcts[dq.ipCdiScenario] ?? 30;
-      const queries = eligible * (dq.ipCdiQueryRate / 100);
-      return Math.round(queries * (pct / 100) * dq.ipCdiCostPerQuery * (dq.ipCdiRealization / 100));
-    }
+    case 'edLwbs':        return v.lwbsRecovery ?? -1;
+    case 'edAdmission':   return v.admissionCapture ?? -1;
+    case 'wrvu':          return (isED ? v.edEmLevel : v.wrvu) ?? -1;
+    case 'hcc':           return v.hccCapture ?? -1;
+    case 'denials':       return v.denialPrevention ?? -1;
+    case 'ipDrg':         return v.drgAccuracy ?? -1;
+    case 'ipCdi':         return v.cdiQueryReduction ?? -1;
+    case 'ipObsDefense':  return v.obsDefense ?? -1;
+    case 'patientAccess': return v.patientAccess ?? -1;
+    case 'nursingOt':     return v.nursingOvertime ?? -1;
+    case 'scribeCost':    return v.scribeCostReduction ?? -1;
     case 'retention': {
-      const isNursing = careSetting === 'nursing';
-      if (isNursing) {
-        const rates: Record<string, number> = nursingRetentionRates(ti.retentionCustomPercent ?? 10);
-        const leaving = numberOfProviders * (ti.nursingTurnoverRate / 100);
-        const retained = leaving * 0.40 * ((rates[ti.retentionImpactScenario] ?? 30) / 100);
-        let total = Math.round(retained * ti.nursingReplacementCost);
-        if (ti.nursingAgencyEnabled) total += Math.round(retained * (ti.nursingAgencyWeeksPerVacancy || 12) * (ti.nursingAgencyWeeklyPremium || 2500));
-        return total;
-      } else {
-        const rates: Record<string, number> = physicianRetentionRates(ti.retentionCustomPercent ?? 10);
-        const leaving = numberOfProviders * (ti.annualTurnoverRate / 100);
-        const retained = leaving * (ti.burnoutRelatedTurnover / 100) * ((rates[ti.retentionImpactScenario] ?? 30) / 100);
-        let total = Math.round(retained * ti.replacementCost);
-        if (ti.physicianAgencyEnabled) total += Math.round(retained * (ti.physicianAgencyWeeksPerVacancy || 16) * (ti.physicianAgencyWeeklyPremium || 5000));
-        return total;
-      }
+      // The proforma "retention" driver bundles retention + agency; the engine
+      // keeps them separate, so sum them. (Also fixes inpatient retention, which
+      // the old shadow computed on generic — not ip* — turnover fields.)
+      const bundled = isNursing
+        ? (v.nursingRetention ?? 0) + (ti.nursingAgencyEnabled ? (v.nursingAgency ?? 0) : 0)
+        : (v.providerWellbeing ?? 0) + (ti.physicianAgencyEnabled ? (v.physicianLocumAgency ?? 0) : 0);
+      return bundled > 0 ? bundled : -1;
     }
-    case 'patientAccess': {
-      const hoursSaved = eligible * minutesSavedPerEncounter / 60;
-      const hrsPerProv = numberOfProviders > 0 ? hoursSaved / numberOfProviders / 48 : 0;
-      const reinvest = (ti.capacityRealizationPercent ?? 25) / 100;
-      const visitHrs = (ti.visitDuration ?? 30) / 60;
-      const visitsPerWeek = visitHrs > 0 ? hrsPerProv * reinvest / visitHrs : 0;
-      const effProv = Math.min(ti.accessProviders || numberOfProviders, numberOfProviders);
-      return Math.round(visitsPerWeek * effProv * 48 * ti.revenuePerVisit);
-    }
-    case 'nursingOt': {
-      const hrs = Math.round(ti.nursingOtHoursPerNurseWeek * (ti.nursingOtReductionPercent / 100) * numberOfProviders * 52);
-      return hrs * ti.nursingOtHourlyRate;
-    }
-    // Delegate to the canonical engine so these never diverge from Explore.
-    // totalHoursSaved is irrelevant to obsDefense / scribeCostReduction (neither reads it).
-    case 'ipObsDefense':
-      return computeAllDriverValues(state, 0).obsDefense ?? -1;
-    case 'scribeCost':
-      return computeAllDriverValues(state, 0).scribeCostReduction ?? -1;
     case 'costReduction': {
       // Not an engine driver — a direct dollar amount the user types.
-      const v = state.timeDriverInputs.estimatedCostReduction;
-      return typeof v === 'number' ? v : -1;
+      const val = ti.estimatedCostReduction;
+      return typeof val === 'number' ? val : -1;
     }
-    // NOTE: no case for 'docQuality' — it's an implied fallback with no backing
-    // input field. It hits default (-1) so mutateAndRecompute keeps the prior
-    // value; its edits flow through a direct-onUpdate NumInput (see renderParams).
+    // 'docQuality' has no backing input — hits default (-1) so the prior value is kept.
     default:
       return -1;
   }
@@ -339,12 +274,11 @@ export function ModelAssumptionRow({
         );
       }
       case 'hcc': {
-        const upliftMap: Record<string, number> = { conservative: 5, typical: 10, optimistic: 15 };
         return (
           <div className="mt-2">
             <p className="text-[9px] text-neutral-400 uppercase tracking-wider mb-1.5">Recapture — Per Plan</p>
-            {dq.hccPlans.map((plan: { id: string; name: string; panelSize: number; currentRecaptureRate: number; uplift: string }) => {
-              const upliftPp = upliftMap[plan.uplift] ?? 10;
+            {dq.hccPlans.map((plan: { id: string; name: string; panelSize: number; currentRecaptureRate: number; uplift: string; upliftCustomPp?: number }) => {
+              const upliftPp = plan.uplift === 'custom' ? (plan.upliftCustomPp ?? 5) : (HCC_UPLIFT_SCENARIOS[plan.uplift] ?? 5);
               const effectiveUplift = Math.min(upliftPp, Math.max(0, 90 - plan.currentRecaptureRate));
               const projected = plan.currentRecaptureRate + effectiveUplift;
               return (

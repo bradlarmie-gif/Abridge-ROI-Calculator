@@ -14,8 +14,11 @@ export default function PhysicianLocumAgencyCalc({ state, updateTimeDriverInputs
 
   const calc = useMemo(() => {
     const providers = state.numberOfProviders;
-    const turnover = (timeDriverInputs.annualTurnoverRate || 0) / 100;
-    const burnout = (timeDriverInputs.burnoutRelatedTurnover || 0) / 100;
+    // Inpatient uses hospitalist-specific turnover fields, matching the engine and
+    // the Provider Retention card; other settings use the generic fields.
+    const isIP = state.careSetting === 'inpatient';
+    const turnover = ((isIP ? timeDriverInputs.ipAnnualTurnoverRate : timeDriverInputs.annualTurnoverRate) || 0) / 100;
+    const burnout = ((isIP ? timeDriverInputs.ipBurnoutRelatedTurnover : timeDriverInputs.burnoutRelatedTurnover) || 0) / 100;
     const impact = retentionScenarios[timeDriverInputs.retentionImpactScenario] / 100;
     const retained = providers * turnover * burnout * impact;
     const weeks = timeDriverInputs.physicianAgencyWeeksPerVacancy || 16;

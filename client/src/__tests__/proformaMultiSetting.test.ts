@@ -370,8 +370,11 @@ describe("lever / assumption editing (recomputeDriverFromExploreState)", () => {
   });
 
   it("retention value rises with turnover rate (non-nursing)", () => {
-    const lo = op({ timeDriverInputs: { ...DEFAULT_EXPLORE_STATE.timeDriverInputs, annualTurnoverRate: 5 } });
-    const hi = op({ timeDriverInputs: { ...DEFAULT_EXPLORE_STATE.timeDriverInputs, annualTurnoverRate: 15 } });
+    // wellbeing + calculateRetentionValue are the preconditions for the engine to
+    // emit providerWellbeing (a retention driver only exists when they're on).
+    const base = { ...DEFAULT_EXPLORE_STATE.timeDriverInputs, wellbeingEnabled: true, calculateRetentionValue: true };
+    const lo = op({ timeDriverInputs: { ...base, annualTurnoverRate: 5 } });
+    const hi = op({ timeDriverInputs: { ...base, annualTurnoverRate: 15 } });
     expect(recomputeDriverFromExploreState("retention", hi))
       .toBeGreaterThan(recomputeDriverFromExploreState("retention", lo));
   });
