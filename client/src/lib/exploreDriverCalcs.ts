@@ -49,6 +49,11 @@ export const HCC_UPLIFT_SCENARIOS: Record<string, number> = {
   typical: 5,
   optimistic: 10,
 };
+export const IP_OBS_PREVENTABLE_SCENARIOS: Record<string, number> = {
+  conservative: 25,
+  typical: 40,
+  aggressive: 55,
+};
 
 // Canonical wRVU lift scenarios — single source of truth for both the headline
 // engine and the per-screen Revenue breakdown / driver card.
@@ -226,7 +231,7 @@ export function computeAllDriverValues(
     );
   }
   if (isIP && dq.ipObsDefenseEnabled) {
-    const preventableScenarios: Record<string, number> = { conservative: 25, typical: 40, aggressive: 55 };
+    const preventableScenarios = IP_OBS_PREVENTABLE_SCENARIOS;
     const preventableRaw = dq.ipObsDefensePreventableScenario === 'custom' ? (dq.ipObsDefenseCustomPercent ?? 40) : (preventableScenarios[dq.ipObsDefensePreventableScenario] ?? 40);
     const preventablePct = preventableRaw / 100;
     const downgrades = eligibleEncounters * (dq.ipObsDefenseDenialRate / 100);
@@ -431,7 +436,7 @@ export function computeAllDriverCalcSummaries(
     out.cdiQueryReduction = `${fmtN(eligibleEncounters)} encounters × ${dq.ipCdiQueryRate}% query rate × ${reductionPct}% reduction × ${fmt$(dq.ipCdiCostPerQuery)}/query × ${dq.ipCdiRealization}% realization`;
   }
   if (isIP && dq.ipObsDefenseEnabled) {
-    const preventableScenarios: Record<string, number> = { conservative: 25, typical: 40, aggressive: 55 };
+    const preventableScenarios = IP_OBS_PREVENTABLE_SCENARIOS;
     const preventablePct = dq.ipObsDefensePreventableScenario === 'custom' ? (dq.ipObsDefenseCustomPercent ?? 40) : (preventableScenarios[dq.ipObsDefensePreventableScenario] ?? 40);
     out.obsDefense = `${fmtN(eligibleEncounters)} encounters × ${dq.ipObsDefenseDenialRate}% downgrade rate × ${fmt$(dq.ipObsDefenseRevenueDelta)}/case delta × ${preventablePct}% doc-preventable × ${dq.ipObsDefenseRealization}% realization`;
   }

@@ -161,7 +161,7 @@ describe("proforma driver formula steps — reconcile to the value, every driver
     expectDriverReconciles(s, "edAdmission");
   });
 
-  it("inpatient: DRG accuracy + CDI + provider retention", () => {
+  it("inpatient: DRG accuracy + CDI + Obs defense + provider retention", () => {
     const state = {
       ...DEFAULT_EXPLORE_STATE,
       careSetting: "inpatient",
@@ -175,13 +175,15 @@ describe("proforma driver formula steps — reconcile to the value, every driver
       },
       docQualityInputs: {
         ...DEFAULT_EXPLORE_STATE.docQualityInputs,
-        ipDrgEnabled: true, ipDrgScenario: "typical",
-        ipCdiEnabled: true, ipCdiScenario: "typical",
+        ipDrgEnabled: true, ipDrgScenario: "typical", ipDrgAtRiskRate: 8, ipDrgWeightIncrease: 0.3, ipDrgBasePayment: 12_000, ipDrgRealization: 60,
+        ipCdiEnabled: true, ipCdiScenario: "typical", ipCdiQueryRate: 10, ipCdiCostPerQuery: 40, ipCdiRealization: 70,
+        ipObsDefenseEnabled: true, ipObsDefensePreventableScenario: "typical", ipObsDefenseDenialRate: 6, ipObsDefenseRevenueDelta: 3_000, ipObsDefenseRealization: 65,
       },
     } as ExploreState;
-    const s = snap("inpatient", state, ["ipDrg", "ipCdi", "retention"], 40, 40);
+    const s = snap("inpatient", state, ["ipDrg", "ipCdi", "ipObsDefense", "retention"], 40, 40);
     expectDriverReconciles(s, "ipDrg");
     expectDriverReconciles(s, "ipCdi");
+    expectDriverReconciles(s, "ipObsDefense");
     // retention: engine value exists; steps present and value shown
     const val = engineValue(s, "retention");
     if (val > 0) {

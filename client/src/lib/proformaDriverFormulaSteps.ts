@@ -8,6 +8,7 @@
  */
 import type { ProformaSettingSnapshot } from "@/pages/proforma/proformaTypes";
 import { nursingRetentionRates, physicianRetentionRates } from "@/lib/retentionScenarios";
+import { IP_DRG_PROTECT_SCENARIOS, IP_CDI_SCENARIOS, IP_OBS_PREVENTABLE_SCENARIOS } from "@/lib/exploreDriverCalcs";
 
 function fmt(n: number): string {
   if (Math.abs(n) >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
@@ -268,35 +269,51 @@ export function buildDriverFormula(
 
     case "ipDrg":
     case "drgAccuracy": {
-      const dqi     = es.docQualityInputs ?? {};
-      const drgRate = dqi.drgImprovementRate || 0;
-      const casesDelta = Math.round(abridgeEnc * (drgRate > 0 ? drgRate / 100 : 0.03));
+      // Mirror the engine (real fields + shared scenario constant) so the steps
+      // reconcile — the old version read fields that don't exist and fabricated counts.
+      const dqi        = es.docQualityInputs ?? {};
+      const atRiskRate = dqi.ipDrgAtRiskRate ?? 0;
+      const protectPct = dqi.ipDrgScenario === "custom" ? (dqi.ipDrgCustomPercent ?? 20) : (IP_DRG_PROTECT_SCENARIOS[dqi.ipDrgScenario] ?? 0);
+      const weight     = dqi.ipDrgWeightIncrease ?? 0;
+      const basePay    = dqi.ipDrgBasePayment ?? 0;
+      const drgReal    = dqi.ipDrgRealization ?? 100;
+      const atRisk     = Math.round(abridgeEnc * (atRiskRate / 100));
+      const protectedCases = Math.round(atRisk * (protectPct / 100));
       return [
-        { label: `CCs/MCCs mentioned at bedside, not in note — conditions that may shift DRG weight $2–4K per stay  ×  ${drgRate > 0 ? drgRate.toFixed(1) + "%" : "~2–4%"} documentation lift`, value: `${n(casesDelta)} cases more accurately coded` },
-        { label: `${n(casesDelta)} cases  ×  avg DRG payment delta from accurate complexity documentation`, value: fmt(driverValue), isResult: true },
+        { label: `${n(abridgeEnc)} discharges  ×  ${p(atRiskRate)} at risk of DRG downgrade`, value: `${n(atRisk)} at-risk cases/yr` },
+        { label: `${n(atRisk)}  ×  ${p(protectPct)} protected via complete documentation`, value: `${n(protectedCases)} cases protected/yr` },
+        { label: `${n(protectedCases)}  ×  ${weight} DRG weight  ×  ${d(basePay)}/case  ×  ${p(drgReal)} realization`, value: fmt(driverValue), isResult: true },
       ];
     }
 
     case "ipCdi":
     case "cdiQueryReduction": {
-      const dqi      = es.docQualityInputs ?? {};
-      const queryVol = dqi.cdiQueriesPerMonth || 0;
-      const annualQueries = queryVol > 0 ? queryVol * 12 : Math.round(abridgeEnc * 0.08);
-      const reduced   = Math.round(annualQueries * 0.35);
+      const dqi        = es.docQualityInputs ?? {};
+      const queryRate  = dqi.ipCdiQueryRate ?? 0;
+      const cdiPct     = dqi.ipCdiScenario === "custom" ? (dqi.ipCdiCustomPercent ?? 25) : (IP_CDI_SCENARIOS[dqi.ipCdiScenario] ?? 0);
+      const costPerQ   = dqi.ipCdiCostPerQuery ?? 0;
+      const cdiReal    = dqi.ipCdiRealization ?? 100;
+      const queries    = Math.round(abridgeEnc * (queryRate / 100));
+      const reduced    = Math.round(queries * (cdiPct / 100));
       return [
-        { label: `${n(annualQueries)} CDI queries/yr — conditions named at bedside, note said "elevated BMP"  →  documentation captured at point of care can reduce queries`, value: `${n(reduced)} queries potentially avoided` },
-        { label: `${n(reduced)} queries eliminated  ×  avg CDI specialist cost per query`, value: fmt(driverValue), isResult: true },
+        { label: `${n(abridgeEnc)} discharges  ×  ${p(queryRate)} CDI query rate`, value: `${n(queries)} CDI queries/yr` },
+        { label: `${n(queries)}  ×  ${p(cdiPct)} reduction from point-of-care documentation`, value: `${n(reduced)} queries avoided/yr` },
+        { label: `${n(reduced)}  ×  ${d(costPerQ)}/query  ×  ${p(cdiReal)} realization`, value: fmt(driverValue), isResult: true },
       ];
     }
 
     case "ipObsDefense": {
-      const dqi     = es.docQualityInputs ?? {};
-      const obsRate = dqi.obsDefenseRate || 0;
-      const avgDelta = dqi.obsInpatientRevDelta || 2800;
-      const defended  = obsRate > 0 ? Math.round(abridgeEnc * (obsRate / 100)) : Math.round(driverValue / avgDelta);
+      const dqi         = es.docQualityInputs ?? {};
+      const denialRate  = dqi.ipObsDefenseDenialRate ?? 0;
+      const revDelta    = dqi.ipObsDefenseRevenueDelta ?? 0;
+      const preventable = dqi.ipObsDefensePreventableScenario === "custom" ? (dqi.ipObsDefenseCustomPercent ?? 40) : (IP_OBS_PREVENTABLE_SCENARIOS[dqi.ipObsDefensePreventableScenario] ?? 40);
+      const obsReal     = dqi.ipObsDefenseRealization ?? 100;
+      const downgrades  = Math.round(abridgeEnc * (denialRate / 100));
+      const defensible  = Math.round(downgrades * (preventable / 100));
       return [
-        { label: `Admission reasoning captured at point of care — two-midnight clinical expectation documented before audit`, value: `inpatient status defended` },
-        { label: `${n(defended)} cases defended  ×  ${d(avgDelta)} avg inpatient vs. observation revenue delta`, value: fmt(driverValue), isResult: true },
+        { label: `${n(abridgeEnc)} discharges  ×  ${p(denialRate)} observation-downgrade rate`, value: `${n(downgrades)} downgrades/yr` },
+        { label: `${n(downgrades)}  ×  ${p(preventable)} documentation-preventable`, value: `${n(defensible)} defensible/yr` },
+        { label: `${n(defensible)}  ×  ${d(revDelta)} inpatient-vs-observation delta  ×  ${p(obsReal)} realization`, value: fmt(driverValue), isResult: true },
       ];
     }
 
