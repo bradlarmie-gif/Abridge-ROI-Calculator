@@ -1,5 +1,7 @@
 import type { ExploreCalcComponentProps } from "@/lib/exploreDrivers";
 import { NumberField } from "@/components/NumberField";
+import { computeAllDriverValues } from "@/lib/exploreDriverCalcs";
+import { engineKeyForDriver } from "@/lib/exploreDriverKeys";
 
 type Props = ExploreCalcComponentProps;
 
@@ -9,10 +11,12 @@ const PREVENTABLE_SCENARIOS = [
   { label: "Aggressive", value: "aggressive" as const, pct: 55, hint: "High denial volume, doc-driven patterns" },
 ];
 
-export default function ObsDefenseCalc({ state, updateDocQualityInputs }: Props) {
+export default function ObsDefenseCalc({ state, updateDocQualityInputs, totalHoursSaved }: Props) {
   const { docQualityInputs, annualEncounters, utilizationPercent } = state;
   const dq = docQualityInputs;
   const eligibleAdmissions = Math.round(annualEncounters * (utilizationPercent / 100));
+
+  const value = computeAllDriverValues(state, totalHoursSaved)[engineKeyForDriver("obsDefense", state.careSetting ?? "")] ?? 0;
 
   const preventablePcts: Record<string, number> = { conservative: 25, typical: 40, aggressive: 55, custom: dq.ipObsDefenseCustomPercent ?? 40 };
   const preventablePct = preventablePcts[dq.ipObsDefensePreventableScenario] / 100;
@@ -20,7 +24,6 @@ export default function ObsDefenseCalc({ state, updateDocQualityInputs }: Props)
   const downgrades = Math.round(eligibleAdmissions * (dq.ipObsDefenseDenialRate / 100));
   const preventable = Math.round(downgrades * preventablePct);
   const gross = preventable * dq.ipObsDefenseRevenueDelta;
-  const net = Math.round(gross * (dq.ipObsDefenseRealization / 100));
 
   const fmt = (n: number) => '$' + Math.round(n).toLocaleString();
   const fmtN = (n: number) => n.toLocaleString();
@@ -222,7 +225,7 @@ export default function ObsDefenseCalc({ state, updateDocQualityInputs }: Props)
           <div className="h-px bg-[#D1D5DB] my-2" />
           <div className="flex justify-between gap-2 text-sm">
             <span className="font-semibold text-black">Annual Obs Defense Value</span>
-            <span className="font-bold text-[#EA2C00]">{fmt(net)}</span>
+            <span className="font-bold text-[#EA2C00]">{fmt(value)}</span>
           </div>
         </div>
       </div>
@@ -231,7 +234,7 @@ export default function ObsDefenseCalc({ state, updateDocQualityInputs }: Props)
       <div className="border-t border-[#E5E5E5] pt-6">
         <div className="flex justify-between items-center mb-4">
           <span className="font-semibold text-black">Annual Obs Defense Value</span>
-          <span className="text-2xl font-bold text-[#EA2C00]" data-testid="text-obs-net">{fmt(net)}</span>
+          <span className="text-2xl font-bold text-[#EA2C00]" data-testid="text-obs-net">{fmt(value)}</span>
         </div>
       </div>
     </div>

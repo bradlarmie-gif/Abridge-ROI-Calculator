@@ -1,11 +1,15 @@
 import { useMemo } from "react";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import type { ExploreCalcComponentProps } from "@/lib/exploreDrivers";
+import { computeAllDriverValues } from "@/lib/exploreDriverCalcs";
+import { engineKeyForDriver } from "@/lib/exploreDriverKeys";
 
 type Props = ExploreCalcComponentProps;
 
-export default function AdmissionCaptureCalc({ state, updateTimeDriverInputs }: Props) {
+export default function AdmissionCaptureCalc({ state, updateTimeDriverInputs, totalHoursSaved }: Props) {
   const { timeDriverInputs } = state;
+
+  const value = computeAllDriverValues(state, totalHoursSaved)[engineKeyForDriver("admissionCapture", state.careSetting ?? "")] ?? 0;
 
   const edRecoveredPatients = useMemo(() => {
     const lwbsPatients = state.annualEncounters * (timeDriverInputs.edLwbsRate / 100);
@@ -14,7 +18,6 @@ export default function AdmissionCaptureCalc({ state, updateTimeDriverInputs }: 
 
   const potentialAdmissions = edRecoveredPatients * (timeDriverInputs.edAdmissionRate / 100);
   const grossValue = potentialAdmissions * timeDriverInputs.edAdmissionRevenue;
-  const netValue = Math.round(grossValue * (timeDriverInputs.edAdmissionRealization / 100));
 
   const formatCurrency = (n: number) => '$' + Math.round(n).toLocaleString();
   const formatNumber = (n: number) => n.toLocaleString();
@@ -98,7 +101,7 @@ export default function AdmissionCaptureCalc({ state, updateTimeDriverInputs }: 
 
           <div className="flex justify-between gap-2">
             <span className="font-semibold text-black">Net Admission Value</span>
-            <span className="font-bold text-[#EA2C00] flex-shrink-0">{formatCurrency(netValue)}</span>
+            <span className="font-bold text-[#EA2C00] flex-shrink-0">{formatCurrency(value)}</span>
           </div>
         </div>
       </div>

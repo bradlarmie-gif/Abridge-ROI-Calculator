@@ -3,12 +3,16 @@ import { AlertTriangle } from "lucide-react";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import type { ExploreCalcComponentProps } from "@/lib/exploreDrivers";
 import { nursingRetentionRates } from "@/lib/retentionScenarios";
+import { computeAllDriverValues } from "@/lib/exploreDriverCalcs";
+import { engineKeyForDriver } from "@/lib/exploreDriverKeys";
 
 type Props = ExploreCalcComponentProps;
 type RetentionScenario = 'conservative' | 'typical' | 'optimistic' | 'custom';
 
-export default function NursingAgencyCalc({ state, updateTimeDriverInputs }: Props) {
+export default function NursingAgencyCalc({ state, updateTimeDriverInputs, totalHoursSaved }: Props) {
   const { timeDriverInputs } = state;
+
+  const value = computeAllDriverValues(state, totalHoursSaved)[engineKeyForDriver("nursingAgency", state.careSetting ?? "")] ?? 0;
 
   const nursingRetentionImpactRates: Record<RetentionScenario, number> = nursingRetentionRates(timeDriverInputs.retentionCustomPercent ?? 10);
 
@@ -20,8 +24,7 @@ export default function NursingAgencyCalc({ state, updateTimeDriverInputs }: Pro
     const retained = burnoutDepartures * impactRate;
     const weeks = timeDriverInputs.nursingAgencyWeeksPerVacancy || 12;
     const weeklyPremium = timeDriverInputs.nursingAgencyWeeklyPremium || 2500;
-    const value = Math.round(retained * weeks * weeklyPremium);
-    return { retained, weeks, weeklyPremium, value };
+    return { retained, weeks, weeklyPremium };
   }, [
     state.numberOfProviders,
     timeDriverInputs.nursingTurnoverRate,
@@ -99,7 +102,7 @@ export default function NursingAgencyCalc({ state, updateTimeDriverInputs }: Pro
               <div className="h-px bg-[#E5E5E5] my-2" />
               <div className="flex justify-between gap-2">
                 <span className="text-[#666666] font-medium">Annual Agency Savings</span>
-                <span className="font-bold text-[#EA2C00]" data-testid="text-nursing-agency-value">{formatCurrency(calc.value)}</span>
+                <span className="font-bold text-[#EA2C00]" data-testid="text-nursing-agency-value">{formatCurrency(value)}</span>
               </div>
             </div>
           </div>

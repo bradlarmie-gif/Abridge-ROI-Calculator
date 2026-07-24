@@ -1,11 +1,15 @@
 import { useMemo } from "react";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import type { ExploreCalcComponentProps } from "@/lib/exploreDrivers";
+import { computeAllDriverValues } from "@/lib/exploreDriverCalcs";
+import { engineKeyForDriver } from "@/lib/exploreDriverKeys";
 
 type Props = ExploreCalcComponentProps;
 
-export default function NursingFallsCalc({ state, updateDocQualityInputs }: Props) {
+export default function NursingFallsCalc({ state, updateDocQualityInputs, totalHoursSaved }: Props) {
   const { docQualityInputs } = state;
+
+  const value = computeAllDriverValues(state, totalHoursSaved)[engineKeyForDriver("nursingFalls", state.careSetting ?? "")] ?? 0;
 
   const patientDays = useMemo(() => {
     return state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365;
@@ -18,10 +22,6 @@ export default function NursingFallsCalc({ state, updateDocQualityInputs }: Prop
   const fallsPrevented = useMemo(() => {
     return fallsPerYear * (docQualityInputs.nursingFallsPreventionRate / 100);
   }, [fallsPerYear, docQualityInputs.nursingFallsPreventionRate]);
-
-  const fallsValue = useMemo(() => {
-    return fallsPrevented * docQualityInputs.nursingFallsCost;
-  }, [fallsPrevented, docQualityInputs.nursingFallsCost]);
 
   const formatCurrency = (n: number) => '$' + Math.round(n).toLocaleString();
   const formatNumber = (n: number) => n.toLocaleString();
@@ -114,7 +114,7 @@ export default function NursingFallsCalc({ state, updateDocQualityInputs }: Prop
           <div className="h-px bg-[#E5E5E5] my-2" />
           <div className="flex justify-between gap-2">
             <span className="font-medium text-black">Potential Falls Value</span>
-            <span className="font-bold text-[#EA2C00]" data-testid="text-nursing-falls-value">{formatCurrency(fallsValue)}</span>
+            <span className="font-bold text-[#EA2C00]" data-testid="text-nursing-falls-value">{formatCurrency(value)}</span>
           </div>
         </div>
       </div>

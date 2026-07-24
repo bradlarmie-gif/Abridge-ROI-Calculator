@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import type { ExploreCalcComponentProps } from "@/lib/exploreDrivers";
 import type { HccPlan } from "@/pages/explore/ExploreFlow";
 import { NumberField } from "@/components/NumberField";
+import { computeAllDriverValues } from "@/lib/exploreDriverCalcs";
+import { engineKeyForDriver } from "@/lib/exploreDriverKeys";
 
 const UPLIFT_OPTIONS: { key: 'conservative' | 'typical' | 'optimistic'; label: string; pp: number }[] = [
   { key: 'conservative', label: 'Conservative', pp: 3 },
@@ -27,10 +29,12 @@ const PLAN_TYPE_LABELS: Record<HccPlan['planType'], string> = {
 
 type Props = ExploreCalcComponentProps;
 
-export default function HccCaptureCalc({ state, updateDocQualityInputs }: Props) {
+export default function HccCaptureCalc({ state, updateDocQualityInputs, totalHoursSaved }: Props) {
   const { docQualityInputs } = state;
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [netNewOpen, setNetNewOpen] = useState<Record<string, boolean>>({});
+
+  const value = computeAllDriverValues(state, totalHoursSaved)[engineKeyForDriver("hccCapture", state.careSetting ?? "")] ?? 0;
 
   const plans = docQualityInputs.hccPlans;
   const upliftMap: Record<string, number> = { conservative: 3, typical: 5, optimistic: 10 };
@@ -51,7 +55,6 @@ export default function HccCaptureCalc({ state, updateDocQualityInputs }: Props)
   });
 
   const totalGross = planCalcs.reduce((s, c) => s + c.planGross, 0);
-  const hccRevenueNet = totalGross * (docQualityInputs.hccRealization / 100);
 
   const fmt$ = (n: number) => '$' + Math.round(n).toLocaleString();
   const fmtN = (n: number) => n.toLocaleString();
@@ -350,7 +353,7 @@ export default function HccCaptureCalc({ state, updateDocQualityInputs }: Props)
         </p>
         <div className="flex justify-between items-center">
           <span className="font-semibold text-black">Estimated Annual HCC Value{plans.length > 1 ? ` (${plans.length} plans)` : ''}</span>
-          <span className="text-2xl font-bold text-[#EA2C00]" data-testid="text-hcc-result">{fmt$(Math.round(hccRevenueNet))}</span>
+          <span className="text-2xl font-bold text-[#EA2C00]" data-testid="text-hcc-result">{fmt$(value)}</span>
         </div>
       </div>
 

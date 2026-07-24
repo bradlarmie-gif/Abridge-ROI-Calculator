@@ -1,6 +1,8 @@
 import { Info } from "lucide-react";
 import type { ExploreCalcComponentProps } from "@/lib/exploreDrivers";
 import { NumberField } from "@/components/NumberField";
+import { computeAllDriverValues } from "@/lib/exploreDriverCalcs";
+import { engineKeyForDriver } from "@/lib/exploreDriverKeys";
 
 const SCENARIO_LABELS: Record<string, string> = {
   conservative: 'Conservative',
@@ -10,16 +12,17 @@ const SCENARIO_LABELS: Record<string, string> = {
 
 type Props = ExploreCalcComponentProps;
 
-export default function DrgAccuracyCalc({ state, updateDocQualityInputs }: Props) {
+export default function DrgAccuracyCalc({ state, updateDocQualityInputs, totalHoursSaved }: Props) {
   const { docQualityInputs, annualEncounters, utilizationPercent } = state;
   const eligibleEncounters = Math.round(annualEncounters * (utilizationPercent / 100));
+
+  const value = computeAllDriverValues(state, totalHoursSaved)[engineKeyForDriver("drgAccuracy", state.careSetting ?? "")] ?? 0;
 
   const ipDrgProtectionScenarios: Record<string, number> = { conservative: 15, typical: 20, aggressive: 25, custom: docQualityInputs.ipDrgCustomPercent ?? 20 };
   const ipDrgProtectionPercent = ipDrgProtectionScenarios[docQualityInputs.ipDrgScenario];
   const ipAdmissionsAtRisk = eligibleEncounters * (docQualityInputs.ipDrgAtRiskRate / 100);
   const ipAdmissionsProtected = ipAdmissionsAtRisk * (ipDrgProtectionPercent / 100);
   const ipDrgGrossValue = ipAdmissionsProtected * docQualityInputs.ipDrgWeightIncrease * docQualityInputs.ipDrgBasePayment;
-  const ipDrgNetValue = ipDrgGrossValue * (docQualityInputs.ipDrgRealization / 100);
 
   const formatCurrency = (n: number) => '$' + Math.round(n).toLocaleString();
   const formatNumber = (n: number) => n.toLocaleString();
@@ -221,7 +224,7 @@ export default function DrgAccuracyCalc({ state, updateDocQualityInputs }: Props
           </div>
           <div className="text-center py-2">
             <span className="text-[13px] text-[#666666]">= </span>
-            <span className="font-semibold text-black">{formatCurrency(Math.round(ipDrgNetValue))} net</span>
+            <span className="font-semibold text-black">{formatCurrency(value)} net</span>
           </div>
         </div>
       </div>
@@ -230,7 +233,7 @@ export default function DrgAccuracyCalc({ state, updateDocQualityInputs }: Props
       <div className="border-t border-[#E5E5E5] pt-6">
         <div className="flex justify-between items-center mb-4">
           <span className="font-semibold text-black">Annual DRG Value</span>
-          <span className="text-2xl font-bold text-[#EA2C00]" data-testid="text-drg-net">{formatCurrency(Math.round(ipDrgNetValue))}</span>
+          <span className="text-2xl font-bold text-[#EA2C00]" data-testid="text-drg-net">{formatCurrency(value)}</span>
         </div>
       </div>
     </div>

@@ -2,23 +2,22 @@ import { useState, useMemo } from "react";
 import { Info } from "lucide-react";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import type { ExploreCalcComponentProps } from "@/lib/exploreDrivers";
+import { computeAllDriverValues } from "@/lib/exploreDriverCalcs";
+import { engineKeyForDriver } from "@/lib/exploreDriverKeys";
 
 type Props = ExploreCalcComponentProps;
 
-export default function LwbsRecoveryCalc({ state, updateTimeDriverInputs }: Props) {
+export default function LwbsRecoveryCalc({ state, updateTimeDriverInputs, totalHoursSaved }: Props) {
   const { timeDriverInputs } = state;
   const [customMode, setCustomMode] = useState(false);
   const [customDisplay, setCustomDisplay] = useState(String(timeDriverInputs.edLwbsReduction));
+
+  const value = computeAllDriverValues(state, totalHoursSaved)[engineKeyForDriver("lwbsRecovery", state.careSetting ?? "")] ?? 0;
 
   const edRecoveredPatients = useMemo(() => {
     const lwbsPatients = state.annualEncounters * (timeDriverInputs.edLwbsRate / 100);
     return lwbsPatients * (timeDriverInputs.edLwbsReduction / 100);
   }, [state.annualEncounters, timeDriverInputs.edLwbsRate, timeDriverInputs.edLwbsReduction]);
-
-  const edLwbsValue = useMemo(() => {
-    const grossValue = edRecoveredPatients * timeDriverInputs.edRevenuePerVisit;
-    return Math.round(grossValue * (timeDriverInputs.edLwbsRealization / 100));
-  }, [edRecoveredPatients, timeDriverInputs.edRevenuePerVisit, timeDriverInputs.edLwbsRealization]);
 
   const formatCurrency = (n: number) => '$' + Math.round(n).toLocaleString();
   const formatNumber = (n: number) => n.toLocaleString();
@@ -222,7 +221,7 @@ export default function LwbsRecoveryCalc({ state, updateTimeDriverInputs }: Prop
 
           <div className="flex justify-between gap-2">
             <span className="font-semibold text-black">Net LWBS Value</span>
-            <span className="font-bold text-[#EA2C00] flex-shrink-0">{formatCurrency(edLwbsValue)}</span>
+            <span className="font-bold text-[#EA2C00] flex-shrink-0">{formatCurrency(value)}</span>
           </div>
         </div>
       </div>

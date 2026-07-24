@@ -1,11 +1,15 @@
 import { useMemo } from "react";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import type { ExploreCalcComponentProps } from "@/lib/exploreDrivers";
+import { computeAllDriverValues } from "@/lib/exploreDriverCalcs";
+import { engineKeyForDriver } from "@/lib/exploreDriverKeys";
 
 type Props = ExploreCalcComponentProps;
 
-export default function NursingHapiCalc({ state, updateDocQualityInputs }: Props) {
+export default function NursingHapiCalc({ state, updateDocQualityInputs, totalHoursSaved }: Props) {
   const { docQualityInputs } = state;
+
+  const value = computeAllDriverValues(state, totalHoursSaved)[engineKeyForDriver("nursingHapi", state.careSetting ?? "")] ?? 0;
 
   const patientDays = useMemo(() => {
     return state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365;
@@ -18,10 +22,6 @@ export default function NursingHapiCalc({ state, updateDocQualityInputs }: Props
   const hapisPrevented = useMemo(() => {
     return hapisPerYear * (docQualityInputs.nursingHapiPreventionRate / 100);
   }, [hapisPerYear, docQualityInputs.nursingHapiPreventionRate]);
-
-  const hapiValue = useMemo(() => {
-    return hapisPrevented * docQualityInputs.nursingHapiCost;
-  }, [hapisPrevented, docQualityInputs.nursingHapiCost]);
 
   const formatCurrency = (n: number) => '$' + Math.round(n).toLocaleString();
   const formatNumber = (n: number) => n.toLocaleString();
@@ -114,7 +114,7 @@ export default function NursingHapiCalc({ state, updateDocQualityInputs }: Props
           <div className="h-px bg-[#E5E5E5] my-2" />
           <div className="flex justify-between gap-2">
             <span className="font-medium text-black">Potential HAPI Value</span>
-            <span className="font-bold text-[#EA2C00]" data-testid="text-nursing-hapi-value">{formatCurrency(hapiValue)}</span>
+            <span className="font-bold text-[#EA2C00]" data-testid="text-nursing-hapi-value">{formatCurrency(value)}</span>
           </div>
         </div>
       </div>

@@ -2,11 +2,14 @@ import { useState, useMemo } from "react";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { NumberField } from "@/components/NumberField";
 import type { ExploreCalcComponentProps } from "@/lib/exploreDrivers";
+import { computeAllDriverValues } from "@/lib/exploreDriverCalcs";
+import { engineKeyForDriver } from "@/lib/exploreDriverKeys";
 
 type Props = ExploreCalcComponentProps;
 
 export default function PatientAccessCalc({ state, updateTimeDriverInputs, totalHoursSaved }: Props) {
   const { timeDriverInputs } = state;
+  const value = computeAllDriverValues(state, totalHoursSaved)[engineKeyForDriver("patientAccess", state.careSetting ?? "")] ?? 0;
   const [customReinvestMode, setCustomReinvestMode] = useState(false);
   const [customReinvestDisplay, setCustomReinvestDisplay] = useState(String(timeDriverInputs.capacityRealizationPercent));
 
@@ -22,7 +25,6 @@ export default function PatientAccessCalc({ state, updateTimeDriverInputs, total
   }, [totalHoursSaved, state.numberOfProviders, timeDriverInputs.capacityRealizationPercent, timeDriverInputs.visitDuration]);
 
   const potentialVisits = Math.round(derivedVisitsPerWeek * effectiveAccessProviders * 48);
-  const potentialRevenue = Math.round(potentialVisits * timeDriverInputs.revenuePerVisit);
 
   const hoursPerProviderPerWeek = state.numberOfProviders > 0
     ? (totalHoursSaved / state.numberOfProviders / 48).toFixed(1)
@@ -181,7 +183,7 @@ export default function PatientAccessCalc({ state, updateTimeDriverInputs, total
           </div>
           <div className="flex justify-between gap-2">
             <span className="text-[#666666]">× {formatCurrency(timeDriverInputs.revenuePerVisit)} per visit</span>
-            <span className="font-bold text-[#EA2C00] flex-shrink-0">= {formatCurrency(potentialRevenue)}/yr</span>
+            <span className="font-bold text-[#EA2C00] flex-shrink-0">= {formatCurrency(value)}/yr</span>
           </div>
         </div>
       </div>

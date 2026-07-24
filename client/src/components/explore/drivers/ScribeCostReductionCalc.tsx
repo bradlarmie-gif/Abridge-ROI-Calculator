@@ -1,10 +1,12 @@
 import { useMemo } from "react";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import type { ExploreCalcComponentProps } from "@/lib/exploreDrivers";
+import { computeAllDriverValues } from "@/lib/exploreDriverCalcs";
+import { engineKeyForDriver } from "@/lib/exploreDriverKeys";
 
 type Props = ExploreCalcComponentProps;
 
-export default function ScribeCostReductionCalc({ state, updateTimeDriverInputs }: Props) {
+export default function ScribeCostReductionCalc({ state, updateTimeDriverInputs, totalHoursSaved }: Props) {
   const { timeDriverInputs: t } = state;
   const mode = t.scribeBillingMode ?? 'position';
   const annualEncounters = state.annualEncounters || 0;
@@ -12,19 +14,19 @@ export default function ScribeCostReductionCalc({ state, updateTimeDriverInputs 
   const visitNoun = isED ? 'ED visit' : 'visit';
   const visitNounPlural = isED ? 'ED visits' : 'visits';
 
+  const value = computeAllDriverValues(state, totalHoursSaved)[engineKeyForDriver("scribeCostReduction", state.careSetting ?? "")] ?? 0;
+
   const calc = useMemo(() => {
     if (mode === 'hourly') {
       const costPerVisit = (t.scribeHourlyRate || 0) * ((t.scribeMinutesPerNote || 0) / 60);
       const scribedVisits = annualEncounters * ((t.scribeCoveragePercent || 0) / 100);
-      const annualSavings = Math.round(costPerVisit * scribedVisits * ((t.scribeVisitPercentEliminated || 0) / 100));
-      return { mode: 'hourly' as const, costPerVisit, scribedVisits, annualSavings };
+      return { mode: 'hourly' as const, costPerVisit, scribedVisits };
     }
     const headcount = t.scribeHeadcount || 0;
     const costPerPosition = t.scribeCostPerPosition || 0;
     const eliminated = Math.min(t.scribePositionsEliminated || 0, headcount);
-    const annualSavings = Math.round(eliminated * costPerPosition);
     const remainingSpend = (headcount - eliminated) * costPerPosition;
-    return { mode: 'position' as const, headcount, costPerPosition, eliminated, annualSavings, remainingSpend };
+    return { mode: 'position' as const, headcount, costPerPosition, eliminated, remainingSpend };
   }, [mode, annualEncounters, t.scribeHeadcount, t.scribeCostPerPosition, t.scribePositionsEliminated,
       t.scribeHourlyRate, t.scribeMinutesPerNote, t.scribeCoveragePercent, t.scribeVisitPercentEliminated]);
 
@@ -125,7 +127,7 @@ export default function ScribeCostReductionCalc({ state, updateTimeDriverInputs 
               <div className="h-px bg-[#333333] my-2" />
               <div className="flex justify-between gap-2">
                 <span className="font-semibold text-black">Annual Scribe Savings</span>
-                <span className="font-bold text-[#EA2C00] flex-shrink-0" data-testid="text-scribe-savings">{fmt(calc.annualSavings)}</span>
+                <span className="font-bold text-[#EA2C00] flex-shrink-0" data-testid="text-scribe-savings">{fmt(value)}</span>
               </div>
             </div>
           </div>
@@ -225,7 +227,7 @@ export default function ScribeCostReductionCalc({ state, updateTimeDriverInputs 
               <div className="h-px bg-[#333333] my-2" />
               <div className="flex justify-between gap-2">
                 <span className="font-semibold text-black">Annual Scribe Savings</span>
-                <span className="font-bold text-[#EA2C00] flex-shrink-0" data-testid="text-scribe-savings">{fmt(calc.annualSavings)}</span>
+                <span className="font-bold text-[#EA2C00] flex-shrink-0" data-testid="text-scribe-savings">{fmt(value)}</span>
               </div>
             </div>
           </div>

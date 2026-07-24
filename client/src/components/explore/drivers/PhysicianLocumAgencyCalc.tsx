@@ -3,12 +3,16 @@ import { AlertTriangle } from "lucide-react";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import type { ExploreCalcComponentProps } from "@/lib/exploreDrivers";
 import { physicianRetentionRates } from "@/lib/retentionScenarios";
+import { computeAllDriverValues } from "@/lib/exploreDriverCalcs";
+import { engineKeyForDriver } from "@/lib/exploreDriverKeys";
 
 type Props = ExploreCalcComponentProps;
 type RetentionScenario = 'conservative' | 'typical' | 'optimistic' | 'custom';
 
-export default function PhysicianLocumAgencyCalc({ state, updateTimeDriverInputs }: Props) {
+export default function PhysicianLocumAgencyCalc({ state, updateTimeDriverInputs, totalHoursSaved }: Props) {
   const { timeDriverInputs } = state;
+
+  const value = computeAllDriverValues(state, totalHoursSaved)[engineKeyForDriver("physicianLocumAgency", state.careSetting ?? "")] ?? 0;
 
   const retentionScenarios: Record<RetentionScenario, number> = physicianRetentionRates(timeDriverInputs.retentionCustomPercent ?? 10);
 
@@ -23,8 +27,7 @@ export default function PhysicianLocumAgencyCalc({ state, updateTimeDriverInputs
     const retained = providers * turnover * burnout * impact;
     const weeks = timeDriverInputs.physicianAgencyWeeksPerVacancy || 16;
     const weeklyPremium = timeDriverInputs.physicianAgencyWeeklyPremium || 5000;
-    const value = Math.round(retained * weeks * weeklyPremium);
-    return { retained, weeks, weeklyPremium, value };
+    return { retained, weeks, weeklyPremium };
   }, [
     state.numberOfProviders,
     timeDriverInputs.annualTurnoverRate,
@@ -108,7 +111,7 @@ export default function PhysicianLocumAgencyCalc({ state, updateTimeDriverInputs
               <div className="h-px bg-[#333333] my-2" />
               <div className="flex justify-between gap-2">
                 <span className="font-semibold text-black">Locum/Agency Avoidance</span>
-                <span className="font-bold text-[#EA2C00] flex-shrink-0" data-testid="text-physician-agency-value">{formatCurrency(calc.value)}</span>
+                <span className="font-bold text-[#EA2C00] flex-shrink-0" data-testid="text-physician-agency-value">{formatCurrency(value)}</span>
               </div>
             </div>
           </div>

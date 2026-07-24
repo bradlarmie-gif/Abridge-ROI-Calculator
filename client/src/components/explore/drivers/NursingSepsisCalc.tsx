@@ -1,11 +1,15 @@
 import { useMemo } from "react";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import type { ExploreCalcComponentProps } from "@/lib/exploreDrivers";
+import { computeAllDriverValues } from "@/lib/exploreDriverCalcs";
+import { engineKeyForDriver } from "@/lib/exploreDriverKeys";
 
 type Props = ExploreCalcComponentProps;
 
-export default function NursingSepsisCalc({ state, updateDocQualityInputs }: Props) {
+export default function NursingSepsisCalc({ state, updateDocQualityInputs, totalHoursSaved }: Props) {
   const { docQualityInputs } = state;
+
+  const value = computeAllDriverValues(state, totalHoursSaved)[engineKeyForDriver("nursingSepsis", state.careSetting ?? "")] ?? 0;
 
   const patientDays = useMemo(() => {
     return state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365;
@@ -22,10 +26,6 @@ export default function NursingSepsisCalc({ state, updateDocQualityInputs }: Pro
   const docLagCases = useMemo(() => {
     return nonCompliant * (docQualityInputs.nursingSepsisDocLagPercent / 100);
   }, [nonCompliant, docQualityInputs.nursingSepsisDocLagPercent]);
-
-  const sepsisValue = useMemo(() => {
-    return docLagCases * docQualityInputs.nursingSepsisExcessCostPerCase * (docQualityInputs.nursingSepsisRealization / 100);
-  }, [docLagCases, docQualityInputs.nursingSepsisExcessCostPerCase, docQualityInputs.nursingSepsisRealization]);
 
   const formatCurrency = (n: number) => '$' + Math.round(n).toLocaleString();
   const formatNumber = (n: number) => n.toLocaleString();
@@ -154,7 +154,7 @@ export default function NursingSepsisCalc({ state, updateDocQualityInputs }: Pro
           <div className="h-px bg-[#E5E5E5] my-2" />
           <div className="flex justify-between gap-2">
             <span className="font-medium text-black">Potential Sepsis Value</span>
-            <span className="font-bold text-[#EA2C00]" data-testid="text-nursing-sepsis-value">{formatCurrency(sepsisValue)}</span>
+            <span className="font-bold text-[#EA2C00]" data-testid="text-nursing-sepsis-value">{formatCurrency(value)}</span>
           </div>
         </div>
       </div>

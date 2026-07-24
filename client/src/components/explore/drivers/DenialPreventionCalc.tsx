@@ -1,6 +1,7 @@
 import { Info } from "lucide-react";
 import type { ExploreCalcComponentProps } from "@/lib/exploreDrivers";
-import { denialsScenariosFor } from "@/lib/exploreDriverCalcs";
+import { computeAllDriverValues, denialsScenariosFor } from "@/lib/exploreDriverCalcs";
+import { engineKeyForDriver } from "@/lib/exploreDriverKeys";
 import { NumberField } from "@/components/NumberField";
 
 const SCENARIO_LABELS: Record<string, string> = {
@@ -11,9 +12,11 @@ const SCENARIO_LABELS: Record<string, string> = {
 
 type Props = ExploreCalcComponentProps;
 
-export default function DenialPreventionCalc({ state, updateDocQualityInputs }: Props) {
+export default function DenialPreventionCalc({ state, updateDocQualityInputs, totalHoursSaved }: Props) {
   const { docQualityInputs, careSetting, annualEncounters, utilizationPercent } = state;
   const isED = careSetting === 'ed';
+
+  const value = computeAllDriverValues(state, totalHoursSaved)[engineKeyForDriver("denialPrevention", state.careSetting ?? "")] ?? 0;
 
   const eligibleEncounters = Math.round(annualEncounters * (utilizationPercent / 100));
   const denialsScenarios = denialsScenariosFor(isED, docQualityInputs.denialsCustomPercent);
@@ -22,7 +25,6 @@ export default function DenialPreventionCalc({ state, updateDocQualityInputs }: 
   const medNecessityDenials = eligibleEncounters * (docQualityInputs.medNecessityDenialRate / 100);
   const preventedDenials = medNecessityDenials * (preventionPercent / 100);
   const denialsRevenueGross = preventedDenials * docQualityInputs.avgClaimValue;
-  const denialsRevenueNet = denialsRevenueGross * (docQualityInputs.denialsRealization / 100);
 
   const formatCurrency = (n: number) => '$' + Math.round(n).toLocaleString();
   const formatNumber = (n: number) => n.toLocaleString();
@@ -173,7 +175,7 @@ export default function DenialPreventionCalc({ state, updateDocQualityInputs }: 
           <div className="h-px bg-[#888888] my-2" />
           <div className="flex justify-between font-semibold">
             <span className="text-black">Annual Denial Prevention Value</span>
-            <span className="text-[#EA2C00]" data-testid="text-denials-net">{formatCurrency(Math.round(denialsRevenueNet))}</span>
+            <span className="text-[#EA2C00]" data-testid="text-denials-net">{formatCurrency(value)}</span>
           </div>
         </div>
       </div>

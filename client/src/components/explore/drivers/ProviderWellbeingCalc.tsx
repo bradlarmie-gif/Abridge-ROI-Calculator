@@ -3,12 +3,15 @@ import { Check, AlertTriangle } from "lucide-react";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import type { ExploreCalcComponentProps } from "@/lib/exploreDrivers";
 import { physicianRetentionRates, PHYSICIAN_RETENTION_SCENARIOS } from "@/lib/retentionScenarios";
+import { computeAllDriverValues } from "@/lib/exploreDriverCalcs";
+import { engineKeyForDriver } from "@/lib/exploreDriverKeys";
 
 type Props = ExploreCalcComponentProps;
 type RetentionScenario = 'conservative' | 'typical' | 'optimistic' | 'custom';
 
 export default function ProviderWellbeingCalc({ state, updateTimeDriverInputs, totalHoursSaved }: Props) {
   const { timeDriverInputs: td } = state;
+  const value = computeAllDriverValues(state, totalHoursSaved)[engineKeyForDriver("providerWellbeing", state.careSetting ?? "")] ?? 0;
   const isInpatient = state.careSetting === 'inpatient';
   const [customMode, setCustomMode] = useState(td.retentionImpactScenario === 'custom');
   const [customDisplay, setCustomDisplay] = useState(String(td.retentionCustomPercent ?? 10));
@@ -36,13 +39,11 @@ export default function ProviderWellbeingCalc({ state, updateTimeDriverInputs, t
     const providersLeavingPerYear = providers * turnoverRate;
     const burnoutRelatedDepartures = providersLeavingPerYear * burnoutRate;
     const providersRetained = burnoutRelatedDepartures * impactRate;
-    const retentionValue = providersRetained * replacementValue;
 
     return {
       providersLeavingPerYear,
       burnoutRelatedDepartures,
       providersRetained,
-      retentionValue: Math.round(retentionValue),
     };
   }, [
     state.numberOfProviders,
@@ -284,7 +285,7 @@ export default function ProviderWellbeingCalc({ state, updateTimeDriverInputs, t
               <div className="h-px bg-[#888888] my-2" />
               <div className="flex justify-between gap-2 font-semibold">
                 <span className="text-black">= Retention value</span>
-                <span className="text-[#EA2C00] flex-shrink-0" data-testid="text-wellbeing-retention-value">{formatCurrency(retentionCalcs.retentionValue)}</span>
+                <span className="text-[#EA2C00] flex-shrink-0" data-testid="text-wellbeing-retention-value">{formatCurrency(value)}</span>
               </div>
             </div>
 

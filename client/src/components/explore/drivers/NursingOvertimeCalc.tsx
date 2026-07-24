@@ -1,11 +1,15 @@
 import { useMemo } from "react";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import type { ExploreCalcComponentProps } from "@/lib/exploreDrivers";
+import { computeAllDriverValues } from "@/lib/exploreDriverCalcs";
+import { engineKeyForDriver } from "@/lib/exploreDriverKeys";
 
 type Props = ExploreCalcComponentProps;
 
-export default function NursingOvertimeCalc({ state, updateTimeDriverInputs }: Props) {
+export default function NursingOvertimeCalc({ state, updateTimeDriverInputs, totalHoursSaved }: Props) {
   const { timeDriverInputs } = state;
+
+  const value = computeAllDriverValues(state, totalHoursSaved)[engineKeyForDriver("nursingOvertime", state.careSetting ?? "")] ?? 0;
 
   const otHoursEliminated = useMemo(() => {
     return Math.round(
@@ -19,10 +23,6 @@ export default function NursingOvertimeCalc({ state, updateTimeDriverInputs }: P
     timeDriverInputs.nursingOtReductionPercent,
     state.numberOfProviders,
   ]);
-
-  const otValue = useMemo(() => {
-    return Math.round(otHoursEliminated * timeDriverInputs.nursingOtHourlyRate);
-  }, [otHoursEliminated, timeDriverInputs.nursingOtHourlyRate]);
 
   const formatCurrency = (n: number) => '$' + Math.round(n).toLocaleString();
   const formatNumber = (n: number) => n.toLocaleString();
@@ -118,7 +118,7 @@ export default function NursingOvertimeCalc({ state, updateTimeDriverInputs }: P
           <div className="h-px bg-[#E5E5E5] my-2" />
           <div className="flex justify-between gap-2">
             <span className="text-[#666666] font-medium">Annual OT Savings</span>
-            <span className="font-bold text-[#EA2C00] flex-shrink-0" data-testid="text-nursing-overtime-value">{formatCurrency(otValue)}</span>
+            <span className="font-bold text-[#EA2C00] flex-shrink-0" data-testid="text-nursing-overtime-value">{formatCurrency(value)}</span>
           </div>
         </div>
       </div>
