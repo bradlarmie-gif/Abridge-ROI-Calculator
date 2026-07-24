@@ -104,7 +104,7 @@ export default function ArAddToolModal({
                   data-testid="ar-add-capability"
                 >
                   {APP_RAT_CATEGORIES.filter((c) => c.id !== "custom").map((c) => (
-                    <option key={c.id} value={c.id}>{c.label}</option>
+                    <option key={c.id} value={c.id} disabled={c.comingSoon}>{c.label}{c.comingSoon ? " (coming soon)" : ""}</option>
                   ))}
                   <option value="custom">Other</option>
                 </select>

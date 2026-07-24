@@ -45,9 +45,12 @@ export default function ArCommandSearch({
 
   const close = () => { setOpen(false); inputRef.current?.blur(); };
 
+  const isComingSoon = (id: AppRatCategoryId) => !!APP_RAT_CATEGORIES.find((c) => c.id === id)?.comingSoon;
+
   const choose = (opt: Option) => {
-    if (opt.kind === "vendor") onSelect(opt.vendor.category, opt.vendor.name);
-    else if (opt.kind === "category") onSelect(opt.category.id);
+    // Coming-soon capabilities are shown for context but can't be added yet.
+    if (opt.kind === "vendor") { if (isComingSoon(opt.vendor.category)) return; onSelect(opt.vendor.category, opt.vendor.name); }
+    else if (opt.kind === "category") { if (opt.category.comingSoon) return; onSelect(opt.category.id); }
     else onSelect("custom", opt.text);
     setQuery("");
     setActive(0);
@@ -99,7 +102,7 @@ export default function ArCommandSearch({
           {vendors.map((v, i) => {
             const idx = vendorStart + i;
             return (
-              <Row key={`v-${v.name}`} activeRow={active === idx} onEnter={() => setActive(idx)} onClick={() => choose({ kind: "vendor", vendor: v })} icon={APP_RAT_CATEGORIES.find((c) => c.id === v.category)!.icon} name={v.name} sub={categoryLabel(v.category)} right="↵ Add" testid={`ar-opt-vendor-${v.name.replace(/\s+/g, "-").toLowerCase()}`} />
+              <Row key={`v-${v.name}`} activeRow={active === idx} onEnter={() => setActive(idx)} onClick={() => choose({ kind: "vendor", vendor: v })} icon={APP_RAT_CATEGORIES.find((c) => c.id === v.category)!.icon} name={v.name} sub={categoryLabel(v.category)} right={isComingSoon(v.category) ? "Coming soon" : "↵ Add"} comingSoon={isComingSoon(v.category)} testid={`ar-opt-vendor-${v.name.replace(/\s+/g, "-").toLowerCase()}`} />
             );
           })}
 
@@ -111,7 +114,7 @@ export default function ArCommandSearch({
           {categories.map((c, i) => {
             const idx = categoryStart + i;
             return (
-              <Row key={`c-${c.id}`} activeRow={active === idx} onEnter={() => setActive(idx)} onClick={() => choose({ kind: "category", category: c })} icon={c.icon} name={c.label} sub={c.hint} right="›" testid={`ar-opt-category-${c.id}`} />
+              <Row key={`c-${c.id}`} activeRow={active === idx} onEnter={() => setActive(idx)} onClick={() => choose({ kind: "category", category: c })} icon={c.icon} name={c.label} sub={c.hint} right={c.comingSoon ? "Coming soon" : "›"} comingSoon={c.comingSoon} testid={`ar-opt-category-${c.id}`} />
             );
           })}
 
@@ -134,16 +137,18 @@ export default function ArCommandSearch({
 }
 
 function Row({
-  activeRow, onEnter, onClick, icon, name, sub, right, testid,
+  activeRow, onEnter, onClick, icon, name, sub, right, testid, comingSoon,
 }: {
   activeRow: boolean; onEnter: () => void; onClick: () => void;
   icon: React.ComponentProps<typeof CategoryIcon>["icon"]; name: string; sub: string; right: string; testid: string;
+  comingSoon?: boolean;
 }) {
   return (
     <div
       onMouseEnter={onEnter}
       onClick={onClick}
-      className={`flex items-center gap-3.5 px-[18px] py-2.5 cursor-pointer ${activeRow ? "bg-[#F5F0EB]" : ""}`}
+      aria-disabled={comingSoon || undefined}
+      className={`flex items-center gap-3.5 px-[18px] py-2.5 ${comingSoon ? "cursor-not-allowed opacity-60" : "cursor-pointer"} ${activeRow && !comingSoon ? "bg-[#F5F0EB]" : ""}`}
       data-testid={testid}
     >
       <div className="w-9 h-9 rounded-[10px] bg-[#F5F0EB] flex items-center justify-center text-[#6B5E4F] flex-shrink-0">
@@ -153,7 +158,7 @@ function Row({
         <div className="text-[15px] font-semibold text-[#1A1A1A] truncate">{name}</div>
         {sub && <div className="text-[12.5px] text-[#8C7E6E] truncate">{sub}</div>}
       </div>
-      {right && <div className="text-[12px] text-[#B4A99B] flex-shrink-0">{right}</div>}
+      {right && <div className={`text-[12px] flex-shrink-0 ${comingSoon ? "font-bold uppercase tracking-[0.08em] text-[#8C7E6E]" : "text-[#B4A99B]"}`}>{right}</div>}
     </div>
   );
 }

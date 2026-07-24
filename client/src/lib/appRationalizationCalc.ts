@@ -14,18 +14,22 @@ export interface AppRatCategory {
   label: string;
   hint: string;      // example vendors, shown under the category in search
   icon: AppRatIconKey;
+  comingSoon?: boolean; // not yet displaceable by Abridge — shown last, not selectable
 }
 
+// Order matters: available capabilities first, then coming-soon ones, then Custom
+// last. Every surface (grid, command search, add-tool picker) renders in this
+// order, so marking a category comingSoon + placing it here sinks it everywhere.
 export const APP_RAT_CATEGORIES: AppRatCategory[] = [
   { id: "ambientDoc",       label: "Ambient documentation",        hint: "Nuance DAX, Suki, Nabla, Ambience", icon: "ambientDoc" },
   { id: "dictation",        label: "Dictation",                    hint: "Dragon Medical One, Fluency",        icon: "dictation" },
   { id: "scribe",           label: "Medical scribe",               hint: "ScribeAmerica, Aquity",              icon: "scribe" },
   { id: "cds",              label: "Clinical decision support",    hint: "UpToDate, DynaMed, Epocrates",       icon: "cds" },
-  { id: "preChartRisk",     label: "Pre-charting risk",            hint: "Iodine, Regard, Navina",             icon: "preChartRisk" },
-  { id: "inEncounterCdi",   label: "In-encounter risk / CDI",      hint: "Stanson, 3M CDI",                    icon: "inEncounterCdi" },
-  { id: "postChartCoding",  label: "Post-charting CDI / coding",   hint: "Solventum, Optum360",                icon: "postChartCoding" },
   { id: "transcription",    label: "Transcription services",       hint: "iMedX, Athreon, offshore",           icon: "transcription" },
   { id: "clinicalEvidence", label: "Clinical evidence & search",   hint: "OpenEvidence, ClinicalKey",          icon: "clinicalEvidence" },
+  { id: "preChartRisk",     label: "Pre-charting risk",            hint: "Iodine, Regard, Navina",             icon: "preChartRisk",    comingSoon: true },
+  { id: "inEncounterCdi",   label: "In-encounter risk / CDI",      hint: "Stanson, 3M CDI",                    icon: "inEncounterCdi",  comingSoon: true },
+  { id: "postChartCoding",  label: "Post-charting CDI / coding",   hint: "Solventum, Optum360",                icon: "postChartCoding", comingSoon: true },
   { id: "custom",           label: "Custom",                       hint: "not on the list",                    icon: "custom" },
 ];
 

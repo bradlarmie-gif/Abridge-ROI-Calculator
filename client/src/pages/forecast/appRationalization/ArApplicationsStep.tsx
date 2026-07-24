@@ -21,20 +21,38 @@ const COL_HEADERS = ["Application", "Price / yr", "How much could you displace?"
 function CapabilityGrid({ onPick }: { onPick: (category: AppRatCategoryId) => void }) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
-      {APP_RAT_CATEGORIES.filter((c) => c.id !== "custom").map((cat) => (
-        <button
-          key={cat.id}
-          onClick={() => onPick(cat.id)}
-          className="group text-left bg-white border border-[#E8E2DA] rounded-2xl p-5 hover:border-[#1A1A1A] hover:shadow-[0_8px_24px_rgba(0,0,0,0.05)] transition-all"
-          data-testid={`ar-browse-${cat.id}`}
-        >
-          <div className="w-11 h-11 rounded-xl bg-[#F5F0EB] flex items-center justify-center mb-4 text-[#6B5E4F] group-hover:bg-[#EA2C00]/10 group-hover:text-[#EA2C00] transition-colors">
-            <CategoryIcon icon={cat.icon} className="w-5 h-5" />
+      {APP_RAT_CATEGORIES.filter((c) => c.id !== "custom").map((cat) =>
+        cat.comingSoon ? (
+          <div
+            key={cat.id}
+            aria-disabled
+            className="relative text-left bg-[#FAF8F5] border border-dashed border-[#E8E2DA] rounded-2xl p-5 cursor-not-allowed opacity-70"
+            data-testid={`ar-browse-${cat.id}`}
+          >
+            <span className="absolute top-4 right-4 text-[9px] font-bold uppercase tracking-[0.1em] text-[#8C7E6E] bg-white border border-[#E8E2DA] rounded-full px-2 py-0.5">
+              Coming soon
+            </span>
+            <div className="w-11 h-11 rounded-xl bg-[#EFE9E1] flex items-center justify-center mb-4 text-[#B4A99B]">
+              <CategoryIcon icon={cat.icon} className="w-5 h-5" />
+            </div>
+            <p className="font-bold text-[#8C7E6E] text-[15px]">{cat.label}</p>
+            <p className="text-[12px] text-[#B4A99B] mt-1 truncate">{cat.hint}</p>
           </div>
-          <p className="font-bold text-[#1A1A1A] text-[15px]">{cat.label}</p>
-          <p className="text-[12px] text-[#8C7E6E] mt-1 truncate">{cat.hint}</p>
-        </button>
-      ))}
+        ) : (
+          <button
+            key={cat.id}
+            onClick={() => onPick(cat.id)}
+            className="group text-left bg-white border border-[#E8E2DA] rounded-2xl p-5 hover:border-[#1A1A1A] hover:shadow-[0_8px_24px_rgba(0,0,0,0.05)] transition-all"
+            data-testid={`ar-browse-${cat.id}`}
+          >
+            <div className="w-11 h-11 rounded-xl bg-[#F5F0EB] flex items-center justify-center mb-4 text-[#6B5E4F] group-hover:bg-[#EA2C00]/10 group-hover:text-[#EA2C00] transition-colors">
+              <CategoryIcon icon={cat.icon} className="w-5 h-5" />
+            </div>
+            <p className="font-bold text-[#1A1A1A] text-[15px]">{cat.label}</p>
+            <p className="text-[12px] text-[#8C7E6E] mt-1 truncate">{cat.hint}</p>
+          </button>
+        )
+      )}
     </div>
   );
 }
