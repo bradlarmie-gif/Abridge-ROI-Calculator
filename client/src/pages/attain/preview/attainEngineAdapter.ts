@@ -1,0 +1,184 @@
+import { computeAllDriverValues } from "@/lib/exploreDriverCalcs";
+import type { ExploreState } from "@/pages/explore/ExploreFlow";
+import { econModel } from "./attainEconomics";
+
+/**
+ * THROWAWAY prototype adapter. Runs the CANONICAL ROI engine
+ * (computeAllDriverValues) so every Attain "value in play" reconciles to the tool
+ * of record instead of a hand-picked placeholder.
+ *
+ * The number is built from the PARTNER'S inputs, per category:
+ *  - size (scope): providers / nurses covered — scales the whole setting
+ *  - economics: their real money (e.g. margin per visit) — replaces typical defaults
+ *  - stance: the realization % they'll stand behind — replaces the default haircut
+ * Anything they haven't entered stays at a conservative typical default. Minutes
+ * saved per note is seeded here and then MEASURED on Progress (never a funnel field).
+ * Field names / enum values / formulas all mirror lib/exploreDriverCalcs.ts.
+ */
+
+export type CellInputs = {
+  scope?: number; // providers / nurses / beds this category covers (Align scope)
+  stancePct?: number; // realization stance for this category
+  econ?: Record<string, number>; // per-category economics keyed by field key (e.g. perVisit)
+  minSaved?: number; // seeded default per setting if unset
+  // real Starting Point volume — the SIZE of the number comes from these, not from constants
+  totalProviders?: number; // total providers/nurses entered on the Starting Point
+  annualEncounters?: number; // total annual visits / discharges
+  util?: number; // utilization %
+  adoption?: number; // % of encounters documented with Abridge
+  staffedBeds?: number; // nursing / inpatient beds
+};
+
+function run(setting: string, top: Record<string, unknown>, td: Record<string, unknown>, dq: Record<string, unknown>, totalHoursSaved: number): Record<string, number> {
+  try {
+    const state = { careSetting: setting, timeDriverInputs: td, docQualityInputs: dq, ...top } as unknown as ExploreState;
+    return computeAllDriverValues(state, totalHoursSaved);
+  } catch (e) {
+    // Defensive: a throw here would blank the cell. Surface it in dev so a real engine
+    // regression during iteration isn't silently indistinguishable from "not filled in".
+    console.warn("[attain] engine compute failed for", setting, e);
+    return {};
+  }
+}
+
+// Encounters for the scoped slice: from their REAL Starting Point total when entered (their own
+// per-head rate × the slice they scoped to), else fall back to a seeded per-provider rate.
+function scaledEncounters(inp: CellInputs, providers: number, seedPerProvider: number): number {
+  if (inp.annualEncounters && inp.annualEncounters > 0) {
+    const total = inp.totalProviders && inp.totalProviders > 0 ? inp.totalProviders : providers;
+    return Math.round((inp.annualEncounters / total) * providers);
+  }
+  return providers * seedPerProvider;
+}
+
+// ---- Outpatient (scope = providers) ----
+const OP_PER_PROVIDER = 3300; // seeded visits / provider / yr (fallback only)
+function opResults(inp: CellInputs) {
+  const providers = inp.scope && inp.scope > 0 ? inp.scope : 40;
+  const encounters = scaledEncounters(inp, providers, OP_PER_PROVIDER);
+  const util = inp.util && inp.util > 0 ? inp.util : 70;
+  const adoption = inp.adoption && inp.adoption > 0 ? inp.adoption : 70;
+  const minSaved = inp.econ?.minSaved ?? inp.minSaved ?? 3;
+  const hrs = Math.round((encounters * (adoption / 100) * minSaved) / 60);
+  return run("outpatient", { numberOfProviders: providers, annualEncounters: encounters, utilizationPercent: util, encountersPerProvider: Math.round(encounters / providers) },
+    {
+      patientAccessEnabled: true, accessProviders: providers, capacityRealizationPercent: inp.stancePct ?? 25, visitDuration: inp.econ?.visitMin ?? 30, revenuePerVisit: inp.econ?.perVisit ?? 200,
+      wellbeingEnabled: true, calculateRetentionValue: true, annualTurnoverRate: inp.econ?.turnover ?? 6, burnoutRelatedTurnover: inp.econ?.burnout ?? 40, replacementCost: inp.econ?.replacementCost ?? 400_000,
+      retentionImpactScenario: inp.stancePct && inp.stancePct > 0 ? "custom" : "typical", retentionCustomPercent: inp.stancePct ?? 10,
+      physicianAgencyEnabled: true, physicianAgencyWeeksPerVacancy: 16, physicianAgencyWeeklyPremium: 5_000,
+    },
+    {
+      wrvuEnabled: true, currentWrvu: inp.econ?.wrvu ?? 1.5, wrvuScenario: inp.econ?.uplift != null ? "custom" : "typical", wrvuCustomPercent: inp.econ?.uplift ?? 5, conversionFactor: inp.econ?.cf ?? 33.4, wrvuRealization: inp.stancePct ?? 60,
+      hccEnabled: true, avgHccs: 2, hccRealization: inp.stancePct ?? 60, hccPlans: [{ panelSize: 1_500, valuePerHcc: 1_500, gapRate: 20, currentRecaptureRate: 50, uplift: "typical", netNewEnabled: false }],
+      denialsEnabled: true, denialsScenario: "typical", medNecessityDenialRate: 5, avgClaimValue: 250, denialsRealization: inp.stancePct ?? 60,
+    }, hrs);
+}
+
+// ---- ED (scope = providers) ----
+const ED_PER_PROVIDER = 2000;
+function edResults(inp: CellInputs) {
+  const providers = inp.scope && inp.scope > 0 ? inp.scope : 30;
+  const encounters = scaledEncounters(inp, providers, ED_PER_PROVIDER);
+  const util = inp.util && inp.util > 0 ? inp.util : 70;
+  const adoption = inp.adoption && inp.adoption > 0 ? inp.adoption : 70;
+  const minSaved = inp.minSaved ?? 3;
+  const hrs = Math.round((encounters * (adoption / 100) * minSaved) / 60);
+  return run("ed", { numberOfProviders: providers, annualEncounters: encounters, utilizationPercent: util, encountersPerProvider: Math.round(encounters / providers) },
+    {
+      edLwbsEnabled: true, edLwbsRate: inp.econ?.lwbsRate ?? 3, edLwbsReduction: 10, edRevenuePerVisit: inp.econ?.edVisit ?? 480, edLwbsRealization: inp.stancePct ?? 80,
+      edThroughputEnabled: true, edAdmissionRate: inp.econ?.admitRate ?? 18, edAdmissionRevenue: inp.econ?.admitMargin ?? 4_000, edAdmissionRealization: inp.stancePct ?? 60,
+      wellbeingEnabled: true, calculateRetentionValue: true, annualTurnoverRate: inp.econ?.turnover ?? 6, burnoutRelatedTurnover: inp.econ?.burnout ?? 40, replacementCost: inp.econ?.replacementCost ?? 400_000,
+      retentionImpactScenario: inp.stancePct && inp.stancePct > 0 ? "custom" : "typical", retentionCustomPercent: inp.stancePct ?? 10,
+      physicianAgencyEnabled: true, physicianAgencyWeeksPerVacancy: 16, physicianAgencyWeeklyPremium: 5_000,
+    },
+    {
+      wrvuEnabled: true, currentWrvu: inp.econ?.wrvu ?? 1.5, wrvuScenario: inp.econ?.uplift != null ? "custom" : "typical", wrvuCustomPercent: inp.econ?.uplift ?? 3, conversionFactor: inp.econ?.cf ?? 33.4, wrvuRealization: inp.stancePct ?? 60,
+      denialsEnabled: true, denialsScenario: "typical", medNecessityDenialRate: 5, avgClaimValue: 250, denialsRealization: inp.stancePct ?? 60,
+    }, hrs);
+}
+
+// ---- Inpatient (scope = providers) ----
+const IP_PER_PROVIDER = 500;
+function ipResults(inp: CellInputs) {
+  const providers = inp.scope && inp.scope > 0 ? inp.scope : 24;
+  const encounters = scaledEncounters(inp, providers, IP_PER_PROVIDER);
+  const util = inp.util && inp.util > 0 ? inp.util : 70;
+  return run("inpatient", { numberOfProviders: providers, annualEncounters: encounters, utilizationPercent: util, encountersPerProvider: Math.round(encounters / providers) },
+    {
+      wellbeingEnabled: true, calculateRetentionValue: true, ipAnnualTurnoverRate: inp.econ?.turnover ?? 8, ipBurnoutRelatedTurnover: inp.econ?.burnout ?? 45, ipReplacementCost: inp.econ?.replacementCost ?? 300_000,
+      retentionImpactScenario: inp.stancePct && inp.stancePct > 0 ? "custom" : "typical", retentionCustomPercent: inp.stancePct ?? 10,
+      physicianAgencyEnabled: true, physicianAgencyWeeksPerVacancy: 16, physicianAgencyWeeklyPremium: 5_000,
+    },
+    {
+      ipDrgEnabled: true, ipDrgScenario: "typical", ipDrgAtRiskRate: inp.econ?.atRisk ?? 15, ipDrgWeightIncrease: inp.econ?.weightInc ?? 0.3, ipDrgBasePayment: inp.econ?.drgBase ?? 6_000, ipDrgRealization: inp.stancePct ?? 60,
+      ipCdiEnabled: true, ipCdiScenario: "typical", ipCdiQueryRate: 20, ipCdiCostPerQuery: 40, ipCdiRealization: inp.stancePct ?? 60,
+      ipObsDefenseEnabled: true, ipObsDefensePreventableScenario: "typical", ipObsDefenseDenialRate: 5, ipObsDefenseRevenueDelta: 5_000, ipObsDefenseRealization: inp.stancePct ?? 60,
+    }, 0);
+}
+
+// ---- Nursing (scope = nurses; beds scale with the nurse count) ----
+function nursingResults(inp: CellInputs) {
+  const nurses = inp.scope && inp.scope > 0 ? inp.scope : 260;
+  const beds = inp.staffedBeds && inp.staffedBeds > 0 ? inp.staffedBeds : Math.max(1, Math.round(nurses * (180 / 260)));
+  const occ = 85, util = inp.util && inp.util > 0 ? inp.util : 70, shifts = 156, minSaved = inp.minSaved ?? 5;
+  const hrs = Math.round((nurses * shifts * (util / 100) * minSaved) / 60);
+  return run("nursing", { numberOfProviders: nurses, nursingStaffedBeds: beds, nursingOccupancyRate: occ, nursingShiftsPerNurseYear: shifts, annualEncounters: 0, utilizationPercent: util },
+    {
+      nursingOtEnabled: true, nursingOtHoursPerNurseWeek: inp.econ?.otHours ?? 1.0, nursingOtReductionPercent: inp.stancePct ?? 40, nursingOtHourlyRate: inp.econ?.otRate ?? 75,
+      nursingRetentionEnabled: true, nursingTurnoverRate: inp.econ?.turnover ?? 18, retentionImpactScenario: inp.stancePct && inp.stancePct > 0 ? "custom" : "typical", retentionCustomPercent: inp.stancePct ?? 15, nursingReplacementCost: inp.econ?.replacementCost ?? 56_300,
+      nursingAgencyEnabled: true, nursingAgencyWeeksPerVacancy: 12, nursingAgencyWeeklyPremium: inp.econ?.agencyWk ?? 2_500,
+    },
+    {
+      nursingHapiEnabled: true, nursingHapiRate: inp.econ?.hapiRate ?? 2.1, nursingHapiPreventionRate: inp.stancePct ?? 20, nursingHapiCost: 25_000,
+      nursingFallsEnabled: true, nursingFallsRate: inp.econ?.fallsRate ?? 3.4, nursingFallsPreventionRate: inp.stancePct ?? 20, nursingFallsCost: 6_500,
+      nursingClabsiEnabled: true, nursingClabsiUtilizationRatio: 15, nursingClabsiRate: inp.econ?.clabsiRate ?? 1.0, nursingClabsiPreventionRate: inp.stancePct ?? 20, nursingClabsiCost: 20_000,
+      nursingSepsisEnabled: true, nursingSepsisRatePerThousand: inp.econ?.sepsisRate ?? 2.0, nursingSepsisCurrentCompliance: 70, nursingSepsisDocLagPercent: 30, nursingSepsisExcessCostPerCase: 3_500, nursingSepsisRealization: inp.stancePct ?? 60,
+    }, hrs);
+}
+
+function resultsFor(setting: string, inp: CellInputs): Record<string, number> {
+  switch (setting) {
+    case "Outpatient": return opResults(inp);
+    case "ED": return edResults(inp);
+    case "Inpatient": return ipResults(inp);
+    case "Nursing": return nursingResults(inp);
+    default: return {};
+  }
+}
+
+const sum = (r: Record<string, number>, keys: string[]) => keys.reduce((s, k) => s + (r[k] ?? 0), 0);
+
+// which engine driver keys roll up to each Attain cell
+const MAP: Record<string, string[]> = {
+  "Outpatient|Patient Access": ["patientAccess"],
+  "Outpatient|Provider Retention": ["providerWellbeing", "physicianLocumAgency"],
+  "Outpatient|Revenue Capture": ["wrvu"],
+  "ED|Patient Access": ["lwbsRecovery", "admissionCapture"],
+  "ED|Provider Retention": ["providerWellbeing", "physicianLocumAgency"],
+  "ED|Revenue Capture": ["edEmLevel"],
+  "Inpatient|Revenue Capture": ["drgAccuracy"],
+  "Inpatient|Provider Retention": ["providerWellbeing", "physicianLocumAgency"],
+  "Nursing|Quality & Safety": ["nursingFalls", "nursingHapi", "nursingClabsi", "nursingSepsis"],
+  "Nursing|Provider Retention": ["nursingRetention", "nursingAgency"],
+  "Nursing|Nursing Capacity": ["nursingOvertime"],
+};
+
+/** True once the partner has entered everything this cell needs to show a real number:
+ * a scope, a stance, and every economics field its model defines (Nursing Quality has none). */
+export function cellInputsReady(setting: string, category: string, inp: CellInputs): boolean {
+  const m = econModel(setting, category);
+  if (!m) return false;
+  if (!(inp.scope && inp.scope > 0)) return false;
+  if (!(inp.stancePct && inp.stancePct > 0)) return false;
+  for (const f of m.fields) { const v = inp.econ?.[f.key]; if (!(v && v > 0)) return false; }
+  return true;
+}
+
+/** The engine-computed value in play for an Attain cell, from the partner's inputs.
+ * Returns 0 until the cell's inputs are ready (no fake numbers). */
+export function engineValueInPlay(setting: string, category: string, inp: CellInputs = {}): number {
+  if (!cellInputsReady(setting, category, inp)) return 0;
+  const keys = MAP[`${setting}|${category}`];
+  if (!keys) return 0;
+  return sum(resultsFor(setting, inp), keys);
+}

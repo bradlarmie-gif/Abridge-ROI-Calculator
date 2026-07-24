@@ -40,12 +40,20 @@ import ForecastModeSelector from "@/pages/forecast/ForecastModeSelector";
 import PricingComparisonFlow from "@/pages/forecast/PricingComparisonFlow";
 import AppRationalizationFlow from "@/pages/forecast/AppRationalizationFlow";
 import { ExploreFlow, type ExploreState, type ExploreCareSetting, type ExplorePhase } from "@/pages/explore";
+import AttainFlow from "@/pages/attain/AttainFlow";
+import AttainConsultPreview from "@/pages/attain/AttainConsultPreview";
+import AttainPlanPreview from "@/pages/attain/AttainPlanPreview";
+import AttainMatrixPreview from "@/pages/attain/preview/AttainMatrixPreview";
+import MultiCategoryPreview from "@/pages/attain/preview/MultiCategoryPreview";
+import AttainFlowV2 from "@/pages/attain/AttainFlowV2";
+import AttainPdf from "@/pages/attain/pdf/AttainPdf";
 import ExploreIntakeForm from "@/pages/intake/ExploreIntakeForm";
 import MeasureDataRequest from "@/pages/intake/MeasureDataRequest";
 import ExploreIntakeReceipt from "@/pages/intake/ExploreIntakeReceipt";
 import MeasureDataReceipt from "@/pages/intake/MeasureDataReceipt";
 import { type IntakeFormPreseed, type ExploreIntakeResponse, decodeIntakePreseed, decodeIntake } from "@/lib/intakeUrlState";
 import { type DataFormPreseed, type MeasureDataRequestResponse, decodeDataFormPreseed, decodeDataRequest } from "@/lib/dataRequestUrlState";
+import { type AttainSaveState, decodeAttain } from "@/lib/attain/attainUrlState";
 import ProformaHub from "@/pages/proforma/ProformaHub";
 import DataRequestBuilder from "@/pages/data-request/DataRequestBuilder";
 import type { ProformaSettingSnapshot, ProformaConfig } from "@/pages/proforma/proformaTypes";
@@ -55,7 +63,7 @@ import { mergeExploreEditIntoSetting } from "@/lib/proformaCalculations";
 import { type CareSettingType } from "@/lib/SETTING_CONFIG";
 import { type RoiInputs } from "@/lib/roi-types";
 
-type AppView = "splash" | "journey" | "explore" | "baseline-setup" | "model-builder" | "investment" | "calculator" | "expand" | "switch" | "learn" | "measure" | "forecast" | "forecast-mode" | "forecast-pricing" | "proforma-hub" | "proforma-view" | "explore-intake" | "measure-data-request" | "explore-intake-receipt" | "measure-data-receipt" | "data-request-builder" | "forecast-app-rationalization";
+type AppView = "splash" | "journey" | "explore" | "baseline-setup" | "model-builder" | "investment" | "calculator" | "expand" | "switch" | "learn" | "measure" | "forecast" | "forecast-mode" | "forecast-pricing" | "proforma-hub" | "proforma-view" | "explore-intake" | "measure-data-request" | "explore-intake-receipt" | "measure-data-receipt" | "data-request-builder" | "forecast-app-rationalization" | "attain";
 
 interface SelectionState {
   selectedSettings: CareSettingType[];
@@ -70,6 +78,7 @@ type InitialDeepLink =
   | { type: 'measure_data_receipt'; data: MeasureDataRequestResponse }
   | { type: 'learn'; screen: LearnScreen }
   | { type: 'forecast' }
+  | { type: 'attain'; saveState: AttainSaveState }
   | { type: 'none' };
 
 const PARTNER_SESSION_KEY = 'abridge_partner_session';
@@ -148,6 +157,19 @@ function getInitialDeepLink(): InitialDeepLink {
     return { type: 'measure_data_form', preseed: decoded ?? { settings: ['outpatient'] }, fingerprint: fp };
   }
 
+  // Save-and-return's "open a shared link" half — see attainUrlState.ts and
+  // AttainFlow.tsx's `initialSaveState` prop. The query param is stripped
+  // either way (valid or not) so re-sharing the same browser tab's URL
+  // never re-triggers this; an invalid/corrupt payload just falls through
+  // to the checks below (effectively "start fresh" at the journey splash),
+  // it never throws.
+  const attainParam = params.get('attain');
+  if (attainParam) {
+    window.history.replaceState({}, '', pathname);
+    const saveState = decodeAttain(attainParam);
+    if (saveState) return { type: 'attain', saveState };
+  }
+
   const exploreSetting = params.get('explore');
   if (exploreSetting) {
     const validSettings: ExploreCareSetting[] = ['outpatient', 'ed', 'inpatient', 'nursing'];
@@ -178,7 +200,33 @@ const INITIAL_DEEP_LINK = getInitialDeepLink();
 
 export default function App() {
   usePreventNumberInputScroll();
-  
+
+  // THROWAWAY: ?consultpreview=1 renders the reimagined Align mechanism prototype
+  // (one driver). Remove this and AttainConsultPreview.tsx once the direction settles.
+  if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("consultpreview") === "1") {
+    return <AttainConsultPreview />;
+  }
+  // THROWAWAY: ?planpreview=1 renders the Plan chapter prototype. Remove with AttainPlanPreview.tsx.
+  if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("planpreview") === "1") {
+    return <AttainPlanPreview />;
+  }
+  // THROWAWAY: ?attainpreview=1 renders the unified matrix preview (setting x category, Align + Plan).
+  if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("attainpreview") === "1") {
+    return <AttainMatrixPreview />;
+  }
+  // THROWAWAY: ?multipreview=1 renders the multi-category mock (one setting, several categories).
+  if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("multipreview") === "1") {
+    return <MultiCategoryPreview />;
+  }
+  // THROWAWAY: ?attainv2=1 = the graft target — real funnel + header + editorial experience.
+  if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("attainv2") === "1") {
+    return <AttainFlowV2 />;
+  }
+  // THROWAWAY: ?attainpdf=1 (kickoff) or ?attainpdf=review = the full Attain PDF.
+  if (typeof window !== "undefined" && ["1", "review"].includes(new URLSearchParams(window.location.search).get("attainpdf") ?? "")) {
+    return <AttainPdf />;
+  }
+
   // State for deep link settings
   const [exploreInitialSettings, setExploreInitialSettings] = useState<{
     careSetting?: ExploreCareSetting;
@@ -219,6 +267,10 @@ export default function App() {
     if (INITIAL_DEEP_LINK.type === 'measure_data_receipt') return INITIAL_DEEP_LINK.data;
     return null;
   });
+  const [attainSaveState] = useState<AttainSaveState | null>(() => {
+    if (INITIAL_DEEP_LINK.type === 'attain') return INITIAL_DEEP_LINK.saveState;
+    return null;
+  });
 
   const [currentView, setCurrentView] = useState<AppView>(() => {
     if (INITIAL_DEEP_LINK.type === 'explore_intake_receipt') return "explore-intake-receipt";
@@ -228,6 +280,7 @@ export default function App() {
     if (INITIAL_DEEP_LINK.type === 'explore') return "explore";
     if (INITIAL_DEEP_LINK.type === 'learn') return "learn";
     if (INITIAL_DEEP_LINK.type === 'forecast') return "forecast";
+    if (INITIAL_DEEP_LINK.type === 'attain') return "attain";
     return "splash";
   });
   
@@ -409,6 +462,7 @@ export default function App() {
                 }}
                 onSelectExpand={() => navigateTo("measure")}
                 onSelectSwitch={() => navigateTo("switch")}
+                onSelectAttain={() => navigateTo("attain")}
                 onSelectForecast={() => navigateTo("forecast-mode")}
                 onSelectLearn={() => {
                   setLearnInitialScreen(undefined);
@@ -430,6 +484,10 @@ export default function App() {
                 disabledCareSettings={proformaSettings.map(s => s.careSetting as ExploreCareSetting)}
                 onDataRequest={() => navigateTo("data-request-builder")}
               />
+            )}
+
+            {currentView === "attain" && (
+              <AttainFlowV2 onBackToJourney={handleBackToJourney} />
             )}
 
             {currentView === "explore-intake" && (
