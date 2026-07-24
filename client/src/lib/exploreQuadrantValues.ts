@@ -1,6 +1,15 @@
 import type { ExploreState, OtherFinancialBenefitItem } from "@/pages/explore/ExploreFlow";
-import { wrvuScenariosFor, denialsScenariosFor, computeAllDriverValues } from "@/lib/exploreDriverCalcs";
+import {
+  wrvuScenariosFor,
+  denialsScenariosFor,
+  computeAllDriverValues,
+  HCC_UPLIFT_SCENARIOS,
+  IP_DRG_PROTECT_SCENARIOS,
+  IP_CDI_SCENARIOS,
+  IP_OBS_PREVENTABLE_SCENARIOS,
+} from "@/lib/exploreDriverCalcs";
 import { EXPLORE_DRIVERS } from "@/lib/exploreDrivers";
+import { calcHapi, calcFalls, calcCauti, calcClabsi, calcSepsis } from "@/lib/nursingQualityCalcs";
 
 export interface QuadrantBreakdown {
   driverValues: Record<string, number>;
@@ -104,7 +113,7 @@ export function computeRevenueBreakdown(state: ExploreState, _totalHoursSaved: n
     else result.wrvu = Math.round(value);
   }
   if (dq.hccEnabled && state.careSetting === 'outpatient') {
-    const upliftMap: Record<string, number> = { conservative: 3, typical: 5, optimistic: 10 };
+    const upliftMap = HCC_UPLIFT_SCENARIOS;
     let totalGross = 0;
     for (const plan of dq.hccPlans) {
       const upliftPp = plan.uplift === 'custom' ? (plan.upliftCustomPp ?? 5) : (upliftMap[plan.uplift] ?? 5);
@@ -125,21 +134,18 @@ export function computeRevenueBreakdown(state: ExploreState, _totalHoursSaved: n
     result.denialPrevention = Math.round(prevented * dq.avgClaimValue * (dq.denialsRealization / 100));
   }
   if (isIP && dq.ipDrgEnabled) {
-    const protectScenarios: Record<string, number> = { conservative: 15, typical: 20, aggressive: 25 };
-    const pct = (dq.ipDrgScenario === 'custom' ? (dq.ipDrgCustomPercent ?? 20) : protectScenarios[dq.ipDrgScenario]) / 100;
+    const pct = (dq.ipDrgScenario === 'custom' ? (dq.ipDrgCustomPercent ?? 20) : IP_DRG_PROTECT_SCENARIOS[dq.ipDrgScenario]) / 100;
     const atRisk = eligibleEncounters * (dq.ipDrgAtRiskRate / 100);
     result.drgAccuracy = Math.round(atRisk * pct * dq.ipDrgWeightIncrease * dq.ipDrgBasePayment * (dq.ipDrgRealization / 100));
   }
   if (isIP && dq.ipCdiEnabled) {
-    const cdiScenarios: Record<string, number> = { conservative: 15, typical: 25, aggressive: 35 };
-    const pct = (dq.ipCdiScenario === 'custom' ? (dq.ipCdiCustomPercent ?? 25) : cdiScenarios[dq.ipCdiScenario]) / 100;
+    const pct = (dq.ipCdiScenario === 'custom' ? (dq.ipCdiCustomPercent ?? 25) : IP_CDI_SCENARIOS[dq.ipCdiScenario]) / 100;
     const totalQueries = eligibleEncounters * (dq.ipCdiQueryRate / 100);
     const avoided = totalQueries * pct;
     result.cdiQueryReduction = Math.round(avoided * dq.ipCdiCostPerQuery * (dq.ipCdiRealization / 100));
   }
   if (isIP && dq.ipObsDefenseEnabled) {
-    const preventableScenarios: Record<string, number> = { conservative: 25, typical: 40, aggressive: 55 };
-    const preventablePct = (dq.ipObsDefensePreventableScenario === 'custom' ? (dq.ipObsDefenseCustomPercent ?? 40) : preventableScenarios[dq.ipObsDefensePreventableScenario]) / 100;
+    const preventablePct = (dq.ipObsDefensePreventableScenario === 'custom' ? (dq.ipObsDefenseCustomPercent ?? 40) : (IP_OBS_PREVENTABLE_SCENARIOS[dq.ipObsDefensePreventableScenario] ?? 40)) / 100;
     const downgrades = eligibleEncounters * (dq.ipObsDefenseDenialRate / 100);
     const gross = downgrades * dq.ipObsDefenseRevenueDelta * preventablePct;
     result.obsDefense = Math.round(gross * (dq.ipObsDefenseRealization / 100));
@@ -154,33 +160,57 @@ export function computeQualityBreakdown(state: ExploreState, _totalHoursSaved: n
   const patientDays = state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365;
 
   if (dq.nursingHapiEnabled) {
-    const hapisPerYear = (patientDays / 1000) * dq.nursingHapiRate;
-    const prevented = hapisPerYear * (dq.nursingHapiPreventionRate / 100);
-    result.nursingHapi = Math.round(prevented * dq.nursingHapiCost);
+    result.nursingHapi = Math.round(
+      calcHapi({
+        patientDays,
+        rate: dq.nursingHapiRate,
+        preventionPct: dq.nursingHapiPreventionRate,
+        cost: dq.nursingHapiCost,
+      }).value,
+    );
   }
   if (dq.nursingFallsEnabled) {
-    const fallsPerYear = (patientDays / 1000) * dq.nursingFallsRate;
-    const prevented = fallsPerYear * (dq.nursingFallsPreventionRate / 100);
-    result.nursingFalls = Math.round(prevented * dq.nursingFallsCost);
+    result.nursingFalls = Math.round(
+      calcFalls({
+        patientDays,
+        rate: dq.nursingFallsRate,
+        preventionPct: dq.nursingFallsPreventionRate,
+        cost: dq.nursingFallsCost,
+      }).value,
+    );
   }
   if (dq.nursingCautiEnabled) {
-    const catheterDays = patientDays * (dq.nursingCautiUtilizationRatio / 100);
-    const cautisPerYear = (catheterDays / 1000) * dq.nursingCautiRate;
-    const prevented = cautisPerYear * (dq.nursingCautiPreventionRate / 100);
-    result.nursingCauti = Math.round(prevented * dq.nursingCautiCost);
+    result.nursingCauti = Math.round(
+      calcCauti({
+        patientDays,
+        utilizationPct: dq.nursingCautiUtilizationRatio,
+        rate: dq.nursingCautiRate,
+        preventionPct: dq.nursingCautiPreventionRate,
+        cost: dq.nursingCautiCost,
+      }).value,
+    );
   }
   if (dq.nursingClabsiEnabled) {
-    const lineDays = patientDays * (dq.nursingClabsiUtilizationRatio / 100);
-    const clabsiPerYear = (lineDays / 1000) * dq.nursingClabsiRate;
-    const prevented = clabsiPerYear * (dq.nursingClabsiPreventionRate / 100);
-    result.nursingClabsi = Math.round(prevented * dq.nursingClabsiCost);
+    result.nursingClabsi = Math.round(
+      calcClabsi({
+        patientDays,
+        utilizationPct: dq.nursingClabsiUtilizationRatio,
+        rate: dq.nursingClabsiRate,
+        preventionPct: dq.nursingClabsiPreventionRate,
+        cost: dq.nursingClabsiCost,
+      }).value,
+    );
   }
   if (dq.nursingSepsisEnabled) {
-    const sepsisPerYear = (patientDays / 1000) * dq.nursingSepsisRatePerThousand;
-    const nonCompliant = sepsisPerYear * ((100 - dq.nursingSepsisCurrentCompliance) / 100);
-    const docLagCases = nonCompliant * (dq.nursingSepsisDocLagPercent / 100);
     result.nursingSepsis = Math.round(
-      docLagCases * dq.nursingSepsisExcessCostPerCase * (dq.nursingSepsisRealization / 100)
+      calcSepsis({
+        patientDays,
+        ratePerThousand: dq.nursingSepsisRatePerThousand,
+        currentCompliancePct: dq.nursingSepsisCurrentCompliance,
+        docLagPct: dq.nursingSepsisDocLagPercent,
+        excessCostPerCase: dq.nursingSepsisExcessCostPerCase,
+        realizationPct: dq.nursingSepsisRealization,
+      }).value,
     );
   }
 

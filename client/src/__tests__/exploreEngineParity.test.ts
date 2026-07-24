@@ -155,6 +155,66 @@ describe("denials custom-scenario parity (screen vs canonical use the same map)"
   });
 });
 
+describe("inpatient DRG / CDI / Obs-defense and outpatient HCC parity (screen vs canonical engine)", () => {
+  // Locks the behavior of the still-hand-copied scenario maps in
+  // exploreQuadrantValues.ts (HCC {3,5,10}, DRG {15,20,25}, CDI {15,25,35},
+  // Obs {25,40,55}) BEFORE they're replaced with imports of the exported
+  // HCC_UPLIFT_SCENARIOS / IP_DRG_PROTECT_SCENARIOS / IP_CDI_SCENARIOS /
+  // IP_OBS_PREVENTABLE_SCENARIOS constants, so a refactor can't silently
+  // change a screen number.
+  const inpatientBase: ExploreState = {
+    ...DEFAULT_EXPLORE_STATE,
+    careSetting: "inpatient",
+    numberOfProviders: 100,
+    annualEncounters: 200000,
+    utilizationPercent: 80,
+  };
+
+  it("drgAccuracy matches for inpatient DRG on the typical scenario", () => {
+    const state: ExploreState = {
+      ...inpatientBase,
+      docQualityInputs: { ...DEFAULT_EXPLORE_STATE.docQualityInputs, ipDrgEnabled: true, ipDrgScenario: "typical" },
+    };
+    expect(computeRevenueBreakdown(state, HOURS).driverValues.drgAccuracy)
+      .toBe(computeAllDriverValues(state, HOURS).drgAccuracy);
+  });
+
+  it("cdiQueryReduction matches for inpatient CDI on the aggressive scenario", () => {
+    const state: ExploreState = {
+      ...inpatientBase,
+      docQualityInputs: { ...DEFAULT_EXPLORE_STATE.docQualityInputs, ipCdiEnabled: true, ipCdiScenario: "aggressive" },
+    };
+    expect(computeRevenueBreakdown(state, HOURS).driverValues.cdiQueryReduction)
+      .toBe(computeAllDriverValues(state, HOURS).cdiQueryReduction);
+  });
+
+  it("obsDefense matches for inpatient Obs defense on the conservative scenario", () => {
+    const state: ExploreState = {
+      ...inpatientBase,
+      docQualityInputs: { ...DEFAULT_EXPLORE_STATE.docQualityInputs, ipObsDefenseEnabled: true, ipObsDefensePreventableScenario: "conservative" },
+    };
+    expect(computeRevenueBreakdown(state, HOURS).driverValues.obsDefense)
+      .toBe(computeAllDriverValues(state, HOURS).obsDefense);
+  });
+
+  it("hccCapture matches for outpatient HCC on the optimistic scenario", () => {
+    const state: ExploreState = {
+      ...DEFAULT_EXPLORE_STATE,
+      careSetting: "outpatient",
+      numberOfProviders: 100,
+      annualEncounters: 200000,
+      utilizationPercent: 80,
+      docQualityInputs: {
+        ...DEFAULT_EXPLORE_STATE.docQualityInputs,
+        hccEnabled: true,
+        hccPlans: DEFAULT_EXPLORE_STATE.docQualityInputs.hccPlans.map(p => ({ ...p, uplift: "optimistic" as const })),
+      },
+    };
+    expect(computeRevenueBreakdown(state, HOURS).driverValues.hccCapture)
+      .toBe(computeAllDriverValues(state, HOURS).hccCapture);
+  });
+});
+
 describe("inpatient provider-wellbeing parity (engine honors IP-specific fields)", () => {
   it("matches the screen engine, which uses ipAnnualTurnoverRate/ipBurnoutRelatedTurnover/ipReplacementCost", () => {
     const state: ExploreState = {
