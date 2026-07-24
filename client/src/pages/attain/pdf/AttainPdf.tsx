@@ -30,7 +30,7 @@ const CASE: PdfData = {
   ],
   chain: [
     { value: "140,000", label: "visits a year" },
-    { value: "3 min", label: "saved per note" },
+    { value: "2 min", label: "saved per note" },
     { value: "25%", label: "of headroom filled" },
     { value: "$220", label: "margin a visit" },
   ],
@@ -63,7 +63,7 @@ const PLAN: PlanCat[] = [
     ],
     chain: ["Lighter notes", "Freed clinician time", "Visit headroom", "25% of it filled, at $220 margin"],
     assumptions: [
-      { label: "Minutes saved per note", value: "3 min" },
+      { label: "Minutes saved per note", value: "2 min" },
       { label: "Minutes per visit", value: "30 min" },
       { label: "Headroom filled", value: "25%" },
       { label: "Margin per visit", value: "$220" },

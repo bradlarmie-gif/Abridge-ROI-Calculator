@@ -7,7 +7,7 @@ import StepScope from "./steps/StepScope";
 import { SettingStep } from "./preview/AttainFunnel";
 import { AttainExperience, type ExperienceSlice } from "./preview/MultiCategoryPreview";
 import { ATTAIN_MATRIX } from "./preview/attainCells";
-import { loadSnapshot, loadPlanByName, saveSnapshot, clearSnapshot, type AttainSnapshot } from "./attainStorage";
+import { loadPlanByName, saveSnapshot, clearSnapshot, type AttainSnapshot } from "./attainStorage";
 import type { AttainSetting, GoalId } from "@/lib/attain/attainTypes";
 import type { AttainBaseline } from "@/lib/attain/attainLevers";
 
@@ -30,16 +30,20 @@ type Phase = "partner" | "setting" | "vision" | "scope" | "experience";
 const PHASES: Phase[] = ["partner", "setting", "vision", "scope", "experience"];
 
 export default function AttainFlowV2({ onBackToJourney }: { onBackToJourney?: () => void } = {}) {
-  const [saved, setSaved] = useState<AttainSnapshot | null>(() => loadSnapshot());
-  const [phase, setPhase] = useState<Phase>(() => (saved?.setting ? ((saved.phase as Phase) || "experience") : "partner"));
-  const [setting, setSetting] = useState<AttainSetting | null>(() => (saved?.setting as AttainSetting) ?? null);
-  const [goals, setGoals] = useState<GoalId[]>(() => (saved?.goals as GoalId[]) ?? []);
-  const [baseline, setBaseline] = useState<AttainBaseline>(() => (saved?.baseline as AttainBaseline) ?? {});
-  const [partner, setPartner] = useState<string>(() => saved?.partner ?? "");
+  // Always open on the name step. We never auto-resume the "active" plan, because that
+  // silently assumed the last partner (reopening straight into, say, Mayo Clinic, with no
+  // way to start someone new). Instead the partner types a name; if a plan is saved under
+  // that exact name, Continue resumes it (see resumeIfExists), otherwise they start fresh.
+  const [saved, setSaved] = useState<AttainSnapshot | null>(null);
+  const [phase, setPhase] = useState<Phase>("partner");
+  const [setting, setSetting] = useState<AttainSetting | null>(null);
+  const [goals, setGoals] = useState<GoalId[]>([]);
+  const [baseline, setBaseline] = useState<AttainBaseline>({});
+  const [partner, setPartner] = useState<string>("");
   const [confirmingReset, setConfirmingReset] = useState(false);
 
-  // latest experience answers, reported up from AttainExperience; merged into the saved plan
-  const expRef = useRef<ExperienceSlice | null>(saved ? (saved as unknown as ExperienceSlice) : null);
+  // latest experience answers, reported up from AttainExperience; set on resume or as they work
+  const expRef = useRef<ExperienceSlice | null>(null);
 
   const buildSnapshot = (): AttainSnapshot => ({
     partner, phase, setting, goals: goals as string[], baseline: baseline as Record<string, number | undefined>,

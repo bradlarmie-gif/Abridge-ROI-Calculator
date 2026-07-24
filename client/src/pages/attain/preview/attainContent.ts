@@ -50,6 +50,7 @@ export type AlignContent = {
     prompt: string;
     helper: string;
     allLabel: string;         // "Across all lines"
+    allSummary?: string;      // clean phrase when every line is selected, e.g. "the entire ambulatory" (avoids enumerating every specialty)
     options: AlignSegment[];
     defaultValue: number;     // used when no segment selected
     unitValueLabel: string;   // "contribution margin"
@@ -116,6 +117,7 @@ export const outpatientAccess: AttainCell = {
       prompt: "Where is the access gap?",
       helper: "Pick the lines this is really about. It scopes the plan and sharpens the margin per visit, since a cardiology slot and a behavioral-health slot aren't worth the same.",
       allLabel: "Across all lines",
+      allSummary: "the entire ambulatory practice",
       options: [
         { id: "primary", title: "Primary care", desc: "Highest volume, where the backlog and wait usually concentrate.", value: 150 },
         { id: "cardiology", title: "Cardiology", desc: "Higher margin per visit; a shorter wait moves real revenue.", value: 280 },

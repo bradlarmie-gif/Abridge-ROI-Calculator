@@ -58,7 +58,7 @@ function opResults(inp: CellInputs) {
   const encounters = scaledEncounters(inp, providers, OP_PER_PROVIDER);
   const util = inp.util && inp.util > 0 ? inp.util : 70;
   const adoption = inp.adoption && inp.adoption > 0 ? inp.adoption : 70;
-  const minSaved = inp.econ?.minSaved ?? inp.minSaved ?? 3;
+  const minSaved = inp.econ?.minSaved ?? inp.minSaved ?? 2;
   const hrs = Math.round((encounters * (adoption / 100) * minSaved) / 60);
   return run("outpatient", { numberOfProviders: providers, annualEncounters: encounters, utilizationPercent: util, encountersPerProvider: Math.round(encounters / providers) },
     {
@@ -81,7 +81,7 @@ function edResults(inp: CellInputs) {
   const encounters = scaledEncounters(inp, providers, ED_PER_PROVIDER);
   const util = inp.util && inp.util > 0 ? inp.util : 70;
   const adoption = inp.adoption && inp.adoption > 0 ? inp.adoption : 70;
-  const minSaved = inp.minSaved ?? 3;
+  const minSaved = inp.minSaved ?? 2;
   const hrs = Math.round((encounters * (adoption / 100) * minSaved) / 60);
   return run("ed", { numberOfProviders: providers, annualEncounters: encounters, utilizationPercent: util, encountersPerProvider: Math.round(encounters / providers) },
     {

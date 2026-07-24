@@ -36,7 +36,7 @@ const SAMPLE: PdfData = {
   ],
   chain: [
     { value: "140,000", label: "visits a year" },
-    { value: "3 min", label: "saved per note" },
+    { value: "2 min", label: "saved per note" },
     { value: "25%", label: "of headroom filled" },
     { value: "$220", label: "margin a visit" },
   ],

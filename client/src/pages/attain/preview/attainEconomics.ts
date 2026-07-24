@@ -59,7 +59,7 @@ export const ECON_MODELS: Record<string, EconModel> = {
     helper: "This is where you set the dollar. Set the margin you actually keep on a visit, and how much of the freed-up headroom you expect to fill. Minutes saved per note we seed conservatively, then watch on Progress.",
     fields: [{ key: "perVisit", label: "Margin per visit", prefix: "$", placeholder: "200", hint: "The contribution margin you keep, not gross charges." }],
     assumptions: [
-      { key: "minSaved", label: "Minutes saved per note", default: "3", suffix: "min" },
+      { key: "minSaved", label: "Minutes saved per note", default: "2", suffix: "min" },
       { key: "visitMin", label: "Minutes per visit", default: "30", suffix: "min" },
     ],
     stancePrompt: "How much of the freed headroom do you expect to fill?",

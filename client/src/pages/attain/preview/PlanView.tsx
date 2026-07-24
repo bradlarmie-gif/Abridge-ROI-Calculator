@@ -152,9 +152,10 @@ export default function PlanView({ c, settingLabel, categoryLabel, committed = [
       <SectionHead n={2} kicker="The outcomes" title="The outcomes from Align" />
       <p className="text-[14px] text-[#6B6B6B] leading-relaxed mb-5 max-w-[600px]">The value in play and the outcomes you named. Everything we measure below connects back to these.</p>
       <div className="rounded-2xl border border-[#EFEAE1] p-5 mb-14">
-        <div className="flex flex-wrap items-baseline gap-x-6 gap-y-1.5 mb-4 pb-4 border-b border-[#EFEAE1]">
-          <span className="text-[13px] text-[#3A3A3A]">Value in play <span className="font-abridge text-[20px] text-[#EA2C00]">{fmt$(valueInPlay)}/yr</span></span>
-          {segSummary && <span className="text-[13px] text-[#8C8C8C]">across {segSummary}</span>}
+        <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1 mb-4 pb-4 border-b border-[#EFEAE1]">
+          <span className="text-[13px] text-[#8C8C8C]">Value in play</span>
+          <span className="font-abridge text-[22px] text-[#EA2C00] leading-none">{fmt$(valueInPlay)}<span className="text-[13px] text-[#8C8C8C]">/yr</span></span>
+          {segSummary && <span className="text-[13px] text-[#8C8C8C] ml-1">across {segSummary}</span>}
         </div>
         <div className="space-y-2.5">
           {c.outcomes.map((o) => (

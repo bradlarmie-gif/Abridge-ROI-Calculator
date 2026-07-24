@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { arrToSet, recArrToSet, setToArr, recSetToArr, type AttainSnapshot } from "../attainStorage";
 import { ChevronLeft, Check, ArrowRight } from "lucide-react";
@@ -50,6 +50,21 @@ export function AttainExperience({ setting, cells, baseline, initial, onPersist 
   const cell = CELLS[catIdx];
   // display heading (nurses aren't "providers"); the stable `category` stays the lookup/storage key
   const catLabel = (c: AttainCell) => c.categoryLabel ?? c.category;
+
+  // Jump to the top whenever the view changes (locking a category in, switching category, or
+  // changing chapter). Without this the next view opened wherever the last one was scrolled —
+  // usually the bottom, right where the lock-in button sits. The app shell scrolls in a div,
+  // not the window, so reset both the window and any scrollable ancestor.
+  const rootRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "auto" });
+    let p: HTMLElement | null = rootRef.current?.parentElement ?? null;
+    while (p) {
+      const oy = getComputedStyle(p).overflowY;
+      if (oy === "auto" || oy === "scroll") p.scrollTop = 0;
+      p = p.parentElement;
+    }
+  }, [chapter, catIdx]);
 
   // the lock-in state for whichever chapter you're in (Align vs Plan each track their own)
   const doneSet = chapter === "plan" ? planDone : alignDone;
@@ -118,7 +133,9 @@ export function AttainExperience({ setting, cells, baseline, initial, onPersist 
   // the ONE engine-computed number that shows in Align, the stepper, Strategy, and Progress.
   type AInputs = { scope: string; econ: Record<string, string>; stance: number | null; custom: string };
   const [alignInputsByCat, setAlignInputsByCat] = useState<Record<string, AInputs>>(() =>
-    Object.fromEntries(CELLS.map((c) => { const sc = scopeCountFor(c); return [c.category, snap?.inputsByCat?.[c.category] ?? { scope: sc != null ? String(sc) : "", econ: assumptionDefaults(SETTING, c.category), stance: null, custom: "" }]; })));
+    // scope starts BLANK (no pre-populated number); the "of X / Use all X" reference beside the
+    // field reads the live Starting Point count, so they enter a slice or click to use all of it.
+    Object.fromEntries(CELLS.map((c) => [c.category, snap?.inputsByCat?.[c.category] ?? { scope: "", econ: assumptionDefaults(SETTING, c.category), stance: null, custom: "" }])));
   const setAlignInput = (cat: string) => (patch: Partial<AInputs>) =>
     setAlignInputsByCat((m) => ({ ...m, [cat]: { ...m[cat], ...patch } }));
 
@@ -167,7 +184,10 @@ export function AttainExperience({ setting, cells, baseline, initial, onPersist 
   const segSummaryFor = (c: (typeof CELLS)[number]) => {
     const seg = c.align.segments;
     const chosen = seg ? Array.from(alignAnswersByCat[c.category]?.segs ?? []) : [];
-    return chosen.length ? chosen.map((id) => seg!.nameMap[id] ?? id).join(" + ") : "";
+    if (!seg || !chosen.length) return "";
+    // when every line is picked, collapse to a clean phrase instead of enumerating each specialty
+    if (chosen.length === seg.options.length) return seg.allSummary ?? "all lines";
+    return chosen.map((id) => seg.nameMap[id] ?? id).join(" + ");
   };
   const committedFor = (c: (typeof CELLS)[number]) =>
     c.align.outcomes.filter((o) => pickedByCat[c.category].has(o.id) && o.plays).map((o) => ({ title: o.title, chosen: Array.from(playsByCat[c.category][o.id] ?? []) }));
@@ -181,7 +201,7 @@ export function AttainExperience({ setting, cells, baseline, initial, onPersist 
   }
 
   return (
-    <div>
+    <div ref={rootRef}>
       {/* chapter nav — FIXED just below the app header so it never scrolls away (sticky
           fights an overflow:auto ancestor in the app shell; fixed is immune to that) */}
       <div className="fixed top-14 sm:top-16 left-0 right-0 z-30 bg-[#FDFCFA]/95 backdrop-blur border-b border-[#EFEAE1] px-8 py-3">
