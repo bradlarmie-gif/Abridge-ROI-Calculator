@@ -17,7 +17,11 @@ export function engineKeyForDriver(driverId: string, careSetting: string): strin
     ipCdi: "cdiQueryReduction",
     ipObsDefense: "obsDefense",
     nursingOt: "nursingOvertime",
-    // identity keys (patientAccess, hccCapture, denials, providerWellbeing,
+    // Legacy Explore→Proforma snapshot ids (ExploreModel.buildExploreProformaDrivers)
+    // that differ from their EXPLORE_DRIVERS registry id / engine result key.
+    hcc: "hccCapture",
+    denials: "denialPrevention",
+    // identity keys (patientAccess, hccCapture, denialPrevention, providerWellbeing,
     // physicianLocumAgency, nursingRetention, nursingAgency, scribeCostReduction,
     // nursingHapi/Falls/Cauti/Clabsi/Sepsis) fall through to the id itself.
   };

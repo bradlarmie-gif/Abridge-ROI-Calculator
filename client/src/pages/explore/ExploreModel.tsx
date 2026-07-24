@@ -28,7 +28,103 @@ import {
 import type { ProformaSettingSnapshot } from "@/pages/proforma/proformaTypes";
 import { SETTING_COLORS, SETTING_LABELS } from "@/pages/proforma/proformaTypes";
 import { AnimatedValue } from "@/components/explore/AnimatedValue";
-import { physicianRetentionRates, nursingRetentionRates } from "@/lib/retentionScenarios";
+import { nursingRetentionRates } from "@/lib/retentionScenarios";
+import { engineKeyForDriver } from "@/lib/exploreDriverKeys";
+
+export interface ProformaDriverExtras {
+  patientAccessValue: number;
+  costReductionValue: number;
+  scribeCostValue: number;
+  nursingHapiValue: number;
+  nursingFallsValue: number;
+  nursingCautiValue: number;
+  nursingClabsiValue: number;
+  nursingSepsisValue: number;
+}
+
+/**
+ * Builds the Explore→Proforma driver snapshot (the `drivers` array handed to
+ * the proforma, plus the bundled retention+agency value) entirely from the
+ * canonical engine (`computeAllDriverValues`), keyed via `engineKeyForDriver`.
+ *
+ * Extracted as a standalone pure function (rather than inlined in
+ * `handleAddToProforma`) for two reasons:
+ *   - `exploreSnapshotParity.test.ts` can exercise the real handoff logic
+ *     without rendering React (this repo has no jsdom).
+ *   - `retentionValue` bundles the base retention driver with its child
+ *     locum/agency driver, mirroring nursing's existing
+ *     nursingRetention+nursingAgency bundle — the physician side previously
+ *     omitted physicianLocumAgency entirely and derived retention off the
+ *     generic turnover/burnout/replacement-cost fields even for inpatient.
+ *     Both values now come from the engine, which already branches on care
+ *     setting for the correct fields (see computeAllDriverValues'
+ *     providerWellbeing branch).
+ *
+ * `extras` carries the handful of driver values NOT re-derived here because
+ * they already read the engine identically (scribeCostValue, the five
+ * nursing-quality values) or are a direct passthrough of a raw input with no
+ * engine key (patientAccessValue mirrors the engine's formula exactly;
+ * costReductionValue is a dead, UI-unreachable legacy field).
+ */
+export function buildExploreProformaDrivers(
+  state: ExploreState,
+  totalHoursSaved: number,
+  extras: ProformaDriverExtras,
+): { drivers: ProformaSettingSnapshot["drivers"]; retentionValue: number } {
+  const cs = state.careSetting!;
+  const isNursing = cs === "nursing";
+  const allDriverValues = computeAllDriverValues(state, totalHoursSaved);
+  const ek = (id: string) => engineKeyForDriver(id, cs);
+
+  const edLwbsValue = allDriverValues[ek("edLwbs")] || 0;
+  const edAdmissionCaptureValue = allDriverValues[ek("edAdmission")] || 0;
+  const nursingOtValue = allDriverValues[ek("nursingOt")] || 0;
+  const wrvuValue = allDriverValues[ek("wrvu")] || 0;
+  const hccValue = allDriverValues[ek("hcc")] || 0;
+  const denialsValue = allDriverValues[ek("denials")] || 0;
+  const ipDrgValue = allDriverValues[ek("ipDrg")] || 0;
+  const ipObsDefenseValue = allDriverValues[ek("ipObsDefense")] || 0;
+
+  const drivers: ProformaSettingSnapshot["drivers"] = [];
+
+  if (extras.patientAccessValue > 0) drivers.push({ id: "patientAccess", name: "Patient Access", value: extras.patientAccessValue, category: "time", quadrant: "Capacity", onset: "delayed" as const });
+  if (edLwbsValue > 0) drivers.push({ id: "edLwbs", name: "LWBS Recovery", value: edLwbsValue, category: "time", quadrant: "Capacity", onset: "delayed" as const });
+  if (edAdmissionCaptureValue > 0) drivers.push({ id: "edAdmission", name: "Admission Capture", value: edAdmissionCaptureValue, category: "time", quadrant: "Capacity", onset: "delayed" as const });
+  if (extras.costReductionValue > 0) drivers.push({ id: "costReduction", name: "Cost Reduction", value: extras.costReductionValue, category: "time", quadrant: "Capacity", onset: "delayed" as const });
+  if (nursingOtValue > 0) drivers.push({ id: "nursingOt", name: "OT Reduction", value: nursingOtValue, category: "time", quadrant: "Capacity", onset: "delayed" as const });
+  if (wrvuValue > 0) drivers.push({ id: "wrvu", name: "E/M Level Accuracy", value: wrvuValue, category: "documentation", quadrant: "Revenue", onset: "immediate" as const });
+  if (hccValue > 0) drivers.push({ id: "hcc", name: "HCC Recapture", value: hccValue, category: "documentation", quadrant: "Revenue", onset: "longTerm" as const });
+  if (denialsValue > 0) drivers.push({ id: "denials", name: "Denial Prevention", value: denialsValue, category: "documentation", quadrant: "Revenue", onset: "immediate" as const });
+  if (ipDrgValue > 0) drivers.push({ id: "ipDrg", name: "DRG Accuracy", value: ipDrgValue, category: "documentation", quadrant: "Revenue", onset: "immediate" as const });
+  if (ipObsDefenseValue > 0) drivers.push({ id: "ipObsDefense", name: "Obs/IP Status Defense", value: ipObsDefenseValue, category: "documentation", quadrant: "Revenue", onset: "immediate" as const });
+  if (extras.nursingHapiValue > 0) drivers.push({ id: "nursingHapi", name: "HAPI Risk Reduction", value: extras.nursingHapiValue, category: "documentation", quadrant: "Quality", onset: "delayed" as const });
+  if (extras.nursingFallsValue > 0) drivers.push({ id: "nursingFalls", name: "Fall Risk Visibility", value: extras.nursingFallsValue, category: "documentation", quadrant: "Quality", onset: "delayed" as const });
+  if (extras.nursingCautiValue > 0) drivers.push({ id: "nursingCauti", name: "CAUTI Bundle Compliance", value: extras.nursingCautiValue, category: "documentation", quadrant: "Quality", onset: "delayed" as const });
+  if (extras.nursingClabsiValue > 0) drivers.push({ id: "nursingClabsi", name: "CLABSI Bundle Compliance", value: extras.nursingClabsiValue, category: "documentation", quadrant: "Quality", onset: "delayed" as const });
+  if (extras.nursingSepsisValue > 0) drivers.push({ id: "nursingSepsis", name: "Sepsis SEP-1 Bundle", value: extras.nursingSepsisValue, category: "documentation", quadrant: "Quality", onset: "delayed" as const });
+
+  if (extras.scribeCostValue > 0) drivers.push({ id: "scribeCost", name: "Scribe Cost Reduction", value: extras.scribeCostValue, category: "time", quadrant: "Workforce", onset: "immediate" as const });
+
+  for (const item of state.timeDriverInputs.nursingAdditionalCostSavings) {
+    if (item.amount > 0 && item.label) {
+      drivers.push({ id: `additionalCost-${item.id}`, name: item.label, value: item.amount, category: "time", quadrant: "Workforce", onset: "immediate" as const });
+    }
+  }
+
+  const providerWellbeingValue = allDriverValues[ek("providerWellbeing")] || 0;
+  const physicianLocumAgencyValue = allDriverValues[ek("physicianLocumAgency")] || 0;
+  const nursingRetentionEngineValue = allDriverValues[ek("nursingRetention")] || 0;
+  const nursingAgencyEngineValue = allDriverValues[ek("nursingAgency")] || 0;
+  const retentionValue = isNursing
+    ? nursingRetentionEngineValue + nursingAgencyEngineValue
+    : providerWellbeingValue + physicianLocumAgencyValue;
+
+  if (retentionValue > 0) {
+    drivers.push({ id: "retention", name: isNursing ? "Nurse Retention" : "Clinician Retention", value: Math.round(retentionValue), category: "time", quadrant: "Workforce", onset: "phased" as const });
+  }
+
+  return { drivers, retentionValue };
+}
 
 interface ExploreModelProps {
   state: ExploreState;
@@ -176,109 +272,20 @@ export default function ExploreModel({
   const isED = state.careSetting === 'ed';
   const costReductionValue = (!isOutpatientSetting && !isED && timeDriverInputs.costReductionEnabled) ? timeDriverInputs.estimatedCostReduction : 0;
 
-  // ED-specific value calculations
-  const edRecoveredPatients = useMemo(() => {
-    const lwbsPatients = state.annualEncounters * (timeDriverInputs.edLwbsRate / 100);
-    return lwbsPatients * (timeDriverInputs.edLwbsReduction / 100);
-  }, [state.annualEncounters, timeDriverInputs.edLwbsRate, timeDriverInputs.edLwbsReduction]);
-
-  const edLwbsValue = useMemo(() => {
-    if (!timeDriverInputs.edLwbsEnabled) return 0;
-    const grossValue = edRecoveredPatients * timeDriverInputs.edRevenuePerVisit;
-    return Math.round(grossValue * (timeDriverInputs.edLwbsRealization / 100));
-  }, [edRecoveredPatients, timeDriverInputs.edLwbsEnabled, timeDriverInputs.edRevenuePerVisit, timeDriverInputs.edLwbsRealization]);
-
-  // Admission Capture uses LWBS recovered patients as base
-  const edAdmissionCaptureValue = useMemo(() => {
-    if (!timeDriverInputs.edThroughputEnabled || !timeDriverInputs.edLwbsEnabled) return 0;
-    const admittedPatients = edRecoveredPatients * (timeDriverInputs.edAdmissionRate / 100);
-    const grossValue = admittedPatients * timeDriverInputs.edAdmissionRevenue;
-    return Math.round(grossValue * (timeDriverInputs.edAdmissionRealization / 100));
-  }, [edRecoveredPatients, timeDriverInputs.edThroughputEnabled, timeDriverInputs.edLwbsEnabled, timeDriverInputs.edAdmissionRate, timeDriverInputs.edAdmissionRevenue, timeDriverInputs.edAdmissionRealization]);
-
   const isNursing = state.careSetting === 'nursing';
 
-  // Doc value breakdown
-  const eligibleEncounters = state.annualEncounters * (state.utilizationPercent / 100);
+  // Doc value breakdown — wrvuScenarios is still used by the qualitative
+  // methodology text rendered below; the per-driver dollar values themselves
+  // (wrvu/hcc/denials/ipDrg/ipObsDefense/nursingOt/retention) come from the
+  // canonical engine via `buildExploreProformaDrivers` in handleAddToProforma,
+  // not from a local re-derivation — see that function's doc comment.
   const isEDForScenarios = state.careSetting === 'ed';
   const wrvuScenarios = wrvuScenariosFor(isEDForScenarios, docQualityInputs.wrvuCustomPercent);
-  const denialsScenarios = denialsScenariosFor(isEDForScenarios, docQualityInputs.denialsCustomPercent);
-
-  const wrvuValue = useMemo(() => {
-    if (!docQualityInputs.wrvuEnabled) return 0;
-    const wrvuLiftPercent = wrvuScenarios[docQualityInputs.wrvuScenario];
-    const wrvuLift = docQualityInputs.currentWrvu * (wrvuLiftPercent / 100);
-    const totalWrvus = eligibleEncounters * wrvuLift;
-    const grossValue = totalWrvus * docQualityInputs.conversionFactor;
-    return Math.round(grossValue * (docQualityInputs.wrvuRealization / 100));
-  }, [eligibleEncounters, docQualityInputs]);
-
-  const hccValue = useMemo(() => {
-    // HCC only applies to Outpatient
-    const isOutpatient = state.careSetting === 'outpatient';
-    if (!isOutpatient || !docQualityInputs.hccEnabled) return 0;
-    const upliftMap: Record<string, number> = { conservative: 3, typical: 5, optimistic: 10 };
-    let totalGross = 0;
-    for (const plan of docQualityInputs.hccPlans) {
-      const upliftPp = plan.uplift === 'custom' ? (plan.upliftCustomPp ?? 5) : (upliftMap[plan.uplift] ?? 5);
-      const effectiveUplift = Math.min(upliftPp, Math.max(0, 90 - plan.currentRecaptureRate));
-      const gapPatients = state.numberOfProviders * plan.panelSize * plan.gapRate / 100;
-      totalGross += gapPatients * (effectiveUplift / 100) * docQualityInputs.avgHccs * plan.valuePerHcc;
-      if (plan.netNewEnabled) {
-        const netNewPts = state.numberOfProviders * plan.panelSize * plan.netNewDiscoveryRate / 100;
-        totalGross += netNewPts * plan.netNewAvgConditions * plan.valuePerHcc;
-      }
-    }
-    return Math.round(totalGross * (docQualityInputs.hccRealization / 100));
-  }, [state.numberOfProviders, state.careSetting, docQualityInputs]);
-
-  const denialsValue = useMemo(() => {
-    if (!docQualityInputs.denialsEnabled) return 0;
-    const preventionPercent = denialsScenarios[docQualityInputs.denialsScenario];
-    const medNecessityDenials = eligibleEncounters * (docQualityInputs.medNecessityDenialRate / 100);
-    const prevented = medNecessityDenials * (preventionPercent / 100);
-    return Math.round(prevented * docQualityInputs.avgClaimValue * (docQualityInputs.denialsRealization / 100));
-  }, [eligibleEncounters, docQualityInputs]);
 
   // Inpatient-specific calculations
   const isInpatient = state.careSetting === 'inpatient';
 
-  const retentionScenarios: Record<string, number> = physicianRetentionRates(timeDriverInputs.retentionCustomPercent ?? 10);
-
-  const clinicianRetentionValue = useMemo(() => {
-    if (!timeDriverInputs.wellbeingEnabled || !timeDriverInputs.calculateRetentionValue) return 0;
-    if (state.careSetting === 'nursing') return 0;
-    const retentionPercent = retentionScenarios[timeDriverInputs.retentionImpactScenario] || 30;
-    const providersLeaving = state.numberOfProviders * (timeDriverInputs.annualTurnoverRate / 100);
-    const burnoutRelated = providersLeaving * (timeDriverInputs.burnoutRelatedTurnover / 100);
-    const retained = burnoutRelated * (retentionPercent / 100);
-    return Math.round(retained * timeDriverInputs.replacementCost);
-  }, [state.numberOfProviders, state.careSetting, timeDriverInputs]);
-
-  const ipWellbeingRetentionValue = clinicianRetentionValue;
-
-  // Inpatient: DRG Accuracy Value
-  const ipDrgValue = useMemo(() => {
-    if (!isInpatient || !docQualityInputs.ipDrgEnabled) return 0;
-    const ipDrgProtectionScenarios: Record<string, number> = { conservative: 15, typical: 20, aggressive: 25, custom: docQualityInputs.ipDrgCustomPercent ?? 20 };
-    const protectionPercent = ipDrgProtectionScenarios[docQualityInputs.ipDrgScenario];
-    const admissionsAtRisk = eligibleEncounters * (docQualityInputs.ipDrgAtRiskRate / 100);
-    const admissionsProtected = admissionsAtRisk * (protectionPercent / 100);
-    const grossValue = admissionsProtected * docQualityInputs.ipDrgWeightIncrease * docQualityInputs.ipDrgBasePayment;
-    return Math.round(grossValue * (docQualityInputs.ipDrgRealization / 100));
-  }, [isInpatient, eligibleEncounters, docQualityInputs]);
-
-  const ipObsDefenseValue = useMemo(() => {
-    if (!isInpatient || !docQualityInputs.ipObsDefenseEnabled) return 0;
-    const preventableScenarios: Record<string, number> = { conservative: 25, typical: 40, aggressive: 55, custom: docQualityInputs.ipObsDefenseCustomPercent ?? 40 };
-    const preventablePct = preventableScenarios[docQualityInputs.ipObsDefensePreventableScenario] / 100;
-    const downgrades = eligibleEncounters * (docQualityInputs.ipObsDefenseDenialRate / 100);
-    const gross = downgrades * docQualityInputs.ipObsDefenseRevenueDelta * preventablePct;
-    return Math.round(gross * (docQualityInputs.ipObsDefenseRealization / 100));
-  }, [isInpatient, eligibleEncounters, docQualityInputs]);
-
-
-  const hoursPerProviderPerWeek = state.numberOfProviders > 0 
+  const hoursPerProviderPerWeek = state.numberOfProviders > 0
     ? (isED
         ? (totalHoursSaved * ((timeDriverInputs.edAllocDocQualityPercent + timeDriverInputs.edAllocWellbeingPercent) / 100) / state.numberOfProviders / 48)
         : (totalHoursSaved / state.numberOfProviders / 48)
@@ -286,42 +293,6 @@ export default function ExploreModel({
     : '0';
 
   const scribeCostValue = allDriverValues.scribeCostReduction || 0;
-
-  const nursingOtValue = useMemo(() => {
-    if (!isNursing || !state.timeDriverInputs.nursingOtEnabled) return 0;
-    const otHoursEliminated = Math.round(
-      state.timeDriverInputs.nursingOtHoursPerNurseWeek *
-      (state.timeDriverInputs.nursingOtReductionPercent / 100) *
-      state.numberOfProviders *
-      52
-    );
-    return Math.round(otHoursEliminated * state.timeDriverInputs.nursingOtHourlyRate);
-  }, [isNursing, state.numberOfProviders, state.timeDriverInputs]);
-
-  const nursingRetentionImpactRates: Record<string, number> = nursingRetentionRates(state.timeDriverInputs.retentionCustomPercent ?? 10);
-
-  const nursingRetainedCount = useMemo(() => {
-    if (!isNursing || !state.timeDriverInputs.nursingRetentionEnabled) return 0;
-    const leavingPerYear = state.numberOfProviders * (state.timeDriverInputs.nursingTurnoverRate / 100);
-    const burnoutDepartures = leavingPerYear * 0.40;
-    const impactRate = (nursingRetentionImpactRates[state.timeDriverInputs.retentionImpactScenario] || 15) / 100;
-    return burnoutDepartures * impactRate;
-  }, [isNursing, state.numberOfProviders, state.timeDriverInputs]);
-
-  const nursingRetentionValue = useMemo(() => {
-    if (!isNursing || !state.timeDriverInputs.nursingRetentionEnabled) return 0;
-    return Math.round(nursingRetainedCount * state.timeDriverInputs.nursingReplacementCost);
-  }, [isNursing, nursingRetainedCount, state.timeDriverInputs]);
-
-  const nursingAgencyValue = useMemo(() => {
-    if (!isNursing || !state.timeDriverInputs.nursingAgencyEnabled) return 0;
-    const retainedForAgency = state.timeDriverInputs.nursingRetentionEnabled
-      ? nursingRetainedCount
-      : 0;
-    const weeksOfCoverage = state.timeDriverInputs.nursingAgencyWeeksPerVacancy || 12;
-    const weeklyPremium = state.timeDriverInputs.nursingAgencyWeeklyPremium || 2500;
-    return Math.round(retainedForAgency * weeksOfCoverage * weeklyPremium);
-  }, [isNursing, nursingRetainedCount, state.timeDriverInputs]);
 
   const valuePerBed = isNursing && state.nursingStaffedBeds > 0 ? Math.round(totalAnnualValue / state.nursingStaffedBeds) : 0;
   const netPerBedYear = isNursing && state.nursingStaffedBeds > 0 ? Math.round(netAnnualValue / state.nursingStaffedBeds) : 0;
@@ -513,31 +484,22 @@ export default function ExploreModel({
   const handleAddToProforma = () => {
     if (!onAddToProforma || !state.careSetting) return;
     const cs = state.careSetting;
-    const drivers: ProformaSettingSnapshot["drivers"] = [];
 
-    if (patientAccessValue > 0) drivers.push({ id: "patientAccess", name: "Patient Access", value: patientAccessValue, category: "time", quadrant: "Capacity", onset: "delayed" as const });
-    if (edLwbsValue > 0) drivers.push({ id: "edLwbs", name: "LWBS Recovery", value: edLwbsValue, category: "time", quadrant: "Capacity", onset: "delayed" as const });
-    if (edAdmissionCaptureValue > 0) drivers.push({ id: "edAdmission", name: "Admission Capture", value: edAdmissionCaptureValue, category: "time", quadrant: "Capacity", onset: "delayed" as const });
-    if (costReductionValue > 0) drivers.push({ id: "costReduction", name: "Cost Reduction", value: costReductionValue, category: "time", quadrant: "Capacity", onset: "delayed" as const });
-    if (nursingOtValue > 0) drivers.push({ id: "nursingOt", name: "OT Reduction", value: nursingOtValue, category: "time", quadrant: "Capacity", onset: "delayed" as const });
-    if (wrvuValue > 0) drivers.push({ id: "wrvu", name: "E/M Level Accuracy", value: wrvuValue, category: "documentation", quadrant: "Revenue", onset: "immediate" as const });
-    if (hccValue > 0) drivers.push({ id: "hcc", name: "HCC Recapture", value: hccValue, category: "documentation", quadrant: "Revenue", onset: "longTerm" as const });
-    if (denialsValue > 0) drivers.push({ id: "denials", name: "Denial Prevention", value: denialsValue, category: "documentation", quadrant: "Revenue", onset: "immediate" as const });
-    if (ipDrgValue > 0) drivers.push({ id: "ipDrg", name: "DRG Accuracy", value: ipDrgValue, category: "documentation", quadrant: "Revenue", onset: "immediate" as const });
-    if (ipObsDefenseValue > 0) drivers.push({ id: "ipObsDefense", name: "Obs/IP Status Defense", value: ipObsDefenseValue, category: "documentation", quadrant: "Revenue", onset: "immediate" as const });
-    if (nursingHapiValue > 0) drivers.push({ id: "nursingHapi", name: "HAPI Risk Reduction", value: nursingHapiValue, category: "documentation", quadrant: "Quality", onset: "delayed" as const });
-    if (nursingFallsValue > 0) drivers.push({ id: "nursingFalls", name: "Fall Risk Visibility", value: nursingFallsValue, category: "documentation", quadrant: "Quality", onset: "delayed" as const });
-    if (nursingCautiValue > 0) drivers.push({ id: "nursingCauti", name: "CAUTI Bundle Compliance", value: nursingCautiValue, category: "documentation", quadrant: "Quality", onset: "delayed" as const });
-    if (nursingClabsiValue > 0) drivers.push({ id: "nursingClabsi", name: "CLABSI Bundle Compliance", value: nursingClabsiValue, category: "documentation", quadrant: "Quality", onset: "delayed" as const });
-    if (nursingSepsisValue > 0) drivers.push({ id: "nursingSepsis", name: "Sepsis SEP-1 Bundle", value: nursingSepsisValue, category: "documentation", quadrant: "Quality", onset: "delayed" as const });
-
-    if (scribeCostValue > 0) drivers.push({ id: "scribeCost", name: "Scribe Cost Reduction", value: scribeCostValue, category: "time", quadrant: "Workforce", onset: "immediate" as const });
-
-    for (const item of state.timeDriverInputs.nursingAdditionalCostSavings) {
-      if (item.amount > 0 && item.label) {
-        drivers.push({ id: `additionalCost-${item.id}`, name: item.label, value: item.amount, category: "time", quadrant: "Workforce", onset: "immediate" as const });
-      }
-    }
+    // Every driver value in `drivers` (and the bundled `retentionValue`) is
+    // sourced from the canonical engine (`computeAllDriverValues`) inside
+    // `buildExploreProformaDrivers` — see that function's doc comment. This
+    // is what fixed the physicianLocumAgency omission + generic-turnover-
+    // fields-on-inpatient-retention bug (see exploreSnapshotParity.test.ts).
+    const { drivers, retentionValue } = buildExploreProformaDrivers(state, totalHoursSaved, {
+      patientAccessValue,
+      costReductionValue,
+      scribeCostValue,
+      nursingHapiValue,
+      nursingFallsValue,
+      nursingCautiValue,
+      nursingClabsiValue,
+      nursingSepsisValue,
+    });
 
     const hasDocDrivers = drivers.some(d => d.category === "documentation" && d.value > 0);
     if (!hasDocDrivers && docValue === 0 && totalHoursSaved > 0) {
@@ -555,14 +517,6 @@ export default function ExploreModel({
           drivers.push({ id: "docQuality", name: "Documentation Quality", value: impliedDocValue, category: "documentation", quadrant: "Revenue", onset: "immediate" as const });
         }
       }
-    }
-
-    const retentionValue = isNursing
-      ? nursingRetentionValue + nursingAgencyValue
-      : clinicianRetentionValue;
-
-    if (retentionValue > 0) {
-      drivers.push({ id: "retention", name: isNursing ? "Nurse Retention" : "Clinician Retention", value: retentionValue, category: "time", quadrant: "Workforce", onset: "phased" as const });
     }
 
     const pilotProviders = isNursing ? state.nursingStaffedBeds : state.numberOfProviders;

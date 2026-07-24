@@ -15,8 +15,7 @@ import {
   computeRevenueBreakdown,
   type PriorQuadrantEntry,
 } from "@/lib/exploreQuadrantValues";
-import { computeExploreTotals, wrvuScenariosFor, denialsScenariosFor } from "@/lib/exploreDriverCalcs";
-import { physicianRetentionRates, nursingRetentionRates } from "@/lib/retentionScenarios";
+import { computeExploreTotals } from "@/lib/exploreDriverCalcs";
 
 export type ExploreCareSetting = 'outpatient' | 'ed' | 'nursing' | 'inpatient';
 
@@ -1081,217 +1080,22 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
     }
   }, [state.careSetting, state.annualEncounters, state.utilizationPercent, state.minutesSavedPerEncounter, state.numberOfProviders, state.nursingShiftsPerNurseYear, state.nursingMinutesPerShift]);
 
-  // Calculate time value based on care setting
-  const timeValue = useMemo(() => {
-    const { timeDriverInputs, careSetting, annualEncounters, numberOfProviders } = state;
-    let total = 0;
-    const isED = careSetting === 'ed';
-    const isInpatient = careSetting === 'inpatient';
-    const isNursing = careSetting === 'nursing';
-    
-    if (isED) {
-      if (timeDriverInputs.edLwbsEnabled) {
-        const lwbsPatients = annualEncounters * (timeDriverInputs.edLwbsRate / 100);
-        const recoveredPatients = lwbsPatients * (timeDriverInputs.edLwbsReduction / 100);
-        const grossValue = recoveredPatients * timeDriverInputs.edRevenuePerVisit;
-        total += grossValue * (timeDriverInputs.edLwbsRealization / 100);
-      }
-      if (timeDriverInputs.edThroughputEnabled && timeDriverInputs.edLwbsEnabled) {
-        const lwbsPatients = annualEncounters * (timeDriverInputs.edLwbsRate / 100);
-        const recoveredPatients = lwbsPatients * (timeDriverInputs.edLwbsReduction / 100);
-        const admittedPatients = recoveredPatients * (timeDriverInputs.edAdmissionRate / 100);
-        const grossValue = admittedPatients * timeDriverInputs.edAdmissionRevenue;
-        total += grossValue * (timeDriverInputs.edAdmissionRealization / 100);
-      }
-      if (timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue) {
-        const retentionScenarios: Record<string, number> = physicianRetentionRates(timeDriverInputs.retentionCustomPercent ?? 10);
-        const turnoverRate = timeDriverInputs.annualTurnoverRate / 100;
-        const burnoutRate = timeDriverInputs.burnoutRelatedTurnover / 100;
-        const impactRate = retentionScenarios[timeDriverInputs.retentionImpactScenario] / 100;
-        const providersLeaving = numberOfProviders * turnoverRate;
-        const burnoutRelated = providersLeaving * burnoutRate;
-        const retained = burnoutRelated * impactRate;
-        total += retained * timeDriverInputs.replacementCost;
-      }
-      if (timeDriverInputs.physicianAgencyEnabled && timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue) {
-        const retentionScenarios: Record<string, number> = physicianRetentionRates(timeDriverInputs.retentionCustomPercent ?? 10);
-        const turnoverRate = timeDriverInputs.annualTurnoverRate / 100;
-        const burnoutRate = timeDriverInputs.burnoutRelatedTurnover / 100;
-        const impactRate = retentionScenarios[timeDriverInputs.retentionImpactScenario] / 100;
-        const providersLeaving = numberOfProviders * turnoverRate;
-        const burnoutRelated = providersLeaving * burnoutRate;
-        const retained = burnoutRelated * impactRate;
-        const weeksOfCoverage = timeDriverInputs.physicianAgencyWeeksPerVacancy || 16;
-        const weeklyPremium = timeDriverInputs.physicianAgencyWeeklyPremium || 5000;
-        total += Math.round(retained * weeksOfCoverage * weeklyPremium);
-      }
-    } else if (isInpatient) {
-      // Inpatient: Rounding is qualitative only (no dollar value)
-      if (timeDriverInputs.costReductionEnabled && timeDriverInputs.estimatedCostReduction > 0) {
-        total += timeDriverInputs.estimatedCostReduction;
-      }
-      if (timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue) {
-        const retentionScenarios: Record<string, number> = physicianRetentionRates(timeDriverInputs.retentionCustomPercent ?? 10);
-        const turnoverRate = timeDriverInputs.annualTurnoverRate / 100;
-        const burnoutRate = timeDriverInputs.burnoutRelatedTurnover / 100;
-        const impactRate = retentionScenarios[timeDriverInputs.retentionImpactScenario] / 100;
-        const providersLeaving = numberOfProviders * turnoverRate;
-        const burnoutRelated = providersLeaving * burnoutRate;
-        const retained = burnoutRelated * impactRate;
-        total += retained * timeDriverInputs.replacementCost;
-      }
-      if (timeDriverInputs.physicianAgencyEnabled && timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue) {
-        const retentionScenarios: Record<string, number> = physicianRetentionRates(timeDriverInputs.retentionCustomPercent ?? 10);
-        const turnoverRate = timeDriverInputs.annualTurnoverRate / 100;
-        const burnoutRate = timeDriverInputs.burnoutRelatedTurnover / 100;
-        const impactRate = retentionScenarios[timeDriverInputs.retentionImpactScenario] / 100;
-        const providersLeaving = numberOfProviders * turnoverRate;
-        const burnoutRelated = providersLeaving * burnoutRate;
-        const retained = burnoutRelated * impactRate;
-        const weeksOfCoverage = timeDriverInputs.physicianAgencyWeeksPerVacancy || 16;
-        const weeklyPremium = timeDriverInputs.physicianAgencyWeeklyPremium || 5000;
-        total += Math.round(retained * weeksOfCoverage * weeklyPremium);
-      }
-    } else if (isNursing) {
-      if (timeDriverInputs.nursingOtEnabled) {
-        const otHoursEliminated = Math.round(
-          timeDriverInputs.nursingOtHoursPerNurseWeek *
-          (timeDriverInputs.nursingOtReductionPercent / 100) *
-          numberOfProviders *
-          52
-        );
-        total += otHoursEliminated * timeDriverInputs.nursingOtHourlyRate;
-      }
-      // Nursing: Retention (40% burnout-related × impact scenario 20/30/40%)
-      if (timeDriverInputs.nursingRetentionEnabled) {
-        const retentionImpactRates: Record<string, number> = nursingRetentionRates(timeDriverInputs.retentionCustomPercent ?? 10);
-        const leavingPerYear = numberOfProviders * (timeDriverInputs.nursingTurnoverRate / 100);
-        const burnoutDepartures = leavingPerYear * 0.40;
-        const impactRate = (retentionImpactRates[timeDriverInputs.retentionImpactScenario] || 15) / 100;
-        const retained = burnoutDepartures * impactRate;
-        total += Math.round(retained * timeDriverInputs.nursingReplacementCost);
-        // Agency Cost Avoidance (depends on retention being enabled)
-        if (timeDriverInputs.nursingAgencyEnabled) {
-          const weeksOfCoverage = timeDriverInputs.nursingAgencyWeeksPerVacancy || 12;
-          const weeklyPremium = timeDriverInputs.nursingAgencyWeeklyPremium || 2500;
-          total += Math.round(retained * weeksOfCoverage * weeklyPremium);
-        }
-      }
-      if (timeDriverInputs.nursingAdditionalCostSavings.length > 0) {
-        total += timeDriverInputs.nursingAdditionalCostSavings.filter(item => item.label.trim()).reduce((sum, item) => sum + (item.amount || 0), 0);
-      }
-    } else {
-      // Outpatient: Patient Access and Wellbeing/Retention
-      if (timeDriverInputs.patientAccessEnabled) {
-        const effectiveAccessProviders = Math.min(timeDriverInputs.accessProviders || numberOfProviders, numberOfProviders);
-        const hrsPerProvPerWeek = numberOfProviders > 0 ? totalHoursSaved / numberOfProviders / 48 : 0;
-        const reinvestmentRate = (timeDriverInputs.capacityRealizationPercent ?? 25) / 100;
-        const visitDurationHrs = (timeDriverInputs.visitDuration ?? 30) / 60;
-        const derivedVisitsPerWeek = visitDurationHrs > 0 ? Math.round((hrsPerProvPerWeek * reinvestmentRate / visitDurationHrs) * 10) / 10 : 0;
-        const annualVisits = derivedVisitsPerWeek * effectiveAccessProviders * 48;
-        total += annualVisits * timeDriverInputs.revenuePerVisit;
-      }
-      if (timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue) {
-        const retentionScenarios: Record<string, number> = physicianRetentionRates(timeDriverInputs.retentionCustomPercent ?? 10);
-        const turnoverRate = timeDriverInputs.annualTurnoverRate / 100;
-        const burnoutRate = timeDriverInputs.burnoutRelatedTurnover / 100;
-        const impactRate = retentionScenarios[timeDriverInputs.retentionImpactScenario] / 100;
-        const providersLeaving = numberOfProviders * turnoverRate;
-        const burnoutRelated = providersLeaving * burnoutRate;
-        const retained = burnoutRelated * impactRate;
-        total += retained * timeDriverInputs.replacementCost;
-      }
-      if (timeDriverInputs.physicianAgencyEnabled && timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue) {
-        const retentionScenarios: Record<string, number> = physicianRetentionRates(timeDriverInputs.retentionCustomPercent ?? 10);
-        const turnoverRate = timeDriverInputs.annualTurnoverRate / 100;
-        const burnoutRate = timeDriverInputs.burnoutRelatedTurnover / 100;
-        const impactRate = retentionScenarios[timeDriverInputs.retentionImpactScenario] / 100;
-        const providersLeaving = numberOfProviders * turnoverRate;
-        const burnoutRelated = providersLeaving * burnoutRate;
-        const retained = burnoutRelated * impactRate;
-        const weeksOfCoverage = timeDriverInputs.physicianAgencyWeeksPerVacancy || 16;
-        const weeklyPremium = timeDriverInputs.physicianAgencyWeeklyPremium || 5000;
-        total += Math.round(retained * weeksOfCoverage * weeklyPremium);
-      }
-    }
-    
-    return Math.round(total);
-  }, [totalHoursSaved, state.timeDriverInputs, state.careSetting, state.annualEncounters, state.numberOfProviders]);
-
-  // Calculate doc value using state inputs
-  const docValue = useMemo(() => {
-    const eligibleEncounters = state.annualEncounters * (state.utilizationPercent / 100);
-    const { docQualityInputs } = state;
-    const isEDLocal = state.careSetting === 'ed';
-    let total = 0;
-    
-    const wrvuScenarios = wrvuScenariosFor(isEDLocal, docQualityInputs.wrvuCustomPercent);
-    const denialsScenarios = denialsScenariosFor(isEDLocal, docQualityInputs.denialsCustomPercent);
-
-    // wRVU
-    if (docQualityInputs.wrvuEnabled) {
-      const wrvuLiftPercent = wrvuScenarios[docQualityInputs.wrvuScenario];
-      const wrvuLift = docQualityInputs.currentWrvu * (wrvuLiftPercent / 100);
-      const totalWrvus = eligibleEncounters * wrvuLift;
-      const grossValue = totalWrvus * docQualityInputs.conversionFactor;
-      total += grossValue * (docQualityInputs.wrvuRealization / 100);
-    }
-
-    // HCC
-    if (docQualityInputs.hccEnabled) {
-      const upliftMap: Record<string, number> = { conservative: 3, typical: 5, optimistic: 10 };
-      let totalGross = 0;
-      for (const plan of docQualityInputs.hccPlans) {
-        const upliftPp = plan.uplift === 'custom' ? (plan.upliftCustomPp ?? 5) : (upliftMap[plan.uplift] ?? 5);
-        const effectiveUplift = Math.min(upliftPp, Math.max(0, 90 - plan.currentRecaptureRate));
-        const gapPatients = state.numberOfProviders * plan.panelSize * plan.gapRate / 100;
-        totalGross += gapPatients * (effectiveUplift / 100) * docQualityInputs.avgHccs * plan.valuePerHcc;
-        if (plan.netNewEnabled) {
-          const netNewPts = state.numberOfProviders * plan.panelSize * plan.netNewDiscoveryRate / 100;
-          totalGross += netNewPts * plan.netNewAvgConditions * plan.valuePerHcc;
-        }
-      }
-      total += totalGross * (docQualityInputs.hccRealization / 100);
-    }
-
-    // Denials (not for inpatient - included in DRG Accuracy)
-    if (docQualityInputs.denialsEnabled && state.careSetting !== 'inpatient') {
-      const preventionPercent = denialsScenarios[docQualityInputs.denialsScenario];
-      const medNecessityDenials = eligibleEncounters * (docQualityInputs.medNecessityDenialRate / 100);
-      const prevented = medNecessityDenials * (preventionPercent / 100);
-      total += prevented * docQualityInputs.avgClaimValue * (docQualityInputs.denialsRealization / 100);
-    }
-
-    // Inpatient: DRG Accuracy
-    if (state.careSetting === 'inpatient' && docQualityInputs.ipDrgEnabled) {
-      const ipDrgProtectionScenarios: Record<string, number> = { conservative: 15, typical: 20, aggressive: 25, custom: docQualityInputs.ipDrgCustomPercent ?? 20 };
-      const protectionPercent = ipDrgProtectionScenarios[docQualityInputs.ipDrgScenario];
-      const admissionsAtRisk = eligibleEncounters * (docQualityInputs.ipDrgAtRiskRate / 100);
-      const admissionsProtected = admissionsAtRisk * (protectionPercent / 100);
-      const grossValue = admissionsProtected * docQualityInputs.ipDrgWeightIncrease * docQualityInputs.ipDrgBasePayment;
-      total += grossValue * (docQualityInputs.ipDrgRealization / 100);
-    }
-
-    // Inpatient: Obs/IP Status Defense
-    if (state.careSetting === 'inpatient' && docQualityInputs.ipObsDefenseEnabled) {
-      const preventableScenarios: Record<string, number> = { conservative: 25, typical: 40, aggressive: 55, custom: docQualityInputs.ipObsDefenseCustomPercent ?? 40 };
-      const preventablePct = preventableScenarios[docQualityInputs.ipObsDefensePreventableScenario] / 100;
-      const downgrades = eligibleEncounters * (docQualityInputs.ipObsDefenseDenialRate / 100);
-      const gross = downgrades * docQualityInputs.ipObsDefenseRevenueDelta * preventablePct;
-      total += gross * (docQualityInputs.ipObsDefenseRealization / 100);
-    }
-
-
-    return Math.round(total);
-  }, [state.annualEncounters, state.utilizationPercent, state.numberOfProviders, state.docQualityInputs, state.careSetting]);
-
   // Canonical headline totals — same driver engine the Your Model screen, PDF,
   // and proforma use. The Investment screen consumes these so its Total Value
   // and ROI can never diverge from the Model screen (see exploreTotals.test.ts).
+  //
+  // timeValue/docValue (passed down to ExploreModel) used to be independent
+  // re-derivations of this same math — a parallel computation that could
+  // (and did) drift from the engine, e.g. the nursing-quality drivers
+  // (HAPI/Falls/CAUTI/CLABSI/Sepsis) were never included in the old docValue
+  // calc at all. They are now just this total's efficiency/documentation
+  // split, so they can't drift (see exploreSnapshotParity.test.ts).
   const exploreTotals = useMemo(
     () => computeExploreTotals(state, totalHoursSaved),
     [state, totalHoursSaved],
   );
+  const timeValue = exploreTotals.efficiencyValue;
+  const docValue = exploreTotals.documentationValue;
 
   // Calculate annual investment
   const annualInvestment = useMemo(() => {
