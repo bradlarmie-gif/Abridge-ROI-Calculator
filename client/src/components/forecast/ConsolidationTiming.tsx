@@ -1,280 +1,301 @@
-// The "Cumulative savings" view: one instrument. On top, an aggregate curve of
-// dollars saved over the horizon (coral "your plan" vs a dashed "if you moved
-// now" ceiling). Below, each tool on the SAME x-axis: a neutral "still paying"
-// runway from today to its sunset, a draggable coral sunset thumb, and a
-// contract-end tick. Drag a sunset earlier and the curve lifts. The what lives
-// in the waterfall; this is purely the when.
-import { useMemo } from "react";
-import { ChevronDown } from "lucide-react";
+// The "When it lands" view: your plan vs riding every contract to its renewal.
+// You already run Abridge, so every tool you retire is pure additional savings.
+// A step chart plots the annual savings run-rate on a real calendar: a faint
+// dashed "ride to renewal" baseline (each tool comes off at its contract end)
+// and a solid coral "your plan" (each tool at its chosen exit). The gap between
+// them, captured earlier, is savings you pocket sooner instead of paying through
+// renewal. Below, one slider per tool sets its exit month, clamped to its
+// contract. The contract term itself is set upstream (Applications), not here.
+import { useMemo, type ReactNode } from "react";
 import { AnimatedValue } from "@/components/explore/AnimatedValue";
-import { NumberField } from "@/components/NumberField";
 import {
-  buildCumulativeSavings, cumulativeSavedAt, sunsetDateLabel, type AppRatItem,
+  buildCumulativeSavings, timingSummary, itemDisplayName, type AppRatItem, type CumulativeTool,
 } from "@/lib/appRationalizationCalc";
 
-const HORIZON_OPTIONS = [2, 3, 4, 5];
+// SVG viewBox and plot rect (matches the locked mockup's geometry).
+const VB_W = 1000, VB_H = 300;
+const X0 = 70, X1 = 980, Y0 = 40, Y1 = 250;
 
-// SVG viewBox for the curve; overlays positioned by percentage of these dims.
-const VB_W = 1000, VB_H = 250;
-const PL = 8, PR = 720, PT = 26, PB = 196; // plot rect inside the viewBox (right gutter for labels)
-// One shared x-mapping (percent of width) for the curve overlay AND every timeline track.
-const L_PCT = (PL / VB_W) * 100;                 // 0.8
-const SPAN_PCT = ((PR - PL) / VB_W) * 100;       // 71.2
-const xPct = (month: number, horizon: number) => L_PCT + (horizon <= 0 ? 0 : (month / horizon)) * SPAN_PCT;
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-function fmtM(n: number): string {
-  const a = Math.abs(n);
-  if (a >= 1_000_000) return `$${(a / 1_000_000).toFixed(1)}M`;
+// $X.XXM / $XXXK / $X for chart labels, the read line and the captured stat.
+function fmtC(v: number): string {
+  const a = Math.abs(Math.round(v));
+  if (a >= 1_000_000) return `$${(a / 1_000_000).toFixed(2)}M`;
   if (a >= 1_000) return `$${Math.round(a / 1_000)}K`;
-  return `$${Math.round(a)}`;
+  return `$${a}`;
 }
+// Full dollars with commas for row amounts and the year-1 / captured stats.
+const fmtFull = (v: number): string => `$${Math.round(v).toLocaleString("en-US")}`;
 
 export default function ConsolidationTiming({
   items, horizonYears, onHorizonChange, onUpdateItem,
 }: {
   items: AppRatItem[];
+  // Kept for the caller's contract; the locked design derives its calendar span
+  // from the contracts themselves, so the horizon selector isn't shown here.
   horizonYears: number;
   onHorizonChange: (y: number) => void;
   onUpdateItem: (id: string, patch: Partial<AppRatItem>) => void;
 }) {
-  const horizon = horizonYears * 12;
-  const cs = useMemo(() => buildCumulativeSavings(items, horizon), [items, horizon]);
+  void horizonYears; void onHorizonChange;
+
+  const cs = useMemo(() => buildCumulativeSavings(items, 60), [items]);
+  const summary = useMemo(() => timingSummary(items), [items]);
+  // A stable "now" so labels don't drift between renders within a session.
+  const now = useMemo(() => new Date(), []);
 
   if (!cs.hasCurve) {
     return (
       <div className="rounded-[20px] p-10 text-center text-sm text-[#8C7E6E]" style={{ background: "linear-gradient(160deg,#FDFBF8,#F6F1EA)", border: "1px solid #E8E2DA" }} data-testid="ar-timing-empty">
-        Add applications with annual spend to see the savings build over time.
+        Add applications with annual spend to see when the savings land.
       </div>
     );
   }
 
-  // Curve paths, sampled monthly.
-  const maxY = Math.max(1, cs.nowTotal) * 1.06;
-  const X = (m: number) => PL + (m / horizon) * (PR - PL);
-  const Y = (v: number) => PB - (v / maxY) * (PB - PT);
-  const path = (mode: "plan" | "now") => {
-    let d = "";
-    for (let m = 0; m <= horizon; m++) d += `${m ? "L" : "M"} ${X(m).toFixed(1)} ${Y(cumulativeSavedAt(cs.tools, m, mode)).toFixed(1)} `;
-    return d.trim();
+  // "MMM 'YY" from now + months (e.g. Jul 2026 + 6 -> "Jan '27").
+  const monthLabel = (m: number): string => {
+    const d = new Date(now.getFullYear(), now.getMonth() + Math.max(0, Math.round(m)), 1);
+    return `${MONTHS[d.getMonth()]} '${String(d.getFullYear()).slice(2)}`;
   };
-  const planD = path("plan");
-  const nowD = path("now");
-  const pctX = (x: number) => (x / VB_W) * 100;
-  const pctY = (y: number) => (y / VB_H) * 100;
-  const yearMarks = Array.from({ length: horizonYears }, (_, i) => (i + 1) * 12);
-  // Keep the two endpoint labels from colliding when the lines converge (tools
-  // sunset early -> plan approaches the ceiling). When close, nudge "now" up and
-  // push the taller "plan" block well below it so they never overlap.
-  const yNowRaw = Y(cs.nowTotal);
-  const yPlanRaw = Y(cs.planTotal);
-  const LABEL_GAP = 62;
-  const yNow = (yPlanRaw - yNowRaw < LABEL_GAP) ? yNowRaw - 10 : yNowRaw;
-  const yPlanLabel = Math.max(yPlanRaw, yNow + LABEL_GAP);
+
+  const tools = cs.tools;
+  const runRate = (t: CumulativeTool) => t.monthlySaving * 12; // annual savings that switch on when it comes off
+  const FULL = Math.max(1, tools.reduce((s, t) => s + runRate(t), 0)); // full run-rate ceiling
+
+  // Calendar span: reach a bit past the last renewal so both lines plateau and
+  // the "sooner" bracket has room. Rounded up to a clean 6-month grid.
+  const spanEnd = Math.max(summary.renewalFinishMonths, summary.planFinishMonths, 6);
+  const axisMax = Math.max(12, Math.ceil((spanEnd + 4) / 6) * 6);
+  const xStep = axisMax <= 24 ? 6 : 12;
+
+  const xf = (m: number) => X0 + (Math.max(0, Math.min(m, axisMax)) / axisMax) * (X1 - X0);
+  const yf = (v: number) => Y1 - (v / FULL) * (Y1 - Y0);
+
+  // Step points for a run-rate line: it jumps by each tool's run-rate at the
+  // month it comes off (sunset for the plan, contract end for the baseline).
+  const stepPts = (key: "sunsetMonths" | "contractMonths"): [number, number][] => {
+    const sorted = [...tools].sort((a, b) => a[key] - b[key]);
+    let cum = 0;
+    const p: [number, number][] = [[0, 0]];
+    for (const t of sorted) { p.push([t[key], cum]); cum += runRate(t); p.push([t[key], cum]); }
+    p.push([axisMax, cum]);
+    return p;
+  };
+  const planPts = stepPts("sunsetMonths");
+  const renewalPts = stepPts("contractMonths");
+  const toXY = (p: [number, number]) => `${xf(p[0]).toFixed(1)},${yf(p[1]).toFixed(1)}`;
+  const planLine = "M " + planPts.map(toXY).join(" L ");
+  const renewalLine = "M " + renewalPts.map(toXY).join(" L ");
+  const baseArea = `M ${xf(0)},${Y1} L ` + renewalPts.map(toXY).join(" L ") + ` L ${xf(axisMax)},${Y1} Z`;
+  const band = "M " + planPts.map(toXY).join(" L ") + " L " + [...renewalPts].reverse().map(toXY).join(" L ") + " Z";
+
+  const captured = summary.capturedSooner;
+  const sooner = summary.monthsSooner;
+
+  // Named dots on the plan line: each name rides the flat run to the right of its
+  // dot (last one flips left), with a white halo and vertical de-collision so
+  // stacked names never hide each other.
+  const sortedPlan = [...tools].sort((a, b) => a.sunsetMonths - b.sunsetMonths);
+  let cumPlan = 0;
+  const nodes = sortedPlan.map((t) => { cumPlan += runRate(t); return { t, x: xf(t.sunsetMonths), y: yf(cumPlan) }; });
+  const shortName = (n: string) => (n.length > 15 ? n.slice(0, 14).trimEnd() + "…" : n);
+  const labels = nodes.map((n) => {
+    const right = n.x <= X1 - 130;
+    return { name: shortName(n.t.name), x: n.x, lx: right ? n.x + 11 : n.x - 11, ly: n.y - 11, anchor: right ? "start" as const : "end" as const };
+  });
+  const byY = [...labels].sort((a, b) => a.ly - b.ly);
+  for (let i = 1; i < byY.length; i++) {
+    const a = byY[i - 1], b = byY[i];
+    if (Math.abs(a.x - b.x) < 95 && b.ly - a.ly < 18) b.ly = a.ly + 18;
+  }
+
+  // Year-1 run-rate reached (tools that have come off by month 12).
+  const year1 = tools.reduce((s, t) => s + (t.sunsetMonths <= 12 ? runRate(t) : 0), 0);
+  const y1x = xf(12), y1y = yf(year1);
+
+  // "N months sooner" bracket at the ceiling, only when the plan finishes earlier.
+  const fx = xf(summary.planFinishMonths), bx = xf(summary.renewalFinishMonths);
+  const bmid = (fx + bx) / 2;
+  const bLabel = `${sooner} ${sooner === 1 ? "month" : "months"} sooner`;
+  const bw = Math.max(120, bLabel.length * 8.2);
+
+  const consolidatedLabel = summary.planFinishMonths === 0 ? "now" : monthLabel(summary.planFinishMonths);
+
+  // Row model: saving tools get a slider; tools with spend but no displaceable
+  // share stay on, unchanged.
+  const byId = new Map(tools.map((t) => [t.id, t]));
+  const rows = items
+    .filter((i) => (i.annualSpend || 0) > 0)
+    .map((i) => ({ item: i, tool: byId.get(i.id) }));
 
   return (
     <div className="rounded-[20px] p-6 md:p-8" style={{ background: "linear-gradient(160deg,#FDFBF8,#F6F1EA)", border: "1px solid #E8E2DA" }} data-testid="ar-timing">
-      {/* header: eyebrow + horizon selector */}
-      <div className="flex items-center justify-between flex-wrap gap-2 mb-4">
-        <span className="uppercase tracking-[0.16em] text-[10.5px] font-bold text-[#B4A99B]">Cumulative savings, over time</span>
-        <div className="flex items-center gap-2 text-[11px] text-[#8C7E6E]">
-          <span>over a</span>
-          <div className="relative">
-            <select
-              value={horizonYears}
-              onChange={(e) => onHorizonChange(Number(e.target.value))}
-              className="h-8 appearance-none bg-white border border-[#E8E2DA] rounded-lg pl-2.5 pr-7 text-[12px] text-[#1A1A1A] outline-none focus:border-[#1A1A1A] cursor-pointer"
-              data-testid="ar-horizon-select"
-            >
-              {HORIZON_OPTIONS.map((y) => <option key={y} value={y}>{y}-year</option>)}
-            </select>
-            <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#8C7E6E]" strokeWidth={2.25} />
-          </div>
-          <span>horizon</span>
-        </div>
+      {/* framing */}
+      <div className="mb-6">
+        <h2 className="font-abridge text-[28px] leading-[1.05] text-[#1A1A1A]">How soon it lands is your call.</h2>
+        <p className="text-[15px] text-[#8C7E6E] mt-3 max-w-[680px] leading-[1.5]">
+          You already run Abridge, so every tool you retire is pure additional savings. Each contract frees its spend on its real renewal date; negotiate out early and it lands sooner.
+        </p>
       </div>
 
-      {/* the aggregate curve */}
-      <div className="relative" data-testid="ar-timing-chart">
+      {/* chart title + legend */}
+      <div className="flex items-baseline justify-between mb-2">
+        <span className="text-[12px] font-extrabold tracking-[0.08em] uppercase text-[#443A32]">Additional savings, on the calendar</span>
+        <span className="flex items-center gap-4 text-[12px] text-[#8C7E6E]">
+          <span className="inline-flex items-center gap-1.5"><span className="inline-block w-[18px] border-t-2 border-dashed border-[#C3B7A8]" /> ride to renewal</span>
+          <span className="inline-flex items-center gap-1.5"><span className="inline-block w-[18px] border-t-[3px] border-[#EA2C00]" /> your plan</span>
+        </span>
+      </div>
+
+      {/* the run-rate step chart */}
+      <div className="rounded-[18px] bg-white border border-[#E8E2DA] px-4 py-3" data-testid="ar-timing-chart">
         <svg viewBox={`0 0 ${VB_W} ${VB_H}`} width="100%" className="block">
           <defs>
-            <clipPath id="ar-reveal">
-              {/* wipes left to right so both lines and the fill draw in "over time" */}
-              <rect className="ar-reveal-rect" x={PL} y={0} width={PR + 170 - PL} height={VB_H} />
-            </clipPath>
+            <linearGradient id="ar-ramp" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#EA2C00" stopOpacity="0.20" />
+              <stop offset="100%" stopColor="#EA2C00" stopOpacity="0.02" />
+            </linearGradient>
           </defs>
-          <line x1={PL} y1={PB} x2={PR + 170} y2={PB} stroke="#DDD5C8" />
-          {yearMarks.map((m) => <line key={m} x1={X(m)} y1={PT} x2={X(m)} y2={PB} stroke="#EFE7DC" strokeDasharray="2 4" />)}
-          <g clipPath="url(#ar-reveal)">
-            <path d={`${planD} L ${X(horizon)} ${PB} L ${X(0)} ${PB} Z`} fill="rgba(234,44,0,0.09)" />
-            <path d={nowD} fill="none" stroke="#B4A99B" strokeWidth={2} strokeDasharray="6 5" strokeLinecap="round" />
-            <path d={planD} fill="none" stroke="#EA2C00" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round" />
-            {/* a dot where each tool sunsets: the bend where its savings switch on */}
-            {cs.tools.map((t) => (t.sunsetMonths > 0 && t.sunsetMonths < horizon) ? (
-              <circle key={t.id} cx={X(t.sunsetMonths)} cy={Y(cumulativeSavedAt(cs.tools, t.sunsetMonths, "plan"))} r={3.2} fill="#EA2C00" stroke="#FDFBF8" strokeWidth={1.5} />
-            ) : null)}
-            <circle cx={X(horizon)} cy={Y(cs.planTotal)} r={6} fill="#EA2C00" />
-            <circle cx={X(horizon)} cy={Y(cs.nowTotal)} r={5} fill="#B4A99B" />
-          </g>
+
+          {/* axes + gridlines */}
+          <line x1={X0} y1={Y1} x2={X1} y2={Y1} stroke="#E8E2DA" strokeWidth={1} />
+          <line x1={X0} y1={(Y0 + Y1) / 2} x2={X1} y2={(Y0 + Y1) / 2} stroke="#F1EAE0" strokeWidth={1} />
+          <text x={X0 - 8} y={Y0 + 4} textAnchor="end" fontFamily="Manrope" fontSize={11} fill="#6E6157">{fmtC(FULL)}</text>
+          <text x={X0 - 8} y={Y1 + 4} textAnchor="end" fontFamily="Manrope" fontSize={11} fill="#6E6157">$0</text>
+          {Array.from({ length: Math.floor(axisMax / xStep) + 1 }, (_, i) => i * xStep).map((m) => (
+            <text key={m} x={xf(m)} y={Y1 + 22} textAnchor="middle" fontFamily="Manrope" fontSize={11} fill="#6E6157">
+              {m === 0 ? `now · ${monthLabel(0)}` : monthLabel(m)}
+            </text>
+          ))}
+
+          {/* fill under the baseline; gap band + dashed baseline only when acting early captures something */}
+          <path d={baseArea} fill="url(#ar-ramp)" />
+          {captured > 0 && <path d={band} fill="#EA2C00" fillOpacity={0.22} />}
+          {captured > 0 && <path d={renewalLine} fill="none" stroke="#C3B7A8" strokeWidth={2} strokeDasharray="5 5" strokeLinejoin="round" />}
+          <path d={planLine} fill="none" stroke="#EA2C00" strokeWidth={3} strokeLinejoin="round" />
+
+          {/* year-1 marker */}
+          <line x1={y1x} y1={y1y} x2={y1x} y2={Y1} stroke="#D9CDBE" strokeWidth={1.5} strokeDasharray="5 5" />
+          <text x={y1x + 8} y={Math.max(y1y + 18, Y0 + 22)} fontFamily="Manrope" fontSize={12} fontWeight={700} fill="#5E534A" stroke="#FDFCFA" strokeWidth={3.5} paintOrder="stroke" strokeLinejoin="round">
+            Year 1 · {fmtC(year1)}
+          </text>
+
+          {/* full run-rate ceiling label */}
+          <text x={X1 - 2} y={Y0 - 10} textAnchor="end" fontFamily="Manrope" fontSize={12.5} fontWeight={800} fill="#EA2C00" stroke="#FDFCFA" strokeWidth={3.5} paintOrder="stroke" strokeLinejoin="round">
+            {fmtC(FULL)} / yr · full run-rate
+          </text>
+
+          {/* "N months sooner" bracket */}
+          {sooner > 0 && (
+            <g>
+              <line x1={fx} y1={Y0 - 8} x2={fx} y2={Y0 + 8} stroke="#EA2C00" strokeWidth={3} />
+              <line x1={bx} y1={Y0 - 8} x2={bx} y2={Y0 + 8} stroke="#C3B7A8" strokeWidth={2} />
+              <line x1={fx} y1={Y0} x2={bx} y2={Y0} stroke="#EA2C00" strokeWidth={3} />
+              <rect x={bmid - bw / 2} y={Y0 - 32} width={bw} height={24} rx={12} fill="#EA2C00" />
+              <text x={bmid} y={Y0 - 15} textAnchor="middle" fontFamily="Manrope" fontSize={14} fontWeight={800} fill="#fff">{bLabel}</text>
+            </g>
+          )}
+
+          {/* named dots on the plan line */}
+          {labels.map((l, i) => (
+            <text key={`l-${i}`} x={l.lx} y={l.ly} textAnchor={l.anchor} fontFamily="Manrope" fontSize={12} fontWeight={700} fill="#6E6157" stroke="#FDFCFA" strokeWidth={3.5} paintOrder="stroke" strokeLinejoin="round">{l.name}</text>
+          ))}
+          {nodes.map((n) => (
+            <circle key={`d-${n.t.id}`} cx={n.x} cy={n.y} r={5.5} fill="#EA2C00" stroke="#fff" strokeWidth={3} />
+          ))}
         </svg>
-
-        {/* x labels */}
-        <div className="absolute text-[9.5px] font-bold uppercase tracking-[0.04em] text-[#9CA3AF]" style={{ left: `${pctX(PL)}%`, top: `${pctY(PB + 12)}%` }}>Today</div>
-        {yearMarks.map((m, i) => (
-          <div key={m} className="absolute text-[9.5px] font-bold uppercase tracking-[0.04em] text-[#9CA3AF]" style={{ left: `${pctX(X(m))}%`, top: `${pctY(PB + 12)}%`, transform: "translateX(-50%)" }}>Year {i + 1}</div>
-        ))}
-
-        {/* endpoint labels */}
-        <div className="absolute" style={{ left: `${pctX(X(horizon) + 14)}%`, top: `${pctY(yNow)}%`, transform: "translateY(-50%)" }}>
-          <div className="text-[8px] font-extrabold uppercase tracking-[0.13em] text-[#B4A99B]">If you moved now</div>
-          <div className="text-[14px] font-extrabold tabular-nums text-[#B4A99B] leading-none mt-0.5">{fmtM(cs.nowTotal)}</div>
-        </div>
-        <div className="absolute" style={{ left: `${pctX(X(horizon) + 14)}%`, top: `${pctY(yPlanLabel)}%`, transform: "translateY(-50%)" }}>
-          <div className="text-[8px] font-extrabold uppercase tracking-[0.13em] text-[#B4A99B]">Your plan</div>
-          <AnimatedValue value={cs.planTotal} format={fmtM} duration={3000} fromZero className="text-[21px] font-extrabold tabular-nums text-[#EA2C00] leading-none block mt-0.5" style={{ letterSpacing: "-0.01em" }} />
-          <div className="text-[10px] text-[#6B7280] mt-0.5">captured over {horizonYears} yrs</div>
-        </div>
       </div>
+
+      {/* the read line */}
+      <p className="text-[15px] text-[#8C7E6E] mt-[18px] leading-[1.55] max-w-[780px]" data-testid="ar-timing-readline">
+        {captured > 0 && sooner > 0 ? (
+          <>Your plan reaches full consolidation <NeutralSpan>{consolidatedLabel}</NeutralSpan>, <CoralSpan>{sooner} months</CoralSpan> ahead of riding to renewal, and captures <CoralSpan>{fmtC(captured)}</CoralSpan> from vendors on the way there.</>
+        ) : captured > 0 ? (
+          <>Pulling these in captures <CoralSpan>{fmtC(captured)}</CoralSpan> you'd otherwise keep paying through renewal. The finish line holds at <NeutralSpan>{monthLabel(summary.renewalFinishMonths)}</NeutralSpan> until you pull <NeutralSpan>{summary.gatingToolName}</NeutralSpan> in too.</>
+        ) : (
+          <><NeutralSpan>Every contract is riding to its renewal.</NeutralSpan> Pull one in below and the gap that opens up is savings you capture sooner instead of paying through renewal.</>
+        )}
+      </p>
 
       {/* per-tool levers */}
-      <div className="flex items-center justify-between mt-5 pt-4 border-t border-[#E8E2DA]">
-        <span className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#B4A99B]">Your tools · drag when each comes off</span>
-        <div className="flex items-center gap-4 text-[10.5px] text-[#6B7280]">
-          <span className="flex items-center gap-1.5"><span className="inline-block w-4 h-1.5 rounded-[3px] bg-[#9C8F7D]" /> Still paying</span>
-          <span className="flex items-center gap-1.5"><span className="inline-block w-4 h-1.5 rounded-[3px]" style={{ background: "rgba(234,44,0,0.2)" }} /> Saving</span>
-          <span className="flex items-center gap-1.5"><span className="inline-block w-2.5 h-2.5 rounded-full bg-[#EA2C00] border-2 border-[#FDFBF8]" /> Sunsets</span>
-        </div>
-      </div>
-
-      <div className="mt-1">
-        {cs.tools.map((t) => {
-          const item = items.find((i) => i.id === t.id)!;
-          const sD = Math.min(t.sunsetMonths, horizon);   // sunset, clamped to view
-          const cD = Math.min(t.contractMonths, horizon); // contract end, clamped to view
-          const L0 = xPct(0, horizon);
-          const xS = xPct(sD, horizon);
-          const xC = xPct(cD, horizon);
-          const xEnd = xPct(horizon, horizon);
-          const sliderMax = cD;
-          const contractDate = sunsetDateLabel(t.contractMonths);
-          // Map a pointer x onto a sunset month (linear, matches the dot's xPct).
-          // Click-anywhere or drag; the whole runway is the target, not a thumb.
-          const setSunsetFromX = (clientX: number, rect: DOMRect) => {
-            const f = rect.width > 0 ? (clientX - rect.left) / rect.width : 0;
-            const month = Math.round(Math.max(0, Math.min(1, f)) * sliderMax);
-            onUpdateItem(t.id, { sunsetMonths: month });
-          };
-          // displacement ramp: savings climb 0 -> full over rampMonths after the sunset
-          const rampM = Math.max(0, Math.round(item.rampMonths ?? 0));
-          const savingMonths = Math.max(0, horizon - sD);
-          const rampPct = savingMonths > 0 ? Math.min(100, (rampM / savingMonths) * 100) : 0;
+      <div className="mt-6">
+        {rows.map(({ item, tool }) => {
+          if (!tool) {
+            // Spend that stays: no displaceable share, so it rides on unchanged.
+            return (
+              <div key={item.id} className="flex items-center gap-3.5 py-3.5 border-b border-[#F2ECE4] last:border-b-0 opacity-90" data-testid={`ar-timing-row-${item.id}`}>
+                <span className="w-[11px] h-[11px] rounded-[3px] bg-[#D8CEC1] shrink-0" />
+                <span className="text-[15.5px] font-bold text-[#8C7E6E] min-w-[180px]">{itemDisplayName(item)}</span>
+                <span className="font-abridge text-[17px] text-[#8C7E6E] min-w-[80px] tabular-nums">{fmtFull(item.annualSpend || 0)}</span>
+                <span className="ml-auto text-[13px] text-[#8C7E6E]">stays on · unchanged</span>
+              </div>
+            );
+          }
+          const mtm = tool.contractMonths === 0;
+          const earlyMo = tool.earlyMonths;
           return (
-            <div key={t.id} className="py-4 border-t border-[#EFE7DC] first:border-t-0" data-testid={`ar-timing-row-${t.id}`}>
-              <div className="flex items-baseline justify-between mb-3.5 gap-3 flex-wrap">
-                <div className="text-[14px] font-bold text-[#1A1A1A] min-w-0 truncate">
-                  {t.name}
-                  <span className="text-[12px] font-bold text-[#EA2C00] tabular-nums ml-2">{fmtM(t.spend)}/yr</span>
-                  <span className="text-[11px] font-medium text-[#9CA3AF] ml-2">{t.capability}</span>
-                </div>
-                <div className="flex items-center gap-4 flex-wrap justify-end">
-                  <div className="flex items-center gap-1.5 text-[11px] text-[#6B7280]">
-                    <span>Contract ends in</span>
-                    <div className="flex items-center h-7 w-11 bg-white border border-[#E8E2DA] rounded-md px-1.5 focus-within:border-[#EA2C00]">
-                      <NumberField
-                        value={item.contractMonths}
-                        onValueChange={(v) => {
-                          const c = Math.max(0, Math.min(120, v));
-                          // The contract end IS when the tool sunsets (they cancel then), so editing
-                          // the term moves the sunset and the curve. Drag the dot to model exiting early.
-                          onUpdateItem(t.id, { contractMonths: c, sunsetMonths: c });
-                        }}
-                        min={0}
-                        className="w-full bg-transparent text-center text-[12.5px] font-bold text-[#1A1A1A] outline-none tabular-nums"
-                        data-testid={`ar-timing-contract-${t.id}`}
-                      />
-                    </div>
-                    <span>mo</span>
-                    <span className="text-[#C4B8A8]">·</span>
-                    <span className="text-[10.5px] text-[#9CA3AF]">{contractDate}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-[11px] text-[#6B7280]">
-                    <span>displaces over</span>
-                    <div className="flex items-center h-7 w-11 bg-white border border-[#E8E2DA] rounded-md px-1.5 focus-within:border-[#EA2C00]">
-                      <NumberField
-                        value={item.rampMonths}
-                        onValueChange={(v) => onUpdateItem(t.id, { rampMonths: Math.max(0, Math.min(36, v)) })}
-                        min={0}
-                        className="w-full bg-transparent text-center text-[12.5px] font-bold text-[#1A1A1A] outline-none tabular-nums"
-                        data-testid={`ar-timing-ramp-${t.id}`}
-                      />
-                    </div>
-                    <span>mo</span>
-                  </div>
-                  <div className="flex items-baseline gap-1.5 min-w-[140px] justify-end">
-                    <span className="text-[8.5px] font-extrabold uppercase tracking-[0.11em] text-[#B4A99B]">Sunsets</span>
-                    <span className="text-[13.5px] font-extrabold text-[#1A1A1A] tabular-nums" data-testid={`ar-timing-sunset-${t.id}`}>{sunsetDateLabel(t.sunsetMonths)}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="relative h-[36px]">
-                {/* quiet phase labels above the bar (editorial, not crammed inside it) */}
-                {xS - L0 > 10 && <div className="absolute top-0 text-[8px] font-bold uppercase tracking-[0.16em] whitespace-nowrap" style={{ left: `${(L0 + xS) / 2}%`, transform: "translateX(-50%)", color: "#A79A88" }}>Still paying</div>}
-                {xEnd - xS > 10 && <div className="absolute top-0 text-[8px] font-bold uppercase tracking-[0.16em] whitespace-nowrap" style={{ left: `${(xS + xEnd) / 2}%`, transform: "translateX(-50%)", color: "#C0350F" }}>Saving</div>}
-                {/* slim base rail, full Today -> horizon */}
-                <div className="absolute rounded-[3px] bg-[#EAE3D8]" style={{ top: "22px", transform: "translateY(-50%)", height: "5px", left: `${L0}%`, right: `${100 - xEnd}%` }} />
-                {/* saving (ramps to solid coral over the displacement window) */}
-                {xEnd > xS && <div className="absolute rounded-[3px]" style={{ top: "22px", transform: "translateY(-50%)", height: "5px", left: `${xS}%`, width: `${xEnd - xS}%`, backgroundImage: `linear-gradient(to right, rgba(234,44,0,0.16) 0%, #EA2C00 ${rampPct}%, #EA2C00 100%)` }} />}
-                {/* still paying (Today -> sunset) */}
-                <div className="absolute rounded-[3px] bg-[#9C8F7D]" style={{ top: "22px", transform: "translateY(-50%)", height: "5px", left: `${L0}%`, width: `${xS - L0}%` }} />
-                {/* contract-ends tick + label */}
-                <div className="absolute rounded-[1px] bg-[#C4B8A8]" style={{ top: "22px", transform: "translate(-50%,-50%)", width: "1.5px", height: "13px", left: `${xC}%` }} />
-                <div className="absolute text-[8px] font-semibold text-[#9CA3AF] whitespace-nowrap" style={{ top: "32px", left: `${xC}%`, transform: "translateX(-50%)" }}>contract ends</div>
-                {/* Big, forgiving drag zone across the whole runway: click anywhere to
-                    set, or drag. Replaces the thin invisible native range that was
-                    fiddly to grab. `peer` so the dot can react to hovering it. */}
-                <div
-                  role="slider"
-                  tabIndex={0}
-                  aria-label={`When ${t.name} sunsets`}
-                  aria-valuemin={0}
-                  aria-valuemax={sliderMax}
-                  aria-valuenow={Math.min(t.sunsetMonths, sliderMax)}
-                  onPointerDown={(e) => {
-                    e.currentTarget.setPointerCapture(e.pointerId);
-                    setSunsetFromX(e.clientX, e.currentTarget.getBoundingClientRect());
-                  }}
-                  onPointerMove={(e) => {
-                    if (e.buttons === 1) setSunsetFromX(e.clientX, e.currentTarget.getBoundingClientRect());
-                  }}
-                  onKeyDown={(e) => {
-                    const cur = Math.min(t.sunsetMonths, sliderMax);
-                    if (e.key === "ArrowLeft" || e.key === "ArrowDown") { e.preventDefault(); onUpdateItem(t.id, { sunsetMonths: Math.max(0, cur - 1) }); }
-                    else if (e.key === "ArrowRight" || e.key === "ArrowUp") { e.preventDefault(); onUpdateItem(t.id, { sunsetMonths: Math.min(sliderMax, cur + 1) }); }
-                  }}
-                  className="absolute m-0 cursor-grab active:cursor-grabbing touch-none rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EA2C00]/40"
-                  style={{ top: "22px", transform: "translateY(-50%)", height: "32px", left: `${L0}%`, width: `${xC - L0}%` }}
-                  data-testid={`ar-timing-slider-${t.id}`}
+            <div key={item.id} className="flex items-center gap-3.5 py-3.5 border-b border-[#F2ECE4] last:border-b-0" data-testid={`ar-timing-row-${item.id}`}>
+              <span className="w-[11px] h-[11px] rounded-[3px] bg-[#EA2C00] shrink-0" />
+              <span className="text-[15.5px] font-bold text-[#1A1A1A] min-w-[180px] truncate">{tool.name}</span>
+              <span className="font-abridge text-[17px] text-[#1A1A1A] min-w-[80px] tabular-nums">{fmtFull(runRate(tool))}</span>
+              <div className="ml-auto flex items-center gap-3.5">
+                <span className="text-[12px] text-[#8C7E6E]">{mtm ? "comes off" : "exit"}</span>
+                <input
+                  type="range"
+                  min={0}
+                  max={tool.contractMonths}
+                  step={1}
+                  value={Math.min(tool.sunsetMonths, tool.contractMonths)}
+                  disabled={mtm}
+                  onChange={(e) => onUpdateItem(item.id, { sunsetMonths: Math.max(0, Math.min(tool.contractMonths, Number(e.target.value))) })}
+                  aria-label={`When ${tool.name} comes off`}
+                  className="h-1 w-[150px] rounded-[3px] bg-[#E8E2DA] appearance-none outline-none cursor-ew-resize disabled:opacity-50 [accent-color:#EA2C00]"
+                  data-testid={`ar-timing-slider-${item.id}`}
                 />
-                {/* sunset dot = the cut point you drag (sits at the paying -> saving
-                    hand-off). After the zone in the DOM + pointer-events-none, so it
-                    sits on top visually but the zone still gets every pointer event. */}
-                <div className="absolute rounded-full bg-[#EA2C00] border-[2.5px] border-[#FDFBF8] shadow-[0_1px_5px_rgba(234,44,0,0.4)] pointer-events-none" style={{ top: "22px", transform: "translate(-50%,-50%)", width: "16px", height: "16px", left: `${xS}%` }} />
-              </div>
-
-              <div className="text-[10px] font-bold text-[#EA2C00] mt-4 min-h-[12px]">
-                {t.earlyMonths > 0 ? `Exit ${t.earlyMonths} mo early · ${fmtM(t.earlySaving)} sooner` : ""}
+                <span className="text-[13px] font-bold text-right min-w-[150px] tabular-nums" data-testid={`ar-timing-when-${item.id}`}>
+                  {mtm ? (
+                    <span className="text-[#EA2C00]">now · month-to-month</span>
+                  ) : earlyMo <= 0 ? (
+                    <span className="text-[#1A1A1A]">renews {monthLabel(tool.contractMonths)}</span>
+                  ) : (
+                    <span className="text-[#1A1A1A]">{monthLabel(tool.sunsetMonths)} · <span className="text-[#EA2C00]">{earlyMo} mo early</span></span>
+                  )}
+                </span>
               </div>
             </div>
           );
         })}
       </div>
 
-      <style>{`
-        @media (prefers-reduced-motion: no-preference){
-          .ar-reveal-rect{ transform: scaleX(0); transform-origin: left center; transform-box: fill-box; animation: arReveal 3s cubic-bezier(0.33,0,0.2,1) forwards; }
-          @keyframes arReveal{ to{ transform: scaleX(1); } }
-        }
-      `}</style>
+      {/* hero stats */}
+      <div className="grid grid-cols-3 mt-9 border-t border-b border-[#E8E2DA]">
+        <div className="py-[22px] border-r border-[#E8E2DA]">
+          <div className="text-[11px] font-extrabold tracking-[0.07em] uppercase text-[#443A32]">Additional savings, year 1</div>
+          <div className="font-abridge text-[30px] mt-2 text-[#1A1A1A]">
+            <AnimatedValue value={year1} format={fmtFull} duration={600} className="tabular-nums" />
+            <span className="text-[13px] text-[#8C7E6E] font-sans font-normal"> / yr</span>
+          </div>
+        </div>
+        <div className="py-[22px] pl-7 border-r border-[#E8E2DA]">
+          <div className="text-[11px] font-extrabold tracking-[0.07em] uppercase text-[#443A32]">Captured sooner by acting</div>
+          <div className="font-abridge text-[30px] mt-2">
+            <AnimatedValue value={captured} format={fmtFull} duration={600} className="tabular-nums" style={{ color: captured > 0 ? "#EA2C00" : "#B4A99B" }} />
+          </div>
+        </div>
+        <div className="py-[22px] pl-7">
+          <div className="text-[11px] font-extrabold tracking-[0.07em] uppercase text-[#443A32]">Fully consolidated</div>
+          <div className="font-abridge text-[30px] mt-2 text-[#1A1A1A]">{consolidatedLabel}</div>
+          {sooner > 0 && <span className="block text-[12.5px] text-[#EA2C00] font-bold mt-1.5">{sooner} mo earlier than {monthLabel(summary.renewalFinishMonths)}</span>}
+        </div>
+      </div>
     </div>
   );
+}
+
+function CoralSpan({ children }: { children: ReactNode }) {
+  return <span className="font-abridge text-[18px] text-[#EA2C00]" style={{ fontWeight: 400 }}>{children}</span>;
+}
+function NeutralSpan({ children }: { children: ReactNode }) {
+  return <span className="font-bold text-[#5E534A]">{children}</span>;
 }

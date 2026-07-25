@@ -306,14 +306,13 @@ export interface CumulativeSavings {
 }
 
 /**
- * Per-tool monthly savings and the aggregate plan-vs-now curve totals over a
- * horizon (in months). "Plan" starts each tool saving at its sunsetMonths;
- * "now" is the ceiling where every tool sunsets at month 0. sunsetMonths is
+ * The per-tool timing model, shared by the cumulative curve and the timing
+ * summary. Only tools that actually save (monthlySaving > 0) are kept, so the
+ * curve, the levers and the summary all see the same set. sunsetMonths is
  * clamped to [0, contractMonths]; contractMonths is floored at 0.
  */
-export function buildCumulativeSavings(items: AppRatItem[], horizonMonths: number): CumulativeSavings {
-  const horizon = Math.max(0, Math.round(horizonMonths));
-  const tools: CumulativeTool[] = items
+export function buildCumulativeTools(items: AppRatItem[]): CumulativeTool[] {
+  return items
     .map((i) => {
       const monthlySaving = toolMonthlySaving(i);
       const contractMonths = Math.max(0, Math.round(i.contractMonths ?? 0));
@@ -333,6 +332,17 @@ export function buildCumulativeSavings(items: AppRatItem[], horizonMonths: numbe
       };
     })
     .filter((t) => t.monthlySaving > 0);
+}
+
+/**
+ * Per-tool monthly savings and the aggregate plan-vs-now curve totals over a
+ * horizon (in months). "Plan" starts each tool saving at its sunsetMonths;
+ * "now" is the ceiling where every tool sunsets at month 0. sunsetMonths is
+ * clamped to [0, contractMonths]; contractMonths is floored at 0.
+ */
+export function buildCumulativeSavings(items: AppRatItem[], horizonMonths: number): CumulativeSavings {
+  const horizon = Math.max(0, Math.round(horizonMonths));
+  const tools = buildCumulativeTools(items);
 
   const planTotal = cumulativeSavedAt(tools, horizon, "plan");
   const nowTotal = cumulativeSavedAt(tools, horizon, "now");
@@ -359,18 +369,59 @@ function realizedMonths(month: number, start: number, ramp: number): number {
   return t - ramp / 2;
 }
 
+export type CumulativeMode = "plan" | "now" | "renewal";
+
 /**
- * Cumulative dollars saved by `month`. "plan" starts each tool at its sunsetMonths
- * and ramps in over its rampMonths (displacement speed). "now" is the instant
- * ceiling: every tool fully displaced from month 0, so a slower ramp on the plan
- * widens the gap (the cost of inaction).
+ * Cumulative dollars saved by `month`, per mode:
+ *  - "plan":    each tool starts saving at its chosen sunsetMonths (ramps over rampMonths).
+ *  - "renewal": the "ride to renewal" baseline. Each tool starts at its contractMonths
+ *               (it sunsets when the contract ends), ramping over the same rampMonths.
+ *               Since sunsetMonths <= contractMonths, "plan" is always >= "renewal".
+ *  - "now":     the instant ceiling: every tool fully displaced from month 0, no ramp.
  */
-export function cumulativeSavedAt(tools: CumulativeTool[], month: number, mode: "plan" | "now"): number {
+export function cumulativeSavedAt(tools: CumulativeTool[], month: number, mode: CumulativeMode): number {
   return tools.reduce((sum, t) => {
-    const start = mode === "now" ? 0 : t.sunsetMonths;
+    const start = mode === "now" ? 0 : mode === "renewal" ? t.contractMonths : t.sunsetMonths;
     const ramp = mode === "now" ? 0 : t.rampMonths;
     return sum + t.monthlySaving * realizedMonths(month, start, ramp);
   }, 0);
+}
+
+export interface TimingSummary {
+  /** Dollars captured sooner by exiting before renewal: sum of each tool's earlySaving
+   *  (earlyMonths * monthlySaving). Zero when every tool rides to its contract end. */
+  capturedSooner: number;
+  /** When the stack is fully consolidated under the plan: the latest chosen sunset. */
+  planFinishMonths: number;
+  /** When it would fully consolidate if every tool rode to renewal: the latest contract end. */
+  renewalFinishMonths: number;
+  /** Months the plan pulls the finish line in vs riding to renewal (never negative). */
+  monthsSooner: number;
+  /** The tool with the latest renewal (max contractMonths); it gates the finish line. "" if none. */
+  gatingToolName: string;
+}
+
+/**
+ * The timing headline numbers for the "when it lands" view: how much is captured
+ * sooner by exiting early, when the plan finishes vs riding to renewal, and which
+ * tool's contract gates the finish line. Considers only tools that save.
+ */
+export function timingSummary(items: AppRatItem[]): TimingSummary {
+  const tools = buildCumulativeTools(items);
+  if (tools.length === 0) {
+    return { capturedSooner: 0, planFinishMonths: 0, renewalFinishMonths: 0, monthsSooner: 0, gatingToolName: "" };
+  }
+  const capturedSooner = tools.reduce((s, t) => s + t.earlySaving, 0);
+  const planFinishMonths = Math.max(...tools.map((t) => t.sunsetMonths));
+  const renewalFinishMonths = Math.max(...tools.map((t) => t.contractMonths));
+  const gating = tools.reduce((a, b) => (b.contractMonths > a.contractMonths ? b : a));
+  return {
+    capturedSooner,
+    planFinishMonths,
+    renewalFinishMonths,
+    monthsSooner: Math.max(0, renewalFinishMonths - planFinishMonths),
+    gatingToolName: gating.name,
+  };
 }
 
 const MONTH_FMT = new Intl.DateTimeFormat("en-US", { month: "short", year: "numeric" });

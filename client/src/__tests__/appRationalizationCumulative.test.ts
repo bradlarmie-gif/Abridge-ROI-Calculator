@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   makeItem, toolMonthlySaving, buildCumulativeSavings, cumulativeSavedAt, sunsetDateLabel,
-  resolveAnnualSpend,
+  resolveAnnualSpend, timingSummary,
   type AppRatItem,
 } from "@/lib/appRationalizationCalc";
 
@@ -99,6 +99,92 @@ describe("cumulativeSavedAt", () => {
     expect(cumulativeSavedAt(cs.tools, 12, "now")).toBe(120_000); // 12 months * 10k
   });
 });
+
+describe("ride-to-renewal baseline (renewal mode)", () => {
+  it("renewal starts each tool at its contract end, so plan (earlier exit) is >= renewal at every month", () => {
+    // two tools, both pulled in before renewal
+    const items = [
+      tool("a", 120_000, 100, 18, 6, 3),  // 10k/mo, contract 18, exit 6
+      tool("b", 60_000, 100, 12, 0, 0),   // 5k/mo, contract 12, exit now
+    ];
+    const cs = buildCumulativeSavings(items, 36);
+    for (let m = 0; m <= 36; m++) {
+      const plan = cumulativeSavedAt(cs.tools, m, "plan");
+      const renewal = cumulativeSavedAt(cs.tools, m, "renewal");
+      expect(plan).toBeGreaterThanOrEqual(renewal - 1e-6); // acting early never lowers savings
+    }
+  });
+
+  it("renewal mode rides to the contract end with the ramp (single tool)", () => {
+    // 120k/yr = 10k/mo, contract 12, ramp 0. Renewal: starts saving at month 12.
+    const cs = buildCumulativeSavings([tool("a", 120_000, 100, 12, 6, 0)], 36);
+    expect(cumulativeSavedAt(cs.tools, 12, "renewal")).toBe(0);
+    expect(cumulativeSavedAt(cs.tools, 18, "renewal")).toBe(60_000); // 6 months * 10k
+    // plan (exit 6) is well ahead at month 18: 12 months * 10k
+    expect(cumulativeSavedAt(cs.tools, 18, "plan")).toBe(120_000);
+  });
+
+  it("renewal equals plan when no tool is pulled in early", () => {
+    const cs = buildCumulativeSavings([tool("a", 120_000, 100, 12, 12, 0)], 36);
+    for (let m = 0; m <= 36; m++) {
+      expect(cumulativeSavedAt(cs.tools, m, "renewal")).toBe(cumulativeSavedAt(cs.tools, m, "plan"));
+    }
+  });
+});
+
+describe("timingSummary", () => {
+  const items = [
+    tool("a", 120_000, 100, 18, 6, 0), // 10k/mo, contract 18, exit 6  -> 12 mo early * 10k = 120k
+    tool("b", 60_000, 100, 12, 3, 0),  // 5k/mo, contract 12, exit 3   -> 9 mo early * 5k  = 45k
+    tool("c", 240_000, 100, 24, 24, 0),// 20k/mo, contract 24, exit 24 -> 0 early (gates the finish)
+  ];
+
+  it("capturedSooner = sum of each tool's earlySaving", () => {
+    const s = timingSummary(items);
+    const cs = buildCumulativeSavings(items, 60);
+    const expected = cs.tools.reduce((sum, t) => sum + t.earlySaving, 0);
+    expect(s.capturedSooner).toBe(expected);
+    expect(s.capturedSooner).toBe(120_000 + 45_000 + 0);
+  });
+
+  it("derives finish months, monthsSooner and the gating tool", () => {
+    const s = timingSummary(items);
+    expect(s.planFinishMonths).toBe(24);    // max sunset (c stays at 24)
+    expect(s.renewalFinishMonths).toBe(24); // max contract (c at 24)
+    expect(s.monthsSooner).toBe(0);         // c gates it, so the finish holds
+    expect(s.gatingToolName).toBe(itemDisplayNameOf(items[2])); // latest renewal = c
+  });
+
+  it("monthsSooner reflects pulling the gating tool in too", () => {
+    const pulled = [
+      tool("a", 120_000, 100, 18, 6, 0),
+      tool("b", 60_000, 100, 12, 3, 0),
+      tool("c", 240_000, 100, 24, 10, 0), // now c exits at 10; latest sunset becomes 10
+    ];
+    const s = timingSummary(pulled);
+    expect(s.renewalFinishMonths).toBe(24);
+    expect(s.planFinishMonths).toBe(10);
+    expect(s.monthsSooner).toBe(14);
+    expect(s.gatingToolName).toBe(itemDisplayNameOf(pulled[2])); // still the latest renewal
+  });
+
+  it("capturedSooner is 0 when every tool rides to its contract end", () => {
+    const none = [tool("a", 120_000, 100, 18, 18, 0), tool("b", 60_000, 100, 12, 12, 0)];
+    const s = timingSummary(none);
+    expect(s.capturedSooner).toBe(0);
+    expect(s.monthsSooner).toBe(0);
+  });
+
+  it("is empty when nothing saves", () => {
+    const s = timingSummary([tool("a", 100_000, 0, 12, 12, 0)]);
+    expect(s).toEqual({ capturedSooner: 0, planFinishMonths: 0, renewalFinishMonths: 0, monthsSooner: 0, gatingToolName: "" });
+  });
+});
+
+// The vendorName-or-category display used by the summary's gatingToolName.
+function itemDisplayNameOf(i: AppRatItem): string {
+  return i.vendorName?.trim() || "Ambient documentation";
+}
 
 describe("sunsetDateLabel", () => {
   const from = new Date(2026, 6, 1); // Jul 2026 (month index 6)
