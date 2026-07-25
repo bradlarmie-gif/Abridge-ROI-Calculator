@@ -3,7 +3,7 @@ import { UnifiedHeader } from "@/components/UnifiedHeader";
 import { type AppRatItem, type AppRatCategoryId, makeItem, computeNet } from "@/lib/appRationalizationCalc";
 import { AnimatedValue } from "@/components/explore/AnimatedValue";
 import ArApplicationsStep from "./appRationalization/ArApplicationsStep";
-import ConsolidationWaterfall from "@/components/forecast/ConsolidationWaterfall";
+import ArConsolidationView from "@/components/forecast/ArConsolidationView";
 import ConsolidationTiming from "@/components/forecast/ConsolidationTiming";
 import { Download } from "lucide-react";
 
@@ -144,7 +144,7 @@ export default function AppRationalizationFlow({ onBack, onHome }: AppRationaliz
             </div>
 
             {conView === "waterfall"
-              ? <ConsolidationWaterfall items={items} />
+              ? <ArConsolidationView items={items} abridgePrice={abridgePrice} />
               : <ConsolidationTiming items={items} horizonYears={termYears} onHorizonChange={setTermYears} onUpdateItem={updateItem} />}
 
             {/* On-demand "why" proof, on the way. Placeholder until the team lands the rationale copy. */}
