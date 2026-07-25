@@ -19,6 +19,7 @@ export default function ArPriceControl({
   perUser, onPerUser,
   effectiveSpend,
   idPrefix = "ar-price",
+  compact = false,
 }: {
   pricingModel: ArPricingModel;
   onPricingModel: (m: ArPricingModel) => void;
@@ -27,6 +28,9 @@ export default function ArPriceControl({
   perUser: number; onPerUser: (v: number) => void;
   effectiveSpend: number;
   idPrefix?: string;
+  // compact = the add-tool modal: hide the optional users field + helper in
+  // annual-fee mode so it matches the tight AddPopup mockup (just the $ input).
+  compact?: boolean;
 }) {
   return (
     <div>
@@ -60,17 +64,21 @@ export default function ArPriceControl({
             />
             <span className="text-[#B4A99B] text-[12px]">/ yr</span>
           </div>
-          <div className="mt-2 flex items-center h-10 bg-white border border-[#E8E2DA] rounded-[11px] px-3.5 gap-1.5 focus-within:border-[#EA2C00]">
-            <NumberField
-              value={users}
-              onValueChange={onUsers}
-              min={0}
-              className="flex-1 min-w-0 bg-transparent text-[13px] text-[#1A1A1A] outline-none tabular-nums"
-              data-testid={`${idPrefix}-users`}
-            />
-            <span className="text-[#B4A99B] text-[12px]">users <span className="text-[#C9BFB2]">· optional</span></span>
-          </div>
-          <p className="text-[10px] leading-tight text-[#B4A99B] mt-1.5">Enterprise or flat contract, or if you don't know the user count. Add the count if you have it; it won't change the price.</p>
+          {!compact && (
+            <>
+              <div className="mt-2 flex items-center h-10 bg-white border border-[#E8E2DA] rounded-[11px] px-3.5 gap-1.5 focus-within:border-[#EA2C00]">
+                <NumberField
+                  value={users}
+                  onValueChange={onUsers}
+                  min={0}
+                  className="flex-1 min-w-0 bg-transparent text-[13px] text-[#1A1A1A] outline-none tabular-nums"
+                  data-testid={`${idPrefix}-users`}
+                />
+                <span className="text-[#B4A99B] text-[12px]">users <span className="text-[#C9BFB2]">· optional</span></span>
+              </div>
+              <p className="text-[10px] leading-tight text-[#B4A99B] mt-1.5">Enterprise or flat contract, or if you don't know the user count. Add the count if you have it; it won't change the price.</p>
+            </>
+          )}
         </>
       ) : (
         <>

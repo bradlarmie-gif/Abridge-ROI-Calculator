@@ -79,11 +79,11 @@ export default function ArAddToolModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[472px] p-0 gap-0 rounded-[20px] border-[#E8E2DA] overflow-hidden bg-white" data-testid="ar-add-modal">
+      <DialogContent className="max-w-[460px] max-h-[90vh] flex flex-col p-0 gap-0 rounded-[20px] border-[#E8E2DA] overflow-hidden bg-white" data-testid="ar-add-modal">
         <DialogDescription className="sr-only">Add this tool to your consolidation stack.</DialogDescription>
 
         {/* header: icon tile + eyebrow + capability title */}
-        <div className="flex items-center gap-3.5 px-6 pt-6 pb-4">
+        <div className="flex items-center gap-3.5 px-6 pt-5 pb-3 shrink-0">
           <div className="w-[46px] h-[46px] rounded-[13px] bg-[#F5F0EB] flex items-center justify-center text-[#6B5E4F] flex-shrink-0">
             <CategoryIcon icon={cat.icon} className="w-[22px] h-[22px]" />
           </div>
@@ -94,7 +94,7 @@ export default function ArAddToolModal({
         </div>
 
         {/* body */}
-        <div className="px-6 pb-1">
+        <div className="px-6 pb-1 flex-1 overflow-y-auto min-h-0">
           {/* capability picker: custom path only */}
           {entryIsCustom && (
             <div className="mb-1">
@@ -138,6 +138,7 @@ export default function ArAddToolModal({
               perUser={perUser} onPerUser={setPerUser}
               effectiveSpend={spend}
               idPrefix="ar-add"
+              compact
             />
           </div>
 
@@ -187,7 +188,7 @@ export default function ArAddToolModal({
         </div>
 
         {/* footer */}
-        <div className="px-6 pt-4 pb-6 mt-3.5 border-t border-[#F2ECE4]">
+        <div className="px-6 pt-3.5 pb-5 border-t border-[#F2ECE4] shrink-0">
           <button
             disabled={!canAdd}
             onClick={() => onConfirm(activeCategory, {
