@@ -1,36 +1,28 @@
 import { useRef, useState } from "react";
 import { UnifiedHeader } from "@/components/UnifiedHeader";
-import { type AppRatItem, type AppRatCategoryId, makeItem, computeNet } from "@/lib/appRationalizationCalc";
-import { AnimatedValue } from "@/components/explore/AnimatedValue";
+import { type AppRatItem, type AppRatCategoryId, makeItem } from "@/lib/appRationalizationCalc";
 import ArApplicationsStep from "./appRationalization/ArApplicationsStep";
 import ArConsolidationView from "@/components/forecast/ArConsolidationView";
 import ConsolidationTiming from "@/components/forecast/ConsolidationTiming";
+import ArMoatView from "@/components/forecast/ArMoatView";
 import { Download } from "lucide-react";
 
-function fmtM(n: number): string {
-  const a = Math.abs(n);
-  if (a >= 1_000_000) return `$${(a / 1_000_000).toFixed(1)}M`;
-  if (a >= 1_000) return `$${Math.round(a / 1_000)}K`;
-  return `$${Math.round(a)}`;
-}
-
-type ArStep = "applications" | "consolidation";
+type ArStep = "applications" | "consolidation" | "timing" | "moat";
 
 interface AppRationalizationFlowProps {
   onBack: () => void;
   onHome: () => void;
 }
 
-const STEP_INDEX: Record<ArStep, number> = { applications: 1, consolidation: 2 };
-const STEP_LABELS = ["Applications", "Consolidation"];
+const STEP_INDEX: Record<ArStep, number> = { applications: 1, consolidation: 2, timing: 3, moat: 4 };
+const STEP_LABELS = ["Applications", "Consolidation", "When it lands", "Why only Abridge"];
 
 export default function AppRationalizationFlow({ onBack, onHome }: AppRationalizationFlowProps) {
   const [step, setStep] = useState<ArStep>("applications");
   const [orgName, setOrgName] = useState("");
   const [abridgePrice, setAbridgePrice] = useState(0);
-  const [termYears, setTermYears] = useState(3);
+  const [horizonYears, setHorizonYears] = useState(3);
   const [items, setItems] = useState<AppRatItem[]>([]);
-  const [conView, setConView] = useState<"waterfall" | "timing">("waterfall");
   const [exporting, setExporting] = useState(false);
   const nextId = useRef(0);
 
@@ -38,7 +30,7 @@ export default function AppRationalizationFlow({ onBack, onHome }: AppRationaliz
     setExporting(true);
     try {
       const mod = await import("@/components/forecast/AppRationalizationPDFExport");
-      await mod.generateAppRationalizationPDF(items, orgName, abridgePrice, termYears);
+      await mod.generateAppRationalizationPDF(items, orgName, abridgePrice, horizonYears);
     } finally {
       setExporting(false);
     }
@@ -53,9 +45,40 @@ export default function AppRationalizationFlow({ onBack, onHome }: AppRationaliz
   // Top-left Back steps back one screen; from the first step it exits the flow.
   // State stays intact while stepping because the flow only unmounts on exit.
   const handleBack = () => {
-    if (step === "consolidation") setStep("applications");
+    if (step === "moat") setStep("timing");
+    else if (step === "timing") setStep("consolidation");
+    else if (step === "consolidation") setStep("applications");
     else onBack();
   };
+
+  // The export button, top-right on every step past Applications. One handler,
+  // one testid, so the export stays reachable throughout the value story.
+  const exportButton = (
+    <div className="flex justify-end mb-5">
+      <button
+        onClick={handleExportPdf}
+        disabled={exporting}
+        className="flex items-center gap-1.5 h-9 px-3.5 rounded-lg border border-[#E8E2DA] bg-white text-[12px] font-bold text-[#1A1A1A] hover:border-[#1A1A1A] disabled:opacity-50 transition-colors"
+        data-testid="ar-export-pdf"
+      >
+        <Download className="w-3.5 h-3.5" strokeWidth={2.25} />
+        {exporting ? "Preparing…" : "Export PDF"}
+      </button>
+    </div>
+  );
+
+  // A primary CTA that advances to the next step (coral, plain copy).
+  const nextCta = (label: string, onClick: () => void, testid: string) => (
+    <div className="flex justify-end mt-8">
+      <button
+        onClick={onClick}
+        className="h-11 px-5 rounded-xl bg-[#EA2C00] text-white text-sm font-bold"
+        data-testid={testid}
+      >
+        {label}
+      </button>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-[#FAF8F5]">
@@ -63,7 +86,7 @@ export default function AppRationalizationFlow({ onBack, onHome }: AppRationaliz
         pathType="forecast"
         stepName="App Rationalization"
         currentStep={STEP_INDEX[step]}
-        totalSteps={3}
+        totalSteps={4}
         stepLabels={STEP_LABELS}
         onBack={handleBack}
         onHome={onHome}
@@ -83,79 +106,33 @@ export default function AppRationalizationFlow({ onBack, onHome }: AppRationaliz
           />
         )}
 
-        {step === "consolidation" && (() => {
-          const net = computeNet(items, abridgePrice);
-          return (
+        {step === "consolidation" && (
           <div data-testid="ar-step-consolidation" className="max-w-[1120px] mx-auto px-6 py-8">
-            {/* Page header, matching the Applications screen */}
-            <div className="flex items-start justify-between gap-6 mb-6">
-              <div>
-                <h1 className="font-abridge text-4xl uppercase tracking-tight text-[#1A1A1A]">Consolidation</h1>
-                <p className="text-sm text-[#6B6B6B] mt-2.5">How much of your stack sunsets onto Abridge, and what you keep.</p>
-              </div>
-              {net.stackTotal > 0 && (
-                <div className="flex flex-col items-end gap-3 shrink-0">
-                  <button
-                    onClick={handleExportPdf}
-                    disabled={exporting}
-                    className="flex items-center gap-1.5 h-9 px-3.5 rounded-lg border border-[#E8E2DA] bg-white text-[12px] font-bold text-[#1A1A1A] hover:border-[#1A1A1A] disabled:opacity-50 transition-colors"
-                    data-testid="ar-export-pdf"
-                  >
-                    <Download className="w-3.5 h-3.5" strokeWidth={2.25} />
-                    {exporting ? "Preparing…" : "Export PDF"}
-                  </button>
-                  <div className="text-right leading-none">
-                    <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#8C7E6E] mb-1.5">
-                      {net.isNetCost ? "Net cost / yr" : "Net savings / yr"}
-                    </div>
-                    <AnimatedValue
-                      value={Math.abs(net.netSavings)}
-                      format={fmtM}
-                      className={`text-[34px] font-extrabold tabular-nums ${net.isNetCost ? "text-[#1A1A1A]" : "text-[#EA2C00]"}`}
-                      style={{ letterSpacing: "-0.01em" }}
-                      data-testid="ar-net-hero"
-                    />
-                    <div className="text-[12px] text-[#8C7E6E] tabular-nums mt-1.5">
-                      {fmtM(net.stackTotal)} across these tools today · {fmtM(net.stays)} stays
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Toggle: what (waterfall, default) vs when (cumulative savings) */}
-            <div className="flex justify-center mb-5">
-              <div className="relative inline-grid grid-cols-2 w-[340px] bg-[#EFE7DC] rounded-[10px] p-[3px]" data-testid="ar-view-toggle">
-                <span
-                  className="absolute top-[3px] bottom-[3px] rounded-lg bg-white shadow-[0_1px_3px_rgba(0,0,0,0.10)] transition-[left,right] duration-200 ease-out"
-                  style={{ left: conView === "waterfall" ? "3px" : "50%", right: conView === "waterfall" ? "50%" : "3px" }}
-                />
-                {([["waterfall", "The consolidation"], ["timing", "Cumulative savings"]] as const).map(([v, label]) => (
-                  <button
-                    key={v}
-                    onClick={() => setConView(v)}
-                    className={`relative z-10 py-2 text-[12px] font-bold rounded-lg text-center transition-colors ${conView === v ? "text-[#EA2C00]" : "text-[#8C7E6E]"}`}
-                    data-testid={`ar-view-${v}`}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {conView === "waterfall"
-              ? <ArConsolidationView items={items} abridgePrice={abridgePrice} />
-              : <ConsolidationTiming items={items} horizonYears={termYears} onHorizonChange={setTermYears} onUpdateItem={updateItem} />}
-
-            {/* On-demand "why" proof, on the way. Placeholder until the team lands the rationale copy. */}
-            <div className="mt-6 flex items-center gap-3 rounded-xl border border-[#E8E2DA] bg-white/60 px-5 py-4" data-testid="ar-why-coming-soon">
-              <span className="text-sm font-semibold text-[#1A1A1A]">Why Abridge can take these on</span>
-              <span className="text-[10px] font-bold uppercase tracking-wide text-[#8C7E6E] bg-[#F5F0EB] border border-[#E8E2DA] rounded-full px-2.5 py-1">Coming soon</span>
-              <span className="text-[12.5px] text-[#8C7E6E] ml-auto hidden sm:block">The case for each capability is on the way.</span>
-            </div>
+            {exportButton}
+            <ArConsolidationView items={items} abridgePrice={abridgePrice} />
+            {nextCta("See when it lands →", () => setStep("timing"), "ar-see-timing")}
           </div>
-          );
-        })()}
+        )}
+
+        {step === "timing" && (
+          <div data-testid="ar-step-timing" className="max-w-[1120px] mx-auto px-6 py-8">
+            {exportButton}
+            <ConsolidationTiming
+              items={items}
+              horizonYears={horizonYears}
+              onHorizonChange={setHorizonYears}
+              onUpdateItem={updateItem}
+            />
+            {nextCta("Why only Abridge →", () => setStep("moat"), "ar-see-moat")}
+          </div>
+        )}
+
+        {step === "moat" && (
+          <div data-testid="ar-step-moat" className="max-w-[1120px] mx-auto px-6 py-8">
+            {exportButton}
+            <ArMoatView items={items} />
+          </div>
+        )}
       </div>
     </div>
   );
