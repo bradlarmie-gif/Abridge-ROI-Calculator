@@ -37,25 +37,35 @@ function renderText(items: AppRatItem[], org: string, price: number, term: numbe
 }
 
 describe("App Rationalization PDF (smoke)", () => {
-  it("renders cover + the three content pages without throwing and prints the expected copy", () => {
+  it("renders cover + the five content sections without throwing and prints the expected copy", () => {
     const text = renderText(sample, "Deaconess Health System", 0, 3);
     // cover
     expect(text).toContain("App Rationalization");
     expect(text).toContain("How your documentation stack folds onto the Abridge you already run.");
     expect(text).toContain("Deaconess Health System");
-    // page 2 · the consolidation
+    // page 2 · executive summary + the stack of record
+    expect(text).toContain("Your documentation stack, consolidated."); // exec title
+    expect(text).toContain("fold onto the Abridge you already run."); // the answer sentence
+    expect(text).toContain("$620,000"); // stack total in the answer + hero KPI band
+    expect(text).toContain("4 → 4"); // vendors KPI: 4 today → 4 still on your bill (all have a residual)
+    expect(text).toContain("The stack of record, tool by tool"); // authoritative table heading
+    expect(text).toContain("Solventum"); // a stack-of-record row
+    expect(text).toContain("How this is calculated"); // the assumptions note
+    // page 3 · the consolidation
     expect(text).toContain("Fold it onto what you already run.");
     expect(text).toContain("Freed every year");
     expect(text).toContain("$492,000"); // freed / yr = Σ itemRetired (320k+88k+54k+30k)
     expect(text).toContain("Dragon");
-    expect(text).toContain("$400,000"); // Dragon annual spend
-    // page 3 · when it lands
+    expect(text).toContain("$400,000"); // Dragon annual spend (stack-of-record table)
+    // page 4 · when it lands
     expect(text).toContain("How soon it lands is your call.");
     expect(text).toContain("Captured sooner by acting");
     expect(text).toContain("$27,000"); // UpToDate/cds pulled 6mo early: 54k/12 * 6
-    // page 4 · why only Abridge (verbatim moat line)
+    // page 5 · why only Abridge (verbatim moat line + per-capability proof table)
     expect(text).toContain("The stack folds into Abridge.");
     expect(text).toContain("folds onto Abridge, and not onto a tool that does one step");
+    expect(text).toContain("Why each capability consolidates"); // proof table heading
+    expect(text).toContain("A working draft of the rationale"); // proof note (working draft)
   });
 
   it("nets the Abridge price and labels a net cost without throwing", () => {
@@ -69,7 +79,10 @@ describe("App Rationalization PDF (smoke)", () => {
     const text = renderText(noSunset, "Acme", 0, 3);
     expect(text).not.toContain("How soon it lands is your call.");
     expect(text).not.toContain("The stack folds into Abridge.");
-    // still renders the consolidation page + table
+    expect(text).not.toContain("Why each capability consolidates");
+    // still renders the exec summary + consolidation pages
+    expect(text).toContain("Your documentation stack, consolidated."); // exec summary always renders when there is spend
+    expect(text).toContain("How this is calculated"); // assumptions note
     expect(text).toContain("Fold it onto what you already run.");
     expect(text).toContain("Dragon");
   });

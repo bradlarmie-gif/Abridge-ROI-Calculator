@@ -1,20 +1,23 @@
-// App Rationalization leave-behind PDF: a shared cover + up to three content
-// pages that reproduce the locked on-screen App Rationalization flow, one page
-// per screen:
-//   1. Cover           — the shared PDFCoverPage.
-//   2. The consolidation — ArConsolidationView: the two aligned "today vs after
-//      fold-in" bars, the three stats, the already-in-place / net note, and a
-//      dense per-tool table.
-//   3. When it lands   — ConsolidationTiming: the run-rate step chart (ride to
-//      renewal vs your plan), the read line, a per-tool timing table, and stats.
-//   4. Why only Abridge — ArMoatView: the documentation-chain diagram and the
-//      verbatim moat line.
+// App Rationalization leave-behind PDF: a shared cover + up to five content
+// pages, built as a stand-alone DOCUMENT a CFO can study alone (not three
+// on-screen posters reprinted):
+//   1. Cover              — the shared PDFCoverPage.
+//   2. Executive summary + the stack of record — the standalone "answer": a
+//      one-line data-built answer sentence, a dark 4-stat hero KPI band, THE
+//      authoritative per-tool stack table (record of record) with a totals row,
+//      and a boxed "How this is calculated" assumptions note for finance.
+//   3. The consolidation — the two aligned "today vs after fold-in" bars, the
+//      already-in-place / net note, and the three stats, tightened to a section.
+//   4. When it lands      — the run-rate step chart (ride to renewal vs your
+//      plan), the read line, a per-tool timing table, and stats.
+//   5. Why only Abridge   — the documentation-chain diagram, a per-capability
+//      "why each capability consolidates" proof table, and the verbatim moat line.
 //
 // Every number comes from the calc (appRationalizationCalc.ts) or the two view
 // model builders (buildConsolidationModel, buildMoatTools) the screens use, so
 // the leave-behind always reconciles with what the rep saw. In particular the
-// consolidation "Freed / yr" and the timing "full run-rate ceiling" are both
-// Σ itemRetired, so they agree by construction.
+// exec-summary "Freed every year", the consolidation "Freed / yr" and the timing
+// "full run-rate ceiling" are all Σ itemRetired, so they agree by construction.
 //
 // Follows pdf_layout_guidelines.md: page padding 54 / paddingBottom 72, a fixed
 // 3-slot footer (ABRIDGE · org name · page number, cover unnumbered),
@@ -34,7 +37,7 @@ import manropeBold from "../../assets/fonts/manrope-bold.ttf";
 import {
   buildStackBars, computeNet, buildCumulativeSavings, timingSummary,
   renewalDateLabel, itemDisplayName, categoryLabel, itemRetired, itemStays,
-  type AppRatItem, type CumulativeTool,
+  type AppRatItem, type AppRatCategoryId, type CumulativeTool,
 } from "@/lib/appRationalizationCalc";
 import { buildConsolidationModel, freedRegionLeftPct } from "@/components/forecast/ArConsolidationView";
 import { buildMoatTools } from "@/components/forecast/ArMoatView";
@@ -73,6 +76,55 @@ const fmtC = (n: number) => {
   if (a >= 1_000_000) return `$${(a / 1_000_000).toFixed(2)}M`;
   if (a >= 1_000) return `$${Math.round(a / 1_000)}K`;
   return `$${a}`;
+};
+
+// Per-capability rationale for the "why each capability consolidates" proof
+// table. Deliberately CLAIM-SAFE: "Today" describes what the tool does; "With
+// Abridge" states the capability in conditional language ("can consolidate",
+// "reduces the need"), never that Abridge replaces or causes anything. The
+// coming-soon categories (pre-charting / CDI / coding) name themselves a working
+// estimate, matching the calc's own comingSoon flags. This is a working draft.
+const CAPABILITY_PROOF: Record<AppRatCategoryId, { today: string; withAbridge: string }> = {
+  ambientDoc: {
+    today: "An ambient tool listens to the visit and drafts the note.",
+    withAbridge: "Abridge drafts the note from the same conversation, so this capability can consolidate onto it.",
+  },
+  dictation: {
+    today: "Dictation turns the clinician's spoken narration into text they then format.",
+    withAbridge: "Abridge structures the note from the conversation itself, which can take on much of what dictation is used for.",
+  },
+  scribe: {
+    today: "A scribe, in person or virtual, writes the note during or after the visit.",
+    withAbridge: "Abridge produces the draft from the visit, so the scribe workflow can fold onto it.",
+  },
+  transcription: {
+    today: "A transcription service types up dictated audio after the fact.",
+    withAbridge: "Abridge generates structured text from the conversation live, reducing the need for downstream transcription.",
+  },
+  cds: {
+    today: "Clinical decision support answers reference questions at the point of care.",
+    withAbridge: "Abridge surfaces context from the encounter; a knowledge base stays on for lookup, so only part consolidates.",
+  },
+  clinicalEvidence: {
+    today: "Evidence search tools retrieve literature and guidelines on demand.",
+    withAbridge: "Abridge brings encounter context forward; a dedicated search stays on, so only part consolidates.",
+  },
+  preChartRisk: {
+    today: "Pre-charting risk tools prep the chart from prior EMR data before the visit.",
+    withAbridge: "Abridge's pre-charting is expanding toward this step; treat this as a working estimate, not a committed capability.",
+  },
+  inEncounterCdi: {
+    today: "In-encounter CDI prompts for documentation and coding gaps during the visit.",
+    withAbridge: "Abridge's coding and quality coverage is expanding toward this step; treat this as a working estimate.",
+  },
+  postChartCoding: {
+    today: "Post-charting CDI and coding tools review the finished note for codes.",
+    withAbridge: "Abridge's coding coverage is expanding toward this step; treat this as a working estimate.",
+  },
+  custom: {
+    today: "A documentation-adjacent tool you entered.",
+    withAbridge: "Where it overlaps the note Abridge already drafts, that share can consolidate.",
+  },
 };
 
 // ────────────────────────────────────────────────────────────────────────
@@ -204,7 +256,7 @@ const s = StyleSheet.create({
     backgroundColor: "#FFEDE7", borderRadius: 8, paddingVertical: 2, paddingHorizontal: 5, marginTop: 4,
   },
 
-  moatBlock: { marginTop: 30, borderTopWidth: 2, borderTopColor: C.ink, paddingTop: 14 },
+  moatBlock: { marginTop: 18, borderTopWidth: 2, borderTopColor: C.ink, paddingTop: 12 },
   moatK: { fontSize: 8, fontWeight: 700, color: C.label, letterSpacing: 1.5, textTransform: "uppercase" },
   moatBig: { fontFamily: "Abridge", fontSize: 17, color: C.ink, lineHeight: 1.25, marginTop: 10 },
   moatBigCoral: { color: C.coral },
@@ -213,6 +265,42 @@ const s = StyleSheet.create({
     borderWidth: 1, borderColor: C.line, borderRadius: 12, backgroundColor: C.tan,
     padding: 22, textAlign: "center", fontSize: 9.5, color: C.body,
   },
+
+  // Exec summary — the one-line answer
+  answer: { fontSize: 11, lineHeight: 1.55, color: C.ink, marginBottom: 2, maxWidth: CW },
+  answerEm: { fontWeight: 700, color: "#2E2822" },
+  answerCoral: { fontFamily: "Abridge", color: C.coral },
+
+  // Exec summary — dark hero KPI band (solid pre-blended divider, never a
+  // fractional-alpha border color; see attain-pdf.tsx's heroCell note).
+  hero: { flexDirection: "row", backgroundColor: C.ink, borderRadius: 6, paddingVertical: 15, marginTop: 14, marginBottom: 16 },
+  heroCell: { flex: 1, paddingHorizontal: 11, borderRightWidth: 1, borderRightColor: "#333029" },
+  heroCellLast: { borderRightWidth: 0 },
+  heroK: { fontSize: 6.8, fontWeight: 700, color: "rgba(255,255,255,0.55)", letterSpacing: 1, textTransform: "uppercase" },
+  heroN: { fontFamily: "Abridge", fontSize: 18, color: C.white, marginTop: 7 },
+  heroNCoral: { fontFamily: "Abridge", fontSize: 18, color: C.coral, marginTop: 7 },
+  heroUnit: { fontSize: 7.5, color: "rgba(255,255,255,0.6)" },
+  heroSub: { fontSize: 6.8, color: "rgba(255,255,255,0.5)", marginTop: 4, letterSpacing: 0.3 },
+
+  // Exec summary — "How this is calculated" assumptions box
+  assumeBox: { borderWidth: 1, borderColor: C.line, borderRadius: 4, backgroundColor: C.tan, padding: 12, marginTop: 14 },
+  assumeK: { fontSize: 8, fontWeight: 700, color: C.label, letterSpacing: 1, textTransform: "uppercase", marginBottom: 5 },
+  assumeT: { fontSize: 8.5, lineHeight: 1.5, color: C.body },
+  assumeEm: { fontWeight: 700, color: "#2E2822" },
+
+  // Dense stack-of-record table cells (7 columns, tighter than the 5-col tables)
+  thTiny: { fontSize: 6.5, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: 0.4 },
+  tCellTiny: { fontSize: 8, color: C.ink },
+  tCellTinyMuted: { fontSize: 8, color: C.body },
+  tCellTinyCoral: { fontSize: 8, fontWeight: 700, color: C.coral },
+  tNameTiny: { fontSize: 8, fontWeight: 700, color: C.ink },
+
+  // Per-capability proof table (moat page)
+  proofNote: { fontSize: 8, color: C.muted, lineHeight: 1.45, marginBottom: 7, maxWidth: CW },
+  proofRow: { flexDirection: "row", alignItems: "flex-start", paddingVertical: 7, paddingHorizontal: 9, borderBottomWidth: 1, borderBottomColor: C.hair },
+  proofCap: { fontSize: 8, fontWeight: 700, color: C.ink, lineHeight: 1.3 },
+  proofToday: { fontSize: 7.5, color: C.body, lineHeight: 1.4, paddingRight: 8 },
+  proofAbridge: { fontSize: 7.5, color: "#5E534A", lineHeight: 1.4 },
 });
 
 // ────────────────────────────────────────────────────────────────────────
@@ -246,7 +334,174 @@ function InteriorFooter({ orgName }: { orgName: string }) {
 }
 
 // ────────────────────────────────────────────────────────────────────────
-// Page 2 · The consolidation (ArConsolidationView)
+// Page 2 · Executive summary + the stack of record
+// The standalone "answer" a CFO can read cold: a data-built answer sentence,
+// a dark 4-stat KPI band, the authoritative per-tool stack table (record of
+// record) with a totals row, and a boxed assumptions note for finance.
+// ────────────────────────────────────────────────────────────────────────
+
+function ExecAnswer({ items, abridgePrice }: { items: AppRatItem[]; abridgePrice: number }) {
+  const model = buildConsolidationModel(items);
+  const net = computeNet(items, abridgePrice);
+  const summary = timingSummary(items);
+  const dateStr = summary.planFinishMonths > 0 ? renewalDateLabel(summary.planFinishMonths) : "now";
+  const vc = model.vendorCount;
+  const vlabel = vc === 1 ? "vendor" : "vendors";
+  const consolidatedClause = model.freed > 0 ? ` Fully consolidated by ${dateStr}.` : "";
+  return (
+    <Text style={s.answer}>
+      <Text style={s.answerEm}>{`${vc} ${vlabel}`}</Text>
+      {` (${fmtFull(model.stackTotal)} / yr) fold onto the Abridge you already run. `}
+      {abridgePrice === 0 ? (
+        <>
+          <Text style={s.answerCoral}>{`${fmtFull(model.freed)} / yr`}</Text>
+          {" comes back."}
+        </>
+      ) : net.isNetCost ? (
+        <>
+          {"The "}
+          <Text style={s.answerEm}>{`${fmtFull(net.abridgePrice)} / yr`}</Text>
+          {" Abridge price runs "}
+          <Text style={s.answerEm}>{`${fmtFull(-net.netSavings)} / yr`}</Text>
+          {" above what these tools free today."}
+        </>
+      ) : (
+        <>
+          {"Net of the "}
+          <Text style={s.answerEm}>{`${fmtFull(net.abridgePrice)} / yr`}</Text>
+          {" Abridge price, "}
+          <Text style={s.answerCoral}>{`${fmtFull(net.netSavings)} / yr`}</Text>
+          {" comes back."}
+        </>
+      )}
+      {consolidatedClause}
+    </Text>
+  );
+}
+
+function ExecHeroBand({ items }: { items: AppRatItem[] }) {
+  const model = buildConsolidationModel(items);
+  const summary = timingSummary(items);
+  const remaining = model.rows.filter((r) => r.stays > 0).length;
+  const dateStr = model.freed > 0 ? (summary.planFinishMonths > 0 ? renewalDateLabel(summary.planFinishMonths) : "now") : "n/a";
+  return (
+    <View style={s.hero} wrap={false}>
+      <View style={s.heroCell}>
+        <Text style={s.heroN}>{fmtFull(model.stackTotal)}<Text style={s.heroUnit}> / yr</Text></Text>
+        <Text style={s.heroK}>Documentation spend today</Text>
+      </View>
+      <View style={s.heroCell}>
+        <Text style={s.heroNCoral}>{fmtFull(model.freed)}<Text style={s.heroUnit}> / yr</Text></Text>
+        <Text style={s.heroK}>Freed every year</Text>
+      </View>
+      <View style={s.heroCell}>
+        <Text style={s.heroN}>{`${model.vendorCount} → ${remaining}`}</Text>
+        <Text style={s.heroK}>Vendors</Text>
+        <Text style={s.heroSub}>today → still on your bill</Text>
+      </View>
+      <View style={[s.heroCell, s.heroCellLast]}>
+        <Text style={s.heroN}>{dateStr}</Text>
+        <Text style={s.heroK}>Fully consolidated</Text>
+      </View>
+    </View>
+  );
+}
+
+function StackOfRecordTable({ items }: { items: AppRatItem[] }) {
+  const rows = items.filter((i) => (i.annualSpend || 0) > 0);
+  const totalSpend = rows.reduce((a, i) => a + (i.annualSpend || 0), 0);
+  const totalFreed = rows.reduce((a, i) => a + itemRetired(i), 0);
+  const totalStays = rows.reduce((a, i) => a + itemStays(i), 0);
+  const overallPct = totalSpend > 0 ? Math.round((totalFreed / totalSpend) * 100) : 0;
+  return (
+    <View style={s.table}>
+      <View style={s.thead}>
+        <Text style={[s.thTiny, { flex: 2.0 }]}>Vendor</Text>
+        <Text style={[s.thTiny, { flex: 1.7 }]}>Capability</Text>
+        <Text style={[s.thTiny, { flex: 1.25, textAlign: "right" }]}>Annual spend</Text>
+        <Text style={[s.thTiny, { flex: 0.85, textAlign: "right" }]}>Cov.</Text>
+        <Text style={[s.thTiny, { flex: 1.2, textAlign: "right" }]}>Freed</Text>
+        <Text style={[s.thTiny, { flex: 1.2, textAlign: "right" }]}>Stays</Text>
+        <Text style={[s.thTiny, { flex: 1.05, textAlign: "right" }]}>Renewal</Text>
+      </View>
+      {rows.map((it, i) => {
+        const staysOnly = itemRetired(it) === 0;
+        return (
+          <View key={it.id} style={i % 2 === 1 ? [s.trow, s.trowAlt] : s.trow} wrap={false}>
+            <View style={[s.colName, { flex: 2.0 }]}>
+              <View style={[s.rail, { backgroundColor: staysOnly ? C.stays : TAN_SHADES[i % TAN_SHADES.length] }]} />
+              <Text style={s.tNameTiny}>{itemDisplayName(it)}</Text>
+            </View>
+            <Text style={[s.tCellTinyMuted, { flex: 1.7 }]}>{categoryLabel(it.category)}</Text>
+            <Text style={[s.tCellTiny, { flex: 1.25, textAlign: "right" }]}>{fmtFull(it.annualSpend)}</Text>
+            <Text style={[s.tCellTinyMuted, { flex: 0.85, textAlign: "right" }]}>{`${it.coveragePct}%`}</Text>
+            <Text style={[itemRetired(it) > 0 ? s.tCellTinyCoral : s.tCellTinyMuted, { flex: 1.2, textAlign: "right" }]}>
+              {itemRetired(it) > 0 ? fmtFull(itemRetired(it)) : "$0"}
+            </Text>
+            <Text style={[s.tCellTinyMuted, { flex: 1.2, textAlign: "right" }]}>{fmtFull(itemStays(it))}</Text>
+            <Text style={[s.tCellTinyMuted, { flex: 1.05, textAlign: "right" }]}>{renewalDateLabel(it.contractMonths)}</Text>
+          </View>
+        );
+      })}
+      <View style={s.trowTotal} wrap={false}>
+        <Text style={[s.tNameTiny, { flex: 2.0 }]}>Total</Text>
+        <Text style={[s.tCellTinyMuted, { flex: 1.7 }]}>{`${rows.length} ${rows.length === 1 ? "vendor" : "vendors"}`}</Text>
+        <Text style={[s.tCellTiny, { flex: 1.25, textAlign: "right", fontWeight: 700 }]}>{fmtFull(totalSpend)}</Text>
+        <Text style={[s.tCellTinyMuted, { flex: 0.85, textAlign: "right" }]}>{`${overallPct}%`}</Text>
+        <Text style={[s.tCellTinyCoral, { flex: 1.2, textAlign: "right" }]}>{fmtFull(totalFreed)}</Text>
+        <Text style={[s.tCellTinyMuted, { flex: 1.2, textAlign: "right" }]}>{fmtFull(totalStays)}</Text>
+        <Text style={[s.tCellTinyMuted, { flex: 1.05, textAlign: "right" }]}> </Text>
+      </View>
+    </View>
+  );
+}
+
+function AssumptionsNote() {
+  return (
+    <View style={s.assumeBox} wrap={false}>
+      <Text style={s.assumeK}>How this is calculated</Text>
+      <Text style={s.assumeT}>
+        {"Freed is the share of each tool's spend Abridge can take on (the coverage % you set) times its annual spend. "}
+        <Text style={s.assumeEm}>Stays</Text>
+        {" is the residual that remains. Figures use only the tools and annual spend you entered, and are for planning purposes, not a commitment or guarantee of savings."}
+      </Text>
+    </View>
+  );
+}
+
+function ExecSummaryPage({ items, orgName, abridgePrice }: {
+  items: AppRatItem[]; orgName: string; abridgePrice: number;
+}) {
+  const model = buildConsolidationModel(items);
+  return (
+    <Page size="LETTER" style={s.page}>
+      <InteriorHeader />
+      <Text style={s.eyebrow}>Executive summary</Text>
+      <Text style={s.title} minPresenceAhead={60}>Your documentation stack, consolidated.</Text>
+
+      {model.stackTotal === 0 ? (
+        <View style={s.emptyNote} wrap={false}>
+          <Text>Add applications with annual spend to see the consolidation.</Text>
+        </View>
+      ) : (
+        <>
+          <ExecAnswer items={items} abridgePrice={abridgePrice} />
+          <ExecHeroBand items={items} />
+
+          <Text style={s.sechead} minPresenceAhead={50}>The stack of record, tool by tool</Text>
+          <StackOfRecordTable items={items} />
+
+          <AssumptionsNote />
+        </>
+      )}
+
+      <InteriorFooter orgName={orgName} />
+    </Page>
+  );
+}
+
+// ────────────────────────────────────────────────────────────────────────
+// Page 3 · The consolidation (ArConsolidationView)
 // ────────────────────────────────────────────────────────────────────────
 
 const CONS_BAR_H = 34;
@@ -376,46 +631,6 @@ function ConsolidationNote({ items, abridgePrice }: { items: AppRatItem[]; abrid
   );
 }
 
-function ConsolidationTable({ items }: { items: AppRatItem[] }) {
-  const rows = items.filter((i) => (i.annualSpend || 0) > 0);
-  const totalSpend = rows.reduce((a, i) => a + (i.annualSpend || 0), 0);
-  const totalFreed = rows.reduce((a, i) => a + itemRetired(i), 0);
-  const totalStays = rows.reduce((a, i) => a + itemStays(i), 0);
-  return (
-    <View style={s.table}>
-      <View style={s.thead}>
-        <Text style={[s.th, { flex: 2.5 }]}>Tool</Text>
-        <Text style={[s.th, { flex: 1.2, textAlign: "right" }]}>Annual spend</Text>
-        <Text style={[s.th, { flex: 1, textAlign: "right" }]}>Coverage</Text>
-        <Text style={[s.th, { flex: 1.2, textAlign: "right" }]}>Freed</Text>
-        <Text style={[s.th, { flex: 1.2, textAlign: "right" }]}>Stays</Text>
-      </View>
-      {rows.map((it, i) => (
-        <View key={it.id} style={i % 2 === 1 ? [s.trow, s.trowAlt] : s.trow} wrap={false}>
-          <View style={[s.colName, { flex: 2.5 }]}>
-            <View style={[s.rail, { backgroundColor: TAN_SHADES[i % TAN_SHADES.length] }]} />
-            <View>
-              <Text style={s.tName}>{itemDisplayName(it)}</Text>
-              <Text style={s.tCap}>{categoryLabel(it.category)}</Text>
-            </View>
-          </View>
-          <Text style={[s.tCell, { flex: 1.2, textAlign: "right" }]}>{fmtFull(it.annualSpend)}</Text>
-          <Text style={[s.tCellMuted, { flex: 1, textAlign: "right" }]}>{`${it.coveragePct}%`}</Text>
-          <Text style={[s.tCellCoral, { flex: 1.2, textAlign: "right" }]}>{fmtFull(itemRetired(it))}</Text>
-          <Text style={[s.tCellMuted, { flex: 1.2, textAlign: "right" }]}>{fmtFull(itemStays(it))}</Text>
-        </View>
-      ))}
-      <View style={s.trowTotal} wrap={false}>
-        <Text style={[s.tName, { flex: 2.5 }]}>Total</Text>
-        <Text style={[s.tCell, { flex: 1.2, textAlign: "right", fontWeight: 700 }]}>{fmtFull(totalSpend)}</Text>
-        <Text style={{ flex: 1 }}> </Text>
-        <Text style={[s.tCellCoral, { flex: 1.2, textAlign: "right" }]}>{fmtFull(totalFreed)}</Text>
-        <Text style={[s.tCellMuted, { flex: 1.2, textAlign: "right" }]}>{fmtFull(totalStays)}</Text>
-      </View>
-    </View>
-  );
-}
-
 function ConsolidationPage({ items, orgName, abridgePrice }: {
   items: AppRatItem[]; orgName: string; abridgePrice: number;
 }) {
@@ -453,9 +668,6 @@ function ConsolidationPage({ items, orgName, abridgePrice }: {
               <Text style={s.statNCoral}>{fmtFull(model.freed)}<Text style={s.statUnit}> / yr</Text></Text>
             </View>
           </View>
-
-          <Text style={s.sechead} minPresenceAhead={50}>Your documentation stack, tool by tool</Text>
-          <ConsolidationTable items={items} />
         </>
       )}
 
@@ -465,7 +677,7 @@ function ConsolidationPage({ items, orgName, abridgePrice }: {
 }
 
 // ────────────────────────────────────────────────────────────────────────
-// Page 3 · When it lands (ConsolidationTiming)
+// Page 4 · When it lands (ConsolidationTiming)
 // ────────────────────────────────────────────────────────────────────────
 
 // The step chart is authored in the same 1000x300 viewBox the on-screen chart
@@ -744,8 +956,38 @@ function TimingPage({ items, orgName }: { items: AppRatItem[]; orgName: string }
 }
 
 // ────────────────────────────────────────────────────────────────────────
-// Page 4 · Why only Abridge (ArMoatView)
+// Page 5 · Why only Abridge (ArMoatView) + per-capability proof table
 // ────────────────────────────────────────────────────────────────────────
+
+/** One row per capability actually present in the stack (spend > 0), in the
+ *  order the tools were entered. Reuses the CAPABILITY_PROOF dict; claim-safe. */
+function CapabilityProofTable({ items }: { items: AppRatItem[] }) {
+  const present: AppRatCategoryId[] = [];
+  for (const it of items) {
+    if ((it.annualSpend || 0) > 0 && !present.includes(it.category)) present.push(it.category);
+  }
+  if (present.length === 0) return null;
+  return (
+    <View style={s.table}>
+      <View style={s.thead}>
+        <Text style={[s.thTiny, { flex: 1.3 }]}>Capability</Text>
+        <Text style={[s.thTiny, { flex: 2.2 }]}>Today</Text>
+        <Text style={[s.thTiny, { flex: 2.5 }]}>With Abridge</Text>
+      </View>
+      {present.map((cat, i) => {
+        const copy = CAPABILITY_PROOF[cat];
+        const rowStyle = i % 2 === 1 ? [s.proofRow, s.trowAlt] : s.proofRow;
+        return (
+          <View key={cat} style={rowStyle} wrap={false}>
+            <Text style={[s.proofCap, { flex: 1.3, paddingRight: 8 }]}>{categoryLabel(cat)}</Text>
+            <Text style={[s.proofToday, { flex: 2.2 }]}>{copy.today}</Text>
+            <Text style={[s.proofAbridge, { flex: 2.5 }]}>{copy.withAbridge}</Text>
+          </View>
+        );
+      })}
+    </View>
+  );
+}
 
 function MoatChain({ items }: { items: AppRatItem[] }) {
   const tools = buildMoatTools(items);
@@ -841,6 +1083,13 @@ function MoatPage({ items, orgName }: { items: AppRatItem[]; orgName: string }) 
       <Text style={s.sechead}>The documentation chain, who covers what</Text>
       <MoatChain items={items} />
 
+      <Text style={s.sechead} minPresenceAhead={60}>Why each capability consolidates</Text>
+      <Text style={s.proofNote}>
+        A working draft of the rationale, capability by capability, for the tools in your stack. It states what each
+        does today and the capability Abridge can take on. Coverage expands over time; this is not a commitment.
+      </Text>
+      <CapabilityProofTable items={items} />
+
       <View style={s.moatBlock} wrap={false}>
         <Text style={s.moatK}>The moat</Text>
         <Text style={s.moatBig}>
@@ -864,7 +1113,9 @@ export function buildAppRationalizationPDFDocument(
   void horizonYears; // the timing calendar is derived from the contracts themselves
   // Timing + moat only carry weight once at least one tool actually frees spend
   // (freed > 0 ⇔ buildCumulativeSavings has a curve). Otherwise it's Cover +
-  // consolidation only, like the old file's conditional third page.
+  // exec summary + consolidation only; the exec summary and its stack table
+  // render whenever there is any spend at all (the gate below drops only the
+  // timing + moat pages).
   const hasSavings = buildCumulativeSavings(items, 60).hasCurve;
   return (
     <Document title={`App Rationalization${orgName ? ` · ${orgName}` : ""}`}>
@@ -875,6 +1126,7 @@ export function buildAppRationalizationPDFDocument(
         clientName={orgName || undefined}
         disclaimerText="Figures are directional estimates based on the inputs provided and are intended to support planning discussions. Actual savings depend on your contracts, adoption, and workflow. Not a commitment or guarantee of savings."
       />
+      <ExecSummaryPage items={items} orgName={orgName} abridgePrice={abridgePrice} />
       <ConsolidationPage items={items} orgName={orgName} abridgePrice={abridgePrice} />
       {hasSavings && <TimingPage items={items} orgName={orgName} />}
       {hasSavings && <MoatPage items={items} orgName={orgName} />}
