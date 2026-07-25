@@ -130,10 +130,17 @@ export default function ArApplicationsStep({
   );
 
   return (
-    <div className="max-w-[1120px] mx-auto px-6 py-8">
-      {/* Topbar: eyebrow + org + Abridge price */}
-      <div className="flex items-start justify-between gap-6 mb-8">
-        <div className="text-[11px] font-bold uppercase tracking-[1.4px] text-[#8C7E6E] pt-1">Forecast · App Rationalization</div>
+    <div className="max-w-[1120px] mx-auto px-6 pt-6 pb-8">
+      {/* Header: headline + subhead on the left, org + Abridge price on the right.
+          The app header already shows the "Forecast · App Rationalization" breadcrumb,
+          so no in-page eyebrow (it was a duplicate). */}
+      <div className="flex items-start justify-between gap-6">
+        <div>
+          <h1 className="font-abridge text-[38px] leading-[1.08] text-[#1A1A1A] max-w-[720px]">What's in your documentation stack?</h1>
+          <p className="text-[16px] leading-[1.5] text-[#8C7E6E] mt-[13px] max-w-[600px]">
+            Pick a capability to add, or search a vendor. Everything you run around the clinical note, in one place.
+          </p>
+        </div>
         <div className="flex items-start gap-3 shrink-0">
           <div className="flex flex-col items-start gap-1.5">
             <label htmlFor="ar-org" className="text-[9px] font-bold uppercase tracking-[0.14em] text-[#8C7E6E]">Organization</label>
@@ -163,16 +170,8 @@ export default function ArApplicationsStep({
         </div>
       </div>
 
-      {/* Hero: editorial headline + subhead */}
-      <div>
-        <h1 className="font-abridge text-[38px] leading-[1.08] text-[#1A1A1A] max-w-[720px]">What's in your documentation stack?</h1>
-        <p className="text-[16px] leading-[1.5] text-[#8C7E6E] mt-[15px] max-w-[600px]">
-          Pick a capability to add, or search a vendor. Everything you run around the clinical note, in one place.
-        </p>
-      </div>
-
       {/* Hero command search */}
-      <div className="mt-7"><ArCommandSearch onSelect={openPick} /></div>
+      <div className="mt-6"><ArCommandSearch onSelect={openPick} /></div>
 
       {items.length > 0 && (
         <>

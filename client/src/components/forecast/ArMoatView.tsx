@@ -55,13 +55,9 @@ export default function ArMoatView({ items }: { items: AppRatItem[] }) {
       style={{ background: "linear-gradient(160deg,#FDFBF8,#F6F1EA)", border: "1px solid #E8E2DA" }}
       data-testid="ar-moat"
     >
-      {/* Eyebrow */}
-      <div className="text-[11px] font-bold tracking-[0.12em] uppercase text-[#8C7E6E]">
-        Forecast · App Rationalization · Why only Abridge
-      </div>
-
-      {/* Hero: black headline + claim-safe subhead (verbatim) */}
-      <h2 className="font-abridge text-[32px] md:text-[40px] leading-[1.05] text-[#1A1A1A] mt-4">
+      {/* Hero: black headline + claim-safe subhead (verbatim). The app header
+          already shows the breadcrumb, so no in-page eyebrow (it was a duplicate). */}
+      <h2 className="font-abridge text-[32px] md:text-[40px] leading-[1.05] text-[#1A1A1A]">
         The stack folds into Abridge.
       </h2>
       <p className="text-[15px] md:text-[16.5px] text-[#8C7E6E] mt-4 max-w-[680px] leading-[1.5]">
