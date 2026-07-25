@@ -37,37 +37,40 @@ function renderText(items: AppRatItem[], org: string, price: number, term: numbe
 }
 
 describe("App Rationalization PDF (smoke)", () => {
-  it("renders cover + content without throwing and prints the expected copy", () => {
+  it("renders cover + the three content pages without throwing and prints the expected copy", () => {
     const text = renderText(sample, "Deaconess Health System", 0, 3);
     // cover
-    expect(text).toContain("Consolidation Analysis");
+    expect(text).toContain("App Rationalization");
+    expect(text).toContain("How your documentation stack folds onto the Abridge you already run.");
     expect(text).toContain("Deaconess Health System");
-    // consolidation header + waterfall
-    expect(text).toContain("Your stack, consolidated onto Abridge");
-    expect(text).toContain("sunsets onto Abridge");
-    expect(text).toContain("$492K"); // net savings (price 0) short form
-    // cumulative savings (the "when" curve)
-    expect(text).toContain("Cumulative savings, over time");
-    expect(text).toContain("If you moved now");
-    expect(text).toContain("Your plan");
-    // stack table
-    expect(text).toContain("Sunset value");
+    // page 2 · the consolidation
+    expect(text).toContain("Fold it onto what you already run.");
+    expect(text).toContain("Freed every year");
+    expect(text).toContain("$492,000"); // freed / yr = Σ itemRetired (320k+88k+54k+30k)
     expect(text).toContain("Dragon");
-    expect(text).toContain("$400,000");
-    expect(text).toContain("$492,000"); // sunset total
+    expect(text).toContain("$400,000"); // Dragon annual spend
+    // page 3 · when it lands
+    expect(text).toContain("How soon it lands is your call.");
+    expect(text).toContain("Captured sooner by acting");
+    expect(text).toContain("$27,000"); // UpToDate/cds pulled 6mo early: 54k/12 * 6
+    // page 4 · why only Abridge (verbatim moat line)
+    expect(text).toContain("The stack folds into Abridge.");
+    expect(text).toContain("folds onto Abridge, and not onto a tool that does one step");
   });
 
   it("nets the Abridge price and labels a net cost without throwing", () => {
-    const text = renderText(sample, "Acme", 600_000, 3); // price > sunset -> net cost
-    expect(text).toContain("Net cost / yr");
+    const text = renderText(sample, "Acme", 600_000, 3); // price > freed -> net cost
+    expect(text).toContain("Net of Abridge");
+    expect(text).toContain("above what these tools free today.");
   });
 
-  it("does not render the cumulative section when nothing sunsets", () => {
+  it("does not render the timing / moat pages when nothing frees spend", () => {
     const noSunset = [tool("a", "dictation", 400_000, 0, 12, 12, "Dragon")];
     const text = renderText(noSunset, "Acme", 0, 3);
-    expect(text).not.toContain("Cumulative savings, over time");
-    // still renders the page + table
-    expect(text).toContain("Your stack, consolidated onto Abridge");
+    expect(text).not.toContain("How soon it lands is your call.");
+    expect(text).not.toContain("The stack folds into Abridge.");
+    // still renders the consolidation page + table
+    expect(text).toContain("Fold it onto what you already run.");
     expect(text).toContain("Dragon");
   });
 });
