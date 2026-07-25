@@ -93,32 +93,105 @@ export default function ConsolidationTiming({
   const captured = summary.capturedSooner;
   const sooner = summary.monthsSooner;
 
-  // Named dots on the plan line: each name rides the flat run to the right of its
-  // dot (last one flips left), with a white halo and vertical de-collision so
-  // stacked names never hide each other.
-  const sortedPlan = [...tools].sort((a, b) => a.sunsetMonths - b.sunsetMonths);
-  let cumPlan = 0;
-  const nodes = sortedPlan.map((t) => { cumPlan += runRate(t); return { t, x: xf(t.sunsetMonths), y: yf(cumPlan) }; });
-  const shortName = (n: string) => (n.length > 15 ? n.slice(0, 14).trimEnd() + "…" : n);
-  const labels = nodes.map((n) => {
-    const right = n.x <= X1 - 130;
-    return { name: shortName(n.t.name), x: n.x, lx: right ? n.x + 11 : n.x - 11, ly: n.y - 11, anchor: right ? "start" as const : "end" as const };
-  });
-  const byY = [...labels].sort((a, b) => a.ly - b.ly);
-  for (let i = 1; i < byY.length; i++) {
-    const a = byY[i - 1], b = byY[i];
-    if (Math.abs(a.x - b.x) < 95 && b.ly - a.ly < 18) b.ly = a.ly + 18;
-  }
+  // ---- Chart label layout (collision-aware) --------------------------------
+  // Small geometry helpers so no two floating labels share the same spot,
+  // whatever the data. Boxes are approximate glyph bounds in viewBox units.
+  const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
+  type Box = { x0: number; y0: number; x1: number; y1: number };
+  const boxesOverlap = (a: Box, b: Box) => a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1;
+  const textWidth = (text: string, size: number) => text.length * size * 0.6;
+  const textBox = (x: number, baseline: number, text: string, size: number, anchor: "start" | "middle" | "end"): Box => {
+    const w = textWidth(text, size);
+    const x0 = anchor === "start" ? x : anchor === "end" ? x - w : x - w / 2;
+    return { x0, y0: baseline - size, x1: x0 + w, y1: baseline + 3 };
+  };
+  // The upper band of the plot is reserved for the ceiling annotations (the
+  // full-run-rate label and the months-sooner pill); a name whose dot rides up
+  // here drops below its line instead of fighting for the same space.
+  const CEIL_Y = Y0 + 0.35 * (Y1 - Y0);
 
   // Year-1 run-rate reached (tools that have come off by month 12).
   const year1 = tools.reduce((s, t) => s + (t.sunsetMonths <= 12 ? runRate(t) : 0), 0);
   const y1x = xf(12), y1y = yf(year1);
 
-  // "N months sooner" bracket at the ceiling, only when the plan finishes earlier.
+  // Full run-rate label (top-right, fixed anchor).
+  const rrText = `${fmtC(FULL)} / yr · full run-rate`;
+  const rrBox = textBox(X1 - 2, Y0 - 10, rrText, 12.5, "end");
+
+  // "N months sooner" bracket + pill at the ceiling, only when the plan finishes
+  // earlier. The bracket stays on the real span; the pill centers over it but
+  // nudges left if it would collide with the run-rate label near the right edge.
   const fx = xf(summary.planFinishMonths), bx = xf(summary.renewalFinishMonths);
-  const bmid = (fx + bx) / 2;
   const bLabel = `${sooner} ${sooner === 1 ? "month" : "months"} sooner`;
   const bw = Math.max(120, bLabel.length * 8.2);
+  const pillBoxAt = (cx: number): Box => ({ x0: cx - bw / 2, y0: Y0 - 32, x1: cx + bw / 2, y1: Y0 - 8 });
+  let pillCx = (fx + bx) / 2;
+  if (sooner > 0 && boxesOverlap(pillBoxAt(pillCx), rrBox)) {
+    pillCx -= pillBoxAt(pillCx).x1 - (rrBox.x0 - 10);
+  }
+  pillCx = clamp(pillCx, X0 + bw / 2, X1 - bw / 2);
+  const pillBox = pillBoxAt(pillCx);
+
+  // Year-1 label. Default above its point; drop it below the plan line when the
+  // year-1 value is at/near the full run-rate (everything lands by month 12), or
+  // when the above position would collide with the pill or run-rate label. Its x
+  // flips to the left of the marker near the right edge and is clamped in-frame.
+  const year1Text = `Year 1 · ${fmtC(year1)}`;
+  const year1AtCeiling = year1 >= FULL - FULL * 0.02;
+  const y1Anchor: "start" | "end" = y1x > X1 - textWidth(year1Text, 12) - 12 ? "end" : "start";
+  const y1lxRaw = y1Anchor === "start" ? y1x + 8 : y1x - 8;
+  const y1AboveBox = textBox(y1lxRaw, y1y - 12, year1Text, 12, y1Anchor);
+  const y1Below = year1AtCeiling || (sooner > 0 && boxesOverlap(y1AboveBox, pillBox)) || boxesOverlap(y1AboveBox, rrBox);
+  const y1Baseline = clamp(y1Below ? y1y + 20 : y1y - 12, Y0 + 16, Y1 - 6);
+  const y1w = textWidth(year1Text, 12);
+  const y1lx = y1Anchor === "start" ? clamp(y1lxRaw, X0, VB_W - y1w - 4) : clamp(y1lxRaw, y1w + 4, VB_W - 4);
+  const year1Box = textBox(y1lx, y1Baseline, year1Text, 12, y1Anchor);
+
+  // Named dots on the plan line. Each name rides just off its dot with a white
+  // halo. Names on dots high in the plot (the reserved band) drop below their
+  // run; the rest sit above. Then de-collide within each direction and keep
+  // every name clear of the year-1 label; finally clamp inside the viewBox.
+  const sortedPlan = [...tools].sort((a, b) => a.sunsetMonths - b.sunsetMonths);
+  let cumPlan = 0;
+  const nodes = sortedPlan.map((t) => { cumPlan += runRate(t); return { t, x: xf(t.sunsetMonths), y: yf(cumPlan) }; });
+  const shortName = (n: string) => (n.length > 15 ? n.slice(0, 14).trimEnd() + "…" : n);
+  type NameLabel = { name: string; x: number; lx: number; ly: number; anchor: "start" | "end"; below: boolean };
+  const nameLabels: NameLabel[] = nodes.map((n) => {
+    const right = n.x <= X1 - 130;
+    const below = n.y <= CEIL_Y; // dot high in the plot -> label under its run
+    return {
+      name: shortName(n.t.name),
+      x: n.x,
+      lx: right ? n.x + 11 : n.x - 11,
+      ly: below ? n.y + 18 : n.y - 11,
+      anchor: right ? ("start" as const) : ("end" as const),
+      below,
+    };
+  });
+  // De-collide names sharing an x band: above-line names stack upward, below-line
+  // names stack downward, so both move away from the plan line.
+  const aboveNames = nameLabels.filter((l) => !l.below).sort((a, b) => b.ly - a.ly);
+  for (let i = 1; i < aboveNames.length; i++) {
+    const a = aboveNames[i - 1], b = aboveNames[i];
+    if (Math.abs(a.x - b.x) < 95 && a.ly - b.ly < 18) b.ly = a.ly - 18;
+  }
+  const belowNames = nameLabels.filter((l) => l.below).sort((a, b) => a.ly - b.ly);
+  for (let i = 1; i < belowNames.length; i++) {
+    const a = belowNames[i - 1], b = belowNames[i];
+    if (Math.abs(a.x - b.x) < 95 && b.ly - a.ly < 18) b.ly = a.ly + 18;
+  }
+  // Push any name that would sit on the year-1 label out of its box.
+  for (const l of nameLabels) {
+    if (boxesOverlap(textBox(l.lx, l.ly, l.name, 12, l.anchor), year1Box)) {
+      l.ly = l.below ? year1Box.y1 + 14 : year1Box.y0 - 6;
+    }
+  }
+  // Keep every name inside the viewBox.
+  for (const l of nameLabels) {
+    const w = textWidth(l.name, 12);
+    l.lx = l.anchor === "start" ? clamp(l.lx, X0, VB_W - w - 4) : clamp(l.lx, w + 4, VB_W - 4);
+    l.ly = clamp(l.ly, Y0 + 14, Y1 - 4);
+  }
 
   const consolidatedLabel = summary.planFinishMonths === 0 ? "now" : monthLabel(summary.planFinishMonths);
 
@@ -177,13 +250,13 @@ export default function ConsolidationTiming({
 
           {/* year-1 marker */}
           <line x1={y1x} y1={y1y} x2={y1x} y2={Y1} stroke="#D9CDBE" strokeWidth={1.5} strokeDasharray="5 5" />
-          <text x={y1x + 8} y={Math.max(y1y + 18, Y0 + 22)} fontFamily="Manrope" fontSize={12} fontWeight={700} fill="#5E534A" stroke="#FDFCFA" strokeWidth={3.5} paintOrder="stroke" strokeLinejoin="round">
-            Year 1 · {fmtC(year1)}
+          <text x={y1lx} y={y1Baseline} textAnchor={y1Anchor} fontFamily="Manrope" fontSize={12} fontWeight={700} fill="#5E534A" stroke="#FDFCFA" strokeWidth={3.5} paintOrder="stroke" strokeLinejoin="round">
+            {year1Text}
           </text>
 
           {/* full run-rate ceiling label */}
           <text x={X1 - 2} y={Y0 - 10} textAnchor="end" fontFamily="Manrope" fontSize={12.5} fontWeight={800} fill="#EA2C00" stroke="#FDFCFA" strokeWidth={3.5} paintOrder="stroke" strokeLinejoin="round">
-            {fmtC(FULL)} / yr · full run-rate
+            {rrText}
           </text>
 
           {/* "N months sooner" bracket */}
@@ -192,13 +265,13 @@ export default function ConsolidationTiming({
               <line x1={fx} y1={Y0 - 8} x2={fx} y2={Y0 + 8} stroke="#EA2C00" strokeWidth={3} />
               <line x1={bx} y1={Y0 - 8} x2={bx} y2={Y0 + 8} stroke="#C3B7A8" strokeWidth={2} />
               <line x1={fx} y1={Y0} x2={bx} y2={Y0} stroke="#EA2C00" strokeWidth={3} />
-              <rect x={bmid - bw / 2} y={Y0 - 32} width={bw} height={24} rx={12} fill="#EA2C00" />
-              <text x={bmid} y={Y0 - 15} textAnchor="middle" fontFamily="Manrope" fontSize={14} fontWeight={800} fill="#fff">{bLabel}</text>
+              <rect x={pillCx - bw / 2} y={Y0 - 32} width={bw} height={24} rx={12} fill="#EA2C00" />
+              <text x={pillCx} y={Y0 - 15} textAnchor="middle" fontFamily="Manrope" fontSize={14} fontWeight={800} fill="#fff">{bLabel}</text>
             </g>
           )}
 
           {/* named dots on the plan line */}
-          {labels.map((l, i) => (
+          {nameLabels.map((l, i) => (
             <text key={`l-${i}`} x={l.lx} y={l.ly} textAnchor={l.anchor} fontFamily="Manrope" fontSize={12} fontWeight={700} fill="#6E6157" stroke="#FDFCFA" strokeWidth={3.5} paintOrder="stroke" strokeLinejoin="round">{l.name}</text>
           ))}
           {nodes.map((n) => (
