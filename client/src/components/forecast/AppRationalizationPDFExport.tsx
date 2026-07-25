@@ -78,6 +78,13 @@ const fmtC = (n: number) => {
   return `$${a}`;
 };
 
+// SVG hardening: a NaN or Infinity reaching an Svg coordinate/width or a Path `d`
+// string makes @react-pdf throw at render time (the export then dies silently).
+// Every computed geometry value below is clamped finite through this before it
+// hits the canvas, so a stray divide-by-zero or bad input degrades to a fallback
+// instead of killing the whole PDF.
+const fin = (n: number, fallback = 0): number => (Number.isFinite(n) ? n : fallback);
+
 // Per-capability rationale for the "why each capability consolidates" proof
 // table. Deliberately CLAIM-SAFE: "Today" describes what the tool does; "With
 // Abridge" states the capability in conditional language ("can consolidate",
@@ -240,8 +247,12 @@ const s = StyleSheet.create({
 
   // Moat chain
   chainRel: { position: "relative", marginTop: 12 },
+  // No borderRadius here: @react-pdf 4.x's border shorthand resolver treats a
+  // radius value of 0 as falsy and throws ("Invalid border radius: undefined"),
+  // so the segmented region boxes below can't square a corner with `…Radius: 0`.
+  // Each box that wants rounding sets it explicitly; unset corners default square.
   chainBox: {
-    position: "absolute", justifyContent: "center", paddingHorizontal: 10, borderRadius: 7,
+    position: "absolute", justifyContent: "center", paddingHorizontal: 10,
   },
   chainToolText: { fontSize: 8, fontWeight: 700, color: "#5E534A" },
   chainFold: { position: "absolute", right: 9, top: 0, bottom: 0, fontSize: 7, fontWeight: 700, color: C.coral },
@@ -510,12 +521,12 @@ function ConsolidationBars({ model }: { model: ReturnType<typeof buildConsolidat
   // Precompute each tool's slot (x, width) once; both bars share the order/widths.
   let acc = 0;
   const segs = model.rows.map((r) => {
-    const x = acc;
-    const w = (CW * r.widthPct) / 100;
+    const x = fin(acc);
+    const w = Math.max(0, fin((CW * r.widthPct) / 100));
     acc += w;
     return { r, x, w };
   });
-  const freedLeft = (CW * freedRegionLeftPct(model.rows)) / 100;
+  const freedLeft = Math.max(0, fin((CW * freedRegionLeftPct(model.rows)) / 100));
 
   return (
     <View>
@@ -556,8 +567,8 @@ function ConsolidationBars({ model }: { model: ReturnType<typeof buildConsolidat
           <Svg width={CW} height={CONS_BAR_H}>
             {segs.map(({ r, x, w }) => {
               const inner = Math.max(1, w - 2);
-              const coralW = (inner * r.retiredPct) / 100;
-              const staysW = (inner * r.staysPct) / 100;
+              const coralW = Math.max(0, fin((inner * r.retiredPct) / 100));
+              const staysW = Math.max(0, fin((inner * r.staysPct) / 100));
               return (
                 <G key={r.id}>
                   {r.retired > 0 && <Rect x={x + 1} y={0} width={coralW} height={CONS_BAR_H} fill={C.coral} />}
@@ -710,8 +721,10 @@ function TimingChart({ items }: { items: AppRatItem[] }) {
   const axisMax = Math.max(12, Math.ceil((spanEnd + 4) / 6) * 6);
   const xStep = axisMax <= 24 ? 6 : 12;
 
-  const xf = (m: number) => T_X0 + (Math.max(0, Math.min(m, axisMax)) / axisMax) * (T_X1 - T_X0);
-  const yf = (v: number) => T_Y1 - (v / FULL) * (T_Y1 - T_Y0);
+  // axisMax >= 12 and FULL >= 1 by construction, but clamp finite anyway so a bad
+  // input can never leak a NaN into a coordinate or a Path `d` string.
+  const xf = (m: number) => fin(T_X0 + (Math.max(0, Math.min(fin(m), axisMax)) / axisMax) * (T_X1 - T_X0), T_X0);
+  const yf = (v: number) => fin(T_Y1 - (fin(v) / FULL) * (T_Y1 - T_Y0), T_Y1);
   const toXY = (p: [number, number]) => `${xf(p[0]).toFixed(1)},${yf(p[1]).toFixed(1)}`;
 
   const planPts = stepPts(tools, "sunsetMonths", runRate, axisMax);
@@ -1021,7 +1034,7 @@ function MoatChain({ items }: { items: AppRatItem[] }) {
           key={i}
           style={[s.chainBox, {
             left: col * 2, width: col * 2, top: i * (TOOL_H + GAP), height: TOOL_H,
-            backgroundColor: "#EFE7DC", borderWidth: 1, borderColor: "#E1D7C9",
+            backgroundColor: "#EFE7DC", borderWidth: 1, borderColor: "#E1D7C9", borderRadius: 7,
           }]}
         >
           <Text style={s.chainToolText}>{name}</Text>
@@ -1033,20 +1046,20 @@ function MoatChain({ items }: { items: AppRatItem[] }) {
       <View style={[s.chainBox, {
         left: 0, width: col, top: barTop, height: BAR_H, alignItems: "center",
         borderWidth: 1.5, borderColor: "#F0B7A6", borderStyle: "dashed", backgroundColor: "#FBE7DF",
-        borderTopLeftRadius: 8, borderBottomLeftRadius: 8, borderTopRightRadius: 0, borderBottomRightRadius: 0,
+        borderTopLeftRadius: 8, borderBottomLeftRadius: 8,
       }]}>
         <Text style={s.chainRegionText}>Pre-charting</Text>
         <Text style={s.chainRegionSmall}>expanding</Text>
       </View>
       <View style={[s.chainBox, {
-        left: col, width: col * 3, top: barTop, height: BAR_H, backgroundColor: C.coral, borderRadius: 0,
+        left: col, width: col * 3, top: barTop, height: BAR_H, backgroundColor: C.coral,
       }]}>
         <Text style={s.chainAbText}>Abridge, from the conversation to the draft note</Text>
       </View>
       <View style={[s.chainBox, {
         left: col * 4, width: col * 2, top: barTop, height: BAR_H, alignItems: "center",
         borderWidth: 1.5, borderColor: "#F0B7A6", borderStyle: "dashed", backgroundColor: "#FBE7DF",
-        borderTopRightRadius: 8, borderBottomRightRadius: 8, borderTopLeftRadius: 0, borderBottomLeftRadius: 0,
+        borderTopRightRadius: 8, borderBottomRightRadius: 8,
       }]}>
         <Text style={s.chainRegionText}>Coding · Quality</Text>
         <Text style={s.chainRegionSmall}>expanding</Text>

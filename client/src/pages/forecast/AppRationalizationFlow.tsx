@@ -5,6 +5,7 @@ import ArApplicationsStep from "./appRationalization/ArApplicationsStep";
 import ArConsolidationView from "@/components/forecast/ArConsolidationView";
 import ConsolidationTiming from "@/components/forecast/ConsolidationTiming";
 import ArMoatView from "@/components/forecast/ArMoatView";
+import { useToast } from "@/hooks/use-toast";
 import { Download } from "lucide-react";
 
 type ArStep = "applications" | "consolidation" | "timing" | "moat";
@@ -25,12 +26,23 @@ export default function AppRationalizationFlow({ onBack, onHome }: AppRationaliz
   const [items, setItems] = useState<AppRatItem[]>([]);
   const [exporting, setExporting] = useState(false);
   const nextId = useRef(0);
+  const { toast } = useToast();
 
   const handleExportPdf = async () => {
     setExporting(true);
     try {
       const mod = await import("@/components/forecast/AppRationalizationPDFExport");
       await mod.generateAppRationalizationPDF(items, orgName, abridgePrice, horizonYears);
+    } catch (err) {
+      // Never fail silently: a throw inside pdf().toBlob() used to be swallowed by
+      // a catch-less try/finally, so the button did nothing. Log for debugging and
+      // surface a brief, non-blocking message so the rep knows to retry.
+      console.error("App Rationalization PDF export failed:", err);
+      toast({
+        title: "Export failed",
+        description: "The PDF couldn't be generated. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setExporting(false);
     }
