@@ -653,8 +653,8 @@ function TimingTable({ items }: { items: AppRatItem[] }) {
                 <Text style={[s.tName, { color: C.body }]}>{itemDisplayName(it)}</Text>
               </View>
               <Text style={[s.tCellMuted, { flex: 1.2, textAlign: "right" }]}>stays on</Text>
-              <Text style={[s.tCellMuted, { flex: 1.2, textAlign: "right" }]}>—</Text>
-              <Text style={[s.tCellMuted, { flex: 1.3, textAlign: "right" }]}>—</Text>
+              <Text style={[s.tCellMuted, { flex: 1.2, textAlign: "right" }]}>·</Text>
+              <Text style={[s.tCellMuted, { flex: 1.3, textAlign: "right" }]}>$0</Text>
             </View>
           );
         }
@@ -670,7 +670,7 @@ function TimingTable({ items }: { items: AppRatItem[] }) {
             <Text style={[s.tCell, { flex: 1.2, textAlign: "right" }]}>{renewal}</Text>
             <Text style={[s.tCell, { flex: 1.2, textAlign: "right" }]}>{exit}</Text>
             <Text style={[t.earlySaving > 0 ? s.tCellCoral : s.tCellMuted, { flex: 1.3, textAlign: "right" }]}>
-              {t.earlySaving > 0 ? fmtFull(t.earlySaving) : "—"}
+              {t.earlySaving > 0 ? fmtFull(t.earlySaving) : "$0"}
             </Text>
           </View>
         );
