@@ -219,7 +219,7 @@ export default function ArApplicationsStep({
               <div style={{ width: `${pctSunset}%`, background: "#EA2C00" }} />
               <div style={{ width: `${100 - pctSunset}%`, background: "#D8CEC1" }} />
             </div>
-            <div className="text-[12.5px] text-[#6B6B6B] tabular-nums">
+            <div className="text-[12.5px] text-[#8C7E6E] tabular-nums">
               <b className="text-[#1A1A1A]">{fmtM(net.sunset)}</b> sunsets onto Abridge
               {net.abridgePrice > 0 && (
                 <>
