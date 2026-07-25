@@ -24,6 +24,17 @@ import PlanView from "./PlanView";
 const fmt$ = (n: number) => (n >= 1_000_000 ? `$${(n / 1_000_000).toFixed(1)}M` : n >= 1000 ? `$${Math.round(n / 1000)}K` : `$${Math.round(n)}`);
 const LBL = "text-[10px] font-bold uppercase tracking-[2px] text-[#8C8C8C]";
 
+// The realistic causal chain per category (ends before the dollar; the dollar pill is appended in
+// render). One link is `fragile` — the partner-owned step where value actually leaks, the core
+// Attain thesis. Kept category-keyed and true across settings.
+const CHAIN_STEPS: Record<string, { text: string; fragile?: boolean }[]> = {
+  "Patient Access": [{ text: "Lighter notes" }, { text: "Freed clinician time" }, { text: "Freed capacity put to work", fragile: true }, { text: "More patients seen" }],
+  "Provider Retention": [{ text: "A lighter day" }, { text: "After-hours charting down" }, { text: "Relief protected, not refilled", fragile: true }, { text: "Burnout eases, more stay" }],
+  "Revenue Capture": [{ text: "Complete notes" }, { text: "Coding-ready specificity" }, { text: "Coding acts on it", fragile: true }, { text: "Claims clear at the right level" }],
+  "Quality & Safety": [{ text: "Earlier documentation" }, { text: "Risk surfaced sooner" }, { text: "Team acts at the bedside", fragile: true }, { text: "Fewer preventable events" }],
+  "Nursing Capacity": [{ text: "Lighter documentation" }, { text: "Charting in the moment" }, { text: "Shift ends on time", fragile: true }, { text: "Documentation overtime falls" }],
+};
+
 const MOCK_SETTING = "Outpatient";
 const MOCK_CELLS = ATTAIN_MATRIX.filter((c) => c.setting === MOCK_SETTING); // Access, Retention, Revenue
 const CURFIELD = "w-16 bg-transparent border-0 border-b-2 border-[#E0D9CE] rounded-none px-0 pb-0.5 text-center font-abridge text-[16px] outline-none transition-colors focus:border-[#EA2C00] placeholder:font-sans placeholder:text-[14px] placeholder:text-[#C4BCB0]";
@@ -55,6 +66,16 @@ export function AttainExperience({ setting, cells, baseline, initial, onPersist 
   // changing chapter). Without this the next view opened wherever the last one was scrolled —
   // usually the bottom, right where the lock-in button sits. The app shell scrolls in a div,
   // not the window, so reset both the window and any scrollable ancestor.
+  // Export the plan as a downloadable PDF (react-pdf, same as every other export in the app).
+  // Lazy-import so react-pdf only loads when they actually click.
+  const [exporting, setExporting] = useState(false);
+  const exportPdf = async () => {
+    setExporting(true);
+    try { const m = await import("../pdf/AttainPdfDoc"); await m.generateAttainPDF(); }
+    catch (e) { console.error("Attain PDF export failed", e); }
+    finally { setExporting(false); }
+  };
+
   const rootRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "auto" });
@@ -227,7 +248,7 @@ export function AttainExperience({ setting, cells, baseline, initial, onPersist 
               <button key={ch} onClick={() => setChapter(ch)} className={chapterTab(ch)}>{ch}</button>
             ))}
           </div>
-          <button type="button" onClick={() => window.open(`${window.location.pathname}?attainpdf=1`, "_blank")} className="ml-auto inline-flex items-center gap-1.5 text-[12px] font-semibold text-[#EA2C00] hover:underline">Export PDF</button>
+          <button type="button" onClick={exportPdf} disabled={exporting} className="ml-auto inline-flex items-center gap-1.5 text-[12px] font-semibold text-[#EA2C00] hover:underline disabled:opacity-50">{exporting ? "Preparing PDF…" : "Export PDF"}</button>
         </div>
       </div>
       {/* clears the fixed chapter nav above */}
@@ -321,44 +342,99 @@ export function AttainExperience({ setting, cells, baseline, initial, onPersist 
     );
   }
 
-  // ---- Strategy: one combined case across all chosen categories ----
+  // ---- Strategy: the executive one-pager — synthesizes Align (stakes) + Plan (owners) per category ----
   function StrategyRollup() {
+    const multi = CELLS.length > 1;
+    const unlocksFor = (c: (typeof CELLS)[number]) => (c.align.unlock?.options ?? []).filter((o) => alignAnswersByCat[c.category]?.unlock?.has(o.id));
+    const ownersFor = (c: (typeof CELLS)[number]) => (peopleByCat[c.category] ?? []).filter((p) => p.name.trim());
+    const ChainPill = ({ text, accent, fragile }: { text: string; accent?: boolean; fragile?: boolean }) => (
+      <span className={`text-[12px] rounded-md px-2.5 py-1 whitespace-nowrap ${accent ? "bg-[#EA2C00] text-white font-semibold" : fragile ? "border-2 border-[#EA2C00] text-[#EA2C00] font-medium bg-white" : "border border-[#E0D9CE] bg-[#FAF7F2] text-[#3A3A3A]"}`}>{text}</span>
+    );
     return (
-      <div className="max-w-[760px] mx-auto">
-        <p className={`${LBL} mb-2`}>Strategy · {SETTING} · {CELLS.length} categories</p>
+      <div className="max-w-[820px] mx-auto">
+        <p className={`${LBL} mb-2`}>Strategy · {SETTING} · {multi ? `${CELLS.length} categories` : "1 category"}</p>
         <h2 className="font-abridge text-[30px] md:text-4xl text-[#1A1A1A] leading-tight mb-3">The whole picture, on one page</h2>
-        <p className="text-[15px] text-[#3A3A3A] leading-relaxed max-w-[640px] mb-10">Everything you set across {CELLS.map((c) => catLabel(c).toLowerCase()).join(", ")}, rolled into one case and one scoreboard.</p>
+        <p className="text-[15px] text-[#3A3A3A] leading-relaxed max-w-[640px] mb-10">{multi ? <>Everything you set across {CELLS.map((c) => catLabel(c).toLowerCase()).join(", ")}, rolled into one case a CFO can act on.</> : <>Everything you set for {catLabel(CELLS[0]).toLowerCase()}, in one case a CFO can act on: what it is worth, how it is earned, what it unlocks, and who owns it.</>}</p>
 
+        {/* the number (+ the mix, only when there's more than one to compare) */}
         <div className="rounded-2xl border border-[#EFEAE1] p-6 mb-12">
-          <p className={`${LBL} mb-1`}>The value in play, all categories</p>
+          <p className={`${LBL} mb-1`}>The value in play{multi ? ", all categories" : ""}</p>
           <p className="font-abridge text-5xl text-[#EA2C00] leading-none mb-5"><AnimatedNumber value={totalValue} format={fmt$} /><span className="text-lg text-[#8C8C8C]"> / yr</span></p>
-          <div className="space-y-3">
-            {CELLS.map((c) => {
-              const v = valueByCat(c);
-              return (
-                <div key={c.category}>
-                  <div className="flex items-baseline justify-between mb-1">
-                    <span className="text-[14px] text-[#1A1A1A]">{catLabel(c)}</span>
-                    {v > 0
-                      ? <span className="font-abridge text-[16px] text-[#1A1A1A]">{fmt$(v)}<span className="text-[12px] text-[#8C8C8C]">/yr</span></span>
-                      : <span className="text-[12px] text-[#B4A896] italic">not entered yet</span>}
+          {multi && (
+            <div className="space-y-3">
+              {CELLS.map((c) => {
+                const v = valueByCat(c);
+                return (
+                  <div key={c.category}>
+                    <div className="flex items-baseline justify-between mb-1">
+                      <span className="text-[14px] text-[#1A1A1A]">{catLabel(c)}</span>
+                      {v > 0
+                        ? <span className="font-abridge text-[16px] text-[#1A1A1A]">{fmt$(v)}<span className="text-[12px] text-[#8C8C8C]">/yr</span></span>
+                        : <span className="text-[12px] text-[#B4A896] italic">not entered yet</span>}
+                    </div>
+                    <div className="h-2 rounded-full bg-[#EFEAE1] overflow-hidden"><div className="h-full bg-[#EA2C00]" style={{ width: `${totalValue > 0 ? Math.round((v / totalValue) * 100) : 0}%` }} /></div>
                   </div>
-                  <div className="h-2 rounded-full bg-[#EFEAE1] overflow-hidden"><div className="h-full bg-[#EA2C00]" style={{ width: `${totalValue > 0 ? Math.round((v / totalValue) * 100) : 0}%` }} /></div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
-        <p className={`${LBL} mb-1`}>How it all happens</p>
-        <h3 className="font-abridge text-[22px] text-[#1A1A1A] mb-4">{CELLS.length > 1 ? "One chain, feeding every category" : "The chain behind the number"}</h3>
-        <div className="rounded-2xl border border-[#EFEAE1] p-5 mb-12">
-          <p className="text-[14px] text-[#3A3A3A] leading-relaxed">A lighter documentation load is the shared lever. Each category runs its own chain from the Epic signals we pull to the outcome it opens{CELLS.length > 1 ? <>: <span className="font-medium">{CELLS.map((c) => catLabel(c).toLowerCase()).join(", ")}</span>.</> : <> for <span className="font-medium">{CELLS[0] ? catLabel(CELLS[0]).toLowerCase() : ""}</span>.</>}</p>
+        {/* per-category synthesis: the chain, what it unlocks (from Align), who owns it (from Plan) */}
+        <p className={`${LBL} mb-4`}>How each number is earned</p>
+        <div className="space-y-6 mb-12">
+          {CELLS.map((c) => {
+            const v = valueByCat(c);
+            const unlocks = unlocksFor(c);
+            const owners = ownersFor(c);
+            return (
+              <div key={c.category} className="rounded-2xl border border-[#EFEAE1] p-6">
+                <div className="flex items-baseline justify-between gap-4 mb-4">
+                  <h3 className="font-abridge text-[21px] text-[#1A1A1A]">{catLabel(c)}</h3>
+                  {v > 0
+                    ? <span className="font-abridge text-[20px] text-[#EA2C00] whitespace-nowrap">{fmt$(v)}<span className="text-[13px] text-[#8C8C8C]">/yr</span></span>
+                    : <span className="text-[12px] text-[#B4A896] italic whitespace-nowrap">not entered yet</span>}
+                </div>
+                {/* the realistic causal chain, with the partner-owned fragile link marked */}
+                <div className="flex flex-wrap items-center gap-2 mb-2.5">
+                  {(CHAIN_STEPS[c.category] ?? [{ text: "A lighter day" }, { text: c.plan.outcomesShortList }]).map((step, i) => (
+                    <span key={i} className="flex items-center gap-2">
+                      <ChainPill text={step.text} fragile={step.fragile} />
+                      <span className="text-[#C4BCB0]">&rarr;</span>
+                    </span>
+                  ))}
+                  <ChainPill text={v > 0 ? `${fmt$(v)}/yr` : "the payoff"} accent />
+                </div>
+                {(CHAIN_STEPS[c.category] ?? []).some((s) => s.fragile) && (
+                  <p className="text-[12.5px] text-[#8C8C8C] leading-relaxed mb-2"><span className="text-[#EA2C00] font-medium">The outlined link is the fragile one.</span> Protect it and the number holds; let it slip and the value leaks.</p>
+                )}
+                <p className="text-[12.5px] text-[#8C8C8C] leading-relaxed mb-5">Measured through {c.plan.signalsShortList}.</p>
+                {/* what it unlocks — the stakes chosen in Align */}
+                {unlocks.length > 0 && (
+                  <div className="pt-4 border-t border-[#EFEAE1]">
+                    <p className={`${LBL} mb-2.5`}>What this unlocks</p>
+                    <div className="space-y-2">
+                      {unlocks.map((u) => (
+                        <div key={u.id} className="flex gap-2.5">
+                          <span className="mt-[7px] w-1.5 h-1.5 rounded-full bg-[#EA2C00] flex-shrink-0" />
+                          <p className="text-[13.5px] text-[#1A1A1A] leading-snug"><span className="font-semibold">{u.title}.</span> <span className="text-[#6B6B6B]">{u.desc}</span></p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {/* who owns it — named in Plan */}
+                {owners.length > 0 && (
+                  <p className="text-[13px] text-[#8C8C8C] mt-4 pt-4 border-t border-[#EFEAE1]">Owned by <span className="font-semibold text-[#1A1A1A]">{owners.map((o) => o.name.trim() + (o.role.trim() ? ` (${o.role.trim()})` : "")).join(", ")}</span></p>
+                )}
+              </div>
+            );
+          })}
         </div>
 
         <div className="rounded-2xl border-2 border-[#1A1A1A] bg-[#1A1A1A] p-6 md:p-7 mb-16">
           <p className="text-[10px] font-bold uppercase tracking-[2px] text-white/50 mb-3">The scoreboard</p>
-          <p className="text-[15px] text-white/90 leading-relaxed">From here we track attainment across all {CELLS.length} categories: the share of {fmt$(totalValue)} you realize. Each category has its own line on the Progress page, and they roll up to one number.</p>
+          <p className="text-[15px] text-white/90 leading-relaxed">From here we track attainment{multi ? ` across all ${CELLS.length} categories` : ""}: the share of {fmt$(totalValue)} you realize. {multi ? "Each category has its own line on the Progress page, and they roll up to one number." : "The Progress page measures it against the baselines you set."}</p>
         </div>
       </div>
     );
