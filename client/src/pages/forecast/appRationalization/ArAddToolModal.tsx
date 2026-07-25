@@ -79,14 +79,14 @@ export default function ArAddToolModal({
       <DialogContent className="max-w-[472px] p-0 gap-0 rounded-[20px] border-[#E8E2DA] overflow-hidden bg-white" data-testid="ar-add-modal">
         <DialogDescription className="sr-only">Add this tool to your consolidation stack.</DialogDescription>
 
-        {/* header */}
+        {/* header: icon tile + eyebrow + capability title */}
         <div className="flex items-center gap-3.5 px-6 pt-6 pb-4">
           <div className="w-[46px] h-[46px] rounded-[13px] bg-[#F5F0EB] flex items-center justify-center text-[#6B5E4F] flex-shrink-0">
             <CategoryIcon icon={cat.icon} className="w-[22px] h-[22px]" />
           </div>
           <div>
-            <div className="font-abridge uppercase tracking-[0.15em] text-[9.5px] text-[#B4A99B]">Add to your stack</div>
-            <DialogTitle className="font-abridge text-[23px] tracking-[-0.01em] leading-none mt-1 text-[#1A1A1A]">{title}</DialogTitle>
+            <div className="font-abridge uppercase tracking-[0.14em] text-[10px] text-[#8C7E6E]">Add to your stack</div>
+            <DialogTitle className="font-abridge text-[23px] tracking-[-0.01em] leading-none mt-[5px] text-[#1A1A1A]">{title}</DialogTitle>
           </div>
         </div>
 
@@ -95,7 +95,7 @@ export default function ArAddToolModal({
           {/* capability picker: custom path only */}
           {entryIsCustom && (
             <div className="mb-1">
-              <div className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#8C7E6E] mb-1.5">What kind of tool is it?</div>
+              <div className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[#443A32] mb-2">What kind of tool is it?</div>
               <div className="relative">
                 <select
                   value={activeCategory}
@@ -114,7 +114,7 @@ export default function ArAddToolModal({
           )}
 
           <div className={entryIsCustom ? "mt-4" : ""}>
-            <div className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#8C7E6E] mb-1.5">
+            <div className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[#443A32] mb-2">
               Vendor <span className="font-semibold tracking-normal normal-case text-[#B4A99B]">optional</span>
             </div>
             <input
@@ -127,6 +127,7 @@ export default function ArAddToolModal({
           </div>
 
           <div className="mt-4">
+            <div className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[#443A32] mb-2">Annual spend</div>
             <ArPriceControl
               pricingModel={pricingModel} onPricingModel={setPricingModel}
               flatSpend={flatSpend} onFlatSpend={setFlatSpend}
@@ -138,21 +139,25 @@ export default function ArAddToolModal({
           </div>
 
           <div className="mt-4">
-            <div className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#8C7E6E] mb-2">How much could you displace?</div>
-            <div className="flex items-center gap-3">
+            <div className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[#443A32] mb-2">How much could you displace?</div>
+            <div className="flex items-center gap-3.5">
               <Slider min={0} max={100} step={5} value={[pct]} onValueChange={(v) => setPct(v[0])} accent="coral" aria-label="How much could you displace" />
-              <span className="text-[13px] font-extrabold text-[#EA2C00] tabular-nums w-11 text-right">{pct}%</span>
+              <span className="text-[16px] font-extrabold text-[#EA2C00] tabular-nums w-12 text-right">{pct}%</span>
             </div>
           </div>
 
-          <div className="mt-5 min-h-[58px] flex items-center px-4 py-3.5 bg-[#FAF7F2] border border-[#EFE7DC] rounded-xl">
+          {/* preview band: what sunsets vs what stays, live from spend x displace% */}
+          <div className="mt-[18px] min-h-[58px] flex items-center px-[18px] py-[15px] bg-[#FAF7F2] border border-[#EFE7DC] rounded-xl">
             {canAdd ? (
-              <div className="flex items-baseline justify-between w-full">
+              <div className="flex items-end justify-between w-full">
                 <div>
-                  <div className="text-[10px] font-extrabold uppercase tracking-[0.11em] text-[#8C7E6E]">Sunsets onto Abridge / yr</div>
-                  <div className="text-[18px] font-bold text-[#EA2C00] tabular-nums mt-1">{fmt(retired)}</div>
+                  <div className="text-[10px] font-extrabold uppercase tracking-[0.06em] text-[#443A32]">Sunsets onto Abridge / yr</div>
+                  <div className="font-abridge text-[23px] leading-none text-[#EA2C00] tabular-nums mt-1.5">{fmt(retired)}</div>
                 </div>
-                <div className="text-[12px] text-[#8C7E6E] tabular-nums">{fmt(stays)} stays on this tool</div>
+                <div className="text-right">
+                  <div className="text-[10px] font-extrabold uppercase tracking-[0.06em] text-[#443A32]">Stays on this tool</div>
+                  <div className="font-abridge text-[19px] leading-none text-[#5E534A] tabular-nums mt-1.5">{fmt(stays)}</div>
+                </div>
               </div>
             ) : (
               <div className="text-[12.5px] text-[#8C7E6E]">Enter a spend to see what sunsets onto Abridge.</div>
@@ -161,7 +166,7 @@ export default function ArAddToolModal({
         </div>
 
         {/* footer */}
-        <div className="px-6 pt-4 pb-6 mt-3 border-t border-[#F2ECE4]">
+        <div className="px-6 pt-4 pb-6 mt-3.5 border-t border-[#F2ECE4]">
           <button
             disabled={!canAdd}
             onClick={() => onConfirm(activeCategory, {
@@ -172,7 +177,7 @@ export default function ArAddToolModal({
               userCount: users > 0 ? users : undefined,
               perUserCost: pricingModel === "perUser" ? perUser : undefined,
             })}
-            className="w-full h-11 rounded-xl bg-[#EA2C00] text-white text-sm font-bold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#d92800] transition-opacity"
+            className="w-full h-[49px] rounded-[13px] bg-[#EA2C00] text-white text-[14.5px] font-extrabold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#d92800] transition-opacity"
             data-testid="ar-add-confirm"
           >
             Add to stack

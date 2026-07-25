@@ -16,43 +16,73 @@ function fmtM(n: number): string {
 
 const COL_HEADERS = ["Application", "Price / yr", "How much could you displace?", "Displaceable"];
 
-// The browsable capability cards, reused by the empty state and the on-demand
-// "+ Add application" panel. Clicking a card opens the add-tool modal.
-function CapabilityGrid({ onPick }: { onPick: (category: AppRatCategoryId) => void }) {
+// The documentation stack, read top to bottom: what you capture, how you keep it
+// coded and clean, and what you reach for at the point of care. Every non-custom
+// capability in APP_RAT_CATEGORIES belongs to exactly one layer; custom is added
+// through the affordance below the layers, never as a browsable card.
+const CAPABILITY_LAYERS: { num: string; name: string; ids: AppRatCategoryId[] }[] = [
+  { num: "01", name: "Capture", ids: ["ambientDoc", "dictation", "scribe", "transcription"] },
+  { num: "02", name: "Coding & integrity", ids: ["preChartRisk", "inEncounterCdi", "postChartCoding"] },
+  { num: "03", name: "Decision support", ids: ["cds", "clinicalEvidence"] },
+];
+
+function CapabilityCard({ id, onPick }: { id: AppRatCategoryId; onPick: (category: AppRatCategoryId) => void }) {
+  const cat = APP_RAT_CATEGORIES.find((c) => c.id === id);
+  if (!cat) return null;
+
+  if (cat.comingSoon) {
+    return (
+      <div
+        aria-disabled
+        className="relative bg-[#FAF7F2] border border-dashed border-[#C9BBA9] rounded-2xl p-[17px_18px] cursor-not-allowed"
+        data-testid={`ar-browse-${cat.id}`}
+      >
+        <span className="absolute top-[15px] right-[15px] text-[8.5px] font-extrabold uppercase tracking-[0.09em] text-[#8C7E6E] bg-white border border-[#E8E2DA] rounded-full px-2 py-[3px]">
+          Coming soon
+        </span>
+        <div className="w-[42px] h-[42px] rounded-xl bg-[#EFE7DC] flex items-center justify-center text-[#B4A99B]">
+          <CategoryIcon icon={cat.icon} className="w-5 h-5" />
+        </div>
+        <p className="font-bold text-[14.5px] text-[#8C7E6E] mt-[13px]">{cat.label}</p>
+        <p className="text-[12px] text-[#B4A99B] mt-[3px] truncate">{cat.hint}</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
-      {APP_RAT_CATEGORIES.filter((c) => c.id !== "custom").map((cat) =>
-        cat.comingSoon ? (
-          <div
-            key={cat.id}
-            aria-disabled
-            className="relative text-left bg-[#FAF8F5] border border-dashed border-[#E8E2DA] rounded-2xl p-5 cursor-not-allowed opacity-70"
-            data-testid={`ar-browse-${cat.id}`}
-          >
-            <span className="absolute top-4 right-4 text-[9px] font-bold uppercase tracking-[0.1em] text-[#8C7E6E] bg-white border border-[#E8E2DA] rounded-full px-2 py-0.5">
-              Coming soon
-            </span>
-            <div className="w-11 h-11 rounded-xl bg-[#EFE9E1] flex items-center justify-center mb-4 text-[#B4A99B]">
-              <CategoryIcon icon={cat.icon} className="w-5 h-5" />
-            </div>
-            <p className="font-bold text-[#8C7E6E] text-[15px]">{cat.label}</p>
-            <p className="text-[12px] text-[#B4A99B] mt-1 truncate">{cat.hint}</p>
+    <button
+      onClick={() => onPick(cat.id)}
+      className="group text-left bg-white border border-[#E8E2DA] rounded-2xl p-[17px_18px] hover:border-[#1A1A1A] transition-all"
+      data-testid={`ar-browse-${cat.id}`}
+    >
+      <div className="w-[42px] h-[42px] rounded-xl bg-[#F5F0EB] flex items-center justify-center text-[#6B5E4F] group-hover:bg-[#EA2C00]/10 group-hover:text-[#EA2C00] transition-colors">
+        <CategoryIcon icon={cat.icon} className="w-5 h-5" />
+      </div>
+      <p className="font-bold text-[14.5px] text-[#1A1A1A] mt-[13px]">{cat.label}</p>
+      <p className="text-[12px] text-[#8C7E6E] mt-[3px] truncate">{cat.hint}</p>
+    </button>
+  );
+}
+
+// The three-layer stack map: each layer is a numbered header (coral number +
+// Abridge-face name + a thin rule) over a grid of its capabilities.
+function CapabilityLayers({ onPick }: { onPick: (category: AppRatCategoryId) => void }) {
+  return (
+    <div>
+      {CAPABILITY_LAYERS.map((layer, i) => (
+        <div key={layer.num} className={i === 0 ? "" : "mt-8"}>
+          <div className="flex items-baseline gap-[15px] mb-[18px]">
+            <span className="font-abridge text-[15px] text-[#EA2C00] tracking-[0.02em]">{layer.num}</span>
+            <span className="font-abridge text-[26px] text-[#1A1A1A] tracking-[0.01em]">{layer.name}</span>
+            <span className="flex-1 h-px bg-[#E8E2DA] self-center" />
           </div>
-        ) : (
-          <button
-            key={cat.id}
-            onClick={() => onPick(cat.id)}
-            className="group text-left bg-white border border-[#E8E2DA] rounded-2xl p-5 hover:border-[#1A1A1A] hover:shadow-[0_8px_24px_rgba(0,0,0,0.05)] transition-all"
-            data-testid={`ar-browse-${cat.id}`}
-          >
-            <div className="w-11 h-11 rounded-xl bg-[#F5F0EB] flex items-center justify-center mb-4 text-[#6B5E4F] group-hover:bg-[#EA2C00]/10 group-hover:text-[#EA2C00] transition-colors">
-              <CategoryIcon icon={cat.icon} className="w-5 h-5" />
-            </div>
-            <p className="font-bold text-[#1A1A1A] text-[15px]">{cat.label}</p>
-            <p className="text-[12px] text-[#8C7E6E] mt-1 truncate">{cat.hint}</p>
-          </button>
-        )
-      )}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {layer.ids.map((id) => (
+              <CapabilityCard key={id} id={id} onPick={onPick} />
+            ))}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
@@ -83,14 +113,27 @@ export default function ArApplicationsStep({
     setPick({ category, vendorName });
   };
 
+  // The "not on the list" affordance under the layers: routes to the custom path.
+  const customAffordance = (
+    <button
+      onClick={() => openPick("custom")}
+      className="group flex items-center gap-2.5 mt-6 text-[13.5px] text-[#8C7E6E]"
+      data-testid="ar-add-custom-tool"
+    >
+      <span className="w-[26px] h-[26px] rounded-lg border border-dashed border-[#C9BBA9] flex items-center justify-center text-[#8C7E6E] group-hover:border-[#1A1A1A] group-hover:text-[#1A1A1A] transition-colors">
+        <Plus className="w-3.5 h-3.5" strokeWidth={2.4} />
+      </span>
+      <span>
+        Running something that isn't listed? <b className="font-bold text-[#1A1A1A]">Add it as a custom tool.</b>
+      </span>
+    </button>
+  );
+
   return (
     <div className="max-w-[1120px] mx-auto px-6 py-8">
-      {/* Header: title + org + Abridge price */}
-      <div className="flex items-start justify-between gap-6 mb-2">
-        <div>
-          <h1 className="font-abridge text-4xl uppercase tracking-tight text-[#1A1A1A]">Applications</h1>
-          <p className="text-sm text-[#6B6B6B] mt-2.5">Browse the capabilities, or type a vendor and we place it for you.</p>
-        </div>
+      {/* Topbar: eyebrow + org + Abridge price */}
+      <div className="flex items-start justify-between gap-6 mb-8">
+        <div className="text-[11px] font-bold uppercase tracking-[1.4px] text-[#8C7E6E] pt-1">Forecast · App Rationalization</div>
         <div className="flex items-start gap-3 shrink-0">
           <div className="flex flex-col items-start gap-1.5">
             <label htmlFor="ar-org" className="text-[9px] font-bold uppercase tracking-[0.14em] text-[#8C7E6E]">Organization</label>
@@ -120,8 +163,16 @@ export default function ArApplicationsStep({
         </div>
       </div>
 
+      {/* Hero: editorial headline + subhead */}
+      <div>
+        <h1 className="font-abridge text-[38px] leading-[1.08] text-[#1A1A1A] max-w-[720px]">What's in your documentation stack?</h1>
+        <p className="text-[16px] leading-[1.5] text-[#8C7E6E] mt-[15px] max-w-[600px]">
+          Pick a capability to add, or search a vendor. Everything you run around the clinical note, in one place.
+        </p>
+      </div>
+
       {/* Hero command search */}
-      <div className="mt-6"><ArCommandSearch onSelect={openPick} /></div>
+      <div className="mt-7"><ArCommandSearch onSelect={openPick} /></div>
 
       {items.length > 0 && (
         <>
@@ -139,9 +190,10 @@ export default function ArApplicationsStep({
           </div>
 
           {browseOpen && (
-            <div className="mb-4 p-5 bg-[#FAF8F5] border border-[#E8E2DA] rounded-2xl" data-testid="ar-browse-panel">
-              <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#8C7E6E] mb-3">Choose a capability to add</div>
-              <CapabilityGrid onPick={openPick} />
+            <div className="mb-4 p-5 bg-[#FAF7F2] border border-[#E8E2DA] rounded-2xl" data-testid="ar-browse-panel">
+              <div className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[#443A32] mb-4">Choose a capability to add</div>
+              <CapabilityLayers onPick={openPick} />
+              {customAffordance}
             </div>
           )}
 
@@ -157,7 +209,7 @@ export default function ArApplicationsStep({
           ))}
 
           {/* Slim total bar with the net */}
-          <div className="flex flex-wrap items-center gap-4 mt-4 px-5 py-4 bg-[#FAF8F5] border border-[#E8E2DA] rounded-2xl">
+          <div className="flex flex-wrap items-center gap-4 mt-4 px-5 py-4 bg-[#FAF7F2] border border-[#E8E2DA] rounded-2xl">
             <div>
               <div className="text-[9px] font-bold uppercase tracking-[0.14em] text-[#8C7E6E]">Stack today</div>
               <div className="text-[19px] font-extrabold text-[#1A1A1A] tabular-nums">
@@ -191,10 +243,9 @@ export default function ArApplicationsStep({
       )}
 
       {items.length === 0 && (
-        <div className="mt-9" data-testid="ar-empty-browse">
-          <div className="text-[11px] font-bold uppercase tracking-[2px] text-[#8C7E6E] mb-4">Browse capabilities to consolidate</div>
-          <CapabilityGrid onPick={openPick} />
-          <p className="text-[12px] text-[#8C7E6E] mt-5">Or search a specific vendor above · add anything not listed as <span className="font-semibold text-[#1A1A1A]">Custom</span>.</p>
+        <div className="mt-12" data-testid="ar-empty-browse">
+          <CapabilityLayers onPick={openPick} />
+          {customAffordance}
         </div>
       )}
 
