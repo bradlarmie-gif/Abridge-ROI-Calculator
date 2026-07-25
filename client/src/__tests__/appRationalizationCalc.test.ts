@@ -1,7 +1,8 @@
 import { describe, it, expect } from "vitest";
 import {
   APP_RAT_CATEGORIES, KNOWN_VENDORS, categoryLabel, makeItem, itemDisplayName,
-  itemRetired, itemStays, computeTotals, searchApplications, type AppRatItem,
+  itemRetired, itemStays, computeTotals, searchApplications,
+  renewalPatch, renewalDateLabel, DEFAULT_CONTRACT_MONTHS, type AppRatItem,
 } from "@/lib/appRationalizationCalc";
 
 const item = (over: Partial<AppRatItem> = {}): AppRatItem => ({
@@ -39,6 +40,28 @@ describe("appRationalizationCalc", () => {
     expect(makeItem("id2", "ambientDoc").coveragePct).toBe(90);
     expect(makeItem("id3", "dictation").coveragePct).toBe(80);
     expect(makeItem("id4", "preChartRisk").coveragePct).toBe(45);
+  });
+  it("makeItem defaults sunsetMonths equal to contractMonths (ride to renewal)", () => {
+    for (const c of APP_RAT_CATEGORIES) {
+      const it = makeItem("id", c.id);
+      expect(it.sunsetMonths).toBe(it.contractMonths);
+      expect(it.contractMonths).toBe(DEFAULT_CONTRACT_MONTHS);
+    }
+  });
+  it("renewalPatch sets sunsetMonths === contractMonths and floors/rounds months", () => {
+    expect(renewalPatch(24)).toEqual({ contractMonths: 24, sunsetMonths: 24 });
+    expect(renewalPatch(0)).toEqual({ contractMonths: 0, sunsetMonths: 0 });
+    expect(renewalPatch(-5)).toEqual({ contractMonths: 0, sunsetMonths: 0 });
+    expect(renewalPatch(18.6)).toEqual({ contractMonths: 19, sunsetMonths: 19 });
+    const p = renewalPatch(36);
+    expect(p.sunsetMonths).toBe(p.contractMonths);
+  });
+  it("renewalDateLabel formats MMM 'YY from a fixed anchor and clamps negatives", () => {
+    const from = new Date(2026, 6, 1); // Jul 2026
+    expect(renewalDateLabel(0, from)).toBe("Jul '26");
+    expect(renewalDateLabel(12, from)).toBe("Jul '27");
+    expect(renewalDateLabel(6, from)).toBe("Jan '27");
+    expect(renewalDateLabel(-3, from)).toBe("Jul '26");
   });
   it("categoryLabel resolves known ids", () => {
     expect(categoryLabel("cds")).toBe("Clinical decision support");

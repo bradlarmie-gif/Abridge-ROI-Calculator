@@ -1,11 +1,12 @@
 import { useMemo } from "react";
 import { ChevronDown } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
+import { NumberField } from "@/components/NumberField";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { CategoryIcon } from "./CategoryIcon";
 import ArPriceControl from "./ArPriceControl";
 import {
-  itemRetired, itemStays, resolveAnnualSpend, APP_RAT_CATEGORIES,
+  itemRetired, itemStays, resolveAnnualSpend, renewalPatch, renewalDateLabel, APP_RAT_CATEGORIES,
   type AppRatItem, type ArPricingModel,
 } from "@/lib/appRationalizationCalc";
 
@@ -43,7 +44,7 @@ export default function ArStackRow({
 
   return (
     <div
-      className="ar-row grid grid-cols-1 md:grid-cols-[1fr_120px_220px_130px] gap-3.5 items-center bg-white border border-[#E8E2DA] rounded-2xl px-4 py-3.5 mb-2.5"
+      className="ar-row grid grid-cols-1 md:grid-cols-[1fr_116px_188px_104px_120px] gap-3.5 items-center bg-white border border-[#E8E2DA] rounded-2xl px-4 py-3.5 mb-2.5"
       data-testid={`ar-row-${item.id}`}
     >
       {/* Application: icon + editable vendor name + category */}
@@ -105,6 +106,25 @@ export default function ArStackRow({
           data-testid={`ar-row-displace-${item.id}`}
         />
         <span className="text-[13px] font-extrabold text-[#EA2C00] tabular-nums w-9 text-right">{item.coveragePct}%</span>
+      </div>
+
+      {/* Renews: months to contract end; setting it resets sunset to ride-to-renewal */}
+      <div className="flex flex-col min-w-0">
+        <div className="flex items-center h-10 bg-white border border-[#E8E2DA] rounded-[10px] px-2.5 gap-1 focus-within:border-[#EA2C00]">
+          <NumberField
+            value={item.contractMonths}
+            onValueChange={(v) => onChange(renewalPatch(v))}
+            min={0}
+            decimal={false}
+            aria-label="Renews in months"
+            className="w-full min-w-0 bg-transparent text-sm text-[#1A1A1A] outline-none tabular-nums"
+            data-testid={`ar-row-renews-${item.id}`}
+          />
+          <span className="text-[11px] text-[#8C7E6E]">mo</span>
+        </div>
+        <span className="block text-[9.5px] text-[#8C7E6E] tabular-nums leading-none mt-1 pl-0.5 truncate">
+          {renewalDateLabel(item.contractMonths)}
+        </span>
       </div>
 
       {/* Displaceable result + remove */}

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
-  makeItem, buildStackBars, computeNet, buildCumulativeSavings,
+  makeItem, buildStackBars, computeNet, buildCumulativeSavings, renewalPatch, timingSummary,
   type AppRatItem, type AppRatCategoryId,
 } from "@/lib/appRationalizationCalc";
 
@@ -78,5 +78,25 @@ describe("Applications → popup → stack: end-to-end data flow", () => {
     expect(makeItem("a", "ambientDoc").coveragePct).toBe(90);
     expect(makeItem("b", "dictation").coveragePct).toBe(80);
     expect(makeItem("c", "custom").sunsetMonths).toBe(12);
+  });
+
+  it("a renewal term entered in the modal (via renewalPatch) rides to renewal by default", () => {
+    // Mirrors ArAddToolModal onConfirm: init spreads ...renewalPatch(renewMonths).
+    let items: AppRatItem[] = [];
+    items = addItem(items, "ambientDoc", { vendorName: "Suki", annualSpend: 200_000, coveragePct: 70, ...renewalPatch(30) });
+    expect(items[0].contractMonths).toBe(30);
+    expect(items[0].sunsetMonths).toBe(30); // starts flush with renewal, no phantom "captured sooner"
+    // timing has nothing captured until the exit slider pulls it earlier
+    expect(timingSummary(items).capturedSooner).toBe(0);
+  });
+
+  it("changing a tool's renewal (renewalPatch patch) keeps sunset flush with contract", () => {
+    // Mirrors ArStackRow: onChange(renewalPatch(v)) patched onto the existing item.
+    let item = makeItem("r", "dictation");
+    item = { ...item, annualSpend: 400_000, coveragePct: 80 };
+    item = { ...item, ...renewalPatch(24) };
+    expect(item.contractMonths).toBe(24);
+    expect(item.sunsetMonths).toBe(24);
+    expect(timingSummary([item]).capturedSooner).toBe(0);
   });
 });

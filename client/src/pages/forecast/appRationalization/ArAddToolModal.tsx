@@ -12,10 +12,11 @@ import { useEffect, useMemo, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Slider } from "@/components/ui/slider";
+import { NumberField } from "@/components/NumberField";
 import { CategoryIcon } from "./CategoryIcon";
 import ArPriceControl from "./ArPriceControl";
 import {
-  APP_RAT_CATEGORIES, makeItem, resolveAnnualSpend,
+  APP_RAT_CATEGORIES, makeItem, resolveAnnualSpend, renewalPatch, renewalDateLabel,
   type AppRatCategoryId, type AppRatItem, type ArPricingModel,
 } from "@/lib/appRationalizationCalc";
 const fmt = (n: number) => "$" + Math.round(n).toLocaleString("en-US");
@@ -40,6 +41,7 @@ export default function ArAddToolModal({
   const [users, setUsers] = useState(0);
   const [perUser, setPerUser] = useState(0);
   const [pct, setPct] = useState(100);
+  const [renewMonths, setRenewMonths] = useState(12);
 
   // reset the form each time a new tool is opened
   useEffect(() => {
@@ -53,6 +55,7 @@ export default function ArAddToolModal({
       setUsers(0);
       setPerUser(0);
       setPct(s.coveragePct);
+      setRenewMonths(s.contractMonths);
     }
   }, [open, category, vendorName]);
 
@@ -146,6 +149,24 @@ export default function ArAddToolModal({
             </div>
           </div>
 
+          <div className="mt-4">
+            <div className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[#443A32] mb-2">Renews in</div>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center h-11 w-[136px] bg-white border border-[#E8E2DA] rounded-[11px] px-3.5 gap-1.5 focus-within:border-[#EA2C00]">
+                <NumberField
+                  value={renewMonths}
+                  onValueChange={setRenewMonths}
+                  min={0}
+                  decimal={false}
+                  className="flex-1 min-w-0 bg-transparent text-sm text-[#1A1A1A] outline-none tabular-nums"
+                  data-testid="ar-add-renews"
+                />
+                <span className="text-[#B4A99B] text-[12px]">months</span>
+              </div>
+              <span className="text-[12.5px] text-[#8C7E6E] tabular-nums">renews {renewalDateLabel(renewMonths)}</span>
+            </div>
+          </div>
+
           {/* preview band: what sunsets vs what stays, live from spend x displace% */}
           <div className="mt-[18px] min-h-[58px] flex items-center px-[18px] py-[15px] bg-[#FAF7F2] border border-[#EFE7DC] rounded-xl">
             {canAdd ? (
@@ -173,6 +194,7 @@ export default function ArAddToolModal({
               vendorName: vendor.trim() || undefined,
               annualSpend: spend,
               coveragePct: pct,
+              ...renewalPatch(renewMonths),
               pricingModel,
               userCount: users > 0 ? users : undefined,
               perUserCost: pricingModel === "perUser" ? perUser : undefined,

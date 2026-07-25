@@ -178,8 +178,25 @@ const CATEGORY_DEFAULT_COVERAGE: Record<AppRatCategoryId, number> = {
   custom:           50,
 };
 
+/** Default renewal runway for a freshly added tool (months from today). */
+export const DEFAULT_CONTRACT_MONTHS = 12;
+
 export function makeItem(id: string, category: AppRatCategoryId): AppRatItem {
-  return { id, category, annualSpend: 0, coveragePct: CATEGORY_DEFAULT_COVERAGE[category] ?? 80, contractMonths: 12, sunsetMonths: 12, rampMonths: 3 };
+  const contractMonths = DEFAULT_CONTRACT_MONTHS;
+  // sunsetMonths starts EQUAL to contractMonths: the timing screen defaults to
+  // "ride to renewal" and only the exit slider pulls it earlier.
+  return { id, category, annualSpend: 0, coveragePct: CATEGORY_DEFAULT_COVERAGE[category] ?? 80, contractMonths, sunsetMonths: contractMonths, rampMonths: 3 };
+}
+
+/**
+ * A renewal-term change. Setting the contract also resets the sunset to
+ * ride-to-renewal (sunsetMonths === contractMonths), so the timing screen never
+ * shows phantom "captured sooner" before the rep drags the exit slider. Months
+ * are floored at 0 and rounded to whole months.
+ */
+export function renewalPatch(months: number): Partial<AppRatItem> {
+  const m = Math.max(0, Math.round(months || 0));
+  return { contractMonths: m, sunsetMonths: m };
 }
 
 export function itemDisplayName(item: AppRatItem): string {
@@ -431,4 +448,13 @@ export function sunsetDateLabel(monthsFromNow: number, from: Date = new Date()):
   const m = Math.max(0, Math.round(monthsFromNow));
   if (m === 0) return "now";
   return MONTH_FMT.format(new Date(from.getFullYear(), from.getMonth() + m, 1));
+}
+
+const MONTH_SHORT_FMT = new Intl.DateTimeFormat("en-US", { month: "short" });
+
+/** Compact "MMM 'YY" renewal date `monthsFromNow` after `from` (e.g. 12 -> "Jul '27"). */
+export function renewalDateLabel(monthsFromNow: number, from: Date = new Date()): string {
+  const m = Math.max(0, Math.round(monthsFromNow));
+  const d = new Date(from.getFullYear(), from.getMonth() + m, 1);
+  return `${MONTH_SHORT_FMT.format(d)} '${String(d.getFullYear()).slice(2)}`;
 }
