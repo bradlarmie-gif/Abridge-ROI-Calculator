@@ -76,6 +76,24 @@ export function buildConsolidationModel(items: AppRatItem[]): ConsolidationModel
   return { rows, stackTotal, freed, stays: bars.stays, vendorCount: rows.length };
 }
 
+/**
+ * Left offset (percent of the bar width) of the coral (freed) region: the sum of
+ * the slot widths of any leading stays-only tools before the first tool that has
+ * a coral portion. Anchoring the "Freed every year" overlay here keeps its white
+ * type on coral no matter which tool sits leftmost. Assumes freed > 0 (a coral
+ * tool exists); returns 0 if none is found.
+ */
+export function freedRegionLeftPct(
+  rows: Pick<ConsolidationRow, "widthPct" | "retired">[],
+): number {
+  let offset = 0;
+  for (const r of rows) {
+    if (r.retired > 0) break;
+    offset += r.widthPct;
+  }
+  return offset;
+}
+
 export default function ArConsolidationView({
   items,
   abridgePrice,
@@ -205,12 +223,13 @@ export default function ArConsolidationView({
               />
             </div>
 
-            {/* freed overlay: hidden while focused, and only when the first tool
-                actually starts coral (so white type never lands on tan) */}
-            {model.freed > 0 && !model.rows[0].staysOnly && (
+            {/* freed overlay: hidden while focused. Anchored to the LEFT EDGE of
+                the coral region (past any leading stays-only tools) so the white
+                type always lands on coral, never on tan. */}
+            {model.freed > 0 && (
               <div
-                className="pointer-events-none absolute left-0 top-1/2 z-[2] -translate-y-1/2 pl-[22px] transition-opacity duration-200"
-                style={{ opacity: focus ? 0 : 1 }}
+                className="pointer-events-none absolute top-1/2 z-[2] -translate-y-1/2 pl-[22px] transition-opacity duration-200"
+                style={{ left: `${freedRegionLeftPct(model.rows)}%`, opacity: focus ? 0 : 1 }}
               >
                 <span className="block text-[11px] font-extrabold uppercase tracking-[0.09em] text-white/85">
                   Freed every year

@@ -89,12 +89,20 @@ export default function ArMoatView({ items }: { items: AppRatItem[] }) {
         }}
         data-testid="ar-moat-chain"
       >
-        {/* vertical gridlines at each sixth (behind the bars) */}
-        {[1, 2, 3, 4, 5].map((i) => (
+        {/* Vertical gridlines (behind the bars). Placed as grid cells whose left
+            borders sit exactly on the interior column boundaries, so they track
+            the real column edges at any container width instead of free-floating
+            percentages. Columns 2..6 → boundaries at 1/6 .. 5/6. Each spans the
+            tool + bar rows, stopping at the label row. */}
+        {[2, 3, 4, 5, 6].map((col) => (
           <div
-            key={i}
-            className="absolute top-0 z-0"
-            style={{ left: `${(i * 100) / 6}%`, bottom: 48, width: 1, background: "#EFE8DF" }}
+            key={col}
+            className="pointer-events-none z-0"
+            style={{
+              gridColumn: `${col} / ${col + 1}`,
+              gridRow: `1 / ${labelRow}`,
+              borderLeft: "1px solid #EFE8DF",
+            }}
           />
         ))}
 

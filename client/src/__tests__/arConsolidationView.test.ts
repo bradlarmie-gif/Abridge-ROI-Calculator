@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildConsolidationModel } from "@/components/forecast/ArConsolidationView";
+import { buildConsolidationModel, freedRegionLeftPct } from "@/components/forecast/ArConsolidationView";
 import type { AppRatItem } from "@/lib/appRationalizationCalc";
 
 const mk = (o: Partial<AppRatItem>): AppRatItem => ({
@@ -53,5 +53,37 @@ describe("buildConsolidationModel", () => {
     expect(m.freed).toBe(0);
     expect(m.rows[0].freedSharePct).toBe(0);
     expect(m.rows[0].staysOnly).toBe(true);
+  });
+});
+
+describe("freedRegionLeftPct", () => {
+  it("is 0 when the first tool already starts coral", () => {
+    const m = buildConsolidationModel([
+      mk({ id: "a", vendorName: "DAX", annualSpend: 200_000, coveragePct: 100 }),
+      mk({ id: "b", vendorName: "UpToDate", category: "cds", annualSpend: 200_000, coveragePct: 0 }),
+    ]);
+    expect(freedRegionLeftPct(m.rows)).toBe(0);
+  });
+
+  it("skips leading stays-only tools to the left edge of the first coral tool", () => {
+    // c (stays-only) leads; a is the first coral tool. Offset = c's slot width.
+    const m = buildConsolidationModel([
+      mk({ id: "c", vendorName: "UpToDate", category: "cds", annualSpend: 100_000, coveragePct: 0 }), // stays only
+      mk({ id: "a", vendorName: "DAX", annualSpend: 200_000, coveragePct: 100 }),  // all freed
+      mk({ id: "b", vendorName: "Scribe", annualSpend: 100_000, coveragePct: 50 }), // half freed
+    ]);
+    // c is 100k of 400k → 25% of the bar
+    expect(freedRegionLeftPct(m.rows)).toBeCloseTo(25, 6);
+    expect(m.rows[0].staysOnly).toBe(true); // sanity: leading tool is stays-only
+  });
+
+  it("sums multiple leading stays-only slots", () => {
+    const m = buildConsolidationModel([
+      mk({ id: "c", vendorName: "UpToDate", category: "cds", annualSpend: 100_000, coveragePct: 0 }),
+      mk({ id: "d", vendorName: "Reference", category: "cds", annualSpend: 100_000, coveragePct: 0 }),
+      mk({ id: "a", vendorName: "DAX", annualSpend: 200_000, coveragePct: 100 }),
+    ]);
+    // two leading stays-only tools of 100k each in a 400k bar → 50%
+    expect(freedRegionLeftPct(m.rows)).toBeCloseTo(50, 6);
   });
 });
