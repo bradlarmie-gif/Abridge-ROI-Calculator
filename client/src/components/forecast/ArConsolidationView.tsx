@@ -229,7 +229,7 @@ export default function ArConsolidationView({
             {model.freed > 0 && (
               <div
                 className="pointer-events-none absolute top-1/2 z-[2] -translate-y-1/2 pl-[22px] transition-opacity duration-200"
-                style={{ left: `${freedRegionLeftPct(model.rows)}%`, opacity: focus ? 0 : 1 }}
+                style={{ left: 0, opacity: focus ? 0 : 1 }}
               >
                 <span className="block text-[11px] font-extrabold uppercase tracking-[0.09em] text-white/85">
                   Freed every year
@@ -241,38 +241,39 @@ export default function ArConsolidationView({
               </div>
             )}
 
+            {/* Grouped read: ALL freed (coral) on the left as one contiguous block,
+                ALL stays (tan) on the right. Per-tool sub-segments keep hover/share.
+                Grouping (vs per-tool coral+tan slots) keeps it clean at any coverage. */}
             <div ref={afterBarRef} className="flex h-[52px] rounded-[10px] overflow-hidden" data-testid="ar-after-bar">
-              {model.rows.map((r) => (
+              {model.rows.filter((r) => r.retired > 0).map((r) => (
                 <div
-                  key={r.id}
+                  key={`f-${r.id}`}
                   data-tool={r.id}
                   data-testid={`ar-after-seg-${r.id}`}
                   onMouseEnter={() => setHoverId(r.id)}
                   onMouseLeave={() => setHoverId(null)}
-                  className="flex h-full border-r-2 border-[#FDFCFA] last:border-r-0"
-                  style={{ width: `${r.widthPct}%` }}
-                >
-                  {r.retired > 0 && (
-                    <div
-                      className="h-full transition-opacity duration-200"
-                      style={{
-                        width: `${r.retiredPct}%`,
-                        background: hoverId === r.id ? "#B02200" : CORAL,
-                        opacity: dimFor(r.id) ? 0.32 : 1,
-                      }}
-                    />
-                  )}
-                  {r.stays > 0 && (
-                    <div
-                      className="h-full transition-opacity duration-200"
-                      style={{
-                        width: `${r.staysPct}%`,
-                        background: STAYS_COLOR,
-                        opacity: dimFor(r.id) ? 0.25 : 1,
-                      }}
-                    />
-                  )}
-                </div>
+                  className="h-full border-r-2 border-[#FDFCFA] transition-opacity duration-200"
+                  style={{
+                    width: `${(r.retired / model.stackTotal) * 100}%`,
+                    background: hoverId === r.id ? "#B02200" : CORAL,
+                    opacity: dimFor(r.id) ? 0.32 : 1,
+                  }}
+                />
+              ))}
+              {model.rows.filter((r) => r.stays > 0).map((r, i, arr) => (
+                <div
+                  key={`s-${r.id}`}
+                  data-tool={r.staysOnly ? r.id : undefined}
+                  data-testid={`ar-after-stays-${r.id}`}
+                  onMouseEnter={() => setHoverId(r.id)}
+                  onMouseLeave={() => setHoverId(null)}
+                  className={`h-full border-r-2 border-[#FDFCFA] transition-opacity duration-200 ${i === arr.length - 1 ? "!border-r-0" : ""}`}
+                  style={{
+                    width: `${(r.stays / model.stackTotal) * 100}%`,
+                    background: STAYS_COLOR,
+                    opacity: dimFor(r.id) ? 0.25 : 1,
+                  }}
+                />
               ))}
             </div>
           </div>
