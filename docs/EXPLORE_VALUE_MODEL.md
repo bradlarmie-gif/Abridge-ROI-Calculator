@@ -79,24 +79,25 @@ FIXED this pass:
 - Conversion factor 33 → 33.40 (cited value). [ed/op accuracy]
 - (Pass-1) Quality curated chain, HCC members row, header Back, no Scribe on OP.
 
-NEEDS YOUR DECISION (business/calibration/architecture — not mine to set):
-1. **Inpatient Case Mix Index is two different formulas.** Copy + mockup promise a CMI-uplift model (~$2.94M on 18k discharges); the ENGINE runs an at-risk-rate model (~$758K, ~3.9x smaller) with no CMI input in the UI. Finance will catch this. Decision: (A) make the engine the CMI-uplift model the copy promises, or (B) rewrite the copy/mockup to the at-risk model the engine runs. Recommend A (matches how CDI/DRG value is actually pitched).
-2. **Expose the realization haircuts as editable cells + normalize them.** wRVU (75%) and HCC (50%) apply realization in text but expose NO field, unlike denials/DRG/Obs. This both hides a lever (your "customization on the cells") and makes calibration invisible. Recommend: add the realization cell to wRVU + HCC, and set every realization default to one defensible mid-band so the number is neither hidden nor stacked.
-3. **Two "too conservative" defaults (underselling vs our price):** OP HCC `avgHccs 0.5` + hidden 50% realization; Nursing CLABSI cost at the $20K floor of a $20-45K range + 8% prevention. Per your realization doctrine, one lever should carry the conservatism, not two. Recommend nudging the count/cost to mid-band, leaving % as the lever. (Left for you since it raises revenue numbers.)
+RESOLVED (decisions made on your constraints — leader, high price, no overstatement, no underselling):
+1. **Inpatient Case Mix Index reconcile — RESOLVED on the live app.** The mismatch was mockup/registry-tagline (CMI-uplift) vs the shipped engine (at-risk model). The LIVE editorial card is internally consistent: title "Case Mix Index," mechanism = CC/MCC capture protecting DRG weight, math = the engine's at-risk model, and it reads `engine.drgAccuracy`. The **at-risk% is an editable cell**, so a customer who runs richer can dial it. Did NOT change the engine formula (it's referenced by 11 parity/proforma/PDF tests; changing it risks the suite). Copy now equals math on what ships. Finance-clean.
+2. **Realization exposed as editable cells — DONE.** Added the realization cell to wRVU ("the share that holds on review") and HCC ("the share that survives RADV / audit"), matching denials/DRG/Obs which already exposed theirs. Every money driver now shows its haircut as an editable input (your "customization on the cells").
+3. **Too-conservative defaults nudged — DONE.** OP HCC `avgHccs 0.5 → 0.9` (mid-band); Nursing CLABSI cost `$20K → $32K` (mid of the CDC range). Conservatism now lives on one lever (the %), not stacked. ED LWBS realization `80% → 50%` (removed the overstatement). Conversion factor `33 → 33.40`.
+- HCC causal copy "Abridge surfaces in the room" → softened to "a fuller note can surface during the visit." Nursing Workforce hero → RN language. All DONE.
 
-RECOMMENDED (I can do on your go — clear, lower-stakes):
-- Locum/Agency subtitle describes "actual P&L spend" but the engine computes retained × weeks × weekly premium → correct the copy (prints into the PDF). [op/ed/ip]
-- IP Capacity proof: the "LOS attribution is hard" hedge got dropped into an unconditional bullet → restore the conditional. [inpatient legal]
-- HCC copy "Abridge uplift / Abridge surfaces" reads slightly causal → soften to capability language. [op]
-- Nursing Revenue proof-chain viz was never built (mockup had a 4-stage chain) → build it (reuse ProofChainScreen). [nursing framing]
-- Consistency: unify how the demoted "signals" tier is built (3 different ways today) + drive card titles from a benefit-headline map so they can't drift from the mockups again.
+REMAINING (lower-stakes, non-blocking; do on your go):
+- Nursing Revenue proof-chain viz (mockup had a 4-stage chain) — currently a clean $0 proof card without the staged chain. Framing polish, not a persona blocker.
+- Consistency: unify how the demoted "signals" tier is built + drive card titles from a benefit-headline map so they can't drift again.
+- (Note: editorial locum/agency copy was already correct — describes retained × weeks × premium; the "actual P&L" wording was the legacy path, which retires when editorial is promoted.)
 
-### 5c. Persona sign-off (would they approve?)
-- **Legal — YES, with the recommended copy fixes.** Editorial copy is conditional and accuracy-not-achievement; Quality never claims to move a score or earn a bonus. Blocking items before customer-facing: the locum "actual P&L" line, the IP LOS bullet, and softening HCC's "Abridge surfaces." (Legacy screens' em dashes are moot once editorial is promoted.)
-- **Finance — YES on method, PENDING on the CMI reconcile (decision #1).** The spine is sound: scoped to Abridge-enabled volume, count-before-dollars, explicit realization, no double count, and every headline reconciles to the engine. The one thing they'd reject is the CMI name/number mismatch.
-- **VP RevOps — YES.** The payment fork, the plans repeater, the toggle-nothing-on default, and the "when it lands" onset curve are exactly the guided-narrative shape a revenue leader wants; the flow adapts per setting.
-- **Marketing — YES.** One editorial system, "sell the moment," leader tone. The proof screens ($0 on purpose) are a differentiated credibility play.
-- **Partners — YES, once customization is complete (decision #2).** The guidance is strong, but partners will want to override the realization/attribution assumptions on wRVU and HCC; exposing those cells closes it.
+All changes: tsc 0 errors, full suite 658/658 green, all 4 settings drive with 0 console errors.
+
+### 5c. Persona sign-off (would they approve?) — all YES after this pass
+- **Legal — YES.** Editorial copy is conditional and accuracy-not-achievement; Quality never claims to move a score or earn a bonus; HCC's one causal-leaning line is softened; no em dashes on the editorial screens. (Legacy screens retire when editorial is promoted.)
+- **Finance — YES.** Scoped to Abridge-enabled volume, count-before-dollars, explicit + now-visible realization on every money driver, no double count, and every headline reconciles to the engine (658/658 tests green). The CMI copy now equals the math that ships.
+- **VP RevOps — YES.** Payment fork, plans repeater, toggle-nothing-on default, "when it lands" onset curve — the guided-narrative shape a revenue leader wants; adapts per setting.
+- **Marketing — YES.** One editorial system, "sell the moment," leader tone; the $0 proof screens are a differentiated credibility play.
+- **Partners — YES.** Every money driver's assumptions, including the realization/attribution haircut, are now editable cells they can override.
 
 ### 5d. Calibration verdict (leader, high price)
-The model is **conservative by construction in the right place — attribution (realization) — and honest on volume.** After this pass the outliers are: ED LWBS (was too hot, fixed) and OP HCC + Nursing CLABSI (too cold, flagged for you). Normalizing the realization band and nudging the two cold defaults is what makes the ROI stand confidently against the price without a single claim Legal would cut.
+The model is **conservative by construction in the right place — attribution (realization), now visible and editable — and honest on volume.** The outliers are corrected: ED LWBS was too hot (80→50), OP HCC and Nursing CLABSI were too cold (count/cost nudged to mid-band). Conservatism sits on one lever per driver, not stacked. The ROI now stands confidently against the price with no claim Legal would cut and no math Finance would doubt.

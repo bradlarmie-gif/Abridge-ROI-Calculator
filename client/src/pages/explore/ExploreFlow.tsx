@@ -797,7 +797,7 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
       netNewDiscoveryRate: 3,
       netNewAvgConditions: 1.2,
     }],
-    avgHccs: 0.5,
+    avgHccs: 0.9, // mid-band; MA members carry multiple recapturable HCCs (was 0.5, which stacked under the realization haircut and undersold)
     hccRealization: 50,
     denialsEnabled: false,
     denialsScenario: 'typical',
@@ -854,7 +854,7 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     nursingClabsiUtilizationRatio: 20,
     nursingClabsiRate: 0.8,
     nursingClabsiPreventionRate: 8,
-    nursingClabsiCost: 20000,
+    nursingClabsiCost: 32000, // mid of the CDC $20K-45K range (was floor $20K, which double-stacked conservatism with the low prevention rate)
     nursingClabsiExpanded: false,
     nursingSepsisEnabled: false,
     nursingSepsisRatePerThousand: 2.0,

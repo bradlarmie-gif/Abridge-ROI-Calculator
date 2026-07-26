@@ -130,6 +130,9 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
             onSelect={(k) => updateDq({ conversionFactor: k === "blended" ? 50 : 33.4 })}
           />
         </FieldTile>
+        <FieldTile label="Realization" note="the share that holds on review">
+          <Fi value={dq.wrvuRealization} onValueChange={(v) => updateDq({ wrvuRealization: v })} suffix="%" testId="input-ed-wrvu-realization" />
+        </FieldTile>
       </FieldGrid>
     </MoneyCard>
   );
@@ -193,7 +196,7 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
       key="hcc"
       title="HCC capture"
       tag="Risk-based"
-      subtitle="Chronic conditions that lapse and must be recaptured each year, plus new ones Abridge surfaces in the room. Each plan is valued on its own economics."
+      subtitle="Chronic conditions that lapse and must be recaptured each year, plus new ones a fuller note can surface during the visit. Each plan is valued on its own economics."
       enabled={dq.hccEnabled}
       onToggle={() => updateDq({ hccEnabled: !dq.hccEnabled, hccExpanded: !dq.hccEnabled ? true : dq.hccExpanded })}
       value={hccValue}
@@ -280,6 +283,9 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
             decimal
             testId="input-ed-newly-identified"
           />
+        </FieldTile>
+        <FieldTile label="Realization" note="the share that survives RADV / audit">
+          <Fi value={dq.hccRealization} onValueChange={(v) => updateDq({ hccRealization: v })} suffix="%" testId="input-ed-hcc-realization" />
         </FieldTile>
       </FieldGrid>
     </MoneyCard>
