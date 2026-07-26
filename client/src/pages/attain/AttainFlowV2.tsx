@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowRight, RotateCcw } from "lucide-react";
+import { ArrowRight, RotateCcw, Download } from "lucide-react";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { useToast } from "@/hooks/use-toast";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import StepVision from "./steps/StepVision";
 import StepScope from "./steps/StepScope";
@@ -41,6 +42,8 @@ export default function AttainFlowV2({ onBackToJourney }: { onBackToJourney?: ()
   const [baseline, setBaseline] = useState<AttainBaseline>({});
   const [partner, setPartner] = useState<string>("");
   const [confirmingReset, setConfirmingReset] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const { toast } = useToast();
 
   // latest experience answers, reported up from AttainExperience; set on resume or as they work
   const expRef = useRef<ExperienceSlice | null>(null);
@@ -68,6 +71,23 @@ export default function AttainFlowV2({ onBackToJourney }: { onBackToJourney?: ()
   useEffect(() => { if (setting) saveSnapshot(buildSnapshot()); /* eslint-disable-next-line */ }, [partner, phase, setting, goals, baseline]);
 
   const onPersist = (slice: ExperienceSlice) => { expRef.current = slice; saveSnapshot(buildSnapshot()); };
+
+  // Export the live plan as the real editorial PDF (cover + the case + a spread
+  // per category), built from the SAME engine the on-screen numbers use so the
+  // download reconciles with what the partner just saw. Never fail silently: a
+  // throw inside pdf().toBlob() surfaces a destructive toast so the rep can retry.
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      const mod = await import("./pdf/attainReactPdf");
+      await mod.generateAttainPdf(buildSnapshot());
+    } catch (err) {
+      console.error("Attain PDF export failed:", err);
+      toast({ title: "Export failed", description: "The PDF couldn't be generated. Please try again.", variant: "destructive" });
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const startOver = () => {
     clearSnapshot(partner);
@@ -112,9 +132,15 @@ export default function AttainFlowV2({ onBackToJourney }: { onBackToJourney?: ()
         onBack={goBack}
         onHome={onBackToJourney ?? (() => setPhase("setting"))}
         rightAction={(partner.trim() || saved) ? (
-          <div className="hidden md:flex items-center gap-3 text-[11px]">
-            <span className="text-[#B4A896] italic whitespace-nowrap">autosaved{partner.trim() ? ` · ${partner.trim()}` : ""}</span>
-            <button type="button" onClick={() => setConfirmingReset(true)} className="inline-flex items-center gap-1 text-slate-500 hover:text-[#EA2C00] transition-colors"><RotateCcw className="w-3 h-3" /> Start over</button>
+          <div className="flex items-center gap-3 text-[11px]">
+            {phase === "experience" && (
+              <button type="button" onClick={handleExport} disabled={exporting} data-testid="attain-export-pdf" className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg border border-[#E8E2DA] bg-white text-[12px] font-bold text-[#1A1A1A] hover:border-[#1A1A1A] disabled:opacity-50 transition-colors">
+                <Download className="w-3.5 h-3.5" strokeWidth={2.25} />
+                {exporting ? "Preparing…" : "Export PDF"}
+              </button>
+            )}
+            <span className="hidden md:inline text-[#B4A896] italic whitespace-nowrap">autosaved{partner.trim() ? ` · ${partner.trim()}` : ""}</span>
+            <button type="button" onClick={() => setConfirmingReset(true)} className="hidden md:inline-flex items-center gap-1 text-slate-500 hover:text-[#EA2C00] transition-colors"><RotateCcw className="w-3 h-3" /> Start over</button>
           </div>
         ) : undefined}
       />
