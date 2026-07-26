@@ -40,7 +40,7 @@ function Radio({ on }: { on: boolean }) {
 
 function OptionRow({ on, onToggle, title, desc, tag, radio }: { on: boolean; onToggle: () => void; title: string; desc: string; tag?: string; radio?: boolean }) {
   return (
-    <button type="button" onClick={onToggle} className="group relative w-full text-left flex items-start gap-3.5 pl-4 pr-3 py-4 border-b border-[#EFEAE1] hover:bg-[#F2EDE5] transition-colors">
+    <button type="button" onClick={onToggle} className="group relative w-full text-left flex items-start gap-3.5 pl-4 pr-3 py-4 border-b border-[#E8E2DA] hover:bg-[#F2EDE5] transition-colors">
       {on && <span className="absolute left-0 top-2 bottom-2 w-[3px] rounded-full bg-[#EA2C00]" />}
       {radio ? <Radio on={on} /> : <Box on={on} />}
       <div>
@@ -135,9 +135,9 @@ export default function AlignView({ c, settingLabel, categoryLabel, picked, setP
 
       {/* Q — outcomes */}
       <SectionHead n={++qn} kicker="The outcomes" title={c.outcomesPrompt} />
-      <div className="border-t border-[#EFEAE1] mb-12">
+      <div className="border-t border-[#E8E2DA] mb-12">
         {c.outcomes.map((o) => (
-          <div key={o.id} className="border-b border-[#EFEAE1]">
+          <div key={o.id} className="border-b border-[#E8E2DA]">
             <button type="button" onClick={() => toggleOutcome(o.id)} className="group relative w-full text-left flex items-start gap-3.5 pl-4 pr-3 py-4 hover:bg-[#F2EDE5] transition-colors">
               {picked.has(o.id) && <span className="absolute left-0 top-2 bottom-2 w-[3px] rounded-full bg-[#EA2C00]" />}
               {single ? <Radio on={picked.has(o.id)} /> : <Box on={picked.has(o.id)} />}
@@ -158,7 +158,7 @@ export default function AlignView({ c, settingLabel, categoryLabel, picked, setP
           <div className="flex justify-end mb-1">
             <button type="button" onClick={setAllSegs} className="text-[12px] font-semibold text-[#EA2C00] hover:underline">{allSegs ? "Clear all" : c.segments.allLabel}</button>
           </div>
-          <div className="border-t border-[#EFEAE1] mb-12">
+          <div className="border-t border-[#E8E2DA] mb-12">
             {c.segments.options.map((s) => <OptionRow key={s.id} on={segs.has(s.id)} onToggle={() => toggleSeg(s.id)} title={s.title} desc={s.desc} />)}
           </div>
         </>
@@ -198,9 +198,9 @@ export default function AlignView({ c, settingLabel, categoryLabel, picked, setP
           <p className={`${LBL} mb-2.5`}>{econ.stancePrompt}</p>
           <div className="flex flex-wrap items-center gap-2 mb-3">
             {econ.stanceBands.map((v) => (
-              <button key={v} type="button" onClick={() => onInput({ stance: v })} className={`px-5 py-2.5 rounded-full border text-[14px] font-semibold transition-colors ${stance === v ? "bg-[#EA2C00] border-[#EA2C00] text-white" : "border-[#E0D9CE] text-[#1A1A1A] hover:bg-[#F2EDE5]"}`}>{v}%</button>
+              <button key={v} type="button" onClick={() => onInput({ stance: v })} className={`px-5 py-2.5 rounded-xl border text-[14px] font-semibold transition-colors ${stance === v ? "bg-[#EA2C00] border-[#EA2C00] text-white" : "border-[#E0D9CE] text-[#1A1A1A] hover:bg-[#F2EDE5]"}`}>{v}%</button>
             ))}
-            <button type="button" onClick={() => onInput({ stance: -1 })} className={`px-5 py-2.5 rounded-full border text-[14px] font-semibold transition-colors ${stance === -1 ? "bg-[#EA2C00] border-[#EA2C00] text-white" : "border-[#E0D9CE] text-[#1A1A1A] hover:bg-[#F2EDE5]"}`}>Custom</button>
+            <button type="button" onClick={() => onInput({ stance: -1 })} className={`px-5 py-2.5 rounded-xl border text-[14px] font-semibold transition-colors ${stance === -1 ? "bg-[#EA2C00] border-[#EA2C00] text-white" : "border-[#E0D9CE] text-[#1A1A1A] hover:bg-[#F2EDE5]"}`}>Custom</button>
             {stance === -1 && (
               <span className="flex items-baseline gap-1.5 ml-1">
                 <AttainNumberInput value={inputs.custom} onChange={(raw) => { if (raw === "") { onInput({ custom: "" }); return; } onInput({ custom: String(Math.min(econ.stanceCap, num(raw))) }); }} placeholder={`up to ${econ.stanceCap}`} className="w-24 bg-transparent border-0 border-b-2 border-[#E0D9CE] rounded-none px-0 pb-0.5 font-abridge text-xl text-[#1A1A1A] outline-none transition-colors focus:border-[#EA2C00] placeholder:font-sans placeholder:text-[13px] placeholder:text-[#C4BCB0]" />
@@ -218,7 +218,7 @@ export default function AlignView({ c, settingLabel, categoryLabel, picked, setP
                 Assumptions{showAssumptions ? "" : ` · ${econ.assumptions.length}`}
               </button>
               {showAssumptions && (
-                <div className="mt-3 rounded-xl border border-[#EFEAE1] bg-[#FAF7F2] p-5">
+                <div className="mt-3 rounded-xl border border-[#E8E2DA] bg-[#FAF7F2] p-5">
                   <p className="text-[12px] text-[#8C8C8C] mb-4 max-w-[520px]">Seeded conservatively so you are not starting from blank. Every one is editable and nothing is hidden. Change any that do not match your reality.</p>
                   <div className="grid sm:grid-cols-2 gap-x-8 gap-y-4">
                     {econ.assumptions.map((a) => (
@@ -244,7 +244,7 @@ export default function AlignView({ c, settingLabel, categoryLabel, picked, setP
         <div key={q.id}>
           <SectionHead n={++qn} kicker={q.kicker} title={q.prompt} />
           <p className="text-[14px] text-[#6B6B6B] leading-relaxed mb-4 max-w-[600px]">{q.helper}</p>
-          <div className="border-t border-[#EFEAE1] mb-12">
+          <div className="border-t border-[#E8E2DA] mb-12">
             {q.options.map((o) => <OptionRow key={o.id} on={(choices[q.id] ?? new Set()).has(o.id)} onToggle={() => toggleChoice(q.id, o.id, q.mode)} title={o.title} desc={o.desc} radio={q.mode === "single"} />)}
           </div>
         </div>
@@ -263,9 +263,9 @@ export default function AlignView({ c, settingLabel, categoryLabel, picked, setP
               return (
                 <div key={o.id}>
                   <p className="text-[13px] font-bold uppercase tracking-[1.5px] text-[#8C8C8C] mb-1.5">{o.title}</p>
-                  <div className="border-t border-[#EFEAE1]">
+                  <div className="border-t border-[#E8E2DA]">
                     {rows.map((pl) => (
-                      <button key={pl} type="button" onClick={() => togglePlay(o.id, pl)} className="group relative w-full text-left flex items-center gap-3.5 pl-4 pr-3 py-3.5 border-b border-[#EFEAE1] hover:bg-[#F2EDE5] transition-colors">
+                      <button key={pl} type="button" onClick={() => togglePlay(o.id, pl)} className="group relative w-full text-left flex items-center gap-3.5 pl-4 pr-3 py-3.5 border-b border-[#E8E2DA] hover:bg-[#F2EDE5] transition-colors">
                         {sel.has(pl) && <span className="absolute left-0 top-2 bottom-2 w-[3px] rounded-full bg-[#EA2C00]" />}
                         <Box on={sel.has(pl)} />
                         <p className={`text-[15px] leading-snug ${sel.has(pl) ? "font-semibold text-[#EA2C00]" : "font-medium text-[#1A1A1A]"}`}>{pl}</p>
@@ -289,14 +289,14 @@ export default function AlignView({ c, settingLabel, categoryLabel, picked, setP
       {/* Q — proof */}
       <SectionHead n={++qn} kicker="The proof" title={c.proof.prompt} />
       <p className="text-[14px] text-[#6B6B6B] leading-relaxed mb-4 max-w-[600px]">{c.proof.helper}</p>
-      <div className="border-t border-[#EFEAE1] mb-14">
+      <div className="border-t border-[#E8E2DA] mb-14">
         {c.proof.signals.map((s) => <OptionRow key={s.id} on={proof.has(s.id)} onToggle={() => toggleProof(s.id)} title={s.label} desc={s.desc} tag={suggested.has(s.id) ? "Matches your outcome" : undefined} />)}
       </div>
 
       {/* Q — unlock */}
       <SectionHead n={++qn} kicker="What it unlocks" title={c.unlock.prompt} />
       <p className="text-[14px] text-[#6B6B6B] leading-relaxed mb-4 max-w-[600px]">{c.unlock.helper}</p>
-      <div className="border-t border-[#EFEAE1] mb-14">
+      <div className="border-t border-[#E8E2DA] mb-14">
         {c.unlock.options.map((u) => <OptionRow key={u.id} on={unlock.has(u.id)} onToggle={() => toggleUnlock(u.id)} title={u.title} desc={u.desc} />)}
       </div>
 

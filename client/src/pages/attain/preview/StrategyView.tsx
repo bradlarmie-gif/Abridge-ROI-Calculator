@@ -25,8 +25,8 @@ export default function StrategyView({ cell, committed = [] }: { cell: AttainCel
       </p>
 
       {/* 1 — the counterfactual + value in play */}
-      <div className="rounded-2xl border border-[#EFEAE1] overflow-hidden mb-12">
-        <div className="grid grid-cols-2 divide-x divide-[#EFEAE1]">
+      <div className="rounded-2xl border border-[#E8E2DA] overflow-hidden mb-12">
+        <div className="grid grid-cols-2 divide-x divide-[#E8E2DA]">
           <div className="p-5">
             <p className={`${LBL} mb-3`}>Today</p>
             <div className="space-y-3">
@@ -50,7 +50,7 @@ export default function StrategyView({ cell, committed = [] }: { cell: AttainCel
             </div>
           </div>
         </div>
-        <div className="border-t border-[#EFEAE1] px-5 py-5 flex flex-wrap items-baseline justify-between gap-3">
+        <div className="border-t border-[#E8E2DA] px-5 py-5 flex flex-wrap items-baseline justify-between gap-3">
           <div>
             <p className={`${LBL} mb-1`}>The value in play</p>
             <p className="font-abridge text-4xl text-[#1A1A1A] leading-none">{fmt$(plan.valueInPlay)}<span className="text-base font-normal text-[#8C8C8C]"> / yr</span></p>
@@ -113,9 +113,9 @@ export default function StrategyView({ cell, committed = [] }: { cell: AttainCel
       {/* 4 — beyond the number */}
       <p className={`${LBL} mb-3`}>Beyond the number</p>
       <p className="text-[14px] text-[#3A3A3A] leading-relaxed max-w-[620px] mb-5">The dollar is the hard part. Hitting it is also what lets you:</p>
-      <div className="border-t border-[#EFEAE1] mb-16">
+      <div className="border-t border-[#E8E2DA] mb-16">
         {align.unlock.options.map((u) => (
-          <div key={u.id} className="flex items-start gap-3.5 pl-1 py-4 border-b border-[#EFEAE1]">
+          <div key={u.id} className="flex items-start gap-3.5 pl-1 py-4 border-b border-[#E8E2DA]">
             <span className="mt-[9px] w-1.5 h-1.5 rounded-full bg-[#EA2C00] flex-shrink-0" />
             <div>
               <p className="text-[16px] font-medium text-[#1A1A1A] leading-snug">{u.title}</p>

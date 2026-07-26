@@ -225,7 +225,7 @@ export default function StepScope({ setting, baseline, onChangeBaseline }: StepS
       <motion.aside
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        className="rounded-2xl border border-[#EFEAE1] bg-[#FAF7F2] p-6 md:p-7 w-full"
+        className="rounded-2xl border border-[#E8E2DA] bg-[#FAF7F2] p-6 md:p-7 w-full"
         data-testid="panel-attain-scope-stage"
         aria-live="polite"
       >
@@ -243,7 +243,7 @@ export default function StepScope({ setting, baseline, onChangeBaseline }: StepS
             </motion.p>
             <p className="text-[15px] text-[#1A1A1A] font-semibold leading-snug">{stage.label}</p>
             <p className="text-[13px] text-[#8C8C8C] leading-relaxed mt-1">{stage.sub}</p>
-            <p className="text-[12.5px] text-[#8C8C8C] leading-relaxed mt-5 pt-5 border-t border-[#EFEAE1]">
+            <p className="text-[12.5px] text-[#8C8C8C] leading-relaxed mt-5 pt-5 border-t border-[#E8E2DA]">
               Everything we calculate next is built from this, not a benchmark.
             </p>
           </div>
@@ -251,7 +251,7 @@ export default function StepScope({ setting, baseline, onChangeBaseline }: StepS
           <div data-testid="text-attain-scope-stage-prompt">
             <p className="font-abridge text-[52px] leading-none text-[#D8CFC0] mb-3">&mdash;</p>
             <p className="text-[13.5px] text-[#8C8C8C] leading-relaxed">{stage.prompt}</p>
-            <p className="text-[12.5px] text-[#B4A896] leading-relaxed mt-5 pt-5 border-t border-[#EFEAE1]">
+            <p className="text-[12.5px] text-[#B4A896] leading-relaxed mt-5 pt-5 border-t border-[#E8E2DA]">
               This becomes the foundation every next-page number is built from.
             </p>
           </div>

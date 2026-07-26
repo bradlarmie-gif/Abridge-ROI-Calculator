@@ -81,7 +81,7 @@ type MState = { today: string; target: string; source: string };
 
 function MetricCard({ m, st, onPatch }: { m: MetricDef; st: MState; onPatch: (k: keyof MState, v: string) => void }) {
   return (
-    <div className="rounded-2xl border border-[#EFEAE1] p-5">
+    <div className="rounded-2xl border border-[#E8E2DA] p-5">
       <h3 className="font-abridge text-[19px] text-[#1A1A1A] mb-1">{m.name}</h3>
       <p className="text-[13px] text-[#6B6B6B] leading-relaxed mb-4 max-w-[560px]"><span className="font-medium text-[#3A3A3A]">We measure:</span> {m.measure}</p>
       <div className="grid grid-cols-[160px_20px_160px_minmax(0,1fr)] items-end gap-x-4 gap-y-4">
@@ -185,8 +185,8 @@ export default function AttainPlanPreview() {
         {/* Step 2 — the outcomes we're chasing (from Align) */}
         <SectionHead n={2} kicker="The outcomes" title="The outcomes from Align" />
         <p className="text-[14px] text-[#6B6B6B] leading-relaxed mb-5 max-w-[600px]">The value in play and the outcomes you named. Everything we measure below connects back to these.</p>
-        <div className="rounded-2xl border border-[#EFEAE1] p-5 mb-14">
-          <div className="flex flex-wrap items-baseline gap-x-6 gap-y-1.5 mb-4 pb-4 border-b border-[#EFEAE1]">
+        <div className="rounded-2xl border border-[#E8E2DA] p-5 mb-14">
+          <div className="flex flex-wrap items-baseline gap-x-6 gap-y-1.5 mb-4 pb-4 border-b border-[#E8E2DA]">
             <span className="text-[13px] text-[#3A3A3A]">Value in play <span className="font-abridge text-[20px] text-[#EA2C00]">{fmt$(CARRIED.valueInPlay)}/yr</span></span>
             <span className="text-[13px] text-[#8C8C8C]">across {CARRIED.specialties.join(" + ")}</span>
           </div>

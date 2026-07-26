@@ -34,7 +34,7 @@ const GOAL_INFO: Record<GoalId, { label: string; desc: string }> = {
 };
 
 const cardCls = (sel: boolean) =>
-  `text-left rounded-2xl border p-5 transition-colors ${sel ? "border-[#EA2C00] bg-[#FBE7E1]/50" : "border-[#EFEAE1] hover:bg-[#F2EDE5] hover:border-[#E7E0D6]"}`;
+  `text-left rounded-2xl border p-5 transition-colors ${sel ? "border-[#EA2C00] bg-[#FBE7E1]/50" : "border-[#E8E2DA] hover:bg-[#F2EDE5] hover:border-[#E7E0D6]"}`;
 
 export function SettingStep({ selected, onSelect }: { selected: AttainSetting | null; onSelect: (s: AttainSetting) => void }) {
   return (
@@ -116,7 +116,7 @@ export function ScopeStep({ setting, baseline, onChange }: { setting: AttainSett
       <p className={`${HELP} mb-10`}>A few real figures from your world. Everything downstream, the value in play and the attainment, is built from these, not from a benchmark.</p>
       <div className="space-y-8 max-w-[520px]">
         {fields.map((f) => (
-          <div key={f.key} className="flex items-baseline justify-between gap-4 border-b border-[#EFEAE1] pb-2">
+          <div key={f.key} className="flex items-baseline justify-between gap-4 border-b border-[#E8E2DA] pb-2">
             <label className="text-[15px] text-[#1A1A1A]">{f.label}</label>
             <div className="flex items-baseline gap-2">
               <input

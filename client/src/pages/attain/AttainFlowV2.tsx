@@ -165,8 +165,8 @@ export default function AttainFlowV2({ onBackToJourney }: { onBackToJourney?: ()
             <StepScope setting={setting} baseline={baseline} onChangeBaseline={(patch) => setBaseline((prev) => ({ ...prev, ...patch }))} />
           )}
 
-          <div className="mt-10 flex items-center justify-end border-t border-[#EFEAE1] pt-6">
-            <button onClick={goNext} disabled={!canContinue} className="inline-flex items-center gap-2 rounded-full bg-[#EA2C00] text-white text-[14px] font-semibold px-5 py-2.5 hover:bg-[#d12800] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+          <div className="mt-10 flex items-center justify-end border-t border-[#E8E2DA] pt-6">
+            <button onClick={goNext} disabled={!canContinue} className="inline-flex items-center gap-2 rounded-xl bg-[#EA2C00] text-white text-[14px] font-semibold px-5 py-2.5 hover:bg-[#d12800] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
               {phase === "scope" ? "Build the plan" : "Continue"} <ArrowRight className="w-4 h-4" />
             </button>
           </div>
@@ -176,14 +176,14 @@ export default function AttainFlowV2({ onBackToJourney }: { onBackToJourney?: ()
       {/* Start-over confirm — a small modal so the whole page registers the destructive action */}
       {confirmingReset && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#1A1A1A]/30 backdrop-blur-[2px] px-4" onClick={() => setConfirmingReset(false)}>
-          <div className="bg-[#FDFCFA] rounded-2xl border border-[#EFEAE1] shadow-2xl w-full max-w-[400px] p-7" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-[#FDFCFA] rounded-2xl border border-[#E8E2DA] shadow-2xl w-full max-w-[400px] p-7" onClick={(e) => e.stopPropagation()}>
             <h3 className="font-abridge text-[23px] text-[#1A1A1A] leading-tight mb-2.5">Start over?</h3>
             <p className="text-[14px] text-[#6B6B6B] leading-relaxed mb-7">
               This clears {partner.trim() ? <span className="font-semibold text-[#1A1A1A]">{partner.trim()}</span> : "this"}&rsquo;s plan from this device and takes you back to the start. It can&rsquo;t be undone.
             </p>
             <div className="flex justify-end items-center gap-2">
-              <button type="button" onClick={() => setConfirmingReset(false)} className="text-[14px] font-semibold text-slate-500 hover:text-slate-800 px-4 py-2.5 rounded-full transition-colors">Cancel</button>
-              <button type="button" onClick={startOver} className="text-[14px] font-semibold text-white bg-[#EA2C00] hover:bg-[#d12800] rounded-full px-5 py-2.5 transition-colors">Yes, clear it</button>
+              <button type="button" onClick={() => setConfirmingReset(false)} className="text-[14px] font-semibold text-slate-500 hover:text-slate-800 px-4 py-2.5 rounded-xl transition-colors">Cancel</button>
+              <button type="button" onClick={startOver} className="text-[14px] font-semibold text-white bg-[#EA2C00] hover:bg-[#d12800] rounded-xl px-5 py-2.5 transition-colors">Yes, clear it</button>
             </div>
           </div>
         </div>

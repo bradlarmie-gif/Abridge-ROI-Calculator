@@ -30,7 +30,7 @@ export default function StepVision({ setting, selectedGoals, onToggle }: StepVis
 
       {/* Editorial rows, pill as an eyebrow, checkbox on the right, coral bar on
           a selected row. Same affordance language as the Align/Plan option rows. */}
-      <div className="border-t border-[#EFEAE1] mb-8 max-w-[720px]" data-testid="list-attain-vision-goals">
+      <div className="border-t border-[#E8E2DA] mb-8 max-w-[720px]" data-testid="list-attain-vision-goals">
         {goals.map((g, i) => {
           const content = getContent(setting, g.id);
           const isSelected = selectedGoals.includes(g.id);
@@ -43,7 +43,7 @@ export default function StepVision({ setting, selectedGoals, onToggle }: StepVis
               transition={{ delay: 0.05 * i }}
               onClick={() => onToggle(g.id)}
               aria-pressed={isSelected}
-              className="group relative w-full text-left flex items-start justify-between gap-4 pl-4 pr-3 py-4 border-b border-[#EFEAE1] hover:bg-[#F2EDE5] transition-colors"
+              className="group relative w-full text-left flex items-start justify-between gap-4 pl-4 pr-3 py-4 border-b border-[#E8E2DA] hover:bg-[#F2EDE5] transition-colors"
               data-testid={`card-attain-goal-${g.id}`}
             >
               {isSelected && <span className="absolute left-0 top-2 bottom-2 w-[3px] rounded-full bg-[#EA2C00]" aria-hidden />}

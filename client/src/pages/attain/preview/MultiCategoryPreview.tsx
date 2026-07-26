@@ -208,7 +208,7 @@ export function AttainExperience({ setting, cells, baseline, initial, onPersist 
     c.align.outcomes.filter((o) => pickedByCat[c.category].has(o.id) && o.plays).map((o) => ({ title: o.title, chosen: Array.from(playsByCat[c.category][o.id] ?? []) }));
 
   const chapterTab = (ch: typeof chapter) =>
-    `text-[13px] rounded-full px-4 py-1.5 capitalize transition-colors ${chapter === ch ? "bg-white shadow-sm font-semibold text-[#1A1A1A]" : "text-[#8C8C8C]"}`;
+    `text-[13px] rounded-[9px] px-4 py-1.5 capitalize transition-colors ${chapter === ch ? "bg-white shadow-sm font-semibold text-[#1A1A1A]" : "text-[#8C8C8C]"}`;
 
   // guard: never white-screen if the setting's goals ever outrun the cell matrix
   if (!CELLS.length || !cell) {
@@ -219,10 +219,10 @@ export function AttainExperience({ setting, cells, baseline, initial, onPersist 
     <div ref={rootRef}>
       {/* chapter nav — FIXED just below the app header so it never scrolls away (sticky
           fights an overflow:auto ancestor in the app shell; fixed is immune to that) */}
-      <div className="fixed top-14 sm:top-16 left-0 right-0 z-30 bg-[#FDFCFA]/95 backdrop-blur border-b border-[#EFEAE1] px-8 py-3">
+      <div className="fixed top-14 sm:top-16 left-0 right-0 z-30 bg-[#FDFCFA]/95 backdrop-blur border-b border-[#E8E2DA] px-8 py-3">
         <div className="max-w-[820px] mx-auto flex flex-wrap items-center gap-x-5 gap-y-2">
           <span className="text-[10px] font-bold uppercase tracking-[2px] text-[#8C8C8C]">Attain · {SETTING}</span>
-          <div className="flex items-center gap-1 bg-[#F2EDE5] rounded-full p-1">
+          <div className="flex items-center gap-1 bg-[#F2EDE5] rounded-[12px] p-1">
             {(["align", "plan", "strategy", "progress"] as const).map((ch) => (
               <button key={ch} onClick={() => setChapter(ch)} className={chapterTab(ch)}>{ch}</button>
             ))}
@@ -274,7 +274,7 @@ export function AttainExperience({ setting, cells, baseline, initial, onPersist 
     return (
       <div className="max-w-[760px] mx-auto mb-10">
         <p className={`${LBL} mb-3`}>Your categories · work through each</p>
-        <div className="grid border-t border-b border-[#EFEAE1] divide-x divide-[#EFEAE1]" style={{ gridTemplateColumns: `repeat(${CELLS.length}, minmax(0,1fr))` }}>
+        <div className="grid border-t border-b border-[#E8E2DA] divide-x divide-[#E8E2DA]" style={{ gridTemplateColumns: `repeat(${CELLS.length}, minmax(0,1fr))` }}>
           {CELLS.map((c, i) => {
             const done = doneSet.has(c.category);
             const active = catIdx === i;
@@ -304,17 +304,17 @@ export function AttainExperience({ setting, cells, baseline, initial, onPersist 
     return (
       <div className="max-w-[760px] mx-auto -mt-12 mb-16">
         {allDone ? (
-          <div className="rounded-2xl border border-[#EFEAE1] bg-[#FAF7F2] p-5 flex flex-wrap items-center justify-between gap-4">
+          <div className="rounded-2xl border border-[#E8E2DA] bg-[#FAF7F2] p-5 flex flex-wrap items-center justify-between gap-4">
             <div>
               <p className="text-[15px] font-semibold text-[#1A1A1A]">All {CELLS.length} categories {doneLabel}.</p>
               <p className="text-[13px] text-[#8C8C8C] mt-1">{isPlan ? "Each has an owner and its metrics set." : `${fmt$(totalValue)}/yr in play across the set.`}</p>
             </div>
-            <button onClick={() => goChapter(nextChapter)} className="inline-flex items-center gap-2 rounded-full bg-[#1A1A1A] text-white text-[14px] font-semibold px-5 py-2.5 hover:bg-black transition-colors">Continue to {isPlan ? "Strategy" : "Plan"} <ArrowRight className="w-4 h-4" /></button>
+            <button onClick={() => goChapter(nextChapter)} className="inline-flex items-center gap-2 rounded-xl bg-[#1A1A1A] text-white text-[14px] font-semibold px-5 py-2.5 hover:bg-black transition-colors">Continue to {isPlan ? "Strategy" : "Plan"} <ArrowRight className="w-4 h-4" /></button>
           </div>
         ) : done ? (
           <p className="text-[13px] text-[#8C8C8C]"><span className="text-[#EA2C00] font-semibold">{catLabel(cell)} is {doneLabel}.</span> Pick the next category above to keep going.</p>
         ) : (
-          <button onClick={() => lockIn(cell.category)} className="inline-flex items-center gap-2 rounded-full bg-[#EA2C00] text-white text-[14px] font-semibold px-5 py-2.5 hover:bg-[#d12800] transition-colors">{lockLabel} <ArrowRight className="w-4 h-4" /></button>
+          <button onClick={() => lockIn(cell.category)} className="inline-flex items-center gap-2 rounded-xl bg-[#EA2C00] text-white text-[14px] font-semibold px-5 py-2.5 hover:bg-[#d12800] transition-colors">{lockLabel} <ArrowRight className="w-4 h-4" /></button>
         )}
       </div>
     );
@@ -328,7 +328,7 @@ export function AttainExperience({ setting, cells, baseline, initial, onPersist 
         <h2 className="font-abridge text-[30px] md:text-4xl text-[#1A1A1A] leading-tight mb-3">The whole picture, on one page</h2>
         <p className="text-[15px] text-[#3A3A3A] leading-relaxed max-w-[640px] mb-10">Everything you set across {CELLS.map((c) => catLabel(c).toLowerCase()).join(", ")}, rolled into one case and one scoreboard.</p>
 
-        <div className="rounded-2xl border border-[#EFEAE1] p-6 mb-12">
+        <div className="rounded-2xl border border-[#E8E2DA] p-6 mb-12">
           <p className={`${LBL} mb-1`}>The value in play, all categories</p>
           <p className="font-abridge text-5xl text-[#EA2C00] leading-none mb-5"><AnimatedNumber value={totalValue} format={fmt$} /><span className="text-lg text-[#8C8C8C]"> / yr</span></p>
           <div className="space-y-3">
@@ -342,7 +342,7 @@ export function AttainExperience({ setting, cells, baseline, initial, onPersist 
                       ? <span className="font-abridge text-[16px] text-[#1A1A1A]">{fmt$(v)}<span className="text-[12px] text-[#8C8C8C]">/yr</span></span>
                       : <span className="text-[12px] text-[#B4A896] italic">not entered yet</span>}
                   </div>
-                  <div className="h-2 rounded-full bg-[#EFEAE1] overflow-hidden"><div className="h-full bg-[#EA2C00]" style={{ width: `${totalValue > 0 ? Math.round((v / totalValue) * 100) : 0}%` }} /></div>
+                  <div className="h-2 rounded-full bg-[#E8E2DA] overflow-hidden"><div className="h-full bg-[#EA2C00]" style={{ width: `${totalValue > 0 ? Math.round((v / totalValue) * 100) : 0}%` }} /></div>
                 </div>
               );
             })}
@@ -351,7 +351,7 @@ export function AttainExperience({ setting, cells, baseline, initial, onPersist 
 
         <p className={`${LBL} mb-1`}>How it all happens</p>
         <h3 className="font-abridge text-[22px] text-[#1A1A1A] mb-4">{CELLS.length > 1 ? "One chain, feeding every category" : "The chain behind the number"}</h3>
-        <div className="rounded-2xl border border-[#EFEAE1] p-5 mb-12">
+        <div className="rounded-2xl border border-[#E8E2DA] p-5 mb-12">
           <p className="text-[14px] text-[#3A3A3A] leading-relaxed">A lighter documentation load is the shared lever. Each category runs its own chain from the Epic signals we pull to the outcome it opens{CELLS.length > 1 ? <>: <span className="font-medium">{CELLS.map((c) => catLabel(c).toLowerCase()).join(", ")}</span>.</> : <> for <span className="font-medium">{CELLS[0] ? catLabel(CELLS[0]).toLowerCase() : ""}</span>.</>}</p>
         </div>
 
@@ -413,7 +413,7 @@ export function AttainExperience({ setting, cells, baseline, initial, onPersist 
               <span className="text-left whitespace-nowrap">{m.unit}</span>
             </span>
           </div>
-          <div className="h-1.5 rounded-full bg-[#EFEAE1] overflow-hidden"><div className="h-full rounded-full transition-all" style={{ width: `${pr === null ? 0 : Math.max(0, Math.min(1, pr)) * 100}%`, backgroundColor: accent }} /></div>
+          <div className="h-1.5 rounded-full bg-[#E8E2DA] overflow-hidden"><div className="h-full rounded-full transition-all" style={{ width: `${pr === null ? 0 : Math.max(0, Math.min(1, pr)) * 100}%`, backgroundColor: accent }} /></div>
         </div>
       );
     };
@@ -425,7 +425,7 @@ export function AttainExperience({ setting, cells, baseline, initial, onPersist 
         <p className="text-[15px] text-[#3A3A3A] leading-relaxed max-w-[640px] mb-10">Walk each category and drop in this review's readings. One combined number up top, the per-category lines below, and the gap shown on purpose.</p>
 
         {/* combined headline */}
-        <div className="rounded-2xl border border-[#EFEAE1] p-6 md:p-7 mb-8">
+        <div className="rounded-2xl border border-[#E8E2DA] p-6 md:p-7 mb-8">
           <div className="flex flex-wrap items-end justify-between gap-4 mb-5">
             <div>
               <p className={`${LBL} mb-2`}>Attainment, all categories</p>
@@ -437,7 +437,7 @@ export function AttainExperience({ setting, cells, baseline, initial, onPersist 
               <p className="text-[14px] text-[#8C8C8C] mt-1"><span className="font-abridge text-[22px] text-[#1A1A1A]">{fmt$(totalValue - totalRealized)}</span> still on the table</p>
             </div>
           </div>
-          <div className="h-3 rounded-full bg-[#EFEAE1] overflow-hidden"><div className="h-full bg-[#EA2C00] transition-all" style={{ width: `${overall}%` }} /></div>
+          <div className="h-3 rounded-full bg-[#E8E2DA] overflow-hidden"><div className="h-full bg-[#EA2C00] transition-all" style={{ width: `${overall}%` }} /></div>
           {/* the climb only charts once there's real history to plot — a single flat line reads as broken */}
           {reviewLog.length > 0 && (
             <svg viewBox={`0 0 ${W} ${H}`} className="w-full mt-5">
@@ -451,7 +451,7 @@ export function AttainExperience({ setting, cells, baseline, initial, onPersist 
 
         {/* per-category entry via the stepper */}
         <p className={`${LBL} mb-3`}>Enter this review, category by category</p>
-        <div className="grid border-t border-b border-[#EFEAE1] divide-x divide-[#EFEAE1] mb-8" style={{ gridTemplateColumns: `repeat(${CELLS.length}, minmax(0,1fr))` }}>
+        <div className="grid border-t border-b border-[#E8E2DA] divide-x divide-[#E8E2DA] mb-8" style={{ gridTemplateColumns: `repeat(${CELLS.length}, minmax(0,1fr))` }}>
           {CELLS.map((c, i) => {
             const st = statsFor(c); const activeI = catIdx === i;
             return (
@@ -464,7 +464,7 @@ export function AttainExperience({ setting, cells, baseline, initial, onPersist 
           })}
         </div>
 
-        <div className="rounded-2xl border border-[#EFEAE1] p-5 mb-4">
+        <div className="rounded-2xl border border-[#E8E2DA] p-5 mb-4">
           <p className="text-[13px] font-semibold text-[#1A1A1A] mb-4">{catLabel(cell)} · this review's readings</p>
           <p className="text-[11px] font-bold uppercase tracking-[1.5px] text-[#8C8C8C] mb-3">What Abridge can enable</p>
           <div className="space-y-3.5 mb-6">{active.sig.map((m) => entryRow(m, "#8C8C8C"))}</div>
@@ -478,19 +478,19 @@ export function AttainExperience({ setting, cells, baseline, initial, onPersist 
           {CELLS.map((c) => {
             const st = statsFor(c); const a = Math.round(st.attain * 100);
             return (
-              <div key={c.category} className={`rounded-xl border p-4 ${st.leak ? "border-[#F0C4B8] bg-[#FDF6F3]" : "border-[#EFEAE1]"}`}>
+              <div key={c.category} className={`rounded-xl border p-4 ${st.leak ? "border-[#F0C4B8] bg-[#FDF6F3]" : "border-[#E8E2DA]"}`}>
                 <div className="flex items-center justify-between gap-3 mb-1.5">
                   <p className="text-[14px] font-semibold text-[#1A1A1A]">{catLabel(c)}</p>
                   <span className="text-[11px] font-bold uppercase tracking-[1.5px] rounded-full px-2.5 py-0.5" style={{ color: st.leak ? "#EA2C00" : "#6B6B6B", backgroundColor: st.leak ? "#FBE7E1" : "#F2EDE5" }}>{st.leak ? "Behind" : st.entered ? `${a}% attained` : "Not entered"}</span>
                 </div>
-                <div className="h-1.5 rounded-full bg-[#EFEAE1] overflow-hidden"><div className="h-full" style={{ width: `${a}%`, backgroundColor: st.leak ? "#EA2C00" : "#1A1A1A" }} /></div>
+                <div className="h-1.5 rounded-full bg-[#E8E2DA] overflow-hidden"><div className="h-full" style={{ width: `${a}%`, backgroundColor: st.leak ? "#EA2C00" : "#1A1A1A" }} /></div>
               </div>
             );
           })}
         </div>
 
         <div className="flex flex-wrap items-center gap-4 mb-12">
-          <button type="button" onClick={() => setReviewLog((l) => [...l, { label: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" }), attain: overall }])} disabled={!anyEntered} className="rounded-full bg-[#EA2C00] text-white text-[14px] font-semibold px-5 py-2.5 hover:bg-[#d12800] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">Log this review</button>
+          <button type="button" onClick={() => setReviewLog((l) => [...l, { label: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" }), attain: overall }])} disabled={!anyEntered} className="rounded-xl bg-[#EA2C00] text-white text-[14px] font-semibold px-5 py-2.5 hover:bg-[#d12800] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">Log this review</button>
           <span className="text-[13px] text-[#8C8C8C]">{reviewLog.length ? `${reviewLog.length} logged. Snapshots all ${CELLS.length} categories as one point.` : "Snapshots all categories at once and drops a point on the climb."}</span>
         </div>
 
@@ -512,7 +512,7 @@ export function AttainExperience({ setting, cells, baseline, initial, onPersist 
 export default function MultiCategoryPreview() {
   return (
     <div className="min-h-screen bg-[#FDFCFA]">
-      <div className="sticky top-0 z-30 h-14 bg-white border-b border-[#EFEAE1] flex items-center px-6">
+      <div className="sticky top-0 z-30 h-14 bg-white border-b border-[#E8E2DA] flex items-center px-6">
         <button className="flex items-center gap-1 text-[13px] text-[#6B6B6B]"><ChevronLeft className="w-4 h-4" /> Back</button>
         <span className="mx-auto font-abridge text-[15px] tracking-wide text-[#1A1A1A]">ROI Calculator · Attain</span>
         <span className="font-abridge text-[15px] font-semibold text-[#EA2C00]">abridge</span>

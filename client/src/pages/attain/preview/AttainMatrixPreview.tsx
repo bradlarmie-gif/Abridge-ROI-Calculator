@@ -56,12 +56,12 @@ export default function AttainMatrixPreview() {
   const storageKey = KEY(partner, cell);
 
   const pill = (active: boolean) =>
-    `text-[13px] rounded-full px-3.5 py-1.5 border transition-colors ${active ? "border-[#EA2C00] bg-[#EA2C00] text-white font-semibold" : "border-[#E0D9CE] text-[#3A3A3A] hover:border-[#B4A896]"}`;
+    `text-[13px] rounded-xl px-3.5 py-1.5 border transition-colors ${active ? "border-[#EA2C00] bg-[#EA2C00] text-white font-semibold" : "border-[#E0D9CE] text-[#3A3A3A] hover:border-[#B4A896]"}`;
 
   return (
     <div className="min-h-screen bg-[#FDFCFA]">
       {/* switcher bar */}
-      <div className="sticky top-0 z-20 bg-[#FDFCFA]/95 backdrop-blur border-b border-[#EFEAE1] px-8 py-4">
+      <div className="sticky top-0 z-20 bg-[#FDFCFA]/95 backdrop-blur border-b border-[#E8E2DA] px-8 py-4">
         <div className="max-w-[860px] mx-auto">
           <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
             <span className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest">Attain</span>
@@ -70,9 +70,9 @@ export default function AttainMatrixPreview() {
               <input value={partner} onChange={(e) => setPartner(e.target.value)} className="w-[150px] bg-transparent border-0 border-b-2 border-[#E0D9CE] rounded-none px-0 pb-0.5 font-abridge text-[16px] text-[#1A1A1A] outline-none transition-colors focus:border-[#EA2C00]" />
               <span className="text-[10px] text-[#B4A896] italic">autosaved</span>
             </div>
-            <div className="ml-auto flex items-center gap-1 bg-[#F2EDE5] rounded-full p-1">
+            <div className="ml-auto flex items-center gap-1 bg-[#F2EDE5] rounded-[12px] p-1">
               {(["align", "plan", "strategy", "progress"] as const).map((ch) => (
-                <button key={ch} type="button" onClick={() => setChapter(ch)} className={`text-[13px] rounded-full px-4 py-1.5 capitalize transition-colors ${chapter === ch ? "bg-white shadow-sm font-semibold text-[#1A1A1A]" : "text-[#8C8C8C]"}`}>{ch}</button>
+                <button key={ch} type="button" onClick={() => setChapter(ch)} className={`text-[13px] rounded-[9px] px-4 py-1.5 capitalize transition-colors ${chapter === ch ? "bg-white shadow-sm font-semibold text-[#1A1A1A]" : "text-[#8C8C8C]"}`}>{ch}</button>
               ))}
             </div>
           </div>

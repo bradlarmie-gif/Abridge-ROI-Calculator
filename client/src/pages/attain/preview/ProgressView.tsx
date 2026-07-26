@@ -68,7 +68,7 @@ export default function ProgressView({ cell, committed = [], readings, setReadin
       </p>
 
       {/* 1 — attainment headline */}
-      <div className="rounded-2xl border border-[#EFEAE1] p-6 md:p-7 mb-12">
+      <div className="rounded-2xl border border-[#E8E2DA] p-6 md:p-7 mb-12">
         <div className="flex flex-wrap items-end justify-between gap-4 mb-5">
           <div>
             <p className={`${LBL} mb-2`}>Attainment</p>
@@ -80,7 +80,7 @@ export default function ProgressView({ cell, committed = [], readings, setReadin
             <p className="text-[14px] text-[#8C8C8C] mt-1"><span className="font-abridge text-[22px] text-[#1A1A1A]">{fmt$(gap)}</span> still on the table</p>
           </div>
         </div>
-        <div className="h-3 rounded-full bg-[#EFEAE1] overflow-hidden">
+        <div className="h-3 rounded-full bg-[#E8E2DA] overflow-hidden">
           <div className="h-full bg-[#EA2C00] transition-all" style={{ width: `${attainPct}%` }} />
         </div>
         <p className="text-[12px] text-[#8C8C8C] mt-3 leading-relaxed">{hasAny ? "The gap is the work still ahead, and it's what we hold both sides to." : "Enter the readings below and this fills in from your real numbers."}</p>
@@ -90,7 +90,7 @@ export default function ProgressView({ cell, committed = [], readings, setReadin
       <p className={`${LBL} mb-1`}>The climb</p>
       <h3 className="font-abridge text-[24px] text-[#1A1A1A] mb-1">Attainment against the full promise</h3>
       <p className="text-[13px] text-[#8C8C8C] mb-5 max-w-[600px]">Each review you log adds a point here, so the trend builds over time.</p>
-      <div className="rounded-2xl border border-[#EFEAE1] p-5 mb-14">
+      <div className="rounded-2xl border border-[#E8E2DA] p-5 mb-14">
         <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
           <line x1={padX} y1={top} x2={W - 24} y2={top} stroke="#E0D9CE" strokeWidth="1" strokeDasharray="2 3" />
           <text x={W - 24} y={top - 6} textAnchor="end" fontSize="10" fill="#B4A896" className="uppercase tracking-widest">the full promise</text>
@@ -123,7 +123,7 @@ export default function ProgressView({ cell, committed = [], readings, setReadin
 
       {/* log this review — snapshots the readings into the climb */}
       <div className="flex flex-wrap items-center gap-4 mb-14">
-        <button type="button" onClick={() => onLogReview(attainPct)} disabled={!hasAny} className="rounded-full bg-[#EA2C00] text-white text-[14px] font-semibold px-5 py-2.5 hover:bg-[#d12800] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">Log this review</button>
+        <button type="button" onClick={() => onLogReview(attainPct)} disabled={!hasAny} className="rounded-xl bg-[#EA2C00] text-white text-[14px] font-semibold px-5 py-2.5 hover:bg-[#d12800] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">Log this review</button>
         <span className="text-[13px] text-[#8C8C8C]">{reviewLog.length ? `${reviewLog.length} review${reviewLog.length > 1 ? "s" : ""} logged. Logging again adds another point to the climb.` : "Snapshots these readings and drops a point on the climb above. Everything's saved to this partner automatically."}</span>
       </div>
 
@@ -149,7 +149,7 @@ function LiveLink({ title, tone, statusLabel, metrics, readings, setReadings, pr
 }) {
   const accent = tone === "leak" ? "#EA2C00" : tone === "value" ? "#1A1A1A" : "#8C8C8C";
   return (
-    <div className={`rounded-2xl border p-5 ${tone === "leak" ? "border-[#F0C4B8] bg-[#FDF6F3]" : "border-[#EFEAE1]"}`}>
+    <div className={`rounded-2xl border p-5 ${tone === "leak" ? "border-[#F0C4B8] bg-[#FDF6F3]" : "border-[#E8E2DA]"}`}>
       <div className="flex items-center justify-between gap-3 mb-3">
         <p className="text-[15px] font-semibold text-[#1A1A1A]">{title}</p>
         <span className="text-[11px] font-bold uppercase tracking-[1.5px] rounded-full px-2.5 py-1" style={{ color: tone === "leak" ? "#EA2C00" : "#6B6B6B", backgroundColor: tone === "leak" ? "#FBE7E1" : "#F2EDE5" }}>{statusLabel}</span>
@@ -171,7 +171,7 @@ function LiveLink({ title, tone, statusLabel, metrics, readings, setReadings, pr
                     <span>{m.target} {m.unit}</span>
                   </span>
                 </div>
-                <div className="h-1.5 rounded-full bg-[#EFEAE1] overflow-hidden">
+                <div className="h-1.5 rounded-full bg-[#E8E2DA] overflow-hidden">
                   <div className="h-full rounded-full transition-all" style={{ width: `${p === null ? 0 : Math.max(0, Math.min(1, p)) * 100}%`, backgroundColor: accent }} />
                 </div>
               </div>

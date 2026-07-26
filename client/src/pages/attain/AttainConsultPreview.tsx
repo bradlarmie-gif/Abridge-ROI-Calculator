@@ -65,7 +65,7 @@ function OutcomeRow({
   children?: React.ReactNode;
 }) {
   return (
-    <div className="border-b border-[#EFEAE1]">
+    <div className="border-b border-[#E8E2DA]">
       <button type="button" onClick={onToggle} className="group relative w-full text-left flex items-start gap-3.5 pl-4 pr-3 py-4 hover:bg-[#F2EDE5] transition-colors">
         {selected && <span className="absolute left-0 top-2 bottom-2 w-[3px] rounded-full bg-[#EA2C00]" />}
         <Box on={selected} />
@@ -85,7 +85,7 @@ function OutcomeRow({
  * number, and the live dollar it contributes. */
 function DigInput({ label, unit, value, onChange, placeholder, contributes }: { label: string; unit: string; value: string; onChange: (v: string) => void; placeholder: string; contributes: number }) {
   return (
-    <div className="flex flex-wrap items-end justify-between gap-4 py-3 border-t border-[#EFEAE1] first:border-t-0">
+    <div className="flex flex-wrap items-end justify-between gap-4 py-3 border-t border-[#E8E2DA] first:border-t-0">
       <div>
         <p className={`${LBL} mb-1.5`}>{label}</p>
         <div className="flex items-baseline gap-1.5">
@@ -166,7 +166,7 @@ export default function AttainConsultPreview() {
         <div className="h-px bg-[#E7E0D6] my-10" />
 
         {/* Contribution margin is established upstream on Starting Point; Align receives it, the specialties only re-weight it */}
-        <div className="rounded-xl border border-[#EFEAE1] bg-[#FAF7F2] px-5 py-4 mb-10">
+        <div className="rounded-xl border border-[#E8E2DA] bg-[#FAF7F2] px-5 py-4 mb-10">
           <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#8C8C8C] mb-2">Per-visit contribution margin · carried in from your Starting Point</p>
           <div className="flex flex-wrap gap-x-6 gap-y-1.5">
             {Object.entries(SPEC_MARGIN).map(([id, m]) => (
@@ -187,7 +187,7 @@ export default function AttainConsultPreview() {
 
         {/* Q1 — multi-select outcomes, each opening a number-digging drill-down */}
         <SectionHead n={1} kicker="The outcomes" title="Pick every outcome you're after" />
-        <div className="border-t border-[#EFEAE1] mb-12">
+        <div className="border-t border-[#E8E2DA] mb-12">
           <OutcomeRow selected={picked.has("backlog")} onToggle={() => toggle("backlog")} title="Work down the referral backlog" desc="Patients already referred and waiting to be scheduled.">
             <DigInput label="How many are waiting right now?" unit="patients" value={backlog} onChange={setBacklog} placeholder="e.g., 1,900" contributes={vBacklog * margin} />
           </OutcomeRow>
@@ -210,7 +210,7 @@ export default function AttainConsultPreview() {
             {allLines ? "Clear all" : "Across all lines"}
           </button>
         </div>
-        <div className="border-t border-[#EFEAE1] mb-12">
+        <div className="border-t border-[#E8E2DA] mb-12">
           {[
             ["primary", "Primary care", "Highest volume, where the backlog and wait usually concentrate."],
             ["cardiology", "Cardiology", "Higher margin per visit; a shorter wait moves real revenue."],
@@ -218,7 +218,7 @@ export default function AttainConsultPreview() {
             ["behavioral", "Behavioral health", "Access is the whole battle; long waits, high no-shows."],
             ["other", "Other specialties", "We'll size it across the board and narrow later."],
           ].map(([id, t, d]) => (
-            <button key={id} type="button" onClick={() => toggleLine(id)} className="group relative w-full text-left flex items-start gap-3.5 pl-4 pr-3 py-4 border-b border-[#EFEAE1] hover:bg-[#F2EDE5] transition-colors">
+            <button key={id} type="button" onClick={() => toggleLine(id)} className="group relative w-full text-left flex items-start gap-3.5 pl-4 pr-3 py-4 border-b border-[#E8E2DA] hover:bg-[#F2EDE5] transition-colors">
               {lines.has(id) && <span className="absolute left-0 top-2 bottom-2 w-[3px] rounded-full bg-[#EA2C00]" />}
               <Box on={lines.has(id)} />
               <div>
@@ -245,7 +245,7 @@ export default function AttainConsultPreview() {
         {/* Q4 — proof / signals, each anchored today -> target (this writes the query + the EBR scorecard) */}
         <SectionHead n={4} kicker="The proof" title="What would tell you it's working?" />
         <p className="text-[14px] text-[#6B6B6B] leading-relaxed mb-4 max-w-[600px]">Pick what you'd point to in a review, and where each sits today versus a win. That before-and-target pair is exactly what we'd measure. The first of these move before the visits do.</p>
-        <div className="border-t border-[#EFEAE1] mb-14">
+        <div className="border-t border-[#E8E2DA] mb-14">
           {([
             ["tna", "Third-next-available falling", "The standard access measure, coming down against your baseline.", "days"],
             ["backlog", "Referral backlog shrinking", "The count of patients waiting to be scheduled going down.", "patients"],
@@ -253,7 +253,7 @@ export default function AttainConsultPreview() {
             ["visits", "Visit volume up", "More visits actually landing on the schedule.", "visits / yr"],
             ["love", "Love Stories", "Patients and staff telling you access got better, in their words.", ""],
           ] as const).map(([id, t, d, unit]) => (
-            <div key={id} className="border-b border-[#EFEAE1]">
+            <div key={id} className="border-b border-[#E8E2DA]">
               <button type="button" onClick={() => toggleProof(id)} className="group relative w-full text-left flex items-start gap-3.5 pl-4 pr-3 py-4 hover:bg-[#F2EDE5] transition-colors">
                 {proof.has(id) && <span className="absolute left-0 top-2 bottom-2 w-[3px] rounded-full bg-[#EA2C00]" />}
                 <Box on={proof.has(id)} />
@@ -294,7 +294,7 @@ export default function AttainConsultPreview() {
         {/* Q5 — the strategic stake underneath the dollar (what Abridge puts its name on moving) */}
         <SectionHead n={5} kicker="What it unlocks" title="If this works, what does it let you do?" />
         <p className="text-[14px] text-[#6B6B6B] leading-relaxed mb-4 max-w-[600px]">The dollar is the hard part; this is the reason underneath it. Pick what hitting this actually opens up. This is what we'd stand behind alongside the number.</p>
-        <div className="border-t border-[#EFEAE1] mb-14">
+        <div className="border-t border-[#E8E2DA] mb-14">
           {[
             ["contract", "Take on a new contract or payer", "Access headroom you can commit to in a deal you can't take today."],
             ["service", "Keep a service line whole", "Stop referrals leaking out to competitors for lack of a slot."],
@@ -302,7 +302,7 @@ export default function AttainConsultPreview() {
             ["site", "Open or fill a new site", "Grow into capacity instead of adding cost to create it."],
             ["standard", "Meet an access standard you're committed to", "A board or system promise on wait times you have to hit."],
           ].map(([id, t, d]) => (
-            <button key={id} type="button" onClick={() => toggleUnlock(id)} className="group relative w-full text-left flex items-start gap-3.5 pl-4 pr-3 py-4 border-b border-[#EFEAE1] hover:bg-[#F2EDE5] transition-colors">
+            <button key={id} type="button" onClick={() => toggleUnlock(id)} className="group relative w-full text-left flex items-start gap-3.5 pl-4 pr-3 py-4 border-b border-[#E8E2DA] hover:bg-[#F2EDE5] transition-colors">
               {unlock.has(id) && <span className="absolute left-0 top-2 bottom-2 w-[3px] rounded-full bg-[#EA2C00]" />}
               <Box on={unlock.has(id)} />
               <div>

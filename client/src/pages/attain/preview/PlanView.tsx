@@ -45,7 +45,7 @@ function SourceSelect({ value, onChange, sources }: { value: string; onChange: (
 
 function MetricCard({ m, st, onPatch, sources }: { m: MetricDef; st: MState; onPatch: (k: keyof MState, v: string) => void; sources: readonly string[] }) {
   return (
-    <div className="rounded-2xl border border-[#EFEAE1] p-5">
+    <div className="rounded-2xl border border-[#E8E2DA] p-5">
       <h3 className="font-abridge text-[19px] text-[#1A1A1A] mb-1">{m.name}</h3>
       <p className="text-[13px] text-[#6B6B6B] leading-relaxed mb-4 max-w-[560px]"><span className="font-medium text-[#3A3A3A]">We measure:</span> {m.measure}</p>
       <div className="grid grid-cols-[176px_20px_176px_minmax(0,1fr)] items-end gap-x-4 gap-y-4">
@@ -151,8 +151,8 @@ export default function PlanView({ c, settingLabel, categoryLabel, committed = [
       {/* Step 2 — outcomes from Align */}
       <SectionHead n={2} kicker="The outcomes" title="The outcomes from Align" />
       <p className="text-[14px] text-[#6B6B6B] leading-relaxed mb-5 max-w-[600px]">The value in play and the outcomes you named. Everything we measure below connects back to these.</p>
-      <div className="rounded-2xl border border-[#EFEAE1] p-5 mb-14">
-        <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1 mb-4 pb-4 border-b border-[#EFEAE1]">
+      <div className="rounded-2xl border border-[#E8E2DA] p-5 mb-14">
+        <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1 mb-4 pb-4 border-b border-[#E8E2DA]">
           <span className="text-[13px] text-[#8C8C8C]">Value in play</span>
           <span className="font-abridge text-[22px] text-[#EA2C00] leading-none">{fmt$(valueInPlay)}<span className="text-[13px] text-[#8C8C8C]">/yr</span></span>
           {segSummary && <span className="text-[13px] text-[#8C8C8C] ml-1">across {segSummary}</span>}
