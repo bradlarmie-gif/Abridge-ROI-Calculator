@@ -408,19 +408,19 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
     <MoneyCard
       key="obs"
       title="Observation / IP status defense"
-      subtitle="The revenue delta when a payer downgrades an inpatient stay to observation for lack of clear medical necessity documentation."
+      subtitle="The revenue delta when a payer downgrades an inpatient stay to observation for want of clear medical-necessity documentation. Two separate questions: which downgrades the note itself can defend, and how many of those survive appeal."
       enabled={dq.ipObsDefenseEnabled}
       onToggle={() =>
         updateDq({ ipObsDefenseEnabled: !dq.ipObsDefenseEnabled, ipObsDefenseExpanded: !dq.ipObsDefenseEnabled ? true : dq.ipObsDefenseExpanded })
       }
       value={obsValue}
-      secondary={<>≈ <b className="text-[#1A1A1A]">{obsPreventablePct}%</b> of downgrades doc-preventable</>}
+      secondary={<>≈ <b className="text-[#1A1A1A]">{obsPreventablePct}%</b> of downgrades the note can defend</>}
       testId="toggle-obs"
       buildLine={
         <>
           <b className="text-[#1A1A1A]">{fmtN(eligibleEncounters)}</b> admissions × <b className="text-[#1A1A1A]">{dq.ipObsDefenseDenialRate}%</b>{" "}
-          downgrade rate × <b className="text-[#1A1A1A]">${fmtN(dq.ipObsDefenseRevenueDelta)}</b>/case × <b className="text-[#1A1A1A]">{obsPreventablePct}%</b>{" "}
-          doc-preventable × {dq.ipObsDefenseRealization}% realization = <b className="text-[#1A1A1A]">{fmt$(obsValue)}</b> a year
+          downgraded × <b className="text-[#1A1A1A]">${fmtN(dq.ipObsDefenseRevenueDelta)}</b>/case × <b className="text-[#1A1A1A]">{obsPreventablePct}%</b>{" "}
+          the note can defend × {dq.ipObsDefenseRealization}% survive appeal = <b className="text-[#1A1A1A]">{fmt$(obsValue)}</b> a year
         </>
       }
     >
@@ -434,7 +434,7 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
         <FieldTile label="Revenue delta / case">
           <Fi value={dq.ipObsDefenseRevenueDelta} onValueChange={(v) => updateDq({ ipObsDefenseRevenueDelta: v })} prefix="$" testId="input-ed-obs-delta" />
         </FieldTile>
-        <FieldTile label="Doc-preventable">
+        <FieldTile label="The note can defend" note="share of downgrades the documentation itself supports">
           <FiReadout suffix="%">{obsPreventablePct}</FiReadout>
           <QuickFill
             options={(["conservative", "typical", "aggressive"] as const).map((k) => ({ key: k, label: `${IP_OBS_PREVENTABLE_SCENARIOS[k]}%` }))}
@@ -444,7 +444,7 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
         </FieldTile>
       </FieldGrid>
       <FieldGrid cols={3}>
-        <FieldTile label="Realization" note="audit adjustments">
+        <FieldTile label="Survives appeal" note="the share that holds through payer appeal / audit">
           <Fi value={dq.ipObsDefenseRealization} onValueChange={(v) => updateDq({ ipObsDefenseRealization: v })} suffix="%" testId="input-ed-obs-realization" />
         </FieldTile>
         <div />

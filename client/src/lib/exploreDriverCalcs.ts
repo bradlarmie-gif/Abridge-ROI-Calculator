@@ -411,7 +411,7 @@ export function computeAllDriverCalcSummaries(
   if (isIP && dq.ipObsDefenseEnabled) {
     const preventableScenarios = IP_OBS_PREVENTABLE_SCENARIOS;
     const preventablePct = dq.ipObsDefensePreventableScenario === 'custom' ? (dq.ipObsDefenseCustomPercent ?? 40) : (preventableScenarios[dq.ipObsDefensePreventableScenario] ?? 40);
-    out.obsDefense = `${fmtN(eligibleEncounters)} encounters × ${dq.ipObsDefenseDenialRate}% downgrade rate × ${fmt$(dq.ipObsDefenseRevenueDelta)}/case delta × ${preventablePct}% doc-preventable × ${dq.ipObsDefenseRealization}% realization`;
+    out.obsDefense = `${fmtN(eligibleEncounters)} admissions × ${dq.ipObsDefenseDenialRate}% downgraded × ${fmt$(dq.ipObsDefenseRevenueDelta)}/case delta × ${preventablePct}% the note can defend × ${dq.ipObsDefenseRealization}% survives appeal`;
   }
 
   // Quality (Nursing only quantified) — derive every multiplicand from the
