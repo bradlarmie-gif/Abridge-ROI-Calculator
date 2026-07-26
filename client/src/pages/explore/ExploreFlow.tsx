@@ -10,6 +10,14 @@ import ExploreQuality from "./ExploreQuality";
 import ExploreInvestment from "./ExploreInvestment";
 import ExploreModel from "./ExploreModel";
 import EdCareSetting from "./editorial/EdCareSetting";
+import EdRevenue from "./editorial/EdRevenue";
+import EdQuality from "./editorial/EdQuality";
+import EdPractice from "./editorial/EdPractice";
+import EdTimeSavings from "./editorial/EdTimeSavings";
+import EdCapacity from "./editorial/EdCapacity";
+import EdWorkforce from "./editorial/EdWorkforce";
+import EdInvestment from "./editorial/EdInvestment";
+import EdModel from "./editorial/EdModel";
 import {
   computeCapacityBreakdown,
   computeWorkforceBreakdown,
@@ -452,7 +460,13 @@ export interface DocQualityInputs {
 
 export interface ExploreState {
   careSetting: ExploreCareSetting | null;
-  
+
+  /** UI-only fork (editorial Revenue screen): which money drivers to surface for
+   * outpatient — fee-for-service (wRVU), risk-based (HCC), or both. Display-only;
+   * it does not change engine math, which already gates wRVU/HCC independently
+   * via their own enabled flags. */
+  paymentModel: 'ffs' | 'risk' | 'both';
+
   numberOfProviders: number;
   encountersPerProvider: number;
   annualEncounters: number;
@@ -500,6 +514,7 @@ export interface ExploreState {
 
 export const DEFAULT_EXPLORE_STATE: ExploreState = {
   careSetting: null,
+  paymentModel: 'both',
   numberOfProviders: 0,
   encountersPerProvider: 0,
   annualEncounters: 0,
@@ -1152,7 +1167,16 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
       break;
     
     case 'practice':
-      content = (
+      content = editorial ? (
+        <EdPractice
+          state={state}
+          updateState={updateState}
+          onNext={() => navigate('timeSavings')}
+          onBack={() => navigate('careSetting')}
+          onHome={goHome}
+          onReturnToBusinessCase={cameFromProforma ? fastExitToProforma : undefined}
+        />
+      ) : (
         <ExploreOpportunity
           state={state}
           updateState={updateState}
@@ -1165,7 +1189,18 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
       break;
     
     case 'timeSavings':
-      content = (
+      content = editorial ? (
+        <EdTimeSavings
+          state={state}
+          updateState={updateState}
+          onNext={() => {
+            navigate('capacity');
+          }}
+          onBack={() => navigate('practice')}
+          onHome={goHome}
+          onReturnToBusinessCase={cameFromProforma ? fastExitToProforma : undefined}
+        />
+      ) : (
         <ExploreTimeSavings
           state={state}
           updateState={updateState}
@@ -1181,7 +1216,18 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
     
     case 'capacity': {
       const priorQuadrants: PriorQuadrantEntry[] = [];
-      content = (
+      content = editorial ? (
+        <EdCapacity
+          state={state}
+          updateState={updateState}
+          totalHoursSaved={totalHoursSaved}
+          priorQuadrants={priorQuadrants}
+          onNext={() => navigate('workforce')}
+          onBack={() => navigate('timeSavings')}
+          onHome={goHome}
+          onReturnToBusinessCase={cameFromProforma ? fastExitToProforma : undefined}
+        />
+      ) : (
         <ExploreCapacity
           state={state}
           updateState={updateState}
@@ -1201,7 +1247,18 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
       const priorQuadrants: PriorQuadrantEntry[] = [
         { key: 'capacity', label: 'Capacity', value: capacity.quadrantAnnualTotal },
       ];
-      content = (
+      content = editorial ? (
+        <EdWorkforce
+          state={state}
+          updateState={updateState}
+          totalHoursSaved={totalHoursSaved}
+          priorQuadrants={priorQuadrants}
+          onNext={() => navigate('revenue')}
+          onBack={() => navigate('capacity')}
+          onHome={goHome}
+          onReturnToBusinessCase={cameFromProforma ? fastExitToProforma : undefined}
+        />
+      ) : (
         <ExploreWorkforce
           state={state}
           updateState={updateState}
@@ -1223,7 +1280,18 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
         { key: 'capacity', label: 'Capacity', value: capacity.quadrantAnnualTotal },
         { key: 'workforce', label: 'Workforce', value: workforce.quadrantAnnualTotal },
       ];
-      content = (
+      content = editorial ? (
+        <EdRevenue
+          state={state}
+          updateState={updateState}
+          totalHoursSaved={totalHoursSaved}
+          priorQuadrants={priorQuadrants}
+          onNext={() => navigate('quality')}
+          onBack={() => navigate('workforce')}
+          onHome={goHome}
+          onReturnToBusinessCase={cameFromProforma ? fastExitToProforma : undefined}
+        />
+      ) : (
         <ExploreRevenue
           state={state}
           updateState={updateState}
@@ -1237,7 +1305,7 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
       );
       break;
     }
-    
+
     case 'quality': {
       const capacity = computeCapacityBreakdown(state, totalHoursSaved);
       const workforce = computeWorkforceBreakdown(state, totalHoursSaved);
@@ -1247,7 +1315,18 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
         { key: 'workforce', label: 'Workforce', value: workforce.quadrantAnnualTotal },
         { key: 'revenue', label: 'Revenue', value: revenue.quadrantAnnualTotal },
       ];
-      content = (
+      content = editorial ? (
+        <EdQuality
+          state={state}
+          updateState={updateState}
+          totalHoursSaved={totalHoursSaved}
+          priorQuadrants={priorQuadrants}
+          onNext={() => navigate('investment')}
+          onBack={() => navigate('revenue')}
+          onHome={goHome}
+          onReturnToBusinessCase={cameFromProforma ? fastExitToProforma : undefined}
+        />
+      ) : (
         <ExploreQuality
           state={state}
           updateState={updateState}
@@ -1263,7 +1342,18 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
     }
     
     case 'investment':
-      content = (
+      content = editorial ? (
+        <EdInvestment
+          state={state}
+          updateState={updateState}
+          totalHoursSaved={totalHoursSaved}
+          efficiencyValue={exploreTotals.efficiencyValue}
+          documentationValue={exploreTotals.documentationValue}
+          onNext={() => navigate('model')}
+          onBack={() => navigate('quality')}
+          onHome={goHome}
+        />
+      ) : (
         <ExploreInvestment
           state={state}
           updateState={updateState}
@@ -1300,7 +1390,23 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
         'Investment',
         'Your Model',
       ];
-      content = (
+      content = editorial ? (
+        <EdModel
+          state={state}
+          updateState={updateState}
+          totalHoursSaved={totalHoursSaved}
+          timeValue={timeValue}
+          docValue={docValue}
+          annualInvestment={annualInvestment}
+          onEdit={() => navigate('practice')}
+          onBack={() => navigate(isEditingProforma ? 'quality' : 'investment')}
+          onHome={goHome}
+          onAddToProforma={onAddToProforma}
+          onStepClick={(step: number) => navigate(stepPhaseMap[step - 1])}
+          stepLabels={stepLabels}
+          autoCommitToProforma={fastExitCommit}
+        />
+      ) : (
         <ExploreModel
           state={state}
           updateState={updateState}
