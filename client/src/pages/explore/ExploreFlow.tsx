@@ -9,6 +9,7 @@ import ExploreRevenue from "./ExploreRevenue";
 import ExploreQuality from "./ExploreQuality";
 import ExploreInvestment from "./ExploreInvestment";
 import ExploreModel from "./ExploreModel";
+import EdCareSetting from "./editorial/EdCareSetting";
 import {
   computeCapacityBreakdown,
   computeWorkforceBreakdown,
@@ -910,9 +911,12 @@ interface ExploreFlowProps {
   onAddToProforma?: (snapshot: import("@/pages/proforma/proformaTypes").ProformaSettingSnapshot) => void;
   disabledCareSettings?: ExploreCareSetting[];
   onDataRequest?: () => void;
+  /** THROWAWAY preview flag (?explorepreview=1): render editorial-brand screens
+   * where built, else fall back to the existing (interactive) screen. */
+  editorial?: boolean;
 }
 
-export default function ExploreFlow({ onBackToJourney, onBackToProforma, initialCareSetting, initialPhase, initialExploreState, onAddToProforma, disabledCareSettings = [], onDataRequest }: ExploreFlowProps) {
+export default function ExploreFlow({ onBackToJourney, onBackToProforma, initialCareSetting, initialPhase, initialExploreState, onAddToProforma, disabledCareSettings = [], onDataRequest, editorial = false }: ExploreFlowProps) {
   const [phase, setPhase] = useState<ExplorePhase>(() => {
     const requested = initialPhase || (initialExploreState ? 'practice' : 'careSetting');
     return resolveExplorePhase(requested, !!initialExploreState && !!onAddToProforma);
@@ -1118,7 +1122,20 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
 
   switch (phase) {
     case 'careSetting':
-      content = (
+      content = editorial ? (
+        <EdCareSetting
+          selectedSetting={disabledCareSettings.includes(state.careSetting as ExploreCareSetting) ? null : state.careSetting}
+          onSelectSetting={(setting: ExploreCareSetting) => {
+            if (disabledCareSettings.includes(setting)) return;
+            updateState({ careSetting: setting });
+          }}
+          onNext={() => navigate('practice')}
+          onBack={goHome}
+          onHome={goHome}
+          disabledSettings={disabledCareSettings}
+          onDataRequest={onDataRequest}
+        />
+      ) : (
         <ExploreCareSettings
           selectedSetting={disabledCareSettings.includes(state.careSetting as ExploreCareSetting) ? null : state.careSetting}
           onSelectSetting={(setting: ExploreCareSetting) => {

@@ -226,6 +226,11 @@ export default function App() {
   if (typeof window !== "undefined" && ["1", "review"].includes(new URLSearchParams(window.location.search).get("attainpdf") ?? "")) {
     return <AttainPdf />;
   }
+  // THROWAWAY: ?explorepreview=1 = the editorial Explore flow (interactive, engine-wired).
+  // Editorial-brand screens where built, else fall back to the existing interactive screen.
+  if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("explorepreview") === "1") {
+    return <ExploreFlow editorial />;
+  }
 
   // State for deep link settings
   const [exploreInitialSettings, setExploreInitialSettings] = useState<{
