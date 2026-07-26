@@ -184,17 +184,19 @@ export function computeAllDriverValues(
     else result.wrvu = Math.round(value);
   }
   if (dq.hccEnabled && isOP) {
+    // Clean recapture model (no gapRate, no hidden discovery rate):
+    // per plan: members × (avg documented conditions/member × recapture-rate lift
+    // + newly identified/member) × $/HCC, then one global realization (RADV survival).
+    // The build line in EdRevenue reproduces this exactly.
     const upliftMap = HCC_UPLIFT_SCENARIOS;
     let totalGross = 0;
     for (const plan of dq.hccPlans) {
+      const members = state.numberOfProviders * plan.panelSize;
       const upliftPp = plan.uplift === 'custom' ? (plan.upliftCustomPp ?? 5) : (upliftMap[plan.uplift] ?? 5);
-      const effectiveUplift = Math.min(upliftPp, Math.max(0, 90 - plan.currentRecaptureRate));
-      const gapPts = state.numberOfProviders * plan.panelSize * plan.gapRate / 100;
-      totalGross += gapPts * (effectiveUplift / 100) * dq.avgHccs * plan.valuePerHcc;
-      if (plan.netNewEnabled) {
-        const netNewPts = state.numberOfProviders * plan.panelSize * plan.netNewDiscoveryRate / 100;
-        totalGross += netNewPts * plan.netNewAvgConditions * plan.valuePerHcc;
-      }
+      const effectiveUplift = Math.min(upliftPp, Math.max(0, 100 - plan.currentRecaptureRate));
+      const recaptured = members * dq.avgHccs * (effectiveUplift / 100);
+      const newlyIdentified = members * (plan.netNewAvgConditions ?? 0);
+      totalGross += (recaptured + newlyIdentified) * plan.valuePerHcc;
     }
     result.hccCapture = Math.round(totalGross * (dq.hccRealization / 100));
   }
@@ -388,27 +390,16 @@ export function computeAllDriverCalcSummaries(
   }
   if (dq.hccEnabled && isOP) {
     const upliftMap = HCC_UPLIFT_SCENARIOS;
-    if (dq.hccPlans.length === 1) {
-      const p = dq.hccPlans[0];
+    // Pure-multiplicand form so the PDF reconciliation parser can verify it:
+    // members × (recapture + new, folded into HCCs/member) × $/HCC × realization.
+    const planLines = dq.hccPlans.map((p: { name: string; panelSize: number; currentRecaptureRate: number; uplift: string; upliftCustomPp?: number; netNewAvgConditions: number; valuePerHcc: number }) => {
+      const members = Math.round(state.numberOfProviders * p.panelSize);
       const upliftPp = p.uplift === 'custom' ? (p.upliftCustomPp ?? 5) : (upliftMap[p.uplift] ?? 5);
-      const effective = Math.min(upliftPp, Math.max(0, 90 - p.currentRecaptureRate));
-      const projected = p.currentRecaptureRate + effective;
-      const gapPatients = Math.round(state.numberOfProviders * p.panelSize * p.gapRate / 100);
-      let formula = `${fmtN(gapPatients)} gap patients (${p.gapRate}% of ${fmtN(state.numberOfProviders * p.panelSize)} ${p.name} pts) × +${effective}pp Abridge uplift (${p.currentRecaptureRate}%→${projected}%) × ${dq.avgHccs} avg HCCs per patient × ${fmt$(p.valuePerHcc)} per captured HCC × ${dq.hccRealization}% realization`;
-      if (p.netNewEnabled) {
-        const netNewPts = Math.round(state.numberOfProviders * p.panelSize * (p.netNewDiscoveryRate / 100));
-        formula += ` (+ ${fmtN(netNewPts)} pts × ${p.netNewAvgConditions} cond net new)`;
-      }
-      out.hccCapture = formula;
-    } else {
-      const planLines = dq.hccPlans.map((p: { name: string; panelSize: number; gapRate: number; currentRecaptureRate: number; uplift: string; upliftCustomPp?: number; netNewEnabled: boolean; netNewDiscoveryRate: number }) => {
-        const upliftPp = p.uplift === 'custom' ? (p.upliftCustomPp ?? 5) : (upliftMap[p.uplift] ?? 5);
-        const effective = Math.min(upliftPp, Math.max(0, 90 - p.currentRecaptureRate));
-        const gapPts = Math.round(state.numberOfProviders * p.panelSize * p.gapRate / 100);
-        return `${p.name}: ${fmtN(gapPts)} gap pts × +${effective}pp (${p.currentRecaptureRate}%→${p.currentRecaptureRate + effective}%)${p.netNewEnabled ? ` + net new` : ''}`;
-      }).join(' | ');
-      out.hccCapture = `${planLines} × ${dq.avgHccs} avg HCCs × ${dq.hccRealization}% realization`;
-    }
+      const effective = Math.min(upliftPp, Math.max(0, 100 - p.currentRecaptureRate));
+      const perMember = dq.avgHccs * (effective / 100) + (p.netNewAvgConditions ?? 0);
+      return `${p.name}: ${fmtN(members)} members × ${perMember.toFixed(3)} HCCs per member × ${fmt$(p.valuePerHcc)}/HCC`;
+    }).join(' | ');
+    out.hccCapture = `${planLines} × ${dq.hccRealization}% realization`;
   }
   if (dq.denialsEnabled && (isOP || isED)) {
     const prevPct = denialsScenarios[dq.denialsScenario] ?? 0;

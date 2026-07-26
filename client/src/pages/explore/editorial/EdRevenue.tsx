@@ -181,13 +181,10 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
   // comes straight from the engine (`engine.hccCapture`), never this.
   const planBreakdown = plans.map((p) => {
     const pUpliftPts = p.uplift === "custom" ? p.upliftCustomPp ?? 5 : HCC_UPLIFT_SCENARIOS[p.uplift] ?? 5;
-    const effectiveUplift = Math.min(pUpliftPts, Math.max(0, 90 - p.currentRecaptureRate));
-    const gapPts = (state.numberOfProviders * p.panelSize * p.gapRate) / 100;
-    let gross = gapPts * (effectiveUplift / 100) * dq.avgHccs * p.valuePerHcc;
-    if (p.netNewEnabled) {
-      const netNewPts = (state.numberOfProviders * p.panelSize * p.netNewDiscoveryRate) / 100;
-      gross += netNewPts * p.netNewAvgConditions * p.valuePerHcc;
-    }
+    const effectiveUplift = Math.min(pUpliftPts, Math.max(0, 100 - p.currentRecaptureRate));
+    const members = state.numberOfProviders * p.panelSize;
+    const perMember = dq.avgHccs * (effectiveUplift / 100) + (p.netNewAvgConditions ?? 0);
+    const gross = members * perMember * p.valuePerHcc;
     return { name: p.name, gross: Math.round(gross * (dq.hccRealization / 100)) };
   });
 
@@ -208,7 +205,7 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
       testId="toggle-hcc"
       buildLine={
         <>
-          Each plan: panel × ({dq.avgHccs} known × {upliftPts}pp recaptured + newly identified) × its $/HCC
+          Each plan: members × ({dq.avgHccs} conditions × {upliftPts}pp recaptured + {sharedPlan?.netNewAvgConditions ?? 0} new) × its $/HCC × {dq.hccRealization}% realization
           {planBreakdown.length > 1 ? (
             <>
               .{" "}
@@ -255,7 +252,7 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
       </PlansRepeater>
 
       <FieldGrid>
-        <FieldTile label="Known HCCs per member" note="chronic, on file each year">
+        <FieldTile label="Avg documented conditions / member" note="chronic HCCs on file each year">
           <Fi value={dq.avgHccs} onValueChange={(v) => updateDq({ avgHccs: v })} decimal testId="input-ed-avg-hccs" />
         </FieldTile>
         <FieldTile label="Recapture rate today" note="of those, re-documented now">

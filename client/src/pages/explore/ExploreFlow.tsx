@@ -793,11 +793,11 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
       gapRate: 65,
       currentRecaptureRate: 65,
       uplift: 'typical' as const,
-      netNewEnabled: false,
-      netNewDiscoveryRate: 3,
-      netNewAvgConditions: 1.2,
+      netNewEnabled: true,
+      netNewDiscoveryRate: 3, // legacy, unused by the clean engine model
+      netNewAvgConditions: 0.05, // newly identified HCCs per member (net-new, surfaced in the visit)
     }],
-    avgHccs: 0.9, // mid-band; MA members carry multiple recapturable HCCs (was 0.5, which stacked under the realization haircut and undersold)
+    avgHccs: 2.5, // avg documented chronic conditions (HCCs) per member; MA runs ~2.5-3.5. The recapture-rate lift applies to this base.
     hccRealization: 50,
     denialsEnabled: false,
     denialsScenario: 'typical',

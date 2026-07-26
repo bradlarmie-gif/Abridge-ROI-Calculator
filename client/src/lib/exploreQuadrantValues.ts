@@ -114,15 +114,14 @@ export function computeRevenueBreakdown(state: ExploreState, _totalHoursSaved: n
   if (dq.hccEnabled && state.careSetting === 'outpatient') {
     const upliftMap = HCC_UPLIFT_SCENARIOS;
     let totalGross = 0;
+    // Clean recapture model — mirrors computeAllDriverValues exactly (no gapRate).
     for (const plan of dq.hccPlans) {
+      const members = state.numberOfProviders * plan.panelSize;
       const upliftPp = plan.uplift === 'custom' ? (plan.upliftCustomPp ?? 5) : (upliftMap[plan.uplift] ?? 5);
-      const effectiveUplift = Math.min(upliftPp, Math.max(0, 90 - plan.currentRecaptureRate));
-      const gapPts = state.numberOfProviders * plan.panelSize * plan.gapRate / 100;
-      totalGross += gapPts * (effectiveUplift / 100) * dq.avgHccs * plan.valuePerHcc;
-      if (plan.netNewEnabled) {
-        const netNewPts = state.numberOfProviders * plan.panelSize * plan.netNewDiscoveryRate / 100;
-        totalGross += netNewPts * plan.netNewAvgConditions * plan.valuePerHcc;
-      }
+      const effectiveUplift = Math.min(upliftPp, Math.max(0, 100 - plan.currentRecaptureRate));
+      const recaptured = members * dq.avgHccs * (effectiveUplift / 100);
+      const newlyIdentified = members * (plan.netNewAvgConditions ?? 0);
+      totalGross += (recaptured + newlyIdentified) * plan.valuePerHcc;
     }
     result.hccCapture = Math.round(totalGross * (dq.hccRealization / 100));
   }
