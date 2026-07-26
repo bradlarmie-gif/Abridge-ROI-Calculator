@@ -454,7 +454,7 @@ export default function EdModel({
                   <text x="40" y="238" fontFamily="Manrope" fontSize="11" fill="#786C5E">Mo 1</text>
                   <text x="330" y="238" fontFamily="Manrope" fontSize="11" fill="#786C5E" textAnchor="middle">Mo 6</text>
                   <text x="620" y="238" fontFamily="Manrope" fontSize="11" fill="#786C5E" textAnchor="end">Mo 12</text>
-                  <text x="626" y="39" fontFamily="Manrope" fontSize="10.5" fill="#786C5E">{fmtShort(totalAnnualValue)}</text>
+                  <text x="620" y="49" fontFamily="Manrope" fontSize="10.5" fontWeight="700" fill="#B02200" textAnchor="end">{fmtShort(totalAnnualValue)}</text>
                 </svg>
                 <div className="flex gap-5 mt-3">
                   <div className="flex items-center gap-[7px] text-[12px] text-[#5E534A]">
