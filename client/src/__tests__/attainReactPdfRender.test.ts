@@ -65,19 +65,33 @@ async function renderBlob(snap: AttainSnapshot) {
   return pdf(doc).toBlob();
 }
 
+// pdf-lib isn't a dependency, so count physical pages by scanning the PDF bytes
+// for page objects. @react-pdf emits one "/Type /Page" per physical page and one
+// "/Type /Pages" for the page tree; the negative lookahead excludes the tree node.
+async function renderPageCount(snap: AttainSnapshot): Promise<number> {
+  const blob = await renderBlob(snap);
+  const bytes = Buffer.from(await blob.arrayBuffer());
+  const text = bytes.toString("latin1");
+  const matches = text.match(/\/Type\s*\/Page(?![sA-Za-z])/g);
+  return matches ? matches.length : 0;
+}
+
 describe("Attain live PDF (real render)", () => {
   it("(a) a single-category plan (Outpatient · Patient Access)", async () => {
-    const blob = await renderBlob(makeSnapshot(
+    const snap = makeSnapshot(
       "outpatient",
       ["access"],
       { "Patient Access": { scope: "40", econ: { perVisit: "200", minSaved: "2", visitMin: "30" }, stance: 25, custom: "" } },
       { providers: 40, annualEncounters: 140_000, utilizationPct: 70, adoptionPct: 70 },
-    ));
+    );
+    const blob = await renderBlob(snap);
     expect(blob.size).toBeGreaterThan(0);
+    // Cover + The Case + 1 in-play category = 3 physical Letter pages.
+    expect(await renderPageCount(snap)).toBe(3);
   });
 
   it("(b) a multi-category plan (Outpatient · Access + Retention)", async () => {
-    const blob = await renderBlob(makeSnapshot(
+    const snap = makeSnapshot(
       "outpatient",
       ["access", "retention"],
       {
@@ -85,17 +99,23 @@ describe("Attain live PDF (real render)", () => {
         "Provider Retention": { scope: "40", econ: { replacementCost: "400000", turnover: "6", burnout: "40" }, stance: 30, custom: "" },
       },
       { providers: 40, annualEncounters: 140_000, utilizationPct: 70, adoptionPct: 70 },
-    ));
+    );
+    const blob = await renderBlob(snap);
     expect(blob.size).toBeGreaterThan(0);
+    // Cover + The Case + 2 in-play categories = 4 physical Letter pages.
+    expect(await renderPageCount(snap)).toBe(4);
   });
 
   it("(c) a nursing quality-only plan (no econ fields, seeded assumptions)", async () => {
-    const blob = await renderBlob(makeSnapshot(
+    const snap = makeSnapshot(
       "nursing",
       ["quality"],
       { "Quality & Safety": { scope: "180", econ: { fallsRate: "3.4", hapiRate: "2.1", clabsiRate: "1.0", sepsisRate: "2.0" }, stance: 20, custom: "" } },
       { staffedBeds: 180, nursingFtes: 260, utilizationPct: 70 },
-    ));
+    );
+    const blob = await renderBlob(snap);
     expect(blob.size).toBeGreaterThan(0);
+    // Cover + The Case + 1 in-play category = 3 physical Letter pages.
+    expect(await renderPageCount(snap)).toBe(3);
   });
 });

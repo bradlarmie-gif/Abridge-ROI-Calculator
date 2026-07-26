@@ -51,7 +51,7 @@ const fmt$ = (n: number) => (n >= 1_000_000 ? `$${(n / 1_000_000).toFixed(1)}M` 
 const clampPct = (n: number) => `${Math.max(0, Math.min(100, Math.round(n)))}%`;
 
 const s = StyleSheet.create({
-  page: { paddingTop: 46, paddingLeft: 54, paddingRight: 54, paddingBottom: 72, fontFamily: "Manrope", fontSize: 9.5, color: C.body, backgroundColor: C.cream },
+  page: { paddingTop: 42, paddingLeft: 54, paddingRight: 54, paddingBottom: 58, fontFamily: "Manrope", fontSize: 9.5, color: C.body, backgroundColor: C.cream },
 
   // Masthead (interior header)
   mast: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" },
@@ -61,10 +61,10 @@ const s = StyleSheet.create({
   mastLabel: { fontSize: 8, fontWeight: 700, color: C.muted, letterSpacing: 2, textTransform: "uppercase" },
   mastPartner: { fontFamily: "Abridge", fontSize: 13, color: C.ink },
   mastMeta: { fontSize: 8.5, color: C.muted, marginTop: 2, textAlign: "right" },
-  rule: { height: 1, backgroundColor: C.hairline, marginTop: 14, marginBottom: 16 },
+  rule: { height: 1, backgroundColor: C.hairline, marginTop: 11, marginBottom: 12 },
 
   // Footer (fixed, 3-slot)
-  footer: { position: "absolute", bottom: 30, left: 54, right: 54, flexDirection: "row", alignItems: "center", borderTopWidth: 1, borderTopColor: C.hairline, paddingTop: 8 },
+  footer: { position: "absolute", bottom: 26, left: 54, right: 54, flexDirection: "row", alignItems: "center", borderTopWidth: 1, borderTopColor: C.hairline, paddingTop: 7 },
   footL: { width: 150, flexShrink: 0, fontSize: 7.5, color: C.faint },
   footC: { flex: 1, textAlign: "center", fontSize: 7.5, color: C.faint },
   footR: { width: 150, flexShrink: 0, textAlign: "right", fontSize: 7.5, color: C.faint, textTransform: "uppercase", letterSpacing: 1 },
@@ -75,12 +75,12 @@ const s = StyleSheet.create({
 
   // Case hero
   heroRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end", gap: 24 },
-  heroTotal: { fontFamily: "Abridge", fontSize: 60, color: C.coral, lineHeight: 1 },
-  heroTotalUnit: { fontSize: 18, color: C.muted },
-  heroNotSized: { fontFamily: "Abridge", fontSize: 34, color: C.ink },
+  heroTotal: { fontFamily: "Abridge", fontSize: 48, color: C.coral, lineHeight: 1 },
+  heroTotalUnit: { fontSize: 16, color: C.muted },
+  heroNotSized: { fontFamily: "Abridge", fontSize: 30, color: C.ink },
   heroRight: { alignItems: "flex-end" },
-  heroRightN: { fontFamily: "Abridge", fontSize: 22, color: C.ink, lineHeight: 1 },
-  heroRightK: { fontSize: 8, color: C.muted, letterSpacing: 1.5, textTransform: "uppercase", marginTop: 3, marginBottom: 10 },
+  heroRightN: { fontFamily: "Abridge", fontSize: 20, color: C.ink, lineHeight: 1 },
+  heroRightK: { fontSize: 8, color: C.muted, letterSpacing: 1.5, textTransform: "uppercase", marginTop: 3, marginBottom: 8 },
 
   // Two-column
   cols: { flexDirection: "row", gap: 34 },
@@ -88,23 +88,23 @@ const s = StyleSheet.create({
   colNarrow: { flex: 1 },
 
   // Category rows (breakdown bars)
-  catRow: { paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: C.hairline },
-  catHead: { flexDirection: "row", justifyContent: "space-between", alignItems: "baseline", marginBottom: 6 },
+  catRow: { paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: C.hairline },
+  catHead: { flexDirection: "row", justifyContent: "space-between", alignItems: "baseline", marginBottom: 5 },
   catName: { fontFamily: "Abridge", fontSize: 15, color: C.ink },
   catNameOff: { fontFamily: "Abridge", fontSize: 15, color: "#C0B7A8" },
   catVal: { fontFamily: "Abridge", fontSize: 15, color: C.ink },
   catValUnit: { fontSize: 9, color: C.muted },
-  catNote: { fontSize: 9, color: C.muted, lineHeight: 1.35, marginTop: 5 },
+  catNote: { fontSize: 9, color: C.muted, lineHeight: 1.3, marginTop: 4 },
   catOff: { fontSize: 8, fontWeight: 700, letterSpacing: 1.2, textTransform: "uppercase", color: "#C0B7A8" },
   track: { height: 7, borderRadius: 4, backgroundColor: C.track, overflow: "hidden" },
   fill: { height: 7, borderRadius: 4, backgroundColor: C.coral },
   trackFlat: { height: 7, borderRadius: 4, backgroundColor: "#F1ECE4" },
 
   // Chain (how the number is built)
-  chainNote: { fontSize: 9.5, color: C.body, lineHeight: 1.5, marginBottom: 12 },
-  chainRow: { flexDirection: "row", alignItems: "baseline", gap: 12, marginBottom: 8 },
-  chainVal: { fontFamily: "Abridge", fontSize: 19, color: C.ink, width: 92, flexShrink: 0 },
-  chainLbl: { fontSize: 9, color: C.muted, lineHeight: 1.35, flex: 1 },
+  chainNote: { fontSize: 9.5, color: C.body, lineHeight: 1.45, marginBottom: 10 },
+  chainRow: { flexDirection: "row", alignItems: "baseline", gap: 12, marginBottom: 6 },
+  chainVal: { fontFamily: "Abridge", fontSize: 18, color: C.ink, width: 90, flexShrink: 0 },
+  chainLbl: { fontSize: 9, color: C.muted, lineHeight: 1.3, flex: 1 },
 
   // Opens (3-col grid)
   opensRow: { flexDirection: "row", gap: 22 },
@@ -116,24 +116,24 @@ const s = StyleSheet.create({
   opensOff: { fontSize: 9, color: "#C0B7A8", lineHeight: 1.35 },
 
   // Dark scoreboard band
-  band: { backgroundColor: C.ink, borderRadius: 12, padding: 20 },
-  bandLabel: { fontSize: 8, fontWeight: 700, letterSpacing: 2.5, textTransform: "uppercase", color: "rgba(255,255,255,0.45)", marginBottom: 10 },
+  band: { backgroundColor: C.ink, borderRadius: 12, padding: 16 },
+  bandLabel: { fontSize: 8, fontWeight: 700, letterSpacing: 2.5, textTransform: "uppercase", color: "rgba(255,255,255,0.45)", marginBottom: 8 },
   bandRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end", gap: 24 },
-  bandBody: { fontSize: 10.5, color: "rgba(255,255,255,0.85)", lineHeight: 1.5, maxWidth: 340 },
-  bandBigN: { fontFamily: "Abridge", fontSize: 34, color: C.coral, lineHeight: 1 },
-  bandBigK: { fontSize: 8, letterSpacing: 1.5, textTransform: "uppercase", color: "rgba(255,255,255,0.45)", marginTop: 5 },
+  bandBody: { fontSize: 10, color: "rgba(255,255,255,0.85)", lineHeight: 1.45, maxWidth: 340 },
+  bandBigN: { fontFamily: "Abridge", fontSize: 30, color: C.coral, lineHeight: 1 },
+  bandBigK: { fontSize: 8, letterSpacing: 1.5, textTransform: "uppercase", color: "rgba(255,255,255,0.45)", marginTop: 4 },
 
   // Per-category page
   catPageHead: { flexDirection: "row", justifyContent: "space-between", alignItems: "baseline", marginBottom: 6 },
-  catPageTitle: { fontFamily: "Abridge", fontSize: 32, color: C.ink, lineHeight: 1 },
+  catPageTitle: { fontFamily: "Abridge", fontSize: 28, color: C.ink, lineHeight: 1 },
   catPageOwner: { fontSize: 9.5, color: C.muted },
   catPageOwnerName: { fontFamily: "Abridge", fontSize: 13, color: C.ink },
   blackRule: { height: 2, backgroundColor: C.ink },
 
-  sectionLbl: { fontSize: 8.5, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", color: C.faint, marginBottom: 10 },
+  sectionLbl: { fontSize: 8.5, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", color: C.faint, marginBottom: 8 },
 
   // Metric rows
-  metricRow: { paddingVertical: 7, borderBottomWidth: 1, borderBottomColor: C.hairline },
+  metricRow: { paddingVertical: 5.5, borderBottomWidth: 1, borderBottomColor: C.hairline },
   metricTop: { flexDirection: "row", justifyContent: "space-between", alignItems: "baseline", gap: 8 },
   metricName: { fontSize: 9.5, color: C.ink, flex: 1, lineHeight: 1.3 },
   metricNums: { flexDirection: "row", alignItems: "baseline", gap: 4, flexShrink: 0 },
@@ -141,22 +141,22 @@ const s = StyleSheet.create({
   metricArrow: { fontSize: 9, color: "#C4BCB0" },
   metricTarget: { fontSize: 9, fontWeight: 700 },
   metricUnit: { fontSize: 9, color: C.muted },
-  metricSource: { fontSize: 7, letterSpacing: 1, textTransform: "uppercase", color: C.faint, marginTop: 3 },
+  metricSource: { fontSize: 7, letterSpacing: 1, textTransform: "uppercase", color: C.faint, marginTop: 2 },
 
-  cadenceNote: { fontSize: 9, color: C.muted, lineHeight: 1.4, marginTop: 12 },
+  cadenceNote: { fontSize: 9, color: C.muted, lineHeight: 1.4, marginTop: 10 },
 
   // Chain + assumptions (per-category)
-  chainStepRow: { flexDirection: "row", alignItems: "baseline", gap: 12, marginBottom: 10 },
+  chainStepRow: { flexDirection: "row", alignItems: "baseline", gap: 12, marginBottom: 7 },
   chainStepN: { fontFamily: "Abridge", fontSize: 14, color: C.coral, width: 16, flexShrink: 0 },
-  chainStepT: { fontSize: 10, color: C.ink, lineHeight: 1.35, flex: 1 },
-  honesty: { fontSize: 9, color: C.muted, lineHeight: 1.5, marginTop: 12 },
-  assumRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "baseline", borderBottomWidth: 1, borderBottomColor: C.hairline, paddingBottom: 8, marginBottom: 8 },
+  chainStepT: { fontSize: 10, color: C.ink, lineHeight: 1.3, flex: 1 },
+  honesty: { fontSize: 9, color: C.muted, lineHeight: 1.45, marginTop: 10 },
+  assumRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "baseline", borderBottomWidth: 1, borderBottomColor: C.hairline, paddingBottom: 6, marginBottom: 6 },
   assumLbl: { fontSize: 9.5, color: C.body, flex: 1 },
   assumVal: { fontFamily: "Abridge", fontSize: 14, color: C.ink, flexShrink: 0 },
-  assumFoot: { fontSize: 8.5, color: C.faint, marginTop: 10 },
+  assumFoot: { fontSize: 8.5, color: C.faint, marginTop: 8 },
 
   // Opens dark band (per-category)
-  opensBand: { backgroundColor: C.ink, borderRadius: 12, padding: 20 },
+  opensBand: { backgroundColor: C.ink, borderRadius: 12, padding: 16 },
   opensBandTitle: { fontFamily: "Abridge", fontSize: 13, color: C.white, marginBottom: 6, lineHeight: 1.2 },
   opensBandDesc: { fontSize: 9, color: "rgba(255,255,255,0.55)", lineHeight: 1.4 },
 });
@@ -242,7 +242,7 @@ function CasePage({ data, categories }: { data: PdfData; categories: PlanCat[] }
           <Text style={s.heroRightK}>review cadence</Text>
         </View>
       </View>
-      <Text style={[s.lead, { marginTop: 14 }]}>
+      <Text style={[s.lead, { marginTop: 10 }]}>
         Built entirely from your own volume, your economics, and the realization you set with us. Not a benchmark, and not a list price.
       </Text>
 
@@ -316,7 +316,7 @@ function CasePage({ data, categories }: { data: PdfData; categories: PlanCat[] }
       </View>
 
       {/* Scoreboard band */}
-      <View style={{ marginTop: 22 }} wrap={false}>
+      <View style={{ marginTop: 14 }} wrap={false}>
         <View style={s.band}>
           <Text style={s.bandLabel}>From here, the scoreboard</Text>
           <View style={s.bandRow}>
@@ -371,7 +371,7 @@ function CategoryPage({ data, c, idx, total }: { data: PdfData; c: PlanCat; idx:
       <View style={s.blackRule} />
 
       {/* What we measure */}
-      <View style={[s.cols, { marginTop: 24 }]}>
+      <View style={[s.cols, { marginTop: 18 }]}>
         <View style={s.colNarrow}>
           <Text style={s.sectionLbl}>What Abridge can enable</Text>
           {c.signals.map((m) => <MetricRow key={m.name} m={m} accent />)}
@@ -385,7 +385,7 @@ function CategoryPage({ data, c, idx, total }: { data: PdfData; c: PlanCat; idx:
         {`Reviewed ${c.cadence.toLowerCase()} against the baselines above. The signals move first; the outcomes follow.`}
       </Text>
 
-      <View style={[s.rule, { marginTop: 22, marginBottom: 22 }]} />
+      <View style={[s.rule, { marginTop: 14, marginBottom: 14 }]} />
 
       {/* Why it holds: chain + assumptions */}
       <View style={s.cols}>
@@ -417,7 +417,7 @@ function CategoryPage({ data, c, idx, total }: { data: PdfData; c: PlanCat; idx:
 
       {/* What this opens */}
       {c.opens.length > 0 && (
-        <View style={{ marginTop: 22 }} wrap={false}>
+        <View style={{ marginTop: 14 }} wrap={false}>
           <View style={s.opensBand}>
             <Text style={s.bandLabel}>What this opens, beyond the number</Text>
             <View style={s.opensRow}>
