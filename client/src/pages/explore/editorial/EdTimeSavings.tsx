@@ -12,7 +12,7 @@ interface EdTimeSavingsProps {
 }
 
 const inputBase =
-  "h-12 w-full rounded-xl border border-[#DED5C8] bg-white px-[15px] text-[16px] font-bold text-[#1A1A1A] tabular-nums focus-visible:ring-1 focus-visible:ring-[#EA2C00] focus-visible:ring-offset-0 focus-visible:border-[#EA2C00] placeholder:text-[#B7ADA0] placeholder:font-normal placeholder:not-italic";
+  "h-12 w-full rounded-xl border border-[#E8E2DA] bg-white px-[15px] text-[16px] font-bold text-[#1A1A1A] tabular-nums focus-visible:ring-1 focus-visible:ring-[#EA2C00] focus-visible:ring-offset-0 focus-visible:border-[#EA2C00] placeholder:text-[#B7ADA0] placeholder:font-normal placeholder:not-italic";
 
 export default function EdTimeSavings({ state, updateState, onNext, onBack }: EdTimeSavingsProps) {
   const isED = state.careSetting === "ed";
@@ -95,7 +95,7 @@ export default function EdTimeSavings({ state, updateState, onNext, onBack }: Ed
 
         <div className="grid grid-cols-[1.35fr_1fr] gap-[22px] mt-[34px] items-start">
           {/* Form */}
-          <div className="bg-[#FDFBF8] border border-[#DED5C8] rounded-[20px] px-7 py-[26px]">
+          <div className="bg-[#FDFBF8] border border-[#E8E2DA] rounded-[20px] px-7 py-[26px]">
             <div>
               <div className="text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#2E2822] mb-[10px]">
                 Minutes saved per {noteUnit}
@@ -124,7 +124,7 @@ export default function EdTimeSavings({ state, updateState, onNext, onBack }: Ed
                     className={`text-[12px] font-bold border rounded-[9px] px-[11px] py-[6px] transition-colors ${
                       state.timePathScenario === key
                         ? "border-[#EA2C00] text-[#EA2C00] bg-[#FFF7F4]"
-                        : "border-[#DED5C8] text-[#5E534A] bg-white hover:border-[#1A1A1A] hover:text-[#1A1A1A]"
+                        : "border-[#E8E2DA] text-[#5E534A] bg-white hover:border-[#1A1A1A] hover:text-[#1A1A1A]"
                     }`}
                   >
                     {label} · {scenarioMinutes[key]}
@@ -136,7 +136,7 @@ export default function EdTimeSavings({ state, updateState, onNext, onBack }: Ed
               </p>
             </div>
 
-            <div className="mt-[22px] border-t border-[#DED5C8] pt-[18px]">
+            <div className="mt-[22px] border-t border-[#E8E2DA] pt-[18px]">
               <div className="text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#2E2822] mb-3">
                 How it adds up
               </div>
@@ -163,7 +163,7 @@ export default function EdTimeSavings({ state, updateState, onNext, onBack }: Ed
           </div>
 
           {/* Snapshot */}
-          <div className="bg-[#FDFBF8] border border-[#DED5C8] rounded-[20px] px-7 py-[26px]">
+          <div className="bg-[#FDFBF8] border border-[#E8E2DA] rounded-[20px] px-7 py-[26px]">
             <div className="text-[11px] font-extrabold tracking-[0.08em] uppercase text-[#2E2822]">
               Time given back
             </div>
@@ -182,7 +182,7 @@ export default function EdTimeSavings({ state, updateState, onNext, onBack }: Ed
               </div>
             </div>
 
-            <div className="h-px bg-[#DED5C8] my-5" />
+            <div className="h-px bg-[#E8E2DA] my-5" />
 
             <div className="flex justify-between items-baseline mb-3">
               <span className="text-[13.5px] text-[#5E534A]">Per {roleWord}</span>

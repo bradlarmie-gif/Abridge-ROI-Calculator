@@ -399,7 +399,7 @@ export default function EdModel({
         </p>
 
         {/* Hero recap */}
-        <div className="bg-[#FDFBF8] border border-[#DED5C8] rounded-[20px] p-[26px_30px] mt-[30px] flex justify-between items-center gap-[30px] flex-wrap">
+        <div className="bg-[#FDFBF8] border border-[#E8E2DA] rounded-[20px] p-[26px_30px] mt-[30px] flex justify-between items-center gap-[30px] flex-wrap">
           <div>
             <div className="text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#2E2822]">Net annual value</div>
             <div className="font-abridge text-[54px] text-[#EA2C00] leading-none mt-[7px]">
@@ -431,7 +431,7 @@ export default function EdModel({
 
         <div className="grid grid-cols-[1.42fr_1fr] gap-[22px] mt-[22px] items-stretch">
           {/* Ramp chart */}
-          <div className="bg-[#FDFBF8] border border-[#DED5C8] rounded-[20px] p-[22px_24px]">
+          <div className="bg-[#FDFBF8] border border-[#E8E2DA] rounded-[20px] p-[22px_24px]">
             <div className="text-[11px] font-extrabold tracking-[0.09em] uppercase text-[#2E2822] mb-[6px]">When it lands</div>
             <p className="text-[12.5px] text-[#5E534A] mb-[14px] leading-[1.5]">
               {annualInvestment <= 0
@@ -451,7 +451,7 @@ export default function EdModel({
                   </defs>
                   <line x1="40" y1="35" x2="620" y2="35" stroke="#EDE7DD" strokeWidth="1" />
                   <line x1="40" y1="128" x2="620" y2="128" stroke="#EDE7DD" strokeWidth="1" />
-                  <line x1="40" y1="220" x2="620" y2="220" stroke="#DED5C8" strokeWidth="1" />
+                  <line x1="40" y1="220" x2="620" y2="220" stroke="#E8E2DA" strokeWidth="1" />
                   <path d={areaPath} fill="url(#edModelRampGradient)" />
                   <path d={linePath} fill="none" stroke="#EA2C00" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
                   {annualInvestment > 0 && (
@@ -494,7 +494,7 @@ export default function EdModel({
           </div>
 
           {/* Quadrant breakdown */}
-          <div className="bg-[#FDFBF8] border border-[#DED5C8] rounded-[20px] p-[22px_24px] flex flex-col">
+          <div className="bg-[#FDFBF8] border border-[#E8E2DA] rounded-[20px] p-[22px_24px] flex flex-col">
             <div className="text-[11px] font-extrabold tracking-[0.09em] uppercase text-[#2E2822] mb-[6px]">Where the value comes from</div>
             <p className="text-[12.5px] text-[#5E534A] mb-[14px] leading-[1.5]">Across the four areas you modeled.</p>
             <div className="flex-1 flex flex-col justify-between gap-4">
@@ -521,7 +521,7 @@ export default function EdModel({
         </div>
 
         {/* Model your expansion */}
-        <div className="bg-[#FDFBF8] border border-[#DED5C8] rounded-[20px] p-[22px_24px] mt-[22px]">
+        <div className="bg-[#FDFBF8] border border-[#E8E2DA] rounded-[20px] p-[22px_24px] mt-[22px]">
           <div className="text-[11px] font-extrabold tracking-[0.09em] uppercase text-[#2E2822] mb-[6px]">Model your expansion</div>
           <p className="text-[12.5px] text-[#5E534A] mb-5 leading-[1.5]">
             Where this goes as you roll out to more {isNursing ? "beds" : "providers"} and higher adoption. Same math, larger footprint.
@@ -620,7 +620,7 @@ export default function EdModel({
               </div>
             </div>
 
-            <div className="border-l border-[#DED5C8] pl-[30px]">
+            <div className="border-l border-[#E8E2DA] pl-[30px]">
               <div className="text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#2E2822]">Projected net value at that scope</div>
               <div className="font-abridge text-[42px] text-[#EA2C00] leading-none mt-[6px]">
                 {fmtCurrency(expandedValue)}
@@ -671,7 +671,7 @@ export default function EdModel({
               onClick={handleAddToProforma}
               disabled={noDriversEnabled}
               data-testid="ed-model-add-proforma"
-              className="text-[14px] font-bold rounded-[12px] px-[22px] py-[13px] inline-flex items-center gap-[9px] bg-white text-[#1A1A1A] border border-[#DED5C8] disabled:opacity-40"
+              className="text-[14px] font-bold rounded-[12px] px-[22px] py-[13px] inline-flex items-center gap-[9px] bg-white text-[#1A1A1A] border border-[#E8E2DA] disabled:opacity-40"
             >
               Take into a full proforma
               <ArrowRight className="w-4 h-4" />

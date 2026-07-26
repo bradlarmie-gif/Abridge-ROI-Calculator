@@ -8,7 +8,7 @@ import { NumberField } from "@/components/NumberField";
  * to real Tailwind so EdRevenue.tsx and EdQuality.tsx don't duplicate the
  * ~150 lines of card/tile/toggle/chip markup. Tokens match EdCareSetting.tsx
  * exactly: coral #EA2C00, ink #1A1A1A, muted #5E534A, faint #786C5E,
- * line #DED5C8, label #2E2822, card bg #FDFBF8.
+ * line #E8E2DA, label #2E2822, card bg #FDFBF8.
  */
 
 export const fmt$ = (n: number) => "$" + Math.round(n || 0).toLocaleString();
@@ -67,7 +67,7 @@ export function Toggle({ on, onClick, testId }: { on: boolean; onClick: () => vo
         type="button"
         onClick={onClick}
         data-testid={testId}
-        className={`w-[46px] h-[27px] rounded-full relative transition-colors ${on ? "bg-[#EA2C00]" : "bg-[#DED5C8]"}`}
+        className={`w-[46px] h-[27px] rounded-full relative transition-colors ${on ? "bg-[#EA2C00]" : "bg-[#E8E2DA]"}`}
       >
         <span
           className={`absolute top-[3px] w-[21px] h-[21px] rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] transition-all ${
@@ -105,7 +105,7 @@ export function MoneyCard({
   testId?: string;
 }) {
   return (
-    <div className="bg-[#FDFBF8] border border-[#DED5C8] rounded-[20px] px-[26px] py-[22px] mb-3.5">
+    <div className="bg-[#FDFBF8] border border-[#E8E2DA] rounded-[20px] px-[26px] py-[22px] mb-3.5">
       <div className="flex justify-between items-start gap-5">
         <div>
           <div className="font-abridge text-[22px] text-[#1A1A1A] flex items-center flex-wrap gap-x-3 gap-y-1">
@@ -129,7 +129,7 @@ export function MoneyCard({
               <span className="text-[15px] text-[#5E534A]">{unit}</span>
             </div>
             {secondary && (
-              <div className="text-[13px] text-[#5E534A] border-l border-[#DED5C8] pl-4">{secondary}</div>
+              <div className="text-[13px] text-[#5E534A] border-l border-[#E8E2DA] pl-4">{secondary}</div>
             )}
           </div>
           {children}
@@ -193,7 +193,7 @@ export function Fi({
   return (
     <div
       className={`h-[42px] rounded-[11px] bg-white flex items-center gap-0.5 px-3 text-[15px] font-bold text-[#1A1A1A] ${
-        highlighted ? "border border-[#EFB6A6] shadow-[0_0_0_1px_#F5D3C8]" : "border border-[#DED5C8]"
+        highlighted ? "border border-[#EFB6A6] shadow-[0_0_0_1px_#F5D3C8]" : "border border-[#E8E2DA]"
       }`}
     >
       {prefix && <span className="text-[#5E534A] text-[14px] font-semibold">{prefix}</span>}
@@ -214,7 +214,7 @@ export function Fi({
 /** Read-only derived tile — a value the engine computed upstream, not editable here. */
 export function FiReadout({ children, suffix }: { children: ReactNode; suffix?: string }) {
   return (
-    <div className="h-[42px] rounded-[11px] bg-[#F5F0EB] border border-[#DED5C8] flex items-center gap-1 px-3 text-[15px] font-bold text-[#5E534A] tabular-nums">
+    <div className="h-[42px] rounded-[11px] bg-[#F5F0EB] border border-[#E8E2DA] flex items-center gap-1 px-3 text-[15px] font-bold text-[#5E534A] tabular-nums">
       {children}
       {suffix && <span className="ml-auto text-[#786C5E] text-[12px] font-semibold">{suffix}</span>}
     </div>
@@ -238,7 +238,7 @@ export function QuickFill({
           type="button"
           onClick={() => onSelect(o.key)}
           className={`text-[11px] font-bold rounded-[8px] border px-[9px] py-[5px] transition-colors ${
-            activeKey === o.key ? "border-[#EA2C00] text-[#EA2C00] bg-[#FFF7F4]" : "border-[#DED5C8] text-[#5E534A] bg-white"
+            activeKey === o.key ? "border-[#EA2C00] text-[#EA2C00] bg-[#FFF7F4]" : "border-[#E8E2DA] text-[#5E534A] bg-white"
           }`}
         >
           {o.label}
@@ -306,7 +306,7 @@ export function PlanRow({
       <select
         value={planType}
         onChange={(e) => onPlanTypeChange(e.target.value)}
-        className="h-[42px] rounded-[11px] border border-[#DED5C8] bg-white px-3 text-[13.5px] font-bold text-[#1A1A1A] outline-none"
+        className="h-[42px] rounded-[11px] border border-[#E8E2DA] bg-white px-3 text-[13.5px] font-bold text-[#1A1A1A] outline-none"
       >
         {Object.entries(PLAN_TYPE_LABELS).map(([k, label]) => (
           <option key={k} value={k}>
@@ -320,7 +320,7 @@ export function PlanRow({
         type="button"
         onClick={onRemove}
         disabled={!removable}
-        className="w-[26px] h-[26px] rounded-[8px] border border-[#DED5C8] bg-white text-[#786C5E] flex items-center justify-center disabled:opacity-30"
+        className="w-[26px] h-[26px] rounded-[8px] border border-[#E8E2DA] bg-white text-[#786C5E] flex items-center justify-center disabled:opacity-30"
       >
         <X className="w-3.5 h-3.5" />
       </button>

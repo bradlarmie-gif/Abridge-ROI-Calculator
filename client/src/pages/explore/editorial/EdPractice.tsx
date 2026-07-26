@@ -54,7 +54,7 @@ const FTE_ESTIMATES = [
 ];
 
 const inputBase =
-  "h-12 w-full rounded-xl border border-[#DED5C8] bg-white px-[15px] text-[16px] font-bold text-[#1A1A1A] tabular-nums focus-visible:ring-1 focus-visible:ring-[#EA2C00] focus-visible:ring-offset-0 focus-visible:border-[#EA2C00] placeholder:text-[#B7ADA0] placeholder:font-normal placeholder:not-italic";
+  "h-12 w-full rounded-xl border border-[#E8E2DA] bg-white px-[15px] text-[16px] font-bold text-[#1A1A1A] tabular-nums focus-visible:ring-1 focus-visible:ring-[#EA2C00] focus-visible:ring-offset-0 focus-visible:border-[#EA2C00] placeholder:text-[#B7ADA0] placeholder:font-normal placeholder:not-italic";
 
 function QuickFillChip({
   label,
@@ -76,7 +76,7 @@ function QuickFillChip({
       className={`text-[12px] font-bold border rounded-[9px] px-[11px] py-[6px] transition-colors ${
         active
           ? "border-[#EA2C00] text-[#EA2C00] bg-[#FFF7F4]"
-          : "border-[#DED5C8] text-[#5E534A] bg-white hover:border-[#1A1A1A] hover:text-[#1A1A1A]"
+          : "border-[#E8E2DA] text-[#5E534A] bg-white hover:border-[#1A1A1A] hover:text-[#1A1A1A]"
       }`}
     >
       {label} · {value.toLocaleString()}
@@ -243,7 +243,7 @@ export default function EdPractice({ state, updateState, onNext, onBack }: EdPra
 
         <div className="grid grid-cols-[1.35fr_1fr] gap-[22px] mt-[34px] items-start">
           {/* Form */}
-          <div className="bg-[#FDFBF8] border border-[#DED5C8] rounded-[20px] px-7 py-[26px]">
+          <div className="bg-[#FDFBF8] border border-[#E8E2DA] rounded-[20px] px-7 py-[26px]">
             {isNursing && (
               <div className="mb-6">
                 <div className="text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#2E2822] mb-[10px]">
@@ -390,7 +390,7 @@ export default function EdPractice({ state, updateState, onNext, onBack }: EdPra
                     className="flex-1 h-2 bg-[#EDE6DB] rounded-full appearance-none cursor-pointer accent-[#EA2C00]"
                     data-testid="ed-slider-occupancy"
                   />
-                  <div className="h-12 min-w-[64px] flex items-center justify-center rounded-xl border border-[#DED5C8] bg-white text-[16px] font-bold text-[#EA2C00] tabular-nums px-3">
+                  <div className="h-12 min-w-[64px] flex items-center justify-center rounded-xl border border-[#E8E2DA] bg-white text-[16px] font-bold text-[#EA2C00] tabular-nums px-3">
                     {state.nursingOccupancyRate}%
                   </div>
                 </div>
@@ -438,7 +438,7 @@ export default function EdPractice({ state, updateState, onNext, onBack }: EdPra
           </div>
 
           {/* Snapshot */}
-          <div className="bg-[#FDFBF8] border border-[#DED5C8] rounded-[20px] px-7 py-[26px]">
+          <div className="bg-[#FDFBF8] border border-[#E8E2DA] rounded-[20px] px-7 py-[26px]">
             <div className="text-[11px] font-extrabold tracking-[0.08em] uppercase text-[#2E2822]">
               Your {settingName}
             </div>
@@ -457,7 +457,7 @@ export default function EdPractice({ state, updateState, onNext, onBack }: EdPra
               </div>
             </div>
 
-            <div className="h-px bg-[#DED5C8] my-5" />
+            <div className="h-px bg-[#E8E2DA] my-5" />
 
             <div className="flex justify-between items-baseline mb-3">
               <span className="text-[13.5px] text-[#5E534A]">{providerLabel}</span>

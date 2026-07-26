@@ -7,7 +7,7 @@ import { FormattedNumberInput } from "@/components/FormattedNumberInput";
  * on" money drivers with a coral ON/OFF switch, and Tier 2 demoted dashed
  * "not counted · examples only" qualitative signals → outcomes block.
  *
- * Tokens match the locked mockup kit exactly (#DED5C8 hairlines, #EA2C00
+ * Tokens match the locked mockup kit exactly (#E8E2DA hairlines, #EA2C00
  * coral, #FDFBF8 card fill, Abridge display face for numbers/titles).
  */
 
@@ -107,7 +107,7 @@ export function ValueCard({
   warning?: ReactNode;
 }) {
   return (
-    <div className="bg-[#FDFBF8] border border-[#DED5C8] rounded-[20px] p-6 sm:p-7 mb-[14px] last:mb-0">
+    <div className="bg-[#FDFBF8] border border-[#E8E2DA] rounded-[20px] p-6 sm:p-7 mb-[14px] last:mb-0">
       <div className="flex justify-between items-start gap-5">
         <div>
           <div className="font-abridge text-[22px] sm:text-[23px] text-[#1A1A1A] leading-tight">{title}</div>
@@ -130,7 +130,7 @@ export function ValueCard({
           <span className="text-[15px] text-[#5E534A]">{unit}</span>
         </div>
         {secondary && (
-          <div className="text-[13.5px] text-[#5E534A] border-l border-[#DED5C8] pl-4">{secondary}</div>
+          <div className="text-[13.5px] text-[#5E534A] border-l border-[#E8E2DA] pl-4">{secondary}</div>
         )}
       </div>
 
@@ -155,7 +155,7 @@ export function OffCard({
   testId?: string;
 }) {
   return (
-    <div className="bg-[#FBF9F5] border border-[#DED5C8] rounded-[20px] px-6 sm:px-7 py-5 mb-[14px] last:mb-0">
+    <div className="bg-[#FBF9F5] border border-[#E8E2DA] rounded-[20px] px-6 sm:px-7 py-5 mb-[14px] last:mb-0">
       <div className="flex items-center justify-between gap-6 flex-wrap sm:flex-nowrap">
         <div>
           <div className="font-abridge text-[22px] sm:text-[23px] text-[#5E534A] leading-tight">{title}</div>
@@ -211,7 +211,7 @@ export function NumBox({
   testId?: string;
 }) {
   return (
-    <div className="h-11 border border-[#DED5C8] rounded-[11px] bg-white flex items-center gap-[2px] px-[13px]">
+    <div className="h-11 border border-[#E8E2DA] rounded-[11px] bg-white flex items-center gap-[2px] px-[13px]">
       {prefix && <span className="text-[#5E534A] text-[14px] font-semibold flex-shrink-0">{prefix}</span>}
       <FormattedNumberInput
         value={value}
@@ -243,7 +243,7 @@ export function QuickPicks({
           className={`text-[11.5px] font-bold rounded-[8px] border px-[9px] py-[5px] transition-colors ${
             Math.round(value) === o.value
               ? "border-[#EA2C00] text-[#EA2C00] bg-[#FFF7F4]"
-              : "border-[#DED5C8] text-[#5E534A] bg-white hover:border-[#1A1A1A]"
+              : "border-[#E8E2DA] text-[#5E534A] bg-white hover:border-[#1A1A1A]"
           }`}
         >
           {o.label} · {o.value}

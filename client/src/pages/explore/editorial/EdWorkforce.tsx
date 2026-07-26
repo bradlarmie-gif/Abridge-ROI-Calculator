@@ -95,7 +95,7 @@ function ScenarioPicks({
           type="button"
           onClick={() => onPick(o.key)}
           className={`text-[11.5px] font-bold rounded-[8px] border px-[9px] py-[5px] transition-colors ${
-            value === o.key ? "border-[#EA2C00] text-[#EA2C00] bg-[#FFF7F4]" : "border-[#DED5C8] text-[#5E534A] bg-white hover:border-[#1A1A1A]"
+            value === o.key ? "border-[#EA2C00] text-[#EA2C00] bg-[#FFF7F4]" : "border-[#E8E2DA] text-[#5E534A] bg-white hover:border-[#1A1A1A]"
           }`}
         >
           {o.label} · {rates[o.key]}%
@@ -107,7 +107,7 @@ function ScenarioPicks({
 
 function ModePicker({ mode, onChange }: { mode: "position" | "hourly"; onChange: (m: "position" | "hourly") => void }) {
   return (
-    <div className="flex items-center gap-[3px] bg-white border border-[#DED5C8] rounded-full p-[3px] w-fit mb-4">
+    <div className="flex items-center gap-[3px] bg-white border border-[#E8E2DA] rounded-full p-[3px] w-fit mb-4">
       {(["position", "hourly"] as const).map((m) => (
         <button
           key={m}

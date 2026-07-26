@@ -94,7 +94,7 @@ function ProofChainScreen({ state, onNext, onBack, setting }: { state: ExploreSt
           The proof
         </SectionLabel>
 
-        <div className="border border-[#DED5C8] rounded-[14px] bg-[#FAF7F2] px-[18px] py-[15px] mb-[18px] flex gap-3">
+        <div className="border border-[#E8E2DA] rounded-[14px] bg-[#FAF7F2] px-[18px] py-[15px] mb-[18px] flex gap-3">
           <span className="w-[9px] h-[9px] rounded-full bg-[#EA2C00] flex-shrink-0 mt-[5px]" />
           <div className="text-[13.5px] text-[#5E534A] leading-[1.5]">
             <b className="text-[#1A1A1A]">{copy.root.split(".")[0]}.</b> {copy.root.split(".").slice(1).join(".").trim()}
@@ -102,7 +102,7 @@ function ProofChainScreen({ state, onNext, onBack, setting }: { state: ExploreSt
         </div>
 
         <div className="flex items-center gap-2 text-[10.5px] font-extrabold tracking-[0.05em] uppercase text-[#786C5E] mb-2.5">
-          How the proof builds <span className="flex-1 h-px bg-gradient-to-r from-[#DED5C8] to-[#EDE7DD]" /> weeks → next year
+          How the proof builds <span className="flex-1 h-px bg-gradient-to-r from-[#E8E2DA] to-[#EDE7DD]" /> weeks → next year
         </div>
 
         <div className="flex items-stretch flex-wrap gap-y-4" data-testid="proof-chain">
@@ -113,7 +113,7 @@ function ProofChainScreen({ state, onNext, onBack, setting }: { state: ExploreSt
               <div key={d.id} className="flex items-stretch" style={{ flex: "1 1 200px", minWidth: 200 }}>
                 <div
                   className={`flex-1 rounded-[16px] p-[18px_17px] flex flex-col gap-2.5 ${
-                    isLast ? "bg-[#FFFBFA] border border-[#F0D3C9]" : "bg-[#FDFBF8] border border-[#DED5C8]"
+                    isLast ? "bg-[#FFFBFA] border border-[#F0D3C9]" : "bg-[#FDFBF8] border border-[#E8E2DA]"
                   }`}
                 >
                   <span
@@ -226,7 +226,7 @@ function NursingQualityScreen({
         </p>
 
         {needsBeds && anyEnabled && (
-          <div className="border border-[#DED5C8] rounded-[14px] bg-[#FAF7F2] px-[18px] py-[15px] mt-6 text-[13px] text-[#5E534A] leading-[1.5]">
+          <div className="border border-[#E8E2DA] rounded-[14px] bg-[#FAF7F2] px-[18px] py-[15px] mt-6 text-[13px] text-[#5E534A] leading-[1.5]">
             Enter <b className="text-[#1A1A1A]">staffed beds</b> and <b className="text-[#1A1A1A]">occupancy</b> on the first
             step to see these values. Without them, patient-days are zero, so the dollar figures stay at $0.
           </div>

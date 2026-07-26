@@ -109,7 +109,7 @@ export default function EdInvestment({
 
         <div className="grid grid-cols-[1fr_1.08fr] gap-[22px] mt-8 items-start">
           {/* Investment card */}
-          <div className="bg-[#FDFBF8] border border-[#DED5C8] rounded-[20px] p-[24px_26px]">
+          <div className="bg-[#FDFBF8] border border-[#E8E2DA] rounded-[20px] p-[24px_26px]">
             <div className="text-[11px] font-extrabold tracking-[0.09em] uppercase text-[#2E2822] mb-4">Your investment</div>
 
             <div className="inline-flex gap-[3px] bg-[#F1EBE3] border border-[#E4DACC] rounded-[12px] p-1 mb-5">
@@ -135,7 +135,7 @@ export default function EdInvestment({
                     <div className="text-[10.5px] font-extrabold tracking-[0.04em] uppercase text-[#2E2822] mb-2">
                       {isNursing ? "Staffed beds" : "Providers"}
                     </div>
-                    <div className="h-[44px] border border-[#DED5C8] rounded-[11px] bg-white flex items-center px-[13px] text-[15px] font-bold text-[#1A1A1A]">
+                    <div className="h-[44px] border border-[#E8E2DA] rounded-[11px] bg-white flex items-center px-[13px] text-[15px] font-bold text-[#1A1A1A]">
                       <FormattedNumberInput
                         value={isNursing ? state.nursingStaffedBeds : state.numberOfProviders}
                         onChange={(v) => updateState(isNursing ? { nursingStaffedBeds: v } : { numberOfProviders: v })}
@@ -150,7 +150,7 @@ export default function EdInvestment({
                     <div className="text-[10.5px] font-extrabold tracking-[0.04em] uppercase text-[#2E2822] mb-2">
                       Cost per {isNursing ? "bed" : "provider"} / month
                     </div>
-                    <div className="h-[44px] border border-[#DED5C8] rounded-[11px] bg-white flex items-center gap-[2px] px-[13px]">
+                    <div className="h-[44px] border border-[#E8E2DA] rounded-[11px] bg-white flex items-center gap-[2px] px-[13px]">
                       <span className="text-[14px] font-semibold text-[#5E534A]">$</span>
                       <FormattedNumberInput
                         value={state.costPerProvider}
@@ -162,7 +162,7 @@ export default function EdInvestment({
                     <div className="text-[11px] text-[#786C5E] mt-[6px]">your contract rate</div>
                   </div>
                 </div>
-                <div className="mt-5 pt-[18px] border-t border-[#DED5C8] flex justify-between items-baseline">
+                <div className="mt-5 pt-[18px] border-t border-[#E8E2DA] flex justify-between items-baseline">
                   <span className="text-[13px] text-[#5E534A]">Annual investment</span>
                   <span className="font-abridge text-[26px] text-[#1A1A1A]">
                     {formatCurrency(annualInvestment)}
@@ -177,7 +177,7 @@ export default function EdInvestment({
               <>
                 <div>
                   <div className="text-[10.5px] font-extrabold tracking-[0.04em] uppercase text-[#2E2822] mb-2">Cost per encounter</div>
-                  <div className="h-[44px] border border-[#DED5C8] rounded-[11px] bg-white flex items-center gap-[2px] px-[13px] max-w-[220px]">
+                  <div className="h-[44px] border border-[#E8E2DA] rounded-[11px] bg-white flex items-center gap-[2px] px-[13px] max-w-[220px]">
                     <span className="text-[14px] font-semibold text-[#5E534A]">$</span>
                     <FormattedNumberInput
                       value={state.costPerEncounter}
@@ -188,7 +188,7 @@ export default function EdInvestment({
                     />
                   </div>
                 </div>
-                <div className="mt-5 pt-[18px] border-t border-[#DED5C8] flex justify-between items-baseline">
+                <div className="mt-5 pt-[18px] border-t border-[#E8E2DA] flex justify-between items-baseline">
                   <span className="text-[13px] text-[#5E534A]">Annual investment</span>
                   <span className="font-abridge text-[26px] text-[#1A1A1A]">
                     {formatCurrency(annualInvestment)}
@@ -204,7 +204,7 @@ export default function EdInvestment({
                 <div className="grid grid-cols-2 gap-[14px]">
                   <div>
                     <div className="text-[10.5px] font-extrabold tracking-[0.04em] uppercase text-[#2E2822] mb-2">Annual platform fee</div>
-                    <div className="h-[44px] border border-[#DED5C8] rounded-[11px] bg-white flex items-center gap-[2px] px-[13px]">
+                    <div className="h-[44px] border border-[#E8E2DA] rounded-[11px] bg-white flex items-center gap-[2px] px-[13px]">
                       <span className="text-[14px] font-semibold text-[#5E534A]">$</span>
                       <FormattedNumberInput
                         value={state.annualLicenseFee}
@@ -216,7 +216,7 @@ export default function EdInvestment({
                   </div>
                   <div>
                     <div className="text-[10.5px] font-extrabold tracking-[0.04em] uppercase text-[#2E2822] mb-2">Per-encounter rate</div>
-                    <div className="h-[44px] border border-[#DED5C8] rounded-[11px] bg-white flex items-center gap-[2px] px-[13px]">
+                    <div className="h-[44px] border border-[#E8E2DA] rounded-[11px] bg-white flex items-center gap-[2px] px-[13px]">
                       <span className="text-[14px] font-semibold text-[#5E534A]">$</span>
                       <FormattedNumberInput
                         value={state.platformEncRate ?? 0}
@@ -228,7 +228,7 @@ export default function EdInvestment({
                     </div>
                   </div>
                 </div>
-                <div className="mt-5 pt-[18px] border-t border-[#DED5C8] flex justify-between items-baseline">
+                <div className="mt-5 pt-[18px] border-t border-[#E8E2DA] flex justify-between items-baseline">
                   <span className="text-[13px] text-[#5E534A]">Annual investment</span>
                   <span className="font-abridge text-[26px] text-[#1A1A1A]">
                     {formatCurrency(annualInvestment)}
@@ -243,7 +243,7 @@ export default function EdInvestment({
               <>
                 <div>
                   <div className="text-[10.5px] font-extrabold tracking-[0.04em] uppercase text-[#2E2822] mb-2">Annual license fee</div>
-                  <div className="h-[44px] border border-[#DED5C8] rounded-[11px] bg-white flex items-center gap-[2px] px-[13px] max-w-[220px]">
+                  <div className="h-[44px] border border-[#E8E2DA] rounded-[11px] bg-white flex items-center gap-[2px] px-[13px] max-w-[220px]">
                     <span className="text-[14px] font-semibold text-[#5E534A]">$</span>
                     <FormattedNumberInput
                       value={state.annualLicenseFee}
@@ -253,7 +253,7 @@ export default function EdInvestment({
                     />
                   </div>
                 </div>
-                <div className="mt-5 pt-[18px] border-t border-[#DED5C8] flex justify-between items-baseline">
+                <div className="mt-5 pt-[18px] border-t border-[#E8E2DA] flex justify-between items-baseline">
                   <span className="text-[13px] text-[#5E534A]">Annual investment</span>
                   <span className="font-abridge text-[26px] text-[#1A1A1A]">
                     {formatCurrency(annualInvestment)}
@@ -268,7 +268,7 @@ export default function EdInvestment({
           </div>
 
           {/* Return stack */}
-          <div className="bg-[#FDFBF8] border border-[#DED5C8] rounded-[20px] p-[24px_26px]">
+          <div className="bg-[#FDFBF8] border border-[#E8E2DA] rounded-[20px] p-[24px_26px]">
             <div className="text-[11px] font-extrabold tracking-[0.09em] uppercase text-[#2E2822] mb-4">What it returns</div>
 
             <div className="flex justify-between items-baseline py-[9px] border-b border-[#EDE5D8] text-[15px]">
@@ -296,7 +296,7 @@ export default function EdInvestment({
               <span className="font-abridge text-[17px] text-[#5E534A]">{formatCurrency(-annualInvestment)}</span>
             </div>
 
-            <div className="mt-[14px] pt-[18px] border-t-2 border-[#DED5C8]">
+            <div className="mt-[14px] pt-[18px] border-t-2 border-[#E8E2DA]">
               <div className="text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#2E2822]">Net annual value</div>
               <div className="font-abridge text-[46px] text-[#EA2C00] leading-none mt-[7px]">
                 {formatCurrency(netAnnualValue)}

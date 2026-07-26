@@ -57,12 +57,12 @@ export default function EdCareSetting({ selectedSetting, onSelectSetting, onNext
                 onClick={() => onSelectSetting(id)}
                 data-testid={`ed-setting-${id}`}
                 className={`relative text-left bg-[#FDFBF8] border rounded-[20px] p-6 transition-all ${
-                  selected ? "border-[#EA2C00] shadow-[0_0_0_1px_#EA2C00]" : "border-[#DED5C8] hover:border-[#1A1A1A]"
+                  selected ? "border-[#EA2C00] shadow-[0_0_0_1px_#EA2C00]" : "border-[#E8E2DA] hover:border-[#1A1A1A]"
                 } ${disabled ? "opacity-40 cursor-not-allowed" : "cursor-pointer"}`}
               >
                 <div
                   className={`absolute top-[22px] right-[22px] w-6 h-6 rounded-full border flex items-center justify-center ${
-                    selected ? "bg-[#EA2C00] border-[#EA2C00]" : "border-[#DED5C8]"
+                    selected ? "bg-[#EA2C00] border-[#EA2C00]" : "border-[#E8E2DA]"
                   }`}
                 >
                   <Check className={`w-[14px] h-[14px] text-white ${selected ? "opacity-100" : "opacity-0"}`} strokeWidth={3} />
