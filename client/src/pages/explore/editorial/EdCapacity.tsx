@@ -82,7 +82,7 @@ const TIER2: Record<
   },
 };
 
-export default function EdCapacity({ state, updateState, totalHoursSaved, onNext }: EdCapacityProps) {
+export default function EdCapacity({ state, updateState, totalHoursSaved, onNext, onBack }: EdCapacityProps) {
   const setting = state.careSetting;
   const td = state.timeDriverInputs;
 
@@ -403,7 +403,7 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
 
   return (
     <EditorialShell>
-      <EditorialHeader stepName="Capacity" stepIndex={4} />
+      <EditorialHeader stepName="Capacity" stepIndex={4} onBack={onBack} />
       <div className="max-w-[1160px] mx-auto px-12 pt-11 pb-[60px]">
         <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#5E534A]">Explore · Step 4 of 9</div>
         <h1 className="font-abridge text-[38px] leading-[1.06] text-[#1A1A1A] mt-[10px]">What does the freed time become?</h1>

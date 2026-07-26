@@ -85,7 +85,7 @@ function QuickFillChip({
   );
 }
 
-export default function EdPractice({ state, updateState, onNext }: EdPracticeProps) {
+export default function EdPractice({ state, updateState, onNext, onBack }: EdPracticeProps) {
   const isED = state.careSetting === "ed";
   const isInpatient = state.careSetting === "inpatient";
   const isNursing = state.careSetting === "nursing";
@@ -228,7 +228,7 @@ export default function EdPractice({ state, updateState, onNext }: EdPracticePro
 
   return (
     <EditorialShell>
-      <EditorialHeader stepName="Practice" stepIndex={2} />
+      <EditorialHeader stepName="Practice" stepIndex={2} onBack={onBack} />
       <div className="max-w-[1160px] mx-auto px-12 pt-12 pb-14">
         <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#5E534A]">
           Explore · Step 2 of 9

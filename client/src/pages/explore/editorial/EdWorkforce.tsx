@@ -124,12 +124,14 @@ function ModePicker({ mode, onChange }: { mode: "position" | "hourly"; onChange:
   );
 }
 
-export default function EdWorkforce({ state, updateState, totalHoursSaved, onNext }: EdWorkforceProps) {
+export default function EdWorkforce({ state, updateState, totalHoursSaved, onNext, onBack }: EdWorkforceProps) {
   const setting = state.careSetting;
   const td = state.timeDriverInputs;
   const isIP = setting === "inpatient";
 
-  const drivers = setting ? getDriversForPage("Workforce", setting) : [];
+  const drivers = (setting ? getDriversForPage("Workforce", setting) : [])
+    // Scribe Spend is not part of the Outpatient Workforce design (mockup omits it).
+    .filter((d) => !(setting === "outpatient" && d.id === "scribeCostReduction"));
   const topLevelDrivers = drivers.filter((d) => !d.childOfDriverId);
   const financialTopLevel = topLevelDrivers.filter((d) => d.visibility === "quantified");
   const flatFinancial = financialTopLevel.flatMap((d) => [
@@ -544,7 +546,7 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
 
   return (
     <EditorialShell>
-      <EditorialHeader stepName="Workforce" stepIndex={5} />
+      <EditorialHeader stepName="Workforce" stepIndex={5} onBack={onBack} />
       <div className="max-w-[1160px] mx-auto px-12 pt-11 pb-[60px]">
         <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#5E534A]">Explore · Step 5 of 9</div>
         <h1 className="font-abridge text-[38px] leading-[1.06] text-[#1A1A1A] mt-[10px]">What is Abridge worth to your workforce?</h1>

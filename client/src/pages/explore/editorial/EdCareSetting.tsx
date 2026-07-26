@@ -32,10 +32,10 @@ const SETTING_LABEL: Record<ExploreCareSetting, string> = {
   nursing: "Nursing",
 };
 
-export default function EdCareSetting({ selectedSetting, onSelectSetting, onNext, disabledSettings = [], onDataRequest }: Props) {
+export default function EdCareSetting({ selectedSetting, onSelectSetting, onNext, onBack, disabledSettings = [], onDataRequest }: Props) {
   return (
     <EditorialShell>
-      <EditorialHeader stepName="Care Setting" stepIndex={1} onDataRequest={onDataRequest} />
+      <EditorialHeader stepName="Care Setting" stepIndex={1} onDataRequest={onDataRequest} onBack={onBack} />
       <div className="max-w-[1000px] mx-auto px-10 pt-[52px] pb-[60px]">
         <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#5E534A]">Explore · Step 1 of 9</div>
         <h1 className="font-abridge text-[40px] leading-[1.06] text-[#1A1A1A] mt-[10px] max-w-[640px]">

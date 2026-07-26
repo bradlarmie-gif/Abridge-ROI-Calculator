@@ -43,7 +43,7 @@ const PAY_LABELS: { key: ExploreState["paymentModel"]; label: string }[] = [
   { key: "both", label: "Both" },
 ];
 
-export default function EdRevenue({ state, updateState, totalHoursSaved, onNext }: EdRevenueProps) {
+export default function EdRevenue({ state, updateState, totalHoursSaved, onNext, onBack }: EdRevenueProps) {
   const setting = state.careSetting;
   const dq = state.docQualityInputs;
   const td = state.timeDriverInputs;
@@ -228,14 +228,19 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext 
           <PlanRow
             key={p.id}
             planType={p.planType}
-            panelSize={p.panelSize}
-            totalPatients={p.panelSize * state.numberOfProviders}
+            members={p.panelSize * state.numberOfProviders}
             valuePerHcc={p.valuePerHcc}
             onPlanTypeChange={(v) =>
               updateDq({ hccPlans: plans.map((pl) => (pl.id === p.id ? { ...pl, planType: v as HccPlan["planType"] } : pl)) })
             }
-            onPanelSizeChange={(v) =>
-              updateDq({ hccPlans: plans.map((pl) => (pl.id === p.id ? { ...pl, panelSize: v } : pl)) })
+            onMembersChange={(v) =>
+              updateDq({
+                hccPlans: plans.map((pl) =>
+                  pl.id === p.id
+                    ? { ...pl, panelSize: state.numberOfProviders > 0 ? Math.round(v / state.numberOfProviders) : v }
+                    : pl,
+                ),
+              })
             }
             onValuePerHccChange={(v) =>
               updateDq({ hccPlans: plans.map((pl) => (pl.id === p.id ? { ...pl, valuePerHcc: v } : pl)) })
@@ -483,7 +488,7 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext 
 
   return (
     <EditorialShell>
-      <EditorialHeader stepName="Revenue" stepIndex={6} />
+      <EditorialHeader stepName="Revenue" stepIndex={6} onBack={onBack} />
       <div className="max-w-[1160px] mx-auto px-12 pt-11 pb-[60px]">
         <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#5E534A]">Explore · Step 6 of 9</div>
         <h1 className="font-abridge text-[38px] leading-[1.06] text-[#1A1A1A] mt-[10px] max-w-[680px]">{heading}</h1>

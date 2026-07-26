@@ -14,7 +14,7 @@ interface EdTimeSavingsProps {
 const inputBase =
   "h-12 w-full rounded-xl border border-[#DED5C8] bg-white px-[15px] text-[16px] font-bold text-[#1A1A1A] tabular-nums focus-visible:ring-1 focus-visible:ring-[#EA2C00] focus-visible:ring-offset-0 focus-visible:border-[#EA2C00] placeholder:text-[#B7ADA0] placeholder:font-normal placeholder:not-italic";
 
-export default function EdTimeSavings({ state, updateState, onNext }: EdTimeSavingsProps) {
+export default function EdTimeSavings({ state, updateState, onNext, onBack }: EdTimeSavingsProps) {
   const isED = state.careSetting === "ed";
   const isInpatient = state.careSetting === "inpatient";
   const isNursing = state.careSetting === "nursing";
@@ -80,7 +80,7 @@ export default function EdTimeSavings({ state, updateState, onNext }: EdTimeSavi
 
   return (
     <EditorialShell>
-      <EditorialHeader stepName="Time Savings" stepIndex={3} />
+      <EditorialHeader stepName="Time Savings" stepIndex={3} onBack={onBack} />
       <div className="max-w-[1160px] mx-auto px-12 pt-12 pb-14">
         <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#5E534A]">
           Explore · Step 3 of 9

@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import { ArrowLeft } from "lucide-react";
 
 /**
  * Shared editorial chrome for the Explore editorial preview (?explorepreview=1).
@@ -10,15 +11,29 @@ export function EditorialHeader({
   stepName,
   stepIndex, // 1-based
   onDataRequest,
+  onBack,
 }: {
   stepName: string;
   stepIndex: number;
   onDataRequest?: () => void;
+  onBack?: () => void;
 }) {
   return (
     <div className="h-[58px] border-b border-[#DED5C8]">
       <div className="max-w-[1160px] mx-auto h-full flex items-center justify-between px-12">
-        <div className="font-abridge text-[20px] text-[#EA2C00] tracking-[0.5px]">ABRIDGE</div>
+        <div className="flex items-center gap-3">
+          {onBack && (
+            <button
+              onClick={onBack}
+              aria-label="Back"
+              data-testid="ed-header-back"
+              className="w-8 h-8 rounded-full border border-[#DED5C8] bg-white flex items-center justify-center text-[#5E534A] hover:text-[#EA2C00] hover:border-[#EA2C00] transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" />
+            </button>
+          )}
+          <div className="font-abridge text-[20px] text-[#EA2C00] tracking-[0.5px]">ABRIDGE</div>
+        </div>
         <div className="text-[14px] text-[#5E534A]">
           Explore · <b className="text-[#1A1A1A] font-bold">{stepName}</b>
         </div>

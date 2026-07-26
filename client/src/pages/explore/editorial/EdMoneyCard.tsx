@@ -284,21 +284,19 @@ const PLAN_TYPE_LABELS: Record<string, string> = {
 
 export function PlanRow({
   planType,
-  panelSize,
-  totalPatients,
+  members,
   valuePerHcc,
   onPlanTypeChange,
-  onPanelSizeChange,
+  onMembersChange,
   onValuePerHccChange,
   onRemove,
   removable,
 }: {
   planType: string;
-  panelSize: number;
-  totalPatients: number;
+  members: number;
   valuePerHcc: number;
   onPlanTypeChange: (v: string) => void;
-  onPanelSizeChange: (v: number) => void;
+  onMembersChange: (v: number) => void;
   onValuePerHccChange: (v: number) => void;
   onRemove: () => void;
   removable: boolean;
@@ -316,10 +314,7 @@ export function PlanRow({
           </option>
         ))}
       </select>
-      <div>
-        <Fi value={panelSize} onValueChange={onPanelSizeChange} suffix="pts/provider" />
-        <div className="text-[10px] text-[#786C5E] mt-1">{fmtN(totalPatients)} total</div>
-      </div>
+      <Fi value={members} onValueChange={onMembersChange} suffix="members" />
       <Fi value={valuePerHcc} onValueChange={onValuePerHccChange} prefix="$" suffix="/HCC" />
       <button
         type="button"
