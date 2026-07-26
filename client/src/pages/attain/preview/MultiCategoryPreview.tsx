@@ -227,7 +227,6 @@ export function AttainExperience({ setting, cells, baseline, initial, onPersist 
               <button key={ch} onClick={() => setChapter(ch)} className={chapterTab(ch)}>{ch}</button>
             ))}
           </div>
-          <button type="button" onClick={() => window.open(`${window.location.pathname}?attainpdf=1`, "_blank")} className="ml-auto inline-flex items-center gap-1.5 text-[12px] font-semibold text-[#EA2C00] hover:underline">Export PDF</button>
         </div>
       </div>
       {/* clears the fixed chapter nav above */}
