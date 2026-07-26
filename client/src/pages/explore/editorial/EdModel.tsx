@@ -11,7 +11,7 @@ import {
 } from "@/lib/exploreDriverCalcs";
 import { buildExploreProformaDrivers } from "../ExploreModel";
 import type { ProformaSettingSnapshot, DriverOnset } from "@/pages/proforma/proformaTypes";
-import { ONSET_DELAY_MONTHS, SETTING_LABELS } from "@/pages/proforma/proformaTypes";
+import { SETTING_LABELS } from "@/pages/proforma/proformaTypes";
 import { PDFExportModal } from "@/components/switch/PDFExportModal";
 import { generateExplorePDF, type ExplorePDFData, type ExplorePDFQuadrantData } from "@/components/explore/ExplorePDFExport";
 import { copyToClipboard } from "@/lib/clipboard";
@@ -75,11 +75,24 @@ const FALLBACK_ONSET_BY_QUADRANT: Record<ExploreQuadrant, DriverOnset> = {
   Quality: "delayed",
 };
 
-function rampFactor(month: number, onsetMonth: number): number {
-  if (month <= 0 || month < onsetMonth) return 0;
-  const denom = 13 - onsetMonth;
-  if (denom <= 0) return 1;
-  return Math.min(1, (month - onsetMonth + 1) / denom);
+// Display-only adoption curve for the "when it lands" chart. Each onset is a
+// smooth back-loaded ramp (progress^k) rather than a hard step: more delay =
+// larger exponent = more back-loaded, but the value always builds gradually,
+// never a cliff. Month 12 is always 1.0, so the curve reconciles exactly to
+// totalAnnualValue ("full run-rate"). This shapes the chart only; it does not
+// touch engine totals or the proforma.
+const ONSET_RAMP_EXPONENT: Record<DriverOnset, number> = {
+  immediate: 1,
+  delayed: 1.8,
+  phased: 2.6,
+  longTerm: 3.6,
+  custom: 1.8,
+};
+
+function rampFactor(month: number, onset: DriverOnset): number {
+  if (month <= 0) return 0;
+  const p = Math.min(1, month / 12);
+  return Math.pow(p, ONSET_RAMP_EXPONENT[onset] ?? 1.8);
 }
 
 const fmtCurrency = (n: number) => (n < 0 ? "−$" + Math.abs(Math.round(n)).toLocaleString() : "$" + Math.round(n).toLocaleString());
@@ -137,8 +150,8 @@ export default function EdModel({
   const rampPoints = useMemo(() => {
     const pts: { month: number; value: number }[] = [];
     for (let m = 0; m <= 12; m++) {
-      let v = otherAnnualTotal * rampFactor(m, ONSET_DELAY_MONTHS.immediate);
-      for (const entry of rampEntries) v += entry.value * rampFactor(m, ONSET_DELAY_MONTHS[entry.onset]);
+      let v = otherAnnualTotal * rampFactor(m, "immediate");
+      for (const entry of rampEntries) v += entry.value * rampFactor(m, entry.onset);
       pts.push({ month: m, value: v });
     }
     return pts;
