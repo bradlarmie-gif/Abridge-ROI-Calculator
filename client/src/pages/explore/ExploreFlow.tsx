@@ -550,7 +550,7 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     edLwbsRate: 3, // 3% baseline LWBS rate
     edLwbsReduction: 10, // 10% reduction in LWBS (conservative default)
     edRevenuePerVisit: 480, // Higher than outpatient
-    edLwbsRealization: 80, // 80% realization (not all recovered patients complete visits)
+    edLwbsRealization: 50, // 50% realization — defensible; not all recovered LWBS patients complete a billable visit (was 80, an overstatement vs the mockup's 40-55% band)
     edThroughputEnabled: false,
     edAdmissionRate: 18, // 18% of recovered patients get admitted
     edAdmissionRevenue: 4000, // Contribution margin per admission (net of cost of care), not gross/net revenue
@@ -781,7 +781,7 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     wrvuScenario: 'typical',
     wrvuCustomPercent: 5,
     currentWrvu: 1.8,
-    conversionFactor: 33,
+    conversionFactor: 33.40, // 2026 Medicare conversion factor (was 33)
     wrvuRealization: 75,
     hccEnabled: false,
     hccPlans: [{
