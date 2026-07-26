@@ -384,10 +384,12 @@ export interface DocQualityInputs {
   ipDrgEnabled: boolean;
   ipDrgScenario: 'conservative' | 'typical' | 'aggressive' | 'custom';
   ipDrgCustomPercent: number;
-  ipDrgAtRiskRate: number; // % of admissions with documentation gaps
-  ipDrgWeightIncrease: number; // Average DRG weight difference
-  ipDrgBasePayment: number; // Base DRG payment
-  ipDrgRealization: number; // Realization rate (audit adjustments)
+  ipDrgAtRiskRate: number; // legacy, unused by the clean CMI model
+  ipDrgWeightIncrease: number; // CMI lift (avg DRG weight increase across discharges)
+  ipDrgBasePayment: number; // Base DRG payment per case
+  ipDrgRealization: number; // Realization rate (RAC/PEPPER audit survival)
+  ipDrgAttribution: number; // % of the CMI lift attributed to Abridge (vs CDI team / other)
+  ipDrgCurrentCmi: number; // current Case Mix Index (context: current -> projected)
   
   // Inpatient: Obs/IP Status Defense
   ipObsDefenseEnabled: boolean;
@@ -809,10 +811,12 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     ipDrgEnabled: false,
     ipDrgScenario: 'typical',
     ipDrgCustomPercent: 20,
-    ipDrgAtRiskRate: 18, // 18% of admissions have documentation gaps
-    ipDrgWeightIncrease: 0.3, // Average DRG weight difference
-    ipDrgBasePayment: 6000, // $6,000 base DRG payment
-    ipDrgRealization: 65, // 65% realization (RAC/PEPPER audits)
+    ipDrgAtRiskRate: 18, // legacy, unused by the clean CMI model
+    ipDrgWeightIncrease: 0.03, // CMI lift: avg DRG weight increase across discharges (~0.02-0.05)
+    ipDrgBasePayment: 6000, // $6,000 base DRG payment per case
+    ipDrgRealization: 65, // 65% realization (RAC/PEPPER audit survival)
+    ipDrgAttribution: 65, // 65% of the CMI lift attributed to Abridge (point-of-care capture, upstream of CDI queries)
+    ipDrgCurrentCmi: 1.5, // current Case Mix Index (context)
     // Inpatient: Obs/IP Status Defense defaults
     ipObsDefenseEnabled: false,
     ipObsDefenseDenialRate: 5,

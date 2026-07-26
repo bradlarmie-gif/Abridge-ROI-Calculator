@@ -349,23 +349,22 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
   );
 
   // ── Inpatient: DRG/CMI + Obs Defense ──
-  const drgProtectPct = dq.ipDrgScenario === "custom" ? dq.ipDrgCustomPercent ?? 20 : IP_DRG_PROTECT_SCENARIOS[dq.ipDrgScenario] ?? 20;
   const drgValue = engine.drgAccuracy ?? 0;
+  const projectedCmi = dq.ipDrgCurrentCmi + dq.ipDrgWeightIncrease;
   const drgCard = (
     <MoneyCard
       key="drg"
       title="Case Mix Index"
-      subtitle="When clinical reasoning is captured in real time, comorbidities and complications are documented as spoken, preserving the CC/MCC assignments that raise DRG weight."
+      subtitle="Complete documentation at the point of care justifies the CC/MCC and severity that set the DRG weight. Your CDI team also moves CMI, so this counts only the share attributed to Abridge, and only what survives audit."
       enabled={dq.ipDrgEnabled}
       onToggle={() => updateDq({ ipDrgEnabled: !dq.ipDrgEnabled, ipDrgExpanded: !dq.ipDrgEnabled ? true : dq.ipDrgExpanded })}
       value={drgValue}
-      secondary={<>≈ <b className="text-[#1A1A1A]">{drgProtectPct}%</b> of at-risk discharges protected</>}
+      secondary={<>≈ CMI <b className="text-[#1A1A1A]">{dq.ipDrgCurrentCmi.toFixed(2)} → {projectedCmi.toFixed(2)}</b>, {dq.ipDrgAttribution}% attributed to Abridge</>}
       testId="toggle-drg"
       buildLine={
         <>
-          <b className="text-[#1A1A1A]">{fmtN(eligibleEncounters)}</b> discharges × <b className="text-[#1A1A1A]">{dq.ipDrgAtRiskRate}%</b>{" "}
-          at-risk × <b className="text-[#1A1A1A]">{drgProtectPct}%</b> protected × <b className="text-[#1A1A1A]">{dq.ipDrgWeightIncrease}</b> weight ×{" "}
-          <b className="text-[#1A1A1A]">${fmtN(dq.ipDrgBasePayment)}</b>/case × {dq.ipDrgRealization}% realization ={" "}
+          <b className="text-[#1A1A1A]">{fmtN(eligibleEncounters)}</b> discharges × <b className="text-[#1A1A1A]">{dq.ipDrgWeightIncrease}</b> CMI lift ×{" "}
+          <b className="text-[#1A1A1A]">${fmtN(dq.ipDrgBasePayment)}</b>/case × {dq.ipDrgAttribution}% attributed × {dq.ipDrgRealization}% realization ={" "}
           <b className="text-[#1A1A1A]">{fmt$(drgValue)}</b> a year
         </>
       }
@@ -374,29 +373,28 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
         <FieldTile label="Annual discharges" note="at your utilization rate">
           <FiReadout>{fmtN(eligibleEncounters)}</FiReadout>
         </FieldTile>
-        <FieldTile label="At-risk rate" note="admissions with doc gaps">
-          <Fi value={dq.ipDrgAtRiskRate} onValueChange={(v) => updateDq({ ipDrgAtRiskRate: v })} suffix="%" testId="input-ed-drg-at-risk" />
+        <FieldTile label="Current CMI" note="your case mix index today">
+          <Fi value={dq.ipDrgCurrentCmi} onValueChange={(v) => updateDq({ ipDrgCurrentCmi: v })} decimal testId="input-ed-drg-current-cmi" />
         </FieldTile>
-        <FieldTile label="Protected">
-          <FiReadout suffix="%">{drgProtectPct}</FiReadout>
+        <FieldTile label="CMI lift" note={`→ ${projectedCmi.toFixed(2)} projected`}>
+          <Fi value={dq.ipDrgWeightIncrease} onValueChange={(v) => updateDq({ ipDrgWeightIncrease: v })} decimal testId="input-ed-drg-cmi-lift" />
           <QuickFill
-            options={(["conservative", "typical", "aggressive"] as const).map((k) => ({ key: k, label: `${IP_DRG_PROTECT_SCENARIOS[k]}%` }))}
-            activeKey={dq.ipDrgScenario}
-            onSelect={(k) => updateDq({ ipDrgScenario: k as typeof dq.ipDrgScenario })}
+            options={[{ key: "0.02", label: "0.02" }, { key: "0.03", label: "0.03" }, { key: "0.05", label: "0.05" }]}
+            activeKey={String(dq.ipDrgWeightIncrease)}
+            onSelect={(k) => updateDq({ ipDrgWeightIncrease: Number(k) })}
           />
         </FieldTile>
-        <FieldTile label="Weight increase" note="avg DRG weight delta">
-          <Fi value={dq.ipDrgWeightIncrease} onValueChange={(v) => updateDq({ ipDrgWeightIncrease: v })} decimal testId="input-ed-drg-weight" />
-        </FieldTile>
-      </FieldGrid>
-      <FieldGrid cols={3}>
         <FieldTile label="Base payment / discharge">
           <Fi value={dq.ipDrgBasePayment} onValueChange={(v) => updateDq({ ipDrgBasePayment: v })} prefix="$" testId="input-ed-drg-base" />
         </FieldTile>
-        <FieldTile label="Realization" note="audit adjustments">
+      </FieldGrid>
+      <FieldGrid>
+        <FieldTile label="Attributed to Abridge" note="vs your CDI team & coders">
+          <Fi value={dq.ipDrgAttribution} onValueChange={(v) => updateDq({ ipDrgAttribution: v })} suffix="%" testId="input-ed-drg-attribution" />
+        </FieldTile>
+        <FieldTile label="Realization" note="the share that survives RAC / PEPPER">
           <Fi value={dq.ipDrgRealization} onValueChange={(v) => updateDq({ ipDrgRealization: v })} suffix="%" testId="input-ed-drg-realization" />
         </FieldTile>
-        <div />
       </FieldGrid>
     </MoneyCard>
   );

@@ -110,7 +110,7 @@ function ipResults(inp: CellInputs) {
       physicianAgencyEnabled: true, physicianAgencyWeeksPerVacancy: 16, physicianAgencyWeeklyPremium: 5_000,
     },
     {
-      ipDrgEnabled: true, ipDrgScenario: "typical", ipDrgAtRiskRate: inp.econ?.atRisk ?? 15, ipDrgWeightIncrease: inp.econ?.weightInc ?? 0.3, ipDrgBasePayment: inp.econ?.drgBase ?? 6_000, ipDrgRealization: inp.stancePct ?? 60,
+      ipDrgEnabled: true, ipDrgScenario: "typical", ipDrgAtRiskRate: inp.econ?.atRisk ?? 15, ipDrgWeightIncrease: inp.econ?.weightInc ?? 0.03, ipDrgBasePayment: inp.econ?.drgBase ?? 6_000, ipDrgAttribution: inp.econ?.attribution ?? 65, ipDrgRealization: inp.stancePct ?? 60,
       ipCdiEnabled: true, ipCdiScenario: "typical", ipCdiQueryRate: 20, ipCdiCostPerQuery: 40, ipCdiRealization: inp.stancePct ?? 60,
       ipObsDefenseEnabled: true, ipObsDefensePreventableScenario: "typical", ipObsDefenseDenialRate: 5, ipObsDefenseRevenueDelta: 5_000, ipObsDefenseRealization: inp.stancePct ?? 60,
     }, 0);

@@ -132,9 +132,10 @@ export function computeRevenueBreakdown(state: ExploreState, _totalHoursSaved: n
     result.denialPrevention = Math.round(prevented * dq.avgClaimValue * (dq.denialsRealization / 100));
   }
   if (isIP && dq.ipDrgEnabled) {
-    const pct = (dq.ipDrgScenario === 'custom' ? (dq.ipDrgCustomPercent ?? 20) : IP_DRG_PROTECT_SCENARIOS[dq.ipDrgScenario]) / 100;
-    const atRisk = eligibleEncounters * (dq.ipDrgAtRiskRate / 100);
-    result.drgAccuracy = Math.round(atRisk * pct * dq.ipDrgWeightIncrease * dq.ipDrgBasePayment * (dq.ipDrgRealization / 100));
+    // Clean CMI model — mirrors computeAllDriverValues (no at-risk/protect stacking).
+    result.drgAccuracy = Math.round(
+      eligibleEncounters * dq.ipDrgWeightIncrease * dq.ipDrgBasePayment * ((dq.ipDrgAttribution ?? 65) / 100) * (dq.ipDrgRealization / 100),
+    );
   }
   if (isIP && dq.ipObsDefenseEnabled) {
     const preventablePct = (dq.ipObsDefensePreventableScenario === 'custom' ? (dq.ipObsDefenseCustomPercent ?? 40) : (IP_OBS_PREVENTABLE_SCENARIOS[dq.ipObsDefensePreventableScenario] ?? 40)) / 100;

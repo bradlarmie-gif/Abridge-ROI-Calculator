@@ -121,17 +121,17 @@ export const ECON_MODELS: Record<string, EconModel> = {
   // ---- Inpatient ----
   "Inpatient|Revenue Capture": {
     title: "How much of the coding do you capture?",
-    helper: "A complete inpatient note carries the severity that was actually treated, so the DRG can land where the documentation supports it. Set your average DRG base payment; how much of the documentation-driven accuracy you capture is yours to set below. This one is held lower for audit risk.",
+    helper: "A complete inpatient note carries the severity that was actually treated, so the DRG lands where the documentation supports it. This is modeled as a lift to your Case Mix Index. Your CDI team also moves CMI, so only the share attributed to Abridge counts, and only what survives audit.",
     fields: [{ key: "drgBase", label: "Average DRG base payment", prefix: "$", placeholder: "6,000", hint: "Your blended base rate per discharge." }],
     assumptions: [
-      { key: "atRisk", label: "Discharges at risk of under-coding", default: "15", suffix: "%" },
-      { key: "weightInc", label: "DRG weight gained when corrected", default: "0.3" },
+      { key: "weightInc", label: "CMI lift (avg DRG weight gained across discharges)", default: "0.03" },
+      { key: "attribution", label: "Share attributed to Abridge (vs CDI team)", default: "65", suffix: "%" },
     ],
-    stancePrompt: "How much of the documentation-driven coding do you capture and keep?",
+    stancePrompt: "How much of the documentation-driven CMI lift survives audit?",
     stanceBands: [55, 65, 75],
     stanceCap: 85,
     capNote: "We cap this at 85 percent, below outpatient coding. Inpatient DRG carries the most audit and RADV exposure, so we stay the most conservative here.",
-    math: (i) => `Your at-risk discharges × documentation-driven DRG accuracy × ${i.stancePct}% captured at ${fmt$(i.econ.drgBase)}/DRG.`,
+    math: (i) => `Your discharges × ${i.econ.weightInc} CMI lift × ${i.econ.attribution}% attributed to Abridge × ${i.stancePct}% that survives audit, at ${fmt$(i.econ.drgBase)}/DRG.`,
   },
   "Inpatient|Provider Retention": workforceModel("hospitalist", "hospitalists", "300,000", "8", [BURNOUT("45")]),
 

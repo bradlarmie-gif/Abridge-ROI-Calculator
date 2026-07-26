@@ -208,14 +208,14 @@ export function computeAllDriverValues(
     );
   }
   if (isIP && dq.ipDrgEnabled) {
-    const drgPct = dq.ipDrgScenario === 'custom' ? (dq.ipDrgCustomPercent ?? 20) : IP_DRG_PROTECT_SCENARIOS[dq.ipDrgScenario];
-    const pct = drgPct / 100;
-    const atRisk = eligibleEncounters * (dq.ipDrgAtRiskRate / 100);
+    // Clean CMI model (no at-risk / protect stacking): the CMI lift is an average
+    // across discharges, so opportunity is already baked in. Two distinct haircuts:
+    // attribution (Abridge vs CDI/other) and realization (RAC/PEPPER survival).
     result.drgAccuracy = Math.round(
-      atRisk *
-        pct *
+      eligibleEncounters *
         dq.ipDrgWeightIncrease *
         dq.ipDrgBasePayment *
+        ((dq.ipDrgAttribution ?? 65) / 100) *
         (dq.ipDrgRealization / 100),
     );
   }
@@ -406,8 +406,7 @@ export function computeAllDriverCalcSummaries(
     out.denialPrevention = `${fmtN(eligibleEncounters)} encounters × ${dq.medNecessityDenialRate}% medical necessity denial rate × ${prevPct}% reduction target × ${fmt$(dq.avgClaimValue)}/claim × ${dq.denialsRealization}% realization`;
   }
   if (isIP && dq.ipDrgEnabled) {
-    const protectPct = dq.ipDrgScenario === 'custom' ? (dq.ipDrgCustomPercent ?? 20) : (IP_DRG_PROTECT_SCENARIOS[dq.ipDrgScenario] ?? 0);
-    out.drgAccuracy = `${fmtN(eligibleEncounters)} encounters × ${dq.ipDrgAtRiskRate}% at-risk × ${protectPct}% protect × ${dq.ipDrgWeightIncrease} weight × ${fmt$(dq.ipDrgBasePayment)}/case × ${dq.ipDrgRealization}% realization`;
+    out.drgAccuracy = `${fmtN(eligibleEncounters)} discharges × ${dq.ipDrgWeightIncrease} CMI lift × ${fmt$(dq.ipDrgBasePayment)}/case × ${dq.ipDrgAttribution ?? 65}% attributed to Abridge × ${dq.ipDrgRealization}% realization`;
   }
   if (isIP && dq.ipObsDefenseEnabled) {
     const preventableScenarios = IP_OBS_PREVENTABLE_SCENARIOS;

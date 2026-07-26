@@ -603,16 +603,20 @@ describe("inpatient doc-quality drivers honor a persisted 'custom' scenario", ()
     docQualityInputs: { ...DEFAULT_EXPLORE_STATE.docQualityInputs, ...overrides },
   });
 
-  it("ipDrg custom % flows through the engine and recompute (not a fallback)", () => {
-    const customState = ipBase({ ipDrgEnabled: true, ipDrgScenario: "custom", ipDrgCustomPercent: 50 });
-    const typicalState = ipBase({ ipDrgEnabled: true, ipDrgScenario: "typical" }); // typical = 20
-    const custom = computeAllDriverValues(customState, 0).drgAccuracy;
-    const typical = computeAllDriverValues(typicalState, 0).drgAccuracy;
-    expect(custom).toBeGreaterThan(0);
-    // 50% custom vs 20% typical → 2.5x, proving the chosen custom % is used.
-    expect(custom).toBeCloseTo(typical * (50 / 20), -1);
+  it("ipDrg CMI lift + attribution flow through the engine and recompute (clean CMI model)", () => {
+    const lowState = ipBase({ ipDrgEnabled: true, ipDrgWeightIncrease: 0.02 });
+    const highState = ipBase({ ipDrgEnabled: true, ipDrgWeightIncrease: 0.04 });
+    const low = computeAllDriverValues(lowState, 0).drgAccuracy;
+    const high = computeAllDriverValues(highState, 0).drgAccuracy;
+    expect(low).toBeGreaterThan(0);
+    // 0.04 vs 0.02 CMI lift → 2x, proving the CMI lift lever is used (no scenario stacking).
+    expect(high).toBeCloseTo(low * 2, -1);
+    // attribution also moves it: 50% vs 100% attributed → half.
+    const halfAttr = computeAllDriverValues(ipBase({ ipDrgEnabled: true, ipDrgWeightIncrease: 0.04, ipDrgAttribution: 50 }), 0).drgAccuracy;
+    const fullAttr = computeAllDriverValues(ipBase({ ipDrgEnabled: true, ipDrgWeightIncrease: 0.04, ipDrgAttribution: 100 }), 0).drgAccuracy;
+    expect(halfAttr).toBeCloseTo(fullAttr * 0.5, -1);
     // recompute path resolves the same value.
-    expect(recomputeDriverFromExploreState("ipDrg", customState)).toBe(custom);
+    expect(recomputeDriverFromExploreState("ipDrg", highState)).toBe(high);
   });
 
   it("ipObsDefense custom % flows through the engine (not a fallback)", () => {

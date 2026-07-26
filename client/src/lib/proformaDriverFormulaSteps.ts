@@ -269,20 +269,15 @@ export function buildDriverFormula(
 
     case "ipDrg":
     case "drgAccuracy": {
-      // Mirror the engine (real fields + shared scenario constant) so the steps
-      // reconcile — the old version read fields that don't exist and fabricated counts.
+      // Clean CMI model: discharges × CMI lift × base × attribution × realization.
       const dqi        = es.docQualityInputs ?? {};
-      const atRiskRate = dqi.ipDrgAtRiskRate ?? 0;
-      const protectPct = dqi.ipDrgScenario === "custom" ? (dqi.ipDrgCustomPercent ?? 20) : (IP_DRG_PROTECT_SCENARIOS[dqi.ipDrgScenario] ?? 0);
-      const weight     = dqi.ipDrgWeightIncrease ?? 0;
+      const cmiLift    = dqi.ipDrgWeightIncrease ?? 0;
       const basePay    = dqi.ipDrgBasePayment ?? 0;
+      const attribution = dqi.ipDrgAttribution ?? 65;
       const drgReal    = dqi.ipDrgRealization ?? 100;
-      const atRisk     = Math.round(abridgeEnc * (atRiskRate / 100));
-      const protectedCases = Math.round(atRisk * (protectPct / 100));
       return [
-        { label: `${n(abridgeEnc)} discharges  ×  ${p(atRiskRate)} at risk of DRG downgrade`, value: `${n(atRisk)} at-risk cases/yr` },
-        { label: `${n(atRisk)}  ×  ${p(protectPct)} protected via complete documentation`, value: `${n(protectedCases)} cases protected/yr` },
-        { label: `${n(protectedCases)}  ×  ${weight} DRG weight  ×  ${d(basePay)}/case  ×  ${p(drgReal)} realization`, value: fmt(driverValue), isResult: true },
+        { label: `${n(abridgeEnc)} Abridge-enabled discharges`, value: `${n(abridgeEnc)} discharges/yr` },
+        { label: `${n(abridgeEnc)}  ×  ${cmiLift} CMI lift  ×  ${d(basePay)}/case  ×  ${p(attribution)} attributed to Abridge  ×  ${p(drgReal)} survives audit`, value: fmt(driverValue), isResult: true },
       ];
     }
 
