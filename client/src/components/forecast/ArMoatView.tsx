@@ -52,7 +52,7 @@ export default function ArMoatView({ items }: { items: AppRatItem[] }) {
   return (
     <div
       className="rounded-[20px] p-6 md:p-8"
-      style={{ background: "linear-gradient(160deg,#FDFBF8,#F6F1EA)", border: "1px solid #E8E2DA" }}
+      style={{ background: "#FDFBF8", border: "1px solid #EFEAE1" }}
       data-testid="ar-moat"
     >
       {/* Hero: black headline + claim-safe subhead (verbatim). The app header

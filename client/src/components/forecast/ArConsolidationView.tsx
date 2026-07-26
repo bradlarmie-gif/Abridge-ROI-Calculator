@@ -128,7 +128,7 @@ export default function ArConsolidationView({
     return (
       <div
         className="rounded-[20px] p-10 text-center text-sm text-[#8C7E6E]"
-        style={{ background: "linear-gradient(160deg,#FDFBF8,#F6F1EA)", border: "1px solid #E8E2DA" }}
+        style={{ background: "#FDFBF8", border: "1px solid #EFEAE1" }}
         data-testid="ar-consolidation-empty"
       >
         Add applications with annual spend to see the consolidation.
@@ -152,7 +152,7 @@ export default function ArConsolidationView({
   return (
     <div
       className="rounded-[20px] p-6 md:p-8"
-      style={{ background: "linear-gradient(160deg,#FDFBF8,#F6F1EA)", border: "1px solid #E8E2DA" }}
+      style={{ background: "#FDFBF8", border: "1px solid #EFEAE1" }}
       data-testid="ar-consolidation"
     >
       {/* Headline + generalized, claim-safe subhead */}

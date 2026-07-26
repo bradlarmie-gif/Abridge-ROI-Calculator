@@ -93,7 +93,7 @@ export default function AppRationalizationFlow({ onBack, onHome }: AppRationaliz
   );
 
   return (
-    <div className="min-h-screen bg-[#FAF8F5]">
+    <div className="min-h-screen bg-[#FDFCFA]">
       <UnifiedHeader
         pathType="forecast"
         stepName="App Rationalization"
