@@ -158,7 +158,7 @@ export default function EdModel({
   }, [rampEntries, otherAnnualTotal]);
 
   const crossMonthFrac = useMemo(() => {
-    if (annualInvestment <= 0) return 0;
+    if (annualInvestment <= 0) return null; // no investment entered yet — nothing to clear
     for (let m = 1; m <= 12; m++) {
       if (rampPoints[m].value >= annualInvestment) {
         const prev = rampPoints[m - 1].value;
@@ -434,9 +434,11 @@ export default function EdModel({
           <div className="bg-[#FDFBF8] border border-[#DED5C8] rounded-[20px] p-[22px_24px]">
             <div className="text-[11px] font-extrabold tracking-[0.09em] uppercase text-[#2E2822] mb-[6px]">When it lands</div>
             <p className="text-[12.5px] text-[#5E534A] mb-[14px] leading-[1.5]">
-              {crossMonthFrac !== null
-                ? <>Value ramps as adoption grows. It clears the cost by month {Math.max(1, Math.ceil(crossMonthFrac))}, then climbs to full run-rate.</>
-                : <>Value ramps as adoption grows toward full run-rate.</>}
+              {annualInvestment <= 0
+                ? <>Value ramps as adoption grows, reaching full run-rate by month 12. Add your investment to see when it clears the cost.</>
+                : crossMonthFrac !== null
+                  ? <>Value ramps as adoption grows. It clears the cost by month {Math.max(1, Math.ceil(crossMonthFrac))}, then climbs to full run-rate.</>
+                  : <>Value ramps as adoption grows. At this scope it's still climbing toward the cost line at month 12.</>}
             </p>
             {totalAnnualValue > 0 ? (
               <>
@@ -452,7 +454,9 @@ export default function EdModel({
                   <line x1="40" y1="220" x2="620" y2="220" stroke="#DED5C8" strokeWidth="1" />
                   <path d={areaPath} fill="url(#edModelRampGradient)" />
                   <path d={linePath} fill="none" stroke="#EA2C00" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
-                  <line x1="40" y1={investmentY} x2="620" y2={investmentY} stroke="#9C8E7E" strokeWidth="1.6" strokeDasharray="5 4" />
+                  {annualInvestment > 0 && (
+                    <line x1="40" y1={investmentY} x2="620" y2={investmentY} stroke="#9C8E7E" strokeWidth="1.6" strokeDasharray="5 4" />
+                  )}
                   {crossX !== null && (
                     <>
                       <line x1={crossX} y1={investmentY} x2={crossX} y2="220" stroke="#C9BCA9" strokeWidth="1" strokeDasharray="3 3" />
@@ -474,15 +478,17 @@ export default function EdModel({
                     <span className="w-[14px] h-[3px] rounded-[2px] bg-[#EA2C00] inline-block" />
                     Value run-rate
                   </div>
-                  <div className="flex items-center gap-[7px] text-[12px] text-[#5E534A]">
-                    <span className="w-[14px] h-[3px] rounded-[2px] bg-[#9C8E7E] inline-block" />
-                    Investment {fmtShort(annualInvestment)} / yr
-                  </div>
+                  {annualInvestment > 0 && (
+                    <div className="flex items-center gap-[7px] text-[12px] text-[#5E534A]">
+                      <span className="w-[14px] h-[3px] rounded-[2px] bg-[#9C8E7E] inline-block" />
+                      Investment {fmtShort(annualInvestment)} / yr
+                    </div>
+                  )}
                 </div>
               </>
             ) : (
               <div className="text-[13px] text-[#786C5E] py-10 text-center">
-                Add value drivers in the prior steps to see when this clears the cost.
+                Add value drivers in the prior steps to see how the value builds.
               </div>
             )}
           </div>
