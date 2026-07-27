@@ -139,27 +139,29 @@ export const ECON_MODELS: Record<string, EconModel> = {
     title: "How much of the revenue do you keep?",
     helper: "The goals you picked above set what gets priced. Getting paid for the acuity sizes on how the visit codes; preventable denials size on the claims a complete note would have saved. Fill in the levers in play; how much of the lift you capture and keep is yours to set below. The size of each lift we seed conservatively.",
     fields: [
-      { key: "wrvu", lever: "emlevel", label: "Average wRVU per ED visit", placeholder: "1.5", hint: "Your current level, before any lift." },
-      { key: "cf", lever: "emlevel", label: "Conversion factor", prefix: "$", placeholder: "33.40", hint: "Dollars per wRVU." },
-      { key: "avgClaim", lever: "denials", label: "Average claim value", prefix: "$", placeholder: "250", hint: "The revenue on a claim you would otherwise write off." },
+      { key: "wrvu", lever: "edcoding", label: "Average wRVU per ED visit", placeholder: "1.5", hint: "Your current level, before any lift." },
+      { key: "cf", lever: "edcoding", label: "Conversion factor", prefix: "$", placeholder: "33.40", hint: "Dollars per wRVU." },
+      { key: "avgClaim", lever: "eddenials", label: "Average claim value", prefix: "$", placeholder: "250", hint: "The revenue on a claim you would otherwise write off." },
     ],
     assumptions: [
-      { key: "uplift", lever: "emlevel", label: "E&M lift from better notes", default: "3", suffix: "%" },
-      { key: "denialRate", lever: "denials", label: "Medical-necessity denial rate", default: "5", suffix: "%" },
+      { key: "uplift", lever: "edcoding", label: "E&M lift from better notes", default: "3", suffix: "%" },
+      { key: "denialRate", lever: "eddenials", label: "Medical-necessity denial rate", default: "5", suffix: "%" },
     ],
+    // Goal-driven, but activated by the mechanism the user picks in the stage:"frame" question,
+    // so the lever ids match the frame option ids AND the discovery population showIf ids.
     levers: [
-      { id: "emlevel", label: "Acuity coding", outcomeIds: ["em"], driverKeys: ["edEmLevel"] },
-      { id: "denials", label: "Preventable denials", outcomeIds: ["denials"], driverKeys: ["denialPrevention"] },
+      { id: "edcoding", label: "Acuity coding", payerOptionIds: ["edcoding"], driverKeys: ["edEmLevel"] },
+      { id: "eddenials", label: "Preventable denials", payerOptionIds: ["eddenials"], driverKeys: ["denialPrevention"] },
     ],
     stancePrompt: "How much of the documentation-driven lift do you capture and keep?",
     stanceBands: [65, 75, 85],
     stanceCap: 95,
     capNote: "We cap this at 95 percent. A defensible E&M level is real money, but not every lift survives billing and audit.",
-    math: (i, active = ["emlevel", "denials"]) => {
+    math: (i, active = ["edcoding", "eddenials"]) => {
       const parts: string[] = [];
-      if (active.includes("emlevel"))
+      if (active.includes("edcoding"))
         parts.push(`Acuity coding: your ED visits × ${i.econ.wrvu ?? 1.5} wRVU × ~${i.econ.uplift ?? 3}% E&M lift × ${fmt$(i.econ.cf ?? 33.4)}/wRVU × ${i.stancePct}% captured and kept`);
-      if (active.includes("denials"))
+      if (active.includes("eddenials"))
         parts.push(`Preventable denials: your ED claims × ${i.econ.denialRate ?? 5}% medical-necessity denial rate × ${fmt$(i.econ.avgClaim ?? 250)}/claim × ${i.stancePct}% a complete note prevents`);
       if (!parts.length) return "";
       return parts.join(". ") + (parts.length > 1 ? ". The two sum to the number above." : ".");
@@ -181,10 +183,12 @@ export const ECON_MODELS: Record<string, EconModel> = {
       { key: "cdiQueries", lever: "cdi", label: "CDI queries a complete note would avoid per year", default: "1,500" },
       { key: "obsRate", lever: "obs", label: "Stays downgraded to observation", default: "5", suffix: "%" },
     ],
+    // Activated by the mechanism the user picks in the stage:"frame" question, so the lever ids
+    // match the frame option ids AND the discovery population showIf ids (drg / cdi / obs).
     levers: [
-      { id: "drg", label: "DRG weight", outcomeIds: ["drg"], driverKeys: ["drgAccuracy"] },
-      { id: "cdi", label: "CDI query reduction", outcomeIds: ["cdi"], driverKeys: ["ipCdiValue"] },
-      { id: "obs", label: "Inpatient status defense", outcomeIds: ["obs"], driverKeys: ["obsDefense"] },
+      { id: "drg", label: "DRG weight", payerOptionIds: ["drg"], driverKeys: ["drgAccuracy"] },
+      { id: "cdi", label: "CDI query reduction", payerOptionIds: ["cdi"], driverKeys: ["ipCdiValue"] },
+      { id: "obs", label: "Inpatient status defense", payerOptionIds: ["obs"], driverKeys: ["obsDefense"] },
     ],
     stancePrompt: "How much of the documentation-driven lift survives audit?",
     stanceBands: [55, 65, 75],

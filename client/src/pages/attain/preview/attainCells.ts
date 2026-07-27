@@ -486,19 +486,69 @@ const edRevenue: AttainCell = {
     outcomesMode: "multi",
     value: { mode: "sumOutcomeDigs", unitValueLabel: "captured revenue" },
     outcomesPrompt: "Pick the goals you're after",
-    outcomesHelper: "This is money for care you already delivered in the ED that the documentation didn't carry to the claim. Pick each goal that matters, and we'll size the number behind it from your own figures. Each goal you pick sets the lever we price below.",
+    outcomesHelper: "This is money for care you already delivered in the ED that the documentation didn't carry to the claim. It slips in a couple of distinct places, so pick the mechanisms you're tackling below and we'll walk each one from your own figures, not a benchmark.",
     outcomes: [
       { id: "em", title: "Get paid for the acuity you treat", desc: "The high-acuity workup happened; the note just didn't carry it, so the visit codes below the level of care. This closes the gap between the acuity and the code.", dig: { label: "ED visits a year you suspect are under-leveled", unit: "visits / yr", placeholder: "e.g., 4,000" }, mathLabel: "under-leveled", plays: ["Capture the full workup in the note", "Coder feedback to ED providers", "Level-driver prompts in the ED note"], unitValue: 40, proof: ["losmix", "captured"] },
       { id: "denials", title: "Stop writing off preventable denials", desc: "Medical-necessity denials a more complete ED note would have prevented.", dig: { label: "Preventable denials a year", unit: "denials / yr", placeholder: "e.g., 350" }, mathLabel: "denials", plays: ["Establish medical necessity in the note", "Fix the top ED denial reasons", "Payer-specific documentation prompts"], unitValue: 3500, proof: ["denialrate", "captured"] },
     ],
     scope: { prompt: "Across how many ED providers?", unitLabel: "ED providers, from your Starting Point", ceiling: 45, default: "30" },
     choices: [
-      { id: "gate", kicker: "The cause", prompt: "Why is it slipping?", helper: "Be honest here. We only count the part a more complete note can defensibly fix, not revenue that was never really there.", mode: "single", defaultId: "note", options: [
-        { id: "note", title: "The note undersold the acuity", desc: "The workup happened; the documentation didn't carry it." },
-        { id: "some", title: "Some of it, honestly", desc: "Part documentation, part genuinely lower acuity." },
-        { id: "acuity", title: "Mostly a coding or workflow gap", desc: "The documentation's there; the miss is downstream of the note." },
+      { id: "edframe", stage: "frame", kicker: "The mechanisms", prompt: "Which of these are you tackling?",
+        helper: "ED revenue slips in a couple of distinct places, and each one is a different conversation. Pick the ones you're working on and we'll walk each with you. You can pick both.", mode: "multi", options: [
+        { id: "edcoding", title: "Getting paid for the acuity you treat", desc: "High-acuity visits that code below the care delivered because the note didn't carry the workup." },
+        { id: "eddenials", title: "Denials you end up writing off", desc: "Medical-necessity denials a more complete ED note would have prevented." },
       ] },
     ],
+    discovery: {
+      populations: [
+        // ---- Acuity coding: 6 beats ----
+        { id: "edcoding", showIf: ["edcoding"], beats: [
+          { kind: "choice", id: "edcodingWhere", mode: "multi", kicker: "Where it slips", prompt: "Where's the acuity getting lost?",
+            helper: "Name the places you actually see it. You can pick more than one.", options: [
+            { id: "highacuity", title: "High-acuity visits coding low", desc: "A real workup lands as a lower-level visit because the note didn't establish the acuity." },
+            { id: "presentations", title: "Specific presentations", desc: "Certain chief complaints where the documentation routinely undersells the work." },
+            { id: "shift", title: "A service or a shift", desc: "The gap concentrates on a team, a location, or the overnight." },
+          ] },
+          { kind: "choice", id: "edcodingWhy", mode: "single", kicker: "The cause", prompt: "Why is it slipping?",
+            helper: "Be honest here. We only count the part a more complete note can defensibly fix, not acuity that was never really there.", options: [
+            { id: "note", title: "The note didn't carry the workup", desc: "The care happened; the documentation didn't establish the level." },
+            { id: "lower", title: "Some of it is genuinely lower acuity", desc: "Part is documentation; part was honestly a simpler visit." },
+            { id: "downstream", title: "A downstream coding gap", desc: "The note is there; the miss is after it, in coding or the queue." },
+          ] },
+          { kind: "number", id: "edUnderLeveled", kicker: "The volume", prompt: "How many ED visits a year code below the acuity treated?",
+            helper: "Your own estimate is fine; it's the base we size the coding lift from.", label: "Under-leveled ED visits a year", unit: "visits / yr", placeholder: "e.g., 4,000" },
+          { kind: "economics", leverId: "edcoding", kicker: "The economics", prompt: "What's the acuity coding worth?",
+            helper: "Set your current wRVU per ED visit and your conversion factor. The E&M lift a more complete note supports we seed conservatively; change it if you have a better read." },
+          { kind: "stance", leverId: "edcoding", kicker: "What you keep", prompt: "How much of the lift survives billing and audit?" },
+          { kind: "outcome", id: "edcodingGoal", kicker: "The goal", prompt: "What does getting paid for the acuity let you do?",
+            helper: "The reason underneath the dollar. Pick each that fits.", options: [
+            { id: "economics", title: "Defend the ED's economics", desc: "Keep the department's revenue matched to the acuity it carries." },
+            { id: "staffing", title: "Support the staffing the department needs", desc: "Fund the coverage the volume and acuity actually demand." },
+            { id: "fair", title: "Fair reimbursement for the acuity you carry", desc: "Get paid for the level of care your team already delivers." },
+          ] },
+        ] },
+        // ---- Preventable denials: 5 beats ----
+        { id: "eddenials", showIf: ["eddenials"], beats: [
+          { kind: "choice", id: "eddenialsWhy", mode: "single", kicker: "The cause", prompt: "What's driving the denials?",
+            helper: "Where they originate tells us how much a more complete note can defensibly prevent.", options: [
+            { id: "necessity", title: "Medical necessity not established in the note", desc: "The documentation didn't carry why the care was warranted." },
+            { id: "eligibility", title: "Eligibility or registration", desc: "Front-end data the note can't fix." },
+            { id: "downstream", title: "A downstream process", desc: "The denial originates after the note, in coding or billing." },
+          ] },
+          { kind: "number", id: "edPreventableDenials", kicker: "The volume", prompt: "How many preventable denials a year?",
+            helper: "Your own estimate is fine; it's the base we size the recovered revenue from.", label: "Preventable denials a year", unit: "denials / yr", placeholder: "e.g., 350" },
+          { kind: "economics", leverId: "eddenials", kicker: "The economics", prompt: "What's a prevented denial worth?",
+            helper: "Set the average value on a claim you'd otherwise write off. The medical-necessity denial rate we seed conservatively; change it if you have a better read." },
+          { kind: "stance", leverId: "eddenials", kicker: "What you keep", prompt: "How much of the lift survives billing and audit?" },
+          { kind: "outcome", id: "eddenialsGoal", kicker: "The goal", prompt: "What does cutting the denials open up?",
+            helper: "The reason underneath the dollar. Pick each that fits.", options: [
+            { id: "recovered", title: "Recovered revenue", desc: "Dollars you were writing off, kept instead." },
+            { id: "queue", title: "A lighter revenue-cycle queue", desc: "Fewer denials landing on the team's desk to work." },
+            { id: "writeoffs", title: "Fewer write-offs", desc: "Less earned revenue lost at the back end." },
+          ] },
+        ] },
+      ],
+    },
     proof: {
       prompt: "What would tell you it's working?",
       helper: "Pick what you'd point to in a review. The documentation signals move before the captured dollars land.",
@@ -523,11 +573,11 @@ const edRevenue: AttainCell = {
     abridgeSignals: REVENUE_DOC_SIGNALS,
     connector: "When the ED note captures the full workup, the acuity coding follows.",
     outcomeGroups: [
-      { outcome: "Get paid for the acuity you treat", lever: "emlevel", metrics: [
+      { outcome: "Get paid for the acuity you treat", lever: "edcoding", metrics: [
         { id: "embelow", name: "E/M below supported level", measure: "Share of ED visits coding below the acuity documented.", source: "Billing / claims", unit: "%", today: "25", target: "13" },
         { id: "losmix", name: "Average E/M level", measure: "Average ED E/M level (99281 to 99285).", source: "Billing / claims", unit: "level", today: "3.4", target: "3.8" },
       ] },
-      { outcome: "Stop writing off preventable denials", lever: "denials", metrics: [
+      { outcome: "Stop writing off preventable denials", lever: "eddenials", metrics: [
         { id: "denialrate", name: "Medical-necessity denial rate", measure: "Share of ED claims denied for medical necessity.", source: "Billing / claims", unit: "%", today: "7", target: "3.5" },
       ] },
     ],
@@ -543,7 +593,7 @@ const inpatientRevenue: AttainCell = {
     outcomesMode: "multi",
     value: { mode: "sumOutcomeDigs", unitValueLabel: "captured revenue" },
     outcomesPrompt: "Pick the goals you're after",
-    outcomesHelper: "Inpatient pay follows the documentation: the weight, the queries, the status. Pick each goal that matters, and we'll size the number behind it from your own figures. Each goal you pick sets the lever we price below.",
+    outcomesHelper: "Inpatient pay follows the documentation: the DRG weight, the CDI query pile, the status on the claim. Each is a distinct conversation, so pick the mechanisms you're tackling below and we'll walk each one from your own figures, not a benchmark.",
     outcomes: [
       { id: "drg", title: "Get the DRG weight the acuity earns", desc: "A sick patient that groups to a lower-weight DRG because a CC or MCC never made it into the note. This closes the gap between the severity treated and the weight paid.", dig: { label: "Admissions a year that group below the weight earned", unit: "admissions / yr", placeholder: "e.g., 200" }, mathLabel: "under-weighted", plays: ["Document CC/MCC severity up front", "Focus CDI on the high-impact charts", "Feedback loop to the attendings"], unitValue: 2500, proof: ["cmi", "captured"] },
       { id: "cdi", title: "Cut the CDI query pile", desc: "Queries your CDI team writes because the note arrived without the specificity coding needs.", dig: { label: "CDI queries a year a complete note would avoid", unit: "queries / yr", placeholder: "e.g., 1,500" }, mathLabel: "queries avoided", plays: ["Complete the note the first time", "Target the top query types", "Provider education on specificity"], unitValue: 90, proof: ["queryrate", "team"] },
@@ -551,12 +601,82 @@ const inpatientRevenue: AttainCell = {
     ],
     scope: { prompt: "Across how many hospitalists?", unitLabel: "hospitalists, from your Starting Point", ceiling: 35, default: "24" },
     choices: [
-      { id: "gate", kicker: "The cause", prompt: "Why is it slipping?", helper: "Be honest here. We only count the part a more complete note can defensibly fix, not revenue that was never really there.", mode: "single", defaultId: "note", options: [
-        { id: "note", title: "Severity was under-documented", desc: "The acuity was there; the note didn't establish it." },
-        { id: "some", title: "Some of it, honestly", desc: "Part documentation, part genuinely appropriate." },
-        { id: "appropriate", title: "Mostly appropriate as coded", desc: "Honestly, the coding already reflects the care." },
+      { id: "ipframe", stage: "frame", kicker: "The mechanisms", prompt: "Which of these are you tackling?",
+        helper: "Inpatient revenue follows the documentation in a few distinct places, and each is a different conversation. Pick the ones you're working on and we'll walk each with you. You can pick more than one.", mode: "multi", options: [
+        { id: "drg", title: "Get the DRG weight the acuity earns", desc: "Admissions that group below the weight the severity earns because a CC or MCC never made the note." },
+        { id: "cdi", title: "Cut the CDI query pile", desc: "Queries your CDI team writes because the note arrived without the specificity coding needs." },
+        { id: "obs", title: "Defend inpatient status", desc: "Inpatient-level care billed as observation because severity wasn't established up front." },
       ] },
     ],
+    discovery: {
+      populations: [
+        // ---- DRG weight: 6 beats ----
+        { id: "drg", showIf: ["drg"], beats: [
+          { kind: "choice", id: "drgWhere", mode: "multi", kicker: "Where it slips", prompt: "Where's the weight getting lost?",
+            helper: "Name the places you actually see it. You can pick more than one.", options: [
+            { id: "ccmcc", title: "A CC or MCC never documented", desc: "A complication or comorbidity that was treated but never made the note." },
+            { id: "severity", title: "Severity not established up front", desc: "The acuity was real but the admission note didn't carry it." },
+            { id: "lines", title: "Specific service lines", desc: "The gap concentrates on certain admitting services." },
+          ] },
+          { kind: "choice", id: "drgWhy", mode: "single", kicker: "The cause", prompt: "Why?",
+            helper: "Be honest here. We only count the part a more complete note can defensibly fix, not weight that was never really earned.", options: [
+            { id: "note", title: "The note didn't establish severity", desc: "The acuity was there; the documentation didn't carry it." },
+            { id: "appropriate", title: "Genuinely appropriate as grouped", desc: "Part is documentation; part honestly grouped correctly." },
+            { id: "downstream", title: "A downstream coding gap", desc: "The note is there; the miss is after it, in coding or the query loop." },
+          ] },
+          { kind: "number", id: "drgUnderWeighted", kicker: "The volume", prompt: "Admissions a year grouping below the weight earned?",
+            helper: "Your own estimate is fine; it's the base we size the weight capture from.", label: "Under-weighted admissions a year", unit: "admissions / yr", placeholder: "e.g., 200" },
+          { kind: "economics", leverId: "drg", kicker: "The economics", prompt: "What's the weight worth?",
+            helper: "Set your average DRG base payment. The CMI lift and the share attributable to Abridge (versus your CDI team) we seed conservatively; change either if you have a better read." },
+          { kind: "stance", leverId: "drg", kicker: "What you keep", prompt: "How much of the lift survives audit?" },
+          { kind: "outcome", id: "drgGoal", kicker: "The goal", prompt: "What does capturing the weight protect?",
+            helper: "The reason underneath the dollar. Pick each that fits.", options: [
+            { id: "cmi", title: "An accurate case mix index", desc: "A CMI that reflects the acuity you actually treat." },
+            { id: "payment", title: "Fair DRG payment", desc: "Get paid the weight the severity earns." },
+            { id: "defensible", title: "Defensible against audit", desc: "A record that holds up if a payer or CMS looks." },
+          ] },
+        ] },
+        // ---- CDI query reduction: 4 beats (realization folded into economics so CDI stands alone) ----
+        { id: "cdi", showIf: ["cdi"], beats: [
+          { kind: "choice", id: "cdiWhy", mode: "single", kicker: "The cause", prompt: "What's driving the query volume?",
+            helper: "Where the queries come from tells us how many a complete note could head off.", options: [
+            { id: "specificity", title: "Notes arrive without the specificity coding needs", desc: "The detail is missing at the source, so CDI has to ask for it." },
+            { id: "timing", title: "Timing", desc: "The note lands late, so the query happens after the fact." },
+            { id: "engagement", title: "Provider engagement", desc: "Responses are slow or incomplete, so the loop repeats." },
+          ] },
+          { kind: "number", id: "cdiQueriesAvoided", kicker: "The volume", prompt: "CDI queries a year a complete note would avoid?",
+            helper: "Your own estimate is fine; it's the base we size the query savings from.", label: "Avoidable CDI queries a year", unit: "queries / yr", placeholder: "e.g., 1,500" },
+          { kind: "economics", leverId: "cdi", kicker: "The economics", prompt: "What's the query pile costing you, and how much do you realize?",
+            helper: "Set the loaded cost of one query cycle, the coder and physician time it takes. The volume a complete note would avoid we seed conservatively. Query savings are operational, not revenue exposed to audit, so set the share you'd actually realize.", withStance: true },
+          { kind: "outcome", id: "cdiGoal", kicker: "The goal", prompt: "What does a lighter query pile free up?",
+            helper: "The reason underneath the dollar. Pick each that fits.", options: [
+            { id: "capacity", title: "CDI capacity for the high-impact charts", desc: "Fewer routine queries means the team works the charts that move the weight." },
+            { id: "coding", title: "Faster coding", desc: "Complete notes clear the coding queue sooner." },
+            { id: "goodwill", title: "Provider goodwill", desc: "Fewer back-and-forth queries landing on the attendings." },
+          ] },
+        ] },
+        // ---- Inpatient status defense: 5 beats ----
+        { id: "obs", showIf: ["obs"], beats: [
+          { kind: "choice", id: "obsWhere", mode: "single", kicker: "The cause", prompt: "Where do the downgrades come from?",
+            helper: "Where they originate tells us how many a more complete note can defensibly hold.", options: [
+            { id: "admission", title: "Severity not established at admission", desc: "The note didn't carry why inpatient level was warranted." },
+            { id: "concurrent", title: "Concurrent-review gaps", desc: "The status question wasn't caught while the patient was still in house." },
+            { id: "payer", title: "Payer pushback", desc: "The payer downgraded despite a defensible stay." },
+          ] },
+          { kind: "number", id: "obsDowngrades", kicker: "The volume", prompt: "Defensible status downgrades a year?",
+            helper: "Your own estimate is fine; it's the base we size the defended revenue from.", label: "Defensible downgrades a year", unit: "stays / yr", placeholder: "e.g., 250" },
+          { kind: "economics", leverId: "obs", kicker: "The economics", prompt: "What's a defended stay worth?",
+            helper: "Set the revenue delta between inpatient and observation on one stay held. The downgrade rate we seed conservatively; change it if you have a better read." },
+          { kind: "stance", leverId: "obs", kicker: "What you keep", prompt: "How much of the lift survives audit?" },
+          { kind: "outcome", id: "obsGoal", kicker: "The goal", prompt: "What does defending status protect?",
+            helper: "The reason underneath the dollar. Pick each that fits.", options: [
+            { id: "revenue", title: "Earned inpatient revenue", desc: "Payment for the level of care the stay actually warranted." },
+            { id: "integrity", title: "Status integrity", desc: "A status determination that matches the documentation." },
+            { id: "appeals", title: "Fewer appeals", desc: "Less back-end rework fighting downgrades after the fact." },
+          ] },
+        ] },
+      ],
+    },
     proof: {
       prompt: "What would tell you it's working?",
       helper: "Pick what you'd point to in a review. The documentation signals move before the captured dollars land.",

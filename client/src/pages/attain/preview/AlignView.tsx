@@ -95,12 +95,16 @@ export default function AlignView({ c, settingLabel, categoryLabel, picked, setP
   // frame question and hide goals until a payer is picked. Goal-driven categories
   // (ED / Inpatient) have no frame, so all their goals are always visible.
   const hasFrame = (c.choices ?? []).some((q) => q.stage === "frame");
-  // Multi-lever categories: which levers are live. A lever turns on when its payer options
-  // intersect the payer answer (choice id "book") OR its outcomeIds intersect the picked goals.
-  // null = this model has no levers (render its flat fields exactly as before).
-  const bookAns = choices["book"] ?? new Set<string>();
+  // Multi-lever categories: which levers are live. A lever turns on when its payerOptionIds
+  // intersect the cell's FRAME answer OR its outcomeIds intersect the picked goals.
+  // The frame is the cell's designated stage:"frame" choice — the payer mix (id "book") for
+  // Outpatient, a mechanism picker for ED / Inpatient. Reading it by stage (not the hardcoded
+  // "book") is what generalizes population gating + lever activation past the payer frame while
+  // keeping Outpatient identical. null = this model has no levers (render flat fields as before).
+  const frameId = (c.choices ?? []).find((q) => q.stage === "frame")?.id;
+  const frameAns = (frameId ? choices[frameId] : undefined) ?? new Set<string>();
   const activeLevers = econ?.levers
-    ? econ.levers.filter((l) => (l.payerOptionIds?.some((id) => bookAns.has(id)) ?? false) || (l.outcomeIds?.some((id) => picked.has(id)) ?? false))
+    ? econ.levers.filter((l) => (l.payerOptionIds?.some((id) => frameAns.has(id)) ?? false) || (l.outcomeIds?.some((id) => picked.has(id)) ?? false))
     : null;
   const stance = inputs.stance; // one of the bands, or -1 for custom
   const [showAssumptions, setShowAssumptions] = useState(false);
@@ -161,8 +165,8 @@ export default function AlignView({ c, settingLabel, categoryLabel, picked, setP
   );
 
   // ---- Discovery (population-gated walk) ----
-  // Populations whose payer-frame ids intersect the frame answer ("book") turn on, in order.
-  const activeDiscPops = c.discovery ? c.discovery.populations.filter((p) => p.showIf.some((id) => bookAns.has(id))) : [];
+  // Populations whose showIf ids intersect the cell's frame answer turn on, in order.
+  const activeDiscPops = c.discovery ? c.discovery.populations.filter((p) => p.showIf.some((id) => frameAns.has(id))) : [];
   // The engine sizes off `scope` (providers) + stance + the live levers. A discovery walk
   // doesn't ask a bare provider count, so seed scope once from the real Starting Point count
   // (or the authored default) — same "unentered → conservative default" contract the adapter

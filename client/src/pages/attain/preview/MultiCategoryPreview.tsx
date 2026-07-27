@@ -171,15 +171,18 @@ export function AttainExperience({ setting, cells, baseline, initial, onPersist 
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pickedByCat, playsByCat, alignAnswersByCat, alignInputsByCat, metricsByCat, readingsByCat, peopleByCat, customsByCat, cadenceByCat, alignDone, planDone, chapter, catIdx, reviewLog]);
-  // Which levers are live for a multi-lever category. A lever turns on when its payer options
-  // intersect the payer answer (choice id "book", payer-driven Outpatient) OR its outcomeIds
-  // intersect the picked goals (goal-driven ED / Inpatient). Null when the category has no levers.
+  // Which levers are live for a multi-lever category. A lever turns on when its payerOptionIds
+  // intersect the cell's FRAME answer (the stage:"frame" choice — payer mix for Outpatient, a
+  // mechanism picker for ED / Inpatient) OR its outcomeIds intersect the picked goals. Reading the
+  // frame by stage rather than the hardcoded "book" generalizes activation while keeping Outpatient
+  // identical (its frame id is still "book"). Null when the category has no levers.
   const activeLeversFor = (c: (typeof CELLS)[number]) => {
     const model = econModel(SETTING, c.category);
     if (!model?.levers) return null;
-    const book = alignAnswersByCat[c.category]?.choices?.["book"] ?? new Set<string>();
+    const frameId = c.align.choices?.find((q) => q.stage === "frame")?.id;
+    const frame = (frameId ? alignAnswersByCat[c.category]?.choices?.[frameId] : undefined) ?? new Set<string>();
     const pickedOutcomes = pickedByCat[c.category] ?? new Set<string>();
-    return model.levers.filter((l) => (l.payerOptionIds?.some((id) => book.has(id)) ?? false) || (l.outcomeIds?.some((id) => pickedOutcomes.has(id)) ?? false));
+    return model.levers.filter((l) => (l.payerOptionIds?.some((id) => frame.has(id)) ?? false) || (l.outcomeIds?.some((id) => pickedOutcomes.has(id)) ?? false));
   };
   const cellInputs = (c: (typeof CELLS)[number]) => {
     const a = alignInputsByCat[c.category];
