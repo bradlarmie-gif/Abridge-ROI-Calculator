@@ -838,11 +838,11 @@ function SettingCard({
 }
 
 /* ─────────────────────────── the workbench ─────────────────────────── */
-const CHAPTERS = [
-  { n: "01", label: "Build the deal", active: true },
-  { n: "02", label: "The 3-year case", active: false },
-  { n: "03", label: "Compare", active: false },
-  { n: "04", label: "Present", active: false },
+type ChapterKey = "build" | "case" | "present";
+const CHAPTERS: { key: ChapterKey; n: string; label: string }[] = [
+  { key: "build", n: "01", label: "Build the deal" },
+  { key: "case", n: "02", label: "The 3-year case" },
+  { key: "present", n: "03", label: "Present" },
 ];
 
 const TERM_OPTIONS = [
@@ -859,9 +859,10 @@ export interface ProformaWorkbenchProps {
   onUpdateSetting: (id: string, updates: Partial<ProformaSettingSnapshot>) => void;
   onUpdateConfig: (updates: Partial<ProformaConfig>) => void;
   onRemoveSetting: (id: string) => void;
+  onNavigate?: (c: ChapterKey) => void;
 }
 
-export default function ProformaWorkbench({ settings, config, onUpdateSetting, onUpdateConfig, onRemoveSetting }: ProformaWorkbenchProps) {
+export default function ProformaWorkbench({ settings, config, onUpdateSetting, onUpdateConfig, onRemoveSetting, onNavigate }: ProformaWorkbenchProps) {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(() => new Set(settings.slice(0, 1).map((s) => s.id)));
   // Per-setting excluded driver ids (v1 on/off). Seed with any "locum" driver off.
   const [excludedMap, setExcludedMap] = useState<Record<string, Set<string>>>(() => {
@@ -961,11 +962,14 @@ export default function ProformaWorkbench({ settings, config, onUpdateSetting, o
         <div style={{ display: "flex", alignItems: "center", gap: 26 }}>
           <span className="font-abridge" style={{ fontSize: 20, color: T.coral }}>ABRIDGE</span>
           <div style={{ display: "flex", gap: 26 }}>
-            {CHAPTERS.map((c) => (
-              <span key={c.n} style={{ fontSize: 13, color: c.active ? T.ink : T.faint, fontWeight: 600, display: "flex", alignItems: "center", gap: 7, cursor: "default" }}>
-                <span style={{ fontSize: 10, color: c.active ? T.coral : T.off }}>{c.n}</span> {c.label}
-              </span>
-            ))}
+            {CHAPTERS.map((c) => {
+              const active = c.key === "build";
+              return (
+                <button key={c.n} onClick={() => onNavigate?.(c.key)} style={{ fontSize: 13, color: active ? T.ink : T.faint, fontWeight: 600, display: "flex", alignItems: "center", gap: 7, cursor: onNavigate ? "pointer" : "default", background: "none", border: "none", padding: 0 }}>
+                  <span style={{ fontSize: 10, color: active ? T.coral : T.off }}>{c.n}</span> {c.label}
+                </button>
+              );
+            })}
           </div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
@@ -1055,7 +1059,7 @@ export default function ProformaWorkbench({ settings, config, onUpdateSetting, o
 
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 32 }}>
           <span style={{ fontSize: 13, color: T.faint }}>{settings.length} settings · {fmt(yearlyValue)}/yr modeled so far</span>
-          <button style={{ background: T.coral, color: "#fff", border: "none", fontFamily: "Manrope", fontWeight: 700, fontSize: 15, padding: "14px 26px", borderRadius: 12, cursor: "pointer" }}>
+          <button onClick={() => onNavigate?.("case")} style={{ background: T.coral, color: "#fff", border: "none", fontFamily: "Manrope", fontWeight: 700, fontSize: 15, padding: "14px 26px", borderRadius: 12, cursor: "pointer" }}>
             See the 3-year case →
           </button>
         </div>
