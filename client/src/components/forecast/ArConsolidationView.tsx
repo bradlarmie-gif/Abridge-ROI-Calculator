@@ -223,23 +223,8 @@ export default function ArConsolidationView({
               />
             </div>
 
-            {/* freed overlay: hidden while focused. Anchored to the LEFT EDGE of
-                the coral region (past any leading stays-only tools) so the white
-                type always lands on coral, never on tan. */}
-            {model.freed > 0 && (
-              <div
-                className="pointer-events-none absolute top-1/2 z-[2] -translate-y-1/2 pl-[22px] transition-opacity duration-200"
-                style={{ left: 0, opacity: focus ? 0 : 1 }}
-              >
-                <span className="block text-[11px] font-extrabold uppercase tracking-[0.09em] text-white/85">
-                  Freed every year
-                </span>
-                <span className="mt-[3px] block font-abridge text-[21px] leading-none text-white tabular-nums">
-                  {fmtFull(model.freed)}
-                  <span className="text-[12px] text-white/70"> / yr</span>
-                </span>
-              </div>
-            )}
+            {/* The freed total lives only on the "After you fold in" header row (right side).
+                No on-bar number overlay, so the figure never appears twice. */}
 
             {/* Grouped read: ALL freed (coral) on the left as one contiguous block,
                 ALL stays (tan) on the right. Per-tool sub-segments keep hover/share.
