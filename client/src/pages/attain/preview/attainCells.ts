@@ -352,18 +352,90 @@ const outpatientRevenue: AttainCell = {
     ],
     scope: { prompt: "Across how many providers?", unitLabel: "providers, from your Starting Point", ceiling: 60, default: "40" },
     choices: [
-      { id: "book", stage: "frame", kicker: "The payers", prompt: "Which payers are we talking about?", helper: "This sets the lever, and you can pick more than one. Fee-for-service pays on the visit level, so how you code the visit is the money (wRVU). Risk contracts (Medicare Advantage, Medicaid, ACA) pay on the conditions you capture, so recapture is (HCC). Pick both and we size both.", mode: "multi", defaultId: "ffs", options: [
+      { id: "book", stage: "frame", kicker: "The payers", prompt: "Which part of your book is this about?", helper: "Revenue capture forks by how you get paid, and you can pick more than one. Fee-for-service pays on the visit level, so how the visit codes is the money. Risk contracts (Medicare Advantage, Medicaid, ACA) pay on the conditions you capture, so recapture is the money. Pick both and we walk both.", mode: "multi", defaultId: "ffs", options: [
         { id: "ffs", title: "Fee-for-service", desc: "The level on the claim drives what you're paid." },
         { id: "ma", title: "Medicare Advantage", desc: "Paid on the risk you capture; recapture is the lever." },
         { id: "medicaid", title: "Medicaid managed care", desc: "Risk-adjusted, and accurate coding matters too." },
         { id: "aca", title: "ACA / Exchange", desc: "Risk-adjusted, like Medicare Advantage." },
       ] },
-      { id: "gate", kicker: "The cause", prompt: "Why is it slipping?", helper: "Be honest here. We only count the part a more complete note can defensibly fix, not revenue that was never really there.", mode: "single", defaultId: "note", options: [
-        { id: "note", title: "The note undersold the visit", desc: "The care happened; the documentation didn't carry it." },
-        { id: "some", title: "Some of it, honestly", desc: "Part documentation, part genuinely lower-complexity." },
-        { id: "coding", title: "Mostly a coding or workflow gap", desc: "The documentation's there; the miss is downstream of the note." },
-      ] },
     ],
+    discovery: {
+      populations: [
+        // ---- Fee-for-service: 7 beats ----
+        { id: "ffs", showIf: ["ffs"], beats: [
+          { kind: "choice", id: "ffsWhere", mode: "multi", kicker: "Where it slips", prompt: "Where's the money slipping?",
+            helper: "Name the places you actually see it. You can pick more than one.", options: [
+            { id: "undercode", title: "Visits coding below the work done", desc: "A level-4 workup goes out as a level 3 because the note didn't carry it." },
+            { id: "lines", title: "A specific service line or two", desc: "The gap concentrates where the visits are most complex." },
+            { id: "denials", title: "Denials you end up writing off", desc: "Medical-necessity denials a more complete note would have prevented." },
+          ] },
+          { kind: "choice", id: "ffsWhy", mode: "single", kicker: "The cause", prompt: "Why is it slipping?",
+            helper: "Be honest here. We only count what a more complete note can defensibly fix, not revenue that was never really there.", options: [
+            { id: "note", title: "The note undersold the visit", desc: "The care happened; the documentation didn't carry it." },
+            { id: "lower", title: "Some of it is genuinely lower complexity", desc: "Part is documentation; part was honestly a simpler visit." },
+            { id: "downstream", title: "Mostly a downstream coding or workflow gap", desc: "The note is there; the miss is after it, in coding or the queue." },
+          ] },
+          { kind: "segments", kicker: "The service lines", prompt: "Which service lines is this really about?",
+            helper: "A cardiology visit and a primary-care visit aren't worth the same, so this sharpens the number.", allLabel: "Across all lines", options: [
+            { id: "primary", title: "Primary care", desc: "Highest volume, where undercoding adds up quietly." },
+            { id: "cardiology", title: "Cardiology", desc: "Higher-complexity visits, more room between the care and the code." },
+            { id: "ortho", title: "Orthopedics & surgical", desc: "Procedural visits with real level swings." },
+            { id: "behavioral", title: "Behavioral health", desc: "Time-based coding the note often understates." },
+            { id: "other", title: "Other specialties", desc: "We'll size it across the board and narrow later." },
+          ] },
+          { kind: "number", id: "ffsUndercoded", kicker: "The volume", prompt: "How many visits a year code below the work done?",
+            helper: "Your own estimate is fine; it's the base we size the coding lift from.", label: "Undercoded visits a year", unit: "visits / yr", placeholder: "e.g., 6,000" },
+          { kind: "economics", leverId: "ffs", kicker: "The economics", prompt: "What's the coding worth?",
+            helper: "Set your current wRVU per visit and your conversion factor. The lift a more complete note supports we seed conservatively; change it if you have a better read." },
+          { kind: "stance", leverId: "ffs", kicker: "What you keep", prompt: "How much of the lift do you capture and keep through billing and audit?" },
+          { kind: "outcome", id: "ffsGoal", kicker: "The goal", prompt: "What does getting paid fairly let you do?",
+            helper: "The reason underneath the dollar. Pick each that fits.", options: [
+            { id: "fund", title: "Fund the documentation program itself", desc: "The capture can cover the cost of the platform." },
+            { id: "defend", title: "Defend a service line's margin", desc: "Keep a line whole that's under margin pressure." },
+            { id: "earned", title: "Stop leaving earned revenue on the table", desc: "Bill accurately for care you already delivered." },
+            { id: "integrity", title: "Meet a coding-integrity bar you're committed to", desc: "A compliance standard you have to hold." },
+          ] },
+        ] },
+        // ---- Risk / VBC: 8 beats (stance folded into the economics beat) ----
+        { id: "risk", showIf: ["ma", "medicaid", "aca"], beats: [
+          { kind: "choice", id: "riskGoing", mode: "multi", kicker: "The target", prompt: "What are you going after?",
+            helper: "Pick both if both apply.", options: [
+            { id: "recapture", title: "Recapture conditions that reset every year", desc: "Chronic conditions coded last year that fall off and have to be re-established (existing)." },
+            { id: "new", title: "Capture conditions documented but never coded", desc: "Conditions treated and in the note that never made it onto the claim (new)." },
+          ] },
+          { kind: "choice", id: "riskScope", mode: "single", kicker: "The scope", prompt: "The whole risk population, or one contract or panel?",
+            helper: "This tells us how wide to size, and which team owns it.", options: [
+            { id: "all", title: "All your risk lives", desc: "Every member under a risk arrangement." },
+            { id: "one", title: "A specific contract or panel", desc: "One payer, product, or panel you're focused on." },
+          ] },
+          { kind: "choice", id: "riskPay", mode: "single", kicker: "The contract", prompt: "How does the contract pay?",
+            helper: "This changes what accuracy is worth and how you'd prove it.", options: [
+            { id: "shared", title: "Shared savings", desc: "You share in the savings against a benchmark." },
+            { id: "cap", title: "Capitated", desc: "A fixed payment per member; accuracy sets the rate." },
+            { id: "full", title: "Full risk", desc: "You hold the risk; the score is the revenue." },
+          ] },
+          { kind: "number", id: "riskPatients", kicker: "The lives", prompt: "How many risk lives are in play?",
+            helper: "The members under the arrangement you're sizing. This is what the recapture value scales on.", label: "Risk-contract lives", unit: "lives", placeholder: "e.g., 18,000" },
+          { kind: "number", id: "riskRateToday", kicker: "Today's rate", prompt: "Where's your recapture rate today?",
+            helper: "Roughly the share of open conditions you close in a year. It sets the starting line.", label: "Current recapture rate", unit: "%", placeholder: "e.g., 55" },
+          { kind: "choice", id: "riskTrend", mode: "single", kicker: "The trend", prompt: "Which way has it been trending?",
+            helper: "Where it's been heading tells us how much of the gap is still open.", options: [
+            { id: "improving", title: "Improving", desc: "It's been climbing." },
+            { id: "flat", title: "Flat", desc: "It's held steady." },
+            { id: "slipping", title: "Slipping", desc: "It's been drifting down." },
+          ] },
+          { kind: "economics", leverId: "risk", kicker: "The economics", prompt: "What's a recaptured condition worth, and how much survives audit?",
+            helper: "Set the annual value one recaptured condition carries. The conditions open per patient we seed conservatively. Risk coding carries more audit exposure than fee-for-service, so stay tighter on what survives.", withStance: true },
+          { kind: "outcome", id: "riskGoal", kicker: "The goal", prompt: "What does closing the gap protect or unlock?",
+            helper: "The reason underneath the dollar. Pick each that fits.", options: [
+            { id: "target", title: "Hit the shared-savings target", desc: "Clear the benchmark you're measured against." },
+            { id: "margin", title: "Protect the capitation margin", desc: "Keep the fixed payment matched to real risk." },
+            { id: "scores", title: "Lift the quality and risk scores", desc: "The scores your contracts turn on." },
+            { id: "radv", title: "Defend the RAF against a RADV audit", desc: "A complete record that holds up if CMS looks." },
+          ] },
+        ] },
+      ],
+    },
     proof: {
       prompt: "What would tell you it's working?",
       helper: "Pick what you'd point to in a review. The documentation signals move before the captured dollars land.",

@@ -39,6 +39,26 @@ export type ChoiceOption = { id: string; title: string; desc: string };
 // FIRST, before the outcomes. Everything else is asked after the leak is named.
 export type ChoiceQuestion = { id: string; kicker: string; prompt: string; helper: string; mode: "single" | "multi"; options: ChoiceOption[]; defaultId?: string; stage?: "frame" };
 
+// ---------- Discovery (population-gated question walk) ----------
+// An optional richer middle for the Align beats. WHEN PRESENT on a cell, it replaces the
+// fixed outcomes → segments → scope → non-frame-choices → economics run with an ordered,
+// population-gated walk. The payer FRAME choice (stage:"frame") still renders first, and
+// proof + unlock + the live value panel still render after. Cells without `discovery`
+// render exactly as before. Each population turns on when its `showIf` (payer-frame option
+// ids) intersects the frame answer (choice id "book"). Beats feed the SAME state the
+// downstream engine + plan already read: choice/outcome → answers.choices[id];
+// number → inputs.econ[id]; economics fields → inputs.econ[fieldKey]; stance → inputs.stance.
+export type DiscoveryBeat =
+  | { kind: "choice"; id: string; kicker: string; prompt: string; helper: string; mode: "single" | "multi"; options: ChoiceOption[] }
+  | { kind: "number"; id: string; kicker: string; prompt: string; helper: string; label: string; unit: string; placeholder: string } // a "dig": persists in the align econ map under `id`
+  | { kind: "segments"; kicker: string; prompt: string; helper: string; allLabel: string; options: ChoiceOption[] } // FFS service lines → answers.segs
+  | { kind: "economics"; leverId: string; kicker: string; prompt: string; helper: string; withStance?: boolean } // that lever's fields (+ assumptions); withStance folds the realization bands in
+  | { kind: "stance"; leverId: string; kicker: string; prompt: string } // the shared realization bands (feeds inputs.stance)
+  | { kind: "outcome"; id: string; kicker: string; prompt: string; helper: string; options: ChoiceOption[] }; // the North Star (multi) → answers.choices[id]
+
+export type DiscoveryPopulation = { id: string; showIf: string[]; beats: DiscoveryBeat[] };
+export type Discovery = { populations: DiscoveryPopulation[] };
+
 // how the live value panel computes the number
 export type ValueModel =
   | { mode: "sumOutcomeDigs"; unitValueLabel: string }                                   // access, quality: Σ(dig × unit/segment)
@@ -60,6 +80,7 @@ export type AlignContent = {
     nameMap: Record<string, string>; // id -> short name for the math line
   };
   scope?: { prompt: string; unitLabel: string; ceiling: number; default: string };
+  discovery?: Discovery; // when present, replaces the fixed middle with a population-gated walk
   choices?: ChoiceQuestion[]; // framing questions between scope and proof
   proof: { prompt: string; helper: string; signals: ProofSignal[] };
   unlock: { prompt: string; helper: string; options: UnlockOption[] };

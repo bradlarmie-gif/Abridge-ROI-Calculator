@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { Check, ChevronRight } from "lucide-react";
-import type { AlignContent } from "./attainContent";
-import { econModel, type EconField, type Assumption } from "./attainEconomics";
+import type { AlignContent, DiscoveryBeat } from "./attainContent";
+import { econModel, type EconField, type Assumption, type EconModel } from "./attainEconomics";
 import { AttainNumberInput } from "./AttainNumberInput";
 
 /** THROWAWAY. The Align chapter, rendered from AlignContent (setting x category). */
@@ -160,6 +160,131 @@ export default function AlignView({ c, settingLabel, categoryLabel, picked, setP
     </div>
   );
 
+  // ---- Discovery (population-gated walk) ----
+  // Populations whose payer-frame ids intersect the frame answer ("book") turn on, in order.
+  const activeDiscPops = c.discovery ? c.discovery.populations.filter((p) => p.showIf.some((id) => bookAns.has(id))) : [];
+  // The engine sizes off `scope` (providers) + stance + the live levers. A discovery walk
+  // doesn't ask a bare provider count, so seed scope once from the real Starting Point count
+  // (or the authored default) — same "unentered → conservative default" contract the adapter
+  // already uses. Only for discovery cells; every other cell keeps scope blank until entered.
+  const seededScope = useRef(false);
+  useEffect(() => {
+    if (!seededScope.current && c.discovery && c.scope && !inputs.scope) {
+      seededScope.current = true;
+      onInput({ scope: scopeCount != null ? String(scopeCount) : c.scope.default });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [c, inputs.scope, scopeCount]);
+
+  const helperCls = "text-[14px] text-[#6B6B6B] leading-relaxed mb-4 max-w-[600px]";
+
+  // the shared realization stance controls (bands + custom + cap note); the section prompt is
+  // supplied by the caller (a LBL in the flat layout, a SectionHead title in discovery).
+  const stanceControls = (m: EconModel) => (
+    <>
+      <div className="flex flex-wrap items-center gap-2 mb-3">
+        {m.stanceBands.map((v) => (
+          <button key={v} type="button" onClick={() => onInput({ stance: v })} className={`px-5 py-2.5 rounded-xl border text-[14px] font-semibold transition-colors ${stance === v ? "bg-[#EA2C00] border-[#EA2C00] text-white" : "border-[#E0D9CE] text-[#1A1A1A] hover:bg-[#F2EDE5]"}`}>{v}%</button>
+        ))}
+        <button type="button" onClick={() => onInput({ stance: -1 })} className={`px-5 py-2.5 rounded-xl border text-[14px] font-semibold transition-colors ${stance === -1 ? "bg-[#EA2C00] border-[#EA2C00] text-white" : "border-[#E0D9CE] text-[#1A1A1A] hover:bg-[#F2EDE5]"}`}>Custom</button>
+        {stance === -1 && (
+          <span className="flex items-baseline gap-1.5 ml-1">
+            <AttainNumberInput value={inputs.custom} onChange={(raw) => { if (raw === "") { onInput({ custom: "" }); return; } onInput({ custom: String(Math.min(m.stanceCap, num(raw))) }); }} placeholder={`up to ${m.stanceCap}`} className="w-24 bg-transparent border-0 border-b-2 border-[#E0D9CE] rounded-none px-0 pb-0.5 font-abridge text-xl text-[#1A1A1A] outline-none transition-colors focus:border-[#EA2C00] placeholder:font-sans placeholder:text-[13px] placeholder:text-[#C4BCB0]" />
+            <span className="text-[14px] text-[#8C8C8C]">%</span>
+          </span>
+        )}
+      </div>
+      <p className="text-[12px] text-[#8C8C8C] mb-5">{m.capNote}</p>
+    </>
+  );
+
+  // one discovery beat → a numbered section, feeding the SAME state the downstream reads
+  const renderDiscoveryBeat = (beat: DiscoveryBeat, key: string) => {
+    switch (beat.kind) {
+      case "choice":
+        return (
+          <div key={key}>
+            <SectionHead n={++qn} kicker={beat.kicker} title={beat.prompt} />
+            <p className={helperCls}>{beat.helper}</p>
+            <div className="border-t border-[#E8E2DA] mb-12">
+              {beat.options.map((o) => <OptionRow key={o.id} on={(choices[beat.id] ?? new Set()).has(o.id)} onToggle={() => toggleChoice(beat.id, o.id, beat.mode)} title={o.title} desc={o.desc} radio={beat.mode === "single"} />)}
+            </div>
+          </div>
+        );
+      case "number":
+        return (
+          <div key={key}>
+            <SectionHead n={++qn} kicker={beat.kicker} title={beat.prompt} />
+            <p className={helperCls}>{beat.helper}</p>
+            <div className="flex flex-wrap items-baseline gap-x-3 gap-y-2 mb-2">
+              <AttainNumberInput value={inputs.econ[beat.id] ?? ""} onChange={(raw) => setEcon(beat.id, raw)} placeholder={beat.placeholder} className={NUMFIELD} />
+              <span className="text-[14px] text-[#8C8C8C]">{beat.unit}</span>
+            </div>
+            <p className="text-[12px] text-[#8C8C8C] mb-12">{beat.label}</p>
+          </div>
+        );
+      case "segments": {
+        const allOn = beat.options.every((o) => segs.has(o.id));
+        const toggleAll = () => setSegs(allOn ? new Set<string>() : new Set(beat.options.map((o) => o.id)));
+        return (
+          <div key={key}>
+            <SectionHead n={++qn} kicker={beat.kicker} title={beat.prompt} />
+            <p className={helperCls}>{beat.helper}</p>
+            <div className="flex justify-end mb-1">
+              <button type="button" onClick={toggleAll} className="text-[12px] font-semibold text-[#EA2C00] hover:underline">{allOn ? "Clear all" : beat.allLabel}</button>
+            </div>
+            <div className="border-t border-[#E8E2DA] mb-12">
+              {beat.options.map((o) => <OptionRow key={o.id} on={segs.has(o.id)} onToggle={() => toggleSeg(o.id)} title={o.title} desc={o.desc} />)}
+            </div>
+          </div>
+        );
+      }
+      case "economics": {
+        if (!econ) return null;
+        const lever = econ.levers?.find((l) => l.id === beat.leverId);
+        const lf = econ.fields.filter((f) => f.lever === beat.leverId);
+        const la = (econ.assumptions ?? []).filter((a) => a.lever === beat.leverId);
+        return (
+          <div key={key}>
+            <SectionHead n={++qn} kicker={beat.kicker} title={beat.prompt} />
+            <p className={helperCls}>{beat.helper}</p>
+            <div className="rounded-xl border border-[#E8E2DA] bg-[#FAF7F2] p-5 mb-12">
+              {lever && <p className="text-[11px] font-bold uppercase tracking-[1.5px] text-[#443A32] mb-4">{lever.label}</p>}
+              {lf.map(renderEconField)}
+              {la.length > 0 && (
+                <>
+                  <p className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#8C8C8C] mb-3">Assumptions · seeded and editable</p>
+                  <div className="grid sm:grid-cols-2 gap-x-8 gap-y-4">{la.map(renderAssumptionInput)}</div>
+                </>
+              )}
+              {beat.withStance && (
+                <div className="mt-6 pt-6 border-t border-[#E8E2DA]">{stanceControls(econ)}</div>
+              )}
+            </div>
+          </div>
+        );
+      }
+      case "stance":
+        if (!econ) return null;
+        return (
+          <div key={key}>
+            <SectionHead n={++qn} kicker={beat.kicker} title={beat.prompt} />
+            <div className="mb-12">{stanceControls(econ)}</div>
+          </div>
+        );
+      case "outcome":
+        return (
+          <div key={key}>
+            <SectionHead n={++qn} kicker={beat.kicker} title={beat.prompt} />
+            <p className={helperCls}>{beat.helper}</p>
+            <div className="border-t border-[#E8E2DA] mb-12">
+              {beat.options.map((o) => <OptionRow key={o.id} on={(choices[beat.id] ?? new Set()).has(o.id)} onToggle={() => toggleChoice(beat.id, o.id, "multi")} title={o.title} desc={o.desc} />)}
+            </div>
+          </div>
+        );
+    }
+  };
+
   let qn = 0;
 
   return (
@@ -180,6 +305,18 @@ export default function AlignView({ c, settingLabel, categoryLabel, picked, setP
         </div>
       ))}
 
+      {/* Discovery walk — when present, it REPLACES the fixed outcomes → segments → scope →
+          non-frame choices → economics run. Populations render in order, each gated by the
+          payer frame answer, and the question numbering continues from the frame. */}
+      {c.discovery && activeDiscPops.length === 0 && (
+        <p className="text-[14px] text-[#8C8C8C] leading-relaxed mb-12 max-w-[600px]">Pick the part of your book above, and the discovery for each opens up here.</p>
+      )}
+      {c.discovery && activeDiscPops.map((pop) => (
+        <Fragment key={pop.id}>{pop.beats.map((beat, i) => renderDiscoveryBeat(beat, `${pop.id}-${i}`))}</Fragment>
+      ))}
+
+      {/* ===== Fixed middle (only when the cell has no discovery) ===== */}
+      {!c.discovery && (<>
       {/* Q — outcomes */}
       <SectionHead n={++qn} kicker="The outcomes" title={c.outcomesPrompt} />
       {hasFrame && activeLevers !== null && activeLevers.length === 0 ? (
@@ -281,19 +418,7 @@ export default function AlignView({ c, settingLabel, categoryLabel, picked, setP
           {/* the shared realization stance — hidden only when a lever model has no lever live yet */}
           {(!activeLevers || activeLevers.length > 0) && (<>
           <p className={`${LBL} mb-2.5`}>{econ.stancePrompt}</p>
-          <div className="flex flex-wrap items-center gap-2 mb-3">
-            {econ.stanceBands.map((v) => (
-              <button key={v} type="button" onClick={() => onInput({ stance: v })} className={`px-5 py-2.5 rounded-xl border text-[14px] font-semibold transition-colors ${stance === v ? "bg-[#EA2C00] border-[#EA2C00] text-white" : "border-[#E0D9CE] text-[#1A1A1A] hover:bg-[#F2EDE5]"}`}>{v}%</button>
-            ))}
-            <button type="button" onClick={() => onInput({ stance: -1 })} className={`px-5 py-2.5 rounded-xl border text-[14px] font-semibold transition-colors ${stance === -1 ? "bg-[#EA2C00] border-[#EA2C00] text-white" : "border-[#E0D9CE] text-[#1A1A1A] hover:bg-[#F2EDE5]"}`}>Custom</button>
-            {stance === -1 && (
-              <span className="flex items-baseline gap-1.5 ml-1">
-                <AttainNumberInput value={inputs.custom} onChange={(raw) => { if (raw === "") { onInput({ custom: "" }); return; } onInput({ custom: String(Math.min(econ.stanceCap, num(raw))) }); }} placeholder={`up to ${econ.stanceCap}`} className="w-24 bg-transparent border-0 border-b-2 border-[#E0D9CE] rounded-none px-0 pb-0.5 font-abridge text-xl text-[#1A1A1A] outline-none transition-colors focus:border-[#EA2C00] placeholder:font-sans placeholder:text-[13px] placeholder:text-[#C4BCB0]" />
-                <span className="text-[14px] text-[#8C8C8C]">%</span>
-              </span>
-            )}
-          </div>
-          <p className="text-[12px] text-[#8C8C8C] mb-5">{econ.capNote}</p>
+          {stanceControls(econ)}
           </>)}
 
           {/* Assumptions — seeded conservatively, shown, and editable. Nothing hidden.
@@ -355,6 +480,8 @@ export default function AlignView({ c, settingLabel, categoryLabel, picked, setP
           </div>
         </>
       )}
+      </>)}
+      {/* ===== end fixed middle ===== */}
 
       {/* Q — proof */}
       <SectionHead n={++qn} kicker="The proof" title={c.proof.prompt} />
