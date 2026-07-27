@@ -681,7 +681,7 @@ function MutedDomain({ q }: { q: ExplorePDFQuadrantData }): JSX.Element {
     q.quadrant === "Quality"
       ? "Documentation quality is tracked as proof that protects the revenue above, care-gap closure, HEDIS/Stars, denial-defensibility. It leads the dollars and is never added to the total."
       : proofOnly
-        ? `${q.quadrant} here is tracked as proof — the signals that support the value above — and is never added to the dollar total.`
+        ? `${q.quadrant} here is tracked as proof: the signals that support the value above, never added to the dollar total.`
         : `Available to model in ${q.quadrant}: ${quantifiedNames.join(", ")}. Off in this run.`;
   return (
     <div style={{ marginTop: 13 }}>
@@ -751,7 +751,7 @@ function SynthesisBar({ data }: { data: ExplorePDFData }): JSX.Element {
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
         <div style={{ height: 5, flex: 1, background: C.soft, borderRadius: 99 }} />
         <span style={{ fontSize: 10, color: C.off, whiteSpace: "nowrap" }}>
-          Quality — the proof running underneath, uncounted
+          Quality · the proof running underneath, uncounted
         </span>
       </div>
     </div>
@@ -825,7 +825,7 @@ function buildBreakdownPages(data: ExplorePDFData): JSX.Element[] {
             />
             {availHere && (
               <div style={{ fontSize: 10.5, color: C.off, marginTop: 8, fontStyle: "italic" }}>
-                Also here: {available.map((a) => a.label).join(", ")} — available to model next.
+                Also here: {available.map((a) => a.label).join(", ")}. Available to model next.
               </div>
             )}
           </div>

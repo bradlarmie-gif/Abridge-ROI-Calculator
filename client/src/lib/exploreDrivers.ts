@@ -172,7 +172,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     id: 'bedsideTime',
     label: 'Bedside / Direct Care Time',
     shortDescription: 'Nurses who document in real time at the bedside don\'t accumulate a charting queue that competes with patient care later in the shift. Documentation happens concurrently with the care event rather than hours after it.',
-    tagline: 'Direct care time ratio — the capacity signal that rises as end-of-shift batch charting falls away',
+    tagline: 'Direct care time ratio, the capacity signal that rises as end-of-shift batch charting falls away',
     quadrant: 'Capacity',
     settings: ['nursing'],
     visibility: 'qualitative',
@@ -182,7 +182,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     measureDefaults: {
       deltaLabel: 'Bedside / direct care time ratio',
       deltaUnit: '%',
-      valuePerUnitLabel: 'Signal — no dollar value',
+      valuePerUnitLabel: 'Signal, no dollar value',
       valuePerUnitDefault: 0,
       realizationDefault: 100,
       scaleAxis: 'fixed',
@@ -314,7 +314,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     label: 'Overtime Spend',
     shortDescription: 'Actual overtime spend, before and after. Faster charting can reduce the documentation-driven overtime you pay. The value is the reduction.',
     // Capacity, not Workforce: for nursing, documentation-time savings convert
-    // straight to payroll (overtime) — that's nursing's capacity-recapture story.
+    // straight to payroll (overtime), that's nursing's capacity-recapture story.
     // Matches the methodology, the Model rollup, and the proforma, which all
     // bucket nursing overtime under Capacity.
     quadrant: 'Capacity',
@@ -337,12 +337,12 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     measurePhase: 'emerging',
   },
   // ───── QUALITY ─────
-  // Outpatient (qualitative — 4 drivers: CDI signal → care gap → HEDIS attribution → STARS proof)
+  // Outpatient (qualitative, 4 drivers: CDI signal → care gap → HEDIS attribution → STARS proof)
   {
     id: 'opCdiQueryTrend',
     label: 'CDI Query Volume Trend',
     shortDescription: 'CDI queries go out when chronic condition documentation lacks specificity for HCC coding. Decreasing query volume means documentation is capturing complexity at the point of care rather than requiring follow-up.',
-    tagline: 'CDI query volume falling — chronic condition documentation getting it right the first time',
+    tagline: 'CDI query volume falling, chronic condition documentation getting it right the first time',
     quadrant: 'Quality',
     settings: ['outpatient'],
     visibility: 'qualitative',
@@ -352,7 +352,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     measureDefaults: {
       deltaLabel: 'CDI queries per provider per month',
       deltaUnit: 'queries/provider/mo',
-      valuePerUnitLabel: 'Signal — no dollar value',
+      valuePerUnitLabel: 'Signal, no dollar value',
       valuePerUnitDefault: 0,
       realizationDefault: 100,
       scaleAxis: 'fixed',
@@ -364,8 +364,8 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
   {
     id: 'opCareGapClosureRate',
     label: 'Care Gap Closure Rate',
-    shortDescription: 'When documentation captures the full clinical encounter, preventive actions that occurred during the visit are recorded accurately — turning a gap that looked open into one that is closed. The formal HEDIS measure follows at year-end.',
-    tagline: 'Care gaps documented closed — HEDIS and value-based contract performance',
+    shortDescription: 'When documentation captures the full clinical encounter, preventive actions that occurred during the visit are recorded accurately, turning a gap that looked open into one that is closed. The formal HEDIS measure follows at year-end.',
+    tagline: 'Care gaps documented closed, HEDIS and value-based contract performance',
     quadrant: 'Quality',
     settings: ['outpatient'],
     visibility: 'qualitative',
@@ -374,7 +374,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     measureDefaults: {
       deltaLabel: 'Care gap closure rate',
       deltaUnit: '%',
-      valuePerUnitLabel: 'Signal — no dollar value',
+      valuePerUnitLabel: 'Signal, no dollar value',
       valuePerUnitDefault: 0,
       realizationDefault: 100,
       scaleAxis: 'fixed',
@@ -385,8 +385,8 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
   {
     id: 'opHedisCompositeScore',
     label: 'HEDIS Composite Score',
-    shortDescription: 'HEDIS scores are calculated from administrative claims and chart data — both depend on documentation accuracy. A visit where preventive care happened but was not documented counts against the measure the same as a visit where it did not happen.',
-    tagline: 'NCQA benchmark performance — where documentation accuracy becomes quality score',
+    shortDescription: 'HEDIS scores are calculated from administrative claims and chart data, both depend on documentation accuracy. A visit where preventive care happened but was not documented counts against the measure the same as a visit where it did not happen.',
+    tagline: 'NCQA benchmark performance, where documentation accuracy becomes quality score',
     quadrant: 'Quality',
     settings: ['outpatient'],
     visibility: 'qualitative',
@@ -395,7 +395,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     measureDefaults: {
       deltaLabel: 'HEDIS composite score',
       deltaUnit: 'composite score',
-      valuePerUnitLabel: 'Signal — no dollar value',
+      valuePerUnitLabel: 'Signal, no dollar value',
       valuePerUnitDefault: 0,
       realizationDefault: 100,
       scaleAxis: 'fixed',
@@ -406,8 +406,8 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
   {
     id: 'opMaStarsPerformance',
     label: 'MA STARS Performance',
-    shortDescription: 'STARS composite scores integrate care gap closure, patient experience, and chronic disease management — all dependent on documentation capturing what actually happened. Ratings reflect the prior measurement year, so current behavior affects next year\'s bonus.',
-    tagline: 'CMS STARS rating — documentation behavior today affects next year\'s bonus',
+    shortDescription: 'STARS composite scores integrate care gap closure, patient experience, and chronic disease management, all dependent on documentation capturing what actually happened. Ratings reflect the prior measurement year, so current behavior affects next year\'s bonus.',
+    tagline: 'CMS STARS rating, documentation behavior today affects next year\'s bonus',
     quadrant: 'Quality',
     settings: ['outpatient'],
     visibility: 'qualitative',
@@ -416,7 +416,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     measureDefaults: {
       deltaLabel: 'MA STARS rating',
       deltaUnit: 'stars',
-      valuePerUnitLabel: 'Signal — no dollar value',
+      valuePerUnitLabel: 'Signal, no dollar value',
       valuePerUnitDefault: 0,
       realizationDefault: 100,
       scaleAxis: 'fixed',
@@ -424,12 +424,12 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     },
     valueArc: { signal: { timing: 'Month 2-5', metric: 'Care gap closure ↑' }, trend: { timing: 'Month 6-12', metric: 'HEDIS composite ↑' }, proof: { timing: 'Year+1', metric: 'CMS STARS rating ↑' } },
   },
-  // ED Quality (qualitative — 3 drivers: protocol adherence | documentation completeness | patient experience)
+  // ED Quality (qualitative, 3 drivers: protocol adherence | documentation completeness | patient experience)
   {
     id: 'edCoreMeasureDocRate',
     label: 'Core Measure Documentation Rate',
-    shortDescription: 'Quality measure compliance in the ED is partly an attribution problem: if the clinical action was taken but not documented with required specificity, the quality system cannot attribute it. Ambient capture records protocol adherence as it happens — capturing NIHSS scores, door-to-CT timing, tPA eligibility documentation, chest pain risk stratification, and STEMI door-to-balloon rationale in real time rather than reconstructed after the fact.',
-    tagline: 'Protocol adherence documented — stroke pathway, STEMI, chest pain risk stratification (sepsis is tracked separately via SEP-1)',
+    shortDescription: 'Quality measure compliance in the ED is partly an attribution problem: if the clinical action was taken but not documented with required specificity, the quality system cannot attribute it. Ambient capture records protocol adherence as it happens, capturing NIHSS scores, door-to-CT timing, tPA eligibility documentation, chest pain risk stratification, and STEMI door-to-balloon rationale in real time rather than reconstructed after the fact.',
+    tagline: 'Protocol adherence documented, stroke pathway, STEMI, chest pain risk stratification (sepsis is tracked separately via SEP-1)',
     quadrant: 'Quality',
     settings: ['ed'],
     visibility: 'qualitative',
@@ -439,7 +439,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     measureDefaults: {
       deltaLabel: 'Core measure documentation rate',
       deltaUnit: '%',
-      valuePerUnitLabel: 'Signal — no dollar value',
+      valuePerUnitLabel: 'Signal, no dollar value',
       valuePerUnitDefault: 0,
       realizationDefault: 100,
       scaleAxis: 'fixed',
@@ -461,7 +461,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     measureDefaults: {
       deltaLabel: 'Documentation deficiency rate',
       deltaUnit: '%',
-      valuePerUnitLabel: 'Signal — no dollar value',
+      valuePerUnitLabel: 'Signal, no dollar value',
       valuePerUnitDefault: 0,
       realizationDefault: 100,
       scaleAxis: 'fixed',
@@ -473,8 +473,8 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
   {
     id: 'edPatientExperience',
     label: 'HCAHPS Physician Communication Score',
-    shortDescription: 'HCAHPS physician communication — "doctor explained clearly," "doctor listened carefully" — is the CMS-required survey domain that directly reflects whether the provider was present in the encounter or focused on the screen. It drives 25% of VBP Total Performance Score, putting real Medicare payment adjustments at stake. Ambient capture shifts the physician\'s attention from keyboard to patient. Press Ganey is the commercial vendor most EDs use to administer HCAHPS; the metric that matters financially is the CMS physician communication composite.',
-    tagline: 'HCAHPS physician communication — 25% of VBP Total Performance Score, directly affected by screen time during the encounter',
+    shortDescription: 'HCAHPS physician communication ("doctor explained clearly," "doctor listened carefully") is the CMS-required survey domain that directly reflects whether the provider was present in the encounter or focused on the screen. It drives 25% of VBP Total Performance Score, putting real Medicare payment adjustments at stake. Ambient capture shifts the physician\'s attention from keyboard to patient. Press Ganey is the commercial vendor most EDs use to administer HCAHPS; the metric that matters financially is the CMS physician communication composite.',
+    tagline: 'HCAHPS physician communication, 25% of VBP Total Performance Score, directly affected by screen time during the encounter',
     quadrant: 'Quality',
     settings: ['ed'],
     visibility: 'qualitative',
@@ -484,19 +484,19 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     measureDefaults: {
       deltaLabel: 'HCAHPS physician communication composite',
       deltaUnit: 'score (0–100)',
-      valuePerUnitLabel: 'Signal — no dollar value',
+      valuePerUnitLabel: 'Signal, no dollar value',
       valuePerUnitDefault: 0,
       realizationDefault: 100,
       scaleAxis: 'fixed',
-      benchmarkHint: 'Enter HCAHPS physician communication composite score (0–100). National average: ~79. Top quartile: ~88. A 5-point improvement can shift VBP percentile rank meaningfully — hospitals scoring below 50th percentile on this domain are leaving payment adjustments on the table. Most EDs access this via Press Ganey or NRC Health reporting.',
+      benchmarkHint: 'Enter HCAHPS physician communication composite score (0–100). National average: ~79. Top quartile: ~88. A 5-point improvement can shift VBP percentile rank meaningfully, hospitals scoring below 50th percentile on this domain are leaving payment adjustments on the table. Most EDs access this via Press Ganey or NRC Health reporting.',
     },
     valueArc: { signal: { timing: 'Weeks 1-4', metric: 'Documentation time per encounter ↓' }, trend: { timing: 'Month 3-6', metric: 'Physician communication scores ↑' }, proof: { timing: 'Month 6-12', metric: 'HCAHPS physician communication ↑' } },
   },
   {
     id: 'edNoteCompleteness',
     label: 'Note Completeness Score',
-    shortDescription: 'The ED note is the source document for E/M coding, CDI queries on admission, down-coding review, and handoff quality. Completeness — capturing the full clinical encounter including HPI, assessment, MDM, and disposition rationale — determines whether every downstream metric can be supported.',
-    tagline: 'Structured completeness of the ED encounter note — upstream signal for coding and handoff quality',
+    shortDescription: 'The ED note is the source document for E/M coding, CDI queries on admission, down-coding review, and handoff quality. Completeness, capturing the full clinical encounter including HPI, assessment, MDM, and disposition rationale, determines whether every downstream metric can be supported.',
+    tagline: 'Structured completeness of the ED encounter note, upstream signal for coding and handoff quality',
     quadrant: 'Quality',
     settings: ['ed'],
     visibility: 'qualitative',
@@ -506,7 +506,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     measureDefaults: {
       deltaLabel: 'Note completeness score',
       deltaUnit: '% complete',
-      valuePerUnitLabel: 'Signal — no dollar value',
+      valuePerUnitLabel: 'Signal, no dollar value',
       valuePerUnitDefault: 0,
       realizationDefault: 100,
       scaleAxis: 'fixed',
@@ -517,8 +517,8 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
   {
     id: 'edSepsisBundle',
     label: 'Sepsis Bundle Documentation Rate (SEP-1)',
-    shortDescription: 'CMS SEP-1 compliance requires documentation of sepsis recognition, septic shock criteria, and each treatment element within strict time windows. Missing a single field — even when care was delivered — means non-compliance. Ambient capture records the clinical encounter as it happens, closing documentation gaps in real time.',
-    tagline: 'CMS SEP-1 bundle compliance — documented in time, not reconstructed after the fact',
+    shortDescription: 'CMS SEP-1 compliance requires documentation of sepsis recognition, septic shock criteria, and each treatment element within strict time windows. Missing a single field, even when care was delivered, means non-compliance. Ambient capture records the clinical encounter as it happens, closing documentation gaps in real time.',
+    tagline: 'CMS SEP-1 bundle compliance, documented in time, not reconstructed after the fact',
     quadrant: 'Quality',
     settings: ['ed'],
     visibility: 'qualitative',
@@ -528,7 +528,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     measureDefaults: {
       deltaLabel: 'SEP-1 compliance rate',
       deltaUnit: '%',
-      valuePerUnitLabel: 'Signal — no dollar value',
+      valuePerUnitLabel: 'Signal, no dollar value',
       valuePerUnitDefault: 0,
       realizationDefault: 100,
       scaleAxis: 'fixed',
@@ -660,8 +660,8 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
   {
     id: 'nursingHcahps',
     label: 'HCAHPS (Nurse Communication)',
-    shortDescription: 'A nurse completing documentation at the bedside through ambient capture is facing the patient — answering questions, making eye contact, and engaging with the person rather than the screen.',
-    tagline: 'Nurse communication composite — attentional presence at bedside, tied to VBP reimbursement',
+    shortDescription: 'A nurse completing documentation at the bedside through ambient capture is facing the patient, answering questions, making eye contact, and engaging with the person rather than the screen.',
+    tagline: 'Nurse communication composite, attentional presence at bedside, tied to VBP reimbursement',
     quadrant: 'Quality',
     settings: ['nursing'],
     visibility: 'qualitative',
@@ -670,7 +670,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     measureDefaults: {
       deltaLabel: 'HCAHPS nurse communication composite',
       deltaUnit: 'composite score',
-      valuePerUnitLabel: 'Signal — no dollar value',
+      valuePerUnitLabel: 'Signal, no dollar value',
       valuePerUnitDefault: 0,
       realizationDefault: 100,
       scaleAxis: 'fixed',
@@ -691,18 +691,18 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     measureDefaults: {
       deltaLabel: 'Early deterioration detection rate',
       deltaUnit: '%',
-      valuePerUnitLabel: 'Signal — no dollar value',
+      valuePerUnitLabel: 'Signal, no dollar value',
       valuePerUnitDefault: 0,
       realizationDefault: 100,
       scaleAxis: 'fixed',
-      benchmarkHint: 'Track median minutes from an abnormal vital or assessment entry (elevated NEWS/MEWS, dropping SpO₂, altered Braden) to documented escalation. Point-of-care flowsheet entry should trigger escalation within 15–30 minutes of the change — not hours after a batched end-of-shift chart entry.',
+      benchmarkHint: 'Track median minutes from an abnormal vital or assessment entry (elevated NEWS/MEWS, dropping SpO₂, altered Braden) to documented escalation. Point-of-care flowsheet entry should trigger escalation within 15–30 minutes of the change, not hours after a batched end-of-shift chart entry.',
     },
     valueArc: { signal: { timing: 'Month 1-3', metric: 'Point-of-care doc timeliness ↑' }, trend: { timing: 'Month 2-5', metric: 'Rapid response triggers ↓' }, proof: { timing: 'Month 6-12', metric: 'Preventable harm events ↓' } },
   },
   {
     id: 'nursingBundleCompliance',
     label: 'Care Bundle Compliance',
-    shortDescription: 'Clinical care bundles — CLABSI, VAP, sepsis, fall prevention — require consistent, timely documentation to demonstrate compliance. Real-time flowsheet entries close the documentation gaps that drive audit failures and bundle non-compliance.',
+    shortDescription: 'Clinical care bundles, CLABSI, VAP, sepsis, fall prevention, require consistent, timely documentation to demonstrate compliance. Real-time flowsheet entries close the documentation gaps that drive audit failures and bundle non-compliance.',
     tagline: 'Real-time flowsheet documentation supports bundle adherence and audit readiness',
     quadrant: 'Quality',
     settings: ['nursing'],
@@ -713,7 +713,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     measureDefaults: {
       deltaLabel: 'Care bundle compliance rate',
       deltaUnit: '%',
-      valuePerUnitLabel: 'Signal — no dollar value',
+      valuePerUnitLabel: 'Signal, no dollar value',
       valuePerUnitDefault: 0,
       realizationDefault: 100,
       scaleAxis: 'fixed',
@@ -871,7 +871,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     id: 'nursingCdiResponse',
     label: 'CDI Query Response',
     shortDescription: 'CDI specialists validating physician query responses depend on nursing documentation to corroborate the clinical picture. When nursing charting is batched, CDI reviewers find gaps between physician documentation and the nursing record.',
-    tagline: 'Nursing assessments that corroborate physician documentation — the evidence CDI needs to close queries',
+    tagline: 'Nursing assessments that corroborate physician documentation, the evidence CDI needs to close queries',
     quadrant: 'Revenue',
     settings: ['nursing'],
     visibility: 'qualitative',
@@ -881,7 +881,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     measureDefaults: {
       deltaLabel: 'CDI query response rate',
       deltaUnit: '%',
-      valuePerUnitLabel: 'Signal — no dollar value',
+      valuePerUnitLabel: 'Signal, no dollar value',
       valuePerUnitDefault: 0,
       realizationDefault: 100,
       scaleAxis: 'fixed',
@@ -892,8 +892,8 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
   {
     id: 'nursingDocCompletion',
     label: 'Documentation Completion Rate',
-    shortDescription: 'When nursing documentation falls behind, claims accumulate in the DNFB bucket — the revenue exists but can\'t be collected until documentation is complete. Each day of delay on a $15K claim adds collection risk.',
-    tagline: 'Documentation completion at discharge — the prerequisite before the claim can be billed',
+    shortDescription: 'When nursing documentation falls behind, claims accumulate in the DNFB bucket, the revenue exists but can\'t be collected until documentation is complete. Each day of delay on a $15K claim adds collection risk.',
+    tagline: 'Documentation completion at discharge, the prerequisite before the claim can be billed',
     quadrant: 'Revenue',
     settings: ['nursing'],
     visibility: 'qualitative',
@@ -903,7 +903,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     measureDefaults: {
       deltaLabel: 'Documentation completion rate at discharge',
       deltaUnit: '%',
-      valuePerUnitLabel: 'Signal — no dollar value',
+      valuePerUnitLabel: 'Signal, no dollar value',
       valuePerUnitDefault: 0,
       realizationDefault: 100,
       scaleAxis: 'fixed',
@@ -912,8 +912,8 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     valueArc: { signal: { timing: 'Weeks 2-4', metric: 'End-of-shift charting ↓' }, proof: { timing: 'Month 1-3', metric: 'Documentation completion rate ↑' } },
   },
 
-  // ───── R-IA-2 / R-IA-3 — Curated qualitative drivers (toggleable, no $ math) ─────
-  // OP Capacity (qualitative — 3 drivers, R-IA-3 trim)
+  // ───── R-IA-2 / R-IA-3, Curated qualitative drivers (toggleable, no $ math) ─────
+  // OP Capacity (qualitative, 3 drivers, R-IA-3 trim)
   {
     id: 'opAppointmentDelay',
     label: 'Appointment Delay / On-Time Rate',
@@ -986,8 +986,8 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
   {
     id: 'opPanelSizePerProvider',
     label: 'Panel Size per Provider',
-    shortDescription: 'Panel size accumulates over time as documentation savings compound into more appointment capacity, which fills with more attributed patients. This is the longest-lag access metric — it requires both provider adoption and sustained scheduling workflow changes to manifest.',
-    tagline: 'Active patients per provider — the long-run access ceiling',
+    shortDescription: 'Panel size accumulates over time as documentation savings compound into more appointment capacity, which fills with more attributed patients. This is the longest-lag access metric, it requires both provider adoption and sustained scheduling workflow changes to manifest.',
+    tagline: 'Active patients per provider, the long-run access ceiling',
     quadrant: 'Capacity',
     settings: ['outpatient'],
     visibility: 'qualitative',
@@ -997,7 +997,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     measureDefaults: {
       deltaLabel: 'Active patients per provider',
       deltaUnit: 'patients',
-      valuePerUnitLabel: 'Signal — no dollar value',
+      valuePerUnitLabel: 'Signal, no dollar value',
       valuePerUnitDefault: 0,
       realizationDefault: 100,
       scaleAxis: 'fixed',
@@ -1006,11 +1006,11 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     valueArc: { signal: { timing: 'Weeks 4-8', metric: 'Documentation time per note ↓' }, trend: { timing: 'Month 3-6', metric: '3rd Next Available ↓' }, proof: { timing: 'Month 9-18', metric: 'Panel size per provider ↑' } },
   },
 
-  // OP Workforce (qualitative — 3 drivers, R-IA-3 trim; Burnout Score listed last)
+  // OP Workforce (qualitative, 3 drivers, R-IA-3 trim; Burnout Score listed last)
   {
     id: 'opAfterHoursDoc',
     label: 'After-Hours Documentation',
-    shortDescription: 'After-hours EHR time measures the gap between documentation volume and available clinic hours. When notes get faster, the after-hours queue empties — consistent adopters see this in EHR audit data within 4–8 weeks.',
+    shortDescription: 'After-hours EHR time measures the gap between documentation volume and available clinic hours. When notes get faster, the after-hours queue empties, consistent adopters see this in EHR audit data within 4–8 weeks.',
     tagline: 'EHR time logged outside scheduled clinical hours',
     quadrant: 'Workforce',
     settings: ['outpatient'],
@@ -1021,7 +1021,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     measureDefaults: {
       deltaLabel: 'After-hours EHR time per provider per week',
       deltaUnit: 'hrs/week/provider',
-      valuePerUnitLabel: 'Signal — no dollar value',
+      valuePerUnitLabel: 'Signal, no dollar value',
       valuePerUnitDefault: 0,
       realizationDefault: 100,
       scaleAxis: 'fixed',
@@ -1044,7 +1044,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     measureDefaults: {
       deltaLabel: 'Notes completed before leaving clinic',
       deltaUnit: '%',
-      valuePerUnitLabel: 'Signal — no dollar value',
+      valuePerUnitLabel: 'Signal, no dollar value',
       valuePerUnitDefault: 0,
       realizationDefault: 100,
       scaleAxis: 'fixed',
@@ -1056,7 +1056,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     id: 'opBurnoutTracking',
     label: 'Burnout Score',
     shortDescription: 'Burnout correlates with the experience of clinical work extending past the scheduled day. Instruments are administered quarterly or semi-annually, so movement requires sustained documentation relief first.',
-    tagline: 'Validated burnout score — leading indicator for retention',
+    tagline: 'Validated burnout score, leading indicator for retention',
     quadrant: 'Workforce',
     settings: ['outpatient'],
     visibility: 'qualitative',
@@ -1066,7 +1066,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     measureDefaults: {
       deltaLabel: 'Burnout score (MBI)',
       deltaUnit: 'MBI score',
-      valuePerUnitLabel: 'Signal — no dollar value',
+      valuePerUnitLabel: 'Signal, no dollar value',
       valuePerUnitDefault: 0,
       realizationDefault: 100,
       scaleAxis: 'fixed',
@@ -1078,8 +1078,8 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
   {
     id: 'opLikelihoodToStay',
     label: 'Likelihood to Stay',
-    shortDescription: 'Likelihood to Stay captures the behavioral intention that precedes an actual departure decision. In outpatient settings where documentation burden drives pajama time, intent to stay follows burnout improvement on a 3–6 month lag — and it\'s the clearest leading indicator that the retention story is on track before turnover data is available.',
-    tagline: 'Intent to remain in current role — the retention leading indicator before turnover data is available',
+    shortDescription: 'Likelihood to Stay captures the behavioral intention that precedes an actual departure decision. In outpatient settings where documentation burden drives pajama time, intent to stay follows burnout improvement on a 3–6 month lag, and it\'s the clearest leading indicator that the retention story is on track before turnover data is available.',
+    tagline: 'Intent to remain in current role, the retention leading indicator before turnover data is available',
     quadrant: 'Workforce',
     settings: ['outpatient'],
     visibility: 'qualitative',
@@ -1089,7 +1089,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     measureDefaults: {
       deltaLabel: 'Likelihood to stay',
       deltaUnit: '%',
-      valuePerUnitLabel: 'Signal — no dollar value',
+      valuePerUnitLabel: 'Signal, no dollar value',
       valuePerUnitDefault: 0,
       realizationDefault: 100,
       scaleAxis: 'fixed',
@@ -1098,7 +1098,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     valueArc: { signal: { timing: 'Weeks 4-8', metric: 'After-hours EHR time ↓' }, trend: { timing: 'Month 6-12', metric: 'Burnout score ↓' }, proof: { timing: 'Month 12-18', metric: 'Likelihood to stay ↑' } },
   },
 
-  // OP Revenue (qualitative — 3 drivers, R-IA-3 trim — all new)
+  // OP Revenue (qualitative, 3 drivers, R-IA-3 trim, all new)
   {
     id: 'opEmLevelDistribution',
     label: 'Average E&M Level',
@@ -1177,22 +1177,22 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     measureDefaults: {
       deltaLabel: 'Staff hours per week on claims rework',
       deltaUnit: 'hrs/week',
-      valuePerUnitLabel: 'Signal — no dollar value',
+      valuePerUnitLabel: 'Signal, no dollar value',
       valuePerUnitDefault: 0,
       realizationDefault: 100,
       scaleAxis: 'fixed',
       lowerIsBetter: true,
-      benchmarkHint: 'Enter staff hours per week spent reworking claims denied specifically for documentation reasons — insufficient medical necessity evidence, missing or incomplete clinical detail, or specificity failures. Do not use total rework hours, which include eligibility, coding, and auth denials unrelated to documentation. Isolate by denial reason code. Typical range: 3–5 hours per worked documentation denial. Measurable via billing system denial reason code reports.',
+      benchmarkHint: 'Enter staff hours per week spent reworking claims denied specifically for documentation reasons, insufficient medical necessity evidence, missing or incomplete clinical detail, or specificity failures. Do not use total rework hours, which include eligibility, coding, and auth denials unrelated to documentation. Isolate by denial reason code. Typical range: 3–5 hours per worked documentation denial. Measurable via billing system denial reason code reports.',
     },
     valueArc: { signal: { timing: 'Weeks 4-8', metric: 'Documentation completeness ↑' }, trend: { timing: 'Month 1-3', metric: 'First-pass acceptance rate ↑' }, proof: { timing: 'Month 2-4', metric: 'Claims rework hours ↓' } },
   },
 
-  // OP Quality (qualitative — CG-CAHPS)
+  // OP Quality (qualitative, CG-CAHPS)
   {
     id: 'opCgCahps',
     label: 'CG-CAHPS Provider Communication',
-    shortDescription: 'Providers not navigating the EHR during encounters sustain eye contact, listen actively, and are perceived as more communicative. CG-CAHPS\'s "Provider Communication" composite measures this directly — and it\'s the domain most directly affected by ambient documentation removing the keyboard barrier.',
-    tagline: 'CG-CAHPS provider communication composite — the patient experience signal that rises when the EHR stops competing with the conversation',
+    shortDescription: 'Providers not navigating the EHR during encounters sustain eye contact, listen actively, and are perceived as more communicative. CG-CAHPS\'s "Provider Communication" composite measures this directly, and it\'s the domain most directly affected by ambient documentation removing the keyboard barrier.',
+    tagline: 'CG-CAHPS provider communication composite, the patient experience signal that rises when the EHR stops competing with the conversation',
     quadrant: 'Quality',
     settings: ['outpatient'],
     visibility: 'qualitative',
@@ -1213,8 +1213,8 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
   {
     id: 'opNoteCompleteness',
     label: 'Note Completeness Score',
-    shortDescription: 'The encounter note is the source record that drives coding accuracy, quality measures, CDI queries, referral context, and prior authorization. Completeness — capturing the full clinical encounter — is the root input every downstream metric depends on. When this improves, every other signal follows.',
-    tagline: 'Structured completeness of the encounter note — the upstream signal for everything downstream',
+    shortDescription: 'The encounter note is the source record that drives coding accuracy, quality measures, CDI queries, referral context, and prior authorization. Completeness, capturing the full clinical encounter, is the root input every downstream metric depends on. When this improves, every other signal follows.',
+    tagline: 'Structured completeness of the encounter note, the upstream signal for everything downstream',
     quadrant: 'Quality',
     settings: ['outpatient'],
     visibility: 'qualitative',
@@ -1224,7 +1224,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     measureDefaults: {
       deltaLabel: 'Note completeness score',
       deltaUnit: '% complete',
-      valuePerUnitLabel: 'Signal — no dollar value',
+      valuePerUnitLabel: 'Signal, no dollar value',
       valuePerUnitDefault: 0,
       realizationDefault: 100,
       scaleAxis: 'fixed',
@@ -1235,8 +1235,8 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
   {
     id: 'opReferralDocQuality',
     label: 'Referral Documentation Quality',
-    shortDescription: 'When the referring note captures the full clinical picture — history, prior workup, clinical reasoning — specialists receive the context they need without asking for it. Incomplete referral documentation forces callbacks, delays care, and creates rework on both sides of the referral relationship.',
-    tagline: 'Clinical context in referrals — reducing specialist callbacks and referral rework',
+    shortDescription: 'When the referring note captures the full clinical picture, history, prior workup, clinical reasoning, specialists receive the context they need without asking for it. Incomplete referral documentation forces callbacks, delays care, and creates rework on both sides of the referral relationship.',
+    tagline: 'Clinical context in referrals, reducing specialist callbacks and referral rework',
     quadrant: 'Quality',
     settings: ['outpatient'],
     visibility: 'qualitative',
@@ -1246,7 +1246,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     measureDefaults: {
       deltaLabel: 'Specialist callback rate',
       deltaUnit: '% of referrals',
-      valuePerUnitLabel: 'Signal — no dollar value',
+      valuePerUnitLabel: 'Signal, no dollar value',
       valuePerUnitDefault: 0,
       realizationDefault: 100,
       scaleAxis: 'fixed',
@@ -1256,7 +1256,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     valueArc: { signal: { timing: 'Weeks 4-8', metric: 'Note completeness ↑' }, trend: { timing: 'Month 1-3', metric: 'Referral context quality ↑' }, proof: { timing: 'Month 2-5', metric: 'Specialist callback rate ↓' } },
   },
 
-  // ED Capacity (qualitative — 3 drivers: Signal → Trend → Proof for LWBS Recovery)
+  // ED Capacity (qualitative, 3 drivers: Signal → Trend → Proof for LWBS Recovery)
   {
     id: 'edDoorToProvider',
     label: 'Door-to-Provider Time',
@@ -1271,7 +1271,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     measureDefaults: {
       deltaLabel: 'Door-to-provider time',
       deltaUnit: 'minutes',
-      valuePerUnitLabel: 'Signal — no dollar value',
+      valuePerUnitLabel: 'Signal, no dollar value',
       valuePerUnitDefault: 0,
       realizationDefault: 100,
       scaleAxis: 'fixed',
@@ -1283,8 +1283,8 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
   {
     id: 'edEncountersPerShift',
     label: 'Encounters per Provider per Shift',
-    shortDescription: 'When documentation time drops, the same shift hours hold more patient encounters — not because providers are rushing, but because the inter-patient time previously consumed by note completion is now available for the next patient. This metric is more confounded than door-to-provider time — census variation, call patterns, and acuity mix all affect it — so treat it as a corroborating signal alongside door-to-provider rather than a standalone attribution.',
-    tagline: 'Patients seen per provider per shift — throughput proof',
+    shortDescription: 'When documentation time drops, the same shift hours hold more patient encounters, not because providers are rushing, but because the inter-patient time previously consumed by note completion is now available for the next patient. This metric is more confounded than door-to-provider time, census variation, call patterns, and acuity mix all affect it, so treat it as a corroborating signal alongside door-to-provider rather than a standalone attribution.',
+    tagline: 'Patients seen per provider per shift, throughput proof',
     quadrant: 'Capacity',
     settings: ['ed'],
     visibility: 'qualitative',
@@ -1294,7 +1294,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     measureDefaults: {
       deltaLabel: 'Encounters per provider per shift',
       deltaUnit: 'encounters/shift',
-      valuePerUnitLabel: 'Signal — no dollar value',
+      valuePerUnitLabel: 'Signal, no dollar value',
       valuePerUnitDefault: 0,
       realizationDefault: 100,
       scaleAxis: 'fixed',
@@ -1305,8 +1305,8 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
   {
     id: 'edDoorToDisposition',
     label: 'Door-to-Disposition Time',
-    shortDescription: 'Door-to-provider measures when the physician first arrives; door-to-disposition measures when the care decision is made. The interval between them — workup, documentation, and clinical reasoning — is where documentation speed creates the most throughput room.',
-    tagline: 'Arrival to admit/discharge decision — total ED length of stay',
+    shortDescription: 'Door-to-provider measures when the physician first arrives; door-to-disposition measures when the care decision is made. The interval between them, workup, documentation, and clinical reasoning, is where documentation speed creates the most throughput room.',
+    tagline: 'Arrival to admit/discharge decision, total ED length of stay',
     quadrant: 'Capacity',
     settings: ['ed'],
     visibility: 'qualitative',
@@ -1316,7 +1316,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     measureDefaults: {
       deltaLabel: 'Median door-to-disposition time',
       deltaUnit: 'minutes',
-      valuePerUnitLabel: 'Signal — no dollar value',
+      valuePerUnitLabel: 'Signal, no dollar value',
       valuePerUnitDefault: 0,
       realizationDefault: 100,
       scaleAxis: 'fixed',
@@ -1326,12 +1326,12 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     valueArc: { signal: { timing: 'Weeks 1-2', metric: 'Documentation time per encounter ↓' }, trend: { timing: 'Month 1-3', metric: 'Door-to-provider ↓' }, proof: { timing: 'Month 3-6', metric: 'Door-to-disposition ↓' } },
   },
 
-  // ED Workforce (qualitative — 4 drivers: 2 signal-stage behavioral + 2 trend-stage attitudinal)
+  // ED Workforce (qualitative, 4 drivers: 2 signal-stage behavioral + 2 trend-stage attitudinal)
   {
     id: 'edAfterHoursDoc',
     label: 'After-Hours Documentation',
-    shortDescription: 'In shift-based settings, after-hours EHR time is driven entirely by notes not completed before the shift ended. When ambient capture reduces documentation time per encounter, the post-shift queue empties — and in shift-based medicine this shows in EHR audit data within weeks.',
-    tagline: 'EHR time after the shift ends — documentation that followed them home',
+    shortDescription: 'In shift-based settings, after-hours EHR time is driven entirely by notes not completed before the shift ended. When ambient capture reduces documentation time per encounter, the post-shift queue empties, and in shift-based medicine this shows in EHR audit data within weeks.',
+    tagline: 'EHR time after the shift ends, documentation that followed them home',
     quadrant: 'Workforce',
     settings: ['ed'],
     visibility: 'qualitative',
@@ -1341,7 +1341,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     measureDefaults: {
       deltaLabel: 'After-shift EHR time per provider',
       deltaUnit: 'hrs/shift',
-      valuePerUnitLabel: 'Signal — no dollar value',
+      valuePerUnitLabel: 'Signal, no dollar value',
       valuePerUnitDefault: 0,
       realizationDefault: 100,
       scaleAxis: 'fixed',
@@ -1353,8 +1353,8 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
   {
     id: 'edEndOfShiftCompletion',
     label: 'End-of-Shift Note Completion Rate',
-    shortDescription: 'End-of-shift completion tracks whether the behavioral habit of closing notes during the shift has taken hold. When documentation is faster per encounter, this rate rises within weeks — the shift ends with closed charts rather than an open queue.',
-    tagline: 'Notes signed before the shift ends — behavioral signal that documentation speed has changed',
+    shortDescription: 'End-of-shift completion tracks whether the behavioral habit of closing notes during the shift has taken hold. When documentation is faster per encounter, this rate rises within weeks, the shift ends with closed charts rather than an open queue.',
+    tagline: 'Notes signed before the shift ends, behavioral signal that documentation speed has changed',
     quadrant: 'Workforce',
     settings: ['ed'],
     visibility: 'qualitative',
@@ -1364,7 +1364,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     measureDefaults: {
       deltaLabel: 'End-of-shift note completion rate',
       deltaUnit: '%',
-      valuePerUnitLabel: 'Signal — no dollar value',
+      valuePerUnitLabel: 'Signal, no dollar value',
       valuePerUnitDefault: 0,
       realizationDefault: 100,
       scaleAxis: 'fixed',
@@ -1375,8 +1375,8 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
   {
     id: 'edBurnoutTracking',
     label: 'Burnout Score',
-    shortDescription: 'Burnout in emergency medicine correlates strongly with the experience of the workday not ending when the shift ends. Movement requires sustained documentation relief first — the physician needs a structurally different workload over time, not just a few good weeks.',
-    tagline: 'Validated burnout score — leading indicator for retention',
+    shortDescription: 'Burnout in emergency medicine correlates strongly with the experience of the workday not ending when the shift ends. Movement requires sustained documentation relief first, the physician needs a structurally different workload over time, not just a few good weeks.',
+    tagline: 'Validated burnout score, leading indicator for retention',
     quadrant: 'Workforce',
     settings: ['ed'],
     visibility: 'qualitative',
@@ -1386,12 +1386,12 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     measureDefaults: {
       deltaLabel: 'Burnout score (MBI)',
       deltaUnit: 'MBI score',
-      valuePerUnitLabel: 'Signal — no dollar value',
+      valuePerUnitLabel: 'Signal, no dollar value',
       valuePerUnitDefault: 0,
       realizationDefault: 100,
       scaleAxis: 'fixed',
       lowerIsBetter: true,
-      benchmarkHint: 'MBI Emotional Exhaustion subscale (0–54). Score ≥27 = high burnout. ED physician burnout rates are among the highest in medicine — baseline ≥30 is common. Requires an active provider wellbeing survey program run on a quarterly cycle. If your organization does not currently administer the MBI or equivalent, use Likelihood to Stay (single item) as the lower-lift leading indicator instead.',
+      benchmarkHint: 'MBI Emotional Exhaustion subscale (0–54). Score ≥27 = high burnout. ED physician burnout rates are among the highest in medicine, baseline ≥30 is common. Requires an active provider wellbeing survey program run on a quarterly cycle. If your organization does not currently administer the MBI or equivalent, use Likelihood to Stay (single item) as the lower-lift leading indicator instead.',
     },
     valueArc: { signal: { timing: 'Weeks 4-8', metric: 'After-shift EHR time ↓' }, trend: { timing: 'Month 2-4', metric: 'Sustained relief confirmed' }, proof: { timing: 'Month 6-12', metric: 'Burnout score ↓' } },
   },
@@ -1399,7 +1399,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     id: 'edLikelihoodToStay',
     label: 'Likelihood to Stay',
     shortDescription: 'Likelihood to Stay captures the behavioral intention that precedes an actual departure decision. When documentation burden decreases and burnout scores improve, intent to stay follows on a 3–6 month lag.',
-    tagline: 'Intent to remain in current role — the retention leading indicator',
+    tagline: 'Intent to remain in current role, the retention leading indicator',
     quadrant: 'Workforce',
     settings: ['ed'],
     visibility: 'qualitative',
@@ -1409,7 +1409,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     measureDefaults: {
       deltaLabel: 'Likelihood to stay',
       deltaUnit: '%',
-      valuePerUnitLabel: 'Signal — no dollar value',
+      valuePerUnitLabel: 'Signal, no dollar value',
       valuePerUnitDefault: 0,
       realizationDefault: 100,
       scaleAxis: 'fixed',
@@ -1418,7 +1418,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     valueArc: { signal: { timing: 'Weeks 4-8', metric: 'After-shift EHR time ↓' }, trend: { timing: 'Month 6-12', metric: 'Burnout score ↓' }, proof: { timing: 'Month 12-18', metric: 'Likelihood to stay ↑' } },
   },
 
-  // ED Revenue (qualitative — 3 drivers: Signal → Trend → Proof for E&M Accuracy + Denial Prevention)
+  // ED Revenue (qualitative, 3 drivers: Signal → Trend → Proof for E&M Accuracy + Denial Prevention)
   {
     id: 'edEmLevelDistribution',
     label: 'Average E&M Level',
@@ -1443,8 +1443,8 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
   {
     id: 'edChargeLag',
     label: 'Charge Lag',
-    shortDescription: 'When documentation is incomplete, billing holds the claim — the note must be finalized before the charge can be submitted. Charge lag is the billing cycle\'s earliest signal that documentation speed has changed. Every day of lag is working capital sitting uncollected and a window in which the claim can age out of timely filing limits.',
-    tagline: 'Days from encounter to bill submission — documentation completeness determines billing cycle speed',
+    shortDescription: 'When documentation is incomplete, billing holds the claim, the note must be finalized before the charge can be submitted. Charge lag is the billing cycle\'s earliest signal that documentation speed has changed. Every day of lag is working capital sitting uncollected and a window in which the claim can age out of timely filing limits.',
+    tagline: 'Days from encounter to bill submission, documentation completeness determines billing cycle speed',
     quadrant: 'Revenue',
     settings: ['ed'],
     visibility: 'qualitative',
@@ -1454,7 +1454,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     measureDefaults: {
       deltaLabel: 'Median days from encounter to bill submission',
       deltaUnit: 'days',
-      valuePerUnitLabel: 'Signal — no dollar value',
+      valuePerUnitLabel: 'Signal, no dollar value',
       valuePerUnitDefault: 0,
       realizationDefault: 100,
       scaleAxis: 'fixed',
@@ -1467,7 +1467,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     id: 'edCdiQueryAdmissions',
     label: 'CDI Query Rate on Admissions',
     shortDescription: 'When the ED admits a patient, the ED note becomes the clinical foundation for inpatient DRG coding. CDI queries go out when the ED note doesn\'t capture complexity with enough specificity to support DRG assignment.',
-    tagline: 'CDI queries on ED admissions — documentation supporting DRG accuracy at handoff',
+    tagline: 'CDI queries on ED admissions, documentation supporting DRG accuracy at handoff',
     quadrant: 'Revenue',
     settings: ['ed'],
     visibility: 'qualitative',
@@ -1477,7 +1477,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     measureDefaults: {
       deltaLabel: 'CDI queries per 100 admissions from ED',
       deltaUnit: 'queries/100 admissions',
-      valuePerUnitLabel: 'Signal — no dollar value',
+      valuePerUnitLabel: 'Signal, no dollar value',
       valuePerUnitDefault: 0,
       realizationDefault: 100,
       scaleAxis: 'fixed',
@@ -1511,7 +1511,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     id: 'edDowncodingRate',
     label: 'Downcoding Rate',
     shortDescription: 'Down-coding is a payer judgment that the note doesn\'t prove the complexity of care billed. When documentation captures MDM completely, payers have less basis for reducing the code on review.',
-    tagline: 'Claims downgraded by payers — when documentation doesn\'t prove the complexity billed',
+    tagline: 'Claims downgraded by payers, when documentation doesn\'t prove the complexity billed',
     quadrant: 'Revenue',
     settings: ['ed'],
     visibility: 'qualitative',
@@ -1521,7 +1521,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     measureDefaults: {
       deltaLabel: 'Down-coding rate',
       deltaUnit: '%',
-      valuePerUnitLabel: 'Signal — no dollar value',
+      valuePerUnitLabel: 'Signal, no dollar value',
       valuePerUnitDefault: 0,
       realizationDefault: 100,
       scaleAxis: 'fixed',
@@ -1544,22 +1544,22 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     measureDefaults: {
       deltaLabel: 'Staff hours per week on claims rework',
       deltaUnit: 'hrs/week',
-      valuePerUnitLabel: 'Signal — no dollar value',
+      valuePerUnitLabel: 'Signal, no dollar value',
       valuePerUnitDefault: 0,
       realizationDefault: 100,
       scaleAxis: 'fixed',
       lowerIsBetter: true,
-      benchmarkHint: 'Enter staff hours per week spent reworking claims denied or rejected specifically for documentation reasons — insufficient medical necessity evidence, missing MDM, or incomplete clinical detail. Do not use total rework hours, which include eligibility, coding, and auth denials unrelated to documentation. Isolate by denial reason code. ED documentation-related denial rates typically run 2–5% of volume.',
+      benchmarkHint: 'Enter staff hours per week spent reworking claims denied or rejected specifically for documentation reasons, insufficient medical necessity evidence, missing MDM, or incomplete clinical detail. Do not use total rework hours, which include eligibility, coding, and auth denials unrelated to documentation. Isolate by denial reason code. ED documentation-related denial rates typically run 2–5% of volume.',
     },
     valueArc: { signal: { timing: 'Weeks 4-8', metric: 'Note completeness ↑' }, trend: { timing: 'Month 1-3', metric: 'First-pass acceptance ↑' }, proof: { timing: 'Month 2-4', metric: 'Claims rework hours ↓' } },
   },
 
-  // IP Capacity (qualitative — 4 drivers + ipHnpCompletion24h appended at end)
+  // IP Capacity (qualitative, 4 drivers + ipHnpCompletion24h appended at end)
   {
     id: 'ipDischargePlanning',
     label: 'Discharge Planning Initiation',
     shortDescription: 'When attending progress notes include anticipated discharge timing and criteria, case management, social work, and SNF placement can begin their workflows hours earlier in the day. The operational signal is how early discharge planning initiates. An earlier documentation start can translate to earlier discharge coordination.',
-    tagline: 'Discharge-ready language in the progress note — the documentation trigger that starts case management workflow earlier in the day',
+    tagline: 'Discharge-ready language in the progress note, the documentation trigger that starts case management workflow earlier in the day',
     quadrant: 'Capacity',
     settings: ['inpatient'],
     visibility: 'qualitative',
@@ -1569,21 +1569,21 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     measureDefaults: {
       deltaLabel: 'Before-noon discharge rate',
       deltaUnit: '%',
-      valuePerUnitLabel: 'Signal — no dollar value',
+      valuePerUnitLabel: 'Signal, no dollar value',
       valuePerUnitDefault: 0,
       realizationDefault: 100,
       scaleAxis: 'fixed',
-      benchmarkHint: 'Track % of discharges completed before noon. Top-quartile hospitals target 30%+. Improvements here are driven by earlier discharge goal language in progress notes — pull from ADT system discharge timestamps.',
+      benchmarkHint: 'Track % of discharges completed before noon. Top-quartile hospitals target 30%+. Improvements here are driven by earlier discharge goal language in progress notes, pull from ADT system discharge timestamps.',
     },
     valueArc: { signal: { timing: 'Weeks 2-4', metric: 'Discharge goal doc rate ↑' }, trend: { timing: 'Month 1-3', metric: 'Discharge planning lead time ↑' }, proof: { timing: 'Month 3-6', metric: 'Before-noon discharge rate ↑' } },
   },
 
-  // IP Capacity (qualitative — 3 drivers; ipHnpCompletion24h appended at end of array and renders FIRST)
+  // IP Capacity (qualitative, 3 drivers; ipHnpCompletion24h appended at end of array and renders FIRST)
   {
     id: 'ipDocumentationLag',
     label: 'Documentation Lag',
     shortDescription: 'Each note type has a downstream consumer waiting: the care team reads the progress note before rounds, the specialist reads the consult request before scheduling, the case manager reads the progress note before initiating discharge planning.',
-    tagline: 'Time from clinical event to signed note — the bottleneck before every care coordination step',
+    tagline: 'Time from clinical event to signed note, the bottleneck before every care coordination step',
     quadrant: 'Capacity',
     settings: ['inpatient'],
     visibility: 'qualitative',
@@ -1593,7 +1593,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     measureDefaults: {
       deltaLabel: 'Documentation lag',
       deltaUnit: 'hours',
-      valuePerUnitLabel: 'Signal — no dollar value',
+      valuePerUnitLabel: 'Signal, no dollar value',
       valuePerUnitDefault: 0,
       realizationDefault: 100,
       scaleAxis: 'fixed',
@@ -1606,7 +1606,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     id: 'ipDischargeGoalDoc',
     label: 'Discharge Goal Documentation',
     shortDescription: 'The attending\'s documentation of anticipated discharge timing in the daily progress note is the trigger for case management, social work, and SNF placement activities. When that language appears late, discharge planning runs behind the clinical trajectory.',
-    tagline: 'Progress note language that triggers case management and SNF placement — the earlier it appears, the earlier discharge planning starts',
+    tagline: 'Progress note language that triggers case management and SNF placement, the earlier it appears, the earlier discharge planning starts',
     quadrant: 'Capacity',
     settings: ['inpatient'],
     visibility: 'qualitative',
@@ -1616,11 +1616,11 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     measureDefaults: {
       deltaLabel: 'Notes with discharge goal language',
       deltaUnit: '%',
-      valuePerUnitLabel: 'Signal — no dollar value',
+      valuePerUnitLabel: 'Signal, no dollar value',
       valuePerUnitDefault: 0,
       realizationDefault: 100,
       scaleAxis: 'fixed',
-      benchmarkHint: 'Enter % of daily progress notes containing anticipated discharge date or criteria. This triggers case management — even moving from 30% to 60% materially advances discharge planning timelines.',
+      benchmarkHint: 'Enter % of daily progress notes containing anticipated discharge date or criteria. This triggers case management, even moving from 30% to 60% materially advances discharge planning timelines.',
     },
     valueArc: { signal: { timing: 'Weeks 1-2', metric: 'Progress note completeness ↑' }, proof: { timing: 'Month 1-3', metric: 'Discharge intent language in notes ↑' } },
   },
@@ -1628,7 +1628,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     id: 'ipConsultThroughput',
     label: 'Consult Turnaround Time',
     shortDescription: 'The specialist sees the patient and forms their recommendation, then faces a separate charting session hours later from a different location. When Abridge captures the consultation in real time, the consultant generates a note immediately after the encounter.',
-    tagline: 'Consult request to signed note — faster closure lets specialists take more consults per shift',
+    tagline: 'Consult request to signed note, faster closure lets specialists take more consults per shift',
     quadrant: 'Capacity',
     settings: ['inpatient'],
     visibility: 'qualitative',
@@ -1638,12 +1638,12 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     measureDefaults: {
       deltaLabel: 'Consult note turnaround time',
       deltaUnit: 'hours',
-      valuePerUnitLabel: 'Signal — no dollar value',
+      valuePerUnitLabel: 'Signal, no dollar value',
       valuePerUnitDefault: 0,
       realizationDefault: 100,
       scaleAxis: 'fixed',
       lowerIsBetter: true,
-      benchmarkHint: 'Enter median hours from consult completion to signed note. Benchmark: <4 hours. Delays hold downstream care coordination — specialists closing notes in real time is the target behavior.',
+      benchmarkHint: 'Enter median hours from consult completion to signed note. Benchmark: <4 hours. Delays hold downstream care coordination, specialists closing notes in real time is the target behavior.',
     },
     valueArc: { signal: { timing: 'Weeks 1-2', metric: 'Documentation time per note ↓' }, proof: { timing: 'Month 1-3', metric: 'Consult note-to-sign ↓' } },
   },
@@ -1651,7 +1651,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     id: 'ipLengthOfStay',
     label: 'Average Length of Stay (LOS)',
     shortDescription: 'Documentation affects LOS through two mechanisms today: faster H&Ps support earlier care planning from admission, and clearer daily progress notes support discharge coordination from day one. Discharge summary ambient capture, coming soon, will add a third mechanism. Attribution to Abridge alone is difficult, so track it as a directional signal alongside the documentation metrics that move it.',
-    tagline: 'Average inpatient LOS — the operational metric that documentation quality moves over time',
+    tagline: 'Average inpatient LOS, the operational metric that documentation quality moves over time',
     quadrant: 'Capacity',
     settings: ['inpatient'],
     visibility: 'qualitative',
@@ -1661,12 +1661,12 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     measureDefaults: {
       deltaLabel: 'Average length of stay',
       deltaUnit: 'days',
-      valuePerUnitLabel: 'Signal — no dollar value',
+      valuePerUnitLabel: 'Signal, no dollar value',
       valuePerUnitDefault: 0,
       realizationDefault: 100,
       scaleAxis: 'fixed',
       lowerIsBetter: true,
-      benchmarkHint: 'Enter average LOS in days for the service lines where Abridge is deployed. Compare to DRG-expected LOS or prior-period baseline. Attribution to Abridge alone is difficult — use alongside documentation lag and discharge goal doc rate for the full picture.',
+      benchmarkHint: 'Enter average LOS in days for the service lines where Abridge is deployed. Compare to DRG-expected LOS or prior-period baseline. Attribution to Abridge alone is difficult, use alongside documentation lag and discharge goal doc rate for the full picture.',
     },
     valueArc: { signal: { timing: 'Month 1-3', metric: 'Documentation lag ↓, discharge goal doc ↑' }, trend: { timing: 'Month 3-6', metric: 'Discharge planning lead time ↑' }, proof: { timing: 'Month 6-12', metric: 'Average LOS ↓' } },
   },
@@ -1674,7 +1674,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     id: 'ipDischargeSummaryTimeliness',
     label: 'Discharge Summary Timeliness',
     shortDescription: 'The time from patient discharge to signed discharge summary affects readmission risk, care transitions, and regulatory compliance. Summaries completed before or shortly after the patient leaves give the receiving provider the full clinical picture when it matters most.',
-    tagline: 'Hours from patient discharge to signed summary — care transitions depend on it',
+    tagline: 'Hours from patient discharge to signed summary, care transitions depend on it',
     quadrant: 'Capacity',
     settings: ['inpatient'],
     visibility: 'qualitative',
@@ -1685,7 +1685,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     measureDefaults: {
       deltaLabel: 'Hours to discharge summary sign',
       deltaUnit: 'hours',
-      valuePerUnitLabel: 'Signal — no dollar value',
+      valuePerUnitLabel: 'Signal, no dollar value',
       valuePerUnitDefault: 0,
       realizationDefault: 100,
       scaleAxis: 'fixed',
@@ -1695,12 +1695,12 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     valueArc: { signal: { timing: 'Weeks 1-2', metric: 'Documentation time per discharge summary ↓' }, proof: { timing: 'Month 1-3', metric: 'Discharge summary timeliness ↑' } },
   },
 
-  // IP Workforce (qualitative — 4 drivers)
+  // IP Workforce (qualitative, 4 drivers)
   {
     id: 'ipAfterHoursDoc',
     label: 'After-Hours Documentation',
-    shortDescription: 'Hospitalists carrying a full census generate H&Ps, daily progress notes, consult responses, and procedure notes every shift. When that volume compresses through ambient capture, after-hours charting stops — this is one of the fastest workforce signals, visible in EHR audit logs within weeks.',
-    tagline: 'EHR time outside scheduled shift hours — falls as ambient capture eliminates the after-shift queue',
+    shortDescription: 'Hospitalists carrying a full census generate H&Ps, daily progress notes, consult responses, and procedure notes every shift. When that volume compresses through ambient capture, after-hours charting stops, this is one of the fastest workforce signals, visible in EHR audit logs within weeks.',
+    tagline: 'EHR time outside scheduled shift hours, falls as ambient capture eliminates the after-shift queue',
     quadrant: 'Workforce',
     settings: ['inpatient'],
     visibility: 'qualitative',
@@ -1710,7 +1710,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     measureDefaults: {
       deltaLabel: 'After-hours EHR time per provider per week',
       deltaUnit: 'hrs/week/provider',
-      valuePerUnitLabel: 'Signal — no dollar value',
+      valuePerUnitLabel: 'Signal, no dollar value',
       valuePerUnitDefault: 0,
       realizationDefault: 100,
       scaleAxis: 'fixed',
@@ -1722,8 +1722,8 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
   {
     id: 'ipProgressNoteCompletion',
     label: 'Progress Note Completion (Same Shift)',
-    shortDescription: 'Progress notes completed during rounds reflect the clinical reasoning spoken at the bedside. A hospitalist dictating through Abridge at each bedside closes notes before the next shift starts — this is the fastest behavioral signal in the inpatient model.',
-    tagline: 'Progress notes signed before shift end — the earliest signal that same-shift documentation is taking hold',
+    shortDescription: 'Progress notes completed during rounds reflect the clinical reasoning spoken at the bedside. A hospitalist dictating through Abridge at each bedside closes notes before the next shift starts, this is the fastest behavioral signal in the inpatient model.',
+    tagline: 'Progress notes signed before shift end, the earliest signal that same-shift documentation is taking hold',
     quadrant: 'Workforce',
     settings: ['inpatient'],
     visibility: 'qualitative',
@@ -1733,19 +1733,19 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     measureDefaults: {
       deltaLabel: 'Progress notes completed same shift',
       deltaUnit: '%',
-      valuePerUnitLabel: 'Signal — no dollar value',
+      valuePerUnitLabel: 'Signal, no dollar value',
       valuePerUnitDefault: 0,
       realizationDefault: 100,
       scaleAxis: 'fixed',
-      benchmarkHint: 'Enter % of progress notes signed before the shift ends. This is the fastest behavioral signal — target 70%+ within first 4–8 weeks. Extractable from EHR timestamps.',
+      benchmarkHint: 'Enter % of progress notes signed before the shift ends. This is the fastest behavioral signal, target 70%+ within first 4–8 weeks. Extractable from EHR timestamps.',
     },
     valueArc: { signal: { timing: 'Weeks 1-2', metric: 'Documentation time per note ↓' }, proof: { timing: 'Weeks 2-4', metric: 'Progress notes before shift end ↑' } },
   },
   {
     id: 'ipBurnoutTracking',
     label: 'Burnout Score',
-    shortDescription: 'Documentation burden in inpatient medicine is higher per shift than outpatient — H&Ps, daily progress notes across a full census, consult responses, and discharge documentation. When that volume compresses through ambient capture, burnout scores improve.',
-    tagline: 'Validated burnout score — the leading indicator that follows after documentation burden falls',
+    shortDescription: 'Documentation burden in inpatient medicine is higher per shift than outpatient, H&Ps, daily progress notes across a full census, consult responses, and discharge documentation. When that volume compresses through ambient capture, burnout scores improve.',
+    tagline: 'Validated burnout score, the leading indicator that follows after documentation burden falls',
     quadrant: 'Workforce',
     settings: ['inpatient'],
     visibility: 'qualitative',
@@ -1755,7 +1755,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     measureDefaults: {
       deltaLabel: 'Burnout score (MBI)',
       deltaUnit: 'MBI score',
-      valuePerUnitLabel: 'Signal — no dollar value',
+      valuePerUnitLabel: 'Signal, no dollar value',
       valuePerUnitDefault: 0,
       realizationDefault: 100,
       scaleAxis: 'fixed',
@@ -1767,8 +1767,8 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
   {
     id: 'ipLikelihoodToStay',
     label: 'Likelihood to Stay',
-    shortDescription: 'The retention chain in hospital medicine: documentation burden falls → burnout score improves (6–12 months) → likelihood-to-stay rises (12–18 months) → actual turnover falls (18–24 months). Groups with 10–15% turnover produce 3–5 departures per year — too few to confirm a trend without the survey signal.',
-    tagline: 'Intent to stay — the lagged confirmation that burnout improvements are translating into retention',
+    shortDescription: 'The retention chain in hospital medicine: documentation burden falls → burnout score improves (6–12 months) → likelihood-to-stay rises (12–18 months) → actual turnover falls (18–24 months). Groups with 10–15% turnover produce 3–5 departures per year, too few to confirm a trend without the survey signal.',
+    tagline: 'Intent to stay, the lagged confirmation that burnout improvements are translating into retention',
     quadrant: 'Workforce',
     settings: ['inpatient'],
     visibility: 'qualitative',
@@ -1778,7 +1778,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     measureDefaults: {
       deltaLabel: 'Likelihood to stay',
       deltaUnit: '%',
-      valuePerUnitLabel: 'Signal — no dollar value',
+      valuePerUnitLabel: 'Signal, no dollar value',
       valuePerUnitDefault: 0,
       realizationDefault: 100,
       scaleAxis: 'fixed',
@@ -1787,12 +1787,12 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     valueArc: { signal: { timing: 'Month 1-3', metric: 'After-hours EHR time ↓' }, trend: { timing: 'Month 6-12', metric: 'Burnout score ↓' }, proof: { timing: 'Month 12-18', metric: 'Likelihood to stay ↑' } },
   },
 
-  // IP Revenue (qualitative — 3 drivers)
+  // IP Revenue (qualitative, 3 drivers)
   {
     id: 'ipCdiQueryTrend',
     label: 'CDI Query Volume Trend',
     shortDescription: 'Each CDI query represents a note that lacked the specificity needed for accurate DRG assignment. When Abridge captures the clinical reasoning the attending narrated at the bedside, the original note documents the severity specificity that CDI would otherwise query.',
-    tagline: 'CDI queries per 100 admissions — falling volume is the first signal that documentation specificity is improving',
+    tagline: 'CDI queries per 100 admissions, falling volume is the first signal that documentation specificity is improving',
     quadrant: 'Revenue',
     settings: ['inpatient'],
     visibility: 'qualitative',
@@ -1802,7 +1802,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     measureDefaults: {
       deltaLabel: 'CDI queries per 100 admissions',
       deltaUnit: 'queries/100 admissions',
-      valuePerUnitLabel: 'Signal — no dollar value',
+      valuePerUnitLabel: 'Signal, no dollar value',
       valuePerUnitDefault: 0,
       realizationDefault: 100,
       scaleAxis: 'fixed',
@@ -1835,7 +1835,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
   {
     id: 'ipClaimsReworkTime',
     label: 'Claims Rework Time',
-    shortDescription: 'Inpatient claims are the highest-value claims in the revenue cycle — average $15K–$20K per admission — making each denial proportionally more costly to work. Denials driven by insufficient clinical documentation are directly reducible through better note quality.',
+    shortDescription: 'Inpatient claims are the highest-value claims in the revenue cycle, average $15K–$20K per admission, making each denial proportionally more costly to work. Denials driven by insufficient clinical documentation are directly reducible through better note quality.',
     tagline: 'Staff hours per week spent reworking denied or rejected inpatient claims',
     quadrant: 'Revenue',
     settings: ['inpatient'],
@@ -1846,7 +1846,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     measureDefaults: {
       deltaLabel: 'Staff hours per week on claims rework',
       deltaUnit: 'hrs/week',
-      valuePerUnitLabel: 'Signal — no dollar value',
+      valuePerUnitLabel: 'Signal, no dollar value',
       valuePerUnitDefault: 0,
       realizationDefault: 100,
       scaleAxis: 'fixed',
@@ -1855,12 +1855,12 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     },
     valueArc: { signal: { timing: 'Month 1-3', metric: 'Documentation completeness ↑' }, trend: { timing: 'Month 2-4', metric: 'CC/MCC capture ↑, CDI queries ↓' }, proof: { timing: 'Month 3-6', metric: 'Claims rework hours ↓' } },
   },
-  // Nursing Workforce (qualitative — 3 drivers, expanded by R-IA-6)
+  // Nursing Workforce (qualitative, 3 drivers, expanded by R-IA-6)
   {
     id: 'nursingLikelihoodToStay',
     label: 'Likelihood to Stay',
     shortDescription: 'The retention chain runs: documentation burden falls → burnout score improves → likelihood-to-stay rises → actual turnover falls. Nursing turnover produces too few departures per quarter to confirm a trend without this leading indicator.',
-    tagline: 'Intent to stay — the lagged signal that confirms burnout improvements are translating into retention',
+    tagline: 'Intent to stay, the lagged signal that confirms burnout improvements are translating into retention',
     quadrant: 'Workforce',
     settings: ['nursing'],
     visibility: 'qualitative',
@@ -1870,20 +1870,20 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     measureDefaults: {
       deltaLabel: 'Likelihood to stay',
       deltaUnit: '%',
-      valuePerUnitLabel: 'Signal — no dollar value',
+      valuePerUnitLabel: 'Signal, no dollar value',
       valuePerUnitDefault: 0,
       realizationDefault: 100,
       scaleAxis: 'fixed',
-      benchmarkHint: 'Enter % of nursing staff who respond "likely" or "very likely" to remain in role. Nursing turnover is expensive — a 5–10 point improvement in likelihood-to-stay is a meaningful leading indicator.',
+      benchmarkHint: 'Enter % of nursing staff who respond "likely" or "very likely" to remain in role. Nursing turnover is expensive, a 5–10 point improvement in likelihood-to-stay is a meaningful leading indicator.',
     },
     valueArc: { signal: { timing: 'Weeks 2-4', metric: 'Charting after shift ↓' }, trend: { timing: 'Month 6-12', metric: 'Burnout score ↓' }, proof: { timing: 'Month 12-18', metric: 'Likelihood to stay ↑' } },
   },
 
-  // Nursing Capacity (qualitative — added by R-IA-6; bedsideTime renders FIRST from earlier in the array)
+  // Nursing Capacity (qualitative, added by R-IA-6; bedsideTime renders FIRST from earlier in the array)
   {
     id: 'nursingDocumentationLag',
     label: 'Documentation Lag',
-    shortDescription: 'The charge nurse, the physician, the oncoming shift — all read a record that reflects when the nurse charted, not when the care happened. When batching is the norm, a 12-hour shift produces a 12-hour documentation gap.',
+    shortDescription: 'The charge nurse, the physician, the oncoming shift, all read a record that reflects when the nurse charted, not when the care happened. When batching is the norm, a 12-hour shift produces a 12-hour documentation gap.',
     tagline: 'Minutes from care event to chart entry',
     quadrant: 'Capacity',
     settings: ['nursing'],
@@ -1894,7 +1894,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     measureDefaults: {
       deltaLabel: 'Documentation lag',
       deltaUnit: 'minutes',
-      valuePerUnitLabel: 'Signal — no dollar value',
+      valuePerUnitLabel: 'Signal, no dollar value',
       valuePerUnitDefault: 0,
       realizationDefault: 100,
       scaleAxis: 'fixed',
@@ -1906,8 +1906,8 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
   {
     id: 'nursingPostShiftQueue',
     label: 'Post-Shift Flowsheet Queue Size',
-    shortDescription: 'The number of flowsheet entries — vitals, I&O, Braden/Morse assessments, MAR events — left undocumented when a nurse reaches the end of their shift. A large queue is the direct predictor of overtime and the first measurable sign that real-time flowsheet charting has replaced batch entry.',
-    tagline: 'Open flowsheet entries at shift end — the earliest signal that bedside documentation is closing the queue',
+    shortDescription: 'The number of flowsheet entries, vitals, I&O, Braden/Morse assessments, MAR events, left undocumented when a nurse reaches the end of their shift. A large queue is the direct predictor of overtime and the first measurable sign that real-time flowsheet charting has replaced batch entry.',
+    tagline: 'Open flowsheet entries at shift end, the earliest signal that bedside documentation is closing the queue',
     quadrant: 'Capacity',
     settings: ['nursing'],
     visibility: 'qualitative',
@@ -1917,7 +1917,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     measureDefaults: {
       deltaLabel: 'Open flowsheet entries at shift end',
       deltaUnit: 'entries/shift',
-      valuePerUnitLabel: 'Signal — no dollar value',
+      valuePerUnitLabel: 'Signal, no dollar value',
       valuePerUnitDefault: 0,
       realizationDefault: 100,
       scaleAxis: 'fixed',
@@ -1929,8 +1929,8 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
   {
     id: 'nursingOnTimeShiftCompletion',
     label: 'On-Time Shift Completion Rate',
-    shortDescription: 'The share of nursing shifts that end on time — no charting extension, no staying late to close the flowsheet queue. When documentation happens at point of care, nurses leave when their shift ends. When batching is the norm, on-time completion drops below 50% and overtime accumulates invisibly.',
-    tagline: 'Shifts ending on time — the intermediate signal between flowsheet documentation speed and overtime cost',
+    shortDescription: 'The share of nursing shifts that end on time, no charting extension, no staying late to close the flowsheet queue. When documentation happens at point of care, nurses leave when their shift ends. When batching is the norm, on-time completion drops below 50% and overtime accumulates invisibly.',
+    tagline: 'Shifts ending on time, the intermediate signal between flowsheet documentation speed and overtime cost',
     quadrant: 'Capacity',
     settings: ['nursing'],
     visibility: 'qualitative',
@@ -1940,7 +1940,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     measureDefaults: {
       deltaLabel: 'On-time shift completion rate',
       deltaUnit: '%',
-      valuePerUnitLabel: 'Signal — no dollar value',
+      valuePerUnitLabel: 'Signal, no dollar value',
       valuePerUnitDefault: 0,
       realizationDefault: 100,
       scaleAxis: 'fixed',
@@ -1962,7 +1962,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     measureDefaults: {
       deltaLabel: 'Point-of-care documentation rate',
       deltaUnit: '%',
-      valuePerUnitLabel: 'Signal — no dollar value',
+      valuePerUnitLabel: 'Signal, no dollar value',
       valuePerUnitDefault: 0,
       realizationDefault: 100,
       scaleAxis: 'fixed',
@@ -1971,12 +1971,12 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     valueArc: { signal: { timing: 'Weeks 1-2', metric: 'Documentation time per care event ↓' }, proof: { timing: 'Month 1-2', metric: 'Point-of-care doc rate ↑' } },
   },
 
-  // Nursing Workforce (qualitative — added by R-IA-6)
+  // Nursing Workforce (qualitative, added by R-IA-6)
   {
     id: 'nursingBurnout',
     label: 'Burnout Score',
-    shortDescription: 'Documentation burden is the most consistently cited driver of nursing burnout — specifically the administrative load of batch charting at shift end and staying late to finish records from the prior shift.',
-    tagline: 'Validated burnout score — the leading indicator that moves before retention data accumulates',
+    shortDescription: 'Documentation burden is the most consistently cited driver of nursing burnout, specifically the administrative load of batch charting at shift end and staying late to finish records from the prior shift.',
+    tagline: 'Validated burnout score, the leading indicator that moves before retention data accumulates',
     quadrant: 'Workforce',
     settings: ['nursing'],
     visibility: 'qualitative',
@@ -1986,7 +1986,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     measureDefaults: {
       deltaLabel: 'Burnout score (MBI)',
       deltaUnit: 'MBI score',
-      valuePerUnitLabel: 'Signal — no dollar value',
+      valuePerUnitLabel: 'Signal, no dollar value',
       valuePerUnitDefault: 0,
       realizationDefault: 100,
       scaleAxis: 'fixed',
@@ -1998,8 +1998,8 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
   {
     id: 'nursingChartingAfterShift',
     label: 'Charting After Shift',
-    shortDescription: 'End-of-shift charting is the accumulation of everything that went undocumented during the shift. When nurses document at point of care, the shift ends with a closed chart — this is the fastest signal in the nursing model, visible within the first 2 weeks.',
-    tagline: 'EHR time after shift ends — the leading indicator for overtime costs and the signal that documentation burden is falling',
+    shortDescription: 'End-of-shift charting is the accumulation of everything that went undocumented during the shift. When nurses document at point of care, the shift ends with a closed chart, this is the fastest signal in the nursing model, visible within the first 2 weeks.',
+    tagline: 'EHR time after shift ends, the leading indicator for overtime costs and the signal that documentation burden is falling',
     quadrant: 'Workforce',
     settings: ['nursing'],
     visibility: 'qualitative',
@@ -2009,12 +2009,12 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     measureDefaults: {
       deltaLabel: 'Charting after shift ends',
       deltaUnit: 'hrs/shift',
-      valuePerUnitLabel: 'Signal — no dollar value',
+      valuePerUnitLabel: 'Signal, no dollar value',
       valuePerUnitDefault: 0,
       realizationDefault: 100,
       scaleAxis: 'fixed',
       lowerIsBetter: true,
-      benchmarkHint: 'Enter average hours per nurse spent charting after shift end. Typical range: 0.5–1.5 hrs/shift. This is the fastest nursing signal — visible within 2 weeks of adoption.',
+      benchmarkHint: 'Enter average hours per nurse spent charting after shift end. Typical range: 0.5–1.5 hrs/shift. This is the fastest nursing signal, visible within 2 weeks of adoption.',
     },
     valueArc: { signal: { timing: 'Weeks 1-2', metric: 'Point-of-care doc rate ↑' }, proof: { timing: 'Weeks 2-4', metric: 'Charting after shift ↓' } },
   },
@@ -2022,8 +2022,8 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
   {
     id: 'ipHnpCompletion24h',
     label: 'H&P Completion Within 24 Hours',
-    shortDescription: 'A late H&P is not just a compliance gap — consulting physicians cannot schedule until it\'s signed, care managers cannot open discharge planning, and the overnight team lacks an admission note. Abridge captures the admission conversation in real time.',
-    tagline: 'H&P signed within the CMS 24-hour window — the note that unlocks consults, care plans, and discharge coordination',
+    shortDescription: 'A late H&P is not just a compliance gap, consulting physicians cannot schedule until it\'s signed, care managers cannot open discharge planning, and the overnight team lacks an admission note. Abridge captures the admission conversation in real time.',
+    tagline: 'H&P signed within the CMS 24-hour window, the note that unlocks consults, care plans, and discharge coordination',
     quadrant: 'Capacity',
     settings: ['inpatient'],
     visibility: 'qualitative',
@@ -2033,7 +2033,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     measureDefaults: {
       deltaLabel: 'H&P completion within 24 hours',
       deltaUnit: '%',
-      valuePerUnitLabel: 'Signal — no dollar value',
+      valuePerUnitLabel: 'Signal, no dollar value',
       valuePerUnitDefault: 0,
       realizationDefault: 100,
       scaleAxis: 'fixed',
@@ -2045,8 +2045,8 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
   {
     id: 'ipCdiQueryRate',
     label: 'CDI Query Rate per Provider',
-    shortDescription: 'When a provider\'s documentation consistently specifies condition severity, laterality, acuity, and comorbidity relationships, CDI specialists have fewer gaps to query — and severity capture rises as a consequence.',
-    tagline: 'CDI queries per provider — falling rate is the first signal that documentation specificity is improving quality capture',
+    shortDescription: 'When a provider\'s documentation consistently specifies condition severity, laterality, acuity, and comorbidity relationships, CDI specialists have fewer gaps to query, and severity capture rises as a consequence.',
+    tagline: 'CDI queries per provider, falling rate is the first signal that documentation specificity is improving quality capture',
     quadrant: 'Quality',
     settings: ['inpatient'],
     visibility: 'qualitative',
@@ -2056,7 +2056,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     measureDefaults: {
       deltaLabel: 'CDI queries per provider per month',
       deltaUnit: 'queries/provider/mo',
-      valuePerUnitLabel: 'Signal — no dollar value',
+      valuePerUnitLabel: 'Signal, no dollar value',
       valuePerUnitDefault: 0,
       realizationDefault: 100,
       scaleAxis: 'fixed',
@@ -2068,8 +2068,8 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
   {
     id: 'ipHcahpsDoctor',
     label: 'HCAHPS Doctor Communication',
-    shortDescription: 'A hospitalist who is not navigating the EHR during rounds sustains eye contact, asks follow-up questions, and is perceived as listening. HCAHPS accounts for 25% of the Total Performance Score — 2% of base Medicare payments are at risk.',
-    tagline: 'Doctor communication composite — eye contact instead of typing, with 2% of Medicare VBP payments at risk',
+    shortDescription: 'A hospitalist who is not navigating the EHR during rounds sustains eye contact, asks follow-up questions, and is perceived as listening. HCAHPS accounts for 25% of the Total Performance Score, 2% of base Medicare payments are at risk.',
+    tagline: 'Doctor communication composite, eye contact instead of typing, with 2% of Medicare VBP payments at risk',
     quadrant: 'Quality',
     settings: ['inpatient'],
     visibility: 'qualitative',
@@ -2079,11 +2079,11 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     measureDefaults: {
       deltaLabel: 'HCAHPS doctor communication composite',
       deltaUnit: 'composite score',
-      valuePerUnitLabel: 'Signal — no dollar value',
+      valuePerUnitLabel: 'Signal, no dollar value',
       valuePerUnitDefault: 0,
       realizationDefault: 100,
       scaleAxis: 'fixed',
-      benchmarkHint: 'Enter doctor communication composite score (0–100). National average ~79; top-quartile ~88. This domain drives 25% of VBP Total Performance Score — 2% of base Medicare payments at risk.',
+      benchmarkHint: 'Enter doctor communication composite score (0–100). National average ~79; top-quartile ~88. This domain drives 25% of VBP Total Performance Score, 2% of base Medicare payments at risk.',
     },
     valueArc: { signal: { timing: 'Weeks 1-4', metric: 'Documentation time per encounter ↓' }, trend: { timing: 'Month 3-6', metric: 'Doctor communication scores ↑' }, proof: { timing: 'Month 6-12', metric: 'Doctor comm. composite ↑' } },
   },
@@ -2091,7 +2091,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     id: 'ipReadmissionRate',
     label: '30-Day Readmission Rate',
     shortDescription: 'The documentation chain that reaches this outcome: complete H&Ps establish post-acute placement needs accurately; thorough daily progress notes keep care coordination moving toward the right discharge destination; complete consult notes help specialist recommendations reach the transition team. Discharge summary ambient capture, coming soon, will add a fourth mechanism.',
-    tagline: 'HRRP readmission rate — the proof metric that H&P, progress note, and consult note quality builds toward',
+    tagline: 'HRRP readmission rate, the proof metric that H&P, progress note, and consult note quality builds toward',
     quadrant: 'Quality',
     settings: ['inpatient'],
     visibility: 'qualitative',
@@ -2101,7 +2101,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     measureDefaults: {
       deltaLabel: '30-day readmission rate',
       deltaUnit: '%',
-      valuePerUnitLabel: 'Signal — no dollar value',
+      valuePerUnitLabel: 'Signal, no dollar value',
       valuePerUnitDefault: 0,
       realizationDefault: 100,
       scaleAxis: 'fixed',
@@ -2111,11 +2111,11 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     valueArc: { signal: { timing: 'Month 1-3', metric: 'H&P completion rate ↑' }, trend: { timing: 'Month 3-6', metric: 'Discharge planning lead time ↑' }, proof: { timing: 'Month 9-18', metric: '30-day readmission rate ↓' } },
   },
 
-  // ───── CAPACITY — Documentation Time per Note (all care settings) ─────
+  // ───── CAPACITY, Documentation Time per Note (all care settings) ─────
   {
     id: 'opDocTimePerNote',
     label: 'Documentation Time per Note',
-    shortDescription: 'Average minutes spent completing a note per outpatient encounter. The foundational signal — every capacity and workforce outcome traces back here.',
+    shortDescription: 'Average minutes spent completing a note per outpatient encounter. The foundational signal, every capacity and workforce outcome traces back here.',
     tagline: 'Minutes per note, the root signal behind every downstream capacity and workforce metric',
     quadrant: 'Capacity',
     settings: ['outpatient'],
@@ -2138,7 +2138,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     id: 'edDocTimePerEncounter',
     label: 'Documentation Time per Encounter',
     shortDescription: 'Average minutes spent completing a note per ED encounter. Faster documentation is the root signal behind door-to-provider, encounters per shift, and LWBS.',
-    tagline: 'Minutes per encounter — the root signal for ED throughput and workforce outcomes',
+    tagline: 'Minutes per encounter, the root signal for ED throughput and workforce outcomes',
     quadrant: 'Capacity',
     settings: ['ed'],
     visibility: 'qualitative',
@@ -2159,8 +2159,8 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
   {
     id: 'ipDocTimeHnp',
     label: 'H&P Documentation Time',
-    shortDescription: 'Minutes to complete a History & Physical. Admission documentation is the longest note type — the greatest opportunity for absolute time savings per encounter.',
-    tagline: 'Minutes per H&P — the admission note that unlocks consults, care plans, and discharge coordination',
+    shortDescription: 'Minutes to complete a History & Physical. Admission documentation is the longest note type, the greatest opportunity for absolute time savings per encounter.',
+    tagline: 'Minutes per H&P, the admission note that unlocks consults, care plans, and discharge coordination',
     quadrant: 'Capacity',
     settings: ['inpatient'],
     visibility: 'qualitative',
@@ -2181,8 +2181,8 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
   {
     id: 'ipDocTimeProgressNote',
     label: 'Progress Note Documentation Time',
-    shortDescription: 'Minutes to complete a daily progress note. Hospitalists write these every shift for every patient — small per-note savings multiply across a full census.',
-    tagline: 'Minutes per progress note — daily savings across a full census compound quickly',
+    shortDescription: 'Minutes to complete a daily progress note. Hospitalists write these every shift for every patient, small per-note savings multiply across a full census.',
+    tagline: 'Minutes per progress note, daily savings across a full census compound quickly',
     quadrant: 'Capacity',
     settings: ['inpatient'],
     visibility: 'qualitative',
@@ -2203,8 +2203,8 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
   {
     id: 'ipDocTimeConsultNote',
     label: 'Consult Note Documentation Time',
-    shortDescription: 'Minutes to complete a consultation note. Specialists dictating through Abridge at the bedside close notes immediately after the consult — eliminating the separate charting session hours later.',
-    tagline: 'Minutes per consult note — immediate closure lets specialists take more consults per shift',
+    shortDescription: 'Minutes to complete a consultation note. Specialists dictating through Abridge at the bedside close notes immediately after the consult, eliminating the separate charting session hours later.',
+    tagline: 'Minutes per consult note, immediate closure lets specialists take more consults per shift',
     quadrant: 'Capacity',
     settings: ['inpatient'],
     visibility: 'qualitative',
@@ -2225,8 +2225,8 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
   {
     id: 'ipDocTimeDischarge',
     label: 'Discharge Summary Documentation Time',
-    shortDescription: 'Minutes to complete a discharge summary. Abridge captures the discharge conversation in real time — coming soon.',
-    tagline: 'Minutes per discharge summary — coming soon',
+    shortDescription: 'Minutes to complete a discharge summary. Abridge captures the discharge conversation in real time, coming soon.',
+    tagline: 'Minutes per discharge summary, coming soon',
     quadrant: 'Capacity',
     settings: ['inpatient'],
     visibility: 'qualitative',
@@ -2247,7 +2247,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
   {
     id: 'nursingDocTimePerEvent',
     label: 'Documentation Time per Care Event',
-    shortDescription: 'Average minutes spent documenting a nursing care event at the bedside. Point-of-care documentation is the root behavior — everything else follows from here.',
+    shortDescription: 'Average minutes spent documenting a nursing care event at the bedside. Point-of-care documentation is the root behavior, everything else follows from here.',
     tagline: 'Minutes per care event, the root signal behind overtime, charting after shift, and bedside time',
     quadrant: 'Capacity',
     settings: ['nursing'],

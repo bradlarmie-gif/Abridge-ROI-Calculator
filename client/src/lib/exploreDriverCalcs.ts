@@ -384,7 +384,10 @@ export function computeAllDriverCalcSummaries(
 
   if (dq.wrvuEnabled && (isOP || isED)) {
     const liftPct = wrvuScenarios[dq.wrvuScenario] ?? 0;
-    const summary = `${fmtN(eligibleEncounters)} encounters × ${dq.currentWrvu} current wRVU × ${liftPct}% lift × ${fmt$(dq.conversionFactor)}/wRVU × ${dq.wrvuRealization}% realization`;
+    // Show the conversion factor at its true precision (e.g. $33.40, not $33)
+    // so the printed chain reproduces the value exactly — Finance's test.
+    const cf = dq.conversionFactor % 1 === 0 ? `$${dq.conversionFactor}` : `$${dq.conversionFactor.toFixed(2)}`;
+    const summary = `${fmtN(eligibleEncounters)} encounters × ${dq.currentWrvu} current wRVU × ${liftPct}% lift × ${cf}/wRVU × ${dq.wrvuRealization}% realization`;
     if (isED) out.edEmLevel = summary;
     else out.wrvu = summary;
   }
