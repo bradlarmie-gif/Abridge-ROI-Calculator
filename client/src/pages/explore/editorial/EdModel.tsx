@@ -202,7 +202,12 @@ export default function EdModel({
     : baselineCount > 0 && state.utilizationPercent > 0
       ? (expandedProviders / baselineCount) * (expandedUtilization / state.utilizationPercent)
       : 0;
+  // Screen keeps NET (its card is a net-vs-net comparison, labeled "net value").
   const expandedValue = Math.round(netAnnualValue * expansionMultiplier);
+  // The PDF's "at full scale" page compares against the GROSS modeled value, so
+  // it needs a gross-scaled figure (today-gross → full-scale-gross, always
+  // grows). Net-scaling there pitted gross vs net and could invert.
+  const expandedGross = Math.round(totalAnnualValue * expansionMultiplier);
   const providerExpansionRatio = baselineCount > 0 ? expandedProviders / baselineCount : 0;
   const expandedInvestment = annualInvestment * providerExpansionRatio;
   const expandedRoi = expandedInvestment > 0 ? (totalAnnualValue * expansionMultiplier) / expandedInvestment : 0;
@@ -374,7 +379,7 @@ export default function EdModel({
           ? {
               expansionProviders: expandedProviders,
               expansionUtilizationPercent: expandedUtilization,
-              expansionAnnualValue: expandedValue,
+              expansionAnnualValue: expandedGross,
               expansionRoi: expandedRoi,
               ...(derivedFullScaleEncounters !== null ? { expansionEncounters: derivedFullScaleEncounters } : {}),
             }

@@ -484,14 +484,17 @@ function RampChart({ data }: { data: ExplorePDFData }): JSX.Element {
               strokeDasharray="3 3"
             />
             <circle cx={marker.x} cy={marker.y} r="4.5" fill="#fff" stroke={C.coral} strokeWidth="2.5" />
+            {/* Anchor the label so it can never overflow the chart box: when
+                the crossover lands early (marker to the left) the label extends
+                RIGHT into open space; when late, it extends LEFT. */}
             <text
-              x={marker.x - 10}
+              x={marker.x >= 180 ? marker.x - 10 : marker.x + 8}
               y={marker.y - 8}
               fontFamily="Manrope"
               fontSize="10"
               fontWeight="700"
               fill="#B02200"
-              textAnchor="end"
+              textAnchor={marker.x >= 180 ? "end" : "start"}
             >
               clears the cost · Mo {month}
             </text>
@@ -760,16 +763,26 @@ function SynthesisBar({ data }: { data: ExplorePDFData }): JSX.Element {
 
 // Estimated block heights (px) used for greedy pagination.
 const H_HEADER = 42;
-const H_DRIVER = 118;
 const H_MUTED = 72;
 const H_AVAIL = 20;
 const H_SYNTH = 115;
-// Usable px for breakdown atoms per page (page 1056 minus chrome). First page
-// carries the full title block; continuation pages carry a compact "(cont.)"
-// title, so they fit more. Tuned so the common single-setting model (≈4 money
-// drivers + a proof domain + synthesis) lands on ONE page, matching the mock.
-const BUDGET_FIRST = 820;
-const BUDGET_CONT = 880;
+// True usable px for breakdown atoms per page = 1056 minus chrome (pad ~76,
+// running header ~50, footer ~40, and the title block: full eyebrow+headline+
+// lead ~100 on the first page, a compact "(cont.)" ~44 after). Budgets sit a
+// hair under so an accurately-estimated page can never exceed 1056 (no bleed),
+// while the common single-setting model still lands on ONE page.
+const BUDGET_FIRST = 785;
+const BUDGET_CONT = 845;
+
+// Content-aware height estimate for a driver card: title row + wrapped
+// description lines + wrapped math-chain rows + padding. Accurate estimates are
+// what keep the greedy packer from overflowing the page bottom.
+function estDriverH(desc: string, summary?: string): number {
+  const descLines = Math.max(1, Math.ceil((desc?.length ?? 0) / 82));
+  const tiles = summary ? summary.replace(/\s*\|\s*/g, " × ").split(" × ").length + 1 : 2;
+  const chainRows = Math.max(1, Math.ceil(tiles / 5));
+  return 24 + descLines * 15 + chainRows * 44 + 18;
+}
 
 interface BreakAtom {
   h: number;
@@ -810,7 +823,7 @@ function buildBreakdownPages(data: ExplorePDFData): JSX.Element[] {
       const isFirst = idx === 0;
       const isLast = idx === includedQuant.length - 1;
       const availHere = isLast && available.length > 0;
-      const h = (isFirst ? H_HEADER : 0) + H_DRIVER + (availHere ? H_AVAIL : 0);
+      const h = (isFirst ? H_HEADER : 0) + estDriverH(d.shortDescription, d.calcSummary) + (availHere ? H_AVAIL : 0);
       atoms.push({
         h,
         node: (
@@ -1260,7 +1273,7 @@ function ScalePage({ data }: { data: ExplorePDFData }): JSX.Element {
                     height: "100%",
                     background: "#F4A48C",
                     borderRadius: 99,
-                    width: `${exp > 0 ? (total / exp) * 100 : 0}%`,
+                    width: `${exp > 0 ? Math.min(100, (total / exp) * 100) : 0}%`,
                   }}
                 />
               </div>
@@ -1304,7 +1317,7 @@ function ScalePage({ data }: { data: ExplorePDFData }): JSX.Element {
             <ScaleStep
               amount={fmtShort(total)}
               label={`Today · ${data.utilizationPercent}%`}
-              width={exp > 0 ? (total / exp) * 100 : 0}
+              width={exp > 0 ? Math.min(100, (total / exp) * 100) : 0}
               color="#F4A48C"
             />
             <div style={{ padding: "0 16px 14px", color: C.off, fontSize: 10.5, textAlign: "center", lineHeight: 1.3 }}>
@@ -1315,7 +1328,7 @@ function ScalePage({ data }: { data: ExplorePDFData }): JSX.Element {
             <ScaleStep
               amount={fmtShort(mid)}
               label="Same team, deeper"
-              width={exp > 0 ? (mid / exp) * 100 : 0}
+              width={exp > 0 ? Math.min(100, (mid / exp) * 100) : 0}
               color="#F0704E"
             />
             <div style={{ padding: "0 16px 14px", color: C.off, fontSize: 10.5, textAlign: "center", lineHeight: 1.3 }}>
