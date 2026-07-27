@@ -776,10 +776,24 @@ interface BreakAtom {
   node: ReactNode;
 }
 
+// A quadrant carries counted value when it has an included quantified driver.
+function quadValue(q: ExplorePDFQuadrantData): number {
+  return q.drivers.some((d) => d.visibility === "quantified" && d.isIncluded !== false && d.value > 0)
+    ? q.annualTotal
+    : -1;
+}
+
 function buildBreakdownPages(data: ExplorePDFData): JSX.Element[] {
   const atoms: BreakAtom[] = [];
 
-  for (const q of data.quadrants) {
+  // Lead with where the money actually is: money-bearing domains first
+  // (largest first), then proof/unmodeled domains as the quiet tail. A stable
+  // sort keeps the muted domains in their natural order. This means every
+  // setting opens on its strongest material — and for nursing the harm-
+  // reduction chains lead instead of three empty domains.
+  const ordered = [...data.quadrants].sort((a, b) => quadValue(b) - quadValue(a));
+
+  for (const q of ordered) {
     const includedQuant = q.drivers.filter(
       (d) => d.visibility === "quantified" && d.isIncluded !== false && d.value > 0,
     );
