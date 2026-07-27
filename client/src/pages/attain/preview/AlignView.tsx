@@ -176,20 +176,24 @@ export default function AlignView({ c, settingLabel, categoryLabel, picked, setP
 
       {/* Q — outcomes */}
       <SectionHead n={++qn} kicker="The outcomes" title={c.outcomesPrompt} />
-      <div className="border-t border-[#E8E2DA] mb-12">
-        {c.outcomes.map((o) => (
-          <div key={o.id} className="border-b border-[#E8E2DA]">
-            <button type="button" onClick={() => toggleOutcome(o.id)} className="group relative w-full text-left flex items-start gap-3.5 pl-4 pr-3 py-4 hover:bg-[#F2EDE5] transition-colors">
-              {picked.has(o.id) && <span className="absolute left-0 top-2 bottom-2 w-[3px] rounded-full bg-[#EA2C00]" />}
-              {single ? <Radio on={picked.has(o.id)} /> : <Box on={picked.has(o.id)} />}
-              <div>
-                <p className={`text-[16px] leading-snug ${picked.has(o.id) ? "font-semibold text-[#EA2C00]" : "font-medium text-[#1A1A1A]"}`}>{o.title}</p>
-                <p className="text-[13px] text-[#8C8C8C] leading-snug mt-1 max-w-[560px]">{o.desc}</p>
-              </div>
-            </button>
-          </div>
-        ))}
-      </div>
+      {activeLevers !== null && activeLevers.length === 0 ? (
+        <p className="text-[14px] text-[#8C8C8C] leading-relaxed mb-12 max-w-[600px]">Pick your payers above, and the goals for each book will appear here.</p>
+      ) : (
+        <div className="border-t border-[#E8E2DA] mb-12">
+          {c.outcomes.filter((o) => activeLevers === null || !o.lever || activeLevers.some((l) => l.id === o.lever)).map((o) => (
+            <div key={o.id} className="border-b border-[#E8E2DA]">
+              <button type="button" onClick={() => toggleOutcome(o.id)} className="group relative w-full text-left flex items-start gap-3.5 pl-4 pr-3 py-4 hover:bg-[#F2EDE5] transition-colors">
+                {picked.has(o.id) && <span className="absolute left-0 top-2 bottom-2 w-[3px] rounded-full bg-[#EA2C00]" />}
+                {single ? <Radio on={picked.has(o.id)} /> : <Box on={picked.has(o.id)} />}
+                <div>
+                  <p className={`text-[16px] leading-snug ${picked.has(o.id) ? "font-semibold text-[#EA2C00]" : "font-medium text-[#1A1A1A]"}`}>{o.title}</p>
+                  <p className="text-[13px] text-[#8C8C8C] leading-snug mt-1 max-w-[560px]">{o.desc}</p>
+                </div>
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Q — segments */}
       {c.segments && (

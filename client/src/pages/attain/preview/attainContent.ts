@@ -26,6 +26,7 @@ export type AlignOutcome = {
   unitValue?: number;           // $ per counted unit (used when not reweighting by segment)
   reweightBySegment?: boolean;  // if true, use the mean of selected segment values instead
   proof?: string[];             // proof-signal ids this outcome carries into the proof question
+  lever?: string;               // population-scoped goal: only shows when this lever (e.g. ffs / risk) is live
 };
 
 export type AlignSegment = { id: string; title: string; desc: string; value: number };
@@ -80,7 +81,9 @@ export type PlanContent = {
   signalsTag: string;         // "measured directly from Epic Signal"
   abridgeSignals: MetricDef[];
   connector: string;          // "When those move, the freed capacity is what makes these outcomes reachable."
-  outcomeGroups: { outcome: string; metrics: MetricDef[] }[];
+  // A group tagged with a `lever` only shows in the plan when that revenue lever is
+  // live (from the payer frame). Untagged groups always show.
+  outcomeGroups: { outcome: string; metrics: MetricDef[]; lever?: string }[];
   // plain-English summary pieces
   signalsShortList: string;   // "time in note, work outside of work, and same-day note closure"
   outcomesShortList: string;  // "backlog and wait"

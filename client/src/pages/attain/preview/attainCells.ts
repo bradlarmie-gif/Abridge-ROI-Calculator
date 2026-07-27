@@ -343,12 +343,12 @@ const outpatientRevenue: AttainCell = {
   align: {
     outcomesMode: "multi",
     value: { mode: "sumOutcomeDigs", unitValueLabel: "captured revenue" },
-    outcomesPrompt: "Where is the revenue slipping?",
-    outcomesHelper: "This is money for care you already delivered that the documentation didn't carry to the claim. Pick where you see it, and we'll size it from your own numbers.",
+    outcomesPrompt: "Pick the goals you're after",
+    outcomesHelper: "These are the goals your payer mix opens up, so pick each one that matters. As you do, we'll size the number behind it from your own figures, not a benchmark. Fee-for-service goals size on how the visit codes; risk goals size on the conditions you recapture.",
     outcomes: [
-      { id: "em", title: "Visits billing below the work that was done", desc: "A level-4 workup that goes out as a level 3 because the note didn't show it.", dig: { label: "Visits a year you suspect are undercoded", unit: "visits / yr", placeholder: "e.g., 6,000" }, mathLabel: "undercoded", plays: ["Coder feedback to providers", "Bake the level drivers into the note", "Spot-audit the level distribution"], unitValue: 33, proof: ["losmix", "captured"] },
-      { id: "hcc", title: "Chronic conditions that reset every year", desc: "Treated and documented in the visit, but never coded, so the risk score and the payment reset each January.", dig: { label: "Risk-contract patients with open condition gaps", unit: "patients", placeholder: "e.g., 900" }, mathLabel: "gaps closed", plays: ["Surface open conditions at the visit", "Address the full problem list each year", "Pre-visit gap lists for the provider"], unitValue: 1200, proof: ["recapture", "captured"] },
-      { id: "denials", title: "Denials you end up writing off", desc: "Medical-necessity denials a more complete note would have prevented.", dig: { label: "Preventable denials a year", unit: "denials / yr", placeholder: "e.g., 300" }, mathLabel: "denials", plays: ["Put medical necessity in the note", "Fix the top denial reasons at the source", "Payer-specific documentation prompts"], unitValue: 3500, proof: ["denialrate", "captured"] },
+      { id: "em", lever: "ffs", title: "Get paid for the level of care you deliver", desc: "The workup happened; the note just didn't carry it, so a level-4 visit goes out as a level 3. This closes the gap between the care and the code.", dig: { label: "Visits a year you suspect are undercoded", unit: "visits / yr", placeholder: "e.g., 6,000" }, mathLabel: "undercoded", plays: ["Coder feedback to providers", "Bake the level drivers into the note", "Spot-audit the level distribution"], unitValue: 33, proof: ["losmix", "captured"] },
+      { id: "hcc", lever: "risk", title: "Improve your risk accuracy", desc: "Chronic conditions treated and documented in the visit, but never coded, so the risk score and the payment reset every January.", dig: { label: "Risk-contract patients with open condition gaps", unit: "patients", placeholder: "e.g., 900" }, mathLabel: "gaps closed", plays: ["Surface open conditions at the visit", "Address the full problem list each year", "Pre-visit gap lists for the provider"], unitValue: 1200, proof: ["recapture", "captured"] },
+      { id: "denials", title: "Stop writing off preventable denials", desc: "Medical-necessity denials a more complete note would have prevented.", dig: { label: "Preventable denials a year", unit: "denials / yr", placeholder: "e.g., 300" }, mathLabel: "denials", plays: ["Put medical necessity in the note", "Fix the top denial reasons at the source", "Payer-specific documentation prompts"], unitValue: 3500, proof: ["denialrate", "captured"] },
     ],
     scope: { prompt: "Across how many providers?", unitLabel: "providers, from your Starting Point", ceiling: 60, default: "40" },
     choices: [
@@ -383,17 +383,21 @@ const outpatientRevenue: AttainCell = {
   plan: {
     valueInPlay: engineValueInPlay("Outpatient", "Revenue Capture"),
     segmentsSummary: "your billed encounters",
-    outcomes: ["Visits billing below the work that was done", "Denials you end up writing off"],
+    outcomes: ["Get paid for the level of care you deliver", "Improve your risk accuracy", "Stop writing off preventable denials"],
     signalsGroupLabel: "What Abridge can enable",
     signalsTag: "measured from the Abridge platform",
     abridgeSignals: REVENUE_DOC_SIGNALS,
     connector: "When the note captures what actually happened, the coding follows.",
     outcomeGroups: [
-      { outcome: "Visits billing below the work that was done", metrics: [
+      { outcome: "Get paid for the level of care you deliver", lever: "ffs", metrics: [
         { id: "embelow", name: "E/M below supported level", measure: "Share of visits coding below what the documentation supports.", source: "Billing / claims", unit: "%", today: "22", target: "12" },
         { id: "losmix", name: "Level-of-service mix", measure: "Average E/M level across the book.", source: "Billing / claims", unit: "avg level", today: "3.6", target: "3.9" },
       ] },
-      { outcome: "Denials you end up writing off", metrics: [
+      { outcome: "Improve your risk accuracy", lever: "risk", metrics: [
+        { id: "recapture", name: "HCC recapture rate", measure: "Share of open risk-adjustment conditions recaptured to the claim each year.", source: "Billing / claims", unit: "%", today: "50", target: "75" },
+        { id: "hcccomplete", name: "Condition capture completeness", measure: "Share of conditions documented at the visit that make it onto the coded claim.", source: "Billing / claims", unit: "%", today: "70", target: "88" },
+      ] },
+      { outcome: "Stop writing off preventable denials", metrics: [
         { id: "denialrate", name: "Medical-necessity denial rate", measure: "Share of claims denied for medical necessity.", source: "Billing / claims", unit: "%", today: "6", target: "3" },
         { id: "recovered", name: "Denials recovered", measure: "Denied revenue recovered or prevented.", source: "Billing / claims", unit: "$/yr", today: "—", target: "—" },
       ] },

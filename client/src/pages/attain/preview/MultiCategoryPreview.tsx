@@ -269,7 +269,7 @@ export function AttainExperience({ setting, cells, baseline, initial, onPersist 
         )}
         {chapter === "plan" && (
           <>
-            <PlanView key={cell.category} c={cell.plan} settingLabel={SETTING} categoryLabel={catLabel(cell)} committed={committedFor(cell)}
+            <PlanView key={cell.category} c={cell.plan} settingLabel={SETTING} categoryLabel={catLabel(cell)} committed={committedFor(cell)} activeLevers={activeLeversFor(cell)?.map((l) => l.id)}
               metrics={metricsByCat[cell.category]} onPatchMetric={patchMetric(cell.category)}
               people={peopleByCat[cell.category]} onPeople={setPeopleFor(cell.category)}
               customs={customsByCat[cell.category]} onCustoms={setCustomsFor(cell.category)}

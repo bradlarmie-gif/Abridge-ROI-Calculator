@@ -80,7 +80,7 @@ const CADENCES = [
   ["quarterly", "Quarterly", "The standard business-review rhythm."],
 ] as const;
 
-export default function PlanView({ c, settingLabel, categoryLabel, committed = [], metrics: metricsProp, onPatchMetric, liveValue, segmentsSummary, people: peopleProp, onPeople, customs: customsProp, onCustoms, cadence: cadenceProp, onCadence }: { c: PlanContent; settingLabel: string; categoryLabel: string; committed?: { title: string; chosen: string[] }[]; metrics?: Record<string, MState>; onPatchMetric?: (id: string, k: keyof MState, v: string) => void; liveValue?: number; segmentsSummary?: string; people?: Person[]; onPeople?: (p: Person[]) => void; customs?: Custom[]; onCustoms?: (c: Custom[]) => void; cadence?: string; onCadence?: (c: string) => void }) {
+export default function PlanView({ c, settingLabel, categoryLabel, committed = [], metrics: metricsProp, onPatchMetric, liveValue, segmentsSummary, people: peopleProp, onPeople, customs: customsProp, onCustoms, cadence: cadenceProp, onCadence, activeLevers }: { c: PlanContent; settingLabel: string; categoryLabel: string; committed?: { title: string; chosen: string[] }[]; metrics?: Record<string, MState>; onPatchMetric?: (id: string, k: keyof MState, v: string) => void; liveValue?: number; segmentsSummary?: string; people?: Person[]; onPeople?: (p: Person[]) => void; customs?: Custom[]; onCustoms?: (c: Custom[]) => void; cadence?: string; onCadence?: (c: string) => void; activeLevers?: string[] }) {
   // setting-appropriate source options: don't offer "Provider survey" on nursing, or "Nurse survey" elsewhere
   const sourceOptions = SOURCES.filter((s) => (settingLabel === "Nursing" ? s !== "Provider survey" : s !== "Nurse survey"));
   const valueInPlay = liveValue ?? c.valueInPlay; // the LIVE engine number (falls back to static only for throwaway previews)
@@ -212,7 +212,7 @@ export default function PlanView({ c, settingLabel, categoryLabel, committed = [
 
       <p className="text-[11px] font-bold uppercase tracking-[2px] text-[#1A1A1A] mb-4">The outcomes they open up</p>
       <div className="space-y-8 mb-14">
-        {c.outcomeGroups.map((g) => (
+        {c.outcomeGroups.filter((g) => !g.lever || (activeLevers ?? []).includes(g.lever)).map((g) => (
           <div key={g.outcome}>
             <p className="text-[14px] font-semibold text-[#1A1A1A] mb-3">{g.outcome}</p>
             <div className="space-y-5">
