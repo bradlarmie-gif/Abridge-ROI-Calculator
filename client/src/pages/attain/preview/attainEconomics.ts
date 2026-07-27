@@ -50,21 +50,24 @@ export type EconModel = {
   math: (i: EconInputs, activeLevers?: string[]) => string;
 };
 
-const BURNOUT = (def: string): Assumption => ({ key: "burnout", label: "Burnout-driven share of turnover", default: def, suffix: "%" });
-
-const workforceModel = (nounSingular: string, nounPlural: string, replacePlaceholder: string, turnoverPlaceholder: string, assumptions: Assumption[]): EconModel => ({
-  title: `What does losing one ${nounSingular} cost you?`,
-  helper: `Retention is a smaller, harder-won number than the rest, so we keep it honest. Set what one departure actually costs you and your real turnover rate. How much of the burnout-driven share Abridge can help prevent is yours to set below.`,
+// The workforce (retention) dollar is DELIBERATELY the quietest, most-discounted claim in the
+// tool. Turnover and the burnout share are captured earlier, in the conversational "where you
+// are today + which way it's trending" beat, so this box asks only the cost of one departure
+// and how much of the burnout-driven share a lighter day can prevent. Turnover / burnout still
+// feed the math from the econ map; the defaults below keep the through-line clean if either is
+// left blank. The value leads with what holding people PROTECTS, not this number.
+const workforceModel = (nounSingular: string, nounPlural: string, replaceDefault: number, replacePlaceholder: string, turnoverDefault: number, burnoutDefault: number, assumptions: Assumption[]): EconModel => ({
+  title: `And the quiet part: what does losing one ${nounSingular} cost you?`,
+  helper: `This comes last on purpose. You set where you are today and the trend above; here we only price one departure. It stays the softest claim in the plan, well behind what holding your people protects, and we count only the burnout-driven share a lighter documentation day can address.`,
   fields: [
     { key: "replacementCost", label: `Cost to replace one ${nounSingular}`, prefix: "$", placeholder: replacePlaceholder, hint: "Recruiting, ramp, and lost production for one departure." },
-    { key: "turnover", label: "Annual turnover", suffix: "%", placeholder: turnoverPlaceholder, hint: "Your yearly rate across this group." },
   ],
   assumptions,
   stancePrompt: "How much of the burnout-driven turnover do you expect to prevent?",
   stanceBands: [20, 30, 40],
   stanceCap: 50,
   capNote: "We cap this at 50 percent. A lighter day moves the burnout-driven share of turnover, not the pay or life reasons behind the rest.",
-  math: (i) => `${nn(i.scope)} ${nounPlural} × ${i.econ.turnover}% turnover × ${i.econ.burnout ?? 40}% burnout-driven × ${i.stancePct}% prevented × ${fmt$(i.econ.replacementCost)}/replacement, plus the agency premium avoided.`,
+  math: (i) => `${nn(i.scope)} ${nounPlural} × ${i.econ.turnover ?? turnoverDefault}% turnover × ${i.econ.burnout ?? burnoutDefault}% burnout-driven × ${i.stancePct}% prevented × ${fmt$(i.econ.replacementCost ?? replaceDefault)}/replacement, plus the agency premium avoided.`,
 });
 
 export const ECON_MODELS: Record<string, EconModel> = {
@@ -83,7 +86,7 @@ export const ECON_MODELS: Record<string, EconModel> = {
     capNote: "We cap this at 75 percent. You can never fill all the headroom, and a number that pretends you can will not survive a CFO.",
     math: (i) => `${nn(i.scope)} providers × freed-time headroom × ${i.stancePct}% filled × ${fmt$(i.econ.perVisit)} margin/visit. Minutes saved is seeded here, then measured on Progress.`,
   },
-  "Outpatient|Provider Retention": workforceModel("provider", "providers", "400,000", "6", [BURNOUT("40")]),
+  "Outpatient|Provider Retention": workforceModel("provider", "providers", 400_000, "400,000", 6, 40, []),
   "Outpatient|Revenue Capture": {
     title: "How much of the revenue do you keep?",
     helper: "The payers you picked above set what gets priced. Fee-for-service pays on the visit level, so the money is the coding lift a more complete note supports. Risk contracts pay on the conditions you capture, so the money is the recapture a fuller note makes possible. Fill in the levers in play; how much of the lift you actually capture and keep is yours to set below. The size of each lift we seed conservatively.",
@@ -134,7 +137,7 @@ export const ECON_MODELS: Record<string, EconModel> = {
     capNote: "We cap this at 60 percent. Throughput has many bottlenecks; documentation moves only its share.",
     math: (i) => `Fewer left-without-being-seen and captured admissions across your ED volume × ${i.stancePct}% realized, at ${fmt$(i.econ.edVisit)}/visit and ${fmt$(i.econ.admitMargin)}/admission.`,
   },
-  "ED|Provider Retention": workforceModel("provider", "ED providers", "400,000", "6", [BURNOUT("40")]),
+  "ED|Provider Retention": workforceModel("provider", "ED providers", 400_000, "400,000", 6, 40, []),
   "ED|Revenue Capture": {
     title: "How much of the revenue do you keep?",
     helper: "The goals you picked above set what gets priced. Getting paid for the acuity sizes on how the visit codes; preventable denials size on the claims a complete note would have saved. Fill in the levers in play; how much of the lift you capture and keep is yours to set below. The size of each lift we seed conservatively.",
@@ -206,7 +209,7 @@ export const ECON_MODELS: Record<string, EconModel> = {
       return parts.join(". ") + (parts.length > 1 ? ". They sum to the number above." : ".");
     },
   },
-  "Inpatient|Provider Retention": workforceModel("hospitalist", "hospitalists", "300,000", "8", [BURNOUT("45")]),
+  "Inpatient|Provider Retention": workforceModel("hospitalist", "hospitalists", 300_000, "300,000", 8, 45, []),
   "Inpatient|Inpatient Capacity": {
     title: "What's an earlier bed turn worth?",
     helper: "When the discharge documentation is ready on time, the order and summary land earlier and the bed opens before noon instead of after. Set what turning a bed earlier in the day is worth to you. Most discharge delay is placement, consults, and authorization, not the note, so we stay conservative: this is an earlier bed turn, never a shorter length of stay.",
@@ -236,7 +239,7 @@ export const ECON_MODELS: Record<string, EconModel> = {
     capNote: "We cap this at 40 percent. Prevention is hard-won, and only some harm is documentation-preventable.",
     math: (i) => `Preventable falls, pressure injuries, CLABSI and sepsis across ${nn(i.scope)} beds × ${i.stancePct}% prevented, at your rates and seeded cost per event.`,
   },
-  "Nursing|Provider Retention": workforceModel("nurse", "nurses", "56,300", "18", [{ key: "agencyWk", label: "Agency premium per week", default: "2,500", prefix: "$" }]),
+  "Nursing|Provider Retention": workforceModel("nurse", "nurses", 56_300, "56,300", 18, 40, [{ key: "agencyWk", label: "Agency premium per week", default: "2,500", prefix: "$" }]),
   "Nursing|Nursing Capacity": {
     title: "What's the overtime worth back?",
     helper: "Lighter documentation can give shift time back, which can show up as less documentation-tied overtime. Set your overtime hourly rate; how much of that overtime you actually remove is yours to set below.",

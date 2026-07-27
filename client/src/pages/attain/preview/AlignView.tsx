@@ -59,11 +59,17 @@ export type AlignInputs = { scope: string; econ: Record<string, string>; stance:
 // The Align answers that used to be local (and got wiped on chapter switch) — now liftable.
 export type AlignAnswers = { segs: Set<string>; choices: Record<string, Set<string>>; proof: Set<string>; unlock: Set<string> };
 export const emptyAlignAnswers = (c: AlignContent): AlignAnswers => ({
-  segs: new Set(), choices: Object.fromEntries((c.choices ?? []).map((q) => [q.id, new Set<string>()])), proof: new Set(), unlock: new Set(),
+  segs: new Set(),
+  choices: Object.fromEntries([
+    ...(c.choices ?? []).map((q) => [q.id, new Set<string>()] as const),
+    ...(c.trend ? [[c.trend.trendId, new Set<string>()] as const] : []),
+  ]),
+  proof: new Set(), unlock: new Set(),
 });
 
-export default function AlignView({ c, settingLabel, categoryLabel, picked, setPicked, plays, setPlays, scopeCount, inputs: inputsProp, onInput: onInputProp, liveValue, liveMath, answers: answersProp, setAnswers: setAnswersProp }: {
+export default function AlignView({ c, settingLabel, categoryLabel, categoryKey, picked, setPicked, plays, setPlays, scopeCount, inputs: inputsProp, onInput: onInputProp, liveValue, liveMath, answers: answersProp, setAnswers: setAnswersProp }: {
   c: AlignContent; settingLabel: string; categoryLabel: string;
+  categoryKey?: string; // STABLE category key for the econ-model lookup; falls back to the display label. Needed where the display label diverges from the key (e.g. Nursing "Nurse Retention" → "Provider Retention").
   picked: Set<string>; setPicked: React.Dispatch<React.SetStateAction<Set<string>>>;
   plays: Record<string, Set<string>>; setPlays: React.Dispatch<React.SetStateAction<Record<string, Set<string>>>>;
   scopeCount?: number; // real count from the partner's Starting Point (providers / nurses / beds)
@@ -90,7 +96,7 @@ export default function AlignView({ c, settingLabel, categoryLabel, picked, setP
   const setSegs = field("segs"), setChoices = field("choices"), setProof = field("proof"), setUnlock = field("unlock");
 
   // the economics beat + realization stance for this category (if it has a model)
-  const econ = econModel(settingLabel, categoryLabel);
+  const econ = econModel(settingLabel, categoryKey ?? categoryLabel);
   // Does this model gate on a payer frame? Payer-driven categories (Outpatient) ask a
   // frame question and hide goals until a payer is picked. Goal-driven categories
   // (ED / Inpatient) have no frame, so all their goals are always visible.
@@ -356,6 +362,44 @@ export default function AlignView({ c, settingLabel, categoryLabel, picked, setP
         </>
       )}
 
+      {/* Q — the remaining framing questions (e.g. the burden anatomy, at-risk, and the honest
+          driver gate for retention): asked after the outcomes, before we size and price it. */}
+      {(c.choices ?? []).filter((q) => q.stage !== "frame").map((q) => (
+        <div key={q.id}>
+          <SectionHead n={++qn} kicker={q.kicker} title={q.prompt} />
+          <p className="text-[14px] text-[#6B6B6B] leading-relaxed mb-4 max-w-[600px]">{q.helper}</p>
+          <div className="border-t border-[#E8E2DA] mb-12">
+            {q.options.map((o) => <OptionRow key={o.id} on={(choices[q.id] ?? new Set()).has(o.id)} onToggle={() => toggleChoice(q.id, o.id, q.mode)} title={o.title} desc={o.desc} radio={q.mode === "single"} />)}
+          </div>
+        </div>
+      ))}
+
+      {/* Q — the trend beat: where they are today (current numbers → econ) + the direction of
+          travel (a single-select → answers.choices). Slipping is the urgent case; steady is
+          a reason to stay humble. Only the numbers feed the (demoted) dollar. */}
+      {c.trend && (
+        <>
+          <SectionHead n={++qn} kicker={c.trend.kicker} title={c.trend.prompt} />
+          <p className="text-[14px] text-[#6B6B6B] leading-relaxed mb-5 max-w-[600px]">{c.trend.helper}</p>
+          <div className="flex flex-wrap gap-x-10 gap-y-5 mb-8">
+            {c.trend.numbers.map((f) => (
+              <div key={f.key}>
+                <p className={`${LBL} mb-1.5`}>{f.label}</p>
+                <div className="flex items-baseline gap-1">
+                  {f.prefix && <span className="font-abridge text-2xl text-[#8C8C8C]">{f.prefix}</span>}
+                  <AttainNumberInput value={inputs.econ[f.key] ?? ""} onChange={(raw) => setEcon(f.key, raw)} placeholder={f.placeholder} className={NUMFIELD} />
+                  {f.suffix && <span className="text-[15px] text-[#8C8C8C]">{f.suffix}</span>}
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="text-[11px] font-bold uppercase tracking-[1.5px] text-[#443A32] mb-3">{c.trend.trendPrompt}</p>
+          <div className="border-t border-[#E8E2DA] mb-12">
+            {c.trend.options.map((o) => <OptionRow key={o.id} on={(choices[c.trend!.trendId] ?? new Set()).has(o.id)} onToggle={() => toggleChoice(c.trend!.trendId, o.id, "single")} title={o.title} desc={o.desc} radio />)}
+          </div>
+        </>
+      )}
+
       {/* Q — scope */}
       {c.scope && (
         <>
@@ -368,18 +412,6 @@ export default function AlignView({ c, settingLabel, categoryLabel, picked, setP
           <p className="text-[12px] text-[#8C8C8C] mb-12">{scopeCount != null ? "That total came from your Starting Point; scope to a slice of it, or run the whole setting." : "How many this applies to."}</p>
         </>
       )}
-
-      {/* Q — the remaining framing questions (e.g. the "why is it slipping" cause):
-          asked after the leak is named, before we price it. */}
-      {(c.choices ?? []).filter((q) => q.stage !== "frame").map((q) => (
-        <div key={q.id}>
-          <SectionHead n={++qn} kicker={q.kicker} title={q.prompt} />
-          <p className="text-[14px] text-[#6B6B6B] leading-relaxed mb-4 max-w-[600px]">{q.helper}</p>
-          <div className="border-t border-[#E8E2DA] mb-12">
-            {q.options.map((o) => <OptionRow key={o.id} on={(choices[q.id] ?? new Set()).has(o.id)} onToggle={() => toggleChoice(q.id, o.id, q.mode)} title={o.title} desc={o.desc} radio={q.mode === "single"} />)}
-          </div>
-        </div>
-      ))}
 
       {/* Q — the economics (their real money + the fill stance), asked after the leak and its cause. */}
       {econ && (
@@ -447,7 +479,7 @@ export default function AlignView({ c, settingLabel, categoryLabel, picked, setP
         </>
       )}
 
-      {/* framing choices now render above: frame-stage before outcomes, the rest before the economics */}
+      {/* framing choices now render above: frame-stage before outcomes, the rest (plus the trend beat) before scope */}
 
       {/* Q — the play (dynamic to the chosen outcomes), in the page's editorial row style */}
       {c.outcomes.some((o) => picked.has(o.id) && o.plays) && (

@@ -1,4 +1,4 @@
-import { outpatientAccess, type AttainCell } from "./attainContent";
+import { outpatientAccess, type AttainCell, type ChoiceOption, type MetricDef } from "./attainContent";
 import { engineValueInPlay } from "./attainEngineAdapter";
 
 /**
@@ -100,100 +100,199 @@ const edAccess: AttainCell = {
 };
 
 // ---------------------------------------------------------------- Retention (all settings)
-function retentionCell(setting: string, nounSingular: string, nounPlural: string, scopeCeiling: number, scopeDefault: string, perScope: number, signals: AttainCell["plan"]["abridgeSignals"], signalsShort: string): AttainCell {
-  // setting-appropriate vocabulary: nurses aren't "providers", don't use "locums", and work at the bedside not "in the visit"
-  const isNurse = nounSingular === "nurse";
+// Wellness-first, goal-first, per-setting depth to the Patient Access exemplar's bar. The
+// financial number is DEMOTED: the walk leads with what holding people protects, and the
+// dollar is the quiet, capped, doc-addressable-burnout-share claim at the end. The honest
+// escape hatch (mostly pay or life → a lighter day won't decide it) stays. The depth is the
+// PER-SETTING burden anatomy + at-risk segments each setting brings.
+type RetentionConfig = {
+  setting: string;
+  nounSingular: string;   // "clinician" | "hospitalist" | "nurse"
+  nounPlural: string;     // display plural: "clinicians" | "ED clinicians" | "hospitalists" | "nurses"
+  peopleWord: string;     // "Clinicians" | "Hospitalists" | "Nurses" — for proof / plan copy
+  isNurse: boolean;
+  scopeCeiling: number;
+  scopeDefault: string;
+  signals: MetricDef[];
+  signalsShort: string;
+  anatomy: ChoiceOption[];   // step 2 — the burden anatomy, SETTING-SPECIFIC (multi)
+  atRisk: ChoiceOption[];    // step 3 — who's most at risk, SETTING-SPECIFIC (multi)
+  turnoverPlaceholder: string;
+  burnoutPlaceholder: string;
+  turnoverToday: string;     // plan metric baselines
+  turnoverTarget: string;
+};
+
+function retentionCell(cfg: RetentionConfig): AttainCell {
+  const { setting, nounSingular, nounPlural, peopleWord, isNurse } = cfg;
   const surveySource = isNurse ? "Nurse survey" : "Provider survey";
+  // nurses lean on travel and agency; physicians on agency and locums
+  const agencyTitle = isNurse ? "Wind down travel and agency spend" : "Wind down agency and locum spend";
+  const agencyDesc = "Stop paying premium rates to cover the gaps that turnover opens.";
+  const bedsideOrScreen = isNurse ? "Give the time back at the bedside" : "Protect time with patients, not the screen";
   return {
     setting,
     category: "Provider Retention", // stable key across settings; nurses aren't providers, so relabel the heading
-    categoryLabel: nounSingular === "nurse" ? "Nurse Retention" : undefined,
+    categoryLabel: isNurse ? "Nurse Retention" : undefined,
     align: {
-      outcomesMode: "single",
-      value: { mode: "scopeBased", perScope, scopeNoun: nounPlural, mathTail: `in avoided turnover cost.` },
-      outcomesPrompt: "What matters most here?",
-      outcomesHelper: `Retention is rarely just one thing. Tell us what you're really after with your ${nounPlural}, and we'll size the value from your own headcount.`,
+      outcomesMode: "multi",
+      value: { mode: "scopeBased", perScope: 0, scopeNoun: nounPlural, mathTail: `in avoided turnover cost.` },
+      outcomesPrompt: "What are you really after?",
+      outcomesHelper: `When a team says "we want to work on wellness," that's the goal. Our job is to already know what it breaks down into for your setting and walk you there. Pick everything you're after with your ${nounPlural}. We lead with what holding your people protects; the dollar comes last, and it's the softest claim we make.`,
       outcomes: [
-        { id: "keep", title: "Keep our people", desc: `Fewer of the ${nounPlural} you have today choosing to leave.`, plays: ["Protect the freed time, don't just refill it", "Check in with the people most at risk of leaving", "Make the change visible to the team"] },
-        { id: "betterday", title: "A better day", desc: "The same team, with a lighter, more livable day.", plays: ["Cut the after-hours charting", "Protect time with patients, not the screen", "Drop the low-value documentation asks"] },
-        { id: "both", title: "Both", desc: "Lower voluntary turnover and a better day, together.", plays: ["Protect the freed time", "Check in with the at-risk", "Track the day getting lighter"], proof: ["turnover", "pulse"] },
+        { id: "betterday", title: "A lighter, more livable day", desc: `The same team, with the day that finally ends when it's supposed to.`, plays: ["Protect the freed time, don't just refill it", "Cut the after-hours charting", bedsideOrScreen], proof: ["pulse", "stay", "tin", "wow"] },
+        { id: "keep", title: "Keep the people you have", desc: `Fewer of the ${nounPlural} you have today choosing to leave.`, plays: ["Check in with the people most at risk of leaving", "Make the lighter day visible to the team", "Protect the freed time so it's actually felt"], proof: ["turnover", "pulse"] },
+        { id: "agency", title: agencyTitle, desc: agencyDesc, plays: [isNurse ? "Redirect freed hours before backfilling with travel or agency" : "Hold coverage in-house before reaching for locums", "Watch the premium-rate spend ease as turnover comes down"], proof: ["turnover"] },
+        { id: "line", title: "Protect a fragile service line", desc: "One or two departures away from a real coverage problem.", plays: ["Shore up the thinnest coverage first", "Track who's at risk on the fragile service or shift"], proof: ["turnover", "stay"] },
       ],
-      scope: { prompt: `Across how many ${nounPlural}?`, unitLabel: `${nounPlural}, from your Starting Point`, ceiling: scopeCeiling, default: scopeDefault },
+      scope: { prompt: `Across how many ${nounPlural}?`, unitLabel: `${nounPlural}, from your Starting Point`, ceiling: cfg.scopeCeiling, default: cfg.scopeDefault },
       choices: [
+        { id: "anatomy", kicker: "The burden", prompt: `What's driving the burden, for your setting?`, helper: `This is the part we already know how to decompose. Pick the ones that ring true for your ${nounPlural}; it's where a lighter documentation day actually reaches.`, mode: "multi", options: cfg.anatomy },
+        { id: "atrisk", kicker: "Where to focus", prompt: "Who's most at risk?", helper: "Turnover isn't even across the group. Naming where it concentrates is where to focus first, and where a lighter day earns its keep.", mode: "multi", options: cfg.atRisk },
         { id: "driver", kicker: "The driver", prompt: "What's driving your departures?", helper: "Be honest here. It tells us how much of the turnover a lighter day can realistically touch, and how much it can't.", mode: "single", defaultId: "burnout", options: [
           { id: "burnout", title: "Mostly burnout and workload", desc: "The day is too heavy, and the charting follows people home." },
           { id: "meaningful", title: "A meaningful share is burnout", desc: "Some of it is workload; some is pay or life." },
           { id: "paylife", title: "Mostly pay or life", desc: "Honestly, a lighter day won't be the deciding factor here." },
         ] },
-        { id: "burden", kicker: "The burden", prompt: "Where does it hurt most?", helper: "Where the day feels heaviest tells us which signals to watch first.", mode: "single", defaultId: "afterhours", options: [
-          { id: "visit", title: isNurse ? "At the bedside" : "In the visit", desc: isNurse ? "Charting instead of being present with the patient." : "Documenting while trying to be present with the patient." },
-          { id: "afterhours", title: "After hours", desc: "Charting at night, the work outside of work tied to burnout." },
-          { id: "both", title: "Both", desc: "Heavy in the room and heavy at home." },
-        ] },
       ],
+      trend: {
+        kicker: "Today, and the trend",
+        prompt: "Where's your turnover and burnout today, and which way is it trending?",
+        helper: "Set roughly where you are now, then tell us the direction. A slipping trend is the urgent case; a steady one is a reason to stay humble about what a lighter day will move. These feed the quiet dollar later; the direction just tells us how hard to lean.",
+        numbers: [
+          { key: "turnover", label: "Voluntary turnover today", suffix: "%", placeholder: cfg.turnoverPlaceholder },
+          { key: "burnout", label: "Burnout on your last pulse", suffix: "%", placeholder: cfg.burnoutPlaceholder },
+        ],
+        trendId: "trend",
+        trendPrompt: "Which way has it been trending?",
+        options: [
+          { id: "improving", title: "Improving", desc: "It's been getting better." },
+          { id: "flat", title: "Flat", desc: "It's held about steady." },
+          { id: "slipping", title: "Slipping", desc: "It's been drifting the wrong way. This is the urgent case." },
+        ],
+      },
       proof: {
         prompt: "What would tell you it's working?",
-        helper: "Pick what you'd point to in a review. The experience signals move before the turnover number does.",
+        helper: "Pick what you'd point to in a review. The experience signals move first, well before the turnover number does.",
         signals: [
+          { id: "pulse", label: "A burnout pulse easing", desc: "A short, repeated read on how the team is actually doing, coming down.", unit: "%" },
+          { id: "stay", label: "Likelihood to stay rising", desc: `The share of ${nounPlural} who say they intend to stay, climbing.`, unit: "%" },
+          { id: "tin", label: isNurse ? "Charting time per shift dropping" : "Time in note dropping", desc: isNurse ? "Minutes spent documenting across a shift, coming down." : "Minutes spent documenting per encounter, coming down.", unit: "min" },
+          { id: "wow", label: isNurse ? "Charting after the shift dropping" : "After-hours minutes dropping", desc: isNurse ? "Documentation finished after the shift ends, the work outside of work, easing." : "The pajama-time work outside of work in the EHR, easing.", unit: "min" },
           { id: "turnover", label: "The turnover number moving", desc: "Voluntary departures coming down against your baseline.", unit: "%" },
-          { id: "vacancy", label: "Open roles filling faster", desc: "Time-to-fill and vacancy easing.", unit: "days" },
-          { id: "pulse", label: "A burnout pulse", desc: "A short, repeated read on how the team is actually doing.", unit: "score" },
-          { id: "lovestories", label: "Love Stories", desc: `${nounSingular === "nurse" ? "Nurses" : "Clinicians"} telling you the day got better, in their words.`, unit: "" },
+          { id: "lovestories", label: "Love Stories", desc: `${peopleWord} telling you the day got better, in their words.`, unit: "" },
         ],
       },
       unlock: {
-        prompt: "If this works, what does it let you do?",
-        helper: "The turnover cost is the hard part; this is the reason underneath it.",
+        prompt: "What does holding onto your people protect?",
+        helper: "This is the real reason to hold the line, and it's what we lead with. The dollar comes after it, and it's the softest claim in the plan. Pick what holding your people actually protects.",
         options: [
-          { id: "line", title: "Protect a fragile service line", desc: "One or two departures away from a real coverage problem." },
-          { id: "agency", title: isNurse ? "Wind down travel and agency spend" : "Wind down agency and locum spend", desc: "Stop paying premium rates to cover gaps." },
-          { id: "knowledge", title: "Keep institutional knowledge", desc: "The people who know how your place actually runs." },
-          { id: "access", title: "Steady access for patients", desc: "Turnover quietly closes schedules; retention keeps them open." },
-          { id: "recruit", title: "Make recruiting easier", desc: "A place people stay is a place people want to join." },
+          { id: "line", title: "A fragile service line", desc: "One or two departures away from a real coverage problem." },
+          { id: "agency", title: agencyTitle, desc: agencyDesc },
+          { id: "knowledge", title: "Institutional knowledge", desc: "The people who know how your place actually runs." },
+          { id: "access", title: "Steady access for patients", desc: "Turnover quietly closes schedules; holding people keeps them open." },
+          { id: "recruit", title: "Easier recruiting", desc: "A place people stay is a place people want to join." },
         ],
       },
       valueNoun: nounPlural,
-      panelKicker: "The value in play, from your numbers",
-      honestNote: "Only the share a lighter documentation day can realistically address.",
+      panelKicker: "The quiet dollar, from your numbers",
+      honestNote: "The softest claim in the plan, and it comes last. We count only the burnout-driven share of turnover a lighter documentation day can address, and we cap even that at half. The pay and life reasons a lighter day won't change are left out.",
     },
     plan: {
       valueInPlay: engineValueInPlay(setting, "Provider Retention"),
       segmentsSummary: `your ${nounPlural}`,
-      outcomes: ["Keep our people", "A better day"],
+      outcomes: ["A lighter, more livable day", "Keep the people you have"],
       signalsGroupLabel: "What Abridge can enable",
       signalsTag: "measured directly from Epic Signal",
-      abridgeSignals: signals,
+      abridgeSignals: cfg.signals,
       connector: "When the day gets lighter and burnout eases, more of your people choose to stay.",
       outcomeGroups: [
-        { outcome: "A better day", metrics: [
+        { outcome: "A lighter, more livable day", metrics: [
           { id: "burnout", name: "Burnout pulse", measure: `Share of ${nounPlural} reporting burnout on a short, repeated survey.`, source: surveySource, unit: "%", today: "48", target: "32" },
           { id: "stay", name: "Likelihood to stay", measure: `Share of ${nounPlural} who say they intend to stay.`, source: surveySource, unit: "%", today: "71", target: "84" },
         ] },
-        { outcome: "Keep our people", metrics: [
-          { id: "turnover", name: "Voluntary turnover rate", measure: `${nounSingular === "nurse" ? "Nurses" : "Clinicians"} choosing to leave in a year.`, source: "HRIS", unit: "%", today: "14", target: "9" },
+        { outcome: "Keep the people you have", metrics: [
+          { id: "turnover", name: "Voluntary turnover rate", measure: `${peopleWord} choosing to leave in a year.`, source: "HRIS", unit: "%", today: cfg.turnoverToday, target: cfg.turnoverTarget },
           { id: "departures", name: "Departures avoided", measure: "Departures you'd expect to prevent against your baseline.", source: "HRIS", unit: "/ yr", today: "—", target: "6" },
           { id: "replace", name: "Replacement cost saved", measure: "The recruiting, onboarding, and coverage cost those departures would have carried.", source: "Finance", unit: "$/yr", today: "—", target: "—" },
         ] },
       ],
-      signalsShortList: signalsShort,
+      signalsShortList: cfg.signalsShort,
       outcomesShortList: "burnout and turnover",
     },
   };
 }
 
-const nurseSignals: AttainCell["plan"]["abridgeSignals"] = [
+const nurseSignals: MetricDef[] = [
   { id: "tin", name: "Charting time per shift", measure: "Minutes a nurse spends documenting across a shift.", source: "Epic Signal", unit: "min", today: "95", target: "65" },
-  { id: "after", name: "Charting after shift", measure: "Minutes of documentation finished after the shift ends.", source: "Epic Signal", unit: "min", today: "35", target: "12" },
+  { id: "wow", name: "Charting after shift", measure: "Minutes of documentation finished after the shift ends.", source: "Epic Signal", unit: "min", today: "35", target: "12" },
 ];
-const providerSignals: AttainCell["plan"]["abridgeSignals"] = [
+const providerSignals: MetricDef[] = [
   { id: "tin", name: "Time in note", measure: "Minutes spent documenting per encounter.", source: "Epic Signal", unit: "min", today: "9.5", target: "5.5" },
   { id: "wow", name: "Work outside of work", measure: "After-hours time in the EHR per day, the \"pajama time\" tied to burnout.", source: "Epic Signal", unit: "min/day", today: "48", target: "25" },
 ];
 
-const outpatientRetention = retentionCell("Outpatient", "clinician", "clinicians", 60, "40", 20_000, providerSignals, "time in note and work outside of work");
-const edRetention = retentionCell("ED", "clinician", "ED clinicians", 45, "30", 22_000, providerSignals, "time in note and work outside of work");
-const inpatientRetention = retentionCell("Inpatient", "clinician", "hospitalists", 35, "24", 24_000, providerSignals, "time in note and work outside of work");
-const nursingRetention = retentionCell("Nursing", "nurse", "nurses", 400, "260", 4_000, nurseSignals, "charting time per shift and charting after shift");
+// Per-setting burden anatomy (step 2) and at-risk segments (step 3) — the depth.
+const outpatientRetention = retentionCell({
+  setting: "Outpatient", nounSingular: "clinician", nounPlural: "clinicians", peopleWord: "Clinicians", isNurse: false,
+  scopeCeiling: 60, scopeDefault: "40", signals: providerSignals, signalsShort: "time in note and work outside of work",
+  turnoverPlaceholder: "6", burnoutPlaceholder: "48", turnoverToday: "14", turnoverTarget: "9",
+  anatomy: [
+    { id: "inbox", title: "The inbox and message burden", desc: "In-basket messages and results piling up between and after visits." },
+    { id: "pajama", title: "After-hours \"pajama time\" charting", desc: "Notes finished at night, the work outside of work tied to burnout." },
+    { id: "cadence", title: "Visit-cadence pressure", desc: "Back-to-back visits with no room to chart in the moment." },
+  ],
+  atRisk: [
+    { id: "highpanel", title: "High-panel PCPs", desc: "The largest panels and the heaviest in-baskets." },
+    { id: "parttime", title: "Part-timers carrying a full inbox", desc: "A reduced schedule, but the message load never shrank." },
+    { id: "newer", title: "Newer clinicians still building speed", desc: "Where the day feels heaviest before the workflow clicks." },
+  ],
+});
+const edRetention = retentionCell({
+  setting: "ED", nounSingular: "clinician", nounPlural: "ED clinicians", peopleWord: "ED clinicians", isNurse: false,
+  scopeCeiling: 45, scopeDefault: "30", signals: providerSignals, signalsShort: "time in note and work outside of work",
+  turnoverPlaceholder: "6", burnoutPlaceholder: "50", turnoverToday: "15", turnoverTarget: "10",
+  anatomy: [
+    { id: "between", title: "Charting between patients on a heavy shift", desc: "Documentation squeezed into the gaps on a full board." },
+    { id: "surge", title: "Documentation piling up during surges", desc: "Notes stacking unfinished when volume spikes." },
+    { id: "boarding", title: "Boarding stretching the shift", desc: "Holding admitted patients drags the shift and the charting past its end." },
+  ],
+  atRisk: [
+    { id: "nights", title: "Nights and weekends", desc: "The shifts hardest to cover and hardest to keep staffed." },
+    { id: "acuity", title: "High-acuity coverage", desc: "The clinicians carrying the sickest boards." },
+    { id: "newer", title: "Newer attendings on the heaviest rotations", desc: "Where the shift feels heaviest before the pace becomes routine." },
+  ],
+});
+const inpatientRetention = retentionCell({
+  setting: "Inpatient", nounSingular: "hospitalist", nounPlural: "hospitalists", peopleWord: "Hospitalists", isNurse: false,
+  scopeCeiling: 35, scopeDefault: "24", signals: providerSignals, signalsShort: "time in note and work outside of work",
+  turnoverPlaceholder: "8", burnoutPlaceholder: "52", turnoverToday: "16", turnoverTarget: "11",
+  anatomy: [
+    { id: "census", title: "Note load scaling with census", desc: "Every added patient is another full note on the list." },
+    { id: "crunch", title: "The discharge-summary and admission H&P crunch", desc: "The heaviest notes land at the busiest moments of the day." },
+    { id: "rounding", title: "Rounding time lost to the note", desc: "Time meant for the bedside going to documentation." },
+  ],
+  atRisk: [
+    { id: "highcensus", title: "High-census services", desc: "The teams carrying the most patients per rounder." },
+    { id: "nocturnist", title: "Nocturnists and swing", desc: "Overnight and swing coverage that's hardest to staff." },
+    { id: "newer", title: "Newer hospitalists on the busiest services", desc: "Where the list feels heaviest before the rhythm settles." },
+  ],
+});
+const nursingRetention = retentionCell({
+  setting: "Nursing", nounSingular: "nurse", nounPlural: "nurses", peopleWord: "Nurses", isNurse: true,
+  scopeCeiling: 400, scopeDefault: "260", signals: nurseSignals, signalsShort: "charting time per shift and charting after shift",
+  turnoverPlaceholder: "18", burnoutPlaceholder: "45", turnoverToday: "22", turnoverTarget: "15",
+  anatomy: [
+    { id: "bedside", title: "Charting stealing time from the bedside", desc: "Documentation pulling nurses away from patient care." },
+    { id: "endshift", title: "End-of-shift and missed-break documentation", desc: "Notes finished after the shift, and through breaks that never happened." },
+    { id: "ratio", title: "Ratio pressure", desc: "Too many patients per nurse leaves no time to chart in the moment." },
+  ],
+  atRisk: [
+    { id: "medsurg", title: "High-ratio med-surg", desc: "The units with the most patients per nurse." },
+    { id: "nights", title: "Nights", desc: "The shifts hardest to staff and quickest to burn out." },
+    { id: "firstyear", title: "First-year nurses", desc: "Where turnover concentrates in the first year on the floor." },
+  ],
+});
 
 // ---------------------------------------------------------------- Nursing · Capacity
 const nursingCapacity: AttainCell = {

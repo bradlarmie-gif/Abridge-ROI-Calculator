@@ -59,6 +59,24 @@ export type DiscoveryBeat =
 export type DiscoveryPopulation = { id: string; showIf: string[]; beats: DiscoveryBeat[] };
 export type Discovery = { populations: DiscoveryPopulation[] };
 
+// ---------- Trend beat (fixed-run only) ----------
+// A single conversational beat that captures where the partner is TODAY (one or two current
+// numbers, persisted into the align econ map under each `key`) plus the DIRECTION of travel
+// (a single-select persisted into answers.choices under `trendId`). Built for retention:
+// a slipping trend is the urgent case, a steady one is a reason to stay humble. The numbers
+// feed the (demoted) economics math; the trend itself is a framing signal and does not move
+// the number. Rendered between the framing choices and the scope question when present.
+export type TrendNumber = { key: string; label: string; prefix?: string; suffix?: string; placeholder: string };
+export type TrendBeat = {
+  kicker: string;
+  prompt: string;
+  helper: string;
+  numbers: TrendNumber[];
+  trendId: string;
+  trendPrompt: string;
+  options: ChoiceOption[];
+};
+
 // how the live value panel computes the number
 export type ValueModel =
   | { mode: "sumOutcomeDigs"; unitValueLabel: string }                                   // access, quality: Σ(dig × unit/segment)
@@ -81,7 +99,8 @@ export type AlignContent = {
   };
   scope?: { prompt: string; unitLabel: string; ceiling: number; default: string };
   discovery?: Discovery; // when present, replaces the fixed middle with a population-gated walk
-  choices?: ChoiceQuestion[]; // framing questions between scope and proof
+  choices?: ChoiceQuestion[]; // framing questions; in the fixed run they render before the trend + scope
+  trend?: TrendBeat; // fixed-run only: a "where you are today + which way it's trending" beat (retention)
   proof: { prompt: string; helper: string; signals: ProofSignal[] };
   unlock: { prompt: string; helper: string; options: UnlockOption[] };
   value: ValueModel;

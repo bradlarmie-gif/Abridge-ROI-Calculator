@@ -268,7 +268,7 @@ export function AttainExperience({ setting, cells, baseline, initial, onPersist 
 
         {chapter === "align" && (
           <>
-            <AlignView key={cell.category} c={cell.align} settingLabel={SETTING} categoryLabel={catLabel(cell)}
+            <AlignView key={cell.category} c={cell.align} settingLabel={SETTING} categoryLabel={catLabel(cell)} categoryKey={cell.category}
               picked={pickedByCat[cell.category]} setPicked={setPickedFor(cell.category)}
               plays={playsByCat[cell.category]} setPlays={setPlaysFor(cell.category)}
               scopeCount={scopeCountFor(cell)}
