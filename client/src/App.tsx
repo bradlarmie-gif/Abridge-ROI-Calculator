@@ -40,6 +40,7 @@ import ForecastModeSelector from "@/pages/forecast/ForecastModeSelector";
 import PricingComparisonFlow from "@/pages/forecast/PricingComparisonFlow";
 import AppRationalizationFlow from "@/pages/forecast/AppRationalizationFlow";
 import ExploreEditorialPdfRoute from "@/components/explore/ExploreEditorialPdfRoute";
+import ProformaEditorialPdfRoute from "@/components/proforma/ProformaEditorialPdfRoute";
 import { ExploreFlow, type ExploreState, type ExploreCareSetting, type ExplorePhase } from "@/pages/explore";
 import AttainFlow from "@/pages/attain/AttainFlow";
 import AttainConsultPreview from "@/pages/attain/AttainConsultPreview";
@@ -241,6 +242,11 @@ export default function App() {
   // HTML-print value-model document from the snapshot stashed in localStorage.
   if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("explorepdf") === "1") {
     return <ExploreEditorialPdfRoute />;
+  }
+  // Print route for the editorial proforma PDF (?proformapdf=1). Renders the
+  // HTML-print financial-proforma document from the deal snapshot in localStorage.
+  if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("proformapdf") === "1") {
+    return <ProformaEditorialPdfRoute />;
   }
 
   // State for deep link settings
