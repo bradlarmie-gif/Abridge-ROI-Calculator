@@ -166,6 +166,14 @@ export function AttainExperience({ setting, cells, baseline, initial, onPersist 
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pickedByCat, playsByCat, alignAnswersByCat, alignInputsByCat, metricsByCat, readingsByCat, peopleByCat, customsByCat, cadenceByCat, alignDone, planDone, chapter, catIdx, reviewLog]);
+  // Which levers are live for a multi-lever category, from the payer answer (choice id "book").
+  // Returns null when the category has no levers (single-lever categories are unchanged).
+  const activeLeversFor = (c: (typeof CELLS)[number]) => {
+    const model = econModel(SETTING, c.category);
+    if (!model?.levers) return null;
+    const picked = alignAnswersByCat[c.category]?.choices?.["book"] ?? new Set<string>();
+    return model.levers.filter((l) => l.payerOptionIds.some((id) => picked.has(id)));
+  };
   const cellInputs = (c: (typeof CELLS)[number]) => {
     const a = alignInputsByCat[c.category];
     const cap = econModel(SETTING, c.category)?.stanceCap ?? 75;
@@ -176,8 +184,11 @@ export function AttainExperience({ setting, cells, baseline, initial, onPersist 
     // real Starting Point volume so the SIZE of the number is theirs, not a per-head constant.
     // Nursing Quality scopes by beds, so its staffed-beds IS the scope; the rest use the baseline.
     const isNursingQuality = SETTING === "Nursing" && c.category === "Quality & Safety";
+    // multi-lever categories: the driver keys the live levers sum, from the payer answer
+    const active = activeLeversFor(c);
+    const activeDriverKeys = active ? Array.from(new Set(active.flatMap((l) => l.driverKeys))) : undefined;
     return {
-      scope, stancePct, econ,
+      scope, stancePct, econ, activeDriverKeys,
       totalProviders: baseline?.providers,
       annualEncounters: baseline?.annualEncounters,
       util: baseline?.utilizationPct,
@@ -189,11 +200,18 @@ export function AttainExperience({ setting, cells, baseline, initial, onPersist 
   const valueMap = useMemo(
     () => new Map(CELLS.map((c) => [c.category, engineValueInPlay(SETTING, c.category, cellInputs(c))])),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [alignInputsByCat, baseline, SETTING],
+    [alignInputsByCat, alignAnswersByCat, baseline, SETTING],
   );
   const valueByCat = (c: (typeof CELLS)[number]) => valueMap.get(c.category) ?? 0;
-  // one number's build line, straight from that category's economics model (blank until it's real)
-  const mathFor = (c: (typeof CELLS)[number]) => (valueByCat(c) > 0 ? (econModel(SETTING, c.category)?.math(cellInputs(c)) ?? "") : "");
+  // one number's build line, straight from that category's economics model (blank until it's real).
+  // Multi-lever categories pass their live lever ids so the through-line names only the payers in play.
+  const mathFor = (c: (typeof CELLS)[number]) => {
+    if (valueByCat(c) <= 0) return "";
+    const model = econModel(SETTING, c.category);
+    if (!model) return "";
+    const active = activeLeversFor(c);
+    return active ? model.math(cellInputs(c), active.map((l) => l.id)) : model.math(cellInputs(c));
+  };
   const totalValue = CELLS.reduce((s, c) => s + valueByCat(c), 0);
   // the specialties they actually picked in Align, for the Plan header (no hardcoded remnant)
   const segSummaryFor = (c: (typeof CELLS)[number]) => {

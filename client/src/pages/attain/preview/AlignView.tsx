@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Check, ChevronRight } from "lucide-react";
 import type { AlignContent } from "./attainContent";
-import { econModel } from "./attainEconomics";
+import { econModel, type EconField, type Assumption } from "./attainEconomics";
 import { AttainNumberInput } from "./AttainNumberInput";
 
 /** THROWAWAY. The Align chapter, rendered from AlignContent (setting x category). */
@@ -91,6 +91,11 @@ export default function AlignView({ c, settingLabel, categoryLabel, picked, setP
 
   // the economics beat + realization stance for this category (if it has a model)
   const econ = econModel(settingLabel, categoryLabel);
+  // Multi-lever categories: which levers the payer answer (choice id "book") turns on.
+  // null = this model has no levers (render its flat fields exactly as before).
+  const activeLevers = econ?.levers
+    ? econ.levers.filter((l) => l.payerOptionIds.some((id) => (choices["book"] ?? new Set<string>()).has(id)))
+    : null;
   const stance = inputs.stance; // one of the bands, or -1 for custom
   const [showAssumptions, setShowAssumptions] = useState(false);
   const togglePlay = (oid: string, label: string) => setPlays((p) => { const s = new Set(p[oid] ?? []); s.has(label) ? s.delete(label) : s.add(label); return { ...p, [oid]: s }; });
@@ -125,6 +130,30 @@ export default function AlignView({ c, settingLabel, categoryLabel, picked, setP
 
   const suggested = new Set(c.outcomes.filter((o) => picked.has(o.id)).flatMap((o) => o.proof ?? []));
 
+  // one economics field (real-money lever, blank + required) — shared by the flat and lever layouts
+  const renderEconField = (f: EconField) => (
+    <div key={f.key} className="mb-8">
+      <p className={`${LBL} mb-1.5`}>{f.label}</p>
+      <div className="flex items-baseline gap-1">
+        {f.prefix && <span className="font-abridge text-2xl text-[#8C8C8C]">{f.prefix}</span>}
+        <AttainNumberInput value={inputs.econ[f.key] ?? ""} onChange={(raw) => setEcon(f.key, raw)} placeholder={f.placeholder} className={NUMFIELD} />
+        {f.suffix && <span className="text-[15px] text-[#8C8C8C]">{f.suffix}</span>}
+      </div>
+      {f.hint && <p className="text-[12px] text-[#8C8C8C] mt-1.5">{f.hint}</p>}
+    </div>
+  );
+  // one seeded assumption input (used inline under a lever, and inside the collapsible panel)
+  const renderAssumptionInput = (a: Assumption) => (
+    <div key={a.key}>
+      <p className={`${LBL} mb-1`}>{a.label}</p>
+      <div className="flex items-baseline gap-1">
+        {a.prefix && <span className="text-[16px] text-[#8C8C8C]">{a.prefix}</span>}
+        <AttainNumberInput value={inputs.econ[a.key] ?? ""} onChange={(raw) => setEcon(a.key, raw)} onBlur={() => { if (!(inputs.econ[a.key] ?? "").trim()) setEcon(a.key, a.default); }} className="w-24 bg-transparent border-0 border-b-2 border-[#E0D9CE] rounded-none px-0 pb-0.5 font-abridge text-[17px] text-[#1A1A1A] outline-none transition-colors focus:border-[#EA2C00]" />
+        {a.suffix && <span className="text-[13px] text-[#8C8C8C]">{a.suffix}</span>}
+      </div>
+    </div>
+  );
+
   let qn = 0;
 
   return (
@@ -132,6 +161,18 @@ export default function AlignView({ c, settingLabel, categoryLabel, picked, setP
       <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#8C8C8C] mb-2">Align · {settingLabel} · {categoryLabel}</p>
       <h2 className="font-abridge text-[30px] md:text-4xl text-[#1A1A1A] leading-tight mb-3">What are you hoping to change?</h2>
       <p className="text-[15px] text-[#3A3A3A] leading-relaxed max-w-[640px] mb-12">{c.outcomesHelper}</p>
+
+      {/* Q — frame choices (e.g. the payer mix): asked FIRST because they set which
+          revenue lever the rest of the questions and the number should follow. */}
+      {(c.choices ?? []).filter((q) => q.stage === "frame").map((q) => (
+        <div key={q.id}>
+          <SectionHead n={++qn} kicker={q.kicker} title={q.prompt} />
+          <p className="text-[14px] text-[#6B6B6B] leading-relaxed mb-4 max-w-[600px]">{q.helper}</p>
+          <div className="border-t border-[#E8E2DA] mb-12">
+            {q.options.map((o) => <OptionRow key={o.id} on={(choices[q.id] ?? new Set()).has(o.id)} onToggle={() => toggleChoice(q.id, o.id, q.mode)} title={o.title} desc={o.desc} radio={q.mode === "single"} />)}
+          </div>
+        </div>
+      ))}
 
       {/* Q — outcomes */}
       <SectionHead n={++qn} kicker="The outcomes" title={c.outcomesPrompt} />
@@ -177,24 +218,58 @@ export default function AlignView({ c, settingLabel, categoryLabel, picked, setP
         </>
       )}
 
-      {/* Q — the economics (their real money + the fill stance). The last beat before the number. */}
+      {/* Q — the remaining framing questions (e.g. the "why is it slipping" cause):
+          asked after the leak is named, before we price it. */}
+      {(c.choices ?? []).filter((q) => q.stage !== "frame").map((q) => (
+        <div key={q.id}>
+          <SectionHead n={++qn} kicker={q.kicker} title={q.prompt} />
+          <p className="text-[14px] text-[#6B6B6B] leading-relaxed mb-4 max-w-[600px]">{q.helper}</p>
+          <div className="border-t border-[#E8E2DA] mb-12">
+            {q.options.map((o) => <OptionRow key={o.id} on={(choices[q.id] ?? new Set()).has(o.id)} onToggle={() => toggleChoice(q.id, o.id, q.mode)} title={o.title} desc={o.desc} radio={q.mode === "single"} />)}
+          </div>
+        </div>
+      ))}
+
+      {/* Q — the economics (their real money + the fill stance), asked after the leak and its cause. */}
       {econ && (
         <>
           <SectionHead n={++qn} kicker="The economics" title={econ.title} />
           <p className="text-[14px] text-[#6B6B6B] leading-relaxed mb-6 max-w-[600px]">{econ.helper}</p>
 
-          {econ.fields.map((f) => (
-            <div key={f.key} className="mb-8">
-              <p className={`${LBL} mb-1.5`}>{f.label}</p>
-              <div className="flex items-baseline gap-1">
-                {f.prefix && <span className="font-abridge text-2xl text-[#8C8C8C]">{f.prefix}</span>}
-                <AttainNumberInput value={inputs.econ[f.key] ?? ""} onChange={(raw) => setEcon(f.key, raw)} placeholder={f.placeholder} className={NUMFIELD} />
-                {f.suffix && <span className="text-[15px] text-[#8C8C8C]">{f.suffix}</span>}
+          {/* Multi-lever: render only the levers the payer answer turned on, each as its own
+              labeled sub-group (its fields + its seeded assumptions). Single-lever models render
+              their flat fields exactly as before. */}
+          {activeLevers ? (
+            activeLevers.length === 0 ? (
+              <div className="rounded-xl border border-dashed border-[#D8CFC0] bg-[#FAF7F2] p-5 mb-8">
+                <p className="text-[14px] text-[#6B6B6B] leading-relaxed max-w-[520px]">Pick the payers in the first question above to set which revenue lever we price. Fee-for-service prices the coding lift; risk contracts price the recapture; pick both and we size both.</p>
               </div>
-              {f.hint && <p className="text-[12px] text-[#8C8C8C] mt-1.5">{f.hint}</p>}
-            </div>
-          ))}
+            ) : (
+              <div className="space-y-6 mb-8">
+                {activeLevers.map((lever) => {
+                  const lf = econ.fields.filter((f) => f.lever === lever.id);
+                  const la = (econ.assumptions ?? []).filter((a) => a.lever === lever.id);
+                  return (
+                    <div key={lever.id} className="rounded-xl border border-[#E8E2DA] bg-[#FAF7F2] p-5">
+                      <p className="text-[11px] font-bold uppercase tracking-[1.5px] text-[#443A32] mb-4">{lever.label}</p>
+                      {lf.map(renderEconField)}
+                      {la.length > 0 && (
+                        <>
+                          <p className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#8C8C8C] mb-3">Assumptions · seeded and editable</p>
+                          <div className="grid sm:grid-cols-2 gap-x-8 gap-y-4">{la.map(renderAssumptionInput)}</div>
+                        </>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )
+          ) : (
+            econ.fields.map(renderEconField)
+          )}
 
+          {/* the shared realization stance — hidden only when a lever model has no lever live yet */}
+          {(!activeLevers || activeLevers.length > 0) && (<>
           <p className={`${LBL} mb-2.5`}>{econ.stancePrompt}</p>
           <div className="flex flex-wrap items-center gap-2 mb-3">
             {econ.stanceBands.map((v) => (
@@ -209,9 +284,12 @@ export default function AlignView({ c, settingLabel, categoryLabel, picked, setP
             )}
           </div>
           <p className="text-[12px] text-[#8C8C8C] mb-5">{econ.capNote}</p>
+          </>)}
 
-          {/* Assumptions — seeded conservatively, shown, and editable. Nothing hidden. */}
-          {econ.assumptions && econ.assumptions.length > 0 && (
+          {/* Assumptions — seeded conservatively, shown, and editable. Nothing hidden.
+              Lever models show their assumptions inline under each lever above, so this
+              collapsible panel is only for single-lever categories. */}
+          {!activeLevers && econ.assumptions && econ.assumptions.length > 0 && (
             <div className="mb-12">
               <button type="button" onClick={() => setShowAssumptions((s) => !s)} className="inline-flex items-center gap-1 text-[12px] font-semibold text-[#8C8C8C] hover:text-[#1A1A1A] transition-colors">
                 <ChevronRight className={`w-3.5 h-3.5 transition-transform ${showAssumptions ? "rotate-90" : ""}`} />
@@ -221,16 +299,7 @@ export default function AlignView({ c, settingLabel, categoryLabel, picked, setP
                 <div className="mt-3 rounded-xl border border-[#E8E2DA] bg-[#FAF7F2] p-5">
                   <p className="text-[12px] text-[#8C8C8C] mb-4 max-w-[520px]">Seeded conservatively so you are not starting from blank. Every one is editable and nothing is hidden. Change any that do not match your reality.</p>
                   <div className="grid sm:grid-cols-2 gap-x-8 gap-y-4">
-                    {econ.assumptions.map((a) => (
-                      <div key={a.key}>
-                        <p className={`${LBL} mb-1`}>{a.label}</p>
-                        <div className="flex items-baseline gap-1">
-                          {a.prefix && <span className="text-[16px] text-[#8C8C8C]">{a.prefix}</span>}
-                          <AttainNumberInput value={inputs.econ[a.key] ?? ""} onChange={(raw) => setEcon(a.key, raw)} onBlur={() => { if (!(inputs.econ[a.key] ?? "").trim()) setEcon(a.key, a.default); }} className="w-24 bg-transparent border-0 border-b-2 border-[#E0D9CE] rounded-none px-0 pb-0.5 font-abridge text-[17px] text-[#1A1A1A] outline-none transition-colors focus:border-[#EA2C00]" />
-                          {a.suffix && <span className="text-[13px] text-[#8C8C8C]">{a.suffix}</span>}
-                        </div>
-                      </div>
-                    ))}
+                    {econ.assumptions.map(renderAssumptionInput)}
                   </div>
                 </div>
               )}
@@ -239,16 +308,7 @@ export default function AlignView({ c, settingLabel, categoryLabel, picked, setP
         </>
       )}
 
-      {/* Q — framing choices (gate / burden / where) */}
-      {(c.choices ?? []).map((q) => (
-        <div key={q.id}>
-          <SectionHead n={++qn} kicker={q.kicker} title={q.prompt} />
-          <p className="text-[14px] text-[#6B6B6B] leading-relaxed mb-4 max-w-[600px]">{q.helper}</p>
-          <div className="border-t border-[#E8E2DA] mb-12">
-            {q.options.map((o) => <OptionRow key={o.id} on={(choices[q.id] ?? new Set()).has(o.id)} onToggle={() => toggleChoice(q.id, o.id, q.mode)} title={o.title} desc={o.desc} radio={q.mode === "single"} />)}
-          </div>
-        </div>
-      ))}
+      {/* framing choices now render above: frame-stage before outcomes, the rest before the economics */}
 
       {/* Q — the play (dynamic to the chosen outcomes), in the page's editorial row style */}
       {c.outcomes.some((o) => picked.has(o.id) && o.plays) && (

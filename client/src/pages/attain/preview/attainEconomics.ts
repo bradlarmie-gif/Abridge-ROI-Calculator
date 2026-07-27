@@ -16,10 +16,21 @@ export type EconField = {
   suffix?: string;
   placeholder: string;
   hint?: string;
+  lever?: string; // when the model is multi-lever, which lever this field belongs to
 };
 
 // A seeded assumption: same as a field but pre-filled with a conservative default, editable.
-export type Assumption = { key: string; label: string; default: string; prefix?: string; suffix?: string };
+export type Assumption = { key: string; label: string; default: string; prefix?: string; suffix?: string; lever?: string };
+
+// A lever is one priced path within a category. Which levers are live is decided by
+// the frame answer (e.g. the payer mix): each lever names the payer option ids that
+// turn it on, and the engine driver keys its dollar rolls up from.
+export type EconLever = {
+  id: string;
+  label: string;
+  payerOptionIds: string[]; // frame-choice option ids that activate this lever
+  driverKeys: string[]; // engine driver keys this lever's value sums
+};
 
 export type EconInputs = { scope: number; econ: Record<string, number>; stancePct: number };
 
@@ -28,11 +39,13 @@ export type EconModel = {
   helper: string;
   fields: EconField[]; // real-money levers, blank + required
   assumptions?: Assumption[]; // seeded, shown + editable in the Assumptions panel
+  levers?: EconLever[]; // present only for multi-lever categories (e.g. Outpatient Revenue)
   stancePrompt: string;
   stanceBands: number[];
   stanceCap: number;
   capNote: string;
-  math: (i: EconInputs) => string;
+  // activeLevers is passed for multi-lever models so the through-line names only the live levers.
+  math: (i: EconInputs, activeLevers?: string[]) => string;
 };
 
 const BURNOUT = (def: string): Assumption => ({ key: "burnout", label: "Burnout-driven share of turnover", default: def, suffix: "%" });
@@ -70,18 +83,35 @@ export const ECON_MODELS: Record<string, EconModel> = {
   },
   "Outpatient|Provider Retention": workforceModel("provider", "providers", "400,000", "6", [BURNOUT("40")]),
   "Outpatient|Revenue Capture": {
-    title: "How much coding lift do you keep?",
-    helper: "Better documentation can support the level your visits code to, when the coding follows. Set your baseline wRVU per visit and your conversion factor. How much of that lift you actually capture and keep through billing is yours to set below. The size of the lift itself we seed conservatively.",
+    title: "How much of the revenue do you keep?",
+    helper: "The payers you picked above set what gets priced. Fee-for-service pays on the visit level, so the money is the coding lift a more complete note supports. Risk contracts pay on the conditions you capture, so the money is the recapture a fuller note makes possible. Fill in the levers in play; how much of the lift you actually capture and keep is yours to set below. The size of each lift we seed conservatively.",
     fields: [
-      { key: "wrvu", label: "Average wRVU per visit", placeholder: "1.5", hint: "Your current level, before any lift." },
-      { key: "cf", label: "Conversion factor", prefix: "$", placeholder: "33.40", hint: "Dollars per wRVU." },
+      { key: "wrvu", lever: "ffs", label: "Average wRVU per visit", placeholder: "1.5", hint: "Your current level, before any lift." },
+      { key: "cf", lever: "ffs", label: "Conversion factor", prefix: "$", placeholder: "33.40", hint: "Dollars per wRVU." },
+      { key: "hccValue", lever: "risk", label: "Value per recaptured condition", prefix: "$", placeholder: "1,500", hint: "The annual risk revenue one recaptured condition carries." },
     ],
-    assumptions: [{ key: "uplift", label: "Coding lift from better notes", default: "5", suffix: "%" }],
-    stancePrompt: "How much of the documentation-driven coding lift do you capture and keep?",
+    assumptions: [
+      { key: "uplift", lever: "ffs", label: "Coding lift from better notes", default: "5", suffix: "%" },
+      { key: "hccPerPatient", lever: "risk", label: "Conditions recaptured per risk patient", default: "0.6" },
+      { key: "riskPatients", lever: "risk", label: "Risk-contract patients in scope", default: "6,000" },
+    ],
+    levers: [
+      { id: "ffs", label: "Fee-for-service coding", payerOptionIds: ["ffs"], driverKeys: ["wrvu"] },
+      { id: "risk", label: "Risk and value-based recapture", payerOptionIds: ["ma", "medicaid", "aca"], driverKeys: ["hccCapture"] },
+    ],
+    stancePrompt: "How much of the documentation-driven lift do you capture and keep?",
     stanceBands: [65, 75, 85],
     stanceCap: 95,
     capNote: "We cap this at 95 percent. A captured, defensible level is real money, but not every lift survives billing and audit.",
-    math: (i) => `Your visits × ${i.econ.wrvu} wRVU × ~${i.econ.uplift ?? 5}% documentation lift × ${fmt$(i.econ.cf)}/wRVU × ${i.stancePct}% captured and kept.`,
+    math: (i, active = ["ffs", "risk"]) => {
+      const parts: string[] = [];
+      if (active.includes("ffs"))
+        parts.push(`Fee-for-service: your visits × ${i.econ.wrvu ?? 1.5} wRVU × ~${i.econ.uplift ?? 5}% documentation lift × ${fmt$(i.econ.cf ?? 33.4)}/wRVU × ${i.stancePct}% captured and kept`);
+      if (active.includes("risk"))
+        parts.push(`Risk recapture: ${nn(i.econ.riskPatients ?? 6000)} risk-contract patients × ${i.econ.hccPerPatient ?? 0.6} conditions recaptured each × $${nn(i.econ.hccValue ?? 1500)}/condition × ${i.stancePct}% that survives audit`);
+      if (!parts.length) return "";
+      return parts.join(". ") + (parts.length > 1 ? ". The two sum to the number above." : ".");
+    },
   },
 
   // ---- ED ----

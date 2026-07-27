@@ -34,7 +34,9 @@ export type UnlockOption = { id: string; title: string; desc: string };
 export type ChoiceOption = { id: string; title: string; desc: string };
 // a framing question (gate / burden / where): shown for shared understanding; in the
 // prototype it doesn't move the number (attribution is set honestly in Plan).
-export type ChoiceQuestion = { id: string; kicker: string; prompt: string; helper: string; mode: "single" | "multi"; options: ChoiceOption[]; defaultId?: string };
+// stage "frame" questions (e.g. payer mix) set the revenue lever, so Align asks them
+// FIRST, before the outcomes. Everything else is asked after the leak is named.
+export type ChoiceQuestion = { id: string; kicker: string; prompt: string; helper: string; mode: "single" | "multi"; options: ChoiceOption[]; defaultId?: string; stage?: "frame" };
 
 // how the live value panel computes the number
 export type ValueModel =

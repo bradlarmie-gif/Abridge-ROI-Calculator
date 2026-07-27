@@ -20,6 +20,7 @@ export type CellInputs = {
   scope?: number; // providers / nurses / beds this category covers (Align scope)
   stancePct?: number; // realization stance for this category
   econ?: Record<string, number>; // per-category economics keyed by field key (e.g. perVisit)
+  activeDriverKeys?: string[]; // multi-lever categories: the driver keys the live levers sum (overrides MAP)
   minSaved?: number; // seeded default per setting if unset
   // real Starting Point volume — the SIZE of the number comes from these, not from constants
   totalProviders?: number; // total providers/nurses entered on the Starting Point
@@ -60,6 +61,14 @@ function opResults(inp: CellInputs) {
   const adoption = inp.adoption && inp.adoption > 0 ? inp.adoption : 70;
   const minSaved = inp.econ?.minSaved ?? inp.minSaved ?? 2;
   const hrs = Math.round((encounters * (adoption / 100) * minSaved) / 60);
+  // HCC lever from the partner's own inputs (fallbacks match the model's seeds). We fold the whole
+  // recaptured-conditions-per-patient figure into netNewAvgConditions and set avgHccs to 0, so the
+  // engine computes exactly riskPatients × conditions/patient × $/condition × realization. panelSize
+  // is back-solved from the scoped provider count so members reproduces the risk-patient total.
+  const riskPatients = inp.econ?.riskPatients ?? 6_000;
+  const hccPerPatient = inp.econ?.hccPerPatient ?? 0.6;
+  const hccValue = inp.econ?.hccValue ?? 1_500;
+  const hccPanelSize = providers > 0 ? riskPatients / providers : riskPatients;
   return run("outpatient", { numberOfProviders: providers, annualEncounters: encounters, utilizationPercent: util, encountersPerProvider: Math.round(encounters / providers) },
     {
       patientAccessEnabled: true, accessProviders: providers, capacityRealizationPercent: inp.stancePct ?? 25, visitDuration: inp.econ?.visitMin ?? 30, revenuePerVisit: inp.econ?.perVisit ?? 200,
@@ -69,7 +78,7 @@ function opResults(inp: CellInputs) {
     },
     {
       wrvuEnabled: true, currentWrvu: inp.econ?.wrvu ?? 1.5, wrvuScenario: inp.econ?.uplift != null ? "custom" : "typical", wrvuCustomPercent: inp.econ?.uplift ?? 5, conversionFactor: inp.econ?.cf ?? 33.4, wrvuRealization: inp.stancePct ?? 60,
-      hccEnabled: true, avgHccs: 2, hccRealization: inp.stancePct ?? 60, hccPlans: [{ panelSize: 1_500, valuePerHcc: 1_500, gapRate: 20, currentRecaptureRate: 50, uplift: "typical", netNewEnabled: false }],
+      hccEnabled: true, avgHccs: 0, hccRealization: inp.stancePct ?? 60, hccPlans: [{ panelSize: hccPanelSize, valuePerHcc: hccValue, currentRecaptureRate: 0, uplift: "typical", netNewAvgConditions: hccPerPatient, netNewEnabled: true }],
       denialsEnabled: true, denialsScenario: "typical", medNecessityDenialRate: 5, avgClaimValue: 250, denialsRealization: inp.stancePct ?? 60,
     }, hrs);
 }
@@ -152,7 +161,7 @@ const sum = (r: Record<string, number>, keys: string[]) => keys.reduce((s, k) =>
 const MAP: Record<string, string[]> = {
   "Outpatient|Patient Access": ["patientAccess"],
   "Outpatient|Provider Retention": ["providerWellbeing", "physicianLocumAgency"],
-  "Outpatient|Revenue Capture": ["wrvu"],
+  "Outpatient|Revenue Capture": ["wrvu", "hccCapture"], // fallback only; the live path passes activeDriverKeys per payer mix
   "ED|Patient Access": ["lwbsRecovery", "admissionCapture"],
   "ED|Provider Retention": ["providerWellbeing", "physicianLocumAgency"],
   "ED|Revenue Capture": ["edEmLevel"],
@@ -173,6 +182,9 @@ export function cellInputsReady(setting: string, category: string, inp: CellInpu
   if (!m) return false;
   if (!(inp.scope && inp.scope > 0)) return false;
   if (!(inp.stancePct && inp.stancePct > 0)) return false;
+  // A multi-lever category also needs at least one live lever (a payer answer selected upstream);
+  // with none picked the honest number is 0.
+  if (m.levers && !(inp.activeDriverKeys && inp.activeDriverKeys.length > 0)) return false;
   return true;
 }
 
@@ -180,7 +192,8 @@ export function cellInputsReady(setting: string, category: string, inp: CellInpu
  * Returns 0 until the cell's inputs are ready (no fake numbers). */
 export function engineValueInPlay(setting: string, category: string, inp: CellInputs = {}): number {
   if (!cellInputsReady(setting, category, inp)) return 0;
-  const keys = MAP[`${setting}|${category}`];
-  if (!keys) return 0;
+  // Multi-lever categories pass the driver keys their live levers sum; the rest use the static MAP.
+  const keys = inp.activeDriverKeys ?? MAP[`${setting}|${category}`];
+  if (!keys || !keys.length) return 0;
   return sum(resultsFor(setting, inp), keys);
 }
