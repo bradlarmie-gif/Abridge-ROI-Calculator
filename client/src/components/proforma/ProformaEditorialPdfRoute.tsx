@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import {
   ProformaEditorialPdfDocument,
-  SAMPLE_PROFORMA_PDF_DATA,
   PROFORMA_PDF_STORAGE_KEY,
   type ProformaPdfData,
 } from "./ProformaEditorialPdf";
@@ -87,7 +86,15 @@ export default function ProformaEditorialPdfRoute() {
   const params = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : new URLSearchParams();
   const sampleN = Number(params.get("sample") || "0");
 
-  let data: ProformaPdfData = SAMPLE_PROFORMA_PDF_DATA;
+  // Default (no stashed deal): build from the SAME sample settings/config the live
+  // flow uses, so the standalone PDF reconciles with Build/Case/Present instead of
+  // showing hand-authored placeholder figures.
+  let data: ProformaPdfData = buildProformaPdfData(
+    clone(SAMPLE_PROFORMA_SETTINGS) as ProformaSettingSnapshot[],
+    clone(SAMPLE_PROFORMA_CONFIG),
+    "Deaconess Health System",
+    "July 2026",
+  );
   if (sampleN === 3 || sampleN === 4) {
     data = sampleVariant(sampleN);
   } else {
