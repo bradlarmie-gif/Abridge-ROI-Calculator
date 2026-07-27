@@ -104,7 +104,12 @@ export default function AttainFlowV2({ onBackToJourney }: { onBackToJourney?: ()
     setSetting((existing.setting as AttainSetting) ?? null);
     setGoals((existing.goals as GoalId[]) ?? []);
     setBaseline((existing.baseline as AttainBaseline) ?? {});
-    setPhase((existing.phase as Phase) || "experience");
+    // Resume FORWARD, never back onto this "who's it for" screen. A saved plan can carry
+    // phase "partner" (autosave fires if you hit Back to step 1 on a plan that already has a
+    // setting), which would make Continue re-land here and read as a dead button. A plan with a
+    // setting belongs in the experience, so anything at or before "partner" resumes there.
+    const savedIdx = PHASES.indexOf(existing.phase as Phase);
+    setPhase(savedIdx > 0 ? PHASES[savedIdx] : "experience");
     return true;
   };
 
