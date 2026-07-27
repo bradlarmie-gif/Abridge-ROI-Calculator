@@ -46,6 +46,7 @@ import AttainConsultPreview from "@/pages/attain/AttainConsultPreview";
 import AttainPlanPreview from "@/pages/attain/AttainPlanPreview";
 import AttainMatrixPreview from "@/pages/attain/preview/AttainMatrixPreview";
 import MultiCategoryPreview from "@/pages/attain/preview/MultiCategoryPreview";
+import ProformaPreview from "@/pages/proforma/editorial/ProformaPreview";
 import AttainFlowV2 from "@/pages/attain/AttainFlowV2";
 import AttainPdf from "@/pages/attain/pdf/AttainPdf";
 import ExploreIntakeForm from "@/pages/intake/ExploreIntakeForm";
@@ -226,6 +227,10 @@ export default function App() {
   // THROWAWAY: ?attainpdf=1 (kickoff) or ?attainpdf=review = the full Attain PDF.
   if (typeof window !== "undefined" && ["1", "review"].includes(new URLSearchParams(window.location.search).get("attainpdf") ?? "")) {
     return <AttainPdf />;
+  }
+  // THROWAWAY: ?proformapreview=1 = the editorial "Build the deal" proforma workbench (engine-wired).
+  if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("proformapreview") === "1") {
+    return <ProformaPreview />;
   }
   // THROWAWAY: ?explorepreview=1 = the editorial Explore flow (interactive, engine-wired).
   // Editorial-brand screens where built, else fall back to the existing interactive screen.
