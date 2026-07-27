@@ -163,14 +163,16 @@ const MAP: Record<string, string[]> = {
   "Nursing|Nursing Capacity": ["nursingOvertime"],
 };
 
-/** True once the partner has entered everything this cell needs to show a real number:
- * a scope, a stance, and every economics field its model defines (Nursing Quality has none). */
+/** True once the partner has committed the two inputs that SIZE and TEMPER the number:
+ * a scope and a stance. Detailed economics fields fall back to this adapter's conservative
+ * typical defaults when not overridden (see the default-fallback design at the top of this file),
+ * so a single blank field no longer zeroes an otherwise-committed category. A cell with no
+ * economics model still shows nothing. */
 export function cellInputsReady(setting: string, category: string, inp: CellInputs): boolean {
   const m = econModel(setting, category);
   if (!m) return false;
   if (!(inp.scope && inp.scope > 0)) return false;
   if (!(inp.stancePct && inp.stancePct > 0)) return false;
-  for (const f of m.fields) { const v = inp.econ?.[f.key]; if (!(v && v > 0)) return false; }
   return true;
 }
 
