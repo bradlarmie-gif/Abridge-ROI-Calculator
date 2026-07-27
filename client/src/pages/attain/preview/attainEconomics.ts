@@ -207,6 +207,17 @@ export const ECON_MODELS: Record<string, EconModel> = {
     },
   },
   "Inpatient|Provider Retention": workforceModel("hospitalist", "hospitalists", "300,000", "8", [BURNOUT("45")]),
+  "Inpatient|Inpatient Capacity": {
+    title: "What's an earlier bed turn worth?",
+    helper: "When the discharge documentation is ready on time, the order and summary land earlier and the bed opens before noon instead of after. Set what turning a bed earlier in the day is worth to you. Most discharge delay is placement, consults, and authorization, not the note, so we stay conservative: this is an earlier bed turn, never a shorter length of stay.",
+    fields: [{ key: "bedTurnValue", label: "Value of an earlier bed turn", prefix: "$", placeholder: "300", hint: "The marginal contribution of freeing a bed earlier in the day, not a full bed-day and not a shorter stay." }],
+    assumptions: [{ key: "dischargeDocShare", label: "Discharges where the note is the gate", default: "8", suffix: "%" }],
+    stancePrompt: "How much of the documentation-gated before-noon miss can you actually move?",
+    stanceBands: [15, 25, 35],
+    stanceCap: 50,
+    capNote: "We cap this at 50 percent. Most discharge delay is placement, consults, and authorization; documentation readiness moves only its share, and never the length of stay itself.",
+    math: (i) => `${nn(i.scope)} hospitalists' discharges × ${i.econ.dischargeDocShare ?? 8}% where the note is the gate × ${i.stancePct}% you can move, at ${fmt$(i.econ.bedTurnValue ?? 300)} per earlier bed turn.`,
+  },
 
   // ---- Nursing ----
   "Nursing|Quality & Safety": {

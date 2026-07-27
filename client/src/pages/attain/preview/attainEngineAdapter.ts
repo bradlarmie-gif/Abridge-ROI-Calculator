@@ -128,6 +128,14 @@ function ipResults(inp: CellInputs) {
   const cdiQueries = inp.econ?.cdiQueries ?? 1_500;
   const cdiCost = inp.econ?.cdiCost ?? 90;
   base.ipCdiValue = Math.round(cdiQueries * cdiCost * ((inp.stancePct ?? 60) / 100));
+  // Inpatient capacity (discharge-before-noon readiness) is likewise NOT a canonical engine driver
+  // (computeAllDriverValues has no throughput/discharge path), so we fold it the same way as ipCdiValue:
+  // the documentation-gated share of discharges × the stance you can move × the value of an earlier bed
+  // turn. Deliberately modest, because most discharge delay is placement, consults, and auth, not the
+  // note, and this is an earlier bed turn, never a shorter length of stay. Synthetic key `ipDischargeCapacity`.
+  const capDocShare = inp.econ?.dischargeDocShare ?? 8;
+  const bedTurnValue = inp.econ?.bedTurnValue ?? 300;
+  base.ipDischargeCapacity = Math.round(encounters * (capDocShare / 100) * ((inp.stancePct ?? 25) / 100) * bedTurnValue);
   return base;
 }
 
@@ -173,6 +181,7 @@ const MAP: Record<string, string[]> = {
   "ED|Revenue Capture": ["edEmLevel", "denialPrevention"], // fallback only; live path passes activeDriverKeys per picked goals
   "Inpatient|Revenue Capture": ["drgAccuracy", "ipCdiValue", "obsDefense"], // fallback only; live path passes activeDriverKeys per picked goals
   "Inpatient|Provider Retention": ["providerWellbeing", "physicianLocumAgency"],
+  "Inpatient|Inpatient Capacity": ["ipDischargeCapacity"], // synthetic, folded in ipResults (no canonical throughput driver)
   "Nursing|Quality & Safety": ["nursingFalls", "nursingHapi", "nursingClabsi", "nursingSepsis"],
   "Nursing|Provider Retention": ["nursingRetention", "nursingAgency"],
   "Nursing|Nursing Capacity": ["nursingOvertime"],

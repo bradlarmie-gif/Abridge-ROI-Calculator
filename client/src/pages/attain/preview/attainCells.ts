@@ -22,7 +22,30 @@ const edAccess: AttainCell = {
       { id: "doortoprovider", title: "Speed up door-to-provider", desc: "Get patients in front of a clinician sooner.", dig: { label: "Visits a year a faster front end would recover", unit: "visits / yr", placeholder: "e.g., 500" }, mathLabel: "from faster intake", plays: ["Provider-in-triage model", "Convert freed charting time to bedside time", "Streamline the intake steps"], unitValue: 380, proof: ["doortime", "recovered"] },
       { id: "admissions", title: "Capture more admissions", desc: "Keep admissions that would otherwise be lost to diversion.", dig: { label: "Admissions a year you could capture", unit: "admissions / yr", placeholder: "e.g., 120" }, mathLabel: "admissions", plays: ["Faster disposition decisions", "Tighten the admit handoff", "Cut boarding to free the beds"], unitValue: 8000, proof: ["admissions"] },
     ],
+    segments: {
+      prompt: "Which zone or shift is this about?",
+      helper: "The gap isn't even across the department, so this sharpens where the throughput actually moves and what a visit is worth there.",
+      allLabel: "Across the whole ED",
+      allSummary: "the whole ED",
+      options: [
+        { id: "fasttrack", title: "Fast-track", desc: "Lower-acuity, high-volume, where saved minutes compound.", value: 250 },
+        { id: "main", title: "Main ED", desc: "Higher-acuity beds where boarding bites hardest.", value: 480 },
+        { id: "peak", title: "Peak surge hours", desc: "When the front end is most likely to back up.", value: 480 },
+        { id: "steady", title: "Steady-state hours", desc: "The baseline flow across the rest of the day.", value: 380 },
+      ],
+      defaultValue: 380,
+      unitValueLabel: "contribution margin",
+      nameMap: { fasttrack: "fast-track", main: "main ED", peak: "peak surge", steady: "steady-state" },
+    },
     scope: { prompt: "Across how many ED providers?", unitLabel: "ED providers, from your Starting Point", ceiling: 45, default: "30" },
+    choices: [
+      { id: "bottleneck", kicker: "The bottleneck", prompt: "Where's the bottleneck, and is it documentation?", helper: "Be honest here. Throughput has several bottlenecks and documentation is only one. Naming yours sets how much of the gain a lighter, faster note can actually move; if it's front-end intake or back-end boarding, the documentation share is small.", mode: "single", defaultId: "docload", options: [
+        { id: "frontend", title: "Front-end intake", desc: "Registration and triage before a clinician is involved." },
+        { id: "provider", title: "Provider availability at the front", desc: "Not enough clinician time where patients arrive." },
+        { id: "boarding", title: "Back-end boarding and disposition", desc: "Admitted patients held in the ED, backing up the front." },
+        { id: "docload", title: "The documentation and charting load itself", desc: "Charting time a lighter note would give back to the front end." },
+      ] },
+    ],
     proof: {
       prompt: "What would tell you it's working?",
       helper: "Pick what you'd point to in a review. The throughput signals move before the recovered visits show up.",
@@ -48,7 +71,7 @@ const edAccess: AttainCell = {
     },
     valueNoun: "visits",
     panelKicker: "The value in play, from your numbers",
-    honestNote: "Counted once, valued at margin, never charges.",
+    honestNote: "Only the share of throughput a lighter, faster note actually moves. Most ED bottlenecks are front-end intake and back-end boarding, not the chart, so the number reflects documentation's share alone.",
   },
   plan: {
     valueInPlay: engineValueInPlay("ED", "Patient Access"),
@@ -177,15 +200,32 @@ const nursingCapacity: AttainCell = {
   setting: "Nursing",
   category: "Nursing Capacity",
   align: {
-    outcomesMode: "single",
+    outcomesMode: "multi",
     value: { mode: "scopeBased", perScope: 2_250, scopeNoun: "nurses", mathTail: "in documentation-tied overtime." },
-    outcomesPrompt: "What matters most here?",
-    outcomesHelper: "Overtime shows up in two places: the budget and the shift that never ends. Tell us which you're really after, and we'll size it from your nurse count.",
+    outcomesPrompt: "Pick every outcome you're after",
+    outcomesHelper: "Lighter charting shows up in more than one place: the overtime line, the shift that finally ends on time, and the hours you get back at the bedside. Pick each outcome that matters and we'll size it from your nurse count. The dollar stays tied to the overtime we can attribute to documentation; the wider goals we align on and track alongside it.",
     outcomes: [
-      { id: "cost", title: "Cut the overtime cost", desc: "The documentation-driven overtime dollars in your budget.", plays: ["Hold nurses to an on-time clock-out", "Chart in the room, not after the shift", "Watch the overtime line by unit"] },
-      { id: "ontime", title: "Nurses finishing on time", desc: "Shifts that end when they're supposed to, not an hour later.", plays: ["Chart at the bedside during the shift", "Protect the last hour from documentation", "Hand off before the charting, not after"] },
-      { id: "both", title: "Both", desc: "Lower overtime cost and nurses finishing on time, together.", plays: ["Chart in the moment", "Hold the on-time clock-out", "Watch the overtime line by unit"], proof: ["othours", "budget"] },
+      { id: "cost", title: "Cut the overtime cost", desc: "The documentation-driven overtime dollars in your budget.", plays: ["Hold nurses to an on-time clock-out", "Chart in the room, not after the shift", "Watch the overtime line by unit"], proof: ["othours", "budget"] },
+      { id: "ontime", title: "Nurses finishing on time", desc: "Shifts that end when they're supposed to, not an hour later.", plays: ["Chart at the bedside during the shift", "Protect the last hour from documentation", "Hand off before the charting, not after"], proof: ["ontime"] },
+      { id: "bedside", title: "Time back at the bedside", desc: "Documentation time returned to patient care instead of the screen.", plays: ["Chart in the room during care, not after", "Protect face-to-face time from the keyboard", "Drop the low-value documentation asks"], proof: ["ontime"] },
+      { id: "ratio", title: "Hold the ratio without adding heads", desc: "Absorb the census with the team you already have.", plays: ["Convert freed charting time into capacity", "Flex the lighter load across the unit", "Watch the ratio against the census"], proof: ["othours"] },
+      { id: "agency", title: "Lean off agency and travel", desc: "Less reliance on premium-rate coverage to fill the gaps.", plays: ["Redirect freed hours before backfilling with agency", "Hold on-time finishes so shifts stay covered", "Watch the agency line by unit"], proof: ["agency", "budget"] },
     ],
+    segments: {
+      prompt: "Which units is this for?",
+      helper: "Overtime and charting load aren't the same on every unit, so this scopes the plan and sharpens where to watch first.",
+      allLabel: "Across all units",
+      allSummary: "all nursing units",
+      options: [
+        { id: "medsurg", title: "Med-surg", desc: "Highest volume, where post-shift charting piles up.", value: 70 },
+        { id: "icu", title: "ICU", desc: "Heavy documentation per patient against tight ratios.", value: 90 },
+        { id: "ednursing", title: "ED nursing", desc: "Bursty load, with charting batched to the end of the shift.", value: 80 },
+        { id: "other", title: "Other floors", desc: "We'll size it across the board and narrow later.", value: 70 },
+      ],
+      defaultValue: 75,
+      unitValueLabel: "loaded overtime rate",
+      nameMap: { medsurg: "med-surg", icu: "ICU", ednursing: "ED nursing", other: "other floors" },
+    },
     scope: { prompt: "Across how many nurses?", unitLabel: "nurses, from your Starting Point", ceiling: 400, default: "260" },
     choices: [
       { id: "where", kicker: "The pattern", prompt: "Where does the overtime show up?", helper: "The pattern tells us which signals to watch and how much a lighter charting load can realistically touch.", mode: "single", defaultId: "postshift", options: [
@@ -201,6 +241,7 @@ const nursingCapacity: AttainCell = {
         { id: "othours", label: "Overtime hours per nurse dropping", desc: "Documentation-related overtime coming down against your baseline.", unit: "hrs/wk" },
         { id: "ontime", label: "Nurses finishing on time", desc: "Share of shifts ending on schedule.", unit: "%" },
         { id: "budget", label: "The overtime dollars in the budget", desc: "The line item finance actually watches, easing.", unit: "$/yr" },
+        { id: "agency", label: "Agency and travel spend easing", desc: "Premium-rate coverage coming down as the team absorbs the load.", unit: "$/yr" },
         { id: "lovestories", label: "Love Stories", desc: "Nurses telling you they got their evenings back, in their words.", unit: "" },
       ],
     },
@@ -216,7 +257,7 @@ const nursingCapacity: AttainCell = {
     },
     valueNoun: "nurses",
     panelKicker: "The value in play, from your numbers",
-    honestNote: "Valued at a loaded hourly rate; only the overtime we can attribute to documentation.",
+    honestNote: "Valued at a loaded hourly rate. The dollar is only the overtime we can attribute to documentation; the wider goals we align on and track, not add to the number.",
   },
   plan: {
     valueInPlay: engineValueInPlay("Nursing", "Nursing Capacity"),
@@ -719,6 +760,84 @@ const inpatientRevenue: AttainCell = {
   },
 };
 
+// ---------------------------------------------------------------- Inpatient · Capacity
+// North Star: beds turn earlier because the discharge documentation is ready on time.
+// This is NOT a length-of-stay play. The spine is discharges-before-noon + taking
+// documentation off the list of reasons a discharge slips. Sized modestly: only the
+// documentation-gated share of the before-noon miss, valued as an earlier bed turn.
+const inpatientCapacity: AttainCell = {
+  setting: "Inpatient",
+  category: "Inpatient Capacity",
+  align: {
+    outcomesMode: "multi",
+    value: { mode: "scopeBased", perScope: 700, scopeNoun: "hospitalists", mathTail: "in earlier bed turns from documentation readiness." },
+    outcomesPrompt: "Pick every outcome you're after",
+    outcomesHelper: "Capacity on the floor is rarely one thing, and documentation is only one lever on it. Pick each outcome that matters and we'll size it from your own discharge numbers, holding to the share a discharge note that's ready on time can honestly move. This is about turning beds earlier in the day, not about shortening the stay.",
+    outcomes: [
+      { id: "beforenoon", title: "Get more discharges out before noon", desc: "When the discharge note is complete and timely, the order and summary land earlier, so the bed opens before noon instead of after.", dig: { label: "Discharges a year that could leave before noon", unit: "discharges / yr", placeholder: "e.g., 2,000" }, mathLabel: "before noon", plays: ["Draft the discharge summary at the last progress note, not on the day", "Round with discharge in mind, note first", "Flag likely next-day discharges the evening before"], unitValue: 300, proof: ["beforenoon", "bedturn"] },
+      { id: "notgate", title: "Take documentation off the list of reasons discharges slip", desc: "Prove the note is not what's holding the discharge, so the conversation moves to the delays that really are.", dig: { label: "Discharges a year where the note is the gate", unit: "discharges / yr", placeholder: "e.g., 900" }, mathLabel: "note-gated", plays: ["Track why each discharge slipped, with documentation as its own reason", "Close the discharge note before the order is written", "Review the note-gated slips each week"], unitValue: 300, proof: ["turnaround", "beforenoon"] },
+      { id: "roundingtime", title: "Give hospitalists rounding time back", desc: "Freed charting time is the capacity we can actually own: hours back for rounding and discharge planning.", dig: { label: "Charting hours a year you'd redirect to rounding", unit: "hours / yr", placeholder: "e.g., 1,200" }, mathLabel: "hours back", plays: ["Protect the freed time for discharge planning", "Move charting out of the discharge conversation", "Hold a documentation-light discharge huddle"], proof: ["tin"] },
+    ],
+    scope: { prompt: "Across how many hospitalists?", unitLabel: "hospitalists, from your Starting Point", ceiling: 35, default: "24" },
+    choices: [
+      { id: "bottleneck", kicker: "The bottleneck", prompt: "Is documentation part of what delays your discharges?", helper: "Be honest here. Discharge delay has several drivers and documentation is only one. Naming yours tells us how much of the before-noon miss a ready note can realistically move, and if it's mostly placement or consults, the honest opportunity is small.", mode: "single", defaultId: "notelag", options: [
+        { id: "notelag", title: "The discharge summary or note lag holds the order", desc: "The medicine is done, but the order waits on the documentation." },
+        { id: "partly", title: "Partly, alongside placement and consults", desc: "Some of it is the note; some is the bed, the ride, or a pending consult." },
+        { id: "placement", title: "No, the delay is placement, auth, or consults", desc: "Honestly, the note isn't the gate, so the documentation opportunity here is small." },
+      ] },
+    ],
+    proof: {
+      prompt: "What would tell you it's working?",
+      helper: "Pick what you'd point to in a review. The documentation signals move before the before-noon rate does.",
+      signals: [
+        { id: "beforenoon", label: "Discharge-before-noon rate rising", desc: "The share of discharges completed before noon, climbing against your baseline.", unit: "%" },
+        { id: "turnaround", label: "Discharge-summary turnaround dropping", desc: "Hours from the discharge decision to a complete summary, coming down.", unit: "hrs" },
+        { id: "tin", label: "Hospitalist time in note dropping", desc: "Minutes documenting per encounter, going down.", unit: "min" },
+        { id: "bedturn", label: "Bed-turn time dropping", desc: "Hours from discharge order to the next patient in the bed.", unit: "hrs" },
+        { id: "love", label: "Love Stories", desc: "Hospitalists and unit leaders telling you discharge got smoother, in their words.", unit: "" },
+      ],
+    },
+    unlock: {
+      prompt: "If this works, what does it let you do?",
+      helper: "The earlier bed turn is the hard part; this is the reason underneath it. Pick what hitting this actually opens up.",
+      options: [
+        { id: "admitsooner", title: "Admit from the ED sooner", desc: "An earlier bed upstairs pulls the next patient off the ED floor faster." },
+        { id: "diversion", title: "Come off diversion", desc: "Beds that open before noon keep the doors open to the community." },
+        { id: "boarding", title: "Ease boarding upstream", desc: "A faster bed turn takes pressure off the ED and the PACU." },
+        { id: "offtable", title: "Take documentation off the table as a delay", desc: "Prove the note isn't the gate, so the team can work the delays that are." },
+        { id: "census", title: "Absorb census without adding beds", desc: "Earlier turns are capacity you already have, not capacity you build." },
+      ],
+    },
+    valueNoun: "discharges",
+    panelKicker: "The value in play, from your numbers",
+    honestNote: "Only the documentation-gated share of the before-noon miss, valued as an earlier bed turn, never a shorter length of stay.",
+  },
+  plan: {
+    valueInPlay: engineValueInPlay("Inpatient", "Inpatient Capacity"),
+    segmentsSummary: "your inpatient units",
+    outcomes: ["Get more discharges out before noon", "Take documentation off the list of reasons discharges slip"],
+    signalsGroupLabel: "What Abridge can enable",
+    signalsTag: "measured directly from Epic Signal",
+    abridgeSignals: [
+      { id: "tin", name: "Time in note", measure: "Minutes a hospitalist spends documenting per encounter.", source: "Epic Signal", unit: "min", today: "11", target: "7" },
+      { id: "wow", name: "Work outside of work", measure: "After-hours time in the EHR per day, the \"pajama time\" tied to burnout.", source: "Epic Signal", unit: "min/day", today: "45", target: "24" },
+      { id: "sdc", name: "Same-day note closure", measure: "Share of encounters with the note closed the same day, not carried over.", source: "Epic Signal", unit: "%", today: "60", target: "85" },
+    ],
+    connector: "When the discharge note is ready on time, the order and summary land earlier and the bed opens before noon.",
+    outcomeGroups: [
+      { outcome: "Get more discharges out before noon", metrics: [
+        { id: "beforenoon", name: "Discharge-before-noon rate", measure: "Share of discharges completed before noon.", source: "Reporting Workbench", unit: "%", today: "22", target: "40" },
+        { id: "bedturn", name: "Bed-turn time", measure: "Hours from the discharge order to the next patient in the bed.", source: "Reporting Workbench", unit: "hrs", today: "3.5", target: "2.2" },
+      ] },
+      { outcome: "Take documentation off the list of reasons discharges slip", metrics: [
+        { id: "turnaround", name: "Discharge-summary turnaround", measure: "Hours from the discharge decision to a complete summary.", source: "Epic Signal", unit: "hrs", today: "6", target: "2" },
+      ] },
+    ],
+    signalsShortList: "time in note, work outside of work, and same-day note closure",
+    outcomesShortList: "discharge-before-noon and summary turnaround",
+  },
+};
+
 // Full matrix, ordered by setting then category (mirrors SETTING_GOAL_MATRIX).
 export const ATTAIN_MATRIX: AttainCell[] = [
   outpatientAccess,
@@ -727,6 +846,7 @@ export const ATTAIN_MATRIX: AttainCell[] = [
   edAccess,
   edRetention,
   edRevenue,
+  inpatientCapacity,
   inpatientRevenue,
   inpatientRetention,
   nursingQuality,
