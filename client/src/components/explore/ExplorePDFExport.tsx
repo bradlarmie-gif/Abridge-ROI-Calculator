@@ -1,6 +1,3 @@
-import { pdf } from "@react-pdf/renderer";
-import { savePdfBlob } from "@/lib/pdf-save";
-
 // ───────────────────────── Type exports ─────────────────────────
 
 export type ExploreCareSetting = "outpatient" | "ed" | "inpatient" | "nursing";
@@ -136,14 +133,23 @@ export interface ExplorePDFData {
 
 // ───────────────────────── Public API ─────────────────────────
 
+/** localStorage key the print route reads the model snapshot from. */
+export const EXPLORE_PDF_STORAGE_KEY = "abridge:explore-pdf";
+
+/**
+ * The editorial PDF is an HTML-print document (like the Attain PDF), not a
+ * rasterized react-pdf blob — that's what lets it carry the full editorial
+ * brand (custom Abridge font, gradients, exact spacing). We stash the model
+ * snapshot in localStorage and open the print route (?explorepdf=1&print=1),
+ * which renders <ExploreEditorialPdfDocument> and triggers the browser's
+ * Save-as-PDF. All four care settings render from the same data shape.
+ */
 export const generateExplorePDF = async (data: ExplorePDFData): Promise<void> => {
-  // OP/ED/IP and Nursing all render through the Mercy-quality narrative PDF.
-  // (Nursing additionally has its own dedicated generator and never reaches
-  // this function in practice.) The legacy multi-page ExplorePDFDocument was
-  // removed once the narrative PDF shipped — see git history for prior shape.
-  const { ExploreNarrativePDFDocument } = await import("./ExploreNarrativePDF");
-  const blob = await pdf(<ExploreNarrativePDFDocument data={data} />).toBlob();
-  const safeOrg = (data.clientName || "abridge").replace(/[^a-z0-9]+/gi, "-").toLowerCase();
-  const safeDate = new Date().toISOString().slice(0, 10);
-  await savePdfBlob(blob, `abridge-roi-${safeOrg}-${safeDate}.pdf`);
+  try {
+    localStorage.setItem(EXPLORE_PDF_STORAGE_KEY, JSON.stringify(data));
+  } catch {
+    // localStorage unavailable (private mode / quota) — the route falls back to sample data.
+  }
+  const url = `${window.location.pathname}?explorepdf=1&print=1`;
+  window.open(url, "_blank", "noopener");
 };

@@ -39,6 +39,7 @@ import ForecastFlow from "@/pages/forecast/ForecastFlow";
 import ForecastModeSelector from "@/pages/forecast/ForecastModeSelector";
 import PricingComparisonFlow from "@/pages/forecast/PricingComparisonFlow";
 import AppRationalizationFlow from "@/pages/forecast/AppRationalizationFlow";
+import ExploreEditorialPdfRoute from "@/components/explore/ExploreEditorialPdfRoute";
 import { ExploreFlow, type ExploreState, type ExploreCareSetting, type ExplorePhase } from "@/pages/explore";
 import AttainFlow from "@/pages/attain/AttainFlow";
 import AttainConsultPreview from "@/pages/attain/AttainConsultPreview";
@@ -230,6 +231,11 @@ export default function App() {
   // Editorial-brand screens where built, else fall back to the existing interactive screen.
   if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("explorepreview") === "1") {
     return <ExploreFlow editorial />;
+  }
+  // Print route for the editorial Explore PDF (?explorepdf=1). Renders the
+  // HTML-print value-model document from the snapshot stashed in localStorage.
+  if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("explorepdf") === "1") {
+    return <ExploreEditorialPdfRoute />;
   }
 
   // State for deep link settings
@@ -480,6 +486,7 @@ export default function App() {
 
             {currentView === "explore" && (
               <ExploreFlow
+                editorial
                 onBackToJourney={handleBackToJourney}
                 onBackToProforma={(proformaAddCareSetting || proformaEditExploreState) ? handleBackToProforma : undefined}
                 initialCareSetting={proformaAddCareSetting || exploreInitialSettings.careSetting}
