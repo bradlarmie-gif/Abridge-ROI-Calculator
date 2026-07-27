@@ -24,8 +24,13 @@ import PlanView from "./PlanView";
 const fmt$ = (n: number) => (n >= 1_000_000 ? `$${(n / 1_000_000).toFixed(1)}M` : n >= 1000 ? `$${Math.round(n / 1000)}K` : `$${Math.round(n)}`);
 const LBL = "text-[10px] font-bold uppercase tracking-[2px] text-[#8C8C8C]";
 
-const MOCK_SETTING = "Outpatient";
-const MOCK_CELLS = ATTAIN_MATRIX.filter((c) => c.setting === MOCK_SETTING); // Access, Retention, Revenue
+// The mock defaults to Outpatient; ?setting=ED / ?setting=Inpatient / ?setting=Nursing
+// let us exercise the same experience for another setting's cell set during review.
+const mockSetting = () => {
+  if (typeof window === "undefined") return "Outpatient";
+  const s = new URLSearchParams(window.location.search).get("setting");
+  return s && ATTAIN_MATRIX.some((c) => c.setting === s) ? s : "Outpatient";
+};
 const CURFIELD = "w-16 bg-transparent border-0 border-b-2 border-[#E0D9CE] rounded-none px-0 pb-0.5 text-center font-abridge text-[16px] outline-none transition-colors focus:border-[#EA2C00] placeholder:font-sans placeholder:text-[14px] placeholder:text-[#C4BCB0]";
 const pnum = (s: string) => { const n = parseFloat((s || "").replace(/[^0-9.]/g, "")); return Number.isFinite(n) ? n : NaN; };
 const pavg = (arr: (number | null)[]) => { const v = arr.filter((x): x is number => x !== null); return v.length ? v.reduce((s, x) => s + x, 0) / v.length : null; };
@@ -166,13 +171,15 @@ export function AttainExperience({ setting, cells, baseline, initial, onPersist 
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pickedByCat, playsByCat, alignAnswersByCat, alignInputsByCat, metricsByCat, readingsByCat, peopleByCat, customsByCat, cadenceByCat, alignDone, planDone, chapter, catIdx, reviewLog]);
-  // Which levers are live for a multi-lever category, from the payer answer (choice id "book").
-  // Returns null when the category has no levers (single-lever categories are unchanged).
+  // Which levers are live for a multi-lever category. A lever turns on when its payer options
+  // intersect the payer answer (choice id "book", payer-driven Outpatient) OR its outcomeIds
+  // intersect the picked goals (goal-driven ED / Inpatient). Null when the category has no levers.
   const activeLeversFor = (c: (typeof CELLS)[number]) => {
     const model = econModel(SETTING, c.category);
     if (!model?.levers) return null;
-    const picked = alignAnswersByCat[c.category]?.choices?.["book"] ?? new Set<string>();
-    return model.levers.filter((l) => l.payerOptionIds.some((id) => picked.has(id)));
+    const book = alignAnswersByCat[c.category]?.choices?.["book"] ?? new Set<string>();
+    const pickedOutcomes = pickedByCat[c.category] ?? new Set<string>();
+    return model.levers.filter((l) => (l.payerOptionIds?.some((id) => book.has(id)) ?? false) || (l.outcomeIds?.some((id) => pickedOutcomes.has(id)) ?? false));
   };
   const cellInputs = (c: (typeof CELLS)[number]) => {
     const a = alignInputsByCat[c.category];
@@ -199,8 +206,9 @@ export function AttainExperience({ setting, cells, baseline, initial, onPersist 
   // the engine number per category, computed once per input change (valueByCat is read many times a render)
   const valueMap = useMemo(
     () => new Map(CELLS.map((c) => [c.category, engineValueInPlay(SETTING, c.category, cellInputs(c))])),
+    // pickedByCat is a dep because goal-driven levers (ED / Inpatient) activate off the picked goals
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [alignInputsByCat, alignAnswersByCat, baseline, SETTING],
+    [alignInputsByCat, alignAnswersByCat, pickedByCat, baseline, SETTING],
   );
   const valueByCat = (c: (typeof CELLS)[number]) => valueMap.get(c.category) ?? 0;
   // one number's build line, straight from that category's economics model (blank until it's real).
@@ -528,6 +536,8 @@ export function AttainExperience({ setting, cells, baseline, initial, onPersist 
 /** THROWAWAY mock wrapper (?multipreview=1): fakes the app header, then renders the
  * reusable AttainExperience for the outpatient sample set. */
 export default function MultiCategoryPreview() {
+  const setting = mockSetting();
+  const cells = ATTAIN_MATRIX.filter((c) => c.setting === setting);
   return (
     <div className="min-h-screen bg-[#FDFCFA]">
       <div className="sticky top-0 z-30 h-14 bg-white border-b border-[#E8E2DA] flex items-center px-6">
@@ -535,7 +545,7 @@ export default function MultiCategoryPreview() {
         <span className="mx-auto font-abridge text-[15px] tracking-wide text-[#1A1A1A]">ROI Calculator · Attain</span>
         <span className="font-abridge text-[15px] font-semibold text-[#EA2C00]">abridge</span>
       </div>
-      <AttainExperience setting={MOCK_SETTING} cells={MOCK_CELLS} />
+      <AttainExperience setting={setting} cells={cells} />
     </div>
   );
 }

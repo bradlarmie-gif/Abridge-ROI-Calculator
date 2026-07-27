@@ -91,10 +91,16 @@ export default function AlignView({ c, settingLabel, categoryLabel, picked, setP
 
   // the economics beat + realization stance for this category (if it has a model)
   const econ = econModel(settingLabel, categoryLabel);
-  // Multi-lever categories: which levers the payer answer (choice id "book") turns on.
+  // Does this model gate on a payer frame? Payer-driven categories (Outpatient) ask a
+  // frame question and hide goals until a payer is picked. Goal-driven categories
+  // (ED / Inpatient) have no frame, so all their goals are always visible.
+  const hasFrame = (c.choices ?? []).some((q) => q.stage === "frame");
+  // Multi-lever categories: which levers are live. A lever turns on when its payer options
+  // intersect the payer answer (choice id "book") OR its outcomeIds intersect the picked goals.
   // null = this model has no levers (render its flat fields exactly as before).
+  const bookAns = choices["book"] ?? new Set<string>();
   const activeLevers = econ?.levers
-    ? econ.levers.filter((l) => l.payerOptionIds.some((id) => (choices["book"] ?? new Set<string>()).has(id)))
+    ? econ.levers.filter((l) => (l.payerOptionIds?.some((id) => bookAns.has(id)) ?? false) || (l.outcomeIds?.some((id) => picked.has(id)) ?? false))
     : null;
   const stance = inputs.stance; // one of the bands, or -1 for custom
   const [showAssumptions, setShowAssumptions] = useState(false);
@@ -176,11 +182,11 @@ export default function AlignView({ c, settingLabel, categoryLabel, picked, setP
 
       {/* Q — outcomes */}
       <SectionHead n={++qn} kicker="The outcomes" title={c.outcomesPrompt} />
-      {activeLevers !== null && activeLevers.length === 0 ? (
+      {hasFrame && activeLevers !== null && activeLevers.length === 0 ? (
         <p className="text-[14px] text-[#8C8C8C] leading-relaxed mb-12 max-w-[600px]">Pick your payers above, and the goals for each book will appear here.</p>
       ) : (
         <div className="border-t border-[#E8E2DA] mb-12">
-          {c.outcomes.filter((o) => activeLevers === null || !o.lever || activeLevers.some((l) => l.id === o.lever)).map((o) => (
+          {c.outcomes.filter((o) => !hasFrame || activeLevers === null || !o.lever || activeLevers.some((l) => l.id === o.lever)).map((o) => (
             <div key={o.id} className="border-b border-[#E8E2DA]">
               <button type="button" onClick={() => toggleOutcome(o.id)} className="group relative w-full text-left flex items-start gap-3.5 pl-4 pr-3 py-4 hover:bg-[#F2EDE5] transition-colors">
                 {picked.has(o.id) && <span className="absolute left-0 top-2 bottom-2 w-[3px] rounded-full bg-[#EA2C00]" />}
@@ -246,7 +252,7 @@ export default function AlignView({ c, settingLabel, categoryLabel, picked, setP
           {activeLevers ? (
             activeLevers.length === 0 ? (
               <div className="rounded-xl border border-dashed border-[#D8CFC0] bg-[#FAF7F2] p-5 mb-8">
-                <p className="text-[14px] text-[#6B6B6B] leading-relaxed max-w-[520px]">Pick the payers in the first question above to set which revenue lever we price. Fee-for-service prices the coding lift; risk contracts price the recapture; pick both and we size both.</p>
+                <p className="text-[14px] text-[#6B6B6B] leading-relaxed max-w-[520px]">{hasFrame ? "Pick the payers in the first question above to set which revenue lever we price. Fee-for-service prices the coding lift; risk contracts price the recapture; pick both and we size both." : "Pick a goal above to set which lever we price. Each goal you pick adds its own lever here, and the number sizes from your figures."}</p>
               </div>
             ) : (
               <div className="space-y-6 mb-8">

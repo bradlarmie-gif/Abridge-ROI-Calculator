@@ -22,13 +22,15 @@ export type EconField = {
 // A seeded assumption: same as a field but pre-filled with a conservative default, editable.
 export type Assumption = { key: string; label: string; default: string; prefix?: string; suffix?: string; lever?: string };
 
-// A lever is one priced path within a category. Which levers are live is decided by
-// the frame answer (e.g. the payer mix): each lever names the payer option ids that
-// turn it on, and the engine driver keys its dollar rolls up from.
+// A lever is one priced path within a category. A lever turns on one of two ways:
+//  - payerOptionIds: a frame answer (the payer mix) selects it — Outpatient, payer-driven.
+//  - outcomeIds: one of the picked goals selects it — ED / Inpatient, goal-driven (no payer frame).
+// A lever names the engine driver keys its dollar rolls up from either way.
 export type EconLever = {
   id: string;
   label: string;
-  payerOptionIds: string[]; // frame-choice option ids that activate this lever
+  payerOptionIds?: string[]; // frame-choice option ids that activate this lever (payer-driven)
+  outcomeIds?: string[]; // picked-goal ids that activate this lever (goal-driven)
   driverKeys: string[]; // engine driver keys this lever's value sums
 };
 
@@ -134,34 +136,71 @@ export const ECON_MODELS: Record<string, EconModel> = {
   },
   "ED|Provider Retention": workforceModel("provider", "ED providers", "400,000", "6", [BURNOUT("40")]),
   "ED|Revenue Capture": {
-    title: "How much coding lift do you keep?",
-    helper: "A complete ED note can support coding to the level of work actually done. Set your baseline wRVU per visit and conversion factor; how much of the lift you capture and keep is yours to set below. The lift size we seed conservatively.",
+    title: "How much of the revenue do you keep?",
+    helper: "The goals you picked above set what gets priced. Getting paid for the acuity sizes on how the visit codes; preventable denials size on the claims a complete note would have saved. Fill in the levers in play; how much of the lift you capture and keep is yours to set below. The size of each lift we seed conservatively.",
     fields: [
-      { key: "wrvu", label: "Average wRVU per ED visit", placeholder: "1.5", hint: "Your current level, before any lift." },
-      { key: "cf", label: "Conversion factor", prefix: "$", placeholder: "33.40", hint: "Dollars per wRVU." },
+      { key: "wrvu", lever: "emlevel", label: "Average wRVU per ED visit", placeholder: "1.5", hint: "Your current level, before any lift." },
+      { key: "cf", lever: "emlevel", label: "Conversion factor", prefix: "$", placeholder: "33.40", hint: "Dollars per wRVU." },
+      { key: "avgClaim", lever: "denials", label: "Average claim value", prefix: "$", placeholder: "250", hint: "The revenue on a claim you would otherwise write off." },
     ],
-    assumptions: [{ key: "uplift", label: "E&M lift from better notes", default: "3", suffix: "%" }],
-    stancePrompt: "How much of the coding lift do you capture and keep?",
+    assumptions: [
+      { key: "uplift", lever: "emlevel", label: "E&M lift from better notes", default: "3", suffix: "%" },
+      { key: "denialRate", lever: "denials", label: "Medical-necessity denial rate", default: "5", suffix: "%" },
+    ],
+    levers: [
+      { id: "emlevel", label: "Acuity coding", outcomeIds: ["em"], driverKeys: ["edEmLevel"] },
+      { id: "denials", label: "Preventable denials", outcomeIds: ["denials"], driverKeys: ["denialPrevention"] },
+    ],
+    stancePrompt: "How much of the documentation-driven lift do you capture and keep?",
     stanceBands: [65, 75, 85],
     stanceCap: 95,
     capNote: "We cap this at 95 percent. A defensible E&M level is real money, but not every lift survives billing and audit.",
-    math: (i) => `Your ED visits × ${i.econ.wrvu} wRVU × ~${i.econ.uplift ?? 3}% E&M lift × ${fmt$(i.econ.cf)}/wRVU × ${i.stancePct}% captured and kept.`,
+    math: (i, active = ["emlevel", "denials"]) => {
+      const parts: string[] = [];
+      if (active.includes("emlevel"))
+        parts.push(`Acuity coding: your ED visits × ${i.econ.wrvu ?? 1.5} wRVU × ~${i.econ.uplift ?? 3}% E&M lift × ${fmt$(i.econ.cf ?? 33.4)}/wRVU × ${i.stancePct}% captured and kept`);
+      if (active.includes("denials"))
+        parts.push(`Preventable denials: your ED claims × ${i.econ.denialRate ?? 5}% medical-necessity denial rate × ${fmt$(i.econ.avgClaim ?? 250)}/claim × ${i.stancePct}% a complete note prevents`);
+      if (!parts.length) return "";
+      return parts.join(". ") + (parts.length > 1 ? ". The two sum to the number above." : ".");
+    },
   },
 
   // ---- Inpatient ----
   "Inpatient|Revenue Capture": {
-    title: "How much of the coding do you capture?",
-    helper: "A complete inpatient note carries the severity that was actually treated, so the DRG lands where the documentation supports it. This is modeled as a lift to your Case Mix Index. Your CDI team also moves CMI, so only the share attributed to Abridge counts, and only what survives audit.",
-    fields: [{ key: "drgBase", label: "Average DRG base payment", prefix: "$", placeholder: "6,000", hint: "Your blended base rate per discharge." }],
-    assumptions: [
-      { key: "weightInc", label: "CMI lift (avg DRG weight gained across discharges)", default: "0.03" },
-      { key: "attribution", label: "Share attributed to Abridge (vs CDI team)", default: "65", suffix: "%" },
+    title: "How much of the coding do you keep?",
+    helper: "The goals you picked above set what gets priced. Each is a different place the documentation carries the pay: the DRG weight the acuity earns, the CDI queries a complete note would head off, and inpatient status held against a downgrade. Fill in the levers in play; how much survives audit is yours to set below. The size of each lift we seed conservatively.",
+    fields: [
+      { key: "drgBase", lever: "drg", label: "Average DRG base payment", prefix: "$", placeholder: "6,000", hint: "Your blended base rate per discharge." },
+      { key: "cdiCost", lever: "cdi", label: "Cost per CDI query", prefix: "$", placeholder: "90", hint: "The loaded cost of one query cycle, coder and physician time." },
+      { key: "obsDelta", lever: "obs", label: "Revenue delta per defended stay", prefix: "$", placeholder: "4,000", hint: "Inpatient minus observation payment on one stay held." },
     ],
-    stancePrompt: "How much of the documentation-driven CMI lift survives audit?",
+    assumptions: [
+      { key: "weightInc", lever: "drg", label: "CMI lift (avg DRG weight gained across discharges)", default: "0.03" },
+      { key: "attribution", lever: "drg", label: "Share attributed to Abridge (vs CDI team)", default: "65", suffix: "%" },
+      { key: "cdiQueries", lever: "cdi", label: "CDI queries a complete note would avoid per year", default: "1,500" },
+      { key: "obsRate", lever: "obs", label: "Stays downgraded to observation", default: "5", suffix: "%" },
+    ],
+    levers: [
+      { id: "drg", label: "DRG weight", outcomeIds: ["drg"], driverKeys: ["drgAccuracy"] },
+      { id: "cdi", label: "CDI query reduction", outcomeIds: ["cdi"], driverKeys: ["ipCdiValue"] },
+      { id: "obs", label: "Inpatient status defense", outcomeIds: ["obs"], driverKeys: ["obsDefense"] },
+    ],
+    stancePrompt: "How much of the documentation-driven lift survives audit?",
     stanceBands: [55, 65, 75],
     stanceCap: 85,
-    capNote: "We cap this at 85 percent, below outpatient coding. Inpatient DRG carries the most audit and RADV exposure, so we stay the most conservative here.",
-    math: (i) => `Your discharges × ${i.econ.weightInc} CMI lift × ${i.econ.attribution}% attributed to Abridge × ${i.stancePct}% that survives audit, at ${fmt$(i.econ.drgBase)}/DRG.`,
+    capNote: "We cap this at 85 percent, below outpatient coding. Inpatient carries the most audit and RADV exposure, so we stay the most conservative here.",
+    math: (i, active = ["drg", "cdi", "obs"]) => {
+      const parts: string[] = [];
+      if (active.includes("drg"))
+        parts.push(`DRG weight: your discharges × ${i.econ.weightInc ?? 0.03} CMI lift × ${i.econ.attribution ?? 65}% attributed to Abridge × ${i.stancePct}% that survives audit, at ${fmt$(i.econ.drgBase ?? 6000)}/DRG`);
+      if (active.includes("cdi"))
+        parts.push(`CDI queries: ${nn(i.econ.cdiQueries ?? 1500)} queries a complete note would avoid × ${fmt$(i.econ.cdiCost ?? 90)}/query × ${i.stancePct}% you realize`);
+      if (active.includes("obs"))
+        parts.push(`Status defense: your admissions × ${i.econ.obsRate ?? 5}% downgraded to observation × ${fmt$(i.econ.obsDelta ?? 4000)}/stay recovered × ${i.stancePct}% the note can defend`);
+      if (!parts.length) return "";
+      return parts.join(". ") + (parts.length > 1 ? ". They sum to the number above." : ".");
+    },
   },
   "Inpatient|Provider Retention": workforceModel("hospitalist", "hospitalists", "300,000", "8", [BURNOUT("45")]),
 

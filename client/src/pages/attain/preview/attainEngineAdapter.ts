@@ -102,7 +102,7 @@ function edResults(inp: CellInputs) {
     },
     {
       wrvuEnabled: true, currentWrvu: inp.econ?.wrvu ?? 1.5, wrvuScenario: inp.econ?.uplift != null ? "custom" : "typical", wrvuCustomPercent: inp.econ?.uplift ?? 3, conversionFactor: inp.econ?.cf ?? 33.4, wrvuRealization: inp.stancePct ?? 60,
-      denialsEnabled: true, denialsScenario: "typical", medNecessityDenialRate: 5, avgClaimValue: 250, denialsRealization: inp.stancePct ?? 60,
+      denialsEnabled: true, denialsScenario: "typical", medNecessityDenialRate: inp.econ?.denialRate ?? 5, avgClaimValue: inp.econ?.avgClaim ?? 250, denialsRealization: inp.stancePct ?? 60,
     }, hrs);
 }
 
@@ -112,7 +112,7 @@ function ipResults(inp: CellInputs) {
   const providers = inp.scope && inp.scope > 0 ? inp.scope : 24;
   const encounters = scaledEncounters(inp, providers, IP_PER_PROVIDER);
   const util = inp.util && inp.util > 0 ? inp.util : 70;
-  return run("inpatient", { numberOfProviders: providers, annualEncounters: encounters, utilizationPercent: util, encountersPerProvider: Math.round(encounters / providers) },
+  const base = run("inpatient", { numberOfProviders: providers, annualEncounters: encounters, utilizationPercent: util, encountersPerProvider: Math.round(encounters / providers) },
     {
       wellbeingEnabled: true, calculateRetentionValue: true, ipAnnualTurnoverRate: inp.econ?.turnover ?? 8, ipBurnoutRelatedTurnover: inp.econ?.burnout ?? 45, ipReplacementCost: inp.econ?.replacementCost ?? 300_000,
       retentionImpactScenario: inp.stancePct && inp.stancePct > 0 ? "custom" : "typical", retentionCustomPercent: inp.stancePct ?? 10,
@@ -120,9 +120,15 @@ function ipResults(inp: CellInputs) {
     },
     {
       ipDrgEnabled: true, ipDrgScenario: "typical", ipDrgAtRiskRate: inp.econ?.atRisk ?? 15, ipDrgWeightIncrease: inp.econ?.weightInc ?? 0.03, ipDrgBasePayment: inp.econ?.drgBase ?? 6_000, ipDrgAttribution: inp.econ?.attribution ?? 65, ipDrgRealization: inp.stancePct ?? 60,
-      ipCdiEnabled: true, ipCdiScenario: "typical", ipCdiQueryRate: 20, ipCdiCostPerQuery: 40, ipCdiRealization: inp.stancePct ?? 60,
-      ipObsDefenseEnabled: true, ipObsDefensePreventableScenario: "typical", ipObsDefenseDenialRate: 5, ipObsDefenseRevenueDelta: 5_000, ipObsDefenseRealization: inp.stancePct ?? 60,
+      ipObsDefenseEnabled: true, ipObsDefensePreventableScenario: "typical", ipObsDefenseDenialRate: inp.econ?.obsRate ?? 5, ipObsDefenseRevenueDelta: inp.econ?.obsDelta ?? 4_000, ipObsDefenseRealization: inp.stancePct ?? 60,
     }, 0);
+  // CDI query reduction is NOT in the canonical engine (computeAllDriverValues has no CDI path),
+  // so we fold it here the way opResults folds HCC: queries a complete note would avoid × cost per
+  // query × the realization stance. Exposed as the synthetic driver key `ipCdiValue` the CDI lever sums.
+  const cdiQueries = inp.econ?.cdiQueries ?? 1_500;
+  const cdiCost = inp.econ?.cdiCost ?? 90;
+  base.ipCdiValue = Math.round(cdiQueries * cdiCost * ((inp.stancePct ?? 60) / 100));
+  return base;
 }
 
 // ---- Nursing (scope = nurses; beds scale with the nurse count) ----
@@ -164,8 +170,8 @@ const MAP: Record<string, string[]> = {
   "Outpatient|Revenue Capture": ["wrvu", "hccCapture"], // fallback only; the live path passes activeDriverKeys per payer mix
   "ED|Patient Access": ["lwbsRecovery", "admissionCapture"],
   "ED|Provider Retention": ["providerWellbeing", "physicianLocumAgency"],
-  "ED|Revenue Capture": ["edEmLevel"],
-  "Inpatient|Revenue Capture": ["drgAccuracy"],
+  "ED|Revenue Capture": ["edEmLevel", "denialPrevention"], // fallback only; live path passes activeDriverKeys per picked goals
+  "Inpatient|Revenue Capture": ["drgAccuracy", "ipCdiValue", "obsDefense"], // fallback only; live path passes activeDriverKeys per picked goals
   "Inpatient|Provider Retention": ["providerWellbeing", "physicianLocumAgency"],
   "Nursing|Quality & Safety": ["nursingFalls", "nursingHapi", "nursingClabsi", "nursingSepsis"],
   "Nursing|Provider Retention": ["nursingRetention", "nursingAgency"],

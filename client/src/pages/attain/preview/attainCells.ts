@@ -413,12 +413,13 @@ const edRevenue: AttainCell = {
   align: {
     outcomesMode: "multi",
     value: { mode: "sumOutcomeDigs", unitValueLabel: "captured revenue" },
-    outcomesPrompt: "Where is the revenue slipping?",
-    outcomesHelper: "This is money for care you already delivered in the ED that the documentation didn't carry to the claim. Pick where you see it, and we'll size it from your own numbers.",
+    outcomesPrompt: "Pick the goals you're after",
+    outcomesHelper: "This is money for care you already delivered in the ED that the documentation didn't carry to the claim. Pick each goal that matters, and we'll size the number behind it from your own figures. Each goal you pick sets the lever we price below.",
     outcomes: [
-      { id: "em", title: "Visits billing below the acuity treated", desc: "A high-acuity workup that codes as a low-level visit because the note didn't carry it.", dig: { label: "ED visits a year you suspect are under-leveled", unit: "visits / yr", placeholder: "e.g., 4,000" }, mathLabel: "under-leveled", plays: ["Capture the full workup in the note", "Coder feedback to ED providers", "Level-driver prompts in the ED note"], unitValue: 40, proof: ["losmix", "captured"] },
-      { id: "denials", title: "Denials you end up writing off", desc: "Medical-necessity denials a more complete ED note would have prevented.", dig: { label: "Preventable denials a year", unit: "denials / yr", placeholder: "e.g., 350" }, mathLabel: "denials", plays: ["Establish medical necessity in the note", "Fix the top ED denial reasons", "Payer-specific documentation prompts"], unitValue: 3500, proof: ["denialrate", "captured"] },
+      { id: "em", title: "Get paid for the acuity you treat", desc: "The high-acuity workup happened; the note just didn't carry it, so the visit codes below the level of care. This closes the gap between the acuity and the code.", dig: { label: "ED visits a year you suspect are under-leveled", unit: "visits / yr", placeholder: "e.g., 4,000" }, mathLabel: "under-leveled", plays: ["Capture the full workup in the note", "Coder feedback to ED providers", "Level-driver prompts in the ED note"], unitValue: 40, proof: ["losmix", "captured"] },
+      { id: "denials", title: "Stop writing off preventable denials", desc: "Medical-necessity denials a more complete ED note would have prevented.", dig: { label: "Preventable denials a year", unit: "denials / yr", placeholder: "e.g., 350" }, mathLabel: "denials", plays: ["Establish medical necessity in the note", "Fix the top ED denial reasons", "Payer-specific documentation prompts"], unitValue: 3500, proof: ["denialrate", "captured"] },
     ],
+    scope: { prompt: "Across how many ED providers?", unitLabel: "ED providers, from your Starting Point", ceiling: 45, default: "30" },
     choices: [
       { id: "gate", kicker: "The cause", prompt: "Why is it slipping?", helper: "Be honest here. We only count the part a more complete note can defensibly fix, not revenue that was never really there.", mode: "single", defaultId: "note", options: [
         { id: "note", title: "The note undersold the acuity", desc: "The workup happened; the documentation didn't carry it." },
@@ -444,17 +445,17 @@ const edRevenue: AttainCell = {
   plan: {
     valueInPlay: engineValueInPlay("ED", "Revenue Capture"),
     segmentsSummary: "your ED claims",
-    outcomes: ["Visits billing below the acuity treated", "Denials you end up writing off"],
+    outcomes: ["Get paid for the acuity you treat", "Stop writing off preventable denials"],
     signalsGroupLabel: "What Abridge can enable",
     signalsTag: "measured from the Abridge platform",
     abridgeSignals: REVENUE_DOC_SIGNALS,
     connector: "When the ED note captures the full workup, the acuity coding follows.",
     outcomeGroups: [
-      { outcome: "Visits billing below the acuity treated", metrics: [
+      { outcome: "Get paid for the acuity you treat", lever: "emlevel", metrics: [
         { id: "embelow", name: "E/M below supported level", measure: "Share of ED visits coding below the acuity documented.", source: "Billing / claims", unit: "%", today: "25", target: "13" },
         { id: "losmix", name: "Average E/M level", measure: "Average ED E/M level (99281 to 99285).", source: "Billing / claims", unit: "level", today: "3.4", target: "3.8" },
       ] },
-      { outcome: "Denials you end up writing off", metrics: [
+      { outcome: "Stop writing off preventable denials", lever: "denials", metrics: [
         { id: "denialrate", name: "Medical-necessity denial rate", measure: "Share of ED claims denied for medical necessity.", source: "Billing / claims", unit: "%", today: "7", target: "3.5" },
       ] },
     ],
@@ -469,13 +470,14 @@ const inpatientRevenue: AttainCell = {
   align: {
     outcomesMode: "multi",
     value: { mode: "sumOutcomeDigs", unitValueLabel: "captured revenue" },
-    outcomesPrompt: "Where is the revenue slipping?",
-    outcomesHelper: "Inpatient pay follows the documentation: the weight, the queries, the status. Pick where you see it slip, and we'll size it from your own numbers.",
+    outcomesPrompt: "Pick the goals you're after",
+    outcomesHelper: "Inpatient pay follows the documentation: the weight, the queries, the status. Pick each goal that matters, and we'll size the number behind it from your own figures. Each goal you pick sets the lever we price below.",
     outcomes: [
-      { id: "drg", title: "Admissions grouping below the acuity treated", desc: "A sick patient that groups to a lower-weight DRG because a CC or MCC never made it into the note.", dig: { label: "Admissions a year that group below the weight earned", unit: "admissions / yr", placeholder: "e.g., 200" }, mathLabel: "under-weighted", plays: ["Document CC/MCC severity up front", "Focus CDI on the high-impact charts", "Feedback loop to the attendings"], unitValue: 2500, proof: ["cmi", "captured"] },
-      { id: "cdi", title: "The CDI query pile", desc: "Queries your CDI team writes because the note arrived without the specificity coding needs.", dig: { label: "CDI queries a year a complete note would avoid", unit: "queries / yr", placeholder: "e.g., 1,500" }, mathLabel: "queries avoided", plays: ["Complete the note the first time", "Target the top query types", "Provider education on specificity"], unitValue: 90, proof: ["queryrate", "team"] },
-      { id: "obs", title: "Stays downgraded to observation", desc: "Inpatient-level care billed as observation because severity wasn't established up front.", dig: { label: "Downgrades a year you could defend", unit: "stays / yr", placeholder: "e.g., 250" }, mathLabel: "downgrades", plays: ["Document severity at admission", "Concurrent status review", "Physician advisor at the front end"], unitValue: 4000, proof: ["obsrate", "captured"] },
+      { id: "drg", title: "Get the DRG weight the acuity earns", desc: "A sick patient that groups to a lower-weight DRG because a CC or MCC never made it into the note. This closes the gap between the severity treated and the weight paid.", dig: { label: "Admissions a year that group below the weight earned", unit: "admissions / yr", placeholder: "e.g., 200" }, mathLabel: "under-weighted", plays: ["Document CC/MCC severity up front", "Focus CDI on the high-impact charts", "Feedback loop to the attendings"], unitValue: 2500, proof: ["cmi", "captured"] },
+      { id: "cdi", title: "Cut the CDI query pile", desc: "Queries your CDI team writes because the note arrived without the specificity coding needs.", dig: { label: "CDI queries a year a complete note would avoid", unit: "queries / yr", placeholder: "e.g., 1,500" }, mathLabel: "queries avoided", plays: ["Complete the note the first time", "Target the top query types", "Provider education on specificity"], unitValue: 90, proof: ["queryrate", "team"] },
+      { id: "obs", title: "Defend inpatient status", desc: "Inpatient-level care billed as observation because severity wasn't established up front.", dig: { label: "Downgrades a year you could defend", unit: "stays / yr", placeholder: "e.g., 250" }, mathLabel: "downgrades", plays: ["Document severity at admission", "Concurrent status review", "Physician advisor at the front end"], unitValue: 4000, proof: ["obsrate", "captured"] },
     ],
+    scope: { prompt: "Across how many hospitalists?", unitLabel: "hospitalists, from your Starting Point", ceiling: 35, default: "24" },
     choices: [
       { id: "gate", kicker: "The cause", prompt: "Why is it slipping?", helper: "Be honest here. We only count the part a more complete note can defensibly fix, not revenue that was never really there.", mode: "single", defaultId: "note", options: [
         { id: "note", title: "Severity was under-documented", desc: "The acuity was there; the note didn't establish it." },
@@ -502,23 +504,26 @@ const inpatientRevenue: AttainCell = {
   plan: {
     valueInPlay: engineValueInPlay("Inpatient", "Revenue Capture"),
     segmentsSummary: "your admissions",
-    outcomes: ["Admissions grouping below the acuity treated", "The CDI query pile"],
+    outcomes: ["Get the DRG weight the acuity earns", "Cut the CDI query pile", "Defend inpatient status"],
     signalsGroupLabel: "What Abridge can enable",
     signalsTag: "measured from the Abridge platform",
     abridgeSignals: REVENUE_DOC_SIGNALS,
     connector: "When the note establishes severity up front, the weight and the status follow, and the queries fall away.",
     outcomeGroups: [
-      { outcome: "Admissions grouping below the acuity treated", metrics: [
+      { outcome: "Get the DRG weight the acuity earns", lever: "drg", metrics: [
         { id: "cmi", name: "Case mix index", measure: "The acuity weight across your admissions.", source: "Billing / claims", unit: "CMI", today: "1.42", target: "1.55" },
         { id: "ccmcc", name: "CC/MCC capture rate", measure: "Share of admissions with the complication or comorbidity captured.", source: "Billing / claims", unit: "%", today: "68", target: "82" },
       ] },
-      { outcome: "The CDI query pile", metrics: [
+      { outcome: "Cut the CDI query pile", lever: "cdi", metrics: [
         { id: "queryrate", name: "CDI query rate", measure: "Share of charts needing a CDI query.", source: "Data warehouse (SQL)", unit: "%", today: "18", target: "9" },
         { id: "turnaround", name: "Query turnaround", measure: "Days from query to response.", source: "Data warehouse (SQL)", unit: "days", today: "3.5", target: "1.5" },
       ] },
+      { outcome: "Defend inpatient status", lever: "obs", metrics: [
+        { id: "obsrate", name: "Observation downgrade rate", measure: "Share of inpatient-level stays billed as observation.", source: "Billing / claims", unit: "%", today: "5", target: "2.5" },
+      ] },
     ],
     signalsShortList: "note completeness, diagnosis specificity, and documentation adoption",
-    outcomesShortList: "case mix and CDI queries",
+    outcomesShortList: "case mix, CDI queries, and inpatient status",
   },
 };
 
