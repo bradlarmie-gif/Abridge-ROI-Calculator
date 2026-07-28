@@ -16,6 +16,80 @@ export const fmtN = (n: number) => Math.round(n || 0).toLocaleString();
 export const fmtNd = (n: number) =>
   Number(n || 0).toLocaleString(undefined, { maximumFractionDigits: 2 });
 
+/**
+ * Structured "build" for a money driver — the math shown as a scannable ledger
+ * with the honest haircut made visible, instead of a run-on formula footnote.
+ * `factors` multiply up to `gross` (the full opportunity); the credibility
+ * discounts (`haircutLabel`, e.g. realization / attribution) carry it down to
+ * `net` (== the card's headline value). `read` is an optional plain-English
+ * sentence shown only on a screen's hero driver.
+ */
+export interface MoneyBuild {
+  read?: ReactNode;
+  factors: { value: string; label: string }[];
+  grossLabel: string;
+  gross: number;
+  net: number;
+  haircutLabel: ReactNode;
+}
+
+function BuildStrip({ build }: { build: MoneyBuild }) {
+  const keepPct = build.gross > 0 ? Math.max(0, Math.min(1, build.net / build.gross)) : 1;
+  const heldBack = Math.max(0, build.gross - build.net);
+  return (
+    <div className="mt-5">
+      {build.read && (
+        <div className="text-[14.5px] leading-[1.5] text-[#574C41] font-semibold max-w-[520px] mb-[18px] [&_b]:text-[#1A1A1A] [&_b]:font-extrabold">
+          {build.read}
+        </div>
+      )}
+      <div className="text-[10.5px] font-extrabold tracking-[0.09em] uppercase text-[#443A32] mb-3 flex items-center gap-2.5">
+        How it builds
+        <span className="flex-1 h-px bg-gradient-to-r from-[#E8E2DA] to-[#EDE7DD]/0" />
+      </div>
+      <div className="flex items-stretch flex-wrap gap-y-2.5">
+        {build.factors.map((f, i) => (
+          <div key={i} className="flex items-stretch">
+            {i > 0 && <span className="self-start text-[15px] text-[#B9AA97] px-[14px] pt-[2px]">×</span>}
+            <div>
+              <div className="font-abridge text-[20px] text-[#1A1A1A] leading-none tabular-nums">{f.value}</div>
+              <div className="text-[9.5px] font-bold tracking-[0.04em] uppercase text-[#786C5E] mt-[7px]">{f.label}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+      {heldBack > 0 ? (
+        <>
+          <div className="flex justify-between items-baseline mt-[18px] pb-[10px]">
+            <div className="text-[12.5px] text-[#5E534A]">{build.grossLabel}</div>
+            <div className="font-abridge text-[16px] text-[#1A1A1A] tabular-nums">{fmt$(build.gross)}</div>
+          </div>
+          <div className="h-[14px] rounded-[5px] overflow-hidden flex bg-[#EFE7DC]">
+            <div className="bg-[#EA2C00] h-full" style={{ width: `${(keepPct * 100).toFixed(2)}%` }} />
+            <div
+              className="h-full"
+              style={{
+                width: `${((1 - keepPct) * 100).toFixed(2)}%`,
+                background: "repeating-linear-gradient(45deg,#E4D9C8,#E4D9C8 4px,#EFE7DC 4px,#EFE7DC 8px)",
+              }}
+            />
+          </div>
+          <div className="flex justify-between items-baseline mt-[9px] gap-4 flex-wrap">
+            <div className="text-[12px] text-[#B02200] font-bold">
+              <span className="font-abridge font-normal tabular-nums">{fmt$(build.net)}</span> counted · {build.haircutLabel}
+            </div>
+            <div className="text-[12px] text-[#786C5E] tabular-nums">− {fmt$(heldBack)} held back</div>
+          </div>
+        </>
+      ) : (
+        <div className="mt-[14px] text-[13px] text-[#5E534A]">
+          = <span className="font-abridge text-[16px] text-[#1A1A1A] tabular-nums">{fmt$(build.net)}</span> a year
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function SectionLabel({
   children,
   tag,
@@ -89,6 +163,7 @@ export function MoneyCard({
   unit = "/ yr",
   secondary,
   buildLine,
+  build,
   children,
   testId,
   awaitingScale,
@@ -102,6 +177,7 @@ export function MoneyCard({
   unit?: string;
   secondary?: ReactNode;
   buildLine?: ReactNode;
+  build?: MoneyBuild;
   children?: ReactNode;
   testId?: string;
   /** When set (and the card is on), the scale input(s) aren't entered yet: show
@@ -150,9 +226,26 @@ export function MoneyCard({
               <div className="text-[13px] text-[#5E534A] border-l border-[#E8E2DA] pl-4">{secondary}</div>
             )}
           </div>
-          {children}
-          {buildLine && (
-            <div className="mt-4 text-[12.5px] text-[#5E534A] leading-[1.5]">{buildLine}</div>
+          {build ? (
+            <>
+              {/* The math leads (the payoff + its proof); the raw inputs recede below. */}
+              <BuildStrip build={build} />
+              {children && (
+                <>
+                  <div className="text-[10.5px] font-extrabold tracking-[0.09em] uppercase text-[#786C5E] mt-[26px] mb-3">
+                    Adjust the inputs
+                  </div>
+                  {children}
+                </>
+              )}
+            </>
+          ) : (
+            <>
+              {children}
+              {buildLine && (
+                <div className="mt-4 text-[12.5px] text-[#5E534A] leading-[1.5]">{buildLine}</div>
+              )}
+            </>
           )}
         </>
         )

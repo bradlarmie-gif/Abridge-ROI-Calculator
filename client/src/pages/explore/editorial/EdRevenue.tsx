@@ -97,14 +97,25 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
       }
       testId="toggle-wrvu"
       awaitingScale={gate("wrvu")}
-      buildLine={
-        <>
-          <b className="text-[#1A1A1A]">{fmtN(eligibleEncounters)}</b> {isED ? "ED encounters" : "visits"} ×{" "}
-          <b className="text-[#1A1A1A]">{dq.currentWrvu} wRVU</b> baseline × <b className="text-[#1A1A1A]">{wrvuLiftPct}%</b>{" "}
-          more × <b className="text-[#1A1A1A]">${dq.conversionFactor.toFixed(2)}</b> × {dq.wrvuRealization}% realization ={" "}
-          <b className="text-[#1A1A1A]">{fmt$(wrvuValue)}</b> a year
-        </>
-      }
+      build={{
+        read: (
+          <>
+            You're leaving about <b>{fmtN(additionalWrvus)}</b> {isED ? "E/M points" : "wRVUs"} on the table each year.
+            At <b>${dq.conversionFactor.toFixed(2)}</b> apiece that's <b>{fmt$(dq.wrvuRealization > 0 ? wrvuValue / (dq.wrvuRealization / 100) : wrvuValue)}</b>,
+            and we count only the <b>{dq.wrvuRealization}%</b> that holds on review.
+          </>
+        ),
+        factors: [
+          { value: fmtN(eligibleEncounters), label: isED ? "ED encounters" : "visits" },
+          { value: fmtNd(dq.currentWrvu), label: "wRVU / visit" },
+          { value: `${wrvuLiftPct}%`, label: "lift captured" },
+          { value: `$${dq.conversionFactor.toFixed(2)}`, label: "per wRVU" },
+        ],
+        grossLabel: "Captured value, before what holds on review",
+        gross: dq.wrvuRealization > 0 ? wrvuValue / (dq.wrvuRealization / 100) : wrvuValue,
+        net: wrvuValue,
+        haircutLabel: <>{dq.wrvuRealization}% holds on review</>,
+      }}
     >
       <FieldGrid>
         <FieldTile label={isED ? "ED encounters" : "Fee-for-service visits"} note="at your utilization rate">
@@ -196,6 +207,12 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
     return { name: p.name, gross: Math.round(gross * (dq.hccRealization / 100)) };
   });
 
+  // Aggregate build across plans: total members × blended value/member = gross
+  // recaptured, then one realization (RADV survival). Per-plan economics stay
+  // visible in the repeater below.
+  const hccGross = dq.hccRealization > 0 ? hccValue / (dq.hccRealization / 100) : hccValue;
+  const hccPerMember = totalPanel > 0 ? hccGross / totalPanel : 0;
+
   const hccCard = (
     <MoneyCard
       key="hcc"
@@ -212,25 +229,16 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
       }
       testId="toggle-hcc"
       awaitingScale={gate("hccCapture")}
-      buildLine={
-        <>
-          Each plan: members × ({dq.avgHccs} conditions × {upliftPts}pp recaptured + {sharedPlan?.netNewAvgConditions ?? 0} new) × its $/HCC × {dq.hccRealization}% realization
-          {planBreakdown.length > 1 ? (
-            <>
-              .{" "}
-              {planBreakdown.map((p, i) => (
-                <span key={p.name}>
-                  {i > 0 && " + "}
-                  {p.name} <b className="text-[#1A1A1A]">{fmt$(p.gross)}</b>
-                </span>
-              ))}{" "}
-              = <b className="text-[#1A1A1A]">{fmt$(hccValue)}</b> a year
-            </>
-          ) : (
-            <> = <b className="text-[#1A1A1A]">{fmt$(hccValue)}</b> a year</>
-          )}
-        </>
-      }
+      build={{
+        factors: [
+          { value: fmtN(totalPanel), label: "members total" },
+          { value: fmt$(hccPerMember), label: "value / member" },
+        ],
+        grossLabel: "Recaptured value, before what survives audit",
+        gross: hccGross,
+        net: hccValue,
+        haircutLabel: <>{dq.hccRealization}% survives RADV</>,
+      }}
     >
       <PlansRepeater totalLabel={<><b className="text-[#1A1A1A] font-abridge text-[14px]">{fmtN(totalPanel)}</b> members total</>} onAdd={addPlan}>
         {plans.map((p) => (
@@ -321,14 +329,18 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
       }
       testId="toggle-denials"
       awaitingScale={gate("denialPrevention")}
-      buildLine={
-        <>
-          <b className="text-[#1A1A1A]">{fmtN(eligibleEncounters)}</b> claims × <b className="text-[#1A1A1A]">{dq.medNecessityDenialRate}%</b>{" "}
-          denial rate × <b className="text-[#1A1A1A]">{denialsPreventedPct}%</b> prevented ({fmtN(fewerDenied)}) ×{" "}
-          <b className="text-[#1A1A1A]">${dq.avgClaimValue}</b> × {dq.denialsRealization}% net of appeals ={" "}
-          <b className="text-[#1A1A1A]">{fmt$(denialsValue)}</b> a year
-        </>
-      }
+      build={{
+        factors: [
+          { value: fmtN(eligibleEncounters), label: "claims" },
+          { value: `${dq.medNecessityDenialRate}%`, label: "denial rate" },
+          { value: `${denialsPreventedPct}%`, label: "prevented" },
+          { value: `$${dq.avgClaimValue}`, label: "per claim" },
+        ],
+        grossLabel: "Recovered claims value, before appeals",
+        gross: dq.denialsRealization > 0 ? denialsValue / (dq.denialsRealization / 100) : denialsValue,
+        net: denialsValue,
+        haircutLabel: <>{dq.denialsRealization}% net of appeals</>,
+      }}
     >
       <FieldGrid>
         <FieldTile label="Annual claims" note="encounters × utilization">
@@ -372,13 +384,24 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
       secondary={<>≈ CMI <b className="text-[#1A1A1A]">{dq.ipDrgCurrentCmi.toFixed(2)} → {projectedCmi.toFixed(2)}</b>, {dq.ipDrgAttribution}% attributed to Abridge</>}
       testId="toggle-drg"
       awaitingScale={gate("drgAccuracy")}
-      buildLine={
-        <>
-          <b className="text-[#1A1A1A]">{fmtN(eligibleEncounters)}</b> discharges × <b className="text-[#1A1A1A]">{dq.ipDrgWeightIncrease}</b> CMI lift ×{" "}
-          <b className="text-[#1A1A1A]">${fmtN(dq.ipDrgBasePayment)}</b>/case × {dq.ipDrgAttribution}% attributed × {dq.ipDrgRealization}% realization ={" "}
-          <b className="text-[#1A1A1A]">{fmt$(drgValue)}</b> a year
-        </>
-      }
+      build={{
+        read: (
+          <>
+            A <b>{fmtNd(dq.ipDrgWeightIncrease)}</b> CMI lift across <b>{fmtN(eligibleEncounters)}</b> discharges at{" "}
+            <b>${fmtN(dq.ipDrgBasePayment)}</b> a case is worth <b>{fmt$((dq.ipDrgAttribution > 0 && dq.ipDrgRealization > 0) ? drgValue / ((dq.ipDrgAttribution / 100) * (dq.ipDrgRealization / 100)) : drgValue)}</b>.
+            We count only the <b>{dq.ipDrgAttribution}%</b> your point-of-care notes drive, and the <b>{dq.ipDrgRealization}%</b> that survives audit.
+          </>
+        ),
+        factors: [
+          { value: fmtN(eligibleEncounters), label: "discharges" },
+          { value: fmtNd(dq.ipDrgWeightIncrease), label: "CMI lift" },
+          { value: `$${fmtN(dq.ipDrgBasePayment)}`, label: "per case" },
+        ],
+        grossLabel: "CMI opportunity, before what's attributed and holds",
+        gross: (dq.ipDrgAttribution > 0 && dq.ipDrgRealization > 0) ? drgValue / ((dq.ipDrgAttribution / 100) * (dq.ipDrgRealization / 100)) : drgValue,
+        net: drgValue,
+        haircutLabel: <>{dq.ipDrgAttribution}% attributed × {dq.ipDrgRealization}% holds</>,
+      }}
     >
       <FieldGrid>
         <FieldTile label="Annual discharges" note="at your utilization rate">
@@ -428,13 +451,17 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
       secondary={<>≈ <b className="text-[#1A1A1A]">{obsPreventablePct}%</b> of downgrades the note can defend</>}
       testId="toggle-obs"
       awaitingScale={gate("obsDefense")}
-      buildLine={
-        <>
-          <b className="text-[#1A1A1A]">{fmtN(eligibleEncounters)}</b> admissions × <b className="text-[#1A1A1A]">{dq.ipObsDefenseDenialRate}%</b>{" "}
-          downgraded × <b className="text-[#1A1A1A]">${fmtN(dq.ipObsDefenseRevenueDelta)}</b>/case × <b className="text-[#1A1A1A]">{obsPreventablePct}%</b>{" "}
-          the note can defend × {dq.ipObsDefenseRealization}% survive appeal = <b className="text-[#1A1A1A]">{fmt$(obsValue)}</b> a year
-        </>
-      }
+      build={{
+        factors: [
+          { value: fmtN(eligibleEncounters), label: "admissions" },
+          { value: `${dq.ipObsDefenseDenialRate}%`, label: "downgraded" },
+          { value: `$${fmtN(dq.ipObsDefenseRevenueDelta)}`, label: "per case delta" },
+        ],
+        grossLabel: "Downgrade exposure, before what the note defends",
+        gross: (obsPreventablePct > 0 && dq.ipObsDefenseRealization > 0) ? obsValue / ((obsPreventablePct / 100) * (dq.ipObsDefenseRealization / 100)) : obsValue,
+        net: obsValue,
+        haircutLabel: <>{obsPreventablePct}% defensible × {dq.ipObsDefenseRealization}% survives appeal</>,
+      }}
     >
       <FieldGrid>
         <FieldTile label="Annual admissions" note="at your utilization rate">
