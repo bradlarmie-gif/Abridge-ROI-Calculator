@@ -64,8 +64,11 @@ const DRIVER_ONSET: Record<string, DriverOnset> = {
   edEmLevel: "immediate",
   hccCapture: "longTerm",
   denialPrevention: "delayed",
-  drgAccuracy: "immediate",
-  obsDefense: "immediate",
+  // DRG accuracy and observation defense are claims-cycle revenue: the corrected
+  // documentation has to move through coding and billing before it shows in paid
+  // claims, exactly like denial prevention. So they ramp "delayed," not day-one.
+  drgAccuracy: "delayed",
+  obsDefense: "delayed",
 };
 
 const FALLBACK_ONSET_BY_QUADRANT: Record<ExploreQuadrant, DriverOnset> = {
@@ -157,26 +160,44 @@ export default function EdModel({
     return pts;
   }, [rampEntries, otherAnnualTotal]);
 
-  const crossMonthFrac = useMemo(() => {
-    if (annualInvestment <= 0) return null; // no investment entered yet — nothing to clear
+  // Cumulative Year-1 cash view — the honest payback. Value accrues month by
+  // month as adoption ramps (monthly value = that month's run-rate / 12), while
+  // cost accrues linearly. Payback is where CUMULATIVE value overtakes CUMULATIVE
+  // spend, not the moment the run-rate rate merely passes the cost rate (which
+  // overstates how fast the investment is actually recovered).
+  const cumPoints = useMemo(() => {
+    const pts: { month: number; value: number; cost: number }[] = [];
+    let cumV = 0;
+    for (let m = 0; m <= 12; m++) {
+      if (m > 0) cumV += rampPoints[m].value / 12;
+      pts.push({ month: m, value: cumV, cost: annualInvestment * (m / 12) });
+    }
+    return pts;
+  }, [rampPoints, annualInvestment]);
+
+  const paybackMonthFrac = useMemo(() => {
+    if (annualInvestment <= 0) return null; // no investment entered yet
     for (let m = 1; m <= 12; m++) {
-      if (rampPoints[m].value >= annualInvestment) {
-        const prev = rampPoints[m - 1].value;
-        const cur = rampPoints[m].value;
-        const frac = cur === prev ? 0 : (annualInvestment - prev) / (cur - prev);
+      if (cumPoints[m].value >= cumPoints[m].cost) {
+        const prevGap = cumPoints[m - 1].value - cumPoints[m - 1].cost; // <= 0
+        const curGap = cumPoints[m].value - cumPoints[m].cost; // >= 0
+        const frac = curGap === prevGap ? 0 : (0 - prevGap) / (curGap - prevGap);
         return (m - 1) + Math.max(0, Math.min(1, frac));
       }
     }
-    return null; // doesn't clear cost within the 12-month window
-  }, [rampPoints, annualInvestment]);
+    return null; // hasn't paid back within the first year
+  }, [cumPoints, annualInvestment]);
 
   // Chart geometry — viewBox 0 0 640 250, matching the locked mockup.
+  const cumMax = Math.max(cumPoints[12].value, cumPoints[12].cost, 1);
   const chartX = (month: number) => 40 + (month / 12) * 580;
-  const chartY = (value: number) => (totalAnnualValue > 0 ? 220 - Math.max(0, Math.min(1, value / totalAnnualValue)) * 185 : 220);
-  const linePath = rampPoints.map((p) => `${p.month === 0 ? "M" : "L"}${chartX(p.month).toFixed(1)},${chartY(p.value).toFixed(1)}`).join(" ");
-  const areaPath = `M40,220 ${rampPoints.map((p) => `L${chartX(p.month).toFixed(1)},${chartY(p.value).toFixed(1)}`).join(" ")} L620,220 Z`;
-  const investmentY = totalAnnualValue > 0 ? 220 - Math.max(0, Math.min(1, annualInvestment / totalAnnualValue)) * 185 : 200;
-  const crossX = crossMonthFrac !== null ? chartX(crossMonthFrac) : null;
+  const chartY = (value: number) => 220 - Math.max(0, Math.min(1, value / cumMax)) * 185;
+  const valuePath = cumPoints.map((p) => `${p.month === 0 ? "M" : "L"}${chartX(p.month).toFixed(1)},${chartY(p.value).toFixed(1)}`).join(" ");
+  const areaPath = `M40,220 ${cumPoints.map((p) => `L${chartX(p.month).toFixed(1)},${chartY(p.value).toFixed(1)}`).join(" ")} L620,220 Z`;
+  const costPath = cumPoints.map((p) => `${p.month === 0 ? "M" : "L"}${chartX(p.month).toFixed(1)},${chartY(p.cost).toFixed(1)}`).join(" ");
+  const paybackX = paybackMonthFrac !== null ? chartX(paybackMonthFrac) : null;
+  const paybackY = paybackMonthFrac !== null ? chartY(annualInvestment * (paybackMonthFrac / 12)) : null;
+  const valueEndY = chartY(cumPoints[12].value);
 
   // ───── Quadrant contribution bars ─────
   const quadrantMax = Math.max(valueByQuadrant.Revenue, valueByQuadrant.Capacity, valueByQuadrant.Workforce, 1);
@@ -440,10 +461,10 @@ export default function EdModel({
             <div className="text-[11px] font-extrabold tracking-[0.09em] uppercase text-[#2E2822] mb-[6px]">When it lands</div>
             <p className="text-[12.5px] text-[#5E534A] mb-[14px] leading-[1.5]">
               {annualInvestment <= 0
-                ? <>Value ramps as adoption grows, reaching full run-rate by month 12. Add your investment to see when it clears the cost.</>
-                : crossMonthFrac !== null
-                  ? <>Value ramps as adoption grows. It clears the cost by month {Math.max(1, Math.ceil(crossMonthFrac))}, then climbs to full run-rate.</>
-                  : <>Value ramps as adoption grows. At this scope it's still climbing toward the cost line at month 12.</>}
+                ? <>Value builds as adoption grows. Add your investment to see the payback point.</>
+                : paybackMonthFrac !== null
+                  ? <>Cumulative value catches the cumulative cost by month {Math.max(1, Math.ceil(paybackMonthFrac))}, the payback point. From there it keeps compounding, and the run-rate reaches its full {fmtShort(totalAnnualValue)} / yr by month 12.</>
+                  : <>Value builds as adoption grows. At this scope the cumulative value is still catching up to the cost at month 12.</>}
             </p>
             {totalAnnualValue > 0 ? (
               <>
@@ -458,35 +479,34 @@ export default function EdModel({
                   <line x1="40" y1="128" x2="620" y2="128" stroke="#EDE7DD" strokeWidth="1" />
                   <line x1="40" y1="220" x2="620" y2="220" stroke="#E8E2DA" strokeWidth="1" />
                   <path d={areaPath} fill="url(#edModelRampGradient)" />
-                  <path d={linePath} fill="none" stroke="#EA2C00" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
                   {annualInvestment > 0 && (
-                    <line x1="40" y1={investmentY} x2="620" y2={investmentY} stroke="#9C8E7E" strokeWidth="1.6" strokeDasharray="5 4" />
+                    <path d={costPath} fill="none" stroke="#9C8E7E" strokeWidth="1.6" strokeDasharray="5 4" strokeLinejoin="round" strokeLinecap="round" />
                   )}
-                  {crossX !== null && (
+                  <path d={valuePath} fill="none" stroke="#EA2C00" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
+                  {paybackX !== null && paybackY !== null && (
                     <>
-                      <line x1={crossX} y1={investmentY} x2={crossX} y2="220" stroke="#C9BCA9" strokeWidth="1" strokeDasharray="3 3" />
-                      <circle cx={crossX} cy={investmentY} r="4.5" fill="#fff" stroke="#EA2C00" strokeWidth="2.5" />
-                      <text x={Math.max(44, crossX - 58)} y={investmentY - 10} fontFamily="Manrope" fontSize="11" fontWeight="700" fill="#B02200">
-                        clears the cost · Mo {Math.max(1, Math.ceil(crossMonthFrac ?? 1))}
+                      <line x1={paybackX} y1={paybackY} x2={paybackX} y2="220" stroke="#C9BCA9" strokeWidth="1" strokeDasharray="3 3" />
+                      <circle cx={paybackX} cy={paybackY} r="4.5" fill="#fff" stroke="#EA2C00" strokeWidth="2.5" />
+                      <text x={Math.max(44, Math.min(paybackX - 6, 512))} y={paybackY - 11} fontFamily="Manrope" fontSize="11" fontWeight="700" fill="#B02200" textAnchor={paybackX > 300 ? "end" : "start"}>
+                        pays back · Mo {Math.max(1, Math.ceil(paybackMonthFrac ?? 1))}
                       </text>
                     </>
                   )}
-                  <circle cx="620" cy="35.5" r="4" fill="#EA2C00" />
-                  <text x="588" y="27" fontFamily="Manrope" fontSize="11" fontWeight="700" fill="#B02200" textAnchor="middle">full run-rate</text>
+                  <circle cx="620" cy={valueEndY} r="4" fill="#EA2C00" />
+                  <text x="616" y={Math.max(24, valueEndY - 10)} fontFamily="Manrope" fontSize="10.5" fontWeight="700" fill="#B02200" textAnchor="end">{fmtShort(cumPoints[12].value)} · year 1</text>
                   <text x="40" y="238" fontFamily="Manrope" fontSize="11" fill="#786C5E">Mo 1</text>
                   <text x="330" y="238" fontFamily="Manrope" fontSize="11" fill="#786C5E" textAnchor="middle">Mo 6</text>
                   <text x="620" y="238" fontFamily="Manrope" fontSize="11" fill="#786C5E" textAnchor="end">Mo 12</text>
-                  <text x="620" y="49" fontFamily="Manrope" fontSize="10.5" fontWeight="700" fill="#B02200" textAnchor="end">{fmtShort(totalAnnualValue)}</text>
                 </svg>
                 <div className="flex gap-5 mt-3">
                   <div className="flex items-center gap-[7px] text-[12px] text-[#5E534A]">
                     <span className="w-[14px] h-[3px] rounded-[2px] bg-[#EA2C00] inline-block" />
-                    Value run-rate
+                    Cumulative value
                   </div>
                   {annualInvestment > 0 && (
                     <div className="flex items-center gap-[7px] text-[12px] text-[#5E534A]">
                       <span className="w-[14px] h-[3px] rounded-[2px] bg-[#9C8E7E] inline-block" />
-                      Investment {fmtShort(annualInvestment)} / yr
+                      Cumulative cost · {fmtShort(annualInvestment)} / yr
                     </div>
                   )}
                 </div>
