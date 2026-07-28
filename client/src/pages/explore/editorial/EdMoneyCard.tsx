@@ -418,7 +418,7 @@ export function PlanRow({
       <select
         value={planType}
         onChange={(e) => onPlanTypeChange(e.target.value)}
-        className="h-[42px] rounded-[11px] border border-[#E8E2DA] bg-white px-3 text-[13.5px] font-bold text-[#1A1A1A] outline-none"
+        className="h-12 rounded-xl border border-[#E8E2DA] bg-white px-[14px] text-[15px] font-bold text-[#1A1A1A] outline-none transition-colors focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]"
       >
         {Object.entries(PLAN_TYPE_LABELS).map(([k, label]) => (
           <option key={k} value={k}>

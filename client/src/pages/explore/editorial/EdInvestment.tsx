@@ -153,12 +153,12 @@ export default function EdInvestment({
                     <div className="text-[10.5px] font-extrabold tracking-[0.04em] uppercase text-[#2E2822] mb-2">
                       {isNursing ? "Staffed beds" : "Providers"}
                     </div>
-                    <div className="h-[44px] border border-[#E8E2DA] rounded-[11px] bg-white flex items-center px-[13px] text-[15px] font-bold text-[#1A1A1A]">
+                    <div className="h-12 border border-[#E8E2DA] rounded-xl bg-white flex items-center px-[14px] text-[16px] font-bold text-[#1A1A1A] transition-colors focus-within:border-[#EA2C00] focus-within:ring-1 focus-within:ring-[#EA2C00]">
                       <FormattedNumberInput
                         value={isNursing ? state.nursingStaffedBeds : state.numberOfProviders}
                         onChange={(v) => updateState(isNursing ? { nursingStaffedBeds: v } : { numberOfProviders: v })}
                         onBlurValue={(v) => updateState(isNursing ? { nursingStaffedBeds: Math.max(v, 1) } : { numberOfProviders: Math.max(v, 1) })}
-                        className="border-0 h-auto p-0 shadow-none text-[15px] font-bold focus-visible:ring-0 w-full"
+                        className="border-0 h-auto p-0 shadow-none text-[16px] font-bold text-[#1A1A1A] tabular-nums focus-visible:ring-0 w-full"
                         data-testid="ed-investment-input-providers"
                       />
                     </div>
@@ -168,12 +168,12 @@ export default function EdInvestment({
                     <div className="text-[10.5px] font-extrabold tracking-[0.04em] uppercase text-[#2E2822] mb-2">
                       Cost per {isNursing ? "bed" : "provider"} / month
                     </div>
-                    <div className="h-[44px] border border-[#E8E2DA] rounded-[11px] bg-white flex items-center gap-[2px] px-[13px]">
-                      <span className="text-[14px] font-semibold text-[#5E534A]">$</span>
+                    <div className="h-12 border border-[#E8E2DA] rounded-xl bg-white flex items-center gap-0 px-[14px] transition-colors focus-within:border-[#EA2C00] focus-within:ring-1 focus-within:ring-[#EA2C00]">
+                      <span className="text-[16px] font-bold text-[#1A1A1A] mr-[1px]">$</span>
                       <FormattedNumberInput
                         value={state.costPerProvider}
                         onChange={(v) => updateState({ costPerProvider: v })}
-                        className="border-0 h-auto p-0 shadow-none text-[15px] font-bold focus-visible:ring-0 w-full"
+                        className="border-0 h-auto p-0 shadow-none text-[16px] font-bold text-[#1A1A1A] tabular-nums focus-visible:ring-0 w-full"
                         data-testid="ed-investment-input-cost-per-provider"
                       />
                     </div>
@@ -195,13 +195,13 @@ export default function EdInvestment({
               <>
                 <div>
                   <div className="text-[10.5px] font-extrabold tracking-[0.04em] uppercase text-[#2E2822] mb-2">Cost per encounter</div>
-                  <div className="h-[44px] border border-[#E8E2DA] rounded-[11px] bg-white flex items-center gap-[2px] px-[13px] max-w-[220px]">
-                    <span className="text-[14px] font-semibold text-[#5E534A]">$</span>
+                  <div className="h-12 border border-[#E8E2DA] rounded-xl bg-white flex items-center gap-0 px-[14px] transition-colors focus-within:border-[#EA2C00] focus-within:ring-1 focus-within:ring-[#EA2C00] max-w-[220px]">
+                    <span className="text-[16px] font-bold text-[#1A1A1A] mr-[1px]">$</span>
                     <FormattedNumberInput
                       value={state.costPerEncounter}
                       onChange={(v) => updateState({ costPerEncounter: v })}
                       step={0.01}
-                      className="border-0 h-auto p-0 shadow-none text-[15px] font-bold focus-visible:ring-0 w-full"
+                      className="border-0 h-auto p-0 shadow-none text-[16px] font-bold text-[#1A1A1A] tabular-nums focus-visible:ring-0 w-full"
                       data-testid="ed-investment-input-cost-per-encounter"
                     />
                   </div>
@@ -222,25 +222,25 @@ export default function EdInvestment({
                 <div className="grid grid-cols-2 gap-[14px]">
                   <div>
                     <div className="text-[10.5px] font-extrabold tracking-[0.04em] uppercase text-[#2E2822] mb-2">Annual platform fee</div>
-                    <div className="h-[44px] border border-[#E8E2DA] rounded-[11px] bg-white flex items-center gap-[2px] px-[13px]">
-                      <span className="text-[14px] font-semibold text-[#5E534A]">$</span>
+                    <div className="h-12 border border-[#E8E2DA] rounded-xl bg-white flex items-center gap-0 px-[14px] transition-colors focus-within:border-[#EA2C00] focus-within:ring-1 focus-within:ring-[#EA2C00]">
+                      <span className="text-[16px] font-bold text-[#1A1A1A] mr-[1px]">$</span>
                       <FormattedNumberInput
                         value={state.annualLicenseFee}
                         onChange={(v) => updateState({ annualLicenseFee: v })}
-                        className="border-0 h-auto p-0 shadow-none text-[15px] font-bold focus-visible:ring-0 w-full"
+                        className="border-0 h-auto p-0 shadow-none text-[16px] font-bold text-[#1A1A1A] tabular-nums focus-visible:ring-0 w-full"
                         data-testid="ed-investment-input-platform-license"
                       />
                     </div>
                   </div>
                   <div>
                     <div className="text-[10.5px] font-extrabold tracking-[0.04em] uppercase text-[#2E2822] mb-2">Per-encounter rate</div>
-                    <div className="h-[44px] border border-[#E8E2DA] rounded-[11px] bg-white flex items-center gap-[2px] px-[13px]">
-                      <span className="text-[14px] font-semibold text-[#5E534A]">$</span>
+                    <div className="h-12 border border-[#E8E2DA] rounded-xl bg-white flex items-center gap-0 px-[14px] transition-colors focus-within:border-[#EA2C00] focus-within:ring-1 focus-within:ring-[#EA2C00]">
+                      <span className="text-[16px] font-bold text-[#1A1A1A] mr-[1px]">$</span>
                       <FormattedNumberInput
                         value={state.platformEncRate ?? 0}
                         onChange={(v) => updateState({ platformEncRate: v })}
                         step={0.01}
-                        className="border-0 h-auto p-0 shadow-none text-[15px] font-bold focus-visible:ring-0 w-full"
+                        className="border-0 h-auto p-0 shadow-none text-[16px] font-bold text-[#1A1A1A] tabular-nums focus-visible:ring-0 w-full"
                         data-testid="ed-investment-input-platform-enc-rate"
                       />
                     </div>
@@ -261,12 +261,12 @@ export default function EdInvestment({
               <>
                 <div>
                   <div className="text-[10.5px] font-extrabold tracking-[0.04em] uppercase text-[#2E2822] mb-2">Annual license fee</div>
-                  <div className="h-[44px] border border-[#E8E2DA] rounded-[11px] bg-white flex items-center gap-[2px] px-[13px] max-w-[220px]">
-                    <span className="text-[14px] font-semibold text-[#5E534A]">$</span>
+                  <div className="h-12 border border-[#E8E2DA] rounded-xl bg-white flex items-center gap-0 px-[14px] transition-colors focus-within:border-[#EA2C00] focus-within:ring-1 focus-within:ring-[#EA2C00] max-w-[220px]">
+                    <span className="text-[16px] font-bold text-[#1A1A1A] mr-[1px]">$</span>
                     <FormattedNumberInput
                       value={state.annualLicenseFee}
                       onChange={(v) => updateState({ annualLicenseFee: v })}
-                      className="border-0 h-auto p-0 shadow-none text-[15px] font-bold focus-visible:ring-0 w-full"
+                      className="border-0 h-auto p-0 shadow-none text-[16px] font-bold text-[#1A1A1A] tabular-nums focus-visible:ring-0 w-full"
                       data-testid="ed-investment-input-annual-license"
                     />
                   </div>
