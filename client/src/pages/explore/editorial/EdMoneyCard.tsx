@@ -52,7 +52,7 @@ export function BuildStrip({ build }: { build: MoneyBuild }) {
           <div key={i} className="flex items-stretch">
             {i > 0 && <span className="self-start text-[15px] text-[#B9AA97] px-[14px] pt-[2px]">×</span>}
             <div>
-              <div className="font-abridge text-[20px] text-[#1A1A1A] leading-none tabular-nums">{f.value}</div>
+              <div className="text-[19px] font-bold text-[#1A1A1A] leading-none tabular-nums">{f.value}</div>
               <div className="text-[9.5px] font-bold tracking-[0.04em] uppercase text-[#786C5E] mt-[7px]">{f.label}</div>
             </div>
           </div>
@@ -62,7 +62,7 @@ export function BuildStrip({ build }: { build: MoneyBuild }) {
         <>
           <div className="flex justify-between items-baseline mt-[18px] pb-[10px]">
             <div className="text-[12.5px] text-[#5E534A]">{build.grossLabel}</div>
-            <div className="font-abridge text-[16px] text-[#1A1A1A] tabular-nums">{fmt$(build.gross)}</div>
+            <div className="text-[16px] font-bold text-[#1A1A1A] tabular-nums">{fmt$(build.gross)}</div>
           </div>
           <div className="h-[14px] rounded-[5px] overflow-hidden flex bg-[#EFE7DC]">
             <div className="bg-[#EA2C00] h-full" style={{ width: `${(keepPct * 100).toFixed(2)}%` }} />
@@ -76,14 +76,14 @@ export function BuildStrip({ build }: { build: MoneyBuild }) {
           </div>
           <div className="flex justify-between items-baseline mt-[9px] gap-4 flex-wrap">
             <div className="text-[12px] text-[#B02200] font-bold">
-              <span className="font-abridge font-normal tabular-nums">{fmt$(build.net)}</span> counted · {build.haircutLabel}
+              <span className="font-extrabold tabular-nums">{fmt$(build.net)}</span> counted · {build.haircutLabel}
             </div>
             <div className="text-[12px] text-[#786C5E] tabular-nums">− {fmt$(heldBack)} held back</div>
           </div>
         </>
       ) : (
         <div className="mt-[14px] text-[13px] text-[#5E534A]">
-          = <span className="font-abridge text-[16px] text-[#1A1A1A] tabular-nums">{fmt$(build.net)}</span> a year
+          = <span className="text-[16px] font-bold text-[#1A1A1A] tabular-nums">{fmt$(build.net)}</span> a year
         </div>
       )}
     </div>
