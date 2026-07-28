@@ -95,8 +95,11 @@ export function buildExploreProformaDrivers(
   if (wrvuValue > 0) drivers.push({ id: "wrvu", name: "E/M Level Accuracy", value: wrvuValue, category: "documentation", quadrant: "Revenue", onset: "immediate" as const });
   if (hccValue > 0) drivers.push({ id: "hcc", name: "HCC Recapture", value: hccValue, category: "documentation", quadrant: "Revenue", onset: "longTerm" as const });
   if (denialsValue > 0) drivers.push({ id: "denials", name: "Denial Prevention", value: denialsValue, category: "documentation", quadrant: "Revenue", onset: "immediate" as const });
-  if (ipDrgValue > 0) drivers.push({ id: "ipDrg", name: "DRG Accuracy", value: ipDrgValue, category: "documentation", quadrant: "Revenue", onset: "immediate" as const });
-  if (ipObsDefenseValue > 0) drivers.push({ id: "ipObsDefense", name: "Obs/IP Status Defense", value: ipObsDefenseValue, category: "documentation", quadrant: "Revenue", onset: "immediate" as const });
+  // DRG accuracy and Obs defense are claims-cycle revenue (corrected documentation
+  // has to clear coding and billing before it lands in paid claims), so they ramp
+  // "delayed" here too — matching the Explore model's "when it lands" chart.
+  if (ipDrgValue > 0) drivers.push({ id: "ipDrg", name: "DRG Accuracy", value: ipDrgValue, category: "documentation", quadrant: "Revenue", onset: "delayed" as const });
+  if (ipObsDefenseValue > 0) drivers.push({ id: "ipObsDefense", name: "Obs/IP Status Defense", value: ipObsDefenseValue, category: "documentation", quadrant: "Revenue", onset: "delayed" as const });
   if (extras.nursingHapiValue > 0) drivers.push({ id: "nursingHapi", name: "HAPI Risk Reduction", value: extras.nursingHapiValue, category: "documentation", quadrant: "Quality", onset: "delayed" as const });
   if (extras.nursingFallsValue > 0) drivers.push({ id: "nursingFalls", name: "Fall Risk Visibility", value: extras.nursingFallsValue, category: "documentation", quadrant: "Quality", onset: "delayed" as const });
   if (extras.nursingCautiValue > 0) drivers.push({ id: "nursingCauti", name: "CAUTI Bundle Compliance", value: extras.nursingCautiValue, category: "documentation", quadrant: "Quality", onset: "delayed" as const });
