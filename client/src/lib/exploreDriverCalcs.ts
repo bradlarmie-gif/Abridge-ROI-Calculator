@@ -180,10 +180,19 @@ export function computeAllDriverValues(
     const lift = (dq.currentWrvu * wrvuScenarios[dq.wrvuScenario]) / 100;
     const value =
       eligibleEncounters * lift * dq.conversionFactor * (dq.wrvuRealization / 100);
+    // wRVU / E&M is fee-for-service revenue: under a pure-risk contract there is
+    // no per-encounter uplift to bill, so OP wRVU is absent (ED E&M is unaffected
+    // by payment model). Gating here — the source of truth — keeps the card, the
+    // ROI total, and the PDF from disagreeing (the OP revenue screen hides the
+    // wRVU card under "risk" the same way).
     if (isED) result.edEmLevel = Math.round(value);
-    else result.wrvu = Math.round(value);
+    else if (state.paymentModel !== "risk") result.wrvu = Math.round(value);
   }
-  if (dq.hccEnabled && isOP) {
+  if (dq.hccEnabled && isOP && state.paymentModel !== "ffs") {
+    // HCC recapture is risk-adjustment revenue: under pure fee-for-service there
+    // is no risk-adjusted payment, so it is absent (the OP revenue screen hides
+    // the HCC card under "ffs" the same way — gate the value so the ROI total
+    // never carries a dollar the screen doesn't show).
     // Clean recapture model (no gapRate, no hidden discovery rate):
     // per plan: members × (avg documented conditions/member × recapture-rate lift
     // + newly identified/member) × $/HCC, then one global realization (RADV survival).
@@ -389,9 +398,9 @@ export function computeAllDriverCalcSummaries(
     const cf = dq.conversionFactor % 1 === 0 ? `$${dq.conversionFactor}` : `$${dq.conversionFactor.toFixed(2)}`;
     const summary = `${fmtN(eligibleEncounters)} encounters × ${dq.currentWrvu} current wRVU × ${liftPct}% lift × ${cf}/wRVU × ${dq.wrvuRealization}% realization`;
     if (isED) out.edEmLevel = summary;
-    else out.wrvu = summary;
+    else if (state.paymentModel !== "risk") out.wrvu = summary;
   }
-  if (dq.hccEnabled && isOP) {
+  if (dq.hccEnabled && isOP && state.paymentModel !== "ffs") {
     const upliftMap = HCC_UPLIFT_SCENARIOS;
     // Pure-multiplicand form so the PDF reconciliation parser can verify it:
     // members × (recapture + new, folded into HCCs/member) × $/HCC × realization.

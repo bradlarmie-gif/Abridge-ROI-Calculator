@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { computeAllDriverValues, computeExploreTotals } from "@/lib/exploreDriverCalcs";
 import { computeRevenueBreakdown, computeWorkforceBreakdown, computeCapacityBreakdown } from "@/lib/exploreQuadrantValues";
+import { driverScaleReadiness } from "@/lib/exploreScaleGate";
 import { DEFAULT_EXPLORE_STATE, type ExploreState } from "@/pages/explore/ExploreFlow";
 
 const td = (overrides: Partial<ExploreState["timeDriverInputs"]>): ExploreState["timeDriverInputs"] => ({
@@ -226,5 +227,92 @@ describe("inpatient provider-wellbeing parity (engine honors IP-specific fields)
     };
     expect(computeAllDriverValues(state, HOURS).providerWellbeing)
       .toBe(computeWorkforceBreakdown(state, HOURS).driverValues.providerWellbeing);
+  });
+});
+
+/**
+ * A hidden card must never contribute to the ROI total. Scale-gating is a
+ * display check, but HCC is the one driver that could be nonzero while its gate
+ * said "not ready" — the card showed "—" while the total still counted it. The
+ * gate is now per-plan (ready as soon as ANY plan has a panel), so a revealed
+ * value always matches the total, and a not-ready gate always means 0.
+ */
+describe("HCC scale-gate reconciles with the engine (a hidden card contributes 0)", () => {
+  const basePlan = DEFAULT_EXPLORE_STATE.docQualityInputs.hccPlans[0];
+  const opHcc = (panels: number[]): ExploreState => ({
+    ...DEFAULT_EXPLORE_STATE,
+    careSetting: "outpatient",
+    numberOfProviders: 50,
+    annualEncounters: 100_000,
+    paymentModel: "both",
+    docQualityInputs: {
+      ...DEFAULT_EXPLORE_STATE.docQualityInputs,
+      hccEnabled: true,
+      hccPlans: panels.map((panelSize) => ({ ...basePlan, panelSize })),
+    },
+  });
+
+  it("is not ready and computes 0 when no plan has a panel", () => {
+    const state = opHcc([0]);
+    expect(driverScaleReadiness("hccCapture", state, HOURS).ready).toBe(false);
+    expect(computeAllDriverValues(state, HOURS).hccCapture).toBe(0);
+  });
+
+  it("is ready with a filled plan plus a still-blank plan, and shows exactly what the total counts", () => {
+    const filledPlusBlank = opHcc([300, 0]);
+    const filledOnly = opHcc([300]);
+    expect(driverScaleReadiness("hccCapture", filledPlusBlank, HOURS).ready).toBe(true);
+    // The blank plan contributes 0, so the revealed value equals the filled plan
+    // alone — and that is the exact number the ROI total carries.
+    const value = computeAllDriverValues(filledPlusBlank, HOURS).hccCapture;
+    expect(value).toBeGreaterThan(0);
+    expect(value).toBe(computeAllDriverValues(filledOnly, HOURS).hccCapture);
+  });
+});
+
+/**
+ * Payment model is a visibility axis the OP revenue screen already respects
+ * (wRVU hidden under pure risk, HCC hidden under pure fee-for-service). The
+ * engine — the source of truth for the ROI total and the PDF — must respect it
+ * too, or a hidden card leaves an orphaned dollar in the headline.
+ */
+describe("payment model gates OP revenue in the engine (no orphaned dollars)", () => {
+  const opRevenue = (paymentModel: ExploreState["paymentModel"]): ExploreState => ({
+    ...DEFAULT_EXPLORE_STATE,
+    careSetting: "outpatient",
+    numberOfProviders: 50,
+    annualEncounters: 100_000,
+    utilizationPercent: 80,
+    paymentModel,
+    docQualityInputs: {
+      ...DEFAULT_EXPLORE_STATE.docQualityInputs,
+      wrvuEnabled: true,
+      hccEnabled: true,
+      hccPlans: DEFAULT_EXPLORE_STATE.docQualityInputs.hccPlans.map((p) => ({ ...p, panelSize: 300 })),
+    },
+  });
+
+  it("counts both wRVU and HCC under 'both'", () => {
+    const v = computeAllDriverValues(opRevenue("both"), HOURS);
+    expect(v.wrvu).toBeGreaterThan(0);
+    expect(v.hccCapture).toBeGreaterThan(0);
+  });
+
+  it("drops HCC (keeps wRVU) under 'ffs', and the Revenue total loses exactly the HCC dollars", () => {
+    const both = computeExploreTotals(opRevenue("both"), HOURS);
+    const ffsState = opRevenue("ffs");
+    const v = computeAllDriverValues(ffsState, HOURS);
+    expect(v.wrvu).toBeGreaterThan(0);
+    expect(v.hccCapture ?? 0).toBe(0); // absent driver key coerces to 0 in the totals
+    const ffs = computeExploreTotals(ffsState, HOURS);
+    expect(ffs.valueByQuadrant.Revenue).toBe(
+      both.valueByQuadrant.Revenue - computeAllDriverValues(opRevenue("both"), HOURS).hccCapture,
+    );
+  });
+
+  it("drops wRVU (keeps HCC) under 'risk'", () => {
+    const v = computeAllDriverValues(opRevenue("risk"), HOURS);
+    expect(v.wrvu ?? 0).toBe(0); // absent driver key coerces to 0 in the totals
+    expect(v.hccCapture).toBeGreaterThan(0);
   });
 });

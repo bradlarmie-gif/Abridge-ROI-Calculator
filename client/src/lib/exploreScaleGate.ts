@@ -75,8 +75,13 @@ export function driverScaleReadiness(
     case "denialPrevention":
       return gate(encounters, encounterNeed);
     case "hccCapture": {
+      // Per-plan, not all-or-nothing: the engine sums HCC per plan (a blank plan
+      // contributes 0), so the card is "ready" as soon as ANY plan has a panel and
+      // shows the value of the plans entered so far. Requiring every plan to be
+      // filled made the card hide a number the ROI total was already counting the
+      // moment a partner added a second, still-blank plan.
       const plans = (dq.hccPlans ?? []) as Array<{ panelSize: number }>;
-      const panelsEntered = plans.length > 0 && plans.every((p) => (p.panelSize ?? 0) > 0);
+      const panelsEntered = plans.some((p) => (p.panelSize ?? 0) > 0);
       if (!providers) return gate(false, "your provider count and patient panel per provider");
       return gate(panelsEntered, "the patient panel per provider");
     }
