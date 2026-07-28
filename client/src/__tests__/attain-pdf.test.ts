@@ -48,30 +48,46 @@ const FIELD_DEFAULT: Record<string, number> = {
   otRate: 75,
 };
 
-// stable category KEYS (used to build snapshots + drive the engine/storage)
-const categoriesFor = (label: string) =>
+// ALL matrix cells for a setting. The PDF page-1 grid lists every one of them — the chosen
+// goals are "entered", the rest render as un-entered $0 teasers (see the subset test below).
+const matrixCatsFor = (label: string) =>
   ATTAIN_MATRIX.filter((c) => c.setting === label).map((c) => c.category);
-// the DISPLAY headings the PDF renders (categoryLabel override, e.g. "Nurse Retention" on Nursing)
-const displayNamesFor = (label: string) =>
+const matrixDisplayNamesFor = (label: string) =>
   ATTAIN_MATRIX.filter((c) => c.setting === label).map((c) => c.categoryLabel ?? c.category);
+// GOAL-SELECTABLE categories: only cells that map back to a goal (GOAL_OF) can be chosen, so only
+// they get "entered" and a detail page. Inpatient Capacity has NO goal (SETTING_GOAL_MATRIX has
+// inpatient = revenue, retention), so it is a preview-only matrix cell — it appears on the grid as
+// a teaser but is never part of a plan. This is why goal cats != matrix cats for Inpatient only.
+const goalCatsFor = (label: string) => matrixCatsFor(label).filter((c) => GOAL_OF[c]);
+const goalDisplayNamesFor = (label: string) =>
+  ATTAIN_MATRIX.filter((c) => c.setting === label && GOAL_OF[c.category]).map((c) => c.categoryLabel ?? c.category);
 
 const cellOf = (label: string, category: string) =>
   ATTAIN_MATRIX.find((c) => c.setting === label && c.category === category)!;
 
 // A ready econ map (as the string-keyed record the snapshot stores) for one cell.
+// NEW MODEL: Provider Retention is proof-only — it has NO ECON_MODELS entry, so there is no
+// econ to fill and no dollar; return an empty map for such cells.
 function econFor(label: string, category: string): Record<string, string> {
   const m = ECON_MODELS[`${label}|${category}`];
   const econ: Record<string, string> = {};
+  if (!m) return econ; // proof-only category (e.g. Provider Retention)
   for (const f of m.fields) econ[f.key] = String(FIELD_DEFAULT[f.key] ?? 100);
   for (const a of m.assumptions ?? []) econ[a.key] = a.default; // seeded string default
   return econ;
 }
 
-// mid stance band for a cell (a positive, in-range percent)
+// mid stance band for a cell (a positive, in-range percent). Proof-only categories have no
+// stance bands and no dollar, so there is no stance to set — return 0.
 function midStance(label: string, category: string): number {
-  const bands = ECON_MODELS[`${label}|${category}`].stanceBands;
+  const m = ECON_MODELS[`${label}|${category}`];
+  if (!m) return 0; // proof-only category (e.g. Provider Retention)
+  const bands = m.stanceBands;
   return bands[Math.floor(bands.length / 2)];
 }
+
+// Is this a proof-only category (no econ model, no dollar by design)?
+const isProofOnly = (label: string, category: string) => !ECON_MODELS[`${label}|${category}`];
 
 function metricsForCell(label: string, category: string): Record<string, StoredMetric> {
   const cell = cellOf(label, category);
@@ -84,10 +100,11 @@ function metricsForCell(label: string, category: string): Record<string, StoredM
   return out;
 }
 
-// Build a full, plausible snapshot with EVERY category of the setting chosen.
+// Build a full, plausible snapshot with EVERY GOAL-SELECTABLE category of the setting chosen.
+// (Only goal-selectable cells can be picked as goals; Inpatient Capacity, having no goal, is not.)
 function buildSnapshot(settingKey: string, onlyCats?: string[]): AttainSnapshot {
   const label = LABEL[settingKey];
-  const cats = onlyCats ?? categoriesFor(label);
+  const cats = onlyCats ?? goalCatsFor(label);
   const goals = cats.map((c) => GOAL_OF[c]);
 
   const inputsByCat: Record<string, StoredAlignInputs> = {};
@@ -150,7 +167,8 @@ function assertNoNaN(v: unknown, path = "root"): void {
 describe("buildFromSnapshot builds a complete result for every setting", () => {
   for (const settingKey of SETTING_KEYS) {
     const label = LABEL[settingKey];
-    const cats = categoriesFor(label);
+    const cats = matrixCatsFor(label); // every cell on the page-1 grid
+    const goalCats = new Set(goalCatsFor(label)); // the subset that can be chosen / entered
 
     it(`${label}: returns non-null with a finite total >= 0`, () => {
       const res = buildFromSnapshot(buildSnapshot(settingKey));
@@ -162,15 +180,34 @@ describe("buildFromSnapshot builds a complete result for every setting", () => {
       expect(data.total).toBeGreaterThan(0);
     });
 
-    it(`${label}: data.categories covers all ${cats.length} setting categories, all entered`, () => {
+    it(`${label}: data.categories covers all ${cats.length} grid cells; goal cells entered`, () => {
       const { data } = buildFromSnapshot(buildSnapshot(settingKey))!;
-      expect(data.categories.map((c) => c.name).sort()).toEqual([...displayNamesFor(label)].sort());
+      // the page-1 grid lists EVERY matrix cell for the setting
+      expect(data.categories.map((c) => c.name).sort()).toEqual([...matrixDisplayNamesFor(label)].sort());
+      // display heading -> stable category key, so we can tell which cells are goal / proof-only
+      const catByDisplay = new Map(
+        ATTAIN_MATRIX.filter((mc) => mc.setting === label).map((mc) => [mc.categoryLabel ?? mc.category, mc.category]),
+      );
       for (const c of data.categories) {
-        expect(c.entered, `${label}/${c.name} entered`).toBe(true);
+        const key = catByDisplay.get(c.name)!;
         expect(Number.isFinite(c.value)).toBe(true);
         expect(c.value).toBeGreaterThanOrEqual(0);
+        // NEW MODEL: only goal-selectable cells are chosen, so only they are "entered". A non-goal
+        // matrix cell (Inpatient Capacity) rides the grid as an un-entered $0 teaser.
+        if (goalCats.has(key)) {
+          expect(c.entered, `${label}/${c.name} is a chosen goal, must be entered`).toBe(true);
+        } else {
+          expect(c.entered, `${label}/${c.name} has no goal, must not be entered`).toBe(false);
+          expect(c.value, `${label}/${c.name} un-entered teaser must be $0`).toBe(0);
+        }
+        // NEW MODEL: Provider/Nurse Retention is proof-only — no econ model, $0 by design.
+        if (isProofOnly(label, key)) {
+          expect(c.value, `${label}/${c.name} is proof-only, must be $0`).toBe(0);
+        }
       }
-      // the sum of category values equals the reported total
+      // a proof-only category IS present and entered, and it contributes nothing to the dollar
+      expect(data.categories.some((c) => c.value === 0 && c.entered)).toBe(true);
+      // the sum of entered category values equals the reported total
       const sum = data.categories
         .filter((c) => c.entered)
         .reduce((s, c) => s + c.value, 0);
@@ -179,7 +216,8 @@ describe("buildFromSnapshot builds a complete result for every setting", () => {
 
     it(`${label}: categories[] detail pages cover exactly the chosen goals`, () => {
       const { categories } = buildFromSnapshot(buildSnapshot(settingKey))!;
-      expect(categories.map((c) => c.name).sort()).toEqual([...displayNamesFor(label)].sort());
+      // only chosen (goal-selectable) categories get a detail page — not the grid-only teasers
+      expect(categories.map((c) => c.name).sort()).toEqual([...goalDisplayNamesFor(label)].sort());
       for (const pc of categories) {
         expect(pc.owner.name).toBe("Jane Doe");
         expect(Array.isArray(pc.signals)).toBe(true);

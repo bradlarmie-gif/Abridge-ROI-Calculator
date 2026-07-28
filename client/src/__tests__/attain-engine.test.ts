@@ -61,7 +61,13 @@ function readyInput(setting: string, category: string): CellInputs {
     const n = parseFloat(v.replace(/,/g, ""));
     if (Number.isFinite(n)) econ[k] = n;
   }
-  return { scope: SCOPE_FOR[setting], stancePct: midStance(key), econ };
+  // NEW MODEL: multi-lever categories (Revenue Capture) only price the levers the live flow
+  // turns on. Mirror MultiCategoryPreview.cellInputs — pass the union of every lever's driver
+  // keys, i.e. all levers active, which is what a fully-answered frame / all picked goals yields.
+  const activeDriverKeys = m.levers
+    ? Array.from(new Set(m.levers.flatMap((l) => l.driverKeys)))
+    : undefined;
+  return { scope: SCOPE_FOR[setting], stancePct: midStance(key), econ, activeDriverKeys };
 }
 
 // Every econ key the cell touches (required fields + assumptions).
@@ -104,17 +110,36 @@ describe("readiness gate returns 0 when inputs are not ready", () => {
     }
   });
 
-  it("returns 0 when any single required economics field is missing", () => {
+  it("returns 0 for a multi-lever category with no active lever", () => {
+    // NEW MODEL: Revenue Capture prices only the levers the frame answer / picked goals turn
+    // on. With no lever live (activeDriverKeys absent), the honest number is 0 — even with
+    // scope, stance and every economics field committed. This is the multi-lever readiness gate.
+    const multi = CELLS.filter((c) => ECON_MODELS[c.key].levers);
+    expect(multi.length).toBeGreaterThan(0);
+    for (const { setting, category, key } of multi) {
+      const { activeDriverKeys, ...noLevers } = readyInput(setting, category);
+      expect(activeDriverKeys, `${key} should be multi-lever`).toBeTruthy();
+      expect(cellInputsReady(setting, category, noLevers)).toBe(false);
+      expect(engineValueInPlay(setting, category, noLevers)).toBe(0);
+    }
+  });
+
+  it("does NOT zero when a single economics field is blank (falls back to a default)", () => {
+    // NEW MODEL: detailed economics fields fall back to conservative typical defaults, so one
+    // blank field no longer zeroes an otherwise-committed (scope + stance) category. The
+    // readiness gate is scope + stance (+ an active lever for multi-lever cells), not each field.
     for (const { setting, category } of CELLS) {
       const fields = ECON_MODELS[`${setting}|${category}`].fields;
       for (const f of fields) {
         const base = readyInput(setting, category);
         const econ = { ...base.econ };
         delete econ[f.key];
+        const v = engineValueInPlay(setting, category, { ...base, econ });
+        expect(finiteNum(v), `${setting}|${category} blank ${f.key}`).toBe(true);
         expect(
-          engineValueInPlay(setting, category, { ...base, econ }),
-          `${setting}|${category} missing required field ${f.key}`,
-        ).toBe(0);
+          v,
+          `${setting}|${category} blank ${f.key} should still produce value from the fallback`,
+        ).toBeGreaterThan(0);
       }
     }
   });
@@ -218,8 +243,25 @@ describe("never NaN / Infinity across nasty inputs", () => {
 // ============================================================================
 // 4. Scales with scope and with annualEncounters
 // ============================================================================
+// NEW MODEL: multi-lever Revenue Capture no longer scales ~linearly as a whole, because some
+// levers are sized by an ABSOLUTE partner-entered count, not by provider/encounter volume:
+//  - hccCapture  (Outpatient risk): sized by riskPatients (the risk-contract panel)
+//  - ipCdiValue  (Inpatient CDI):    sized by cdiQueries (queries a complete note avoids a year)
+// Those stay constant when scope/encounters double; every other driver scales ~linearly. So the
+// single-lever cells still "roughly double", while multi-lever cells are exercised per-lever below.
+const FIXED_COUNT_DRIVERS = new Set(["hccCapture", "ipCdiValue"]);
+const isMultiLever = (key: string) => Boolean(ECON_MODELS[key].levers);
+function driversByScaling(setting: string, category: string) {
+  const drivers = (ECON_MODELS[`${setting}|${category}`].levers ?? []).flatMap((l) => l.driverKeys);
+  return {
+    linear: drivers.filter((d) => !FIXED_COUNT_DRIVERS.has(d)),
+    fixed: drivers.filter((d) => FIXED_COUNT_DRIVERS.has(d)),
+  };
+}
+
 describe("scales with scope (scope drives volume everywhere)", () => {
-  for (const { setting, category } of CELLS) {
+  // single-lever / volume-linear cells; multi-lever revenue is exercised per-lever further down
+  for (const { setting, category } of CELLS.filter((c) => !isMultiLever(c.key))) {
     it(`${setting} | ${category} roughly doubles when scope doubles`, () => {
       const base = readyInput(setting, category);
       const s = base.scope!;
@@ -234,13 +276,70 @@ describe("scales with scope (scope drives volume everywhere)", () => {
   }
 });
 
-describe("scales with annualEncounters (OP/ED/IP revenue & access)", () => {
+// The multi-lever revenue cells: each lever scales by its own rule (volume levers ~double, fixed-
+// count levers stay put), and the whole value grows monotonically but sub-linearly when both mix.
+describe("multi-lever Revenue Capture scales per lever (volume levers scale, fixed-count don't)", () => {
+  const MULTI = CELLS.filter((c) => isMultiLever(c.key));
+  const A = 100_000;
+  for (const { setting, category } of MULTI) {
+    const { linear, fixed } = driversByScaling(setting, category);
+
+    it(`${setting} | ${category}: volume levers [${linear.join(", ")}] ~double when scope & encounters double`, () => {
+      expect(linear.length).toBeGreaterThan(0);
+      const base = { ...readyInput(setting, category), activeDriverKeys: linear };
+      const s = base.scope!;
+      const s1 = engineValueInPlay(setting, category, { ...base, scope: s });
+      const s2 = engineValueInPlay(setting, category, { ...base, scope: s * 2 });
+      expect(s1).toBeGreaterThan(0);
+      expect(s2).toBeGreaterThan(s1 * 1.5);
+      expect(s2).toBeLessThan(s1 * 2.5);
+      // encounters (totalProviders pinned = scope so encounters flow 1:1)
+      const common = { ...base, totalProviders: s };
+      const e1 = engineValueInPlay(setting, category, { ...common, annualEncounters: A });
+      const e2 = engineValueInPlay(setting, category, { ...common, annualEncounters: A * 2 });
+      expect(e1).toBeGreaterThan(0);
+      expect(e2).toBeGreaterThan(e1 * 1.5);
+      expect(e2).toBeLessThan(e1 * 2.5);
+    });
+
+    if (fixed.length) {
+      it(`${setting} | ${category}: fixed-count levers [${fixed.join(", ")}] stay constant when scope & encounters double`, () => {
+        const base = { ...readyInput(setting, category), activeDriverKeys: fixed };
+        const s = base.scope!;
+        const s1 = engineValueInPlay(setting, category, { ...base, scope: s });
+        const s2 = engineValueInPlay(setting, category, { ...base, scope: s * 2 });
+        expect(s1).toBeGreaterThan(0);
+        // sized by an absolute panel / query count, so doubling scope must NOT move it
+        expect(s2).toBeGreaterThan(s1 * 0.99);
+        expect(s2).toBeLessThan(s1 * 1.01);
+        const common = { ...base, totalProviders: s };
+        const e1 = engineValueInPlay(setting, category, { ...common, annualEncounters: A });
+        const e2 = engineValueInPlay(setting, category, { ...common, annualEncounters: A * 2 });
+        expect(e1).toBeGreaterThan(0);
+        expect(e2).toBeGreaterThan(e1 * 0.99);
+        expect(e2).toBeLessThan(e1 * 1.01);
+      });
+    }
+
+    if (linear.length && fixed.length) {
+      it(`${setting} | ${category}: the whole value grows monotonically but sub-linearly (fixed lever damps it)`, () => {
+        const base = readyInput(setting, category); // all levers active
+        const s = base.scope!;
+        const v1 = engineValueInPlay(setting, category, { ...base, scope: s });
+        const v2 = engineValueInPlay(setting, category, { ...base, scope: s * 2 });
+        expect(v1).toBeGreaterThan(0);
+        expect(v2).toBeGreaterThan(v1); // the volume levers still push it up
+        expect(v2).toBeLessThan(v1 * 2); // but the fixed-count lever keeps it under a clean doubling
+      });
+    }
+  }
+});
+
+describe("scales with annualEncounters (OP/ED access)", () => {
+  // multi-lever revenue encounter-scaling is covered per-lever in the block above
   const ENCOUNTER_CELLS = [
     { setting: "Outpatient", category: "Patient Access" },
-    { setting: "Outpatient", category: "Revenue Capture" },
     { setting: "ED", category: "Patient Access" },
-    { setting: "ED", category: "Revenue Capture" },
-    { setting: "Inpatient", category: "Revenue Capture" },
   ];
   for (const { setting, category } of ENCOUNTER_CELLS) {
     it(`${setting} | ${category} roughly doubles when annualEncounters doubles`, () => {
