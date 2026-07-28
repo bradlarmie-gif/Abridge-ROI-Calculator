@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { BuildStrip, type MoneyBuild } from "./EdMoneyCard";
+import { AnimatedValue } from "@/components/explore/AnimatedValue";
 
 /**
  * Shared presentational primitives for the editorial "two-tier value screen"
@@ -131,9 +132,11 @@ export function ValueCard({
 
       <div className="flex items-baseline gap-4 mt-[18px] flex-wrap" data-testid={awaitingScale && testId ? `${testId}-awaiting` : undefined}>
         <div>
-          <span className={`font-abridge text-[36px] sm:text-[40px] leading-none ${awaitingScale ? "text-[#C9BDAD] select-none" : "text-[#EA2C00]"}`}>
-            {awaitingScale ? "—" : formatCurrency(value)}
-          </span>{" "}
+          {awaitingScale ? (
+            <span className="font-abridge text-[36px] sm:text-[40px] leading-none text-[#C9BDAD] select-none">{"—"}</span>
+          ) : (
+            <AnimatedValue value={value} format={formatCurrency} duration={450} className="font-abridge text-[36px] sm:text-[40px] leading-none text-[#EA2C00]" />
+          )}{" "}
           <span className="text-[15px] text-[#5E534A]">{unit}</span>
         </div>
         {awaitingScale ? (

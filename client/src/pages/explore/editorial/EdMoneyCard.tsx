@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import { Plus, X } from "lucide-react";
 import { NumberField } from "@/components/NumberField";
+import { AnimatedValue } from "@/components/explore/AnimatedValue";
 
 /**
  * Shared editorial-brand chrome for Explore Revenue/Quality money cards.
@@ -62,12 +63,12 @@ export function BuildStrip({ build }: { build: MoneyBuild }) {
         <>
           <div className="flex justify-between items-baseline mt-[18px] pb-[10px]">
             <div className="text-[12.5px] text-[#5E534A]">{build.grossLabel}</div>
-            <div className="text-[16px] font-bold text-[#1A1A1A] tabular-nums">{fmt$(build.gross)}</div>
+            <AnimatedValue value={build.gross} format={fmt$} duration={450} className="text-[16px] font-bold text-[#1A1A1A] tabular-nums" />
           </div>
           <div className="h-[14px] rounded-[5px] overflow-hidden flex bg-[#EFE7DC]">
-            <div className="bg-[#EA2C00] h-full" style={{ width: `${(keepPct * 100).toFixed(2)}%` }} />
+            <div className="bg-[#EA2C00] h-full transition-[width] duration-500 ease-out" style={{ width: `${(keepPct * 100).toFixed(2)}%` }} />
             <div
-              className="h-full"
+              className="h-full transition-[width] duration-500 ease-out"
               style={{
                 width: `${((1 - keepPct) * 100).toFixed(2)}%`,
                 background: "repeating-linear-gradient(45deg,#E4D9C8,#E4D9C8 4px,#EFE7DC 4px,#EFE7DC 8px)",
@@ -76,14 +77,14 @@ export function BuildStrip({ build }: { build: MoneyBuild }) {
           </div>
           <div className="flex justify-between items-baseline mt-[9px] gap-4 flex-wrap">
             <div className="text-[12px] text-[#B02200] font-bold">
-              <span className="font-extrabold tabular-nums">{fmt$(build.net)}</span> counted · {build.haircutLabel}
+              <AnimatedValue value={build.net} format={fmt$} duration={450} className="font-extrabold tabular-nums" /> counted · {build.haircutLabel}
             </div>
-            <div className="text-[12px] text-[#786C5E] tabular-nums">− {fmt$(heldBack)} held back</div>
+            <div className="text-[12px] text-[#786C5E] tabular-nums">− <AnimatedValue value={heldBack} format={fmt$} duration={450} /> held back</div>
           </div>
         </>
       ) : (
         <div className="mt-[14px] text-[13px] text-[#5E534A]">
-          = <span className="text-[16px] font-bold text-[#1A1A1A] tabular-nums">{fmt$(build.net)}</span> a year
+          = <AnimatedValue value={build.net} format={fmt$} duration={450} className="text-[16px] font-bold text-[#1A1A1A] tabular-nums" /> a year
         </div>
       )}
     </div>
@@ -219,7 +220,7 @@ export function MoneyCard({
         <>
           <div className="flex items-baseline gap-4 mt-4 flex-wrap">
             <div>
-              <span className="font-abridge text-[36px] text-[#EA2C00] leading-none tabular-nums">{fmt$(value)}</span>{" "}
+              <AnimatedValue value={value} format={fmt$} duration={450} className="font-abridge text-[36px] text-[#EA2C00] leading-none tabular-nums" />{" "}
               <span className="text-[15px] text-[#5E534A]">{unit}</span>
             </div>
             {secondary && (
