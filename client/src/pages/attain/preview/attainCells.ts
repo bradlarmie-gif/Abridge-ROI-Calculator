@@ -100,19 +100,24 @@ const edAccess: AttainCell = {
 };
 
 // ---------------------------------------------------------------- Retention (all settings)
-// Wellness-first, goal-first, per-setting depth to the Patient Access exemplar's bar. The
-// financial number is DEMOTED: the walk leads with what holding people protects, and the
-// dollar is the quiet, capped, doc-addressable-burnout-share claim at the end. The honest
-// escape hatch (mostly pay or life → a lighter day won't decide it) stays. The depth is the
-// PER-SETTING burden anatomy + at-risk segments each setting brings.
+// PROOF-ONLY, wellbeing-first, per-setting depth to the Patient Access exemplar's bar.
+// Retention carries NO dollar anywhere: the cost-of-a-provider claim is a stretch, so it's
+// pulled entirely (no economics beat, no replacement-cost input, no prevent-share stance, no
+// scope). This is the wellbeing / belief / proof layer that makes the OTHER cases credible —
+// tracked as proof, never dollarized (the way quality signals are "tracked as proof, uncounted").
+// The honesty the stance used to carry now lives entirely in the Q4 driver gate ("mostly pay or
+// life → a lighter day won't be the deciding factor") and the framing. The ~7-beat walk:
+//   Q1 outcomes (the human goals) → Q2 burden anatomy → Q3 who's at risk → Q4 driver gate →
+//   Q5 today + trend (CONTEXT: baseline + how hard to lean) → proof → what it protects.
+// Q1 = what they want for their PEOPLE; the "what it protects" beat = what the ORG protects by
+// keeping them (fragile line, agency held down, knowledge, access, recruiting) — nothing repeats.
+// The depth is the PER-SETTING burden anatomy + at-risk segments each setting brings.
 type RetentionConfig = {
   setting: string;
   nounSingular: string;   // "clinician" | "hospitalist" | "nurse"
   nounPlural: string;     // display plural: "clinicians" | "ED clinicians" | "hospitalists" | "nurses"
   peopleWord: string;     // "Clinicians" | "Hospitalists" | "Nurses" — for proof / plan copy
   isNurse: boolean;
-  scopeCeiling: number;
-  scopeDefault: string;
   signals: MetricDef[];
   signalsShort: string;
   anatomy: ChoiceOption[];   // step 2 — the burden anatomy, SETTING-SPECIFIC (multi)
@@ -124,32 +129,32 @@ type RetentionConfig = {
 };
 
 function retentionCell(cfg: RetentionConfig): AttainCell {
-  const { setting, nounSingular, nounPlural, peopleWord, isNurse } = cfg;
+  const { setting, nounPlural, peopleWord, isNurse } = cfg;
   const surveySource = isNurse ? "Nurse survey" : "Provider survey";
   // nurses lean on travel and agency; physicians on agency and locums
-  const agencyTitle = isNurse ? "Wind down travel and agency spend" : "Wind down agency and locum spend";
-  const agencyDesc = "Stop paying premium rates to cover the gaps that turnover opens.";
-  const bedsideOrScreen = isNurse ? "Give the time back at the bedside" : "Protect time with patients, not the screen";
+  const agencyProtect = isNurse ? "Travel and agency spend held down" : "Agency and locum spend held down";
+  const bedsideOrScreen = isNurse ? "Give the time back at the bedside" : "Give time back to patients, not the screen";
   return {
     setting,
     category: "Provider Retention", // stable key across settings; nurses aren't providers, so relabel the heading
     categoryLabel: isNurse ? "Nurse Retention" : undefined,
+    proofOnly: true, // NO dollar: tracked as proof everywhere (Align panel, Strategy rollup, Progress)
     align: {
       outcomesMode: "multi",
-      value: { mode: "scopeBased", perScope: 0, scopeNoun: nounPlural, mathTail: `in avoided turnover cost.` },
+      // Unused for a proof-only cell (the engine returns $0 and the panel is non-dollar), but the
+      // ValueModel field is required by the type; keep a harmless placeholder.
+      value: { mode: "scopeBased", perScope: 0, scopeNoun: nounPlural, mathTail: `` },
       outcomesPrompt: "What are you really after?",
-      outcomesHelper: `When a team says "we want to work on wellness," that's the goal. Our job is to already know what it breaks down into for your setting and walk you there. Pick everything you're after with your ${nounPlural}. We lead with what holding your people protects; the dollar comes last, and it's the softest claim we make.`,
+      outcomesHelper: `When a team says "we want to work on wellness," that's the goal. Our job is to already know what it breaks down into for your setting and walk you there. Pick everything you're after for your ${nounPlural}. This is the wellbeing layer of the plan: we track it as proof, and it's what makes the rest of the cases credible. There's no dollar attached, on purpose.`,
       outcomes: [
         { id: "betterday", title: "A lighter, more livable day", desc: `The same team, with the day that finally ends when it's supposed to.`, plays: ["Protect the freed time, don't just refill it", "Cut the after-hours charting", bedsideOrScreen], proof: ["pulse", "stay", "tin", "wow"] },
         { id: "keep", title: "Keep the people you have", desc: `Fewer of the ${nounPlural} you have today choosing to leave.`, plays: ["Check in with the people most at risk of leaving", "Make the lighter day visible to the team", "Protect the freed time so it's actually felt"], proof: ["turnover", "pulse"] },
-        { id: "agency", title: agencyTitle, desc: agencyDesc, plays: [isNurse ? "Redirect freed hours before backfilling with travel or agency" : "Hold coverage in-house before reaching for locums", "Watch the premium-rate spend ease as turnover comes down"], proof: ["turnover"] },
-        { id: "line", title: "Protect a fragile service line", desc: "One or two departures away from a real coverage problem.", plays: ["Shore up the thinnest coverage first", "Track who's at risk on the fragile service or shift"], proof: ["turnover", "stay"] },
+        { id: "patients", title: bedsideOrScreen, desc: isNurse ? "Documentation time returned to the bedside instead of the screen." : "Documentation time returned to patient care instead of the screen.", plays: [isNurse ? "Chart at the bedside during care, not after" : "Chart in the room during the visit, not after", "Protect face-to-face time from the keyboard", "Drop the low-value documentation asks"], proof: ["tin", "wow", "stay"] },
       ],
-      scope: { prompt: `Across how many ${nounPlural}?`, unitLabel: `${nounPlural}, from your Starting Point`, ceiling: cfg.scopeCeiling, default: cfg.scopeDefault },
       choices: [
         { id: "anatomy", kicker: "The burden", prompt: `What's driving the burden, for your setting?`, helper: `This is the part we already know how to decompose. Pick the ones that ring true for your ${nounPlural}; it's where a lighter documentation day actually reaches.`, mode: "multi", options: cfg.anatomy },
         { id: "atrisk", kicker: "Where to focus", prompt: "Who's most at risk?", helper: "Turnover isn't even across the group. Naming where it concentrates is where to focus first, and where a lighter day earns its keep.", mode: "multi", options: cfg.atRisk },
-        { id: "driver", kicker: "The driver", prompt: "What's driving your departures?", helper: "Be honest here. It tells us how much of the turnover a lighter day can realistically touch, and how much it can't.", mode: "single", defaultId: "burnout", options: [
+        { id: "driver", kicker: "The driver", prompt: "What's driving your departures?", helper: "Be honest here. It tells us how much of the turnover a lighter day can realistically touch, and how much it can't. If it's mostly pay or life, a lighter day won't be the deciding factor, and we'd rather say so.", mode: "single", defaultId: "burnout", options: [
           { id: "burnout", title: "Mostly burnout and workload", desc: "The day is too heavy, and the charting follows people home." },
           { id: "meaningful", title: "A meaningful share is burnout", desc: "Some of it is workload; some is pay or life." },
           { id: "paylife", title: "Mostly pay or life", desc: "Honestly, a lighter day won't be the deciding factor here." },
@@ -158,7 +163,7 @@ function retentionCell(cfg: RetentionConfig): AttainCell {
       trend: {
         kicker: "Today, and the trend",
         prompt: "Where's your turnover and burnout today, and which way is it trending?",
-        helper: "Set roughly where you are now, then tell us the direction. A slipping trend is the urgent case; a steady one is a reason to stay humble about what a lighter day will move. These feed the quiet dollar later; the direction just tells us how hard to lean.",
+        helper: "Set roughly where you are now, then tell us the direction. A slipping trend is the urgent case; a steady one is a reason to stay humble about what a lighter day will move. This is context: it sets the plan's baseline and how hard to lean, not a dollar.",
         numbers: [
           { key: "turnover", label: "Voluntary turnover today", suffix: "%", placeholder: cfg.turnoverPlaceholder },
           { key: "burnout", label: "Burnout on your last pulse", suffix: "%", placeholder: cfg.burnoutPlaceholder },
@@ -173,7 +178,7 @@ function retentionCell(cfg: RetentionConfig): AttainCell {
       },
       proof: {
         prompt: "What would tell you it's working?",
-        helper: "Pick what you'd point to in a review. The experience signals move first, well before the turnover number does.",
+        helper: "This is the proof you're building. Pick what you'd point to in a review. The experience signals move first, well before the turnover number does.",
         signals: [
           { id: "pulse", label: "A burnout pulse easing", desc: "A short, repeated read on how the team is actually doing, coming down.", unit: "%" },
           { id: "stay", label: "Likelihood to stay rising", desc: `The share of ${nounPlural} who say they intend to stay, climbing.`, unit: "%" },
@@ -185,18 +190,18 @@ function retentionCell(cfg: RetentionConfig): AttainCell {
       },
       unlock: {
         prompt: "What does holding onto your people protect?",
-        helper: "This is the real reason to hold the line, and it's what we lead with. The dollar comes after it, and it's the softest claim in the plan. Pick what holding your people actually protects.",
+        helper: "Q1 was what you want for your people. This is what the organization protects by keeping them, the downstream that a steady team holds together. Pick what holding your people actually protects.",
         options: [
           { id: "line", title: "A fragile service line", desc: "One or two departures away from a real coverage problem." },
-          { id: "agency", title: agencyTitle, desc: agencyDesc },
+          { id: "agency", title: agencyProtect, desc: "Fewer gaps to backfill means less premium-rate coverage to pay for." },
           { id: "knowledge", title: "Institutional knowledge", desc: "The people who know how your place actually runs." },
           { id: "access", title: "Steady access for patients", desc: "Turnover quietly closes schedules; holding people keeps them open." },
           { id: "recruit", title: "Easier recruiting", desc: "A place people stay is a place people want to join." },
         ],
       },
       valueNoun: nounPlural,
-      panelKicker: "The quiet dollar, from your numbers",
-      honestNote: "The softest claim in the plan, and it comes last. We count only the burnout-driven share of turnover a lighter documentation day can address, and we cap even that at half. The pay and life reasons a lighter day won't change are left out.",
+      panelKicker: "The proof you're building",
+      honestNote: "Retention is tracked as proof, not counted in dollars. It's the wellbeing layer that makes the rest of the plan credible. We hold ourselves to the signals moving, not a replacement-cost claim.",
     },
     plan: {
       valueInPlay: engineValueInPlay(setting, "Provider Retention"),
@@ -214,7 +219,6 @@ function retentionCell(cfg: RetentionConfig): AttainCell {
         { outcome: "Keep the people you have", metrics: [
           { id: "turnover", name: "Voluntary turnover rate", measure: `${peopleWord} choosing to leave in a year.`, source: "HRIS", unit: "%", today: cfg.turnoverToday, target: cfg.turnoverTarget },
           { id: "departures", name: "Departures avoided", measure: "Departures you'd expect to prevent against your baseline.", source: "HRIS", unit: "/ yr", today: "—", target: "6" },
-          { id: "replace", name: "Replacement cost saved", measure: "The recruiting, onboarding, and coverage cost those departures would have carried.", source: "Finance", unit: "$/yr", today: "—", target: "—" },
         ] },
       ],
       signalsShortList: cfg.signalsShort,
@@ -235,7 +239,7 @@ const providerSignals: MetricDef[] = [
 // Per-setting burden anatomy (step 2) and at-risk segments (step 3) — the depth.
 const outpatientRetention = retentionCell({
   setting: "Outpatient", nounSingular: "clinician", nounPlural: "clinicians", peopleWord: "Clinicians", isNurse: false,
-  scopeCeiling: 60, scopeDefault: "40", signals: providerSignals, signalsShort: "time in note and work outside of work",
+  signals: providerSignals, signalsShort: "time in note and work outside of work",
   turnoverPlaceholder: "6", burnoutPlaceholder: "48", turnoverToday: "14", turnoverTarget: "9",
   anatomy: [
     { id: "inbox", title: "The inbox and message burden", desc: "In-basket messages and results piling up between and after visits." },
@@ -250,7 +254,7 @@ const outpatientRetention = retentionCell({
 });
 const edRetention = retentionCell({
   setting: "ED", nounSingular: "clinician", nounPlural: "ED clinicians", peopleWord: "ED clinicians", isNurse: false,
-  scopeCeiling: 45, scopeDefault: "30", signals: providerSignals, signalsShort: "time in note and work outside of work",
+  signals: providerSignals, signalsShort: "time in note and work outside of work",
   turnoverPlaceholder: "6", burnoutPlaceholder: "50", turnoverToday: "15", turnoverTarget: "10",
   anatomy: [
     { id: "between", title: "Charting between patients on a heavy shift", desc: "Documentation squeezed into the gaps on a full board." },
@@ -265,7 +269,7 @@ const edRetention = retentionCell({
 });
 const inpatientRetention = retentionCell({
   setting: "Inpatient", nounSingular: "hospitalist", nounPlural: "hospitalists", peopleWord: "Hospitalists", isNurse: false,
-  scopeCeiling: 35, scopeDefault: "24", signals: providerSignals, signalsShort: "time in note and work outside of work",
+  signals: providerSignals, signalsShort: "time in note and work outside of work",
   turnoverPlaceholder: "8", burnoutPlaceholder: "52", turnoverToday: "16", turnoverTarget: "11",
   anatomy: [
     { id: "census", title: "Note load scaling with census", desc: "Every added patient is another full note on the list." },
@@ -280,7 +284,7 @@ const inpatientRetention = retentionCell({
 });
 const nursingRetention = retentionCell({
   setting: "Nursing", nounSingular: "nurse", nounPlural: "nurses", peopleWord: "Nurses", isNurse: true,
-  scopeCeiling: 400, scopeDefault: "260", signals: nurseSignals, signalsShort: "charting time per shift and charting after shift",
+  signals: nurseSignals, signalsShort: "charting time per shift and charting after shift",
   turnoverPlaceholder: "18", burnoutPlaceholder: "45", turnoverToday: "22", turnoverTarget: "15",
   anatomy: [
     { id: "bedside", title: "Charting stealing time from the bedside", desc: "Documentation pulling nurses away from patient care." },

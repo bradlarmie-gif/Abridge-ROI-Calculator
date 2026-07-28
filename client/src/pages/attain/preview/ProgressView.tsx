@@ -21,6 +21,7 @@ export default function ProgressView({ cell, committed = [], readings, setReadin
   reviewLog?: { label: string; attain: number }[]; onLogReview: (attain: number) => void;
 }) {
   const { plan } = cell;
+  const proofOnly = !!cell.proofOnly; // measured on its signals, never a realized dollar
   const chosenPlays = committed.flatMap((c) => c.chosen);
 
   const signals = plan.abridgeSignals;
@@ -71,14 +72,20 @@ export default function ProgressView({ cell, committed = [], readings, setReadin
       <div className="rounded-2xl border border-[#E8E2DA] p-6 md:p-7 mb-12">
         <div className="flex flex-wrap items-end justify-between gap-4 mb-5">
           <div>
-            <p className={`${LBL} mb-2`}>Attainment</p>
+            <p className={`${LBL} mb-2`}>{proofOnly ? "Signals moving" : "Attainment"}</p>
             <p className="font-abridge text-6xl text-[#EA2C00] leading-none">{attainPct}<span className="text-3xl">%</span></p>
-            <p className="text-[13px] text-[#8C8C8C] mt-2">of the {fmt$(plan.valueInPlay)}/yr promise</p>
+            <p className="text-[13px] text-[#8C8C8C] mt-2">{proofOnly ? "of the way to the signal targets you set" : `of the ${fmt$(plan.valueInPlay)}/yr promise`}</p>
           </div>
-          <div className="text-right">
-            <p className="text-[14px] text-[#1A1A1A]"><span className="font-abridge text-[22px]">{fmt$(realized)}</span> realized</p>
-            <p className="text-[14px] text-[#8C8C8C] mt-1"><span className="font-abridge text-[22px] text-[#1A1A1A]">{fmt$(gap)}</span> still on the table</p>
-          </div>
+          {proofOnly ? (
+            <div className="text-right max-w-[240px]">
+              <p className="text-[13px] text-[#6B6B6B] leading-relaxed">Tracked as proof, not a dollar. The burnout pulse, likelihood-to-stay, and turnover are the scoreboard here.</p>
+            </div>
+          ) : (
+            <div className="text-right">
+              <p className="text-[14px] text-[#1A1A1A]"><span className="font-abridge text-[22px]">{fmt$(realized)}</span> realized</p>
+              <p className="text-[14px] text-[#8C8C8C] mt-1"><span className="font-abridge text-[22px] text-[#1A1A1A]">{fmt$(gap)}</span> still on the table</p>
+            </div>
+          )}
         </div>
         <div className="h-3 rounded-full bg-[#E8E2DA] overflow-hidden">
           <div className="h-full bg-[#EA2C00] transition-all" style={{ width: `${attainPct}%` }} />
@@ -117,8 +124,8 @@ export default function ProgressView({ cell, committed = [], readings, setReadin
           note={chosenPlays.length ? chosenPlays.join(" · ") : "Set your plays in Align."} />
         <LiveLink title="The outcomes" tone={leak ? "leak" : "on"} statusLabel={outAvg === null ? "Awaiting readings" : leak ? "Behind the signals" : `${Math.round(Math.max(0, outAvg) * 100)}% of the way`}
           metrics={outcomeMetrics} readings={readings} setReadings={setReadings} prog={prog} />
-        <LiveLink title="The value" tone="value" statusLabel={`${attainPct}% attained`}
-          note={`${fmt$(realized)} of ${fmt$(plan.valueInPlay)} realized so far.`} />
+        <LiveLink title={proofOnly ? "The proof" : "The value"} tone="value" statusLabel={proofOnly ? `${attainPct}% of signals` : `${attainPct}% attained`}
+          note={proofOnly ? "Tracked as proof, not a dollar. We hold ourselves to the signals moving." : `${fmt$(realized)} of ${fmt$(plan.valueInPlay)} realized so far.`} />
       </div>
 
       {/* log this review — snapshots the readings into the climb */}

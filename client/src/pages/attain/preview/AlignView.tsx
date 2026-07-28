@@ -67,9 +67,10 @@ export const emptyAlignAnswers = (c: AlignContent): AlignAnswers => ({
   proof: new Set(), unlock: new Set(),
 });
 
-export default function AlignView({ c, settingLabel, categoryLabel, categoryKey, picked, setPicked, plays, setPlays, scopeCount, inputs: inputsProp, onInput: onInputProp, liveValue, liveMath, answers: answersProp, setAnswers: setAnswersProp }: {
+export default function AlignView({ c, settingLabel, categoryLabel, categoryKey, proofOnly, picked, setPicked, plays, setPlays, scopeCount, inputs: inputsProp, onInput: onInputProp, liveValue, liveMath, answers: answersProp, setAnswers: setAnswersProp }: {
   c: AlignContent; settingLabel: string; categoryLabel: string;
   categoryKey?: string; // STABLE category key for the econ-model lookup; falls back to the display label. Needed where the display label diverges from the key (e.g. Nursing "Nurse Retention" → "Provider Retention").
+  proofOnly?: boolean; // proof-only categories (retention) carry NO dollar: the closing panel names the signals + what it protects instead of a figure.
   picked: Set<string>; setPicked: React.Dispatch<React.SetStateAction<Set<string>>>;
   plays: Record<string, Set<string>>; setPlays: React.Dispatch<React.SetStateAction<Record<string, Set<string>>>>;
   scopeCount?: number; // real count from the partner's Starting Point (providers / nurses / beds)
@@ -533,21 +534,64 @@ export default function AlignView({ c, settingLabel, categoryLabel, categoryKey,
         {c.unlock.options.map((u) => <OptionRow key={u.id} on={unlock.has(u.id)} onToggle={() => toggleUnlock(u.id)} title={u.title} desc={u.desc} />)}
       </div>
 
-      {/* Live value — sits at the end of the content, not floating over it */}
+      {/* Closing panel — sits at the end of the content, not floating over it. Proof-only
+          categories (retention) get a NON-DOLLAR panel: the signals they're building + what
+          it protects, tracked as proof, never a figure. Everything else keeps the live dollar. */}
       <div>
-        <div className="rounded-2xl border-2 border-[#1A1A1A] bg-[#1A1A1A] p-6 md:p-7">
-          <p className="text-[10px] font-bold uppercase tracking-[2px] text-white/50 mb-2">{c.panelKicker}</p>
-          {showValue > 0 ? (
-            <>
-              <p className="font-abridge text-4xl md:text-5xl text-[#EA2C00] leading-none">{fmt$(showValue)}<span className="text-base font-normal text-white/50"> / yr</span></p>
-              <p className="text-[13px] text-white/70 mt-3 leading-relaxed">{showMath}</p>
-            </>
-          ) : (
-            <p className="text-[14px] text-white/55 leading-relaxed">{econ ? "Set the scope, the economics, and a stance above. The number assembles here from your own inputs." : "This category's economics are coming next; the number will assemble here from your inputs."}</p>
-          )}
-        </div>
+        {proofOnly ? (
+          <ProofPanel kicker={c.panelKicker} note={c.honestNote} signals={c.proof.signals.filter((s) => proof.has(s.id))} allSignals={c.proof.signals} protects={c.unlock.options.filter((u) => unlock.has(u.id))} />
+        ) : (
+          <div className="rounded-2xl border-2 border-[#1A1A1A] bg-[#1A1A1A] p-6 md:p-7">
+            <p className="text-[10px] font-bold uppercase tracking-[2px] text-white/50 mb-2">{c.panelKicker}</p>
+            {showValue > 0 ? (
+              <>
+                <p className="font-abridge text-4xl md:text-5xl text-[#EA2C00] leading-none">{fmt$(showValue)}<span className="text-base font-normal text-white/50"> / yr</span></p>
+                <p className="text-[13px] text-white/70 mt-3 leading-relaxed">{showMath}</p>
+              </>
+            ) : (
+              <p className="text-[14px] text-white/55 leading-relaxed">{econ ? "Set the scope, the economics, and a stance above. The number assembles here from your own inputs." : "This category's economics are coming next; the number will assemble here from your inputs."}</p>
+            )}
+          </div>
+        )}
       </div>
       <div className="h-16" />
+    </div>
+  );
+}
+
+/** The proof-only closing panel (retention): no dollar. Names the proof you're building
+ * (the signals picked, or all of them until any are) and what holding your people protects. */
+function ProofPanel({ kicker, note, signals, allSignals, protects }: {
+  kicker: string; note: string;
+  signals: { id: string; label: string }[]; allSignals: { id: string; label: string }[];
+  protects: { id: string; title: string }[];
+}) {
+  const shownSignals = signals.length ? signals : allSignals;
+  return (
+    <div className="rounded-2xl border-2 border-[#1A1A1A] bg-[#1A1A1A] p-6 md:p-7">
+      <p className="text-[10px] font-bold uppercase tracking-[2px] text-white/50 mb-2">{kicker}</p>
+      <p className="font-abridge text-2xl md:text-[26px] text-[#EA2C00] leading-tight">Tracked as proof, not a dollar</p>
+      <p className="text-[13px] text-white/70 mt-3 leading-relaxed max-w-[560px]">{note}</p>
+
+      <div className="mt-6 pt-5 border-t border-white/10">
+        <p className="text-[10px] font-bold uppercase tracking-[2px] text-white/40 mb-3">The signals you're building{signals.length ? "" : " · pick yours above"}</p>
+        <div className="flex flex-wrap gap-2">
+          {shownSignals.map((s) => (
+            <span key={s.id} className={`text-[12.5px] rounded-full px-3 py-1 border ${signals.length ? "border-[#EA2C00]/60 bg-[#EA2C00]/15 text-white" : "border-white/15 text-white/60"}`}>{s.label}</span>
+          ))}
+        </div>
+      </div>
+
+      {protects.length > 0 && (
+        <div className="mt-5 pt-5 border-t border-white/10">
+          <p className="text-[10px] font-bold uppercase tracking-[2px] text-white/40 mb-3">What holding your people protects</p>
+          <div className="flex flex-wrap gap-x-5 gap-y-1.5">
+            {protects.map((p) => (
+              <span key={p.id} className="flex items-center gap-2 text-[13px] text-white/80"><span className="w-1.5 h-1.5 rounded-full bg-[#EA2C00]" />{p.title}</span>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -12,6 +12,7 @@ const LBL = "text-[10px] font-bold uppercase tracking-[2px] text-[#8C8C8C]";
 
 export default function StrategyView({ cell, committed = [] }: { cell: AttainCell; committed?: { title: string; chosen: string[] }[] }) {
   const { align, plan } = cell;
+  const proofOnly = !!cell.proofOnly; // no dollar anywhere for this category (retention)
   const metrics = plan.outcomeGroups.flatMap((g) => g.metrics);
   const headline = metrics.filter((m) => m.today !== "—").slice(0, 3);
   const chosenPlays = committed.flatMap((c) => c.chosen);
@@ -52,8 +53,10 @@ export default function StrategyView({ cell, committed = [] }: { cell: AttainCel
         </div>
         <div className="border-t border-[#E8E2DA] px-5 py-5 flex flex-wrap items-baseline justify-between gap-3">
           <div>
-            <p className={`${LBL} mb-1`}>The value in play</p>
-            <p className="font-abridge text-4xl text-[#1A1A1A] leading-none">{fmt$(plan.valueInPlay)}<span className="text-base font-normal text-[#8C8C8C]"> / yr</span></p>
+            <p className={`${LBL} mb-1`}>{proofOnly ? "How we hold it" : "The value in play"}</p>
+            {proofOnly
+              ? <p className="font-abridge text-3xl text-[#1A1A1A] leading-none">Tracked as proof</p>
+              : <p className="font-abridge text-4xl text-[#1A1A1A] leading-none">{fmt$(plan.valueInPlay)}<span className="text-base font-normal text-[#8C8C8C]"> / yr</span></p>}
           </div>
           <p className="text-[12px] text-[#8C8C8C] max-w-[320px] leading-relaxed">{align.honestNote}</p>
         </div>
@@ -88,9 +91,11 @@ export default function StrategyView({ cell, committed = [] }: { cell: AttainCel
             ))}
           </div>
         </ChainNode>
-        {/* node 4 — value */}
-        <ChainNode label="The value lands" sub="the payoff, once the outcomes follow" last>
-          <p className="font-abridge text-[26px] text-[#EA2C00] leading-none">{fmt$(plan.valueInPlay)}<span className="text-[13px] font-normal text-[#8C8C8C]"> / yr in play</span></p>
+        {/* node 4 — value (proof-only: the proof lands, no dollar) */}
+        <ChainNode label={proofOnly ? "The proof lands" : "The value lands"} sub={proofOnly ? "the signals move, and the team stays" : "the payoff, once the outcomes follow"} last>
+          {proofOnly
+            ? <p className="font-abridge text-[22px] text-[#EA2C00] leading-none">Tracked as proof<span className="text-[13px] font-normal text-[#8C8C8C]">, not a dollar</span></p>
+            : <p className="font-abridge text-[26px] text-[#EA2C00] leading-none">{fmt$(plan.valueInPlay)}<span className="text-[13px] font-normal text-[#8C8C8C]"> / yr in play</span></p>}
         </ChainNode>
       </div>
 
@@ -98,7 +103,9 @@ export default function StrategyView({ cell, committed = [] }: { cell: AttainCel
       <div className="rounded-2xl border-2 border-[#1A1A1A] bg-[#1A1A1A] p-6 md:p-7 mb-12">
         <p className="text-[10px] font-bold uppercase tracking-[2px] text-white/50 mb-3">The scoreboard</p>
         <p className="text-[15px] text-white/90 leading-relaxed mb-5">
-          From here we track <span className="text-white font-semibold">attainment</span>: the share of that {fmt$(plan.valueInPlay)} you actually realize. It starts at zero today and climbs as the signals move, the plays land, and the outcomes follow. Your named owners run the plays; we bring the numbers to every review, against the baselines you set.
+          {proofOnly
+            ? <>From here we track this as <span className="text-white font-semibold">proof</span>, not a dollar: the burnout pulse easing, likelihood-to-stay rising, and the turnover number moving. It's the wellbeing layer that makes the rest of the plan credible. Your named owners run the plays; we bring the signals to every review, against the baselines you set.</>
+            : <>From here we track <span className="text-white font-semibold">attainment</span>: the share of that {fmt$(plan.valueInPlay)} you actually realize. It starts at zero today and climbs as the signals move, the plays land, and the outcomes follow. Your named owners run the plays; we bring the numbers to every review, against the baselines you set.</>}
         </p>
         <div className="mb-2 flex items-center justify-between">
           <span className="text-[11px] font-bold uppercase tracking-[1.5px] text-white/40">Attained so far</span>
@@ -110,9 +117,9 @@ export default function StrategyView({ cell, committed = [] }: { cell: AttainCel
         <p className="text-[12px] text-white/45 mt-3 leading-relaxed">This is the number the Progress page tracks over time. It's what keeps both sides honest: the promise, measured.</p>
       </div>
 
-      {/* 4 — beyond the number */}
-      <p className={`${LBL} mb-3`}>Beyond the number</p>
-      <p className="text-[14px] text-[#3A3A3A] leading-relaxed max-w-[620px] mb-5">The dollar is the hard part. Hitting it is also what lets you:</p>
+      {/* 4 — beyond the number (proof-only: what holding your people protects) */}
+      <p className={`${LBL} mb-3`}>{proofOnly ? "What it protects" : "Beyond the number"}</p>
+      <p className="text-[14px] text-[#3A3A3A] leading-relaxed max-w-[620px] mb-5">{proofOnly ? "There's no dollar on retention, on purpose. What holding your people protects is the reason it matters:" : "The dollar is the hard part. Hitting it is also what lets you:"}</p>
       <div className="border-t border-[#E8E2DA] mb-16">
         {align.unlock.options.map((u) => (
           <div key={u.id} className="flex items-start gap-3.5 pl-1 py-4 border-b border-[#E8E2DA]">
