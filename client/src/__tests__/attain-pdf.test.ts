@@ -110,6 +110,7 @@ function buildSnapshot(settingKey: string, onlyCats?: string[]): AttainSnapshot 
   const inputsByCat: Record<string, StoredAlignInputs> = {};
   const metricsByCat: Record<string, Record<string, StoredMetric>> = {};
   const peopleByCat: Record<string, StoredPerson[]> = {};
+  const answersByCat: Record<string, { segs: string[]; choices: Record<string, string[]>; proof: string[]; unlock: string[] }> = {};
   for (const c of cats) {
     inputsByCat[c] = {
       scope: label === "Nursing" ? "260" : "40",
@@ -119,6 +120,10 @@ function buildSnapshot(settingKey: string, onlyCats?: string[]): AttainSnapshot 
     };
     metricsByCat[c] = metricsForCell(label, c);
     peopleByCat[c] = [{ name: "Jane Doe", role: "Director" }];
+    // Multi-lever cells (Revenue Capture) only price out once their frame answer is set, so a
+    // fully-ready plan must have its payers/mechanisms picked. Turn them all on.
+    const frameChoice = ECON_MODELS[`${label}|${c}`]?.levers ? cellOf(label, c).align.choices?.find((q) => q.stage === "frame") : undefined;
+    if (frameChoice) answersByCat[c] = { segs: [], choices: { [frameChoice.id]: frameChoice.options.map((o) => o.id) }, proof: [], unlock: [] };
   }
 
   return {
@@ -135,7 +140,7 @@ function buildSnapshot(settingKey: string, onlyCats?: string[]): AttainSnapshot 
     },
     pickedByCat: {},
     playsByCat: {},
-    answersByCat: {},
+    answersByCat,
     inputsByCat,
     metricsByCat,
     readingsByCat: {},

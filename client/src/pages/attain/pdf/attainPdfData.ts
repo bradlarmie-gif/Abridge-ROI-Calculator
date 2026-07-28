@@ -94,7 +94,20 @@ function inputsFor(snap: AttainSnapshot, settingLabel: string, category: string)
   const scope = num(a.scope) || 0;
   const b = snap.baseline ?? {};
   const isNursingQuality = settingLabel === "Nursing" && category === "Quality & Safety";
-  return { scope, stancePct, econ, totalProviders: b.providers, annualEncounters: b.annualEncounters, util: b.utilizationPct, adoption: b.adoptionPct, staffedBeds: isNursingQuality ? scope : b.staffedBeds };
+  // Multi-lever categories (Revenue Capture): reconstruct the live levers from the saved frame
+  // answer + picked goals, exactly as MultiCategoryPreview.activeLeversFor does, so the PDF sums
+  // the right driver keys instead of failing the readiness gate and rendering $0.
+  let activeDriverKeys: string[] | undefined;
+  const model = econModel(settingLabel, category);
+  if (model?.levers) {
+    const cell = ATTAIN_MATRIX.find((c) => c.setting === settingLabel && c.category === category);
+    const frameId = cell?.align.choices?.find((q) => q.stage === "frame")?.id;
+    const frame = new Set<string>(frameId ? (snap.answersByCat?.[category]?.choices?.[frameId] ?? []) : []);
+    const picked = new Set<string>(snap.pickedByCat?.[category] ?? []);
+    const active = model.levers.filter((l) => (l.payerOptionIds?.some((id) => frame.has(id)) ?? false) || (l.outcomeIds?.some((id) => picked.has(id)) ?? false));
+    if (active.length) activeDriverKeys = Array.from(new Set(active.flatMap((l) => l.driverKeys)));
+  }
+  return { scope, stancePct, econ, activeDriverKeys, totalProviders: b.providers, annualEncounters: b.annualEncounters, util: b.utilizationPct, adoption: b.adoptionPct, staffedBeds: isNursingQuality ? scope : b.staffedBeds };
 }
 
 function metricRow(m: { name: string; unit: string; source: string; today: string; target: string }, entered?: { today: string; target: string; source: string }) {
