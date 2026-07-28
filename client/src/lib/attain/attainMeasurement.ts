@@ -743,6 +743,21 @@ export function deriveRetentionMeasurementPlan(
         defaultTarget: departuresSet ? `${fmtDepartures(ladder.departuresAvoided)} / yr` : "finish the Align chain",
         fromProof: departuresFromProof,
       },
+      ...(setting === "nursing"
+        ? ([
+            {
+              id: "first-year-turnover",
+              label: "First-year RN turnover",
+              unit: "%",
+              helper:
+                "Turnover among nurses in their first year, the group the charting load hits hardest and the most expensive to replace. Watch it against the after-hours charting signal above.",
+              baseline: "your current rate",
+              baselineTag: "benchmark",
+              defaultTarget: "lower than today",
+              fromProof: false,
+            },
+          ] as MeasurementMetricOption[])
+        : []),
       {
         id: "replacement-cost-saved",
         label: "Replacement cost saved",
@@ -1466,6 +1481,36 @@ export function deriveQualityMeasurementPlan(
         defaultTarget: "rising against baseline",
         fromProof: false,
       },
+      {
+        id: "quality-poa-accuracy",
+        label: "Present-on-admission documentation accuracy",
+        unit: "% of at-risk admissions",
+        helper: "How accurately a pressure injury, infection, or condition is documented as present on admission. When the admission note is complete, harm that arrived with the patient is not counted as hospital-acquired. Most teams never watch it directly, and it sits entirely on the documentation.",
+        baseline: "your current rate",
+        baselineTag: "benchmark",
+        defaultTarget: "rising against baseline",
+        fromProof: false,
+      },
+      {
+        id: "quality-ccmcc-support",
+        label: "Nurse-documented CC/MCC support",
+        unit: "% of eligible cases",
+        helper: "How often nurse-captured conditions like malnutrition, pressure-injury stage, and functional status are specific enough to support the secondary diagnoses coders rely on. Tracked as proof that the documentation also helps the coders; no dollar is claimed for nursing here.",
+        baseline: "your current rate",
+        baselineTag: "benchmark",
+        defaultTarget: "rising against baseline",
+        fromProof: false,
+      },
+      {
+        id: "quality-cdi-response",
+        label: "CDI query response rate & turnaround",
+        unit: "% answered / days",
+        helper: "The share of CDI queries the nursing record helps answer, and how fast. A complete, timely note gives CDI the corroborating evidence already in the chart. Tracked as proof only.",
+        baseline: "your current rate",
+        baselineTag: "benchmark",
+        defaultTarget: "rising against baseline",
+        fromProof: false,
+      },
     ],
     defaultChosen: ["quality-adoption"],
   });
@@ -1505,6 +1550,32 @@ export function deriveQualityMeasurementPlan(
         fromProof: nearMissFromProof,
       },
     ];
+    // Event-specific documentation signals: the measure that shows the note
+    // itself moved, not just the intervention. Documentation-first, benchmarked.
+    if (e.id === "hapi") {
+      conversionMetrics.push({
+        id: `${e.id}-braden-timeliness`,
+        label: "Braden reassessment timeliness",
+        unit: "% on schedule",
+        helper: "The share of Braden reassessments completed on schedule, so a protocol acts on a current risk score instead of one that is hours stale. Benchmark until you drop in your own.",
+        baseline: "your current rate",
+        baselineTag: "benchmark",
+        defaultTarget: "rising against baseline",
+        fromProof: false,
+      });
+    }
+    if (e.id === "sepsis") {
+      conversionMetrics.push({
+        id: `${e.id}-ews-lag`,
+        label: "Early-warning-score documentation lag",
+        unit: "minutes",
+        helper: "The delay between a deteriorating vital and its documented early-warning score (MEWS or NEWS). A shorter lag is more time for the rapid-response team to act. Benchmark until you drop in your own.",
+        baseline: "your current rate",
+        baselineTag: "benchmark",
+        defaultTarget: "lower than today",
+        fromProof: false,
+      });
+    }
     const convProofChosen = conversionMetrics.filter((m) => m.fromProof).map((m) => m.id);
     links.push({
       id: `${e.id}-conversions`,
