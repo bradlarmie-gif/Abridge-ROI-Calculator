@@ -67,7 +67,7 @@ interface ChainTile {
   u: string;
 }
 
-function parseChain(summary?: string): ChainTile[] {
+export function parseChain(summary?: string): ChainTile[] {
   if (!summary) return [];
   // Flatten multi-plan HCC summaries ("… | MCO: …") into one chain, then split
   // on the multiplication joiner.
