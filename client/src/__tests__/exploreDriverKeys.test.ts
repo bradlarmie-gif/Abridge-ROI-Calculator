@@ -73,6 +73,9 @@ describe("engineKeyForDriver — every registered quantified driver resolves to 
         conversionFactor: 33,
         wrvuRealization: 75,
         hccEnabled: true,
+        // panelSize is a SCALE input (blank by default now) — feed it explicitly
+        // so HCC produces a positive value for the resolve check.
+        hccPlans: DEFAULT_EXPLORE_STATE.docQualityInputs.hccPlans.map(p => ({ ...p, panelSize: 300 })),
         denialsEnabled: true,
         denialsScenario: "typical",
         medNecessityDenialRate: 3,

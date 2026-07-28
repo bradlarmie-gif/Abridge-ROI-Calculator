@@ -3,6 +3,7 @@ import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import type { ExploreCalcComponentProps } from "@/lib/exploreDrivers";
 import { computeAllDriverValues } from "@/lib/exploreDriverCalcs";
 import { engineKeyForDriver } from "@/lib/exploreDriverKeys";
+import { driverScaleReadiness } from "@/lib/exploreScaleGate";
 
 type Props = ExploreCalcComponentProps;
 
@@ -10,6 +11,7 @@ export default function AdmissionCaptureCalc({ state, updateTimeDriverInputs, to
   const { timeDriverInputs } = state;
 
   const value = computeAllDriverValues(state, totalHoursSaved)[engineKeyForDriver("admissionCapture", state.careSetting ?? "")] ?? 0;
+  const { ready, need } = driverScaleReadiness("admissionCapture", state, totalHoursSaved);
 
   const edRecoveredPatients = useMemo(() => {
     const lwbsPatients = state.annualEncounters * (timeDriverInputs.edLwbsRate / 100);
@@ -104,7 +106,9 @@ export default function AdmissionCaptureCalc({ state, updateTimeDriverInputs, to
 
           <div className="flex justify-between gap-2">
             <span className="font-semibold text-black">Net Admission Value</span>
-            <span className="font-bold text-[#EA2C00] flex-shrink-0">{formatCurrency(value)}</span>
+            {ready
+              ? <span className="font-bold text-[#EA2C00] flex-shrink-0">{formatCurrency(value)}</span>
+              : <span className="text-sm font-medium text-[#8C7E6E] flex-shrink-0">Enter {need}</span>}
           </div>
         </div>
       </div>

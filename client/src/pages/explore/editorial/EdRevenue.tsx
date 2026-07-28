@@ -22,6 +22,7 @@ import {
   IP_OBS_PREVENTABLE_SCENARIOS,
 } from "@/lib/exploreDriverCalcs";
 import { engineKeyForDriver } from "@/lib/exploreDriverKeys";
+import { driverScaleReadiness } from "@/lib/exploreScaleGate";
 import { getDriversForPage } from "@/lib/exploreDrivers";
 import { type ExploreState, type HccPlan } from "../ExploreFlow";
 import type { PriorQuadrantEntry } from "@/lib/exploreQuadrantValues";
@@ -54,6 +55,12 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
 
   const engine = computeAllDriverValues(state, totalHoursSaved);
   const eligibleEncounters = Math.round(state.annualEncounters * (state.utilizationPercent / 100));
+
+  // Scale-gating: no dollar until the driver's scale input(s) are entered.
+  const gate = (driverId: string) => {
+    const r = driverScaleReadiness(driverId, state, totalHoursSaved);
+    return r.ready ? undefined : { need: r.need };
+  };
 
   const updateDq = (updates: Partial<ExploreState["docQualityInputs"]>) =>
     updateState({ docQualityInputs: { ...dq, ...updates } });
@@ -89,6 +96,7 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
         </>
       }
       testId="toggle-wrvu"
+      awaitingScale={gate("wrvu")}
       buildLine={
         <>
           <b className="text-[#1A1A1A]">{fmtN(eligibleEncounters)}</b> {isED ? "ED encounters" : "visits"} ×{" "}
@@ -158,7 +166,7 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
       id: `plan-${Date.now()}`,
       planType: "custom",
       name: "Custom plan",
-      panelSize: 100,
+      panelSize: 0, // SCALE — blank until the partner enters this plan's panel
       valuePerHcc: 1000,
       gapRate: sharedPlan?.gapRate ?? 65,
       currentRecaptureRate: recaptureRateToday,
@@ -203,6 +211,7 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
         </>
       }
       testId="toggle-hcc"
+      awaitingScale={gate("hccCapture")}
       buildLine={
         <>
           Each plan: members × ({dq.avgHccs} conditions × {upliftPts}pp recaptured + {sharedPlan?.netNewAvgConditions ?? 0} new) × its $/HCC × {dq.hccRealization}% realization
@@ -311,6 +320,7 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
         </>
       }
       testId="toggle-denials"
+      awaitingScale={gate("denialPrevention")}
       buildLine={
         <>
           <b className="text-[#1A1A1A]">{fmtN(eligibleEncounters)}</b> claims × <b className="text-[#1A1A1A]">{dq.medNecessityDenialRate}%</b>{" "}
@@ -361,6 +371,7 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
       value={drgValue}
       secondary={<>≈ CMI <b className="text-[#1A1A1A]">{dq.ipDrgCurrentCmi.toFixed(2)} → {projectedCmi.toFixed(2)}</b>, {dq.ipDrgAttribution}% attributed to Abridge</>}
       testId="toggle-drg"
+      awaitingScale={gate("drgAccuracy")}
       buildLine={
         <>
           <b className="text-[#1A1A1A]">{fmtN(eligibleEncounters)}</b> discharges × <b className="text-[#1A1A1A]">{dq.ipDrgWeightIncrease}</b> CMI lift ×{" "}
@@ -416,6 +427,7 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
       value={obsValue}
       secondary={<>≈ <b className="text-[#1A1A1A]">{obsPreventablePct}%</b> of downgrades the note can defend</>}
       testId="toggle-obs"
+      awaitingScale={gate("obsDefense")}
       buildLine={
         <>
           <b className="text-[#1A1A1A]">{fmtN(eligibleEncounters)}</b> admissions × <b className="text-[#1A1A1A]">{dq.ipObsDefenseDenialRate}%</b>{" "}

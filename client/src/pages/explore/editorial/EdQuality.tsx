@@ -1,6 +1,7 @@
 import { EditorialHeader, EditorialShell } from "./EditorialHeader";
 import { MoneyCard, SectionLabel, FieldGrid, FieldTile, Fi, FiReadout, OutcomesTier, fmtN } from "./EdMoneyCard";
 import { computeAllDriverValues } from "@/lib/exploreDriverCalcs";
+import { driverScaleReadiness } from "@/lib/exploreScaleGate";
 import { calcHapi, calcFalls, calcCauti, calcClabsi, calcSepsis } from "@/lib/nursingQualityCalcs";
 import { getDriversForPage, type ExploreDriver } from "@/lib/exploreDrivers";
 import { type ExploreState } from "../ExploreFlow";
@@ -173,6 +174,10 @@ function NursingQualityScreen({
   const engine = computeAllDriverValues(state, totalHoursSaved);
   const patientDays = state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365;
   const updateDq = (updates: Partial<ExploreState["docQualityInputs"]>) => updateState({ docQualityInputs: { ...dq, ...updates } });
+  const gate = (driverId: string) => {
+    const r = driverScaleReadiness(driverId, state, totalHoursSaved);
+    return r.ready ? undefined : { need: r.need };
+  };
 
   const hapi = calcHapi({ patientDays, rate: dq.nursingHapiRate, preventionPct: dq.nursingHapiPreventionRate, cost: dq.nursingHapiCost });
   const falls = calcFalls({ patientDays, rate: dq.nursingFallsRate, preventionPct: dq.nursingFallsPreventionRate, cost: dq.nursingFallsCost });
@@ -253,6 +258,7 @@ function NursingQualityScreen({
           value={hapi.value}
           secondary={<>≈ <b className="text-[#1A1A1A]">{fmtN(hapi.prevented)}</b> HAPIs prevented a year</>}
           testId="toggle-nursing-hapi"
+          awaitingScale={gate("nursingHapi")}
           buildLine={
             <>
               {fmtN(patientDays)} patient-days × {dq.nursingHapiRate}/1k HAPI rate × {dq.nursingHapiPreventionRate}% prevention ×{" "}
@@ -288,6 +294,7 @@ function NursingQualityScreen({
           value={falls.value}
           secondary={<>≈ <b className="text-[#1A1A1A]">{fmtN(falls.prevented)}</b> falls prevented a year</>}
           testId="toggle-nursing-falls"
+          awaitingScale={gate("nursingFalls")}
           buildLine={
             <>
               {fmtN(patientDays)} patient-days × {dq.nursingFallsRate}/1k fall rate × {dq.nursingFallsPreventionRate}% prevention ×{" "}
@@ -324,6 +331,7 @@ function NursingQualityScreen({
           value={cauti.value}
           secondary={<>≈ <b className="text-[#1A1A1A]">{fmtN(cauti.prevented)}</b> CAUTIs prevented a year</>}
           testId="toggle-nursing-cauti"
+          awaitingScale={gate("nursingCauti")}
           buildLine={
             <>
               {fmtN(cauti.catheterDays)} catheter-days × {dq.nursingCautiRate}/1k CAUTI rate × {dq.nursingCautiPreventionRate}% prevention ×{" "}
@@ -355,6 +363,7 @@ function NursingQualityScreen({
           value={clabsi.value}
           secondary={<>≈ <b className="text-[#1A1A1A]">{fmtN(clabsi.prevented)}</b> CLABSIs prevented a year</>}
           testId="toggle-nursing-clabsi"
+          awaitingScale={gate("nursingClabsi")}
           buildLine={
             <>
               {fmtN(clabsi.lineDays)} line-days × {dq.nursingClabsiRate}/1k CLABSI rate × {dq.nursingClabsiPreventionRate}% prevention ×{" "}
@@ -386,6 +395,7 @@ function NursingQualityScreen({
           value={sepsis.value}
           secondary={<>≈ <b className="text-[#1A1A1A]">{fmtN(sepsis.prevented)}</b> cases moved into compliance a year</>}
           testId="toggle-nursing-sepsis"
+          awaitingScale={gate("nursingSepsis")}
           buildLine={
             <>
               {fmtN(patientDays)} patient-days × {dq.nursingSepsisRatePerThousand}/1k sepsis rate × {sepsis.complianceGapPct}% non-compliant ×{" "}

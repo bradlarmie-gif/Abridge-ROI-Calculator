@@ -3,6 +3,7 @@ import type { ExploreCalcComponentProps } from "@/lib/exploreDrivers";
 import { NumberField } from "@/components/NumberField";
 import { computeAllDriverValues } from "@/lib/exploreDriverCalcs";
 import { engineKeyForDriver } from "@/lib/exploreDriverKeys";
+import { driverScaleReadiness } from "@/lib/exploreScaleGate";
 
 const SCENARIO_LABELS: Record<string, string> = {
   conservative: 'Conservative',
@@ -17,6 +18,7 @@ export default function DrgAccuracyCalc({ state, updateDocQualityInputs, totalHo
   const eligibleEncounters = Math.round(annualEncounters * (utilizationPercent / 100));
 
   const value = computeAllDriverValues(state, totalHoursSaved)[engineKeyForDriver("drgAccuracy", state.careSetting ?? "")] ?? 0;
+  const { ready, need } = driverScaleReadiness("drgAccuracy", state, totalHoursSaved);
 
   const ipDrgProtectionScenarios: Record<string, number> = { conservative: 15, typical: 20, aggressive: 25, custom: docQualityInputs.ipDrgCustomPercent ?? 20 };
   const ipDrgProtectionPercent = ipDrgProtectionScenarios[docQualityInputs.ipDrgScenario];
@@ -233,7 +235,9 @@ export default function DrgAccuracyCalc({ state, updateDocQualityInputs, totalHo
       <div className="border-t border-[#E5E5E5] pt-6">
         <div className="flex justify-between items-center mb-4">
           <span className="font-semibold text-black">Annual DRG Value</span>
-          <span className="text-2xl font-bold text-[#EA2C00]" data-testid="text-drg-net">{formatCurrency(value)}</span>
+          {ready
+            ? <span className="text-2xl font-bold text-[#EA2C00]" data-testid="text-drg-net">{formatCurrency(value)}</span>
+            : <span className="text-sm font-medium text-[#8C7E6E]" data-testid="text-drg-net">Enter {need}</span>}
         </div>
       </div>
     </div>

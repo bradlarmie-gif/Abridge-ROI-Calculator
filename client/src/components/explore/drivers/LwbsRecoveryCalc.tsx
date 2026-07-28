@@ -4,6 +4,7 @@ import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import type { ExploreCalcComponentProps } from "@/lib/exploreDrivers";
 import { computeAllDriverValues } from "@/lib/exploreDriverCalcs";
 import { engineKeyForDriver } from "@/lib/exploreDriverKeys";
+import { driverScaleReadiness } from "@/lib/exploreScaleGate";
 
 type Props = ExploreCalcComponentProps;
 
@@ -13,6 +14,7 @@ export default function LwbsRecoveryCalc({ state, updateTimeDriverInputs, totalH
   const [customDisplay, setCustomDisplay] = useState(String(timeDriverInputs.edLwbsReduction));
 
   const value = computeAllDriverValues(state, totalHoursSaved)[engineKeyForDriver("lwbsRecovery", state.careSetting ?? "")] ?? 0;
+  const { ready, need } = driverScaleReadiness("lwbsRecovery", state, totalHoursSaved);
 
   const edRecoveredPatients = useMemo(() => {
     const lwbsPatients = state.annualEncounters * (timeDriverInputs.edLwbsRate / 100);
@@ -222,7 +224,9 @@ export default function LwbsRecoveryCalc({ state, updateTimeDriverInputs, totalH
 
           <div className="flex justify-between gap-2">
             <span className="font-semibold text-black">Net LWBS Value</span>
-            <span className="font-bold text-[#EA2C00] flex-shrink-0">{formatCurrency(value)}</span>
+            {ready
+              ? <span className="font-bold text-[#EA2C00] flex-shrink-0">{formatCurrency(value)}</span>
+              : <span className="text-sm font-medium text-[#8C7E6E] flex-shrink-0">Enter {need}</span>}
           </div>
         </div>
       </div>

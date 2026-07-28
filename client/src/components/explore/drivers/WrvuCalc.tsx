@@ -3,6 +3,7 @@ import { Info } from "lucide-react";
 import type { ExploreCalcComponentProps } from "@/lib/exploreDrivers";
 import { computeAllDriverValues, wrvuScenariosFor } from "@/lib/exploreDriverCalcs";
 import { engineKeyForDriver } from "@/lib/exploreDriverKeys";
+import { driverScaleReadiness } from "@/lib/exploreScaleGate";
 import { NumberField } from "@/components/NumberField";
 
 const SCENARIO_LABELS: Record<string, string> = {
@@ -21,6 +22,7 @@ export default function WrvuCalc({ state, updateDocQualityInputs, totalHoursSave
   const [customDisplay, setCustomDisplay] = useState(String(docQualityInputs.wrvuCustomPercent ?? 5));
 
   const value = computeAllDriverValues(state, totalHoursSaved)[engineKeyForDriver("wrvu", state.careSetting ?? "")] ?? 0;
+  const { ready, need } = driverScaleReadiness("wrvu", state, totalHoursSaved);
 
   const eligibleEncounters = Math.round(annualEncounters * (utilizationPercent / 100));
   const wrvuScenarios = wrvuScenariosFor(isED, docQualityInputs.wrvuCustomPercent);
@@ -205,7 +207,9 @@ export default function WrvuCalc({ state, updateDocQualityInputs, totalHoursSave
           <div className="h-px bg-[#E5E5E5] my-2" />
           <div className="flex justify-between gap-2">
             <span className="font-semibold text-black">Annual E/M Value</span>
-            <span className="font-bold text-[#EA2C00]" data-testid="text-wrvu-net">{formatCurrency(value)}</span>
+            {ready
+              ? <span className="font-bold text-[#EA2C00]" data-testid="text-wrvu-net">{formatCurrency(value)}</span>
+              : <span className="text-sm font-medium text-[#8C7E6E]" data-testid="text-wrvu-net">Enter {need}</span>}
           </div>
         </div>
       </div>

@@ -3,6 +3,7 @@ import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import type { ExploreCalcComponentProps } from "@/lib/exploreDrivers";
 import { computeAllDriverValues } from "@/lib/exploreDriverCalcs";
 import { engineKeyForDriver } from "@/lib/exploreDriverKeys";
+import { driverScaleReadiness } from "@/lib/exploreScaleGate";
 
 type Props = ExploreCalcComponentProps;
 
@@ -10,6 +11,7 @@ export default function NursingOvertimeCalc({ state, updateTimeDriverInputs, tot
   const { timeDriverInputs } = state;
 
   const value = computeAllDriverValues(state, totalHoursSaved)[engineKeyForDriver("nursingOvertime", state.careSetting ?? "")] ?? 0;
+  const { ready, need } = driverScaleReadiness("nursingOvertime", state, totalHoursSaved);
 
   const otHoursEliminated = useMemo(() => {
     return Math.round(
@@ -118,7 +120,7 @@ export default function NursingOvertimeCalc({ state, updateTimeDriverInputs, tot
           <div className="h-px bg-[#E5E5E5] my-2" />
           <div className="flex justify-between gap-2">
             <span className="text-[#666666] font-medium">Annual OT Savings</span>
-            <span className="font-bold text-[#EA2C00] flex-shrink-0" data-testid="text-nursing-overtime-value">{formatCurrency(value)}</span>
+            {ready ? <span className="font-bold text-[#EA2C00] flex-shrink-0" data-testid="text-nursing-overtime-value">{formatCurrency(value)}</span> : <span className="text-sm font-medium text-[#8C7E6E]" data-testid="text-nursing-overtime-value">Enter {need}</span>}
           </div>
         </div>
       </div>

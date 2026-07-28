@@ -57,7 +57,20 @@ const TOTAL_HOURS_SAVED = 50 * 4 * 48;
 
 // Bases primed so an enabled driver actually produces a value off DEFAULT inputs.
 const BASES: Record<ExploreCareSetting, ExploreState> = {
-  outpatient: { ...DEFAULT_EXPLORE_STATE, careSetting: "outpatient", numberOfProviders: 50, annualEncounters: 100_000, utilizationPercent: 80 },
+  outpatient: {
+    ...DEFAULT_EXPLORE_STATE,
+    careSetting: "outpatient",
+    numberOfProviders: 50,
+    annualEncounters: 100_000,
+    utilizationPercent: 80,
+    // HCC panelSize is a SCALE input, blank (0) by default under scale-gating.
+    // Feed it explicitly so every HCC on/off combo produces a value and its
+    // printed formula is still asserted (do NOT weaken the fuzz — just supply scale).
+    docQualityInputs: {
+      ...DEFAULT_EXPLORE_STATE.docQualityInputs,
+      hccPlans: DEFAULT_EXPLORE_STATE.docQualityInputs.hccPlans.map((p) => ({ ...p, panelSize: 300 })),
+    },
+  },
   ed: { ...DEFAULT_EXPLORE_STATE, careSetting: "ed", numberOfProviders: 30, annualEncounters: 60_000, utilizationPercent: 100 },
   inpatient: { ...DEFAULT_EXPLORE_STATE, careSetting: "inpatient", numberOfProviders: 25, annualEncounters: 12_000, utilizationPercent: 100 },
   nursing: {

@@ -3,6 +3,8 @@ import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import type { ExploreCalcComponentProps } from "@/lib/exploreDrivers";
 import { computeAllDriverValues } from "@/lib/exploreDriverCalcs";
 import { engineKeyForDriver } from "@/lib/exploreDriverKeys";
+import { driverScaleReadiness } from "@/lib/exploreScaleGate";
+import AwaitingScale from "@/components/explore/drivers/AwaitingScale";
 
 type Props = ExploreCalcComponentProps;
 
@@ -15,6 +17,7 @@ export default function ScribeCostReductionCalc({ state, updateTimeDriverInputs,
   const visitNounPlural = isED ? 'ED visits' : 'visits';
 
   const value = computeAllDriverValues(state, totalHoursSaved)[engineKeyForDriver("scribeCostReduction", state.careSetting ?? "")] ?? 0;
+  const { ready, need } = driverScaleReadiness("scribeCostReduction", state, totalHoursSaved);
 
   const calc = useMemo(() => {
     if (mode === 'hourly') {
@@ -114,6 +117,9 @@ export default function ScribeCostReductionCalc({ state, updateTimeDriverInputs,
           </div>
 
           <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Calculation</p>
+          {!ready ? (
+            <AwaitingScale need={need} title="Annual Scribe Savings" testId="scribe-awaiting-scale" />
+          ) : (
           <div className="bg-[#F5F0EB] rounded-lg p-4">
             <div className="space-y-2 text-sm">
               <div className="flex justify-between gap-2">
@@ -131,6 +137,7 @@ export default function ScribeCostReductionCalc({ state, updateTimeDriverInputs,
               </div>
             </div>
           </div>
+          )}
 
           {calc.mode === 'position' && calc.headcount > calc.eliminated && calc.eliminated > 0 && (
             <div className="bg-[#F5F0EB]/60 rounded-lg p-3 mt-4">
@@ -210,6 +217,9 @@ export default function ScribeCostReductionCalc({ state, updateTimeDriverInputs,
           </div>
 
           <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Calculation</p>
+          {!ready ? (
+            <AwaitingScale need={need} title="Annual Scribe Savings" testId="scribe-awaiting-scale" />
+          ) : (
           <div className="bg-[#F5F0EB] rounded-lg p-4">
             <div className="space-y-2 text-sm">
               <div className="flex justify-between gap-2">
@@ -231,6 +241,7 @@ export default function ScribeCostReductionCalc({ state, updateTimeDriverInputs,
               </div>
             </div>
           </div>
+          )}
 
           {calc.mode === 'hourly' && calc.costPerVisit > 0 && (
             <div className="bg-[#F5F0EB]/60 rounded-lg p-3 mt-4">

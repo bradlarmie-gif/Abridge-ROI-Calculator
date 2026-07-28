@@ -18,6 +18,7 @@ import {
 import { getDriversForPage, type ExploreDriver, type ExploreSetting } from "@/lib/exploreDrivers";
 import { computeAllDriverValues } from "@/lib/exploreDriverCalcs";
 import { engineKeyForDriver } from "@/lib/exploreDriverKeys";
+import { driverScaleReadiness } from "@/lib/exploreScaleGate";
 import { physicianRetentionRates, nursingRetentionRates, PHYSICIAN_RETENTION_SCENARIOS, NURSING_RETENTION_SCENARIOS } from "@/lib/retentionScenarios";
 import type { PriorQuadrantEntry } from "@/lib/exploreQuadrantValues";
 import { type ExploreState } from "../ExploreFlow";
@@ -359,6 +360,7 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
           secondary={isPosition ? <>≈ <b className="font-abridge text-[#1A1A1A]">{eliminated}</b> scribe position{eliminated !== 1 ? "s" : ""} eliminated</> : <>≈ <b className="font-abridge text-[#1A1A1A]">{formatNum(scribedVisitsReplaced)}</b> scribed visits/yr replaced</>}
           onToggle={() => toggleEnabled(driver)}
           testId={`ed-toggle-${driver.id}`}
+          awaitingScale={(() => { const r = driverScaleReadiness(driver.id, state, totalHoursSaved); return r.ready ? undefined : { need: r.need }; })()}
           build={
             isPosition ? (
               <>

@@ -5,6 +5,7 @@ import type { ExploreCalcComponentProps } from "@/lib/exploreDrivers";
 import { physicianRetentionRates } from "@/lib/retentionScenarios";
 import { computeAllDriverValues } from "@/lib/exploreDriverCalcs";
 import { engineKeyForDriver } from "@/lib/exploreDriverKeys";
+import { driverScaleReadiness } from "@/lib/exploreScaleGate";
 
 type Props = ExploreCalcComponentProps;
 type RetentionScenario = 'conservative' | 'typical' | 'optimistic' | 'custom';
@@ -13,6 +14,7 @@ export default function PhysicianLocumAgencyCalc({ state, updateTimeDriverInputs
   const { timeDriverInputs } = state;
 
   const value = computeAllDriverValues(state, totalHoursSaved)[engineKeyForDriver("physicianLocumAgency", state.careSetting ?? "")] ?? 0;
+  const { ready, need } = driverScaleReadiness("physicianLocumAgency", state, totalHoursSaved);
 
   const retentionScenarios: Record<RetentionScenario, number> = physicianRetentionRates(timeDriverInputs.retentionCustomPercent ?? 10);
 
@@ -111,7 +113,7 @@ export default function PhysicianLocumAgencyCalc({ state, updateTimeDriverInputs
               <div className="h-px bg-[#333333] my-2" />
               <div className="flex justify-between gap-2">
                 <span className="font-semibold text-black">Locum/Agency Avoidance</span>
-                <span className="font-bold text-[#EA2C00] flex-shrink-0" data-testid="text-physician-agency-value">{formatCurrency(value)}</span>
+                {ready ? <span className="font-bold text-[#EA2C00] flex-shrink-0" data-testid="text-physician-agency-value">{formatCurrency(value)}</span> : <span className="text-sm font-medium text-[#8C7E6E]" data-testid="text-physician-agency-value">Enter {need}</span>}
               </div>
             </div>
           </div>

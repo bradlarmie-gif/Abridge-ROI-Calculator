@@ -4,12 +4,14 @@ import { NumberField } from "@/components/NumberField";
 import type { ExploreCalcComponentProps } from "@/lib/exploreDrivers";
 import { computeAllDriverValues } from "@/lib/exploreDriverCalcs";
 import { engineKeyForDriver } from "@/lib/exploreDriverKeys";
+import { driverScaleReadiness } from "@/lib/exploreScaleGate";
 
 type Props = ExploreCalcComponentProps;
 
 export default function PatientAccessCalc({ state, updateTimeDriverInputs, totalHoursSaved }: Props) {
   const { timeDriverInputs } = state;
   const value = computeAllDriverValues(state, totalHoursSaved)[engineKeyForDriver("patientAccess", state.careSetting ?? "")] ?? 0;
+  const { ready, need } = driverScaleReadiness("patientAccess", state, totalHoursSaved);
   const [customReinvestMode, setCustomReinvestMode] = useState(false);
   const [customReinvestDisplay, setCustomReinvestDisplay] = useState(String(timeDriverInputs.capacityRealizationPercent));
 
@@ -183,7 +185,9 @@ export default function PatientAccessCalc({ state, updateTimeDriverInputs, total
           </div>
           <div className="flex justify-between gap-2">
             <span className="text-[#666666]">× {formatCurrency(timeDriverInputs.revenuePerVisit)} per visit</span>
-            <span className="font-bold text-[#EA2C00] flex-shrink-0">= {formatCurrency(value)}/yr</span>
+            {ready
+              ? <span className="font-bold text-[#EA2C00] flex-shrink-0">= {formatCurrency(value)}/yr</span>
+              : <span className="text-sm font-medium text-[#8C7E6E] flex-shrink-0">Enter {need}</span>}
           </div>
         </div>
       </div>

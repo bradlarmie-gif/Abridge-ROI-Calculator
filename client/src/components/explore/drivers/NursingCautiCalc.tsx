@@ -3,6 +3,7 @@ import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import type { ExploreCalcComponentProps } from "@/lib/exploreDrivers";
 import { computeAllDriverValues } from "@/lib/exploreDriverCalcs";
 import { engineKeyForDriver } from "@/lib/exploreDriverKeys";
+import { driverScaleReadiness } from "@/lib/exploreScaleGate";
 
 type Props = ExploreCalcComponentProps;
 
@@ -10,6 +11,7 @@ export default function NursingCautiCalc({ state, updateDocQualityInputs, totalH
   const { docQualityInputs } = state;
 
   const value = computeAllDriverValues(state, totalHoursSaved)[engineKeyForDriver("nursingCauti", state.careSetting ?? "")] ?? 0;
+  const { ready, need } = driverScaleReadiness("nursingCauti", state, totalHoursSaved);
 
   const patientDays = useMemo(() => {
     return state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365;
@@ -133,7 +135,7 @@ export default function NursingCautiCalc({ state, updateDocQualityInputs, totalH
           <div className="h-px bg-[#E5E5E5] my-2" />
           <div className="flex justify-between gap-2">
             <span className="font-medium text-black">Potential CAUTI Value</span>
-            <span className="font-bold text-[#EA2C00]" data-testid="text-nursing-cauti-value">{formatCurrency(value)}</span>
+            {ready ? <span className="font-bold text-[#EA2C00]" data-testid="text-nursing-cauti-value">{formatCurrency(value)}</span> : <span className="text-sm font-medium text-[#8C7E6E]" data-testid="text-nursing-cauti-value">Enter {need}</span>}
           </div>
         </div>
       </div>

@@ -6,6 +6,8 @@ import type { HccPlan } from "@/pages/explore/ExploreFlow";
 import { NumberField } from "@/components/NumberField";
 import { computeAllDriverValues } from "@/lib/exploreDriverCalcs";
 import { engineKeyForDriver } from "@/lib/exploreDriverKeys";
+import { driverScaleReadiness } from "@/lib/exploreScaleGate";
+import AwaitingScale from "@/components/explore/drivers/AwaitingScale";
 
 const UPLIFT_OPTIONS: { key: 'conservative' | 'typical' | 'optimistic'; label: string; pp: number }[] = [
   { key: 'conservative', label: 'Conservative', pp: 3 },
@@ -13,11 +15,14 @@ const UPLIFT_OPTIONS: { key: 'conservative' | 'typical' | 'optimistic'; label: s
   { key: 'optimistic',   label: 'Optimistic',   pp: 10 },
 ];
 
+// panelSize is a SCALE input — left blank (0) so switching plan type seeds the
+// ASSUMPTIONS ($/HCC, gap/recapture rates) but never a fabricated panel size.
+// The partner enters their own panel per provider; no dollar shows until they do.
 const PLAN_TYPE_DEFAULTS: Record<HccPlan['planType'], Omit<HccPlan, 'id'>> = {
-  medicare_advantage: { planType: 'medicare_advantage', name: 'Medicare Advantage', panelSize: 300, valuePerHcc: 1500, gapRate: 65, currentRecaptureRate: 65, uplift: 'typical', netNewEnabled: false, netNewDiscoveryRate: 3, netNewAvgConditions: 1.2 },
-  aca_marketplace:    { planType: 'aca_marketplace',    name: 'ACA Marketplace',    panelSize: 150, valuePerHcc: 800,  gapRate: 60, currentRecaptureRate: 60, uplift: 'typical', netNewEnabled: false, netNewDiscoveryRate: 2, netNewAvgConditions: 1.0 },
-  medicaid_mco:       { planType: 'medicaid_mco',       name: 'Medicaid MCO',       panelSize: 200, valuePerHcc: 600,  gapRate: 55, currentRecaptureRate: 55, uplift: 'typical', netNewEnabled: false, netNewDiscoveryRate: 2, netNewAvgConditions: 1.0 },
-  custom:             { planType: 'custom',              name: 'Custom Plan',        panelSize: 100, valuePerHcc: 1000, gapRate: 60, currentRecaptureRate: 60, uplift: 'typical', netNewEnabled: false, netNewDiscoveryRate: 3, netNewAvgConditions: 1.2 },
+  medicare_advantage: { planType: 'medicare_advantage', name: 'Medicare Advantage', panelSize: 0, valuePerHcc: 1500, gapRate: 65, currentRecaptureRate: 65, uplift: 'typical', netNewEnabled: false, netNewDiscoveryRate: 3, netNewAvgConditions: 1.2 },
+  aca_marketplace:    { planType: 'aca_marketplace',    name: 'ACA Marketplace',    panelSize: 0, valuePerHcc: 800,  gapRate: 60, currentRecaptureRate: 60, uplift: 'typical', netNewEnabled: false, netNewDiscoveryRate: 2, netNewAvgConditions: 1.0 },
+  medicaid_mco:       { planType: 'medicaid_mco',       name: 'Medicaid MCO',       panelSize: 0, valuePerHcc: 600,  gapRate: 55, currentRecaptureRate: 55, uplift: 'typical', netNewEnabled: false, netNewDiscoveryRate: 2, netNewAvgConditions: 1.0 },
+  custom:             { planType: 'custom',              name: 'Custom Plan',        panelSize: 0, valuePerHcc: 1000, gapRate: 60, currentRecaptureRate: 60, uplift: 'typical', netNewEnabled: false, netNewDiscoveryRate: 3, netNewAvgConditions: 1.2 },
 };
 
 const PLAN_TYPE_LABELS: Record<HccPlan['planType'], string> = {
@@ -35,6 +40,7 @@ export default function HccCaptureCalc({ state, updateDocQualityInputs, totalHou
   const [netNewOpen, setNetNewOpen] = useState<Record<string, boolean>>({});
 
   const value = computeAllDriverValues(state, totalHoursSaved)[engineKeyForDriver("hccCapture", state.careSetting ?? "")] ?? 0;
+  const { ready, need } = driverScaleReadiness("hccCapture", state, totalHoursSaved);
 
   const plans = docQualityInputs.hccPlans;
   const upliftMap: Record<string, number> = { conservative: 3, typical: 5, optimistic: 10 };
@@ -141,6 +147,7 @@ export default function HccCaptureCalc({ state, updateDocQualityInputs, totalHou
                     <NumberField
                       decimal={false}
                       value={plan.panelSize}
+                      placeholder="e.g., 300"
                       onValueChange={(v) => updatePlan(plan.id, { panelSize: v })}
                       className="w-20 h-8 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]/20 outline-none transition-colors"
                     />
@@ -327,6 +334,10 @@ export default function HccCaptureCalc({ state, updateDocQualityInputs, totalHou
 
       <div className="h-px bg-[#E5E5E5] my-5" />
 
+      {!ready ? (
+        <AwaitingScale need={need} testId="hcc-awaiting-scale" />
+      ) : (
+      <>
       <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Estimated Value</p>
       <div className="bg-[#F5F0EB] rounded-lg p-4">
         <div className="space-y-3 mb-3">
@@ -356,6 +367,8 @@ export default function HccCaptureCalc({ state, updateDocQualityInputs, totalHou
           <span className="text-2xl font-bold text-[#EA2C00]" data-testid="text-hcc-result">{fmt$(value)}</span>
         </div>
       </div>
+      </>
+      )}
 
       <div className="h-px bg-[#E5E5E5] my-5" />
 

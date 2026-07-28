@@ -91,6 +91,7 @@ export function MoneyCard({
   buildLine,
   children,
   testId,
+  awaitingScale,
 }: {
   title: string;
   tag?: string;
@@ -103,6 +104,9 @@ export function MoneyCard({
   buildLine?: ReactNode;
   children?: ReactNode;
   testId?: string;
+  /** When set (and the card is on), the scale input(s) aren't entered yet: show
+   * the waiting headline instead of a dollar, but keep the input tiles visible. */
+  awaitingScale?: { need: string };
 }) {
   return (
     <div className="bg-[#FDFBF8] border border-[#E8E2DA] rounded-[20px] px-[26px] py-[22px] mb-3.5">
@@ -122,6 +126,20 @@ export function MoneyCard({
       </div>
 
       {enabled ? (
+        awaitingScale ? (
+          <>
+            <div className="flex items-baseline gap-4 mt-4 flex-wrap" data-testid={testId ? `${testId}-awaiting` : undefined}>
+              <div>
+                <span className="font-abridge text-[36px] text-[#C9BDAD] leading-none tabular-nums select-none">{"—"}</span>{" "}
+                <span className="text-[15px] text-[#5E534A]">{unit}</span>
+              </div>
+              <div className="text-[13px] text-[#786C5E] border-l border-[#E8E2DA] pl-4">
+                Enter {awaitingScale.need} to see your number.
+              </div>
+            </div>
+            {children}
+          </>
+        ) : (
         <>
           <div className="flex items-baseline gap-4 mt-4 flex-wrap">
             <div>
@@ -137,6 +155,7 @@ export function MoneyCard({
             <div className="mt-4 text-[12.5px] text-[#5E534A] leading-[1.5]">{buildLine}</div>
           )}
         </>
+        )
       ) : (
         <div className="mt-4 text-[13px] text-[#786C5E] italic">Off. Turn on to model this driver against your numbers.</div>
       )}
@@ -314,7 +333,7 @@ export function PlanRow({
           </option>
         ))}
       </select>
-      <Fi value={members} onValueChange={onMembersChange} suffix="members" />
+      <Fi value={members} onValueChange={onMembersChange} suffix="members" testId="ed-input-hcc-members" />
       <Fi value={valuePerHcc} onValueChange={onValuePerHccChange} prefix="$" suffix="/HCC" />
       <button
         type="button"

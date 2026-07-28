@@ -203,7 +203,8 @@ describe("inpatient DRG / Obs-defense and outpatient HCC parity (screen vs canon
       docQualityInputs: {
         ...DEFAULT_EXPLORE_STATE.docQualityInputs,
         hccEnabled: true,
-        hccPlans: DEFAULT_EXPLORE_STATE.docQualityInputs.hccPlans.map(p => ({ ...p, uplift: "optimistic" as const })),
+        // panelSize is a SCALE input (blank by default now) — feed it explicitly so the parity check exercises a non-zero value.
+        hccPlans: DEFAULT_EXPLORE_STATE.docQualityInputs.hccPlans.map(p => ({ ...p, uplift: "optimistic" as const, panelSize: 300 })),
       },
     };
     expect(computeRevenueBreakdown(state, HOURS).driverValues.hccCapture)

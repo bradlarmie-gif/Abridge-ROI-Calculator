@@ -8,6 +8,7 @@ import ValueArcDisplay from "@/components/explore/ValueArcDisplay";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { getDriversForPage, type ExploreDriver } from "@/lib/exploreDrivers";
 import { computeWorkforceBreakdown, type PriorQuadrantEntry } from "@/lib/exploreQuadrantValues";
+import { driverScaleReadiness } from "@/lib/exploreScaleGate";
 import { type ExploreState, type OtherFinancialBenefitItem } from "./ExploreFlow";
 
 interface ExploreWorkforceProps {
@@ -387,6 +388,7 @@ export default function ExploreWorkforce({ state, updateState, totalHoursSaved, 
                           {financialDriversInPanel.map(d => {
                             const enabled = isEnabled(d);
                             const value = driverValues[d.id];
+                            const scaleReady = enabled ? driverScaleReadiness(d.id, state, totalHoursSaved).ready : false;
                             return (
                               <div key={d.id} className={`flex justify-between items-center ${d.childOfDriverId ? 'pl-4' : ''}`}>
                                 <div className="flex items-center gap-2 min-w-0">
@@ -394,7 +396,7 @@ export default function ExploreWorkforce({ state, updateState, totalHoursSaved, 
                                   <span className="text-sm text-[#888888] truncate">{d.label}</span>
                                 </div>
                                 <span className={`text-sm font-semibold flex-shrink-0 ${enabled ? 'text-white' : 'text-[#666666]'}`} data-testid={`right-panel-value-${d.id}`}>
-                                  {!enabled ? '—' : (typeof value === 'number' ? formatCurrency(value) : '—')}
+                                  {!enabled ? '—' : (!scaleReady ? '—' : (typeof value === 'number' ? formatCurrency(value) : '—'))}
                                 </span>
                               </div>
                             );

@@ -94,6 +94,7 @@ export function ValueCard({
   children,
   build,
   warning,
+  awaitingScale,
 }: {
   title: string;
   subtitle: string;
@@ -105,6 +106,9 @@ export function ValueCard({
   children?: ReactNode;
   build?: ReactNode;
   warning?: ReactNode;
+  /** When set, the scale input(s) aren't entered: show the waiting headline
+   * instead of a dollar, keep the input tiles visible, suppress the build line. */
+  awaitingScale?: { need: string };
 }) {
   return (
     <div className="bg-[#FDFBF8] border border-[#E8E2DA] rounded-[20px] p-6 sm:p-7 mb-[14px] last:mb-0">
@@ -122,21 +126,25 @@ export function ValueCard({
         </div>
       )}
 
-      <div className="flex items-baseline gap-4 mt-[18px] flex-wrap">
+      <div className="flex items-baseline gap-4 mt-[18px] flex-wrap" data-testid={awaitingScale && testId ? `${testId}-awaiting` : undefined}>
         <div>
-          <span className="font-abridge text-[36px] sm:text-[40px] text-[#EA2C00] leading-none">
-            {formatCurrency(value)}
+          <span className={`font-abridge text-[36px] sm:text-[40px] leading-none ${awaitingScale ? "text-[#C9BDAD] select-none" : "text-[#EA2C00]"}`}>
+            {awaitingScale ? "—" : formatCurrency(value)}
           </span>{" "}
           <span className="text-[15px] text-[#5E534A]">{unit}</span>
         </div>
-        {secondary && (
-          <div className="text-[13.5px] text-[#5E534A] border-l border-[#E8E2DA] pl-4">{secondary}</div>
+        {awaitingScale ? (
+          <div className="text-[13.5px] text-[#786C5E] border-l border-[#E8E2DA] pl-4">Enter {awaitingScale.need} to see your number.</div>
+        ) : (
+          secondary && (
+            <div className="text-[13.5px] text-[#5E534A] border-l border-[#E8E2DA] pl-4">{secondary}</div>
+          )
         )}
       </div>
 
       {children && <div className="grid grid-cols-1 sm:grid-cols-2 gap-[14px] mt-[22px]">{children}</div>}
 
-      {build && <div className="text-[13px] text-[#5E534A] leading-[1.5] mt-[18px]">{build}</div>}
+      {!awaitingScale && build && <div className="text-[13px] text-[#5E534A] leading-[1.5] mt-[18px]">{build}</div>}
     </div>
   );
 }

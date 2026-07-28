@@ -790,7 +790,7 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
       id: 'plan-ma',
       planType: 'medicare_advantage' as const,
       name: 'Medicare Advantage',
-      panelSize: 300,
+      panelSize: 0, // SCALE input — blank until the partner enters their panel; no fabricated lives/dollar from a default
       valuePerHcc: 1500,
       gapRate: 65,
       currentRecaptureRate: 65,

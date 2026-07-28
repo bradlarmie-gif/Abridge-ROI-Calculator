@@ -125,6 +125,8 @@ describe("proforma driver formula steps — reconcile to the value, every driver
         ...DEFAULT_EXPLORE_STATE.docQualityInputs,
         wrvuEnabled: true, wrvuScenario: "typical",
         hccEnabled: true,
+        // panelSize is a SCALE input (blank by default now) — feed it so HCC shows real covered lives, not "0 MA lives".
+        hccPlans: DEFAULT_EXPLORE_STATE.docQualityInputs.hccPlans.map(p => ({ ...p, panelSize: 300 })),
         denialsEnabled: true, denialsScenario: "typical",
       },
     } as ExploreState;

@@ -2,6 +2,7 @@ import { Info } from "lucide-react";
 import type { ExploreCalcComponentProps } from "@/lib/exploreDrivers";
 import { computeAllDriverValues, denialsScenariosFor } from "@/lib/exploreDriverCalcs";
 import { engineKeyForDriver } from "@/lib/exploreDriverKeys";
+import { driverScaleReadiness } from "@/lib/exploreScaleGate";
 import { NumberField } from "@/components/NumberField";
 
 const SCENARIO_LABELS: Record<string, string> = {
@@ -17,6 +18,7 @@ export default function DenialPreventionCalc({ state, updateDocQualityInputs, to
   const isED = careSetting === 'ed';
 
   const value = computeAllDriverValues(state, totalHoursSaved)[engineKeyForDriver("denialPrevention", state.careSetting ?? "")] ?? 0;
+  const { ready, need } = driverScaleReadiness("denialPrevention", state, totalHoursSaved);
 
   const eligibleEncounters = Math.round(annualEncounters * (utilizationPercent / 100));
   const denialsScenarios = denialsScenariosFor(isED, docQualityInputs.denialsCustomPercent);
@@ -175,7 +177,9 @@ export default function DenialPreventionCalc({ state, updateDocQualityInputs, to
           <div className="h-px bg-[#888888] my-2" />
           <div className="flex justify-between font-semibold">
             <span className="text-black">Annual Denial Prevention Value</span>
-            <span className="text-[#EA2C00]" data-testid="text-denials-net">{formatCurrency(value)}</span>
+            {ready
+              ? <span className="text-[#EA2C00]" data-testid="text-denials-net">{formatCurrency(value)}</span>
+              : <span className="text-sm text-[#8C7E6E]" data-testid="text-denials-net">Enter {need}</span>}
           </div>
         </div>
       </div>
