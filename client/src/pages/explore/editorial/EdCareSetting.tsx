@@ -104,14 +104,14 @@ export default function EdCareSetting({ selectedSetting, onSelectSetting, onNext
       <EditorialHeader stepName="Care Setting" stepIndex={1} onDataRequest={onDataRequest} onBack={onBack} />
       <div className="max-w-[1120px] mx-auto px-10 pt-[52px] pb-[60px]">
         <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#5E534A]">Explore · Step 1 of 9</div>
-        <h1 className="font-abridge text-[40px] leading-[1.06] text-[#1A1A1A] mt-[10px] max-w-[680px]">
+        <h1 className="font-abridge text-[27px] sm:text-[34px] lg:text-[40px] leading-[1.08] text-[#1A1A1A] mt-[10px] max-w-[680px]">
           Which care setting should we model first?
         </h1>
         <p className="text-[16.5px] text-[#5E534A] mt-[14px] max-w-[620px] leading-[1.5]">
           Pick one to start. The panel shows what you'll build for that setting, all from its real volume and economics, never a benchmark.
         </p>
 
-        <div className="grid grid-cols-[380px_1fr] gap-7 mt-9 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-7 mt-9 items-start">
           {/* Selector list */}
           <div className="flex flex-col gap-[10px]" onMouseLeave={() => setHovered(null)}>
             {SETTINGS.map(({ id, name, sub, Icon }) => {

@@ -562,9 +562,9 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
   return (
     <EditorialShell>
       <EditorialHeader stepName="Workforce" stepIndex={5} onBack={onBack} />
-      <div className="max-w-[1160px] mx-auto px-12 pt-11 pb-[60px]">
+      <div className="max-w-[1160px] mx-auto px-5 sm:px-8 lg:px-12 pt-11 pb-[60px]">
         <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#5E534A]">Explore · Step 5 of 9</div>
-        <h1 className="font-abridge text-[38px] leading-[1.06] text-[#1A1A1A] mt-[10px]">What is Abridge worth to your workforce?</h1>
+        <h1 className="font-abridge text-[26px] sm:text-[32px] lg:text-[38px] leading-[1.08] text-[#1A1A1A] mt-[10px]">What is Abridge worth to your workforce?</h1>
         <p className="text-[16px] text-[#5E534A] mt-[13px] max-w-[680px] leading-[1.5]">
           {setting === "nursing" ? (
             <>Documentation burden is a leading reason RNs burn out and leave the bedside. As the after-hours charting load comes down, fewer walk out the door. Turn on only what you can stand behind, and nothing counts until you switch it on.</>

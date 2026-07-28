@@ -80,9 +80,9 @@ function ProofChainScreen({ state, onNext, onBack, setting }: { state: ExploreSt
   return (
     <EditorialShell>
       <EditorialHeader stepName="Quality" stepIndex={stepIndex} onBack={onBack} />
-      <div className="max-w-[1160px] mx-auto px-12 pt-11 pb-[60px]">
+      <div className="max-w-[1160px] mx-auto px-5 sm:px-8 lg:px-12 pt-11 pb-[60px]">
         <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#5E534A]">Explore · Step 7 of 9</div>
-        <h1 className="font-abridge text-[38px] leading-[1.06] text-[#1A1A1A] mt-[10px] max-w-[700px]">{copy.h1}</h1>
+        <h1 className="font-abridge text-[26px] sm:text-[32px] lg:text-[38px] leading-[1.08] text-[#1A1A1A] mt-[10px] max-w-[700px]">{copy.h1}</h1>
         <p className="text-[16px] text-[#5E534A] mt-[13px] max-w-[660px] leading-[1.5]">{copy.sub}</p>
 
         <SectionLabel
@@ -222,9 +222,9 @@ function NursingQualityScreen({
   return (
     <EditorialShell>
       <EditorialHeader stepName="Quality" stepIndex={7} onBack={onBack} />
-      <div className="max-w-[1160px] mx-auto px-12 pt-11 pb-[60px]">
+      <div className="max-w-[1160px] mx-auto px-5 sm:px-8 lg:px-12 pt-11 pb-[60px]">
         <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#5E534A]">Explore · Step 7 of 9</div>
-        <h1 className="font-abridge text-[38px] leading-[1.06] text-[#1A1A1A] mt-[10px] max-w-[700px]">
+        <h1 className="font-abridge text-[26px] sm:text-[32px] lg:text-[38px] leading-[1.08] text-[#1A1A1A] mt-[10px] max-w-[700px]">
           Where does nursing documentation prevent harm?
         </h1>
         <p className="text-[16px] text-[#5E534A] mt-[13px] max-w-[660px] leading-[1.5]">
@@ -502,7 +502,7 @@ export default function EdQuality({ state, updateState, totalHoursSaved, onNext,
   return (
     <EditorialShell>
       <EditorialHeader stepName="Quality" stepIndex={7} onBack={onBack} />
-      <div className="max-w-[1160px] mx-auto px-12 pt-11 pb-[60px]">
+      <div className="max-w-[1160px] mx-auto px-5 sm:px-8 lg:px-12 pt-11 pb-[60px]">
         <p className="text-[15px] text-[#5E534A]">Pick a care setting first.</p>
       </div>
     </EditorialShell>

@@ -229,11 +229,11 @@ export default function EdPractice({ state, updateState, onNext, onBack }: EdPra
   return (
     <EditorialShell>
       <EditorialHeader stepName="Practice" stepIndex={2} onBack={onBack} />
-      <div className="max-w-[1160px] mx-auto px-12 pt-12 pb-14">
+      <div className="max-w-[1160px] mx-auto px-5 sm:px-8 lg:px-12 pt-12 pb-14">
         <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#5E534A]">
           Explore · Step 2 of 9
         </div>
-        <h1 className="font-abridge text-[40px] leading-[1.06] text-[#1A1A1A] mt-[10px] max-w-[640px]">
+        <h1 className="font-abridge text-[27px] sm:text-[34px] lg:text-[40px] leading-[1.08] text-[#1A1A1A] mt-[10px] max-w-[640px]">
           How big is the {settingHeadline}?
         </h1>
         <p className="text-[16.5px] text-[#5E534A] mt-[14px] max-w-[600px] leading-[1.5]">
@@ -241,7 +241,7 @@ export default function EdPractice({ state, updateState, onNext, onBack }: EdPra
           round estimates.
         </p>
 
-        <div className="grid grid-cols-[1.35fr_1fr] gap-[22px] mt-[34px] items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-[1.35fr_1fr] gap-[22px] mt-[34px] items-start">
           {/* Form */}
           <div className="bg-[#FDFBF8] border border-[#E8E2DA] rounded-[20px] px-7 py-[26px]">
             {isNursing && (
@@ -442,7 +442,7 @@ export default function EdPractice({ state, updateState, onNext, onBack }: EdPra
             <div className="text-[11px] font-extrabold tracking-[0.08em] uppercase text-[#2E2822]">
               Your {settingName}
             </div>
-            <div className="font-abridge text-[46px] leading-none text-[#1A1A1A] mt-3 tabular-nums">
+            <div className="font-abridge text-[34px] sm:text-[46px] leading-none text-[#1A1A1A] mt-3 tabular-nums">
               {formatNumber(isNursing ? nursingTotalShiftsPerYear : annualEncounters)}
             </div>
             <div className="text-[13px] text-[#5E534A]">{isNursing ? "shifts a year" : `${encounterLabel} a year`}</div>

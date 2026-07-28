@@ -278,7 +278,11 @@ export function FieldTile({
 }
 
 export function FieldGrid({ cols = 4, children }: { cols?: 3 | 4; children: ReactNode }) {
-  return <div className={`grid gap-3 mt-5 ${cols === 3 ? "grid-cols-3" : "grid-cols-4"}`}>{children}</div>;
+  return (
+    <div className={`grid gap-3 mt-5 grid-cols-2 ${cols === 3 ? "sm:grid-cols-3" : "sm:grid-cols-2 lg:grid-cols-4"}`}>
+      {children}
+    </div>
+  );
 }
 
 /** Numeric input styled as the mock's `.fi` box (bare, bordered, tabular). */
@@ -415,7 +419,7 @@ export function PlanRow({
   removable: boolean;
 }) {
   return (
-    <div className="grid grid-cols-[1.5fr_1fr_1fr_auto] gap-2.5 items-center">
+    <div className="grid grid-cols-2 sm:grid-cols-[1.5fr_1fr_1fr_auto] gap-2.5 items-center">
       <select
         value={planType}
         onChange={(e) => onPlanTypeChange(e.target.value)}

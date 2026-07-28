@@ -118,14 +118,14 @@ export default function EdInvestment({
   return (
     <EditorialShell>
       <EditorialHeader stepName="Investment" stepIndex={8} onBack={onBack} />
-      <div className="max-w-[1160px] mx-auto px-12 pt-[44px] pb-[60px]">
+      <div className="max-w-[1160px] mx-auto px-5 sm:px-8 lg:px-12 pt-[44px] pb-[60px]">
         <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#5E534A]">Explore · Step 8 of 9</div>
-        <h1 className="font-abridge text-[38px] leading-[1.06] text-[#1A1A1A] mt-[10px]">What it costs, and what&apos;s left.</h1>
+        <h1 className="font-abridge text-[26px] sm:text-[32px] lg:text-[38px] leading-[1.08] text-[#1A1A1A] mt-[10px]">What it costs, and what&apos;s left.</h1>
         <p className="text-[16px] text-[#5E534A] mt-[13px] max-w-[620px] leading-[1.5]">
           Enter your pricing. Everything the prior screens built, minus the cost, is what&apos;s left.
         </p>
 
-        <div className="grid grid-cols-[1fr_1.08fr] gap-[22px] mt-8 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.08fr] gap-[22px] mt-8 items-start">
           {/* Investment card */}
           <div className="bg-[#FDFBF8] border border-[#E8E2DA] rounded-[20px] p-[24px_26px]">
             <div className="text-[11px] font-extrabold tracking-[0.09em] uppercase text-[#2E2822] mb-4">Your investment</div>
@@ -313,7 +313,7 @@ export default function EdInvestment({
 
             <div className="mt-[14px] pt-[18px] border-t-2 border-[#E8E2DA]">
               <div className="text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#2E2822]">Net annual value</div>
-              <div className="font-abridge text-[46px] text-[#EA2C00] leading-none mt-[7px]">
+              <div className="font-abridge text-[34px] sm:text-[46px] text-[#EA2C00] leading-none mt-[7px]">
                 {formatCurrency(netAnnualValue)}
                 <span className="text-[16px] text-[#5E534A]"> / yr</span>
               </div>

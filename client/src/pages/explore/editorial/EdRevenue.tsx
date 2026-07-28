@@ -531,22 +531,22 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
   return (
     <EditorialShell>
       <EditorialHeader stepName="Revenue" stepIndex={6} onBack={onBack} />
-      <div className="max-w-[1160px] mx-auto px-12 pt-11 pb-[60px]">
+      <div className="max-w-[1160px] mx-auto px-5 sm:px-8 lg:px-12 pt-11 pb-[60px]">
         <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#5E534A]">Explore · Step 6 of 9</div>
-        <h1 className="font-abridge text-[38px] leading-[1.06] text-[#1A1A1A] mt-[10px] max-w-[680px]">{heading}</h1>
+        <h1 className="font-abridge text-[26px] sm:text-[32px] lg:text-[38px] leading-[1.08] text-[#1A1A1A] mt-[10px] max-w-[680px]">{heading}</h1>
         <p className="text-[16px] text-[#5E534A] mt-[13px] max-w-[640px] leading-[1.5]">{sub}</p>
 
         {isOP && (
           <>
             <div className="text-[11px] font-extrabold tracking-[0.09em] uppercase text-[#2E2822] mt-[26px] mb-3">How are you paid?</div>
-            <div className="inline-flex gap-[3px] bg-[#F1EBE3] border border-[#E4DACC] rounded-[13px] p-1">
+            <div className="flex w-full sm:inline-flex sm:w-auto gap-[3px] bg-[#F1EBE3] border border-[#E4DACC] rounded-[13px] p-1">
               {PAY_LABELS.map(({ key, label }) => (
                 <button
                   key={key}
                   type="button"
                   onClick={() => updatePaymentModel(key)}
                   data-testid={`button-payment-model-${key}`}
-                  className={`text-[14px] font-bold rounded-[9px] px-7 py-[11px] transition-colors ${
+                  className={`flex-1 sm:flex-none whitespace-nowrap text-[12.5px] sm:text-[14px] font-bold rounded-[9px] px-2 sm:px-7 py-[11px] transition-colors ${
                     state.paymentModel === key ? "bg-white text-[#EA2C00] shadow-[0_1px_3px_rgba(0,0,0,0.08)]" : "text-[#5E534A]"
                   }`}
                 >
