@@ -94,7 +94,10 @@ export function buildExploreProformaDrivers(
   if (nursingOtValue > 0) drivers.push({ id: "nursingOt", name: "OT Reduction", value: nursingOtValue, category: "time", quadrant: "Capacity", onset: "delayed" as const });
   if (wrvuValue > 0) drivers.push({ id: "wrvu", name: "E/M Level Accuracy", value: wrvuValue, category: "documentation", quadrant: "Revenue", onset: "immediate" as const });
   if (hccValue > 0) drivers.push({ id: "hcc", name: "HCC Recapture", value: hccValue, category: "documentation", quadrant: "Revenue", onset: "longTerm" as const });
-  if (denialsValue > 0) drivers.push({ id: "denials", name: "Denial Prevention", value: denialsValue, category: "documentation", quadrant: "Revenue", onset: "immediate" as const });
+  // Denial prevention is claims-cycle revenue too (a corrected note has to move
+  // through the appeal / rebill cycle), so it ramps "delayed" everywhere — the
+  // Explore chart already treats it this way.
+  if (denialsValue > 0) drivers.push({ id: "denials", name: "Denial Prevention", value: denialsValue, category: "documentation", quadrant: "Revenue", onset: "delayed" as const });
   // DRG accuracy and Obs defense are claims-cycle revenue (corrected documentation
   // has to clear coding and billing before it lands in paid claims), so they ramp
   // "delayed" here too — matching the Explore model's "when it lands" chart.
