@@ -992,14 +992,17 @@ function InvestmentPage({ data }: { data: ExplorePDFData }): JSX.Element {
   const mult = (v: number) => (inv > 0 ? `${(v / inv).toFixed(1)}× return` : "—");
   const downMultBare = inv > 0 ? `${((total * 0.7) / inv).toFixed(1)}×` : "—";
 
+  // Nursing prices per staffed bed, not per provider.
+  const isNursing = data.careSetting === "nursing";
+  const bedScope = data.nursingStaffedBeds ?? data.numberOfProviders;
   let pricingLabel = "Annual license";
   let rateVal: number | undefined;
   let rateUnit = "/ yr";
   switch (data.pricingModel) {
     case "perProvider":
-      pricingLabel = "Per provider";
+      pricingLabel = isNursing ? "Per bed" : "Per provider";
       rateVal = data.costPerProvider;
-      rateUnit = "/ provider / yr";
+      rateUnit = isNursing ? "/ bed / yr" : "/ provider / yr";
       break;
     case "perEncounter":
       pricingLabel = "Per encounter";
@@ -1020,7 +1023,7 @@ function InvestmentPage({ data }: { data: ExplorePDFData }): JSX.Element {
 
   const licenseLabel =
     data.pricingModel === "perProvider"
-      ? `Annual license · ${data.numberOfProviders} providers`
+      ? `Annual license · ${isNursing ? `${bedScope} beds` : `${data.numberOfProviders} providers`}`
       : "Annual license";
   const year1Cash = inv + (data.includeImplementation ? data.implementationFee : 0);
 
@@ -1218,8 +1221,16 @@ function ScalePage({ data }: { data: ExplorePDFData }): JSX.Element {
       ? total * (data.expansionUtilizationPercent / data.utilizationPercent)
       : total;
 
+  // Nursing scopes by staffed beds, not providers — label and count accordingly.
+  const isNursing = data.careSetting === "nursing";
+  const unit = isNursing ? "beds" : "providers";
+  const unitSingular = isNursing ? "bed" : "provider";
+  const unitCap = isNursing ? "Beds" : "Providers";
+  const teamWord = isNursing ? "unit" : "team";
+  const scopeToday = isNursing && data.nursingStaffedBeds != null ? data.nursingStaffedBeds : data.numberOfProviders;
+
   const statCells: { v: ReactNode; k: string }[] = [
-    { v: `${data.numberOfProviders} → ${data.expansionProviders}`, k: "Providers" },
+    { v: `${scopeToday} → ${data.expansionProviders}`, k: unitCap },
     {
       v: `${data.utilizationPercent} → ${data.expansionUtilizationPercent}%`,
       k: "Adoption",
@@ -1249,8 +1260,8 @@ function ScalePage({ data }: { data: ExplorePDFData }): JSX.Element {
       </h2>
       <p style={sLead}>
         {hasExpansion
-          ? `Same math, larger footprint. From today's ${data.numberOfProviders} providers at ${data.utilizationPercent}% adoption to the full team at ${data.expansionUtilizationPercent}%, the value compounds on both levers at once.`
-          : "Same math, larger footprint. The value scales with your footprint as adoption deepens and more of the team comes on."}
+          ? `Same math, larger footprint. From today's ${scopeToday} ${unit} at ${data.utilizationPercent}% adoption to the full ${teamWord} at ${data.expansionUtilizationPercent}%, the value compounds on both levers at once.`
+          : `Same math, larger footprint. The value scales with your footprint as adoption deepens and more of the ${teamWord} comes on.`}
       </p>
 
       {hasExpansion ? (
@@ -1265,7 +1276,7 @@ function ScalePage({ data }: { data: ExplorePDFData }): JSX.Element {
               }}
             >
               <div style={sLbl}>
-                Today · {data.numberOfProviders} providers · {data.utilizationPercent}%
+                Today · {scopeToday} {unit} · {data.utilizationPercent}%
               </div>
               <div className="font-abridge" style={{ fontSize: 38, marginTop: 8 }}>
                 {fmtShort(total)}
@@ -1291,7 +1302,7 @@ function ScalePage({ data }: { data: ExplorePDFData }): JSX.Element {
               }}
             >
               <div style={{ ...sLbl, color: C.coral }}>
-                Full team · {data.expansionProviders} providers · {data.expansionUtilizationPercent}%
+                Full {teamWord} · {data.expansionProviders} {unit} · {data.expansionUtilizationPercent}%
               </div>
               <div className="font-abridge" style={{ fontSize: 38, marginTop: 8, color: C.coral }}>
                 {fmtShort(exp)}
@@ -1307,13 +1318,13 @@ function ScalePage({ data }: { data: ExplorePDFData }): JSX.Element {
           <StatBand cells={statCells} />
 
           <p style={{ fontSize: 12.5, color: C.muted, lineHeight: 1.55, marginTop: 18, maxWidth: 660 }}>
-            The value compounds on two levers at once, more providers on Abridge, and deeper adoption
+            The value compounds on two levers at once, more {unit} on Abridge, and deeper adoption
             within each. Lifting adoption from {data.utilizationPercent}% to{" "}
             {data.expansionUtilizationPercent}% alone carries today's figure toward{" "}
             <b className="font-abridge" style={{ fontStyle: "normal" }}>
               {fmtShort(mid)}
             </b>
-            , before a single new provider is added.
+            , before a single new {unitSingular} is added.
           </p>
 
           <div style={{ ...sLbl, marginTop: 26, marginBottom: 14 }}>The path there</div>
@@ -1331,18 +1342,18 @@ function ScalePage({ data }: { data: ExplorePDFData }): JSX.Element {
             </div>
             <ScaleStep
               amount={fmtShort(mid)}
-              label="Same team, deeper"
+              label={`Same ${teamWord}, deeper`}
               width={exp > 0 ? Math.min(100, (mid / exp) * 100) : 0}
               color="#F0704E"
             />
             <div style={{ padding: "0 16px 14px", color: C.off, fontSize: 10.5, textAlign: "center", lineHeight: 1.3 }}>
-              ＋ providers
+              ＋ {unit}
               <br />
-              {data.numberOfProviders} → {data.expansionProviders}
+              {scopeToday} → {data.expansionProviders}
             </div>
             <ScaleStep
               amount={fmtShort(exp)}
-              label={`Full team · ${data.expansionUtilizationPercent}%`}
+              label={`Full ${teamWord} · ${data.expansionUtilizationPercent}%`}
               width={100}
               color={C.coral}
               highlight
