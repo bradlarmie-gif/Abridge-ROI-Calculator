@@ -5,6 +5,8 @@ import { driverScaleReadiness } from "@/lib/exploreScaleGate";
 import { calcHapi, calcFalls, calcCauti, calcClabsi, calcSepsis } from "@/lib/nursingQualityCalcs";
 import { getDriversForPage, type ExploreDriver } from "@/lib/exploreDrivers";
 import { type ExploreState } from "../ExploreFlow";
+import { SignalWatch } from "./SignalWatch";
+import { watchDomainFor } from "@/lib/exploreWatchSignals";
 import type { PriorQuadrantEntry } from "@/lib/exploreQuadrantValues";
 
 interface EdQualityProps {
@@ -454,17 +456,21 @@ function NursingQualityScreen({
           </FieldGrid>
         </MoneyCard>
 
-        {signalDrivers.length > 0 && (
-          <OutcomesTier
-            title="The bedside signals it protects"
-            items={signalDrivers.map((d) => ({ label: d.label, example: d.tagline }))}
-            note={
-              <>
-                <b className="text-[#1A1A1A]">These signals lead the dollars above.</b> We keep them as signals so nothing is
-                counted twice.
-              </>
-            }
-          />
+        {watchDomainFor(state.careSetting, "Quality") ? (
+          <SignalWatch domain={watchDomainFor(state.careSetting, "Quality")!} title="The bedside signals it protects" />
+        ) : (
+          signalDrivers.length > 0 && (
+            <OutcomesTier
+              title="The bedside signals it protects"
+              items={signalDrivers.map((d) => ({ label: d.label, example: d.tagline }))}
+              note={
+                <>
+                  <b className="text-[#1A1A1A]">These signals lead the dollars above.</b> We keep them as signals so nothing is
+                  counted twice.
+                </>
+              }
+            />
+          )
         )}
 
         <div className="flex justify-end mt-[30px]">

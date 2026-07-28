@@ -25,6 +25,8 @@ import { engineKeyForDriver } from "@/lib/exploreDriverKeys";
 import { driverScaleReadiness } from "@/lib/exploreScaleGate";
 import { getDriversForPage } from "@/lib/exploreDrivers";
 import { type ExploreState, type HccPlan } from "../ExploreFlow";
+import { SignalWatch } from "./SignalWatch";
+import { watchDomainFor } from "@/lib/exploreWatchSignals";
 import type { PriorQuadrantEntry } from "@/lib/exploreQuadrantValues";
 
 interface EdRevenueProps {
@@ -586,17 +588,21 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
         {hasDenials && isOP && <DividerLabel tag="always relevant">Regardless of how you're paid</DividerLabel>}
         {hasDenials && denialsCard}
 
-        {signalDrivers.length > 0 && (
-          <OutcomesTier
-            title={isOP ? "The clean revenue it protects" : isIP ? "The revenue it protects" : "What this protects"}
-            items={signalDrivers.map((d) => ({ label: d.label, example: d.tagline }))}
-            note={
-              <>
-                <b className="text-[#1A1A1A]">These signals lead the dollars above.</b> We keep them as signals so nothing is
-                counted twice.
-              </>
-            }
-          />
+        {watchDomainFor(setting, "Revenue") ? (
+          <SignalWatch domain={watchDomainFor(setting, "Revenue")!} />
+        ) : (
+          signalDrivers.length > 0 && (
+            <OutcomesTier
+              title={isOP ? "The clean revenue it protects" : isIP ? "The revenue it protects" : "What this protects"}
+              items={signalDrivers.map((d) => ({ label: d.label, example: d.tagline }))}
+              note={
+                <>
+                  <b className="text-[#1A1A1A]">These signals lead the dollars above.</b> We keep them as signals so nothing is
+                  counted twice.
+                </>
+              }
+            />
+          )
         )}
 
         {isNursing && (

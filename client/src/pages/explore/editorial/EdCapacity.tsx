@@ -20,6 +20,8 @@ import { computeAllDriverValues } from "@/lib/exploreDriverCalcs";
 import { engineKeyForDriver } from "@/lib/exploreDriverKeys";
 import type { PriorQuadrantEntry } from "@/lib/exploreQuadrantValues";
 import { type ExploreState } from "../ExploreFlow";
+import { SignalWatch } from "./SignalWatch";
+import { watchDomainFor } from "@/lib/exploreWatchSignals";
 
 interface EdCapacityProps {
   state: ExploreState;
@@ -495,13 +497,17 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
           </>
         )}
 
-        {tier2 && (
-          <>
-            <SectionLabel tag="not counted · examples only" tagMuted>
-              {tier2.sectionLabel}
-            </SectionLabel>
-            <OutcomesBlock heading={tier2.heading} signals={tier2.signals} outcomes={tier2.outcomes} note={tier2.note} />
-          </>
+        {watchDomainFor(setting, "Capacity") ? (
+          <SignalWatch domain={watchDomainFor(setting, "Capacity")!} />
+        ) : (
+          tier2 && (
+            <>
+              <SectionLabel tag="not counted · examples only" tagMuted>
+                {tier2.sectionLabel}
+              </SectionLabel>
+              <OutcomesBlock heading={tier2.heading} signals={tier2.signals} outcomes={tier2.outcomes} note={tier2.note} />
+            </>
+          )
         )}
 
         <Foot onNext={onNext} />

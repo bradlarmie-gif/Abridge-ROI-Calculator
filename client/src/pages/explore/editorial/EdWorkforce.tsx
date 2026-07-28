@@ -22,6 +22,8 @@ import { driverScaleReadiness } from "@/lib/exploreScaleGate";
 import { physicianRetentionRates, nursingRetentionRates, PHYSICIAN_RETENTION_SCENARIOS, NURSING_RETENTION_SCENARIOS } from "@/lib/retentionScenarios";
 import type { PriorQuadrantEntry } from "@/lib/exploreQuadrantValues";
 import { type ExploreState } from "../ExploreFlow";
+import { SignalWatch } from "./SignalWatch";
+import { watchDomainFor } from "@/lib/exploreWatchSignals";
 
 interface EdWorkforceProps {
   state: ExploreState;
@@ -594,13 +596,17 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
           <EmptyValueCard>No financial workforce driver applies to this care setting yet in Explore.</EmptyValueCard>
         )}
 
-        {tier2 && (
-          <>
-            <SectionLabel tag="not counted · examples only" tagMuted>
-              {TEAM_TIER2.label}
-            </SectionLabel>
-            <OutcomesBlock heading={TEAM_TIER2.label} signals={tier2.signals} outcomes={tier2.outcomes} note={TEAM_TIER2.note} />
-          </>
+        {watchDomainFor(setting, "Workforce") ? (
+          <SignalWatch domain={watchDomainFor(setting, "Workforce")!} />
+        ) : (
+          tier2 && (
+            <>
+              <SectionLabel tag="not counted · examples only" tagMuted>
+                {TEAM_TIER2.label}
+              </SectionLabel>
+              <OutcomesBlock heading={TEAM_TIER2.label} signals={tier2.signals} outcomes={tier2.outcomes} note={TEAM_TIER2.note} />
+            </>
+          )
         )}
 
         <Foot onNext={onNext} />
