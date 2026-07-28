@@ -237,15 +237,15 @@ export function NumBox({
   testId?: string;
 }) {
   return (
-    <div className="h-11 border border-[#E8E2DA] rounded-[11px] bg-white flex items-center gap-[2px] px-[13px]">
-      {prefix && <span className="text-[#5E534A] text-[14px] font-semibold flex-shrink-0">{prefix}</span>}
+    <div className="h-12 border border-[#E8E2DA] rounded-xl bg-white flex items-center gap-0 px-[14px] transition-colors focus-within:border-[#EA2C00] focus-within:ring-1 focus-within:ring-[#EA2C00]">
+      {prefix && <span className="text-[16px] font-bold text-[#1A1A1A] flex-shrink-0 mr-[1px]">{prefix}</span>}
       <FormattedNumberInput
         value={value}
         onChange={onChange}
-        className="h-full w-full border-0 rounded-none bg-transparent px-0 py-0 shadow-none ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-bold text-[#1A1A1A]"
+        className="h-full w-full border-0 rounded-none bg-transparent px-0 py-0 shadow-none ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-[16px] font-bold text-[#1A1A1A] tabular-nums"
         data-testid={testId}
       />
-      {suffix && <span className="ml-auto text-[#5E534A] text-[13px] font-semibold flex-shrink-0">{suffix}</span>}
+      {suffix && <span className="ml-auto pl-2 text-[13px] font-semibold text-[#786C5E] flex-shrink-0">{suffix}</span>}
     </div>
   );
 }

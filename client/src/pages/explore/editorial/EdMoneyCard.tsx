@@ -304,11 +304,11 @@ export function Fi({
 }) {
   return (
     <div
-      className={`h-[42px] rounded-[11px] bg-white flex items-center gap-0.5 px-3 text-[15px] font-bold text-[#1A1A1A] ${
+      className={`h-12 rounded-xl bg-white flex items-center gap-0 px-[14px] text-[16px] font-bold text-[#1A1A1A] transition-colors focus-within:border-[#EA2C00] focus-within:ring-1 focus-within:ring-[#EA2C00] ${
         highlighted ? "border border-[#EFB6A6] shadow-[0_0_0_1px_#F5D3C8]" : "border border-[#E8E2DA]"
       }`}
     >
-      {prefix && <span className="text-[#5E534A] text-[14px] font-semibold">{prefix}</span>}
+      {prefix && <span className="text-[16px] font-bold text-[#1A1A1A] flex-shrink-0 mr-[1px]">{prefix}</span>}
       <NumberField
         value={value}
         onValueChange={onValueChange}
@@ -316,9 +316,9 @@ export function Fi({
         min={min}
         max={max}
         data-testid={testId}
-        className="w-full bg-transparent outline-none font-bold tabular-nums"
+        className="w-full bg-transparent outline-none text-[16px] font-bold text-[#1A1A1A] tabular-nums"
       />
-      {suffix && <span className="ml-auto text-[#5E534A] text-[12px] font-semibold">{suffix}</span>}
+      {suffix && <span className="ml-auto pl-2 text-[13px] font-semibold text-[#786C5E] flex-shrink-0">{suffix}</span>}
     </div>
   );
 }
@@ -326,9 +326,9 @@ export function Fi({
 /** Read-only derived tile — a value the engine computed upstream, not editable here. */
 export function FiReadout({ children, suffix }: { children: ReactNode; suffix?: string }) {
   return (
-    <div className="h-[42px] rounded-[11px] bg-[#F5F0EB] border border-[#E8E2DA] flex items-center gap-1 px-3 text-[15px] font-bold text-[#5E534A] tabular-nums">
+    <div className="h-12 rounded-xl bg-[#F5F0EB] border border-[#E8E2DA] flex items-center gap-1 px-[14px] text-[16px] font-bold text-[#5E534A] tabular-nums">
       {children}
-      {suffix && <span className="ml-auto text-[#786C5E] text-[12px] font-semibold">{suffix}</span>}
+      {suffix && <span className="ml-auto pl-2 text-[13px] font-semibold text-[#786C5E]">{suffix}</span>}
     </div>
   );
 }
