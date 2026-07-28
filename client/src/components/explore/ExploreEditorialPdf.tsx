@@ -77,8 +77,12 @@ function parseChain(summary?: string): ChainTile[] {
     .map((raw) => {
       const tok = raw.trim();
       // Non-greedy leading text (a plan name / label) → number → trailing unit.
+      // The unit (including a "/x" like "/wRVU" or "/replacement") always drops
+      // into the small caption, so the big number tile stays narrow and can't
+      // overflow onto the next tile or the result (long units like "replacement"
+      // used to bleed across the row).
       const m = tok.match(
-        /^(.*?)([−-]?\$?[\d,]+(?:\.\d+)?[%KMB]?(?:\/[A-Za-z0-9]+)?)\s*(.*)$/,
+        /^(.*?)([−-]?\$?[\d,]+(?:\.\d+)?[%KMB]?)\s*(\/?.*)$/,
       );
       if (!m) return { n: tok, u: "" };
       const pre = m[1].replace(/[:\s]+$/, "").trim();
