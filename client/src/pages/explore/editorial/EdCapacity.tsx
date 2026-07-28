@@ -401,6 +401,12 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
 
   const tier2 = setting ? TIER2[setting] : null;
 
+  // Inpatient is the one setting where Capacity is a NON-FINANCIAL proof layer:
+  // we're only in the documentation, so we can show the signals move but we
+  // won't put a dollar on throughput or length of stay we don't control. Present
+  // it deliberately as proof (like Quality), never as an empty/unfinished dollar slot.
+  const capacityIsProofLayer = setting === "inpatient";
+
   return (
     <EditorialShell>
       <EditorialHeader stepName="Capacity" stepIndex={4} onBack={onBack} />
@@ -408,34 +414,73 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
         <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#5E534A]">Explore · Step 4 of 9</div>
         <h1 className="font-abridge text-[38px] leading-[1.06] text-[#1A1A1A] mt-[10px]">What does the freed time become?</h1>
         <p className="text-[16px] text-[#5E534A] mt-[13px] max-w-[660px] leading-[1.5]">
-          Those <b className="text-[#EA2C00] font-bold">{formatNum(totalHoursSaved)}</b> hours can open real capacity. Turn on
-          only what fits, every driver here is optional, and nothing counts until you switch it on.
+          {capacityIsProofLayer ? (
+            <>
+              Those <b className="text-[#EA2C00] font-bold">{formatNum(totalHoursSaved)}</b> hours give the team room to move
+              earlier in the day. In inpatient we hold capacity as proof, not a dollar: the signals below are ones we can
+              show move, and we leave the throughput itself uncounted.
+            </>
+          ) : (
+            <>
+              Those <b className="text-[#EA2C00] font-bold">{formatNum(totalHoursSaved)}</b> hours can open real capacity. Turn on
+              only what fits, every driver here is optional, and nothing counts until you switch it on.
+            </>
+          )}
         </p>
 
-        <SectionLabel
-          tag="counts when it's on"
-          subtotal={
-            flatFinancial.length > 1 && (
-              <>
-                Counted on this screen&nbsp; <b className="font-abridge text-[#1A1A1A] text-[15px]">{formatCurrency(totalValue)}</b>{" "}
-                / yr &nbsp;·&nbsp;{" "}
-                <span className="text-[#786C5E] font-bold">
-                  {totalOn} of {flatFinancial.length} drivers on
-                </span>
-              </>
-            )
-          }
-        >
-          The value
-        </SectionLabel>
+        {capacityIsProofLayer ? (
+          <>
+            <SectionLabel
+              tag="no dollar counted here"
+              tagMuted
+              subtotal={
+                <>
+                  Where documentation turns into dollars, it&apos;s counted in{" "}
+                  <b className="text-[#1A1A1A]">Revenue</b>
+                </>
+              }
+            >
+              The proof
+            </SectionLabel>
 
-        {flatFinancial.length > 0 ? (
-          flatFinancial.map(renderDriver)
+            <div className="border border-[#E8E2DA] rounded-[14px] bg-[#FAF7F2] px-[18px] py-[15px] flex gap-3">
+              <span className="w-[9px] h-[9px] rounded-full bg-[#EA2C00] flex-shrink-0 mt-[5px]" />
+              <div className="text-[13.5px] text-[#5E534A] leading-[1.5]">
+                <b className="text-[#1A1A1A]">We&apos;re only in the documentation, so capacity stays proof here on purpose.</b>{" "}
+                Earlier, complete notes can let discharge planning and consults start sooner, but the days themselves depend
+                on beds, staffing, and placement we don&apos;t touch. So we track the documentation signals that have to move
+                first, and never put a dollar on the throughput.
+              </div>
+            </div>
+          </>
         ) : (
-          <EmptyValueCard>
-            No financial capacity driver applies to this care setting yet in Explore. What's happening here shows up
-            in the signals below instead.
-          </EmptyValueCard>
+          <>
+            <SectionLabel
+              tag="counts when it's on"
+              subtotal={
+                flatFinancial.length > 1 && (
+                  <>
+                    Counted on this screen&nbsp; <b className="font-abridge text-[#1A1A1A] text-[15px]">{formatCurrency(totalValue)}</b>{" "}
+                    / yr &nbsp;·&nbsp;{" "}
+                    <span className="text-[#786C5E] font-bold">
+                      {totalOn} of {flatFinancial.length} drivers on
+                    </span>
+                  </>
+                )
+              }
+            >
+              The value
+            </SectionLabel>
+
+            {flatFinancial.length > 0 ? (
+              flatFinancial.map(renderDriver)
+            ) : (
+              <EmptyValueCard>
+                No financial capacity driver applies to this care setting in Explore. What&apos;s happening here shows up
+                in the signals below instead.
+              </EmptyValueCard>
+            )}
+          </>
         )}
 
         {tier2 && (

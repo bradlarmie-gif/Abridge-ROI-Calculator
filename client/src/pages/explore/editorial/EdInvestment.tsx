@@ -25,6 +25,20 @@ interface Props {
 
 type Tab = "perProvider" | "perEncounter" | "annual" | "platform";
 
+// The governing four-domain rule: every setting has Capacity / Workforce /
+// Revenue / Quality, and in each setting a specific domain is the NON-FINANCIAL
+// proof layer — tracked, never dollarized. The engine emits $0 for exactly
+// these quadrants, so the recap marks them as proof (and points to where the
+// dollar does live) instead of showing a misleading $0 or, worse, the wrong
+// domain. Nursing is the one where Revenue is the proof layer, not Quality.
+const PROOF_LAYER: Record<string, Partial<Record<"Capacity" | "Workforce" | "Revenue" | "Quality", string>>> = {
+  outpatient: { Quality: "proof, counted in Revenue" },
+  ed: { Quality: "proof, counted in Revenue" },
+  inpatient: { Capacity: "proof, dollar shows in Revenue", Quality: "proof, counted in Revenue" },
+  nursing: { Revenue: "tracked as proof, no dollar here" },
+};
+const QUADRANT_ORDER = ["Capacity", "Workforce", "Revenue", "Quality"] as const;
+
 export default function EdInvestment({
   state,
   updateState,
@@ -94,7 +108,11 @@ export default function EdInvestment({
         { id: "platform", label: "Platform" },
       ];
 
-  const formatCurrency = (n: number) => (n < 0 ? "−$" + Math.abs(Math.round(n)).toLocaleString() : "$" + Math.round(n).toLocaleString());
+  const formatCurrency = (n: number) => {
+    const r = Math.round(n);
+    if (r === 0) return "$0"; // never render a signed zero ("−$0") in the empty state
+    return r < 0 ? "−$" + Math.abs(r).toLocaleString() : "$" + r.toLocaleString();
+  };
   const formatNumber = (n: number) => Math.round(n).toLocaleString();
 
   return (
@@ -271,22 +289,19 @@ export default function EdInvestment({
           <div className="bg-[#FDFBF8] border border-[#E8E2DA] rounded-[20px] p-[24px_26px]">
             <div className="text-[11px] font-extrabold tracking-[0.09em] uppercase text-[#2E2822] mb-4">What it returns</div>
 
-            <div className="flex justify-between items-baseline py-[9px] border-b border-[#EDE5D8] text-[15px]">
-              <span className="text-[#5E534A]">Capacity</span>
-              <span className="font-abridge text-[17px] text-[#1A1A1A]">{formatCurrency(valueByQuadrant.Capacity)}</span>
-            </div>
-            <div className="flex justify-between items-baseline py-[9px] border-b border-[#EDE5D8] text-[15px]">
-              <span className="text-[#5E534A]">Workforce</span>
-              <span className="font-abridge text-[17px] text-[#1A1A1A]">{formatCurrency(valueByQuadrant.Workforce)}</span>
-            </div>
-            <div className="flex justify-between items-baseline py-[9px] border-b border-[#EDE5D8] text-[15px]">
-              <span className="text-[#5E534A]">Revenue</span>
-              <span className="font-abridge text-[17px] text-[#1A1A1A]">{formatCurrency(valueByQuadrant.Revenue)}</span>
-            </div>
-            <div className="flex justify-between items-baseline py-[9px] border-b border-[#EDE5D8] text-[15px]">
-              <span className="text-[#786C5E]">Quality</span>
-              <span className="text-[13px] text-[#786C5E] italic">proof, counted in Revenue</span>
-            </div>
+            {QUADRANT_ORDER.map((q) => {
+              const proofNote = (PROOF_LAYER[state.careSetting ?? ""] ?? {})[q];
+              return (
+                <div key={q} className="flex justify-between items-baseline py-[9px] border-b border-[#EDE5D8] text-[15px]">
+                  <span className={proofNote ? "text-[#786C5E]" : "text-[#5E534A]"}>{q}</span>
+                  {proofNote ? (
+                    <span className="text-[13px] text-[#786C5E] italic">{proofNote}</span>
+                  ) : (
+                    <span className="font-abridge text-[17px] text-[#1A1A1A]">{formatCurrency(valueByQuadrant[q])}</span>
+                  )}
+                </div>
+              );
+            })}
             <div className="flex justify-between items-baseline pt-[13px] text-[15px]">
               <span className="text-[#1A1A1A] font-bold">Total annual value</span>
               <span className="font-abridge text-[19px] text-[#1A1A1A]">{formatCurrency(totalValue)}</span>
