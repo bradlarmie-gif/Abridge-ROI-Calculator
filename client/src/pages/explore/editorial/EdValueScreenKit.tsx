@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
+import { BuildStrip, type MoneyBuild } from "./EdMoneyCard";
 
 /**
  * Shared presentational primitives for the editorial "two-tier value screen"
@@ -93,6 +94,7 @@ export function ValueCard({
   testId,
   children,
   build,
+  buildStruct,
   warning,
   awaitingScale,
 }: {
@@ -105,6 +107,7 @@ export function ValueCard({
   testId?: string;
   children?: ReactNode;
   build?: ReactNode;
+  buildStruct?: MoneyBuild;
   warning?: ReactNode;
   /** When set, the scale input(s) aren't entered: show the waiting headline
    * instead of a dollar, keep the input tiles visible, suppress the build line. */
@@ -142,9 +145,24 @@ export function ValueCard({
         )}
       </div>
 
-      {children && <div className="grid grid-cols-1 sm:grid-cols-2 gap-[14px] mt-[22px]">{children}</div>}
+      {/* The build ledger leads (payoff + proof); raw inputs recede below. */}
+      {!awaitingScale && buildStruct && <BuildStrip build={buildStruct} />}
 
-      {!awaitingScale && build && <div className="text-[13px] text-[#5E534A] leading-[1.5] mt-[18px]">{build}</div>}
+      {children &&
+        (!awaitingScale && buildStruct ? (
+          <>
+            <div className="text-[10.5px] font-extrabold tracking-[0.09em] uppercase text-[#786C5E] mt-[26px] mb-3">
+              Adjust the inputs
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-[14px]">{children}</div>
+          </>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-[14px] mt-[22px]">{children}</div>
+        ))}
+
+      {!awaitingScale && !buildStruct && build && (
+        <div className="text-[13px] text-[#5E534A] leading-[1.5] mt-[18px]">{build}</div>
+      )}
     </div>
   );
 }

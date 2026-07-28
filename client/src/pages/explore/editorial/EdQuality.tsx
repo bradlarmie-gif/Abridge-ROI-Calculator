@@ -259,12 +259,18 @@ function NursingQualityScreen({
           secondary={<>≈ <b className="text-[#1A1A1A]">{fmtN(hapi.prevented)}</b> HAPIs prevented a year</>}
           testId="toggle-nursing-hapi"
           awaitingScale={gate("nursingHapi")}
-          buildLine={
-            <>
-              {fmtN(patientDays)} patient-days × {dq.nursingHapiRate}/1k HAPI rate × {dq.nursingHapiPreventionRate}% prevention ×{" "}
-              ${dq.nursingHapiCost.toLocaleString()}/case
-            </>
-          }
+          build={{
+            factors: [
+              { value: fmtN(patientDays), label: "patient-days" },
+              { value: `${dq.nursingHapiRate}`, label: "/1k HAPI rate" },
+              { value: `${dq.nursingHapiPreventionRate}%`, label: "earlier docs prevent" },
+              { value: `$${dq.nursingHapiCost.toLocaleString()}`, label: "per case" },
+            ],
+            grossLabel: "",
+            gross: hapi.value,
+            net: hapi.value,
+            haircutLabel: "",
+          }}
         >
           <FieldGrid cols={3}>
             <FieldTile label="Patient days" note="staffed beds × occupancy × 365">
@@ -295,12 +301,18 @@ function NursingQualityScreen({
           secondary={<>≈ <b className="text-[#1A1A1A]">{fmtN(falls.prevented)}</b> falls prevented a year</>}
           testId="toggle-nursing-falls"
           awaitingScale={gate("nursingFalls")}
-          buildLine={
-            <>
-              {fmtN(patientDays)} patient-days × {dq.nursingFallsRate}/1k fall rate × {dq.nursingFallsPreventionRate}% prevention ×{" "}
-              ${dq.nursingFallsCost.toLocaleString()}/case
-            </>
-          }
+          build={{
+            factors: [
+              { value: fmtN(patientDays), label: "patient-days" },
+              { value: `${dq.nursingFallsRate}`, label: "/1k fall rate" },
+              { value: `${dq.nursingFallsPreventionRate}%`, label: "earlier docs prevent" },
+              { value: `$${dq.nursingFallsCost.toLocaleString()}`, label: "per case" },
+            ],
+            grossLabel: "",
+            gross: falls.value,
+            net: falls.value,
+            haircutLabel: "",
+          }}
         >
           <FieldGrid cols={3}>
             <FieldTile label="Patient days" note="staffed beds × occupancy × 365">
@@ -332,12 +344,18 @@ function NursingQualityScreen({
           secondary={<>≈ <b className="text-[#1A1A1A]">{fmtN(cauti.prevented)}</b> CAUTIs prevented a year</>}
           testId="toggle-nursing-cauti"
           awaitingScale={gate("nursingCauti")}
-          buildLine={
-            <>
-              {fmtN(cauti.catheterDays)} catheter-days × {dq.nursingCautiRate}/1k CAUTI rate × {dq.nursingCautiPreventionRate}% prevention ×{" "}
-              ${dq.nursingCautiCost.toLocaleString()}/case
-            </>
-          }
+          build={{
+            factors: [
+              { value: fmtN(cauti.catheterDays), label: "catheter-days" },
+              { value: `${dq.nursingCautiRate}`, label: "/1k CAUTI rate" },
+              { value: `${dq.nursingCautiPreventionRate}%`, label: "earlier docs prevent" },
+              { value: `$${dq.nursingCautiCost.toLocaleString()}`, label: "per case" },
+            ],
+            grossLabel: "",
+            gross: cauti.value,
+            net: cauti.value,
+            haircutLabel: "",
+          }}
         >
           <FieldGrid cols={4}>
             <FieldTile label="Catheter utilization" note="% of patient-days">
@@ -364,12 +382,18 @@ function NursingQualityScreen({
           secondary={<>≈ <b className="text-[#1A1A1A]">{fmtN(clabsi.prevented)}</b> CLABSIs prevented a year</>}
           testId="toggle-nursing-clabsi"
           awaitingScale={gate("nursingClabsi")}
-          buildLine={
-            <>
-              {fmtN(clabsi.lineDays)} line-days × {dq.nursingClabsiRate}/1k CLABSI rate × {dq.nursingClabsiPreventionRate}% prevention ×{" "}
-              ${dq.nursingClabsiCost.toLocaleString()}/case
-            </>
-          }
+          build={{
+            factors: [
+              { value: fmtN(clabsi.lineDays), label: "line-days" },
+              { value: `${dq.nursingClabsiRate}`, label: "/1k CLABSI rate" },
+              { value: `${dq.nursingClabsiPreventionRate}%`, label: "earlier docs prevent" },
+              { value: `$${dq.nursingClabsiCost.toLocaleString()}`, label: "per case" },
+            ],
+            grossLabel: "",
+            gross: clabsi.value,
+            net: clabsi.value,
+            haircutLabel: "",
+          }}
         >
           <FieldGrid cols={4}>
             <FieldTile label="Line utilization" note="% of patient-days">
@@ -396,12 +420,16 @@ function NursingQualityScreen({
           secondary={<>≈ <b className="text-[#1A1A1A]">{fmtN(sepsis.prevented)}</b> cases moved into compliance a year</>}
           testId="toggle-nursing-sepsis"
           awaitingScale={gate("nursingSepsis")}
-          buildLine={
-            <>
-              {fmtN(patientDays)} patient-days × {dq.nursingSepsisRatePerThousand}/1k sepsis rate × {sepsis.complianceGapPct}% non-compliant ×{" "}
-              {dq.nursingSepsisDocLagPercent}% doc-lag × {dq.nursingSepsisRealization}% realization × ${dq.nursingSepsisExcessCostPerCase.toLocaleString()}/case
-            </>
-          }
+          build={{
+            factors: [
+              { value: fmtN(sepsis.prevented), label: "cases into compliance" },
+              { value: `$${dq.nursingSepsisExcessCostPerCase.toLocaleString()}`, label: "excess / case" },
+            ],
+            grossLabel: "",
+            gross: sepsis.value,
+            net: sepsis.value,
+            haircutLabel: "",
+          }}
         >
           <FieldGrid cols={4}>
             <FieldTile label="Sepsis rate" note="per 1,000 patient-days">

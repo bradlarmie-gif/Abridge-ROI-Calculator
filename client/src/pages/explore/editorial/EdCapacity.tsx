@@ -153,15 +153,16 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
           }
           onToggle={() => toggleEnabled(driver)}
           testId={`ed-toggle-${driver.id}`}
-          build={
-            <>
-              {formatNum(totalHoursSaved)} freed hrs <b className="font-abridge text-[#1A1A1A]">× {Math.round((td.capacityRealizationPercent ?? 25))}%</b>{" "}
-              reinvested ÷ <b className="font-abridge text-[#1A1A1A]">{td.visitDuration ?? 30} min</b> per visit ×{" "}
-              <b className="font-abridge text-[#1A1A1A]">{effectiveAccessProviders} providers</b> × 48 wks ×{" "}
-              <b className="font-abridge text-[#1A1A1A]">{formatCurrency(td.revenuePerVisit)}</b> ={" "}
-              <b className="font-abridge text-[#1A1A1A]">{formatNum(annualVisits)} added visits</b> a year
-            </>
-          }
+          buildStruct={{
+            factors: [
+              { value: formatNum(annualVisits), label: "added visits / yr" },
+              { value: formatCurrency(td.revenuePerVisit), label: "margin / visit" },
+            ],
+            grossLabel: "",
+            gross: value,
+            net: value,
+            haircutLabel: "",
+          }}
         >
           <Field label="Providers who can see more">
             <NumBox
@@ -237,15 +238,18 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
           }
           onToggle={() => toggleEnabled(driver)}
           testId={`ed-toggle-${driver.id}`}
-          build={
-            <>
-              {formatNum(state.annualEncounters)} encounters <b className="font-abridge text-[#1A1A1A]">× {td.edLwbsRate}%</b> LWBS{" "}
-              <b className="font-abridge text-[#1A1A1A]">× {td.edLwbsReduction}%</b> reduction ×{" "}
-              <b className="font-abridge text-[#1A1A1A]">{formatCurrency(td.edRevenuePerVisit)}</b>/visit ×{" "}
-              <b className="font-abridge text-[#1A1A1A]">{td.edLwbsRealization}%</b> realization ={" "}
-              <b className="font-abridge text-[#1A1A1A]">{formatCurrency(value)}</b> a year
-            </>
-          }
+          buildStruct={{
+            factors: [
+              { value: formatNum(state.annualEncounters), label: "encounters" },
+              { value: `${td.edLwbsRate}%`, label: "LWBS rate" },
+              { value: `${td.edLwbsReduction}%`, label: "recovered" },
+              { value: formatCurrency(td.edRevenuePerVisit), label: "per visit" },
+            ],
+            grossLabel: "Recovered visit value, before who completes a visit",
+            gross: td.edLwbsRealization > 0 ? value / (td.edLwbsRealization / 100) : value,
+            net: value,
+            haircutLabel: <>{td.edLwbsRealization}% complete a visit</>,
+          }}
         >
           <Field label="Current LWBS rate">
             <NumBox value={td.edLwbsRate} suffix="%" onChange={(v) => updateTimeDriverInputs({ edLwbsRate: v })} testId={`ed-input-${driver.id}-rate`} />
@@ -307,14 +311,17 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
             !td.edLwbsEnabled &&
             "Admission Capture uses LWBS-recovered patients as its base. Turn on LWBS Recovery above to see this value."
           }
-          build={
-            <>
-              {formatNum(Math.round(recovered))} recovered patients <b className="font-abridge text-[#1A1A1A]">× {td.edAdmissionRate}%</b> admit rate ×{" "}
-              <b className="font-abridge text-[#1A1A1A]">{formatCurrency(td.edAdmissionRevenue)}</b>/admission ×{" "}
-              <b className="font-abridge text-[#1A1A1A]">{td.edAdmissionRealization}%</b> realization ={" "}
-              <b className="font-abridge text-[#1A1A1A]">{formatCurrency(value)}</b> a year
-            </>
-          }
+          buildStruct={{
+            factors: [
+              { value: formatNum(Math.round(recovered)), label: "recovered patients" },
+              { value: `${td.edAdmissionRate}%`, label: "admit rate" },
+              { value: formatCurrency(td.edAdmissionRevenue), label: "margin / admission" },
+            ],
+            grossLabel: "Admission margin, before beds & conversion",
+            gross: td.edAdmissionRealization > 0 ? value / (td.edAdmissionRealization / 100) : value,
+            net: value,
+            haircutLabel: <>{td.edAdmissionRealization}% bed & conversion</>,
+          }}
         >
           <Field label="Admission rate">
             <NumBox value={td.edAdmissionRate} suffix="%" onChange={(v) => updateTimeDriverInputs({ edAdmissionRate: v })} testId={`ed-input-${driver.id}-rate`} />
@@ -360,14 +367,19 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
           }
           onToggle={() => toggleEnabled(driver)}
           testId={`ed-toggle-${driver.id}`}
-          build={
-            <>
-              {state.numberOfProviders} nurses <b className="font-abridge text-[#1A1A1A]">× {td.nursingOtHoursPerNurseWeek}</b> post-shift hrs/wk{" "}
-              <b className="font-abridge text-[#1A1A1A]">× {td.nursingOtReductionPercent}%</b> Abridge impact × 52 wks ×{" "}
-              <b className="font-abridge text-[#1A1A1A]">{formatCurrency(td.nursingOtHourlyRate)}</b>/hr ={" "}
-              <b className="font-abridge text-[#1A1A1A]">{formatCurrency(value)}</b> a year
-            </>
-          }
+          buildStruct={{
+            factors: [
+              { value: formatNum(state.numberOfProviders), label: "nurses" },
+              { value: `${td.nursingOtHoursPerNurseWeek}`, label: "OT hrs / wk" },
+              { value: `${td.nursingOtReductionPercent}%`, label: "Abridge reduces" },
+              { value: "52", label: "weeks" },
+              { value: formatCurrency(td.nursingOtHourlyRate), label: "per hour" },
+            ],
+            grossLabel: "",
+            gross: value,
+            net: value,
+            haircutLabel: "",
+          }}
         >
           <Field label="Post-shift OT hrs / nurse / week">
             <NumBox value={td.nursingOtHoursPerNurseWeek} suffix="hrs" onChange={(v) => updateTimeDriverInputs({ nursingOtHoursPerNurseWeek: v })} testId={`ed-input-${driver.id}-hours`} />

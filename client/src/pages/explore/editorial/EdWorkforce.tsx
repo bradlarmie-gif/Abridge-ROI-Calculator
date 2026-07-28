@@ -203,17 +203,19 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
           }
           onToggle={() => toggleEnabled(driver)}
           testId={`ed-toggle-${driver.id}`}
-          build={
-            <>
-              <b className="font-abridge text-[#1A1A1A]">{formatNum(state.numberOfProviders)}</b> providers × {turnoverValue}%
-              turnover × {burnoutValue}% tied to burnout &amp; documentation ={" "}
-              <b className="font-abridge text-[#1A1A1A]">{formatNum1(burnoutRelatedDepartures)}</b> · Abridge keeps {impactPct}%
-              of those ={" "}
-              <b className="font-abridge text-[#1A1A1A]">{formatNum1(providersRetained)}</b>{" "}
-              <b className="font-abridge text-[#1A1A1A]">× {formatCurrency(replacementValue)}</b> to replace ={" "}
-              <b className="font-abridge text-[#1A1A1A]">{formatCurrency(value)}</b> a year
-            </>
-          }
+          buildStruct={{
+            factors: [
+              { value: formatNum(state.numberOfProviders), label: "providers" },
+              { value: `${turnoverValue}%`, label: "turnover" },
+              { value: `${burnoutValue}%`, label: "tied to burnout" },
+              { value: `${impactPct}%`, label: "Abridge keeps" },
+              { value: formatCurrency(replacementValue), label: "to replace" },
+            ],
+            grossLabel: "",
+            gross: value,
+            net: value,
+            haircutLabel: "",
+          }}
         >
           <Field label={isIP ? "Inpatient provider turnover" : "Annual turnover rate"}>
             <NumBox
@@ -301,14 +303,17 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
           onToggle={() => toggleEnabled(driver)}
           testId={`ed-toggle-${driver.id}`}
           warning={blocked && "Turn on Provider Retention above to see this driver's value. Locum & agency savings are derived from the providers it retains."}
-          build={
-            <>
-              <b className="font-abridge text-[#1A1A1A]">{formatNum1(retained)}</b> providers retained (from Provider
-              Retention) × <b className="font-abridge text-[#1A1A1A]">{td.physicianAgencyWeeksPerVacancy}</b> wks locum
-              coverage avoided × <b className="font-abridge text-[#1A1A1A]">{formatCurrency(td.physicianAgencyWeeklyPremium)}</b>
-              /wk = <b className="font-abridge text-[#1A1A1A]">{formatCurrency(value)}</b> a year
-            </>
-          }
+          buildStruct={{
+            factors: [
+              { value: formatNum1(retained), label: "providers retained" },
+              { value: `${td.physicianAgencyWeeksPerVacancy}`, label: "wks locum avoided" },
+              { value: formatCurrency(td.physicianAgencyWeeklyPremium), label: "per week" },
+            ],
+            grossLabel: "",
+            gross: value,
+            net: value,
+            haircutLabel: "",
+          }}
         >
           <Field label="Weeks of locum coverage per vacancy">
             <NumBox
@@ -361,21 +366,21 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
           onToggle={() => toggleEnabled(driver)}
           testId={`ed-toggle-${driver.id}`}
           awaitingScale={(() => { const r = driverScaleReadiness(driver.id, state, totalHoursSaved); return r.ready ? undefined : { need: r.need }; })()}
-          build={
-            isPosition ? (
-              <>
-                <b className="font-abridge text-[#1A1A1A]">{eliminated}</b> position{eliminated !== 1 ? "s" : ""} eliminated ×{" "}
-                <b className="font-abridge text-[#1A1A1A]">{formatCurrency(td.scribeCostPerPosition)}</b>/position ={" "}
-                <b className="font-abridge text-[#1A1A1A]">{formatCurrency(value)}</b> a year
-              </>
-            ) : (
-              <>
-                <b className="font-abridge text-[#1A1A1A]">{formatNum(scribedVisitsReplaced)}</b> scribed visits replaced ×{" "}
-                <b className="font-abridge text-[#1A1A1A]">${costPerVisit.toFixed(2)}</b>/visit ={" "}
-                <b className="font-abridge text-[#1A1A1A]">{formatCurrency(value)}</b> a year
-              </>
-            )
-          }
+          buildStruct={{
+            factors: isPosition
+              ? [
+                  { value: `${eliminated}`, label: eliminated === 1 ? "position cut" : "positions cut" },
+                  { value: formatCurrency(td.scribeCostPerPosition), label: "per position" },
+                ]
+              : [
+                  { value: formatNum(scribedVisitsReplaced), label: "scribed visits replaced" },
+                  { value: `$${costPerVisit.toFixed(2)}`, label: "per visit" },
+                ],
+            grossLabel: "",
+            gross: value,
+            net: value,
+            haircutLabel: "",
+          }}
         >
           <div className="sm:col-span-2">
             <ModePicker mode={isPosition ? "position" : "hourly"} onChange={(m) => updateTimeDriverInputs({ scribeBillingMode: m })} />
@@ -449,16 +454,19 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
           }
           onToggle={() => toggleEnabled(driver)}
           testId={`ed-toggle-${driver.id}`}
-          build={
-            <>
-              <b className="font-abridge text-[#1A1A1A]">{formatNum(state.numberOfProviders)}</b> nurses ×{" "}
-              {td.nursingTurnoverRate}% turnover × 40% burnout-related ={" "}
-              <b className="font-abridge text-[#1A1A1A]">{formatNum1(burnoutDepartures)}</b> · Abridge keeps {impactPct}% ={" "}
-              <b className="font-abridge text-[#1A1A1A]">{formatNum1(retained)}</b>{" "}
-              <b className="font-abridge text-[#1A1A1A]">× {formatCurrency(td.nursingReplacementCost)}</b> to replace ={" "}
-              <b className="font-abridge text-[#1A1A1A]">{formatCurrency(value)}</b> a year
-            </>
-          }
+          buildStruct={{
+            factors: [
+              { value: formatNum(state.numberOfProviders), label: "nurses" },
+              { value: `${td.nursingTurnoverRate}%`, label: "turnover" },
+              { value: "40%", label: "tied to burnout" },
+              { value: `${impactPct}%`, label: "Abridge keeps" },
+              { value: formatCurrency(td.nursingReplacementCost), label: "to replace" },
+            ],
+            grossLabel: "",
+            gross: value,
+            net: value,
+            haircutLabel: "",
+          }}
         >
           <Field label="Annual turnover rate">
             <NumBox value={td.nursingTurnoverRate} suffix="%" onChange={(v) => updateTimeDriverInputs({ nursingTurnoverRate: v })} testId={`ed-input-${driver.id}-turnover`} />
@@ -518,14 +526,17 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
           onToggle={() => toggleEnabled(driver)}
           testId={`ed-toggle-${driver.id}`}
           warning={blocked && "Turn on RN Retention above to see this driver's value. Travel & agency savings are derived from the nurses it retains."}
-          build={
-            <>
-              <b className="font-abridge text-[#1A1A1A]">{formatNum1(retained)}</b> nurses retained (from RN Retention) ×{" "}
-              <b className="font-abridge text-[#1A1A1A]">{td.nursingAgencyWeeksPerVacancy}</b> wks agency coverage avoided ×{" "}
-              <b className="font-abridge text-[#1A1A1A]">{formatCurrency(td.nursingAgencyWeeklyPremium)}</b>/wk ={" "}
-              <b className="font-abridge text-[#1A1A1A]">{formatCurrency(value)}</b> a year
-            </>
-          }
+          buildStruct={{
+            factors: [
+              { value: formatNum1(retained), label: "nurses retained" },
+              { value: `${td.nursingAgencyWeeksPerVacancy}`, label: "wks agency avoided" },
+              { value: formatCurrency(td.nursingAgencyWeeklyPremium), label: "per week" },
+            ],
+            grossLabel: "",
+            gross: value,
+            net: value,
+            haircutLabel: "",
+          }}
         >
           <Field label="Weeks of agency coverage per vacancy">
             <NumBox value={td.nursingAgencyWeeksPerVacancy} suffix="wks" onChange={(v) => updateTimeDriverInputs({ nursingAgencyWeeksPerVacancy: v })} testId={`ed-input-${driver.id}-weeks`} />

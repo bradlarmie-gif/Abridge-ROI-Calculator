@@ -33,7 +33,7 @@ export interface MoneyBuild {
   haircutLabel: ReactNode;
 }
 
-function BuildStrip({ build }: { build: MoneyBuild }) {
+export function BuildStrip({ build }: { build: MoneyBuild }) {
   const keepPct = build.gross > 0 ? Math.max(0, Math.min(1, build.net / build.gross)) : 1;
   const heldBack = Math.max(0, build.gross - build.net);
   return (
