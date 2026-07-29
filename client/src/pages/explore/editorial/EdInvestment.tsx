@@ -31,13 +31,13 @@ type Tab = "perProvider" | "perEncounter" | "annual" | "platform";
 // these quadrants, so the recap marks them as proof (and points to where the
 // dollar does live) instead of showing a misleading $0 or, worse, the wrong
 // domain. Nursing is the one where Revenue is the proof layer, not Quality.
-const PROOF_LAYER: Record<string, Partial<Record<"Capacity" | "Workforce" | "Revenue" | "Quality", string>>> = {
+export const PROOF_LAYER: Record<string, Partial<Record<"Capacity" | "Workforce" | "Revenue" | "Quality", string>>> = {
   outpatient: { Quality: "proof, counted in Revenue" },
   ed: { Quality: "proof, counted in Revenue" },
   inpatient: { Capacity: "proof, dollar shows in Revenue", Quality: "proof, counted in Revenue" },
   nursing: { Revenue: "tracked as proof, no dollar here" },
 };
-const QUADRANT_ORDER = ["Capacity", "Workforce", "Revenue", "Quality"] as const;
+export const QUADRANT_ORDER = ["Capacity", "Workforce", "Revenue", "Quality"] as const;
 
 export default function EdInvestment({
   state,

@@ -10,6 +10,7 @@ import {
   computeExploreTotals,
 } from "@/lib/exploreDriverCalcs";
 import { buildExploreProformaDrivers } from "../ExploreModel";
+import { PROOF_LAYER, QUADRANT_ORDER } from "./EdInvestment";
 import type { ProformaSettingSnapshot, DriverOnset } from "@/pages/proforma/proformaTypes";
 import { SETTING_LABELS } from "@/pages/proforma/proformaTypes";
 import { PDFExportModal } from "@/components/switch/PDFExportModal";
@@ -200,12 +201,24 @@ export default function EdModel({
   const valueEndY = chartY(cumPoints[12].value);
 
   // ───── Quadrant contribution bars ─────
-  const quadrantMax = Math.max(valueByQuadrant.Revenue, valueByQuadrant.Capacity, valueByQuadrant.Workforce, 1);
-  const quadrantBars: { name: string; value: number; dim?: boolean; fillClass: string }[] = [
-    { name: "Revenue", value: valueByQuadrant.Revenue, fillClass: "bg-[#EA2C00]" },
-    { name: "Capacity", value: valueByQuadrant.Capacity, fillClass: "bg-[#F0704E]" },
-    { name: "Workforce", value: valueByQuadrant.Workforce, fillClass: "bg-[#F4A48C]" },
-  ];
+  // Which domain is the non-financial proof layer depends on the setting
+  // (nursing = Revenue is proof, Quality carries a dollar; everyone else the
+  // reverse). Read it from the single source so the recap can never label the
+  // wrong quadrant as proof or show a misleading $0.
+  const proofForSetting = PROOF_LAYER[state.careSetting ?? ""] ?? {};
+  const quadFill: Record<string, string> = {
+    Revenue: "bg-[#EA2C00]",
+    Capacity: "bg-[#F0704E]",
+    Workforce: "bg-[#F4A48C]",
+    Quality: "bg-[#F6B79E]",
+  };
+  const quadrantMax = Math.max(
+    valueByQuadrant.Revenue,
+    valueByQuadrant.Capacity,
+    valueByQuadrant.Workforce,
+    valueByQuadrant.Quality,
+    1,
+  );
 
   // ───── Model your expansion ─────
   const [expandedUtilization, setExpandedUtilization] = useState(() => Math.max(80, state.utilizationPercent));
@@ -523,24 +536,32 @@ export default function EdModel({
             <div className="text-[11px] font-extrabold tracking-[0.09em] uppercase text-[#2E2822] mb-[6px]">Where the value comes from</div>
             <p className="text-[12.5px] text-[#5E534A] mb-[14px] leading-[1.5]">Across the four areas you modeled.</p>
             <div className="flex-1 flex flex-col justify-between gap-4">
-              {quadrantBars.map((bar) => (
-                <div key={bar.name}>
-                  <div className="flex justify-between items-baseline mb-[7px]">
-                    <span className="text-[13.5px] font-bold text-[#1A1A1A]">{bar.name}</span>
-                    <span className="font-abridge text-[15px] text-[#1A1A1A]">{fmtCurrency(bar.value)}</span>
+              {QUADRANT_ORDER.map((q) => {
+                const proofNote = proofForSetting[q];
+                if (proofNote) {
+                  return (
+                    <div key={q}>
+                      <div className="flex justify-between items-baseline mb-[7px]">
+                        <span className="text-[13.5px] font-bold text-[#1A1A1A]">{q}</span>
+                        <span className="text-[12px] text-[#786C5E] italic">{proofNote}</span>
+                      </div>
+                      <div className="h-[9px] bg-transparent rounded-full" />
+                    </div>
+                  );
+                }
+                const value = valueByQuadrant[q];
+                return (
+                  <div key={q}>
+                    <div className="flex justify-between items-baseline mb-[7px]">
+                      <span className="text-[13.5px] font-bold text-[#1A1A1A]">{q}</span>
+                      <span className="font-abridge text-[15px] text-[#1A1A1A]">{fmtCurrency(value)}</span>
+                    </div>
+                    <div className="h-[9px] bg-[#F1EBE3] rounded-full overflow-hidden">
+                      <div className={`h-full rounded-full ${quadFill[q]}`} style={{ width: `${Math.max(value > 0 ? 4 : 0, (value / quadrantMax) * 100)}%` }} />
+                    </div>
                   </div>
-                  <div className="h-[9px] bg-[#F1EBE3] rounded-full overflow-hidden">
-                    <div className={`h-full rounded-full ${bar.fillClass}`} style={{ width: `${Math.max(bar.value > 0 ? 4 : 0, (bar.value / quadrantMax) * 100)}%` }} />
-                  </div>
-                </div>
-              ))}
-              <div>
-                <div className="flex justify-between items-baseline mb-[7px]">
-                  <span className="text-[13.5px] font-bold text-[#1A1A1A]">Quality</span>
-                  <span className="text-[12px] text-[#786C5E] italic">proof, counted in Revenue</span>
-                </div>
-                <div className="h-[9px] bg-transparent rounded-full" />
-              </div>
+                );
+              })}
             </div>
           </div>
         </div>
