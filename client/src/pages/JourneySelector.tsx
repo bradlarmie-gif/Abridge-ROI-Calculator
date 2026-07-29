@@ -286,13 +286,13 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
                 </div>
 
                 <p className="text-[13px] text-[#EA2C00] font-medium mb-1.5" data-testid="text-forecast-tagline">
-                  Model what's next
+                  Run the numbers
                 </p>
                 <h3 className="text-2xl font-bold text-[#1A1A1A] mb-2.5" data-testid="text-forecast-title">
-                  Forecast
+                  ROI Calculator
                 </h3>
                 <p className="text-sm text-[#666666] leading-relaxed flex-1 mb-6" data-testid="text-forecast-description">
-                  Compare deal structures, model new partnerships, or forward-project an existing partner's ROI.
+                  Get a quick ROI answer, model a new partnership proforma, or map a tech-stack consolidation.
                 </p>
 
                 <Button
