@@ -27,7 +27,7 @@ export default function StrategyView({ cell, committed = [] }: { cell: AttainCel
 
       {/* 1 — the counterfactual + value in play */}
       <div className="rounded-2xl border border-[#E8E2DA] overflow-hidden mb-12">
-        <div className="grid grid-cols-2 divide-x divide-[#E8E2DA]">
+        <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-[#E8E2DA]">
           <div className="p-5">
             <p className={`${LBL} mb-3`}>Today</p>
             <div className="space-y-3">

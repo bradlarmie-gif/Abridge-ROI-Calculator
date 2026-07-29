@@ -241,14 +241,14 @@ export function AttainExperience({ setting, cells, baseline, initial, onPersist 
 
   // guard: never white-screen if the setting's goals ever outrun the cell matrix
   if (!CELLS.length || !cell) {
-    return <div className="max-w-[760px] mx-auto px-8 py-20 text-center text-[15px] text-[#8C8C8C]">No categories selected for this setting yet.</div>;
+    return <div className="max-w-[760px] mx-auto px-5 sm:px-8 py-20 text-center text-[15px] text-[#8C8C8C]">No categories selected for this setting yet.</div>;
   }
 
   return (
     <div ref={rootRef}>
       {/* chapter nav — FIXED just below the app header so it never scrolls away (sticky
           fights an overflow:auto ancestor in the app shell; fixed is immune to that) */}
-      <div className="fixed top-14 sm:top-16 left-0 right-0 z-30 bg-[#FDFCFA]/95 backdrop-blur border-b border-[#E8E2DA] px-8 py-3">
+      <div className="fixed top-14 sm:top-16 left-0 right-0 z-30 bg-[#FDFCFA]/95 backdrop-blur border-b border-[#E8E2DA] px-5 sm:px-8 py-3">
         <div className="max-w-[820px] mx-auto flex flex-wrap items-center gap-x-5 gap-y-2">
           <span className="text-[10px] font-bold uppercase tracking-[2px] text-[#8C8C8C]">Attain · {SETTING}</span>
           <div className="flex items-center gap-1 bg-[#F2EDE5] rounded-[12px] p-1">
@@ -262,7 +262,7 @@ export function AttainExperience({ setting, cells, baseline, initial, onPersist 
       <div className="h-[52px]" />
 
       <AnimatePresence mode="wait">
-      <motion.div key={chapter} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }} className="px-8 py-10">
+      <motion.div key={chapter} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }} className="px-5 sm:px-8 py-10">
         {/* Align / Plan: editorial category stepper, work one at a time */}
         {(chapter === "align" || chapter === "plan") && <CategoryStepper />}
 

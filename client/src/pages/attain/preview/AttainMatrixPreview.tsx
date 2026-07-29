@@ -61,7 +61,7 @@ export default function AttainMatrixPreview() {
   return (
     <div className="min-h-screen bg-[#FDFCFA]">
       {/* switcher bar */}
-      <div className="sticky top-0 z-20 bg-[#FDFCFA]/95 backdrop-blur border-b border-[#E8E2DA] px-8 py-4">
+      <div className="sticky top-0 z-20 bg-[#FDFCFA]/95 backdrop-blur border-b border-[#E8E2DA] px-5 sm:px-8 py-4">
         <div className="max-w-[860px] mx-auto">
           <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
             <span className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest">Attain</span>
@@ -93,7 +93,7 @@ export default function AttainMatrixPreview() {
         </div>
       </div>
 
-      <div className="px-8 py-12">
+      <div className="px-5 sm:px-8 py-12">
         {/* keyed by storageKey so switching partner or cell loads that saved session fresh */}
         <AttainSession key={storageKey} storageKey={storageKey} cell={cell} chapter={chapter} />
       </div>

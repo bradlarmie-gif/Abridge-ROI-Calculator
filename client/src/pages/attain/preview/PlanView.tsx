@@ -48,7 +48,7 @@ function MetricCard({ m, st, onPatch, sources }: { m: MetricDef; st: MState; onP
     <div className="rounded-2xl border border-[#E8E2DA] p-5">
       <h3 className="font-abridge text-[19px] text-[#1A1A1A] mb-1">{m.name}</h3>
       <p className="text-[13px] text-[#6B6B6B] leading-relaxed mb-4 max-w-[560px]"><span className="font-medium text-[#3A3A3A]">We measure:</span> {m.measure}</p>
-      <div className="grid grid-cols-[176px_20px_176px_minmax(0,1fr)] items-end gap-x-4 gap-y-4">
+      <div className="grid grid-cols-[1fr_20px_1fr] sm:grid-cols-[176px_20px_176px_minmax(0,1fr)] items-end gap-x-4 gap-y-4">
         <div>
           <p className={`${LBL} mb-1.5`}>Today</p>
           <div className="flex items-baseline gap-1.5">
@@ -64,7 +64,7 @@ function MetricCard({ m, st, onPatch, sources }: { m: MetricDef; st: MState; onP
             <span className="text-[13px] text-[#8C8C8C] whitespace-nowrap">{m.unit}</span>
           </div>
         </div>
-        <div className="min-w-0">
+        <div className="min-w-0 col-span-3 sm:col-span-1">
           <p className={`${LBL} mb-1.5`}>Measured from</p>
           <SourceSelect value={st.source} onChange={(v) => onPatch("source", v)} sources={sources} />
         </div>
