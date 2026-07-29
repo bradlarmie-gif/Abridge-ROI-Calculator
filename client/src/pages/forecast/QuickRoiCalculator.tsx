@@ -2,43 +2,46 @@ import { useMemo, useState, useEffect, useRef } from "react";
 import { ArrowRight } from "lucide-react";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
+import {
+  type SettingKey,
+  type RoiDriver,
+  type RoiField,
+  type RoiAccount,
+  type Domain,
+  SETTING_META,
+  DRIVERS,
+  DOMAIN_ORDER,
+  defaultVals,
+  defaultEnabled,
+  runRoi,
+} from "./roiEngine";
 
 /**
  * ROI Calculator — a guided, editorial three-step flow that turns an Abridge
  * impact-analysis data pull into dollars for a partner, then shows the headroom
- * if they expand. Built for someone who has never done this: one task at a time,
- * plain language, before -> after pairs read straight off the named pull table.
+ * if they expand.
  *
- * Dollars come only from levers a pull cleanly supports (coding wRVU x CF, HCC).
- * Reclaimed documentation time is shown as a measured COUNT of clinician hours,
- * never dollarized. Nursing keeps an overtime lever (a real payroll rate).
+ * Every dollar is produced by the SAME canonical Explore engine
+ * (`computeAllDriverValues`) the Explore path uses — see `roiEngine.ts`. The
+ * "how the number is built" line is the engine's own calc-summary string, so the
+ * number and its arithmetic can never disagree, and can never disagree with the
+ * promise the partner was sold in Explore. That reconciliation is the point:
+ * this is the proof side of the same value story.
  *
- * Model: value today = per-encounter lift x encounters Abridge touched today
- * (providers on Abridge x their visits x utilization). Headroom = same lift with
- * the adoption + utilization dials turned up. Volume scales, the effect never does.
+ * Design rules the partner-success rep must never trip over:
+ *   - every input is editable, including realization / attribution — no locked
+ *     numbers, ever;
+ *   - the drivers are the real per-setting Explore drivers (the ED has LWBS and
+ *     admission capture, not HCC; outpatient has Patient Access, not a made-up
+ *     capacity lever) — nothing invented;
+ *   - reclaimed documentation time is shown as a COUNT of clinician hours, never
+ *     dollarized on its own.
+ *
+ * Value today runs the engine on the encounters Abridge touches now (providers
+ * on Abridge × their visits × utilization). Headroom re-runs the same engine
+ * with the adoption + utilization dials turned up. Volume scales, the measured
+ * effect never does.
  */
-
-type SettingKey = "outpatient" | "ed" | "inpatient" | "nursing";
-
-interface LeverField { k: string; label: string; def: number; prefix?: string; suffix?: string; step?: number; }
-interface Lever {
-  id: string; domain: string; title: string; optional?: boolean; note?: string;
-  before: LeverField; after: LeverField; rate: LeverField; unit?: string; table?: string;
-  perEnc: (f: Record<string, number>) => number;
-}
-interface HccCfg { populations: { label: string; perHcc: number }[]; members: number; before: number; after: number; }
-interface SettingCfg {
-  label: string; blurb: string; providerWord: string; encWord: string; visitWord: string;
-  defaults: { totalProviders: number; onAbridge: number; encPerProvider: number; utilNow: number };
-  levers: Lever[];
-  hcc?: HccCfg; // risk capture is modeled on the panel (per member / year), not per visit
-  timeMetric?: { before: number; after: number; table: string };
-}
-const HCC_POPULATIONS = [
-  { label: "Medicare Advantage", perHcc: 1200 },
-  { label: "Medicaid MCO", perHcc: 800 },
-  { label: "ACA / Exchange", perHcc: 1000 },
-];
 
 const fmtInt = (n: number) => Math.round(n).toLocaleString("en-US");
 const fmtShort = (n: number) => {
@@ -46,55 +49,6 @@ const fmtShort = (n: number) => {
   if (a >= 1e6) return `$${(n / 1e6).toFixed(2).replace(/\.?0+$/, "")}M`;
   if (a >= 1e3) return `$${Math.round(n / 1e3)}K`;
   return `$${Math.round(n)}`;
-};
-
-const codingLever = (before: number, after: number): Lever => ({
-  id: "coding", domain: "Revenue", title: "Coding accuracy", unit: "wRVU", table: "Transaction wRVU/enc table",
-  before: { k: "wrvuBefore", label: "wRVU / visit", def: before, step: 0.01 },
-  after: { k: "wrvuAfter", label: "wRVU / visit", def: after, step: 0.01 },
-  rate: { k: "cf", label: "Paid per wRVU (2026 conversion factor)", def: 33.4, prefix: "$", step: 0.1 },
-  perEnc: (f) => Math.max(0, f.wrvuAfter - f.wrvuBefore) * f.cf,
-});
-const CFG: Record<SettingKey, SettingCfg> = {
-  outpatient: {
-    label: "Outpatient", blurb: "Office visits, primary care and specialty.",
-    providerWord: "providers", encWord: "visits", visitWord: "visit",
-    defaults: { totalProviders: 458, onAbridge: 340, encPerProvider: 3500, utilNow: 74 },
-    levers: [codingLever(1.95, 2.03)],
-    hcc: { populations: HCC_POPULATIONS, members: 25000, before: 2.4, after: 2.7 },
-    timeMetric: { before: 6.26, after: 5.12, table: "Time in Notes table" },
-  },
-  ed: {
-    label: "Emergency", blurb: "The emergency department.",
-    providerWord: "providers", encWord: "ED visits", visitWord: "visit",
-    defaults: { totalProviders: 80, onAbridge: 55, encPerProvider: 3000, utilNow: 70 },
-    levers: [codingLever(1.9, 2.05)],
-    hcc: { populations: HCC_POPULATIONS, members: 6000, before: 1.8, after: 2.0 },
-    timeMetric: { before: 6.5, after: 5.1, table: "Time in Notes table" },
-  },
-  inpatient: {
-    label: "Inpatient", blurb: "Hospital medicine.",
-    providerWord: "providers", encWord: "encounters", visitWord: "encounter",
-    defaults: { totalProviders: 90, onAbridge: 60, encPerProvider: 2500, utilNow: 68 },
-    levers: [codingLever(2.1, 2.28)],
-    hcc: { populations: HCC_POPULATIONS, members: 12000, before: 2.6, after: 2.9 },
-    timeMetric: { before: 9.0, after: 6.5, table: "Time in Notes table" },
-  },
-  nursing: {
-    label: "Nursing", blurb: "Inpatient nursing.",
-    providerWord: "nurses", encWord: "care events", visitWord: "care event",
-    defaults: { totalProviders: 600, onAbridge: 420, encPerProvider: 1800, utilNow: 65 },
-    levers: [
-      {
-        id: "overtime", domain: "Capacity", title: "Overtime avoided", unit: "min", table: "Time in Notes table",
-        note: "Counts reclaimed charting time that would otherwise be paid as overtime. Set the rate to your blended OT rate; leave visits that don't hit overtime out of the count.",
-        before: { k: "timeBefore", label: "charting / care event", def: 4.5, step: 0.1 },
-        after: { k: "timeAfter", label: "charting / care event", def: 3.5, step: 0.1 },
-        rate: { k: "otRate", label: "Overtime rate per hour (payroll)", def: 65, prefix: "$" },
-        perEnc: (f) => (Math.max(0, f.timeBefore - f.timeAfter) / 60) * f.otRate,
-      },
-    ],
-  },
 };
 
 function useCountUp(value: number, ms = 550): number {
@@ -118,6 +72,7 @@ function useCountUp(value: number, ms = 550): number {
 }
 
 const EYEBROW = "text-[10.5px] font-extrabold tracking-[0.14em] uppercase text-[#A69A88]";
+const STEPS = ["The account", "The lift", "The answer"];
 
 interface Props { onBack: () => void; onHome: () => void; }
 
@@ -165,12 +120,12 @@ function SettingPicker({ onPick }: { onPick: (s: SettingKey) => void }) {
         Three quick steps, straight from an impact-analysis pull. First, which care setting?
       </p>
       <div className="mt-12 border-t border-[#E8E2DA]">
-        {(Object.keys(CFG) as SettingKey[]).map((k) => (
+        {(Object.keys(SETTING_META) as SettingKey[]).map((k) => (
           <button key={k} onClick={() => onPick(k)}
             className="group w-full text-left flex items-center justify-between gap-6 py-6 border-b border-[#E8E2DA] hover:pl-2 transition-all">
             <div>
-              <span className="font-abridge text-[26px] text-[#1A1A1A] group-hover:text-[#EA2C00] transition-colors">{CFG[k].label}</span>
-              <span className="ml-4 text-[14px] text-[#A69A88]">{CFG[k].blurb}</span>
+              <span className="font-abridge text-[26px] text-[#1A1A1A] group-hover:text-[#EA2C00] transition-colors">{SETTING_META[k].label}</span>
+              <span className="ml-4 text-[14px] text-[#A69A88]">{SETTING_META[k].blurb}</span>
             </div>
             <ArrowRight className="w-5 h-5 text-[#C9BDAD] group-hover:text-[#EA2C00] group-hover:translate-x-1 transition-all flex-shrink-0" />
           </button>
@@ -180,92 +135,91 @@ function SettingPicker({ onPick }: { onPick: (s: SettingKey) => void }) {
   );
 }
 
-const STEPS = ["The account", "The lift", "The answer"];
-
 function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingKey; step: number; setStep: (n: number) => void; onChangeSetting: () => void }) {
-  const cfg = CFG[setting];
-  const d = cfg.defaults;
+  const meta = SETTING_META[setting];
+  const d = meta.defaults;
+  const isNursing = !!meta.isNursing;
   // Everything is scoped to THIS care setting, not the whole system.
-  const scopeWord = cfg.providerWord === "nurses" ? "nurses" : `${cfg.label.toLowerCase()} providers`;
-  const settingWord = cfg.label.toLowerCase();
+  const scopeWord = isNursing ? "nurses" : `${meta.label.toLowerCase()} providers`;
+  const settingWord = meta.label.toLowerCase();
+
+  // ── account ──────────────────────────────────────────────────────────────
   const [partner, setPartner] = useState("");
   const [totalProviders, setTotalProviders] = useState(d.totalProviders);
   const [onAbridge, setOnAbridge] = useState(d.onAbridge);
   const [encPerProvider, setEncPerProvider] = useState(d.encPerProvider);
   const [utilNow, setUtilNow] = useState(d.utilNow);
-  const [fields, setFields] = useState<Record<string, number>>(() => {
-    const init: Record<string, number> = {};
-    cfg.levers.forEach((l) => { init[l.before.k] = l.before.def; init[l.after.k] = l.after.def; init[l.rate.k] = l.rate.def; });
-    return init;
+  const [staffedBeds, setStaffedBeds] = useState(d.staffedBeds ?? 0);
+  const [occupancy, setOccupancy] = useState(d.occupancy ?? 85);
+  // Documentation minutes in notes (before -> after). Feeds Patient Access
+  // dollars (outpatient) and the reclaimed-hours proof (all physician settings).
+  const [timeBefore, setTimeBefore] = useState(meta.timeMetric?.before ?? 0);
+  const [timeAfter, setTimeAfter] = useState(meta.timeMetric?.after ?? 0);
+
+  // ── drivers ──────────────────────────────────────────────────────────────
+  const [vals, setVals] = useState<Record<string, number>>(() => defaultVals(setting));
+  const [enabled, setEnabled] = useState<Record<string, boolean>>(() => defaultEnabled(setting));
+  const setVal = (k: string, v: number) => setVals((p) => ({ ...p, [k]: v }));
+  const toggle = (id: string) => setEnabled((p) => ({ ...p, [id]: !p[id] }));
+
+  // ── headroom dials ────────────────────────────────────────────────────────
+  const adoptionNow = totalProviders > 0 ? (onAbridge / totalProviders) * 100 : 0;
+  // Default the upside to a realistic reachable target: 70% of providers on
+  // Abridge (never below where they are today) at full per-visit utilization.
+  const [targetAdoptionPct, setTargetAdoptionPct] = useState(() => {
+    const now = d.totalProviders > 0 ? (d.onAbridge / d.totalProviders) * 100 : 0;
+    return Math.min(100, Math.max(Math.round(now), 70));
   });
-  const [on, setOn] = useState<Record<string, boolean>>(() => {
-    const init: Record<string, boolean> = {}; cfg.levers.forEach((l) => { init[l.id] = !l.optional; }); return init;
-  });
-  const [timeBefore, setTimeBefore] = useState(cfg.timeMetric?.before ?? 0);
-  const [timeAfter, setTimeAfter] = useState(cfg.timeMetric?.after ?? 0);
-  const [targetAdoptionPct, setTargetAdoptionPct] = useState(100);
   const [targetUtilPct, setTargetUtilPct] = useState(100);
   const [price, setPrice] = useState(0);
 
-  const setF = (k: string, v: number) => setFields((p) => ({ ...p, [k]: v }));
-  const adoptionNow = totalProviders > 0 ? (onAbridge / totalProviders) * 100 : 0;
+  const account: RoiAccount = useMemo(() => ({
+    totalProviders, onAbridge, encPerProvider, utilNow,
+    minutesSaved: isNursing ? 0 : Math.max(0, timeBefore - timeAfter),
+    staffedBeds: isNursing ? staffedBeds : undefined,
+    occupancy: isNursing ? occupancy : undefined,
+  }), [totalProviders, onAbridge, encPerProvider, utilNow, isNursing, timeBefore, timeAfter, staffedBeds, occupancy]);
+
+  // Both runs come straight from the canonical engine.
+  const today = useMemo(() => runRoi(setting, account, vals, enabled), [setting, account, vals, enabled]);
+  const potential = useMemo(
+    () => runRoi(setting, account, vals, enabled, { adoptionPct: targetAdoptionPct, utilPct: targetUtilPct }),
+    [setting, account, vals, enabled, targetAdoptionPct, targetUtilPct],
+  );
+
   const encToday = onAbridge * encPerProvider * (utilNow / 100);
-  const encTarget = totalProviders * (targetAdoptionPct / 100) * encPerProvider * (targetUtilPct / 100);
-
-  const results = useMemo(() => cfg.levers.map((l) => {
-    const f = { [l.before.k]: fields[l.before.k], [l.after.k]: fields[l.after.k], [l.rate.k]: fields[l.rate.k] };
-    return { lever: l, perEnc: on[l.id] ? l.perEnc(f) : 0 };
-  }), [cfg, fields, on]);
-  const valuePerEnc = results.reduce((s, r) => s + r.perEnc, 0);
-
-  // HCC / risk capture is a PANEL calculation — value accrues once per member
-  // per year (RAF), never per visit. So it's computed separately from the
-  // per-encounter levers and scales with adoption (more providers cover more of
-  // the panel), not with per-visit utilization.
-  const hccCfg = cfg.hcc;
-  const [hccOn, setHccOn] = useState(false);
-  const [hccPopIdx, setHccPopIdx] = useState(0);
-  const [hccMembers, setHccMembers] = useState(hccCfg?.members ?? 0);
-  const [hccBefore, setHccBefore] = useState(hccCfg?.before ?? 0);
-  const [hccAfter, setHccAfter] = useState(hccCfg?.after ?? 0);
-  const [hccPerHcc, setHccPerHcc] = useState(hccCfg?.populations[0].perHcc ?? 1200);
-  const hccDelta = Math.max(0, hccAfter - hccBefore);
-  const hccValue = hccOn && hccCfg ? hccDelta * hccMembers * hccPerHcc : 0;
-  const adoptionScale = adoptionNow > 0 ? targetAdoptionPct / adoptionNow : 1;
-  const hccPotential = hccValue * adoptionScale;
-
-  const todayValue = valuePerEnc * encToday + hccValue;
-  const potentialValue = valuePerEnc * encTarget + hccPotential;
-  const headroom = Math.max(0, potentialValue - todayValue);
-  const hoursReclaimed = cfg.timeMetric ? (Math.max(0, timeBefore - timeAfter) / 60) * encToday : 0;
+  const hoursReclaimed = isNursing ? 0 : today.totalHoursSaved;
   const partnerName = partner.trim() || "this partner";
-  const breakdown = [
-    ...results.filter((r) => r.perEnc > 0).map((r) => ({ title: r.lever.title, value: r.perEnc * encToday })),
-    ...(hccValue > 0 ? [{ title: "Risk capture (HCC)", value: hccValue }] : []),
-  ];
 
-  // Group the lift levers by domain so Step 2 can offer a clean tab to move
-  // between the Revenue / Capacity sections instead of one long scroll.
+  const todayValue = today.total;
+  const potentialValue = Math.max(potential.total, todayValue);
+  const headroom = Math.max(0, potentialValue - todayValue);
+
+  const breakdown = DRIVERS[setting]
+    .filter((dr) => enabled[dr.id] && (today.valueById[dr.id] ?? 0) > 0)
+    .map((dr) => ({ title: dr.title, value: today.valueById[dr.id] }));
+
+  // ── lift-step domain tabs ──────────────────────────────────────────────────
   const [liftTab, setLiftTab] = useState(0);
-  const liftGroups = useMemo(() => {
-    const order = ["Revenue", "Capacity", "Quality"];
-    return order
-      .map((dom) => {
-        const levs = results.filter((r) => r.lever.domain === dom);
-        const hasTime = dom === "Capacity" && !!cfg.timeMetric;
-        if (!levs.length && !hasTime) return null;
-        const dollar = levs.reduce((s, r) => s + r.perEnc * encToday, 0) + (dom === "Revenue" ? hccValue : 0);
-        const summary = dollar > 0 ? fmtShort(dollar) : hasTime ? `${fmtInt(hoursReclaimed)} hrs` : "—";
-        return { dom, levs, hasTime, summary };
-      })
-      .filter(Boolean) as { dom: string; levs: typeof results; hasTime: boolean; summary: string }[];
-  }, [results, cfg, encToday, hoursReclaimed, hccValue]);
-  const activeGroup = liftGroups[Math.min(liftTab, Math.max(0, liftGroups.length - 1))];
+  const domains = useMemo(() => DOMAIN_ORDER.filter((dom) => {
+    const hasDrivers = DRIVERS[setting].some((dr) => dr.domain === dom);
+    const capacityTime = dom === "Capacity" && !isNursing; // reclaimed-hours proof lives here
+    return hasDrivers || capacityTime;
+  }), [setting, isNursing]);
+  const tabSummary = (dom: Domain): string => {
+    const dollar = DRIVERS[setting]
+      .filter((dr) => dr.domain === dom && enabled[dr.id])
+      .reduce((s, dr) => s + (today.valueById[dr.id] ?? 0), 0);
+    if (dollar > 0) return fmtShort(dollar);
+    if (dom === "Capacity" && !isNursing && hoursReclaimed > 0) return `${fmtInt(hoursReclaimed)} hrs`;
+    return "—";
+  };
+  const activeDomain = domains[Math.min(liftTab, Math.max(0, domains.length - 1))];
 
   return (
     <div className="pt-10 pb-28">
       <div className="mb-7 text-[11px] font-extrabold tracking-[0.14em] uppercase text-[#A69A88]">
-        {cfg.label} <button onClick={onChangeSetting} className="text-[#B4A896] hover:text-[#EA2C00] transition-colors">· change</button>
+        {meta.label} <button onClick={onChangeSetting} className="text-[#B4A896] hover:text-[#EA2C00] transition-colors">· change</button>
       </div>
 
       {step === 0 && (
@@ -280,71 +234,61 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
             <Row label="How many are on Abridge today?" hint={`of ${fmtInt(totalProviders)} — ${scopeWord} with a go-live date`}>
               <NumInput value={onAbridge} onChange={setOnAbridge} />
             </Row>
-            <Row label={`About how many ${cfg.encWord} does each ${cfg.providerWord.replace(/s$/, "")} see a year?`}>
+            <Row label={`About how many ${meta.encWord} does each ${meta.providerWord.replace(/s$/, "")} handle a year?`}>
               <NumInput value={encPerProvider} onChange={setEncPerProvider} />
             </Row>
-            <Row label="Of their visits, what share are documented with Abridge?" hint="the utilization % from the pull">
+            <Row label={`Of their ${meta.encWord}, what share are documented with Abridge?`} hint="the utilization % from the pull">
               <NumInput value={utilNow} onChange={setUtilNow} suffix="%" />
             </Row>
+            {isNursing && (
+              <>
+                <Row label="How many staffed beds?" hint="drives the patient-days behind the quality math">
+                  <NumInput value={staffedBeds} onChange={setStaffedBeds} />
+                </Row>
+                <Row label="Average occupancy?">
+                  <NumInput value={occupancy} onChange={setOccupancy} suffix="%" />
+                </Row>
+              </>
+            )}
           </div>
           <p className="mt-7 text-[15px] leading-[1.6] text-[#5E534A]">
-            So Abridge is on about <span className="font-abridge text-[#1A1A1A]">{fmtInt(encToday)}</span> {cfg.encWord} a year in {settingWord} right now — {Math.round(adoptionNow)}% of {scopeWord}, on {Math.round(utilNow)}% of their visits.
+            So Abridge is on about <span className="font-abridge text-[#1A1A1A]">{fmtInt(encToday)}</span> {meta.encWord} a year in {settingWord} right now — {Math.round(adoptionNow)}% of {scopeWord}, on {Math.round(utilNow)}% of their {meta.encWord}.
           </p>
           <NavRow onNext={() => setStep(1)} nextLabel="Next: the lift" />
         </StepShell>
       )}
 
       {step === 1 && (
-        <StepShell title="What changed after they turned Abridge on?" sub="Read the before and after off the named table. It was this, now it's this.">
+        <StepShell title="What changed after they turned Abridge on?" sub="Read the before and after off the named table. It was this, now it's this — every number here is yours to edit.">
           {/* section tabs — navigate between the domains */}
-          <div className="flex items-center gap-7 border-b border-[#E8E2DA]">
-            {liftGroups.map((g, i) => (
-              <button key={g.dom} onClick={() => setLiftTab(i)} className="relative flex items-baseline gap-2 pb-3 -mb-px outline-none group">
-                <span className={`text-[13px] font-bold tracking-[0.01em] transition-colors ${i === liftTab ? "text-[#1A1A1A]" : "text-[#A69A88] group-hover:text-[#5E534A]"}`}>{g.dom}</span>
-                <span className={`font-abridge text-[14px] transition-colors ${i === liftTab ? "text-[#EA2C00]" : "text-[#C9BDAD]"}`}>{g.summary}</span>
+          <div className="flex items-center gap-7 border-b border-[#E8E2DA] flex-wrap">
+            {domains.map((dom, i) => (
+              <button key={dom} onClick={() => setLiftTab(i)} className="relative flex items-baseline gap-2 pb-3 -mb-px outline-none group">
+                <span className={`text-[13px] font-bold tracking-[0.01em] transition-colors ${i === liftTab ? "text-[#1A1A1A]" : "text-[#A69A88] group-hover:text-[#5E534A]"}`}>{dom}</span>
+                <span className={`font-abridge text-[14px] transition-colors ${i === liftTab ? "text-[#EA2C00]" : "text-[#C9BDAD]"}`}>{tabSummary(dom)}</span>
                 {i === liftTab && <span className="absolute left-0 right-0 bottom-[-1px] h-[2px] bg-[#EA2C00]" />}
               </button>
             ))}
           </div>
 
           <div>
-            {activeGroup?.levs.map(({ lever, perEnc }) => (
-              <LiftRow key={lever.id} lever={lever} on={on[lever.id]} onToggle={() => setOn((p) => ({ ...p, [lever.id]: !p[lever.id] }))}
-                fields={fields} setF={setF} perYear={perEnc * encToday} visitWord={cfg.visitWord} perEnc={perEnc} encToday={encToday} />
+            {activeDomain === "Capacity" && !isNursing && meta.timeMetric && (
+              <TimeBackBlock table={meta.timeMetric.table} before={timeBefore} after={timeAfter}
+                onBefore={setTimeBefore} onAfter={setTimeAfter} encToday={encToday} hours={hoursReclaimed}
+                dollarized={setting === "outpatient"} />
+            )}
+            {DRIVERS[setting].filter((dr) => dr.domain === activeDomain).map((dr) => (
+              <DriverCard key={dr.id} driver={dr} vals={vals} setVal={setVal}
+                on={!!enabled[dr.id]} onToggle={() => toggle(dr.id)} eligibleEncounters={Math.round(encToday)}
+                value={today.valueById[dr.id] ?? 0} summary={today.summaryById[dr.id] ?? ""} />
             ))}
-            {activeGroup?.dom === "Revenue" && hccCfg && (
-              <HccCard cfg={hccCfg} on={hccOn} onToggle={() => setHccOn((v) => !v)}
-                popIdx={hccPopIdx} onPop={(i) => { setHccPopIdx(i); setHccPerHcc(hccCfg.populations[i].perHcc); }}
-                members={hccMembers} setMembers={setHccMembers} before={hccBefore} setBefore={setHccBefore}
-                after={hccAfter} setAfter={setHccAfter} perHcc={hccPerHcc} setPerHcc={setHccPerHcc} delta={hccDelta} value={hccValue} />
-            )}
-            {activeGroup?.hasTime && cfg.timeMetric && (
-              <div className="py-8 border-b border-[#E8E2DA]">
-                <div className="text-[17px] font-bold text-[#1A1A1A]">Time back in the day</div>
-                <div className="mt-5">
-                  <BeforeAfter label="Minutes in notes per visit" table={cfg.timeMetric.table} unit="min" step={0.1}
-                    before={timeBefore} after={timeAfter} onBefore={setTimeBefore} onAfter={setTimeAfter} lowerIsBetter />
-                </div>
-                <div className="mt-7 pt-6 border-t border-[#EFE9E0]">
-                  <div className="text-[10.5px] font-extrabold tracking-[0.14em] uppercase text-[#A69A88] mb-3">How the number is built</div>
-                  <div className="text-[15px] leading-[2] text-[#5E534A]">
-                    <Mono>{Math.max(0, timeBefore - timeAfter).toFixed(1)} min</Mono> saved × <Mono>{fmtInt(encToday)}</Mono> Abridge visits ÷ 60
-                  </div>
-                  <div className="mt-4 flex items-baseline justify-between">
-                    <span className="text-[13px] text-[#A69A88]">equals</span>
-                    <span className="font-abridge text-[34px] leading-none text-[#1A1A1A]">{fmtInt(hoursReclaimed)}<span className="text-[15px] text-[#9A8C7A]"> clinician hours a year</span></span>
-                  </div>
-                  <p className="mt-4 text-[13px] leading-[1.55] text-[#8C8073]">Shown as time given back — never converted to a made-up dollar.</p>
-                </div>
-              </div>
-            )}
           </div>
           <NavRow onBack={() => setStep(0)} onNext={() => setStep(2)} nextLabel="See the answer" />
         </StepShell>
       )}
 
       {step === 2 && (
-        <AnswerStep partnerName={partnerName} cfg={cfg} breakdown={breakdown} todayValue={todayValue}
+        <AnswerStep partnerName={partnerName} breakdown={breakdown} todayValue={todayValue}
           potentialValue={potentialValue} headroom={headroom} hoursReclaimed={hoursReclaimed}
           adoptionNow={adoptionNow} utilNow={utilNow} totalProviders={totalProviders}
           targetAdoptionPct={targetAdoptionPct} setTargetAdoptionPct={setTargetAdoptionPct}
@@ -389,6 +333,15 @@ function NumInput({ value, onChange, suffix, prefix, step = 1, w = "w-[168px]" }
   );
 }
 
+function NumInputAccent({ value, onChange, suffix, step = 0.01, w = "w-[96px]" }: { value: number; onChange: (n: number) => void; suffix?: string; step?: number; w?: string }) {
+  return (
+    <div className={`${w} inline-flex items-baseline gap-1.5 border-b-2 border-[#EA2C00] pb-1`}>
+      <FormattedNumberInput value={value} onChange={onChange} step={step} className={UINPUT_CLASS} />
+      {suffix && <span className="text-[14px] text-[#A69A88]">{suffix}</span>}
+    </div>
+  );
+}
+
 function TextInput({ value, onChange, placeholder }: { value: string; onChange: (s: string) => void; placeholder?: string }) {
   return (
     <div className="w-[168px] inline-flex border-b-2 border-[#E0D9CE] focus-within:border-[#EA2C00] transition-colors pb-1">
@@ -403,6 +356,7 @@ function BeforeAfter({ label, table, unit, before, after, onBefore, onAfter, ste
 }) {
   const delta = lowerIsBetter ? before - after : after - before;
   const good = delta > 0;
+  const decimals = unit === "min" ? 1 : 2;
   return (
     <div>
       <div className="flex items-baseline justify-between mb-3">
@@ -420,18 +374,9 @@ function BeforeAfter({ label, table, unit, before, after, onBefore, onAfter, ste
           <NumInputAccent value={after} onChange={onAfter} step={step} suffix={unit} w="w-[96px]" />
         </div>
         <span className={`self-end mb-2.5 ml-1 text-[14px] font-bold whitespace-nowrap ${good ? "text-[#B02200]" : "text-[#B4A896]"}`}>
-          {good ? (lowerIsBetter ? "−" : "+") : ""}{Math.abs(delta).toFixed(unit === "min" ? 1 : 2)} {unit}
+          {good ? (lowerIsBetter ? "−" : "+") : ""}{Math.abs(delta).toFixed(decimals)} {unit}
         </span>
       </div>
-    </div>
-  );
-}
-
-function NumInputAccent({ value, onChange, suffix, step = 0.01, w = "w-[96px]" }: { value: number; onChange: (n: number) => void; suffix?: string; step?: number; w?: string }) {
-  return (
-    <div className={`${w} inline-flex items-baseline gap-1.5 border-b-2 border-[#EA2C00] pb-1`}>
-      <FormattedNumberInput value={value} onChange={onChange} step={step} className={UINPUT_CLASS} />
-      {suffix && <span className="text-[14px] text-[#A69A88]">{suffix}</span>}
     </div>
   );
 }
@@ -439,114 +384,162 @@ function NumInputAccent({ value, onChange, suffix, step = 0.01, w = "w-[96px]" }
 function Mono({ children }: { children: React.ReactNode }) {
   return <span className="font-bold text-[#443A32] tabular-nums">{children}</span>;
 }
-function LiftRow({ lever, on, onToggle, fields, setF, perYear, perEnc, encToday, visitWord }: {
-  lever: Lever; on: boolean; onToggle: () => void; fields: Record<string, number>; setF: (k: string, v: number) => void; perYear: number; perEnc: number; encToday: number; visitWord: string;
-}) {
-  if (lever.optional && !on) {
-    return (
-      <div className="py-6 border-b border-[#E8E2DA] flex items-center justify-between">
-        <span className="text-[17px] font-bold text-[#B4A896]">{lever.title}</span>
-        <button onClick={onToggle} className="text-[13px] font-bold text-[#B02200] hover:text-[#EA2C00] transition-colors">+ Add if the pull has it</button>
-      </div>
-    );
-  }
+
+/** The engine's own multiplicand formula string + the engine's value. */
+function WorkedMath({ summary, value }: { summary: string; value: number }) {
   return (
-    <div className="py-8 border-b border-[#E8E2DA]">
-      <div className="flex items-center justify-between">
-        <span className="text-[17px] font-bold text-[#1A1A1A]">{lever.title}</span>
-        {lever.optional && <button onClick={onToggle} className="text-[12px] font-bold text-[#B4A896] hover:text-[#EA2C00] transition-colors">Remove</button>}
+    <div className="mt-7 pt-6 border-t border-[#EFE9E0]">
+      <div className="text-[10.5px] font-extrabold tracking-[0.14em] uppercase text-[#A69A88] mb-3">How the number is built</div>
+      <div className="text-[15px] leading-[1.9] text-[#5E534A]">{summary || "Turn this driver on to build the number."}</div>
+      <div className="mt-4 flex items-baseline justify-between">
+        <span className="text-[13px] text-[#A69A88]">equals</span>
+        <span className="font-abridge text-[34px] leading-none text-[#EA2C00]">{fmtShort(value)}<span className="text-[15px] text-[#9A8C7A]"> a year</span></span>
       </div>
-      {lever.note && <p className="mt-2 text-[13px] leading-[1.55] text-[#8C8073] max-w-[560px]">{lever.note}</p>}
-      <div className="mt-5">
-        <BeforeAfter label={`${lever.unit} / ${lever.unit === "min" ? "care event" : "visit"}`} table={lever.table} unit={lever.unit} step={lever.before.step}
-          before={fields[lever.before.k]} after={fields[lever.after.k]} onBefore={(v) => setF(lever.before.k, v)} onAfter={(v) => setF(lever.after.k, v)} lowerIsBetter={lever.unit === "min"} />
-      </div>
-      <div className="flex items-center justify-between gap-6 mt-6">
-        <span className="text-[14px] text-[#5E534A]">{lever.rate.label}</span>
-        <NumInput value={fields[lever.rate.k]} onChange={(v) => setF(lever.rate.k, v)} prefix={lever.rate.prefix} step={lever.rate.step} w="w-[92px]" />
-      </div>
-      {(() => {
-        const isTime = lever.unit === "min";
-        const before = fields[lever.before.k]; const after = fields[lever.after.k]; const rate = fields[lever.rate.k];
-        const delta = isTime ? Math.max(0, before - after) : Math.max(0, after - before);
-        return (
-          <div className="mt-7 pt-6 border-t border-[#EFE9E0]">
-            <div className="text-[10.5px] font-extrabold tracking-[0.14em] uppercase text-[#A69A88] mb-3">How the number is built</div>
-            <div className="text-[15px] leading-[2] text-[#5E534A]">
-              {isTime
-                ? <><Mono>{delta.toFixed(1)} min</Mono> saved ÷ 60 × <Mono>${fmtInt(rate)}/hr</Mono> = <Mono>${perEnc.toFixed(2)}</Mono> per {visitWord}</>
-                : <><Mono>{delta.toFixed(2)} {lever.unit}</Mono> lift × <Mono>${rate}</Mono> per {lever.unit} = <Mono>${perEnc.toFixed(2)}</Mono> per {visitWord}</>}
-              <br />
-              <Mono>${perEnc.toFixed(2)}</Mono> per {visitWord} × <Mono>{fmtInt(encToday)}</Mono> Abridge {visitWord}s a year
-            </div>
-            <div className="mt-4 flex items-baseline justify-between">
-              <span className="text-[13px] text-[#A69A88]">equals</span>
-              <span className="font-abridge text-[34px] leading-none text-[#EA2C00]">{fmtShort(perYear)}<span className="text-[15px] text-[#9A8C7A]"> a year</span></span>
-            </div>
-          </div>
-        );
-      })()}
     </div>
   );
 }
 
-function HccCard({ cfg, on, onToggle, popIdx, onPop, members, setMembers, before, setBefore, after, setAfter, perHcc, setPerHcc, delta, value }: {
-  cfg: HccCfg; on: boolean; onToggle: () => void; popIdx: number; onPop: (i: number) => void;
-  members: number; setMembers: (n: number) => void; before: number; setBefore: (n: number) => void;
-  after: number; setAfter: (n: number) => void; perHcc: number; setPerHcc: (n: number) => void; delta: number; value: number;
+/** Renders one engine driver: before/after (if any) + its editable fields + the worked math. */
+function DriverCard({ driver, vals, setVal, on, onToggle, value, summary, eligibleEncounters }: {
+  driver: RoiDriver; vals: Record<string, number>; setVal: (k: string, v: number) => void;
+  on: boolean; onToggle: () => void; value: number; summary: string; eligibleEncounters: number;
 }) {
+  const workStr = driver.work ? driver.work(vals, eligibleEncounters) : summary;
+  if (driver.optional && !on) {
+    return (
+      <div className="py-6 border-b border-[#E8E2DA] flex items-center justify-between gap-4">
+        <span className="text-[17px] font-bold text-[#B4A896]">{driver.title}</span>
+        <button onClick={onToggle} className="text-[13px] font-bold text-[#B02200] hover:text-[#EA2C00] transition-colors whitespace-nowrap">+ Add if the pull has it</button>
+      </div>
+    );
+  }
+  if (driver.kind === "hcc") {
+    return <HccDriverCard driver={driver} vals={vals} setVal={setVal} on={on} onToggle={onToggle} value={value} summary={summary} />;
+  }
+  const ba = driver.beforeAfter;
+  return (
+    <div className="py-8 border-b border-[#E8E2DA]">
+      <div className="flex items-center justify-between">
+        <span className="text-[17px] font-bold text-[#1A1A1A]">{driver.title}</span>
+        {driver.optional && <button onClick={onToggle} className="text-[12px] font-bold text-[#B4A896] hover:text-[#EA2C00] transition-colors">Remove</button>}
+      </div>
+      {driver.note && <p className="mt-2 text-[13px] leading-[1.55] text-[#8C8073] max-w-[560px]">{driver.note}</p>}
+      {ba && (
+        <div className="mt-5">
+          <BeforeAfter label={ba.label} table={ba.table} unit={ba.unit} step={ba.step ?? 0.01}
+            before={vals[ba.beforeK]} after={vals[ba.afterK]}
+            onBefore={(v) => setVal(ba.beforeK, v)} onAfter={(v) => setVal(ba.afterK, v)}
+            lowerIsBetter={ba.lowerIsBetter} />
+        </div>
+      )}
+      <div className="mt-2">
+        {driver.fields.map((f) => (
+          <FieldRow key={f.k} field={f} value={vals[f.k]} onChange={(v) => setVal(f.k, v)} />
+        ))}
+      </div>
+      <WorkedMath summary={workStr} value={value} />
+    </div>
+  );
+}
+
+function FieldRow({ field, value, onChange }: { field: RoiField; value: number; onChange: (n: number) => void }) {
+  return (
+    <div className="flex items-center justify-between gap-6 mt-5">
+      <div className="min-w-0">
+        <div className="text-[14px] text-[#5E534A]">{field.label}</div>
+        {field.hint && <div className="text-[12px] text-[#A69A88] mt-0.5">{field.hint}</div>}
+      </div>
+      <NumInput value={value} onChange={onChange} prefix={field.prefix} suffix={field.suffix} step={field.step ?? 1} w="w-[120px]" />
+    </div>
+  );
+}
+
+/** Risk capture (HCC) — valued on the panel, once per member per year, never per visit. */
+function HccDriverCard({ driver, vals, setVal, on, onToggle, value, summary }: {
+  driver: RoiDriver; vals: Record<string, number>; setVal: (k: string, v: number) => void;
+  on: boolean; onToggle: () => void; value: number; summary: string;
+}) {
+  const pops = driver.populations ?? [];
+  const [popIdx, setPopIdx] = useState(0);
   if (!on) {
     return (
-      <div className="py-6 border-b border-[#E8E2DA] flex items-center justify-between">
-        <span className="text-[17px] font-bold text-[#B4A896]">Risk capture (HCC)</span>
-        <button onClick={onToggle} className="text-[13px] font-bold text-[#B02200] hover:text-[#EA2C00] transition-colors">+ Add if they carry risk</button>
+      <div className="py-6 border-b border-[#E8E2DA] flex items-center justify-between gap-4">
+        <span className="text-[17px] font-bold text-[#B4A896]">{driver.title}</span>
+        <button onClick={onToggle} className="text-[13px] font-bold text-[#B02200] hover:text-[#EA2C00] transition-colors whitespace-nowrap">+ Add if they carry risk</button>
       </div>
     );
   }
   return (
     <div className="py-8 border-b border-[#E8E2DA]">
       <div className="flex items-center justify-between">
-        <span className="text-[17px] font-bold text-[#1A1A1A]">Risk capture (HCC)</span>
+        <span className="text-[17px] font-bold text-[#1A1A1A]">{driver.title}</span>
         <button onClick={onToggle} className="text-[12px] font-bold text-[#B4A896] hover:text-[#EA2C00] transition-colors">Remove</button>
       </div>
       <p className="mt-2 text-[13px] leading-[1.55] text-[#8C8073] max-w-[520px]">Risk capture is valued on the panel — once per member, per year — not per visit.</p>
 
-      {/* population */}
-      <div className="mt-5 flex items-center gap-2">
-        {cfg.populations.map((p, i) => (
-          <button key={p.label} onClick={() => onPop(i)}
-            className={`text-[12px] font-bold rounded-full px-3.5 py-1.5 transition-colors ${i === popIdx ? "bg-[#1A1A1A] text-white" : "border border-[#E8E2DA] text-[#8C8073] hover:border-[#1A1A1A] hover:text-[#1A1A1A]"}`}>
-            {p.label}
-          </button>
-        ))}
-      </div>
+      {pops.length > 0 && (
+        <div className="mt-5 flex items-center gap-2 flex-wrap">
+          {pops.map((p, i) => (
+            <button key={p.label} onClick={() => { setPopIdx(i); setVal("hccPerHcc", p.perHcc); }}
+              className={`text-[12px] font-bold rounded-full px-3.5 py-1.5 transition-colors ${i === popIdx ? "bg-[#1A1A1A] text-white" : "border border-[#E8E2DA] text-[#8C8073] hover:border-[#1A1A1A] hover:text-[#1A1A1A]"}`}>
+              {p.label}
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className="flex items-center justify-between gap-6 mt-6">
         <div className="min-w-0">
           <div className="text-[14px] font-medium text-[#1A1A1A]">Risk-adjusted members Abridge covers</div>
-          <div className="text-[12.5px] text-[#A69A88] mt-1">the {cfg.populations[popIdx].label} panel seen by Abridge providers</div>
+          <div className="text-[12.5px] text-[#A69A88] mt-1">the {pops[popIdx]?.label ?? ""} panel seen by Abridge providers</div>
         </div>
-        <NumInput value={members} onChange={setMembers} w="w-[128px]" />
+        <NumInput value={vals.hccMembers} onChange={(v) => setVal("hccMembers", v)} w="w-[128px]" />
       </div>
 
       <div className="mt-6">
         <BeforeAfter label="HCC captured per member, per year" table="risk-adjustment report" unit="HCC" step={0.01}
-          before={before} after={after} onBefore={setBefore} onAfter={setAfter} />
+          before={vals.hccBefore} after={vals.hccAfter} onBefore={(v) => setVal("hccBefore", v)} onAfter={(v) => setVal("hccAfter", v)} />
       </div>
       <div className="flex items-center justify-between gap-6 mt-6">
         <span className="text-[14px] text-[#5E534A]">Value per HCC captured (RAF)</span>
-        <NumInput value={perHcc} onChange={setPerHcc} prefix="$" w="w-[104px]" />
+        <NumInput value={vals.hccPerHcc} onChange={(v) => setVal("hccPerHcc", v)} prefix="$" w="w-[104px]" />
+      </div>
+      <div className="flex items-center justify-between gap-6 mt-5">
+        <span className="text-[14px] text-[#5E534A]">Realization (audit survival)</span>
+        <NumInput value={vals.hccRealization} onChange={(v) => setVal("hccRealization", v)} suffix="%" w="w-[104px]" />
       </div>
 
+      <WorkedMath summary={summary} value={value} />
+    </div>
+  );
+}
+
+/** Reclaimed documentation time, shown as a COUNT of clinician hours — never dollarized here. */
+function TimeBackBlock({ table, before, after, onBefore, onAfter, encToday, hours, dollarized }: {
+  table: string; before: number; after: number; onBefore: (n: number) => void; onAfter: (n: number) => void;
+  encToday: number; hours: number; dollarized: boolean;
+}) {
+  return (
+    <div className="py-8 border-b border-[#E8E2DA]">
+      <div className="text-[17px] font-bold text-[#1A1A1A]">Time back in the day</div>
+      <div className="mt-5">
+        <BeforeAfter label="Minutes in notes per encounter" table={table} unit="min" step={0.1}
+          before={before} after={after} onBefore={onBefore} onAfter={onAfter} lowerIsBetter />
+      </div>
       <div className="mt-7 pt-6 border-t border-[#EFE9E0]">
         <div className="text-[10.5px] font-extrabold tracking-[0.14em] uppercase text-[#A69A88] mb-3">How the number is built</div>
-        <div className="text-[15px] leading-[2] text-[#5E534A]">
-          <Mono>{delta.toFixed(2)} HCC</Mono> more per member × <Mono>{fmtInt(members)}</Mono> members × <Mono>${fmtInt(perHcc)}</Mono> per HCC
+        <div className="text-[15px] leading-[1.9] text-[#5E534A]">
+          <Mono>{Math.max(0, before - after).toFixed(1)} min</Mono> saved × <Mono>{fmtInt(encToday)}</Mono> Abridge encounters ÷ 60
         </div>
         <div className="mt-4 flex items-baseline justify-between">
           <span className="text-[13px] text-[#A69A88]">equals</span>
-          <span className="font-abridge text-[34px] leading-none text-[#EA2C00]">{fmtShort(value)}<span className="text-[15px] text-[#9A8C7A]"> a year</span></span>
+          <span className="font-abridge text-[34px] leading-none text-[#1A1A1A]">{fmtInt(hours)}<span className="text-[15px] text-[#9A8C7A]"> clinician hours a year</span></span>
         </div>
+        <p className="mt-4 text-[13px] leading-[1.55] text-[#8C8073]">
+          {dollarized
+            ? "Shown as time given back. The share reinvested into visits is valued below, in Patient access."
+            : "Shown as time given back — never converted to a made-up dollar."}
+        </p>
       </div>
     </div>
   );
@@ -564,7 +557,7 @@ function NavRow({ onBack, onNext, nextLabel }: { onBack?: () => void; onNext: ()
 }
 
 function AnswerStep(p: {
-  partnerName: string; cfg: SettingCfg; breakdown: { title: string; value: number }[];
+  partnerName: string; breakdown: { title: string; value: number }[];
   todayValue: number; potentialValue: number; headroom: number; hoursReclaimed: number;
   adoptionNow: number; utilNow: number; totalProviders: number;
   targetAdoptionPct: number; setTargetAdoptionPct: (n: number) => void; targetUtilPct: number; setTargetUtilPct: (n: number) => void;
@@ -577,7 +570,7 @@ function AnswerStep(p: {
   const headroomPct = Math.max(0, 100 - todayPct);
   const dollarLevers = p.breakdown;
   const makeup = [
-    dollarLevers.map((r) => r.title.toLowerCase()).join(" and "),
+    dollarLevers.map((r) => r.title.toLowerCase()).join(", "),
     p.hoursReclaimed > 0 ? `${fmtInt(p.hoursReclaimed)} clinician hours back` : "",
   ].filter(Boolean).join(", plus ");
 
@@ -588,7 +581,7 @@ function AnswerStep(p: {
       <h1 className="font-abridge text-[30px] sm:text-[36px] leading-[1.12] text-[#1A1A1A] mt-4">Abridge is making {p.partnerName}</h1>
       <div className="font-abridge text-[66px] sm:text-[92px] leading-[0.88] text-[#EA2C00] mt-3">{fmtShort(todayShown)}<span className="text-[26px] text-[#9A8C7A] font-normal"> a year</span></div>
       <p className="mt-5 text-[16px] leading-[1.6] text-[#5E534A] max-w-[560px]">
-        From {makeup} — at today's {Math.round(p.adoptionNow)}% rollout, {Math.round(p.utilNow)}% utilization.
+        {makeup ? <>From {makeup} — at today's {Math.round(p.adoptionNow)}% rollout, {Math.round(p.utilNow)}% utilization.</> : "Turn on the drivers your pull supports to build the number."}
       </p>
 
       {/* Beat 2 — the upside */}
@@ -596,7 +589,7 @@ function AnswerStep(p: {
         <div className={EYEBROW}>The upside, if they expand</div>
         <div className="mt-4 flex flex-wrap items-baseline gap-x-5 gap-y-1">
           <span className="font-abridge text-[44px] sm:text-[56px] leading-[0.9] text-[#1A1A1A]">{fmtShort(potentialShown)}<span className="text-[20px] text-[#9A8C7A] font-normal"> a year</span></span>
-          <span className="font-abridge text-[22px] text-[#EA2C00]">+{fmtShort(p.potentialValue - p.todayValue)} on the table</span>
+          <span className="font-abridge text-[22px] text-[#EA2C00]">+{fmtShort(p.headroom)} on the table</span>
         </div>
 
         {/* the meter: solid coral = already made, light = reachable headroom */}
@@ -607,17 +600,17 @@ function AnswerStep(p: {
           </div>
           <div className="flex justify-between mt-2.5 text-[12.5px]">
             <span className="flex items-center gap-1.5 text-[#8C8073]"><span className="w-2 h-2 rounded-full bg-[#EA2C00]" /> Made today {fmtShort(p.todayValue)}</span>
-            <span className="flex items-center gap-1.5 text-[#8C8073]"><span className="w-2 h-2 rounded-full bg-[#F6B7A6]" /> On the table {fmtShort(p.potentialValue - p.todayValue)}</span>
+            <span className="flex items-center gap-1.5 text-[#8C8073]"><span className="w-2 h-2 rounded-full bg-[#F6B7A6]" /> On the table {fmtShort(p.headroom)}</span>
           </div>
         </div>
 
         {/* the dials */}
         <div className="mt-9 grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-6">
           <Slider label="More providers on Abridge" value={p.targetAdoptionPct} min={Math.round(p.adoptionNow)} onChange={p.setTargetAdoptionPct} right={`${fmtInt(Math.round(p.totalProviders * p.targetAdoptionPct / 100))} of ${fmtInt(p.totalProviders)}`} />
-          <Slider label="Using it on more of their visits" value={p.targetUtilPct} min={Math.round(p.utilNow)} onChange={p.setTargetUtilPct} right={`${p.targetUtilPct}%`} />
+          <Slider label="Using it on more of their encounters" value={p.targetUtilPct} min={Math.round(p.utilNow)} onChange={p.setTargetUtilPct} right={`${p.targetUtilPct}%`} />
         </div>
         <p className="mt-6 text-[13.5px] leading-[1.6] text-[#8C8073] max-w-[560px]">
-          Same per-visit lift you measured, on more visits. Volume grows, the effect stays exactly where the data put it.
+          Same measured effect, on more encounters. Volume grows, the effect stays exactly where the data put it.
         </p>
       </div>
 
