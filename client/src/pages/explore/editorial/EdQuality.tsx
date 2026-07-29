@@ -62,7 +62,7 @@ const HEADING_COPY: Record<"outpatient" | "ed" | "inpatient", { h1: string; sub:
   },
 };
 
-function ProofChainScreen({ state, onNext, onBack, setting }: { state: ExploreState; onNext: () => void; onBack: () => void; setting: "outpatient" | "ed" | "inpatient" }) {
+function ProofChainScreen({ state, onNext, onBack, onHome, setting }: { state: ExploreState; onNext: () => void; onBack: () => void; onHome: () => void; setting: "outpatient" | "ed" | "inpatient" }) {
   // The proof chain is the CURATED set from the locked mockup (not every
   // qualitative driver), in this exact order. Matching the mockups screen-for-screen.
   const allDrivers = getDriversForPage("Quality", setting).filter((d) => !d.childOfDriverId);
@@ -79,7 +79,7 @@ function ProofChainScreen({ state, onNext, onBack, setting }: { state: ExploreSt
 
   return (
     <EditorialShell>
-      <EditorialHeader stepName="Quality" stepIndex={stepIndex} onBack={onBack} />
+      <EditorialHeader stepName="Quality" stepIndex={stepIndex} onBack={onBack} onHome={onHome} />
       <div className="max-w-[1160px] mx-auto px-5 sm:px-8 lg:px-12 pt-11 pb-[60px]">
         <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#5E534A]">Explore · Step 7 of 9</div>
         <h1 className="font-abridge text-[26px] sm:text-[32px] lg:text-[38px] leading-[1.08] text-[#1A1A1A] mt-[10px] max-w-[700px]">{copy.h1}</h1>
@@ -165,12 +165,14 @@ function NursingQualityScreen({
   totalHoursSaved,
   onNext,
   onBack,
+  onHome,
 }: {
   state: ExploreState;
   updateState: (updates: Partial<ExploreState>) => void;
   totalHoursSaved: number;
   onNext: () => void;
   onBack: () => void;
+  onHome: () => void;
 }) {
   const dq = state.docQualityInputs;
   const engine = computeAllDriverValues(state, totalHoursSaved);
@@ -221,7 +223,7 @@ function NursingQualityScreen({
 
   return (
     <EditorialShell>
-      <EditorialHeader stepName="Quality" stepIndex={7} onBack={onBack} />
+      <EditorialHeader stepName="Quality" stepIndex={7} onBack={onBack} onHome={onHome} />
       <div className="max-w-[1160px] mx-auto px-5 sm:px-8 lg:px-12 pt-11 pb-[60px]">
         <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#5E534A]">Explore · Step 7 of 9</div>
         <h1 className="font-abridge text-[26px] sm:text-[32px] lg:text-[38px] leading-[1.08] text-[#1A1A1A] mt-[10px] max-w-[700px]">
@@ -488,20 +490,20 @@ function NursingQualityScreen({
   );
 }
 
-export default function EdQuality({ state, updateState, totalHoursSaved, onNext, onBack }: EdQualityProps) {
+export default function EdQuality({ state, updateState, totalHoursSaved, onNext, onBack, onHome }: EdQualityProps) {
   const setting = state.careSetting;
 
   if (setting === "nursing") {
-    return <NursingQualityScreen state={state} updateState={updateState} totalHoursSaved={totalHoursSaved} onNext={onNext} onBack={onBack} />;
+    return <NursingQualityScreen state={state} updateState={updateState} totalHoursSaved={totalHoursSaved} onNext={onNext} onBack={onBack} onHome={onHome} />;
   }
 
   if (setting === "outpatient" || setting === "ed" || setting === "inpatient") {
-    return <ProofChainScreen state={state} onNext={onNext} onBack={onBack} setting={setting} />;
+    return <ProofChainScreen state={state} onNext={onNext} onBack={onBack} onHome={onHome} setting={setting} />;
   }
 
   return (
     <EditorialShell>
-      <EditorialHeader stepName="Quality" stepIndex={7} onBack={onBack} />
+      <EditorialHeader stepName="Quality" stepIndex={7} onBack={onBack} onHome={onHome} />
       <div className="max-w-[1160px] mx-auto px-5 sm:px-8 lg:px-12 pt-11 pb-[60px]">
         <p className="text-[15px] text-[#5E534A]">Pick a care setting first.</p>
       </div>

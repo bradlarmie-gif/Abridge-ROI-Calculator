@@ -91,7 +91,7 @@ const SETTING_LABEL: Record<ExploreCareSetting, string> = {
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
-export default function EdCareSetting({ selectedSetting, onSelectSetting, onNext, onBack, disabledSettings = [], onDataRequest }: Props) {
+export default function EdCareSetting({ selectedSetting, onSelectSetting, onNext, onBack, onHome, disabledSettings = [], onDataRequest }: Props) {
   const [hovered, setHovered] = useState<ExploreCareSetting | null>(null);
 
   // Preview follows the pointer, falls back to the selection, then to the
@@ -101,7 +101,7 @@ export default function EdCareSetting({ selectedSetting, onSelectSetting, onNext
 
   return (
     <EditorialShell>
-      <EditorialHeader stepName="Care Setting" stepIndex={1} onDataRequest={onDataRequest} onBack={onBack} />
+      <EditorialHeader stepName="Care Setting" stepIndex={1} onDataRequest={onDataRequest} onBack={onBack} onHome={onHome} />
       <div className="max-w-[1120px] mx-auto px-10 pt-[52px] pb-[60px]">
         <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#5E534A]">Explore · Step 1 of 9</div>
         <h1 className="font-abridge text-[27px] sm:text-[34px] lg:text-[40px] leading-[1.08] text-[#1A1A1A] mt-[10px] max-w-[680px]">

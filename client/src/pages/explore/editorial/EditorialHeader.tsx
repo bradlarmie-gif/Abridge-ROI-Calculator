@@ -12,11 +12,13 @@ export function EditorialHeader({
   stepIndex, // 1-based
   onDataRequest,
   onBack,
+  onHome,
 }: {
   stepName: string;
   stepIndex: number;
   onDataRequest?: () => void;
   onBack?: () => void;
+  onHome?: () => void;
 }) {
   return (
     <div className="h-[58px] border-b border-[#E8E2DA]">
@@ -32,7 +34,14 @@ export function EditorialHeader({
               <ArrowLeft className="w-4 h-4" />
             </button>
           )}
-          <div className="font-abridge text-[18px] sm:text-[20px] text-[#EA2C00] tracking-[0.5px]">ABRIDGE</div>
+          <button
+            type="button"
+            onClick={onHome}
+            aria-label="Home"
+            className="font-abridge text-[18px] sm:text-[20px] text-[#EA2C00] tracking-[0.5px] hover:opacity-70 transition-opacity"
+          >
+            ABRIDGE
+          </button>
         </div>
         {/* Center step label: desktop only. On smaller screens the screen's own
             "EXPLORE · STEP N OF 9" eyebrow carries it, so we drop it to avoid the collision. */}

@@ -46,7 +46,7 @@ const PAY_LABELS: { key: ExploreState["paymentModel"]; label: string }[] = [
   { key: "both", label: "Both" },
 ];
 
-export default function EdRevenue({ state, updateState, totalHoursSaved, onNext, onBack }: EdRevenueProps) {
+export default function EdRevenue({ state, updateState, totalHoursSaved, onNext, onBack, onHome }: EdRevenueProps) {
   const setting = state.careSetting;
   const dq = state.docQualityInputs;
   const td = state.timeDriverInputs;
@@ -530,7 +530,7 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
 
   return (
     <EditorialShell>
-      <EditorialHeader stepName="Revenue" stepIndex={6} onBack={onBack} />
+      <EditorialHeader stepName="Revenue" stepIndex={6} onBack={onBack} onHome={onHome} />
       <div className="max-w-[1160px] mx-auto px-5 sm:px-8 lg:px-12 pt-11 pb-[60px]">
         <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#5E534A]">Explore · Step 6 of 9</div>
         <h1 className="font-abridge text-[26px] sm:text-[32px] lg:text-[38px] leading-[1.08] text-[#1A1A1A] mt-[10px] max-w-[680px]">{heading}</h1>

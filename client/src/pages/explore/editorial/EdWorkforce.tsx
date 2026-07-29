@@ -127,7 +127,7 @@ function ModePicker({ mode, onChange }: { mode: "position" | "hourly"; onChange:
   );
 }
 
-export default function EdWorkforce({ state, updateState, totalHoursSaved, onNext, onBack }: EdWorkforceProps) {
+export default function EdWorkforce({ state, updateState, totalHoursSaved, onNext, onBack, onHome }: EdWorkforceProps) {
   const setting = state.careSetting;
   const td = state.timeDriverInputs;
   const isIP = setting === "inpatient";
@@ -561,7 +561,7 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
 
   return (
     <EditorialShell>
-      <EditorialHeader stepName="Workforce" stepIndex={5} onBack={onBack} />
+      <EditorialHeader stepName="Workforce" stepIndex={5} onBack={onBack} onHome={onHome} />
       <div className="max-w-[1160px] mx-auto px-5 sm:px-8 lg:px-12 pt-11 pb-[60px]">
         <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#5E534A]">Explore · Step 5 of 9</div>
         <h1 className="font-abridge text-[26px] sm:text-[32px] lg:text-[38px] leading-[1.08] text-[#1A1A1A] mt-[10px]">What is Abridge worth to your workforce?</h1>

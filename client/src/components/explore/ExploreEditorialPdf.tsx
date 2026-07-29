@@ -1,5 +1,7 @@
 import { Fragment, type CSSProperties, type ReactNode } from "react";
 import type { ExplorePDFData, ExplorePDFQuadrantData } from "./ExplorePDFExport";
+import abridgeLogoRed from "@assets/abridge-logo-wordmark-red_1769187440253.png";
+import abridgeSymbol from "@assets/abridge-logo-symbol_1774906992195.png";
 
 // ────────────────────────────────────────────────────────────────
 // Editorial "Value Model" print-to-PDF document.
@@ -323,99 +325,83 @@ function Chain({ summary, value }: { summary?: string; value: number }): JSX.Ele
 
 // ───────────────────────── Page 1 · Cover ─────────────────────────
 
-const COVER_CHAPTERS: [string, string, string][] = [
-  ["01", "The number, grounded", "The total, tied to your real volume"],
-  ["02", "Where the value comes from", "Four value areas, and the math behind each"],
-  ["03", "The investment case", "Conservative to optimistic, and the price"],
-  ["04", "At full scale", "Where this goes as you roll out further"],
-];
-
+// The standard Abridge cover, matched to PDFCoverPage (the react-pdf cover
+// every other report uses) but expressed in this HTML-print document: white
+// page, red wordmark top-left, org name as the title, faint symbol corner
+// mark, disclaimer footer.
 function CoverPage({ data }: { data: ExplorePDFData }): JSX.Element {
+  const reportLabel = (() => {
+    switch (data.careSetting) {
+      case "ed":
+        return "EMERGENCY DEPARTMENT VALUE ASSESSMENT";
+      case "inpatient":
+        return "INPATIENT VALUE ASSESSMENT";
+      case "nursing":
+        return "NURSING VALUE ASSESSMENT";
+      default:
+        return "OUTPATIENT VALUE ASSESSMENT";
+    }
+  })();
+  const scope =
+    data.careSetting === "nursing"
+      ? `${fmtNum(data.nursingStaffedBeds ?? 0)} staffed beds`
+      : `${fmtNum(data.numberOfProviders)} providers`;
+  const subtitle = `${scope} · ${fmtNum(data.annualEncounters)} encounters · ${data.careSettingLabel}`;
+
   return (
-    <Page>
-      <div className="font-abridge" style={{ fontSize: 26, color: C.coral, letterSpacing: ".02em" }}>
-        ABRIDGE
-      </div>
-      <div style={{ ...sEyebrow, marginTop: 76 }}>Value Model</div>
-      <h1
-        className="font-abridge"
-        style={{ fontSize: 56, lineHeight: 1.04, color: C.ink, marginTop: 14, maxWidth: 600 }}
+    <div
+      style={{
+        width: 816,
+        height: 1056,
+        background: "#FFFFFF",
+        breakAfter: "page",
+        position: "relative",
+        overflow: "hidden",
+      }}
+    >
+      <img src={abridgeLogoRed} alt="Abridge" style={{ position: "absolute", top: 60, left: 64, width: 120 }} />
+      <img
+        src={abridgeSymbol}
+        alt=""
+        style={{ position: "absolute", bottom: 92, right: 10, width: 340, opacity: 0.06 }}
+      />
+
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          padding: "0 64px",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+        }}
       >
-        The value in your documentation, built from your numbers.
-      </h1>
-      <p style={{ fontSize: 15.5, color: C.muted, lineHeight: 1.5, marginTop: 18, maxWidth: 560 }}>
-        A model for {data.clientName}. Every figure is your own volume and economics, never a
-        benchmark, sized to what better documentation can realistically move.
-      </p>
-
-      <div style={{ ...sLbl, marginTop: 52, fontSize: 10.5 }}>The modeled value</div>
-      <div style={{ display: "flex", alignItems: "flex-end", gap: 30, marginTop: 8 }}>
-        <div>
-          <span className="font-abridge" style={{ fontSize: 82, lineHeight: 0.9, color: C.coral }}>
-            {fmtShort(data.totalAnnualValue)}
-          </span>
-          <span style={{ fontSize: 25, color: C.faint }}> / year</span>
+        <div style={{ fontSize: 11, color: "#666666", letterSpacing: "3px", textTransform: "uppercase", marginBottom: 16 }}>
+          {reportLabel}
         </div>
-        <div
-          style={{
-            fontSize: 14.5,
-            color: C.muted,
-            lineHeight: 1.45,
-            maxWidth: 250,
-            paddingBottom: 8,
-          }}
+        <h1
+          className="font-abridge"
+          style={{ fontSize: 48, lineHeight: 1.12, color: "#1A1A1A", letterSpacing: "-0.5px", margin: 0, marginBottom: 20, maxWidth: 620 }}
         >
-          Across four value areas at today's {data.utilizationPercent}% adoption. Net of investment,
-          about a {data.roi.toFixed(1)}× return.
+          {data.clientName}
+        </h1>
+        <div style={{ width: 80, height: 3, background: C.coral, marginBottom: 24 }} />
+        <div style={{ fontSize: 17, color: "#666666", marginBottom: 44 }}>{subtitle}</div>
+        <div style={{ fontSize: 10, color: "#999999", letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: 6 }}>
+          Prepared by
+        </div>
+        <div style={{ fontSize: 14, color: "#666666" }}>
+          {data.preparedBy} {"·"} {data.date}
         </div>
       </div>
 
-      <div style={{ ...sLbl, marginTop: 50, fontSize: 10.5 }}>Inside this model</div>
-      <div style={{ marginTop: 12 }}>
-        {COVER_CHAPTERS.map(([no, title, desc]) => (
-          <div
-            key={no}
-            style={{ display: "flex", padding: "14px 0", borderBottom: `1px solid ${C.hair}` }}
-          >
-            <div className="font-abridge" style={{ width: 44, fontSize: 18, color: C.off }}>
-              {no}
-            </div>
-            <div className="font-abridge" style={{ width: 250, fontSize: 20 }}>
-              {title}
-            </div>
-            <div style={{ fontSize: 14, color: C.faint, alignSelf: "center" }}>{desc}</div>
-          </div>
-        ))}
-      </div>
-
-      <div style={{ marginTop: "auto" }}>
-        <div style={{ ...sRule, marginBottom: 15 }} />
-        <div style={{ display: "flex", gap: 56 }}>
-          <div>
-            <div style={sLbl}>Organization</div>
-            <div className="font-abridge" style={{ fontSize: 17, marginTop: 5 }}>
-              {data.clientName}
-            </div>
-          </div>
-          <div>
-            <div style={sLbl}>Care setting</div>
-            <div className="font-abridge" style={{ fontSize: 17, marginTop: 5 }}>
-              {data.careSettingLabel}
-            </div>
-          </div>
-          <div>
-            <div style={sLbl}>Prepared</div>
-            <div className="font-abridge" style={{ fontSize: 17, marginTop: 5 }}>
-              {data.date}
-            </div>
-          </div>
-        </div>
-        <div style={{ fontSize: 10, color: C.faint, lineHeight: 1.4, marginTop: 15 }}>
-          Powered by Abridge · abridge.com · Built from partner-provided inputs; results depend on
-          adoption and how teams act on what the documentation surfaces.
+      <div style={{ position: "absolute", bottom: 44, left: 64, right: 64, borderTop: "1px solid #E0E0E0", paddingTop: 12 }}>
+        <div style={{ fontSize: 10.5, color: "#999999", lineHeight: 1.5 }}>
+          This assessment is for planning purposes. Every figure is built from partner-provided volume and
+          economics, and results depend on adoption and how teams act on what the documentation surfaces.
         </div>
       </div>
-    </Page>
+    </div>
   );
 }
 

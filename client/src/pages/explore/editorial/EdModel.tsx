@@ -116,6 +116,7 @@ export default function EdModel({
   onEdit,
   onAddToProforma,
   onBack,
+  onHome,
 }: Props) {
   const { toast } = useToast();
   const isNursing = state.careSetting === "nursing";
@@ -429,7 +430,7 @@ export default function EdModel({
 
   return (
     <EditorialShell>
-      <EditorialHeader stepName="Your Model" stepIndex={9} onBack={onBack} />
+      <EditorialHeader stepName="Your Model" stepIndex={9} onBack={onBack} onHome={onHome} />
       <div className="max-w-[1160px] mx-auto px-5 sm:px-8 lg:px-12 pt-[44px] pb-[60px]">
         <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#5E534A]">Explore · Step 9 of 9</div>
         <h1 className="font-abridge text-[26px] sm:text-[32px] lg:text-[38px] leading-[1.08] text-[#1A1A1A] mt-[10px]">Your model.</h1>
