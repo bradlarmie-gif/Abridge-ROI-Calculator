@@ -1,11 +1,6 @@
 import { useState, useEffect } from "react";
-import {
-  MethodologyFramework,
-  MethodologyOutpatient,
-  MethodologyED,
-  MethodologyInpatient,
-  MethodologyNursing,
-} from "./methodology";
+import { MethodologyFramework } from "./methodology";
+import { MethodologyEditorialFor } from "./methodology/editorial/MethodologyEditorial";
 
 interface LearnPathProps {
   onBack: () => void;
@@ -45,13 +40,18 @@ export default function LearnPath({ onBack, onStartCalculator, initialScreen }: 
   // Render the appropriate methodology page based on current screen
   switch (currentScreen) {
     case "outpatient":
-      return <MethodologyOutpatient onBack={handleBackToHome} onHome={onBack} onNavigateToSetting={handleNavigateToSetting} onBuildModel={() => onStartCalculator?.("outpatient")} />;
     case "ed":
-      return <MethodologyED onBack={handleBackToHome} onHome={onBack} onNavigateToSetting={handleNavigateToSetting} onBuildModel={() => onStartCalculator?.("ed")} />;
     case "inpatient":
-      return <MethodologyInpatient onBack={handleBackToHome} onHome={onBack} onNavigateToSetting={handleNavigateToSetting} onBuildModel={() => onStartCalculator?.("inpatient")} />;
     case "nursing":
-      return <MethodologyNursing onBack={handleBackToHome} onHome={onBack} onNavigateToSetting={handleNavigateToSetting} onBuildModel={() => onStartCalculator?.("nursing")} />;
+      return (
+        <MethodologyEditorialFor
+          setting={currentScreen}
+          onBack={handleBackToHome}
+          onHome={onBack}
+          onNavigateToSetting={handleNavigateToSetting}
+          onBuildModel={() => onStartCalculator?.(currentScreen)}
+        />
+      );
     case "framework":
     case "home":
     default:
