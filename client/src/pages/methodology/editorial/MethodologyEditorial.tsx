@@ -1,63 +1,30 @@
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import {
   type MethodologyData,
   type MethodDomain,
   type MethodArcStage,
   METHODOLOGY_DATA,
 } from "./methodologyData";
+import { MethodologyHeader, type MethodologyNavKey } from "./MethodologyHeader";
 
 interface Props {
   data: MethodologyData;
-  onBack: () => void; // back to the methodology hub
+  onBack: () => void; // exit Learn (back arrow)
   onHome: () => void; // exit Learn entirely (wordmark)
   onNavigateToSetting?: (setting: string) => void;
   onBuildModel: () => void;
 }
 
-const SWITCHER: { key: MethodologyData["key"]; label: string }[] = [
-  { key: "outpatient", label: "Outpatient" },
-  { key: "ed", label: "Emergency" },
-  { key: "inpatient", label: "Inpatient" },
-  { key: "nursing", label: "Nursing" },
-];
-
 export default function MethodologyEditorial({ data, onBack, onHome, onNavigateToSetting, onBuildModel }: Props) {
   return (
     <div className="min-h-screen bg-[#FDFCFA] text-[#5E534A] antialiased">
-      {/* top bar */}
-      <div className="h-16 border-b border-[#E8E2DA]">
-        <div className="max-w-[1120px] mx-auto h-full px-5 sm:px-8 lg:px-14 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3 min-w-0">
-            <button
-              onClick={onBack}
-              aria-label="Back"
-              className="w-8 h-8 rounded-full border border-[#E8E2DA] bg-white flex items-center justify-center text-[#5E534A] hover:text-[#EA2C00] hover:border-[#EA2C00] transition-colors flex-shrink-0"
-            >
-              <ArrowLeft className="w-4 h-4" />
-            </button>
-            <button onClick={onHome} className="font-abridge text-[22px] text-[#EA2C00] tracking-[0.03em]">ABRIDGE</button>
-            <span className="hidden sm:inline text-[#B4A896]">|</span>
-            <span className="hidden sm:inline text-[11px] font-extrabold tracking-[0.14em] uppercase text-[#8C8073]">The Value Methodology</span>
-          </div>
-          {/* setting switcher */}
-          <div className="hidden md:flex items-center gap-1 bg-[#F2EDE5] rounded-[12px] p-1">
-            {SWITCHER.map((s) => (
-              <button
-                key={s.key}
-                onClick={() => onNavigateToSetting?.(s.key)}
-                className={
-                  s.key === data.key
-                    ? "text-[12px] font-bold rounded-[9px] px-3 py-1.5 bg-white shadow-sm text-[#1A1A1A]"
-                    : "text-[12px] font-semibold rounded-[9px] px-3 py-1.5 text-[#8C8073] hover:text-[#443A32] transition-colors"
-                }
-              >
-                {s.label}
-              </button>
-            ))}
-          </div>
-          <span className="md:hidden text-[11px] font-extrabold tracking-[0.14em] uppercase text-[#8C8073]">{data.settingLabel}</span>
-        </div>
-      </div>
+      <MethodologyHeader
+        active={data.key}
+        activeLabel={data.settingLabel}
+        onBack={onBack}
+        onHome={onHome}
+        onNavigate={(k: MethodologyNavKey) => onNavigateToSetting?.(k)}
+      />
 
       <div className="max-w-[1120px] mx-auto px-5 sm:px-8 lg:px-14">
         {/* hero */}

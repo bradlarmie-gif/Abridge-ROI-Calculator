@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { MethodologyFramework } from "./methodology";
 import { MethodologyEditorialFor } from "./methodology/editorial/MethodologyEditorial";
+import MethodologyContinuum from "./methodology/editorial/MethodologyContinuum";
 
 interface LearnPathProps {
   onBack: () => void;
@@ -9,12 +9,20 @@ interface LearnPathProps {
 }
 
 type CareSettingType = "outpatient" | "ed" | "nursing" | "inpatient";
-type LearnScreen = "framework" | "home" | "outpatient" | "ed" | "inpatient" | "nursing";
+// "framework"/"home" are kept for back-compat with existing deep links; both now
+// resolve to the default setting page since the dark hub has been retired.
+type LearnScreen = "framework" | "home" | "continuum" | "outpatient" | "ed" | "inpatient" | "nursing";
 
 export type { LearnScreen };
 
+const SETTINGS: CareSettingType[] = ["outpatient", "ed", "inpatient", "nursing"];
+
 export default function LearnPath({ onBack, onStartCalculator, initialScreen }: LearnPathProps) {
-  const [currentScreen, setCurrentScreen] = useState<LearnScreen>(initialScreen || "framework");
+  // Land directly on a setting; the switcher moves between settings and the
+  // continuum capstone. Legacy "framework"/"home" entries fall through to it.
+  const resolveInitial = (s?: LearnScreen): LearnScreen =>
+    s && (SETTINGS.includes(s as CareSettingType) || s === "continuum") ? s : "outpatient";
+  const [currentScreen, setCurrentScreen] = useState<LearnScreen>(resolveInitial(initialScreen));
 
   // Scroll to top on every screen change (mobile fix)
   useEffect(() => {
@@ -25,41 +33,22 @@ export default function LearnPath({ onBack, onStartCalculator, initialScreen }: 
     });
   }, [currentScreen]);
 
-  const handleSelectSetting = (setting: CareSettingType) => {
-    setCurrentScreen(setting);
+  const handleNavigate = (screen: string) => {
+    setCurrentScreen(screen as LearnScreen);
   };
 
-  const handleBackToHome = () => {
-    setCurrentScreen("framework");
-  };
-
-  const handleNavigateToSetting = (setting: string) => {
-    setCurrentScreen(setting as LearnScreen);
-  };
-
-  // Render the appropriate methodology page based on current screen
-  switch (currentScreen) {
-    case "outpatient":
-    case "ed":
-    case "inpatient":
-    case "nursing":
-      return (
-        <MethodologyEditorialFor
-          setting={currentScreen}
-          onBack={handleBackToHome}
-          onHome={onBack}
-          onNavigateToSetting={handleNavigateToSetting}
-          onBuildModel={() => onStartCalculator?.(currentScreen)}
-        />
-      );
-    case "framework":
-    case "home":
-    default:
-      return (
-        <MethodologyFramework
-          onBack={onBack}
-          onSelectSetting={handleSelectSetting}
-        />
-      );
+  if (currentScreen === "continuum") {
+    return <MethodologyContinuum onBack={onBack} onHome={onBack} onNavigate={handleNavigate} />;
   }
+
+  const setting = (SETTINGS.includes(currentScreen as CareSettingType) ? currentScreen : "outpatient") as CareSettingType;
+  return (
+    <MethodologyEditorialFor
+      setting={setting}
+      onBack={onBack}
+      onHome={onBack}
+      onNavigateToSetting={handleNavigate}
+      onBuildModel={() => onStartCalculator?.(setting)}
+    />
+  );
 }

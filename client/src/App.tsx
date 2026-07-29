@@ -188,7 +188,7 @@ function getInitialDeepLink(): InitialDeepLink {
 
   if (pathname.startsWith('/learn/')) {
     const setting = pathname.replace('/learn/', '');
-    const validScreens: LearnScreen[] = ['outpatient', 'ed', 'inpatient', 'nursing', 'home'];
+    const validScreens: LearnScreen[] = ['outpatient', 'ed', 'inpatient', 'nursing', 'continuum', 'home'];
     if (validScreens.includes(setting as LearnScreen)) {
       window.history.replaceState({}, '', '/');
       return { type: 'learn', screen: setting as LearnScreen };
