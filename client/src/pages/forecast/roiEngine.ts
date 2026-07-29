@@ -141,6 +141,17 @@ const dq = (s: ExploreState) => s.docQualityInputs as any;
 
 // ─── Reusable driver factories ──────────────────────────────────────────────
 
+/**
+ * The measured wRVU lift, clamped. The engine expresses lift as a PERCENT of
+ * the current wRVU (currentWrvu × custom%/100), so a before of 0 can't express
+ * an absolute lift and a before ≥ after is not a lift. Both the engine input
+ * and the printed "work" string derive from THIS single value, so the shown
+ * arithmetic and the displayed dollar can never disagree (the bug where a
+ * before > after showed "0.00 lift" but produced a negative dollar).
+ */
+const codingLift = (before: number, after: number) =>
+  before > 0 && after > before ? after - before : 0;
+
 /** Coding accuracy: OP emits `wrvu`, ED emits `edEmLevel`. Same fields + math. */
 const codingDriver = (id: "wrvu" | "edEmLevel", beforeDef: number, afterDef: number): RoiDriver => ({
   id,
@@ -164,19 +175,19 @@ const codingDriver = (id: "wrvu" | "edEmLevel", beforeDef: number, afterDef: num
     const d = dq(s);
     d.wrvuEnabled = true;
     const before = v.wrvuBefore;
-    const after = v.wrvuAfter;
+    const lift = codingLift(before, v.wrvuAfter);
     d.currentWrvu = before;
     d.wrvuScenario = "custom";
-    // Feed the measured before/after through the engine's %-lift knob so the
-    // engine's own lift = currentWrvu x custom% / 100 = (after - before).
-    d.wrvuCustomPercent = before > 0 ? ((after - before) / before) * 100 : 0;
+    // Feed the CLAMPED lift through the engine's %-lift knob so the engine's own
+    // lift = currentWrvu x custom% / 100 = clamped(after - before). No negatives.
+    d.wrvuCustomPercent = before > 0 ? (lift / before) * 100 : 0;
     d.conversionFactor = v.cf;
     d.wrvuRealization = v.wrvuRealization;
   },
   // Reads the measured lift directly (0.08), not "1.95 × 4.1025…% lift".
-  // (after - before) x CF x realization x encounters == the engine value.
+  // Uses the SAME clamped lift the engine input uses, so string == dollar.
   work: (v, enc) => {
-    const lift = Math.max(0, (v.wrvuAfter ?? 0) - (v.wrvuBefore ?? 0));
+    const lift = codingLift(v.wrvuBefore ?? 0, v.wrvuAfter ?? 0);
     const cf = v.cf % 1 === 0 ? `$${v.cf}` : `$${v.cf.toFixed(2)}`;
     return `${enc.toLocaleString("en-US")} encounters × ${lift.toFixed(2)} wRVU lift (${v.wrvuBefore} → ${v.wrvuAfter}) × ${cf}/wRVU × ${v.wrvuRealization}% realization`;
   },
@@ -361,7 +372,7 @@ const admissionDriver: RoiDriver = {
   domain: "Capacity",
   title: "Admission capture",
   optional: true,
-  note: "A share of recovered LWBS patients are admitted — capturing the admission margin too.",
+  note: "A share of recovered LWBS patients are admitted, capturing the admission margin too.",
   fields: [
     { k: "edAdmissionRate", label: "Share of recovered patients admitted", def: 18, suffix: "%" },
     { k: "edAdmissionRevenue", label: "Margin per admission", def: 4000, prefix: "$" },
@@ -699,8 +710,10 @@ export function buildRoiState(
   // Keep both wRVU (needs !== "risk") and HCC (needs !== "ffs") emittable.
   state.paymentModel = "both";
 
+  // When projecting the upside, never round BELOW the providers already on
+  // Abridge today — "expanding" can't mean fewer people than you have now.
   const providers = scale
-    ? Math.round(account.totalProviders * (scale.adoptionPct / 100))
+    ? Math.max(account.onAbridge, Math.round(account.totalProviders * (scale.adoptionPct / 100)))
     : account.onAbridge;
   state.numberOfProviders = providers;
   state.annualEncounters = providers * account.encPerProvider;

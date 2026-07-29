@@ -74,6 +74,27 @@ describe("ROI Calculator reconciles with the Explore engine", () => {
     expect(Math.abs(run.valueById.wrvu - expected)).toBeLessThan(Math.max(5, expected * 0.001));
   });
 
+  // Regression: a coding before > after (both positive, reachable via the UI)
+  // must NOT produce a negative dollar that corrupts the headline. The value is
+  // 0 and the shown-work lift is 0, and the total stays the sum of visible cards.
+  it("coding: before > after yields $0, not a negative that breaks reconciliation", () => {
+    const account = accountFor("outpatient");
+    const enabled = { ...defaultEnabled("outpatient"), wrvu: true };
+    const run = runRoi("outpatient", account, { ...defaultVals("outpatient"), wrvuBefore: 2.03, wrvuAfter: 1.95 }, enabled);
+    expect(run.valueById.wrvu).toBe(0);
+    // headline == sum of the per-driver values, and none is negative
+    const sum = DRIVERS.outpatient.reduce((a, d) => a + (run.valueById[d.id] ?? 0), 0);
+    expect(run.total).toBe(sum);
+    for (const d of DRIVERS.outpatient) expect(run.valueById[d.id] ?? 0).toBeGreaterThanOrEqual(0);
+  });
+
+  it("coding: a zero baseline (before = 0) yields $0, matching the shown work", () => {
+    const account = accountFor("outpatient");
+    const enabled = { ...defaultEnabled("outpatient"), wrvu: true };
+    const run = runRoi("outpatient", account, { ...defaultVals("outpatient"), wrvuBefore: 0, wrvuAfter: 2.03 }, enabled);
+    expect(run.valueById.wrvu).toBe(0);
+  });
+
   it("realization is a live lever: dropping it lowers the number", () => {
     const account = accountFor("outpatient");
     const enabled = { ...defaultEnabled("outpatient"), wrvu: true };

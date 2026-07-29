@@ -164,11 +164,12 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
 
   // ── headroom dials ────────────────────────────────────────────────────────
   const adoptionNow = totalProviders > 0 ? (onAbridge / totalProviders) * 100 : 0;
-  // Default the upside to a realistic reachable target: 70% of providers on
-  // Abridge (never below where they are today) at full per-visit utilization.
+  // Default the upside to a reachable stretch: a step up in adoption from where
+  // they are today (floored at 70%), at full utilization. Always shows real
+  // headroom, never claims 100% of providers. The rep dials it to reality.
   const [targetAdoptionPct, setTargetAdoptionPct] = useState(() => {
     const now = d.totalProviders > 0 ? (d.onAbridge / d.totalProviders) * 100 : 0;
-    return Math.min(100, Math.max(Math.round(now), 70));
+    return Math.min(100, Math.max(Math.round(now) + 15, 70));
   });
   const [targetUtilPct, setTargetUtilPct] = useState(100);
   const [price, setPrice] = useState(0);
@@ -212,7 +213,7 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
       .reduce((s, dr) => s + (today.valueById[dr.id] ?? 0), 0);
     if (dollar > 0) return fmtShort(dollar);
     if (dom === "Capacity" && !isNursing && hoursReclaimed > 0) return `${fmtInt(hoursReclaimed)} hrs`;
-    return "—";
+    return "Off";
   };
   const activeDomain = domains[Math.min(liftTab, Math.max(0, domains.length - 1))];
 
@@ -228,10 +229,10 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
             <Row label="Partner name">
               <TextInput value={partner} onChange={setPartner} placeholder="e.g., Bronson Healthcare" />
             </Row>
-            <Row label={`How many ${scopeWord} does this partner have?`} hint={`the ${settingWord} population — everyone who could use Abridge here`}>
+            <Row label={`How many ${scopeWord} does this partner have?`} hint={`the ${settingWord} population, everyone who could use Abridge here`}>
               <NumInput value={totalProviders} onChange={setTotalProviders} />
             </Row>
-            <Row label="How many are on Abridge today?" hint={`of ${fmtInt(totalProviders)} — ${scopeWord} with a go-live date`}>
+            <Row label="How many are on Abridge today?" hint={`of ${fmtInt(totalProviders)} ${scopeWord} with a go-live date`}>
               <NumInput value={onAbridge} onChange={setOnAbridge} />
             </Row>
             <Row label={`About how many ${meta.encWord} does each ${meta.providerWord.replace(/s$/, "")} handle a year?`}>
@@ -252,14 +253,14 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
             )}
           </div>
           <p className="mt-7 text-[15px] leading-[1.6] text-[#5E534A]">
-            So Abridge is on about <span className="font-abridge text-[#1A1A1A]">{fmtInt(encToday)}</span> {meta.encWord} a year in {settingWord} right now — {Math.round(adoptionNow)}% of {scopeWord}, on {Math.round(utilNow)}% of their {meta.encWord}.
+            So Abridge is on about <span className="font-abridge text-[#1A1A1A]">{fmtInt(encToday)}</span> {meta.encWord} a year in {settingWord} right now. That is {Math.round(adoptionNow)}% of {scopeWord}, on {Math.round(utilNow)}% of their {meta.encWord}.
           </p>
           <NavRow onNext={() => setStep(1)} nextLabel="Next: the lift" />
         </StepShell>
       )}
 
       {step === 1 && (
-        <StepShell title="What changed after they turned Abridge on?" sub="Read the before and after off the named table. It was this, now it's this — every number here is yours to edit.">
+        <StepShell title="What changed after they turned Abridge on?" sub="Read the before and after off the named table. It was this, now it's this. Every number here is yours to edit.">
           {/* section tabs — navigate between the domains */}
           <div className="flex items-center gap-7 border-b border-[#E8E2DA] flex-wrap">
             {domains.map((dom, i) => (
@@ -271,7 +272,7 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
             ))}
           </div>
 
-          <div>
+          <div className="pt-6 space-y-4">
             {activeDomain === "Capacity" && !isNursing && meta.timeMetric && (
               <TimeBackBlock table={meta.timeMetric.table} before={timeBefore} after={timeAfter}
                 onBefore={setTimeBefore} onAfter={setTimeAfter} encToday={encToday} hours={hoursReclaimed}
@@ -292,7 +293,7 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
           potentialValue={potentialValue} headroom={headroom} hoursReclaimed={hoursReclaimed}
           adoptionNow={adoptionNow} utilNow={utilNow} totalProviders={totalProviders}
           targetAdoptionPct={targetAdoptionPct} setTargetAdoptionPct={setTargetAdoptionPct}
-          targetUtilPct={targetUtilPct} setTargetUtilPct={setTargetUtilPct}
+          targetUtilPct={targetUtilPct} setTargetUtilPct={setTargetUtilPct} showUtilDial={!isNursing}
           price={price} setPrice={setPrice} onBack={() => setStep(1)} />
       )}
     </div>
@@ -399,46 +400,66 @@ function WorkedMath({ summary, value }: { summary: string; value: number }) {
   );
 }
 
+/** The universal on/off switch that lives in every driver card's header. */
+function Toggle({ on, onToggle, label }: { on: boolean; onToggle: () => void; label: string }) {
+  return (
+    <button type="button" role="switch" aria-checked={on} aria-label={label} onClick={onToggle}
+      className={`relative w-10 h-6 rounded-full transition-colors flex-shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-[#EA2C00] focus-visible:ring-offset-2 ${on ? "bg-[#EA2C00]" : "bg-[#E0D9CE] hover:bg-[#D2C8B8]"}`}>
+      <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-all duration-200 ${on ? "left-[18px]" : "left-0.5"}`} />
+    </button>
+  );
+}
+
+/**
+ * Every driver is its own card with a switch, so any driver can be turned off,
+ * and the boundary between one driver and the next is unmistakable. The card's
+ * own annual total sits in the header so the list is scannable.
+ */
+function DriverShell({ title, on, onToggle, value, children }: {
+  title: string; on: boolean; onToggle: () => void; value: number; children: React.ReactNode;
+}) {
+  return (
+    <div className={`rounded-xl border transition-colors ${on ? "border-[#EAE3D9] bg-[#FDFBF8]" : "border-[#EFE9E0] bg-transparent"}`}>
+      <div className="flex items-center justify-between gap-4 px-6 py-5">
+        <span className={`text-[17px] font-bold ${on ? "text-[#1A1A1A]" : "text-[#B4A896]"}`}>{title}</span>
+        <div className="flex items-center gap-4">
+          {on
+            ? <span className="font-abridge text-[18px] text-[#EA2C00] tabular-nums">{fmtShort(value)}</span>
+            : <span className="text-[12px] font-semibold text-[#B4A896] whitespace-nowrap">Not counted</span>}
+          <Toggle on={on} onToggle={onToggle} label={`Include ${title}`} />
+        </div>
+      </div>
+      {on && <div className="px-6 pb-7 border-t border-[#EFE9E0] pt-6">{children}</div>}
+    </div>
+  );
+}
+
 /** Renders one engine driver: before/after (if any) + its editable fields + the worked math. */
 function DriverCard({ driver, vals, setVal, on, onToggle, value, summary, eligibleEncounters }: {
   driver: RoiDriver; vals: Record<string, number>; setVal: (k: string, v: number) => void;
   on: boolean; onToggle: () => void; value: number; summary: string; eligibleEncounters: number;
 }) {
-  const workStr = driver.work ? driver.work(vals, eligibleEncounters) : summary;
-  if (driver.optional && !on) {
-    return (
-      <div className="py-6 border-b border-[#E8E2DA] flex items-center justify-between gap-4">
-        <span className="text-[17px] font-bold text-[#B4A896]">{driver.title}</span>
-        <button onClick={onToggle} className="text-[13px] font-bold text-[#B02200] hover:text-[#EA2C00] transition-colors whitespace-nowrap">+ Add if the pull has it</button>
-      </div>
-    );
-  }
   if (driver.kind === "hcc") {
     return <HccDriverCard driver={driver} vals={vals} setVal={setVal} on={on} onToggle={onToggle} value={value} summary={summary} />;
   }
+  const workStr = driver.work ? driver.work(vals, eligibleEncounters) : summary;
   const ba = driver.beforeAfter;
   return (
-    <div className="py-8 border-b border-[#E8E2DA]">
-      <div className="flex items-center justify-between">
-        <span className="text-[17px] font-bold text-[#1A1A1A]">{driver.title}</span>
-        {driver.optional && <button onClick={onToggle} className="text-[12px] font-bold text-[#B4A896] hover:text-[#EA2C00] transition-colors">Remove</button>}
-      </div>
-      {driver.note && <p className="mt-2 text-[13px] leading-[1.55] text-[#8C8073] max-w-[560px]">{driver.note}</p>}
+    <DriverShell title={driver.title} on={on} onToggle={onToggle} value={value}>
+      {driver.note && <p className="text-[13px] leading-[1.55] text-[#8C8073] max-w-[560px] mb-1">{driver.note}</p>}
       {ba && (
-        <div className="mt-5">
+        <div className={driver.note ? "mt-5" : ""}>
           <BeforeAfter label={ba.label} table={ba.table} unit={ba.unit} step={ba.step ?? 0.01}
             before={vals[ba.beforeK]} after={vals[ba.afterK]}
             onBefore={(v) => setVal(ba.beforeK, v)} onAfter={(v) => setVal(ba.afterK, v)}
             lowerIsBetter={ba.lowerIsBetter} />
         </div>
       )}
-      <div className="mt-2">
-        {driver.fields.map((f) => (
-          <FieldRow key={f.k} field={f} value={vals[f.k]} onChange={(v) => setVal(f.k, v)} />
-        ))}
-      </div>
+      {driver.fields.map((f) => (
+        <FieldRow key={f.k} field={f} value={vals[f.k]} onChange={(v) => setVal(f.k, v)} />
+      ))}
       <WorkedMath summary={workStr} value={value} />
-    </div>
+    </DriverShell>
   );
 }
 
@@ -461,21 +482,9 @@ function HccDriverCard({ driver, vals, setVal, on, onToggle, value, summary }: {
 }) {
   const pops = driver.populations ?? [];
   const [popIdx, setPopIdx] = useState(0);
-  if (!on) {
-    return (
-      <div className="py-6 border-b border-[#E8E2DA] flex items-center justify-between gap-4">
-        <span className="text-[17px] font-bold text-[#B4A896]">{driver.title}</span>
-        <button onClick={onToggle} className="text-[13px] font-bold text-[#B02200] hover:text-[#EA2C00] transition-colors whitespace-nowrap">+ Add if they carry risk</button>
-      </div>
-    );
-  }
   return (
-    <div className="py-8 border-b border-[#E8E2DA]">
-      <div className="flex items-center justify-between">
-        <span className="text-[17px] font-bold text-[#1A1A1A]">{driver.title}</span>
-        <button onClick={onToggle} className="text-[12px] font-bold text-[#B4A896] hover:text-[#EA2C00] transition-colors">Remove</button>
-      </div>
-      <p className="mt-2 text-[13px] leading-[1.55] text-[#8C8073] max-w-[520px]">Risk capture is valued on the panel — once per member, per year — not per visit.</p>
+    <DriverShell title={driver.title} on={on} onToggle={onToggle} value={value}>
+      <p className="text-[13px] leading-[1.55] text-[#8C8073] max-w-[520px] mb-1">Risk capture is valued on the panel, once per member per year, not per visit.</p>
 
       {pops.length > 0 && (
         <div className="mt-5 flex items-center gap-2 flex-wrap">
@@ -510,18 +519,21 @@ function HccDriverCard({ driver, vals, setVal, on, onToggle, value, summary }: {
       </div>
 
       <WorkedMath summary={summary} value={value} />
-    </div>
+    </DriverShell>
   );
 }
 
-/** Reclaimed documentation time, shown as a COUNT of clinician hours — never dollarized here. */
+/** Reclaimed documentation time, shown as a COUNT of clinician hours, never dollarized here. */
 function TimeBackBlock({ table, before, after, onBefore, onAfter, encToday, hours, dollarized }: {
   table: string; before: number; after: number; onBefore: (n: number) => void; onAfter: (n: number) => void;
   encToday: number; hours: number; dollarized: boolean;
 }) {
   return (
-    <div className="py-8 border-b border-[#E8E2DA]">
-      <div className="text-[17px] font-bold text-[#1A1A1A]">Time back in the day</div>
+    <div className="rounded-xl border border-dashed border-[#E5DDD1] bg-transparent px-6 py-6">
+      <div className="flex items-center justify-between gap-4">
+        <span className="text-[17px] font-bold text-[#1A1A1A]">Time back in the day</span>
+        <span className="text-[10px] font-extrabold tracking-[0.12em] uppercase text-[#B4A896] whitespace-nowrap">Measured · not counted in $</span>
+      </div>
       <div className="mt-5">
         <BeforeAfter label="Minutes in notes per encounter" table={table} unit="min" step={0.1}
           before={before} after={after} onBefore={onBefore} onAfter={onAfter} lowerIsBetter />
@@ -538,7 +550,7 @@ function TimeBackBlock({ table, before, after, onBefore, onAfter, encToday, hour
         <p className="mt-4 text-[13px] leading-[1.55] text-[#8C8073]">
           {dollarized
             ? "Shown as time given back. The share reinvested into visits is valued below, in Patient access."
-            : "Shown as time given back — never converted to a made-up dollar."}
+            : "Shown as time given back, never converted to a made-up dollar."}
         </p>
       </div>
     </div>
@@ -561,7 +573,7 @@ function AnswerStep(p: {
   todayValue: number; potentialValue: number; headroom: number; hoursReclaimed: number;
   adoptionNow: number; utilNow: number; totalProviders: number;
   targetAdoptionPct: number; setTargetAdoptionPct: (n: number) => void; targetUtilPct: number; setTargetUtilPct: (n: number) => void;
-  price: number; setPrice: (n: number) => void; onBack: () => void;
+  showUtilDial: boolean; price: number; setPrice: (n: number) => void; onBack: () => void;
 }) {
   const todayShown = useCountUp(p.todayValue);
   const potentialShown = useCountUp(p.potentialValue);
@@ -581,7 +593,7 @@ function AnswerStep(p: {
       <h1 className="font-abridge text-[30px] sm:text-[36px] leading-[1.12] text-[#1A1A1A] mt-4">Abridge is making {p.partnerName}</h1>
       <div className="font-abridge text-[66px] sm:text-[92px] leading-[0.88] text-[#EA2C00] mt-3">{fmtShort(todayShown)}<span className="text-[26px] text-[#9A8C7A] font-normal"> a year</span></div>
       <p className="mt-5 text-[16px] leading-[1.6] text-[#5E534A] max-w-[560px]">
-        {makeup ? <>From {makeup} — at today's {Math.round(p.adoptionNow)}% rollout, {Math.round(p.utilNow)}% utilization.</> : "Turn on the drivers your pull supports to build the number."}
+        {makeup ? <>From {makeup}, at today's {Math.round(p.adoptionNow)}% rollout and {Math.round(p.utilNow)}% utilization.</> : "Turn on the drivers your pull supports to build the number."}
       </p>
 
       {/* Beat 2 — the upside */}
@@ -605,12 +617,14 @@ function AnswerStep(p: {
         </div>
 
         {/* the dials */}
-        <div className="mt-9 grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-6">
+        <div className={`mt-9 grid grid-cols-1 ${p.showUtilDial ? "sm:grid-cols-2" : ""} gap-x-10 gap-y-6`}>
           <Slider label="More providers on Abridge" value={p.targetAdoptionPct} min={Math.round(p.adoptionNow)} onChange={p.setTargetAdoptionPct} right={`${fmtInt(Math.round(p.totalProviders * p.targetAdoptionPct / 100))} of ${fmtInt(p.totalProviders)}`} />
-          <Slider label="Using it on more of their encounters" value={p.targetUtilPct} min={Math.round(p.utilNow)} onChange={p.setTargetUtilPct} right={`${p.targetUtilPct}%`} />
+          {p.showUtilDial && (
+            <Slider label="Using it on more of their encounters" value={p.targetUtilPct} min={Math.round(p.utilNow)} onChange={p.setTargetUtilPct} right={`${p.targetUtilPct}%`} />
+          )}
         </div>
         <p className="mt-6 text-[13.5px] leading-[1.6] text-[#8C8073] max-w-[560px]">
-          Same measured effect, on more encounters. Volume grows, the effect stays exactly where the data put it.
+          The measured effect stays exactly where the data put it. Only the volume it runs on grows.
         </p>
       </div>
 
