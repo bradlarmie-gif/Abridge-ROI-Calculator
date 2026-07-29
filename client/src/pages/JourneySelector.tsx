@@ -289,10 +289,10 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
                   Run the numbers
                 </p>
                 <h3 className="text-2xl font-bold text-[#1A1A1A] mb-2.5" data-testid="text-forecast-title">
-                  ROI Calculator
+                  Forecast
                 </h3>
                 <p className="text-sm text-[#666666] leading-relaxed flex-1 mb-6" data-testid="text-forecast-description">
-                  Get a quick ROI answer, model a new partnership proforma, or map a tech-stack consolidation.
+                  Calculate a partner's ROI from a data pull, model a new partnership, or map a tech-stack consolidation.
                 </p>
 
                 <Button

@@ -27,7 +27,7 @@ export default function ForecastModeSelector({
 
   return (
     <div className="min-h-screen bg-white relative overflow-hidden">
-      <GlobalHeader pageName="ROI Calculator" />
+      <GlobalHeader pageName="Forecast" />
       <div className="max-w-6xl mx-auto px-4 md:px-6 pt-[88px] md:pt-[96px] pb-8 relative z-10">
 
         <motion.section
@@ -37,7 +37,7 @@ export default function ForecastModeSelector({
           className="text-center mb-12 md:mb-16"
         >
           <p className="text-xs uppercase text-[#999999] font-medium mb-3" style={{ letterSpacing: "3px" }}>
-            ROI Calculator
+            Forecast
           </p>
           <h1 className="text-3xl sm:text-4xl font-bold text-black font-abridge uppercase" style={{ letterSpacing: "0.025em" }}>
             What do you want to model?
@@ -62,10 +62,10 @@ export default function ForecastModeSelector({
             <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center mb-5">
               <Calculator className="w-6 h-6 text-[#EA2C00]" />
             </div>
-            <p className="text-[13px] text-[#EA2C00] font-medium mb-1.5">Fast answer</p>
-            <h3 className="text-2xl font-bold text-[#1A1A1A] mb-2.5">Quick ROI Calculator</h3>
+            <p className="text-[13px] text-[#EA2C00] font-medium mb-1.5">From a data pull</p>
+            <h3 className="text-2xl font-bold text-[#1A1A1A] mb-2.5">ROI Calculator</h3>
             <p className="text-sm text-[#666666] leading-relaxed flex-1 mb-6">
-              Enter a few numbers and get an ROI answer on the spot. The fastest way to size the return before building a full model.
+              Turn an impact-analysis pull into dollars for a partner, then show the headroom if they expand adoption and use.
             </p>
             <Button
               className="w-full bg-[#EA2C00] text-white border-[#EA2C00]"
