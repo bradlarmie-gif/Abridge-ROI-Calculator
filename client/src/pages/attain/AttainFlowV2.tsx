@@ -83,7 +83,10 @@ export default function AttainFlowV2({ onBackToJourney }: { onBackToJourney?: ()
       await mod.generateAttainPdf(buildSnapshot());
     } catch (err) {
       console.error("Attain PDF export failed:", err);
-      toast({ title: "Export failed", description: "The PDF couldn't be generated. Please try again.", variant: "destructive" });
+      // Surface the real reason instead of a generic line, so a failure in the
+      // field is self-describing (no DevTools needed to diagnose it).
+      const reason = err instanceof Error && err.message ? err.message : "Unknown error";
+      toast({ title: "Export failed", description: reason, variant: "destructive" });
     } finally {
       setExporting(false);
     }
