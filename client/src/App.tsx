@@ -37,7 +37,6 @@ import LearnPath, { type LearnScreen } from "@/pages/LearnPath";
 import MeasureFlow from "@/pages/measure/MeasureFlow";
 import ForecastFlow from "@/pages/forecast/ForecastFlow";
 import ForecastModeSelector from "@/pages/forecast/ForecastModeSelector";
-import PricingComparisonFlow from "@/pages/forecast/PricingComparisonFlow";
 import QuickRoiCalculator from "@/pages/forecast/QuickRoiCalculator";
 import AppRationalizationFlow from "@/pages/forecast/AppRationalizationFlow";
 import ExploreEditorialPdfRoute from "@/components/explore/ExploreEditorialPdfRoute";
@@ -67,7 +66,7 @@ import { mergeExploreEditIntoSetting } from "@/lib/proformaCalculations";
 import { type CareSettingType } from "@/lib/SETTING_CONFIG";
 import { type RoiInputs } from "@/lib/roi-types";
 
-type AppView = "splash" | "journey" | "explore" | "baseline-setup" | "model-builder" | "investment" | "calculator" | "expand" | "switch" | "learn" | "measure" | "forecast" | "forecast-mode" | "forecast-roi-calc" | "forecast-pricing" | "proforma-hub" | "proforma-view" | "explore-intake" | "measure-data-request" | "explore-intake-receipt" | "measure-data-receipt" | "data-request-builder" | "forecast-app-rationalization" | "attain";
+type AppView = "splash" | "journey" | "explore" | "baseline-setup" | "model-builder" | "investment" | "calculator" | "expand" | "switch" | "learn" | "measure" | "forecast" | "forecast-mode" | "forecast-roi-calc" | "proforma-hub" | "proforma-view" | "explore-intake" | "measure-data-request" | "explore-intake-receipt" | "measure-data-receipt" | "data-request-builder" | "forecast-app-rationalization" | "attain";
 
 interface SelectionState {
   selectedSettings: CareSettingType[];
@@ -617,13 +616,6 @@ export default function App() {
 
             {currentView === "forecast-roi-calc" && (
               <QuickRoiCalculator
-                onBack={() => navigateTo("forecast-mode")}
-                onHome={() => navigateTo("journey")}
-              />
-            )}
-
-            {currentView === "forecast-pricing" && (
-              <PricingComparisonFlow
                 onBack={() => navigateTo("forecast-mode")}
                 onHome={() => navigateTo("journey")}
               />

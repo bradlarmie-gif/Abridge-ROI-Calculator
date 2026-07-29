@@ -115,7 +115,7 @@ function SettingPicker({ onPick }: { onPick: (s: SettingKey) => void }) {
   return (
     <div className="pt-12 sm:pt-16 pb-24">
       <div className={EYEBROW}>ROI Calculator</div>
-      <h1 className="font-abridge text-[32px] sm:text-[40px] leading-[1.08] text-[#1A1A1A] mt-4 max-w-[640px]">How much is Abridge making your partner?</h1>
+      <h1 className="font-abridge text-[32px] sm:text-[40px] leading-[1.08] text-[#1A1A1A] mt-4 max-w-[640px]">How much is Abridge worth to your partner?</h1>
       <p className="mt-5 text-[16px] leading-[1.55] text-[#8C8073] max-w-[520px]">
         Three quick steps, straight from an impact-analysis pull. First, which care setting?
       </p>
@@ -506,7 +506,7 @@ function HccDriverCard({ driver, vals, setVal, on, onToggle, value, summary }: {
       </div>
 
       <div className="mt-6">
-        <BeforeAfter label="HCC captured per member, per year" table="risk-adjustment report" unit="HCC" step={0.01}
+        <BeforeAfter label="HCC captured per member, per year" table="your risk-adjustment pull" unit="HCC" step={0.01}
           before={vals.hccBefore} after={vals.hccAfter} onBefore={(v) => setVal("hccBefore", v)} onAfter={(v) => setVal("hccAfter", v)} />
       </div>
       <div className="flex items-center justify-between gap-6 mt-6">
@@ -514,7 +514,7 @@ function HccDriverCard({ driver, vals, setVal, on, onToggle, value, summary }: {
         <NumInput value={vals.hccPerHcc} onChange={(v) => setVal("hccPerHcc", v)} prefix="$" w="w-[104px]" />
       </div>
       <div className="flex items-center justify-between gap-6 mt-5">
-        <span className="text-[14px] text-[#5E534A]">Realization (audit survival)</span>
+        <span className="text-[14px] text-[#5E534A]">Realization (defensible share)</span>
         <NumInput value={vals.hccRealization} onChange={(v) => setVal("hccRealization", v)} suffix="%" w="w-[104px]" />
       </div>
 
@@ -582,15 +582,29 @@ function AnswerStep(p: {
   const headroomPct = Math.max(0, 100 - todayPct);
   const dollarLevers = p.breakdown;
   const makeup = [
-    dollarLevers.map((r) => r.title.toLowerCase()).join(", "),
+    dollarLevers.map((r) => r.title).join(", "),
     p.hoursReclaimed > 0 ? `${fmtInt(p.hoursReclaimed)} clinician hours back` : "",
   ].filter(Boolean).join(", plus ");
 
+  // Nothing is on: show an intentional empty state, not "$0" + a stray meter.
+  if (p.todayValue <= 0 && p.potentialValue <= 0) {
+    return (
+      <div>
+        <div className={EYEBROW}>The answer</div>
+        <h1 className="font-abridge text-[30px] sm:text-[36px] leading-[1.12] text-[#1A1A1A] mt-4 max-w-[540px]">No drivers are on yet</h1>
+        <p className="mt-5 text-[16px] leading-[1.6] text-[#5E534A] max-w-[520px]">Go back and switch on the drivers your pull supports. Each one you turn on builds the number here.</p>
+        <button onClick={p.onBack} className="mt-8 inline-flex items-center gap-2 rounded-full bg-[#EA2C00] text-white text-[14px] font-bold px-7 py-3.5 hover:bg-[#d12800] transition-colors">
+          Back to the drivers <ArrowRight className="w-4 h-4" />
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div>
-      {/* Beat 1 — what it's making today */}
+      {/* Beat 1 — what it's worth today */}
       <div className={EYEBROW}>The answer</div>
-      <h1 className="font-abridge text-[30px] sm:text-[36px] leading-[1.12] text-[#1A1A1A] mt-4">Abridge is making {p.partnerName}</h1>
+      <h1 className="font-abridge text-[30px] sm:text-[36px] leading-[1.12] text-[#1A1A1A] mt-4">To {p.partnerName}, Abridge is worth</h1>
       <div className="font-abridge text-[66px] sm:text-[92px] leading-[0.88] text-[#EA2C00] mt-3">{fmtShort(todayShown)}<span className="text-[26px] text-[#9A8C7A] font-normal"> a year</span></div>
       <p className="mt-5 text-[16px] leading-[1.6] text-[#5E534A] max-w-[560px]">
         {makeup ? <>From {makeup}, at today's {Math.round(p.adoptionNow)}% rollout and {Math.round(p.utilNow)}% utilization.</> : "Turn on the drivers your pull supports to build the number."}

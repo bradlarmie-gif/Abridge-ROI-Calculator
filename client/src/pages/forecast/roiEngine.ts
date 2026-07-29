@@ -153,13 +153,13 @@ const codingLift = (before: number, after: number) =>
   before > 0 && after > before ? after - before : 0;
 
 /** Coding accuracy: OP emits `wrvu`, ED emits `edEmLevel`. Same fields + math. */
-const codingDriver = (id: "wrvu" | "edEmLevel", beforeDef: number, afterDef: number): RoiDriver => ({
+const codingDriver = (id: "wrvu" | "edEmLevel", beforeDef: number, afterDef: number, title = "Coding accuracy"): RoiDriver => ({
   id,
   domain: "Revenue",
-  title: "Coding accuracy",
+  title,
   beforeAfter: {
     label: "wRVU / visit",
-    table: "Transaction wRVU/enc table",
+    table: "your wRVU pull",
     unit: "wRVU",
     step: 0.01,
     beforeK: "wrvuBefore",
@@ -169,7 +169,7 @@ const codingDriver = (id: "wrvu" | "edEmLevel", beforeDef: number, afterDef: num
   },
   fields: [
     { k: "cf", label: "Paid per wRVU (2026 conversion factor)", def: 33.4, prefix: "$", step: 0.1 },
-    { k: "wrvuRealization", label: "Realization (coding Abridge can defend)", def: 75, suffix: "%" },
+    { k: "wrvuRealization", label: "Realization (defensible share)", def: 75, suffix: "%" },
   ],
   applyToState: (s, v) => {
     const d = dq(s);
@@ -199,9 +199,9 @@ const denialDriver = (denialsCustomDef: number): RoiDriver => ({
   title: "Denial prevention",
   fields: [
     { k: "medNecessityDenialRate", label: "Medical-necessity denial rate today", def: 3, suffix: "%", step: 0.1 },
-    { k: "denialsCustomPercent", label: "Share of those denials Abridge can prevent", def: denialsCustomDef, suffix: "%" },
+    { k: "denialsCustomPercent", label: "Share of those denials better documentation can prevent", def: denialsCustomDef, suffix: "%" },
     { k: "avgClaimValue", label: "Average claim value", def: 200, prefix: "$" },
-    { k: "denialsRealization", label: "Realization", def: 60, suffix: "%" },
+    { k: "denialsRealization", label: "Realization (defensible share)", def: 60, suffix: "%" },
   ],
   applyToState: (s, v) => {
     const d = dq(s);
@@ -218,11 +218,12 @@ const providerWellbeingDriver: RoiDriver = {
   id: "providerWellbeing",
   domain: "Workforce",
   title: "Retention (burnout)",
-  note: "Tracked as proof, valued conservatively: fewer burnout-driven departures when documentation load drops.",
+  optional: true,
+  note: "The softest number on the page: it rests on a replacement-cost estimate a CFO may discount. Off by default. Turn it on only if the partner buys the retention story.",
   fields: [
     { k: "turnover", label: "Annual provider turnover", def: 6, suffix: "%", step: 0.1 },
     { k: "burnout", label: "Share of turnover that is burnout-related", def: 40, suffix: "%" },
-    { k: "impact", label: "Abridge's impact on burnout turnover", def: 30, suffix: "%" },
+    { k: "impact", label: "Reduction in burnout turnover where Abridge is used", def: 30, suffix: "%" },
     { k: "replacementCost", label: "Cost to replace one provider", def: 400000, prefix: "$" },
   ],
   applyToState: (s, v, ctx) => {
@@ -266,10 +267,10 @@ const scribeDriver: RoiDriver = {
   domain: "Workforce",
   title: "Scribe cost reduction",
   optional: true,
-  note: "Only if Abridge lets the partner retire scribe positions they pay for today.",
+  note: "Only if the partner can retire scribe positions they pay for today.",
   fields: [
     { k: "scribeHeadcount", label: "Scribe positions today", def: 0 },
-    { k: "scribePositionsEliminated", label: "Positions Abridge lets you eliminate", def: 0 },
+    { k: "scribePositionsEliminated", label: "Scribe positions you could retire", def: 0 },
     { k: "scribeCostPerPosition", label: "Fully-loaded cost per scribe position", def: 45000, prefix: "$" },
   ],
   applyToState: (s, v) => {
@@ -397,7 +398,7 @@ const drgDriver: RoiDriver = {
     { k: "ipDrgWeightIncrease", label: "CMI lift (avg DRG weight increase / discharge)", def: 0.03, step: 0.01 },
     { k: "ipDrgBasePayment", label: "Base payment per case", def: 6000, prefix: "$" },
     { k: "ipDrgAttribution", label: "Share attributed to Abridge", def: 65, suffix: "%" },
-    { k: "ipDrgRealization", label: "Realization (audit survival)", def: 65, suffix: "%" },
+    { k: "ipDrgRealization", label: "Realization (defensible share)", def: 65, suffix: "%" },
   ],
   applyToState: (s, v) => {
     const d = dq(s);
@@ -417,7 +418,7 @@ const obsDriver: RoiDriver = {
     { k: "ipObsDefenseDenialRate", label: "Admissions downgraded to observation today", def: 5, suffix: "%", step: 0.1 },
     { k: "ipObsDefenseCustomPercent", label: "Share the note can defend", def: 40, suffix: "%" },
     { k: "ipObsDefenseRevenueDelta", label: "Revenue delta per defended case", def: 5000, prefix: "$" },
-    { k: "ipObsDefenseRealization", label: "Survives appeal", def: 50, suffix: "%" },
+    { k: "ipObsDefenseRealization", label: "Realization (survives appeal)", def: 50, suffix: "%" },
   ],
   applyToState: (s, v) => {
     const d = dq(s);
@@ -453,9 +454,11 @@ const nursingRetentionDriver: RoiDriver = {
   id: "nursingRetention",
   domain: "Workforce",
   title: "Retention (burnout)",
+  optional: true,
+  note: "The softest number on the page: it rests on a replacement-cost estimate a CFO may discount. Off by default. Turn it on only if the partner buys the retention story.",
   fields: [
     { k: "nursingTurnoverRate", label: "Annual nurse turnover", def: 18, suffix: "%", step: 0.1 },
-    { k: "impact", label: "Abridge's impact on burnout turnover", def: 30, suffix: "%" },
+    { k: "impact", label: "Reduction in burnout turnover where Abridge is used", def: 30, suffix: "%" },
     { k: "nursingReplacementCost", label: "Cost to replace one nurse", def: 56300, prefix: "$" },
   ],
   applyToState: (s, v) => {
@@ -594,7 +597,7 @@ export const SETTING_META: Record<SettingKey, SettingMeta> = {
     encWord: "visits",
     visitWord: "visit",
     defaults: { totalProviders: 458, onAbridge: 340, encPerProvider: 3500, utilNow: 74 },
-    timeMetric: { before: 6.26, after: 5.12, table: "Time in Notes table" },
+    timeMetric: { before: 6.26, after: 5.12, table: "your time-in-notes pull" },
   },
   ed: {
     label: "Emergency",
@@ -603,7 +606,7 @@ export const SETTING_META: Record<SettingKey, SettingMeta> = {
     encWord: "ED visits",
     visitWord: "visit",
     defaults: { totalProviders: 80, onAbridge: 55, encPerProvider: 3000, utilNow: 70 },
-    timeMetric: { before: 6.5, after: 5.1, table: "Time in Notes table" },
+    timeMetric: { before: 6.5, after: 5.1, table: "your time-in-notes pull" },
   },
   inpatient: {
     label: "Inpatient",
@@ -612,7 +615,7 @@ export const SETTING_META: Record<SettingKey, SettingMeta> = {
     encWord: "encounters",
     visitWord: "encounter",
     defaults: { totalProviders: 90, onAbridge: 60, encPerProvider: 2500, utilNow: 68 },
-    timeMetric: { before: 9.0, after: 6.5, table: "Time in Notes table" },
+    timeMetric: { before: 9.0, after: 6.5, table: "your time-in-notes pull" },
   },
   nursing: {
     label: "Nursing",
@@ -636,7 +639,7 @@ export const DRIVERS: Record<SettingKey, RoiDriver[]> = {
     scribeDriver,
   ],
   ed: [
-    codingDriver("edEmLevel", 1.9, 2.05),
+    codingDriver("edEmLevel", 1.9, 2.05, "E/M level coding"),
     denialDriver(30),
     lwbsDriver,
     admissionDriver,
