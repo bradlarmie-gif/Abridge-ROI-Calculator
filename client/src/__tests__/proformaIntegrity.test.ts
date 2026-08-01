@@ -129,6 +129,15 @@ describe("Proforma Integrity — Layer 1: seam reconciliation fuzz", () => {
               chk(model.termValue >= -tol(model.termValue), `termValue negative ${model.termValue}`);
               chk(model.termDisplaced >= -1, `displaced negative ${model.termDisplaced}`);
               chk(model.payback === null || (model.payback >= 1 && model.payback <= term), `payback out of range ${model.payback}`);
+
+              // I. Sane economics — the guard that would have caught the pricing
+              // blowups ($161M investment, $0/infinite-ROI). Every fuzzed combo
+              // has a real pricing model, so investment must be positive and in a
+              // plausible band of the value it's buying (not 30x it).
+              const grossValue = model.termValue + model.termDisplaced;
+              chk(model.termInvestment > 0, `non-positive investment ${model.termInvestment} (pm=${pm})`);
+              chk(Number.isFinite(model.roi), `non-finite ROI ${model.roi} (pm=${pm})`);
+              chk(model.termInvestment <= grossValue * 10 + 1_000_000, `investment ${model.termInvestment} absurd vs value ${grossValue} (pm=${pm})`);
             }
           }
         }

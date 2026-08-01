@@ -617,6 +617,24 @@ function SettingCard({
   const priceFor = (key: "year1" | "year2" | "year3") =>
     setting.yearlyPricing?.[key] ?? setting.costPerUnit;
 
+  // Switch pricing model and seed a SANE default for the target model, derived
+  // from the current at-scale per-provider spend so investment stays in the same
+  // ballpark (no $161M blowup, no $0 / infinite-ROI). Also drops the per-provider
+  // yearly ramp when leaving perUnit so it can't leak into the other models.
+  const switchPricing = (m: "perUnit" | "perEncounter" | "annualFlat" | "platform") => {
+    const spend = (setting.fullScaleProviders || setting.providerCount) * setting.costPerUnit * 12;
+    const enc = setting.encounters || 1;
+    const patch: Partial<ProformaSettingSnapshot> = { pricingModel: m };
+    if (m !== "perUnit") patch.yearlyPricing = undefined;
+    if (m === "annualFlat" && !setting.annualLicenseFee) patch.annualLicenseFee = Math.round(spend);
+    if (m === "perEncounter" && !setting.costPerEncounter) patch.costPerEncounter = Math.max(1, Math.round((spend / enc) * 100) / 100);
+    if (m === "platform") {
+      if (!setting.annualLicenseFee) patch.annualLicenseFee = Math.round(spend * 0.5);
+      if (!setting.platformEncRate) patch.platformEncRate = Math.max(0.5, Math.round((spend * 0.5 / enc) * 100) / 100);
+    }
+    onUpdateSetting(patch);
+  };
+
   const pricingLabel: Record<string, string> = {
     perUnit: "Per provider",
     perEncounter: "Per encounter",
@@ -743,37 +761,50 @@ function SettingCard({
               <div style={{ borderTop: `1px solid ${T.hair}`, paddingTop: 15, marginTop: 13 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
                   <Lbl>Pricing</Lbl>
-                  <MiniSeg
-                    options={[{ key: "flat", label: "Flat" }, { key: "peryear", label: "Per year" }]}
-                    value={perYearPricing ? "peryear" : "flat"}
-                    onChange={(m) => {
-                      if (m === "peryear") {
-                        onUpdateSetting({ yearlyPricing: { year1: setting.costPerUnit, year2: setting.costPerUnit, year3: setting.costPerUnit } });
-                      } else {
-                        onUpdateSetting({ yearlyPricing: undefined });
-                      }
-                    }}
-                  />
+                  {pricingModel === "perUnit" && (
+                    <MiniSeg
+                      options={[{ key: "flat", label: "Flat" }, { key: "peryear", label: "Per year" }]}
+                      value={perYearPricing ? "peryear" : "flat"}
+                      onChange={(m) => {
+                        if (m === "peryear") {
+                          onUpdateSetting({ yearlyPricing: { year1: setting.costPerUnit, year2: setting.costPerUnit, year3: setting.costPerUnit } });
+                        } else {
+                          onUpdateSetting({ yearlyPricing: undefined });
+                        }
+                      }}
+                    />
+                  )}
                 </div>
                 <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 12 }}>
                   {(["perUnit", "perEncounter", "annualFlat", "platform"] as const).map((m) => (
-                    <Pill key={m} on={pricingModel === m} onClick={() => onUpdateSetting({ pricingModel: m })}>
+                    <Pill key={m} on={pricingModel === m} onClick={() => switchPricing(m)}>
                       {pricingLabel[m]}
                     </Pill>
                   ))}
                 </div>
                 <div style={{ display: "flex", gap: 8, alignItems: "flex-end", flexWrap: "wrap" }}>
-                  {perYearPricing ? (
-                    <>
-                      {yearKeys.map((k, i) => (
-                        <NumCell key={k} value={Math.round(priceFor(k) * 12)} onChange={(n) => setYearPricing(k, n)} kLabel={`Y${i + 1} / provider`} prefix="$" format={commaFmt} />
-                      ))}
-                      {Array.from({ length: heldYears }).map((_, i) => (
-                        <HeldCell key={`hpr${i}`} value={Math.round(priceFor("year3") * 12)} prefix="$" kLabel={`Y${yearKeys.length + i + 1} / provider`} />
-                      ))}
-                    </>
+                  {pricingModel === "perUnit" ? (
+                    perYearPricing ? (
+                      <>
+                        {yearKeys.map((k, i) => (
+                          <NumCell key={k} value={Math.round(priceFor(k) * 12)} onChange={(n) => setYearPricing(k, n)} kLabel={`Y${i + 1} / provider`} prefix="$" format={commaFmt} />
+                        ))}
+                        {Array.from({ length: heldYears }).map((_, i) => (
+                          <HeldCell key={`hpr${i}`} value={Math.round(priceFor("year3") * 12)} prefix="$" kLabel={`Y${yearKeys.length + i + 1} / provider`} />
+                        ))}
+                      </>
+                    ) : (
+                      <NumCell value={Math.round(setting.costPerUnit * 12)} onChange={(n) => onUpdateSetting({ costPerUnit: n / 12 })} kLabel="Per provider / yr" prefix="$" format={commaFmt} />
+                    )
+                  ) : pricingModel === "annualFlat" ? (
+                    <NumCell value={setting.annualLicenseFee || 0} onChange={(n) => onUpdateSetting({ annualLicenseFee: n })} kLabel="Annual license fee" prefix="$" format={commaFmt} />
+                  ) : pricingModel === "perEncounter" ? (
+                    <NumCell value={setting.costPerEncounter || 0} onChange={(n) => onUpdateSetting({ costPerEncounter: n })} kLabel="Per encounter" prefix="$" decimals format={(x) => String(x)} />
                   ) : (
-                    <NumCell value={Math.round(setting.costPerUnit * 12)} onChange={(n) => onUpdateSetting({ costPerUnit: n / 12 })} kLabel="Per provider / yr" prefix="$" format={commaFmt} />
+                    <>
+                      <NumCell value={setting.annualLicenseFee || 0} onChange={(n) => onUpdateSetting({ annualLicenseFee: n })} kLabel="Platform fee / yr" prefix="$" format={commaFmt} />
+                      <NumCell value={setting.platformEncRate || 0} onChange={(n) => onUpdateSetting({ platformEncRate: n })} kLabel="Per encounter" prefix="$" decimals format={(x) => String(x)} />
+                    </>
                   )}
                   <span style={{ paddingBottom: 8, color: T.off }}>→</span>
                   <div>

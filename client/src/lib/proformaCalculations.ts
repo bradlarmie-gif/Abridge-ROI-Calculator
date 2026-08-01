@@ -536,11 +536,14 @@ export function buildMonthlyCashFlows(
 
       let monthlyInvestment: number;
       if (setting.pricingModel === "annualFlat") {
-        const price = resolvedPrice ?? (setting.annualLicenseFee || 0);
+        // NOTE: resolvedPrice (yearlyPricing) is a PER-PROVIDER price and must
+        // never feed a non-perUnit model — that leak turned a $2,250/provider
+        // rate into a $2,250 license fee / $2,250-per-encounter blowup.
+        const price = setting.annualLicenseFee || 0;
         monthlyInvestment = price / 12;
         totalEconomicInvestment += monthlyInvestment;
       } else if (setting.pricingModel === "perEncounter") {
-        const price = resolvedPrice ?? (setting.costPerEncounter || 0);
+        const price = setting.costPerEncounter || 0;
         // Banked: encounter billing lags by 1 year (Y1 consumption billed in Y2).
         const billingYearIndex = setting.bankedEncounters
           ? (yearIndex === 0 ? -1 : yearIndex - 1)
