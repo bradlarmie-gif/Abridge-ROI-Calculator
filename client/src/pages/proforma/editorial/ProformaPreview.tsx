@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import type { ProformaSettingSnapshot, ProformaConfig } from "../proformaTypes";
 import ProformaWorkbench, { SAMPLE_PROFORMA_SETTINGS, SAMPLE_PROFORMA_CONFIG } from "./ProformaWorkbench";
 import ProformaCaseView from "./ProformaCaseView";
 import ProformaPresentView from "./ProformaPresentView";
-import type { Chapter } from "./editorialShared";
+import { type Chapter, applyExclusions } from "./editorialShared";
 
 /**
  * THROWAWAY preview host for the editorial proforma flow (?proformapreview=1).
@@ -39,11 +39,14 @@ export default function ProformaPreview() {
     if (typeof window !== "undefined") window.scrollTo({ top: 0 });
   };
 
+  // Resolve driver on/off once, so Case and Present count exactly what Build does.
+  const resolved = useMemo(() => applyExclusions(settings), [settings]);
+
   if (chapter === "case") {
-    return <ProformaCaseView settings={settings} config={config} onNavigate={navigate} />;
+    return <ProformaCaseView settings={resolved} config={config} onNavigate={navigate} />;
   }
   if (chapter === "present") {
-    return <ProformaPresentView settings={settings} config={config} org={SAMPLE_ORG} onNavigate={navigate} />;
+    return <ProformaPresentView settings={resolved} config={config} org={SAMPLE_ORG} onNavigate={navigate} />;
   }
 
   return (

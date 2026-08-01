@@ -7,6 +7,7 @@ import type {
   ProformaDriver,
   DriverOnset,
   ExploreQuadrant,
+  CostOffset,
 } from "../proformaTypes";
 import { DEFAULT_PROFORMA_CONFIG } from "../proformaTypes";
 import { DEFAULT_EXPLORE_STATE } from "@/pages/explore";
@@ -14,7 +15,10 @@ import {
   buildMonthlyCashFlows,
   calculateProformaSummary,
   groupByYear,
+  costOffsetDisplacedAmount,
 } from "@/lib/proformaCalculations";
+import { computeSettingDriverFormulas } from "@/lib/presentFormulas";
+import { applyExclusions } from "./editorialShared";
 
 /* ─────────────────────────── design tokens ─────────────────────────── */
 const T = {
@@ -84,27 +88,6 @@ function useAnimatedNumber(value: number, duration = 0.7): number {
 function AnimatedMoney({ value, className, style }: { value: number; className?: string; style?: React.CSSProperties }) {
   const v = useAnimatedNumber(value);
   return <span className={className} style={style}>{fmt(v)}</span>;
-}
-
-/* ─────────────────────────── driver breakdown model ─────────────────────────── */
-type Breakdown = { labels: [string, string, string, string]; V: number; L: number; U: number; R: number };
-
-const BREAKDOWN_SEED: Record<string, { labels: [string, string, string, string]; V: number; L: number; R: number }> = {
-  hcc: { labels: ["Members", "HCC lift / life", "Per HCC", "Realization"], V: 18000, L: 0.125, R: 50 },
-  patientAccess: { labels: ["Panel size", "Visits / life", "$ / visit", "Realization"], V: 24000, L: 0.6, R: 60 },
-  wrvu: { labels: ["Encounters", "wRVU lift", "$ / wRVU", "Realization"], V: 180000, L: 0.35, R: 65 },
-  providerWellbeing: { labels: ["Providers", "Hours saved", "$ / hour", "Realization"], V: 120, L: 180, R: 55 },
-  locum: { labels: ["Shifts avoided", "Coverage", "$ / shift", "Realization"], V: 60, L: 1, R: 70 },
-};
-
-function seedBreakdown(driver: ProformaDriver): Breakdown {
-  const t = BREAKDOWN_SEED[driver.id] ?? { labels: ["Volume", "Lift / unit", "$ / unit", "Realization"] as [string, string, string, string], V: 1000, L: 1, R: 60 };
-  const denom = t.V * t.L * (t.R / 100);
-  const U = denom > 0 ? driver.value / denom : 0;
-  return { labels: t.labels, V: t.V, L: t.L, U, R: t.R };
-}
-function breakdownValue(b: Breakdown): number {
-  return Math.round(b.V * b.L * b.U * (b.R / 100));
 }
 
 /* ─────────────────────────── small styled controls ─────────────────────────── */
@@ -401,8 +384,7 @@ function DriverRow({
   expanded,
   onToggleOff,
   onToggleExpand,
-  breakdown,
-  onBreakdownChange,
+  formula,
   onOnsetChange,
 }: {
   driver: ProformaDriver;
@@ -410,12 +392,10 @@ function DriverRow({
   expanded: boolean;
   onToggleOff: () => void;
   onToggleExpand: () => void;
-  breakdown: Breakdown;
-  onBreakdownChange: (b: Breakdown) => void;
+  formula?: string;
   onOnsetChange: (o: DriverOnset) => void;
 }) {
   const isProof = driver.quadrant === "Quality" || driver.value <= 0;
-  const setB = (patch: Partial<Breakdown>) => onBreakdownChange({ ...breakdown, ...patch });
 
   // Proof row — never counted, no switch, no expand.
   if (isProof) {
@@ -466,19 +446,23 @@ function DriverRow({
           {DRIVER_DESCRIPTION[driver.id] && (
             <div style={{ fontSize: 11.5, color: T.faint, marginTop: 8 }}>{DRIVER_DESCRIPTION[driver.id]}</div>
           )}
-          {/* borderless math chain */}
-          <div style={{ display: "flex", gap: 15, alignItems: "center", flexWrap: "wrap", marginTop: 13 }}>
-            <NumCell variant="chain" value={breakdown.V} onChange={(V) => setB({ V })} kLabel={breakdown.labels[0].toLowerCase()} decimals format={commaFmt} />
-            <span style={{ fontSize: 15, color: "#C9BCA9" }}>×</span>
-            <NumCell variant="chain" value={breakdown.L} onChange={(L) => setB({ L })} kLabel={breakdown.labels[1].toLowerCase()} decimals format={decFmt} />
-            <span style={{ fontSize: 15, color: "#C9BCA9" }}>×</span>
-            <NumCell variant="chain" value={breakdown.U} onChange={(U) => setB({ U })} kLabel={breakdown.labels[2].toLowerCase()} prefix="$" decimals format={commaFmt} />
-            <span style={{ fontSize: 15, color: "#C9BCA9" }}>×</span>
-            <NumCell variant="chain" value={breakdown.R} onChange={(R) => setB({ R })} kLabel={breakdown.labels[3].toLowerCase()} suffix="%" />
-            <span style={{ fontSize: 15, color: "#C9BCA9" }}>=</span>
-            <div style={{ textAlign: "center" }}>
-              <div className="font-abridge" style={{ fontSize: 19, color: T.coral, lineHeight: 1 }}>{fmt(breakdownValue(breakdown))}</div>
-              <div style={{ fontSize: 9.5, color: T.faint, marginTop: 3 }}>a year</div>
+          {/* Real reconciling formula — the same math Explore shows, tied to the
+              dollar on the right. Clinical inputs are edited in Explore; the
+              proforma owns deployment, pricing and timing (below). */}
+          <div style={{ marginTop: 13, paddingTop: 13, borderTop: `1px solid ${T.soft}` }}>
+            <Lbl style={{ display: "block", marginBottom: 7 }}>How the number is built</Lbl>
+            {formula ? (
+              <div style={{ fontSize: 13.5, lineHeight: 1.85, color: T.muted }}>{formula}</div>
+            ) : (
+              <div style={{ fontSize: 12.5, color: T.faint, fontStyle: "italic", lineHeight: 1.6 }}>
+                Built from this setting's Explore model. Adjust the clinical inputs in Explore to change it.
+              </div>
+            )}
+            <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginTop: 11 }}>
+              <span style={{ fontSize: 12, color: T.faint }}>equals</span>
+              <span className="font-abridge" style={{ fontSize: 22, color: T.coral, lineHeight: 1 }}>
+                {fmt(driver.value)}<span style={{ fontSize: 11, color: T.faint }}> a year</span>
+              </span>
             </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 14 }}>
@@ -508,25 +492,24 @@ function SettingCard({
   config,
   excluded,
   expanded,
-  breakdowns,
   onToggleExpanded,
   onUpdateSetting,
   onRemove,
   onToggleDriverOff,
-  onSetBreakdown,
 }: {
   setting: ProformaSettingSnapshot;
   config: ProformaConfig;
   excluded: Set<string>;
   expanded: boolean;
-  breakdowns: Record<string, Breakdown>;
   onToggleExpanded: () => void;
   onUpdateSetting: (updates: Partial<ProformaSettingSnapshot>) => void;
   onRemove: () => void;
   onToggleDriverOff: (driverId: string) => void;
-  onSetBreakdown: (driverId: string, b: Breakdown) => void;
 }) {
   const Icon = SETTING_ICON[setting.careSetting] ?? Stethoscope;
+  // Real, reconciling per-driver formulas (the same math Explore shows), keyed
+  // by proforma driver id. Read-only here; clinical inputs are edited in Explore.
+  const driverFormulas = useMemo(() => computeSettingDriverFormulas(setting), [setting]);
   const termYears = Math.min(3, Math.max(1, Math.round(config.contractTermMonths / 12)));
   const yearKeys = (["year1", "year2", "year3"] as const).slice(0, termYears);
   const [rampMode, setRampMode] = useState<"year" | "quarter">("year");
@@ -577,14 +560,16 @@ function SettingCard({
   const updateDriverOnset = (driverId: string, onset: DriverOnset) => {
     onUpdateSetting({ drivers: setting.drivers.map((d) => (d.id === driverId ? { ...d, onset } : d)) });
   };
-  const commitBreakdown = (driverId: string, b: Breakdown) => {
-    onSetBreakdown(driverId, b);
-    const newValue = breakdownValue(b);
-    const old = setting.drivers.find((d) => d.id === driverId);
-    if (!old) return;
-    const drivers = setting.drivers.map((d) => (d.id === driverId ? { ...d, value: newValue } : d));
-    onUpdateSetting({ drivers, annualValue: setting.annualValue - old.value + newValue });
-  };
+
+  // Cost offsets — legacy vendor spend Abridge displaces (ramped over the
+  // transition). The engine (buildMonthlyCashFlows) already consumes these.
+  const offsets = setting.costOffsets ?? [];
+  const setOffsets = (next: CostOffset[]) => onUpdateSetting({ costOffsets: next });
+  const addOffset = () =>
+    setOffsets([...offsets, { id: `off-${Date.now()}`, label: "Legacy tool", annualSpend: 100000, displacementPct: 100, transitionMonths: 6 }]);
+  const updateOffset = (id: string, patch: Partial<CostOffset>) =>
+    setOffsets(offsets.map((o) => (o.id === id ? { ...o, ...patch } : o)));
+  const removeOffset = (id: string) => setOffsets(offsets.filter((o) => o.id !== id));
 
   const setYearProviders = (key: "year1" | "year2" | "year3", n: number) => {
     const yp = { year1: setting.providerCount, year2: setting.fullScaleProviders, year3: setting.fullScaleProviders, ...setting.yearlyProviders, [key]: n };
@@ -779,8 +764,7 @@ function SettingCard({
                     expanded={expandedDriver === d.id}
                     onToggleOff={() => onToggleDriverOff(d.id)}
                     onToggleExpand={() => setExpandedDriver((cur) => (cur === d.id ? null : d.id))}
-                    breakdown={breakdowns[d.id] ?? seedBreakdown(d)}
-                    onBreakdownChange={(b) => commitBreakdown(d.id, b)}
+                    formula={driverFormulas[d.id]}
                     onOnsetChange={(o) => updateDriverOnset(d.id, o)}
                   />
                 ))}
@@ -814,20 +798,57 @@ function SettingCard({
                 </div>
               </div>
 
-              {/* ADVANCED (placeholder chips) */}
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8, borderTop: `1px solid ${T.hair}`, marginTop: 14, paddingTop: 14, alignItems: "center" }}>
-                <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: T.off, marginRight: 4 }}>Advanced</span>
-                {["Cost offsets", "Scenario B pricing", "Edit encounter volumes", "Compare all pricing models"].map((c) => (
-                  <span key={c} title="Coming soon" style={{ fontSize: 12, fontWeight: 600, color: T.muted, background: T.page, border: `1px solid ${T.hair}`, borderRadius: 8, padding: "7px 12px", display: "inline-flex", alignItems: "center", gap: 6, cursor: "default" }}>
-                    <Plus size={13} style={{ color: T.off }} /> {c}
-                  </span>
-                ))}
-                <button
-                  onClick={onRemove}
-                  style={{ marginLeft: "auto", fontSize: 12, fontWeight: 600, color: T.off, background: "none", border: "none", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 5 }}
-                >
-                  <Trash2 size={13} /> Remove
-                </button>
+              {/* ADVANCED */}
+              <div style={{ borderTop: `1px solid ${T.hair}`, marginTop: 14, paddingTop: 14 }}>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
+                  <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: T.off, marginRight: 4 }}>Advanced</span>
+                  {/* Cost offsets — real control (engine already consumes setting.costOffsets) */}
+                  <button
+                    onClick={addOffset}
+                    style={{ fontSize: 12, fontWeight: 700, color: T.coral, background: "#fff", border: `1px solid ${T.coral}`, borderRadius: 8, padding: "7px 12px", display: "inline-flex", alignItems: "center", gap: 6, cursor: "pointer" }}
+                  >
+                    <Plus size={13} /> Cost offset
+                  </button>
+                  {["Scenario B pricing", "Edit encounter volumes", "Compare all pricing models"].map((c) => (
+                    <span key={c} title="Coming soon" style={{ fontSize: 12, fontWeight: 600, color: T.muted, background: T.page, border: `1px solid ${T.hair}`, borderRadius: 8, padding: "7px 12px", display: "inline-flex", alignItems: "center", gap: 6, cursor: "default" }}>
+                      <Plus size={13} style={{ color: T.off }} /> {c}
+                    </span>
+                  ))}
+                  <button
+                    onClick={onRemove}
+                    style={{ marginLeft: "auto", fontSize: 12, fontWeight: 600, color: T.off, background: "none", border: "none", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 5 }}
+                  >
+                    <Trash2 size={13} /> Remove
+                  </button>
+                </div>
+
+                {offsets.length > 0 && (
+                  <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 8 }}>
+                    <div style={{ fontSize: 11.5, color: T.faint }}>
+                      Legacy spend Abridge displaces. Counted as cost avoided, ramped over the transition.
+                    </div>
+                    {offsets.map((o) => (
+                      <div key={o.id} style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 14, background: "#fff", border: `1px solid ${T.hair}`, borderRadius: 10, padding: "11px 13px" }}>
+                        <input
+                          value={o.label}
+                          onChange={(e) => updateOffset(o.id, { label: e.target.value })}
+                          placeholder="Legacy tool"
+                          style={{ flex: "1 1 130px", minWidth: 110, fontSize: 13.5, fontWeight: 700, color: T.label, background: "none", border: "none", borderBottom: `1px solid ${T.hair}`, padding: "2px 0", outline: "none" }}
+                        />
+                        <NumCell value={o.annualSpend} onChange={(n) => updateOffset(o.id, { annualSpend: n })} kLabel="Annual spend" prefix="$" format={commaFmt} />
+                        <NumCell value={o.displacementPct} onChange={(n) => updateOffset(o.id, { displacementPct: n })} kLabel="Displaced" suffix="%" />
+                        <NumCell value={o.transitionMonths} onChange={(n) => updateOffset(o.id, { transitionMonths: n })} kLabel="Transition (mo)" />
+                        <div style={{ textAlign: "right", minWidth: 82 }}>
+                          <div className="font-abridge" style={{ fontSize: 15, color: T.coral, lineHeight: 1 }}>{fmt(costOffsetDisplacedAmount(o))}</div>
+                          <div style={{ fontSize: 9, color: T.faint, marginTop: 3 }}>displaced / yr</div>
+                        </div>
+                        <button onClick={() => removeOffset(o.id)} title="Remove offset" style={{ background: "none", border: "none", cursor: "pointer", color: T.off, display: "inline-flex", padding: 4 }}>
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </motion.div>
@@ -864,36 +885,15 @@ export interface ProformaWorkbenchProps {
 
 export default function ProformaWorkbench({ settings, config, onUpdateSetting, onUpdateConfig, onRemoveSetting, onNavigate }: ProformaWorkbenchProps) {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(() => new Set(settings.slice(0, 1).map((s) => s.id)));
-  // Per-setting excluded driver ids (v1 on/off). Seed with any "locum" driver off.
-  const [excludedMap, setExcludedMap] = useState<Record<string, Set<string>>>(() => {
-    const m: Record<string, Set<string>> = {};
-    settings.forEach((s) => {
-      const off = s.drivers.filter((d) => d.id === "locum").map((d) => d.id);
-      if (off.length) m[s.id] = new Set(off);
-    });
-    return m;
-  });
-  // Per-driver breakdown state, keyed `${settingId}:${driverId}`.
-  const [breakdownMap, setBreakdownMap] = useState<Record<string, Breakdown>>({});
 
-  const excludedFor = useCallback((id: string) => excludedMap[id] ?? new Set<string>(), [excludedMap]);
+  const excludedFor = useCallback(
+    (id: string) => new Set((settings.find((s) => s.id === id)?.drivers ?? []).filter((d) => d.excluded).map((d) => d.id)),
+    [settings],
+  );
 
-  // Effective settings (exclusions applied) drive the deal-wide engine run.
-  const effectiveSettings = useMemo(() => {
-    return settings.map((s) => {
-      const ex = excludedMap[s.id];
-      if (!ex || ex.size === 0) return s;
-      let removed = 0;
-      const drivers = s.drivers.map((d) => {
-        if (ex.has(d.id)) {
-          removed += d.value;
-          return { ...d, value: 0 };
-        }
-        return d;
-      });
-      return { ...s, drivers, annualValue: s.annualValue - removed };
-    });
-  }, [settings, excludedMap]);
+  // Exclusions resolved from the shared driver.excluded flag — the SAME source
+  // Case and Present read (via applyExclusions), so no chapter can disagree.
+  const effectiveSettings = useMemo(() => applyExclusions(settings), [settings]);
 
   const { summary, quadrantTotals } = useMemo(() => {
     const flows = buildMonthlyCashFlows(effectiveSettings, config);
@@ -927,27 +927,14 @@ export default function ProformaWorkbench({ settings, config, onUpdateSetting, o
       return next;
     });
 
-  const toggleDriverOff = (settingId: string, driverId: string) =>
-    setExcludedMap((cur) => {
-      const next = { ...cur };
-      const set = new Set(next[settingId] ?? []);
-      set.has(driverId) ? set.delete(driverId) : set.add(driverId);
-      next[settingId] = set;
-      return next;
-    });
-
-  const setBreakdown = (settingId: string, driverId: string, b: Breakdown) =>
-    setBreakdownMap((cur) => ({ ...cur, [`${settingId}:${driverId}`]: b }));
-
-  const settingBreakdowns = (settingId: string): Record<string, Breakdown> => {
-    const out: Record<string, Breakdown> = {};
+  const toggleDriverOff = (settingId: string, driverId: string) => {
     const s = settings.find((x) => x.id === settingId);
-    if (!s) return out;
-    for (const d of s.drivers) {
-      out[d.id] = breakdownMap[`${settingId}:${d.id}`] ?? seedBreakdown(d);
-    }
-    return out;
+    if (!s) return;
+    onUpdateSetting(settingId, {
+      drivers: s.drivers.map((d) => (d.id === driverId ? { ...d, excluded: !d.excluded } : d)),
+    });
   };
+
 
   const scoreboard: { v: number; k: string; coral?: boolean }[] = [
     { v: yearlyValue, k: "Value / yr", coral: true },
@@ -1032,12 +1019,10 @@ export default function ProformaWorkbench({ settings, config, onUpdateSetting, o
             config={config}
             excluded={excludedFor(s.id)}
             expanded={expandedIds.has(s.id)}
-            breakdowns={settingBreakdowns(s.id)}
             onToggleExpanded={() => toggleExpanded(s.id)}
             onUpdateSetting={(u) => onUpdateSetting(s.id, u)}
             onRemove={() => onRemoveSetting(s.id)}
             onToggleDriverOff={(driverId) => toggleDriverOff(s.id, driverId)}
-            onSetBreakdown={(driverId, b) => setBreakdown(s.id, driverId, b)}
           />
         ))}
 
@@ -1069,7 +1054,7 @@ export default function ProformaWorkbench({ settings, config, onUpdateSetting, o
 }
 
 /* ─────────────────────────── sample data ─────────────────────────── */
-type DriverSeed = { id: string; name: string; value: number; quadrant: ExploreQuadrant; onset: DriverOnset; category: "time" | "documentation" };
+type DriverSeed = { id: string; name: string; value: number; quadrant: ExploreQuadrant; onset: DriverOnset; category: "time" | "documentation"; excluded?: boolean };
 
 function buildSetting(
   base: {
@@ -1088,7 +1073,7 @@ function buildSetting(
     drivers: DriverSeed[];
   },
 ): ProformaSettingSnapshot {
-  const drivers: ProformaDriver[] = base.drivers.map((d) => ({ id: d.id, name: d.name, value: d.value, quadrant: d.quadrant, onset: d.onset, category: d.category }));
+  const drivers: ProformaDriver[] = base.drivers.map((d) => ({ id: d.id, name: d.name, value: d.value, quadrant: d.quadrant, onset: d.onset, category: d.category, excluded: d.excluded }));
   const annualValue = drivers.reduce((s, d) => s + d.value, 0);
   const q = (name: ExploreQuadrant) => drivers.filter((d) => d.quadrant === name).reduce((s, d) => s + d.value, 0);
   return {
@@ -1146,7 +1131,7 @@ export const SAMPLE_PROFORMA_SETTINGS: ProformaSettingSnapshot[] = [
       { id: "wrvu", name: "wRVU capture", value: 412000, quadrant: "Revenue", onset: "delayed", category: "documentation" },
       { id: "hcc", name: "HCC recapture", value: 319000, quadrant: "Revenue", onset: "delayed", category: "documentation" },
       { id: "providerWellbeing", name: "Provider wellbeing", value: 180000, quadrant: "Workforce", onset: "phased", category: "time" },
-      { id: "locum", name: "Locum & agency avoidance", value: 95000, quadrant: "Workforce", onset: "phased", category: "time" },
+      { id: "locum", name: "Locum & agency avoidance", value: 95000, quadrant: "Workforce", onset: "phased", category: "time", excluded: true },
       { id: "docQuality", name: "Documentation quality", value: 0, quadrant: "Quality", onset: "immediate", category: "documentation" },
     ],
   }),
@@ -1163,9 +1148,8 @@ export const SAMPLE_PROFORMA_SETTINGS: ProformaSettingSnapshot[] = [
     goLiveMonth: 4,
     color: "#BF2A06",
     drivers: [
-      { id: "patientAccess", name: "Throughput & LWBS", value: 260000, quadrant: "Capacity", onset: "immediate", category: "time" },
-      { id: "wrvu", name: "wRVU capture", value: 240000, quadrant: "Revenue", onset: "delayed", category: "documentation" },
-      { id: "hcc", name: "HCC recapture", value: 90000, quadrant: "Revenue", onset: "delayed", category: "documentation" },
+      { id: "edLwbs", name: "Throughput & LWBS", value: 260000, quadrant: "Capacity", onset: "immediate", category: "time" },
+      { id: "wrvu", name: "E/M level coding", value: 240000, quadrant: "Revenue", onset: "delayed", category: "documentation" },
       { id: "providerWellbeing", name: "Provider wellbeing", value: 50000, quadrant: "Workforce", onset: "phased", category: "time" },
     ],
   }),

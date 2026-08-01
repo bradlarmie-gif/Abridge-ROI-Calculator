@@ -6,7 +6,34 @@ import {
   groupByYear,
   groupByQuarter,
 } from "@/lib/proformaCalculations";
-import type { ProformaSettingSnapshot, ProformaConfig, ProformaCashFlowRow } from "../proformaTypes";
+import type { ProformaSettingSnapshot, ProformaConfig, ProformaCashFlowRow, ExploreQuadrant } from "../proformaTypes";
+
+/**
+ * Apply per-driver on/off (driver.excluded) to a settings array, zeroing
+ * excluded drivers and recomputing the setting's rolled-up value fields. This is
+ * the ONE place exclusions are resolved, so every chapter (Build, Case, Present)
+ * and the engine see the same numbers — the on/off can never make the chapters
+ * disagree.
+ */
+export function applyExclusions(settings: ProformaSettingSnapshot[]): ProformaSettingSnapshot[] {
+  return settings.map((s) => {
+    if (!s.drivers.some((d) => d.excluded)) return s;
+    const drivers = s.drivers.map((d) => (d.excluded ? { ...d, value: 0 } : d));
+    const q = (name: ExploreQuadrant) => drivers.filter((d) => d.quadrant === name).reduce((a, d) => a + d.value, 0);
+    return {
+      ...s,
+      drivers,
+      annualValue: drivers.reduce((a, d) => a + d.value, 0),
+      capacityValue: q("Capacity"),
+      workforceValue: q("Workforce"),
+      revenueValue: q("Revenue"),
+      qualityValue: q("Quality"),
+      timeValue: q("Capacity"),
+      docValue: q("Revenue"),
+      retentionValue: q("Workforce"),
+    };
+  });
+}
 
 /* ─────────────────────────── design tokens ─────────────────────────── */
 export const T = {

@@ -12,6 +12,9 @@ export interface ProformaDriver {
   onset: DriverOnset;
   // For onset === "custom": the month the value starts (then ramps from there).
   customOnsetMonths?: number;
+  // Editorial on/off. Excluded drivers are zeroed everywhere via applyExclusions,
+  // so every chapter and the engine agree. Absent = counted.
+  excluded?: boolean;
 }
 
 export interface YearlyProviders {
