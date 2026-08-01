@@ -974,7 +974,7 @@ export default function ProformaWorkbench({ settings, config, onUpdateSetting, o
   const read =
     summary.paybackMonth != null
       ? `At this ramp the deal clears its cost by month ${summary.paybackMonth} and reaches ${fmt(summary.termNet)} net over ${termYears === 1 ? "the first year" : `${termYears} years`}. ${topDomain} carries about ${topShare}% of the value at run-rate.`
-      : `The deal has not yet cleared its cost inside a ${termYears}-year term — tune the ramp, pricing, or drivers below. ${topDomain} carries about ${topShare}% of the value at run-rate.`;
+      : `The deal has not yet cleared its cost inside a ${termYears}-year term. Tune the ramp, pricing, or drivers below. ${topDomain} carries about ${topShare}% of the value at run-rate.`;
 
   const toggleExpanded = (id: string) =>
     setExpandedIds((cur) => {
