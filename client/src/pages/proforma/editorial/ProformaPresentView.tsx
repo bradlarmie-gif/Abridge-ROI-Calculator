@@ -133,7 +133,10 @@ export default function ProformaPresentView({ settings, config, org, onNavigate 
   const [isolatedId, setIsolatedId] = useState<string | null>(null);
   const [showStress, setShowStress] = useState(false);
 
-  const { settingsMeta, termValue, termInvestment, termNet, termDisplaced, payback, roi, runRate, termYears } = model;
+  const { settingsMeta, termValue, termInvestment, termNet, termDisplaced, payback, paybackWithDisplacement, roi, runRate, termYears } = model;
+  // Displacement-acceleration story: headline payback is clinical-only; real
+  // break-even lands sooner once the displaced legacy spend is counted.
+  const displacementBeat = termDisplaced > 0 && paybackWithDisplacement != null && payback != null && paybackWithDisplacement < payback;
 
   const conservative = termValue * 0.7 - termInvestment;
   const monthLabel = new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" });
@@ -164,6 +167,11 @@ export default function ProformaPresentView({ settings, config, org, onNavigate 
         <p style={{ fontSize: 16, color: T.muted, lineHeight: 1.5, marginTop: 18, maxWidth: 640 }}>
           {settings.length === 1 ? "One care setting" : `${wordify(settings.length).replace(/^\w/, (c) => c.toUpperCase())} care settings`}, modeled on your own volume and economics over {termYears === 3 ? "three" : wordify(termYears)} years. Everything here opens up, tap any line to see exactly how it's built.
         </p>
+        {displacementBeat && (
+          <p style={{ fontSize: 15, color: T.muted, lineHeight: 1.5, marginTop: 12, maxWidth: 640 }}>
+            That payback is on clinical value alone. Counting the <span style={{ color: T.coral, fontWeight: 700 }}>{fmt(termDisplaced)}</span> in legacy spend Abridge displaces, real break-even comes sooner, in month {paybackWithDisplacement}.
+          </p>
+        )}
 
         {/* STATS */}
         <div style={{ display: "grid", gridTemplateColumns: `repeat(${termDisplaced > 0 ? 5 : 4}, 1fr)`, gap: 24, marginTop: 40, padding: "26px 0", borderTop: `1px solid ${T.hair}`, borderBottom: `1px solid ${T.hair}` }}>

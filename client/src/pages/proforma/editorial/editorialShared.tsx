@@ -209,7 +209,8 @@ export interface CaseModel {
   termInvestment: number;
   termNet: number;
   termDisplaced: number;
-  payback: number | null;
+  payback: number | null; // clinical-only break-even — the headline
+  paybackWithDisplacement: number | null; // counting displaced spend — the "real break-even" story
   roi: number;
   runRate: number;
   termYears: number;
@@ -284,7 +285,8 @@ export function computeCaseModel(settings: ProformaSettingSnapshot[], config: Pr
     termInvestment,
     termNet,
     termDisplaced,
-    payback: summary.paybackMonth,
+    payback: summary.clinicalPaybackMonth,
+    paybackWithDisplacement: summary.paybackMonth,
     roi,
     runRate,
     termYears: years.length,

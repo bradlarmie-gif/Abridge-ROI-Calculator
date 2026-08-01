@@ -107,8 +107,11 @@ export default function ProformaCaseView({ settings, config, onNavigate }: Profo
   const [isolatedId, setIsolatedId] = useState<string | null>(null);
   const [expandedSetting, setExpandedSetting] = useState<string | null>(model.settingsMeta[0]?.id ?? null);
 
-  const { years, settingsMeta, termValue, termInvestment, termNet, termDisplaced, payback, roi, runRate, termYears } = model;
+  const { years, settingsMeta, termValue, termInvestment, termNet, termDisplaced, payback, paybackWithDisplacement, roi, runRate, termYears } = model;
   const grid = gridFor(years.length);
+  // The displacement-acceleration story: real break-even once you count the
+  // legacy spend Abridge displaces (shown only when it actually lands sooner).
+  const displacementBeat = termDisplaced > 0 && paybackWithDisplacement != null && payback != null && paybackWithDisplacement < payback;
 
   // Mini scoreboard (per-year run-rate = last year value / investment / net).
   const lastYear = years[years.length - 1];
@@ -254,7 +257,7 @@ export default function ProformaCaseView({ settings, config, onNavigate }: Profo
           <Lbl style={{ color: T.coral, whiteSpace: "nowrap", paddingTop: 2 }}>The read</Lbl>
           <div className="font-abridge" style={{ fontSize: 17, color: T.ink, lineHeight: 1.35, maxWidth: 860 }}>
             {payback != null ? (
-              <>Year one is the investment year while the team ramps; payback lands in <span style={{ color: T.coral }}>month {payback}</span>{stacked ? ` once ${stacked.label} is online` : ""}. From there the settings compound to <span style={{ color: T.coral }}>{fmt(termNet)} net</span> over the term, and even the conservative case clears the cost.</>
+              <>Year one is the investment year while the team ramps; on clinical value alone, payback lands in <span style={{ color: T.coral }}>month {payback}</span>{stacked ? ` once ${stacked.label} is online` : ""}. From there the settings compound to <span style={{ color: T.coral }}>{fmt(termNet)} net</span> over the term.{displacementBeat ? <> Counting the <span style={{ color: T.coral }}>{fmt(termDisplaced)}</span> in legacy spend Abridge displaces, real break-even comes sooner, in <span style={{ color: T.coral }}>month {paybackWithDisplacement}</span>.</> : null}</>
             ) : (
               <>The case has not yet cleared its cost inside the term. Tune the ramp, pricing, or drivers in Build the deal, then the settings compound toward a <span style={{ color: T.coral }}>{fmt(runRate)}</span> run-rate.</>
             )}

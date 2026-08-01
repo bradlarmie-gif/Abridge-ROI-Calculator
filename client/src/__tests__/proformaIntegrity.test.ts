@@ -118,6 +118,13 @@ describe("Proforma Integrity — Layer 1: seam reconciliation fuzz", () => {
               chk(Math.abs(model.termDisplaced - summary.displacementSavings) <= tol(summary.displacementSavings),
                 `model.termDisplaced ${model.termDisplaced} != summary.displacementSavings ${summary.displacementSavings}`);
 
+              // F. Payback doctrine: the headline is clinical-only (one source,
+              // shared with the PDF), and the displacement-inclusive "real
+              // break-even" is never later than it.
+              chk(model.payback === summary.clinicalPaybackMonth, `model.payback ${model.payback} != summary.clinicalPaybackMonth ${summary.clinicalPaybackMonth}`);
+              if (model.termDisplaced > 0 && model.payback != null && model.paybackWithDisplacement != null)
+                chk(model.paybackWithDisplacement <= model.payback, `displacement payback ${model.paybackWithDisplacement} later than clinical ${model.payback}`);
+
               // H. Sane bounds.
               chk(model.termValue >= -tol(model.termValue), `termValue negative ${model.termValue}`);
               chk(model.termDisplaced >= -1, `displaced negative ${model.termDisplaced}`);
@@ -162,7 +169,9 @@ describe("Proforma Integrity — Layer 1: seam reconciliation fuzz", () => {
     expect(noOff.termDisplaced).toBe(0);
     expect(Math.abs(withOff.termValue - noOff.termValue)).toBeLessThanOrEqual(tol(noOff.termValue));
     expect(Math.abs(withOff.roi - noOff.roi)).toBeLessThanOrEqual(0.02);
-    // displacement can only help (or not move) payback, never hurt it
-    expect(withOff.payback ?? 9999).toBeLessThanOrEqual(noOff.payback ?? 9999);
+    // The HEADLINE (clinical) payback is displacement-independent — it must not move.
+    expect(withOff.payback).toBe(noOff.payback);
+    // The displacement-inclusive "real break-even" story lands sooner or equal.
+    expect(withOff.paybackWithDisplacement ?? 9999).toBeLessThanOrEqual(noOff.paybackWithDisplacement ?? 9999);
   });
 });

@@ -971,9 +971,14 @@ export default function ProformaWorkbench({ settings, config, onUpdateSetting, o
   // "The read"
   const topDomain = (Object.entries(quadrantTotals).sort((a, b) => b[1] - a[1])[0]?.[0]) ?? "Capacity";
   const topShare = yearlyValue > 0 ? Math.round(((quadrantTotals as Record<string, number>)[topDomain] / yearlyValue) * 100) : 0;
+  // Headline payback is clinical-only; the displaced spend brings real break-even
+  // sooner and is told as a story beat (never folded into the headline).
+  const clinicalPayback = summary.clinicalPaybackMonth;
+  const displacedPayback = summary.paybackMonth;
+  const dispBeat = displacedPerYr > 0 && displacedPayback != null && clinicalPayback != null && displacedPayback < clinicalPayback;
   const read =
-    summary.paybackMonth != null
-      ? `At this ramp the deal clears its cost by month ${summary.paybackMonth} and reaches ${fmt(summary.termNet)} net over ${termYears === 1 ? "the first year" : `${termYears} years`}. ${topDomain} carries about ${topShare}% of the value at run-rate.`
+    clinicalPayback != null
+      ? `At this ramp the deal clears its cost on clinical value by month ${clinicalPayback} and reaches ${fmt(summary.termNet)} net over ${termYears === 1 ? "the first year" : `${termYears} years`}.${dispBeat ? ` Counting the legacy spend Abridge displaces, real break-even is month ${displacedPayback}.` : ""} ${topDomain} carries about ${topShare}% of the value at run-rate.`
       : `The deal has not yet cleared its cost inside a ${termYears}-year term. Tune the ramp, pricing, or drivers below. ${topDomain} carries about ${topShare}% of the value at run-rate.`;
 
   const toggleExpanded = (id: string) =>

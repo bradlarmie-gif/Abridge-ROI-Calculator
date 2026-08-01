@@ -182,7 +182,10 @@ export function buildProformaPdfData(
   const termInvestment = years.reduce((a, y) => a + y.investment, 0);
   const termNet = termValue - termInvestment;
   const roi = termInvestment > 0 ? termValue / termInvestment : 0;
-  const paybackMonth = paybackFor(clinicalMonthly(settings, config, 1)) ?? summary.paybackMonth;
+  // One source of truth for payback: the engine's clinical-only break-even (same
+  // number the screens show). Fall back to the local clinical recompute only if
+  // the engine didn't produce one.
+  const paybackMonth = summary.clinicalPaybackMonth ?? paybackFor(clinicalMonthly(settings, config, 1)) ?? summary.paybackMonth;
 
   const runRateValue = pfSettings.reduce((a, s) => a + s.atScaleValue, 0);
 
@@ -274,7 +277,7 @@ export function buildProformaPdfData(
     whenValueLands: `Revenue from month 1 · Capacity from month ${config.implementationRampMonths} · Quality signals tracked from month ${config.implementationRampMonths} · Workforce phased ${rp.year1Pct}% / ${rp.year2Pct}% / ${rp.year3Pct}% across years 1 to 3.`,
     theRead:
       paybackMonth != null
-        ? `Year one is the investment year while teams ramp; payback lands in month ${paybackMonth}. From there the case compounds to ${money(termNet)} net.`
+        ? `Year one is the investment year while teams ramp; on clinical value, payback lands in month ${paybackMonth}. From there the case compounds to ${money(termNet)} net.${summary.displacementSavings > 0 && summary.paybackMonth != null && summary.paybackMonth < paybackMonth ? ` Counting the ${money(summary.displacementSavings)} in legacy spend Abridge displaces, real break-even is month ${summary.paybackMonth}.` : ""}`
         : `The case builds as adoption deepens toward a ${money(runRateValue)} run-rate.`,
     costRows,
     totalInvestmentRow,

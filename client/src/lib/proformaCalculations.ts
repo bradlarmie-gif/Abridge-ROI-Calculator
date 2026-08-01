@@ -834,14 +834,25 @@ export function calculateProformaSummary(
   // because Year 1 billing is just the platform fee — economic basis charges
   // encounters in the year they're consumed, giving a fair payback figure.
   const usesEconomicPayback = settings.some(s => s.bankedEncounters && (s.pricingModel === "platform" || s.pricingModel === "perEncounter"));
+  // Two break-even points, computed once so every surface agrees:
+  //   clinicalPaybackMonth — clinical value only (the HEADLINE; displaced spend
+  //     never accelerates the promise, matching the "counted separately" rule).
+  //   paybackMonth — displacement-inclusive cash break-even, told separately as
+  //     the "real break-even, once you count the spend you stop paying" story.
+  // Displacement is purely additive to net, so clinicalCum = cumNet − Σdisplacement.
   let paybackMonth: number | null = null;
-  let cumulativeWentNegative = false;
+  let clinicalPaybackMonth: number | null = null;
+  let wentNegative = false;
+  let clinicalWentNegative = false;
+  let cumDisplacement = 0;
   for (const row of cashFlows) {
     const cumNet = usesEconomicPayback ? (row.economicCumulativeNet ?? row.cumulativeNet) : row.cumulativeNet;
-    if (cumNet < 0) cumulativeWentNegative = true;
-    if (cumulativeWentNegative && cumNet >= 0 && paybackMonth === null) {
-      paybackMonth = row.period;
-    }
+    if (cumNet < 0) wentNegative = true;
+    if (wentNegative && cumNet >= 0 && paybackMonth === null) paybackMonth = row.period;
+    cumDisplacement += row.displacementValue;
+    const clinicalCum = cumNet - cumDisplacement;
+    if (clinicalCum < 0) clinicalWentNegative = true;
+    if (clinicalWentNegative && clinicalCum >= 0 && clinicalPaybackMonth === null) clinicalPaybackMonth = row.period;
   }
 
   // Way C — displacement is a SEPARATE savings line. It is NOT in the value figure and NOT
@@ -874,6 +885,7 @@ export function calculateProformaSummary(
     atScaleReturn,
     totalHours,
     paybackMonth,
+    clinicalPaybackMonth,
     termNet,
     termValue,
     termInvestment,

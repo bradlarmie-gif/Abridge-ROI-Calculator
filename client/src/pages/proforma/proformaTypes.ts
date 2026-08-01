@@ -161,7 +161,8 @@ export interface ProformaSummary {
   valueToCost: number;
   atScaleReturn: number;
   totalHours: number;
-  paybackMonth: number | null;
+  paybackMonth: number | null; // displacement-inclusive cash break-even (the "real break-even" story)
+  clinicalPaybackMonth: number | null; // clinical-only break-even (the headline)
   termNet: number;
   termValue: number;
   termInvestment: number;
