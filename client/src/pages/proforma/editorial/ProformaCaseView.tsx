@@ -17,11 +17,13 @@ import {
 } from "./editorialShared";
 
 /* ─────────────────────────── financial summary matrix ─────────────────────────── */
-const GRID = "1.5fr 1fr 1fr 1fr 1.05fr";
+// Label + one column per term year + a term-total column, so the table stays
+// aligned whether the deal is 1 or 5 years.
+const gridFor = (nYears: number) => `1.5fr ${Array(Math.max(1, nYears)).fill("1fr").join(" ")} 1.05fr`;
 
-function FRow({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
+function FRow({ children, style, grid }: { children: React.ReactNode; style?: React.CSSProperties; grid: string }) {
   return (
-    <div style={{ display: "grid", gridTemplateColumns: GRID, padding: "12px 26px", alignItems: "baseline", ...style }}>
+    <div style={{ display: "grid", gridTemplateColumns: grid, padding: "12px 26px", alignItems: "baseline", ...style }}>
       {children}
     </div>
   );
@@ -49,6 +51,7 @@ function SettingMatrixRow({
   expanded,
   onToggle,
   lastRow,
+  grid,
 }: {
   meta: CaseSettingMeta;
   yearValues: number[];
@@ -56,11 +59,12 @@ function SettingMatrixRow({
   expanded: boolean;
   onToggle: () => void;
   lastRow: boolean;
+  grid: string;
 }) {
   const shares = driverShares(meta);
   return (
     <>
-      <FRow style={{ borderBottom: `1px solid ${lastRow ? T.hair : T.soft}`, cursor: "pointer" }}>
+      <FRow grid={grid} style={{ borderBottom: `1px solid ${lastRow ? T.hair : T.soft}`, cursor: "pointer" }}>
         <span style={{ fontSize: 13.5, color: T.label, fontWeight: 700, display: "flex", alignItems: "center", gap: 9 }} onClick={onToggle}>
           <motion.span animate={{ rotate: expanded ? 90 : 0 }} transition={{ duration: 0.2 }} style={{ color: T.off, fontSize: 10, width: 10, display: "inline-block" }}>▸</motion.span>
           <span style={{ width: 10, height: 10, borderRadius: 3, background: meta.color, flex: "none" }} />
@@ -75,7 +79,7 @@ function SettingMatrixRow({
         {expanded && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }} style={{ overflow: "hidden", background: "#FBF8F4", borderBottom: `1px solid ${T.soft}` }}>
             {shares.map((d) => (
-              <div key={d.id} style={{ display: "grid", gridTemplateColumns: GRID, padding: "9px 26px", alignItems: "baseline" }}>
+              <div key={d.id} style={{ display: "grid", gridTemplateColumns: grid, padding: "9px 26px", alignItems: "baseline" }}>
                 <span style={{ fontSize: 12.5, color: T.muted, paddingLeft: 29 }}>{d.name}</span>
                 {yearValues.map((v, i) => (
                   <span key={i} className="font-abridge" style={{ textAlign: "right", fontSize: 13.5, color: T.faint }}>{fmt(v * d.share)}</span>
@@ -104,6 +108,7 @@ export default function ProformaCaseView({ settings, config, onNavigate }: Profo
   const [expandedSetting, setExpandedSetting] = useState<string | null>(model.settingsMeta[0]?.id ?? null);
 
   const { years, settingsMeta, termValue, termInvestment, termNet, termDisplaced, payback, roi, runRate, termYears } = model;
+  const grid = gridFor(years.length);
 
   // Mini scoreboard (per-year run-rate = last year value / investment / net).
   const lastYear = years[years.length - 1];
@@ -144,8 +149,8 @@ export default function ProformaCaseView({ settings, config, onNavigate }: Profo
       </div>
 
       <div style={{ maxWidth: 1120, margin: "0 auto", padding: "36px 40px 60px" }}>
-        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.15em", textTransform: "uppercase", color: T.coral }}>Chapter 02 · The 3-year case</div>
-        <h1 className="font-abridge" style={{ fontSize: 40, lineHeight: 1.04, color: T.ink, marginTop: 8 }}>The case, over three years.</h1>
+        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.15em", textTransform: "uppercase", color: T.coral }}>Chapter 02 · The case</div>
+        <h1 className="font-abridge" style={{ fontSize: 40, lineHeight: 1.04, color: T.ink, marginTop: 8 }}>The case, over {termYears === 1 ? "one year" : `${termYears} years`}.</h1>
         <p style={{ fontSize: 15.5, color: T.muted, lineHeight: 1.5, marginTop: 12, maxWidth: 640 }}>
           How the value builds as each care setting comes online and adoption deepens.
           {anchor ? ` ${anchor.label} anchors year one` : ""}
@@ -179,7 +184,7 @@ export default function ProformaCaseView({ settings, config, onNavigate }: Profo
           <span style={{ fontSize: 11, color: T.off }}>Expand a setting to see its value drivers</span>
         </div>
         <div style={{ border: `1px solid ${T.hair}`, borderRadius: 18, background: T.card, overflow: "hidden", marginTop: 12 }}>
-          <FRow style={{ borderBottom: `1px solid ${T.hair}`, background: "#FBF7F1" }}>
+          <FRow grid={grid} style={{ borderBottom: `1px solid ${T.hair}`, background: "#FBF7F1" }}>
             <Lbl />
             {years.map((_, i) => (
               <Lbl key={i} style={{ textAlign: "right" }}>Year {i + 1}</Lbl>
@@ -199,39 +204,40 @@ export default function ProformaCaseView({ settings, config, onNavigate }: Profo
                 expanded={expandedSetting === meta.id}
                 onToggle={() => setExpandedSetting((cur) => (cur === meta.id ? null : meta.id))}
                 lastRow={si === settingsMeta.length - 1}
+                grid={grid}
               />
             );
           })}
 
           {/* totals */}
-          <FRow style={{ borderBottom: `1px solid ${T.soft}`, background: "#F4EEE6" }}>
+          <FRow grid={grid} style={{ borderBottom: `1px solid ${T.soft}`, background: "#F4EEE6" }}>
             <span style={{ fontSize: 13.5, color: T.label, fontWeight: 800 }}>Total value</span>
             {years.map((y, i) => (<Num key={i}>{fmt(y.clinical)}</Num>))}
             <Num>{fmt(termValue)}</Num>
           </FRow>
-          <FRow style={{ borderBottom: `1px solid ${T.soft}` }}>
+          <FRow grid={grid} style={{ borderBottom: `1px solid ${T.soft}` }}>
             <span style={{ fontSize: 13.5, color: T.muted }}>Investment</span>
             {years.map((y, i) => (<Num key={i} style={{ color: T.muted }}>({fmt(y.investment)})</Num>))}
             <Num style={{ color: T.muted }}>({fmt(termInvestment)})</Num>
           </FRow>
-          <FRow style={{ borderBottom: `1px solid ${T.soft}`, background: "#FEF3EF" }}>
+          <FRow grid={grid} style={{ borderBottom: `1px solid ${T.soft}`, background: "#FEF3EF" }}>
             <span style={{ fontSize: 13.5, color: T.label, fontWeight: 800 }}>Net value</span>
             {years.map((y, i) => (<Num key={i}>{fmt(y.net)}</Num>))}
             <Num style={{ color: T.coral }}>{fmt(termNet)}</Num>
           </FRow>
           {termDisplaced > 0 && (
-            <FRow style={{ borderBottom: `1px solid ${T.soft}` }}>
+            <FRow grid={grid} style={{ borderBottom: `1px solid ${T.soft}` }}>
               <span style={{ fontSize: 13.5, color: T.muted }}>Cost displaced <span style={{ fontSize: 11, color: T.faint }}>· returned, separate from value</span></span>
               {years.map((y, i) => (<Num key={i} style={{ color: T.coral }}>{fmt(y.displaced)}</Num>))}
               <Num style={{ color: T.coral }}>{fmt(termDisplaced)}</Num>
             </FRow>
           )}
-          <FRow style={{ borderBottom: `1px solid ${T.soft}` }}>
+          <FRow grid={grid} style={{ borderBottom: `1px solid ${T.soft}` }}>
             <span style={{ fontSize: 13.5, color: T.muted }}>Cumulative net</span>
             {cumByYear.map((c, i) => (<Num key={i} style={{ color: T.muted }}>{fmt(c)}</Num>))}
             <Num style={{ color: T.off }}>—</Num>
           </FRow>
-          <FRow>
+          <FRow grid={grid}>
             <span style={{ fontSize: 13.5, color: T.muted }}>Return on investment</span>
             {years.map((y, i) => (<Num key={i}>{y.roi.toFixed(1)}×</Num>))}
             <Num style={{ color: T.coral }}>{roi.toFixed(1)}×</Num>

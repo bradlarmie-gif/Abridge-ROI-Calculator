@@ -124,7 +124,7 @@ export function Lbl({ children, style }: { children?: React.ReactNode; style?: R
 export type Chapter = "build" | "case" | "present";
 const CHAPTER_LIST: { key: Chapter; n: string; label: string }[] = [
   { key: "build", n: "01", label: "Build the deal" },
-  { key: "case", n: "02", label: "The 3-year case" },
+  { key: "case", n: "02", label: "The case" },
   { key: "present", n: "03", label: "Present" },
 ];
 
@@ -450,7 +450,7 @@ export function StressTest({ termValue, termInvestment, termNet }: { termValue: 
   return (
     <div style={{ border: `1px solid ${T.hair}`, borderRadius: 18, background: T.card, padding: "24px 28px" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-        <Lbl>Stress test · how the 3-year net holds</Lbl>
+        <Lbl>Stress test · how the term net holds</Lbl>
         <div style={{ display: "inline-flex", gap: 6 }}>
           {[15, 20, 25, 30].map((v) => {
             const on = v === pct;

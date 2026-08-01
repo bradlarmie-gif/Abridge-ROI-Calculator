@@ -244,7 +244,7 @@ export default function ProformaPresentView({ settings, config, org, onNavigate 
 
         {/* back nav */}
         <div style={{ marginTop: 28 }}>
-          <button onClick={() => onNavigate("case")} style={{ background: "none", border: "none", color: T.faint, fontWeight: 700, fontSize: 14, cursor: "pointer" }}>← Back to the 3-year case</button>
+          <button onClick={() => onNavigate("case")} style={{ background: "none", border: "none", color: T.faint, fontWeight: 700, fontSize: 14, cursor: "pointer" }}>← Back to the case</button>
         </div>
       </div>
     </div>

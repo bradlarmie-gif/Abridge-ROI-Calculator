@@ -276,6 +276,20 @@ function NumCell({
   );
 }
 
+/** Read-only "held at full scale" cell for term years beyond the 3-year ramp. */
+function HeldCell({ value, suffix, prefix, kLabel }: { value: number; suffix?: string; prefix?: string; kLabel?: string }) {
+  return (
+    <div style={{ border: `1px dashed ${T.hair}`, borderRadius: 9, background: T.page, padding: "6px 12px", textAlign: "center", minWidth: 74, display: "inline-block" }}>
+      <span className="font-abridge" style={{ fontSize: 15, color: T.muted }}>{prefix}{commaFmt(value)}{suffix}</span>
+      {kLabel && (
+        <span style={{ display: "block", fontSize: 9, color: T.faint, textTransform: "uppercase", letterSpacing: "0.06em", marginTop: 2 }}>
+          {kLabel} · held
+        </span>
+      )}
+    </div>
+  );
+}
+
 /* ─────────────────────────── reactive value-ramp chart ─────────────────────────── */
 function buildSmoothPath(pts: { x: number; y: number }[]): string {
   if (pts.length === 0) return "";
@@ -510,8 +524,13 @@ function SettingCard({
   // Real, reconciling per-driver formulas (the same math Explore shows), keyed
   // by proforma driver id. Read-only here; clinical inputs are edited in Explore.
   const driverFormulas = useMemo(() => computeSettingDriverFormulas(setting), [setting]);
-  const termYears = Math.min(3, Math.max(1, Math.round(config.contractTermMonths / 12)));
-  const yearKeys = (["year1", "year2", "year3"] as const).slice(0, termYears);
+  // The deal term can run to 5 years; the rollout ramps to full scale over its
+  // first 3 years (the engine's model), then HOLDS at full scale for the rest of
+  // the term. So there are up to 3 editable anchors, and years 4-5 are shown as
+  // held so a 5-year term never looks like it's missing inputs.
+  const termYears = Math.min(5, Math.max(1, Math.round(config.contractTermMonths / 12)));
+  const yearKeys = (["year1", "year2", "year3"] as const).slice(0, Math.min(3, termYears));
+  const heldYears = Math.max(0, termYears - yearKeys.length);
   const [rampMode, setRampMode] = useState<"year" | "quarter">("year");
   const [expandedDriver, setExpandedDriver] = useState<string | null>(null);
 
@@ -678,13 +697,24 @@ function SettingCard({
                           {yearKeys.map((k, i) => (
                             <NumCell key={k} value={providersFor(k)} onChange={(n) => setYearProviders(k, n)} kLabel={`Year ${i + 1}`} />
                           ))}
+                          {Array.from({ length: heldYears }).map((_, i) => (
+                            <HeldCell key={`hp${i}`} value={providersFor("year3")} kLabel={`Year ${yearKeys.length + i + 1}`} />
+                          ))}
                         </div>
                         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
                           <span style={{ width: 96, fontSize: 11, fontWeight: 800, letterSpacing: "0.05em", textTransform: "uppercase", color: T.faint }}>Adoption</span>
                           {yearKeys.map((k, i) => (
                             <NumCell key={k} value={utilFor(k)} onChange={(n) => setYearUtil(k, n)} kLabel={`Year ${i + 1}`} suffix="%" />
                           ))}
+                          {Array.from({ length: heldYears }).map((_, i) => (
+                            <HeldCell key={`hu${i}`} value={utilFor("year3")} suffix="%" kLabel={`Year ${yearKeys.length + i + 1}`} />
+                          ))}
                         </div>
+                        {heldYears > 0 && (
+                          <div style={{ fontSize: 11.5, color: T.faint, marginTop: 9, lineHeight: 1.5 }}>
+                            Ramps to full scale by year 3, then holds there through year {termYears}. Editing the year-4+ ramp is coming soon.
+                          </div>
+                        )}
                       </>
                     ) : (
                       <div style={{ fontSize: 12, color: T.faint, lineHeight: 1.6 }}>
@@ -734,9 +764,14 @@ function SettingCard({
                 </div>
                 <div style={{ display: "flex", gap: 8, alignItems: "flex-end", flexWrap: "wrap" }}>
                   {perYearPricing ? (
-                    yearKeys.map((k, i) => (
-                      <NumCell key={k} value={Math.round(priceFor(k) * 12)} onChange={(n) => setYearPricing(k, n)} kLabel={`Y${i + 1} / provider`} prefix="$" format={commaFmt} />
-                    ))
+                    <>
+                      {yearKeys.map((k, i) => (
+                        <NumCell key={k} value={Math.round(priceFor(k) * 12)} onChange={(n) => setYearPricing(k, n)} kLabel={`Y${i + 1} / provider`} prefix="$" format={commaFmt} />
+                      ))}
+                      {Array.from({ length: heldYears }).map((_, i) => (
+                        <HeldCell key={`hpr${i}`} value={Math.round(priceFor("year3") * 12)} prefix="$" kLabel={`Y${yearKeys.length + i + 1} / provider`} />
+                      ))}
+                    </>
                   ) : (
                     <NumCell value={Math.round(setting.costPerUnit * 12)} onChange={(n) => onUpdateSetting({ costPerUnit: n / 12 })} kLabel="Per provider / yr" prefix="$" format={commaFmt} />
                   )}
@@ -877,7 +912,7 @@ function SettingCard({
 type ChapterKey = "build" | "case" | "present";
 const CHAPTERS: { key: ChapterKey; n: string; label: string }[] = [
   { key: "build", n: "01", label: "Build the deal" },
-  { key: "case", n: "02", label: "The 3-year case" },
+  { key: "case", n: "02", label: "The case" },
   { key: "present", n: "03", label: "Present" },
 ];
 
@@ -999,7 +1034,7 @@ export default function ProformaWorkbench({ settings, config, onUpdateSetting, o
         <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.15em", textTransform: "uppercase", color: T.coral }}>Chapter 01 · Build the deal</div>
         <h1 className="font-abridge" style={{ fontSize: 40, lineHeight: 1.04, color: T.ink, marginTop: 8 }}>Build the deal.</h1>
         <p style={{ fontSize: 15.5, color: T.muted, lineHeight: 1.5, marginTop: 12, maxWidth: 640 }}>
-          Each care setting becomes a line in the deal. Set how fast it rolls out, how it's priced, and which drivers count, then the three-year case builds from it.
+          Each care setting becomes a line in the deal. Set how fast it rolls out, how it's priced, and which drivers count, then the case builds from it.
         </p>
 
         {/* DEAL-WIDE TERMS */}
@@ -1067,7 +1102,7 @@ export default function ProformaWorkbench({ settings, config, onUpdateSetting, o
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 32 }}>
           <span style={{ fontSize: 13, color: T.faint }}>{settings.length} settings · {fmt(yearlyValue)}/yr modeled so far</span>
           <button onClick={() => onNavigate?.("case")} style={{ background: T.coral, color: "#fff", border: "none", fontFamily: "Manrope", fontWeight: 700, fontSize: 15, padding: "14px 26px", borderRadius: 12, cursor: "pointer" }}>
-            See the 3-year case →
+            See the {termYears}-year case →
           </button>
         </div>
       </div>
