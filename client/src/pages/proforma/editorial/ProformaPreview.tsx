@@ -18,7 +18,7 @@ function clone<T>(v: T): T {
     : JSON.parse(JSON.stringify(v));
 }
 
-const SAMPLE_ORG = "Deaconess Health System";
+const SAMPLE_ORG = "Northwind Health System"; // fictional sample org, never a real system
 
 export default function ProformaPreview() {
   const [settings, setSettings] = useState<ProformaSettingSnapshot[]>(() => clone(SAMPLE_PROFORMA_SETTINGS));

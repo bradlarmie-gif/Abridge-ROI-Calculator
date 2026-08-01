@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { ProformaSettingSnapshot, ProformaConfig } from "../proformaTypes";
 import { generateProformaEditorialPDF } from "@/components/proforma/ProformaPDFExport";
+import { computeSettingDriverFormulas } from "@/lib/presentFormulas";
 import {
   T,
   fmt,
@@ -17,45 +18,24 @@ import {
   type CaseDriver,
 } from "./editorialShared";
 
-/* ─────────────────────────── driver math chain ─────────────────────────── */
-// Mirrors the Build workbench's breakdown seeds so the "show the math" chain in
-// Present reads the same. The per-unit rate (U) is back-solved from the driver's
-// value, so V × L × U × R always multiplies out to the dollar shown.
-const CHAIN_SEED: Record<string, { labels: [string, string, string, string]; V: number; L: number; R: number }> = {
-  hcc: { labels: ["members", "HCC lift / life", "per HCC", "realization"], V: 18000, L: 0.125, R: 50 },
-  patientAccess: { labels: ["panel size", "visits / life", "$ / visit", "realization"], V: 24000, L: 0.6, R: 60 },
-  wrvu: { labels: ["encounters", "wRVU lift", "$ / wRVU", "realization"], V: 180000, L: 0.35, R: 65 },
-  providerWellbeing: { labels: ["providers", "hours saved", "$ / hour", "realization"], V: 120, L: 180, R: 55 },
-  locum: { labels: ["shifts avoided", "coverage", "$ / shift", "realization"], V: 60, L: 1, R: 70 },
-};
-
-const num = (n: number) => (Number.isInteger(n) ? n.toLocaleString() : String(Number(n.toFixed(3))));
-
-function DriverChain({ driver }: { driver: CaseDriver }) {
-  const seed = CHAIN_SEED[driver.id] ?? { labels: ["volume", "lift / unit", "$ / unit", "realization"] as [string, string, string, string], V: 1000, L: 1, R: 60 };
-  const U = driver.value / (seed.V * seed.L * (seed.R / 100)) || 0;
-  const cells: { n: string; u: string }[] = [
-    { n: num(seed.V), u: seed.labels[0] },
-    { n: num(seed.L), u: seed.labels[1] },
-    { n: `$${Math.round(U).toLocaleString()}`, u: seed.labels[2] },
-    { n: `${seed.R}%`, u: seed.labels[3] },
-  ];
+/* ─────────────────────────── driver "show the math" ─────────────────────────── */
+// The REAL reconciling formula string (the same source Build and the PDF use).
+// No fabricated constants: when a driver has no single clean formula we say so,
+// rather than invent one that only looks like "your own numbers."
+function DriverChain({ driver, formula }: { driver: CaseDriver; formula?: string }) {
   return (
-    <div style={{ display: "flex", gap: 13, alignItems: "center", flexWrap: "wrap", margin: "8px 0 4px", paddingLeft: 23 }}>
-      {cells.map((c, i) => (
-        <span key={i} style={{ display: "flex", gap: 13, alignItems: "center" }}>
-          <span style={{ textAlign: "center" }}>
-            <span className="font-abridge" style={{ fontSize: 17, color: T.ink, lineHeight: 1, display: "block" }}>{c.n}</span>
-            <span style={{ fontSize: 9, color: T.faint, marginTop: 3, display: "block" }}>{c.u}</span>
-          </span>
-          <span style={{ fontSize: 13, color: "#C9BCA9" }}>×</span>
-        </span>
-      ))}
-      <span style={{ fontSize: 13, color: "#C9BCA9" }}>=</span>
-      <span style={{ textAlign: "center" }}>
-        <span className="font-abridge" style={{ fontSize: 17, color: T.coral, lineHeight: 1, display: "block" }}>{fmt(driver.value)}</span>
-        <span style={{ fontSize: 9, color: T.faint, marginTop: 3, display: "block" }}>a year</span>
-      </span>
+    <div style={{ margin: "8px 0 6px", paddingLeft: 23 }}>
+      {formula ? (
+        <div style={{ fontSize: 13, lineHeight: 1.8, color: T.muted }}>{formula}</div>
+      ) : (
+        <div style={{ fontSize: 12.5, color: T.faint, fontStyle: "italic", lineHeight: 1.6 }}>
+          Built from this setting's Explore model. Adjust the clinical inputs in Explore to change it.
+        </div>
+      )}
+      <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginTop: 7 }}>
+        <span style={{ fontSize: 11, color: T.faint }}>equals</span>
+        <span className="font-abridge" style={{ fontSize: 17, color: T.coral }}>{fmt(driver.value)}<span style={{ fontSize: 10, color: T.faint }}> a year</span></span>
+      </div>
     </div>
   );
 }
@@ -64,9 +44,11 @@ function DriverChain({ driver }: { driver: CaseDriver }) {
 function DealSetting({
   meta,
   defaultOpen,
+  formulas,
 }: {
   meta: import("./editorialShared").CaseSettingMeta;
   defaultOpen: boolean;
+  formulas: Record<string, string>;
 }) {
   const [open, setOpen] = useState(defaultOpen);
   const [openDriver, setOpenDriver] = useState<string | null>(null);
@@ -103,7 +85,7 @@ function DealSetting({
                     <AnimatePresence initial={false}>
                       {isOpen && (
                         <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.24 }} style={{ overflow: "hidden" }}>
-                          <DriverChain driver={d} />
+                          <DriverChain driver={d} formula={formulas[d.id]} />
                         </motion.div>
                       )}
                     </AnimatePresence>
@@ -140,10 +122,22 @@ export default function ProformaPresentView({ settings, config, org, onNavigate 
 
   const conservative = termValue * 0.7 - termInvestment;
   const monthLabel = new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" });
+  // Real reconciling per-driver formulas, keyed by setting id (same source as
+  // Build + the PDF). No fabricated chains.
+  const formulasById = useMemo(
+    () => Object.fromEntries(settings.map((s) => [s.id, computeSettingDriverFormulas(s)])),
+    [settings],
+  );
 
-  const headline = payback != null
-    ? `A ${fmt(termNet)} case, paid back in ${wordify(payback)} months.`
-    : `A ${fmt(runRate)} run-rate case, built over ${termYears === 3 ? "three" : wordify(termYears)} years.`;
+  // Copy must match the sign of the deal: only a winning deal gets triumphant
+  // language, so a losing (e.g. 1-year) case is never dressed as a win.
+  const wins = termNet > 0 && payback != null;
+  const termWord = termYears === 1 ? "one year" : `${termYears === 3 ? "three" : wordify(termYears)} years`;
+  const headline = wins
+    ? `A ${fmt(termNet)} case, paid back in ${wordify(payback!)} months.`
+    : termNet > 0
+      ? `A ${fmt(termNet)} net case over ${termWord}.`
+      : `This ${termYears === 1 ? "one-year" : `${wordify(termYears)}-year`} term doesn't clear its cost yet.`;
 
   return (
     <div style={{ background: T.page, minHeight: "100vh", color: T.ink, fontFamily: "Manrope, sans-serif", WebkitFontSmoothing: "antialiased" }}>
@@ -190,7 +184,7 @@ export default function ProformaPresentView({ settings, config, org, onNavigate 
           <span style={{ fontSize: 11, color: T.off }}>Tap a setting to see its drivers and the math</span>
         </div>
         {settingsMeta.map((meta, i) => (
-          <DealSetting key={meta.id} meta={meta} defaultOpen={i === 0} />
+          <DealSetting key={meta.id} meta={meta} defaultOpen={i === 0} formulas={formulasById[meta.id] ?? {}} />
         ))}
 
         {/* THE 3-YEAR ARC */}
@@ -203,9 +197,13 @@ export default function ProformaPresentView({ settings, config, org, onNavigate 
         {/* WHY IT HOLDS */}
         <div onClick={() => setShowStress((s) => !s)} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", border: `1px solid ${T.hair}`, borderRadius: 14, background: T.card, padding: "18px 22px", marginTop: 40, cursor: "pointer" }}>
           <div>
-            <div style={{ marginBottom: 5 }}><Lbl>Why it holds</Lbl></div>
+            <div style={{ marginBottom: 5 }}><Lbl>{conservative > 0 ? "Why it holds" : "How it moves"}</Lbl></div>
             <div style={{ fontSize: 14, color: T.muted }}>
-              Even the conservative case (<b className="font-abridge" style={{ fontStyle: "normal", color: T.ink }}>{fmt(conservative)}</b> net) clears the cost several times over.
+              {conservative > 0 ? (
+                <>Even the conservative case (<b className="font-abridge" style={{ fontStyle: "normal", color: T.ink }}>{fmt(conservative)}</b> net) still clears the cost.</>
+              ) : (
+                <>The conservative case (<b className="font-abridge" style={{ fontStyle: "normal", color: T.ink }}>{fmt(conservative)}</b> net) does not clear the cost; adoption and ramp are what carry it.</>
+              )}
             </div>
           </div>
           <span style={{ fontSize: 12, fontWeight: 700, color: T.coral }}>{showStress ? "Hide the stress test ↑" : "See the stress test →"}</span>

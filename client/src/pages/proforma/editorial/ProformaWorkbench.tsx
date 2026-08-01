@@ -61,11 +61,14 @@ const ONSET_ORDER: { key: DriverOnset; label: string }[] = [
 ];
 
 /* ─────────────────────────── formatting ─────────────────────────── */
+// Sign BEFORE the $ ("-$60K", never "$-60K") — must match editorialShared.fmt so
+// the same negative reads identically across Build / Case / Present.
 function fmt(n: number): string {
   const abs = Math.abs(n);
-  if (abs >= 1_000_000) return `$${(n / 1_000_000).toFixed(2)}M`;
-  if (abs >= 1_000) return `$${Math.round(n / 1_000)}K`;
-  return `$${Math.round(n).toLocaleString()}`;
+  const sign = n < 0 ? "-" : "";
+  if (abs >= 1_000_000) return `${sign}$${(abs / 1_000_000).toFixed(2)}M`;
+  if (abs >= 1_000) return `${sign}$${Math.round(abs / 1_000)}K`;
+  return `${sign}$${Math.round(abs).toLocaleString()}`;
 }
 /* ─────────────────────── animated count-up hook ─────────────────────── */
 function useAnimatedNumber(value: number, duration = 0.7): number {

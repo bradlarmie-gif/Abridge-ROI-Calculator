@@ -6,6 +6,7 @@ import {
 } from "./ProformaEditorialPdf";
 import { buildProformaPdfData } from "./ProformaPDFExport";
 import { SAMPLE_PROFORMA_SETTINGS, SAMPLE_PROFORMA_CONFIG } from "@/pages/proforma/editorial/ProformaWorkbench";
+import { applyExclusions } from "@/pages/proforma/editorial/editorialShared";
 import type { ProformaSettingSnapshot, ProformaDriver, ExploreQuadrant, DriverOnset } from "@/pages/proforma/proformaTypes";
 
 /**
@@ -79,7 +80,7 @@ function sampleVariant(n: number): ProformaPdfData {
       ]),
     );
   }
-  return buildProformaPdfData(settings, clone(SAMPLE_PROFORMA_CONFIG), "Deaconess Health System", "July 2026");
+  return buildProformaPdfData(applyExclusions(settings), clone(SAMPLE_PROFORMA_CONFIG), "Northwind Health System", "July 2026");
 }
 
 export default function ProformaEditorialPdfRoute() {
@@ -90,9 +91,9 @@ export default function ProformaEditorialPdfRoute() {
   // flow uses, so the standalone PDF reconciles with Build/Case/Present instead of
   // showing hand-authored placeholder figures.
   let data: ProformaPdfData = buildProformaPdfData(
-    clone(SAMPLE_PROFORMA_SETTINGS) as ProformaSettingSnapshot[],
+    applyExclusions(clone(SAMPLE_PROFORMA_SETTINGS) as ProformaSettingSnapshot[]),
     clone(SAMPLE_PROFORMA_CONFIG),
-    "Deaconess Health System",
+    "Northwind Health System",
     "July 2026",
   );
   if (sampleN === 3 || sampleN === 4) {
