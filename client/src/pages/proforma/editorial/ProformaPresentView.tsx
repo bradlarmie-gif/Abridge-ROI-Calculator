@@ -133,7 +133,7 @@ export default function ProformaPresentView({ settings, config, org, onNavigate 
   const [isolatedId, setIsolatedId] = useState<string | null>(null);
   const [showStress, setShowStress] = useState(false);
 
-  const { settingsMeta, termValue, termInvestment, termNet, payback, roi, runRate, termYears } = model;
+  const { settingsMeta, termValue, termInvestment, termNet, termDisplaced, payback, roi, runRate, termYears } = model;
 
   const conservative = termValue * 0.7 - termInvestment;
   const monthLabel = new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" });
@@ -165,12 +165,15 @@ export default function ProformaPresentView({ settings, config, org, onNavigate 
           {settings.length === 1 ? "One care setting" : `${wordify(settings.length).replace(/^\w/, (c) => c.toUpperCase())} care settings`}, modeled on your own volume and economics over {termYears === 3 ? "three" : wordify(termYears)} years. Everything here opens up, tap any line to see exactly how it's built.
         </p>
 
-        {/* 4 STATS */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 24, marginTop: 40, padding: "26px 0", borderTop: `1px solid ${T.hair}`, borderBottom: `1px solid ${T.hair}` }}>
+        {/* STATS */}
+        <div style={{ display: "grid", gridTemplateColumns: `repeat(${termDisplaced > 0 ? 5 : 4}, 1fr)`, gap: 24, marginTop: 40, padding: "26px 0", borderTop: `1px solid ${T.hair}`, borderBottom: `1px solid ${T.hair}` }}>
           <Cell v={<AnimatedMoney value={termNet} />} k={`${termYears === 3 ? "Three" : wordify(termYears)}-year net value`} coral />
           <Cell v={payback != null ? `Month ${payback}` : "—"} k="Payback" />
           <Cell v={<AnimatedX value={roi} />} k="Return on investment" />
           <Cell v={<span><AnimatedMoney value={runRate} /><span style={{ fontSize: 14, color: T.faint }}>/yr</span></span>} k="At full scale" />
+          {termDisplaced > 0 && (
+            <Cell v={<span><AnimatedMoney value={termDisplaced} /></span>} k="Cost displaced" />
+          )}
         </div>
 
         {/* THE DEAL */}

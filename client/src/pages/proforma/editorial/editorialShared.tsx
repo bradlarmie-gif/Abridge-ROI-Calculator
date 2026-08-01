@@ -199,6 +199,7 @@ export interface CasePeriod {
   net: number;
   cumNet: number;
   roi: number;
+  displaced: number;
 }
 export interface CaseModel {
   years: CasePeriod[];
@@ -207,6 +208,7 @@ export interface CaseModel {
   termValue: number;
   termInvestment: number;
   termNet: number;
+  termDisplaced: number;
   payback: number | null;
   roi: number;
   runRate: number;
@@ -238,6 +240,7 @@ function toPeriods(rows: ProformaCashFlowRow[], settings: ProformaSettingSnapsho
       net,
       cumNet: cum,
       roi: r.investment > 0 ? clinical / r.investment : 0,
+      displaced: r.displacementValue,
     };
   });
 }
@@ -269,6 +272,7 @@ export function computeCaseModel(settings: ProformaSettingSnapshot[], config: Pr
   const termValue = years.reduce((a, y) => a + y.clinical, 0);
   const termInvestment = years.reduce((a, y) => a + y.investment, 0);
   const termNet = termValue - termInvestment;
+  const termDisplaced = years.reduce((a, y) => a + y.displaced, 0);
   const roi = termInvestment > 0 ? termValue / termInvestment : 0;
   const runRate = settingsMeta.reduce((a, s) => a + s.atScale, 0);
 
@@ -279,6 +283,7 @@ export function computeCaseModel(settings: ProformaSettingSnapshot[], config: Pr
     termValue,
     termInvestment,
     termNet,
+    termDisplaced,
     payback: summary.paybackMonth,
     roi,
     runRate,

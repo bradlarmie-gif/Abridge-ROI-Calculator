@@ -564,6 +564,7 @@ function SettingCard({
   // Cost offsets — legacy vendor spend Abridge displaces (ramped over the
   // transition). The engine (buildMonthlyCashFlows) already consumes these.
   const offsets = setting.costOffsets ?? [];
+  const settingDisplaced = offsets.reduce((a, o) => a + costOffsetDisplacedAmount(o), 0);
   const setOffsets = (next: CostOffset[]) => onUpdateSetting({ costOffsets: next });
   const addOffset = () =>
     setOffsets([...offsets, { id: `off-${Date.now()}`, label: "Legacy tool", annualSpend: 100000, displacementPct: 100, transitionMonths: 6 }]);
@@ -798,35 +799,30 @@ function SettingCard({
                 </div>
               </div>
 
-              {/* ADVANCED */}
-              <div style={{ borderTop: `1px solid ${T.hair}`, marginTop: 14, paddingTop: 14 }}>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
-                  <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: T.off, marginRight: 4 }}>Advanced</span>
-                  {/* Cost offsets — real control (engine already consumes setting.costOffsets) */}
-                  <button
-                    onClick={addOffset}
-                    style={{ fontSize: 12, fontWeight: 700, color: T.coral, background: "#fff", border: `1px solid ${T.coral}`, borderRadius: 8, padding: "7px 12px", display: "inline-flex", alignItems: "center", gap: 6, cursor: "pointer" }}
-                  >
-                    <Plus size={13} /> Cost offset
-                  </button>
-                  {["Scenario B pricing", "Edit encounter volumes", "Compare all pricing models"].map((c) => (
-                    <span key={c} title="Coming soon" style={{ fontSize: 12, fontWeight: 600, color: T.muted, background: T.page, border: `1px solid ${T.hair}`, borderRadius: 8, padding: "7px 12px", display: "inline-flex", alignItems: "center", gap: 6, cursor: "default" }}>
-                      <Plus size={13} style={{ color: T.off }} /> {c}
+              {/* WHAT THEY STOP PAYING FOR — cost offsets as a first-class deal lever.
+                  Legacy spend Abridge displaces, surfaced separately from clinical value. */}
+              <div style={{ borderTop: `1px solid ${T.hair}`, paddingTop: 15, marginTop: 13 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
+                  <Lbl>What they stop paying for</Lbl>
+                  {settingDisplaced > 0 && (
+                    <span className="font-abridge" style={{ fontSize: 14, color: T.coral }}>
+                      {fmt(settingDisplaced)}<span style={{ fontSize: 10, color: T.faint }}> /yr displaced</span>
                     </span>
-                  ))}
-                  <button
-                    onClick={onRemove}
-                    style={{ marginLeft: "auto", fontSize: 12, fontWeight: 600, color: T.off, background: "none", border: "none", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 5 }}
-                  >
-                    <Trash2 size={13} /> Remove
-                  </button>
+                  )}
+                </div>
+                <div style={{ fontSize: 11.5, color: T.faint, marginBottom: 10, lineHeight: 1.5, maxWidth: 560 }}>
+                  Legacy tools Abridge replaces. The spend comes back, ramped over the switch, and is counted separately from clinical value so it never inflates the ROI.
                 </div>
 
-                {offsets.length > 0 && (
-                  <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 8 }}>
-                    <div style={{ fontSize: 11.5, color: T.faint }}>
-                      Legacy spend Abridge displaces. Counted as cost avoided, ramped over the transition.
-                    </div>
+                {offsets.length === 0 ? (
+                  <button
+                    onClick={addOffset}
+                    style={{ width: "100%", textAlign: "left", fontSize: 13, fontWeight: 700, color: T.coral, background: "#fff", border: `1px dashed ${T.coral}`, borderRadius: 10, padding: "13px 15px", display: "inline-flex", alignItems: "center", gap: 8, cursor: "pointer" }}
+                  >
+                    <Plus size={14} /> Add a tool Abridge replaces
+                  </button>
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                     {offsets.map((o) => (
                       <div key={o.id} style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 14, background: "#fff", border: `1px solid ${T.hair}`, borderRadius: 10, padding: "11px 13px" }}>
                         <input
@@ -847,8 +843,27 @@ function SettingCard({
                         </button>
                       </div>
                     ))}
+                    <button onClick={addOffset} style={{ alignSelf: "flex-start", fontSize: 12, fontWeight: 700, color: T.coral, background: "none", border: "none", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6, marginTop: 2 }}>
+                      <Plus size={13} /> Add another
+                    </button>
                   </div>
                 )}
+              </div>
+
+              {/* ADVANCED */}
+              <div style={{ borderTop: `1px solid ${T.hair}`, marginTop: 14, paddingTop: 14, display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
+                <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: T.off, marginRight: 4 }}>Advanced</span>
+                {["Scenario B pricing", "Edit encounter volumes", "Compare all pricing models"].map((c) => (
+                  <span key={c} title="Coming soon" style={{ fontSize: 12, fontWeight: 600, color: T.muted, background: T.page, border: `1px solid ${T.hair}`, borderRadius: 8, padding: "7px 12px", display: "inline-flex", alignItems: "center", gap: 6, cursor: "default" }}>
+                    <Plus size={13} style={{ color: T.off }} /> {c}
+                  </span>
+                ))}
+                <button
+                  onClick={onRemove}
+                  style={{ marginLeft: "auto", fontSize: 12, fontWeight: 600, color: T.off, background: "none", border: "none", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 5 }}
+                >
+                  <Trash2 size={13} /> Remove
+                </button>
               </div>
             </div>
           </motion.div>
@@ -911,6 +926,12 @@ export default function ProformaWorkbench({ settings, config, onUpdateSetting, o
   const yearlyInvestment = summary.runRateInvestment;
   const yearlyNet = yearlyValue - yearlyInvestment;
   const termYears = Math.max(1, Math.round(config.contractTermMonths / 12));
+  // Legacy spend Abridge displaces, at full ramp. Shown SEPARATELY from clinical
+  // value (Way C doctrine) — real cash returned, never juicing the ROI multiple.
+  const displacedPerYr = effectiveSettings.reduce(
+    (s, st) => s + (st.costOffsets ?? []).reduce((a, o) => a + costOffsetDisplacedAmount(o), 0),
+    0,
+  );
 
   // "The read"
   const topDomain = (Object.entries(quadrantTotals).sort((a, b) => b[1] - a[1])[0]?.[0]) ?? "Capacity";
@@ -940,6 +961,7 @@ export default function ProformaWorkbench({ settings, config, onUpdateSetting, o
     { v: yearlyValue, k: "Value / yr", coral: true },
     { v: yearlyInvestment, k: "Investment" },
     { v: yearlyNet, k: "Net / yr" },
+    ...(displacedPerYr > 0 ? [{ v: displacedPerYr, k: "Displaced / yr" }] : []),
   ];
 
   return (
@@ -1071,6 +1093,7 @@ function buildSetting(
     goLiveMonth: number;
     color: string;
     drivers: DriverSeed[];
+    costOffsets?: CostOffset[];
   },
 ): ProformaSettingSnapshot {
   const drivers: ProformaDriver[] = base.drivers.map((d) => ({ id: d.id, name: d.name, value: d.value, quadrant: d.quadrant, onset: d.onset, category: d.category, excluded: d.excluded }));
@@ -1109,6 +1132,7 @@ function buildSetting(
     workforceValue: q("Workforce"),
     revenueValue: q("Revenue"),
     qualityValue: q("Quality"),
+    costOffsets: base.costOffsets,
   };
 }
 
@@ -1133,6 +1157,9 @@ export const SAMPLE_PROFORMA_SETTINGS: ProformaSettingSnapshot[] = [
       { id: "providerWellbeing", name: "Provider wellbeing", value: 180000, quadrant: "Workforce", onset: "phased", category: "time" },
       { id: "locum", name: "Locum & agency avoidance", value: 95000, quadrant: "Workforce", onset: "phased", category: "time", excluded: true },
       { id: "docQuality", name: "Documentation quality", value: 0, quadrant: "Quality", onset: "immediate", category: "documentation" },
+    ],
+    costOffsets: [
+      { id: "legacy-scribe", label: "Legacy ambient scribe", annualSpend: 180000, displacementPct: 100, transitionMonths: 6 },
     ],
   }),
   buildSetting({

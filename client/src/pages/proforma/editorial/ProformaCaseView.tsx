@@ -103,7 +103,7 @@ export default function ProformaCaseView({ settings, config, onNavigate }: Profo
   const [isolatedId, setIsolatedId] = useState<string | null>(null);
   const [expandedSetting, setExpandedSetting] = useState<string | null>(model.settingsMeta[0]?.id ?? null);
 
-  const { years, settingsMeta, termValue, termInvestment, termNet, payback, roi, runRate, termYears } = model;
+  const { years, settingsMeta, termValue, termInvestment, termNet, termDisplaced, payback, roi, runRate, termYears } = model;
 
   // Mini scoreboard (per-year run-rate = last year value / investment / net).
   const lastYear = years[years.length - 1];
@@ -111,6 +111,7 @@ export default function ProformaCaseView({ settings, config, onNavigate }: Profo
     { v: lastYear?.clinical ?? 0, k: "Value / yr", coral: true },
     { v: lastYear?.investment ?? 0, k: "Investment" },
     { v: (lastYear?.clinical ?? 0) - (lastYear?.investment ?? 0), k: "Net / yr" },
+    ...((lastYear?.displaced ?? 0) > 0 ? [{ v: lastYear.displaced, k: "Displaced / yr" }] : []),
   ];
 
   let cumRunning = 0;
@@ -218,6 +219,13 @@ export default function ProformaCaseView({ settings, config, onNavigate }: Profo
             {years.map((y, i) => (<Num key={i}>{fmt(y.net)}</Num>))}
             <Num style={{ color: T.coral }}>{fmt(termNet)}</Num>
           </FRow>
+          {termDisplaced > 0 && (
+            <FRow style={{ borderBottom: `1px solid ${T.soft}` }}>
+              <span style={{ fontSize: 13.5, color: T.muted }}>Cost displaced <span style={{ fontSize: 11, color: T.faint }}>· returned, separate from value</span></span>
+              {years.map((y, i) => (<Num key={i} style={{ color: T.coral }}>{fmt(y.displaced)}</Num>))}
+              <Num style={{ color: T.coral }}>{fmt(termDisplaced)}</Num>
+            </FRow>
+          )}
           <FRow style={{ borderBottom: `1px solid ${T.soft}` }}>
             <span style={{ fontSize: 13.5, color: T.muted }}>Cumulative net</span>
             {cumByYear.map((c, i) => (<Num key={i} style={{ color: T.muted }}>{fmt(c)}</Num>))}
