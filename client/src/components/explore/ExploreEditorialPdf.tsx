@@ -1564,7 +1564,7 @@ export const SAMPLE_EXPLORE_PDF_DATA: ExplorePDFData = {
   quadrants: [
     {
       quadrant: "Capacity",
-      annualTotal: 549000,
+      annualTotal: 513480,
       oneTimeTotal: 0,
       otherFinancialBenefits: [],
       drivers: [
@@ -1574,15 +1574,15 @@ export const SAMPLE_EXPLORE_PDF_DATA: ExplorePDFData = {
           shortDescription:
             "A lighter documentation load returns clinician time; a share fills as visit headroom, valued at your margin per visit.",
           visibility: "quantified",
-          value: 549000,
+          value: 513480,
           isIncluded: true,
-          calcSummary: "140,000 visits × 2 min saved × 25% headroom filled × $220/visit",
+          calcSummary: "2,334 added visits × $220/visit",
         },
       ],
     },
     {
       quadrant: "Revenue",
-      annualTotal: 731000,
+      annualTotal: 691083,
       oneTimeTotal: 0,
       otherFinancialBenefits: [],
       drivers: [
@@ -1592,7 +1592,7 @@ export const SAMPLE_EXPLORE_PDF_DATA: ExplorePDFData = {
           shortDescription:
             "A more complete note supports the level of service delivered, lifting captured wRVUs against baseline.",
           visibility: "quantified",
-          value: 412000,
+          value: 372708,
           isIncluded: true,
           calcSummary: "248,000 wRVUs × 5% lift × $33.40/wRVU × 90% realization",
         },
@@ -1602,7 +1602,7 @@ export const SAMPLE_EXPLORE_PDF_DATA: ExplorePDFData = {
           shortDescription:
             "Chronic conditions re-documented and newly surfaced during the visit, valued per plan.",
           visibility: "quantified",
-          value: 319000,
+          value: 318375,
           isIncluded: true,
           calcSummary: "18,000 members × 0.125 HCCs per member × $283/HCC × 50% realization",
         },
@@ -1670,7 +1670,7 @@ export const SAMPLE_EXPLORE_PDF_DATA: ExplorePDFData = {
       ],
     },
   ],
-  totalAnnualValue: 1460000,
+  totalAnnualValue: 1384563,
   totalOneTimeValue: 0,
 
   pricingModel: "perProvider",
@@ -1681,27 +1681,27 @@ export const SAMPLE_EXPLORE_PDF_DATA: ExplorePDFData = {
 
   year2GrowthPercent: 0,
   year3GrowthPercent: 0,
-  year1Value: 1460000,
-  year2Value: 1460000,
-  year3Value: 1460000,
+  year1Value: 1384563,
+  year2Value: 1384563,
+  year3Value: 1384563,
   year1Investment: 270000,
   year2Investment: 270000,
   year3Investment: 270000,
-  year1Net: 1190000,
-  year2Net: 1190000,
-  year3Net: 1190000,
-  threeYearGrossTotal: 4380000,
+  year1Net: 1114563,
+  year2Net: 1114563,
+  year3Net: 1114563,
+  threeYearGrossTotal: 4153689,
   threeYearInvestmentTotal: 810000,
-  threeYearNetTotal: 3570000,
+  threeYearNetTotal: 3343689,
   projectionYears: 3,
 
-  netAnnualValue: 1190000,
-  roi: 5.4,
-  valuePerProvider: 12167,
+  netAnnualValue: 1114563,
+  roi: 5.1,
+  valuePerProvider: 11538,
 
   expansionProviders: 240,
   expansionUtilizationPercent: 90,
-  expansionAnnualValue: 6600000,
-  expansionRoi: 8.1,
+  expansionAnnualValue: 6230534,
+  expansionRoi: 11.5,
   expansionEncounters: 630000,
 };
