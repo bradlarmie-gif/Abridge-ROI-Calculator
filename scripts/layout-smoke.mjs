@@ -133,6 +133,7 @@ for (const route of ROUTES) {
 // a number that comes out "$NaN", or sideways overflow. Render each with print
 // media and check all four. minPages guards against a page silently dropping.
 const PDF_PAGE_H = 1056;
+const SPARSE_MAX = 330; // px of dead space above a body page's footer before it reads as "not dense"
 const PDF_ROUTES = [
   { url: "/?explorepdf=1", label: "Explore PDF", minPages: 5 },
   { url: "/?proformapdf=1", label: "Proforma PDF", minPages: 6 },
@@ -158,13 +159,38 @@ for (const route of PDF_ROUTES) {
       const totalH = document.documentElement.scrollHeight;
       const overflow = document.documentElement.scrollWidth - 816;
       const nan = /\$?NaN|Infinity|undefined/.test(document.body.innerText || "");
-      return { boxes: boxes.length, bleeds, pages: Math.round(totalH / PAGE_H), overflow, nan };
+      // Sparse page: dead vertical gap between a body page's last content and its
+      // running footer. A content page that ends far above the footer is the
+      // "half-empty, not dense" defect. Keyed off the "Abridge · NN" footer, so
+      // covers and the pitch (no such footer) are exempt automatically.
+      const sparse = [];
+      const footers = [...document.querySelectorAll("span,div")]
+        .filter((e) => /^Abridge · \d/.test((e.textContent || "").trim()) && (e.textContent || "").trim().length < 18);
+      for (const f of footers) {
+        // Walk up to the flex-column content container that fills the page; the
+        // child of it that holds the footer is the footer block, and its previous
+        // sibling is the last real content block. The gap between them is the
+        // dead space marginTop:auto opened up.
+        let fb = f, container = f.parentElement;
+        while (container) {
+          const cs = getComputedStyle(container);
+          if (cs.display === "flex" && cs.flexDirection === "column" && container.getBoundingClientRect().height > 900) break;
+          fb = container; container = container.parentElement;
+        }
+        const prev = fb ? fb.previousElementSibling : null;
+        if (!container || !prev) continue;
+        const gap = Math.round(fb.getBoundingClientRect().top - prev.getBoundingClientRect().bottom);
+        sparse.push({ page: (f.textContent || "").trim(), gap });
+      }
+      return { boxes: boxes.length, bleeds, pages: Math.round(totalH / PAGE_H), overflow, nan, sparse };
     }, PDF_PAGE_H);
     const tag = route.label;
+    if (process.env.SPARSE_DEBUG) console.log(`  [gaps] ${tag}: ` + r.sparse.map((s) => `${s.page}=${s.gap}`).join("  "));
     if (r.pages < route.minPages) fails.push(`${tag}: only ${r.pages} page(s) rendered, expected >= ${route.minPages} (a page failed to render)`);
     if (r.bleeds > 0) fails.push(`${tag}: ${r.bleeds} page(s) bleed past the 816×1056 box (content overflows the page)`);
     if (r.overflow > 3) fails.push(`${tag}: horizontal overflow ${r.overflow}px past the page width`);
     if (r.nan) fails.push(`${tag}: renders "NaN"/"undefined"/"Infinity" in the document text`);
+    for (const s of r.sparse) if (s.gap > SPARSE_MAX) fails.push(`${tag}: ${s.page} is sparse — ${s.gap}px of dead space above the footer (not dense)`);
   } catch (e) {
     fails.push(`${route.label}: PDF render error ${String(e).slice(0, 100)}`);
   }
