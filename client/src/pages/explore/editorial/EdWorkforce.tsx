@@ -41,7 +41,9 @@ const TEAM_TIER2: { label: string; note: string } = {
   note: "When these signals move, a steadier team is within reach. They are the early signs of the same retention we value above, so we keep them as signals and never count them twice.",
 };
 
-const TIER2: Record<ExploreSetting, { signals: OutcomeSignal[]; outcomes: string[] }> = {
+// Nursing resolves its Workforce signals through SignalWatch (WATCH_SIGNALS),
+// so only the non-nursing settings need a TIER2 outcomes block here.
+const TIER2: Partial<Record<ExploreSetting, { signals: OutcomeSignal[]; outcomes: string[] }>> = {
   outpatient: {
     signals: [
       { label: "After-hours EHR time", ex: "ex. 4 → 1.5 hrs/wk" },
@@ -65,14 +67,6 @@ const TIER2: Record<ExploreSetting, { signals: OutcomeSignal[]; outcomes: string
       { label: "Likelihood to stay", ex: "ex. +8 pts" },
     ],
     outcomes: ["Fewer providers reach burnout", "More choose to stay", "Recruiting and backfill ease"],
-  },
-  nursing: {
-    signals: [
-      { label: "Charting time after shift ends", ex: "ex. 45 → 15 min" },
-      { label: "Burnout score (MBI)", ex: "ex. 29 → 22" },
-      { label: "Likelihood to stay", ex: "ex. +10 pts" },
-    ],
-    outcomes: ["Fewer nurses reach burnout", "More choose to stay", "Recruiting and backfill ease"],
   },
 };
 

@@ -12,6 +12,7 @@ import {
   StackedBuildChart,
   StressTest,
   computeCaseModel,
+  useNarrow,
   type Chapter,
   type CaseSettingMeta,
 } from "./editorialShared";
@@ -108,6 +109,7 @@ export default function ProformaCaseView({ settings, config, onNavigate }: Profo
   const [expandedSetting, setExpandedSetting] = useState<string | null>(model.settingsMeta[0]?.id ?? null);
 
   const { years, settingsMeta, termValue, termInvestment, termNet, termDisplaced, payback, paybackWithDisplacement, roi, runRate, termYears } = model;
+  const narrow = useNarrow();
   const grid = gridFor(years.length);
   // The displacement-acceleration story: real break-even once you count the
   // legacy spend Abridge displaces (shown only when it actually lands sooner).
@@ -132,12 +134,12 @@ export default function ProformaCaseView({ settings, config, onNavigate }: Profo
   return (
     <div style={{ background: T.page, minHeight: "100vh", color: T.ink, fontFamily: "Manrope, sans-serif", WebkitFontSmoothing: "antialiased" }}>
       {/* TOP BAR */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 40px", borderBottom: `1px solid ${T.hair}` }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 26 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", rowGap: 12, padding: "16px 40px", borderBottom: `1px solid ${T.hair}` }}>
+        <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 26 }}>
           <span className="font-abridge" style={{ fontSize: 20, color: T.coral }}>ABRIDGE</span>
           <ChapterNav active="case" onNavigate={onNavigate} />
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
+        <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 18 }}>
           {scoreboard.map((m) => (
             <div key={m.k}>
               <AnimatedMoney value={m.v} className="font-abridge" style={{ fontSize: 19, lineHeight: 1, color: m.coral ? T.coral : T.ink, display: "block" }} />
@@ -161,7 +163,7 @@ export default function ProformaCaseView({ settings, config, onNavigate }: Profo
         </p>
 
         {/* HERO: stacked build + verdict */}
-        <div style={{ display: "grid", gridTemplateColumns: "1.6fr 1fr", gap: 34, marginTop: 26, alignItems: "center" }}>
+        <div style={{ display: "grid", gridTemplateColumns: narrow ? "1fr" : "1.6fr 1fr", gap: narrow ? 24 : 34, marginTop: 26, alignItems: "center" }}>
           <div style={{ border: `1px solid ${T.hair}`, borderRadius: 20, background: T.card, padding: "24px 26px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
               <Lbl>Value by care setting, building over the term</Lbl>
@@ -186,7 +188,8 @@ export default function ProformaCaseView({ settings, config, onNavigate }: Profo
           <Lbl>{termYears}-year financial summary</Lbl>
           <span style={{ fontSize: 11, color: T.off }}>Expand a setting to see its value drivers</span>
         </div>
-        <div style={{ border: `1px solid ${T.hair}`, borderRadius: 18, background: T.card, overflow: "hidden", marginTop: 12 }}>
+        <div style={{ border: `1px solid ${T.hair}`, borderRadius: 18, background: T.card, overflowX: "auto", marginTop: 12 }}>
+          <div style={{ minWidth: 380 + years.length * 96 }}>
           <FRow grid={grid} style={{ borderBottom: `1px solid ${T.hair}`, background: "#FBF7F1" }}>
             <Lbl />
             {years.map((_, i) => (
@@ -245,6 +248,7 @@ export default function ProformaCaseView({ settings, config, onNavigate }: Profo
             {years.map((y, i) => (<Num key={i}>{y.roi.toFixed(1)}×</Num>))}
             <Num style={{ color: T.coral }}>{roi.toFixed(1)}×</Num>
           </FRow>
+          </div>
         </div>
 
         {/* STRESS TEST */}

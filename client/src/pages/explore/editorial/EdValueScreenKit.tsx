@@ -70,7 +70,7 @@ export function SectionLabel({
     <div className="text-[11px] font-extrabold tracking-[0.09em] uppercase text-[#2E2822] mt-[30px] mb-[13px] flex flex-wrap items-center gap-[10px]">
       {children}
       <span
-        className={`text-[10px] font-extrabold tracking-[0.05em] uppercase rounded-full px-[9px] py-[3px] ${
+        className={`text-[10px] font-extrabold tracking-[0.05em] normal-case rounded-full px-[9px] py-[3px] ${
           tagMuted ? "text-[#786C5E] bg-[#F1EBE3]" : "text-[#EA2C00] bg-[#FFEDE7]"
         }`}
       >

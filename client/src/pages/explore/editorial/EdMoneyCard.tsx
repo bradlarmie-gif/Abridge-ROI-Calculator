@@ -107,7 +107,7 @@ export function SectionLabel({
       <span>{children}</span>
       {tag && (
         <span
-          className={`text-[10px] font-extrabold tracking-[0.05em] uppercase rounded-full px-[9px] py-[3px] normal-case ${
+          className={`text-[10px] font-extrabold tracking-[0.05em] rounded-full px-[9px] py-[3px] normal-case ${
             tagVariant === "coral" ? "text-[#EA2C00] bg-[#FFEDE7]" : "text-[#786C5E] bg-[#F1EBE3]"
           }`}
         >

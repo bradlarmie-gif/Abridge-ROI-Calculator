@@ -411,7 +411,7 @@ export default function AlignView({ c, settingLabel, categoryLabel, categoryKey,
         <>
           <SectionHead n={++qn} kicker="The scope" title={c.scope.prompt} />
           <div className="flex flex-wrap items-baseline gap-x-3 gap-y-2 mb-2">
-            <AttainNumberInput value={providers} onChange={(raw) => { if (raw === "") { setProviders(""); return; } const v = scopeCount != null ? Math.min(num(raw), scopeCount) : num(raw); setProviders(String(v)); }} className={NUMFIELD} placeholder="0" />
+            <AttainNumberInput value={providers} onChange={(raw) => { if (raw === "") { setProviders(""); return; } const v = scopeCount != null ? Math.min(num(raw), scopeCount) : num(raw); setProviders(String(v)); }} onBlur={() => { if (!providers) return; const v = num(providers); if (Number.isFinite(v) && v !== Math.round(v)) setProviders(String(Math.round(v))); }} className={NUMFIELD} placeholder="0" />
             <span className="text-[14px] text-[#8C8C8C]">{scopeCount != null ? `of ${scopeCount} ` : ""}{c.scope.unitLabel}</span>
             {scopeCount != null && <button type="button" onClick={() => setProviders(String(scopeCount))} className="text-[12px] font-semibold text-[#EA2C00] hover:underline">Use all {scopeCount}</button>}
           </div>

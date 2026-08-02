@@ -525,7 +525,7 @@ export default function EdModel({
                     </>
                   )}
                   <circle cx="620" cy={valueEndY} r="4" fill="#EA2C00" />
-                  <text x="616" y={Math.max(24, valueEndY - 10)} fontFamily="Manrope" fontSize="10.5" fontWeight="700" fill="#B02200" textAnchor="end">{fmtShort(cumPoints[12].value)} · year 1</text>
+                  <text x="616" y={Math.max(24, valueEndY - 10)} fontFamily="Manrope" fontSize="10.5" fontWeight="700" fill="#9C8E7E" textAnchor="end">{fmtShort(cumPoints[12].value)} cumulative · year 1</text>
                   <text x="40" y="238" fontFamily="Manrope" fontSize="11" fill="#786C5E">Mo 1</text>
                   <text x="330" y="238" fontFamily="Manrope" fontSize="11" fill="#786C5E" textAnchor="middle">Mo 6</text>
                   <text x="620" y="238" fontFamily="Manrope" fontSize="11" fill="#786C5E" textAnchor="end">Mo 12</text>
@@ -558,13 +558,12 @@ export default function EdModel({
               {QUADRANT_ORDER.map((q) => {
                 const proofNote = proofForSetting[q];
                 if (proofNote) {
+                  // Proof-layer quadrant: no dollar here on purpose. Keep the row
+                  // compact (no empty rail) so it reads as intentional, not missing.
                   return (
-                    <div key={q}>
-                      <div className="flex justify-between items-baseline mb-[7px]">
-                        <span className="text-[13.5px] font-bold text-[#1A1A1A]">{q}</span>
-                        <span className="text-[12px] text-[#786C5E] italic">{proofNote}</span>
-                      </div>
-                      <div className="h-[9px] bg-transparent rounded-full" />
+                    <div key={q} className="flex justify-between items-baseline">
+                      <span className="text-[13.5px] font-bold text-[#1A1A1A]">{q}</span>
+                      <span className="text-[12px] text-[#786C5E] italic">{proofNote}</span>
                     </div>
                   );
                 }

@@ -43,7 +43,7 @@ const DRIVER_DESC: Record<string, string> = {
   providerWellbeing: "Lower documentation burden reduces the turnover risk that carries real recruiting and lost-productivity cost.",
   retention: "Lower documentation burden reduces the turnover risk that carries real recruiting and lost-productivity cost.",
   locum: "Fewer vacancies to backfill with premium contract labor as retention improves.",
-  edLwbs: "Faster documentation shortens throughput, so fewer patients leave without being seen and their care is retained.",
+  edLwbs: "Complete documentation can shorten throughput; where teams act on it, fewer patients leave before being seen and their care is retained.",
   edAdmission: "Complete ED notes support the medical necessity and acuity of admissions, protecting earned inpatient revenue.",
   denials: "Stronger documentation supports medical necessity, reducing avoidable denials on eligible claims.",
   ipDrg: "More complete inpatient documentation raises coded case-mix accuracy on Abridge-enabled discharges.",
@@ -251,11 +251,19 @@ export function buildProformaPdfData(
 
   const milestones = years.map((y, i) => {
     const provs = settings.reduce((a, s) => a + (s.yearlyProviders?.[yearKey(i)] ?? (i === 0 ? s.providerCount : s.fullScaleProviders)), 0);
+    // Each year gets its own derived body so Year 1 (onboarding) and the middle
+    // scaling years never read as the same copy stub.
+    let body: string;
+    if (i === termYears - 1) {
+      body = `${provs} ${aggVocab.providerWord} · full scale at a ${money(runRateValue)} run-rate.`;
+    } else if (i === 0) {
+      body = `${provs} ${aggVocab.providerWord} live · ${settingsWord} onboarding, ${money(y.total)} of value landing as revenue starts and capacity ramps.`;
+    } else {
+      body = `${provs} ${aggVocab.providerWord} · adoption deepens and value climbs to ${money(y.total)} on the year.`;
+    }
     return {
       label: `Year ${i + 1} · ${milestoneNames[i] ?? "Year " + (i + 1)}`,
-      body: i === termYears - 1
-        ? `${provs} ${aggVocab.providerWord} · full scale at a ${money(runRateValue)} run-rate.`
-        : `${provs} ${aggVocab.providerWord} live · ${settingsWord} ramping toward full adoption.`,
+      body,
     };
   });
 
@@ -297,7 +305,7 @@ export function buildProformaPdfData(
       scenario("Optimistic", 1.3),
     ],
     scenarioNote:
-      "Flex realization by ±30% and even the conservative case clears its cost. Today's figure sits toward the conservative end, so it has room to be beaten, not defended.",
+      "Flex realization by ±30% and even the conservative case clears its cost. Today's figure sits toward the conservative end, so there's upside if adoption runs ahead of plan.",
     modelInputs: [
       { label: "Contract term", value: `${config.contractTermMonths} months` },
       { label: "Implementation ramp", value: `${config.implementationRampMonths} months` },

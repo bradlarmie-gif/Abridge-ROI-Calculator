@@ -143,8 +143,8 @@ export default function ProformaPresentView({ settings, config, org, onNavigate 
   return (
     <div style={{ background: T.page, minHeight: "100vh", color: T.ink, fontFamily: "Manrope, sans-serif", WebkitFontSmoothing: "antialiased" }}>
       {/* TOP BAR */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 40px", borderBottom: `1px solid ${T.hair}` }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 26 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", rowGap: 12, padding: "16px 40px", borderBottom: `1px solid ${T.hair}` }}>
+        <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 26 }}>
           <span className="font-abridge" style={{ fontSize: 20, color: T.coral }}>ABRIDGE</span>
           <ChapterNav active="present" onNavigate={onNavigate} />
         </div>
@@ -169,13 +169,13 @@ export default function ProformaPresentView({ settings, config, org, onNavigate 
         )}
 
         {/* STATS */}
-        <div style={{ display: "grid", gridTemplateColumns: `repeat(${termDisplaced > 0 ? 5 : 4}, 1fr)`, gap: 24, marginTop: 40, padding: "26px 0", borderTop: `1px solid ${T.hair}`, borderBottom: `1px solid ${T.hair}` }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 24, marginTop: 40, padding: "26px 0", borderTop: `1px solid ${T.hair}`, borderBottom: `1px solid ${T.hair}` }}>
           <Cell v={<AnimatedMoney value={termNet} />} k={`${termYears === 3 ? "Three" : wordify(termYears)}-year net value`} coral />
           <Cell v={payback != null ? `Month ${payback}` : "—"} k="Payback" />
           <Cell v={<AnimatedX value={roi} />} k="Return on investment" />
           <Cell v={<span><AnimatedMoney value={runRate} /><span style={{ fontSize: 14, color: T.faint }}>/yr</span></span>} k="At full scale" />
           {termDisplaced > 0 && (
-            <Cell v={<span><AnimatedMoney value={termDisplaced} /></span>} k="Cost displaced" />
+            <Cell v={<span><AnimatedMoney value={termDisplaced} /></span>} k="Cost displaced · over the term" />
           )}
         </div>
 

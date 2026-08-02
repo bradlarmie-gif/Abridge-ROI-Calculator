@@ -123,7 +123,7 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
         <FieldTile label={isED ? "ED encounters" : "Fee-for-service visits"} note="at your utilization rate">
           <FiReadout>{fmtN(eligibleEncounters)}</FiReadout>
         </FieldTile>
-        <FieldTile label="Avg wRVU per visit" note="your baseline">
+        <FieldTile label="Avg wRVU per visit" note="typical baseline, edit to yours">
           <Fi value={dq.currentWrvu} onValueChange={(v) => updateDq({ currentWrvu: v })} decimal testId="input-ed-current-wrvu" />
         </FieldTile>
         <FieldTile label="Increase">

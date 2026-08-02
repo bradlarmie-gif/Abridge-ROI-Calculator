@@ -18,7 +18,7 @@ import {
   costOffsetDisplacedAmount,
 } from "@/lib/proformaCalculations";
 import { computeSettingDriverFormulas } from "@/lib/presentFormulas";
-import { applyExclusions } from "./editorialShared";
+import { applyExclusions, useNarrow } from "./editorialShared";
 
 /* ─────────────────────────── design tokens ─────────────────────────── */
 const T = {
@@ -49,7 +49,15 @@ const DRIVER_DESCRIPTION: Record<string, string> = {
   patientAccess: "Added visit capacity the freed documentation time opens up, valued at the margin per visit.",
   wrvu: "More completely coded encounters lifting work-RVU capture, valued per wRVU.",
   providerWellbeing: "Documentation burden lifted off providers, valued as retained capacity and lower turnover risk.",
+  retention: "Documentation burden lifted off the workforce, valued as retained clinicians and lower turnover risk.",
   locum: "Reduced reliance on locum and agency coverage as capacity is recovered.",
+  edLwbs: "Complete documentation can shorten throughput; where teams act on it, fewer patients leave before being seen and their care is retained.",
+  edAdmission: "Complete ED notes support the medical necessity and acuity of admissions, protecting earned inpatient revenue.",
+  denials: "Stronger documentation supports medical necessity, reducing avoidable denials on eligible claims.",
+  ipDrg: "More complete inpatient documentation raises coded case-mix accuracy on Abridge-enabled discharges.",
+  ipObsDefense: "Complete notes defend inpatient status against observation downgrades where the acuity supports it.",
+  nursingOt: "Documentation efficiency trims overtime hours across the nursing workforce.",
+  scribeCost: "Scribe positions retired as ambient documentation covers the same work.",
 };
 
 const ONSET_ORDER: { key: DriverOnset; label: string }[] = [
@@ -319,28 +327,48 @@ function ValueRamp({ series }: { series: number[] }) {
   const padR = 12;
   const baseY = 88;
   const topY = 10;
-  const n = Math.max(series.length, 1);
   const maxVal = Math.max(...series, 1) * 1.06;
-  const pts = series.map((v, i) => ({
-    x: n === 1 ? padL : padL + (i / (n - 1)) * (W - padL - padR),
-    y: baseY - (v / maxVal) * (baseY - topY),
-  }));
-  if (pts.length === 1) pts.push({ x: W - padR, y: pts[0].y });
+  const yFor = (v: number) => baseY - (v / maxVal) * (baseY - topY);
+  const isSingle = series.length === 1;
+
+  // A one-year term has a single value point. Rather than duplicating it into a
+  // flat filled slab that reads as an empty placeholder, draw a short
+  // baseline→scale segment so it reads intentionally as "ramps to full scale in
+  // year one," with the value dot and Y1 tick at the right.
+  const pts = isSingle
+    ? [
+        { x: padL, y: baseY },
+        { x: W - padR, y: yFor(series[0]) },
+      ]
+    : series.map((v, i) => ({
+        x: padL + (i / (series.length - 1)) * (W - padL - padR),
+        y: yFor(v),
+      }));
+  const dotIdxs = isSingle ? [1] : pts.map((_, i) => i);
+  const ticks = isSingle
+    ? [{ x: W - padR, label: "Y1", anchor: "end" as const }]
+    : series.map((_, i) => ({
+        x: pts[i].x,
+        label: `Y${i + 1}`,
+        anchor: (i === 0 ? "start" : i === series.length - 1 ? "end" : "middle") as "start" | "middle" | "end",
+      }));
+
   const line = buildSmoothPath(pts);
   const area = `${line} L${pts[pts.length - 1].x},${baseY} L${pts[0].x},${baseY} Z`;
   return (
     <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", marginTop: 6 }}>
       <line x1={padL} y1={baseY} x2={W - padR} y2={baseY} stroke={T.hair} />
-      {pts.map((p, i) => (
-        <line key={i} x1={p.x} y1={topY + 4} x2={p.x} y2={baseY} stroke="#F1EBE3" />
+      {ticks.map((t, i) => (
+        <line key={i} x1={t.x} y1={topY + 4} x2={t.x} y2={baseY} stroke="#F1EBE3" />
       ))}
       <motion.path d={area} fill={T.coral} fillOpacity={0.09} initial={false} animate={{ d: area }} transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }} />
       <motion.path d={line} fill="none" stroke={T.coral} strokeWidth={2.4} strokeLinecap="round" initial={false} animate={{ d: line }} transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }} />
-      {pts.map((p, i) => {
-        const last = i === pts.length - 1;
+      {dotIdxs.map((idx) => {
+        const p = pts[idx];
+        const last = idx === pts.length - 1;
         return (
           <motion.circle
-            key={i}
+            key={idx}
             cx={p.x}
             r={last ? 4.2 : 3.4}
             fill={last ? T.coral : "#fff"}
@@ -352,17 +380,9 @@ function ValueRamp({ series }: { series: number[] }) {
           />
         );
       })}
-      {series.map((_, i) => (
-        <text
-          key={i}
-          x={pts[i]?.x ?? 0}
-          y={100}
-          fontFamily="Manrope"
-          fontSize={9}
-          fill={T.faint}
-          textAnchor={i === 0 ? "start" : i === series.length - 1 ? "end" : "middle"}
-        >
-          Y{i + 1}
+      {ticks.map((t, i) => (
+        <text key={i} x={t.x} y={100} fontFamily="Manrope" fontSize={9} fill={T.faint} textAnchor={t.anchor}>
+          {t.label}
         </text>
       ))}
     </svg>
@@ -524,6 +544,7 @@ function SettingCard({
   onToggleDriverOff: (driverId: string) => void;
 }) {
   const Icon = SETTING_ICON[setting.careSetting] ?? Stethoscope;
+  const narrow = useNarrow();
   // Real, reconciling per-driver formulas (the same math Explore shows), keyed
   // by proforma driver id. Read-only here; clinical inputs are edited in Explore.
   const driverFormulas = useMemo(() => computeSettingDriverFormulas(setting), [setting]);
@@ -648,11 +669,11 @@ function SettingCard({
 
   return (
     <div style={{ border: `1px solid ${expanded ? "#D9CFC0" : T.hair}`, borderRadius: 18, background: T.card, marginTop: 16, overflow: "hidden" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 16, padding: "20px 24px" }}>
+      <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", rowGap: 10, gap: 16, padding: "20px 24px" }}>
         <div style={{ width: 40, height: 40, borderRadius: 11, background: T.tile, display: "flex", alignItems: "center", justifyContent: "center", color: T.label, flex: "none" }}>
           <Icon size={20} strokeWidth={1.8} />
         </div>
-        <div style={{ flex: 1 }}>
+        <div style={{ flex: 1, minWidth: 140 }}>
           <div className="font-abridge" style={{ fontSize: 23, color: T.ink }}>{setting.label}</div>
           <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.05em", textTransform: "uppercase", color: T.faint, marginTop: 2 }}>
             {vocab.subtitle} · go-live month {setting.goLiveMonth}
@@ -710,11 +731,11 @@ function SettingCard({
                     <MiniSeg options={[{ key: "year", label: "By year" }, { key: "quarter", label: "By quarter" }]} value={rampMode} onChange={setRampMode} />
                   </div>
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: 30, alignItems: "center" }}>
-                  <div>
+                <div style={{ display: "grid", gridTemplateColumns: narrow ? "1fr" : "1fr 320px", gap: narrow ? 20 : 30, alignItems: "center" }}>
+                  <div style={{ overflowX: "auto" }}>
                     {rampMode === "year" ? (
                       <>
-                        <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 10 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 10, width: "max-content" }}>
                           <span style={{ width: 96, fontSize: 11, fontWeight: 800, letterSpacing: "0.05em", textTransform: "uppercase", color: T.faint }}>{vocab.providerWord}</span>
                           {yearKeys.map((k, i) => (
                             <NumCell key={k} value={providersFor(k)} onChange={(n) => setYearProviders(k, n)} kLabel={`Year ${i + 1}`} />
@@ -723,7 +744,7 @@ function SettingCard({
                             <HeldCell key={`hp${i}`} value={providersFor("year3")} kLabel={`Year ${yearKeys.length + i + 1}`} />
                           ))}
                         </div>
-                        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 14, width: "max-content" }}>
                           <span style={{ width: 96, fontSize: 11, fontWeight: 800, letterSpacing: "0.05em", textTransform: "uppercase", color: T.faint }}>Adoption</span>
                           {yearKeys.map((k, i) => (
                             <NumCell key={k} value={utilFor(k)} onChange={(n) => setYearUtil(k, n)} kLabel={`Year ${i + 1}`} suffix="%" />
@@ -924,8 +945,9 @@ function SettingCard({
               <div style={{ borderTop: `1px solid ${T.hair}`, marginTop: 14, paddingTop: 14, display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
                 <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: T.off, marginRight: 4 }}>Advanced</span>
                 {["Scenario B pricing", "Edit encounter volumes", "Compare all pricing models"].map((c) => (
-                  <span key={c} title="Coming soon" style={{ fontSize: 12, fontWeight: 600, color: T.muted, background: T.page, border: `1px solid ${T.hair}`, borderRadius: 8, padding: "7px 12px", display: "inline-flex", alignItems: "center", gap: 6, cursor: "default" }}>
-                    <Plus size={13} style={{ color: T.off }} /> {c}
+                  <span key={c} title="Coming soon" style={{ fontSize: 12, fontWeight: 600, color: T.off, background: T.soft, border: `1px dashed ${T.hair}`, borderRadius: 8, padding: "7px 12px", display: "inline-flex", alignItems: "center", gap: 7, cursor: "default", opacity: 0.75 }}>
+                    {c}
+                    <span style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: T.faint, background: T.page, border: `1px solid ${T.hair}`, borderRadius: 4, padding: "1px 5px" }}>Soon</span>
                   </span>
                 ))}
                 <button
@@ -1042,10 +1064,10 @@ export default function ProformaWorkbench({ settings, config, onUpdateSetting, o
   return (
     <div style={{ background: T.page, minHeight: "100vh", color: T.ink, fontFamily: "Manrope, sans-serif", WebkitFontSmoothing: "antialiased" }}>
       {/* TOP BAR */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 40px", borderBottom: `1px solid ${T.hair}` }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 26 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", rowGap: 12, padding: "16px 40px", borderBottom: `1px solid ${T.hair}` }}>
+        <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 26 }}>
           <span className="font-abridge" style={{ fontSize: 20, color: T.coral }}>ABRIDGE</span>
-          <div style={{ display: "flex", gap: 26 }}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 26 }}>
             {CHAPTERS.map((c) => {
               const active = c.key === "build";
               return (
@@ -1056,7 +1078,7 @@ export default function ProformaWorkbench({ settings, config, onUpdateSetting, o
             })}
           </div>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
+        <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 18 }}>
           {scoreboard.map((m) => (
             <div key={m.k}>
               <AnimatedMoney value={m.v} className="font-abridge" style={{ fontSize: 19, lineHeight: 1, color: m.coral ? T.coral : T.ink, display: "block" }} />

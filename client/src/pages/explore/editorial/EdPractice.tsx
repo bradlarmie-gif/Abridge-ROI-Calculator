@@ -212,7 +212,7 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
     : isInpatient
       ? "Inpatient providers"
       : isED
-        ? "ED physicians"
+        ? "ED providers"
         : "Providers";
   const encounterLabel = isInpatient ? "discharges" : "encounters";
   const settingName = isNursing

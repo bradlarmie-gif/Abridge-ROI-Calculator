@@ -1213,7 +1213,7 @@ export const SAMPLE_PROFORMA_PDF_DATA: ProformaPdfData = {
     { name: "Optimistic", realizationPct: 130, net: 4130000, roi: 2.8, paybackLabel: "Mo 11" },
   ],
   scenarioNote:
-    "Flex realization by ±30% and even the conservative case clears its cost several times over. Today's figure sits toward the conservative end, so it has room to be beaten, not defended.",
+    "Flex realization by ±30% and even the conservative case clears its cost several times over. Today's figure sits toward the conservative end, so there's upside if adoption runs ahead of plan.",
   modelInputs: [
     { label: "Contract term", value: "36 months" },
     { label: "Implementation ramp", value: "3 months" },

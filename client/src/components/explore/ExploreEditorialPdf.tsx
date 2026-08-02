@@ -1367,6 +1367,11 @@ function ScalePage({ data }: { data: ExplorePDFData }): JSX.Element {
             </div>
           </div>
 
+          <p style={{ fontSize: 10.5, color: C.faint, lineHeight: 1.5, marginTop: 10 }}>
+            Total annual value, before the recurring investment. The interactive model shows the same
+            expansion net of investment.
+          </p>
+
           <div style={{ ...sLbl, marginTop: 26, marginBottom: 10 }}>What changes at full scale</div>
           <StatBand cells={statCells} />
 

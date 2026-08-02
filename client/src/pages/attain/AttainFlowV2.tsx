@@ -8,7 +8,7 @@ import StepScope from "./steps/StepScope";
 import { SettingStep } from "./preview/AttainFunnel";
 import { AttainExperience, type ExperienceSlice } from "./preview/MultiCategoryPreview";
 import { ATTAIN_MATRIX } from "./preview/attainCells";
-import { loadPlanByName, saveSnapshot, clearSnapshot, type AttainSnapshot } from "./attainStorage";
+import { loadPlanByName, loadSnapshot, saveSnapshot, clearSnapshot, type AttainSnapshot } from "./attainStorage";
 import { categoryForGoal } from "@/lib/attain/attainGoals";
 import type { AttainSetting, GoalId } from "@/lib/attain/attainTypes";
 import type { AttainBaseline } from "@/lib/attain/attainLevers";
@@ -105,12 +105,13 @@ export default function AttainFlowV2({ onBackToJourney }: { onBackToJourney?: ()
     setPartner(""); setSetting(null); setGoals([]); setBaseline({}); setPhase("partner");
   };
 
-  // typing an existing partner name and continuing resumes that partner's saved plan
-  const resumeIfExists = (): boolean => {
-    const existing = loadPlanByName(partner);
-    if (!existing?.setting) return false;
+  // Rehydrate the whole flow from a saved snapshot (used by both the type-the-name resume and the
+  // one-click "Resume {name}" on step 1). Restores the partner name too, so the one-click path
+  // never asks them to retype it.
+  const hydrateFrom = (existing: AttainSnapshot) => {
     expRef.current = existing as unknown as ExperienceSlice;
     setSaved(existing);
+    setPartner(existing.partner ?? partner);
     setSetting((existing.setting as AttainSetting) ?? null);
     setGoals((existing.goals as GoalId[]) ?? []);
     setBaseline((existing.baseline as AttainBaseline) ?? {});
@@ -120,8 +121,19 @@ export default function AttainFlowV2({ onBackToJourney }: { onBackToJourney?: ()
     // setting belongs in the experience, so anything at or before "partner" resumes there.
     const savedIdx = PHASES.indexOf(existing.phase as Phase);
     setPhase(savedIdx > 0 ? PHASES[savedIdx] : "experience");
+  };
+
+  // typing an existing partner name and continuing resumes that partner's saved plan
+  const resumeIfExists = (): boolean => {
+    const existing = loadPlanByName(partner);
+    if (!existing?.setting) return false;
+    hydrateFrom(existing);
     return true;
   };
+
+  // The last plan worked on on this device — offered as a one-click resume on step 1 while the
+  // name field is still empty, so a plain reload doesn't force the partner to retype the name.
+  const activePlan = phase === "partner" && !partner.trim() ? loadSnapshot() : null;
 
   const idx = PHASES.indexOf(phase);
   const canContinue = phase === "partner" ? partner.trim().length > 0 : phase === "setting" ? !!setting : phase === "vision" ? goals.length > 0 : true;
@@ -170,6 +182,14 @@ export default function AttainFlowV2({ onBackToJourney }: { onBackToJourney?: ()
               <p className="text-[15px] text-[#6B6B6B] leading-relaxed max-w-[560px] mb-8">Name the partner or organization. Your plan autosaves under this name on this device, so you can close it and pick it back up here anytime.</p>
               <input value={partner} onChange={(e) => setPartner(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && canContinue) goNext(); }} placeholder="e.g., Northgate Medical Group" autoFocus className="w-full max-w-[520px] bg-transparent border-0 border-b-2 border-[#E0D9CE] rounded-none px-0 pb-2 font-abridge text-[26px] text-[#1A1A1A] outline-none transition-colors focus:border-[#EA2C00] placeholder:text-[#C4BCB0] placeholder:font-sans placeholder:text-[18px]" />
               {partner.trim() && loadPlanByName(partner)?.setting && <p className="text-[12px] text-[#EA2C00] mt-3">A saved plan for this name will pick up where you left off.</p>}
+              {activePlan?.setting && activePlan.partner && (
+                <div className="mt-8 pt-6 border-t border-[#E8E2DA]">
+                  <p className="text-[12px] text-[#8C8C8C] mb-2.5">Or pick up where you left off:</p>
+                  <button type="button" onClick={() => hydrateFrom(activePlan)} className="inline-flex items-center gap-2 rounded-xl border border-[#E0D9CE] bg-white text-[14px] font-semibold text-[#1A1A1A] px-5 py-2.5 hover:border-[#1A1A1A] transition-colors">
+                    Resume {activePlan.partner} <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
             </div>
           )}
           {phase === "setting" && <SettingStep selected={setting} onSelect={setSetting} />}

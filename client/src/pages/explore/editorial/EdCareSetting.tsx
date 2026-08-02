@@ -94,10 +94,11 @@ const EASE = [0.22, 1, 0.36, 1] as const;
 export default function EdCareSetting({ selectedSetting, onSelectSetting, onNext, onBack, onHome, disabledSettings = [], onDataRequest }: Props) {
   const [hovered, setHovered] = useState<ExploreCareSetting | null>(null);
 
-  // Preview follows the pointer, falls back to the selection, then to the
-  // first setting — so the panel is never empty and never snaps to blank.
-  const previewId: ExploreCareSetting = hovered ?? selectedSetting ?? SETTINGS[0].id;
-  const preview = SETTINGS.find((s) => s.id === previewId)!;
+  // Preview follows the pointer, then the selection. Before either exists we
+  // show a neutral placeholder rather than defaulting to a real setting, so the
+  // panel never implies a pre-selection (Outpatient) the user hasn't made.
+  const previewId: ExploreCareSetting | null = hovered ?? selectedSetting ?? null;
+  const preview = previewId ? SETTINGS.find((s) => s.id === previewId)! : null;
 
   return (
     <EditorialShell>
@@ -152,28 +153,55 @@ export default function EdCareSetting({ selectedSetting, onSelectSetting, onNext
           {/* Live preview */}
           <div className="bg-[#FDFBF8] border border-[#E8E2DA] rounded-[20px] p-[30px_32px] min-h-[360px] overflow-hidden">
             <AnimatePresence mode="wait">
-              <motion.div
-                key={preview.id}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                transition={{ duration: 0.3, ease: EASE }}
-              >
-                <div className="text-[11px] font-extrabold tracking-[0.09em] uppercase text-[#786C5E]">
-                  What you'll model · {preview.name}
-                </div>
-                <div className="font-abridge text-[32px] text-[#1A1A1A] mt-[6px] mb-1">{preview.name}</div>
-                <p className="text-[15px] text-[#5E534A] leading-[1.55] max-w-[520px] mt-[10px] mb-6">{preview.blurb}</p>
-                <div className="grid grid-cols-2 gap-3">
-                  {preview.cells.map((c) => (
-                    <div key={c.q} className="border border-[#E8E2DA] rounded-[14px] px-4 py-[15px] bg-white">
-                      <div className="text-[10.5px] font-extrabold tracking-[0.08em] uppercase text-[#EA2C00]">{c.q}</div>
-                      <div className="text-[14px] font-semibold text-[#2E2822] mt-[5px]">{c.head}</div>
-                      <div className="text-[12px] text-[#786C5E] mt-[2px] leading-[1.4]">{c.sub}</div>
-                    </div>
-                  ))}
-                </div>
-              </motion.div>
+              {preview ? (
+                <motion.div
+                  key={preview.id}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.3, ease: EASE }}
+                >
+                  <div className="text-[11px] font-extrabold tracking-[0.09em] uppercase text-[#786C5E]">
+                    What you'll model · {preview.name}
+                  </div>
+                  <div className="font-abridge text-[32px] text-[#1A1A1A] mt-[6px] mb-1">{preview.name}</div>
+                  <p className="text-[15px] text-[#5E534A] leading-[1.55] max-w-[520px] mt-[10px] mb-6">{preview.blurb}</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    {preview.cells.map((c) => (
+                      <div key={c.q} className="border border-[#E8E2DA] rounded-[14px] px-4 py-[15px] bg-white">
+                        <div className="text-[10.5px] font-extrabold tracking-[0.08em] uppercase text-[#EA2C00]">{c.q}</div>
+                        <div className="text-[14px] font-semibold text-[#2E2822] mt-[5px]">{c.head}</div>
+                        <div className="text-[12px] text-[#786C5E] mt-[2px] leading-[1.4]">{c.sub}</div>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="placeholder"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.3, ease: EASE }}
+                >
+                  <div className="text-[11px] font-extrabold tracking-[0.09em] uppercase text-[#786C5E]">
+                    What you'll model
+                  </div>
+                  <div className="font-abridge text-[32px] text-[#1A1A1A] mt-[6px] mb-1">Choose a setting</div>
+                  <p className="text-[15px] text-[#5E534A] leading-[1.55] max-w-[520px] mt-[10px] mb-6">
+                    Hover or pick a setting on the left to preview what we'll build for it. Every setting
+                    models the same four areas, each from its own volume and economics.
+                  </p>
+                  <div className="grid grid-cols-2 gap-3">
+                    {(["Capacity", "Workforce", "Revenue", "Quality"] as const).map((q) => (
+                      <div key={q} className="border border-dashed border-[#E0D8CD] rounded-[14px] px-4 py-[15px] bg-transparent">
+                        <div className="text-[10.5px] font-extrabold tracking-[0.08em] uppercase text-[#B4A99B]">{q}</div>
+                        <div className="text-[13px] text-[#B4A99B] mt-[5px] leading-[1.4]">Shown once you pick a setting</div>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
             </AnimatePresence>
           </div>
         </div>

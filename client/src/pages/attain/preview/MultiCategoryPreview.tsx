@@ -434,7 +434,11 @@ export function AttainExperience({ setting, cells, baseline, initial, onPersist 
     const overall = totalValue > 0 ? Math.round((totalRealized / totalValue) * 100) : 0;
     const anyEntered = CELLS.some((c) => statsFor(c).entered);
     const active = statsFor(cell);
-    const laggard = [...CELLS].filter((c) => statsFor(c).entered).sort((a, z) => statsFor(a).attain - statsFor(z).attain)[0];
+    // The category to push on is the lowest-attaining ENTERED category that is genuinely still
+    // behind (< 100%). When every entered category is at its target, there is nothing to push on,
+    // so laggard is null and the read shows the fully-attained line instead of naming a category.
+    const laggardCell = [...CELLS].filter((c) => statsFor(c).entered).sort((a, z) => statsFor(a).attain - statsFor(z).attain)[0];
+    const laggard = laggardCell && statsFor(laggardCell).attain < 1 ? laggardCell : null;
 
     // climb from combined log (+ preview of current)
     const pts = reviewLog.length ? [0, ...reviewLog.map((r) => r.attain)] : [0, overall];
@@ -545,7 +549,7 @@ export function AttainExperience({ setting, cells, baseline, initial, onPersist 
         <div className="rounded-2xl border-2 border-[#1A1A1A] bg-[#1A1A1A] p-6 md:p-7 mb-16">
           <p className="text-[10px] font-bold uppercase tracking-[2px] text-white/50 mb-3">The read</p>
           {anyEntered ? (
-            <p className="text-[15px] text-white/90 leading-relaxed">You're at {overall}% across the set. {laggard ? <>The category to push on is <span className="text-[#EA2C00] font-semibold">{catLabel(laggard)}</span>{statsFor(laggard).leak ? ": the signals are moving but the outcome hasn't followed yet." : ", furthest from its target."}</> : ""}</p>
+            <p className="text-[15px] text-white/90 leading-relaxed">You're at <AnimatedNumber value={overall} format={(n) => `${Math.round(n)}`} />% across the set. {laggard ? <>The category to push on is <span className="text-[#EA2C00] font-semibold">{catLabel(laggard)}</span>{statsFor(laggard).leak ? ": the signals are moving but the outcome hasn't followed yet." : ", furthest from its target."}</> : overall >= 100 ? "Every category has hit its target." : ""}</p>
           ) : (
             <p className="text-[15px] text-white/70 leading-relaxed">Enter this review's readings above and the combined score, the per-category lines, and the read all fill in from your real numbers.</p>
           )}

@@ -79,6 +79,21 @@ export function wordify(n: number): string {
   return String(n);
 }
 
+/* ─────────────────────── responsive helper ─────────────────────── */
+// These are desktop-first tools; this only flips a few multi-column layouts to a
+// single column (and lets wide tables scroll) so nothing clips at narrow widths.
+export function useNarrow(breakpoint = 760): boolean {
+  const [narrow, setNarrow] = useState(() =>
+    typeof window !== "undefined" ? window.innerWidth < breakpoint : false,
+  );
+  useEffect(() => {
+    const handler = () => setNarrow(window.innerWidth < breakpoint);
+    window.addEventListener("resize", handler);
+    return () => window.removeEventListener("resize", handler);
+  }, [breakpoint]);
+  return narrow;
+}
+
 /* ─────────────────────── animated count-up hook ─────────────────────── */
 export function useAnimatedNumber(value: number, duration = 0.8): number {
   const [display, setDisplay] = useState(value);
@@ -469,7 +484,7 @@ export function StressTest({ termValue, termInvestment, termNet }: { termValue: 
         </div>
       </div>
       <p style={{ fontSize: 12.5, color: T.muted, lineHeight: 1.5, marginBottom: 16, maxWidth: 640 }}>
-        Today's figure sits toward the conservative end, so it has room to be beaten, not defended.
+        Today's figure sits toward the conservative end, so there's upside if adoption runs ahead of plan.
       </p>
       <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%" }}>
         <line x1={30} y1={56} x2={530} y2={56} stroke={T.hair} />

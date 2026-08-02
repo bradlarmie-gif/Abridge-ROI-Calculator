@@ -34,9 +34,13 @@ interface EdCapacityProps {
   onReturnToBusinessCase?: () => void;
 }
 
-const TIER2: Record<
-  ExploreSetting,
-  { sectionLabel: string; heading: string; signals: OutcomeSignal[]; outcomes: string[]; note: string }
+// Nursing resolves its Capacity/Workforce signals through SignalWatch (WATCH_SIGNALS),
+// so only the non-nursing settings need a TIER2 outcomes block here.
+const TIER2: Partial<
+  Record<
+    ExploreSetting,
+    { sectionLabel: string; heading: string; signals: OutcomeSignal[]; outcomes: string[]; note: string }
+  >
 > = {
   outpatient: {
     sectionLabel: "The access it opens",
@@ -70,17 +74,6 @@ const TIER2: Record<
     ],
     outcomes: ["Discharge planning starts earlier", "Length of stay trends down", "Consult turnaround tightens"],
     note: "When these signals move, better flow comes within reach. We track the signals so it's earned, not assumed, and never put a dollar on it here.",
-  },
-  nursing: {
-    sectionLabel: "The capacity it opens",
-    heading: "The capacity it can open",
-    signals: [
-      { label: "Documentation time per care event", ex: "ex. 5 → 2 min" },
-      { label: "Point-of-care documentation rate", ex: "ex. 55 → 80%" },
-      { label: "Post-shift flowsheet queue", ex: "ex. −60%" },
-    ],
-    outcomes: ["On-time shift completion improves", "Bedside / direct care time rises", "Charting stops carrying into the next shift"],
-    note: "When these signals move, more direct care time comes within reach. We track the signals so it's earned, not assumed, and never put a dollar on it here.",
   },
 };
 
