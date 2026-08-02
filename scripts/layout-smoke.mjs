@@ -1,0 +1,89 @@
+/**
+ * LAYOUT SMOKE — the automated guard for "squished / wrapped / clipped" regressions.
+ *
+ * The Integrity Harness (vitest) covers MATH, COPY, and RECONCILIATION but is
+ * blind to rendered layout — which is how a header that wrapped "Build the deal"
+ * into three lines shipped on a green suite. This drives each tool's real screens
+ * at several widths and fails if:
+ *   - the page overflows horizontally (content clipped/unreachable),
+ *   - the top bar balloons past a single/double row (a wrapped nav),
+ *   - a chapter-nav label wraps to more than one line.
+ *
+ * Run after ANY layout/responsive change:  npm run layout:smoke
+ * (requires the dev server: npx vite --port 5199 --strictPort)
+ */
+import pkg from "../node_modules/playwright-core/index.js";
+const { chromium } = pkg;
+
+const BASE = process.env.SMOKE_BASE || "http://localhost:5199";
+// Desktop widths get the full check (overflow + header height + clipped inputs).
+// The narrow tier gets ONLY the clipped-input check — a value cut mid-word is a
+// bug at any width (this is the "minimized window" regime that hid the offset-row
+// clip), while a legitimately responsive header/nav wrap there is not.
+const WIDTHS = [1440, 1200, 1024];
+const NARROW_WIDTHS = [820, 700];
+const HEADER_MAX = 104; // a single/double-row top bar; a wrapped nav blows past this
+
+// route, label, and nav button texts to click (each visits a chapter)
+const ROUTES = [
+  { url: "/?proformapreview=1", label: "Proforma · Build" },
+  { url: "/?proformapreview=1", label: "Proforma · Case", click: "The case" },
+  { url: "/?proformapreview=1", label: "Proforma · Present", click: "Present" },
+  { url: "/?explorepreview=1", label: "Explore" },
+  { url: "/?multipreview=1&setting=Outpatient", label: "Attain · experience" },
+];
+
+const fails = [];
+
+const browser = await chromium.launch();
+const PLAN = [
+  ...WIDTHS.map((width) => ({ width, full: true })),
+  ...NARROW_WIDTHS.map((width) => ({ width, full: false })),
+];
+for (const route of ROUTES) {
+  for (const { width, full } of PLAN) {
+    const ctx = await browser.newContext({ viewport: { width, height: 900 } });
+    const page = await ctx.newPage();
+    try {
+      await page.goto(BASE + route.url, { waitUntil: "networkidle" });
+      await page.waitForTimeout(700);
+      if (route.click) {
+        await page.getByRole("button", { name: new RegExp(route.click) }).first().click({ timeout: 6000 }).catch(() => {});
+        await page.waitForTimeout(500);
+      }
+      const r = await page.evaluate(() => {
+        const overflow = document.documentElement.scrollWidth - window.innerWidth;
+        // The top bar = the ancestor row that contains the "ABRIDGE" wordmark.
+        const ab = [...document.querySelectorAll("span")].find((e) => e.textContent?.trim() === "ABRIDGE");
+        const bar = ab?.parentElement?.parentElement ?? null;
+        const headerH = bar ? Math.round(bar.getBoundingClientRect().height) : 0;
+        // Clipped inputs: a text field whose value is wider than the box cuts the
+        // value off mid-word (e.g. "Legacy ambient s…"). Page overflow can't see
+        // this — the clip is internal to the field. Skip the focused field.
+        const clipped = [...document.querySelectorAll("input[type=text], input:not([type])")]
+          .filter((el) => {
+            const s = getComputedStyle(el);
+            if (s.display === "none" || s.visibility === "hidden" || el.offsetParent === null) return false;
+            if (el === document.activeElement) return false;
+            return (el.value ?? "").trim().length > 0 && el.scrollWidth - el.clientWidth > 4;
+          })
+          .map((el) => `"${(el.value || "").slice(0, 24)}" (${el.scrollWidth - el.clientWidth}px cut)`);
+        return { overflow, headerH, foundHeader: !!bar, clipped };
+      });
+      const tag = `${route.label} @${width}`;
+      if (full && r.overflow > 3) fails.push(`${tag}: horizontal overflow ${r.overflow}px (content clipped)`);
+      if (full && r.foundHeader && r.headerH > HEADER_MAX) fails.push(`${tag}: header ${r.headerH}px > ${HEADER_MAX} (wrapped/squished top bar)`);
+      for (const c of r.clipped) fails.push(`${tag}: clipped input value ${c}`);
+    } catch (e) {
+      fails.push(`${route.label} @${width}: drive error ${String(e).slice(0, 100)}`);
+    }
+    await ctx.close();
+  }
+}
+await browser.close();
+
+if (fails.length) {
+  console.error(`\n✗ LAYOUT SMOKE FAILED (${fails.length}):\n` + fails.map((f) => "  " + f).join("\n") + "\n");
+  process.exit(1);
+}
+console.log("✓ layout smoke passed — no overflow, no wrapped/squished headers across all routes × widths");

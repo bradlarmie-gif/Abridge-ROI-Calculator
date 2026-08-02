@@ -915,12 +915,13 @@ function SettingCard({
                 ) : (
                   <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                     {offsets.map((o) => (
-                      <div key={o.id} style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 14, background: "#fff", border: `1px solid ${T.hair}`, borderRadius: 10, padding: "11px 13px" }}>
+                      <div key={o.id} className="pf-offset-row" style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 14, background: "#fff", border: `1px solid ${T.hair}`, borderRadius: 10, padding: "11px 13px" }}>
                         <input
                           value={o.label}
                           onChange={(e) => updateOffset(o.id, { label: e.target.value })}
                           placeholder="Legacy tool"
-                          style={{ flex: "1 1 130px", minWidth: 110, fontSize: 13.5, fontWeight: 700, color: T.label, background: "none", border: "none", borderBottom: `1px solid ${T.hair}`, padding: "2px 0", outline: "none" }}
+                          className="pf-offset-name"
+                          style={{ flex: "1 1 200px", minWidth: 170, fontSize: 13.5, fontWeight: 700, color: T.label, background: "none", border: "none", borderBottom: `1px solid ${T.hair}`, padding: "2px 0", outline: "none", textOverflow: "ellipsis" }}
                         />
                         <NumCell value={o.annualSpend} onChange={(n) => updateOffset(o.id, { annualSpend: n })} kLabel="Annual spend" prefix="$" format={commaFmt} />
                         <NumCell value={o.displacementPct} onChange={(n) => updateOffset(o.id, { displacementPct: n })} kLabel="Displaced" suffix="%" />
@@ -937,6 +938,13 @@ function SettingCard({
                     <button onClick={addOffset} style={{ alignSelf: "flex-start", fontSize: 12, fontWeight: 700, color: T.coral, background: "none", border: "none", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6, marginTop: 2 }}>
                       <Plus size={13} /> Add another
                     </button>
+                    <style>{`
+                      /* Narrow window: give the tool name its own full-width line so it
+                         never clips mid-word competing with the metric cells. */
+                      @media (max-width: 760px){
+                        .pf-offset-row .pf-offset-name{ flex-basis: 100%; min-width: 0; }
+                      }
+                    `}</style>
                   </div>
                 )}
               </div>
@@ -1065,13 +1073,13 @@ export default function ProformaWorkbench({ settings, config, onUpdateSetting, o
     <div style={{ background: T.page, minHeight: "100vh", color: T.ink, fontFamily: "Manrope, sans-serif", WebkitFontSmoothing: "antialiased" }}>
       {/* TOP BAR */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", rowGap: 12, padding: "16px 40px", borderBottom: `1px solid ${T.hair}` }}>
-        <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 26 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 26, flexShrink: 0 }}>
           <span className="font-abridge" style={{ fontSize: 20, color: T.coral }}>ABRIDGE</span>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 26 }}>
+          <div style={{ display: "flex", gap: 26 }}>
             {CHAPTERS.map((c) => {
               const active = c.key === "build";
               return (
-                <button key={c.n} onClick={() => onNavigate?.(c.key)} style={{ fontSize: 13, color: active ? T.ink : T.faint, fontWeight: 600, display: "flex", alignItems: "center", gap: 7, cursor: onNavigate ? "pointer" : "default", background: "none", border: "none", padding: 0 }}>
+                <button key={c.n} onClick={() => onNavigate?.(c.key)} style={{ fontSize: 13, color: active ? T.ink : T.faint, fontWeight: 600, display: "flex", alignItems: "center", gap: 7, whiteSpace: "nowrap", cursor: onNavigate ? "pointer" : "default", background: "none", border: "none", padding: 0 }}>
                   <span style={{ fontSize: 10, color: active ? T.coral : T.off }}>{c.n}</span> {c.label}
                 </button>
               );
@@ -1250,7 +1258,7 @@ export const SAMPLE_PROFORMA_SETTINGS: ProformaSettingSnapshot[] = [
     drivers: [
       { id: "patientAccess", name: "Patient access", value: 549000, quadrant: "Capacity", onset: "immediate", category: "time" },
       { id: "wrvu", name: "wRVU capture", value: 412000, quadrant: "Revenue", onset: "delayed", category: "documentation" },
-      { id: "hcc", name: "HCC recapture", value: 319000, quadrant: "Revenue", onset: "delayed", category: "documentation" },
+      { id: "hcc", name: "HCC recapture", value: 319000, quadrant: "Revenue", onset: "longTerm", category: "documentation" },
       { id: "providerWellbeing", name: "Provider wellbeing", value: 180000, quadrant: "Workforce", onset: "phased", category: "time" },
       { id: "locum", name: "Locum & agency avoidance", value: 95000, quadrant: "Workforce", onset: "phased", category: "time", excluded: true },
       { id: "docQuality", name: "Documentation quality", value: 0, quadrant: "Quality", onset: "immediate", category: "documentation" },
