@@ -411,6 +411,10 @@ function StepChart({ items }: { items: AppRatItem[] }): JSX.Element | null {
   const nodes = sortedPlan.map((t) => { cumP += rr(t); return { id: t.id, x: xf(t.sunsetMonths), y: yf(cumP) }; });
   const year1 = tools.reduce((a, t) => a + (t.sunsetMonths <= 12 ? rr(t) : 0), 0);
   const y1x = xf(12), y1y = yf(year1);
+  // Only mark Year 1 when it is a distinct, lower point worth calling out. When
+  // everything already lands in year 1 (year1 == full run-rate), the marker just
+  // duplicates the plateau and the Aug-'27 gridline, so it is left off.
+  const showYear1 = year1 < FULL * 0.98 && axisMax > 12;
   const fx = xf(summary.planFinishMonths), bx = xf(summary.renewalFinishMonths);
   const bmid = (fx + bx) / 2;
   const marks = Array.from({ length: Math.floor(axisMax / xStep) + 1 }, (_, i) => i * xStep);
@@ -428,7 +432,7 @@ function StepChart({ items }: { items: AppRatItem[] }): JSX.Element | null {
       {captured > 0 && <path d={band} fill={C.coral} fillOpacity={0.2} />}
       {captured > 0 && <path d={renewalLine} fill="none" stroke="#C3B7A8" strokeWidth={2} strokeDasharray="5 5" strokeLinejoin="round" />}
       <path d={planLine} fill="none" stroke={C.coral} strokeWidth={3} strokeLinejoin="round" />
-      <line x1={y1x} y1={y1y} x2={y1x} y2={yBase} stroke="#D9CDBE" strokeWidth={1.5} strokeDasharray="5 5" />
+      {showYear1 && <line x1={y1x} y1={y1y} x2={y1x} y2={yBase} stroke="#D9CDBE" strokeWidth={1.5} strokeDasharray="5 5" />}
       {sooner > 0 && (
         <g>
           <line x1={fx} y1={yTop - 10} x2={fx} y2={yTop + 6} stroke={C.coral} strokeWidth={3} />
@@ -445,7 +449,7 @@ function StepChart({ items }: { items: AppRatItem[] }): JSX.Element | null {
         <text key={m} x={xf(m)} y={yBase + 18} textAnchor={m === 0 ? "start" : m === axisMax ? "end" : "middle"} fontSize={9} fill={C.faint}>{m === 0 ? "now" : renewalDateLabel(m)}</text>
       ))}
       <text x={x1} y={yTop - 14} textAnchor="end" fontSize={9} fontWeight={700} fill={C.coral}>{fmtShort(FULL)} / yr · full run-rate</text>
-      <text x={y1x + 5} y={Math.max(y1y - 6, yTop + 13)} fontSize={9} fontWeight={700} fill={C.muted}>Year 1 · {fmtShort(year1)}</text>
+      {showYear1 && <text x={y1x + 5} y={Math.max(y1y - 6, yTop + 13)} fontSize={9} fontWeight={700} fill={C.muted}>Year 1 · {fmtShort(year1)}</text>}
     </svg>
   );
 }
