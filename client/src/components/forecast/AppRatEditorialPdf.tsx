@@ -4,6 +4,7 @@ import abridgeSymbol from "@assets/abridge-logo-symbol_1774906992195.png";
 import {
   type AppRatItem,
   type AppRatCategoryId,
+  type CumulativeTool,
   itemRetired,
   itemStays,
   itemDisplayName,
@@ -11,6 +12,7 @@ import {
   renewalDateLabel,
   computeNet,
   timingSummary,
+  buildCumulativeSavings,
 } from "@/lib/appRationalizationCalc";
 import { buildConsolidationModel } from "@/components/forecast/ArConsolidationView";
 import { buildMoatTools } from "@/components/forecast/ArMoatView";
@@ -368,18 +370,43 @@ function ConsolidationPage({ data }: { data: AppRatPdfData }): JSX.Element {
         <span style={sLbl}>Stays on your bill</span>
       </div>
 
-      <div style={{ ...sLbl, marginTop: 34, marginBottom: 12 }}>Freed, tool by tool</div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", columnGap: 40, rowGap: 2 }}>
-        {model.rows.filter((r) => r.retired > 0).map((r, i) => (
-          <div key={r.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "9px 0", borderBottom: `1px solid ${C.soft}` }}>
-            <span style={{ fontSize: 12.5, color: C.label, display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
-              <span style={{ width: 8, height: 8, borderRadius: 2, background: TAN[i % TAN.length] }} />
-              <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.name}</span>
-            </span>
-            <span className="font-abridge" style={{ fontSize: 13, color: C.coral, flexShrink: 0 }}>{fmtShort(r.retired)}</span>
-          </div>
-        ))}
+      <div style={{ ...sLbl, marginTop: 32, marginBottom: 10 }}>Tool by tool, what folds and what stays</div>
+      <div style={{ display: "flex", ...sLbl, fontSize: 9, marginBottom: 7, paddingRight: 2 }}>
+        <span style={{ flex: 1.7 }}>Tool</span>
+        <span style={{ width: 66, textAlign: "right" }}>Spend</span>
+        <span style={{ flex: 2.4, paddingLeft: 12 }}>Freed vs stays</span>
+        <span style={{ width: 66, textAlign: "right" }}>Freed</span>
+        <span style={{ width: 66, textAlign: "right" }}>Stays</span>
       </div>
+      {model.rows.map((r) => (
+        <div key={r.id} style={{ display: "flex", alignItems: "center", padding: "9px 0", borderTop: `1px solid ${C.soft}` }}>
+          <span style={{ flex: 1.7, fontSize: 12.5, color: C.label, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.name}</span>
+          <span className="font-abridge" style={{ width: 66, textAlign: "right", fontSize: 12.5, color: C.ink }}>{fmtShort(r.spend)}</span>
+          <span style={{ flex: 2.4, paddingLeft: 12 }}>
+            <span style={{ display: "flex", height: 16, borderRadius: 4, overflow: "hidden", background: C.soft }}>
+              {r.retiredPct > 0 && <span style={{ width: `${r.retiredPct}%`, background: C.coral }} />}
+              {r.staysPct > 0 && <span style={{ width: `${r.staysPct}%`, background: TAN[1] }} />}
+            </span>
+          </span>
+          <span className="font-abridge" style={{ width: 66, textAlign: "right", fontSize: 12.5, color: r.retired > 0 ? C.coral : C.off }}>{r.retired > 0 ? fmtShort(r.retired) : "—"}</span>
+          <span style={{ width: 66, textAlign: "right", fontSize: 12.5, color: C.faint }}>{r.stays > 0 ? fmtShort(r.stays) : "—"}</span>
+        </div>
+      ))}
+
+      {model.rows.some((r) => r.stays > 0) && (
+        <div style={{ marginTop: 26, background: C.card, border: `1px solid ${C.hair}`, borderRadius: 12, padding: "16px 20px" }}>
+          <div style={{ ...sLbl, marginBottom: 10 }}>What stays, and why</div>
+          {model.rows.filter((r) => r.stays > 0).map((r) => (
+            <div key={r.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "6px 0", gap: 16 }}>
+              <span style={{ fontSize: 12.5, color: C.label }}>
+                <b className="font-abridge" style={{ color: C.ink }}>{r.name}</b>
+                <span style={{ color: C.faint }}> — {r.staysOnly ? "kept as-is; not displaceable by Abridge yet" : `the ${100 - Math.round(r.retiredPct)}% above the coverage you set for it`}</span>
+              </span>
+              <span className="font-abridge" style={{ fontSize: 12.5, color: C.label, flexShrink: 0 }}>{fmtShort(r.stays)} / yr</span>
+            </div>
+          ))}
+        </div>
+      )}
       <Footer note="Freed is the coverage share you set for each tool times its annual spend. Displacement is not a commitment." num="02" />
     </Page>
   );
@@ -387,13 +414,122 @@ function ConsolidationPage({ data }: { data: AppRatPdfData }): JSX.Element {
 
 // ───────────────────────── Page 5 · When it lands ─────────────────────────
 
+// The sharp step chart: annual run-rate freed climbing as each tool sunsets
+// (coral staircase), the "ride to renewal" baseline (dashed), and the coral
+// band between them = captured sooner. Ported from the react-pdf timing chart.
+function StepChart({ items }: { items: AppRatItem[] }): JSX.Element | null {
+  const cs = buildCumulativeSavings(items, 60);
+  const summary = timingSummary(items);
+  const tools = cs.tools;
+  if (tools.length === 0) return null;
+  const rr = (t: CumulativeTool) => t.monthlySaving * 12;
+  const FULL = Math.max(1, tools.reduce((a, t) => a + rr(t), 0));
+  const spanEnd = Math.max(summary.renewalFinishMonths, summary.planFinishMonths, 6);
+  const axisMax = Math.max(12, Math.ceil((spanEnd + 4) / 6) * 6);
+  const xStep = axisMax <= 24 ? 6 : 12;
+  const W = 690, H = 218, x0 = 50, x1 = 678, yTop = 34, yBase = 174;
+  const xf = (m: number) => x0 + (Math.max(0, Math.min(m, axisMax)) / axisMax) * (x1 - x0);
+  const yf = (v: number) => yBase - (v / FULL) * (yBase - yTop);
+  const step = (key: "sunsetMonths" | "contractMonths"): [number, number][] => {
+    const sorted = [...tools].sort((a, b) => a[key] - b[key]);
+    let cum = 0;
+    const p: [number, number][] = [[0, 0]];
+    for (const t of sorted) { p.push([t[key], cum]); cum += rr(t); p.push([t[key], cum]); }
+    p.push([axisMax, cum]);
+    return p;
+  };
+  const toXY = (p: [number, number]) => `${xf(p[0]).toFixed(1)},${yf(p[1]).toFixed(1)}`;
+  const planPts = step("sunsetMonths");
+  const renewalPts = step("contractMonths");
+  const planLine = "M " + planPts.map(toXY).join(" L ");
+  const renewalLine = "M " + renewalPts.map(toXY).join(" L ");
+  const baseArea = `M ${xf(0)},${yBase} L ` + renewalPts.map(toXY).join(" L ") + ` L ${xf(axisMax)},${yBase} Z`;
+  const band = "M " + planPts.map(toXY).join(" L ") + " L " + [...renewalPts].reverse().map(toXY).join(" L ") + " Z";
+  const captured = summary.capturedSooner;
+  const sooner = summary.monthsSooner;
+  const sortedPlan = [...tools].sort((a, b) => a.sunsetMonths - b.sunsetMonths);
+  let cumP = 0;
+  const nodes = sortedPlan.map((t) => { cumP += rr(t); return { id: t.id, x: xf(t.sunsetMonths), y: yf(cumP) }; });
+  const year1 = tools.reduce((a, t) => a + (t.sunsetMonths <= 12 ? rr(t) : 0), 0);
+  const y1x = xf(12), y1y = yf(year1);
+  const fx = xf(summary.planFinishMonths), bx = xf(summary.renewalFinishMonths);
+  const bmid = (fx + bx) / 2;
+  const marks = Array.from({ length: Math.floor(axisMax / xStep) + 1 }, (_, i) => i * xStep);
+  return (
+    <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{ display: "block" }}>
+      <defs>
+        <linearGradient id="arRamp" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={C.coral} stopOpacity={0.18} />
+          <stop offset="100%" stopColor={C.coral} stopOpacity={0.02} />
+        </linearGradient>
+      </defs>
+      <line x1={x0} y1={yBase} x2={x1} y2={yBase} stroke={C.hair} strokeWidth={1} />
+      <line x1={x0} y1={(yTop + yBase) / 2} x2={x1} y2={(yTop + yBase) / 2} stroke={C.soft} strokeWidth={1} />
+      <path d={baseArea} fill="url(#arRamp)" />
+      {captured > 0 && <path d={band} fill={C.coral} fillOpacity={0.2} />}
+      {captured > 0 && <path d={renewalLine} fill="none" stroke="#C3B7A8" strokeWidth={2} strokeDasharray="5 5" strokeLinejoin="round" />}
+      <path d={planLine} fill="none" stroke={C.coral} strokeWidth={3} strokeLinejoin="round" />
+      <line x1={y1x} y1={y1y} x2={y1x} y2={yBase} stroke="#D9CDBE" strokeWidth={1.5} strokeDasharray="5 5" />
+      {sooner > 0 && (
+        <g>
+          <line x1={fx} y1={yTop - 10} x2={fx} y2={yTop + 6} stroke={C.coral} strokeWidth={3} />
+          <line x1={bx} y1={yTop - 10} x2={bx} y2={yTop + 6} stroke="#C3B7A8" strokeWidth={2} />
+          <line x1={fx} y1={yTop - 2} x2={bx} y2={yTop - 2} stroke={C.coral} strokeWidth={3} />
+          <rect x={bmid - 62} y={yTop - 22} width={124} height={19} rx={9.5} fill={C.coral} />
+          <text x={bmid} y={yTop - 9} textAnchor="middle" fontSize={10} fontWeight={700} fill="#fff">{sooner} {sooner === 1 ? "month" : "months"} sooner</text>
+        </g>
+      )}
+      {nodes.map((n) => <circle key={n.id} cx={n.x} cy={n.y} r={5} fill={C.coral} stroke="#fff" strokeWidth={2.5} />)}
+      <text x={x0 - 8} y={yf(FULL) + 4} textAnchor="end" fontSize={10} fontWeight={700} fill={C.faint}>{fmtShort(FULL)}</text>
+      <text x={x0 - 8} y={yBase + 3} textAnchor="end" fontSize={10} fill={C.off}>$0</text>
+      {marks.map((m) => (
+        <text key={m} x={xf(m)} y={yBase + 18} textAnchor={m === 0 ? "start" : m === axisMax ? "end" : "middle"} fontSize={9} fill={C.faint}>{m === 0 ? "now" : renewalDateLabel(m)}</text>
+      ))}
+      <text x={x1} y={yTop - 14} textAnchor="end" fontSize={9} fontWeight={700} fill={C.coral}>{fmtShort(FULL)} / yr · full run-rate</text>
+      <text x={y1x + 5} y={Math.max(y1y - 6, yTop + 13)} fontSize={9} fontWeight={700} fill={C.muted}>Year 1 · {fmtShort(year1)}</text>
+    </svg>
+  );
+}
+
+function TimingReadLine({ items }: { items: AppRatItem[] }): JSX.Element {
+  const s = timingSummary(items);
+  const captured = s.capturedSooner;
+  const sooner = s.monthsSooner;
+  const consolidated = s.planFinishMonths === 0 ? "now" : renewalDateLabel(s.planFinishMonths);
+  const coral = { color: C.coral, fontWeight: 700 } as const;
+  const ink = { color: C.ink, fontWeight: 700 } as const;
+  let body: JSX.Element;
+  if (captured > 0 && sooner > 0) {
+    body = (
+      <>
+        Your plan reaches full consolidation <span style={ink}>{consolidated}</span>,{" "}
+        <span style={coral}>{sooner} months</span> ahead of riding to renewal, and captures{" "}
+        <span style={coral}>{fmtShort(captured)}</span> from vendors on the way there.
+      </>
+    );
+  } else if (captured > 0) {
+    body = (
+      <>
+        Pulling these in captures <span style={coral}>{fmtShort(captured)}</span> you&rsquo;d otherwise keep paying
+        through renewal, with the finish line at <span style={ink}>{renewalDateLabel(s.renewalFinishMonths)}</span>.
+      </>
+    );
+  } else {
+    body = (
+      <>
+        <span style={ink}>Every contract is riding to its renewal.</span> The spend comes back as each one ends, no
+        early-exit fees assumed.
+      </>
+    );
+  }
+  return <div style={{ fontSize: 13.5, color: C.muted, lineHeight: 1.55, marginTop: 14, maxWidth: 640 }}>{body}</div>;
+}
+
 function TimingPage({ data }: { data: AppRatPdfData }): JSX.Element {
   const summary = timingSummary(data.items);
   const net = computeNet(data.items, data.abridgePrice);
   const priced = net.abridgePrice > 0;
   const savers = data.items.filter((i) => itemRetired(i) > 0).sort((a, b) => a.sunsetMonths - b.sunsetMonths);
-  // Net-aware: with no Abridge price, freed is the punchline; with a price, the
-  // net (back or cost) is, so it takes the coral.
   const stats = [
     { v: fmtShort(net.sunset), k: "Freed at full consolidation", coral: !priced },
     ...(priced
@@ -413,30 +549,41 @@ function TimingPage({ data }: { data: AppRatPdfData }): JSX.Element {
       <h2 className="font-abridge" style={{ fontSize: 27, color: C.ink, marginTop: 7, lineHeight: 1.06 }}>
         The runway, and how fast the spend comes back.
       </h2>
-      <div style={{ display: "flex", gap: 48, marginTop: 22, flexWrap: "wrap" }}>
+      <div style={{ display: "flex", gap: 44, marginTop: 18, flexWrap: "wrap" }}>
         {stats.map((s, i) => (
           <div key={i}>
-            <div className="font-abridge" style={{ fontSize: 28, lineHeight: 1, color: s.coral ? C.coral : C.ink }}>{s.v}</div>
-            <div style={{ ...sLbl, marginTop: 7 }}>{s.k}</div>
+            <div className="font-abridge" style={{ fontSize: 25, lineHeight: 1, color: s.coral ? C.coral : C.ink }}>{s.v}</div>
+            <div style={{ ...sLbl, marginTop: 6 }}>{s.k}</div>
           </div>
         ))}
       </div>
 
-      <div style={{ ...sLbl, marginTop: 30, marginBottom: 8 }}>Each tool&rsquo;s sunset</div>
-      <div>
-        {savers.map((it) => (
-          <div key={it.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "9px 0", borderBottom: `1px solid ${C.soft}` }}>
-            <span style={{ fontSize: 13, color: C.label, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{itemDisplayName(it)}</span>
-            <span style={{ display: "flex", gap: 26, alignItems: "baseline", flexShrink: 0 }}>
-              <span style={{ fontSize: 12, color: C.faint }}>sunsets {renewalDateLabel(it.sunsetMonths)}</span>
-              <span className="font-abridge" style={{ fontSize: 13, color: C.coral, width: 68, textAlign: "right" }}>{fmtShort(itemRetired(it))} / yr</span>
-            </span>
-          </div>
-        ))}
-        {savers.length === 0 && <div style={{ fontSize: 12.5, color: C.faint, padding: "10px 0" }}>No tools set to displace yet.</div>}
+      <div style={{ ...sLbl, marginTop: 26, marginBottom: 10 }}>The run-rate freed, month by month</div>
+      <StepChart items={data.items} />
+      <div style={{ display: "flex", gap: 22, marginTop: 6, fontSize: 10.5, color: C.faint }}>
+        <span style={{ display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 16, height: 3, background: C.coral, borderRadius: 2 }} /> This plan</span>
+        <span style={{ display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 16, height: 0, borderTop: `2px dashed #C3B7A8` }} /> Ride to renewal</span>
       </div>
+      <TimingReadLine items={data.items} />
+
+      <div style={{ ...sLbl, marginTop: 22, marginBottom: 4 }}>Each tool&rsquo;s sunset</div>
+      <div style={{ display: "flex", ...sLbl, fontSize: 9, marginBottom: 6 }}>
+        <span style={{ flex: 2 }}>Tool</span>
+        <span style={{ width: 120, textAlign: "right" }}>Sunsets</span>
+        <span style={{ width: 90, textAlign: "right" }}>Ramp</span>
+        <span style={{ width: 90, textAlign: "right" }}>Freed / yr</span>
+      </div>
+      {savers.map((it) => (
+        <div key={it.id} style={{ display: "flex", alignItems: "baseline", padding: "8px 0", borderTop: `1px solid ${C.soft}` }}>
+          <span style={{ flex: 2, fontSize: 13, color: C.label, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{itemDisplayName(it)}</span>
+          <span style={{ width: 120, textAlign: "right", fontSize: 12, color: C.faint }}>{renewalDateLabel(it.sunsetMonths)}</span>
+          <span style={{ width: 90, textAlign: "right", fontSize: 12, color: C.faint }}>{it.rampMonths > 0 ? `${it.rampMonths} mo` : "instant"}</span>
+          <span className="font-abridge" style={{ width: 90, textAlign: "right", fontSize: 13, color: C.coral }}>{fmtShort(itemRetired(it))}</span>
+        </div>
+      ))}
+      {savers.length === 0 && <div style={{ fontSize: 12.5, color: C.faint, padding: "10px 0" }}>No tools set to displace yet.</div>}
       {summary.gatingToolName && (
-        <div style={{ fontSize: 12, color: C.faint, marginTop: 12 }}>
+        <div style={{ fontSize: 12, color: C.faint, marginTop: 10 }}>
           The finish line is gated by {summary.gatingToolName}, the latest contract to run out.
         </div>
       )}
@@ -566,9 +713,9 @@ export const SAMPLE_APPRAT_PDF_DATA: AppRatPdfData = {
   date: "August 2026",
   abridgePrice: 0,
   items: [
-    { id: "s1", category: "ambientDoc", vendorName: "Nuance DAX", annualSpend: 480000, coveragePct: 100, contractMonths: 8, sunsetMonths: 8, rampMonths: 3 },
-    { id: "s2", category: "scribe", vendorName: "ScribeAmerica", annualSpend: 360000, coveragePct: 100, contractMonths: 14, sunsetMonths: 14, rampMonths: 3 },
-    { id: "s3", category: "dictation", vendorName: "Dragon Medical One", annualSpend: 210000, coveragePct: 75, contractMonths: 20, sunsetMonths: 20, rampMonths: 4 },
+    { id: "s1", category: "ambientDoc", vendorName: "Nuance DAX", annualSpend: 480000, coveragePct: 100, contractMonths: 8, sunsetMonths: 4, rampMonths: 3 },
+    { id: "s2", category: "scribe", vendorName: "ScribeAmerica", annualSpend: 360000, coveragePct: 100, contractMonths: 14, sunsetMonths: 8, rampMonths: 3 },
+    { id: "s3", category: "dictation", vendorName: "Dragon Medical One", annualSpend: 210000, coveragePct: 75, contractMonths: 20, sunsetMonths: 12, rampMonths: 4 },
     { id: "s4", category: "cds", vendorName: "UpToDate", annualSpend: 140000, coveragePct: 0, contractMonths: 24, sunsetMonths: 24, rampMonths: 0 },
   ],
 };
