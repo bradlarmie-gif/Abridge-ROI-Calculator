@@ -41,6 +41,7 @@ import QuickRoiCalculator from "@/pages/forecast/QuickRoiCalculator";
 import AppRationalizationFlow from "@/pages/forecast/AppRationalizationFlow";
 import ExploreEditorialPdfRoute from "@/components/explore/ExploreEditorialPdfRoute";
 import ProformaEditorialPdfRoute from "@/components/proforma/ProformaEditorialPdfRoute";
+import AppRatEditorialPdfRoute from "@/components/forecast/AppRatEditorialPdfRoute";
 import { ExploreFlow, type ExploreState, type ExploreCareSetting, type ExplorePhase } from "@/pages/explore";
 import AttainFlow from "@/pages/attain/AttainFlow";
 import AttainConsultPreview from "@/pages/attain/AttainConsultPreview";
@@ -247,6 +248,10 @@ export default function App() {
   // HTML-print financial-proforma document from the deal snapshot in localStorage.
   if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("proformapdf") === "1") {
     return <ProformaEditorialPdfRoute />;
+  }
+  // Print route for the editorial App Rationalization PDF (?appratpdf=1).
+  if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("appratpdf") === "1") {
+    return <AppRatEditorialPdfRoute />;
   }
 
   // State for deep link settings

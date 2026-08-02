@@ -31,12 +31,15 @@ export default function AppRationalizationFlow({ onBack, onHome }: AppRationaliz
   const handleExportPdf = async () => {
     setExporting(true);
     try {
-      const mod = await import("@/components/forecast/AppRationalizationPDFExport");
-      await mod.generateAppRationalizationPDF(items, orgName, abridgePrice, horizonYears);
+      // Stash the deal and open the HTML print route (?appratpdf=1&print=1), the
+      // same editorial engine Explore/Proforma/Attain use, so all four PDFs match.
+      const { APP_RAT_PDF_STORAGE_KEY } = await import("@/components/forecast/AppRatEditorialPdf");
+      const date = new Intl.DateTimeFormat("en-US", { month: "long", year: "numeric" }).format(new Date());
+      localStorage.setItem(APP_RAT_PDF_STORAGE_KEY, JSON.stringify({ orgName, date, abridgePrice, items }));
+      const url = `${window.location.pathname}?appratpdf=1&print=1`;
+      window.open(url, "_blank", "noopener");
     } catch (err) {
-      // Never fail silently: a throw inside pdf().toBlob() used to be swallowed by
-      // a catch-less try/finally, so the button did nothing. Log for debugging and
-      // surface a brief, non-blocking message so the rep knows to retry.
+      // Never fail silently: surface a brief, non-blocking message so the rep knows to retry.
       console.error("App Rationalization PDF export failed:", err);
       toast({
         title: "Export failed",
