@@ -125,10 +125,56 @@ for (const route of ROUTES) {
     await ctx.close();
   }
 }
+
+// ── PDF health ────────────────────────────────────────────────────────────
+// The four tool PDFs are HTML-print documents (?...pdf=...), a rendering path
+// vitest never sees. Each page is a fixed 816×1056 box; the risks are a page
+// that fails to render (doc collapses), content that bleeds past a page box,
+// a number that comes out "$NaN", or sideways overflow. Render each with print
+// media and check all four. minPages guards against a page silently dropping.
+const PDF_PAGE_H = 1056;
+const PDF_ROUTES = [
+  { url: "/?explorepdf=1", label: "Explore PDF", minPages: 5 },
+  { url: "/?proformapdf=1", label: "Proforma PDF", minPages: 6 },
+  { url: "/?attainpdf=review", label: "Attain PDF", minPages: 4 },
+  { url: "/?appratpdf=1", label: "App Rationalization PDF", minPages: 5 },
+];
+for (const route of PDF_ROUTES) {
+  const ctx = await browser.newContext({ viewport: { width: 816, height: PDF_PAGE_H } });
+  const page = await ctx.newPage();
+  await page.addInitScript(() => { window.print = () => {}; });
+  try {
+    await page.goto(BASE + route.url, { waitUntil: "networkidle" });
+    await page.emulateMedia({ media: "print" });
+    await page.waitForTimeout(1200);
+    const r = await page.evaluate((PAGE_H) => {
+      // Page boxes: elements sized to a full Letter page (816×1056).
+      const boxes = [...document.querySelectorAll("body *")].filter((el) => {
+        const b = el.getBoundingClientRect();
+        return Math.abs(b.width - 816) < 4 && Math.abs(b.height - PAGE_H) < 6;
+      });
+      // >24px = real content spilling a page; smaller is padding/line-height rounding.
+      const bleeds = boxes.filter((el) => el.scrollHeight - el.clientHeight > 24).length;
+      const totalH = document.documentElement.scrollHeight;
+      const overflow = document.documentElement.scrollWidth - 816;
+      const nan = /\$?NaN|Infinity|undefined/.test(document.body.innerText || "");
+      return { boxes: boxes.length, bleeds, pages: Math.round(totalH / PAGE_H), overflow, nan };
+    }, PDF_PAGE_H);
+    const tag = route.label;
+    if (r.pages < route.minPages) fails.push(`${tag}: only ${r.pages} page(s) rendered, expected >= ${route.minPages} (a page failed to render)`);
+    if (r.bleeds > 0) fails.push(`${tag}: ${r.bleeds} page(s) bleed past the 816×1056 box (content overflows the page)`);
+    if (r.overflow > 3) fails.push(`${tag}: horizontal overflow ${r.overflow}px past the page width`);
+    if (r.nan) fails.push(`${tag}: renders "NaN"/"undefined"/"Infinity" in the document text`);
+  } catch (e) {
+    fails.push(`${route.label}: PDF render error ${String(e).slice(0, 100)}`);
+  }
+  await ctx.close();
+}
+
 await browser.close();
 
 if (fails.length) {
   console.error(`\n✗ LAYOUT SMOKE FAILED (${fails.length}):\n` + fails.map((f) => "  " + f).join("\n") + "\n");
   process.exit(1);
 }
-console.log("✓ layout smoke passed — no overflow, no wrapped/squished headers across all routes × widths");
+console.log("✓ layout smoke passed — no overflow, no wrapped/squished headers, no clipped inputs across all routes × widths; all 4 PDFs render clean (pages, no bleed, no NaN)");
