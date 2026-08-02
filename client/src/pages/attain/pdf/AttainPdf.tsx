@@ -1,4 +1,5 @@
 import abridgeLogo from "@assets/abridge-logo-wordmark-red_1769020684647.png";
+import abridgeSymbol from "@assets/abridge-logo-symbol_1774906992195.png";
 import AttainPdfPage1, { fmtDollars as fmt$, type PdfData, type PdfMode } from "./AttainPdfPage1";
 import { buildFromSnapshot, type PlanCat } from "./attainPdfData";
 import { loadSnapshot } from "../attainStorage";
@@ -158,7 +159,38 @@ function MetricRow({ s, accent }: { s: Signal; accent?: boolean }) {
   );
 }
 
-// ---- Cover ----
+// ---- Report cover (universal, matched to Explore/Proforma) ----
+function ReportCover({ data }: { data: PdfData }) {
+  const subtitle = `${data.categories.length} value categories · ${data.setting}`;
+  return (
+    <div style={{ width: 816, height: 1056, background: "#FFFFFF", breakAfter: "page", position: "relative", overflow: "hidden" }}>
+      <img src={abridgeLogo} alt="Abridge" style={{ position: "absolute", top: 60, left: 64, width: 120 }} />
+      <img src={abridgeSymbol} alt="" style={{ position: "absolute", bottom: 92, right: 10, width: 340, opacity: 0.06 }} />
+      <div style={{ position: "absolute", inset: 0, padding: "0 64px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+        <div style={{ fontSize: 11, color: "#666666", letterSpacing: "3px", textTransform: "uppercase", marginBottom: 16 }}>
+          Value Attainment Plan
+        </div>
+        <h1 className="font-abridge" style={{ fontSize: 48, lineHeight: 1.12, color: "#1A1A1A", letterSpacing: "-0.5px", margin: "0 0 20px", maxWidth: 620 }}>
+          {data.partner}
+        </h1>
+        <div style={{ width: 80, height: 3, background: "#EA2C00", marginBottom: 24 }} />
+        <div style={{ fontSize: 17, color: "#666666", marginBottom: 44 }}>{subtitle}</div>
+        <div style={{ fontSize: 10, color: "#999999", letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: 6 }}>
+          Prepared by
+        </div>
+        <div style={{ fontSize: 14, color: "#666666" }}>Abridge · {data.date}</div>
+      </div>
+      <div style={{ position: "absolute", bottom: 44, left: 64, right: 64, borderTop: "1px solid #E0E0E0", paddingTop: 12 }}>
+        <div style={{ fontSize: 10.5, color: "#999999", lineHeight: 1.5 }}>
+          This plan is for planning purposes. Every figure is built from partner-provided inputs, and results depend on
+          adoption and how teams act on what the documentation surfaces.
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ---- Cover (the pitch) ----
 function Cover({ data }: { data: PdfData }) {
   const entered = data.categories.filter((c) => c.entered).length;
   return (
@@ -308,6 +340,7 @@ export default function AttainPdf() {
   return (
     <div className="bg-white">
       <style>{`.pdf-page:last-child { break-after: auto; }`}</style>
+      <ReportCover data={caseData} />
       <Cover data={caseData} />
       <AttainPdfPage1 data={caseData} mode={mode} />
       {planCats.map((c, i) => <CategoryPage key={c.name} c={c} idx={i + 1} total={planCats.length} page={(page += 1)} data={caseData} />)}
