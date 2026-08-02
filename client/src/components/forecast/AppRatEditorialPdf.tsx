@@ -307,13 +307,21 @@ function StackPage({ data }: { data: AppRatPdfData }): JSX.Element {
           </div>
         ))}
       </div>
-      {/* Tool tick labels under wide-enough segments */}
-      <div style={{ display: "flex", marginTop: 6 }}>
-        {model.rows.map((r) => (
-          <div key={r.id} style={{ width: `${r.widthPct}%`, textAlign: "center", overflow: "hidden" }}>
-            {r.widthPct >= 11 && <span style={{ fontSize: 9.5, color: C.faint, whiteSpace: "nowrap" }}>{r.name}</span>}
-          </div>
-        ))}
+      {/* Under each segment: the tool and how much of it folds, so the bar teaches per-tool */}
+      <div style={{ display: "flex", marginTop: 7 }}>
+        {model.rows.map((r) => {
+          const pct = Math.round(r.retiredPct);
+          return (
+            <div key={r.id} style={{ width: `${r.widthPct}%`, textAlign: "center", padding: "0 4px", overflow: "hidden" }}>
+              {r.widthPct >= 8 && (
+                <>
+                  <div style={{ fontSize: 9.5, color: C.label, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{r.name}</div>
+                  <div style={{ fontSize: 9, fontWeight: 700, color: pct > 0 ? C.coral : C.off, marginTop: 1 }}>{pct > 0 ? `${pct}% folds` : "stays"}</div>
+                </>
+              )}
+            </div>
+          );
+        })}
       </div>
       <div style={{ display: "flex", gap: 26, marginTop: 12 }}>
         <span style={{ display: "flex", alignItems: "center", gap: 7 }}>
@@ -334,12 +342,10 @@ function StackPage({ data }: { data: AppRatPdfData }): JSX.Element {
         </div>
         {rows.map((it, i) => {
           const freed = itemRetired(it);
-          const staysOnly = freed === 0;
           return (
             <div key={it.id} style={{ display: "flex", alignItems: "center", padding: "10px 16px", background: i % 2 ? C.card : "#fff", borderTop: `1px solid ${C.soft}` }}>
-              <span style={{ flex: cols[0][0], display: "flex", alignItems: "center", gap: 9, minWidth: 0 }}>
-                <span style={{ width: 3, height: 22, borderRadius: 2, background: staysOnly ? C.off : TAN[i % TAN.length], flexShrink: 0 }} />
-                <span className="font-abridge" style={{ fontSize: 13, color: C.ink, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{itemDisplayName(it)}</span>
+              <span style={{ flex: cols[0][0], minWidth: 0 }}>
+                <span className="font-abridge" style={{ fontSize: 13, color: C.ink, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", display: "block" }}>{itemDisplayName(it)}</span>
               </span>
               <span style={{ flex: cols[1][0], fontSize: 12, color: C.faint }}>{categoryLabel(it.category)}</span>
               <span style={{ flex: cols[2][0], textAlign: "right", fontSize: 12.5, color: C.ink }}>{fmtFull(it.annualSpend)}</span>
