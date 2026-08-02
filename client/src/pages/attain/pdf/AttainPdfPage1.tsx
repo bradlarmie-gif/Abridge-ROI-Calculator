@@ -6,6 +6,7 @@
  */
 
 import abridgeLogo from "@assets/abridge-logo-wordmark-red_1769020684647.png";
+import { fmt$ as sharedFmt$ } from "@/lib/attain/attainFormat";
 
 const CORAL = "#EA2C00";
 
@@ -20,7 +21,9 @@ export type PdfData = {
 };
 export type PdfMode = "kickoff" | "review";
 
-export const fmtDollars = (n: number) => (n >= 1_000_000 ? `$${(n / 1_000_000).toFixed(2)}M` : n >= 1000 ? `$${Math.round(n / 1000)}K` : `$${Math.round(n)}`);
+// One shared money formatter across screen + PDF (B/M/K ladder), so the same figure never renders
+// at a different precision on the export than on the screen (it used to be toFixed(2) here).
+export const fmtDollars = sharedFmt$;
 const fmt$ = fmtDollars;
 
 const SAMPLE: PdfData = {

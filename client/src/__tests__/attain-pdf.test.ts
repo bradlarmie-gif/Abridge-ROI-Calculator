@@ -54,10 +54,10 @@ const matrixCatsFor = (label: string) =>
   ATTAIN_MATRIX.filter((c) => c.setting === label).map((c) => c.category);
 const matrixDisplayNamesFor = (label: string) =>
   ATTAIN_MATRIX.filter((c) => c.setting === label).map((c) => c.categoryLabel ?? c.category);
-// GOAL-SELECTABLE categories: only cells that map back to a goal (GOAL_OF) can be chosen, so only
-// they get "entered" and a detail page. Inpatient Capacity has NO goal (SETTING_GOAL_MATRIX has
-// inpatient = revenue, retention), so it is a preview-only matrix cell — it appears on the grid as
-// a teaser but is never part of a plan. This is why goal cats != matrix cats for Inpatient only.
+// GOAL-SELECTABLE categories: this test picks only the categories in its local GOAL_OF map, so a
+// cell it does not list stays an un-entered $0 teaser here. (Inpatient Capacity IS now a real goal
+// — see attainReachability.test.ts — but this suite deliberately doesn't pick it, so it exercises
+// the un-entered teaser path. Reachability + the review dollar are covered by their own suites.)
 const goalCatsFor = (label: string) => matrixCatsFor(label).filter((c) => GOAL_OF[c]);
 const goalDisplayNamesFor = (label: string) =>
   ATTAIN_MATRIX.filter((c) => c.setting === label && GOAL_OF[c.category]).map((c) => c.categoryLabel ?? c.category);

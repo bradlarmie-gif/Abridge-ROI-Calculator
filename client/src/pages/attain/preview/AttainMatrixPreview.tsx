@@ -128,8 +128,8 @@ function AttainSession({ storageKey, cell, chapter }: { storageKey: string; cell
 
   return (
     <>
-      {chapter === "align" && <AlignView c={cell.align} settingLabel={cell.setting} categoryLabel={cell.category} picked={picked} setPicked={setPicked} plays={plays} setPlays={setPlays} />}
-      {chapter === "plan" && <PlanView c={cell.plan} settingLabel={cell.setting} categoryLabel={cell.category} committed={committed} />}
+      {chapter === "align" && <AlignView c={cell.align} settingLabel={cell.setting} categoryLabel={cell.categoryLabel ?? cell.category} categoryKey={cell.category} picked={picked} setPicked={setPicked} plays={plays} setPlays={setPlays} />}
+      {chapter === "plan" && <PlanView c={cell.plan} settingLabel={cell.setting} categoryLabel={cell.categoryLabel ?? cell.category} committed={committed} />}
       {chapter === "strategy" && <StrategyView cell={cell} committed={committed} />}
       {chapter === "progress" && <ProgressView cell={cell} committed={committed} readings={readings} setReadings={setReadings} reviewLog={reviewLog} onLogReview={logReview} />}
     </>

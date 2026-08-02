@@ -7,8 +7,14 @@
 import { ATTAIN_MATRIX } from "../preview/attainCells";
 import { econModel } from "../preview/attainEconomics";
 import { engineValueInPlay, type CellInputs } from "../preview/attainEngineAdapter";
+import { categoryForGoal } from "@/lib/attain/attainGoals";
+import type { AttainSetting, GoalId } from "@/lib/attain/attainTypes";
 import type { AttainSnapshot } from "../attainStorage";
 import type { PdfData } from "./AttainPdfPage1";
+
+// Re-exported so the reachability test can assert the funnel and the PDF builder
+// resolve GoalId→category through the exact same source of truth (no drift).
+export { categoryForGoal };
 
 export type PlanCat = {
   name: string; owner: { name: string; role: string }; cadence: string;
@@ -19,8 +25,11 @@ export type PlanCat = {
 };
 
 const SETTING_LABEL: Record<string, string> = { outpatient: "Outpatient", ed: "ED", inpatient: "Inpatient", nursing: "Nursing" };
-const GOAL_CATEGORY: Record<string, string> = { access: "Patient Access", retention: "Provider Retention", revenue: "Revenue Capture", quality: "Quality & Safety", capacity: "Nursing Capacity" };
 const num = (s: string) => { const n = parseFloat((s || "").replace(/[^0-9.]/g, "")); return Number.isFinite(n) ? n : 0; };
+// progress-reading helpers, mirroring MultiCategoryPreview's ProgressRollup exactly so the PDF's
+// realized/attainment math is the SAME the on-screen Progress chapter shows.
+const pnum = (s: string) => { const n = parseFloat((s || "").replace(/[^0-9.]/g, "")); return Number.isFinite(n) ? n : NaN; };
+const pavg = (arr: (number | null)[]) => { const v = arr.filter((x): x is number => x !== null); return v.length ? v.reduce((s, x) => s + x, 0) / v.length : null; };
 
 // "how the number holds" steps + a one-line note, per category (not in the content model)
 const CHAIN: Record<string, string[]> = {
@@ -120,7 +129,9 @@ export function buildFromSnapshot(snap: AttainSnapshot | null | undefined): { da
   if (!settingLabel || !snap.goals?.length) return null;
 
   const allCells = ATTAIN_MATRIX.filter((c) => c.setting === settingLabel);
-  const inPlan = new Set(snap.goals.map((g) => GOAL_CATEGORY[g]).filter(Boolean));
+  // Setting-aware GoalId→category (capacity → "Inpatient Capacity" on inpatient, etc.), the same
+  // resolver the live funnel uses, so a chosen goal always lands on the cell the screen showed.
+  const inPlan = new Set(snap.goals.map((g) => categoryForGoal(snap.setting as AttainSetting, g as GoalId)).filter(Boolean));
   const planCells = allCells.filter((c) => inPlan.has(c.category)); // only chosen ones get detail pages
   if (!planCells.length) return null;
 
@@ -129,6 +140,45 @@ export function buildFromSnapshot(snap: AttainSnapshot | null | undefined): { da
   const largest = [...planCells].sort((a, b) => valueOf(b.category) - valueOf(a.category))[0];
   // display heading (e.g., nurses aren't "providers"); the stable `category` stays the engine/storage key
   const catLabel = (c: (typeof allCells)[number]) => c.categoryLabel ?? c.category;
+
+  // ── Realized-to-date, from the logged reviews ──────────────────────────────
+  // Mirrors MultiCategoryPreview.ProgressRollup.statsFor exactly: a category's attainment is the
+  // clamped average progress of its OUTCOME metrics (baseline→reading→target), and its realized
+  // dollar is value-in-play × that attainment. Only surfaced once the partner has actually logged a
+  // review (a non-empty reviewLog); otherwise the PDF stays the kickoff "0% / measurement begins at
+  // go-live" page, which is honest before any review exists.
+  const attainOf = (category: string): number => {
+    const tgt = (id: string) => snap.metricsByCat?.[category]?.[id] ?? { today: "", target: "", source: "" };
+    const readings = snap.readingsByCat?.[category] ?? {};
+    const progOf = (id: string): number | null => {
+      const t = tgt(id);
+      const cur = pnum(readings[id] ?? ""), a = pnum(t.today), b = pnum(t.target);
+      if (!Number.isFinite(cur) || !Number.isFinite(a) || !Number.isFinite(b) || a === b) return null;
+      return (cur - a) / (b - a);
+    };
+    const cell = allCells.find((c) => c.category === category);
+    const out = (cell?.plan.outcomeGroups ?? []).flatMap((g) => g.metrics);
+    const outAvg = pavg(out.map((m) => progOf(m.id)));
+    return outAvg !== null ? Math.max(0, Math.min(1, outAvg)) : 0;
+  };
+  const realizedOf = (category: string): number => Math.round(valueOf(category) * attainOf(category));
+
+  const reviewLog = snap.reviewLog ?? [];
+  const hasReviews = reviewLog.length > 0;
+  const totalRealized = hasReviews ? planCells.reduce((s, c) => s + realizedOf(c.category), 0) : 0;
+  const attainmentPct = hasReviews && total > 0 ? Math.round((totalRealized / total) * 100) : 0;
+  // the same "push on the laggard" read the screen shows, special-cased when everything is attained
+  // so it never tells a CFO to push on a category already at 100%.
+  const enteredForRead = planCells.filter((c) => valueOf(c.category) > 0);
+  const laggard = [...enteredForRead].sort((a, b) => attainOf(a.category) - attainOf(b.category))[0];
+  const reviewRead = !hasReviews
+    ? ""
+    : attainmentPct >= 100 || !laggard
+      ? `You're at ${attainmentPct}% across the set — the plan is fully realized against the promise.`
+      : `You're at ${attainmentPct}% across the set. The category to push on is ${catLabel(laggard)}, furthest from its target.`;
+  const climb = hasReviews
+    ? [{ label: "Kickoff", pct: 0 }, ...reviewLog.map((r) => ({ label: r.label, pct: Math.max(0, Math.min(100, Math.round(r.attain))) }))]
+    : [];
 
   const date = new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" });
 
@@ -143,10 +193,18 @@ export function buildFromSnapshot(snap: AttainSnapshot | null | undefined): { da
     categories: allCells.map((c) => ({
       name: catLabel(c),
       value: valueOf(c.category),
+      // realized-to-date within this category's own promise (0 before any review is logged)
+      realized: hasReviews && inPlan.has(c.category) ? realizedOf(c.category) : 0,
       note: NOTE[c.category] ?? "",
       opens: (c.align.unlock?.options ?? []).slice(0, 2).map((o) => o.title),
       entered: inPlan.has(c.category),
     })),
+    // Only present once a review is logged; its presence is what flips the PDF from the kickoff
+    // page to the live scoreboard (AttainPdf picks mode="review", the react-pdf export renders the
+    // realized band). Before that, the honest page is the go-live one.
+    review: hasReviews
+      ? { label: reviewLog[reviewLog.length - 1].label, attainmentPct, realized: totalRealized, climb, read: reviewRead }
+      : undefined,
   };
 
   const categories: PlanCat[] = planCells.map((c) => {

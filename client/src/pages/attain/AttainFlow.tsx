@@ -30,7 +30,7 @@ import {
   type AttainScope,
   type GoalId,
 } from "@/lib/attain/attainTypes";
-import { getContent, GOAL_CATALOG } from "@/lib/attain/attainGoals";
+import { getContent, GOAL_CATALOG, goalsForSetting } from "@/lib/attain/attainGoals";
 import {
   leversFor,
   defaultLeverValues,
@@ -984,7 +984,15 @@ export default function AttainFlow({ onBackToJourney, initialSaveState }: Attain
             )}
 
             {step === "vision" && state.setting && (
-              <StepVision setting={state.setting} selectedGoals={goals} onToggle={handleToggleGoal} />
+              // This consult flow is entirely SettingGoalContent-driven, so it can only offer goals
+              // that have content. Inpatient Capacity is a cell-driven v2-funnel goal with no
+              // SettingGoalContent, so filter it out here (the v2 funnel offers the full matrix).
+              <StepVision
+                setting={state.setting}
+                selectedGoals={goals}
+                onToggle={handleToggleGoal}
+                goals={goalsForSetting(state.setting).filter((g) => !!getContent(state.setting!, g.id))}
+              />
             )}
 
             {step === "scope" && state.setting && (

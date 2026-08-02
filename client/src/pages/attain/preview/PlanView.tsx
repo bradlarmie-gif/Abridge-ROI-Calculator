@@ -5,7 +5,7 @@ import { AttainNumberInput } from "./AttainNumberInput";
 
 /** THROWAWAY. The Plan chapter, rendered from PlanContent (setting x category). */
 
-const fmt$ = (n: number) => (n >= 1_000_000 ? `$${(n / 1_000_000).toFixed(1)}M` : n >= 1000 ? `$${Math.round(n / 1000)}K` : `$${Math.round(n)}`);
+import { fmt$ } from "@/lib/attain/attainFormat";
 const LBL = "text-[10px] font-bold uppercase tracking-[2px] text-[#8C8C8C]";
 const NUMFIELD =
   "w-24 bg-transparent border-0 border-b-2 border-[#E0D9CE] rounded-none px-0 pb-1 font-abridge text-xl text-[#1A1A1A] outline-none transition-colors focus:border-[#EA2C00] placeholder:font-sans placeholder:text-[15px] placeholder:text-[#C4BCB0]";

@@ -6,7 +6,7 @@
  * domain calls, confirmed 2026-07-24.
  */
 
-const fmt$ = (n: number) => (n >= 1_000_000 ? `$${(n / 1_000_000).toFixed(1)}M` : n >= 1000 ? `$${Math.round(n / 1000)}K` : `$${Math.round(n)}`);
+import { fmt$ } from "@/lib/attain/attainFormat";
 const nn = (n: number) => Math.round(n).toLocaleString();
 
 export type EconField = {
@@ -205,7 +205,7 @@ export const ECON_MODELS: Record<string, EconModel> = {
     stanceBands: [15, 25, 35],
     stanceCap: 50,
     capNote: "We cap this at 50 percent. Most discharge delay is placement, consults, and authorization; documentation readiness moves only its share, and never the length of stay itself.",
-    math: (i) => `${nn(i.scope)} hospitalists' discharges × ${i.econ.dischargeDocShare ?? 8}% where the note is the gate × ${i.stancePct}% you can move, at ${fmt$(i.econ.bedTurnValue ?? 300)} per earlier bed turn.`,
+    math: (i) => `Across your ${nn(i.scope)} hospitalists: discharges × ${i.econ.dischargeDocShare ?? 8}% where the note is the gate × ${i.stancePct}% you can move, at ${fmt$(i.econ.bedTurnValue ?? 300)} per earlier bed turn.`,
   },
 
   // ---- Nursing ----

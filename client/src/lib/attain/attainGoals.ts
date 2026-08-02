@@ -585,9 +585,33 @@ export const GOAL_CATALOG: Record<GoalId, GoalDef> = {
 export const SETTING_GOAL_MATRIX: Record<AttainSetting, GoalId[]> = {
   outpatient: ["access", "retention", "revenue"],
   ed: ["access", "retention", "revenue"],
-  inpatient: ["revenue", "retention"],
+  // Inpatient's capacity is the discharge-before-noon / earlier-bed-turn play (its
+  // non-financial-adjacent capacity layer). It ships as a fully authored cell in
+  // ATTAIN_MATRIX ("Inpatient Capacity"), so it is offered here too — resolved to the
+  // right cell by the setting-aware `categoryForGoal` below (capacity → "Inpatient
+  // Capacity" for inpatient, "Nursing Capacity" for nursing).
+  inpatient: ["capacity", "revenue", "retention"],
   nursing: ["quality", "retention", "capacity"],
 };
+
+/**
+ * The STABLE `AttainCell.category` key a (setting, goal) resolves to — the single
+ * source of truth for the GoalId→category mapping used by BOTH the live funnel
+ * (AttainFlowV2.cellsFor) and the PDF builder (attainPdfData.buildFromSnapshot),
+ * so the two can never drift. It is SETTING-AWARE because one GoalId ("capacity")
+ * maps to two different cells: inpatient's discharge-capacity cell vs nursing's
+ * overtime cell. Every other goal maps to one stable category across settings.
+ */
+export function categoryForGoal(setting: AttainSetting, goal: GoalId): string {
+  if (goal === "capacity") return setting === "inpatient" ? "Inpatient Capacity" : "Nursing Capacity";
+  const base: Record<Exclude<GoalId, "capacity">, string> = {
+    access: "Patient Access",
+    retention: "Provider Retention",
+    revenue: "Revenue Capture",
+    quality: "Quality & Safety",
+  };
+  return base[goal];
+}
 
 // ────────────────────────────────────────────────────────────────────────
 // CONTENT - per (setting, goal) copy
@@ -1409,6 +1433,11 @@ export function goalsForSetting(setting: AttainSetting): GoalDef[] {
     // nurses aren't "providers" — relabel the retention goal on the Nursing setting (id stays "retention")
     if (setting === "nursing" && goalId === "retention") {
       return { ...g, label: "Nurse Retention", domainSub: "Nurse Wellbeing & Retention" };
+    }
+    // the shared "capacity" goal is Nursing's overtime play by default; on Inpatient it is the
+    // discharge-timing / earlier-bed-turn play, so relabel it (id stays "capacity").
+    if (setting === "inpatient" && goalId === "capacity") {
+      return { ...g, label: "Inpatient Capacity", domainSub: "Discharge Timing & Bed Turns" };
     }
     return g;
   });

@@ -149,6 +149,7 @@ export default function StepScope({ setting, baseline, onChangeBaseline }: StepS
               value={baseline.staffedBeds ?? 0}
               onChange={(v) => onChangeBaseline({ staffedBeds: v })}
               placeholder="e.g., 120"
+              max={10_000}
               help="Beds with active nursing staff, units in scope."
               width="w-32"
             />
@@ -158,6 +159,7 @@ export default function StepScope({ setting, baseline, onChangeBaseline }: StepS
               value={baseline.nursingFtes ?? 0}
               onChange={(v) => onChangeBaseline({ nursingFtes: v })}
               placeholder="e.g., 180"
+              max={100_000}
               help="Nurses whose documentation this plan covers."
               width="w-32"
             />
@@ -167,6 +169,7 @@ export default function StepScope({ setting, baseline, onChangeBaseline }: StepS
               value={baseline.dailyCensus ?? 0}
               onChange={(v) => onChangeBaseline({ dailyCensus: v })}
               placeholder="e.g., 102"
+              max={10_000}
               help="Patients in those beds on a typical day."
               width="w-32"
             />
@@ -190,6 +193,7 @@ export default function StepScope({ setting, baseline, onChangeBaseline }: StepS
               value={baseline.providers ?? 0}
               onChange={(v) => onChangeBaseline({ providers: v })}
               placeholder="e.g., 40"
+              max={50_000}
               help={PROVIDER_HELP[setting]}
               width="w-28"
             />
@@ -199,6 +203,7 @@ export default function StepScope({ setting, baseline, onChangeBaseline }: StepS
               value={baseline.annualEncounters ?? 0}
               onChange={(v) => onChangeBaseline({ annualEncounters: v })}
               placeholder="e.g., 140,000"
+              max={50_000_000}
               help={ENCOUNTER_HELP[setting]}
               warn={inpatientDischargesWarning(setting, baseline)}
               width="w-48"

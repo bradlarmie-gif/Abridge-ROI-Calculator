@@ -18,7 +18,7 @@ const CORAL = "#EA2C00";
 // number re-weights to whichever lines they pick.
 const SPEC_MARGIN: Record<string, number> = { primary: 150, cardiology: 280, ortho: 350, behavioral: 110, other: 180 };
 const DEFAULT_MARGIN = 210;
-const fmt$ = (n: number) => (n >= 1_000_000 ? `$${(n / 1_000_000).toFixed(1)}M` : n >= 1000 ? `$${Math.round(n / 1000)}K` : `$${Math.round(n)}`);
+import { fmt$ } from "@/lib/attain/attainFormat";
 const fmtN = (n: number) => Math.round(n).toLocaleString();
 
 const LBL = "text-[10px] font-semibold uppercase tracking-[1.8px] text-[#8C8C8C]";

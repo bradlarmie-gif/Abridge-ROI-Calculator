@@ -1,16 +1,22 @@
 import { Check } from "lucide-react";
 import { motion } from "framer-motion";
 import { goalsForSetting, getContent } from "@/lib/attain/attainGoals";
+import type { GoalDef } from "@/lib/attain/attainTypes";
 import type { AttainSetting, GoalId } from "@/lib/attain/attainTypes";
 
 interface StepVisionProps {
   setting: AttainSetting;
   selectedGoals: GoalId[];
   onToggle: (goal: GoalId) => void;
+  /** The goals to offer. Defaults to every goal the setting matrix defines. The
+   * older CONTENT-driven consult flow (AttainFlow) passes a filtered subset —
+   * only goals it has full SettingGoalContent for — so it never offers a goal
+   * (e.g. Inpatient Capacity) that only the cell-driven v2 funnel can render. */
+  goals?: GoalDef[];
 }
 
-export default function StepVision({ setting, selectedGoals, onToggle }: StepVisionProps) {
-  const goals = goalsForSetting(setting);
+export default function StepVision({ setting, selectedGoals, onToggle, goals: goalsOverride }: StepVisionProps) {
+  const goals = goalsOverride ?? goalsForSetting(setting);
 
   return (
     <div>

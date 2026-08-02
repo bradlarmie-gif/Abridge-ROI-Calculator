@@ -88,6 +88,7 @@ export type AlignContent = {
   outcomesHelper: string;
   outcomes: AlignOutcome[];
   segments?: {
+    kicker?: string;          // section eyebrow over the segments question; defaults to "The specialties" (fits Outpatient). ED = "The zone or shift", Nursing = "The units".
     prompt: string;
     helper: string;
     allLabel: string;         // "Across all lines"

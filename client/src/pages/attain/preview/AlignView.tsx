@@ -6,8 +6,13 @@ import { AttainNumberInput } from "./AttainNumberInput";
 
 /** THROWAWAY. The Align chapter, rendered from AlignContent (setting x category). */
 
-const fmt$ = (n: number) => (n >= 1_000_000 ? `$${(n / 1_000_000).toFixed(1)}M` : n >= 1000 ? `$${Math.round(n / 1000)}K` : `$${Math.round(n)}`);
+import { fmt$ } from "@/lib/attain/attainFormat";
 const fmtN = (n: number) => Math.round(n).toLocaleString();
+// A generous, universal sane ceiling on any Align economics / discovery number input. No per-unit
+// healthcare economic value (margin, DRG base, replacement cost, OT rate, claim value) or realistic
+// count legitimately reaches this, so it only ever trips an implausible fat-finger (the audit's
+// "$99,999,999 margin/visit" → "$172800.0M" slop), never a real entry.
+const ECON_MAX = 10_000_000;
 const num = (s: string) => { const n = parseFloat((s || "").replace(/[^0-9.]/g, "")); return Number.isFinite(n) ? n : 0; };
 
 const LBL = "text-[10px] font-semibold uppercase tracking-[1.8px] text-[#8C8C8C]";
@@ -153,7 +158,7 @@ export default function AlignView({ c, settingLabel, categoryLabel, categoryKey,
       <p className={`${LBL} mb-1.5`}>{f.label}</p>
       <div className="flex items-baseline gap-1">
         {f.prefix && <span className="font-abridge text-2xl text-[#8C8C8C]">{f.prefix}</span>}
-        <AttainNumberInput value={inputs.econ[f.key] ?? ""} onChange={(raw) => setEcon(f.key, raw)} placeholder={f.placeholder} className={NUMFIELD} />
+        <AttainNumberInput value={inputs.econ[f.key] ?? ""} onChange={(raw) => setEcon(f.key, raw)} placeholder={f.placeholder} className={NUMFIELD} max={ECON_MAX} />
         {f.suffix && <span className="text-[15px] text-[#8C8C8C]">{f.suffix}</span>}
       </div>
       {f.hint && <p className="text-[12px] text-[#8C8C8C] mt-1.5">{f.hint}</p>}
@@ -165,7 +170,7 @@ export default function AlignView({ c, settingLabel, categoryLabel, categoryKey,
       <p className={`${LBL} mb-1`}>{a.label}</p>
       <div className="flex items-baseline gap-1">
         {a.prefix && <span className="text-[16px] text-[#8C8C8C]">{a.prefix}</span>}
-        <AttainNumberInput value={inputs.econ[a.key] ?? ""} onChange={(raw) => setEcon(a.key, raw)} onBlur={() => { if (!(inputs.econ[a.key] ?? "").trim()) setEcon(a.key, a.default); }} className="w-24 bg-transparent border-0 border-b-2 border-[#E0D9CE] rounded-none px-0 pb-0.5 font-abridge text-[17px] text-[#1A1A1A] outline-none transition-colors focus:border-[#EA2C00]" />
+        <AttainNumberInput value={inputs.econ[a.key] ?? ""} onChange={(raw) => setEcon(a.key, raw)} onBlur={() => { if (!(inputs.econ[a.key] ?? "").trim()) setEcon(a.key, a.default); }} className="w-24 bg-transparent border-0 border-b-2 border-[#E0D9CE] rounded-none px-0 pb-0.5 font-abridge text-[17px] text-[#1A1A1A] outline-none transition-colors focus:border-[#EA2C00]" max={ECON_MAX} />
         {a.suffix && <span className="text-[13px] text-[#8C8C8C]">{a.suffix}</span>}
       </div>
     </div>
@@ -228,7 +233,7 @@ export default function AlignView({ c, settingLabel, categoryLabel, categoryKey,
             <SectionHead n={++qn} kicker={beat.kicker} title={beat.prompt} />
             <p className={helperCls}>{beat.helper}</p>
             <div className="flex flex-wrap items-baseline gap-x-3 gap-y-2 mb-2">
-              <AttainNumberInput value={inputs.econ[beat.id] ?? ""} onChange={(raw) => setEcon(beat.id, raw)} placeholder={beat.placeholder} className={NUMFIELD} />
+              <AttainNumberInput value={inputs.econ[beat.id] ?? ""} onChange={(raw) => setEcon(beat.id, raw)} placeholder={beat.placeholder} className={NUMFIELD} max={ECON_MAX} />
               <span className="text-[14px] text-[#8C8C8C]">{beat.unit}</span>
             </div>
             <p className="text-[12px] text-[#8C8C8C] mb-12">{beat.label}</p>
@@ -352,7 +357,7 @@ export default function AlignView({ c, settingLabel, categoryLabel, categoryKey,
       {/* Q — segments */}
       {c.segments && (
         <>
-          <SectionHead n={++qn} kicker="The specialties" title={c.segments.prompt} />
+          <SectionHead n={++qn} kicker={c.segments.kicker ?? "The specialties"} title={c.segments.prompt} />
           <p className="text-[14px] text-[#6B6B6B] leading-relaxed mb-3 max-w-[600px]">{c.segments.helper}</p>
           <div className="flex justify-end mb-1">
             <button type="button" onClick={setAllSegs} className="text-[12px] font-semibold text-[#EA2C00] hover:underline">{allSegs ? "Clear all" : c.segments.allLabel}</button>
@@ -388,7 +393,7 @@ export default function AlignView({ c, settingLabel, categoryLabel, categoryKey,
                 <p className={`${LBL} mb-1.5`}>{f.label}</p>
                 <div className="flex items-baseline gap-1">
                   {f.prefix && <span className="font-abridge text-2xl text-[#8C8C8C]">{f.prefix}</span>}
-                  <AttainNumberInput value={inputs.econ[f.key] ?? ""} onChange={(raw) => setEcon(f.key, raw)} placeholder={f.placeholder} className={NUMFIELD} />
+                  <AttainNumberInput value={inputs.econ[f.key] ?? ""} onChange={(raw) => setEcon(f.key, raw)} placeholder={f.placeholder} className={NUMFIELD} max={ECON_MAX} />
                   {f.suffix && <span className="text-[15px] text-[#8C8C8C]">{f.suffix}</span>}
                 </div>
               </div>

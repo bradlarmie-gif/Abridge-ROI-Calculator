@@ -7,7 +7,7 @@ import type { AttainCell } from "./attainContent";
  * got it (attainment = share of the promise realized, the handoff to Progress).
  */
 
-const fmt$ = (n: number) => (n >= 1_000_000 ? `$${(n / 1_000_000).toFixed(1)}M` : n >= 1000 ? `$${Math.round(n / 1000)}K` : `$${Math.round(n)}`);
+import { fmt$ } from "@/lib/attain/attainFormat";
 const LBL = "text-[10px] font-bold uppercase tracking-[2px] text-[#8C8C8C]";
 
 export default function StrategyView({ cell, committed = [] }: { cell: AttainCell; committed?: { title: string; chosen: string[] }[] }) {

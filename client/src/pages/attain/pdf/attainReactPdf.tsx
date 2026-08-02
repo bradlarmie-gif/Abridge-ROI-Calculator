@@ -24,6 +24,7 @@ import manropeRegular from "../../../assets/fonts/manrope-regular.ttf";
 import manropeBold from "../../../assets/fonts/manrope-bold.ttf";
 import { buildFromSnapshot, type PlanCat } from "./attainPdfData";
 import { type PdfData } from "./AttainPdfPage1";
+import { fmt$ } from "@/lib/attain/attainFormat";
 import type { AttainSnapshot } from "../attainStorage";
 
 // Register the two brand faces explicitly (Manrope carries the → / · glyphs the
@@ -47,7 +48,6 @@ const C = {
 
 const CW = 504; // content width = 612 (LETTER) - 54 * 2
 
-const fmt$ = (n: number) => (n >= 1_000_000 ? `$${(n / 1_000_000).toFixed(1)}M` : n >= 1000 ? `$${Math.round(n / 1000)}K` : `$${Math.round(n)}`);
 const clampPct = (n: number) => `${Math.max(0, Math.min(100, Math.round(n)))}%`;
 
 const s = StyleSheet.create({
@@ -122,6 +122,13 @@ const s = StyleSheet.create({
   bandBody: { fontSize: 10, color: "rgba(255,255,255,0.85)", lineHeight: 1.45, maxWidth: 340 },
   bandBigN: { fontFamily: "Abridge", fontSize: 30, color: C.coral, lineHeight: 1 },
   bandBigK: { fontSize: 8, letterSpacing: 1.5, textTransform: "uppercase", color: "rgba(255,255,255,0.45)", marginTop: 4 },
+  // Review scoreboard (once quarterly reviews are logged)
+  bandBigPct: { fontFamily: "Abridge", fontSize: 40, color: C.coral, lineHeight: 1 },
+  bandRealized: { fontSize: 10, color: "rgba(255,255,255,0.8)", marginTop: 10, lineHeight: 1.4 },
+  bandRealizedN: { fontFamily: "Abridge", fontSize: 14, color: C.white },
+  bandRule: { height: 1, backgroundColor: "rgba(255,255,255,0.1)", marginTop: 12, marginBottom: 10 },
+  bandRead: { fontSize: 9.5, color: "rgba(255,255,255,0.7)", lineHeight: 1.45 },
+  bandReadLbl: { fontSize: 8, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", color: "rgba(255,255,255,0.45)" },
 
   // Per-category page
   catPageHead: { flexDirection: "row", justifyContent: "space-between", alignItems: "baseline", marginBottom: 6 },
@@ -214,6 +221,8 @@ function Bar({ pct, flat }: { pct: number; flat?: boolean }) {
 function CasePage({ data, categories }: { data: PdfData; categories: PlanCat[] }) {
   const enteredCount = data.categories.filter((c) => c.entered).length;
   const cadence = categories.some((c) => c.cadence.toLowerCase() === "monthly") ? "Monthly" : "Quarterly";
+  const review = data.review; // present once quarterly reviews are logged → live scoreboard, not "0%"
+  const onTable = data.total - (review?.realized ?? 0);
 
   return (
     <Page size="LETTER" style={s.page}>
@@ -233,13 +242,24 @@ function CasePage({ data, categories }: { data: PdfData; categories: PlanCat[] }
           )}
         </View>
         <View style={s.heroRight}>
-          <Text style={s.heroRightN}>
-            {enteredCount}
-            <Text style={{ fontSize: 14, color: C.muted }}>{` of ${data.categories.length}`}</Text>
-          </Text>
-          <Text style={s.heroRightK}>categories in play</Text>
-          <Text style={s.heroRightN}>{cadence}</Text>
-          <Text style={s.heroRightK}>review cadence</Text>
+          {review ? (
+            <>
+              <Text style={[s.heroRightN, { color: C.coral, fontSize: 26 }]}>{`${review.attainmentPct}%`}</Text>
+              <Text style={s.heroRightK}>realized to date</Text>
+              <Text style={s.heroRightN}>{review.label}</Text>
+              <Text style={s.heroRightK}>latest review</Text>
+            </>
+          ) : (
+            <>
+              <Text style={s.heroRightN}>
+                {enteredCount}
+                <Text style={{ fontSize: 14, color: C.muted }}>{` of ${data.categories.length}`}</Text>
+              </Text>
+              <Text style={s.heroRightK}>categories in play</Text>
+              <Text style={s.heroRightN}>{cadence}</Text>
+              <Text style={s.heroRightK}>review cadence</Text>
+            </>
+          )}
         </View>
       </View>
       <Text style={[s.lead, { marginTop: 10 }]}>
@@ -253,15 +273,18 @@ function CasePage({ data, categories }: { data: PdfData; categories: PlanCat[] }
         <View style={s.colWide}>
           <Text style={[s.eyebrow, { marginBottom: 8 }]}>Across your categories</Text>
           {data.categories.map((c) => {
-            const pct = data.total > 0 ? (c.value / data.total) * 100 : 0;
+            // In review mode a bar shows realized-within-promise; at kickoff it shows the category's
+            // share of the total. Un-entered categories stay flat teasers either way.
+            const attained = c.value > 0 ? ((c.realized ?? 0) / c.value) * 100 : 0;
+            const pct = review ? attained : data.total > 0 ? (c.value / data.total) * 100 : 0;
             return (
               <View key={c.name} style={s.catRow} wrap={false}>
                 <View style={s.catHead}>
                   <Text style={c.entered ? s.catName : s.catNameOff}>{c.name}</Text>
                   {c.entered ? (
                     <Text style={s.catVal}>
-                      {fmt$(c.value)}
-                      <Text style={s.catValUnit}> / yr</Text>
+                      {review ? fmt$(c.realized ?? 0) : fmt$(c.value)}
+                      <Text style={s.catValUnit}>{review ? " realized" : " / yr"}</Text>
                     </Text>
                   ) : (
                     <Text style={s.catOff}>Not in this plan</Text>
@@ -269,7 +292,11 @@ function CasePage({ data, categories }: { data: PdfData; categories: PlanCat[] }
                 </View>
                 <Bar pct={pct} flat={!c.entered} />
                 <Text style={c.entered ? s.catNote : s.opensOff}>
-                  {c.entered ? c.note : "Available to turn on in a later review."}
+                  {c.entered
+                    ? review
+                      ? `${Math.round(attained)}% of the ${fmt$(c.value)}/yr promise`
+                      : c.note
+                    : "Available to turn on in a later review."}
                 </Text>
               </View>
             );
@@ -315,20 +342,49 @@ function CasePage({ data, categories }: { data: PdfData; categories: PlanCat[] }
         ))}
       </View>
 
-      {/* Scoreboard band */}
+      {/* Scoreboard band — kickoff: the promise-to-come. review: the live scoreboard. */}
       <View style={{ marginTop: 14 }} wrap={false}>
-        <View style={s.band}>
-          <Text style={s.bandLabel}>From here, the scoreboard</Text>
-          <View style={s.bandRow}>
-            <Text style={s.bandBody}>
-              Measurement begins at go-live. Every review fills the plan with what you have realized against the promise, and shows the gap in full.
-            </Text>
-            <View style={{ alignItems: "flex-end", flexShrink: 0 }}>
-              <Text style={s.bandBigN}>0%</Text>
-              <Text style={s.bandBigK}>realized to date</Text>
+        {review ? (
+          <View style={s.band}>
+            <Text style={s.bandLabel}>{`Attainment, all categories · ${review.label}`}</Text>
+            <View style={s.bandRow}>
+              <View style={{ flexShrink: 1 }}>
+                <Text>
+                  <Text style={s.bandBigPct}>{`${review.attainmentPct}%`}</Text>
+                  <Text style={{ fontSize: 11, color: "rgba(255,255,255,0.5)" }}>{` of the ${fmt$(data.total)}/yr promise`}</Text>
+                </Text>
+                <Text style={s.bandRealized}>
+                  <Text style={s.bandRealizedN}>{fmt$(review.realized)}</Text>
+                  {" realized · "}
+                  <Text style={s.bandRealizedN}>{fmt$(onTable)}</Text>
+                  {" still on the table"}
+                </Text>
+              </View>
+            </View>
+            {review.read ? (
+              <>
+                <View style={s.bandRule} />
+                <Text style={s.bandRead}>
+                  <Text style={s.bandReadLbl}>{"The read   "}</Text>
+                  {review.read}
+                </Text>
+              </>
+            ) : null}
+          </View>
+        ) : (
+          <View style={s.band}>
+            <Text style={s.bandLabel}>From here, the scoreboard</Text>
+            <View style={s.bandRow}>
+              <Text style={s.bandBody}>
+                Measurement begins at go-live. Every review fills the plan with what you have realized against the promise, and shows the gap in full.
+              </Text>
+              <View style={{ alignItems: "flex-end", flexShrink: 0 }}>
+                <Text style={s.bandBigN}>0%</Text>
+                <Text style={s.bandBigK}>realized to date</Text>
+              </View>
             </View>
           </View>
-        </View>
+        )}
       </View>
 
       <Footer data={data} />

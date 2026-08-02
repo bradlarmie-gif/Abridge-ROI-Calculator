@@ -10,7 +10,7 @@ import type { AttainCell, MetricDef } from "./attainContent";
  * a later add; here the climb shows this review against the full promise.
  */
 
-const fmt$ = (n: number) => (n >= 1_000_000 ? `$${(n / 1_000_000).toFixed(1)}M` : n >= 1000 ? `$${Math.round(n / 1000)}K` : `$${Math.round(n)}`);
+import { fmt$ } from "@/lib/attain/attainFormat";
 const LBL = "text-[10px] font-bold uppercase tracking-[2px] text-[#8C8C8C]";
 const num = (s: string) => { const n = parseFloat((s || "").replace(/[^0-9.]/g, "")); return Number.isFinite(n) ? n : NaN; };
 const CURFIELD = "w-16 bg-transparent border-0 border-b-2 border-[#E0D9CE] rounded-none px-0 pb-0.5 text-center font-abridge text-[16px] outline-none transition-colors focus:border-[#EA2C00] placeholder:font-sans placeholder:text-[14px] placeholder:text-[#C4BCB0]";

@@ -18,7 +18,7 @@ function commafy(raw: string): string {
 }
 
 export function AttainNumberInput({
-  value, onChange, onBlur, className, placeholder, style,
+  value, onChange, onBlur, className, placeholder, style, max,
 }: {
   value: string; // the raw stored string (digits, optional dot — no commas)
   onChange: (raw: string) => void;
@@ -26,6 +26,9 @@ export function AttainNumberInput({
   className?: string;
   placeholder?: string;
   style?: React.CSSProperties;
+  /** Optional sane ceiling. A value above it is clamped to it on entry, so an
+   * implausible fat-finger can never flow into the engine or a scoreboard. */
+  max?: number;
 }) {
   const ref = useRef<HTMLInputElement>(null);
   const display = commafy(value);
@@ -33,7 +36,12 @@ export function AttainNumberInput({
   const handle = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value;
     const cursor = e.target.selectionStart ?? raw.length;
-    const cleaned = raw.replace(/[^\d.]/g, "");
+    let cleaned = raw.replace(/[^\d.]/g, "");
+    // Clamp to the ceiling (only when a full number is parseable, so mid-typing a decimal is fine).
+    if (max != null && cleaned !== "" && cleaned !== ".") {
+      const n = parseFloat(cleaned);
+      if (Number.isFinite(n) && n > max) cleaned = String(max);
+    }
     onChange(cleaned);
     const formatted = commafy(cleaned);
     const digitsBefore = raw.slice(0, cursor).replace(/[^\d.]/g, "").length;
@@ -46,7 +54,7 @@ export function AttainNumberInput({
     requestAnimationFrame(() => {
       if (ref.current && document.activeElement === ref.current) ref.current.setSelectionRange(pos, pos);
     });
-  }, [onChange]);
+  }, [onChange, max]);
 
   return (
     <input ref={ref} inputMode="decimal" value={display} onChange={handle} onBlur={onBlur} placeholder={placeholder} className={className} style={style} />

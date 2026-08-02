@@ -9,8 +9,13 @@ import { SettingStep } from "./preview/AttainFunnel";
 import { AttainExperience, type ExperienceSlice } from "./preview/MultiCategoryPreview";
 import { ATTAIN_MATRIX } from "./preview/attainCells";
 import { loadPlanByName, saveSnapshot, clearSnapshot, type AttainSnapshot } from "./attainStorage";
+import { categoryForGoal } from "@/lib/attain/attainGoals";
 import type { AttainSetting, GoalId } from "@/lib/attain/attainTypes";
 import type { AttainBaseline } from "@/lib/attain/attainLevers";
+
+// Re-exported so the reachability test can assert the funnel and the PDF builder
+// resolve GoalId→category through the exact same source of truth (no drift).
+export { categoryForGoal };
 
 /**
  * THROWAWAY graft target (?attainv2=1). Real funnel + header, then the editorial
@@ -20,11 +25,13 @@ import type { AttainBaseline } from "@/lib/attain/attainLevers";
  */
 
 const SETTING_LABEL: Record<AttainSetting, string> = { outpatient: "Outpatient", ed: "ED", inpatient: "Inpatient", nursing: "Nursing" };
-const GOAL_CATEGORY: Record<GoalId, string> = { access: "Patient Access", retention: "Provider Retention", revenue: "Revenue Capture", quality: "Quality & Safety", capacity: "Nursing Capacity" };
 
 function cellsFor(setting: AttainSetting, goals: GoalId[]) {
   const label = SETTING_LABEL[setting];
-  return goals.map((g) => ATTAIN_MATRIX.find((c) => c.setting === label && c.category === GOAL_CATEGORY[g])).filter(Boolean) as typeof ATTAIN_MATRIX;
+  // Setting-aware resolution: capacity → "Inpatient Capacity" on inpatient, "Nursing Capacity" on
+  // nursing, etc. (see attainGoals.categoryForGoal). A hardcoded map here is what orphaned the
+  // Inpatient Capacity cell before — no goal could ever resolve to it.
+  return goals.map((g) => ATTAIN_MATRIX.find((c) => c.setting === label && c.category === categoryForGoal(setting, g))).filter(Boolean) as typeof ATTAIN_MATRIX;
 }
 
 type Phase = "partner" | "setting" | "vision" | "scope" | "experience";

@@ -301,12 +301,15 @@ export default function AttainPdf() {
   const live = snap ? buildFromSnapshot(snap) : null;
   const caseData: PdfData = live?.data ?? CASE;
   const planCats: PlanCat[] = live?.categories ?? PLAN;
+  // A live plan with logged reviews carries a `review`; render the live scoreboard, not the frozen
+  // "0% realized" kickoff page. With no live plan, honor the ?attainpdf=review query on the sample.
+  const mode: PdfMode = caseData.review ? "review" : MODE;
   let page = 1; // page 1 = the case
   return (
     <div className="bg-white">
       <style>{`.pdf-page:last-child { break-after: auto; }`}</style>
       <Cover data={caseData} />
-      <AttainPdfPage1 data={caseData} mode={MODE} />
+      <AttainPdfPage1 data={caseData} mode={mode} />
       {planCats.map((c, i) => <CategoryPage key={c.name} c={c} idx={i + 1} total={planCats.length} page={(page += 1)} data={caseData} />)}
     </div>
   );
