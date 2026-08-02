@@ -133,7 +133,6 @@ function RunningHeader({ org }: { org: string }): JSX.Element {
         </div>
         <div style={{ textAlign: "right" }}>
           <div className="font-abridge" style={{ fontSize: 17 }}>{org}</div>
-          <div style={{ fontSize: 12, color: C.faint }}>Tech consolidation</div>
         </div>
       </div>
       <div style={{ ...sRule, marginTop: 14 }} />
@@ -284,7 +283,7 @@ function StackPage({ data }: { data: AppRatPdfData }): JSX.Element {
   const totalStays = rows.reduce((a, i) => a + itemStays(i), 0);
   const overallPct = totalSpend > 0 ? Math.round((totalFreed / totalSpend) * 100) : 0;
   const cols: [number, CSSProperties["textAlign"]][] = [[2.0, "left"], [1.7, "left"], [1.25, "right"], [0.8, "right"], [1.2, "right"], [1.2, "right"], [1.05, "right"]];
-  const th = ["Vendor", "Capability", "Annual spend", "Cov.", "Freed", "Stays", "Renewal"];
+  const th = ["Vendor", "Capability", "Annual spend", "Folds %", "Freed", "Stays", "Renewal"];
   return (
     <Page>
       <RunningHeader org={data.orgName} />
@@ -654,8 +653,9 @@ function MoatPage({ data }: { data: AppRatPdfData }): JSX.Element {
       <div style={{ marginTop: 26, background: C.card, border: `1px solid ${C.hair}`, borderRadius: 12, padding: "18px 22px" }}>
         <div style={sLbl}>The moat</div>
         <div className="font-abridge" style={{ fontSize: 17, color: C.ink, lineHeight: 1.3, marginTop: 8 }}>
-          Price is a move any vendor can match in a year. Working from the conversation itself is not.{" "}
-          <span style={{ color: C.coral }}>That is why the stack folds onto Abridge, and not onto a tool that does one step.</span>
+          Price is a move any vendor can match in a year. Working from{" "}
+          <span style={{ color: C.coral }}>the conversation itself</span> is not. That is why the stack folds onto
+          Abridge, and not onto a tool that does one step.
         </div>
       </div>
       <Footer note="A working rationale, not a committed capability set. Coverage expands over time." num="03" />

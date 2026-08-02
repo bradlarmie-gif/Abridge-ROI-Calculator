@@ -1618,7 +1618,7 @@ export const SAMPLE_EXPLORE_PDF_DATA: ExplorePDFData = {
           id: "providerWellbeing",
           label: "Provider wellbeing",
           shortDescription:
-            "A lighter after-hours load prevents the burnout-driven share of turnover, valued at replacement cost.",
+            "A lighter after-hours load reduces the burnout-driven share of turnover, valued at replacement cost.",
           visibility: "quantified",
           value: 180000,
           isIncluded: true,

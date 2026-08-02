@@ -93,7 +93,7 @@ const PLAN: PlanCat[] = [
     assumptions: [
       { label: "Annual turnover", value: "6%" },
       { label: "Burnout-driven share", value: "40%" },
-      { label: "Prevented by Abridge", value: "30%" },
+      { label: "Expected to prevent", value: "30%" },
       { label: "Cost to replace one", value: "$400K" },
     ],
     honesty: "Turnover has many causes. We only count the burnout-driven share a lighter day can move, and only the fraction of that you expect to prevent.",
