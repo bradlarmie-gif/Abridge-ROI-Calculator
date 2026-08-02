@@ -57,7 +57,8 @@ export interface PfSetting {
   encounters: number; // annual, at full scale
   goLiveMonth: number;
   atScaleValue: number;
-  encounterLabel: string; // "encounters / yr" | "ED visits / yr"
+  encounterLabel: string; // "encounters / yr" | "ED visits / yr" | "discharges / yr" | "patient-days / yr"
+  providerWord?: string;  // "providers" | "nurses"
   narrative: string;
   domains: PfDomainGroup[];
   ramp: PfRampYear[];
@@ -418,7 +419,7 @@ function DealCard({ s }: { s: PfSetting }): JSX.Element {
         </span>
       </div>
       <div style={{ fontSize: 11, color: "var(--faint)", marginTop: 5 }}>
-        {s.pilotProviders} → {s.fullScaleProviders} providers · ≈{fmtCount(s.encounters)} {s.encounterLabel} · go-live month {s.goLiveMonth}
+        {s.pilotProviders} → {s.fullScaleProviders} {s.providerWord ?? "providers"} · ≈{fmtCount(s.encounters)} {s.encounterLabel} · go-live month {s.goLiveMonth}
       </div>
       <div className="mini">
         <div style={{ width: `${(rev / sum) * 100}%`, background: "var(--rev)" }} />
@@ -827,7 +828,7 @@ function SettingHeader({ s }: { s: PfSetting }): JSX.Element {
             <span className="abr" style={{ fontSize: 28 }}>{s.label}</span>
           </div>
           <div style={{ fontSize: 12, color: "var(--faint)", marginTop: 5 }}>
-            {s.pilotProviders} → {s.fullScaleProviders} providers · ≈{fmtCount(s.encounters)} {s.encounterLabel} · go-live month {s.goLiveMonth} · run-rate at full utilization
+            {s.pilotProviders} → {s.fullScaleProviders} {s.providerWord ?? "providers"} · ≈{fmtCount(s.encounters)} {s.encounterLabel} · go-live month {s.goLiveMonth} · run-rate at full utilization
           </div>
         </div>
         <div style={{ textAlign: "right" }}>

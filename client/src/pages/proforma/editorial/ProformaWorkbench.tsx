@@ -9,7 +9,7 @@ import type {
   ExploreQuadrant,
   CostOffset,
 } from "../proformaTypes";
-import { DEFAULT_PROFORMA_CONFIG } from "../proformaTypes";
+import { DEFAULT_PROFORMA_CONFIG, settingVocab } from "../proformaTypes";
 import { DEFAULT_EXPLORE_STATE } from "@/pages/explore";
 import {
   buildMonthlyCashFlows,
@@ -527,6 +527,7 @@ function SettingCard({
   // Real, reconciling per-driver formulas (the same math Explore shows), keyed
   // by proforma driver id. Read-only here; clinical inputs are edited in Explore.
   const driverFormulas = useMemo(() => computeSettingDriverFormulas(setting), [setting]);
+  const vocab = settingVocab(setting.careSetting);
   // The deal term can run to 5 years; the rollout ramps to full scale over its
   // first 3 years (the engine's model), then HOLDS at full scale for the rest of
   // the term. So there are up to 3 editable anchors, and years 4-5 are shown as
@@ -654,14 +655,14 @@ function SettingCard({
         <div style={{ flex: 1 }}>
           <div className="font-abridge" style={{ fontSize: 23, color: T.ink }}>{setting.label}</div>
           <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.05em", textTransform: "uppercase", color: T.faint, marginTop: 2 }}>
-            {setting.careSetting === "ed" ? "Emergency department" : "Primary care & specialty"} · go-live month {setting.goLiveMonth}
+            {vocab.subtitle} · go-live month {setting.goLiveMonth}
           </div>
         </div>
         {!expanded && (
           <div style={{ fontSize: 12.5, color: T.faint, textAlign: "right", marginRight: 8, lineHeight: 1.4 }}>
             {pricingLabel[pricingModel]} · {fmt(solo.atScale)}/yr
             <br />
-            {providersFor("year1")} → {providersFor(yearKeys[yearKeys.length - 1])} providers · {utilFor("year1")} → {utilFor(yearKeys[yearKeys.length - 1])}% adoption
+            {providersFor("year1")} → {providersFor(yearKeys[yearKeys.length - 1])} {vocab.providerWord} · {utilFor("year1")} → {utilFor(yearKeys[yearKeys.length - 1])}% adoption
           </div>
         )}
         <div style={{ textAlign: "right" }}>
@@ -714,7 +715,7 @@ function SettingCard({
                     {rampMode === "year" ? (
                       <>
                         <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 10 }}>
-                          <span style={{ width: 96, fontSize: 11, fontWeight: 800, letterSpacing: "0.05em", textTransform: "uppercase", color: T.faint }}>Providers</span>
+                          <span style={{ width: 96, fontSize: 11, fontWeight: 800, letterSpacing: "0.05em", textTransform: "uppercase", color: T.faint }}>{vocab.providerWord}</span>
                           {yearKeys.map((k, i) => (
                             <NumCell key={k} value={providersFor(k)} onChange={(n) => setYearProviders(k, n)} kLabel={`Year ${i + 1}`} />
                           ))}
@@ -790,14 +791,14 @@ function SettingCard({
                     perYearPricing ? (
                       <>
                         {yearKeys.map((k, i) => (
-                          <NumCell key={k} value={Math.round(priceFor(k) * 12)} onChange={(n) => setYearPricing(k, n)} kLabel={`Y${i + 1} / provider`} prefix="$" format={commaFmt} />
+                          <NumCell key={k} value={Math.round(priceFor(k) * 12)} onChange={(n) => setYearPricing(k, n)} kLabel={`Y${i + 1} / ${vocab.providerSingular}`} prefix="$" format={commaFmt} />
                         ))}
                         {Array.from({ length: heldYears }).map((_, i) => (
-                          <HeldCell key={`hpr${i}`} value={Math.round(priceFor("year3") * 12)} prefix="$" kLabel={`Y${yearKeys.length + i + 1} / provider`} />
+                          <HeldCell key={`hpr${i}`} value={Math.round(priceFor("year3") * 12)} prefix="$" kLabel={`Y${yearKeys.length + i + 1} / ${vocab.providerSingular}`} />
                         ))}
                       </>
                     ) : (
-                      <NumCell value={Math.round(setting.costPerUnit * 12)} onChange={(n) => onUpdateSetting({ costPerUnit: n / 12 })} kLabel="Per provider / yr" prefix="$" format={commaFmt} />
+                      <NumCell value={Math.round(setting.costPerUnit * 12)} onChange={(n) => onUpdateSetting({ costPerUnit: n / 12 })} kLabel={`Per ${vocab.providerSingular} / yr`} prefix="$" format={commaFmt} />
                     )
                   ) : pricingModel === "annualFlat" ? (
                     <NumCell value={setting.annualLicenseFee || 0} onChange={(n) => onUpdateSetting({ annualLicenseFee: n })} kLabel="Annual license fee" prefix="$" format={commaFmt} />

@@ -3,6 +3,32 @@ import { type ExploreState } from "../explore/ExploreFlow";
 export type DriverOnset = "immediate" | "delayed" | "phased" | "longTerm" | "custom";
 export type ExploreQuadrant = "Capacity" | "Workforce" | "Revenue" | "Quality";
 
+/**
+ * Per-setting vocabulary — one source of truth for the chrome (subtitles,
+ * provider/encounter nouns) so a nursing deal never reads "providers" /
+ * "encounters" and inpatient never reads "Primary care & specialty". The
+ * clinical MATH already swaps nurse/physician in the engine; this is the copy.
+ */
+export interface SettingVocab {
+  providerWord: string;   // plural: "providers" | "nurses"
+  providerSingular: string;
+  encounterNoun: string;  // "encounters" | "ED visits" | "discharges" | "patient-days"
+  encounterPerYr: string; // "encounters / yr" ...
+  subtitle: string;       // deal-card subtitle
+}
+export function settingVocab(careSetting: string | null | undefined): SettingVocab {
+  switch (careSetting) {
+    case "ed":
+      return { providerWord: "providers", providerSingular: "provider", encounterNoun: "ED visits", encounterPerYr: "ED visits / yr", subtitle: "Emergency department" };
+    case "inpatient":
+      return { providerWord: "providers", providerSingular: "provider", encounterNoun: "discharges", encounterPerYr: "discharges / yr", subtitle: "Hospital medicine" };
+    case "nursing":
+      return { providerWord: "nurses", providerSingular: "nurse", encounterNoun: "patient-days", encounterPerYr: "patient-days / yr", subtitle: "Inpatient nursing" };
+    default:
+      return { providerWord: "providers", providerSingular: "provider", encounterNoun: "encounters", encounterPerYr: "encounters / yr", subtitle: "Primary care & specialty" };
+  }
+}
+
 export interface ProformaDriver {
   id: string;
   name: string;

@@ -1,4 +1,5 @@
 import type { ProformaSettingSnapshot, ProformaConfig } from "@/pages/proforma/proformaTypes";
+import { settingVocab } from "@/pages/proforma/proformaTypes";
 import {
   buildMonthlyCashFlows,
   calculateProformaSummary,
@@ -75,7 +76,7 @@ const DOMAIN_NORTHSTAR: Record<string, string> = {
 const yearKey = (i: number) => (["year1", "year2", "year3"] as const)[i];
 
 function encounterLabel(careSetting: string): string {
-  return careSetting === "ed" ? "ED visits / yr" : "encounters / yr";
+  return settingVocab(careSetting).encounterPerYr;
 }
 
 /** Clinical monthly net (Revenue+Capacity+Workforce − investment), impl at go-live. */
@@ -152,6 +153,7 @@ export function buildProformaPdfData(
       goLiveMonth: s.goLiveMonth,
       atScaleValue: atScale,
       encounterLabel: encounterLabel(s.careSetting),
+      providerWord: settingVocab(s.careSetting).providerWord,
       narrative: NARRATIVE[s.careSetting] ?? "",
       domains,
       ramp,
@@ -241,13 +243,19 @@ export function buildProformaPdfData(
 
   // ── Milestones ──────────────────────────────────────────────────────────────
   const milestoneNames = ["Foundation", "Scaling", "Maturity"];
+  // Aggregate vocabulary: if every setting is the same care setting use its
+  // words (so an all-nursing deal reads "nurses"/"patient-days"), else generic.
+  const aggVocab = settingVocab(settings.every((s) => s.careSetting === settings[0]?.careSetting) ? settings[0]?.careSetting : null);
+  const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+  const settingsWord = settings.length === 1 ? "the setting" : settings.length === 2 ? "both settings" : `all ${settings.length} settings`;
+
   const milestones = years.map((y, i) => {
     const provs = settings.reduce((a, s) => a + (s.yearlyProviders?.[yearKey(i)] ?? (i === 0 ? s.providerCount : s.fullScaleProviders)), 0);
     return {
       label: `Year ${i + 1} · ${milestoneNames[i] ?? "Year " + (i + 1)}`,
       body: i === termYears - 1
-        ? `${provs} providers · full scale at a ${money(runRateValue)} run-rate.`
-        : `${provs} providers live · both settings ramping toward full adoption.`,
+        ? `${provs} ${aggVocab.providerWord} · full scale at a ${money(runRateValue)} run-rate.`
+        : `${provs} ${aggVocab.providerWord} live · ${settingsWord} ramping toward full adoption.`,
     };
   });
 
@@ -263,8 +271,8 @@ export function buildProformaPdfData(
     runRateValue,
     settings: pfSettings,
     operation: [
-      { label: "Providers at scale", value: String(settings.reduce((a, s) => a + s.fullScaleProviders, 0)) },
-      { label: "Encounters / yr", value: `≈${count(settings.reduce((a, s) => a + s.encounters, 0))}` },
+      { label: `${cap(aggVocab.providerWord)} at scale`, value: String(settings.reduce((a, s) => a + s.fullScaleProviders, 0)) },
+      { label: cap(aggVocab.encounterPerYr), value: `≈${count(settings.reduce((a, s) => a + s.encounters, 0))}` },
       { label: "Care settings", value: String(settings.length) },
       { label: "Utilization at scale", value: `${utilScale}%` },
       { label: "Clinician hrs returned", value: `≈${count(settings.reduce((a, s) => a + (s.totalHoursSaved || 0), 0))}` },

@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { ProformaSettingSnapshot, ProformaConfig } from "../proformaTypes";
+import { settingVocab } from "../proformaTypes";
 import { generateProformaEditorialPDF } from "@/components/proforma/ProformaPDFExport";
 import { computeSettingDriverFormulas } from "@/lib/presentFormulas";
 import {
@@ -60,7 +61,7 @@ function DealSetting({
           <motion.span animate={{ rotate: open ? 0 : -90 }} transition={{ duration: 0.2 }} style={{ color: T.off, fontSize: 11, width: 12, display: "inline-block" }}>▾</motion.span>
           <span style={{ width: 11, height: 11, borderRadius: 3, background: meta.color, flex: "none" }} />
           <span className="font-abridge" style={{ fontSize: 21 }}>{meta.label}</span>
-          <span style={{ fontSize: 12, color: T.faint }}>{meta.providerCount} → {meta.fullScaleProviders} providers · go-live month {meta.goLiveMonth}</span>
+          <span style={{ fontSize: 12, color: T.faint }}>{meta.providerCount} → {meta.fullScaleProviders} {settingVocab(meta.careSetting).providerWord} · go-live month {meta.goLiveMonth}</span>
         </div>
         <span className="font-abridge" style={{ fontSize: 19 }}>{fmt(meta.atScale)}<span style={{ fontSize: 12, color: T.faint }}>/yr</span></span>
       </div>
