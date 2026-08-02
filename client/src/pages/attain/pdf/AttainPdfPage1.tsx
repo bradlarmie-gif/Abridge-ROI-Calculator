@@ -205,30 +205,8 @@ export default function AttainPdfPage1({ data = SAMPLE, mode = "kickoff" }: { da
           </div>
         </div>
 
-        {/* What this opens — the strategic payoffs past the dollar; fills the middle with substance */}
-        <div className="mt-[20px]">
-          <div className="h-px bg-[#EFEAE1] mb-[16px]" />
-          <p className="text-[10.5px] font-bold uppercase tracking-[2.5px] text-[#8C8C8C] mb-[12px]">What this opens, beyond the number</p>
-          <div className="grid grid-cols-3 gap-[30px]">
-            {data.categories.map((c) => (
-              <div key={c.name}>
-                <p className={`font-abridge text-[15px] mb-[9px] ${c.entered ? "text-[#1A1A1A]" : "text-[#C0B7A8]"}`}>{c.name}</p>
-                {c.entered ? (
-                  <ul className="space-y-[7px]">
-                    {(c.opens ?? []).map((o) => (
-                      <li key={o} className="flex gap-[8px] text-[12px] text-[#3A3A3A] leading-snug">
-                        <span className="mt-[6px] h-[4px] w-[4px] rounded-full shrink-0" style={{ backgroundColor: CORAL }} />
-                        <span>{o}</span>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-[12px] text-[#C4BCB0] italic leading-snug">Not part of this plan.</p>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
+        {/* "What this opens" lives in full on the per-category pages; keeping only a
+           preview here duplicated them and overran the page, so it is not repeated. */}
 
         {/* Scoreboard band — kickoff: the promise-to-come. review: the live scoreboard + climb. */}
         {review ? (
