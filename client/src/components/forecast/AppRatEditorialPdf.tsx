@@ -557,31 +557,37 @@ function TimingPage({ data }: { data: AppRatPdfData }): JSX.Element {
 
 // ───────────────────────── Page 5 · Why only Abridge ─────────────────────────
 
+// The note's life, left to right. THEIR tools all cluster in the middle span
+// (capture -> draft), which is exactly where Abridge already works, so they fold
+// down into it; the two ends are where Abridge is expanding.
 function CoverageChain({ items }: { items: AppRatItem[] }): JSX.Element {
   const tools = buildMoatTools(items);
+  const chips = tools.length ? tools.map((t) => t.name) : ["Your capture & draft tools"];
   const stages = ["Pre-charting", "The conversation", "Capture", "Draft note", "Coding", "Quality"];
+  const faded: CSSProperties = { background: "#FBE7DF", border: "1.5px dashed #F0B7A6", display: "flex", alignItems: "center", justifyContent: "center" };
   return (
     <div>
-      {/* Tools that fold in */}
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
-        {(tools.length ? tools.map((t) => t.name) : ["Your capture tools"]).map((name, i) => (
-          <span key={i} style={{ fontSize: 11.5, fontWeight: 700, color: "#6B5E4C", background: C.tile, border: `1px solid ${C.hair}`, borderRadius: 7, padding: "5px 10px" }}>
-            {name} <span style={{ color: C.off, fontWeight: 500 }}>↓ folds in</span>
-          </span>
-        ))}
+      {/* Their tools, sitting over the exact span Abridge covers */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)" }}>
+        <div style={{ gridColumn: "2 / 5", display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 7 }}>
+          {chips.map((n, i) => (
+            <span key={i} style={{ fontSize: 11, fontWeight: 700, color: "#6B5E4C", background: C.tile, border: `1px solid ${C.hair}`, borderRadius: 7, padding: "5px 10px", whiteSpace: "nowrap" }}>{n}</span>
+          ))}
+        </div>
       </div>
-      {/* Coverage band: pre-charting (expanding) · Abridge (coral) · coding/quality (expanding) */}
-      <div style={{ display: "flex", height: 40, borderRadius: 9, overflow: "hidden" }}>
-        <div style={{ flex: 1, border: `1.5px dashed #F0B7A6`, background: "#FBE7DF", borderRadius: "9px 0 0 9px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-          <span style={{ fontSize: 10.5, fontWeight: 700, color: "#B5573C" }}>Pre-charting</span>
-          <span style={{ fontSize: 8.5, color: "#C98A72" }}>expanding</span>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", margin: "6px 0" }}>
+        <div style={{ gridColumn: "2 / 5", textAlign: "center", fontSize: 12, fontWeight: 700, color: C.coral }}>↓ fold onto Abridge</div>
+      </div>
+      {/* Coverage band, aligned to the six stages: coral where Abridge works now, faded where it is expanding */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", height: 44, borderRadius: 9, overflow: "hidden" }}>
+        <div style={{ gridColumn: "1 / 2", ...faded, borderRadius: "9px 0 0 9px" }}>
+          <span style={{ fontSize: 9.5, fontWeight: 700, color: "#B5573C" }}>&larr; expanding</span>
         </div>
-        <div style={{ flex: 3, background: C.coral, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <span style={{ fontSize: 12, fontWeight: 700, color: "#fff" }}>Abridge, from the conversation to the draft note</span>
+        <div style={{ gridColumn: "2 / 5", background: C.coral, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 8px" }}>
+          <span style={{ fontSize: 12, fontWeight: 700, color: "#fff", textAlign: "center" }}>Abridge, from the conversation to the draft note</span>
         </div>
-        <div style={{ flex: 2, border: `1.5px dashed #F0B7A6`, background: "#FBE7DF", borderRadius: "0 9px 9px 0", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-          <span style={{ fontSize: 10.5, fontWeight: 700, color: "#B5573C" }}>Coding · Quality</span>
-          <span style={{ fontSize: 8.5, color: "#C98A72" }}>expanding</span>
+        <div style={{ gridColumn: "5 / 7", ...faded, borderRadius: "0 9px 9px 0" }}>
+          <span style={{ fontSize: 9.5, fontWeight: 700, color: "#B5573C" }}>expanding &rarr;</span>
         </div>
       </div>
       {/* Stage labels aligned under the six columns */}
