@@ -442,7 +442,99 @@ function CoverPage({ data }: { data: ExplorePDFData }): JSX.Element {
   );
 }
 
-// ───────────────────────── Page 2 · 01 The number, grounded ─────────────────────────
+// ───────────────────────── Page 2 · The pitch (overview) ─────────────────────────
+
+// The universal "pitch" page: the report-cover shell (page 1) is followed by
+// this one on every tool. Fixed skeleton — wordmark + tag, coral eyebrow,
+// headline sentence, lead, stat trio, table of contents — filled with THIS
+// tool's own tag, number, stats, and sections.
+function PitchPage({ data }: { data: ExplorePDFData }): JSX.Element {
+  const toc = [
+    { n: "01", t: "The number, grounded" },
+    { n: "02", t: "Where the value comes from" },
+    { n: "03", t: "The investment case" },
+    { n: "04", t: "At full scale" },
+  ];
+  const isNursing = data.careSetting === "nursing";
+  const scope = isNursing
+    ? `${fmtNum(data.nursingStaffedBeds ?? 0)} staffed beds`
+    : `${fmtNum(data.numberOfProviders)} providers and ${fmtNum(data.annualEncounters)} encounters`;
+
+  return (
+    <Page>
+      {/* Top row: wordmark left, tool tag right (matches the pitch across tools) */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <span className="font-abridge" style={{ fontSize: 20, color: C.coral }}>
+          ABRIDGE
+        </span>
+        <span style={sLbl}>Value Model</span>
+      </div>
+
+      {/* Headline block, dropped for editorial whitespace */}
+      <div style={{ marginTop: 128 }}>
+        <div style={sEyebrow}>The value on the table</div>
+        <h2
+          className="font-abridge"
+          style={{ fontSize: 44, lineHeight: 1.06, color: C.ink, margin: "10px 0 0", maxWidth: 660, letterSpacing: "-0.5px" }}
+        >
+          {fmtShort(data.totalAnnualValue)} in value a year, built from your own volume.
+        </h2>
+        <div style={{ ...sLead, marginTop: 16, maxWidth: 600 }}>
+          {data.careSettingLabel}, modeled on {data.clientName}&rsquo;s {scope}. Not a benchmark, and not a
+          projection.
+        </div>
+      </div>
+
+      {/* Hairline + stat trio */}
+      <div style={{ ...sRule, margin: "30px 0 22px" }} />
+      <div style={{ display: "flex", gap: 56 }}>
+        {[
+          { v: fmtShort(data.totalAnnualValue), k: "Annual value", coral: true },
+          { v: fmtShort(data.valuePerProvider), k: isNursing ? "Per bed" : "Per provider", coral: false },
+          { v: data.totalHoursSaved.toLocaleString("en-US"), k: "Clinician hours returned", coral: false },
+        ].map((s, i) => (
+          <div key={i}>
+            <div className="font-abridge" style={{ fontSize: 34, lineHeight: 1, color: s.coral ? C.coral : C.ink }}>
+              {s.v}
+            </div>
+            <div style={{ ...sLbl, marginTop: 7 }}>{s.k}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Table of contents, pinned near the foot */}
+      <div style={{ marginTop: "auto" }}>
+        <div style={{ ...sLbl, marginBottom: 6 }}>Inside this assessment</div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", columnGap: 44 }}>
+          {toc.map((r) => (
+            <div
+              key={r.n}
+              style={{ display: "flex", gap: 14, alignItems: "baseline", padding: "12px 0", borderTop: `1px solid ${C.hair}` }}
+            >
+              <span className="font-abridge" style={{ fontSize: 13, color: C.off }}>
+                {r.n}
+              </span>
+              <span style={{ fontSize: 14, color: C.label }}>{r.t}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Light footer, no section number; the report body starts at 01 */}
+      <div style={{ marginTop: 20 }}>
+        <div style={{ ...sRule, marginBottom: 9 }} />
+        <div style={{ display: "flex", justifyContent: "space-between" }}>
+          <span style={{ fontSize: 10, color: C.faint }}>
+            Prepared for {data.clientName} · {data.date}
+          </span>
+          <span style={sLbl}>Confidential</span>
+        </div>
+      </div>
+    </Page>
+  );
+}
+
+// ───────────────────────── Page 3 · 01 The number, grounded ─────────────────────────
 
 function ValueBar({ label, total, max }: { label: string; total: number; max: number }): JSX.Element {
   const counted = total > 0;
@@ -1443,6 +1535,7 @@ export function ExploreEditorialPdfDocument({ data }: { data: ExplorePDFData }):
     <div className="explore-pdf-root">
       <style>{`@page { size: Letter; margin: 0; } @media print { body { margin: 0; } }`}</style>
       <CoverPage data={data} />
+      <PitchPage data={data} />
       <NumberPage data={data} />
       {buildBreakdownPages(data)}
       <InvestmentPage data={data} />
