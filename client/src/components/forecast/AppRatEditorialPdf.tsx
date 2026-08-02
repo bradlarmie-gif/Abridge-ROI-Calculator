@@ -3,6 +3,7 @@ import abridgeLogoRed from "@assets/abridge-logo-wordmark-red_1769187440253.png"
 import abridgeSymbol from "@assets/abridge-logo-symbol_1774906992195.png";
 import {
   type AppRatItem,
+  type AppRatCategoryId,
   itemRetired,
   itemStays,
   itemDisplayName,
@@ -12,6 +13,53 @@ import {
   timingSummary,
 } from "@/lib/appRationalizationCalc";
 import { buildConsolidationModel } from "@/components/forecast/ArConsolidationView";
+import { buildMoatTools } from "@/components/forecast/ArMoatView";
+
+// Per-capability rationale: what each tool does today, and the capability
+// Abridge can take on. Carried over from the react-pdf export so the HTML PDF
+// keeps the same "why each consolidates" proof.
+const CAPABILITY_PROOF: Record<AppRatCategoryId, { today: string; withAbridge: string }> = {
+  ambientDoc: {
+    today: "An ambient tool listens to the visit and drafts the note.",
+    withAbridge: "Abridge drafts the note from the same conversation, so this capability can consolidate onto it.",
+  },
+  dictation: {
+    today: "Dictation turns the clinician's spoken narration into text they then format.",
+    withAbridge: "Abridge structures the note from the conversation itself, which can take on much of what dictation is used for.",
+  },
+  scribe: {
+    today: "A scribe, in person or virtual, writes the note during or after the visit.",
+    withAbridge: "Abridge produces the draft from the visit, so the scribe workflow can fold onto it.",
+  },
+  transcription: {
+    today: "A transcription service types up dictated audio after the fact.",
+    withAbridge: "Abridge generates structured text from the conversation live, reducing the need for downstream transcription.",
+  },
+  cds: {
+    today: "Clinical decision support answers reference questions at the point of care.",
+    withAbridge: "Abridge surfaces context from the encounter; a knowledge base stays on for lookup, so only part consolidates.",
+  },
+  clinicalEvidence: {
+    today: "Evidence search tools retrieve literature and guidelines on demand.",
+    withAbridge: "Abridge brings encounter context forward; a dedicated search stays on, so only part consolidates.",
+  },
+  preChartRisk: {
+    today: "Pre-charting risk tools prep the chart from prior EMR data before the visit.",
+    withAbridge: "Abridge's pre-charting is expanding toward this step; treat this as a working estimate, not a committed capability.",
+  },
+  inEncounterCdi: {
+    today: "In-encounter CDI prompts for documentation and coding gaps during the visit.",
+    withAbridge: "Abridge's coding and quality coverage is expanding toward this step; treat this as a working estimate.",
+  },
+  postChartCoding: {
+    today: "Post-charting CDI and coding tools review the finished note for codes.",
+    withAbridge: "Abridge's coding coverage is expanding toward this step; treat this as a working estimate.",
+  },
+  custom: {
+    today: "A documentation-adjacent tool you entered.",
+    withAbridge: "Where it overlaps the note Abridge already drafts, that share can consolidate.",
+  },
+};
 
 // ────────────────────────────────────────────────────────────────
 // Editorial "App Rationalization" print-to-PDF document. HTML-print
@@ -147,6 +195,8 @@ function ReportCover({ data }: { data: AppRatPdfData }): JSX.Element {
 function PitchPage({ data }: { data: AppRatPdfData }): JSX.Element {
   const model = buildConsolidationModel(data.items);
   const summary = timingSummary(data.items);
+  const net = computeNet(data.items, data.abridgePrice);
+  const priced = net.abridgePrice > 0;
   const remaining = model.rows.filter((r) => r.stays > 0).length;
   const consolidatedBy = model.freed > 0 ? (summary.planFinishMonths > 0 ? renewalDateLabel(summary.planFinishMonths) : "now") : "n/a";
   const toc = [
@@ -170,6 +220,21 @@ function PitchPage({ data }: { data: AppRatPdfData }): JSX.Element {
           Your documentation stack, priced on the tools and spend you entered. What Abridge can take on comes back; the
           rest stays. Not a commitment, and not a list price.
         </div>
+        {priced && (
+          <div style={{ marginTop: 16, fontSize: 14.5, color: C.label, lineHeight: 1.5, maxWidth: 620 }}>
+            {net.isNetCost ? (
+              <>
+                The <b style={{ color: C.ink }}>{fmtFull(net.abridgePrice)} / yr</b> Abridge price runs{" "}
+                <b style={{ color: C.ink }}>{fmtFull(-net.netSavings)} / yr</b> above what these tools free today.
+              </>
+            ) : (
+              <>
+                Net of the <b style={{ color: C.ink }}>{fmtFull(net.abridgePrice)} / yr</b> Abridge price,{" "}
+                <b style={{ color: C.coral }}>{fmtFull(net.netSavings)} / yr</b> comes back.
+              </>
+            )}
+          </div>
+        )}
       </div>
       <div style={{ ...sRule, margin: "30px 0 22px" }} />
       <div style={{ display: "flex", gap: 56 }}>
@@ -320,14 +385,24 @@ function ConsolidationPage({ data }: { data: AppRatPdfData }): JSX.Element {
   );
 }
 
-// ───────────────────────── Page 5 · When it lands · Why only Abridge ─────────────────────────
+// ───────────────────────── Page 5 · When it lands ─────────────────────────
 
-function TimingMoatPage({ data }: { data: AppRatPdfData }): JSX.Element {
+function TimingPage({ data }: { data: AppRatPdfData }): JSX.Element {
   const summary = timingSummary(data.items);
   const net = computeNet(data.items, data.abridgePrice);
+  const priced = net.abridgePrice > 0;
   const savers = data.items.filter((i) => itemRetired(i) > 0).sort((a, b) => a.sunsetMonths - b.sunsetMonths);
+  // Net-aware: with no Abridge price, freed is the punchline; with a price, the
+  // net (back or cost) is, so it takes the coral.
   const stats = [
-    { v: fmtShort(net.sunset), k: "Freed at full consolidation", coral: true },
+    { v: fmtShort(net.sunset), k: "Freed at full consolidation", coral: !priced },
+    ...(priced
+      ? [{
+          v: (net.isNetCost ? "-" : "") + fmtShort(Math.abs(net.netSavings)),
+          k: net.isNetCost ? "Net cost, after Abridge" : "Net back, after Abridge",
+          coral: !net.isNetCost,
+        }]
+      : []),
     { v: summary.planFinishMonths > 0 ? renewalDateLabel(summary.planFinishMonths) : "now", k: "Fully consolidated", coral: false },
     { v: summary.monthsSooner > 0 ? `${summary.monthsSooner} mo` : "on renewal", k: "Sooner than renewal", coral: false },
   ];
@@ -338,7 +413,7 @@ function TimingMoatPage({ data }: { data: AppRatPdfData }): JSX.Element {
       <h2 className="font-abridge" style={{ fontSize: 27, color: C.ink, marginTop: 7, lineHeight: 1.06 }}>
         The runway, and how fast the spend comes back.
       </h2>
-      <div style={{ display: "flex", gap: 56, marginTop: 22 }}>
+      <div style={{ display: "flex", gap: 48, marginTop: 22, flexWrap: "wrap" }}>
         {stats.map((s, i) => (
           <div key={i}>
             <div className="font-abridge" style={{ fontSize: 28, lineHeight: 1, color: s.coral ? C.coral : C.ink }}>{s.v}</div>
@@ -349,7 +424,7 @@ function TimingMoatPage({ data }: { data: AppRatPdfData }): JSX.Element {
 
       <div style={{ ...sLbl, marginTop: 30, marginBottom: 8 }}>Each tool&rsquo;s sunset</div>
       <div>
-        {savers.map((it, i) => (
+        {savers.map((it) => (
           <div key={it.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "9px 0", borderBottom: `1px solid ${C.soft}` }}>
             <span style={{ fontSize: 13, color: C.label, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{itemDisplayName(it)}</span>
             <span style={{ display: "flex", gap: 26, alignItems: "baseline", flexShrink: 0 }}>
@@ -365,16 +440,105 @@ function TimingMoatPage({ data }: { data: AppRatPdfData }): JSX.Element {
           The finish line is gated by {summary.gatingToolName}, the latest contract to run out.
         </div>
       )}
+      <Footer note="An estimate built from the figures you entered, not a guarantee. Contracts and adoption set the real pace." num="03" />
+    </Page>
+  );
+}
 
-      <div style={{ marginTop: 34, background: C.card, border: `1px solid ${C.hair}`, borderRadius: 12, padding: "20px 22px" }}>
-        <div style={sEyebrow}>04 · Why only Abridge</div>
-        <div style={{ fontSize: 13.5, color: C.muted, lineHeight: 1.55, marginTop: 8 }}>
-          These tools each own one slice of the note. Abridge already sits in the encounter, so the capabilities you pay
-          separate vendors for can fold onto the platform you run, one contract at a time as each renews. Consolidation
-          expands over time; this is not a commitment.
+// ───────────────────────── Page 6 · Why only Abridge ─────────────────────────
+
+function CoverageChain({ items }: { items: AppRatItem[] }): JSX.Element {
+  const tools = buildMoatTools(items);
+  const stages = ["Pre-charting", "The conversation", "Capture", "Draft note", "Coding", "Quality"];
+  return (
+    <div>
+      {/* Tools that fold in */}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
+        {(tools.length ? tools.map((t) => t.name) : ["Your capture tools"]).map((name, i) => (
+          <span key={i} style={{ fontSize: 11.5, fontWeight: 700, color: "#6B5E4C", background: C.tile, border: `1px solid ${C.hair}`, borderRadius: 7, padding: "5px 10px" }}>
+            {name} <span style={{ color: C.off, fontWeight: 500 }}>↓ folds in</span>
+          </span>
+        ))}
+      </div>
+      {/* Coverage band: pre-charting (expanding) · Abridge (coral) · coding/quality (expanding) */}
+      <div style={{ display: "flex", height: 40, borderRadius: 9, overflow: "hidden" }}>
+        <div style={{ flex: 1, border: `1.5px dashed #F0B7A6`, background: "#FBE7DF", borderRadius: "9px 0 0 9px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+          <span style={{ fontSize: 10.5, fontWeight: 700, color: "#B5573C" }}>Pre-charting</span>
+          <span style={{ fontSize: 8.5, color: "#C98A72" }}>expanding</span>
+        </div>
+        <div style={{ flex: 3, background: C.coral, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <span style={{ fontSize: 12, fontWeight: 700, color: "#fff" }}>Abridge, from the conversation to the draft note</span>
+        </div>
+        <div style={{ flex: 2, border: `1.5px dashed #F0B7A6`, background: "#FBE7DF", borderRadius: "0 9px 9px 0", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+          <span style={{ fontSize: 10.5, fontWeight: 700, color: "#B5573C" }}>Coding · Quality</span>
+          <span style={{ fontSize: 8.5, color: "#C98A72" }}>expanding</span>
         </div>
       </div>
-      <Footer note="An estimate built from the figures you entered, not a guarantee. Contracts and adoption set the real pace." num="03" />
+      {/* Stage labels aligned under the six columns */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", marginTop: 8 }}>
+        {stages.map((st, i) => (
+          <div key={st} style={{ textAlign: "center" }}>
+            <div style={{ fontSize: 10.5, fontWeight: 700, color: i === 0 || i >= 4 ? C.off : C.label }}>{st}</div>
+            {i === 1 && <div style={{ fontSize: 8.5, color: C.coral, fontWeight: 700 }}>the source</div>}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function MoatPage({ data }: { data: AppRatPdfData }): JSX.Element {
+  const present: AppRatCategoryId[] = [];
+  for (const it of data.items) {
+    if ((it.annualSpend || 0) > 0 && !present.includes(it.category)) present.push(it.category);
+  }
+  return (
+    <Page>
+      <RunningHeader org={data.orgName} />
+      <SectionEyebrow num="04" title="Why only Abridge" />
+      <h2 className="font-abridge" style={{ fontSize: 27, color: C.ink, marginTop: 7, lineHeight: 1.06 }}>
+        The stack folds into Abridge.
+      </h2>
+      <div style={{ ...sLead }}>
+        Each of these tools does one step of the note, and Abridge already covers those steps, so they fold in. A
+        single-step tool has nothing for the rest to fold onto.
+      </div>
+
+      <div style={{ ...sLbl, marginTop: 26, marginBottom: 12 }}>The documentation chain, who covers what</div>
+      <CoverageChain items={data.items} />
+
+      {present.length > 0 && (
+        <>
+          <div style={{ ...sLbl, marginTop: 30, marginBottom: 4 }}>Why each capability consolidates</div>
+          <div style={{ fontSize: 11.5, color: C.faint, lineHeight: 1.5, marginBottom: 12, maxWidth: 620 }}>
+            A working draft of the rationale, capability by capability, for the tools in your stack. Coverage expands
+            over time; this is not a commitment.
+          </div>
+          <div style={{ border: `1px solid ${C.hair}`, borderRadius: 12, overflow: "hidden" }}>
+            <div style={{ display: "flex", background: C.tile, padding: "9px 16px" }}>
+              <span style={{ ...sLbl, fontSize: 9, flex: 1.3 }}>Capability</span>
+              <span style={{ ...sLbl, fontSize: 9, flex: 2.2 }}>Today</span>
+              <span style={{ ...sLbl, fontSize: 9, flex: 2.5 }}>With Abridge</span>
+            </div>
+            {present.map((cat, i) => (
+              <div key={cat} style={{ display: "flex", padding: "10px 16px", background: i % 2 ? C.card : "#fff", borderTop: `1px solid ${C.soft}` }}>
+                <span className="font-abridge" style={{ flex: 1.3, fontSize: 12.5, color: C.ink, paddingRight: 8 }}>{categoryLabel(cat)}</span>
+                <span style={{ flex: 2.2, fontSize: 11, color: C.faint, lineHeight: 1.4, paddingRight: 10 }}>{CAPABILITY_PROOF[cat].today}</span>
+                <span style={{ flex: 2.5, fontSize: 11, color: C.muted, lineHeight: 1.4 }}>{CAPABILITY_PROOF[cat].withAbridge}</span>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      <div style={{ marginTop: 26, background: C.card, border: `1px solid ${C.hair}`, borderRadius: 12, padding: "18px 22px" }}>
+        <div style={sLbl}>The moat</div>
+        <div className="font-abridge" style={{ fontSize: 17, color: C.ink, lineHeight: 1.3, marginTop: 8 }}>
+          Price is a move any vendor can match in a year. Working from the conversation itself is not.{" "}
+          <span style={{ color: C.coral }}>That is why the stack folds onto Abridge, and not onto a tool that does one step.</span>
+        </div>
+      </div>
+      <Footer note="A working rationale, not a committed capability set. Coverage expands over time." num="04" />
     </Page>
   );
 }
@@ -389,7 +553,8 @@ export function AppRatEditorialPdfDocument({ data }: { data: AppRatPdfData }): J
       <PitchPage data={data} />
       <StackPage data={data} />
       <ConsolidationPage data={data} />
-      <TimingMoatPage data={data} />
+      <TimingPage data={data} />
+      <MoatPage data={data} />
     </div>
   );
 }
