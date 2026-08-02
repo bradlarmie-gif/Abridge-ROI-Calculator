@@ -365,6 +365,19 @@ function StackPage({ data }: { data: AppRatPdfData }): JSX.Element {
           <span style={{ flex: cols[6][0] }} />
         </div>
       </div>
+
+      {(() => {
+        const survivors = model.rows.filter((r) => r.stays > 0).map((r) => r.name);
+        const names = survivors.length <= 2 ? survivors.join(" and ") : `${survivors.slice(0, -1).join(", ")}, and ${survivors.slice(-1)}`;
+        const who = survivors.length === 1 ? "One vendor stays" : `${survivors.length} vendors stay`;
+        return (
+          <div style={{ fontSize: 13, color: C.muted, lineHeight: 1.55, marginTop: 20, maxWidth: 650 }}>
+            <b className="font-abridge" style={{ color: C.coral }}>{fmtShort(model.freed)}</b> of the {fmtShort(model.stackTotal)} you spend
+            overlaps what Abridge already produces from the conversation.
+            {survivors.length > 0 && ` ${who} on your bill (${names}), for the work Abridge does not take on yet.`}
+          </div>
+        );
+      })()}
       <Footer note="Figures use only the tools and annual spend you entered. For planning purposes, not a guarantee of savings." num="01" />
     </Page>
   );
@@ -492,6 +505,7 @@ function TimingPage({ data }: { data: AppRatPdfData }): JSX.Element {
   const net = computeNet(data.items, data.abridgePrice);
   const priced = net.abridgePrice > 0;
   const savers = data.items.filter((i) => itemRetired(i) > 0).sort((a, b) => a.sunsetMonths - b.sunsetMonths);
+  const yearOne = savers.filter((i) => i.sunsetMonths <= 12).reduce((a, i) => a + itemRetired(i), 0);
   const stats = [
     { v: fmtShort(net.sunset), k: "Freed at full consolidation", coral: !priced },
     ...(priced
@@ -502,7 +516,11 @@ function TimingPage({ data }: { data: AppRatPdfData }): JSX.Element {
         }]
       : []),
     { v: summary.planFinishMonths > 0 ? renewalDateLabel(summary.planFinishMonths) : "now", k: "Fully consolidated", coral: false },
-    { v: summary.monthsSooner > 0 ? `${summary.monthsSooner} mo` : "on renewal", k: "Sooner than renewal", coral: false },
+    // When there is an early-exit plan, show how much sooner; otherwise the useful
+    // number is how much comes back in the first year on the renewal calendar.
+    summary.monthsSooner > 0
+      ? { v: `${summary.monthsSooner} mo`, k: "Sooner than renewal", coral: false }
+      : { v: fmtShort(yearOne), k: "Freed in year one", coral: false },
   ];
   return (
     <Page>
@@ -526,10 +544,12 @@ function TimingPage({ data }: { data: AppRatPdfData }): JSX.Element {
 
       <div style={{ ...sLbl, marginTop: 26, marginBottom: 10 }}>The run-rate freed, month by month</div>
       <StepChart items={data.items} />
-      <div style={{ display: "flex", gap: 22, marginTop: 6, fontSize: 10.5, color: C.faint }}>
-        <span style={{ display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 16, height: 3, background: C.coral, borderRadius: 2 }} /> This plan</span>
-        <span style={{ display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 16, height: 0, borderTop: `2px dashed #C3B7A8` }} /> Ride to renewal</span>
-      </div>
+      {summary.capturedSooner > 0 && (
+        <div style={{ display: "flex", gap: 22, marginTop: 6, fontSize: 10.5, color: C.faint }}>
+          <span style={{ display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 16, height: 3, background: C.coral, borderRadius: 2 }} /> This plan</span>
+          <span style={{ display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 16, height: 0, borderTop: `2px dashed #C3B7A8` }} /> Ride to renewal</span>
+        </div>
+      )}
       <TimingReadLine items={data.items} />
 
       <div style={{ ...sLbl, marginTop: 22, marginBottom: 4 }}>Each tool&rsquo;s sunset</div>
@@ -685,9 +705,9 @@ export const SAMPLE_APPRAT_PDF_DATA: AppRatPdfData = {
   date: "August 2026",
   abridgePrice: 0,
   items: [
-    { id: "s1", category: "ambientDoc", vendorName: "Nuance DAX", annualSpend: 480000, coveragePct: 100, contractMonths: 8, sunsetMonths: 4, rampMonths: 3 },
-    { id: "s2", category: "scribe", vendorName: "ScribeAmerica", annualSpend: 360000, coveragePct: 100, contractMonths: 14, sunsetMonths: 8, rampMonths: 3 },
-    { id: "s3", category: "dictation", vendorName: "Dragon Medical One", annualSpend: 210000, coveragePct: 75, contractMonths: 20, sunsetMonths: 12, rampMonths: 4 },
+    { id: "s1", category: "ambientDoc", vendorName: "Nuance DAX", annualSpend: 480000, coveragePct: 100, contractMonths: 8, sunsetMonths: 8, rampMonths: 3 },
+    { id: "s2", category: "scribe", vendorName: "ScribeAmerica", annualSpend: 360000, coveragePct: 100, contractMonths: 14, sunsetMonths: 14, rampMonths: 3 },
+    { id: "s3", category: "dictation", vendorName: "Dragon Medical One", annualSpend: 210000, coveragePct: 75, contractMonths: 20, sunsetMonths: 20, rampMonths: 4 },
     { id: "s4", category: "cds", vendorName: "UpToDate", annualSpend: 140000, coveragePct: 0, contractMonths: 24, sunsetMonths: 24, rampMonths: 0 },
   ],
 };
