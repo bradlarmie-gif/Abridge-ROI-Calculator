@@ -202,10 +202,9 @@ function PitchPage({ data }: { data: AppRatPdfData }): JSX.Element {
   const remaining = model.rows.filter((r) => r.stays > 0).length;
   const consolidatedBy = model.freed > 0 ? (summary.planFinishMonths > 0 ? renewalDateLabel(summary.planFinishMonths) : "now") : "n/a";
   const toc = [
-    { n: "01", t: "The stack of record" },
-    { n: "02", t: "The consolidation" },
-    { n: "03", t: "When it lands" },
-    { n: "04", t: "Why only Abridge" },
+    { n: "01", t: "The stack, consolidated" },
+    { n: "02", t: "When it lands" },
+    { n: "03", t: "Why only Abridge" },
   ];
   return (
     <Page>
@@ -218,9 +217,10 @@ function PitchPage({ data }: { data: AppRatPdfData }): JSX.Element {
         <h2 className="font-abridge" style={{ fontSize: 44, lineHeight: 1.06, color: C.ink, margin: "10px 0 0", maxWidth: 680, letterSpacing: "-0.5px" }}>
           {fmtShort(model.freed)} a year folds back onto the Abridge you already run.
         </h2>
-        <div style={{ ...sLead, marginTop: 16, maxWidth: 600 }}>
-          Your documentation stack, priced on the tools and spend you entered. What Abridge can take on comes back; the
-          rest stays. Not a commitment, and not a list price.
+        <div style={{ ...sLead, marginTop: 16, maxWidth: 610 }}>
+          You added these tools over the years, each for one part of the note. Abridge now drafts the note from the
+          conversation itself, so much of that work overlaps what you already run. As each contract renews, it can fold
+          onto Abridge; the rest stays.
         </div>
         {priced && (
           <div style={{ marginTop: 16, fontSize: 14.5, color: C.label, lineHeight: 1.5, maxWidth: 620 }}>
@@ -274,10 +274,11 @@ function PitchPage({ data }: { data: AppRatPdfData }): JSX.Element {
   );
 }
 
-// ───────────────────────── Page 3 · The stack of record ─────────────────────────
+// ───────────────────────── Page 3 · The stack, consolidated ─────────────────────────
 
 function StackPage({ data }: { data: AppRatPdfData }): JSX.Element {
   const rows = data.items.filter((i) => (i.annualSpend || 0) > 0);
+  const model = buildConsolidationModel(data.items);
   const totalSpend = rows.reduce((a, i) => a + (i.annualSpend || 0), 0);
   const totalFreed = rows.reduce((a, i) => a + itemRetired(i), 0);
   const totalStays = rows.reduce((a, i) => a + itemStays(i), 0);
@@ -287,14 +288,44 @@ function StackPage({ data }: { data: AppRatPdfData }): JSX.Element {
   return (
     <Page>
       <RunningHeader org={data.orgName} />
-      <SectionEyebrow num="01" title="The stack of record" />
+      <SectionEyebrow num="01" title="The stack, consolidated" />
       <h2 className="font-abridge" style={{ fontSize: 27, color: C.ink, marginTop: 7, lineHeight: 1.06 }}>
-        Everything you run around the note, in one place.
+        Everything you run around the note, and what folds onto Abridge.
       </h2>
       <div style={{ ...sLead }}>
-        The authoritative list, built only from the tools and annual spend you entered. Freed is the share Abridge can
-        take on; stays is the residual that remains.
+        Health systems add these tools one at a time, each for a step of the note. This is the whole stack you run
+        today; coral is the share Abridge can take on, because it already produces the note from the conversation.
       </div>
+
+      {/* Hero: one bar, each tool sized by spend and split freed (coral) vs stays (tan) */}
+      <div style={{ ...sLbl, marginTop: 24, marginBottom: 9 }}>Your documentation stack today · {fmtShort(model.stackTotal)} / yr</div>
+      <div style={{ display: "flex", height: 54, borderRadius: 9, overflow: "hidden", border: `1px solid ${C.hair}` }}>
+        {model.rows.map((r, i) => (
+          <div key={r.id} style={{ width: `${r.widthPct}%`, display: "flex", borderRight: i < model.rows.length - 1 ? "2px solid #fff" : "none" }}>
+            {r.retiredPct > 0 && <div style={{ width: `${r.retiredPct}%`, background: C.coral }} />}
+            {r.staysPct > 0 && <div style={{ width: `${r.staysPct}%`, background: TAN[1] }} />}
+          </div>
+        ))}
+      </div>
+      {/* Tool tick labels under wide-enough segments */}
+      <div style={{ display: "flex", marginTop: 6 }}>
+        {model.rows.map((r) => (
+          <div key={r.id} style={{ width: `${r.widthPct}%`, textAlign: "center", overflow: "hidden" }}>
+            {r.widthPct >= 11 && <span style={{ fontSize: 9.5, color: C.faint, whiteSpace: "nowrap" }}>{r.name}</span>}
+          </div>
+        ))}
+      </div>
+      <div style={{ display: "flex", gap: 26, marginTop: 12 }}>
+        <span style={{ display: "flex", alignItems: "center", gap: 7 }}>
+          <span style={{ width: 11, height: 11, borderRadius: 3, background: C.coral }} />
+          <span style={{ fontSize: 12, color: C.label }}><b className="font-abridge" style={{ color: C.coral }}>{fmtShort(model.freed)}</b> folds onto Abridge / yr</span>
+        </span>
+        <span style={{ display: "flex", alignItems: "center", gap: 7 }}>
+          <span style={{ width: 11, height: 11, borderRadius: 3, background: TAN[1] }} />
+          <span style={{ fontSize: 12, color: C.label }}><b className="font-abridge">{fmtShort(model.stays)}</b> stays on your bill</span>
+        </span>
+      </div>
+
       <div style={{ marginTop: 22, border: `1px solid ${C.hair}`, borderRadius: 12, overflow: "hidden" }}>
         <div style={{ display: "flex", background: C.tile, padding: "10px 16px" }}>
           {th.map((t, i) => (
@@ -334,85 +365,7 @@ function StackPage({ data }: { data: AppRatPdfData }): JSX.Element {
   );
 }
 
-// ───────────────────────── Page 4 · The consolidation ─────────────────────────
-
-function ConsolidationPage({ data }: { data: AppRatPdfData }): JSX.Element {
-  const model = buildConsolidationModel(data.items);
-  const freedPct = model.stackTotal > 0 ? (model.freed / model.stackTotal) * 100 : 0;
-  return (
-    <Page>
-      <RunningHeader org={data.orgName} />
-      <SectionEyebrow num="02" title="The consolidation" />
-      <h2 className="font-abridge" style={{ fontSize: 27, color: C.ink, marginTop: 7, lineHeight: 1.06 }}>
-        What folds onto Abridge, and what stays.
-      </h2>
-
-      <div style={{ ...sLbl, marginTop: 30, marginBottom: 10 }}>Your documentation stack today · {fmtShort(model.stackTotal)} / yr</div>
-      <div style={{ display: "flex", height: 46, borderRadius: 8, overflow: "hidden", border: `1px solid ${C.hair}` }}>
-        {model.rows.map((r, i) => (
-          <div key={r.id} title={r.name} style={{ width: `${r.widthPct}%`, background: TAN[i % TAN.length], display: "flex", alignItems: "center", justifyContent: "center", borderRight: i < model.rows.length - 1 ? "1px solid rgba(255,255,255,.5)" : "none" }}>
-            <span style={{ fontSize: 9.5, color: "#4A3F30", fontWeight: 700, padding: "0 4px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.name}</span>
-          </div>
-        ))}
-      </div>
-
-      <div style={{ ...sLbl, marginTop: 34, marginBottom: 10 }}>Where it lands</div>
-      <div style={{ display: "flex", height: 46, borderRadius: 8, overflow: "hidden", border: `1px solid ${C.hair}` }}>
-        <div style={{ width: `${freedPct}%`, background: C.coral, display: "flex", alignItems: "center", paddingLeft: 14 }}>
-          <span className="font-abridge" style={{ fontSize: 15, color: "#fff" }}>{fmtShort(model.freed)}</span>
-        </div>
-        <div style={{ flex: 1, background: C.tile, display: "flex", alignItems: "center", justifyContent: "flex-end", paddingRight: 14 }}>
-          <span className="font-abridge" style={{ fontSize: 15, color: C.label }}>{fmtShort(model.stays)}</span>
-        </div>
-      </div>
-      <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8 }}>
-        <span style={{ ...sLbl, color: C.coral }}>Onto Abridge · freed every year</span>
-        <span style={sLbl}>Stays on your bill</span>
-      </div>
-
-      <div style={{ ...sLbl, marginTop: 32, marginBottom: 10 }}>Tool by tool, what folds and what stays</div>
-      <div style={{ display: "flex", ...sLbl, fontSize: 9, marginBottom: 7, paddingRight: 2 }}>
-        <span style={{ flex: 1.7 }}>Tool</span>
-        <span style={{ width: 66, textAlign: "right" }}>Spend</span>
-        <span style={{ flex: 2.4, paddingLeft: 12 }}>Freed vs stays</span>
-        <span style={{ width: 66, textAlign: "right" }}>Freed</span>
-        <span style={{ width: 66, textAlign: "right" }}>Stays</span>
-      </div>
-      {model.rows.map((r) => (
-        <div key={r.id} style={{ display: "flex", alignItems: "center", padding: "9px 0", borderTop: `1px solid ${C.soft}` }}>
-          <span style={{ flex: 1.7, fontSize: 12.5, color: C.label, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.name}</span>
-          <span className="font-abridge" style={{ width: 66, textAlign: "right", fontSize: 12.5, color: C.ink }}>{fmtShort(r.spend)}</span>
-          <span style={{ flex: 2.4, paddingLeft: 12 }}>
-            <span style={{ display: "flex", height: 16, borderRadius: 4, overflow: "hidden", background: C.soft }}>
-              {r.retiredPct > 0 && <span style={{ width: `${r.retiredPct}%`, background: C.coral }} />}
-              {r.staysPct > 0 && <span style={{ width: `${r.staysPct}%`, background: TAN[1] }} />}
-            </span>
-          </span>
-          <span className="font-abridge" style={{ width: 66, textAlign: "right", fontSize: 12.5, color: r.retired > 0 ? C.coral : C.off }}>{r.retired > 0 ? fmtShort(r.retired) : "—"}</span>
-          <span style={{ width: 66, textAlign: "right", fontSize: 12.5, color: C.faint }}>{r.stays > 0 ? fmtShort(r.stays) : "—"}</span>
-        </div>
-      ))}
-
-      {model.rows.some((r) => r.stays > 0) && (
-        <div style={{ marginTop: 26, background: C.card, border: `1px solid ${C.hair}`, borderRadius: 12, padding: "16px 20px" }}>
-          <div style={{ ...sLbl, marginBottom: 10 }}>What stays, and why</div>
-          {model.rows.filter((r) => r.stays > 0).map((r) => (
-            <div key={r.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "6px 0", gap: 16 }}>
-              <span style={{ fontSize: 12.5, color: C.label }}>
-                <b className="font-abridge" style={{ color: C.ink }}>{r.name}</b>
-                <span style={{ color: C.faint }}> — {r.staysOnly ? "kept as-is; not displaceable by Abridge yet" : `the ${100 - Math.round(r.retiredPct)}% above the coverage you set for it`}</span>
-              </span>
-              <span className="font-abridge" style={{ fontSize: 12.5, color: C.label, flexShrink: 0 }}>{fmtShort(r.stays)} / yr</span>
-            </div>
-          ))}
-        </div>
-      )}
-      <Footer note="Freed is the coverage share you set for each tool times its annual spend. Displacement is not a commitment." num="02" />
-    </Page>
-  );
-}
-
-// ───────────────────────── Page 5 · When it lands ─────────────────────────
+// ───────────────────────── Page 4 · When it lands ─────────────────────────
 
 // The sharp step chart: annual run-rate freed climbing as each tool sunsets
 // (coral staircase), the "ride to renewal" baseline (dashed), and the coral
@@ -545,10 +498,14 @@ function TimingPage({ data }: { data: AppRatPdfData }): JSX.Element {
   return (
     <Page>
       <RunningHeader org={data.orgName} />
-      <SectionEyebrow num="03" title="When it lands" />
+      <SectionEyebrow num="02" title="When it lands" />
       <h2 className="font-abridge" style={{ fontSize: 27, color: C.ink, marginTop: 7, lineHeight: 1.06 }}>
-        The runway, and how fast the spend comes back.
+        No rip-and-replace. The spend comes back as each contract ends.
       </h2>
+      <div style={{ ...sLead, maxWidth: 620 }}>
+        Each tool comes off at its own renewal, so the finish line follows your contract calendar, not a switch you have
+        to flip on day one.
+      </div>
       <div style={{ display: "flex", gap: 44, marginTop: 18, flexWrap: "wrap" }}>
         {stats.map((s, i) => (
           <div key={i}>
@@ -587,12 +544,12 @@ function TimingPage({ data }: { data: AppRatPdfData }): JSX.Element {
           The finish line is gated by {summary.gatingToolName}, the latest contract to run out.
         </div>
       )}
-      <Footer note="An estimate built from the figures you entered, not a guarantee. Contracts and adoption set the real pace." num="03" />
+      <Footer note="An estimate built from the figures you entered, not a guarantee. Contracts and adoption set the real pace." num="02" />
     </Page>
   );
 }
 
-// ───────────────────────── Page 6 · Why only Abridge ─────────────────────────
+// ───────────────────────── Page 5 · Why only Abridge ─────────────────────────
 
 function CoverageChain({ items }: { items: AppRatItem[] }): JSX.Element {
   const tools = buildMoatTools(items);
@@ -642,7 +599,7 @@ function MoatPage({ data }: { data: AppRatPdfData }): JSX.Element {
   return (
     <Page>
       <RunningHeader org={data.orgName} />
-      <SectionEyebrow num="04" title="Why only Abridge" />
+      <SectionEyebrow num="03" title="Why only Abridge" />
       <h2 className="font-abridge" style={{ fontSize: 27, color: C.ink, marginTop: 7, lineHeight: 1.06 }}>
         The stack folds into Abridge.
       </h2>
@@ -685,7 +642,7 @@ function MoatPage({ data }: { data: AppRatPdfData }): JSX.Element {
           <span style={{ color: C.coral }}>That is why the stack folds onto Abridge, and not onto a tool that does one step.</span>
         </div>
       </div>
-      <Footer note="A working rationale, not a committed capability set. Coverage expands over time." num="04" />
+      <Footer note="A working rationale, not a committed capability set. Coverage expands over time." num="03" />
     </Page>
   );
 }
@@ -699,7 +656,6 @@ export function AppRatEditorialPdfDocument({ data }: { data: AppRatPdfData }): J
       <ReportCover data={data} />
       <PitchPage data={data} />
       <StackPage data={data} />
-      <ConsolidationPage data={data} />
       <TimingPage data={data} />
       <MoatPage data={data} />
     </div>
