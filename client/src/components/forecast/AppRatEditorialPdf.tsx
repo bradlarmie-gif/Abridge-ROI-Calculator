@@ -215,12 +215,12 @@ function PitchPage({ data }: { data: AppRatPdfData }): JSX.Element {
       <div style={{ marginTop: 128 }}>
         <div style={sEyebrow}>The consolidation case</div>
         <h2 className="font-abridge" style={{ fontSize: 44, lineHeight: 1.06, color: C.ink, margin: "10px 0 0", maxWidth: 680, letterSpacing: "-0.5px" }}>
-          {fmtShort(model.freed)} a year folds back onto the Abridge you already run.
+          {fmtShort(model.freed)} a year of your stack folds onto the Abridge you already run.
         </h2>
         <div style={{ ...sLead, marginTop: 16, maxWidth: 610 }}>
-          You added these tools over the years, each for one part of the note. Abridge now drafts the note from the
-          conversation itself, so much of that work overlaps what you already run. As each contract renews, it can fold
-          onto Abridge; the rest stays.
+          You added these tools over the years, each for one part of the note. Abridge already drafts the note from the
+          conversation, so much of that work overlaps what it does. As each contract renews, that tool can fold onto
+          Abridge; the rest stays.
         </div>
         {priced && (
           <div style={{ marginTop: 16, fontSize: 14.5, color: C.label, lineHeight: 1.5, maxWidth: 620 }}>

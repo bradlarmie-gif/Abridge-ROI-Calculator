@@ -62,7 +62,7 @@ describe("App Rationalization HTML PDF — reconciliation", () => {
 
   it("default (no Abridge price) tells the already-have-Abridge story, no net line", () => {
     expect(data.abridgePrice).toBe(0);
-    expect(html).toContain("folds back onto the Abridge you already run");
+    expect(html).toContain("folds onto the Abridge you already run");
     expect(html).not.toContain("Net of the");
   });
 
