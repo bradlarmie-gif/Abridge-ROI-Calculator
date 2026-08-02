@@ -86,3 +86,15 @@ Claude the prompt below and have it drive `?proformapreview=1`.
 **The discipline:** anything the adversarial pass finds that is objective and
 repeatable gets promoted into the harness (Layer 1 or 2), so it can never regress.
 That's how the premium bar holds as the proforma grows.
+
+## Layout guard (all tools)
+
+The vitest harness is blind to rendered layout — run the layout smoke after ANY
+layout/responsive change (needs the dev server on :5199):
+
+```
+npm run layout:smoke
+```
+
+It drives every tool at 1440/1200/1024 and fails on horizontal overflow or a
+wrapped/squished top bar (the class that let the 3-line header ship on a green suite).

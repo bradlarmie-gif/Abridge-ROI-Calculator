@@ -144,7 +144,7 @@ export default function ProformaPresentView({ settings, config, org, onNavigate 
     <div style={{ background: T.page, minHeight: "100vh", color: T.ink, fontFamily: "Manrope, sans-serif", WebkitFontSmoothing: "antialiased" }}>
       {/* TOP BAR */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", rowGap: 12, padding: "16px 40px", borderBottom: `1px solid ${T.hair}` }}>
-        <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 26 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 26, flexShrink: 0 }}>
           <span className="font-abridge" style={{ fontSize: 20, color: T.coral }}>ABRIDGE</span>
           <ChapterNav active="present" onNavigate={onNavigate} />
         </div>

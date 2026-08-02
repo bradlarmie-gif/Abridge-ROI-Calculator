@@ -145,7 +145,7 @@ const CHAPTER_LIST: { key: Chapter; n: string; label: string }[] = [
 
 export function ChapterNav({ active, onNavigate }: { active: Chapter; onNavigate?: (c: Chapter) => void }) {
   return (
-    <div style={{ display: "flex", gap: 26 }}>
+    <div style={{ display: "flex", gap: 26, flexShrink: 0 }}>
       {CHAPTER_LIST.map((c) => {
         const on = c.key === active;
         return (
@@ -159,6 +159,7 @@ export function ChapterNav({ active, onNavigate }: { active: Chapter; onNavigate
               display: "flex",
               alignItems: "center",
               gap: 7,
+              whiteSpace: "nowrap",
               cursor: onNavigate ? "pointer" : "default",
               background: "none",
               border: "none",

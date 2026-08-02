@@ -104,3 +104,15 @@ tight; keep them that way by adding any new numeric surface to
 `attainReactPdfReconciliation.test.ts`, and any new cell/goal to
 `attainReachability.test.ts`, the moment it ships — not after a rep demos an
 orphan in the field.
+
+## Layout guard (all tools)
+
+The vitest harness is blind to rendered layout — run the layout smoke after ANY
+layout/responsive change (needs the dev server on :5199):
+
+```
+npm run layout:smoke
+```
+
+It drives every tool at 1440/1200/1024 and fails on horizontal overflow or a
+wrapped/squished top bar (the class that let the 3-line header ship on a green suite).
