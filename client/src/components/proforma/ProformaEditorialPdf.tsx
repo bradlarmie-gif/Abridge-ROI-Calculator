@@ -1,4 +1,6 @@
 import { Fragment, type ReactNode } from "react";
+import abridgeLogoRed from "@assets/abridge-logo-wordmark-red_1769187440253.png";
+import abridgeSymbol from "@assets/abridge-logo-symbol_1774906992195.png";
 
 // ────────────────────────────────────────────────────────────────
 // Editorial "Financial Proforma" print-to-PDF document.
@@ -329,7 +331,55 @@ function RunningHeader({ label, num }: { label: string; num: string }): JSX.Elem
   );
 }
 
-// ───────────────────────── Page 1 · Cover ─────────────────────────
+// ───────────────────────── Page 1 · Report cover ─────────────────────────
+
+// The universal Abridge report cover, shared across every tool PDF: white page,
+// coral wordmark, org name as title, faint symbol corner mark, disclaimer foot.
+// Matched pixel-for-pixel to Explore's cover so all tools open identically.
+function ReportCover({ data }: { data: ProformaPdfData }): JSX.Element {
+  const term = data.years?.length ?? 3;
+  const labels = data.settings.map((s) => s.label);
+  const settingsSummary =
+    labels.length <= 3 ? labels.join(" · ") : `${cap(numWord(labels.length))} care settings`;
+  const subtitle = `${settingsSummary} · ${term}-year term`;
+  return (
+    <div className="sheet" style={{ background: "#FFFFFF" }}>
+      <img src={abridgeLogoRed} alt="Abridge" style={{ position: "absolute", top: 60, left: 64, width: 120 }} />
+      <img src={abridgeSymbol} alt="" style={{ position: "absolute", bottom: 92, right: 10, width: 340, opacity: 0.06 }} />
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          padding: "0 64px",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+        }}
+      >
+        <div style={{ fontSize: 11, color: "#666666", letterSpacing: "3px", textTransform: "uppercase", marginBottom: 16 }}>
+          Financial Proforma
+        </div>
+        <h1 className="abr" style={{ fontSize: 48, lineHeight: 1.12, color: "#1A1A1A", letterSpacing: "-0.5px", margin: "0 0 20px", maxWidth: 620 }}>
+          {data.org}
+        </h1>
+        <div style={{ width: 80, height: 3, background: "var(--coral)", marginBottom: 24 }} />
+        <div style={{ fontSize: 17, color: "#666666", marginBottom: 44 }}>{subtitle}</div>
+        <div style={{ fontSize: 10, color: "#999999", letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: 6 }}>
+          Prepared by
+        </div>
+        <div style={{ fontSize: 14, color: "#666666" }}>Abridge · {data.date}</div>
+      </div>
+      <div style={{ position: "absolute", bottom: 44, left: 64, right: 64, borderTop: "1px solid #E0E0E0", paddingTop: 12 }}>
+        <div style={{ fontSize: 10.5, color: "#999999", lineHeight: 1.5 }}>
+          This proforma is for planning purposes. Every figure is built from partner-provided volume and economics,
+          and results depend on adoption and how teams act on what the documentation surfaces.
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ───────────────────────── Page 2 · The pitch ─────────────────────────
 
 function CoverInner({ data }: { data: ProformaPdfData }): JSX.Element {
   const chapters: [string, string][] = [
@@ -999,19 +1049,22 @@ export function ProformaEditorialPdfDocument({ data }: { data: ProformaPdfData }
   });
   const closingNum = pad2(4 + data.settings.length);
 
-  const total = 1 /*cover*/ + 3 /*case,howvalue,investment*/ + settingNodes.length + 1 /*closing*/;
+  const total = 2 /*report cover + pitch*/ + 3 /*case,howvalue,investment*/ + settingNodes.length + 1 /*closing*/;
   const pg = (n: number) => `Abridge · Financial Proforma · ${n} of ${total}`;
   let p = 1;
 
-  const coverPg = p++; // cover = page 1 (no footer number shown)
+  const reportCoverPg = p++; // page 1 (front matter, no footer number)
+  const pitchPg = p++; // page 2 (front matter, no footer number)
   const casePg = p++;
   const howPg = p++;
   const invPg = p++;
-  void coverPg;
+  void reportCoverPg;
+  void pitchPg;
 
   return (
     <div className="pf">
       <style>{CSS}</style>
+      <ReportCover data={data} />
       <Sheet><CoverInner data={data} /></Sheet>
       <Sheet pgnum={pg(casePg)}><CaseInner data={data} /></Sheet>
       <Sheet pgnum={pg(howPg)}><HowValueInner data={data} /></Sheet>
