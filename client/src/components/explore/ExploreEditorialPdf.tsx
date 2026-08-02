@@ -1,5 +1,6 @@
 import { Fragment, type CSSProperties, type ReactNode } from "react";
 import type { ExplorePDFData, ExplorePDFQuadrantData } from "./ExplorePDFExport";
+import { PROOF_LAYER } from "@/pages/explore/editorial/EdInvestment";
 import abridgeLogoRed from "@assets/abridge-logo-wordmark-red_1769187440253.png";
 import abridgeSymbol from "@assets/abridge-logo-symbol_1774906992195.png";
 
@@ -56,6 +57,27 @@ function fmtNum(n: number): string {
 
 function titleCase(w: string): string {
   return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+}
+
+// ───────────────────────── Proof-layer resolution ─────────────────────────
+// Which domain(s) are the NON-FINANCIAL proof layer is a property of the
+// setting, read from the SAME source the live model recap uses (PROOF_LAYER):
+// nursing = Revenue, inpatient = Capacity + Quality, everyone else = Quality.
+// The PDF must never hardcode "Quality" or it contradicts the page it sits on
+// (nursing prices Quality as a real dollar).
+
+type PdfProofDomain = "Capacity" | "Workforce" | "Revenue" | "Quality";
+
+function proofDomainsFor(careSetting: string): PdfProofDomain[] {
+  const keys = Object.keys(PROOF_LAYER[careSetting] ?? {}) as PdfProofDomain[];
+  return keys.length > 0 ? keys : ["Quality"];
+}
+
+/** "Quality" · "Revenue" · "Capacity and Quality" · "A, B, and C". */
+function joinAnd(items: string[]): string {
+  if (items.length <= 1) return items[0] ?? "";
+  if (items.length === 2) return `${items[0]} and ${items[1]}`;
+  return `${items.slice(0, -1).join(", ")}, and ${items[items.length - 1]}`;
 }
 
 // ───────────────────────── Chain parser ─────────────────────────
@@ -127,6 +149,16 @@ function extractHaircuts(data: ExplorePDFData): Haircut[] {
 /** Month (1–12) at which cumulative value clears the recurring cost. */
 function crossoverMonth(data: ExplorePDFData): number | null {
   if (data.annualInvestment <= 0) return null;
+  // Prefer the REAL cumulative-crossover month the model screen computed and
+  // threaded through, so the PDF's "When it lands" agrees with the interactive
+  // one (they used to disagree: real ramp vs a closed-form approximation).
+  // null = model does not pay back within year 1. undefined = not provided
+  // (older snapshots / the sample), so fall back to the approximation.
+  if (data.paybackMonth !== undefined) {
+    return data.paybackMonth === null
+      ? null
+      : Math.min(12, Math.max(1, Math.round(data.paybackMonth)));
+  }
   const ratio = data.annualInvestment / Math.max(1, data.totalAnnualValue);
   const raw = 12 * Math.pow(ratio, 1 / 2.4);
   return Math.min(12, Math.max(1, Math.round(raw)));
@@ -346,7 +378,12 @@ function CoverPage({ data }: { data: ExplorePDFData }): JSX.Element {
     data.careSetting === "nursing"
       ? `${fmtNum(data.nursingStaffedBeds ?? 0)} staffed beds`
       : `${fmtNum(data.numberOfProviders)} providers`;
-  const subtitle = `${scope} · ${fmtNum(data.annualEncounters)} encounters · ${data.careSettingLabel}`;
+  // Nursing scopes by beds × occupancy (patient-days), not encounters — never
+  // print "0 encounters" for a setting that has none.
+  const subtitle =
+    data.careSetting === "nursing"
+      ? `${scope}${data.nursingOccupancyRate ? ` · ${data.nursingOccupancyRate}% occupancy` : ""} · ${data.careSettingLabel}`
+      : `${scope} · ${fmtNum(data.annualEncounters)} encounters · ${data.careSettingLabel}`;
 
   return (
     <div
@@ -511,10 +548,24 @@ function NumberPage({ data }: { data: ExplorePDFData }): JSX.Element {
   const max = Math.max(...data.quadrants.map((q) => q.annualTotal), 1);
   const haircuts = extractHaircuts(data);
 
+  const isNursing = data.careSetting === "nursing";
   const providerCell =
-    data.careSetting === "nursing" && data.nursingStaffedBeds != null
+    isNursing && data.nursingStaffedBeds != null
       ? { v: fmtNum(data.nursingStaffedBeds), k: "Beds" }
       : { v: fmtNum(data.numberOfProviders), k: "Providers" };
+  // Nursing has no encounters; its volume analog is patient-days
+  // (beds × occupancy × 365). Everyone else counts annual encounters.
+  const volumeCell = isNursing
+    ? {
+        v: fmtNum(
+          Math.round((data.nursingStaffedBeds ?? 0) * ((data.nursingOccupancyRate ?? 0) / 100) * 365),
+        ),
+        k: "Annual patient-days",
+      }
+    : { v: data.annualEncounters.toLocaleString("en-US"), k: "Annual encounters" };
+  // Nursing time is saved per shift / care event, not per note.
+  const savedPerLabel = isNursing ? "Saved per shift" : "Saved per note";
+  const proofDomains = proofDomainsFor(data.careSetting);
 
   return (
     <Page>
@@ -562,9 +613,9 @@ function NumberPage({ data }: { data: ExplorePDFData }): JSX.Element {
       <StatBand
         cells={[
           providerCell,
-          { v: data.annualEncounters.toLocaleString("en-US"), k: "Annual encounters" },
+          volumeCell,
           { v: `${data.utilizationPercent}%`, k: "On Abridge today" },
-          { v: `${data.minutesSavedPerEncounter} min`, k: "Saved per note" },
+          { v: `${data.minutesSavedPerEncounter} min`, k: savedPerLabel },
           { v: data.timePathScenario, k: "Time path" },
         ]}
       />
@@ -594,7 +645,7 @@ function NumberPage({ data }: { data: ExplorePDFData }): JSX.Element {
       )}
 
       <Footer
-        note="Counted once, valued at margin, never charges. Quality is tracked as proof and never added to the dollar total."
+        note={`Counted once, valued at margin, never charges. ${joinAnd(proofDomains)} ${proofDomains.length > 1 ? "are" : "is"} tracked as proof and never added to the dollar total.`}
         num="01"
       />
     </Page>
@@ -660,7 +711,13 @@ function DriverCard({
   );
 }
 
-function MutedDomain({ q }: { q: ExplorePDFQuadrantData }): JSX.Element {
+function MutedDomain({
+  q,
+  proofDomains,
+}: {
+  q: ExplorePDFQuadrantData;
+  proofDomains: PdfProofDomain[];
+}): JSX.Element {
   // A domain is muted for one of two reasons: it is inherently proof-only
   // (no quantified drivers exist for this setting — e.g. Quality, or Nursing
   // Revenue), or it is a money domain whose drivers are simply switched off in
@@ -670,12 +727,16 @@ function MutedDomain({ q }: { q: ExplorePDFQuadrantData }): JSX.Element {
     .map((d) => d.label);
   const proofOnly = quantifiedNames.length === 0;
   const rightLabel = proofOnly ? "Proof · not counted" : "Not modeled";
-  const body =
-    q.quadrant === "Quality"
-      ? "Documentation quality is tracked as proof that protects the revenue above, care-gap closure, HEDIS/Stars, denial-defensibility. It leads the dollars and is never added to the total."
-      : proofOnly
-        ? `${q.quadrant} here is tracked as proof: the signals that support the value above, never added to the dollar total.`
-        : `Available to model in ${q.quadrant}: ${quantifiedNames.join(", ")}. Off in this run.`;
+  // The Quality-as-proof gloss only applies where Quality is actually this
+  // setting's proof layer (outpatient/ED/inpatient). For nursing, Quality
+  // carries a dollar and Revenue is the proof layer, so a muted nursing
+  // Quality falls through to the generic proof/unmodeled framing.
+  const qualityIsProof = q.quadrant === "Quality" && proofDomains.includes("Quality");
+  const body = qualityIsProof
+    ? "Documentation quality is tracked as proof that protects the revenue above, care-gap closure, HEDIS/Stars, denial-defensibility. It leads the dollars and is never added to the total."
+    : proofOnly
+      ? `${q.quadrant} here is tracked as proof: the signals that support the value above, never added to the dollar total.`
+      : `Available to model in ${q.quadrant}: ${quantifiedNames.join(", ")}. Off in this run.`;
   return (
     <div style={{ marginTop: 13 }}>
       <div
@@ -713,6 +774,7 @@ function SynthesisBar({ data }: { data: ExplorePDFData }): JSX.Element {
     .filter((q) => q.annualTotal > 0)
     .sort((a, b) => b.annualTotal - a.annualTotal);
   const total = data.totalAnnualValue || 1;
+  const proofDomains = proofDomainsFor(data.careSetting);
   return (
     <div style={{ marginTop: 22, borderTop: `1px solid ${C.hair}`, paddingTop: 16 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
@@ -744,7 +806,7 @@ function SynthesisBar({ data }: { data: ExplorePDFData }): JSX.Element {
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
         <div style={{ height: 5, flex: 1, background: C.soft, borderRadius: 99 }} />
         <span style={{ fontSize: 10, color: C.off, whiteSpace: "nowrap" }}>
-          Quality · the proof running underneath, uncounted
+          {joinAnd(proofDomains)} · the proof running underneath, uncounted
         </span>
       </div>
     </div>
@@ -788,6 +850,7 @@ function quadValue(q: ExplorePDFQuadrantData): number {
 
 function buildBreakdownPages(data: ExplorePDFData): JSX.Element[] {
   const atoms: BreakAtom[] = [];
+  const proofDomains = proofDomainsFor(data.careSetting);
 
   // Lead with where the money actually is: money-bearing domains first
   // (largest first), then proof/unmodeled domains as the quiet tail. A stable
@@ -805,7 +868,7 @@ function buildBreakdownPages(data: ExplorePDFData): JSX.Element[] {
     );
 
     if (includedQuant.length === 0) {
-      atoms.push({ h: H_MUTED, node: <MutedDomain q={q} /> });
+      atoms.push({ h: H_MUTED, node: <MutedDomain q={q} proofDomains={proofDomains} /> });
       continue;
     }
 
@@ -976,7 +1039,8 @@ function InvestmentPage({ data }: { data: ExplorePDFData }): JSX.Element {
   const inv = data.annualInvestment;
   const total = data.totalAnnualValue;
   const mult = (v: number) => (inv > 0 ? `${(v / inv).toFixed(1)}× return` : "—");
-  const downMultBare = inv > 0 ? `${((total * 0.7) / inv).toFixed(1)}×` : "—";
+  const downMultNum = inv > 0 ? (total * 0.7) / inv : 0;
+  const downMultBare = inv > 0 ? `${downMultNum.toFixed(1)}×` : "—";
 
   // Nursing prices per staffed bed, not per provider.
   const isNursing = data.careSetting === "nursing";
@@ -1024,8 +1088,10 @@ function InvestmentPage({ data }: { data: ExplorePDFData }): JSX.Element {
       </h2>
       <p style={sLead}>
         Hit 100% of the plan and here's the return. Miss it by 30% and this is your floor; beat it by
-        30% and this is the upside. Even the downside clears the recurring investment nearly four
-        times over.
+        30% and this is the upside.
+        {downMultNum >= 1
+          ? ` Even the downside clears the recurring investment, at ${downMultBare} in year one.`
+          : ""}
       </p>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14, marginTop: 20 }}>
@@ -1123,8 +1189,9 @@ function InvestmentPage({ data }: { data: ExplorePDFData }): JSX.Element {
             </div>
           </div>
           <p style={{ fontSize: 11, color: C.faint, lineHeight: 1.45, marginTop: 12 }}>
-            Even a 30% miss returns {downMultBare} in year one. The plan pays for itself well before
-            the downside case.
+            {downMultNum >= 1
+              ? `Even a 30% miss returns ${downMultBare} in year one. The plan pays for itself well before the downside case.`
+              : `At the modeled scope, the configured plan returns ${data.roi.toFixed(1)}× in year one.`}
           </p>
         </div>
       </div>

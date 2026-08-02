@@ -306,8 +306,14 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
           testId={`ed-toggle-${driver.id}`}
           warning={blocked && "Turn on Provider Retention above to see this driver's value. Locum & agency savings are derived from the providers it retains."}
           buildStruct={{
+            // Full raw chain (mirrors the Provider Retention card and the PDF
+            // calcSummary) so the printed factors multiply exactly to the value;
+            // the rounded `retained` used as a hard multiplicand didn't reconcile.
             factors: [
-              { value: formatNum1(retained), label: "providers retained" },
+              { value: formatNum(state.numberOfProviders), label: "providers" },
+              { value: `${turnoverValue}%`, label: "turnover" },
+              { value: `${burnoutValue}%`, label: "tied to burnout" },
+              { value: `${impactPct}%`, label: "Abridge keeps" },
               { value: `${td.physicianAgencyWeeksPerVacancy}`, label: "wks locum avoided" },
               { value: formatCurrency(td.physicianAgencyWeeklyPremium), label: "per week" },
             ],
@@ -529,8 +535,15 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
           testId={`ed-toggle-${driver.id}`}
           warning={blocked && "Turn on RN Retention above to see this driver's value. Travel & agency savings are derived from the nurses it retains."}
           buildStruct={{
+            // Full raw chain (mirrors the RN Retention card and the PDF
+            // calcSummary) so the printed factors multiply exactly to the value.
+            // Using the rounded `retained` (0.2) as a hard multiplicand made the
+            // chain fail to reconcile (0.2 × 12 × $2,500 ≠ $5,184).
             factors: [
-              { value: formatNum1(retained), label: "nurses retained" },
+              { value: formatNum(state.numberOfProviders), label: "nurses" },
+              { value: `${td.nursingTurnoverRate}%`, label: "turnover" },
+              { value: "40%", label: "tied to burnout" },
+              { value: `${impactPct}%`, label: "Abridge keeps" },
               { value: `${td.nursingAgencyWeeksPerVacancy}`, label: "wks agency avoided" },
               { value: formatCurrency(td.nursingAgencyWeeklyPremium), label: "per week" },
             ],

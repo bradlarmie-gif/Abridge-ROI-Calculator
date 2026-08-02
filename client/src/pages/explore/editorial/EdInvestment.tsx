@@ -115,6 +115,9 @@ export default function EdInvestment({
     return r < 0 ? "−$" + Math.abs(r).toLocaleString() : "$" + r.toLocaleString();
   };
   const formatNumber = (n: number) => Math.round(n).toLocaleString();
+  // Two decimals plus a real minus sign — a raw `$${n.toFixed(2)}` printed the
+  // malformed "$-0.16" when the net went negative.
+  const formatPerDollar = (n: number) => (n < 0 ? "−$" : "$") + Math.abs(n).toFixed(2);
 
   return (
     <EditorialShell>
@@ -314,16 +317,30 @@ export default function EdInvestment({
 
             <div className="mt-[14px] pt-[18px] border-t-2 border-[#E8E2DA]">
               <div className="text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#2E2822]">Net annual value</div>
-              <div className="font-abridge text-[34px] sm:text-[46px] text-[#EA2C00] leading-none mt-[7px]">
+              {/* Coral is reserved for a real gain; a loss reads in neutral ink, never celebratory. */}
+              <div className={`font-abridge text-[34px] sm:text-[46px] leading-none mt-[7px] ${netAnnualValue >= 0 ? "text-[#EA2C00]" : "text-[#1A1A1A]"}`}>
                 {formatCurrency(netAnnualValue)}
                 <span className="text-[16px] text-[#5E534A]"> / yr</span>
               </div>
-              <div className="inline-flex items-center gap-[9px] mt-[14px] bg-[#FFEDE7] border border-[#F5D3C8] rounded-full px-[15px] py-[8px]">
-                <span className="font-abridge text-[19px] text-[#EA2C00]">{roi.toFixed(1)}×</span>
-                <span className="text-[12.5px] font-bold text-[#B02200]">
-                  ≈ ${netPerDollar.toFixed(2)} net back for every $1 spent
-                </span>
-              </div>
+              {annualInvestment <= 0 ? (
+                <div className="inline-flex items-center gap-[9px] mt-[14px] bg-[#F1EBE3] border border-[#E4DACC] rounded-full px-[15px] py-[8px]">
+                  <span className="text-[12.5px] font-bold text-[#5E534A]">Add your pricing to see the return</span>
+                </div>
+              ) : netAnnualValue > 0 ? (
+                <div className="inline-flex items-center gap-[9px] mt-[14px] bg-[#FFEDE7] border border-[#F5D3C8] rounded-full px-[15px] py-[8px]">
+                  <span className="font-abridge text-[19px] text-[#EA2C00]">{roi.toFixed(1)}×</span>
+                  <span className="text-[12.5px] font-bold text-[#B02200]">
+                    ≈ {formatPerDollar(netPerDollar)} net back for every $1 spent
+                  </span>
+                </div>
+              ) : (
+                <div className="inline-flex items-center gap-[9px] mt-[14px] bg-[#F1EBE3] border border-[#E4DACC] rounded-full px-[15px] py-[8px]">
+                  <span className="font-abridge text-[19px] text-[#5E534A]">{roi.toFixed(1)}×</span>
+                  <span className="text-[12.5px] font-bold text-[#5E534A]">
+                    the modeled value doesn&apos;t cover the cost at this scope
+                  </span>
+                </div>
+              )}
             </div>
 
             <p className="text-[12.5px] text-[#5E534A] leading-[1.55] mt-[18px]">

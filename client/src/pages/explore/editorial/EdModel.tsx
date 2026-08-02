@@ -100,6 +100,9 @@ function rampFactor(month: number, onset: DriverOnset): number {
 }
 
 const fmtCurrency = (n: number) => (n < 0 ? "−$" + Math.abs(Math.round(n)).toLocaleString() : "$" + Math.round(n).toLocaleString());
+// Net-per-dollar keeps two decimals AND a real minus sign — a raw
+// `$${n.toFixed(2)}` yielded the malformed "$-0.16" for a negative net.
+const fmtPerDollar = (n: number) => (n < 0 ? "−$" : "$") + Math.abs(n).toFixed(2);
 const fmtNumber = (n: number) => Math.round(n).toLocaleString();
 const fmtShort = (n: number) => {
   const abs = Math.abs(n);
@@ -409,6 +412,9 @@ export default function EdModel({
         projectionYears: 3,
         netAnnualValue,
         roi,
+        // Same real cumulative-crossover the "When it lands" chart shows (ceil'd
+        // to the customer-facing month), so the PDF can't disagree with the screen.
+        paybackMonth: paybackMonthFrac !== null ? Math.max(1, Math.ceil(paybackMonthFrac)) : null,
         valuePerProvider: baselineCount > 0 ? Math.round(netAnnualValue / baselineCount) : 0,
         ...(expandedProviders > baselineCount || expandedUtilization > state.utilizationPercent
           ? {
@@ -442,14 +448,26 @@ export default function EdModel({
         <div className="bg-[#FDFBF8] border border-[#E8E2DA] rounded-[20px] p-[26px_30px] mt-[30px] flex justify-between items-center gap-[30px] flex-wrap">
           <div>
             <div className="text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#2E2822]">Net annual value</div>
-            <div className="font-abridge text-[54px] text-[#EA2C00] leading-none mt-[7px]">
+            {/* Coral is reserved for a real gain; a loss reads in neutral ink, never celebratory. */}
+            <div className={`font-abridge text-[54px] leading-none mt-[7px] ${netAnnualValue >= 0 ? "text-[#EA2C00]" : "text-[#1A1A1A]"}`}>
               {fmtCurrency(netAnnualValue)}
               <span className="text-[17px] text-[#5E534A]"> / yr</span>
             </div>
-            <div className="inline-flex items-center gap-[9px] mt-[13px] bg-[#FFEDE7] border border-[#F5D3C8] rounded-full px-[15px] py-[8px]">
-              <span className="font-abridge text-[19px] text-[#EA2C00]">{roi.toFixed(1)}×</span>
-              <span className="text-[12.5px] font-bold text-[#B02200]">≈ ${netPerDollar.toFixed(2)} net back for every $1 spent</span>
-            </div>
+            {annualInvestment <= 0 ? (
+              <div className="inline-flex items-center gap-[9px] mt-[13px] bg-[#F1EBE3] border border-[#E4DACC] rounded-full px-[15px] py-[8px]">
+                <span className="text-[12.5px] font-bold text-[#5E534A]">Add your pricing to see the return</span>
+              </div>
+            ) : netAnnualValue > 0 ? (
+              <div className="inline-flex items-center gap-[9px] mt-[13px] bg-[#FFEDE7] border border-[#F5D3C8] rounded-full px-[15px] py-[8px]">
+                <span className="font-abridge text-[19px] text-[#EA2C00]">{roi.toFixed(1)}×</span>
+                <span className="text-[12.5px] font-bold text-[#B02200]">≈ {fmtPerDollar(netPerDollar)} net back for every $1 spent</span>
+              </div>
+            ) : (
+              <div className="inline-flex items-center gap-[9px] mt-[13px] bg-[#F1EBE3] border border-[#E4DACC] rounded-full px-[15px] py-[8px]">
+                <span className="font-abridge text-[19px] text-[#5E534A]">{roi.toFixed(1)}×</span>
+                <span className="text-[12.5px] font-bold text-[#5E534A]">the modeled value doesn&apos;t cover the cost at this scope</span>
+              </div>
+            )}
           </div>
           <div className="flex gap-[30px] flex-wrap">
             <div>
@@ -669,33 +687,43 @@ export default function EdModel({
 
             <div className="border-l border-[#E8E2DA] pl-[30px]">
               <div className="text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#2E2822]">Projected net value at that scope</div>
-              <div className="font-abridge text-[42px] text-[#EA2C00] leading-none mt-[6px]">
+              <div className={`font-abridge text-[42px] leading-none mt-[6px] ${expandedValue >= 0 ? "text-[#EA2C00]" : "text-[#1A1A1A]"}`}>
                 {fmtCurrency(expandedValue)}
                 <span className="text-[15px] text-[#5E534A]"> / yr</span>
               </div>
-              <div className="text-[13px] text-[#5E534A] mt-2">
-                <b className="font-abridge font-normal text-[#1A1A1A]">{expandedRoi.toFixed(1)}×</b> return · up from <b className="font-abridge font-normal text-[#1A1A1A]">{fmtCurrency(netAnnualValue)}</b> today
-              </div>
-              <div className="mt-[18px]">
-                <div className="mb-[10px]">
-                  <div className="flex justify-between text-[12px] mb-[5px]">
-                    <span className="text-[#5E534A]">Today · {fmtNumber(baselineCount)} {isNursing ? "beds" : "providers"}</span>
-                    <span className="font-abridge text-[#1A1A1A]">{fmtCurrency(netAnnualValue)}</span>
+              {netAnnualValue > 0 ? (
+                <>
+                  <div className="text-[13px] text-[#5E534A] mt-2">
+                    <b className="font-abridge font-normal text-[#1A1A1A]">{expandedRoi.toFixed(1)}×</b> return · up from <b className="font-abridge font-normal text-[#1A1A1A]">{fmtCurrency(netAnnualValue)}</b> today
                   </div>
-                  <div className="h-2 bg-[#F1EBE3] rounded-full overflow-hidden">
-                    <div className="h-full rounded-full bg-[#F4A48C]" style={{ width: `${Math.max(4, (netAnnualValue / cmpMax) * 100)}%` }} />
+                  <div className="mt-[18px]">
+                    <div className="mb-[10px]">
+                      <div className="flex justify-between text-[12px] mb-[5px]">
+                        <span className="text-[#5E534A]">Today · {fmtNumber(baselineCount)} {isNursing ? "beds" : "providers"}</span>
+                        <span className="font-abridge text-[#1A1A1A]">{fmtCurrency(netAnnualValue)}</span>
+                      </div>
+                      <div className="h-2 bg-[#F1EBE3] rounded-full overflow-hidden">
+                        <div className="h-full rounded-full bg-[#F4A48C]" style={{ width: `${Math.max(4, (netAnnualValue / cmpMax) * 100)}%` }} />
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex justify-between text-[12px] mb-[5px]">
+                        <span className="text-[#5E534A]">Expanded · {fmtNumber(expandedProviders)} {isNursing ? "beds" : "providers"}</span>
+                        <span className="font-abridge text-[#1A1A1A]">{fmtCurrency(expandedValue)}</span>
+                      </div>
+                      <div className="h-2 bg-[#F1EBE3] rounded-full overflow-hidden">
+                        <div className="h-full rounded-full bg-[#EA2C00]" style={{ width: `${Math.max(4, (expandedValue / cmpMax) * 100)}%` }} />
+                      </div>
+                    </div>
                   </div>
+                </>
+              ) : (
+                // Net is zero/negative: a bigger footprint only scales the same
+                // shortfall, so a "× return · up from …" line would read as a win.
+                <div className="text-[13px] text-[#5E534A] mt-2 leading-[1.5]">
+                  At this scope the cost still exceeds the modeled value. Add {isNursing ? "beds" : "providers"} or adoption, or revisit pricing, to clear it.
                 </div>
-                <div>
-                  <div className="flex justify-between text-[12px] mb-[5px]">
-                    <span className="text-[#5E534A]">Expanded · {fmtNumber(expandedProviders)} {isNursing ? "beds" : "providers"}</span>
-                    <span className="font-abridge text-[#1A1A1A]">{fmtCurrency(expandedValue)}</span>
-                  </div>
-                  <div className="h-2 bg-[#F1EBE3] rounded-full overflow-hidden">
-                    <div className="h-full rounded-full bg-[#EA2C00]" style={{ width: `${Math.max(4, (expandedValue / cmpMax) * 100)}%` }} />
-                  </div>
-                </div>
-              </div>
+              )}
             </div>
           </div>
         </div>

@@ -84,3 +84,56 @@ describe("Explore editorial PDF — renders + setting-aware scope labels", () =>
     expect(html).toMatch(/providers/);
   });
 });
+
+describe("Explore editorial PDF — proof layer + encounter noun are setting-derived", () => {
+  // A realistic nursing model: scoped by beds, no encounters, Revenue is the
+  // non-financial proof layer (Quality carries a real dollar). This is exactly
+  // the shape the OP-hardcoded strings used to break.
+  const nursing: ExplorePDFData = {
+    ...SAMPLE_EXPLORE_PDF_DATA,
+    careSetting: "nursing",
+    careSettingLabel: "Nursing",
+    nursingStaffedBeds: 200,
+    nursingOccupancyRate: 80,
+    annualEncounters: 0,
+    expansionEncounters: undefined,
+  };
+
+  it("names the correct proof-layer domain per setting (nursing = Revenue, never Quality)", () => {
+    const html = renderToStaticMarkup(<ExploreEditorialPdfDocument data={nursing} />);
+    expect(html).toContain("Revenue is tracked as proof");
+    expect(html).toContain("Revenue · the proof running underneath");
+    // the OP-shaped literals must never appear on a nursing model
+    expect(html).not.toContain("Quality is tracked as proof");
+    expect(html).not.toContain("Quality · the proof running underneath");
+  });
+
+  it("inpatient names both proof-layer domains (Capacity and Quality)", () => {
+    const ip: ExplorePDFData = { ...SAMPLE_EXPLORE_PDF_DATA, careSetting: "inpatient", careSettingLabel: "Inpatient" };
+    const html = renderToStaticMarkup(<ExploreEditorialPdfDocument data={ip} />);
+    expect(html).toContain("Capacity and Quality are tracked as proof");
+  });
+
+  it("never prints '0 encounters' for nursing (uses patient-days instead)", () => {
+    const html = renderToStaticMarkup(<ExploreEditorialPdfDocument data={nursing} />);
+    expect(html).not.toContain("0 encounters");
+    expect(html).not.toContain("Annual encounters");
+    expect(html).toContain("patient-days");
+    expect(html).toContain("Saved per shift");
+  });
+
+  it("does not hardcode an Outpatient-shaped downside multiple", () => {
+    const html = renderToStaticMarkup(<ExploreEditorialPdfDocument data={nursing} />);
+    expect(html).not.toContain("four times");
+  });
+
+  it("uses the real payback month threaded from the screen, not the closed-form estimate", () => {
+    const priced: ExplorePDFData = { ...SAMPLE_EXPLORE_PDF_DATA, paybackMonth: 9 };
+    const html = renderToStaticMarkup(<ExploreEditorialPdfDocument data={priced} />);
+    expect(html).toContain("Mo 9");
+    // null = does not pay back within year 1 → no crossover marker/caption
+    const noPayback: ExplorePDFData = { ...SAMPLE_EXPLORE_PDF_DATA, paybackMonth: null };
+    const html2 = renderToStaticMarkup(<ExploreEditorialPdfDocument data={noPayback} />);
+    expect(html2).not.toContain("clears the cost");
+  });
+});

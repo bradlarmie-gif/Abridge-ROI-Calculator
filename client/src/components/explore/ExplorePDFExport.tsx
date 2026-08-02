@@ -118,6 +118,11 @@ export interface ExplorePDFData {
   netAnnualValue: number;
   roi: number;
   valuePerProvider: number;
+  /** Real cumulative-crossover payback month from the model screen (already
+      ceil'd to the customer-facing month), so the PDF's "When it lands" agrees
+      with the interactive one. null = does not pay back within year 1;
+      undefined = not provided (PDF falls back to a closed-form estimate). */
+  paybackMonth?: number | null;
 
   // Expansion opportunity (optional — only populated if user configured full-scale)
   expansionProviders?: number;
