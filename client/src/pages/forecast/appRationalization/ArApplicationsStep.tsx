@@ -197,7 +197,7 @@ export default function ArApplicationsStep({
           )}
 
           {/* Column headers */}
-          <div className="hidden md:grid grid-cols-[1fr_116px_188px_104px_120px] gap-3.5 px-4 pb-2">
+          <div className="hidden lg:grid grid-cols-[1fr_116px_188px_104px_120px] gap-3.5 px-4 pb-2">
             {COL_HEADERS.map((h, i) => (
               <span key={h} className={`text-[9px] font-bold uppercase tracking-[0.13em] text-[#B4A99B] ${i === COL_HEADERS.length - 1 ? "text-right" : ""}`}>{h}</span>
             ))}

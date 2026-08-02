@@ -44,7 +44,7 @@ export default function ArStackRow({
 
   return (
     <div
-      className="ar-row grid grid-cols-1 md:grid-cols-[1fr_116px_188px_104px_120px] gap-3.5 items-center bg-white border border-[#E8E2DA] rounded-2xl px-4 py-3.5 mb-2.5"
+      className="ar-row grid grid-cols-1 lg:grid-cols-[1fr_116px_188px_104px_120px] gap-3.5 items-center bg-white border border-[#E8E2DA] rounded-2xl px-4 py-3.5 mb-2.5"
       data-testid={`ar-row-${item.id}`}
     >
       {/* Application: icon + editable vendor name + category */}

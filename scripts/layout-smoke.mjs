@@ -21,16 +21,57 @@ const BASE = process.env.SMOKE_BASE || "http://localhost:5199";
 // bug at any width (this is the "minimized window" regime that hid the offset-row
 // clip), while a legitimately responsive header/nav wrap there is not.
 const WIDTHS = [1440, 1200, 1024];
-const NARROW_WIDTHS = [820, 700];
+// A flex field only clips its value inside a NARROW BAND of widths (grow rescues
+// it on either side). Two discrete widths straddle the band and miss it — the
+// clip that shipped lived at ~640-780px while checks at 820/700 both passed. So
+// the narrow tier must be a DENSE sweep, not a couple of points.
+const NARROW_WIDTHS = [960, 920, 880, 840, 800, 760, 720, 680, 640, 600, 560];
 const HEADER_MAX = 104; // a single/double-row top bar; a wrapped nav blows past this
 
-// route, label, and nav button texts to click (each visits a chapter)
+// A long name that forces any name field to reveal a clip if the box is fixed.
+const LONG_NAME = "Legacy ambient documentation platform";
+
+// Every routable surface. `click` = a nav-button label to press after load;
+// `drive` = a custom interaction (used to reach states behind clicks/modals,
+// e.g. App Rationalization only shows its vendor rows once a tool is added).
 const ROUTES = [
   { url: "/?proformapreview=1", label: "Proforma · Build" },
   { url: "/?proformapreview=1", label: "Proforma · Case", click: "The case" },
   { url: "/?proformapreview=1", label: "Proforma · Present", click: "Present" },
-  { url: "/?explorepreview=1", label: "Explore" },
-  { url: "/?multipreview=1&setting=Outpatient", label: "Attain · experience" },
+  { url: "/?explorepreview=1", label: "Explore · flow" },
+  { url: "/?explore=outpatient", label: "Explore · outpatient" },
+  { url: "/?explore=ed", label: "Explore · ED" },
+  { url: "/?explore=inpatient", label: "Explore · inpatient" },
+  { url: "/?explore=nursing", label: "Explore · nursing" },
+  { url: "/?multipreview=1", label: "Attain · multi-category" },
+  { url: "/?attainpreview=1", label: "Attain · matrix" },
+  { url: "/?consultpreview=1", label: "Attain · align" },
+  { url: "/?planpreview=1", label: "Attain · plan" },
+  { url: "/?attainv2=1", label: "Attain · v2 funnel" },
+  { url: "/forecast", label: "Forecast · hub" },
+  {
+    url: "/",
+    label: "App Rationalization · row",
+    // Home splash -> Forecast -> App Rationalization -> add a long-named custom
+    // tool (needs annual spend > 0 to enable "Add to stack") so the vendor row
+    // renders and any name clip is exposed.
+    drive: async (page) => {
+      await page.getByRole("button", { name: /get started/i }).first().click({ timeout: 6000 }).catch(() => {});
+      await page.waitForTimeout(400);
+      await page.getByText("Forecast", { exact: true }).first().click({ timeout: 6000 });
+      await page.waitForTimeout(500);
+      await page.getByText("App Rationalization", { exact: true }).first().click({ timeout: 6000 });
+      await page.waitForTimeout(500);
+      await page.getByTestId("ar-add-custom-tool").click({ timeout: 6000 });
+      await page.waitForTimeout(300);
+      await page.getByTestId("ar-add-vendor").fill(LONG_NAME, { timeout: 6000 });
+      await page.getByTestId("ar-add-spend").fill("180000", { timeout: 6000 });
+      await page.waitForTimeout(150);
+      await page.getByTestId("ar-add-confirm").click({ timeout: 6000 });
+      await page.waitForTimeout(400);
+      await page.evaluate(() => (document.activeElement)?.blur?.());
+    },
+  },
 ];
 
 const fails = [];
@@ -50,6 +91,10 @@ for (const route of ROUTES) {
       if (route.click) {
         await page.getByRole("button", { name: new RegExp(route.click) }).first().click({ timeout: 6000 }).catch(() => {});
         await page.waitForTimeout(500);
+      }
+      if (route.drive) {
+        try { await route.drive(page); }
+        catch (e) { fails.push(`${route.label} @${width}: drive step failed ${String(e).slice(0, 80)}`); }
       }
       const r = await page.evaluate(() => {
         const overflow = document.documentElement.scrollWidth - window.innerWidth;

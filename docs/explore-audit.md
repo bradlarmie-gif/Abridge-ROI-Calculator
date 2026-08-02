@@ -124,5 +124,10 @@ layout/responsive change (needs the dev server on :5199):
 npm run layout:smoke
 ```
 
-It drives every tool at 1440/1200/1024 and fails on horizontal overflow or a
-wrapped/squished top bar (the class that let the 3-line header ship on a green suite).
+It drives all 15 app surfaces (proforma Build/Case/Present, Explore + each
+care setting, every Attain preview, the Forecast hub, and App Rationalization
+with a tool added) at desktop widths PLUS a dense narrow sweep (960->560px in
+40px steps). It fails on horizontal overflow, a wrapped/squished top bar, or a
+text input whose value is clipped. The dense sweep matters: a flex field only
+clips inside a ~40px band, so two discrete widths straddle and miss it (that is
+exactly how the header AND the offset/vendor name clips shipped on a green suite).
