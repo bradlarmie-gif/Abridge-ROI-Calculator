@@ -87,7 +87,7 @@ Extend the existing per-setting methodology data with the causal-chain, leading/
 - **Layout smoke:** the `?methodpdf=1` route joins `PDF_ROUTES` (bleed / overflow / pages / NaN / sparse), footer format registered in the sparse detector.
 - Tone stays a human review pass.
 
-## Open items (for Brad / clinical review)
+## Decisions (Brad, 2026-08-02)
 
-- The ED, Inpatient, and Nursing **illustrative math** figures above are representative and need a clinical sign-off pass so every number is defensible (the Outpatient set is already validated).
-- Confirm the setting-chapter lever headlines ("Speed is the lever," "Acuity is the lever," "Time is the lever").
+- **Illustrative math:** build with the representative figures above and lock them in. They must reconcile (foot-test) and read defensibly; a later clinical pass can adjust values without changing the structure.
+- **Lever headlines confirmed:** Outpatient "Volume is the lever," ED "Speed is the lever," Inpatient "Acuity is the lever," Nursing "Time is the lever."
