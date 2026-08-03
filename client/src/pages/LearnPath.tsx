@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { MethodologyEditorialFor } from "./methodology/editorial/MethodologyEditorial";
 import MethodologyContinuum from "./methodology/editorial/MethodologyContinuum";
+import MethodologyOverview from "./methodology/editorial/MethodologyOverview";
 
 interface LearnPathProps {
   onBack: () => void;
@@ -11,7 +12,7 @@ interface LearnPathProps {
 type CareSettingType = "outpatient" | "ed" | "nursing" | "inpatient";
 // "framework"/"home" are kept for back-compat with existing deep links; both now
 // resolve to the default setting page since the dark hub has been retired.
-type LearnScreen = "framework" | "home" | "continuum" | "outpatient" | "ed" | "inpatient" | "nursing";
+type LearnScreen = "framework" | "home" | "continuum" | "overview" | "outpatient" | "ed" | "inpatient" | "nursing";
 
 export type { LearnScreen };
 
@@ -21,7 +22,7 @@ export default function LearnPath({ onBack, onStartCalculator, initialScreen }: 
   // Land directly on a setting; the switcher moves between settings and the
   // continuum capstone. Legacy "framework"/"home" entries fall through to it.
   const resolveInitial = (s?: LearnScreen): LearnScreen =>
-    s && (SETTINGS.includes(s as CareSettingType) || s === "continuum") ? s : "outpatient";
+    s && (SETTINGS.includes(s as CareSettingType) || s === "continuum" || s === "overview") ? s : "overview";
   const [currentScreen, setCurrentScreen] = useState<LearnScreen>(resolveInitial(initialScreen));
 
   // Scroll to top on every screen change (mobile fix)
@@ -36,6 +37,10 @@ export default function LearnPath({ onBack, onStartCalculator, initialScreen }: 
   const handleNavigate = (screen: string) => {
     setCurrentScreen(screen as LearnScreen);
   };
+
+  if (currentScreen === "overview") {
+    return <MethodologyOverview onBack={onBack} onHome={onBack} onNavigate={handleNavigate} />;
+  }
 
   if (currentScreen === "continuum") {
     return <MethodologyContinuum onBack={onBack} onHome={onBack} onNavigate={handleNavigate} />;
