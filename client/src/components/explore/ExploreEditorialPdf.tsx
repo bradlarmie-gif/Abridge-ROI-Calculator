@@ -547,7 +547,7 @@ function ValueBar({ label, total, max }: { label: string; total: number; max: nu
             <span style={{ fontSize: 10, color: C.faint }}>/yr</span>
           </span>
         ) : (
-          <span style={sLbl}>Proof · not counted</span>
+          <span style={sLbl}>Tracked, not counted</span>
         )}
       </div>
       <div style={{ height: 7, background: "#EFE9E1", borderRadius: 99, overflow: "hidden", marginTop: 6 }}>
@@ -734,7 +734,7 @@ function NumberPage({ data }: { data: ExplorePDFData }): JSX.Element {
       )}
 
       <Footer
-        note={`Counted once, valued at margin, never charges. ${joinAnd(proofDomains)} ${proofDomains.length > 1 ? "are" : "is"} tracked as proof and never added to the dollar total.`}
+        note={`Counted once, valued at margin, never charges. ${joinAnd(proofDomains)} ${proofDomains.length > 1 ? "are" : "is"} tracked, not counted, and never added to the dollar total.`}
         num="01"
       />
     </Page>
@@ -815,16 +815,16 @@ function MutedDomain({
     .filter((d) => d.visibility === "quantified")
     .map((d) => d.label);
   const proofOnly = quantifiedNames.length === 0;
-  const rightLabel = proofOnly ? "Proof · not counted" : "Not modeled";
+  const rightLabel = proofOnly ? "Tracked, not counted" : "Not modeled";
   // The Quality-as-proof gloss only applies where Quality is actually this
   // setting's proof layer (outpatient/ED/inpatient). For nursing, Quality
   // carries a dollar and Revenue is the proof layer, so a muted nursing
   // Quality falls through to the generic proof/unmodeled framing.
   const qualityIsProof = q.quadrant === "Quality" && proofDomains.includes("Quality");
   const body = qualityIsProof
-    ? "Documentation quality is tracked as proof that protects the revenue above, care-gap closure, HEDIS/Stars, denial-defensibility. It leads the dollars and is never added to the total."
+    ? "Documentation quality is tracked, not counted; it protects the revenue above, care-gap closure, HEDIS/Stars, denial-defensibility. It leads the dollars and is never added to the total."
     : proofOnly
-      ? `${q.quadrant} here is tracked as proof: the signals that support the value above, never added to the dollar total.`
+      ? `${q.quadrant} here is tracked, not counted: the signals that support the value above, never added to the dollar total.`
       : `Available to model in ${q.quadrant}: ${quantifiedNames.join(", ")}. Off in this run.`;
   return (
     <div style={{ marginTop: 13 }}>

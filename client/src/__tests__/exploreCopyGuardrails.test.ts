@@ -45,14 +45,14 @@ describe("Explore COPY guardrails — Legal / brand tripwires", () => {
 describe("Explore PDF — proof/encounter/downside phrasing is setting-derived, not hardcoded", () => {
   const pdf = readFileSync(join(CLIENT_SRC, "components/explore/ExploreEditorialPdf.tsx"), "utf8");
 
-  it("does not hardcode Quality as the proof layer (footer + synthesis caption)", () => {
-    expect(pdf).not.toMatch(/Quality is tracked as proof/);
+  it("does not hardcode Quality as the tracked-not-counted layer (footer + synthesis caption)", () => {
+    expect(pdf).not.toMatch(/Quality is tracked, not counted/);
     expect(pdf).not.toMatch(/Quality · the proof running underneath/);
   });
 
-  it("derives the proof caption/footer from PROOF_LAYER via the setting", () => {
+  it("derives the caption/footer from PROOF_LAYER via the setting", () => {
     expect(pdf).toContain("proofDomainsFor(");
-    expect(pdf).toContain("tracked as proof and never added to the dollar total");
+    expect(pdf).toContain("tracked, not counted, and never added to the dollar total");
   });
 
   it("does not hardcode an Outpatient-shaped 'four times' downside multiple", () => {

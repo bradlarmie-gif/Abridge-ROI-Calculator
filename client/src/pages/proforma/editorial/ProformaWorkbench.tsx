@@ -442,7 +442,7 @@ function DriverRow({
         <span style={{ width: 34, flex: "none" }} />
         <QuadTag quadrant={driver.quadrant} />
         <span style={{ flex: 1, fontWeight: 700, fontSize: 14.5, color: T.faint }}>{driver.name}</span>
-        <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: T.faint }}>Proof · not counted</span>
+        <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: T.faint }}>Tracked, not counted</span>
       </div>
     );
   }

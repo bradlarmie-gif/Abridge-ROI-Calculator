@@ -101,15 +101,15 @@ describe("Explore editorial PDF — proof layer + encounter noun are setting-der
 
   it("names the correct proof-layer domain per setting (nursing = Revenue, never Quality)", () => {
     const html = renderToStaticMarkup(<ExploreEditorialPdfDocument data={nursing} />);
-    expect(html).toContain("Revenue is tracked as proof");
+    expect(html).toContain("Revenue is tracked, not counted");
     // the OP-shaped literal must never appear on a nursing model
-    expect(html).not.toContain("Quality is tracked as proof");
+    expect(html).not.toContain("Quality is tracked, not counted");
   });
 
   it("inpatient names both proof-layer domains (Capacity and Quality)", () => {
     const ip: ExplorePDFData = { ...SAMPLE_EXPLORE_PDF_DATA, careSetting: "inpatient", careSettingLabel: "Inpatient" };
     const html = renderToStaticMarkup(<ExploreEditorialPdfDocument data={ip} />);
-    expect(html).toContain("Capacity and Quality are tracked as proof");
+    expect(html).toContain("Capacity and Quality are tracked, not counted");
   });
 
   it("never prints '0 encounters' for nursing (uses patient-days instead)", () => {

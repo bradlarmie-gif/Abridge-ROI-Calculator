@@ -29,6 +29,6 @@ describe("Methodology PDF illustrative math foots", () => {
     // dollar here); Revenue is the proof layer.
     expect(n.math.length).toBeGreaterThanOrEqual(2);
     expect(n.math.some((m) => /harm|hapi|falls|sepsis/i.test(m.name))).toBe(true);
-    expect(n.proofNote.toLowerCase()).toContain("revenue is the proof layer");
+    expect(n.proofNote.toLowerCase()).toContain("revenue is tracked, not counted");
   });
 });

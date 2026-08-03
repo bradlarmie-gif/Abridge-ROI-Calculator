@@ -186,7 +186,7 @@ export const WATCH_SIGNALS: Partial<
     },
 
     Revenue: {
-      dollar: "tracked as proof, no dollar counted here",
+      dollar: "tracked, not counted; no dollar here",
       signals: [
         {
           name: "Nurse-documented CC/MCC support",

@@ -339,7 +339,7 @@ export function buildProformaPdfData(
     costRows,
     totalInvestmentRow,
     costNote:
-      "Cost displacement from retired tooling is modeled separately in App Rationalization and deliberately excluded from this return. Quality value is tracked as proof and kept out of the dollars.",
+      "Cost displacement from retired tooling is modeled separately in App Rationalization and deliberately excluded from this return. Quality value is tracked, not counted, and kept out of the dollars.",
     scenarios: [
       scenario("Conservative", 0.7),
       scenario("Base", 1.0, true),

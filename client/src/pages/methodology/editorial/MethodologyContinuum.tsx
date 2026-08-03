@@ -65,7 +65,7 @@ export default function MethodologyContinuum({ onBack, onHome, onNavigate }: Pro
         <div className="border-t border-[#E8E2DA] pt-10">
           <div className="text-[11px] font-extrabold tracking-[0.13em] uppercase text-[#443A32]">Counted once</div>
           <p className="mt-2 mb-6 text-[13.5px] leading-[1.5] text-[#8C8073] max-w-[620px]">
-            The four domains are constant. What moves is which one is the proof layer: tracked, never billed. The model never counts a dollar twice, so each one appears once, in the setting and domain where it is earned.
+            The four domains are constant. What moves is which one is tracked, not counted, never billed. The model never counts a dollar twice, so each one appears once, in the setting and domain where it is earned.
           </p>
 
           <div className="overflow-x-auto -mx-5 px-5 sm:mx-0 sm:px-0">
@@ -117,14 +117,14 @@ export default function MethodologyContinuum({ onBack, onHome, onNavigate }: Pro
           {/* legend */}
           <div className="flex flex-wrap items-center gap-x-7 gap-y-2 mt-4 text-[12px] text-[#8C8073]">
             <span className="flex items-center gap-2"><span className="w-4 h-4 rounded-full bg-[#FBEAE4] text-[#B02200] text-[10px] font-extrabold flex items-center justify-center">$</span> Carries a dollar</span>
-            <span className="flex items-center gap-2"><span className="w-4 h-4 rounded-full border border-[#DCD3C6] flex items-center justify-center"><span className="w-[5px] h-[5px] rounded-full bg-[#B4A896]" /></span> The proof layer, tracked not billed</span>
+            <span className="flex items-center gap-2"><span className="w-4 h-4 rounded-full border border-[#DCD3C6] flex items-center justify-center"><span className="w-[5px] h-[5px] rounded-full bg-[#B4A896]" /></span> Tracked, not counted</span>
           </div>
 
           {/* the read */}
           <div className="mt-10">
             <div className="text-[11px] font-extrabold tracking-[0.13em] uppercase text-[#443A32]">The read</div>
             <p className="mt-4 text-[15px] sm:text-[16px] leading-[1.65] text-[#5E534A] max-w-[720px]">
-              Notice where the color moves. In most settings Quality is the proof layer, the place you watch rather than bill. In nursing it inverts: the harm-prevention dollar lives in Quality, and Revenue becomes the proof. Inpatient carries two proof layers, Capacity and Quality, because the dollar it frees shows up in Revenue. The model never counts a dollar twice. Each one appears once, in the setting and the domain where it is earned.
+              Notice where the color moves. In most settings Quality is tracked, not counted, the place you watch rather than bill. In nursing it inverts: the harm-prevention dollar lives in Quality, and Revenue becomes the one tracked, not counted. Inpatient carries two tracked, not counted layers, Capacity and Quality, because the dollar it frees shows up in Revenue. The model never counts a dollar twice. Each one appears once, in the setting and the domain where it is earned.
             </p>
           </div>
         </div>

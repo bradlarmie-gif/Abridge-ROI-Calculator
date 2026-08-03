@@ -551,7 +551,7 @@ function CaseInner({ data }: { data: ProformaPdfData }): JSX.Element {
                   {fmtMoney(t.value)}<span style={{ fontSize: 10, color: "var(--faint)" }}> · {t.pct}%</span>
                 </span>
               ) : (
-                <span style={{ fontSize: 11, fontWeight: 700, color: "var(--faint)" }}>tracked as proof</span>
+                <span style={{ fontSize: 11, fontWeight: 700, color: "var(--faint)" }}>tracked, not counted</span>
               )}
             </div>
             <div className="northstar">{t.northStar}</div>
@@ -934,7 +934,7 @@ function SettingTrailer({ s }: { s: PfSetting }): JSX.Element {
         ))}
       </div>
       <div style={{ marginTop: 20 }}>
-        <div className="lbl" style={{ marginBottom: 9 }}>Signals to track · quality, as proof</div>
+        <div className="lbl" style={{ marginBottom: 9 }}>Signals to track · quality, not counted</div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 30px" }}>
           {s.signals.map((sig, i) => (
             <div className="sig" key={i} style={i >= 2 ? { border: "none" } : undefined}>

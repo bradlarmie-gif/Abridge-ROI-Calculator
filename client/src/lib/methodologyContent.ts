@@ -53,7 +53,7 @@ export const METHODOLOGY_SETTINGS: MethodologySetting[] = [
       { title: "Book the hours it returns", desc: "Returned charting time becomes access only once it is scheduled. Booked as visits, it turns into margin." },
       { title: "Keep every claim to the record", desc: "Nothing is coded beyond what the record supports, and the lift is measured against your own baseline. Defensible, and yours." },
     ],
-    proofNote: "Documentation quality is tracked as proof that protects the revenue above: care-gap closure, HEDIS/Stars, denial defensibility. It leads the dollars and is never added to the total.",
+    proofNote: "Documentation quality is tracked, not counted; it protects the revenue above: care-gap closure, HEDIS/Stars, denial defensibility. It leads the dollars and is never added to the total.",
   },
   {
     id: "ed",
@@ -82,7 +82,7 @@ export const METHODOLOGY_SETTINGS: MethodologySetting[] = [
       { title: "Convert returned time to throughput", desc: "Charting time returned means providers reach the next patient sooner. Where that happens, fewer patients leave before being seen." },
       { title: "Keep every claim to the record", desc: "Nothing is coded beyond what the note supports, measured against your own baseline. Defensible, and yours." },
     ],
-    proofNote: "Safety and experience signals (door-to-provider time, LWBS) are tracked as proof and kept out of the dollar case.",
+    proofNote: "Safety and experience signals (door-to-provider time, LWBS) are tracked, not counted, and kept out of the dollar case.",
   },
   {
     id: "inpatient",
@@ -111,7 +111,7 @@ export const METHODOLOGY_SETTINGS: MethodologySetting[] = [
       { title: "Defend status with the record", desc: "Where the note supports inpatient status, observation downgrades are appealable on the documentation." },
       { title: "Keep every claim to the record", desc: "Nothing is coded beyond what the note supports, measured against your own baseline. Defensible, and yours." },
     ],
-    proofNote: "Case-mix index trend and query metrics are tracked as proof alongside the dollar case, not added to it.",
+    proofNote: "Case-mix index trend and query metrics are tracked, not counted, alongside the dollar case.",
   },
   {
     id: "nursing",
@@ -119,11 +119,11 @@ export const METHODOLOGY_SETTINGS: MethodologySetting[] = [
     unit: "per patient-day",
     lever: "Time is the lever.",
     leverBlurb:
-      "A mostly non-billing setting where the value is hours returned to the bedside and harm avoided. Revenue is the proof layer, not the point.",
+      "A mostly non-billing setting where the value is hours returned to the bedside and harm avoided. Revenue is tracked, not counted, not the point.",
     dominantLever: "Time at the bedside & safety. Mostly non-billing; the value is hours and harm avoided.",
     recordChanges: "Flowsheet completeness and hours returned from charting.",
     comparisonSignals: "Flowsheet completeness, time in documentation.",
-    comparisonOutcomes: "Returned bedside time, harm events avoided, overtime down (revenue is the proof layer).",
+    comparisonOutcomes: "Returned bedside time, harm events avoided, overtime down (revenue is tracked, not counted).",
     chain: [
       { n: "01 · The record changes", title: "Flowsheets complete, in real time", desc: "Documentation is captured at the bedside, not caught up on later." },
       { n: "02 · The mechanism", title: "Hours returned; risks surfaced", desc: "Charting time returns to care, and safety-relevant findings surface earlier in the record." },
@@ -140,6 +140,6 @@ export const METHODOLOGY_SETTINGS: MethodologySetting[] = [
       { title: "Return the hours to the bedside", desc: "Documentation time saved becomes care time where it is protected, not backfilled with new tasks." },
       { title: "Keep every claim to the record", desc: "Only harm the record surfaces and hours it returns are counted, measured against your own baseline. Defensible, and yours." },
     ],
-    proofNote: "In nursing, Revenue is the proof layer (little of the work is billed). The dollar case is the harm a complete record helps avoid and the time it returns.",
+    proofNote: "In nursing, Revenue is tracked, not counted (little of the work is billed). The dollar case is the harm a complete record helps avoid and the time it returns.",
   },
 ];

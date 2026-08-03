@@ -372,7 +372,7 @@ export function AttainExperience({ setting, cells, baseline, initial, onPersist 
                   <div key={c.category}>
                     <div className="flex items-baseline justify-between mb-1">
                       <span className="text-[14px] text-[#1A1A1A]">{catLabel(c)}</span>
-                      <span className="text-[11px] font-bold uppercase tracking-[1.5px] text-[#6B6B6B]">tracked as proof</span>
+                      <span className="text-[11px] font-bold uppercase tracking-[1.5px] text-[#6B6B6B]">tracked, not counted</span>
                     </div>
                     <div className="h-2 rounded-full overflow-hidden" style={{ backgroundImage: "repeating-linear-gradient(45deg, #E8E2DA 0, #E8E2DA 4px, #F2EDE5 4px, #F2EDE5 8px)" }} />
                   </div>

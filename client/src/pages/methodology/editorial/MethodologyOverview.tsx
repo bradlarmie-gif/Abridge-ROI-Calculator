@@ -14,7 +14,7 @@ const VALUES: { label: string; dot: string; desc: string }[] = [
   { label: "Revenue", dot: "#EA2C00", desc: "Acuity and services already delivered, captured instead of lost to thin notes." },
   { label: "Capacity", dot: "#F0704E", desc: "Clinician hours returned from after-hours charting to patient care." },
   { label: "Workforce", dot: "#F4A48C", desc: "The documentation burden that drives burnout, lifted." },
-  { label: "Quality", dot: "#B4A896", desc: "Care gaps and safety signals surfaced in the record, tracked as proof." },
+  { label: "Quality", dot: "#B4A896", desc: "Care gaps and safety signals surfaced in the record, tracked, not counted." },
 ];
 
 /**

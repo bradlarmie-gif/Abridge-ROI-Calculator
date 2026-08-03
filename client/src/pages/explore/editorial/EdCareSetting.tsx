@@ -222,7 +222,7 @@ export default function EdCareSetting({ selectedSetting, onSelectSetting, onNext
                             >
                               {isProof && (
                                 <span className="absolute top-[14px] right-[14px] text-[8.5px] font-extrabold tracking-[0.05em] uppercase text-[#8A8480] bg-[#F2ECE3] rounded-full px-[8px] py-[3px]">
-                                  Proof
+                                  Not counted
                                 </span>
                               )}
                               <div className="flex items-center gap-[7px]">
@@ -250,7 +250,7 @@ export default function EdCareSetting({ selectedSetting, onSelectSetting, onNext
                             <span className="text-[10px] font-extrabold tracking-[0.05em] uppercase text-[#EA2C00] bg-[#FFEDE7] rounded-full px-[10px] py-[4px] whitespace-nowrap mt-[1px]">The read</span>
                             <span className="text-[13px] text-[#7C766F] leading-[1.5]">
                               <b className="text-[#1A1A1A] font-bold">{list(dollar)} carry the dollar.</b>{" "}
-                              {list(proof)} {proof.length > 1 ? "are" : "is"} the proof we track alongside, never counted in the number.
+                              {list(proof)} {proof.length > 1 ? "are" : "is"} tracked alongside, never counted in the number.
                             </span>
                           </motion.div>
                         );

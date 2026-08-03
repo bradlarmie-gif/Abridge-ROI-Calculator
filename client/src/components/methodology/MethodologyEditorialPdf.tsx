@@ -326,7 +326,7 @@ function RecordPage(): JSX.Element {
           />
           <FloorCell dot={C.cap} name="Capacity" desc="Clinician hours returned from after-hours charting to patient care." />
           <FloorCell dot={C.wf} name="Workforce" desc="The documentation burden that drives burnout, lifted." />
-          <FloorCell dot={C.off} name="Quality" desc="Care gaps and safety signals surfaced in the record, tracked as proof." />
+          <FloorCell dot={C.off} name="Quality" desc="Care gaps and safety signals surfaced in the record, tracked, not counted." />
         </div>
       </div>
 
