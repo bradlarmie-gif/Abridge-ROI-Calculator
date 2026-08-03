@@ -495,11 +495,16 @@ function CaseInner({ data }: { data: ProformaPdfData }): JSX.Element {
       <div className="eyebrow" style={{ marginTop: 16 }}>The case, grounded</div>
       <h2 className="chaptitle">What the deal is, and where the value comes from.</h2>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16, marginTop: dense ? 12 : 18, padding: dense ? "12px 0" : "16px 0", borderTop: "1px solid var(--hair)", borderBottom: "1px solid var(--hair)" }}>
-        <div className="stat"><div className="v coral">{fmtM(data.termNet)}</div><div className="k">3-year net value</div></div>
-        <div className="stat"><div className="v">{paybackTxt}</div><div className="k">Payback</div></div>
-        <div className="stat"><div className="v">{data.roi.toFixed(1)}×</div><div className="k">Return on investment</div></div>
-        <div className="stat"><div className="v">{fmtM(data.runRateValue)}<span style={{ fontSize: 12, color: "var(--faint)" }}>/yr</span></div><div className="k">At full scale</div></div>
+      {/* Page 2 (the pitch) owns the 3-year net / payback / ROI trio; this page
+          grounds the case in the annual run-rate the operation actually produces. */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 24, marginTop: dense ? 12 : 18, padding: dense ? "12px 0" : "16px 0", borderTop: "1px solid var(--hair)", borderBottom: "1px solid var(--hair)" }}>
+        <div>
+          <div className="v coral" style={{ fontSize: 46, lineHeight: 1 }}>{fmtM(data.runRateValue)}<span style={{ fontSize: 16, color: "var(--faint)" }}>/yr</span></div>
+          <div className="k" style={{ marginTop: 6 }}>At full scale · clinical value, counted once</div>
+        </div>
+        <p style={{ fontSize: 12, color: "var(--faint)", lineHeight: 1.5, maxWidth: 320, paddingBottom: 4 }}>
+          What the operation produces in a year once {data.settings.length === 1 ? "the care setting reaches" : data.settings.length === 2 ? "both care settings reach" : `all ${numWord(data.settings.length)} care settings reach`} full adoption. The three-year case compounds from this run-rate as teams ramp; payback lands in {paybackTxt.toLowerCase()}.
+        </p>
       </div>
 
       <div className="lbl" style={{ marginTop: dense ? 14 : 18, marginBottom: 4 }}>

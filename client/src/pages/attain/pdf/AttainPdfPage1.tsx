@@ -131,7 +131,7 @@ export default function AttainPdfPage1({ data = SAMPLE, mode = "kickoff" }: { da
           <div className="flex items-center gap-[16px]">
             <img src={abridgeLogo} alt="Abridge" className="h-[20px] w-auto" />
             <span className="h-[20px] w-px bg-[#D8CFC0]" />
-            <span className="text-[10.5px] font-bold uppercase tracking-[2.5px] text-[#8C8C8C]">Value Attainment Plan</span>
+            <span className="text-[10.5px] font-bold uppercase tracking-[2.5px] text-[#8C8C8C]">The case{review ? " · where it stands" : ""}</span>
           </div>
           <div className="text-right">
             <p className="font-abridge text-[15px] text-[#1A1A1A] leading-tight">{data.partner}</p>

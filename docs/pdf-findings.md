@@ -25,7 +25,8 @@ Status: ✅ fixed · ⏳ pending mechanical · ❗ needs Brad's call.
 - ❗ **[Major] (judgment) p4 and p5 open with the same two signals** verbatim (time-in-note, work-outside-work). Two owners, identical numbers → reads templated. Needs category-specific signals.
 - ❗ **[Major] (judgment) $729K hero repeats identically p2→p3.** Let p2 own the promise; p3 should pivot to the realized/remaining scoreboard.
 - ⏳ **[Major] (mechanical/legal) "Prevented by Abridge 30%"** is a causal claim → "Expected to prevent" / "Attributable share."
-- Minor: "34%" shown twice on p3; TOC "case/plan/proof" doesn't match the body; coral on after-signal values.
+- ✅ **FIXED — TOC "case/plan/proof" now matches the body.** Every TOC promise now appears as a labeled section: the case page is masted "The case · where it stands"; category pages are masted "The plan & the proof" and carry coral "THE PLAN" (signals/outcomes) and "THE PROOF" (chain/assumptions) section anchors. Verified no overflow on the category page.
+- Minor: "34%" shown twice on p3; coral on after-signal values.
 
 ## Explore (7 pages)
 

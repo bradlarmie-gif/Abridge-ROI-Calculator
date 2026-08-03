@@ -255,7 +255,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 function CategoryPage({ c, page, idx, total, data }: { c: PlanCat; page: number; idx: number; total: number; data: PdfData }) {
   return (
     <PdfPage>
-      <Mast section={`The Plan · ${idx} of ${total} categories`} partner={data.partner} setting={data.setting} date={data.date} />
+      <Mast section={`The plan & the proof · ${idx} of ${total} categories`} partner={data.partner} setting={data.setting} date={data.date} />
       <div className="flex-1 flex flex-col">
         {/* header */}
         <div className="flex items-baseline justify-between mb-[6px]">
@@ -264,8 +264,9 @@ function CategoryPage({ c, page, idx, total, data }: { c: PlanCat; page: number;
         </div>
         <div className="h-[2px] bg-[#1A1A1A]" />
 
-        {/* what we measure */}
-        <div className="mt-[30px] grid grid-cols-2 gap-[46px]">
+        {/* THE PLAN — who owns it, the signals and outcomes we measure */}
+        <p className="text-[11px] font-bold uppercase tracking-[3px] mt-[26px] mb-[14px]" style={{ color: CORAL }}>The plan</p>
+        <div className="grid grid-cols-2 gap-[46px]">
           <div>
             <SectionLabel>What Abridge can enable</SectionLabel>
             <div>{c.signals.map((s) => <MetricRow key={s.name} s={s} accent />)}</div>
@@ -277,9 +278,10 @@ function CategoryPage({ c, page, idx, total, data }: { c: PlanCat; page: number;
         </div>
         <p className="text-[12px] text-[#8C8C8C] mt-[16px]">Reviewed <span className="text-[#1A1A1A] font-medium">{c.cadence.toLowerCase()}</span> against the baselines above. The signals move first; the outcomes follow.</p>
 
-        <div className="h-px bg-[#EFEAE1] my-[38px]" />
+        <div className="h-px bg-[#EFEAE1] my-[26px]" />
 
-        {/* why it holds */}
+        {/* THE PROOF — the chain from documentation to dollar, and the assumptions */}
+        <p className="text-[11px] font-bold uppercase tracking-[3px] mb-[14px]" style={{ color: CORAL }}>The proof</p>
         <div className="grid grid-cols-[1.15fr_1fr] gap-[46px]">
           <div>
             <SectionLabel>How the number holds: the chain</SectionLabel>
