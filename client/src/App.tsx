@@ -50,6 +50,7 @@ import AttainPlanPreview from "@/pages/attain/AttainPlanPreview";
 import AttainMatrixPreview from "@/pages/attain/preview/AttainMatrixPreview";
 import MultiCategoryPreview from "@/pages/attain/preview/MultiCategoryPreview";
 import ProformaPreview from "@/pages/proforma/editorial/ProformaPreview";
+import ProformaEditorialHost from "@/pages/proforma/editorial/ProformaEditorialHost";
 import AttainFlowV2 from "@/pages/attain/AttainFlowV2";
 import AttainPdf from "@/pages/attain/pdf/AttainPdf";
 import ExploreIntakeForm from "@/pages/intake/ExploreIntakeForm";
@@ -663,37 +664,62 @@ export default function App() {
             )}
 
             {(currentView === "proforma-hub" || currentView === "proforma-view") && (
-              <ProformaHub
-                settings={proformaSettings}
-                config={proformaConfig}
-                onConfigChange={(newConfig) => {
-                  // Clamp any setting's goLiveMonth to the new contract term - 1
-                  const maxGoLive = Math.max(1, newConfig.contractTermMonths - 1);
-                  setProformaSettings(prev => prev.map(s =>
-                    s.goLiveMonth > maxGoLive ? { ...s, goLiveMonth: maxGoLive } : s
-                  ));
-                  setProformaConfig(newConfig);
-                }}
-                onAddSetting={(careSetting) => {
-                  setProformaAddCareSetting(careSetting as ExploreCareSetting);
-                  setProformaEditExploreState(undefined);
-                  setExploreInitialSettings({});
-                  navigateTo("explore");
-                }}
-                onEditSetting={(id) => {
-                  const setting = proformaSettings.find(s => s.id === id);
-                  if (setting) {
-                    setProformaAddCareSetting(setting.careSetting as ExploreCareSetting);
-                    setProformaEditExploreState(setting.fullExploreState);
+              (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("proformalegacy") === "1") ? (
+                <ProformaHub
+                  settings={proformaSettings}
+                  config={proformaConfig}
+                  onConfigChange={(newConfig) => {
+                    // Clamp any setting's goLiveMonth to the new contract term - 1
+                    const maxGoLive = Math.max(1, newConfig.contractTermMonths - 1);
+                    setProformaSettings(prev => prev.map(s =>
+                      s.goLiveMonth > maxGoLive ? { ...s, goLiveMonth: maxGoLive } : s
+                    ));
+                    setProformaConfig(newConfig);
+                  }}
+                  onAddSetting={(careSetting) => {
+                    setProformaAddCareSetting(careSetting as ExploreCareSetting);
+                    setProformaEditExploreState(undefined);
                     setExploreInitialSettings({});
                     navigateTo("explore");
-                  }
-                }}
-                onRemoveSetting={handleRemoveFromProforma}
-                onUpdateSetting={handleUpdateProformaSetting}
-                onHome={() => navigateTo("journey")}
-                onBack={() => navigateTo("journey")}
-              />
+                  }}
+                  onEditSetting={(id) => {
+                    const setting = proformaSettings.find(s => s.id === id);
+                    if (setting) {
+                      setProformaAddCareSetting(setting.careSetting as ExploreCareSetting);
+                      setProformaEditExploreState(setting.fullExploreState);
+                      setExploreInitialSettings({});
+                      navigateTo("explore");
+                    }
+                  }}
+                  onRemoveSetting={handleRemoveFromProforma}
+                  onUpdateSetting={handleUpdateProformaSetting}
+                  onHome={() => navigateTo("journey")}
+                  onBack={() => navigateTo("journey")}
+                />
+              ) : (
+                <ProformaEditorialHost
+                  settings={proformaSettings}
+                  config={proformaConfig}
+                  onUpdateSetting={handleUpdateProformaSetting}
+                  onUpdateConfig={(updates) => {
+                    const newConfig = { ...proformaConfig, ...updates };
+                    // Clamp any setting's goLiveMonth to the new contract term - 1
+                    const maxGoLive = Math.max(1, newConfig.contractTermMonths - 1);
+                    setProformaSettings(prev => prev.map(s =>
+                      s.goLiveMonth > maxGoLive ? { ...s, goLiveMonth: maxGoLive } : s
+                    ));
+                    setProformaConfig(newConfig);
+                  }}
+                  onAddSetting={(careSetting) => {
+                    setProformaAddCareSetting(careSetting as ExploreCareSetting);
+                    setProformaEditExploreState(undefined);
+                    setExploreInitialSettings({});
+                    navigateTo("explore");
+                  }}
+                  onRemoveSetting={handleRemoveFromProforma}
+                  onBack={() => navigateTo("journey")}
+                />
+              )
             )}
             </PageTransition>
           </TooltipProvider>

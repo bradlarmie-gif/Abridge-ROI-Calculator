@@ -1,6 +1,6 @@
 import { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence, animate } from "framer-motion";
-import { Stethoscope, Zap, ChevronDown, Plus, Trash2 } from "lucide-react";
+import { Stethoscope, Zap, ChevronDown, Plus, Trash2, ArrowLeft } from "lucide-react";
 import type {
   ProformaSettingSnapshot,
   ProformaConfig,
@@ -996,9 +996,13 @@ export interface ProformaWorkbenchProps {
   onUpdateConfig: (updates: Partial<ProformaConfig>) => void;
   onRemoveSetting: (id: string) => void;
   onNavigate?: (c: ChapterKey) => void;
+  /** Build another care setting in Explore, then it lands back here. */
+  onAddSetting?: (careSetting?: string) => void;
+  /** Leave the proforma (back to the journey/home). */
+  onBack?: () => void;
 }
 
-export default function ProformaWorkbench({ settings, config, onUpdateSetting, onUpdateConfig, onRemoveSetting, onNavigate }: ProformaWorkbenchProps) {
+export default function ProformaWorkbench({ settings, config, onUpdateSetting, onUpdateConfig, onRemoveSetting, onNavigate, onAddSetting, onBack }: ProformaWorkbenchProps) {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(() => new Set(settings.slice(0, 1).map((s) => s.id)));
 
   const excludedFor = useCallback(
@@ -1073,7 +1077,12 @@ export default function ProformaWorkbench({ settings, config, onUpdateSetting, o
     <div style={{ background: T.page, minHeight: "100vh", color: T.ink, fontFamily: "Manrope, sans-serif", WebkitFontSmoothing: "antialiased" }}>
       {/* TOP BAR */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", rowGap: 12, padding: "16px 40px", borderBottom: `1px solid ${T.hair}` }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 26, flexShrink: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 16, flexShrink: 0 }}>
+          {onBack && (
+            <button onClick={onBack} aria-label="Back" style={{ width: 32, height: 32, borderRadius: 999, border: `1px solid ${T.hair}`, background: "#fff", display: "flex", alignItems: "center", justifyContent: "center", color: T.muted, cursor: "pointer", flexShrink: 0 }}>
+              <ArrowLeft size={16} />
+            </button>
+          )}
           <span className="font-abridge" style={{ fontSize: 20, color: T.coral }}>ABRIDGE</span>
           <div style={{ display: "flex", gap: 26 }}>
             {CHAPTERS.map((c) => {
@@ -1153,21 +1162,36 @@ export default function ProformaWorkbench({ settings, config, onUpdateSetting, o
           />
         ))}
 
-        {/* ADD SETTING (placeholder) */}
-        <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase", color: T.faint, marginTop: 26 }}>Add a care setting</div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginTop: 16 }}>
-          {["Inpatient", "Nursing"].map((label) => (
-            <div key={label} style={{ border: `1.5px dashed ${T.hair}`, borderRadius: 16, padding: "18px 20px", display: "flex", alignItems: "center", gap: 14, color: T.muted }}>
-              <div style={{ width: 34, height: 34, borderRadius: 9, border: `1.5px dashed ${T.off}`, display: "flex", alignItems: "center", justifyContent: "center", color: T.off }}>
-                <Plus size={18} />
+        {/* ADD SETTING — builds another line in Explore, which lands back here */}
+        {onAddSetting && (() => {
+          const ALL: { k: ProformaSettingSnapshot["careSetting"]; label: string }[] = [
+            { k: "outpatient", label: "Outpatient" },
+            { k: "ed", label: "Emergency" },
+            { k: "inpatient", label: "Inpatient" },
+            { k: "nursing", label: "Nursing" },
+          ];
+          const have = new Set(settings.map((s) => s.careSetting));
+          const missing = ALL.filter((a) => !have.has(a.k));
+          if (missing.length === 0) return null;
+          return (
+            <>
+              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase", color: T.faint, marginTop: 26 }}>Add a care setting</div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginTop: 16 }}>
+                {missing.map(({ k, label }) => (
+                  <button key={k} onClick={() => onAddSetting(k)} style={{ border: `1.5px dashed ${T.hair}`, borderRadius: 16, padding: "18px 20px", display: "flex", alignItems: "center", gap: 14, color: T.muted, background: "none", cursor: "pointer", textAlign: "left", width: "100%" }}>
+                    <div style={{ width: 34, height: 34, borderRadius: 9, border: `1.5px dashed ${T.off}`, display: "flex", alignItems: "center", justifyContent: "center", color: T.off, flexShrink: 0 }}>
+                      <Plus size={18} />
+                    </div>
+                    <div>
+                      <div style={{ fontWeight: 700, fontSize: 15, color: T.ink }}>{label}</div>
+                      <div style={{ fontSize: 12 }}>Build it in Explore, then it lands here</div>
+                    </div>
+                  </button>
+                ))}
               </div>
-              <div>
-                <div style={{ fontWeight: 700, fontSize: 15, color: T.ink }}>{label}</div>
-                <div style={{ fontSize: 12 }}>Build it in Explore, then it lands here</div>
-              </div>
-            </div>
-          ))}
-        </div>
+            </>
+          );
+        })()}
 
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 32 }}>
           <span style={{ fontSize: 13, color: T.faint }}>{settings.length} settings · {fmt(yearlyValue)}/yr modeled so far</span>
