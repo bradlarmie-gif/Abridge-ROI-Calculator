@@ -311,7 +311,10 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
   const denialsScenarios = denialsScenariosFor(isED, dq.denialsCustomPercent);
   const denialsPreventedPct = denialsScenarios[dq.denialsScenario] ?? 0;
   const rateAfter = dq.medNecessityDenialRate * (1 - denialsPreventedPct / 100);
-  const deniedClaims = Math.round(eligibleEncounters * (dq.medNecessityDenialRate / 100));
+  // Annual claims is user-entered (claims are not the same as encounters). It
+  // shows the Abridge-enabled encounters as a starting default until overridden.
+  const claimsBase = dq.denialsAnnualClaims > 0 ? dq.denialsAnnualClaims : eligibleEncounters;
+  const deniedClaims = Math.round(claimsBase * (dq.medNecessityDenialRate / 100));
   const fewerDenied = Math.round(deniedClaims * (denialsPreventedPct / 100));
   const denialsValue = engine.denialPrevention ?? 0;
 
@@ -333,7 +336,7 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
       awaitingScale={gate("denialPrevention")}
       build={{
         factors: [
-          { value: fmtN(eligibleEncounters), label: "claims" },
+          { value: fmtN(claimsBase), label: "claims" },
           { value: `${dq.medNecessityDenialRate}%`, label: "denial rate" },
           { value: `${denialsPreventedPct}%`, label: "prevented" },
           { value: `$${dq.avgClaimValue}`, label: "per claim" },
@@ -345,8 +348,12 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
       }}
     >
       <FieldGrid>
-        <FieldTile label="Annual claims" note="encounters × utilization">
-          <FiReadout>{fmtN(eligibleEncounters)}</FiReadout>
+        <FieldTile label="Annual claims" note="your claims a year; defaults to enabled encounters">
+          <Fi
+            value={claimsBase}
+            onValueChange={(v) => updateDq({ denialsAnnualClaims: v })}
+            testId="input-ed-annual-claims"
+          />
         </FieldTile>
         <FieldTile label="Fewer denials" note={<>{dq.medNecessityDenialRate}% → {fmtNd(rateAfter)}% = {fmtN(fewerDenied)}</>}>
           <Fi

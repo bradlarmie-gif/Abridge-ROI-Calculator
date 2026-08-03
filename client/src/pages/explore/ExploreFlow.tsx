@@ -377,6 +377,9 @@ export interface DocQualityInputs {
   denialsScenario: 'conservative' | 'typical' | 'aggressive' | 'custom';
   denialsCustomPercent: number;
   medNecessityDenialRate: number;
+  /** Annual medical-necessity claims the user enters. 0 = fall back to the
+   *  Abridge-enabled encounters default (claims are not the same as encounters). */
+  denialsAnnualClaims: number;
   avgClaimValue: number;
   denialsRealization: number;
   
@@ -805,6 +808,7 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     denialsScenario: 'typical',
     denialsCustomPercent: 15,
     medNecessityDenialRate: 3,
+    denialsAnnualClaims: 0,
     avgClaimValue: 200,
     denialsRealization: 60,
     // Inpatient: DRG Accuracy defaults

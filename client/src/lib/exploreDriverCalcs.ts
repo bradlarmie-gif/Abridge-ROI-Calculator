@@ -211,7 +211,10 @@ export function computeAllDriverValues(
   }
   if (dq.denialsEnabled && (isOP || isED)) {
     const prev = denialsScenarios[dq.denialsScenario] / 100;
-    const medNecessityDenials = eligibleEncounters * (dq.medNecessityDenialRate / 100);
+    // Claims are entered by the user (they are not the same as encounters); fall
+    // back to the Abridge-enabled encounters only when nothing has been entered.
+    const claimsBase = dq.denialsAnnualClaims > 0 ? dq.denialsAnnualClaims : eligibleEncounters;
+    const medNecessityDenials = claimsBase * (dq.medNecessityDenialRate / 100);
     result.denialPrevention = Math.round(
       medNecessityDenials * prev * dq.avgClaimValue * (dq.denialsRealization / 100),
     );
@@ -415,7 +418,8 @@ export function computeAllDriverCalcSummaries(
   }
   if (dq.denialsEnabled && (isOP || isED)) {
     const prevPct = denialsScenarios[dq.denialsScenario] ?? 0;
-    out.denialPrevention = `${fmtN(eligibleEncounters)} encounters × ${dq.medNecessityDenialRate}% medical necessity denial rate × ${prevPct}% reduction target × ${fmt$(dq.avgClaimValue)}/claim × ${dq.denialsRealization}% realization`;
+    const claimsBase = dq.denialsAnnualClaims > 0 ? dq.denialsAnnualClaims : eligibleEncounters;
+    out.denialPrevention = `${fmtN(claimsBase)} claims × ${dq.medNecessityDenialRate}% medical necessity denial rate × ${prevPct}% reduction target × ${fmt$(dq.avgClaimValue)}/claim × ${dq.denialsRealization}% realization`;
   }
   if (isIP && dq.ipDrgEnabled) {
     out.drgAccuracy = `${fmtN(eligibleEncounters)} discharges × ${dq.ipDrgWeightIncrease} CMI lift × ${fmt$(dq.ipDrgBasePayment)}/case × ${dq.ipDrgAttribution ?? 65}% attributed to Abridge × ${dq.ipDrgRealization}% realization`;
