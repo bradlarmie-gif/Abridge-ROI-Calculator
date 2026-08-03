@@ -1,6 +1,6 @@
 import { ArrowLeft } from "lucide-react";
 
-export type MethodologyNavKey = "outpatient" | "ed" | "inpatient" | "nursing" | "continuum";
+export type MethodologyNavKey = "overview" | "outpatient" | "ed" | "inpatient" | "nursing" | "continuum";
 
 const SETTINGS: { key: MethodologyNavKey; label: string }[] = [
   { key: "outpatient", label: "Outpatient" },
@@ -48,6 +48,10 @@ export function MethodologyHeader({
           <span className="hidden sm:inline text-[11px] font-extrabold tracking-[0.14em] uppercase text-[#8C8073]">The Value Methodology</span>
         </div>
         <div className="hidden md:flex items-center gap-1 bg-[#F2EDE5] rounded-[12px] p-1">
+          <button onClick={() => onNavigate?.("overview")} className={tab(active === "overview")}>
+            The Methodology
+          </button>
+          <span className="w-px h-4 bg-[#DCD3C6] mx-1" />
           {SETTINGS.map((s) => (
             <button key={s.key} onClick={() => onNavigate?.(s.key)} className={tab(s.key === active)}>
               {s.label}
