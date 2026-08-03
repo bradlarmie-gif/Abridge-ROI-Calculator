@@ -24,6 +24,7 @@ const FILES: string[] = [
   "components/explore/ExploreEditorialPdf.tsx",
   "components/explore/ExploreEditorialPdfRoute.tsx",
   "lib/exploreDrivers.ts",
+  "lib/methodologySettingData.ts",
 ];
 
 describe("Explore COPY guardrails — Legal / brand tripwires", () => {
