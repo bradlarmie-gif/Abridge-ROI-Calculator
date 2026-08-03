@@ -48,7 +48,7 @@ export default function MethodologyOverview({ onBack, onHome, onNavigate }: Prop
             {RECORD_LINES_LEFT.map((w, i) => (
               <div
                 key={i}
-                className={`h-[10px] rounded-[5px] mb-3.5 ${i % 2 === 1 ? "bg-[#CFC6B9]" : "bg-[#E7DFD5]"}`}
+                className={`h-[10px] rounded-[5px] mb-3.5 ${[1, 4, 6].includes(i) ? "bg-[#CFC6B9]" : "bg-[#E7DFD5]"}`}
                 style={{ width: `${w}%` }}
               />
             ))}
@@ -107,6 +107,7 @@ export default function MethodologyOverview({ onBack, onHome, onNavigate }: Prop
             {METHODOLOGY_SETTINGS.map((s) => (
               <button
                 key={s.id}
+                type="button"
                 onClick={() => onNavigate?.(s.id)}
                 className="border border-[#E8E2DA] bg-[#FDFBF8] rounded-[12px] px-4 py-[11px] text-[13.5px] text-[#1A1A1A] flex items-center gap-2 hover:border-[#EA2C00] transition-colors"
               >
