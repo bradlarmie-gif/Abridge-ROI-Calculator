@@ -80,10 +80,13 @@ const PLAN: PlanCat[] = [
     name: "Provider Retention",
     owner: { name: "Dr. Alan Mercer", role: "Chief Medical Officer" },
     cadence: "Quarterly",
+    // Retention is proven by the documentation-burden signals that predict
+    // burnout, not by the throughput signals Patient Access runs on. Keeping
+    // these distinct is the point: two categories, two different proofs.
     signals: [
-      { name: "Time in note", today: "9.5", target: "5.5", unit: "min", source: "Epic Signal" },
-      { name: "Work outside of work", today: "48", target: "25", unit: "min/day", source: "Epic Signal" },
       { name: "After-hours charting", today: "71", target: "40", unit: "%", source: "Epic Signal" },
+      { name: "Weekend charting", today: "3.6", target: "1.4", unit: "hrs/wk", source: "Epic Signal" },
+      { name: "Provider-reported burnout", today: "54", target: "39", unit: "%", source: "Wellbeing survey" },
     ],
     outcomes: [
       { name: "Annual turnover", today: "6.0", target: "5.0", unit: "%", source: "HRIS" },

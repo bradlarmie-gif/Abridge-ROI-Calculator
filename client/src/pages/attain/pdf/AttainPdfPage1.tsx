@@ -144,14 +144,28 @@ export default function AttainPdfPage1({ data = SAMPLE, mode = "kickoff" }: { da
         {/* Hero — the number + the frame */}
         <div className="flex items-end justify-between gap-8">
           <div>
-            <p className="text-[10.5px] font-bold uppercase tracking-[2.5px] text-[#8C8C8C] mb-[10px]">The value in play, all categories</p>
-            {data.total > 0 ? (
-              <p className="font-abridge leading-[0.9] text-[#1A1A1A]" style={{ fontSize: 84 }}>
-                <span style={{ color: CORAL }}>{fmt$(data.total)}</span>
-                <span className="text-[24px] text-[#8C8C8C] font-normal"> / year</span>
-              </p>
+            {review ? (
+              /* At a review, the pitch page (p2) already carried the promise; this
+                 page pivots to where the partner stands against it. */
+              <>
+                <p className="text-[10.5px] font-bold uppercase tracking-[2.5px] text-[#8C8C8C] mb-[10px]">Realized so far · all categories</p>
+                <p className="font-abridge leading-[0.9] text-[#1A1A1A]" style={{ fontSize: 84 }}>
+                  <span style={{ color: CORAL }}>{fmt$(review.realized)}</span>
+                  <span className="text-[24px] text-[#8C8C8C] font-normal"> of {fmt$(data.total)}/yr</span>
+                </p>
+                <p className="text-[13px] text-[#8C8C8C] mt-[10px]"><span className="font-abridge text-[16px] text-[#1A1A1A]">{fmt$(onTable)}</span> still on the table</p>
+              </>
+            ) : data.total > 0 ? (
+              <>
+                <p className="text-[10.5px] font-bold uppercase tracking-[2.5px] text-[#8C8C8C] mb-[10px]">The value in play, all categories</p>
+                <p className="font-abridge leading-[0.9] text-[#1A1A1A]" style={{ fontSize: 84 }}>
+                  <span style={{ color: CORAL }}>{fmt$(data.total)}</span>
+                  <span className="text-[24px] text-[#8C8C8C] font-normal"> / year</span>
+                </p>
+              </>
             ) : (
               <>
+                <p className="text-[10.5px] font-bold uppercase tracking-[2.5px] text-[#8C8C8C] mb-[10px]">The value in play, all categories</p>
                 <p className="font-abridge leading-[0.95] text-[#1A1A1A]" style={{ fontSize: 46 }}>Not yet sized</p>
                 <p className="text-[13px] text-[#8C8C8C] mt-[8px] max-w-[430px]">Enter the economics for each category and the number sizes itself here.</p>
               </>
@@ -160,10 +174,10 @@ export default function AttainPdfPage1({ data = SAMPLE, mode = "kickoff" }: { da
           <div className="text-right pb-[6px] shrink-0">
             {review ? (
               <>
-                <p className="font-abridge text-[30px] leading-none" style={{ color: CORAL }}>{review.attainmentPct}%</p>
-                <p className="text-[10px] uppercase tracking-[1.5px] text-[#8C8C8C] mt-[3px] mb-[13px]">realized to date</p>
-                <p className="font-abridge text-[20px] text-[#1A1A1A] leading-none">{review.label.split(" · ")[0]}</p>
-                <p className="text-[10px] uppercase tracking-[1.5px] text-[#8C8C8C] mt-[3px]">{data.date}</p>
+                <p className="font-abridge text-[26px] text-[#1A1A1A] leading-none">{review.label.split(" · ")[0]}</p>
+                <p className="text-[10px] uppercase tracking-[1.5px] text-[#8C8C8C] mt-[3px] mb-[13px]">{data.date}</p>
+                <p className="font-abridge text-[26px] text-[#1A1A1A] leading-none">Quarterly</p>
+                <p className="text-[10px] uppercase tracking-[1.5px] text-[#8C8C8C] mt-[3px]">review cadence</p>
               </>
             ) : (
               <>
@@ -213,9 +227,9 @@ export default function AttainPdfPage1({ data = SAMPLE, mode = "kickoff" }: { da
           <div className="mt-auto rounded-[14px] p-[24px]" style={{ backgroundColor: "#1A1A1A" }}>
             <div className="flex items-start justify-between gap-[36px]">
               <div className="pt-[2px]">
-                <p className="text-[10px] font-bold uppercase tracking-[2.5px] text-white/45 mb-[8px]">Attainment, all categories · {review.label}</p>
+                <p className="text-[10px] font-bold uppercase tracking-[2.5px] text-white/45 mb-[8px]">The climb · attainment over reviews</p>
                 <p className="font-abridge leading-none" style={{ fontSize: 46, color: CORAL }}>{review.attainmentPct}%<span className="text-[15px] text-white/50 font-normal"> of the {fmt$(data.total)}/yr promise</span></p>
-                <p className="text-[13px] text-white/80 mt-[12px]"><span className="font-abridge text-[18px] text-white">{fmt$(review.realized)}</span> realized<span className="text-white/40"> · </span><span className="font-abridge text-[18px] text-white">{fmt$(onTable)}</span> still on the table</p>
+                <p className="text-[13px] text-white/80 mt-[12px] max-w-[300px] leading-relaxed">Each review moves the realized number toward the full promise. The gap is the work still ahead.</p>
               </div>
               <div className="shrink-0">
                 <ClimbChart pts={review.climb} />
