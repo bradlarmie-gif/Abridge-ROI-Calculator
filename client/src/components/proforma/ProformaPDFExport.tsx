@@ -88,7 +88,12 @@ function encounterLabel(careSetting: string): string {
   return settingVocab(careSetting).encounterPerYr;
 }
 
-/** Clinical monthly net (Revenue+Capacity+Workforce − investment), impl at go-live. */
+/** Clinical monthly net (all clinical quadrants − investment), impl at go-live.
+ * Clinical = Revenue+Capacity+Workforce+Quality; only DISPLACEMENT is excluded.
+ * Quality is $0 in settings where it is the proof layer (OP/ED/IP), so this is a
+ * no-op there, but it correctly counts Nursing's harm-avoidance dollars (HAPI,
+ * falls, CAUTI/CLABSI, sepsis), where Quality carries the dollar and Revenue is
+ * the proof layer. */
 function clinicalMonthly(
   settings: ProformaSettingSnapshot[],
   config: ProformaConfig,
@@ -96,7 +101,7 @@ function clinicalMonthly(
 ): number[] {
   const flows = buildMonthlyCashFlows(settings, config);
   return flows.map((r) => {
-    const value = (r.revenueValue + r.capacityValue + r.workforceValue) * factor;
+    const value = (r.revenueValue + r.capacityValue + r.workforceValue + r.qualityValue) * factor;
     let impl = 0;
     for (const s of settings) if (s.goLiveMonth === r.period) impl += s.implementationFee;
     return value - r.investment - impl;
@@ -146,18 +151,19 @@ export function buildProformaPdfData(
 
     const ramp = yearly.map((y, i) => {
       // Same clinical basis as the system year rows and the at-scale headline
-      // (revenue + capacity + workforce); excludes quality + displacement so the
-      // per-year figures reconcile with the summary and never exceed run-rate.
+      // (revenue + capacity + workforce + quality); only DISPLACEMENT is excluded.
+      // Quality is $0 where it is the proof layer (OP/ED/IP) and carries the
+      // dollar in Nursing (harm avoidance), so this reconciles for every setting.
       const bs = y.bySettings[s.id];
       return {
         year: i + 1,
-        value: bs ? bs.revenueValue + bs.capacityValue + bs.workforceValue : 0,
+        value: bs ? bs.revenueValue + bs.capacityValue + bs.workforceValue + bs.qualityValue : 0,
         providers: s.yearlyProviders?.[yearKey(i)] ?? (i === 0 ? s.providerCount : s.fullScaleProviders),
         utilization: s.yearlyUtilization?.[yearKey(i)] ?? config.yearlyUtilization[yearKey(i)] ?? 0,
       };
     });
 
-    const atScale = (s.revenueValue ?? 0) + (s.capacityValue ?? 0) + (s.workforceValue ?? 0);
+    const atScale = (s.revenueValue ?? 0) + (s.capacityValue ?? 0) + (s.workforceValue ?? 0) + (s.qualityValue ?? 0);
     return {
       id: s.id,
       label: s.label,
@@ -179,22 +185,23 @@ export function buildProformaPdfData(
   // ── System-level year rows (clinical basis) ────────────────────────────────
   let cum = 0;
   const years: PfYearRow[] = yearly.map((y) => {
-    const total = y.revenueValue + y.capacityValue + y.workforceValue;
+    const total = y.revenueValue + y.capacityValue + y.workforceValue + y.qualityValue;
     const net = total - y.investment;
     cum += net;
     return {
-      // Per-setting cut must use the SAME clinical basis as the Total row
-      // (revenue + capacity + workforce). bySettings.value also folds in quality
-      // and displacement, which the total excludes, so using it made the settings
-      // over-foot the total. Displacement stays out of the clinical value (doctrine).
+      // Per-setting cut uses the SAME clinical basis as the Total row
+      // (revenue + capacity + workforce + quality). Only DISPLACEMENT is excluded
+      // from clinical value (doctrine). Quality is $0 in proof-layer settings
+      // (OP/ED/IP) and carries the dollar in Nursing, so the rows still foot.
       perSetting: settings.map((s) => {
         const bs = y.bySettings[s.id];
-        return { id: s.id, value: bs ? bs.revenueValue + bs.capacityValue + bs.workforceValue : 0 };
+        return { id: s.id, value: bs ? bs.revenueValue + bs.capacityValue + bs.workforceValue + bs.qualityValue : 0 };
       }),
       total,
       revenue: y.revenueValue,
       capacity: y.capacityValue,
       workforce: y.workforceValue,
+      quality: y.qualityValue,
       investment: y.investment,
       net,
       cumulativeNet: cum,

@@ -23,9 +23,12 @@ describe("Methodology PDF illustrative math foots", () => {
     }
   });
 
-  it("nursing's dollar case stays modest and proof-forward (single counted line)", () => {
+  it("nursing counts harm-avoidance dollars, with Revenue (not safety) as the proof layer", () => {
     const n = METHODOLOGY_SETTINGS.find((s) => s.id === "nursing")!;
-    expect(n.math.length).toBe(1);
-    expect(n.proofNote.toLowerCase()).toContain("proof");
+    // Nursing's dollar case is harm avoided + time returned (Quality carries the
+    // dollar here); Revenue is the proof layer.
+    expect(n.math.length).toBeGreaterThanOrEqual(2);
+    expect(n.math.some((m) => /harm|hapi|falls|sepsis/i.test(m.name))).toBe(true);
+    expect(n.proofNote.toLowerCase()).toContain("revenue is the proof layer");
   });
 });

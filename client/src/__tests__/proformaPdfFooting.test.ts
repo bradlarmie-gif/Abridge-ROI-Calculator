@@ -78,9 +78,9 @@ describe("proforma PDF financial summary foots", () => {
     }
   });
 
-  it("each year: revenue + capacity + workforce == Total value", () => {
+  it("each year: revenue + capacity + workforce + quality == Total value", () => {
     for (const y of data.years) {
-      const domainSum = y.revenue + y.capacity + y.workforce;
+      const domainSum = y.revenue + y.capacity + y.workforce + y.quality;
       expect(Math.abs(domainSum - y.total)).toBeLessThanOrEqual(10);
     }
   });
@@ -103,10 +103,13 @@ describe("proforma PDF financial summary foots", () => {
     }
   });
 
-  it("clinical basis excludes displacement and quality (settings sum < gross value)", () => {
-    // Outpatient carries $120K displacement + $90K quality that must NOT appear
-    // in the clinical at-scale figure.
+  it("clinical basis EXCLUDES displacement but INCLUDES quality (harm-avoidance dollars count)", () => {
+    // The clinical dollar case is Revenue+Capacity+Workforce+Quality; only cost
+    // displacement is excluded (it lives in App Rationalization). Quality is $0
+    // where it is the proof layer (OP/ED/IP) and carries the dollar in Nursing.
+    // This Outpatient sample carries a $90K Quality driver and a $120K cost
+    // offset; the $90K quality MUST be counted and the $120K displacement MUST NOT.
     const op = data.settings.find((s) => s.id === "s-outpatient")!;
-    expect(op.atScaleValue).toBe(412_000 + 319_000 + 549_000 + 180_000);
+    expect(op.atScaleValue).toBe(412_000 + 319_000 + 549_000 + 180_000 + 90_000);
   });
 });

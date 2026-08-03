@@ -81,6 +81,7 @@ export interface PfYearRow {
   revenue: number;
   capacity: number;
   workforce: number;
+  quality: number;
   investment: number;
   net: number;
   cumulativeNet: number;
@@ -657,6 +658,13 @@ function HowValueInner({ data }: { data: ProformaPdfData }): JSX.Element {
             {years.map((y, i) => <td key={i}>{fmtM(y.workforce)}</td>)}
             <td>{fmtM(sum((y) => y.workforce))}</td>
           </tr>
+          {sum((y) => y.quality) > 0 && (
+            <tr className="sub">
+              <td>Quality</td>
+              {years.map((y, i) => <td key={i}>{fmtM(y.quality)}</td>)}
+              <td>{fmtM(sum((y) => y.quality))}</td>
+            </tr>
+          )}
           <tr>
             <td>Investment</td>
             {years.map((y, i) => <td className="num" key={i}>{fmtCost(y.investment)}</td>)}
@@ -1252,9 +1260,9 @@ export const SAMPLE_PROFORMA_PDF_DATA: ProformaPdfData = {
   thesis:
     "Outpatient carries the case on documentation-driven revenue and freed provider time; Emergency stacks on in year one as it goes live. The investment is front-loaded while teams ramp, and the return compounds as adoption deepens and the second setting matures.",
   years: [
-    { perSetting: [{ id: "outpatient-1", value: 850000 }, { id: "ed-1", value: 170000 }], total: 1020000, revenue: 640000, capacity: 290000, workforce: 90000, investment: 800000, net: 220000, cumulativeNet: 220000, roi: 1.3 },
-    { perSetting: [{ id: "outpatient-1", value: 1350000 }, { id: "ed-1", value: 550000 }], total: 1900000, revenue: 1080000, capacity: 640000, workforce: 180000, investment: 740000, net: 1160000, cumulativeNet: 1380000, roi: 2.6 },
-    { perSetting: [{ id: "outpatient-1", value: 1460000 }, { id: "ed-1", value: 550000 }], total: 2010000, revenue: 1120000, capacity: 640000, workforce: 250000, investment: 740000, net: 1270000, cumulativeNet: 2650000, roi: 2.7 },
+    { perSetting: [{ id: "outpatient-1", value: 850000 }, { id: "ed-1", value: 170000 }], total: 1020000, revenue: 640000, capacity: 290000, workforce: 90000, quality: 0, investment: 800000, net: 220000, cumulativeNet: 220000, roi: 1.3 },
+    { perSetting: [{ id: "outpatient-1", value: 1350000 }, { id: "ed-1", value: 550000 }], total: 1900000, revenue: 1080000, capacity: 640000, workforce: 180000, quality: 0, investment: 740000, net: 1160000, cumulativeNet: 1380000, roi: 2.6 },
+    { perSetting: [{ id: "outpatient-1", value: 1460000 }, { id: "ed-1", value: 550000 }], total: 2010000, revenue: 1120000, capacity: 640000, workforce: 250000, quality: 0, investment: 740000, net: 1270000, cumulativeNet: 2650000, roi: 2.7 },
   ],
   milestones: [
     { label: "Year 1 · Foundation", body: "220 providers live · 180K encounters documented · both settings ramping." },

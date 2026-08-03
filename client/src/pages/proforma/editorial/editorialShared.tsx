@@ -232,15 +232,17 @@ export interface CaseModel {
   termYears: number;
 }
 
-// Clinical value = Revenue + Capacity + Workforce (Quality is proof-only and
-// Cost Displacement lives in App Rationalization — both are kept out of the
-// dollar case, exactly as the PDF does). Every figure below reconciles from the
-// engine: drivers → setting, settings → period, periods → term.
-function clinicalOf(row: { revenueValue: number; capacityValue: number; workforceValue: number }): number {
-  return row.revenueValue + row.capacityValue + row.workforceValue;
+// Clinical value = Revenue + Capacity + Workforce + Quality. Only Cost
+// Displacement is kept out of the dollar case (it lives in App Rationalization),
+// exactly as the PDF does. Quality is $0 where it is the proof layer (Outpatient/
+// ED/Inpatient) and carries the dollar in Nursing (harm avoidance: HAPI, falls,
+// CAUTI/CLABSI, sepsis), so this reconciles for every setting. Every figure below
+// reconciles from the engine: drivers -> setting, settings -> period, periods -> term.
+function clinicalOf(row: { revenueValue: number; capacityValue: number; workforceValue: number; qualityValue: number }): number {
+  return row.revenueValue + row.capacityValue + row.workforceValue + row.qualityValue;
 }
-function settingClinical(b?: { revenueValue: number; capacityValue: number; workforceValue: number }): number {
-  return b ? b.revenueValue + b.capacityValue + b.workforceValue : 0;
+function settingClinical(b?: { revenueValue: number; capacityValue: number; workforceValue: number; qualityValue: number }): number {
+  return b ? b.revenueValue + b.capacityValue + b.workforceValue + b.qualityValue : 0;
 }
 
 function toPeriods(rows: ProformaCashFlowRow[], settings: ProformaSettingSnapshot[]): CasePeriod[] {
