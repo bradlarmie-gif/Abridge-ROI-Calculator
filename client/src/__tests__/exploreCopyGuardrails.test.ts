@@ -51,7 +51,7 @@ describe("Explore PDF — proof/encounter/downside phrasing is setting-derived, 
 
   it("derives the proof caption/footer from PROOF_LAYER via the setting", () => {
     expect(pdf).toContain("proofDomainsFor(");
-    expect(pdf).toContain("the proof running underneath, uncounted");
+    expect(pdf).toContain("tracked as proof and never added to the dollar total");
   });
 
   it("does not hardcode an Outpatient-shaped 'four times' downside multiple", () => {

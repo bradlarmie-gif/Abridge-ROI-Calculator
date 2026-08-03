@@ -26,9 +26,6 @@ const C = {
   tile: "#F3EEE7",
 } as const;
 
-// Segment colors for the synthesis stacked bar (descending value order)
-const SEG_COLORS = [C.coral, "#F0704E", "#F4A48C", "#F8C4B4"];
-
 // ───────────────────────── Formatting helpers ─────────────────────────
 
 /** "$1.46M" / "$549K" — 1–2 sig decimals for M, 0 for K. */
@@ -861,46 +858,27 @@ function MutedDomain({
   );
 }
 
+// The area split is already shown on page 1 (the "where the value comes from"
+// magnitude bars) and again in each area header on this page, so this page
+// closes on a clean total line rather than re-drawing the split a third time.
+// Quality's exclusion is stated in its own body section and the page footer.
 function SynthesisBar({ data }: { data: ExplorePDFData }): JSX.Element {
-  const positives = data.quadrants
-    .filter((q) => q.annualTotal > 0)
-    .sort((a, b) => b.annualTotal - a.annualTotal);
-  const total = data.totalAnnualValue || 1;
-  const proofDomains = proofDomainsFor(data.careSetting);
   return (
-    <div style={{ marginTop: 22, borderTop: `1px solid ${C.hair}`, paddingTop: 16 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-        <span style={sLbl}>The four areas, together</span>
-        <span className="font-abridge" style={{ fontSize: 18 }}>
-          {fmtShort(data.totalAnnualValue)}
-          <span style={{ fontSize: 11, color: C.faint }}>/yr</span>
-        </span>
-      </div>
-      <div style={{ display: "flex", height: 34, borderRadius: 9, overflow: "hidden", marginTop: 10 }}>
-        {positives.map((q, i) => (
-          <div
-            key={q.quadrant}
-            style={{
-              width: `${(q.annualTotal / total) * 100}%`,
-              background: SEG_COLORS[Math.min(i, SEG_COLORS.length - 1)],
-              display: "flex",
-              alignItems: "center",
-              paddingLeft: 12,
-              color: "#fff",
-              fontSize: 12,
-              fontWeight: 700,
-            }}
-          >
-            {q.quadrant} · {fmtShort(q.annualTotal)}
-          </div>
-        ))}
-      </div>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
-        <div style={{ height: 5, flex: 1, background: C.soft, borderRadius: 99 }} />
-        <span style={{ fontSize: 10, color: C.off, whiteSpace: "nowrap" }}>
-          {joinAnd(proofDomains)} · the proof running underneath, uncounted
-        </span>
-      </div>
+    <div
+      style={{
+        marginTop: 22,
+        borderTop: `1px solid ${C.hair}`,
+        paddingTop: 16,
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "baseline",
+      }}
+    >
+      <span style={sLbl}>The four areas, together</span>
+      <span className="font-abridge" style={{ fontSize: 22 }}>
+        {fmtShort(data.totalAnnualValue)}
+        <span style={{ fontSize: 12, color: C.faint }}>/yr</span>
+      </span>
     </div>
   );
 }
@@ -909,7 +887,7 @@ function SynthesisBar({ data }: { data: ExplorePDFData }): JSX.Element {
 const H_HEADER = 42;
 const H_MUTED = 72;
 const H_AVAIL = 20;
-const H_SYNTH = 115;
+const H_SYNTH = 52;
 // True usable px for breakdown atoms per page = 1056 minus chrome (pad ~76,
 // running header ~50, footer ~40, and the title block: full eyebrow+headline+
 // lead ~100 on the first page, a compact "(cont.)" ~44 after). Budgets sit a
