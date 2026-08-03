@@ -8,8 +8,8 @@ import { AnimatedValue } from "@/components/explore/AnimatedValue";
  * Ports the locked mockup kit (explore-06-revenue.html / explore-07-quality.html)
  * to real Tailwind so EdRevenue.tsx and EdQuality.tsx don't duplicate the
  * ~150 lines of card/tile/toggle/chip markup. Tokens match EdCareSetting.tsx
- * exactly: coral #EA2C00, ink #1A1A1A, muted #5E534A, faint #786C5E,
- * line #E8E2DA, label #2E2822, card bg #FDFBF8.
+ * exactly: coral #EA2C00, ink #1A1A1A, muted #565250, faint #7C766F,
+ * line #E7E3DD, label #2E2822, card bg #FDFBF8.
  */
 
 export const fmt$ = (n: number) => "$" + Math.round(n || 0).toLocaleString();
@@ -44,9 +44,9 @@ export function BuildStrip({ build }: { build: MoneyBuild }) {
           {build.read}
         </div>
       )}
-      <div className="text-[10.5px] font-extrabold tracking-[0.09em] uppercase text-[#443A32] mb-3 flex items-center gap-2.5">
+      <div className="text-[10.5px] font-extrabold tracking-[0.09em] uppercase text-[#3E3B37] mb-3 flex items-center gap-2.5">
         How it builds
-        <span className="flex-1 h-px bg-gradient-to-r from-[#E8E2DA] to-[#EDE7DD]/0" />
+        <span className="flex-1 h-px bg-gradient-to-r from-[#E7E3DD] to-[#EDE7DD]/0" />
       </div>
       <div className="flex items-stretch flex-wrap gap-y-2.5">
         {build.factors.map((f, i) => (
@@ -54,7 +54,7 @@ export function BuildStrip({ build }: { build: MoneyBuild }) {
             {i > 0 && <span className="self-start text-[15px] text-[#B9AA97] px-[14px] pt-[2px]">×</span>}
             <div>
               <div className="text-[19px] font-bold text-[#1A1A1A] leading-none tabular-nums">{f.value}</div>
-              <div className="text-[9.5px] font-bold tracking-[0.04em] uppercase text-[#786C5E] mt-[7px]">{f.label}</div>
+              <div className="text-[9.5px] font-bold tracking-[0.04em] uppercase text-[#7C766F] mt-[7px]">{f.label}</div>
             </div>
           </div>
         ))}
@@ -62,16 +62,16 @@ export function BuildStrip({ build }: { build: MoneyBuild }) {
       {heldBack > 0 ? (
         <>
           <div className="flex justify-between items-baseline mt-[18px] pb-[10px]">
-            <div className="text-[12.5px] text-[#5E534A]">{build.grossLabel}</div>
+            <div className="text-[12.5px] text-[#565250]">{build.grossLabel}</div>
             <AnimatedValue value={build.gross} format={fmt$} duration={450} className="text-[16px] font-bold text-[#1A1A1A] tabular-nums" />
           </div>
-          <div className="h-[14px] rounded-[5px] overflow-hidden flex bg-[#EFE7DC]">
+          <div className="h-[14px] rounded-[5px] overflow-hidden flex bg-[#EBE6DE]">
             <div className="bg-[#EA2C00] h-full transition-[width] duration-500 ease-out" style={{ width: `${(keepPct * 100).toFixed(2)}%` }} />
             <div
               className="h-full transition-[width] duration-500 ease-out"
               style={{
                 width: `${((1 - keepPct) * 100).toFixed(2)}%`,
-                background: "repeating-linear-gradient(45deg,#E4D9C8,#E4D9C8 4px,#EFE7DC 4px,#EFE7DC 8px)",
+                background: "repeating-linear-gradient(45deg,#E4D9C8,#E4D9C8 4px,#EBE6DE 4px,#EBE6DE 8px)",
               }}
             />
           </div>
@@ -79,11 +79,11 @@ export function BuildStrip({ build }: { build: MoneyBuild }) {
             <div className="text-[12px] text-[#B02200] font-bold">
               <AnimatedValue value={build.net} format={fmt$} duration={450} className="font-extrabold tabular-nums" /> counted · {build.haircutLabel}
             </div>
-            <div className="text-[12px] text-[#786C5E] tabular-nums">− <AnimatedValue value={heldBack} format={fmt$} duration={450} /> held back</div>
+            <div className="text-[12px] text-[#7C766F] tabular-nums">− <AnimatedValue value={heldBack} format={fmt$} duration={450} /> held back</div>
           </div>
         </>
       ) : (
-        <div className="mt-[14px] text-[13px] text-[#5E534A]">
+        <div className="mt-[14px] text-[13px] text-[#565250]">
           = <AnimatedValue value={build.net} format={fmt$} duration={450} className="text-[16px] font-bold text-[#1A1A1A] tabular-nums" /> a year
         </div>
       )}
@@ -108,13 +108,13 @@ export function SectionLabel({
       {tag && (
         <span
           className={`text-[10px] font-extrabold tracking-[0.05em] rounded-full px-[9px] py-[3px] normal-case ${
-            tagVariant === "coral" ? "text-[#EA2C00] bg-[#FFEDE7]" : "text-[#786C5E] bg-[#F1EBE3]"
+            tagVariant === "coral" ? "text-[#EA2C00] bg-[#FFEDE7]" : "text-[#7C766F] bg-[#F2EFEA]"
           }`}
         >
           {tag}
         </span>
       )}
-      {right && <span className="ml-auto normal-case tracking-normal text-[12px] font-bold text-[#5E534A]">{right}</span>}
+      {right && <span className="ml-auto normal-case tracking-normal text-[12px] font-bold text-[#565250]">{right}</span>}
     </div>
   );
 }
@@ -124,7 +124,7 @@ export function DividerLabel({ children, tag }: { children: ReactNode; tag?: str
     <div className="flex items-center gap-2.5 mt-6 mb-3 text-[11px] font-extrabold tracking-[0.09em] uppercase text-[#2E2822]">
       <span>{children}</span>
       {tag && (
-        <span className="text-[10px] font-extrabold tracking-[0.05em] uppercase text-[#786C5E] bg-[#F1EBE3] rounded-full px-[9px] py-[3px] normal-case">
+        <span className="text-[10px] font-extrabold tracking-[0.05em] uppercase text-[#7C766F] bg-[#F2EFEA] rounded-full px-[9px] py-[3px] normal-case">
           {tag}
         </span>
       )}
@@ -142,7 +142,7 @@ export function Toggle({ on, onClick, testId }: { on: boolean; onClick: () => vo
         type="button"
         onClick={onClick}
         data-testid={testId}
-        className={`w-[46px] h-[27px] rounded-full relative transition-colors ${on ? "bg-[#EA2C00]" : "bg-[#E8E2DA]"}`}
+        className={`w-[46px] h-[27px] rounded-full relative transition-colors ${on ? "bg-[#EA2C00]" : "bg-[#E7E3DD]"}`}
       >
         <span
           className={`absolute top-[3px] w-[21px] h-[21px] rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] transition-all ${
@@ -186,18 +186,18 @@ export function MoneyCard({
   awaitingScale?: { need: string };
 }) {
   return (
-    <div className="bg-[#FDFBF8] border border-[#E8E2DA] rounded-[20px] px-[26px] py-[22px] mb-3.5">
+    <div className="bg-[#FDFBF8] border border-[#E7E3DD] rounded-[20px] px-[26px] py-[22px] mb-3.5">
       <div className="flex justify-between items-start gap-5">
         <div>
           <div className="font-abridge text-[22px] text-[#1A1A1A] flex items-center flex-wrap gap-x-3 gap-y-1">
             {title}
             {tag && (
-              <span className="text-[9.5px] font-extrabold tracking-[0.05em] uppercase text-[#786C5E] bg-[#F1EBE3] rounded-full px-[9px] py-[3px] relative -top-[1px] font-sans">
+              <span className="text-[9.5px] font-extrabold tracking-[0.05em] uppercase text-[#7C766F] bg-[#F2EFEA] rounded-full px-[9px] py-[3px] relative -top-[1px] font-sans">
                 {tag}
               </span>
             )}
           </div>
-          <div className="text-[13px] text-[#5E534A] mt-[5px] max-w-[560px] leading-[1.45]">{subtitle}</div>
+          <div className="text-[13px] text-[#565250] mt-[5px] max-w-[560px] leading-[1.45]">{subtitle}</div>
         </div>
         <Toggle on={enabled} onClick={onToggle} testId={testId} />
       </div>
@@ -208,9 +208,9 @@ export function MoneyCard({
             <div className="flex items-baseline gap-4 mt-4 flex-wrap" data-testid={testId ? `${testId}-awaiting` : undefined}>
               <div>
                 <span className="font-abridge text-[36px] text-[#C9BDAD] leading-none tabular-nums select-none">{"—"}</span>{" "}
-                <span className="text-[15px] text-[#5E534A]">{unit}</span>
+                <span className="text-[15px] text-[#565250]">{unit}</span>
               </div>
-              <div className="text-[13px] text-[#786C5E] border-l border-[#E8E2DA] pl-4">
+              <div className="text-[13px] text-[#7C766F] border-l border-[#E7E3DD] pl-4">
                 Enter {awaitingScale.need} to see your number.
               </div>
             </div>
@@ -221,10 +221,10 @@ export function MoneyCard({
           <div className="flex items-baseline gap-4 mt-4 flex-wrap">
             <div>
               <AnimatedValue value={value} format={fmt$} duration={450} className="font-abridge text-[36px] text-[#EA2C00] leading-none tabular-nums" />{" "}
-              <span className="text-[15px] text-[#5E534A]">{unit}</span>
+              <span className="text-[15px] text-[#565250]">{unit}</span>
             </div>
             {secondary && (
-              <div className="text-[13px] text-[#5E534A] border-l border-[#E8E2DA] pl-4">{secondary}</div>
+              <div className="text-[13px] text-[#565250] border-l border-[#E7E3DD] pl-4">{secondary}</div>
             )}
           </div>
           {build ? (
@@ -233,7 +233,7 @@ export function MoneyCard({
               <BuildStrip build={build} />
               {children && (
                 <>
-                  <div className="text-[10.5px] font-extrabold tracking-[0.09em] uppercase text-[#786C5E] mt-[26px] mb-3">
+                  <div className="text-[10.5px] font-extrabold tracking-[0.09em] uppercase text-[#7C766F] mt-[26px] mb-3">
                     Adjust the inputs
                   </div>
                   {children}
@@ -244,14 +244,14 @@ export function MoneyCard({
             <>
               {children}
               {buildLine && (
-                <div className="mt-4 text-[12.5px] text-[#5E534A] leading-[1.5]">{buildLine}</div>
+                <div className="mt-4 text-[12.5px] text-[#565250] leading-[1.5]">{buildLine}</div>
               )}
             </>
           )}
         </>
         )
       ) : (
-        <div className="mt-4 text-[13px] text-[#786C5E] italic">Off. Turn on to model this driver against your numbers.</div>
+        <div className="mt-4 text-[13px] text-[#7C766F] italic">Off. Turn on to model this driver against your numbers.</div>
       )}
     </div>
   );
@@ -272,7 +272,7 @@ export function FieldTile({
     <div>
       <div className="text-[10.5px] font-extrabold tracking-[0.04em] uppercase text-[#2E2822] mb-[7px]">{label}</div>
       {children}
-      {note && <div className={`text-[11px] mt-1.5 ${hot ? "text-[#EA2C00] font-bold" : "text-[#786C5E]"}`}>{note}</div>}
+      {note && <div className={`text-[11px] mt-1.5 ${hot ? "text-[#EA2C00] font-bold" : "text-[#7C766F]"}`}>{note}</div>}
     </div>
   );
 }
@@ -309,8 +309,8 @@ export function Fi({
 }) {
   return (
     <div
-      className={`h-12 rounded-xl bg-white flex items-center gap-0 px-[14px] text-[16px] font-bold text-[#1A1A1A] transition-colors focus-within:border-[#EA2C00] focus-within:ring-1 focus-within:ring-[#EA2C00] ${
-        highlighted ? "border border-[#EFB6A6] shadow-[0_0_0_1px_#F5D3C8]" : "border border-[#E8E2DA]"
+      className={`h-12 rounded-xl bg-white flex items-center gap-0 px-[14px] text-[16px] font-bold text-[#1A1A1A] transition-colors focus-within:border-[#EA2C00] focus-within:shadow-[0_0_0_3px_#FBD9CE] ${
+        highlighted ? "border border-[#EFB6A6] shadow-[0_0_0_1px_#F5D3C8]" : "border border-[#E7E3DD]"
       }`}
     >
       {prefix && <span className="text-[16px] font-bold text-[#1A1A1A] flex-shrink-0 mr-[1px]">{prefix}</span>}
@@ -323,7 +323,7 @@ export function Fi({
         data-testid={testId}
         className="w-full bg-transparent outline-none text-[16px] font-bold text-[#1A1A1A] tabular-nums"
       />
-      {suffix && <span className="ml-auto pl-2 text-[13px] font-semibold text-[#786C5E] flex-shrink-0">{suffix}</span>}
+      {suffix && <span className="ml-auto pl-2 text-[13px] font-semibold text-[#7C766F] flex-shrink-0">{suffix}</span>}
     </div>
   );
 }
@@ -331,9 +331,9 @@ export function Fi({
 /** Read-only derived tile — a value the engine computed upstream, not editable here. */
 export function FiReadout({ children, suffix }: { children: ReactNode; suffix?: string }) {
   return (
-    <div className="h-12 rounded-xl bg-[#F5F0EB] border border-[#E8E2DA] flex items-center gap-1 px-[14px] text-[16px] font-bold text-[#5E534A] tabular-nums">
+    <div className="h-12 rounded-xl bg-[#F4F1EC] border border-[#E7E3DD] flex items-center gap-1 px-[14px] text-[16px] font-bold text-[#565250] tabular-nums">
       {children}
-      {suffix && <span className="ml-auto pl-2 text-[13px] font-semibold text-[#786C5E]">{suffix}</span>}
+      {suffix && <span className="ml-auto pl-2 text-[13px] font-semibold text-[#7C766F]">{suffix}</span>}
     </div>
   );
 }
@@ -355,7 +355,7 @@ export function QuickFill({
           type="button"
           onClick={() => onSelect(o.key)}
           className={`text-[11px] font-bold rounded-[8px] border px-[9px] py-[5px] transition-colors ${
-            activeKey === o.key ? "border-[#EA2C00] text-[#EA2C00] bg-[#FFF7F4]" : "border-[#E8E2DA] text-[#5E534A] bg-white"
+            activeKey === o.key ? "border-[#EA2C00] text-[#EA2C00] bg-[#FFF7F4]" : "border-[#E7E3DD] text-[#565250] bg-white"
           }`}
         >
           {o.label}
@@ -378,7 +378,7 @@ export function PlansRepeater({
     <div className="mt-5">
       <div className="flex items-center text-[10.5px] font-extrabold tracking-[0.04em] uppercase text-[#2E2822] mb-2.5">
         <span>Risk-based plans, each at its own value per HCC</span>
-        <span className="ml-auto normal-case tracking-normal font-bold text-[#5E534A] text-[12px]">{totalLabel}</span>
+        <span className="ml-auto normal-case tracking-normal font-bold text-[#565250] text-[12px]">{totalLabel}</span>
       </div>
       <div className="space-y-2.5">{children}</div>
       <button
@@ -423,7 +423,7 @@ export function PlanRow({
       <select
         value={planType}
         onChange={(e) => onPlanTypeChange(e.target.value)}
-        className="h-12 rounded-xl border border-[#E8E2DA] bg-white px-[14px] text-[15px] font-bold text-[#1A1A1A] outline-none transition-colors focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]"
+        className="h-[54px] rounded-[14px] border-[1.5px] border-[#E4DED6] bg-white shadow-[0_1px_2px_rgba(40,30,20,0.04)] px-[14px] text-[15px] font-bold text-[#1A1A1A] outline-none transition-colors focus:border-[#EA2C00] focus:shadow-[0_0_0_3px_#FBD9CE]"
       >
         {Object.entries(PLAN_TYPE_LABELS).map(([k, label]) => (
           <option key={k} value={k}>
@@ -437,7 +437,7 @@ export function PlanRow({
         type="button"
         onClick={onRemove}
         disabled={!removable}
-        className="w-[26px] h-[26px] rounded-[8px] border border-[#E8E2DA] bg-white text-[#786C5E] flex items-center justify-center disabled:opacity-30"
+        className="w-[26px] h-[26px] rounded-[8px] border border-[#E7E3DD] bg-white text-[#7C766F] flex items-center justify-center disabled:opacity-30"
       >
         <X className="w-3.5 h-3.5" />
       </button>
@@ -462,23 +462,23 @@ export function OutcomesTier({
         {title}
       </SectionLabel>
       <div className="border border-dashed border-[#D8CFC0] rounded-[18px] bg-[#FAF7F2] px-6 py-5">
-        <div className="text-[10.5px] font-extrabold tracking-[0.06em] uppercase text-[#786C5E] mb-3">
+        <div className="text-[10.5px] font-extrabold tracking-[0.06em] uppercase text-[#7C766F] mb-3">
           Signals we track, no dollar value
         </div>
         <div>
           {items.map((it, i) => (
             <div
               key={it.label}
-              className={`flex justify-between items-baseline gap-4 py-2 text-[14px] text-[#5E534A] ${
+              className={`flex justify-between items-baseline gap-4 py-2 text-[14px] text-[#565250] ${
                 i < items.length - 1 ? "border-b border-[#EDE5D8]" : ""
               }`}
             >
               <span>{it.label}</span>
-              {it.example && <span className="text-[12px] text-[#786C5E] italic text-right">{it.example}</span>}
+              {it.example && <span className="text-[12px] text-[#7C766F] italic text-right">{it.example}</span>}
             </div>
           ))}
         </div>
-        <div className="mt-[15px] text-[12.5px] text-[#5E534A] leading-[1.5]">{note}</div>
+        <div className="mt-[15px] text-[12.5px] text-[#565250] leading-[1.5]">{note}</div>
       </div>
     </>
   );

@@ -14,12 +14,12 @@ export function SignalWatch({ domain, title = "What you can watch" }: { domain: 
     <div className="mt-9">
       <div className="flex items-baseline gap-2.5 mb-2 flex-wrap">
         <span className="text-[11px] font-extrabold tracking-[0.09em] uppercase text-[#2E2822]">{title}</span>
-        <span className="text-[10px] font-extrabold tracking-[0.05em] uppercase text-[#786C5E] bg-[#F1EBE3] rounded-full px-[9px] py-[3px]">
+        <span className="text-[10px] font-extrabold tracking-[0.05em] uppercase text-[#7C766F] bg-[#F2EFEA] rounded-full px-[9px] py-[3px]">
           signals · not counted
         </span>
-        <span className="ml-auto text-[12px] text-[#786C5E]">the dollar: {domain.dollar}</span>
+        <span className="ml-auto text-[12px] text-[#7C766F]">the dollar: {domain.dollar}</span>
       </div>
-      <p className="text-[12.5px] text-[#5E534A] leading-[1.5] mb-3.5 max-w-[660px]">
+      <p className="text-[12.5px] text-[#565250] leading-[1.5] mb-3.5 max-w-[660px]">
         Every measure here starts with the documentation. They are the numbers that move first, so the value is
         something you confirm on your own dashboards, not something we ask you to take on faith.
       </p>
@@ -36,7 +36,7 @@ export function SignalWatch({ domain, title = "What you can watch" }: { domain: 
                 data-testid={`signal-trace-${i}`}
               >
                 <span className="text-[15px] font-bold text-[#1A1A1A]">{s.name}</span>
-                <span className="text-[13px] text-[#786C5E] flex-1 hidden sm:block">{s.what}</span>
+                <span className="text-[13px] text-[#7C766F] flex-1 hidden sm:block">{s.what}</span>
                 <span className="text-[11.5px] font-bold text-[#B02200] whitespace-nowrap flex items-center gap-[5px]">
                   {isOpen ? "Close" : "Trace it"}
                   <span className={`inline-block transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}>↓</span>
@@ -62,7 +62,7 @@ function Beat({ label, text, matters }: { label: string; text: string; matters?:
     <div>
       <div
         className={`text-[9.5px] font-extrabold tracking-[0.09em] uppercase mb-1 ${
-          matters ? "text-[#B02200]" : "text-[#786C5E]"
+          matters ? "text-[#B02200]" : "text-[#7C766F]"
         }`}
       >
         {label}

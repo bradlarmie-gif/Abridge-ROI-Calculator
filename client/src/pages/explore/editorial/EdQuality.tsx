@@ -81,9 +81,9 @@ function ProofChainScreen({ state, onNext, onBack, onHome, setting }: { state: E
     <EditorialShell>
       <EditorialHeader stepName="Quality" stepIndex={stepIndex} onBack={onBack} onHome={onHome} />
       <div className="max-w-[1160px] mx-auto px-5 sm:px-8 lg:px-12 pt-11 pb-[60px]">
-        <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#5E534A]">Explore · Step 7 of 9</div>
+        <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#565250]">Explore · Step 7 of 9</div>
         <h1 className="font-abridge text-[26px] sm:text-[32px] lg:text-[38px] leading-[1.08] text-[#1A1A1A] mt-[10px] max-w-[700px]">{copy.h1}</h1>
-        <p className="text-[16px] text-[#5E534A] mt-[13px] max-w-[660px] leading-[1.5]">{copy.sub}</p>
+        <p className="text-[16px] text-[#565250] mt-[13px] max-w-[660px] leading-[1.5]">{copy.sub}</p>
 
         <SectionLabel
           tag="no dollar counted here"
@@ -97,15 +97,15 @@ function ProofChainScreen({ state, onNext, onBack, onHome, setting }: { state: E
           The proof
         </SectionLabel>
 
-        <div className="border border-[#E8E2DA] rounded-[14px] bg-[#FAF7F2] px-[18px] py-[15px] mb-[18px] flex gap-3">
+        <div className="border border-[#E7E3DD] rounded-[14px] bg-[#FAF7F2] px-[18px] py-[15px] mb-[18px] flex gap-3">
           <span className="w-[9px] h-[9px] rounded-full bg-[#EA2C00] flex-shrink-0 mt-[5px]" />
-          <div className="text-[13.5px] text-[#5E534A] leading-[1.5]">
+          <div className="text-[13.5px] text-[#565250] leading-[1.5]">
             <b className="text-[#1A1A1A]">{copy.root.split(".")[0]}.</b> {copy.root.split(".").slice(1).join(".").trim()}
           </div>
         </div>
 
-        <div className="flex items-center gap-2 text-[10.5px] font-extrabold tracking-[0.05em] uppercase text-[#786C5E] mb-2.5">
-          How the proof builds <span className="flex-1 h-px bg-gradient-to-r from-[#E8E2DA] to-[#EDE7DD]" /> weeks → next year
+        <div className="flex items-center gap-2 text-[10.5px] font-extrabold tracking-[0.05em] uppercase text-[#7C766F] mb-2.5">
+          How the proof builds <span className="flex-1 h-px bg-gradient-to-r from-[#E7E3DD] to-[#EDE7DD]" /> weeks → next year
         </div>
 
         <div className="flex items-stretch flex-wrap gap-y-4" data-testid="proof-chain">
@@ -116,18 +116,18 @@ function ProofChainScreen({ state, onNext, onBack, onHome, setting }: { state: E
               <div key={d.id} className="flex items-stretch" style={{ flex: "1 1 200px", minWidth: 200 }}>
                 <div
                   className={`flex-1 rounded-[16px] p-[18px_17px] flex flex-col gap-2.5 ${
-                    isLast ? "bg-[#FFFBFA] border border-[#F0D3C9]" : "bg-[#FDFBF8] border border-[#E8E2DA]"
+                    isLast ? "bg-[#FFFBFA] border border-[#F0D3C9]" : "bg-[#FDFBF8] border border-[#E7E3DD]"
                   }`}
                 >
                   <span
                     className={`self-start text-[10px] font-extrabold tracking-[0.05em] uppercase rounded-full px-[9px] py-[3px] ${
-                      isLast ? "text-[#B02200] bg-[#FFEDE7]" : "text-[#786C5E] bg-[#F1EBE3]"
+                      isLast ? "text-[#B02200] bg-[#FFEDE7]" : "text-[#7C766F] bg-[#F2EFEA]"
                     }`}
                   >
                     {stageTiming(d)}
                   </span>
                   <div className="font-abridge text-[17px] text-[#1A1A1A] leading-[1.15]">{copyEntry.metric}</div>
-                  <div className="text-[11.5px] text-[#786C5E] leading-[1.4]">{copyEntry.sub}</div>
+                  <div className="text-[11.5px] text-[#7C766F] leading-[1.4]">{copyEntry.sub}</div>
                 </div>
                 {!isLast && (
                   <div className="flex items-center justify-center text-[19px] text-[#CBBEAB] w-10 flex-shrink-0">→</div>
@@ -137,7 +137,7 @@ function ProofChainScreen({ state, onNext, onBack, onHome, setting }: { state: E
           })}
         </div>
 
-        <div className="border border-dashed border-[#D8CFC0] rounded-[14px] bg-[#FAF7F2] px-5 py-[17px] mt-[22px] text-[13px] text-[#5E534A] leading-[1.55]">
+        <div className="border border-dashed border-[#D8CFC0] rounded-[14px] bg-[#FAF7F2] px-5 py-[17px] mt-[22px] text-[13px] text-[#565250] leading-[1.55]">
           <b className="text-[#1A1A1A]">We don't put a dollar on this screen, on purpose.</b> Abridge doesn't change your
           scores or earn a bonus. It makes sure the care you actually delivered is reflected in the measures you're already
           judged by. Any dollars tied to those measures are counted once, in Revenue, so nothing here is double-counted or
@@ -225,17 +225,17 @@ function NursingQualityScreen({
     <EditorialShell>
       <EditorialHeader stepName="Quality" stepIndex={7} onBack={onBack} onHome={onHome} />
       <div className="max-w-[1160px] mx-auto px-5 sm:px-8 lg:px-12 pt-11 pb-[60px]">
-        <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#5E534A]">Explore · Step 7 of 9</div>
+        <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#565250]">Explore · Step 7 of 9</div>
         <h1 className="font-abridge text-[26px] sm:text-[32px] lg:text-[38px] leading-[1.08] text-[#1A1A1A] mt-[10px] max-w-[700px]">
           Where does nursing documentation prevent harm?
         </h1>
-        <p className="text-[16px] text-[#5E534A] mt-[13px] max-w-[660px] leading-[1.5]">
+        <p className="text-[16px] text-[#565250] mt-[13px] max-w-[660px] leading-[1.5]">
           Five harm events scored on timestamps. Undocumented care looks non-compliant even when every element was
           performed. Real-time flowsheet entries are the difference.
         </p>
 
         {needsBeds && anyEnabled && (
-          <div className="border border-[#E8E2DA] rounded-[14px] bg-[#FAF7F2] px-[18px] py-[15px] mt-6 text-[13px] text-[#5E534A] leading-[1.5]">
+          <div className="border border-[#E7E3DD] rounded-[14px] bg-[#FAF7F2] px-[18px] py-[15px] mt-6 text-[13px] text-[#565250] leading-[1.5]">
             Enter <b className="text-[#1A1A1A]">staffed beds</b> and <b className="text-[#1A1A1A]">occupancy</b> on the first
             step to see these values. Without them, patient-days are zero, so the dollar figures stay at $0.
           </div>
@@ -246,14 +246,14 @@ function NursingQualityScreen({
           right={
             <>
               Counted on this screen&nbsp; <b className="font-abridge text-[15px] text-[#1A1A1A]">${Math.round(countedTotal).toLocaleString()}</b> / yr
-              &nbsp;·&nbsp; <span className="text-[#786C5E]">{onCount} of 5 on</span>
+              &nbsp;·&nbsp; <span className="text-[#7C766F]">{onCount} of 5 on</span>
             </>
           }
         >
           The value
         </SectionLabel>
 
-        <div className="text-[10.5px] font-extrabold tracking-[0.06em] uppercase text-[#786C5E] mb-2">Harm events</div>
+        <div className="text-[10.5px] font-extrabold tracking-[0.06em] uppercase text-[#7C766F] mb-2">Harm events</div>
         <MoneyCard
           title="HAPI prevention"
           subtitle="Real-time Braden scores and turning events documented at the bedside, not batched after Stage 1 has already progressed."
@@ -338,7 +338,7 @@ function NursingQualityScreen({
           </FieldGrid>
         </MoneyCard>
 
-        <div className="text-[10.5px] font-extrabold tracking-[0.06em] uppercase text-[#786C5E] mt-6 mb-2">Bundle compliance</div>
+        <div className="text-[10.5px] font-extrabold tracking-[0.06em] uppercase text-[#7C766F] mt-6 mb-2">Bundle compliance</div>
         <MoneyCard
           title="CAUTI prevention"
           subtitle="Each point-of-care necessity review is the timestamped prompt for removal. Every catheter day avoided is one fewer chance for a CAUTI."
@@ -505,7 +505,7 @@ export default function EdQuality({ state, updateState, totalHoursSaved, onNext,
     <EditorialShell>
       <EditorialHeader stepName="Quality" stepIndex={7} onBack={onBack} onHome={onHome} />
       <div className="max-w-[1160px] mx-auto px-5 sm:px-8 lg:px-12 pt-11 pb-[60px]">
-        <p className="text-[15px] text-[#5E534A]">Pick a care setting first.</p>
+        <p className="text-[15px] text-[#565250]">Pick a care setting first.</p>
       </div>
     </EditorialShell>
   );

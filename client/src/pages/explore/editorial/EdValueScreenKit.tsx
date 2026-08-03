@@ -9,7 +9,7 @@ import { AnimatedValue } from "@/components/explore/AnimatedValue";
  * on" money drivers with a coral ON/OFF switch, and Tier 2 demoted dashed
  * "not counted · examples only" qualitative signals → outcomes block.
  *
- * Tokens match the locked mockup kit exactly (#E8E2DA hairlines, #EA2C00
+ * Tokens match the locked mockup kit exactly (#E7E3DD hairlines, #EA2C00
  * coral, #FDFBF8 card fill, Abridge display face for numbers/titles).
  */
 
@@ -31,7 +31,7 @@ export function Switch({
     <div className="flex-shrink-0 text-right">
       <div
         className={`text-[11px] font-extrabold tracking-[0.05em] uppercase mb-[6px] ${
-          on ? "text-[#EA2C00]" : "text-[#786C5E]"
+          on ? "text-[#EA2C00]" : "text-[#7C766F]"
         }`}
       >
         {on ? "On" : "Off"}
@@ -71,13 +71,13 @@ export function SectionLabel({
       {children}
       <span
         className={`text-[10px] font-extrabold tracking-[0.05em] normal-case rounded-full px-[9px] py-[3px] ${
-          tagMuted ? "text-[#786C5E] bg-[#F1EBE3]" : "text-[#EA2C00] bg-[#FFEDE7]"
+          tagMuted ? "text-[#7C766F] bg-[#F2EFEA]" : "text-[#EA2C00] bg-[#FFEDE7]"
         }`}
       >
         {tag}
       </span>
       {subtotal && (
-        <span className="ml-auto normal-case tracking-normal text-[12px] font-bold text-[#5E534A]">
+        <span className="ml-auto normal-case tracking-normal text-[12px] font-bold text-[#565250]">
           {subtotal}
         </span>
       )}
@@ -115,11 +115,11 @@ export function ValueCard({
   awaitingScale?: { need: string };
 }) {
   return (
-    <div className="bg-[#FDFBF8] border border-[#E8E2DA] rounded-[20px] p-6 sm:p-7 mb-[14px] last:mb-0">
+    <div className="bg-[#FDFBF8] border border-[#E7E3DD] rounded-[20px] p-6 sm:p-7 mb-[14px] last:mb-0">
       <div className="flex justify-between items-start gap-5">
         <div>
           <div className="font-abridge text-[22px] sm:text-[23px] text-[#1A1A1A] leading-tight">{title}</div>
-          <div className="text-[13.5px] text-[#5E534A] mt-1 max-w-[430px] leading-[1.45]">{subtitle}</div>
+          <div className="text-[13.5px] text-[#565250] mt-1 max-w-[430px] leading-[1.45]">{subtitle}</div>
         </div>
         <Switch on={true} onClick={onToggle} testId={testId} />
       </div>
@@ -137,13 +137,13 @@ export function ValueCard({
           ) : (
             <AnimatedValue value={value} format={formatCurrency} duration={450} className="font-abridge text-[36px] sm:text-[40px] leading-none text-[#EA2C00]" />
           )}{" "}
-          <span className="text-[15px] text-[#5E534A]">{unit}</span>
+          <span className="text-[15px] text-[#565250]">{unit}</span>
         </div>
         {awaitingScale ? (
-          <div className="text-[13.5px] text-[#786C5E] border-l border-[#E8E2DA] pl-4">Enter {awaitingScale.need} to see your number.</div>
+          <div className="text-[13.5px] text-[#7C766F] border-l border-[#E7E3DD] pl-4">Enter {awaitingScale.need} to see your number.</div>
         ) : (
           secondary && (
-            <div className="text-[13.5px] text-[#5E534A] border-l border-[#E8E2DA] pl-4">{secondary}</div>
+            <div className="text-[13.5px] text-[#565250] border-l border-[#E7E3DD] pl-4">{secondary}</div>
           )
         )}
       </div>
@@ -154,7 +154,7 @@ export function ValueCard({
       {children &&
         (!awaitingScale && buildStruct ? (
           <>
-            <div className="text-[10.5px] font-extrabold tracking-[0.09em] uppercase text-[#786C5E] mt-[26px] mb-3">
+            <div className="text-[10.5px] font-extrabold tracking-[0.09em] uppercase text-[#7C766F] mt-[26px] mb-3">
               Adjust the inputs
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-[14px]">{children}</div>
@@ -164,7 +164,7 @@ export function ValueCard({
         ))}
 
       {!awaitingScale && !buildStruct && build && (
-        <div className="text-[13px] text-[#5E534A] leading-[1.5] mt-[18px]">{build}</div>
+        <div className="text-[13px] text-[#565250] leading-[1.5] mt-[18px]">{build}</div>
       )}
     </div>
   );
@@ -184,25 +184,25 @@ export function OffCard({
   testId?: string;
 }) {
   return (
-    <div className="bg-[#FBF9F5] border border-[#E8E2DA] rounded-[20px] px-6 sm:px-7 py-5 mb-[14px] last:mb-0">
+    <div className="bg-[#FBF9F5] border border-[#E7E3DD] rounded-[20px] px-6 sm:px-7 py-5 mb-[14px] last:mb-0">
       <div className="flex items-center justify-between gap-6 flex-wrap sm:flex-nowrap">
         <div>
-          <div className="font-abridge text-[22px] sm:text-[23px] text-[#5E534A] leading-tight">{title}</div>
-          <div className="text-[13.5px] text-[#5E534A] mt-[5px] max-w-[520px] leading-[1.45]">{subtitle}</div>
+          <div className="font-abridge text-[22px] sm:text-[23px] text-[#565250] leading-tight">{title}</div>
+          <div className="text-[13.5px] text-[#565250] mt-[5px] max-w-[520px] leading-[1.45]">{subtitle}</div>
         </div>
         <div className="flex items-center gap-[22px] flex-shrink-0">
-          <div className="text-[13px] font-extrabold tracking-[0.04em] uppercase text-[#786C5E]">Not counted</div>
+          <div className="text-[13px] font-extrabold tracking-[0.04em] uppercase text-[#7C766F]">Not counted</div>
           <Switch on={false} onClick={onToggle} testId={testId} />
         </div>
       </div>
-      {hint && <div className="text-[12.5px] text-[#786C5E] mt-[11px] leading-[1.5]">{hint}</div>}
+      {hint && <div className="text-[12.5px] text-[#7C766F] mt-[11px] leading-[1.5]">{hint}</div>}
     </div>
   );
 }
 
 export function EmptyValueCard({ children }: { children: ReactNode }) {
   return (
-    <div className="bg-[#FBF9F5] border border-dashed border-[#D8CFC0] rounded-[20px] px-6 sm:px-7 py-6 text-[13.5px] text-[#786C5E] leading-[1.5]">
+    <div className="bg-[#FBF9F5] border border-dashed border-[#D8CFC0] rounded-[20px] px-6 sm:px-7 py-6 text-[13.5px] text-[#7C766F] leading-[1.5]">
       {children}
     </div>
   );
@@ -221,7 +221,7 @@ export function Field({
     <div>
       <div className="text-[11px] font-extrabold tracking-[0.05em] uppercase text-[#2E2822] mb-2">{label}</div>
       {children}
-      {note && <div className="text-[11.5px] text-[#786C5E] mt-[7px] leading-[1.4]">{note}</div>}
+      {note && <div className="text-[11.5px] text-[#7C766F] mt-[7px] leading-[1.4]">{note}</div>}
     </div>
   );
 }
@@ -240,7 +240,7 @@ export function NumBox({
   testId?: string;
 }) {
   return (
-    <div className="h-12 border border-[#E8E2DA] rounded-xl bg-white flex items-center gap-0 px-[14px] transition-colors focus-within:border-[#EA2C00] focus-within:ring-1 focus-within:ring-[#EA2C00]">
+    <div className="h-[54px] border-[1.5px] border-[#E4DED6] rounded-[14px] bg-white shadow-[0_1px_2px_rgba(40,30,20,0.04)] flex items-center gap-0 px-[14px] transition-colors focus-within:border-[#EA2C00] focus-within:shadow-[0_0_0_3px_#FBD9CE]">
       {prefix && <span className="text-[16px] font-bold text-[#1A1A1A] flex-shrink-0 mr-[1px]">{prefix}</span>}
       <FormattedNumberInput
         value={value}
@@ -248,7 +248,7 @@ export function NumBox({
         className="h-full w-full border-0 rounded-none bg-transparent px-0 py-0 shadow-none ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-[16px] font-bold text-[#1A1A1A] tabular-nums"
         data-testid={testId}
       />
-      {suffix && <span className="ml-auto pl-2 text-[13px] font-semibold text-[#786C5E] flex-shrink-0">{suffix}</span>}
+      {suffix && <span className="ml-auto pl-2 text-[13px] font-semibold text-[#7C766F] flex-shrink-0">{suffix}</span>}
     </div>
   );
 }
@@ -272,7 +272,7 @@ export function QuickPicks({
           className={`text-[11.5px] font-bold rounded-[8px] border px-[9px] py-[5px] transition-colors ${
             Math.round(value) === o.value
               ? "border-[#EA2C00] text-[#EA2C00] bg-[#FFF7F4]"
-              : "border-[#E8E2DA] text-[#5E534A] bg-white hover:border-[#1A1A1A]"
+              : "border-[#E7E3DD] text-[#565250] bg-white hover:border-[#1A1A1A]"
           }`}
         >
           {o.label} · {o.value}
@@ -302,21 +302,21 @@ export function OutcomesBlock({
     <div className="border border-dashed border-[#D8CFC0] rounded-[18px] p-5 sm:p-6 bg-[#FAF7F2]">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-9 gap-y-5">
         <div>
-          <div className="text-[10.5px] font-extrabold tracking-[0.06em] uppercase text-[#786C5E] mb-3">
+          <div className="text-[10.5px] font-extrabold tracking-[0.06em] uppercase text-[#7C766F] mb-3">
             Signals we can measure
           </div>
           {signals.map((s) => (
             <div
               key={s.label}
-              className="flex justify-between items-baseline gap-3 py-2 border-b border-[#EDE5D8] last:border-b-0 text-[14px] text-[#5E534A]"
+              className="flex justify-between items-baseline gap-3 py-2 border-b border-[#EDE5D8] last:border-b-0 text-[14px] text-[#565250]"
             >
               <span>{s.label}</span>
-              <span className="text-[12px] text-[#786C5E] italic flex-shrink-0 whitespace-nowrap">{s.ex}</span>
+              <span className="text-[12px] text-[#7C766F] italic flex-shrink-0 whitespace-nowrap">{s.ex}</span>
             </div>
           ))}
         </div>
         <div>
-          <div className="text-[10.5px] font-extrabold tracking-[0.06em] uppercase text-[#786C5E] mb-3">
+          <div className="text-[10.5px] font-extrabold tracking-[0.06em] uppercase text-[#7C766F] mb-3">
             {heading}
           </div>
           {outcomes.map((o) => (
@@ -329,7 +329,7 @@ export function OutcomesBlock({
           ))}
         </div>
       </div>
-      <div className="text-[12.5px] text-[#5E534A] leading-[1.5] mt-[15px]">{note}</div>
+      <div className="text-[12.5px] text-[#565250] leading-[1.5] mt-[15px]">{note}</div>
     </div>
   );
 }

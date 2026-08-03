@@ -31,7 +31,7 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
   };
 
   return (
-    <div className="min-h-screen bg-white relative overflow-hidden">
+    <div className="min-h-screen bg-[#FDFCFA] relative overflow-hidden">
       <GlobalHeader pageName="Home" />
       <div 
         className="absolute pointer-events-none z-0"

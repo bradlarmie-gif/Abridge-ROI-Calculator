@@ -123,18 +123,18 @@ export default function EdInvestment({
     <EditorialShell>
       <EditorialHeader stepName="Investment" stepIndex={8} onBack={onBack} onHome={onHome} />
       <div className="max-w-[1160px] mx-auto px-5 sm:px-8 lg:px-12 pt-[44px] pb-[60px]">
-        <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#5E534A]">Explore · Step 8 of 9</div>
+        <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#565250]">Explore · Step 8 of 9</div>
         <h1 className="font-abridge text-[26px] sm:text-[32px] lg:text-[38px] leading-[1.08] text-[#1A1A1A] mt-[10px]">What it costs, and what&apos;s left.</h1>
-        <p className="text-[16px] text-[#5E534A] mt-[13px] max-w-[620px] leading-[1.5]">
+        <p className="text-[16px] text-[#565250] mt-[13px] max-w-[620px] leading-[1.5]">
           Enter your pricing. Everything the prior screens built, minus the cost, is what&apos;s left.
         </p>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.08fr] gap-[22px] mt-8 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.08fr] gap-[22px] mt-8 items-stretch">
           {/* Investment card */}
-          <div className="bg-[#FDFBF8] border border-[#E8E2DA] rounded-[20px] p-[24px_26px]">
+          <div className="bg-[#FDFBF8] border border-[#E7E3DD] rounded-[20px] p-[24px_26px]">
             <div className="text-[11px] font-extrabold tracking-[0.09em] uppercase text-[#2E2822] mb-4">Your investment</div>
 
-            <div className="inline-flex gap-[3px] bg-[#F1EBE3] border border-[#E4DACC] rounded-[12px] p-1 mb-5">
+            <div className="inline-flex gap-[3px] bg-[#F2EFEA] border border-[#E7E2DB] rounded-[12px] p-1 mb-5">
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
@@ -142,7 +142,7 @@ export default function EdInvestment({
                   onClick={() => updateState({ pricingModel: tab.id })}
                   data-testid={`ed-investment-tab-${tab.id}`}
                   className={`text-[13px] font-bold rounded-[8px] px-[18px] py-[9px] transition-colors ${
-                    state.pricingModel === tab.id ? "bg-white text-[#EA2C00] shadow-[0_1px_3px_rgba(0,0,0,0.08)]" : "text-[#5E534A]"
+                    state.pricingModel === tab.id ? "bg-white text-[#EA2C00] shadow-[0_1px_3px_rgba(0,0,0,0.08)]" : "text-[#565250]"
                   }`}
                 >
                   {tab.label}
@@ -157,7 +157,7 @@ export default function EdInvestment({
                     <div className="text-[10.5px] font-extrabold tracking-[0.04em] uppercase text-[#2E2822] mb-2">
                       {isNursing ? "Staffed beds" : "Providers"}
                     </div>
-                    <div className="h-12 border border-[#E8E2DA] rounded-xl bg-white flex items-center px-[14px] text-[16px] font-bold text-[#1A1A1A] transition-colors focus-within:border-[#EA2C00] focus-within:ring-1 focus-within:ring-[#EA2C00]">
+                    <div className="h-[54px] border-[1.5px] border-[#E4DED6] rounded-[14px] bg-white shadow-[0_1px_2px_rgba(40,30,20,0.04)] flex items-center px-[14px] text-[16px] font-bold text-[#1A1A1A] transition-colors focus-within:border-[#EA2C00] focus-within:shadow-[0_0_0_3px_#FBD9CE]">
                       <FormattedNumberInput
                         value={isNursing ? state.nursingStaffedBeds : state.numberOfProviders}
                         onChange={(v) => updateState(isNursing ? { nursingStaffedBeds: v } : { numberOfProviders: v })}
@@ -166,13 +166,13 @@ export default function EdInvestment({
                         data-testid="ed-investment-input-providers"
                       />
                     </div>
-                    <div className="text-[11px] text-[#786C5E] mt-[6px]">from your practice</div>
+                    <div className="text-[11px] text-[#7C766F] mt-[6px]">from your practice</div>
                   </div>
                   <div>
                     <div className="text-[10.5px] font-extrabold tracking-[0.04em] uppercase text-[#2E2822] mb-2">
                       Cost per {isNursing ? "bed" : "provider"} / month
                     </div>
-                    <div className="h-12 border border-[#E8E2DA] rounded-xl bg-white flex items-center gap-0 px-[14px] transition-colors focus-within:border-[#EA2C00] focus-within:ring-1 focus-within:ring-[#EA2C00]">
+                    <div className="h-[54px] border-[1.5px] border-[#E4DED6] rounded-[14px] bg-white shadow-[0_1px_2px_rgba(40,30,20,0.04)] flex items-center gap-0 px-[14px] transition-colors focus-within:border-[#EA2C00] focus-within:shadow-[0_0_0_3px_#FBD9CE]">
                       <span className="text-[16px] font-bold text-[#1A1A1A] mr-[1px]">$</span>
                       <FormattedNumberInput
                         value={state.costPerProvider}
@@ -181,17 +181,17 @@ export default function EdInvestment({
                         data-testid="ed-investment-input-cost-per-provider"
                       />
                     </div>
-                    <div className="text-[11px] text-[#786C5E] mt-[6px]">your contract rate</div>
+                    <div className="text-[11px] text-[#7C766F] mt-[6px]">your contract rate</div>
                   </div>
                 </div>
-                <div className="mt-5 pt-[18px] border-t border-[#E8E2DA] flex justify-between items-baseline">
-                  <span className="text-[13px] text-[#5E534A]">Annual investment</span>
+                <div className="mt-5 pt-[18px] border-t border-[#E7E3DD] flex justify-between items-baseline">
+                  <span className="text-[13px] text-[#565250]">Annual investment</span>
                   <span className="font-abridge text-[26px] text-[#1A1A1A]">
                     {formatCurrency(annualInvestment)}
-                    <span className="text-[13px] text-[#5E534A]"> / yr</span>
+                    <span className="text-[13px] text-[#565250]"> / yr</span>
                   </span>
                 </div>
-                <div className="text-[11.5px] text-[#786C5E] mt-[10px] leading-[1.5]">
+                <div className="text-[11.5px] text-[#7C766F] mt-[10px] leading-[1.5]">
                   {formatNumber(isNursing ? state.nursingStaffedBeds : state.numberOfProviders)} {isNursing ? "beds" : "providers"} × {formatCurrency(state.costPerProvider)} × 12 months. Switch pricing model above to match your contract.
                 </div>
               </>
@@ -199,7 +199,7 @@ export default function EdInvestment({
               <>
                 <div>
                   <div className="text-[10.5px] font-extrabold tracking-[0.04em] uppercase text-[#2E2822] mb-2">Cost per encounter</div>
-                  <div className="h-12 border border-[#E8E2DA] rounded-xl bg-white flex items-center gap-0 px-[14px] transition-colors focus-within:border-[#EA2C00] focus-within:ring-1 focus-within:ring-[#EA2C00] max-w-[220px]">
+                  <div className="h-[54px] border-[1.5px] border-[#E4DED6] rounded-[14px] bg-white shadow-[0_1px_2px_rgba(40,30,20,0.04)] flex items-center gap-0 px-[14px] transition-colors focus-within:border-[#EA2C00] focus-within:shadow-[0_0_0_3px_#FBD9CE] max-w-[220px]">
                     <span className="text-[16px] font-bold text-[#1A1A1A] mr-[1px]">$</span>
                     <FormattedNumberInput
                       value={state.costPerEncounter}
@@ -210,14 +210,14 @@ export default function EdInvestment({
                     />
                   </div>
                 </div>
-                <div className="mt-5 pt-[18px] border-t border-[#E8E2DA] flex justify-between items-baseline">
-                  <span className="text-[13px] text-[#5E534A]">Annual investment</span>
+                <div className="mt-5 pt-[18px] border-t border-[#E7E3DD] flex justify-between items-baseline">
+                  <span className="text-[13px] text-[#565250]">Annual investment</span>
                   <span className="font-abridge text-[26px] text-[#1A1A1A]">
                     {formatCurrency(annualInvestment)}
-                    <span className="text-[13px] text-[#5E534A]"> / yr</span>
+                    <span className="text-[13px] text-[#565250]"> / yr</span>
                   </span>
                 </div>
-                <div className="text-[11.5px] text-[#786C5E] mt-[10px] leading-[1.5]">
+                <div className="text-[11.5px] text-[#7C766F] mt-[10px] leading-[1.5]">
                   {formatNumber(state.annualEncounters)} encounters × ${(state.costPerEncounter ?? 0).toFixed(2)}. Switch pricing model above to match your contract.
                 </div>
               </>
@@ -226,7 +226,7 @@ export default function EdInvestment({
                 <div className="grid grid-cols-2 gap-[14px]">
                   <div>
                     <div className="text-[10.5px] font-extrabold tracking-[0.04em] uppercase text-[#2E2822] mb-2">Annual platform fee</div>
-                    <div className="h-12 border border-[#E8E2DA] rounded-xl bg-white flex items-center gap-0 px-[14px] transition-colors focus-within:border-[#EA2C00] focus-within:ring-1 focus-within:ring-[#EA2C00]">
+                    <div className="h-[54px] border-[1.5px] border-[#E4DED6] rounded-[14px] bg-white shadow-[0_1px_2px_rgba(40,30,20,0.04)] flex items-center gap-0 px-[14px] transition-colors focus-within:border-[#EA2C00] focus-within:shadow-[0_0_0_3px_#FBD9CE]">
                       <span className="text-[16px] font-bold text-[#1A1A1A] mr-[1px]">$</span>
                       <FormattedNumberInput
                         value={state.annualLicenseFee}
@@ -238,7 +238,7 @@ export default function EdInvestment({
                   </div>
                   <div>
                     <div className="text-[10.5px] font-extrabold tracking-[0.04em] uppercase text-[#2E2822] mb-2">Per-encounter rate</div>
-                    <div className="h-12 border border-[#E8E2DA] rounded-xl bg-white flex items-center gap-0 px-[14px] transition-colors focus-within:border-[#EA2C00] focus-within:ring-1 focus-within:ring-[#EA2C00]">
+                    <div className="h-[54px] border-[1.5px] border-[#E4DED6] rounded-[14px] bg-white shadow-[0_1px_2px_rgba(40,30,20,0.04)] flex items-center gap-0 px-[14px] transition-colors focus-within:border-[#EA2C00] focus-within:shadow-[0_0_0_3px_#FBD9CE]">
                       <span className="text-[16px] font-bold text-[#1A1A1A] mr-[1px]">$</span>
                       <FormattedNumberInput
                         value={state.platformEncRate ?? 0}
@@ -250,14 +250,14 @@ export default function EdInvestment({
                     </div>
                   </div>
                 </div>
-                <div className="mt-5 pt-[18px] border-t border-[#E8E2DA] flex justify-between items-baseline">
-                  <span className="text-[13px] text-[#5E534A]">Annual investment</span>
+                <div className="mt-5 pt-[18px] border-t border-[#E7E3DD] flex justify-between items-baseline">
+                  <span className="text-[13px] text-[#565250]">Annual investment</span>
                   <span className="font-abridge text-[26px] text-[#1A1A1A]">
                     {formatCurrency(annualInvestment)}
-                    <span className="text-[13px] text-[#5E534A]"> / yr</span>
+                    <span className="text-[13px] text-[#565250]"> / yr</span>
                   </span>
                 </div>
-                <div className="text-[11.5px] text-[#786C5E] mt-[10px] leading-[1.5]">
+                <div className="text-[11.5px] text-[#7C766F] mt-[10px] leading-[1.5]">
                   {formatCurrency(state.annualLicenseFee)} platform + {formatNumber(state.annualEncounters)} enc × ${(state.platformEncRate ?? 0).toFixed(2)}.
                 </div>
               </>
@@ -265,7 +265,7 @@ export default function EdInvestment({
               <>
                 <div>
                   <div className="text-[10.5px] font-extrabold tracking-[0.04em] uppercase text-[#2E2822] mb-2">Annual license fee</div>
-                  <div className="h-12 border border-[#E8E2DA] rounded-xl bg-white flex items-center gap-0 px-[14px] transition-colors focus-within:border-[#EA2C00] focus-within:ring-1 focus-within:ring-[#EA2C00] max-w-[220px]">
+                  <div className="h-[54px] border-[1.5px] border-[#E4DED6] rounded-[14px] bg-white shadow-[0_1px_2px_rgba(40,30,20,0.04)] flex items-center gap-0 px-[14px] transition-colors focus-within:border-[#EA2C00] focus-within:shadow-[0_0_0_3px_#FBD9CE] max-w-[220px]">
                     <span className="text-[16px] font-bold text-[#1A1A1A] mr-[1px]">$</span>
                     <FormattedNumberInput
                       value={state.annualLicenseFee}
@@ -275,14 +275,14 @@ export default function EdInvestment({
                     />
                   </div>
                 </div>
-                <div className="mt-5 pt-[18px] border-t border-[#E8E2DA] flex justify-between items-baseline">
-                  <span className="text-[13px] text-[#5E534A]">Annual investment</span>
+                <div className="mt-5 pt-[18px] border-t border-[#E7E3DD] flex justify-between items-baseline">
+                  <span className="text-[13px] text-[#565250]">Annual investment</span>
                   <span className="font-abridge text-[26px] text-[#1A1A1A]">
                     {formatCurrency(annualInvestment)}
-                    <span className="text-[13px] text-[#5E534A]"> / yr</span>
+                    <span className="text-[13px] text-[#565250]"> / yr</span>
                   </span>
                 </div>
-                <div className="text-[11.5px] text-[#786C5E] mt-[10px] leading-[1.5]">
+                <div className="text-[11.5px] text-[#7C766F] mt-[10px] leading-[1.5]">
                   Fixed annual fee. Switch pricing model above to match your contract.
                 </div>
               </>
@@ -290,16 +290,16 @@ export default function EdInvestment({
           </div>
 
           {/* Return stack */}
-          <div className="bg-[#FDFBF8] border border-[#E8E2DA] rounded-[20px] p-[24px_26px]">
+          <div className="bg-[#FDFBF8] border border-[#E7E3DD] rounded-[20px] p-[24px_26px]">
             <div className="text-[11px] font-extrabold tracking-[0.09em] uppercase text-[#2E2822] mb-4">What it returns</div>
 
             {QUADRANT_ORDER.map((q) => {
               const proofNote = (PROOF_LAYER[state.careSetting ?? ""] ?? {})[q];
               return (
                 <div key={q} className="flex justify-between items-baseline py-[9px] border-b border-[#EDE5D8] text-[15px]">
-                  <span className={proofNote ? "text-[#786C5E]" : "text-[#5E534A]"}>{q}</span>
+                  <span className={proofNote ? "text-[#7C766F]" : "text-[#565250]"}>{q}</span>
                   {proofNote ? (
-                    <span className="text-[13px] text-[#786C5E] italic">{proofNote}</span>
+                    <span className="text-[13px] text-[#7C766F] italic">{proofNote}</span>
                   ) : (
                     <span className="font-abridge text-[17px] text-[#1A1A1A]">{formatCurrency(valueByQuadrant[q])}</span>
                   )}
@@ -311,20 +311,20 @@ export default function EdInvestment({
               <span className="font-abridge text-[19px] text-[#1A1A1A]">{formatCurrency(totalValue)}</span>
             </div>
             <div className="flex justify-between items-baseline py-[9px] text-[15px]">
-              <span className="text-[#5E534A]">Your investment</span>
-              <span className="font-abridge text-[17px] text-[#5E534A]">{formatCurrency(-annualInvestment)}</span>
+              <span className="text-[#565250]">Your investment</span>
+              <span className="font-abridge text-[17px] text-[#565250]">{formatCurrency(-annualInvestment)}</span>
             </div>
 
-            <div className="mt-[14px] pt-[18px] border-t-2 border-[#E8E2DA]">
+            <div className="mt-[14px] pt-[18px] border-t-2 border-[#E7E3DD]">
               <div className="text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#2E2822]">Net annual value</div>
               {/* Coral is reserved for a real gain; a loss reads in neutral ink, never celebratory. */}
               <div className={`font-abridge text-[34px] sm:text-[46px] leading-none mt-[7px] ${netAnnualValue >= 0 ? "text-[#EA2C00]" : "text-[#1A1A1A]"}`}>
                 {formatCurrency(netAnnualValue)}
-                <span className="text-[16px] text-[#5E534A]"> / yr</span>
+                <span className="text-[16px] text-[#565250]"> / yr</span>
               </div>
               {annualInvestment <= 0 ? (
-                <div className="inline-flex items-center gap-[9px] mt-[14px] bg-[#F1EBE3] border border-[#E4DACC] rounded-full px-[15px] py-[8px]">
-                  <span className="text-[12.5px] font-bold text-[#5E534A]">Add your pricing to see the return</span>
+                <div className="inline-flex items-center gap-[9px] mt-[14px] bg-[#F2EFEA] border border-[#E7E2DB] rounded-full px-[15px] py-[8px]">
+                  <span className="text-[12.5px] font-bold text-[#565250]">Add your pricing to see the return</span>
                 </div>
               ) : netAnnualValue > 0 ? (
                 <div className="inline-flex items-center gap-[9px] mt-[14px] bg-[#FFEDE7] border border-[#F5D3C8] rounded-full px-[15px] py-[8px]">
@@ -334,23 +334,23 @@ export default function EdInvestment({
                   </span>
                 </div>
               ) : (
-                <div className="inline-flex items-center gap-[9px] mt-[14px] bg-[#F1EBE3] border border-[#E4DACC] rounded-full px-[15px] py-[8px]">
-                  <span className="font-abridge text-[19px] text-[#5E534A]">{roi.toFixed(1)}×</span>
-                  <span className="text-[12.5px] font-bold text-[#5E534A]">
+                <div className="inline-flex items-center gap-[9px] mt-[14px] bg-[#F2EFEA] border border-[#E7E2DB] rounded-full px-[15px] py-[8px]">
+                  <span className="font-abridge text-[19px] text-[#565250]">{roi.toFixed(1)}×</span>
+                  <span className="text-[12.5px] font-bold text-[#565250]">
                     the modeled value doesn&apos;t cover the cost at this scope
                   </span>
                 </div>
               )}
             </div>
 
-            <p className="text-[12.5px] text-[#5E534A] leading-[1.55] mt-[18px]">
+            <p className="text-[12.5px] text-[#565250] leading-[1.55] mt-[18px]">
               <b className="text-[#1A1A1A] font-bold">Most of this builds over the first year</b> as adoption ramps. Time given back shows first, in weeks; revenue capture and recapture follow across the year.
             </p>
           </div>
         </div>
 
         <div className="flex justify-between items-center mt-[26px]">
-          <p className="text-[12px] text-[#786C5E] max-w-[560px] leading-[1.5]">
+          <p className="text-[12px] text-[#7C766F] max-w-[560px] leading-[1.5]">
             An estimate built from the figures you entered, not a guarantee of financial results. Actual outcomes vary. You confirm the real numbers as you measure.
           </p>
           <button

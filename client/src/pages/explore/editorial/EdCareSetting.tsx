@@ -104,15 +104,15 @@ export default function EdCareSetting({ selectedSetting, onSelectSetting, onNext
     <EditorialShell>
       <EditorialHeader stepName="Care Setting" stepIndex={1} onDataRequest={onDataRequest} onBack={onBack} onHome={onHome} />
       <div className="max-w-[1120px] mx-auto px-10 pt-[52px] pb-[60px]">
-        <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#5E534A]">Explore · Step 1 of 9</div>
+        <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#565250]">Explore · Step 1 of 9</div>
         <h1 className="font-abridge text-[27px] sm:text-[34px] lg:text-[40px] leading-[1.08] text-[#1A1A1A] mt-[10px] max-w-[680px]">
           Which care setting should we model first?
         </h1>
-        <p className="text-[16.5px] text-[#5E534A] mt-[14px] max-w-[620px] leading-[1.5]">
+        <p className="text-[16.5px] text-[#565250] mt-[14px] max-w-[620px] leading-[1.5]">
           Pick one to start. The panel shows what you'll build for that setting, all from its real volume and economics, never a benchmark.
         </p>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-7 mt-9 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-7 mt-9 items-stretch">
           {/* Selector list */}
           <div className="flex flex-col gap-[10px]" onMouseLeave={() => setHovered(null)}>
             {SETTINGS.map(({ id, name, sub, Icon }) => {
@@ -129,19 +129,19 @@ export default function EdCareSetting({ selectedSetting, onSelectSetting, onNext
                   className={`group relative text-left flex items-center gap-[14px] border rounded-[14px] px-4 py-[15px] transition-all duration-200 ${
                     selected
                       ? "border-[#EA2C00] bg-[#FEF6F3] shadow-[0_0_0_1px_#EA2C00]"
-                      : "border-[#E8E2DA] bg-[#FDFBF8] hover:border-[#C9BCA9] hover:bg-[#FBF7F1]"
+                      : "border-[#E7E3DD] bg-[#FDFBF8] hover:border-[#C9BCA9] hover:bg-[#FBF7F1]"
                   } ${disabled ? "opacity-40 cursor-not-allowed" : "cursor-pointer"}`}
                 >
-                  <div className={`w-[44px] h-[44px] rounded-[12px] flex items-center justify-center transition-colors duration-200 ${selected ? "bg-[#FFEDE7] text-[#EA2C00]" : "bg-[#F3EEE7] text-[#6B5E4F]"}`}>
+                  <div className={`w-[44px] h-[44px] rounded-[12px] flex items-center justify-center transition-colors duration-200 ${selected ? "bg-[#FFEDE7] text-[#EA2C00]" : "bg-[#F2EFEA] text-[#6B5E4F]"}`}>
                     <Icon className="w-[22px] h-[22px]" strokeWidth={1.8} />
                   </div>
                   <div className="min-w-0">
                     <div className="font-abridge text-[20px] text-[#1A1A1A] leading-tight">{name}</div>
-                    <div className="text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#786C5E] mt-[2px]">{sub}</div>
+                    <div className="text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#7C766F] mt-[2px]">{sub}</div>
                   </div>
                   <ArrowRight
                     className={`ml-auto w-[18px] h-[18px] transition-all duration-200 ${
-                      selected ? "text-[#EA2C00] translate-x-0" : "text-[#B4A99B] -translate-x-1 group-hover:translate-x-0 group-hover:text-[#8C7E6E]"
+                      selected ? "text-[#EA2C00] translate-x-0" : "text-[#B0ABA4] -translate-x-1 group-hover:translate-x-0 group-hover:text-[#8C7E6E]"
                     }`}
                     strokeWidth={1.8}
                   />
@@ -151,7 +151,7 @@ export default function EdCareSetting({ selectedSetting, onSelectSetting, onNext
           </div>
 
           {/* Live preview */}
-          <div className="bg-[#FDFBF8] border border-[#E8E2DA] rounded-[20px] p-[30px_32px] min-h-[360px] overflow-hidden">
+          <div className="bg-[#FDFBF8] border border-[#E7E3DD] rounded-[20px] p-[30px_32px] min-h-[360px] overflow-hidden">
             <AnimatePresence mode="wait">
               {preview ? (
                 <motion.div
@@ -161,17 +161,17 @@ export default function EdCareSetting({ selectedSetting, onSelectSetting, onNext
                   exit={{ opacity: 0, y: -6 }}
                   transition={{ duration: 0.3, ease: EASE }}
                 >
-                  <div className="text-[11px] font-extrabold tracking-[0.09em] uppercase text-[#786C5E]">
+                  <div className="text-[11px] font-extrabold tracking-[0.09em] uppercase text-[#7C766F]">
                     What you'll model · {preview.name}
                   </div>
                   <div className="font-abridge text-[32px] text-[#1A1A1A] mt-[6px] mb-1">{preview.name}</div>
-                  <p className="text-[15px] text-[#5E534A] leading-[1.55] max-w-[520px] mt-[10px] mb-6">{preview.blurb}</p>
+                  <p className="text-[15px] text-[#565250] leading-[1.55] max-w-[520px] mt-[10px] mb-6">{preview.blurb}</p>
                   <div className="grid grid-cols-2 gap-3">
                     {preview.cells.map((c) => (
-                      <div key={c.q} className="border border-[#E8E2DA] rounded-[14px] px-4 py-[15px] bg-white">
+                      <div key={c.q} className="border border-[#E7E3DD] rounded-[14px] px-4 py-[15px] bg-white">
                         <div className="text-[10.5px] font-extrabold tracking-[0.08em] uppercase text-[#EA2C00]">{c.q}</div>
                         <div className="text-[14px] font-semibold text-[#2E2822] mt-[5px]">{c.head}</div>
-                        <div className="text-[12px] text-[#786C5E] mt-[2px] leading-[1.4]">{c.sub}</div>
+                        <div className="text-[12px] text-[#7C766F] mt-[2px] leading-[1.4]">{c.sub}</div>
                       </div>
                     ))}
                   </div>
@@ -184,19 +184,19 @@ export default function EdCareSetting({ selectedSetting, onSelectSetting, onNext
                   exit={{ opacity: 0, y: -6 }}
                   transition={{ duration: 0.3, ease: EASE }}
                 >
-                  <div className="text-[11px] font-extrabold tracking-[0.09em] uppercase text-[#786C5E]">
+                  <div className="text-[11px] font-extrabold tracking-[0.09em] uppercase text-[#7C766F]">
                     What you'll model
                   </div>
                   <div className="font-abridge text-[32px] text-[#1A1A1A] mt-[6px] mb-1">Choose a setting</div>
-                  <p className="text-[15px] text-[#5E534A] leading-[1.55] max-w-[520px] mt-[10px] mb-6">
+                  <p className="text-[15px] text-[#565250] leading-[1.55] max-w-[520px] mt-[10px] mb-6">
                     Hover or pick a setting on the left to preview what we'll build for it. Every setting
                     models the same four areas, each from its own volume and economics.
                   </p>
                   <div className="grid grid-cols-2 gap-3">
                     {(["Capacity", "Workforce", "Revenue", "Quality"] as const).map((q) => (
                       <div key={q} className="border border-dashed border-[#E0D8CD] rounded-[14px] px-4 py-[15px] bg-transparent">
-                        <div className="text-[10.5px] font-extrabold tracking-[0.08em] uppercase text-[#B4A99B]">{q}</div>
-                        <div className="text-[13px] text-[#B4A99B] mt-[5px] leading-[1.4]">Shown once you pick a setting</div>
+                        <div className="text-[10.5px] font-extrabold tracking-[0.08em] uppercase text-[#B0ABA4]">{q}</div>
+                        <div className="text-[13px] text-[#B0ABA4] mt-[5px] leading-[1.4]">Shown once you pick a setting</div>
                       </div>
                     ))}
                   </div>
@@ -207,7 +207,7 @@ export default function EdCareSetting({ selectedSetting, onSelectSetting, onNext
         </div>
 
         <div className="flex justify-between items-center mt-[34px]">
-          <div className="text-[13px] text-[#5E534A]">
+          <div className="text-[13px] text-[#565250]">
             {selectedSetting ? (
               <>Modeling <b className="text-[#1A1A1A]">{SETTING_LABEL[selectedSetting]}</b> · you can add more settings later</>
             ) : (

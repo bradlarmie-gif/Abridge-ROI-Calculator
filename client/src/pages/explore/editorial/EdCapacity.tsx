@@ -401,7 +401,7 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
     // Fallback for any future Capacity quantified driver not yet wired here.
     return (
       <EmptyValueCard key={driver.id}>
-        <b className="text-[#5E534A] font-bold">{driver.label}.</b> {driver.shortDescription}
+        <b className="text-[#565250] font-bold">{driver.label}.</b> {driver.shortDescription}
       </EmptyValueCard>
     );
   };
@@ -418,9 +418,9 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
     <EditorialShell>
       <EditorialHeader stepName="Capacity" stepIndex={4} onBack={onBack} onHome={onHome} />
       <div className="max-w-[1160px] mx-auto px-5 sm:px-8 lg:px-12 pt-11 pb-[60px]">
-        <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#5E534A]">Explore · Step 4 of 9</div>
+        <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#565250]">Explore · Step 4 of 9</div>
         <h1 className="font-abridge text-[26px] sm:text-[32px] lg:text-[38px] leading-[1.08] text-[#1A1A1A] mt-[10px]">What does the freed time become?</h1>
-        <p className="text-[16px] text-[#5E534A] mt-[13px] max-w-[660px] leading-[1.5]">
+        <p className="text-[16px] text-[#565250] mt-[13px] max-w-[660px] leading-[1.5]">
           {capacityIsProofLayer ? (
             <>
               Those <b className="text-[#EA2C00] font-bold">{formatNum(totalHoursSaved)}</b> hours give the team room to move
@@ -450,9 +450,9 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
               The proof
             </SectionLabel>
 
-            <div className="border border-[#E8E2DA] rounded-[14px] bg-[#FAF7F2] px-[18px] py-[15px] flex gap-3">
+            <div className="border border-[#E7E3DD] rounded-[14px] bg-[#FAF7F2] px-[18px] py-[15px] flex gap-3">
               <span className="w-[9px] h-[9px] rounded-full bg-[#EA2C00] flex-shrink-0 mt-[5px]" />
-              <div className="text-[13.5px] text-[#5E534A] leading-[1.5]">
+              <div className="text-[13.5px] text-[#565250] leading-[1.5]">
                 <b className="text-[#1A1A1A]">We&apos;re only in the documentation, so capacity stays proof here on purpose.</b>{" "}
                 Earlier, complete notes can let discharge planning and consults start sooner, but the days themselves depend
                 on beds, staffing, and placement we don&apos;t touch. So we track the documentation signals that have to move
@@ -469,7 +469,7 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
                   <>
                     Counted on this screen&nbsp; <b className="font-abridge text-[#1A1A1A] text-[15px]">{formatCurrency(totalValue)}</b>{" "}
                     / yr &nbsp;·&nbsp;{" "}
-                    <span className="text-[#786C5E] font-bold">
+                    <span className="text-[#7C766F] font-bold">
                       {totalOn} of {flatFinancial.length} drivers on
                     </span>
                   </>

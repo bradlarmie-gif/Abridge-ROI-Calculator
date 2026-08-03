@@ -92,7 +92,7 @@ function ScenarioPicks({
           type="button"
           onClick={() => onPick(o.key)}
           className={`text-[11.5px] font-bold rounded-[8px] border px-[9px] py-[5px] transition-colors ${
-            value === o.key ? "border-[#EA2C00] text-[#EA2C00] bg-[#FFF7F4]" : "border-[#E8E2DA] text-[#5E534A] bg-white hover:border-[#1A1A1A]"
+            value === o.key ? "border-[#EA2C00] text-[#EA2C00] bg-[#FFF7F4]" : "border-[#E7E3DD] text-[#565250] bg-white hover:border-[#1A1A1A]"
           }`}
         >
           {o.label} · {rates[o.key]}%
@@ -104,14 +104,14 @@ function ScenarioPicks({
 
 function ModePicker({ mode, onChange }: { mode: "position" | "hourly"; onChange: (m: "position" | "hourly") => void }) {
   return (
-    <div className="flex items-center gap-[3px] bg-white border border-[#E8E2DA] rounded-full p-[3px] w-fit mb-4">
+    <div className="flex items-center gap-[3px] bg-white border border-[#E7E3DD] rounded-full p-[3px] w-fit mb-4">
       {(["position", "hourly"] as const).map((m) => (
         <button
           key={m}
           type="button"
           onClick={() => onChange(m)}
           className={`px-[14px] py-[6px] rounded-full text-[12px] font-bold transition-colors ${
-            mode === m ? "bg-[#EA2C00] text-white" : "text-[#5E534A]"
+            mode === m ? "bg-[#EA2C00] text-white" : "text-[#565250]"
           }`}
         >
           {m === "position" ? "Per position" : "Hourly"}
@@ -225,8 +225,8 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
             label="Tied to burnout & documentation"
             note={
               <>
-                ≈ <b className="font-abridge text-[#5E534A]">{formatNum1(burnoutRelatedDepartures)}</b> of the{" "}
-                <b className="font-abridge text-[#5E534A]">{formatNum1(providersLeavingPerYear)}</b> leaving each year are
+                ≈ <b className="font-abridge text-[#565250]">{formatNum1(burnoutRelatedDepartures)}</b> of the{" "}
+                <b className="font-abridge text-[#565250]">{formatNum1(providersLeavingPerYear)}</b> leaving each year are
                 addressable
               </>
             }
@@ -559,7 +559,7 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
 
     return (
       <EmptyValueCard key={driver.id}>
-        <b className="text-[#5E534A] font-bold">{driver.label}.</b> {driver.shortDescription}
+        <b className="text-[#565250] font-bold">{driver.label}.</b> {driver.shortDescription}
       </EmptyValueCard>
     );
   };
@@ -570,9 +570,9 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
     <EditorialShell>
       <EditorialHeader stepName="Workforce" stepIndex={5} onBack={onBack} onHome={onHome} />
       <div className="max-w-[1160px] mx-auto px-5 sm:px-8 lg:px-12 pt-11 pb-[60px]">
-        <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#5E534A]">Explore · Step 5 of 9</div>
+        <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#565250]">Explore · Step 5 of 9</div>
         <h1 className="font-abridge text-[26px] sm:text-[32px] lg:text-[38px] leading-[1.08] text-[#1A1A1A] mt-[10px]">What is Abridge worth to your workforce?</h1>
-        <p className="text-[16px] text-[#5E534A] mt-[13px] max-w-[680px] leading-[1.5]">
+        <p className="text-[16px] text-[#565250] mt-[13px] max-w-[680px] leading-[1.5]">
           {setting === "nursing" ? (
             <>Documentation burden is a leading reason RNs burn out and leave the bedside. As the after-hours charting load comes down, fewer walk out the door. Turn on only what you can stand behind, and nothing counts until you switch it on.</>
           ) : (
@@ -587,7 +587,7 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
               <>
                 Counted on this screen&nbsp; <b className="font-abridge text-[#1A1A1A] text-[15px]">{formatCurrency(totalValue)}</b>{" "}
                 / yr &nbsp;·&nbsp;{" "}
-                <span className="text-[#786C5E] font-bold">
+                <span className="text-[#7C766F] font-bold">
                   {totalOn} of {flatFinancial.length} drivers on
                 </span>
               </>

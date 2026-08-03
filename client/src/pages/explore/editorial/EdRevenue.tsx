@@ -532,14 +532,14 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
     <EditorialShell>
       <EditorialHeader stepName="Revenue" stepIndex={6} onBack={onBack} onHome={onHome} />
       <div className="max-w-[1160px] mx-auto px-5 sm:px-8 lg:px-12 pt-11 pb-[60px]">
-        <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#5E534A]">Explore · Step 6 of 9</div>
+        <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#565250]">Explore · Step 6 of 9</div>
         <h1 className="font-abridge text-[26px] sm:text-[32px] lg:text-[38px] leading-[1.08] text-[#1A1A1A] mt-[10px] max-w-[680px]">{heading}</h1>
-        <p className="text-[16px] text-[#5E534A] mt-[13px] max-w-[640px] leading-[1.5]">{sub}</p>
+        <p className="text-[16px] text-[#565250] mt-[13px] max-w-[640px] leading-[1.5]">{sub}</p>
 
         {isOP && (
           <>
             <div className="text-[11px] font-extrabold tracking-[0.09em] uppercase text-[#2E2822] mt-[26px] mb-3">How are you paid?</div>
-            <div className="flex w-full sm:inline-flex sm:w-auto gap-[3px] bg-[#F1EBE3] border border-[#E4DACC] rounded-[13px] p-1">
+            <div className="flex w-full sm:inline-flex sm:w-auto gap-[3px] bg-[#F2EFEA] border border-[#E7E2DB] rounded-[13px] p-1">
               {PAY_LABELS.map(({ key, label }) => (
                 <button
                   key={key}
@@ -547,15 +547,15 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
                   onClick={() => updatePaymentModel(key)}
                   data-testid={`button-payment-model-${key}`}
                   className={`flex-1 sm:flex-none whitespace-nowrap text-[12.5px] sm:text-[14px] font-bold rounded-[9px] px-2 sm:px-7 py-[11px] transition-colors ${
-                    state.paymentModel === key ? "bg-white text-[#EA2C00] shadow-[0_1px_3px_rgba(0,0,0,0.08)]" : "text-[#5E534A]"
+                    state.paymentModel === key ? "bg-white text-[#EA2C00] shadow-[0_1px_3px_rgba(0,0,0,0.08)]" : "text-[#565250]"
                   }`}
                 >
                   {label}
                 </button>
               ))}
             </div>
-            <p className="text-[13px] text-[#786C5E] mt-[11px] leading-[1.5] max-w-[640px]">
-              <b className="text-[#5E534A]">{PAY_LABELS.find((p) => p.key === state.paymentModel)?.label}.</b>{" "}
+            <p className="text-[13px] text-[#7C766F] mt-[11px] leading-[1.5] max-w-[640px]">
+              <b className="text-[#565250]">{PAY_LABELS.find((p) => p.key === state.paymentModel)?.label}.</b>{" "}
               {state.paymentModel === "ffs"
                 ? "Modeling fee-for-service visits only. Switch to Risk-based or Both to add HCC capture."
                 : state.paymentModel === "risk"
@@ -571,7 +571,7 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
             right={
               <>
                 Counted on this screen&nbsp; <b className="font-abridge text-[15px] text-[#1A1A1A]">{fmt$(countedTotal)}</b> / yr &nbsp;·&nbsp;{" "}
-                <span className="text-[#786C5E]">{onCount} of {visibleCards.length} on</span>
+                <span className="text-[#7C766F]">{onCount} of {visibleCards.length} on</span>
               </>
             }
           >
@@ -609,7 +609,7 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
           <div className="border border-dashed border-[#D8CFC0] rounded-[18px] bg-[#FAF7F2] px-6 py-5 mt-8">
             <div className="flex gap-3">
               <span className="w-[9px] h-[9px] rounded-full bg-[#EA2C00] flex-shrink-0 mt-[5px]" />
-              <div className="text-[13.5px] text-[#5E534A] leading-[1.5]">
+              <div className="text-[13.5px] text-[#565250] leading-[1.5]">
                 <b className="text-[#1A1A1A]">$0 counted here, on purpose.</b> Nursing documentation corroborates CDI queries and
                 clears the documentation-completion backlog that holds claims in DNFB, but the dollars land on the physician
                 side of the record. Nothing here is double-counted against Revenue.
