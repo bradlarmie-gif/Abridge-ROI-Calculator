@@ -162,15 +162,20 @@ export function categoryLabel(id: AppRatCategoryId): string {
 // can typically take on. The rep can still adjust per tool.
 // Conservative starting shares: a defensible floor a prospect won't argue down,
 // which the rep can raise per tool. Dictation is held at 80 per internal guidance.
-// Reference tools (CDS, clinical evidence) are deliberately low since Abridge
-// surfaces context rather than replacing a knowledge base. Validate against the
-// per-capability rationale before treating these as fact.
+// The capture layer (ambient/dictation/scribe/transcription) folds fully; the
+// pre-charting and coding/quality categories are the "expanding" regions Abridge
+// is growing into, so they fold partially.
+// Clinical reference (clinical evidence & search) and clinical decision support
+// fold into NEITHER — Abridge surfaces context, it does not replace a knowledge
+// base or a CDS engine — so they default to 0 (they "stay on"), which keeps the
+// two-sink consistent with the fold-chain and the "clinical reference stays on"
+// copy. A rep who believes some of that spend is displaceable can raise it.
 const CATEGORY_DEFAULT_COVERAGE: Record<AppRatCategoryId, number> = {
   ambientDoc:       90,
   dictation:        80,
   scribe:           75,
-  cds:              40,
-  clinicalEvidence: 40,
+  cds:              0,  // clinical decision support — stays on
+  clinicalEvidence: 0,  // clinical reference & search — stays on
   transcription:    75,
   preChartRisk:     45,
   inEncounterCdi:   45,

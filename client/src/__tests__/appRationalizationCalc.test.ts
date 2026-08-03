@@ -36,7 +36,11 @@ describe("appRationalizationCalc", () => {
     expect(computeTotals([])).toEqual({ stackTotal: 0, toAbridge: 0, stays: 0, pctToAbridge: 0 });
   });
   it("makeItem uses a per-category default displace share, a 12-month contract, and the given category", () => {
-    expect(makeItem("id1", "cds")).toMatchObject({ id: "id1", category: "cds", coveragePct: 40, annualSpend: 0, contractMonths: 12, sunsetMonths: 12 });
+    // cds & clinicalEvidence (clinical decision support / reference) fold into
+    // neither the capture layer nor the expanding regions, so they default to 0
+    // ("stays on") — consistent with the fold-chain and the two-sink.
+    expect(makeItem("id1", "cds")).toMatchObject({ id: "id1", category: "cds", coveragePct: 0, annualSpend: 0, contractMonths: 12, sunsetMonths: 12 });
+    expect(makeItem("id5", "clinicalEvidence").coveragePct).toBe(0);
     expect(makeItem("id2", "ambientDoc").coveragePct).toBe(90);
     expect(makeItem("id3", "dictation").coveragePct).toBe(80);
     expect(makeItem("id4", "preChartRisk").coveragePct).toBe(45);
