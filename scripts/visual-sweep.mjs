@@ -240,7 +240,27 @@ await scene(browser, "apprat-timing", async (p) => {
   await arEnter(p);
   await clickIf(p, "[data-testid=ar-see-consolidation]"); await p.waitForTimeout(300);
   await clickIf(p, "[data-testid=ar-see-timing]"); await p.waitForTimeout(400);
-  return "timing (2-months-sooner pill)";
+  // Pull the first contract's exit in early (low sunset month) so the
+  // "N months sooner" pill renders — the state that only appears once the plan
+  // finishes ahead of ride-to-renewal.
+  const slider = await p.$("[data-testid^=ar-timing-slider-]");
+  if (slider) {
+    const id = await slider.getAttribute("data-testid");
+    try {
+      await slider.fill("2", { timeout: 1500 });
+    } catch {
+      // React tracks value via its own setter; set through the native setter and
+      // dispatch input+change so onChange fires.
+      await p.$eval(`[data-testid="${id}"]`, (el) => {
+        const set = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
+        set.call(el, "2");
+        el.dispatchEvent(new Event("input", { bubbles: true }));
+        el.dispatchEvent(new Event("change", { bubbles: true }));
+      });
+    }
+    await p.waitForTimeout(500);
+  }
+  return "timing (contract pulled in → 'N months sooner' pill)";
 }, { height: 1500 });
 await scene(browser, "apprat-moat", async (p) => {
   await arEnter(p);
