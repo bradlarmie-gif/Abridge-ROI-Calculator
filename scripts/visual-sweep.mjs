@@ -270,6 +270,32 @@ await scene(browser, "apprat-moat", async (p) => {
   return "moat";
 }, { height: 1500 });
 
+// ── Attain (Value Attainment): the flow that was NEVER in the sweep, which is
+// how placeholder/centering bugs on the workforce category reached the user.
+// Each preview is URL-reachable; the matrix also gets a workforce variant.
+for (const [flag, name] of [["consultpreview", "attain-align"], ["planpreview", "attain-plan"], ["attainpreview", "attain-matrix"], ["multipreview", "attain-multi"], ["attainv2", "attain-v2"]]) {
+  await scene(browser, name, async (p) => {
+    await p.goto(`${BASE}/?${flag}=1`, { waitUntil: "networkidle" });
+    await p.waitForTimeout(1000);
+    return name;
+  }, { height: 1600 });
+}
+// Workforce category specifically (the one flagged) — matrix + Provider Retention.
+await scene(browser, "attain-matrix-workforce", async (p) => {
+  await p.goto(`${BASE}/?attainpreview=1`, { waitUntil: "networkidle" });
+  await p.waitForTimeout(900);
+  await clickText(p, /Provider Retention/);
+  await p.waitForTimeout(600);
+  return "workforce (Provider Retention)";
+}, { height: 1800 });
+await scene(browser, "attain-multi-workforce", async (p) => {
+  await p.goto(`${BASE}/?multipreview=1`, { waitUntil: "networkidle" });
+  await p.waitForTimeout(900);
+  await clickText(p, /Provider Retention/);
+  await p.waitForTimeout(600);
+  return "workforce (multi)";
+}, { height: 1800 });
+
 // ── B. PDFs, one screenshot PER PAGE (so each page gets its own eyeball) ──────
 const PDF_ROUTES = [
   { url: "/?proformapdf=1", label: "proforma-pdf" },
