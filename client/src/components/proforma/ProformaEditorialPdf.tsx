@@ -730,7 +730,7 @@ function HowValueInner({ data }: { data: ProformaPdfData }): JSX.Element {
 
 function CashFlowCurve({ data }: { data: ProformaPdfData }): JSX.Element {
   const pts = data.cashFlow;
-  if (pts.length === 0) return <svg viewBox="0 0 820 148" style={{ width: "100%" }} />;
+  if (pts.length === 0) return <svg viewBox="0 0 820 158" style={{ width: "100%" }} />;
   const months = Math.max(...pts.map((p) => p.month), 1);
   const maxPos = Math.max(...pts.map((p) => p.cumNet), 1);
   const minNeg = Math.min(...pts.map((p) => p.cumNet), 0);
@@ -752,7 +752,7 @@ function CashFlowCurve({ data }: { data: ProformaPdfData }): JSX.Element {
   const pbX = payback != null ? xFor(payback) : null;
   const end = pts[pts.length - 1];
   return (
-    <svg viewBox="0 0 820 148" style={{ width: "100%" }}>
+    <svg viewBox="0 0 820 158" style={{ width: "100%" }}>
       <line x1="40" y1={baseY} x2="800" y2={baseY} stroke="var(--hair)" strokeDasharray="4 3" />
       <text x="44" y={baseY - 6} fontSize="9" fill="var(--faint)">break-even</text>
       <path d={path} fill="none" stroke="var(--coral)" strokeWidth="2.6" />
@@ -763,8 +763,8 @@ function CashFlowCurve({ data }: { data: ProformaPdfData }): JSX.Element {
         </>
       )}
       <text x="800" y="12" fontSize="12" fill="var(--coral)" textAnchor="end" className="abr">+{fmtM(end.cumNet)}</text>
-      <text x="55" y="104" fontSize="9" fill="var(--faint)">Month 0</text>
-      <text x="800" y="104" fontSize="9" fill="var(--faint)" textAnchor="end">Month {months}</text>
+      <text x={x0} y="150" fontSize="9" fill="var(--faint)">Month 0</text>
+      <text x="800" y="150" fontSize="9" fill="var(--faint)" textAnchor="end">Month {months}</text>
     </svg>
   );
 }
