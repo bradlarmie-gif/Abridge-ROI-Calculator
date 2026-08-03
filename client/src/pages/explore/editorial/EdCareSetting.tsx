@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Stethoscope, Zap, Building2, HeartPulse, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { EditorialHeader, EditorialShell } from "./EditorialHeader";
+import { PROOF_LAYER } from "./EdInvestment";
 import type { ExploreCareSetting } from "../ExploreFlow";
 
 interface Props {
@@ -14,7 +15,8 @@ interface Props {
   onDataRequest?: () => void;
 }
 
-type Cell = { q: string; head: string; sub: string };
+type Quadrant = "Capacity" | "Workforce" | "Revenue" | "Quality";
+type Cell = { q: Quadrant; head: string; sub: string; signal: string };
 type Setting = {
   id: ExploreCareSetting;
   name: string;
@@ -26,7 +28,8 @@ type Setting = {
 
 // Each setting previews the SAME four value areas the rest of the flow is
 // organized around (Capacity · Workforce · Revenue · Quality), so step 1
-// foreshadows the whole journey. Copy is domain-accurate per setting.
+// foreshadows the whole journey. Copy is domain-accurate per setting, and each
+// area names the signal we watch to prove it.
 const SETTINGS: Setting[] = [
   {
     id: "outpatient",
@@ -35,10 +38,10 @@ const SETTINGS: Setting[] = [
     blurb: "Primary care & specialty. We build the value across four areas, each from your own volume and rates.",
     Icon: Stethoscope,
     cells: [
-      { q: "Capacity", head: "Patient access", sub: "Visits freed as documentation load drops" },
-      { q: "Workforce", head: "Provider wellbeing", sub: "Retention and locum / agency avoidance" },
-      { q: "Revenue", head: "wRVU & HCC capture", sub: "Coding accuracy and recapture lift" },
-      { q: "Quality", head: "Documentation quality", sub: "Signals that protect the revenue above" },
+      { q: "Capacity", head: "Patient access", sub: "Visits freed as documentation load drops", signal: "Time in note ↓" },
+      { q: "Workforce", head: "Provider wellbeing", sub: "Retention and locum / agency avoidance", signal: "Burnout ↓" },
+      { q: "Revenue", head: "wRVU & HCC capture", sub: "Coding accuracy and recapture lift", signal: "Coding accuracy ↑" },
+      { q: "Quality", head: "Documentation quality", sub: "Signals that protect the revenue above", signal: "Note completeness ↑" },
     ],
   },
   {
@@ -48,10 +51,10 @@ const SETTINGS: Setting[] = [
     blurb: "Emergency department. We build the value across four areas, each from your own volume and rates.",
     Icon: Zap,
     cells: [
-      { q: "Capacity", head: "Throughput", sub: "LWBS recovery and downstream admission capture" },
-      { q: "Workforce", head: "Physician wellbeing", sub: "Retention and less locum / agency reliance" },
-      { q: "Revenue", head: "E&M accuracy", sub: "The right level captured on every visit" },
-      { q: "Quality", head: "Core-measure & sepsis docs", sub: "Signals that protect the revenue above" },
+      { q: "Capacity", head: "Throughput", sub: "LWBS recovery and downstream admission capture", signal: "LWBS rate ↓" },
+      { q: "Workforce", head: "Physician wellbeing", sub: "Retention and less locum / agency reliance", signal: "Burnout ↓" },
+      { q: "Revenue", head: "E&M accuracy", sub: "The right level captured on every visit", signal: "E/M level ↑" },
+      { q: "Quality", head: "Core-measure & sepsis docs", sub: "Signals that protect the revenue above", signal: "Measure compliance ↑" },
     ],
   },
   {
@@ -61,10 +64,10 @@ const SETTINGS: Setting[] = [
     blurb: "Hospital medicine. We build the value across four areas, each from your own volume and rates.",
     Icon: Building2,
     cells: [
-      { q: "Capacity", head: "Length-of-stay signals", sub: "Documentation supporting timely discharge" },
-      { q: "Workforce", head: "Hospitalist wellbeing", sub: "Retention and coverage cost avoidance" },
-      { q: "Revenue", head: "DRG accuracy & CDI", sub: "CMI lift, CC/MCC capture, fewer denials" },
-      { q: "Quality", head: "HCAHPS & readmissions", sub: "Signals that protect the revenue above" },
+      { q: "Capacity", head: "Length-of-stay signals", sub: "Documentation supporting timely discharge", signal: "Discharge-by-noon ↑" },
+      { q: "Workforce", head: "Hospitalist wellbeing", sub: "Retention and coverage cost avoidance", signal: "Coverage cost ↓" },
+      { q: "Revenue", head: "DRG accuracy & CDI", sub: "CMI lift, CC/MCC capture, fewer denials", signal: "Case-mix index ↑" },
+      { q: "Quality", head: "HCAHPS & readmissions", sub: "Signals that protect the revenue above", signal: "Readmissions ↓" },
     ],
   },
   {
@@ -74,10 +77,10 @@ const SETTINGS: Setting[] = [
     blurb: "Inpatient nursing. We build the value across four areas, each from your own volume and rates.",
     Icon: HeartPulse,
     cells: [
-      { q: "Capacity", head: "Bedside time", sub: "Charting time returned to patient care" },
-      { q: "Workforce", head: "Retention & overtime", sub: "Turnover, agency, and overtime reduction" },
-      { q: "Revenue", head: "Revenue integrity", sub: "Capture signals we track, not a dollar claim" },
-      { q: "Quality", head: "Harm reduction", sub: "HAPI, falls, CAUTI, CLABSI, and sepsis" },
+      { q: "Capacity", head: "Bedside time", sub: "Charting time returned to patient care", signal: "Time at bedside ↑" },
+      { q: "Workforce", head: "Retention & overtime", sub: "Turnover, agency, and overtime reduction", signal: "Overtime hours ↓" },
+      { q: "Revenue", head: "Revenue integrity", sub: "Capture signals we track, not a dollar claim", signal: "Capture completeness ↑" },
+      { q: "Quality", head: "Harm reduction", sub: "HAPI, falls, CAUTI, CLABSI, and sepsis", signal: "Harm events ↓" },
     ],
   },
 ];
@@ -89,10 +92,40 @@ const SETTING_LABEL: Record<ExploreCareSetting, string> = {
   nursing: "Nursing",
 };
 
+// Quadrant accent colors — the real four-domains palette (matches the proforma /
+// PDF). The proof domain is deliberately NOT colored; it takes the muted proof
+// treatment so the customer sees which area is the non-financial layer on sight.
+const QUAD_COLOR: Record<Quadrant, string> = {
+  Capacity: "#F0704E",
+  Workforce: "#C4674C",
+  Revenue: "#EA2C00",
+  Quality: "#8A8072",
+};
+const QUAD_DOT: Record<Quadrant, string> = {
+  Capacity: "#F0704E",
+  Workforce: "#F4A48C",
+  Revenue: "#EA2C00",
+  Quality: "#AFA491",
+};
+
 const EASE = [0.22, 1, 0.36, 1] as const;
+
+// Tailored one-line "read" per setting: which areas carry the dollar, and which
+// is the proof — driven off the canonical PROOF_LAYER so it can never disagree
+// with the rest of the flow.
+function readFor(id: ExploreCareSetting): { dollar: Quadrant[]; proof: Quadrant[] } {
+  const proofMap = PROOF_LAYER[id] ?? {};
+  const all: Quadrant[] = ["Capacity", "Workforce", "Revenue", "Quality"];
+  const proof = all.filter((q) => proofMap[q]);
+  const dollar = all.filter((q) => !proofMap[q]);
+  return { dollar, proof };
+}
+const list = (qs: Quadrant[]) =>
+  qs.length <= 1 ? qs.join("") : qs.length === 2 ? `${qs[0]} and ${qs[1]}` : `${qs.slice(0, -1).join(", ")}, and ${qs[qs.length - 1]}`;
 
 export default function EdCareSetting({ selectedSetting, onSelectSetting, onNext, onBack, onHome, disabledSettings = [], onDataRequest }: Props) {
   const [hovered, setHovered] = useState<ExploreCareSetting | null>(null);
+  const v2 = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("caresettingv2") === "1";
 
   // Preview follows the pointer, then the selection. Before either exists we
   // show a neutral placeholder rather than defaulting to a real setting, so the
@@ -132,11 +165,12 @@ export default function EdCareSetting({ selectedSetting, onSelectSetting, onNext
                       : "border-[#E7E3DD] bg-[#FDFBF8] hover:border-[#C9BCA9] hover:bg-[#FBF7F1]"
                   } ${disabled ? "opacity-40 cursor-not-allowed" : "cursor-pointer"}`}
                 >
+                  {selected && <span className="absolute left-0 top-[14px] bottom-[14px] w-[3px] rounded-r-[3px] bg-[#EA2C00]" />}
                   <div className={`w-[44px] h-[44px] rounded-[12px] flex items-center justify-center transition-colors duration-200 ${selected ? "bg-[#FFEDE7] text-[#EA2C00]" : "bg-[#F2EFEA] text-[#6B5E4F]"}`}>
                     <Icon className="w-[22px] h-[22px]" strokeWidth={1.8} />
                   </div>
                   <div className="min-w-0">
-                    <div className="font-abridge text-[20px] text-[#1A1A1A] leading-tight">{name}</div>
+                    <div className={`font-abridge text-[20px] leading-tight ${selected ? "text-[#EA2C00]" : "text-[#1A1A1A]"}`}>{name}</div>
                     <div className="text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#7C766F] mt-[2px]">{sub}</div>
                   </div>
                   <ArrowRight
@@ -166,15 +200,73 @@ export default function EdCareSetting({ selectedSetting, onSelectSetting, onNext
                   </div>
                   <div className="font-abridge text-[32px] text-[#1A1A1A] mt-[6px] mb-1">{preview.name}</div>
                   <p className="text-[15px] text-[#565250] leading-[1.55] max-w-[520px] mt-[10px] mb-6">{preview.blurb}</p>
-                  <div className="grid grid-cols-2 gap-3">
-                    {preview.cells.map((c) => (
-                      <div key={c.q} className="border border-[#E7E3DD] rounded-[14px] px-4 py-[15px] bg-white">
-                        <div className="text-[10.5px] font-extrabold tracking-[0.08em] uppercase text-[#EA2C00]">{c.q}</div>
-                        <div className="text-[14px] font-semibold text-[#2E2822] mt-[5px]">{c.head}</div>
-                        <div className="text-[12px] text-[#7C766F] mt-[2px] leading-[1.4]">{c.sub}</div>
-                      </div>
-                    ))}
-                  </div>
+
+                  {v2 ? (
+                    <>
+                      {/* Color-coded four areas, proof layer marked per setting, each
+                          card naming the signal we watch — cards stagger in. */}
+                      <motion.div
+                        className="grid grid-cols-2 gap-3"
+                        initial="hidden"
+                        animate="show"
+                        variants={{ show: { transition: { staggerChildren: 0.06, delayChildren: 0.05 } } }}
+                      >
+                        {preview.cells.map((c) => {
+                          const proofNote = (PROOF_LAYER[preview.id] ?? {})[c.q];
+                          const isProof = !!proofNote;
+                          return (
+                            <motion.div
+                              key={c.q}
+                              variants={{ hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0, transition: { duration: 0.34, ease: EASE } } }}
+                              className={`relative rounded-[14px] px-4 py-[15px] ${isProof ? "border border-dashed border-[#E0D8CD] bg-[#FBF8F3]" : "border border-[#E7E3DD] bg-white"}`}
+                            >
+                              {isProof && (
+                                <span className="absolute top-[14px] right-[14px] text-[8.5px] font-extrabold tracking-[0.05em] uppercase text-[#8A8480] bg-[#F2ECE3] rounded-full px-[8px] py-[3px]">
+                                  Proof
+                                </span>
+                              )}
+                              <div className="flex items-center gap-[7px]">
+                                <span className="w-[9px] h-[9px] rounded-[3px] flex-shrink-0" style={{ background: isProof ? "#C4BCB0" : QUAD_DOT[c.q] }} />
+                                <span className="text-[10px] font-extrabold tracking-[0.08em] uppercase" style={{ color: isProof ? "#8A8072" : QUAD_COLOR[c.q] }}>{c.q}</span>
+                              </div>
+                              <div className="text-[14px] font-semibold text-[#2E2822] mt-[9px]">{c.head}</div>
+                              <div className="text-[12px] text-[#7C766F] mt-[3px] leading-[1.4]">{c.sub}</div>
+                              <div className="flex items-center gap-[7px] mt-[12px] pt-[10px] border-t border-[#F1EBE2]">
+                                <span className="text-[9px] font-extrabold tracking-[0.06em] uppercase text-[#A79E92]">We watch</span>
+                                <span className="text-[11.5px] font-bold text-[#574C41]">{c.signal}</span>
+                              </div>
+                            </motion.div>
+                          );
+                        })}
+                      </motion.div>
+                      {(() => {
+                        const { dollar, proof } = readFor(preview.id);
+                        return (
+                          <motion.div
+                            className="flex items-start gap-[10px] mt-[18px]"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1, transition: { delay: 0.34, duration: 0.4 } }}
+                          >
+                            <span className="text-[10px] font-extrabold tracking-[0.05em] uppercase text-[#EA2C00] bg-[#FFEDE7] rounded-full px-[10px] py-[4px] whitespace-nowrap mt-[1px]">The read</span>
+                            <span className="text-[13px] text-[#7C766F] leading-[1.5]">
+                              <b className="text-[#1A1A1A] font-bold">{list(dollar)} carry the dollar.</b>{" "}
+                              {list(proof)} {proof.length > 1 ? "are" : "is"} the proof we track alongside, never counted in the number.
+                            </span>
+                          </motion.div>
+                        );
+                      })()}
+                    </>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-3">
+                      {preview.cells.map((c) => (
+                        <div key={c.q} className="border border-[#E7E3DD] rounded-[14px] px-4 py-[15px] bg-white">
+                          <div className="text-[10.5px] font-extrabold tracking-[0.08em] uppercase text-[#EA2C00]">{c.q}</div>
+                          <div className="text-[14px] font-semibold text-[#2E2822] mt-[5px]">{c.head}</div>
+                          <div className="text-[12px] text-[#7C766F] mt-[2px] leading-[1.4]">{c.sub}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </motion.div>
               ) : (
                 <motion.div
@@ -187,16 +279,20 @@ export default function EdCareSetting({ selectedSetting, onSelectSetting, onNext
                   <div className="text-[11px] font-extrabold tracking-[0.09em] uppercase text-[#7C766F]">
                     What you'll model
                   </div>
-                  <div className="font-abridge text-[32px] text-[#1A1A1A] mt-[6px] mb-1">Choose a setting</div>
+                  <div className="font-abridge text-[32px] text-[#1A1A1A] mt-[6px] mb-1">{v2 ? "The four areas we model" : "Choose a setting"}</div>
                   <p className="text-[15px] text-[#565250] leading-[1.55] max-w-[520px] mt-[10px] mb-6">
-                    Hover or pick a setting on the left to preview what we'll build for it. Every setting
-                    models the same four areas, each from its own volume and economics.
+                    {v2
+                      ? "Every setting is modeled across the same four areas, each from its own volume and economics. Hover or pick one on the left to see it."
+                      : "Hover or pick a setting on the left to preview what we'll build for it. Every setting models the same four areas, each from its own volume and economics."}
                   </p>
                   <div className="grid grid-cols-2 gap-3">
                     {(["Capacity", "Workforce", "Revenue", "Quality"] as const).map((q) => (
                       <div key={q} className="border border-dashed border-[#E0D8CD] rounded-[14px] px-4 py-[15px] bg-transparent">
-                        <div className="text-[10.5px] font-extrabold tracking-[0.08em] uppercase text-[#B0ABA4]">{q}</div>
-                        <div className="text-[13px] text-[#B0ABA4] mt-[5px] leading-[1.4]">Shown once you pick a setting</div>
+                        <div className="flex items-center gap-[7px]">
+                          <span className="w-[9px] h-[9px] rounded-[3px] flex-shrink-0" style={{ background: v2 ? QUAD_DOT[q] : "#D8CFC2", opacity: v2 ? 0.5 : 1 }} />
+                          <div className="text-[10.5px] font-extrabold tracking-[0.08em] uppercase text-[#B0ABA4]">{q}</div>
+                        </div>
+                        <div className="text-[12.5px] text-[#B0ABA4] mt-[6px] leading-[1.4]">{v2 ? "Previewed once you pick a setting" : "Shown once you pick a setting"}</div>
                       </div>
                     ))}
                   </div>
