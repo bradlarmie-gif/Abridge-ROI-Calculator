@@ -926,6 +926,10 @@ function SettingTrailer({ s }: { s: PfSetting }): JSX.Element {
 function buildSettingInner(s: PfSetting, chapterNum: string): ReactNode[] {
   const atoms: Atom[] = [];
   for (const dom of s.domains) {
+    // When a domain has a single driver, the domain total and the driver value
+    // are identical; showing both stacks the same number twice. Suppress the
+    // per-driver value in that case and let the domain header carry it.
+    const single = dom.drivers.length === 1;
     dom.drivers.forEach((d, idx) => {
       const isFirst = idx === 0;
       atoms.push({
@@ -941,7 +945,10 @@ function buildSettingInner(s: PfSetting, chapterNum: string): ReactNode[] {
                 <span className="domtot">{fmtMoney(dom.total)}</span>
               </div>
             )}
-            <div className="drv"><span className="nm">{d.label}</span><span className="vl">{fmtMoney(d.value)}</span></div>
+            <div className="drv">
+              <span className="nm">{d.label}</span>
+              {!single && <span className="vl">{fmtMoney(d.value)}</span>}
+            </div>
             <div className="dsc">{d.desc}</div>
             <Chain chain={d.chain} value={d.value} />
           </div>

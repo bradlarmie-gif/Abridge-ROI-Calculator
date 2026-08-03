@@ -933,7 +933,7 @@ export function getYearlySummary(cashFlows: ProformaCashFlowRow[], settings: Pro
   return years
     .filter(y => y.rows.length > 0)
     .map((y, idx) => {
-      const bySettings: Record<string, { value: number; workforceValue: number; investment: number; providers: number; licensedProviders: number; encounters: number }> = {};
+      const bySettings: Record<string, { value: number; capacityValue: number; revenueValue: number; workforceValue: number; investment: number; providers: number; licensedProviders: number; encounters: number }> = {};
       settings.forEach(s => {
         const avgProviders = y.rows.length > 0
           ? Math.round(y.rows.reduce((sum, r) => sum + (r.bySettings[s.id]?.providers || 0), 0) / y.rows.length)
@@ -946,6 +946,8 @@ export function getYearlySummary(cashFlows: ProformaCashFlowRow[], settings: Pro
           : 0;
         bySettings[s.id] = {
           value: y.rows.reduce((sum, r) => sum + (r.bySettings[s.id]?.value || 0), 0),
+          capacityValue: y.rows.reduce((sum, r) => sum + (r.bySettings[s.id]?.capacityValue || 0), 0),
+          revenueValue: y.rows.reduce((sum, r) => sum + (r.bySettings[s.id]?.revenueValue || 0), 0),
           workforceValue: y.rows.reduce((sum, r) => sum + (r.bySettings[s.id]?.workforceValue || 0), 0),
           investment: y.rows.reduce((sum, r) => sum + (r.bySettings[s.id]?.investment || 0), 0),
           providers: avgProviders,

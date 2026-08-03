@@ -52,6 +52,15 @@ const DRIVER_DESC: Record<string, string> = {
   scribeCost: "Scribe positions retired as ambient documentation covers the same work.",
 };
 
+// Some driver ids are shared across settings (e.g. `wrvu` is "wRVU capture" in
+// Outpatient but "E/M level coding" in the ED). The generic DRIVER_DESC copy is
+// written for the outpatient case, so it reads wrong in another setting. These
+// overrides, keyed `${careSetting}:${driverId}`, keep the description true to the
+// setting it actually appears in.
+const DRIVER_DESC_BY_SETTING: Record<string, string> = {
+  "ed:wrvu": "Complete ED notes support the E/M level the visit actually warranted, so the acuity already delivered is coded and billed accurately.",
+};
+
 const SIGNALS: Record<string, string[]> = {
   outpatient: ["Time in note, weekly per provider", "Same-day chart closure rate", "HCC capture completeness", "Provider-reported burnout"],
   ed: ["Left-without-being-seen rate", "Door-to-provider time", "Admission documentation completeness", "Provider-reported burnout"],
@@ -127,7 +136,7 @@ export function buildProformaPdfData(
       byDomain[dom].push({
         label: d.name,
         value: d.value,
-        desc: DRIVER_DESC[d.id] ?? getDriverFallback(d.id),
+        desc: DRIVER_DESC_BY_SETTING[`${s.careSetting}:${d.id}`] ?? DRIVER_DESC[d.id] ?? getDriverFallback(d.id),
         chain: chains[d.id],
       });
     }
@@ -135,12 +144,18 @@ export function buildProformaPdfData(
       .filter((k) => byDomain[k].length > 0)
       .map((k) => ({ key: k, total: byDomain[k].reduce((a, d) => a + d.value, 0), drivers: byDomain[k] }));
 
-    const ramp = yearly.map((y, i) => ({
-      year: i + 1,
-      value: y.bySettings[s.id]?.value ?? 0,
-      providers: s.yearlyProviders?.[yearKey(i)] ?? (i === 0 ? s.providerCount : s.fullScaleProviders),
-      utilization: s.yearlyUtilization?.[yearKey(i)] ?? config.yearlyUtilization[yearKey(i)] ?? 0,
-    }));
+    const ramp = yearly.map((y, i) => {
+      // Same clinical basis as the system year rows and the at-scale headline
+      // (revenue + capacity + workforce); excludes quality + displacement so the
+      // per-year figures reconcile with the summary and never exceed run-rate.
+      const bs = y.bySettings[s.id];
+      return {
+        year: i + 1,
+        value: bs ? bs.revenueValue + bs.capacityValue + bs.workforceValue : 0,
+        providers: s.yearlyProviders?.[yearKey(i)] ?? (i === 0 ? s.providerCount : s.fullScaleProviders),
+        utilization: s.yearlyUtilization?.[yearKey(i)] ?? config.yearlyUtilization[yearKey(i)] ?? 0,
+      };
+    });
 
     const atScale = (s.revenueValue ?? 0) + (s.capacityValue ?? 0) + (s.workforceValue ?? 0);
     return {
@@ -168,7 +183,14 @@ export function buildProformaPdfData(
     const net = total - y.investment;
     cum += net;
     return {
-      perSetting: settings.map((s) => ({ id: s.id, value: y.bySettings[s.id]?.value ?? 0 })),
+      // Per-setting cut must use the SAME clinical basis as the Total row
+      // (revenue + capacity + workforce). bySettings.value also folds in quality
+      // and displacement, which the total excludes, so using it made the settings
+      // over-foot the total. Displacement stays out of the clinical value (doctrine).
+      perSetting: settings.map((s) => {
+        const bs = y.bySettings[s.id];
+        return { id: s.id, value: bs ? bs.revenueValue + bs.capacityValue + bs.workforceValue : 0 };
+      }),
       total,
       revenue: y.revenueValue,
       capacity: y.capacityValue,
@@ -293,7 +315,7 @@ export function buildProformaPdfData(
     whenValueLands: `Revenue from month 1 · Capacity from month ${config.implementationRampMonths} · Quality signals tracked from month ${config.implementationRampMonths} · Workforce phased ${rp.year1Pct}% / ${rp.year2Pct}% / ${rp.year3Pct}% across years 1 to 3.`,
     theRead:
       paybackMonth != null
-        ? `Year one is the investment year while teams ramp; on clinical value, payback lands in month ${paybackMonth}. From there the case compounds to ${money(termNet)} net.${summary.displacementSavings > 0 && summary.paybackMonth != null && summary.paybackMonth < paybackMonth ? ` Counting the ${money(summary.displacementSavings)} in legacy spend Abridge displaces, real break-even is month ${summary.paybackMonth}.` : ""}`
+        ? `Year one is the investment year while teams ramp; on clinical value, payback lands in month ${paybackMonth}. From there the case compounds to ${money(termNet)} net, before any credit for the legacy tooling Abridge displaces.`
         : `The case builds as adoption deepens toward a ${money(runRateValue)} run-rate.`,
     costRows,
     totalInvestmentRow,

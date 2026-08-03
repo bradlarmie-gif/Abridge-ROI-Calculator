@@ -38,13 +38,13 @@ Status: ✅ fixed · ⏳ pending mechanical · ❗ needs Brad's call.
 
 ## Proforma (8 pages)
 
-- ❗ **[Blocker] (mechanical, engine question) The 3-year summary doesn't foot.** p4: Outpatient ($2.88M) + Emergency ($0.96M) = $3.84M, but "Total value" says $3.34M. The sub-rows sum to 3.34 and everything else ties, so **the Outpatient year rows are the broken cut** — and OP Y3 ($1.61M) exceeds the stated full run-rate ($1.46M), which is impossible. This is the most damaging item anywhere. Needs a look at how the per-setting year rows are built.
-- ❗ **[Blocker] (judgment) p4 vs p5 displacement contradiction** — p4 "The Read" introduces a month-11 break-even by counting $503K displaced; p5 says displacement is deliberately excluded. Two paybacks undercut the Month-16 headline. Recommend: delete the month-11 line (keep one payback).
-- ⏳ **[Major] (mechanical) p7 ED copy is domain-wrong** — Emergency "E/M coding" reuses Outpatient's "recovering wRVUs" description. Rewrite for ED (facility/E-M level, not wRVU).
-- ❗ **[Major] (judgment) headline trio ($1.56M / 1.9× / Month 16) shown 4×** (p2,p3,p4,p5). Let p2 own it; p3 lead with the $2.01M/yr run-rate.
-- ⏳ **[Major] (mechanical) single-driver domains print the number twice** (ED Revenue $240K=$240K, etc.) → suppress the subtotal when one line.
-- ⏳ (mechanical) p6/p7 "over the term" bars restate p4 rows; p7 ~28% dead space.
-- Minor: "not a benchmark" 3×.
+- ✅ **[Blocker] FIXED — the 3-year summary now foots.** Root cause: the per-setting year rows AND the p6/p7 "over the term" ramp both used `bySettings.value` (revenue+capacity+workforce+**quality+displacement**) while the Total row used the clinical basis (revenue+capacity+workforce only). Fix: aligned both cuts to the clinical basis in `ProformaPDFExport.tsx` (`years[].perSetting` and `ramp`), and extended `getYearlySummary`'s per-setting aggregation to expose `revenueValue`/`capacityValue`. Verified: OP $2.38M + ED $0.96M = $3.34M Total, every year column foots, and OP Y3 = $1.43M ≤ $1.46M run-rate. Guarded by `proformaPdfFooting.test.ts` (5 tests).
+- ✅ **[Blocker] FIXED — p4/p5 displacement contradiction.** Removed the month-11 break-even from p4's "The Read"; it now states the $1.56M net "before any credit for the legacy tooling Abridge displaces," consistent with p5's "modeled separately, deliberately excluded." One payback (Month 16), doctrine-clean.
+- ✅ **[Major] FIXED — p7 ED copy domain-wrong.** Added a `DRIVER_DESC_BY_SETTING` override keyed `${careSetting}:${driverId}`; ED `wrvu` now reads "Complete ED notes support the E/M level the visit actually warranted…" (no more "recovering wRVUs"). Fixes the factory pattern, not just the instance.
+- ✅ **[Major] FIXED — single-driver domains printed the number twice.** When a domain has one driver, the per-driver value is suppressed and the domain header carries it.
+- ⏳ **[Major] (judgment — for Brad) headline trio ($1.56M / 1.9× / Month 16) repeated on cover, p2, p3.** Not touched; cover→pitch→chapter-01 leading with the same three stats is heavy. Options: let p2 own it, have p3 lead with the $2.01M/yr run-rate. Deferred as a narrative-structure call.
+- ⏳ (judgment — for Brad) p6/p7 detail pages have ~20% bottom whitespace. Consistent across both settings and content is complete; matches Brad's stated "airy" preference. Left as-is rather than adding filler ("every element earns its place").
+- Minor: "not a benchmark" appears 3×.
 
 ---
 
@@ -56,5 +56,5 @@ Status: ✅ fixed · ⏳ pending mechanical · ❗ needs Brad's call.
 
 ## What to promote into the automated layer
 - Extend the em-dash/causal-claim copy guardrail to scan all four PDF component files (would have caught the "prevents/prevented" claims).
-- Add per-tool PDF reconciliation tests that assert the summary/total rows FOOT (would have caught the Proforma non-footing and, with the formula strings, the Explore mismatch).
+- ✅ DONE for Proforma: `proformaPdfFooting.test.ts` asserts the summary/total rows FOOT, the ramp reconciles with the summary, no year exceeds run-rate, and the clinical basis excludes displacement+quality. Replicate this per-tool pattern for the other three PDFs.
 - Tighten the bleed check to catch the Attain cross-page overflow.
