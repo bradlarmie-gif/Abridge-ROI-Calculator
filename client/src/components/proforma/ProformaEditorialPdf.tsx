@@ -38,7 +38,7 @@ export interface PfDriver {
 }
 
 export interface PfDomainGroup {
-  key: "Revenue" | "Capacity" | "Workforce";
+  key: "Revenue" | "Capacity" | "Workforce" | "Quality";
   total: number;
   drivers: PfDriver[];
 }
@@ -133,7 +133,8 @@ export interface ProformaPdfData {
   date: string;
   // headline
   termNet: number;
-  roi: number; // 3-year value / cost
+  termYears: number; // contract term length in years (drives all "N-year" copy)
+  roi: number; // term value / cost
   paybackMonth: number | null;
   runRateValue: number; // $/yr at full scale
   // page 2 · the case, grounded
@@ -385,7 +386,7 @@ function ReportCover({ data }: { data: ProformaPdfData }): JSX.Element {
 function CoverInner({ data }: { data: ProformaPdfData }): JSX.Element {
   const chapters: [string, string][] = [
     ["01", "The case, grounded"],
-    ["02", "How value builds over three years"],
+    ["02", `How value builds over ${termYrsWord(data.termYears)}`],
     ["03", "The investment case"],
     ...data.settings.map((s, i): [string, string] => [pad2(4 + i), `${s.label}, in detail`]),
     [pad2(4 + data.settings.length), "The number is yours"],
@@ -402,12 +403,14 @@ function CoverInner({ data }: { data: ProformaPdfData }): JSX.Element {
         <span className="lbl">Financial Proforma</span>
       </div>
       <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-        <div className="eyebrow">The 3-year case</div>
+        <div className="eyebrow">The {data.termYears}-year case</div>
         <h1 className="abr" style={{ fontSize: 56, lineHeight: 1.02, marginTop: 16, maxWidth: 640 }}>
-          A {fmtM(data.termNet)} case, paid back in {data.paybackMonth != null ? `${numWord(data.paybackMonth)} months` : "term"}.
+          {data.termNet >= 0
+            ? `A ${fmtM(data.termNet)} case, paid back in ${data.paybackMonth != null ? `${numWord(data.paybackMonth)} months` : "term"}.`
+            : `A ${termYrsWord(data.termYears)} case that does not clear its cost yet.`}
         </h1>
         <p style={{ fontSize: 16, color: "var(--muted)", lineHeight: 1.5, marginTop: 20, maxWidth: 530 }}>
-          {settingCount === 1 ? "One care setting" : `${cap(numWord(settingCount))} care settings`}, modeled on {data.org}'s own volume and economics over a three-year term. Not a benchmark, and not a list price.
+          {settingCount === 1 ? "One care setting" : `${cap(numWord(settingCount))} care settings`}, modeled on {data.org}'s own volume and economics over a {data.termYears}-year term. Not a benchmark, and not a list price.
         </p>
         <div style={{ display: "flex", gap: 48, marginTop: 38, paddingTop: 24, borderTop: "1px solid var(--hair)" }}>
           <div className="stat">
@@ -450,13 +453,20 @@ function numWord(n: number): string {
   return n >= 0 && n <= 20 ? WORDS[n] : String(n);
 }
 
+/** "over three years" / "over one year" — grammatical term-length phrase. */
+function termYrsWord(n: number): string {
+  return n === 1 ? "one year" : `${numWord(n)} years`;
+}
+
 // ───────────────────────── Page 2 · The case, grounded ─────────────────────────
 
 function DealCard({ s }: { s: PfSetting }): JSX.Element {
   const rev = s.domains.find((d) => d.key === "Revenue")?.total ?? 0;
   const cap = s.domains.find((d) => d.key === "Capacity")?.total ?? 0;
   const wf = s.domains.find((d) => d.key === "Workforce")?.total ?? 0;
-  const sum = rev + cap + wf || 1;
+  // Quality carries a dollar only in Nursing; elsewhere it is $0 and drops out.
+  const qua = s.domains.find((d) => d.key === "Quality")?.total ?? 0;
+  const sum = rev + cap + wf + qua || 1;
   return (
     <div style={{ paddingTop: 12 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
@@ -476,9 +486,11 @@ function DealCard({ s }: { s: PfSetting }): JSX.Element {
         <div style={{ width: `${(rev / sum) * 100}%`, background: "var(--rev)" }} />
         <div style={{ width: `${(cap / sum) * 100}%`, background: "var(--cap)" }} />
         <div style={{ width: `${(wf / sum) * 100}%`, background: "var(--wf)" }} />
+        {qua > 0 && <div style={{ width: `${(qua / sum) * 100}%`, background: "var(--off)" }} />}
       </div>
       <div style={{ fontSize: 10, color: "var(--faint)", marginTop: 6 }}>
         Revenue {fmtMoney(rev)} · Capacity {fmtMoney(cap)} · Workforce {fmtMoney(wf)}
+        {qua > 0 ? ` · Quality ${fmtMoney(qua)}` : ""}
       </div>
     </div>
   );
@@ -492,7 +504,7 @@ function CaseInner({ data }: { data: ProformaPdfData }): JSX.Element {
   const secMt = dense ? 12 : 20;
   return (
     <>
-      <RunningHeader label={`The 3-year case · ${data.org}`} num="01" />
+      <RunningHeader label={`The ${data.termYears}-year case · ${data.org}`} num="01" />
       <div className="eyebrow" style={{ marginTop: 16 }}>The case, grounded</div>
       <h2 className="chaptitle">What the deal is, and where the value comes from.</h2>
 
@@ -504,7 +516,7 @@ function CaseInner({ data }: { data: ProformaPdfData }): JSX.Element {
           <div className="k" style={{ marginTop: 6 }}>At full scale · clinical value, counted once</div>
         </div>
         <p style={{ fontSize: 12, color: "var(--faint)", lineHeight: 1.5, maxWidth: 320, paddingBottom: 4 }}>
-          What the operation produces in a year once {data.settings.length === 1 ? "the care setting reaches" : data.settings.length === 2 ? "both care settings reach" : `all ${numWord(data.settings.length)} care settings reach`} full adoption. The three-year case compounds from this run-rate as teams ramp; payback lands in {paybackTxt.toLowerCase()}.
+          What the operation produces in a year once {data.settings.length === 1 ? "the care setting reaches" : data.settings.length === 2 ? "both care settings reach" : `all ${numWord(data.settings.length)} care settings reach`} full adoption. The {data.termYears}-year case compounds from this run-rate as teams ramp; payback lands in {paybackTxt.toLowerCase()}.
         </p>
       </div>
 
@@ -605,8 +617,8 @@ function HowValueInner({ data }: { data: ProformaPdfData }): JSX.Element {
   const roi3 = data.roi;
   return (
     <>
-      <RunningHeader label={`The 3-year case · ${data.org}`} num="02" />
-      <div className="eyebrow" style={{ marginTop: 16 }}>How value builds over three years</div>
+      <RunningHeader label={`The ${data.termYears}-year case · ${data.org}`} num="02" />
+      <div className="eyebrow" style={{ marginTop: 16 }}>How value builds over {termYrsWord(data.termYears)}</div>
       <h2 className="chaptitle">The case, year by year.</h2>
 
       <StackedBar data={data} />
@@ -621,13 +633,13 @@ function HowValueInner({ data }: { data: ProformaPdfData }): JSX.Element {
         </div>
       </div>
 
-      <div className="lbl" style={{ marginTop: 16 }}>3-year financial summary</div>
+      <div className="lbl" style={{ marginTop: 16 }}>{data.termYears}-year financial summary</div>
       <table className="tbl">
         <thead>
           <tr>
             <th>Care setting</th>
             {years.map((_, i) => <th key={i}>Year {i + 1}</th>)}
-            <th>3-year</th>
+            <th>{data.termYears}-year</th>
           </tr>
         </thead>
         <tbody>
@@ -762,7 +774,7 @@ function InvestmentInner({ data }: { data: ProformaPdfData }): JSX.Element {
   const cell = (v: number) => (v === 0 ? "—" : fmtMoney(v));
   return (
     <>
-      <RunningHeader label={`The 3-year case · ${data.org}`} num="03" />
+      <RunningHeader label={`The ${data.termYears}-year case · ${data.org}`} num="03" />
       <div className="eyebrow" style={{ marginTop: 16 }}>The investment case</div>
       <h2 className="chaptitle">What it costs, and how the case holds.</h2>
 
@@ -772,7 +784,7 @@ function InvestmentInner({ data }: { data: ProformaPdfData }): JSX.Element {
           <tr>
             <th>Pricing</th>
             {years.map((_, i) => <th key={i}>Year {i + 1}</th>)}
-            <th>3-year</th>
+            <th>{data.termYears}-year</th>
           </tr>
         </thead>
         <tbody>
@@ -808,7 +820,7 @@ function InvestmentInner({ data }: { data: ProformaPdfData }): JSX.Element {
                 {data.scenarios.map((s) => <td className="num" key={s.name}>{s.realizationPct}%</td>)}
               </tr>
               <tr>
-                <td>3-year net value</td>
+                <td>{data.termYears}-year net value</td>
                 {data.scenarios.map((s) => <td className="num" key={s.name} style={s.highlight ? { color: "var(--coral)", fontWeight: 800 } : undefined}>{fmtM(s.net)}</td>)}
               </tr>
               <tr>
@@ -1103,6 +1115,7 @@ export const SAMPLE_PROFORMA_PDF_DATA: ProformaPdfData = {
   org: "Deaconess Health System",
   date: "July 2026",
   termNet: 2650000,
+  termYears: 3,
   roi: 2.2,
   paybackMonth: 14,
   runRateValue: 2010000,

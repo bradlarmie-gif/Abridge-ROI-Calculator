@@ -281,18 +281,26 @@ export function computeCaseModel(settings: ProformaSettingSnapshot[], config: Pr
     goLiveMonth: s.goLiveMonth,
     providerCount: s.providerCount,
     fullScaleProviders: s.fullScaleProviders,
-    atScale: (s.revenueValue ?? 0) + (s.capacityValue ?? 0) + (s.workforceValue ?? 0),
+    atScale: (s.revenueValue ?? 0) + (s.capacityValue ?? 0) + (s.workforceValue ?? 0) + (s.qualityValue ?? 0),
     drivers: s.drivers
-      .filter((d) => d.quadrant !== "Quality" && d.value > 0)
+      // Quality carries a real dollar only in Nursing (harm avoidance); elsewhere
+      // its drivers are $0 and fall out via value > 0. Including it keeps the
+      // per-setting breakdown reconciling to atScale for every setting.
+      .filter((d) => d.value > 0)
       .map((d) => ({ id: d.id, name: d.name, value: d.value }))
       .sort((a, b) => b.value - a.value),
   }));
 
   const termValue = years.reduce((a, y) => a + y.clinical, 0);
-  const termInvestment = years.reduce((a, y) => a + y.investment, 0);
-  const termNet = termValue - termInvestment;
+  // Term investment/net/ROI come from the engine summary, which includes one-time
+  // implementation fees (folded into cumulativeNet at go-live, not into the raw
+  // monthly `investment` rows). Deriving them from the period rows would omit
+  // those fees and inflate ROI/net vs the PDF and the payback month, which do
+  // include them. Single source of truth → screen and PDF reconcile.
+  const termInvestment = summary.termInvestment;
+  const termNet = summary.termNet;
   const termDisplaced = years.reduce((a, y) => a + y.displaced, 0);
-  const roi = termInvestment > 0 ? termValue / termInvestment : 0;
+  const roi = summary.valueToCost;
   const runRate = settingsMeta.reduce((a, s) => a + s.atScale, 0);
 
   return {

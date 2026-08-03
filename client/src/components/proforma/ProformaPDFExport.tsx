@@ -29,11 +29,15 @@ import {
 // domain-by-year → year totals, and sensitivity / cash-flow → term net.
 // ────────────────────────────────────────────────────────────────
 
-const DOMAIN_OF: Record<string, "Revenue" | "Capacity" | "Workforce" | null> = {
+// Quality maps to its own domain (not null) so nursing's harm-avoidance dollars
+// (HAPI/falls/CAUTI/CLABSI/sepsis, all quadrant "Quality") appear in the
+// breakdown. Where Quality is the proof layer (OP/ED/IP) its drivers are $0 and
+// drop out via the value > 0 guard, so the breakdown reconciles for every setting.
+const DOMAIN_OF: Record<string, "Revenue" | "Capacity" | "Workforce" | "Quality" | null> = {
   Revenue: "Revenue",
   Capacity: "Capacity",
   Workforce: "Workforce",
-  Quality: null,
+  Quality: "Quality",
 };
 
 const DRIVER_DESC: Record<string, string> = {
@@ -82,7 +86,10 @@ const DOMAIN_NORTHSTAR: Record<string, string> = {
   Quality: "Safety and experience signals we monitor with you, but deliberately leave out of the dollar case.",
 };
 
-const yearKey = (i: number) => (["year1", "year2", "year3"] as const)[i];
+// Explore captures yearly ramps only through year 3; a 4- or 5-year term holds
+// at full scale after that, so years beyond 3 read the year-3 (full-scale) values
+// rather than falling off to undefined → 0% utilization.
+const yearKey = (i: number) => (["year1", "year2", "year3"] as const)[Math.min(i, 2)];
 
 function encounterLabel(careSetting: string): string {
   return settingVocab(careSetting).encounterPerYr;
@@ -134,7 +141,7 @@ export function buildProformaPdfData(
   // ── Per-setting drill-downs ────────────────────────────────────────────────
   const pfSettings: PfSetting[] = settings.map((s, idx) => {
     const chains = safeChains(s);
-    const byDomain: Record<string, PfDriver[]> = { Revenue: [], Capacity: [], Workforce: [] };
+    const byDomain: Record<string, PfDriver[]> = { Revenue: [], Capacity: [], Workforce: [], Quality: [] };
     for (const d of s.drivers) {
       const dom = DOMAIN_OF[d.quadrant];
       if (!dom || d.value <= 0) continue;
@@ -145,7 +152,7 @@ export function buildProformaPdfData(
         chain: chains[d.id],
       });
     }
-    const domains: PfDomainGroup[] = (["Revenue", "Capacity", "Workforce"] as const)
+    const domains: PfDomainGroup[] = (["Revenue", "Capacity", "Workforce", "Quality"] as const)
       .filter((k) => byDomain[k].length > 0)
       .map((k) => ({ key: k, total: byDomain[k].reduce((a, d) => a + d.value, 0), drivers: byDomain[k] }));
 
@@ -221,21 +228,25 @@ export function buildProformaPdfData(
   const runRateValue = pfSettings.reduce((a, s) => a + s.atScaleValue, 0);
 
   // ── Domain tiles at full scale ──────────────────────────────────────────────
-  const domTotals = { Revenue: 0, Capacity: 0, Workforce: 0 };
+  // All four domains, keyed off actual dollars. A domain is "counted" when it
+  // carries a dollar (value > 0); the proof layer for each setting has $0 there
+  // (Quality in OP/ED/IP, Revenue in Nursing) and renders as proof, so the tiles
+  // sum to runRateValue for every setting and mix of settings.
+  const domTotals = { Revenue: 0, Capacity: 0, Workforce: 0, Quality: 0 };
   for (const s of settings) {
     domTotals.Revenue += s.revenueValue ?? 0;
     domTotals.Capacity += s.capacityValue ?? 0;
     domTotals.Workforce += s.workforceValue ?? 0;
+    domTotals.Quality += s.qualityValue ?? 0;
   }
-  const domSum = domTotals.Revenue + domTotals.Capacity + domTotals.Workforce || 1;
-  const domainTiles: PfDomainTile[] = (["Revenue", "Capacity", "Workforce"] as const).map((k) => ({
+  const domSum = domTotals.Revenue + domTotals.Capacity + domTotals.Workforce + domTotals.Quality || 1;
+  const domainTiles: PfDomainTile[] = (["Revenue", "Capacity", "Workforce", "Quality"] as const).map((k) => ({
     key: k,
     value: domTotals[k],
     pct: Math.round((domTotals[k] / domSum) * 100),
-    counted: true,
+    counted: domTotals[k] > 0,
     northStar: DOMAIN_NORTHSTAR[k],
   }));
-  domainTiles.push({ key: "Quality", value: 0, pct: 0, counted: false, northStar: DOMAIN_NORTHSTAR.Quality });
 
   // ── Cost rows: split each year's investment into subscription vs impl ───────
   const implByYear = years.map((_, i) =>
@@ -303,6 +314,7 @@ export function buildProformaPdfData(
     org,
     date: now,
     termNet,
+    termYears,
     roi,
     paybackMonth,
     runRateValue,

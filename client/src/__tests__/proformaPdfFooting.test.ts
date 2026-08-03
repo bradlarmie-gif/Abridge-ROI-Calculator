@@ -103,6 +103,28 @@ describe("proforma PDF financial summary foots", () => {
     }
   });
 
+  it("each setting's domain breakdown sums to its at-scale run-rate (Quality drivers included)", () => {
+    // Guards the bug where Quality-quadrant drivers were counted in the header /
+    // atScaleValue but dropped from the per-setting domain breakdown, so the
+    // header no longer equalled the sum of its parts (nursing harm-avoidance).
+    for (const s of data.settings) {
+      const domSum = s.domains.reduce((a, d) => a + d.total, 0);
+      expect(Math.abs(domSum - s.atScaleValue), s.label).toBeLessThanOrEqual(10);
+    }
+  });
+
+  it("Quality dollars appear as their own breakdown domain, not just in the total", () => {
+    const op = data.settings.find((s) => s.id === "s-outpatient")!;
+    expect(op.domains.find((d) => d.key === "Quality")?.total).toBe(90_000);
+  });
+
+  it("page-2 domain tiles that are counted sum to the run-rate", () => {
+    // Guards the bug where the Quality tile was hardcoded $0/not-counted while
+    // runRateValue included quality, so the tiles under-summed the stated total.
+    const countedSum = data.domainTiles.filter((t) => t.counted).reduce((a, t) => a + t.value, 0);
+    expect(Math.abs(countedSum - data.runRateValue)).toBeLessThanOrEqual(10);
+  });
+
   it("clinical basis EXCLUDES displacement but INCLUDES quality (harm-avoidance dollars count)", () => {
     // The clinical dollar case is Revenue+Capacity+Workforce+Quality; only cost
     // displacement is excluded (it lives in App Rationalization). Quality is $0

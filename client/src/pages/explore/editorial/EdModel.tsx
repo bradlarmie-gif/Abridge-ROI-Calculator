@@ -287,6 +287,20 @@ export default function EdModel({
     const y2Providers = Math.round(pilotProviders + (fullScale - pilotProviders) * 0.4);
     const encountersPerProvider = pilotProviders > 0 ? state.annualEncounters / pilotProviders : 0;
 
+    // The proforma engine ramps expansionMultiplier 0→1 toward fullScaleProviders
+    // and realizes each driver.value at full deployment (proformaCalculations.ts:
+    // scaleSettingValue + monthly loop). So driver.value — and every value field
+    // derived from it — must be the FULL-SCALE annual value, not the pilot value.
+    // Explore computes at pilot providers; scale up by fullScale/pilot so value and
+    // investment track together as the deal expands (mirrors ExploreModel import).
+    // Nursing holds fullScale = pilot, so the factor is 1 (no provider expansion).
+    const providerScaleFactor = fullScale > pilotProviders && pilotProviders > 0 ? fullScale / pilotProviders : 1;
+    const scaledDrivers = providerScaleFactor > 1
+      ? drivers.map((d) => ({ ...d, value: Math.round(d.value * providerScaleFactor) }))
+      : drivers;
+    const sumQuadrant = (q: string) => scaledDrivers.filter((d) => d.quadrant === q).reduce((s, d) => s + d.value, 0);
+    const scaleUp = (n: number) => Math.round(n * providerScaleFactor);
+
     const snapshot: ProformaSettingSnapshot = {
       id: `${cs}-${Date.now()}`,
       careSetting: cs,
@@ -297,12 +311,12 @@ export default function EdModel({
       yearlyProviders: { year1: pilotProviders, year2: y2Providers, year3: fullScale },
       encounters: state.annualEncounters,
       utilizationPercent: state.utilizationPercent,
-      annualValue: totalAnnualValue,
-      timeValue: exploreTotals.efficiencyValue,
-      docValue: exploreTotals.documentationValue,
-      retentionValue: Math.round(retentionValue),
+      annualValue: scaleUp(totalAnnualValue),
+      timeValue: scaleUp(exploreTotals.efficiencyValue),
+      docValue: scaleUp(exploreTotals.documentationValue),
+      retentionValue: scaleUp(retentionValue),
       totalHoursSaved,
-      drivers,
+      drivers: scaledDrivers,
       costPerUnit: state.pricingModel === "perProvider" ? state.costPerProvider : 0,
       yearlyPricing: state.pricingModel === "perProvider"
         ? { year1: state.costPerProvider, year2: state.costPerProvider, year3: state.costPerProvider }
@@ -323,10 +337,10 @@ export default function EdModel({
       yearlyUtilization: { year1: state.utilizationPercent, year2: state.utilizationPercent, year3: state.utilizationPercent },
       retentionRate: 0,
       replacementCost: isNursing ? (state.timeDriverInputs.nursingReplacementCost || 56300) : (state.timeDriverInputs.replacementCost || 400000),
-      capacityValue: valueByQuadrant.Capacity,
-      workforceValue: valueByQuadrant.Workforce,
-      revenueValue: valueByQuadrant.Revenue,
-      qualityValue: valueByQuadrant.Quality,
+      capacityValue: sumQuadrant("Capacity"),
+      workforceValue: sumQuadrant("Workforce"),
+      revenueValue: sumQuadrant("Revenue"),
+      qualityValue: sumQuadrant("Quality"),
       costOffsets: (state.costDisplacementItems ?? []).length > 0
         ? state.costDisplacementItems.map((d) => ({ id: d.id, label: d.label, annualSpend: d.annualSpend, displacementPct: d.displacementPct, transitionMonths: 12 }))
         : undefined,
