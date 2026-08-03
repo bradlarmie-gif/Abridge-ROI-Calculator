@@ -265,8 +265,10 @@ export default function ConsolidationTiming({
               <line x1={fx} y1={Y0 - 8} x2={fx} y2={Y0 + 8} stroke="#EA2C00" strokeWidth={3} />
               <line x1={bx} y1={Y0 - 8} x2={bx} y2={Y0 + 8} stroke="#C3B7A8" strokeWidth={2} />
               <line x1={fx} y1={Y0} x2={bx} y2={Y0} stroke="#EA2C00" strokeWidth={3} />
-              <rect x={pillCx - bw / 2} y={Y0 - 32} width={bw} height={24} rx={12} fill="#EA2C00" />
-              <text x={pillCx} y={Y0 - 15} textAnchor="middle" fontFamily="Manrope" fontSize={14} fontWeight={800} fill="#fff">{bLabel}</text>
+              {/* A quiet caption, not a shouting badge: light coral tint + coral text,
+                  so it reads as an annotation and coral still means "money". */}
+              <rect x={pillCx - bw / 2} y={Y0 - 31} width={bw} height={22} rx={11} fill="#FFEDE7" stroke="#F6C9BC" strokeWidth={1} />
+              <text x={pillCx} y={Y0 - 16} textAnchor="middle" fontFamily="Manrope" fontSize={12} fontWeight={700} fill="#EA2C00">{bLabel}</text>
             </g>
           )}
 

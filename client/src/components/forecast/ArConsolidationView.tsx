@@ -8,7 +8,7 @@
 //
 // Data-driven from the rep's real entries; no hardcoded vendors. Pure model math
 // lives in buildConsolidationModel so it can be unit-tested.
-import { useLayoutEffect, useRef, useState } from "react";
+import { useState } from "react";
 import {
   buildStackBars,
   computeNet,
@@ -103,26 +103,6 @@ export default function ArConsolidationView({
 }) {
   const model = buildConsolidationModel(items);
   const [hoverId, setHoverId] = useState<string | null>(null);
-  const afterBarRef = useRef<HTMLDivElement>(null);
-  const tipRef = useRef<HTMLDivElement>(null);
-
-  // Position the single floating tooltip: pin its arrow to the hovered tool's
-  // slot center in the after bar, then slide the box so it stays fully in view.
-  // Direct DOM writes (like the source mockup) avoid a second render for layout.
-  useLayoutEffect(() => {
-    const tip = tipRef.current;
-    const bar = afterBarRef.current;
-    if (!hoverId || !tip || !bar) return;
-    const seg = bar.querySelector<HTMLElement>(`[data-tool="${hoverId}"]`);
-    if (!seg) return;
-    const br = bar.getBoundingClientRect();
-    const sr = seg.getBoundingClientRect();
-    const cx = sr.left + sr.width / 2 - br.left; // arrow target = slot center
-    const bw = tip.offsetWidth;
-    const boxLeft = Math.max(0, Math.min(cx - bw / 2, br.width - bw)); // clamp
-    tip.style.left = `${boxLeft}px`;
-    tip.style.setProperty("--ax", `${cx - boxLeft}px`); // arrow stays pinned
-  }, [hoverId]);
 
   if (model.stackTotal === 0) {
     return (
@@ -139,15 +119,8 @@ export default function ArConsolidationView({
   const net = computeNet(items, abridgePrice);
   const alreadyInPlace = net.abridgePrice === 0;
   const staysOnlyRows = model.rows.filter((r) => r.staysOnly);
-  const hovered = hoverId ? model.rows.find((r) => r.id === hoverId) ?? null : null;
   const focus = hoverId !== null;
   const dimFor = (id: string) => focus && id !== hoverId;
-
-  const tipText = hovered
-    ? hovered.staysOnly
-      ? `${hovered.name} · ${fmtM(hovered.spend)} · stays on (clinical reference)`
-      : `${hovered.name} · ${fmtM(hovered.retired)} · ${hovered.freedSharePct}% of freed`
-    : "";
 
   return (
     <div
@@ -208,28 +181,14 @@ export default function ArConsolidationView({
             </span>
           </div>
 
-          <div className="relative">
-            {/* single floating tooltip, clamped in view, arrow pinned to slot */}
-            <div
-              ref={tipRef}
-              className="pointer-events-none absolute top-full z-20 mt-3 rounded-[9px] bg-[#2E2822] px-3 py-[7px] text-[12.5px] font-bold text-white whitespace-nowrap shadow-[0_5px_16px_rgba(0,0,0,0.20)] transition-opacity duration-150"
-              style={{ left: 0, opacity: hovered ? 1 : 0 }}
-              data-testid="ar-consolidation-tip"
-            >
-              {tipText}
-              <span
-                className="absolute bottom-full h-0 w-0 border-[6px] border-transparent border-b-[#2E2822]"
-                style={{ left: "var(--ax, 50%)", transform: "translateX(-50%)" }}
-              />
-            </div>
-
+          <div>
             {/* The freed total lives only on the "After you fold in" header row (right side).
-                No on-bar number overlay, so the figure never appears twice. */}
+                The per-tool detail lives in the persistent legend below (enriched on
+                hover), so there is no floating tooltip to overlap the labels.
 
-            {/* Grouped read: ALL freed (coral) on the left as one contiguous block,
-                ALL stays (tan) on the right. Per-tool sub-segments keep hover/share.
-                Grouping (vs per-tool coral+tan slots) keeps it clean at any coverage. */}
-            <div ref={afterBarRef} className="flex h-[52px] rounded-[10px] overflow-hidden" data-testid="ar-after-bar">
+                Grouped read: ALL freed (coral) on the left as one contiguous block,
+                ALL stays (tan) on the right. Per-tool sub-segments keep hover/share. */}
+            <div className="flex h-[52px] rounded-[10px] overflow-hidden" data-testid="ar-after-bar">
               {model.rows.filter((r) => r.retired > 0).map((r) => (
                 <div
                   key={`f-${r.id}`}
@@ -284,6 +243,9 @@ export default function ArConsolidationView({
                   <span className="text-[9px] font-extrabold uppercase tracking-[0.05em] text-[#8C7E6E] bg-white border border-[#E0D6C8] rounded-full px-[7px] py-[2px]">
                     Stays
                   </span>
+                )}
+                {hoverId === r.id && !r.staysOnly && (
+                  <span className="text-[12px] font-bold text-[#EA2C00] tabular-nums whitespace-nowrap">· {r.freedSharePct}% of freed</span>
                 )}
               </div>
             ))}

@@ -48,6 +48,9 @@ const clickIf = async (page, sel, opts = {}) => {
 const clickText = async (page, re) => {
   try { await page.getByText(re).first().click({ timeout: 1500, force: true }); return true; } catch { return false; }
 };
+const page_hoverFirstLegend = async (page) => {
+  try { const el = await page.$("[data-testid^=ar-legend-]"); if (el) { await el.hover({ timeout: 1200 }); await page.waitForTimeout(250); } } catch {}
+};
 const fillAllNumbers = async (page, val = "200") => {
   const inputs = await page.$$("input");
   for (const inp of inputs) {
@@ -200,6 +203,52 @@ await scene(browser, "proforma-present", async (p) => {
   await p.waitForTimeout(600);
   return "present";
 }, { height: 1600 });
+
+// App Rationalization: enter via Forecast, add two tools, then screenshot each
+// step (consolidation two-sink + legend hover, timing pill, moat). Defensive —
+// captures whatever state it reaches. This is the flow whose hover/timeline
+// states slipped through because it was never in a screenshot gate.
+async function arAddTool(page, name, spend) {
+  if (!(await clickIf(page, "[data-testid=ar-add-custom-tool]"))) return;
+  await page.waitForTimeout(250);
+  try { await page.getByTestId("ar-add-vendor").fill(name, { timeout: 1500 }); } catch {}
+  try { await page.getByTestId("ar-add-spend").fill(String(spend), { timeout: 1500 }); } catch {}
+  await page.waitForTimeout(150);
+  await clickIf(page, "[data-testid=ar-add-confirm]");
+  await page.waitForTimeout(300);
+}
+async function arEnter(page) {
+  await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
+  await page.waitForTimeout(700);
+  await clickIf(page, "[data-testid=button-enter-app]");
+  await page.waitForTimeout(400);
+  await clickText(page, /^Forecast$/);
+  await page.waitForTimeout(400);
+  await clickText(page, /App Rationalization/);
+  await page.waitForTimeout(500);
+  await arAddTool(page, "Fluency", 250000);
+  await arAddTool(page, "UpToDate", 160000);
+  await page.waitForTimeout(200);
+}
+await scene(browser, "apprat-consolidation", async (p) => {
+  await arEnter(p);
+  await clickIf(p, "[data-testid=ar-see-consolidation]");
+  await page_hoverFirstLegend(p);
+  return "consolidation + legend hover";
+}, { height: 1500 });
+await scene(browser, "apprat-timing", async (p) => {
+  await arEnter(p);
+  await clickIf(p, "[data-testid=ar-see-consolidation]"); await p.waitForTimeout(300);
+  await clickIf(p, "[data-testid=ar-see-timing]"); await p.waitForTimeout(400);
+  return "timing (2-months-sooner pill)";
+}, { height: 1500 });
+await scene(browser, "apprat-moat", async (p) => {
+  await arEnter(p);
+  await clickIf(p, "[data-testid=ar-see-consolidation]"); await p.waitForTimeout(300);
+  await clickIf(p, "[data-testid=ar-see-timing]"); await p.waitForTimeout(300);
+  await clickIf(p, "[data-testid=ar-see-moat]"); await p.waitForTimeout(400);
+  return "moat";
+}, { height: 1500 });
 
 // ── B. PDFs, one screenshot PER PAGE (so each page gets its own eyeball) ──────
 const PDF_ROUTES = [
