@@ -1003,8 +1003,85 @@ export interface ProformaWorkbenchProps {
   onBack?: () => void;
 }
 
+// Deal-wide engine levers behind "Advanced deal assumptions". These are real:
+// ramp speed = implementationRampMonths (how fast value ramps after go-live);
+// retention phasing = how much workforce/retention value is realized each year.
+// Both feed buildMonthlyCashFlows, so changing them moves the case live.
+const RAMP_PRESETS = [
+  { months: 1, label: "Fast", sub: "1 mo" },
+  { months: 3, label: "Standard", sub: "3 mo" },
+  { months: 6, label: "Gradual", sub: "6 mo" },
+];
+const PHASE_PRESETS = [
+  { key: "conservative", label: "Conservative", y1: 25, y2: 60 },
+  { key: "standard", label: "Standard", y1: 35, y2: 75 },
+  { key: "fast", label: "Fast", y1: 50, y2: 85 },
+];
+
+function AdvancedAssumptions({ config, onUpdateConfig }: { config: ProformaConfig; onUpdateConfig: (u: Partial<ProformaConfig>) => void }) {
+  const ramp = config.implementationRampMonths;
+  const phasing = config.retentionPhasing;
+  const activePhase = PHASE_PRESETS.find((p) => p.y1 === phasing.year1Pct && p.y2 === phasing.year2Pct)?.key ?? "custom";
+  const setPhase = (y1: number, y2: number) => {
+    const next = { year1Pct: y1, year2Pct: y2, year3Pct: 100, year4Pct: 100, year5Pct: 100, year6Pct: 100 };
+    onUpdateConfig({ retentionPhasing: next, nursingRetentionPhasing: next });
+  };
+  const isDefault =
+    ramp === DEFAULT_PROFORMA_CONFIG.implementationRampMonths &&
+    phasing.year1Pct === DEFAULT_PROFORMA_CONFIG.retentionPhasing.year1Pct &&
+    phasing.year2Pct === DEFAULT_PROFORMA_CONFIG.retentionPhasing.year2Pct;
+  const reset = () =>
+    onUpdateConfig({
+      implementationRampMonths: DEFAULT_PROFORMA_CONFIG.implementationRampMonths,
+      retentionPhasing: { ...DEFAULT_PROFORMA_CONFIG.retentionPhasing },
+      nursingRetentionPhasing: { ...DEFAULT_PROFORMA_CONFIG.nursingRetentionPhasing! },
+    });
+
+  const seg = (active: boolean): React.CSSProperties => ({
+    fontSize: 11, fontWeight: 700, padding: "6px 12px", border: "none", cursor: "pointer",
+    background: active ? T.ink : "transparent", color: active ? "#fff" : T.faint,
+  });
+  const lbl: React.CSSProperties = { fontSize: 10, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: T.faint, marginBottom: 8 };
+  const wrap: React.CSSProperties = { display: "inline-flex", border: `1px solid ${T.hair}`, borderRadius: 8, overflow: "hidden" };
+
+  return (
+    <div style={{ border: `1px solid ${T.hair}`, borderRadius: 14, background: T.soft, padding: "20px 22px", marginTop: 12, display: "flex", flexWrap: "wrap", alignItems: "flex-start", gap: 40 }}>
+      <div>
+        <div style={lbl}>Ramp speed · time to full adoption</div>
+        <div style={wrap}>
+          {RAMP_PRESETS.map((p) => (
+            <button key={p.months} type="button" onClick={() => onUpdateConfig({ implementationRampMonths: p.months })} style={seg(ramp === p.months)} data-testid={`adv-ramp-${p.months}`}>
+              {p.label} · {p.sub}
+            </button>
+          ))}
+        </div>
+        <div style={{ fontSize: 10.5, color: T.off, marginTop: 6, maxWidth: 260, lineHeight: 1.4 }}>How long a setting takes to reach full value after go-live.</div>
+      </div>
+      <div>
+        <div style={lbl}>Retention phasing · workforce value by year</div>
+        <div style={wrap}>
+          {PHASE_PRESETS.map((p) => (
+            <button key={p.key} type="button" onClick={() => setPhase(p.y1, p.y2)} style={seg(activePhase === p.key)} data-testid={`adv-phase-${p.key}`}>
+              {p.label}
+            </button>
+          ))}
+        </div>
+        <div style={{ fontSize: 10.5, color: T.off, marginTop: 6, maxWidth: 320, lineHeight: 1.4 }}>
+          Year 1 {phasing.year1Pct}% → Year 2 {phasing.year2Pct}% → Year 3 {phasing.year3Pct}% of retention value realized.
+        </div>
+      </div>
+      <div style={{ marginLeft: "auto", paddingTop: 2 }}>
+        <button type="button" onClick={reset} disabled={isDefault} style={{ background: "none", border: "none", cursor: isDefault ? "default" : "pointer", fontSize: 11.5, fontWeight: 700, color: isDefault ? T.off : T.coral, padding: 0 }} data-testid="adv-reset">
+          Reset to defaults
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function ProformaWorkbench({ settings, config, onUpdateSetting, onUpdateConfig, onRemoveSetting, onNavigate, onAddSetting, onBack }: ProformaWorkbenchProps) {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(() => new Set(settings.slice(0, 1).map((s) => s.id)));
+  const [advOpen, setAdvOpen] = useState(false);
 
   const excludedFor = useCallback(
     (id: string) => new Set((settings.find((s) => s.id === id)?.drivers ?? []).filter((d) => d.excluded).map((d) => d.id)),
@@ -1137,10 +1214,21 @@ export default function ProformaWorkbench({ settings, config, onUpdateSetting, o
             <NumCell value={config.systemWideFee ?? 0} onChange={(n) => onUpdateConfig({ systemWideFee: n })} prefix="$" suffix="" cellStyle={{ minWidth: 110 }} />
           </div>
           <div style={{ paddingBottom: 8 }}>
-            <span style={{ fontSize: 12, fontWeight: 700, color: T.coral, cursor: "default" }}>Advanced deal assumptions →</span>
+            <button
+              type="button"
+              onClick={() => setAdvOpen((v) => !v)}
+              aria-expanded={advOpen}
+              style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "none", padding: 0, cursor: "pointer", fontSize: 12, fontWeight: 700, color: T.coral }}
+              data-testid="button-advanced-assumptions"
+            >
+              Advanced deal assumptions
+              <ChevronDown size={14} style={{ transition: "transform .2s", transform: advOpen ? "rotate(180deg)" : "none" }} />
+            </button>
             <div style={{ fontSize: 10.5, color: T.off, marginTop: 3 }}>ramp speed · retention phasing · defaults</div>
           </div>
         </div>
+
+        {advOpen && <AdvancedAssumptions config={config} onUpdateConfig={onUpdateConfig} />}
 
         {/* THE READ */}
         <div style={{ display: "flex", gap: 16, alignItems: "flex-start", border: "1px solid #F0D9CF", borderRadius: 14, background: "#FEF9F7", padding: "16px 22px", marginTop: 14 }}>
