@@ -273,19 +273,13 @@ export function FieldTile({
   );
 }
 
-export function FieldGrid({ cols = 4, children }: { cols?: 3 | 4; children: ReactNode }) {
-  // Masonry column flow (not a grid) so a taller field — one with quick-picks or
-  // a note — never leaves a gap beside a shorter one. Uniform column widths, one
-  // consistent vertical rhythm via each child's bottom margin.
-  return (
-    <div
-      className={`mt-5 gap-x-[18px] columns-2 [&>*]:mb-[16px] [&>*]:break-inside-avoid ${
-        cols === 3 ? "sm:columns-3" : "sm:columns-2 lg:columns-4"
-      }`}
-    >
-      {children}
-    </div>
-  );
+export function FieldGrid({ cols: _cols = 4, children }: { cols?: 3 | 4; children: ReactNode }) {
+  // Single column, one field per row. Uniform by construction — fields with
+  // quick-picks or notes vary in height, and any multi-column layout either
+  // couples row heights (leaving gaps beside short fields) or runs columns
+  // independently (lopsided). One column can do neither. Height is fine inside
+  // the collapsed assumptions tray.
+  return <div className="mt-5 flex flex-col gap-4">{children}</div>;
 }
 
 /** Numeric input styled as the mock's `.fi` box (bare, bordered, tabular). */

@@ -155,7 +155,7 @@ export function ValueCard({
       {children &&
         (!awaitingScale && buildStruct ? (
           <AssumptionsDisclosure>
-            <div className="columns-1 sm:columns-2 gap-x-[18px] [&>*]:mb-[16px] [&>*]:break-inside-avoid [&>*:last-child]:mb-0">{children}</div>
+            <div className="flex flex-col gap-4">{children}</div>
           </AssumptionsDisclosure>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-[14px] mt-[22px]">{children}</div>
