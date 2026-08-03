@@ -915,7 +915,7 @@ const H_SYNTH = 115;
 // lead ~100 on the first page, a compact "(cont.)" ~44 after). Budgets sit a
 // hair under so an accurately-estimated page can never exceed 1056 (no bleed),
 // while the common single-setting model still lands on ONE page.
-const BUDGET_FIRST = 785;
+const BUDGET_FIRST = 880;
 const BUDGET_CONT = 845;
 
 // Content-aware height estimate for a driver card: title row + wrapped
