@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { BuildStrip, type MoneyBuild } from "./EdMoneyCard";
 import { AnimatedValue } from "@/components/explore/AnimatedValue";
+import { AssumptionsDisclosure } from "./AssumptionsDisclosure";
 
 /**
  * Shared presentational primitives for the editorial "two-tier value screen"
@@ -153,12 +154,9 @@ export function ValueCard({
 
       {children &&
         (!awaitingScale && buildStruct ? (
-          <>
-            <div className="text-[10.5px] font-extrabold tracking-[0.09em] uppercase text-[#7C766F] mt-[26px] mb-3">
-              Adjust the inputs
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-[14px]">{children}</div>
-          </>
+          <AssumptionsDisclosure>
+            <div className="columns-1 sm:columns-2 gap-x-[18px] [&>*]:mb-[16px] [&>*]:break-inside-avoid [&>*:last-child]:mb-0">{children}</div>
+          </AssumptionsDisclosure>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-[14px] mt-[22px]">{children}</div>
         ))}
@@ -219,9 +217,9 @@ export function Field({
 }) {
   return (
     <div>
-      <div className="text-[11px] font-extrabold tracking-[0.05em] uppercase text-[#2E2822] mb-2">{label}</div>
+      <div className="text-[10.5px] font-extrabold tracking-[0.05em] uppercase text-[#2E2822] mb-[8px] leading-[1.3] min-h-[14px]">{label}</div>
       {children}
-      {note && <div className="text-[11.5px] text-[#7C766F] mt-[7px] leading-[1.4]">{note}</div>}
+      {note && <div className="text-[11.5px] text-[#7C766F] mt-[8px] leading-[1.4]">{note}</div>}
     </div>
   );
 }
@@ -240,12 +238,12 @@ export function NumBox({
   testId?: string;
 }) {
   return (
-    <div className="h-[54px] border-[1.5px] border-[#E4DED6] rounded-[14px] bg-white shadow-[0_1px_2px_rgba(40,30,20,0.04)] flex items-center gap-0 px-[14px] transition-colors focus-within:border-[#EA2C00] focus-within:shadow-[0_0_0_3px_#FBD9CE]">
-      {prefix && <span className="text-[16px] font-bold text-[#1A1A1A] flex-shrink-0 mr-[1px]">{prefix}</span>}
+    <div className="h-[54px] border-[1.5px] border-[#E4DED6] rounded-[14px] bg-white shadow-[0_1px_2px_rgba(40,30,20,0.04)] flex items-center gap-0 px-[16px] transition-colors focus-within:border-[#EA2C00] focus-within:shadow-[0_0_0_3px_#FBD9CE]">
+      {prefix && <span className="text-[16px] font-medium text-[#1A1A1A] flex-shrink-0 mr-[1px]">{prefix}</span>}
       <FormattedNumberInput
         value={value}
         onChange={onChange}
-        className="h-full w-full border-0 rounded-none bg-transparent px-0 py-0 shadow-none ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-[16px] font-bold text-[#1A1A1A] tabular-nums"
+        className="h-full w-full border-0 rounded-none bg-transparent px-0 py-0 shadow-none ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-[16px] font-medium text-[#1A1A1A] tabular-nums"
         data-testid={testId}
       />
       {suffix && <span className="ml-auto pl-2 text-[13px] font-semibold text-[#7C766F] flex-shrink-0">{suffix}</span>}
@@ -263,7 +261,7 @@ export function QuickPicks({
   onPick: (v: number) => void;
 }) {
   return (
-    <div className="flex gap-[6px] mt-2 flex-wrap">
+    <div className="flex gap-[6px] mt-[8px] flex-wrap">
       {options.map((o) => (
         <button
           key={o.label}

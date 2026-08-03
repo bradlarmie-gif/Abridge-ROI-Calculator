@@ -12,7 +12,7 @@ interface EdTimeSavingsProps {
 }
 
 const inputBase =
-  "h-[54px] w-full rounded-[14px] border-[1.5px] border-[#E4DED6] bg-white px-[18px] text-[17px] font-bold text-[#1A1A1A] tabular-nums shadow-[0_1px_2px_rgba(40,30,20,0.04)] transition-[box-shadow,border-color] focus-visible:outline-none focus-visible:border-[#EA2C00] focus-visible:shadow-[0_0_0_3px_#FBD9CE] placeholder:text-[#B5AFA6] placeholder:font-normal placeholder:not-italic";
+  "h-[54px] w-full rounded-[14px] border-[1.5px] border-[#E4DED6] bg-white px-[18px] text-[17px] font-medium text-[#1A1A1A] tabular-nums shadow-[0_1px_2px_rgba(40,30,20,0.04)] transition-[box-shadow,border-color] focus-visible:outline-none focus-visible:border-[#EA2C00] focus-visible:shadow-[0_0_0_3px_#FBD9CE] placeholder:text-[#B5AFA6] placeholder:font-normal placeholder:not-italic";
 
 export default function EdTimeSavings({ state, updateState, onNext, onBack, onHome }: EdTimeSavingsProps) {
   const isED = state.careSetting === "ed";

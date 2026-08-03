@@ -162,7 +162,7 @@ export default function EdInvestment({
                         value={isNursing ? state.nursingStaffedBeds : state.numberOfProviders}
                         onChange={(v) => updateState(isNursing ? { nursingStaffedBeds: v } : { numberOfProviders: v })}
                         onBlurValue={(v) => updateState(isNursing ? { nursingStaffedBeds: Math.max(v, 1) } : { numberOfProviders: Math.max(v, 1) })}
-                        className="border-0 h-auto p-0 shadow-none text-[16px] font-bold text-[#1A1A1A] tabular-nums focus-visible:ring-0 w-full"
+                        className="border-0 h-auto p-0 shadow-none text-[16px] font-medium text-[#1A1A1A] tabular-nums focus-visible:ring-0 w-full"
                         data-testid="ed-investment-input-providers"
                       />
                     </div>
@@ -177,7 +177,7 @@ export default function EdInvestment({
                       <FormattedNumberInput
                         value={state.costPerProvider}
                         onChange={(v) => updateState({ costPerProvider: v })}
-                        className="border-0 h-auto p-0 shadow-none text-[16px] font-bold text-[#1A1A1A] tabular-nums focus-visible:ring-0 w-full"
+                        className="border-0 h-auto p-0 shadow-none text-[16px] font-medium text-[#1A1A1A] tabular-nums focus-visible:ring-0 w-full"
                         data-testid="ed-investment-input-cost-per-provider"
                       />
                     </div>
@@ -205,7 +205,7 @@ export default function EdInvestment({
                       value={state.costPerEncounter}
                       onChange={(v) => updateState({ costPerEncounter: v })}
                       step={0.01}
-                      className="border-0 h-auto p-0 shadow-none text-[16px] font-bold text-[#1A1A1A] tabular-nums focus-visible:ring-0 w-full"
+                      className="border-0 h-auto p-0 shadow-none text-[16px] font-medium text-[#1A1A1A] tabular-nums focus-visible:ring-0 w-full"
                       data-testid="ed-investment-input-cost-per-encounter"
                     />
                   </div>
@@ -231,7 +231,7 @@ export default function EdInvestment({
                       <FormattedNumberInput
                         value={state.annualLicenseFee}
                         onChange={(v) => updateState({ annualLicenseFee: v })}
-                        className="border-0 h-auto p-0 shadow-none text-[16px] font-bold text-[#1A1A1A] tabular-nums focus-visible:ring-0 w-full"
+                        className="border-0 h-auto p-0 shadow-none text-[16px] font-medium text-[#1A1A1A] tabular-nums focus-visible:ring-0 w-full"
                         data-testid="ed-investment-input-platform-license"
                       />
                     </div>
@@ -244,7 +244,7 @@ export default function EdInvestment({
                         value={state.platformEncRate ?? 0}
                         onChange={(v) => updateState({ platformEncRate: v })}
                         step={0.01}
-                        className="border-0 h-auto p-0 shadow-none text-[16px] font-bold text-[#1A1A1A] tabular-nums focus-visible:ring-0 w-full"
+                        className="border-0 h-auto p-0 shadow-none text-[16px] font-medium text-[#1A1A1A] tabular-nums focus-visible:ring-0 w-full"
                         data-testid="ed-investment-input-platform-enc-rate"
                       />
                     </div>
@@ -270,7 +270,7 @@ export default function EdInvestment({
                     <FormattedNumberInput
                       value={state.annualLicenseFee}
                       onChange={(v) => updateState({ annualLicenseFee: v })}
-                      className="border-0 h-auto p-0 shadow-none text-[16px] font-bold text-[#1A1A1A] tabular-nums focus-visible:ring-0 w-full"
+                      className="border-0 h-auto p-0 shadow-none text-[16px] font-medium text-[#1A1A1A] tabular-nums focus-visible:ring-0 w-full"
                       data-testid="ed-investment-input-annual-license"
                     />
                   </div>

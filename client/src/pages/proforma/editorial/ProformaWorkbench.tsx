@@ -239,7 +239,7 @@ function NumCell({
       }
     >
       <span style={{ display: "flex", alignItems: "baseline", justifyContent: "center", gap: 1 }}>
-        {prefix && <span className="font-abridge" style={{ fontSize: numFontSize, color: T.ink, ...valueStyle }}>{prefix}</span>}
+        {prefix && <span className="tabular-nums" style={{ fontSize: numFontSize, fontWeight: 500, color: T.ink, ...valueStyle }}>{prefix}</span>}
         <input
           value={text}
           inputMode={decimals ? "decimal" : "numeric"}
@@ -255,7 +255,7 @@ function NumCell({
             setText(e.target.value);
             onChange(parse(e.target.value));
           }}
-          className="font-abridge"
+          className="tabular-nums"
           style={{
             width: `${Math.max(2, text.length + 1)}ch`,
             maxWidth: 96,
@@ -264,13 +264,14 @@ function NumCell({
             background: "transparent",
             textAlign: "center",
             fontSize: numFontSize,
+            fontWeight: 500,
             color: T.ink,
             padding: 0,
             lineHeight: 1,
             ...valueStyle,
           }}
         />
-        {suffix && <span className="font-abridge" style={{ fontSize: numFontSize, color: T.ink, ...valueStyle }}>{suffix}</span>}
+        {suffix && <span className="tabular-nums" style={{ fontSize: numFontSize, fontWeight: 500, color: T.ink, ...valueStyle }}>{suffix}</span>}
       </span>
       {kLabel && (
         <span

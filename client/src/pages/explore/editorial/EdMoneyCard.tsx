@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 import { Plus, X } from "lucide-react";
 import { NumberField } from "@/components/NumberField";
 import { AnimatedValue } from "@/components/explore/AnimatedValue";
+import { AssumptionsDisclosure } from "./AssumptionsDisclosure";
 
 /**
  * Shared editorial-brand chrome for Explore Revenue/Quality money cards.
@@ -232,12 +233,7 @@ export function MoneyCard({
               {/* The math leads (the payoff + its proof); the raw inputs recede below. */}
               <BuildStrip build={build} />
               {children && (
-                <>
-                  <div className="text-[10.5px] font-extrabold tracking-[0.09em] uppercase text-[#7C766F] mt-[26px] mb-3">
-                    Adjust the inputs
-                  </div>
-                  {children}
-                </>
+                <AssumptionsDisclosure>{children}</AssumptionsDisclosure>
               )}
             </>
           ) : (
@@ -270,16 +266,23 @@ export function FieldTile({
 }) {
   return (
     <div>
-      <div className="text-[10.5px] font-extrabold tracking-[0.04em] uppercase text-[#2E2822] mb-[7px]">{label}</div>
+      <div className="text-[10.5px] font-extrabold tracking-[0.05em] uppercase text-[#2E2822] mb-[8px] leading-[1.3] min-h-[14px]">{label}</div>
       {children}
-      {note && <div className={`text-[11px] mt-1.5 ${hot ? "text-[#EA2C00] font-bold" : "text-[#7C766F]"}`}>{note}</div>}
+      {note && <div className={`text-[11.5px] mt-[8px] leading-[1.4] ${hot ? "text-[#EA2C00] font-bold" : "text-[#7C766F]"}`}>{note}</div>}
     </div>
   );
 }
 
 export function FieldGrid({ cols = 4, children }: { cols?: 3 | 4; children: ReactNode }) {
+  // Masonry column flow (not a grid) so a taller field — one with quick-picks or
+  // a note — never leaves a gap beside a shorter one. Uniform column widths, one
+  // consistent vertical rhythm via each child's bottom margin.
   return (
-    <div className={`grid gap-3 mt-5 grid-cols-2 ${cols === 3 ? "sm:grid-cols-3" : "sm:grid-cols-2 lg:grid-cols-4"}`}>
+    <div
+      className={`mt-5 gap-x-[18px] columns-2 [&>*]:mb-[16px] [&>*]:break-inside-avoid ${
+        cols === 3 ? "sm:columns-3" : "sm:columns-2 lg:columns-4"
+      }`}
+    >
       {children}
     </div>
   );
@@ -309,11 +312,11 @@ export function Fi({
 }) {
   return (
     <div
-      className={`h-[54px] rounded-[14px] bg-white shadow-[0_1px_2px_rgba(40,30,20,0.04)] flex items-center gap-0 px-[16px] text-[16px] font-bold text-[#1A1A1A] transition-[box-shadow,border-color] focus-within:border-[#EA2C00] focus-within:shadow-[0_0_0_3px_#FBD9CE] ${
+      className={`h-[54px] rounded-[14px] bg-white shadow-[0_1px_2px_rgba(40,30,20,0.04)] flex items-center gap-0 px-[16px] text-[16px] font-medium text-[#1A1A1A] transition-[box-shadow,border-color] focus-within:border-[#EA2C00] focus-within:shadow-[0_0_0_3px_#FBD9CE] ${
         highlighted ? "border-[1.5px] border-[#EFB6A6]" : "border-[1.5px] border-[#E4DED6]"
       }`}
     >
-      {prefix && <span className="text-[16px] font-bold text-[#1A1A1A] flex-shrink-0 mr-[1px]">{prefix}</span>}
+      {prefix && <span className="text-[16px] font-medium text-[#1A1A1A] flex-shrink-0 mr-[1px]">{prefix}</span>}
       <NumberField
         value={value}
         onValueChange={onValueChange}
@@ -321,7 +324,7 @@ export function Fi({
         min={min}
         max={max}
         data-testid={testId}
-        className="w-full bg-transparent outline-none text-[16px] font-bold text-[#1A1A1A] tabular-nums"
+        className="w-full bg-transparent outline-none text-[16px] font-medium text-[#1A1A1A] tabular-nums"
       />
       {suffix && <span className="ml-auto pl-2 text-[13px] font-semibold text-[#7C766F] flex-shrink-0">{suffix}</span>}
     </div>
@@ -331,7 +334,7 @@ export function Fi({
 /** Read-only derived tile — a value the engine computed upstream, not editable here. */
 export function FiReadout({ children, suffix }: { children: ReactNode; suffix?: string }) {
   return (
-    <div className="h-[54px] rounded-[14px] bg-[#F4F1EC] border-[1.5px] border-[#E4DED6] flex items-center gap-1 px-[16px] text-[16px] font-bold text-[#565250] tabular-nums">
+    <div className="h-[54px] rounded-[14px] bg-[#F4F1EC] border-[1.5px] border-[#E4DED6] flex items-center gap-1 px-[16px] text-[16px] font-medium text-[#565250] tabular-nums">
       {children}
       {suffix && <span className="ml-auto pl-2 text-[13px] font-semibold text-[#7C766F]">{suffix}</span>}
     </div>
@@ -348,13 +351,13 @@ export function QuickFill({
   onSelect: (key: string) => void;
 }) {
   return (
-    <div className="flex gap-[5px] mt-[7px]">
+    <div className="flex gap-[6px] mt-[8px] flex-wrap">
       {options.map((o) => (
         <button
           key={o.key}
           type="button"
           onClick={() => onSelect(o.key)}
-          className={`text-[11px] font-bold rounded-[8px] border px-[9px] py-[5px] transition-colors ${
+          className={`text-[11.5px] font-bold rounded-[8px] border px-[9px] py-[5px] transition-colors ${
             activeKey === o.key ? "border-[#EA2C00] text-[#EA2C00] bg-[#FFF7F4]" : "border-[#E7E3DD] text-[#565250] bg-white"
           }`}
         >
@@ -423,7 +426,7 @@ export function PlanRow({
       <select
         value={planType}
         onChange={(e) => onPlanTypeChange(e.target.value)}
-        className="h-[54px] rounded-[14px] border-[1.5px] border-[#E4DED6] bg-white shadow-[0_1px_2px_rgba(40,30,20,0.04)] px-[14px] text-[15px] font-bold text-[#1A1A1A] outline-none transition-colors focus:border-[#EA2C00] focus:shadow-[0_0_0_3px_#FBD9CE]"
+        className="h-[54px] rounded-[14px] border-[1.5px] border-[#E4DED6] bg-white shadow-[0_1px_2px_rgba(40,30,20,0.04)] px-[14px] text-[15px] font-medium text-[#1A1A1A] outline-none transition-colors focus:border-[#EA2C00] focus:shadow-[0_0_0_3px_#FBD9CE]"
       >
         {Object.entries(PLAN_TYPE_LABELS).map(([k, label]) => (
           <option key={k} value={k}>
