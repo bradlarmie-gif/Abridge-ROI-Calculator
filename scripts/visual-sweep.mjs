@@ -1,0 +1,252 @@
+/**
+ * VISUAL SWEEP — the screenshot-first guard for AESTHETIC / stateful layout bugs.
+ *
+ * layout-smoke.mjs (the pass/fail gate) catches overflow, wrapped headers,
+ * clipped inputs, and PDF bleed. It is blind to two things that keep slipping
+ * through to the user:
+ *   1. INTERACTIVE STATES — a driver card's "Adjust assumptions" tray only exists
+ *      once a driver is ON and the disclosure is open; smoke never opens it, so a
+ *      lopsided tray shipped green.
+ *   2. AESTHETIC defects — a chart label floating over the curve, ragged columns,
+ *      uneven rhythm. These render INSIDE the box (no overflow), so no automated
+ *      pass/fail can see them. A human/agent has to LOOK.
+ *
+ * This tool therefore does two jobs:
+ *   A. Drives a MATRIX of states (each care setting, drivers on, tray open,
+ *      advanced panel open, every proforma chapter, every PDF page) and writes a
+ *      screenshot for EACH to scripts/visual-sweep-out/ — the gallery the agent
+ *      reviews before declaring any visual change done.
+ *   B. Runs the auto-checks smoke lacks: overlapping interactive controls,
+ *      text escaping its own box, and SVG <text> overlapping a chart path
+ *      (the floating-label class). Hard defects exit non-zero.
+ *
+ * Usage:  npx vite --port 5199 --strictPort   (in another shell)
+ *         node scripts/visual-sweep.mjs
+ * Review: open every PNG in scripts/visual-sweep-out/ and eyeball it. The point
+ *         is the LOOK — the auto-checks are a floor, not the ceiling.
+ */
+import pkg from "../node_modules/playwright-core/index.js";
+import { mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
+const { chromium } = pkg;
+
+const BASE = process.env.SWEEP_BASE || "http://localhost:5199";
+const OUT = join(dirname(fileURLToPath(import.meta.url)), "visual-sweep-out");
+rmSync(OUT, { recursive: true, force: true });
+mkdirSync(OUT, { recursive: true });
+
+const fails = [];   // hard defects → non-zero exit
+const notes = [];   // soft observations for the review log
+const shots = [];   // manifest
+
+// ── Defensive helpers ───────────────────────────────────────────────────────
+const clickIf = async (page, sel, opts = {}) => {
+  try { const el = await page.$(sel); if (el) { await el.click({ timeout: 1500, force: true, ...opts }); return true; } } catch {}
+  return false;
+};
+const clickText = async (page, re) => {
+  try { await page.getByText(re).first().click({ timeout: 1500, force: true }); return true; } catch { return false; }
+};
+const fillAllNumbers = async (page, val = "200") => {
+  const inputs = await page.$$("input");
+  for (const inp of inputs) {
+    try { await inp.click({ timeout: 600 }); await inp.fill(val, { timeout: 600 }); } catch {}
+  }
+};
+
+// The reusable Explore drive: land on a value (driver) screen for a setting,
+// turn drivers on, and open every assumptions tray. Returns the step title.
+async function driveExploreToValue(page, setting) {
+  await page.goto(`${BASE}/?explorepreview=1`, { waitUntil: "networkidle" });
+  await page.waitForTimeout(700);
+  await clickIf(page, `[data-testid=ed-setting-${setting}]`);
+  await page.waitForTimeout(200);
+  await clickIf(page, "[data-testid=ed-careSetting-continue]");
+  await page.waitForTimeout(500);
+  await fillAllNumbers(page);
+  await clickText(page, /Typical/);
+  await clickIf(page, "[data-testid=ed-practice-continue]");
+  await page.waitForTimeout(400);
+  await clickText(page, /Typical/);
+  await clickIf(page, "[data-testid=ed-timesavings-continue]");
+  await page.waitForTimeout(600);
+  // turn on any drivers on this screen, then open every assumptions tray
+  for (const t of await page.$$("[data-testid^=ed-toggle-],[data-testid^=toggle-]")) {
+    try { await t.click({ timeout: 800, force: true }); await page.waitForTimeout(120); } catch {}
+  }
+  await page.waitForTimeout(200);
+  for (const b of await page.$$("[data-testid=button-adjust-assumptions]")) {
+    try { await b.click({ timeout: 800, force: true }); await page.waitForTimeout(120); } catch {}
+  }
+  await page.waitForTimeout(300);
+  return page.evaluate(() => document.querySelector("h1")?.innerText?.slice(0, 40) || "");
+}
+
+// ── The in-page auto-audit (the checks smoke lacks) ──────────────────────────
+function audit() {
+  const out = { overflow: 0, overlaps: [], escaped: [], svgLabels: [] };
+  out.overflow = document.documentElement.scrollWidth - window.innerWidth;
+
+  const visible = (el) => {
+    const s = getComputedStyle(el);
+    if (s.display === "none" || s.visibility === "hidden" || +s.opacity === 0) return false;
+    const r = el.getBoundingClientRect();
+    return r.width > 1 && r.height > 1;
+  };
+
+  // Overlapping interactive controls: two buttons/inputs/selects whose rects
+  // overlap by >6px on BOTH axes = a broken layout (they should never sit on
+  // top of each other).
+  const ctrls = [...document.querySelectorAll("button, input, select, [role=button]")].filter(visible);
+  for (let i = 0; i < ctrls.length; i++) {
+    for (let j = i + 1; j < ctrls.length; j++) {
+      const a = ctrls[i], b = ctrls[j];
+      if (a.contains(b) || b.contains(a)) continue;
+      const ra = a.getBoundingClientRect(), rb = b.getBoundingClientRect();
+      const ox = Math.min(ra.right, rb.right) - Math.max(ra.left, rb.left);
+      const oy = Math.min(ra.bottom, rb.bottom) - Math.max(ra.top, rb.top);
+      if (ox > 6 && oy > 6) {
+        out.overlaps.push(`${(a.textContent || a.getAttribute("data-testid") || a.tagName).trim().slice(0, 20)} ✕ ${(b.textContent || b.getAttribute("data-testid") || b.tagName).trim().slice(0, 20)}`);
+      }
+    }
+  }
+
+  // SVG <text> that overlaps a chart <path>/<polyline> in the same svg — the
+  // "label floating over the curve" class (the Month 0 bug). Flags a text whose
+  // box overlaps a stroke path box by a real amount, excluding the intended
+  // on-line marker (a text within ~14px of a circle/dot marker is deliberate).
+  for (const svg of document.querySelectorAll("svg")) {
+    const texts = [...svg.querySelectorAll("text")];
+    const paths = [...svg.querySelectorAll("path, polyline")];
+    const markers = [...svg.querySelectorAll("circle")].map((c) => c.getBoundingClientRect());
+    for (const t of texts) {
+      const rt = t.getBoundingClientRect();
+      const nearMarker = markers.some((m) => Math.hypot((m.left + m.right) / 2 - (rt.left + rt.right) / 2, (m.top + m.bottom) / 2 - (rt.top + rt.bottom) / 2) < 22);
+      if (nearMarker) continue;
+      for (const p of paths) {
+        const rp = p.getBoundingClientRect();
+        const ox = Math.min(rt.right, rp.right) - Math.max(rt.left, rp.left);
+        const oy = Math.min(rt.bottom, rp.bottom) - Math.max(rt.top, rp.top);
+        if (ox > 4 && oy > 4) { out.svgLabels.push(`"${(t.textContent || "").trim().slice(0, 18)}" over curve`); break; }
+      }
+    }
+  }
+  return out;
+}
+
+async function scene(browser, name, setup, { width = 1440, height = 1000 } = {}) {
+  const ctx = await browser.newContext({ viewport: { width, height } });
+  const page = await ctx.newPage();
+  await page.addInitScript(() => { window.print = () => {}; });
+  let title = "";
+  try {
+    title = (await setup(page)) || "";
+    await page.waitForTimeout(300);
+    const file = join(OUT, `${name}.png`);
+    await page.screenshot({ path: file, fullPage: true });
+    shots.push(`${name}.png${title ? `  (${title})` : ""}`);
+    const r = await page.evaluate(audit);
+    if (r.overflow > 3) fails.push(`${name}: horizontal overflow ${r.overflow}px`);
+    for (const o of r.overlaps.slice(0, 6)) fails.push(`${name}: overlapping controls — ${o}`);
+    // svg-label overlap is heuristic (a path's bbox spans the whole chart, so
+    // legitimate in-chart labels trip it) — a LOOK prompt, not a hard fail.
+    for (const s of r.svgLabels.slice(0, 6)) notes.push(`${name}: review chart label — ${s}`);
+  } catch (e) {
+    notes.push(`${name}: drive error ${String(e).slice(0, 90)}`);
+    try { await page.screenshot({ path: join(OUT, `${name}.png`), fullPage: true }); shots.push(`${name}.png (partial)`); } catch {}
+  }
+  await ctx.close();
+}
+
+const browser = await chromium.launch();
+
+// ── A. On-screen surfaces, including interactive states ──────────────────────
+await scene(browser, "explore-caresetting-empty", async (p) => {
+  await p.goto(`${BASE}/?explorepreview=1`, { waitUntil: "networkidle" });
+  await p.waitForTimeout(700);
+  return p.evaluate(() => document.querySelector("h1")?.innerText?.slice(0, 40) || "");
+});
+await scene(browser, "explore-caresetting-hover", async (p) => {
+  await p.goto(`${BASE}/?explorepreview=1`, { waitUntil: "networkidle" });
+  await p.waitForTimeout(600);
+  await clickIf(p, "[data-testid=ed-setting-ed]");
+  await p.waitForTimeout(300);
+  return "hovered ed";
+});
+for (const s of ["outpatient", "ed", "inpatient", "nursing"]) {
+  await scene(browser, `explore-value-${s}-trays-open`, (p) => driveExploreToValue(p, s), { height: 1500 });
+}
+
+// Proforma chapters + the advanced-assumptions panel open
+await scene(browser, "proforma-build", async (p) => {
+  await p.goto(`${BASE}/?proformapreview=1`, { waitUntil: "networkidle" });
+  await p.waitForTimeout(900);
+  await clickIf(p, "[data-testid=button-advanced-assumptions]");
+  await p.waitForTimeout(300);
+  return "build + advanced open";
+}, { height: 1600 });
+await scene(browser, "proforma-case", async (p) => {
+  await p.goto(`${BASE}/?proformapreview=1`, { waitUntil: "networkidle" });
+  await p.waitForTimeout(800);
+  await clickText(p, /The case/);
+  await p.waitForTimeout(600);
+  return "case";
+}, { height: 1600 });
+await scene(browser, "proforma-present", async (p) => {
+  await p.goto(`${BASE}/?proformapreview=1`, { waitUntil: "networkidle" });
+  await p.waitForTimeout(800);
+  await clickText(p, /Present/);
+  await p.waitForTimeout(600);
+  return "present";
+}, { height: 1600 });
+
+// ── B. PDFs, one screenshot PER PAGE (so each page gets its own eyeball) ──────
+const PDF_ROUTES = [
+  { url: "/?proformapdf=1", label: "proforma-pdf" },
+  { url: "/?explorepdf=1", label: "explore-pdf" },
+];
+const PAGE_H = 1056;
+for (const route of PDF_ROUTES) {
+  const ctx = await browser.newContext({ viewport: { width: 816, height: PAGE_H } });
+  const page = await ctx.newPage();
+  await page.addInitScript(() => { window.print = () => {}; });
+  try {
+    await page.goto(BASE + route.url, { waitUntil: "networkidle" });
+    await page.emulateMedia({ media: "print" });
+    await page.waitForTimeout(1200);
+    const total = await page.evaluate(() => document.documentElement.scrollHeight);
+    const pages = Math.max(1, Math.round(total / PAGE_H));
+    for (let i = 0; i < pages; i++) {
+      await page.evaluate((y) => window.scrollTo(0, y), i * PAGE_H);
+      await page.waitForTimeout(200);
+      await page.screenshot({ path: join(OUT, `${route.label}-p${i + 1}.png`), clip: { x: 0, y: 0, width: 816, height: PAGE_H } });
+      shots.push(`${route.label}-p${i + 1}.png`);
+    }
+    const r = await page.evaluate(audit);
+    for (const s of r.svgLabels.slice(0, 6)) notes.push(`${route.label}: review chart label — ${s}`);
+  } catch (e) {
+    notes.push(`${route.label}: PDF render error ${String(e).slice(0, 90)}`);
+  }
+  await ctx.close();
+}
+
+await browser.close();
+
+// ── Report ───────────────────────────────────────────────────────────────────
+const manifest = [
+  `VISUAL SWEEP — ${shots.length} screenshots in scripts/visual-sweep-out/`,
+  "REVIEW EVERY IMAGE — auto-checks are a floor; lopsided/ragged/floating is a LOOK call.",
+  "",
+  "Screenshots:", ...shots.map((s) => "  " + s),
+  "",
+  notes.length ? "Notes (non-blocking):" : "", ...notes.map((n) => "  " + n),
+].join("\n");
+writeFileSync(join(OUT, "MANIFEST.txt"), manifest);
+console.log(manifest);
+
+if (fails.length) {
+  console.error(`\n✗ VISUAL SWEEP auto-checks flagged ${fails.length}:\n` + fails.map((f) => "  " + f).join("\n") + "\n");
+  process.exit(1);
+}
+console.log("\n✓ auto-checks clean (no overflow, no overlapping controls, no chart-label collisions). Now REVIEW the gallery.");

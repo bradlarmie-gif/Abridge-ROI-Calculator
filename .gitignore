@@ -10,3 +10,4 @@ vite.config.ts.*
 /test-results/
 /playwright-report/
 /playwright/.cache/
+scripts/visual-sweep-out/
