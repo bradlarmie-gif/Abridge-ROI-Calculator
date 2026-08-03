@@ -30,12 +30,12 @@ Status: ✅ fixed · ⏳ pending mechanical · ❗ needs Brad's call.
 
 ## Explore (7 pages)
 
-- ❗ **[Blocker] (mechanical, but engine question) The "exact math" page doesn't reconcile.** Patient access shows `140,000 × 2 min × 25% × $220 = $549K`, but that product is $15.4M — the formula string is missing the minutes-per-visit divisor. wRVU also doesn't cleanly land on $412K. HCC and Workforce reconcile fine. **This is the credibility spine and it breaks under a calculator.** Need to decide: is the value right and the formula string incomplete (fix the string), or is a number wrong (fix upstream)? Likely the `calcSummary` строкa omits a term — but it may be the live engine's string, not just the sample.
-- ⏳ **[Major] (mechanical) p4 & p5 are ~40–50% empty** (the sparse check already fails these). Consolidate section 02 to one dense spread, or fill with the promised "what's there to model next" dimmed drivers.
-- ❗ **[Major] (judgment) p3 bars == p5 stacked bar** (same Revenue/Capacity/Workforce split, twice). Cut one or differentiate (% vs absolute).
-- ⏳ **[Major] (mechanical/legal) "prevents the burnout-driven share of turnover"** — causal claim → "reduces" / capability+conditional.
-- ⏳ (mechanical) "haircuts" params shown as global (90%/12.5%) but they're per-driver → label as examples or show blended.
-- Minor: "4,667 hours" orphaned on p2; "Assessment" vs "Value Model" naming; "haircuts" cutesy; 5.4× / $1.46M repeated on p6.
+- ✅ **[Blocker] FIXED — the "exact math" page now reconciles.** The hand-maintained SAMPLE was the culprit (calcSummary strings didn't multiply to the values); production engine strings reconcile. Regenerated the sample from honest formulas with cascading totals ($1.38M → $3.12M → $6.23M, 5.1× → 11.5×). Guarded by `exploreNarrativePdfReconciliation` (formula strings) + the new `exploreEditorialPdfFooting` (quadrant/total footing).
+- ✅ **[Major] FIXED — p4 & p5 sparse.** Raised `BUDGET_FIRST` 785→880 so the four domains consolidate onto one dense page (7→6 pages); the broadened sparse guard now measures Explore max gap ≈213px, well under SPARSE_MAX=330.
+- ✅ **[Major] FIXED — "prevents the burnout-driven share of turnover"** → "reduces". Now also guarded app-wide by the shared copy guardrail's `prevents`/`prevented-by` rule.
+- ⏳ **[Major] (judgment — for Brad) p3 bars == p5 stacked bar** (same Revenue/Capacity/Workforce split shown twice). Cut one or differentiate (% vs absolute). NOT yet changed — the one remaining Explore judgment call.
+- ⏳ (judgment — for Brad) "haircuts" params shown as global (90%/12.5%) but they're per-driver → label as examples or show blended; "haircuts" label is cutesy.
+- Minor: "4,667 hours" orphaned on p2; "Assessment" vs "Value Model" naming; 5.4× / $1.46M repeated on p6.
 
 ## Proforma (8 pages)
 
