@@ -48,6 +48,8 @@ const ROUTES = [
   { url: "/?consultpreview=1", label: "Attain · align" },
   { url: "/?planpreview=1", label: "Attain · plan" },
   { url: "/?attainv2=1", label: "Attain · v2 funnel" },
+  { url: "/learn/overview", label: "Methodology · overview" },
+  { url: "/learn/continuum", label: "Methodology · across settings" },
   { url: "/forecast", label: "Forecast · hub" },
   {
     url: "/",
