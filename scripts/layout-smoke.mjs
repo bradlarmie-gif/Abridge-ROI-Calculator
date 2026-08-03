@@ -139,6 +139,7 @@ const PDF_ROUTES = [
   { url: "/?proformapdf=1", label: "Proforma PDF", minPages: 6 },
   { url: "/?attainpdf=review", label: "Attain PDF", minPages: 4 },
   { url: "/?appratpdf=1", label: "App Rationalization PDF", minPages: 5 },
+  { url: "/?methodpdf=1", label: "Methodology PDF", minPages: 6 },
 ];
 for (const route of PDF_ROUTES) {
   const ctx = await browser.newContext({ viewport: { width: 816, height: PDF_PAGE_H } });
