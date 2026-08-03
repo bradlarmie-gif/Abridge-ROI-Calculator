@@ -309,8 +309,8 @@ export function Fi({
 }) {
   return (
     <div
-      className={`h-12 rounded-xl bg-white flex items-center gap-0 px-[14px] text-[16px] font-bold text-[#1A1A1A] transition-colors focus-within:border-[#EA2C00] focus-within:shadow-[0_0_0_3px_#FBD9CE] ${
-        highlighted ? "border border-[#EFB6A6] shadow-[0_0_0_1px_#F5D3C8]" : "border border-[#E7E3DD]"
+      className={`h-[54px] rounded-[14px] bg-white shadow-[0_1px_2px_rgba(40,30,20,0.04)] flex items-center gap-0 px-[16px] text-[16px] font-bold text-[#1A1A1A] transition-[box-shadow,border-color] focus-within:border-[#EA2C00] focus-within:shadow-[0_0_0_3px_#FBD9CE] ${
+        highlighted ? "border-[1.5px] border-[#EFB6A6]" : "border-[1.5px] border-[#E4DED6]"
       }`}
     >
       {prefix && <span className="text-[16px] font-bold text-[#1A1A1A] flex-shrink-0 mr-[1px]">{prefix}</span>}
@@ -331,7 +331,7 @@ export function Fi({
 /** Read-only derived tile — a value the engine computed upstream, not editable here. */
 export function FiReadout({ children, suffix }: { children: ReactNode; suffix?: string }) {
   return (
-    <div className="h-12 rounded-xl bg-[#F4F1EC] border border-[#E7E3DD] flex items-center gap-1 px-[14px] text-[16px] font-bold text-[#565250] tabular-nums">
+    <div className="h-[54px] rounded-[14px] bg-[#F4F1EC] border-[1.5px] border-[#E4DED6] flex items-center gap-1 px-[16px] text-[16px] font-bold text-[#565250] tabular-nums">
       {children}
       {suffix && <span className="ml-auto pl-2 text-[13px] font-semibold text-[#7C766F]">{suffix}</span>}
     </div>
