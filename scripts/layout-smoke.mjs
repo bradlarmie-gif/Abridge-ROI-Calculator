@@ -161,11 +161,19 @@ for (const route of PDF_ROUTES) {
       const nan = /\$?NaN|Infinity|undefined/.test(document.body.innerText || "");
       // Sparse page: dead vertical gap between a body page's last content and its
       // running footer. A content page that ends far above the footer is the
-      // "half-empty, not dense" defect. Keyed off the "Abridge · NN" footer, so
-      // covers and the pitch (no such footer) are exempt automatically.
+      // "half-empty, not dense" defect. Keyed off the running footer, which each
+      // tool spells differently, so covers and pitch pages (no such footer) are
+      // exempt automatically:
+      //   Explore / App Rat : "Abridge · 06"
+      //   Attain            : "Abridge · Page 1"        (a <p>)
+      //   Proforma          : "Abridge · Financial Proforma · 3 of 8"  (absolute .pgnum)
       const sparse = [];
-      const footers = [...document.querySelectorAll("span,div")]
-        .filter((e) => /^Abridge · \d/.test((e.textContent || "").trim()) && (e.textContent || "").trim().length < 18);
+      const footRe = /^abridge · (page |financial proforma · )?\d/i;
+      const footers = [...document.querySelectorAll("span,div,p")]
+        .filter((e) => {
+          const t = (e.textContent || "").trim();
+          return footRe.test(t) && t.length < 45;
+        });
       for (const f of footers) {
         // Walk up to the flex-column content container that fills the page; the
         // child of it that holds the footer is the footer block, and its previous

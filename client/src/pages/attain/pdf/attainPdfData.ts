@@ -174,7 +174,7 @@ export function buildFromSnapshot(snap: AttainSnapshot | null | undefined): { da
   const reviewRead = !hasReviews
     ? ""
     : attainmentPct >= 100 || !laggard
-      ? `You're at ${attainmentPct}% across the set — the plan is fully realized against the promise.`
+      ? `You're at ${attainmentPct}% across the set. The plan is fully realized against the promise.`
       : `You're at ${attainmentPct}% across the set. The category to push on is ${catLabel(laggard)}, furthest from its target.`;
   const climb = hasReviews
     ? [{ label: "Kickoff", pct: 0 }, ...reviewLog.map((r) => ({ label: r.label, pct: Math.max(0, Math.min(100, Math.round(r.attain))) }))]
