@@ -274,7 +274,7 @@ describe("buildFromSnapshot honors a subset of goals", () => {
 // ============================================================================
 // Contract: null (not throw) for bad input; no throw for partial input
 // ============================================================================
-describe("buildFromSnapshot returns null (not throws) for bad input", () => {
+describe("buildFromSnapshot returns null ONLY without a valid setting", () => {
   const nullish = (v: unknown) => {
     let res: unknown;
     expect(() => {
@@ -286,15 +286,25 @@ describe("buildFromSnapshot returns null (not throws) for bad input", () => {
   it("null snapshot", () => nullish(null));
   it("undefined snapshot", () => nullish(undefined));
   it("empty snapshot {}", () => nullish({}));
-  it("snapshot with no goals", () =>
-    nullish({ partner: "X", setting: "outpatient", goals: [] }));
   it("unknown setting", () =>
     nullish({ partner: "X", setting: "rooftop", goals: ["access"] }));
+});
+
+// Hardening: a valid setting always exports. Empty or unmapped goals (a stale
+// plan from an older build) fall back to the setting's categories instead of
+// returning null — that null was the "Export failed" bug in the field.
+describe("buildFromSnapshot falls back (not null) for a valid setting with stale goals", () => {
+  const buildsAnyway = (v: unknown) => {
+    let res: ReturnType<typeof buildFromSnapshot> = null;
+    expect(() => { res = buildFromSnapshot(v as AttainSnapshot); }).not.toThrow();
+    expect(res, `${JSON.stringify(v)} should still build`).not.toBeNull();
+    expect(res!.categories.length).toBeGreaterThan(0);
+  };
+  it("no goals", () => buildsAnyway({ partner: "X", setting: "outpatient", goals: [] }));
   it("goals that map to no cells for the setting", () =>
-    // 'capacity' -> 'Nursing Capacity', which Outpatient does not have
-    nullish({ partner: "X", setting: "outpatient", goals: ["capacity"] }));
+    buildsAnyway({ partner: "X", setting: "outpatient", goals: ["capacity"] }));
   it("goals that map to no category at all", () =>
-    nullish({ partner: "X", setting: "outpatient", goals: ["nonsense"] }));
+    buildsAnyway({ partner: "X", setting: "outpatient", goals: ["nonsense"] }));
 
   it("does NOT throw for a partial snapshot (missing metricsByCat/peopleByCat/econ/baseline)", () => {
     const partial = {

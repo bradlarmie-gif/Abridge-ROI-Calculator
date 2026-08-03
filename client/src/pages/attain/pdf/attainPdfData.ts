@@ -126,16 +126,30 @@ function metricRow(m: { name: string; unit: string; source: string; today: strin
 export function buildFromSnapshot(snap: AttainSnapshot | null | undefined): { data: PdfData; categories: PlanCat[] } | null {
   if (!snap) return null;
   const settingLabel = snap.setting ? SETTING_LABEL[snap.setting] : null;
-  if (!settingLabel || !snap.goals?.length) return null;
+  // A setting is the ONE thing we truly can't build without. Everything else
+  // (goals, categories, inputs) degrades gracefully below, so a stale or partial
+  // plan saved by an older build still exports instead of throwing.
+  if (!settingLabel) return null;
 
   const allCells = ATTAIN_MATRIX.filter((c) => c.setting === settingLabel);
   // Setting-aware GoalId→category (capacity → "Inpatient Capacity" on inpatient, etc.), the same
   // resolver the live funnel uses, so a chosen goal always lands on the cell the screen showed.
-  const inPlan = new Set(snap.goals.map((g) => categoryForGoal(snap.setting as AttainSetting, g as GoalId)).filter(Boolean));
-  const planCells = allCells.filter((c) => inPlan.has(c.category)); // only chosen ones get detail pages
-  if (!planCells.length) return null;
+  const goals = snap.goals ?? [];
+  const mapped = new Set(goals.map((g) => categoryForGoal(snap.setting as AttainSetting, g as GoalId)).filter(Boolean));
+  // Fall back to every category for the setting when the saved goals are empty or
+  // carry ids that no longer map (schema drift) — never fail the export for it.
+  let planCells = allCells.filter((c) => mapped.has(c.category));
+  if (!planCells.length) planCells = allCells;
+  const inPlan = new Set(planCells.map((c) => c.category));
 
-  const valueOf = (category: string) => (inPlan.has(category) ? engineValueInPlay(settingLabel, category, inputsFor(snap, settingLabel, category)) : 0);
+  // Never let a stale input or an engine edge case throw the whole export; a
+  // category that can't be valued just contributes 0.
+  const valueOf = (category: string) => {
+    if (!inPlan.has(category)) return 0;
+    try { return engineValueInPlay(settingLabel, category, inputsFor(snap, settingLabel, category)); }
+    catch { return 0; }
+  };
+  const safe = <T,>(fn: () => T, fallback: T): T => { try { return fn(); } catch { return fallback; } };
   const total = planCells.reduce((s, c) => s + valueOf(c.category), 0);
   const largest = [...planCells].sort((a, b) => valueOf(b.category) - valueOf(a.category))[0];
   // display heading (e.g., nurses aren't "providers"); the stable `category` stays the engine/storage key
@@ -189,7 +203,7 @@ export function buildFromSnapshot(snap: AttainSnapshot | null | undefined): { da
     preparedWith: "",
     total,
     chainCategory: largest ? catLabel(largest) : undefined,
-    chain: largest ? chainFor(settingLabel, largest.category, inputsFor(snap, settingLabel, largest.category)) : [],
+    chain: largest ? safe(() => chainFor(settingLabel, largest.category, inputsFor(snap, settingLabel, largest.category)), []) : [],
     categories: allCells.map((c) => ({
       name: catLabel(c),
       value: valueOf(c.category),
