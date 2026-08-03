@@ -54,7 +54,7 @@ const FTE_ESTIMATES = [
 ];
 
 const inputBase =
-  "h-12 w-full rounded-xl border border-[#E8E2DA] bg-white px-[15px] text-[16px] font-bold text-[#1A1A1A] tabular-nums focus-visible:ring-1 focus-visible:ring-[#EA2C00] focus-visible:ring-offset-0 focus-visible:border-[#EA2C00] placeholder:text-[#B7ADA0] placeholder:font-normal placeholder:not-italic";
+  "h-[54px] w-full rounded-[14px] border-[1.5px] border-[#E4DED6] bg-white px-[18px] text-[17px] font-bold text-[#1A1A1A] tabular-nums shadow-[0_1px_2px_rgba(40,30,20,0.04)] transition-[box-shadow,border-color] focus-visible:outline-none focus-visible:border-[#EA2C00] focus-visible:shadow-[0_0_0_3px_#FBD9CE] placeholder:text-[#B5AFA6] placeholder:font-normal placeholder:not-italic";
 
 function QuickFillChip({
   label,
@@ -76,7 +76,7 @@ function QuickFillChip({
       className={`text-[12px] font-bold border rounded-[9px] px-[11px] py-[6px] transition-colors ${
         active
           ? "border-[#EA2C00] text-[#EA2C00] bg-[#FFF7F4]"
-          : "border-[#E8E2DA] text-[#5E534A] bg-white hover:border-[#1A1A1A] hover:text-[#1A1A1A]"
+          : "border-[#E7E3DD] text-[#565250] bg-white hover:border-[#1A1A1A] hover:text-[#1A1A1A]"
       }`}
     >
       {label} · {value.toLocaleString()}
@@ -230,20 +230,20 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
     <EditorialShell>
       <EditorialHeader stepName="Practice" stepIndex={2} onBack={onBack} onHome={onHome} />
       <div className="max-w-[1160px] mx-auto px-5 sm:px-8 lg:px-12 pt-12 pb-14">
-        <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#5E534A]">
+        <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#565250]">
           Explore · Step 2 of 9
         </div>
         <h1 className="font-abridge text-[27px] sm:text-[34px] lg:text-[40px] leading-[1.08] text-[#1A1A1A] mt-[10px] max-w-[640px]">
           How big is the {settingHeadline}?
         </h1>
-        <p className="text-[16.5px] text-[#5E534A] mt-[14px] max-w-[600px] leading-[1.5]">
+        <p className="text-[16.5px] text-[#565250] mt-[14px] max-w-[600px] leading-[1.5]">
           A few real numbers about your volume. Everything downstream is built on these, so use your figures, not
           round estimates.
         </p>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[1.35fr_1fr] gap-[22px] mt-[34px] items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-[1.35fr_1fr] gap-[22px] mt-[34px] items-stretch">
           {/* Form */}
-          <div className="bg-[#FDFBF8] border border-[#E8E2DA] rounded-[20px] px-7 py-[26px]">
+          <div className="bg-[#FDFBF8] border border-[#E7E3DD] rounded-[20px] px-7 py-[26px] h-full">
             {isNursing && (
               <div className="mb-6">
                 <div className="text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#2E2822] mb-[10px]">
@@ -256,7 +256,7 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
                   className={inputBase}
                   data-testid="ed-input-beds"
                 />
-                <p className="text-[12.5px] text-[#5E534A] mt-[10px]">
+                <p className="text-[12.5px] text-[#565250] mt-[10px]">
                   Licensed beds with active nursing staff.
                 </p>
               </div>
@@ -275,7 +275,7 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
               />
               {isNursing && state.nursingStaffedBeds > 0 && (
                 <div className="flex items-center gap-[7px] mt-[10px] flex-wrap">
-                  <span className="text-[10px] font-extrabold tracking-[0.05em] uppercase text-[#786C5E]">
+                  <span className="text-[10px] font-extrabold tracking-[0.05em] uppercase text-[#7C766F]">
                     Estimate
                   </span>
                   {FTE_ESTIMATES.map(({ label, multiplier }) => (
@@ -297,12 +297,12 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
                   <div className="text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#2E2822]">
                     Annual {encounterLabel}
                   </div>
-                  <div className="inline-flex gap-[2px] bg-[#F1EBE3] border border-[#E4DACC] rounded-[10px] p-[3px]">
+                  <div className="inline-flex gap-[2px] bg-[#F2EFEA] border border-[#E7E2DB] rounded-[10px] p-[3px]">
                     <button
                       type="button"
                       onClick={() => setUsingTotalInput(true)}
                       className={`text-[11.5px] font-bold px-3 py-[6px] rounded-[7px] transition-colors ${
-                        usingTotalInput ? "bg-white text-[#EA2C00] shadow-sm" : "text-[#5E534A]"
+                        usingTotalInput ? "bg-white text-[#EA2C00] shadow-sm" : "text-[#565250]"
                       }`}
                     >
                       Total for the org
@@ -311,7 +311,7 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
                       type="button"
                       onClick={() => setUsingTotalInput(false)}
                       className={`text-[11.5px] font-bold px-3 py-[6px] rounded-[7px] transition-colors ${
-                        !usingTotalInput ? "bg-white text-[#EA2C00] shadow-sm" : "text-[#5E534A]"
+                        !usingTotalInput ? "bg-white text-[#EA2C00] shadow-sm" : "text-[#565250]"
                       }`}
                     >
                       Per provider
@@ -329,11 +329,11 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
                         className={`${inputBase} pr-14`}
                         data-testid="ed-input-total-encounters"
                       />
-                      <span className="absolute right-[15px] top-1/2 -translate-y-1/2 text-[#5E534A] text-[14px] font-semibold">
+                      <span className="absolute right-[15px] top-1/2 -translate-y-1/2 text-[#565250] text-[14px] font-semibold">
                         / yr
                       </span>
                     </div>
-                    <p className="text-[12.5px] text-[#5E534A] mt-[10px]">
+                    <p className="text-[12.5px] text-[#565250] mt-[10px]">
                       Most teams know their org-wide total. Prefer to build it up? Switch to{" "}
                       <b className="text-[#EA2C00] font-bold">Per provider</b>.
                     </p>
@@ -348,12 +348,12 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
                         className={`${inputBase} pr-14`}
                         data-testid="ed-input-encounters-per-provider"
                       />
-                      <span className="absolute right-[15px] top-1/2 -translate-y-1/2 text-[#5E534A] text-[14px] font-semibold">
+                      <span className="absolute right-[15px] top-1/2 -translate-y-1/2 text-[#565250] text-[14px] font-semibold">
                         / yr
                       </span>
                     </div>
                     <div className="flex items-center gap-[7px] mt-[10px] flex-wrap">
-                      <span className="text-[10px] font-extrabold tracking-[0.05em] uppercase text-[#786C5E]">
+                      <span className="text-[10px] font-extrabold tracking-[0.05em] uppercase text-[#7C766F]">
                         Quick fill
                       </span>
                       {BUSYNESS_PRESETS.map((preset) => (
@@ -366,7 +366,7 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
                         />
                       ))}
                     </div>
-                    <p className="text-[12.5px] text-[#5E534A] mt-[10px]">
+                    <p className="text-[12.5px] text-[#565250] mt-[10px]">
                       Know your org-wide total instead? Switch to{" "}
                       <b className="text-[#EA2C00] font-bold">Total for the org</b>.
                     </p>
@@ -387,14 +387,14 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
                     max={100}
                     value={state.nursingOccupancyRate}
                     onChange={(e) => handleOccupancyChange(Number(e.target.value))}
-                    className="flex-1 h-2 bg-[#EDE6DB] rounded-full appearance-none cursor-pointer accent-[#EA2C00]"
+                    className="flex-1 h-2 bg-[#EBE6DE] rounded-full appearance-none cursor-pointer accent-[#EA2C00]"
                     data-testid="ed-slider-occupancy"
                   />
-                  <div className="h-12 min-w-[64px] flex items-center justify-center rounded-xl border border-[#E8E2DA] bg-white text-[16px] font-bold text-[#EA2C00] tabular-nums px-3">
+                  <div className="h-12 min-w-[64px] flex items-center justify-center rounded-xl border border-[#E7E3DD] bg-white text-[16px] font-bold text-[#EA2C00] tabular-nums px-3">
                     {state.nursingOccupancyRate}%
                   </div>
                 </div>
-                <p className="text-[12.5px] text-[#5E534A] mt-[10px]">Most hospitals run 75-90% occupancy.</p>
+                <p className="text-[12.5px] text-[#565250] mt-[10px]">Most hospitals run 75-90% occupancy.</p>
               </div>
             )}
 
@@ -410,12 +410,12 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
                   className={`${inputBase} pr-9`}
                   data-testid="ed-input-utilization"
                 />
-                <span className="absolute right-[15px] top-1/2 -translate-y-1/2 text-[#5E534A] text-[14px] font-semibold">
+                <span className="absolute right-[15px] top-1/2 -translate-y-1/2 text-[#565250] text-[14px] font-semibold">
                   %
                 </span>
               </div>
               <div className="flex items-center gap-[7px] mt-[10px] flex-wrap">
-                <span className="text-[10px] font-extrabold tracking-[0.05em] uppercase text-[#786C5E]">
+                <span className="text-[10px] font-extrabold tracking-[0.05em] uppercase text-[#7C766F]">
                   Quick fill
                 </span>
                 {utilizationPresets.map((preset) => (
@@ -429,7 +429,7 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
                   />
                 ))}
               </div>
-              <p className="text-[12.5px] text-[#5E534A] mt-[10px]">
+              <p className="text-[12.5px] text-[#565250] mt-[10px]">
                 {isNursing
                   ? "The share of nurses actively documenting with Abridge. Most implementations reach 40-60% within 6 months."
                   : "The share of encounters documented with Abridge. The value only counts the volume it actually touches."}
@@ -438,14 +438,14 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
           </div>
 
           {/* Snapshot */}
-          <div className="bg-[#FDFBF8] border border-[#E8E2DA] rounded-[20px] px-7 py-[26px]">
+          <div className="bg-[#FDFBF8] border border-[#E7E3DD] rounded-[20px] px-7 py-[26px] h-full flex flex-col">
             <div className="text-[11px] font-extrabold tracking-[0.08em] uppercase text-[#2E2822]">
               Your {settingName}
             </div>
             <div className="font-abridge text-[34px] sm:text-[46px] leading-none text-[#1A1A1A] mt-3 tabular-nums">
               {formatNumber(isNursing ? nursingTotalShiftsPerYear : annualEncounters)}
             </div>
-            <div className="text-[13px] text-[#5E534A]">{isNursing ? "shifts a year" : `${encounterLabel} a year`}</div>
+            <div className="text-[13px] text-[#565250]">{isNursing ? "shifts a year" : `${encounterLabel} a year`}</div>
 
             <div className="mt-4 bg-[#FFF7F4] border border-[#F5D3C8] rounded-[12px] px-4 py-[13px]">
               <div className="text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#B02200]">
@@ -457,16 +457,16 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
               </div>
             </div>
 
-            <div className="h-px bg-[#E8E2DA] my-5" />
+            <div className="h-px bg-[#E7E3DD] my-5" />
 
             <div className="flex justify-between items-baseline mb-3">
-              <span className="text-[13.5px] text-[#5E534A]">{providerLabel}</span>
+              <span className="text-[13.5px] text-[#565250]">{providerLabel}</span>
               <span className="font-abridge text-[16px] text-[#1A1A1A] tabular-nums">
                 {state.numberOfProviders > 0 ? formatNumber(state.numberOfProviders) : "—"}
               </span>
             </div>
             <div className="flex justify-between items-baseline mb-3">
-              <span className="text-[13.5px] text-[#5E534A]">{isNursing ? "Shifts per nurse" : "Per provider"}</span>
+              <span className="text-[13.5px] text-[#565250]">{isNursing ? "Shifts per nurse" : "Per provider"}</span>
               <span className="font-abridge text-[16px] text-[#1A1A1A] tabular-nums">
                 {isNursing
                   ? `${formatNumber(state.nursingShiftsPerNurseYear)} / yr`
@@ -476,13 +476,13 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
               </span>
             </div>
             <div className="flex justify-between items-baseline mb-3">
-              <span className="text-[13.5px] text-[#5E534A]">On Abridge</span>
+              <span className="text-[13.5px] text-[#565250]">On Abridge</span>
               <span className="font-abridge text-[16px] text-[#1A1A1A] tabular-nums">
                 {state.utilizationPercent > 0 ? `${state.utilizationPercent}%` : "—"}
               </span>
             </div>
 
-            <p className="text-[12.5px] text-[#5E534A] leading-[1.5] mt-[6px]">
+            <p className="text-[12.5px] text-[#565250] leading-[1.5] mt-auto pt-[18px]">
               This is the volume your value is built on, not the full book. Refine any of it as we go.
             </p>
           </div>
