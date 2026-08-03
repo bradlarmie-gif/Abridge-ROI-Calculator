@@ -16,8 +16,11 @@ const ECON_MAX = 10_000_000;
 const num = (s: string) => { const n = parseFloat((s || "").replace(/[^0-9.]/g, "")); return Number.isFinite(n) ? n : 0; };
 
 const LBL = "text-[10px] font-semibold uppercase tracking-[1.8px] text-[#8C8C8C]";
+// field-sizing:content makes the underline hug the number (or its placeholder),
+// so the "%" / unit sits right next to it instead of floating past a fixed-width
+// box. min/max keep a tappable underline and cap very long values.
 const NUMFIELD =
-  "w-28 bg-transparent border-0 border-b-2 border-[#E0D9CE] rounded-none px-0 pb-1 font-abridge text-2xl text-[#1A1A1A] outline-none transition-colors focus:border-[#EA2C00] placeholder:font-sans placeholder:text-[15px] placeholder:text-[#C4BCB0]";
+  "w-auto min-w-[2.5ch] max-w-[10ch] [field-sizing:content] text-center bg-transparent border-0 border-b-2 border-[#E0D9CE] rounded-none px-0 pb-1 font-abridge text-2xl text-[#1A1A1A] outline-none transition-colors focus:border-[#EA2C00] placeholder:font-sans placeholder:text-[15px] placeholder:text-[#C4BCB0]";
 
 function SectionHead({ n, kicker, title }: { n: number; kicker: string; title: string }) {
   return (
