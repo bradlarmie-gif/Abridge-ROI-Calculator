@@ -14,7 +14,7 @@ import type {
   ExploreCareSetting,
   ExplorePDFQuadrantData,
 } from "./ExplorePDFExport";
-import { settingData as methodologySettingData } from "@/lib/methodology-pdf-export";
+import { settingData as methodologySettingData } from "@/lib/methodologySettingData";
 
 Font.registerHyphenationCallback((word) => [word]);
 
