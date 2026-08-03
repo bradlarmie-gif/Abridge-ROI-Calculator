@@ -57,12 +57,12 @@ describe("App Rationalization HTML PDF — reconciliation", () => {
     for (const it of data.items) {
       expect(html).toContain(categoryLabel(it.category));
     }
-    expect(html).toContain("Price is a move any vendor can match"); // the moat close
+    expect(html).toContain("these tools consolidate onto Abridge instead of a point tool."); // the moat close
   });
 
   it("default (no Abridge price) tells the already-have-Abridge story, no net line", () => {
     expect(data.abridgePrice).toBe(0);
-    expect(html).toContain("folds onto the Abridge you already run");
+    expect(html).toContain("consolidates onto the Abridge you already run");
     expect(html).not.toContain("Net of the");
   });
 

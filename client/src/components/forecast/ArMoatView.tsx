@@ -58,11 +58,11 @@ export default function ArMoatView({ items }: { items: AppRatItem[] }) {
       {/* Hero: black headline + claim-safe subhead (verbatim). The app header
           already shows the breadcrumb, so no in-page eyebrow (it was a duplicate). */}
       <h2 className="font-abridge text-[32px] md:text-[40px] leading-[1.05] text-[#1A1A1A]">
-        The stack folds into Abridge.
+        The stack consolidates into Abridge.
       </h2>
       <p className="text-[15px] md:text-[16.5px] text-[#8C7E6E] mt-4 max-w-[680px] leading-[1.5]">
-        Each of these tools does one step of the note, and Abridge already covers those steps, so they
-        fold in. A single-step tool has nothing for the rest to fold onto.
+        Each of these tools does one step of the note, and Abridge already covers those steps, so that
+        spend consolidates onto Abridge. A point tool that does one step can&rsquo;t absorb the rest of the chain.
       </p>
 
       {/* Chain title */}
@@ -126,7 +126,7 @@ export default function ArMoatView({ items }: { items: AppRatItem[] }) {
                     className="absolute right-[13px] text-[11px] font-extrabold tracking-[0.02em]"
                     style={{ color: CORAL }}
                   >
-                    ↓ folds in
+                    ↓ consolidates
                   </span>
                 </button>
               );
@@ -148,7 +148,7 @@ export default function ArMoatView({ items }: { items: AppRatItem[] }) {
                 className="absolute right-[13px] text-[11px] font-extrabold tracking-[0.02em]"
                 style={{ color: CORAL }}
               >
-                ↓ folds in
+                ↓ consolidates
               </span>
             </div>
           )}
@@ -176,7 +176,7 @@ export default function ArMoatView({ items }: { items: AppRatItem[] }) {
           style={{ gridRow: barRow, gridColumn: "2 / 5", background: CORAL }}
           data-testid="ar-moat-abridge-bar"
         >
-          Abridge, from the conversation to the draft note
+          Abridge covers the conversation through the draft note
         </div>
         <div
           className="relative z-[2] flex items-center rounded-r-[10px] px-[14px] text-[12px] font-extrabold"
@@ -299,9 +299,10 @@ export default function ArMoatView({ items }: { items: AppRatItem[] }) {
       <div className="mt-[52px] border-t-2 border-[#1A1A1A] pt-[22px]" data-testid="ar-moat-block">
         <div className="text-[11px] font-extrabold tracking-[0.1em] uppercase text-[#443A32]">The moat</div>
         <div className="font-abridge mt-3 max-w-[940px] text-[24px] md:text-[26px] leading-[1.2] text-[#1A1A1A]">
-          Price is a move any vendor can match in a year. Working from the conversation itself is not.{" "}
+          A competitor can match Abridge&rsquo;s price within a year. What&rsquo;s hard to match is working from
+          the raw conversation, which is where Abridge starts.{" "}
           <span className="font-normal" style={{ color: CORAL }}>
-            That is why the stack folds onto Abridge, and not onto a tool that does one step.
+            That is why these tools consolidate onto Abridge instead of a point tool.
           </span>
         </div>
       </div>

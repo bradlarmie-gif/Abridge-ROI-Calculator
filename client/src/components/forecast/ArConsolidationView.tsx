@@ -130,7 +130,7 @@ export default function ArConsolidationView({
     >
       {/* Headline + generalized, claim-safe subhead */}
       <h2 className="font-abridge text-[30px] md:text-[34px] leading-[1.05] text-[#1A1A1A]">
-        Fold it onto what you already run.
+        Consolidate it onto what you already run.
       </h2>
       <p className="text-[15px] md:text-[16px] text-[#8C7E6E] mt-3.5 max-w-[620px] leading-[1.5]">
         You already pay for Abridge, so the documentation and scribe spend that overlaps it
@@ -173,7 +173,7 @@ export default function ArConsolidationView({
         <div>
           <div className="flex justify-between items-baseline mb-3">
             <span className="text-[12px] font-extrabold tracking-[0.08em] uppercase text-[#443A32]">
-              After you fold in
+              After you consolidate
             </span>
             <span className="text-[13.5px] text-[#8C7E6E] tabular-nums">
               <b className="font-abridge text-[18px] font-normal text-[#EA2C00]">{fmtFull(model.freed)}</b>{" "}
@@ -257,7 +257,7 @@ export default function ArConsolidationView({
               <span className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[#EA2C00] bg-[#FFEDE7] rounded-full px-[11px] py-1 whitespace-nowrap">
                 Already in place
               </span>
-              Abridge is a cost you already carry, so nothing new gets added here. These tools just fold onto it.
+              Abridge is a cost you already carry, so nothing new gets added here. These tools just consolidate onto it.
             </div>
           ) : (
             <div className="flex items-center gap-2.5 text-[13.5px] text-[#8C7E6E] mt-11" data-testid="ar-net-note">
@@ -314,7 +314,7 @@ export default function ArConsolidationView({
         </div>
         <div className="py-[22px] border-r border-[#E8E2DA] px-7">
           <div className="text-[11px] font-extrabold uppercase tracking-[0.07em] text-[#443A32]">
-            Still on after fold-in
+            Still on after consolidating
           </div>
           <div className="font-abridge text-[30px] mt-2 text-[#1A1A1A] tabular-nums">
             {fmtFull(model.stays)}

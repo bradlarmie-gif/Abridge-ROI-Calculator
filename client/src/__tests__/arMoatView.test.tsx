@@ -35,29 +35,29 @@ describe("ArMoatView", () => {
     ]);
 
     // black font-abridge headline
-    expect(html).toContain("The stack folds into Abridge.");
+    expect(html).toContain("The stack consolidates into Abridge.");
     // claim-safe subhead (verbatim)
     expect(html).toContain(
-      "Each of these tools does one step of the note, and Abridge already covers those steps, so they",
+      "Each of these tools does one step of the note, and Abridge already covers those steps, so that",
     );
     // the moat line, both halves (verbatim, legal-approved)
     expect(html).toContain(
-      "Price is a move any vendor can match in a year. Working from the conversation itself is not.",
+      "A competitor can match Abridge",
     );
     expect(html).toContain(
-      "That is why the stack folds onto Abridge, and not onto a tool that does one step.",
+      "these tools consolidate onto Abridge instead of a point tool.",
     );
     // Abridge coverage bar copy
-    expect(html).toContain("Abridge, from the conversation to the draft note");
+    expect(html).toContain("Abridge covers the conversation through the draft note");
     // one of the customer's actual tool bars
     expect(html).toContain("Nuance DAX");
-    expect(html).toContain("folds in");
+    expect(html).toContain("consolidates");
   });
 
   it("falls back to a neutral bar with no capture tools (no crash)", () => {
-    // only non-capture tools → no fold-in bars, must not look broken
+    // only non-capture tools → no consolidate bars, must not look broken
     const html = render([tool("c", "cds", 60_000, "UpToDate")]);
-    expect(html).toContain("The stack folds into Abridge.");
+    expect(html).toContain("The stack consolidates into Abridge.");
     expect(html).toContain("Your capture tools");
   });
 

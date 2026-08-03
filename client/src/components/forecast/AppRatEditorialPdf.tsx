@@ -31,7 +31,7 @@ const CAPABILITY_PROOF: Record<AppRatCategoryId, { today: string; withAbridge: s
   },
   scribe: {
     today: "A scribe, in person or virtual, writes the note during or after the visit.",
-    withAbridge: "Abridge produces the draft from the visit, so the scribe workflow can fold onto it.",
+    withAbridge: "Abridge produces the draft from the visit, so the scribe workflow can consolidate onto it.",
   },
   transcription: {
     today: "A transcription service types up dictated audio after the fact.",
@@ -39,11 +39,11 @@ const CAPABILITY_PROOF: Record<AppRatCategoryId, { today: string; withAbridge: s
   },
   cds: {
     today: "Clinical decision support answers reference questions at the point of care.",
-    withAbridge: "Abridge surfaces context from the encounter; a knowledge base stays on for lookup, so only part consolidates.",
+    withAbridge: "Abridge surfaces context from the encounter, but a knowledge base is a different job, so this one stays on.",
   },
   clinicalEvidence: {
     today: "Evidence search tools retrieve literature and guidelines on demand.",
-    withAbridge: "Abridge brings encounter context forward; a dedicated search stays on, so only part consolidates.",
+    withAbridge: "Abridge brings encounter context forward, but a dedicated evidence search is a different job, so this one stays on.",
   },
   preChartRisk: {
     today: "Pre-charting risk tools prep the chart from prior EMR data before the visit.",
@@ -214,11 +214,11 @@ function PitchPage({ data }: { data: AppRatPdfData }): JSX.Element {
       <div style={{ marginTop: 128 }}>
         <div style={sEyebrow}>The consolidation case</div>
         <h2 className="font-abridge" style={{ fontSize: 44, lineHeight: 1.06, color: C.ink, margin: "10px 0 0", maxWidth: 680, letterSpacing: "-0.5px" }}>
-          {fmtShort(model.freed)} a year of your stack folds onto the Abridge you already run.
+          {fmtShort(model.freed)} a year of your stack consolidates onto the Abridge you already run.
         </h2>
         <div style={{ ...sLead, marginTop: 16, maxWidth: 610 }}>
           You added these tools over the years, each for one part of the note. Abridge already drafts the note from the
-          conversation, so much of that work overlaps what it does. As each contract renews, that tool can fold onto
+          conversation, so much of that work overlaps what it does. As each contract renews, that tool can consolidate onto
           Abridge; the rest stays.
         </div>
         {priced && (
@@ -283,13 +283,13 @@ function StackPage({ data }: { data: AppRatPdfData }): JSX.Element {
   const totalStays = rows.reduce((a, i) => a + itemStays(i), 0);
   const overallPct = totalSpend > 0 ? Math.round((totalFreed / totalSpend) * 100) : 0;
   const cols: [number, CSSProperties["textAlign"]][] = [[2.0, "left"], [1.7, "left"], [1.25, "right"], [0.8, "right"], [1.2, "right"], [1.2, "right"], [1.05, "right"]];
-  const th = ["Vendor", "Capability", "Annual spend", "Folds %", "Freed", "Stays", "Renewal"];
+  const th = ["Vendor", "Capability", "Annual spend", "Freed %", "Freed", "Stays", "Renewal"];
   return (
     <Page>
       <RunningHeader org={data.orgName} />
       <SectionEyebrow num="01" title="The stack, consolidated" />
       <h2 className="font-abridge" style={{ fontSize: 27, color: C.ink, marginTop: 7, lineHeight: 1.06 }}>
-        Everything you run around the note, and what folds onto Abridge.
+        Everything you run around the note, and what consolidates onto Abridge.
       </h2>
       <div style={{ ...sLead }}>
         Health systems add these tools one at a time, each for a step of the note. This is the whole stack you run
@@ -315,7 +315,7 @@ function StackPage({ data }: { data: AppRatPdfData }): JSX.Element {
               {r.widthPct >= 8 && (
                 <>
                   <div style={{ fontSize: 9.5, color: C.label, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{r.name}</div>
-                  <div style={{ fontSize: 9, fontWeight: 700, color: pct > 0 ? C.coral : C.off, marginTop: 1 }}>{pct > 0 ? `${pct}% folds` : "stays"}</div>
+                  <div style={{ fontSize: 9, fontWeight: 700, color: pct > 0 ? C.coral : C.off, marginTop: 1 }}>{pct > 0 ? `${pct}% freed` : "stays"}</div>
                 </>
               )}
             </div>
@@ -325,7 +325,7 @@ function StackPage({ data }: { data: AppRatPdfData }): JSX.Element {
       <div style={{ display: "flex", gap: 26, marginTop: 12 }}>
         <span style={{ display: "flex", alignItems: "center", gap: 7 }}>
           <span style={{ width: 11, height: 11, borderRadius: 3, background: C.coral }} />
-          <span style={{ fontSize: 12, color: C.label }}><b className="font-abridge" style={{ color: C.coral }}>{fmtShort(model.freed)}</b> folds onto Abridge / yr</span>
+          <span style={{ fontSize: 12, color: C.label }}><b className="font-abridge" style={{ color: C.coral }}>{fmtShort(model.freed)}</b> consolidates onto Abridge / yr</span>
         </span>
         <span style={{ display: "flex", alignItems: "center", gap: 7 }}>
           <span style={{ width: 11, height: 11, borderRadius: 3, background: TAN[1] }} />
@@ -599,7 +599,7 @@ function CoverageChain({ items }: { items: AppRatItem[] }): JSX.Element {
         </div>
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", margin: "6px 0" }}>
-        <div style={{ gridColumn: "2 / 5", textAlign: "center", fontSize: 12, fontWeight: 700, color: C.coral }}>↓ fold onto Abridge</div>
+        <div style={{ gridColumn: "2 / 5", textAlign: "center", fontSize: 12, fontWeight: 700, color: C.coral }}>↓ consolidate onto Abridge</div>
       </div>
       {/* Coverage band, aligned to the six stages: coral where Abridge works now, faded where it is expanding */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", height: 44, borderRadius: 9, overflow: "hidden" }}>
@@ -636,11 +636,11 @@ function MoatPage({ data }: { data: AppRatPdfData }): JSX.Element {
       <RunningHeader org={data.orgName} />
       <SectionEyebrow num="03" title="Why only Abridge" />
       <h2 className="font-abridge" style={{ fontSize: 27, color: C.ink, marginTop: 7, lineHeight: 1.06 }}>
-        The stack folds into Abridge.
+        The stack consolidates into Abridge.
       </h2>
       <div style={{ ...sLead }}>
-        Each of these tools does one step of the note, and Abridge already covers those steps, so they fold in. A
-        single-step tool has nothing for the rest to fold onto.
+        Each of these tools does one step of the note, and Abridge already covers those steps, so that spend
+        consolidates onto Abridge. A point tool that does one step can&rsquo;t absorb the rest of the chain.
       </div>
 
       <div style={{ ...sLbl, marginTop: 26, marginBottom: 12 }}>The documentation chain, who covers what</div>
@@ -673,9 +673,9 @@ function MoatPage({ data }: { data: AppRatPdfData }): JSX.Element {
       <div style={{ marginTop: 26, background: C.card, border: `1px solid ${C.hair}`, borderRadius: 12, padding: "18px 22px" }}>
         <div style={sLbl}>The moat</div>
         <div className="font-abridge" style={{ fontSize: 17, color: C.ink, lineHeight: 1.3, marginTop: 8 }}>
-          Price is a move any vendor can match in a year. Working from{" "}
-          <span style={{ color: C.coral }}>the conversation itself</span> is not. That is why the stack folds onto
-          Abridge, and not onto a tool that does one step.
+          A competitor can match Abridge&rsquo;s price within a year. What&rsquo;s hard to match is working from{" "}
+          <span style={{ color: C.coral }}>the raw conversation</span>, which is where Abridge starts. That is why
+          these tools consolidate onto Abridge instead of a point tool.
         </div>
       </div>
       <Footer note="A working rationale, not a committed capability set. Coverage expands over time." num="03" />
