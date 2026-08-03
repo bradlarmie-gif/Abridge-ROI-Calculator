@@ -11,7 +11,6 @@
 import { motion, useInView } from "framer-motion";
 import { useState, useRef } from "react";
 import { ArrowLeft, Download, ArrowRight, Stethoscope, Building2, Heart, Loader2 } from "lucide-react";
-import { generateMethodologyPDF } from "@/lib/methodology-pdf-export";
 import abridgeLogo from '@assets/abridge-logo-wordmark-red_1769020684647.png';
 import {
   NarrativeText,
@@ -1210,16 +1209,8 @@ function EDValueArcSection() {
 export function MethodologyED({ onBack, onHome, onNavigateToSetting, onBuildModel }: MethodologyEDProps) {
   const [isExporting, setIsExporting] = useState(false);
 
-  const handleExportPDF = async () => {
-    setIsExporting(true);
-    try {
-      await generateMethodologyPDF("ed");
-    } catch (error) {
-      console.error('PDF export failed:', error);
-      alert('PDF export failed. Please try again or check your browser settings.');
-    } finally {
-      setIsExporting(false);
-    }
+  const handleExportPDF = () => {
+    window.open(`?methodpdf=1&setting=ed&print=1`, "_blank");
   };
 
   return (
