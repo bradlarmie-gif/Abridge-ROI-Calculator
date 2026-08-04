@@ -246,11 +246,13 @@ function settingClinical(b?: { revenueValue: number; capacityValue: number; work
 }
 
 function toPeriods(rows: ProformaCashFlowRow[], settings: ProformaSettingSnapshot[]): CasePeriod[] {
-  let cum = 0;
+  let cum = 0, cumClinical = 0, cumInvestment = 0;
   return rows.map((r) => {
     const clinical = clinicalOf(r);
     const net = clinical - r.investment;
     cum += net;
+    cumClinical += clinical;
+    cumInvestment += r.investment;
     return {
       label: r.label,
       perSetting: settings.map((s) => ({ id: s.id, value: settingClinical(r.bySettings[s.id]) })),
@@ -258,7 +260,10 @@ function toPeriods(rows: ProformaCashFlowRow[], settings: ProformaSettingSnapsho
       investment: r.investment,
       net,
       cumNet: cum,
-      roi: r.investment > 0 ? clinical / r.investment : 0,
+      // ROI is CUMULATIVE — value-to-date over investment-to-date — so the row builds toward the
+      // term ROI (like Cumulative net right above it) instead of the marginal per-year ratio, which
+      // climbed each year and then read as a "drop" when the cumulative 3-year total came in lower.
+      roi: cumInvestment > 0 ? cumClinical / cumInvestment : 0,
       displaced: r.displacementValue,
     };
   });
