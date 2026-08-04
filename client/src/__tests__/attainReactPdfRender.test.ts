@@ -84,6 +84,7 @@ describe("Attain live PDF (real render)", () => {
       { "Patient Access": { scope: "40", econ: { perVisit: "200", minSaved: "2", visitMin: "30" }, stance: 25, custom: "" } },
       { providers: 40, annualEncounters: 140_000, utilizationPct: 70, adoptionPct: 70 },
     );
+    snap.pickedByCat = { "Patient Access": ["backlog", "wait"] }; // a real plan picks its outcomes; the Plan/PDF track those
     const blob = await renderBlob(snap);
     expect(blob.size).toBeGreaterThan(0);
     // Cover + The Case + 1 in-play category = 3 physical Letter pages.
@@ -100,6 +101,7 @@ describe("Attain live PDF (real render)", () => {
       },
       { providers: 40, annualEncounters: 140_000, utilizationPct: 70, adoptionPct: 70 },
     );
+    snap.pickedByCat = { "Patient Access": ["backlog", "wait"], "Provider Retention": ["betterday", "keep"] };
     const blob = await renderBlob(snap);
     expect(blob.size).toBeGreaterThan(0);
     // Cover + The Case + 2 in-play categories = 4 physical Letter pages.
@@ -113,6 +115,7 @@ describe("Attain live PDF (real render)", () => {
       { "Quality & Safety": { scope: "180", econ: { fallsRate: "3.4", hapiRate: "2.1", clabsiRate: "1.0", sepsisRate: "2.0" }, stance: 20, custom: "" } },
       { staffedBeds: 180, nursingFtes: 260, utilizationPct: 70 },
     );
+    snap.pickedByCat = { "Quality & Safety": ["falls", "hapi"] };
     const blob = await renderBlob(snap);
     expect(blob.size).toBeGreaterThan(0);
     // Cover + The Case + 1 in-play category = 3 physical Letter pages.

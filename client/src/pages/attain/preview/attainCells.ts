@@ -13,6 +13,7 @@ const edAccess: AttainCell = {
   setting: "ED",
   category: "Patient Access",
   align: {
+    noPlayBeat: true, // the ED bottleneck gate earns a slot; the moves live in the Plan (≤8 bar)
     outcomesMode: "multi",
     value: { mode: "sumOutcomeDigs", unitValueLabel: "contribution margin" },
     outcomesPrompt: "Pick every outcome you're after",
@@ -91,6 +92,10 @@ const edAccess: AttainCell = {
         { id: "lwbsrate", name: "LWBS rate", measure: "Share of arrivals who leave before being seen.", source: "Reporting Workbench", unit: "%", today: "3.5", target: "1.5" },
         { id: "doortime", name: "Door-to-provider time", measure: "Minutes from arrival to first clinician contact.", source: "Epic Cadence", unit: "min", today: "42", target: "22" },
       ] },
+      { outcome: "Speed up door-to-provider", metrics: [
+        { id: "dtp", name: "Door-to-provider time", measure: "Minutes from arrival to first clinician contact.", source: "Epic Cadence", unit: "min", today: "42", target: "22" },
+        { id: "intake", name: "Intake-to-bed time", measure: "Minutes from arrival to a treatment space.", source: "Epic Cadence", unit: "min", today: "—", target: "—" },
+      ] },
       { outcome: "Capture more admissions", metrics: [
         { id: "captadmits", name: "Captured admissions", measure: "Admissions kept in your system rather than lost to diversion or walkout.", source: "Billing / claims", unit: "/ yr", today: "—", target: "120" },
       ] },
@@ -161,22 +166,8 @@ function retentionCell(cfg: RetentionConfig): AttainCell {
           { id: "paylife", title: "Mostly pay or life", desc: "Honestly, a lighter day won't be the deciding factor here." },
         ] },
       ],
-      trend: {
-        kicker: "Today, and the trend",
-        prompt: "Where's your turnover and burnout today, and which way is it trending?",
-        helper: "Set roughly where you are now, then tell us the direction. A slipping trend is the urgent case; a steady one is a reason to stay humble about what a lighter day will move. This is context: it sets the plan's baseline and how hard to lean, not a dollar.",
-        numbers: [
-          { key: "turnover", label: "Voluntary turnover today", suffix: "%", placeholder: cfg.turnoverPlaceholder },
-          { key: "burnout", label: "Burnout on your last pulse", suffix: "%", placeholder: cfg.burnoutPlaceholder },
-        ],
-        trendId: "trend",
-        trendPrompt: "Which way has it been trending?",
-        options: [
-          { id: "improving", title: "Improving", desc: "It's been getting better." },
-          { id: "flat", title: "Flat", desc: "It's held about steady." },
-          { id: "slipping", title: "Slipping", desc: "It's been drifting the wrong way. This is the urgent case." },
-        ],
-      },
+      // The turnover/burnout baseline + trend that used to live here is now tracked in the Plan
+      // (retention is proof, not counted), keeping this walk to the lock-step questions.
       proof: {
         prompt: "What would tell you it's working?",
         helper: "This is the proof you're building. Pick what you'd point to in a review. The experience signals move first, well before the turnover number does.",
@@ -304,6 +295,7 @@ const nursingCapacity: AttainCell = {
   setting: "Nursing",
   category: "Nursing Capacity",
   align: {
+    noPlayBeat: true, // the "where does overtime show up" gate earns a slot; the moves live in the Plan (≤8 bar)
     outcomesMode: "multi",
     value: { mode: "scopeBased", perScope: 2_250, scopeNoun: "nurses", mathTail: "in documentation-tied overtime." },
     outcomesPrompt: "Pick every outcome you're after",
@@ -383,6 +375,15 @@ const nursingCapacity: AttainCell = {
         { id: "othours", name: "Overtime hours per nurse", measure: "Documentation-related overtime per nurse each week.", source: "HRIS", unit: "hrs/wk", today: "1.0", target: "0.4" },
         { id: "otcost", name: "Overtime cost", measure: "The documentation-tied overtime dollars in the budget.", source: "Finance", unit: "$/yr", today: "—", target: "—" },
       ] },
+      { outcome: "Time back at the bedside", metrics: [
+        { id: "bedside", name: "Time at the bedside per shift", measure: "Direct-care time returned as charting comes off the shift.", source: "Epic Signal", unit: "min", today: "—", target: "—" },
+      ] },
+      { outcome: "Hold the ratio without adding heads", metrics: [
+        { id: "ratio", name: "Worked hours per patient-day", measure: "Staffing intensity held as census moves, without new headcount.", source: "HRIS", unit: "HPPD", today: "—", target: "—" },
+      ] },
+      { outcome: "Lean off agency and travel", metrics: [
+        { id: "agencyspend", name: "Agency and travel spend", measure: "Premium-rate coverage as the team absorbs the load.", source: "Finance", unit: "$/yr", today: "—", target: "—" },
+      ] },
     ],
     signalsShortList: "charting time per shift and charting after shift",
     outcomesShortList: "on-time finishes and overtime",
@@ -458,6 +459,17 @@ const nursingQuality: AttainCell = {
         { id: "hapirate", name: "HAPI rate per 1,000 patient-days", measure: "Hospital-acquired pressure injuries against volume.", source: "Reporting Workbench", unit: "per 1,000", today: "2.1", target: "1.3" },
         { id: "bundle", name: "Bundle compliance", measure: "Prevention steps completed and documented on schedule.", source: "Reporting Workbench", unit: "%", today: "74", target: "92" },
       ] },
+      { outcome: "Central-line infections (CLABSI)", metrics: [
+        { id: "clabsirate", name: "CLABSI rate per 1,000 line-days", measure: "Central-line infections against line-days.", source: "Reporting Workbench", unit: "per 1,000", today: "1.0", target: "0.5" },
+        { id: "linedoc", name: "Daily line-necessity review documented", measure: "Share of line-days with the necessity review on the chart.", source: "Reporting Workbench", unit: "%", today: "—", target: "—" },
+      ] },
+      { outcome: "Sepsis caught late", metrics: [
+        { id: "sepsisbundle", name: "Sepsis bundle on time", measure: "Share of sepsis cases with the bundle completed in the window.", source: "Reporting Workbench", unit: "%", today: "—", target: "—" },
+        { id: "ewslag", name: "Early-warning-score documentation lag", measure: "Time from deterioration to it landing on the chart.", source: "Epic Signal", unit: "min", today: "—", target: "—" },
+      ] },
+      { outcome: "Time at the bedside (HCAHPS)", metrics: [
+        { id: "hcahps", name: "HCAHPS nurse-communication domain", measure: "Patient-experience score for nurse communication.", source: "Reporting Workbench", unit: "%ile", today: "—", target: "—" },
+      ] },
     ],
     signalsShortList: "charting time per shift and risk documented earlier",
     outcomesShortList: "fall and HAPI rates",
@@ -529,16 +541,7 @@ const outpatientRevenue: AttainCell = {
             { id: "behavioral", title: "Behavioral health", desc: "Time-based coding the note often understates." },
             { id: "other", title: "Other specialties", desc: "We'll size it across the board and narrow later." },
           ] },
-          { kind: "number", id: "ffsUndercoded", kicker: "The volume", prompt: "How many visits a year code below the work done?",
-            helper: "Your own estimate is fine. This frames the conversation; the dollar sizes on your total visit volume at a conservative coding lift, not on this count.", label: "Undercoded visits a year", unit: "visits / yr", placeholder: "e.g., 6,000" },
           { kind: "stance", leverId: "ffs", kicker: "What you keep", prompt: "How much of the lift do you capture and keep through billing and audit?" },
-          { kind: "outcome", id: "ffsGoal", kicker: "The goal", prompt: "What does getting paid fairly let you do?",
-            helper: "The reason underneath the dollar. Pick each that fits.", options: [
-            { id: "fund", title: "Fund the documentation program itself", desc: "The capture can cover the cost of the platform." },
-            { id: "defend", title: "Defend a service line's margin", desc: "Keep a line whole that's under margin pressure." },
-            { id: "earned", title: "Stop leaving earned revenue on the table", desc: "Bill accurately for care you already delivered." },
-            { id: "integrity", title: "Meet a coding-integrity bar you're committed to", desc: "A compliance standard you have to hold." },
-          ] },
         ] },
         // ---- Risk / VBC: 8 beats (stance folded into the economics beat) ----
         { id: "risk", showIf: ["ma", "medicaid", "aca"], label: "Risk contracts", beats: [
@@ -547,29 +550,18 @@ const outpatientRevenue: AttainCell = {
             { id: "recapture", title: "Recapture conditions that reset every year", desc: "Chronic conditions coded last year that fall off and have to be re-established (existing)." },
             { id: "new", title: "Capture conditions documented but never coded", desc: "Conditions treated and in the note that never made it onto the claim (new)." },
           ] },
-          { kind: "choice", id: "riskScope", mode: "single", kicker: "The scope", prompt: "The whole risk population, or one contract or panel?",
-            helper: "This tells us how wide to size, and which team owns it.", options: [
-            { id: "all", title: "All your risk lives", desc: "Every member under a risk arrangement." },
-            { id: "one", title: "A specific contract or panel", desc: "One payer, product, or panel you're focused on." },
-          ] },
           { kind: "choice", id: "riskPay", mode: "single", kicker: "The contract", prompt: "How does the contract pay?",
             helper: "This changes what accuracy is worth and how you'd prove it.", options: [
             { id: "shared", title: "Shared savings", desc: "You share in the savings against a benchmark." },
             { id: "cap", title: "Capitated", desc: "A fixed payment per member; accuracy sets the rate." },
             { id: "full", title: "Full risk", desc: "You hold the risk; the score is the revenue." },
           ] },
-          { kind: "number", id: "riskPatients", kicker: "The lives", prompt: "How many risk lives are in play?",
-            helper: "The members under the arrangement you're sizing. This is what the recapture value scales on.", label: "Risk-contract lives", unit: "lives", placeholder: "e.g., 18,000" },
-          { kind: "number", id: "riskRateToday", kicker: "Today's rate", prompt: "Where's your recapture rate today?",
-            helper: "Roughly the share of open conditions you close in a year. It sets the starting line.", label: "Current recapture rate", unit: "%", placeholder: "e.g., 55" },
-          { kind: "choice", id: "riskTrend", mode: "single", kicker: "The trend", prompt: "Which way has it been trending?",
-            helper: "Where it's been heading tells us how much of the gap is still open.", options: [
-            { id: "improving", title: "Improving", desc: "It's been climbing." },
-            { id: "flat", title: "Flat", desc: "It's held steady." },
-            { id: "slipping", title: "Slipping", desc: "It's been drifting down." },
+          { kind: "choice", id: "riskCause", mode: "single", kicker: "The cause", prompt: "Where's the gap, at the visit or downstream?",
+            helper: "The honest part. We only work the conditions that go uncaptured because they weren't surfaced and carried at the visit. If the gap is downstream in coding or submission, that's not ours to claim, and we'll track it, not count it.", options: [
+            { id: "visit", title: "Conditions aren't surfaced at the visit", desc: "The chronic problem is treated but never makes the note, so it can't be coded." },
+            { id: "submission", title: "Documented, but not reaching the claim", desc: "It's in the note, but it drops somewhere between the visit and the coded claim." },
+            { id: "downstream", title: "Mostly downstream", desc: "Coder capacity or audit caution, not the documentation." },
           ] },
-          { kind: "economics", leverId: "risk", kicker: "What you keep", prompt: "How much of the recapture survives audit?",
-            helper: "Risk coding carries more audit exposure than fee-for-service, so stay tighter on what actually survives. The conditions open per patient we seed conservatively; the value per recaptured condition sits on your Starting Point.", withStance: true },
           { kind: "outcome", id: "riskGoal", kicker: "The goal", prompt: "What does closing the gap protect or unlock?",
             helper: "The reason underneath the dollar. Pick each that fits.", options: [
             { id: "target", title: "Hit the shared-savings target", desc: "Clear the benchmark you're measured against." },
@@ -659,8 +651,6 @@ const edRevenue: AttainCell = {
             { id: "lower", title: "Some of it is genuinely lower acuity", desc: "Part is documentation; part was honestly a simpler visit." },
             { id: "downstream", title: "A downstream coding gap", desc: "The note is there; the miss is after it, in coding or the queue." },
           ] },
-          { kind: "number", id: "edUnderLeveled", kicker: "The volume", prompt: "How many ED visits a year code below the acuity treated?",
-            helper: "Your own estimate is fine. This frames the conversation; the dollar sizes on your total ED visit volume at a conservative E&M lift, not on this count.", label: "Under-leveled ED visits a year", unit: "visits / yr", placeholder: "e.g., 4,000" },
           { kind: "stance", leverId: "edcoding", kicker: "What you keep", prompt: "How much of the lift survives billing and audit?" },
           { kind: "outcome", id: "edcodingGoal", kicker: "The goal", prompt: "What does getting paid for the acuity let you do?",
             helper: "The reason underneath the dollar. Pick each that fits.", options: [
@@ -677,8 +667,6 @@ const edRevenue: AttainCell = {
             { id: "eligibility", title: "Eligibility or registration", desc: "Front-end data the note can't fix." },
             { id: "downstream", title: "A downstream process", desc: "The denial originates after the note, in coding or billing." },
           ] },
-          { kind: "number", id: "edPreventableDenials", kicker: "The volume", prompt: "How many preventable denials a year?",
-            helper: "Your own estimate is fine. This frames the conversation; the dollar sizes on your ED claim volume at a conservative denial rate, not on this count.", label: "Preventable denials a year", unit: "denials / yr", placeholder: "e.g., 350" },
           { kind: "stance", leverId: "eddenials", kicker: "What you keep", prompt: "How much of the lift survives billing and audit?" },
           { kind: "outcome", id: "eddenialsGoal", kicker: "The goal", prompt: "What does cutting the denials open up?",
             helper: "The reason underneath the dollar. Pick each that fits.", options: [
@@ -764,8 +752,6 @@ const inpatientRevenue: AttainCell = {
             { id: "appropriate", title: "Genuinely appropriate as grouped", desc: "Part is documentation; part honestly grouped correctly." },
             { id: "downstream", title: "A downstream coding gap", desc: "The note is there; the miss is after it, in coding or the query loop." },
           ] },
-          { kind: "number", id: "drgUnderWeighted", kicker: "The volume", prompt: "Admissions a year grouping below the weight earned?",
-            helper: "Your own estimate is fine. This frames the conversation; the dollar sizes on your total discharges at a conservative CMI lift, not on this count.", label: "Under-weighted admissions a year", unit: "admissions / yr", placeholder: "e.g., 200" },
           { kind: "stance", leverId: "drg", kicker: "What you keep", prompt: "How much of the lift survives audit?" },
           { kind: "outcome", id: "drgGoal", kicker: "The goal", prompt: "What does capturing the weight protect?",
             helper: "The reason underneath the dollar. Pick each that fits.", options: [
@@ -782,8 +768,6 @@ const inpatientRevenue: AttainCell = {
             { id: "timing", title: "Timing", desc: "The note lands late, so the query happens after the fact." },
             { id: "engagement", title: "Provider engagement", desc: "Responses are slow or incomplete, so the loop repeats." },
           ] },
-          { kind: "number", id: "cdiQueriesAvoided", kicker: "The volume", prompt: "CDI queries a year a complete note would avoid?",
-            helper: "Your own estimate is fine. This frames the conversation; the seeded query figure that drives the dollar sits in what we seed, just below.", label: "Avoidable CDI queries a year", unit: "queries / yr", placeholder: "e.g., 1,500" },
           { kind: "economics", leverId: "cdi", kicker: "What you keep", prompt: "How much of the query savings do you realize?",
             helper: "Query savings are operational, not revenue exposed to audit, so set the share you'd actually realize. The volume a complete note would avoid we seed conservatively; the cost per query cycle sits on your Starting Point.", withStance: true },
           { kind: "outcome", id: "cdiGoal", kicker: "The goal", prompt: "What does a lighter query pile free up?",
@@ -801,8 +785,6 @@ const inpatientRevenue: AttainCell = {
             { id: "concurrent", title: "Concurrent-review gaps", desc: "The status question wasn't caught while the patient was still in house." },
             { id: "payer", title: "Payer pushback", desc: "The payer downgraded despite a defensible stay." },
           ] },
-          { kind: "number", id: "obsDowngrades", kicker: "The volume", prompt: "Defensible status downgrades a year?",
-            helper: "Your own estimate is fine. This frames the conversation; the dollar sizes on your admissions at the downgrade rate you set below, not on this count.", label: "Defensible downgrades a year", unit: "stays / yr", placeholder: "e.g., 250" },
           { kind: "stance", leverId: "obs", kicker: "What you keep", prompt: "How much of the lift survives audit?" },
           { kind: "outcome", id: "obsGoal", kicker: "The goal", prompt: "What does defending status protect?",
             helper: "The reason underneath the dollar. Pick each that fits.", options: [

@@ -9,7 +9,7 @@ import { econModel, assumptionDefaults } from "./attainEconomics";
 import { AttainNumberInput } from "./AttainNumberInput";
 import type { AttainCell } from "./attainContent";
 import type { AttainBaseline } from "@/lib/attain/attainLevers";
-import AlignView, { emptyAlignAnswers, type AlignAnswers } from "./AlignView";
+import AlignView, { emptyAlignAnswers, LEAKS, type AlignAnswers } from "./AlignView";
 import PlanView from "./PlanView";
 
 /**
@@ -245,7 +245,15 @@ export function AttainExperience({ setting, cells, baseline, initial, onPersist 
     return chosen.map((id) => seg.nameMap[id] ?? id).join(" + ");
   };
   const committedFor = (c: (typeof CELLS)[number]) =>
-    c.align.outcomes.filter((o) => pickedByCat[c.category].has(o.id) && o.plays).map((o) => ({ title: o.title, chosen: Array.from(playsByCat[c.category][o.id] ?? []) }));
+    c.align.noPlayBeat ? [] : c.align.outcomes.filter((o) => pickedByCat[c.category].has(o.id) && o.plays).map((o) => ({ title: o.title, chosen: Array.from(playsByCat[c.category][o.id] ?? []) }));
+  // DYNAMIC PLAN: the Plan tracks exactly what they selected in Align. The outcomes they picked
+  // drive which outcomes + metrics the Plan shows; the leaks they named become the Plan's watch-list.
+  const pickedOutcomesFor = (c: (typeof CELLS)[number]) =>
+    c.align.outcomes.filter((o) => pickedByCat[c.category]?.has(o.id)).map((o) => o.title);
+  const watchoutsFor = (c: (typeof CELLS)[number]) => {
+    const leaks = alignAnswersByCat[c.category]?.choices?.["leak"] ?? new Set<string>();
+    return LEAKS.filter((l) => leaks.has(l.id)).map((l) => ({ title: l.title, desc: l.desc }));
+  };
 
   const chapterTab = (ch: typeof chapter) =>
     `text-[13px] rounded-[9px] px-4 py-1.5 capitalize transition-colors ${chapter === ch ? "bg-white shadow-sm font-semibold text-[#1A1A1A]" : "text-[#8C8C8C]"}`;
@@ -296,7 +304,8 @@ export function AttainExperience({ setting, cells, baseline, initial, onPersist 
               people={peopleByCat[cell.category]} onPeople={setPeopleFor(cell.category)}
               customs={customsByCat[cell.category]} onCustoms={setCustomsFor(cell.category)}
               cadence={cadenceByCat[cell.category]} onCadence={setCadenceFor(cell.category)}
-              liveValue={valueByCat(cell)} segmentsSummary={segSummaryFor(cell)} />
+              liveValue={valueByCat(cell)} segmentsSummary={segSummaryFor(cell)}
+              pickedOutcomes={pickedOutcomesFor(cell)} watchouts={watchoutsFor(cell)} />
             <Completion />
           </>
         )}

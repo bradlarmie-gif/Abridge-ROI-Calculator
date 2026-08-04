@@ -19,7 +19,7 @@ const num = (s: string) => { const n = parseFloat((s || "").replace(/[^0-9.]/g, 
 // Value leaks after the plan is signed, in the handoffs the partner owns. Naming the
 // most likely leaks lets the Plan put an owner and a date against each one. Pure
 // strategy: these feed the plan's discussion, never the dollar.
-const LEAKS: { id: string; title: string; desc: string }[] = [
+export const LEAKS: { id: string; title: string; desc: string }[] = [
   { id: "adoption", title: "Adoption stalls below plan", desc: "Fewer clinicians record with Abridge than the plan assumes, so the signal never builds." },
   { id: "habit", title: "The new habit doesn't stick", desc: "Documentation improves at first, then drifts back once attention moves on." },
   { id: "cadence", title: "The review cadence slips", desc: "The check-ins that keep this on track quietly stop happening." },
@@ -478,8 +478,9 @@ export default function AlignView({ c, settingLabel, categoryLabel, categoryKey,
 
       {/* framing choices now render above: frame-stage before outcomes, the rest (plus the trend beat) before scope */}
 
-      {/* Q — the play (dynamic to the chosen outcomes), in the page's editorial row style */}
-      {c.outcomes.some((o) => picked.has(o.id) && o.plays) && (
+      {/* Q — the play (dynamic to the chosen outcomes), in the page's editorial row style.
+          Suppressed when the cell opts out (noPlayBeat) to hold the walk inside the ≤8 bar. */}
+      {!c.noPlayBeat && c.outcomes.some((o) => picked.has(o.id) && o.plays) && (
         <>
           <SectionHead n={++qn} kicker="The play" title="How will you actually do it?" />
           <p className="text-[14px] text-[#6B6B6B] leading-relaxed mb-6 max-w-[600px]">For each outcome you picked, choose the moves that turn the freed time into the result. Add your own if we're missing one.</p>
@@ -516,9 +517,9 @@ export default function AlignView({ c, settingLabel, categoryLabel, categoryKey,
       </>)}
       {/* ===== end fixed middle ===== */}
 
-      {/* Q — the leak (value attainment): what's most likely to keep this from landing. Pure
-          strategy, shown for every category, feeding the plan's discussion, never the dollar. It
-          replaces the economics beat's old spot as the thing this walk drives toward. */}
+      {/* Q — the leak (value attainment): what's most likely to keep this from landing. A real
+          lock-step question (we both name the risks up front), shown for every category, feeding
+          the plan's discussion and ownership, never the dollar. */}
       <SectionHead n={++qn} kicker="What could get in the way" title="What's most likely to keep this from landing?" />
       <p className="text-[14px] text-[#6B6B6B] leading-relaxed mb-4 max-w-[600px]">Most value leaks after the plan is signed, in the handoffs nobody owns. Name the risks most likely to blunt this one, so the plan can put an owner and a date against them.</p>
       <div className="border-t border-[#E8E2DA] mb-14">
@@ -552,6 +553,12 @@ export default function AlignView({ c, settingLabel, categoryLabel, categoryKey,
               <>
                 <p className="font-abridge text-4xl md:text-5xl text-[#EA2C00] leading-none">{fmt$(showValue)}<span className="text-base font-normal text-white/50"> / yr</span></p>
                 <p className="text-[13px] text-white/70 mt-3 leading-relaxed">{showMath}</p>
+              </>
+            ) : activeLevers && activeLevers.length > 0 && activeLevers.every((l) => (l.driverKeys?.length ?? 0) === 0) ? (
+              // every live lever is tracked-only (e.g. risk/HCC): no dollar to assemble; the proof is the metric moving.
+              <>
+                <p className="font-abridge text-2xl md:text-[26px] text-[#EA2C00] leading-tight">Tracked, not counted</p>
+                <p className="text-[14px] text-white/70 mt-3 leading-relaxed max-w-[560px]">This one runs downstream of the note, through the coder, the claim, and the audit, so we don't put a manufactured dollar on it. We prove it by the metric moving, tracked in your plan.</p>
               </>
             ) : (
               <p className="text-[14px] text-white/55 leading-relaxed">{econ ? "Set the scope and a stance above. The number assembles here from those and the economics on your Starting Point." : "This category's economics are coming next; the number will assemble here from your inputs."}</p>

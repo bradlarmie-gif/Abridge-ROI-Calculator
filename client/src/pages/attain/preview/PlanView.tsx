@@ -81,7 +81,13 @@ const CADENCES = [
   ["quarterly", "Quarterly", "The standard business-review rhythm."],
 ] as const;
 
-export default function PlanView({ c, settingLabel, categoryLabel, committed = [], metrics: metricsProp, onPatchMetric, liveValue, segmentsSummary, people: peopleProp, onPeople, customs: customsProp, onCustoms, cadence: cadenceProp, onCadence, activeLevers, baseline }: { c: PlanContent; settingLabel: string; categoryLabel: string; committed?: { title: string; chosen: string[] }[]; metrics?: Record<string, MState>; onPatchMetric?: (id: string, k: keyof MState, v: string) => void; liveValue?: number; segmentsSummary?: string; people?: Person[]; onPeople?: (p: Person[]) => void; customs?: Custom[]; onCustoms?: (c: Custom[]) => void; cadence?: string; onCadence?: (c: string) => void; activeLevers?: string[]; baseline?: AttainBaseline }) {
+export default function PlanView({ c, settingLabel, categoryLabel, committed = [], metrics: metricsProp, onPatchMetric, liveValue, segmentsSummary, people: peopleProp, onPeople, customs: customsProp, onCustoms, cadence: cadenceProp, onCadence, activeLevers, baseline, pickedOutcomes, watchouts }: { c: PlanContent; settingLabel: string; categoryLabel: string; committed?: { title: string; chosen: string[] }[]; metrics?: Record<string, MState>; onPatchMetric?: (id: string, k: keyof MState, v: string) => void; liveValue?: number; segmentsSummary?: string; people?: Person[]; onPeople?: (p: Person[]) => void; customs?: Custom[]; onCustoms?: (c: Custom[]) => void; cadence?: string; onCadence?: (c: string) => void; activeLevers?: string[]; baseline?: AttainBaseline; pickedOutcomes?: string[]; watchouts?: { title: string; desc: string }[] }) {
+  // DYNAMIC PLAN: track exactly what was selected in Align. `pickedOutcomes` (titles they chose)
+  // drives which outcomes + metrics render; `watchouts` (the leaks they named) become the plan's
+  // watch-list. Both fall back gracefully (throwaway previews / discovery walks pass nothing).
+  const outcomeList = pickedOutcomes && pickedOutcomes.length ? pickedOutcomes : c.outcomes;
+  const showOutcome = (title: string) => !pickedOutcomes || pickedOutcomes.length === 0 || pickedOutcomes.includes(title);
+  const shownGroups = c.outcomeGroups.filter((g) => (!g.lever || (activeLevers ?? []).includes(g.lever)) && showOutcome(g.outcome));
   // setting-appropriate source options: don't offer "Provider survey" on nursing, or "Nurse survey" elsewhere
   const sourceOptions = SOURCES.filter((s) => (settingLabel === "Nursing" ? s !== "Provider survey" : s !== "Nurse survey"));
   const valueInPlay = liveValue ?? c.valueInPlay; // the LIVE engine number (falls back to static only for throwaway previews)
@@ -166,7 +172,7 @@ export default function PlanView({ c, settingLabel, categoryLabel, committed = [
           {segSummary && <span className="text-[13px] text-[#8C8C8C] ml-1">across {segSummary}</span>}
         </div>
         <div className="space-y-2.5">
-          {c.outcomes.map((o) => (
+          {outcomeList.map((o) => (
             <div key={o} className="flex items-center gap-2.5">
               <span className="w-1.5 h-1.5 rounded-full bg-[#EA2C00] flex-shrink-0" />
               <span className="text-[15px] text-[#1A1A1A]">{o}</span>
@@ -274,6 +280,7 @@ export default function PlanView({ c, settingLabel, categoryLabel, committed = [
         ))}
       </div>
 
+      {shownGroups.length > 0 && (<>
       <div className="flex items-center gap-2 mb-4">
         <span className="text-[#C4BCB0]">&darr;</span>
         <p className="text-[13px] text-[#6B6B6B] italic">{c.connector}</p>
@@ -281,7 +288,7 @@ export default function PlanView({ c, settingLabel, categoryLabel, committed = [
 
       <p className="text-[11px] font-bold uppercase tracking-[2px] text-[#1A1A1A] mb-4">The outcomes they open up</p>
       <div className="space-y-8 mb-14">
-        {c.outcomeGroups.filter((g) => !g.lever || (activeLevers ?? []).includes(g.lever)).map((g) => (
+        {shownGroups.map((g) => (
           <div key={g.outcome}>
             <p className="text-[14px] font-semibold text-[#1A1A1A] mb-3">{g.outcome}</p>
             <div className="space-y-5">
@@ -290,6 +297,27 @@ export default function PlanView({ c, settingLabel, categoryLabel, committed = [
           </div>
         ))}
       </div>
+      </>)}
+
+      {/* What we're watching for — the leaks named in Align, carried into the plan as the risks
+          the named owners watch each review. Dynamic: only the ones they actually picked. */}
+      {watchouts && watchouts.length > 0 && (
+        <>
+          <p className="text-[11px] font-bold uppercase tracking-[2px] text-[#1A1A1A] mb-1">What we're watching for</p>
+          <p className="text-[13px] text-[#8C8C8C] leading-relaxed mb-4 max-w-[560px]">The risks you named in Align. {named.length ? <><span className="font-medium text-[#3A3A3A]">{named.join(", ")}</span> watch these</> : "Your named owners watch these"} each review, so a stall gets caught early instead of at the end.</p>
+          <div className="space-y-3 mb-14">
+            {watchouts.map((w) => (
+              <div key={w.title} className="flex items-start gap-3 rounded-2xl border border-[#E8E2DA] p-4">
+                <span className="mt-[7px] w-1.5 h-1.5 rounded-full bg-[#EA2C00] flex-shrink-0" />
+                <div>
+                  <p className="text-[14px] font-semibold text-[#1A1A1A]">{w.title}</p>
+                  <p className="text-[13px] text-[#8C8C8C] leading-snug mt-0.5 max-w-[560px]">{w.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
 
       {/* custom metrics */}
       <p className="text-[11px] font-bold uppercase tracking-[2px] text-[#1A1A1A] mb-1">Anything else you want to track</p>

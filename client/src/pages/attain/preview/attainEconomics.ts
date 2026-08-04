@@ -78,30 +78,26 @@ export const ECON_MODELS: Record<string, EconModel> = {
     helper: "The payers you picked above set what gets priced. Fee-for-service pays on the visit level, so the money is the coding lift a more complete note supports. Risk contracts pay on the conditions you capture, so the money is the recapture a fuller note makes possible. Fill in the levers in play; how much of the lift you actually capture and keep is yours to set below. The size of each lift we seed conservatively.",
     fields: [
       { key: "cf", lever: "ffs", label: "Conversion factor", prefix: "$", placeholder: "33.40", hint: "Dollars per wRVU." },
-      { key: "hccValue", lever: "risk", label: "Value per recaptured condition", prefix: "$", placeholder: "1,500", hint: "The annual risk revenue one recaptured condition carries." },
     ],
     assumptions: [
       { key: "wrvu", lever: "ffs", label: "Average wRVU per visit", default: "1.5" },
       { key: "uplift", lever: "ffs", label: "Coding lift from better notes", default: "5", suffix: "%" },
-      { key: "hccPerPatient", lever: "risk", label: "Conditions recaptured per risk patient", default: "0.6" },
-      { key: "riskPatients", lever: "risk", label: "Risk-contract patients in scope", default: "6,000" },
     ],
+    // Risk / VBC recapture is TRACKED, not counted (driverKeys empty): the note only surfaces the
+    // condition — a coder, the claim, and RADV all sit between it and the dollar — so we refuse to
+    // manufacture a figure from our own seeds. Its proof is the recapture rate moving, in the Plan.
+    // Fee-for-service keeps a quiet dollar because the note directly carries the E/M level.
     levers: [
       { id: "ffs", label: "Fee-for-service coding", payerOptionIds: ["ffs"], driverKeys: ["wrvu"] },
-      { id: "risk", label: "Risk and value-based recapture", payerOptionIds: ["ma", "medicaid", "aca"], driverKeys: ["hccCapture"] },
+      { id: "risk", label: "Risk and value-based recapture", payerOptionIds: ["ma", "medicaid", "aca"], driverKeys: [] },
     ],
     stancePrompt: "How much of the documentation-driven lift do you capture and keep?",
     stanceBands: [65, 75, 85],
     stanceCap: 95,
     capNote: "We cap this at 95 percent. A captured, defensible level is real money, but not every lift survives billing and audit.",
-    math: (i, active = ["ffs", "risk"]) => {
-      const parts: string[] = [];
-      if (active.includes("ffs"))
-        parts.push(`Fee-for-service: your visits × ${i.econ.wrvu ?? 1.5} wRVU × ~${i.econ.uplift ?? 5}% documentation lift × ${fmt$(i.econ.cf ?? 33.4)}/wRVU × ${i.stancePct}% captured and kept`);
-      if (active.includes("risk"))
-        parts.push(`Risk recapture: ${nn(i.econ.riskPatients ?? 6000)} risk-contract patients × ${i.econ.hccPerPatient ?? 0.6} conditions recaptured each × $${nn(i.econ.hccValue ?? 1500)}/condition × ${i.stancePct}% that survives audit`);
-      if (!parts.length) return "";
-      return parts.join(". ") + (parts.length > 1 ? ". The two sum to the number above." : ".");
+    math: (i, active = ["ffs"]) => {
+      if (!active.includes("ffs")) return "";
+      return `Fee-for-service: your visits × ${i.econ.wrvu ?? 1.5} wRVU × ~${i.econ.uplift ?? 5}% documentation lift × ${fmt$(i.econ.cf ?? 33.4)}/wRVU × ${i.stancePct}% captured and kept.`;
     },
   },
 

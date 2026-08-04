@@ -175,7 +175,7 @@ const sum = (r: Record<string, number>, keys: string[]) => keys.reduce((s, k) =>
 const MAP: Record<string, string[]> = {
   "Outpatient|Patient Access": ["patientAccess"],
   "Outpatient|Provider Retention": ["providerWellbeing", "physicianLocumAgency"],
-  "Outpatient|Revenue Capture": ["wrvu", "hccCapture"], // fallback only; the live path passes activeDriverKeys per payer mix
+  "Outpatient|Revenue Capture": ["wrvu"], // FFS coding lift only; risk/HCC is tracked, not counted (no dollar driver)
   "ED|Patient Access": ["lwbsRecovery", "admissionCapture"],
   "ED|Provider Retention": ["providerWellbeing", "physicianLocumAgency"],
   "ED|Revenue Capture": ["edEmLevel", "denialPrevention"], // fallback only; live path passes activeDriverKeys per picked goals

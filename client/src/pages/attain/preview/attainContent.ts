@@ -105,6 +105,9 @@ export type AlignContent = {
   discovery?: Discovery; // when present, replaces the fixed middle with a population-gated walk
   choices?: ChoiceQuestion[]; // framing questions; in the fixed run they render before the trend + scope
   trend?: TrendBeat; // fixed-run only: a "where you are today + which way it's trending" beat (retention)
+  // Suppress the standalone "The play" beat in Align — the moves become the Plan's to run, keeping
+  // walks that would otherwise hit 9 questions inside the ≤8 bar. The plays still live on outcomes.
+  noPlayBeat?: boolean;
   proof: { prompt: string; helper: string; signals: ProofSignal[] };
   unlock: { prompt: string; helper: string; options: UnlockOption[] };
   value: ValueModel;
@@ -229,6 +232,14 @@ export const outpatientAccess: AttainCell = {
       { outcome: "Shorten the wait for a new appointment", metrics: [
         { id: "tna", name: "Third-next-available", measure: "Days to the third open new-patient slot, the standard access measure.", source: "Epic Cadence", unit: "days", today: "14", target: "7" },
         { id: "wait", name: "New-patient wait", measure: "Average days from referral to first appointment.", source: "Epic Cadence", unit: "days", today: "31", target: "18" },
+      ] },
+      { outcome: "Recover no-shows", metrics: [
+        { id: "noshowrate", name: "No-show rate", measure: "Share of scheduled visits where the patient doesn't arrive.", source: "Reporting Workbench", unit: "%", today: "12", target: "7" },
+        { id: "recovered", name: "Recovered visits", measure: "No-show slots refilled from the waitlist.", source: "Reporting Workbench", unit: "visits / yr", today: "—", target: "—" },
+      ] },
+      { outcome: "Grow the panel", metrics: [
+        { id: "panel", name: "Active panel size", measure: "Patients attributed to the panel.", source: "Reporting Workbench", unit: "patients", today: "—", target: "—" },
+        { id: "netnew", name: "Net-new visits", measure: "New-patient visits added from freed capacity.", source: "Reporting Workbench", unit: "visits / yr", today: "—", target: "—" },
       ] },
     ],
     signalsShortList: "time in note, work outside of work, and same-day note closure",

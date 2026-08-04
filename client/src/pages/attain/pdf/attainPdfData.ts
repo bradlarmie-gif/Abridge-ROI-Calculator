@@ -135,6 +135,24 @@ function metricRow(m: { name: string; unit: string; source: string; today: strin
   return { name: m.name, unit: m.unit, source: entered?.source || m.source, today: entered?.today || "—", target: entered?.target || "—" };
 }
 
+// The PDF, like PlanView, tracks only the outcomes picked in Align, filtered to the live levers.
+// Empty picked -> all groups (matches the screen's fallback for a not-yet-narrowed plan).
+function shownOutcomeGroups(cell: (typeof ATTAIN_MATRIX)[number], snap: AttainSnapshot) {
+  const category = cell.category;
+  const picked = new Set<string>(snap.pickedByCat?.[category] ?? []);
+  const pickedTitles = new Set(cell.align.outcomes.filter((o) => picked.has(o.id)).map((o) => o.title));
+  const model = econModel(cell.setting, category);
+  let activeLeverIds: string[] | null = null;
+  if (model?.levers) {
+    const frameId = cell.align.choices?.find((q) => q.stage === "frame")?.id;
+    const frame = new Set<string>(frameId ? (snap.answersByCat?.[category]?.choices?.[frameId] ?? []) : []);
+    activeLeverIds = model.levers.filter((l) => (l.payerOptionIds?.some((id) => frame.has(id)) ?? false) || (l.outcomeIds?.some((id) => picked.has(id)) ?? false)).map((l) => l.id);
+  }
+  return cell.plan.outcomeGroups.filter((g) =>
+    (!g.lever || (activeLeverIds ?? []).includes(g.lever)) && (pickedTitles.size === 0 || pickedTitles.has(g.outcome)),
+  );
+}
+
 export function buildFromSnapshot(snap: AttainSnapshot | null | undefined): { data: PdfData; categories: PlanCat[] } | null {
   if (!snap) return null;
   const settingLabel = snap.setting ? SETTING_LABEL[snap.setting] : null;
@@ -183,7 +201,7 @@ export function buildFromSnapshot(snap: AttainSnapshot | null | undefined): { da
       return (cur - a) / (b - a);
     };
     const cell = allCells.find((c) => c.category === category);
-    const out = (cell?.plan.outcomeGroups ?? []).flatMap((g) => g.metrics);
+    const out = (cell ? shownOutcomeGroups(cell, snap) : []).flatMap((g) => g.metrics);
     const outAvg = pavg(out.map((m) => progOf(m.id)));
     return outAvg !== null ? Math.max(0, Math.min(1, outAvg)) : 0;
   };
@@ -248,7 +266,7 @@ export function buildFromSnapshot(snap: AttainSnapshot | null | undefined): { da
       owner: { name: owner.name || "—", role: owner.role || "" },
       cadence: snap.cadenceByCat?.[c.category] === "monthly" ? "Monthly" : "Quarterly",
       signals: (c.plan.abridgeSignals ?? []).map((s) => metricRow(s, metrics[s.id])),
-      outcomes: [...(c.plan.outcomeGroups ?? []).flatMap((g) => g.metrics).map((s) => metricRow(s, metrics[s.id])), ...customRows],
+      outcomes: [...shownOutcomeGroups(c, snap).flatMap((g) => g.metrics).map((s) => metricRow(s, metrics[s.id])), ...customRows],
       chain: CHAIN[c.category] ?? ["A lighter documentation load", "The outcome it opens"],
       // A proof-only category carries no dollar, so it shows no replacement-cost
       // assumptions (they'd imply a number) — just the tracked-proof honesty line.
