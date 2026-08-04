@@ -134,6 +134,7 @@ export default function AppRationalizationFlow({ onBack, onHome }: AppRationaliz
             {exportButton}
             <ConsolidationTiming
               items={items}
+              abridgePrice={abridgePrice}
               horizonYears={horizonYears}
               onHorizonChange={setHorizonYears}
               onUpdateItem={updateItem}

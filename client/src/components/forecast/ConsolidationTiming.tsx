@@ -1,5 +1,7 @@
 // The "When it lands" view: your plan vs riding every contract to its renewal.
-// You already run Abridge, so every tool you retire is pure additional savings.
+// When Abridge is already carried (no price entered) every retired tool is pure
+// additional savings; when a price IS entered the framing nets it out, matching
+// the Consolidation view and the PDF (so the timing screen can't over-claim).
 // A step chart plots the annual savings run-rate on a real calendar: a faint
 // dashed "ride to renewal" baseline (each tool comes off at its contract end)
 // and a solid coral "your plan" (each tool at its chosen exit). The gap between
@@ -9,7 +11,7 @@
 import { useMemo, type ReactNode } from "react";
 import { AnimatedValue } from "@/components/explore/AnimatedValue";
 import {
-  buildCumulativeSavings, timingSummary, itemDisplayName, type AppRatItem, type CumulativeTool,
+  buildCumulativeSavings, timingSummary, itemDisplayName, computeNet, type AppRatItem, type CumulativeTool,
 } from "@/lib/appRationalizationCalc";
 
 // SVG viewBox and plot rect (matches the locked mockup's geometry).
@@ -29,9 +31,10 @@ function fmtC(v: number): string {
 const fmtFull = (v: number): string => `$${Math.round(v).toLocaleString("en-US")}`;
 
 export default function ConsolidationTiming({
-  items, horizonYears, onHorizonChange, onUpdateItem,
+  items, abridgePrice, horizonYears, onHorizonChange, onUpdateItem,
 }: {
   items: AppRatItem[];
+  abridgePrice: number;
   // Kept for the caller's contract; the locked design derives its calendar span
   // from the contracts themselves, so the horizon selector isn't shown here.
   horizonYears: number;
@@ -42,6 +45,12 @@ export default function ConsolidationTiming({
 
   const cs = useMemo(() => buildCumulativeSavings(items, 60), [items]);
   const summary = useMemo(() => timingSummary(items), [items]);
+  // Match the framing the Consolidation view and the PDF use: with an Abridge
+  // price entered, the calendar shows freed spend NET of that price, not "pure
+  // additional savings" (that claim only holds when Abridge is already carried).
+  const net = useMemo(() => computeNet(items, abridgePrice), [items, abridgePrice]);
+  const priced = net.abridgePrice > 0;
+  const fmtM = (n: number) => (Math.abs(n) >= 1_000_000 ? `$${(n / 1_000_000).toFixed(2)}M` : `$${Math.round(n / 1_000).toLocaleString()}K`);
   // A stable "now" so labels don't drift between renders within a session.
   const now = useMemo(() => new Date(), []);
 
@@ -208,13 +217,17 @@ export default function ConsolidationTiming({
       <div className="mb-6">
         <h2 className="font-abridge text-[28px] leading-[1.05] text-[#1A1A1A]">How soon it lands is your call.</h2>
         <p className="text-[15px] text-[#8C7E6E] mt-3 max-w-[680px] leading-[1.5]">
-          You already run Abridge, so every tool you retire is pure additional savings. Each contract frees its spend on its real renewal date; negotiate out early and it lands sooner.
+          {priced ? (
+            <>Net of the <b className="text-[#2E2822]">{fmtM(net.abridgePrice)}</b> / yr Abridge price, retiring these tools brings <b className="text-[#2E2822]">{fmtM(Math.max(0, net.netSavings))}</b> / yr back. Each contract frees its spend on its real renewal date; negotiate out early and it lands sooner.</>
+          ) : (
+            <>You already run Abridge, so every tool you retire is pure additional savings. Each contract frees its spend on its real renewal date; negotiate out early and it lands sooner.</>
+          )}
         </p>
       </div>
 
       {/* chart title + legend */}
       <div className="flex items-baseline justify-between mb-2">
-        <span className="text-[12px] font-extrabold tracking-[0.08em] uppercase text-[#443A32]">Additional savings, on the calendar</span>
+        <span className="text-[12px] font-extrabold tracking-[0.08em] uppercase text-[#443A32]">{priced ? "Freed spend, on the calendar" : "Additional savings, on the calendar"}</span>
         <span className="flex items-center gap-4 text-[12px] text-[#8C7E6E]">
           <span className="inline-flex items-center gap-1.5"><span className="inline-block w-[18px] border-t-2 border-dashed border-[#C3B7A8]" /> ride to renewal</span>
           <span className="inline-flex items-center gap-1.5"><span className="inline-block w-[18px] border-t-[3px] border-[#EA2C00]" /> your plan</span>
