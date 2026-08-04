@@ -279,6 +279,10 @@ export interface AttainBaseline {
   nursingFtes?: number;
   dailyCensus?: number;
   adoptionPct?: number;
+  /** Monthly recording users TODAY — of the licensed providers, how many
+   * actually record with Abridge each month. The baseline the Plan's adoption
+   * target is set against. Headcount, not a percent. */
+  mruRecording?: number;
 }
 
 /** Sensible benchmark defaults, one per care setting, matching the same

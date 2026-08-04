@@ -6,6 +6,7 @@ import { AttainNumberInput } from "./AttainNumberInput";
 /** THROWAWAY. The Plan chapter, rendered from PlanContent (setting x category). */
 
 import { fmt$ } from "@/lib/attain/attainFormat";
+import type { AttainBaseline } from "@/lib/attain/attainLevers";
 const LBL = "text-[10px] font-bold uppercase tracking-[2px] text-[#8C8C8C]";
 const NUMFIELD =
   "w-24 bg-transparent border-0 border-b-2 border-[#E0D9CE] rounded-none px-0 pb-1 font-abridge text-xl text-[#1A1A1A] outline-none transition-colors focus:border-[#EA2C00] placeholder:font-sans placeholder:text-[15px] placeholder:text-[#C4BCB0]";
@@ -80,7 +81,7 @@ const CADENCES = [
   ["quarterly", "Quarterly", "The standard business-review rhythm."],
 ] as const;
 
-export default function PlanView({ c, settingLabel, categoryLabel, committed = [], metrics: metricsProp, onPatchMetric, liveValue, segmentsSummary, people: peopleProp, onPeople, customs: customsProp, onCustoms, cadence: cadenceProp, onCadence, activeLevers }: { c: PlanContent; settingLabel: string; categoryLabel: string; committed?: { title: string; chosen: string[] }[]; metrics?: Record<string, MState>; onPatchMetric?: (id: string, k: keyof MState, v: string) => void; liveValue?: number; segmentsSummary?: string; people?: Person[]; onPeople?: (p: Person[]) => void; customs?: Custom[]; onCustoms?: (c: Custom[]) => void; cadence?: string; onCadence?: (c: string) => void; activeLevers?: string[] }) {
+export default function PlanView({ c, settingLabel, categoryLabel, committed = [], metrics: metricsProp, onPatchMetric, liveValue, segmentsSummary, people: peopleProp, onPeople, customs: customsProp, onCustoms, cadence: cadenceProp, onCadence, activeLevers, baseline }: { c: PlanContent; settingLabel: string; categoryLabel: string; committed?: { title: string; chosen: string[] }[]; metrics?: Record<string, MState>; onPatchMetric?: (id: string, k: keyof MState, v: string) => void; liveValue?: number; segmentsSummary?: string; people?: Person[]; onPeople?: (p: Person[]) => void; customs?: Custom[]; onCustoms?: (c: Custom[]) => void; cadence?: string; onCadence?: (c: string) => void; activeLevers?: string[]; baseline?: AttainBaseline }) {
   // setting-appropriate source options: don't offer "Provider survey" on nursing, or "Nurse survey" elsewhere
   const sourceOptions = SOURCES.filter((s) => (settingLabel === "Nursing" ? s !== "Provider survey" : s !== "Nurse survey"));
   const valueInPlay = liveValue ?? c.valueInPlay; // the LIVE engine number (falls back to static only for throwaway previews)
@@ -117,6 +118,13 @@ export default function PlanView({ c, settingLabel, categoryLabel, committed = [
   const removeCustom = (id: string) => setCustoms((x) => x.filter((c) => c.id !== id));
 
   const [localCadence, setLocalCadence] = useState<string>("quarterly");
+  // The foundation: MRU (provider-level uptake, the behavior they drive) and
+  // Utilization (encounter-level reach, what the dollar rides on). TODAY echoes
+  // from the Starting Point baseline; only the TARGETS are set here. Local
+  // prototype state for the targets.
+  const [fdn, setFdn] = useState<{ mruTarget: string; utilTarget: string }>({ mruTarget: "", utilTarget: "" });
+  const mruToday = baseline?.mruRecording;
+  const utilToday = baseline?.utilizationPct;
   const cadence = cadenceProp ?? localCadence;
   const setCadence = (v: string) => (onCadence ? onCadence(v) : setLocalCadence(v));
   const cadenceWord = cadence === "monthly" ? "monthly" : "quarterly";
@@ -194,6 +202,67 @@ export default function PlanView({ c, settingLabel, categoryLabel, committed = [
       {/* Step 3 — the metrics */}
       <SectionHead n={3} kicker="The metrics" title="What we measure, and where it comes from" />
       <p className="text-[14px] text-[#6B6B6B] leading-relaxed mb-6 max-w-[600px]">It comes in two parts. First, the documentation signals we pull straight from Epic. Then the outcomes they open up. The definition and source are what our team would pull; today and the target are yours to confirm.</p>
+
+      {/* THE FOUNDATION: the two adoption numbers, above "What Abridge can
+          enable." MRU is the provider-level behavior the partner drives;
+          Utilization is the encounter-level reach the dollar rides on. TODAY is
+          carried in from the Starting Point (read-only); only the TARGET is set
+          here. Every signal and outcome below only moves if these do. */}
+      <div className="flex items-center gap-3 mb-4">
+        <p className="text-[11px] font-bold uppercase tracking-[2px] text-[#EA2C00]">The foundation</p>
+        <span className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#8C8C8C] border border-[#E0D9CE] rounded-full px-2 py-0.5">Every goal depends on it</span>
+      </div>
+      <div className="rounded-2xl border border-[#F1C9BC] bg-[#FFF8F5] p-5 mb-10 divide-y divide-[#F1DDD5]">
+        {/* MRU — provider-level uptake */}
+        <div className="pb-5">
+          <h3 className="font-abridge text-[19px] text-[#1A1A1A] mb-1">Monthly recording users</h3>
+          <p className="text-[13px] text-[#6B6B6B] leading-relaxed mb-4 max-w-[560px]"><span className="font-medium text-[#3A3A3A]">We measure:</span> of the {settingLabel === "Nursing" ? "nurses in scope" : "providers you licensed"}, how many record with Abridge each month. The behavior you drive first.</p>
+          <div className="grid grid-cols-[minmax(0,1fr)_20px_minmax(0,1fr)] sm:grid-cols-[176px_20px_176px_minmax(0,1fr)] items-end gap-x-4 gap-y-3">
+            <div>
+              <p className={`${LBL} mb-1.5`}>Today</p>
+              <div className="flex items-baseline gap-1.5">
+                <span className="font-abridge text-3xl text-[#1A1A1A]">{mruToday ? mruToday.toLocaleString() : "—"}</span>
+                <span className="text-[13px] text-[#8C8C8C] whitespace-nowrap">recording</span>
+              </div>
+            </div>
+            <span className="pb-2 text-[#C4BCB0] text-lg">&rarr;</span>
+            <div>
+              <p className={`${LBL} mb-1.5`}>Target</p>
+              <div className="flex items-baseline gap-1.5">
+                <AttainNumberInput value={fdn.mruTarget} onChange={(raw) => setFdn((a) => ({ ...a, mruTarget: raw }))} placeholder="—" className={NUMFIELD} />
+                <span className="text-[13px] text-[#8C8C8C] whitespace-nowrap">recording</span>
+              </div>
+            </div>
+            <p className="text-[12px] text-[#8C8C8C] leading-relaxed sm:pb-1 min-w-0 col-span-3 sm:col-span-1">Carried from the Starting Point. Set where you're driving it.</p>
+          </div>
+        </div>
+        {/* Utilization — encounter-level reach. Non-nursing only; nursing has no
+            encounter-level utilization, so its foundation is MRU alone. */}
+        {settingLabel !== "Nursing" && (
+        <div className="pt-5">
+          <h3 className="font-abridge text-[19px] text-[#1A1A1A] mb-1">Utilization</h3>
+          <p className="text-[13px] text-[#6B6B6B] leading-relaxed mb-4 max-w-[560px]"><span className="font-medium text-[#3A3A3A]">We measure:</span> the share of your encounters Abridge is actually on. The reach the dollar rides on; it follows MRU.</p>
+          <div className="grid grid-cols-[minmax(0,1fr)_20px_minmax(0,1fr)] sm:grid-cols-[176px_20px_176px_minmax(0,1fr)] items-end gap-x-4 gap-y-3">
+            <div>
+              <p className={`${LBL} mb-1.5`}>Today</p>
+              <div className="flex items-baseline gap-1.5">
+                <span className="font-abridge text-3xl text-[#1A1A1A]">{utilToday ? utilToday.toLocaleString() : "—"}</span>
+                <span className="text-[13px] text-[#8C8C8C]">%</span>
+              </div>
+            </div>
+            <span className="pb-2 text-[#C4BCB0] text-lg">&rarr;</span>
+            <div>
+              <p className={`${LBL} mb-1.5`}>Target</p>
+              <div className="flex items-baseline gap-1.5">
+                <AttainNumberInput value={fdn.utilTarget} onChange={(raw) => setFdn((a) => ({ ...a, utilTarget: raw }))} placeholder="—" className={NUMFIELD} />
+                <span className="text-[13px] text-[#8C8C8C]">%</span>
+              </div>
+            </div>
+            <p className="text-[12px] text-[#8C8C8C] leading-relaxed sm:pb-1 min-w-0 col-span-3 sm:col-span-1">Drive MRU and reach follows. The dollar is measured against this.</p>
+          </div>
+        </div>
+        )}
+      </div>
 
       <div className="flex items-center gap-3 mb-4">
         <p className="text-[11px] font-bold uppercase tracking-[2px] text-[#EA2C00]">{c.signalsGroupLabel}</p>

@@ -1,9 +1,55 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { HelpCircle } from "lucide-react";
 import { NumberField } from "@/components/NumberField";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { categoryForGoal } from "@/lib/attain/attainGoals";
 import type { AttainBaseline } from "@/lib/attain/attainLevers";
-import type { AttainSetting } from "@/lib/attain/attainTypes";
+import type { AttainSetting, GoalId } from "@/lib/attain/attainTypes";
+
+/**
+ * The static "what a unit is worth" numbers, revealed on the Starting Point
+ * only for the goals the partner actually picked (a margin for Access, a wRVU
+ * value for Revenue, a replacement cost for Retention). Pulling these here
+ * keeps every dollar OUT of the strategy questions downstream. They hold the
+ * line, they don't move over time, which is why they live with the baseline
+ * and not on the Plan (that's where the tracked metrics live).
+ */
+interface EconField { key: string; label: string; placeholder: string; prefix?: string; suffix?: string; decimal?: boolean; help: string }
+// Maps each picked goal's category to the static dollar(s) it rides on. Follows
+// the four-domains doctrine: the tracked/proof domains carry NO dollar here
+// (Inpatient Capacity, and the Quality proof layer on OP/ED/IP), so they emit
+// no field. Nursing carries its own economics (overtime, harm cost, RN replace).
+function econFieldsForGoals(setting: AttainSetting, goals: GoalId[]): EconField[] {
+  const cats = new Set(goals.map((g) => categoryForGoal(setting, g)).filter(Boolean) as string[]);
+  const out: EconField[] = [];
+  // Capacity dollar — outpatient/ED only (Inpatient Capacity is tracked, no dollar).
+  if (cats.has("Patient Access")) {
+    out.push({ key: "marginPerVisit", label: setting === "ed" ? "Margin per ED visit" : "Margin per visit", placeholder: "e.g., 220", prefix: "$", help: "The contribution margin a filled visit brings in." });
+    // ED throughput has a downstream rail: a share of recovered LWBS patients
+    // are admitted, so the inpatient admission margin counts too.
+    if (setting === "ed") out.push({ key: "marginPerAdmission", label: "Margin per admission", placeholder: "e.g., 4,000", prefix: "$", help: "Contribution margin when a recovered ED patient is admitted to inpatient." });
+  }
+  // Nursing capacity dollar — overtime recovered as documentation lands in-shift.
+  if (cats.has("Nursing Capacity"))
+    out.push({ key: "overtimeRate", label: "Overtime rate", placeholder: "e.g., 65", prefix: "$", suffix: "/hr", help: "Loaded nursing overtime cost per hour." });
+  // Revenue dollar — OP: coding lift (wRVU) + risk capture (HCC); ED: E/M wRVU; IP: DRG base.
+  if (cats.has("Revenue Capture")) {
+    if (setting === "inpatient") {
+      out.push({ key: "drgBase", label: "DRG base rate", placeholder: "e.g., 12,000", prefix: "$", help: "Blended base payment per discharge." });
+    } else {
+      out.push({ key: "valuePerWrvu", label: "Value per wRVU", placeholder: "e.g., 33.40", prefix: "$", decimal: true, help: "Your blended dollar per wRVU." });
+      if (setting === "outpatient") out.push({ key: "valuePerHcc", label: "Value per HCC", placeholder: "e.g., 1,200", prefix: "$", help: "Annual risk-adjusted revenue per HCC recaptured." });
+    }
+  }
+  // Retention dollar — replacement cost, setting-aware noun.
+  if (cats.has("Provider Retention"))
+    out.push({ key: "replacementCost", label: setting === "nursing" ? "Cost to replace a nurse" : setting === "inpatient" ? "Cost to replace a hospitalist" : "Cost to replace a provider", placeholder: setting === "nursing" ? "e.g., 60,000" : "e.g., 250,000", prefix: "$", help: "Fully loaded recruit and ramp cost of one departure." });
+  // Nursing quality dollar — harm avoidance (HAPIs, falls, CAUTI, sepsis).
+  if (cats.has("Quality & Safety"))
+    out.push({ key: "costPerEvent", label: "Cost per preventable event", placeholder: "e.g., 12,000", prefix: "$", help: "Blended cost of one preventable harm event." });
+  return out;
+}
 
 const PROVIDER_LABEL: Record<AttainSetting, string> = {
   outpatient: "Providers",
@@ -63,6 +109,7 @@ export function inpatientDischargesWarning(setting: AttainSetting, baseline: Att
 
 interface StepScopeProps {
   setting: AttainSetting;
+  goals?: GoalId[];
   baseline: AttainBaseline;
   onChangeBaseline: (patch: Partial<AttainBaseline>) => void;
 }
@@ -80,41 +127,13 @@ interface StepScopeProps {
  * collects only the handful of real numbers every lever's math is built
  * from, per the shared `AttainBaseline` engine input.
  */
-export default function StepScope({ setting, baseline, onChangeBaseline }: StepScopeProps) {
+export default function StepScope({ setting, goals = [], baseline, onChangeBaseline }: StepScopeProps) {
   const isNursing = setting === "nursing";
-
-  // The live "stage" derived from what they have typed so far, read straight
-  // back to them so the step feels like it is building their foundation, not
-  // collecting a form. Non-nursing: the reachable encounters (encounters x
-  // utilization) every next-page dollar stands on. Nursing: today's occupancy
-  // and adoption. Everything degrades cleanly to a prompt while still blank.
-  const providers = baseline.providers ?? 0;
-  const encounters = baseline.annualEncounters ?? 0;
-  const util = baseline.utilizationPct ?? 0;
-  const reachable = encounters > 0 && util > 0 ? Math.round((encounters * util) / 100) : 0;
-
-  const beds = baseline.staffedBeds ?? 0;
-  const census = baseline.dailyCensus ?? 0;
-  const ftes = baseline.nursingFtes ?? 0;
-  const adoption = baseline.adoptionPct ?? 0;
-  const occupancy = beds > 0 && census > 0 ? Math.round((census / beds) * 100) : 0;
-
-  const providerWord = (PROVIDER_LABEL[setting] || "providers").toLowerCase();
-  const stage = isNursing
-    ? {
-        ready: occupancy > 0,
-        value: `${occupancy}%`,
-        label: "occupancy today",
-        sub: `${ftes.toLocaleString()} nurse${ftes === 1 ? "" : "s"} in scope${adoption > 0 ? `, ${adoption}% on Abridge today` : ""}`,
-        prompt: "Enter your program above to see today's occupancy.",
-      }
-    : {
-        ready: reachable > 0,
-        value: reachable.toLocaleString(),
-        label: "encounters within reach",
-        sub: `across ${providers.toLocaleString()} ${providerWord}`,
-        prompt: "Enter your numbers above to see what's within reach.",
-      };
+  // The static per-unit values behind the goals they picked, revealed for every
+  // setting. Local prototype state for now (not yet wired to the engine);
+  // defaults live in the "e.g." placeholder until they type over one.
+  const econFields = econFieldsForGoals(setting, goals);
+  const [econ, setEcon] = useState<Record<string, number>>({});
 
   return (
     <div>
@@ -142,123 +161,147 @@ export default function StepScope({ setting, baseline, onChangeBaseline }: StepS
         </p>
 
         {isNursing ? (
-          <div className="flex flex-wrap gap-x-12 gap-y-8">
-            <NumberBaselineField
-              label="Staffed beds"
-              testid="staffed-beds"
-              value={baseline.staffedBeds ?? 0}
-              onChange={(v) => onChangeBaseline({ staffedBeds: v })}
-              placeholder="e.g., 120"
-              max={10_000}
-              help="Beds with active nursing staff, units in scope."
-              width="w-32"
-            />
-            <NumberBaselineField
-              label="Nursing FTEs"
-              testid="nursing-ftes"
-              value={baseline.nursingFtes ?? 0}
-              onChange={(v) => onChangeBaseline({ nursingFtes: v })}
-              placeholder="e.g., 180"
-              max={100_000}
-              help="Nurses whose documentation this plan covers."
-              width="w-32"
-            />
-            <NumberBaselineField
-              label="Daily census"
-              testid="daily-census"
-              value={baseline.dailyCensus ?? 0}
-              onChange={(v) => onChangeBaseline({ dailyCensus: v })}
-              placeholder="e.g., 102"
-              max={10_000}
-              help="Patients in those beds on a typical day."
-              width="w-32"
-            />
-            <NumberBaselineField
-              label="Adoption rate"
-              testid="adoption-pct"
-              value={baseline.adoptionPct ?? 0}
-              onChange={(v) => onChangeBaseline({ adoptionPct: v })}
-              placeholder="e.g., 50"
-              suffix="%"
-              max={100}
-              help="Nurses documenting with Abridge today."
-              width="w-24"
-            />
-          </div>
+          <>
+            {/* Row 1 — the raw scale of the nursing program. */}
+            <div className="grid grid-cols-2 gap-x-10 gap-y-9 max-w-[460px]">
+              <NumberBaselineField
+                label="Staffed beds"
+                testid="staffed-beds"
+                value={baseline.staffedBeds ?? 0}
+                onChange={(v) => onChangeBaseline({ staffedBeds: v })}
+                placeholder="e.g., 120"
+                max={10_000}
+                help="Beds with active nursing staff, units in scope."
+              />
+              <NumberBaselineField
+                label="Nursing FTEs"
+                testid="nursing-ftes"
+                value={baseline.nursingFtes ?? 0}
+                onChange={(v) => onChangeBaseline({ nursingFtes: v })}
+                placeholder="e.g., 180"
+                max={100_000}
+                help="Nurses whose documentation this plan covers."
+              />
+              <NumberBaselineField
+                label="Daily census"
+                testid="daily-census"
+                value={baseline.dailyCensus ?? 0}
+                onChange={(v) => onChangeBaseline({ dailyCensus: v })}
+                placeholder="e.g., 102"
+                max={10_000}
+                help="Patients in those beds on a typical day."
+              />
+            </div>
+
+            {/* Row 2 — usage today: nurses recording, the number that gets a target on the Plan. */}
+            <p className="text-[10px] font-semibold text-[#8C8C8C] uppercase tracking-[1.8px] mt-10 mb-6">Usage today</p>
+            <div className="grid grid-cols-2 gap-x-10 gap-y-9 max-w-[460px]">
+              <NumberBaselineField
+                label="Monthly recording users"
+                testid="mru-recording"
+                value={baseline.mruRecording ?? 0}
+                onChange={(v) => onChangeBaseline({ mruRecording: v })}
+                placeholder="e.g., 140"
+                max={100_000}
+                help="Of your nurses, how many record with Abridge each month."
+              />
+            </div>
+          </>
         ) : (
-          <div className="flex flex-wrap gap-x-14 gap-y-8">
-            <NumberBaselineField
-              label={PROVIDER_LABEL[setting]}
-              testid="providers"
-              value={baseline.providers ?? 0}
-              onChange={(v) => onChangeBaseline({ providers: v })}
-              placeholder="e.g., 40"
-              max={50_000}
-              help={PROVIDER_HELP[setting]}
-              width="w-28"
-            />
-            <NumberBaselineField
-              label={ENCOUNTER_LABEL[setting]}
-              testid="annual-encounters"
-              value={baseline.annualEncounters ?? 0}
-              onChange={(v) => onChangeBaseline({ annualEncounters: v })}
-              placeholder="e.g., 140,000"
-              max={50_000_000}
-              help={ENCOUNTER_HELP[setting]}
-              warn={inpatientDischargesWarning(setting, baseline)}
-              width="w-48"
-            />
-            <NumberBaselineField
-              label="Utilization"
-              testid="utilization-pct"
-              value={baseline.utilizationPct ?? 0}
-              onChange={(v) => onChangeBaseline({ utilizationPct: v })}
-              placeholder="e.g., 70"
-              suffix="%"
-              max={100}
-              help="Share you can realistically reach."
-              tip={UTILIZATION_BENCHMARK_TIP}
-              width="w-28"
-            />
-          </div>
+          <>
+            {/* Row 1 — the raw scale: how many providers, how many visits.
+                A 2-column grid so both fields (and their underlines) align. */}
+            <div className="grid grid-cols-2 gap-x-10 gap-y-9 max-w-[460px]">
+              <NumberBaselineField
+                label={PROVIDER_LABEL[setting]}
+                testid="providers"
+                value={baseline.providers ?? 0}
+                onChange={(v) => onChangeBaseline({ providers: v })}
+                placeholder="e.g., 40"
+                max={50_000}
+                help={PROVIDER_HELP[setting]}
+              />
+              <NumberBaselineField
+                label={ENCOUNTER_LABEL[setting]}
+                testid="annual-encounters"
+                value={baseline.annualEncounters ?? 0}
+                onChange={(v) => onChangeBaseline({ annualEncounters: v })}
+                placeholder="e.g., 140,000"
+                max={50_000_000}
+                help={ENCOUNTER_HELP[setting]}
+                warn={inpatientDischargesWarning(setting, baseline)}
+              />
+            </div>
+
+            {/* Row 2 — usage today: the two numbers that get a target on the Plan.
+                Utilization is encounter-level reach; MRU is provider-level uptake.
+                Same 2-column grid so it lines up under row 1. */}
+            <p className="text-[10px] font-semibold text-[#8C8C8C] uppercase tracking-[1.8px] mt-10 mb-6">Usage today</p>
+            <div className="grid grid-cols-2 gap-x-10 gap-y-9 max-w-[460px]">
+              <NumberBaselineField
+                label="Utilization"
+                testid="utilization-pct"
+                value={baseline.utilizationPct ?? 0}
+                onChange={(v) => onChangeBaseline({ utilizationPct: v })}
+                placeholder="e.g., 70"
+                suffix="%"
+                max={100}
+                help="Share of your encounters Abridge is on today."
+                tip={UTILIZATION_BENCHMARK_TIP}
+              />
+              <NumberBaselineField
+                label="Monthly recording users"
+                testid="mru-recording"
+                value={baseline.mruRecording ?? 0}
+                onChange={(v) => onChangeBaseline({ mruRecording: v })}
+                placeholder="e.g., 80"
+                max={50_000}
+                help={`Of your ${setting === "ed" ? "ED providers" : (PROVIDER_LABEL[setting] || "providers").toLowerCase()}, how many record with Abridge each month.`}
+              />
+            </div>
+          </>
         )}
       </motion.div>
 
-      {/* The live "within reach" panel — anticipatory when blank, alive when they type.
-          Sits beside the inputs so the step reads as a foundation being built, not a
-          sparse form. The coral figure echoes the Attainment output downstream. */}
+      {/* The goal-driven "what a unit is worth" card, every setting. The static
+          per-unit numbers reveal here for the goals they picked, in the same
+          editorial "e.g." field style, so no dollar ever lands in the strategy
+          questions downstream. */}
       <motion.aside
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         className="rounded-2xl border border-[#E8E2DA] bg-[#FAF7F2] p-6 md:p-7 w-full"
-        data-testid="panel-attain-scope-stage"
-        aria-live="polite"
+        data-testid="panel-attain-scope-econ"
       >
-        <p className="text-[10px] font-semibold text-[#8C8C8C] uppercase tracking-[1.8px] mb-5">Within reach</p>
-        {stage.ready ? (
-          <div>
-            <motion.p
-              key={stage.value}
-              initial={{ opacity: 0, y: 4 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="font-abridge text-[52px] leading-none text-[#EA2C00] mb-3"
-              data-testid="text-attain-scope-stage-value"
-            >
-              {stage.value}
-            </motion.p>
-            <p className="text-[15px] text-[#1A1A1A] font-semibold leading-snug">{stage.label}</p>
-            <p className="text-[13px] text-[#8C8C8C] leading-relaxed mt-1">{stage.sub}</p>
-            <p className="text-[12.5px] text-[#8C8C8C] leading-relaxed mt-5 pt-5 border-t border-[#E8E2DA]">
-              Everything we calculate next is built from this, not a benchmark.
+        <p className="text-[10px] font-semibold text-[#8C8C8C] uppercase tracking-[1.8px] mb-5">What a unit is worth</p>
+        {econFields.length > 0 ? (
+          <>
+            <div className="flex flex-col gap-7">
+              {econFields.map((f, i) => (
+                <motion.div key={f.key} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.06 * i }}>
+                  <NumberBaselineField
+                    label={f.label}
+                    testid={`econ-${f.key}`}
+                    value={econ[f.key] ?? 0}
+                    onChange={(v) => setEcon((p) => ({ ...p, [f.key]: v }))}
+                    placeholder={f.placeholder}
+                    prefix={f.prefix}
+                    suffix={f.suffix}
+                    decimal={f.decimal}
+                    help={f.help}
+                    width="w-full"
+                  />
+                </motion.div>
+              ))}
+            </div>
+            <p className="text-[12.5px] text-[#8C8C8C] leading-relaxed mt-6 pt-5 border-t border-[#E8E2DA]">
+              These hold the line, they don't move. Defaults sit here; change any if you know yours. The plan is measured against them.
             </p>
-          </div>
+          </>
         ) : (
-          <div data-testid="text-attain-scope-stage-prompt">
+          <div>
             <p className="font-abridge text-[52px] leading-none text-[#D8CFC0] mb-3">&mdash;</p>
-            <p className="text-[13.5px] text-[#8C8C8C] leading-relaxed">{stage.prompt}</p>
-            <p className="text-[12.5px] text-[#B4A896] leading-relaxed mt-5 pt-5 border-t border-[#E8E2DA]">
-              This becomes the foundation every next-page number is built from.
-            </p>
+            <p className="text-[13.5px] text-[#8C8C8C] leading-relaxed">Pick your goals and the numbers behind them appear here.</p>
           </div>
         )}
       </motion.aside>
@@ -275,6 +318,8 @@ interface NumberBaselineFieldProps {
   placeholder: string;
   help: string;
   suffix?: string;
+  prefix?: string;
+  decimal?: boolean;
   max?: number;
   /** Extra benchmark nuance that doesn't need to live inline, one hover
    * away from the label instead. */
@@ -287,7 +332,7 @@ interface NumberBaselineFieldProps {
   width?: string;
 }
 
-function NumberBaselineField({ label, testid, value, onChange, placeholder, help, suffix, max, tip, warn, width = "w-32" }: NumberBaselineFieldProps) {
+function NumberBaselineField({ label, testid, value, onChange, placeholder, help, suffix, prefix, decimal = false, max, tip, warn, width = "w-full" }: NumberBaselineFieldProps) {
   return (
     <div className={width}>
       <label
@@ -297,19 +342,22 @@ function NumberBaselineField({ label, testid, value, onChange, placeholder, help
         {label}
         {tip && <InfoTip text={tip} testid={`tooltip-attain-baseline-${testid}`} />}
       </label>
-      <div className="flex items-baseline">
+      {/* The underline lives on the wrapper (full width), not the input, so every
+          field's line is the same length regardless of value or a %/$ marker. */}
+      <div className="flex items-baseline gap-1.5 border-b-2 border-[#E0D9CE] pb-1 transition-colors focus-within:border-[#EA2C00]">
+        {prefix && <span className="font-abridge text-2xl text-[#B4B4B4]">{prefix}</span>}
         <NumberField
           id={`attain-baseline-${testid}`}
           value={value}
           onValueChange={onChange}
           min={0}
           max={max}
-          decimal={false}
-          className={`${suffix ? "w-16" : "w-full"} bg-transparent border-0 border-b-2 border-[#E0D9CE] rounded-none px-0 pb-1 font-abridge text-3xl text-[#1A1A1A] outline-none transition-colors focus:border-[#EA2C00] placeholder:font-sans placeholder:text-[15px] placeholder:text-[#C4BCB0]`}
+          decimal={decimal}
+          className="flex-1 min-w-0 bg-transparent border-0 rounded-none px-0 font-abridge text-3xl text-[#1A1A1A] outline-none placeholder:font-sans placeholder:text-[15px] placeholder:text-[#C4BCB0]"
           placeholder={placeholder}
           data-testid={`input-attain-baseline-${testid}`}
         />
-        {suffix && <span className="font-abridge text-2xl text-[#B4B4B4] ml-1.5">{suffix}</span>}
+        {suffix && <span className="font-abridge text-2xl text-[#B4B4B4]">{suffix}</span>}
       </div>
       <p className="text-[12px] text-[#8C8C8C] leading-relaxed mt-2">{help}</p>
       {warn && (

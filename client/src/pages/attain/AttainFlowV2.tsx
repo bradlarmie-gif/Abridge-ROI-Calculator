@@ -197,7 +197,7 @@ export default function AttainFlowV2({ onBackToJourney }: { onBackToJourney?: ()
             <StepVision setting={setting} selectedGoals={goals} onToggle={(g) => setGoals((prev) => (prev.includes(g) ? prev.filter((x) => x !== g) : [...prev, g]))} />
           )}
           {phase === "scope" && setting && (
-            <StepScope setting={setting} baseline={baseline} onChangeBaseline={(patch) => setBaseline((prev) => ({ ...prev, ...patch }))} />
+            <StepScope setting={setting} goals={goals} baseline={baseline} onChangeBaseline={(patch) => setBaseline((prev) => ({ ...prev, ...patch }))} />
           )}
 
           <div className="mt-10 flex items-center justify-end border-t border-[#E8E2DA] pt-6">
