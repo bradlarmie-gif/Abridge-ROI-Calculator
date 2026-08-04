@@ -151,16 +151,13 @@ export default function EdInvestment({
                     <div className="text-[10.5px] font-extrabold tracking-[0.04em] uppercase text-[#2E2822] mb-2">
                       {isNursing ? "Staffed beds" : "Providers"}
                     </div>
-                    <div className="h-[54px] border-[1.5px] border-[#E4DED6] rounded-[14px] bg-white shadow-[0_1px_2px_rgba(40,30,20,0.04)] flex items-center px-[14px] text-[16px] font-bold text-[#1A1A1A] transition-colors focus-within:border-[#EA2C00] focus-within:shadow-[0_0_0_3px_#FBD9CE]">
-                      <FormattedNumberInput
-                        value={isNursing ? state.nursingStaffedBeds : state.numberOfProviders}
-                        onChange={(v) => updateState(isNursing ? { nursingStaffedBeds: v } : { numberOfProviders: v })}
-                        onBlurValue={(v) => updateState(isNursing ? { nursingStaffedBeds: Math.max(v, 1) } : { numberOfProviders: Math.max(v, 1) })}
-                        className="border-0 h-auto p-0 shadow-none text-[16px] font-medium text-[#1A1A1A] tabular-nums focus-visible:ring-0 w-full"
-                        data-testid="ed-investment-input-providers"
-                      />
+                    {/* Read-only: the scale (providers/beds) is set in the opportunity setup, where it
+                        drives BOTH the value and the investment together. Editing it here would only
+                        rescale the cost, not the value, so it's locked to keep the ROI coherent. */}
+                    <div className="h-[54px] border-[1.5px] border-[#EDE8E1] rounded-[14px] bg-[#F7F2EC] flex items-center px-[14px] text-[16px] font-medium text-[#1A1A1A] tabular-nums" data-testid="ed-investment-input-providers">
+                      {formatNumber(isNursing ? state.nursingStaffedBeds : state.numberOfProviders)}
                     </div>
-                    <div className="text-[11px] text-[#7C766F] mt-[6px]">from your practice</div>
+                    <div className="text-[11px] text-[#7C766F] mt-[6px]">From your setup, so the value stays in sync</div>
                   </div>
                   <div>
                     <div className="text-[10.5px] font-extrabold tracking-[0.04em] uppercase text-[#2E2822] mb-2">
