@@ -16,6 +16,9 @@ export interface SettingVocab {
   encounterPerYr: string; // "encounters / yr" ...
   subtitle: string;       // deal-card subtitle
 }
+// The FTE / headcount vocabulary (who works the setting): nursing = "nurses".
+// This is distinct from SETTING_UNIT_LABELS (the pricing unit, "beds" for
+// nursing) on purpose — see the note there. Used for workforce/overtime copy.
 export function settingVocab(careSetting: string | null | undefined): SettingVocab {
   switch (careSetting) {
     case "ed":
@@ -211,6 +214,12 @@ export const SETTING_LABELS: Record<string, string> = {
   nursing: "Nursing",
 };
 
+// The PRICING unit per setting — what a per-unit price is charged against.
+// Nursing is priced per BED, so "beds" is correct here and intentionally
+// different from settingVocab().providerWord ("nurses"), which is the FTE /
+// headcount vocabulary used for workforce math (e.g. overtime is nurse FTEs).
+// Do NOT unify these: they answer different questions (what we price vs who
+// works). ed/inpatient name the clinician type; the count is the same headcount.
 export const SETTING_UNIT_LABELS: Record<string, string> = {
   outpatient: "providers",
   ed: "physicians",
