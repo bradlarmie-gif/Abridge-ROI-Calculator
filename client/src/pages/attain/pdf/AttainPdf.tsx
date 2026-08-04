@@ -312,6 +312,20 @@ function CategoryPage({ c, page, idx, total, data }: { c: PlanCat; page: number;
           </div>
         </div>
 
+        {/* what we're watching for — the leaks named in Align, the risks the owner watches */}
+        {c.watchouts && c.watchouts.length > 0 && (
+          <>
+            <div className="h-px bg-[#EFEAE1] my-[22px]" />
+            <SectionLabel>What we're watching for</SectionLabel>
+            <div className="flex flex-wrap gap-[8px]">
+              {c.watchouts.map((w) => (
+                <span key={w.title} className="text-[11.5px] rounded-full px-[13px] py-[5px] border border-[#E8E2DA] text-[#3A3A3A]">{w.title}</span>
+              ))}
+            </div>
+            <p className="text-[10.5px] text-[#B4A896] mt-[10px] italic">The risks {c.owner.name !== "—" ? c.owner.name : "the owner"} watches each review, so a stall is caught early instead of at the end.</p>
+          </>
+        )}
+
         <div className="mt-auto" />
 
         {/* what this opens — the strategic payoffs past the dollar */}

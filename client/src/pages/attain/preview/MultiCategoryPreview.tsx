@@ -7,9 +7,9 @@ import { ATTAIN_MATRIX } from "./attainCells";
 import { engineValueInPlay } from "./attainEngineAdapter";
 import { econModel, assumptionDefaults } from "./attainEconomics";
 import { AttainNumberInput } from "./AttainNumberInput";
-import type { AttainCell } from "./attainContent";
+import { LEAKS, type AttainCell } from "./attainContent";
 import type { AttainBaseline } from "@/lib/attain/attainLevers";
-import AlignView, { emptyAlignAnswers, LEAKS, type AlignAnswers } from "./AlignView";
+import AlignView, { emptyAlignAnswers, type AlignAnswers } from "./AlignView";
 import PlanView from "./PlanView";
 
 /**

@@ -477,6 +477,14 @@ function CategoryPage({ data, c, idx, total }: { data: PdfData; c: PlanCat; idx:
         </View>
       </View>
 
+      {/* What we're watching for — the leaks named in Align, the risks the owner watches */}
+      {c.watchouts && c.watchouts.length > 0 && (
+        <View style={{ marginTop: 14 }} wrap={false}>
+          <Text style={s.sectionLbl}>What we're watching for</Text>
+          <Text style={s.chainLbl}>The risks {c.owner.name !== "—" ? c.owner.name : "the owner"} watches each review, so a stall is caught early: {c.watchouts.map((w) => w.title).join(" · ")}.</Text>
+        </View>
+      )}
+
       {/* What this opens */}
       {c.opens.length > 0 && (
         <View style={{ marginTop: 14 }} wrap={false}>

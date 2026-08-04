@@ -5,6 +5,7 @@
  * the built-in sample when there's no plan yet.
  */
 import { ATTAIN_MATRIX } from "../preview/attainCells";
+import { LEAKS } from "../preview/attainContent";
 import { econModel } from "../preview/attainEconomics";
 import { engineValueInPlay, type CellInputs } from "../preview/attainEngineAdapter";
 import { categoryForGoal } from "@/lib/attain/attainGoals";
@@ -22,6 +23,9 @@ export type PlanCat = {
   outcomes: { name: string; today: string; target: string; unit: string; source: string }[];
   chain: string[]; assumptions: { label: string; value: string }[]; honesty: string;
   opens: { title: string; desc: string }[];
+  /** The leaks named in Align — carried into the plan as "what we're watching for", the risks
+   * the named owner watches each review. Absent/empty when none were named. */
+  watchouts?: { title: string; desc: string }[];
   /** Retention: tracked as proof, no dollar. The renderer must not print a
    * dollar value or a replacement-cost chain for a proof-only category. */
   proofOnly?: boolean;
@@ -280,6 +284,10 @@ export function buildFromSnapshot(snap: AttainSnapshot | null | undefined): { da
         ? "Tracked as proof, not counted in the dollar. The wellbeing layer that makes the rest of the plan credible."
         : (m?.capNote ?? "Counted conservatively, from your own numbers."),
       opens: (c.align.unlock?.options ?? []).slice(0, 3).map((o) => ({ title: o.title, desc: o.desc })),
+      watchouts: (() => {
+        const picked = new Set<string>(snap.answersByCat?.[c.category]?.choices?.["leak"] ?? []);
+        return LEAKS.filter((l) => picked.has(l.id)).map((l) => ({ title: l.title, desc: l.desc }));
+      })(),
       proofOnly: !!c.proofOnly,
     };
   });

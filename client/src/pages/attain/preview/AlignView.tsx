@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useRef, useState } from "react";
 import { Check, ChevronRight } from "lucide-react";
-import type { AlignContent, DiscoveryBeat } from "./attainContent";
+import { LEAKS, type AlignContent, type DiscoveryBeat } from "./attainContent";
 import { econModel, type Assumption, type EconModel } from "./attainEconomics";
 import { AttainNumberInput } from "./AttainNumberInput";
 
@@ -14,18 +14,6 @@ const fmtN = (n: number) => Math.round(n).toLocaleString();
 // "$99,999,999 margin/visit" → "$172800.0M" slop), never a real entry.
 const ECON_MAX = 10_000_000;
 const num = (s: string) => { const n = parseFloat((s || "").replace(/[^0-9.]/g, "")); return Number.isFinite(n) ? n : 0; };
-
-// The value-attainment leak question — universal across every setting and category.
-// Value leaks after the plan is signed, in the handoffs the partner owns. Naming the
-// most likely leaks lets the Plan put an owner and a date against each one. Pure
-// strategy: these feed the plan's discussion, never the dollar.
-export const LEAKS: { id: string; title: string; desc: string }[] = [
-  { id: "adoption", title: "Adoption stalls below plan", desc: "Fewer clinicians record with Abridge than the plan assumes, so the signal never builds." },
-  { id: "habit", title: "The new habit doesn't stick", desc: "Documentation improves at first, then drifts back once attention moves on." },
-  { id: "cadence", title: "The review cadence slips", desc: "The check-ins that keep this on track quietly stop happening." },
-  { id: "owner", title: "No clear owner for the follow-through", desc: "Everyone agrees on the goal; nobody carries it week to week." },
-  { id: "absorbed", title: "The gain gets absorbed elsewhere", desc: "The freed capacity or captured margin gets spent on something else before this goal sees it." },
-];
 
 const LBL = "text-[10px] font-semibold uppercase tracking-[1.8px] text-[#8C8C8C]";
 // field-sizing:content makes the underline hug the number (or its placeholder),

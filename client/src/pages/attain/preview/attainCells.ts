@@ -521,12 +521,6 @@ const outpatientRevenue: AttainCell = {
       populations: [
         // ---- Fee-for-service: 7 beats ----
         { id: "ffs", showIf: ["ffs"], label: "Fee-for-service", beats: [
-          { kind: "choice", id: "ffsWhere", mode: "multi", kicker: "Where it slips", prompt: "Where's the money slipping?",
-            helper: "Name the places you actually see it. You can pick more than one.", options: [
-            { id: "undercode", title: "Visits coding below the work done", desc: "A level-4 workup goes out as a level 3 because the note didn't carry it." },
-            { id: "lines", title: "A specific service line or two", desc: "The gap concentrates where the visits are most complex." },
-            { id: "denials", title: "Denials you end up writing off", desc: "Medical-necessity denials a more complete note would have prevented." },
-          ] },
           { kind: "choice", id: "ffsWhy", mode: "single", kicker: "The cause", prompt: "Why is it slipping?",
             helper: "Be honest here. We only count what a more complete note can defensibly fix, not revenue that was never really there.", options: [
             { id: "note", title: "The note undersold the visit", desc: "The care happened; the documentation didn't carry it." },
@@ -542,6 +536,13 @@ const outpatientRevenue: AttainCell = {
             { id: "other", title: "Other specialties", desc: "We'll size it across the board and narrow later." },
           ] },
           { kind: "stance", leverId: "ffs", kicker: "What you keep", prompt: "How much of the lift do you capture and keep through billing and audit?" },
+          { kind: "outcome", id: "ffsGoal", kicker: "The goal", prompt: "What does getting paid fairly let you do?",
+            helper: "The reason underneath the dollar. Pick each that fits.", options: [
+            { id: "fund", title: "Fund the documentation program itself", desc: "The capture can cover the cost of the platform." },
+            { id: "defend", title: "Defend a service line's margin", desc: "Keep a line whole that's under margin pressure." },
+            { id: "earned", title: "Stop leaving earned revenue on the table", desc: "Bill accurately for care you already delivered." },
+            { id: "integrity", title: "Meet a coding-integrity bar you're committed to", desc: "A compliance standard you have to hold." },
+          ] },
         ] },
         // ---- Risk / VBC: 8 beats (stance folded into the economics beat) ----
         { id: "risk", showIf: ["ma", "medicaid", "aca"], label: "Risk contracts", beats: [

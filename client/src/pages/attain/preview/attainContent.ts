@@ -59,6 +59,18 @@ export type DiscoveryBeat =
 // `label` names the mechanism (e.g. "Fee-for-service", "Risk contracts"); shown as a divider
 // heading before the population's beats WHEN more than one mechanism is active, so a walk that
 // covers two levers reads as two clearly separated conversations rather than one long list.
+// The value-attainment leak question — universal across every setting and category. Value leaks
+// after the plan is signed, in the handoffs the partner owns; naming the likely leaks lets the
+// Plan (and PDF) put an owner against each. Pure strategy — feeds the plan's watch-list, never the
+// dollar. Lives here (pure data) so AlignView, the Plan, and the PDF all read one source.
+export const LEAKS: { id: string; title: string; desc: string }[] = [
+  { id: "adoption", title: "Adoption stalls below plan", desc: "Fewer clinicians record with Abridge than the plan assumes, so the signal never builds." },
+  { id: "habit", title: "The new habit doesn't stick", desc: "Documentation improves at first, then drifts back once attention moves on." },
+  { id: "cadence", title: "The review cadence slips", desc: "The check-ins that keep this on track quietly stop happening." },
+  { id: "owner", title: "No clear owner for the follow-through", desc: "Everyone agrees on the goal; nobody carries it week to week." },
+  { id: "absorbed", title: "The gain gets absorbed elsewhere", desc: "The freed capacity or captured margin gets spent on something else before this goal sees it." },
+];
+
 export type DiscoveryPopulation = { id: string; showIf: string[]; label?: string; beats: DiscoveryBeat[] };
 export type Discovery = { populations: DiscoveryPopulation[] };
 
