@@ -873,6 +873,7 @@ const inpatientRevenue: AttainCell = {
 const inpatientCapacity: AttainCell = {
   setting: "Inpatient",
   category: "Inpatient Capacity",
+  proofOnly: true, // NO dollar: tracked, matching Explore (its value shows in Revenue, not here)
   align: {
     outcomesMode: "multi",
     value: { mode: "scopeBased", perScope: 700, scopeNoun: "hospitalists", mathTail: "in earlier bed turns from documentation readiness." },

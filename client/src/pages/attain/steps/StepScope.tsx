@@ -4,8 +4,11 @@ import { HelpCircle } from "lucide-react";
 import { NumberField } from "@/components/NumberField";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { categoryForGoal } from "@/lib/attain/attainGoals";
+import { econModel } from "@/pages/attain/preview/attainEconomics";
 import type { AttainBaseline } from "@/lib/attain/attainLevers";
 import type { AttainSetting, GoalId } from "@/lib/attain/attainTypes";
+
+const SETTING_LABEL: Record<AttainSetting, string> = { outpatient: "Outpatient", ed: "ED", inpatient: "Inpatient", nursing: "Nursing" };
 
 /**
  * The static "what a unit is worth" numbers, revealed on the Starting Point
@@ -16,38 +19,28 @@ import type { AttainSetting, GoalId } from "@/lib/attain/attainTypes";
  * and not on the Plan (that's where the tracked metrics live).
  */
 interface EconField { key: string; label: string; placeholder: string; prefix?: string; suffix?: string; decimal?: boolean; help: string }
-// Maps each picked goal's category to the static dollar(s) it rides on. Follows
-// the four-domains doctrine: the tracked/proof domains carry NO dollar here
-// (Inpatient Capacity, and the Quality proof layer on OP/ED/IP), so they emit
-// no field. Nursing carries its own economics (overtime, harm cost, RN replace).
+// Derived STRAIGHT from the Attain econ model (ECON_MODELS) for the picked
+// goals' categories: the dollar ($-prefixed) fields the value is computed from.
+// Single source, so what the Starting Point collects is exactly what the engine
+// uses. A proof-only category (Provider Retention has no econ model) contributes
+// nothing, which keeps it tracked, not counted, with no field here.
+// Friendlier customer-facing labels for a couple of model fields (keys + values
+// still come straight from the model, so the math stays single-sourced).
+const FRIENDLY_LABEL: Record<string, string> = { cf: "Value per wRVU", hccValue: "Value per HCC" };
 function econFieldsForGoals(setting: AttainSetting, goals: GoalId[]): EconField[] {
-  const cats = new Set(goals.map((g) => categoryForGoal(setting, g)).filter(Boolean) as string[]);
+  const label = SETTING_LABEL[setting];
+  const cats = goals.map((g) => categoryForGoal(setting, g)).filter(Boolean) as string[];
   const out: EconField[] = [];
-  // Capacity dollar — outpatient/ED only (Inpatient Capacity is tracked, no dollar).
-  if (cats.has("Patient Access")) {
-    out.push({ key: "marginPerVisit", label: setting === "ed" ? "Margin per ED visit" : "Margin per visit", placeholder: "e.g., 220", prefix: "$", help: "The contribution margin a filled visit brings in." });
-    // ED throughput has a downstream rail: a share of recovered LWBS patients
-    // are admitted, so the inpatient admission margin counts too.
-    if (setting === "ed") out.push({ key: "marginPerAdmission", label: "Margin per admission", placeholder: "e.g., 4,000", prefix: "$", help: "Contribution margin when a recovered ED patient is admitted to inpatient." });
-  }
-  // Nursing capacity dollar — overtime recovered as documentation lands in-shift.
-  if (cats.has("Nursing Capacity"))
-    out.push({ key: "overtimeRate", label: "Overtime rate", placeholder: "e.g., 65", prefix: "$", suffix: "/hr", help: "Loaded nursing overtime cost per hour." });
-  // Revenue dollar — OP: coding lift (wRVU) + risk capture (HCC); ED: E/M wRVU; IP: DRG base.
-  if (cats.has("Revenue Capture")) {
-    if (setting === "inpatient") {
-      out.push({ key: "drgBase", label: "DRG base rate", placeholder: "e.g., 12,000", prefix: "$", help: "Blended base payment per discharge." });
-    } else {
-      out.push({ key: "valuePerWrvu", label: "Value per wRVU", placeholder: "e.g., 33.40", prefix: "$", decimal: true, help: "Your blended dollar per wRVU." });
-      if (setting === "outpatient") out.push({ key: "valuePerHcc", label: "Value per HCC", placeholder: "e.g., 1,200", prefix: "$", help: "Annual risk-adjusted revenue per HCC recaptured." });
+  const seen = new Set<string>();
+  for (const cat of cats) {
+    const model = econModel(label, cat);
+    if (!model) continue; // proof-only category → no dollar field
+    for (const f of model.fields) {
+      if (f.prefix !== "$" || seen.has(f.key)) continue; // only the dollars land here
+      seen.add(f.key);
+      out.push({ key: f.key, label: FRIENDLY_LABEL[f.key] ?? f.label, placeholder: `e.g., ${f.placeholder}`, prefix: f.prefix, suffix: f.suffix, decimal: f.placeholder.includes("."), help: f.hint ?? "" });
     }
   }
-  // Retention dollar — replacement cost, setting-aware noun.
-  if (cats.has("Provider Retention"))
-    out.push({ key: "replacementCost", label: setting === "nursing" ? "Cost to replace a nurse" : setting === "inpatient" ? "Cost to replace a hospitalist" : "Cost to replace a provider", placeholder: setting === "nursing" ? "e.g., 60,000" : "e.g., 250,000", prefix: "$", help: "Fully loaded recruit and ramp cost of one departure." });
-  // Nursing quality dollar — harm avoidance (HAPIs, falls, CAUTI, sepsis).
-  if (cats.has("Quality & Safety"))
-    out.push({ key: "costPerEvent", label: "Cost per preventable event", placeholder: "e.g., 12,000", prefix: "$", help: "Blended cost of one preventable harm event." });
   return out;
 }
 

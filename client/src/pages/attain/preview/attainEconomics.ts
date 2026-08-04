@@ -196,17 +196,12 @@ export const ECON_MODELS: Record<string, EconModel> = {
     },
   },
   // Inpatient|Provider Retention — intentionally omitted (proof-only, no dollar).
-  "Inpatient|Inpatient Capacity": {
-    title: "What's an earlier bed turn worth?",
-    helper: "When the discharge documentation is ready on time, the order and summary land earlier and the bed opens before noon instead of after. Set what turning a bed earlier in the day is worth to you. Most discharge delay is placement, consults, and authorization, not the note, so we stay conservative: this is an earlier bed turn, never a shorter length of stay.",
-    fields: [{ key: "bedTurnValue", label: "Value of an earlier bed turn", prefix: "$", placeholder: "300", hint: "The marginal contribution of freeing a bed earlier in the day, not a full bed-day and not a shorter stay." }],
-    assumptions: [{ key: "dischargeDocShare", label: "Discharges where the note is the gate", default: "8", suffix: "%" }],
-    stancePrompt: "How much of the documentation-gated before-noon miss can you actually move?",
-    stanceBands: [15, 25, 35],
-    stanceCap: 50,
-    capNote: "We cap this at 50 percent. Most discharge delay is placement, consults, and authorization; documentation readiness moves only its share, and never the length of stay itself.",
-    math: (i) => `Across your ${nn(i.scope)} hospitalists: discharges × ${i.econ.dischargeDocShare ?? 8}% where the note is the gate × ${i.stancePct}% you can move, at ${fmt$(i.econ.bedTurnValue ?? 300)} per earlier bed turn.`,
-  },
+  // Inpatient|Inpatient Capacity — intentionally omitted (proof-only, no dollar).
+  // Explore treats inpatient capacity as the tracked layer with NO dollar (its
+  // value shows in Revenue); Attain must agree, so there is no economics model
+  // here. With no entry, econModel() returns undefined: no Align economics beat,
+  // no Starting Point dollar, and engineValueInPlay returns 0. The bed-turn
+  // dollar this used to carry was a divergence from Explore, i.e. a bug.
 
   // ---- Nursing ----
   "Nursing|Quality & Safety": {
