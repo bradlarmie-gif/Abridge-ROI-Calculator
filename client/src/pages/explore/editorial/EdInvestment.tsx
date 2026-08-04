@@ -27,17 +27,11 @@ type Tab = "perProvider" | "perEncounter" | "annual" | "platform";
 
 // The governing four-domain rule: every setting has Capacity / Workforce /
 // Revenue / Quality, and in each setting a specific domain is the NON-FINANCIAL
-// proof layer — tracked, never dollarized. The engine emits $0 for exactly
-// these quadrants, so the recap marks them as proof (and points to where the
-// dollar does live) instead of showing a misleading $0 or, worse, the wrong
-// domain. Nursing is the one where Revenue is the proof layer, not Quality.
-export const PROOF_LAYER: Record<string, Partial<Record<"Capacity" | "Workforce" | "Revenue" | "Quality", string>>> = {
-  outpatient: { Quality: "tracked, not counted; shows in Revenue" },
-  ed: { Quality: "tracked, not counted; shows in Revenue" },
-  inpatient: { Capacity: "tracked, not counted; dollar shows in Revenue", Quality: "tracked, not counted; shows in Revenue" },
-  nursing: { Revenue: "tracked, not counted; no dollar here" },
-};
-export const QUADRANT_ORDER = ["Capacity", "Workforce", "Revenue", "Quality"] as const;
+// The proof layer (tracked, never dollarized) lives in ONE canonical place now
+// so no surface can silently disagree; imported for use here and re-exported
+// for the other existing importers (EdModel, EdCareSetting, ExploreEditorialPdf).
+import { PROOF_LAYER, QUADRANT_ORDER } from "@/lib/proofLayer";
+export { PROOF_LAYER, QUADRANT_ORDER };
 
 export default function EdInvestment({
   state,

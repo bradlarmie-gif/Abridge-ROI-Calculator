@@ -82,7 +82,7 @@ export const METHODOLOGY_SETTINGS: MethodologySetting[] = [
       { title: "Convert returned time to throughput", desc: "Charting time returned means providers reach the next patient sooner. Where that happens, fewer patients leave before being seen." },
       { title: "Keep every claim to the record", desc: "Nothing is coded beyond what the note supports, measured against your own baseline. Defensible, and yours." },
     ],
-    proofNote: "Safety and experience signals (door-to-provider time, LWBS) are tracked, not counted, and kept out of the dollar case.",
+    proofNote: "Note-quality and safety signals (core-measure and sepsis-bundle compliance, note completeness) are tracked, not counted, and lead the dollar case. Recovered throughput, including fewer patients who leave before being seen, is the counted capacity dollar above.",
   },
   {
     id: "inpatient",
@@ -111,7 +111,7 @@ export const METHODOLOGY_SETTINGS: MethodologySetting[] = [
       { title: "Defend status with the record", desc: "Where the note supports inpatient status, observation downgrades are appealable on the documentation." },
       { title: "Keep every claim to the record", desc: "Nothing is coded beyond what the note supports, measured against your own baseline. Defensible, and yours." },
     ],
-    proofNote: "Case-mix index trend and query metrics are tracked, not counted, alongside the dollar case.",
+    proofNote: "Case-mix index trend, CDI query metrics, and discharge-timing signals are tracked, not counted, alongside the dollar case.",
   },
   {
     id: "nursing",
