@@ -345,8 +345,14 @@ export function buildProformaPdfData(
       scenario("Base", 1.0, true),
       scenario("Optimistic", 1.3),
     ],
+    // Only claim the conservative case clears its cost when it actually does at
+    // today's ramp; otherwise tell the true story (base clears, or it builds).
     scenarioNote:
-      "Flex realization by ±30% and even the conservative case clears its cost. Today's figure sits toward the conservative end, so there's upside if adoption runs ahead of plan.",
+      termValue * 0.7 - termInvestment > 0
+        ? "Flex realization by ±30% and even the conservative case clears its cost. Today's figure sits toward the conservative end, so there's upside if adoption runs ahead of plan."
+        : termNet > 0
+          ? "Flex realization by ±30%. The base case clears its cost; the conservative end is where it runs tightest, with upside if adoption runs ahead of plan."
+          : "Flex realization by ±30%. At today's ramp the case does not yet clear its cost over the term; it builds as adoption deepens and legacy tooling is displaced.",
     modelInputs: [
       { label: "Contract term", value: `${config.contractTermMonths} months` },
       { label: "Implementation ramp", value: `${config.implementationRampMonths} months` },

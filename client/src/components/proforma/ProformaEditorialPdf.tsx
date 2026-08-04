@@ -415,7 +415,7 @@ function CoverInner({ data }: { data: ProformaPdfData }): JSX.Element {
         <div style={{ display: "flex", gap: 48, marginTop: 38, paddingTop: 24, borderTop: "1px solid var(--hair)" }}>
           <div className="stat">
             <div className="v coral" style={{ fontSize: 32 }}>{fmtM(data.termNet)}</div>
-            <div className="k">Three-year net value</div>
+            <div className="k">{cap(numWord(data.termYears))}-year net value</div>
           </div>
           <div className="stat">
             <div className="v" style={{ fontSize: 32 }}>{data.roi.toFixed(1)}×</div>
