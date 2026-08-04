@@ -249,6 +249,8 @@ export function buildProformaPdfData(
   }));
 
   // ── Cost rows: split each year's investment into subscription vs impl ───────
+  // (getYearlySummary already folds the one-time impl fee into y.investment in
+  // the go-live year, so subscription is the remainder.)
   const implByYear = years.map((_, i) =>
     settings.reduce((a, s) => (Math.floor((s.goLiveMonth - 1) / 12) === i ? a + s.implementationFee : a), 0),
   );

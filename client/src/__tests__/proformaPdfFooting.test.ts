@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { buildProformaPdfData } from "@/components/proforma/ProformaPDFExport";
+import { calculateProformaSummary, buildMonthlyCashFlows } from "@/lib/proformaCalculations";
 import {
   type ProformaSettingSnapshot,
   type ProformaConfig,
@@ -133,5 +134,44 @@ describe("proforma PDF financial summary foots", () => {
     // offset; the $90K quality MUST be counted and the $120K displacement MUST NOT.
     const op = data.settings.find((s) => s.id === "s-outpatient")!;
     expect(op.atScaleValue).toBe(412_000 + 319_000 + 549_000 + 180_000 + 90_000);
+  });
+});
+
+// The original fixtures used implementationFee: 0, so the per-year investment
+// path never exercised the one-time fee. This guards the bug where per-year
+// rows omitted impl (understating cost, overstating net/ROI) and the PDF term
+// disagreed with the canonical calculateProformaSummary.
+describe("proforma PDF: per-year investment includes the implementation fee", () => {
+  const OUT_IMPL = makeSetting(
+    "outpatient",
+    [
+      { id: "wrvu", name: "wRVU capture", value: 400_000, quadrant: "Revenue", onset: "immediate", category: "documentation" },
+      { id: "patientAccess", name: "Patient access", value: 300_000, quadrant: "Capacity", onset: "delayed", category: "time" },
+    ],
+    { implementationFee: 300_000, goLiveMonth: 1 },
+  );
+  const ED_IMPL = makeSetting(
+    "ed",
+    [{ id: "wrvu", name: "E/M level coding", value: 240_000, quadrant: "Revenue", onset: "delayed", category: "documentation" }],
+    { id: "s-ed", implementationFee: 200_000, goLiveMonth: 13, providerCount: 80, fullScaleProviders: 110, encounters: 264_000 },
+  );
+  const settings = [OUT_IMPL, ED_IMPL];
+  const d = buildProformaPdfData(settings, config, "Test Health", "July 2026");
+
+  it("per-year investments sum to the Total investment row", () => {
+    const perYearSum = d.years.reduce((a, y) => a + y.investment, 0);
+    expect(Math.abs(perYearSum - d.totalInvestmentRow.total)).toBeLessThanOrEqual(10);
+  });
+
+  it("the term investment includes both implementation fees (not dropped)", () => {
+    const impl = d.costRows.find((r) => /Implementation/.test(r.label))!.total;
+    const sub = d.costRows.find((r) => /Subscription/.test(r.label))!.total;
+    expect(impl).toBe(500_000);
+    expect(Math.abs(sub + impl - d.totalInvestmentRow.total)).toBeLessThanOrEqual(10);
+  });
+
+  it("reconciles to the canonical calculateProformaSummary term investment", () => {
+    const summary = calculateProformaSummary(settings, config, buildMonthlyCashFlows(settings, config));
+    expect(Math.abs(d.totalInvestmentRow.total - summary.termInvestment)).toBeLessThanOrEqual(10);
   });
 });
