@@ -242,7 +242,7 @@ function PitchPage({ data }: { data: AppRatPdfData }): JSX.Element {
         {[
           { v: fmtShort(model.stackTotal), k: "Documentation spend today", coral: false },
           { v: fmtShort(model.freed), k: "Freed every year", coral: true },
-          { v: `${model.vendorCount} → ${remaining}`, k: "Vendors on your bill", coral: false },
+          { v: String(Math.max(0, model.vendorCount - remaining)), k: "Tools folded onto Abridge", coral: false },
           { v: consolidatedBy, k: "Fully consolidated", coral: false },
         ].map((s, i) => (
           <div key={i}>
@@ -450,8 +450,10 @@ function StepChart({ items }: { items: AppRatItem[] }): JSX.Element | null {
           <line x1={fx} y1={yTop - 10} x2={fx} y2={yTop + 6} stroke={C.coral} strokeWidth={3} />
           <line x1={bx} y1={yTop - 10} x2={bx} y2={yTop + 6} stroke="#C3B7A8" strokeWidth={2} />
           <line x1={fx} y1={yTop - 2} x2={bx} y2={yTop - 2} stroke={C.coral} strokeWidth={3} />
-          <rect x={bmid - 62} y={yTop - 22} width={124} height={19} rx={9.5} fill={C.coral} />
-          <text x={bmid} y={yTop - 9} textAnchor="middle" fontSize={10} fontWeight={700} fill="#fff">{sooner} {sooner === 1 ? "month" : "months"} sooner</text>
+          {/* A quiet caption, not a shouting badge — matches the screen: light
+              coral tint + coral text, not a solid coral fill with white text. */}
+          <rect x={bmid - 62} y={yTop - 22} width={124} height={19} rx={9.5} fill="#FFEDE7" stroke="#F6C9BC" strokeWidth={1} />
+          <text x={bmid} y={yTop - 9} textAnchor="middle" fontSize={10} fontWeight={700} fill={C.coral}>{sooner} {sooner === 1 ? "month" : "months"} sooner</text>
         </g>
       )}
       {nodes.map((n) => <circle key={n.id} cx={n.x} cy={n.y} r={5} fill={C.coral} stroke="#fff" strokeWidth={2.5} />)}
@@ -520,7 +522,7 @@ function TimingPage({ data }: { data: AppRatPdfData }): JSX.Element {
     // number is how much comes back in the first year on the renewal calendar.
     summary.monthsSooner > 0
       ? { v: `${summary.monthsSooner} mo`, k: "Sooner than renewal", coral: false }
-      : { v: fmtShort(yearOne), k: "Freed in year one", coral: false },
+      : { v: fmtShort(yearOne), k: "Freed by year-one exits", coral: false },
   ];
   return (
     <Page>
