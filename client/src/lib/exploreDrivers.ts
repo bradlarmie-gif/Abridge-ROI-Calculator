@@ -1700,7 +1700,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     id: 'ipAfterHoursDoc',
     label: 'After-Hours Documentation',
     shortDescription: 'Hospitalists carrying a full census generate H&Ps, daily progress notes, consult responses, and procedure notes every shift. When that volume compresses through ambient capture, after-hours charting stops, this is one of the fastest workforce signals, visible in EHR audit logs within weeks.',
-    tagline: 'EHR time outside scheduled shift hours, falls as ambient capture eliminates the after-shift queue',
+    tagline: 'EHR time outside scheduled shift hours, falls as ambient capture clears the after-shift queue',
     quadrant: 'Workforce',
     settings: ['inpatient'],
     visibility: 'qualitative',

@@ -61,6 +61,10 @@ const CREDITED = /credited to/i;
 // you expect to prevent"), which these patterns deliberately do NOT match.
 const PREVENTS = /\bprevents\b/i;
 const PREVENTED_BY = /\bprevented by\b/i;
+// Present-tense "eliminates" / "eradicates" attribute removal causally, same as
+// "prevents". The approved forms are descriptive ("clears", "expected to
+// eliminate"), which the bare present tense here does not match.
+const ELIMINATES = /\b(eliminates|eradicates)\b/i;
 
 const CORE_RULES: Rule[] = [
   { name: "em-dash", hit: (c) => c.includes("—") },
@@ -72,6 +76,7 @@ const CORE_RULES: Rule[] = [
   { name: "credited-to", hit: (c) => CREDITED.test(c) },
   { name: "prevents", hit: (c) => PREVENTS.test(c) },
   { name: "prevented-by", hit: (c) => PREVENTED_BY.test(c) },
+  { name: "eliminates", hit: (c) => ELIMINATES.test(c) },
 ];
 
 /** Scan `files` (relative to `root`) with the core rules plus any `extra` rules. */

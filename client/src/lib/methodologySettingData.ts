@@ -581,7 +581,7 @@ export const settingData: Record<MethodologyCareSetting, SettingPDFData> = {
         badge: "Provider Wellbeing & Retention",
         northStar: "Voluntary Turnover",
         direction: "↓",
-        sub: "A provider seeing 24 patients per day carrying 3 minutes of incomplete documentation per visit enters the evening with 72 minutes of charting backlog, every day, structurally, not occasionally. Ambient capture eliminates that backlog at the point of care. The mechanism that matters most for the retention story isn't time savings in the abstract: it's the difference between leaving the clinic knowing the work is done versus leaving knowing it isn't. That psychological shift, experienced consistently, is what eventually changes departure calculus.",
+        sub: "A provider seeing 24 patients per day carrying 3 minutes of incomplete documentation per visit enters the evening with 72 minutes of charting backlog, every day, structurally, not occasionally. Ambient capture clears that backlog at the point of care. The mechanism that matters most for the retention story isn't time savings in the abstract: it's the difference between leaving the clinic knowing the work is done versus leaving knowing it isn't. That psychological shift, experienced consistently, is what eventually changes departure calculus.",
         matterMostIf:
           "At $250K–$350K per replacement for primary care and higher for specialists, even one additional retention per year covers a significant portion of program cost. Documentation burden is consistently cited in exit interviews as a contributing factor: the attribution is already in your own data.",
         alsoNote:
