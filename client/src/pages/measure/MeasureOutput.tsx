@@ -960,7 +960,7 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
                                       <div className={`px-5 pb-5 ${financialDrivers.length > 0 ? 'pt-0' : 'pt-5'}`}>
                                         {financialDrivers.length > 0 && <div className="h-px bg-[#F0F0F0] mb-4" />}
                                         <p className="text-[10px] font-bold text-[#888888] uppercase tracking-[1.5px] mb-1">Signal Evidence</p>
-                                        <p className="text-[11px] text-[#AAAAAA] mb-3">Early proof the value story is real — metrics trending the right way, not yet valued in dollars.</p>
+                                        <p className="text-[11px] text-[#AAAAAA] mb-3">Early proof the value story is real: metrics trending the right way, not yet valued in dollars.</p>
                                         <div className="space-y-2">
                                           {signalDrivers.map(drv => (
                                             <SignalDriverRow key={drv.id} drv={drv} settingBadges={[]} lowerIsBetter={getDriverLowerIsBetter(drv.id)} />
@@ -1064,7 +1064,7 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
                                     Signal Evidence
                                   </p>
                                   <p className="text-[11px] text-[#AAAAAA] mb-3">
-                                    Early proof the value story is real — metrics trending the right way, not yet valued in dollars.
+                                    Early proof the value story is real: metrics trending the right way, not yet valued in dollars.
                                   </p>
                                   <div className="space-y-2">
                                     {signalDrivers.map((drv: MeasurePDFDriver) => (
@@ -1134,7 +1134,7 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
                   <div>
                     <p className="text-sm font-semibold text-white mb-1">Take this with you</p>
                     <p className="text-sm text-white/50 leading-relaxed max-w-sm">
-                      A polished PDF of the full summary — ready to share or present.
+                      A polished PDF of the full summary, ready to share or present.
                     </p>
                   </div>
                 </div>
