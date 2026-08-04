@@ -10,7 +10,7 @@ import { fmt$ as sharedFmt$ } from "@/lib/attain/attainFormat";
 
 const CORAL = "#EA2C00";
 
-export type Cat = { name: string; value: number; note?: string; opens?: string[]; entered: boolean; realized?: number };
+export type Cat = { name: string; value: number; note?: string; opens?: string[]; entered: boolean; realized?: number; proofOnly?: boolean };
 export type PdfData = {
   partner: string; setting: string; date: string; preparedWith: string;
   total: number; categories: Cat[];
@@ -31,10 +31,10 @@ const SAMPLE: PdfData = {
   setting: "Outpatient",
   date: "July 2026",
   preparedWith: "Dana Ruiz · Ambulatory Access Director",
-  total: 729_000,
+  total: 549_000,
   categories: [
     { name: "Patient Access", value: 549_000, realized: 210_000, note: "Filling freed-time headroom at $220 a visit", opens: ["Take on a new contract or payer", "Keep a service line whole"], entered: true },
-    { name: "Provider Retention", value: 180_000, realized: 38_000, note: "Preventing the burnout-driven share of turnover", opens: ["Protect a fragile service line", "Wind down agency spend"], entered: true },
+    { name: "Provider Retention", value: 0, proofOnly: true, note: "Tracked as proof: turnover, burnout, likelihood to stay. No dollar attached, on purpose.", opens: ["Protect a fragile service line", "Wind down agency spend"], entered: true },
     { name: "Revenue Capture", value: 0, note: "Keeping the documentation-driven coding lift", opens: ["Fund the documentation program", "Stop writing off preventable denials"], entered: false },
   ],
   chain: [
@@ -45,8 +45,8 @@ const SAMPLE: PdfData = {
   ],
   review: {
     label: "Review 4 · Jul 2026",
-    attainmentPct: 34,
-    realized: 248_000,
+    attainmentPct: 38,
+    realized: 210_000,
     climb: [{ label: "Kickoff", pct: 0 }, { label: "Oct", pct: 10 }, { label: "Jan", pct: 21 }, { label: "Apr", pct: 29 }, { label: "Now", pct: 34 }],
     read: "On pace on Patient Access. Provider Retention is behind its signals: the day is lighter, but the turnover hasn't followed yet.",
   },
@@ -63,6 +63,19 @@ function CategoryRow({ c, total, review }: { c: Cat; total: number; review?: boo
         </div>
         <div className="h-[7px] rounded-full bg-[#F1ECE4] mb-[6px]" />
         <p className="text-[11.5px] text-[#C4BCB0] leading-snug">Available to turn on in a later review.</p>
+      </div>
+    );
+  }
+  if (c.proofOnly) {
+    // Tracked as proof (retention): no dollar, no bar, no realized $. It's the
+    // wellbeing layer — shown as signals, deliberately kept out of the number.
+    return (
+      <div className="py-[10px] border-b border-[#EFEAE1] last:border-b-0">
+        <div className="flex items-baseline justify-between mb-[7px]">
+          <span className="font-abridge text-[17px] text-[#1A1A1A]">{c.name}</span>
+          <span className="text-[10px] font-bold uppercase tracking-[1.5px] text-[#8C8C8C] border border-[#E7E0D6] rounded-full px-[9px] py-[2px]">Tracked · no dollar</span>
+        </div>
+        <p className="text-[11.5px] text-[#8C8C8C] leading-snug">{c.note}</p>
       </div>
     );
   }

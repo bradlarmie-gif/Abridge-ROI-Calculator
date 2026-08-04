@@ -281,22 +281,26 @@ function CasePage({ data, categories }: { data: PdfData; categories: PlanCat[] }
               <View key={c.name} style={s.catRow} wrap={false}>
                 <View style={s.catHead}>
                   <Text style={c.entered ? s.catName : s.catNameOff}>{c.name}</Text>
-                  {c.entered ? (
+                  {!c.entered ? (
+                    <Text style={s.catOff}>Not in this plan</Text>
+                  ) : c.proofOnly ? (
+                    <Text style={s.catOff}>Tracked · no dollar</Text>
+                  ) : (
                     <Text style={s.catVal}>
                       {review ? fmt$(c.realized ?? 0) : fmt$(c.value)}
                       <Text style={s.catValUnit}>{review ? " realized" : " / yr"}</Text>
                     </Text>
-                  ) : (
-                    <Text style={s.catOff}>Not in this plan</Text>
                   )}
                 </View>
-                <Bar pct={pct} flat={!c.entered} />
+                <Bar pct={pct} flat={!c.entered || !!c.proofOnly} />
                 <Text style={c.entered ? s.catNote : s.opensOff}>
-                  {c.entered
-                    ? review
-                      ? `${Math.round(attained)}% of the ${fmt$(c.value)}/yr promise`
-                      : c.note
-                    : "Available to turn on in a later review."}
+                  {!c.entered
+                    ? "Available to turn on in a later review."
+                    : c.proofOnly
+                      ? c.note
+                      : review
+                        ? `${Math.round(attained)}% of the ${fmt$(c.value)}/yr promise`
+                        : c.note}
                 </Text>
               </View>
             );
@@ -446,7 +450,7 @@ function CategoryPage({ data, c, idx, total }: { data: PdfData; c: PlanCat; idx:
       {/* Why it holds: chain + assumptions */}
       <View style={s.cols}>
         <View style={s.colWide}>
-          <Text style={s.sectionLbl}>How the number holds: the chain</Text>
+          <Text style={s.sectionLbl}>{c.proofOnly ? "How the signal holds: the chain" : "How the number holds: the chain"}</Text>
           {c.chain.map((step, i) => (
             <View key={i} style={s.chainStepRow} wrap={false}>
               <Text style={s.chainStepN}>{i + 1}</Text>
@@ -457,7 +461,9 @@ function CategoryPage({ data, c, idx, total }: { data: PdfData; c: PlanCat; idx:
         </View>
         <View style={s.colNarrow}>
           <Text style={s.sectionLbl}>The assumptions</Text>
-          {c.assumptions.length === 0 ? (
+          {c.proofOnly ? (
+            <Text style={s.chainLbl}>No dollar is attached. This layer is tracked as proof, not counted, and the signals above are what we measure.</Text>
+          ) : c.assumptions.length === 0 ? (
             <Text style={s.chainLbl}>Seeded from published figures; no partner inputs required.</Text>
           ) : (
             c.assumptions.map((a) => (
@@ -467,7 +473,7 @@ function CategoryPage({ data, c, idx, total }: { data: PdfData; c: PlanCat; idx:
               </View>
             ))
           )}
-          <Text style={s.assumFoot}>Seeded conservatively. Editable, and shown in full.</Text>
+          {!c.proofOnly && <Text style={s.assumFoot}>Seeded conservatively. Editable, and shown in full.</Text>}
         </View>
       </View>
 

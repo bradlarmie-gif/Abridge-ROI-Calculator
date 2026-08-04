@@ -272,6 +272,32 @@ describe("buildFromSnapshot honors a subset of goals", () => {
 });
 
 // ============================================================================
+// Retention is proof-only: the PDF must mark it tracked, never a dollar. Guards
+// the audit bug where the PDF printed retention as "$0/yr" with a dollar chain.
+// ============================================================================
+describe("buildFromSnapshot marks retention proof-only (tracked, no dollar)", () => {
+  it("Outpatient with retention chosen: retention is proofOnly, value 0, no dollar assumptions", () => {
+    const { data, categories } = buildFromSnapshot(
+      buildSnapshot("outpatient", ["Patient Access", "Provider Retention"]),
+    )!;
+
+    const gridRetention = data.categories.find((c) => c.name === "Provider Retention")!;
+    expect(gridRetention.proofOnly).toBe(true);
+    expect(gridRetention.value).toBe(0);
+    expect(gridRetention.entered).toBe(true); // it IS in the plan — just tracked, not counted
+
+    const detailRetention = categories.find((c) => c.name === "Provider Retention")!;
+    expect(detailRetention.proofOnly).toBe(true);
+    // no replacement-cost assumptions that would imply a dollar
+    expect(detailRetention.assumptions).toEqual([]);
+    expect(detailRetention.honesty.toLowerCase()).toContain("tracked as proof");
+
+    // and it never inflates the counted total (only Patient Access does)
+    expect(data.total).toBe(data.categories.find((c) => c.name === "Patient Access")!.value);
+  });
+});
+
+// ============================================================================
 // Contract: null (not throw) for bad input; no throw for partial input
 // ============================================================================
 describe("buildFromSnapshot returns null ONLY without a valid setting", () => {

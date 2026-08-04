@@ -22,6 +22,9 @@ export type PlanCat = {
   outcomes: { name: string; today: string; target: string; unit: string; source: string }[];
   chain: string[]; assumptions: { label: string; value: string }[]; honesty: string;
   opens: { title: string; desc: string }[];
+  /** Retention: tracked as proof, no dollar. The renderer must not print a
+   * dollar value or a replacement-cost chain for a proof-only category. */
+  proofOnly?: boolean;
 };
 
 const SETTING_LABEL: Record<string, string> = { outpatient: "Outpatient", ed: "ED", inpatient: "Inpatient", nursing: "Nursing" };
@@ -206,10 +209,13 @@ export function buildFromSnapshot(snap: AttainSnapshot | null | undefined): { da
     chain: largest ? safe(() => chainFor(settingLabel, largest.category, inputsFor(snap, settingLabel, largest.category)), []) : [],
     categories: allCells.map((c) => ({
       name: catLabel(c),
-      value: valueOf(c.category),
+      value: c.proofOnly ? 0 : valueOf(c.category),
+      proofOnly: !!c.proofOnly,
       // realized-to-date within this category's own promise (0 before any review is logged)
-      realized: hasReviews && inPlan.has(c.category) ? realizedOf(c.category) : 0,
-      note: NOTE[c.category] ?? "",
+      realized: hasReviews && inPlan.has(c.category) && !c.proofOnly ? realizedOf(c.category) : 0,
+      note: c.proofOnly
+        ? "Tracked as proof: turnover, burnout, likelihood to stay. No dollar attached, on purpose."
+        : (NOTE[c.category] ?? ""),
       opens: (c.align.unlock?.options ?? []).slice(0, 2).map((o) => o.title),
       entered: inPlan.has(c.category),
     })),
@@ -235,12 +241,19 @@ export function buildFromSnapshot(snap: AttainSnapshot | null | undefined): { da
       signals: (c.plan.abridgeSignals ?? []).map((s) => metricRow(s, metrics[s.id])),
       outcomes: [...(c.plan.outcomeGroups ?? []).flatMap((g) => g.metrics).map((s) => metricRow(s, metrics[s.id])), ...customRows],
       chain: CHAIN[c.category] ?? ["A lighter documentation load", "The outcome it opens"],
-      assumptions: (m?.assumptions ?? []).map((a) => {
-        const v = snap.inputsByCat?.[c.category]?.econ?.[a.key] ?? a.default;
-        return { label: a.label, value: `${a.prefix ?? ""}${v}${a.suffix ?? ""}` };
-      }),
-      honesty: m?.capNote ?? "Counted conservatively, from your own numbers.",
+      // A proof-only category carries no dollar, so it shows no replacement-cost
+      // assumptions (they'd imply a number) — just the tracked-proof honesty line.
+      assumptions: c.proofOnly
+        ? []
+        : (m?.assumptions ?? []).map((a) => {
+            const v = snap.inputsByCat?.[c.category]?.econ?.[a.key] ?? a.default;
+            return { label: a.label, value: `${a.prefix ?? ""}${v}${a.suffix ?? ""}` };
+          }),
+      honesty: c.proofOnly
+        ? "Tracked as proof, not counted in the dollar. The wellbeing layer that makes the rest of the plan credible."
+        : (m?.capNote ?? "Counted conservatively, from your own numbers."),
       opens: (c.align.unlock?.options ?? []).slice(0, 3).map((o) => ({ title: o.title, desc: o.desc })),
+      proofOnly: !!c.proofOnly,
     };
   });
 
