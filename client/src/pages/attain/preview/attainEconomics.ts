@@ -234,6 +234,14 @@ export function econModel(setting: string, category: string): EconModel | undefi
   return ECON_MODELS[`${setting}|${category}`];
 }
 
+/** The realization Align used to ask as the "stance". Align no longer asks it (Explore models it
+ * and the Plan's targets are the real commitment), so the value carries this conservative default:
+ * the model's typical band (the middle of its Explore-tuned stanceBands). */
+export function defaultStance(setting: string, category: string): number {
+  const bands = econModel(setting, category)?.stanceBands ?? [];
+  return bands.length ? bands[Math.floor((bands.length - 1) / 2)] : 25;
+}
+
 /** The seeded assumption defaults for a cell, as the {key: "value"} map used to pre-fill state. */
 export function assumptionDefaults(setting: string, category: string): Record<string, string> {
   const m = econModel(setting, category);

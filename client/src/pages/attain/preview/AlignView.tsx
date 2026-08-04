@@ -185,25 +185,6 @@ export default function AlignView({ c, settingLabel, categoryLabel, categoryKey,
 
   const helperCls = "text-[14px] text-[#6B6B6B] leading-relaxed mb-4 max-w-[600px]";
 
-  // the shared realization stance controls (bands + custom + cap note); the section prompt is
-  // supplied by the caller (a LBL in the flat layout, a SectionHead title in discovery).
-  const stanceControls = (m: EconModel) => (
-    <>
-      <div className="flex flex-wrap items-center gap-2 mb-3">
-        {m.stanceBands.map((v) => (
-          <button key={v} type="button" onClick={() => onInput({ stance: v })} className={`px-5 py-2.5 rounded-xl border text-[14px] font-semibold transition-colors ${stance === v ? "bg-[#EA2C00] border-[#EA2C00] text-white" : "border-[#E0D9CE] text-[#1A1A1A] hover:bg-[#F2EDE5]"}`}>{v}%</button>
-        ))}
-        <button type="button" onClick={() => onInput({ stance: -1 })} className={`px-5 py-2.5 rounded-xl border text-[14px] font-semibold transition-colors ${stance === -1 ? "bg-[#EA2C00] border-[#EA2C00] text-white" : "border-[#E0D9CE] text-[#1A1A1A] hover:bg-[#F2EDE5]"}`}>Custom</button>
-        {stance === -1 && (
-          <span className="flex items-baseline gap-1.5 ml-1">
-            <AttainNumberInput value={inputs.custom} onChange={(raw) => { if (raw === "") { onInput({ custom: "" }); return; } onInput({ custom: String(Math.min(m.stanceCap, num(raw))) }); }} placeholder={`up to ${m.stanceCap}`} className="w-24 bg-transparent border-0 border-b-2 border-[#E0D9CE] rounded-none px-0 pb-0.5 font-abridge text-xl text-[#1A1A1A] outline-none transition-colors focus:border-[#EA2C00] placeholder:font-sans placeholder:text-[13px] placeholder:text-[#C4BCB0]" />
-            <span className="text-[14px] text-[#8C8C8C]">%</span>
-          </span>
-        )}
-      </div>
-      <p className="text-[12px] text-[#8C8C8C] mb-5">{m.capNote}</p>
-    </>
-  );
 
   // the seeded rate assumptions for a lever (e.g. the coding lift, the query volume), shown
   // alongside the stance. The per-unit DOLLARS moved to the Starting Point, so what's left here
@@ -219,9 +200,6 @@ export default function AlignView({ c, settingLabel, categoryLabel, categoryKey,
       </div>
     );
   };
-  // the standing helper under a discovery stance beat — reinforces that this is a judgment call,
-  // not a number to look up (the dollars live on the Starting Point).
-  const STANCE_HELPER = "A judgment call, not a number to look up. Set how much you'd realistically capture and keep; the economics behind it sit on your Starting Point.";
 
   // one discovery beat → a numbered section, feeding the SAME state the downstream reads
   const renderDiscoveryBeat = (beat: DiscoveryBeat, key: string) => {
@@ -264,34 +242,16 @@ export default function AlignView({ c, settingLabel, categoryLabel, categoryKey,
           </div>
         );
       }
-      case "economics": {
+      // The realization stance is no longer asked (Explore models it; the Plan's targets are the
+      // real commitment). Both the "stance" and "economics" beats now render only their lever's
+      // seeded rate assumptions — a numberless "what we seed" reveal, not a question — so nothing
+      // is hidden but the walk stays a strategy conversation.
+      case "economics":
+      case "stance": {
         if (!econ) return null;
-        // The per-unit dollars this beat used to collect moved to the Starting Point. A plain
-        // economics beat (paired with a sibling "stance" beat) now has nothing of its own to ask,
-        // so it renders nothing — its seeded rates surface under that sibling stance. Only a
-        // withStance economics beat (no sibling) still renders, as a stance + seeded rates.
-        if (!beat.withStance) return null;
-        return (
-          <div key={key}>
-            <SectionHead n={++qn} kicker={beat.kicker} title={beat.prompt} />
-            <p className={helperCls}>{beat.helper}</p>
-            <div className="mb-4">{stanceControls(econ)}</div>
-            {renderSeededAssumptions(beat.leverId)}
-            <div className="mb-12" />
-          </div>
-        );
+        const panel = renderSeededAssumptions(beat.leverId);
+        return panel ? <div key={key} className="mb-12">{panel}</div> : <Fragment key={key} />;
       }
-      case "stance":
-        if (!econ) return null;
-        return (
-          <div key={key}>
-            <SectionHead n={++qn} kicker={beat.kicker} title={beat.prompt} />
-            <p className={helperCls}>{STANCE_HELPER}</p>
-            <div className="mb-4">{stanceControls(econ)}</div>
-            {renderSeededAssumptions(beat.leverId)}
-            <div className="mb-12" />
-          </div>
-        );
       case "outcome":
         return (
           <div key={key}>
@@ -434,33 +394,25 @@ export default function AlignView({ c, settingLabel, categoryLabel, categoryKey,
         </>
       )}
 
-      {/* Q — how far you'll push (the realization stance). The per-unit dollars used to be asked
-          here; they now live on the Starting Point, so this stays a judgment call, not data entry.
-          The seeded rate assumptions stay, collapsible. Non-discovery cells never have levers, so
-          this is the single-lever path only (revenue's per-lever stance lives in its discovery walk). */}
-      {econ && (
+      {/* The seeded rate assumptions — a numberless "what we seed" reveal, not a question. The
+          realization stance is no longer asked (Explore models it; the Plan's targets are the real
+          commitment), so this stays a strategy walk while nothing stays hidden. */}
+      {econ && econ.assumptions && econ.assumptions.length > 0 && (
         <>
-          <SectionHead n={++qn} kicker="How far you'll push" title={econ.stancePrompt} />
-          <p className="text-[14px] text-[#6B6B6B] leading-relaxed mb-5 max-w-[600px]">A judgment call, not a number to look up. Set how much of the reachable value you can realistically move. The economics behind it sit on your Starting Point.</p>
-          <div className="mb-8">{stanceControls(econ)}</div>
-
-          {/* Assumptions — seeded conservatively, shown, and editable. Nothing hidden. */}
-          {econ.assumptions && econ.assumptions.length > 0 && (
-            <div className="mb-12">
-              <button type="button" onClick={() => setShowAssumptions((s) => !s)} className="inline-flex items-center gap-1 text-[12px] font-semibold text-[#8C8C8C] hover:text-[#1A1A1A] transition-colors">
-                <ChevronRight className={`w-3.5 h-3.5 transition-transform ${showAssumptions ? "rotate-90" : ""}`} />
-                Assumptions{showAssumptions ? "" : ` · ${econ.assumptions.length}`}
-              </button>
-              {showAssumptions && (
-                <div className="mt-3 rounded-xl border border-[#E8E2DA] bg-[#FAF7F2] p-5">
-                  <p className="text-[12px] text-[#8C8C8C] mb-4 max-w-[520px]">Seeded conservatively so you are not starting from blank. Every one is editable and nothing is hidden. Change any that do not match your reality.</p>
-                  <div className="grid sm:grid-cols-2 gap-x-8 gap-y-4">
-                    {econ.assumptions.map(renderAssumptionInput)}
-                  </div>
+          <div className="mb-12">
+            <button type="button" onClick={() => setShowAssumptions((s) => !s)} className="inline-flex items-center gap-1 text-[12px] font-semibold text-[#8C8C8C] hover:text-[#1A1A1A] transition-colors">
+              <ChevronRight className={`w-3.5 h-3.5 transition-transform ${showAssumptions ? "rotate-90" : ""}`} />
+              What we seed{showAssumptions ? "" : ` · ${econ.assumptions.length}`}
+            </button>
+            {showAssumptions && (
+              <div className="mt-3 rounded-xl border border-[#E8E2DA] bg-[#FAF7F2] p-5">
+                <p className="text-[12px] text-[#8C8C8C] mb-4 max-w-[520px]">Seeded conservatively so you are not starting from blank. Every one is editable and nothing is hidden. Change any that do not match your reality.</p>
+                <div className="grid sm:grid-cols-2 gap-x-8 gap-y-4">
+                  {econ.assumptions.map(renderAssumptionInput)}
                 </div>
-              )}
-            </div>
-          )}
+              </div>
+            )}
+          </div>
         </>
       )}
 

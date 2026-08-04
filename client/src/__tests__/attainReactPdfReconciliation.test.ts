@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { buildFromSnapshot } from "@/pages/attain/pdf/attainPdfData";
 import { engineValueInPlay, type CellInputs } from "@/pages/attain/preview/attainEngineAdapter";
-import { econModel } from "@/pages/attain/preview/attainEconomics";
+import { econModel, defaultStance } from "@/pages/attain/preview/attainEconomics";
 import type { AttainSnapshot } from "@/pages/attain/attainStorage";
 
 /**
@@ -27,7 +27,7 @@ const num = (str: string) => { const n = parseFloat((str || "").replace(/[^0-9.]
 function cellInputs(snap: AttainSnapshot, settingLabel: string, category: string): CellInputs {
   const a = snap.inputsByCat?.[category] ?? { scope: "", econ: {}, stance: null, custom: "" };
   const cap = econModel(settingLabel, category)?.stanceCap ?? 75;
-  const stancePct = a.stance === -1 ? Math.min(cap, num(a.custom)) : (a.stance ?? 0);
+  const stancePct = a.stance === -1 ? Math.min(cap, num(a.custom)) : (a.stance ?? defaultStance(settingLabel, category));
   const econ: Record<string, number> = {};
   for (const [k, v] of Object.entries(a.econ ?? {})) { const n = num(v); if (Number.isFinite(n)) econ[k] = n; }
   const b = snap.baseline ?? {};

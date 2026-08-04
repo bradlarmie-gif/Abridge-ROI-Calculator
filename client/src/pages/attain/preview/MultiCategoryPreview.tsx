@@ -5,7 +5,7 @@ import { ChevronLeft, Check, ArrowRight } from "lucide-react";
 import { AnimatedNumber } from "./AnimatedNumber";
 import { ATTAIN_MATRIX } from "./attainCells";
 import { engineValueInPlay } from "./attainEngineAdapter";
-import { econModel, assumptionDefaults } from "./attainEconomics";
+import { econModel, assumptionDefaults, defaultStance } from "./attainEconomics";
 import { AttainNumberInput } from "./AttainNumberInput";
 import { LEAKS, type AttainCell } from "./attainContent";
 import type { AttainBaseline } from "@/lib/attain/attainLevers";
@@ -187,7 +187,11 @@ export function AttainExperience({ setting, cells, baseline, initial, onPersist 
   const cellInputs = (c: (typeof CELLS)[number]) => {
     const a = alignInputsByCat[c.category];
     const cap = econModel(SETTING, c.category)?.stanceCap ?? 75;
-    const stancePct = a.stance === -1 ? Math.min(cap, pnum(a.custom) || 0) : (a.stance ?? 0);
+    // Align no longer asks the realization stance (Explore already models it, and the Plan's
+    // targets capture the real commitment). Default it to the model's typical band (its Explore-
+    // tuned "middle") so the value carries the promise's conservative realization; an explicit
+    // stance (legacy / tests) still wins.
+    const stancePct = a.stance === -1 ? Math.min(cap, pnum(a.custom) || 0) : (a.stance ?? defaultStance(SETTING, c.category));
     const econ: Record<string, number> = {};
     // Assumptions (seeded rates, still asked in Align's collapsible panel).
     for (const [k, v] of Object.entries(a.econ)) { const n = pnum(v); if (Number.isFinite(n)) econ[k] = n; }

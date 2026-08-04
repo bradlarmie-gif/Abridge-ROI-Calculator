@@ -21,7 +21,7 @@ function fixedMiddleCount(cell: (typeof ATTAIN_MATRIX)[number]): number {
   if (a.trend) n += 1;
   if (a.scope) n += 1;
   if (!a.noPlayBeat && a.outcomes.some((o) => o.plays)) n += 1; // the play beat (unless suppressed)
-  if (econModel(cell.setting, key)) n += 1; // the stance beat ("how far you'll push")
+  // the realization stance is no longer a question — it's a numberless "what we seed" reveal.
   n += 3; // leak + proof + unlock
   return n;
 }
@@ -31,8 +31,9 @@ function discoveryConversationMax(cell: (typeof ATTAIN_MATRIX)[number]): number 
   if (!a.discovery) return 0;
   const frame = (a.choices ?? []).filter((q) => q.stage === "frame").length;
   const perPop = a.discovery.populations.map((pop) =>
-    // non-withStance economics beats render nothing (their seeds surface under the sibling stance)
-    pop.beats.filter((b) => !(b.kind === "economics" && !(b as { withStance?: boolean }).withStance)).length,
+    // stance + economics beats are numberless now (they render only the "what we seed" reveal, not
+    // a question), so they don't count toward the ≤8 question budget.
+    pop.beats.filter((b) => b.kind !== "stance" && b.kind !== "economics").length,
   );
   const maxPop = perPop.length ? Math.max(...perPop) : 0;
   return frame + maxPop + 3; // + leak + proof + unlock

@@ -6,7 +6,7 @@
  */
 import { ATTAIN_MATRIX } from "../preview/attainCells";
 import { LEAKS } from "../preview/attainContent";
-import { econModel } from "../preview/attainEconomics";
+import { econModel, defaultStance } from "../preview/attainEconomics";
 import { engineValueInPlay, type CellInputs } from "../preview/attainEngineAdapter";
 import { categoryForGoal } from "@/lib/attain/attainGoals";
 import type { AttainSetting, GoalId } from "@/lib/attain/attainTypes";
@@ -104,7 +104,7 @@ function chainFor(settingLabel: string, category: string, inp: CellInputs): { va
 function inputsFor(snap: AttainSnapshot, settingLabel: string, category: string): CellInputs {
   const a = snap.inputsByCat?.[category] ?? { scope: "", econ: {}, stance: null, custom: "" };
   const cap = econModel(settingLabel, category)?.stanceCap ?? 75;
-  const stancePct = a.stance === -1 ? Math.min(cap, num(a.custom)) : (a.stance ?? 0);
+  const stancePct = a.stance === -1 ? Math.min(cap, num(a.custom)) : (a.stance ?? defaultStance(settingLabel, category));
   const econ: Record<string, number> = {};
   for (const [k, v] of Object.entries(a.econ ?? {})) { const n = num(v); if (Number.isFinite(n)) econ[k] = n; }
   const scope = num(a.scope) || 0;

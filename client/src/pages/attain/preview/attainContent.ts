@@ -198,6 +198,14 @@ export const outpatientAccess: AttainCell = {
       unitValueLabel: "contribution margin",
       nameMap: { primary: "primary care", cardiology: "cardiology", ortho: "ortho", behavioral: "behavioral", other: "other" },
     },
+    choices: [
+      { id: "accessgap", kicker: "The bottleneck", prompt: "What's driving the access gap, and is it documentation?", helper: "The honest part. A lighter, faster note only moves the share of the gap that's about clinical time lost to charting. If it's scheduling, demand, or the front desk, that's real, but it isn't ours to claim.", mode: "single", defaultId: "charting", options: [
+        { id: "charting", title: "Charting load eating clinical time", desc: "Time on documentation that could be time seeing patients." },
+        { id: "template", title: "Scheduling and template design", desc: "How the day is built, not how long the note takes." },
+        { id: "demand", title: "Demand outstripping capacity", desc: "More need than the panel can hold, documentation aside." },
+        { id: "frontdesk", title: "Front-desk and referral workflow", desc: "Intake and referral handoffs before the visit." },
+      ] },
+    ],
     scope: { prompt: "Across how many providers?", unitLabel: "providers in those lines, from your Starting Point", ceiling: 60, default: "40" },
     proof: {
       prompt: "What would tell you it's working?",
