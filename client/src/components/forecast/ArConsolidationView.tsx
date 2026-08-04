@@ -118,7 +118,6 @@ export default function ArConsolidationView({
 
   const net = computeNet(items, abridgePrice);
   const alreadyInPlace = net.abridgePrice === 0;
-  const staysOnlyRows = model.rows.filter((r) => r.staysOnly);
   const focus = hoverId !== null;
   const dimFor = (id: string) => focus && id !== hoverId;
 
@@ -188,6 +187,20 @@ export default function ArConsolidationView({
 
                 Grouped read: ALL freed (coral) on the left as one contiguous block,
                 ALL stays (tan) on the right. Per-tool sub-segments keep hover/share. */}
+            {/* Region labels so each side of the bar is self-explanatory, hover or not:
+                the coral block (left) is what folds onto Abridge, the tan block (right) stays. */}
+            <div className="flex mb-2 text-[10px] font-extrabold uppercase tracking-[0.06em]" aria-hidden data-testid="ar-after-labels">
+              {model.freed > 0 && (
+                <div style={{ width: `${(model.freed / model.stackTotal) * 100}%` }} className="text-[#EA2C00]">
+                  Freed onto Abridge
+                </div>
+              )}
+              {model.stays > 0 && (
+                <div style={{ width: `${(model.stays / model.stackTotal) * 100}%` }} className="text-[#A89A88] text-right">
+                  Stays on
+                </div>
+              )}
+            </div>
             <div className="flex h-[52px] rounded-[10px] overflow-hidden" data-testid="ar-after-bar">
               {model.rows.filter((r) => r.retired > 0).map((r) => (
                 <div
@@ -245,7 +258,9 @@ export default function ArConsolidationView({
                   </span>
                 )}
                 {hoverId === r.id && !r.staysOnly && (
-                  <span className="text-[12px] font-bold text-[#EA2C00] tabular-nums whitespace-nowrap">· {r.freedSharePct}% of freed</span>
+                  <span className="text-[12px] font-bold text-[#EA2C00] tabular-nums whitespace-nowrap">
+                    · {fmtM(r.retired)} freed{r.stays > 0 ? ` · ${fmtM(r.stays)} stays` : ""}
+                  </span>
                 )}
               </div>
             ))}
@@ -280,24 +295,33 @@ export default function ArConsolidationView({
             </div>
           )}
 
-          <p className="text-[13px] text-[#8C7E6E] mt-3.5">
-            Hover any tool to see its share of the freed total.
-            {staysOnlyRows.length > 0 && (
-              <>
-                {" "}
-                What stays on both bars:{" "}
-                {staysOnlyRows.map((r, i) => (
-                  <span key={r.id}>
-                    <b className="text-[#2E2822] font-bold">
-                      {r.name} ({fmtM(r.spend)})
-                    </b>
-                    {i < staysOnlyRows.length - 2 ? ", " : i === staysOnlyRows.length - 2 ? " and " : ""}
-                  </span>
-                ))}
-                . Abridge doesn&rsquo;t replace these.
-              </>
-            )}
-          </p>
+          {/* Dynamic caption: the whole story in plain dollars by default, and the hovered tool's
+              own split on hover — no share-of-pool math, so it reads the way a CFO thinks. */}
+          {(() => {
+            const h = model.rows.find((r) => r.id === hoverId);
+            if (h) {
+              return (
+                <p className="text-[13px] text-[#8C7E6E] mt-3.5" data-testid="ar-caption">
+                  <b className="text-[#2E2822] font-bold">{h.name}</b> is <b className="text-[#2E2822] font-bold tabular-nums">{fmtM(h.spend)}</b> / yr.{" "}
+                  {h.staysOnly ? (
+                    <>It <b className="text-[#2E2822] font-bold">stays on</b> &mdash; Abridge doesn&rsquo;t replace it.</>
+                  ) : (
+                    <>
+                      <b className="text-[#EA2C00] font-bold tabular-nums">{fmtM(h.retired)}</b> folds onto Abridge
+                      {h.stays > 0 ? <>, and <b className="text-[#2E2822] font-bold tabular-nums">{fmtM(h.stays)}</b> stays on.</> : <>.</>}
+                    </>
+                  )}
+                </p>
+              );
+            }
+            return (
+              <p className="text-[13px] text-[#8C7E6E] mt-3.5" data-testid="ar-caption">
+                Of your <b className="text-[#2E2822] font-bold tabular-nums">{fmtM(model.stackTotal)}</b>,{" "}
+                <b className="text-[#EA2C00] font-bold tabular-nums">{fmtM(model.freed)}</b> folds onto Abridge and{" "}
+                <b className="text-[#2E2822] font-bold tabular-nums">{fmtM(model.stays)}</b> stays on. Hover any tool for its own split.
+              </p>
+            );
+          })()}
         </div>
       </div>
 
