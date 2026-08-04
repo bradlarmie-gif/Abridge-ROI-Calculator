@@ -45,7 +45,9 @@ const stripPlaceholders = (l: string) =>
 // Guarantee/ensure/cause/proven as a positive CLAIM. Negated forms
 // ("not a guarantee", "no guarantee") are the disclaimer and are allowed.
 const GUARANTEE = /\bguarantee[sd]?\b/i;
-const GUARANTEE_NEGATED = /\b(not a|no|never a|without)\s+guarantee/i;
+// Allow a short list between the negation and "guarantee" ("not a commitment or
+// guarantee of savings"), not only the adjacent form ("not a guarantee").
+const GUARANTEE_NEGATED = /\b(not a|no|never a|without)\s+(?:\w+\s+(?:and|or)\s+)?guarantee/i;
 const ENSURES = /\bensures?\b/i;
 const PROVEN = /\bproven to\b|\bclinically proven\b/i;
 // "causes" as an Abridge-attributed EFFECT verb ("documentation causes X").
