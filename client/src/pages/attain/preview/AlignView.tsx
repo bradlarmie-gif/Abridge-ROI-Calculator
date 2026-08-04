@@ -501,7 +501,7 @@ export default function AlignView({ c, settingLabel, categoryLabel, categoryKey,
                 <p className="text-[14px] text-white/70 mt-3 leading-relaxed max-w-[560px]">This one runs downstream of the note, through the coder, the claim, and the audit, so we don't put a manufactured dollar on it. We prove it by the metric moving, tracked in your plan.</p>
               </>
             ) : (
-              <p className="text-[14px] text-white/55 leading-relaxed">{econ ? "Set the scope and a stance above. The number assembles here from those and the economics on your Starting Point." : "This category's economics are coming next; the number will assemble here from your inputs."}</p>
+              <p className="text-[14px] text-white/55 leading-relaxed">{econ ? "Pick your goals and scope above. The number assembles here from those and the economics on your Starting Point." : "This category's economics are coming next; the number will assemble here from your inputs."}</p>
             )}
           </div>
         )}
