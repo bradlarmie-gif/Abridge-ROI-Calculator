@@ -198,7 +198,10 @@ function PitchPage({ data }: { data: AppRatPdfData }): JSX.Element {
   const summary = timingSummary(data.items);
   const net = computeNet(data.items, data.abridgePrice);
   const priced = net.abridgePrice > 0;
-  const remaining = model.rows.filter((r) => r.stays > 0).length;
+  // A tool "folds onto Abridge" if any of its spend consolidates (retired > 0), even partially —
+  // a 75%-freed tool folds, it isn't a tool that "stays". Counting "no residual" as folded wrongly
+  // bucketed partly-freed tools as staying.
+  const foldedCount = model.rows.filter((r) => r.retired > 0).length;
   const consolidatedBy = model.freed > 0 ? (summary.planFinishMonths > 0 ? renewalDateLabel(summary.planFinishMonths) : "now") : "n/a";
   const toc = [
     { n: "01", t: "The stack, consolidated" },
@@ -242,7 +245,7 @@ function PitchPage({ data }: { data: AppRatPdfData }): JSX.Element {
         {[
           { v: fmtShort(model.stackTotal), k: "Documentation spend today", coral: false },
           { v: fmtShort(model.freed), k: "Freed every year", coral: true },
-          { v: String(Math.max(0, model.vendorCount - remaining)), k: "Tools folded onto Abridge", coral: false },
+          { v: String(foldedCount), k: "Tools folded onto Abridge", coral: false },
           { v: consolidatedBy, k: "Fully consolidated", coral: false },
         ].map((s, i) => (
           <div key={i}>
@@ -367,14 +370,22 @@ function StackPage({ data }: { data: AppRatPdfData }): JSX.Element {
       </div>
 
       {(() => {
-        const survivors = model.rows.filter((r) => r.stays > 0).map((r) => r.name);
-        const names = survivors.length <= 2 ? survivors.join(" and ") : `${survivors.slice(0, -1).join(", ")}, and ${survivors.slice(-1)}`;
-        const who = survivors.length === 1 ? "One vendor stays" : `${survivors.length} vendors stay`;
+        // "Stays" has two sources, and they read differently: tools Abridge wholly doesn't replace
+        // (staysOnly), and the residual on tools it covers only in part. Naming a 75%-freed tool as
+        // "staying" was wrong, so we name only the wholly-staying tools and note partial residuals.
+        const staysWhole = model.rows.filter((r) => r.staysOnly).map((r) => r.name);
+        const hasPartial = model.rows.some((r) => r.retired > 0 && r.stays > 0);
+        const names = staysWhole.length <= 2 ? staysWhole.join(" and ") : `${staysWhole.slice(0, -1).join(", ")}, and ${staysWhole.slice(-1)}`;
+        const reasons: string[] = [];
+        if (staysWhole.length) reasons.push(`${names}, which Abridge doesn't replace`);
+        if (hasPartial) reasons.push("the residual on tools it covers only in part");
         return (
           <div style={{ fontSize: 13, color: C.muted, lineHeight: 1.55, marginTop: 20, maxWidth: 650 }}>
             <b className="font-abridge" style={{ color: C.coral }}>{fmtShort(model.freed)}</b> of the {fmtShort(model.stackTotal)} you spend
-            overlaps what Abridge already produces from the conversation.
-            {survivors.length > 0 && ` ${who} on your bill (${names}), for the work Abridge does not take on yet.`}
+            overlaps what Abridge already produces from the conversation, so it folds onto Abridge as contracts renew.
+            {model.stays > 0 && reasons.length > 0 && (
+              <> The <b className="font-abridge">{fmtShort(model.stays)}</b> that stays is {reasons.join(", plus ")}.</>
+            )}
           </div>
         );
       })()}
