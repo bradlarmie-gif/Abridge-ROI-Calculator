@@ -20,11 +20,11 @@ const num = (s: string) => { const n = parseFloat((s || "").replace(/[^0-9.]/g, 
 // most likely leaks lets the Plan put an owner and a date against each one. Pure
 // strategy: these feed the plan's discussion, never the dollar.
 const LEAKS: { id: string; title: string; desc: string }[] = [
-  { id: "reabsorbed", title: "The freed time gets reabsorbed", desc: "Capacity opens up but fills with other work before the goal ever sees it." },
+  { id: "adoption", title: "Adoption stalls below plan", desc: "Fewer clinicians record with Abridge than the plan assumes, so the signal never builds." },
+  { id: "habit", title: "The new habit doesn't stick", desc: "Documentation improves at first, then drifts back once attention moves on." },
   { id: "cadence", title: "The review cadence slips", desc: "The check-ins that keep this on track quietly stop happening." },
   { id: "owner", title: "No clear owner for the follow-through", desc: "Everyone agrees on the goal; nobody carries it week to week." },
-  { id: "adoption", title: "Adoption stalls below plan", desc: "Fewer providers record with Abridge than the plan assumes." },
-  { id: "priorities", title: "A bigger priority crowds it out", desc: "Another initiative pulls attention before this change takes hold." },
+  { id: "absorbed", title: "The gain gets absorbed elsewhere", desc: "The freed capacity or captured margin gets spent on something else before this goal sees it." },
 ];
 
 const LBL = "text-[10px] font-semibold uppercase tracking-[1.8px] text-[#8C8C8C]";
@@ -217,6 +217,24 @@ export default function AlignView({ c, settingLabel, categoryLabel, categoryKey,
     </>
   );
 
+  // the seeded rate assumptions for a lever (e.g. the coding lift, the query volume), shown
+  // alongside the stance. The per-unit DOLLARS moved to the Starting Point, so what's left here
+  // is only the seeded rates: shown, editable, nothing hidden.
+  const renderSeededAssumptions = (leverId?: string) => {
+    const la = (econ?.assumptions ?? []).filter((a) => !leverId || a.lever === leverId);
+    if (la.length === 0) return null;
+    return (
+      <div className="mt-6 rounded-xl border border-[#E8E2DA] bg-[#FAF7F2] p-5 max-w-[560px]">
+        <p className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#8C8C8C] mb-2">What we seed · editable</p>
+        <p className="text-[12px] text-[#8C8C8C] mb-4 max-w-[500px]">Set conservatively so you're not starting from blank. Change any that don't match your reality; the dollars behind them sit on your Starting Point.</p>
+        <div className="grid sm:grid-cols-2 gap-x-8 gap-y-4">{la.map(renderAssumptionInput)}</div>
+      </div>
+    );
+  };
+  // the standing helper under a discovery stance beat — reinforces that this is a judgment call,
+  // not a number to look up (the dollars live on the Starting Point).
+  const STANCE_HELPER = "A judgment call, not a number to look up. Set how much you'd realistically capture and keep; the economics behind it sit on your Starting Point.";
+
   // one discovery beat → a numbered section, feeding the SAME state the downstream reads
   const renderDiscoveryBeat = (beat: DiscoveryBeat, key: string) => {
     switch (beat.kind) {
@@ -260,27 +278,18 @@ export default function AlignView({ c, settingLabel, categoryLabel, categoryKey,
       }
       case "economics": {
         if (!econ) return null;
-        // The per-unit dollars this beat used to collect now live on the Starting Point, so
-        // it keeps only the seeded rate assumptions and (where set) the realization stance.
-        const lever = econ.levers?.find((l) => l.id === beat.leverId);
-        const la = (econ.assumptions ?? []).filter((a) => a.lever === beat.leverId);
-        if (la.length === 0 && !beat.withStance) return null; // nothing left to ask for this lever
+        // The per-unit dollars this beat used to collect moved to the Starting Point. A plain
+        // economics beat (paired with a sibling "stance" beat) now has nothing of its own to ask,
+        // so it renders nothing — its seeded rates surface under that sibling stance. Only a
+        // withStance economics beat (no sibling) still renders, as a stance + seeded rates.
+        if (!beat.withStance) return null;
         return (
           <div key={key}>
             <SectionHead n={++qn} kicker={beat.kicker} title={beat.prompt} />
             <p className={helperCls}>{beat.helper}</p>
-            <div className="rounded-xl border border-[#E8E2DA] bg-[#FAF7F2] p-5 mb-12">
-              {lever && <p className="text-[11px] font-bold uppercase tracking-[1.5px] text-[#443A32] mb-4">{lever.label}</p>}
-              {la.length > 0 && (
-                <>
-                  <p className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#8C8C8C] mb-3">Assumptions · seeded and editable</p>
-                  <div className="grid sm:grid-cols-2 gap-x-8 gap-y-4">{la.map(renderAssumptionInput)}</div>
-                </>
-              )}
-              {beat.withStance && (
-                <div className="mt-6 pt-6 border-t border-[#E8E2DA]">{stanceControls(econ)}</div>
-              )}
-            </div>
+            <div className="mb-4">{stanceControls(econ)}</div>
+            {renderSeededAssumptions(beat.leverId)}
+            <div className="mb-12" />
           </div>
         );
       }
@@ -289,7 +298,10 @@ export default function AlignView({ c, settingLabel, categoryLabel, categoryKey,
         return (
           <div key={key}>
             <SectionHead n={++qn} kicker={beat.kicker} title={beat.prompt} />
-            <div className="mb-12">{stanceControls(econ)}</div>
+            <p className={helperCls}>{STANCE_HELPER}</p>
+            <div className="mb-4">{stanceControls(econ)}</div>
+            {renderSeededAssumptions(beat.leverId)}
+            <div className="mb-12" />
           </div>
         );
       case "outcome":
@@ -331,8 +343,19 @@ export default function AlignView({ c, settingLabel, categoryLabel, categoryKey,
       {c.discovery && activeDiscPops.length === 0 && (
         <p className="text-[14px] text-[#8C8C8C] leading-relaxed mb-12 max-w-[600px]">Pick the part of your book above, and the discovery for each opens up here.</p>
       )}
-      {c.discovery && activeDiscPops.map((pop) => (
-        <Fragment key={pop.id}>{pop.beats.map((beat, i) => renderDiscoveryBeat(beat, `${pop.id}-${i}`))}</Fragment>
+      {c.discovery && activeDiscPops.map((pop, pi) => (
+        <Fragment key={pop.id}>
+          {/* When more than one mechanism is in play, head each one so the walk reads as
+              two clearly separated conversations, not one long list. */}
+          {activeDiscPops.length > 1 && pop.label && (
+            <div className={`flex items-center gap-3 ${pi === 0 ? "mb-8" : "mt-4 mb-8"}`}>
+              <span className="text-[11px] font-bold uppercase tracking-[2px] text-[#EA2C00] whitespace-nowrap">{pop.label}</span>
+              <span className="h-px flex-1 bg-[#E8E2DA]" />
+              <span className="text-[11px] text-[#B8AFA2] whitespace-nowrap">{pi + 1} of {activeDiscPops.length}</span>
+            </div>
+          )}
+          {pop.beats.map((beat, i) => renderDiscoveryBeat(beat, `${pop.id}-${i}`))}
+        </Fragment>
       ))}
 
       {/* ===== Fixed middle (only when the cell has no discovery) ===== */}
@@ -531,7 +554,7 @@ export default function AlignView({ c, settingLabel, categoryLabel, categoryKey,
                 <p className="text-[13px] text-white/70 mt-3 leading-relaxed">{showMath}</p>
               </>
             ) : (
-              <p className="text-[14px] text-white/55 leading-relaxed">{econ ? "Set the scope, the economics, and a stance above. The number assembles here from your own inputs." : "This category's economics are coming next; the number will assemble here from your inputs."}</p>
+              <p className="text-[14px] text-white/55 leading-relaxed">{econ ? "Set the scope and a stance above. The number assembles here from those and the economics on your Starting Point." : "This category's economics are coming next; the number will assemble here from your inputs."}</p>
             )}
           </div>
         )}

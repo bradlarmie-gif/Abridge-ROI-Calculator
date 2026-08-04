@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { buildFromSnapshot } from "@/pages/attain/pdf/attainPdfData";
 import { engineValueInPlay, type CellInputs } from "@/pages/attain/preview/attainEngineAdapter";
+import { econModel } from "@/pages/attain/preview/attainEconomics";
 import type { AttainSnapshot } from "@/pages/attain/attainStorage";
 
 /**
@@ -20,19 +21,28 @@ const SETTING_LABEL: Record<string, string> = { outpatient: "Outpatient", ed: "E
 const GOAL_CATEGORY: Record<string, string> = { access: "Patient Access", retention: "Provider Retention", revenue: "Revenue Capture", quality: "Quality & Safety", capacity: "Nursing Capacity" };
 const num = (str: string) => { const n = parseFloat((str || "").replace(/[^0-9.]/g, "")); return Number.isFinite(n) ? n : 0; };
 
-// Independent copy of attainPdfData.inputsFor — the engine's own input shape.
+// Independent copy of attainPdfData.inputsFor — the engine's own input shape. Mirrors the real
+// mapping exactly, INCLUDING sourcing the per-unit dollars from the Starting Point (baseline.econ)
+// with the model's placeholder default as fallback; if inputsFor drops that merge, this diverges.
 function cellInputs(snap: AttainSnapshot, settingLabel: string, category: string): CellInputs {
   const a = snap.inputsByCat?.[category] ?? { scope: "", econ: {}, stance: null, custom: "" };
-  const stancePct = a.stance === -1 ? num(a.custom) : (a.stance ?? 0);
+  const cap = econModel(settingLabel, category)?.stanceCap ?? 75;
+  const stancePct = a.stance === -1 ? Math.min(cap, num(a.custom)) : (a.stance ?? 0);
   const econ: Record<string, number> = {};
   for (const [k, v] of Object.entries(a.econ ?? {})) { const n = num(v); if (Number.isFinite(n)) econ[k] = n; }
-  const scope = num(a.scope) || 0;
   const b = snap.baseline ?? {};
+  const model = econModel(settingLabel, category);
+  for (const f of model?.fields ?? []) {
+    const typed = b.econ?.[f.key];
+    const val = typed != null && typed > 0 ? typed : num(f.placeholder);
+    if (Number.isFinite(val) && val > 0) econ[f.key] = val;
+  }
+  const scope = num(a.scope) || 0;
   const isNursingQuality = settingLabel === "Nursing" && category === "Quality & Safety";
   return { scope, stancePct, econ, totalProviders: b.providers, annualEncounters: b.annualEncounters, util: b.utilizationPct, adoption: b.adoptionPct, staffedBeds: isNursingQuality ? scope : b.staffedBeds };
 }
 
-function makeSnapshot(setting: string, goals: string[], inputsByCat: Record<string, AttainSnapshot["inputsByCat"][string]>, baseline: Record<string, number>): AttainSnapshot {
+function makeSnapshot(setting: string, goals: string[], inputsByCat: Record<string, AttainSnapshot["inputsByCat"][string]>, baseline: AttainSnapshot["baseline"]): AttainSnapshot {
   return {
     partner: "Test Health System", phase: "experience", setting, goals, baseline,
     pickedByCat: {}, playsByCat: {}, answersByCat: {}, inputsByCat,
@@ -45,10 +55,14 @@ const OUTPATIENT_MULTI = makeSnapshot(
   "outpatient",
   ["access", "retention"],
   {
-    "Patient Access": { scope: "40", econ: { perVisit: "200", minSaved: "2", visitMin: "30" }, stance: 25, custom: "" },
-    "Provider Retention": { scope: "40", econ: { replacementCost: "400000", turnover: "6", burnout: "40" }, stance: 30, custom: "" },
+    // The per-unit dollar (perVisit) now lives on the Starting Point (baseline.econ), NOT here;
+    // Align keeps only the seeded rate assumptions + the stance.
+    "Patient Access": { scope: "40", econ: { minSaved: "2", visitMin: "30" }, stance: 25, custom: "" },
+    "Provider Retention": { scope: "40", econ: { turnover: "6", burnout: "40" }, stance: 30, custom: "" },
   },
-  { providers: 40, annualEncounters: 140_000, utilizationPct: 70, adoptionPct: 70 },
+  // A NON-default margin ($250 vs the model's $200 placeholder) proves the PDF sources the dollar
+  // from the Starting Point, not a bare model default.
+  { providers: 40, annualEncounters: 140_000, utilizationPct: 70, adoptionPct: 70, econ: { perVisit: 250 } },
 );
 
 describe("Attain live PDF reconciliation (buildFromSnapshot ⇄ engineValueInPlay)", () => {
@@ -82,8 +96,8 @@ describe("Attain live PDF reconciliation (buildFromSnapshot ⇄ engineValueInPla
     const single = makeSnapshot(
       "outpatient",
       ["access"],
-      { "Patient Access": { scope: "40", econ: { perVisit: "200", minSaved: "2", visitMin: "30" }, stance: 25, custom: "" } },
-      { providers: 40, annualEncounters: 140_000, utilizationPct: 70, adoptionPct: 70 },
+      { "Patient Access": { scope: "40", econ: { minSaved: "2", visitMin: "30" }, stance: 25, custom: "" } },
+      { providers: 40, annualEncounters: 140_000, utilizationPct: 70, adoptionPct: 70, econ: { perVisit: 250 } },
     );
     const built = buildFromSnapshot(single)!;
     const engineVal = engineValueInPlay("Outpatient", "Patient Access", cellInputs(single, "Outpatient", "Patient Access"));

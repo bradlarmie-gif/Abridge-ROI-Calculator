@@ -7,6 +7,8 @@
  * multi-partner switching keys off it later. Sets/nested-Sets are serialized to arrays.
  */
 
+import type { AttainBaseline } from "@/lib/attain/attainLevers";
+
 const NS = "attain:plan:v1:";           // one saved plan per partner, keyed by name
 const ACTIVE = "attain:plan:v1:active"; // which partner's plan to resume on refresh
 const slug = (name: string) => (name || "").trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "untitled";
@@ -23,7 +25,7 @@ export type AttainSnapshot = {
   phase: string;            // resume the funnel where they left off
   setting: string | null;
   goals: string[];
-  baseline: Record<string, number | undefined>;
+  baseline: AttainBaseline;
   // per-category experience state (keyed by category label)
   pickedByCat: Record<string, string[]>;
   playsByCat: Record<string, Record<string, string[]>>;

@@ -56,7 +56,10 @@ export type DiscoveryBeat =
   | { kind: "stance"; leverId: string; kicker: string; prompt: string } // the shared realization bands (feeds inputs.stance)
   | { kind: "outcome"; id: string; kicker: string; prompt: string; helper: string; options: ChoiceOption[] }; // the North Star (multi) → answers.choices[id]
 
-export type DiscoveryPopulation = { id: string; showIf: string[]; beats: DiscoveryBeat[] };
+// `label` names the mechanism (e.g. "Fee-for-service", "Risk contracts"); shown as a divider
+// heading before the population's beats WHEN more than one mechanism is active, so a walk that
+// covers two levers reads as two clearly separated conversations rather than one long list.
+export type DiscoveryPopulation = { id: string; showIf: string[]; label?: string; beats: DiscoveryBeat[] };
 export type Discovery = { populations: DiscoveryPopulation[] };
 
 // ---------- Trend beat (fixed-run only) ----------

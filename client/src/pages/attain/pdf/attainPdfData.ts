@@ -105,6 +105,15 @@ function inputsFor(snap: AttainSnapshot, settingLabel: string, category: string)
   for (const [k, v] of Object.entries(a.econ ?? {})) { const n = num(v); if (Number.isFinite(n)) econ[k] = n; }
   const scope = num(a.scope) || 0;
   const b = snap.baseline ?? {};
+  // The per-unit dollars live on the Starting Point (baseline.econ); read each model field from
+  // there with the model's placeholder default as fallback, exactly as MultiCategoryPreview.cellInputs
+  // does, so the PDF number reconciles with the screen instead of falling back to bare model defaults.
+  const model0 = econModel(settingLabel, category);
+  for (const f of model0?.fields ?? []) {
+    const typed = b.econ?.[f.key];
+    const val = typed != null && typed > 0 ? typed : num(f.placeholder);
+    if (Number.isFinite(val) && val > 0) econ[f.key] = val;
+  }
   const isNursingQuality = settingLabel === "Nursing" && category === "Quality & Safety";
   // Multi-lever categories (Revenue Capture): reconstruct the live levers from the saved frame
   // answer + picked goals, exactly as MultiCategoryPreview.activeLeversFor does, so the PDF sums
