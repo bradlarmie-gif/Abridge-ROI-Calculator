@@ -33,6 +33,9 @@ const state: ExploreState = {
   annualEncounters: 200000,
   utilizationPercent: 80,
   minutesSavedPerEncounter: 2,
+  // Count retention here so the Workforce quadrant is exercised (default is now
+  // "tracked", which keeps the retention dollar out of the total).
+  retentionMode: "counted",
   timeDriverInputs: {
     ...DEFAULT_EXPLORE_STATE.timeDriverInputs,
     patientAccessEnabled: true,
@@ -90,5 +93,33 @@ describe("computeExploreTotals", () => {
     expect(totals.efficiencyValue).toBe(byQuadrant.Capacity + byQuadrant.Workforce);
     // documentation = Revenue + Quality drivers + the $50k Revenue annual benefit
     expect(totals.documentationValue).toBe(byQuadrant.Revenue + byQuadrant.Quality + 50000);
+  });
+});
+
+describe("retention lens (Counted vs Tracked)", () => {
+  it("tracked (default) keeps the retention dollar out of the total; counted folds it in", () => {
+    const tracked: ExploreState = { ...state, retentionMode: "tracked" };
+    const counted: ExploreState = { ...state, retentionMode: "counted" };
+
+    const trackedVals = computeAllDriverValues(tracked, TOTAL_HOURS_SAVED);
+    const countedVals = computeAllDriverValues(counted, TOTAL_HOURS_SAVED);
+
+    // The retention replacement-cost dollar exists and is real when counted...
+    expect(countedVals.providerWellbeing).toBeGreaterThan(0);
+    // ...and is zeroed (shown as signals instead) when tracked.
+    expect(trackedVals.providerWellbeing).toBe(0);
+
+    // The total drops by exactly the retention dollar when tracked — nothing
+    // else moves (agency/scribe stay counted).
+    const trackedTotal = computeExploreTotals(tracked, TOTAL_HOURS_SAVED).totalAnnualValue;
+    const countedTotal = computeExploreTotals(counted, TOTAL_HOURS_SAVED).totalAnnualValue;
+    expect(countedTotal - trackedTotal).toBe(countedVals.providerWellbeing);
+  });
+
+  it("defaults to tracked when retentionMode is unset", () => {
+    const { retentionMode, ...rest } = state;
+    void retentionMode;
+    const unset = rest as ExploreState;
+    expect(computeAllDriverValues(unset, TOTAL_HOURS_SAVED).providerWellbeing).toBe(0);
   });
 });

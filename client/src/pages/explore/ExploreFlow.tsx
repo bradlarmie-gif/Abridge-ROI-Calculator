@@ -515,6 +515,15 @@ export interface ExploreState {
 
   year2GrowthPercent: number;
   year3GrowthPercent: number;
+
+  /** Retention lens (audience toggle). "counted" folds the retention
+   * replacement-cost dollar (providerWellbeing / nursingRetention) into the
+   * ROI; "tracked" (the default when unset) shows retention as its signals —
+   * turnover, burnout, likelihood to stay — and keeps the dollar out of the
+   * total. Lens only: the underlying replacement-cost math is unchanged, just
+   * gated in/out of the sum. Agency/locum and scribe reductions are hard
+   * displacement dollars and always count. */
+  retentionMode?: "counted" | "tracked";
 }
 
 export const DEFAULT_EXPLORE_STATE: ExploreState = {
@@ -892,6 +901,9 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
   fullScaleProviders: 500,
   year2GrowthPercent: 10,
   year3GrowthPercent: 10,
+  // Retention is tracked (shown as signals, kept out of the ROI) by default; a
+  // finance audience can flip it to "counted" to fold in replacement-cost value.
+  retentionMode: "tracked",
 };
 
 export type ExplorePhase =

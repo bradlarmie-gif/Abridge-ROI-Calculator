@@ -453,6 +453,9 @@ export function exploreStateForReconciliation(baseline: AttainBaseline, setting:
   const chain = computeWorkforceChain(baseline, setting, values);
   const state = mkState(setting);
   state.numberOfProviders = chain.scope.providersInScope;
+  // This reconciliation is specifically the retention DOLLAR chain, so count it
+  // (the app-wide default keeps retention tracked / out of the ROI total).
+  state.retentionMode = "counted";
 
   if (setting === "nursing") {
     (state.timeDriverInputs as any).nursingRetentionEnabled = true;

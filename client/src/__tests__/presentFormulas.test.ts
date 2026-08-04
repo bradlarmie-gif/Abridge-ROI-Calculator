@@ -56,6 +56,7 @@ describe("present formulas — reconcile across all care settings", () => {
     const state: ExploreState = {
       ...DEFAULT_EXPLORE_STATE,
       careSetting: "outpatient",
+      retentionMode: "counted",
       numberOfProviders: 100,
       annualEncounters: 200_000,
       utilizationPercent: 80,

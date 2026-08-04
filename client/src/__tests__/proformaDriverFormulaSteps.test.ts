@@ -113,6 +113,7 @@ describe("proforma driver formula steps — reconcile to the value, every driver
     const state = {
       ...DEFAULT_EXPLORE_STATE,
       careSetting: "outpatient",
+      retentionMode: "counted",
       numberOfProviders: 100,
       annualEncounters: 240_000,
       utilizationPercent: 30,
@@ -148,6 +149,7 @@ describe("proforma driver formula steps — reconcile to the value, every driver
     const state = {
       ...DEFAULT_EXPLORE_STATE,
       careSetting: "ed",
+      retentionMode: "counted",
       numberOfProviders: 60,
       annualEncounters: 120_000,
       utilizationPercent: 100,
@@ -166,6 +168,7 @@ describe("proforma driver formula steps — reconcile to the value, every driver
     const state = {
       ...DEFAULT_EXPLORE_STATE,
       careSetting: "inpatient",
+      retentionMode: "counted",
       numberOfProviders: 40,
       annualEncounters: 20_000,
       utilizationPercent: 60,
@@ -195,6 +198,7 @@ describe("proforma driver formula steps — reconcile to the value, every driver
     const state = {
       ...DEFAULT_EXPLORE_STATE,
       careSetting: "nursing",
+      retentionMode: "counted",
       numberOfProviders: 300,
       nursingStaffedBeds: 300,
       nursingOccupancyRate: 85,

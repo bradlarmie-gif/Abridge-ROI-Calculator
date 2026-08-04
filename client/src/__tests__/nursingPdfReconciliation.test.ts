@@ -170,6 +170,7 @@ describe("Nursing PDF reconciliation — engine math vs. printed formula", () =>
     const state: ExploreState = {
       ...DEFAULT_EXPLORE_STATE,
       careSetting: "nursing",
+      retentionMode: "counted",
       numberOfProviders: 4,
       timeDriverInputs: {
         ...DEFAULT_EXPLORE_STATE.timeDriverInputs,
@@ -203,6 +204,7 @@ describe("Nursing PDF reconciliation — engine math vs. printed formula", () =>
     const state: ExploreState = {
       ...DEFAULT_EXPLORE_STATE,
       careSetting: "nursing",
+      retentionMode: "counted",
       numberOfProviders: 4,
       timeDriverInputs: {
         ...DEFAULT_EXPLORE_STATE.timeDriverInputs,
@@ -233,6 +235,7 @@ describe("Nursing PDF reconciliation — engine math vs. printed formula", () =>
     const state: ExploreState = {
       ...DEFAULT_EXPLORE_STATE,
       careSetting: "nursing",
+      retentionMode: "counted",
       numberOfProviders: 120,
       timeDriverInputs: {
         ...DEFAULT_EXPLORE_STATE.timeDriverInputs,

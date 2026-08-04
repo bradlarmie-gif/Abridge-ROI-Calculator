@@ -374,8 +374,10 @@ describe("lever / assumption editing (recomputeDriverFromExploreState)", () => {
     // wellbeing + calculateRetentionValue are the preconditions for the engine to
     // emit providerWellbeing (a retention driver only exists when they're on).
     const base = { ...DEFAULT_EXPLORE_STATE.timeDriverInputs, wellbeingEnabled: true, calculateRetentionValue: true };
-    const lo = op({ timeDriverInputs: { ...base, annualTurnoverRate: 5 } });
-    const hi = op({ timeDriverInputs: { ...base, annualTurnoverRate: 15 } });
+    // Retention defaults to tracked (out of the ROI); count it so the driver
+    // emits a dollar to compare across turnover rates.
+    const lo = op({ retentionMode: "counted", timeDriverInputs: { ...base, annualTurnoverRate: 5 } });
+    const hi = op({ retentionMode: "counted", timeDriverInputs: { ...base, annualTurnoverRate: 15 } });
     expect(recomputeDriverFromExploreState("retention", hi))
       .toBeGreaterThan(recomputeDriverFromExploreState("retention", lo));
   });

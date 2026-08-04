@@ -67,6 +67,16 @@ const fmtNd = (n: number) =>
   Number(n).toLocaleString(undefined, { maximumFractionDigits: 1 });
 const fmt$ = (n: number) => `$${Math.round(n).toLocaleString()}`;
 
+/**
+ * Retention lens resolver. Retention (the replacement-cost dollar) counts
+ * toward the ROI only when the user has explicitly flipped it on; the default
+ * (unset) is "tracked" — shown as signals, kept out of every total. Single
+ * source so the engine, the recap, the proforma snapshot and the PDFs agree.
+ */
+export function retentionIsCounted(state: ExploreState): boolean {
+  return state.retentionMode === "counted";
+}
+
 export function computeAllDriverValues(
   state: ExploreState,
   totalHoursSaved: number,
@@ -152,6 +162,15 @@ export function computeAllDriverValues(
           td.nursingAgencyWeeklyPremium,
       );
     }
+  }
+  // Retention lens: unless retention is flipped to "counted", keep the soft
+  // replacement-cost dollar out of every total (it renders as signals instead).
+  // This is the single gate point — computeExploreTotals, the quadrant
+  // breakdowns and the proforma snapshot all read these values. Agency/locum
+  // and scribe (hard displacement) are deliberately left counted.
+  if (!retentionIsCounted(state)) {
+    if (result.providerWellbeing !== undefined) result.providerWellbeing = 0;
+    if (result.nursingRetention !== undefined) result.nursingRetention = 0;
   }
   if (isNursing && td.nursingOtEnabled) {
     const otHrs =

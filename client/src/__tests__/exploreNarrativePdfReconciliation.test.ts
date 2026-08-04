@@ -122,6 +122,7 @@ function assertReconciles(
 const opBase: ExploreState = {
   ...DEFAULT_EXPLORE_STATE,
   careSetting: "outpatient",
+  retentionMode: "counted",
   numberOfProviders: 50,
   annualEncounters: 100_000,
   utilizationPercent: 80,
@@ -130,6 +131,7 @@ const opBase: ExploreState = {
 const edBase: ExploreState = {
   ...DEFAULT_EXPLORE_STATE,
   careSetting: "ed",
+  retentionMode: "counted",
   numberOfProviders: 30,
   annualEncounters: 60_000,
   utilizationPercent: 100,
@@ -138,6 +140,7 @@ const edBase: ExploreState = {
 const ipBase: ExploreState = {
   ...DEFAULT_EXPLORE_STATE,
   careSetting: "inpatient",
+  retentionMode: "counted",
   numberOfProviders: 25,
   annualEncounters: 12_000,
   utilizationPercent: 100,
