@@ -125,7 +125,9 @@ const list = (qs: Quadrant[]) =>
 
 export default function EdCareSetting({ selectedSetting, onSelectSetting, onNext, onBack, onHome, disabledSettings = [], onDataRequest }: Props) {
   const [hovered, setHovered] = useState<ExploreCareSetting | null>(null);
-  const v2 = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("caresettingv2") === "1";
+  // v2 (color-coded four domains + Tracked marking + tailored read) is now the
+  // default; ?caresettingv2=0 falls back to the old flat panel for comparison.
+  const v2 = typeof window === "undefined" || new URLSearchParams(window.location.search).get("caresettingv2") !== "0";
 
   // Preview follows the pointer, then the selection. Before either exists we
   // show a neutral placeholder rather than defaulting to a real setting, so the
@@ -222,7 +224,7 @@ export default function EdCareSetting({ selectedSetting, onSelectSetting, onNext
                             >
                               {isProof && (
                                 <span className="absolute top-[14px] right-[14px] text-[8.5px] font-extrabold tracking-[0.05em] uppercase text-[#8A8480] bg-[#F2ECE3] rounded-full px-[8px] py-[3px]">
-                                  Not counted
+                                  Tracked
                                 </span>
                               )}
                               <div className="flex items-center gap-[7px]">
@@ -250,7 +252,7 @@ export default function EdCareSetting({ selectedSetting, onSelectSetting, onNext
                             <span className="text-[10px] font-extrabold tracking-[0.05em] uppercase text-[#EA2C00] bg-[#FFEDE7] rounded-full px-[10px] py-[4px] whitespace-nowrap mt-[1px]">The read</span>
                             <span className="text-[13px] text-[#7C766F] leading-[1.5]">
                               <b className="text-[#1A1A1A] font-bold">{list(dollar)} carry the dollar.</b>{" "}
-                              {list(proof)} {proof.length > 1 ? "are" : "is"} tracked alongside, never counted in the number.
+              {list(proof)} {proof.length > 1 ? "are" : "is"} tracked as the leading signal, not a dollar.
                             </span>
                           </motion.div>
                         );
