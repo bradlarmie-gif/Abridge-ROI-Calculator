@@ -56,6 +56,48 @@ export function Switch({
   );
 }
 
+/** "Show as: Number / Dollar" segmented control for a driver whose value can be
+ * carried either as a tracked signal or a counted dollar (retention lens). */
+export function LensToggle({
+  counted,
+  onChange,
+  testId,
+}: {
+  counted: boolean;
+  onChange: (counted: boolean) => void;
+  testId?: string;
+}) {
+  return (
+    <div className="inline-flex items-center gap-[6px]">
+      <span className="text-[10.5px] font-extrabold tracking-[0.08em] uppercase text-[#7C766F]">Show as</span>
+      <div className="inline-flex items-center gap-[2px] bg-[#F2EFEA] rounded-full p-[3px]" data-testid={testId}>
+        {([
+          { counts: false, label: "Number" },
+          { counts: true, label: "Dollar" },
+        ] as const).map(({ counts, label }) => {
+          const active = counted === counts;
+          return (
+            <button
+              key={label}
+              type="button"
+              onClick={() => onChange(counts)}
+              data-testid={testId ? `${testId}-${counts ? "dollar" : "number"}` : undefined}
+              aria-pressed={active}
+              className={`text-[11px] font-extrabold tracking-[0.03em] rounded-full px-[12px] py-[4px] transition-all ${
+                active
+                  ? `bg-white shadow-[0_1px_2px_rgba(0,0,0,0.12)] ${counts ? "text-[#EA2C00]" : "text-[#2E2822]"}`
+                  : "text-[#7C766F] hover:text-[#2E2822]"
+              }`}
+            >
+              {label}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export function SectionLabel({
   children,
   tag,
@@ -99,6 +141,8 @@ export function ValueCard({
   buildStruct,
   warning,
   awaitingScale,
+  lens,
+  trackedHeadline,
 }: {
   title: string;
   subtitle: string;
@@ -114,7 +158,14 @@ export function ValueCard({
   /** When set, the scale input(s) aren't entered: show the waiting headline
    * instead of a dollar, keep the input tiles visible, suppress the build line. */
   awaitingScale?: { need: string };
+  /** Counted/Tracked lens (retention). When present, shows the "Show as"
+   * segmented control. When `lens.counted` is false the card leads with
+   * `trackedHeadline` (the signals) instead of the dollar, and the dollar
+   * build strip is suppressed — the value is kept out of the ROI. */
+  lens?: { counted: boolean; onChange: (counted: boolean) => void; testId?: string };
+  trackedHeadline?: ReactNode;
 }) {
+  const dollarMode = !lens || lens.counted;
   return (
     <div className="bg-[#FDFBF8] border border-[#E7E3DD] rounded-[20px] p-6 sm:p-7 mb-[14px] last:mb-0">
       <div className="flex justify-between items-start gap-5">
@@ -131,29 +182,42 @@ export function ValueCard({
         </div>
       )}
 
-      <div className="flex items-baseline gap-4 mt-[18px] flex-wrap" data-testid={awaitingScale && testId ? `${testId}-awaiting` : undefined}>
-        <div>
-          {awaitingScale ? (
-            <span className="font-abridge text-[36px] sm:text-[40px] leading-none text-[#C9BDAD] select-none">{"—"}</span>
-          ) : (
-            <AnimatedValue value={value} format={formatCurrency} duration={450} className="font-abridge text-[36px] sm:text-[40px] leading-none text-[#EA2C00]" />
-          )}{" "}
-          <span className="text-[15px] text-[#565250]">{unit}</span>
+      {lens && (
+        <div className="mt-[16px]">
+          <LensToggle counted={lens.counted} onChange={lens.onChange} testId={lens.testId} />
         </div>
-        {awaitingScale ? (
-          <div className="text-[13.5px] text-[#7C766F] border-l border-[#E7E3DD] pl-4">Enter {awaitingScale.need} to see your number.</div>
-        ) : (
-          secondary && (
-            <div className="text-[13.5px] text-[#565250] border-l border-[#E7E3DD] pl-4">{secondary}</div>
-          )
-        )}
-      </div>
+      )}
 
-      {/* The build ledger leads (payoff + proof); raw inputs recede below. */}
-      {!awaitingScale && buildStruct && <BuildStrip build={buildStruct} />}
+      {dollarMode ? (
+        <div className="flex items-baseline gap-4 mt-[18px] flex-wrap" data-testid={awaitingScale && testId ? `${testId}-awaiting` : undefined}>
+          <div>
+            {awaitingScale ? (
+              <span className="font-abridge text-[36px] sm:text-[40px] leading-none text-[#C9BDAD] select-none">{"—"}</span>
+            ) : (
+              <AnimatedValue value={value} format={formatCurrency} duration={450} className="font-abridge text-[36px] sm:text-[40px] leading-none text-[#EA2C00]" />
+            )}{" "}
+            <span className="text-[15px] text-[#565250]">{unit}</span>
+          </div>
+          {awaitingScale ? (
+            <div className="text-[13.5px] text-[#7C766F] border-l border-[#E7E3DD] pl-4">Enter {awaitingScale.need} to see your number.</div>
+          ) : (
+            secondary && (
+              <div className="text-[13.5px] text-[#565250] border-l border-[#E7E3DD] pl-4">{secondary}</div>
+            )
+          )}
+        </div>
+      ) : (
+        <div className="mt-[18px]" data-testid={testId ? `${testId}-tracked` : undefined}>
+          {trackedHeadline}
+        </div>
+      )}
+
+      {/* The build ledger leads (payoff + proof); raw inputs recede below.
+          In tracked mode the dollar build is suppressed — it's kept out of the ROI. */}
+      {dollarMode && !awaitingScale && buildStruct && <BuildStrip build={buildStruct} />}
 
       {children &&
-        (!awaitingScale && buildStruct ? (
+        (dollarMode && !awaitingScale && buildStruct ? (
           <AssumptionsDisclosure>
             <div className="flex flex-col gap-4">{children}</div>
           </AssumptionsDisclosure>

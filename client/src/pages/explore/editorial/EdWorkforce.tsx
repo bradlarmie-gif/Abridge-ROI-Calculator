@@ -125,6 +125,8 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
   const setting = state.careSetting;
   const td = state.timeDriverInputs;
   const isIP = setting === "inpatient";
+  const retentionCounted = state.retentionMode === "counted";
+  const setRetentionMode = (counted: boolean) => updateState({ retentionMode: counted ? "counted" : "tracked" });
 
   const drivers = (setting ? getDriversForPage("Workforce", setting) : [])
     // Scribe Spend is not part of the Outpatient Workforce design (mockup omits it).
@@ -195,6 +197,28 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
             <>
               ≈ <b className="font-abridge text-[#1A1A1A]">{formatNum1(providersRetained)}</b> provider a year who'd otherwise
               have burned out and left
+            </>
+          }
+          lens={{ counted: retentionCounted, onChange: setRetentionMode, testId: `ed-retention-lens-${driver.id}` }}
+          trackedHeadline={
+            <>
+              <div className="flex flex-wrap items-end gap-x-[26px] gap-y-[10px]">
+                {[
+                  { v: `${turnoverValue}%`, l: "turnover" },
+                  { v: `${burnoutValue}%`, l: "tied to burnout" },
+                  { v: `${impactPct}%`, l: "Abridge keeps" },
+                  { v: `≈ ${formatNum1(providersRetained)}`, l: "providers/yr kept" },
+                ].map((s) => (
+                  <div key={s.l}>
+                    <div className="font-abridge text-[30px] sm:text-[32px] leading-none text-[#2E2822]">{s.v}</div>
+                    <div className="text-[12px] text-[#7C766F] mt-[4px]">{s.l}</div>
+                  </div>
+                ))}
+              </div>
+              <div className="text-[12.5px] text-[#7C766F] mt-[13px] leading-[1.45] max-w-[460px]">
+                Tracked as the leading signal, not a dollar. When these move, a steadier team is within reach; the
+                replacement-cost value stays out of the ROI unless you switch to Dollar.
+              </div>
             </>
           }
           onToggle={() => toggleEnabled(driver)}
@@ -452,6 +476,28 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
           secondary={
             <>
               ≈ <b className="font-abridge text-[#1A1A1A]">{formatNum1(retained)}</b> nurse a year who'd otherwise have left
+            </>
+          }
+          lens={{ counted: retentionCounted, onChange: setRetentionMode, testId: `ed-retention-lens-${driver.id}` }}
+          trackedHeadline={
+            <>
+              <div className="flex flex-wrap items-end gap-x-[26px] gap-y-[10px]">
+                {[
+                  { v: `${td.nursingTurnoverRate}%`, l: "turnover" },
+                  { v: "40%", l: "tied to burnout" },
+                  { v: `${impactPct}%`, l: "Abridge keeps" },
+                  { v: `≈ ${formatNum1(retained)}`, l: "nurses/yr kept" },
+                ].map((s) => (
+                  <div key={s.l}>
+                    <div className="font-abridge text-[30px] sm:text-[32px] leading-none text-[#2E2822]">{s.v}</div>
+                    <div className="text-[12px] text-[#7C766F] mt-[4px]">{s.l}</div>
+                  </div>
+                ))}
+              </div>
+              <div className="text-[12.5px] text-[#7C766F] mt-[13px] leading-[1.45] max-w-[460px]">
+                Tracked as the leading signal, not a dollar. When these move, a steadier team is within reach; the
+                replacement-cost value stays out of the ROI unless you switch to Dollar.
+              </div>
             </>
           }
           onToggle={() => toggleEnabled(driver)}
