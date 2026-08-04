@@ -5,6 +5,7 @@ import {
   getYearlySummary,
   costOffsetDisplacedAmount,
   scaleSettingValue,
+  buildProviderChangePatch,
   mergeExploreEditIntoSetting,
 } from "@/lib/proformaCalculations";
 import {
@@ -469,6 +470,34 @@ describe("provider scaling — more providers means more value", () => {
   it("returns no change when the full-scale is unchanged", () => {
     const s = makeSetting("outpatient", { fullScaleProviders: 2000 });
     expect(scaleSettingValue(s, 2000)).toEqual({});
+  });
+
+  it("buildProviderChangePatch rescales value up when full-scale providers rise", () => {
+    // Guards the Build-screen path (setYearProviders): the earlier bug edited
+    // provider counts WITHOUT rescaling value, so adding providers looked like
+    // losing value. The patch must raise annualValue when year3 rises.
+    const s = makeSetting("outpatient", {
+      providerCount: 1000,
+      fullScaleProviders: 2000,
+      yearlyProviders: { year1: 1000, year2: 1500, year3: 2000 },
+      pricingModel: "annualFlat",
+    });
+    const patch = buildProviderChangePatch(s, "year3", 2400, ["year1", "year2", "year3"]);
+    expect(patch.fullScaleProviders).toBe(2400);
+    expect(patch.annualValue!).toBeGreaterThan(s.annualValue);
+    expect(patch.annualValue!).toBe(Math.round(s.annualValue * 2400 / 2000));
+  });
+
+  it("buildProviderChangePatch leaves value alone for per-encounter pricing", () => {
+    const s = makeSetting("outpatient", {
+      providerCount: 1000,
+      fullScaleProviders: 2000,
+      yearlyProviders: { year1: 1000, year2: 1500, year3: 2000 },
+      pricingModel: "perEncounter",
+    });
+    const patch = buildProviderChangePatch(s, "year3", 2400, ["year1", "year2", "year3"]);
+    expect(patch.fullScaleProviders).toBe(2400);
+    expect(patch.annualValue).toBeUndefined();
   });
 
   it("raising full-scale providers raises at-scale value but leaves ramp years ~unchanged", () => {

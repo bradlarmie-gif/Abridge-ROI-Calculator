@@ -121,6 +121,42 @@ export function scaleSettingValue(
 }
 
 /**
+ * Build the setting patch for a provider-count edit on the Build screen.
+ *
+ * The value fields + driver values on a snapshot represent value at the
+ * full-scale provider count. When the user edits that count, the value must be
+ * rescaled so more providers reads as more value. Skipping this (the earlier
+ * bug) left the total pinned while the ramp divided it across more providers,
+ * inverting the model: adding providers appeared to LOSE value. Per-encounter
+ * pricing already scales value by the encounter ramp, so it is left alone.
+ *
+ * Extracted as a pure function so the direction is unit-testable (the calling
+ * component has no jsdom harness).
+ */
+export function buildProviderChangePatch(
+  setting: ProformaSettingSnapshot,
+  key: "year1" | "year2" | "year3",
+  n: number,
+  yearKeys: ReadonlyArray<"year1" | "year2" | "year3">,
+): Partial<ProformaSettingSnapshot> {
+  const yp = {
+    year1: setting.providerCount,
+    year2: setting.fullScaleProviders,
+    year3: setting.fullScaleProviders,
+    ...setting.yearlyProviders,
+    [key]: n,
+  };
+  const patch: Partial<ProformaSettingSnapshot> = { yearlyProviders: yp };
+  if (key === "year1") patch.providerCount = n;
+  const lastYearKey = yearKeys[yearKeys.length - 1];
+  patch.fullScaleProviders = yp[lastYearKey];
+  if ((setting.pricingModel ?? "perUnit") !== "perEncounter") {
+    Object.assign(patch, scaleSettingValue(setting, patch.fullScaleProviders));
+  }
+  return patch;
+}
+
+/**
  * Merge a freshly-rebuilt Explore snapshot back into an existing proforma
  * setting after the user round-trips through "Edit drivers in Explore". Explore
  * owns the clinical value (drivers + value fields + fullExploreState); the

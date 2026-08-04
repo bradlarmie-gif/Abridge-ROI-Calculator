@@ -16,6 +16,7 @@ import {
   calculateProformaSummary,
   groupByYear,
   costOffsetDisplacedAmount,
+  buildProviderChangePatch,
 } from "@/lib/proformaCalculations";
 import { computeSettingDriverFormulas } from "@/lib/presentFormulas";
 import { applyExclusions, useNarrow } from "./editorialShared";
@@ -618,12 +619,7 @@ function SettingCard({
   const removeOffset = (id: string) => setOffsets(offsets.filter((o) => o.id !== id));
 
   const setYearProviders = (key: "year1" | "year2" | "year3", n: number) => {
-    const yp = { year1: setting.providerCount, year2: setting.fullScaleProviders, year3: setting.fullScaleProviders, ...setting.yearlyProviders, [key]: n };
-    const patch: Partial<ProformaSettingSnapshot> = { yearlyProviders: yp };
-    if (key === "year1") patch.providerCount = n;
-    const lastYearKey = yearKeys[yearKeys.length - 1];
-    patch.fullScaleProviders = yp[lastYearKey];
-    onUpdateSetting(patch);
+    onUpdateSetting(buildProviderChangePatch(setting, key, n, yearKeys));
   };
   const setYearUtil = (key: "year1" | "year2" | "year3", n: number) => {
     const yu = { year1: 40, year2: 60, year3: 80, ...setting.yearlyUtilization, [key]: n };
