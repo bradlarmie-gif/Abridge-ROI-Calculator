@@ -125,7 +125,15 @@ export function buildExploreProformaDrivers(
     ? nursingRetentionEngineValue + nursingAgencyEngineValue
     : providerWellbeingValue + physicianLocumAgencyValue;
 
-  if (retentionValue > 0) {
+  // Include the retention line whenever retention is ENABLED in Explore, even if
+  // its value is 0 because it's currently tracked (out of the ROI). That keeps
+  // the Number/Dollar lens available on the proforma so finance can fold the
+  // replacement-cost dollar back in without returning to Explore.
+  const tdr = state.timeDriverInputs as any;
+  const retentionEnabled = isNursing
+    ? !!tdr.nursingRetentionEnabled
+    : !!tdr.wellbeingEnabled && !!tdr.calculateRetentionValue;
+  if (retentionValue > 0 || retentionEnabled) {
     drivers.push({ id: "retention", name: isNursing ? "Nurse Retention" : "Clinician Retention", value: Math.round(retentionValue), category: "time", quadrant: "Workforce", onset: "phased" as const });
   }
 

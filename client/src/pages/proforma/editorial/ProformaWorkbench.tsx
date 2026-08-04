@@ -19,6 +19,9 @@ import {
   buildProviderChangePatch,
 } from "@/lib/proformaCalculations";
 import { computeSettingDriverFormulas } from "@/lib/presentFormulas";
+import { recomputeSettingValues } from "@/pages/proforma/ModelAssumptionDrawer";
+import { LensToggle } from "@/pages/explore/editorial/EdValueScreenKit";
+import type { ExploreState } from "@/pages/explore/ExploreFlow";
 import { applyExclusions, useNarrow } from "./editorialShared";
 
 /* ─────────────────────────── design tokens ─────────────────────────── */
@@ -425,6 +428,7 @@ function DriverRow({
   onToggleExpand,
   formula,
   onOnsetChange,
+  retentionLens,
 }: {
   driver: ProformaDriver;
   isOff: boolean;
@@ -433,7 +437,28 @@ function DriverRow({
   onToggleExpand: () => void;
   formula?: string;
   onOnsetChange: (o: DriverOnset) => void;
+  retentionLens?: { counted: boolean; onChange: (counted: boolean) => void };
 }) {
+  // Retention row: a Number/Dollar lens so finance can fold the replacement-cost
+  // dollar in or out here, not just in Explore. When tracked the dollar is out
+  // (only any agency remainder still counts).
+  if (retentionLens) {
+    const showDollar = retentionLens.counted || driver.value > 0;
+    return (
+      <div style={{ display: "flex", alignItems: "center", gap: 13, padding: "14px 0", borderBottom: `1px solid ${T.soft}` }}>
+        <span style={{ width: 34, flex: "none" }} />
+        <QuadTag quadrant={driver.quadrant} />
+        <span style={{ flex: 1, fontWeight: 700, fontSize: 14.5, color: T.label }}>{driver.name}</span>
+        <LensToggle counted={retentionLens.counted} onChange={retentionLens.onChange} />
+        {showDollar ? (
+          <span className="font-abridge" style={{ fontSize: 17, color: retentionLens.counted ? T.coral : T.label, minWidth: 64, textAlign: "right" }}>{fmt(driver.value)}</span>
+        ) : (
+          <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: T.faint, minWidth: 64, textAlign: "right" }}>Tracked</span>
+        )}
+      </div>
+    );
+  }
+
   const isProof = driver.quadrant === "Quality" || driver.value <= 0;
 
   // Proof row — never counted, no switch, no expand.
@@ -443,7 +468,7 @@ function DriverRow({
         <span style={{ width: 34, flex: "none" }} />
         <QuadTag quadrant={driver.quadrant} />
         <span style={{ flex: 1, fontWeight: 700, fontSize: 14.5, color: T.faint }}>{driver.name}</span>
-        <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: T.faint }}>Tracked, not counted</span>
+        <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: T.faint }}>Tracked</span>
       </div>
     );
   }
@@ -621,6 +646,16 @@ function SettingCard({
   const setYearProviders = (key: "year1" | "year2" | "year3", n: number) => {
     onUpdateSetting(buildProviderChangePatch(setting, key, n, yearKeys));
   };
+
+  // Retention lens: flip whether the replacement-cost dollar counts, without
+  // going back to Explore. Recompute rebuilds the retention driver value (0 when
+  // tracked) and rolls it through the setting totals.
+  const retentionCounted = (setting.fullExploreState as ExploreState | undefined)?.retentionMode === "counted";
+  const setRetentionMode = (counted: boolean) => {
+    const base = (setting.fullExploreState as ExploreState | undefined) ?? DEFAULT_EXPLORE_STATE;
+    onUpdateSetting(recomputeSettingValues(setting, { ...base, retentionMode: counted ? "counted" : "tracked" }));
+  };
+  const hasRetention = setting.drivers.some((d) => d.id === "retention");
   const setYearUtil = (key: "year1" | "year2" | "year3", n: number) => {
     const yu = { year1: 40, year2: 60, year3: 80, ...setting.yearlyUtilization, [key]: n };
     const lastYearKey = yearKeys[yearKeys.length - 1];
@@ -855,6 +890,7 @@ function SettingCard({
                     onToggleExpand={() => setExpandedDriver((cur) => (cur === d.id ? null : d.id))}
                     formula={driverFormulas[d.id]}
                     onOnsetChange={(o) => updateDriverOnset(d.id, o)}
+                    retentionLens={d.id === "retention" ? { counted: retentionCounted, onChange: setRetentionMode } : undefined}
                   />
                 ))}
               </div>

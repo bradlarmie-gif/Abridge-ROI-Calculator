@@ -63,9 +63,15 @@ export function recomputeDriverFromExploreState(driverId: string, state: Explore
       // The proforma "retention" driver bundles retention + agency; the engine
       // keeps them separate, so sum them. (Also fixes inpatient retention, which
       // the old shadow computed on generic — not ip* — turnover fields.)
+      // When retention is tracked, computeAllDriverValues has already zeroed the
+      // replacement-cost dollar, so the bundle is agency-only (possibly 0).
       const bundled = isNursing
         ? (v.nursingRetention ?? 0) + (ti.nursingAgencyEnabled ? (v.nursingAgency ?? 0) : 0)
         : (v.providerWellbeing ?? 0) + (ti.physicianAgencyEnabled ? (v.physicianLocumAgency ?? 0) : 0);
+      // Tracked is an explicit choice, so 0 is a REAL value here (the dollar is
+      // intentionally out) — don't fall back to "keep prior". Only the counted
+      // case treats a 0 bundle as "no backing / disabled" and keeps the prior.
+      if (state.retentionMode !== 'counted') return bundled;
       return bundled > 0 ? bundled : -1;
     }
     case 'costReduction': {
