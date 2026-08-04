@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useRef, useState } from "react";
 import { Check, ChevronRight } from "lucide-react";
 import type { AlignContent, DiscoveryBeat } from "./attainContent";
-import { econModel, type EconField, type Assumption, type EconModel } from "./attainEconomics";
+import { econModel, type Assumption, type EconModel } from "./attainEconomics";
 import { AttainNumberInput } from "./AttainNumberInput";
 
 /** THROWAWAY. The Align chapter, rendered from AlignContent (setting x category). */
@@ -14,6 +14,18 @@ const fmtN = (n: number) => Math.round(n).toLocaleString();
 // "$99,999,999 margin/visit" → "$172800.0M" slop), never a real entry.
 const ECON_MAX = 10_000_000;
 const num = (s: string) => { const n = parseFloat((s || "").replace(/[^0-9.]/g, "")); return Number.isFinite(n) ? n : 0; };
+
+// The value-attainment leak question — universal across every setting and category.
+// Value leaks after the plan is signed, in the handoffs the partner owns. Naming the
+// most likely leaks lets the Plan put an owner and a date against each one. Pure
+// strategy: these feed the plan's discussion, never the dollar.
+const LEAKS: { id: string; title: string; desc: string }[] = [
+  { id: "reabsorbed", title: "The freed time gets reabsorbed", desc: "Capacity opens up but fills with other work before the goal ever sees it." },
+  { id: "cadence", title: "The review cadence slips", desc: "The check-ins that keep this on track quietly stop happening." },
+  { id: "owner", title: "No clear owner for the follow-through", desc: "Everyone agrees on the goal; nobody carries it week to week." },
+  { id: "adoption", title: "Adoption stalls below plan", desc: "Fewer providers record with Abridge than the plan assumes." },
+  { id: "priorities", title: "A bigger priority crowds it out", desc: "Another initiative pulls attention before this change takes hold." },
+];
 
 const LBL = "text-[10px] font-semibold uppercase tracking-[1.8px] text-[#8C8C8C]";
 // field-sizing:content makes the underline hug the number (or its placeholder),
@@ -155,18 +167,6 @@ export default function AlignView({ c, settingLabel, categoryLabel, categoryKey,
 
   const suggested = new Set(c.outcomes.filter((o) => picked.has(o.id)).flatMap((o) => o.proof ?? []));
 
-  // one economics field (real-money lever, blank + required) — shared by the flat and lever layouts
-  const renderEconField = (f: EconField) => (
-    <div key={f.key} className="mb-8">
-      <p className={`${LBL} mb-1.5`}>{f.label}</p>
-      <div className="flex items-baseline gap-1">
-        {f.prefix && <span className="font-abridge text-2xl text-[#8C8C8C]">{f.prefix}</span>}
-        <AttainNumberInput value={inputs.econ[f.key] ?? ""} onChange={(raw) => setEcon(f.key, raw)} placeholder={f.placeholder} className={NUMFIELD} max={ECON_MAX} />
-        {f.suffix && <span className="text-[15px] text-[#8C8C8C]">{f.suffix}</span>}
-      </div>
-      {f.hint && <p className="text-[12px] text-[#8C8C8C] mt-1.5">{f.hint}</p>}
-    </div>
-  );
   // one seeded assumption input (used inline under a lever, and inside the collapsible panel)
   const renderAssumptionInput = (a: Assumption) => (
     <div key={a.key}>
@@ -260,16 +260,17 @@ export default function AlignView({ c, settingLabel, categoryLabel, categoryKey,
       }
       case "economics": {
         if (!econ) return null;
+        // The per-unit dollars this beat used to collect now live on the Starting Point, so
+        // it keeps only the seeded rate assumptions and (where set) the realization stance.
         const lever = econ.levers?.find((l) => l.id === beat.leverId);
-        const lf = econ.fields.filter((f) => f.lever === beat.leverId);
         const la = (econ.assumptions ?? []).filter((a) => a.lever === beat.leverId);
+        if (la.length === 0 && !beat.withStance) return null; // nothing left to ask for this lever
         return (
           <div key={key}>
             <SectionHead n={++qn} kicker={beat.kicker} title={beat.prompt} />
             <p className={helperCls}>{beat.helper}</p>
             <div className="rounded-xl border border-[#E8E2DA] bg-[#FAF7F2] p-5 mb-12">
               {lever && <p className="text-[11px] font-bold uppercase tracking-[1.5px] text-[#443A32] mb-4">{lever.label}</p>}
-              {lf.map(renderEconField)}
               {la.length > 0 && (
                 <>
                   <p className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#8C8C8C] mb-3">Assumptions · seeded and editable</p>
@@ -422,54 +423,18 @@ export default function AlignView({ c, settingLabel, categoryLabel, categoryKey,
         </>
       )}
 
-      {/* Q — the economics (their real money + the fill stance), asked after the leak and its cause. */}
+      {/* Q — how far you'll push (the realization stance). The per-unit dollars used to be asked
+          here; they now live on the Starting Point, so this stays a judgment call, not data entry.
+          The seeded rate assumptions stay, collapsible. Non-discovery cells never have levers, so
+          this is the single-lever path only (revenue's per-lever stance lives in its discovery walk). */}
       {econ && (
         <>
-          <SectionHead n={++qn} kicker="The economics" title={econ.title} />
-          <p className="text-[14px] text-[#6B6B6B] leading-relaxed mb-6 max-w-[600px]">{econ.helper}</p>
+          <SectionHead n={++qn} kicker="How far you'll push" title={econ.stancePrompt} />
+          <p className="text-[14px] text-[#6B6B6B] leading-relaxed mb-5 max-w-[600px]">A judgment call, not a number to look up. Set how much of the reachable value you can realistically move. The economics behind it sit on your Starting Point.</p>
+          <div className="mb-8">{stanceControls(econ)}</div>
 
-          {/* Multi-lever: render only the levers the payer answer turned on, each as its own
-              labeled sub-group (its fields + its seeded assumptions). Single-lever models render
-              their flat fields exactly as before. */}
-          {activeLevers ? (
-            activeLevers.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-[#D8CFC0] bg-[#FAF7F2] p-5 mb-8">
-                <p className="text-[14px] text-[#6B6B6B] leading-relaxed max-w-[520px]">{hasFrame ? "Pick the payers in the first question above to set which revenue lever we price. Fee-for-service prices the coding lift; risk contracts price the recapture; pick both and we size both." : "Pick a goal above to set which lever we price. Each goal you pick adds its own lever here, and the number sizes from your figures."}</p>
-              </div>
-            ) : (
-              <div className="space-y-6 mb-8">
-                {activeLevers.map((lever) => {
-                  const lf = econ.fields.filter((f) => f.lever === lever.id);
-                  const la = (econ.assumptions ?? []).filter((a) => a.lever === lever.id);
-                  return (
-                    <div key={lever.id} className="rounded-xl border border-[#E8E2DA] bg-[#FAF7F2] p-5">
-                      <p className="text-[11px] font-bold uppercase tracking-[1.5px] text-[#443A32] mb-4">{lever.label}</p>
-                      {lf.map(renderEconField)}
-                      {la.length > 0 && (
-                        <>
-                          <p className="text-[11px] font-semibold uppercase tracking-[1.5px] text-[#8C8C8C] mb-3">Assumptions · seeded and editable</p>
-                          <div className="grid sm:grid-cols-2 gap-x-8 gap-y-4">{la.map(renderAssumptionInput)}</div>
-                        </>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            )
-          ) : (
-            econ.fields.map(renderEconField)
-          )}
-
-          {/* the shared realization stance — hidden only when a lever model has no lever live yet */}
-          {(!activeLevers || activeLevers.length > 0) && (<>
-          <p className={`${LBL} mb-2.5`}>{econ.stancePrompt}</p>
-          {stanceControls(econ)}
-          </>)}
-
-          {/* Assumptions — seeded conservatively, shown, and editable. Nothing hidden.
-              Lever models show their assumptions inline under each lever above, so this
-              collapsible panel is only for single-lever categories. */}
-          {!activeLevers && econ.assumptions && econ.assumptions.length > 0 && (
+          {/* Assumptions — seeded conservatively, shown, and editable. Nothing hidden. */}
+          {econ.assumptions && econ.assumptions.length > 0 && (
             <div className="mb-12">
               <button type="button" onClick={() => setShowAssumptions((s) => !s)} className="inline-flex items-center gap-1 text-[12px] font-semibold text-[#8C8C8C] hover:text-[#1A1A1A] transition-colors">
                 <ChevronRight className={`w-3.5 h-3.5 transition-transform ${showAssumptions ? "rotate-90" : ""}`} />
@@ -527,6 +492,15 @@ export default function AlignView({ c, settingLabel, categoryLabel, categoryKey,
       )}
       </>)}
       {/* ===== end fixed middle ===== */}
+
+      {/* Q — the leak (value attainment): what's most likely to keep this from landing. Pure
+          strategy, shown for every category, feeding the plan's discussion, never the dollar. It
+          replaces the economics beat's old spot as the thing this walk drives toward. */}
+      <SectionHead n={++qn} kicker="What could get in the way" title="What's most likely to keep this from landing?" />
+      <p className="text-[14px] text-[#6B6B6B] leading-relaxed mb-4 max-w-[600px]">Most value leaks after the plan is signed, in the handoffs nobody owns. Name the risks most likely to blunt this one, so the plan can put an owner and a date against them.</p>
+      <div className="border-t border-[#E8E2DA] mb-14">
+        {LEAKS.map((o) => <OptionRow key={o.id} on={(choices["leak"] ?? new Set()).has(o.id)} onToggle={() => toggleChoice("leak", o.id, "multi")} title={o.title} desc={o.desc} />)}
+      </div>
 
       {/* Q — proof */}
       <SectionHead n={++qn} kicker="The proof" title={c.proof.prompt} />

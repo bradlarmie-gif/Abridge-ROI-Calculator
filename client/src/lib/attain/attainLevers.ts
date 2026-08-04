@@ -283,6 +283,13 @@ export interface AttainBaseline {
    * actually record with Abridge each month. The baseline the Plan's adoption
    * target is set against. Headcount, not a percent. */
   mruRecording?: number;
+  /** The per-unit ECONOMICS entered on the Starting Point ("what a unit is
+   * worth"): a map of econ-model field key → dollar value ($/visit, DRG base,
+   * value per wRVU, etc.). These used to be asked inside the Align strategy
+   * questions; they now live on the Starting Point so Align stays strategy, and
+   * the value engine reads them from here. A blank field falls back to the
+   * model's conservative default (the "e.g." placeholder). */
+  econ?: Record<string, number>;
 }
 
 /** Sensible benchmark defaults, one per care setting, matching the same

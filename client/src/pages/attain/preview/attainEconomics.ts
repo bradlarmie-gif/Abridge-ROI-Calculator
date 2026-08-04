@@ -77,11 +77,11 @@ export const ECON_MODELS: Record<string, EconModel> = {
     title: "How much of the revenue do you keep?",
     helper: "The payers you picked above set what gets priced. Fee-for-service pays on the visit level, so the money is the coding lift a more complete note supports. Risk contracts pay on the conditions you capture, so the money is the recapture a fuller note makes possible. Fill in the levers in play; how much of the lift you actually capture and keep is yours to set below. The size of each lift we seed conservatively.",
     fields: [
-      { key: "wrvu", lever: "ffs", label: "Average wRVU per visit", placeholder: "1.5", hint: "Your current level, before any lift." },
       { key: "cf", lever: "ffs", label: "Conversion factor", prefix: "$", placeholder: "33.40", hint: "Dollars per wRVU." },
       { key: "hccValue", lever: "risk", label: "Value per recaptured condition", prefix: "$", placeholder: "1,500", hint: "The annual risk revenue one recaptured condition carries." },
     ],
     assumptions: [
+      { key: "wrvu", lever: "ffs", label: "Average wRVU per visit", default: "1.5" },
       { key: "uplift", lever: "ffs", label: "Coding lift from better notes", default: "5", suffix: "%" },
       { key: "hccPerPatient", lever: "risk", label: "Conditions recaptured per risk patient", default: "0.6" },
       { key: "riskPatients", lever: "risk", label: "Risk-contract patients in scope", default: "6,000" },
@@ -128,11 +128,11 @@ export const ECON_MODELS: Record<string, EconModel> = {
     title: "How much of the revenue do you keep?",
     helper: "The goals you picked above set what gets priced. Getting paid for the acuity sizes on how the visit codes; preventable denials size on the claims a complete note would have saved. Fill in the levers in play; how much of the lift you capture and keep is yours to set below. The size of each lift we seed conservatively.",
     fields: [
-      { key: "wrvu", lever: "edcoding", label: "Average wRVU per ED visit", placeholder: "1.5", hint: "Your current level, before any lift." },
       { key: "cf", lever: "edcoding", label: "Conversion factor", prefix: "$", placeholder: "33.40", hint: "Dollars per wRVU." },
       { key: "avgClaim", lever: "eddenials", label: "Average claim value", prefix: "$", placeholder: "250", hint: "The revenue on a claim you would otherwise write off." },
     ],
     assumptions: [
+      { key: "wrvu", lever: "edcoding", label: "Average wRVU per ED visit", default: "1.5" },
       { key: "uplift", lever: "edcoding", label: "E&M lift from better notes", default: "3", suffix: "%" },
       { key: "denialRate", lever: "eddenials", label: "Medical-necessity denial rate", default: "5", suffix: "%" },
     ],

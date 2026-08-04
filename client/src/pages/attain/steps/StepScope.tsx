@@ -123,10 +123,13 @@ interface StepScopeProps {
 export default function StepScope({ setting, goals = [], baseline, onChangeBaseline }: StepScopeProps) {
   const isNursing = setting === "nursing";
   // The static per-unit values behind the goals they picked, revealed for every
-  // setting. Local prototype state for now (not yet wired to the engine);
-  // defaults live in the "e.g." placeholder until they type over one.
+  // setting. These are the plan's economics: they persist on the baseline and
+  // the value engine reads them from here (Align no longer asks for dollars).
+  // A blank field falls back to the model's conservative default (its "e.g."
+  // placeholder) downstream, so the plan always has a number to measure.
   const econFields = econFieldsForGoals(setting, goals);
-  const [econ, setEcon] = useState<Record<string, number>>({});
+  const econ = baseline.econ ?? {};
+  const setEconField = (key: string, v: number) => onChangeBaseline({ econ: { ...(baseline.econ ?? {}), [key]: v } });
 
   return (
     <div>
@@ -276,7 +279,7 @@ export default function StepScope({ setting, goals = [], baseline, onChangeBasel
                     label={f.label}
                     testid={`econ-${f.key}`}
                     value={econ[f.key] ?? 0}
-                    onChange={(v) => setEcon((p) => ({ ...p, [f.key]: v }))}
+                    onChange={(v) => setEconField(f.key, v)}
                     placeholder={f.placeholder}
                     prefix={f.prefix}
                     suffix={f.suffix}

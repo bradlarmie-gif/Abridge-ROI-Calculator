@@ -120,7 +120,7 @@ export function ScopeStep({ setting, baseline, onChange }: { setting: AttainSett
             <label className="text-[15px] text-[#1A1A1A]">{f.label}</label>
             <div className="flex items-baseline gap-2">
               <input
-                value={baseline[f.key] ?? ""}
+                value={(baseline[f.key] as string | number | undefined) ?? ""}
                 onChange={(e) => onChange({ [f.key]: num(e.target.value) } as Partial<AttainBaseline>)}
                 placeholder={f.ph}
                 className={NUMFIELD}

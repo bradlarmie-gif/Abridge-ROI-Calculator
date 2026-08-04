@@ -189,7 +189,18 @@ export function AttainExperience({ setting, cells, baseline, initial, onPersist 
     const cap = econModel(SETTING, c.category)?.stanceCap ?? 75;
     const stancePct = a.stance === -1 ? Math.min(cap, pnum(a.custom) || 0) : (a.stance ?? 0);
     const econ: Record<string, number> = {};
+    // Assumptions (seeded rates, still asked in Align's collapsible panel).
     for (const [k, v] of Object.entries(a.econ)) { const n = pnum(v); if (Number.isFinite(n)) econ[k] = n; }
+    // The per-unit dollars now live on the Starting Point (baseline.econ), not in
+    // the Align strategy questions. Read each model field from there, falling back
+    // to the model's conservative default (its "e.g." placeholder) so the plan
+    // always has a number to measure. Baseline wins over any stale Align value.
+    const model = econModel(SETTING, c.category);
+    for (const f of model?.fields ?? []) {
+      const typed = baseline?.econ?.[f.key];
+      const val = typed != null && typed > 0 ? typed : pnum(f.placeholder);
+      if (Number.isFinite(val) && val > 0) econ[f.key] = val;
+    }
     const scope = pnum(a.scope) || 0;
     // real Starting Point volume so the SIZE of the number is theirs, not a per-head constant.
     // Nursing Quality scopes by beds, so its staffed-beds IS the scope; the rest use the baseline.
