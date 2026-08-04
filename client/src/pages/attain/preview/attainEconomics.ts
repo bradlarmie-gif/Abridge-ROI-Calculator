@@ -151,7 +151,7 @@ export const ECON_MODELS: Record<string, EconModel> = {
       if (active.includes("edcoding"))
         parts.push(`Acuity coding: your ED visits × ${i.econ.wrvu ?? 1.5} wRVU × ~${i.econ.uplift ?? 3}% E&M lift × ${fmt$(i.econ.cf ?? 33.4)}/wRVU × ${i.stancePct}% captured and kept`);
       if (active.includes("eddenials"))
-        parts.push(`Preventable denials: your ED claims × ${i.econ.denialRate ?? 5}% medical-necessity denial rate × ${fmt$(i.econ.avgClaim ?? 250)}/claim × ${i.stancePct}% a complete note prevents`);
+        parts.push(`Preventable denials: your ED claims × ${i.econ.denialRate ?? 5}% medical-necessity denial rate × ${fmt$(i.econ.avgClaim ?? 250)}/claim × ${i.stancePct}% preventable with a complete note`);
       if (!parts.length) return "";
       return parts.join(". ") + (parts.length > 1 ? ". The two sum to the number above." : ".");
     },
