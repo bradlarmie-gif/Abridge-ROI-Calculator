@@ -101,10 +101,11 @@ export default function ValueRail({ state, totalHoursSaved, activeDomain, invest
 
         {/* domain rows: dollar for counted, "tracked, not counted" for proof domains */}
         <div className="mt-7 flex flex-col">
-          {counted.map((q) => {
+          {counted.map((q, idx) => {
             const active = q === activeDomain;
+            const isLastCounted = idx === counted.length - 1;
             return (
-              <div key={q} className="flex items-center justify-between py-[13px] border-b border-[#F1ECE4] last:border-b-0">
+              <div key={q} className={`flex items-center justify-between py-[13px] ${isLastCounted ? "" : "border-b border-[#F1ECE4]"}`}>
                 <div className="flex items-center gap-[11px]">
                   <span className="w-[11px] h-[11px] rounded-[3px] flex-shrink-0" style={{ background: DOMAIN_TINT[q] }} />
                   <span className={`text-[15px] text-[#1A1A1A] ${active ? "font-bold" : "font-medium"}`}>{q}</span>
