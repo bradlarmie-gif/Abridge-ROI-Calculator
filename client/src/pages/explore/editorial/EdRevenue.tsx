@@ -28,6 +28,8 @@ import { type ExploreState, type HccPlan } from "../ExploreFlow";
 import { SignalWatch } from "./SignalWatch";
 import { watchDomainFor } from "@/lib/exploreWatchSignals";
 import ValueRail from "./ValueRail";
+import { InlineDriverCard, EqNum, EqCarried, EqOp, EqResult, EquationRow, EqAwaiting } from "./InlineEquation";
+import { X, Plus } from "lucide-react";
 import type { PriorQuadrantEntry } from "@/lib/exploreQuadrantValues";
 
 interface EdRevenueProps {
@@ -80,8 +82,9 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
   const wrvuLiftPerVisit = (dq.currentWrvu * wrvuLiftPct) / 100;
   const additionalWrvus = Math.round(eligibleEncounters * wrvuLiftPerVisit);
 
+  const wrvuAwait = gate("wrvu");
   const wrvuCard = (
-    <MoneyCard
+    <InlineDriverCard
       key="wrvu"
       title={isED ? "E&M level accuracy" : "wRVU capture"}
       tag={isOP ? "Fee-for-service" : undefined}
@@ -92,71 +95,29 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
       }
       enabled={dq.wrvuEnabled}
       onToggle={() => updateDq({ wrvuEnabled: !dq.wrvuEnabled, wrvuExpanded: !dq.wrvuEnabled ? true : dq.wrvuExpanded })}
-      value={wrvuValue}
-      secondary={
-        <>
-          ≈ <b className="text-[#1A1A1A]">{fmtN(additionalWrvus)}</b> more wRVUs captured, a {wrvuLiftPct}% lift
-        </>
-      }
       testId="toggle-wrvu"
-      awaitingScale={gate("wrvu")}
-      build={{
-        read: (
-          <>
-            You're leaving about <b>{fmtN(additionalWrvus)}</b> {isED ? "E/M points" : "wRVUs"} on the table each year.
-            At <b>${dq.conversionFactor.toFixed(2)}</b> apiece that's <b>{fmt$(dq.wrvuRealization > 0 ? wrvuValue / (dq.wrvuRealization / 100) : wrvuValue)}</b>,
-            and we count only the <b>{dq.wrvuRealization}%</b> that holds on review.
-          </>
-        ),
-        factors: [
-          { value: fmtN(eligibleEncounters), label: isED ? "ED encounters" : "visits" },
-          { value: fmtNd(dq.currentWrvu), label: "wRVU / visit" },
-          { value: `${wrvuLiftPct}%`, label: "lift captured" },
-          { value: `$${dq.conversionFactor.toFixed(2)}`, label: "per wRVU" },
-        ],
-        grossLabel: "Captured value, before what holds on review",
-        gross: dq.wrvuRealization > 0 ? wrvuValue / (dq.wrvuRealization / 100) : wrvuValue,
-        net: wrvuValue,
-        haircutLabel: <>{dq.wrvuRealization}% holds on review</>,
-      }}
+      note={
+        <>Grey figures carry from your earlier steps. Change any coral figure and this reprices live, then updates the model on the right. You keep <b className="text-[#B02200] not-italic">{dq.wrvuRealization}%</b> of the lift; the rest stays out of the number.</>
+      }
     >
-      <FieldGrid>
-        <FieldTile label={isED ? "ED encounters" : "Fee-for-service visits"} note="at your utilization rate">
-          <FiReadout>{fmtN(eligibleEncounters)}</FiReadout>
-        </FieldTile>
-        <FieldTile label="Avg wRVU per visit" note="typical baseline, edit to yours">
-          <Fi value={dq.currentWrvu} onValueChange={(v) => updateDq({ currentWrvu: v })} decimal testId="input-ed-current-wrvu" />
-        </FieldTile>
-        <FieldTile label="Increase">
-          <FiReadout suffix="%">{wrvuLiftPct}</FiReadout>
-          <QuickFill
-            options={(["conservative", "typical", "aggressive"] as const).map((k) => ({ key: k, label: `${wrvuScenarios[k]}%` }))}
-            activeKey={dq.wrvuScenario}
-            onSelect={(k) => updateDq({ wrvuScenario: k as typeof dq.wrvuScenario })}
-          />
-        </FieldTile>
-        <FieldTile label="Per wRVU">
-          <Fi
-            value={dq.conversionFactor}
-            onValueChange={(v) => updateDq({ conversionFactor: v })}
-            prefix="$"
-            decimal
-            testId="input-ed-conversion-factor"
-          />
-          <QuickFill
-            options={[
-              { key: "medicare", label: "Medicare" },
-              { key: "blended", label: "Blended · 50" },
-            ]}
-            activeKey={dq.conversionFactor >= 45 ? "blended" : "medicare"}
-            onSelect={(k) => updateDq({ conversionFactor: k === "blended" ? 50 : 33.4 })}
-          />
-        </FieldTile>
-        <FieldTile label="Realization" note="the share that holds on review">
-          <Fi value={dq.wrvuRealization} onValueChange={(v) => updateDq({ wrvuRealization: v })} suffix="%" testId="input-ed-wrvu-realization" />
-        </FieldTile>
-      </FieldGrid>
-    </MoneyCard>
+      {wrvuAwait ? (
+        <EqAwaiting need={wrvuAwait.need} />
+      ) : (
+        <EquationRow>
+          <EqCarried cap={isED ? "ED encounters" : "FFS visits"}>{fmtN(eligibleEncounters)}</EqCarried>
+          <EqOp>×</EqOp>
+          <EqNum cap="wRVU / visit" value={dq.currentWrvu} onChange={(v) => updateDq({ currentWrvu: v })} decimal width={50} />
+          <EqOp>×</EqOp>
+          <EqNum cap="lift captured" value={wrvuLiftPct} onChange={(v) => updateDq({ wrvuScenario: "custom", wrvuCustomPercent: v })} suffix="%" width={40} />
+          <EqOp>×</EqOp>
+          <EqNum cap="per wRVU" value={dq.conversionFactor} onChange={(v) => updateDq({ conversionFactor: v })} prefix="$" decimal width={66} />
+          <EqOp>×</EqOp>
+          <EqNum cap="you keep" value={dq.wrvuRealization} onChange={(v) => updateDq({ wrvuRealization: v })} suffix="%" width={40} />
+          <EqOp>=</EqOp>
+          <EqResult value={wrvuValue} />
+        </EquationRow>
+      )}
+    </InlineDriverCard>
   );
 
   // ── HCC card (outpatient only) ──
@@ -216,96 +177,89 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
   const hccGross = dq.hccRealization > 0 ? hccValue / (dq.hccRealization / 100) : hccValue;
   const hccPerMember = totalPanel > 0 ? hccGross / totalPanel : 0;
 
+  // Per-plan economics, computed from the plan's own figures so each card's +$ foots and the plans
+  // sum to the engine's hccValue. Realization (RADV survival) applied per plan, shared rate below.
+  const HCC_SC: Record<string, number> = { conservative: 3, typical: 5, optimistic: 10 };
+  const upliftPtsOf = (p: HccPlan) => (p.uplift === "custom" ? p.upliftCustomPp ?? 5 : HCC_SC[p.uplift] ?? 5);
+  const effUpliftOf = (p: HccPlan) => Math.min(upliftPtsOf(p), Math.max(0, 100 - p.currentRecaptureRate));
+  const membersOf = (p: HccPlan) => p.panelSize * state.numberOfProviders;
+  const recapturePartOf = (p: HccPlan) => Math.round(membersOf(p) * dq.avgHccs * (effUpliftOf(p) / 100) * p.valuePerHcc * (dq.hccRealization / 100));
+  const netNewPartOf = (p: HccPlan) => Math.round(membersOf(p) * (p.netNewEnabled ? p.netNewAvgConditions ?? 0 : 0) * p.valuePerHcc * (dq.hccRealization / 100));
+  const planNetOf = (p: HccPlan) => recapturePartOf(p) + netNewPartOf(p);
+  const patchPlan = (id: string, u: Partial<HccPlan>) => updateDq({ hccPlans: plans.map((pl) => (pl.id === id ? { ...pl, ...u } : pl)) });
+  const hccAwait = gate("hccCapture");
+
   const hccCard = (
-    <MoneyCard
+    <InlineDriverCard
       key="hcc"
       title="HCC capture"
       tag="Risk-based"
-      subtitle="Chronic conditions that lapse and must be recaptured each year, plus new ones a fuller note can surface during the visit. Each plan is valued on its own economics."
+      subtitle="Chronic conditions a fuller note surfaces during the visit, each plan on its own economics."
       enabled={dq.hccEnabled}
       onToggle={() => updateDq({ hccEnabled: !dq.hccEnabled, hccExpanded: !dq.hccEnabled ? true : dq.hccExpanded })}
-      value={hccValue}
-      secondary={
-        <>
-          ≈ <b className="text-[#1A1A1A]">{upliftPts}pp</b> recapture lift per plan, plus newly identified conditions
-        </>
-      }
       testId="toggle-hcc"
-      awaitingScale={gate("hccCapture")}
-      build={{
-        factors: [
-          { value: fmtN(totalPanel), label: "members total" },
-          { value: fmt$(hccPerMember), label: "value / member" },
-        ],
-        grossLabel: "Recaptured value, before what survives audit",
-        gross: hccGross,
-        net: hccValue,
-        haircutLabel: <>{dq.hccRealization}% survives RADV</>,
-      }}
+      note={<>Enter each plan's lives to see its number. Change any coral figure and this reprices live, then updates the model on the right.</>}
     >
-      <PlansRepeater totalLabel={<><b className="text-[#1A1A1A] font-abridge text-[14px]">{fmtN(totalPanel)}</b> members total</>} onAdd={addPlan}>
-        {plans.map((p) => (
-          <PlanRow
-            key={p.id}
-            planType={p.planType}
-            members={p.panelSize * state.numberOfProviders}
-            valuePerHcc={p.valuePerHcc}
-            onPlanTypeChange={(v) =>
-              updateDq({ hccPlans: plans.map((pl) => (pl.id === p.id ? { ...pl, planType: v as HccPlan["planType"] } : pl)) })
-            }
-            onMembersChange={(v) =>
-              updateDq({
-                hccPlans: plans.map((pl) =>
-                  pl.id === p.id
-                    ? { ...pl, panelSize: state.numberOfProviders > 0 ? Math.round(v / state.numberOfProviders) : v }
-                    : pl,
-                ),
-              })
-            }
-            onValuePerHccChange={(v) =>
-              updateDq({ hccPlans: plans.map((pl) => (pl.id === p.id ? { ...pl, valuePerHcc: v } : pl)) })
-            }
-            onRemove={() => removePlan(p.id)}
-            removable={plans.length > 1}
-          />
-        ))}
-      </PlansRepeater>
-
-      <FieldGrid>
-        <FieldTile label="Avg documented conditions / member" note="chronic HCCs on file each year">
-          <Fi value={dq.avgHccs} onValueChange={(v) => updateDq({ avgHccs: v })} decimal testId="input-ed-avg-hccs" />
-        </FieldTile>
-        <FieldTile label="Recapture rate today" note="of those, re-documented now">
-          <Fi
-            value={recaptureRateToday}
-            onValueChange={(v) => setAllPlans({ currentRecaptureRate: v })}
-            suffix="%"
-            testId="input-ed-recapture-today"
-          />
-        </FieldTile>
-        <FieldTile label="With Abridge" note={`+${upliftPts} pts recaptured`} hot>
-          <Fi
-            value={withAbridge}
-            onValueChange={(v) => setAllPlans({ uplift: "custom", upliftCustomPp: Math.max(0, v - recaptureRateToday) })}
-            suffix="%"
-            highlighted
-            testId="input-ed-with-abridge"
-          />
-        </FieldTile>
-        <FieldTile label="Newly identified / member" note="net-new, in the visit">
-          <Fi
-            value={sharedPlan?.netNewAvgConditions ?? 0}
-            onValueChange={(v) => setAllPlans({ netNewEnabled: v > 0, netNewAvgConditions: v })}
-            suffix="HCC"
-            decimal
-            testId="input-ed-newly-identified"
-          />
-        </FieldTile>
-        <FieldTile label="Realization" note="the share that survives RADV / audit">
-          <Fi value={dq.hccRealization} onValueChange={(v) => updateDq({ hccRealization: v })} suffix="%" testId="input-ed-hcc-realization" />
-        </FieldTile>
-      </FieldGrid>
-    </MoneyCard>
+      {(
+        <div>
+          {plans.map((p) => (
+            <div key={p.id} className="rounded-[14px] border border-[#E7E3DD] bg-white px-4 py-[15px] mb-2.5">
+              <div className="flex items-center justify-between gap-3 mb-3">
+                <select
+                  value={p.planType}
+                  onChange={(e) => patchPlan(p.id, { planType: e.target.value as HccPlan["planType"] })}
+                  className="font-abridge text-[17px] text-[#1A1A1A] bg-transparent border-0 outline-none cursor-pointer -ml-1"
+                >
+                  {[["medicare_advantage", "Medicare Advantage"], ["aca_marketplace", "ACA / Exchange"], ["medicaid_mco", "Medicaid managed care"], ["custom", "Custom plan"]].map(([k, l]) => (
+                    <option key={k} value={k}>{l}</option>
+                  ))}
+                </select>
+                <div className="flex items-center gap-3">
+                  <span className="font-abridge text-[19px] text-[#EA2C00] whitespace-nowrap">+{fmt$(planNetOf(p))}<span className="text-[11px] text-[#7C766F] font-sans"> / yr</span></span>
+                  {plans.length > 1 && (
+                    <button type="button" onClick={() => removePlan(p.id)} className="w-[24px] h-[24px] rounded-[7px] border border-[#E7E3DD] bg-white text-[#7C766F] flex items-center justify-center"><X className="w-3.5 h-3.5" /></button>
+                  )}
+                </div>
+              </div>
+              <div className="flex items-end flex-wrap gap-x-[22px] gap-y-3">
+                <EqNum cap="Lives" value={membersOf(p)} onChange={(v) => patchPlan(p.id, { panelSize: state.numberOfProviders > 0 ? Math.round(v / state.numberOfProviders) : v })} width={72} />
+                <EqNum cap="HCCs / patient" value={dq.avgHccs} onChange={(v) => updateDq({ avgHccs: v })} decimal width={44} />
+                <EqNum cap="Realized / HCC" value={p.valuePerHcc} onChange={(v) => patchPlan(p.id, { valuePerHcc: v })} prefix="$" width={72} />
+                <div className="flex flex-col justify-end">
+                  <div className="text-[9.5px] font-bold tracking-[0.04em] uppercase text-[#7C766F] mb-[6px]">Recapture rate</div>
+                  <div className="inline-flex items-end gap-2">
+                    <EqNum cap="" value={p.currentRecaptureRate} onChange={(v) => patchPlan(p.id, { currentRecaptureRate: v })} suffix="%" width={38} />
+                    <span className="text-[#C4BCB0] pb-[3px]">→</span>
+                    <EqNum cap="" value={p.currentRecaptureRate + upliftPtsOf(p)} onChange={(v) => patchPlan(p.id, { uplift: "custom", upliftCustomPp: Math.max(0, v - p.currentRecaptureRate) })} suffix="%" width={38} />
+                  </div>
+                </div>
+              </div>
+              <div className="mt-[13px] pt-3 border-t border-[#F4EEE7]">
+                {p.netNewEnabled ? (
+                  <div className="flex items-end justify-between gap-3 flex-wrap">
+                    <EqNum cap="Net-new HCCs / patient · surfaced at the visit" value={p.netNewAvgConditions ?? 0} onChange={(v) => patchPlan(p.id, { netNewAvgConditions: v })} decimal width={44} />
+                    <div className="text-[12px] text-[#7C766F]">
+                      recapture <b className="font-abridge text-[#1A1A1A] text-[14px]">+{fmt$(recapturePartOf(p))}</b> <span className="text-[#C4BCB0]">+</span> net-new <b className="font-abridge text-[#1A1A1A] text-[14px]">+{fmt$(netNewPartOf(p))}</b>
+                    </div>
+                  </div>
+                ) : (
+                  <button type="button" onClick={() => patchPlan(p.id, { netNewEnabled: true, netNewAvgConditions: p.netNewAvgConditions || 0.1 })} className="inline-flex items-center gap-1.5 text-[12px] font-bold text-[#EA2C00]">
+                    <Plus className="w-3.5 h-3.5" /> Include net-new HCCs a fuller note surfaces
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
+          <button type="button" onClick={addPlan} className="mt-1 mb-3 inline-flex items-center gap-1.5 text-[12.5px] font-bold text-[#EA2C00]"><Plus className="w-3.5 h-3.5" /> Add a risk plan</button>
+          <div className="flex items-baseline justify-between gap-4 pt-3 border-t border-[#E7E3DD] flex-wrap">
+            <div className="flex items-end gap-2">
+              <EqNum cap="share that survives RADV / audit" value={dq.hccRealization} onChange={(v) => updateDq({ hccRealization: v })} suffix="%" width={40} />
+            </div>
+            <div className="text-[13px] text-[#565250]">Across {plans.length} {plans.length === 1 ? "plan" : "plans"}&nbsp; <b className="font-abridge text-[19px] text-[#EA2C00]">+{fmt$(hccValue)}</b> / yr</div>
+          </div>
+        </div>
+      )}
+    </InlineDriverCard>
   );
 
   // ── Denials card (outpatient + ED) ──
