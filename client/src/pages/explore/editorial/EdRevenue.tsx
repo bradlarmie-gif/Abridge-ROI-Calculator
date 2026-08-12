@@ -27,6 +27,9 @@ import { getDriversForPage } from "@/lib/exploreDrivers";
 import { type ExploreState, type HccPlan } from "../ExploreFlow";
 import { SignalWatch } from "./SignalWatch";
 import { watchDomainFor } from "@/lib/exploreWatchSignals";
+import ValueRail from "./ValueRail";
+import { InlineDriverCard, EqNum, EqCarried, EqOp, EqResult, EquationRow, EqAwaiting } from "./InlineEquation";
+import { X, Plus } from "lucide-react";
 import type { PriorQuadrantEntry } from "@/lib/exploreQuadrantValues";
 
 interface EdRevenueProps {
@@ -79,8 +82,9 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
   const wrvuLiftPerVisit = (dq.currentWrvu * wrvuLiftPct) / 100;
   const additionalWrvus = Math.round(eligibleEncounters * wrvuLiftPerVisit);
 
+  const wrvuAwait = gate("wrvu");
   const wrvuCard = (
-    <MoneyCard
+    <InlineDriverCard
       key="wrvu"
       title={isED ? "E&M level accuracy" : "wRVU capture"}
       tag={isOP ? "Fee-for-service" : undefined}
@@ -91,71 +95,28 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
       }
       enabled={dq.wrvuEnabled}
       onToggle={() => updateDq({ wrvuEnabled: !dq.wrvuEnabled, wrvuExpanded: !dq.wrvuEnabled ? true : dq.wrvuExpanded })}
-      value={wrvuValue}
-      secondary={
-        <>
-          ≈ <b className="text-[#1A1A1A]">{fmtN(additionalWrvus)}</b> more wRVUs captured, a {wrvuLiftPct}% lift
-        </>
-      }
       testId="toggle-wrvu"
-      awaitingScale={gate("wrvu")}
-      build={{
-        read: (
-          <>
-            You're leaving about <b>{fmtN(additionalWrvus)}</b> {isED ? "E/M points" : "wRVUs"} on the table each year.
-            At <b>${dq.conversionFactor.toFixed(2)}</b> apiece that's <b>{fmt$(dq.wrvuRealization > 0 ? wrvuValue / (dq.wrvuRealization / 100) : wrvuValue)}</b>,
-            and we count only the <b>{dq.wrvuRealization}%</b> that holds on review.
-          </>
-        ),
-        factors: [
-          { value: fmtN(eligibleEncounters), label: isED ? "ED encounters" : "visits" },
-          { value: fmtNd(dq.currentWrvu), label: "wRVU / visit" },
-          { value: `${wrvuLiftPct}%`, label: "lift captured" },
-          { value: `$${dq.conversionFactor.toFixed(2)}`, label: "per wRVU" },
-        ],
-        grossLabel: "Captured value, before what holds on review",
-        gross: dq.wrvuRealization > 0 ? wrvuValue / (dq.wrvuRealization / 100) : wrvuValue,
-        net: wrvuValue,
-        haircutLabel: <>{dq.wrvuRealization}% holds on review</>,
-      }}
+      note={
+        <>Grey figures carry from your earlier steps. Change any coral figure and this reprices live, then updates the model on the right. You keep <b className="text-[#B02200] not-italic">{dq.wrvuRealization}%</b> of the lift; the rest stays out of the number.</>
+      }
     >
-      <FieldGrid>
-        <FieldTile label={isED ? "ED encounters" : "Fee-for-service visits"} note="at your utilization rate">
-          <FiReadout>{fmtN(eligibleEncounters)}</FiReadout>
-        </FieldTile>
-        <FieldTile label="Avg wRVU per visit" note="typical baseline, edit to yours">
-          <Fi value={dq.currentWrvu} onValueChange={(v) => updateDq({ currentWrvu: v })} decimal testId="input-ed-current-wrvu" />
-        </FieldTile>
-        <FieldTile label="Increase">
-          <FiReadout suffix="%">{wrvuLiftPct}</FiReadout>
-          <QuickFill
-            options={(["conservative", "typical", "aggressive"] as const).map((k) => ({ key: k, label: `${wrvuScenarios[k]}%` }))}
-            activeKey={dq.wrvuScenario}
-            onSelect={(k) => updateDq({ wrvuScenario: k as typeof dq.wrvuScenario })}
-          />
-        </FieldTile>
-        <FieldTile label="Per wRVU">
-          <Fi
-            value={dq.conversionFactor}
-            onValueChange={(v) => updateDq({ conversionFactor: v })}
-            prefix="$"
-            decimal
-            testId="input-ed-conversion-factor"
-          />
-          <QuickFill
-            options={[
-              { key: "medicare", label: "Medicare" },
-              { key: "blended", label: "Blended · 50" },
-            ]}
-            activeKey={dq.conversionFactor >= 45 ? "blended" : "medicare"}
-            onSelect={(k) => updateDq({ conversionFactor: k === "blended" ? 50 : 33.4 })}
-          />
-        </FieldTile>
-        <FieldTile label="Realization" note="the share that holds on review">
-          <Fi value={dq.wrvuRealization} onValueChange={(v) => updateDq({ wrvuRealization: v })} suffix="%" testId="input-ed-wrvu-realization" />
-        </FieldTile>
-      </FieldGrid>
-    </MoneyCard>
+      {wrvuAwait ? (
+        <EqAwaiting need={wrvuAwait.need} />
+      ) : (
+        <EquationRow>
+          <EqCarried cap={isED ? "ED encounters" : "FFS visits"}>{fmtN(eligibleEncounters)}</EqCarried>
+          <EqOp>×</EqOp>
+          <EqNum cap="wRVU / visit" value={dq.currentWrvu} onChange={(v) => updateDq({ currentWrvu: v })} decimal width={50} />
+          <EqOp>×</EqOp>
+          <EqNum cap="lift captured" value={wrvuLiftPct} onChange={(v) => updateDq({ wrvuScenario: "custom", wrvuCustomPercent: v })} suffix="%" width={40} />
+          <EqOp>×</EqOp>
+          <EqNum cap="per wRVU" value={dq.conversionFactor} onChange={(v) => updateDq({ conversionFactor: v })} prefix="$" decimal width={66} />
+          <EqOp>×</EqOp>
+          <EqNum cap="you keep" value={dq.wrvuRealization} onChange={(v) => updateDq({ wrvuRealization: v })} suffix="%" width={40} />
+          <EqResult value={wrvuValue} />
+        </EquationRow>
+      )}
+    </InlineDriverCard>
   );
 
   // ── HCC card (outpatient only) ──
@@ -215,96 +176,89 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
   const hccGross = dq.hccRealization > 0 ? hccValue / (dq.hccRealization / 100) : hccValue;
   const hccPerMember = totalPanel > 0 ? hccGross / totalPanel : 0;
 
+  // Per-plan economics, computed from the plan's own figures so each card's +$ foots and the plans
+  // sum to the engine's hccValue. Realization (RADV survival) applied per plan, shared rate below.
+  const HCC_SC: Record<string, number> = { conservative: 3, typical: 5, optimistic: 10 };
+  const upliftPtsOf = (p: HccPlan) => (p.uplift === "custom" ? p.upliftCustomPp ?? 5 : HCC_SC[p.uplift] ?? 5);
+  const effUpliftOf = (p: HccPlan) => Math.min(upliftPtsOf(p), Math.max(0, 100 - p.currentRecaptureRate));
+  const membersOf = (p: HccPlan) => p.panelSize * state.numberOfProviders;
+  const recapturePartOf = (p: HccPlan) => Math.round(membersOf(p) * dq.avgHccs * (effUpliftOf(p) / 100) * p.valuePerHcc * (dq.hccRealization / 100));
+  const netNewPartOf = (p: HccPlan) => Math.round(membersOf(p) * (p.netNewEnabled ? p.netNewAvgConditions ?? 0 : 0) * p.valuePerHcc * (dq.hccRealization / 100));
+  const planNetOf = (p: HccPlan) => recapturePartOf(p) + netNewPartOf(p);
+  const patchPlan = (id: string, u: Partial<HccPlan>) => updateDq({ hccPlans: plans.map((pl) => (pl.id === id ? { ...pl, ...u } : pl)) });
+  const hccAwait = gate("hccCapture");
+
   const hccCard = (
-    <MoneyCard
+    <InlineDriverCard
       key="hcc"
       title="HCC capture"
       tag="Risk-based"
-      subtitle="Chronic conditions that lapse and must be recaptured each year, plus new ones a fuller note can surface during the visit. Each plan is valued on its own economics."
+      subtitle="Chronic conditions a fuller note surfaces during the visit, each plan on its own economics."
       enabled={dq.hccEnabled}
       onToggle={() => updateDq({ hccEnabled: !dq.hccEnabled, hccExpanded: !dq.hccEnabled ? true : dq.hccExpanded })}
-      value={hccValue}
-      secondary={
-        <>
-          ≈ <b className="text-[#1A1A1A]">{upliftPts}pp</b> recapture lift per plan, plus newly identified conditions
-        </>
-      }
       testId="toggle-hcc"
-      awaitingScale={gate("hccCapture")}
-      build={{
-        factors: [
-          { value: fmtN(totalPanel), label: "members total" },
-          { value: fmt$(hccPerMember), label: "value / member" },
-        ],
-        grossLabel: "Recaptured value, before what survives audit",
-        gross: hccGross,
-        net: hccValue,
-        haircutLabel: <>{dq.hccRealization}% survives RADV</>,
-      }}
+      note={<>Enter each plan's lives to see its number. Change any coral figure and this reprices live, then updates the model on the right.</>}
     >
-      <PlansRepeater totalLabel={<><b className="text-[#1A1A1A] font-abridge text-[14px]">{fmtN(totalPanel)}</b> members total</>} onAdd={addPlan}>
-        {plans.map((p) => (
-          <PlanRow
-            key={p.id}
-            planType={p.planType}
-            members={p.panelSize * state.numberOfProviders}
-            valuePerHcc={p.valuePerHcc}
-            onPlanTypeChange={(v) =>
-              updateDq({ hccPlans: plans.map((pl) => (pl.id === p.id ? { ...pl, planType: v as HccPlan["planType"] } : pl)) })
-            }
-            onMembersChange={(v) =>
-              updateDq({
-                hccPlans: plans.map((pl) =>
-                  pl.id === p.id
-                    ? { ...pl, panelSize: state.numberOfProviders > 0 ? Math.round(v / state.numberOfProviders) : v }
-                    : pl,
-                ),
-              })
-            }
-            onValuePerHccChange={(v) =>
-              updateDq({ hccPlans: plans.map((pl) => (pl.id === p.id ? { ...pl, valuePerHcc: v } : pl)) })
-            }
-            onRemove={() => removePlan(p.id)}
-            removable={plans.length > 1}
-          />
-        ))}
-      </PlansRepeater>
-
-      <FieldGrid>
-        <FieldTile label="Avg documented conditions / member" note="chronic HCCs on file each year">
-          <Fi value={dq.avgHccs} onValueChange={(v) => updateDq({ avgHccs: v })} decimal testId="input-ed-avg-hccs" />
-        </FieldTile>
-        <FieldTile label="Recapture rate today" note="of those, re-documented now">
-          <Fi
-            value={recaptureRateToday}
-            onValueChange={(v) => setAllPlans({ currentRecaptureRate: v })}
-            suffix="%"
-            testId="input-ed-recapture-today"
-          />
-        </FieldTile>
-        <FieldTile label="With Abridge" note={`+${upliftPts} pts recaptured`} hot>
-          <Fi
-            value={withAbridge}
-            onValueChange={(v) => setAllPlans({ uplift: "custom", upliftCustomPp: Math.max(0, v - recaptureRateToday) })}
-            suffix="%"
-            highlighted
-            testId="input-ed-with-abridge"
-          />
-        </FieldTile>
-        <FieldTile label="Newly identified / member" note="net-new, in the visit">
-          <Fi
-            value={sharedPlan?.netNewAvgConditions ?? 0}
-            onValueChange={(v) => setAllPlans({ netNewEnabled: v > 0, netNewAvgConditions: v })}
-            suffix="HCC"
-            decimal
-            testId="input-ed-newly-identified"
-          />
-        </FieldTile>
-        <FieldTile label="Realization" note="the share that survives RADV / audit">
-          <Fi value={dq.hccRealization} onValueChange={(v) => updateDq({ hccRealization: v })} suffix="%" testId="input-ed-hcc-realization" />
-        </FieldTile>
-      </FieldGrid>
-    </MoneyCard>
+      {(
+        <div>
+          {plans.map((p) => (
+            <div key={p.id} className="rounded-[14px] border border-[#E7E3DD] bg-white px-4 py-[15px] mb-2.5">
+              <div className="flex items-center justify-between gap-3 mb-3">
+                <select
+                  value={p.planType}
+                  onChange={(e) => patchPlan(p.id, { planType: e.target.value as HccPlan["planType"] })}
+                  className="font-abridge text-[17px] text-[#1A1A1A] bg-transparent border-0 outline-none cursor-pointer -ml-1"
+                >
+                  {[["medicare_advantage", "Medicare Advantage"], ["aca_marketplace", "ACA / Exchange"], ["medicaid_mco", "Medicaid managed care"], ["custom", "Custom plan"]].map(([k, l]) => (
+                    <option key={k} value={k}>{l}</option>
+                  ))}
+                </select>
+                <div className="flex items-center gap-3">
+                  <span className="font-abridge text-[19px] text-[#EA2C00] whitespace-nowrap">+{fmt$(planNetOf(p))}<span className="text-[11px] text-[#7C766F] font-sans"> / yr</span></span>
+                  {plans.length > 1 && (
+                    <button type="button" onClick={() => removePlan(p.id)} className="w-[24px] h-[24px] rounded-[7px] border border-[#E7E3DD] bg-white text-[#7C766F] flex items-center justify-center"><X className="w-3.5 h-3.5" /></button>
+                  )}
+                </div>
+              </div>
+              <div className="flex items-end flex-wrap gap-x-[22px] gap-y-3">
+                <EqNum cap="Lives" value={membersOf(p)} onChange={(v) => patchPlan(p.id, { panelSize: state.numberOfProviders > 0 ? Math.round(v / state.numberOfProviders) : v })} width={72} />
+                <EqNum cap="HCCs / patient" value={dq.avgHccs} onChange={(v) => updateDq({ avgHccs: v })} decimal width={44} />
+                <EqNum cap="Realized / HCC" value={p.valuePerHcc} onChange={(v) => patchPlan(p.id, { valuePerHcc: v })} prefix="$" width={72} />
+                <div className="flex flex-col justify-end">
+                  <div className="text-[9.5px] font-bold tracking-[0.04em] uppercase text-[#7C766F] mb-[6px]">Recapture rate</div>
+                  <div className="inline-flex items-end gap-2">
+                    <EqNum cap="" value={p.currentRecaptureRate} onChange={(v) => patchPlan(p.id, { currentRecaptureRate: v })} suffix="%" width={38} />
+                    <span className="text-[#C4BCB0] pb-[3px]">→</span>
+                    <EqNum cap="" value={p.currentRecaptureRate + upliftPtsOf(p)} onChange={(v) => patchPlan(p.id, { uplift: "custom", upliftCustomPp: Math.max(0, v - p.currentRecaptureRate) })} suffix="%" width={38} />
+                  </div>
+                </div>
+              </div>
+              <div className="mt-[13px] pt-3 border-t border-[#F4EEE7]">
+                {p.netNewEnabled ? (
+                  <div className="flex items-end justify-between gap-3 flex-wrap">
+                    <EqNum cap="Net-new HCCs / patient · surfaced at the visit" value={p.netNewAvgConditions ?? 0} onChange={(v) => patchPlan(p.id, { netNewAvgConditions: v })} decimal width={44} />
+                    <div className="text-[12px] text-[#7C766F]">
+                      recapture <b className="font-abridge text-[#1A1A1A] text-[14px]">+{fmt$(recapturePartOf(p))}</b> <span className="text-[#C4BCB0]">+</span> net-new <b className="font-abridge text-[#1A1A1A] text-[14px]">+{fmt$(netNewPartOf(p))}</b>
+                    </div>
+                  </div>
+                ) : (
+                  <button type="button" onClick={() => patchPlan(p.id, { netNewEnabled: true, netNewAvgConditions: p.netNewAvgConditions || 0.1 })} className="inline-flex items-center gap-1.5 text-[12px] font-bold text-[#EA2C00]">
+                    <Plus className="w-3.5 h-3.5" /> Include net-new HCCs a fuller note surfaces
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
+          <button type="button" onClick={addPlan} className="mt-1 mb-3 inline-flex items-center gap-1.5 text-[12.5px] font-bold text-[#EA2C00]"><Plus className="w-3.5 h-3.5" /> Add a risk plan</button>
+          <div className="flex items-baseline justify-between gap-4 pt-3 border-t border-[#E7E3DD] flex-wrap">
+            <div className="flex items-end gap-2">
+              <EqNum cap="share that survives RADV / audit" value={dq.hccRealization} onChange={(v) => updateDq({ hccRealization: v })} suffix="%" width={40} />
+            </div>
+            <div className="text-[13px] text-[#565250]">Across {plans.length} {plans.length === 1 ? "plan" : "plans"}&nbsp; <b className="font-abridge text-[19px] text-[#EA2C00]">+{fmt$(hccValue)}</b> / yr</div>
+          </div>
+        </div>
+      )}
+    </InlineDriverCard>
   );
 
   // ── Denials card (outpatient + ED) ──
@@ -318,128 +272,72 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
   const fewerDenied = Math.round(deniedClaims * (denialsPreventedPct / 100));
   const denialsValue = engine.denialPrevention ?? 0;
 
+  const denialsAwait = gate("denialPrevention");
   const denialsCard = (
-    <MoneyCard
+    <InlineDriverCard
       key="denials"
       title="Medical necessity denials"
       tag={isOP || isED ? "Fee-for-service & risk" : undefined}
       subtitle="Claims you earned but lose to documentation gaps. Fewer denied, less rework."
       enabled={dq.denialsEnabled}
       onToggle={() => updateDq({ denialsEnabled: !dq.denialsEnabled, denialsExpanded: !dq.denialsEnabled ? true : dq.denialsExpanded })}
-      value={denialsValue}
-      secondary={
-        <>
-          ≈ <b className="text-[#1A1A1A]">{fmtN(fewerDenied)}</b> fewer denied claims a year
-        </>
-      }
       testId="toggle-denials"
-      awaitingScale={gate("denialPrevention")}
-      build={{
-        factors: [
-          { value: fmtN(claimsBase), label: "claims" },
-          { value: `${dq.medNecessityDenialRate}%`, label: "denial rate" },
-          { value: `${denialsPreventedPct}%`, label: "prevented" },
-          { value: `$${dq.avgClaimValue}`, label: "per claim" },
-        ],
-        grossLabel: "Recovered claims value, before appeals",
-        gross: dq.denialsRealization > 0 ? denialsValue / (dq.denialsRealization / 100) : denialsValue,
-        net: denialsValue,
-        haircutLabel: <>{dq.denialsRealization}% net of appeals</>,
-      }}
+      note={
+        <>Annual claims defaults to your enabled encounters until you enter your own. Change any coral figure and this reprices live, then updates the model on the right. You keep <b className="text-[#B02200] not-italic">{dq.denialsRealization}%</b> net of appeals; the rest stays out of the number.</>
+      }
     >
-      <FieldGrid>
-        <FieldTile label="Annual claims" note="your claims a year; defaults to enabled encounters">
-          <Fi
-            value={claimsBase}
-            onValueChange={(v) => updateDq({ denialsAnnualClaims: v })}
-            testId="input-ed-annual-claims"
-          />
-        </FieldTile>
-        <FieldTile label="Fewer denials" note={<>{dq.medNecessityDenialRate}% → {fmtNd(rateAfter)}% = {fmtN(fewerDenied)}</>}>
-          <Fi
-            value={dq.medNecessityDenialRate}
-            onValueChange={(v) => updateDq({ medNecessityDenialRate: v })}
-            suffix="%"
-            decimal
-            testId="input-ed-denial-rate"
-          />
-          <QuickFill
-            options={(["conservative", "typical", "aggressive"] as const).map((k) => ({ key: k, label: `${denialsScenarios[k]}%` }))}
-            activeKey={dq.denialsScenario}
-            onSelect={(k) => updateDq({ denialsScenario: k as typeof dq.denialsScenario })}
-          />
-        </FieldTile>
-        <FieldTile label="Avg claim value">
-          <Fi value={dq.avgClaimValue} onValueChange={(v) => updateDq({ avgClaimValue: v })} prefix="$" testId="input-ed-claim-value" />
-        </FieldTile>
-        <FieldTile label="Net of appeals" note="kept, not won back anyway">
-          <Fi value={dq.denialsRealization} onValueChange={(v) => updateDq({ denialsRealization: v })} suffix="%" testId="input-ed-net-appeals" />
-        </FieldTile>
-      </FieldGrid>
-    </MoneyCard>
+      {denialsAwait ? (
+        <EqAwaiting need={denialsAwait.need} />
+      ) : (
+        <EquationRow>
+          <EqNum cap="claims / yr" value={claimsBase} onChange={(v) => updateDq({ denialsAnnualClaims: v })} />
+          <EqOp>×</EqOp>
+          <EqNum cap="denied today" value={dq.medNecessityDenialRate} onChange={(v) => updateDq({ medNecessityDenialRate: v })} suffix="%" decimal />
+          <EqOp>×</EqOp>
+          <EqNum cap="prevented" value={denialsPreventedPct} onChange={(v) => updateDq({ denialsScenario: "custom", denialsCustomPercent: v })} suffix="%" />
+          <EqOp>×</EqOp>
+          <EqNum cap="per claim" value={dq.avgClaimValue} onChange={(v) => updateDq({ avgClaimValue: v })} prefix="$" />
+          <EqOp>×</EqOp>
+          <EqNum cap="you keep" value={dq.denialsRealization} onChange={(v) => updateDq({ denialsRealization: v })} suffix="%" />
+          <EqResult value={denialsValue} />
+        </EquationRow>
+      )}
+    </InlineDriverCard>
   );
 
   // ── Inpatient: DRG/CMI + Obs Defense ──
   const drgValue = engine.drgAccuracy ?? 0;
   const projectedCmi = dq.ipDrgCurrentCmi + dq.ipDrgWeightIncrease;
+  const drgAwait = gate("drgAccuracy");
   const drgCard = (
-    <MoneyCard
+    <InlineDriverCard
       key="drg"
       title="Case Mix Index"
       subtitle="Complete documentation at the point of care justifies the CC/MCC and severity that set the DRG weight. Your CDI team also moves CMI, so this counts only the share attributed to Abridge, and only what survives audit."
       enabled={dq.ipDrgEnabled}
       onToggle={() => updateDq({ ipDrgEnabled: !dq.ipDrgEnabled, ipDrgExpanded: !dq.ipDrgEnabled ? true : dq.ipDrgExpanded })}
-      value={drgValue}
-      secondary={<>≈ CMI <b className="text-[#1A1A1A]">{dq.ipDrgCurrentCmi.toFixed(2)} → {projectedCmi.toFixed(2)}</b>, {dq.ipDrgAttribution}% attributed to Abridge</>}
       testId="toggle-drg"
-      awaitingScale={gate("drgAccuracy")}
-      build={{
-        read: (
-          <>
-            A <b>{fmtNd(dq.ipDrgWeightIncrease)}</b> CMI lift across <b>{fmtN(eligibleEncounters)}</b> discharges at{" "}
-            <b>${fmtN(dq.ipDrgBasePayment)}</b> a case is worth <b>{fmt$((dq.ipDrgAttribution > 0 && dq.ipDrgRealization > 0) ? drgValue / ((dq.ipDrgAttribution / 100) * (dq.ipDrgRealization / 100)) : drgValue)}</b>.
-            We count only the <b>{dq.ipDrgAttribution}%</b> your point-of-care notes drive, and the <b>{dq.ipDrgRealization}%</b> that survives audit.
-          </>
-        ),
-        factors: [
-          { value: fmtN(eligibleEncounters), label: "discharges" },
-          { value: fmtNd(dq.ipDrgWeightIncrease), label: "CMI lift" },
-          { value: `$${fmtN(dq.ipDrgBasePayment)}`, label: "per case" },
-        ],
-        grossLabel: "CMI opportunity, before what's attributed and holds",
-        gross: (dq.ipDrgAttribution > 0 && dq.ipDrgRealization > 0) ? drgValue / ((dq.ipDrgAttribution / 100) * (dq.ipDrgRealization / 100)) : drgValue,
-        net: drgValue,
-        haircutLabel: <>{dq.ipDrgAttribution}% attributed × {dq.ipDrgRealization}% holds</>,
-      }}
+      note={
+        <>Grey figures carry from your earlier steps. Change any coral figure and this reprices live, then updates the model on the right. We count only the <b className="text-[#B02200] not-italic">{dq.ipDrgAttribution}%</b> your point-of-care notes drive, and the <b className="text-[#B02200] not-italic">{dq.ipDrgRealization}%</b> that survives audit.</>
+      }
     >
-      <FieldGrid>
-        <FieldTile label="Annual discharges" note="at your utilization rate">
-          <FiReadout>{fmtN(eligibleEncounters)}</FiReadout>
-        </FieldTile>
-        <FieldTile label="Current CMI" note="your case mix index today">
-          <Fi value={dq.ipDrgCurrentCmi} onValueChange={(v) => updateDq({ ipDrgCurrentCmi: v })} decimal testId="input-ed-drg-current-cmi" />
-        </FieldTile>
-        <FieldTile label="CMI lift" note={`→ ${projectedCmi.toFixed(2)} projected`}>
-          <Fi value={dq.ipDrgWeightIncrease} onValueChange={(v) => updateDq({ ipDrgWeightIncrease: v })} decimal testId="input-ed-drg-cmi-lift" />
-          <QuickFill
-            options={[{ key: "0.02", label: "0.02" }, { key: "0.03", label: "0.03" }, { key: "0.05", label: "0.05" }]}
-            activeKey={String(dq.ipDrgWeightIncrease)}
-            onSelect={(k) => updateDq({ ipDrgWeightIncrease: Number(k) })}
-          />
-        </FieldTile>
-        <FieldTile label="Base payment / discharge">
-          <Fi value={dq.ipDrgBasePayment} onValueChange={(v) => updateDq({ ipDrgBasePayment: v })} prefix="$" testId="input-ed-drg-base" />
-        </FieldTile>
-      </FieldGrid>
-      <FieldGrid>
-        <FieldTile label="Attributed to Abridge" note="vs your CDI team & coders">
-          <Fi value={dq.ipDrgAttribution} onValueChange={(v) => updateDq({ ipDrgAttribution: v })} suffix="%" testId="input-ed-drg-attribution" />
-        </FieldTile>
-        <FieldTile label="Realization" note="the share that survives RAC / PEPPER">
-          <Fi value={dq.ipDrgRealization} onValueChange={(v) => updateDq({ ipDrgRealization: v })} suffix="%" testId="input-ed-drg-realization" />
-        </FieldTile>
-      </FieldGrid>
-    </MoneyCard>
+      {drgAwait ? (
+        <EqAwaiting need={drgAwait.need} />
+      ) : (
+        <EquationRow>
+          <EqCarried cap="discharges">{fmtN(eligibleEncounters)}</EqCarried>
+          <EqOp>×</EqOp>
+          <EqNum cap="CMI lift" value={dq.ipDrgWeightIncrease} onChange={(v) => updateDq({ ipDrgWeightIncrease: v })} decimal />
+          <EqOp>×</EqOp>
+          <EqNum cap="per case" value={dq.ipDrgBasePayment} onChange={(v) => updateDq({ ipDrgBasePayment: v })} prefix="$" />
+          <EqOp>×</EqOp>
+          <EqNum cap="attributed" value={dq.ipDrgAttribution} onChange={(v) => updateDq({ ipDrgAttribution: v })} suffix="%" />
+          <EqOp>×</EqOp>
+          <EqNum cap="survives audit" value={dq.ipDrgRealization} onChange={(v) => updateDq({ ipDrgRealization: v })} suffix="%" />
+          <EqResult value={drgValue} />
+        </EquationRow>
+      )}
+    </InlineDriverCard>
   );
 
   const obsPreventablePct =
@@ -447,8 +345,9 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
       ? dq.ipObsDefenseCustomPercent ?? 40
       : IP_OBS_PREVENTABLE_SCENARIOS[dq.ipObsDefensePreventableScenario] ?? 40;
   const obsValue = engine.obsDefense ?? 0;
+  const obsAwait = gate("obsDefense");
   const obsCard = (
-    <MoneyCard
+    <InlineDriverCard
       key="obs"
       title="Observation / IP status defense"
       subtitle="The revenue delta when a payer downgrades an inpatient stay to observation for want of clear medical-necessity documentation. Two separate questions: which downgrades the note itself can defend, and how many of those survive appeal."
@@ -456,49 +355,28 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
       onToggle={() =>
         updateDq({ ipObsDefenseEnabled: !dq.ipObsDefenseEnabled, ipObsDefenseExpanded: !dq.ipObsDefenseEnabled ? true : dq.ipObsDefenseExpanded })
       }
-      value={obsValue}
-      secondary={<>≈ <b className="text-[#1A1A1A]">{obsPreventablePct}%</b> of downgrades the note can defend</>}
       testId="toggle-obs"
-      awaitingScale={gate("obsDefense")}
-      build={{
-        factors: [
-          { value: fmtN(eligibleEncounters), label: "admissions" },
-          { value: `${dq.ipObsDefenseDenialRate}%`, label: "downgraded" },
-          { value: `$${fmtN(dq.ipObsDefenseRevenueDelta)}`, label: "per case delta" },
-        ],
-        grossLabel: "Downgrade exposure, before what the note defends",
-        gross: (obsPreventablePct > 0 && dq.ipObsDefenseRealization > 0) ? obsValue / ((obsPreventablePct / 100) * (dq.ipObsDefenseRealization / 100)) : obsValue,
-        net: obsValue,
-        haircutLabel: <>{obsPreventablePct}% defensible × {dq.ipObsDefenseRealization}% survives appeal</>,
-      }}
+      note={
+        <>Grey figures carry from your earlier steps. Change any coral figure and this reprices live. We keep only the <b className="text-[#B02200] not-italic">{obsPreventablePct}%</b> the note can defend, and the <b className="text-[#B02200] not-italic">{dq.ipObsDefenseRealization}%</b> that survives appeal.</>
+      }
     >
-      <FieldGrid>
-        <FieldTile label="Annual admissions" note="at your utilization rate">
-          <FiReadout>{fmtN(eligibleEncounters)}</FiReadout>
-        </FieldTile>
-        <FieldTile label="Downgrade rate">
-          <Fi value={dq.ipObsDefenseDenialRate} onValueChange={(v) => updateDq({ ipObsDefenseDenialRate: v })} suffix="%" testId="input-ed-obs-rate" />
-        </FieldTile>
-        <FieldTile label="Revenue delta / case">
-          <Fi value={dq.ipObsDefenseRevenueDelta} onValueChange={(v) => updateDq({ ipObsDefenseRevenueDelta: v })} prefix="$" testId="input-ed-obs-delta" />
-        </FieldTile>
-        <FieldTile label="The note can defend" note="share of downgrades the documentation itself supports">
-          <FiReadout suffix="%">{obsPreventablePct}</FiReadout>
-          <QuickFill
-            options={(["conservative", "typical", "aggressive"] as const).map((k) => ({ key: k, label: `${IP_OBS_PREVENTABLE_SCENARIOS[k]}%` }))}
-            activeKey={dq.ipObsDefensePreventableScenario}
-            onSelect={(k) => updateDq({ ipObsDefensePreventableScenario: k as typeof dq.ipObsDefensePreventableScenario })}
-          />
-        </FieldTile>
-      </FieldGrid>
-      <FieldGrid cols={3}>
-        <FieldTile label="Survives appeal" note="the share that holds through payer appeal / audit">
-          <Fi value={dq.ipObsDefenseRealization} onValueChange={(v) => updateDq({ ipObsDefenseRealization: v })} suffix="%" testId="input-ed-obs-realization" />
-        </FieldTile>
-        <div />
-        <div />
-      </FieldGrid>
-    </MoneyCard>
+      {obsAwait ? (
+        <EqAwaiting need={obsAwait.need} />
+      ) : (
+        <EquationRow>
+          <EqCarried cap="admissions">{fmtN(eligibleEncounters)}</EqCarried>
+          <EqOp>×</EqOp>
+          <EqNum cap="downgraded" value={dq.ipObsDefenseDenialRate} onChange={(v) => updateDq({ ipObsDefenseDenialRate: v })} suffix="%" />
+          <EqOp>×</EqOp>
+          <EqNum cap="per case delta" value={dq.ipObsDefenseRevenueDelta} onChange={(v) => updateDq({ ipObsDefenseRevenueDelta: v })} prefix="$" />
+          <EqOp>×</EqOp>
+          <EqNum cap="note defends" value={obsPreventablePct} onChange={(v) => updateDq({ ipObsDefensePreventableScenario: "custom", ipObsDefenseCustomPercent: v })} suffix="%" />
+          <EqOp>×</EqOp>
+          <EqNum cap="survives appeal" value={dq.ipObsDefenseRealization} onChange={(v) => updateDq({ ipObsDefenseRealization: v })} suffix="%" />
+          <EqResult value={obsValue} />
+        </EquationRow>
+      )}
+    </InlineDriverCard>
   );
 
   // ── Which financial cards are visible on screen, for the section subtotal ──
@@ -572,6 +450,8 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
           </>
         )}
 
+        <div className="mt-6 grid lg:grid-cols-[minmax(0,1fr)_380px] gap-x-10 gap-y-8 items-start">
+        <div className="min-w-0">
         {!isNursing && (
           <SectionLabel
             tag="counts when it's on"
@@ -624,6 +504,9 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
             </div>
           </div>
         )}
+        </div>
+        <ValueRail state={state} totalHoursSaved={totalHoursSaved} activeDomain="Revenue" />
+        </div>
 
         <div className="flex justify-end mt-[30px]">
           <button

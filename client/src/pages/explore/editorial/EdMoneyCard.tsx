@@ -35,9 +35,26 @@ export interface MoneyBuild {
   haircutLabel: ReactNode;
 }
 
+/** One bottom-aligned cell in the equation: a caption line (reserved even when empty, so operators
+ * and the result share the factors' baseline) over a value. */
+function EqCell({ cap, children, color = "#1A1A1A", size = 19 }: { cap?: string; children: ReactNode; color?: string; size?: number }) {
+  return (
+    <div className="flex flex-col justify-end">
+      <div className="text-[9.5px] font-bold tracking-[0.04em] uppercase text-[#7C766F] mb-[6px] min-h-[12px] whitespace-nowrap">{cap ?? " "}</div>
+      <div className="font-bold tabular-nums leading-none" style={{ fontSize: size, color }}>{children}</div>
+    </div>
+  );
+}
+
+/**
+ * The math as a single footing equation: factor × factor × … × what-you-keep = the counted value.
+ * The result is the engine's value (`build.net`), and it equals the product of the shown terms
+ * (gross × net/gross), so a skeptic who multiplies the line gets the number. Replaces the old
+ * gross→net bar. Used by every driver in both card kits, so all four screens upgrade at once.
+ */
 export function BuildStrip({ build }: { build: MoneyBuild }) {
-  const keepPct = build.gross > 0 ? Math.max(0, Math.min(1, build.net / build.gross)) : 1;
   const heldBack = Math.max(0, build.gross - build.net);
+  const keepPct = build.gross > 0 ? Math.round((build.net / build.gross) * 100) : 100;
   return (
     <div className="mt-5">
       {build.read && (
@@ -45,47 +62,29 @@ export function BuildStrip({ build }: { build: MoneyBuild }) {
           {build.read}
         </div>
       )}
-      <div className="text-[10.5px] font-extrabold tracking-[0.09em] uppercase text-[#3E3B37] mb-3 flex items-center gap-2.5">
-        How it builds
-        <span className="flex-1 h-px bg-gradient-to-r from-[#E7E3DD] to-[#EDE7DD]/0" />
-      </div>
-      <div className="flex items-stretch flex-wrap gap-y-2.5">
+      <div className="text-[10.5px] font-extrabold tracking-[0.09em] uppercase text-[#3E3B37] mb-3">The math</div>
+      <div className="flex items-end flex-wrap gap-x-[12px] gap-y-2.5">
         {build.factors.map((f, i) => (
-          <div key={i} className="flex items-stretch">
-            {i > 0 && <span className="self-start text-[15px] text-[#B9AA97] px-[14px] pt-[2px]">×</span>}
-            <div>
-              <div className="text-[19px] font-bold text-[#1A1A1A] leading-none tabular-nums">{f.value}</div>
-              <div className="text-[9.5px] font-bold tracking-[0.04em] uppercase text-[#7C766F] mt-[7px]">{f.label}</div>
-            </div>
+          <div key={i} className="flex items-end gap-x-[12px]">
+            {i > 0 && <EqCell color="#B9AA97">×</EqCell>}
+            <EqCell cap={f.label}>{f.value}</EqCell>
           </div>
         ))}
+        {heldBack > 0 && (
+          <>
+            <EqCell color="#B9AA97">×</EqCell>
+            <EqCell cap="you keep" color="#B02200">{keepPct}%</EqCell>
+          </>
+        )}
+        <EqCell color="#B9AA97">=</EqCell>
+        <EqCell color="#EA2C00" size={24}>
+          <AnimatedValue value={build.net} format={fmt$} duration={450} className="font-abridge" />
+          <span className="text-[12px] font-normal text-[#7C766F] font-sans"> / yr</span>
+        </EqCell>
       </div>
-      {heldBack > 0 ? (
-        <>
-          <div className="flex justify-between items-baseline mt-[18px] pb-[10px]">
-            <div className="text-[12.5px] text-[#565250]">{build.grossLabel}</div>
-            <AnimatedValue value={build.gross} format={fmt$} duration={450} className="text-[16px] font-bold text-[#1A1A1A] tabular-nums" />
-          </div>
-          <div className="h-[14px] rounded-[5px] overflow-hidden flex bg-[#EBE6DE]">
-            <div className="bg-[#EA2C00] h-full transition-[width] duration-500 ease-out" style={{ width: `${(keepPct * 100).toFixed(2)}%` }} />
-            <div
-              className="h-full transition-[width] duration-500 ease-out"
-              style={{
-                width: `${((1 - keepPct) * 100).toFixed(2)}%`,
-                background: "repeating-linear-gradient(45deg,#E4D9C8,#E4D9C8 4px,#EBE6DE 4px,#EBE6DE 8px)",
-              }}
-            />
-          </div>
-          <div className="flex justify-between items-baseline mt-[9px] gap-4 flex-wrap">
-            <div className="text-[12px] text-[#B02200] font-bold">
-              <AnimatedValue value={build.net} format={fmt$} duration={450} className="font-extrabold tabular-nums" /> counted · {build.haircutLabel}
-            </div>
-            <div className="text-[12px] text-[#7C766F] tabular-nums">− <AnimatedValue value={heldBack} format={fmt$} duration={450} /> held back</div>
-          </div>
-        </>
-      ) : (
-        <div className="mt-[14px] text-[13px] text-[#565250]">
-          = <AnimatedValue value={build.net} format={fmt$} duration={450} className="text-[16px] font-bold text-[#1A1A1A] tabular-nums" /> a year
+      {heldBack > 0 && (
+        <div className="text-[12px] text-[#7C766F] mt-[12px] leading-[1.4]">
+          You keep <b className="text-[#B02200]">{keepPct}%</b> ({build.haircutLabel}); {fmt$(heldBack)} held back stays out of the number.
         </div>
       )}
     </div>

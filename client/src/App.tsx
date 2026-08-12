@@ -36,6 +36,7 @@ import { SwitchFlow } from "@/pages/switch";
 import LearnPath, { type LearnScreen } from "@/pages/LearnPath";
 import MeasureFlow from "@/pages/measure/MeasureFlow";
 import ForecastFlow from "@/pages/forecast/ForecastFlow";
+import MockExplore from "@/pages/explore/editorial/MockExplore"; // THROWAWAY ?exploremock=1
 import ForecastModeSelector from "@/pages/forecast/ForecastModeSelector";
 import QuickRoiCalculator from "@/pages/forecast/QuickRoiCalculator";
 import AppRationalizationFlow from "@/pages/forecast/AppRationalizationFlow";
@@ -250,6 +251,10 @@ export default function App() {
   // HTML-print financial-proforma document from the deal snapshot in localStorage.
   if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("proformapdf") === "1") {
     return <ProformaEditorialPdfRoute />;
+  }
+  // THROWAWAY: ?exploremock=1 = design mockup for the "flat" Explore redesign (value-accumulation rail).
+  if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("exploremock") === "1") {
+    return <MockExplore />;
   }
   // Print route for the editorial App Rationalization PDF (?appratpdf=1).
   if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("appratpdf") === "1") {
