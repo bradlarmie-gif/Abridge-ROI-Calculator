@@ -22,6 +22,7 @@ import type { PriorQuadrantEntry } from "@/lib/exploreQuadrantValues";
 import { type ExploreState } from "../ExploreFlow";
 import { SignalWatch } from "./SignalWatch";
 import { watchDomainFor } from "@/lib/exploreWatchSignals";
+import ValueRail from "./ValueRail";
 
 interface EdCapacityProps {
   state: ExploreState;
@@ -435,6 +436,8 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
           )}
         </p>
 
+        <div className="mt-6 grid lg:grid-cols-[minmax(0,1fr)_340px] gap-x-10 gap-y-8 items-start">
+        <div className="min-w-0">
         {capacityIsProofLayer ? (
           <>
             <SectionLabel
@@ -502,6 +505,9 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
             </>
           )
         )}
+        </div>
+        <ValueRail state={state} totalHoursSaved={totalHoursSaved} activeDomain="Capacity" />
+        </div>
 
         <Foot onNext={onNext} />
       </div>
