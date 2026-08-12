@@ -527,7 +527,7 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
           </>
         )}
 
-        <div className="mt-6 grid lg:grid-cols-[minmax(0,1fr)_340px] gap-x-10 gap-y-8 items-start">
+        <div className="mt-6 grid lg:grid-cols-[minmax(0,1fr)_380px] gap-x-10 gap-y-8 items-start">
         <div className="min-w-0">
         {!isNursing && (
           <SectionLabel

@@ -86,7 +86,7 @@ function ProofChainScreen({ state, totalHoursSaved, onNext, onBack, onHome, sett
         <h1 className="font-abridge text-[26px] sm:text-[32px] lg:text-[38px] leading-[1.08] text-[#1A1A1A] mt-[10px] max-w-[700px]">{copy.h1}</h1>
         <p className="text-[16px] text-[#565250] mt-[13px] max-w-[660px] leading-[1.5]">{copy.sub}</p>
 
-        <div className="mt-6 grid lg:grid-cols-[minmax(0,1fr)_340px] gap-x-10 gap-y-8 items-start">
+        <div className="mt-6 grid lg:grid-cols-[minmax(0,1fr)_380px] gap-x-10 gap-y-8 items-start">
         <div className="min-w-0">
         <SectionLabel
           tag="no dollar counted here"
@@ -247,7 +247,7 @@ function NursingQualityScreen({
           </div>
         )}
 
-        <div className="mt-6 grid lg:grid-cols-[minmax(0,1fr)_340px] gap-x-10 gap-y-8 items-start">
+        <div className="mt-6 grid lg:grid-cols-[minmax(0,1fr)_380px] gap-x-10 gap-y-8 items-start">
         <div className="min-w-0">
         <SectionLabel
           tag="counts when it's on"

@@ -64,35 +64,35 @@ export default function ValueRail({ state, totalHoursSaved, activeDomain, invest
 
   return (
     <div className="lg:sticky lg:top-6">
-      <div className="bg-white border border-[#E7E3DD] rounded-[20px] p-6 sm:p-7 shadow-[0_1px_3px_rgba(40,30,20,0.04)]">
-        <div className="flex items-center justify-between mb-1.5">
+      <div className="bg-white border border-[#E7E3DD] rounded-[22px] p-8 sm:p-9 shadow-[0_1px_3px_rgba(40,30,20,0.04)]">
+        <div className="flex items-center justify-between mb-4">
           <span className="text-[11px] font-extrabold tracking-[0.08em] uppercase text-[#7C766F]">
             {onInvestment ? "Your model" : "Your model so far"}
           </span>
           {!onInvestment && (
-            <span className="text-[11px] font-bold text-[#EA2C00] bg-[#FFEDE7] rounded-full px-[10px] py-[3px]">building</span>
+            <span className="text-[11px] font-bold text-[#EA2C00] bg-[#FFEDE7] rounded-full px-[10px] py-[4px]">building</span>
           )}
         </div>
 
         {/* headline: the assembled total (count-up) */}
         <div>
-          <AnimatedValue value={domainTotal} format={fmtMoney} duration={450} className="font-abridge text-[44px] sm:text-[48px] leading-none text-[#EA2C00]" />
+          <AnimatedValue value={domainTotal} format={fmtMoney} duration={450} className="font-abridge text-[46px] sm:text-[52px] leading-none text-[#EA2C00]" />
           <span className="text-[15px] text-[#7C766F]"> / yr</span>
         </div>
         {onInvestment ? (
-          <div className="text-[13.5px] text-[#565250] mt-2 leading-[1.5]">
+          <div className="text-[13.5px] text-[#565250] mt-3 leading-[1.55]">
             net of a <b className="text-[#1A1A1A]">{fmtMoney(investment!)}</b> investment,{" "}
             <b className="text-[#EA2C00]">{fmtMoney(net)}</b> / yr comes back{roi > 0 ? <> ≈ <b className="text-[#EA2C00]">{roi.toFixed(1)}×</b></> : null}.
           </div>
         ) : (
-          <div className="text-[13.5px] text-[#565250] mt-2 leading-[1.5]">
+          <div className="text-[13.5px] text-[#565250] mt-3 leading-[1.55]">
             Built from your own numbers, across the four areas we model.
           </div>
         )}
 
         {/* the growing stacked bar over the counted domains */}
         {domainTotal > 0 && (
-          <div className="flex h-[16px] rounded-[8px] overflow-hidden mt-[22px] bg-[#F3EEE7]">
+          <div className="flex h-[16px] rounded-[8px] overflow-hidden mt-8 bg-[#F3EEE7]">
             {counted.map((q) =>
               (vbq[q] || 0) > 0 ? <div key={q} style={{ width: seg(vbq[q]), background: DOMAIN_TINT[q] }} /> : null,
             )}
@@ -100,34 +100,34 @@ export default function ValueRail({ state, totalHoursSaved, activeDomain, invest
         )}
 
         {/* domain rows: dollar for counted, "tracked, not counted" for proof domains */}
-        <div className="mt-[22px] flex flex-col">
+        <div className="mt-7 flex flex-col">
           {counted.map((q) => {
             const active = q === activeDomain;
             return (
-              <div key={q} className="flex items-center justify-between py-[9px]">
-                <div className="flex items-center gap-[10px]">
+              <div key={q} className="flex items-center justify-between py-[13px] border-b border-[#F1ECE4] last:border-b-0">
+                <div className="flex items-center gap-[11px]">
                   <span className="w-[11px] h-[11px] rounded-[3px] flex-shrink-0" style={{ background: DOMAIN_TINT[q] }} />
-                  <span className={`text-[14.5px] text-[#1A1A1A] ${active ? "font-bold" : "font-medium"}`}>{q}</span>
+                  <span className={`text-[15px] text-[#1A1A1A] ${active ? "font-bold" : "font-medium"}`}>{q}</span>
                   <span className={`text-[11.5px] ${active ? "text-[#EA2C00]" : "text-[#7C766F] italic"}`}>
                     {active ? "building now" : `from ${DOMAIN_STEP[q]}`}
                   </span>
                 </div>
-                <span className="font-abridge text-[17px] text-[#1A1A1A] tabular-nums">{fmtMoney(vbq[q] || 0)}</span>
+                <span className="font-abridge text-[18px] text-[#1A1A1A] tabular-nums">{fmtMoney(vbq[q] || 0)}</span>
               </div>
             );
           })}
           {tracked.map((q, i) => (
             <div
               key={q}
-              className={`flex items-center justify-between pt-[12px] pb-[2px] ${i === 0 ? "border-t border-[#E7E3DD] mt-[8px]" : ""}`}
+              className={`flex items-center justify-between py-[13px] ${i === 0 ? "border-t border-[#E7E3DD] mt-[6px] pt-[16px]" : ""}`}
             >
-              <span className="text-[13px] text-[#565250]">{q}</span>
+              <span className="text-[13.5px] text-[#565250]">{q}</span>
               <span className="text-[12.5px] italic text-[#7C766F]">tracked, not counted</span>
             </div>
           ))}
         </div>
       </div>
-      <p className="text-[12.5px] text-[#7C766F] mt-[14px] leading-[1.5] text-center max-w-[340px] mx-auto">
+      <p className="text-[12.5px] text-[#7C766F] mt-[16px] leading-[1.55] text-center max-w-[360px] mx-auto">
         {onInvestment
           ? "Everything the prior steps built, against the cost. This is what's left."
           : "This stays with you across every step. Each driver you turn on lands here, so the model is already built by the time you reach the end."}
