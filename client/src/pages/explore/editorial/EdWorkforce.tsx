@@ -16,7 +16,7 @@ import {
   formatNum1,
   type OutcomeSignal,
 } from "./EdValueScreenKit";
-import { InlineDriverCard, EqNum, EqCarried, EqOp, EqResult, EquationRow } from "./InlineEquation";
+import { InlineDriverCard, EqNum, EqCarried, EqOp, EqResult, EquationRow, EqAwaiting } from "./InlineEquation";
 import { getDriversForPage, type ExploreDriver, type ExploreSetting } from "@/lib/exploreDrivers";
 import { computeAllDriverValues } from "@/lib/exploreDriverCalcs";
 import { engineKeyForDriver } from "@/lib/exploreDriverKeys";
@@ -331,68 +331,78 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
       const scribedVisits = state.annualEncounters * ((td.scribeCoveragePercent || 0) / 100);
       const scribedVisitsReplaced = Math.round(scribedVisits * ((td.scribeVisitPercentEliminated || 0) / 100));
 
+      const scribeReady = driverScaleReadiness(driver.id, state, totalHoursSaved);
       return (
-        <ValueCard
+        <InlineDriverCard
           key={driver.id}
           title={driver.label}
           subtitle={driver.shortDescription}
-          value={value}
-          secondary={isPosition ? <>≈ <b className="font-abridge text-[#1A1A1A]">{eliminated}</b> scribe position{eliminated !== 1 ? "s" : ""} eliminated</> : <>≈ <b className="font-abridge text-[#1A1A1A]">{formatNum(scribedVisitsReplaced)}</b> scribed visits/yr replaced</>}
+          enabled
           onToggle={() => toggleEnabled(driver)}
           testId={`ed-toggle-${driver.id}`}
-          awaitingScale={(() => { const r = driverScaleReadiness(driver.id, state, totalHoursSaved); return r.ready ? undefined : { need: r.need }; })()}
-          buildStruct={{
-            factors: isPosition
-              ? [
-                  { value: `${eliminated}`, label: eliminated === 1 ? "position cut" : "positions cut" },
-                  { value: formatCurrency(td.scribeCostPerPosition), label: "per position" },
-                ]
-              : [
-                  { value: formatNum(scribedVisitsReplaced), label: "scribed visits replaced" },
-                  { value: `$${costPerVisit.toFixed(2)}`, label: "per visit" },
-                ],
-            grossLabel: "",
-            gross: value,
-            net: value,
-            haircutLabel: "",
-          }}
+          note={isPosition
+            ? <>Change any coral figure and this reprices live. We value only the positions you can actually cut, held at your current headcount.</>
+            : <>The two figures above are derived from the knobs below. Change any coral figure and this reprices live.</>}
         >
-          <div className="sm:col-span-2">
+          <div className="mb-4">
             <ModePicker mode={isPosition ? "position" : "hourly"} onChange={(m) => updateTimeDriverInputs({ scribeBillingMode: m })} />
           </div>
-          {isPosition ? (
+          {!scribeReady.ready ? (
+            <EqAwaiting need={scribeReady.need} />
+          ) : isPosition ? (
             <>
-              <Field label="Current scribe headcount">
-                <NumBox value={td.scribeHeadcount} onChange={(v) => updateTimeDriverInputs({ scribeHeadcount: v })} testId={`ed-input-${driver.id}-headcount`} />
-              </Field>
-              <Field label="Annual cost per position">
-                <NumBox value={td.scribeCostPerPosition} prefix="$" onChange={(v) => updateTimeDriverInputs({ scribeCostPerPosition: v })} testId={`ed-input-${driver.id}-costperposition`} />
-              </Field>
-              <Field label="Positions eliminated with Abridge">
-                <NumBox
+              <EquationRow>
+                <EqNum
+                  cap="positions cut"
                   value={td.scribePositionsEliminated}
                   onChange={(v) => updateTimeDriverInputs({ scribePositionsEliminated: td.scribeHeadcount > 0 ? Math.min(v, td.scribeHeadcount) : v })}
-                  testId={`ed-input-${driver.id}-eliminated`}
+                  width={44}
                 />
-              </Field>
+                <EqOp>×</EqOp>
+                <EqNum
+                  cap="cost / position"
+                  value={td.scribeCostPerPosition}
+                  prefix="$"
+                  onChange={(v) => updateTimeDriverInputs({ scribeCostPerPosition: v })}
+                  width={80}
+                />
+                <EqResult value={value} />
+              </EquationRow>
+              <div className="mt-4 pt-3.5 border-t border-[#F1E4DC]">
+                <div className="text-[10px] font-bold tracking-[0.05em] uppercase text-[#7C766F] mb-2.5">Held at your headcount</div>
+                <EquationRow>
+                  <EqNum
+                    cap="current scribe headcount"
+                    value={td.scribeHeadcount}
+                    onChange={(v) => updateTimeDriverInputs({ scribeHeadcount: v })}
+                    width={44}
+                  />
+                </EquationRow>
+              </div>
             </>
           ) : (
             <>
-              <Field label="Hourly billing rate">
-                <NumBox value={td.scribeHourlyRate} prefix="$" onChange={(v) => updateTimeDriverInputs({ scribeHourlyRate: v })} testId={`ed-input-${driver.id}-hourlyrate`} />
-              </Field>
-              <Field label="Avg minutes per note">
-                <NumBox value={td.scribeMinutesPerNote} suffix="min" onChange={(v) => updateTimeDriverInputs({ scribeMinutesPerNote: v })} testId={`ed-input-${driver.id}-minutes`} />
-              </Field>
-              <Field label="% of visits currently scribed">
-                <NumBox value={td.scribeCoveragePercent} suffix="%" onChange={(v) => updateTimeDriverInputs({ scribeCoveragePercent: Math.min(v, 100) })} testId={`ed-input-${driver.id}-coverage`} />
-              </Field>
-              <Field label="% of those replaced by Abridge">
-                <NumBox value={td.scribeVisitPercentEliminated} suffix="%" onChange={(v) => updateTimeDriverInputs({ scribeVisitPercentEliminated: Math.min(v, 100) })} testId={`ed-input-${driver.id}-visitpct`} />
-              </Field>
+              <EquationRow>
+                <EqCarried cap="scribed visits replaced">{formatNum(scribedVisitsReplaced)}</EqCarried>
+                <EqOp>×</EqOp>
+                <EqCarried cap="cost / visit">{`$${costPerVisit.toFixed(2)}`}</EqCarried>
+                <EqResult value={value} />
+              </EquationRow>
+              <div className="mt-4 pt-3.5 border-t border-[#F1E4DC]">
+                <div className="text-[10px] font-bold tracking-[0.05em] uppercase text-[#7C766F] mb-2.5">How it's priced</div>
+                <EquationRow>
+                  <EqNum cap="visits scribed" value={td.scribeCoveragePercent} suffix="%" onChange={(v) => updateTimeDriverInputs({ scribeCoveragePercent: Math.min(v, 100) })} width={40} />
+                  <EqOp>×</EqOp>
+                  <EqNum cap="replaced by Abridge" value={td.scribeVisitPercentEliminated} suffix="%" onChange={(v) => updateTimeDriverInputs({ scribeVisitPercentEliminated: Math.min(v, 100) })} width={40} />
+                  <EqOp>·</EqOp>
+                  <EqNum cap="hourly rate" value={td.scribeHourlyRate} prefix="$" onChange={(v) => updateTimeDriverInputs({ scribeHourlyRate: v })} width={56} />
+                  <EqOp>×</EqOp>
+                  <EqNum cap="min / note" value={td.scribeMinutesPerNote} suffix="min" onChange={(v) => updateTimeDriverInputs({ scribeMinutesPerNote: v })} width={44} />
+                </EquationRow>
+              </div>
             </>
           )}
-        </ValueCard>
+        </InlineDriverCard>
       );
     }
 
