@@ -7,6 +7,7 @@ import { getDriversForPage, type ExploreDriver } from "@/lib/exploreDrivers";
 import { type ExploreState } from "../ExploreFlow";
 import { SignalWatch } from "./SignalWatch";
 import { watchDomainFor } from "@/lib/exploreWatchSignals";
+import ValueRail from "./ValueRail";
 import type { PriorQuadrantEntry } from "@/lib/exploreQuadrantValues";
 
 interface EdQualityProps {
@@ -62,7 +63,7 @@ const HEADING_COPY: Record<"outpatient" | "ed" | "inpatient", { h1: string; sub:
   },
 };
 
-function ProofChainScreen({ state, onNext, onBack, onHome, setting }: { state: ExploreState; onNext: () => void; onBack: () => void; onHome: () => void; setting: "outpatient" | "ed" | "inpatient" }) {
+function ProofChainScreen({ state, totalHoursSaved, onNext, onBack, onHome, setting }: { state: ExploreState; totalHoursSaved: number; onNext: () => void; onBack: () => void; onHome: () => void; setting: "outpatient" | "ed" | "inpatient" }) {
   // The proof chain is the CURATED set from the locked mockup (not every
   // qualitative driver), in this exact order. Matching the mockups screen-for-screen.
   const allDrivers = getDriversForPage("Quality", setting).filter((d) => !d.childOfDriverId);
@@ -85,6 +86,8 @@ function ProofChainScreen({ state, onNext, onBack, onHome, setting }: { state: E
         <h1 className="font-abridge text-[26px] sm:text-[32px] lg:text-[38px] leading-[1.08] text-[#1A1A1A] mt-[10px] max-w-[700px]">{copy.h1}</h1>
         <p className="text-[16px] text-[#565250] mt-[13px] max-w-[660px] leading-[1.5]">{copy.sub}</p>
 
+        <div className="mt-6 grid lg:grid-cols-[minmax(0,1fr)_340px] gap-x-10 gap-y-8 items-start">
+        <div className="min-w-0">
         <SectionLabel
           tag="no dollar counted here"
           tagVariant="grey"
@@ -142,6 +145,9 @@ function ProofChainScreen({ state, onNext, onBack, onHome, setting }: { state: E
           scores or earn a bonus. It makes sure the care you actually delivered is reflected in the measures you're already
           judged by. Any dollars tied to those measures are counted once, in Revenue, so nothing here is double-counted or
           promised.
+        </div>
+        </div>
+        <ValueRail state={state} totalHoursSaved={totalHoursSaved} activeDomain="Quality" />
         </div>
 
         <div className="flex justify-end mt-[30px]">
@@ -241,6 +247,8 @@ function NursingQualityScreen({
           </div>
         )}
 
+        <div className="mt-6 grid lg:grid-cols-[minmax(0,1fr)_340px] gap-x-10 gap-y-8 items-start">
+        <div className="min-w-0">
         <SectionLabel
           tag="counts when it's on"
           right={
@@ -474,6 +482,9 @@ function NursingQualityScreen({
             />
           )
         )}
+        </div>
+        <ValueRail state={state} totalHoursSaved={totalHoursSaved} activeDomain="Quality" />
+        </div>
 
         <div className="flex justify-end mt-[30px]">
           <button
@@ -498,7 +509,7 @@ export default function EdQuality({ state, updateState, totalHoursSaved, onNext,
   }
 
   if (setting === "outpatient" || setting === "ed" || setting === "inpatient") {
-    return <ProofChainScreen state={state} onNext={onNext} onBack={onBack} onHome={onHome} setting={setting} />;
+    return <ProofChainScreen state={state} totalHoursSaved={totalHoursSaved} onNext={onNext} onBack={onBack} onHome={onHome} setting={setting} />;
   }
 
   return (

@@ -24,6 +24,7 @@ import type { PriorQuadrantEntry } from "@/lib/exploreQuadrantValues";
 import { type ExploreState } from "../ExploreFlow";
 import { SignalWatch } from "./SignalWatch";
 import { watchDomainFor } from "@/lib/exploreWatchSignals";
+import ValueRail from "./ValueRail";
 
 interface EdWorkforceProps {
   state: ExploreState;
@@ -626,6 +627,8 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
           )}
         </p>
 
+        <div className="mt-6 grid lg:grid-cols-[minmax(0,1fr)_340px] gap-x-10 gap-y-8 items-start">
+        <div className="min-w-0">
         <SectionLabel
           tag="counts when it's on"
           subtotal={
@@ -661,6 +664,9 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
             </>
           )
         )}
+        </div>
+        <ValueRail state={state} totalHoursSaved={totalHoursSaved} activeDomain="Workforce" />
+        </div>
 
         <Foot onNext={onNext} />
       </div>

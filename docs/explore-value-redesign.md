@@ -64,6 +64,26 @@ The rail's stacked bar only includes `$` domains; tracked domains render as a tr
 - **EdInvestment**: the rail becomes the assembled total; investment subtracts; net + ROI shown
   in-rail. Providers/beds already locked read-only (done).
 
+## PROGRESS (resume here)
+
+DONE (branch `explore-value-redesign`): spec; `ValueRail.tsx`; `BuildStrip` upgraded to footing
+equation (EdMoneyCard, used by both kits); `EdCapacity` wired to two columns + rail. Pattern
+validated on Outpatient Capacity.
+
+**Per-screen wiring recipe** (apply to EdWorkforce, EdRevenue, EdQuality, EdInvestment, for every
+setting — the screens already branch by setting, so one edit covers all four settings):
+1. `import ValueRail from "./ValueRail";`
+2. Keep the eyebrow/h1/intro full-width. Wrap the driver/content block in:
+   `<div className="mt-6 grid lg:grid-cols-[minmax(0,1fr)_340px] gap-x-10 gap-y-8 items-start"><div className="min-w-0"> …existing content… </div><ValueRail state={state} totalHoursSaved={totalHoursSaved} activeDomain="Workforce|Revenue|Quality" /></div>`
+3. Keep `<Foot onNext={onNext} />` full-width below the grid.
+4. EdInvestment: pass `investment={annualInvestment}` and NO `activeDomain`; the rail becomes the
+   payoff (net + ROI). Its existing right-hand "what it returns" panel is replaced by the rail.
+5. The driver-math upgrade needs no per-screen change — it rides on the shared BuildStrip.
+
+TODO: Outpatient Workforce/Revenue/Quality/Investment; then ED, Inpatient, Nursing (all four
+screens each); verify (tsc/vitest/build/layout:smoke + reconcile + screenshot every setting); merge
+to main; report.
+
 ## Build order
 
 1. `ValueRail` + `EquationStrip` (+ `MoneyBuild.carried`), taste-locked on the mock's bar.

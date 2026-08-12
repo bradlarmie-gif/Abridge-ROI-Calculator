@@ -27,6 +27,7 @@ import { getDriversForPage } from "@/lib/exploreDrivers";
 import { type ExploreState, type HccPlan } from "../ExploreFlow";
 import { SignalWatch } from "./SignalWatch";
 import { watchDomainFor } from "@/lib/exploreWatchSignals";
+import ValueRail from "./ValueRail";
 import type { PriorQuadrantEntry } from "@/lib/exploreQuadrantValues";
 
 interface EdRevenueProps {
@@ -572,6 +573,8 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
           </>
         )}
 
+        <div className="mt-6 grid lg:grid-cols-[minmax(0,1fr)_340px] gap-x-10 gap-y-8 items-start">
+        <div className="min-w-0">
         {!isNursing && (
           <SectionLabel
             tag="counts when it's on"
@@ -624,6 +627,9 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
             </div>
           </div>
         )}
+        </div>
+        <ValueRail state={state} totalHoursSaved={totalHoursSaved} activeDomain="Revenue" />
+        </div>
 
         <div className="flex justify-end mt-[30px]">
           <button
