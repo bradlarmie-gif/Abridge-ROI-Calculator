@@ -46,7 +46,9 @@
   --destructive: 0 72% 42%;
   --destructive-foreground: 0 72% 98%;
   --input: 210 20% 75%;
-  --ring: 211 80% 50%;
+  /* Brand coral (#EA2C00), not the leftover shadcn blue, so every default focus
+     ring across the app reads on-brand instead of browser-blue. */
+  --ring: 11 100% 46%;
   --chart-1: 211 85% 45%;
   --chart-2: 195 75% 40%;
   --chart-3: 160 65% 38%;
@@ -131,7 +133,7 @@
   --destructive: 0 68% 48%;
   --destructive-foreground: 0 68% 98%;
   --input: 210 18% 30%;
-  --ring: 211 75% 60%;
+  --ring: 11 100% 55%;
   --chart-1: 211 80% 65%;
   --chart-2: 195 70% 60%;
   --chart-3: 160 60% 58%;

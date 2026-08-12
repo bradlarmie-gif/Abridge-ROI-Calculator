@@ -110,19 +110,6 @@ const QUAD_DOT: Record<Quadrant, string> = {
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
-// Tailored one-line "read" per setting: which areas carry the dollar, and which
-// is the proof — driven off the canonical PROOF_LAYER so it can never disagree
-// with the rest of the flow.
-function readFor(id: ExploreCareSetting): { dollar: Quadrant[]; proof: Quadrant[] } {
-  const proofMap = PROOF_LAYER[id] ?? {};
-  const all: Quadrant[] = ["Capacity", "Workforce", "Revenue", "Quality"];
-  const proof = all.filter((q) => proofMap[q]);
-  const dollar = all.filter((q) => !proofMap[q]);
-  return { dollar, proof };
-}
-const list = (qs: Quadrant[]) =>
-  qs.length <= 1 ? qs.join("") : qs.length === 2 ? `${qs[0]} and ${qs[1]}` : `${qs.slice(0, -1).join(", ")}, and ${qs[qs.length - 1]}`;
-
 export default function EdCareSetting({ selectedSetting, onSelectSetting, onNext, onBack, onHome, disabledSettings = [], onDataRequest }: Props) {
   const [hovered, setHovered] = useState<ExploreCareSetting | null>(null);
   // v2 (color-coded four domains + Tracked marking + tailored read) is now the
@@ -141,7 +128,8 @@ export default function EdCareSetting({ selectedSetting, onSelectSetting, onNext
       <div className="max-w-[1120px] mx-auto px-10 pt-[52px] pb-[60px]">
         <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#565250]">Explore · Step 1 of 9</div>
         <h1 className="font-abridge text-[27px] sm:text-[34px] lg:text-[40px] leading-[1.08] text-[#1A1A1A] mt-[10px] max-w-[680px]">
-          Which care setting should we model first?
+          Which care setting<br className="hidden sm:inline" />{" "}
+          should we model first?
         </h1>
         <p className="text-[16.5px] text-[#565250] mt-[14px] max-w-[620px] leading-[1.5]">
           Pick one to start. The panel shows what you'll build for that setting, all from its real volume and economics, never a benchmark.
@@ -233,30 +221,10 @@ export default function EdCareSetting({ selectedSetting, onSelectSetting, onNext
                               </div>
                               <div className="text-[14px] font-semibold text-[#2E2822] mt-[9px]">{c.head}</div>
                               <div className="text-[12px] text-[#7C766F] mt-[3px] leading-[1.4]">{c.sub}</div>
-                              <div className="flex items-center gap-[7px] mt-[12px] pt-[10px] border-t border-[#F1EBE2]">
-                                <span className="text-[9px] font-extrabold tracking-[0.06em] uppercase text-[#A79E92]">We watch</span>
-                                <span className="text-[11.5px] font-bold text-[#574C41]">{c.signal}</span>
-                              </div>
                             </motion.div>
                           );
                         })}
                       </motion.div>
-                      {(() => {
-                        const { dollar, proof } = readFor(preview.id);
-                        return (
-                          <motion.div
-                            className="flex items-start gap-[10px] mt-[18px]"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1, transition: { delay: 0.34, duration: 0.4 } }}
-                          >
-                            <span className="text-[10px] font-extrabold tracking-[0.05em] uppercase text-[#EA2C00] bg-[#FFEDE7] rounded-full px-[10px] py-[4px] whitespace-nowrap mt-[1px]">The read</span>
-                            <span className="text-[13px] text-[#7C766F] leading-[1.5]">
-                              <b className="text-[#1A1A1A] font-bold">{list(dollar)} carry the dollar.</b>{" "}
-              {list(proof)} {proof.length > 1 ? "are" : "is"} tracked as the leading signal, not a dollar.
-                            </span>
-                          </motion.div>
-                        );
-                      })()}
                     </>
                   ) : (
                     <div className="grid grid-cols-2 gap-3">
