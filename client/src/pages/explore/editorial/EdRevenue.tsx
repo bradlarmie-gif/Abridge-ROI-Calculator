@@ -283,7 +283,7 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
       onToggle={() => updateDq({ denialsEnabled: !dq.denialsEnabled, denialsExpanded: !dq.denialsEnabled ? true : dq.denialsExpanded })}
       testId="toggle-denials"
       note={
-        <>Annual claims defaults to your enabled encounters until you enter your own; change any coral figure and this reprices live. Utilization review and payer policy also move denials, and some denied claims would be won on appeal anyway, so we attribute only <b className="text-[#B02200] not-italic">{dq.denialsRealization}%</b> to the note and leave the rest out.</>
+        <>Annual claims defaults to your enabled encounters until you enter your own; change any coral figure and this reprices live. Some denied claims would be won back on appeal anyway, so we count only the <b className="text-[#B02200] not-italic">{dq.denialsRealization}%</b> a complete note prevents outright and leave the rest out.</>
       }
     >
       {denialsAwait ? (
@@ -298,7 +298,7 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
           <EqOp>×</EqOp>
           <EqNum cap="per claim" value={dq.avgClaimValue} onChange={(v) => updateDq({ avgClaimValue: v })} prefix="$" />
           <EqOp>×</EqOp>
-          <EqNum cap="attribution" value={dq.denialsRealization} onChange={(v) => updateDq({ denialsRealization: v })} suffix="%" />
+          <EqNum cap="realization" value={dq.denialsRealization} onChange={(v) => updateDq({ denialsRealization: v })} suffix="%" />
           <EqResult value={denialsValue} />
         </EquationRow>
       )}
