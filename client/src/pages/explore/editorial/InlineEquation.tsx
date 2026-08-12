@@ -21,15 +21,17 @@ function Cap({ children }: { children: ReactNode }) {
   return <div className="text-[9.5px] font-bold tracking-[0.04em] uppercase text-[#7C766F] mb-[6px] min-h-[12px] whitespace-nowrap">{children}</div>;
 }
 
-/** An editable number, inline in the equation (coral underline). Bound to state via onChange. */
-export function EqNum({ cap, value, onChange, prefix, suffix, decimal, width = 66 }: { cap: string; value: number; onChange: (v: number) => void; prefix?: string; suffix?: string; decimal?: boolean; width?: number }) {
+/** An editable number, inline in the equation. The underline hugs the value (sizes to content)
+ * and the number is centered over it, matching the mock — not a full-width coral bar. Bound to
+ * state via onChange. `width` is retained for call-site compatibility but sizing is content-based. */
+export function EqNum({ cap, value, onChange, prefix, suffix, decimal }: { cap: string; value: number; onChange: (v: number) => void; prefix?: string; suffix?: string; decimal?: boolean; width?: number }) {
   return (
-    <div className="flex flex-col justify-end">
-      <Cap>{cap}</Cap>
-      <div className="inline-flex items-baseline border-b-2 border-[#EA2C00] pb-[2px] transition-colors focus-within:border-[#B02200]">
-        {prefix && <span className="font-abridge text-[19px] text-[#1A1A1A] mr-[1px] leading-none">{prefix}</span>}
-        <NumberField value={value} onValueChange={onChange} decimal={decimal} style={{ width }} className="bg-transparent outline-none border-0 p-0 font-abridge text-[19px] text-[#1A1A1A] tabular-nums leading-none" />
-        {suffix && <span className="text-[13px] text-[#7C766F] ml-[2px] leading-none">{suffix}</span>}
+    <div className="flex flex-col justify-end items-center">
+      {cap ? <Cap>{cap}</Cap> : null}
+      <div className="inline-flex items-baseline w-fit border-b-2 border-[#EA2C00] pb-[2px] transition-colors focus-within:border-[#B02200]">
+        {prefix && <span className="font-abridge text-[19px] text-[#1A1A1A] leading-none">{prefix}</span>}
+        <NumberField value={value} onValueChange={onChange} decimal={decimal} className="bg-transparent outline-none border-0 p-0 font-abridge text-[19px] text-[#1A1A1A] tabular-nums leading-none text-center [field-sizing:content] min-w-[1ch]" />
+        {suffix && <span className="text-[13px] text-[#7C766F] leading-none">{suffix}</span>}
       </div>
     </div>
   );
