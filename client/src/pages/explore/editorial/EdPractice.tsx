@@ -400,7 +400,7 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
 
             <div>
               <div className="text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#2E2822] mb-[10px]">
-                How much runs on Abridge?
+                Share documented with Abridge
               </div>
               <div className="relative">
                 <FormattedNumberInput

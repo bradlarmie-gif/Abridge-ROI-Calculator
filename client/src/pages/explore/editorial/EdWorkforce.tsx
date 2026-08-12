@@ -270,7 +270,7 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
           testId={`ed-toggle-${driver.id}`}
           note={
             blocked ? undefined : (
-              <>Grey figures carry from Provider Retention above. Change the coral figures to match your locum contracts.</>
+              <>Grey figures carry from Provider Retention above. Change the coral figures to match your locum contracts. This is the coverage spend you stop paying when a provider stays, a separate dollar from the retention value above, so nothing is counted twice.</>
             )
           }
         >
@@ -534,7 +534,7 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
           testId={`ed-toggle-${driver.id}`}
           note={
             blocked ? undefined : (
-              <>Grey figures carry from RN Retention above. Change the coral figures to match your agency contracts.</>
+              <>Grey figures carry from RN Retention above. Change the coral figures to match your agency contracts. This is the coverage spend you stop paying when a nurse stays, a separate dollar from the retention value above, so nothing is counted twice.</>
             )
           }
         >
