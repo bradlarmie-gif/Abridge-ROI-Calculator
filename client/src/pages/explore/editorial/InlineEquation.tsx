@@ -15,7 +15,12 @@ const CORAL = "#EA2C00";
 const INK = "#1A1A1A";
 const MUTED = "#7C766F";
 export const fmt$ = (n: number) => "$" + Math.round(n || 0).toLocaleString();
-const fmtK = (n: number) => (Math.abs(n) >= 1000 ? `$${Math.round(n / 1000)}K` : `$${Math.round(n)}`);
+const fmtK = (n: number) => {
+  const a = Math.abs(n);
+  if (a >= 1_000_000) return `$${(n / 1_000_000).toFixed(2)}M`;
+  if (a >= 1_000) return `$${Math.round(n / 1_000)}K`;
+  return `$${Math.round(n)}`;
+};
 
 function Cap({ children }: { children: ReactNode }) {
   return <div className="text-[9.5px] font-bold tracking-[0.04em] uppercase text-[#7C766F] mb-[6px] min-h-[12px] whitespace-nowrap">{children}</div>;

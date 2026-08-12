@@ -1,23 +1,19 @@
 import { useMemo } from "react";
 import { EditorialHeader, EditorialShell } from "./EditorialHeader";
 import {
-  ValueCard,
-  OffCard,
   EmptyValueCard,
   SectionLabel,
-  Field,
-  NumBox,
-  QuickPicks,
   OutcomesBlock,
   Foot,
   formatCurrency,
   formatNum,
-  formatNum1,
   type OutcomeSignal,
 } from "./EdValueScreenKit";
+import { InlineDriverCard, EqNum, EqCarried, EqOp, EqResult, EquationRow, EqAwaiting } from "./InlineEquation";
 import { getDriversForPage, type ExploreDriver, type ExploreSetting } from "@/lib/exploreDrivers";
 import { computeAllDriverValues } from "@/lib/exploreDriverCalcs";
 import { engineKeyForDriver } from "@/lib/exploreDriverKeys";
+import { driverScaleReadiness } from "@/lib/exploreScaleGate";
 import type { PriorQuadrantEntry } from "@/lib/exploreQuadrantValues";
 import { type ExploreState } from "../ExploreFlow";
 import { SignalWatch } from "./SignalWatch";
@@ -108,6 +104,12 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
   const engineValues = useMemo(() => computeAllDriverValues(state, totalHoursSaved), [state, totalHoursSaved]);
   const valueFor = (driverId: string) => engineValues[engineKeyForDriver(driverId, setting ?? "")] ?? 0;
 
+  // Scale-gating: no dollar until the driver's scale input(s) are entered.
+  const gate = (driverId: string) => {
+    const r = driverScaleReadiness(driverId, state, totalHoursSaved);
+    return r.ready ? undefined : { need: r.need };
+  };
+
   const totalOn = flatFinancial.filter(isEnabled).length;
   const totalValue = flatFinancial.reduce((sum, d) => sum + (isEnabled(d) ? valueFor(d.id) : 0), 0);
 
@@ -115,18 +117,6 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
     const enabled = isEnabled(driver);
 
     if (driver.id === "patientAccess") {
-      if (!enabled) {
-        return (
-          <OffCard
-            key={driver.id}
-            title={driver.label}
-            subtitle={driver.shortDescription}
-            hint="Turn on if some of the freed time should convert into additional visits."
-            onToggle={() => toggleEnabled(driver)}
-            testId={`ed-toggle-${driver.id}`}
-          />
-        );
-      }
       const effectiveAccessProviders = Math.min(td.accessProviders || state.numberOfProviders, state.numberOfProviders);
       const hrsPerProvPerWeek = state.numberOfProviders > 0 ? totalHoursSaved / state.numberOfProviders / 48 : 0;
       const reinvest = (td.capacityRealizationPercent ?? 25) / 100;
@@ -134,268 +124,163 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
       const visitsPerWeek = visitHrs > 0 ? Math.round((hrsPerProvPerWeek * reinvest / visitHrs) * 10) / 10 : 0;
       const annualVisits = Math.round(visitsPerWeek * effectiveAccessProviders * 48);
       const value = valueFor(driver.id);
+      const awaiting = gate(driver.id);
 
       return (
-        <ValueCard
+        <InlineDriverCard
           key={driver.id}
           title={driver.label}
           subtitle="If some of the freed hours get reinvested into seeing more patients, at your margin per visit."
-          value={value}
-          secondary={
-            <>
-              ≈ <b className="font-abridge text-[#1A1A1A]">{formatNum1(visitsPerWeek)}</b> more visits a week, for
-              each provider who has room
-            </>
-          }
+          enabled={enabled}
           onToggle={() => toggleEnabled(driver)}
           testId={`ed-toggle-${driver.id}`}
-          buildStruct={{
-            factors: [
-              { value: formatNum(annualVisits), label: "added visits / yr" },
-              { value: formatCurrency(td.revenuePerVisit), label: "margin / visit" },
-            ],
-            grossLabel: "",
-            gross: value,
-            net: value,
-            haircutLabel: "",
-          }}
+          note={
+            <>Grey figures carry from your earlier steps. Change any coral figure and this reprices live, then updates the model on the right. The visits are freed from your documentation time saved, reinvested at the rate you set below.</>
+          }
         >
-          <Field label="Providers who can see more">
-            <NumBox
-              value={effectiveAccessProviders}
-              suffix={`of ${state.numberOfProviders}`}
-              onChange={(v) => updateTimeDriverInputs({ accessProviders: Math.max(0, Math.min(v, state.numberOfProviders)) })}
-              testId={`ed-input-${driver.id}-providers`}
-            />
-            <QuickPicks
-              value={effectiveAccessProviders}
-              options={[
-                { label: "A third", value: Math.round(state.numberOfProviders / 3) },
-                { label: "Half", value: Math.round(state.numberOfProviders / 2) },
-                { label: "Most", value: Math.round(state.numberOfProviders * 0.75) },
-              ]}
-              onPick={(v) => updateTimeDriverInputs({ accessProviders: v })}
-            />
-          </Field>
-          <Field label="Freed time they reinvest">
-            <NumBox
-              value={td.capacityRealizationPercent ?? 25}
-              suffix="%"
-              onChange={(v) => updateTimeDriverInputs({ capacityRealizationPercent: v })}
-              testId={`ed-input-${driver.id}-reinvest`}
-            />
-            <QuickPicks
-              value={td.capacityRealizationPercent ?? 25}
-              options={[
-                { label: "Conservative", value: 15 },
-                { label: "Moderate", value: 25 },
-                { label: "Optimistic", value: 35 },
-              ]}
-              onPick={(v) => updateTimeDriverInputs({ capacityRealizationPercent: v })}
-            />
-          </Field>
-          <Field label="Revenue per visit">
-            <NumBox value={td.revenuePerVisit} prefix="$" onChange={(v) => updateTimeDriverInputs({ revenuePerVisit: v })} testId={`ed-input-${driver.id}-revenue`} />
-          </Field>
-          <Field label="Visit length">
-            <NumBox value={td.visitDuration} suffix="min" onChange={(v) => updateTimeDriverInputs({ visitDuration: v })} testId={`ed-input-${driver.id}-duration`} />
-          </Field>
-        </ValueCard>
+          {awaiting ? (
+            <EqAwaiting need={awaiting.need} />
+          ) : (
+            <>
+              <EquationRow>
+                <EqCarried cap="added visits / yr">{formatNum(annualVisits)}</EqCarried>
+                <EqOp>×</EqOp>
+                <EqNum cap="margin / visit" value={td.revenuePerVisit} onChange={(v) => updateTimeDriverInputs({ revenuePerVisit: v })} prefix="$" />
+                <EqOp>=</EqOp>
+                <EqResult value={value} />
+              </EquationRow>
+              <div className="mt-4 pt-4 border-t border-[#F1E4DC]">
+                <div className="text-[10px] font-extrabold tracking-[0.06em] uppercase text-[#7C766F] mb-3">How the visits are freed</div>
+                <EquationRow>
+                  <EqNum
+                    cap="providers who can see more"
+                    value={effectiveAccessProviders}
+                    onChange={(v) => updateTimeDriverInputs({ accessProviders: Math.max(0, Math.min(v, state.numberOfProviders)) })}
+                    suffix={`of ${state.numberOfProviders}`}
+                  />
+                  <EqNum cap="freed time they reinvest" value={td.capacityRealizationPercent ?? 25} onChange={(v) => updateTimeDriverInputs({ capacityRealizationPercent: v })} suffix="%" />
+                  <EqNum cap="visit length" value={td.visitDuration} onChange={(v) => updateTimeDriverInputs({ visitDuration: v })} suffix="min" />
+                </EquationRow>
+              </div>
+            </>
+          )}
+        </InlineDriverCard>
       );
     }
 
     if (driver.id === "lwbsRecovery") {
-      if (!enabled) {
-        return (
-          <OffCard
-            key={driver.id}
-            title={driver.label}
-            subtitle={driver.shortDescription}
-            hint="Turn on if faster documentation frees up physician time to see waiting patients sooner."
-            onToggle={() => toggleEnabled(driver)}
-            testId={`ed-toggle-${driver.id}`}
-          />
-        );
-      }
-      const lwbsPatients = state.annualEncounters * (td.edLwbsRate / 100);
-      const recovered = lwbsPatients * (td.edLwbsReduction / 100);
       const value = valueFor(driver.id);
+      const awaiting = gate(driver.id);
 
       return (
-        <ValueCard
+        <InlineDriverCard
           key={driver.id}
           title={driver.label}
           subtitle={driver.shortDescription}
-          value={value}
-          secondary={
-            <>
-              ≈ <b className="font-abridge text-[#1A1A1A]">{formatNum(Math.round(recovered))}</b> patients recovered a year
-            </>
-          }
+          enabled={enabled}
           onToggle={() => toggleEnabled(driver)}
           testId={`ed-toggle-${driver.id}`}
-          buildStruct={{
-            factors: [
-              { value: formatNum(state.annualEncounters), label: "encounters" },
-              { value: `${td.edLwbsRate}%`, label: "LWBS rate" },
-              { value: `${td.edLwbsReduction}%`, label: "recovered" },
-              { value: formatCurrency(td.edRevenuePerVisit), label: "per visit" },
-            ],
-            grossLabel: "Recovered visit value, before who completes a visit",
-            gross: td.edLwbsRealization > 0 ? value / (td.edLwbsRealization / 100) : value,
-            net: value,
-            haircutLabel: <>{td.edLwbsRealization}% complete a visit</>,
-          }}
+          note={
+            <>Grey figures carry from your earlier steps. Change any coral figure and this reprices live. You keep <b className="text-[#B02200] not-italic">{td.edLwbsRealization}%</b>, the share of recovered patients who complete a visit; the rest stays out of the number.</>
+          }
         >
-          <Field label="Current LWBS rate">
-            <NumBox value={td.edLwbsRate} suffix="%" onChange={(v) => updateTimeDriverInputs({ edLwbsRate: v })} testId={`ed-input-${driver.id}-rate`} />
-          </Field>
-          <Field label="Expected reduction">
-            <NumBox value={td.edLwbsReduction} suffix="%" onChange={(v) => updateTimeDriverInputs({ edLwbsReduction: v })} testId={`ed-input-${driver.id}-reduction`} />
-            <QuickPicks
-              value={td.edLwbsReduction}
-              options={[
-                { label: "Conservative", value: 10 },
-                { label: "Typical", value: 20 },
-                { label: "Optimistic", value: 30 },
-              ]}
-              onPick={(v) => updateTimeDriverInputs({ edLwbsReduction: v })}
-            />
-          </Field>
-          <Field label="Revenue per ED visit">
-            <NumBox value={td.edRevenuePerVisit} prefix="$" onChange={(v) => updateTimeDriverInputs({ edRevenuePerVisit: v })} testId={`ed-input-${driver.id}-revenue`} />
-          </Field>
-          <Field label="Realization" note="Not all recovered patients complete a visit.">
-            <NumBox value={td.edLwbsRealization} suffix="%" onChange={(v) => updateTimeDriverInputs({ edLwbsRealization: v })} testId={`ed-input-${driver.id}-realization`} />
-          </Field>
-        </ValueCard>
+          {awaiting ? (
+            <EqAwaiting need={awaiting.need} />
+          ) : (
+            <EquationRow>
+              <EqCarried cap="ED encounters">{formatNum(state.annualEncounters)}</EqCarried>
+              <EqOp>×</EqOp>
+              <EqNum cap="LWBS rate" value={td.edLwbsRate} onChange={(v) => updateTimeDriverInputs({ edLwbsRate: v })} suffix="%" />
+              <EqOp>×</EqOp>
+              <EqNum cap="recovered" value={td.edLwbsReduction} onChange={(v) => updateTimeDriverInputs({ edLwbsReduction: v })} suffix="%" />
+              <EqOp>×</EqOp>
+              <EqNum cap="per ED visit" value={td.edRevenuePerVisit} onChange={(v) => updateTimeDriverInputs({ edRevenuePerVisit: v })} prefix="$" />
+              <EqOp>×</EqOp>
+              <EqNum cap="you keep" value={td.edLwbsRealization} onChange={(v) => updateTimeDriverInputs({ edLwbsRealization: v })} suffix="%" />
+              <EqOp>=</EqOp>
+              <EqResult value={value} />
+            </EquationRow>
+          )}
+        </InlineDriverCard>
       );
     }
 
     if (driver.id === "admissionCapture") {
-      if (!enabled) {
-        return (
-          <OffCard
-            key={driver.id}
-            title={driver.label}
-            subtitle={driver.shortDescription}
-            hint="Turn on if some LWBS-recovered patients require inpatient admission."
-            onToggle={() => toggleEnabled(driver)}
-            testId={`ed-toggle-${driver.id}`}
-          />
-        );
-      }
       const lwbsPatients = state.annualEncounters * (td.edLwbsRate / 100);
       const recovered = lwbsPatients * (td.edLwbsReduction / 100);
-      const potentialAdmissions = recovered * (td.edAdmissionRate / 100);
       const value = valueFor(driver.id);
+      const awaiting = gate(driver.id);
 
       return (
-        <ValueCard
+        <InlineDriverCard
           key={driver.id}
           title={driver.label}
           subtitle={driver.shortDescription}
-          value={value}
-          secondary={
-            <>
-              ≈ <b className="font-abridge text-[#1A1A1A]">{formatNum1(potentialAdmissions)}</b> admissions captured a year
-            </>
-          }
+          enabled={enabled}
           onToggle={() => toggleEnabled(driver)}
           testId={`ed-toggle-${driver.id}`}
-          warning={
-            !td.edLwbsEnabled &&
-            "Admission Capture uses LWBS-recovered patients as its base. Turn on LWBS Recovery above to see this value."
+          note={
+            <>Grey figures carry from LWBS Recovery above. Change any coral figure and this reprices live. You keep <b className="text-[#B02200] not-italic">{td.edAdmissionRealization}%</b> for bed availability and conversion; the rest stays out of the number.</>
           }
-          buildStruct={{
-            factors: [
-              { value: formatNum(Math.round(recovered)), label: "recovered patients" },
-              { value: `${td.edAdmissionRate}%`, label: "admit rate" },
-              { value: formatCurrency(td.edAdmissionRevenue), label: "margin / admission" },
-            ],
-            grossLabel: "Admission margin, before beds & conversion",
-            gross: td.edAdmissionRealization > 0 ? value / (td.edAdmissionRealization / 100) : value,
-            net: value,
-            haircutLabel: <>{td.edAdmissionRealization}% bed & conversion</>,
-          }}
         >
-          <Field label="Admission rate">
-            <NumBox value={td.edAdmissionRate} suffix="%" onChange={(v) => updateTimeDriverInputs({ edAdmissionRate: v })} testId={`ed-input-${driver.id}-rate`} />
-          </Field>
-          <Field label="Margin per admission" note="Net of the cost of care, not gross charges.">
-            <NumBox value={td.edAdmissionRevenue} prefix="$" onChange={(v) => updateTimeDriverInputs({ edAdmissionRevenue: v })} testId={`ed-input-${driver.id}-revenue`} />
-          </Field>
-          <Field label="Realization" note="Bed availability and conversion.">
-            <NumBox value={td.edAdmissionRealization} suffix="%" onChange={(v) => updateTimeDriverInputs({ edAdmissionRealization: v })} testId={`ed-input-${driver.id}-realization`} />
-          </Field>
-        </ValueCard>
+          {!td.edLwbsEnabled && (
+            <div className="mb-3 px-3.5 py-2.5 bg-[#FFF7F4] border border-[#FFDDD6] rounded-[10px] text-[12.5px] text-[#B23100] leading-[1.4]">
+              Admission Capture uses LWBS-recovered patients as its base. Turn on LWBS Recovery above to see this value.
+            </div>
+          )}
+          {awaiting ? (
+            <EqAwaiting need={awaiting.need} />
+          ) : (
+            <EquationRow>
+              <EqCarried cap="recovered patients">{formatNum(Math.round(recovered))}</EqCarried>
+              <EqOp>×</EqOp>
+              <EqNum cap="admit rate" value={td.edAdmissionRate} onChange={(v) => updateTimeDriverInputs({ edAdmissionRate: v })} suffix="%" />
+              <EqOp>×</EqOp>
+              <EqNum cap="margin / admission" value={td.edAdmissionRevenue} onChange={(v) => updateTimeDriverInputs({ edAdmissionRevenue: v })} prefix="$" />
+              <EqOp>×</EqOp>
+              <EqNum cap="you keep" value={td.edAdmissionRealization} onChange={(v) => updateTimeDriverInputs({ edAdmissionRealization: v })} suffix="%" />
+              <EqOp>=</EqOp>
+              <EqResult value={value} />
+            </EquationRow>
+          )}
+        </InlineDriverCard>
       );
     }
 
     if (driver.id === "nursingOvertime") {
-      if (!enabled) {
-        return (
-          <OffCard
-            key={driver.id}
-            title={driver.label}
-            subtitle={driver.shortDescription}
-            hint="Turn on if faster charting reduces the documentation-driven overtime you pay."
-            onToggle={() => toggleEnabled(driver)}
-            testId={`ed-toggle-${driver.id}`}
-          />
-        );
-      }
-      const otHoursEliminated = Math.round(
-        td.nursingOtHoursPerNurseWeek * (td.nursingOtReductionPercent / 100) * state.numberOfProviders * 52,
-      );
       const value = valueFor(driver.id);
+      const awaiting = gate(driver.id);
 
       return (
-        <ValueCard
+        <InlineDriverCard
           key={driver.id}
           title={driver.label}
           subtitle={driver.shortDescription}
-          value={value}
-          secondary={
-            <>
-              ≈ <b className="font-abridge text-[#1A1A1A]">{formatNum(otHoursEliminated)}</b> OT hours eliminated a year
-            </>
-          }
+          enabled={enabled}
           onToggle={() => toggleEnabled(driver)}
           testId={`ed-toggle-${driver.id}`}
-          buildStruct={{
-            factors: [
-              { value: formatNum(state.numberOfProviders), label: "nurses" },
-              { value: `${td.nursingOtHoursPerNurseWeek}`, label: "OT hrs / wk" },
-              { value: `${td.nursingOtReductionPercent}%`, label: "Abridge reduces" },
-              { value: "52", label: "weeks" },
-              { value: formatCurrency(td.nursingOtHourlyRate), label: "per hour" },
-            ],
-            grossLabel: "",
-            gross: value,
-            net: value,
-            haircutLabel: "",
-          }}
+          note={
+            <>Grey figures carry from your earlier steps. Change any coral figure and this reprices live. This counts documentation-driven overtime only, at your blended OT rate.</>
+          }
         >
-          <Field label="Post-shift OT hrs / nurse / week">
-            <NumBox value={td.nursingOtHoursPerNurseWeek} suffix="hrs" onChange={(v) => updateTimeDriverInputs({ nursingOtHoursPerNurseWeek: v })} testId={`ed-input-${driver.id}-hours`} />
-          </Field>
-          <Field label="How much Abridge can impact">
-            <NumBox value={td.nursingOtReductionPercent} suffix="%" onChange={(v) => updateTimeDriverInputs({ nursingOtReductionPercent: v })} testId={`ed-input-${driver.id}-reduction`} />
-            <QuickPicks
-              value={td.nursingOtReductionPercent}
-              options={[
-                { label: "Conservative", value: 30 },
-                { label: "Moderate", value: 40 },
-                { label: "Optimistic", value: 50 },
-              ]}
-              onPick={(v) => updateTimeDriverInputs({ nursingOtReductionPercent: v })}
-            />
-          </Field>
-          <Field label="Average OT hourly rate">
-            <NumBox value={td.nursingOtHourlyRate} prefix="$" onChange={(v) => updateTimeDriverInputs({ nursingOtHourlyRate: v })} testId={`ed-input-${driver.id}-rate`} />
-          </Field>
-        </ValueCard>
+          {awaiting ? (
+            <EqAwaiting need={awaiting.need} />
+          ) : (
+            <EquationRow>
+              <EqCarried cap="nurses">{formatNum(state.numberOfProviders)}</EqCarried>
+              <EqOp>×</EqOp>
+              <EqNum cap="OT hrs / wk" value={td.nursingOtHoursPerNurseWeek} onChange={(v) => updateTimeDriverInputs({ nursingOtHoursPerNurseWeek: v })} suffix="hrs" />
+              <EqOp>×</EqOp>
+              <EqNum cap="Abridge reduces" value={td.nursingOtReductionPercent} onChange={(v) => updateTimeDriverInputs({ nursingOtReductionPercent: v })} suffix="%" />
+              <EqOp>×</EqOp>
+              <EqCarried cap="weeks">52</EqCarried>
+              <EqOp>×</EqOp>
+              <EqNum cap="per hour" value={td.nursingOtHourlyRate} onChange={(v) => updateTimeDriverInputs({ nursingOtHourlyRate: v })} prefix="$" />
+              <EqOp>=</EqOp>
+              <EqResult value={value} />
+            </EquationRow>
+          )}
+        </InlineDriverCard>
       );
     }
 

@@ -8,6 +8,7 @@ import { type ExploreState } from "../ExploreFlow";
 import { SignalWatch } from "./SignalWatch";
 import { watchDomainFor } from "@/lib/exploreWatchSignals";
 import ValueRail from "./ValueRail";
+import { InlineDriverCard, EqNum, EqCarried, EqOp, EqResult, EquationRow, EqAwaiting } from "./InlineEquation";
 import type { PriorQuadrantEntry } from "@/lib/exploreQuadrantValues";
 
 interface EdQualityProps {
@@ -214,6 +215,12 @@ function NursingQualityScreen({
     realizationPct: dq.nursingSepsisRealization,
   });
 
+  const hapiAwait = gate("nursingHapi");
+  const fallsAwait = gate("nursingFalls");
+  const cautiAwait = gate("nursingCauti");
+  const clabsiAwait = gate("nursingClabsi");
+  const sepsisAwait = gate("nursingSepsis");
+
   const anyEnabled = dq.nursingHapiEnabled || dq.nursingFallsEnabled || dq.nursingCautiEnabled || dq.nursingClabsiEnabled || dq.nursingSepsisEnabled;
   const needsBeds = state.nursingStaffedBeds <= 0 || state.nursingOccupancyRate <= 0;
 
@@ -262,209 +269,139 @@ function NursingQualityScreen({
         </SectionLabel>
 
         <div className="text-[10.5px] font-extrabold tracking-[0.06em] uppercase text-[#7C766F] mb-2">Harm events</div>
-        <MoneyCard
+        <InlineDriverCard
           title="HAPI prevention"
           subtitle="Real-time Braden scores and turning events documented at the bedside, not batched after Stage 1 has already progressed."
           enabled={dq.nursingHapiEnabled}
           onToggle={() => updateDq({ nursingHapiEnabled: !dq.nursingHapiEnabled })}
-          value={hapi.value}
-          secondary={<>≈ <b className="text-[#1A1A1A]">{fmtN(hapi.prevented)}</b> HAPIs prevented a year</>}
           testId="toggle-nursing-hapi"
-          awaitingScale={gate("nursingHapi")}
-          build={{
-            factors: [
-              { value: fmtN(patientDays), label: "patient-days" },
-              { value: `${dq.nursingHapiRate}`, label: "/1k HAPI rate" },
-              { value: `${dq.nursingHapiPreventionRate}%`, label: "earlier docs prevent" },
-              { value: `$${dq.nursingHapiCost.toLocaleString()}`, label: "per case" },
-            ],
-            grossLabel: "",
-            gross: hapi.value,
-            net: hapi.value,
-            haircutLabel: "",
-          }}
+          note={<>≈ <b className="text-[#B02200] not-italic">{fmtN(hapi.prevented)}</b> HAPIs prevented a year. Change any coral figure and this reprices live, then updates the model on the right.</>}
         >
-          <FieldGrid cols={3}>
-            <FieldTile label="Patient days" note="staffed beds × occupancy × 365">
-              <FiReadout>{fmtN(patientDays)}</FiReadout>
-            </FieldTile>
-            <FieldTile label="HAPI rate" note="per 1,000 patient-days">
-              <Fi value={dq.nursingHapiRate} onValueChange={(v) => updateDq({ nursingHapiRate: v })} decimal testId="input-eq-hapi-rate" />
-            </FieldTile>
-            <FieldTile label="Prevention rate">
-              <Fi value={dq.nursingHapiPreventionRate} onValueChange={(v) => updateDq({ nursingHapiPreventionRate: v })} suffix="%" testId="input-eq-hapi-prevention" />
-            </FieldTile>
-          </FieldGrid>
-          <FieldGrid cols={3}>
-            <FieldTile label="Cost per HAPI">
-              <Fi value={dq.nursingHapiCost} onValueChange={(v) => updateDq({ nursingHapiCost: v })} prefix="$" testId="input-eq-hapi-cost" />
-            </FieldTile>
-            <div />
-            <div />
-          </FieldGrid>
-        </MoneyCard>
+          {hapiAwait ? (
+            <EqAwaiting need={hapiAwait.need} />
+          ) : (
+            <EquationRow>
+              <EqCarried cap="patient-days">{fmtN(patientDays)}</EqCarried>
+              <EqOp>×</EqOp>
+              <EqNum cap="HAPI / 1k days" value={dq.nursingHapiRate} onChange={(v) => updateDq({ nursingHapiRate: v })} decimal />
+              <EqOp>×</EqOp>
+              <EqNum cap="docs prevent" value={dq.nursingHapiPreventionRate} onChange={(v) => updateDq({ nursingHapiPreventionRate: v })} suffix="%" />
+              <EqOp>×</EqOp>
+              <EqNum cap="per case" value={dq.nursingHapiCost} onChange={(v) => updateDq({ nursingHapiCost: v })} prefix="$" />
+              <EqOp>=</EqOp>
+              <EqResult value={hapi.value} />
+            </EquationRow>
+          )}
+        </InlineDriverCard>
 
-        <MoneyCard
+        <InlineDriverCard
           title="Falls prevention"
           subtitle="Protocols act on the documented Morse score. Point-of-care reassessment keeps the chart current, not frozen at the score from eight hours ago."
           enabled={dq.nursingFallsEnabled}
           onToggle={() => updateDq({ nursingFallsEnabled: !dq.nursingFallsEnabled })}
-          value={falls.value}
-          secondary={<>≈ <b className="text-[#1A1A1A]">{fmtN(falls.prevented)}</b> falls prevented a year</>}
           testId="toggle-nursing-falls"
-          awaitingScale={gate("nursingFalls")}
-          build={{
-            factors: [
-              { value: fmtN(patientDays), label: "patient-days" },
-              { value: `${dq.nursingFallsRate}`, label: "/1k fall rate" },
-              { value: `${dq.nursingFallsPreventionRate}%`, label: "earlier docs prevent" },
-              { value: `$${dq.nursingFallsCost.toLocaleString()}`, label: "per case" },
-            ],
-            grossLabel: "",
-            gross: falls.value,
-            net: falls.value,
-            haircutLabel: "",
-          }}
+          note={<>≈ <b className="text-[#B02200] not-italic">{fmtN(falls.prevented)}</b> falls prevented a year. Change any coral figure and this reprices live, then updates the model on the right.</>}
         >
-          <FieldGrid cols={3}>
-            <FieldTile label="Patient days" note="staffed beds × occupancy × 365">
-              <FiReadout>{fmtN(patientDays)}</FiReadout>
-            </FieldTile>
-            <FieldTile label="Fall rate" note="per 1,000 patient-days">
-              <Fi value={dq.nursingFallsRate} onValueChange={(v) => updateDq({ nursingFallsRate: v })} decimal testId="input-eq-falls-rate" />
-            </FieldTile>
-            <FieldTile label="Prevention rate">
-              <Fi value={dq.nursingFallsPreventionRate} onValueChange={(v) => updateDq({ nursingFallsPreventionRate: v })} suffix="%" testId="input-eq-falls-prevention" />
-            </FieldTile>
-          </FieldGrid>
-          <FieldGrid cols={3}>
-            <FieldTile label="Cost per fall">
-              <Fi value={dq.nursingFallsCost} onValueChange={(v) => updateDq({ nursingFallsCost: v })} prefix="$" testId="input-eq-falls-cost" />
-            </FieldTile>
-            <div />
-            <div />
-          </FieldGrid>
-        </MoneyCard>
+          {fallsAwait ? (
+            <EqAwaiting need={fallsAwait.need} />
+          ) : (
+            <EquationRow>
+              <EqCarried cap="patient-days">{fmtN(patientDays)}</EqCarried>
+              <EqOp>×</EqOp>
+              <EqNum cap="fall / 1k days" value={dq.nursingFallsRate} onChange={(v) => updateDq({ nursingFallsRate: v })} decimal />
+              <EqOp>×</EqOp>
+              <EqNum cap="docs prevent" value={dq.nursingFallsPreventionRate} onChange={(v) => updateDq({ nursingFallsPreventionRate: v })} suffix="%" />
+              <EqOp>×</EqOp>
+              <EqNum cap="per case" value={dq.nursingFallsCost} onChange={(v) => updateDq({ nursingFallsCost: v })} prefix="$" />
+              <EqOp>=</EqOp>
+              <EqResult value={falls.value} />
+            </EquationRow>
+          )}
+        </InlineDriverCard>
 
         <div className="text-[10.5px] font-extrabold tracking-[0.06em] uppercase text-[#7C766F] mt-6 mb-2">Bundle compliance</div>
-        <MoneyCard
+        <InlineDriverCard
           title="CAUTI prevention"
           subtitle="Each point-of-care necessity review is the timestamped prompt for removal. Every catheter day avoided is one fewer chance for a CAUTI."
           enabled={dq.nursingCautiEnabled}
           onToggle={() => updateDq({ nursingCautiEnabled: !dq.nursingCautiEnabled })}
-          value={cauti.value}
-          secondary={<>≈ <b className="text-[#1A1A1A]">{fmtN(cauti.prevented)}</b> CAUTIs prevented a year</>}
           testId="toggle-nursing-cauti"
-          awaitingScale={gate("nursingCauti")}
-          build={{
-            factors: [
-              { value: fmtN(cauti.catheterDays), label: "catheter-days" },
-              { value: `${dq.nursingCautiRate}`, label: "/1k CAUTI rate" },
-              { value: `${dq.nursingCautiPreventionRate}%`, label: "earlier docs prevent" },
-              { value: `$${dq.nursingCautiCost.toLocaleString()}`, label: "per case" },
-            ],
-            grossLabel: "",
-            gross: cauti.value,
-            net: cauti.value,
-            haircutLabel: "",
-          }}
+          note={<>≈ <b className="text-[#B02200] not-italic">{fmtN(cauti.prevented)}</b> CAUTIs prevented a year. Change any coral figure and this reprices live, then updates the model on the right.</>}
         >
-          <FieldGrid cols={4}>
-            <FieldTile label="Catheter utilization" note="% of patient-days">
-              <Fi value={dq.nursingCautiUtilizationRatio} onValueChange={(v) => updateDq({ nursingCautiUtilizationRatio: v })} suffix="%" testId="input-eq-cauti-util" />
-            </FieldTile>
-            <FieldTile label="CAUTI rate" note="per 1,000 catheter-days">
-              <Fi value={dq.nursingCautiRate} onValueChange={(v) => updateDq({ nursingCautiRate: v })} decimal testId="input-eq-cauti-rate" />
-            </FieldTile>
-            <FieldTile label="Prevention rate">
-              <Fi value={dq.nursingCautiPreventionRate} onValueChange={(v) => updateDq({ nursingCautiPreventionRate: v })} suffix="%" testId="input-eq-cauti-prevention" />
-            </FieldTile>
-            <FieldTile label="Cost per CAUTI">
-              <Fi value={dq.nursingCautiCost} onValueChange={(v) => updateDq({ nursingCautiCost: v })} prefix="$" testId="input-eq-cauti-cost" />
-            </FieldTile>
-          </FieldGrid>
-        </MoneyCard>
+          {cautiAwait ? (
+            <EqAwaiting need={cautiAwait.need} />
+          ) : (
+            <EquationRow>
+              <EqCarried cap="patient-days">{fmtN(patientDays)}</EqCarried>
+              <EqOp>×</EqOp>
+              <EqNum cap="catheter use" value={dq.nursingCautiUtilizationRatio} onChange={(v) => updateDq({ nursingCautiUtilizationRatio: v })} suffix="%" />
+              <EqOp>×</EqOp>
+              <EqNum cap="CAUTI / 1k cath-days" value={dq.nursingCautiRate} onChange={(v) => updateDq({ nursingCautiRate: v })} decimal />
+              <EqOp>×</EqOp>
+              <EqNum cap="docs prevent" value={dq.nursingCautiPreventionRate} onChange={(v) => updateDq({ nursingCautiPreventionRate: v })} suffix="%" />
+              <EqOp>×</EqOp>
+              <EqNum cap="per case" value={dq.nursingCautiCost} onChange={(v) => updateDq({ nursingCautiCost: v })} prefix="$" />
+              <EqOp>=</EqOp>
+              <EqResult value={cauti.value} />
+            </EquationRow>
+          )}
+        </InlineDriverCard>
 
-        <MoneyCard
+        <InlineDriverCard
           title="CLABSI prevention"
           subtitle="Bundle compliance is scored from timestamps. Undocumented care looks non-compliant even when every element was performed."
           enabled={dq.nursingClabsiEnabled}
           onToggle={() => updateDq({ nursingClabsiEnabled: !dq.nursingClabsiEnabled })}
-          value={clabsi.value}
-          secondary={<>≈ <b className="text-[#1A1A1A]">{fmtN(clabsi.prevented)}</b> CLABSIs prevented a year</>}
           testId="toggle-nursing-clabsi"
-          awaitingScale={gate("nursingClabsi")}
-          build={{
-            factors: [
-              { value: fmtN(clabsi.lineDays), label: "line-days" },
-              { value: `${dq.nursingClabsiRate}`, label: "/1k CLABSI rate" },
-              { value: `${dq.nursingClabsiPreventionRate}%`, label: "earlier docs prevent" },
-              { value: `$${dq.nursingClabsiCost.toLocaleString()}`, label: "per case" },
-            ],
-            grossLabel: "",
-            gross: clabsi.value,
-            net: clabsi.value,
-            haircutLabel: "",
-          }}
+          note={<>≈ <b className="text-[#B02200] not-italic">{fmtN(clabsi.prevented)}</b> CLABSIs prevented a year. Change any coral figure and this reprices live, then updates the model on the right.</>}
         >
-          <FieldGrid cols={4}>
-            <FieldTile label="Line utilization" note="% of patient-days">
-              <Fi value={dq.nursingClabsiUtilizationRatio} onValueChange={(v) => updateDq({ nursingClabsiUtilizationRatio: v })} suffix="%" testId="input-eq-clabsi-util" />
-            </FieldTile>
-            <FieldTile label="CLABSI rate" note="per 1,000 line-days">
-              <Fi value={dq.nursingClabsiRate} onValueChange={(v) => updateDq({ nursingClabsiRate: v })} decimal testId="input-eq-clabsi-rate" />
-            </FieldTile>
-            <FieldTile label="Prevention rate">
-              <Fi value={dq.nursingClabsiPreventionRate} onValueChange={(v) => updateDq({ nursingClabsiPreventionRate: v })} suffix="%" testId="input-eq-clabsi-prevention" />
-            </FieldTile>
-            <FieldTile label="Cost per CLABSI">
-              <Fi value={dq.nursingClabsiCost} onValueChange={(v) => updateDq({ nursingClabsiCost: v })} prefix="$" testId="input-eq-clabsi-cost" />
-            </FieldTile>
-          </FieldGrid>
-        </MoneyCard>
+          {clabsiAwait ? (
+            <EqAwaiting need={clabsiAwait.need} />
+          ) : (
+            <EquationRow>
+              <EqCarried cap="patient-days">{fmtN(patientDays)}</EqCarried>
+              <EqOp>×</EqOp>
+              <EqNum cap="line use" value={dq.nursingClabsiUtilizationRatio} onChange={(v) => updateDq({ nursingClabsiUtilizationRatio: v })} suffix="%" />
+              <EqOp>×</EqOp>
+              <EqNum cap="CLABSI / 1k line-days" value={dq.nursingClabsiRate} onChange={(v) => updateDq({ nursingClabsiRate: v })} decimal />
+              <EqOp>×</EqOp>
+              <EqNum cap="docs prevent" value={dq.nursingClabsiPreventionRate} onChange={(v) => updateDq({ nursingClabsiPreventionRate: v })} suffix="%" />
+              <EqOp>×</EqOp>
+              <EqNum cap="per case" value={dq.nursingClabsiCost} onChange={(v) => updateDq({ nursingClabsiCost: v })} prefix="$" />
+              <EqOp>=</EqOp>
+              <EqResult value={clabsi.value} />
+            </EquationRow>
+          )}
+        </InlineDriverCard>
 
-        <MoneyCard
+        <InlineDriverCard
           title="Sepsis bundle compliance"
           subtitle="SEP-1 is scored on timestamps. A 45-minute documentation lag can flip a compliant case to non-compliant."
           enabled={dq.nursingSepsisEnabled}
           onToggle={() => updateDq({ nursingSepsisEnabled: !dq.nursingSepsisEnabled })}
-          value={sepsis.value}
-          secondary={<>≈ <b className="text-[#1A1A1A]">{fmtN(sepsis.prevented)}</b> cases moved into compliance a year</>}
           testId="toggle-nursing-sepsis"
-          awaitingScale={gate("nursingSepsis")}
-          build={{
-            factors: [
-              { value: fmtN(sepsis.prevented), label: "cases into compliance" },
-              { value: `$${dq.nursingSepsisExcessCostPerCase.toLocaleString()}`, label: "excess / case" },
-            ],
-            grossLabel: "",
-            gross: sepsis.value,
-            net: sepsis.value,
-            haircutLabel: "",
-          }}
+          note={<>≈ <b className="text-[#B02200] not-italic">{fmtN(sepsis.prevented)}</b> cases moved into compliance a year. Change any coral figure and this reprices live, then updates the model on the right.</>}
         >
-          <FieldGrid cols={4}>
-            <FieldTile label="Sepsis rate" note="per 1,000 patient-days">
-              <Fi value={dq.nursingSepsisRatePerThousand} onValueChange={(v) => updateDq({ nursingSepsisRatePerThousand: v })} decimal testId="input-eq-sepsis-rate" />
-            </FieldTile>
-            <FieldTile label="Current compliance">
-              <Fi value={dq.nursingSepsisCurrentCompliance} onValueChange={(v) => updateDq({ nursingSepsisCurrentCompliance: v })} suffix="%" testId="input-eq-sepsis-compliance" />
-            </FieldTile>
-            <FieldTile label="Doc-lag share" note="of non-compliant cases">
-              <Fi value={dq.nursingSepsisDocLagPercent} onValueChange={(v) => updateDq({ nursingSepsisDocLagPercent: v })} suffix="%" testId="input-eq-sepsis-doclag" />
-            </FieldTile>
-            <FieldTile label="Excess cost / case">
-              <Fi value={dq.nursingSepsisExcessCostPerCase} onValueChange={(v) => updateDq({ nursingSepsisExcessCostPerCase: v })} prefix="$" testId="input-eq-sepsis-cost" />
-            </FieldTile>
-          </FieldGrid>
-          <FieldGrid cols={3}>
-            <FieldTile label="Realization" note="haircut on captured value">
-              <Fi value={dq.nursingSepsisRealization} onValueChange={(v) => updateDq({ nursingSepsisRealization: v })} suffix="%" testId="input-eq-sepsis-realization" />
-            </FieldTile>
-            <div />
-            <div />
-          </FieldGrid>
-        </MoneyCard>
+          {sepsisAwait ? (
+            <EqAwaiting need={sepsisAwait.need} />
+          ) : (
+            <EquationRow>
+              <EqCarried cap="patient-days">{fmtN(patientDays)}</EqCarried>
+              <EqOp>×</EqOp>
+              <EqNum cap="sepsis / 1k days" value={dq.nursingSepsisRatePerThousand} onChange={(v) => updateDq({ nursingSepsisRatePerThousand: v })} decimal />
+              <EqOp>×</EqOp>
+              <EqNum cap="non-compliant" value={Math.round(sepsis.complianceGapPct)} onChange={(v) => updateDq({ nursingSepsisCurrentCompliance: Math.max(0, 100 - v) })} suffix="%" />
+              <EqOp>×</EqOp>
+              <EqNum cap="doc-lag share" value={dq.nursingSepsisDocLagPercent} onChange={(v) => updateDq({ nursingSepsisDocLagPercent: v })} suffix="%" />
+              <EqOp>×</EqOp>
+              <EqNum cap="you keep" value={dq.nursingSepsisRealization} onChange={(v) => updateDq({ nursingSepsisRealization: v })} suffix="%" />
+              <EqOp>×</EqOp>
+              <EqNum cap="excess / case" value={dq.nursingSepsisExcessCostPerCase} onChange={(v) => updateDq({ nursingSepsisExcessCostPerCase: v })} prefix="$" />
+              <EqOp>=</EqOp>
+              <EqResult value={sepsis.value} />
+            </EquationRow>
+          )}
+        </InlineDriverCard>
 
         {watchDomainFor(state.careSetting, "Quality") ? (
           <SignalWatch domain={watchDomainFor(state.careSetting, "Quality")!} title="The bedside signals it protects" />

@@ -10,16 +10,18 @@ import {
   QuickPicks,
   OutcomesBlock,
   Foot,
+  LensToggle,
   formatCurrency,
   formatNum,
   formatNum1,
   type OutcomeSignal,
 } from "./EdValueScreenKit";
+import { InlineDriverCard, EqNum, EqCarried, EqOp, EqResult, EquationRow } from "./InlineEquation";
 import { getDriversForPage, type ExploreDriver, type ExploreSetting } from "@/lib/exploreDrivers";
 import { computeAllDriverValues } from "@/lib/exploreDriverCalcs";
 import { engineKeyForDriver } from "@/lib/exploreDriverKeys";
 import { driverScaleReadiness } from "@/lib/exploreScaleGate";
-import { physicianRetentionRates, nursingRetentionRates, PHYSICIAN_RETENTION_SCENARIOS, NURSING_RETENTION_SCENARIOS } from "@/lib/retentionScenarios";
+import { physicianRetentionRates, nursingRetentionRates } from "@/lib/retentionScenarios";
 import type { PriorQuadrantEntry } from "@/lib/exploreQuadrantValues";
 import { type ExploreState } from "../ExploreFlow";
 import { SignalWatch } from "./SignalWatch";
@@ -70,38 +72,6 @@ const TIER2: Partial<Record<ExploreSetting, { signals: OutcomeSignal[]; outcomes
     outcomes: ["Fewer providers reach burnout", "More choose to stay", "Recruiting and backfill ease"],
   },
 };
-
-function ScenarioPicks({
-  value,
-  onPick,
-  rates,
-}: {
-  value: string;
-  onPick: (v: "conservative" | "typical" | "optimistic") => void;
-  rates: Record<string, number>;
-}) {
-  const opts: { key: "conservative" | "typical" | "optimistic"; label: string }[] = [
-    { key: "conservative", label: "Conservative" },
-    { key: "typical", label: "Typical" },
-    { key: "optimistic", label: "Optimistic" },
-  ];
-  return (
-    <div className="flex gap-[6px] mt-2 flex-wrap">
-      {opts.map((o) => (
-        <button
-          key={o.key}
-          type="button"
-          onClick={() => onPick(o.key)}
-          className={`text-[11.5px] font-bold rounded-[8px] border px-[9px] py-[5px] transition-colors ${
-            value === o.key ? "border-[#EA2C00] text-[#EA2C00] bg-[#FFF7F4]" : "border-[#E7E3DD] text-[#565250] bg-white hover:border-[#1A1A1A]"
-          }`}
-        >
-          {o.label} · {rates[o.key]}%
-        </button>
-      ))}
-    </div>
-  );
-}
 
 function ModePicker({ mode, onChange }: { mode: "position" | "hourly"; onChange: (m: "position" | "hourly") => void }) {
   return (
@@ -189,19 +159,61 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
       const value = valueFor(driver.id);
 
       return (
-        <ValueCard
+        <InlineDriverCard
           key={driver.id}
           title={driver.label}
           subtitle="Abridge only touches the departures tied to documentation burden and burnout, not retirements, moves, or pay. This values just that slice, conservatively."
-          value={value}
-          secondary={
-            <>
-              ≈ <b className="font-abridge text-[#1A1A1A]">{formatNum1(providersRetained)}</b> provider a year who'd otherwise
-              have burned out and left
-            </>
+          enabled
+          onToggle={() => toggleEnabled(driver)}
+          testId={`ed-toggle-${driver.id}`}
+          note={
+            retentionCounted ? (
+              <>Grey figures carry from your earlier steps. Change any coral figure and this reprices live. Only the burnout-tied slice is valued; retirements, moves, and pay stay out.</>
+            ) : undefined
           }
-          lens={{ counted: retentionCounted, onChange: setRetentionMode, testId: `ed-retention-lens-${driver.id}` }}
-          trackedHeadline={
+        >
+          <div className="mb-4">
+            <LensToggle counted={retentionCounted} onChange={setRetentionMode} testId={`ed-retention-lens-${driver.id}`} />
+          </div>
+          {retentionCounted ? (
+            <EquationRow>
+              <EqCarried cap="providers">{formatNum(state.numberOfProviders)}</EqCarried>
+              <EqOp>×</EqOp>
+              <EqNum
+                cap="turnover"
+                value={turnoverValue}
+                suffix="%"
+                onChange={(v) => updateTimeDriverInputs(isIP ? { ipAnnualTurnoverRate: v } : { annualTurnoverRate: v })}
+                width={40}
+              />
+              <EqOp>×</EqOp>
+              <EqNum
+                cap="tied to burnout"
+                value={burnoutValue}
+                suffix="%"
+                onChange={(v) => updateTimeDriverInputs(isIP ? { ipBurnoutRelatedTurnover: v } : { burnoutRelatedTurnover: v })}
+                width={40}
+              />
+              <EqOp>×</EqOp>
+              <EqNum
+                cap="Abridge keeps"
+                value={impactPct}
+                suffix="%"
+                onChange={(v) => updateTimeDriverInputs({ retentionImpactScenario: "custom", retentionCustomPercent: v })}
+                width={40}
+              />
+              <EqOp>×</EqOp>
+              <EqNum
+                cap="to replace"
+                value={replacementValue}
+                prefix="$"
+                onChange={(v) => updateTimeDriverInputs(isIP ? { ipReplacementCost: v } : { replacementCost: v })}
+                width={72}
+              />
+              <EqOp>=</EqOp>
+              <EqResult value={value} />
+            </EquationRow>
+          ) : (
             <>
               <div className="flex flex-wrap items-end gap-x-[26px] gap-y-[10px]">
                 {[
@@ -221,70 +233,8 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
                 replacement-cost value stays out of the ROI unless you switch to Dollar.
               </div>
             </>
-          }
-          onToggle={() => toggleEnabled(driver)}
-          testId={`ed-toggle-${driver.id}`}
-          buildStruct={{
-            factors: [
-              { value: formatNum(state.numberOfProviders), label: "providers" },
-              { value: `${turnoverValue}%`, label: "turnover" },
-              { value: `${burnoutValue}%`, label: "tied to burnout" },
-              { value: `${impactPct}%`, label: "Abridge keeps" },
-              { value: formatCurrency(replacementValue), label: "to replace" },
-            ],
-            grossLabel: "",
-            gross: value,
-            net: value,
-            haircutLabel: "",
-          }}
-        >
-          <Field label={isIP ? "Inpatient provider turnover" : "Annual turnover rate"}>
-            <NumBox
-              value={turnoverValue}
-              suffix="%"
-              onChange={(v) => updateTimeDriverInputs(isIP ? { ipAnnualTurnoverRate: v } : { annualTurnoverRate: v })}
-              testId={`ed-input-${driver.id}-turnover`}
-            />
-          </Field>
-          <Field
-            label="Tied to burnout & documentation"
-            note={
-              <>
-                ≈ <b className="font-abridge text-[#565250]">{formatNum1(burnoutRelatedDepartures)}</b> of the{" "}
-                <b className="font-abridge text-[#565250]">{formatNum1(providersLeavingPerYear)}</b> leaving each year are
-                addressable
-              </>
-            }
-          >
-            <NumBox
-              value={burnoutValue}
-              suffix="%"
-              onChange={(v) => updateTimeDriverInputs(isIP ? { ipBurnoutRelatedTurnover: v } : { burnoutRelatedTurnover: v })}
-              testId={`ed-input-${driver.id}-burnout`}
-            />
-          </Field>
-          <Field label="Of those, Abridge keeps">
-            <NumBox
-              value={impactPct}
-              suffix="%"
-              onChange={(v) => updateTimeDriverInputs({ retentionImpactScenario: "custom", retentionCustomPercent: v })}
-              testId={`ed-input-${driver.id}-impact`}
-            />
-            <ScenarioPicks
-              value={td.retentionImpactScenario}
-              onPick={(v) => updateTimeDriverInputs({ retentionImpactScenario: v })}
-              rates={PHYSICIAN_RETENTION_SCENARIOS}
-            />
-          </Field>
-          <Field label="Cost to replace each">
-            <NumBox
-              value={replacementValue}
-              prefix="$"
-              onChange={(v) => updateTimeDriverInputs(isIP ? { ipReplacementCost: v } : { replacementCost: v })}
-              testId={`ed-input-${driver.id}-replacement`}
-            />
-          </Field>
-        </ValueCard>
+          )}
+        </InlineDriverCard>
       );
     }
 
@@ -310,55 +260,55 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
       }
       const value = valueFor(driver.id);
       return (
-        <ValueCard
+        <InlineDriverCard
           key={driver.id}
           title={driver.label}
           subtitle="Avoided locum coverage spend for the providers Provider Retention keeps from leaving, priced at weeks of coverage avoided times the weekly premium."
-          value={value}
-          secondary={
-            <>
-              ≈ <b className="font-abridge text-[#1A1A1A]">{formatNum1(retained)}</b> provider's worth of vacancy coverage
-              avoided
-            </>
-          }
+          enabled
           onToggle={() => toggleEnabled(driver)}
           testId={`ed-toggle-${driver.id}`}
-          warning={blocked && "Turn on Provider Retention above to see this driver's value. Locum & agency savings are derived from the providers it retains."}
-          buildStruct={{
-            // Full raw chain (mirrors the Provider Retention card and the PDF
-            // calcSummary) so the printed factors multiply exactly to the value;
-            // the rounded `retained` used as a hard multiplicand didn't reconcile.
-            factors: [
-              { value: formatNum(state.numberOfProviders), label: "providers" },
-              { value: `${turnoverValue}%`, label: "turnover" },
-              { value: `${burnoutValue}%`, label: "tied to burnout" },
-              { value: `${impactPct}%`, label: "Abridge keeps" },
-              { value: `${td.physicianAgencyWeeksPerVacancy}`, label: "wks locum avoided" },
-              { value: formatCurrency(td.physicianAgencyWeeklyPremium), label: "per week" },
-            ],
-            grossLabel: "",
-            gross: value,
-            net: value,
-            haircutLabel: "",
-          }}
+          note={
+            blocked ? undefined : (
+              <>Grey figures carry from Provider Retention above. Change the coral figures to match your locum contracts.</>
+            )
+          }
         >
-          <Field label="Weeks of locum coverage per vacancy">
-            <NumBox
-              value={td.physicianAgencyWeeksPerVacancy}
-              suffix="wks"
-              onChange={(v) => updateTimeDriverInputs({ physicianAgencyWeeksPerVacancy: v })}
-              testId={`ed-input-${driver.id}-weeks`}
-            />
-          </Field>
-          <Field label="Weekly premium above base salary">
-            <NumBox
-              value={td.physicianAgencyWeeklyPremium}
-              prefix="$"
-              onChange={(v) => updateTimeDriverInputs({ physicianAgencyWeeklyPremium: v })}
-              testId={`ed-input-${driver.id}-premium`}
-            />
-          </Field>
-        </ValueCard>
+          {blocked ? (
+            <div className="px-3.5 py-2.5 bg-[#FFF7F4] border border-[#FFDDD6] rounded-[10px] text-[12.5px] text-[#B23100] leading-[1.4]">
+              Turn on Provider Retention above to see this driver's value. Locum &amp; agency savings are derived from the
+              providers it retains.
+            </div>
+          ) : (
+            <EquationRow>
+              {/* Full raw chain (mirrors Provider Retention above) so the factors multiply exactly to the value. */}
+              <EqCarried cap="providers">{formatNum(state.numberOfProviders)}</EqCarried>
+              <EqOp>×</EqOp>
+              <EqCarried cap="turnover">{turnoverValue}%</EqCarried>
+              <EqOp>×</EqOp>
+              <EqCarried cap="tied to burnout">{burnoutValue}%</EqCarried>
+              <EqOp>×</EqOp>
+              <EqCarried cap="Abridge keeps">{impactPct}%</EqCarried>
+              <EqOp>×</EqOp>
+              <EqNum
+                cap="wks locum avoided"
+                value={td.physicianAgencyWeeksPerVacancy}
+                suffix="wks"
+                onChange={(v) => updateTimeDriverInputs({ physicianAgencyWeeksPerVacancy: v })}
+                width={44}
+              />
+              <EqOp>×</EqOp>
+              <EqNum
+                cap="per week"
+                value={td.physicianAgencyWeeklyPremium}
+                prefix="$"
+                onChange={(v) => updateTimeDriverInputs({ physicianAgencyWeeklyPremium: v })}
+                width={72}
+              />
+              <EqOp>=</EqOp>
+              <EqResult value={value} />
+            </EquationRow>
+          )}
+        </InlineDriverCard>
       );
     }
 
@@ -469,18 +419,55 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
       const value = valueFor(driver.id);
 
       return (
-        <ValueCard
+        <InlineDriverCard
           key={driver.id}
           title={driver.label}
           subtitle={driver.shortDescription}
-          value={value}
-          secondary={
-            <>
-              ≈ <b className="font-abridge text-[#1A1A1A]">{formatNum1(retained)}</b> nurse a year who'd otherwise have left
-            </>
+          enabled
+          onToggle={() => toggleEnabled(driver)}
+          testId={`ed-toggle-${driver.id}`}
+          note={
+            retentionCounted ? (
+              <>Grey figures carry from your earlier steps. Change any coral figure and this reprices live. Only the burnout-tied slice (40% of departures) is valued.</>
+            ) : undefined
           }
-          lens={{ counted: retentionCounted, onChange: setRetentionMode, testId: `ed-retention-lens-${driver.id}` }}
-          trackedHeadline={
+        >
+          <div className="mb-4">
+            <LensToggle counted={retentionCounted} onChange={setRetentionMode} testId={`ed-retention-lens-${driver.id}`} />
+          </div>
+          {retentionCounted ? (
+            <EquationRow>
+              <EqCarried cap="nurses">{formatNum(state.numberOfProviders)}</EqCarried>
+              <EqOp>×</EqOp>
+              <EqNum
+                cap="turnover"
+                value={td.nursingTurnoverRate}
+                suffix="%"
+                onChange={(v) => updateTimeDriverInputs({ nursingTurnoverRate: v })}
+                width={40}
+              />
+              <EqOp>×</EqOp>
+              <EqCarried cap="tied to burnout">40%</EqCarried>
+              <EqOp>×</EqOp>
+              <EqNum
+                cap="Abridge keeps"
+                value={impactPct}
+                suffix="%"
+                onChange={(v) => updateTimeDriverInputs({ retentionImpactScenario: "custom", retentionCustomPercent: v })}
+                width={40}
+              />
+              <EqOp>×</EqOp>
+              <EqNum
+                cap="to replace"
+                value={td.nursingReplacementCost}
+                prefix="$"
+                onChange={(v) => updateTimeDriverInputs({ nursingReplacementCost: v })}
+                width={72}
+              />
+              <EqOp>=</EqOp>
+              <EqResult value={value} />
+            </EquationRow>
+          ) : (
             <>
               <div className="flex flex-wrap items-end gap-x-[26px] gap-y-[10px]">
                 {[
@@ -500,43 +487,8 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
                 replacement-cost value stays out of the ROI unless you switch to Dollar.
               </div>
             </>
-          }
-          onToggle={() => toggleEnabled(driver)}
-          testId={`ed-toggle-${driver.id}`}
-          buildStruct={{
-            factors: [
-              { value: formatNum(state.numberOfProviders), label: "nurses" },
-              { value: `${td.nursingTurnoverRate}%`, label: "turnover" },
-              { value: "40%", label: "tied to burnout" },
-              { value: `${impactPct}%`, label: "Abridge keeps" },
-              { value: formatCurrency(td.nursingReplacementCost), label: "to replace" },
-            ],
-            grossLabel: "",
-            gross: value,
-            net: value,
-            haircutLabel: "",
-          }}
-        >
-          <Field label="Annual turnover rate">
-            <NumBox value={td.nursingTurnoverRate} suffix="%" onChange={(v) => updateTimeDriverInputs({ nursingTurnoverRate: v })} testId={`ed-input-${driver.id}-turnover`} />
-          </Field>
-          <Field label="Of those, Abridge keeps" note="Applied to the 40% of departures that are burnout-related.">
-            <NumBox
-              value={impactPct}
-              suffix="%"
-              onChange={(v) => updateTimeDriverInputs({ retentionImpactScenario: "custom", retentionCustomPercent: v })}
-              testId={`ed-input-${driver.id}-impact`}
-            />
-            <ScenarioPicks
-              value={td.retentionImpactScenario}
-              onPick={(v) => updateTimeDriverInputs({ retentionImpactScenario: v })}
-              rates={NURSING_RETENTION_SCENARIOS}
-            />
-          </Field>
-          <Field label="Replacement cost per nurse">
-            <NumBox value={td.nursingReplacementCost} prefix="$" onChange={(v) => updateTimeDriverInputs({ nursingReplacementCost: v })} testId={`ed-input-${driver.id}-replacement`} />
-          </Field>
-        </ValueCard>
+          )}
+        </InlineDriverCard>
       );
     }
 
@@ -562,45 +514,55 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
       }
       const value = valueFor(driver.id);
       return (
-        <ValueCard
+        <InlineDriverCard
           key={driver.id}
           title={driver.label}
           subtitle="Avoided agency coverage spend for the nurses RN Retention keeps from leaving, priced at weeks of coverage avoided times the weekly premium."
-          value={value}
-          secondary={
-            <>
-              ≈ <b className="font-abridge text-[#1A1A1A]">{formatNum1(retained)}</b> nurse's worth of vacancy coverage avoided
-            </>
-          }
+          enabled
           onToggle={() => toggleEnabled(driver)}
           testId={`ed-toggle-${driver.id}`}
-          warning={blocked && "Turn on RN Retention above to see this driver's value. Travel & agency savings are derived from the nurses it retains."}
-          buildStruct={{
-            // Full raw chain (mirrors the RN Retention card and the PDF
-            // calcSummary) so the printed factors multiply exactly to the value.
-            // Using the rounded `retained` (0.2) as a hard multiplicand made the
-            // chain fail to reconcile (0.2 × 12 × $2,500 ≠ $5,184).
-            factors: [
-              { value: formatNum(state.numberOfProviders), label: "nurses" },
-              { value: `${td.nursingTurnoverRate}%`, label: "turnover" },
-              { value: "40%", label: "tied to burnout" },
-              { value: `${impactPct}%`, label: "Abridge keeps" },
-              { value: `${td.nursingAgencyWeeksPerVacancy}`, label: "wks agency avoided" },
-              { value: formatCurrency(td.nursingAgencyWeeklyPremium), label: "per week" },
-            ],
-            grossLabel: "",
-            gross: value,
-            net: value,
-            haircutLabel: "",
-          }}
+          note={
+            blocked ? undefined : (
+              <>Grey figures carry from RN Retention above. Change the coral figures to match your agency contracts.</>
+            )
+          }
         >
-          <Field label="Weeks of agency coverage per vacancy">
-            <NumBox value={td.nursingAgencyWeeksPerVacancy} suffix="wks" onChange={(v) => updateTimeDriverInputs({ nursingAgencyWeeksPerVacancy: v })} testId={`ed-input-${driver.id}-weeks`} />
-          </Field>
-          <Field label="Weekly agency premium">
-            <NumBox value={td.nursingAgencyWeeklyPremium} prefix="$" onChange={(v) => updateTimeDriverInputs({ nursingAgencyWeeklyPremium: v })} testId={`ed-input-${driver.id}-premium`} />
-          </Field>
-        </ValueCard>
+          {blocked ? (
+            <div className="px-3.5 py-2.5 bg-[#FFF7F4] border border-[#FFDDD6] rounded-[10px] text-[12.5px] text-[#B23100] leading-[1.4]">
+              Turn on RN Retention above to see this driver's value. Travel &amp; agency savings are derived from the nurses
+              it retains.
+            </div>
+          ) : (
+            <EquationRow>
+              {/* Full raw chain (mirrors RN Retention above) so the factors multiply exactly to the value. */}
+              <EqCarried cap="nurses">{formatNum(state.numberOfProviders)}</EqCarried>
+              <EqOp>×</EqOp>
+              <EqCarried cap="turnover">{td.nursingTurnoverRate}%</EqCarried>
+              <EqOp>×</EqOp>
+              <EqCarried cap="tied to burnout">40%</EqCarried>
+              <EqOp>×</EqOp>
+              <EqCarried cap="Abridge keeps">{impactPct}%</EqCarried>
+              <EqOp>×</EqOp>
+              <EqNum
+                cap="wks agency avoided"
+                value={td.nursingAgencyWeeksPerVacancy}
+                suffix="wks"
+                onChange={(v) => updateTimeDriverInputs({ nursingAgencyWeeksPerVacancy: v })}
+                width={44}
+              />
+              <EqOp>×</EqOp>
+              <EqNum
+                cap="per week"
+                value={td.nursingAgencyWeeklyPremium}
+                prefix="$"
+                onChange={(v) => updateTimeDriverInputs({ nursingAgencyWeeklyPremium: v })}
+                width={72}
+              />
+              <EqOp>=</EqOp>
+              <EqResult value={value} />
+            </EquationRow>
+          )}
+        </InlineDriverCard>
       );
     }
 
