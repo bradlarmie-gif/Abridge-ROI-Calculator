@@ -130,7 +130,7 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
         <InlineDriverCard
           key={driver.id}
           title={driver.label}
-          subtitle="If some of the freed hours get reinvested into seeing more patients, at your margin per visit."
+          subtitle="Faster documentation gives providers time back. If some of those freed hours go to seeing more patients, each added visit earns your margin per visit."
           enabled={enabled}
           onToggle={() => toggleEnabled(driver)}
           testId={`ed-toggle-${driver.id}`}
@@ -180,7 +180,7 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
           onToggle={() => toggleEnabled(driver)}
           testId={`ed-toggle-${driver.id}`}
           note={
-            <>Grey figures carry from your earlier steps. Change any coral figure and this reprices live. You keep <b className="text-[#B02200] not-italic">{td.edLwbsRealization}%</b>, the share of recovered patients who complete a visit; the rest stays out of the number.</>
+            <>Grey figures carry from your earlier steps; change any coral figure and this reprices live. Whether a recovered patient actually completes a visit also depends on beds, staffing, and throughput, so we attribute only <b className="text-[#B02200] not-italic">{td.edLwbsRealization}%</b> to faster documentation and leave the rest out.</>
           }
         >
           {awaiting ? (
@@ -195,7 +195,7 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
               <EqOp>×</EqOp>
               <EqNum cap="per ED visit" value={td.edRevenuePerVisit} onChange={(v) => updateTimeDriverInputs({ edRevenuePerVisit: v })} prefix="$" />
               <EqOp>×</EqOp>
-              <EqNum cap="you keep" value={td.edLwbsRealization} onChange={(v) => updateTimeDriverInputs({ edLwbsRealization: v })} suffix="%" />
+              <EqNum cap="attribution" value={td.edLwbsRealization} onChange={(v) => updateTimeDriverInputs({ edLwbsRealization: v })} suffix="%" />
               <EqResult value={value} />
             </EquationRow>
           )}
@@ -218,7 +218,7 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
           onToggle={() => toggleEnabled(driver)}
           testId={`ed-toggle-${driver.id}`}
           note={
-            <>Grey figures carry from LWBS Recovery above. Change any coral figure and this reprices live. You keep <b className="text-[#B02200] not-italic">{td.edAdmissionRealization}%</b> for bed availability and conversion; the rest stays out of the number.</>
+            <>Grey figures carry from LWBS Recovery above; change any coral figure and this reprices live. Whether a recovered patient is admitted depends on bed availability and clinical conversion, not the note, so we attribute only <b className="text-[#B02200] not-italic">{td.edAdmissionRealization}%</b> and leave the rest out.</>
           }
         >
           {!td.edLwbsEnabled && (
@@ -236,7 +236,7 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
               <EqOp>×</EqOp>
               <EqNum cap="margin / admission" value={td.edAdmissionRevenue} onChange={(v) => updateTimeDriverInputs({ edAdmissionRevenue: v })} prefix="$" />
               <EqOp>×</EqOp>
-              <EqNum cap="you keep" value={td.edAdmissionRealization} onChange={(v) => updateTimeDriverInputs({ edAdmissionRealization: v })} suffix="%" />
+              <EqNum cap="attribution" value={td.edAdmissionRealization} onChange={(v) => updateTimeDriverInputs({ edAdmissionRealization: v })} suffix="%" />
               <EqResult value={value} />
             </EquationRow>
           )}

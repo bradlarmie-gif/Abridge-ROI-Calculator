@@ -376,7 +376,7 @@ function NursingQualityScreen({
           enabled={dq.nursingSepsisEnabled}
           onToggle={() => updateDq({ nursingSepsisEnabled: !dq.nursingSepsisEnabled })}
           testId="toggle-nursing-sepsis"
-          note={<>≈ <b className="text-[#B02200] not-italic">{fmtN(sepsis.prevented)}</b> cases moved into compliance a year. Change any coral figure and this reprices live, then updates the model on the right.</>}
+          note={<>≈ <b className="text-[#B02200] not-italic">{fmtN(sepsis.prevented)}</b> cases moved into compliance a year; change any coral figure and this reprices live. The sepsis bundle depends on the whole team's response, so we attribute only <b className="text-[#B02200] not-italic">{dq.nursingSepsisRealization}%</b> to the documentation and leave the rest out.</>}
         >
           {sepsisAwait ? (
             <EqAwaiting need={sepsisAwait.need} />
@@ -390,7 +390,7 @@ function NursingQualityScreen({
               <EqOp>×</EqOp>
               <EqNum cap="doc-lag share" value={dq.nursingSepsisDocLagPercent} onChange={(v) => updateDq({ nursingSepsisDocLagPercent: v })} suffix="%" />
               <EqOp>×</EqOp>
-              <EqNum cap="you keep" value={dq.nursingSepsisRealization} onChange={(v) => updateDq({ nursingSepsisRealization: v })} suffix="%" />
+              <EqNum cap="attribution" value={dq.nursingSepsisRealization} onChange={(v) => updateDq({ nursingSepsisRealization: v })} suffix="%" />
               <EqOp>×</EqOp>
               <EqNum cap="excess / case" value={dq.nursingSepsisExcessCostPerCase} onChange={(v) => updateDq({ nursingSepsisExcessCostPerCase: v })} prefix="$" />
               <EqResult value={sepsis.value} />

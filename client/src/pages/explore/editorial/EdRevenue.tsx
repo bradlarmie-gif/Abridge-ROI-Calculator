@@ -90,14 +90,14 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
       tag={isOP ? "Fee-for-service" : undefined}
       subtitle={
         isED
-          ? "A fuller ED note lets the E/M level match the visit complexity. Capture, not upcoding."
-          : "A fuller note lets the E/M level match the visit. Capture, not upcoding."
+          ? "When an ED note understates the acuity, the E/M level codes down and you bill below the work you did. A complete note lets the level match the visit, so you capture what you already earned."
+          : "When a note understates the visit, the E/M level codes down and you bill below the work you did. A complete note lets the level match the visit, so you capture what you already earned."
       }
       enabled={dq.wrvuEnabled}
       onToggle={() => updateDq({ wrvuEnabled: !dq.wrvuEnabled, wrvuExpanded: !dq.wrvuEnabled ? true : dq.wrvuExpanded })}
       testId="toggle-wrvu"
       note={
-        <>Grey figures carry from your earlier steps. Change any coral figure and this reprices live, then updates the model on the right. You keep <b className="text-[#B02200] not-italic">{dq.wrvuRealization}%</b> of the lift; the rest stays out of the number.</>
+        <>Grey figures carry from your earlier steps; change any coral figure and this reprices live. Coding education and CDI programs also move this lift, so we attribute only <b className="text-[#B02200] not-italic">{dq.wrvuRealization}%</b> to the note and leave the rest out of the number.</>
       }
     >
       {wrvuAwait ? (
@@ -112,7 +112,7 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
           <EqOp>×</EqOp>
           <EqNum cap="per wRVU" value={dq.conversionFactor} onChange={(v) => updateDq({ conversionFactor: v })} prefix="$" decimal width={66} />
           <EqOp>×</EqOp>
-          <EqNum cap="you keep" value={dq.wrvuRealization} onChange={(v) => updateDq({ wrvuRealization: v })} suffix="%" width={40} />
+          <EqNum cap="attribution" value={dq.wrvuRealization} onChange={(v) => updateDq({ wrvuRealization: v })} suffix="%" width={40} />
           <EqResult value={wrvuValue} />
         </EquationRow>
       )}
@@ -278,12 +278,12 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
       key="denials"
       title="Medical necessity denials"
       tag={isOP || isED ? "Fee-for-service & risk" : undefined}
-      subtitle="Claims you earned but lose to documentation gaps. Fewer denied, less rework."
+      subtitle="Payers deny claims when the note does not clearly support medical necessity, so work you already did gets written off or sent back for rework. A complete note documents the necessity up front, so fewer of those claims are denied."
       enabled={dq.denialsEnabled}
       onToggle={() => updateDq({ denialsEnabled: !dq.denialsEnabled, denialsExpanded: !dq.denialsEnabled ? true : dq.denialsExpanded })}
       testId="toggle-denials"
       note={
-        <>Annual claims defaults to your enabled encounters until you enter your own. Change any coral figure and this reprices live, then updates the model on the right. You keep <b className="text-[#B02200] not-italic">{dq.denialsRealization}%</b> net of appeals; the rest stays out of the number.</>
+        <>Annual claims defaults to your enabled encounters until you enter your own; change any coral figure and this reprices live. Utilization review and payer policy also move denials, and some denied claims would be won on appeal anyway, so we attribute only <b className="text-[#B02200] not-italic">{dq.denialsRealization}%</b> to the note and leave the rest out.</>
       }
     >
       {denialsAwait ? (
@@ -298,7 +298,7 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
           <EqOp>×</EqOp>
           <EqNum cap="per claim" value={dq.avgClaimValue} onChange={(v) => updateDq({ avgClaimValue: v })} prefix="$" />
           <EqOp>×</EqOp>
-          <EqNum cap="you keep" value={dq.denialsRealization} onChange={(v) => updateDq({ denialsRealization: v })} suffix="%" />
+          <EqNum cap="attribution" value={dq.denialsRealization} onChange={(v) => updateDq({ denialsRealization: v })} suffix="%" />
           <EqResult value={denialsValue} />
         </EquationRow>
       )}

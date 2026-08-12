@@ -73,7 +73,7 @@ export function BuildStrip({ build }: { build: MoneyBuild }) {
         {heldBack > 0 && (
           <>
             <EqCell color="#B9AA97">×</EqCell>
-            <EqCell cap="you keep" color="#B02200">{keepPct}%</EqCell>
+            <EqCell cap="attribution" color="#B02200">{keepPct}%</EqCell>
           </>
         )}
         <EqCell color="#B9AA97">=</EqCell>
@@ -84,7 +84,7 @@ export function BuildStrip({ build }: { build: MoneyBuild }) {
       </div>
       {heldBack > 0 && (
         <div className="text-[12px] text-[#7C766F] mt-[12px] leading-[1.4]">
-          You keep <b className="text-[#B02200]">{keepPct}%</b> ({build.haircutLabel}); {fmt$(heldBack)} held back stays out of the number.
+          We attribute <b className="text-[#B02200]">{keepPct}%</b> ({build.haircutLabel}); {fmt$(heldBack)} stays out of the number.
         </div>
       )}
     </div>
