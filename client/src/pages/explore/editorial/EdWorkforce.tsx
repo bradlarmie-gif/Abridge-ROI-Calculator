@@ -210,7 +210,6 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
                 onChange={(v) => updateTimeDriverInputs(isIP ? { ipReplacementCost: v } : { replacementCost: v })}
                 width={72}
               />
-              <EqOp>=</EqOp>
               <EqResult value={value} />
             </EquationRow>
           ) : (
@@ -304,7 +303,6 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
                 onChange={(v) => updateTimeDriverInputs({ physicianAgencyWeeklyPremium: v })}
                 width={72}
               />
-              <EqOp>=</EqOp>
               <EqResult value={value} />
             </EquationRow>
           )}
@@ -464,7 +462,6 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
                 onChange={(v) => updateTimeDriverInputs({ nursingReplacementCost: v })}
                 width={72}
               />
-              <EqOp>=</EqOp>
               <EqResult value={value} />
             </EquationRow>
           ) : (
@@ -558,7 +555,6 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
                 onChange={(v) => updateTimeDriverInputs({ nursingAgencyWeeklyPremium: v })}
                 width={72}
               />
-              <EqOp>=</EqOp>
               <EqResult value={value} />
             </EquationRow>
           )}

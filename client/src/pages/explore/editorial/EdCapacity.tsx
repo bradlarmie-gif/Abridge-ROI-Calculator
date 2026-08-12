@@ -146,7 +146,6 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
                 <EqCarried cap="added visits / yr">{formatNum(annualVisits)}</EqCarried>
                 <EqOp>×</EqOp>
                 <EqNum cap="margin / visit" value={td.revenuePerVisit} onChange={(v) => updateTimeDriverInputs({ revenuePerVisit: v })} prefix="$" />
-                <EqOp>=</EqOp>
                 <EqResult value={value} />
               </EquationRow>
               <div className="mt-4 pt-4 border-t border-[#F1E4DC]">
@@ -197,7 +196,6 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
               <EqNum cap="per ED visit" value={td.edRevenuePerVisit} onChange={(v) => updateTimeDriverInputs({ edRevenuePerVisit: v })} prefix="$" />
               <EqOp>×</EqOp>
               <EqNum cap="you keep" value={td.edLwbsRealization} onChange={(v) => updateTimeDriverInputs({ edLwbsRealization: v })} suffix="%" />
-              <EqOp>=</EqOp>
               <EqResult value={value} />
             </EquationRow>
           )}
@@ -239,7 +237,6 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
               <EqNum cap="margin / admission" value={td.edAdmissionRevenue} onChange={(v) => updateTimeDriverInputs({ edAdmissionRevenue: v })} prefix="$" />
               <EqOp>×</EqOp>
               <EqNum cap="you keep" value={td.edAdmissionRealization} onChange={(v) => updateTimeDriverInputs({ edAdmissionRealization: v })} suffix="%" />
-              <EqOp>=</EqOp>
               <EqResult value={value} />
             </EquationRow>
           )}
@@ -276,7 +273,6 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
               <EqCarried cap="weeks">52</EqCarried>
               <EqOp>×</EqOp>
               <EqNum cap="per hour" value={td.nursingOtHourlyRate} onChange={(v) => updateTimeDriverInputs({ nursingOtHourlyRate: v })} prefix="$" />
-              <EqOp>=</EqOp>
               <EqResult value={value} />
             </EquationRow>
           )}

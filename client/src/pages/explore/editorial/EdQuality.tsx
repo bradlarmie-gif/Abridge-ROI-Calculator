@@ -288,7 +288,6 @@ function NursingQualityScreen({
               <EqNum cap="docs prevent" value={dq.nursingHapiPreventionRate} onChange={(v) => updateDq({ nursingHapiPreventionRate: v })} suffix="%" />
               <EqOp>×</EqOp>
               <EqNum cap="per case" value={dq.nursingHapiCost} onChange={(v) => updateDq({ nursingHapiCost: v })} prefix="$" />
-              <EqOp>=</EqOp>
               <EqResult value={hapi.value} />
             </EquationRow>
           )}
@@ -313,7 +312,6 @@ function NursingQualityScreen({
               <EqNum cap="docs prevent" value={dq.nursingFallsPreventionRate} onChange={(v) => updateDq({ nursingFallsPreventionRate: v })} suffix="%" />
               <EqOp>×</EqOp>
               <EqNum cap="per case" value={dq.nursingFallsCost} onChange={(v) => updateDq({ nursingFallsCost: v })} prefix="$" />
-              <EqOp>=</EqOp>
               <EqResult value={falls.value} />
             </EquationRow>
           )}
@@ -341,7 +339,6 @@ function NursingQualityScreen({
               <EqNum cap="docs prevent" value={dq.nursingCautiPreventionRate} onChange={(v) => updateDq({ nursingCautiPreventionRate: v })} suffix="%" />
               <EqOp>×</EqOp>
               <EqNum cap="per case" value={dq.nursingCautiCost} onChange={(v) => updateDq({ nursingCautiCost: v })} prefix="$" />
-              <EqOp>=</EqOp>
               <EqResult value={cauti.value} />
             </EquationRow>
           )}
@@ -368,7 +365,6 @@ function NursingQualityScreen({
               <EqNum cap="docs prevent" value={dq.nursingClabsiPreventionRate} onChange={(v) => updateDq({ nursingClabsiPreventionRate: v })} suffix="%" />
               <EqOp>×</EqOp>
               <EqNum cap="per case" value={dq.nursingClabsiCost} onChange={(v) => updateDq({ nursingClabsiCost: v })} prefix="$" />
-              <EqOp>=</EqOp>
               <EqResult value={clabsi.value} />
             </EquationRow>
           )}
@@ -397,7 +393,6 @@ function NursingQualityScreen({
               <EqNum cap="you keep" value={dq.nursingSepsisRealization} onChange={(v) => updateDq({ nursingSepsisRealization: v })} suffix="%" />
               <EqOp>×</EqOp>
               <EqNum cap="excess / case" value={dq.nursingSepsisExcessCostPerCase} onChange={(v) => updateDq({ nursingSepsisExcessCostPerCase: v })} prefix="$" />
-              <EqOp>=</EqOp>
               <EqResult value={sepsis.value} />
             </EquationRow>
           )}

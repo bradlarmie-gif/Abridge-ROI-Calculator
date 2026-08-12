@@ -63,12 +63,12 @@ export function EqOp({ children }: { children: string }) {
 
 export function EqResult({ value }: { value: number }) {
   return (
-    <div className="flex flex-col justify-end">
-      <Cap>{" "}</Cap>
-      <div className="leading-none pb-[2px] whitespace-nowrap">
-        <AnimatedValue value={value} format={(n) => "+" + fmtK(n)} duration={450} className="font-abridge text-[24px] text-[#EA2C00]" />
+    <div className="basis-full w-full flex items-baseline gap-2.5 pt-3 mt-1 border-t border-[#F3E9E1]">
+      <span className="font-abridge text-[19px] text-[#B9AA97] leading-none">=</span>
+      <span className="leading-none whitespace-nowrap">
+        <AnimatedValue value={value} format={(n) => "+" + fmtK(n)} duration={450} className="font-abridge text-[28px] text-[#EA2C00]" />
         <span className="text-[12px] text-[#7C766F]"> / yr</span>
-      </div>
+      </span>
     </div>
   );
 }

@@ -113,7 +113,6 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
           <EqNum cap="per wRVU" value={dq.conversionFactor} onChange={(v) => updateDq({ conversionFactor: v })} prefix="$" decimal width={66} />
           <EqOp>×</EqOp>
           <EqNum cap="you keep" value={dq.wrvuRealization} onChange={(v) => updateDq({ wrvuRealization: v })} suffix="%" width={40} />
-          <EqOp>=</EqOp>
           <EqResult value={wrvuValue} />
         </EquationRow>
       )}
@@ -300,7 +299,6 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
           <EqNum cap="per claim" value={dq.avgClaimValue} onChange={(v) => updateDq({ avgClaimValue: v })} prefix="$" />
           <EqOp>×</EqOp>
           <EqNum cap="you keep" value={dq.denialsRealization} onChange={(v) => updateDq({ denialsRealization: v })} suffix="%" />
-          <EqOp>=</EqOp>
           <EqResult value={denialsValue} />
         </EquationRow>
       )}
@@ -336,7 +334,6 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
           <EqNum cap="attributed" value={dq.ipDrgAttribution} onChange={(v) => updateDq({ ipDrgAttribution: v })} suffix="%" />
           <EqOp>×</EqOp>
           <EqNum cap="survives audit" value={dq.ipDrgRealization} onChange={(v) => updateDq({ ipDrgRealization: v })} suffix="%" />
-          <EqOp>=</EqOp>
           <EqResult value={drgValue} />
         </EquationRow>
       )}
@@ -376,7 +373,6 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
           <EqNum cap="note defends" value={obsPreventablePct} onChange={(v) => updateDq({ ipObsDefensePreventableScenario: "custom", ipObsDefenseCustomPercent: v })} suffix="%" />
           <EqOp>×</EqOp>
           <EqNum cap="survives appeal" value={dq.ipObsDefenseRealization} onChange={(v) => updateDq({ ipObsDefenseRealization: v })} suffix="%" />
-          <EqOp>=</EqOp>
           <EqResult value={obsValue} />
         </EquationRow>
       )}
