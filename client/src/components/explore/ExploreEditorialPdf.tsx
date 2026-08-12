@@ -127,7 +127,7 @@ function extractHaircuts(data: ExplorePDFData): Haircut[] {
     for (const d of q.drivers) {
       if (!d.isIncluded || !d.calcSummary) continue;
       const re =
-        /(\d+(?:\.\d+)?)%\s*(realization|survives|attributed|holds|prevention|reduction|impact|defend)/gi;
+        /(\d+(?:\.\d+)?)%\s*(realization|attribution|conversion|survives|attributed|holds|prevention|reduction|impact|defend)/gi;
       let m: RegExpExecArray | null;
       while ((m = re.exec(d.calcSummary)) !== null) {
         const word = m[2].toLowerCase();
@@ -1572,7 +1572,7 @@ export const SAMPLE_EXPLORE_PDF_DATA: ExplorePDFData = {
           visibility: "quantified",
           value: 372708,
           isIncluded: true,
-          calcSummary: "248,000 wRVUs × 5% lift × $33.40/wRVU × 90% realization",
+          calcSummary: "248,000 wRVUs × 5% lift × $33.40/wRVU × 90% attribution",
         },
         {
           id: "hccRecapture",

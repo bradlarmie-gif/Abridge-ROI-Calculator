@@ -473,9 +473,9 @@ describe("Explore OP/ED/IP PDF reconciliation — engine math vs. printed formul
       };
       const values = computeAllDriverValues(state, TOTAL_HOURS_SAVED);
       const summaries = computeAllDriverCalcSummaries(state, TOTAL_HOURS_SAVED);
-      // Tamper: drop the realization multiplier from the printed formula.
+      // Tamper: drop the attribution multiplier from the printed formula.
       const tampered = (summaries.wrvu ?? "").replace(
-        /×\s*\d+%\s*realization/,
+        /×\s*\d+%\s*attribution/,
         "",
       );
       expect(() =>

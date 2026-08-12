@@ -360,12 +360,12 @@ export function computeAllDriverCalcSummaries(
     out.patientAccess = `${fmtN(eff)} providers × ${fmtNd(visitsPerWk)} visits/wk × 48 wks × ${fmt$(td.revenuePerVisit)}/visit`;
   }
   if (isED && td.edLwbsEnabled) {
-    out.lwbsRecovery = `${fmtN(state.annualEncounters)} encounters × ${td.edLwbsRate}% LWBS × ${td.edLwbsReduction}% reduction × ${fmt$(td.edRevenuePerVisit)}/visit × ${td.edLwbsRealization}% realization`;
+    out.lwbsRecovery = `${fmtN(state.annualEncounters)} encounters × ${td.edLwbsRate}% LWBS × ${td.edLwbsReduction}% reduction × ${fmt$(td.edRevenuePerVisit)}/visit × ${td.edLwbsRealization}% conversion`;
     if (td.edThroughputEnabled) {
       const recovered = Math.round(
         state.annualEncounters * (td.edLwbsRate / 100) * (td.edLwbsReduction / 100),
       );
-      out.admissionCapture = `${fmtN(recovered)} recovered visits × ${td.edAdmissionRate}% admit rate × ${fmt$(td.edAdmissionRevenue)}/admit × ${td.edAdmissionRealization}% realization`;
+      out.admissionCapture = `${fmtN(recovered)} recovered visits × ${td.edAdmissionRate}% admit rate × ${fmt$(td.edAdmissionRevenue)}/admit × ${td.edAdmissionRealization}% conversion`;
     }
   }
 
@@ -418,7 +418,7 @@ export function computeAllDriverCalcSummaries(
     // Show the conversion factor at its true precision (e.g. $33.40, not $33)
     // so the printed chain reproduces the value exactly — Finance's test.
     const cf = dq.conversionFactor % 1 === 0 ? `$${dq.conversionFactor}` : `$${dq.conversionFactor.toFixed(2)}`;
-    const summary = `${fmtN(eligibleEncounters)} encounters × ${dq.currentWrvu} current wRVU × ${liftPct}% lift × ${cf}/wRVU × ${dq.wrvuRealization}% realization`;
+    const summary = `${fmtN(eligibleEncounters)} encounters × ${dq.currentWrvu} current wRVU × ${liftPct}% lift × ${cf}/wRVU × ${dq.wrvuRealization}% attribution`;
     if (isED) out.edEmLevel = summary;
     else if (state.paymentModel !== "risk") out.wrvu = summary;
   }
@@ -490,7 +490,7 @@ export function computeAllDriverCalcSummaries(
         excessCostPerCase: dq.nursingSepsisExcessCostPerCase,
         realizationPct: dq.nursingSepsisRealization,
       });
-      out.nursingSepsis = `${fmtN(patientDays)} patient-days × ${dq.nursingSepsisRatePerThousand}/1k sepsis × ${sepsisCalc.complianceGapPct}% non-compliance × ${dq.nursingSepsisDocLagPercent}% doc lag × ${fmt$(dq.nursingSepsisExcessCostPerCase)}/case × ${dq.nursingSepsisRealization}% realization`;
+      out.nursingSepsis = `${fmtN(patientDays)} patient-days × ${dq.nursingSepsisRatePerThousand}/1k sepsis × ${sepsisCalc.complianceGapPct}% non-compliance × ${dq.nursingSepsisDocLagPercent}% doc lag × ${fmt$(dq.nursingSepsisExcessCostPerCase)}/case × ${dq.nursingSepsisRealization}% attribution`;
     }
   }
 
