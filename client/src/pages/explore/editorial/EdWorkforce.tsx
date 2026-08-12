@@ -166,6 +166,8 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
           enabled
           onToggle={() => toggleEnabled(driver)}
           testId={`ed-toggle-${driver.id}`}
+          editHint={retentionCounted}
+          mathLabel={retentionCounted ? "The math" : "What we track"}
           note={
             retentionCounted ? (
               <>Grey figures carry from your earlier steps. Change any coral figure and this reprices live. Only the burnout-tied slice is valued; retirements, moves, and pay stay out.</>
@@ -434,6 +436,8 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
           enabled
           onToggle={() => toggleEnabled(driver)}
           testId={`ed-toggle-${driver.id}`}
+          editHint={retentionCounted}
+          mathLabel={retentionCounted ? "The math" : "What we track"}
           note={
             retentionCounted ? (
               <>Grey figures carry from your earlier steps. Change any coral figure and this reprices live. Only the burnout-tied slice (40% of departures) is valued.</>

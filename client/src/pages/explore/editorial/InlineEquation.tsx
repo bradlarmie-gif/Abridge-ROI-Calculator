@@ -79,10 +79,14 @@ export function EquationRow({ children }: { children: ReactNode }) {
 
 /** The card shell (title, tag, subtitle, toggle) + a collapsible "THE MATH" body. Off = calm invite. */
 export function InlineDriverCard({
-  title, tag, subtitle, enabled, onToggle, note, testId, children,
+  title, tag, subtitle, enabled, onToggle, note, testId, children, editHint = true, mathLabel = "The math",
 }: {
   title: string; tag?: string; subtitle: string; enabled: boolean; onToggle: () => void;
   note?: ReactNode; testId?: string; children: ReactNode;
+  /** Show the coral "edit any figure" hint. False when the body is read-only (e.g. tracked-signal mode). */
+  editHint?: boolean;
+  /** Header label for the body. Defaults to "The math"; use "What we track" for read-only signal bodies. */
+  mathLabel?: string;
 }) {
   const [open, setOpen] = useState(true);
   return (
@@ -104,9 +108,9 @@ export function InlineDriverCard({
           <div className="flex items-center justify-between mb-3">
             <button type="button" onClick={() => setOpen(!open)} className="flex items-center gap-1.5">
               <ChevronDown size={15} color={MUTED} style={{ transform: open ? "none" : "rotate(-90deg)", transition: "transform .15s" }} />
-              <span className="text-[11px] font-extrabold tracking-[0.07em] uppercase text-[#7C766F]">The math</span>
+              <span className="text-[11px] font-extrabold tracking-[0.07em] uppercase text-[#7C766F]">{mathLabel}</span>
             </button>
-            {open && <span className="text-[11.5px] font-bold text-[#EA2C00]">edit any figure</span>}
+            {open && editHint && <span className="text-[11.5px] font-bold text-[#EA2C00]">edit any figure</span>}
           </div>
           {open && (
             <>
