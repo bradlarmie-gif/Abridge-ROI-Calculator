@@ -283,7 +283,7 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
       onToggle={() => updateDq({ denialsEnabled: !dq.denialsEnabled, denialsExpanded: !dq.denialsEnabled ? true : dq.denialsExpanded })}
       testId="toggle-denials"
       note={
-        <>Annual claims defaults to your enabled encounters until you enter your own; change any coral figure and this reprices live. Some denied claims would be won back on appeal anyway, so we count only the <b className="text-[#B02200] not-italic">{dq.denialsRealization}%</b> a complete note prevents outright and leave the rest out.</>
+        <>Annual claims defaults to your enabled encounters until you enter your own; change any coral figure and this reprices live. Some denied claims would be won back on appeal anyway, so we count only the <b className="text-[#B02200] not-italic">{dq.denialsRealization}%</b> you expect to keep off the denial list up front and leave the rest out.</>
       }
     >
       {denialsAwait ? (
