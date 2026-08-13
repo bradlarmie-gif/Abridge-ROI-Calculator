@@ -54,7 +54,7 @@ const FTE_ESTIMATES = [
 ];
 
 const inputBase =
-  "h-[54px] w-full rounded-[14px] border-[1.5px] border-[#E4DED6] bg-white px-[18px] text-[17px] font-medium text-[#1A1A1A] tabular-nums shadow-[0_1px_2px_rgba(40,30,20,0.04)] transition-[box-shadow,border-color] focus-visible:outline-none focus-visible:border-[#EA2C00] focus-visible:shadow-[0_0_0_3px_#FBD9CE] placeholder:text-[#B5AFA6] placeholder:font-normal placeholder:not-italic";
+  "h-[56px] w-full rounded-[14px] border-[1.5px] border-[#E4DED6] bg-white px-[18px] text-[20px] font-abridge text-[#1A1A1A] tabular-nums shadow-[0_1px_2px_rgba(40,30,20,0.04)] transition-[box-shadow,border-color] focus-visible:outline-none focus-visible:border-[#EA2C00] focus-visible:shadow-[0_0_0_3px_#FBD9CE] placeholder:text-[#B5AFA6] placeholder:font-normal placeholder:not-italic placeholder:font-sans placeholder:text-[16px]";
 
 function QuickFillChip({
   label,
@@ -73,7 +73,7 @@ function QuickFillChip({
     <button
       type="button"
       onClick={onClick}
-      className={`text-[12px] font-bold border rounded-[9px] px-[11px] py-[6px] transition-colors ${
+      className={`text-[12px] font-bold border rounded-[9px] px-[11px] py-[6px] transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[#EA2C00] focus-visible:ring-offset-1 ${
         active
           ? "border-[#EA2C00] text-[#EA2C00] bg-[#FFF7F4]"
           : "border-[#E7E3DD] text-[#565250] bg-white hover:border-[#1A1A1A] hover:text-[#1A1A1A]"
@@ -435,56 +435,73 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
                   : "The share of encounters documented with Abridge. The value only counts the volume it actually touches."}
               </p>
             </div>
+            {isValid && (
+              <div className="border-t border-[#F1ECE4] mt-6 pt-4 text-[13px] text-[#565250] leading-[1.55]">
+                {isNursing ? (
+                  <><b className="text-[#1A1A1A] font-abridge text-[15px]">{formatNumber(state.nursingStaffedBeds)}</b> beds become <b className="text-[#1A1A1A] font-abridge text-[15px]">{formatNumber(nursingTotalShiftsPerYear)}</b> shifts a year, and <b className="text-[#EA2C00]">{state.utilizationPercent}%</b> run on Abridge.</>
+                ) : (
+                  <><b className="text-[#1A1A1A] font-abridge text-[15px]">{formatNumber(state.numberOfProviders)}</b> providers × <b className="text-[#1A1A1A] font-abridge text-[15px]">{formatNumber(encountersPerProvider)}</b> / provider = <b className="text-[#1A1A1A] font-abridge text-[15px]">{formatNumber(annualEncounters)}</b> encounters, and <b className="text-[#EA2C00]">{state.utilizationPercent}%</b> run on Abridge.</>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Snapshot */}
           <div className="bg-[#FDFBF8] border border-[#E7E3DD] rounded-[20px] px-7 py-[26px] h-full flex flex-col">
-            <div className="text-[11px] font-extrabold tracking-[0.08em] uppercase text-[#2E2822]">
-              Your {settingName}
-            </div>
-            <div className="font-abridge text-[34px] sm:text-[46px] leading-none text-[#1A1A1A] mt-3 tabular-nums">
-              {formatNumber(isNursing ? nursingTotalShiftsPerYear : annualEncounters)}
-            </div>
-            <div className="text-[13px] text-[#565250]">{isNursing ? "shifts a year" : `${encounterLabel} a year`}</div>
+            {(() => {
+              const total = isNursing ? nursingTotalShiftsPerYear : annualEncounters;
+              const enabled = isNursing ? nursingEligibleShifts : eligibleEncounters;
+              const unit = isNursing ? "shifts" : encounterLabel;
+              const pct = Math.round(state.utilizationPercent);
+              const notYet = Math.max(0, total - enabled);
+              return (
+                <>
+                  <div className="text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#443A32]">
+                    Your {settingName} · what the value is built on
+                  </div>
+                  <div className="mt-3 leading-none">
+                    <span className="font-abridge text-[42px] sm:text-[52px] text-[#EA2C00] tabular-nums">{formatNumber(enabled)}</span>
+                    <span className="text-[14px] text-[#565250]"> {unit} on Abridge / yr</span>
+                  </div>
 
-            <div className="mt-4 bg-[#FFF7F4] border border-[#F5D3C8] rounded-[12px] px-4 py-[13px]">
-              <div className="text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#B02200]">
-                Abridge-enabled {isNursing ? "shifts" : encounterLabel}
-              </div>
-              <div className="font-abridge text-[28px] text-[#EA2C00] mt-[5px] leading-none tabular-nums">
-                {formatNumber(isNursing ? nursingEligibleShifts : eligibleEncounters)}
-                <span className="text-[13px] text-[#EA2C00] opacity-70"> / yr</span>
-              </div>
-            </div>
+                  {total > 0 ? (
+                    <>
+                      <div className="text-[12px] text-[#7C766F] font-semibold mt-6 mb-3">
+                        Of every 100 {unit} on your schedule, {pct} run on Abridge
+                      </div>
+                      <div className="grid gap-[5px]" style={{ gridTemplateColumns: "repeat(20, minmax(0, 1fr))" }}>
+                        {Array.from({ length: 100 }).map((_, i) => (
+                          <div
+                            key={i}
+                            className={`aspect-square rounded-[3px] ${i < pct ? "bg-[#F7C9B8]" : "border border-[#EAE3D9]"}`}
+                          />
+                        ))}
+                      </div>
+                      <div className="flex justify-between text-[12.5px] text-[#7C766F] mt-4">
+                        <span className="flex items-center gap-[6px]">
+                          <span className="w-[10px] h-[10px] rounded-[3px] bg-[#F7C9B8]" />On Abridge · {formatNumber(enabled)}
+                        </span>
+                        <span className="flex items-center gap-[6px]">
+                          <span className="w-[10px] h-[10px] rounded-[3px] border border-[#EAE3D9]" />Not yet · {formatNumber(notYet)}
+                        </span>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="mt-6 text-[13px] text-[#7C766F] italic">Enter your volume to see the slice your value is built on.</div>
+                  )}
 
-            <div className="h-px bg-[#E7E3DD] my-5" />
-
-            <div className="flex justify-between items-baseline mb-3">
-              <span className="text-[13.5px] text-[#565250]">{providerLabel}</span>
-              <span className="font-abridge text-[16px] text-[#1A1A1A] tabular-nums">
-                {state.numberOfProviders > 0 ? formatNumber(state.numberOfProviders) : "—"}
-              </span>
-            </div>
-            <div className="flex justify-between items-baseline mb-3">
-              <span className="text-[13.5px] text-[#565250]">{isNursing ? "Shifts per nurse" : "Per provider"}</span>
-              <span className="font-abridge text-[16px] text-[#1A1A1A] tabular-nums">
-                {isNursing
-                  ? `${formatNumber(state.nursingShiftsPerNurseYear)} / yr`
-                  : encountersPerProvider > 0
-                    ? `${formatNumber(encountersPerProvider)} / yr`
-                    : "—"}
-              </span>
-            </div>
-            <div className="flex justify-between items-baseline mb-3">
-              <span className="text-[13.5px] text-[#565250]">On Abridge</span>
-              <span className="font-abridge text-[16px] text-[#1A1A1A] tabular-nums">
-                {state.utilizationPercent > 0 ? `${state.utilizationPercent}%` : "—"}
-              </span>
-            </div>
-
-            <p className="text-[12.5px] text-[#565250] leading-[1.5] mt-auto pt-[18px]">
-              This is the volume your value is built on, not the full book. Refine any of it as we go.
-            </p>
+                  <div className="mt-auto pt-[18px] border-t border-[#E7E3DD] mt-6">
+                    <p className="text-[12.5px] text-[#565250] leading-[1.55]">
+                      {total > 0 ? (
+                        <><b className="text-[#1A1A1A]">{formatNumber(total)}</b> total × <b className="text-[#EA2C00]">{pct}%</b> = <b className="text-[#EA2C00]">{formatNumber(enabled)}</b> the value is built on. Refine any of it as we go.</>
+                      ) : (
+                        <>This is the volume your value is built on, not the full book. Refine any of it as we go.</>
+                      )}
+                    </p>
+                  </div>
+                </>
+              );
+            })()}
           </div>
         </div>
 
