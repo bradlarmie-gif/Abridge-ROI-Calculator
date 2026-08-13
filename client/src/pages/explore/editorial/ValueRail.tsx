@@ -3,6 +3,7 @@ import type { ExploreState } from "@/pages/explore";
 import { computeExploreTotals } from "@/lib/exploreDriverCalcs";
 import { PROOF_LAYER, QUADRANT_ORDER, type ProofDomain } from "@/lib/proofLayer";
 import { AnimatedValue } from "@/components/explore/AnimatedValue";
+import { DOMAIN_COLORS } from "@/lib/domainColors";
 
 /**
  * The persistent "your model so far" rail. Lives in the right column of every
@@ -23,13 +24,9 @@ const fmtMoney = (n: number) => {
   return `$${Math.round(n)}`;
 };
 
-// coral-tint progression, deepest → lightest by QUADRANT_ORDER (money = coral family)
-const DOMAIN_TINT: Record<ProofDomain, string> = {
-  Capacity: "#EA2C00",
-  Workforce: "#F26A45",
-  Revenue: "#F7A488",
-  Quality: "#F9B79D",
-};
+// The one app-wide domain palette (see lib/domainColors). Coral ramp for the
+// money domains, warm grey for the tracked proof layer.
+const DOMAIN_TINT = DOMAIN_COLORS;
 const DOMAIN_STEP: Record<ProofDomain, string> = {
   Capacity: "step 4",
   Workforce: "step 5",

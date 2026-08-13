@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { EditorialHeader, EditorialShell } from "./EditorialHeader";
 import { PROOF_LAYER } from "./EdInvestment";
 import type { ExploreCareSetting } from "../ExploreFlow";
+import { DOMAIN_COLORS, DOMAIN_INK } from "@/lib/domainColors";
 
 interface Props {
   selectedSetting: ExploreCareSetting | null;
@@ -92,24 +93,10 @@ const SETTING_LABEL: Record<ExploreCareSetting, string> = {
   nursing: "Nursing",
 };
 
-// Quadrant accent colors — the SAME coral progression the "your model so far"
-// rail uses on every value step (ValueRail DOMAIN_TINT: Capacity deepest →
-// Quality lightest, by build order), so the opening preview shows each domain in
-// the exact color it carries for the rest of the flow. Kept in sync by hand;
-// see ValueRail.tsx. (The proforma editorial PDF uses a different, Revenue-deepest
-// identity palette — an app-wide unification is a separate design decision.)
-const QUAD_COLOR: Record<Quadrant, string> = {
-  Capacity: "#EA2C00",
-  Workforce: "#F26A45",
-  Revenue: "#F7A488",
-  Quality: "#F9B79D",
-};
-const QUAD_DOT: Record<Quadrant, string> = {
-  Capacity: "#EA2C00",
-  Workforce: "#F26A45",
-  Revenue: "#F7A488",
-  Quality: "#F9B79D",
-};
+// The one app-wide domain palette (see lib/domainColors). Dots carry the coral
+// identity; labels use dark ink so they stay readable (the light tints would fail
+// contrast as text).
+const QUAD_DOT = DOMAIN_COLORS;
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -220,7 +207,7 @@ export default function EdCareSetting({ selectedSetting, onSelectSetting, onNext
                               )}
                               <div className="flex items-center gap-[7px]">
                                 <span className="w-[9px] h-[9px] rounded-[3px] flex-shrink-0" style={{ background: isProof ? "#C4BCB0" : QUAD_DOT[c.q] }} />
-                                <span className="text-[10px] font-extrabold tracking-[0.08em] uppercase" style={{ color: isProof ? "#8A8072" : QUAD_COLOR[c.q] }}>{c.q}</span>
+                                <span className="text-[10px] font-extrabold tracking-[0.08em] uppercase" style={{ color: isProof ? "#8A8072" : DOMAIN_INK }}>{c.q}</span>
                               </div>
                               <div className="text-[14px] font-semibold text-[#2E2822] mt-[9px]">{c.head}</div>
                               <div className="text-[12px] text-[#7C766F] mt-[3px] leading-[1.4]">{c.sub}</div>
