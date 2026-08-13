@@ -298,7 +298,7 @@ export default function ConsolidationTiming({
       {/* the read line */}
       <p className="text-[15px] text-[#8C7E6E] mt-[18px] leading-[1.55] max-w-[780px]" data-testid="ar-timing-readline">
         {captured > 0 && sooner > 0 ? (
-          <>Your plan reaches full consolidation <NeutralSpan>{consolidatedLabel}</NeutralSpan>, <CoralSpan>{sooner} months</CoralSpan> ahead of riding to renewal, and captures <CoralSpan>{fmtC(captured)}</CoralSpan> from vendors on the way there.</>
+          <>Your plan reaches full consolidation <NeutralSpan>{consolidatedLabel}</NeutralSpan>, <CoralSpan>{sooner} months</CoralSpan> ahead of riding to renewal, and captures <CoralSpan>{fmtC(captured)}</CoralSpan> from {tools.length === 1 ? tools[0].name : "these vendors"} on the way there.</>
         ) : captured > 0 ? (
           <>Pulling these in captures <CoralSpan>{fmtC(captured)}</CoralSpan> you'd otherwise keep paying through renewal. The finish line holds at <NeutralSpan>{monthLabel(summary.renewalFinishMonths)}</NeutralSpan> until you pull <NeutralSpan>{summary.gatingToolName}</NeutralSpan> in too.</>
         ) : (
