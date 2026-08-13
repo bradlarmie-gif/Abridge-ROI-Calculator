@@ -101,12 +101,9 @@ function ProofChainScreen({ state, totalHoursSaved, onNext, onBack, onHome, sett
           The proof
         </SectionLabel>
 
-        <div className="border border-[#E7E3DD] rounded-[14px] bg-[#FAF7F2] px-[18px] py-[15px] mb-[18px] flex gap-3">
-          <span className="w-[9px] h-[9px] rounded-full bg-[#EA2C00] flex-shrink-0 mt-[5px]" />
-          <div className="text-[13.5px] text-[#565250] leading-[1.5]">
-            <b className="text-[#1A1A1A]">{copy.root.split(".")[0]}.</b> {copy.root.split(".").slice(1).join(".").trim()}
-          </div>
-        </div>
+        <p className="text-[14px] text-[#565250] leading-[1.55] mb-[20px] max-w-[640px]">
+          <b className="text-[#1A1A1A]">{copy.root.split(".")[0]}.</b> {copy.root.split(".").slice(1).join(".").trim()}
+        </p>
 
         <div className="flex items-center gap-2 text-[10.5px] font-extrabold tracking-[0.05em] uppercase text-[#7C766F] mb-2.5">
           How the proof builds <span className="flex-1 h-px bg-gradient-to-r from-[#E7E3DD] to-[#EDE7DD]" /> weeks → next year
@@ -141,12 +138,9 @@ function ProofChainScreen({ state, totalHoursSaved, onNext, onBack, onHome, sett
           })}
         </div>
 
-        <div className="border border-dashed border-[#D8CFC0] rounded-[14px] bg-[#FAF7F2] px-5 py-[17px] mt-[22px] text-[13px] text-[#565250] leading-[1.55]">
-          <b className="text-[#1A1A1A]">We don't put a dollar on this screen, on purpose.</b> Abridge doesn't change your
-          scores or earn a bonus. It makes sure the care you actually delivered is reflected in the measures you're already
-          judged by. Any dollars tied to those measures are counted once, in Revenue, so nothing here is double-counted or
-          promised.
-        </div>
+        <p className="text-[12.5px] text-[#7C766F] leading-[1.5] mt-5 max-w-[640px] italic">
+          No dollar here, on purpose. Abridge doesn&apos;t change your scores; anything financial is counted once, in Revenue.
+        </p>
         </div>
         <div className="flex flex-col gap-5">
           <ValueRail state={state} totalHoursSaved={totalHoursSaved} activeDomain="Quality" />

@@ -166,8 +166,6 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
           enabled
           onToggle={() => toggleEnabled(driver)}
           testId={`ed-toggle-${driver.id}`}
-          editHint={retentionCounted}
-          mathLabel={retentionCounted ? "The math" : "What we track"}
           note={
             retentionCounted ? (
               <>Grey figures carry from your earlier steps. Change any coral figure and this reprices live. Only the burnout-tied slice is valued; retirements, moves, and pay stay out.</>
@@ -216,22 +214,24 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
             </EquationRow>
           ) : (
             <>
-              <div className="flex flex-wrap items-end gap-x-[26px] gap-y-[10px]">
-                {[
-                  { v: `${turnoverValue}%`, l: "turnover" },
-                  { v: `${burnoutValue}%`, l: "tied to burnout" },
-                  { v: `${impactPct}%`, l: "Abridge impact" },
-                  { v: `≈ ${formatNum1(providersRetained)}`, l: "providers/yr kept" },
-                ].map((s) => (
-                  <div key={s.l}>
-                    <div className="font-abridge text-[30px] sm:text-[32px] leading-none text-[#2E2822]">{s.v}</div>
-                    <div className="text-[12px] text-[#7C766F] mt-[4px]">{s.l}</div>
-                  </div>
-                ))}
-              </div>
-              <div className="text-[12.5px] text-[#7C766F] mt-[13px] leading-[1.45] max-w-[460px]">
-                Tracked as the leading signal, not a dollar. When these move, a steadier team is within reach; the
-                replacement-cost value stays out of the ROI unless you switch to Dollar.
+              <EquationRow>
+                <EqCarried cap="providers">{formatNum(state.numberOfProviders)}</EqCarried>
+                <EqOp>×</EqOp>
+                <EqNum cap="turnover" value={turnoverValue} suffix="%" onChange={(v) => updateTimeDriverInputs(isIP ? { ipAnnualTurnoverRate: v } : { annualTurnoverRate: v })} width={40} />
+                <EqOp>×</EqOp>
+                <EqNum cap="tied to burnout" value={burnoutValue} suffix="%" onChange={(v) => updateTimeDriverInputs(isIP ? { ipBurnoutRelatedTurnover: v } : { burnoutRelatedTurnover: v })} width={40} />
+                <EqOp>×</EqOp>
+                <EqNum cap="Abridge impact" value={impactPct} suffix="%" onChange={(v) => updateTimeDriverInputs({ retentionImpactScenario: "custom", retentionCustomPercent: v })} width={40} />
+                <div className="basis-full w-full flex items-baseline gap-2.5 pt-3 mt-1 border-t border-[#F3E9E1]">
+                  <span className="font-abridge text-[19px] text-[#B9AA97] leading-none">=</span>
+                  <span className="leading-none whitespace-nowrap">
+                    <span className="font-abridge text-[28px] text-[#EA2C00]">≈ {formatNum1(providersRetained)}</span>
+                    <span className="text-[12px] text-[#7C766F]"> providers a year kept</span>
+                  </span>
+                </div>
+              </EquationRow>
+              <div className="text-[12px] text-[#7C766F] mt-3 leading-[1.45] italic">
+                Tracked as the leading signal, not a dollar. Switch to Dollar to put the replacement-cost value in the ROI.
               </div>
             </>
           )}
@@ -436,8 +436,6 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
           enabled
           onToggle={() => toggleEnabled(driver)}
           testId={`ed-toggle-${driver.id}`}
-          editHint={retentionCounted}
-          mathLabel={retentionCounted ? "The math" : "What we track"}
           note={
             retentionCounted ? (
               <>Grey figures carry from your earlier steps. Change any coral figure and this reprices live. Only the burnout-tied slice (40% of departures) is valued.</>
@@ -480,22 +478,24 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
             </EquationRow>
           ) : (
             <>
-              <div className="flex flex-wrap items-end gap-x-[26px] gap-y-[10px]">
-                {[
-                  { v: `${td.nursingTurnoverRate}%`, l: "turnover" },
-                  { v: "40%", l: "tied to burnout" },
-                  { v: `${impactPct}%`, l: "Abridge impact" },
-                  { v: `≈ ${formatNum1(retained)}`, l: "nurses/yr kept" },
-                ].map((s) => (
-                  <div key={s.l}>
-                    <div className="font-abridge text-[30px] sm:text-[32px] leading-none text-[#2E2822]">{s.v}</div>
-                    <div className="text-[12px] text-[#7C766F] mt-[4px]">{s.l}</div>
-                  </div>
-                ))}
-              </div>
-              <div className="text-[12.5px] text-[#7C766F] mt-[13px] leading-[1.45] max-w-[460px]">
-                Tracked as the leading signal, not a dollar. When these move, a steadier team is within reach; the
-                replacement-cost value stays out of the ROI unless you switch to Dollar.
+              <EquationRow>
+                <EqCarried cap="nurses">{formatNum(state.numberOfProviders)}</EqCarried>
+                <EqOp>×</EqOp>
+                <EqNum cap="turnover" value={td.nursingTurnoverRate} suffix="%" onChange={(v) => updateTimeDriverInputs({ nursingTurnoverRate: v })} width={40} />
+                <EqOp>×</EqOp>
+                <EqCarried cap="tied to burnout">40%</EqCarried>
+                <EqOp>×</EqOp>
+                <EqNum cap="Abridge impact" value={impactPct} suffix="%" onChange={(v) => updateTimeDriverInputs({ retentionImpactScenario: "custom", retentionCustomPercent: v })} width={40} />
+                <div className="basis-full w-full flex items-baseline gap-2.5 pt-3 mt-1 border-t border-[#F3E9E1]">
+                  <span className="font-abridge text-[19px] text-[#B9AA97] leading-none">=</span>
+                  <span className="leading-none whitespace-nowrap">
+                    <span className="font-abridge text-[28px] text-[#EA2C00]">≈ {formatNum1(retained)}</span>
+                    <span className="text-[12px] text-[#7C766F]"> nurses a year kept</span>
+                  </span>
+                </div>
+              </EquationRow>
+              <div className="text-[12px] text-[#7C766F] mt-3 leading-[1.45] italic">
+                Tracked as the leading signal, not a dollar. Switch to Dollar to put the replacement-cost value in the ROI.
               </div>
             </>
           )}
