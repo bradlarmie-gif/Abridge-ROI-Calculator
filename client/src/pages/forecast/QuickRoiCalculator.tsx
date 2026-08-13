@@ -1,5 +1,6 @@
 import { useMemo, useState, useEffect, useRef } from "react";
-import { ArrowRight, ChevronDown } from "lucide-react";
+import { ArrowRight, ChevronDown, Download } from "lucide-react";
+import { QUICK_ROI_PDF_STORAGE_KEY } from "@/components/forecast/QuickRoiEditorialPdf";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import {
@@ -188,6 +189,17 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
   }, [utilNow]);
   const [price, setPrice] = useState(0);
 
+  // HCC risk-capture members default from the partner's size, not a fixed 25,000
+  // that would show the same $4.5M for a 12-provider group and a 400-provider
+  // system. ~300 risk-adjusted members per on-Abridge provider is a starting
+  // panel the rep overrides from the risk-adjustment pull. We only seed while the
+  // driver is off; once it is on, the rep owns the number.
+  useEffect(() => {
+    if (!DRIVERS[setting].some((dr) => dr.id === "hccCapture")) return;
+    if (enabled["hccCapture"]) return;
+    setVals((p) => ({ ...p, hccMembers: Math.max(0, Math.round(onAbridge * 300)) }));
+  }, [onAbridge, setting, enabled]);
+
   const account: RoiAccount = useMemo(() => ({
     totalProviders, onAbridge, encPerProvider, utilNow,
     minutesSaved: isNursing ? 0 : Math.max(0, timeBefore - timeAfter),
@@ -232,6 +244,19 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
     return "Off";
   };
   const activeDomain = domains[Math.min(liftTab, Math.max(0, domains.length - 1))];
+
+  // Export the one-pager: stash a snapshot of the inputs and open the HTML print
+  // route (?quickroipdf=1&print=1). The PDF recomputes from these same inputs
+  // through runRoi, so it reconciles with this screen by construction.
+  const onExportPdf = () => {
+    const data = {
+      orgName: partner.trim() || "Prospective partner",
+      date: new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }),
+      setting, account, vals, enabled, price, targetAdoptionPct, targetUtilPct,
+    };
+    try { localStorage.setItem(QUICK_ROI_PDF_STORAGE_KEY, JSON.stringify(data)); } catch { /* ignore */ }
+    window.open(`${window.location.pathname}?quickroipdf=1&print=1`, "_blank", "noopener");
+  };
 
   return (
     <div className="pt-10 pb-28">
@@ -318,7 +343,7 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
           adoptionNow={adoptionNow} utilNow={utilNow} totalProviders={totalProviders}
           targetAdoptionPct={targetAdoptionPct} setTargetAdoptionPct={setTargetAdoptionPct}
           targetUtilPct={targetUtilPct} setTargetUtilPct={setTargetUtilPct} showUtilDial={!isNursing}
-          price={price} setPrice={setPrice} onBack={() => setStep(1)} />
+          price={price} setPrice={setPrice} onBack={() => setStep(1)} onExport={onExportPdf} />
       )}
     </div>
   );
@@ -693,7 +718,7 @@ function AnswerStep(p: {
   todayValue: number; potentialValue: number; headroom: number; hoursReclaimed: number;
   adoptionNow: number; utilNow: number; totalProviders: number;
   targetAdoptionPct: number; setTargetAdoptionPct: (n: number) => void; targetUtilPct: number; setTargetUtilPct: (n: number) => void;
-  showUtilDial: boolean; price: number; setPrice: (n: number) => void; onBack: () => void;
+  showUtilDial: boolean; price: number; setPrice: (n: number) => void; onBack: () => void; onExport: () => void;
 }) {
   const todayShown = useCountUp(p.todayValue);
   const potentialShown = useCountUp(p.potentialValue);
@@ -800,7 +825,12 @@ function AnswerStep(p: {
         {p.hoursReclaimed > 0 && <span className="text-[13px] text-[#8C8073]">Hours back <span className="font-abridge text-[15px] text-[#1A1A1A]">{fmtInt(p.hoursReclaimed)}</span></span>}
       </div>
 
-      <button onClick={p.onBack} className="mt-8 text-[14px] font-semibold text-[#A69A88] hover:text-[#1A1A1A] transition-colors rounded outline-none focus-visible:ring-2 focus-visible:ring-[#EA2C00] focus-visible:ring-offset-2">Back to the numbers</button>
+      <div className="mt-10 pt-7 border-t border-[#E8E2DA] flex items-center justify-between gap-4 flex-wrap">
+        <button onClick={p.onBack} className="text-[14px] font-semibold text-[#A69A88] hover:text-[#1A1A1A] transition-colors rounded outline-none focus-visible:ring-2 focus-visible:ring-[#EA2C00] focus-visible:ring-offset-2">Back to the numbers</button>
+        <button onClick={p.onExport} className="inline-flex items-center gap-2 rounded-full bg-[#EA2C00] text-white text-[14px] font-bold px-7 py-3.5 hover:bg-[#d12800] transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[#EA2C00] focus-visible:ring-offset-2">
+          <Download className="w-4 h-4" /> Export the one-pager
+        </button>
+      </div>
     </div>
   );
 }

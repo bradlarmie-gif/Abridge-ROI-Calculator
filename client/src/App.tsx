@@ -44,6 +44,7 @@ import AppRationalizationFlow from "@/pages/forecast/AppRationalizationFlow";
 import ExploreEditorialPdfRoute from "@/components/explore/ExploreEditorialPdfRoute";
 import ProformaEditorialPdfRoute from "@/components/proforma/ProformaEditorialPdfRoute";
 import AppRatEditorialPdfRoute from "@/components/forecast/AppRatEditorialPdfRoute";
+import QuickRoiEditorialPdfRoute from "@/components/forecast/QuickRoiEditorialPdfRoute";
 import MethodologyEditorialPdfRoute from "@/components/methodology/MethodologyEditorialPdfRoute";
 import { ExploreFlow, type ExploreState, type ExploreCareSetting, type ExplorePhase } from "@/pages/explore";
 import AttainFlow from "@/pages/attain/AttainFlow";
@@ -264,6 +265,10 @@ export default function App() {
   // Print route for the editorial App Rationalization PDF (?appratpdf=1).
   if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("appratpdf") === "1") {
     return <AppRatEditorialPdfRoute />;
+  }
+  // Print route for the editorial ROI Calculator PDF (?quickroipdf=1).
+  if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("quickroipdf") === "1") {
+    return <QuickRoiEditorialPdfRoute />;
   }
   // Print route for the editorial Methodology PDF (?methodpdf=1).
   if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("methodpdf") === "1") {
