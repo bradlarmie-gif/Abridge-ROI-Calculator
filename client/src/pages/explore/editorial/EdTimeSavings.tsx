@@ -12,7 +12,7 @@ interface EdTimeSavingsProps {
 }
 
 const inputBase =
-  "h-[54px] w-full rounded-[14px] border-[1.5px] border-[#E4DED6] bg-white px-[18px] text-[17px] font-medium text-[#1A1A1A] tabular-nums shadow-[0_1px_2px_rgba(40,30,20,0.04)] transition-[box-shadow,border-color] focus-visible:outline-none focus-visible:border-[#EA2C00] focus-visible:shadow-[0_0_0_3px_#FBD9CE] placeholder:text-[#B5AFA6] placeholder:font-normal placeholder:not-italic";
+  "h-[56px] w-full rounded-[14px] border-[1.5px] border-[#E4DED6] bg-white px-[18px] text-[20px] font-abridge text-[#1A1A1A] tabular-nums shadow-[0_1px_2px_rgba(40,30,20,0.04)] transition-[box-shadow,border-color] focus-visible:outline-none focus-visible:border-[#EA2C00] focus-visible:shadow-[0_0_0_3px_#FBD9CE] placeholder:text-[#B5AFA6] placeholder:font-normal placeholder:not-italic placeholder:font-sans placeholder:text-[16px]";
 
 export default function EdTimeSavings({ state, updateState, onNext, onBack, onHome }: EdTimeSavingsProps) {
   const isED = state.careSetting === "ed";
@@ -121,7 +121,7 @@ export default function EdTimeSavings({ state, updateState, onNext, onBack, onHo
                     key={key}
                     type="button"
                     onClick={() => handleScenarioSelect(key)}
-                    className={`text-[12px] font-bold border rounded-[9px] px-[11px] py-[6px] transition-colors ${
+                    className={`text-[12px] font-bold border rounded-[9px] px-[11px] py-[6px] transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[#EA2C00] focus-visible:ring-offset-1 ${
                       state.timePathScenario === key
                         ? "border-[#EA2C00] text-[#EA2C00] bg-[#FFF7F4]"
                         : "border-[#E7E3DD] text-[#565250] bg-white hover:border-[#1A1A1A] hover:text-[#1A1A1A]"
@@ -163,43 +163,54 @@ export default function EdTimeSavings({ state, updateState, onNext, onBack, onHo
           </div>
 
           {/* Snapshot */}
-          <div className="bg-[#FDFBF8] border border-[#E7E3DD] rounded-[20px] px-7 py-[26px]">
-            <div className="text-[11px] font-extrabold tracking-[0.08em] uppercase text-[#2E2822]">
+          <div className="bg-[#FDFBF8] border border-[#E7E3DD] rounded-[20px] px-7 py-[26px] flex flex-col">
+            <div className="text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#443A32]">
               Time given back
             </div>
-            <div className="font-abridge text-[34px] sm:text-[46px] leading-none text-[#1A1A1A] mt-3 tabular-nums">
-              {formatNumber(hoursSaved)}
-            </div>
-            <div className="text-[13px] text-[#565250]">hours a year</div>
-
-            <div className="mt-4 bg-[#FFF7F4] border border-[#F5D3C8] rounded-[12px] px-4 py-[13px]">
-              <div className="text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#B02200]">
-                Per {roleWord}, every week
-              </div>
-              <div className="font-abridge text-[28px] text-[#EA2C00] mt-[5px] leading-none tabular-nums">
-                {perWeek.value}
-                <span className="text-[13px] text-[#EA2C00] opacity-70"> {perWeek.unit}</span>
-              </div>
+            <div className="mt-3 leading-none">
+              <span className="font-abridge text-[42px] sm:text-[52px] text-[#EA2C00] tabular-nums">{formatNumber(hoursSaved)}</span>
+              <span className="text-[14px] text-[#565250]"> hours a year</span>
             </div>
 
-            <div className="h-px bg-[#E7E3DD] my-5" />
+            {hoursSaved > 0 ? (
+              <>
+                <div className="text-[12px] text-[#7C766F] font-semibold mt-6 mb-2">
+                  A couple of minutes a {noteUnit}, compounding across the year
+                </div>
+                <svg viewBox="0 0 300 74" preserveAspectRatio="none" className="w-full h-[74px] block">
+                  <defs>
+                    <linearGradient id="tsfill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0" stopColor="#EA2C00" stopOpacity="0.16" />
+                      <stop offset="1" stopColor="#EA2C00" stopOpacity="0" />
+                    </linearGradient>
+                  </defs>
+                  <path d="M0,70 C80,66 150,50 300,8 L300,74 L0,74 Z" fill="url(#tsfill)" />
+                  <path d="M0,70 C80,66 150,50 300,8" fill="none" stroke="#EA2C00" strokeWidth="2.5" />
+                  <circle cx="300" cy="8" r="3.5" fill="#EA2C00" />
+                </svg>
+                <div className="flex justify-between text-[11px] text-[#9C8E7E] font-semibold mt-1">
+                  <span>Month 1</span><span>Month 12</span>
+                </div>
 
-            <div className="flex justify-between items-baseline mb-3">
-              <span className="text-[13.5px] text-[#565250]">Per {roleWord}</span>
-              <span className="font-abridge text-[16px] text-[#1A1A1A] tabular-nums">
-                {state.numberOfProviders > 0 ? `${formatNumber(hoursPerProvider)} hrs / yr` : "—"}
-              </span>
-            </div>
-            <div className="flex justify-between items-baseline mb-3">
-              <span className="text-[13.5px] text-[#565250]">From</span>
-              <span className="font-abridge text-[16px] text-[#1A1A1A] tabular-nums">
-                {formatNumber(volumeValue)} × {state.minutesSavedPerEncounter} min
-              </span>
-            </div>
+                <div className="mt-5 bg-[#FFF7F4] border border-[#F5D3C8] rounded-[12px] px-4 py-[13px]">
+                  <div className="text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#B02200]">
+                    Per {roleWord}, every week
+                  </div>
+                  <div className="font-abridge text-[28px] text-[#EA2C00] mt-[5px] leading-none tabular-nums">
+                    {perWeek.value}
+                    <span className="text-[13px] text-[#EA2C00] opacity-70"> {perWeek.unit}</span>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="mt-6 text-[13px] text-[#7C766F] italic">Enter minutes saved to see the time given back.</div>
+            )}
 
-            <p className="text-[12.5px] text-[#565250] leading-[1.5] mt-[6px]">
-              This is time back, not dollars yet. We turn it into value on the next screens.
-            </p>
+            <div className="mt-auto pt-[18px] border-t border-[#E7E3DD] mt-6">
+              <p className="text-[12.5px] text-[#565250] leading-[1.55]">
+                <b className="text-[#1A1A1A]">{formatNumber(volumeValue)}</b> {volumeLabel.toLowerCase()} × <b className="text-[#1A1A1A]">{state.minutesSavedPerEncounter} min</b> = <b className="text-[#EA2C00]">{formatNumber(hoursSaved)} hours</b>{state.numberOfProviders > 0 ? <>, about <b className="text-[#1A1A1A]">{formatNumber(hoursPerProvider)}</b> per {roleWord}</> : null}. This is time back, not dollars yet; we turn it into value on the next screens.
+              </p>
+            </div>
           </div>
         </div>
 
