@@ -68,12 +68,12 @@ const brand = {
   positive:      "#059669",
   negative:      "#DC2626",
   amber:         "#D4930A",
-  // Domain
+  // Domain — app-wide coral palette (lib/domainColors); used as chart fills
   capacity:     "#EA2C00",
-  workforce:    "#4E5A6B",
-  revenue:      "#1E3A5F",
-  quality:      "#888888",
-  displacement: "#2D6F6B",
+  workforce:    "#F26A45",
+  revenue:      "#F7A488",
+  quality:      "#CDBBA6",
+  displacement: "#B98A5E",
 };
 
 // ─── STYLES ──────────────────────────────────────────────────────────────────

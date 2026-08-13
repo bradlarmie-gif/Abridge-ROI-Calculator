@@ -1,3 +1,4 @@
+import { DOMAIN_COLORS } from "@/lib/domainColors";
 import { useMemo, useState } from "react";
 import { Download, ArrowLeft, Loader2, FileText, TrendingUp, ChevronDown, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -28,12 +29,7 @@ interface MeasureOutputProps {
 
 const QUADRANT_ORDER: ExploreQuadrant[] = ["Capacity", "Workforce", "Revenue", "Quality"];
 
-const QUADRANT_COLORS: Record<string, string> = {
-  Capacity: '#0891B2',   // sky/cyan — clinical efficiency, calm
-  Workforce: '#4E5A6B',  // slate — neutral, on-palette
-  Revenue: '#EA2C00',    // brand red
-  Quality: '#059669',    // emerald — clinical outcomes
-};
+const QUADRANT_COLORS: Record<string, string> = DOMAIN_COLORS; // one app-wide palette (lib/domainColors)
 
 const QUADRANT_TAGLINES: Record<string, string> = {
   Capacity: 'Time reclaimed, and what it became',

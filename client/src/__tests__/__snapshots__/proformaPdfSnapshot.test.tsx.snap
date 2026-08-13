@@ -1389,7 +1389,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                                       "paddingVertical": 2,
                                     },
                                     {
-                                      "backgroundColor": "#2D6F6B",
+                                      "backgroundColor": "#B98A5E",
                                     },
                                   ],
                                 },
@@ -1460,7 +1460,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                                     "children": [],
                                     "kind": "primitive",
                                     "props": {
-                                      "fill": "#2D6F6B",
+                                      "fill": "#B98A5E",
                                       "height": 4,
                                       "rx": 2,
                                       "width": 7,
@@ -2609,7 +2609,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                                             "children": [],
                                             "kind": "primitive",
                                             "props": {
-                                              "fill": "#1E3A5F",
+                                              "fill": "#F7A488",
                                               "fillOpacity": 0.72,
                                               "height": 1.6799680000000001,
                                               "width": 20.783333333333335,
@@ -2622,7 +2622,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                                             "children": [],
                                             "kind": "primitive",
                                             "props": {
-                                              "fill": "#2D6F6B",
+                                              "fill": "#B98A5E",
                                               "fillOpacity": 0.8,
                                               "height": 0.96,
                                               "rx": 1,
@@ -2670,7 +2670,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                                             "children": [],
                                             "kind": "primitive",
                                             "props": {
-                                              "fill": "#888888",
+                                              "fill": "#CDBBA6",
                                               "fillOpacity": 0.65,
                                               "height": 0.996,
                                               "rx": 1,
@@ -2684,7 +2684,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                                             "children": [],
                                             "kind": "primitive",
                                             "props": {
-                                              "fill": "#1E3A5F",
+                                              "fill": "#F7A488",
                                               "fillOpacity": 0.72,
                                               "height": 7.202783999999999,
                                               "width": 20.783333333333335,
@@ -2710,7 +2710,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                                             "children": [],
                                             "kind": "primitive",
                                             "props": {
-                                              "fill": "#2D6F6B",
+                                              "fill": "#B98A5E",
                                               "fillOpacity": 0.8,
                                               "height": 2.4,
                                               "rx": 1,
@@ -2758,7 +2758,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                                             "children": [],
                                             "kind": "primitive",
                                             "props": {
-                                              "fill": "#888888",
+                                              "fill": "#CDBBA6",
                                               "fillOpacity": 0.65,
                                               "height": 2.76896,
                                               "rx": 1,
@@ -2772,7 +2772,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                                             "children": [],
                                             "kind": "primitive",
                                             "props": {
-                                              "fill": "#4E5A6B",
+                                              "fill": "#F26A45",
                                               "fillOpacity": 0.72,
                                               "height": 0.915456,
                                               "width": 20.783333333333335,
@@ -2785,7 +2785,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                                             "children": [],
                                             "kind": "primitive",
                                             "props": {
-                                              "fill": "#1E3A5F",
+                                              "fill": "#F7A488",
                                               "fillOpacity": 0.72,
                                               "height": 13.255136,
                                               "width": 20.783333333333335,
@@ -2811,7 +2811,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                                             "children": [],
                                             "kind": "primitive",
                                             "props": {
-                                              "fill": "#2D6F6B",
+                                              "fill": "#B98A5E",
                                               "fillOpacity": 0.8,
                                               "height": 2.88,
                                               "rx": 1,
@@ -2859,7 +2859,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                                             "children": [],
                                             "kind": "primitive",
                                             "props": {
-                                              "fill": "#888888",
+                                              "fill": "#CDBBA6",
                                               "fillOpacity": 0.65,
                                               "height": 4.434592,
                                               "rx": 1,
@@ -2873,7 +2873,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                                             "children": [],
                                             "kind": "primitive",
                                             "props": {
-                                              "fill": "#4E5A6B",
+                                              "fill": "#F26A45",
                                               "fillOpacity": 0.72,
                                               "height": 2.5396479999999997,
                                               "width": 20.783333333333335,
@@ -2886,7 +2886,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                                             "children": [],
                                             "kind": "primitive",
                                             "props": {
-                                              "fill": "#1E3A5F",
+                                              "fill": "#F7A488",
                                               "fillOpacity": 0.72,
                                               "height": 16.864383999999998,
                                               "width": 20.783333333333335,
@@ -2912,7 +2912,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                                             "children": [],
                                             "kind": "primitive",
                                             "props": {
-                                              "fill": "#2D6F6B",
+                                              "fill": "#B98A5E",
                                               "fillOpacity": 0.8,
                                               "height": 2.88,
                                               "rx": 1,
@@ -2960,7 +2960,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                                             "children": [],
                                             "kind": "primitive",
                                             "props": {
-                                              "fill": "#888888",
+                                              "fill": "#CDBBA6",
                                               "fillOpacity": 0.65,
                                               "height": 5.605408,
                                               "rx": 1,
@@ -2974,7 +2974,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                                             "children": [],
                                             "kind": "primitive",
                                             "props": {
-                                              "fill": "#4E5A6B",
+                                              "fill": "#F26A45",
                                               "fillOpacity": 0.72,
                                               "height": 6.818464,
                                               "width": 20.783333333333335,
@@ -2987,7 +2987,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                                             "children": [],
                                             "kind": "primitive",
                                             "props": {
-                                              "fill": "#1E3A5F",
+                                              "fill": "#F7A488",
                                               "fillOpacity": 0.72,
                                               "height": 19.21856,
                                               "width": 20.783333333333335,
@@ -3013,7 +3013,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                                             "children": [],
                                             "kind": "primitive",
                                             "props": {
-                                              "fill": "#2D6F6B",
+                                              "fill": "#B98A5E",
                                               "fillOpacity": 0.8,
                                               "height": 2.88,
                                               "rx": 1,
@@ -3061,7 +3061,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                                             "children": [],
                                             "kind": "primitive",
                                             "props": {
-                                              "fill": "#888888",
+                                              "fill": "#CDBBA6",
                                               "fillOpacity": 0.65,
                                               "height": 6.4489920000000005,
                                               "rx": 1,
@@ -3075,7 +3075,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                                             "children": [],
                                             "kind": "primitive",
                                             "props": {
-                                              "fill": "#4E5A6B",
+                                              "fill": "#F26A45",
                                               "fillOpacity": 0.72,
                                               "height": 10.846464000000001,
                                               "width": 20.783333333333335,
@@ -3088,7 +3088,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                                             "children": [],
                                             "kind": "primitive",
                                             "props": {
-                                              "fill": "#1E3A5F",
+                                              "fill": "#F7A488",
                                               "fillOpacity": 0.72,
                                               "height": 22.110848,
                                               "width": 20.783333333333335,
@@ -3114,7 +3114,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                                             "children": [],
                                             "kind": "primitive",
                                             "props": {
-                                              "fill": "#2D6F6B",
+                                              "fill": "#B98A5E",
                                               "fillOpacity": 0.8,
                                               "height": 2.88,
                                               "rx": 1,
@@ -3162,7 +3162,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                                             "children": [],
                                             "kind": "primitive",
                                             "props": {
-                                              "fill": "#888888",
+                                              "fill": "#CDBBA6",
                                               "fillOpacity": 0.65,
                                               "height": 7.157824000000001,
                                               "rx": 1,
@@ -3176,7 +3176,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                                             "children": [],
                                             "kind": "primitive",
                                             "props": {
-                                              "fill": "#4E5A6B",
+                                              "fill": "#F26A45",
                                               "fillOpacity": 0.72,
                                               "height": 13.804416,
                                               "width": 20.783333333333335,
@@ -3189,7 +3189,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                                             "children": [],
                                             "kind": "primitive",
                                             "props": {
-                                              "fill": "#1E3A5F",
+                                              "fill": "#F7A488",
                                               "fillOpacity": 0.72,
                                               "height": 24.541184,
                                               "width": 20.783333333333335,
@@ -3215,7 +3215,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                                             "children": [],
                                             "kind": "primitive",
                                             "props": {
-                                              "fill": "#2D6F6B",
+                                              "fill": "#B98A5E",
                                               "fillOpacity": 0.8,
                                               "height": 2.88,
                                               "rx": 1,
@@ -3263,7 +3263,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                                             "children": [],
                                             "kind": "primitive",
                                             "props": {
-                                              "fill": "#888888",
+                                              "fill": "#CDBBA6",
                                               "fillOpacity": 0.65,
                                               "height": 7.301760000000001,
                                               "rx": 1,
@@ -3277,7 +3277,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                                             "children": [],
                                             "kind": "primitive",
                                             "props": {
-                                              "fill": "#4E5A6B",
+                                              "fill": "#F26A45",
                                               "fillOpacity": 0.72,
                                               "height": 14.08192,
                                               "width": 20.783333333333335,
@@ -3290,7 +3290,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                                             "children": [],
                                             "kind": "primitive",
                                             "props": {
-                                              "fill": "#1E3A5F",
+                                              "fill": "#F7A488",
                                               "fillOpacity": 0.72,
                                               "height": 25.034496,
                                               "width": 20.783333333333335,
@@ -3316,7 +3316,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                                             "children": [],
                                             "kind": "primitive",
                                             "props": {
-                                              "fill": "#2D6F6B",
+                                              "fill": "#B98A5E",
                                               "fillOpacity": 0.8,
                                               "height": 2.88,
                                               "rx": 1,
@@ -3364,7 +3364,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                                             "children": [],
                                             "kind": "primitive",
                                             "props": {
-                                              "fill": "#888888",
+                                              "fill": "#CDBBA6",
                                               "fillOpacity": 0.65,
                                               "height": 7.722016,
                                               "rx": 1,
@@ -3378,7 +3378,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                                             "children": [],
                                             "kind": "primitive",
                                             "props": {
-                                              "fill": "#4E5A6B",
+                                              "fill": "#F26A45",
                                               "fillOpacity": 0.72,
                                               "height": 16.58896,
                                               "width": 20.783333333333335,
@@ -3391,7 +3391,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                                             "children": [],
                                             "kind": "primitive",
                                             "props": {
-                                              "fill": "#1E3A5F",
+                                              "fill": "#F7A488",
                                               "fillOpacity": 0.72,
                                               "height": 26.475456,
                                               "width": 20.783333333333335,
@@ -3417,7 +3417,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                                             "children": [],
                                             "kind": "primitive",
                                             "props": {
-                                              "fill": "#2D6F6B",
+                                              "fill": "#B98A5E",
                                               "fillOpacity": 0.8,
                                               "height": 2.88,
                                               "rx": 1,
@@ -3465,7 +3465,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                                             "children": [],
                                             "kind": "primitive",
                                             "props": {
-                                              "fill": "#888888",
+                                              "fill": "#CDBBA6",
                                               "fillOpacity": 0.65,
                                               "height": 7.825888,
                                               "rx": 1,
@@ -3479,7 +3479,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                                             "children": [],
                                             "kind": "primitive",
                                             "props": {
-                                              "fill": "#4E5A6B",
+                                              "fill": "#F26A45",
                                               "fillOpacity": 0.72,
                                               "height": 18.6208,
                                               "width": 20.783333333333335,
@@ -3492,7 +3492,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                                             "children": [],
                                             "kind": "primitive",
                                             "props": {
-                                              "fill": "#1E3A5F",
+                                              "fill": "#F7A488",
                                               "fillOpacity": 0.72,
                                               "height": 26.831680000000002,
                                               "width": 20.783333333333335,
@@ -3518,7 +3518,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                                             "children": [],
                                             "kind": "primitive",
                                             "props": {
-                                              "fill": "#2D6F6B",
+                                              "fill": "#B98A5E",
                                               "fillOpacity": 0.8,
                                               "height": 2.88,
                                               "rx": 1,
@@ -3566,7 +3566,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                                             "children": [],
                                             "kind": "primitive",
                                             "props": {
-                                              "fill": "#888888",
+                                              "fill": "#CDBBA6",
                                               "fillOpacity": 0.65,
                                               "height": 8.248864000000001,
                                               "rx": 1,
@@ -3580,7 +3580,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                                             "children": [],
                                             "kind": "primitive",
                                             "props": {
-                                              "fill": "#4E5A6B",
+                                              "fill": "#F26A45",
                                               "fillOpacity": 0.72,
                                               "height": 21.21136,
                                               "width": 20.783333333333335,
@@ -3593,7 +3593,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                                             "children": [],
                                             "kind": "primitive",
                                             "props": {
-                                              "fill": "#1E3A5F",
+                                              "fill": "#F7A488",
                                               "fillOpacity": 0.72,
                                               "height": 28.281792000000003,
                                               "width": 20.783333333333335,
@@ -3619,7 +3619,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                                             "children": [],
                                             "kind": "primitive",
                                             "props": {
-                                              "fill": "#2D6F6B",
+                                              "fill": "#B98A5E",
                                               "fillOpacity": 0.8,
                                               "height": 2.88,
                                               "rx": 1,
@@ -3667,7 +3667,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                                             "children": [],
                                             "kind": "primitive",
                                             "props": {
-                                              "fill": "#888888",
+                                              "fill": "#CDBBA6",
                                               "fillOpacity": 0.65,
                                               "height": 8.362912,
                                               "rx": 1,
@@ -3681,7 +3681,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                                             "children": [],
                                             "kind": "primitive",
                                             "props": {
-                                              "fill": "#4E5A6B",
+                                              "fill": "#F26A45",
                                               "fillOpacity": 0.72,
                                               "height": 21.504672,
                                               "width": 20.783333333333335,
@@ -3694,7 +3694,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                                             "children": [],
                                             "kind": "primitive",
                                             "props": {
-                                              "fill": "#1E3A5F",
+                                              "fill": "#F7A488",
                                               "fillOpacity": 0.72,
                                               "height": 28.672863999999997,
                                               "width": 20.783333333333335,
@@ -3720,7 +3720,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                                             "children": [],
                                             "kind": "primitive",
                                             "props": {
-                                              "fill": "#2D6F6B",
+                                              "fill": "#B98A5E",
                                               "fillOpacity": 0.8,
                                               "height": 2.88,
                                               "rx": 1,
@@ -4213,7 +4213,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                                     "kind": "primitive",
                                     "props": {
                                       "style": {
-                                        "backgroundColor": "#4E5A6B",
+                                        "backgroundColor": "#F26A45",
                                         "borderRadius": 1,
                                         "height": 5,
                                         "width": 8,
@@ -4255,7 +4255,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                                     "kind": "primitive",
                                     "props": {
                                       "style": {
-                                        "backgroundColor": "#1E3A5F",
+                                        "backgroundColor": "#F7A488",
                                         "borderRadius": 1,
                                         "height": 5,
                                         "width": 8,
@@ -4297,7 +4297,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                                     "kind": "primitive",
                                     "props": {
                                       "style": {
-                                        "backgroundColor": "#888888",
+                                        "backgroundColor": "#CDBBA6",
                                         "borderRadius": 1,
                                         "height": 5,
                                         "width": 8,
@@ -4339,7 +4339,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                                     "kind": "primitive",
                                     "props": {
                                       "style": {
-                                        "backgroundColor": "#2D6F6B",
+                                        "backgroundColor": "#B98A5E",
                                         "borderRadius": 1,
                                         "height": 5,
                                         "width": 8,
@@ -6559,7 +6559,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                                 "kind": "primitive",
                                 "props": {
                                   "style": {
-                                    "backgroundColor": "#4E5A6B",
+                                    "backgroundColor": "#F26A45",
                                     "borderRadius": 1,
                                     "height": 6,
                                     "width": 6,
@@ -6691,7 +6691,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                                 "kind": "primitive",
                                 "props": {
                                   "style": {
-                                    "backgroundColor": "#1E3A5F",
+                                    "backgroundColor": "#F7A488",
                                     "borderRadius": 1,
                                     "height": 6,
                                     "width": 6,
@@ -6823,7 +6823,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                                 "kind": "primitive",
                                 "props": {
                                   "style": {
-                                    "backgroundColor": "#888888",
+                                    "backgroundColor": "#CDBBA6",
                                     "borderRadius": 1,
                                     "height": 6,
                                     "width": 6,
@@ -6955,7 +6955,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                                 "kind": "primitive",
                                 "props": {
                                   "style": {
-                                    "backgroundColor": "#2D6F6B",
+                                    "backgroundColor": "#B98A5E",
                                     "borderRadius": 1,
                                     "height": 6,
                                     "width": 6,
@@ -7356,7 +7356,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                             "kind": "primitive",
                             "props": {
                               "style": {
-                                "backgroundColor": "#2D6F6B",
+                                "backgroundColor": "#B98A5E",
                                 "borderRadius": 1,
                                 "height": 6,
                                 "width": 6,
@@ -7449,7 +7449,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                             "kind": "primitive",
                             "props": {
                               "style": {
-                                "color": "#2D6F6B",
+                                "color": "#B98A5E",
                                 "fontSize": 8,
                                 "fontWeight": 600,
                               },
