@@ -113,6 +113,7 @@ export interface TimeDriverInputs {
   nursingRetentionEnabled: boolean;
   nursingRetentionExpanded: boolean;
   nursingTurnoverRate: number;
+  nursingBurnoutRelatedTurnover: number;
   nursingReplacementCost: number;
   nursingCareTimeEnabled: boolean;
   nursingCareTimeExpanded: boolean;
@@ -608,6 +609,7 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     nursingRetentionEnabled: false,
     nursingRetentionExpanded: false,
     nursingTurnoverRate: 18,
+    nursingBurnoutRelatedTurnover: 40,
     nursingReplacementCost: 56300,
     nursingCareTimeEnabled: false,
     nursingCareTimeExpanded: false,

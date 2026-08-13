@@ -159,7 +159,7 @@ const codingDriver = (id: "wrvu" | "edEmLevel", beforeDef: number, afterDef: num
   title,
   beforeAfter: {
     label: "wRVU / visit",
-    table: "your wRVU pull",
+    table: "your wRVU analysis",
     unit: "wRVU",
     step: 0.01,
     beforeK: "wrvuBefore",
@@ -350,7 +350,10 @@ const patientAccessDriver: RoiDriver = {
 
 const lwbsDriver: RoiDriver = {
   id: "lwbsRecovery",
-  domain: "Capacity",
+  // Recovered visits and their margin are revenue, not a time signal. Kept in
+  // Revenue so the ED Capacity tab is a pure "time given back" proof card, like
+  // inpatient, instead of mixing counted dollars under a "not counted" header.
+  domain: "Revenue",
   title: "LWBS recovery",
   fields: [
     { k: "edLwbsRate", label: "Left-without-being-seen rate today", def: 3, suffix: "%", step: 0.1 },
@@ -370,7 +373,7 @@ const lwbsDriver: RoiDriver = {
 
 const admissionDriver: RoiDriver = {
   id: "admissionCapture",
-  domain: "Capacity",
+  domain: "Revenue",
   title: "Admission capture",
   optional: true,
   note: "A share of recovered LWBS patients are admitted, capturing the admission margin too.",
@@ -466,6 +469,7 @@ const nursingRetentionDriver: RoiDriver = {
   note: "The softest number on the page: it rests on a replacement-cost estimate a CFO may discount. Off by default. Turn it on only if the partner buys the retention story.",
   fields: [
     { k: "nursingTurnoverRate", label: "Annual nurse turnover", def: 18, suffix: "%", step: 0.1 },
+    { k: "nursingBurnout", label: "Share of turnover that is burnout-related", def: 40, suffix: "%" },
     { k: "impact", label: "Reduction in burnout turnover where Abridge is used", def: 30, suffix: "%" },
     { k: "nursingReplacementCost", label: "Cost to replace one nurse", def: 56300, prefix: "$" },
   ],
@@ -475,6 +479,7 @@ const nursingRetentionDriver: RoiDriver = {
     t.retentionImpactScenario = "custom";
     t.retentionCustomPercent = v.impact;
     t.nursingTurnoverRate = v.nursingTurnoverRate;
+    t.nursingBurnoutRelatedTurnover = v.nursingBurnout;
     t.nursingReplacementCost = v.nursingReplacementCost;
   },
 };
@@ -605,7 +610,7 @@ export const SETTING_META: Record<SettingKey, SettingMeta> = {
     encWord: "visits",
     visitWord: "visit",
     defaults: { totalProviders: 0, onAbridge: 0, encPerProvider: 0, utilNow: 0 },
-    timeMetric: { before: 6.3, after: 5.2, table: "your time-in-notes pull" },
+    timeMetric: { before: 6.3, after: 5.2, table: "your time-in-notes data" },
   },
   ed: {
     label: "Emergency",
@@ -614,7 +619,7 @@ export const SETTING_META: Record<SettingKey, SettingMeta> = {
     encWord: "ED visits",
     visitWord: "visit",
     defaults: { totalProviders: 0, onAbridge: 0, encPerProvider: 0, utilNow: 0 },
-    timeMetric: { before: 6.5, after: 5.1, table: "your time-in-notes pull" },
+    timeMetric: { before: 6.5, after: 5.1, table: "your time-in-notes data" },
   },
   inpatient: {
     label: "Inpatient",
@@ -623,7 +628,7 @@ export const SETTING_META: Record<SettingKey, SettingMeta> = {
     encWord: "encounters",
     visitWord: "encounter",
     defaults: { totalProviders: 0, onAbridge: 0, encPerProvider: 0, utilNow: 0 },
-    timeMetric: { before: 9.0, after: 6.5, table: "your time-in-notes pull" },
+    timeMetric: { before: 9.0, after: 6.5, table: "your time-in-notes data" },
   },
   nursing: {
     label: "Nursing",
@@ -691,8 +696,10 @@ export function defaultVals(setting: SettingKey): Record<string, number> {
 }
 
 export function defaultEnabled(setting: SettingKey): Record<string, boolean> {
+  // Everything off at the jump — the rep turns on only what the partner's pull
+  // supports, co-building the number the way the Explore path does.
   const out: Record<string, boolean> = {};
-  for (const d of DRIVERS[setting]) out[d.id] = !d.optional;
+  for (const d of DRIVERS[setting]) out[d.id] = false;
   return out;
 }
 
@@ -720,6 +727,10 @@ export function buildRoiState(
   state.careSetting = setting as ExploreCareSetting;
   // Keep both wRVU (needs !== "risk") and HCC (needs !== "ffs") emittable.
   state.paymentModel = "both";
+  // The quick ROI calc has no Counted/Tracked lens, so retention counts when its
+  // driver is turned on (otherwise the shared engine's default "tracked" gate
+  // zeroes it and the Workforce card reads $0 with the driver on).
+  state.retentionMode = "counted";
 
   // When projecting the upside, never round BELOW the providers already on
   // Abridge today — "expanding" can't mean fewer people than you have now.

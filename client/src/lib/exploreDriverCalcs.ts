@@ -152,7 +152,7 @@ export function computeAllDriverValues(
     const turnover = td.nursingTurnoverRate / 100;
     const impact =
       RETENTION_SCENARIOS_NURSING[td.retentionImpactScenario] / 100;
-    const burnoutDep = state.numberOfProviders * turnover * 0.4;
+    const burnoutDep = state.numberOfProviders * turnover * ((td.nursingBurnoutRelatedTurnover ?? 40) / 100);
     const retained = burnoutDep * impact;
     result.nursingRetention = Math.round(retained * td.nursingReplacementCost);
     if (td.nursingAgencyEnabled) {
@@ -375,7 +375,7 @@ export function computeAllDriverCalcSummaries(
     out.patientAccess = `${fmtN(eff)} providers × ${fmtNd(visitsPerWk)} visits/wk × 48 wks × ${fmt$(td.revenuePerVisit)}/visit`;
   }
   if (isED && td.edLwbsEnabled) {
-    out.lwbsRecovery = `${fmtN(state.annualEncounters)} encounters × ${td.edLwbsRate}% LWBS × ${td.edLwbsReduction}% reduction × ${fmt$(td.edRevenuePerVisit)}/visit × ${td.edLwbsRealization}% conversion`;
+    out.lwbsRecovery = `${fmtN(state.annualEncounters)} ED visits × ${td.edLwbsRate}% LWBS × ${td.edLwbsReduction}% reduction × ${fmt$(td.edRevenuePerVisit)}/visit × ${td.edLwbsRealization}% conversion`;
     if (td.edThroughputEnabled) {
       const recovered = Math.round(
         state.annualEncounters * (td.edLwbsRate / 100) * (td.edLwbsReduction / 100),
@@ -409,7 +409,7 @@ export function computeAllDriverCalcSummaries(
   if (isNursing && td.nursingRetentionEnabled) {
     const impactPct =
       CS_RETENTION_NURSING[td.retentionImpactScenario] ?? 0;
-    out.nursingRetention = `${fmtN(state.numberOfProviders)} nurses × ${td.nursingTurnoverRate}% turnover × 40% burnout × ${impactPct}% impact × ${fmt$(td.nursingReplacementCost)}/replacement`;
+    out.nursingRetention = `${fmtN(state.numberOfProviders)} nurses × ${td.nursingTurnoverRate}% turnover × ${td.nursingBurnoutRelatedTurnover ?? 40}% burnout × ${impactPct}% impact × ${fmt$(td.nursingReplacementCost)}/replacement`;
     if (td.nursingAgencyEnabled) {
       // Print the full factor breakdown rather than a precomputed
       // `${fmtNd(retained)} retained` token. Rounding the retained-nurses
@@ -417,7 +417,7 @@ export function computeAllDriverCalcSummaries(
       // the printed math by ~25% versus the engine value. Breaking the
       // formula down keeps the printed multiplicands in lockstep with the
       // engine's unrounded retained × weeks × premium product.
-      out.nursingAgency = `${fmtN(state.numberOfProviders)} nurses × ${td.nursingTurnoverRate}% turnover × 40% burnout × ${impactPct}% impact × ${td.nursingAgencyWeeksPerVacancy} wks/vacancy × ${fmt$(td.nursingAgencyWeeklyPremium)}/wk`;
+      out.nursingAgency = `${fmtN(state.numberOfProviders)} nurses × ${td.nursingTurnoverRate}% turnover × ${td.nursingBurnoutRelatedTurnover ?? 40}% burnout × ${impactPct}% impact × ${td.nursingAgencyWeeksPerVacancy} wks/vacancy × ${fmt$(td.nursingAgencyWeeklyPremium)}/wk`;
     }
   }
   if (isNursing && td.nursingOtEnabled) {

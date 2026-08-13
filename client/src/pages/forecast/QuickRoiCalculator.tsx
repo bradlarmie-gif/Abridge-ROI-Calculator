@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect, useRef } from "react";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ChevronDown } from "lucide-react";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import {
@@ -115,9 +115,9 @@ function SettingPicker({ onPick }: { onPick: (s: SettingKey) => void }) {
   return (
     <div className="pt-12 sm:pt-16 pb-24">
       <div className={EYEBROW}>ROI Calculator</div>
-      <h1 className="font-abridge text-[32px] sm:text-[40px] leading-[1.08] text-[#1A1A1A] mt-4 max-w-[640px]">How much is Abridge worth to your partner?</h1>
+      <h1 className="font-abridge text-[28px] sm:text-[34px] leading-[1.12] text-[#4A3F35] mt-4 max-w-[640px]">How much is Abridge worth to your partner?</h1>
       <p className="mt-5 text-[16px] leading-[1.55] text-[#8C8073] max-w-[520px]">
-        Three quick steps, straight from an impact-analysis pull. First, which care setting?
+        Three quick steps, straight from the impact analysis. First, which care setting?
       </p>
       <div className="mt-12 border-t border-[#E8E2DA]">
         {(Object.keys(SETTING_META) as SettingKey[]).map((k) => (
@@ -179,7 +179,13 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
   useEffect(() => {
     setTargetAdoptionPct(Math.min(100, Math.max(Math.round(adoptionNow) + 15, 70)));
   }, [adoptionNow]);
-  const [targetUtilPct, setTargetUtilPct] = useState(100);
+  // Utilization stretch: a credible ceiling, never a literal 100% of every note.
+  // Caps at 90% and never sits below where they are today (recomputes with utilNow).
+  const utilStretch = (u: number) => Math.max(Math.round(u), Math.min(90, Math.round(u) + 12));
+  const [targetUtilPct, setTargetUtilPct] = useState(() => utilStretch(d.utilNow));
+  useEffect(() => {
+    setTargetUtilPct(utilStretch(utilNow));
+  }, [utilNow]);
   const [price, setPrice] = useState(0);
 
   const account: RoiAccount = useMemo(() => ({
@@ -220,7 +226,9 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
       .filter((dr) => dr.domain === dom && enabled[dr.id])
       .reduce((s, dr) => s + (today.valueById[dr.id] ?? 0), 0);
     if (dollar > 0) return fmtShort(dollar);
-    if (dom === "Capacity" && !isNursing && hoursReclaimed > 0) return `${fmtInt(hoursReclaimed)} hrs`;
+    // Capacity is a measured signal, never a toggle — show its hours, or a neutral
+    // dash before the account numbers are in, but never "Off".
+    if (dom === "Capacity" && !isNursing) return hoursReclaimed > 0 ? `${fmtInt(hoursReclaimed)} hrs` : "—";
     return "Off";
   };
   const activeDomain = domains[Math.min(liftTab, Math.max(0, domains.length - 1))];
@@ -232,10 +240,10 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
       </div>
 
       {step === 0 && (
-        <StepShell title="Who is this partner, and how big are they?" sub="You'll find these on the pull's methodology and utilization pages.">
+        <StepShell title="Who is this partner, and how big are they?" sub="These come from the impact analysis, on its methodology and utilization pages.">
           <div className="border-t border-[#E8E2DA]">
             <Row label="Partner name">
-              <TextInput value={partner} onChange={setPartner} placeholder="e.g., Bronson Healthcare" />
+              <TextInput value={partner} onChange={setPartner} placeholder="e.g., Abridge Healthcare" />
             </Row>
             <Row label={`How many ${scopeWord} does this partner have?`} hint={`the ${settingWord} population, everyone who could use Abridge here`}>
               <NumInput value={totalProviders} onChange={setTotalProviders} placeholder="e.g., 90" />
@@ -246,7 +254,7 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
             <Row label={`About how many ${meta.encWord} does each ${meta.providerWord.replace(/s$/, "")} handle a year?`}>
               <NumInput value={encPerProvider} onChange={setEncPerProvider} placeholder="e.g., 2,500" />
             </Row>
-            <Row label={`Of their ${meta.encWord}, what share are documented with Abridge?`} hint="the utilization % from the pull">
+            <Row label={`Of their ${meta.encWord}, what share are documented with Abridge?`} hint="the documentation utilization % from the impact analysis">
               <NumInput value={utilNow} onChange={setUtilNow} suffix="%" placeholder="e.g., 68" />
             </Row>
             {isNursing && (
@@ -272,16 +280,20 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
       )}
 
       {step === 1 && (
-        <StepShell title="What changed after they turned Abridge on?" sub="Read the before and after off the named table. It was this, now it's this. Every number here is yours to edit.">
+        <StepShell title="What changed after they turned Abridge on?" sub="Read the before and after off the impact analysis. It was this, now it's this. Every number here is yours to edit.">
           {/* section tabs — navigate between the domains */}
           <div className="flex items-center gap-7 border-b border-[#E8E2DA] flex-wrap">
-            {domains.map((dom, i) => (
+            {domains.map((dom, i) => {
+              const sum = tabSummary(dom);
+              const isNull = sum === "Off" || sum === "—";
+              return (
               <button key={dom} onClick={() => setLiftTab(i)} className="relative flex items-baseline gap-2 pb-3 -mb-px outline-none group">
                 <span className={`text-[13px] font-bold tracking-[0.01em] transition-colors ${i === liftTab ? "text-[#1A1A1A]" : "text-[#A69A88] group-hover:text-[#5E534A]"}`}>{dom}</span>
-                <span className={`font-abridge text-[14px] transition-colors ${i === liftTab ? "text-[#EA2C00]" : "text-[#C9BDAD]"}`}>{tabSummary(dom)}</span>
+                <span className={`font-abridge text-[14px] transition-colors ${i === liftTab && !isNull ? "text-[#EA2C00]" : "text-[#C9BDAD]"}`}>{sum}</span>
                 {i === liftTab && <span className="absolute left-0 right-0 bottom-[-1px] h-[2px] bg-[#EA2C00]" />}
               </button>
-            ))}
+              );
+            })}
           </div>
 
           <div className="pt-6 space-y-4">
@@ -315,7 +327,7 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
 function StepShell({ title, sub, children }: { title: string; sub: string; children: React.ReactNode }) {
   return (
     <div>
-      <h1 className="font-abridge text-[32px] sm:text-[40px] leading-[1.08] text-[#1A1A1A] max-w-[600px]">{title}</h1>
+      <h1 className="font-abridge text-[26px] sm:text-[32px] leading-[1.14] text-[#4A3F35] max-w-[600px]">{title}</h1>
       <p className="mt-3 mb-9 text-[15px] leading-[1.55] text-[#8C8073] max-w-[560px]">{sub}</p>
       {children}
     </div>
@@ -335,7 +347,7 @@ function Row({ label, hint, children }: { label: string; hint?: string; children
 }
 
 // Underlined editorial inputs
-const UINPUT_CLASS = "flex-1 min-w-0 h-auto border-0 rounded-none bg-transparent p-0 shadow-none text-right text-[19px] font-bold text-[#1A1A1A] tabular-nums focus-visible:ring-0 focus-visible:ring-offset-0";
+const UINPUT_CLASS = "flex-1 min-w-0 h-auto border-0 rounded-none bg-transparent p-0 shadow-none text-right text-[19px] font-bold text-[#1A1A1A] tabular-nums focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:not-italic placeholder:font-normal placeholder:text-[15px] placeholder:text-[#C9BDAD]";
 function NumInput({ value, onChange, suffix, prefix, step = 1, w = "w-[168px]", placeholder }: { value: number; onChange: (n: number) => void; suffix?: string; prefix?: string; step?: number; w?: string; placeholder?: string }) {
   return (
     <div className={`${w} inline-flex items-baseline gap-1.5 border-b-2 border-[#E0D9CE] focus-within:border-[#EA2C00] transition-colors pb-1`}>
@@ -403,7 +415,7 @@ function WorkedMath({ summary, value }: { summary: string; value: number }) {
   return (
     <div className="mt-7 pt-6 border-t border-[#EFE9E0]">
       <div className="text-[10.5px] font-extrabold tracking-[0.14em] uppercase text-[#A69A88] mb-3">How the number is built</div>
-      <div className="text-[15px] leading-[1.9] text-[#5E534A]">{summary || "Turn this driver on to build the number."}</div>
+      <div className="text-[15px] leading-[1.9] text-[#5E534A]">{summary || "Enter the numbers above to build this."}</div>
       <div className="mt-4 flex items-baseline justify-between">
         <span className="text-[13px] text-[#A69A88]">equals</span>
         <span className="font-abridge text-[34px] leading-none text-[#EA2C00]">{fmtShort(value)}<span className="text-[15px] text-[#9A8C7A]"> a year</span></span>
@@ -430,6 +442,7 @@ function Toggle({ on, onToggle, label }: { on: boolean; onToggle: () => void; la
 function DriverShell({ title, on, onToggle, value, children }: {
   title: string; on: boolean; onToggle: () => void; value: number; children: React.ReactNode;
 }) {
+  const [open, setOpen] = useState(true);
   return (
     <div className={`rounded-xl border transition-colors ${on ? "border-[#EAE3D9] bg-[#FDFBF8]" : "border-[#EFE9E0] bg-transparent"}`}>
       <div className="flex items-center justify-between gap-4 px-6 py-5">
@@ -441,7 +454,15 @@ function DriverShell({ title, on, onToggle, value, children }: {
           <Toggle on={on} onToggle={onToggle} label={`Include ${title}`} />
         </div>
       </div>
-      {on && <div className="px-6 pb-7 border-t border-[#EFE9E0] pt-6">{children}</div>}
+      {on && (
+        <div className="px-6 pb-7 border-t border-[#EFE9E0] pt-5">
+          <button type="button" onClick={() => setOpen((o) => !o)}
+            className="flex items-center gap-1.5 text-[10.5px] font-extrabold tracking-[0.14em] uppercase text-[#A69A88] mb-4 outline-none focus-visible:ring-2 focus-visible:ring-[#EA2C00] focus-visible:ring-offset-2 rounded">
+            <ChevronDown className={`w-3.5 h-3.5 transition-transform ${open ? "" : "-rotate-90"}`} /> The math
+          </button>
+          {open && children}
+        </div>
+      )}
     </div>
   );
 }
@@ -521,7 +542,7 @@ function HccDriverCard({ driver, vals, setVal, on, onToggle, value, summary }: {
       </div>
 
       <div className="mt-6">
-        <BeforeAfter label="HCC captured per member, per year" table="your risk-adjustment pull" unit="HCC" step={0.01}
+        <BeforeAfter label="HCC captured per member, per year" table="your risk-adjustment analysis" unit="HCC" step={0.01}
           before={vals.hccBefore} after={vals.hccAfter} onBefore={(v) => setVal("hccBefore", v)} onAfter={(v) => setVal("hccAfter", v)} />
       </div>
       <div className="flex items-center justify-between gap-6 mt-6">
@@ -614,11 +635,13 @@ function TimeBackBlock({ table, before, after, onBefore, onAfter, encToday, hour
   table: string; before: number; after: number; onBefore: (n: number) => void; onAfter: (n: number) => void;
   encToday: number; hours: number; dollarized: boolean;
 }) {
+  const hasNumbers = encToday > 0 && hours > 0;
+  const fte = hours / 2080; // 2,080 = one clinician's paid hours a year
   return (
-    <div className="rounded-xl border border-dashed border-[#E5DDD1] bg-transparent px-6 py-6">
+    <div className="rounded-xl border border-[#EAE3D9] bg-[#FDFBF8] px-6 py-6">
       <div className="flex items-center justify-between gap-4">
         <span className="text-[17px] font-bold text-[#1A1A1A]">Time back in the day</span>
-        <span className="text-[10px] font-extrabold tracking-[0.12em] uppercase text-[#B4A896] whitespace-nowrap">Measured · not counted in $</span>
+        <span className="rounded-full bg-[#F2ECE2] px-3 py-1 text-[10px] font-extrabold tracking-[0.12em] uppercase text-[#8C7F6D] whitespace-nowrap">{dollarized ? "Measured · shown as time" : "Measured · not counted in $"}</span>
       </div>
       <div className="mt-5">
         <BeforeAfter label="Minutes in notes per encounter" table={table} unit="min" step={0.1}
@@ -626,18 +649,29 @@ function TimeBackBlock({ table, before, after, onBefore, onAfter, encToday, hour
       </div>
       <div className="mt-7 pt-6 border-t border-[#EFE9E0]">
         <div className="text-[10.5px] font-extrabold tracking-[0.14em] uppercase text-[#A69A88] mb-3">How the number is built</div>
-        <div className="text-[15px] leading-[1.9] text-[#5E534A]">
-          <Mono>{Math.max(0, before - after).toFixed(1)} min</Mono> saved × <Mono>{fmtInt(encToday)}</Mono> Abridge encounters ÷ 60
-        </div>
-        <div className="mt-4 flex items-baseline justify-between">
-          <span className="text-[13px] text-[#A69A88]">equals</span>
-          <span className="font-abridge text-[34px] leading-none text-[#1A1A1A]">{fmtInt(hours)}<span className="text-[15px] text-[#9A8C7A]"> clinician hours a year</span></span>
-        </div>
-        <p className="mt-4 text-[13px] leading-[1.55] text-[#8C8073]">
-          {dollarized
-            ? "Shown as time given back. The share reinvested into visits is valued below, in Patient access."
-            : "Shown as time given back, never converted to a made-up dollar."}
-        </p>
+        {hasNumbers ? (
+          <>
+            <div className="text-[15px] leading-[1.9] text-[#5E534A]">
+              <Mono>{Math.max(0, before - after).toFixed(1)} min</Mono> saved × <Mono>{fmtInt(encToday)}</Mono> Abridge encounters ÷ 60
+            </div>
+            <div className="mt-4 flex items-baseline justify-between">
+              <span className="text-[13px] text-[#A69A88]">equals</span>
+              <span className="font-abridge text-[34px] leading-none text-[#1A1A1A]">{fmtInt(hours)}<span className="text-[15px] text-[#9A8C7A]"> clinician hours a year</span></span>
+            </div>
+            <div className="mt-2.5 text-right text-[13px] text-[#8C8073]">
+              about <span className="font-bold text-[#443A32]">{fte.toFixed(1)}</span> full-time clinicians' worth of documentation time, back on the floor
+            </div>
+            <p className="mt-5 text-[13px] leading-[1.55] text-[#8C8073]">
+              {dollarized
+                ? "Shown as time given back. The share reinvested into visits is valued below, in Patient access."
+                : "Shown as time given back, never converted to a made-up dollar."}
+            </p>
+          </>
+        ) : (
+          <p className="text-[14px] leading-[1.55] italic text-[#A69A88]">
+            Add the partner's encounter numbers on the first step to see the hours reclaimed here.
+          </p>
+        )}
       </div>
     </div>
   );
@@ -678,7 +712,7 @@ function AnswerStep(p: {
       <div>
         <div className={EYEBROW}>The answer</div>
         <h1 className="font-abridge text-[30px] sm:text-[36px] leading-[1.12] text-[#1A1A1A] mt-4 max-w-[540px]">No drivers are on yet</h1>
-        <p className="mt-5 text-[16px] leading-[1.6] text-[#5E534A] max-w-[520px]">Go back and switch on the drivers your pull supports. Each one you turn on builds the number here.</p>
+        <p className="mt-5 text-[16px] leading-[1.6] text-[#5E534A] max-w-[520px]">Go back and switch on the drivers your data supports. Each one you turn on builds the number here.</p>
         <button onClick={p.onBack} className="mt-8 inline-flex items-center gap-2 rounded-full bg-[#EA2C00] text-white text-[14px] font-bold px-7 py-3.5 hover:bg-[#d12800] transition-colors">
           Back to the drivers <ArrowRight className="w-4 h-4" />
         </button>
@@ -690,10 +724,10 @@ function AnswerStep(p: {
     <div>
       {/* Beat 1 — what it's worth today */}
       <div className={EYEBROW}>The answer</div>
-      <h1 className="font-abridge text-[30px] sm:text-[36px] leading-[1.12] text-[#1A1A1A] mt-4">To {p.partnerName}, Abridge is worth</h1>
+      <h1 className="font-abridge text-[26px] sm:text-[32px] leading-[1.14] text-[#4A3F35] mt-4">To {p.partnerName}, Abridge is worth</h1>
       <div className="font-abridge text-[66px] sm:text-[92px] leading-[0.88] text-[#EA2C00] mt-3">{fmtShort(todayShown)}<span className="text-[26px] text-[#9A8C7A] font-normal"> a year</span></div>
       <p className="mt-5 text-[16px] leading-[1.6] text-[#5E534A] max-w-[560px]">
-        {makeup ? <>From {makeup}, at today's {Math.round(p.adoptionNow)}% rollout and {Math.round(p.utilNow)}% utilization.</> : "Turn on the drivers your pull supports to build the number."}
+        {makeup ? <>From {makeup}, at today's {Math.round(p.adoptionNow)}% rollout and {Math.round(p.utilNow)}% utilization.</> : "Turn on the drivers your data supports to build the number."}
       </p>
 
       {/* Beat 2 — the upside */}
@@ -728,24 +762,45 @@ function AnswerStep(p: {
         </p>
       </div>
 
-      {/* footer: makeup + price, quiet */}
-      <div className="mt-14 pt-6 border-t border-[#E8E2DA] flex flex-wrap items-center justify-between gap-y-4 gap-x-8">
-        <div className="flex flex-wrap items-baseline gap-x-6 gap-y-1">
-          {dollarLevers.map((r) => (
-            <span key={r.title} className="text-[13px] text-[#8C8073]">{r.title} <span className="font-abridge text-[15px] text-[#1A1A1A]">{fmtShort(r.value)}</span></span>
-          ))}
-          {p.hoursReclaimed > 0 && <span className="text-[13px] text-[#8C8073]">Hours back <span className="font-abridge text-[15px] text-[#1A1A1A]">{fmtInt(p.hoursReclaimed)}</span></span>}
-        </div>
-        <div className="flex items-center gap-4">
-          {p.price > 0 && <span className="text-[13px] text-[#8C8073]"><span className="font-abridge text-[18px] text-[#1A1A1A]">{roi.toFixed(1)}×</span> · {fmtShort(p.todayValue - p.price)} net</span>}
-          <div className="flex items-center gap-2">
-            <span className="text-[12.5px] text-[#A69A88] whitespace-nowrap">Abridge price</span>
-            <NumInput value={p.price} onChange={p.setPrice} prefix="$" w="w-[104px]" />
+      {/* THE RETURN — the payoff a CFO actually reads: price in, multiple + net out */}
+      <div className="mt-16 pt-8 border-t-2 border-[#E7E2DB]">
+        <div className={EYEBROW}>The return</div>
+        <div className="mt-5 flex flex-wrap items-end gap-x-12 gap-y-6">
+          <div>
+            <div className="text-[12.5px] text-[#8C8073] mb-2">Abridge price</div>
+            <div className="w-[180px] inline-flex items-baseline gap-1.5 border-b-2 border-[#E0D9CE] focus-within:border-[#EA2C00] transition-colors pb-1">
+              <span className="text-[16px] text-[#A69A88]">$</span>
+              <FormattedNumberInput value={p.price} onChange={p.setPrice}
+                className="flex-1 min-w-0 h-auto border-0 rounded-none bg-transparent p-0 shadow-none text-[24px] font-bold text-[#1A1A1A] tabular-nums focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:not-italic placeholder:font-normal placeholder:text-[16px] placeholder:text-[#C9BDAD]"
+                placeholder="your contract rate" />
+            </div>
           </div>
+          {p.price > 0 ? (
+            <>
+              <div>
+                <div className="font-abridge text-[46px] sm:text-[56px] leading-none text-[#EA2C00]">{roi.toFixed(1)}×</div>
+                <div className="text-[12.5px] text-[#8C8073] mt-2">return on the Abridge spend</div>
+              </div>
+              <div>
+                <div className="font-abridge text-[46px] sm:text-[56px] leading-none text-[#1A1A1A]">{fmtShort(p.todayValue - p.price)}</div>
+                <div className="text-[12.5px] text-[#8C8073] mt-2">net a year, after the price</div>
+              </div>
+            </>
+          ) : (
+            <div className="text-[15px] text-[#A69A88] italic pb-2">Enter the Abridge price to see the return.</div>
+          )}
         </div>
       </div>
 
-      <button onClick={p.onBack} className="mt-8 text-[14px] font-semibold text-[#A69A88] hover:text-[#1A1A1A] transition-colors">Back to the numbers</button>
+      {/* quiet breakdown of where the value came from */}
+      <div className="mt-10 pt-5 border-t border-[#E8E2DA] flex flex-wrap items-baseline gap-x-6 gap-y-1">
+        {dollarLevers.map((r) => (
+          <span key={r.title} className="text-[13px] text-[#8C8073]">{r.title} <span className="font-abridge text-[15px] text-[#1A1A1A]">{fmtShort(r.value)}</span></span>
+        ))}
+        {p.hoursReclaimed > 0 && <span className="text-[13px] text-[#8C8073]">Hours back <span className="font-abridge text-[15px] text-[#1A1A1A]">{fmtInt(p.hoursReclaimed)}</span></span>}
+      </div>
+
+      <button onClick={p.onBack} className="mt-8 text-[14px] font-semibold text-[#A69A88] hover:text-[#1A1A1A] transition-colors rounded outline-none focus-visible:ring-2 focus-visible:ring-[#EA2C00] focus-visible:ring-offset-2">Back to the numbers</button>
     </div>
   );
 }
