@@ -164,7 +164,6 @@ export const ECON_MODELS: Record<string, EconModel> = {
     ],
     assumptions: [
       { key: "weightInc", lever: "drg", label: "CMI lift (avg DRG weight gained across discharges)", default: "0.03" },
-      { key: "attribution", lever: "drg", label: "Share attributed to Abridge (vs CDI team)", default: "65", suffix: "%" },
       { key: "cdiQueries", lever: "cdi", label: "CDI queries a complete note would avoid per year", default: "1,500" },
       { key: "obsRate", lever: "obs", label: "Stays downgraded to observation", default: "5", suffix: "%" },
     ],
@@ -182,7 +181,7 @@ export const ECON_MODELS: Record<string, EconModel> = {
     math: (i, active = ["drg", "cdi", "obs"]) => {
       const parts: string[] = [];
       if (active.includes("drg"))
-        parts.push(`DRG weight: your discharges × ${i.econ.weightInc ?? 0.03} CMI lift × ${i.econ.attribution ?? 65}% attributed to Abridge × ${i.stancePct}% that survives audit, at ${fmt$(i.econ.drgBase ?? 6000)}/DRG`);
+        parts.push(`DRG weight: your discharges × ${i.econ.weightInc ?? 0.03} CMI lift × ${i.stancePct}% defensible share (attributed + survives audit), at ${fmt$(i.econ.drgBase ?? 6000)}/DRG`);
       if (active.includes("cdi"))
         parts.push(`CDI queries: ${nn(i.econ.cdiQueries ?? 1500)} queries a complete note would avoid × ${fmt$(i.econ.cdiCost ?? 90)}/query × ${i.stancePct}% you realize`);
       if (active.includes("obs"))

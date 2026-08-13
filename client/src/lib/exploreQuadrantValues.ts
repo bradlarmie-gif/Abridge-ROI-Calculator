@@ -132,9 +132,14 @@ export function computeRevenueBreakdown(state: ExploreState, _totalHoursSaved: n
     result.denialPrevention = Math.round(prevented * dq.avgClaimValue * (dq.denialsRealization / 100));
   }
   if (isIP && dq.ipDrgEnabled) {
-    // Clean CMI model — mirrors computeAllDriverValues (no at-risk/protect stacking).
+    // DRG query-funnel model — mirrors computeAllDriverValues. Abridge's value is
+    // the flagged-but-lost queries (queried − corrected) captured up front,
+    // netted for audit survival. No attribution/defensible haircut.
+    const queried = eligibleEncounters * (dq.ipDrgCdiReviewRate / 100) * (dq.ipDrgQueryRate / 100);
+    const changed = queried * (dq.ipDrgResponseRate / 100) * (dq.ipDrgChangeRate / 100);
+    const lost = Math.max(0, queried - changed);
     result.drgAccuracy = Math.round(
-      eligibleEncounters * dq.ipDrgWeightIncrease * dq.ipDrgBasePayment * ((dq.ipDrgAttribution ?? 65) / 100) * (dq.ipDrgRealization / 100),
+      lost * (dq.ipDrgUpfrontCapture / 100) * dq.ipDrgWeightGain * dq.ipDrgBaseRate,
     );
   }
   if (isIP && dq.ipObsDefenseEnabled) {

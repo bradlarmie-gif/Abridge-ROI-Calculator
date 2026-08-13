@@ -119,9 +119,18 @@ function ipResults(inp: CellInputs) {
       physicianAgencyEnabled: true, physicianAgencyWeeksPerVacancy: 16, physicianAgencyWeeklyPremium: 5_000,
     },
     {
-      ipDrgEnabled: true, ipDrgScenario: "typical", ipDrgAtRiskRate: inp.econ?.atRisk ?? 15, ipDrgWeightIncrease: inp.econ?.weightInc ?? 0.03, ipDrgBasePayment: inp.econ?.drgBase ?? 6_000, ipDrgAttribution: inp.econ?.attribution ?? 65, ipDrgRealization: inp.stancePct ?? 60,
+      ipDrgEnabled: true, ipDrgScenario: "typical", ipDrgAtRiskRate: inp.econ?.atRisk ?? 15, ipDrgWeightIncrease: inp.econ?.weightInc ?? 0.03, ipDrgBasePayment: inp.econ?.drgBase ?? 6_000, ipDrgRealization: inp.stancePct ?? 60,
       ipObsDefenseEnabled: true, ipObsDefensePreventableScenario: "typical", ipObsDefenseDenialRate: inp.econ?.obsRate ?? 5, ipObsDefenseRevenueDelta: inp.econ?.obsDelta ?? 4_000, ipObsDefenseRealization: inp.stancePct ?? 60,
     }, 0);
+  // DRG decouple: Explore/ROI/Proforma moved DRG to the CDI query-funnel model, but
+  // Attain deliberately stays on its own CMI-lift chain for now (funnel conversion is
+  // a later, separate effort). So we do NOT use the engine's funnel `drgAccuracy` here;
+  // we reproduce Attain's CMI-lift value (eligible × at-risk × weight × base × stance),
+  // which is what every Attain surface and test expects.
+  const drgEligible = encounters * (util / 100);
+  base.drgAccuracy = Math.round(
+    drgEligible * ((inp.econ?.atRisk ?? 15) / 100) * (inp.econ?.weightInc ?? 0.03) * (inp.econ?.drgBase ?? 6_000) * ((inp.stancePct ?? 60) / 100),
+  );
   // CDI query reduction is NOT in the canonical engine (computeAllDriverValues has no CDI path),
   // so we fold it here the way opResults folds HCC: queries a complete note would avoid × cost per
   // query × the realization stance. Exposed as the synthetic driver key `ipCdiValue` the CDI lever sums.

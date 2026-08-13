@@ -388,10 +388,21 @@ export interface DocQualityInputs {
   ipDrgScenario: 'conservative' | 'typical' | 'aggressive' | 'custom';
   ipDrgCustomPercent: number;
   ipDrgAtRiskRate: number; // legacy, unused by the clean CMI model
-  ipDrgWeightIncrease: number; // CMI lift (avg DRG weight increase across discharges)
-  ipDrgBasePayment: number; // Base DRG payment per case
-  ipDrgRealization: number; // Realization rate (RAC/PEPPER audit survival)
-  ipDrgAttribution: number; // % of the CMI lift attributed to Abridge (vs CDI team / other)
+  // DRG query-funnel model. The CDI funnel (review → query → respond → change) is
+  // the baseline the CDI team already produces; Abridge's value is the DELTA it
+  // captures on the discharges that funnel structurally misses.
+  ipDrgCdiReviewRate: number; // % of discharges CDI reviews
+  ipDrgQueryRate: number; // % of reviewed charts that get a query
+  ipDrgResponseRate: number; // % of queries the physician answers
+  ipDrgChangeRate: number; // % of responses that actually change the DRG
+  ipDrgUpfrontCapture: number; // ABRIDGE lever: durable share of the flagged-but-lost queries Abridge captures (lands up front AND holds up under audit)
+  ipDrgWeightGain: number; // avg DRG weight gained on a case that moves up a tier
+  ipDrgBaseRate: number; // blended base payment per weight unit ($/weight)
+  ipDrgRealization: number; // legacy audit-survival factor; folded into ipDrgUpfrontCapture, retained for Attain/legacy
+  // Legacy CMI-lift fields, retained for Attain/Intake which still model DRG the
+  // old way. The core engine value now comes from the funnel fields above.
+  ipDrgWeightIncrease: number;
+  ipDrgBasePayment: number;
   ipDrgCurrentCmi: number; // current Case Mix Index (context: current -> projected)
   
   // Inpatient: Obs/IP Status Defense
@@ -825,10 +836,16 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     ipDrgScenario: 'typical',
     ipDrgCustomPercent: 20,
     ipDrgAtRiskRate: 18, // legacy, unused by the clean CMI model
-    ipDrgWeightIncrease: 0.03, // CMI lift: avg DRG weight increase across discharges (~0.02-0.05)
-    ipDrgBasePayment: 6000, // $6,000 base DRG payment per case
-    ipDrgRealization: 65, // 65% realization (RAC/PEPPER audit survival)
-    ipDrgAttribution: 65, // 65% of the CMI lift attributed to Abridge (point-of-care capture, upstream of CDI queries)
+    ipDrgCdiReviewRate: 60, // CDI reviews 60% of discharges
+    ipDrgQueryRate: 10, // 10% of reviewed charts get a query
+    ipDrgResponseRate: 70, // physician answers 70% of queries
+    ipDrgChangeRate: 60, // 60% of responses change the DRG
+    ipDrgUpfrontCapture: 33, // durable share Abridge captures of the flagged-but-lost queries (lands up front AND holds up under audit)
+    ipDrgWeightGain: 0.4, // avg weight gained on a case that moves up a tier
+    ipDrgBaseRate: 7000, // $7,000 blended base payment per weight unit
+    ipDrgWeightIncrease: 0.03, // legacy (Attain/Intake); not used by the funnel engine
+    ipDrgBasePayment: 6000, // legacy (Attain/Intake); not used by the funnel engine
+    ipDrgRealization: 65, // audit survival: share of the DRG change that holds up under RAC/PEPPER
     ipDrgCurrentCmi: 1.5, // current Case Mix Index (context)
     // Inpatient: Obs/IP Status Defense defaults
     ipObsDefenseEnabled: false,

@@ -634,18 +634,18 @@ describe("inpatient doc-quality drivers honor a persisted 'custom' scenario", ()
     docQualityInputs: { ...DEFAULT_EXPLORE_STATE.docQualityInputs, ...overrides },
   });
 
-  it("ipDrg CMI lift + attribution flow through the engine and recompute (clean CMI model)", () => {
-    const lowState = ipBase({ ipDrgEnabled: true, ipDrgWeightIncrease: 0.02 });
-    const highState = ipBase({ ipDrgEnabled: true, ipDrgWeightIncrease: 0.04 });
+  it("ipDrg query-funnel: weight gain and capture drive the value, and recompute matches", () => {
+    const lowState = ipBase({ ipDrgEnabled: true, ipDrgWeightGain: 0.2 });
+    const highState = ipBase({ ipDrgEnabled: true, ipDrgWeightGain: 0.4 });
     const low = computeAllDriverValues(lowState, 0).drgAccuracy;
     const high = computeAllDriverValues(highState, 0).drgAccuracy;
     expect(low).toBeGreaterThan(0);
-    // 0.04 vs 0.02 CMI lift → 2x, proving the CMI lift lever is used (no scenario stacking).
+    // 0.4 vs 0.2 weight gain → 2x, proving weight gain is a live lever.
     expect(high).toBeCloseTo(low * 2, -1);
-    // attribution also moves it: 50% vs 100% attributed → half.
-    const halfAttr = computeAllDriverValues(ipBase({ ipDrgEnabled: true, ipDrgWeightIncrease: 0.04, ipDrgAttribution: 50 }), 0).drgAccuracy;
-    const fullAttr = computeAllDriverValues(ipBase({ ipDrgEnabled: true, ipDrgWeightIncrease: 0.04, ipDrgAttribution: 100 }), 0).drgAccuracy;
-    expect(halfAttr).toBeCloseTo(fullAttr * 0.5, -1);
+    // the single "captured by Abridge" lever moves it: 20% vs 40% → half (no separate audit cut).
+    const halfCap = computeAllDriverValues(ipBase({ ipDrgEnabled: true, ipDrgUpfrontCapture: 20 }), 0).drgAccuracy;
+    const fullCap = computeAllDriverValues(ipBase({ ipDrgEnabled: true, ipDrgUpfrontCapture: 40 }), 0).drgAccuracy;
+    expect(halfCap).toBeCloseTo(fullCap * 0.5, -1);
     // recompute path resolves the same value.
     expect(recomputeDriverFromExploreState("ipDrg", highState)).toBe(high);
   });

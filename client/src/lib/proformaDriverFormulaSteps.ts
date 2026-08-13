@@ -269,15 +269,18 @@ export function buildDriverFormula(
 
     case "ipDrg":
     case "drgAccuracy": {
-      // Clean CMI model: discharges × CMI lift × base × attribution × realization.
-      const dqi        = es.docQualityInputs ?? {};
-      const cmiLift    = dqi.ipDrgWeightIncrease ?? 0;
-      const basePay    = dqi.ipDrgBasePayment ?? 0;
-      const attribution = dqi.ipDrgAttribution ?? 65;
-      const drgReal    = dqi.ipDrgRealization ?? 100;
+      // CDI query-funnel model: Abridge's value is the flagged-but-lost queries
+      // (queried − corrected) it captures, at weight × base. No audit/attribution cut.
+      const dqi     = es.docQualityInputs ?? {};
+      const queried = abridgeEnc * ((dqi.ipDrgCdiReviewRate ?? 60) / 100) * ((dqi.ipDrgQueryRate ?? 10) / 100);
+      const changed = queried * ((dqi.ipDrgResponseRate ?? 70) / 100) * ((dqi.ipDrgChangeRate ?? 60) / 100);
+      const lost    = Math.max(0, queried - changed);
+      const capture = dqi.ipDrgUpfrontCapture ?? 33;
+      const cases   = lost * (capture / 100);
+      void cases;
       return [
-        { label: `${n(abridgeEnc)} Abridge-enabled discharges`, value: `${n(abridgeEnc)} discharges/yr` },
-        { label: `${n(abridgeEnc)}  ×  ${cmiLift} CMI lift  ×  ${d(basePay)}/case  ×  ${p(attribution)} attributed to Abridge  ×  ${p(drgReal)} survives audit`, value: fmt(driverValue), isResult: true },
+        { label: `${n(queried)} flagged, ${n(changed)} corrected by CDI`, value: `${n(lost)} flagged-but-lost` },
+        { label: `${n(lost)}  ×  ${p(capture)} captured by Abridge  ×  ${dqi.ipDrgWeightGain ?? 0.4} weight  ×  ${d(dqi.ipDrgBaseRate ?? 7000)}/weight`, value: fmt(driverValue), isResult: true },
       ];
     }
 

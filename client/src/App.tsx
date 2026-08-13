@@ -39,6 +39,7 @@ import ForecastFlow from "@/pages/forecast/ForecastFlow";
 import MockExplore from "@/pages/explore/editorial/MockExplore"; // THROWAWAY ?exploremock=1
 import ForecastModeSelector from "@/pages/forecast/ForecastModeSelector";
 import QuickRoiCalculator from "@/pages/forecast/QuickRoiCalculator";
+import DrgFunnelPreview from "@/pages/forecast/DrgFunnelPreview";
 import AppRationalizationFlow from "@/pages/forecast/AppRationalizationFlow";
 import ExploreEditorialPdfRoute from "@/components/explore/ExploreEditorialPdfRoute";
 import ProformaEditorialPdfRoute from "@/components/proforma/ProformaEditorialPdfRoute";
@@ -241,6 +242,10 @@ export default function App() {
   // Editorial-brand screens where built, else fall back to the existing interactive screen.
   if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("explorepreview") === "1") {
     return <ExploreFlow editorial />;
+  }
+  // THROWAWAY: ?drgfunnelpreview=1 = the before→after DRG query-funnel prototype (not engine-wired).
+  if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("drgfunnelpreview") === "1") {
+    return <DrgFunnelPreview />;
   }
   // Print route for the editorial Explore PDF (?explorepdf=1). Renders the
   // HTML-print value-model document from the snapshot stashed in localStorage.

@@ -305,37 +305,60 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
     </InlineDriverCard>
   );
 
-  // ── Inpatient: DRG/CMI + Obs Defense ──
+  // ── Inpatient: DRG accuracy (the query funnel) + Obs Defense ──
   const drgValue = engine.drgAccuracy ?? 0;
-  const projectedCmi = dq.ipDrgCurrentCmi + dq.ipDrgWeightIncrease;
   const drgAwait = gate("drgAccuracy");
+  const drgQueried = eligibleEncounters * (dq.ipDrgCdiReviewRate / 100) * (dq.ipDrgQueryRate / 100);
+  const drgChanged = drgQueried * (dq.ipDrgResponseRate / 100) * (dq.ipDrgChangeRate / 100);
+  const drgLost = Math.max(0, drgQueried - drgChanged);
   const drgCard = (
     <InlineDriverCard
       key="drg"
-      title="Case Mix Index"
-      subtitle="Complete documentation at the point of care justifies the CC/MCC and severity that set the DRG weight. Your CDI team also moves CMI, so this counts only the share attributed to Abridge, and only what survives audit."
+      title="DRG accuracy · the query funnel"
+      subtitle="DRG revenue moves through the CDI query funnel, and that funnel is your CDI team's work, with or without Abridge. A query is proof the record had a gap; Abridge's value is the gaps your team flags but loses."
       enabled={dq.ipDrgEnabled}
       onToggle={() => updateDq({ ipDrgEnabled: !dq.ipDrgEnabled, ipDrgExpanded: !dq.ipDrgEnabled ? true : dq.ipDrgExpanded })}
       testId="toggle-drg"
       note={
-        <>Grey figures carry from your earlier steps. Change any coral figure and this reprices live, then updates the model on the right. We count only the <b className="text-[#B02200] not-italic">{dq.ipDrgAttribution}%</b> your point-of-care notes drive, and the <b className="text-[#B02200] not-italic">{dq.ipDrgRealization}%</b> that survives audit.</>
+        <>Every rate carries from your CDI reports. The one judgment lever is the <b className="text-[#B02200] not-italic">{dq.ipDrgUpfrontCapture}%</b> durable share Abridge captures, what it lands up front and what holds up under audit, folded into a single number. No stacked haircuts.</>
       }
     >
       {drgAwait ? (
         <EqAwaiting need={drgAwait.need} />
       ) : (
-        <EquationRow>
-          <EqCarried cap="discharges">{fmtN(eligibleEncounters)}</EqCarried>
-          <EqOp>×</EqOp>
-          <EqNum cap="CMI lift" value={dq.ipDrgWeightIncrease} onChange={(v) => updateDq({ ipDrgWeightIncrease: v })} decimal />
-          <EqOp>×</EqOp>
-          <EqNum cap="per case" value={dq.ipDrgBasePayment} onChange={(v) => updateDq({ ipDrgBasePayment: v })} prefix="$" />
-          <EqOp>×</EqOp>
-          <EqNum cap="attributed" value={dq.ipDrgAttribution} onChange={(v) => updateDq({ ipDrgAttribution: v })} suffix="%" />
-          <EqOp>×</EqOp>
-          <EqNum cap="survives audit" value={dq.ipDrgRealization} onChange={(v) => updateDq({ ipDrgRealization: v })} suffix="%" />
-          <EqResult value={drgValue} />
-        </EquationRow>
+        <>
+          <div className="text-[10.5px] font-extrabold tracking-[0.1em] uppercase text-[#A79B8B] mb-3">What the CDI funnel catches today</div>
+          <EquationRow>
+            <EqCarried cap="discharges">{fmtN(eligibleEncounters)}</EqCarried>
+            <EqOp>×</EqOp>
+            <EqNum cap="reviewed" value={dq.ipDrgCdiReviewRate} onChange={(v) => updateDq({ ipDrgCdiReviewRate: v })} suffix="%" />
+            <EqOp>×</EqOp>
+            <EqNum cap="query" value={dq.ipDrgQueryRate} onChange={(v) => updateDq({ ipDrgQueryRate: v })} suffix="%" />
+            <EqOp>×</EqOp>
+            <EqNum cap="responds" value={dq.ipDrgResponseRate} onChange={(v) => updateDq({ ipDrgResponseRate: v })} suffix="%" />
+            <EqOp>×</EqOp>
+            <EqNum cap="changes DRG" value={dq.ipDrgChangeRate} onChange={(v) => updateDq({ ipDrgChangeRate: v })} suffix="%" />
+            <div className="basis-full w-full flex items-baseline gap-2.5 pt-3 mt-1 border-t border-[#F3E9E1]">
+              <span className="font-abridge text-[19px] text-[#B9AA97] leading-none">=</span>
+              <span className="font-abridge text-[24px] text-[#5E534A] leading-none">{fmtN(drgChanged)}</span>
+              <span className="text-[12px] text-[#7C766F]">corrected today · your CDI team's, not Abridge's</span>
+            </div>
+          </EquationRow>
+          <p className="text-[13px] leading-[1.55] text-[#7C766F] mt-4 max-w-[600px]">
+            Of the <b className="text-[#1A1A1A]">{fmtN(drgQueried)}</b> gaps your CDI team flags, only <b className="text-[#1A1A1A]">{fmtN(drgChanged)}</b> get corrected. The other <b className="text-[#B02200]">{fmtN(drgLost)}</b> die in the query process, with no response or a response that doesn&apos;t stick. Abridge captures the acuity up front, so those land at the right DRG without waiting on a query.
+          </p>
+          <div className="text-[10.5px] font-extrabold tracking-[0.1em] uppercase text-[#A79B8B] mt-6 mb-3">What Abridge adds, on top</div>
+          <EquationRow>
+            <EqCarried cap="flagged but lost">{fmtN(drgLost)}</EqCarried>
+            <EqOp>×</EqOp>
+            <EqNum cap="Abridge captures" value={dq.ipDrgUpfrontCapture} onChange={(v) => updateDq({ ipDrgUpfrontCapture: v })} suffix="%" />
+            <EqOp>×</EqOp>
+            <EqNum cap="weight gain" value={dq.ipDrgWeightGain} onChange={(v) => updateDq({ ipDrgWeightGain: v })} decimal />
+            <EqOp>×</EqOp>
+            <EqNum cap="per weight" value={dq.ipDrgBaseRate} onChange={(v) => updateDq({ ipDrgBaseRate: v })} prefix="$" />
+            <EqResult value={drgValue} />
+          </EquationRow>
+        </>
       )}
     </InlineDriverCard>
   );

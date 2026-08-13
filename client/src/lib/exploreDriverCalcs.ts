@@ -248,16 +248,22 @@ export function computeAllDriverValues(
     );
   }
   if (isIP && dq.ipDrgEnabled) {
-    // Clean CMI model (no at-risk / protect stacking): the CMI lift is an average
-    // across discharges, so opportunity is already baked in. Two distinct haircuts:
-    // attribution (Abridge vs CDI/other) and realization (RAC/PEPPER survival).
-    result.drgAccuracy = Math.round(
-      eligibleEncounters *
-        dq.ipDrgWeightIncrease *
-        dq.ipDrgBasePayment *
-        ((dq.ipDrgAttribution ?? 65) / 100) *
-        (dq.ipDrgRealization / 100),
-    );
+    // DRG query-funnel model, anchored on the CDI QUERY as the evidence of a gap.
+    // A query means a trained reviewer flagged a documentation deficiency. Of the
+    // queries issued, the CDI team converts some to a DRG change (respond × change)
+    // — that is theirs. Abridge's value is the FLAGGED-BUT-LOST: queries that die
+    // with no response or a response that doesn't stick. A complete note at the
+    // point of care carries the acuity the query was chasing, so those land at the
+    // right DRG without waiting on a query. Only real, evidenced gaps; one end
+    // haircut (audit survival).
+    const drgQueried = eligibleEncounters * (dq.ipDrgCdiReviewRate / 100) * (dq.ipDrgQueryRate / 100);
+    const drgChanged = drgQueried * (dq.ipDrgResponseRate / 100) * (dq.ipDrgChangeRate / 100);
+    const drgLost = Math.max(0, drgQueried - drgChanged);
+    // ONE lever: the durable share Abridge captures (lands up front AND holds up
+    // under audit, folded together). No separate audit multiplier — the capture
+    // rate is the whole conservatism.
+    const drgAbridgeCases = drgLost * (dq.ipDrgUpfrontCapture / 100);
+    result.drgAccuracy = Math.round(drgAbridgeCases * dq.ipDrgWeightGain * dq.ipDrgBaseRate);
   }
   if (isIP && dq.ipObsDefenseEnabled) {
     const preventableScenarios = IP_OBS_PREVENTABLE_SCENARIOS;
@@ -450,7 +456,13 @@ export function computeAllDriverCalcSummaries(
     out.denialPrevention = `${fmtN(claimsBase)} claims × ${dq.medNecessityDenialRate}% medical necessity denial rate × ${prevPct}% reduction target × ${fmt$(dq.avgClaimValue)}/claim × ${dq.denialsRealization}% realization`;
   }
   if (isIP && dq.ipDrgEnabled) {
-    out.drgAccuracy = `${fmtN(eligibleEncounters)} discharges × ${dq.ipDrgWeightIncrease} CMI lift × ${fmt$(dq.ipDrgBasePayment)}/case × ${dq.ipDrgAttribution ?? 65}% attributed to Abridge × ${dq.ipDrgRealization}% realization`;
+    out.drgAccuracy = (() => {
+      const queried = eligibleEncounters * (dq.ipDrgCdiReviewRate / 100) * (dq.ipDrgQueryRate / 100);
+      const changed = queried * (dq.ipDrgResponseRate / 100) * (dq.ipDrgChangeRate / 100);
+      const lost = Math.max(0, queried - changed);
+      const cases = lost * (dq.ipDrgUpfrontCapture / 100);
+      return `${fmtN(lost)} flagged-but-lost queries × ${dq.ipDrgUpfrontCapture}% captured by Abridge (${fmtN(cases)} cases) × ${dq.ipDrgWeightGain} weight × ${fmt$(dq.ipDrgBaseRate)}/weight`;
+    })();
   }
   if (isIP && dq.ipObsDefenseEnabled) {
     const preventableScenarios = IP_OBS_PREVENTABLE_SCENARIOS;

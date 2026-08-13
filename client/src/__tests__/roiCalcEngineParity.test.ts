@@ -14,16 +14,17 @@ import { computeAllDriverValues } from "@/lib/exploreDriverCalcs";
 const SETTINGS: SettingKey[] = ["outpatient", "ed", "inpatient", "nursing"];
 
 function accountFor(s: SettingKey): RoiAccount {
-  const d = SETTING_META[s].defaults;
   const tm = SETTING_META[s].timeMetric;
+  // The per-setting demo defaults are intentionally blank now (partner facts are
+  // entered from the pull), so the parity tests supply an explicit account.
   return {
-    totalProviders: d.totalProviders,
-    onAbridge: d.onAbridge,
-    encPerProvider: d.encPerProvider,
-    utilNow: d.utilNow,
+    totalProviders: 100,
+    onAbridge: 70,
+    encPerProvider: 3000,
+    utilNow: 70,
     minutesSaved: s === "nursing" || !tm ? 0 : tm.before - tm.after,
-    staffedBeds: d.staffedBeds,
-    occupancy: d.occupancy,
+    staffedBeds: 300,
+    occupancy: 85,
   };
 }
 

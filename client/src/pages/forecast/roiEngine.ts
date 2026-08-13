@@ -394,19 +394,27 @@ const drgDriver: RoiDriver = {
   id: "drgAccuracy",
   domain: "Revenue",
   title: "DRG accuracy (CMI)",
+  // The query-funnel model. A custom card in the ROI calc renders these as the
+  // before→after funnel; the value is the delta on the cases the funnel misses.
   fields: [
-    { k: "ipDrgWeightIncrease", label: "CMI lift (avg DRG weight increase / discharge)", def: 0.03, step: 0.01 },
-    { k: "ipDrgBasePayment", label: "Base payment per case", def: 6000, prefix: "$" },
-    { k: "ipDrgAttribution", label: "Share attributed to Abridge", def: 65, suffix: "%" },
-    { k: "ipDrgRealization", label: "Realization (defensible share)", def: 65, suffix: "%" },
+    { k: "ipDrgCdiReviewRate", label: "Reviewed by CDI", def: 60, suffix: "%" },
+    { k: "ipDrgQueryRate", label: "Query issued", def: 10, suffix: "%" },
+    { k: "ipDrgResponseRate", label: "Physician responds", def: 70, suffix: "%" },
+    { k: "ipDrgChangeRate", label: "Response changes the DRG", def: 60, suffix: "%" },
+    { k: "ipDrgUpfrontCapture", label: "Captured by Abridge (durable)", def: 33, suffix: "%" },
+    { k: "ipDrgWeightGain", label: "Weight gained per case", def: 0.4, step: 0.05 },
+    { k: "ipDrgBaseRate", label: "Base payment per weight", def: 7000, prefix: "$" },
   ],
   applyToState: (s, v) => {
     const d = dq(s);
     d.ipDrgEnabled = true;
-    d.ipDrgWeightIncrease = v.ipDrgWeightIncrease;
-    d.ipDrgBasePayment = v.ipDrgBasePayment;
-    d.ipDrgAttribution = v.ipDrgAttribution;
-    d.ipDrgRealization = v.ipDrgRealization;
+    d.ipDrgCdiReviewRate = v.ipDrgCdiReviewRate;
+    d.ipDrgQueryRate = v.ipDrgQueryRate;
+    d.ipDrgResponseRate = v.ipDrgResponseRate;
+    d.ipDrgChangeRate = v.ipDrgChangeRate;
+    d.ipDrgUpfrontCapture = v.ipDrgUpfrontCapture;
+    d.ipDrgWeightGain = v.ipDrgWeightGain;
+    d.ipDrgBaseRate = v.ipDrgBaseRate;
   },
 };
 
@@ -596,8 +604,8 @@ export const SETTING_META: Record<SettingKey, SettingMeta> = {
     providerWord: "providers",
     encWord: "visits",
     visitWord: "visit",
-    defaults: { totalProviders: 458, onAbridge: 340, encPerProvider: 3500, utilNow: 74 },
-    timeMetric: { before: 6.26, after: 5.12, table: "your time-in-notes pull" },
+    defaults: { totalProviders: 0, onAbridge: 0, encPerProvider: 0, utilNow: 0 },
+    timeMetric: { before: 6.3, after: 5.2, table: "your time-in-notes pull" },
   },
   ed: {
     label: "Emergency",
@@ -605,7 +613,7 @@ export const SETTING_META: Record<SettingKey, SettingMeta> = {
     providerWord: "providers",
     encWord: "ED visits",
     visitWord: "visit",
-    defaults: { totalProviders: 80, onAbridge: 55, encPerProvider: 3000, utilNow: 70 },
+    defaults: { totalProviders: 0, onAbridge: 0, encPerProvider: 0, utilNow: 0 },
     timeMetric: { before: 6.5, after: 5.1, table: "your time-in-notes pull" },
   },
   inpatient: {
@@ -614,7 +622,7 @@ export const SETTING_META: Record<SettingKey, SettingMeta> = {
     providerWord: "providers",
     encWord: "encounters",
     visitWord: "encounter",
-    defaults: { totalProviders: 90, onAbridge: 60, encPerProvider: 2500, utilNow: 68 },
+    defaults: { totalProviders: 0, onAbridge: 0, encPerProvider: 0, utilNow: 0 },
     timeMetric: { before: 9.0, after: 6.5, table: "your time-in-notes pull" },
   },
   nursing: {
@@ -624,7 +632,7 @@ export const SETTING_META: Record<SettingKey, SettingMeta> = {
     encWord: "care events",
     visitWord: "care event",
     isNursing: true,
-    defaults: { totalProviders: 600, onAbridge: 420, encPerProvider: 1800, utilNow: 65, staffedBeds: 300, occupancy: 85 },
+    defaults: { totalProviders: 0, onAbridge: 0, encPerProvider: 0, utilNow: 0, staffedBeds: 0, occupancy: 85 },
   },
 };
 

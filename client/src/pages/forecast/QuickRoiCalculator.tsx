@@ -171,6 +171,14 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
     const now = d.totalProviders > 0 ? (d.onAbridge / d.totalProviders) * 100 : 0;
     return Math.min(100, Math.max(Math.round(now) + 15, 70));
   });
+  // The account starts blank (partner facts are entered from the pull), so the
+  // stretch target has to recompute once the real adoption is in — otherwise it
+  // stays frozen at the blank-state 70% and can sit BELOW today's adoption (a
+  // regressive "upside"). Re-derive a reachable stretch whenever adoption changes;
+  // it never lands below where they are today.
+  useEffect(() => {
+    setTargetAdoptionPct(Math.min(100, Math.max(Math.round(adoptionNow) + 15, 70)));
+  }, [adoptionNow]);
   const [targetUtilPct, setTargetUtilPct] = useState(100);
   const [price, setPrice] = useState(0);
 
@@ -230,21 +238,21 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
               <TextInput value={partner} onChange={setPartner} placeholder="e.g., Bronson Healthcare" />
             </Row>
             <Row label={`How many ${scopeWord} does this partner have?`} hint={`the ${settingWord} population, everyone who could use Abridge here`}>
-              <NumInput value={totalProviders} onChange={setTotalProviders} />
+              <NumInput value={totalProviders} onChange={setTotalProviders} placeholder="e.g., 90" />
             </Row>
-            <Row label="How many are on Abridge today?" hint={`of ${fmtInt(totalProviders)} ${scopeWord} with a go-live date`}>
-              <NumInput value={onAbridge} onChange={setOnAbridge} />
+            <Row label="How many are on Abridge today?" hint={totalProviders > 0 ? `of ${fmtInt(totalProviders)} ${scopeWord} with a go-live date` : `${scopeWord} with a go-live date`}>
+              <NumInput value={onAbridge} onChange={setOnAbridge} placeholder="e.g., 60" />
             </Row>
             <Row label={`About how many ${meta.encWord} does each ${meta.providerWord.replace(/s$/, "")} handle a year?`}>
-              <NumInput value={encPerProvider} onChange={setEncPerProvider} />
+              <NumInput value={encPerProvider} onChange={setEncPerProvider} placeholder="e.g., 2,500" />
             </Row>
             <Row label={`Of their ${meta.encWord}, what share are documented with Abridge?`} hint="the utilization % from the pull">
-              <NumInput value={utilNow} onChange={setUtilNow} suffix="%" />
+              <NumInput value={utilNow} onChange={setUtilNow} suffix="%" placeholder="e.g., 68" />
             </Row>
             {isNursing && (
               <>
                 <Row label="How many staffed beds?" hint="drives the patient-days behind the quality math">
-                  <NumInput value={staffedBeds} onChange={setStaffedBeds} />
+                  <NumInput value={staffedBeds} onChange={setStaffedBeds} placeholder="e.g., 300" />
                 </Row>
                 <Row label="Average occupancy?">
                   <NumInput value={occupancy} onChange={setOccupancy} suffix="%" />
@@ -253,7 +261,11 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
             )}
           </div>
           <p className="mt-7 text-[15px] leading-[1.6] text-[#5E534A]">
-            So Abridge is on about <span className="font-abridge text-[#1A1A1A]">{fmtInt(encToday)}</span> {meta.encWord} a year in {settingWord} right now. That is {Math.round(adoptionNow)}% of {scopeWord}, on {Math.round(utilNow)}% of their {meta.encWord}.
+            {encToday > 0 ? (
+              <>So Abridge is on about <span className="font-abridge text-[#1A1A1A]">{fmtInt(encToday)}</span> {meta.encWord} a year in {settingWord} right now. That is {Math.round(adoptionNow)}% of {scopeWord}, on {Math.round(utilNow)}% of their {meta.encWord}.</>
+            ) : (
+              <span className="italic text-[#A69A88]">Enter the partner's numbers above and we'll show today's Abridge footprint.</span>
+            )}
           </p>
           <NavRow onNext={() => setStep(1)} nextLabel="Next: the lift" />
         </StepShell>
@@ -324,11 +336,11 @@ function Row({ label, hint, children }: { label: string; hint?: string; children
 
 // Underlined editorial inputs
 const UINPUT_CLASS = "flex-1 min-w-0 h-auto border-0 rounded-none bg-transparent p-0 shadow-none text-right text-[19px] font-bold text-[#1A1A1A] tabular-nums focus-visible:ring-0 focus-visible:ring-offset-0";
-function NumInput({ value, onChange, suffix, prefix, step = 1, w = "w-[168px]" }: { value: number; onChange: (n: number) => void; suffix?: string; prefix?: string; step?: number; w?: string }) {
+function NumInput({ value, onChange, suffix, prefix, step = 1, w = "w-[168px]", placeholder }: { value: number; onChange: (n: number) => void; suffix?: string; prefix?: string; step?: number; w?: string; placeholder?: string }) {
   return (
     <div className={`${w} inline-flex items-baseline gap-1.5 border-b-2 border-[#E0D9CE] focus-within:border-[#EA2C00] transition-colors pb-1`}>
       {prefix && <span className="text-[14px] text-[#A69A88]">{prefix}</span>}
-      <FormattedNumberInput value={value} onChange={onChange} step={step} className={UINPUT_CLASS} />
+      <FormattedNumberInput value={value} onChange={onChange} step={step} className={UINPUT_CLASS} placeholder={placeholder} />
       {suffix && <span className="text-[14px] text-[#A69A88]">{suffix}</span>}
     </div>
   );
@@ -362,7 +374,7 @@ function BeforeAfter({ label, table, unit, before, after, onBefore, onAfter, ste
     <div>
       <div className="flex items-baseline justify-between mb-3">
         <span className="text-[14px] font-medium text-[#1A1A1A]">{label}</span>
-        {table && <span className="text-[12px] text-[#A69A88]">from the {table}</span>}
+        {table && <span className="text-[12px] text-[#A69A88]">from {table}</span>}
       </div>
       <div className="flex items-baseline gap-4 flex-wrap">
         <div>
@@ -442,6 +454,9 @@ function DriverCard({ driver, vals, setVal, on, onToggle, value, summary, eligib
   if (driver.kind === "hcc") {
     return <HccDriverCard driver={driver} vals={vals} setVal={setVal} on={on} onToggle={onToggle} value={value} summary={summary} />;
   }
+  if (driver.id === "drgAccuracy") {
+    return <DrgFunnelCard vals={vals} setVal={setVal} on={on} onToggle={onToggle} value={value} discharges={eligibleEncounters} />;
+  }
   const workStr = driver.work ? driver.work(vals, eligibleEncounters) : summary;
   const ba = driver.beforeAfter;
   return (
@@ -519,6 +534,77 @@ function HccDriverCard({ driver, vals, setVal, on, onToggle, value, summary }: {
       </div>
 
       <WorkedMath summary={summary} value={value} />
+    </DriverShell>
+  );
+}
+
+/** Centered, coral, editable rate/number for the DRG funnel table. */
+function PctEdit({ value, onChange, suffix = "%", prefix, step = 1 }: { value: number; onChange: (n: number) => void; suffix?: string; prefix?: string; step?: number }) {
+  return (
+    <span className="inline-flex items-baseline justify-center gap-1 border-b-2 border-[#F3C9BC] pb-0.5 w-[72px]">
+      {prefix && <span className="text-[12px] text-[#A69A88]">{prefix}</span>}
+      <FormattedNumberInput value={value} onChange={onChange} step={step}
+        className="h-auto border-0 rounded-none bg-transparent p-0 shadow-none text-center text-[15px] font-bold text-[#EA2C00] tabular-nums focus-visible:ring-0 focus-visible:ring-offset-0"
+        style={{ width: `${String(value).length + 2}ch` }} />
+      {suffix && <span className="text-[12px] text-[#A69A88]">{suffix}</span>}
+    </span>
+  );
+}
+
+/**
+ * DRG accuracy, modeled as the CDI query funnel. The funnel is the CDI program's
+ * baseline (theirs). Abridge's value is the DELTA on the discharges the funnel
+ * misses — the leak — netted for audit survival. No attribution/defensible haircut.
+ */
+function DrgFunnelCard({ vals, setVal, on, onToggle, value, discharges }: {
+  vals: Record<string, number>; setVal: (k: string, v: number) => void;
+  on: boolean; onToggle: () => void; value: number; discharges: number;
+}) {
+  const reviewed = discharges * (vals.ipDrgCdiReviewRate / 100);
+  const queried = reviewed * (vals.ipDrgQueryRate / 100);
+  const responded = queried * (vals.ipDrgResponseRate / 100);
+  const changed = responded * (vals.ipDrgChangeRate / 100);
+  const cdiRevenue = changed * vals.ipDrgWeightGain * vals.ipDrgBaseRate;
+  const lost = Math.max(0, queried - changed); // flagged gaps that die in the funnel
+  const abridgeCases = lost * (vals.ipDrgUpfrontCapture / 100);
+  const GRID = "grid grid-cols-[1fr_84px_96px] items-baseline";
+
+  const FRow = ({ step, rateK, prefix, suffix, cases, bold }: { step: string; rateK?: string; prefix?: string; suffix?: string; cases: string; bold?: boolean }) => (
+    <div className={`${GRID} py-[11px] border-t border-[#EFE9E0]`}>
+      <span className={`text-[15px] text-[#1A1A1A] ${bold ? "font-bold" : ""}`}>{step}</span>
+      <span className="text-right">{rateK ? <PctEdit value={vals[rateK]} onChange={(v) => setVal(rateK, v)} prefix={prefix} suffix={suffix ?? "%"} step={suffix === "" ? 0.05 : 1} /> : <span className="text-[14px] text-[#A69A88]">—</span>}</span>
+      <span className={`text-right tabular-nums ${bold ? "font-abridge text-[19px] text-[#EA2C00]" : "text-[15px] text-[#1A1A1A]"}`}>{cases}</span>
+    </div>
+  );
+
+  return (
+    <DriverShell title="DRG accuracy (CMI)" on={on} onToggle={onToggle} value={value}>
+      <p className="text-[13px] leading-[1.55] text-[#8C8073] max-w-[560px] mb-1">DRG revenue moves through the CDI query funnel. This is what it catches today; Abridge is the delta on the gaps your team flags but loses.</p>
+
+      <div className={`${GRID} mt-6 text-[10px] font-extrabold tracking-[0.1em] uppercase text-[#A69A88]`}>
+        <span>What the CDI funnel catches today</span><span className="text-right">Rate</span><span className="text-right">Cases</span>
+      </div>
+      <FRow step="Annual discharges" cases={fmtInt(discharges)} />
+      <FRow step="Reviewed by CDI" rateK="ipDrgCdiReviewRate" cases={fmtInt(reviewed)} />
+      <FRow step="Query issued" rateK="ipDrgQueryRate" cases={fmtInt(queried)} />
+      <FRow step="Physician responds" rateK="ipDrgResponseRate" cases={fmtInt(responded)} />
+      <FRow step="Response changes the DRG" rateK="ipDrgChangeRate" cases={fmtInt(changed)} bold />
+      <div className="flex items-baseline justify-between gap-3 py-[11px] border-t border-[#EFE9E0] text-[13px] text-[#8C8073]">
+        <span className="italic flex items-baseline gap-1.5 flex-wrap">Each moves ~<PctEdit value={vals.ipDrgWeightGain} onChange={(v) => setVal("ipDrgWeightGain", v)} suffix="" step={0.05} /> weight, at <PctEdit value={vals.ipDrgBaseRate} onChange={(v) => setVal("ipDrgBaseRate", v)} prefix="$" suffix="" step={250} />/weight</span>
+        <span className="whitespace-nowrap">= {fmtShort(cdiRevenue)} <span className="text-[#A69A88]">to CDI</span></span>
+      </div>
+
+      <div className="mt-6 rounded-xl px-5 py-4 bg-[#FBF3EE] border border-[#F3DDD2]">
+        <p className="text-[14.5px] leading-[1.5] text-[#1A1A1A]">Of the <b>{fmtInt(queried)}</b> gaps your CDI team flags, only <b>{fmtInt(changed)}</b> get corrected. The other <b className="text-[#EA2C00]">{fmtInt(lost)}</b> die in the query process, with no response or one that doesn't stick. Abridge captures the acuity up front, so those land at the right DRG without a query.</p>
+      </div>
+
+      <div className={`${GRID} mt-6 text-[10px] font-extrabold tracking-[0.1em] uppercase text-[#A69A88]`}>
+        <span>What Abridge adds, on top</span><span className="text-right">Rate</span><span className="text-right">Cases</span>
+      </div>
+      <FRow step="Flagged but lost" cases={fmtInt(lost)} />
+      <FRow step="Captured by Abridge" rateK="ipDrgUpfrontCapture" cases={fmtInt(abridgeCases)} bold />
+
+      <WorkedMath summary={`${fmtInt(lost)} flagged-but-lost × ${vals.ipDrgUpfrontCapture}% captured by Abridge (${fmtInt(abridgeCases)} cases) × ${vals.ipDrgWeightGain} weight × $${fmtInt(vals.ipDrgBaseRate)}/weight`} value={value} />
     </DriverShell>
   );
 }
