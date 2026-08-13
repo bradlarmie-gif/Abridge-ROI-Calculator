@@ -31,6 +31,7 @@ type Tab = "perProvider" | "perEncounter" | "annual" | "platform";
 // so no surface can silently disagree; imported for use here and re-exported
 // for the other existing importers (EdModel, EdCareSetting, ExploreEditorialPdf).
 import { PROOF_LAYER, QUADRANT_ORDER } from "@/lib/proofLayer";
+import { DOMAIN_COLORS } from "@/lib/domainColors";
 export { PROOF_LAYER, QUADRANT_ORDER };
 
 export default function EdInvestment({
@@ -285,11 +286,26 @@ export default function EdInvestment({
           <div className="bg-[#FDFBF8] border border-[#E7E3DD] rounded-[20px] p-[24px_26px] flex-1">
             <div className="text-[11px] font-extrabold tracking-[0.09em] uppercase text-[#2E2822] mb-4">What it returns</div>
 
+            {totalValue > 0 && (
+              <div className="flex h-[14px] rounded-[7px] overflow-hidden bg-[#F3EEE7] mb-[18px]">
+                {QUADRANT_ORDER.map((q) => {
+                  const proofNote = (PROOF_LAYER[state.careSetting ?? ""] ?? {})[q];
+                  const v = valueByQuadrant[q] || 0;
+                  return !proofNote && v > 0 ? (
+                    <div key={q} style={{ width: `${(v / totalValue) * 100}%`, background: DOMAIN_COLORS[q] }} />
+                  ) : null;
+                })}
+              </div>
+            )}
+
             {QUADRANT_ORDER.map((q) => {
               const proofNote = (PROOF_LAYER[state.careSetting ?? ""] ?? {})[q];
               return (
                 <div key={q} className="flex justify-between items-baseline py-[9px] border-b border-[#EDE5D8] text-[15px]">
-                  <span className={proofNote ? "text-[#7C766F]" : "text-[#565250]"}>{q}</span>
+                  <span className={`flex items-center gap-[10px] ${proofNote ? "text-[#7C766F]" : "text-[#565250]"}`}>
+                    <span className="w-[10px] h-[10px] rounded-[3px] flex-shrink-0" style={{ background: DOMAIN_COLORS[q] }} />
+                    {q}
+                  </span>
                   {proofNote ? (
                     <span className="text-[13px] text-[#7C766F] italic">{proofNote}</span>
                   ) : (
