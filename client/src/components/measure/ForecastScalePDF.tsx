@@ -1,3 +1,4 @@
+import { DOMAIN_COLORS } from "@/lib/domainColors";
 import {
   Document,
   Page,
@@ -77,12 +78,7 @@ const brand = {
   positive:      "#059669",
 };
 
-const domainColors: Record<string, string> = {
-  Capacity:  "#0891B2",
-  Workforce: "#4E5A6B",
-  Revenue:   "#EA2C00",
-  Quality:   "#059669",
-};
+const domainColors = DOMAIN_COLORS; // one app-wide palette (lib/domainColors)
 
 const QUADS = ["Capacity", "Workforce", "Revenue", "Quality"] as const;
 
@@ -587,7 +583,7 @@ function ScaleSummaryPage({ data }: { data: ForecastScalePDFData }) {
               <Text
                 style={{
                   fontSize: 7,
-                  color: dColor,
+                  color: brand.black,
                   textTransform: "uppercase",
                   letterSpacing: 1.5,
                 }}

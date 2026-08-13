@@ -1,3 +1,4 @@
+import { DOMAIN_COLORS } from "@/lib/domainColors";
 import {
   Document,
   Page,
@@ -56,12 +57,7 @@ const brand = {
 
 // ─── DOMAIN COLORS ────────────────────────────────────────────────────────────
 
-const domainColors: Record<string, string> = {
-  Capacity:  "#0891B2",
-  Workforce: "#4E5A6B",
-  Revenue:   "#EA2C00",
-  Quality:   "#059669",
-};
+const domainColors = DOMAIN_COLORS; // one app-wide palette (lib/domainColors)
 
 // ─── CONTENT MAPS ─────────────────────────────────────────────────────────────
 
@@ -417,7 +413,7 @@ function CalcChainRow({
             <Text style={{ fontSize: 6, color: brand.textTertiary, textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 3 }}>
               {step.topLabel}
             </Text>
-            <Text style={{ fontSize: 11, fontWeight: 700, color: step.accent ? accentColor : brand.textPrimary, lineHeight: 1.1 }}>
+            <Text style={{ fontSize: 11, fontWeight: 700, color: step.accent ? brand.coral : brand.textPrimary, lineHeight: 1.1 }}>
               {step.value}
             </Text>
             {step.bottomLabel ? (
@@ -490,7 +486,7 @@ function DriverCard({
         </View>
         {isQuant && showDollars && driver.realizedValue > 0 && (
           <View style={{ alignItems: "flex-end" }}>
-            <Text style={{ fontSize: 15, fontWeight: 700, color: accentColor, lineHeight: 1.1 }}>
+            <Text style={{ fontSize: 15, fontWeight: 700, color: brand.coral, lineHeight: 1.1 }}>
               {fmtCurrency(driver.realizedValue)}
             </Text>
             <Text style={{ fontSize: 7, color: brand.textTertiary }}>realized / yr</Text>
@@ -504,7 +500,7 @@ function DriverCard({
           {driver.singleValueEntry ? (
             <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", backgroundColor: brand.lightGray, borderRadius: 3, paddingVertical: 8, paddingHorizontal: 10, marginTop: 4, marginBottom: 4 }}>
               <Text style={{ fontSize: 8.5, color: brand.textSecondary }}>{driver.deltaLabel || "Amount"}</Text>
-              <Text style={{ fontSize: 14, fontWeight: 700, color: accentColor }}>{`+${fmtNum(driver.delta)}${unit ? " " + unit : ""}`}</Text>
+              <Text style={{ fontSize: 14, fontWeight: 700, color: brand.coral }}>{`+${fmtNum(driver.delta)}${unit ? " " + unit : ""}`}</Text>
             </View>
           ) : (
           /* Before / With Abridge / Change strip */
@@ -512,7 +508,7 @@ function DriverCard({
             {[
               { label: "Before",       value: driver.withoutAbridge, color: brand.textSecondary, prefix: "" },
               { label: "With Abridge", value: driver.withAbridge,    color: brand.textPrimary,   prefix: "" },
-              { label: "Change",       value: driver.delta,          color: accentColor,          prefix: deltaSign },
+              { label: "Change",       value: driver.delta,          color: brand.coral,          prefix: deltaSign },
             ].map(({ label, value, color: cellColor, prefix }, i) => (
               <View
                 key={label}
@@ -556,7 +552,7 @@ function DriverCard({
 
           {/* Sparkline */}
           {hasMonthly && driver.monthlyData && (
-            <Sparkline data={driver.monthlyData} color={accentColor} />
+            <Sparkline data={driver.monthlyData} color={brand.coral} />
           )}
 
           {/* Notes */}
@@ -848,7 +844,7 @@ function DomainPage({
       <PageHeader label="Evidence Summary" />
 
       {/* Eyebrow in domain color */}
-      <Text style={[S.eyebrow, { color: accentColor }]}>{section.quadrant.toUpperCase()}</Text>
+      <Text style={[S.eyebrow, { color: brand.textPrimary }]}>{section.quadrant.toUpperCase()}</Text>
 
       {/* Section title in Abridge serif */}
       <Text style={S.sectionTitle}>{subtitle}</Text>
@@ -856,7 +852,7 @@ function DomainPage({
       {/* Domain realized value */}
       {showDollars && section.realizedTotal > 0 && (
         <View style={{ flexDirection: "row", alignItems: "baseline", gap: 6, marginBottom: 8 }}>
-          <Text style={{ fontSize: 18, fontWeight: 700, color: accentColor }}>{fmtCurrency(section.realizedTotal)}</Text>
+          <Text style={{ fontSize: 18, fontWeight: 700, color: brand.coral }}>{fmtCurrency(section.realizedTotal)}</Text>
           <Text style={{ fontSize: 8, color: brand.textTertiary }}>realized annual value</Text>
         </View>
       )}
