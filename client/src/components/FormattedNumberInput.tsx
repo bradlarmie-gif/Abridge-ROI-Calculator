@@ -18,7 +18,8 @@ interface FormattedNumberInputProps {
 function formatWithCommas(num: number, decimals: number = 0): string {
   if (num === 0) return '';
   if (decimals > 0) {
-    return num.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+    // Cap at `decimals`, but don't pad trailing zeros: 3 -> "3", 1.30 -> "1.3".
+    return num.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: decimals });
   }
   return num.toLocaleString('en-US');
 }
