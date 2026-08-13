@@ -637,10 +637,11 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
           )
         )}
         </div>
-        <ValueRail state={state} totalHoursSaved={totalHoursSaved} activeDomain="Workforce" />
+        <div className="flex flex-col gap-5">
+          <ValueRail state={state} totalHoursSaved={totalHoursSaved} activeDomain="Workforce" />
+          <Foot onNext={onNext} />
         </div>
-
-        <Foot onNext={onNext} />
+        </div>
       </div>
     </EditorialShell>
   );

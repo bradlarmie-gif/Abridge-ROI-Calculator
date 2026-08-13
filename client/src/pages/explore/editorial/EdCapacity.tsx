@@ -387,10 +387,11 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
           )
         )}
         </div>
-        <ValueRail state={state} totalHoursSaved={totalHoursSaved} activeDomain="Capacity" />
+        <div className="flex flex-col gap-5">
+          <ValueRail state={state} totalHoursSaved={totalHoursSaved} activeDomain="Capacity" />
+          <Foot onNext={onNext} />
         </div>
-
-        <Foot onNext={onNext} />
+        </div>
       </div>
     </EditorialShell>
   );

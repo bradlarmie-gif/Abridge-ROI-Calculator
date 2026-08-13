@@ -505,18 +505,19 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
           </div>
         )}
         </div>
-        <ValueRail state={state} totalHoursSaved={totalHoursSaved} activeDomain="Revenue" />
+        <div className="flex flex-col gap-5">
+          <ValueRail state={state} totalHoursSaved={totalHoursSaved} activeDomain="Revenue" />
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={onNext}
+              data-testid="button-ed-revenue-continue"
+              className="bg-[#EA2C00] text-white text-[15px] font-bold px-7 py-[14px] rounded-[12px] shadow-[0_2px_6px_rgba(234,44,0,0.15)]"
+            >
+              Continue →
+            </button>
+          </div>
         </div>
-
-        <div className="flex justify-end mt-[30px]">
-          <button
-            type="button"
-            onClick={onNext}
-            data-testid="button-ed-revenue-continue"
-            className="bg-[#EA2C00] text-white text-[15px] font-bold px-7 py-[14px] rounded-[12px] shadow-[0_2px_6px_rgba(234,44,0,0.15)]"
-          >
-            Continue →
-          </button>
         </div>
       </div>
     </EditorialShell>
