@@ -22,7 +22,7 @@ export const PROOF_LAYER: Record<string, Partial<Record<ProofDomain, string>>> =
   outpatient: { Quality: "tracked, not counted; shows in Revenue" },
   ed: { Quality: "tracked, not counted; shows in Revenue" },
   inpatient: {
-    Capacity: "tracked, not counted; dollar shows in Revenue",
+    Capacity: "tracked, not counted; shows in Revenue",
     Quality: "tracked, not counted; shows in Revenue",
   },
   nursing: { Revenue: "tracked, not counted; no dollar here" },

@@ -97,23 +97,35 @@ describe("computeExploreTotals", () => {
 });
 
 describe("retention lens (Counted vs Tracked)", () => {
-  it("tracked (default) keeps the retention dollar out of the total; counted folds it in", () => {
-    const tracked: ExploreState = { ...state, retentionMode: "tracked" };
-    const counted: ExploreState = { ...state, retentionMode: "counted" };
+  it("tracked (default) keeps BOTH the retention dollar and the retention-derived agency dollar out of the total; counted folds them in", () => {
+    // Enable Locum & Agency so the retention-derived agency dollar is exercised.
+    // Agency is priced on the SAME retained count retention produces, so it must
+    // follow the same lens: counted only when retention is counted (otherwise it
+    // is the retention dollar wearing a different hat — an over-claim).
+    const withAgency: ExploreState = {
+      ...state,
+      timeDriverInputs: { ...state.timeDriverInputs, physicianAgencyEnabled: true },
+    };
+    const tracked: ExploreState = { ...withAgency, retentionMode: "tracked" };
+    const counted: ExploreState = { ...withAgency, retentionMode: "counted" };
 
     const trackedVals = computeAllDriverValues(tracked, TOTAL_HOURS_SAVED);
     const countedVals = computeAllDriverValues(counted, TOTAL_HOURS_SAVED);
 
-    // The retention replacement-cost dollar exists and is real when counted...
+    // Both retention dollars exist and are real when counted...
     expect(countedVals.providerWellbeing).toBeGreaterThan(0);
-    // ...and is zeroed (shown as signals instead) when tracked.
+    expect(countedVals.physicianLocumAgency).toBeGreaterThan(0);
+    // ...and BOTH are zeroed (shown as signals instead) when tracked.
     expect(trackedVals.providerWellbeing).toBe(0);
+    expect(trackedVals.physicianLocumAgency).toBe(0);
 
-    // The total drops by exactly the retention dollar when tracked — nothing
-    // else moves (agency/scribe stay counted).
+    // The total drops by exactly the retention + agency dollars when tracked —
+    // nothing else moves (scribe is independent displacement and stays counted).
     const trackedTotal = computeExploreTotals(tracked, TOTAL_HOURS_SAVED).totalAnnualValue;
     const countedTotal = computeExploreTotals(counted, TOTAL_HOURS_SAVED).totalAnnualValue;
-    expect(countedTotal - trackedTotal).toBe(countedVals.providerWellbeing);
+    expect(countedTotal - trackedTotal).toBe(
+      countedVals.providerWellbeing + countedVals.physicianLocumAgency,
+    );
   });
 
   it("defaults to tracked when retentionMode is unset", () => {

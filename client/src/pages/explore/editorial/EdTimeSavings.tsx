@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { EditorialHeader, EditorialShell } from "./EditorialHeader";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { type ExploreState, type TimePathScenario } from "../ExploreFlow";
@@ -28,6 +29,20 @@ export default function EdTimeSavings({ state, updateState, onNext, onBack, onHo
       : isNursing
         ? { conservative: 20, typical: 30, aggressive: 40 }
         : { conservative: 2, typical: 3, aggressive: 4 };
+
+  // The header promises a conservative starting point ("we start conservative").
+  // Seed it once, on first arrival, so the screen never lands on all-zeros that
+  // contradict its own copy. Guard on timePathScenario === null (never picked);
+  // once seeded this will not re-fire, and it never overrides a user's choice.
+  useEffect(() => {
+    if (state.timePathScenario == null) {
+      updateState({
+        timePathScenario: "conservative",
+        minutesSavedPerEncounter: scenarioMinutes.conservative,
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const nursingShiftsPerYear = state.numberOfProviders * state.nursingShiftsPerNurseYear;
   const nursingEligibleShifts = Math.round(nursingShiftsPerYear * (state.utilizationPercent / 100));

@@ -166,11 +166,20 @@ export function computeAllDriverValues(
   // Retention lens: unless retention is flipped to "counted", keep the soft
   // replacement-cost dollar out of every total (it renders as signals instead).
   // This is the single gate point — computeExploreTotals, the quadrant
-  // breakdowns and the proforma snapshot all read these values. Agency/locum
-  // and scribe (hard displacement) are deliberately left counted.
+  // breakdowns and the proforma snapshot all read these values.
+  //
+  // Agency/locum is real P&L displacement, BUT it is priced on the SAME retained
+  // count the retention model produces (retained × weeks × premium). If retention
+  // is only tracked (a signal the customer chose not to dollarize), a counted
+  // agency dollar derived from that same count is the retention dollar wearing a
+  // different hat — an over-claim a CFO catches. So gate it by the same lens:
+  // agency counts only when retention counts. Scribe is independent displacement
+  // (not derived from retention), so it stays counted.
   if (!retentionIsCounted(state)) {
     if (result.providerWellbeing !== undefined) result.providerWellbeing = 0;
     if (result.nursingRetention !== undefined) result.nursingRetention = 0;
+    if (result.physicianLocumAgency !== undefined) result.physicianLocumAgency = 0;
+    if (result.nursingAgency !== undefined) result.nursingAgency = 0;
   }
   if (isNursing && td.nursingOtEnabled) {
     const otHrs =

@@ -268,8 +268,10 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
           enabled
           onToggle={() => toggleEnabled(driver)}
           testId={`ed-toggle-${driver.id}`}
+          editHint={retentionCounted && !blocked}
+          mathLabel={retentionCounted ? "The math" : "What we track"}
           note={
-            blocked ? undefined : (
+            blocked || !retentionCounted ? undefined : (
               <>Grey figures carry from Provider Retention above. Change the coral figures to match your locum contracts. This is the coverage spend you stop paying when a provider stays, a separate dollar from the retention value above, so nothing is counted twice.</>
             )
           }
@@ -278,6 +280,11 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
             <div className="px-3.5 py-2.5 bg-[#FFF7F4] border border-[#FFDDD6] rounded-[10px] text-[12.5px] text-[#B23100] leading-[1.4]">
               Turn on Provider Retention above to see this driver's value. Locum &amp; agency savings are derived from the
               providers it retains.
+            </div>
+          ) : !retentionCounted ? (
+            <div className="text-[12.5px] text-[#7C766F] leading-[1.5] italic">
+              This spend is priced on the providers retention keeps. While Provider Retention is tracked as a signal, the
+              savings stay tracked too, so nothing counts twice. Switch Provider Retention to Dollar to put both in the ROI.
             </div>
           ) : (
             <EquationRow>
@@ -532,8 +539,10 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
           enabled
           onToggle={() => toggleEnabled(driver)}
           testId={`ed-toggle-${driver.id}`}
+          editHint={retentionCounted && !blocked}
+          mathLabel={retentionCounted ? "The math" : "What we track"}
           note={
-            blocked ? undefined : (
+            blocked || !retentionCounted ? undefined : (
               <>Grey figures carry from RN Retention above. Change the coral figures to match your agency contracts. This is the coverage spend you stop paying when a nurse stays, a separate dollar from the retention value above, so nothing is counted twice.</>
             )
           }
@@ -542,6 +551,11 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
             <div className="px-3.5 py-2.5 bg-[#FFF7F4] border border-[#FFDDD6] rounded-[10px] text-[12.5px] text-[#B23100] leading-[1.4]">
               Turn on RN Retention above to see this driver's value. Travel &amp; agency savings are derived from the nurses
               it retains.
+            </div>
+          ) : !retentionCounted ? (
+            <div className="text-[12.5px] text-[#7C766F] leading-[1.5] italic">
+              This spend is priced on the nurses retention keeps. While RN Retention is tracked as a signal, the savings
+              stay tracked too, so nothing counts twice. Switch RN Retention to Dollar to put both in the ROI.
             </div>
           ) : (
             <EquationRow>

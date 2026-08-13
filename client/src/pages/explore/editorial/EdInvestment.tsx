@@ -324,9 +324,16 @@ export default function EdInvestment({
             </div>
 
             <div className="mt-[14px] pt-[18px] border-t-2 border-[#E7E3DD]">
-              <div className="text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#2E2822]">Net annual value</div>
-              {/* Coral is reserved for a real gain; a loss reads in neutral ink, never celebratory. */}
-              <div className={`font-abridge text-[34px] sm:text-[46px] leading-none mt-[7px] ${netAnnualValue >= 0 ? "text-[#EA2C00]" : "text-[#1A1A1A]"}`}>
+              {/* Before pricing is entered, investment is $0 and "net" would be the
+                  gross wearing a net label (net of nothing). Label it honestly as
+                  value-before-cost and hold the celebratory coral until a real
+                  return exists. */}
+              <div className="text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#2E2822]">
+                {annualInvestment > 0 ? "Net annual value" : "Value before cost"}
+              </div>
+              {/* Coral is reserved for a real gain (pricing entered, net positive); before that,
+                  and for a loss, the number reads in neutral ink, never celebratory. */}
+              <div className={`font-abridge text-[34px] sm:text-[46px] leading-none mt-[7px] ${annualInvestment > 0 && netAnnualValue >= 0 ? "text-[#EA2C00]" : "text-[#1A1A1A]"}`}>
                 {formatCurrency(netAnnualValue)}
                 <span className="text-[16px] text-[#565250]"> / yr</span>
               </div>
