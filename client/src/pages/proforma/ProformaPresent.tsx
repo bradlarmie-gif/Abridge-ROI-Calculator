@@ -1,3 +1,4 @@
+import { DOMAIN_COLORS } from "@/lib/domainColors";
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ChevronLeft, ChevronRight, ChevronDown, Building2, HeartPulse, BedDouble, Stethoscope, Plus, Minus, TrendingUp, TrendingDown } from "lucide-react";
@@ -24,10 +25,10 @@ const ICONS: Record<string, typeof Building2> = {
 // Quadrant palette tuned for the dark stage (the build view's #1A1A1A Revenue /
 // dark slate would vanish on black) — same families, lifted for contrast.
 const QUADRANT: { key: keyof QuadrantValues; label: string; color: string }[] = [
-  { key: "capacityValue", label: "Capacity", color: "#FF5230" },
-  { key: "workforceValue", label: "Workforce", color: "#93A4BC" },
-  { key: "revenueValue", label: "Revenue", color: "#E8DCC8" },
-  { key: "qualityValue", label: "Quality", color: "#8A8F99" },
+  { key: "capacityValue", label: "Capacity", color: DOMAIN_COLORS.Capacity },
+  { key: "workforceValue", label: "Workforce", color: DOMAIN_COLORS.Workforce },
+  { key: "revenueValue", label: "Revenue", color: DOMAIN_COLORS.Revenue },
+  { key: "qualityValue", label: "Quality", color: DOMAIN_COLORS.Quality },
 ];
 
 interface QuadrantValues {
@@ -41,12 +42,7 @@ const CORAL = "#FF5230";
 
 // Quadrant dot color (matches the composition bar above) keyed by the driver's
 // quadrant name.
-const QUADRANT_COLOR: Record<string, string> = {
-  Capacity: "#FF5230",
-  Workforce: "#93A4BC",
-  Revenue: "#E8DCC8",
-  Quality: "#8A8F99",
-};
+const QUADRANT_COLOR: Record<string, string> = DOMAIN_COLORS; // one app-wide palette (lib/domainColors)
 
 // Plain, CFO-readable "what this actually is" line per driver — keyed by the
 // proforma driver id (see ExploreModel snapshot builder). We show the mechanism

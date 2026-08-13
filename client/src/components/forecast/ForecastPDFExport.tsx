@@ -1,3 +1,4 @@
+import { DOMAIN_COLORS_LC } from "@/lib/domainColors";
 import { Document, Page, Text, View, StyleSheet, Svg, Rect, Line, Path, pdf, Font } from "@react-pdf/renderer";
 import { format } from "date-fns";
 import { savePdfBlob } from "@/lib/pdf-save";
@@ -81,12 +82,7 @@ const SCALING_LABELS = {
   annualFlat: "Annual",
 };
 
-const DOMAIN_FILLS = {
-  capacity: "#EA2C00",
-  revenue: "#1E3A5F",
-  workforce: "#D4930A",
-  quality: "#2D7377"
-};
+const DOMAIN_FILLS = DOMAIN_COLORS_LC; // one app-wide palette (lib/domainColors)
 
 const DOMAIN_LEGEND = [
   { label: "Billing/Capacity", color: DOMAIN_FILLS.capacity },

@@ -1,3 +1,4 @@
+import { DOMAIN_COLORS as SHARED_DOMAIN_COLORS } from "@/lib/domainColors";
 import {
   Document,
   Page,
@@ -259,7 +260,7 @@ const S = StyleSheet.create({
   domainPillText: {
     fontSize: 6,
     fontWeight: 600,
-    color: brand.white,
+    color: "#1A1A1A",
     textTransform: "uppercase",
     letterSpacing: 0.8,
   },
@@ -376,10 +377,7 @@ const S = StyleSheet.create({
 const TOTAL_PDF_PAGES = 7;
 
 const DOMAIN_COLORS: Record<string, string> = {
-  Capacity:          brand.capacity,
-  Workforce:         brand.workforce,
-  Revenue:           brand.revenue,
-  Quality:           brand.quality,
+  ...SHARED_DOMAIN_COLORS, // one app-wide palette (lib/domainColors)
   "Cost Displacement": brand.displacement,
 };
 
@@ -1336,7 +1334,7 @@ function ValueDriverDetailPage({ settings, config, preparedBy, totalPDFPages }: 
                       <DomainPill domain={domain} />
                       <Text style={{ fontSize: 8, color: brand.textSecondary }}>{DOMAIN_NORTH_STARS[domain]}</Text>
                     </View>
-                    <Text style={{ fontSize: 9, fontWeight: 600, color: domColor }}>{fmt(domTotal)}/yr</Text>
+                    <Text style={{ fontSize: 9, fontWeight: 600, color: brand.coral }}>{fmt(domTotal)}/yr</Text>
                   </View>
 
                   {/* Driver rows */}
@@ -1362,7 +1360,7 @@ function ValueDriverDetailPage({ settings, config, preparedBy, totalPDFPages }: 
                         {/* Driver name + value */}
                         <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "baseline", marginBottom: 5 }}>
                           <Text style={{ fontSize: 10, fontWeight: 600, color: brand.textPrimary }}>{driver.name}</Text>
-                          <Text style={{ fontSize: 10, fontWeight: 700, color: domColor }}>{fmt(driver.value)}/yr</Text>
+                          <Text style={{ fontSize: 10, fontWeight: 700, color: brand.coral }}>{fmt(driver.value)}/yr</Text>
                         </View>
 
                         {formula.length > 0 ? (

@@ -186,11 +186,13 @@ const PILLAR_LABELS: Record<PillarId, string> = {
   risk: "Enterprise Risk",
 };
 
+// Coral-family ramp (matches the app-wide domain palette; no teal/purple/amber).
+// Used as a fill; the text usages below take dark ink for contrast.
 const PILLAR_COLORS: Record<PillarId, string> = {
   capacity: "#EA2C00",
-  yield: "#0D9488",
-  workforce: "#7C3AED",
-  risk: "#D97706",
+  yield: "#F26A45",
+  workforce: "#F7A488",
+  risk: "#CDBBA6",
 };
 
 function formatCurrency(n: number): string {
@@ -293,7 +295,7 @@ export default function StepLeakageDrivers({
                   {blocker.atStakeValue > 0 && (
                     <div className="text-right hidden sm:block">
                       <p className="text-[9px] text-[#999999] uppercase tracking-wider">At Stake</p>
-                      <p className="text-sm font-bold" style={{ color: pillarColor }}>
+                      <p className="text-sm font-bold" style={{ color: "#EA2C00" }}>
                         {formatCurrency(blocker.atStakeValue)}
                       </p>
                     </div>
@@ -313,7 +315,7 @@ export default function StepLeakageDrivers({
                       className="w-2 h-2 rounded-full"
                       style={{ backgroundColor: pillarColor }}
                     />
-                    <span className="text-[12px] font-medium uppercase tracking-wider" style={{ color: pillarColor }}>
+                    <span className="text-[12px] font-medium uppercase tracking-wider" style={{ color: "#1A1A1A" }}>
                       Linked to {PILLAR_LABELS[blocker.linkedPillar]}
                     </span>
                   </div>

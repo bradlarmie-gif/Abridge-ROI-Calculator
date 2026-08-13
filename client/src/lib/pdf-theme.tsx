@@ -63,11 +63,11 @@ export const brand = {
   muted: "#8C8C8C",
   faint: "#B4B4B4",
   bodyText: "#3A3A3A",
-  // Domain pill background colors (never green/amber/RAG)
-  pillCapacity: "#1A1A1A",
-  pillWorkforce: "#574A43",
-  pillRevenue: "#EA2C00",
-  pillQuality: "#6B7280",
+  // Domain pill colors — app-wide coral palette (lib/domainColors), warm grey for Quality
+  pillCapacity: "#EA2C00",
+  pillWorkforce: "#F26A45",
+  pillRevenue: "#F7A488",
+  pillQuality: "#CDBBA6",
 };
 
 // ============================================================================
