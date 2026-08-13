@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
+import { DOMAIN_COLORS } from "@/lib/domainColors";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Trash2, Edit, ArrowRight, ArrowLeftRight, Building2, Stethoscope, HeartPulse, BedDouble, Layers, ChevronDown, ChevronUp, TrendingUp, Clock, DollarSign, BarChart3, X, Sliders, GitCompare, Download, Loader2, Presentation, MoreHorizontal } from "lucide-react";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
@@ -126,12 +127,7 @@ function RolloutTimeline({ settings, contractMonths, onContractTermChange }: {
   );
 }
 
-const QUADRANT_COLORS: Record<string, string> = {
-  Capacity: "#EA2C00",
-  Workforce: "#4E5A6B",
-  Revenue: "#1A1A1A",
-  Quality: "#888888",
-};
+const QUADRANT_COLORS = DOMAIN_COLORS; // one app-wide palette (lib/domainColors)
 
 const DISPLACEMENT_COLOR = "#2D6F6B";
 

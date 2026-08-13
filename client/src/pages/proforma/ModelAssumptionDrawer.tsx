@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
+import { DOMAIN_COLORS } from "@/lib/domainColors";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ExternalLink, ArrowLeftRight, ChevronUp, Plus, Trash2 } from "lucide-react";
 import type { ProformaSettingSnapshot, ProformaConfig, DriverOnset, ScenarioDealTerms, QuarterlyProviders } from "./proformaTypes";
@@ -15,12 +16,7 @@ import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { computeAllDriverValues, HCC_UPLIFT_SCENARIOS } from "@/lib/exploreDriverCalcs";
 import { PHYSICIAN_RETENTION_SCENARIOS, NURSING_RETENTION_SCENARIOS } from "@/lib/retentionScenarios";
 
-export const DOMAIN_PILL_COLORS: Record<string, string> = {
-  Capacity:  "#EA2C00",
-  Workforce: "#4E5A6B",
-  Revenue:   "#1E3A5F",
-  Quality:   "#888888",
-};
+export const DOMAIN_PILL_COLORS: Record<string, string> = DOMAIN_COLORS; // one app-wide palette (lib/domainColors)
 
 const ONSET_OPTIONS: { value: DriverOnset; label: string }[] = [
   { value: "immediate", label: "Immediate" },
@@ -545,7 +541,7 @@ export function ModelAssumptionRow({
       <div className="flex items-start gap-3">
         <div className="w-[3px] self-stretch rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
         <div className="flex-1 min-w-0">
-          <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color }}>{driver.quadrant}</p>
+          <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "#1A1A1A" }}>{driver.quadrant}</p>
           <p className="text-[13px] font-semibold text-neutral-900 leading-snug mt-0.5">{driver.name}</p>
         </div>
         <div className="text-right flex-shrink-0 pl-2">

@@ -1,4 +1,5 @@
 import { Fragment, type ReactNode } from "react";
+import { DOMAIN_COLORS, DOMAIN_INK } from "@/lib/domainColors";
 import abridgeLogoRed from "@assets/abridge-logo-wordmark-red_1769187440253.png";
 import abridgeSymbol from "@assets/abridge-logo-symbol_1774906992195.png";
 
@@ -20,12 +21,7 @@ export const PROFORMA_PDF_STORAGE_KEY = "abridge:proforma-pdf";
 export const PF_SETTING_COLORS = ["#EA2C00", "#F4A48C", "#F0704E", "#AFA491"] as const;
 
 // Domain accent colors (mock --rev / --cap / --wf / --off).
-const DOMAIN_COLOR: Record<string, string> = {
-  Revenue: "#EA2C00",
-  Capacity: "#F0704E",
-  Workforce: "#F4A48C",
-  Quality: "#AFA491",
-};
+const DOMAIN_COLOR = DOMAIN_COLORS; // one app-wide palette (lib/domainColors)
 
 // ───────────────────────── Types ─────────────────────────
 
@@ -968,7 +964,7 @@ function buildSettingInner(s: PfSetting, chapterNum: string): ReactNode[] {
               <div className="domhead">
                 <div className="dompill">
                   <span className="dot" style={{ background: DOMAIN_COLOR[dom.key] }} />
-                  <span className="p" style={{ color: DOMAIN_COLOR[dom.key] }}>{dom.key}</span>
+                  <span className="p" style={{ color: DOMAIN_INK }}>{dom.key}</span>
                 </div>
                 <span className="domtot">{fmtMoney(dom.total)}</span>
               </div>

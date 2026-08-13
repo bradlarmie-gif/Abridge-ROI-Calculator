@@ -1,4 +1,5 @@
 import { useState, useMemo, useRef, useEffect, useCallback } from "react";
+import { DOMAIN_COLORS } from "@/lib/domainColors";
 import { motion, AnimatePresence, animate } from "framer-motion";
 import { Stethoscope, Zap, ChevronDown, Plus, Trash2, ArrowLeft } from "lucide-react";
 import type {
@@ -41,12 +42,7 @@ const T = {
 
 // Mix-bar colors (the one composition element). Coral reserved for money;
 // Revenue = coral, Capacity/Workforce = warm neutrals so the screen stays restrained.
-const QUADRANT_MIX: Record<ExploreQuadrant, string> = {
-  Revenue: "#EA2C00",
-  Capacity: "#F0704E",
-  Workforce: "#F4A48C",
-  Quality: "#D9CFC0",
-};
+const QUADRANT_MIX: Record<ExploreQuadrant, string> = DOMAIN_COLORS; // one app-wide palette (lib/domainColors)
 
 const DRIVER_DESCRIPTION: Record<string, string> = {
   hcc: "Chronic conditions re-documented and newly surfaced during the visit, valued per plan.",
@@ -914,7 +910,7 @@ function SettingCard({
                         initial={false}
                         animate={{ width: `${pct}%` }}
                         transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-                        style={{ background: QUADRANT_MIX[m.q], display: "flex", alignItems: "center", paddingLeft: wide ? 11 : 0, color: "#fff", fontSize: 10.5, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden" }}
+                        style={{ background: QUADRANT_MIX[m.q], display: "flex", alignItems: "center", paddingLeft: wide ? 11 : 0, color: "#1A1A1A", fontSize: 10.5, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden" }}
                       >
                         {wide && `${m.q} · ${fmt(m.value)}`}
                       </motion.div>

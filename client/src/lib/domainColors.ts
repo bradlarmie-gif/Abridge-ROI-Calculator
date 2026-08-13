@@ -13,7 +13,7 @@
  */
 export type DomainKey = "Capacity" | "Workforce" | "Revenue" | "Quality";
 
-export const DOMAIN_COLORS: Record<DomainKey, string> = {
+export const DOMAIN_COLORS: Record<string, string> = {
   Capacity: "#EA2C00",
   Workforce: "#F26A45",
   Revenue: "#F7A488",
