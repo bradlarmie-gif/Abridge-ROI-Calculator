@@ -92,20 +92,23 @@ const SETTING_LABEL: Record<ExploreCareSetting, string> = {
   nursing: "Nursing",
 };
 
-// Quadrant accent colors — the real four-domains palette (matches the proforma /
-// PDF). The proof domain is deliberately NOT colored; it takes the muted proof
-// treatment so the customer sees which area is the non-financial layer on sight.
+// Quadrant accent colors — the SAME coral progression the "your model so far"
+// rail uses on every value step (ValueRail DOMAIN_TINT: Capacity deepest →
+// Quality lightest, by build order), so the opening preview shows each domain in
+// the exact color it carries for the rest of the flow. Kept in sync by hand;
+// see ValueRail.tsx. (The proforma editorial PDF uses a different, Revenue-deepest
+// identity palette — an app-wide unification is a separate design decision.)
 const QUAD_COLOR: Record<Quadrant, string> = {
-  Capacity: "#F0704E",
-  Workforce: "#C4674C",
-  Revenue: "#EA2C00",
-  Quality: "#8A8072",
+  Capacity: "#EA2C00",
+  Workforce: "#F26A45",
+  Revenue: "#F7A488",
+  Quality: "#F9B79D",
 };
 const QUAD_DOT: Record<Quadrant, string> = {
-  Capacity: "#F0704E",
-  Workforce: "#F4A48C",
-  Revenue: "#EA2C00",
-  Quality: "#AFA491",
+  Capacity: "#EA2C00",
+  Workforce: "#F26A45",
+  Revenue: "#F7A488",
+  Quality: "#F9B79D",
 };
 
 const EASE = [0.22, 1, 0.36, 1] as const;

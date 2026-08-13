@@ -507,7 +507,7 @@ export default function EdModel({
             <div className="text-[11px] font-extrabold tracking-[0.09em] uppercase text-[#2E2822] mb-[6px]">When it lands</div>
             <p className="text-[12.5px] text-[#565250] mb-[14px] leading-[1.5]">
               {annualInvestment <= 0
-                ? <>Value builds as adoption grows. Add your investment to see the payback point.</>
+                ? <>Value builds as adoption grows, so year 1 lands around {fmtShort(cumPoints[12].value)} and the run-rate reaches its full {fmtShort(totalAnnualValue)} / yr by month 12. Add your investment to see the payback point.</>
                 : paybackMonthFrac !== null
                   ? <>Cumulative value catches the cumulative cost by month {Math.max(1, Math.ceil(paybackMonthFrac))}, the payback point. From there it keeps compounding, and the run-rate reaches its full {fmtShort(totalAnnualValue)} / yr by month 12.</>
                   : <>Value builds as adoption grows. At this scope the cumulative value is still catching up to the cost at month 12.</>}
@@ -707,7 +707,10 @@ export default function EdModel({
               {netAnnualValue > 0 ? (
                 <>
                   <div className="text-[13px] text-[#565250] mt-2">
-                    <b className="font-abridge font-normal text-[#1A1A1A]">{expandedRoi.toFixed(1)}×</b> return · up from <b className="font-abridge font-normal text-[#1A1A1A]">{fmtCurrency(netAnnualValue)}</b> today
+                    {annualInvestment > 0 && (
+                      <><b className="font-abridge font-normal text-[#1A1A1A]">{expandedRoi.toFixed(1)}×</b> return · </>
+                    )}
+                    up from <b className="font-abridge font-normal text-[#1A1A1A]">{fmtCurrency(netAnnualValue)}</b> today
                   </div>
                   <div className="mt-[18px]">
                     <div className="mb-[10px]">
