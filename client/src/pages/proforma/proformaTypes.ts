@@ -76,21 +76,6 @@ export interface QuarterlyUtilization {
   q9: number; q10: number; q11: number; q12: number;
 }
 
-export interface ScenarioDealTerms {
-  pricingModel?: "perUnit" | "annualFlat" | "perEncounter" | "platform";
-  costPerUnit?: number;
-  costPerEncounter?: number;
-  annualLicenseFee?: number;
-  platformEncRate?: number;
-  yearlyPricing?: YearlyPricing;
-  providerCount?: number;
-  fullScaleProviders?: number;
-  yearlyProviders?: YearlyProviders;
-  yearlyUtilization?: YearlyUtilization;
-  yearlyEncounters?: { year1: number; year2: number; year3: number };
-  goLiveMonth?: number;
-}
-
 export interface CostOffset {
   id: string;
   label: string;
@@ -137,7 +122,6 @@ export interface ProformaSettingSnapshot {
   workforceValue: number;
   revenueValue: number;
   qualityValue: number;
-  scenarioB?: ScenarioDealTerms;
   costOffsets?: CostOffset[];
 }
 

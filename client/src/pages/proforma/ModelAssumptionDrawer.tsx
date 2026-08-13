@@ -1,8 +1,8 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { DOMAIN_COLORS } from "@/lib/domainColors";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, ExternalLink, ArrowLeftRight, ChevronUp, Plus, Trash2 } from "lucide-react";
-import type { ProformaSettingSnapshot, ProformaConfig, DriverOnset, ScenarioDealTerms, QuarterlyProviders } from "./proformaTypes";
+import { X, ExternalLink, ArrowLeftRight, ChevronUp } from "lucide-react";
+import type { ProformaSettingSnapshot, ProformaConfig, DriverOnset, QuarterlyProviders } from "./proformaTypes";
 import { SETTING_UNIT_LABELS } from "./proformaTypes";
 import type { ExploreState } from "../explore/ExploreFlow";
 import {
@@ -1279,78 +1279,12 @@ interface AssumptionsDrawerProps {
   onOnsetChange: (settingId: string, driverId: string, onset: DriverOnset, customOnsetMonths?: number) => void;
   onUpdateSetting: (id: string, updates: Partial<ProformaSettingSnapshot>) => void;
   onEditInExplore?: (settingId: string) => void;
-  initialScenario?: "A" | "B";
 }
 
-const SCENARIO_B_DEAL_FIELDS: (keyof ScenarioDealTerms)[] = [
-  "pricingModel", "costPerUnit", "costPerEncounter", "annualLicenseFee",
-  "platformEncRate", "yearlyPricing", "providerCount", "fullScaleProviders",
-  "yearlyProviders", "yearlyUtilization", "yearlyEncounters", "goLiveMonth",
-];
-
-function initScenarioB(s: ProformaSettingSnapshot): ScenarioDealTerms {
-  return {
-    pricingModel: s.pricingModel,
-    costPerUnit: s.costPerUnit,
-    costPerEncounter: s.costPerEncounter,
-    annualLicenseFee: s.annualLicenseFee,
-    platformEncRate: s.platformEncRate,
-    yearlyPricing: s.yearlyPricing ? { ...s.yearlyPricing } : undefined,
-    providerCount: s.providerCount,
-    fullScaleProviders: s.fullScaleProviders,
-    yearlyProviders: s.yearlyProviders ? { ...s.yearlyProviders } : undefined,
-    yearlyUtilization: s.yearlyUtilization ? { ...s.yearlyUtilization } : undefined,
-    yearlyEncounters: s.yearlyEncounters ? { ...s.yearlyEncounters } : undefined,
-    goLiveMonth: s.goLiveMonth,
-  };
-}
-
-export function AssumptionsDrawer({ setting, config, onClose, onUpdate, onOnsetChange, onUpdateSetting, onEditInExplore, initialScenario }: AssumptionsDrawerProps) {
+export function AssumptionsDrawer({ setting, config, onClose, onUpdate, onOnsetChange, onUpdateSetting, onEditInExplore }: AssumptionsDrawerProps) {
   const activeDrivers = setting?.drivers.filter(d => d.value > 0) ?? [];
-  const [activeScenario, setActiveScenario] = useState<"A" | "B">(initialScenario ?? "A");
-
-  // When opened directly into B mode, auto-create scenarioB if it doesn't exist yet
-  useEffect(() => {
-    if (initialScenario === "B" && setting && !setting.scenarioB) {
-      onUpdateSetting(setting.id, { scenarioB: initScenarioB(setting) });
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const hasScenarioB = !!setting?.scenarioB;
-
-  const effectiveSetting: ProformaSettingSnapshot | null = (() => {
-    if (!setting) return null;
-    if (activeScenario === "B" && setting.scenarioB) {
-      return { ...setting, ...setting.scenarioB };
-    }
-    return setting;
-  })();
-
-  const effectiveOnUpdate = (id: string, updates: Partial<ProformaSettingSnapshot>) => {
-    if (!setting) return;
-    if (activeScenario === "B") {
-      const bFields: Partial<ScenarioDealTerms> = {};
-      for (const k of SCENARIO_B_DEAL_FIELDS) {
-        if (k in updates) (bFields as Record<string, unknown>)[k] = (updates as Record<string, unknown>)[k];
-      }
-      onUpdateSetting(id, { scenarioB: { ...(setting.scenarioB ?? {}), ...bFields } });
-    } else {
-      onUpdateSetting(id, updates);
-    }
-  };
-
-  const handleAddScenarioB = () => {
-    if (!setting) return;
-    onUpdateSetting(setting.id, { scenarioB: initScenarioB(setting) });
-    setActiveScenario("B");
-  };
-
-  const handleRemoveScenarioB = () => {
-    if (!setting) return;
-    onUpdateSetting(setting.id, { scenarioB: undefined });
-    setActiveScenario("A");
-  };
+  const effectiveSetting = setting;
+  const effectiveOnUpdate = onUpdateSetting;
 
   return (
     <AnimatePresence>
@@ -1393,54 +1327,8 @@ export function AssumptionsDrawer({ setting, config, onClose, onUpdate, onOnsetC
             <div className="flex-1 overflow-y-auto">
               {/* Volume & Pricing */}
               <div className="px-5 py-5 border-b border-neutral-100">
-                <div className="flex items-center justify-between mb-3">
-                  <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Volume & Pricing</p>
-                  {hasScenarioB ? (
-                    <div className="flex items-center gap-1.5">
-                      <div className="flex items-center gap-0.5 bg-[#F5F0EB] rounded-full p-0.5">
-                        {(["A", "B"] as const).map(s => (
-                          <button
-                            key={s}
-                            onClick={() => setActiveScenario(s)}
-                            className={`px-3 py-0.5 rounded-full text-[10px] font-bold transition-colors ${
-                              activeScenario === s ? "bg-white text-neutral-900 shadow-sm" : "text-[#8C7E6E] hover:text-neutral-900"
-                            }`}
-                          >
-                            {s}
-                          </button>
-                        ))}
-                      </div>
-                      {activeScenario === "B" && (
-                        <button
-                          onClick={handleRemoveScenarioB}
-                          className="p-1 rounded hover:bg-red-50 text-[#C0B5A8] hover:text-red-400 transition-colors"
-                          title="Remove Scenario B"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      )}
-                    </div>
-                  ) : (
-                    <button
-                      onClick={handleAddScenarioB}
-                      className="inline-flex items-center gap-1 text-[10px] font-medium text-[#6B5E4F] hover:text-[#EA2C00] transition-colors"
-                    >
-                      <Plus className="w-3 h-3" />
-                      Add Scenario B
-                    </button>
-                  )}
-                </div>
-                {hasScenarioB && (
-                  <div className={`text-[10px] font-semibold px-2 py-1 rounded-full inline-block mb-3 ${
-                    activeScenario === "A"
-                      ? "bg-[#F5F0EB] text-[#6B5E4F]"
-                      : "bg-[#EA2C00]/10 text-[#EA2C00]"
-                  }`}>
-                    Scenario {activeScenario} — {activeScenario === "A" ? "Base deal terms" : "Alternative deal terms"}
-                  </div>
-                )}
+                <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-3">Volume & Pricing</p>
                 <VolumeAndPricingSection
-                  key={activeScenario}
                   setting={effectiveSetting}
                   config={config}
                   onUpdateSetting={effectiveOnUpdate}
@@ -1452,7 +1340,6 @@ export function AssumptionsDrawer({ setting, config, onClose, onUpdate, onOnsetC
                 <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-1">Value Drivers</p>
                 <p className="text-[11px] text-neutral-400 mb-4">
                   Clinical inputs driving your model.
-                  {hasScenarioB && " Shared across Scenario A & B — only deal terms (pricing & volume) differ."}
                 </p>
                 {activeDrivers.length === 0 ? (
                   <p className="text-sm text-neutral-400 text-center py-8">No active drivers to configure.</p>

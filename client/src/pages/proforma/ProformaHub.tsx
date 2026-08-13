@@ -1,10 +1,10 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { DOMAIN_COLORS } from "@/lib/domainColors";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Trash2, Edit, ArrowRight, ArrowLeftRight, Building2, Stethoscope, HeartPulse, BedDouble, Layers, ChevronDown, ChevronUp, TrendingUp, Clock, DollarSign, BarChart3, X, Sliders, GitCompare, Download, Loader2, Presentation, MoreHorizontal } from "lucide-react";
+import { Plus, Edit, ArrowRight, Building2, Stethoscope, HeartPulse, BedDouble, Layers, ChevronDown, ChevronUp, TrendingUp, Clock, DollarSign, BarChart3, X, Sliders, Download, Loader2, Presentation, MoreHorizontal } from "lucide-react";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
-import type { ProformaSettingSnapshot, ProformaConfig, ProformaSummary, ScenarioDealTerms } from "./proformaTypes";
+import type { ProformaSettingSnapshot, ProformaConfig, ProformaSummary } from "./proformaTypes";
 import type { CostOffset } from "./proformaTypes";
 import { SETTING_COLORS, SETTING_LABELS, SETTING_UNIT_LABELS, CONTRACT_TERM_OPTIONS } from "./proformaTypes";
 import { buildMonthlyCashFlows, calculateProformaSummary, computeYearlyEncounters, groupByQuarter } from "@/lib/proformaCalculations";
@@ -13,7 +13,6 @@ import type { ProformaCashFlowRow } from "./proformaTypes";
 import ProformaView from "./ProformaView";
 import { AssumptionsDrawer, VolumeAndPricingSection, buildDriverChangeUpdate } from "./ModelAssumptionDrawer";
 import ProformaPresent from "./ProformaPresent";
-import { generateScenarioComparisonPDF } from "./ProformaPDFExport";
 import type { DriverOnset } from "./proformaTypes";
 import type { ExploreState } from "../explore/ExploreFlow";
 
@@ -165,348 +164,6 @@ function ValueCompositionBar({ setting, scale = 1 }: { setting: ProformaSettingS
         ))}
       </div>
     </div>
-  );
-}
-
-function fmtY(v: number): string {
-  if (Math.abs(v) >= 1_000_000) return `$${(v / 1_000_000).toFixed(1)}M`;
-  if (Math.abs(v) >= 1_000) return `$${Math.round(v / 1_000)}K`;
-  return `$${Math.round(v)}`;
-}
-
-function ScenarioComparisonCard({
-  cashFlowsA,
-  cashFlowsB,
-  summaryA,
-  summaryB,
-  config,
-  settingsWithB,
-  onPrint,
-  isPrinting = false,
-}: {
-  cashFlowsA: ProformaCashFlowRow[];
-  cashFlowsB: ProformaCashFlowRow[];
-  summaryA: ProformaSummary;
-  summaryB: ProformaSummary;
-  config: ProformaConfig;
-  settingsWithB: ProformaSettingSnapshot[];
-  onPrint: () => void;
-  isPrinting?: boolean;
-}) {
-  const quarterlyA = groupByQuarter(cashFlowsA);
-  const quarterlyB = groupByQuarter(cashFlowsB);
-
-  const chartData = quarterlyA.map((rowA, i) => ({
-    label: rowA.label,
-    A: rowA.cumulativeNet,
-    B: quarterlyB[i]?.cumulativeNet ?? null,
-  }));
-
-  // Deltas — since value drivers are shared, lower investment = better ROI
-  const investDiff = summaryA.termInvestment - summaryB.termInvestment; // pos = B cheaper
-  const roiDiffPts = (summaryB.simpleROI - summaryA.simpleROI) * 100;  // pos = B better
-  const paybackDiff = summaryA.paybackMonth !== null && summaryB.paybackMonth !== null
-    ? summaryA.paybackMonth - summaryB.paybackMonth   // pos = B faster
-    : null;
-
-  const bWins = investDiff > 0;
-  const winnerLabel = bWins ? "Scenario B" : "Scenario A";
-  const winnerColor = bWins ? "#EA2C00" : "#1A1A1A";
-  const winnerBg = bWins ? "#EA2C0008" : "#1A1A1A08";
-
-  const calloutParts: string[] = [];
-  if (Math.abs(investDiff) > 1000) {
-    calloutParts.push(`${fmt(Math.abs(investDiff))} ${investDiff > 0 ? "less" : "more"} investment`);
-  }
-  if (Math.abs(roiDiffPts) >= 1) {
-    calloutParts.push(`${Math.abs(roiDiffPts).toFixed(0)}% ${roiDiffPts > 0 ? "higher" : "lower"} ROI`);
-  }
-  if (paybackDiff !== null && Math.abs(paybackDiff) >= 1) {
-    calloutParts.push(`payback ${Math.abs(paybackDiff)} mo ${paybackDiff > 0 ? "earlier" : "later"}`);
-  }
-
-  const tableRows = [
-    {
-      label: "Total Investment",
-      a: fmt(summaryA.termInvestment),
-      b: fmt(summaryB.termInvestment),
-      aWins: summaryA.termInvestment < summaryB.termInvestment,
-      bWins: summaryB.termInvestment < summaryA.termInvestment,
-    },
-    {
-      label: "Net Value",
-      a: fmt(summaryA.termNet),
-      b: fmt(summaryB.termNet),
-      aWins: summaryA.termNet > summaryB.termNet,
-      bWins: summaryB.termNet > summaryA.termNet,
-    },
-    {
-      label: "Payback",
-      a: summaryA.paybackMonth ? `Month ${summaryA.paybackMonth}` : "—",
-      b: summaryB.paybackMonth ? `Month ${summaryB.paybackMonth}` : "—",
-      aWins: (summaryA.paybackMonth ?? 999) < (summaryB.paybackMonth ?? 999),
-      bWins: (summaryB.paybackMonth ?? 999) < (summaryA.paybackMonth ?? 999),
-    },
-  ];
-
-  const settingNames = settingsWithB.map(s => s.label).join(", ");
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="mb-6 rounded-xl border border-[#E8E2DA] overflow-hidden shadow-sm bg-white"
-      data-testid="scenario-comparison-card"
-    >
-      {/* Header */}
-      <div className="flex items-center gap-2 px-4 py-3 bg-[#1A1A1A] text-white">
-        <GitCompare className="w-3.5 h-3.5 text-white/60" />
-        <p className="text-[11px] font-bold uppercase tracking-widest">Scenario Comparison</p>
-        <span className="text-[10px] text-white/40">{settingNames}</span>
-        <button
-          onClick={onPrint}
-          disabled={isPrinting}
-          className="ml-auto inline-flex items-center gap-1.5 text-[10px] font-semibold text-white/70 hover:text-white bg-white/10 hover:bg-white/20 disabled:opacity-50 rounded-full px-3 py-1 transition-colors"
-        >
-          {isPrinting
-            ? <Loader2 className="w-3 h-3 animate-spin" />
-            : <Download className="w-3 h-3" />
-          }
-          {isPrinting ? "Generating..." : "Export PDF"}
-        </button>
-      </div>
-
-      {/* Delta callout */}
-      {calloutParts.length > 0 && (
-        <div className="px-5 py-3.5 border-b border-[#F0EAE2]" style={{ backgroundColor: winnerBg }}>
-          <p className="text-sm font-bold" style={{ color: winnerColor }}>
-            {winnerLabel} — {calloutParts.join(" · ")}
-          </p>
-          <p className="text-[11px] text-neutral-400 mt-0.5">Value drivers are shared between both scenarios.</p>
-        </div>
-      )}
-
-      {/* Chart */}
-      <div className="px-5 pt-5 pb-3">
-        <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-4">Cumulative Net Value</p>
-        <ResponsiveContainer width="100%" height={200}>
-          <ComposedChart data={chartData} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#F0EAE2" vertical={false} />
-            <XAxis dataKey="label" tick={{ fontSize: 9, fill: "#A39888" }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
-            <YAxis tickFormatter={fmtY} tick={{ fontSize: 9, fill: "#A39888" }} axisLine={false} tickLine={false} width={52}
-              domain={[(dataMin: number) => Math.min(dataMin * 1.15, -Math.abs(chartData[0]?.A ?? 0) * 3 || -10000), "auto"]} />
-            <ReferenceLine y={0} stroke="#C4BBAD" strokeWidth={1.5} strokeDasharray="4 2" label={{ value: "Break even", position: "insideBottomLeft", fontSize: 9, fill: "#A39888" }} />
-            <Tooltip
-              formatter={(value: number, name: string) => [fmtY(value), name === "A" ? "Scenario A" : "Scenario B"]}
-              contentStyle={{ fontSize: 11, border: "1px solid #E8E2DA", borderRadius: 8, padding: "6px 10px" }}
-              labelStyle={{ fontWeight: 700, marginBottom: 4, fontSize: 11 }}
-            />
-            <Line dataKey="A" stroke="#1A1A1A" strokeWidth={2.5} dot={false} name="A" type="monotone" connectNulls />
-            <Line dataKey="B" stroke="#EA2C00" strokeWidth={2.5} strokeDasharray="7 3" dot={false} name="B" type="monotone" connectNulls />
-          </ComposedChart>
-        </ResponsiveContainer>
-
-        <div className="flex items-center gap-5 mt-3 justify-end">
-          <div className="flex items-center gap-1.5">
-            <div className="h-[2.5px] w-6 rounded-full bg-[#1A1A1A]" />
-            <span className="text-[10px] text-neutral-500 font-medium">Scenario A</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <svg width="24" height="3" viewBox="0 0 24 3"><line x1="0" y1="1.5" x2="24" y2="1.5" stroke="#EA2C00" strokeWidth="2.5" strokeDasharray="7 3" /></svg>
-            <span className="text-[10px] text-neutral-500 font-medium">Scenario B</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Summary table */}
-      <div className="border-t border-[#F0EAE2]">
-        <div className="grid grid-cols-[1fr_1fr_1fr] bg-[#FAFAF7] border-b border-[#F0EAE2]">
-          <div className="px-5 py-2" />
-          <div className="px-5 py-2 border-l border-[#F0EAE2]">
-            <p className="text-[10px] font-bold text-[#6B5E4F] uppercase tracking-wider">Scenario A</p>
-          </div>
-          <div className="px-5 py-2 border-l border-[#F0EAE2]">
-            <p className="text-[10px] font-bold text-[#EA2C00] uppercase tracking-wider">Scenario B</p>
-          </div>
-        </div>
-        {tableRows.map((row, i) => (
-          <div key={row.label} className={`grid grid-cols-[1fr_1fr_1fr] ${i < tableRows.length - 1 ? "border-b border-[#F5F0EB]" : ""}`}>
-            <div className="px-5 py-3">
-              <p className="text-[11px] text-[#8C7E6E] font-medium">{row.label}</p>
-            </div>
-            <div className={`px-5 py-3 border-l border-[#F0EAE2] ${row.aWins ? "bg-[#F5F0EB]" : ""}`}>
-              <p className={`text-sm font-bold ${row.aWins ? "text-[#1A1A1A]" : "text-neutral-400"}`}>{row.a}</p>
-              {row.aWins && <p className="text-[9px] text-[#6B5E4F] font-semibold mt-0.5">↑ better</p>}
-            </div>
-            <div className={`px-5 py-3 border-l border-[#F0EAE2] ${row.bWins ? "bg-[#EA2C00]/5" : ""}`}>
-              <p className={`text-sm font-bold ${row.bWins ? "text-[#EA2C00]" : "text-neutral-400"}`}>{row.b}</p>
-              {row.bWins && <p className="text-[9px] text-[#EA2C00] font-semibold mt-0.5">↑ better</p>}
-            </div>
-          </div>
-        ))}
-      </div>
-    </motion.div>
-  );
-}
-
-// ─── DEAL-LEVEL PRICING COMPARISON MODAL ────────────────────────────────────
-
-function fmtCurrentPricing(s: ProformaSettingSnapshot): string {
-  if (s.pricingModel === "perEncounter") return `$${s.costPerEncounter ?? 0}/enc`;
-  if (s.pricingModel === "annualFlat") return `$${Math.round((s.annualLicenseFee ?? 0) / 1000)}K/yr`;
-  if (s.pricingModel === "platform") return `$${Math.round((s.annualLicenseFee ?? 0) / 1000)}K + $${s.platformEncRate ?? 0}/enc`;
-  return `$${s.costPerUnit ?? 0}/provider/mo`;
-}
-
-function CompareDealPricingModal({
-  settings,
-  onApply,
-  onClear,
-  onClose,
-  hasComparison,
-}: {
-  settings: ProformaSettingSnapshot[];
-  onApply: (b: Partial<ScenarioDealTerms>) => void;
-  onClear: () => void;
-  onClose: () => void;
-  hasComparison: boolean;
-}) {
-  const existingB = settings.find(s => s.scenarioB)?.scenarioB;
-  const [model, setModel] = useState<"perUnit" | "annualFlat" | "perEncounter" | "platform">(
-    existingB?.pricingModel ?? "perEncounter"
-  );
-  const [costPerUnit,      setCostPerUnit]      = useState(existingB?.costPerUnit      ?? settings[0]?.costPerUnit      ?? 200);
-  const [costPerEncounter, setCostPerEncounter] = useState(existingB?.costPerEncounter ?? settings[0]?.costPerEncounter ?? 6);
-  const [annualFee,        setAnnualFee]        = useState(existingB?.annualLicenseFee ?? settings[0]?.annualLicenseFee ?? 500000);
-  const [platformFee,      setPlatformFee]      = useState(existingB?.annualLicenseFee ?? settings[0]?.annualLicenseFee ?? 200000);
-  const [platformEncRate,  setPlatformEncRate]  = useState(existingB?.platformEncRate  ?? settings[0]?.platformEncRate  ?? 2);
-
-  const modelDefs = [
-    { key: "perUnit"      as const, label: "$/Provider/Mo" },
-    { key: "perEncounter" as const, label: "Per Encounter" },
-    { key: "annualFlat"   as const, label: "Annual Flat"   },
-    { key: "platform"     as const, label: "Platform"      },
-  ];
-
-  const handleApply = () => {
-    const b: Partial<ScenarioDealTerms> = { pricingModel: model };
-    if (model === "perUnit")      { b.costPerUnit = costPerUnit; }
-    if (model === "perEncounter") { b.costPerEncounter = costPerEncounter; }
-    if (model === "annualFlat")   { b.annualLicenseFee = annualFee; b.yearlyPricing = { year1: annualFee, year2: annualFee, year3: annualFee }; }
-    if (model === "platform")     { b.annualLicenseFee = platformFee; b.platformEncRate = platformEncRate; }
-    onApply(b);
-  };
-
-  const inputCls = "flex-1 h-9 text-sm border border-[#DDD6CC] rounded-lg px-3 text-right focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/20";
-
-  return (
-    <AnimatePresence>
-      <>
-        <motion.div
-          initial={{ opacity: 0 }} animate={{ opacity: 0.45 }} exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black z-50" onClick={onClose}
-        />
-        <motion.div
-          initial={{ opacity: 0, scale: 0.96, y: 12 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.96, y: 12 }}
-          transition={{ type: "spring", damping: 28, stiffness: 340 }}
-          className="fixed inset-x-4 top-1/2 -translate-y-1/2 max-w-sm mx-auto bg-white rounded-2xl shadow-2xl z-50 overflow-hidden"
-        >
-          {/* Header */}
-          <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-100">
-            <div>
-              <h2 className="text-sm font-bold text-neutral-900">Compare Deal Pricing</h2>
-              <p className="text-[11px] text-neutral-400 mt-0.5">Applies Scenario B to all {settings.length} care settings</p>
-            </div>
-            <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-neutral-100 text-neutral-400 transition-colors">
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-
-          <div className="px-5 py-5 space-y-5">
-            {/* Current A pricing */}
-            <div className="rounded-lg bg-[#F5F0EB] px-4 py-3">
-              <p className="text-[10px] font-bold text-[#8C7E6E] uppercase tracking-wider mb-2">Scenario A — Current</p>
-              <div className="space-y-1">
-                {settings.map(s => (
-                  <div key={s.id} className="flex items-center justify-between">
-                    <span className="text-[11px] text-neutral-600">{s.label}</span>
-                    <span className="text-[11px] font-semibold text-neutral-800">{fmtCurrentPricing(s)}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Scenario B model */}
-            <div>
-              <p className="text-[11px] font-semibold text-neutral-700 mb-2">Scenario B — Alternate pricing</p>
-              <div className="flex items-center gap-0.5 bg-[#F5F0EB] rounded-full p-0.5 mb-4">
-                {modelDefs.map(m => (
-                  <button key={m.key} onClick={() => setModel(m.key)}
-                    className={`flex-1 py-1 rounded-full text-[10px] font-medium transition-colors ${
-                      model === m.key ? "bg-white text-neutral-900 shadow-sm" : "text-[#8C7E6E] hover:text-neutral-900"
-                    }`}
-                  >
-                    {m.label}
-                  </button>
-                ))}
-              </div>
-
-              {model === "perUnit" && (
-                <div className="flex items-center gap-2">
-                  <span className="text-[11px] text-neutral-400">$</span>
-                  <FormattedNumberInput value={costPerUnit} onChange={setCostPerUnit} className={inputCls} />
-                  <span className="text-[11px] text-neutral-400 whitespace-nowrap">/ provider / mo</span>
-                </div>
-              )}
-              {model === "perEncounter" && (
-                <div className="flex items-center gap-2">
-                  <span className="text-[11px] text-neutral-400">$</span>
-                  <FormattedNumberInput value={costPerEncounter} onChange={setCostPerEncounter} className={inputCls} />
-                  <span className="text-[11px] text-neutral-400 whitespace-nowrap">/ encounter</span>
-                </div>
-              )}
-              {model === "annualFlat" && (
-                <div className="flex items-center gap-2">
-                  <span className="text-[11px] text-neutral-400">$</span>
-                  <FormattedNumberInput value={annualFee} onChange={setAnnualFee} className={inputCls} />
-                  <span className="text-[11px] text-neutral-400 whitespace-nowrap">/ year total</span>
-                </div>
-              )}
-              {model === "platform" && (
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[11px] text-neutral-400">$</span>
-                    <FormattedNumberInput value={platformFee} onChange={setPlatformFee} className={inputCls} />
-                    <span className="text-[11px] text-neutral-400 whitespace-nowrap">/ yr platform</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[11px] text-neutral-400">+$</span>
-                    <FormattedNumberInput value={platformEncRate} onChange={setPlatformEncRate} className={inputCls} />
-                    <span className="text-[11px] text-neutral-400 whitespace-nowrap">/ encounter</span>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Footer */}
-          <div className="px-5 py-4 border-t border-neutral-100 flex items-center justify-between">
-            {hasComparison
-              ? <button onClick={onClear} className="text-[11px] text-red-400 hover:text-red-600 font-medium transition-colors">Clear comparison</button>
-              : <div />
-            }
-            <div className="flex items-center gap-2">
-              <button onClick={onClose} className="px-4 py-1.5 text-xs text-neutral-500 hover:text-neutral-700 font-medium transition-colors">Cancel</button>
-              <button onClick={handleApply} className="px-4 py-1.5 bg-[#1A1A1A] text-white text-xs font-semibold rounded-full hover:bg-[#333] transition-colors">
-                Apply to all settings
-              </button>
-            </div>
-          </div>
-        </motion.div>
-      </>
-    </AnimatePresence>
   );
 }
 
@@ -675,46 +332,7 @@ export default function ProformaHub({
     setTimeout(() => el.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
   }, [editingId]);
   const [assumptionsDrawerSettingId, setAssumptionsDrawerSettingId] = useState<string | null>(null);
-  const [drawerInitialScenario, setDrawerInitialScenario] = useState<"A" | "B">("A");
-  const [showComparePricingModal, setShowComparePricingModal] = useState(false);
-  const [isPrinting, setIsPrinting] = useState(false);
 
-  const handleApplyDealComparison = useCallback((bRates: Partial<ScenarioDealTerms>) => {
-    settings.forEach(s => {
-      onUpdateSetting(s.id, {
-        scenarioB: {
-          pricingModel: bRates.pricingModel,
-          costPerUnit: bRates.costPerUnit,
-          costPerEncounter: bRates.costPerEncounter,
-          annualLicenseFee: bRates.annualLicenseFee,
-          platformEncRate: bRates.platformEncRate,
-          yearlyPricing: bRates.yearlyPricing,
-          providerCount: s.providerCount,
-          fullScaleProviders: s.fullScaleProviders,
-          yearlyProviders: s.yearlyProviders,
-          yearlyUtilization: s.yearlyUtilization,
-          yearlyEncounters: s.yearlyEncounters,
-          goLiveMonth: s.goLiveMonth,
-        },
-      });
-    });
-    setShowComparePricingModal(false);
-  }, [settings, onUpdateSetting]);
-
-  const handleClearDealComparison = useCallback(() => {
-    settings.forEach(s => onUpdateSetting(s.id, { scenarioB: undefined }));
-    setShowComparePricingModal(false);
-  }, [settings, onUpdateSetting]);
-
-  const handlePrintScenarioComparison = useCallback(async () => {
-    if (isPrinting) return;
-    setIsPrinting(true);
-    try {
-      await generateScenarioComparisonPDF(settings, config);
-    } finally {
-      setIsPrinting(false);
-    }
-  }, [settings, config, isPrinting]);
   const addedSettings = settings.map(s => s.careSetting);
   const hasNursing = settings.some(s => s.careSetting === "nursing");
   const availableSettings = ALL_SETTINGS.filter(s => !addedSettings.includes(s));
@@ -742,16 +360,6 @@ export default function ProformaHub({
     }
     return map;
   }, [settings, config]);
-
-  const settingsWithB = settings.filter(s => s.scenarioB);
-  const proformaB = useMemo(() => {
-    if (!settings.some(s => s.scenarioB)) return null;
-    const settingsForB = settings.map(s => s.scenarioB ? { ...s, ...s.scenarioB } : s);
-    const cashFlows = buildMonthlyCashFlows(settingsForB, config);
-    return { cashFlows, summary: calculateProformaSummary(settingsForB, config, cashFlows) };
-  }, [settings, config]);
-
-  const summaryB = proformaB?.summary ?? null;
 
   const totalHours = settings.reduce((s, v) => s + v.totalHoursSaved, 0);
   const totalProviders = settings.reduce((s, v) => s + v.providerCount, 0);
@@ -943,11 +551,6 @@ export default function ProformaHub({
                           <div>
                             <div className="flex items-center gap-2">
                               <h3 className="font-bold text-neutral-900">{setting.label}</h3>
-                              {setting.scenarioB && (
-                                <span className="text-[9px] font-bold tracking-wide uppercase px-1.5 py-0.5 rounded-full bg-[#EA2C00]/10 text-[#EA2C00]">
-                                  A / B
-                                </span>
-                              )}
                             </div>
                             <p className="text-sm text-[#8C7E6E] flex items-center gap-1.5 flex-wrap">
                               {isEncPricing
@@ -1054,12 +657,6 @@ export default function ProformaHub({
                           )}
                         </div>
                         <div className="shrink-0 flex items-center gap-3">
-                          {setting.scenarioB && (
-                            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#EA2C00] bg-[#EA2C00]/8 px-2 py-0.5 rounded-full">
-                              <ArrowLeftRight className="w-2.5 h-2.5" />
-                              A/B
-                            </span>
-                          )}
                           <button
                             onClick={() => setEditingId(isEditing ? null : setting.id)}
                             className={`inline-flex items-center gap-1.5 text-xs font-medium transition-colors ${isEditing ? 'text-[#EA2C00]' : 'text-[#6B5E4F] hover:text-[#4A3F35]'}`}
@@ -1070,10 +667,7 @@ export default function ProformaHub({
                           </button>
                           <span className="text-[#D8CFC4] select-none">&middot;</span>
                           <button
-                            onClick={() => {
-                              setDrawerInitialScenario("A");
-                              setAssumptionsDrawerSettingId(setting.id);
-                            }}
+                            onClick={() => setAssumptionsDrawerSettingId(setting.id)}
                             className="inline-flex items-center gap-1.5 text-xs text-[#6B5E4F] hover:text-[#4A3F35] font-medium transition-colors"
                             data-testid={`button-edit-assumptions-${setting.careSetting}`}
                           >
@@ -1125,19 +719,6 @@ export default function ProformaHub({
             })}
           </AnimatePresence>
         </div>
-
-        {proformaA && proformaB && settingsWithB.length > 0 && (
-          <ScenarioComparisonCard
-            cashFlowsA={proformaA.cashFlows}
-            cashFlowsB={proformaB.cashFlows}
-            summaryA={proformaA.summary}
-            summaryB={proformaB.summary}
-            config={config}
-            settingsWithB={settingsWithB}
-            onPrint={handlePrintScenarioComparison}
-            isPrinting={isPrinting}
-          />
-        )}
 
         {settings.length === 0 && (
           <motion.div
@@ -1206,23 +787,12 @@ export default function ProformaHub({
       <AssumptionsDrawer
         setting={settings.find(s => s.id === assumptionsDrawerSettingId) ?? null}
         config={config}
-        onClose={() => { setAssumptionsDrawerSettingId(null); setDrawerInitialScenario("A"); }}
+        onClose={() => setAssumptionsDrawerSettingId(null)}
         onUpdate={handleDriverChangeWithExplore}
         onOnsetChange={handleDriverOnsetChange}
         onUpdateSetting={onUpdateSetting}
         onEditInExplore={onEditSetting}
-        initialScenario={drawerInitialScenario}
       />
-
-      {showComparePricingModal && (
-        <CompareDealPricingModal
-          settings={settings}
-          hasComparison={settingsWithB.length > 0}
-          onApply={handleApplyDealComparison}
-          onClear={handleClearDealComparison}
-          onClose={() => setShowComparePricingModal(false)}
-        />
-      )}
 
       <AnimatePresence>
         {presenting && summary && (

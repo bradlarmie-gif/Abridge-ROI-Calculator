@@ -206,7 +206,6 @@ export function mergeExploreEditIntoSetting(
     goLiveMonth: old.goLiveMonth,
     // proforma-only constructs
     costOffsets: old.costOffsets,
-    scenarioB: old.scenarioB,
   };
 }
 
