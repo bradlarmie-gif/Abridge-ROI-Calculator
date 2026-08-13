@@ -446,8 +446,9 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
             )}
           </div>
 
-          {/* Snapshot */}
-          <div className="bg-[#FDFBF8] border border-[#E7E3DD] rounded-[20px] px-7 py-[26px] h-full flex flex-col">
+          {/* Snapshot + continue, anchored to the right column */}
+          <div className="flex flex-col gap-5 h-full">
+          <div className="bg-[#FDFBF8] border border-[#E7E3DD] rounded-[20px] px-7 py-[26px] flex-1 flex flex-col">
             {(() => {
               const total = isNursing ? nursingTotalShiftsPerYear : annualEncounters;
               const enabled = isNursing ? nursingEligibleShifts : eligibleEncounters;
@@ -503,18 +504,18 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
               );
             })()}
           </div>
+          <div className="flex justify-end">
+            <button
+              type="button"
+              disabled={!isValid}
+              onClick={onNext}
+              data-testid="ed-practice-continue"
+              className="bg-[#EA2C00] text-white text-[15px] font-bold px-7 py-[14px] rounded-[12px] shadow-[0_2px_6px_rgba(234,44,0,0.15)] disabled:opacity-40"
+            >
+              Continue →
+            </button>
+          </div>
         </div>
-
-        <div className="flex justify-end mt-[30px]">
-          <button
-            type="button"
-            disabled={!isValid}
-            onClick={onNext}
-            data-testid="ed-practice-continue"
-            className="bg-[#EA2C00] text-white text-[15px] font-bold px-7 py-[14px] rounded-[12px] shadow-[0_2px_6px_rgba(234,44,0,0.15)] disabled:opacity-40"
-          >
-            Continue →
-          </button>
         </div>
       </div>
     </EditorialShell>

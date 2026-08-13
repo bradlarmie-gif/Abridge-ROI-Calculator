@@ -198,7 +198,7 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
               />
               <EqOp>×</EqOp>
               <EqNum
-                cap="Abridge keeps"
+                cap="Abridge impact"
                 value={impactPct}
                 suffix="%"
                 onChange={(v) => updateTimeDriverInputs({ retentionImpactScenario: "custom", retentionCustomPercent: v })}
@@ -220,7 +220,7 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
                 {[
                   { v: `${turnoverValue}%`, l: "turnover" },
                   { v: `${burnoutValue}%`, l: "tied to burnout" },
-                  { v: `${impactPct}%`, l: "Abridge keeps" },
+                  { v: `${impactPct}%`, l: "Abridge impact" },
                   { v: `≈ ${formatNum1(providersRetained)}`, l: "providers/yr kept" },
                 ].map((s) => (
                   <div key={s.l}>
@@ -288,7 +288,7 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
               <EqOp>×</EqOp>
               <EqCarried cap="tied to burnout">{burnoutValue}%</EqCarried>
               <EqOp>×</EqOp>
-              <EqCarried cap="Abridge keeps">{impactPct}%</EqCarried>
+              <EqCarried cap="Abridge impact">{impactPct}%</EqCarried>
               <EqOp>×</EqOp>
               <EqNum
                 cap="wks locum avoided"
@@ -462,7 +462,7 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
               <EqCarried cap="tied to burnout">40%</EqCarried>
               <EqOp>×</EqOp>
               <EqNum
-                cap="Abridge keeps"
+                cap="Abridge impact"
                 value={impactPct}
                 suffix="%"
                 onChange={(v) => updateTimeDriverInputs({ retentionImpactScenario: "custom", retentionCustomPercent: v })}
@@ -484,7 +484,7 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
                 {[
                   { v: `${td.nursingTurnoverRate}%`, l: "turnover" },
                   { v: "40%", l: "tied to burnout" },
-                  { v: `${impactPct}%`, l: "Abridge keeps" },
+                  { v: `${impactPct}%`, l: "Abridge impact" },
                   { v: `≈ ${formatNum1(retained)}`, l: "nurses/yr kept" },
                 ].map((s) => (
                   <div key={s.l}>
@@ -552,7 +552,7 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
               <EqOp>×</EqOp>
               <EqCarried cap="tied to burnout">40%</EqCarried>
               <EqOp>×</EqOp>
-              <EqCarried cap="Abridge keeps">{impactPct}%</EqCarried>
+              <EqCarried cap="Abridge impact">{impactPct}%</EqCarried>
               <EqOp>×</EqOp>
               <EqNum
                 cap="wks agency avoided"

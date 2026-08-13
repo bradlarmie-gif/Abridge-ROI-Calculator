@@ -280,8 +280,9 @@ export default function EdInvestment({
             )}
           </div>
 
-          {/* Return stack */}
-          <div className="bg-[#FDFBF8] border border-[#E7E3DD] rounded-[20px] p-[24px_26px]">
+          {/* Return stack + continue, anchored to the right column */}
+          <div className="flex flex-col gap-5 h-full">
+          <div className="bg-[#FDFBF8] border border-[#E7E3DD] rounded-[20px] p-[24px_26px] flex-1">
             <div className="text-[11px] font-extrabold tracking-[0.09em] uppercase text-[#2E2822] mb-4">What it returns</div>
 
             {QUADRANT_ORDER.map((q) => {
@@ -338,21 +339,22 @@ export default function EdInvestment({
               <b className="text-[#1A1A1A] font-bold">Most of this builds over the first year</b> as adoption ramps. Time given back shows first, in weeks; revenue capture and recapture follow across the year.
             </p>
           </div>
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={onNext}
+              data-testid="ed-investment-continue"
+              className="bg-[#EA2C00] text-white text-[15px] font-bold px-7 py-[14px] rounded-[12px] shadow-[0_2px_6px_rgba(234,44,0,0.15)] flex-shrink-0"
+            >
+              See your model →
+            </button>
+          </div>
+          </div>
         </div>
 
-        <div className="flex justify-between items-center mt-[26px]">
-          <p className="text-[12px] text-[#7C766F] max-w-[560px] leading-[1.5]">
-            An estimate built from the figures you entered, not a guarantee of financial results. Actual outcomes vary. You confirm the real numbers as you measure.
-          </p>
-          <button
-            type="button"
-            onClick={onNext}
-            data-testid="ed-investment-continue"
-            className="bg-[#EA2C00] text-white text-[15px] font-bold px-7 py-[14px] rounded-[12px] shadow-[0_2px_6px_rgba(234,44,0,0.15)] flex-shrink-0"
-          >
-            See your model →
-          </button>
-        </div>
+        <p className="text-[12px] text-[#7C766F] max-w-[560px] leading-[1.5] mt-6">
+          An estimate built from the figures you entered, not a guarantee of financial results. Actual outcomes vary. You confirm the real numbers as you measure.
+        </p>
       </div>
     </EditorialShell>
   );
