@@ -492,9 +492,12 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
                           Your annual {unit} times the share documented with Abridge. Enter your numbers on the left and it fills in here.
                         </p>
                         <div className="mt-7 flex flex-col gap-[11px]">
+                          {/* mirror the left-side field labels exactly, per setting
+                              (providerLabel + `Annual {unit}`), so inpatient reads
+                              "Annual discharges", nursing "Annual shifts", etc. */}
                           {[
-                            isNursing ? "Nurses" : "Providers",
-                            isNursing ? "Annual shifts" : "Annual encounters",
+                            providerLabel,
+                            `Annual ${unit}`,
                             isNursing ? "Share documenting" : "Documented share",
                           ].map((l) => (
                             <div key={l} className="flex items-center gap-[10px] text-[13px] text-[#B0A99E]">
