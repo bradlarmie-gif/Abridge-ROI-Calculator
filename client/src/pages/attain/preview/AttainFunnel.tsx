@@ -39,7 +39,7 @@ const cardCls = (sel: boolean) =>
 export function SettingStep({ selected, onSelect }: { selected: AttainSetting | null; onSelect: (s: AttainSetting) => void }) {
   return (
     <div>
-      <p className={`${LBL} mb-2`}>Step 1 · Where does this plan live?</p>
+      <p className={`${LBL} mb-2`}>Step 2 · Where does this plan live?</p>
       <h2 className={`${H2} mb-3`}>Pick the care setting</h2>
       <p className={`${HELP} mb-8`}>Every plan is scoped to one care setting, because the goals, the value chain, and the benchmarks all change with it. You can build a separate plan for another setting later.</p>
       <div className="grid sm:grid-cols-2 gap-3">

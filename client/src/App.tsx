@@ -47,7 +47,6 @@ import AppRatEditorialPdfRoute from "@/components/forecast/AppRatEditorialPdfRou
 import QuickRoiEditorialPdfRoute from "@/components/forecast/QuickRoiEditorialPdfRoute";
 import MethodologyEditorialPdfRoute from "@/components/methodology/MethodologyEditorialPdfRoute";
 import { ExploreFlow, type ExploreState, type ExploreCareSetting, type ExplorePhase } from "@/pages/explore";
-import AttainFlow from "@/pages/attain/AttainFlow";
 import AttainConsultPreview from "@/pages/attain/AttainConsultPreview";
 import AttainPlanPreview from "@/pages/attain/AttainPlanPreview";
 import AttainMatrixPreview from "@/pages/attain/preview/AttainMatrixPreview";

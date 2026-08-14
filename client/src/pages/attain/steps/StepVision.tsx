@@ -22,7 +22,7 @@ export default function StepVision({ setting, selectedGoals, onToggle, goals: go
     <div>
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
         <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-3" data-testid="text-step-eyebrow">
-          Step 2 · What are you actually chasing?
+          Step 3 · What are you actually chasing?
         </p>
         <h1 className="text-2xl md:text-4xl font-bold text-black mb-3 font-abridge uppercase tracking-tight" data-testid="text-step-title">
           Pick the goals

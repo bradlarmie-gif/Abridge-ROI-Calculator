@@ -135,7 +135,7 @@ export default function StepScope({ setting, goals = [], baseline, onChangeBasel
     <div>
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-10 max-w-[620px]">
         <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-3" data-testid="text-step-eyebrow">
-          Step 3 · Where are you starting from?
+          Step 4 · Where are you starting from?
         </p>
         <h1 className="text-2xl md:text-4xl font-bold text-black mb-3 font-abridge uppercase tracking-tight" data-testid="text-step-title">
           Your starting point
