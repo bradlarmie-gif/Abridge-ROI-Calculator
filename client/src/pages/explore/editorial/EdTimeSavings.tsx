@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { EditorialHeader, EditorialShell } from "./EditorialHeader";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { type ExploreState, type TimePathScenario } from "../ExploreFlow";
@@ -28,20 +27,8 @@ export default function EdTimeSavings({ state, updateState, onNext, onBack, onHo
       : isNursing
         ? { conservative: 20, typical: 30, aggressive: 40 }
         : { conservative: 2, typical: 3, aggressive: 4 };
-
-  // The header promises a conservative starting point ("we start conservative").
-  // Seed it once, on first arrival, so the screen never lands on all-zeros that
-  // contradict its own copy. Guard on timePathScenario === null (never picked);
-  // once seeded this will not re-fire, and it never overrides a user's choice.
-  useEffect(() => {
-    if (state.timePathScenario == null) {
-      updateState({
-        timePathScenario: "conservative",
-        minutesSavedPerEncounter: scenarioMinutes.conservative,
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // No auto-seed: the screen starts blank (placeholder) and the rep picks a
+  // quick-fill or types their own, like the other steps. Nothing is pre-selected.
 
   const nursingShiftsPerYear = state.numberOfProviders * state.nursingShiftsPerNurseYear;
   const nursingEligibleShifts = Math.round(nursingShiftsPerYear * (state.utilizationPercent / 100));
@@ -102,8 +89,8 @@ export default function EdTimeSavings({ state, updateState, onNext, onBack, onHo
           How much time can Abridge give back?
         </h1>
         <p className="text-[16.5px] text-[#565250] mt-[14px] max-w-[600px] leading-[1.5]">
-          A couple of minutes off each {noteUnit} adds up fast across your volume. We start conservative; you confirm
-          the real figure when you measure.
+          A couple of minutes off each {noteUnit} adds up fast across your volume. Pick a starting point or type your
+          own; confirm the real figure when you measure.
         </p>
 
         {/* Two balanced halves: left builds it, right shows the result. */}
@@ -118,8 +105,9 @@ export default function EdTimeSavings({ state, updateState, onNext, onBack, onHo
                 value={state.minutesSavedPerEncounter}
                 onChange={handleCustomMinutes}
                 step={0.1}
+                placeholder="e.g., 2.5"
                 data-testid="ed-input-minutes-saved"
-                className="flex-1 self-center font-abridge text-[22px] leading-none text-[#1A1A1A] tabular-nums bg-transparent border-0 p-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                className="flex-1 self-center font-abridge text-[22px] leading-none text-[#1A1A1A] tabular-nums bg-transparent border-0 p-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-[15px] placeholder:font-sans placeholder:font-normal placeholder:not-italic placeholder:text-[#B5AFA6]"
               />
               <span className="text-[14px] text-[#565250] self-center">min</span>
             </div>
@@ -145,10 +133,14 @@ export default function EdTimeSavings({ state, updateState, onNext, onBack, onHo
               <div className="text-[10px] font-extrabold tracking-[0.06em] uppercase text-[#443A32] mb-3">How it adds up</div>
               <div className="text-[15px] text-[#565250] leading-[1.85]">
                 <b className="font-abridge text-[17px] text-[#1A1A1A]">{formatNumber(volumeValue)}</b> Abridge {noteUnit}s a year<br />
-                <span className="text-[#AFA491]">×</span> <b className="font-abridge text-[17px] text-[#1A1A1A]">{state.minutesSavedPerEncounter} min</b> saved on each
+                {state.minutesSavedPerEncounter > 0 ? (
+                  <><span className="text-[#AFA491]">×</span> <b className="font-abridge text-[17px] text-[#1A1A1A]">{state.minutesSavedPerEncounter} min</b> saved on each</>
+                ) : (
+                  <span className="text-[#B5AFA6]">× pick a starting point or type the minutes above</span>
+                )}
               </div>
               <p className="text-[12px] text-[#7C766F] mt-3 leading-[1.5]">
-                Seeded conservatively from {settingWord} implementations. You measure the real number on Progress.
+                The quick-fills are seeded conservatively from {settingWord} implementations. You measure the real number on Progress.
               </p>
             </div>
           </div>
