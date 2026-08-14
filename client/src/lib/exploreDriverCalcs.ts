@@ -106,10 +106,16 @@ export function computeAllDriverValues(
         : 0;
     const reinvest = (td.capacityRealizationPercent ?? 25) / 100;
     const visitHrs = (td.visitDuration ?? 30) / 60;
+    // Observed override (ROI calc, live partner): the rep enters the added
+    // visits/provider they actually see, so we count that directly instead of
+    // deriving it from an assumed reinvest %. Explore leaves the override unset
+    // and keeps the reinvest-driven model.
     const visitsPerWk =
-      visitHrs > 0
-        ? Math.round((hrsPerProvWk * reinvest / visitHrs) * 10) / 10
-        : 0;
+      td.patientAccessVisitsPerProvWk && td.patientAccessVisitsPerProvWk > 0
+        ? td.patientAccessVisitsPerProvWk
+        : visitHrs > 0
+          ? Math.round((hrsPerProvWk * reinvest / visitHrs) * 10) / 10
+          : 0;
     result.patientAccess = Math.round(
       visitsPerWk * eff * 48 * td.revenuePerVisit,
     );
@@ -368,10 +374,16 @@ export function computeAllDriverCalcSummaries(
         : 0;
     const reinvest = (td.capacityRealizationPercent ?? 25) / 100;
     const visitHrs = (td.visitDuration ?? 30) / 60;
+    // Observed override (ROI calc, live partner): the rep enters the added
+    // visits/provider they actually see, so we count that directly instead of
+    // deriving it from an assumed reinvest %. Explore leaves the override unset
+    // and keeps the reinvest-driven model.
     const visitsPerWk =
-      visitHrs > 0
-        ? Math.round((hrsPerProvWk * reinvest / visitHrs) * 10) / 10
-        : 0;
+      td.patientAccessVisitsPerProvWk && td.patientAccessVisitsPerProvWk > 0
+        ? td.patientAccessVisitsPerProvWk
+        : visitHrs > 0
+          ? Math.round((hrsPerProvWk * reinvest / visitHrs) * 10) / 10
+          : 0;
     out.patientAccess = `${fmtN(eff)} providers × ${fmtNd(visitsPerWk)} visits/wk × 48 wks × ${fmt$(td.revenuePerVisit)}/visit`;
   }
   if (isED && td.edLwbsEnabled) {

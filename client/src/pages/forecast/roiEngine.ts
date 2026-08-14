@@ -334,18 +334,24 @@ const patientAccessDriver: RoiDriver = {
   id: "patientAccess",
   domain: "Capacity",
   title: "Patient access (reclaimed capacity)",
-  note: "Freed documentation time reinvested into more visits. Set the reclaimed minutes with the time metric below.",
+  note: "The added visits the partner is already seeing now that notes are faster. We count what they observe, then show what share of the reclaimed hours it uses.",
+  // The partner is live, so they OBSERVE their added visits — we count that
+  // directly (visits/provider/wk) rather than assuming a % of freed time gets
+  // reinvested. The card reads back what share of the reclaimed hours it uses.
   fields: [
-    { k: "accessProviders", label: "Providers reinvesting the time (0 = everyone on Abridge)", def: 0 },
-    { k: "capacityRealizationPercent", label: "Share of freed time reinvested into visits", def: 25, suffix: "%" },
+    { k: "accessVisitsPerProvWk", label: "Added visits per provider, each week", def: 0, step: 0.5, hint: "what the partner is actually seeing now that notes are faster" },
     { k: "visitDuration", label: "Minutes per added visit", def: 30, suffix: "min" },
     { k: "revenuePerVisit", label: "Margin per added visit", def: 200, prefix: "$" },
   ],
   applyToState: (s, v) => {
     const t = td(s);
     t.patientAccessEnabled = true;
-    t.accessProviders = v.accessProviders;
-    t.capacityRealizationPercent = v.capacityRealizationPercent;
+    t.accessProviders = 0; // everyone on Abridge
+    t.patientAccessVisitsPerProvWk = v.accessVisitsPerProvWk;
+    // Zero the assumed-reinvest fallback: with no observed visits entered, the
+    // value stays $0 (no fabricated number) rather than deriving one from a 25%
+    // assumption. The rep enters what they see.
+    t.capacityRealizationPercent = 0;
     t.visitDuration = v.visitDuration;
     t.revenuePerVisit = v.revenuePerVisit;
   },

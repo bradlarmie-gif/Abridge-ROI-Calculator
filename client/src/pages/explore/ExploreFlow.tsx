@@ -55,6 +55,7 @@ export interface TimeDriverInputs {
   additionalVisitsPerWeek: number;
   accessProviders: number;
   capacityRealizationPercent: number;
+  patientAccessVisitsPerProvWk: number; // ROI calc: observed added visits/provider/wk (0 = use reinvest model)
   visitDuration: number;
   revenuePerVisit: number;
   
@@ -560,6 +561,7 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     additionalVisitsPerWeek: 1,
     accessProviders: 0,
     capacityRealizationPercent: 25,
+    patientAccessVisitsPerProvWk: 0,
     visitDuration: 30,
     revenuePerVisit: 200,
     costReductionEnabled: false,

@@ -209,6 +209,33 @@ for (const route of PDF_ROUTES) {
   await ctx.close();
 }
 
+// ── Scroll-reset guard ──────────────────────────────────────────────────────
+// A screen must open at the TOP. SPA step changes are the trap: app-level scroll
+// reset fires on route changes but not on in-flow wizard steps, so the next step
+// inherits the previous scroll position and opens mid-page. Drive the ROI calc
+// scrolled-down through Lift → Answer and fail if the Answer opens below the top.
+try {
+  const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 } });
+  const page = await ctx.newPage();
+  await page.goto(BASE, { waitUntil: "networkidle" });
+  await page.waitForTimeout(400);
+  const enter = await page.$('[data-testid="button-enter-app"]');
+  if (enter) { await enter.click(); await page.waitForTimeout(300); }
+  await page.click('[data-testid="card-forecast"]'); await page.waitForTimeout(250);
+  await page.click('[data-testid="card-forecast-roi-calculator-button"]'); await page.waitForTimeout(250);
+  await page.click('button:has-text("Inpatient")'); await page.waitForTimeout(250);
+  await page.click('button:has-text("Next: the lift")'); await page.waitForTimeout(350);
+  // scroll to the bottom of the lift, then advance — the answer must land at top
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+  await page.waitForTimeout(150);
+  await page.click('button:has-text("See the answer")'); await page.waitForTimeout(450);
+  const y = await page.evaluate(() => window.scrollY);
+  if (y > 4) fails.push(`ROI calc: the Answer step opens at scrollY=${Math.round(y)}, not the top (step change didn't reset scroll)`);
+  await ctx.close();
+} catch (e) {
+  fails.push(`scroll-reset guard error ${String(e).slice(0, 100)}`);
+}
+
 await browser.close();
 
 if (fails.length) {

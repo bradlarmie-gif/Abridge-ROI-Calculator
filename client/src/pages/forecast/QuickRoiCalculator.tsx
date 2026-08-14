@@ -81,6 +81,13 @@ export default function QuickRoiCalculator({ onBack, onHome }: Props) {
   const [setting, setSetting] = useState<SettingKey | null>(null);
   const [step, setStep] = useState(0); // 0 = account, 1 = lift, 2 = answer
   const inPicker = setting === null;
+  // Every step change starts a new screen — always open it at the top. Without
+  // this, advancing while scrolled down (e.g. Lift -> Answer) opens the next
+  // screen mid-page. App-level scroll reset only fires on view changes, not on
+  // these in-flow step changes.
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }, [step, setting]);
   const goBack = () => {
     if (inPicker) onBack();
     else if (step > 0) setStep(step - 1);
@@ -154,8 +161,11 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
   const [occupancy, setOccupancy] = useState(d.occupancy ?? 85);
   // Documentation minutes in notes (before -> after). Feeds Patient Access
   // dollars (outpatient) and the reclaimed-hours proof (all physician settings).
-  const [timeBefore, setTimeBefore] = useState(meta.timeMetric?.before ?? 0);
-  const [timeAfter, setTimeAfter] = useState(meta.timeMetric?.after ?? 0);
+  // Blank by default (a live partner reads their own before/after off the impact
+  // analysis); the setting's benchmark shows as a ghost placeholder, not a
+  // fabricated pre-filled value.
+  const [timeBefore, setTimeBefore] = useState(0);
+  const [timeAfter, setTimeAfter] = useState(0);
 
   // ── drivers ──────────────────────────────────────────────────────────────
   const [vals, setVals] = useState<Record<string, number>>(() => defaultVals(setting));
@@ -325,11 +335,13 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
             {activeDomain === "Capacity" && !isNursing && meta.timeMetric && (
               <TimeBackBlock table={meta.timeMetric.table} before={timeBefore} after={timeAfter}
                 onBefore={setTimeBefore} onAfter={setTimeAfter} encToday={encToday} hours={hoursReclaimed}
-                dollarized={setting === "outpatient"} />
+                dollarized={setting === "outpatient"}
+                placeholderBefore={String(meta.timeMetric.before)} placeholderAfter={String(meta.timeMetric.after)} />
             )}
             {DRIVERS[setting].filter((dr) => dr.domain === activeDomain).map((dr) => (
               <DriverCard key={dr.id} driver={dr} vals={vals} setVal={setVal}
                 on={!!enabled[dr.id]} onToggle={() => toggle(dr.id)} eligibleEncounters={Math.round(encToday)}
+                hoursReclaimed={hoursReclaimed} providersOnAbridge={onAbridge}
                 value={today.valueById[dr.id] ?? 0} summary={today.summaryById[dr.id] ?? ""} />
             ))}
           </div>
@@ -383,10 +395,10 @@ function NumInput({ value, onChange, suffix, prefix, step = 1, w = "w-[168px]", 
   );
 }
 
-function NumInputAccent({ value, onChange, suffix, step = 0.01, w = "w-[96px]" }: { value: number; onChange: (n: number) => void; suffix?: string; step?: number; w?: string }) {
+function NumInputAccent({ value, onChange, suffix, step = 0.01, w = "w-[96px]", placeholder }: { value: number; onChange: (n: number) => void; suffix?: string; step?: number; w?: string; placeholder?: string }) {
   return (
     <div className={`${w} inline-flex items-baseline gap-1.5 border-b-2 border-[#EA2C00] pb-1`}>
-      <FormattedNumberInput value={value} onChange={onChange} step={step} className={UINPUT_CLASS} />
+      <FormattedNumberInput value={value} onChange={onChange} step={step} className={UINPUT_CLASS} placeholder={placeholder} />
       {suffix && <span className="text-[14px] text-[#A69A88]">{suffix}</span>}
     </div>
   );
@@ -401,12 +413,13 @@ function TextInput({ value, onChange, placeholder }: { value: string; onChange: 
   );
 }
 
-function BeforeAfter({ label, table, unit, before, after, onBefore, onAfter, step = 0.01, lowerIsBetter }: {
-  label: string; table?: string; unit?: string; before: number; after: number; onBefore: (n: number) => void; onAfter: (n: number) => void; step?: number; lowerIsBetter?: boolean;
+function BeforeAfter({ label, table, unit, before, after, onBefore, onAfter, step = 0.01, lowerIsBetter, placeholderBefore, placeholderAfter }: {
+  label: string; table?: string; unit?: string; before: number; after: number; onBefore: (n: number) => void; onAfter: (n: number) => void; step?: number; lowerIsBetter?: boolean; placeholderBefore?: string; placeholderAfter?: string;
 }) {
   const delta = lowerIsBetter ? before - after : after - before;
   const good = delta > 0;
   const decimals = unit === "min" ? 1 : 2;
+  const bothEntered = before > 0 && after > 0;
   return (
     <div>
       <div className="flex items-baseline justify-between mb-3">
@@ -416,16 +429,18 @@ function BeforeAfter({ label, table, unit, before, after, onBefore, onAfter, ste
       <div className="flex items-baseline gap-4 flex-wrap">
         <div>
           <div className="text-[10px] font-extrabold tracking-[0.1em] uppercase text-[#A69A88] mb-1">Before</div>
-          <NumInput value={before} onChange={onBefore} step={step} suffix={unit} w="w-[96px]" />
+          <NumInput value={before} onChange={onBefore} step={step} suffix={unit} w="w-[96px]" placeholder={placeholderBefore} />
         </div>
         <ArrowRight className="w-4 h-4 text-[#C9BDAD] self-end mb-2.5" />
         <div>
           <div className="text-[10px] font-extrabold tracking-[0.1em] uppercase text-[#EA2C00] mb-1">After</div>
-          <NumInputAccent value={after} onChange={onAfter} step={step} suffix={unit} w="w-[96px]" />
+          <NumInputAccent value={after} onChange={onAfter} step={step} suffix={unit} w="w-[96px]" placeholder={placeholderAfter} />
         </div>
-        <span className={`self-end mb-2.5 ml-1 text-[14px] font-bold whitespace-nowrap ${good ? "text-[#B02200]" : "text-[#B4A896]"}`}>
-          {good ? (lowerIsBetter ? "−" : "+") : ""}{Math.abs(delta).toFixed(decimals)} {unit}
-        </span>
+        {bothEntered && (
+          <span className={`self-end mb-2.5 ml-1 text-[14px] font-bold whitespace-nowrap ${good ? "text-[#B02200]" : "text-[#B4A896]"}`}>
+            {good ? (lowerIsBetter ? "−" : "+") : ""}{Math.abs(delta).toFixed(decimals)} {unit}
+          </span>
+        )}
       </div>
     </div>
   );
@@ -493,15 +508,19 @@ function DriverShell({ title, on, onToggle, value, children }: {
 }
 
 /** Renders one engine driver: before/after (if any) + its editable fields + the worked math. */
-function DriverCard({ driver, vals, setVal, on, onToggle, value, summary, eligibleEncounters }: {
+function DriverCard({ driver, vals, setVal, on, onToggle, value, summary, eligibleEncounters, hoursReclaimed, providersOnAbridge }: {
   driver: RoiDriver; vals: Record<string, number>; setVal: (k: string, v: number) => void;
   on: boolean; onToggle: () => void; value: number; summary: string; eligibleEncounters: number;
+  hoursReclaimed: number; providersOnAbridge: number;
 }) {
   if (driver.kind === "hcc") {
     return <HccDriverCard driver={driver} vals={vals} setVal={setVal} on={on} onToggle={onToggle} value={value} summary={summary} />;
   }
   if (driver.id === "drgAccuracy") {
     return <DrgFunnelCard vals={vals} setVal={setVal} on={on} onToggle={onToggle} value={value} discharges={eligibleEncounters} />;
+  }
+  if (driver.id === "patientAccess") {
+    return <PatientAccessCard driver={driver} vals={vals} setVal={setVal} on={on} onToggle={onToggle} value={value} summary={summary} hoursReclaimed={hoursReclaimed} providersOnAbridge={providersOnAbridge} />;
   }
   const workStr = driver.work ? driver.work(vals, eligibleEncounters) : summary;
   const ba = driver.beforeAfter;
@@ -570,6 +589,39 @@ function HccDriverCard({ driver, vals, setVal, on, onToggle, value, summary }: {
         <FieldRow key={f.k} field={f} value={vals[f.k]} onChange={(v) => setVal(f.k, v)} />
       ))}
 
+      <WorkedMath summary={summary} value={value} />
+    </DriverShell>
+  );
+}
+
+/**
+ * Patient access — anchored on the OBSERVED added visits a live partner already
+ * sees, not an assumed reinvest %. The read-back shows what share of the
+ * reclaimed hours those visits use, so the number stays tied to the time proof.
+ */
+function PatientAccessCard({ driver, vals, setVal, on, onToggle, value, summary, hoursReclaimed, providersOnAbridge }: {
+  driver: RoiDriver; vals: Record<string, number>; setVal: (k: string, v: number) => void;
+  on: boolean; onToggle: () => void; value: number; summary: string; hoursReclaimed: number; providersOnAbridge: number;
+}) {
+  const V = vals.accessVisitsPerProvWk || 0;
+  const dur = vals.visitDuration || 30;
+  const addedVisits = V * providersOnAbridge * 48;
+  const hoursConsumed = addedVisits * (dur / 60);
+  const pct = hoursReclaimed > 0 ? Math.round((hoursConsumed / hoursReclaimed) * 100) : 0;
+  return (
+    <DriverShell title={driver.title} on={on} onToggle={onToggle} value={value}>
+      {driver.note && <p className="text-[13px] leading-[1.55] text-[#8C8073] max-w-[560px] mb-1">{driver.note}</p>}
+      {driver.fields.map((f) => (
+        <FieldRow key={f.k} field={f} value={vals[f.k]} onChange={(v) => setVal(f.k, v)} />
+      ))}
+      {V > 0 && hoursReclaimed > 0 && (
+        <div className="mt-6 rounded-lg bg-[#F3EEE7] px-4 py-3.5 text-[13px] leading-[1.6] text-[#5E534A]">
+          That is about <span className="font-bold text-[#443A32]">{fmtInt(addedVisits)}</span> more visits a year, which uses <span className="font-bold text-[#443A32]">{pct}%</span> of the <span className="font-bold text-[#443A32]">{fmtInt(hoursReclaimed)}</span> clinician hours Abridge reclaimed.{" "}
+          {pct > 100
+            ? "That is more than the reclaimed time alone, so lean on the observed visits and treat the rest as other workflow gains."
+            : "The rest of that time stays as capacity."}
+        </div>
+      )}
       <WorkedMath summary={summary} value={value} />
     </DriverShell>
   );
@@ -647,9 +699,9 @@ function DrgFunnelCard({ vals, setVal, on, onToggle, value, discharges }: {
 }
 
 /** Reclaimed documentation time, shown as a COUNT of clinician hours, never dollarized here. */
-function TimeBackBlock({ table, before, after, onBefore, onAfter, encToday, hours, dollarized }: {
+function TimeBackBlock({ table, before, after, onBefore, onAfter, encToday, hours, dollarized, placeholderBefore, placeholderAfter }: {
   table: string; before: number; after: number; onBefore: (n: number) => void; onAfter: (n: number) => void;
-  encToday: number; hours: number; dollarized: boolean;
+  encToday: number; hours: number; dollarized: boolean; placeholderBefore?: string; placeholderAfter?: string;
 }) {
   const hasNumbers = encToday > 0 && hours > 0;
   const fte = hours / 2080; // 2,080 = one clinician's paid hours a year
@@ -661,7 +713,8 @@ function TimeBackBlock({ table, before, after, onBefore, onAfter, encToday, hour
       </div>
       <div className="mt-5">
         <BeforeAfter label="Minutes in notes per encounter" table={table} unit="min" step={0.1}
-          before={before} after={after} onBefore={onBefore} onAfter={onAfter} lowerIsBetter />
+          before={before} after={after} onBefore={onBefore} onAfter={onAfter} lowerIsBetter
+          placeholderBefore={placeholderBefore} placeholderAfter={placeholderAfter} />
       </div>
       <div className="mt-7 pt-6 border-t border-[#EFE9E0]">
         <div className="text-[10.5px] font-extrabold tracking-[0.14em] uppercase text-[#A69A88] mb-3">How the number is built</div>
@@ -685,7 +738,7 @@ function TimeBackBlock({ table, before, after, onBefore, onAfter, encToday, hour
           </>
         ) : (
           <p className="text-[14px] leading-[1.55] italic text-[#A69A88]">
-            Add the partner's encounter numbers on the first step to see the hours reclaimed here.
+            Enter the before and after minutes above, plus the partner's encounter numbers on the first step, to see the hours reclaimed.
           </p>
         )}
       </div>

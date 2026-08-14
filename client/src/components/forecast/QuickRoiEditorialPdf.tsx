@@ -249,52 +249,81 @@ function PitchPage({ data }: { data: QuickRoiPdfData }): JSX.Element {
   );
 }
 
-// ───────────────────────── Page 3 · The numbers, itemized ─────────────────────────
+// ───────────────────────── Page 3 · What Abridge is worth ─────────────────────────
+// A ramp of coral shades for the composition bar — darkest = biggest driver, so
+// the eye reads the makeup by weight. Coral because this bar IS the money.
+const CORAL_RAMP = ["#EA2C00", "#F0562F", "#F4785B", "#F89A82", "#FBBBA9", "#F6D3C6", "#EFE0D6"];
+
 function NumbersPage({ data }: { data: QuickRoiPdfData }): JSX.Element {
   const m = buildQuickRoiPdfModel(data);
-  const domainsWithItems = DOMAIN_ORDER.filter((dom) => m.items.some((it) => it.domain === dom));
+  const total = m.todayValue;
+  const items = [...m.items].sort((a, b) => b.value - a.value);
+  const pct = (v: number) => (total > 0 ? (v / total) * 100 : 0);
+  const domainList = Array.from(new Set(items.map((it) => it.domain))).join(", ").toLowerCase();
   return (
     <Page>
       <RunningHeader org={data.orgName} />
-      <SectionEyebrow num="01" title="The numbers, itemized" />
-      <h2 className="font-abridge" style={{ fontSize: 30, lineHeight: 1.1, color: C.ink, margin: "8px 0 0" }}>
-        What Abridge is worth today
-      </h2>
-      <div style={{ ...sLead, marginBottom: 6 }}>Each driver, the measured way it was built, and the dollars it carries. Turned off drivers are not shown.</div>
+      <SectionEyebrow num="01" title="What Abridge is worth" />
 
-      <div style={{ marginTop: 14, flex: 1, overflow: "hidden" }}>
-        {domainsWithItems.map((dom) => (
-          <div key={dom} style={{ marginBottom: 16 }}>
-            <div style={{ ...sLbl, color: C.off, marginBottom: 8 }}>{dom}</div>
-            {m.items.filter((it) => it.domain === dom).map((it) => (
-              <div key={it.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 24, padding: "9px 0", borderTop: `1px solid ${C.hair}` }}>
-                <div style={{ maxWidth: 500 }}>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: C.ink }}>{it.title}</div>
-                  <div style={{ fontSize: 11, color: C.faint, lineHeight: 1.5, marginTop: 3 }}>{it.summary}</div>
-                </div>
-                <div className="font-abridge" style={{ fontSize: 20, color: C.coral, whiteSpace: "nowrap" }}>{fmtShort(it.value)}</div>
-              </div>
-            ))}
-          </div>
-        ))}
+      {/* Hero — the number lands first */}
+      <div style={{ marginTop: 12, display: "flex", alignItems: "flex-end", gap: 14 }}>
+        <span className="font-abridge" style={{ fontSize: 66, lineHeight: 0.92, color: C.coral, letterSpacing: "-1px" }}>{fmtShort(total)}</span>
+        <span style={{ fontSize: 17, color: C.muted, paddingBottom: 8 }}>a year, counted</span>
+      </div>
+      <div style={{ ...sLead, marginTop: 12, maxWidth: 640 }}>
+        Built from {items.length} {items.length === 1 ? "driver" : "drivers"} across {domainList}, at today's {Math.round(m.adoptionNow)}% rollout
+        and {Math.round(data.account.utilNow)}% documentation utilization. Every dollar is lift only, net of realization and attribution.
+      </div>
 
-        {m.hours > 0 && (
-          <div style={{ marginTop: 4, padding: "12px 16px", background: C.tile, borderRadius: 10 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+      {/* Composition bar — how the number is built, by weight */}
+      <div style={{ marginTop: 34 }}>
+        <div style={sLbl}>How the number is built</div>
+        <div style={{ marginTop: 12, display: "flex", height: 60, borderRadius: 10, overflow: "hidden", gap: 2, background: C.tile }}>
+          {items.map((it, i) => (
+            <div key={it.id} style={{ width: `${Math.max(pct(it.value), 3).toFixed(2)}%`, background: CORAL_RAMP[i % CORAL_RAMP.length], minWidth: 6, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+              {pct(it.value) >= 16 && (
+                <span className="font-abridge" style={{ fontSize: 15, color: "#FFFFFF", whiteSpace: "nowrap" }}>{fmtShort(it.value)}</span>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Ledger — each driver ties to its bar segment by the swatch color */}
+      <div style={{ marginTop: 26 }}>
+        {items.map((it, i) => (
+          <div key={it.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 24, padding: "15px 0", borderTop: `1px solid ${C.hair}` }}>
+            <div style={{ display: "flex", gap: 13, alignItems: "baseline", maxWidth: 540 }}>
+              <span style={{ width: 11, height: 11, borderRadius: 3, background: CORAL_RAMP[i % CORAL_RAMP.length], flexShrink: 0, alignSelf: "center" }} />
               <div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: C.ink }}>Time back in the day</div>
-                <div style={{ fontSize: 11, color: C.faint, marginTop: 3 }}>{fmtInt(m.hours)} clinician hours a year · shown as time, never converted to a dollar</div>
+                <div style={{ fontSize: 14.5, fontWeight: 700, color: C.ink }}>{it.title}</div>
+                <div style={{ fontSize: 10.5, color: C.faint, lineHeight: 1.5, marginTop: 2 }}>{it.summary}</div>
               </div>
-              <span style={{ ...sLbl, color: C.off }}>Measured · not counted in $</span>
+            </div>
+            <div style={{ textAlign: "right", whiteSpace: "nowrap" }}>
+              <span className="font-abridge" style={{ fontSize: 19, color: C.coral }}>{fmtShort(it.value)}</span>
+              <span style={{ fontSize: 11, color: C.faint, marginLeft: 7 }}>{Math.round(pct(it.value))}%</span>
             </div>
           </div>
-        )}
+        ))}
       </div>
 
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "14px 0 4px", borderTop: `2px solid ${C.ink}` }}>
-        <span style={{ fontSize: 13, fontWeight: 800, letterSpacing: ".04em", textTransform: "uppercase", color: C.ink }}>Counted value today</span>
-        <span className="font-abridge" style={{ fontSize: 30, color: C.coral }}>{fmtShort(m.todayValue)}<span style={{ fontSize: 14, color: C.faint }}> a year</span></span>
+      {m.hours > 0 && (
+        <div style={{ marginTop: 22, padding: "15px 18px", background: C.tile, borderRadius: 10, display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: C.ink }}>Plus {fmtInt(m.hours)} clinician hours back a year</div>
+            <div style={{ fontSize: 11, color: C.faint, marginTop: 3 }}>about {(m.hours / 2080).toFixed(1)} full-time clinicians' worth of documentation time</div>
+          </div>
+          <span style={{ ...sLbl, color: C.off }}>Measured · not counted in $</span>
+        </div>
+      )}
+
+      <div style={{ marginTop: "auto" }}>
+        <div style={{ fontSize: 15, color: C.label, lineHeight: 1.55, maxWidth: 640 }}>
+          This is what the documentation already supports at today's footprint. The next page holds the same measured effect flat and grows only the volume it runs on.
+        </div>
       </div>
+
       <Footer note="Realization and attribution rates are applied inside each line; the total counts lift only, never gross charges." num="02" />
     </Page>
   );
