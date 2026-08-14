@@ -21,7 +21,7 @@ function ProgressDots({ currentStep, totalSteps, onStepClick, stepLabels }: Prog
             key={i}
             onClick={() => onStepClick(stepNum)}
             title={label || `Step ${stepNum}`}
-            className={`h-1.5 sm:h-2 rounded-full transition-all cursor-pointer hover:opacity-60 ${
+            className={`h-1.5 sm:h-2 min-h-0 min-w-0 rounded-full transition-all cursor-pointer hover:opacity-60 ${
               'w-1.5 sm:w-2 bg-slate-800'
             }`}
             data-testid={`progress-dot-${stepNum}`}
