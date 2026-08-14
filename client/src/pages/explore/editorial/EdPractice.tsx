@@ -1,7 +1,30 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { EditorialHeader, EditorialShell } from "./EditorialHeader";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { type ExploreState } from "../ExploreFlow";
+
+/** Animates a number toward its target (easeOutCubic) so the value reveals with a quick count-up. */
+function useCountUp(target: number, duration = 550): number {
+  const [val, setVal] = useState(target);
+  const prev = useRef(target);
+  useEffect(() => {
+    const from = prev.current;
+    const to = target;
+    if (from === to) return;
+    let raf = 0;
+    const start = performance.now();
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - t, 3);
+      setVal(Math.round(from + (to - from) * eased));
+      if (t < 1) raf = requestAnimationFrame(tick);
+      else prev.current = to;
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [target, duration]);
+  return val;
+}
 
 interface EdPracticeProps {
   state: ExploreState;
@@ -105,7 +128,7 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
   const [totalEncountersInput, setTotalEncountersInput] = useState(
     state.annualEncounters > 0 ? state.annualEncounters : 0
   );
-  const [usingTotalInput, setUsingTotalInput] = useState(false);
+  const [usingTotalInput, setUsingTotalInput] = useState(true);
   const [appliedEstimate, setAppliedEstimate] = useState<string | null>(null);
 
   const handleProvidersChange = useCallback(
@@ -200,6 +223,13 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
 
   const formatNumber = (n: number) => n.toLocaleString();
 
+  // Count-up reveal for the right-panel result. Targets the resolved slice once
+  // both volume AND share are in; otherwise 0 (the ghost empty state shows instead).
+  const rightTotal = isNursing ? nursingTotalShiftsPerYear : annualEncounters;
+  const rightEnabled = isNursing ? nursingEligibleShifts : eligibleEncounters;
+  const rightReady = rightTotal > 0 && Math.round(state.utilizationPercent) > 0;
+  const shownEnabled = useCountUp(rightReady ? rightEnabled : 0);
+
   const isValid = isNursing
     ? state.numberOfProviders > 0 && state.nursingStaffedBeds > 0 && state.utilizationPercent > 0
     : state.numberOfProviders > 0 && state.utilizationPercent > 0;
@@ -243,7 +273,7 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
 
         <div className="grid grid-cols-1 lg:grid-cols-[1.35fr_1fr] gap-[22px] mt-[34px] items-stretch">
           {/* Form */}
-          <div className="bg-[#FDFBF8] border border-[#E7E3DD] rounded-[20px] px-7 py-[26px] h-full">
+          <div className="bg-[#FDFBF8] border border-[#E7E3DD] rounded-[20px] px-7 py-[26px] h-full flex flex-col">
             {isNursing && (
               <div className="mb-6">
                 <div className="text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#2E2822] mb-[10px]">
@@ -435,15 +465,6 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
                   : "The share of encounters documented with Abridge. The value only counts the volume it actually touches."}
               </p>
             </div>
-            {isValid && (
-              <div className="border-t border-[#F1ECE4] mt-6 pt-4 text-[13px] text-[#565250] leading-[1.55]">
-                {isNursing ? (
-                  <><b className="text-[#1A1A1A] font-abridge text-[15px]">{formatNumber(state.nursingStaffedBeds)}</b> beds become <b className="text-[#1A1A1A] font-abridge text-[15px]">{formatNumber(nursingTotalShiftsPerYear)}</b> shifts a year, and <b className="text-[#EA2C00]">{state.utilizationPercent}%</b> run on Abridge.</>
-                ) : (
-                  <><b className="text-[#1A1A1A] font-abridge text-[15px]">{formatNumber(state.numberOfProviders)}</b> providers × <b className="text-[#1A1A1A] font-abridge text-[15px]">{formatNumber(encountersPerProvider)}</b> / provider = <b className="text-[#1A1A1A] font-abridge text-[15px]">{formatNumber(annualEncounters)}</b> encounters, and <b className="text-[#EA2C00]">{state.utilizationPercent}%</b> run on Abridge.</>
-                )}
-              </div>
-            )}
           </div>
 
           {/* Snapshot + continue, anchored to the right column */}
@@ -460,46 +481,49 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
                   <div className="text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#443A32]">
                     Your {settingName} · what the value is built on
                   </div>
-                  <div className="mt-3 leading-none">
-                    <span className="font-abridge text-[42px] sm:text-[52px] text-[#EA2C00] tabular-nums">{formatNumber(enabled)}</span>
-                    <span className="text-[14px] text-[#565250]"> {unit} on Abridge / yr</span>
+
+                  {/* result / ghost, vertically centered so the panel reads balanced, not top-weighted */}
+                  <div className="flex-1 flex flex-col justify-center">
+                    {total > 0 && pct > 0 ? (
+                      <>
+                        {/* the chain, read as one line — same idiom as the left card's footing */}
+                        <div className="text-[15px] text-[#565250] leading-[1.6]">
+                          <b className="font-abridge text-[17px] text-[#1A1A1A]">{formatNumber(total)}</b> {unit} a year, <b className="font-abridge text-[17px] text-[#EA2C00]">{pct}%</b> documented with Abridge
+                        </div>
+                        {/* the result, prominent, below the chain (count-up reveal) */}
+                        <div className="mt-6 leading-[0.9]">
+                          <div className="font-abridge text-[62px] sm:text-[74px] text-[#EA2C00] tabular-nums">{formatNumber(shownEnabled)}</div>
+                          <div className="text-[14px] text-[#565250] mt-2">{unit} your value is built on</div>
+                        </div>
+                        {/* one restrained accent: a single proportion line */}
+                        <div className="mt-8 h-[7px] rounded-full bg-[#F1ECE4] overflow-hidden">
+                          <div className="h-full bg-[#EA2C00] rounded-full transition-[width] duration-500 ease-out" style={{ width: `${Math.max(pct, 3)}%` }} />
+                        </div>
+                        <div className="flex justify-between text-[12px] text-[#7C766F] mt-3">
+                          <span>On Abridge · {formatNumber(enabled)}</span>
+                          <span>Not yet · {formatNumber(notYet)}</span>
+                        </div>
+                      </>
+                    ) : (
+                      // Ghosted structure — reads composed before the inputs are in, not empty
+                      <>
+                        <div className="text-[15px] text-[#B8B0A6] leading-[1.6]">Your volume, and the share on Abridge, build the number here.</div>
+                        <div className="mt-6 leading-[0.9]">
+                          <div className="font-abridge text-[62px] sm:text-[74px] text-[#E4DED5] tabular-nums">&ndash;</div>
+                          <div className="text-[14px] text-[#B8B0A6] mt-2">{unit} your value is built on</div>
+                        </div>
+                        <div className="mt-8 h-[7px] rounded-full bg-[#F1ECE4]" />
+                      </>
+                    )}
                   </div>
 
-                  {total > 0 ? (
-                    <>
-                      <div className="text-[12px] text-[#7C766F] font-semibold mt-6 mb-3">
-                        Of every 100 {unit} on your schedule, {pct} run on Abridge
-                      </div>
-                      <div className="grid gap-[5px]" style={{ gridTemplateColumns: "repeat(20, minmax(0, 1fr))" }}>
-                        {Array.from({ length: 100 }).map((_, i) => (
-                          <div
-                            key={i}
-                            className={`aspect-square rounded-[3px] ${i < pct ? "bg-[#F7C9B8]" : "border border-[#EAE3D9]"}`}
-                          />
-                        ))}
-                      </div>
-                      <div className="flex justify-between text-[12.5px] text-[#7C766F] mt-4">
-                        <span className="flex items-center gap-[6px]">
-                          <span className="w-[10px] h-[10px] rounded-[3px] bg-[#F7C9B8]" />On Abridge · {formatNumber(enabled)}
-                        </span>
-                        <span className="flex items-center gap-[6px]">
-                          <span className="w-[10px] h-[10px] rounded-[3px] border border-[#EAE3D9]" />Not yet · {formatNumber(notYet)}
-                        </span>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="mt-6 text-[13px] text-[#7C766F] italic">Enter your volume to see the slice your value is built on.</div>
+                  {total > 0 && pct > 0 && (
+                    <div className="pt-[18px] border-t border-[#E7E3DD]">
+                      <p className="text-[12.5px] text-[#565250] leading-[1.55]">
+                        The volume your value is built on, not the full book. Refine any of it as we go.
+                      </p>
+                    </div>
                   )}
-
-                  <div className="mt-auto pt-[18px] border-t border-[#E7E3DD] mt-6">
-                    <p className="text-[12.5px] text-[#565250] leading-[1.55]">
-                      {total > 0 ? (
-                        <><b className="text-[#1A1A1A]">{formatNumber(total)}</b> total × <b className="text-[#EA2C00]">{pct}%</b> = <b className="text-[#EA2C00]">{formatNumber(enabled)}</b> the value is built on. Refine any of it as we go.</>
-                      ) : (
-                        <>This is the volume your value is built on, not the full book. Refine any of it as we go.</>
-                      )}
-                    </p>
-                  </div>
                 </>
               );
             })()}
