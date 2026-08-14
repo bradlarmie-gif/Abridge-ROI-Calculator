@@ -545,7 +545,7 @@ function HccDriverCard({ driver, vals, setVal, on, onToggle, value, summary }: {
   const [popIdx, setPopIdx] = useState(0);
   return (
     <DriverShell title={driver.title} on={on} onToggle={onToggle} value={value}>
-      <p className="text-[13px] leading-[1.55] text-[#8C8073] max-w-[520px] mb-1">Risk capture is valued on the panel, once per member per year, not per visit.</p>
+      <p className="text-[13px] leading-[1.55] text-[#8C8073] max-w-[540px] mb-1">Risk capture is valued on the panel, once per member per year, never per visit. Abridge lifts the recapture rate on the conditions a member already carries.</p>
 
       {pops.length > 0 && (
         <div className="mt-5 flex items-center gap-2 flex-wrap">
@@ -561,23 +561,14 @@ function HccDriverCard({ driver, vals, setVal, on, onToggle, value, summary }: {
       <div className="flex items-center justify-between gap-6 mt-6">
         <div className="min-w-0">
           <div className="text-[14px] font-medium text-[#1A1A1A]">Risk-adjusted members Abridge covers</div>
-          <div className="text-[12.5px] text-[#A69A88] mt-1">the {pops[popIdx]?.label ?? ""} panel seen by Abridge providers</div>
+          <div className="text-[12.5px] text-[#A69A88] mt-1">the {pops[popIdx]?.label ?? ""} panel your providers see</div>
         </div>
         <NumInput value={vals.hccMembers} onChange={(v) => setVal("hccMembers", v)} w="w-[128px]" />
       </div>
 
-      <div className="mt-6">
-        <BeforeAfter label="HCC captured per member, per year" table="your risk-adjustment analysis" unit="HCC" step={0.01}
-          before={vals.hccBefore} after={vals.hccAfter} onBefore={(v) => setVal("hccBefore", v)} onAfter={(v) => setVal("hccAfter", v)} />
-      </div>
-      <div className="flex items-center justify-between gap-6 mt-6">
-        <span className="text-[14px] text-[#5E534A]">Value per HCC captured (RAF)</span>
-        <NumInput value={vals.hccPerHcc} onChange={(v) => setVal("hccPerHcc", v)} prefix="$" w="w-[104px]" />
-      </div>
-      <div className="flex items-center justify-between gap-6 mt-5">
-        <span className="text-[14px] text-[#5E534A]">Realization (defensible share)</span>
-        <NumInput value={vals.hccRealization} onChange={(v) => setVal("hccRealization", v)} suffix="%" w="w-[104px]" />
-      </div>
+      {driver.fields.filter((f) => f.k !== "hccMembers").map((f) => (
+        <FieldRow key={f.k} field={f} value={vals[f.k]} onChange={(v) => setVal(f.k, v)} />
+      ))}
 
       <WorkedMath summary={summary} value={value} />
     </DriverShell>

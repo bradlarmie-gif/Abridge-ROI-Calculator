@@ -131,9 +131,9 @@ export interface SettingMeta {
 }
 
 const HCC_POPULATIONS: RoiPopulation[] = [
-  { label: "Medicare Advantage", perHcc: 1200 },
-  { label: "Medicaid MCO", perHcc: 800 },
-  { label: "ACA / Exchange", perHcc: 1000 },
+  { label: "Medicare Advantage", perHcc: 1500 },
+  { label: "Medicaid MCO", perHcc: 900 },
+  { label: "ACA / Exchange", perHcc: 1100 },
 ];
 
 const td = (s: ExploreState) => s.timeDriverInputs as any;
@@ -290,38 +290,41 @@ const hccDriver: RoiDriver = {
   optional: true,
   kind: "hcc",
   populations: HCC_POPULATIONS,
+  // Same recapture-rate model the Explore path uses (tuned there): members ×
+  // conditions-carried × recapture-rate LIFT (capped by the remaining gap) ×
+  // $/HCC + net-new, then × realization. Not a hand-rolled "HCC/member before→
+  // after" — so the two paths reconcile and the number holds up.
   fields: [
-    { k: "hccMembers", label: "Risk-adjusted members Abridge covers", def: 25000 },
-    { k: "hccBefore", label: "HCC captured per member / yr (before)", def: 2.4, step: 0.01 },
-    { k: "hccAfter", label: "HCC captured per member / yr (after)", def: 2.7, step: 0.01 },
-    { k: "hccPerHcc", label: "Value per HCC captured (RAF)", def: 1200, prefix: "$" },
+    { k: "hccMembers", label: "Risk-adjusted members Abridge covers", def: 0 },
+    { k: "hccAvg", label: "Documented conditions (HCCs) each member carries", def: 2.5, step: 0.1, hint: "MA panels run about 2.5 to 3.5" },
+    { k: "hccRecaptureNow", label: "Share recaptured today", def: 65, suffix: "%", hint: "how many of those conditions get coded each year now" },
+    { k: "hccRecaptureLift", label: "Recapture-rate lift with Abridge", def: 5, suffix: "pp", hint: "percentage points, capped by the remaining gap" },
+    { k: "hccNetNew", label: "Net-new HCCs surfaced per member", def: 0.05, step: 0.01, hint: "conditions surfaced in the visit that weren't coded before" },
+    { k: "hccPerHcc", label: "Value per HCC captured (RAF)", def: 1500, prefix: "$" },
     { k: "hccRealization", label: "Realization (audit survival)", def: 50, suffix: "%" },
   ],
   applyToState: (s, v, ctx) => {
     const d = dq(s);
     d.hccEnabled = true;
-    // Fold the measured per-member uplift onto avgHccs=1 so the engine computes
-    // members x (uplift) x $/HCC x realization with no hidden factors.
-    d.avgHccs = 1;
+    d.avgHccs = v.hccAvg;
     d.hccRealization = v.hccRealization;
-    const delta = Math.max(0, v.hccAfter - v.hccBefore);
-    // members = numberOfProviders x panelSize. Panel is per-provider (keyed off
-    // today's provider count) so the engine scales members with adoption.
+    // members = numberOfProviders × panelSize; panel is per-provider so the
+    // engine scales members with adoption.
     const panelSize = ctx.baseProviders > 0 ? v.hccMembers / ctx.baseProviders : 0;
     d.hccPlans = [
       {
         id: "plan-ma",
         planType: "medicare_advantage",
-        name: "Medicare Advantage",
+        name: "Risk-adjusted panel",
         panelSize,
         valuePerHcc: v.hccPerHcc,
-        gapRate: 0,
-        currentRecaptureRate: 0,
+        gapRate: v.hccRecaptureNow,
+        currentRecaptureRate: v.hccRecaptureNow,
         uplift: "custom",
-        upliftCustomPp: delta * 100,
-        netNewEnabled: false,
+        upliftCustomPp: v.hccRecaptureLift,
+        netNewEnabled: v.hccNetNew > 0,
         netNewDiscoveryRate: 0,
-        netNewAvgConditions: 0,
+        netNewAvgConditions: v.hccNetNew,
       },
     ];
   },

@@ -426,7 +426,7 @@ export const SAMPLE_QUICK_ROI_PDF_DATA: QuickRoiPdfData = {
   account: { totalProviders: 90, onAbridge: 60, encPerProvider: 2500, utilNow: 68, minutesSaved: 1.1 },
   vals: {
     wrvuBefore: 1.95, wrvuAfter: 2.03, cf: 33.4, wrvuRealization: 75,
-    hccMembers: 18000, hccBefore: 2.4, hccAfter: 2.7, hccPerHcc: 1200, hccRealization: 50,
+    hccMembers: 18000, hccAvg: 2.5, hccRecaptureNow: 65, hccRecaptureLift: 5, hccNetNew: 0.05, hccPerHcc: 1500, hccRealization: 50,
     medNecessityDenialRate: 3, denialsCustomPercent: 50, avgClaimValue: 200, denialsRealization: 60,
   },
   enabled: { wrvu: true, hccCapture: true, denialPrevention: true },
