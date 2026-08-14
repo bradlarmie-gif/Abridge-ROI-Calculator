@@ -36,6 +36,14 @@ const INPATIENT_BUSYNESS_PRESETS: BusynessPreset[] = [
   { label: "Busy", value: 500 },
 ];
 
+// Average length of stay drives the inpatient progress-note count (one note each
+// day after admission). National average runs ~4.5 days; ICU-heavy units skew longer.
+const ALOS_PRESETS = [
+  { label: "Short stay", value: 3.5 },
+  { label: "Typical", value: 4.5 },
+  { label: "Longer", value: 6 },
+];
+
 const UTILIZATION_PRESETS = [
   { label: "Conservative", value: 50 },
   { label: "Typical", value: 70 },
@@ -186,6 +194,13 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
     [updateState]
   );
 
+  const handleAlosChange = useCallback(
+    (value: number) => {
+      updateState({ inpatientAlos: value > 0 ? Math.min(60, value) : 0 });
+    },
+    [updateState]
+  );
+
   const handleOccupancyChange = useCallback(
     (value: number) => {
       updateState({ nursingOccupancyRate: Math.max(50, Math.min(100, value)) });
@@ -210,7 +225,9 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
 
   const isValid = isNursing
     ? state.numberOfProviders > 0 && state.nursingStaffedBeds > 0 && state.utilizationPercent > 0
-    : state.numberOfProviders > 0 && state.utilizationPercent > 0;
+    : isInpatient
+      ? state.numberOfProviders > 0 && state.utilizationPercent > 0 && state.inpatientAlos > 0
+      : state.numberOfProviders > 0 && state.utilizationPercent > 0;
 
   const isPresetSelected = (presetValue: number) => encountersPerProvider === presetValue && !usingTotalInput;
   const isUtilizationPresetSelected = (presetValue: number) => state.utilizationPercent === presetValue;
@@ -380,6 +397,44 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
                     </p>
                   </>
                 )}
+              </div>
+            )}
+
+            {isInpatient && (
+              <div className="mb-6">
+                <div className="text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#2E2822] mb-[10px]">
+                  Average length of stay
+                </div>
+                <div className="relative">
+                  <FormattedNumberInput
+                    value={state.inpatientAlos}
+                    onChange={handleAlosChange}
+                    step={0.1}
+                    placeholder="e.g., 4.5"
+                    className={`${inputBase} pr-16`}
+                    data-testid="ed-input-alos"
+                  />
+                  <span className="absolute right-[15px] top-1/2 -translate-y-1/2 text-[#565250] text-[14px] font-semibold">
+                    days
+                  </span>
+                </div>
+                <div className="flex items-center gap-[7px] mt-[10px] flex-wrap">
+                  <span className="text-[10px] font-extrabold tracking-[0.05em] uppercase text-[#7C766F]">
+                    Quick fill
+                  </span>
+                  {ALOS_PRESETS.map((preset) => (
+                    <QuickFillChip
+                      key={preset.label}
+                      label={preset.label}
+                      value={preset.value}
+                      active={state.inpatientAlos === preset.value}
+                      onClick={() => handleAlosChange(preset.value)}
+                    />
+                  ))}
+                </div>
+                <p className="text-[12.5px] text-[#565250] mt-[10px]">
+                  Drives the progress-note count on the next step: one note each day after admission.
+                </p>
               </div>
             )}
 

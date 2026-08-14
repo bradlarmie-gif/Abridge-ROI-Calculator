@@ -651,9 +651,10 @@ function NumberPage({ data }: { data: ExplorePDFData }): JSX.Element {
         ),
         k: "Annual patient-days",
       }
-    : { v: data.annualEncounters.toLocaleString("en-US"), k: "Annual encounters" };
-  // Nursing time is saved per shift / care event, not per note.
-  const savedPerLabel = isNursing ? "Saved per shift" : "Saved per note";
+    : { v: data.annualEncounters.toLocaleString("en-US"), k: data.careSetting === "inpatient" ? "Annual admissions" : "Annual encounters" };
+  // Nursing time is saved per shift / care event, not per note. Inpatient minutes
+  // are a blended per-admission figure across the note types Abridge writes today.
+  const savedPerLabel = isNursing ? "Saved per shift" : data.careSetting === "inpatient" ? "Saved per admission" : "Saved per note";
   const proofDomains = proofDomainsFor(data.careSetting);
 
   return (

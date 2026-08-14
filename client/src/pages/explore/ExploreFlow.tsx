@@ -498,6 +498,20 @@ export interface ExploreState {
   timePathScenario: TimePathScenario;
   minutesSavedPerEncounter: number;
 
+  /** Inpatient time savings is modeled per note type, not one flat
+   * minutes-per-note: an H&P once per admission (heavy narrative), a progress
+   * note each day after admission (so it scales with length of stay), and
+   * optional consults. These components DERIVE minutesSavedPerEncounter for
+   * inpatient (a blended minutes-per-admission) in updateState, so the whole
+   * value engine keeps reading the one canonical field unchanged. ALOS is
+   * entered on the Practice step. The discharge summary is deliberately not
+   * modeled here yet (Abridge does not write it today). */
+  inpatientHpMinutes: number;
+  inpatientProgressMinutes: number;
+  inpatientConsultsEnabled: boolean;
+  inpatientConsultMinutes: number;
+  inpatientAlos: number;
+
   wrvuPctIncrease: number;
   hccPctRecaptured: number;
   denialsPctReduced: number;
@@ -539,6 +553,31 @@ export interface ExploreState {
   retentionMode?: "counted" | "tracked";
 }
 
+/** Inpatient time savings, blended to a single minutes-per-admission figure that
+ * the whole value engine reads through minutesSavedPerEncounter. An H&P is written
+ * once per admission (heavy narrative); a progress note is written each day AFTER
+ * admission, so it scales with length of stay (ALOS - 1 days); consults are an
+ * optional blended per-admission add. The discharge summary is deliberately
+ * excluded (Abridge does not write it today). Pure + exported so it is the single
+ * source of truth for the derivation and can be unit-tested. */
+export function deriveInpatientMinutesPerAdmission(
+  s: Pick<
+    ExploreState,
+    | "inpatientHpMinutes"
+    | "inpatientProgressMinutes"
+    | "inpatientConsultsEnabled"
+    | "inpatientConsultMinutes"
+    | "inpatientAlos"
+  >,
+): number {
+  const progressDays = Math.max(0, s.inpatientAlos - 1);
+  const blended =
+    s.inpatientHpMinutes +
+    s.inpatientProgressMinutes * progressDays +
+    (s.inpatientConsultsEnabled ? s.inpatientConsultMinutes : 0);
+  return Math.round(blended * 100) / 100;
+}
+
 export const DEFAULT_EXPLORE_STATE: ExploreState = {
   careSetting: null,
   paymentModel: 'both',
@@ -552,6 +591,11 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
   nursingMinutesPerShift: 0,
   timePathScenario: null,
   minutesSavedPerEncounter: 0,
+  inpatientHpMinutes: 0,
+  inpatientProgressMinutes: 0,
+  inpatientConsultsEnabled: false,
+  inpatientConsultMinutes: 3,
+  inpatientAlos: 0,
   wrvuPctIncrease: 5,
   hccPctRecaptured: 15,
   denialsPctReduced: 50,
@@ -1001,6 +1045,14 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
           ...next.timeDriverInputs,
           accessProviders: Math.min(next.timeDriverInputs.accessProviders, updates.numberOfProviders),
         };
+      }
+      // Inpatient: minutesSavedPerEncounter is DERIVED from the per-note-type
+      // components as a blended minutes-per-admission, so the whole value engine
+      // (drivers, proforma, ROI calc, PDF) keeps reading one canonical field.
+      // Runs on every inpatient update so ALOS changes on Practice and note-type
+      // edits on Time both keep it in sync.
+      if (next.careSetting === 'inpatient') {
+        next.minutesSavedPerEncounter = deriveInpatientMinutesPerAdmission(next);
       }
       return next;
     });
