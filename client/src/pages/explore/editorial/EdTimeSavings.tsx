@@ -99,50 +99,32 @@ export default function EdTimeSavings({ state, updateState, onNext, onBack, onHo
           Explore · Step 3 of 9
         </div>
         <h1 className="font-abridge text-[27px] sm:text-[34px] lg:text-[40px] leading-[1.08] text-[#1A1A1A] mt-[10px] max-w-[640px]">
-          How much time does Abridge give back?
+          How much time can Abridge give back?
         </h1>
         <p className="text-[16.5px] text-[#565250] mt-[14px] max-w-[600px] leading-[1.5]">
           A couple of minutes off each {noteUnit} adds up fast across your volume. We start conservative; you confirm
           the real figure when you measure.
         </p>
 
-        {/* Inline editorial — one centered statement; the minutes is editable inside the sentence */}
-        <div className="mt-[38px] max-w-[900px] mx-auto">
-          <div className="bg-[#FDFBF8] border border-[#E7E3DD] rounded-[24px] px-8 sm:px-14 py-[52px] text-center">
-            <div className="text-[11px] font-extrabold tracking-[0.08em] uppercase text-[#443A32]">
-              Time given back
+        {/* Two balanced halves: left builds it, right shows the result. */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-[22px] mt-[34px] items-stretch">
+          {/* LEFT — the build (input + presets + how it adds up) */}
+          <div className="bg-[#FDFBF8] border border-[#E7E3DD] rounded-[20px] px-7 py-[28px] flex flex-col">
+            <div className="text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#2E2822]">
+              Minutes saved per {noteUnit}
             </div>
-
-            <div className="mt-6 text-[25px] sm:text-[31px] leading-[1.35] text-[#3A342E]">
-              Take{" "}
-              <span className="inline-flex items-baseline">
-                <FormattedNumberInput
-                  value={state.minutesSavedPerEncounter}
-                  onChange={handleCustomMinutes}
-                  step={0.1}
-                  data-testid="ed-input-minutes-saved"
-                  className="w-[72px] font-abridge text-[34px] sm:text-[38px] leading-none text-[#EA2C00] tabular-nums text-center bg-transparent border-0 border-b-2 border-[#EA2C00] rounded-none p-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
-                />
-                <span className="font-abridge text-[25px] text-[#EA2C00] ml-1">min</span>
-              </span>{" "}
-              off each of <b className="font-abridge text-[#1A1A1A]">{formatNumber(volumeValue)}</b> {noteUnit}s,
+            <div className="mt-3 inline-flex items-baseline gap-1 border border-[#E4DED6] rounded-[12px] bg-white px-4 h-[54px] w-full max-w-[240px] focus-within:border-[#EA2C00] transition-colors">
+              <FormattedNumberInput
+                value={state.minutesSavedPerEncounter}
+                onChange={handleCustomMinutes}
+                step={0.1}
+                data-testid="ed-input-minutes-saved"
+                className="flex-1 self-center font-abridge text-[22px] leading-none text-[#1A1A1A] tabular-nums bg-transparent border-0 p-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
+              />
+              <span className="text-[14px] text-[#565250] self-center">min</span>
             </div>
-
-            <div className="mt-7 leading-[0.88]">
-              <span className="font-abridge text-[76px] sm:text-[100px] text-[#EA2C00] tabular-nums">{hoursSaved > 0 ? formatNumber(shownHours) : "—"}</span>
-              <span className="text-[22px] text-[#565250]"> hours a year</span>
-            </div>
-
-            {hoursSaved > 0 && (
-              <div className="mt-6 text-[17px] text-[#3A342E] leading-[1.5]">
-                That&apos;s about <b className="text-[#EA2C00]">{perWeek.value} {perWeek.unit}</b> for every {roleWord}, every week.
-              </div>
-            )}
-
-            <div className="mt-9 flex items-center justify-center gap-[7px] flex-wrap">
-              <span className="text-[10px] font-extrabold tracking-[0.05em] uppercase text-[#7C766F]">
-                Quick fill
-              </span>
+            <div className="mt-3 flex items-center gap-[7px] flex-wrap">
+              <span className="text-[10px] font-extrabold tracking-[0.05em] uppercase text-[#7C766F]">Quick fill</span>
               {scenarioChips.map(({ key, label }) => (
                 <button
                   key={key}
@@ -158,22 +140,64 @@ export default function EdTimeSavings({ state, updateState, onNext, onBack, onHo
                 </button>
               ))}
             </div>
-            <p className="text-[12.5px] text-[#7C766F] mt-5 max-w-[540px] mx-auto leading-[1.5]">
-              Seeded conservatively from {settingWord} implementations. Time back, not dollars yet; we turn it into value on the next screens.
-            </p>
+
+            <div className="mt-8 pt-7 border-t border-[#E7E3DD]">
+              <div className="text-[10px] font-extrabold tracking-[0.06em] uppercase text-[#443A32] mb-3">How it adds up</div>
+              <div className="text-[15px] text-[#565250] leading-[1.85]">
+                <b className="font-abridge text-[17px] text-[#1A1A1A]">{formatNumber(volumeValue)}</b> Abridge {noteUnit}s a year<br />
+                <span className="text-[#AFA491]">×</span> <b className="font-abridge text-[17px] text-[#1A1A1A]">{state.minutesSavedPerEncounter} min</b> saved on each
+              </div>
+              <p className="text-[12px] text-[#7C766F] mt-3 leading-[1.5]">
+                Seeded conservatively from {settingWord} implementations. You measure the real number on Progress.
+              </p>
+            </div>
           </div>
 
-          <div className="flex justify-end mt-6">
-            <button
-              type="button"
-              disabled={!isValid}
-              onClick={onNext}
-              data-testid="ed-timesavings-continue"
-              className="bg-[#EA2C00] text-white text-[15px] font-bold px-7 py-[14px] rounded-[12px] shadow-[0_2px_6px_rgba(234,44,0,0.15)] disabled:opacity-40"
-            >
-              Continue →
-            </button>
+          {/* RIGHT — the result (moderate hero + the human read) */}
+          <div className="bg-[#FDFBF8] border border-[#E7E3DD] rounded-[20px] px-7 py-[28px] flex flex-col">
+            <div className="text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#443A32]">
+              Time given back
+            </div>
+            <div className="flex-1 flex flex-col justify-center">
+              {hoursSaved > 0 ? (
+                <>
+                  <div className="leading-[0.85]">
+                    <span className="font-abridge text-[68px] sm:text-[84px] text-[#EA2C00] tabular-nums">{formatNumber(shownHours)}</span>
+                  </div>
+                  <div className="text-[16px] text-[#574C41] mt-2">clinician hours a year</div>
+                  <div className="text-[15px] text-[#3A342E] mt-4 leading-[1.5]">
+                    ≈ <b className="text-[#1A1A1A]">{(hoursSaved / 2080).toFixed(1)}</b> full-time {roleWord}s&apos; worth of documentation time
+                  </div>
+                  <div className="mt-5 pt-5 border-t border-[#EFE7DD] text-[15px] text-[#3A342E] leading-[1.5]">
+                    about <b className="text-[#1A1A1A]">{perWeek.value} {perWeek.unit}</b> for every {roleWord}, every week
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="text-[15px] text-[#B8B0A6] leading-[1.6]">Set the minutes to see the time given back.</div>
+                  <div className="mt-3 font-abridge text-[68px] sm:text-[84px] text-[#E4DED5] tabular-nums leading-[0.85]">&ndash;</div>
+                  <div className="text-[16px] text-[#B8B0A6] mt-2">clinician hours a year</div>
+                </>
+              )}
+            </div>
+            <div className="pt-[18px] border-t border-[#E7E3DD]">
+              <p className="text-[12.5px] text-[#565250] leading-[1.55]">
+                Time back, not dollars yet; we turn it into value on the next screens.
+              </p>
+            </div>
           </div>
+        </div>
+
+        <div className="flex justify-end mt-6">
+          <button
+            type="button"
+            disabled={!isValid}
+            onClick={onNext}
+            data-testid="ed-timesavings-continue"
+            className="bg-[#EA2C00] text-white text-[15px] font-bold px-7 py-[14px] rounded-[12px] shadow-[0_2px_6px_rgba(234,44,0,0.15)] disabled:opacity-40"
+          >
+            Continue →
+          </button>
         </div>
       </div>
     </EditorialShell>
