@@ -199,16 +199,10 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
   }, [utilNow]);
   const [price, setPrice] = useState(0);
 
-  // HCC risk-capture members default from the partner's size, not a fixed 25,000
-  // that would show the same $4.5M for a 12-provider group and a 400-provider
-  // system. ~300 risk-adjusted members per on-Abridge provider is a starting
-  // panel the rep overrides from the risk-adjustment pull. We only seed while the
-  // driver is off; once it is on, the rep owns the number.
-  useEffect(() => {
-    if (!DRIVERS[setting].some((dr) => dr.id === "hccCapture")) return;
-    if (enabled["hccCapture"]) return;
-    setVals((p) => ({ ...p, hccMembers: Math.max(0, Math.round(onAbridge * 300)) }));
-  }, [onAbridge, setting, enabled]);
+  // HCC panel size is account-specific (the MA / risk-adjusted membership from the
+  // partner's own risk-adjustment pull), so we never fabricate it from provider
+  // count. It stays blank until the rep enters the real number; the driver reads
+  // $0 until then rather than inflating off a guessed panel.
 
   const account: RoiAccount = useMemo(() => ({
     totalProviders, onAbridge, encPerProvider, utilNow,
@@ -458,7 +452,7 @@ function WorkedMath({ summary, value }: { summary: string; value: number }) {
       <div className="text-[15px] leading-[1.9] text-[#5E534A]">{summary || "Enter the numbers above to build this."}</div>
       <div className="mt-4 flex items-baseline justify-between">
         <span className="text-[13px] text-[#A69A88]">equals</span>
-        <span className="font-abridge text-[34px] leading-none text-[#EA2C00]">{fmtShort(value)}<span className="text-[15px] text-[#9A8C7A]"> a year</span></span>
+        <span className={`font-abridge text-[34px] leading-none ${value > 0 ? "text-[#EA2C00]" : "text-[#C9BDAD]"}`}>{fmtShort(value)}<span className="text-[15px] text-[#9A8C7A]"> a year</span></span>
       </div>
     </div>
   );
@@ -489,7 +483,7 @@ function DriverShell({ title, on, onToggle, value, children }: {
         <span className={`text-[17px] font-bold ${on ? "text-[#1A1A1A]" : "text-[#B4A896]"}`}>{title}</span>
         <div className="flex items-center gap-4">
           {on
-            ? <span className="font-abridge text-[18px] text-[#EA2C00] tabular-nums">{fmtShort(value)}</span>
+            ? <span className={`font-abridge text-[18px] tabular-nums ${value > 0 ? "text-[#EA2C00]" : "text-[#C9BDAD]"}`}>{fmtShort(value)}</span>
             : <span className="text-[12px] font-semibold text-[#B4A896] whitespace-nowrap">Not counted</span>}
           <Toggle on={on} onToggle={onToggle} label={`Include ${title}`} />
         </div>
@@ -582,7 +576,7 @@ function HccDriverCard({ driver, vals, setVal, on, onToggle, value, summary }: {
           <div className="text-[14px] font-medium text-[#1A1A1A]">Risk-adjusted members Abridge covers</div>
           <div className="text-[12.5px] text-[#A69A88] mt-1">the {pops[popIdx]?.label ?? ""} panel your providers see</div>
         </div>
-        <NumInput value={vals.hccMembers} onChange={(v) => setVal("hccMembers", v)} w="w-[128px]" />
+        <NumInput value={vals.hccMembers} onChange={(v) => setVal("hccMembers", v)} placeholder="e.g., 45,000" w="w-[128px]" />
       </div>
 
       {driver.fields.filter((f) => f.k !== "hccMembers").map((f) => (
