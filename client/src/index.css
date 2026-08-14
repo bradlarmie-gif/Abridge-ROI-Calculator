@@ -887,10 +887,11 @@ body {
   }
 }
 
-/* Ensure minimum tap target size */
+/* Ensure minimum tap target size — OPT-IN only. A blanket button/[role="button"]
+   selector ballooned compact controls (progress dots, toggle switches, chips, tabs)
+   into 44px circles at narrow widths. Genuine tap targets opt in via .btn/.clickable
+   (or the .touch-target classes above); primary CTAs are already >=44px via padding. */
 @media (max-width: 767px) {
-  button,
-  [role="button"],
   a.btn,
   .clickable {
     min-height: 44px;
