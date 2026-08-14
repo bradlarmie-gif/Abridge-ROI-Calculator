@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { EditorialHeader, EditorialShell } from "./EditorialHeader";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { type ExploreState, type TimePathScenario } from "../ExploreFlow";
+import { useCountUp } from "@/lib/useCountUp";
 
 interface EdTimeSavingsProps {
   state: ExploreState;
@@ -12,8 +13,6 @@ interface EdTimeSavingsProps {
   onReturnToBusinessCase?: () => void;
 }
 
-const inputBase =
-  "h-[56px] w-full rounded-[14px] border-[1.5px] border-[#E4DED6] bg-white px-[18px] text-[20px] font-abridge text-[#1A1A1A] tabular-nums shadow-[0_1px_2px_rgba(40,30,20,0.04)] transition-[box-shadow,border-color] focus-visible:outline-none focus-visible:border-[#EA2C00] focus-visible:shadow-[0_0_0_3px_#FBD9CE] placeholder:text-[#B5AFA6] placeholder:font-normal placeholder:not-italic placeholder:font-sans placeholder:text-[16px]";
 
 export default function EdTimeSavings({ state, updateState, onNext, onBack, onHome }: EdTimeSavingsProps) {
   const isED = state.careSetting === "ed";
@@ -51,7 +50,6 @@ export default function EdTimeSavings({ state, updateState, onNext, onBack, onHo
     ? Math.round((state.minutesSavedPerEncounter * nursingEligibleShifts) / 60)
     : Math.round((state.minutesSavedPerEncounter * eligibleEncounters) / 60);
 
-  const hoursPerProvider = state.numberOfProviders > 0 ? Math.round(hoursSaved / state.numberOfProviders) : 0;
 
   // Per-provider weekly time saved. When it's under 0.1 hr it rounds to an
   // unhelpful "0.0", so show minutes instead (e.g. "~2 min"). Mirrors the
@@ -78,9 +76,9 @@ export default function EdTimeSavings({ state, updateState, onNext, onBack, onHo
   };
 
   const formatNumber = (n: number) => n.toLocaleString();
+  const shownHours = useCountUp(hoursSaved > 0 ? hoursSaved : 0);
 
   const noteUnit = isNursing ? "shift" : "note";
-  const volumeLabel = isNursing ? "Abridge-enabled shifts" : "Abridge-enabled encounters";
   const volumeValue = isNursing ? nursingEligibleShifts : eligibleEncounters;
   const settingWord = isNursing ? "nursing" : isED ? "ED" : isInpatient ? "inpatient" : "outpatient";
   const roleWord = isNursing ? "nurse" : "provider";
@@ -108,118 +106,64 @@ export default function EdTimeSavings({ state, updateState, onNext, onBack, onHo
           the real figure when you measure.
         </p>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[1.35fr_1fr] gap-[22px] mt-[34px] items-stretch">
-          {/* Form */}
-          <div className="bg-[#FDFBF8] border border-[#E7E3DD] rounded-[20px] px-7 py-[26px] h-full">
-            <div>
-              <div className="text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#2E2822] mb-[10px]">
-                Minutes saved per {noteUnit}
-              </div>
-              <div className="relative">
+        {/* Inline editorial — one centered statement; the minutes is editable inside the sentence */}
+        <div className="mt-[38px] max-w-[900px] mx-auto">
+          <div className="bg-[#FDFBF8] border border-[#E7E3DD] rounded-[24px] px-8 sm:px-14 py-[52px] text-center">
+            <div className="text-[11px] font-extrabold tracking-[0.08em] uppercase text-[#443A32]">
+              Time given back
+            </div>
+
+            <div className="mt-6 text-[25px] sm:text-[31px] leading-[1.35] text-[#3A342E]">
+              Take{" "}
+              <span className="inline-flex items-baseline">
                 <FormattedNumberInput
                   value={state.minutesSavedPerEncounter}
                   onChange={handleCustomMinutes}
                   step={0.1}
-                  placeholder="e.g., 2.5"
-                  className={`${inputBase} pr-14`}
                   data-testid="ed-input-minutes-saved"
+                  className="w-[72px] font-abridge text-[34px] sm:text-[38px] leading-none text-[#EA2C00] tabular-nums text-center bg-transparent border-0 border-b-2 border-[#EA2C00] rounded-none p-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
                 />
-                <span className="absolute right-[15px] top-1/2 -translate-y-1/2 text-[#565250] text-[14px] font-semibold">
-                  min
-                </span>
-              </div>
-              <div className="flex items-center gap-[7px] mt-[10px] flex-wrap">
-                <span className="text-[10px] font-extrabold tracking-[0.05em] uppercase text-[#7C766F]">
-                  Quick fill
-                </span>
-                {scenarioChips.map(({ key, label }) => (
-                  <button
-                    key={key}
-                    type="button"
-                    onClick={() => handleScenarioSelect(key)}
-                    className={`text-[12px] font-bold border rounded-[9px] px-[11px] py-[6px] transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[#EA2C00] focus-visible:ring-offset-1 ${
-                      state.timePathScenario === key
-                        ? "border-[#EA2C00] text-[#EA2C00] bg-[#FFF7F4]"
-                        : "border-[#E7E3DD] text-[#565250] bg-white hover:border-[#1A1A1A] hover:text-[#1A1A1A]"
-                    }`}
-                  >
-                    {label} · {scenarioMinutes[key]}
-                  </button>
-                ))}
-              </div>
-              <p className="text-[12.5px] text-[#565250] mt-[10px]">
-                Seeded conservatively from {settingWord} implementations. You measure the real number on Progress.
-              </p>
+                <span className="font-abridge text-[25px] text-[#EA2C00] ml-1">min</span>
+              </span>{" "}
+              off each of <b className="font-abridge text-[#1A1A1A]">{formatNumber(volumeValue)}</b> {noteUnit}s,
             </div>
 
-            <div className="mt-[22px] border-t border-[#E7E3DD] pt-[18px]">
-              <div className="text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#2E2822] mb-3">
-                How it adds up
-              </div>
-              <div className="flex items-center gap-3 text-[14px] text-[#565250]">
-                <span className="font-abridge text-[18px] text-[#1A1A1A] tabular-nums">
-                  {formatNumber(volumeValue)}
-                </span>
-                {volumeLabel}
-              </div>
-              <div className="flex items-center gap-3 text-[14px] text-[#565250] mt-[10px]">
-                <span className="font-abridge text-[18px] text-[#1A1A1A] tabular-nums">
-                  × {state.minutesSavedPerEncounter} min
-                </span>
-                saved per {noteUnit}
-              </div>
-              <div className="text-[14px] text-[#565250] mt-3">
-                ={" "}
-                <span className="font-abridge text-[20px] text-[#EA2C00] tabular-nums">
-                  {formatNumber(hoursSaved)} hours
-                </span>{" "}
-                given back a year
-              </div>
-            </div>
-          </div>
-
-          {/* Snapshot + continue, anchored to the right column */}
-          <div className="flex flex-col gap-5 h-full">
-          <div className="bg-[#FDFBF8] border border-[#E7E3DD] rounded-[20px] px-7 py-[26px] flex-1 flex flex-col">
-            <div className="text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#443A32]">
-              Time given back
-            </div>
-            <div className="mt-3 leading-none">
-              <span className="font-abridge text-[42px] sm:text-[52px] text-[#EA2C00] tabular-nums">{formatNumber(hoursSaved)}</span>
-              <span className="text-[14px] text-[#565250]"> hours a year</span>
+            <div className="mt-7 leading-[0.88]">
+              <span className="font-abridge text-[76px] sm:text-[100px] text-[#EA2C00] tabular-nums">{hoursSaved > 0 ? formatNumber(shownHours) : "—"}</span>
+              <span className="text-[22px] text-[#565250]"> hours a year</span>
             </div>
 
-            {hoursSaved > 0 ? (
-              <>
-                <div className="mt-6 text-[17px] text-[#3A342E] leading-[1.55]">
-                  That&apos;s <span className="font-abridge text-[30px] text-[#EA2C00] align-baseline">{perWeek.value}</span> <span className="text-[#EA2C00] font-semibold">{perWeek.unit}</span> for every {roleWord}, every week.
-                </div>
-                <div className="mt-6 grid grid-cols-2 gap-3">
-                  <div className="bg-white border border-[#EFE7DD] rounded-[14px] px-4 py-[14px]">
-                    <div className="font-abridge text-[26px] text-[#1A1A1A] tabular-nums leading-none">
-                      {state.numberOfProviders > 0 ? formatNumber(hoursPerProvider) : "—"}
-                    </div>
-                    <div className="text-[12px] text-[#7C766F] mt-[6px]">hours / {roleWord} / yr</div>
-                  </div>
-                  <div className="bg-white border border-[#EFE7DD] rounded-[14px] px-4 py-[14px]">
-                    <div className="font-abridge text-[26px] text-[#1A1A1A] tabular-nums leading-none">
-                      {state.minutesSavedPerEncounter} min
-                    </div>
-                    <div className="text-[12px] text-[#7C766F] mt-[6px]">saved per {noteUnit}</div>
-                  </div>
-                </div>
-              </>
-            ) : (
-              <div className="mt-6 text-[13px] text-[#7C766F] italic">Enter minutes saved to see the time given back.</div>
+            {hoursSaved > 0 && (
+              <div className="mt-6 text-[17px] text-[#3A342E] leading-[1.5]">
+                That&apos;s about <b className="text-[#EA2C00]">{perWeek.value} {perWeek.unit}</b> for every {roleWord}, every week.
+              </div>
             )}
 
-            <div className="mt-auto pt-[18px] border-t border-[#E7E3DD] mt-6">
-              <p className="text-[12.5px] text-[#565250] leading-[1.55]">
-                <b className="text-[#1A1A1A]">{formatNumber(volumeValue)}</b> {volumeLabel.toLowerCase()} × <b className="text-[#1A1A1A]">{state.minutesSavedPerEncounter} min</b> = <b className="text-[#EA2C00]">{formatNumber(hoursSaved)} hours</b>{state.numberOfProviders > 0 ? <>, about <b className="text-[#1A1A1A]">{formatNumber(hoursPerProvider)}</b> per {roleWord}</> : null}. This is time back, not dollars yet; we turn it into value on the next screens.
-              </p>
+            <div className="mt-9 flex items-center justify-center gap-[7px] flex-wrap">
+              <span className="text-[10px] font-extrabold tracking-[0.05em] uppercase text-[#7C766F]">
+                Quick fill
+              </span>
+              {scenarioChips.map(({ key, label }) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => handleScenarioSelect(key)}
+                  className={`text-[12px] font-bold border rounded-[9px] px-[11px] py-[6px] transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[#EA2C00] focus-visible:ring-offset-1 ${
+                    state.timePathScenario === key
+                      ? "border-[#EA2C00] text-[#EA2C00] bg-[#FFF7F4]"
+                      : "border-[#E7E3DD] text-[#565250] bg-white hover:border-[#1A1A1A] hover:text-[#1A1A1A]"
+                  }`}
+                >
+                  {label} · {scenarioMinutes[key]}
+                </button>
+              ))}
             </div>
+            <p className="text-[12.5px] text-[#7C766F] mt-5 max-w-[540px] mx-auto leading-[1.5]">
+              Seeded conservatively from {settingWord} implementations. Time back, not dollars yet; we turn it into value on the next screens.
+            </p>
           </div>
-          <div className="flex justify-end">
+
+          <div className="flex justify-end mt-6">
             <button
               type="button"
               disabled={!isValid}
@@ -230,7 +174,6 @@ export default function EdTimeSavings({ state, updateState, onNext, onBack, onHo
               Continue →
             </button>
           </div>
-        </div>
         </div>
       </div>
     </EditorialShell>
