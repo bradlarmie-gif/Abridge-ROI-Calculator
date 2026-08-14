@@ -59,6 +59,12 @@ export default function ValueRail({ state, totalHoursSaved, activeDomain, invest
   const roi = investment && investment > 0 ? domainTotal / investment : 0;
   const seg = (v: number) => (domainTotal > 0 ? `${(v / domainTotal) * 100}%` : "0%");
 
+  // This step is a proof/tracked domain (inpatient Capacity, every setting's
+  // Quality): it adds no dollar by design, so the rail must NOT wear the
+  // dollar-step chrome (giant $0, coral "building"). It reframes as proof.
+  const activeIsProof = !onInvestment && activeDomain != null && !!proof[activeDomain];
+  const hasDollars = domainTotal > 0;
+
   return (
     <div className="lg:sticky lg:top-6">
       <div className="bg-white border border-[#E7E3DD] rounded-[22px] p-8 sm:p-9 shadow-[0_1px_3px_rgba(40,30,20,0.04)]">
@@ -66,25 +72,44 @@ export default function ValueRail({ state, totalHoursSaved, activeDomain, invest
           <span className="text-[11px] font-extrabold tracking-[0.08em] uppercase text-[#7C766F]">
             {onInvestment ? "Your model" : "Your model so far"}
           </span>
-          {!onInvestment && (
-            <span className="text-[11px] font-bold text-[#EA2C00] bg-[#FFEDE7] rounded-full px-[10px] py-[4px]">building</span>
-          )}
+          {!onInvestment &&
+            (activeIsProof ? (
+              <span className="text-[11px] font-bold text-[#7C766F] bg-[#F2EFEA] rounded-full px-[10px] py-[4px]">tracked this step</span>
+            ) : hasDollars ? (
+              <span className="text-[11px] font-bold text-[#EA2C00] bg-[#FFEDE7] rounded-full px-[10px] py-[4px]">building</span>
+            ) : null)}
         </div>
 
-        {/* headline: the assembled total (count-up) */}
-        <div>
-          <AnimatedValue value={domainTotal} format={fmtMoney} duration={450} className="font-abridge text-[46px] sm:text-[52px] leading-none text-[#EA2C00]" />
-          <span className="text-[15px] text-[#7C766F]"> / yr</span>
-        </div>
+        {/* headline: dollars on counted steps; a proof statement on proof steps */}
         {onInvestment ? (
-          <div className="text-[13.5px] text-[#565250] mt-3 leading-[1.55]">
-            net of a <b className="text-[#1A1A1A]">{fmtMoney(investment!)}</b> investment,{" "}
-            <b className="text-[#EA2C00]">{fmtMoney(net)}</b> / yr comes back{roi > 0 ? <> ≈ <b className="text-[#EA2C00]">{roi.toFixed(1)}×</b></> : null}.
-          </div>
+          <>
+            <div>
+              <AnimatedValue value={domainTotal} format={fmtMoney} duration={450} className="font-abridge text-[46px] sm:text-[52px] leading-none text-[#EA2C00]" />
+              <span className="text-[15px] text-[#7C766F]"> / yr</span>
+            </div>
+            <div className="text-[13.5px] text-[#565250] mt-3 leading-[1.55]">
+              net of a <b className="text-[#1A1A1A]">{fmtMoney(investment!)}</b> investment,{" "}
+              <b className="text-[#EA2C00]">{fmtMoney(net)}</b> / yr comes back{roi > 0 ? <> ≈ <b className="text-[#EA2C00]">{roi.toFixed(1)}×</b></> : null}.
+            </div>
+          </>
+        ) : activeIsProof ? (
+          <>
+            <div className="font-abridge text-[30px] sm:text-[34px] leading-[1.1] text-[#1A1A1A]">Proof, not a dollar</div>
+            <div className="text-[13.5px] text-[#565250] mt-3 leading-[1.55]">
+              {activeDomain} is tracked this step. Your dollars build on the counted steps.
+            </div>
+          </>
         ) : (
-          <div className="text-[13.5px] text-[#565250] mt-3 leading-[1.55]">
-            Built from your own numbers, across the four areas we model.
-          </div>
+          <>
+            <div>
+              <AnimatedValue value={domainTotal} format={fmtMoney} duration={450} className={`font-abridge text-[46px] sm:text-[52px] leading-none ${hasDollars ? "text-[#EA2C00]" : "text-[#C9BDAD]"}`} />
+              <span className="text-[15px] text-[#7C766F]"> / yr</span>
+            </div>
+            <div className="text-[13.5px] text-[#565250] mt-3 leading-[1.55]">
+              {/* neutral when zero: drivers may be ON but tracked (retention default), so never say "turn one on" */}
+              {hasDollars ? "Built from your own numbers." : "Your counted dollars appear here as the model builds."}
+            </div>
+          </>
         )}
 
         {/* the growing stacked bar over the counted domains */}
@@ -128,7 +153,7 @@ export default function ValueRail({ state, totalHoursSaved, activeDomain, invest
       <p className="text-[12.5px] text-[#7C766F] mt-[16px] leading-[1.55] text-center max-w-[360px] mx-auto">
         {onInvestment
           ? "Everything the prior steps built, against the cost. This is what's left."
-          : "This stays with you across every step. Each driver you turn on lands here, so the model is already built by the time you reach the end."}
+          : "Your model stays here and grows with every driver you turn on."}
       </p>
     </div>
   );

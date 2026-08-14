@@ -70,7 +70,7 @@ function ProofChainScreen({ state, totalHoursSaved, onNext, onBack, onHome, sett
   const allDrivers = getDriversForPage("Quality", setting).filter((d) => !d.childOfDriverId);
   const CHAIN_IDS: Record<"outpatient" | "ed" | "inpatient", string[]> = {
     outpatient: ["opCdiQueryTrend", "opCareGapClosureRate", "opHedisCompositeScore", "opMaStarsPerformance"],
-    ed: ["edCoreMeasureDocRate", "edNoteCompleteness", "edSepsisBundle", "edPatientExperience"],
+    ed: ["edNoteCompleteness", "edCoreMeasureDocRate", "edSepsisBundle", "edPatientExperience"],
     inpatient: ["ipCdiQueryRate", "ipHcahpsDoctor", "ipReadmissionRate"],
   };
   const drivers = (CHAIN_IDS[setting] ?? [])
@@ -106,14 +106,16 @@ function ProofChainScreen({ state, totalHoursSaved, onNext, onBack, onHome, sett
         </p>
 
         <div className="flex items-center gap-2 text-[10.5px] font-extrabold tracking-[0.05em] uppercase text-[#7C766F] mb-2.5">
-          How the proof builds <span className="flex-1 h-px bg-gradient-to-r from-[#E7E3DD] to-[#EDE7DD]" /> weeks → next year
+          How the proof builds <span className="flex-1 h-px bg-gradient-to-r from-[#E7E3DD] to-[#EDE7DD]" /> months → next year
         </div>
 
-        <div className="flex items-stretch flex-wrap gap-y-4" data-testid="proof-chain">
+        <div className="flex items-stretch flex-wrap gap-x-3 gap-y-4" data-testid="proof-chain">
           {drivers.map((d, i) => {
             const copyEntry = CHAIN_COPY[d.id] ?? { metric: d.label, sub: d.tagline ?? "" };
             const isLast = i === drivers.length - 1;
             return (
+              // No connector arrows: they dangle into empty space when cards wrap
+              // to a new row. The ascending timing badges carry the sequence.
               <div key={d.id} className="flex items-stretch" style={{ flex: "1 1 200px", minWidth: 200 }}>
                 <div
                   className={`flex-1 rounded-[16px] p-[18px_17px] flex flex-col gap-2.5 ${
@@ -130,9 +132,6 @@ function ProofChainScreen({ state, totalHoursSaved, onNext, onBack, onHome, sett
                   <div className="font-abridge text-[17px] text-[#1A1A1A] leading-[1.15]">{copyEntry.metric}</div>
                   <div className="text-[11.5px] text-[#7C766F] leading-[1.4]">{copyEntry.sub}</div>
                 </div>
-                {!isLast && (
-                  <div className="flex items-center justify-center text-[19px] text-[#CBBEAB] w-10 flex-shrink-0">→</div>
-                )}
               </div>
             );
           })}

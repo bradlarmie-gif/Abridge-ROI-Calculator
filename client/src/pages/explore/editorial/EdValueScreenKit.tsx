@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { Fragment, type ReactNode } from "react";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { BuildStrip, type MoneyBuild } from "./EdMoneyCard";
 import { AnimatedValue } from "@/components/explore/AnimatedValue";
@@ -360,36 +360,35 @@ export function OutcomesBlock({
   outcomes: string[];
   note: ReactNode;
 }) {
+  // One grid so each row's two cells share a height and their bottom borders
+  // line up across columns (two independent lists drift apart when a label
+  // wraps). Column headers are the first grid row.
+  const rowCount = Math.max(signals.length, outcomes.length);
+  const hdr = "text-[10.5px] font-extrabold tracking-[0.06em] uppercase text-[#7C766F] pb-3";
+  const cell = "flex items-center min-h-[52px] py-2 border-b border-[#EDE5D8] text-[14px]";
   return (
     <div className="border border-dashed border-[#D8CFC0] rounded-[18px] p-5 sm:p-6 bg-[#FAF7F2]">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-9 gap-y-5">
-        <div>
-          <div className="text-[10.5px] font-extrabold tracking-[0.06em] uppercase text-[#7C766F] mb-3">
-            Signals we can measure
-          </div>
-          {signals.map((s) => (
-            <div
-              key={s.label}
-              className="flex justify-between items-baseline gap-3 py-2 border-b border-[#EDE5D8] last:border-b-0 text-[14px] text-[#565250]"
-            >
-              <span>{s.label}</span>
-              <span className="text-[12px] text-[#7C766F] italic flex-shrink-0 whitespace-nowrap">{s.ex}</span>
-            </div>
-          ))}
-        </div>
-        <div>
-          <div className="text-[10.5px] font-extrabold tracking-[0.06em] uppercase text-[#7C766F] mb-3">
-            {heading}
-          </div>
-          {outcomes.map((o) => (
-            <div
-              key={o}
-              className="py-2 border-b border-[#EDE5D8] last:border-b-0 text-[14px] font-bold text-[#1A1A1A]"
-            >
-              {o}
-            </div>
-          ))}
-        </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-9">
+        <div className={hdr}>Signals we can measure</div>
+        <div className={`${hdr} hidden sm:block`}>{heading}</div>
+        {Array.from({ length: rowCount }).map((_, i) => {
+          const s = signals[i];
+          const o = outcomes[i];
+          const last = i === rowCount - 1;
+          return (
+            <Fragment key={i}>
+              <div className={`${cell} justify-between gap-3 text-[#565250] ${last ? "sm:border-b-0" : ""}`}>
+                {s && (
+                  <>
+                    <span>{s.label}</span>
+                    <span className="text-[12px] text-[#7C766F] italic flex-shrink-0 whitespace-nowrap">{s.ex}</span>
+                  </>
+                )}
+              </div>
+              <div className={`${cell} font-bold text-[#1A1A1A] ${last ? "border-b-0" : ""}`}>{o}</div>
+            </Fragment>
+          );
+        })}
       </div>
       <div className="text-[12.5px] text-[#565250] leading-[1.5] mt-[15px]">{note}</div>
     </div>

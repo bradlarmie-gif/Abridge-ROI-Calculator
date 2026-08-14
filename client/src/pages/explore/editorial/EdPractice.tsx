@@ -483,15 +483,26 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
                         </div>
                       </>
                     ) : (
-                      // Ghosted structure — reads composed before the inputs are in, not empty
-                      <>
-                        <div className="text-[15px] text-[#B8B0A6] leading-[1.6]">Your volume, and the share on Abridge, build the number here.</div>
-                        <div className="mt-6 leading-[0.9]">
-                          <div className="font-abridge text-[62px] sm:text-[74px] text-[#E4DED5] tabular-nums">&ndash;</div>
-                          <div className="text-[14px] text-[#B8B0A6] mt-2">{unit} your value is built on</div>
+                      // Composed empty state: explain what this panel will show and
+                      // preview the inputs that feed it. No ghost number / orphaned
+                      // fragment / empty skeleton bar (those read as broken).
+                      <div className="max-w-[330px]">
+                        <div className="font-abridge text-[23px] text-[#3A342E] leading-[1.2]">The volume your value is built on</div>
+                        <p className="text-[14px] text-[#8A8073] leading-[1.6] mt-3">
+                          Your annual {unit} times the share documented with Abridge. Enter your numbers on the left and it fills in here.
+                        </p>
+                        <div className="mt-7 flex flex-col gap-[11px]">
+                          {[
+                            isNursing ? "Nurses" : "Providers",
+                            isNursing ? "Annual shifts" : "Annual encounters",
+                            isNursing ? "Share documenting" : "Documented share",
+                          ].map((l) => (
+                            <div key={l} className="flex items-center gap-[10px] text-[13px] text-[#B0A99E]">
+                              <span className="w-[6px] h-[6px] rounded-full bg-[#DDD5C9] flex-shrink-0" /> {l}
+                            </div>
+                          ))}
                         </div>
-                        <div className="mt-8 h-[7px] rounded-full bg-[#F1ECE4]" />
-                      </>
+                      </div>
                     )}
                   </div>
 

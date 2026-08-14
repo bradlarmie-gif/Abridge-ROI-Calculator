@@ -156,7 +156,7 @@ export default function EdTimeSavings({ state, updateState, onNext, onBack, onHo
                   <div className="leading-[0.85]">
                     <span className="font-abridge text-[68px] sm:text-[84px] text-[#EA2C00] tabular-nums">{formatNumber(shownHours)}</span>
                   </div>
-                  <div className="text-[16px] text-[#574C41] mt-2">clinician hours a year</div>
+                  <div className="text-[16px] text-[#574C41] mt-2">{isNursing ? "nurse" : "clinician"} hours a year</div>
                   <div className="text-[15px] text-[#3A342E] mt-4 leading-[1.5]">
                     ≈ <b className="text-[#1A1A1A]">{(hoursSaved / 2080).toFixed(1)}</b> full-time {roleWord}s&apos; worth of documentation time
                   </div>
@@ -168,7 +168,7 @@ export default function EdTimeSavings({ state, updateState, onNext, onBack, onHo
                 <>
                   <div className="text-[15px] text-[#B8B0A6] leading-[1.6]">Set the minutes to see the time given back.</div>
                   <div className="mt-3 font-abridge text-[68px] sm:text-[84px] text-[#E4DED5] tabular-nums leading-[0.85]">&ndash;</div>
-                  <div className="text-[16px] text-[#B8B0A6] mt-2">clinician hours a year</div>
+                  <div className="text-[16px] text-[#B8B0A6] mt-2">{isNursing ? "nurse" : "clinician"} hours a year</div>
                 </>
               )}
             </div>

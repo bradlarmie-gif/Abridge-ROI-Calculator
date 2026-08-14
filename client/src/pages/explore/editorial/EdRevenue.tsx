@@ -104,7 +104,9 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
         <EqAwaiting need={wrvuAwait.need} />
       ) : (
         <EquationRow>
-          <EqCarried cap={isED ? "ED encounters" : "FFS visits"}>{fmtN(eligibleEncounters)}</EqCarried>
+          {/* eligibleEncounters is the DOCUMENTED subset (× utilization), not the full
+              ED-encounter total shown on Capacity; label it so the two never collide. */}
+          <EqCarried cap={isED ? "Documented ED visits" : "Documented visits"}>{fmtN(eligibleEncounters)}</EqCarried>
           <EqOp>×</EqOp>
           <EqNum cap="wRVU / visit" value={dq.currentWrvu} onChange={(v) => updateDq({ currentWrvu: v })} decimal width={50} />
           <EqOp>×</EqOp>
@@ -214,7 +216,12 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
                   ))}
                 </select>
                 <div className="flex items-center gap-3">
-                  <span className="font-abridge text-[19px] text-[#EA2C00] whitespace-nowrap">+{fmt$(planNetOf(p))}<span className="text-[11px] text-[#7C766F] font-sans"> / yr</span></span>
+                  {/* No lives yet: show a muted dash, not a "+$0" that reads broken. */}
+                  {membersOf(p) > 0 ? (
+                    <span className="font-abridge text-[19px] text-[#EA2C00] whitespace-nowrap">+{fmt$(planNetOf(p))}<span className="text-[11px] text-[#7C766F] font-sans"> / yr</span></span>
+                  ) : (
+                    <span className="font-abridge text-[19px] text-[#C9BDAD] whitespace-nowrap">&ndash;<span className="text-[11px] text-[#7C766F] font-sans"> / yr</span></span>
+                  )}
                   {plans.length > 1 && (
                     <button type="button" onClick={() => removePlan(p.id)} className="w-[24px] h-[24px] rounded-[7px] border border-[#E7E3DD] bg-white text-[#7C766F] flex items-center justify-center"><X className="w-3.5 h-3.5" /></button>
                   )}
@@ -254,7 +261,7 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
             <div className="flex items-end gap-2">
               <EqNum cap="share that survives RADV / audit" value={dq.hccRealization} onChange={(v) => updateDq({ hccRealization: v })} suffix="%" width={40} />
             </div>
-            <div className="text-[13px] text-[#565250]">Across {plans.length} {plans.length === 1 ? "plan" : "plans"}&nbsp; <b className="font-abridge text-[19px] text-[#EA2C00]">+{fmt$(hccValue)}</b> / yr</div>
+            <div className="text-[13px] text-[#565250]">Across {plans.length} {plans.length === 1 ? "plan" : "plans"}&nbsp; {totalPanel > 0 ? <b className="font-abridge text-[19px] text-[#EA2C00]">+{fmt$(hccValue)}</b> : <b className="font-abridge text-[19px] text-[#C9BDAD]">&ndash;</b>} / yr</div>
           </div>
         </div>
       )}

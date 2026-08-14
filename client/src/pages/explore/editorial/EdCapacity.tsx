@@ -326,21 +326,19 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
               tagMuted
               subtotal={
                 <>
-                  Where documentation turns into dollars, it&apos;s counted in{" "}
-                  <b className="text-[#1A1A1A]">Revenue</b>
+                  Dollars are counted in <b className="text-[#1A1A1A]">Revenue</b>
                 </>
               }
             >
               The proof
             </SectionLabel>
 
-            <div className="border border-[#E7E3DD] rounded-[14px] bg-[#FAF7F2] px-[18px] py-[15px] flex gap-3">
-              <span className="w-[9px] h-[9px] rounded-full bg-[#EA2C00] flex-shrink-0 mt-[5px]" />
-              <div className="text-[13.5px] text-[#565250] leading-[1.5]">
-                <b className="text-[#1A1A1A]">We&apos;re only in the documentation, so capacity stays proof here on purpose.</b>{" "}
-                Earlier, complete notes can let discharge planning and consults start sooner, but the days themselves depend
-                on beds, staffing, and placement we don&apos;t touch. So we track the documentation signals that have to move
-                first, and never put a dollar on the throughput.
+            <div className="border border-[#E7E3DD] rounded-[14px] bg-[#FAF7F2] px-[18px] py-[16px] flex gap-3">
+              <span className="w-[9px] h-[9px] rounded-full bg-[#EA2C00] flex-shrink-0 mt-[7px]" />
+              <div className="text-[14px] text-[#565250] leading-[1.55]">
+                <b className="text-[#1A1A1A]">Complete notes let discharge planning and consults start sooner.</b>{" "}
+                But length of stay depends on beds, staffing, and placement Abridge doesn&apos;t touch, so we track the
+                signals that move first and never put a dollar on the days themselves.
               </div>
             </div>
           </>

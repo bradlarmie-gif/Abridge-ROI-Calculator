@@ -461,7 +461,8 @@ export default function EdModel({
         {/* Hero recap */}
         <div className="bg-[#FDFBF8] border border-[#E7E3DD] rounded-[20px] p-[26px_30px] mt-[30px] flex justify-between items-center gap-[30px] flex-wrap">
           <div>
-            <div className="text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#2E2822]">Net annual value</div>
+            {/* "Net" only once a cost exists; before pricing this figure is net of nothing, so it's "value before cost" (matches EdInvestment). */}
+            <div className="text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#2E2822]">{annualInvestment > 0 ? "Net annual value" : "Value before cost"}</div>
             {/* Coral is reserved for a real gain; a loss reads in neutral ink, never celebratory. */}
             <div className={`font-abridge text-[54px] leading-none mt-[7px] ${netAnnualValue >= 0 ? "text-[#EA2C00]" : "text-[#1A1A1A]"}`}>
               {fmtCurrency(netAnnualValue)}
@@ -582,6 +583,16 @@ export default function EdModel({
                   );
                 }
                 const value = valueByQuadrant[q];
+                // Workforce with retention in Tracked mode counts $0 by design; show it
+                // as a tracked signal (like the proof rows), never a $0 + empty bar.
+                if (q === "Workforce" && value === 0 && state.retentionMode === "tracked") {
+                  return (
+                    <div key={q} className="flex justify-between items-baseline">
+                      <span className="text-[13.5px] font-bold text-[#1A1A1A]">{q}</span>
+                      <span className="text-[12px] text-[#7C766F] italic">tracked as a signal; switch Retention to Dollar to count</span>
+                    </div>
+                  );
+                }
                 return (
                   <div key={q}>
                     <div className="flex justify-between items-baseline mb-[7px]">
@@ -699,7 +710,7 @@ export default function EdModel({
             </div>
 
             <div className="border-l border-[#E7E3DD] pl-[30px]">
-              <div className="text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#2E2822]">Projected net value at that scope</div>
+              <div className="text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#2E2822]">{annualInvestment > 0 ? "Projected net value at that scope" : "Projected value at that scope"}</div>
               <div className={`font-abridge text-[42px] leading-none mt-[6px] ${expandedValue >= 0 ? "text-[#EA2C00]" : "text-[#1A1A1A]"}`}>
                 {fmtCurrency(expandedValue)}
                 <span className="text-[15px] text-[#565250]"> / yr</span>

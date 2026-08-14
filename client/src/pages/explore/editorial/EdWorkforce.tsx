@@ -618,7 +618,8 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
         <SectionLabel
           tag="counts when it's on"
           subtotal={
-            flatFinancial.length > 1 && (
+            flatFinancial.length > 1 &&
+            (totalValue > 0 ? (
               <>
                 Counted on this screen&nbsp; <b className="font-abridge text-[#1A1A1A] text-[15px]">{formatCurrency(totalValue)}</b>{" "}
                 / yr &nbsp;·&nbsp;{" "}
@@ -626,7 +627,16 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
                   {totalOn} of {flatFinancial.length} drivers on
                 </span>
               </>
-            )
+            ) : totalOn > 0 ? (
+              // Drivers on but tracked (retention default): don't show a broken "$0/yr · N on".
+              <>
+                Tracked as signals&nbsp;·&nbsp;{" "}
+                <span className="text-[#7C766F] font-bold">{totalOn} of {flatFinancial.length} on</span>
+                &nbsp;·&nbsp; switch to Dollar to count
+              </>
+            ) : (
+              <span className="text-[#7C766F] font-bold">{totalOn} of {flatFinancial.length} drivers on</span>
+            ))
           }
         >
           The value

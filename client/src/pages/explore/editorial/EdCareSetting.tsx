@@ -98,6 +98,15 @@ const SETTING_LABEL: Record<ExploreCareSetting, string> = {
 // contrast as text).
 const QUAD_DOT = DOMAIN_COLORS;
 
+// Short, setting-agnostic hints for the empty-state ghost cards, so the four
+// placeholders read as distinct areas rather than the same line four times.
+const EMPTY_HINTS: Record<Quadrant, string> = {
+  Capacity: "Time given back to care",
+  Workforce: "Retention and staffing cost",
+  Revenue: "Coding and capture accuracy",
+  Quality: "The signals that protect it",
+};
+
 const EASE = [0.22, 1, 0.36, 1] as const;
 
 export default function EdCareSetting({ selectedSetting, onSelectSetting, onNext, onBack, onHome, disabledSettings = [], onDataRequest }: Props) {
@@ -139,7 +148,7 @@ export default function EdCareSetting({ selectedSetting, onSelectSetting, onNext
                   onClick={() => onSelectSetting(id)}
                   onMouseEnter={() => !disabled && setHovered(id)}
                   data-testid={`ed-setting-${id}`}
-                  className={`group relative text-left flex items-center gap-[14px] border rounded-[14px] px-4 py-[15px] transition-all duration-200 ${
+                  className={`group relative text-left flex-1 flex items-center gap-[14px] border rounded-[14px] px-4 py-[15px] min-h-[74px] transition-all duration-200 ${
                     selected
                       ? "border-[#EA2C00] bg-[#FEF6F3] shadow-[0_0_0_1px_#EA2C00]"
                       : "border-[#E7E3DD] bg-[#FDFBF8] hover:border-[#C9BCA9] hover:bg-[#FBF7F1]"
@@ -252,7 +261,7 @@ export default function EdCareSetting({ selectedSetting, onSelectSetting, onNext
                           <span className="w-[9px] h-[9px] rounded-[3px] flex-shrink-0" style={{ background: v2 ? QUAD_DOT[q] : "#D8CFC2", opacity: v2 ? 0.5 : 1 }} />
                           <div className="text-[10.5px] font-extrabold tracking-[0.08em] uppercase text-[#B0ABA4]">{q}</div>
                         </div>
-                        <div className="text-[12.5px] text-[#B0ABA4] mt-[6px] leading-[1.4]">{v2 ? "Previewed once you pick a setting" : "Shown once you pick a setting"}</div>
+                        <div className="text-[12.5px] text-[#B0ABA4] mt-[6px] leading-[1.4]">{v2 ? EMPTY_HINTS[q] : "Shown once you pick a setting"}</div>
                       </div>
                     ))}
                   </div>

@@ -36,7 +36,8 @@ export function EqNum({ cap, value, onChange, prefix, suffix, decimal }: { cap: 
       <div className="inline-flex items-baseline w-fit border-b-2 border-[#EA2C00] pb-[2px] transition-colors focus-within:border-[#B02200]">
         {prefix && <span className="font-abridge text-[19px] text-[#1A1A1A] leading-none">{prefix}</span>}
         <NumberField value={value} onValueChange={onChange} decimal={decimal} className="bg-transparent outline-none border-0 p-0 font-abridge text-[19px] text-[#1A1A1A] tabular-nums leading-none text-center [field-sizing:content] min-w-[1ch]" />
-        {suffix && <span className="text-[13px] text-[#7C766F] leading-none">{suffix}</span>}
+        {/* "%" hugs the number; word suffixes (hrs, min, "of N") need a space so it's not "1hrs". */}
+        {suffix && <span className={`text-[13px] text-[#7C766F] leading-none ${suffix === "%" ? "" : "ml-[3px]"}`}>{suffix}</span>}
       </div>
     </div>
   );
@@ -47,7 +48,9 @@ export function EqCarried({ cap, children }: { cap: string; children: ReactNode 
   return (
     <div className="flex flex-col justify-end">
       <Cap>{cap}</Cap>
-      <div className="font-abridge text-[19px] text-[#A79E92] tabular-nums leading-none pb-[2px]">{children}</div>
+      {/* transparent underline mirrors EqNum's 2px border so the carried figure
+          shares the exact baseline of the editable coral figures in the row. */}
+      <div className="font-abridge text-[19px] text-[#A79E92] tabular-nums leading-none border-b-2 border-transparent pb-[2px]">{children}</div>
     </div>
   );
 }
@@ -56,7 +59,7 @@ export function EqOp({ children }: { children: string }) {
   return (
     <div className="flex flex-col justify-end">
       <Cap>{" "}</Cap>
-      <div className="font-abridge text-[19px] text-[#B9AA97] leading-none pb-[2px]">{children}</div>
+      <div className="font-abridge text-[19px] text-[#B9AA97] leading-none border-b-2 border-transparent pb-[2px]">{children}</div>
     </div>
   );
 }

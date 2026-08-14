@@ -124,7 +124,7 @@ export default function EdInvestment({
           Enter your pricing. Everything the prior screens built, minus the cost, is what&apos;s left.
         </p>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.08fr] gap-[22px] mt-8 items-stretch">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.08fr] gap-[22px] mt-8 items-start">
           {/* Investment card */}
           <div className="bg-[#FDFBF8] border border-[#E7E3DD] rounded-[20px] p-[24px_26px]">
             <div className="text-[11px] font-extrabold tracking-[0.09em] uppercase text-[#2E2822] mb-4">Your investment</div>
