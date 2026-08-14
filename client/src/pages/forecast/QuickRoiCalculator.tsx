@@ -127,13 +127,13 @@ function SettingPicker({ onPick }: { onPick: (s: SettingKey) => void }) {
       <p className="mt-5 text-[16px] leading-[1.55] text-[#8C8073] max-w-[520px]">
         Three quick steps, straight from the impact analysis. First, which care setting?
       </p>
-      <div className="mt-12 border-t border-[#E8E2DA]">
+      <div className="mt-12 border-t border-[#E8E2DA] max-w-[680px]">
         {(Object.keys(SETTING_META) as SettingKey[]).map((k) => (
           <button key={k} onClick={() => onPick(k)}
-            className="group w-full text-left flex items-center justify-between gap-6 py-6 border-b border-[#E8E2DA] hover:pl-2 transition-all">
+            className="group w-full text-left flex items-center justify-between gap-6 py-[22px] border-b border-[#E8E2DA] hover:pl-2 transition-all">
             <div>
-              <span className="font-abridge text-[26px] text-[#1A1A1A] group-hover:text-[#EA2C00] transition-colors">{SETTING_META[k].label}</span>
-              <span className="ml-4 text-[14px] text-[#A69A88]">{SETTING_META[k].blurb}</span>
+              <div className="font-abridge text-[24px] text-[#1A1A1A] group-hover:text-[#EA2C00] transition-colors leading-tight">{SETTING_META[k].label}</div>
+              <div className="text-[13.5px] text-[#A69A88] mt-[3px]">{SETTING_META[k].blurb}</div>
             </div>
             <ArrowRight className="w-5 h-5 text-[#C9BDAD] group-hover:text-[#EA2C00] group-hover:translate-x-1 transition-all flex-shrink-0" />
           </button>

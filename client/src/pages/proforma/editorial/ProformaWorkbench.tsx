@@ -903,19 +903,26 @@ function SettingCard({
                 <div style={{ display: "flex", height: 22, borderRadius: 7, overflow: "hidden", background: T.soft }}>
                   {mix.map((m) => {
                     const pct = mixTotal > 0 ? (m.value / mixTotal) * 100 : 0;
-                    const wide = pct > 16;
                     return (
                       <motion.div
                         key={m.q}
                         initial={false}
                         animate={{ width: `${pct}%` }}
                         transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-                        style={{ background: QUADRANT_MIX[m.q], display: "flex", alignItems: "center", paddingLeft: wide ? 11 : 0, color: "#1A1A1A", fontSize: 10.5, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden" }}
-                      >
-                        {wide && `${m.q} · ${fmt(m.value)}`}
-                      </motion.div>
+                        style={{ background: QUADRANT_MIX[m.q] }}
+                      />
                     );
                   })}
+                </div>
+                {/* Legend labels EVERY segment (narrow ones can't hold an inline label
+                    without clipping, which left a segment reading as an unlabeled tail). */}
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "5px 18px", marginTop: 10 }}>
+                  {mix.map((m) => (
+                    <span key={m.q} style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 11.5, color: T.label }}>
+                      <span style={{ width: 9, height: 9, borderRadius: 3, background: QUADRANT_MIX[m.q], flexShrink: 0 }} />
+                      {m.q} · <span className="font-abridge" style={{ color: T.ink }}>{fmt(m.value)}</span>
+                    </span>
+                  ))}
                 </div>
               </div>
 
@@ -978,15 +985,9 @@ function SettingCard({
                 )}
               </div>
 
-              {/* ADVANCED */}
+              {/* Unshipped "Soon" stub chips removed: a row of dead controls reads as an
+                  unfinished product to a CFO. Bring them back only when they actually work. */}
               <div style={{ borderTop: `1px solid ${T.hair}`, marginTop: 14, paddingTop: 14, display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
-                <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: T.off, marginRight: 4 }}>Advanced</span>
-                {["Scenario B pricing", "Edit encounter volumes", "Compare all pricing models"].map((c) => (
-                  <span key={c} title="Coming soon" style={{ fontSize: 12, fontWeight: 600, color: T.off, background: T.soft, border: `1px dashed ${T.hair}`, borderRadius: 8, padding: "7px 12px", display: "inline-flex", alignItems: "center", gap: 7, cursor: "default", opacity: 0.75 }}>
-                    {c}
-                    <span style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: T.faint, background: T.page, border: `1px solid ${T.hair}`, borderRadius: 4, padding: "1px 5px" }}>Soon</span>
-                  </span>
-                ))}
                 <button
                   onClick={onRemove}
                   style={{ marginLeft: "auto", fontSize: 12, fontWeight: 600, color: T.off, background: "none", border: "none", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 5 }}
@@ -1239,7 +1240,7 @@ export default function ProformaWorkbench({ settings, config, onUpdateSetting, o
           </div>
           <div>
             <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: T.faint, marginBottom: 6 }}>System-wide fee · all settings</div>
-            <NumCell value={config.systemWideFee ?? 0} onChange={(n) => onUpdateConfig({ systemWideFee: n })} prefix="$" suffix="" cellStyle={{ minWidth: 110 }} />
+            <NumCell value={config.systemWideFee ?? 0} onChange={(n) => onUpdateConfig({ systemWideFee: n })} prefix="$" suffix="" format={commaFmt} cellStyle={{ minWidth: 110 }} />
           </div>
           <div style={{ paddingBottom: 8 }}>
             <button

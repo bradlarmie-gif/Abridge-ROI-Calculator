@@ -623,7 +623,7 @@ export const SETTING_META: Record<SettingKey, SettingMeta> = {
   },
   ed: {
     label: "Emergency",
-    blurb: "The emergency department.",
+    blurb: "LWBS recovery, admission capture, and E&M accuracy.",
     providerWord: "providers",
     encWord: "ED visits",
     visitWord: "visit",
@@ -632,7 +632,7 @@ export const SETTING_META: Record<SettingKey, SettingMeta> = {
   },
   inpatient: {
     label: "Inpatient",
-    blurb: "Hospital medicine.",
+    blurb: "Hospitalist notes, DRG accuracy, and length-of-stay signals.",
     providerWord: "providers",
     encWord: "encounters",
     visitWord: "encounter",
@@ -641,7 +641,7 @@ export const SETTING_META: Record<SettingKey, SettingMeta> = {
   },
   nursing: {
     label: "Nursing",
-    blurb: "Inpatient nursing.",
+    blurb: "Bedside charting time, retention, and harm-reduction quality.",
     providerWord: "nurses",
     encWord: "care events",
     visitWord: "care event",
