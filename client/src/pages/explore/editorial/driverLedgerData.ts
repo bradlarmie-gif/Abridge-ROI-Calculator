@@ -85,10 +85,12 @@ export function buildInpatientLedger(
   }
 
   // 2) Other counted domains, carried as one line each.
+  // Direction-agnostic: drivers can be toggled in any order and the user can
+  // navigate back, so "earlier/later" would mislabel (a real bug caught in audit).
   const carried = countedDomains.filter((d) => d !== currentDomain);
   if (carried.length > 0) {
     groups.push({
-      label: "Carried from earlier steps",
+      label: "Elsewhere in your model",
       items: carried.map((d) => {
         const v = domainSubtotal(d);
         return { label: d, value: v > 0 ? fmtMoney(v) : "not yet on", tone: (v > 0 ? "on" : "dim") as "on" | "dim" };

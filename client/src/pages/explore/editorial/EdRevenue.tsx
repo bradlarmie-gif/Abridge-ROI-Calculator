@@ -374,6 +374,11 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
 
   const obsValue = engine.obsDefense ?? 0;
   const obsAwait = gate("obsDefense");
+  // Split the seven-factor denials chain into three readable steps (<=3 factors
+  // each) with neutral intermediates, so no row wraps and each keeps one baseline.
+  const obsAtStake = Math.round(state.annualEncounters * (dq.ipObsDenialRate / 100) * dq.ipObsAllowedPerCase);
+  const obsDocDriven = Math.round(obsAtStake * (dq.ipObsNotRecoveredPct / 100) * (dq.ipObsDocMaterialPct / 100));
+  const compact$ = (n: number) => (n >= 1_000_000 ? `$${(n / 1_000_000).toFixed(1)}M` : fmt$(n));
   const obsCard = (
     <InlineDriverCard
       key="obs"
@@ -476,22 +481,43 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
         amount: obsValue,
         awaiting: obsAwait?.need,
         levers: (
-          <EquationRow>
-            <EqCarried cap="admissions">{fmtN(state.annualEncounters)}</EqCarried>
-            <EqOp>×</EqOp>
-            <EqNum cap="denied" value={dq.ipObsDenialRate} onChange={(v) => updateDq({ ipObsDenialRate: v })} suffix="%" />
-            <EqOp>×</EqOp>
-            <EqNum cap="allowed / case" value={dq.ipObsAllowedPerCase} onChange={(v) => updateDq({ ipObsAllowedPerCase: v })} prefix="$" />
-            <EqOp>×</EqOp>
-            <EqNum cap="not recovered" value={dq.ipObsNotRecoveredPct} onChange={(v) => updateDq({ ipObsNotRecoveredPct: v })} suffix="%" />
-            <EqOp>×</EqOp>
-            <EqNum cap="doc is material" value={dq.ipObsDocMaterialPct} onChange={(v) => updateDq({ ipObsDocMaterialPct: v })} suffix="%" />
-            <EqOp>×</EqOp>
-            <EqNum cap="Abridge opportunity" value={dq.ipObsAbridgeOpportunityPct} onChange={(v) => updateDq({ ipObsAbridgeOpportunityPct: v })} suffix="%" />
-            <EqOp>×</EqOp>
-            <EqNum cap="Abridge impact" value={dq.ipObsAbridgeImpactPct} onChange={(v) => updateDq({ ipObsAbridgeImpactPct: v })} suffix="%" />
-            <EqResult value={obsValue} />
-          </EquationRow>
+          <div className="flex flex-col gap-4">
+            {/* Step 1 — revenue at stake */}
+            <EquationRow>
+              <EqCarried cap="admissions">{fmtN(state.annualEncounters)}</EqCarried>
+              <EqOp>×</EqOp>
+              <EqNum cap="denied" value={dq.ipObsDenialRate} onChange={(v) => updateDq({ ipObsDenialRate: v })} suffix="%" width={40} />
+              <EqOp>×</EqOp>
+              <EqNum cap="allowed / case" value={dq.ipObsAllowedPerCase} onChange={(v) => updateDq({ ipObsAllowedPerCase: v })} prefix="$" />
+              <div className="basis-full w-full flex items-baseline gap-2.5 pt-3 mt-1 border-t border-[#F3E9E1]">
+                <span className="font-abridge text-[19px] text-[#B9AA97] leading-none">=</span>
+                <span className="font-abridge text-[24px] text-[#5E534A] leading-none">{fmt$(obsAtStake)}</span>
+                <span className="text-[12px] text-[#7C766F]">revenue at stake</span>
+              </div>
+            </EquationRow>
+            {/* Step 2 — the share documentation actually drives */}
+            <EquationRow>
+              <EqCarried cap="at stake">{compact$(obsAtStake)}</EqCarried>
+              <EqOp>×</EqOp>
+              <EqNum cap="not recovered" value={dq.ipObsNotRecoveredPct} onChange={(v) => updateDq({ ipObsNotRecoveredPct: v })} suffix="%" width={40} />
+              <EqOp>×</EqOp>
+              <EqNum cap="doc is material" value={dq.ipObsDocMaterialPct} onChange={(v) => updateDq({ ipObsDocMaterialPct: v })} suffix="%" width={40} />
+              <div className="basis-full w-full flex items-baseline gap-2.5 pt-3 mt-1 border-t border-[#F3E9E1]">
+                <span className="font-abridge text-[19px] text-[#B9AA97] leading-none">=</span>
+                <span className="font-abridge text-[24px] text-[#5E534A] leading-none">{fmt$(obsDocDriven)}</span>
+                <span className="text-[12px] text-[#7C766F]">where documentation is the material factor</span>
+              </div>
+            </EquationRow>
+            {/* Step 3 — the durable Abridge dollar */}
+            <EquationRow>
+              <EqCarried cap="doc-driven">{compact$(obsDocDriven)}</EqCarried>
+              <EqOp>×</EqOp>
+              <EqNum cap="Abridge opportunity" value={dq.ipObsAbridgeOpportunityPct} onChange={(v) => updateDq({ ipObsAbridgeOpportunityPct: v })} suffix="%" width={40} />
+              <EqOp>×</EqOp>
+              <EqNum cap="Abridge impact" value={dq.ipObsAbridgeImpactPct} onChange={(v) => updateDq({ ipObsAbridgeImpactPct: v })} suffix="%" width={40} />
+              <EqResult value={obsValue} />
+            </EquationRow>
+          </div>
         ),
       },
     ];

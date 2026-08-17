@@ -87,14 +87,14 @@ function DriverRow({ row, depth = 0 }: { row: LedgerRow; depth?: number }) {
       <div className="flex justify-between items-start gap-5">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <span className={`font-abridge text-[20px] leading-[1.15] ${isComing || (!on && isCounted) ? "text-[#9A9086]" : "text-[#1A1A1A]"}`}>
+            <span className={`font-abridge text-[20px] leading-[1.15] ${isComing || (!on && isCounted) ? "text-[#574C41]" : "text-[#1A1A1A]"}`}>
               {row.label}
             </span>
             {isComing && (
-              <span className="text-[9px] font-extrabold tracking-[0.06em] uppercase text-[#B0A99E] border border-[#E7E1D8] rounded-[5px] px-[6px] py-[2px]">Coming soon</span>
+              <span className="text-[9px] font-extrabold tracking-[0.06em] uppercase text-[#7C766F] border border-[#DAD3C8] rounded-[5px] px-[6px] py-[2px]">Coming soon</span>
             )}
           </div>
-          <div className={`text-[13px] mt-[6px] leading-[1.5] max-w-[420px] ${isComing ? "text-[#B7AEA2]" : "text-[#8C8073]"}`}>{row.mechanism}</div>
+          <div className={`text-[13px] mt-[6px] leading-[1.5] max-w-[420px] ${isComing ? "text-[#8C8073]" : "text-[#8C8073]"}`}>{row.mechanism}</div>
         </div>
         <div className="flex items-center gap-[14px] flex-shrink-0">
           {isCounted && on && row.amount != null && !row.awaiting && (
@@ -102,7 +102,7 @@ function DriverRow({ row, depth = 0 }: { row: LedgerRow; depth?: number }) {
           )}
           {isCounted && <Toggle on={on} onClick={row.onToggle} />}
           {row.kind === "tracked" && (
-            <span className="text-[11px] font-bold uppercase tracking-[0.05em] text-[#B0A99E]">Tracked</span>
+            <span className="text-[11px] font-bold uppercase tracking-[0.05em] text-[#7C766F]">Tracked</span>
           )}
         </div>
       </div>
@@ -172,9 +172,9 @@ export default function DriverLedger(props: DriverLedgerProps) {
               <div key={g.label}>
                 <div className="text-[11px] font-extrabold tracking-[0.05em] uppercase text-[#6E675C] mt-[26px] mb-[2px]">{g.label}</div>
                 {g.items.map((it) => (
-                  <div key={it.label} className={`flex justify-between items-baseline py-[11px] border-b border-[#EDE8E1] text-[14.5px] ${it.tone === "dim" ? "text-[#8C8073]" : "text-[#3A342E]"}`}>
+                  <div key={it.label} className={`flex justify-between items-baseline py-[11px] border-b border-[#EDE8E1] text-[14.5px] ${it.tone === "dim" ? "text-[#7C766F]" : "text-[#3A342E]"}`}>
                     <span>{it.label}</span>
-                    <span className={`font-abridge text-[16px] ${it.tone === "dim" ? "text-[#9A9086] font-sans !text-[14px]" : it.tone === "on" ? "text-[#EA2C00]" : "text-[#1A1A1A]"}`}>{it.value}</span>
+                    <span className={`font-abridge text-[16px] ${it.tone === "dim" ? "text-[#7C766F] font-sans !text-[14px]" : it.tone === "on" ? "text-[#EA2C00]" : "text-[#1A1A1A]"}`}>{it.value}</span>
                   </div>
                 ))}
                 {g.subtotal && (
