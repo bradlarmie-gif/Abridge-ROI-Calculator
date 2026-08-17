@@ -186,15 +186,20 @@ export default function DriverLedger(props: DriverLedgerProps) {
           {/* RIGHT — the ledger that adds up */}
           <div>
             <div className={sectCls}>Your model</div>
-            {ledgerGroups.map((g) => (
+            {ledgerGroups.map((g, gi) => (
               <div key={g.label}>
                 <div className="text-[11px] font-extrabold tracking-[0.05em] uppercase text-[#6E675C] mt-[26px] mb-[2px]">{g.label}</div>
-                {g.items.map((it) => (
-                  <div key={it.label} className={`flex justify-between items-baseline py-[11px] border-b border-[#EDE8E1] text-[14.5px] ${it.tone === "dim" ? "text-[#7C766F]" : "text-[#3A342E]"}`}>
+                {g.items.map((it, ii) => {
+                  // Drop the hairline under the very last ledger row so it doesn't
+                  // dangle above the grand-total rule (its border provides the split).
+                  const isFinalRow = gi === ledgerGroups.length - 1 && !g.subtotal && ii === g.items.length - 1;
+                  return (
+                  <div key={it.label} className={`flex justify-between items-baseline py-[11px] ${isFinalRow ? "" : "border-b border-[#EDE8E1]"} text-[14.5px] ${it.tone === "dim" ? "text-[#7C766F]" : "text-[#3A342E]"}`}>
                     <span>{it.label}</span>
                     <span className={`font-abridge text-[16px] ${it.tone === "dim" ? "text-[#7C766F] font-sans !text-[14px]" : it.tone === "on" ? "text-[#EA2C00]" : "text-[#1A1A1A]"}`}>{it.value}</span>
                   </div>
-                ))}
+                  );
+                })}
                 {g.subtotal && (
                   <div className="flex justify-between items-baseline py-[13px] border-b-2 border-[#E4DACE] text-[14px] font-bold uppercase tracking-[0.04em] text-[#1A1A1A]">
                     <span>{g.subtotal.label}</span>
