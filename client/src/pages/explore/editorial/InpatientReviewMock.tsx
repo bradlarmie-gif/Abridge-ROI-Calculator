@@ -50,6 +50,10 @@ const NURSING_SAMPLE: ExploreState = {
   numberOfProviders: 200, // nurses
   nursingStaffedBeds: 300,
   nursingOccupancyRate: 85,
+  utilizationPercent: 70, // share documenting with Abridge — gates shifts + model adoption
+  minutesSavedPerEncounter: 15, // minutes saved per shift (nursing time model)
+  nursingMinutesPerShift: 15,
+  timePathScenario: "typical",
   retentionMode: "counted",
   timeDriverInputs: {
     ...DEFAULT_EXPLORE_STATE.timeDriverInputs,

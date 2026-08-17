@@ -705,7 +705,9 @@ export default function EdModel({
                     {annualInvestment > 0 && (
                       <><span className="font-abridge text-[#1A1A1A]">{expandedRoi.toFixed(1)}×</span> return · </>
                     )}
-                    <span className="text-[#EA2C00] font-semibold">+{fmtCurrency(expandedValue - netAnnualValue)}</span> over today
+                    {/* fmtCurrency already carries the minus for a negative delta;
+                        only add the plus for a gain so it never reads "+−$". */}
+                    <span className="text-[#EA2C00] font-semibold">{expandedValue - netAnnualValue >= 0 ? "+" : ""}{fmtCurrency(expandedValue - netAnnualValue)}</span> over today
                   </div>
                   <div className="mt-[20px] flex flex-col gap-[12px]">
                     <div>

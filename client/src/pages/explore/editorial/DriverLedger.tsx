@@ -89,7 +89,7 @@ function DriverRow({ row, depth = 0 }: { row: LedgerRow; depth?: number }) {
   const on = Boolean(row.enabled);
   const expanded = row.expanded ?? true;
   return (
-    <div className={`py-6 border-b border-[#EDE8E1] ${depth > 0 ? "pl-6" : ""}`}>
+    <div className={`py-6 border-b border-[#EDE8E1] ${depth > 0 ? "pl-6 ml-[3px] border-l-2 border-[#E4DACE]" : ""}`}>
       <div className="flex justify-between items-start gap-5">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
