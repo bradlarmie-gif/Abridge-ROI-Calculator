@@ -493,8 +493,72 @@ export default function EdQuality({ state, updateState, totalHoursSaved, onNext,
     );
   }
 
+  // ─── ED V2 driver ledger ───
+  // Quality is a non-financial proof layer: five tracked measures, no dollar.
+  // Anything financial quality touches is counted once, in Revenue (E&M + denials).
   if (setting === "ed") {
-    return <ProofChainScreen state={state} totalHoursSaved={totalHoursSaved} onNext={onNext} onBack={onBack} onHome={onHome} setting={setting} />;
+    const ledger = buildDriverLedger(state, totalHoursSaved, "Quality", "ed");
+    const rows: LedgerRow[] = [
+      {
+        id: "edCoreMeasureDocRate",
+        label: "Core Measure Documentation Rate",
+        kind: "tracked",
+        mechanism:
+          "Quality measures depend on the clinical action being documented with the required specificity. Captured as it happens, stroke, STEMI, and chest-pain pathway elements land on the chart instead of being reconstructed after the shift.",
+        signals: ["Core measures document clean at the point of care", "Protocol adherence captured as it happens"],
+      },
+      {
+        id: "edDocDeficiencyRate",
+        label: "Documentation Deficiency Rate",
+        kind: "tracked",
+        mechanism:
+          "Every deficiency is rework: the quality team finds it, routes it back, and the provider closes it days later. Completed at the point of care, fewer notes come back after the shift ends.",
+        signals: ["Deficiency queue empties", "Fewer notes return for post-shift follow-up"],
+      },
+      {
+        id: "edPatientExperience",
+        label: "HCAHPS Physician Communication",
+        kind: "tracked",
+        mechanism:
+          "The physician communication survey reflects whether the provider was present in the encounter or focused on the screen. Ambient capture shifts attention from the keyboard back to the patient in the room.",
+        signals: ["Doctor communication scores move", "Attention shifts from the screen back to the patient"],
+      },
+      {
+        id: "edNoteCompleteness",
+        label: "Note Completeness Score",
+        kind: "tracked",
+        mechanism:
+          "The ED note is the source document for coding, CDI queries on admission, and handoff. When HPI, MDM, and disposition rationale are captured while the encounter is open, the downstream metrics have something to stand on.",
+        signals: ["Notes reach full completeness", "HPI, MDM, and disposition captured in the encounter"],
+      },
+      {
+        id: "edSepsisBundle",
+        label: "Sepsis Bundle Doc Rate (SEP-1)",
+        kind: "tracked",
+        mechanism:
+          "SEP-1 requires each bundle element documented inside a strict time window. Missing one field reads as non-compliance even when the care was delivered. Real-time capture closes those gaps as they happen.",
+        signals: ["SEP-1 bundle closes in time", "Time-sensitive elements land inside the CMS window"],
+      },
+    ];
+    return (
+      <DriverLedger
+        eyebrow="Value Estimator · Step 7 of 9 · Quality"
+        title="Where does the quality show up?"
+        intro="Better ED notes make sure the care delivered is reflected in the measures you already report. Abridge does not change the score; it keeps a busy shift's care from being lost to an incomplete note. We track these as proof, not a dollar; anything financial is counted once, in Revenue."
+        sectionLabel="The proof · tracked, not counted"
+        rows={rows}
+        ledgerGroups={ledger.groups}
+        grandLabel="Model so far"
+        grandValue={ledger.grandValue}
+        grandCaption={ledger.grandCaption}
+        stepName="Quality"
+        stepIndex={7}
+        isValid={true}
+        onNext={onNext}
+        onBack={onBack}
+        onHome={onHome}
+      />
+    );
   }
 
   return (

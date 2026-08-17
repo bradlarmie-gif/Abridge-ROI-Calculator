@@ -120,14 +120,55 @@ const OUTPATIENT_SAMPLE: ExploreState = {
   },
 };
 
+const ED_SAMPLE: ExploreState = {
+  ...DEFAULT_EXPLORE_STATE,
+  careSetting: "ed",
+  numberOfProviders: 40,
+  annualEncounters: 120000,
+  utilizationPercent: 70,
+  minutesSavedPerEncounter: 4,
+  timePathScenario: "typical",
+  retentionMode: "counted",
+  timeDriverInputs: {
+    ...DEFAULT_EXPLORE_STATE.timeDriverInputs,
+    edLwbsEnabled: true,
+    edLwbsExpanded: true,
+    edThroughputEnabled: true,
+    edThroughputExpanded: true,
+    wellbeingEnabled: true,
+    wellbeingExpanded: true,
+    calculateRetentionValue: true,
+    physicianAgencyEnabled: true,
+    physicianAgencyExpanded: true,
+    scribeCostReductionEnabled: true,
+    scribeCostReductionExpanded: true,
+    scribeHeadcount: 3,
+    scribePositionsEliminated: 2,
+    scribeCostPerPosition: 45000,
+    edCoreMeasureDocRateEnabled: true,
+    edDocDeficiencyRateEnabled: true,
+    edPatientExperienceEnabled: true,
+    edNoteCompletenessEnabled: true,
+    edSepsisBundleEnabled: true,
+  },
+  docQualityInputs: {
+    ...DEFAULT_EXPLORE_STATE.docQualityInputs,
+    wrvuEnabled: true,
+    wrvuExpanded: true,
+    denialsEnabled: true,
+    denialsExpanded: true,
+  },
+};
+
 export default function InpatientReviewMock() {
   const params = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : new URLSearchParams();
   const step = params.get("step") || undefined;
   // ?mock=<setting> wins; ?inpatientmock=1 keeps the original inpatient entry.
   const requested = (params.get("mock") || "inpatient") as ExploreCareSetting;
   const setting: ExploreCareSetting =
-    requested === "nursing" ? "nursing" : requested === "outpatient" ? "outpatient" : "inpatient";
-  const sample = setting === "nursing" ? NURSING_SAMPLE : setting === "outpatient" ? OUTPATIENT_SAMPLE : INPATIENT_SAMPLE;
+    requested === "nursing" ? "nursing" : requested === "outpatient" ? "outpatient" : requested === "ed" ? "ed" : "inpatient";
+  const sample =
+    setting === "nursing" ? NURSING_SAMPLE : setting === "outpatient" ? OUTPATIENT_SAMPLE : setting === "ed" ? ED_SAMPLE : INPATIENT_SAMPLE;
 
   return (
     <ExploreFlow

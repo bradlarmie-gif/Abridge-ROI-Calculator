@@ -749,6 +749,94 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
     );
   }
 
+  // ─── ED V2 driver ledger ───
+  // Two counted drivers, no payment fork: E&M Level Accuracy (engine key
+  // `edEmLevel`) and Medical Necessity Denials. Cascade intermediates are
+  // computed inline from `dq` so each final running foots to the engine value.
+  if (isED) {
+    const ledger = buildDriverLedger(state, totalHoursSaved, "Revenue", "ed");
+
+    // E&M cascade intermediates (foot to engine edEmLevel / wrvuValue).
+    const emCurrentTotal = eligibleEncounters * dq.currentWrvu;
+    const emAddedWrvus = eligibleEncounters * dq.currentWrvu * (wrvuLiftPct / 100);
+    const emGross = emAddedWrvus * dq.conversionFactor;
+    const emRow: LedgerRow = {
+      id: "edEmLevel",
+      label: "E&M Level Accuracy",
+      kind: "counted",
+      mechanism:
+        "The ED note is the source document for the level of service. When it captures the full complexity, the E/M level holds up instead of coding down.",
+      enabled: dq.wrvuEnabled,
+      onToggle: () => updateDq({ wrvuEnabled: !dq.wrvuEnabled, wrvuExpanded: !dq.wrvuEnabled ? true : dq.wrvuExpanded }),
+      expanded: dq.wrvuExpanded,
+      onToggleExpand: () => updateDq({ wrvuExpanded: !dq.wrvuExpanded }),
+      amount: wrvuValue > 0 ? wrvuValue : undefined,
+      awaiting: wrvuAwait?.need,
+      levers: (
+        <MathCascade
+          steps={[
+            { label: "Documented ED visits", running: fmtN(eligibleEncounters) },
+            { label: "Current wRVU per visit", factor: { value: dq.currentWrvu, onChange: (v) => updateDq({ currentWrvu: v }), decimal: true }, running: `${fmtNd(emCurrentTotal)} wRVUs` },
+            { label: "Lift Abridge documents", factor: { value: wrvuLiftPct, onChange: (v) => updateDq({ wrvuScenario: "custom", wrvuCustomPercent: v }), suffix: "%" }, running: `${fmtNd(emAddedWrvus)} wRVUs` },
+            { label: "Conversion factor", factor: { value: dq.conversionFactor, onChange: (v) => updateDq({ conversionFactor: v }), prefix: "$", decimal: true }, running: fmt$(emGross) },
+            { label: "Attribution", factor: { value: dq.wrvuRealization, onChange: (v) => updateDq({ wrvuRealization: v }), suffix: "%" }, running: fmt$(wrvuValue), final: true },
+          ]}
+        />
+      ),
+    };
+
+    // Denials cascade intermediates (foot to engine denialsValue).
+    const denialsDenied = claimsBase * (dq.medNecessityDenialRate / 100);
+    const denialsFewer = denialsDenied * (denialsPreventedPct / 100);
+    const denialsGross = denialsFewer * dq.avgClaimValue;
+    const denialsRow: LedgerRow = {
+      id: "denialPrevention",
+      label: "Medical Necessity Denials",
+      kind: "counted",
+      mechanism:
+        "Payers deny claims when the note does not clearly support medical necessity, so work you already did gets written off or sent back. A complete note documents the necessity up front, so fewer of those claims are denied.",
+      enabled: dq.denialsEnabled,
+      onToggle: () => updateDq({ denialsEnabled: !dq.denialsEnabled, denialsExpanded: !dq.denialsEnabled ? true : dq.denialsExpanded }),
+      expanded: dq.denialsExpanded,
+      onToggleExpand: () => updateDq({ denialsExpanded: !dq.denialsExpanded }),
+      amount: denialsValue > 0 ? denialsValue : undefined,
+      awaiting: denialsAwait?.need,
+      levers: (
+        <MathCascade
+          steps={[
+            { label: "Claims a year", factor: { value: claimsBase, onChange: (v) => updateDq({ denialsAnnualClaims: v }) }, running: fmtN(claimsBase) },
+            { label: "Medical-necessity denial rate", factor: { value: dq.medNecessityDenialRate, onChange: (v) => updateDq({ medNecessityDenialRate: v }), suffix: "%", decimal: true }, running: `${fmtN(denialsDenied)} denials` },
+            { label: "Abridge reduces", factor: { value: denialsPreventedPct, onChange: (v) => updateDq({ denialsScenario: "custom", denialsCustomPercent: v }), suffix: "%" }, running: `${fmtN(denialsFewer)} fewer` },
+            { label: "Allowed per claim", factor: { value: dq.avgClaimValue, onChange: (v) => updateDq({ avgClaimValue: v }), prefix: "$" }, running: fmt$(denialsGross) },
+            { label: "Realization", factor: { value: dq.denialsRealization, onChange: (v) => updateDq({ denialsRealization: v }), suffix: "%" }, running: fmt$(denialsValue), final: true },
+          ]}
+        />
+      ),
+    };
+
+    const rows: LedgerRow[] = [emRow, denialsRow];
+
+    return (
+      <DriverLedger
+        eyebrow="Value Estimator · Step 6 of 9 · Revenue"
+        title="How does documentation turn into revenue?"
+        intro="The same complete note supports accurate E/M coding and fewer denied claims. Turn on the drivers that apply; each models against your numbers and adds to the ledger."
+        sectionLabel="The drivers · turn on what applies"
+        rows={rows}
+        ledgerGroups={ledger.groups}
+        grandLabel="Model so far"
+        grandValue={ledger.grandValue}
+        grandCaption={ledger.grandCaption}
+        stepName="Revenue"
+        stepIndex={6}
+        isValid={true}
+        onNext={onNext}
+        onBack={onBack}
+        onHome={onHome}
+      />
+    );
+  }
+
   // ── Which financial cards are visible on screen, for the section subtotal ──
   let visibleCards: { id: string; enabled: boolean; value: number; node: React.ReactNode }[] = [];
   if (isOP) {

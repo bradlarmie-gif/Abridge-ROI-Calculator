@@ -33,7 +33,7 @@ export function MathCascade({ label, steps }: { label?: string; steps: CascadeSt
       {steps.map((s, i) => (
         <div
           key={s.label + i}
-          className={`grid grid-cols-[1fr_76px_128px] gap-x-[10px] items-baseline py-[12px] ${
+          className={`py-[12px] ${
             s.final
               ? "border-t-2 border-[#1A1A1A] mt-1 pt-[16px]"
               : s.pivot
@@ -41,27 +41,31 @@ export function MathCascade({ label, steps }: { label?: string; steps: CascadeSt
                 : "border-b border-[#EDE8E1]"
           }`}
         >
-          <div className={`text-[14px] leading-[1.3] ${s.final ? "font-abridge text-[#1A1A1A] font-bold" : "text-[#3A342E]"}`}>{s.label}</div>
-          <div className="text-right">
-            {s.factor ? (
-              <span className="inline-flex items-baseline border-b-2 border-[#EA2C00] pb-[1px]">
-                {s.factor.prefix && <span className="font-abridge text-[19px] text-[#1A1A1A] leading-none">{s.factor.prefix}</span>}
-                <NumberField
-                  value={s.factor.value}
-                  onValueChange={s.factor.onChange}
-                  decimal={s.factor.decimal}
-                  className="bg-transparent outline-none border-0 p-0 font-abridge text-[19px] text-[#1A1A1A] tabular-nums leading-none text-right [field-sizing:content] min-w-[1ch]"
-                />
-                {s.factor.suffix && <span className="text-[12px] text-[#7C766F] leading-none ml-[1px]">{s.factor.suffix}</span>}
-              </span>
-            ) : (
-              <span className="font-abridge text-[19px] text-[#C4BCB0] leading-none">—</span>
-            )}
+          <div className="grid grid-cols-[1fr_76px_128px] gap-x-[10px] items-baseline">
+            <div className={`text-[14px] leading-[1.3] ${s.final ? "font-abridge text-[#1A1A1A] font-bold" : "text-[#3A342E]"}`}>{s.label}</div>
+            <div className="text-right">
+              {s.factor ? (
+                <span className="inline-flex items-baseline border-b-2 border-[#EA2C00] pb-[1px]">
+                  {s.factor.prefix && <span className="font-abridge text-[19px] text-[#1A1A1A] leading-none">{s.factor.prefix}</span>}
+                  <NumberField
+                    value={s.factor.value}
+                    onValueChange={s.factor.onChange}
+                    decimal={s.factor.decimal}
+                    className="bg-transparent outline-none border-0 p-0 font-abridge text-[19px] text-[#1A1A1A] tabular-nums leading-none text-right [field-sizing:content] min-w-[1ch]"
+                  />
+                  {s.factor.suffix && <span className="text-[12px] text-[#7C766F] leading-none ml-[1px]">{s.factor.suffix}</span>}
+                </span>
+              ) : (
+                <span className="font-abridge text-[19px] text-[#C4BCB0] leading-none">—</span>
+              )}
+            </div>
+            <div className="text-right whitespace-nowrap">
+              <span className={`font-abridge leading-none ${s.final ? "text-[26px] text-[#EA2C00]" : "text-[19px] text-[#8C8073]"}`}>{s.running}</span>
+            </div>
           </div>
-          <div className="text-right whitespace-nowrap">
-            <span className={`font-abridge leading-none ${s.final ? "text-[26px] text-[#EA2C00]" : "text-[19px] text-[#8C8073]"}`}>{s.running}</span>
-            {s.note && <div className="text-[11px] text-[#8C8073] mt-[3px] leading-tight">{s.note}</div>}
-          </div>
+          {/* Note on its own full-width line below the row so a long aside wraps
+              inside the column instead of spilling across the divider. */}
+          {s.note && <div className="text-[11px] text-[#8C8073] leading-tight mt-[5px] text-right">{s.note}</div>}
         </div>
       ))}
     </div>

@@ -490,6 +490,100 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
     );
   }
 
+  // ─── ED V2 driver ledger ───
+  // Capacity is where ED's throughput recovery lives: LWBS Recovery (base is the
+  // full annual ED-visit total, not the documented subset) with Admission Capture
+  // nested as a counted child (its base is the LWBS-recovered patients). Cascade
+  // intermediates are computed inline from `td` so each running chain foots to the
+  // engine value exactly.
+  if (setting === "ed") {
+    const ledger = buildDriverLedger(state, totalHoursSaved, "Capacity", "ed");
+    const lwbs = state.annualEncounters * (td.edLwbsRate / 100);
+    const recovered = lwbs * (td.edLwbsReduction / 100);
+    const lwbsValue = valueFor("lwbsRecovery");
+    const admValue = valueFor("admissionCapture");
+    const lwbsAwait = gate("lwbsRecovery");
+    const admAwait = gate("admissionCapture");
+
+    const rows: LedgerRow[] = [
+      {
+        id: "lwbsRecovery",
+        label: "LWBS Recovery",
+        kind: "counted",
+        mechanism:
+          "Faster documentation moves patients through the department. Some who would have left before being seen are seen instead.",
+        enabled: Boolean(td.edLwbsEnabled),
+        onToggle: () => {
+          const current = Boolean(td.edLwbsEnabled);
+          updateTimeDriverInputs(current ? { edLwbsEnabled: false } : { edLwbsEnabled: true, edLwbsExpanded: true });
+        },
+        amount: lwbsValue > 0 ? lwbsValue : undefined,
+        awaiting: lwbsAwait?.need,
+        expanded: Boolean(td.edLwbsExpanded),
+        onToggleExpand: () => updateTimeDriverInputs({ edLwbsExpanded: !td.edLwbsExpanded }),
+        levers: (
+          <MathCascade
+            steps={[
+              { label: "Annual ED visits", running: formatNum(state.annualEncounters) },
+              { label: "Leave before being seen", factor: { value: td.edLwbsRate, onChange: (v: number) => updateTimeDriverInputs({ edLwbsRate: v }), suffix: "%", decimal: true }, running: `${formatNum(lwbs)} LWBS` },
+              { label: "Recovered with faster throughput", factor: { value: td.edLwbsReduction, onChange: (v: number) => updateTimeDriverInputs({ edLwbsReduction: v }), suffix: "%" }, running: `${formatNum(recovered)} recovered` },
+              { label: "Revenue per visit", factor: { value: td.edRevenuePerVisit, onChange: (v: number) => updateTimeDriverInputs({ edRevenuePerVisit: v }), prefix: "$" }, running: formatCurrency(recovered * td.edRevenuePerVisit) },
+              { label: "Conversion", factor: { value: td.edLwbsRealization, onChange: (v: number) => updateTimeDriverInputs({ edLwbsRealization: v }), suffix: "%" }, running: formatCurrency(lwbsValue), final: true },
+            ]}
+          />
+        ),
+        children: [
+          {
+            id: "admissionCapture",
+            label: "Admission Capture",
+            kind: "counted",
+            mechanism:
+              "A share of the recovered patients need inpatient admission, which the department captures.",
+            enabled: Boolean(td.edThroughputEnabled),
+            onToggle: () => {
+              const current = Boolean(td.edThroughputEnabled);
+              updateTimeDriverInputs(current ? { edThroughputEnabled: false } : { edThroughputEnabled: true, edThroughputExpanded: true });
+            },
+            amount: admValue > 0 ? admValue : undefined,
+            awaiting: admAwait?.need,
+            expanded: Boolean(td.edThroughputExpanded),
+            onToggleExpand: () => updateTimeDriverInputs({ edThroughputExpanded: !td.edThroughputExpanded }),
+            levers: (
+              <MathCascade
+                steps={[
+                  { label: "Recovered visits", running: `${formatNum(recovered)} recovered` },
+                  { label: "Need admission", factor: { value: td.edAdmissionRate, onChange: (v: number) => updateTimeDriverInputs({ edAdmissionRate: v }), suffix: "%" }, running: `${formatNum1(recovered * td.edAdmissionRate / 100)} admits` },
+                  { label: "Revenue per admission", factor: { value: td.edAdmissionRevenue, onChange: (v: number) => updateTimeDriverInputs({ edAdmissionRevenue: v }), prefix: "$" }, running: formatCurrency(recovered * td.edAdmissionRate / 100 * td.edAdmissionRevenue) },
+                  { label: "Realization", factor: { value: td.edAdmissionRealization, onChange: (v: number) => updateTimeDriverInputs({ edAdmissionRealization: v }), suffix: "%" }, running: formatCurrency(admValue), final: true },
+                ]}
+              />
+            ),
+          },
+        ],
+      },
+    ];
+
+    return (
+      <DriverLedger
+        eyebrow="Value Estimator · Step 4 of 9 · Capacity"
+        title="What does faster throughput recover?"
+        intro="Faster documentation moves patients through the department sooner. Some who would have left before being seen stay to be treated, and a share of them need admission. Turn on only what you can stand behind; it adds to the ledger as you go."
+        sectionLabel="The drivers · turn on what applies"
+        rows={rows}
+        ledgerGroups={ledger.groups}
+        grandLabel="Model so far"
+        grandValue={ledger.grandValue}
+        grandCaption={ledger.grandCaption}
+        stepName="Capacity"
+        stepIndex={4}
+        isValid={true}
+        onNext={onNext}
+        onBack={onBack}
+        onHome={onHome}
+      />
+    );
+  }
+
   return (
     <EditorialShell>
       <EditorialHeader stepName="Capacity" stepIndex={4} onBack={onBack} onHome={onHome} />

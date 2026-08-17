@@ -1025,6 +1025,174 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
     );
   }
 
+  // ─── ED V2 driver ledger ───
+  // ED Workforce uses the SAME physician fields and engine keys as outpatient:
+  // Provider Retention (lens-gated) + Locum & Agency Spend (priced on the same
+  // retained count) + Scribe Spend (independent displacement, not lens-gated).
+  // Only the mechanism copy is ED-voiced. Cascade intermediates are computed
+  // inline from `td` so each running chain foots to the engine value.
+  if (setting === "ed") {
+    const gate = (driverId: string) => {
+      const r = driverScaleReadiness(driverId, state, totalHoursSaved);
+      return r.ready ? undefined : r.need;
+    };
+
+    const impactPct = physicianRetentionRates(td.retentionCustomPercent ?? 10)[td.retentionImpactScenario] ?? 0;
+    const leaving = state.numberOfProviders * (td.annualTurnoverRate / 100);
+    const burnoutDep = leaving * (td.burnoutRelatedTurnover / 100);
+    const retained = burnoutDep * (impactPct / 100);
+    const retentionValue = valueFor("providerWellbeing");
+    const agencyValue = valueFor("physicianLocumAgency");
+
+    const retentionRows = [
+      { label: "Providers", running: formatNum(state.numberOfProviders) },
+      { label: "Annual turnover", factor: { value: td.annualTurnoverRate, onChange: (v: number) => updateTimeDriverInputs({ annualTurnoverRate: v }), suffix: "%" }, running: formatNum1(leaving) },
+      { label: "Tied to burnout", factor: { value: td.burnoutRelatedTurnover, onChange: (v: number) => updateTimeDriverInputs({ burnoutRelatedTurnover: v }), suffix: "%" }, running: formatNum1(burnoutDep) },
+      { label: "Abridge impact", factor: { value: impactPct, onChange: (v: number) => updateTimeDriverInputs({ retentionImpactScenario: "custom", retentionCustomPercent: v }), suffix: "%" }, running: `${formatNum1(retained)} kept` },
+    ];
+
+    const retentionLevers = (
+      <>
+        <div className="mb-4">
+          <LensToggle counted={retentionCounted} onChange={setRetentionMode} testId="ed-retention-lens-providerWellbeing" />
+        </div>
+        {retentionCounted ? (
+          <MathCascade
+            steps={[
+              ...retentionRows,
+              { label: "Replacement cost", factor: { value: td.replacementCost, onChange: (v: number) => updateTimeDriverInputs({ replacementCost: v }), prefix: "$" }, running: formatCurrency(retentionValue), final: true },
+            ]}
+          />
+        ) : (
+          <>
+            <MathCascade steps={retentionRows} />
+            <div className="text-[12px] text-[#7C766F] mt-3 leading-[1.45] italic">
+              Tracked as the leading signal, not a dollar. Switch to Dollar to put the replacement-cost value in the ROI.
+            </div>
+          </>
+        )}
+      </>
+    );
+
+    const agencyLevers = (
+      <MathCascade
+        steps={[
+          { label: "Providers kept", running: `${formatNum1(retained)} kept` },
+          { label: "Weeks of coverage per vacancy", factor: { value: td.physicianAgencyWeeksPerVacancy, onChange: (v: number) => updateTimeDriverInputs({ physicianAgencyWeeksPerVacancy: v }), suffix: "wks" }, running: `${formatNum1(retained * td.physicianAgencyWeeksPerVacancy)} wks` },
+          { label: "Weekly premium", factor: { value: td.physicianAgencyWeeklyPremium, onChange: (v: number) => updateTimeDriverInputs({ physicianAgencyWeeklyPremium: v }), prefix: "$", suffix: "/wk" }, running: formatCurrency(agencyValue), final: true },
+        ]}
+      />
+    );
+
+    const scribeMode: "position" | "hourly" = td.scribeBillingMode === "hourly" ? "hourly" : "position";
+    const scribeValue = valueFor("scribeCostReduction");
+    const eliminated = Math.min(td.scribePositionsEliminated || 0, td.scribeHeadcount || 0);
+    const costPerVisit = (td.scribeHourlyRate || 0) * ((td.scribeMinutesPerNote || 0) / 60);
+    const scribedVisits = state.annualEncounters * ((td.scribeCoveragePercent || 0) / 100);
+    const scribeLevers = (
+      <>
+        <ModePicker mode={scribeMode} onChange={(m) => updateTimeDriverInputs({ scribeBillingMode: m })} />
+        {scribeMode === "hourly" ? (
+          <MathCascade
+            steps={[
+              { label: "Documented visits scribed", running: formatNum(scribedVisits) },
+              { label: "Scribe minutes per note", factor: { value: td.scribeMinutesPerNote, onChange: (v: number) => updateTimeDriverInputs({ scribeMinutesPerNote: v }), suffix: "min" }, running: `${formatNum1((td.scribeMinutesPerNote || 0) / 60)} hr/note` },
+              { label: "Scribe hourly rate", factor: { value: td.scribeHourlyRate, onChange: (v: number) => updateTimeDriverInputs({ scribeHourlyRate: v }), prefix: "$" }, running: `${formatCurrency(costPerVisit)}/visit` },
+              { label: "Share Abridge replaces", factor: { value: td.scribeVisitPercentEliminated, onChange: (v: number) => updateTimeDriverInputs({ scribeVisitPercentEliminated: Math.min(v, 100) }), suffix: "%" }, running: formatCurrency(scribeValue), final: true },
+            ]}
+          />
+        ) : (
+          <MathCascade
+            steps={[
+              { label: "Scribe positions today", factor: { value: td.scribeHeadcount, onChange: (v: number) => updateTimeDriverInputs({ scribeHeadcount: v }) }, running: `${formatNum(td.scribeHeadcount || 0)} positions` },
+              { label: "Positions Abridge retires", factor: { value: td.scribePositionsEliminated, onChange: (v: number) => updateTimeDriverInputs({ scribePositionsEliminated: td.scribeHeadcount > 0 ? Math.min(v, td.scribeHeadcount) : v }) }, running: `${formatNum(eliminated)} retired` },
+              { label: "Cost per position", factor: { value: td.scribeCostPerPosition, onChange: (v: number) => updateTimeDriverInputs({ scribeCostPerPosition: v }), prefix: "$" }, running: formatCurrency(scribeValue), final: true },
+            ]}
+          />
+        )}
+      </>
+    );
+
+    const rows: LedgerRow[] = [
+      {
+        id: "providerWellbeing",
+        label: "Provider Retention",
+        kind: "counted",
+        mechanism:
+          "A heavy documentation load is a leading reason emergency physicians burn out and leave. Abridge only touches the departures tied to that, not pay or life events.",
+        enabled: Boolean(td.wellbeingEnabled),
+        onToggle: () => {
+          const current = Boolean(td.wellbeingEnabled);
+          updateTimeDriverInputs(
+            current
+              ? { wellbeingEnabled: false, calculateRetentionValue: false }
+              : { wellbeingEnabled: true, calculateRetentionValue: true, wellbeingExpanded: true },
+          );
+        },
+        amount: retentionCounted ? retentionValue : undefined,
+        awaiting: gate("providerWellbeing"),
+        expanded: Boolean(td.wellbeingExpanded),
+        onToggleExpand: () => updateTimeDriverInputs({ wellbeingExpanded: !td.wellbeingExpanded }),
+        levers: retentionLevers,
+      },
+      {
+        id: "physicianLocumAgency",
+        label: "Locum & Agency Spend",
+        kind: "counted",
+        mechanism:
+          "Contract coverage bought to fill the vacancies turnover creates. Keep more people and you lean on it less.",
+        enabled: Boolean(td.physicianAgencyEnabled),
+        onToggle: () => {
+          const current = Boolean(td.physicianAgencyEnabled);
+          updateTimeDriverInputs(current ? { physicianAgencyEnabled: false } : { physicianAgencyEnabled: true, physicianAgencyExpanded: true });
+        },
+        amount: retentionCounted ? agencyValue : undefined,
+        awaiting: gate("physicianLocumAgency"),
+        expanded: Boolean(td.physicianAgencyExpanded),
+        onToggleExpand: () => updateTimeDriverInputs({ physicianAgencyExpanded: !td.physicianAgencyExpanded }),
+        levers: agencyLevers,
+      },
+      {
+        id: "scribeCostReduction",
+        label: "Scribe Spend",
+        kind: "counted",
+        mechanism:
+          "Abridge covers the documentation role a scribe was hired for, so the scribe cost can be retired.",
+        enabled: Boolean(td.scribeCostReductionEnabled),
+        onToggle: () => {
+          const current = Boolean(td.scribeCostReductionEnabled);
+          updateTimeDriverInputs(current ? { scribeCostReductionEnabled: false } : { scribeCostReductionEnabled: true, scribeCostReductionExpanded: true });
+        },
+        amount: scribeValue > 0 ? scribeValue : undefined,
+        expanded: Boolean(td.scribeCostReductionExpanded),
+        onToggleExpand: () => updateTimeDriverInputs({ scribeCostReductionExpanded: !td.scribeCostReductionExpanded }),
+        levers: scribeLevers,
+      },
+    ];
+
+    const ledger = buildDriverLedger(state, totalHoursSaved, "Workforce", "ed");
+
+    return (
+      <DriverLedger
+        eyebrow="Value Estimator · Step 5 of 9 · Workforce"
+        title="What is Abridge worth to your workforce?"
+        intro="Documentation load is a leading reason emergency physicians burn out and lean on locum coverage. Turn on only what you can stand behind; it adds to the ledger as you go."
+        sectionLabel="The drivers · turn on what applies"
+        rows={rows}
+        ledgerGroups={ledger.groups}
+        grandLabel="Model so far"
+        grandValue={ledger.grandValue}
+        grandCaption={ledger.grandCaption}
+        stepName="Workforce"
+        stepIndex={5}
+        isValid={true}
+        onNext={onNext}
+        onBack={onBack}
+        onHome={onHome}
+      />
+    );
+  }
+
   return (
     <EditorialShell>
       <EditorialHeader stepName="Workforce" stepIndex={5} onBack={onBack} onHome={onHome} />
