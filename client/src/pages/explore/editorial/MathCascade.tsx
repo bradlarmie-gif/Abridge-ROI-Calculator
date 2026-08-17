@@ -30,15 +30,20 @@ export function MathCascade({ label, steps }: { label?: string; steps: CascadeSt
         <div className="text-[9.5px] font-extrabold tracking-[0.06em] uppercase text-[#8C8073] text-right">Your inputs</div>
         <div className="text-[9.5px] font-extrabold tracking-[0.06em] uppercase text-[#8C8073] text-right">Running total</div>
       </div>
-      {steps.map((s, i) => (
+      {steps.map((s, i) => {
+        // The final row draws a thick top rule; the row just before it drops its
+        // own hairline so the two don't stack into a double line.
+        const nextFinal = steps[i + 1]?.final === true;
+        const bottom = nextFinal ? "" : "border-b border-[#EDE8E1]";
+        return (
         <div
           key={s.label + i}
           className={`py-[12px] ${
             s.final
               ? "border-t-2 border-[#1A1A1A] mt-1 pt-[16px]"
               : s.pivot
-                ? "border-b border-[#EDE8E1] bg-[#FBF6F1] -mx-3 px-3 rounded-[6px]"
-                : "border-b border-[#EDE8E1]"
+                ? `${bottom} bg-[#FBF6F1] -mx-3 px-3 rounded-[6px]`
+                : bottom
           }`}
         >
           <div className="grid grid-cols-[1fr_92px_128px] gap-x-[10px] items-baseline">
@@ -67,7 +72,8 @@ export function MathCascade({ label, steps }: { label?: string; steps: CascadeSt
               inside the column instead of spilling across the divider. */}
           {s.note && <div className="text-[11px] text-[#8C8073] leading-tight mt-[5px] text-right">{s.note}</div>}
         </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

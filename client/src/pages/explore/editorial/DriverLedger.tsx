@@ -88,8 +88,11 @@ function DriverRow({ row, depth = 0 }: { row: LedgerRow; depth?: number }) {
   const isComing = row.kind === "coming-soon";
   const on = Boolean(row.enabled);
   const expanded = row.expanded ?? true;
+  // A row with children lets the last child's border close the block, so it
+  // omits its own bottom border (otherwise the two stack into a double line).
+  const hasChildren = Boolean(row.children && row.children.length > 0);
   return (
-    <div className={`py-6 border-b border-[#EDE8E1] ${depth > 0 ? "pl-6 ml-[3px] border-l-2 border-[#E4DACE]" : ""}`}>
+    <div className={`py-6 ${hasChildren ? "" : "border-b border-[#EDE8E1]"} ${depth > 0 ? "pl-6 ml-[3px] border-l-2 border-[#E4DACE]" : ""}`}>
       <div className="flex justify-between items-start gap-5">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
