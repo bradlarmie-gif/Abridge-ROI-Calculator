@@ -24,34 +24,32 @@ const INPATIENT_PRESETS: Record<"conservative" | "typical" | "aggressive", { hp:
 
 const fmt = (n: number) => Math.round(n).toLocaleString();
 
-// Two-level flex: outer items-center vertically CENTERS the group in the box; inner
-// items-baseline keeps the value and unit on one baseline. Value hugs its width so
-// it's centered, never floated-right over dead space, and decimals never clip.
-function NumBox({ value, onChange, suffix, w = "w-[84px]", step = 0.5, testId }: { value: number; onChange: (n: number) => void; suffix: string; w?: string; step?: number; testId?: string }) {
+const sectLabel = "text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#8C8073]";
+
+// Editorial entry figure: a coral-underlined number that hugs its width, with a
+// small unit beside it. Matches the Practice page's input styling.
+function NumBox({ value, onChange, suffix, step = 0.5, testId }: { value: number; onChange: (n: number) => void; suffix: string; step?: number; testId?: string }) {
   return (
-    <span className={`inline-flex items-center justify-center border border-[#E4DED6] rounded-[10px] bg-white h-[42px] ${w} focus-within:border-[#EA2C00] transition-colors`}>
-      <span className="inline-flex items-baseline gap-1">
-        <input
-          type="number"
-          value={value || ""}
-          onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
-          step={step}
-          data-testid={testId}
-          style={{ width: `${Math.max(1, String(value || "").length)}ch` }}
-          className="text-right font-abridge text-[19px] text-[#1A1A1A] tabular-nums bg-transparent border-0 p-0 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-        />
-        <span className="text-[12px] text-[#7C766F] whitespace-nowrap">{suffix}</span>
-      </span>
+    <span className="inline-flex items-baseline gap-[5px] border-b-2 border-[#EA2C00] pb-[2px] whitespace-nowrap">
+      <input
+        type="number"
+        value={value || ""}
+        onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
+        step={step}
+        data-testid={testId}
+        className="min-w-[36px] max-w-[120px] [field-sizing:content] text-right font-abridge text-[30px] text-[#1A1A1A] tabular-nums bg-transparent border-0 p-0 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+      />
+      <span className="font-sans text-[13px] text-[#8C8073]">{suffix}</span>
     </span>
   );
 }
 
 function NoteRow({ title, sub, value, onChange, testId }: { title: string; sub: string; value: number; onChange: (n: number) => void; testId?: string }) {
   return (
-    <div className="flex items-center justify-between gap-4">
+    <div className="flex items-end justify-between gap-6 py-5 border-b border-[#EDE8E1]">
       <div>
-        <div className="text-[15px] font-semibold text-[#1A1A1A]">{title}</div>
-        <div className="text-[12.5px] text-[#7C766F]">{sub}</div>
+        <div className="font-abridge text-[16px] font-bold text-[#1A1A1A]">{title}</div>
+        <div className="text-[13px] text-[#8C8073] mt-1 leading-[1.45] max-w-[320px]">{sub}</div>
       </div>
       <NumBox value={value} onChange={onChange} suffix="min" testId={testId} />
     </div>
@@ -161,7 +159,7 @@ export default function EdTimeSavings({ state, updateState, onNext, onBack, onHo
     return (
       <EditorialShell>
         <EditorialHeader stepName="Time Savings" stepIndex={3} onBack={onBack} onHome={onHome} />
-        <div className="max-w-[1160px] mx-auto px-5 sm:px-8 lg:px-12 pt-12 pb-14">
+        <div className="max-w-[1080px] mx-auto px-5 sm:px-8 lg:px-12 pt-12 pb-14">
           <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#565250]">Value Estimator · Step 3 of 9</div>
           <h1 className="font-abridge text-[27px] sm:text-[34px] lg:text-[40px] leading-[1.08] text-[#1A1A1A] mt-[10px] max-w-[680px]">
             How much time can Abridge give back?
@@ -171,65 +169,57 @@ export default function EdTimeSavings({ state, updateState, onNext, onBack, onHo
             the total time saved across the notes Abridge writes today, per admission.
           </p>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-[22px] mt-[34px] items-stretch">
+          <div className="grid grid-cols-1 lg:grid-cols-[1.15fr_1px_1fr] gap-x-[56px] gap-y-10 mt-[46px]">
             {/* LEFT — the build */}
-            <div className="bg-[#FDFBF8] border border-[#E7E3DD] rounded-[20px] px-7 py-[28px] flex flex-col">
-              <div className="text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#2E2822]">Minutes saved, by note type</div>
-              <div className="mt-3 flex items-center gap-[7px] flex-wrap">
-                <span className="text-[10px] font-extrabold tracking-[0.05em] uppercase text-[#7C766F]">Quick fill</span>
+            <div>
+              <div className={sectLabel}>Minutes saved, by note type</div>
+              <div className="mt-4 flex items-center gap-[7px] flex-wrap">
+                <span className="text-[10px] font-extrabold tracking-[0.05em] uppercase text-[#B0A99E]">Quick fill</span>
                 {scenarioChips.map(({ key, label }) => (
-                  <button
-                    key={key}
-                    type="button"
-                    onClick={() => pickPreset(key)}
-                    className={quickFillChip(activePreset === key)}
-                  >
+                  <button key={key} type="button" onClick={() => pickPreset(key)} className={quickFillChip(activePreset === key)}>
                     {label}
                   </button>
                 ))}
               </div>
 
-              <div className="mt-6 space-y-4">
+              <div className="mt-4">
                 <NoteRow title="H&P" sub="Once per admission, the heavy narrative note." value={state.inpatientHpMinutes} onChange={setHp} testId="ed-input-hp-minutes" />
                 <NoteRow title="Progress note" sub="One each day after admission, so it scales with stay." value={state.inpatientProgressMinutes} onChange={setProg} testId="ed-input-progress-minutes" />
                 {state.inpatientConsultsEnabled ? (
-                  <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-end justify-between gap-6 py-5 border-b border-[#EDE8E1]">
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="text-[15px] font-semibold text-[#1A1A1A]">Consults</span>
+                        <span className="font-abridge text-[16px] font-bold text-[#1A1A1A]">Consults</span>
                         <button type="button" onClick={() => updateState({ inpatientConsultsEnabled: false })} className="text-[#B5AFA6] hover:text-[#EA2C00]" aria-label="Remove consults">
                           <X className="w-3.5 h-3.5" />
                         </button>
                       </div>
-                      <div className="text-[12.5px] text-[#7C766F]">Average time saved per admission from consults.</div>
+                      <div className="text-[13px] text-[#8C8073] mt-1 leading-[1.45] max-w-[320px]">Average time saved per admission from consults.</div>
                     </div>
                     <NumBox value={state.inpatientConsultMinutes} onChange={setConsultMin} suffix="min" testId="ed-input-consult-minutes" />
                   </div>
                 ) : (
-                  <button type="button" onClick={() => updateState({ inpatientConsultsEnabled: true })} className="flex items-center gap-1.5 text-[13px] font-bold text-[#EA2C00]">
+                  <button type="button" onClick={() => updateState({ inpatientConsultsEnabled: true })} className="flex items-center gap-1.5 text-[13px] font-bold text-[#EA2C00] py-5 border-b border-[#EDE8E1] w-full">
                     <Plus className="w-3.5 h-3.5" /> Add consults (optional)
                   </button>
                 )}
                 {/* Discharge summary — COMING SOON, not counted (Abridge does not write it yet) */}
-                <div className="flex items-center justify-between gap-4 opacity-60">
+                <div className="flex items-end justify-between gap-6 py-5 border-b border-[#EDE8E1]">
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="text-[15px] font-semibold text-[#8A8073]">Discharge summary</span>
-                      <span className="text-[9px] font-extrabold tracking-[0.06em] uppercase text-[#8A8072] bg-[#F2ECE3] rounded-full px-[8px] py-[2px]">Coming soon</span>
+                      <span className="font-abridge text-[16px] font-bold text-[#C6BEB2]">Discharge summary</span>
+                      <span className="text-[9px] font-extrabold tracking-[0.06em] uppercase text-[#B0A99E] border border-[#E7E1D8] rounded-[5px] px-[6px] py-[2px]">Coming soon</span>
                     </div>
-                    <div className="text-[12.5px] text-[#9A9086]">The other heavy note. More time back once it lands, not counted today.</div>
+                    <div className="text-[13px] text-[#C6BEB2] mt-1 leading-[1.45] max-w-[320px]">The other heavy note. More time back once it lands, not counted today.</div>
                   </div>
-                  <span className="text-[12px] text-[#B5AFA6] italic whitespace-nowrap flex-shrink-0">not counted yet</span>
+                  <span className="text-[12px] text-[#C6BEB2] italic whitespace-nowrap flex-shrink-0">not counted yet</span>
                 </div>
               </div>
 
-              {/* How it adds up — admissions + ALOS live inline in the math (from
-                  Practice), not a redundant re-entry block. ALOS stays editable
-                  here (coral underline = editable) since it drives this screen. */}
-              <div className="mt-8 pt-7 border-t border-[#E7E3DD]">
-                <div className="text-[10px] font-extrabold tracking-[0.06em] uppercase text-[#443A32] mb-2">How it adds up</div>
-                <div className="text-[13.5px] text-[#565250] leading-[1.95]">
-                  <b className="font-abridge text-[16px] text-[#1A1A1A]">{fmt(eligibleEncounters)}</b> admissions on Abridge a year, at a{" "}
+              {/* How it adds up — admissions + ALOS live inline in the math. */}
+              <div className="mt-8">
+                <div className="text-[15px] text-[#3A342E] leading-[1.7]">
+                  <b className="font-bold text-[#1A1A1A]">{fmt(eligibleEncounters)}</b> admissions on Abridge a year, at a{" "}
                   <input
                     type="number"
                     value={state.inpatientAlos || ""}
@@ -240,87 +230,68 @@ export default function EdTimeSavings({ state, updateState, onNext, onBack, onHo
                     className="font-abridge text-[16px] text-[#EA2C00] tabular-nums text-center bg-transparent border-0 border-b-2 border-[#EA2C00] p-0 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />{" "}
                   day average stay
-                  {entered ? (
-                    <>
-                      <br />
-                      H&amp;P: {fmt(eligibleEncounters)} × {state.inpatientHpMinutes} min = <b className="text-[#1A1A1A]">{fmt(ipHpHours)} hrs</b>
-                      <br />
-                      Progress: {fmt(eligibleEncounters)} × {Math.round(ipProgressDays * 10) / 10} days after admission × {state.inpatientProgressMinutes} min = <b className="text-[#1A1A1A]">{fmt(ipProgHours)} hrs</b>
-                      {state.inpatientConsultsEnabled && ipConsultHours > 0 && (
-                        <>
-                          <br />
-                          Consults: {fmt(eligibleEncounters)} × {state.inpatientConsultMinutes} min = <b className="text-[#1A1A1A]">{fmt(ipConsultHours)} hrs</b>
-                        </>
-                      )}
-                    </>
-                  ) : (
-                    <>
-                      <br />
-                      <span className="text-[#B5AFA6]">Pick a quick-fill or type the minutes above to see it add up.</span>
-                    </>
-                  )}
                 </div>
+                {entered ? (
+                  <>
+                    <div className="text-[14px] text-[#8C8073] mt-[9px]">H&amp;P · {fmt(eligibleEncounters)} × {state.inpatientHpMinutes} min = <b className="font-bold text-[#1A1A1A]">{fmt(ipHpHours)} hrs</b></div>
+                    <div className="text-[14px] text-[#8C8073] mt-[9px]">Progress · {fmt(eligibleEncounters)} × {Math.round(ipProgressDays * 10) / 10} days after admission × {state.inpatientProgressMinutes} min = <b className="font-bold text-[#1A1A1A]">{fmt(ipProgHours)} hrs</b></div>
+                    {state.inpatientConsultsEnabled && ipConsultHours > 0 && (
+                      <div className="text-[14px] text-[#8C8073] mt-[9px]">Consults · {fmt(eligibleEncounters)} × {state.inpatientConsultMinutes} min = <b className="font-bold text-[#1A1A1A]">{fmt(ipConsultHours)} hrs</b></div>
+                    )}
+                  </>
+                ) : (
+                  <div className="text-[14px] text-[#B5AFA6] mt-[9px]">Pick a quick-fill or type the minutes above to see it add up.</div>
+                )}
               </div>
             </div>
 
+            {/* vertical hairline */}
+            <div className="hidden lg:block bg-[#E8E2DA]" />
+
             {/* RIGHT — time given back + contribution viz */}
-            <div className="bg-[#FDFBF8] border border-[#E7E3DD] rounded-[20px] px-7 py-[28px] flex flex-col">
-              <div className="text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#443A32]">Time given back</div>
-              <div className="flex-1 flex flex-col justify-center">
-                {entered ? (
-                  <>
-                    <div className="leading-[0.85]">
-                      <span className="font-abridge text-[68px] sm:text-[84px] text-[#EA2C00] tabular-nums">{formatNumber(shownIpHours)}</span>
-                    </div>
-                    <div className="text-[16px] text-[#574C41] mt-2">clinician hours a year</div>
-                    <div className="text-[15px] text-[#3A342E] mt-3 leading-[1.5]">
-                      ≈ <b className="text-[#1A1A1A]">{fmt(ipPerStay)} min</b> saved per stay · ≈ <b className="text-[#1A1A1A]">{(ipTotalHours / 2080).toFixed(1)}</b> full-time hospitalists&apos; worth
-                    </div>
-                    <div className="mt-8">
-                      <div className="flex h-[14px] rounded-full overflow-hidden bg-[#F1ECE4]">
-                        {segs.map((s) => (
-                          <div key={s.label} style={{ width: `${pct(s.hours)}%`, background: s.color }} />
-                        ))}
-                        <div className="w-[46px] flex-shrink-0 border-l-2 border-white" style={{ backgroundImage: "repeating-linear-gradient(45deg,#E4DACE 0,#E4DACE 5px,#F1ECE4 5px,#F1ECE4 10px)" }} />
-                      </div>
-                      <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1.5 text-[12.5px]">
-                        {segs.map((s) => (
-                          <span key={s.label} className="inline-flex items-center gap-[6px] text-[#565250]">
-                            <span className="w-[9px] h-[9px] rounded-[3px]" style={{ background: s.color }} /> {s.label} · <b className="text-[#1A1A1A] font-abridge">{fmt(s.hours)} hrs</b>
-                          </span>
-                        ))}
-                        <span className="inline-flex items-center gap-[6px] text-[#9A9086]">
-                          <span className="w-[9px] h-[9px] rounded-[3px] border border-dashed border-[#C4BCB0]" /> Discharge summary · coming
-                        </span>
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  // Intentional empty state: preview the structure (a ghost bar +
-                  // note-type legend) rather than a lone floating dash.
-                  <div className="max-w-[340px]">
-                    <div className="font-abridge text-[23px] text-[#3A342E] leading-[1.2]">The hours given back</div>
-                    <p className="text-[14px] text-[#8A8073] leading-[1.6] mt-3">
-                      Pick a quick-fill or set the minutes on the left, and the time given back fills in here, split by note type.
-                    </p>
-                    <div className="mt-7 h-[14px] rounded-full bg-[#F1ECE4]" />
-                    <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1.5 text-[12.5px] text-[#B0A99E]">
-                      <span className="inline-flex items-center gap-[6px]"><span className="w-[9px] h-[9px] rounded-[3px] bg-[#E4DED5]" /> H&amp;P</span>
-                      <span className="inline-flex items-center gap-[6px]"><span className="w-[9px] h-[9px] rounded-[3px] bg-[#E4DED5]" /> Progress</span>
-                      <span className="inline-flex items-center gap-[6px]"><span className="w-[9px] h-[9px] rounded-[3px] border border-dashed border-[#C4BCB0]" /> Discharge summary · coming</span>
-                    </div>
+            <div>
+              <div className={sectLabel}>Time given back</div>
+              {entered ? (
+                <>
+                  <div className="font-abridge text-[64px] sm:text-[88px] text-[#EA2C00] leading-[0.88] tabular-nums mt-[22px]">{formatNumber(shownIpHours)}</div>
+                  <div className="font-abridge text-[20px] text-[#1A1A1A] mt-3">clinician hours a year</div>
+                  <div className="text-[15.5px] text-[#565250] mt-[18px] leading-[1.5]">
+                    ≈ <b className="font-bold text-[#1A1A1A]">{fmt(ipPerStay)} min</b> saved per stay · ≈ <b className="font-bold text-[#1A1A1A]">{(ipTotalHours / 2080).toFixed(1)}</b> full-time hospitalists&apos; worth
                   </div>
-                )}
-              </div>
-              <div className="pt-[18px] mt-6 border-t border-[#E7E3DD]">
-                <p className="text-[12.5px] text-[#565250] leading-[1.55]">
-                  Today&apos;s notes only. The discharge summary adds more once it ships; we don&apos;t count what Abridge doesn&apos;t write yet.
-                </p>
-              </div>
+                  <div className="flex h-[10px] rounded-full overflow-hidden gap-[2px] mt-[30px] max-w-[460px]">
+                    {segs.map((s) => (
+                      <span key={s.label} className="block rounded-[3px]" style={{ flex: Math.max(1, s.hours), background: s.color }} />
+                    ))}
+                    <span className="block rounded-[3px]" style={{ flex: Math.max(1, Math.round(ipTotalHours * 0.16)), background: "repeating-linear-gradient(45deg,#E8E2DA,#E8E2DA 3px,#F5F1EB 3px,#F5F1EB 6px)" }} />
+                  </div>
+                  <div className="flex flex-wrap gap-x-[22px] gap-y-[9px] mt-[18px] text-[13px] text-[#565250]">
+                    {segs.map((s) => (
+                      <span key={s.label} className="flex items-center gap-[7px]"><span className="w-[9px] h-[9px] rounded-full" style={{ background: s.color }} />{s.label} · <b className="font-bold text-[#1A1A1A]">{fmt(s.hours)} hrs</b></span>
+                    ))}
+                    <span className="text-[#B0A99E]">Discharge summary · coming</span>
+                  </div>
+                  <div className="mt-9 border-t border-[#EDE8E1] pt-5 text-[13.5px] text-[#8C8073] leading-[1.55] max-w-[420px]">
+                    Today&apos;s notes only. The discharge summary adds more once it ships; we don&apos;t count what Abridge doesn&apos;t write yet.
+                  </div>
+                </>
+              ) : (
+                <div className="mt-[22px] max-w-[360px]">
+                  <div className="font-abridge text-[23px] text-[#3A342E] leading-[1.2]">The hours given back</div>
+                  <p className="text-[14px] text-[#8A8073] leading-[1.6] mt-3">
+                    Pick a quick-fill or set the minutes on the left, and the time given back fills in here, split by note type.
+                  </p>
+                  <div className="mt-7 h-[10px] rounded-full bg-[#F1ECE4] max-w-[460px]" />
+                  <div className="mt-4 flex flex-wrap gap-x-[22px] gap-y-[9px] text-[13px] text-[#B0A99E]">
+                    <span className="flex items-center gap-[7px]"><span className="w-[9px] h-[9px] rounded-full bg-[#E4DED5]" /> H&amp;P</span>
+                    <span className="flex items-center gap-[7px]"><span className="w-[9px] h-[9px] rounded-full bg-[#E4DED5]" /> Progress</span>
+                    <span>Discharge summary · coming</span>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
-          <div className="flex justify-end mt-6">
+          <div className="flex justify-end mt-14">
             <button
               type="button"
               disabled={!isValid}
@@ -340,7 +311,7 @@ export default function EdTimeSavings({ state, updateState, onNext, onBack, onHo
   return (
     <EditorialShell>
       <EditorialHeader stepName="Time Savings" stepIndex={3} onBack={onBack} onHome={onHome} />
-      <div className="max-w-[1160px] mx-auto px-5 sm:px-8 lg:px-12 pt-12 pb-14">
+      <div className="max-w-[1080px] mx-auto px-5 sm:px-8 lg:px-12 pt-12 pb-14">
         <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#565250]">
           Value Estimator · Step 3 of 9
         </div>
@@ -352,90 +323,86 @@ export default function EdTimeSavings({ state, updateState, onNext, onBack, onHo
           own; confirm the real figure when you measure.
         </p>
 
-        {/* Two balanced halves: left builds it, right shows the result. */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-[22px] mt-[34px] items-stretch">
-          {/* LEFT — the build (input + presets + how it adds up) */}
-          <div className="bg-[#FDFBF8] border border-[#E7E3DD] rounded-[20px] px-7 py-[28px] flex flex-col">
-            <div className="text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#2E2822]">
-              Minutes saved per {noteUnit}
+        <div className="grid grid-cols-1 lg:grid-cols-[1.15fr_1px_1fr] gap-x-[56px] gap-y-10 mt-[46px]">
+          {/* LEFT — the build */}
+          <div>
+            <div className={sectLabel}>Minutes saved per {noteUnit}</div>
+
+            <div className="flex items-end justify-between gap-6 py-5 border-b border-[#EDE8E1] mt-4">
+              <div>
+                <div className="font-abridge text-[16px] font-bold text-[#1A1A1A]">Time saved per {noteUnit}</div>
+                <div className="text-[13px] text-[#8C8073] mt-1 leading-[1.45] max-w-[320px]">The average minutes Abridge takes off each {noteUnit}.</div>
+              </div>
+              <span className="inline-flex items-baseline gap-[5px] border-b-2 border-[#EA2C00] pb-[2px] whitespace-nowrap">
+                <FormattedNumberInput
+                  value={state.minutesSavedPerEncounter}
+                  onChange={handleCustomMinutes}
+                  step={0.1}
+                  placeholder="e.g. 2.5"
+                  data-testid="ed-input-minutes-saved"
+                  className="min-w-[36px] max-w-[120px] [field-sizing:content] text-right font-abridge text-[30px] leading-none text-[#1A1A1A] tabular-nums bg-transparent border-0 p-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-[15px] placeholder:font-sans placeholder:font-normal placeholder:not-italic placeholder:text-[#C7BFB4]"
+                />
+                <span className="font-sans text-[13px] text-[#8C8073]">min</span>
+              </span>
             </div>
-            <div className="mt-3 inline-flex items-baseline gap-1 border border-[#E4DED6] rounded-[12px] bg-white px-4 h-[54px] w-full max-w-[240px] focus-within:border-[#EA2C00] transition-colors">
-              <FormattedNumberInput
-                value={state.minutesSavedPerEncounter}
-                onChange={handleCustomMinutes}
-                step={0.1}
-                placeholder="e.g., 2.5"
-                data-testid="ed-input-minutes-saved"
-                className="flex-1 self-center font-abridge text-[22px] leading-none text-[#1A1A1A] tabular-nums bg-transparent border-0 p-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-[15px] placeholder:font-sans placeholder:font-normal placeholder:not-italic placeholder:text-[#B5AFA6]"
-              />
-              <span className="text-[14px] text-[#565250] self-center">min</span>
-            </div>
-            <div className="mt-3 flex items-center gap-[7px] flex-wrap">
-              <span className="text-[10px] font-extrabold tracking-[0.05em] uppercase text-[#7C766F]">Quick fill</span>
+            <div className="mt-[14px] flex items-center gap-[7px] flex-wrap">
+              <span className="text-[10px] font-extrabold tracking-[0.05em] uppercase text-[#B0A99E]">Quick fill</span>
               {scenarioChips.map(({ key, label }) => (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() => handleScenarioSelect(key)}
-                  className={quickFillChip(state.timePathScenario === key)}
-                >
+                <button key={key} type="button" onClick={() => handleScenarioSelect(key)} className={quickFillChip(state.timePathScenario === key)}>
                   {label} · {scenarioMinutes[key]}
                 </button>
               ))}
             </div>
 
-            <div className="mt-8 pt-7 border-t border-[#E7E3DD]">
-              <div className="text-[10px] font-extrabold tracking-[0.06em] uppercase text-[#443A32] mb-3">How it adds up</div>
-              <div className="text-[15px] text-[#565250] leading-[1.85]">
-                <b className="font-abridge text-[17px] text-[#1A1A1A]">{formatNumber(volumeValue)}</b> Abridge {noteUnit}s a year<br />
-                {state.minutesSavedPerEncounter > 0 ? (
-                  <><span className="text-[#AFA491]">×</span> <b className="font-abridge text-[17px] text-[#1A1A1A]">{state.minutesSavedPerEncounter} min</b> saved on each</>
-                ) : (
-                  <span className="text-[#B5AFA6]">× pick a starting point or type the minutes above</span>
-                )}
+            <div className="mt-8">
+              <div className="text-[15px] text-[#3A342E] leading-[1.7]">
+                <b className="font-bold text-[#1A1A1A]">{formatNumber(volumeValue)}</b> Abridge {noteUnit}s a year
               </div>
-              <p className="text-[12px] text-[#7C766F] mt-3 leading-[1.5]">
+              {state.minutesSavedPerEncounter > 0 ? (
+                <div className="text-[14px] text-[#8C8073] mt-[9px]">
+                  × <b className="font-bold text-[#1A1A1A]">{state.minutesSavedPerEncounter} min</b> saved on each = <b className="font-bold text-[#1A1A1A]">{formatNumber(hoursSaved)} hrs</b>
+                </div>
+              ) : (
+                <div className="text-[14px] text-[#B5AFA6] mt-[9px]">Pick a starting point or type the minutes above to see it add up.</div>
+              )}
+              <p className="text-[12.5px] text-[#B0A99E] mt-4 leading-[1.5] max-w-[360px]">
                 The quick-fills are seeded conservatively from {settingWord} implementations. You measure the real number on Progress.
               </p>
             </div>
           </div>
 
-          {/* RIGHT — the result (moderate hero + the human read) */}
-          <div className="bg-[#FDFBF8] border border-[#E7E3DD] rounded-[20px] px-7 py-[28px] flex flex-col">
-            <div className="text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#443A32]">
-              Time given back
-            </div>
-            <div className="flex-1 flex flex-col justify-center">
-              {hoursSaved > 0 ? (
-                <>
-                  <div className="leading-[0.85]">
-                    <span className="font-abridge text-[68px] sm:text-[84px] text-[#EA2C00] tabular-nums">{formatNumber(shownHours)}</span>
-                  </div>
-                  <div className="text-[16px] text-[#574C41] mt-2">{isNursing ? "nurse" : "clinician"} hours a year</div>
-                  <div className="text-[15px] text-[#3A342E] mt-4 leading-[1.5]">
-                    ≈ <b className="text-[#1A1A1A]">{(hoursSaved / 2080).toFixed(1)}</b> full-time {roleWord}s&apos; worth of documentation time
-                  </div>
-                  <div className="mt-5 pt-5 border-t border-[#EFE7DD] text-[15px] text-[#3A342E] leading-[1.5]">
-                    about <b className="text-[#1A1A1A]">{perWeek.value} {perWeek.unit}</b> for every {roleWord}, every week
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="text-[15px] text-[#B8B0A6] leading-[1.6]">Set the minutes to see the time given back.</div>
-                  <div className="mt-3 font-abridge text-[68px] sm:text-[84px] text-[#E4DED5] tabular-nums leading-[0.85]">&ndash;</div>
-                  <div className="text-[16px] text-[#B8B0A6] mt-2">{isNursing ? "nurse" : "clinician"} hours a year</div>
-                </>
-              )}
-            </div>
-            <div className="pt-[18px] border-t border-[#E7E3DD]">
-              <p className="text-[12.5px] text-[#565250] leading-[1.55]">
-                Time back, not dollars yet; we turn it into value on the next screens.
-              </p>
-            </div>
+          {/* vertical hairline */}
+          <div className="hidden lg:block bg-[#E8E2DA]" />
+
+          {/* RIGHT — the result */}
+          <div>
+            <div className={sectLabel}>Time given back</div>
+            {hoursSaved > 0 ? (
+              <>
+                <div className="font-abridge text-[64px] sm:text-[88px] text-[#EA2C00] leading-[0.88] tabular-nums mt-[22px]">{formatNumber(shownHours)}</div>
+                <div className="font-abridge text-[20px] text-[#1A1A1A] mt-3">{isNursing ? "nurse" : "clinician"} hours a year</div>
+                <div className="text-[15.5px] text-[#565250] mt-[18px] leading-[1.5]">
+                  ≈ <b className="font-bold text-[#1A1A1A]">{(hoursSaved / 2080).toFixed(1)}</b> full-time {roleWord}s&apos; worth of documentation time
+                </div>
+                <div className="mt-[18px] text-[15.5px] text-[#565250] leading-[1.5]">
+                  about <b className="font-bold text-[#1A1A1A]">{perWeek.value} {perWeek.unit}</b> for every {roleWord}, every week
+                </div>
+                <div className="mt-9 border-t border-[#EDE8E1] pt-5 text-[13.5px] text-[#8C8073] leading-[1.55] max-w-[420px]">
+                  Time back, not dollars yet; we turn it into value on the next screens.
+                </div>
+              </>
+            ) : (
+              <div className="mt-[22px] max-w-[360px]">
+                <div className="font-abridge text-[23px] text-[#3A342E] leading-[1.2]">The hours given back</div>
+                <p className="text-[14px] text-[#8A8073] leading-[1.6] mt-3">
+                  Set the minutes on the left and the time given back fills in here, in {isNursing ? "nurse" : "clinician"} hours a year.
+                </p>
+              </div>
+            )}
           </div>
         </div>
 
-        <div className="flex justify-end mt-6">
+        <div className="flex justify-end mt-14">
           <button
             type="button"
             disabled={!isValid}
