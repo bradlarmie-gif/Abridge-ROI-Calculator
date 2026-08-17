@@ -33,6 +33,7 @@ import { X, Plus } from "lucide-react";
 import type { PriorQuadrantEntry } from "@/lib/exploreQuadrantValues";
 import DriverLedger, { type LedgerRow } from "./DriverLedger";
 import { buildInpatientLedger } from "./driverLedgerData";
+import { MathCascade } from "./MathCascade";
 
 interface EdRevenueProps {
   state: ExploreState;
@@ -317,9 +318,13 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
   // ── Inpatient: DRG accuracy (the query funnel) + Obs Defense ──
   const drgValue = engine.drgAccuracy ?? 0;
   const drgAwait = gate("drgAccuracy");
-  const drgQueried = eligibleEncounters * (dq.ipDrgCdiReviewRate / 100) * (dq.ipDrgQueryRate / 100);
-  const drgChanged = drgQueried * (dq.ipDrgResponseRate / 100) * (dq.ipDrgChangeRate / 100);
+  const drgReviewed = eligibleEncounters * (dq.ipDrgCdiReviewRate / 100);
+  const drgQueried = drgReviewed * (dq.ipDrgQueryRate / 100);
+  const drgResponds = drgQueried * (dq.ipDrgResponseRate / 100);
+  const drgChanged = drgResponds * (dq.ipDrgChangeRate / 100);
   const drgLost = Math.max(0, drgQueried - drgChanged);
+  const drgCaptured = drgLost * (dq.ipDrgUpfrontCapture / 100);
+  const drgWeightAdded = drgCaptured * dq.ipDrgWeightGain;
   const drgCard = (
     <InlineDriverCard
       key="drg"
@@ -374,7 +379,10 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
   // Split the seven-factor denials chain into three readable steps (<=3 factors
   // each) with neutral intermediates, so no row wraps and each keeps one baseline.
   const obsAtStake = Math.round(state.annualEncounters * (dq.ipObsDenialRate / 100) * dq.ipObsAllowedPerCase);
+  const obsDenied = Math.round(state.annualEncounters * (dq.ipObsDenialRate / 100));
+  const obsAfterNotRec = Math.round(obsAtStake * (dq.ipObsNotRecoveredPct / 100));
   const obsDocDriven = Math.round(obsAtStake * (dq.ipObsNotRecoveredPct / 100) * (dq.ipObsDocMaterialPct / 100));
+  const obsAfterOpp = Math.round(obsDocDriven * (dq.ipObsAbridgeOpportunityPct / 100));
   const obsCard = (
     <InlineDriverCard
       key="obs"
@@ -432,36 +440,27 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
         amount: drgValue,
         awaiting: drgAwait?.need,
         levers: (
-          <>
-            <div className="text-[10.5px] font-extrabold tracking-[0.1em] uppercase text-[#A79B8B] mb-3">What the CDI funnel catches today</div>
-            <EquationRow>
-              <EqCarried cap="discharges">{fmtN(eligibleEncounters)}</EqCarried>
-              <EqOp>×</EqOp>
-              <EqNum cap="reviewed by CDI" value={dq.ipDrgCdiReviewRate} onChange={(v) => updateDq({ ipDrgCdiReviewRate: v })} suffix="%" />
-              <EqOp>×</EqOp>
-              <EqNum cap="get a query" value={dq.ipDrgQueryRate} onChange={(v) => updateDq({ ipDrgQueryRate: v })} suffix="%" />
-              <EqOp>×</EqOp>
-              <EqNum cap="physician responds" value={dq.ipDrgResponseRate} onChange={(v) => updateDq({ ipDrgResponseRate: v })} suffix="%" />
-              <EqOp>×</EqOp>
-              <EqNum cap="changes the DRG" value={dq.ipDrgChangeRate} onChange={(v) => updateDq({ ipDrgChangeRate: v })} suffix="%" />
-              <div className="basis-full w-full flex items-baseline gap-2.5 pt-3 mt-1 border-t border-[#F3E9E1]">
-                <span className="font-abridge text-[19px] text-[#B9AA97] leading-none">=</span>
-                <span className="font-abridge text-[24px] text-[#5E534A] leading-none">{fmtN(drgChanged)}</span>
-                <span className="text-[12px] text-[#7C766F]">corrected today · your CDI team's, not Abridge's</span>
-              </div>
-            </EquationRow>
-            <div className="text-[10.5px] font-extrabold tracking-[0.1em] uppercase text-[#A79B8B] mt-6 mb-3">What Abridge adds, on top</div>
-            <EquationRow>
-              <EqCarried cap="flagged but lost">{fmtN(drgLost)}</EqCarried>
-              <EqOp>×</EqOp>
-              <EqNum cap="captured by Abridge" value={dq.ipDrgUpfrontCapture} onChange={(v) => updateDq({ ipDrgUpfrontCapture: v })} suffix="%" />
-              <EqOp>×</EqOp>
-              <EqNum cap="DRG weight gained" value={dq.ipDrgWeightGain} onChange={(v) => updateDq({ ipDrgWeightGain: v })} decimal />
-              <EqOp>×</EqOp>
-              <EqNum cap="$ per weight" value={dq.ipDrgBaseRate} onChange={(v) => updateDq({ ipDrgBaseRate: v })} prefix="$" />
-              <EqResult value={drgValue} />
-            </EquationRow>
-          </>
+          <div className="flex flex-col gap-7">
+            <MathCascade
+              label="What the CDI funnel catches today"
+              steps={[
+                { label: "Discharges", running: fmtN(eligibleEncounters) },
+                { label: "Reviewed by CDI", factor: { value: dq.ipDrgCdiReviewRate, onChange: (v) => updateDq({ ipDrgCdiReviewRate: v }), suffix: "%" }, running: fmtN(drgReviewed) },
+                { label: "Get a query", factor: { value: dq.ipDrgQueryRate, onChange: (v) => updateDq({ ipDrgQueryRate: v }), suffix: "%" }, running: fmtN(drgQueried) },
+                { label: "Physician responds", factor: { value: dq.ipDrgResponseRate, onChange: (v) => updateDq({ ipDrgResponseRate: v }), suffix: "%" }, running: fmtN(drgResponds) },
+                { label: "Changes the DRG", factor: { value: dq.ipDrgChangeRate, onChange: (v) => updateDq({ ipDrgChangeRate: v }), suffix: "%" }, running: fmtN(drgChanged), note: "your CDI team's, not Abridge's" },
+              ]}
+            />
+            <MathCascade
+              label="What Abridge adds, on top"
+              steps={[
+                { label: "Flagged but lost", running: fmtN(drgLost), note: "queried but never corrected" },
+                { label: "Captured by Abridge", factor: { value: dq.ipDrgUpfrontCapture, onChange: (v) => updateDq({ ipDrgUpfrontCapture: v }), suffix: "%" }, running: fmtN(drgCaptured) },
+                { label: "DRG weight gained per case", factor: { value: dq.ipDrgWeightGain, onChange: (v) => updateDq({ ipDrgWeightGain: v }), decimal: true }, running: `${drgWeightAdded.toFixed(1)} wt` },
+                { label: "Paid per weight", factor: { value: dq.ipDrgBaseRate, onChange: (v) => updateDq({ ipDrgBaseRate: v }), prefix: "$" }, running: fmt$(drgValue), final: true },
+              ]}
+            />
+          </div>
         ),
       },
       {
@@ -478,41 +477,17 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
         amount: obsValue,
         awaiting: obsAwait?.need,
         levers: (
-          <div className="flex flex-col gap-4">
-            {/* Step 1 — revenue at stake */}
-            <EquationRow>
-              <EqCarried cap="admissions">{fmtN(state.annualEncounters)}</EqCarried>
-              <EqOp>×</EqOp>
-              <EqNum cap="denied by payer" value={dq.ipObsDenialRate} onChange={(v) => updateDq({ ipObsDenialRate: v })} suffix="%" width={40} />
-              <EqOp>×</EqOp>
-              <EqNum cap="allowed per case" value={dq.ipObsAllowedPerCase} onChange={(v) => updateDq({ ipObsAllowedPerCase: v })} prefix="$" />
-              <div className="basis-full w-full flex items-baseline gap-2.5 pt-3 mt-1 border-t border-[#F3E9E1]">
-                <span className="font-abridge text-[19px] text-[#B9AA97] leading-none">=</span>
-                <span className="font-abridge text-[24px] text-[#5E534A] leading-none">{fmt$(obsAtStake)}</span>
-                <span className="text-[12px] text-[#7C766F]">revenue at stake</span>
-              </div>
-            </EquationRow>
-            {/* Step 2 — continues from the running total above (leading ×, no repeated carry) */}
-            <EquationRow>
-              <EqOp>×</EqOp>
-              <EqNum cap="never recovered" value={dq.ipObsNotRecoveredPct} onChange={(v) => updateDq({ ipObsNotRecoveredPct: v })} suffix="%" width={40} />
-              <EqOp>×</EqOp>
-              <EqNum cap="documentation-driven" value={dq.ipObsDocMaterialPct} onChange={(v) => updateDq({ ipObsDocMaterialPct: v })} suffix="%" width={40} />
-              <div className="basis-full w-full flex items-baseline gap-2.5 pt-3 mt-1 border-t border-[#F3E9E1]">
-                <span className="font-abridge text-[19px] text-[#B9AA97] leading-none">=</span>
-                <span className="font-abridge text-[24px] text-[#5E534A] leading-none">{fmt$(obsDocDriven)}</span>
-                <span className="text-[12px] text-[#7C766F]">where documentation is the material factor</span>
-              </div>
-            </EquationRow>
-            {/* Step 3 — the durable Abridge dollar */}
-            <EquationRow>
-              <EqOp>×</EqOp>
-              <EqNum cap="Abridge in the workflow" value={dq.ipObsAbridgeOpportunityPct} onChange={(v) => updateDq({ ipObsAbridgeOpportunityPct: v })} suffix="%" width={40} />
-              <EqOp>×</EqOp>
-              <EqNum cap="Abridge moves it" value={dq.ipObsAbridgeImpactPct} onChange={(v) => updateDq({ ipObsAbridgeImpactPct: v })} suffix="%" width={40} />
-              <EqResult value={obsValue} />
-            </EquationRow>
-          </div>
+          <MathCascade
+            steps={[
+              { label: "Admissions", running: fmtN(state.annualEncounters) },
+              { label: "Denied by payer", factor: { value: dq.ipObsDenialRate, onChange: (v) => updateDq({ ipObsDenialRate: v }), suffix: "%" }, running: fmtN(obsDenied) },
+              { label: "Allowed per case", factor: { value: dq.ipObsAllowedPerCase, onChange: (v) => updateDq({ ipObsAllowedPerCase: v }), prefix: "$" }, running: fmt$(obsAtStake) },
+              { label: "Never recovered", factor: { value: dq.ipObsNotRecoveredPct, onChange: (v) => updateDq({ ipObsNotRecoveredPct: v }), suffix: "%" }, running: fmt$(obsAfterNotRec) },
+              { label: "Documentation is the material factor", factor: { value: dq.ipObsDocMaterialPct, onChange: (v) => updateDq({ ipObsDocMaterialPct: v }), suffix: "%" }, running: fmt$(obsDocDriven) },
+              { label: "Abridge is in the workflow", factor: { value: dq.ipObsAbridgeOpportunityPct, onChange: (v) => updateDq({ ipObsAbridgeOpportunityPct: v }), suffix: "%" }, running: fmt$(obsAfterOpp) },
+              { label: "Abridge moves it", factor: { value: dq.ipObsAbridgeImpactPct, onChange: (v) => updateDq({ ipObsAbridgeImpactPct: v }), suffix: "%" }, running: fmt$(obsValue), final: true },
+            ]}
+          />
         ),
       },
     ];
