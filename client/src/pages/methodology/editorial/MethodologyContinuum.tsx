@@ -16,7 +16,12 @@ type Cell = { kind: "dollar"; n: number } | { kind: "proof" };
 
 function cellFor(setting: MethodologyData["key"], domain: MethodQuadrant): Cell {
   const dom = METHODOLOGY_DATA[setting].domains.find((d) => d.name === domain)!;
-  return dom.chip.kind === "dollar" ? { kind: "dollar", n: dom.drivers.length } : { kind: "proof" };
+  // Count only dollar-carrying drivers — a dollar domain can hold a tracked
+  // ("watch") driver too (e.g. inpatient Workforce's Administrative Efficiency,
+  // counted once in Revenue). Counting drivers.length would report it under the
+  // "$ Carries a dollar" legend and overstate the dollar-driver count.
+  const dollarDrivers = dom.drivers.filter((d) => d.mode === "dollar").length;
+  return dom.chip.kind === "dollar" ? { kind: "dollar", n: dollarDrivers } : { kind: "proof" };
 }
 
 export default function MethodologyContinuum({ onBack, onHome, onNavigate }: Props) {
