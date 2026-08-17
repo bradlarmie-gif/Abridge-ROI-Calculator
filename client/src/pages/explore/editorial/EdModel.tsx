@@ -467,8 +467,9 @@ export default function EdModel({
           Everything the prior steps built, assembled from your numbers. Ready to share, or take into a full proforma.
         </p>
 
-        {/* HERO — the one number everything built to, de-boxed */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1.15fr_1px_1fr] gap-x-[56px] gap-y-10 mt-[48px]">
+        {/* HERO — the one number everything built to. Number left, the
+            components that make it up right, on the shared spine. */}
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_1px_1fr] gap-x-[56px] gap-y-8 mt-[44px] items-center">
           <div>
             {/* "Net" only once a cost exists; before pricing this is net of nothing, so it reads "value before cost" (matches EdInvestment). */}
             <div className={sectLabel}>{annualInvestment > 0 ? "Net annual value" : "Value before cost"}</div>
@@ -478,14 +479,14 @@ export default function EdModel({
               <span className="font-sans text-[19px] text-[#8C8073]"> / yr</span>
             </div>
             {annualInvestment <= 0 ? (
-              <div className="mt-[16px] text-[13.5px] font-bold text-[#8C8073]">Add your pricing to see the return.</div>
+              <div className="mt-[14px] text-[13.5px] font-bold text-[#8C8073]">Add your pricing to see the return.</div>
             ) : netAnnualValue > 0 ? (
-              <div className="mt-[16px] text-[14px] text-[#3A342E]">
+              <div className="mt-[14px] text-[14px] text-[#3A342E]">
                 <span className="font-abridge text-[21px] text-[#EA2C00]">{roi.toFixed(1)}×</span>
                 <span className="ml-[9px]">return · <b className="font-semibold">≈{fmtPerDollar(netPerDollar)}</b> net back for every $1 spent</span>
               </div>
             ) : (
-              <div className="mt-[16px] text-[13.5px] text-[#8C8073] leading-[1.5] max-w-[380px]">
+              <div className="mt-[14px] text-[13.5px] text-[#8C8073] leading-[1.5] max-w-[380px]">
                 <span className="font-abridge text-[18px] text-[#8C8073]">{roi.toFixed(1)}×</span> · the modeled value doesn&apos;t cover the cost at this scope.
               </div>
             )}
@@ -493,29 +494,29 @@ export default function EdModel({
 
           <div className="hidden lg:block bg-[#E8E2DA]" />
 
-          <div>
-            <div className="flex justify-between items-baseline py-[13px] border-b border-[#EDE8E1]">
+          <div className="flex flex-col gap-[15px]">
+            <div className="flex justify-between items-baseline">
               <span className="text-[14px] text-[#3A342E]">Total annual value</span>
               <span className="font-abridge text-[19px] text-[#1A1A1A] tabular-nums">{fmtCurrency(totalAnnualValue)}</span>
             </div>
-            <div className="flex justify-between items-baseline py-[13px] border-b border-[#EDE8E1]">
+            <div className="flex justify-between items-baseline">
               <span className="text-[14px] text-[#3A342E]">Your investment</span>
               <span className="font-abridge text-[19px] text-[#1A1A1A] tabular-nums">{annualInvestment > 0 ? "−" + fmtCurrency(annualInvestment) : fmtCurrency(0)}</span>
             </div>
-            <div className="flex justify-between items-baseline pt-[15px]">
-              <span className="text-[11px] font-extrabold tracking-[0.05em] uppercase text-[#443A32]">Scope</span>
+            <div className="flex justify-between items-baseline">
+              <span className="text-[14px] text-[#3A342E]">Scope</span>
               <span className="font-abridge text-[15px] text-[#1A1A1A] text-right">{fmtNumber(baselineCount)} {isNursing ? "beds" : "providers"} · {careSettingLabel}</span>
             </div>
           </div>
         </div>
 
         {/* WHERE the value comes from + WHEN it lands */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_1px_1.28fr] gap-x-[52px] gap-y-12 mt-[60px] pt-[44px] border-t border-[#E8E2DA]">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_1px_1fr] gap-x-[56px] gap-y-12 mt-[56px]">
           {/* Where the value comes from */}
           <div>
             <div className={sectHead}>Where the value comes from</div>
-            <p className="text-[13px] text-[#8C8073] mt-[8px] mb-[24px] leading-[1.5]">Across the four areas you modeled.</p>
-            <div className="flex flex-col gap-[18px]">
+            <p className="text-[13px] text-[#8C8073] mt-[8px] mb-[22px] leading-[1.5]">Across the four areas you modeled.</p>
+            <div className="flex flex-col gap-[17px]">
               {QUADRANT_ORDER.map((q) => {
                 const proofNote = proofForSetting[q];
                 if (proofNote) {
@@ -616,12 +617,12 @@ export default function EdModel({
         </div>
 
         {/* Model your expansion */}
-        <div className="mt-[60px] pt-[44px] border-t border-[#E8E2DA]">
+        <div className="mt-[56px]">
           <div className={sectHead}>Model your expansion</div>
-          <p className="text-[13px] text-[#8C8073] mt-[8px] mb-[28px] leading-[1.55] max-w-[560px]">
+          <p className="text-[13px] text-[#8C8073] mt-[8px] mb-[26px] leading-[1.55] max-w-[560px]">
             Where this goes as you roll out to more {isNursing ? "beds" : "providers"} and higher adoption. Same math, larger footprint.
           </p>
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_1px_1.15fr] gap-x-[52px] gap-y-10">
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_1px_1fr] gap-x-[56px] gap-y-10">
             <div>
               {/* Providers slider */}
               <div className="mb-[26px]">
@@ -764,7 +765,7 @@ export default function EdModel({
         </div>
 
         {/* Actions */}
-        <div className="flex gap-3 mt-[56px] pt-[36px] border-t border-[#E8E2DA] items-center flex-wrap">
+        <div className="flex gap-3 mt-[60px] items-center flex-wrap">
           <button
             type="button"
             onClick={() => setShowExportModal(true)}
