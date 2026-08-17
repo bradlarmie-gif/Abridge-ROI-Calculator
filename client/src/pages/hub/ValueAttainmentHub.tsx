@@ -10,7 +10,8 @@ interface ValueAttainmentHubProps {
 export default function ValueAttainmentHub({ onSelectStrategy, onSelectFinancial, onSelectPlanning }: ValueAttainmentHubProps) {
   return (
     <HubPage
-      pageName="Home"
+      pageName="Value Attainment"
+      showBack={false}
       header={
         <>
           <h1

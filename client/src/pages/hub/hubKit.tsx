@@ -17,6 +17,7 @@ export function HubPage({
   children,
   footer,
   onHome,
+  showBack = true,
 }: {
   pageName: string;
   header: ReactNode;
@@ -25,10 +26,12 @@ export function HubPage({
   // Return to the top-level home hub (Strategy / Financial / Planning). Without
   // it, the Abridge logo's click handler has nothing to call and no-ops.
   onHome?: () => void;
+  // The top-level home passes false — there is nowhere to go back to from root.
+  showBack?: boolean;
 }) {
   return (
     <div className="min-h-screen bg-[#FFFFFF] relative overflow-hidden">
-      <UnifiedHeader pathType="forecast" pathLabel={pageName} onHome={onHome} />
+      <UnifiedHeader pathType="forecast" pathLabel={pageName} onHome={onHome} showBack={showBack} />
       <div className="max-w-6xl mx-auto px-4 md:px-6 pt-[88px] md:pt-[96px] pb-8 relative z-10">
         <motion.section
           initial={{ opacity: 0, y: 12 }}
