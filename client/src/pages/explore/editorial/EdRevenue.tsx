@@ -31,6 +31,8 @@ import ValueRail from "./ValueRail";
 import { InlineDriverCard, EqNum, EqCarried, EqOp, EqResult, EquationRow, EqAwaiting } from "./InlineEquation";
 import { X, Plus } from "lucide-react";
 import type { PriorQuadrantEntry } from "@/lib/exploreQuadrantValues";
+import DriverLedger, { type LedgerRow } from "./DriverLedger";
+import { buildInpatientLedger } from "./driverLedgerData";
 
 interface EdRevenueProps {
   state: ExploreState;
@@ -408,6 +410,111 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
       )}
     </InlineDriverCard>
   );
+
+  // ─── Inpatient V2 driver ledger ───
+  // Revenue is where inpatient's two counted drivers live: Case Mix Index (the
+  // CDI query funnel) and Status / Medical Necessity Denials. Both lift their
+  // equations verbatim from the cards above so the math never drifts.
+  if (isIP) {
+    const ledger = buildInpatientLedger(state, totalHoursSaved, "Revenue");
+    const rows: LedgerRow[] = [
+      {
+        id: "drgAccuracy",
+        label: "Case Mix Index",
+        kind: "counted",
+        mechanism:
+          "DRG revenue moves through the CDI query funnel, and that funnel is your CDI team's work, with or without Abridge. A query is proof the record had a gap; Abridge's value is the gaps your team flags but loses.",
+        enabled: dq.ipDrgEnabled,
+        onToggle: () => updateDq({ ipDrgEnabled: !dq.ipDrgEnabled, ipDrgExpanded: !dq.ipDrgEnabled ? true : dq.ipDrgExpanded }),
+        amount: drgValue,
+        awaiting: drgAwait?.need,
+        levers: (
+          <>
+            <div className="text-[10.5px] font-extrabold tracking-[0.1em] uppercase text-[#A79B8B] mb-3">What the CDI funnel catches today</div>
+            <EquationRow>
+              <EqCarried cap="discharges">{fmtN(eligibleEncounters)}</EqCarried>
+              <EqOp>×</EqOp>
+              <EqNum cap="reviewed" value={dq.ipDrgCdiReviewRate} onChange={(v) => updateDq({ ipDrgCdiReviewRate: v })} suffix="%" />
+              <EqOp>×</EqOp>
+              <EqNum cap="query" value={dq.ipDrgQueryRate} onChange={(v) => updateDq({ ipDrgQueryRate: v })} suffix="%" />
+              <EqOp>×</EqOp>
+              <EqNum cap="responds" value={dq.ipDrgResponseRate} onChange={(v) => updateDq({ ipDrgResponseRate: v })} suffix="%" />
+              <EqOp>×</EqOp>
+              <EqNum cap="changes DRG" value={dq.ipDrgChangeRate} onChange={(v) => updateDq({ ipDrgChangeRate: v })} suffix="%" />
+              <div className="basis-full w-full flex items-baseline gap-2.5 pt-3 mt-1 border-t border-[#F3E9E1]">
+                <span className="font-abridge text-[19px] text-[#B9AA97] leading-none">=</span>
+                <span className="font-abridge text-[24px] text-[#5E534A] leading-none">{fmtN(drgChanged)}</span>
+                <span className="text-[12px] text-[#7C766F]">corrected today · your CDI team's, not Abridge's</span>
+              </div>
+            </EquationRow>
+            <p className="text-[13px] leading-[1.55] text-[#7C766F] mt-4 max-w-[600px]">
+              Of the <b className="text-[#1A1A1A]">{fmtN(drgQueried)}</b> gaps your CDI team flags, only <b className="text-[#1A1A1A]">{fmtN(drgChanged)}</b> get corrected. The other <b className="text-[#B02200]">{fmtN(drgLost)}</b> die in the query process, with no response or a response that doesn&apos;t stick. Abridge captures the acuity up front, so those land at the right DRG without waiting on a query.
+            </p>
+            <div className="text-[10.5px] font-extrabold tracking-[0.1em] uppercase text-[#A79B8B] mt-6 mb-3">What Abridge adds, on top</div>
+            <EquationRow>
+              <EqCarried cap="flagged but lost">{fmtN(drgLost)}</EqCarried>
+              <EqOp>×</EqOp>
+              <EqNum cap="Abridge captures" value={dq.ipDrgUpfrontCapture} onChange={(v) => updateDq({ ipDrgUpfrontCapture: v })} suffix="%" />
+              <EqOp>×</EqOp>
+              <EqNum cap="weight gain" value={dq.ipDrgWeightGain} onChange={(v) => updateDq({ ipDrgWeightGain: v })} decimal />
+              <EqOp>×</EqOp>
+              <EqNum cap="per weight" value={dq.ipDrgBaseRate} onChange={(v) => updateDq({ ipDrgBaseRate: v })} prefix="$" />
+              <EqResult value={drgValue} />
+            </EquationRow>
+          </>
+        ),
+      },
+      {
+        id: "obsDefense",
+        label: "Status / Medical Necessity Denials",
+        kind: "counted",
+        mechanism:
+          "A share of admissions draw a status or medical-necessity denial. The chain narrows from every admission to the durable dollar: what is never recovered, where documentation is the material factor, and where Abridge is in position to move it.",
+        enabled: dq.ipObsDefenseEnabled,
+        onToggle: () =>
+          updateDq({ ipObsDefenseEnabled: !dq.ipObsDefenseEnabled, ipObsDefenseExpanded: !dq.ipObsDefenseEnabled ? true : dq.ipObsDefenseExpanded }),
+        amount: obsValue,
+        awaiting: obsAwait?.need,
+        levers: (
+          <EquationRow>
+            <EqCarried cap="admissions">{fmtN(state.annualEncounters)}</EqCarried>
+            <EqOp>×</EqOp>
+            <EqNum cap="denied" value={dq.ipObsDenialRate} onChange={(v) => updateDq({ ipObsDenialRate: v })} suffix="%" />
+            <EqOp>×</EqOp>
+            <EqNum cap="allowed / case" value={dq.ipObsAllowedPerCase} onChange={(v) => updateDq({ ipObsAllowedPerCase: v })} prefix="$" />
+            <EqOp>×</EqOp>
+            <EqNum cap="not recovered" value={dq.ipObsNotRecoveredPct} onChange={(v) => updateDq({ ipObsNotRecoveredPct: v })} suffix="%" />
+            <EqOp>×</EqOp>
+            <EqNum cap="doc is material" value={dq.ipObsDocMaterialPct} onChange={(v) => updateDq({ ipObsDocMaterialPct: v })} suffix="%" />
+            <EqOp>×</EqOp>
+            <EqNum cap="Abridge opportunity" value={dq.ipObsAbridgeOpportunityPct} onChange={(v) => updateDq({ ipObsAbridgeOpportunityPct: v })} suffix="%" />
+            <EqOp>×</EqOp>
+            <EqNum cap="Abridge impact" value={dq.ipObsAbridgeImpactPct} onChange={(v) => updateDq({ ipObsAbridgeImpactPct: v })} suffix="%" />
+            <EqResult value={obsValue} />
+          </EquationRow>
+        ),
+      },
+    ];
+    return (
+      <DriverLedger
+        eyebrow="Value Estimator · Step 6 of 9 · Revenue"
+        title="How does documentation protect what you're already owed?"
+        intro="Turn on the drivers that apply. Each one models against your numbers and adds to the ledger."
+        sectionLabel="The drivers · turn on what applies"
+        rows={rows}
+        ledgerGroups={ledger.groups}
+        grandLabel="Model so far"
+        grandValue={ledger.grandValue}
+        grandCaption={ledger.grandCaption}
+        stepName="Revenue"
+        stepIndex={6}
+        isValid={true}
+        onNext={onNext}
+        onBack={onBack}
+        onHome={onHome}
+      />
+    );
+  }
 
   // ── Which financial cards are visible on screen, for the section subtotal ──
   let visibleCards: { id: string; enabled: boolean; value: number; node: React.ReactNode }[] = [];

@@ -27,6 +27,8 @@ import { type ExploreState } from "../ExploreFlow";
 import { SignalWatch } from "./SignalWatch";
 import { watchDomainFor } from "@/lib/exploreWatchSignals";
 import ValueRail from "./ValueRail";
+import DriverLedger, { type LedgerRow } from "./DriverLedger";
+import { buildInpatientLedger } from "./driverLedgerData";
 
 interface EdWorkforceProps {
   state: ExploreState;
@@ -598,6 +600,190 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
   };
 
   const tier2 = setting ? TIER2[setting] : null;
+
+  // ─── Inpatient V2 driver ledger ───
+  if (setting === "inpatient") {
+    const gate = (driverId: string) => {
+      const r = driverScaleReadiness(driverId, state, totalHoursSaved);
+      return r.ready ? undefined : r.need;
+    };
+
+    const retentionValue = valueFor("providerWellbeing");
+    const retentionScenarios = physicianRetentionRates(td.retentionCustomPercent ?? 10);
+    const retentionImpactPct = retentionScenarios[td.retentionImpactScenario] ?? 0;
+    const providersLeavingPerYear = state.numberOfProviders * (td.ipAnnualTurnoverRate / 100);
+    const burnoutRelatedDepartures = providersLeavingPerYear * (td.ipBurnoutRelatedTurnover / 100);
+    const providersRetained = burnoutRelatedDepartures * (retentionImpactPct / 100);
+
+    const retentionLevers = (
+      <>
+        <div className="mb-4">
+          <LensToggle counted={retentionCounted} onChange={setRetentionMode} testId="ed-retention-lens-providerWellbeing" />
+        </div>
+        {retentionCounted ? (
+          <EquationRow>
+            <EqCarried cap="providers">{formatNum(state.numberOfProviders)}</EqCarried>
+            <EqOp>×</EqOp>
+            <EqNum
+              cap="turnover"
+              value={td.ipAnnualTurnoverRate}
+              suffix="%"
+              onChange={(v) => updateTimeDriverInputs({ ipAnnualTurnoverRate: v })}
+              width={40}
+            />
+            <EqOp>×</EqOp>
+            <EqNum
+              cap="tied to burnout"
+              value={td.ipBurnoutRelatedTurnover}
+              suffix="%"
+              onChange={(v) => updateTimeDriverInputs({ ipBurnoutRelatedTurnover: v })}
+              width={40}
+            />
+            <EqOp>×</EqOp>
+            <EqNum
+              cap="Abridge impact"
+              value={retentionImpactPct}
+              suffix="%"
+              onChange={(v) => updateTimeDriverInputs({ retentionImpactScenario: "custom", retentionCustomPercent: v })}
+              width={40}
+            />
+            <EqOp>×</EqOp>
+            <EqNum
+              cap="to replace"
+              value={td.ipReplacementCost}
+              prefix="$"
+              onChange={(v) => updateTimeDriverInputs({ ipReplacementCost: v })}
+              width={72}
+            />
+            <EqResult value={retentionValue} />
+          </EquationRow>
+        ) : (
+          <>
+            <EquationRow>
+              <EqCarried cap="providers">{formatNum(state.numberOfProviders)}</EqCarried>
+              <EqOp>×</EqOp>
+              <EqNum cap="turnover" value={td.ipAnnualTurnoverRate} suffix="%" onChange={(v) => updateTimeDriverInputs({ ipAnnualTurnoverRate: v })} width={40} />
+              <EqOp>×</EqOp>
+              <EqNum cap="tied to burnout" value={td.ipBurnoutRelatedTurnover} suffix="%" onChange={(v) => updateTimeDriverInputs({ ipBurnoutRelatedTurnover: v })} width={40} />
+              <EqOp>×</EqOp>
+              <EqNum cap="Abridge impact" value={retentionImpactPct} suffix="%" onChange={(v) => updateTimeDriverInputs({ retentionImpactScenario: "custom", retentionCustomPercent: v })} width={40} />
+              <div className="basis-full w-full flex items-baseline gap-2.5 pt-3 mt-1 border-t border-[#F3E9E1]">
+                <span className="font-abridge text-[19px] text-[#B9AA97] leading-none">=</span>
+                <span className="leading-none whitespace-nowrap">
+                  <span className="font-abridge text-[28px] text-[#EA2C00]">≈ {formatNum1(providersRetained)}</span>
+                  <span className="text-[12px] text-[#7C766F]"> providers a year kept</span>
+                </span>
+              </div>
+            </EquationRow>
+            <div className="text-[12px] text-[#7C766F] mt-3 leading-[1.45] italic">
+              Tracked as the leading signal, not a dollar. Switch to Dollar to put the replacement-cost value in the ROI.
+            </div>
+          </>
+        )}
+      </>
+    );
+
+    const staffingValue = valueFor("incrementalStaffing");
+    const staffingLevers = (
+      <EquationRow>
+        <EqNum
+          cap="current spend"
+          value={td.ipStaffingCurrentSpend}
+          prefix="$"
+          onChange={(v) => updateTimeDriverInputs({ ipStaffingCurrentSpend: v })}
+          width={90}
+        />
+        <EqOp>×</EqOp>
+        <EqNum
+          cap="Abridge reduces"
+          value={td.ipStaffingReductionPct}
+          suffix="%"
+          onChange={(v) => updateTimeDriverInputs({ ipStaffingReductionPct: v })}
+          width={40}
+        />
+        <EqResult value={staffingValue} />
+      </EquationRow>
+    );
+
+    const rows: LedgerRow[] = [
+      {
+        id: "providerWellbeing",
+        label: "Provider Retention",
+        kind: "counted",
+        mechanism:
+          "Abridge only touches the departures tied to documentation burden and burnout, not retirements, moves, or pay. This values just that slice, conservatively.",
+        enabled: Boolean(td.wellbeingEnabled),
+        onToggle: () => {
+          const current = Boolean(td.wellbeingEnabled);
+          updateTimeDriverInputs({ wellbeingEnabled: !current, calculateRetentionValue: !current });
+        },
+        amount: retentionCounted ? retentionValue : undefined,
+        awaiting: gate("providerWellbeing"),
+        levers: retentionLevers,
+      },
+      {
+        id: "incrementalStaffing",
+        label: "Incremental Staffing Avoided",
+        kind: "counted",
+        mechanism:
+          "Locum, moonlighting, overtime, and extra shifts are the premium coverage bought to absorb a documentation-heavy load. As the after-hours burden comes down, some of it is avoidable.",
+        enabled: Boolean(td.ipIncrementalStaffingEnabled),
+        onToggle: () => {
+          const current = Boolean(td.ipIncrementalStaffingEnabled);
+          updateTimeDriverInputs({ ipIncrementalStaffingEnabled: !current, ipIncrementalStaffingExpanded: true });
+        },
+        // The spend IS this driver's scale input, and it lives inside the levers.
+        // So never gate the levers behind an awaiting message (that would hide the
+        // only place to enter it); just withhold the header dollar until it's set.
+        amount: staffingValue > 0 ? staffingValue : undefined,
+        levers: staffingLevers,
+      },
+      {
+        id: "adminEfficiency",
+        label: "Administrative Efficiency",
+        kind: "tracked",
+        mechanism: "Fewer clarifications and queries to chase. We track these as proof; the dollars they touch are counted once, in Revenue.",
+        children: [
+          {
+            id: "umClarification",
+            label: "UM Clarification Reduction",
+            kind: "tracked",
+            mechanism: "Complete admission documentation means Utilization Management sends fewer clarification requests back to physicians.",
+            signals: ["UM clarification volume falls", "Physician time on UM back-and-forth drops"],
+          },
+          {
+            id: "cdiQuery",
+            label: "CDI Query / Physician Clarification Reduction",
+            kind: "tracked",
+            mechanism: "When the note carries the acuity up front, the CDI team raises fewer queries to close the same gaps.",
+            signals: ["CDI queries per 100 admissions fall", "Query response burden drops"],
+          },
+        ],
+      },
+    ];
+
+    const ledger = buildInpatientLedger(state, totalHoursSaved, "Workforce");
+
+    return (
+      <DriverLedger
+        eyebrow="Value Estimator · Step 5 of 9 · Workforce"
+        title="What is Abridge worth to your workforce?"
+        intro="Documentation burden is a leading reason providers leave. Turn on only what you can stand behind; it adds to the ledger as you go."
+        sectionLabel="The drivers · turn on what applies"
+        rows={rows}
+        ledgerGroups={ledger.groups}
+        grandLabel="Model so far"
+        grandValue={ledger.grandValue}
+        grandCaption={ledger.grandCaption}
+        stepName="Workforce"
+        stepIndex={5}
+        isValid={true}
+        onNext={onNext}
+        onBack={onBack}
+        onHome={onHome}
+      />
+    );
+  }
 
   return (
     <EditorialShell>

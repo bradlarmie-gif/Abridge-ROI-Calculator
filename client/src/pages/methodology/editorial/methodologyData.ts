@@ -194,38 +194,37 @@ export const INPATIENT_METHODOLOGY: MethodologyData = {
   ],
   domains: [
     {
-      num: "01", name: "Capacity", chip: { kind: "proof", note: "The proof layer · dollar shows in Revenue" },
-      enable: "Real-time documentation keeps the record current through the stay, so discharge planning starts on time and the team is not waiting on a note. The throughput this frees is tracked here; the dollar it unlocks shows up in Revenue.",
+      num: "01", name: "Capacity", chip: { kind: "proof", note: "The proof layer · no dollar" },
+      enable: "Real-time documentation keeps the record current through the stay, so discharge planning and consults start on time and the team is not waiting on a note. The capacity this frees is tracked here as proof; we do not put a dollar on throughput we do not control.",
       drivers: [
-        { name: "Discharge Planning Initiation", sub: "Planning starts on the documented plan, not after it", mode: "watch" },
-        { name: "Documentation Lag", sub: "The gap between the encounter and the note, closing", mode: "watch" },
-        { name: "Average Length of Stay", sub: "The aggregate the earlier signals point toward", mode: "watch" },
-        { name: "Discharge Summary Timeliness", sub: "Summaries complete at discharge, not days later", mode: "watch" },
+        { name: "Census Capacity", sub: "Discharge planning starts earlier, so beds turn over on time", mode: "watch" },
+        { name: "Consult Capacity", sub: "Consult notes land the same day, so downstream teams act sooner", mode: "watch" },
+        { name: "Discharge Timeliness", sub: "Summaries complete on time. Coming soon, not counted today", mode: "watch" },
       ],
     },
     {
       num: "02", name: "Workforce", chip: dollar,
-      enable: "Documentation burden drives hospitalist burnout and the spend on locum coverage. A lighter load helps you keep your people and lean less on contract staffing.",
+      enable: "Documentation burden drives hospitalist burnout and the premium coverage bought to absorb it. A lighter load helps you keep your people and lean less on incremental staffing. The administrative friction it also removes is tracked as proof.",
       drivers: [
         { name: "Provider Retention", sub: "Replacement cost avoided when fewer providers leave", mode: "dollar" },
-        { name: "Locum & Agency Spend", sub: "Contract coverage reduced as staffing stabilizes", mode: "dollar" },
+        { name: "Incremental Staffing Avoided", sub: "Locum, moonlighting, overtime and extra shifts you stop buying", mode: "dollar" },
+        { name: "Administrative Efficiency", sub: "Fewer UM clarifications and CDI queries to chase. Tracked, counted once in Revenue", mode: "watch" },
       ],
     },
     {
       num: "03", name: "Revenue", chip: dollar,
-      enable: "When the note captures the comorbidities and complications as spoken, the CC/MCC assignments that raise DRG weight are preserved, and admissions hold up as inpatient rather than being downgraded to observation.",
+      enable: "When the note captures the comorbidities and complications as spoken, the CC/MCC assignments that raise DRG weight are preserved, and admissions hold up as inpatient rather than drawing a status or medical-necessity denial.",
       drivers: [
-        { name: "Case Mix Index", sub: "Documented acuity reflects the patients actually treated", mode: "dollar" },
-        { name: "Status / Medical Necessity Denials", sub: "Admission documentation that holds inpatient status", mode: "dollar" },
+        { name: "Case Mix Index (DRG Accuracy)", sub: "Documented acuity reflects the patients actually treated", mode: "dollar" },
+        { name: "Status / Medical Necessity Denials", sub: "Admission documentation that defends the reimbursement you billed", mode: "dollar" },
       ],
     },
     {
       num: "04", name: "Quality", chip: { kind: "proof", note: "The proof layer · no dollar" },
-      enable: "Complete, timely documentation is what quality review reads. Capture the encounter accurately and the record supports the measure rather than working against it.",
+      enable: "Complete, timely documentation is what quality review reads. Capture the encounter accurately and the record supports the measure rather than working against it. The dollar depends on your specific quality program, so we track it rather than price it.",
       drivers: [
-        { name: "CDI Query Rate per Provider", sub: "Fewer queries as documentation gets it right the first time", mode: "watch" },
-        { name: "HCAHPS Doctor Communication", sub: "Attention shifts from the screen to the patient", mode: "watch" },
-        { name: "30-Day Readmission Rate", sub: "The outcome the earlier signals point toward", mode: "watch" },
+        { name: "Quality Measurement Fidelity", sub: "Risk-adjusted and quality measures reflect the care delivered", mode: "watch" },
+        { name: "Clinical Quality / Care Gaps", sub: "Important findings surfaced and acted on, not buried in an incomplete note", mode: "watch" },
       ],
     },
   ],
@@ -234,7 +233,7 @@ export const INPATIENT_METHODOLOGY: MethodologyData = {
   arc: [
     { when: "Weeks 2-4", stage: "Signal", title: "The hospitalist feels it", desc: "H&P and progress-note documentation time drops. Notes close the same shift. The documentation lag starts shrinking." },
     { when: "Months 2-4", stage: "Trend", title: "The chart shows it", desc: "CC/MCC capture rises. Discharge planning starts earlier. CDI queries per provider begin to fall." },
-    { when: "Months 6-12", stage: "Proof", title: "The service measures it", desc: "Case Mix Index reflects true acuity. Length of stay eases. Observation downgrades and readmissions respond." },
+    { when: "Months 6-12", stage: "Proof", title: "The service measures it", desc: "Case Mix Index reflects true acuity. Length of stay eases. Status and medical-necessity denials fall as admission documentation holds." },
   ],
 };
 

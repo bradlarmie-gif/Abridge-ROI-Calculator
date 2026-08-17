@@ -20,6 +20,17 @@ const SAMPLE: ExploreState = {
   inpatientAlos: 4.5,
   minutesSavedPerEncounter: 25.5,
   timePathScenario: "typical",
+  // Pre-enable the counted drivers so the driver screens render populated for review.
+  docQualityInputs: {
+    ...DEFAULT_EXPLORE_STATE.docQualityInputs,
+    ipDrgEnabled: true,
+    ipObsDefenseEnabled: true,
+  },
+  timeDriverInputs: {
+    ...DEFAULT_EXPLORE_STATE.timeDriverInputs,
+    ipIncrementalStaffingEnabled: true,
+    ipStaffingCurrentSpend: 500000,
+  },
 };
 
 export default function InpatientReviewMock() {
