@@ -28,11 +28,15 @@ const SAMPLE: ExploreState = {
     ipObsDefenseEnabled: true,
     ipObsDefenseExpanded: true,
   },
+  retentionMode: "counted",
   timeDriverInputs: {
     ...DEFAULT_EXPLORE_STATE.timeDriverInputs,
     ipIncrementalStaffingEnabled: true,
     ipIncrementalStaffingExpanded: true,
     ipStaffingCurrentSpend: 500000,
+    wellbeingEnabled: true,
+    wellbeingExpanded: true,
+    calculateRetentionValue: true,
   },
 };
 

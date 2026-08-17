@@ -308,15 +308,15 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
         id: "ipCensusCapacity",
         label: "Census Capacity",
         kind: "tracked",
-        mechanism: "Complete notes let discharge planning and consults start sooner, so beds turn over on time. We track the signals that move first and never put a dollar on the days themselves.",
-        signals: ["Discharge planning starts earlier", "Length of stay trends down"],
+        mechanism: "The hours documentation gives back are clinical capacity. As volume grows, the existing team absorbs more census without adding providers. We track that headroom as proof, not a dollar.",
+        signals: ["Census grows without adding FTEs", "More admissions carried per provider"],
       },
       {
         id: "ipConsultCapacity",
         label: "Consult Capacity",
         kind: "tracked",
-        mechanism: "Consult notes land the same day, so the downstream team acts without waiting on documentation.",
-        signals: ["Consult turnaround tightens", "Same-day consult completion rises"],
+        mechanism: "Freed time lets the service take on more consult volume with the same team, and consults land the same day instead of waiting on a note.",
+        signals: ["More consults absorbed per day", "Consult turnaround tightens"],
       },
       {
         id: "ipDischargeTimeliness",
@@ -329,7 +329,7 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
       <DriverLedger
         eyebrow="Value Estimator · Step 4 of 9 · Capacity"
         title="What does the freed time become?"
-        intro="Freed time shows up as capacity. In inpatient we hold it as proof, not a dollar: the signals below are ones we can show move, and we leave the throughput itself uncounted."
+        intro="Freed documentation time is clinical capacity: room for the existing team to carry more census and consult volume as you grow. We hold it as proof, not a dollar; we do not put a number on capacity we do not control."
         sectionLabel="The proof · tracked, not counted"
         rows={rows}
         ledgerGroups={ledger.groups}

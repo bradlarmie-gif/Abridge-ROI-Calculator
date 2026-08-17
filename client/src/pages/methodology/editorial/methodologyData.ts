@@ -195,10 +195,10 @@ export const INPATIENT_METHODOLOGY: MethodologyData = {
   domains: [
     {
       num: "01", name: "Capacity", chip: { kind: "proof", note: "The proof layer · no dollar" },
-      enable: "Real-time documentation keeps the record current through the stay, so discharge planning and consults start on time and the team is not waiting on a note. The capacity this frees is tracked here as proof; we do not put a dollar on throughput we do not control.",
+      enable: "Freed documentation time is clinical capacity: the existing team can carry more census and consult volume as you grow, without adding providers. We track that headroom as proof; we do not put a dollar on capacity we do not control.",
       drivers: [
-        { name: "Census Capacity", sub: "Discharge planning starts earlier, so beds turn over on time", mode: "watch" },
-        { name: "Consult Capacity", sub: "Consult notes land the same day, so downstream teams act sooner", mode: "watch" },
+        { name: "Census Capacity", sub: "The existing team absorbs more census as you grow, without adding FTEs", mode: "watch" },
+        { name: "Consult Capacity", sub: "More consult volume carried by the same team, consults land same-day", mode: "watch" },
         { name: "Discharge Timeliness", sub: "Summaries complete on time. Coming soon, not counted today", mode: "watch" },
       ],
     },

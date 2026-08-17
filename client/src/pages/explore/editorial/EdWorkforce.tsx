@@ -29,6 +29,7 @@ import { watchDomainFor } from "@/lib/exploreWatchSignals";
 import ValueRail from "./ValueRail";
 import DriverLedger, { type LedgerRow } from "./DriverLedger";
 import { buildInpatientLedger } from "./driverLedgerData";
+import { MathCascade } from "./MathCascade";
 
 interface EdWorkforceProps {
   state: ExploreState;
@@ -615,66 +616,27 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
     const burnoutRelatedDepartures = providersLeavingPerYear * (td.ipBurnoutRelatedTurnover / 100);
     const providersRetained = burnoutRelatedDepartures * (retentionImpactPct / 100);
 
+    const retentionRows = [
+      { label: "Providers", running: formatNum(state.numberOfProviders) },
+      { label: "Annual turnover", factor: { value: td.ipAnnualTurnoverRate, onChange: (v: number) => updateTimeDriverInputs({ ipAnnualTurnoverRate: v }), suffix: "%" }, running: formatNum1(providersLeavingPerYear) },
+      { label: "Tied to burnout", factor: { value: td.ipBurnoutRelatedTurnover, onChange: (v: number) => updateTimeDriverInputs({ ipBurnoutRelatedTurnover: v }), suffix: "%" }, running: formatNum1(burnoutRelatedDepartures) },
+      { label: "Abridge impact", factor: { value: retentionImpactPct, onChange: (v: number) => updateTimeDriverInputs({ retentionImpactScenario: "custom", retentionCustomPercent: v }), suffix: "%" }, running: `${formatNum1(providersRetained)} kept` },
+    ];
     const retentionLevers = (
       <>
         <div className="mb-4">
           <LensToggle counted={retentionCounted} onChange={setRetentionMode} testId="ed-retention-lens-providerWellbeing" />
         </div>
         {retentionCounted ? (
-          <EquationRow>
-            <EqCarried cap="providers">{formatNum(state.numberOfProviders)}</EqCarried>
-            <EqOp>×</EqOp>
-            <EqNum
-              cap="turnover"
-              value={td.ipAnnualTurnoverRate}
-              suffix="%"
-              onChange={(v) => updateTimeDriverInputs({ ipAnnualTurnoverRate: v })}
-              width={40}
-            />
-            <EqOp>×</EqOp>
-            <EqNum
-              cap="tied to burnout"
-              value={td.ipBurnoutRelatedTurnover}
-              suffix="%"
-              onChange={(v) => updateTimeDriverInputs({ ipBurnoutRelatedTurnover: v })}
-              width={40}
-            />
-            <EqOp>×</EqOp>
-            <EqNum
-              cap="Abridge impact"
-              value={retentionImpactPct}
-              suffix="%"
-              onChange={(v) => updateTimeDriverInputs({ retentionImpactScenario: "custom", retentionCustomPercent: v })}
-              width={40}
-            />
-            <EqOp>×</EqOp>
-            <EqNum
-              cap="to replace"
-              value={td.ipReplacementCost}
-              prefix="$"
-              onChange={(v) => updateTimeDriverInputs({ ipReplacementCost: v })}
-              width={72}
-            />
-            <EqResult value={retentionValue} />
-          </EquationRow>
+          <MathCascade
+            steps={[
+              ...retentionRows,
+              { label: "Replacement cost", factor: { value: td.ipReplacementCost, onChange: (v: number) => updateTimeDriverInputs({ ipReplacementCost: v }), prefix: "$" }, running: formatCurrency(Math.round(retentionValue / 1000) * 1000), final: true },
+            ]}
+          />
         ) : (
           <>
-            <EquationRow>
-              <EqCarried cap="providers">{formatNum(state.numberOfProviders)}</EqCarried>
-              <EqOp>×</EqOp>
-              <EqNum cap="turnover" value={td.ipAnnualTurnoverRate} suffix="%" onChange={(v) => updateTimeDriverInputs({ ipAnnualTurnoverRate: v })} width={40} />
-              <EqOp>×</EqOp>
-              <EqNum cap="tied to burnout" value={td.ipBurnoutRelatedTurnover} suffix="%" onChange={(v) => updateTimeDriverInputs({ ipBurnoutRelatedTurnover: v })} width={40} />
-              <EqOp>×</EqOp>
-              <EqNum cap="Abridge impact" value={retentionImpactPct} suffix="%" onChange={(v) => updateTimeDriverInputs({ retentionImpactScenario: "custom", retentionCustomPercent: v })} width={40} />
-              <div className="basis-full w-full flex items-baseline gap-2.5 pt-3 mt-1 border-t border-[#F3E9E1]">
-                <span className="font-abridge text-[19px] text-[#B9AA97] leading-none">=</span>
-                <span className="leading-none whitespace-nowrap">
-                  <span className="font-abridge text-[28px] text-[#EA2C00]">≈ {formatNum1(providersRetained)}</span>
-                  <span className="text-[12px] text-[#7C766F]"> providers a year kept</span>
-                </span>
-              </div>
-            </EquationRow>
+            <MathCascade steps={retentionRows} />
             <div className="text-[12px] text-[#7C766F] mt-3 leading-[1.45] italic">
               Tracked as the leading signal, not a dollar. Switch to Dollar to put the replacement-cost value in the ROI.
             </div>
@@ -685,24 +647,12 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
 
     const staffingValue = valueFor("incrementalStaffing");
     const staffingLevers = (
-      <EquationRow>
-        <EqNum
-          cap="current spend"
-          value={td.ipStaffingCurrentSpend}
-          prefix="$"
-          onChange={(v) => updateTimeDriverInputs({ ipStaffingCurrentSpend: v })}
-          width={90}
-        />
-        <EqOp>×</EqOp>
-        <EqNum
-          cap="Abridge reduces"
-          value={td.ipStaffingReductionPct}
-          suffix="%"
-          onChange={(v) => updateTimeDriverInputs({ ipStaffingReductionPct: v })}
-          width={40}
-        />
-        <EqResult value={staffingValue} />
-      </EquationRow>
+      <MathCascade
+        steps={[
+          { label: "Current incremental-staffing spend", factor: { value: td.ipStaffingCurrentSpend, onChange: (v: number) => updateTimeDriverInputs({ ipStaffingCurrentSpend: v }), prefix: "$" }, running: "—" },
+          { label: "Abridge reduces", factor: { value: td.ipStaffingReductionPct, onChange: (v: number) => updateTimeDriverInputs({ ipStaffingReductionPct: v }), suffix: "%" }, running: formatCurrency(Math.round(staffingValue / 1000) * 1000), final: true },
+        ]}
+      />
     );
 
     const rows: LedgerRow[] = [
