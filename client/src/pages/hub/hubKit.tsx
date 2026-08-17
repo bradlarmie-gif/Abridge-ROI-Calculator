@@ -16,15 +16,19 @@ export function HubPage({
   header,
   children,
   footer,
+  onHome,
 }: {
   pageName: string;
   header: ReactNode;
   children: ReactNode;
   footer?: ReactNode;
+  // Return to the top-level home hub (Strategy / Financial / Planning). Without
+  // it, the Abridge logo's click handler has nothing to call and no-ops.
+  onHome?: () => void;
 }) {
   return (
     <div className="min-h-screen bg-[#FFFFFF] relative overflow-hidden">
-      <UnifiedHeader pathType="forecast" pathLabel={pageName} />
+      <UnifiedHeader pathType="forecast" pathLabel={pageName} onHome={onHome} />
       <div className="max-w-6xl mx-auto px-4 md:px-6 pt-[88px] md:pt-[96px] pb-8 relative z-10">
         <motion.section
           initial={{ opacity: 0, y: 12 }}

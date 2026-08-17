@@ -562,6 +562,7 @@ export default function App() {
 
             {currentView === "strategy-hub" && (
               <StrategyHub
+                onHome={() => navigateTo("hub")}
                 onSelectValueStory={() => {
                   setLearnInitialScreen(undefined);
                   navigateTo("learn");
@@ -596,6 +597,7 @@ export default function App() {
 
             {currentView === "financial-hub" && (
               <FinancialHub
+                onHome={() => navigateTo("hub")}
                 onSelectRoiCalculator={() => navigateTo("forecast-roi-calc")}
                 onSelectNewDeal={() => navigateTo("proforma-hub")}
                 onSelectAppRationalization={() => navigateTo("forecast-app-rationalization")}
@@ -615,6 +617,7 @@ export default function App() {
 
             {currentView === "planning-hub" && (
               <PlanningHub
+                onHome={() => navigateTo("hub")}
                 onOpenPlanning={() => navigateTo("planning")}
                 onOpenMetrics={() => navigateTo("planning")}
               />

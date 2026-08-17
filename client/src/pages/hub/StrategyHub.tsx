@@ -4,11 +4,12 @@ import { HubPage, HubHeader, HubCard } from "./hubKit";
 interface StrategyHubProps {
   onSelectValueStory: () => void;
   onSelectValueStrategy: () => void;
+  onHome?: () => void;
 }
 
-export default function StrategyHub({ onSelectValueStory, onSelectValueStrategy }: StrategyHubProps) {
+export default function StrategyHub({ onSelectValueStory, onSelectValueStrategy, onHome }: StrategyHubProps) {
   return (
-    <HubPage pageName="Strategy" header={<HubHeader eyebrow="Strategy" title="Start with the why" />}>
+    <HubPage pageName="Strategy" onHome={onHome} header={<HubHeader eyebrow="Strategy" title="Start with the why" />}>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6 max-w-3xl mx-auto">
         <HubCard
           icon={BookOpen}

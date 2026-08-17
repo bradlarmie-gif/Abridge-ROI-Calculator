@@ -7,11 +7,12 @@ interface PlanningHubProps {
   // signals-definition surface, both seeded from the saved strategy.
   onOpenPlanning: () => void;
   onOpenMetrics: () => void;
+  onHome?: () => void;
 }
 
-export default function PlanningHub({ onOpenPlanning, onOpenMetrics }: PlanningHubProps) {
+export default function PlanningHub({ onOpenPlanning, onOpenMetrics, onHome }: PlanningHubProps) {
   return (
-    <HubPage pageName="Planning" header={<HubHeader eyebrow="Planning" title="Make it happen" />}>
+    <HubPage pageName="Planning" onHome={onHome} header={<HubHeader eyebrow="Planning" title="Make it happen" />}>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6 max-w-3xl mx-auto">
         <HubCard
           icon={ClipboardCheck}

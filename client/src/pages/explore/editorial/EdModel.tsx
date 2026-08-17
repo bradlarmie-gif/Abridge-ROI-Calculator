@@ -449,65 +449,113 @@ export default function EdModel({
     }
   };
 
+  // Editorial tokens — matches the de-boxed language shipped across the path.
+  const sectLabel = "text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#8C8073]";
+  const sectHead = "text-[11px] font-extrabold tracking-[0.09em] uppercase text-[#443A32]";
+  // Expansion entries are editable (coral underline). `md:text-[26px]` defeats
+  // the shared Input's default `md:text-sm`, which otherwise shrinks the figure.
+  const expEntry =
+    "min-w-[30px] max-w-[110px] [field-sizing:content] text-right bg-transparent border-0 p-0 shadow-none font-abridge text-[26px] md:text-[26px] text-[#EA2C00] tabular-nums leading-none focus-visible:ring-0 focus:outline-none";
+
   return (
     <EditorialShell>
       <EditorialHeader stepName="Your Model" stepIndex={9} onBack={onBack} onHome={onHome} />
-      <div className="max-w-[1160px] mx-auto px-5 sm:px-8 lg:px-12 pt-[44px] pb-[60px]">
+      <div className="max-w-[1080px] mx-auto px-5 sm:px-8 lg:px-12 pt-12 pb-16">
         <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#565250]">Value Estimator · Step 9 of 9</div>
-        <h1 className="font-abridge text-[26px] sm:text-[32px] lg:text-[38px] leading-[1.08] text-[#1A1A1A] mt-[10px]">Your model.</h1>
-        <p className="text-[16px] text-[#565250] mt-[13px] max-w-[620px] leading-[1.5]">
-          The whole picture, built from your numbers. Ready to share, or take into a full proforma.
+        <h1 className="font-abridge text-[27px] sm:text-[34px] lg:text-[40px] leading-[1.08] text-[#1A1A1A] mt-[10px] max-w-[640px]">Your model, in full.</h1>
+        <p className="text-[16.5px] text-[#565250] mt-[14px] max-w-[600px] leading-[1.5]">
+          Everything the prior steps built, assembled from your numbers. Ready to share, or take into a full proforma.
         </p>
 
-        {/* Hero recap */}
-        <div className="bg-[#FDFBF8] border border-[#E7E3DD] rounded-[20px] p-[26px_30px] mt-[30px] flex justify-between items-center gap-[30px] flex-wrap">
+        {/* HERO — the one number everything built to, de-boxed */}
+        <div className="grid grid-cols-1 lg:grid-cols-[1.15fr_1px_1fr] gap-x-[56px] gap-y-10 mt-[48px]">
           <div>
-            {/* "Net" only once a cost exists; before pricing this figure is net of nothing, so it's "value before cost" (matches EdInvestment). */}
-            <div className="text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#2E2822]">{annualInvestment > 0 ? "Net annual value" : "Value before cost"}</div>
+            {/* "Net" only once a cost exists; before pricing this is net of nothing, so it reads "value before cost" (matches EdInvestment). */}
+            <div className={sectLabel}>{annualInvestment > 0 ? "Net annual value" : "Value before cost"}</div>
             {/* Coral is reserved for a real gain; a loss reads in neutral ink, never celebratory. */}
-            <div className={`font-abridge text-[54px] leading-none mt-[7px] ${netAnnualValue >= 0 ? "text-[#EA2C00]" : "text-[#1A1A1A]"}`}>
+            <div className={`font-abridge text-[56px] sm:text-[64px] leading-[0.92] mt-[10px] ${netAnnualValue >= 0 ? "text-[#EA2C00]" : "text-[#1A1A1A]"}`}>
               {fmtCurrency(netAnnualValue)}
-              <span className="text-[17px] text-[#565250]"> / yr</span>
+              <span className="font-sans text-[19px] text-[#8C8073]"> / yr</span>
             </div>
             {annualInvestment <= 0 ? (
-              <div className="inline-flex items-center gap-[9px] mt-[13px] bg-[#F2EFEA] border border-[#E7E2DB] rounded-full px-[15px] py-[8px]">
-                <span className="text-[12.5px] font-bold text-[#565250]">Add your pricing to see the return</span>
-              </div>
+              <div className="mt-[16px] text-[13.5px] font-bold text-[#8C8073]">Add your pricing to see the return.</div>
             ) : netAnnualValue > 0 ? (
-              <div className="inline-flex items-center gap-[9px] mt-[13px] bg-[#FFEDE7] border border-[#F5D3C8] rounded-full px-[15px] py-[8px]">
-                <span className="font-abridge text-[19px] text-[#EA2C00]">{roi.toFixed(1)}×</span>
-                <span className="text-[12.5px] font-bold text-[#B02200]">≈ {fmtPerDollar(netPerDollar)} net back for every $1 spent</span>
+              <div className="mt-[16px] text-[14px] text-[#3A342E]">
+                <span className="font-abridge text-[21px] text-[#EA2C00]">{roi.toFixed(1)}×</span>
+                <span className="ml-[9px]">return · <b className="font-semibold">≈{fmtPerDollar(netPerDollar)}</b> net back for every $1 spent</span>
               </div>
             ) : (
-              <div className="inline-flex items-center gap-[9px] mt-[13px] bg-[#F2EFEA] border border-[#E7E2DB] rounded-full px-[15px] py-[8px]">
-                <span className="font-abridge text-[19px] text-[#565250]">{roi.toFixed(1)}×</span>
-                <span className="text-[12.5px] font-bold text-[#565250]">the modeled value doesn&apos;t cover the cost at this scope</span>
+              <div className="mt-[16px] text-[13.5px] text-[#8C8073] leading-[1.5] max-w-[380px]">
+                <span className="font-abridge text-[18px] text-[#8C8073]">{roi.toFixed(1)}×</span> · the modeled value doesn&apos;t cover the cost at this scope.
               </div>
             )}
           </div>
-          <div className="flex gap-[30px] flex-wrap">
-            <div>
-              <div className="text-[11px] font-extrabold tracking-[0.05em] uppercase text-[#7C766F]">Total value</div>
-              <div className="font-abridge text-[22px] text-[#1A1A1A] mt-[5px]">{fmtCurrency(totalAnnualValue)}</div>
+
+          <div className="hidden lg:block bg-[#E8E2DA]" />
+
+          <div>
+            <div className="flex justify-between items-baseline py-[13px] border-b border-[#EDE8E1]">
+              <span className="text-[14px] text-[#3A342E]">Total annual value</span>
+              <span className="font-abridge text-[19px] text-[#1A1A1A] tabular-nums">{fmtCurrency(totalAnnualValue)}</span>
             </div>
-            <div>
-              <div className="text-[11px] font-extrabold tracking-[0.05em] uppercase text-[#7C766F]">Investment</div>
-              <div className="font-abridge text-[22px] text-[#1A1A1A] mt-[5px]">{fmtCurrency(annualInvestment)}</div>
+            <div className="flex justify-between items-baseline py-[13px] border-b border-[#EDE8E1]">
+              <span className="text-[14px] text-[#3A342E]">Your investment</span>
+              <span className="font-abridge text-[19px] text-[#1A1A1A] tabular-nums">{annualInvestment > 0 ? "−" + fmtCurrency(annualInvestment) : fmtCurrency(0)}</span>
             </div>
-            <div>
-              <div className="text-[11px] font-extrabold tracking-[0.05em] uppercase text-[#7C766F]">Scope</div>
-              <div className="font-abridge text-[15px] text-[#1A1A1A] mt-[5px]">
-                {fmtNumber(baselineCount)} {isNursing ? "beds" : "providers"} · {careSettingLabel}
-              </div>
+            <div className="flex justify-between items-baseline pt-[15px]">
+              <span className="text-[11px] font-extrabold tracking-[0.05em] uppercase text-[#443A32]">Scope</span>
+              <span className="font-abridge text-[15px] text-[#1A1A1A] text-right">{fmtNumber(baselineCount)} {isNursing ? "beds" : "providers"} · {careSettingLabel}</span>
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[1.42fr_1fr] gap-[22px] mt-[22px] items-stretch">
-          {/* Ramp chart */}
-          <div className="bg-[#FDFBF8] border border-[#E7E3DD] rounded-[20px] p-[22px_24px]">
-            <div className="text-[11px] font-extrabold tracking-[0.09em] uppercase text-[#2E2822] mb-[6px]">When it lands</div>
-            <p className="text-[12.5px] text-[#565250] mb-[14px] leading-[1.5]">
+        {/* WHERE the value comes from + WHEN it lands */}
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_1px_1.28fr] gap-x-[52px] gap-y-12 mt-[60px] pt-[44px] border-t border-[#E8E2DA]">
+          {/* Where the value comes from */}
+          <div>
+            <div className={sectHead}>Where the value comes from</div>
+            <p className="text-[13px] text-[#8C8073] mt-[8px] mb-[24px] leading-[1.5]">Across the four areas you modeled.</p>
+            <div className="flex flex-col gap-[18px]">
+              {QUADRANT_ORDER.map((q) => {
+                const proofNote = proofForSetting[q];
+                if (proofNote) {
+                  return (
+                    <div key={q} className="flex justify-between items-baseline gap-4">
+                      <span className="text-[14px] font-bold text-[#1A1A1A]">{q}</span>
+                      <span className="text-[12px] text-[#8C8073] italic text-right max-w-[210px] leading-[1.4]">{proofNote}</span>
+                    </div>
+                  );
+                }
+                const value = valueByQuadrant[q];
+                if (q === "Workforce" && value === 0 && state.retentionMode === "tracked") {
+                  return (
+                    <div key={q} className="flex justify-between items-baseline gap-4">
+                      <span className="text-[14px] font-bold text-[#1A1A1A]">{q}</span>
+                      <span className="text-[12px] text-[#8C8073] italic text-right max-w-[220px] leading-[1.4]">tracked as a signal; switch Retention to Dollar to count</span>
+                    </div>
+                  );
+                }
+                return (
+                  <div key={q}>
+                    <div className="flex justify-between items-baseline mb-[7px]">
+                      <span className="text-[14px] font-bold text-[#1A1A1A]">{q}</span>
+                      <span className="font-abridge text-[16px] text-[#1A1A1A] tabular-nums">{fmtCurrency(value)}</span>
+                    </div>
+                    <div className="h-[8px] bg-[#F2EFEA] rounded-full overflow-hidden">
+                      <div className={`h-full rounded-full ${quadFill[q]}`} style={{ width: `${Math.max(value > 0 ? 4 : 0, (value / quadrantMax) * 100)}%` }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="hidden lg:block bg-[#E8E2DA]" />
+
+          {/* When it lands */}
+          <div>
+            <div className={sectHead}>When it lands</div>
+            <p className="text-[13px] text-[#8C8073] mt-[8px] mb-[16px] leading-[1.55]">
               {annualInvestment <= 0
                 ? <>Value builds as adoption grows, so year 1 lands around {fmtShort(cumPoints[12].value)} and the run-rate reaches its full {fmtShort(totalAnnualValue)} / yr by month 12. Add your investment to see the payback point.</>
                 : paybackMonthFrac !== null
@@ -565,58 +613,15 @@ export default function EdModel({
               </div>
             )}
           </div>
-
-          {/* Quadrant breakdown */}
-          <div className="bg-[#FDFBF8] border border-[#E7E3DD] rounded-[20px] p-[22px_24px] flex flex-col">
-            <div className="text-[11px] font-extrabold tracking-[0.09em] uppercase text-[#2E2822] mb-[6px]">Where the value comes from</div>
-            <p className="text-[12.5px] text-[#565250] mb-[14px] leading-[1.5]">Across the four areas you modeled.</p>
-            <div className="flex-1 flex flex-col justify-between gap-4">
-              {QUADRANT_ORDER.map((q) => {
-                const proofNote = proofForSetting[q];
-                if (proofNote) {
-                  // Proof-layer quadrant: no dollar here on purpose. Keep the row
-                  // compact (no empty rail) so it reads as intentional, not missing.
-                  return (
-                    <div key={q} className="flex justify-between items-baseline">
-                      <span className="text-[13.5px] font-bold text-[#1A1A1A]">{q}</span>
-                      <span className="text-[12px] text-[#7C766F] italic">{proofNote}</span>
-                    </div>
-                  );
-                }
-                const value = valueByQuadrant[q];
-                // Workforce with retention in Tracked mode counts $0 by design; show it
-                // as a tracked signal (like the proof rows), never a $0 + empty bar.
-                if (q === "Workforce" && value === 0 && state.retentionMode === "tracked") {
-                  return (
-                    <div key={q} className="flex justify-between items-baseline">
-                      <span className="text-[13.5px] font-bold text-[#1A1A1A]">{q}</span>
-                      <span className="text-[12px] text-[#7C766F] italic">tracked as a signal; switch Retention to Dollar to count</span>
-                    </div>
-                  );
-                }
-                return (
-                  <div key={q}>
-                    <div className="flex justify-between items-baseline mb-[7px]">
-                      <span className="text-[13.5px] font-bold text-[#1A1A1A]">{q}</span>
-                      <span className="font-abridge text-[15px] text-[#1A1A1A]">{fmtCurrency(value)}</span>
-                    </div>
-                    <div className="h-[9px] bg-[#F2EFEA] rounded-full overflow-hidden">
-                      <div className={`h-full rounded-full ${quadFill[q]}`} style={{ width: `${Math.max(value > 0 ? 4 : 0, (value / quadrantMax) * 100)}%` }} />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
         </div>
 
         {/* Model your expansion */}
-        <div className="bg-[#FDFBF8] border border-[#E7E3DD] rounded-[20px] p-[22px_24px] mt-[22px]">
-          <div className="text-[11px] font-extrabold tracking-[0.09em] uppercase text-[#2E2822] mb-[6px]">Model your expansion</div>
-          <p className="text-[12.5px] text-[#565250] mb-5 leading-[1.5]">
+        <div className="mt-[60px] pt-[44px] border-t border-[#E8E2DA]">
+          <div className={sectHead}>Model your expansion</div>
+          <p className="text-[13px] text-[#8C8073] mt-[8px] mb-[28px] leading-[1.55] max-w-[560px]">
             Where this goes as you roll out to more {isNursing ? "beds" : "providers"} and higher adoption. Same math, larger footprint.
           </p>
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.15fr] gap-[30px] items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_1px_1.15fr] gap-x-[52px] gap-y-10">
             <div>
               {/* Providers slider */}
               <div className="mb-[26px]">
@@ -625,12 +630,12 @@ export default function EdModel({
                     <div className="text-[10.5px] font-extrabold tracking-[0.04em] uppercase text-[#2E2822]">{isNursing ? "Beds" : "Providers"}</div>
                     <div className="text-[12.5px] text-[#7C766F] mt-[5px]">{fmtNumber(baselineCount)} today</div>
                   </div>
-                  <div className="inline-flex items-baseline gap-[1px] border border-[#EFB6A6] rounded-[10px] px-[13px] py-[4px] bg-white shadow-[0_0_0_1px_#F5D3C8]">
+                  <div className="inline-flex items-baseline border-b-2 border-[#EA2C00] pb-[2px] whitespace-nowrap">
                     <FormattedNumberInput
                       value={expandedProviders}
                       onChange={(v) => updateState({ fullScaleProviders: v })}
                       onBlurValue={(v) => updateState({ fullScaleProviders: Math.max(v, baselineCount) })}
-                      className="font-abridge text-[23px] text-[#EA2C00] leading-none border-0 h-auto p-0 shadow-none w-16 text-right focus-visible:ring-0"
+                      className={expEntry}
                       data-testid="ed-model-input-providers"
                     />
                   </div>
@@ -670,15 +675,15 @@ export default function EdModel({
                     <div className="text-[10.5px] font-extrabold tracking-[0.04em] uppercase text-[#2E2822]">Adoption</div>
                     <div className="text-[12.5px] text-[#7C766F] mt-[5px]">{state.utilizationPercent}% today</div>
                   </div>
-                  <div className="inline-flex items-baseline gap-[1px] border border-[#EFB6A6] rounded-[10px] px-[13px] py-[4px] bg-white shadow-[0_0_0_1px_#F5D3C8]">
+                  <div className="inline-flex items-baseline gap-[3px] border-b-2 border-[#EA2C00] pb-[2px] whitespace-nowrap">
                     <FormattedNumberInput
                       value={expandedUtilization}
                       onChange={(v) => setExpandedUtilization(v)}
                       onBlurValue={(v) => setExpandedUtilization(Math.min(Math.max(v, state.utilizationPercent), 100))}
-                      className="font-abridge text-[23px] text-[#EA2C00] leading-none border-0 h-auto p-0 shadow-none w-12 text-right focus-visible:ring-0"
+                      className={expEntry}
                       data-testid="ed-model-input-adoption"
                     />
-                    <span className="text-[13px] text-[#565250]">%</span>
+                    <span className="font-sans text-[14px] text-[#8C8073]">%</span>
                   </div>
                 </div>
                 <div className="relative h-2 bg-[#F2EFEA] rounded-full my-[22px] mr-[6px]">
@@ -710,9 +715,11 @@ export default function EdModel({
               </div>
             </div>
 
-            <div className="border-l border-[#E7E3DD] pl-[30px]">
-              <div className="text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#2E2822]">{annualInvestment > 0 ? "Projected net value at that scope" : "Projected value at that scope"}</div>
-              <div className={`font-abridge text-[42px] leading-none mt-[6px] ${expandedValue >= 0 ? "text-[#EA2C00]" : "text-[#1A1A1A]"}`}>
+            <div className="hidden lg:block bg-[#E8E2DA]" />
+
+            <div>
+              <div className={sectLabel}>{annualInvestment > 0 ? "Projected net value at that scope" : "Projected value at that scope"}</div>
+              <div className={`font-abridge text-[44px] leading-none mt-[8px] ${expandedValue >= 0 ? "text-[#EA2C00]" : "text-[#1A1A1A]"}`}>
                 {fmtCurrency(expandedValue)}
                 <span className="text-[15px] text-[#565250]"> / yr</span>
               </div>
@@ -757,7 +764,7 @@ export default function EdModel({
         </div>
 
         {/* Actions */}
-        <div className="flex gap-3 mt-6 items-center flex-wrap">
+        <div className="flex gap-3 mt-[56px] pt-[36px] border-t border-[#E8E2DA] items-center flex-wrap">
           <button
             type="button"
             onClick={() => setShowExportModal(true)}

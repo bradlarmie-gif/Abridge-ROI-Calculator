@@ -6,6 +6,7 @@ interface FinancialHubProps {
   onSelectNewDeal: () => void;
   onSelectAppRationalization: () => void;
   onSelectExplore: () => void;
+  onHome?: () => void;
 }
 
 export default function FinancialHub({
@@ -13,9 +14,10 @@ export default function FinancialHub({
   onSelectNewDeal,
   onSelectAppRationalization,
   onSelectExplore,
+  onHome,
 }: FinancialHubProps) {
   return (
-    <HubPage pageName="Financial" header={<HubHeader eyebrow="Financial" title="Run the numbers" />}>
+    <HubPage pageName="Financial" onHome={onHome} header={<HubHeader eyebrow="Financial" title="Run the numbers" />}>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 md:gap-6 mx-auto">
         <HubCard
           icon={Calculator}
