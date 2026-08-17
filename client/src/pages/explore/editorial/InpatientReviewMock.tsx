@@ -1,12 +1,16 @@
-import ExploreFlow, { DEFAULT_EXPLORE_STATE, type ExploreState } from "../ExploreFlow";
+import ExploreFlow, { DEFAULT_EXPLORE_STATE, type ExploreState, type ExploreCareSetting } from "../ExploreFlow";
 
 /**
- * THROWAWAY (?inpatientmock=1). Drops you into the REAL inpatient Explore path,
- * pre-filled with sample numbers, so every screen is populated and walkable for
- * review/comment (no data entry, no half-empty screens). Starts at Practice;
- * hit Back to see the care-setting step. Delete after the redesign.
+ * THROWAWAY review harness. Drops you into a REAL Explore path pre-filled with
+ * sample numbers so every driver screen renders populated and walkable for
+ * review/comment (no data entry, no half-empty screens). Delete after the redesign.
+ *
+ *   ?inpatientmock=1   → inpatient (original entry point, still works)
+ *   ?mock=inpatient    → inpatient
+ *   ?mock=nursing      → nursing
+ *   &step=<phase>      → jump straight to a phase (e.g. capacity, workforce)
  */
-const SAMPLE: ExploreState = {
+const INPATIENT_SAMPLE: ExploreState = {
   ...DEFAULT_EXPLORE_STATE,
   careSetting: "inpatient",
   numberOfProviders: 60,
@@ -20,7 +24,6 @@ const SAMPLE: ExploreState = {
   inpatientAlos: 4.5,
   minutesSavedPerEncounter: 25.5,
   timePathScenario: "typical",
-  // Pre-enable the counted drivers so the driver screens render populated for review.
   docQualityInputs: {
     ...DEFAULT_EXPLORE_STATE.docQualityInputs,
     ipDrgEnabled: true,
@@ -41,16 +44,54 @@ const SAMPLE: ExploreState = {
   },
 };
 
+const NURSING_SAMPLE: ExploreState = {
+  ...DEFAULT_EXPLORE_STATE,
+  careSetting: "nursing",
+  numberOfProviders: 200, // nurses
+  nursingStaffedBeds: 300,
+  nursingOccupancyRate: 85,
+  retentionMode: "counted",
+  timeDriverInputs: {
+    ...DEFAULT_EXPLORE_STATE.timeDriverInputs,
+    nursingOtEnabled: true,
+    nursingOtExpanded: true,
+    nursingRetentionEnabled: true,
+    nursingRetentionExpanded: true,
+    calculateRetentionValue: true,
+    nursingAgencyEnabled: true,
+    nursingAgencyExpanded: true,
+    nursingCareTimeEnabled: true,
+    nursingCdiResponseEnabled: true,
+    nursingDocCompletionEnabled: true,
+  },
+  docQualityInputs: {
+    ...DEFAULT_EXPLORE_STATE.docQualityInputs,
+    nursingHapiEnabled: true,
+    nursingHapiExpanded: true,
+    nursingFallsEnabled: true,
+    nursingFallsExpanded: true,
+    nursingCautiEnabled: true,
+    nursingCautiExpanded: true,
+    nursingClabsiEnabled: true,
+    nursingClabsiExpanded: true,
+    nursingSepsisEnabled: true,
+    nursingSepsisExpanded: true,
+  },
+};
+
 export default function InpatientReviewMock() {
-  // ?inpatientmock=1&step=timeSavings jumps straight to a given phase for review.
-  const step = typeof window !== "undefined"
-    ? new URLSearchParams(window.location.search).get("step") || undefined
-    : undefined;
+  const params = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : new URLSearchParams();
+  const step = params.get("step") || undefined;
+  // ?mock=<setting> wins; ?inpatientmock=1 keeps the original inpatient entry.
+  const requested = (params.get("mock") || "inpatient") as ExploreCareSetting;
+  const setting: ExploreCareSetting = requested === "nursing" ? "nursing" : "inpatient";
+  const sample = setting === "nursing" ? NURSING_SAMPLE : INPATIENT_SAMPLE;
+
   return (
     <ExploreFlow
       editorial
-      initialExploreState={SAMPLE}
-      initialCareSetting="inpatient"
+      initialExploreState={sample}
+      initialCareSetting={setting}
       initialPhase={step as any}
       onBackToJourney={() => { if (typeof window !== "undefined") window.location.href = "/?hub=1"; }}
     />

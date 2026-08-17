@@ -7,6 +7,7 @@ import {
   Foot,
   formatCurrency,
   formatNum,
+  formatNum1,
   type OutcomeSignal,
 } from "./EdValueScreenKit";
 import { InlineDriverCard, EqNum, EqCarried, EqOp, EqResult, EquationRow, EqAwaiting } from "./InlineEquation";
@@ -20,7 +21,8 @@ import { SignalWatch } from "./SignalWatch";
 import { watchDomainFor } from "@/lib/exploreWatchSignals";
 import ValueRail from "./ValueRail";
 import DriverLedger, { type LedgerRow } from "./DriverLedger";
-import { buildInpatientLedger } from "./driverLedgerData";
+import { buildInpatientLedger, buildDriverLedger } from "./driverLedgerData";
+import { MathCascade } from "./MathCascade";
 
 interface EdCapacityProps {
   state: ExploreState;
@@ -331,6 +333,78 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
         title="What does the freed time become?"
         intro="Freed documentation time is clinical capacity: room for the existing team to carry more census and consult volume as you grow. We hold it as proof, not a dollar; we do not put a number on capacity we do not control."
         sectionLabel="The proof · tracked, not counted"
+        rows={rows}
+        ledgerGroups={ledger.groups}
+        grandLabel="Model so far"
+        grandValue={ledger.grandValue}
+        grandCaption={ledger.grandCaption}
+        stepName="Capacity"
+        stepIndex={4}
+        isValid={true}
+        onNext={onNext}
+        onBack={onBack}
+        onHome={onHome}
+      />
+    );
+  }
+
+  // ─── Nursing V2 driver ledger ───
+  // Capacity carries one counted driver (documentation-driven overtime) and one
+  // tracked proof row (time at the bedside). Cascade intermediates are computed
+  // inline from `td` so the running chain foots to the engine value exactly.
+  if (setting === "nursing") {
+    const ledger = buildDriverLedger(state, totalHoursSaved, "Capacity", "nursing");
+    const nurses = state.numberOfProviders;
+    const hrsWk = td.nursingOtHoursPerNurseWeek;
+    const red = td.nursingOtReductionPercent / 100;
+    const otHrs = hrsWk * red * nurses * 52;
+    const otValue = valueFor("nursingOvertime");
+    const otAwait = gate("nursingOvertime");
+
+    const rows: LedgerRow[] = [
+      {
+        id: "nursingOvertime",
+        label: "Overtime Spend",
+        kind: "counted",
+        mechanism:
+          "When documentation happens at the bedside instead of piling up for end of shift, the charting that used to spill into paid overtime falls away.",
+        enabled: Boolean(td.nursingOtEnabled),
+        onToggle: () => {
+          const current = Boolean(td.nursingOtEnabled);
+          updateTimeDriverInputs(current ? { nursingOtEnabled: false } : { nursingOtEnabled: true, nursingOtExpanded: true });
+        },
+        amount: otValue > 0 ? otValue : undefined,
+        awaiting: otAwait?.need,
+        expanded: Boolean(td.nursingOtExpanded),
+        onToggleExpand: () => updateTimeDriverInputs({ nursingOtExpanded: !td.nursingOtExpanded }),
+        levers: (
+          <MathCascade
+            steps={[
+              { label: "Nurses on the unit", running: formatNum(nurses) },
+              { label: "Overtime hours per nurse each week", factor: { value: td.nursingOtHoursPerNurseWeek, onChange: (v: number) => updateTimeDriverInputs({ nursingOtHoursPerNurseWeek: v }), suffix: "hrs", decimal: true }, running: `${formatNum1(nurses * hrsWk)} /wk` },
+              { label: "Share Abridge takes back", factor: { value: td.nursingOtReductionPercent, onChange: (v: number) => updateTimeDriverInputs({ nursingOtReductionPercent: v }), suffix: "%" }, running: `${formatNum1(nurses * hrsWk * red)} /wk` },
+              { label: "Across the year", running: `${formatNum(otHrs)} hrs`, note: "× 52 weeks" },
+              { label: "Overtime rate", factor: { value: td.nursingOtHourlyRate, onChange: (v: number) => updateTimeDriverInputs({ nursingOtHourlyRate: v }), prefix: "$" }, running: formatCurrency(otValue), final: true },
+            ]}
+          />
+        ),
+      },
+      {
+        id: "bedsideTime",
+        label: "Time at the Bedside",
+        kind: "tracked",
+        mechanism:
+          "The time documentation gives back is time at the bedside. We track that as proof; we do not put a dollar on capacity we do not control.",
+        signals: ["Point-of-care documentation rises", "Post-shift charting queue shrinks"],
+      },
+    ];
+
+    return (
+      <DriverLedger
+        eyebrow="Value Estimator · Step 4 of 9 · Capacity"
+        title="What is Abridge worth to your unit's capacity?"
+        intro="Charting that used to spill past the shift gets done at the bedside. Turn on only what you can stand behind; it adds to the ledger as you go."
+        sectionLabel="The drivers · turn on what applies"
         rows={rows}
         ledgerGroups={ledger.groups}
         grandLabel="Model so far"

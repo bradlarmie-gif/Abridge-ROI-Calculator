@@ -32,7 +32,7 @@ import { InlineDriverCard, EqNum, EqCarried, EqOp, EqResult, EquationRow, EqAwai
 import { X, Plus } from "lucide-react";
 import type { PriorQuadrantEntry } from "@/lib/exploreQuadrantValues";
 import DriverLedger, { type LedgerRow } from "./DriverLedger";
-import { buildInpatientLedger } from "./driverLedgerData";
+import { buildInpatientLedger, buildDriverLedger } from "./driverLedgerData";
 import { MathCascade } from "./MathCascade";
 
 interface EdRevenueProps {
@@ -489,6 +489,49 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
         title="How does documentation protect what you're already owed?"
         intro="Turn on the drivers that apply. Each one models against your numbers and adds to the ledger."
         sectionLabel="The drivers · turn on what applies"
+        rows={rows}
+        ledgerGroups={ledger.groups}
+        grandLabel="Model so far"
+        grandValue={ledger.grandValue}
+        grandCaption={ledger.grandCaption}
+        stepName="Revenue"
+        stepIndex={6}
+        isValid={true}
+        onNext={onNext}
+        onBack={onBack}
+        onHome={onHome}
+      />
+    );
+  }
+
+  // ─── Nursing V2 driver ledger ───
+  // Revenue is a proof-only layer for nursing: the dollars nursing documentation
+  // touches are claimed once, on the physician side, so nothing is counted here.
+  if (isNursing) {
+    const ledger = buildDriverLedger(state, totalHoursSaved, "Revenue", "nursing");
+    const rows: LedgerRow[] = [
+      {
+        id: "nursingCdiResponse",
+        label: "CDI Query Response",
+        kind: "tracked",
+        mechanism:
+          "Strong nursing documentation corroborates the physician record CDI depends on to close queries. The dollar is claimed on the physician side, so here it is tracked as proof.",
+        signals: ["CDI queries close faster", "Nursing record corroborates the clinical picture"],
+      },
+      {
+        id: "nursingDocCompletion",
+        label: "Documentation Completion",
+        kind: "tracked",
+        mechanism: "Flowsheet entries complete and on time.",
+        signals: ["Flowsheet completion rises", "Charting stays current through the shift"],
+      },
+    ];
+    return (
+      <DriverLedger
+        eyebrow="Value Estimator · Step 6 of 9 · Revenue"
+        title="Where does nursing documentation show up in revenue?"
+        intro="Nursing documentation supports the revenue cycle rather than driving it directly. The dollars it touches are claimed once, on the physician side, so nothing is counted here. We track the proof instead."
+        sectionLabel="The proof · tracked, not counted"
         rows={rows}
         ledgerGroups={ledger.groups}
         grandLabel="Model so far"

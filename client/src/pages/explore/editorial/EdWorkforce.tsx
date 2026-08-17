@@ -28,7 +28,7 @@ import { SignalWatch } from "./SignalWatch";
 import { watchDomainFor } from "@/lib/exploreWatchSignals";
 import ValueRail from "./ValueRail";
 import DriverLedger, { type LedgerRow } from "./DriverLedger";
-import { buildInpatientLedger } from "./driverLedgerData";
+import { buildInpatientLedger, buildDriverLedger } from "./driverLedgerData";
 import { MathCascade } from "./MathCascade";
 
 interface EdWorkforceProps {
@@ -739,6 +739,123 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
     );
   }
 
+  // ─── Nursing V2 driver ledger ───
+  // Mirrors the inpatient retention block: RN Retention (lens-gated) + Travel &
+  // Agency Spend (priced on the same retained count). All cascade intermediates
+  // are computed inline from `td` so the running chain foots to the engine value.
+  if (setting === "nursing") {
+    const gate = (driverId: string) => {
+      const r = driverScaleReadiness(driverId, state, totalHoursSaved);
+      return r.ready ? undefined : r.need;
+    };
+
+    const impactPct = nursingRetentionRates(td.retentionCustomPercent ?? 10)[td.retentionImpactScenario] ?? 0;
+    const leaving = state.numberOfProviders * (td.nursingTurnoverRate / 100);
+    const burnoutDep = leaving * (td.nursingBurnoutRelatedTurnover / 100);
+    const retained = burnoutDep * (impactPct / 100);
+    const retentionValue = valueFor("nursingRetention");
+    const agencyValue = valueFor("nursingAgency");
+
+    const retentionRows = [
+      { label: "Nurses", running: formatNum(state.numberOfProviders) },
+      { label: "Annual turnover", factor: { value: td.nursingTurnoverRate, onChange: (v: number) => updateTimeDriverInputs({ nursingTurnoverRate: v }), suffix: "%" }, running: formatNum1(leaving) },
+      { label: "Tied to burnout", factor: { value: td.nursingBurnoutRelatedTurnover, onChange: (v: number) => updateTimeDriverInputs({ nursingBurnoutRelatedTurnover: v }), suffix: "%" }, running: formatNum1(burnoutDep) },
+      { label: "Abridge impact", factor: { value: impactPct, onChange: (v: number) => updateTimeDriverInputs({ retentionImpactScenario: "custom", retentionCustomPercent: v }), suffix: "%" }, running: `${formatNum1(retained)} kept` },
+    ];
+
+    const retentionLevers = (
+      <>
+        <div className="mb-4">
+          <LensToggle counted={retentionCounted} onChange={setRetentionMode} testId="ed-retention-lens-nursingRetention" />
+        </div>
+        {retentionCounted ? (
+          <MathCascade
+            steps={[
+              ...retentionRows,
+              { label: "Replacement cost", factor: { value: td.nursingReplacementCost, onChange: (v: number) => updateTimeDriverInputs({ nursingReplacementCost: v }), prefix: "$" }, running: formatCurrency(retentionValue), final: true },
+            ]}
+          />
+        ) : (
+          <>
+            <MathCascade steps={retentionRows} />
+            <div className="text-[12px] text-[#7C766F] mt-3 leading-[1.45] italic">
+              Tracked as the leading signal, not a dollar. Switch to Dollar to put the replacement-cost value in the ROI.
+            </div>
+          </>
+        )}
+      </>
+    );
+
+    const agencyLevers = (
+      <MathCascade
+        steps={[
+          { label: "Nurses kept", running: `${formatNum1(retained)} kept` },
+          { label: "Weeks of agency per vacancy", factor: { value: td.nursingAgencyWeeksPerVacancy, onChange: (v: number) => updateTimeDriverInputs({ nursingAgencyWeeksPerVacancy: v }), suffix: "wks" }, running: `${formatNum1(retained * td.nursingAgencyWeeksPerVacancy)} wks` },
+          { label: "Agency premium", factor: { value: td.nursingAgencyWeeklyPremium, onChange: (v: number) => updateTimeDriverInputs({ nursingAgencyWeeklyPremium: v }), prefix: "$", suffix: "/wk" }, running: formatCurrency(agencyValue), final: true },
+        ]}
+      />
+    );
+
+    const rows: LedgerRow[] = [
+      {
+        id: "nursingRetention",
+        label: "RN Retention",
+        kind: "counted",
+        mechanism:
+          "Documentation burden is a real contributor to nurse burnout and turnover. Abridge only touches the departures tied to that, not pay or life events. This values just that slice.",
+        enabled: Boolean(td.nursingRetentionEnabled),
+        onToggle: () => {
+          const current = Boolean(td.nursingRetentionEnabled);
+          updateTimeDriverInputs(current ? { nursingRetentionEnabled: false } : { nursingRetentionEnabled: true, nursingRetentionExpanded: true });
+        },
+        amount: retentionCounted ? retentionValue : undefined,
+        awaiting: gate("nursingRetention"),
+        expanded: Boolean(td.nursingRetentionExpanded),
+        onToggleExpand: () => updateTimeDriverInputs({ nursingRetentionExpanded: !td.nursingRetentionExpanded }),
+        levers: retentionLevers,
+      },
+      {
+        id: "nursingAgency",
+        label: "Travel & Agency Spend",
+        kind: "counted",
+        mechanism:
+          "Travel and agency coverage is bought to fill the vacancies turnover creates. Keep more nurses and you lean on it less.",
+        enabled: Boolean(td.nursingAgencyEnabled),
+        onToggle: () => {
+          const current = Boolean(td.nursingAgencyEnabled);
+          updateTimeDriverInputs(current ? { nursingAgencyEnabled: false } : { nursingAgencyEnabled: true, nursingAgencyExpanded: true });
+        },
+        amount: retentionCounted ? agencyValue : undefined,
+        awaiting: gate("nursingAgency"),
+        expanded: Boolean(td.nursingAgencyExpanded),
+        onToggleExpand: () => updateTimeDriverInputs({ nursingAgencyExpanded: !td.nursingAgencyExpanded }),
+        levers: agencyLevers,
+      },
+    ];
+
+    const ledger = buildDriverLedger(state, totalHoursSaved, "Workforce", "nursing");
+
+    return (
+      <DriverLedger
+        eyebrow="Value Estimator · Step 5 of 9 · Workforce"
+        title="What is Abridge worth to your workforce?"
+        intro="Documentation burden is a leading reason nurses burn out and leave the bedside. Turn on only what you can stand behind; it adds to the ledger as you go."
+        sectionLabel="The drivers · turn on what applies"
+        rows={rows}
+        ledgerGroups={ledger.groups}
+        grandLabel="Model so far"
+        grandValue={ledger.grandValue}
+        grandCaption={ledger.grandCaption}
+        stepName="Workforce"
+        stepIndex={5}
+        isValid={true}
+        onNext={onNext}
+        onBack={onBack}
+        onHome={onHome}
+      />
+    );
+  }
+
   return (
     <EditorialShell>
       <EditorialHeader stepName="Workforce" stepIndex={5} onBack={onBack} onHome={onHome} />
@@ -746,11 +863,7 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
         <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#565250]">Value Estimator · Step 5 of 9</div>
         <h1 className="font-abridge text-[26px] sm:text-[32px] lg:text-[38px] leading-[1.08] text-[#1A1A1A] mt-[10px]">What is Abridge worth to your workforce?</h1>
         <p className="text-[16px] text-[#565250] mt-[13px] max-w-[680px] leading-[1.5]">
-          {setting === "nursing" ? (
-            <>Documentation burden is a leading reason RNs burn out and leave the bedside. As the after-hours charting load comes down, fewer walk out the door. Turn on only what you can stand behind, and nothing counts until you switch it on.</>
-          ) : (
-            <>Documentation burden is a leading reason providers burn out and leave. As the after-hours load comes down, fewer walk out the door. Turn on only what you can stand behind, and nothing counts until you switch it on.</>
-          )}
+          <>Documentation burden is a leading reason providers burn out and leave. As the after-hours load comes down, fewer walk out the door. Turn on only what you can stand behind, and nothing counts until you switch it on.</>
         </p>
 
         <div className="mt-6 grid lg:grid-cols-[minmax(0,1fr)_380px] gap-x-10 gap-y-8 items-start">

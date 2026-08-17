@@ -9,9 +9,11 @@ import { SignalWatch } from "./SignalWatch";
 import { watchDomainFor } from "@/lib/exploreWatchSignals";
 import ValueRail from "./ValueRail";
 import { InlineDriverCard, EqNum, EqCarried, EqOp, EqResult, EquationRow, EqAwaiting } from "./InlineEquation";
+import { formatCurrency, formatNum, formatNum1 } from "./EdValueScreenKit";
 import type { PriorQuadrantEntry } from "@/lib/exploreQuadrantValues";
 import DriverLedger, { type LedgerRow } from "./DriverLedger";
-import { buildInpatientLedger } from "./driverLedgerData";
+import { buildInpatientLedger, buildDriverLedger } from "./driverLedgerData";
+import { MathCascade } from "./MathCascade";
 
 interface EdQualityProps {
   state: ExploreState;
@@ -181,252 +183,205 @@ function NursingQualityScreen({
   const engine = computeAllDriverValues(state, totalHoursSaved);
   const patientDays = state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365;
   const updateDq = (updates: Partial<ExploreState["docQualityInputs"]>) => updateState({ docQualityInputs: { ...dq, ...updates } });
+  const valueFor = (key: string) => engine[key] ?? 0;
   const gate = (driverId: string) => {
     const r = driverScaleReadiness(driverId, state, totalHoursSaved);
-    return r.ready ? undefined : { need: r.need };
+    return r.ready ? undefined : r.need;
   };
 
-  const hapi = calcHapi({ patientDays, rate: dq.nursingHapiRate, preventionPct: dq.nursingHapiPreventionRate, cost: dq.nursingHapiCost });
-  const falls = calcFalls({ patientDays, rate: dq.nursingFallsRate, preventionPct: dq.nursingFallsPreventionRate, cost: dq.nursingFallsCost });
-  const cauti = calcCauti({
-    patientDays,
-    utilizationPct: dq.nursingCautiUtilizationRatio,
-    rate: dq.nursingCautiRate,
-    preventionPct: dq.nursingCautiPreventionRate,
-    cost: dq.nursingCautiCost,
-  });
-  const clabsi = calcClabsi({
-    patientDays,
-    utilizationPct: dq.nursingClabsiUtilizationRatio,
-    rate: dq.nursingClabsiRate,
-    preventionPct: dq.nursingClabsiPreventionRate,
-    cost: dq.nursingClabsiCost,
-  });
-  const sepsis = calcSepsis({
-    patientDays,
-    ratePerThousand: dq.nursingSepsisRatePerThousand,
-    currentCompliancePct: dq.nursingSepsisCurrentCompliance,
-    docLagPct: dq.nursingSepsisDocLagPercent,
-    excessCostPerCase: dq.nursingSepsisExcessCostPerCase,
-    realizationPct: dq.nursingSepsisRealization,
-  });
+  const ledger = buildDriverLedger(state, totalHoursSaved, "Quality", "nursing");
 
-  const hapiAwait = gate("nursingHapi");
-  const fallsAwait = gate("nursingFalls");
-  const cautiAwait = gate("nursingCauti");
-  const clabsiAwait = gate("nursingClabsi");
-  const sepsisAwait = gate("nursingSepsis");
+  // HAPI
+  const hapiEvents = (patientDays / 1000) * dq.nursingHapiRate;
+  const hapiPrevented = hapiEvents * (dq.nursingHapiPreventionRate / 100);
+  // Falls
+  const fallsEvents = (patientDays / 1000) * dq.nursingFallsRate;
+  const fallsPrevented = fallsEvents * (dq.nursingFallsPreventionRate / 100);
+  // CAUTI
+  const cautiCathDays = patientDays * (dq.nursingCautiUtilizationRatio / 100);
+  const cautiEvents = (cautiCathDays / 1000) * dq.nursingCautiRate;
+  const cautiPrevented = cautiEvents * (dq.nursingCautiPreventionRate / 100);
+  // CLABSI
+  const clabsiLineDays = patientDays * (dq.nursingClabsiUtilizationRatio / 100);
+  const clabsiEvents = (clabsiLineDays / 1000) * dq.nursingClabsiRate;
+  const clabsiPrevented = clabsiEvents * (dq.nursingClabsiPreventionRate / 100);
+  // Sepsis
+  const sepsisEvents = (patientDays / 1000) * dq.nursingSepsisRatePerThousand;
+  const sepsisGap = Math.max(0, 100 - dq.nursingSepsisCurrentCompliance);
+  const sepsisNonComp = sepsisEvents * (sepsisGap / 100);
+  const sepsisDocLag = sepsisNonComp * (dq.nursingSepsisDocLagPercent / 100);
+  const sepsisPrevented = sepsisDocLag * (dq.nursingSepsisRealization / 100);
 
-  const anyEnabled = dq.nursingHapiEnabled || dq.nursingFallsEnabled || dq.nursingCautiEnabled || dq.nursingClabsiEnabled || dq.nursingSepsisEnabled;
-  const needsBeds = state.nursingStaffedBeds <= 0 || state.nursingOccupancyRate <= 0;
-
-  const signalDrivers = getDriversForPage("Quality", "nursing").filter((d) => !d.childOfDriverId && d.visibility === "qualitative");
-
-  const countedTotal =
-    (dq.nursingHapiEnabled ? engine.nursingHapi ?? 0 : 0) +
-    (dq.nursingFallsEnabled ? engine.nursingFalls ?? 0 : 0) +
-    (dq.nursingCautiEnabled ? engine.nursingCauti ?? 0 : 0) +
-    (dq.nursingClabsiEnabled ? engine.nursingClabsi ?? 0 : 0) +
-    (dq.nursingSepsisEnabled ? engine.nursingSepsis ?? 0 : 0);
-  const onCount = [dq.nursingHapiEnabled, dq.nursingFallsEnabled, dq.nursingCautiEnabled, dq.nursingClabsiEnabled, dq.nursingSepsisEnabled].filter(Boolean).length;
+  const rows: LedgerRow[] = [
+    {
+      id: "nursingHapi",
+      label: "HAPI Prevention",
+      kind: "counted",
+      mechanism:
+        "Real-time Braden scores and turning events documented at the point of care let protocols act before a pressure injury progresses.",
+      enabled: Boolean(dq.nursingHapiEnabled),
+      onToggle: () => {
+        const current = Boolean(dq.nursingHapiEnabled);
+        updateDq(current ? { nursingHapiEnabled: false } : { nursingHapiEnabled: true, nursingHapiExpanded: true });
+      },
+      amount: valueFor("nursingHapi") > 0 ? valueFor("nursingHapi") : undefined,
+      awaiting: gate("nursingHapi"),
+      expanded: Boolean(dq.nursingHapiExpanded),
+      onToggleExpand: () => updateDq({ nursingHapiExpanded: !dq.nursingHapiExpanded }),
+      levers: (
+        <MathCascade
+          steps={[
+            { label: "Patient days a year", running: formatNum(patientDays) },
+            { label: "HAPIs per 1,000 patient days", factor: { value: dq.nursingHapiRate, onChange: (v: number) => updateDq({ nursingHapiRate: v }), suffix: "/1k", decimal: true }, running: `${formatNum1(hapiEvents)} events` },
+            { label: "Prevented with complete documentation", factor: { value: dq.nursingHapiPreventionRate, onChange: (v: number) => updateDq({ nursingHapiPreventionRate: v }), suffix: "%", decimal: true }, running: `${formatNum1(hapiPrevented)} prevented` },
+            { label: "Cost per HAPI", factor: { value: dq.nursingHapiCost, onChange: (v: number) => updateDq({ nursingHapiCost: v }), prefix: "$" }, running: formatCurrency(valueFor("nursingHapi")), final: true },
+          ]}
+        />
+      ),
+    },
+    {
+      id: "nursingFalls",
+      label: "Falls Prevention",
+      kind: "counted",
+      mechanism: "Protocols act on a current Morse score instead of a stale one.",
+      enabled: Boolean(dq.nursingFallsEnabled),
+      onToggle: () => {
+        const current = Boolean(dq.nursingFallsEnabled);
+        updateDq(current ? { nursingFallsEnabled: false } : { nursingFallsEnabled: true, nursingFallsExpanded: true });
+      },
+      amount: valueFor("nursingFalls") > 0 ? valueFor("nursingFalls") : undefined,
+      awaiting: gate("nursingFalls"),
+      expanded: Boolean(dq.nursingFallsExpanded),
+      onToggleExpand: () => updateDq({ nursingFallsExpanded: !dq.nursingFallsExpanded }),
+      levers: (
+        <MathCascade
+          steps={[
+            { label: "Patient days a year", running: formatNum(patientDays) },
+            { label: "Falls per 1,000 patient days", factor: { value: dq.nursingFallsRate, onChange: (v: number) => updateDq({ nursingFallsRate: v }), suffix: "/1k", decimal: true }, running: `${formatNum1(fallsEvents)} events` },
+            { label: "Prevented with complete documentation", factor: { value: dq.nursingFallsPreventionRate, onChange: (v: number) => updateDq({ nursingFallsPreventionRate: v }), suffix: "%", decimal: true }, running: `${formatNum1(fallsPrevented)} prevented` },
+            { label: "Cost per fall", factor: { value: dq.nursingFallsCost, onChange: (v: number) => updateDq({ nursingFallsCost: v }), prefix: "$" }, running: formatCurrency(valueFor("nursingFalls")), final: true },
+          ]}
+        />
+      ),
+    },
+    {
+      id: "nursingCauti",
+      label: "CAUTI Prevention",
+      kind: "counted",
+      mechanism:
+        "Each point-of-care necessity review is the timestamped prompt to pull the catheter. Every catheter day avoided is one fewer chance for a CAUTI.",
+      enabled: Boolean(dq.nursingCautiEnabled),
+      onToggle: () => {
+        const current = Boolean(dq.nursingCautiEnabled);
+        updateDq(current ? { nursingCautiEnabled: false } : { nursingCautiEnabled: true, nursingCautiExpanded: true });
+      },
+      amount: valueFor("nursingCauti") > 0 ? valueFor("nursingCauti") : undefined,
+      awaiting: gate("nursingCauti"),
+      expanded: Boolean(dq.nursingCautiExpanded),
+      onToggleExpand: () => updateDq({ nursingCautiExpanded: !dq.nursingCautiExpanded }),
+      levers: (
+        <MathCascade
+          steps={[
+            { label: "Patient days a year", running: formatNum(patientDays) },
+            { label: "On a urinary catheter", factor: { value: dq.nursingCautiUtilizationRatio, onChange: (v: number) => updateDq({ nursingCautiUtilizationRatio: v }), suffix: "%" }, running: `${formatNum(cautiCathDays)} cath-days` },
+            { label: "CAUTIs per 1,000 catheter days", factor: { value: dq.nursingCautiRate, onChange: (v: number) => updateDq({ nursingCautiRate: v }), suffix: "/1k", decimal: true }, running: `${formatNum1(cautiEvents)} events` },
+            { label: "Prevented via each necessity review", factor: { value: dq.nursingCautiPreventionRate, onChange: (v: number) => updateDq({ nursingCautiPreventionRate: v }), suffix: "%", decimal: true }, running: `${formatNum1(cautiPrevented)} prevented` },
+            { label: "Cost per CAUTI", factor: { value: dq.nursingCautiCost, onChange: (v: number) => updateDq({ nursingCautiCost: v }), prefix: "$" }, running: formatCurrency(valueFor("nursingCauti")), final: true },
+          ]}
+        />
+      ),
+    },
+    {
+      id: "nursingClabsi",
+      label: "CLABSI Prevention",
+      kind: "counted",
+      mechanism:
+        "Bundle compliance is scored from timestamps. A central line reviewed and documented at the point of care is one fewer chance for a CLABSI.",
+      enabled: Boolean(dq.nursingClabsiEnabled),
+      onToggle: () => {
+        const current = Boolean(dq.nursingClabsiEnabled);
+        updateDq(current ? { nursingClabsiEnabled: false } : { nursingClabsiEnabled: true, nursingClabsiExpanded: true });
+      },
+      amount: valueFor("nursingClabsi") > 0 ? valueFor("nursingClabsi") : undefined,
+      awaiting: gate("nursingClabsi"),
+      expanded: Boolean(dq.nursingClabsiExpanded),
+      onToggleExpand: () => updateDq({ nursingClabsiExpanded: !dq.nursingClabsiExpanded }),
+      levers: (
+        <MathCascade
+          steps={[
+            { label: "Patient days a year", running: formatNum(patientDays) },
+            { label: "On a central line", factor: { value: dq.nursingClabsiUtilizationRatio, onChange: (v: number) => updateDq({ nursingClabsiUtilizationRatio: v }), suffix: "%" }, running: `${formatNum(clabsiLineDays)} line-days` },
+            { label: "CLABSIs per 1,000 line days", factor: { value: dq.nursingClabsiRate, onChange: (v: number) => updateDq({ nursingClabsiRate: v }), suffix: "/1k", decimal: true }, running: `${formatNum1(clabsiEvents)} events` },
+            { label: "Prevented with complete documentation", factor: { value: dq.nursingClabsiPreventionRate, onChange: (v: number) => updateDq({ nursingClabsiPreventionRate: v }), suffix: "%", decimal: true }, running: `${formatNum1(clabsiPrevented)} prevented` },
+            { label: "Cost per CLABSI", factor: { value: dq.nursingClabsiCost, onChange: (v: number) => updateDq({ nursingClabsiCost: v }), prefix: "$" }, running: formatCurrency(valueFor("nursingClabsi")), final: true },
+          ]}
+        />
+      ),
+    },
+    {
+      id: "nursingSepsis",
+      label: "Sepsis Bundle Compliance",
+      kind: "counted",
+      mechanism:
+        "SEP-1 is scored on timestamps. When bundle elements are documented as they happen, cases that would read non-compliant on a documentation lag stay in compliance.",
+      enabled: Boolean(dq.nursingSepsisEnabled),
+      onToggle: () => {
+        const current = Boolean(dq.nursingSepsisEnabled);
+        updateDq(current ? { nursingSepsisEnabled: false } : { nursingSepsisEnabled: true, nursingSepsisExpanded: true });
+      },
+      amount: valueFor("nursingSepsis") > 0 ? valueFor("nursingSepsis") : undefined,
+      awaiting: gate("nursingSepsis"),
+      expanded: Boolean(dq.nursingSepsisExpanded),
+      onToggleExpand: () => updateDq({ nursingSepsisExpanded: !dq.nursingSepsisExpanded }),
+      levers: (
+        <MathCascade
+          steps={[
+            { label: "Patient days a year", running: formatNum(patientDays) },
+            { label: "Sepsis cases per 1,000", factor: { value: dq.nursingSepsisRatePerThousand, onChange: (v: number) => updateDq({ nursingSepsisRatePerThousand: v }), suffix: "/1k", decimal: true }, running: `${formatNum1(sepsisEvents)} cases` },
+            { label: "Current bundle compliance", factor: { value: dq.nursingSepsisCurrentCompliance, onChange: (v: number) => updateDq({ nursingSepsisCurrentCompliance: v }), suffix: "%" }, running: `${formatNum1(sepsisNonComp)} out of bundle`, note: "gap = 100 − compliance", pivot: true },
+            { label: "Where documentation is the lag", factor: { value: dq.nursingSepsisDocLagPercent, onChange: (v: number) => updateDq({ nursingSepsisDocLagPercent: v }), suffix: "%" }, running: `${formatNum1(sepsisDocLag)} cases` },
+            { label: "Realization", factor: { value: dq.nursingSepsisRealization, onChange: (v: number) => updateDq({ nursingSepsisRealization: v }), suffix: "%" }, running: `${formatNum1(sepsisPrevented)} prevented` },
+            { label: "Excess cost per case", factor: { value: dq.nursingSepsisExcessCostPerCase, onChange: (v: number) => updateDq({ nursingSepsisExcessCostPerCase: v }), prefix: "$" }, running: formatCurrency(valueFor("nursingSepsis")), final: true },
+          ]}
+        />
+      ),
+    },
+    {
+      id: "nursingHcahps",
+      label: "HCAHPS Nurse Communication",
+      kind: "tracked",
+      mechanism:
+        "Time back at the bedside shows up in how patients rate their nursing care. We track it as proof, not a dollar.",
+      signals: ["Nurse communication scores move", "More time with the patient, less with the keyboard"],
+    },
+    {
+      id: "nursingEarlyDeterioration",
+      label: "Early Deterioration Recognition",
+      kind: "tracked",
+      mechanism:
+        "Current vitals and assessments documented in real time let escalation protocols act on the patient in front of you, not a stale chart.",
+      signals: ["Rapid-response triggers fire on current data", "Rescue happens earlier"],
+    },
+  ];
 
   return (
-    <EditorialShell>
-      <EditorialHeader stepName="Quality" stepIndex={7} onBack={onBack} onHome={onHome} />
-      <div className="max-w-[1160px] mx-auto px-5 sm:px-8 lg:px-12 pt-11 pb-[60px]">
-        <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#565250]">Value Estimator · Step 7 of 9</div>
-        <h1 className="font-abridge text-[26px] sm:text-[32px] lg:text-[38px] leading-[1.08] text-[#1A1A1A] mt-[10px] max-w-[700px]">
-          Where does nursing documentation prevent harm?
-        </h1>
-        <p className="text-[16px] text-[#565250] mt-[13px] max-w-[660px] leading-[1.5]">
-          Five harm events scored on timestamps. Undocumented care looks non-compliant even when every element was
-          performed. Real-time flowsheet entries are the difference.
-        </p>
-
-        {needsBeds && anyEnabled && (
-          <div className="border border-[#E7E3DD] rounded-[14px] bg-[#FAF7F2] px-[18px] py-[15px] mt-6 text-[13px] text-[#565250] leading-[1.5]">
-            Enter <b className="text-[#1A1A1A]">staffed beds</b> and <b className="text-[#1A1A1A]">occupancy</b> on the first
-            step to see these values. Without them, patient-days are zero, so the dollar figures stay at $0.
-          </div>
-        )}
-
-        <div className="mt-6 grid lg:grid-cols-[minmax(0,1fr)_380px] gap-x-10 gap-y-8 items-start">
-        <div className="min-w-0">
-        <SectionLabel
-          tag="counts when it's on"
-          right={
-            <>
-              Counted on this screen&nbsp; <b className="font-abridge text-[15px] text-[#1A1A1A]">${Math.round(countedTotal).toLocaleString()}</b> / yr
-              &nbsp;·&nbsp; <span className="text-[#7C766F]">{onCount} of 5 on</span>
-            </>
-          }
-        >
-          The value
-        </SectionLabel>
-
-        <div className="text-[10.5px] font-extrabold tracking-[0.06em] uppercase text-[#7C766F] mb-2">Harm events</div>
-        <InlineDriverCard
-          title="HAPI prevention"
-          subtitle="Real-time Braden scores and turning events documented at the bedside, not batched after Stage 1 has already progressed."
-          enabled={dq.nursingHapiEnabled}
-          onToggle={() => updateDq({ nursingHapiEnabled: !dq.nursingHapiEnabled })}
-          testId="toggle-nursing-hapi"
-          note={<>≈ <b className="text-[#B02200] not-italic">{fmtN(hapi.prevented)}</b> HAPIs prevented a year. Change any coral figure and this reprices live, then updates the model on the right.</>}
-        >
-          {hapiAwait ? (
-            <EqAwaiting need={hapiAwait.need} />
-          ) : (
-            <EquationRow>
-              <EqCarried cap="patient-days">{fmtN(patientDays)}</EqCarried>
-              <EqOp>×</EqOp>
-              <EqNum cap="HAPI / 1k days" value={dq.nursingHapiRate} onChange={(v) => updateDq({ nursingHapiRate: v })} decimal />
-              <EqOp>×</EqOp>
-              <EqNum cap="docs prevent" value={dq.nursingHapiPreventionRate} onChange={(v) => updateDq({ nursingHapiPreventionRate: v })} suffix="%" />
-              <EqOp>×</EqOp>
-              <EqNum cap="per case" value={dq.nursingHapiCost} onChange={(v) => updateDq({ nursingHapiCost: v })} prefix="$" />
-              <EqResult value={hapi.value} />
-            </EquationRow>
-          )}
-        </InlineDriverCard>
-
-        <InlineDriverCard
-          title="Falls prevention"
-          subtitle="Protocols act on the documented Morse score. Point-of-care reassessment keeps the chart current, not frozen at the score from eight hours ago."
-          enabled={dq.nursingFallsEnabled}
-          onToggle={() => updateDq({ nursingFallsEnabled: !dq.nursingFallsEnabled })}
-          testId="toggle-nursing-falls"
-          note={<>≈ <b className="text-[#B02200] not-italic">{fmtN(falls.prevented)}</b> falls prevented a year. Change any coral figure and this reprices live, then updates the model on the right.</>}
-        >
-          {fallsAwait ? (
-            <EqAwaiting need={fallsAwait.need} />
-          ) : (
-            <EquationRow>
-              <EqCarried cap="patient-days">{fmtN(patientDays)}</EqCarried>
-              <EqOp>×</EqOp>
-              <EqNum cap="fall / 1k days" value={dq.nursingFallsRate} onChange={(v) => updateDq({ nursingFallsRate: v })} decimal />
-              <EqOp>×</EqOp>
-              <EqNum cap="docs prevent" value={dq.nursingFallsPreventionRate} onChange={(v) => updateDq({ nursingFallsPreventionRate: v })} suffix="%" />
-              <EqOp>×</EqOp>
-              <EqNum cap="per case" value={dq.nursingFallsCost} onChange={(v) => updateDq({ nursingFallsCost: v })} prefix="$" />
-              <EqResult value={falls.value} />
-            </EquationRow>
-          )}
-        </InlineDriverCard>
-
-        <div className="text-[10.5px] font-extrabold tracking-[0.06em] uppercase text-[#7C766F] mt-6 mb-2">Bundle compliance</div>
-        <InlineDriverCard
-          title="CAUTI prevention"
-          subtitle="Each point-of-care necessity review is the timestamped prompt for removal. Every catheter day avoided is one fewer chance for a CAUTI."
-          enabled={dq.nursingCautiEnabled}
-          onToggle={() => updateDq({ nursingCautiEnabled: !dq.nursingCautiEnabled })}
-          testId="toggle-nursing-cauti"
-          note={<>≈ <b className="text-[#B02200] not-italic">{fmtN(cauti.prevented)}</b> CAUTIs prevented a year. Change any coral figure and this reprices live, then updates the model on the right.</>}
-        >
-          {cautiAwait ? (
-            <EqAwaiting need={cautiAwait.need} />
-          ) : (
-            <EquationRow>
-              <EqCarried cap="patient-days">{fmtN(patientDays)}</EqCarried>
-              <EqOp>×</EqOp>
-              <EqNum cap="catheter use" value={dq.nursingCautiUtilizationRatio} onChange={(v) => updateDq({ nursingCautiUtilizationRatio: v })} suffix="%" />
-              <EqOp>×</EqOp>
-              <EqNum cap="CAUTI / 1k cath-days" value={dq.nursingCautiRate} onChange={(v) => updateDq({ nursingCautiRate: v })} decimal />
-              <EqOp>×</EqOp>
-              <EqNum cap="docs prevent" value={dq.nursingCautiPreventionRate} onChange={(v) => updateDq({ nursingCautiPreventionRate: v })} suffix="%" />
-              <EqOp>×</EqOp>
-              <EqNum cap="per case" value={dq.nursingCautiCost} onChange={(v) => updateDq({ nursingCautiCost: v })} prefix="$" />
-              <EqResult value={cauti.value} />
-            </EquationRow>
-          )}
-        </InlineDriverCard>
-
-        <InlineDriverCard
-          title="CLABSI prevention"
-          subtitle="Bundle compliance is scored from timestamps. Undocumented care looks non-compliant even when every element was performed."
-          enabled={dq.nursingClabsiEnabled}
-          onToggle={() => updateDq({ nursingClabsiEnabled: !dq.nursingClabsiEnabled })}
-          testId="toggle-nursing-clabsi"
-          note={<>≈ <b className="text-[#B02200] not-italic">{fmtN(clabsi.prevented)}</b> CLABSIs prevented a year. Change any coral figure and this reprices live, then updates the model on the right.</>}
-        >
-          {clabsiAwait ? (
-            <EqAwaiting need={clabsiAwait.need} />
-          ) : (
-            <EquationRow>
-              <EqCarried cap="patient-days">{fmtN(patientDays)}</EqCarried>
-              <EqOp>×</EqOp>
-              <EqNum cap="line use" value={dq.nursingClabsiUtilizationRatio} onChange={(v) => updateDq({ nursingClabsiUtilizationRatio: v })} suffix="%" />
-              <EqOp>×</EqOp>
-              <EqNum cap="CLABSI / 1k line-days" value={dq.nursingClabsiRate} onChange={(v) => updateDq({ nursingClabsiRate: v })} decimal />
-              <EqOp>×</EqOp>
-              <EqNum cap="docs prevent" value={dq.nursingClabsiPreventionRate} onChange={(v) => updateDq({ nursingClabsiPreventionRate: v })} suffix="%" />
-              <EqOp>×</EqOp>
-              <EqNum cap="per case" value={dq.nursingClabsiCost} onChange={(v) => updateDq({ nursingClabsiCost: v })} prefix="$" />
-              <EqResult value={clabsi.value} />
-            </EquationRow>
-          )}
-        </InlineDriverCard>
-
-        <InlineDriverCard
-          title="Sepsis bundle compliance"
-          subtitle="SEP-1 is scored on timestamps. A 45-minute documentation lag can flip a compliant case to non-compliant."
-          enabled={dq.nursingSepsisEnabled}
-          onToggle={() => updateDq({ nursingSepsisEnabled: !dq.nursingSepsisEnabled })}
-          testId="toggle-nursing-sepsis"
-          note={<>≈ <b className="text-[#B02200] not-italic">{fmtN(sepsis.prevented)}</b> cases moved into compliance a year; change any coral figure and this reprices live. The sepsis bundle depends on the whole team's response, so we attribute only <b className="text-[#B02200] not-italic">{dq.nursingSepsisRealization}%</b> to the documentation and leave the rest out.</>}
-        >
-          {sepsisAwait ? (
-            <EqAwaiting need={sepsisAwait.need} />
-          ) : (
-            <EquationRow>
-              <EqCarried cap="patient-days">{fmtN(patientDays)}</EqCarried>
-              <EqOp>×</EqOp>
-              <EqNum cap="sepsis / 1k days" value={dq.nursingSepsisRatePerThousand} onChange={(v) => updateDq({ nursingSepsisRatePerThousand: v })} decimal />
-              <EqOp>×</EqOp>
-              <EqNum cap="non-compliant" value={Math.round(sepsis.complianceGapPct)} onChange={(v) => updateDq({ nursingSepsisCurrentCompliance: Math.max(0, 100 - v) })} suffix="%" />
-              <EqOp>×</EqOp>
-              <EqNum cap="doc-lag share" value={dq.nursingSepsisDocLagPercent} onChange={(v) => updateDq({ nursingSepsisDocLagPercent: v })} suffix="%" />
-              <EqOp>×</EqOp>
-              <EqNum cap="attribution" value={dq.nursingSepsisRealization} onChange={(v) => updateDq({ nursingSepsisRealization: v })} suffix="%" />
-              <EqOp>×</EqOp>
-              <EqNum cap="excess / case" value={dq.nursingSepsisExcessCostPerCase} onChange={(v) => updateDq({ nursingSepsisExcessCostPerCase: v })} prefix="$" />
-              <EqResult value={sepsis.value} />
-            </EquationRow>
-          )}
-        </InlineDriverCard>
-
-        {watchDomainFor(state.careSetting, "Quality") ? (
-          <SignalWatch domain={watchDomainFor(state.careSetting, "Quality")!} title="The bedside signals it protects" />
-        ) : (
-          signalDrivers.length > 0 && (
-            <OutcomesTier
-              title="The bedside signals it protects"
-              items={signalDrivers.map((d) => ({ label: d.label, example: d.tagline }))}
-              note={
-                <>
-                  <b className="text-[#1A1A1A]">These signals lead the dollars above.</b> We keep them as signals so nothing is
-                  counted twice.
-                </>
-              }
-            />
-          )
-        )}
-        </div>
-        <div className="flex flex-col gap-5">
-          <ValueRail state={state} totalHoursSaved={totalHoursSaved} activeDomain="Quality" />
-          <div className="flex justify-end">
-            <button
-              type="button"
-              onClick={onNext}
-              data-testid="button-ed-quality-continue"
-              className="bg-[#EA2C00] text-white text-[15px] font-bold px-7 py-[14px] rounded-[12px] shadow-[0_2px_6px_rgba(234,44,0,0.15)]"
-            >
-              Continue →
-            </button>
-          </div>
-        </div>
-        </div>
-      </div>
-    </EditorialShell>
+    <DriverLedger
+      eyebrow="Value Estimator · Step 7 of 9 · Quality"
+      title="Where does nursing documentation prevent harm?"
+      intro="Harm events are scored on timestamps. Documented in real time at the bedside, the same care that was delivered is the care that counts. Turn on only what you can stand behind; it adds to the ledger as you go."
+      sectionLabel="The drivers · turn on what applies"
+      rows={rows}
+      ledgerGroups={ledger.groups}
+      grandLabel="Model so far"
+      grandValue={ledger.grandValue}
+      grandCaption={ledger.grandCaption}
+      stepName="Quality"
+      stepIndex={7}
+      isValid={true}
+      onNext={onNext}
+      onBack={onBack}
+      onHome={onHome}
+    />
   );
 }
 

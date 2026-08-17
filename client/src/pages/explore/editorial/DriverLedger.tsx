@@ -58,6 +58,8 @@ export interface DriverLedgerProps {
   onBack: () => void;
   onHome: () => void;
   onDataRequest?: () => void;
+  /** optional control rendered above the ledger (e.g. the OP payment-model toggle) */
+  headerControl?: ReactNode;
 }
 
 const sectCls = "text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#8C8073]";
@@ -164,6 +166,8 @@ export default function DriverLedger(props: DriverLedgerProps) {
         <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#565250]">{eyebrow}</div>
         <h1 className="font-abridge text-[27px] sm:text-[34px] lg:text-[38px] leading-[1.1] text-[#1A1A1A] mt-[10px] max-w-[640px]">{title}</h1>
         <p className="text-[16px] text-[#565250] mt-[12px] max-w-[600px] leading-[1.55]">{intro}</p>
+
+        {props.headerControl && <div className="mt-[26px]">{props.headerControl}</div>}
 
         <div className="grid grid-cols-1 lg:grid-cols-[1.25fr_1px_0.8fr] gap-x-[56px] gap-y-10 mt-[46px]">
           {/* LEFT — driver ledger */}

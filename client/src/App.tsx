@@ -232,9 +232,12 @@ export default function App() {
   if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("planpreview") === "1") {
     return <AttainPlanPreview />;
   }
-  // THROWAWAY ?inpatientmock=1 — real inpatient Explore path pre-filled for review.
-  if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("inpatientmock") === "1") {
-    return <InpatientReviewMock />;
+  // THROWAWAY ?inpatientmock=1 / ?mock=<setting> — real Explore path pre-filled for review.
+  if (typeof window !== "undefined") {
+    const sp = new URLSearchParams(window.location.search);
+    if (sp.get("inpatientmock") === "1" || sp.get("mock")) {
+      return <InpatientReviewMock />;
+    }
   }
   // Metric Library preview (?metriclibrary=1) while it's built out; the Planning
   // Metrics card stays "coming soon" until it's wired in.
