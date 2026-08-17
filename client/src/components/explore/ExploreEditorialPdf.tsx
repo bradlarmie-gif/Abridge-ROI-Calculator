@@ -467,53 +467,56 @@ function PitchPage({ data }: { data: ExplorePDFData }): JSX.Element {
         <span style={sLbl}>Value Model</span>
       </div>
 
-      {/* Headline block, dropped for editorial whitespace */}
-      <div style={{ marginTop: 128 }}>
-        <div style={sEyebrow}>The value on the table</div>
-        <h2
-          className="font-abridge"
-          style={{ fontSize: 44, lineHeight: 1.06, color: C.ink, margin: "10px 0 0", maxWidth: 660, letterSpacing: "-0.5px" }}
-        >
-          {fmtShort(data.totalAnnualValue)} in value a year, built from your own volume.
-        </h2>
-        <div style={{ ...sLead, marginTop: 16, maxWidth: 600 }}>
-          {data.careSettingLabel}, modeled on {data.clientName}&rsquo;s {scope}. Not a benchmark, and not a
-          projection.
-        </div>
-      </div>
-
-      {/* Hairline + stat trio */}
-      <div style={{ ...sRule, margin: "30px 0 22px" }} />
-      <div style={{ display: "flex", gap: 56 }}>
-        {[
-          { v: fmtShort(data.totalAnnualValue), k: "Annual value", coral: true },
-          { v: fmtShort(data.valuePerProvider), k: isNursing ? "Per bed" : "Per provider", coral: false },
-          { v: data.totalHoursSaved.toLocaleString("en-US"), k: "Clinician hours returned", coral: false },
-        ].map((s, i) => (
-          <div key={i}>
-            <div className="font-abridge" style={{ fontSize: 34, lineHeight: 1, color: s.coral ? C.coral : C.ink }}>
-              {s.v}
-            </div>
-            <div style={{ ...sLbl, marginTop: 7 }}>{s.k}</div>
+      {/* Content block, vertically centered between the header and footer so the
+          whitespace reads as balanced editorial air, not a cavernous mid-page void. */}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", paddingTop: 28, paddingBottom: 28 }}>
+        <div>
+          <div style={sEyebrow}>The value on the table</div>
+          <h2
+            className="font-abridge"
+            style={{ fontSize: 44, lineHeight: 1.06, color: C.ink, margin: "10px 0 0", maxWidth: 660, letterSpacing: "-0.5px" }}
+          >
+            {fmtShort(data.totalAnnualValue)} in value a year, built from your own volume.
+          </h2>
+          <div style={{ ...sLead, marginTop: 16, maxWidth: 600 }}>
+            {data.careSettingLabel}, modeled on {data.clientName}&rsquo;s {scope}. Not a benchmark, and not a
+            projection.
           </div>
-        ))}
-      </div>
+        </div>
 
-      {/* Table of contents, pinned near the foot */}
-      <div style={{ marginTop: "auto" }}>
-        <div style={{ ...sLbl, marginBottom: 6 }}>Inside this assessment</div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", columnGap: 44 }}>
-          {toc.map((r) => (
-            <div
-              key={r.n}
-              style={{ display: "flex", gap: 14, alignItems: "baseline", padding: "12px 0", borderTop: `1px solid ${C.hair}` }}
-            >
-              <span className="font-abridge" style={{ fontSize: 13, color: C.off }}>
-                {r.n}
-              </span>
-              <span style={{ fontSize: 14, color: C.label }}>{r.t}</span>
+        {/* Hairline + stat trio */}
+        <div style={{ ...sRule, margin: "30px 0 22px" }} />
+        <div style={{ display: "flex", gap: 56 }}>
+          {[
+            { v: fmtShort(data.totalAnnualValue), k: "Annual value", coral: true },
+            { v: fmtShort(data.valuePerProvider), k: isNursing ? "Per bed" : "Per provider", coral: false },
+            { v: data.totalHoursSaved.toLocaleString("en-US"), k: "Clinician hours returned", coral: false },
+          ].map((s, i) => (
+            <div key={i}>
+              <div className="font-abridge" style={{ fontSize: 34, lineHeight: 1, color: s.coral ? C.coral : C.ink }}>
+                {s.v}
+              </div>
+              <div style={{ ...sLbl, marginTop: 7 }}>{s.k}</div>
             </div>
           ))}
+        </div>
+
+        {/* Table of contents */}
+        <div style={{ marginTop: 46 }}>
+          <div style={{ ...sLbl, marginBottom: 6 }}>Inside this assessment</div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", columnGap: 44 }}>
+            {toc.map((r) => (
+              <div
+                key={r.n}
+                style={{ display: "flex", gap: 14, alignItems: "baseline", padding: "12px 0", borderTop: `1px solid ${C.hair}` }}
+              >
+                <span className="font-abridge" style={{ fontSize: 13, color: C.off }}>
+                  {r.n}
+                </span>
+                <span style={{ fontSize: 14, color: C.label }}>{r.t}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
