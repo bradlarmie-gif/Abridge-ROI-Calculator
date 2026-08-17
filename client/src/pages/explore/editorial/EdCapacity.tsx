@@ -19,6 +19,8 @@ import { type ExploreState } from "../ExploreFlow";
 import { SignalWatch } from "./SignalWatch";
 import { watchDomainFor } from "@/lib/exploreWatchSignals";
 import ValueRail from "./ValueRail";
+import DriverLedger, { type LedgerRow } from "./DriverLedger";
+import { buildInpatientLedger } from "./driverLedgerData";
 
 interface EdCapacityProps {
   state: ExploreState;
@@ -295,6 +297,54 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
   // won't put a dollar on throughput or length of stay we don't control. Present
   // it deliberately as proof (like Quality), never as an empty/unfinished dollar slot.
   const capacityIsProofLayer = setting === "inpatient";
+
+  // ─── Inpatient V2 driver ledger ───
+  // Capacity is a non-financial proof layer for inpatient: three tracked signals,
+  // no dollar. The running model on the right reflects the counted domains.
+  if (setting === "inpatient") {
+    const ledger = buildInpatientLedger(state, totalHoursSaved, "Capacity");
+    const rows: LedgerRow[] = [
+      {
+        id: "ipCensusCapacity",
+        label: "Census Capacity",
+        kind: "tracked",
+        mechanism: "Complete notes let discharge planning and consults start sooner, so beds turn over on time. We track the signals that move first and never put a dollar on the days themselves.",
+        signals: ["Discharge planning starts earlier", "Length of stay trends down"],
+      },
+      {
+        id: "ipConsultCapacity",
+        label: "Consult Capacity",
+        kind: "tracked",
+        mechanism: "Consult notes land the same day, so the downstream team acts without waiting on documentation.",
+        signals: ["Consult turnaround tightens", "Same-day consult completion rises"],
+      },
+      {
+        id: "ipDischargeTimeliness",
+        label: "Discharge Timeliness",
+        kind: "coming-soon",
+        mechanism: "The discharge summary lands on time, so the next site of care has what it needs. More capacity back once it ships, not counted today.",
+      },
+    ];
+    return (
+      <DriverLedger
+        eyebrow="Value Estimator · Step 4 of 9 · Capacity"
+        title="What does the freed time become?"
+        intro="Freed time shows up as capacity. In inpatient we hold it as proof, not a dollar: the signals below are ones we can show move, and we leave the throughput itself uncounted."
+        sectionLabel="The proof · tracked, not counted"
+        rows={rows}
+        ledgerGroups={ledger.groups}
+        grandLabel="Model so far"
+        grandValue={ledger.grandValue}
+        grandCaption={ledger.grandCaption}
+        stepName="Capacity"
+        stepIndex={4}
+        isValid={true}
+        onNext={onNext}
+        onBack={onBack}
+        onHome={onHome}
+      />
+    );
+  }
 
   return (
     <EditorialShell>

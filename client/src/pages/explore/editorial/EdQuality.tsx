@@ -10,6 +10,8 @@ import { watchDomainFor } from "@/lib/exploreWatchSignals";
 import ValueRail from "./ValueRail";
 import { InlineDriverCard, EqNum, EqCarried, EqOp, EqResult, EquationRow, EqAwaiting } from "./InlineEquation";
 import type { PriorQuadrantEntry } from "@/lib/exploreQuadrantValues";
+import DriverLedger, { type LedgerRow } from "./DriverLedger";
+import { buildInpatientLedger } from "./driverLedgerData";
 
 interface EdQualityProps {
   state: ExploreState;
@@ -435,7 +437,48 @@ export default function EdQuality({ state, updateState, totalHoursSaved, onNext,
     return <NursingQualityScreen state={state} updateState={updateState} totalHoursSaved={totalHoursSaved} onNext={onNext} onBack={onBack} onHome={onHome} />;
   }
 
-  if (setting === "outpatient" || setting === "ed" || setting === "inpatient") {
+  // ─── Inpatient V2 driver ledger ───
+  // Quality is a non-financial proof layer: two tracked drivers, no dollar.
+  if (setting === "inpatient") {
+    const ledger = buildInpatientLedger(state, totalHoursSaved, "Quality");
+    const rows: LedgerRow[] = [
+      {
+        id: "ipQualityFidelity",
+        label: "Quality Measurement Fidelity",
+        kind: "tracked",
+        mechanism: "Acuity and comorbidities captured as they are assessed, so the risk-adjusted and quality measures you already report reflect the care you delivered. The dollar depends on your specific quality and payment program, so we track it, not price it here.",
+        signals: ["Risk-adjusted performance is more accurate", "Quality reporting reflects true acuity"],
+      },
+      {
+        id: "ipCareGaps",
+        label: "Clinical Quality / Care Gaps",
+        kind: "tracked",
+        mechanism: "Abridge surfaces clinically important findings that an incomplete note can bury, so gaps get seen and acted on before they are missed.",
+        signals: ["Care gaps surfaced at the point of care", "Documented findings lead to action"],
+      },
+    ];
+    return (
+      <DriverLedger
+        eyebrow="Value Estimator · Step 7 of 9 · Quality"
+        title="Where does the quality show up?"
+        intro="Better inpatient notes make sure the acuity and care you delivered are reflected in the measures you already report. Abridge does not change the score; it keeps real care from being lost to an incomplete note."
+        sectionLabel="The proof · tracked, not counted"
+        rows={rows}
+        ledgerGroups={ledger.groups}
+        grandLabel="Model so far"
+        grandValue={ledger.grandValue}
+        grandCaption={ledger.grandCaption}
+        stepName="Quality"
+        stepIndex={7}
+        isValid={true}
+        onNext={onNext}
+        onBack={onBack}
+        onHome={onHome}
+      />
+    );
+  }
+
+  if (setting === "outpatient" || setting === "ed") {
     return <ProofChainScreen state={state} totalHoursSaved={totalHoursSaved} onNext={onNext} onBack={onBack} onHome={onHome} setting={setting} />;
   }
 
