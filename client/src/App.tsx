@@ -352,7 +352,10 @@ export default function App() {
 
   // Value Attainment Hub staging: when entered via ?hub=1, "home" and the moved
   // paths' back/home targets point at the new hub instead of the legacy journey.
-  const hubMode = INITIAL_DEEP_LINK.type === 'hub';
+  // The Value Attainment Hub is now the default home (Phase 3 flip). hubMode is
+  // always on: the splash enters the hub, and every flow's back/home targets the
+  // hub / its sub-hubs. The legacy JourneySelector ("journey") is now unreachable.
+  const hubMode = true;
 
   // Track navigation history for browser back button support
   const [viewHistory, setViewHistory] = useState<AppView[]>(["splash"]);
@@ -514,7 +517,7 @@ export default function App() {
 
             <PageTransition pageKey={currentView}>
             {currentView === "splash" && (
-              <SplashScreen onEnter={() => navigateTo("journey")} />
+              <SplashScreen onEnter={() => navigateTo("hub")} />
             )}
 
             {currentView === "journey" && (
