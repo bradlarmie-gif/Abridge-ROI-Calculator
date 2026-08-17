@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import type { ProformaSettingSnapshot, ProformaConfig } from "../proformaTypes";
 import { settingVocab } from "../proformaTypes";
 import { generateProformaEditorialPDF } from "@/components/proforma/ProformaPDFExport";
@@ -142,19 +143,21 @@ export default function ProformaPresentView({ settings, config, org, onNavigate 
 
   return (
     <div style={{ background: T.page, minHeight: "100vh", color: T.ink, fontFamily: "Manrope, sans-serif", WebkitFontSmoothing: "antialiased" }}>
-      {/* TOP BAR */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", rowGap: 12, padding: "16px 40px", borderBottom: `1px solid ${T.hair}` }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 26, flexShrink: 0 }}>
-          <span className="font-abridge" style={{ fontSize: 20, color: T.coral }}>ABRIDGE</span>
-          <ChapterNav active="present" onNavigate={onNavigate} />
-        </div>
-        <button
-          onClick={() => generateProformaEditorialPDF(settings, config, org)}
-          style={{ background: T.ink, color: "#fff", border: "none", fontFamily: "Manrope", fontWeight: 700, fontSize: 13, padding: "9px 16px", borderRadius: 9, cursor: "pointer" }}
-        >
-          Download the deal PDF ↓
-        </button>
-      </div>
+      <UnifiedHeader
+        pathType="forecast"
+        pathLabel="Financial"
+        showBack={false}
+        centerContent={<ChapterNav active="present" onNavigate={onNavigate} />}
+        rightAction={
+          <button
+            onClick={() => generateProformaEditorialPDF(settings, config, org)}
+            style={{ background: T.ink, color: "#fff", border: "none", fontFamily: "Manrope", fontWeight: 700, fontSize: 13, padding: "9px 16px", borderRadius: 9, cursor: "pointer" }}
+          >
+            Download the deal PDF ↓
+          </button>
+        }
+      />
+      <UnifiedHeaderSpacer />
 
       <div style={{ maxWidth: 1000, margin: "0 auto", padding: "52px 40px 70px" }}>
         <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.16em", textTransform: "uppercase", color: T.coral }}>The case · {org}</div>

@@ -860,7 +860,7 @@ const REVENUE_PATH_GROUP: Record<RevenuePathId, string> = {
 const IP_REVENUE_PATH_GROUP: Record<IpRevenuePathId, string> = {
   drg: "Case mix and DRG accuracy",
   cdi: "CDI query efficiency",
-  obs: "Observation status defense",
+  obs: "Status / Medical Necessity Denials",
 };
 
 /** The Align proof option ids -> the capture metric each pre-selects, so a

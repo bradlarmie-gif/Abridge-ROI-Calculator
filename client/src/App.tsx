@@ -64,6 +64,11 @@ import { type DataFormPreseed, type MeasureDataRequestResponse, decodeDataFormPr
 import { type AttainSaveState, decodeAttain } from "@/lib/attain/attainUrlState";
 import ProformaHub from "@/pages/proforma/ProformaHub";
 import DataRequestBuilder from "@/pages/data-request/DataRequestBuilder";
+import ValueAttainmentHub from "@/pages/hub/ValueAttainmentHub";
+import StrategyHub from "@/pages/hub/StrategyHub";
+import FinancialHub from "@/pages/hub/FinancialHub";
+import PlanningHub from "@/pages/hub/PlanningHub";
+import MetricLibrary from "@/pages/hub/MetricLibrary";
 import type { ProformaSettingSnapshot, ProformaConfig } from "@/pages/proforma/proformaTypes";
 import { DEFAULT_PROFORMA_CONFIG } from "@/pages/proforma/proformaTypes";
 import { mergeExploreEditIntoSetting } from "@/lib/proformaCalculations";
@@ -71,7 +76,7 @@ import { mergeExploreEditIntoSetting } from "@/lib/proformaCalculations";
 import { type CareSettingType } from "@/lib/SETTING_CONFIG";
 import { type RoiInputs } from "@/lib/roi-types";
 
-type AppView = "splash" | "journey" | "explore" | "baseline-setup" | "model-builder" | "investment" | "calculator" | "expand" | "switch" | "learn" | "measure" | "forecast" | "forecast-mode" | "forecast-roi-calc" | "proforma-hub" | "proforma-view" | "explore-intake" | "measure-data-request" | "explore-intake-receipt" | "measure-data-receipt" | "data-request-builder" | "forecast-app-rationalization" | "attain";
+type AppView = "splash" | "journey" | "explore" | "baseline-setup" | "model-builder" | "investment" | "calculator" | "expand" | "switch" | "learn" | "measure" | "forecast" | "forecast-mode" | "forecast-roi-calc" | "proforma-hub" | "proforma-view" | "explore-intake" | "measure-data-request" | "explore-intake-receipt" | "measure-data-receipt" | "data-request-builder" | "forecast-app-rationalization" | "attain" | "hub" | "strategy-hub" | "financial-hub" | "planning-hub" | "value-strategy" | "planning";
 
 interface SelectionState {
   selectedSettings: CareSettingType[];
@@ -87,6 +92,7 @@ type InitialDeepLink =
   | { type: 'learn'; screen: LearnScreen }
   | { type: 'forecast' }
   | { type: 'attain'; saveState: AttainSaveState }
+  | { type: 'hub' }
   | { type: 'none' };
 
 const PARTNER_SESSION_KEY = 'abridge_partner_session';
@@ -134,6 +140,13 @@ function clearPartnerSession() {
 function getInitialDeepLink(): InitialDeepLink {
   const params = new URLSearchParams(window.location.search);
   const pathname = window.location.pathname;
+
+  // Staging flag for the Value Attainment Hub IA restructure. While on, the app
+  // opens on the new three-section hub instead of the legacy journey home; the
+  // legacy home stays the default when the flag is absent.
+  if (params.get('hub') === '1') {
+    return { type: 'hub' };
+  }
 
   const intakeReceiptParam = params.get('intake_receipt');
   if (intakeReceiptParam) {
@@ -217,6 +230,11 @@ export default function App() {
   // THROWAWAY: ?planpreview=1 renders the Plan chapter prototype. Remove with AttainPlanPreview.tsx.
   if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("planpreview") === "1") {
     return <AttainPlanPreview />;
+  }
+  // Metric Library preview (?metriclibrary=1) while it's built out; the Planning
+  // Metrics card stays "coming soon" until it's wired in.
+  if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("metriclibrary") === "1") {
+    return <MetricLibrary />;
   }
   // THROWAWAY: ?attainpreview=1 renders the unified matrix preview (setting x category, Align + Plan).
   if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("attainpreview") === "1") {
@@ -328,9 +346,14 @@ export default function App() {
     if (INITIAL_DEEP_LINK.type === 'learn') return "learn";
     if (INITIAL_DEEP_LINK.type === 'forecast') return "forecast";
     if (INITIAL_DEEP_LINK.type === 'attain') return "attain";
+    if (INITIAL_DEEP_LINK.type === 'hub') return "hub";
     return "splash";
   });
-  
+
+  // Value Attainment Hub staging: when entered via ?hub=1, "home" and the moved
+  // paths' back/home targets point at the new hub instead of the legacy journey.
+  const hubMode = INITIAL_DEEP_LINK.type === 'hub';
+
   // Track navigation history for browser back button support
   const [viewHistory, setViewHistory] = useState<AppView[]>(["splash"]);
 
@@ -471,7 +494,7 @@ export default function App() {
   };
 
   const handleBackToJourney = () => {
-    navigateTo("journey");
+    navigateTo(hubMode ? "hub" : "journey");
   };
 
   const handleBackToProforma = useCallback(() => {
@@ -520,10 +543,79 @@ export default function App() {
               />
             )}
 
+            {/* Value Attainment Hub (staged behind ?hub=1) — new three-section IA */}
+            {currentView === "hub" && (
+              <ValueAttainmentHub
+                onSelectStrategy={() => navigateTo("strategy-hub")}
+                onSelectFinancial={() => navigateTo("financial-hub")}
+                onSelectPlanning={() => navigateTo("planning-hub")}
+              />
+            )}
+
+            {currentView === "strategy-hub" && (
+              <StrategyHub
+                onSelectValueStory={() => {
+                  setLearnInitialScreen(undefined);
+                  navigateTo("learn");
+                }}
+                onSelectValueStrategy={() => navigateTo("value-strategy")}
+              />
+            )}
+
+            {/* Value Strategy — the Attain funnel + Align + strategy summary, then
+                hands off to Planning (the plan autosaves and Planning resumes it). */}
+            {currentView === "value-strategy" && (
+              <AttainFlowV2
+                chapters={["align", "strategy"]}
+                onFinish={() => navigateTo("planning")}
+                onBackToJourney={() => navigateTo("strategy-hub")}
+                flowLabel="Value Strategy"
+                buildCta="Build the strategy"
+                experienceLabel="Your strategy"
+              />
+            )}
+
+            {/* Planning — resumes the saved strategy straight into Plan → Progress. */}
+            {currentView === "planning" && (
+              <AttainFlowV2
+                autoResume
+                chapters={["plan", "progress"]}
+                onBackToJourney={() => navigateTo("planning-hub")}
+                flowLabel="Planning"
+                experienceLabel="Build the plan"
+              />
+            )}
+
+            {currentView === "financial-hub" && (
+              <FinancialHub
+                onSelectRoiCalculator={() => navigateTo("forecast-roi-calc")}
+                onSelectNewDeal={() => navigateTo("proforma-hub")}
+                onSelectAppRationalization={() => navigateTo("forecast-app-rationalization")}
+                onSelectExplore={() => {
+                  setSelectionState({ selectedSettings: [], selectedLevers: [] });
+                  setSeedInputs({});
+                  setBaselineInfo(null);
+                  setValueResults(null);
+                  setModelResults(null);
+                  setExploreInitialSettings({});
+                  setProformaAddCareSetting(undefined);
+                  setProformaEditExploreState(undefined);
+                  navigateTo("explore");
+                }}
+              />
+            )}
+
+            {currentView === "planning-hub" && (
+              <PlanningHub
+                onOpenPlanning={() => navigateTo("planning")}
+                onOpenMetrics={() => navigateTo("planning")}
+              />
+            )}
+
             {currentView === "explore" && (
               <ExploreFlow
                 editorial
-                onBackToJourney={handleBackToJourney}
+                onBackToJourney={hubMode ? () => navigateTo("financial-hub") : handleBackToJourney}
                 onBackToProforma={(proformaAddCareSetting || proformaEditExploreState) ? handleBackToProforma : undefined}
                 initialCareSetting={proformaAddCareSetting || exploreInitialSettings.careSetting}
                 initialPhase={exploreInitialSettings.phase}
@@ -607,8 +699,8 @@ export default function App() {
             )}
 
             {currentView === "learn" && (
-              <LearnPath 
-                onBack={handleBackToJourney} 
+              <LearnPath
+                onBack={hubMode ? () => navigateTo("strategy-hub") : handleBackToJourney}
                 initialScreen={learnInitialScreen}
                 onStartCalculator={(setting) => {
                   setSelectionState({ selectedSettings: [setting as CareSettingType], selectedLevers: [] });
@@ -641,15 +733,17 @@ export default function App() {
 
             {currentView === "forecast-roi-calc" && (
               <QuickRoiCalculator
-                onBack={() => navigateTo("forecast-mode")}
-                onHome={() => navigateTo("journey")}
+                onBack={() => navigateTo(hubMode ? "financial-hub" : "forecast-mode")}
+                onHome={() => navigateTo(hubMode ? "hub" : "journey")}
+                pathLabel={hubMode ? "Financial" : undefined}
               />
             )}
 
             {currentView === "forecast-app-rationalization" && (
               <AppRationalizationFlow
-                onBack={() => navigateTo("forecast-mode")}
-                onHome={() => navigateTo("journey")}
+                onBack={() => navigateTo(hubMode ? "financial-hub" : "forecast-mode")}
+                onHome={() => navigateTo(hubMode ? "hub" : "journey")}
+                pathLabel={hubMode ? "Financial" : undefined}
               />
             )}
 
@@ -731,7 +825,7 @@ export default function App() {
                     navigateTo("explore");
                   }}
                   onRemoveSetting={handleRemoveFromProforma}
-                  onBack={() => navigateTo("journey")}
+                  onBack={() => navigateTo(hubMode ? "financial-hub" : "journey")}
                 />
               )
             )}

@@ -143,7 +143,7 @@ export default function AttainPlanPreview() {
   const named = people.filter((p) => p.name.trim()).map((p) => p.name.trim() + (p.role.trim() ? ` (${p.role.trim()})` : ""));
 
   return (
-    <div className="min-h-screen bg-[#FDFCFA] px-8 py-12">
+    <div className="min-h-screen bg-[#FFFFFF] px-8 py-12">
       <div className="max-w-[760px] mx-auto">
         <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-1">Prototype · the Plan chapter</p>
         <h1 className="font-abridge text-3xl text-[#1A1A1A] mb-3">Who's on it, the outcomes, and how we measure them</h1>

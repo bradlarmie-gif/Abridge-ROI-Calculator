@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import type { ProformaSettingSnapshot, ProformaConfig } from "../proformaTypes";
 import {
   T,
@@ -133,25 +134,27 @@ export default function ProformaCaseView({ settings, config, onNavigate }: Profo
 
   return (
     <div style={{ background: T.page, minHeight: "100vh", color: T.ink, fontFamily: "Manrope, sans-serif", WebkitFontSmoothing: "antialiased" }}>
-      {/* TOP BAR */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", rowGap: 12, padding: "16px 40px", borderBottom: `1px solid ${T.hair}` }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 26, flexShrink: 0 }}>
-          <span className="font-abridge" style={{ fontSize: 20, color: T.coral }}>ABRIDGE</span>
-          <ChapterNav active="case" onNavigate={onNavigate} />
-        </div>
-        <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 18 }}>
-          {scoreboard.map((m) => (
-            <div key={m.k}>
-              <AnimatedMoney value={m.v} className="font-abridge" style={{ fontSize: 19, lineHeight: 1, color: m.coral ? T.coral : T.ink, display: "block" }} />
-              <div style={{ fontSize: 9, color: T.faint, textTransform: "uppercase", letterSpacing: "0.07em", fontWeight: 800, marginTop: 3 }}>{m.k}</div>
+      <UnifiedHeader
+        pathType="forecast"
+        pathLabel="Financial"
+        showBack={false}
+        centerContent={<ChapterNav active="case" onNavigate={onNavigate} />}
+        rightAction={
+          <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
+            {scoreboard.map((m) => (
+              <div key={m.k}>
+                <AnimatedMoney value={m.v} className="font-abridge" style={{ fontSize: 18, lineHeight: 1, color: m.coral ? T.coral : T.ink, display: "block" }} />
+                <div style={{ fontSize: 9, color: T.faint, textTransform: "uppercase", letterSpacing: "0.07em", fontWeight: 800, marginTop: 3 }}>{m.k}</div>
+              </div>
+            ))}
+            <div>
+              <div className="font-abridge" style={{ fontSize: 18, lineHeight: 1, color: T.ink }}>{settings.length}</div>
+              <div style={{ fontSize: 9, color: T.faint, textTransform: "uppercase", letterSpacing: "0.07em", fontWeight: 800, marginTop: 3 }}>Settings</div>
             </div>
-          ))}
-          <div>
-            <div className="font-abridge" style={{ fontSize: 19, lineHeight: 1, color: T.ink }}>{settings.length}</div>
-            <div style={{ fontSize: 9, color: T.faint, textTransform: "uppercase", letterSpacing: "0.07em", fontWeight: 800, marginTop: 3 }}>Settings</div>
           </div>
-        </div>
-      </div>
+        }
+      />
+      <UnifiedHeaderSpacer />
 
       <div style={{ maxWidth: 1120, margin: "0 auto", padding: "36px 40px 60px" }}>
         <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.15em", textTransform: "uppercase", color: T.coral }}>Chapter 02 · The case</div>

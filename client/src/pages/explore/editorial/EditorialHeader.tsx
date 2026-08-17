@@ -1,11 +1,11 @@
 import { ReactNode } from "react";
-import { ArrowLeft } from "lucide-react";
+import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 
 /**
- * Shared editorial chrome for the Explore editorial preview (?explorepreview=1).
- * Matches the locked mockup kit exactly: #FDFCFA page, #E7E3DD hairlines,
- * ABRIDGE coral wordmark, "Explore · {step}", Data request chip, 9-dot progress
- * with the active dot elongated coral.
+ * Explore chrome. Delegates to the app-wide UnifiedHeader so Explore shares the
+ * one header shell with the hub and every other flow (same logo/back, breadcrumb,
+ * progress dots, and a right-side action slot). The Data-request control lives in
+ * that action slot. Keeps its own prop shape so the 9 Explore screens don't change.
  */
 export function EditorialHeader({
   stepName,
@@ -21,63 +21,32 @@ export function EditorialHeader({
   onHome?: () => void;
 }) {
   return (
-    <div className="h-[58px] border-b border-[#E7E3DD]">
-      <div className="max-w-[1160px] mx-auto h-full flex items-center justify-between px-5 sm:px-8 lg:px-12 gap-3">
-        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-          {onBack && (
+    <>
+      <UnifiedHeader
+        pathType="explore"
+        pathLabel="Value Estimator"
+        currentStep={stepIndex}
+        totalSteps={9}
+        stepName={stepName}
+        onBack={onBack}
+        onHome={onHome}
+        rightAction={
+          onDataRequest ? (
             <button
-              onClick={onBack}
-              aria-label="Back"
-              data-testid="ed-header-back"
-              className="w-8 h-8 rounded-full border border-[#E7E3DD] bg-white flex items-center justify-center text-[#565250] hover:text-[#EA2C00] hover:border-[#EA2C00] transition-colors flex-shrink-0"
+              onClick={onDataRequest}
+              data-testid="ed-header-data-request"
+              className="inline-flex items-center h-8 px-3 rounded-lg border border-[#E8E2DA] bg-white text-[12px] font-bold text-[#1A1A1A] hover:border-[#1A1A1A] transition-colors whitespace-nowrap"
             >
-              <ArrowLeft className="w-4 h-4" />
+              Data request
             </button>
-          )}
-          <button
-            type="button"
-            onClick={onHome}
-            aria-label="Home"
-            className="font-abridge text-[18px] sm:text-[20px] text-[#EA2C00] tracking-[0.5px] hover:opacity-70 transition-opacity"
-          >
-            ABRIDGE
-          </button>
-        </div>
-        {/* Center step label: desktop only. On smaller screens the screen's own
-            "EXPLORE · STEP N OF 9" eyebrow carries it, so we drop it to avoid the collision. */}
-        <div className="hidden lg:block text-[14px] text-[#565250]">
-          Explore · <b className="text-[#1A1A1A] font-bold">{stepName}</b>
-        </div>
-        <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
-          <button
-            onClick={onDataRequest}
-            className="text-[12px] font-bold text-[#2E2822] border border-[#E7E3DD] rounded-[12px] px-[11px] sm:px-[13px] py-[7px] bg-white whitespace-nowrap"
-          >
-            Data request
-          </button>
-          {/* Full progress dots on sm+; a compact step counter on phones. */}
-          <div className="hidden sm:flex gap-[6px]">
-            {Array.from({ length: 9 }).map((_, i) => (
-              <span
-                key={i}
-                className={
-                  i === stepIndex - 1
-                    ? "h-2 w-5 rounded-full bg-[#EA2C00]"
-                    : "h-2 w-2 rounded-full bg-[#E2DDD6]"
-                }
-              />
-            ))}
-          </div>
-          <div className="sm:hidden text-[12px] font-bold text-[#7C766F] whitespace-nowrap tabular-nums">
-            {stepIndex}
-            <span className="text-[#C9BDAD]">/9</span>
-          </div>
-        </div>
-      </div>
-    </div>
+          ) : undefined
+        }
+      />
+      <UnifiedHeaderSpacer />
+    </>
   );
 }
 
 export function EditorialShell({ children }: { children: ReactNode }) {
-  return <div className="min-h-screen bg-[#FDFCFA] font-sans text-[#1A1A1A] antialiased">{children}</div>;
+  return <div className="min-h-screen bg-[#FFFFFF] font-sans text-[#1A1A1A] antialiased">{children}</div>;
 }

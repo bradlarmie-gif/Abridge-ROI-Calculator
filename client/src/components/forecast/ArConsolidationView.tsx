@@ -157,7 +157,7 @@ export default function ArConsolidationView({
                 data-testid={`ar-today-seg-${r.id}`}
                 onMouseEnter={() => setHoverId(r.id)}
                 onMouseLeave={() => setHoverId(null)}
-                className="h-full border-r-2 border-[#FDFCFA] last:border-r-0 transition-opacity duration-200"
+                className="h-full border-r-2 border-[#FFFFFF] last:border-r-0 transition-opacity duration-200"
                 style={{
                   width: `${r.widthPct}%`,
                   background: r.staysOnly ? STAYS_COLOR : r.shade,
@@ -209,7 +209,7 @@ export default function ArConsolidationView({
                   data-testid={`ar-after-seg-${r.id}`}
                   onMouseEnter={() => setHoverId(r.id)}
                   onMouseLeave={() => setHoverId(null)}
-                  className="h-full border-r-2 border-[#FDFCFA] transition-opacity duration-200"
+                  className="h-full border-r-2 border-[#FFFFFF] transition-opacity duration-200"
                   style={{
                     width: `${(r.retired / model.stackTotal) * 100}%`,
                     background: hoverId === r.id ? "#B02200" : CORAL,
@@ -224,7 +224,7 @@ export default function ArConsolidationView({
                   data-testid={`ar-after-stays-${r.id}`}
                   onMouseEnter={() => setHoverId(r.id)}
                   onMouseLeave={() => setHoverId(null)}
-                  className={`h-full border-r-2 border-[#FDFCFA] transition-opacity duration-200 ${i === arr.length - 1 ? "!border-r-0" : ""}`}
+                  className={`h-full border-r-2 border-[#FFFFFF] transition-opacity duration-200 ${i === arr.length - 1 ? "!border-r-0" : ""}`}
                   style={{
                     width: `${(r.stays / model.stackTotal) * 100}%`,
                     background: STAYS_COLOR,

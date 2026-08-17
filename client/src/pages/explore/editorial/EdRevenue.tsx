@@ -379,7 +379,7 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
   const obsCard = (
     <InlineDriverCard
       key="obs"
-      title="Observation / IP status defense"
+      title="Status / Medical Necessity Denials"
       subtitle="The revenue delta when a payer downgrades an inpatient stay to observation for want of clear medical-necessity documentation. Two separate questions: which downgrades the note itself can defend, and how many of those survive appeal."
       enabled={dq.ipObsDefenseEnabled}
       onToggle={() =>
@@ -447,7 +447,7 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
     <EditorialShell>
       <EditorialHeader stepName="Revenue" stepIndex={6} onBack={onBack} onHome={onHome} />
       <div className="max-w-[1160px] mx-auto px-5 sm:px-8 lg:px-12 pt-11 pb-[60px]">
-        <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#565250]">Explore · Step 6 of 9</div>
+        <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#565250]">Value Estimator · Step 6 of 9</div>
         <h1 className="font-abridge text-[26px] sm:text-[32px] lg:text-[38px] leading-[1.08] text-[#1A1A1A] mt-[10px] max-w-[680px]">{heading}</h1>
         <p className="text-[16px] text-[#565250] mt-[13px] max-w-[640px] leading-[1.5]">{sub}</p>
 

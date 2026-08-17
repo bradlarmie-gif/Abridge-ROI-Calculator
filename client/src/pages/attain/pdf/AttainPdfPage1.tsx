@@ -135,7 +135,7 @@ export default function AttainPdfPage1({ data = SAMPLE, mode = "kickoff" }: { da
   const review = mode === "review" ? data.review : undefined;
   const onTable = data.total - (review?.realized ?? 0);
   return (
-    <div className="pdf-page mx-auto bg-[#FDFCFA] text-[#1A1A1A]" style={{ width: 816, height: 1056, breakAfter: "page" }}>
+    <div className="pdf-page mx-auto bg-[#FFFFFF] text-[#1A1A1A]" style={{ width: 816, height: 1056, breakAfter: "page" }}>
       <style>{`@page { size: Letter; margin: 0; } @media print { body { margin: 0; } }`}</style>
       <div className="flex flex-col h-full px-[62px] pt-[52px] pb-[42px]">
 

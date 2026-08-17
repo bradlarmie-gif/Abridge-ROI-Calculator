@@ -46,7 +46,7 @@ import { DEFAULT_EXPLORE_STATE, type ExploreState } from "@/pages/explore/Explor
  *      clamps the price to `MAX_IP_CDI_COST_PER_QUERY` for exactly this
  *      reason (see that constant's own comment), and the UI shows an
  *      explicit note whenever both DRG and CDI are chosen together.
- *   3. Observation / IP Status Defense — a status downgrade driven by
+ *   3. Status / Medical Necessity Denials — a status downgrade driven by
  *      under-specified severity-of-illness documentation is a genuinely
  *      separate claim from a DRG-weight gap: it is the whole admission
  *      moving from inpatient to observation, not a lower weight within the
@@ -157,7 +157,7 @@ const NO_MOVE_FORMULA = "Set the numbers above and the math appears here.";
 export const IP_REVENUE_PATH_LABELS = {
   drg: "Case Mix / DRG Accuracy",
   cdi: "CDI Query Efficiency",
-  obs: "Observation / IP Status Defense",
+  obs: "Status / Medical Necessity Denials",
 } as const;
 
 export type IpRevenuePathId = keyof typeof IP_REVENUE_PATH_LABELS;
@@ -326,7 +326,7 @@ export function ipCdiPayoffFormula(chain: IpCdiChain): string {
 }
 
 // ────────────────────────────────────────────────────────────────────────
-// PATH 3 — Observation / IP Status Defense
+// PATH 3 — Status / Medical Necessity Denials
 // ────────────────────────────────────────────────────────────────────────
 
 /** Benchmark observation downgrade/denial rate, matching the live engine's

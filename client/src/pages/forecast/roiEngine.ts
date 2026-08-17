@@ -433,7 +433,7 @@ const drgDriver: RoiDriver = {
 const obsDriver: RoiDriver = {
   id: "obsDefense",
   domain: "Revenue",
-  title: "Observation / status defense",
+  title: "Status / Medical Necessity Denials",
   fields: [
     { k: "ipObsDefenseDenialRate", label: "Admissions downgraded to observation today", def: 5, suffix: "%", step: 0.1 },
     { k: "ipObsDefenseCustomPercent", label: "Share the note can defend", def: 40, suffix: "%" },

@@ -226,7 +226,7 @@ export default function ObsDefenseCalc({ state, updateDocQualityInputs, totalHou
           </div>
           <div className="h-px bg-[#D1D5DB] my-2" />
           <div className="flex justify-between gap-2 text-sm">
-            <span className="font-semibold text-black">Annual Obs Defense Value</span>
+            <span className="font-semibold text-black">Annual value defended</span>
             <span className="font-bold text-[#EA2C00]">{fmt(value)}</span>
           </div>
         </div>
@@ -235,7 +235,7 @@ export default function ObsDefenseCalc({ state, updateDocQualityInputs, totalHou
       {/* Final Value */}
       <div className="border-t border-[#E5E5E5] pt-6">
         <div className="flex justify-between items-center mb-4">
-          <span className="font-semibold text-black">Annual Obs Defense Value</span>
+          <span className="font-semibold text-black">Annual value defended</span>
           {ready
             ? <span className="text-2xl font-bold text-[#EA2C00]" data-testid="text-obs-net">{fmt(value)}</span>
             : <span className="text-sm font-medium text-[#8C7E6E]" data-testid="text-obs-net">Enter {need}</span>}

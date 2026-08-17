@@ -181,7 +181,7 @@ export function generateIntakeResponseText(data: ExploreIntakeResponse): string 
         line('Hospitalists', data.ipProviders),
         line('Annual admissions', data.ipAnnualAdmissions),
         line('Average length of stay (days)', data.ipAvgLos, { decimals: 1 }),
-        line('Obs/IP status denial rate', data.ipDenialRate, { suffix: '%' }),
+        line('Status / med-necessity denial rate', data.ipDenialRate, { suffix: '%' }),
         line('Avg claim value at risk', data.ipAvgClaimValue, { suffix: ' $' }),
         line('DRG at-risk rate', data.ipDrgAtRiskRate, { suffix: '%' }),
         line('DRG weight increase', data.ipDrgWeightIncrease, { decimals: 2 }),

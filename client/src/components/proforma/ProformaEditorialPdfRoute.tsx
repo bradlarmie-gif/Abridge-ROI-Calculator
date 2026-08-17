@@ -60,7 +60,7 @@ function sampleVariant(n: number): ProformaPdfData {
     settings.push(
       synthSetting(template, "inpatient-1", "Inpatient", "inpatient", [
         { id: "ipDrg", name: "DRG / case-mix accuracy", value: 380000, quadrant: "Revenue", onset: "delayed", category: "documentation" },
-        { id: "ipObsDefense", name: "Observation status defense", value: 190000, quadrant: "Revenue", onset: "delayed", category: "documentation" },
+        { id: "ipObsDefense", name: "Status / Medical Necessity Denials", value: 190000, quadrant: "Revenue", onset: "delayed", category: "documentation" },
         { id: "patientAccess", name: "Throughput, freed clinician time", value: 120000, quadrant: "Capacity", onset: "immediate", category: "time" },
         { id: "providerWellbeing", name: "Provider wellbeing", value: 70000, quadrant: "Workforce", onset: "phased", category: "time" },
       ]),

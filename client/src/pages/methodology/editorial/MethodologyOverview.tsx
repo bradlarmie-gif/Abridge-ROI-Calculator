@@ -25,7 +25,7 @@ const VALUES: { label: string; dot: string; desc: string }[] = [
  */
 export default function MethodologyOverview({ onBack, onHome, onNavigate }: Props) {
   return (
-    <div className="min-h-screen bg-[#FDFCFA] text-[#5E534A] antialiased">
+    <div className="min-h-screen bg-[#FFFFFF] text-[#5E534A] antialiased">
       <MethodologyHeader active="overview" activeLabel="The Methodology" onBack={onBack} onHome={onHome} onNavigate={onNavigate} />
 
       <div className="max-w-[1120px] mx-auto px-5 sm:px-8 lg:px-14">

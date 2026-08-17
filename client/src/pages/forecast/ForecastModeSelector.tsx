@@ -26,7 +26,7 @@ export default function ForecastModeSelector({
   };
 
   return (
-    <div className="min-h-screen bg-white relative overflow-hidden">
+    <div className="min-h-screen bg-[#FFFFFF] relative overflow-hidden">
       <GlobalHeader pageName="Forecast" />
       <div className="max-w-6xl mx-auto px-4 md:px-6 pt-[88px] md:pt-[96px] pb-8 relative z-10">
 

@@ -119,7 +119,7 @@ function getInpatientFields(d: ExploreIntakeResponse): { section: string; fields
       { label: "Avg length of stay", value: d.ipAvgLos != null ? `${d.ipAvgLos.toFixed(1)} days` : null },
     ]},
     { section: "Obs / IP Status Denials", fields: [
-      { label: "Obs/IP status denial rate", value: fmt(d.ipDenialRate, { suffix: "%" }) },
+      { label: "Status / med-necessity denial rate", value: fmt(d.ipDenialRate, { suffix: "%" }) },
       { label: "Avg claim value at risk", value: fmt(d.ipAvgClaimValue, { prefix: "$" }) },
     ]},
     { section: "DRG Accuracy / CC-MCC Capture", fields: [

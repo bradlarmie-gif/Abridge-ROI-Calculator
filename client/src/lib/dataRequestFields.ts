@@ -157,7 +157,7 @@ export const DRIVER_FIELDS: DriverFieldGroup[] = [
   },
   {
     driverId: 'obsDefense',
-    driverLabel: 'Obs/IP Status Defense',
+    driverLabel: 'Status / Medical Necessity Denials',
     quadrant: 'Revenue',
     fields: [
       { id: 'ipConcurrentReviewRate', label: 'Admissions undergoing concurrent payer review (%)', description: 'Percentage of inpatient admissions that are actively reviewed for status by payers.', who: 'Revenue cycle or utilization management', example: '20%', type: 'percent' },

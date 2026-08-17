@@ -367,7 +367,7 @@ export function getDriverFallback(driverId: string): string {
     bedsideTime:          "Hours returned to direct patient care — documentation time shifted to bedside.",
     opAfterHoursDoc:      "After-hours documentation eliminated — hours returned directly to providers.",
     opBurnoutTracking:    "Burnout trajectory improvement; workforce sustainability benefit compounds over time.",
-    obsDefense:           "Observation-to-inpatient status defense from thorough documentation — auditable per-case.",
+    obsDefense:           "Status / medical-necessity denials, the inpatient stays a complete note keeps off observation, auditable per-case.",
     nursingHcahps:        "HCAHPS score improvement from provider presence and communication quality.",
     nursingSepsis:        "Earlier sepsis recognition via documentation quality — outcomes and cost improvement.",
     nursingEarlyDeterioration: "Earlier harm event prevention through real-time flowsheet documentation of clinical deterioration signals.",

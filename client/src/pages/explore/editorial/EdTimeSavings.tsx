@@ -162,7 +162,7 @@ export default function EdTimeSavings({ state, updateState, onNext, onBack, onHo
       <EditorialShell>
         <EditorialHeader stepName="Time Savings" stepIndex={3} onBack={onBack} onHome={onHome} />
         <div className="max-w-[1160px] mx-auto px-5 sm:px-8 lg:px-12 pt-12 pb-14">
-          <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#565250]">Explore · Step 3 of 9</div>
+          <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#565250]">Value Estimator · Step 3 of 9</div>
           <h1 className="font-abridge text-[27px] sm:text-[34px] lg:text-[40px] leading-[1.08] text-[#1A1A1A] mt-[10px] max-w-[680px]">
             How much time can Abridge give back?
           </h1>
@@ -342,7 +342,7 @@ export default function EdTimeSavings({ state, updateState, onNext, onBack, onHo
       <EditorialHeader stepName="Time Savings" stepIndex={3} onBack={onBack} onHome={onHome} />
       <div className="max-w-[1160px] mx-auto px-5 sm:px-8 lg:px-12 pt-12 pb-14">
         <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#565250]">
-          Explore · Step 3 of 9
+          Value Estimator · Step 3 of 9
         </div>
         <h1 className="font-abridge text-[27px] sm:text-[34px] lg:text-[40px] leading-[1.08] text-[#1A1A1A] mt-[10px] max-w-[640px]">
           How much time can Abridge give back?

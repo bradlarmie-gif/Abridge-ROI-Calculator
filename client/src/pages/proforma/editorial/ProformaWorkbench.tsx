@@ -2,6 +2,7 @@ import { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import { DOMAIN_COLORS } from "@/lib/domainColors";
 import { motion, AnimatePresence, animate } from "framer-motion";
 import { Stethoscope, Zap, ChevronDown, Plus, Trash2, ArrowLeft } from "lucide-react";
+import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import type {
   ProformaSettingSnapshot,
   ProformaConfig,
@@ -27,7 +28,7 @@ import { applyExclusions, useNarrow } from "./editorialShared";
 
 /* ─────────────────────────── design tokens ─────────────────────────── */
 const T = {
-  page: "#FDFCFA",
+  page: "#FFFFFF",
   card: "#FDFBF8",
   hair: "#E8E2DA",
   soft: "#F1EBE3",
@@ -1182,15 +1183,13 @@ export default function ProformaWorkbench({ settings, config, onUpdateSetting, o
 
   return (
     <div style={{ background: T.page, minHeight: "100vh", color: T.ink, fontFamily: "Manrope, sans-serif", WebkitFontSmoothing: "antialiased" }}>
-      {/* TOP BAR */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", rowGap: 12, padding: "16px 40px", borderBottom: `1px solid ${T.hair}` }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 16, flexShrink: 0 }}>
-          {onBack && (
-            <button onClick={onBack} aria-label="Back" style={{ width: 32, height: 32, borderRadius: 999, border: `1px solid ${T.hair}`, background: "#fff", display: "flex", alignItems: "center", justifyContent: "center", color: T.muted, cursor: "pointer", flexShrink: 0 }}>
-              <ArrowLeft size={16} />
-            </button>
-          )}
-          <span className="font-abridge" style={{ fontSize: 20, color: T.coral }}>ABRIDGE</span>
+      {/* Shared header shell (logo + back), with the Proforma chapter tabs as the
+          center and the live scoreboard as the right-side action. */}
+      <UnifiedHeader
+        pathType="forecast"
+        pathLabel="Financial"
+        onBack={onBack}
+        centerContent={
           <div style={{ display: "flex", gap: 26 }}>
             {CHAPTERS.map((c) => {
               const active = c.key === "build";
@@ -1201,20 +1200,23 @@ export default function ProformaWorkbench({ settings, config, onUpdateSetting, o
               );
             })}
           </div>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 18 }}>
-          {scoreboard.map((m) => (
-            <div key={m.k}>
-              <AnimatedMoney value={m.v} className="font-abridge" style={{ fontSize: 19, lineHeight: 1, color: m.coral ? T.coral : T.ink, display: "block" }} />
-              <div style={{ fontSize: 9, color: T.faint, textTransform: "uppercase", letterSpacing: "0.07em", fontWeight: 800, marginTop: 3 }}>{m.k}</div>
+        }
+        rightAction={
+          <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
+            {scoreboard.map((m) => (
+              <div key={m.k}>
+                <AnimatedMoney value={m.v} className="font-abridge" style={{ fontSize: 18, lineHeight: 1, color: m.coral ? T.coral : T.ink, display: "block" }} />
+                <div style={{ fontSize: 9, color: T.faint, textTransform: "uppercase", letterSpacing: "0.07em", fontWeight: 800, marginTop: 3 }}>{m.k}</div>
+              </div>
+            ))}
+            <div>
+              <div className="font-abridge" style={{ fontSize: 18, lineHeight: 1, color: T.ink }}>{settings.length}</div>
+              <div style={{ fontSize: 9, color: T.faint, textTransform: "uppercase", letterSpacing: "0.07em", fontWeight: 800, marginTop: 3 }}>Settings</div>
             </div>
-          ))}
-          <div>
-            <div className="font-abridge" style={{ fontSize: 19, lineHeight: 1, color: T.ink }}>{settings.length}</div>
-            <div style={{ fontSize: 9, color: T.faint, textTransform: "uppercase", letterSpacing: "0.07em", fontWeight: 800, marginTop: 3 }}>Settings</div>
           </div>
-        </div>
-      </div>
+        }
+      />
+      <UnifiedHeaderSpacer />
 
       <div style={{ maxWidth: 1120, margin: "0 auto", padding: "34px 40px 60px" }}>
         <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.15em", textTransform: "uppercase", color: T.coral }}>Chapter 01 · Build the deal</div>

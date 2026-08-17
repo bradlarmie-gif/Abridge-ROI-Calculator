@@ -110,7 +110,7 @@ const PLAN: PlanCat[] = [
 
 function PdfPage({ children }: { children: React.ReactNode }) {
   return (
-    <div className="pdf-page mx-auto bg-[#FDFCFA] text-[#1A1A1A]" style={{ width: 816, height: 1056, breakAfter: "page" }}>
+    <div className="pdf-page mx-auto bg-[#FFFFFF] text-[#1A1A1A]" style={{ width: 816, height: 1056, breakAfter: "page" }}>
       <div className="flex flex-col h-full px-[62px] pt-[46px] pb-[40px]">{children}</div>
     </div>
   );

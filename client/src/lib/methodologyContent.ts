@@ -94,17 +94,17 @@ export const METHODOLOGY_SETTINGS: MethodologySetting[] = [
     dominantLever: "Acuity on complex stays. Few, high-value encounters; case-mix is everything.",
     recordChanges: "Complete case-mix and the support for the status a stay warrants.",
     comparisonSignals: "Note completeness, CDI query burden.",
-    comparisonOutcomes: "Case-mix (DRG) accuracy, observation-status defense.",
+    comparisonOutcomes: "Case-mix (DRG) accuracy, status / medical-necessity denials.",
     chain: [
       { n: "01 · The record changes", title: "A complete note across the stay", desc: "The full clinical picture of a complex admission is captured." },
       { n: "02 · The mechanism", title: "Case-mix and status, supported", desc: "The note supports the codes and the level of care the stay warrants." },
       { n: "03 · The dollar", title: "Accurate DRG, defended status", desc: "Case-mix reflects true acuity; observation downgrades are defensible." },
     ],
     leadingSignals: ["Note completeness ↑", "CDI query burden ↓", "Documentation turnaround ↓"],
-    laggingOutcomes: ["Case-mix (DRG) accuracy ↑", "Observation-status defense ↑", "Case-mix index trend ↑"],
+    laggingOutcomes: ["Case-mix (DRG) accuracy ↑", "Status / medical-necessity denials ↓", "Case-mix index trend ↑"],
     math: [
       { name: "DRG / case-mix accuracy", formula: "12,000 discharges × 3% more accurate case-mix × $1,000 margin", value: 360000 },
-      { name: "Observation-status defense", formula: "2,000 status reviews × 20% defended × $1,000 margin", value: 400000 },
+      { name: "Status / Medical Necessity Denials", formula: "2,000 status reviews × 20% defended × $1,000 margin", value: 400000 },
     ],
     attain: [
       { title: "Code to the documented acuity", desc: "CDI and coding work the complete note, so case-mix reflects the stay actually delivered." },

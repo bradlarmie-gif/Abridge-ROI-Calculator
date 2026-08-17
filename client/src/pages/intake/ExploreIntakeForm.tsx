@@ -485,7 +485,7 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
 
                     <SectionDivider label="Obs / IP Status Denials" context="Obs vs. IP disputes are one of the most common and costly denial categories in hospital medicine. We use denial volume and claim value to model the defensibility improvement." />
                     <div className="grid grid-cols-2 gap-4">
-                      <NumberField label="Obs/IP status denial rate" value={formState.ipDenialRate}
+                      <NumberField label="Status / med-necessity denial rate" value={formState.ipDenialRate}
                         onChange={v => update('ipDenialRate', v)} placeholder="e.g. 5" suffix="%" />
                       <NumberField label="Avg claim value at risk" value={formState.ipAvgClaimValue}
                         onChange={v => update('ipAvgClaimValue', v)} placeholder="e.g. 10,000" suffix="$"

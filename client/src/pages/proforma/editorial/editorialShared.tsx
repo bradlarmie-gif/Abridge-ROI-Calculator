@@ -37,7 +37,7 @@ export function applyExclusions(settings: ProformaSettingSnapshot[]): ProformaSe
 
 /* ─────────────────────────── design tokens ─────────────────────────── */
 export const T = {
-  page: "#FDFCFA",
+  page: "#FFFFFF",
   card: "#FDFBF8",
   hair: "#E8E2DA",
   soft: "#F1EBE3",

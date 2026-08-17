@@ -13,12 +13,13 @@ type ArStep = "applications" | "consolidation" | "timing" | "moat";
 interface AppRationalizationFlowProps {
   onBack: () => void;
   onHome: () => void;
+  pathLabel?: string;
 }
 
 const STEP_INDEX: Record<ArStep, number> = { applications: 1, consolidation: 2, timing: 3, moat: 4 };
 const STEP_LABELS = ["Applications", "Consolidation", "When it lands", "Why only Abridge"];
 
-export default function AppRationalizationFlow({ onBack, onHome }: AppRationalizationFlowProps) {
+export default function AppRationalizationFlow({ onBack, onHome, pathLabel }: AppRationalizationFlowProps) {
   const [step, setStep] = useState<ArStep>("applications");
   const [orgName, setOrgName] = useState("");
   const [abridgePrice, setAbridgePrice] = useState(0);
@@ -96,9 +97,10 @@ export default function AppRationalizationFlow({ onBack, onHome }: AppRationaliz
   );
 
   return (
-    <div className="min-h-screen bg-[#FDFCFA]">
+    <div className="min-h-screen bg-[#FFFFFF]">
       <UnifiedHeader
         pathType="forecast"
+        pathLabel={pathLabel}
         stepName="App Rationalization"
         currentStep={STEP_INDEX[step]}
         totalSteps={4}

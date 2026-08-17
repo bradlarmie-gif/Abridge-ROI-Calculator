@@ -49,8 +49,12 @@ export type PathType = "explore" | "switch" | "expand" | "measure" | "forecast" 
 
 interface UnifiedHeaderProps {
   pathType: PathType;
-  currentStep: number;
-  totalSteps: number;
+  /** Overrides the section label derived from pathType (e.g. "Strategy" /
+   * "Planning" when the Attain engine is mounted under the Value Attainment Hub). */
+  pathLabel?: string;
+  // Optional: landings (the hub, Metric Library) use this header with no steps.
+  currentStep?: number;
+  totalSteps?: number;
   stepName?: string;
   onBack?: () => void;
   showBack?: boolean;
@@ -58,6 +62,10 @@ interface UnifiedHeaderProps {
   onStepClick?: (step: number) => void;
   stepLabels?: string[];
   rightAction?: React.ReactNode;
+  /** Replaces the default breadcrumb/step center with custom content (e.g. the
+   * Proforma chapter tabs), so a flow with a richer center can still use the one
+   * shared shell (logo, back, right slot). */
+  centerContent?: React.ReactNode;
 }
 
 const PATH_LABELS: Record<PathType, string> = {
@@ -69,10 +77,11 @@ const PATH_LABELS: Record<PathType, string> = {
   attain: "Attain",
 };
 
-export function UnifiedHeader({ 
-  pathType, 
-  currentStep, 
-  totalSteps, 
+export function UnifiedHeader({
+  pathType,
+  pathLabel: pathLabelOverride,
+  currentStep,
+  totalSteps,
   stepName,
   onBack,
   showBack = true,
@@ -80,6 +89,7 @@ export function UnifiedHeader({
   onStepClick,
   stepLabels,
   rightAction,
+  centerContent,
 }: UnifiedHeaderProps) {
   const [, setLocation] = useLocation();
   
@@ -101,7 +111,8 @@ export function UnifiedHeader({
     }
   };
 
-  const pathLabel = PATH_LABELS[pathType];
+  const pathLabel = pathLabelOverride ?? PATH_LABELS[pathType];
+  const hasSteps = currentStep != null && totalSteps != null;
 
   return (
     <header className="fixed top-0 left-0 right-0 bg-white border-b border-slate-200 z-50 h-14 sm:h-16 overflow-hidden">
@@ -136,30 +147,36 @@ export function UnifiedHeader({
           )}
         </div>
 
-        {/* Center: Path + Step — adaptive by breakpoint */}
+        {/* Center: custom content, or the default Path + Step breadcrumb */}
         <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1 justify-center overflow-hidden">
-          <span className="text-xs sm:text-sm text-slate-500 font-medium flex-shrink-0">{pathLabel}</span>
-          <span className="text-slate-300 flex-shrink-0 hidden min-[480px]:inline">·</span>
+          {centerContent ?? (<>
+          <span className={`text-xs sm:text-sm flex-shrink-0 ${stepName || hasSteps ? "text-slate-500 font-medium" : "text-slate-900 font-semibold"}`}>{pathLabel}</span>
+          {(stepName || hasSteps) && <span className="text-slate-300 flex-shrink-0 hidden min-[480px]:inline">·</span>}
           {stepName ? (
             <span className="text-xs sm:text-sm text-slate-900 font-semibold truncate hidden min-[480px]:inline">{stepName}</span>
-          ) : (
+          ) : hasSteps ? (
             <span className="text-xs sm:text-sm text-slate-600 flex-shrink-0 hidden min-[480px]:inline">
               Step {currentStep} of {totalSteps}
             </span>
-          )}
+          ) : null}
+          </>)}
         </div>
 
         {/* Right: optional action + Progress indicator */}
         <div className="flex items-center flex-shrink-0 gap-2 sm:gap-3">
           {rightAction}
-          {/* Narrow phones (<480px): compact step counter only */}
-          <span className="text-xs text-slate-500 font-medium tabular-nums min-[480px]:hidden" data-testid="step-counter-compact">
-            {currentStep} / {totalSteps}
-          </span>
-          {/* Wider phones & up (≥480px): progress dots */}
-          <div className="hidden min-[480px]:flex">
-            <ProgressDots currentStep={currentStep} totalSteps={totalSteps} onStepClick={onStepClick} stepLabels={stepLabels} />
-          </div>
+          {hasSteps && (
+            <>
+              {/* Narrow phones (<480px): compact step counter only */}
+              <span className="text-xs text-slate-500 font-medium tabular-nums min-[480px]:hidden" data-testid="step-counter-compact">
+                {currentStep} / {totalSteps}
+              </span>
+              {/* Wider phones & up (≥480px): progress dots */}
+              <div className="hidden min-[480px]:flex">
+                <ProgressDots currentStep={currentStep!} totalSteps={totalSteps!} onStepClick={onStepClick} stepLabels={stepLabels} />
+              </div>
+            </>
+          )}
         </div>
       </div>
     </header>

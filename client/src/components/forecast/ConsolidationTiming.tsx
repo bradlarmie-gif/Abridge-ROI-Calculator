@@ -263,12 +263,12 @@ export default function ConsolidationTiming({
 
           {/* year-1 marker */}
           <line x1={y1x} y1={y1y} x2={y1x} y2={Y1} stroke="#D9CDBE" strokeWidth={1.5} strokeDasharray="5 5" />
-          <text x={y1lx} y={y1Baseline} textAnchor={y1Anchor} fontFamily="Manrope" fontSize={12} fontWeight={700} fill="#5E534A" stroke="#FDFCFA" strokeWidth={3.5} paintOrder="stroke" strokeLinejoin="round">
+          <text x={y1lx} y={y1Baseline} textAnchor={y1Anchor} fontFamily="Manrope" fontSize={12} fontWeight={700} fill="#5E534A" stroke="#FFFFFF" strokeWidth={3.5} paintOrder="stroke" strokeLinejoin="round">
             {year1Text}
           </text>
 
           {/* full run-rate ceiling label */}
-          <text x={X1 - 2} y={Y0 - 10} textAnchor="end" fontFamily="Manrope" fontSize={12.5} fontWeight={800} fill="#EA2C00" stroke="#FDFCFA" strokeWidth={3.5} paintOrder="stroke" strokeLinejoin="round">
+          <text x={X1 - 2} y={Y0 - 10} textAnchor="end" fontFamily="Manrope" fontSize={12.5} fontWeight={800} fill="#EA2C00" stroke="#FFFFFF" strokeWidth={3.5} paintOrder="stroke" strokeLinejoin="round">
             {rrText}
           </text>
 
@@ -287,7 +287,7 @@ export default function ConsolidationTiming({
 
           {/* named dots on the plan line */}
           {nameLabels.map((l, i) => (
-            <text key={`l-${i}`} x={l.lx} y={l.ly} textAnchor={l.anchor} fontFamily="Manrope" fontSize={12} fontWeight={700} fill="#6E6157" stroke="#FDFCFA" strokeWidth={3.5} paintOrder="stroke" strokeLinejoin="round">{l.name}</text>
+            <text key={`l-${i}`} x={l.lx} y={l.ly} textAnchor={l.anchor} fontFamily="Manrope" fontSize={12} fontWeight={700} fill="#6E6157" stroke="#FFFFFF" strokeWidth={3.5} paintOrder="stroke" strokeLinejoin="round">{l.name}</text>
           ))}
           {nodes.map((n) => (
             <circle key={`d-${n.t.id}`} cx={n.x} cy={n.y} r={5.5} fill="#EA2C00" stroke="#fff" strokeWidth={3} />

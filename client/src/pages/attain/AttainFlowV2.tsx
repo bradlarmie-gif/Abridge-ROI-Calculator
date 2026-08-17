@@ -6,7 +6,7 @@ import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import StepVision from "./steps/StepVision";
 import StepScope from "./steps/StepScope";
 import { SettingStep } from "./preview/AttainFunnel";
-import { AttainExperience, type ExperienceSlice } from "./preview/MultiCategoryPreview";
+import { AttainExperience, type ExperienceSlice, type Chapter } from "./preview/MultiCategoryPreview";
 import { ATTAIN_MATRIX } from "./preview/attainCells";
 import { loadPlanByName, loadSnapshot, saveSnapshot, clearSnapshot, type AttainSnapshot } from "./attainStorage";
 import { categoryForGoal } from "@/lib/attain/attainGoals";
@@ -37,7 +37,28 @@ function cellsFor(setting: AttainSetting, goals: GoalId[]) {
 type Phase = "partner" | "setting" | "vision" | "scope" | "experience";
 const PHASES: Phase[] = ["partner", "setting", "vision", "scope", "experience"];
 
-export default function AttainFlowV2({ onBackToJourney }: { onBackToJourney?: () => void } = {}) {
+export default function AttainFlowV2({
+  onBackToJourney,
+  chapters,
+  onFinish,
+  autoResume,
+  flowLabel,
+  buildCta,
+  experienceLabel,
+}: {
+  onBackToJourney?: () => void;
+  // Value Attainment Hub: mount a SUBSET of chapters. Value Strategy runs
+  // ["align","strategy"] and hands off via onFinish; Planning runs
+  // ["plan","progress"] and autoResumes the active saved plan (skips the funnel).
+  chapters?: Chapter[];
+  onFinish?: () => void;
+  autoResume?: boolean;
+  // Copy overrides so the shared Attain engine names itself per hub section.
+  // Defaults preserve the combined Attain flow.
+  flowLabel?: string; // section label in the header + chapter nav ("Attain" default)
+  buildCta?: string; // the funnel's final button ("Build the plan" default)
+  experienceLabel?: string; // stepName shown once in the experience ("Your plan" default)
+} = {}) {
   // Always open on the name step. We never auto-resume the "active" plan, because that
   // silently assumed the last partner (reopening straight into, say, Mayo Clinic, with no
   // way to start someone new). Instead the partner types a name; if a plan is saved under
@@ -123,6 +144,16 @@ export default function AttainFlowV2({ onBackToJourney }: { onBackToJourney?: ()
     setPhase(savedIdx > 0 ? PHASES[savedIdx] : "experience");
   };
 
+  // Planning entry (autoResume): skip the funnel and pick up the active saved plan
+  // straight in the experience. If there's no active plan, fall through to the
+  // partner step so they can resume a saved strategy by name.
+  useEffect(() => {
+    if (!autoResume) return;
+    const active = loadSnapshot();
+    if (active?.setting) hydrateFrom(active);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // typing an existing partner name and continuing resumes that partner's saved plan
   const resumeIfExists = (): boolean => {
     const existing = loadPlanByName(partner);
@@ -137,7 +168,7 @@ export default function AttainFlowV2({ onBackToJourney }: { onBackToJourney?: ()
 
   const idx = PHASES.indexOf(phase);
   const canContinue = phase === "partner" ? partner.trim().length > 0 : phase === "setting" ? !!setting : phase === "vision" ? goals.length > 0 : true;
-  const stepName = phase === "partner" ? "Who it's for" : phase === "setting" ? "Care setting" : phase === "vision" ? "What you're after" : phase === "scope" ? "Starting point" : "Your plan";
+  const stepName = phase === "partner" ? "Who it's for" : phase === "setting" ? "Care setting" : phase === "vision" ? "What you're after" : phase === "scope" ? "Starting point" : (experienceLabel ?? "Your plan");
 
   const cells = setting ? cellsFor(setting, goals) : [];
 
@@ -150,9 +181,10 @@ export default function AttainFlowV2({ onBackToJourney }: { onBackToJourney?: ()
 
   return (
     <TooltipProvider>
-    <div className="min-h-screen bg-[#FDFCFA]">
+    <div className="min-h-screen bg-[#FFFFFF]">
       <UnifiedHeader
         pathType="attain"
+        pathLabel={flowLabel}
         currentStep={idx + 1}
         totalSteps={PHASES.length}
         stepName={stepName}
@@ -172,7 +204,7 @@ export default function AttainFlowV2({ onBackToJourney }: { onBackToJourney?: ()
         ) : undefined}
       />
       {phase === "experience" ? (
-        <><UnifiedHeaderSpacer /><AttainExperience key={partner} setting={SETTING_LABEL[setting!]} cells={cells} baseline={baseline} initial={buildSnapshot()} onPersist={onPersist} /></>
+        <><UnifiedHeaderSpacer /><AttainExperience key={partner} setting={SETTING_LABEL[setting!]} cells={cells} baseline={baseline} initial={buildSnapshot()} onPersist={onPersist} chapters={chapters} onFinish={onFinish} flowLabel={flowLabel} /></>
       ) : (
         <><UnifiedHeaderSpacer /><div className={`${phase === "scope" ? "max-w-[1040px]" : "max-w-[760px]"} mx-auto px-6 py-8 md:py-12`}>
           {phase === "partner" && (
@@ -202,7 +234,7 @@ export default function AttainFlowV2({ onBackToJourney }: { onBackToJourney?: ()
 
           <div className="mt-10 flex items-center justify-end border-t border-[#E8E2DA] pt-6">
             <button onClick={goNext} disabled={!canContinue} className="inline-flex items-center gap-2 rounded-xl bg-[#EA2C00] text-white text-[14px] font-semibold px-5 py-2.5 hover:bg-[#d12800] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
-              {phase === "scope" ? "Build the plan" : "Continue"} <ArrowRight className="w-4 h-4" />
+              {phase === "scope" ? (buildCta ?? "Build the plan") : "Continue"} <ArrowRight className="w-4 h-4" />
             </button>
           </div>
         </div></>
@@ -211,7 +243,7 @@ export default function AttainFlowV2({ onBackToJourney }: { onBackToJourney?: ()
       {/* Start-over confirm — a small modal so the whole page registers the destructive action */}
       {confirmingReset && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#1A1A1A]/30 backdrop-blur-[2px] px-4" onClick={() => setConfirmingReset(false)}>
-          <div className="bg-[#FDFCFA] rounded-2xl border border-[#E8E2DA] shadow-2xl w-full max-w-[400px] p-7" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-[#FFFFFF] rounded-2xl border border-[#E8E2DA] shadow-2xl w-full max-w-[400px] p-7" onClick={(e) => e.stopPropagation()}>
             <h3 className="font-abridge text-[23px] text-[#1A1A1A] leading-tight mb-2.5">Start over?</h3>
             <p className="text-[14px] text-[#6B6B6B] leading-relaxed mb-7">
               This clears {partner.trim() ? <span className="font-semibold text-[#1A1A1A]">{partner.trim()}</span> : "this"}&rsquo;s plan from this device and takes you back to the start. It can&rsquo;t be undone.

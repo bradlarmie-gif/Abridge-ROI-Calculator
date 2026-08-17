@@ -21,7 +21,7 @@ function cellFor(setting: MethodologyData["key"], domain: MethodQuadrant): Cell 
 
 export default function MethodologyContinuum({ onBack, onHome, onNavigate }: Props) {
   return (
-    <div className="min-h-screen bg-[#FDFCFA] text-[#5E534A] antialiased">
+    <div className="min-h-screen bg-[#FFFFFF] text-[#5E534A] antialiased">
       <MethodologyHeader active="continuum" activeLabel="Across settings" onBack={onBack} onHome={onHome} onNavigate={onNavigate} />
 
       <div className="max-w-[1120px] mx-auto px-5 sm:px-8 lg:px-14">

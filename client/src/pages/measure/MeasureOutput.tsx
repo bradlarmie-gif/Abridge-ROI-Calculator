@@ -847,7 +847,7 @@ export default function MeasureOutput({ state, updateState, onNext, onBack, onHo
             {!showManageQuotes && (state.quotes?.length ?? 0) === 0 && (
               <motion.button
                 onClick={() => setShowManageQuotes(true)}
-                className="w-full flex items-center justify-between gap-4 mb-4 px-5 py-4 rounded-2xl border border-dashed border-[#DDD6CE] bg-white hover:border-[#A39888] hover:bg-[#FDFCFA] transition-all text-left"
+                className="w-full flex items-center justify-between gap-4 mb-4 px-5 py-4 rounded-2xl border border-dashed border-[#DDD6CE] bg-white hover:border-[#A39888] hover:bg-[#FFFFFF] transition-all text-left"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 data-testid="card-empty-quotes"

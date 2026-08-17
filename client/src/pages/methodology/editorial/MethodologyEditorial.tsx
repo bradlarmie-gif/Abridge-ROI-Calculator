@@ -17,7 +17,7 @@ interface Props {
 
 export default function MethodologyEditorial({ data, onBack, onHome, onNavigateToSetting, onBuildModel }: Props) {
   return (
-    <div className="min-h-screen bg-[#FDFCFA] text-[#5E534A] antialiased">
+    <div className="min-h-screen bg-[#FFFFFF] text-[#5E534A] antialiased">
       <MethodologyHeader
         active={data.key}
         activeLabel={data.settingLabel}
@@ -42,7 +42,7 @@ export default function MethodologyEditorial({ data, onBack, onHome, onNavigateT
           <div className="grid grid-cols-2 md:grid-cols-4 gap-y-8 relative">
             {data.flow.map((f, i) => (
               <div key={i} className="pr-6 md:pr-8 relative">
-                <div className="w-[15px] h-[15px] rounded-full bg-[#EA2C00] shadow-[0_0_0_5px_#FDFCFA] relative z-[1]" />
+                <div className="w-[15px] h-[15px] rounded-full bg-[#EA2C00] shadow-[0_0_0_5px_#FFFFFF] relative z-[1]" />
                 <div className="mt-3 text-[10.5px] font-extrabold tracking-[0.1em] uppercase text-[#B02200]">{f.step}</div>
                 <div className="mt-2 text-[15px] sm:text-[15.5px] font-bold text-[#443A32] leading-[1.4]">{f.text}</div>
               </div>
@@ -125,7 +125,7 @@ function DomainCard({ d }: { d: MethodDomain }) {
 function ArcStage({ s }: { s: MethodArcStage }) {
   return (
     <div className="text-center px-2">
-      <div className="w-[16px] h-[16px] rounded-full bg-[#EA2C00] mx-auto shadow-[0_0_0_6px_#FDFCFA]" />
+      <div className="w-[16px] h-[16px] rounded-full bg-[#EA2C00] mx-auto shadow-[0_0_0_6px_#FFFFFF]" />
       <div className="mt-5 text-[11px] font-extrabold tracking-[0.09em] text-[#EA2C00]">{s.when}</div>
       <div className="font-abridge text-[26px] text-[#1A1A1A] mt-2">{s.stage}</div>
       <div className="mt-1.5 text-[14.5px] font-bold text-[#443A32]">{s.title}</div>

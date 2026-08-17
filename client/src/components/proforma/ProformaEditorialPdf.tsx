@@ -252,7 +252,7 @@ function Chain({ chain, value }: { chain?: string; value: number }): JSX.Element
 const CSS = `
 @page { size: Letter; margin: 0; }
 @media print { body { margin: 0; } .pf { background: #fff !important; padding: 0 !important; } .pf .sheet { box-shadow: none !important; margin: 0 auto !important; } }
-.pf { --page:#FDFCFA; --card:#FDFBF8; --hair:#E8E2DA; --soft:#F1EBE3; --coral:#EA2C00; --ink:#1A1A1A; --label:#2E2822; --muted:#5E534A; --faint:#786C5E; --off:#AFA491; --cap:#F0704E; --rev:#EA2C00; --wf:#F4A48C; background:#DED8D0; font-family:'Manrope',sans-serif; color:var(--ink); -webkit-font-smoothing:antialiased; padding:34px 0; }
+.pf { --page:#FFFFFF; --card:#FDFBF8; --hair:#E8E2DA; --soft:#F1EBE3; --coral:#EA2C00; --ink:#1A1A1A; --label:#2E2822; --muted:#5E534A; --faint:#786C5E; --off:#AFA491; --cap:#F0704E; --rev:#EA2C00; --wf:#F4A48C; background:#DED8D0; font-family:'Manrope',sans-serif; color:var(--ink); -webkit-font-smoothing:antialiased; padding:34px 0; }
 .pf * { box-sizing:border-box; margin:0; padding:0; }
 .pf .abr { font-family:'Abridge','Manrope'; font-weight:normal; }
 .pf .sheet { width:816px; height:1056px; background:var(--page); margin:0 auto 30px; position:relative; box-shadow:0 8px 34px rgba(60,46,32,.16); overflow:hidden; }

@@ -24,6 +24,13 @@ import PlanView from "./PlanView";
 import { fmt$ } from "@/lib/attain/attainFormat";
 const LBL = "text-[10px] font-bold uppercase tracking-[2px] text-[#8C8C8C]";
 
+// The four chapters. The Value Attainment Hub mounts SUBSETS of these: Value
+// Strategy runs ["align","strategy"], Planning runs ["plan","progress"]. Default
+// is all four so the combined Attain flow is unchanged.
+export type Chapter = "align" | "plan" | "strategy" | "progress";
+const CHAPTERS_ALL: Chapter[] = ["align", "plan", "strategy", "progress"];
+const capChapter = (c: Chapter) => c.charAt(0).toUpperCase() + c.slice(1);
+
 // The mock defaults to Outpatient; ?setting=ED / ?setting=Inpatient / ?setting=Nursing
 // let us exercise the same experience for another setting's cell set during review.
 const mockSetting = () => {
@@ -39,7 +46,7 @@ const pavg = (arr: (number | null)[]) => { const v = arr.filter((x): x is number
  * setting. The app's real header wraps this; here it renders its own chapter nav. */
 export type ExperienceSlice = Pick<AttainSnapshot, "pickedByCat" | "playsByCat" | "answersByCat" | "inputsByCat" | "metricsByCat" | "readingsByCat" | "peopleByCat" | "customsByCat" | "cadenceByCat" | "alignDone" | "planDone" | "chapter" | "catIdx" | "reviewLog">;
 
-export function AttainExperience({ setting, cells, baseline, initial, onPersist }: { setting: string; cells: AttainCell[]; baseline?: AttainBaseline; initial?: AttainSnapshot | null; onPersist?: (slice: ExperienceSlice) => void }) {
+export function AttainExperience({ setting, cells, baseline, initial, onPersist, chapters = CHAPTERS_ALL, onFinish, flowLabel = "Attain" }: { setting: string; cells: AttainCell[]; baseline?: AttainBaseline; initial?: AttainSnapshot | null; onPersist?: (slice: ExperienceSlice) => void; chapters?: Chapter[]; onFinish?: () => void; flowLabel?: string }) {
   const SETTING = setting;
   const CELLS = cells;
   const snap = initial ?? undefined; // hydrate per-category state from a saved plan when present
@@ -48,7 +55,10 @@ export function AttainExperience({ setting, cells, baseline, initial, onPersist 
     if (SETTING === "Nursing") return c.category === "Quality & Safety" ? baseline?.staffedBeds : baseline?.nursingFtes;
     return baseline?.providers;
   };
-  const [chapter, setChapter] = useState<"align" | "plan" | "strategy" | "progress">(() => (snap?.chapter as "align" | "plan" | "strategy" | "progress") ?? "align");
+  const [chapter, setChapter] = useState<Chapter>(() => {
+    const saved = snap?.chapter as Chapter | undefined;
+    return saved && chapters.includes(saved) ? saved : chapters[0];
+  });
   const [catIdx, setCatIdx] = useState(() => (typeof snap?.catIdx === "number" && snap.catIdx < CELLS.length ? snap.catIdx : 0));
   const [alignDone, setAlignDone] = useState<Set<string>>(() => arrToSet(snap?.alignDone));
   const [planDone, setPlanDone] = useState<Set<string>>(() => arrToSet(snap?.planDone));
@@ -271,11 +281,11 @@ export function AttainExperience({ setting, cells, baseline, initial, onPersist 
     <div ref={rootRef}>
       {/* chapter nav — FIXED just below the app header so it never scrolls away (sticky
           fights an overflow:auto ancestor in the app shell; fixed is immune to that) */}
-      <div className="fixed top-14 sm:top-16 left-0 right-0 z-30 bg-[#FDFCFA]/95 backdrop-blur border-b border-[#E8E2DA] px-5 sm:px-8 py-3">
+      <div className="fixed top-14 sm:top-16 left-0 right-0 z-30 bg-[#FFFFFF]/95 backdrop-blur border-b border-[#E8E2DA] px-5 sm:px-8 py-3">
         <div className="max-w-[820px] mx-auto flex flex-wrap items-center gap-x-5 gap-y-2">
-          <span className="text-[10px] font-bold uppercase tracking-[2px] text-[#8C8C8C]">Attain · {SETTING}</span>
+          <span className="text-[10px] font-bold uppercase tracking-[2px] text-[#8C8C8C]">{flowLabel} · {SETTING}</span>
           <div className="flex items-center gap-1 bg-[#F2EDE5] rounded-[12px] p-1">
-            {(["align", "plan", "strategy", "progress"] as const).map((ch) => (
+            {chapters.map((ch) => (
               <button key={ch} onClick={() => setChapter(ch)} className={chapterTab(ch)}>{ch}</button>
             ))}
           </div>
@@ -351,7 +361,10 @@ export function AttainExperience({ setting, cells, baseline, initial, onPersist 
   function Completion() {
     const isPlan = chapter === "plan";
     const done = doneSet.has(cell.category);
-    const nextChapter = isPlan ? "strategy" : "plan";
+    // The next chapter is whatever follows the current one in THIS mount's chapter
+    // list, so a subset (Value Strategy = align→strategy, Planning = plan→progress)
+    // advances correctly and the full flow is unchanged (align→plan, plan→strategy).
+    const nextChapter = chapters[chapters.indexOf(chapter) + 1];
     const lockLabel = isPlan || valueByCat(cell) <= 0 ? `Lock in ${catLabel(cell)}${isPlan ? "'s plan" : ""}` : `Lock in ${catLabel(cell)} · ${fmt$(valueByCat(cell))}`;
     const doneLabel = isPlan ? "planned" : "aligned";
     return (
@@ -362,7 +375,11 @@ export function AttainExperience({ setting, cells, baseline, initial, onPersist 
               <p className="text-[15px] font-semibold text-[#1A1A1A]">All {CELLS.length} categories {doneLabel}.</p>
               <p className="text-[13px] text-[#8C8C8C] mt-1">{isPlan ? "Each has an owner and its metrics set." : `${fmt$(totalValue)}/yr in play across the set.`}</p>
             </div>
-            <button onClick={() => goChapter(nextChapter)} className="inline-flex items-center gap-2 rounded-xl bg-[#1A1A1A] text-white text-[14px] font-semibold px-5 py-2.5 hover:bg-black transition-colors">Continue to {isPlan ? "Strategy" : "Plan"} <ArrowRight className="w-4 h-4" /></button>
+            {nextChapter ? (
+              <button onClick={() => goChapter(nextChapter)} className="inline-flex items-center gap-2 rounded-xl bg-[#1A1A1A] text-white text-[14px] font-semibold px-5 py-2.5 hover:bg-black transition-colors">Continue to {capChapter(nextChapter)} <ArrowRight className="w-4 h-4" /></button>
+            ) : onFinish ? (
+              <button onClick={onFinish} className="inline-flex items-center gap-2 rounded-xl bg-[#1A1A1A] text-white text-[14px] font-semibold px-5 py-2.5 hover:bg-black transition-colors">Continue <ArrowRight className="w-4 h-4" /></button>
+            ) : null}
           </div>
         ) : done ? (
           <p className="text-[13px] text-[#8C8C8C]"><span className="text-[#EA2C00] font-semibold">{catLabel(cell)} is {doneLabel}.</span> Pick the next category above to keep going.</p>
@@ -426,10 +443,18 @@ export function AttainExperience({ setting, cells, baseline, initial, onPersist 
           <p className="text-[14px] text-[#3A3A3A] leading-relaxed">A lighter documentation load is the shared lever. Each category runs its own chain from the Epic signals we pull to the outcome it opens{CELLS.length > 1 ? <>: <span className="font-medium">{CELLS.map((c) => catLabel(c).toLowerCase()).join(", ")}</span>.</> : <> for <span className="font-medium">{CELLS[0] ? catLabel(CELLS[0]).toLowerCase() : ""}</span>.</>}</p>
         </div>
 
-        <div className="rounded-2xl border-2 border-[#1A1A1A] bg-[#1A1A1A] p-6 md:p-7 mb-16">
+        <div className="rounded-2xl border-2 border-[#1A1A1A] bg-[#1A1A1A] p-6 md:p-7 mb-8">
           <p className="text-[10px] font-bold uppercase tracking-[2px] text-white/50 mb-3">The scoreboard</p>
           <p className="text-[15px] text-white/90 leading-relaxed">From here we track attainment across all {CELLS.length} categories: the share of {fmt$(totalValue)} you realize. Each category has its own line on the Progress page, and they roll up to one number.</p>
         </div>
+
+        {/* Value Strategy hands off to Planning (saved to this partner; Planning resumes it). */}
+        {onFinish && (
+          <div className="flex justify-end mb-16">
+            <button onClick={onFinish} className="inline-flex items-center gap-2 rounded-xl bg-[#EA2C00] text-white text-[14px] font-semibold px-5 py-2.5 hover:bg-[#d12800] transition-colors">Continue to Planning <ArrowRight className="w-4 h-4" /></button>
+          </div>
+        )}
+        {!onFinish && <div className="mb-8" />}
       </div>
     );
   }
@@ -589,7 +614,7 @@ export default function MultiCategoryPreview() {
   const setting = mockSetting();
   const cells = ATTAIN_MATRIX.filter((c) => c.setting === setting);
   return (
-    <div className="min-h-screen bg-[#FDFCFA]">
+    <div className="min-h-screen bg-[#FFFFFF]">
       <div className="sticky top-0 z-30 h-14 bg-white border-b border-[#E8E2DA] flex items-center px-6">
         <button className="flex items-center gap-1 text-[13px] text-[#6B6B6B]"><ChevronLeft className="w-4 h-4" /> Back</button>
         <span className="mx-auto font-abridge text-[15px] tracking-wide text-[#1A1A1A]">ROI Calculator · Attain</span>

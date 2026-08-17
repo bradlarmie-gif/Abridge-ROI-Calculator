@@ -59,9 +59,9 @@ export default function AttainMatrixPreview() {
     `text-[13px] rounded-xl px-3.5 py-1.5 border transition-colors ${active ? "border-[#EA2C00] bg-[#EA2C00] text-white font-semibold" : "border-[#E0D9CE] text-[#3A3A3A] hover:border-[#B4A896]"}`;
 
   return (
-    <div className="min-h-screen bg-[#FDFCFA]">
+    <div className="min-h-screen bg-[#FFFFFF]">
       {/* switcher bar */}
-      <div className="sticky top-0 z-20 bg-[#FDFCFA]/95 backdrop-blur border-b border-[#E8E2DA] px-5 sm:px-8 py-4">
+      <div className="sticky top-0 z-20 bg-[#FFFFFF]/95 backdrop-blur border-b border-[#E8E2DA] px-5 sm:px-8 py-4">
         <div className="max-w-[860px] mx-auto">
           <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
             <span className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest">Attain</span>

@@ -17,7 +17,7 @@ import abridgeSymbol from "@assets/abridge-logo-symbol_1774906992195.png";
 // ────────────────────────────────────────────────────────────────
 
 const C = {
-  page: "#FDFCFA",
+  page: "#FFFFFF",
   card: "#FDFBF8",
   hair: "#E8E2DA",
   soft: "#F1EBE3",

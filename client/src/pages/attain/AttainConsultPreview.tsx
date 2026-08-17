@@ -153,7 +153,7 @@ export default function AttainConsultPreview() {
   ].filter(Boolean);
 
   return (
-    <div className="min-h-screen bg-[#FDFCFA] px-8 py-12">
+    <div className="min-h-screen bg-[#FFFFFF] px-8 py-12">
       <div className="max-w-[760px] mx-auto">
         <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-1">Prototype · the Align chapter</p>
         <h1 className="font-abridge text-3xl text-[#1A1A1A] mb-3">A working session, not a form</h1>

@@ -133,7 +133,7 @@ import { computeCapacityContributions } from "./attainCapacity";
  *    visit-level E/M coding, so none of outpatient/ED revenue's paths
  *    (HCC, wRVU, denials) apply here. A partner picks one or more of Case
  *    Mix / DRG Accuracy (CC/MCC capture), CDI Query Efficiency, and
- *    Observation / IP Status Defense; each path's own dollar is derived
+ *    Status / Medical Necessity Denials; each path's own dollar is derived
  *    from its own gated decisions and reconciles exactly to Explore's
  *    `ipDrg`/`ipCdi`/`ipObsDefense` primitives, and the three paths simply
  *    SUM (each is a genuinely separate claim). `computeLeverContributions`

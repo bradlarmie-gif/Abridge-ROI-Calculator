@@ -42,7 +42,7 @@ const C = {
   hairline: "#EFEAE1",
   tan: "#D8CFC0",
   track: "#EFEAE1",
-  cream: "#FDFCFA",
+  cream: "#FFFFFF",
   white: "#FFFFFF",
 };
 

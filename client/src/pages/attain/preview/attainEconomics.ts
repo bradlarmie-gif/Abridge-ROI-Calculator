@@ -172,7 +172,7 @@ export const ECON_MODELS: Record<string, EconModel> = {
     levers: [
       { id: "drg", label: "DRG weight", payerOptionIds: ["drg"], driverKeys: ["drgAccuracy"] },
       { id: "cdi", label: "CDI query reduction", payerOptionIds: ["cdi"], driverKeys: ["ipCdiValue"] },
-      { id: "obs", label: "Inpatient status defense", payerOptionIds: ["obs"], driverKeys: ["obsDefense"] },
+      { id: "obs", label: "Status / Medical Necessity Denials", payerOptionIds: ["obs"], driverKeys: ["obsDefense"] },
     ],
     stancePrompt: "How much of the documentation-driven lift survives audit?",
     stanceBands: [55, 65, 75],

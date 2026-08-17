@@ -843,7 +843,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
   },
   {
     id: 'obsDefense',
-    label: 'Observation / IP Status Defense',
+    label: 'Status / Medical Necessity Denials',
     tagline: 'The revenue gap when an inpatient stay is downgraded to observation',
     shortDescription: 'When a payer reviews an inpatient stay and the admission documentation does not clearly establish medical necessity, the claim is reclassified from inpatient DRG to outpatient APC status. The financial loss is the delta between what was billed and what is paid, typically $3,000 to $8,000 per downgraded case. Strong ambient documentation at the point of admission is the defense.',
     quadrant: 'Revenue',

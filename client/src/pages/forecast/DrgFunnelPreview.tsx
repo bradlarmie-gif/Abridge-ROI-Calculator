@@ -76,7 +76,7 @@ export default function DrgFunnelPreview() {
   }, [discharges, reviewPct, queryPct, respondPct, changePct, weightGain, baseRate, capturePct]);
 
   return (
-    <div className="min-h-screen antialiased" style={{ background: "#FDFCFA", color: MUTED, fontFamily: "Manrope, sans-serif" }}>
+    <div className="min-h-screen antialiased" style={{ background: "#FFFFFF", color: MUTED, fontFamily: "Manrope, sans-serif" }}>
       <div className="max-w-[880px] mx-auto px-8 py-16">
         <div className="text-[10.5px] font-extrabold tracking-[0.14em] uppercase" style={{ color: FAINT }}>Forecast · Inpatient · DRG accuracy</div>
         <h1 className="font-abridge text-[34px] sm:text-[42px] leading-[1.08] mt-4 max-w-[620px]" style={{ color: INK }}>

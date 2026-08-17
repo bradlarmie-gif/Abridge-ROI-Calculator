@@ -216,7 +216,7 @@ export const INPATIENT_METHODOLOGY: MethodologyData = {
       enable: "When the note captures the comorbidities and complications as spoken, the CC/MCC assignments that raise DRG weight are preserved, and admissions hold up as inpatient rather than being downgraded to observation.",
       drivers: [
         { name: "Case Mix Index", sub: "Documented acuity reflects the patients actually treated", mode: "dollar" },
-        { name: "Observation / IP Status Defense", sub: "Admission documentation that holds inpatient status", mode: "dollar" },
+        { name: "Status / Medical Necessity Denials", sub: "Admission documentation that holds inpatient status", mode: "dollar" },
       ],
     },
     {

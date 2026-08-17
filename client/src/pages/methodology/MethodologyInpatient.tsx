@@ -575,12 +575,12 @@ const ipFramework: FrameworkItem[] = [
           { v: 'IP-to-obs revenue delta per case', kind: 'benchmark', hint: '~$3K–$8K' },
           { v: '% doc-preventable (scenario)', kind: 'benchmark', hint: 'Conservative 25% / Typical 40% / Aggressive 55%' },
         ],
-        result: 'Obs defense value',
+        result: 'Value defended',
       },
       {
         vars: [
           { v: 'DRG accuracy value', kind: 'derived' },
-          { v: 'Obs defense value', kind: 'derived', op: '+' },
+          { v: 'Value defended', kind: 'derived', op: '+' },
           { v: 'Realization haircut', kind: 'input' },
         ],
         result: 'Total estimated revenue',
