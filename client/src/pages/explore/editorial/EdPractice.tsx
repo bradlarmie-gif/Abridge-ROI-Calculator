@@ -274,9 +274,6 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
                   className={inputBase}
                   data-testid="ed-input-beds"
                 />
-                <p className="text-[12.5px] text-[#565250] mt-[10px]">
-                  Licensed beds with active nursing staff.
-                </p>
               </div>
             )}
 
@@ -320,7 +317,7 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
                       type="button"
                       onClick={() => setUsingTotalInput(true)}
                       className={`text-[11.5px] font-bold px-3 py-[6px] rounded-[7px] transition-colors ${
-                        usingTotalInput ? "bg-white text-[#EA2C00] shadow-sm" : "text-[#565250]"
+                        usingTotalInput ? "bg-[#2E2822] text-white" : "text-[#565250]"
                       }`}
                     >
                       Total for the org
@@ -329,7 +326,7 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
                       type="button"
                       onClick={() => setUsingTotalInput(false)}
                       className={`text-[11.5px] font-bold px-3 py-[6px] rounded-[7px] transition-colors ${
-                        !usingTotalInput ? "bg-white text-[#EA2C00] shadow-sm" : "text-[#565250]"
+                        !usingTotalInput ? "bg-[#2E2822] text-white" : "text-[#565250]"
                       }`}
                     >
                       Per provider
@@ -351,10 +348,6 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
                         / yr
                       </span>
                     </div>
-                    <p className="text-[12.5px] text-[#565250] mt-[10px]">
-                      Most teams know their org-wide total. Prefer to build it up? Switch to{" "}
-                      <b className="text-[#EA2C00] font-bold">Per provider</b>.
-                    </p>
                   </>
                 ) : (
                   <>
@@ -384,10 +377,6 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
                         />
                       ))}
                     </div>
-                    <p className="text-[12.5px] text-[#565250] mt-[10px]">
-                      Know your org-wide total instead? Switch to{" "}
-                      <b className="text-[#EA2C00] font-bold">Total for the org</b>.
-                    </p>
                   </>
                 )}
               </div>
@@ -425,9 +414,6 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
                     />
                   ))}
                 </div>
-                <p className="text-[12.5px] text-[#565250] mt-[10px]">
-                  Drives the progress-note count on the next step: one note each day after admission.
-                </p>
               </div>
             )}
 
@@ -450,7 +436,6 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
                     {state.nursingOccupancyRate}%
                   </div>
                 </div>
-                <p className="text-[12.5px] text-[#565250] mt-[10px]">Most hospitals run 75-90% occupancy.</p>
               </div>
             )}
 
@@ -485,11 +470,6 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
                   />
                 ))}
               </div>
-              <p className="text-[12.5px] text-[#565250] mt-[10px]">
-                {isNursing
-                  ? "The share of nurses actively documenting with Abridge. Most implementations reach 40-60% within 6 months."
-                  : "The share of encounters documented with Abridge. The value only counts the volume it actually touches."}
-              </p>
             </div>
           </div>
 
@@ -508,10 +488,10 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
                     Your {settingName} · what the value is built on
                   </div>
 
-                  {/* result / ghost, vertically centered so the panel reads balanced, not top-weighted */}
-                  <div className="flex-1 flex flex-col justify-center">
-                    {total > 0 && pct > 0 ? (
-                      <>
+                  {total > 0 && pct > 0 ? (
+                    <>
+                      {/* hero: the chain + the result, breathing in the freed vertical space */}
+                      <div className="flex-1 flex flex-col justify-center">
                         {/* the chain, read as one line — same idiom as the left card's footing */}
                         <div className="text-[15px] text-[#565250] leading-[1.6]">
                           <b className="font-abridge text-[17px] text-[#1A1A1A]">{formatNumber(total)}</b> {unit} a year, <b className="font-abridge text-[17px] text-[#EA2C00]">{pct}%</b> documented with Abridge
@@ -521,19 +501,23 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
                           <div className="font-abridge text-[62px] sm:text-[74px] text-[#EA2C00] tabular-nums">{formatNumber(shownEnabled)}</div>
                           <div className="text-[14px] text-[#565250] mt-2">{unit} your value is built on</div>
                         </div>
-                        {/* one restrained accent: a single proportion line */}
-                        <div className="mt-8 h-[7px] rounded-full bg-[#F1ECE4] overflow-hidden">
+                      </div>
+                      {/* proportion, anchored to the bottom so the card reads balanced end-to-end */}
+                      <div>
+                        <div className="h-[7px] rounded-full bg-[#F1ECE4] overflow-hidden">
                           <div className="h-full bg-[#EA2C00] rounded-full transition-[width] duration-500 ease-out" style={{ width: `${Math.max(pct, 3)}%` }} />
                         </div>
                         <div className="flex justify-between text-[12px] text-[#7C766F] mt-3">
                           <span>On Abridge · {formatNumber(enabled)}</span>
                           <span>Not yet · {formatNumber(notYet)}</span>
                         </div>
-                      </>
-                    ) : (
-                      // Composed empty state: explain what this panel will show and
-                      // preview the inputs that feed it. No ghost number / orphaned
-                      // fragment / empty skeleton bar (those read as broken).
+                      </div>
+                    </>
+                  ) : (
+                    // Composed empty state: explain what this panel will show and
+                    // preview the inputs that feed it. No ghost number / orphaned
+                    // fragment / empty skeleton bar (those read as broken).
+                    <div className="flex-1 flex flex-col justify-center">
                       <div className="max-w-[330px]">
                         <div className="font-abridge text-[23px] text-[#3A342E] leading-[1.2]">The volume your value is built on</div>
                         <p className="text-[14px] text-[#8A8073] leading-[1.6] mt-3">
@@ -554,14 +538,6 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
                           ))}
                         </div>
                       </div>
-                    )}
-                  </div>
-
-                  {total > 0 && pct > 0 && (
-                    <div className="pt-[18px] border-t border-[#E7E3DD]">
-                      <p className="text-[12.5px] text-[#565250] leading-[1.55]">
-                        The volume your value is built on, not the full book. Refine any of it as we go.
-                      </p>
                     </div>
                   )}
                 </>

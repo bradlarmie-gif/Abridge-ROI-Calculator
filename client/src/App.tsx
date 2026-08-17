@@ -69,6 +69,7 @@ import StrategyHub from "@/pages/hub/StrategyHub";
 import FinancialHub from "@/pages/hub/FinancialHub";
 import PlanningHub from "@/pages/hub/PlanningHub";
 import MetricLibrary from "@/pages/hub/MetricLibrary";
+import InpatientReviewMock from "@/pages/explore/editorial/InpatientReviewMock"; // THROWAWAY ?inpatientmock=1
 import type { ProformaSettingSnapshot, ProformaConfig } from "@/pages/proforma/proformaTypes";
 import { DEFAULT_PROFORMA_CONFIG } from "@/pages/proforma/proformaTypes";
 import { mergeExploreEditIntoSetting } from "@/lib/proformaCalculations";
@@ -230,6 +231,10 @@ export default function App() {
   // THROWAWAY: ?planpreview=1 renders the Plan chapter prototype. Remove with AttainPlanPreview.tsx.
   if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("planpreview") === "1") {
     return <AttainPlanPreview />;
+  }
+  // THROWAWAY ?inpatientmock=1 — real inpatient Explore path pre-filled for review.
+  if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("inpatientmock") === "1") {
+    return <InpatientReviewMock />;
   }
   // Metric Library preview (?metriclibrary=1) while it's built out; the Planning
   // Metrics card stays "coming soon" until it's wired in.
