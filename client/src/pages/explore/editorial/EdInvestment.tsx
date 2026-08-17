@@ -114,185 +114,130 @@ export default function EdInvestment({
   // malformed "$-0.16" when the net went negative.
   const formatPerDollar = (n: number) => (n < 0 ? "−$" : "$") + Math.abs(n).toFixed(2);
 
+  const sectLabel = "text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#8C8073]";
+  const fieldLabel = "text-[11px] font-extrabold tracking-[0.05em] uppercase text-[#8C8073]";
+  const entryWrap = "inline-flex items-baseline gap-[2px] border-b-2 border-[#EA2C00] pb-[2px] mt-[10px] whitespace-nowrap";
+  const entryInput =
+    "min-w-[36px] max-w-[150px] [field-sizing:content] bg-transparent border-0 p-0 shadow-none font-abridge text-[28px] text-[#1A1A1A] tabular-nums focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none";
+  const chip = (active: boolean) =>
+    `text-[12px] font-bold px-[14px] py-[7px] rounded-full transition-colors ${active ? "bg-[#2E2822] text-white" : "bg-[#F2ECE3] text-[#565250]"}`;
+  const carriedFigure = "font-abridge text-[28px] text-[#A79E92] tabular-nums mt-[10px] pb-[2px] border-b-2 border-transparent inline-block";
+
+  const MoneyEntry = ({ value, onChange, step, testId }: { value: number; onChange: (v: number) => void; step?: number; testId: string }) => (
+    <span className={entryWrap}>
+      <span className="font-abridge text-[28px] text-[#1A1A1A] leading-none">$</span>
+      <FormattedNumberInput value={value} onChange={onChange} step={step} className={entryInput} data-testid={testId} />
+    </span>
+  );
+
+  const breakdown =
+    state.pricingModel === "perProvider"
+      ? `${formatNumber(isNursing ? state.nursingStaffedBeds : state.numberOfProviders)} ${isNursing ? "beds" : "providers"} × ${formatCurrency(state.costPerProvider)} × 12 months`
+      : state.pricingModel === "perEncounter"
+        ? `${formatNumber(state.annualEncounters)} encounters × $${(state.costPerEncounter ?? 0).toFixed(2)}`
+        : state.pricingModel === "platform"
+          ? `${formatCurrency(state.annualLicenseFee)} platform + ${formatNumber(state.annualEncounters)} enc × $${(state.platformEncRate ?? 0).toFixed(2)}`
+          : "Fixed annual fee";
+
   return (
     <EditorialShell>
       <EditorialHeader stepName="Investment" stepIndex={8} onBack={onBack} onHome={onHome} />
-      <div className="max-w-[1160px] mx-auto px-5 sm:px-8 lg:px-12 pt-[44px] pb-[60px]">
+      <div className="max-w-[1120px] mx-auto px-5 sm:px-8 lg:px-12 pt-12 pb-14">
         <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#565250]">Value Estimator · Step 8 of 9</div>
-        <h1 className="font-abridge text-[26px] sm:text-[32px] lg:text-[38px] leading-[1.08] text-[#1A1A1A] mt-[10px]">What it costs, and what&apos;s left.</h1>
-        <p className="text-[16px] text-[#565250] mt-[13px] max-w-[620px] leading-[1.5]">
+        <h1 className="font-abridge text-[27px] sm:text-[34px] lg:text-[38px] leading-[1.08] text-[#1A1A1A] mt-[10px]">What it costs, and what&apos;s left.</h1>
+        <p className="text-[16px] text-[#565250] mt-[12px] max-w-[600px] leading-[1.55]">
           Enter your pricing. Everything the prior screens built, minus the cost, is what&apos;s left.
         </p>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.08fr] gap-[22px] mt-8 items-start">
-          {/* Investment card */}
-          <div className="bg-[#FDFBF8] border border-[#E7E3DD] rounded-[20px] p-[24px_26px]">
-            <div className="text-[11px] font-extrabold tracking-[0.09em] uppercase text-[#2E2822] mb-4">Your investment</div>
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_1px_1.06fr] gap-x-[56px] gap-y-10 mt-[46px]">
+          {/* LEFT — your investment */}
+          <div>
+            <div className={sectLabel}>Your investment</div>
 
-            <div className="inline-flex gap-[3px] bg-[#F2EFEA] border border-[#E7E2DB] rounded-[12px] p-1 mb-5">
+            <div className="flex flex-wrap gap-[7px] mt-4">
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
                   type="button"
                   onClick={() => updateState({ pricingModel: tab.id })}
                   data-testid={`ed-investment-tab-${tab.id}`}
-                  className={`text-[13px] font-bold rounded-[8px] px-[18px] py-[9px] transition-colors ${
-                    state.pricingModel === tab.id ? "bg-white text-[#EA2C00] shadow-[0_1px_3px_rgba(0,0,0,0.08)]" : "text-[#565250]"
-                  }`}
+                  className={chip(state.pricingModel === tab.id)}
                 >
                   {tab.label}
                 </button>
               ))}
             </div>
 
-            {state.pricingModel === "perProvider" ? (
-              <>
-                <div className="grid grid-cols-2 gap-[14px]">
+            <div className="flex flex-wrap gap-x-[48px] gap-y-6 mt-7">
+              {state.pricingModel === "perProvider" && (
+                <>
                   <div>
-                    <div className="text-[10.5px] font-extrabold tracking-[0.04em] uppercase text-[#2E2822] mb-2">
-                      {isNursing ? "Staffed beds" : "Providers"}
-                    </div>
-                    {/* Read-only: the scale (providers/beds) is set in the opportunity setup, where it
-                        drives BOTH the value and the investment together. Editing it here would only
-                        rescale the cost, not the value, so it's locked to keep the ROI coherent. */}
-                    <div className="h-[54px] border-[1.5px] border-[#EDE8E1] rounded-[14px] bg-[#F7F2EC] flex items-center px-[14px] text-[16px] font-medium text-[#1A1A1A] tabular-nums" data-testid="ed-investment-input-providers">
-                      {formatNumber(isNursing ? state.nursingStaffedBeds : state.numberOfProviders)}
-                    </div>
-                    <div className="text-[11px] text-[#7C766F] mt-[6px]">From your setup, so the value stays in sync</div>
+                    <div className={fieldLabel}>{isNursing ? "Staffed beds" : "Providers"}</div>
+                    {/* Read-only: scale is set in the opportunity setup where it drives BOTH value
+                        and investment; editing here would only rescale cost, breaking the ROI. */}
+                    <div className={carriedFigure} data-testid="ed-investment-input-providers">{formatNumber(isNursing ? state.nursingStaffedBeds : state.numberOfProviders)}</div>
+                    <div className="text-[11px] text-[#8C8073] mt-[6px]">From your setup, so the value stays in sync</div>
                   </div>
                   <div>
-                    <div className="text-[10.5px] font-extrabold tracking-[0.04em] uppercase text-[#2E2822] mb-2">
-                      Cost per {isNursing ? "bed" : "provider"} / month
-                    </div>
-                    <div className="h-[54px] border-[1.5px] border-[#E4DED6] rounded-[14px] bg-white shadow-[0_1px_2px_rgba(40,30,20,0.04)] flex items-center gap-0 px-[14px] transition-colors focus-within:border-[#EA2C00] focus-within:shadow-[0_0_0_3px_#FBD9CE]">
-                      <span className="text-[16px] font-bold text-[#1A1A1A] mr-[1px]">$</span>
-                      <FormattedNumberInput
-                        value={state.costPerProvider}
-                        onChange={(v) => updateState({ costPerProvider: v })}
-                        className="border-0 h-auto p-0 shadow-none text-[16px] font-medium text-[#1A1A1A] tabular-nums focus-visible:ring-0 w-full"
-                        data-testid="ed-investment-input-cost-per-provider"
-                      />
-                    </div>
-                    <div className="text-[11px] text-[#7C766F] mt-[6px]">your contract rate</div>
+                    <div className={fieldLabel}>Cost per {isNursing ? "bed" : "provider"} / month</div>
+                    <MoneyEntry value={state.costPerProvider} onChange={(v) => updateState({ costPerProvider: v })} testId="ed-investment-input-cost-per-provider" />
+                    <div className="text-[11px] text-[#8C8073] mt-[6px]">your contract rate</div>
                   </div>
-                </div>
-                <div className="mt-5 pt-[18px] border-t border-[#E7E3DD] flex justify-between items-baseline">
-                  <span className="text-[13px] text-[#565250]">Annual investment</span>
-                  <span className="font-abridge text-[26px] text-[#1A1A1A]">
-                    {formatCurrency(annualInvestment)}
-                    <span className="text-[13px] text-[#565250]"> / yr</span>
-                  </span>
-                </div>
-                <div className="text-[11.5px] text-[#7C766F] mt-[10px] leading-[1.5]">
-                  {formatNumber(isNursing ? state.nursingStaffedBeds : state.numberOfProviders)} {isNursing ? "beds" : "providers"} × {formatCurrency(state.costPerProvider)} × 12 months. Switch pricing model above to match your contract.
-                </div>
-              </>
-            ) : state.pricingModel === "perEncounter" ? (
-              <>
+                </>
+              )}
+              {state.pricingModel === "perEncounter" && (
                 <div>
-                  <div className="text-[10.5px] font-extrabold tracking-[0.04em] uppercase text-[#2E2822] mb-2">Cost per encounter</div>
-                  <div className="h-[54px] border-[1.5px] border-[#E4DED6] rounded-[14px] bg-white shadow-[0_1px_2px_rgba(40,30,20,0.04)] flex items-center gap-0 px-[14px] transition-colors focus-within:border-[#EA2C00] focus-within:shadow-[0_0_0_3px_#FBD9CE] max-w-[220px]">
-                    <span className="text-[16px] font-bold text-[#1A1A1A] mr-[1px]">$</span>
-                    <FormattedNumberInput
-                      value={state.costPerEncounter}
-                      onChange={(v) => updateState({ costPerEncounter: v })}
-                      step={0.01}
-                      className="border-0 h-auto p-0 shadow-none text-[16px] font-medium text-[#1A1A1A] tabular-nums focus-visible:ring-0 w-full"
-                      data-testid="ed-investment-input-cost-per-encounter"
-                    />
-                  </div>
+                  <div className={fieldLabel}>Cost per encounter</div>
+                  <MoneyEntry value={state.costPerEncounter} onChange={(v) => updateState({ costPerEncounter: v })} step={0.01} testId="ed-investment-input-cost-per-encounter" />
+                  <div className="text-[11px] text-[#8C8073] mt-[6px]">your contract rate</div>
                 </div>
-                <div className="mt-5 pt-[18px] border-t border-[#E7E3DD] flex justify-between items-baseline">
-                  <span className="text-[13px] text-[#565250]">Annual investment</span>
-                  <span className="font-abridge text-[26px] text-[#1A1A1A]">
-                    {formatCurrency(annualInvestment)}
-                    <span className="text-[13px] text-[#565250]"> / yr</span>
-                  </span>
-                </div>
-                <div className="text-[11.5px] text-[#7C766F] mt-[10px] leading-[1.5]">
-                  {formatNumber(state.annualEncounters)} encounters × ${(state.costPerEncounter ?? 0).toFixed(2)}. Switch pricing model above to match your contract.
-                </div>
-              </>
-            ) : state.pricingModel === "platform" ? (
-              <>
-                <div className="grid grid-cols-2 gap-[14px]">
+              )}
+              {state.pricingModel === "platform" && (
+                <>
                   <div>
-                    <div className="text-[10.5px] font-extrabold tracking-[0.04em] uppercase text-[#2E2822] mb-2">Annual platform fee</div>
-                    <div className="h-[54px] border-[1.5px] border-[#E4DED6] rounded-[14px] bg-white shadow-[0_1px_2px_rgba(40,30,20,0.04)] flex items-center gap-0 px-[14px] transition-colors focus-within:border-[#EA2C00] focus-within:shadow-[0_0_0_3px_#FBD9CE]">
-                      <span className="text-[16px] font-bold text-[#1A1A1A] mr-[1px]">$</span>
-                      <FormattedNumberInput
-                        value={state.annualLicenseFee}
-                        onChange={(v) => updateState({ annualLicenseFee: v })}
-                        className="border-0 h-auto p-0 shadow-none text-[16px] font-medium text-[#1A1A1A] tabular-nums focus-visible:ring-0 w-full"
-                        data-testid="ed-investment-input-platform-license"
-                      />
-                    </div>
+                    <div className={fieldLabel}>Annual platform fee</div>
+                    <MoneyEntry value={state.annualLicenseFee} onChange={(v) => updateState({ annualLicenseFee: v })} testId="ed-investment-input-platform-license" />
                   </div>
                   <div>
-                    <div className="text-[10.5px] font-extrabold tracking-[0.04em] uppercase text-[#2E2822] mb-2">Per-encounter rate</div>
-                    <div className="h-[54px] border-[1.5px] border-[#E4DED6] rounded-[14px] bg-white shadow-[0_1px_2px_rgba(40,30,20,0.04)] flex items-center gap-0 px-[14px] transition-colors focus-within:border-[#EA2C00] focus-within:shadow-[0_0_0_3px_#FBD9CE]">
-                      <span className="text-[16px] font-bold text-[#1A1A1A] mr-[1px]">$</span>
-                      <FormattedNumberInput
-                        value={state.platformEncRate ?? 0}
-                        onChange={(v) => updateState({ platformEncRate: v })}
-                        step={0.01}
-                        className="border-0 h-auto p-0 shadow-none text-[16px] font-medium text-[#1A1A1A] tabular-nums focus-visible:ring-0 w-full"
-                        data-testid="ed-investment-input-platform-enc-rate"
-                      />
-                    </div>
+                    <div className={fieldLabel}>Per-encounter rate</div>
+                    <MoneyEntry value={state.platformEncRate ?? 0} onChange={(v) => updateState({ platformEncRate: v })} step={0.01} testId="ed-investment-input-platform-enc-rate" />
                   </div>
-                </div>
-                <div className="mt-5 pt-[18px] border-t border-[#E7E3DD] flex justify-between items-baseline">
-                  <span className="text-[13px] text-[#565250]">Annual investment</span>
-                  <span className="font-abridge text-[26px] text-[#1A1A1A]">
-                    {formatCurrency(annualInvestment)}
-                    <span className="text-[13px] text-[#565250]"> / yr</span>
-                  </span>
-                </div>
-                <div className="text-[11.5px] text-[#7C766F] mt-[10px] leading-[1.5]">
-                  {formatCurrency(state.annualLicenseFee)} platform + {formatNumber(state.annualEncounters)} enc × ${(state.platformEncRate ?? 0).toFixed(2)}.
-                </div>
-              </>
-            ) : (
-              <>
+                </>
+              )}
+              {state.pricingModel === "annual" && (
                 <div>
-                  <div className="text-[10.5px] font-extrabold tracking-[0.04em] uppercase text-[#2E2822] mb-2">Annual license fee</div>
-                  <div className="h-[54px] border-[1.5px] border-[#E4DED6] rounded-[14px] bg-white shadow-[0_1px_2px_rgba(40,30,20,0.04)] flex items-center gap-0 px-[14px] transition-colors focus-within:border-[#EA2C00] focus-within:shadow-[0_0_0_3px_#FBD9CE] max-w-[220px]">
-                    <span className="text-[16px] font-bold text-[#1A1A1A] mr-[1px]">$</span>
-                    <FormattedNumberInput
-                      value={state.annualLicenseFee}
-                      onChange={(v) => updateState({ annualLicenseFee: v })}
-                      className="border-0 h-auto p-0 shadow-none text-[16px] font-medium text-[#1A1A1A] tabular-nums focus-visible:ring-0 w-full"
-                      data-testid="ed-investment-input-annual-license"
-                    />
-                  </div>
+                  <div className={fieldLabel}>Annual license fee</div>
+                  <MoneyEntry value={state.annualLicenseFee} onChange={(v) => updateState({ annualLicenseFee: v })} testId="ed-investment-input-annual-license" />
                 </div>
-                <div className="mt-5 pt-[18px] border-t border-[#E7E3DD] flex justify-between items-baseline">
-                  <span className="text-[13px] text-[#565250]">Annual investment</span>
-                  <span className="font-abridge text-[26px] text-[#1A1A1A]">
-                    {formatCurrency(annualInvestment)}
-                    <span className="text-[13px] text-[#565250]"> / yr</span>
-                  </span>
-                </div>
-                <div className="text-[11.5px] text-[#7C766F] mt-[10px] leading-[1.5]">
-                  Fixed annual fee. Switch pricing model above to match your contract.
-                </div>
-              </>
-            )}
+              )}
+            </div>
+
+            <div className="mt-9 pt-5 border-t border-[#EDE8E1]">
+              <div className="flex justify-between items-baseline">
+                <span className="text-[15px] text-[#3A342E]">Annual investment</span>
+                <span className="font-abridge text-[28px] text-[#1A1A1A]">
+                  {formatCurrency(annualInvestment)}
+                  <span className="text-[13px] text-[#8C8073]"> / yr</span>
+                </span>
+              </div>
+              <div className="text-[12.5px] text-[#8C8073] mt-[9px] leading-[1.5]">{breakdown}</div>
+            </div>
           </div>
 
-          {/* Return stack + continue, anchored to the right column */}
-          <div className="flex flex-col gap-5 h-full">
-          <div className="bg-[#FDFBF8] border border-[#E7E3DD] rounded-[20px] p-[24px_26px] flex-1">
-            <div className="text-[11px] font-extrabold tracking-[0.09em] uppercase text-[#2E2822] mb-4">What it returns</div>
+          {/* vertical hairline */}
+          <div className="hidden lg:block bg-[#E8E2DA]" />
+
+          {/* RIGHT — what it returns */}
+          <div>
+            <div className={sectLabel}>What it returns</div>
 
             {totalValue > 0 && (
-              <div className="flex h-[14px] rounded-[7px] overflow-hidden bg-[#F3EEE7] mb-[18px]">
+              <div className="flex h-[12px] rounded-full overflow-hidden bg-[#F3EEE7] mt-[18px] mb-[22px] gap-[2px]">
                 {QUADRANT_ORDER.map((q) => {
                   const proofNote = (PROOF_LAYER[state.careSetting ?? ""] ?? {})[q];
                   const v = valueByQuadrant[q] || 0;
                   return !proofNote && v > 0 ? (
-                    <div key={q} style={{ width: `${(v / totalValue) * 100}%`, background: DOMAIN_COLORS[q] }} />
+                    <div key={q} className="rounded-[3px]" style={{ width: `${(v / totalValue) * 100}%`, background: DOMAIN_COLORS[q] }} />
                   ) : null;
                 })}
               </div>
@@ -301,81 +246,64 @@ export default function EdInvestment({
             {QUADRANT_ORDER.map((q) => {
               const proofNote = (PROOF_LAYER[state.careSetting ?? ""] ?? {})[q];
               return (
-                <div key={q} className="flex justify-between items-baseline py-[9px] border-b border-[#EDE5D8] text-[15px]">
-                  <span className={`flex items-center gap-[10px] ${proofNote ? "text-[#7C766F]" : "text-[#565250]"}`}>
+                <div key={q} className="flex justify-between items-baseline py-[11px] border-b border-[#EDE8E1] text-[15px]">
+                  <span className={`flex items-center gap-[10px] ${proofNote ? "text-[#7C766F]" : "text-[#3A342E]"}`}>
                     <span className="w-[10px] h-[10px] rounded-[3px] flex-shrink-0" style={{ background: DOMAIN_COLORS[q] }} />
                     {q}
                   </span>
                   {proofNote ? (
-                    <span className="text-[13px] text-[#7C766F] italic">{proofNote}</span>
+                    <span className="text-[13px] text-[#8C8073] italic">{proofNote}</span>
                   ) : (
-                    <span className="font-abridge text-[17px] text-[#1A1A1A]">{formatCurrency(valueByQuadrant[q])}</span>
+                    <span className="font-abridge text-[18px] text-[#1A1A1A]">{formatCurrency(valueByQuadrant[q])}</span>
                   )}
                 </div>
               );
             })}
-            <div className="flex justify-between items-baseline pt-[13px] text-[15px]">
+            <div className="flex justify-between items-baseline pt-[14px] text-[15px]">
               <span className="text-[#1A1A1A] font-bold">Total annual value</span>
-              <span className="font-abridge text-[19px] text-[#1A1A1A]">{formatCurrency(totalValue)}</span>
+              <span className="font-abridge text-[20px] text-[#1A1A1A]">{formatCurrency(totalValue)}</span>
             </div>
-            <div className="flex justify-between items-baseline py-[9px] text-[15px]">
+            <div className="flex justify-between items-baseline py-[10px] text-[15px]">
               <span className="text-[#565250]">Your investment</span>
-              <span className="font-abridge text-[17px] text-[#565250]">{formatCurrency(-annualInvestment)}</span>
+              <span className="font-abridge text-[18px] text-[#565250]">{formatCurrency(-annualInvestment)}</span>
             </div>
 
-            <div className="mt-[14px] pt-[18px] border-t-2 border-[#E7E3DD]">
-              {/* Before pricing is entered, investment is $0 and "net" would be the
-                  gross wearing a net label (net of nothing). Label it honestly as
-                  value-before-cost and hold the celebratory coral until a real
-                  return exists. */}
-              <div className="text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#2E2822]">
+            <div className="mt-4 pt-5 border-t-2 border-[#1A1A1A]">
+              <div className="text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#8C8073]">
                 {annualInvestment > 0 ? "Net annual value" : "Value before cost"}
               </div>
-              {/* Coral is reserved for a real gain (pricing entered, net positive); before that,
-                  and for a loss, the number reads in neutral ink, never celebratory. */}
-              <div className={`font-abridge text-[34px] sm:text-[46px] leading-none mt-[7px] ${annualInvestment > 0 && netAnnualValue >= 0 ? "text-[#EA2C00]" : "text-[#1A1A1A]"}`}>
+              <div className={`font-abridge text-[40px] sm:text-[52px] leading-[0.95] mt-[8px] ${annualInvestment > 0 && netAnnualValue >= 0 ? "text-[#EA2C00]" : "text-[#1A1A1A]"}`}>
                 {formatCurrency(netAnnualValue)}
-                <span className="text-[16px] text-[#565250]"> / yr</span>
+                <span className="text-[16px] text-[#8C8073]"> / yr</span>
               </div>
               {annualInvestment <= 0 ? (
-                <div className="inline-flex items-center gap-[9px] mt-[14px] bg-[#F2EFEA] border border-[#E7E2DB] rounded-full px-[15px] py-[8px]">
-                  <span className="text-[12.5px] font-bold text-[#565250]">Add your pricing to see the return</span>
-                </div>
+                <div className="text-[13px] text-[#8C8073] mt-[12px]">Add your pricing to see the return.</div>
               ) : netAnnualValue > 0 ? (
-                <div className="inline-flex items-center gap-[9px] mt-[14px] bg-[#FFEDE7] border border-[#F5D3C8] rounded-full px-[15px] py-[8px]">
-                  <span className="font-abridge text-[19px] text-[#EA2C00]">{roi.toFixed(1)}×</span>
-                  <span className="text-[12.5px] font-bold text-[#B02200]">
-                    ≈ {formatPerDollar(netPerDollar)} net back for every $1 spent
-                  </span>
+                <div className="mt-[14px] text-[15px] text-[#3A342E]">
+                  <b className="font-abridge text-[20px] text-[#EA2C00]">{roi.toFixed(1)}×</b>{" "}
+                  return · ≈ <b className="font-bold text-[#1A1A1A]">{formatPerDollar(netPerDollar)}</b> net back for every $1 spent
                 </div>
               ) : (
-                <div className="inline-flex items-center gap-[9px] mt-[14px] bg-[#F2EFEA] border border-[#E7E2DB] rounded-full px-[15px] py-[8px]">
-                  <span className="font-abridge text-[19px] text-[#565250]">{roi.toFixed(1)}×</span>
-                  <span className="text-[12.5px] font-bold text-[#565250]">
-                    the modeled value doesn&apos;t cover the cost at this scope
-                  </span>
+                <div className="mt-[14px] text-[15px] text-[#565250]">
+                  <b className="font-abridge text-[20px] text-[#565250]">{roi.toFixed(1)}×</b> · the modeled value doesn&apos;t cover the cost at this scope
                 </div>
               )}
             </div>
-
-            <p className="text-[12.5px] text-[#565250] leading-[1.55] mt-[18px]">
-              <b className="text-[#1A1A1A] font-bold">Most of this builds over the first year</b> as adoption ramps. Time given back shows first, in weeks; revenue capture and recapture follow across the year.
-            </p>
-          </div>
-          <div className="flex justify-end">
-            <button
-              type="button"
-              onClick={onNext}
-              data-testid="ed-investment-continue"
-              className="bg-[#EA2C00] text-white text-[15px] font-bold px-7 py-[14px] rounded-[12px] shadow-[0_2px_6px_rgba(234,44,0,0.15)] flex-shrink-0"
-            >
-              See your model →
-            </button>
-          </div>
           </div>
         </div>
 
-        <p className="text-[12px] text-[#7C766F] max-w-[560px] leading-[1.5] mt-6">
+        <div className="flex justify-end mt-14">
+          <button
+            type="button"
+            onClick={onNext}
+            data-testid="ed-investment-continue"
+            className="bg-[#EA2C00] text-white text-[15px] font-bold px-7 py-[14px] rounded-[12px] shadow-[0_2px_6px_rgba(234,44,0,0.15)]"
+          >
+            See your model →
+          </button>
+        </div>
+
+        <p className="text-[12px] text-[#8C8073] max-w-[560px] leading-[1.5] mt-10">
           An estimate built from the figures you entered, not a guarantee of financial results. Actual outcomes vary. You confirm the real numbers as you measure.
         </p>
       </div>

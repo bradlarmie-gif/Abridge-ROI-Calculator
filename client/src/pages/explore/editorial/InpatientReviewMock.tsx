@@ -29,6 +29,7 @@ const SAMPLE: ExploreState = {
     ipObsDefenseExpanded: true,
   },
   retentionMode: "counted",
+  costPerProvider: 500,
   timeDriverInputs: {
     ...DEFAULT_EXPLORE_STATE.timeDriverInputs,
     ipIncrementalStaffingEnabled: true,
