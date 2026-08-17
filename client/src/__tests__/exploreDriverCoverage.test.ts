@@ -162,9 +162,15 @@ const inpatientState = {
     ipBurnoutRelatedTurnover: 45,
     ipReplacementCost: 400_000,
     retentionImpactScenario: "typical",
-    physicianAgencyEnabled: true,
-    physicianAgencyWeeksPerVacancy: 16,
-    physicianAgencyWeeklyPremium: 5_000,
+    // physicianLocumAgency is no longer registered for inpatient (settings:
+    // ['outpatient','ed'] only) — Incremental Staffing Avoided replaced it as
+    // the inpatient Workforce P&L-displacement driver. Do NOT enable
+    // physicianAgencyEnabled here: the engine still computes the key for any
+    // physician setting (isPhysician gate), so leaving it on would emit an
+    // orphan key with no inpatient card to claim it.
+    ipIncrementalStaffingEnabled: true,
+    ipStaffingCurrentSpend: 500_000,
+    ipStaffingReductionPct: 15,
   },
   docQualityInputs: {
     ...DEFAULT_EXPLORE_STATE.docQualityInputs,
@@ -174,11 +180,15 @@ const inpatientState = {
     ipDrgWeightIncrease: 0.3,
     ipDrgBasePayment: 12_000,
     ipDrgRealization: 60,
+    // Status / Medical Necessity Denials (obsDefense) new chain — base is
+    // TOTAL admissions, not a documented slice. See exploreDriverCalcs.ts.
     ipObsDefenseEnabled: true,
-    ipObsDefensePreventableScenario: "typical",
-    ipObsDefenseDenialRate: 6,
-    ipObsDefenseRevenueDelta: 3_000,
-    ipObsDefenseRealization: 65,
+    ipObsDenialRate: 5,
+    ipObsAllowedPerCase: 10_000,
+    ipObsNotRecoveredPct: 30,
+    ipObsDocMaterialPct: 40,
+    ipObsAbridgeOpportunityPct: 75,
+    ipObsAbridgeImpactPct: 40,
   },
 } as ExploreState;
 

@@ -52,6 +52,7 @@ const DRIVER_ONSET: Record<string, DriverOnset> = {
   admissionCapture: "delayed",
   providerWellbeing: "phased",
   physicianLocumAgency: "phased",
+  incrementalStaffing: "phased",
   scribeCostReduction: "immediate",
   nursingRetention: "phased",
   nursingAgency: "phased",

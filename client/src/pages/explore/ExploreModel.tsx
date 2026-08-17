@@ -111,6 +111,13 @@ export function buildExploreProformaDrivers(
 
   if (extras.scribeCostValue > 0) drivers.push({ id: "scribeCost", name: "Scribe Cost Reduction", value: extras.scribeCostValue, category: "time", quadrant: "Workforce", onset: "immediate" as const });
 
+  // Incremental Staffing Avoided (inpatient): independent P&L displacement off
+  // current locum/moonlighting/overtime spend, not derived from the retention
+  // count. Ramps "phased" like retention — the spend doesn't stop day one, it
+  // comes down as the after-hours burden eases (mirrors DRIVER_ONSET in EdModel).
+  const incrementalStaffingValue = allDriverValues[ek("incrementalStaffing")] || 0;
+  if (incrementalStaffingValue > 0) drivers.push({ id: "incrementalStaffing", name: "Incremental Staffing Avoided", value: incrementalStaffingValue, category: "time", quadrant: "Workforce", onset: "phased" as const });
+
   for (const item of state.timeDriverInputs.nursingAdditionalCostSavings) {
     if (item.amount > 0 && item.label) {
       drivers.push({ id: `additionalCost-${item.id}`, name: item.label, value: item.amount, category: "time", quadrant: "Workforce", onset: "immediate" as const });

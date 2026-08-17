@@ -140,7 +140,7 @@ describe("engineKeyForDriver — every registered quantified driver resolves to 
     assertAllResolve("ed", state, 5_000);
   });
 
-  it("inpatient: providerWellbeing, physicianLocumAgency, drgAccuracy, obsDefense", () => {
+  it("inpatient: providerWellbeing, incrementalStaffing, drgAccuracy, obsDefense", () => {
     const state = {
       ...DEFAULT_EXPLORE_STATE,
       careSetting: "inpatient",
@@ -156,9 +156,12 @@ describe("engineKeyForDriver — every registered quantified driver resolves to 
         ipBurnoutRelatedTurnover: 45,
         ipReplacementCost: 400_000,
         retentionImpactScenario: "typical",
-        physicianAgencyEnabled: true,
-        physicianAgencyWeeksPerVacancy: 16,
-        physicianAgencyWeeklyPremium: 5_000,
+        // physicianLocumAgency is registered for outpatient/ed only now;
+        // inpatient's Workforce P&L-displacement driver is Incremental
+        // Staffing Avoided.
+        ipIncrementalStaffingEnabled: true,
+        ipStaffingCurrentSpend: 500_000,
+        ipStaffingReductionPct: 15,
       },
       docQualityInputs: {
         ...DEFAULT_EXPLORE_STATE.docQualityInputs,
@@ -168,11 +171,15 @@ describe("engineKeyForDriver — every registered quantified driver resolves to 
         ipDrgWeightIncrease: 0.3,
         ipDrgBasePayment: 12_000,
         ipDrgRealization: 60,
+        // Status / Medical Necessity Denials (obsDefense) new chain — base is
+        // TOTAL admissions, not a documented slice. See exploreDriverCalcs.ts.
         ipObsDefenseEnabled: true,
-        ipObsDefensePreventableScenario: "typical",
-        ipObsDefenseDenialRate: 6,
-        ipObsDefenseRevenueDelta: 3_000,
-        ipObsDefenseRealization: 65,
+        ipObsDenialRate: 5,
+        ipObsAllowedPerCase: 10_000,
+        ipObsNotRecoveredPct: 30,
+        ipObsDocMaterialPct: 40,
+        ipObsAbridgeOpportunityPct: 75,
+        ipObsAbridgeImpactPct: 40,
       },
     } as ExploreState;
 

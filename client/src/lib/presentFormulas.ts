@@ -34,6 +34,12 @@ export function summaryKeyFor(driverId: string, careSetting: string): string | u
     nursingCauti: "nursingCauti",
     nursingClabsi: "nursingClabsi",
     nursingSepsis: "nursingSepsis",
+    // incrementalStaffing is intentionally NOT mapped: like nursingAgency /
+    // physicianLocumAgency, its dollar base (ipStaffingCurrentSpend) is a raw
+    // current-spend input `scaledExploreStateFor` does not scale by the provider
+    // factor, so a re-derived formula would print the pilot-level spend next to
+    // a full-scale-scaled driver value and fail to tie out. No formula beats a
+    // wrong one (see the "direct cost inputs" note above).
   };
   // Clinician retention === providerWellbeing for OP/ED (same generic turnover
   // fields, same formula). NOT mapped for inpatient (proforma uses generic

@@ -120,7 +120,16 @@ function ipResults(inp: CellInputs) {
     },
     {
       ipDrgEnabled: true, ipDrgScenario: "typical", ipDrgAtRiskRate: inp.econ?.atRisk ?? 15, ipDrgWeightIncrease: inp.econ?.weightInc ?? 0.03, ipDrgBasePayment: inp.econ?.drgBase ?? 6_000, ipDrgRealization: inp.stancePct ?? 60,
-      ipObsDefenseEnabled: true, ipObsDefensePreventableScenario: "typical", ipObsDefenseDenialRate: inp.econ?.obsRate ?? 5, ipObsDefenseRevenueDelta: inp.econ?.obsDelta ?? 4_000, ipObsDefenseRealization: inp.stancePct ?? 60,
+      // Status / Medical Necessity Denials now runs a 6-factor chain in the
+      // canonical engine (denial rate -> allowed $/case -> not recovered % ->
+      // documentation material % -> Abridge opportunity % -> Abridge impact %),
+      // but Attain's UI only collects the 2 fields its narrative uses (see
+      // attainEconomics.ts "Inpatient|Revenue Capture" obs lever: obsRate,
+      // obsDelta) plus the shared stance. Fold the 3 sub-factors Attain doesn't
+      // expose to 100% (identity) so the chain collapses to exactly Attain's own
+      // 3-factor story: admissions × obsRate% downgraded × $obsDelta/stay
+      // recovered × stance% the note can defend.
+      ipObsDefenseEnabled: true, ipObsDenialRate: inp.econ?.obsRate ?? 5, ipObsAllowedPerCase: inp.econ?.obsDelta ?? 4_000, ipObsNotRecoveredPct: 100, ipObsDocMaterialPct: 100, ipObsAbridgeOpportunityPct: 100, ipObsAbridgeImpactPct: inp.stancePct ?? 60,
     }, 0);
   // DRG decouple: Explore/ROI/Proforma moved DRG to the CDI query-funnel model, but
   // Attain deliberately stays on its own CMI-lift chain for now (funnel conversion is

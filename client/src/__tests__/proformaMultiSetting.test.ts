@@ -548,10 +548,12 @@ describe("newly-tunable drivers recompute correctly", () => {
       docQualityInputs: {
         ...DEFAULT_EXPLORE_STATE.docQualityInputs,
         ipObsDefenseEnabled: true,
-        ipObsDefensePreventableScenario: "typical",
-        ipObsDefenseDenialRate: 8,
-        ipObsDefenseRevenueDelta: 6000,
-        ipObsDefenseRealization: 50,
+        ipObsDenialRate: 8,
+        ipObsAllowedPerCase: 10_000,
+        ipObsNotRecoveredPct: 30,
+        ipObsDocMaterialPct: 40,
+        ipObsAbridgeOpportunityPct: 75,
+        ipObsAbridgeImpactPct: 40,
       },
     };
     const recomputed = recomputeDriverFromExploreState("ipObsDefense", base);
@@ -560,7 +562,7 @@ describe("newly-tunable drivers recompute correctly", () => {
 
     const higher: ExploreState = {
       ...base,
-      docQualityInputs: { ...base.docQualityInputs, ipObsDefenseDenialRate: 16 },
+      docQualityInputs: { ...base.docQualityInputs, ipObsDenialRate: 16 },
     };
     expect(recomputeDriverFromExploreState("ipObsDefense", higher))
       .toBeGreaterThan(recomputed);
@@ -650,13 +652,31 @@ describe("inpatient doc-quality drivers honor a persisted 'custom' scenario", ()
     expect(recomputeDriverFromExploreState("ipDrg", highState)).toBe(high);
   });
 
-  it("ipObsDefense custom % flows through the engine (not a fallback)", () => {
-    const customState = ipBase({ ipObsDefenseEnabled: true, ipObsDefensePreventableScenario: "custom", ipObsDefenseCustomPercent: 80, ipObsDefenseDenialRate: 8, ipObsDefenseRevenueDelta: 6000 });
-    const typicalState = ipBase({ ipObsDefenseEnabled: true, ipObsDefensePreventableScenario: "typical", ipObsDefenseDenialRate: 8, ipObsDefenseRevenueDelta: 6000 }); // typical = 40
-    const custom = computeAllDriverValues(customState, 0).obsDefense;
-    const typical = computeAllDriverValues(typicalState, 0).obsDefense;
-    expect(custom).toBeGreaterThan(0);
-    expect(custom).toBeCloseTo(typical * (80 / 40), -1);
+  // The old "preventable scenario" (conservative/typical/aggressive/custom
+  // percent) concept was removed with the Status / Medical Necessity Denials
+  // rebuild — there is no longer a persisted scenario to honor. The chain is
+  // now a straight run of real levers (denial rate -> allowed $/case -> not
+  // recovered -> documentation materiality -> Abridge opportunity -> Abridge
+  // impact), so the replacement coverage is: (1) it is monotonic in a real
+  // factor, and (2) at the documented defaults it lands at the stated ~$432K.
+  it("ipObsDefense: monotonic in documentation materiality, and reconciles at defaults", () => {
+    const halfMaterial = ipBase({ ipObsDefenseEnabled: true, ipObsDocMaterialPct: 20 });
+    const fullMaterial = ipBase({ ipObsDefenseEnabled: true, ipObsDocMaterialPct: 40 });
+    const half = computeAllDriverValues(halfMaterial, 0).obsDefense;
+    const full = computeAllDriverValues(fullMaterial, 0).obsDefense;
+    expect(half).toBeGreaterThan(0);
+    // Doubling documentation-is-material % doubles the value — a real, live lever.
+    expect(full).toBeCloseTo(half * 2, -1);
+
+    // At the documented defaults (24,000 admissions, 5% denial rate, $10K
+    // allowed/case, 30% not recovered, 40% documentation material, 75%
+    // Abridge opportunity, 40% Abridge impact) the value is ~$432,000.
+    const defaultsState: ExploreState = {
+      ...ipBase({ ipObsDefenseEnabled: true }),
+      annualEncounters: 24_000,
+    };
+    const atDefaults = computeAllDriverValues(defaultsState, 0).obsDefense;
+    expect(atDefaults).toBe(432_000);
   });
 });
 
