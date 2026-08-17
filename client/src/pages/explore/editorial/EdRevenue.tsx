@@ -440,27 +440,19 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
         amount: drgValue,
         awaiting: drgAwait?.need,
         levers: (
-          <div className="flex flex-col gap-7">
-            <MathCascade
-              label="What the CDI funnel catches today"
-              steps={[
-                { label: "Discharges", running: fmtN(eligibleEncounters) },
-                { label: "Reviewed by CDI", factor: { value: dq.ipDrgCdiReviewRate, onChange: (v) => updateDq({ ipDrgCdiReviewRate: v }), suffix: "%" }, running: fmtN(drgReviewed) },
-                { label: "Get a query", factor: { value: dq.ipDrgQueryRate, onChange: (v) => updateDq({ ipDrgQueryRate: v }), suffix: "%" }, running: fmtN(drgQueried) },
-                { label: "Physician responds", factor: { value: dq.ipDrgResponseRate, onChange: (v) => updateDq({ ipDrgResponseRate: v }), suffix: "%" }, running: fmtN(drgResponds) },
-                { label: "Changes the DRG", factor: { value: dq.ipDrgChangeRate, onChange: (v) => updateDq({ ipDrgChangeRate: v }), suffix: "%" }, running: fmtN(drgChanged), note: "your CDI team's, not Abridge's" },
-              ]}
-            />
-            <MathCascade
-              label="What Abridge adds, on top"
-              steps={[
-                { label: "Flagged but lost", running: fmtN(drgLost), note: "queried but never corrected" },
-                { label: "Captured by Abridge", factor: { value: dq.ipDrgUpfrontCapture, onChange: (v) => updateDq({ ipDrgUpfrontCapture: v }), suffix: "%" }, running: fmtN(drgCaptured) },
-                { label: "DRG weight gained per case", factor: { value: dq.ipDrgWeightGain, onChange: (v) => updateDq({ ipDrgWeightGain: v }), decimal: true }, running: `${drgWeightAdded.toFixed(1)} wt` },
-                { label: "Paid per weight", factor: { value: dq.ipDrgBaseRate, onChange: (v) => updateDq({ ipDrgBaseRate: v }), prefix: "$" }, running: fmt$(drgValue), final: true },
-              ]}
-            />
-          </div>
+          <MathCascade
+            steps={[
+              { label: "Discharges", running: fmtN(eligibleEncounters) },
+              { label: "Reviewed by CDI", factor: { value: dq.ipDrgCdiReviewRate, onChange: (v) => updateDq({ ipDrgCdiReviewRate: v }), suffix: "%" }, running: fmtN(drgReviewed) },
+              { label: "Get a query", factor: { value: dq.ipDrgQueryRate, onChange: (v) => updateDq({ ipDrgQueryRate: v }), suffix: "%" }, running: fmtN(drgQueried) },
+              { label: "Physician responds", factor: { value: dq.ipDrgResponseRate, onChange: (v) => updateDq({ ipDrgResponseRate: v }), suffix: "%" }, running: fmtN(drgResponds) },
+              { label: "Changes the DRG", factor: { value: dq.ipDrgChangeRate, onChange: (v) => updateDq({ ipDrgChangeRate: v }), suffix: "%" }, running: fmtN(drgChanged), note: "corrected by your CDI team" },
+              { label: "Flagged but lost", running: fmtN(drgLost), note: `${fmtN(drgQueried)} queried − ${fmtN(drgChanged)} corrected · Abridge's opportunity`, pivot: true },
+              { label: "Captured by Abridge", factor: { value: dq.ipDrgUpfrontCapture, onChange: (v) => updateDq({ ipDrgUpfrontCapture: v }), suffix: "%" }, running: fmtN(drgCaptured) },
+              { label: "DRG weight gained per case", factor: { value: dq.ipDrgWeightGain, onChange: (v) => updateDq({ ipDrgWeightGain: v }), decimal: true }, running: `${drgWeightAdded.toFixed(1)} wt` },
+              { label: "Paid per weight", factor: { value: dq.ipDrgBaseRate, onChange: (v) => updateDq({ ipDrgBaseRate: v }), prefix: "$" }, running: fmt$(drgValue), final: true },
+            ]}
+          />
         ),
       },
       {

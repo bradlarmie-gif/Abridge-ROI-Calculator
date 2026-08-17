@@ -18,6 +18,8 @@ export interface CascadeStep {
   note?: string;
   /** the final row: heavier rule, coral running */
   final?: boolean;
+  /** a pivot row (a subtraction / handoff, not a multiply): subtle tinted band */
+  pivot?: boolean;
 }
 
 export function MathCascade({ label, steps }: { label?: string; steps: CascadeStep[] }) {
@@ -31,7 +33,13 @@ export function MathCascade({ label, steps }: { label?: string; steps: CascadeSt
       {steps.map((s, i) => (
         <div
           key={s.label + i}
-          className={`grid grid-cols-[1fr_76px_128px] gap-x-[10px] items-baseline py-[12px] ${s.final ? "border-t-2 border-[#1A1A1A] mt-1 pt-[16px]" : "border-b border-[#EDE8E1]"}`}
+          className={`grid grid-cols-[1fr_76px_128px] gap-x-[10px] items-baseline py-[12px] ${
+            s.final
+              ? "border-t-2 border-[#1A1A1A] mt-1 pt-[16px]"
+              : s.pivot
+                ? "border-b border-[#EDE8E1] bg-[#FBF6F1] -mx-3 px-3 rounded-[6px]"
+                : "border-b border-[#EDE8E1]"
+          }`}
         >
           <div className={`text-[14px] leading-[1.3] ${s.final ? "font-abridge text-[#1A1A1A] font-bold" : "text-[#3A342E]"}`}>{s.label}</div>
           <div className="text-right">
