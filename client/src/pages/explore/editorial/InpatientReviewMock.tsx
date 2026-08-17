@@ -55,6 +55,7 @@ const NURSING_SAMPLE: ExploreState = {
   nursingMinutesPerShift: 15,
   timePathScenario: "typical",
   retentionMode: "counted",
+  costPerProvider: 120, // per nurse / month — so the model + PDF show a real return
   timeDriverInputs: {
     ...DEFAULT_EXPLORE_STATE.timeDriverInputs,
     nursingOtEnabled: true,
@@ -93,6 +94,7 @@ const OUTPATIENT_SAMPLE: ExploreState = {
   timePathScenario: "typical",
   paymentModel: "both",
   retentionMode: "counted",
+  costPerProvider: 850, // per provider / month — real return in the PDF
   timeDriverInputs: {
     ...DEFAULT_EXPLORE_STATE.timeDriverInputs,
     patientAccessEnabled: true,
@@ -133,6 +135,7 @@ const ED_SAMPLE: ExploreState = {
   minutesSavedPerEncounter: 4,
   timePathScenario: "typical",
   retentionMode: "counted",
+  costPerProvider: 300, // per ED physician / month — real return in the PDF
   timeDriverInputs: {
     ...DEFAULT_EXPLORE_STATE.timeDriverInputs,
     edLwbsEnabled: true,
