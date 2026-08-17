@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Download, Link as LinkIcon, ArrowRight } from "lucide-react";
+import { Download, ArrowRight, ArrowDown } from "lucide-react";
 import { EditorialHeader, EditorialShell } from "./EditorialHeader";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { type ExploreState } from "../ExploreFlow";
@@ -15,7 +15,6 @@ import type { ProformaSettingSnapshot, DriverOnset } from "@/pages/proforma/prof
 import { SETTING_LABELS } from "@/pages/proforma/proformaTypes";
 import { PDFExportModal } from "@/components/switch/PDFExportModal";
 import { generateExplorePDF, type ExplorePDFData, type ExplorePDFQuadrantData } from "@/components/explore/ExplorePDFExport";
-import { copyToClipboard } from "@/lib/clipboard";
 import { useToast } from "@/hooks/use-toast";
 
 /**
@@ -111,6 +110,39 @@ const fmtShort = (n: number) => {
   if (abs >= 1_000) return (n < 0 ? "-" : "") + "$" + (abs / 1_000).toFixed(0) + "K";
   return fmtCurrency(n);
 };
+
+const EXP_ENTRY =
+  "min-w-[28px] max-w-[92px] [field-sizing:content] text-right bg-transparent border-0 p-0 shadow-none font-abridge text-[24px] md:text-[24px] text-[#EA2C00] tabular-nums leading-none focus-visible:ring-0 focus:outline-none";
+const STEP_BTN =
+  "w-[26px] h-[26px] shrink-0 rounded-full border border-[#E0D9CE] text-[#8C7E6E] text-[15px] leading-none flex items-center justify-center hover:border-[#EA2C00] hover:text-[#EA2C00] transition-colors select-none";
+
+// Before/after expansion stepper: a coral figure nudged by − / +, still
+// typeable. Module scope so it keeps a stable identity across renders — a
+// nested component would remount and drop input focus on every keystroke.
+function ExpStepper({
+  value, onInput, onCommit, step, min, max, suffix, testId,
+}: {
+  value: number;
+  onInput: (v: number) => void;
+  onCommit: (v: number) => void;
+  step: number;
+  min: number;
+  max: number;
+  suffix?: string;
+  testId: string;
+}) {
+  const clamp = (v: number) => Math.min(max, Math.max(min, v));
+  return (
+    <span className="inline-flex items-center gap-[11px]">
+      <button type="button" aria-label="decrease" onClick={() => onCommit(clamp(value - step))} className={STEP_BTN}>−</button>
+      <span className="inline-flex items-baseline gap-[2px] border-b-2 border-[#EA2C00] pb-[1px]">
+        <FormattedNumberInput value={value} onChange={onInput} onBlurValue={(v) => onCommit(clamp(v))} className={EXP_ENTRY} data-testid={testId} />
+        {suffix && <span className="font-sans text-[14px] text-[#8C8073]">{suffix}</span>}
+      </span>
+      <button type="button" aria-label="increase" onClick={() => onCommit(clamp(value + step))} className={STEP_BTN}>+</button>
+    </span>
+  );
+}
 
 export default function EdModel({
   state,
@@ -261,11 +293,6 @@ export default function EdModel({
   // ───── Actions ─────
   const [showExportModal, setShowExportModal] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
-
-  const handleCopyLink = async () => {
-    const ok = await copyToClipboard(window.location.href);
-    toast({ title: ok ? "Link copied" : "Couldn't copy link", description: ok ? "Share link copied to your clipboard." : "Try again or copy the URL manually." });
-  };
 
   const handleAddToProforma = () => {
     if (!onAddToProforma || !state.careSetting) return;
@@ -452,10 +479,6 @@ export default function EdModel({
   // Editorial tokens — matches the de-boxed language shipped across the path.
   const sectLabel = "text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#8C8073]";
   const sectHead = "text-[11px] font-extrabold tracking-[0.09em] uppercase text-[#443A32]";
-  // Expansion entries are editable (coral underline). `md:text-[26px]` defeats
-  // the shared Input's default `md:text-sm`, which otherwise shrinks the figure.
-  const expEntry =
-    "min-w-[30px] max-w-[110px] [field-sizing:content] text-right bg-transparent border-0 p-0 shadow-none font-abridge text-[26px] md:text-[26px] text-[#EA2C00] tabular-nums leading-none focus-visible:ring-0 focus:outline-none";
 
   return (
     <EditorialShell>
@@ -624,94 +647,46 @@ export default function EdModel({
           </p>
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_1px_1fr] gap-x-[56px] gap-y-10">
             <div>
-              {/* Providers slider */}
-              <div className="mb-[26px]">
-                <div className="flex justify-between items-end">
-                  <div>
-                    <div className="text-[10.5px] font-extrabold tracking-[0.04em] uppercase text-[#2E2822]">{isNursing ? "Beds" : "Providers"}</div>
-                    <div className="text-[12.5px] text-[#7C766F] mt-[5px]">{fmtNumber(baselineCount)} today</div>
-                  </div>
-                  <div className="inline-flex items-baseline border-b-2 border-[#EA2C00] pb-[2px] whitespace-nowrap">
-                    <FormattedNumberInput
-                      value={expandedProviders}
-                      onChange={(v) => updateState({ fullScaleProviders: v })}
-                      onBlurValue={(v) => updateState({ fullScaleProviders: Math.max(v, baselineCount) })}
-                      className={expEntry}
-                      data-testid="ed-model-input-providers"
-                    />
-                  </div>
-                </div>
-                <div className="relative h-2 bg-[#F2EFEA] rounded-full my-[22px] mr-[6px]">
-                  <div className="absolute left-0 top-0 h-full bg-[#E7E2DB] rounded-full" style={{ width: `${providersTodayPct}%` }} />
-                  <div className="absolute top-0 h-full bg-[#EA2C00] rounded-full" style={{ left: `${providersTodayPct}%`, width: `${Math.max(0, providersPct - providersTodayPct)}%` }} />
-                  <div className="absolute -top-1 w-[2px] h-4 bg-[#B0ABA4]" style={{ left: `${providersTodayPct}%`, transform: "translateX(-50%)" }} />
-                  <input
-                    type="range"
-                    min={baselineCount}
-                    max={providersTrackMax}
-                    value={expandedProviders}
-                    onChange={(e) => updateState({ fullScaleProviders: Number(e.target.value) })}
-                    data-testid="ed-model-slider-providers"
-                    className="absolute inset-0 w-full h-4 -top-1 opacity-0 cursor-grab"
-                  />
-                  <div
-                    className="absolute -top-[6px] w-5 h-5 rounded-full bg-white border-[2.5px] border-[#EA2C00] shadow-[0_1px_4px_rgba(0,0,0,0.18)] pointer-events-none"
-                    style={{ left: `${providersPct}%`, transform: "translateX(-50%)" }}
-                  />
-                </div>
-                <div className="flex justify-between items-baseline mt-3 gap-3">
-                  <span className="text-[12px] text-[#565250]">
-                    <b className="text-[#EA2C00] font-bold">+{fmtNumber(Math.max(0, expandedProviders - baselineCount))} {isNursing ? "beds" : "providers"}</b> vs today
-                  </span>
-                  <span className="text-[12px] text-[#7C766F] whitespace-nowrap">
-                    full {isNursing ? "unit" : "team"} · <span className="text-[#565250] font-bold">{fmtNumber(expandedProviders)}</span>
-                  </span>
-                </div>
+              {/* Today */}
+              <div className="text-[10.5px] font-extrabold tracking-[0.05em] uppercase text-[#8C8073]">Today</div>
+              <div className="mt-[7px] flex items-baseline justify-between gap-4">
+                <span className="text-[14px] text-[#8C7E6E]">{fmtNumber(baselineCount)} {isNursing ? "beds" : "providers"} · {state.utilizationPercent}% adoption</span>
+                <span className="font-abridge text-[18px] text-[#8C7E6E] tabular-nums">{fmtCurrency(netAnnualValue)}<span className="font-sans text-[12px]"> / yr</span></span>
               </div>
 
-              {/* Adoption slider */}
-              <div>
-                <div className="flex justify-between items-end">
-                  <div>
-                    <div className="text-[10.5px] font-extrabold tracking-[0.04em] uppercase text-[#2E2822]">Adoption</div>
-                    <div className="text-[12.5px] text-[#7C766F] mt-[5px]">{state.utilizationPercent}% today</div>
-                  </div>
-                  <div className="inline-flex items-baseline gap-[3px] border-b-2 border-[#EA2C00] pb-[2px] whitespace-nowrap">
-                    <FormattedNumberInput
-                      value={expandedUtilization}
-                      onChange={(v) => setExpandedUtilization(v)}
-                      onBlurValue={(v) => setExpandedUtilization(Math.min(Math.max(v, state.utilizationPercent), 100))}
-                      className={expEntry}
-                      data-testid="ed-model-input-adoption"
-                    />
-                    <span className="font-sans text-[14px] text-[#8C8073]">%</span>
-                  </div>
+              {/* connector */}
+              <div className="flex items-center gap-[8px] my-[20px] text-[11px] font-bold tracking-[0.04em] uppercase text-[#B0A99E]">
+                <ArrowDown className="w-[15px] h-[15px] text-[#C4BCB0]" />
+                roll out to full scale
+              </div>
+
+              {/* At full scale */}
+              <div className="text-[10.5px] font-extrabold tracking-[0.05em] uppercase text-[#443A32]">At full scale</div>
+              <div className="mt-[16px] flex flex-col gap-[18px]">
+                <div className="flex items-center justify-between gap-4">
+                  <span className="text-[13.5px] text-[#565250]">{isNursing ? "Beds" : "Providers"}</span>
+                  <ExpStepper
+                    value={expandedProviders}
+                    onInput={(v) => updateState({ fullScaleProviders: v })}
+                    onCommit={(v) => updateState({ fullScaleProviders: v })}
+                    step={5}
+                    min={baselineCount}
+                    max={providersTrackMax}
+                    testId="ed-model-input-providers"
+                  />
                 </div>
-                <div className="relative h-2 bg-[#F2EFEA] rounded-full my-[22px] mr-[6px]">
-                  <div className="absolute left-0 top-0 h-full bg-[#E7E2DB] rounded-full" style={{ width: `${adoptionTodayPct}%` }} />
-                  <div className="absolute top-0 h-full bg-[#EA2C00] rounded-full" style={{ left: `${adoptionTodayPct}%`, width: `${Math.max(0, adoptionPct - adoptionTodayPct)}%` }} />
-                  <div className="absolute -top-1 w-[2px] h-4 bg-[#B0ABA4]" style={{ left: `${adoptionTodayPct}%`, transform: "translateX(-50%)" }} />
-                  <input
-                    type="range"
+                <div className="flex items-center justify-between gap-4">
+                  <span className="text-[13.5px] text-[#565250]">Adoption</span>
+                  <ExpStepper
+                    value={expandedUtilization}
+                    onInput={(v) => setExpandedUtilization(v)}
+                    onCommit={(v) => setExpandedUtilization(v)}
+                    step={5}
                     min={state.utilizationPercent}
                     max={100}
-                    value={expandedUtilization}
-                    onChange={(e) => setExpandedUtilization(Number(e.target.value))}
-                    data-testid="ed-model-slider-adoption"
-                    className="absolute inset-0 w-full h-4 -top-1 opacity-0 cursor-grab"
+                    suffix="%"
+                    testId="ed-model-input-adoption"
                   />
-                  <div
-                    className="absolute -top-[6px] w-5 h-5 rounded-full bg-white border-[2.5px] border-[#EA2C00] shadow-[0_1px_4px_rgba(0,0,0,0.18)] pointer-events-none"
-                    style={{ left: `${adoptionPct}%`, transform: "translateX(-50%)" }}
-                  />
-                </div>
-                <div className="flex justify-between items-baseline mt-3 gap-3">
-                  <span className="text-[12px] text-[#565250]">
-                    <b className="text-[#EA2C00] font-bold">+{Math.max(0, Math.round(expandedUtilization - state.utilizationPercent))} points</b> vs today
-                  </span>
-                  <span className="text-[12px] text-[#7C766F] whitespace-nowrap">
-                    full adoption · <span className="text-[#565250] font-bold">100%</span>
-                  </span>
                 </div>
               </div>
             </div>
@@ -726,17 +701,17 @@ export default function EdModel({
               </div>
               {netAnnualValue > 0 ? (
                 <>
-                  <div className="text-[13px] text-[#565250] mt-2">
+                  <div className="text-[13px] text-[#565250] mt-[10px]">
                     {annualInvestment > 0 && (
-                      <><b className="font-abridge font-normal text-[#1A1A1A]">{expandedRoi.toFixed(1)}×</b> return · </>
+                      <><span className="font-abridge text-[#1A1A1A]">{expandedRoi.toFixed(1)}×</span> return · </>
                     )}
-                    up from <b className="font-abridge font-normal text-[#1A1A1A]">{fmtCurrency(netAnnualValue)}</b> today
+                    <span className="text-[#EA2C00] font-semibold">+{fmtCurrency(expandedValue - netAnnualValue)}</span> over today
                   </div>
-                  <div className="mt-[18px]">
-                    <div className="mb-[10px]">
+                  <div className="mt-[20px] flex flex-col gap-[12px]">
+                    <div>
                       <div className="flex justify-between text-[12px] mb-[5px]">
-                        <span className="text-[#565250]">Today · {fmtNumber(baselineCount)} {isNursing ? "beds" : "providers"}</span>
-                        <span className="font-abridge text-[#1A1A1A]">{fmtCurrency(netAnnualValue)}</span>
+                        <span className="text-[#8C7E6E]">Today</span>
+                        <span className="font-abridge text-[#8C7E6E] tabular-nums">{fmtCurrency(netAnnualValue)}</span>
                       </div>
                       <div className="h-2 bg-[#F2EFEA] rounded-full overflow-hidden">
                         <div className="h-full rounded-full bg-[#F4A48C]" style={{ width: `${Math.max(4, (netAnnualValue / cmpMax) * 100)}%` }} />
@@ -744,8 +719,8 @@ export default function EdModel({
                     </div>
                     <div>
                       <div className="flex justify-between text-[12px] mb-[5px]">
-                        <span className="text-[#565250]">Expanded · {fmtNumber(expandedProviders)} {isNursing ? "beds" : "providers"}</span>
-                        <span className="font-abridge text-[#1A1A1A]">{fmtCurrency(expandedValue)}</span>
+                        <span className="text-[#565250] font-semibold">At full scale</span>
+                        <span className="font-abridge text-[#1A1A1A] tabular-nums">{fmtCurrency(expandedValue)}</span>
                       </div>
                       <div className="h-2 bg-[#F2EFEA] rounded-full overflow-hidden">
                         <div className="h-full rounded-full bg-[#EA2C00]" style={{ width: `${Math.max(4, (expandedValue / cmpMax) * 100)}%` }} />
@@ -788,15 +763,6 @@ export default function EdModel({
               <ArrowRight className="w-4 h-4" />
             </button>
           )}
-          <button
-            type="button"
-            onClick={handleCopyLink}
-            data-testid="ed-model-copy-link"
-            className="text-[14px] font-bold rounded-[12px] px-[22px] py-[13px] inline-flex items-center gap-[9px] text-[#565250] border border-transparent"
-          >
-            <LinkIcon className="w-4 h-4" />
-            Copy share link
-          </button>
           <button type="button" onClick={onEdit} data-testid="ed-model-edit" className="text-[13px] text-[#7C766F] underline ml-1">
             Edit model
           </button>
