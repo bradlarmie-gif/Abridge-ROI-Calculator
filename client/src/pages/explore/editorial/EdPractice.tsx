@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useState, type ReactNode } from "react";
 import { EditorialHeader, EditorialShell } from "./EditorialHeader";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { type ExploreState } from "../ExploreFlow";
@@ -244,10 +244,55 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
 
   const utilizationPresets = isNursing ? NURSING_UTILIZATION_PRESETS : UTILIZATION_PRESETS;
 
+  // Per-setting row copy
+  const providersDesc = isNursing
+    ? "Nurse FTEs documenting at the bedside."
+    : isInpatient
+      ? "Hospitalists carrying the inpatient census."
+      : isED
+        ? "Physicians and APPs staffing the department."
+        : "Clinicians seeing patients on the schedule.";
+  const volumeDesc = isInpatient
+    ? "Total discharges across the service, per year."
+    : isED
+      ? "Total ED visits across the department, per year."
+      : "Total encounters across the practice, per year.";
+  const shareDesc = isNursing
+    ? "The share of nurses actively documenting with Abridge."
+    : `The share of ${encounterLabel} captured with Abridge.`;
+
+  // Editorial entry styling — underline figure, coral = editable (matches Time)
+  const sectLabel = "text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#8C8073]";
+  const entryWrap = "inline-flex items-baseline gap-[5px] border-b-2 border-[#EA2C00] pb-[2px] whitespace-nowrap";
+  const entryInput = "min-w-[40px] max-w-[170px] [field-sizing:content] text-right bg-transparent border-0 p-0 font-abridge text-[30px] text-[#1A1A1A] tabular-nums focus:outline-none placeholder:text-[#C7BFB4] placeholder:font-sans placeholder:text-[15px]";
+  const entryUnit = "font-sans text-[13px] text-[#8C8073]";
+
+  // One input row: label + description on the left, the entry figure on the right
+  // (single line, no wrap), and any chips/toggle on their own full-width line below.
+  const Row = ({ label, desc, children, controls }: { label: string; desc: string; children: ReactNode; controls?: ReactNode }) => (
+    <div className="py-[22px] border-b border-[#EDE8E1]">
+      <div className="flex justify-between items-end gap-6">
+        <div className="min-w-0">
+          <div className="font-abridge text-[16px] font-bold text-[#1A1A1A] whitespace-nowrap">{label}</div>
+          <div className="text-[13px] text-[#8C8073] mt-1 leading-[1.45] max-w-[320px]">{desc}</div>
+        </div>
+        <div className="flex-shrink-0">{children}</div>
+      </div>
+      {controls && <div className="mt-[14px] flex items-center gap-[7px] flex-wrap">{controls}</div>}
+    </div>
+  );
+
+  // shared right-column derived readouts
+  const pct = Math.round(state.utilizationPercent);
+  const notYet = Math.max(0, rightTotal - rightEnabled);
+  const documentedUnit = isNursing ? "shifts" : encounterLabel;
+  const perProvider =
+    state.numberOfProviders > 0 ? Math.round(annualEncounters / state.numberOfProviders) : 0;
+
   return (
     <EditorialShell>
       <EditorialHeader stepName="Practice" stepIndex={2} onBack={onBack} onHome={onHome} />
-      <div className="max-w-[1160px] mx-auto px-5 sm:px-8 lg:px-12 pt-12 pb-14">
+      <div className="max-w-[1080px] mx-auto px-5 sm:px-8 lg:px-12 pt-12 pb-14">
         <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#565250]">
           Value Estimator · Step 2 of 9
         </div>
@@ -259,303 +304,184 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
           round estimates.
         </p>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[1.35fr_1fr] gap-[22px] mt-[34px] items-stretch">
-          {/* Form */}
-          <div className="bg-[#FDFBF8] border border-[#E7E3DD] rounded-[20px] px-7 py-[26px] h-full flex flex-col">
-            {isNursing && (
-              <div className="mb-6">
-                <div className="text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#2E2822] mb-[10px]">
-                  Staffed beds
-                </div>
-                <FormattedNumberInput
-                  value={state.nursingStaffedBeds}
-                  onChange={handleBedsChange}
-                  placeholder="e.g., 200"
-                  className={inputBase}
-                  data-testid="ed-input-beds"
-                />
-              </div>
-            )}
-
-            <div className="mb-6">
-              <div className="text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#2E2822] mb-[10px]">
-                {providerLabel}
-              </div>
-              <FormattedNumberInput
-                value={state.numberOfProviders}
-                onChange={handleProvidersChange}
-                placeholder={isNursing ? "e.g., 300" : "e.g., 50"}
-                className={inputBase}
-                data-testid="ed-input-providers"
-              />
-              {isNursing && state.nursingStaffedBeds > 0 && (
-                <div className="flex items-center gap-[7px] mt-[10px] flex-wrap">
-                  <span className="text-[10px] font-extrabold tracking-[0.05em] uppercase text-[#7C766F]">
-                    Estimate
-                  </span>
-                  {FTE_ESTIMATES.map(({ label, multiplier }) => (
-                    <QuickFillChip
-                      key={label}
-                      label={label}
-                      value={Math.round(state.nursingStaffedBeds * multiplier)}
-                      active={appliedEstimate === label}
-                      onClick={() => applyFteEstimate(multiplier, label)}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {!isNursing && (
-              <div className="mb-6">
-                <div className="flex items-center justify-between mb-[10px] gap-3">
-                  <div className="text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#2E2822]">
-                    Annual {encounterLabel}
-                  </div>
-                  <div className="inline-flex gap-[2px] bg-[#F2EFEA] border border-[#E7E2DB] rounded-[10px] p-[3px]">
-                    <button
-                      type="button"
-                      onClick={() => setUsingTotalInput(true)}
-                      className={`text-[11.5px] font-bold px-3 py-[6px] rounded-[7px] transition-colors ${
-                        usingTotalInput ? "bg-[#2E2822] text-white" : "text-[#565250]"
-                      }`}
-                    >
-                      Total for the org
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setUsingTotalInput(false)}
-                      className={`text-[11.5px] font-bold px-3 py-[6px] rounded-[7px] transition-colors ${
-                        !usingTotalInput ? "bg-[#2E2822] text-white" : "text-[#565250]"
-                      }`}
-                    >
-                      Per provider
-                    </button>
-                  </div>
-                </div>
-
-                {usingTotalInput ? (
-                  <>
-                    <div className="relative">
-                      <FormattedNumberInput
-                        value={totalEncountersInput}
-                        onChange={handleTotalEncountersChange}
-                        placeholder="e.g., 420,000"
-                        className={`${inputBase} pr-14`}
-                        data-testid="ed-input-total-encounters"
-                      />
-                      <span className="absolute right-[15px] top-1/2 -translate-y-1/2 text-[#565250] text-[14px] font-semibold">
-                        / yr
-                      </span>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="relative">
-                      <FormattedNumberInput
-                        value={encountersPerProvider}
-                        onChange={handleBusynessChange}
-                        placeholder="e.g., 3,500"
-                        className={`${inputBase} pr-14`}
-                        data-testid="ed-input-encounters-per-provider"
-                      />
-                      <span className="absolute right-[15px] top-1/2 -translate-y-1/2 text-[#565250] text-[14px] font-semibold">
-                        / yr
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-[7px] mt-[10px] flex-wrap">
-                      <span className="text-[10px] font-extrabold tracking-[0.05em] uppercase text-[#7C766F]">
-                        Quick fill
-                      </span>
-                      {BUSYNESS_PRESETS.map((preset) => (
-                        <QuickFillChip
-                          key={preset.label}
-                          label={preset.label}
-                          value={preset.value}
-                          active={isPresetSelected(preset.value)}
-                          onClick={() => handleBusynessChange(preset.value)}
-                        />
-                      ))}
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
-
-            {isInpatient && (
-              <div className="mb-6">
-                <div className="text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#2E2822] mb-[10px]">
-                  Average length of stay
-                </div>
-                <div className="relative">
-                  <FormattedNumberInput
-                    value={state.inpatientAlos}
-                    onChange={handleAlosChange}
-                    step={0.1}
-                    placeholder="e.g., 4.5"
-                    className={`${inputBase} pr-16`}
-                    data-testid="ed-input-alos"
-                  />
-                  <span className="absolute right-[15px] top-1/2 -translate-y-1/2 text-[#565250] text-[14px] font-semibold">
-                    days
-                  </span>
-                </div>
-                <div className="flex items-center gap-[7px] mt-[10px] flex-wrap">
-                  <span className="text-[10px] font-extrabold tracking-[0.05em] uppercase text-[#7C766F]">
-                    Quick fill
-                  </span>
-                  {ALOS_PRESETS.map((preset) => (
-                    <QuickFillChip
-                      key={preset.label}
-                      label={preset.label}
-                      value={preset.value}
-                      active={state.inpatientAlos === preset.value}
-                      onClick={() => handleAlosChange(preset.value)}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
+        <div className="grid grid-cols-1 lg:grid-cols-[1.15fr_1px_1fr] gap-x-[56px] gap-y-10 mt-[46px]">
+          {/* LEFT — inputs */}
+          <div>
+            <div className={sectLabel}>Your {settingName}</div>
 
             {isNursing && (
-              <div className="mb-6">
-                <div className="text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#2E2822] mb-[10px]">
-                  Bed occupancy
-                </div>
-                <div className="flex items-center gap-4">
-                  <input
-                    type="range"
-                    min={50}
-                    max={100}
-                    value={state.nursingOccupancyRate}
-                    onChange={(e) => handleOccupancyChange(Number(e.target.value))}
-                    className="flex-1 h-2 bg-[#EBE6DE] rounded-full appearance-none cursor-pointer accent-[#EA2C00]"
-                    data-testid="ed-slider-occupancy"
-                  />
-                  <div className="h-12 min-w-[64px] flex items-center justify-center rounded-xl border border-[#E7E3DD] bg-white text-[16px] font-bold text-[#EA2C00] tabular-nums px-3">
-                    {state.nursingOccupancyRate}%
-                  </div>
-                </div>
-              </div>
+              <Row label="Staffed beds" desc="Licensed beds with active nursing staff.">
+                <span className={entryWrap}>
+                  <FormattedNumberInput value={state.nursingStaffedBeds} onChange={handleBedsChange} placeholder="e.g. 200" className={entryInput} data-testid="ed-input-beds" />
+                </span>
+              </Row>
             )}
 
-            <div>
-              <div className="text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#2E2822] mb-[10px]">
-                Share documented with Abridge
-              </div>
-              <div className="relative">
-                <FormattedNumberInput
-                  value={state.utilizationPercent}
-                  onChange={handleUtilizationChange}
-                  placeholder="e.g., 90"
-                  className={`${inputBase} pr-9`}
-                  data-testid="ed-input-utilization"
-                />
-                <span className="absolute right-[15px] top-1/2 -translate-y-1/2 text-[#565250] text-[14px] font-semibold">
-                  %
-                </span>
-              </div>
-              <div className="flex items-center gap-[7px] mt-[10px] flex-wrap">
-                <span className="text-[10px] font-extrabold tracking-[0.05em] uppercase text-[#7C766F]">
-                  Quick fill
-                </span>
-                {utilizationPresets.map((preset) => (
-                  <QuickFillChip
-                    key={preset.label}
-                    label={preset.label}
-                    value={preset.value}
-                    suffix="%"
-                    active={isUtilizationPresetSelected(preset.value)}
-                    onClick={() => handleUtilizationChange(preset.value)}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Snapshot + continue, anchored to the right column */}
-          <div className="flex flex-col gap-5 h-full">
-          <div className="bg-[#FDFBF8] border border-[#E7E3DD] rounded-[20px] px-7 py-[26px] flex-1 flex flex-col">
-            {(() => {
-              const total = isNursing ? nursingTotalShiftsPerYear : annualEncounters;
-              const enabled = isNursing ? nursingEligibleShifts : eligibleEncounters;
-              const unit = isNursing ? "shifts" : encounterLabel;
-              const pct = Math.round(state.utilizationPercent);
-              const notYet = Math.max(0, total - enabled);
-              return (
-                <>
-                  <div className="text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#443A32]">
-                    Your {settingName} · what the value is built on
-                  </div>
-
-                  {total > 0 && pct > 0 ? (
-                    <>
-                      {/* hero: the chain + the result, breathing in the freed vertical space */}
-                      <div className="flex-1 flex flex-col justify-center">
-                        {/* the chain, read as one line — same idiom as the left card's footing */}
-                        <div className="text-[15px] text-[#565250] leading-[1.6]">
-                          <b className="font-abridge text-[17px] text-[#1A1A1A]">{formatNumber(total)}</b> {unit} a year, <b className="font-abridge text-[17px] text-[#EA2C00]">{pct}%</b> documented with Abridge
-                        </div>
-                        {/* the result, prominent, below the chain (count-up reveal) */}
-                        <div className="mt-6 leading-[0.9]">
-                          <div className="font-abridge text-[62px] sm:text-[74px] text-[#EA2C00] tabular-nums">{formatNumber(shownEnabled)}</div>
-                          <div className="text-[14px] text-[#565250] mt-2">{unit} your value is built on</div>
-                        </div>
-                      </div>
-                      {/* proportion, anchored to the bottom so the card reads balanced end-to-end */}
-                      <div>
-                        <div className="h-[7px] rounded-full bg-[#F1ECE4] overflow-hidden">
-                          <div className="h-full bg-[#EA2C00] rounded-full transition-[width] duration-500 ease-out" style={{ width: `${Math.max(pct, 3)}%` }} />
-                        </div>
-                        <div className="flex justify-between text-[12px] text-[#7C766F] mt-3">
-                          <span>On Abridge · {formatNumber(enabled)}</span>
-                          <span>Not yet · {formatNumber(notYet)}</span>
-                        </div>
-                      </div>
-                    </>
-                  ) : (
-                    // Composed empty state: explain what this panel will show and
-                    // preview the inputs that feed it. No ghost number / orphaned
-                    // fragment / empty skeleton bar (those read as broken).
-                    <div className="flex-1 flex flex-col justify-center">
-                      <div className="max-w-[330px]">
-                        <div className="font-abridge text-[23px] text-[#3A342E] leading-[1.2]">The volume your value is built on</div>
-                        <p className="text-[14px] text-[#8A8073] leading-[1.6] mt-3">
-                          Your annual {unit} times the share documented with Abridge. Enter your numbers on the left and it fills in here.
-                        </p>
-                        <div className="mt-7 flex flex-col gap-[11px]">
-                          {/* mirror the left-side field labels exactly, per setting
-                              (providerLabel + `Annual {unit}`), so inpatient reads
-                              "Annual discharges", nursing "Annual shifts", etc. */}
-                          {[
-                            providerLabel,
-                            `Annual ${unit}`,
-                            isNursing ? "Share documenting" : "Documented share",
-                          ].map((l) => (
-                            <div key={l} className="flex items-center gap-[10px] text-[13px] text-[#B0A99E]">
-                              <span className="w-[6px] h-[6px] rounded-full bg-[#DDD5C9] flex-shrink-0" /> {l}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </>
-              );
-            })()}
-          </div>
-          <div className="flex justify-end">
-            <button
-              type="button"
-              disabled={!isValid}
-              onClick={onNext}
-              data-testid="ed-practice-continue"
-              className="bg-[#EA2C00] text-white text-[15px] font-bold px-7 py-[14px] rounded-[12px] shadow-[0_2px_6px_rgba(234,44,0,0.15)] disabled:opacity-40"
+            {/* Providers */}
+            <Row
+              label={providerLabel}
+              desc={providersDesc}
+              controls={isNursing && state.nursingStaffedBeds > 0
+                ? FTE_ESTIMATES.map(({ label, multiplier }) => (
+                    <QuickFillChip key={label} label={label} value={Math.round(state.nursingStaffedBeds * multiplier)} active={appliedEstimate === label} onClick={() => applyFteEstimate(multiplier, label)} />
+                  ))
+                : undefined}
             >
-              Continue →
-            </button>
+              <span className={entryWrap}>
+                <FormattedNumberInput value={state.numberOfProviders} onChange={handleProvidersChange} placeholder={isNursing ? "e.g. 300" : "e.g. 50"} className={entryInput} data-testid="ed-input-providers" />
+              </span>
+            </Row>
+
+            {/* Annual encounters / discharges (non-nursing) */}
+            {!isNursing && (
+              <Row
+                label={`Annual ${encounterLabel}`}
+                desc={volumeDesc}
+                controls={
+                  <>
+                    <div className="inline-flex gap-[2px] bg-[#F2EFEA] border border-[#E7E2DB] rounded-[9px] p-[3px]">
+                      <button type="button" onClick={() => setUsingTotalInput(true)} className={`text-[11px] font-bold px-[10px] py-[5px] rounded-[6px] transition-colors ${usingTotalInput ? "bg-[#2E2822] text-white" : "text-[#565250]"}`}>Total</button>
+                      <button type="button" onClick={() => setUsingTotalInput(false)} className={`text-[11px] font-bold px-[10px] py-[5px] rounded-[6px] transition-colors ${!usingTotalInput ? "bg-[#2E2822] text-white" : "text-[#565250]"}`}>Per provider</button>
+                    </div>
+                    {!usingTotalInput && BUSYNESS_PRESETS.map((preset) => (
+                      <QuickFillChip key={preset.label} label={preset.label} value={preset.value} active={isPresetSelected(preset.value)} onClick={() => handleBusynessChange(preset.value)} />
+                    ))}
+                  </>
+                }
+              >
+                {usingTotalInput ? (
+                  <span className={entryWrap}>
+                    <FormattedNumberInput value={totalEncountersInput} onChange={handleTotalEncountersChange} placeholder="e.g. 24,000" className={entryInput} data-testid="ed-input-total-encounters" />
+                    <span className={entryUnit}>/ yr</span>
+                  </span>
+                ) : (
+                  <span className={entryWrap}>
+                    <FormattedNumberInput value={encountersPerProvider} onChange={handleBusynessChange} placeholder="e.g. 400" className={entryInput} data-testid="ed-input-encounters-per-provider" />
+                    <span className={entryUnit}>/ yr</span>
+                  </span>
+                )}
+              </Row>
+            )}
+
+            {/* Average length of stay (inpatient) */}
+            {isInpatient && (
+              <Row
+                label="Average length of stay"
+                desc="Sets one progress note for each day after admission."
+                controls={ALOS_PRESETS.map((preset) => (
+                  <QuickFillChip key={preset.label} label={preset.label} value={preset.value} active={state.inpatientAlos === preset.value} onClick={() => handleAlosChange(preset.value)} />
+                ))}
+              >
+                <span className={entryWrap}>
+                  <FormattedNumberInput value={state.inpatientAlos} onChange={handleAlosChange} step={0.1} placeholder="e.g. 4.5" className={entryInput} data-testid="ed-input-alos" />
+                  <span className={entryUnit}>days</span>
+                </span>
+              </Row>
+            )}
+
+            {/* Bed occupancy (nursing) */}
+            {isNursing && (
+              <Row
+                label="Bed occupancy"
+                desc="Average census as a share of staffed beds."
+                controls={
+                  <input type="range" min={50} max={100} value={state.nursingOccupancyRate} onChange={(e) => handleOccupancyChange(Number(e.target.value))} className="w-full h-[3px] bg-[#EBE6DE] rounded-full appearance-none cursor-pointer accent-[#EA2C00]" data-testid="ed-slider-occupancy" />
+                }
+              >
+                <span className={entryWrap}>
+                  <span className="font-abridge text-[30px] text-[#1A1A1A] tabular-nums">{state.nursingOccupancyRate}</span>
+                  <span className={entryUnit}>%</span>
+                </span>
+              </Row>
+            )}
+
+            {/* Share documented */}
+            <Row
+              label="Share documented with Abridge"
+              desc={shareDesc}
+              controls={utilizationPresets.map((preset) => (
+                <QuickFillChip key={preset.label} label={preset.label} value={preset.value} suffix="%" active={isUtilizationPresetSelected(preset.value)} onClick={() => handleUtilizationChange(preset.value)} />
+              ))}
+            >
+              <span className={entryWrap}>
+                <FormattedNumberInput value={state.utilizationPercent} onChange={handleUtilizationChange} placeholder="e.g. 70" className={entryInput} data-testid="ed-input-utilization" />
+                <span className={entryUnit}>%</span>
+              </span>
+            </Row>
+
+            {/* How it adds up */}
+            {rightReady && (
+              <div className="mt-8">
+                <div className="text-[15px] text-[#3A342E] leading-[1.6]">
+                  <b className="font-bold text-[#1A1A1A]">{formatNumber(rightTotal)}</b> {documentedUnit} a year, <b className="font-bold text-[#1A1A1A]">{pct}%</b> documented with Abridge
+                </div>
+                <div className="text-[14px] text-[#8C8073] mt-[9px]">
+                  Documented · {formatNumber(rightTotal)} × {pct}% = <b className="font-bold text-[#1A1A1A]">{formatNumber(rightEnabled)}</b>
+                </div>
+                <div className="text-[14px] text-[#8C8073] mt-[9px]">
+                  Not yet on Abridge · {formatNumber(rightTotal)} − {formatNumber(rightEnabled)} = <b className="font-bold text-[#1A1A1A]">{formatNumber(notYet)}</b>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* vertical hairline */}
+          <div className="hidden lg:block bg-[#E8E2DA]" />
+
+          {/* RIGHT — result */}
+          <div>
+            <div className={sectLabel}>What the value is built on</div>
+            {rightReady ? (
+              <>
+                <div className="font-abridge text-[64px] sm:text-[88px] text-[#EA2C00] leading-[0.88] tabular-nums mt-[22px]">
+                  {formatNumber(shownEnabled)}
+                </div>
+                <div className="font-abridge text-[20px] text-[#1A1A1A] mt-3">documented {documentedUnit} a year</div>
+                <div className="text-[15.5px] text-[#565250] mt-[18px] leading-[1.5]">
+                  {!isNursing && perProvider > 0 && (<>≈ <b className="font-bold text-[#1A1A1A]">{formatNumber(perProvider)}</b> per provider · </>)}
+                  <b className="font-bold text-[#1A1A1A]">{pct}%</b> of the book documented with Abridge
+                </div>
+                <div className="flex h-[10px] rounded-full overflow-hidden gap-[2px] mt-[30px] max-w-[460px]">
+                  <span className="block rounded-[3px] bg-[#EA2C00]" style={{ flex: rightEnabled || 1 }} />
+                  <span className="block rounded-[3px]" style={{ flex: notYet || 0.0001, background: "repeating-linear-gradient(45deg,#E8E2DA,#E8E2DA 3px,#F5F1EB 3px,#F5F1EB 6px)" }} />
+                </div>
+                <div className="flex flex-wrap gap-x-[22px] gap-y-[9px] mt-[18px] text-[13px] text-[#565250]">
+                  <span className="flex items-center gap-[7px]"><span className="w-[9px] h-[9px] rounded-full bg-[#EA2C00]" />Documented with Abridge · <b className="font-bold text-[#1A1A1A]">{formatNumber(rightEnabled)}</b></span>
+                  <span className="text-[#B0A99E]">Not yet · {formatNumber(notYet)}</span>
+                </div>
+                <div className="mt-9 border-t border-[#EDE8E1] pt-5 text-[13.5px] text-[#8C8073] leading-[1.55] max-w-[420px]">
+                  Everything downstream is built on this documented volume, not the full book. The other {formatNumber(notYet)} are not yet on Abridge.
+                </div>
+              </>
+            ) : (
+              <div className="mt-[22px] max-w-[360px]">
+                <div className="font-abridge text-[23px] text-[#3A342E] leading-[1.2]">The volume your value is built on</div>
+                <p className="text-[14px] text-[#8A8073] leading-[1.6] mt-3">
+                  Your annual {documentedUnit} times the share documented with Abridge. Enter your numbers on the left and it fills in here.
+                </p>
+                <div className="mt-7 flex flex-col gap-[11px]">
+                  {[providerLabel, `Annual ${documentedUnit}`, isNursing ? "Share documenting" : "Documented share"].map((l) => (
+                    <div key={l} className="flex items-center gap-[10px] text-[13px] text-[#B0A99E]">
+                      <span className="w-[6px] h-[6px] rounded-full bg-[#DDD5C9] flex-shrink-0" /> {l}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
+
+        {/* Continue */}
+        <div className="flex justify-end mt-14">
+          <button
+            type="button"
+            disabled={!isValid}
+            onClick={onNext}
+            data-testid="ed-practice-continue"
+            className="bg-[#EA2C00] text-white text-[15px] font-bold px-7 py-[14px] rounded-[12px] shadow-[0_2px_6px_rgba(234,44,0,0.15)] disabled:opacity-40"
+          >
+            Continue →
+          </button>
         </div>
       </div>
     </EditorialShell>
