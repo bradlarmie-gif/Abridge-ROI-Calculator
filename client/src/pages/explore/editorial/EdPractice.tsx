@@ -87,6 +87,25 @@ function QuickFillChip({
   );
 }
 
+// One input row: label + description on the left, the entry figure on the right
+// (single line, no wrap), and any chips/toggle on their own full-width line below.
+// Defined at module scope so it keeps a stable component identity across renders —
+// a nested definition remounts the subtree on every keystroke and drops input focus.
+function Row({ label, desc, children, controls }: { label: string; desc: string; children: ReactNode; controls?: ReactNode }) {
+  return (
+    <div className="py-[22px] border-b border-[#EDE8E1]">
+      <div className="flex justify-between items-end gap-6">
+        <div className="min-w-0">
+          <div className="font-abridge text-[16px] font-bold text-[#1A1A1A] whitespace-nowrap">{label}</div>
+          <div className="text-[13px] text-[#8C8073] mt-1 leading-[1.45] max-w-[320px]">{desc}</div>
+        </div>
+        <div className="flex-shrink-0">{children}</div>
+      </div>
+      {controls && <div className="mt-[14px] flex items-center gap-[7px] flex-wrap">{controls}</div>}
+    </div>
+  );
+}
+
 export default function EdPractice({ state, updateState, onNext, onBack, onHome }: EdPracticeProps) {
   const isED = state.careSetting === "ed";
   const isInpatient = state.careSetting === "inpatient";
@@ -264,23 +283,8 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
   // Editorial entry styling — underline figure, coral = editable (matches Time)
   const sectLabel = "text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#8C8073]";
   const entryWrap = "inline-flex items-baseline gap-[5px] border-b-2 border-[#EA2C00] pb-[2px] whitespace-nowrap";
-  const entryInput = "min-w-[40px] max-w-[170px] [field-sizing:content] text-right bg-transparent border-0 p-0 font-abridge text-[30px] text-[#1A1A1A] tabular-nums focus:outline-none placeholder:text-[#C7BFB4] placeholder:font-sans placeholder:text-[15px]";
+  const entryInput = "min-w-[40px] max-w-[170px] [field-sizing:content] text-right bg-transparent border-0 p-0 font-abridge text-[30px] md:text-[30px] text-[#1A1A1A] tabular-nums focus:outline-none placeholder:text-[#C7BFB4] placeholder:font-sans placeholder:text-[15px]";
   const entryUnit = "font-sans text-[13px] text-[#8C8073]";
-
-  // One input row: label + description on the left, the entry figure on the right
-  // (single line, no wrap), and any chips/toggle on their own full-width line below.
-  const Row = ({ label, desc, children, controls }: { label: string; desc: string; children: ReactNode; controls?: ReactNode }) => (
-    <div className="py-[22px] border-b border-[#EDE8E1]">
-      <div className="flex justify-between items-end gap-6">
-        <div className="min-w-0">
-          <div className="font-abridge text-[16px] font-bold text-[#1A1A1A] whitespace-nowrap">{label}</div>
-          <div className="text-[13px] text-[#8C8073] mt-1 leading-[1.45] max-w-[320px]">{desc}</div>
-        </div>
-        <div className="flex-shrink-0">{children}</div>
-      </div>
-      {controls && <div className="mt-[14px] flex items-center gap-[7px] flex-wrap">{controls}</div>}
-    </div>
-  );
 
   // shared right-column derived readouts
   const pct = Math.round(state.utilizationPercent);

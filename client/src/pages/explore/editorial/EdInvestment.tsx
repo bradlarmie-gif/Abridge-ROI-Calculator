@@ -34,6 +34,24 @@ import { PROOF_LAYER, QUADRANT_ORDER } from "@/lib/proofLayer";
 import { DOMAIN_COLORS } from "@/lib/domainColors";
 export { PROOF_LAYER, QUADRANT_ORDER };
 
+// Editorial money entry. `md:text-[30px]` defeats the shared Input's default
+// `md:text-sm`, which otherwise shrinks the typed figure on wide screens.
+const MONEY_ENTRY_WRAP =
+  "inline-flex items-baseline gap-[2px] border-b-2 border-[#EA2C00] pb-[2px] mt-[10px] whitespace-nowrap";
+const MONEY_ENTRY_INPUT =
+  "min-w-[36px] max-w-[150px] [field-sizing:content] bg-transparent border-0 p-0 shadow-none font-abridge text-[30px] md:text-[30px] text-[#1A1A1A] tabular-nums focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none";
+
+// Module scope keeps a stable identity across renders — a nested component
+// remounts on every keystroke and drops input focus.
+function MoneyEntry({ value, onChange, step, testId }: { value: number; onChange: (v: number) => void; step?: number; testId: string }) {
+  return (
+    <span className={MONEY_ENTRY_WRAP}>
+      <span className="font-abridge text-[30px] text-[#1A1A1A] leading-none">$</span>
+      <FormattedNumberInput value={value} onChange={onChange} step={step} className={MONEY_ENTRY_INPUT} data-testid={testId} />
+    </span>
+  );
+}
+
 export default function EdInvestment({
   state,
   updateState,
@@ -116,19 +134,9 @@ export default function EdInvestment({
 
   const sectLabel = "text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#8C8073]";
   const fieldLabel = "text-[11px] font-extrabold tracking-[0.05em] uppercase text-[#8C8073]";
-  const entryWrap = "inline-flex items-baseline gap-[2px] border-b-2 border-[#EA2C00] pb-[2px] mt-[10px] whitespace-nowrap";
-  const entryInput =
-    "min-w-[36px] max-w-[150px] [field-sizing:content] bg-transparent border-0 p-0 shadow-none font-abridge text-[28px] text-[#1A1A1A] tabular-nums focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none";
   const chip = (active: boolean) =>
     `text-[12px] font-bold px-[14px] py-[7px] rounded-full transition-colors ${active ? "bg-[#2E2822] text-white" : "bg-[#F2ECE3] text-[#565250]"}`;
-  const carriedFigure = "font-abridge text-[28px] text-[#A79E92] tabular-nums mt-[10px] pb-[2px] border-b-2 border-transparent inline-block";
-
-  const MoneyEntry = ({ value, onChange, step, testId }: { value: number; onChange: (v: number) => void; step?: number; testId: string }) => (
-    <span className={entryWrap}>
-      <span className="font-abridge text-[28px] text-[#1A1A1A] leading-none">$</span>
-      <FormattedNumberInput value={value} onChange={onChange} step={step} className={entryInput} data-testid={testId} />
-    </span>
-  );
+  const carriedFigure = "font-abridge text-[30px] text-[#A79E92] tabular-nums mt-[10px] pb-[2px] border-b-2 border-transparent inline-block";
 
   const breakdown =
     state.pricingModel === "perProvider"
