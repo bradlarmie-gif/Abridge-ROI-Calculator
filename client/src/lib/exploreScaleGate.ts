@@ -64,6 +64,10 @@ export function driverScaleReadiness(
     case "nursingAgency":
     case "nursingOvertime":
       return gate(providers, "your nurse count");
+    case "incrementalStaffing":
+      // Dollar-level driver: the scale IS the entered spend, so it stays hidden
+      // until the partner puts in their current incremental-staffing spend.
+      return gate((td.ipStaffingCurrentSpend ?? 0) > 0, "your current incremental-staffing spend");
     case "scribeCostReduction":
       return (td.scribeBillingMode ?? "position") === "hourly"
         ? gate(encounters, encounterNeed)

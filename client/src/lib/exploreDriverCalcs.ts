@@ -205,6 +205,15 @@ export function computeAllDriverValues(
       result.scribeCostReduction = Math.round(eliminated * (td.scribeCostPerPosition || 0));
     }
   }
+  // Incremental Staffing Avoided (inpatient). Independent P&L displacement:
+  // the customer's current annual incremental-staffing spend (locum, moonlighting,
+  // overtime, extra shifts) times the share Abridge can take off it. NOT derived
+  // from the retention count, so it is not gated by the retention lens above.
+  if (isIP && td.ipIncrementalStaffingEnabled) {
+    result.incrementalStaffing = Math.round(
+      (td.ipStaffingCurrentSpend || 0) * ((td.ipStaffingReductionPct || 0) / 100),
+    );
+  }
 
   // ─── Revenue ───
   const wrvuScenarios = wrvuScenariosFor(isED, dq.wrvuCustomPercent);
@@ -272,12 +281,22 @@ export function computeAllDriverValues(
     result.drgAccuracy = Math.round(drgAbridgeCases * dq.ipDrgWeightGain * dq.ipDrgBaseRate);
   }
   if (isIP && dq.ipObsDefenseEnabled) {
-    const preventableScenarios = IP_OBS_PREVENTABLE_SCENARIOS;
-    const preventableRaw = dq.ipObsDefensePreventableScenario === 'custom' ? (dq.ipObsDefenseCustomPercent ?? 40) : (preventableScenarios[dq.ipObsDefensePreventableScenario] ?? 40);
-    const preventablePct = preventableRaw / 100;
-    const downgrades = eligibleEncounters * (dq.ipObsDefenseDenialRate / 100);
-    const gross = downgrades * dq.ipObsDefenseRevenueDelta * preventablePct;
-    result.obsDefense = Math.round(gross * (dq.ipObsDefenseRealization / 100));
+    // Status / Medical Necessity Denials. Base is TOTAL admissions (not the
+    // documented slice): a payer can downgrade any admission. The chain narrows
+    // from every admission to the durable Abridge dollar, each factor a real
+    // lever the CFO can see: denied share -> allowed $/case -> not recovered ->
+    // documentation is a material factor -> Abridge is in the workflow -> Abridge
+    // moves it. The Abridge-opportunity factor is the coverage proxy (Abridge is
+    // not in every workflow), so this does not also multiply by utilization.
+    const denials = state.annualEncounters * (dq.ipObsDenialRate / 100);
+    const gross =
+      denials *
+      dq.ipObsAllowedPerCase *
+      (dq.ipObsNotRecoveredPct / 100) *
+      (dq.ipObsDocMaterialPct / 100);
+    result.obsDefense = Math.round(
+      gross * (dq.ipObsAbridgeOpportunityPct / 100) * (dq.ipObsAbridgeImpactPct / 100),
+    );
   }
 
   // ─── Quality (Nursing only quantified) ───
@@ -435,6 +454,9 @@ export function computeAllDriverCalcSummaries(
   if (isNursing && td.nursingOtEnabled) {
     out.nursingOvertime = `${fmtN(state.numberOfProviders)} nurses × ${td.nursingOtHoursPerNurseWeek} OT hrs/wk × ${td.nursingOtReductionPercent}% reduction × 52 wks × ${fmt$(td.nursingOtHourlyRate)}/hr`;
   }
+  if (isIP && td.ipIncrementalStaffingEnabled) {
+    out.incrementalStaffing = `${fmt$(td.ipStaffingCurrentSpend || 0)} current incremental-staffing spend × ${td.ipStaffingReductionPct}% reduction with Abridge`;
+  }
 
   // Revenue
   const wrvuScenarios = wrvuScenariosFor(isED, dq.wrvuCustomPercent);
@@ -477,9 +499,8 @@ export function computeAllDriverCalcSummaries(
     })();
   }
   if (isIP && dq.ipObsDefenseEnabled) {
-    const preventableScenarios = IP_OBS_PREVENTABLE_SCENARIOS;
-    const preventablePct = dq.ipObsDefensePreventableScenario === 'custom' ? (dq.ipObsDefenseCustomPercent ?? 40) : (preventableScenarios[dq.ipObsDefensePreventableScenario] ?? 40);
-    out.obsDefense = `${fmtN(eligibleEncounters)} admissions × ${dq.ipObsDefenseDenialRate}% downgraded × ${fmt$(dq.ipObsDefenseRevenueDelta)}/case delta × ${preventablePct}% the note can defend × ${dq.ipObsDefenseRealization}% survives appeal`;
+    const denials = Math.round(state.annualEncounters * (dq.ipObsDenialRate / 100));
+    out.obsDefense = `${fmtN(state.annualEncounters)} admissions × ${dq.ipObsDenialRate}% denied (${fmtN(denials)} cases) × ${fmt$(dq.ipObsAllowedPerCase)}/case × ${dq.ipObsNotRecoveredPct}% not recovered × ${dq.ipObsDocMaterialPct}% documentation is material × ${dq.ipObsAbridgeOpportunityPct}% Abridge opportunity × ${dq.ipObsAbridgeImpactPct}% Abridge impact`;
   }
 
   // Quality (Nursing only quantified) — derive every multiplicand from the

@@ -135,6 +135,13 @@ export interface TimeDriverInputs {
   physicianAgencyWeeksPerVacancy: number; // weeks of contracted coverage per vacancy
   physicianAgencyWeeklyPremium: number;   // dollar premium per week above base salary equivalent
 
+  // Inpatient: Incremental Staffing Avoided (locum + moonlighting + OT + extra shifts).
+  // Independent of retention: current annual incremental-staffing spend × Abridge reduction %.
+  ipIncrementalStaffingEnabled: boolean;
+  ipIncrementalStaffingExpanded: boolean;
+  ipStaffingCurrentSpend: number;   // current annual incremental-staffing spend ($)
+  ipStaffingReductionPct: number;   // Abridge-attributable reduction (%)
+
   nursingAdditionalCostSavings: Array<{ id: string; label: string; amount: number }>;
 
   // Scribe Cost Reduction (OP/ED)
@@ -407,14 +414,23 @@ export interface DocQualityInputs {
   ipDrgBasePayment: number;
   ipDrgCurrentCmi: number; // current Case Mix Index (context: current -> projected)
   
-  // Inpatient: Obs/IP Status Defense
+  // Inpatient: Status / Medical Necessity Denials
+  // Chain (base = TOTAL admissions): admissions × denied% × $allowed/case
+  //   × notRecovered% × docMaterial% × abridgeOpportunity% × abridgeImpact%
   ipObsDefenseEnabled: boolean;
-  ipObsDefenseDenialRate: number;
-  ipObsDefenseRevenueDelta: number;         // IP-to-Obs revenue delta per downgraded case
-  ipObsDefensePreventableScenario: 'conservative' | 'typical' | 'aggressive' | 'custom';
-  ipObsDefenseCustomPercent: number;
-  ipObsDefenseRealization: number;
   ipObsDefenseExpanded: boolean;
+  ipObsDenialRate: number;            // % of total admissions that receive a status/med-nec denial
+  ipObsAllowedPerCase: number;        // expected allowed inpatient reimbursement per case ($)
+  ipObsNotRecoveredPct: number;       // % traditionally not recovered
+  ipObsDocMaterialPct: number;        // % where documentation is a material contributing factor
+  ipObsAbridgeOpportunityPct: number; // % Abridge is in the workflow (coverage proxy)
+  ipObsAbridgeImpactPct: number;      // % Abridge moves
+  // Legacy obs fields (kept for back-compat with older snapshots; unused by the new chain)
+  ipObsDefenseDenialRate?: number;
+  ipObsDefenseRevenueDelta?: number;
+  ipObsDefensePreventableScenario?: 'conservative' | 'typical' | 'aggressive' | 'custom';
+  ipObsDefenseCustomPercent?: number;
+  ipObsDefenseRealization?: number;
   
   // Inpatient: CDI Query Reduction
   ipCdiEnabled: boolean;
@@ -673,6 +689,11 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     physicianAgencyExpanded: false,
     physicianAgencyWeeksPerVacancy: 16, // 16 weeks average to fill a physician vacancy
     physicianAgencyWeeklyPremium: 5000, // $5K/week premium for locum coverage
+    // Inpatient: Incremental Staffing Avoided defaults
+    ipIncrementalStaffingEnabled: false,
+    ipIncrementalStaffingExpanded: false,
+    ipStaffingCurrentSpend: 0,       // customer enters their current spend
+    ipStaffingReductionPct: 15,      // conservative Abridge-attributable reduction
     nursingAdditionalCostSavings: [],
     scribeBillingMode: 'position',
     scribeHeadcount: 0,
@@ -895,14 +916,15 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     ipDrgBasePayment: 6000, // legacy (Attain/Intake); not used by the funnel engine
     ipDrgRealization: 65, // audit survival: share of the DRG change that holds up under RAC/PEPPER
     ipDrgCurrentCmi: 1.5, // current Case Mix Index (context)
-    // Inpatient: Obs/IP Status Defense defaults
+    // Inpatient: Status / Medical Necessity Denials defaults
     ipObsDefenseEnabled: false,
-    ipObsDefenseDenialRate: 5,
-    ipObsDefenseRevenueDelta: 5000,
-    ipObsDefensePreventableScenario: 'typical',
-    ipObsDefenseCustomPercent: 40,
-    ipObsDefenseRealization: 50,
     ipObsDefenseExpanded: false,
+    ipObsDenialRate: 5,             // 5% of admissions denied
+    ipObsAllowedPerCase: 10000,     // $10k allowed reimbursement per case
+    ipObsNotRecoveredPct: 30,       // 30% not recovered
+    ipObsDocMaterialPct: 40,        // 40% where documentation is material
+    ipObsAbridgeOpportunityPct: 75, // Abridge in 75% of workflows
+    ipObsAbridgeImpactPct: 40,      // Abridge moves 40%
     // Inpatient: CDI Query Reduction defaults
     ipCdiEnabled: false,
     ipCdiScenario: 'typical',

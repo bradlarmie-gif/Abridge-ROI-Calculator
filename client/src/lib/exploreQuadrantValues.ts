@@ -143,10 +143,13 @@ export function computeRevenueBreakdown(state: ExploreState, _totalHoursSaved: n
     );
   }
   if (isIP && dq.ipObsDefenseEnabled) {
-    const preventablePct = (dq.ipObsDefensePreventableScenario === 'custom' ? (dq.ipObsDefenseCustomPercent ?? 40) : (IP_OBS_PREVENTABLE_SCENARIOS[dq.ipObsDefensePreventableScenario] ?? 40)) / 100;
-    const downgrades = eligibleEncounters * (dq.ipObsDefenseDenialRate / 100);
-    const gross = downgrades * dq.ipObsDefenseRevenueDelta * preventablePct;
-    result.obsDefense = Math.round(gross * (dq.ipObsDefenseRealization / 100));
+    // Status / Medical Necessity Denials — keep in lockstep with computeAllDriverValues.
+    const denials = state.annualEncounters * (dq.ipObsDenialRate / 100);
+    const gross =
+      denials * dq.ipObsAllowedPerCase * (dq.ipObsNotRecoveredPct / 100) * (dq.ipObsDocMaterialPct / 100);
+    result.obsDefense = Math.round(
+      gross * (dq.ipObsAbridgeOpportunityPct / 100) * (dq.ipObsAbridgeImpactPct / 100),
+    );
   }
 
   return buildResult(result, benefitsForQuadrant(state, 'Revenue'));

@@ -430,27 +430,33 @@ export function ModelAssumptionRow({
           </div>
         );
       case 'ipObsDefense': {
-        const opts = [
-          { key: 'conservative', label: 'Conservative', sub: '25%' },
-          { key: 'typical', label: 'Typical', sub: '40%' },
-          { key: 'aggressive', label: 'Optimistic', sub: '55%' },
-        ];
         return (
           <div className="mt-2">
-            <p className="text-[9px] text-neutral-400 uppercase tracking-wider">Doc-Preventable Share</p>
-            <ScenarioPills opts={opts} value={dq.ipObsDefensePreventableScenario} onChange={k => updateDQ({ ipObsDefensePreventableScenario: k })} />
-            <div className="grid grid-cols-3 gap-2 mt-2.5">
+            <p className="text-[9px] text-neutral-400 uppercase tracking-wider mb-1.5">Status / Medical Necessity Denials · on total admissions</p>
+            <div className="grid grid-cols-3 gap-2">
               <div>
-                <p className="text-[9px] text-neutral-400 uppercase tracking-wider mb-1.5">Downgrade Rate</p>
-                <NumInput value={dq.ipObsDefenseDenialRate} onChange={v => updateDQ({ ipObsDefenseDenialRate: v })} suffix="%" />
+                <p className="text-[9px] text-neutral-400 uppercase tracking-wider mb-1.5">Denied</p>
+                <NumInput value={dq.ipObsDenialRate} onChange={v => updateDQ({ ipObsDenialRate: v })} suffix="%" />
               </div>
               <div>
-                <p className="text-[9px] text-neutral-400 uppercase tracking-wider mb-1.5">Rev / Case Delta</p>
-                <NumInput value={dq.ipObsDefenseRevenueDelta} onChange={v => updateDQ({ ipObsDefenseRevenueDelta: v })} prefix="$" />
+                <p className="text-[9px] text-neutral-400 uppercase tracking-wider mb-1.5">Allowed / Case</p>
+                <NumInput value={dq.ipObsAllowedPerCase} onChange={v => updateDQ({ ipObsAllowedPerCase: v })} prefix="$" />
               </div>
               <div>
-                <p className="text-[9px] text-neutral-400 uppercase tracking-wider mb-1.5">Realization</p>
-                <NumInput value={dq.ipObsDefenseRealization} onChange={v => updateDQ({ ipObsDefenseRealization: v })} suffix="%" />
+                <p className="text-[9px] text-neutral-400 uppercase tracking-wider mb-1.5">Not Recovered</p>
+                <NumInput value={dq.ipObsNotRecoveredPct} onChange={v => updateDQ({ ipObsNotRecoveredPct: v })} suffix="%" />
+              </div>
+              <div>
+                <p className="text-[9px] text-neutral-400 uppercase tracking-wider mb-1.5">Doc Material</p>
+                <NumInput value={dq.ipObsDocMaterialPct} onChange={v => updateDQ({ ipObsDocMaterialPct: v })} suffix="%" />
+              </div>
+              <div>
+                <p className="text-[9px] text-neutral-400 uppercase tracking-wider mb-1.5">Abridge Opp.</p>
+                <NumInput value={dq.ipObsAbridgeOpportunityPct} onChange={v => updateDQ({ ipObsAbridgeOpportunityPct: v })} suffix="%" />
+              </div>
+              <div>
+                <p className="text-[9px] text-neutral-400 uppercase tracking-wider mb-1.5">Abridge Impact</p>
+                <NumInput value={dq.ipObsAbridgeImpactPct} onChange={v => updateDQ({ ipObsAbridgeImpactPct: v })} suffix="%" />
               </div>
             </div>
           </div>

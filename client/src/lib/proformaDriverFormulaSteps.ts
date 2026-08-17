@@ -8,7 +8,6 @@
  */
 import type { ProformaSettingSnapshot } from "@/pages/proforma/proformaTypes";
 import { nursingRetentionRates, physicianRetentionRates } from "@/lib/retentionScenarios";
-import { IP_DRG_PROTECT_SCENARIOS, IP_OBS_PREVENTABLE_SCENARIOS } from "@/lib/exploreDriverCalcs";
 
 function fmt(n: number): string {
   if (Math.abs(n) >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
@@ -158,6 +157,14 @@ export function buildDriverFormula(
       ];
     }
 
+    case "incrementalStaffing": {
+      const spend     = tdi.ipStaffingCurrentSpend || 0;
+      const reduction = tdi.ipStaffingReductionPct || 0;
+      return [
+        { label: `${d(spend)} current incremental-staffing spend  ×  ${p(reduction)} reduction with Abridge`, value: fmt(driverValue), isResult: true },
+      ];
+    }
+
     case "nursingRetention": {
       const turnoverRate  = tdi.nursingTurnoverRate || 0;
       const replaceCost   = tdi.nursingReplacementCost || 50000;
@@ -285,17 +292,20 @@ export function buildDriverFormula(
     }
 
     case "ipObsDefense": {
-      const dqi         = es.docQualityInputs ?? {};
-      const denialRate  = dqi.ipObsDefenseDenialRate ?? 0;
-      const revDelta    = dqi.ipObsDefenseRevenueDelta ?? 0;
-      const preventable = dqi.ipObsDefensePreventableScenario === "custom" ? (dqi.ipObsDefenseCustomPercent ?? 40) : (IP_OBS_PREVENTABLE_SCENARIOS[dqi.ipObsDefensePreventableScenario] ?? 40);
-      const obsReal     = dqi.ipObsDefenseRealization ?? 100;
-      const downgrades  = Math.round(abridgeEnc * (denialRate / 100));
-      const defensible  = Math.round(downgrades * (preventable / 100));
+      // Status / Medical Necessity Denials. Base is TOTAL admissions (annEnc),
+      // not the documented slice. Chain: admissions -> denied -> allowed/case
+      // -> not recovered -> documentation material -> Abridge opportunity -> impact.
+      const dqi        = es.docQualityInputs ?? {};
+      const denialRate = dqi.ipObsDenialRate ?? 5;
+      const allowed    = dqi.ipObsAllowedPerCase ?? 10000;
+      const notRec     = dqi.ipObsNotRecoveredPct ?? 30;
+      const docMat     = dqi.ipObsDocMaterialPct ?? 40;
+      const opp        = dqi.ipObsAbridgeOpportunityPct ?? 75;
+      const impact     = dqi.ipObsAbridgeImpactPct ?? 40;
+      const denials    = Math.round(annEnc * (denialRate / 100));
       return [
-        { label: `${n(abridgeEnc)} discharges  ×  ${p(denialRate)} observation-downgrade rate`, value: `${n(downgrades)} downgrades/yr` },
-        { label: `${n(downgrades)}  ×  ${p(preventable)} documentation-preventable`, value: `${n(defensible)} defensible/yr` },
-        { label: `${n(defensible)}  ×  ${d(revDelta)} inpatient-vs-observation delta  ×  ${p(obsReal)} realization`, value: fmt(driverValue), isResult: true },
+        { label: `${n(annEnc)} admissions  ×  ${p(denialRate)} status / med-nec denied`, value: `${n(denials)} denied cases/yr` },
+        { label: `${n(denials)}  ×  ${d(allowed)} allowed/case  ×  ${p(notRec)} not recovered  ×  ${p(docMat)} documentation material  ×  ${p(opp)} Abridge opportunity  ×  ${p(impact)} Abridge impact`, value: fmt(driverValue), isResult: true },
       ];
     }
 

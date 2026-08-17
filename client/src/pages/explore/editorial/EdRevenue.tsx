@@ -370,39 +370,39 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
     </InlineDriverCard>
   );
 
-  const obsPreventablePct =
-    dq.ipObsDefensePreventableScenario === "custom"
-      ? dq.ipObsDefenseCustomPercent ?? 40
-      : IP_OBS_PREVENTABLE_SCENARIOS[dq.ipObsDefensePreventableScenario] ?? 40;
   const obsValue = engine.obsDefense ?? 0;
   const obsAwait = gate("obsDefense");
   const obsCard = (
     <InlineDriverCard
       key="obs"
       title="Status / Medical Necessity Denials"
-      subtitle="The revenue delta when a payer downgrades an inpatient stay to observation for want of clear medical-necessity documentation. Two separate questions: which downgrades the note itself can defend, and how many of those survive appeal."
+      subtitle="A share of admissions draw a status or medical-necessity denial. The chain narrows from every admission to the durable dollar: what is never recovered, where documentation is the material factor, and where Abridge is in position to move it."
       enabled={dq.ipObsDefenseEnabled}
       onToggle={() =>
         updateDq({ ipObsDefenseEnabled: !dq.ipObsDefenseEnabled, ipObsDefenseExpanded: !dq.ipObsDefenseEnabled ? true : dq.ipObsDefenseExpanded })
       }
       testId="toggle-obs"
       note={
-        <>Grey figures carry from your earlier steps. Change any coral figure and this reprices live. We keep only the <b className="text-[#B02200] not-italic">{obsPreventablePct}%</b> the note can defend, and the <b className="text-[#B02200] not-italic">{dq.ipObsDefenseRealization}%</b> that survives appeal.</>
+        <>Grey figures carry from your earlier steps. Change any coral figure and this reprices live. Based on total admissions, not just the documented share.</>
       }
     >
       {obsAwait ? (
         <EqAwaiting need={obsAwait.need} />
       ) : (
         <EquationRow>
-          <EqCarried cap="admissions">{fmtN(eligibleEncounters)}</EqCarried>
+          <EqCarried cap="admissions">{fmtN(state.annualEncounters)}</EqCarried>
           <EqOp>×</EqOp>
-          <EqNum cap="downgraded" value={dq.ipObsDefenseDenialRate} onChange={(v) => updateDq({ ipObsDefenseDenialRate: v })} suffix="%" />
+          <EqNum cap="denied" value={dq.ipObsDenialRate} onChange={(v) => updateDq({ ipObsDenialRate: v })} suffix="%" />
           <EqOp>×</EqOp>
-          <EqNum cap="per case delta" value={dq.ipObsDefenseRevenueDelta} onChange={(v) => updateDq({ ipObsDefenseRevenueDelta: v })} prefix="$" />
+          <EqNum cap="allowed / case" value={dq.ipObsAllowedPerCase} onChange={(v) => updateDq({ ipObsAllowedPerCase: v })} prefix="$" />
           <EqOp>×</EqOp>
-          <EqNum cap="note defends" value={obsPreventablePct} onChange={(v) => updateDq({ ipObsDefensePreventableScenario: "custom", ipObsDefenseCustomPercent: v })} suffix="%" />
+          <EqNum cap="not recovered" value={dq.ipObsNotRecoveredPct} onChange={(v) => updateDq({ ipObsNotRecoveredPct: v })} suffix="%" />
           <EqOp>×</EqOp>
-          <EqNum cap="survives appeal" value={dq.ipObsDefenseRealization} onChange={(v) => updateDq({ ipObsDefenseRealization: v })} suffix="%" />
+          <EqNum cap="doc is material" value={dq.ipObsDocMaterialPct} onChange={(v) => updateDq({ ipObsDocMaterialPct: v })} suffix="%" />
+          <EqOp>×</EqOp>
+          <EqNum cap="Abridge opportunity" value={dq.ipObsAbridgeOpportunityPct} onChange={(v) => updateDq({ ipObsAbridgeOpportunityPct: v })} suffix="%" />
+          <EqOp>×</EqOp>
+          <EqNum cap="Abridge impact" value={dq.ipObsAbridgeImpactPct} onChange={(v) => updateDq({ ipObsAbridgeImpactPct: v })} suffix="%" />
           <EqResult value={obsValue} />
         </EquationRow>
       )}
