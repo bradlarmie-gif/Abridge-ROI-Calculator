@@ -437,13 +437,13 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
             <EquationRow>
               <EqCarried cap="discharges">{fmtN(eligibleEncounters)}</EqCarried>
               <EqOp>×</EqOp>
-              <EqNum cap="reviewed" value={dq.ipDrgCdiReviewRate} onChange={(v) => updateDq({ ipDrgCdiReviewRate: v })} suffix="%" />
+              <EqNum cap="reviewed by CDI" value={dq.ipDrgCdiReviewRate} onChange={(v) => updateDq({ ipDrgCdiReviewRate: v })} suffix="%" />
               <EqOp>×</EqOp>
-              <EqNum cap="query" value={dq.ipDrgQueryRate} onChange={(v) => updateDq({ ipDrgQueryRate: v })} suffix="%" />
+              <EqNum cap="get a query" value={dq.ipDrgQueryRate} onChange={(v) => updateDq({ ipDrgQueryRate: v })} suffix="%" />
               <EqOp>×</EqOp>
-              <EqNum cap="responds" value={dq.ipDrgResponseRate} onChange={(v) => updateDq({ ipDrgResponseRate: v })} suffix="%" />
+              <EqNum cap="physician responds" value={dq.ipDrgResponseRate} onChange={(v) => updateDq({ ipDrgResponseRate: v })} suffix="%" />
               <EqOp>×</EqOp>
-              <EqNum cap="changes DRG" value={dq.ipDrgChangeRate} onChange={(v) => updateDq({ ipDrgChangeRate: v })} suffix="%" />
+              <EqNum cap="changes the DRG" value={dq.ipDrgChangeRate} onChange={(v) => updateDq({ ipDrgChangeRate: v })} suffix="%" />
               <div className="basis-full w-full flex items-baseline gap-2.5 pt-3 mt-1 border-t border-[#F3E9E1]">
                 <span className="font-abridge text-[19px] text-[#B9AA97] leading-none">=</span>
                 <span className="font-abridge text-[24px] text-[#5E534A] leading-none">{fmtN(drgChanged)}</span>
@@ -454,11 +454,11 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
             <EquationRow>
               <EqCarried cap="flagged but lost">{fmtN(drgLost)}</EqCarried>
               <EqOp>×</EqOp>
-              <EqNum cap="Abridge captures" value={dq.ipDrgUpfrontCapture} onChange={(v) => updateDq({ ipDrgUpfrontCapture: v })} suffix="%" />
+              <EqNum cap="captured by Abridge" value={dq.ipDrgUpfrontCapture} onChange={(v) => updateDq({ ipDrgUpfrontCapture: v })} suffix="%" />
               <EqOp>×</EqOp>
-              <EqNum cap="weight gain" value={dq.ipDrgWeightGain} onChange={(v) => updateDq({ ipDrgWeightGain: v })} decimal />
+              <EqNum cap="DRG weight gained" value={dq.ipDrgWeightGain} onChange={(v) => updateDq({ ipDrgWeightGain: v })} decimal />
               <EqOp>×</EqOp>
-              <EqNum cap="per weight" value={dq.ipDrgBaseRate} onChange={(v) => updateDq({ ipDrgBaseRate: v })} prefix="$" />
+              <EqNum cap="$ per weight" value={dq.ipDrgBaseRate} onChange={(v) => updateDq({ ipDrgBaseRate: v })} prefix="$" />
               <EqResult value={drgValue} />
             </EquationRow>
           </>
@@ -483,9 +483,9 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
             <EquationRow>
               <EqCarried cap="admissions">{fmtN(state.annualEncounters)}</EqCarried>
               <EqOp>×</EqOp>
-              <EqNum cap="denied" value={dq.ipObsDenialRate} onChange={(v) => updateDq({ ipObsDenialRate: v })} suffix="%" width={40} />
+              <EqNum cap="denied by payer" value={dq.ipObsDenialRate} onChange={(v) => updateDq({ ipObsDenialRate: v })} suffix="%" width={40} />
               <EqOp>×</EqOp>
-              <EqNum cap="allowed / case" value={dq.ipObsAllowedPerCase} onChange={(v) => updateDq({ ipObsAllowedPerCase: v })} prefix="$" />
+              <EqNum cap="allowed per case" value={dq.ipObsAllowedPerCase} onChange={(v) => updateDq({ ipObsAllowedPerCase: v })} prefix="$" />
               <div className="basis-full w-full flex items-baseline gap-2.5 pt-3 mt-1 border-t border-[#F3E9E1]">
                 <span className="font-abridge text-[19px] text-[#B9AA97] leading-none">=</span>
                 <span className="font-abridge text-[24px] text-[#5E534A] leading-none">{fmt$(obsAtStake)}</span>
@@ -495,9 +495,9 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
             {/* Step 2 — continues from the running total above (leading ×, no repeated carry) */}
             <EquationRow>
               <EqOp>×</EqOp>
-              <EqNum cap="not recovered" value={dq.ipObsNotRecoveredPct} onChange={(v) => updateDq({ ipObsNotRecoveredPct: v })} suffix="%" width={40} />
+              <EqNum cap="never recovered" value={dq.ipObsNotRecoveredPct} onChange={(v) => updateDq({ ipObsNotRecoveredPct: v })} suffix="%" width={40} />
               <EqOp>×</EqOp>
-              <EqNum cap="doc is material" value={dq.ipObsDocMaterialPct} onChange={(v) => updateDq({ ipObsDocMaterialPct: v })} suffix="%" width={40} />
+              <EqNum cap="documentation-driven" value={dq.ipObsDocMaterialPct} onChange={(v) => updateDq({ ipObsDocMaterialPct: v })} suffix="%" width={40} />
               <div className="basis-full w-full flex items-baseline gap-2.5 pt-3 mt-1 border-t border-[#F3E9E1]">
                 <span className="font-abridge text-[19px] text-[#B9AA97] leading-none">=</span>
                 <span className="font-abridge text-[24px] text-[#5E534A] leading-none">{fmt$(obsDocDriven)}</span>
@@ -507,9 +507,9 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
             {/* Step 3 — the durable Abridge dollar */}
             <EquationRow>
               <EqOp>×</EqOp>
-              <EqNum cap="Abridge opportunity" value={dq.ipObsAbridgeOpportunityPct} onChange={(v) => updateDq({ ipObsAbridgeOpportunityPct: v })} suffix="%" width={40} />
+              <EqNum cap="Abridge in the workflow" value={dq.ipObsAbridgeOpportunityPct} onChange={(v) => updateDq({ ipObsAbridgeOpportunityPct: v })} suffix="%" width={40} />
               <EqOp>×</EqOp>
-              <EqNum cap="Abridge impact" value={dq.ipObsAbridgeImpactPct} onChange={(v) => updateDq({ ipObsAbridgeImpactPct: v })} suffix="%" width={40} />
+              <EqNum cap="Abridge moves it" value={dq.ipObsAbridgeImpactPct} onChange={(v) => updateDq({ ipObsAbridgeImpactPct: v })} suffix="%" width={40} />
               <EqResult value={obsValue} />
             </EquationRow>
           </div>

@@ -223,7 +223,7 @@ export const INPATIENT_METHODOLOGY: MethodologyData = {
       num: "04", name: "Quality", chip: { kind: "proof", note: "The proof layer · no dollar" },
       enable: "Complete, timely documentation is what quality review reads. Capture the encounter accurately and the record supports the measure rather than working against it. The dollar depends on your specific quality program, so we track it rather than price it.",
       drivers: [
-        { name: "Quality Measurement Fidelity", sub: "Risk-adjusted and quality measures reflect the care delivered", mode: "watch" },
+        { name: "Quality Reporting Accuracy", sub: "Risk-adjusted and quality measures reflect the care delivered", mode: "watch" },
         { name: "Clinical Quality / Care Gaps", sub: "Important findings surfaced and acted on, not buried in an incomplete note", mode: "watch" },
       ],
     },

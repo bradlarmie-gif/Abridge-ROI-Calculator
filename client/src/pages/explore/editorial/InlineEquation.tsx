@@ -23,7 +23,9 @@ const fmtK = (n: number) => {
 };
 
 function Cap({ children }: { children: ReactNode }) {
-  return <div className="text-[9.5px] font-bold tracking-[0.04em] uppercase text-[#7C766F] mb-[6px] min-h-[12px] whitespace-nowrap">{children}</div>;
+  // Wraps to two lines (values are bottom-aligned, so the baseline holds) so a
+  // label can say what the % is OF instead of a cryptic one-word abbreviation.
+  return <div className="text-[9.5px] font-bold tracking-[0.04em] uppercase text-[#7C766F] mb-[6px] min-h-[12px] leading-[1.25] max-w-[104px] text-center">{children}</div>;
 }
 
 /** An editable number, inline in the equation. The underline hugs the value (sizes to content)

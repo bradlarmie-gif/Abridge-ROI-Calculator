@@ -444,7 +444,7 @@ export default function EdQuality({ state, updateState, totalHoursSaved, onNext,
     const rows: LedgerRow[] = [
       {
         id: "ipQualityFidelity",
-        label: "Quality Measurement Fidelity",
+        label: "Quality Reporting Accuracy",
         kind: "tracked",
         mechanism: "Acuity and comorbidities captured as they are assessed, so the risk-adjusted and quality measures you already report reflect the care you delivered. The dollar depends on your specific quality and payment program, so we track it, not price it here.",
         signals: ["Risk-adjusted performance is more accurate", "Quality reporting reflects true acuity"],
