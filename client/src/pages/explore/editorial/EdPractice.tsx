@@ -282,8 +282,11 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
 
   // Editorial entry styling — underline figure, coral = editable (matches Time)
   const sectLabel = "text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#8C8073]";
-  const entryWrap = "inline-flex items-baseline gap-[5px] border-b-2 border-[#EA2C00] pb-[2px] whitespace-nowrap";
-  const entryInput = "min-w-[40px] max-w-[170px] [field-sizing:content] text-right bg-transparent border-0 p-0 font-abridge text-[30px] md:text-[30px] text-[#1A1A1A] tabular-nums focus:outline-none placeholder:text-[#C7BFB4] placeholder:font-sans placeholder:text-[15px]";
+  // Fixed-width, right-aligned underline: every editable figure gets the SAME
+  // line length and shares a right edge, so they read as a clean aligned column
+  // (not a per-number hug). Number + unit right-align inside the fixed width.
+  const entryWrap = "flex items-baseline justify-end gap-[5px] border-b-2 border-[#EA2C00] pb-[2px] whitespace-nowrap w-[168px]";
+  const entryInput = "max-w-full [field-sizing:content] text-right bg-transparent border-0 p-0 font-abridge text-[30px] md:text-[30px] text-[#1A1A1A] tabular-nums focus:outline-none placeholder:text-[#C7BFB4] placeholder:font-sans placeholder:text-[15px]";
   const entryUnit = "font-sans text-[13px] text-[#8C8073]";
 
   // shared right-column derived readouts

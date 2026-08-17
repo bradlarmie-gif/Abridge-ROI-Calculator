@@ -30,14 +30,14 @@ const sectLabel = "text-[11px] font-extrabold tracking-[0.06em] uppercase text-[
 // small unit beside it. Matches the Practice page's input styling.
 function NumBox({ value, onChange, suffix, step = 0.5, testId }: { value: number; onChange: (n: number) => void; suffix: string; step?: number; testId?: string }) {
   return (
-    <span className="inline-flex items-baseline gap-[5px] border-b-2 border-[#EA2C00] pb-[2px] whitespace-nowrap">
+    <span className="flex items-baseline justify-end gap-[5px] border-b-2 border-[#EA2C00] pb-[2px] whitespace-nowrap w-[120px]">
       <input
         type="number"
         value={value || ""}
         onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
         step={step}
         data-testid={testId}
-        className="min-w-[36px] max-w-[120px] [field-sizing:content] text-right font-abridge text-[30px] text-[#1A1A1A] tabular-nums bg-transparent border-0 p-0 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+        className="max-w-full [field-sizing:content] text-right font-abridge text-[30px] text-[#1A1A1A] tabular-nums bg-transparent border-0 p-0 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
       />
       <span className="font-sans text-[13px] text-[#8C8073]">{suffix}</span>
     </span>

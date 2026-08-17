@@ -25,10 +25,10 @@ export interface CascadeStep {
 export function MathCascade({ label, steps }: { label?: string; steps: CascadeStep[] }) {
   return (
     <div>
-      <div className="grid grid-cols-[1fr_76px_128px] gap-x-[10px] items-end pb-[6px] border-b border-[#EDE8E1]">
+      <div className="grid grid-cols-[1fr_92px_128px] gap-x-[10px] items-end pb-[6px] border-b border-[#EDE8E1]">
         <div className="text-[10px] font-extrabold tracking-[0.08em] uppercase text-[#8C8073]">{label ?? ""}</div>
-        <div />
-        <div className="text-[9.5px] font-extrabold tracking-[0.06em] uppercase text-[#8C8073] text-right">Running</div>
+        <div className="text-[9.5px] font-extrabold tracking-[0.06em] uppercase text-[#8C8073] text-right">Your inputs</div>
+        <div className="text-[9.5px] font-extrabold tracking-[0.06em] uppercase text-[#8C8073] text-right">Running total</div>
       </div>
       {steps.map((s, i) => (
         <div
@@ -41,24 +41,24 @@ export function MathCascade({ label, steps }: { label?: string; steps: CascadeSt
                 : "border-b border-[#EDE8E1]"
           }`}
         >
-          <div className="grid grid-cols-[1fr_76px_128px] gap-x-[10px] items-baseline">
+          <div className="grid grid-cols-[1fr_92px_128px] gap-x-[10px] items-baseline">
             <div className={`text-[14px] leading-[1.3] ${s.final ? "font-abridge text-[#1A1A1A] font-bold" : "text-[#3A342E]"}`}>{s.label}</div>
-            <div className="text-right">
-              {s.factor ? (
-                <span className="inline-flex items-baseline border-b-2 border-[#EA2C00] pb-[1px]">
-                  {s.factor.prefix && <span className="font-abridge text-[19px] text-[#1A1A1A] leading-none">{s.factor.prefix}</span>}
-                  <NumberField
-                    value={s.factor.value}
-                    onValueChange={s.factor.onChange}
-                    decimal={s.factor.decimal}
-                    className="bg-transparent outline-none border-0 p-0 font-abridge text-[19px] text-[#1A1A1A] tabular-nums leading-none text-right [field-sizing:content] min-w-[1ch]"
-                  />
-                  {s.factor.suffix && <span className="text-[12px] text-[#7C766F] leading-none ml-[1px]">{s.factor.suffix}</span>}
-                </span>
-              ) : (
-                <span className="font-abridge text-[19px] text-[#C4BCB0] leading-none">—</span>
-              )}
-            </div>
+            {s.factor ? (
+              // Underline fills the whole factor column so every editable figure
+              // gets the same line length, right-aligned into a clean column.
+              <div className="flex items-baseline justify-end border-b-2 border-[#EA2C00] pb-[1px]">
+                {s.factor.prefix && <span className="font-abridge text-[19px] text-[#1A1A1A] leading-none">{s.factor.prefix}</span>}
+                <NumberField
+                  value={s.factor.value}
+                  onValueChange={s.factor.onChange}
+                  decimal={s.factor.decimal}
+                  className="bg-transparent outline-none border-0 p-0 font-abridge text-[19px] text-[#1A1A1A] tabular-nums leading-none text-right [field-sizing:content] min-w-[1ch]"
+                />
+                {s.factor.suffix && <span className="text-[12px] text-[#7C766F] leading-none ml-[1px]">{s.factor.suffix}</span>}
+              </div>
+            ) : (
+              <div className="text-right"><span className="font-abridge text-[19px] text-[#C4BCB0] leading-none">—</span></div>
+            )}
             <div className="text-right whitespace-nowrap">
               <span className={`font-abridge leading-none ${s.final ? "text-[26px] text-[#EA2C00]" : "text-[19px] text-[#8C8073]"}`}>{s.running}</span>
             </div>
