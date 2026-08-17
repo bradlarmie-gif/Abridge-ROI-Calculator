@@ -449,8 +449,8 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
               { label: "Changes the DRG", factor: { value: dq.ipDrgChangeRate, onChange: (v) => updateDq({ ipDrgChangeRate: v }), suffix: "%" }, running: fmtN(drgChanged), note: "corrected by your CDI team" },
               { label: "Flagged but lost", running: fmtN(drgLost), note: `${fmtN(drgQueried)} queried − ${fmtN(drgChanged)} corrected · Abridge's opportunity`, pivot: true },
               { label: "Captured by Abridge", factor: { value: dq.ipDrgUpfrontCapture, onChange: (v) => updateDq({ ipDrgUpfrontCapture: v }), suffix: "%" }, running: fmtN(drgCaptured) },
-              { label: "DRG weight gained per case", factor: { value: dq.ipDrgWeightGain, onChange: (v) => updateDq({ ipDrgWeightGain: v }), decimal: true }, running: `${drgWeightAdded.toFixed(1)} wt` },
-              { label: "Paid per weight", factor: { value: dq.ipDrgBaseRate, onChange: (v) => updateDq({ ipDrgBaseRate: v }), prefix: "$" }, running: fmt$(drgValue), final: true },
+              { label: "DRG weight gained per case", factor: { value: dq.ipDrgWeightGain, onChange: (v) => updateDq({ ipDrgWeightGain: v }), decimal: true }, running: `${Math.round(drgWeightAdded)} weight` },
+              { label: "Paid per weight", factor: { value: dq.ipDrgBaseRate, onChange: (v) => updateDq({ ipDrgBaseRate: v }), prefix: "$" }, running: fmt$(Math.round(drgValue / 1000) * 1000), final: true },
             ]}
           />
         ),
