@@ -3,6 +3,7 @@ import { EditorialHeader, EditorialShell } from "./EditorialHeader";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { type ExploreState, type TimePathScenario } from "../ExploreFlow";
 import { useCountUp } from "@/lib/useCountUp";
+import { quickFillChip } from "./quickFillChip";
 
 interface EdTimeSavingsProps {
   state: ExploreState;
@@ -181,11 +182,7 @@ export default function EdTimeSavings({ state, updateState, onNext, onBack, onHo
                     key={key}
                     type="button"
                     onClick={() => pickPreset(key)}
-                    className={`text-[12px] font-bold border rounded-[9px] px-[11px] py-[6px] transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[#EA2C00] focus-visible:ring-offset-1 ${
-                      activePreset === key
-                        ? "border-[#EA2C00] text-[#EA2C00] bg-[#FFF7F4]"
-                        : "border-[#E7E3DD] text-[#565250] bg-white hover:border-[#1A1A1A] hover:text-[#1A1A1A]"
-                    }`}
+                    className={quickFillChip(activePreset === key)}
                   >
                     {label}
                   </button>
@@ -380,11 +377,7 @@ export default function EdTimeSavings({ state, updateState, onNext, onBack, onHo
                   key={key}
                   type="button"
                   onClick={() => handleScenarioSelect(key)}
-                  className={`text-[12px] font-bold border rounded-[9px] px-[11px] py-[6px] transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[#EA2C00] focus-visible:ring-offset-1 ${
-                    state.timePathScenario === key
-                      ? "border-[#EA2C00] text-[#EA2C00] bg-[#FFF7F4]"
-                      : "border-[#E7E3DD] text-[#565250] bg-white hover:border-[#1A1A1A] hover:text-[#1A1A1A]"
-                  }`}
+                  className={quickFillChip(state.timePathScenario === key)}
                 >
                   {label} · {scenarioMinutes[key]}
                 </button>

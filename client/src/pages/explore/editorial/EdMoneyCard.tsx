@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import { Plus, X } from "lucide-react";
 import { NumberField } from "@/components/NumberField";
+import { quickFillChip } from "./quickFillChip";
 import { AnimatedValue } from "@/components/explore/AnimatedValue";
 import { AssumptionsDisclosure } from "./AssumptionsDisclosure";
 
@@ -350,9 +351,7 @@ export function QuickFill({
           key={o.key}
           type="button"
           onClick={() => onSelect(o.key)}
-          className={`text-[11.5px] font-bold rounded-[8px] border px-[9px] py-[5px] transition-colors ${
-            activeKey === o.key ? "border-[#EA2C00] text-[#EA2C00] bg-[#FFF7F4]" : "border-[#E7E3DD] text-[#565250] bg-white"
-          }`}
+          className={quickFillChip(activeKey === o.key, "sm")}
         >
           {o.label}
         </button>

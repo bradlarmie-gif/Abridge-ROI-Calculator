@@ -1,5 +1,6 @@
 import { Fragment, type ReactNode } from "react";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
+import { quickFillChip } from "./quickFillChip";
 import { BuildStrip, type MoneyBuild } from "./EdMoneyCard";
 import { AnimatedValue } from "@/components/explore/AnimatedValue";
 import { AssumptionsDisclosure } from "./AssumptionsDisclosure";
@@ -331,11 +332,7 @@ export function QuickPicks({
           key={o.label}
           type="button"
           onClick={() => onPick(o.value)}
-          className={`text-[11.5px] font-bold rounded-[8px] border px-[9px] py-[5px] transition-colors ${
-            Math.round(value) === o.value
-              ? "border-[#EA2C00] text-[#EA2C00] bg-[#FFF7F4]"
-              : "border-[#E7E3DD] text-[#565250] bg-white hover:border-[#1A1A1A]"
-          }`}
+          className={quickFillChip(Math.round(value) === o.value, "sm")}
         >
           {o.label} · {o.value}
         </button>
