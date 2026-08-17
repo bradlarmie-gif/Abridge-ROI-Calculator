@@ -686,20 +686,31 @@ function NumberPage({ data }: { data: ExplorePDFData }): JSX.Element {
             <span style={{ fontSize: 24, color: C.faint }}> / year</span>
           </div>
         </div>
-        <div style={{ display: "flex", gap: 22, textAlign: "right", paddingBottom: 6 }}>
-          <div>
-            <div className="font-abridge" style={{ fontSize: 26 }}>
-              {fmtShort(data.netAnnualValue)}
+        {/* Net + return only once pricing exists; before that the value stands
+            on its own, matching the on-screen "value before cost" state. */}
+        {data.annualInvestment > 0 ? (
+          <div style={{ display: "flex", gap: 22, textAlign: "right", paddingBottom: 6 }}>
+            <div>
+              <div className="font-abridge" style={{ fontSize: 26 }}>
+                {fmtShort(data.netAnnualValue)}
+              </div>
+              <div style={{ ...sLbl, marginTop: 2 }}>Net annual value</div>
             </div>
-            <div style={{ ...sLbl, marginTop: 2 }}>Net annual value</div>
-          </div>
-          <div>
-            <div className="font-abridge" style={{ fontSize: 26, color: C.coral }}>
-              {data.roi.toFixed(1)}×
+            <div>
+              <div className="font-abridge" style={{ fontSize: 26, color: C.coral }}>
+                {data.roi.toFixed(1)}×
+              </div>
+              <div style={{ ...sLbl, marginTop: 2 }}>Year-1 return</div>
             </div>
-            <div style={{ ...sLbl, marginTop: 2 }}>Year-1 return</div>
           </div>
-        </div>
+        ) : (
+          <div style={{ textAlign: "right", paddingBottom: 6, maxWidth: 210 }}>
+            <div style={sLbl}>Value before cost</div>
+            <div style={{ fontSize: 12, color: C.faint, lineHeight: 1.4, marginTop: 3 }}>
+              Add your pricing to see the net and return.
+            </div>
+          </div>
+        )}
       </div>
 
       <div style={{ ...sLbl, marginTop: 22, marginBottom: 9 }}>Your operation, as modeled</div>
@@ -1111,6 +1122,7 @@ function CostRow({ k, children }: { k: ReactNode; children: ReactNode }): JSX.El
 
 function InvestmentPage({ data }: { data: ExplorePDFData }): JSX.Element {
   const inv = data.annualInvestment;
+  const priced = inv > 0;
   const total = data.totalAnnualValue;
   const mult = (v: number) => (inv > 0 ? `${(v / inv).toFixed(1)}× return` : "—");
   const downMultNum = inv > 0 ? (total * 0.7) / inv : 0;
@@ -1158,14 +1170,20 @@ function InvestmentPage({ data }: { data: ExplorePDFData }): JSX.Element {
         <span style={{ color: C.off }}>03</span> · The investment case
       </div>
       <h2 className="font-abridge" style={sHeadline}>
-        Conservative even before it's optimistic.
+        {priced ? "Conservative even before it's optimistic." : "The value, before any cost."}
       </h2>
       <p style={sLead}>
-        Hit 100% of the plan and here's the return. Miss it by 30% and this is your floor; beat it by
-        30% and this is the upside.
-        {downMultNum >= 1
-          ? ` Even the downside clears the recurring investment, at ${downMultBare} in year one.`
-          : ""}
+        {priced ? (
+          <>
+            Hit 100% of the plan and here's the return. Miss it by 30% and this is your floor; beat it by
+            30% and this is the upside.
+            {downMultNum >= 1
+              ? ` Even the downside clears the recurring investment, at ${downMultBare} in year one.`
+              : ""}
+          </>
+        ) : (
+          <>The value below holds before any cost. Add your pricing to see the year-one return, payback, and net.</>
+        )}
       </p>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14, marginTop: 20 }}>
@@ -1178,7 +1196,7 @@ function InvestmentPage({ data }: { data: ExplorePDFData }): JSX.Element {
         <ScenarioCard
           eyebrow="On plan · 100%"
           amount={fmtShort(total)}
-          ret={`${data.roi.toFixed(1)}× return`}
+          ret={mult(total)}
           note="Your configured model"
           highlight
         />
@@ -1243,9 +1261,9 @@ function InvestmentPage({ data }: { data: ExplorePDFData }): JSX.Element {
             </div>
             <div style={{ ...sRule, margin: "14px 0" }} />
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-              <span style={{ fontSize: 13, fontWeight: 700, color: C.label }}>Net annual value</span>
+              <span style={{ fontSize: 13, fontWeight: 700, color: C.label }}>{priced ? "Net annual value" : "Value before cost"}</span>
               <span className="font-abridge" style={{ fontSize: 26 }}>
-                {fmtShort(data.netAnnualValue)}
+                {fmtShort(priced ? data.netAnnualValue : total)}
               </span>
             </div>
             <div
@@ -1257,15 +1275,17 @@ function InvestmentPage({ data }: { data: ExplorePDFData }): JSX.Element {
               }}
             >
               <span style={{ fontSize: 13, fontWeight: 700, color: C.label }}>Year-1 return</span>
-              <span className="font-abridge" style={{ fontSize: 26, color: C.coral }}>
-                {data.roi.toFixed(1)}×
+              <span className="font-abridge" style={{ fontSize: 26, color: priced ? C.coral : C.faint }}>
+                {priced ? `${data.roi.toFixed(1)}×` : "—"}
               </span>
             </div>
           </div>
           <p style={{ fontSize: 11, color: C.faint, lineHeight: 1.45, marginTop: 12 }}>
-            {downMultNum >= 1
-              ? `Even a 30% miss returns ${downMultBare} in year one. The plan pays for itself well before the downside case.`
-              : `At the modeled scope, the configured plan returns ${data.roi.toFixed(1)}× in year one.`}
+            {!priced
+              ? "Add your pricing to see the year-one return and payback. The value holds regardless of cost."
+              : downMultNum >= 1
+                ? `Even a 30% miss returns ${downMultBare} in year one. The plan pays for itself well before the downside case.`
+                : `At the modeled scope, the configured plan returns ${data.roi.toFixed(1)}× in year one.`}
           </p>
         </div>
       </div>
@@ -1371,7 +1391,9 @@ function ScalePage({ data }: { data: ExplorePDFData }): JSX.Element {
         ]
       : []),
     {
-      v: `${data.roi.toFixed(1)}× → ${data.expansionRoi != null ? data.expansionRoi.toFixed(1) : "—"}×`,
+      v: data.annualInvestment > 0
+        ? `${data.roi.toFixed(1)}× → ${data.expansionRoi != null ? data.expansionRoi.toFixed(1) : "—"}×`
+        : "—",
       k: "Year-1 return",
     },
   ];
