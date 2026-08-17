@@ -433,7 +433,67 @@ export default function EdQuality({ state, updateState, totalHoursSaved, onNext,
     );
   }
 
-  if (setting === "outpatient" || setting === "ed") {
+  // ─── Outpatient V2 driver ledger ───
+  // Quality is a non-financial proof layer: four tracked measures, no dollar.
+  // The dollar quality touches is counted once, in Revenue (HCC / denials).
+  if (setting === "outpatient") {
+    const ledger = buildDriverLedger(state, totalHoursSaved, "Quality", "outpatient");
+    const rows: LedgerRow[] = [
+      {
+        id: "opCdiQueryTrend",
+        label: "CDI Query Volume Trend",
+        kind: "tracked",
+        mechanism:
+          "CDI queries go out when chronic-condition documentation lacks the specificity risk coding needs. Captured at the point of care, the specificity is there the first time, so fewer queries come back.",
+        signals: ["CDI query volume falls", "Chronic conditions documented to specificity the first time"],
+      },
+      {
+        id: "opCareGapClosureRate",
+        label: "Care Gap Closure Rate",
+        kind: "tracked",
+        mechanism:
+          "Preventive care that actually happened in the visit is recorded as done, so a gap that looked open is captured as closed.",
+        signals: ["Care gaps recorded closed", "Documented preventive care matches what was delivered"],
+      },
+      {
+        id: "opHedisCompositeScore",
+        label: "HEDIS Composite Score",
+        kind: "tracked",
+        mechanism:
+          "HEDIS is scored from claims and chart data. When the note reflects the care delivered, the year-end measure reflects it too.",
+        signals: ["HEDIS reflects the care delivered", "Fewer visits lost to an incomplete note"],
+      },
+      {
+        id: "opMaStarsPerformance",
+        label: "MA STARS Performance",
+        kind: "tracked",
+        mechanism:
+          "STARS runs on the same documented care, one measurement year later, so the accuracy you build today shows up in next year's rating.",
+        signals: ["MA STARS reflects the documented care", "This year's documentation carries into next year's rating"],
+      },
+    ];
+    return (
+      <DriverLedger
+        eyebrow="Value Estimator · Step 7 of 9 · Quality"
+        title="Where does the quality show up?"
+        intro="Quality scores are built from documentation. Capture the visit accurately and the scores reflect the care you delivered. We track these as proof, not a dollar; anything financial is counted once, in Revenue, through HCC and denials."
+        sectionLabel="The proof · tracked, not counted"
+        rows={rows}
+        ledgerGroups={ledger.groups}
+        grandLabel="Model so far"
+        grandValue={ledger.grandValue}
+        grandCaption={ledger.grandCaption}
+        stepName="Quality"
+        stepIndex={7}
+        isValid={true}
+        onNext={onNext}
+        onBack={onBack}
+        onHome={onHome}
+      />
+    );
+  }
+
+  if (setting === "ed") {
     return <ProofChainScreen state={state} totalHoursSaved={totalHoursSaved} onNext={onNext} onBack={onBack} onHome={onHome} setting={setting} />;
   }
 

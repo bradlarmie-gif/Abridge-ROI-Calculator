@@ -420,6 +420,76 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
     );
   }
 
+  // ─── Outpatient V2 driver ledger ───
+  // One counted driver: Patient Access. Freed documentation time is reinvested as
+  // added visits, each earning your margin per visit. Cascade intermediates are
+  // computed inline from `td` so the running chain foots to the engine value.
+  if (setting === "outpatient") {
+    const ledger = buildDriverLedger(state, totalHoursSaved, "Capacity", "outpatient");
+    const eff = Math.min(td.accessProviders || state.numberOfProviders, state.numberOfProviders);
+    const hrsPerProvWk = state.numberOfProviders > 0 ? totalHoursSaved / state.numberOfProviders / 48 : 0;
+    const reinvest = (td.capacityRealizationPercent ?? 25) / 100;
+    const visitHrs = (td.visitDuration ?? 30) / 60;
+    const visitsPerWk =
+      td.patientAccessVisitsPerProvWk && td.patientAccessVisitsPerProvWk > 0
+        ? td.patientAccessVisitsPerProvWk
+        : visitHrs > 0
+          ? Math.round((hrsPerProvWk * reinvest / visitHrs) * 10) / 10
+          : 0;
+    const paValue = valueFor("patientAccess");
+    const paAwait = gate("patientAccess");
+
+    const rows: LedgerRow[] = [
+      {
+        id: "patientAccess",
+        label: "Patient Access",
+        kind: "counted",
+        mechanism:
+          "Charting used to happen after the visit. Done in the room, that reclaimed time goes back into the schedule as room for more patients, without adding cost.",
+        enabled: Boolean(td.patientAccessEnabled),
+        onToggle: () => {
+          const current = Boolean(td.patientAccessEnabled);
+          updateTimeDriverInputs(current ? { patientAccessEnabled: false } : { patientAccessEnabled: true, patientAccessExpanded: true });
+        },
+        amount: paValue > 0 ? paValue : undefined,
+        awaiting: paAwait?.need,
+        expanded: Boolean(td.patientAccessExpanded),
+        onToggleExpand: () => updateTimeDriverInputs({ patientAccessExpanded: !td.patientAccessExpanded }),
+        levers: (
+          <MathCascade
+            steps={[
+              { label: "Providers", running: formatNum(eff) },
+              { label: "Freed time they reinvest", factor: { value: td.capacityRealizationPercent ?? 25, onChange: (v: number) => updateTimeDriverInputs({ capacityRealizationPercent: v }), suffix: "%" }, running: `${formatNum1(hrsPerProvWk * reinvest)} hrs/wk` },
+              { label: "At this visit length", factor: { value: td.visitDuration ?? 30, onChange: (v: number) => updateTimeDriverInputs({ visitDuration: v }), suffix: "min" }, running: `${formatNum1(visitsPerWk)} visits/wk` },
+              { label: "Across the year", running: `${formatNum(visitsPerWk * eff * 48)} visits`, note: "× 48 weeks" },
+              { label: "Margin per visit", factor: { value: td.revenuePerVisit, onChange: (v: number) => updateTimeDriverInputs({ revenuePerVisit: v }), prefix: "$" }, running: formatCurrency(paValue), final: true },
+            ]}
+          />
+        ),
+      },
+    ];
+
+    return (
+      <DriverLedger
+        eyebrow="Value Estimator · Step 4 of 9 · Capacity"
+        title="What does the freed time become?"
+        intro="Charting that used to happen after the visit gets done in the room, and the time it gives back becomes room on the schedule. Turn on only what you can stand behind; it adds to the ledger as you go."
+        sectionLabel="The drivers · turn on what applies"
+        rows={rows}
+        ledgerGroups={ledger.groups}
+        grandLabel="Model so far"
+        grandValue={ledger.grandValue}
+        grandCaption={ledger.grandCaption}
+        stepName="Capacity"
+        stepIndex={4}
+        isValid={true}
+        onNext={onNext}
+        onBack={onBack}
+        onHome={onHome}
+      />
+    );
+  }
+
   return (
     <EditorialShell>
       <EditorialHeader stepName="Capacity" stepIndex={4} onBack={onBack} onHome={onHome} />

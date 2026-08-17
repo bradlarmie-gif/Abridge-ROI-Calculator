@@ -79,13 +79,55 @@ const NURSING_SAMPLE: ExploreState = {
   },
 };
 
+const OUTPATIENT_SAMPLE: ExploreState = {
+  ...DEFAULT_EXPLORE_STATE,
+  careSetting: "outpatient",
+  numberOfProviders: 100,
+  annualEncounters: 240000,
+  utilizationPercent: 70,
+  minutesSavedPerEncounter: 3, // so Patient Access (needs documentation time saved) computes
+  timePathScenario: "typical",
+  paymentModel: "both",
+  retentionMode: "counted",
+  timeDriverInputs: {
+    ...DEFAULT_EXPLORE_STATE.timeDriverInputs,
+    patientAccessEnabled: true,
+    patientAccessExpanded: true,
+    wellbeingEnabled: true,
+    wellbeingExpanded: true,
+    calculateRetentionValue: true,
+    physicianAgencyEnabled: true,
+    physicianAgencyExpanded: true,
+    scribeCostReductionEnabled: true,
+    scribeCostReductionExpanded: true,
+    scribeHeadcount: 8,
+    scribePositionsEliminated: 6,
+    scribeCostPerPosition: 45000,
+    opCdiQueryTrendEnabled: true,
+    opCareGapClosureRateEnabled: true,
+    opHedisCompositeScoreEnabled: true,
+    opMaStarsPerformanceEnabled: true,
+  },
+  docQualityInputs: {
+    ...DEFAULT_EXPLORE_STATE.docQualityInputs,
+    wrvuEnabled: true,
+    wrvuExpanded: true,
+    hccEnabled: true,
+    hccExpanded: true,
+    denialsEnabled: true,
+    denialsExpanded: true,
+    hccPlans: [{ ...DEFAULT_EXPLORE_STATE.docQualityInputs.hccPlans[0], panelSize: 300 }],
+  },
+};
+
 export default function InpatientReviewMock() {
   const params = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : new URLSearchParams();
   const step = params.get("step") || undefined;
   // ?mock=<setting> wins; ?inpatientmock=1 keeps the original inpatient entry.
   const requested = (params.get("mock") || "inpatient") as ExploreCareSetting;
-  const setting: ExploreCareSetting = requested === "nursing" ? "nursing" : "inpatient";
-  const sample = setting === "nursing" ? NURSING_SAMPLE : INPATIENT_SAMPLE;
+  const setting: ExploreCareSetting =
+    requested === "nursing" ? "nursing" : requested === "outpatient" ? "outpatient" : "inpatient";
+  const sample = setting === "nursing" ? NURSING_SAMPLE : setting === "outpatient" ? OUTPATIENT_SAMPLE : INPATIENT_SAMPLE;
 
   return (
     <ExploreFlow

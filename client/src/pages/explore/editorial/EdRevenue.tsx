@@ -547,6 +547,208 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
     );
   }
 
+  // ─── Outpatient V2 driver ledger ───
+  // Payment-model fork (FFS / Risk / Both) gates the row set exactly as the
+  // engine does: wRVU when paymentModel !== "risk", HCC when !== "ffs", denials
+  // always. Cascade intermediates are computed inline from `dq` so each final
+  // running foots to the engine value; the HCC row is the per-plan repeater
+  // (not a cascade), lifted verbatim from the legacy card.
+  if (isOP) {
+    const ledger = buildDriverLedger(state, totalHoursSaved, "Revenue", "outpatient");
+
+    // wRVU cascade intermediates (foot to engine wrvuValue).
+    const wrvuCurrentTotal = eligibleEncounters * dq.currentWrvu;
+    const wrvuAddedWrvus = eligibleEncounters * dq.currentWrvu * (wrvuLiftPct / 100);
+    const wrvuGross = wrvuAddedWrvus * dq.conversionFactor;
+    const wrvuRow: LedgerRow = {
+      id: "wrvu",
+      label: "wRVU Capture",
+      kind: "counted",
+      mechanism:
+        "When a note understates the visit, the E/M level codes down and you bill below the work you did. A complete note lets the level match the visit, so you capture what you already earned.",
+      enabled: dq.wrvuEnabled,
+      onToggle: () => updateDq({ wrvuEnabled: !dq.wrvuEnabled, wrvuExpanded: !dq.wrvuEnabled ? true : dq.wrvuExpanded }),
+      expanded: dq.wrvuExpanded,
+      onToggleExpand: () => updateDq({ wrvuExpanded: !dq.wrvuExpanded }),
+      amount: wrvuValue > 0 ? wrvuValue : undefined,
+      awaiting: wrvuAwait?.need,
+      levers: (
+        <MathCascade
+          steps={[
+            { label: "Documented visits", running: fmtN(eligibleEncounters) },
+            { label: "Current wRVU per visit", factor: { value: dq.currentWrvu, onChange: (v) => updateDq({ currentWrvu: v }), decimal: true }, running: `${fmtNd(wrvuCurrentTotal)} wRVUs` },
+            { label: "Lift Abridge documents", factor: { value: wrvuLiftPct, onChange: (v) => updateDq({ wrvuScenario: "custom", wrvuCustomPercent: v }), suffix: "%" }, running: `${fmtNd(wrvuAddedWrvus)} wRVUs` },
+            { label: "Conversion factor", factor: { value: dq.conversionFactor, onChange: (v) => updateDq({ conversionFactor: v }), prefix: "$", decimal: true }, running: fmt$(wrvuGross) },
+            { label: "Attribution", factor: { value: dq.wrvuRealization, onChange: (v) => updateDq({ wrvuRealization: v }), suffix: "%" }, running: fmt$(wrvuValue), final: true },
+          ]}
+        />
+      ),
+    };
+
+    // HCC row — the per-plan repeater lifted verbatim from the legacy card (NOT
+    // a cascade). The panel (Lives) input lives inside it, so we never gate the
+    // levers behind an awaiting message (that would hide the only place to enter
+    // it); we withhold the header dollar until a panel is set.
+    const hccRow: LedgerRow = {
+      id: "hccCapture",
+      label: "HCC Capture",
+      kind: "counted",
+      mechanism: "Chronic conditions a fuller note surfaces during the visit, each plan on its own economics.",
+      enabled: dq.hccEnabled,
+      onToggle: () => updateDq({ hccEnabled: !dq.hccEnabled, hccExpanded: !dq.hccEnabled ? true : dq.hccExpanded }),
+      expanded: dq.hccExpanded,
+      onToggleExpand: () => updateDq({ hccExpanded: !dq.hccExpanded }),
+      amount: hccValue > 0 ? hccValue : undefined,
+      levers: (
+        <div>
+          {plans.map((p) => (
+            <div key={p.id} className="rounded-[14px] border border-[#E7E3DD] bg-white px-4 py-[15px] mb-2.5">
+              <div className="flex items-center justify-between gap-3 mb-3">
+                <select
+                  value={p.planType}
+                  onChange={(e) => patchPlan(p.id, { planType: e.target.value as HccPlan["planType"] })}
+                  className="font-abridge text-[17px] text-[#1A1A1A] bg-transparent border-0 outline-none cursor-pointer -ml-1"
+                >
+                  {[["medicare_advantage", "Medicare Advantage"], ["aca_marketplace", "ACA / Exchange"], ["medicaid_mco", "Medicaid managed care"], ["custom", "Custom plan"]].map(([k, l]) => (
+                    <option key={k} value={k}>{l}</option>
+                  ))}
+                </select>
+                <div className="flex items-center gap-3">
+                  {membersOf(p) > 0 ? (
+                    <span className="font-abridge text-[19px] text-[#EA2C00] whitespace-nowrap">+{fmt$(planNetOf(p))}<span className="text-[11px] text-[#7C766F] font-sans"> / yr</span></span>
+                  ) : (
+                    <span className="font-abridge text-[19px] text-[#C9BDAD] whitespace-nowrap">&ndash;<span className="text-[11px] text-[#7C766F] font-sans"> / yr</span></span>
+                  )}
+                  {plans.length > 1 && (
+                    <button type="button" onClick={() => removePlan(p.id)} className="w-[24px] h-[24px] rounded-[7px] border border-[#E7E3DD] bg-white text-[#7C766F] flex items-center justify-center"><X className="w-3.5 h-3.5" /></button>
+                  )}
+                </div>
+              </div>
+              <div className="flex items-end flex-wrap gap-x-[22px] gap-y-3">
+                <EqNum cap="Lives" value={membersOf(p)} onChange={(v) => patchPlan(p.id, { panelSize: state.numberOfProviders > 0 ? Math.round(v / state.numberOfProviders) : v })} width={72} />
+                <EqNum cap="HCCs / patient" value={dq.avgHccs} onChange={(v) => updateDq({ avgHccs: v })} decimal width={44} />
+                <EqNum cap="Realized / HCC" value={p.valuePerHcc} onChange={(v) => patchPlan(p.id, { valuePerHcc: v })} prefix="$" width={72} />
+                <div className="flex flex-col justify-end">
+                  <div className="text-[9.5px] font-bold tracking-[0.04em] uppercase text-[#7C766F] mb-[6px]">Recapture rate</div>
+                  <div className="inline-flex items-end gap-2">
+                    <EqNum cap="" value={p.currentRecaptureRate} onChange={(v) => patchPlan(p.id, { currentRecaptureRate: v })} suffix="%" width={38} />
+                    <span className="text-[#C4BCB0] pb-[3px]">→</span>
+                    <EqNum cap="" value={p.currentRecaptureRate + upliftPtsOf(p)} onChange={(v) => patchPlan(p.id, { uplift: "custom", upliftCustomPp: Math.max(0, v - p.currentRecaptureRate) })} suffix="%" width={38} />
+                  </div>
+                </div>
+              </div>
+              <div className="mt-[13px] pt-3 border-t border-[#F4EEE7]">
+                {p.netNewEnabled ? (
+                  <div className="flex items-end justify-between gap-3 flex-wrap">
+                    <EqNum cap="Net-new HCCs / patient · surfaced at the visit" value={p.netNewAvgConditions ?? 0} onChange={(v) => patchPlan(p.id, { netNewAvgConditions: v })} decimal width={44} />
+                    <div className="text-[12px] text-[#7C766F]">
+                      recapture <b className="font-abridge text-[#1A1A1A] text-[14px]">+{fmt$(recapturePartOf(p))}</b> <span className="text-[#C4BCB0]">+</span> net-new <b className="font-abridge text-[#1A1A1A] text-[14px]">+{fmt$(netNewPartOf(p))}</b>
+                    </div>
+                  </div>
+                ) : (
+                  <button type="button" onClick={() => patchPlan(p.id, { netNewEnabled: true, netNewAvgConditions: p.netNewAvgConditions || 0.1 })} className="inline-flex items-center gap-1.5 text-[12px] font-bold text-[#EA2C00]">
+                    <Plus className="w-3.5 h-3.5" /> Include net-new HCCs a fuller note surfaces
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
+          <button type="button" onClick={addPlan} className="mt-1 mb-3 inline-flex items-center gap-1.5 text-[12.5px] font-bold text-[#EA2C00]"><Plus className="w-3.5 h-3.5" /> Add a risk plan</button>
+          <div className="flex items-baseline justify-between gap-4 pt-3 border-t border-[#E7E3DD] flex-wrap">
+            <div className="flex items-end gap-2">
+              <EqNum cap="share that survives RADV / audit" value={dq.hccRealization} onChange={(v) => updateDq({ hccRealization: v })} suffix="%" width={40} />
+            </div>
+            <div className="text-[13px] text-[#565250]">Across {plans.length} {plans.length === 1 ? "plan" : "plans"}&nbsp; {totalPanel > 0 ? <b className="font-abridge text-[19px] text-[#EA2C00]">+{fmt$(hccValue)}</b> : <b className="font-abridge text-[19px] text-[#C9BDAD]">&ndash;</b>} / yr</div>
+          </div>
+        </div>
+      ),
+    };
+
+    // Denials cascade intermediates (foot to engine denialsValue).
+    const denialsDenied = claimsBase * (dq.medNecessityDenialRate / 100);
+    const denialsFewer = denialsDenied * (denialsPreventedPct / 100);
+    const denialsGross = denialsFewer * dq.avgClaimValue;
+    const denialsRow: LedgerRow = {
+      id: "denialPrevention",
+      label: "Medical Necessity Denials",
+      kind: "counted",
+      mechanism:
+        "Payers deny claims when the note does not clearly support medical necessity, so work you already did gets written off or sent back. A complete note documents the necessity up front, so fewer of those claims are denied.",
+      enabled: dq.denialsEnabled,
+      onToggle: () => updateDq({ denialsEnabled: !dq.denialsEnabled, denialsExpanded: !dq.denialsEnabled ? true : dq.denialsExpanded }),
+      expanded: dq.denialsExpanded,
+      onToggleExpand: () => updateDq({ denialsExpanded: !dq.denialsExpanded }),
+      amount: denialsValue > 0 ? denialsValue : undefined,
+      awaiting: denialsAwait?.need,
+      levers: (
+        <MathCascade
+          steps={[
+            { label: "Claims a year", factor: { value: claimsBase, onChange: (v) => updateDq({ denialsAnnualClaims: v }) }, running: fmtN(claimsBase) },
+            { label: "Medical-necessity denial rate", factor: { value: dq.medNecessityDenialRate, onChange: (v) => updateDq({ medNecessityDenialRate: v }), suffix: "%", decimal: true }, running: `${fmtN(denialsDenied)} denials` },
+            { label: "Abridge reduces", factor: { value: denialsPreventedPct, onChange: (v) => updateDq({ denialsScenario: "custom", denialsCustomPercent: v }), suffix: "%" }, running: `${fmtN(denialsFewer)} fewer` },
+            { label: "Allowed per claim", factor: { value: dq.avgClaimValue, onChange: (v) => updateDq({ avgClaimValue: v }), prefix: "$" }, running: fmt$(denialsGross) },
+            { label: "Realization", factor: { value: dq.denialsRealization, onChange: (v) => updateDq({ denialsRealization: v }), suffix: "%" }, running: fmt$(denialsValue), final: true },
+          ]}
+        />
+      ),
+    };
+
+    const rows: LedgerRow[] = [];
+    if (state.paymentModel !== "risk") rows.push(wrvuRow);
+    if (state.paymentModel !== "ffs") rows.push(hccRow);
+    rows.push(denialsRow);
+
+    const paymentControl = (
+      <div>
+        <div className="text-[11px] font-extrabold tracking-[0.09em] uppercase text-[#2E2822] mb-3">How are you paid?</div>
+        <div className="flex w-full sm:inline-flex sm:w-auto gap-[3px] bg-[#F2EFEA] border border-[#E7E2DB] rounded-[13px] p-1">
+          {PAY_LABELS.map(({ key, label }) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => updatePaymentModel(key)}
+              data-testid={`button-payment-model-${key}`}
+              className={`flex-1 sm:flex-none whitespace-nowrap text-[12.5px] sm:text-[14px] font-bold rounded-[9px] px-2 sm:px-7 py-[11px] transition-colors ${
+                state.paymentModel === key ? "bg-white text-[#EA2C00] shadow-[0_1px_3px_rgba(0,0,0,0.08)]" : "text-[#565250]"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        <p className="text-[13px] text-[#7C766F] mt-[11px] leading-[1.5] max-w-[640px]">
+          <b className="text-[#565250]">{PAY_LABELS.find((p) => p.key === state.paymentModel)?.label}.</b>{" "}
+          {state.paymentModel === "ffs"
+            ? "Modeling fee-for-service visits only. Switch to Risk-based or Both to add HCC capture."
+            : state.paymentModel === "risk"
+            ? "Modeling risk-based lives only. Switch to Fee-for-service or Both to add wRVU capture."
+            : "Fee-for-service visits and risk lives are kept separate, so no patient is counted twice."}
+        </p>
+      </div>
+    );
+
+    return (
+      <DriverLedger
+        eyebrow="Value Estimator · Step 6 of 9 · Revenue"
+        title="How does documentation turn into revenue?"
+        intro="The same complete note earns money differently depending on how you're paid. Turn on the drivers that apply; each models against your numbers and adds to the ledger."
+        sectionLabel="The drivers · turn on what applies"
+        headerControl={paymentControl}
+        rows={rows}
+        ledgerGroups={ledger.groups}
+        grandLabel="Model so far"
+        grandValue={ledger.grandValue}
+        grandCaption={ledger.grandCaption}
+        stepName="Revenue"
+        stepIndex={6}
+        isValid={true}
+        onNext={onNext}
+        onBack={onBack}
+        onHome={onHome}
+      />
+    );
+  }
+
   // ── Which financial cards are visible on screen, for the section subtotal ──
   let visibleCards: { id: string; enabled: boolean; value: number; node: React.ReactNode }[] = [];
   if (isOP) {
