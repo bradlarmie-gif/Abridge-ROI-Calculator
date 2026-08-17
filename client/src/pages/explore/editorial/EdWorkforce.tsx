@@ -719,6 +719,8 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
         },
         amount: retentionCounted ? retentionValue : undefined,
         awaiting: gate("providerWellbeing"),
+        expanded: Boolean(td.wellbeingExpanded),
+        onToggleExpand: () => updateTimeDriverInputs({ wellbeingExpanded: !td.wellbeingExpanded }),
         levers: retentionLevers,
       },
       {
@@ -736,6 +738,8 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
         // So never gate the levers behind an awaiting message (that would hide the
         // only place to enter it); just withhold the header dollar until it's set.
         amount: staffingValue > 0 ? staffingValue : undefined,
+        expanded: Boolean(td.ipIncrementalStaffingExpanded),
+        onToggleExpand: () => updateTimeDriverInputs({ ipIncrementalStaffingExpanded: !td.ipIncrementalStaffingExpanded }),
         levers: staffingLevers,
       },
       {

@@ -353,9 +353,6 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
               <span className="text-[12px] text-[#7C766F]">corrected today · your CDI team's, not Abridge's</span>
             </div>
           </EquationRow>
-          <p className="text-[13px] leading-[1.55] text-[#7C766F] mt-4 max-w-[600px]">
-            Of the <b className="text-[#1A1A1A]">{fmtN(drgQueried)}</b> gaps your CDI team flags, only <b className="text-[#1A1A1A]">{fmtN(drgChanged)}</b> get corrected. The other <b className="text-[#B02200]">{fmtN(drgLost)}</b> die in the query process, with no response or a response that doesn&apos;t stick. Abridge captures the acuity up front, so those land at the right DRG without waiting on a query.
-          </p>
           <div className="text-[10.5px] font-extrabold tracking-[0.1em] uppercase text-[#A79B8B] mt-6 mb-3">What Abridge adds, on top</div>
           <EquationRow>
             <EqCarried cap="flagged but lost">{fmtN(drgLost)}</EqCarried>
@@ -378,7 +375,6 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
   // each) with neutral intermediates, so no row wraps and each keeps one baseline.
   const obsAtStake = Math.round(state.annualEncounters * (dq.ipObsDenialRate / 100) * dq.ipObsAllowedPerCase);
   const obsDocDriven = Math.round(obsAtStake * (dq.ipObsNotRecoveredPct / 100) * (dq.ipObsDocMaterialPct / 100));
-  const compact$ = (n: number) => (n >= 1_000_000 ? `$${(n / 1_000_000).toFixed(1)}M` : fmt$(n));
   const obsCard = (
     <InlineDriverCard
       key="obs"
@@ -431,6 +427,8 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
           "DRG revenue moves through the CDI query funnel, and that funnel is your CDI team's work, with or without Abridge. A query is proof the record had a gap; Abridge's value is the gaps your team flags but loses.",
         enabled: dq.ipDrgEnabled,
         onToggle: () => updateDq({ ipDrgEnabled: !dq.ipDrgEnabled, ipDrgExpanded: !dq.ipDrgEnabled ? true : dq.ipDrgExpanded }),
+        expanded: dq.ipDrgExpanded,
+        onToggleExpand: () => updateDq({ ipDrgExpanded: !dq.ipDrgExpanded }),
         amount: drgValue,
         awaiting: drgAwait?.need,
         levers: (
@@ -452,9 +450,6 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
                 <span className="text-[12px] text-[#7C766F]">corrected today · your CDI team's, not Abridge's</span>
               </div>
             </EquationRow>
-            <p className="text-[13px] leading-[1.55] text-[#7C766F] mt-4 max-w-[600px]">
-              Of the <b className="text-[#1A1A1A]">{fmtN(drgQueried)}</b> gaps your CDI team flags, only <b className="text-[#1A1A1A]">{fmtN(drgChanged)}</b> get corrected. The other <b className="text-[#B02200]">{fmtN(drgLost)}</b> die in the query process, with no response or a response that doesn&apos;t stick. Abridge captures the acuity up front, so those land at the right DRG without waiting on a query.
-            </p>
             <div className="text-[10.5px] font-extrabold tracking-[0.1em] uppercase text-[#A79B8B] mt-6 mb-3">What Abridge adds, on top</div>
             <EquationRow>
               <EqCarried cap="flagged but lost">{fmtN(drgLost)}</EqCarried>
@@ -478,6 +473,8 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
         enabled: dq.ipObsDefenseEnabled,
         onToggle: () =>
           updateDq({ ipObsDefenseEnabled: !dq.ipObsDefenseEnabled, ipObsDefenseExpanded: !dq.ipObsDefenseEnabled ? true : dq.ipObsDefenseExpanded }),
+        expanded: dq.ipObsDefenseExpanded,
+        onToggleExpand: () => updateDq({ ipObsDefenseExpanded: !dq.ipObsDefenseExpanded }),
         amount: obsValue,
         awaiting: obsAwait?.need,
         levers: (
@@ -495,9 +492,8 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
                 <span className="text-[12px] text-[#7C766F]">revenue at stake</span>
               </div>
             </EquationRow>
-            {/* Step 2 — the share documentation actually drives */}
+            {/* Step 2 — continues from the running total above (leading ×, no repeated carry) */}
             <EquationRow>
-              <EqCarried cap="at stake">{compact$(obsAtStake)}</EqCarried>
               <EqOp>×</EqOp>
               <EqNum cap="not recovered" value={dq.ipObsNotRecoveredPct} onChange={(v) => updateDq({ ipObsNotRecoveredPct: v })} suffix="%" width={40} />
               <EqOp>×</EqOp>
@@ -510,7 +506,6 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
             </EquationRow>
             {/* Step 3 — the durable Abridge dollar */}
             <EquationRow>
-              <EqCarried cap="doc-driven">{compact$(obsDocDriven)}</EqCarried>
               <EqOp>×</EqOp>
               <EqNum cap="Abridge opportunity" value={dq.ipObsAbridgeOpportunityPct} onChange={(v) => updateDq({ ipObsAbridgeOpportunityPct: v })} suffix="%" width={40} />
               <EqOp>×</EqOp>

@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { ChevronDown } from "lucide-react";
 import { EditorialHeader, EditorialShell } from "./EditorialHeader";
 
 /**
@@ -21,6 +22,8 @@ export interface LedgerRow {
   amount?: number; // engine dollars, shown when counted + enabled + ready
   awaiting?: string; // scale-gate need phrase, when counted + enabled + not ready
   levers?: ReactNode; // expanded content when enabled
+  expanded?: boolean; // whether the levers are shown (chevron collapses them); defaults open
+  onToggleExpand?: () => void;
   /** tracked only: a couple of short proof signals */
   signals?: string[];
   /** nested rows (e.g. Administrative Efficiency → UM + CDI) */
@@ -82,6 +85,7 @@ function DriverRow({ row, depth = 0 }: { row: LedgerRow; depth?: number }) {
   const isCounted = row.kind === "counted";
   const isComing = row.kind === "coming-soon";
   const on = Boolean(row.enabled);
+  const expanded = row.expanded ?? true;
   return (
     <div className={`py-6 border-b border-[#EDE8E1] ${depth > 0 ? "pl-6" : ""}`}>
       <div className="flex justify-between items-start gap-5">
@@ -100,6 +104,16 @@ function DriverRow({ row, depth = 0 }: { row: LedgerRow; depth?: number }) {
           {isCounted && on && row.amount != null && !row.awaiting && (
             <span className="font-abridge text-[22px] text-[#EA2C00] whitespace-nowrap">{fmtMoney(row.amount)}<span className="font-sans text-[12px] text-[#8C8073]">/yr</span></span>
           )}
+          {isCounted && on && row.onToggleExpand && (
+            <button
+              type="button"
+              onClick={row.onToggleExpand}
+              aria-label={expanded ? "Collapse details" : "Expand details"}
+              className="text-[#B0A99E] hover:text-[#EA2C00] transition-colors"
+            >
+              <ChevronDown className={`w-[18px] h-[18px] transition-transform ${expanded ? "" : "-rotate-90"}`} strokeWidth={2} />
+            </button>
+          )}
           {isCounted && <Toggle on={on} onClick={row.onToggle} />}
           {row.kind === "tracked" && (
             <span className="text-[11px] font-bold uppercase tracking-[0.05em] text-[#7C766F]">Tracked</span>
@@ -107,8 +121,8 @@ function DriverRow({ row, depth = 0 }: { row: LedgerRow; depth?: number }) {
         </div>
       </div>
 
-      {/* counted + on: the levers + footed math */}
-      {isCounted && on && (
+      {/* counted + on + expanded: the levers + footed math */}
+      {isCounted && on && expanded && (
         <div className="mt-5">
           {row.awaiting ? (
             <div className="text-[13px] text-[#B0A99E] italic">Enter {row.awaiting} to see this driver.</div>

@@ -24,11 +24,14 @@ const SAMPLE: ExploreState = {
   docQualityInputs: {
     ...DEFAULT_EXPLORE_STATE.docQualityInputs,
     ipDrgEnabled: true,
+    ipDrgExpanded: true,
     ipObsDefenseEnabled: true,
+    ipObsDefenseExpanded: true,
   },
   timeDriverInputs: {
     ...DEFAULT_EXPLORE_STATE.timeDriverInputs,
     ipIncrementalStaffingEnabled: true,
+    ipIncrementalStaffingExpanded: true,
     ipStaffingCurrentSpend: 500000,
   },
 };

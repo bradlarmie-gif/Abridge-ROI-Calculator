@@ -25,11 +25,11 @@ const IP_COUNTED: Record<Domain, CountedItem[]> = {
   Capacity: [],
   Workforce: [
     { label: "Provider Retention", engineKey: "providerWellbeing" },
-    { label: "Incremental Staffing", engineKey: "incrementalStaffing" },
+    { label: "Incremental Staffing Avoided", engineKey: "incrementalStaffing" },
   ],
   Revenue: [
-    { label: "Case Mix Index", engineKey: "drgAccuracy" },
-    { label: "Status / Med-Nec Denials", engineKey: "obsDefense" },
+    { label: "Case Mix Index (DRG Accuracy)", engineKey: "drgAccuracy" },
+    { label: "Status / Medical Necessity Denials", engineKey: "obsDefense" },
   ],
   Quality: [],
 };
