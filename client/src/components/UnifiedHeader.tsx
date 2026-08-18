@@ -150,7 +150,7 @@ export function UnifiedHeader({
         {/* Center: custom content, or the default Path + Step breadcrumb */}
         <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1 justify-center overflow-hidden">
           {centerContent ?? (<>
-          <span className={`text-xs sm:text-sm flex-shrink-0 ${stepName || hasSteps ? "text-slate-500 font-medium" : "text-slate-900 font-semibold"}`}>{pathLabel}</span>
+          <span className={`text-xs sm:text-sm truncate min-w-0 ${stepName || hasSteps ? "text-slate-500 font-medium" : "text-slate-900 font-semibold"}`}>{pathLabel}</span>
           {(stepName || hasSteps) && <span className="text-slate-300 flex-shrink-0 hidden min-[480px]:inline">·</span>}
           {stepName ? (
             <span className="text-xs sm:text-sm text-slate-900 font-semibold truncate hidden min-[480px]:inline">{stepName}</span>

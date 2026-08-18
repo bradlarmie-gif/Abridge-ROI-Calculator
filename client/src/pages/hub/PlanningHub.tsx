@@ -18,7 +18,7 @@ export default function PlanningHub({ onOpenPlanning, onOpenMetrics, onHome }: P
           icon={ClipboardCheck}
           tagline="The plan"
           title="Build the Plan"
-          description="Turn your value strategy into an owned, step-by-step plan with owners, plays, and a review cadence."
+          description="Turn your value attainment strategy into an owned, step-by-step plan with owners, plays, and a review cadence."
           cta="Build the Plan"
           onClick={onOpenPlanning}
           testId="planning-card-build"

@@ -35,7 +35,7 @@ export default function ValueAttainmentHub({ onSelectStrategy, onSelectFinancial
           icon={Target}
           tagline="Start with the why"
           title="Strategy"
-          description="The value story and the value strategy: the outcomes you're chasing and why they matter."
+          description="The value story and the value attainment strategy: the outcomes you're chasing and why they matter."
           cta="Open Strategy"
           onClick={onSelectStrategy}
           testId="hub-card-strategy"

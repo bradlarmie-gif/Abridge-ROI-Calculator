@@ -1427,8 +1427,11 @@ export const CONTENT: Record<AttainSetting, Partial<Record<GoalId, SettingGoalCo
 // Helpers
 // ────────────────────────────────────────────────────────────────────────
 
-export function goalsForSetting(setting: AttainSetting): GoalDef[] {
-  return SETTING_GOAL_MATRIX[setting].map((goalId) => {
+/** Resolve an arbitrary GoalId list to setting-correct GoalDefs (applies the
+ * per-setting relabels). Used by goalsForSetting and by the Value Attainment
+ * Strategy flow, which offers its own all-four-domains goal list. */
+export function goalDefs(setting: AttainSetting, ids: GoalId[]): GoalDef[] {
+  return ids.map((goalId) => {
     const g = GOAL_CATALOG[goalId];
     // nurses aren't "providers" — relabel the retention goal on the Nursing setting (id stays "retention")
     if (setting === "nursing" && goalId === "retention") {
@@ -1441,6 +1444,10 @@ export function goalsForSetting(setting: AttainSetting): GoalDef[] {
     }
     return g;
   });
+}
+
+export function goalsForSetting(setting: AttainSetting): GoalDef[] {
+  return goalDefs(setting, SETTING_GOAL_MATRIX[setting]);
 }
 
 export function getContent(

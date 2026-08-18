@@ -7,9 +7,12 @@ import StepVision from "./steps/StepVision";
 import StepScope from "./steps/StepScope";
 import { SettingStep } from "./preview/AttainFunnel";
 import { AttainExperience, type ExperienceSlice, type Chapter } from "./preview/MultiCategoryPreview";
+import ValueStrategyExperience, { type VSEHandle } from "./valuestrategy/ValueStrategyExperience";
 import { ATTAIN_MATRIX } from "./preview/attainCells";
 import { loadPlanByName, loadSnapshot, saveSnapshot, clearSnapshot, type AttainSnapshot } from "./attainStorage";
-import { categoryForGoal } from "@/lib/attain/attainGoals";
+import { categoryForGoal, goalDefs } from "@/lib/attain/attainGoals";
+import { STRATEGY_GOALS } from "@/lib/attain/valueStrategy";
+import type { DiscoveryAnswers } from "@/lib/attain/discovery";
 import type { AttainSetting, GoalId } from "@/lib/attain/attainTypes";
 import type { AttainBaseline } from "@/lib/attain/attainLevers";
 
@@ -35,7 +38,6 @@ function cellsFor(setting: AttainSetting, goals: GoalId[]) {
 }
 
 type Phase = "partner" | "setting" | "vision" | "scope" | "experience";
-const PHASES: Phase[] = ["partner", "setting", "vision", "scope", "experience"];
 
 export default function AttainFlowV2({
   onBackToJourney,
@@ -45,6 +47,7 @@ export default function AttainFlowV2({
   flowLabel,
   buildCta,
   experienceLabel,
+  mode,
 }: {
   onBackToJourney?: () => void;
   // Value Attainment Hub: mount a SUBSET of chapters. Value Strategy runs
@@ -53,6 +56,10 @@ export default function AttainFlowV2({
   chapters?: Chapter[];
   onFinish?: () => void;
   autoResume?: boolean;
+  // "strategy" swaps the experience for the no-dollar Value Attainment Strategy
+  // backward-trace build + map (align/strategy). Planning leaves this unset and
+  // keeps the shared Plan/Progress engine untouched.
+  mode?: "strategy";
   // Copy overrides so the shared Attain engine names itself per hub section.
   // Defaults preserve the combined Attain flow.
   flowLabel?: string; // section label in the header + chapter nav ("Attain" default)
@@ -75,6 +82,18 @@ export default function AttainFlowV2({
 
   // latest experience answers, reported up from AttainExperience; set on resume or as they work
   const expRef = useRef<ExperienceSlice | null>(null);
+  // Value Attainment Strategy (mode="strategy"): the discovery interview answers.
+  // Held in its own ref so it never touches the Plan/Progress slice.
+  const discoveryRef = useRef<DiscoveryAnswers | null>(null);
+  // The discovery experience exposes its back() so the header's single Back button
+  // steps back through the interview, then exits to the funnel (no double Back).
+  const vseRef = useRef<VSEHandle | null>(null);
+
+  // Strategy mode is the pre-ROI discovery interview, so it drops the numeric
+  // Starting Point step (numbers get agreed later, in the Plan/ROI).
+  const PHASES: Phase[] = mode === "strategy"
+    ? ["partner", "setting", "vision", "experience"]
+    : ["partner", "setting", "vision", "scope", "experience"];
 
   const buildSnapshot = (): AttainSnapshot => ({
     partner, phase, setting, goals: goals as string[], baseline: baseline as Record<string, number | undefined>,
@@ -92,6 +111,7 @@ export default function AttainFlowV2({
     chapter: expRef.current?.chapter,
     catIdx: expRef.current?.catIdx,
     reviewLog: expRef.current?.reviewLog ?? [],
+    discovery: discoveryRef.current ?? undefined,
     savedAt: 0,
   });
 
@@ -99,6 +119,7 @@ export default function AttainFlowV2({
   useEffect(() => { if (setting) saveSnapshot(buildSnapshot()); /* eslint-disable-next-line */ }, [partner, phase, setting, goals, baseline]);
 
   const onPersist = (slice: ExperienceSlice) => { expRef.current = slice; saveSnapshot(buildSnapshot()); };
+  const onPersistAnswers = (a: DiscoveryAnswers) => { discoveryRef.current = a; saveSnapshot(buildSnapshot()); };
 
   // Export the live plan as the real editorial PDF (cover + the case + a spread
   // per category), built from the SAME engine the on-screen numbers use so the
@@ -122,7 +143,7 @@ export default function AttainFlowV2({
 
   const startOver = () => {
     clearSnapshot(partner);
-    expRef.current = null; setSaved(null); setConfirmingReset(false);
+    expRef.current = null; discoveryRef.current = null; setSaved(null); setConfirmingReset(false);
     setPartner(""); setSetting(null); setGoals([]); setBaseline({}); setPhase("partner");
   };
 
@@ -131,6 +152,7 @@ export default function AttainFlowV2({
   // never asks them to retype it.
   const hydrateFrom = (existing: AttainSnapshot) => {
     expRef.current = existing as unknown as ExperienceSlice;
+    discoveryRef.current = existing.discovery ?? null;
     setSaved(existing);
     setPartner(existing.partner ?? partner);
     setSetting((existing.setting as AttainSetting) ?? null);
@@ -162,17 +184,18 @@ export default function AttainFlowV2({
     return true;
   };
 
-  // The last plan worked on on this device — offered as a one-click resume on step 1 while the
-  // name field is still empty, so a plain reload doesn't force the partner to retype the name.
-  const activePlan = phase === "partner" && !partner.trim() ? loadSnapshot() : null;
-
   const idx = PHASES.indexOf(phase);
   const canContinue = phase === "partner" ? partner.trim().length > 0 : phase === "setting" ? !!setting : phase === "vision" ? goals.length > 0 : true;
   const stepName = phase === "partner" ? "Who it's for" : phase === "setting" ? "Care setting" : phase === "vision" ? "What you're after" : phase === "scope" ? "Starting point" : (experienceLabel ?? "Your plan");
 
   const cells = setting ? cellsFor(setting, goals) : [];
 
-  const goBack = () => { if (idx > 0) setPhase(PHASES[idx - 1]); else onBackToJourney?.(); };
+  const goBack = () => {
+    // In the discovery interview, the header Back steps back through the questions
+    // (and exits to the funnel from the first one) via the experience's handle.
+    if (phase === "experience" && mode === "strategy" && vseRef.current) { vseRef.current.back(); return; }
+    if (idx > 0) setPhase(PHASES[idx - 1]); else onBackToJourney?.();
+  };
   const goNext = () => {
     if (!canContinue) return;
     if (phase === "partner" && resumeIfExists()) return;
@@ -192,7 +215,9 @@ export default function AttainFlowV2({
         onHome={onBackToJourney ?? (() => setPhase("setting"))}
         rightAction={(partner.trim() || saved) ? (
           <div className="flex items-center gap-3 text-[11px]">
-            {phase === "experience" && (
+            {/* Export PDF drives the dollar-based Attain plan PDF; the no-dollar
+                strategy trace has no PDF yet, so it's suppressed in strategy mode. */}
+            {phase === "experience" && mode !== "strategy" && (
               <button type="button" onClick={handleExport} disabled={exporting} data-testid="attain-export-pdf" className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg border border-[#E8E2DA] bg-white text-[12px] font-bold text-[#1A1A1A] hover:border-[#1A1A1A] disabled:opacity-50 transition-colors">
                 <Download className="w-3.5 h-3.5" strokeWidth={2.25} />
                 {exporting ? "Preparing…" : "Export PDF"}
@@ -204,39 +229,47 @@ export default function AttainFlowV2({
         ) : undefined}
       />
       {phase === "experience" ? (
-        <><UnifiedHeaderSpacer /><AttainExperience key={partner} setting={SETTING_LABEL[setting!]} cells={cells} baseline={baseline} initial={buildSnapshot()} onPersist={onPersist} chapters={chapters} onFinish={onFinish} flowLabel={flowLabel} /></>
+        mode === "strategy" ? (
+          <><UnifiedHeaderSpacer /><ValueStrategyExperience ref={vseRef} key={partner} setting={setting!} settingLabel={SETTING_LABEL[setting!]} goals={goals} partner={partner} initialAnswers={discoveryRef.current ?? {}} onPersistAnswers={onPersistAnswers} onFinish={onFinish} onExit={() => setPhase("vision")} /></>
+        ) : (
+          <><UnifiedHeaderSpacer /><AttainExperience key={partner} setting={SETTING_LABEL[setting!]} cells={cells} baseline={baseline} initial={buildSnapshot()} onPersist={onPersist} chapters={chapters} onFinish={onFinish} flowLabel={flowLabel} /></>
+        )
       ) : (
         <><UnifiedHeaderSpacer /><div className={`${phase === "scope" ? "max-w-[1040px]" : "max-w-[760px]"} mx-auto px-6 py-8 md:py-12`}>
           {phase === "partner" && (
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#EA2C00] mb-2">Step 1 · Who's this for?</p>
-              <h1 className="font-abridge text-[32px] md:text-[40px] text-[#1A1A1A] leading-tight mb-4">Who are we building this plan for?</h1>
-              <p className="text-[15px] text-[#6B6B6B] leading-relaxed max-w-[560px] mb-8">Name the partner or organization. Your plan autosaves under this name on this device, so you can close it and pick it back up here anytime.</p>
+              <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#EA2C00] mb-3">Step 1 · Start here</p>
+              <h1 className="font-abridge text-[32px] md:text-[42px] text-[#1A1A1A] leading-[1.1] mb-5">Start with the outcome.<br className="hidden md:inline" /> Trace back to what makes it real.</h1>
+              <p className="text-[16px] text-[#4A4A4A] leading-relaxed max-w-[600px] mb-3">Before any ROI or financial model, a value attainment strategy maps how the outcome actually happens: the operating conditions, the decisions, the behaviors, and the dependencies that have to hold for it to land.</p>
+              <p className="text-[16px] text-[#4A4A4A] leading-relaxed max-w-[600px] mb-10">The financial work comes later and proves it. First, who are we building this for?</p>
+              <label className="block text-[11px] font-bold uppercase tracking-[1.5px] text-[#8C8073] mb-3">Partner or organization</label>
               <input value={partner} onChange={(e) => setPartner(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && canContinue) goNext(); }} placeholder="e.g., Northgate Medical Group" autoFocus className="w-full max-w-[520px] bg-transparent border-0 border-b-2 border-[#E0D9CE] rounded-none px-0 pb-2 font-abridge text-[26px] text-[#1A1A1A] outline-none transition-colors focus:border-[#EA2C00] placeholder:text-[#C4BCB0] placeholder:font-sans placeholder:text-[18px]" />
               {partner.trim() && loadPlanByName(partner)?.setting && <p className="text-[12px] text-[#EA2C00] mt-3">A saved plan for this name will pick up where you left off.</p>}
-              {activePlan?.setting && activePlan.partner && (
-                <div className="mt-8 pt-6 border-t border-[#E8E2DA]">
-                  <p className="text-[12px] text-[#8C8C8C] mb-2.5">Or pick up where you left off:</p>
-                  <button type="button" onClick={() => hydrateFrom(activePlan)} className="inline-flex items-center gap-2 rounded-xl border border-[#E0D9CE] bg-white text-[14px] font-semibold text-[#1A1A1A] px-5 py-2.5 hover:border-[#1A1A1A] transition-colors">
-                    Resume {activePlan.partner} <ArrowRight className="w-4 h-4" />
-                  </button>
-                </div>
-              )}
             </div>
           )}
-          {phase === "setting" && <SettingStep selected={setting} onSelect={setSetting} />}
+          {phase === "setting" && <SettingStep selected={setting} onPick={(s) => { setSetting(s); setPhase("vision"); }} />}
           {phase === "vision" && setting && (
-            <StepVision setting={setting} selectedGoals={goals} onToggle={(g) => setGoals((prev) => (prev.includes(g) ? prev.filter((x) => x !== g) : [...prev, g]))} />
+            <StepVision
+              setting={setting}
+              selectedGoals={goals}
+              onToggle={(g) => setGoals((prev) => (prev.includes(g) ? prev.filter((x) => x !== g) : [...prev, g]))}
+              goals={mode === "strategy" ? goalDefs(setting, STRATEGY_GOALS[setting]) : undefined}
+              preferOutcome={mode === "strategy"}
+            />
           )}
           {phase === "scope" && setting && (
             <StepScope setting={setting} goals={goals} baseline={baseline} onChangeBaseline={(patch) => setBaseline((prev) => ({ ...prev, ...patch }))} />
           )}
 
-          <div className="mt-10 flex items-center justify-end border-t border-[#E8E2DA] pt-6">
-            <button onClick={goNext} disabled={!canContinue} className="inline-flex items-center gap-2 rounded-xl bg-[#EA2C00] text-white text-[14px] font-semibold px-5 py-2.5 hover:bg-[#d12800] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
-              {phase === "scope" ? (buildCta ?? "Build the plan") : "Continue"} <ArrowRight className="w-4 h-4" />
-            </button>
-          </div>
+          {/* The care-setting step advances on row click (Explore parity), so it
+              carries no Continue button; every other funnel step does. */}
+          {phase !== "setting" && (
+            <div className="mt-10 flex items-center justify-end border-t border-[#E8E2DA] pt-6">
+              <button onClick={goNext} disabled={!canContinue} className="inline-flex items-center gap-2 rounded-xl bg-[#EA2C00] text-white text-[14px] font-semibold px-5 py-2.5 hover:bg-[#d12800] disabled:bg-transparent disabled:text-[#B4A896] disabled:border disabled:border-[#E0D9CE] disabled:cursor-not-allowed transition-colors">
+                {idx === PHASES.length - 2 ? (buildCta ?? "Build the plan") : "Continue"} <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
         </div></>
       )}
 

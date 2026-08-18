@@ -578,12 +578,13 @@ export default function App() {
                 hands off to Planning (the plan autosaves and Planning resumes it). */}
             {currentView === "value-strategy" && (
               <AttainFlowV2
+                mode="strategy"
                 chapters={["align", "strategy"]}
-                onFinish={() => navigateTo("planning")}
+                onFinish={() => navigateTo("financial-hub")}
                 onBackToJourney={() => navigateTo("strategy-hub")}
-                flowLabel="Value Strategy"
-                buildCta="Build the strategy"
-                experienceLabel="Your strategy"
+                flowLabel="Value Attainment Strategy"
+                buildCta="Start discovery"
+                experienceLabel="Discovery"
               />
             )}
 

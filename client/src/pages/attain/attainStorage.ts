@@ -8,6 +8,7 @@
  */
 
 import type { AttainBaseline } from "@/lib/attain/attainLevers";
+import type { DiscoveryAnswers } from "@/lib/attain/discovery";
 
 const NS = "attain:plan:v1:";           // one saved plan per partner, keyed by name
 const ACTIVE = "attain:plan:v1:active"; // which partner's plan to resume on refresh
@@ -41,6 +42,10 @@ export type AttainSnapshot = {
   chapter?: string;                                // which chapter they were last on
   catIdx?: number;                                 // which category sub-tab they were last on
   reviewLog: { label: string; attain: number }[];
+  // Value Attainment Strategy (front half): the pre-ROI discovery interview
+  // answers, keyed "goal:questionId" -> optionId. No numbers here. Optional so it
+  // never affects the Plan/Progress mount, which ignores it.
+  discovery?: DiscoveryAnswers;
   savedAt: number;
 };
 

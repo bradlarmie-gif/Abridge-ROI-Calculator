@@ -24,8 +24,8 @@ export default function StrategyHub({ onSelectValueStory, onSelectValueStrategy,
         <HubCard
           icon={Target}
           tagline="Your goals"
-          title="Value Strategy"
-          description="Pick the outcomes you're chasing and dig into the number behind each, from your own figures, not a benchmark."
+          title="Value Attainment Strategy"
+          description="Trace each outcome back to the operating conditions, decisions, and behaviors that have to be true to reach it, before you run a single number."
           cta="Build the Strategy"
           onClick={onSelectValueStrategy}
           testId="strategy-card-value-strategy"

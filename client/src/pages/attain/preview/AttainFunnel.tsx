@@ -1,4 +1,4 @@
-import { Check } from "lucide-react";
+import { Check, Stethoscope, Zap, Building2, HeartPulse, ArrowRight } from "lucide-react";
 import type { AttainSetting, GoalId } from "@/lib/attain/attainTypes";
 import type { AttainBaseline } from "@/lib/attain/attainLevers";
 
@@ -12,11 +12,11 @@ const LBL = "text-[10px] font-bold uppercase tracking-[2px] text-[#EA2C00]";
 const H2 = "font-abridge text-[30px] md:text-4xl text-[#1A1A1A] leading-tight";
 const HELP = "text-[15px] text-[#3A3A3A] leading-relaxed max-w-[620px]";
 
-const SETTINGS: { id: AttainSetting; label: string; sub: string; desc: string }[] = [
-  { id: "outpatient", label: "Outpatient", sub: "Primary care & specialty", desc: "Panel access, wRVU capture, and provider retention across clinics." },
-  { id: "ed", label: "Emergency", sub: "Emergency department", desc: "Throughput, LWBS recovery, coding accuracy, and provider retention." },
-  { id: "inpatient", label: "Inpatient", sub: "Hospital medicine", desc: "DRG accuracy, CDI turnaround, and hospitalist retention." },
-  { id: "nursing", label: "Nursing", sub: "Inpatient nursing", desc: "Bundle compliance, preventable harm, and nurse retention." },
+const SETTINGS: { id: AttainSetting; label: string; desc: string; Icon: typeof Stethoscope }[] = [
+  { id: "outpatient", label: "Outpatient", desc: "Primary care and specialty. Panel access, coding capture, and provider retention across clinics.", Icon: Stethoscope },
+  { id: "ed", label: "Emergency", desc: "The emergency department. Throughput, LWBS recovery, coding accuracy, and staff wellbeing.", Icon: Zap },
+  { id: "inpatient", label: "Inpatient", desc: "Hospital medicine. DRG accuracy, CDI turnaround, and hospitalist retention.", Icon: Building2 },
+  { id: "nursing", label: "Nursing", desc: "Inpatient nursing. Bundle compliance, preventable harm, and nurse retention.", Icon: HeartPulse },
 ];
 
 const SETTING_GOALS: Record<AttainSetting, GoalId[]> = {
@@ -36,25 +36,32 @@ const GOAL_INFO: Record<GoalId, { label: string; desc: string }> = {
 const cardCls = (sel: boolean) =>
   `text-left rounded-2xl border p-5 transition-colors ${sel ? "border-[#EA2C00] bg-[#FBE7E1]/50" : "border-[#E8E2DA] hover:bg-[#F2EDE5] hover:border-[#E7E0D6]"}`;
 
-export function SettingStep({ selected, onSelect }: { selected: AttainSetting | null; onSelect: (s: AttainSetting) => void }) {
+// Matches the Explore care-setting picker (EdCareSetting): one hairline list, a
+// bare icon per row, a one-line blurb, click a row to advance. Keeps the whole
+// Value Attainment flow reading as one product with Explore.
+export function SettingStep({ selected, onPick }: { selected: AttainSetting | null; onPick: (s: AttainSetting) => void }) {
   return (
     <div>
       <p className={`${LBL} mb-2`}>Step 2 · Where does this plan live?</p>
       <h2 className={`${H2} mb-3`}>Pick the care setting</h2>
-      <p className={`${HELP} mb-8`}>Every plan is scoped to one care setting, because the goals, the value chain, and the benchmarks all change with it. You can build a separate plan for another setting later.</p>
-      <div className="grid sm:grid-cols-2 gap-3">
-        {SETTINGS.map((s) => {
-          const sel = selected === s.id;
+      <p className={`${HELP} mb-9`}>Every plan is scoped to one care setting, because the outcomes, the operating conditions, and what has to be true all change with it. You can build a separate plan for another setting later.</p>
+      <div className="border-t border-[#E8E2DA]">
+        {SETTINGS.map(({ id, label, desc, Icon }) => {
+          const sel = selected === id;
           return (
-            <button key={s.id} type="button" onClick={() => onSelect(s.id)} className={cardCls(sel)}>
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className={`font-abridge text-[21px] leading-none ${sel ? "text-[#EA2C00]" : "text-[#1A1A1A]"}`}>{s.label}</p>
-                  <p className="text-[12px] text-[#8C8C8C] mt-1.5">{s.sub}</p>
-                </div>
-                {sel && <Check className="w-4 h-4 text-[#EA2C00] flex-shrink-0 mt-1" strokeWidth={2.5} />}
+            <button
+              key={id}
+              type="button"
+              onClick={() => onPick(id)}
+              data-testid={`attain-setting-${id}`}
+              className="group w-full text-left flex items-center gap-5 py-6 border-b border-[#E8E2DA] transition-all cursor-pointer hover:pl-2"
+            >
+              <Icon className={`w-6 h-6 flex-shrink-0 transition-colors ${sel ? "text-[#EA2C00]" : "text-[#B0A99E] group-hover:text-[#EA2C00]"}`} strokeWidth={1.6} />
+              <div className="min-w-0 flex-1">
+                <div className={`font-abridge text-[24px] sm:text-[26px] leading-tight transition-colors ${sel ? "text-[#EA2C00]" : "text-[#1A1A1A] group-hover:text-[#EA2C00]"}`}>{label}</div>
+                <div className="text-[14px] text-[#8C8073] mt-1 leading-[1.5]">{desc}</div>
               </div>
-              <p className="text-[13px] text-[#6B6B6B] mt-3 leading-snug">{s.desc}</p>
+              <ArrowRight className={`w-5 h-5 flex-shrink-0 transition-all ${sel ? "text-[#EA2C00]" : "text-[#C9BDAD] group-hover:text-[#EA2C00] group-hover:translate-x-1"}`} strokeWidth={1.8} />
             </button>
           );
         })}
