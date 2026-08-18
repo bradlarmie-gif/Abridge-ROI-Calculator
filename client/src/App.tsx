@@ -46,7 +46,10 @@ import ProformaEditorialPdfRoute from "@/components/proforma/ProformaEditorialPd
 import AppRatEditorialPdfRoute from "@/components/forecast/AppRatEditorialPdfRoute";
 import QuickRoiEditorialPdfRoute from "@/components/forecast/QuickRoiEditorialPdfRoute";
 import MethodologyEditorialPdfRoute from "@/components/methodology/MethodologyEditorialPdfRoute";
-import { ExploreFlow, type ExploreState, type ExploreCareSetting, type ExplorePhase } from "@/pages/explore";
+import { ExploreFlow, type ExploreState, type ExploreCareSetting, type ExplorePhase, DEFAULT_EXPLORE_STATE } from "@/pages/explore";
+import { loadSnapshot } from "@/pages/attain/attainStorage";
+import { resolveResult } from "@/lib/attain/discovery";
+import type { AttainSetting, GoalId } from "@/lib/attain/attainTypes";
 import AttainConsultPreview from "@/pages/attain/AttainConsultPreview";
 import AttainPlanPreview from "@/pages/attain/AttainPlanPreview";
 import AttainMatrixPreview from "@/pages/attain/preview/AttainMatrixPreview";
@@ -419,6 +422,11 @@ export default function App() {
   const [proformaConfig, setProformaConfig] = useState<ProformaConfig>(() => ({ ...DEFAULT_PROFORMA_CONFIG }));
   const [proformaAddCareSetting, setProformaAddCareSetting] = useState<ExploreCareSetting | undefined>(undefined);
   const [proformaEditExploreState, setProformaEditExploreState] = useState<ExploreState | undefined>(undefined);
+  // Discovery → ROI handoff: a seeded Explore state (setting + drivers pre-toggled)
+  // built from the Value Attainment Strategy discovery brief. Distinct from the
+  // proforma-edit atom so Explore behaves like a normal run (keeps the investment
+  // page, backs out to the financial hub), not a proforma edit.
+  const [exploreSeedState, setExploreSeedState] = useState<ExploreState | undefined>(undefined);
   const [measureFromForecastMode, setMeasureFromForecastMode] = useState(false);
 
   const handleAddToProforma = useCallback((snapshot: ProformaSettingSnapshot) => {
@@ -456,6 +464,7 @@ export default function App() {
     setProformaSettings([]);
     setProformaConfig({ ...DEFAULT_PROFORMA_CONFIG });
     setProformaAddCareSetting(undefined);
+    setExploreSeedState(undefined);
     setCurrentView("splash");
   }, []);
 
@@ -511,7 +520,46 @@ export default function App() {
   const handleBackToProforma = useCallback(() => {
     setProformaAddCareSetting(undefined);
     setProformaEditExploreState(undefined);
+    setExploreSeedState(undefined);
     navigateTo("proforma-hub");
+  }, [navigateTo]);
+
+  // "Build the ROI on this" from the discovery brief: read the saved discovery,
+  // map each goal's pinned lever to its Explore driver, and open editorial Explore
+  // pre-set to the setting with those drivers already toggled on. Proof-plays and
+  // honest-outs pin no lever, so they simply don't pre-enable a driver.
+  const handleBuildRoiFromDiscovery = useCallback(() => {
+    const snap = loadSnapshot();
+    const setting = snap?.setting as ExploreCareSetting | undefined;
+    if (!snap || !setting) { navigateTo("financial-hub"); return; }
+    const answers = snap.discovery ?? {};
+    const driverIds = new Set<string>();
+    for (const g of (snap.goals ?? []) as GoalId[]) {
+      const r = resolveResult(snap.setting as AttainSetting, g, answers);
+      if (r?.lever) driverIds.add(r.lever.driverId);
+    }
+    const td = { ...DEFAULT_EXPLORE_STATE.timeDriverInputs };
+    const dq = { ...DEFAULT_EXPLORE_STATE.docQualityInputs };
+    driverIds.forEach((id) => {
+      switch (id) {
+        case "patientAccess": td.patientAccessEnabled = true; break;
+        case "lwbsRecovery": td.edLwbsEnabled = true; break;
+        case "admissionCapture": td.edLwbsEnabled = true; td.edThroughputEnabled = true; break;
+        case "nursingOvertime": td.nursingOtEnabled = true; break;
+        case "wrvu": case "edEmLevel": dq.wrvuEnabled = true; break;
+        case "hccCapture": dq.hccEnabled = true; break;
+        case "denialPrevention": dq.denialsEnabled = true; break;
+        case "drgAccuracy": dq.ipDrgEnabled = true; break;
+        case "obsDefense": dq.ipObsDefenseEnabled = true; break;
+        case "nursingFalls": dq.nursingFallsEnabled = true; break;
+        case "nursingSepsis": dq.nursingSepsisEnabled = true; break;
+      }
+    });
+    const seeded: ExploreState = { ...DEFAULT_EXPLORE_STATE, careSetting: setting, timeDriverInputs: td, docQualityInputs: dq };
+    setProformaAddCareSetting(undefined);
+    setProformaEditExploreState(undefined);
+    setExploreSeedState(seeded);
+    navigateTo("explore");
   }, [navigateTo]);
 
   const hasSelection = selectionState.selectedSettings.length > 0;
@@ -539,6 +587,7 @@ export default function App() {
                   setExploreInitialSettings({});
                   setProformaAddCareSetting(undefined);
                   setProformaEditExploreState(undefined);
+                  setExploreSeedState(undefined);
                   navigateTo("explore");
                 }}
                 onSelectExpand={() => navigateTo("measure")}
@@ -580,7 +629,7 @@ export default function App() {
               <AttainFlowV2
                 mode="strategy"
                 chapters={["align", "strategy"]}
-                onFinish={() => navigateTo("financial-hub")}
+                onFinish={handleBuildRoiFromDiscovery}
                 onBackToJourney={() => navigateTo("strategy-hub")}
                 flowLabel="Value Attainment Strategy"
                 buildCta="Start discovery"
@@ -614,6 +663,7 @@ export default function App() {
                   setExploreInitialSettings({});
                   setProformaAddCareSetting(undefined);
                   setProformaEditExploreState(undefined);
+                  setExploreSeedState(undefined);
                   navigateTo("explore");
                 }}
               />
@@ -634,8 +684,8 @@ export default function App() {
                 onBackToProforma={(proformaAddCareSetting || proformaEditExploreState) ? handleBackToProforma : undefined}
                 initialCareSetting={proformaAddCareSetting || exploreInitialSettings.careSetting}
                 initialPhase={exploreInitialSettings.phase}
-                initialExploreState={proformaEditExploreState}
-                onAddToProforma={handleAddToProforma}
+                initialExploreState={proformaEditExploreState ?? exploreSeedState}
+                onAddToProforma={exploreSeedState ? undefined : handleAddToProforma}
                 disabledCareSettings={proformaSettings.map(s => s.careSetting as ExploreCareSetting)}
                 onDataRequest={() => navigateTo("data-request-builder")}
               />
