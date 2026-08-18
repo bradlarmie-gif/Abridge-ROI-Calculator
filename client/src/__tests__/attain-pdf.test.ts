@@ -290,7 +290,7 @@ describe("buildFromSnapshot marks retention proof-only (tracked, no dollar)", ()
     expect(detailRetention.proofOnly).toBe(true);
     // no replacement-cost assumptions that would imply a dollar
     expect(detailRetention.assumptions).toEqual([]);
-    expect(detailRetention.honesty.toLowerCase()).toContain("tracked as proof");
+    expect(detailRetention.honesty.toLowerCase()).toContain("tracked metrics");
 
     // and it never inflates the counted total (only Patient Access does)
     expect(data.total).toBe(data.categories.find((c) => c.name === "Patient Access")!.value);

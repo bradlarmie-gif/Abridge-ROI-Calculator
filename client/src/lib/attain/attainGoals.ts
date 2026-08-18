@@ -1192,7 +1192,7 @@ const nursingQuality: SettingGoalContent = {
   thesis1: "The documentation is timelier.",
   thesis2: "This is the plan to turn it into fewer events.",
   p1Lead:
-    "Nurses in this scope are charting closer to the point of care and less at the end of the shift. Timely documentation is the leading edge of safer care: bundles get charted when they are done, deterioration gets flagged when it appears. But timelier notes only prevent harm if the routine at the bedside changes with them. That is the link that usually goes unwatched.",
+    "Nurses in this scope are charting closer to the point of care and less at the end of the shift. Timely documentation is the leading edge of safer care: bundles get charted when they are done, deterioration gets flagged when it appears. But timelier notes only translate into safer care if the routine at the bedside changes with them. That is the link that usually goes unwatched.",
   worldCards: [
     { k: "HAPI rate", n: "2.0 / 1k", benchmark: true, f: "Benchmark, per 1,000 patient-days" },
     { k: "Bundle compliance", n: "95%+", benchmark: true, f: "Typical target" },
@@ -1227,15 +1227,15 @@ const nursingQuality: SettingGoalContent = {
   ],
   bendsCloser: "The first two links are where plans like this usually slip, so every link below gets an owner and a date.",
   fragile:
-    "Links 3 and 4 are flagged because timely charting only prevents harm if someone acts on what it shows. A gap visible on the screen still needs a nurse to close it at the bedside. Changing that routine is the one thing this plan holds. Value is counted as cost per prevented event, so it never inflates.",
+    "Links 3 and 4 are flagged because timely charting only translates into safer care if someone acts on what it shows. A gap visible on the screen still needs a nurse to close it at the bedside. Changing that routine is the one thing this plan holds. Value is counted as the documentation-attributable cost per event, so it never inflates.",
   hardestTitle: "Changing the Bedside Routine",
   hardestArrow: "↑",
   hardestLead:
-    "A timelier note does not prevent an injury on its own. It makes the missed bundle step or the early warning visible, but a person still has to act while there is time. Unless the unit routine changes to act on what the documentation shows, the timeliness is just a cleaner record of the same outcome. Prevention only holds if the bedside changes. We hold it three ways.",
+    "A timelier note does not change an outcome on its own. It makes the missed bundle step or the early warning visible, but a person still has to act while there is time. Unless the unit routine changes to act on what the documentation shows, the timeliness is just a cleaner record of the same outcome. The outcome only changes if the bedside changes. We hold it three ways.",
   splitLabel: "Where the timely documentation can go",
   splitLeft: ["A cleaner record", "The care event is charted on time, but the routine is unchanged. Better documentation of the same event rate."],
-  splitRight: ["A prevented event", "The gap is seen and closed at the bedside while it matters. This is harm avoided and cost avoided."],
-  splitCloser: "Both start from the same timely note. Only one prevents harm. Acting on it has to be built into the shift, not left to the audit.",
+  splitRight: ["An event caught in time", "The gap is seen and closed at the bedside while it matters. This is the documentation-attributable cost, counted conservatively."],
+  splitCloser: "Both start from the same timely note. Only one changes the outcome. Acting on it has to be built into the shift, not left to the audit.",
   barHead: "Where real-time gaps are being handled now",
   barAcc: 55,
   barTarget: 85,

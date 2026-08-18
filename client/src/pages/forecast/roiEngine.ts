@@ -196,10 +196,10 @@ const codingDriver = (id: "wrvu" | "edEmLevel", beforeDef: number, afterDef: num
 const denialDriver = (denialsCustomDef: number): RoiDriver => ({
   id: "denialPrevention",
   domain: "Revenue",
-  title: "Denial prevention",
+  title: "Medical Necessity Denials",
   fields: [
     { k: "medNecessityDenialRate", label: "Medical-necessity denial rate today", def: 3, suffix: "%", step: 0.1 },
-    { k: "denialsCustomPercent", label: "Share of those denials better documentation can prevent", def: denialsCustomDef, suffix: "%" },
+    { k: "denialsCustomPercent", label: "Share of those denials a complete note is positioned to reduce", def: denialsCustomDef, suffix: "%" },
     { k: "avgClaimValue", label: "Average claim value", def: 200, prefix: "$" },
     { k: "denialsRealization", label: "Realization (defensible share)", def: 60, suffix: "%" },
   ],

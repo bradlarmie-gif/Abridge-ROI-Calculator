@@ -1940,7 +1940,7 @@ exports[`Explore Narrative PDF — structural snapshot > renders the outpatient 
                             "children": [
                               {
                                 "kind": "text",
-                                "value": "E/M Accuracy & Denial Prevention",
+                                "value": "E/M Accuracy & Medical Necessity Denials",
                               },
                             ],
                             "kind": "primitive",

@@ -1024,12 +1024,12 @@ function getDriverLogic(driver: DriverCalculation, data: OutpatientPDFData): Dri
           {
             label: "STEP 2: DOCUMENTATION-RELATED",
             formula: `${formatNumber((inputs.totalDenials as number) || 0)} × ${inputs.docRelatedPercent || 50}% = ${formatNumber((inputs.docRelatedDenials as number) || 0)} doc-related`,
-            explanation: "These are the denials that better documentation can prevent.",
+            explanation: "These are the denials that a complete note is positioned to reduce.",
           },
           {
             label: "STEP 3: PREVENTABLE VALUE",
             formula: `${formatNumber((inputs.writtenOffDenials as number) || 0)} × ${inputs.abridgeCaptureRate || 70}% × $${inputs.avgClaimValue || 350} = ${formatCurrency(driver.value)}`,
-            explanation: "Denial prevention is among the most measurable value drivers. You can track before and after with clear attribution.",
+            explanation: "Medical Necessity Denials is among the most measurable value drivers. You can track before and after with clear attribution.",
           },
         ],
         calibration: "Most organizations write off 40-50% of denials without appeal. Complete documentation prevents the denial from occurring in the first place.",

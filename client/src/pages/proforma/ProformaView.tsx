@@ -168,7 +168,7 @@ function getScenarioDiffs(a: ProformaScenario, b: ProformaScenario): DiffItem[] 
     const denA = sa.fullExploreState?.docQualityInputs?.denialsEnabled;
     const denB = sb.fullExploreState?.docQualityInputs?.denialsEnabled;
     if (denA !== undefined && denB !== undefined && denA !== denB) {
-      diffs.push({ label: "Denial Prevention", valueA: denA ? "on" : "off", valueB: denB ? "on" : "off", category: "drivers" });
+      diffs.push({ label: "Medical Necessity Denials", valueA: denA ? "on" : "off", valueB: denB ? "on" : "off", category: "drivers" });
     }
 
     if (Math.abs(sa.utilizationPercent - sb.utilizationPercent) > 2) {

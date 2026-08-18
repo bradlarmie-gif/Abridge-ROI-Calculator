@@ -172,7 +172,7 @@ const outpatientRevenue: OutcomeTrace = {
 
 // ── Outpatient · Quality & Safety ────────────────────────────────────────────
 const outpatientQuality: OutcomeTrace = {
-  outcome: "Turn attention back to the patient into better, safer care.",
+  outcome: "Turn attention back to the patient, and to better, safer care.",
   outcomeSub: "Time not spent typing becomes time on the exam, the history, and the plan.",
   conditions: [
     { id: "c_present", label: "Providers are more present in the visit", helper: "Eye contact and attention return when the keyboard recedes.", defaultOn: true },
@@ -302,7 +302,7 @@ const edQuality: OutcomeTrace = {
   ],
   decisions: [
     { id: "d_target", label: "The safety outcomes to target are chosen", helper: "A focused set, not every metric at once.", defaultOn: true },
-    { id: "d_point", label: "Freed attention goes to protocol adherence", helper: "The recovered focus is spent on the steps that prevent harm.", defaultOn: true, fragile: true },
+    { id: "d_point", label: "Freed attention goes to protocol adherence", helper: "The recovered focus is spent on the steps that keep patients safe.", defaultOn: true, fragile: true },
     { id: "d_outcome", label: "Safety is measured as an outcome", helper: "The result, not just documentation of it." },
     { id: "d_roles", label: "Team roles in the protocols are defined", helper: "Who does what when the bundle fires." },
   ],
@@ -422,7 +422,7 @@ const inpatientQuality: OutcomeTrace = {
   ],
   decisions: [
     { id: "d_target", label: "The harm outcomes to target are chosen", helper: "A focused set with real room to improve.", defaultOn: true },
-    { id: "d_point", label: "Freed attention goes to protocols and rounding quality", helper: "The recovered focus is spent on the steps that prevent harm.", defaultOn: true, fragile: true },
+    { id: "d_point", label: "Freed attention goes to protocols and rounding quality", helper: "The recovered focus is spent on the steps that keep patients safe.", defaultOn: true, fragile: true },
     { id: "d_outcome", label: "Safety is measured as an outcome", helper: "The result, not documentation of it." },
     { id: "d_roles", label: "Roles in the protocols are defined", helper: "Who acts on an early warning." },
   ],
@@ -542,7 +542,7 @@ const nursingQuality: OutcomeTrace = {
   ],
   decisions: [
     { id: "d_target", label: "The harm outcomes to target are chosen", helper: "A focused set with real room to improve.", defaultOn: true },
-    { id: "d_point", label: "Freed time goes to rounding and protocols", helper: "The recovered time is spent on the steps that prevent harm.", defaultOn: true, fragile: true },
+    { id: "d_point", label: "Freed time goes to rounding and protocols", helper: "The recovered time is spent on the steps that keep patients safe.", defaultOn: true, fragile: true },
     { id: "d_outcome", label: "Safety is measured as an outcome", helper: "The result, not documentation of it." },
     { id: "d_roles", label: "Roles in the protocols are defined", helper: "Who does what on rounds and escalation." },
   ],

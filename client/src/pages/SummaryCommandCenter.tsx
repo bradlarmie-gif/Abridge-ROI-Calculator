@@ -99,12 +99,12 @@ const DRIVER_CATEGORIES: Record<string, { category: "time" | "documentation"; la
   wrvu: { category: "documentation", label: "Accurate Level of Service" },
   hcc_capture: { category: "documentation", label: "HCC Capture" },
   hcc: { category: "documentation", label: "HCC Risk Capture" },
-  denials: { category: "documentation", label: "Denial Prevention" },
+  denials: { category: "documentation", label: "Medical Necessity Denials" },
   nursingOvertime: { category: "time", label: "Overtime Reduction" },
   nursingRetention: { category: "time", label: "Nurse Retention" },
   nursingAgency: { category: "time", label: "Agency Reduction" },
-  nursingHAPI: { category: "documentation", label: "HAPI Prevention" },
-  nursingFalls: { category: "documentation", label: "Falls Prevention" },
+  nursingHAPI: { category: "documentation", label: "Pressure Injuries (HAPI)" },
+  nursingFalls: { category: "documentation", label: "Patient Falls" },
   nursingSurvey: { category: "documentation", label: "Survey & Compliance Readiness" },
   nursingCareCoordination: { category: "time", label: "Care Coordination" },
   nursingPatientExperience: { category: "time", label: "Patient Experience (HCAHPS)" },
@@ -134,7 +134,7 @@ const ED_DRIVER_LABELS: Record<string, string> = {
   overtime: "Physician Retention",
   workforce: "Provider Wellbeing",
   wrvu: "Level of Service Accuracy",
-  denials: "Denial Prevention",
+  denials: "Medical Necessity Denials",
 };
 
 function CustomTooltip({ active, payload, unitName = "beds", encountersPerUnit = 0, volumeUnit = "encounters" }: { active?: boolean; payload?: Array<{ payload: { providers: number; utilization: number; value: number; linearValue: number; actualValue: number; roi: string; milestoneLabel?: string | null; phase?: string; month?: number } }>; unitName?: string; encountersPerUnit?: number; volumeUnit?: string }) {
@@ -1074,7 +1074,7 @@ export default function SummaryCommandCenter({
                           <Shield className="w-5 h-5 text-[#EA2C00]" />
                         </div>
                         <div>
-                          <span className="font-semibold text-black block mb-1">Denial Prevention</span>
+                          <span className="font-semibold text-black block mb-1">Medical Necessity Denials</span>
                           <p className="text-sm text-slate-600 leading-relaxed">Medical necessity documented at admission is your first line of defense against payer audits.</p>
                         </div>
                       </div>

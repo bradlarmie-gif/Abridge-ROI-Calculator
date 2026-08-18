@@ -260,7 +260,7 @@ export default function EdInvestment({
                     {q}
                   </span>
                   {proofNote ? (
-                    <span className="text-[13px] text-[#8C8073] italic">{proofNote}</span>
+                    <span className="text-[9px] font-bold uppercase tracking-[0.12em] text-[#8C8073] border border-[#DAD3C8] rounded-full px-[7px] py-[2px]">Tracked</span>
                   ) : (
                     <span className="font-abridge text-[18px] text-[#1A1A1A]">{formatCurrency(valueByQuadrant[q])}</span>
                   )}

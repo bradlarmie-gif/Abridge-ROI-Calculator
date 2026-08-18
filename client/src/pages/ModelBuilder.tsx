@@ -225,14 +225,14 @@ interface DriverInputs {
   nursingHAPI: {
     annualAdmissions: number;  // Total annual admissions (10,000)
     hapiRate: number;          // % of admissions with HAPI (2.5%)
-    preventionRate: number;    // % of HAPIs documentation can prevent (10%)
+    preventionRate: number;    // % of HAPIs a complete note can reduce (10%)
     costPerHAPI: number;       // Cost per HAPI ($20,000)
   };
   nursingFalls: {
     annualAdmissions: number;  // Total annual admissions (10,000)
     fallsRate: number;         // Falls per 1,000 patient days (3.5)
     avgLOS: number;            // Average length of stay in days (4)
-    preventionRate: number;    // % of falls documentation can prevent (8%)
+    preventionRate: number;    // % of falls a complete note can reduce (8%)
     costPerFall: number;       // Average cost per fall ($6,500)
   };
   nursingAgency: {
@@ -311,8 +311,8 @@ const DRIVER_NAMES: Record<string, string> = {
   nursingOvertime: "Overtime Reduction",
   nursingAgency: "Agency & Travel Nurse Reduction",
   nursingRetention: "Nurse Retention",
-  nursingHAPI: "HAPI Prevention",
-  nursingFalls: "Falls Prevention",
+  nursingHAPI: "Pressure Injuries (HAPI)",
+  nursingFalls: "Patient Falls",
   nursingSurvey: "Survey & Compliance Readiness",
   nursingCareCoordination: "Care Coordination",
   nursingPatientExperience: "Patient Experience (HCAHPS)",
@@ -4453,7 +4453,7 @@ export default function ModelBuilder({
               </p>
             </div>
             <div>
-              <p className="text-sm font-medium text-blue-900">Denial Prevention</p>
+              <p className="text-sm font-medium text-blue-900">Medical Necessity Denials</p>
               <p className="text-sm text-blue-800">
                 Documentation gaps also cause post-submission denials—medical necessity not supported, level of care not justified, IP vs Obs status unclear. The same documentation that improves DRG accuracy also reduces denial write-offs.
               </p>
@@ -4489,7 +4489,7 @@ export default function ModelBuilder({
         {/* Final Result */}
         <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
           <div className="flex justify-between items-center">
-            <span className="font-medium text-[#111827]">Annual Revenue Protected (DRG Accuracy + Denial Prevention)</span>
+            <span className="font-medium text-[#111827]">Annual Revenue Protected (DRG Accuracy + Medical Necessity Denials)</span>
             <span className="font-mono font-bold text-emerald-600 text-xl" data-testid="inpatient-ccmcc-result">
               {formatCurrency(Math.round(annualValue))}
             </span>
@@ -6455,7 +6455,7 @@ export default function ModelBuilder({
                     <div className="flex gap-3 p-3 bg-white rounded-lg border border-slate-200">
                       <Shield className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
                       <div>
-                        <p className="text-sm font-semibold text-slate-800">Denial Prevention</p>
+                        <p className="text-sm font-semibold text-slate-800">Medical Necessity Denials</p>
                         <p className="text-xs text-slate-500">Medical necessity documented at admission is your first line of defense against payer audits.</p>
                       </div>
                     </div>
@@ -6560,7 +6560,7 @@ export default function ModelBuilder({
                     <div className="flex gap-3 p-3 bg-white rounded-lg border border-slate-200">
                       <Shield className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
                       <div>
-                        <p className="text-sm font-semibold text-slate-800">Denial Prevention</p>
+                        <p className="text-sm font-semibold text-slate-800">Medical Necessity Denials</p>
                         <p className="text-xs text-slate-500">Payer audits start with the admission note. Complete documentation from day one means stronger appeals.</p>
                       </div>
                     </div>

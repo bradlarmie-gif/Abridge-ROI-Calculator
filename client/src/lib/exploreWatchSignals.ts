@@ -130,7 +130,7 @@ export const WATCH_SIGNALS: Partial<
     },
 
     Quality: {
-      dollar: "harm avoided across HAPI, falls, CAUTI, CLABSI, and sepsis",
+      dollar: "the documentation-attributable share of harm-event cost across HAPI, falls, CAUTI, CLABSI, and sepsis",
       signals: [
         {
           name: "Present-on-admission documentation accuracy",
@@ -150,7 +150,7 @@ export const WATCH_SIGNALS: Partial<
           signal:
             "The share of Braden reassessments completed on schedule is measurable per unit.",
           matters:
-            "Protocols act on the documented score. When the score is current, the intervention it triggers lands inside the window where a stage-1 injury is still preventable.",
+            "Protocols act on the documented score. When the score is current, the intervention it triggers acts on live information rather than a stale entry.",
         },
         {
           name: "Line & catheter daily-necessity documentation",
@@ -160,7 +160,7 @@ export const WATCH_SIGNALS: Partial<
           signal:
             "The rate of documented daily necessity reviews, and the device-days that follow, is trackable.",
           matters:
-            "Every device-day removed is one fewer chance for a CLABSI or CAUTI. The documented review is the timestamped prompt that leads it.",
+            "The documented daily necessity review is the timestamped prompt supporting the care team's timely removal decisions.",
         },
         {
           name: "Early-warning-score documentation lag",

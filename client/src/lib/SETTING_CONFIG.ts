@@ -147,7 +147,7 @@ export const SETTING_CONFIG: Record<CareSettingType, LeverConfig[]> = {
     // 🛡️ QUALITY & SAFETY BENEFITS
     {
       id: "nursingHAPI",
-      label: "HAPI Prevention",
+      label: "Pressure Injuries (HAPI)",
       category: "qualitySafety",
       description: "Reduce hospital-acquired pressure injuries",
       driverSummary: "Potential value—indirect causal link",
@@ -158,7 +158,7 @@ export const SETTING_CONFIG: Record<CareSettingType, LeverConfig[]> = {
     },
     {
       id: "nursingFalls",
-      label: "Falls Prevention",
+      label: "Patient Falls",
       category: "qualitySafety",
       description: "Reduce patient falls through real-time risk assessment",
       driverSummary: "Potential value—indirect causal link",

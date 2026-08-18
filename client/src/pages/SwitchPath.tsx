@@ -2698,7 +2698,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
                             {/* Denials - Direct Pathway */}
                             {driverId === 'denials' && values.gapBreakdown.direct && (
                               <PathwayCard
-                                title="Denial Prevention"
+                                title="Medical Necessity Denials"
                                 enabled={!!driverAssumptions.denials.denialsEnabled}
                                 onToggle={(enabled) => updateDriverAssumption('denials', 'denialsEnabled', enabled ? 1 : 0)}
                                 canToggle={true}

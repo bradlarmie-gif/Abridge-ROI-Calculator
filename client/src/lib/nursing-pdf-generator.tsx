@@ -532,8 +532,8 @@ function Page1({ data }: { data?: NursingPDFData }) {
         <View style={styles.limitsColumn}>
           <Text style={styles.limitsHeader}>[ ] WHAT WE ENABLE</Text>
           <Text style={styles.limitsSubtext}>Supportive only</Text>
-          <Text style={styles.limitsBullet}>- Falls prevention</Text>
-          <Text style={styles.limitsBullet}>- HAPI prevention</Text>
+          <Text style={styles.limitsBullet}>- Patient Falls</Text>
+          <Text style={styles.limitsBullet}>- Pressure Injuries (HAPI)</Text>
           <Text style={styles.limitsBullet}>- HCAHPS improvement</Text>
           <Text style={styles.limitsBullet}>- Clinical outcomes</Text>
         </View>
@@ -601,7 +601,7 @@ function Page2() {
           </Text>
         </View>
         <View style={[styles.card, styles.cardWithAccent, styles.column, { borderTopColor: brand.potentialAccent }]}>
-          <Text style={styles.cardTitle}>HAPI PREVENTION</Text>
+          <Text style={styles.cardTitle}>PRESSURE INJURIES (HAPI)</Text>
           <Badge type="potential" />
           <Text style={styles.cardLabel}>MECHANISM</Text>
           <Text style={styles.cardText}>
@@ -616,7 +616,7 @@ function Page2() {
       
       <View style={styles.twoColumn}>
         <View style={[styles.card, styles.cardWithAccent, styles.column, { borderTopColor: brand.potentialAccent }]}>
-          <Text style={styles.cardTitle}>FALLS PREVENTION</Text>
+          <Text style={styles.cardTitle}>PATIENT FALLS</Text>
           <Badge type="potential" />
           <Text style={styles.cardLabel}>MECHANISM</Text>
           <Text style={styles.cardText}>

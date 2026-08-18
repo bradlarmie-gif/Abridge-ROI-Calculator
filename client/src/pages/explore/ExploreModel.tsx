@@ -94,10 +94,10 @@ export function buildExploreProformaDrivers(
   if (nursingOtValue > 0) drivers.push({ id: "nursingOt", name: "OT Reduction", value: nursingOtValue, category: "time", quadrant: "Capacity", onset: "delayed" as const });
   if (wrvuValue > 0) drivers.push({ id: "wrvu", name: "E/M Level Accuracy", value: wrvuValue, category: "documentation", quadrant: "Revenue", onset: "immediate" as const });
   if (hccValue > 0) drivers.push({ id: "hcc", name: "HCC Recapture", value: hccValue, category: "documentation", quadrant: "Revenue", onset: "longTerm" as const });
-  // Denial prevention is claims-cycle revenue too (a corrected note has to move
+  // Medical Necessity Denials is claims-cycle revenue too (a corrected note has to move
   // through the appeal / rebill cycle), so it ramps "delayed" everywhere — the
   // Explore chart already treats it this way.
-  if (denialsValue > 0) drivers.push({ id: "denials", name: "Denial Prevention", value: denialsValue, category: "documentation", quadrant: "Revenue", onset: "delayed" as const });
+  if (denialsValue > 0) drivers.push({ id: "denials", name: "Medical Necessity Denials", value: denialsValue, category: "documentation", quadrant: "Revenue", onset: "delayed" as const });
   // DRG accuracy and Obs defense are claims-cycle revenue (corrected documentation
   // has to clear coding and billing before it lands in paid claims), so they ramp
   // "delayed" here too — matching the Explore model's "when it lands" chart.
@@ -814,15 +814,15 @@ export default function ExploreModel({
               case 'nursingOvertime':
                 return `Documentation is supposed to happen in the gaps between patient care — but those gaps shrink when acuity rises and ratios tighten. Documentation debt accumulates through the shift and gets paid off on overtime at the end. Across ${fmt(providers)} nurses, this driver models ${fmtCur(value)} in potential value from moving charting into the patient interaction and reducing post-shift overtime.`;
               case 'nursingHapi':
-                return `Real-time skin and turning documentation ensures risk factors are captured when observed, not reconstructed at end of shift. CMS does not reimburse for hospital-acquired pressure injuries — this driver models ${fmtCur(value)} in prevented HAPI costs annually.`;
+                return `Real-time skin and turning documentation captures risk factors when they are observed rather than reconstructed at end of shift. CMS does not reimburse for hospital-acquired pressure injuries, so accurate present-on-admission and ongoing documentation protects reimbursement. This driver models ${fmtCur(value)} in documentation-attributable HAPI cost exposure annually.`;
               case 'nursingFalls':
-                return `Real-time risk assessments and Morse score updates enable earlier preventive action. CMS does not reimburse for hospital-acquired fall injuries — this driver models ${fmtCur(value)} in prevented fall costs annually.`;
+                return `Real-time risk assessments and current Morse scores keep the documented picture up to date for the care team. CMS does not reimburse for hospital-acquired fall injuries, so timely documentation protects reimbursement. This driver models ${fmtCur(value)} in documentation-attributable fall cost exposure annually.`;
               case 'nursingCauti':
-                return `Daily catheter-necessity documentation supports earlier removal and bundle adherence. CMS penalizes CAUTI rates through the HAC Reduction Program — this driver models ${fmtCur(value)} in prevented infection costs annually.`;
+                return `Daily catheter-necessity documentation supports the care team's timely removal decisions and bundle adherence. CMS penalizes CAUTI rates through the HAC Reduction Program, so complete documentation supports the metrics behind those penalties. This driver models ${fmtCur(value)} in documentation-attributable CAUTI cost exposure annually.`;
               case 'nursingClabsi':
-                return `Bundle compliance and timely line documentation reduce central line bloodstream infections. CMS penalizes CLABSI rates through the HAC Reduction Program — this driver models ${fmtCur(value)} in prevented infection costs annually.`;
+                return `Bundle compliance and timely line documentation support the central-line practices the care team follows. CMS penalizes CLABSI rates through the HAC Reduction Program, so complete documentation supports the metrics behind those penalties. This driver models ${fmtCur(value)} in documentation-attributable CLABSI cost exposure annually.`;
               case 'nursingSepsis':
-                return `Time-stamped vitals and intervention documentation lift SEP-1 bundle compliance rates. Earlier recognition and better documentation support both outcomes and compliance reporting — this driver models ${fmtCur(value)} in avoided excess costs annually.`;
+                return `Time-stamped vitals and intervention documentation support SEP-1 bundle compliance rates. Earlier recognition and complete documentation support both outcomes and compliance reporting. This driver models ${fmtCur(value)} in documentation-attributable excess-cost exposure annually.`;
               default:
                 return '';
             }
@@ -1133,7 +1133,7 @@ export default function ExploreModel({
       docCardDescription: 'When documentation is complete and accurate, downstream revenue follows.',
       docDriver1: 'E/M Level Accuracy',
       docDriver2: 'HCC Capture',
-      docDriver3: 'Denial Prevention',
+      docDriver3: 'Medical Necessity Denials',
       showHCC: true,
     },
     ed: {
@@ -1146,7 +1146,7 @@ export default function ExploreModel({
       docCardDescription: 'Complete documentation supports accurate coding and can help reduce claim denials.',
       docDriver1: 'E&M Level Accuracy',
       docDriver2: '', // No HCC for ED
-      docDriver3: 'Denial Prevention',
+      docDriver3: 'Medical Necessity Denials',
       showHCC: false,
     },
     inpatient: {

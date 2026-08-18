@@ -748,7 +748,7 @@ export interface RevenueLadderModel {
 const REVENUE_PATH_WHO_ACTS: Record<RevenuePathId, string> = {
   hcc: "Risk adjustment / coding team",
   em: "Providers and the coding team",
-  denials: "Denial prevention / billing team",
+  denials: "Medical Necessity Denials / billing team",
 };
 
 /** Who has to act on the E/M path, worded for the setting: ED names the ED
@@ -835,7 +835,7 @@ export function deriveRevenueLadder(
       groundLabel: isED ? "ED medical-necessity denials a year" : "Medical-necessity denials a year",
       groundValue: c.deniedEncounters > 0 ? `${fmtInt(c.deniedEncounters)} denials / yr` : "Not set yet",
       groundSet: c.deniedEncounters > 0,
-      ceilingLabel: "Denials the note can prevent, not payer rules or authorization",
+      ceilingLabel: "Denials a complete note can reduce, not payer rules or authorization",
       ceilingCount: c.deniedEncounters,
       ceilingUnit: "denials / yr",
       capturedLabel: "Denials prevented with complete documentation",

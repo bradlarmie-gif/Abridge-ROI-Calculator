@@ -1106,7 +1106,7 @@ function opPathLinks(
         id: "denials-mednec-rate",
         label: "Medical-necessity denial rate",
         unit: "%",
-        helper: "The share of eligible claims denied for medical necessity, the denials a complete note can prevent, not payer rules or authorization.",
+        helper: "The share of eligible claims denied for medical necessity, the denials a complete note can reduce, not payer rules or authorization.",
         baseline: `${fmtPct(c.denialRate)}%`,
         baselineTag: rateTyped ? "data" : "benchmark",
         defaultTarget: c.preventablePct > 0 ? `under ${fmtPct(remaining)}%` : "lower than today",

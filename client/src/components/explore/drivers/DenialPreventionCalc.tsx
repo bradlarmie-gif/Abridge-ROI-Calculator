@@ -176,7 +176,7 @@ export default function DenialPreventionCalc({ state, updateDocQualityInputs, to
           </div>
           <div className="h-px bg-[#888888] my-2" />
           <div className="flex justify-between font-semibold">
-            <span className="text-black">Annual Denial Prevention Value</span>
+            <span className="text-black">Annual Medical Necessity Denials Value</span>
             {ready
               ? <span className="text-[#EA2C00]" data-testid="text-denials-net">{formatCurrency(value)}</span>
               : <span className="text-sm text-[#8C7E6E]" data-testid="text-denials-net">Enter {need}</span>}

@@ -256,7 +256,7 @@ export function generateDriverExplanation(
           `Prevented: ${formatCurrency(docDenials)} × ${preventPct}% = ${formatCurrency(driverValue)}`,
         ],
         meaning: `Documentation-related denials cost your practice approximately ${formatCurrency(docDenials)} annually. With better upfront documentation, ${formatPercent(preventPct)} of these can be prevented.`,
-        whyItMatters: "Denial prevention is more valuable than denial management. Each avoided denial saves not just the revenue at risk, but the administrative cost of appeals (averaging $25-45 per claim).",
+        whyItMatters: "Medical Necessity Denials is more valuable than denial management. Each avoided denial saves not just the revenue at risk, but the administrative cost of appeals (averaging $25-45 per claim).",
         assumptions: [
           {
             label: 'Denial Rate',

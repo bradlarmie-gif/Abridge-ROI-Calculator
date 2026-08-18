@@ -692,7 +692,7 @@ export function deriveQualityLadder(baseline: AttainBaseline, values: LeverValue
       ceilingLabel:
         e.id === "sepsis"
           ? "Cases the documentation can move, the rest occur despite best practice"
-          : "Events a fully committed program can prevent, the rest occur despite best practice",
+          : "Events a fully committed program can address, the rest occur despite best practice",
       ceilingCount: e.ceilingCount,
       ceilingUnit: e.id === "sepsis" ? "cases / yr" : "events / yr",
       capturedLabel: "Events this plan's committed interventions prevent",

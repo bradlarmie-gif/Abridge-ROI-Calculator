@@ -1441,7 +1441,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     valueArc: { signal: { timing: 'Weeks 4-8', metric: 'After-shift EHR time ↓' }, trend: { timing: 'Month 6-12', metric: 'Burnout score ↓' }, proof: { timing: 'Month 12-18', metric: 'Likelihood to stay ↑' } },
   },
 
-  // ED Revenue (qualitative, 3 drivers: Signal → Trend → Proof for E&M Accuracy + Denial Prevention)
+  // ED Revenue (qualitative, 3 drivers: Signal → Trend → Proof for E&M Accuracy + Medical Necessity Denials)
   {
     id: 'edEmLevelDistribution',
     label: 'Average E&M Level',

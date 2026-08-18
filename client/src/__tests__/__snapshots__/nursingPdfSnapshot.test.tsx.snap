@@ -4713,7 +4713,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                                         "children": [
                                           {
                                             "kind": "text",
-                                            "value": "CAUTI Prevention",
+                                            "value": "CAUTI",
                                           },
                                         ],
                                         "kind": "primitive",
@@ -5271,7 +5271,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                                         "children": [
                                           {
                                             "kind": "text",
-                                            "value": "CLABSI Prevention",
+                                            "value": "CLABSI",
                                           },
                                         ],
                                         "kind": "primitive",
@@ -5840,7 +5840,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                                         "children": [
                                           {
                                             "kind": "text",
-                                            "value": "Sepsis Bundle Compliance",
+                                            "value": "Sepsis Bundle (SEP-1)",
                                           },
                                         ],
                                         "kind": "primitive",
@@ -8189,7 +8189,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                                 "children": [
                                   {
                                     "kind": "text",
-                                    "value": "HAPI Prevention",
+                                    "value": "Pressure Injuries (HAPI)",
                                   },
                                 ],
                                 "kind": "primitive",
@@ -8236,7 +8236,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                                 "children": [
                                   {
                                     "kind": "text",
-                                    "value": "Falls Prevention",
+                                    "value": "Patient Falls",
                                   },
                                 ],
                                 "kind": "primitive",
@@ -8283,7 +8283,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                                 "children": [
                                   {
                                     "kind": "text",
-                                    "value": "CAUTI Prevention",
+                                    "value": "CAUTI",
                                   },
                                 ],
                                 "kind": "primitive",
@@ -8330,7 +8330,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                                 "children": [
                                   {
                                     "kind": "text",
-                                    "value": "CLABSI Prevention",
+                                    "value": "CLABSI",
                                   },
                                 ],
                                 "kind": "primitive",
@@ -8377,7 +8377,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                                 "children": [
                                   {
                                     "kind": "text",
-                                    "value": "Sepsis Bundle Compliance",
+                                    "value": "Sepsis Bundle (SEP-1)",
                                   },
                                 ],
                                 "kind": "primitive",
@@ -16646,7 +16646,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                                         "children": [
                                           {
                                             "kind": "text",
-                                            "value": "CAUTI Prevention",
+                                            "value": "CAUTI",
                                           },
                                         ],
                                         "kind": "primitive",
@@ -17204,7 +17204,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                                         "children": [
                                           {
                                             "kind": "text",
-                                            "value": "CLABSI Prevention",
+                                            "value": "CLABSI",
                                           },
                                         ],
                                         "kind": "primitive",
@@ -17773,7 +17773,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                                         "children": [
                                           {
                                             "kind": "text",
-                                            "value": "Sepsis Bundle Compliance",
+                                            "value": "Sepsis Bundle (SEP-1)",
                                           },
                                         ],
                                         "kind": "primitive",
@@ -20122,7 +20122,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                                 "children": [
                                   {
                                     "kind": "text",
-                                    "value": "HAPI Prevention",
+                                    "value": "Pressure Injuries (HAPI)",
                                   },
                                 ],
                                 "kind": "primitive",
@@ -20169,7 +20169,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                                 "children": [
                                   {
                                     "kind": "text",
-                                    "value": "Falls Prevention",
+                                    "value": "Patient Falls",
                                   },
                                 ],
                                 "kind": "primitive",
@@ -20216,7 +20216,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                                 "children": [
                                   {
                                     "kind": "text",
-                                    "value": "CAUTI Prevention",
+                                    "value": "CAUTI",
                                   },
                                 ],
                                 "kind": "primitive",
@@ -20263,7 +20263,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                                 "children": [
                                   {
                                     "kind": "text",
-                                    "value": "CLABSI Prevention",
+                                    "value": "CLABSI",
                                   },
                                 ],
                                 "kind": "primitive",
@@ -20310,7 +20310,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                                 "children": [
                                   {
                                     "kind": "text",
-                                    "value": "Sepsis Bundle Compliance",
+                                    "value": "Sepsis Bundle (SEP-1)",
                                   },
                                 ],
                                 "kind": "primitive",

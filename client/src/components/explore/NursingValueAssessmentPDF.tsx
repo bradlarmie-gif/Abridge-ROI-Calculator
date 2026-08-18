@@ -1027,10 +1027,10 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
             if (data.retention.enabled) quantified.push({ label: "RN Retention", value: fmtCurrency(data.retention.value), domain: "Workforce" });
             if (data.agency.enabled) quantified.push({ label: "Agency Reduction", value: fmtCurrency(data.agency.value), domain: "Workforce" });
             if (data.overtime.enabled) quantified.push({ label: "OT Reduction", value: fmtCurrency(data.overtime.value), domain: "Capacity" });
-            if (data.hapi.enabled) quantified.push({ label: "HAPI Prevention", value: fmtCurrency(data.hapi.value), domain: "Quality" });
-            if (data.falls.enabled) quantified.push({ label: "Fall Prevention", value: fmtCurrency(data.falls.value), domain: "Quality" });
-            if (data.cauti.enabled) quantified.push({ label: "CAUTI Prevention", value: fmtCurrency(data.cauti.value), domain: "Quality" });
-            if (data.clabsi.enabled) quantified.push({ label: "CLABSI Prevention", value: fmtCurrency(data.clabsi.value), domain: "Quality" });
+            if (data.hapi.enabled) quantified.push({ label: "Pressure Injuries (HAPI)", value: fmtCurrency(data.hapi.value), domain: "Quality" });
+            if (data.falls.enabled) quantified.push({ label: "Patient Falls", value: fmtCurrency(data.falls.value), domain: "Quality" });
+            if (data.cauti.enabled) quantified.push({ label: "CAUTI", value: fmtCurrency(data.cauti.value), domain: "Quality" });
+            if (data.clabsi.enabled) quantified.push({ label: "CLABSI", value: fmtCurrency(data.clabsi.value), domain: "Quality" });
             if (data.sepsis.enabled) quantified.push({ label: "Sepsis Bundle", value: fmtCurrency(data.sepsis.value), domain: "Quality" });
 
             const tracked: Array<{ label: string; domain: string }> = [];
@@ -1344,7 +1344,7 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
               <View style={{ flexDirection: "row" }}>
                 {data.cauti.enabled ? (
                   <CompactDriverCard
-                    name="CAUTI Prevention"
+                    name="CAUTI"
                     value={`${fmtCurrency(data.cauti.value)} (pot.)`}
                     body="Daily catheter-necessity documentation supports earlier removal and bundle adherence."
                     mathRows={[
@@ -1362,7 +1362,7 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
                 ) : null}
                 {data.clabsi.enabled ? (
                   <CompactDriverCard
-                    name="CLABSI Prevention"
+                    name="CLABSI"
                     value={`${fmtCurrency(data.clabsi.value)} (pot.)`}
                     body="Timely line documentation supports bundle compliance and is associated with fewer central-line bloodstream infections."
                     mathRows={[
@@ -1383,7 +1383,7 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
               <View style={{ flexDirection: "row" }}>
                 {data.sepsis.enabled ? (
                   <CompactDriverCard
-                    name="Sepsis Bundle Compliance"
+                    name="Sepsis Bundle (SEP-1)"
                     value={`${fmtCurrency(data.sepsis.value)} (pot.)`}
                     body="Time-stamped vitals and antibiotic documentation lift SEP-1 compliance. The model captures only the documentation-lag share."
                     mathRows={[
@@ -1918,11 +1918,11 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
                 : "Tracked"
             }
             rows={[
-              { label: "HAPI Prevention", value: data.hapi.enabled ? fmtCurrency(data.hapi.value) : "—" },
-              { label: "Falls Prevention", value: data.falls.enabled ? fmtCurrency(data.falls.value) : "—" },
-              { label: "CAUTI Prevention", value: data.cauti.enabled ? fmtCurrency(data.cauti.value) : "—" },
-              { label: "CLABSI Prevention", value: data.clabsi.enabled ? fmtCurrency(data.clabsi.value) : "—" },
-              { label: "Sepsis Bundle Compliance", value: data.sepsis.enabled ? fmtCurrency(data.sepsis.value) : "—" },
+              { label: "Pressure Injuries (HAPI)", value: data.hapi.enabled ? fmtCurrency(data.hapi.value) : "—" },
+              { label: "Patient Falls", value: data.falls.enabled ? fmtCurrency(data.falls.value) : "—" },
+              { label: "CAUTI", value: data.cauti.enabled ? fmtCurrency(data.cauti.value) : "—" },
+              { label: "CLABSI", value: data.clabsi.enabled ? fmtCurrency(data.clabsi.value) : "—" },
+              { label: "Sepsis Bundle (SEP-1)", value: data.sepsis.enabled ? fmtCurrency(data.sepsis.value) : "—" },
               { label: "HAC Penalty Exposure", value: "Risk display only" },
               { label: "HCAHPS / Patient Experience", value: data.hcahpsEnabled ? "Qualitative" : "—" },
               { label: "Early Deterioration Documentation", value: data.medErrorEnabled ? "Qualitative" : "—" },

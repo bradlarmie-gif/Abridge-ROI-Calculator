@@ -971,7 +971,7 @@ export const REVENUE_INTEGRATIONS = [
   'Specialty-level analysis identifies where documentation has the biggest revenue impact',
   'CDI strategy is informed by ambient documentation patterns and gaps',
   'Documentation quality data supports payer contract negotiations or rate discussions',
-  'Denial prevention is proactive — documentation gaps identified before claims submitted',
+  'Medical Necessity Denials is proactive — documentation gaps identified before claims submitted',
   'Documentation-driven revenue is a line item in financial planning and forecasting',
   'Revenue cycle, CDI, and clinical leadership have a shared view of documentation-to-revenue performance',
 ];

@@ -80,7 +80,7 @@ export const DRIVER_FIELDS: DriverFieldGroup[] = [
   },
   {
     driverId: 'denialPrevention',
-    driverLabel: 'Denial Prevention',
+    driverLabel: 'Medical Necessity Denials',
     quadrant: 'Revenue',
     fields: [
       { id: 'opDenialRate', label: 'Medical necessity denial rate (%)', description: 'Percentage of outpatient claims denied for medical necessity or documentation reasons.', who: 'Revenue cycle director', example: '4%', type: 'percent' },
@@ -214,7 +214,7 @@ export const DRIVER_FIELDS: DriverFieldGroup[] = [
   },
   {
     driverId: 'nursingHapi',
-    driverLabel: 'HAPI Prevention',
+    driverLabel: 'Pressure Injuries (HAPI)',
     quadrant: 'Quality',
     fields: [
       { id: 'nursingHapiRate', label: 'HAPI rate (per 1,000 patient days)', description: 'Current hospital-acquired pressure injury rate per 1,000 inpatient days.', who: 'Quality / infection control / nursing leadership', example: '1.5', type: 'number' },
@@ -223,7 +223,7 @@ export const DRIVER_FIELDS: DriverFieldGroup[] = [
   },
   {
     driverId: 'nursingFalls',
-    driverLabel: 'Falls Prevention',
+    driverLabel: 'Patient Falls',
     quadrant: 'Quality',
     fields: [
       { id: 'nursingFallsRate', label: 'Fall rate (per 1,000 patient days)', description: 'Current inpatient fall rate per 1,000 patient days.', who: 'Quality or patient safety', example: '3.5', type: 'number' },
@@ -232,7 +232,7 @@ export const DRIVER_FIELDS: DriverFieldGroup[] = [
   },
   {
     driverId: 'nursingCauti',
-    driverLabel: 'CAUTI Prevention',
+    driverLabel: 'CAUTI',
     quadrant: 'Quality',
     fields: [
       { id: 'nursingCautiRate', label: 'CAUTI rate (per 1,000 catheter days)', description: 'Current catheter-associated UTI rate per 1,000 catheter days.', who: 'Quality / infection control', example: '1.2', type: 'number' },
@@ -241,7 +241,7 @@ export const DRIVER_FIELDS: DriverFieldGroup[] = [
   },
   {
     driverId: 'nursingClabsi',
-    driverLabel: 'CLABSI Prevention',
+    driverLabel: 'CLABSI',
     quadrant: 'Quality',
     fields: [
       { id: 'nursingClabsiRate', label: 'CLABSI rate (per 1,000 central line days)', description: 'Current central line-associated bloodstream infection rate per 1,000 central line days.', who: 'Quality / infection control', example: '0.8', type: 'number' },
@@ -250,7 +250,7 @@ export const DRIVER_FIELDS: DriverFieldGroup[] = [
   },
   {
     driverId: 'nursingSepsis',
-    driverLabel: 'Sepsis Bundle Compliance',
+    driverLabel: 'Sepsis Bundle (SEP-1)',
     quadrant: 'Quality',
     fields: [
       { id: 'nursingSepsisRate', label: 'Sepsis cases per 1,000 patient days', description: 'Current sepsis case volume per 1,000 inpatient patient days.', who: 'Quality or clinical operations', example: '2.1', type: 'number' },

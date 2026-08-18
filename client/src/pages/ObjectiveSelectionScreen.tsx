@@ -4261,7 +4261,7 @@ export default function ObjectiveSelectionScreen({
                                 )}
                                 {selectedLeverIds.has("denials") && (
                                   <>
-                                    <div>• Denial prevention</div>
+                                    <div>• Medical Necessity Denials</div>
                                     <div className="text-right tabular-nums">50%</div>
                                     <div className="text-right tabular-nums">66%</div>
                                     <div className="text-right tabular-nums">80%</div>

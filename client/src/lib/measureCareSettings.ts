@@ -1748,10 +1748,10 @@ export const NURSING_METRICS: MetricDefinition[] = [
     source: 'partner',
     sourceLabel: 'Quality Department',
     description: 'NDNQI nursing-sensitive indicator. Falls per 1,000 patient days.',
-    whyItMatters: 'Falls correlate with documentation gaps — incomplete risk assessments, missed reassessments.',
+    whyItMatters: 'Falls correlate with documentation gaps: incomplete risk assessments, missed reassessments.',
     plainEnglishTemplate:
       'Patient fall rate is down from {{before}} to {{after}} per 1,000 patient days. ' +
-      'Each prevented fall avoids an average of $14,000–$30,000 in direct care costs, plus regulatory exposure.',
+      'A fall with injury runs an average of $14,000–$30,000 in direct care costs, plus regulatory exposure.',
     roiQuadrant: 'Quality',
     shortDescription: 'Falls per 1,000 patient days. NDNQI nursing-sensitive indicator.',
     exploreVisibility: 'driver-quantified',

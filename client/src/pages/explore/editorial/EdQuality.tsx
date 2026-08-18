@@ -271,7 +271,7 @@ function NursingQualityScreen({
       label: "CAUTI",
       kind: "counted",
       mechanism:
-        "Point-of-care necessity reviews create a timestamped record supporting the care team.s timely removal decisions.",
+        "Point-of-care necessity reviews create a timestamped record supporting the care team's timely removal decisions.",
       enabled: Boolean(dq.nursingCautiEnabled),
       onToggle: () => {
         const current = Boolean(dq.nursingCautiEnabled);
@@ -363,7 +363,7 @@ function NursingQualityScreen({
       kind: "tracked",
       mechanism:
         "Current vitals and assessments documented in real time let escalation protocols act on the patient in front of you, not a stale chart.",
-      signals: ["Rapid-response triggers fire on current data", "Rescue happens earlier"],
+      signals: ["Rapid-response triggers fire on current data", "Deterioration is documented as it happens"],
     },
   ];
 

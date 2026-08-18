@@ -47,7 +47,7 @@ const DRIVER_NAMES: Record<string, string> = {
   workforce: "Workforce Retention",
   wrvu: "wRVU / Level of Service",
   hcc: "HCC Capture",
-  denials: "Denial Prevention",
+  denials: "Medical Necessity Denials",
 };
 
 const PACE_MONTHS: Record<string, number> = {

@@ -28,7 +28,7 @@ const DRIVER_NAMES: Record<string, string> = {
   workforce: "Clinician Retention",
   wrvu: "Accurate Level of Service",
   overtime: "Overtime & Locum Savings",
-  denials: "Denial Prevention",
+  denials: "Medical Necessity Denials",
   hcc: "HCC Capture",
 };
 

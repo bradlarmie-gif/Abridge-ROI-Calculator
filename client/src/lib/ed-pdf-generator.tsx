@@ -808,7 +808,7 @@ const narrativeContent = {
     },
     denials: {
       theory: "ED claims are frequently denied for documentation gaps—missing clinical information, insufficient medical necessity, incomplete MDM. Preventing denials upfront is more efficient than appeals.",
-      implication: (value: number) => `Denial prevention at ${formatCurrency(value)} is highly measurable—you can track ED-specific denials before and after with clear attribution to documentation improvement.`,
+      implication: (value: number) => `Medical Necessity Denials at ${formatCurrency(value)} is highly measurable—you can track ED-specific denials before and after with clear attribution to documentation improvement.`,
       benchmark: "ED denial rates run 8-12%, with 50-60% stemming from documentation insufficiency.",
     },
   },
@@ -871,7 +871,7 @@ const ED_DRIVER_LABELS: Record<string, string> = {
   overtime: "Physician Retention",
   workforce: "Provider Wellbeing",
   wrvu: "Level of Service Accuracy",
-  denials: "Denial Prevention",
+  denials: "Medical Necessity Denials",
 };
 
 function getEDDriverName(driverId: string, defaultName: string): string {
@@ -1617,7 +1617,7 @@ const MethodologyPage = ({ data, pageNum, totalPages }: { data: EDPDFData; pageN
             <Text style={styles.valueAmount}>75%</Text>
           </View>
           <View style={[styles.valueRow, styles.valueRowLast]}>
-            <Text style={styles.valueLabel}>Denial prevention realization</Text>
+            <Text style={styles.valueLabel}>Medical Necessity Denials realization</Text>
             <Text style={styles.valueAmount}>70%</Text>
           </View>
         </View>

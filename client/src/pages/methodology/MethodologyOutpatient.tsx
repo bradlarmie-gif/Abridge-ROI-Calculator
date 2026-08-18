@@ -291,7 +291,7 @@ const opDomainCards: OPDomainCardData[] = [
   {
     domain: 'REVENUE',
     number: 'Domain 3 of 4',
-    badge: 'E/M Accuracy & Denial Prevention',
+    badge: 'E/M Accuracy & Medical Necessity Denials',
     northStar: 'Revenue Per Visit',
     direction: '↑',
     northStarSub: "E/M coding in outpatient runs on Medical Decision Making. When documentation captures the full complexity of the clinical conversation, codes reflect what was actually managed — and revenue per visit reflects the work actually done.",

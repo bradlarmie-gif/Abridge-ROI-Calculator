@@ -37,8 +37,8 @@ const ED_DRIVER_NAMES: Record<string, string> = {
   edThroughput: "Patient Throughput (LWBS)",
   edRetention: "Physician Retention",
   edLevelOfService: "Level-of-Service Accuracy",
-  edDenials: "Denial Prevention",
-  edDenialReduction: "Denial Prevention",
+  edDenials: "Medical Necessity Denials",
+  edDenialReduction: "Medical Necessity Denials",
   edScribe: "Scribe Cost Reduction",
 };
 

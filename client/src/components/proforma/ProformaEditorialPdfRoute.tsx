@@ -74,8 +74,8 @@ function sampleVariant(n: number): ProformaPdfData {
         { id: "patientAccess", name: "Bedside time returned", value: 160000, quadrant: "Capacity", onset: "immediate", category: "time" },
         { id: "retention", name: "Nurse retention", value: 240000, quadrant: "Workforce", onset: "phased", category: "time" },
         { id: "locum", name: "Agency & travel avoidance", value: 130000, quadrant: "Workforce", onset: "phased", category: "time" },
-        { id: "nursingHapi", name: "HAPI prevention", value: 90000, quadrant: "Revenue", onset: "delayed", category: "documentation" },
-        { id: "nursingFalls", name: "Fall prevention", value: 80000, quadrant: "Revenue", onset: "delayed", category: "documentation" },
+        { id: "nursingHapi", name: "Pressure Injuries (HAPI)", value: 90000, quadrant: "Revenue", onset: "delayed", category: "documentation" },
+        { id: "nursingFalls", name: "Patient Falls", value: 80000, quadrant: "Revenue", onset: "delayed", category: "documentation" },
         { id: "nursingSepsis", name: "Sepsis recognition", value: 110000, quadrant: "Revenue", onset: "delayed", category: "documentation" },
       ]),
     );

@@ -86,10 +86,10 @@ export const LEVER_LINE: Record<string, string> = {
   drgAccuracy: "the DRG weight the acuity earns, through fuller capture of complications and comorbidities (the CC/MCC that set severity).",
   obsDefense: "the inpatient stays you defend against observation and medical-necessity downgrades.",
   nursingOvertime: "the documentation-driven overtime you stop paying when charting fits in the shift.",
-  nursingFalls: "the cost of the falls with injury that closer attention helps prevent.",
-  nursingHapi: "the cost of the pressure injuries that reliable, documented prevention helps avoid.",
-  nursingClabsi: "the cost of the central-line infections that tighter documented practice helps prevent.",
-  nursingSepsis: "the excess cost of sepsis caught late, reduced by faster documented response.",
+  nursingFalls: "the cost of falls with injury, the share where closer documented attention makes the difference.",
+  nursingHapi: "the cost of pressure injuries, the share where reliable, documented assessment makes the difference.",
+  nursingClabsi: "the cost of central-line infections, the share where tighter documented practice makes the difference.",
+  nursingSepsis: "the excess cost of sepsis caught late, the share a faster documented response can reduce.",
   providerWellbeing: "the replacement cost you avoid by keeping the people you have. This is usually carried as a proof signal and counted only when you choose to.",
   nursingRetention: "the replacement cost you avoid by keeping nurses. This is usually carried as a proof signal and counted only when you choose to.",
 };
@@ -409,32 +409,32 @@ const edQuality = proofQuality({
 });
 
 const inpatientQuality = proofQuality({
-  briefIntro: "You said quality. Inpatient, this shows up as fewer harm events and cleaner safety measures, tracked rather than booked as a hard dollar.",
-  proofLine: "fewer harm events and cleaner safety measures, tracked as metrics.",
+  briefIntro: "You said quality. Inpatient, this shows up as a stronger safety record and cleaner safety measures, tracked rather than booked as a hard dollar.",
+  proofLine: "a stronger safety record and cleaner safety measures, tracked as metrics.",
   roles: ["Quality leadership", "Hospitalist and nursing leads", "Patient safety"],
-  caveat: "Harm prevention only moves if the freed attention reaches rounding and the protocols, and someone acts on early signals.",
+  caveat: "The safety measures only move if the freed attention reaches rounding and the protocols, and someone acts on the early signals the record surfaces.",
   outcomes: [
-    { id: "hac", label: "Hospital-acquired conditions", capture: "preventing hospital-acquired conditions" },
+    { id: "hac", label: "Hospital-acquired conditions", capture: "improving hospital-acquired-condition rates" },
     { id: "readmit", label: "Readmissions", capture: "reducing readmissions" },
-    { id: "events", label: "Safety events", capture: "preventing safety events" },
+    { id: "events", label: "Safety events", capture: "improving safety-event rates" },
   ],
 });
 
 const nursingQuality: DiscoveryScript = {
   entry: "outcome",
-  briefIntro: "You said quality. In nursing this is the one place documentation time converts into prevented harm you can actually cost.",
+  briefIntro: "You said quality. In nursing this is the one place documentation time most directly supports the safety measures you can actually cost.",
   roles: ["Nursing quality", "Unit managers", "Infection prevention"],
-  caveat: "A timely chart only prevents harm if someone acts at the bedside. The freed time has to reach the room.",
+  caveat: "A timely chart only helps if someone acts at the bedside. The freed time has to reach the room.",
   questions: {
     outcome: {
-      eyebrow: "The harm",
-      prompt: "Which harm are you focused on?",
+      eyebrow: "The focus",
+      prompt: "Which safety outcome are you focused on?",
       teach: "Each has a different amount of documentation leverage, so we are honest about which move most.",
       options: [
-        { id: "falls", label: "Falls with injury", capture: "preventing falls with injury", lever: { driverId: "nursingFalls", label: "Falls Prevention" }, next: "gate" },
-        { id: "hapi", label: "Pressure injuries", teach: "Mostly a turn-schedule and staffing story, so we track this rather than book it.", capture: "preventing pressure injuries", proof: "supporting pressure-injury prevention, which is mostly a turn-schedule and staffing story, so we track it rather than book it as a dollar.", next: "gate" },
-        { id: "clabsi", label: "Central-line infections", teach: "The smallest documentation lever of the four, so we track it, not book it.", capture: "preventing central-line infections", proof: "supporting central-line-infection prevention, the smallest documentation lever of the four, so we track it rather than book it.", next: "gate" },
-        { id: "sepsis", label: "Sepsis caught late", capture: "catching sepsis earlier", lever: { driverId: "nursingSepsis", label: "Sepsis Response" }, next: "gate" },
+        { id: "falls", label: "Falls with injury", capture: "reducing falls with injury", lever: { driverId: "nursingFalls", label: "Patient Falls" }, next: "gate" },
+        { id: "hapi", label: "Pressure injuries", teach: "Mostly a turn-schedule and staffing story, so we track this rather than book it.", capture: "reducing pressure injuries", proof: "supporting pressure-injury documentation, which is mostly a turn-schedule and staffing story, so we track it rather than book it as a dollar.", next: "gate" },
+        { id: "clabsi", label: "Central-line infections", teach: "The smallest documentation lever of the four, so we track it, not book it.", capture: "reducing central-line infections", proof: "supporting central-line documentation, the smallest documentation lever of the four, so we track it rather than book it.", next: "gate" },
+        { id: "sepsis", label: "Sepsis caught late", capture: "catching sepsis earlier", lever: { driverId: "nursingSepsis", label: "Sepsis Bundle (SEP-1)" }, next: "gate" },
       ],
     },
     gate: {
@@ -450,9 +450,9 @@ const nursingQuality: DiscoveryScript = {
     act: {
       eyebrow: "The fragile link",
       prompt: "Will the freed time reach the bedside?",
-      teach: "Prevention only moves if the recovered time goes to rounding and the protocols.",
+      teach: "This only moves if the recovered time goes to rounding and the protocols.",
       options: [
-        { id: "yes", label: "Yes, into rounding and prevention", capture: "the freed time will go to rounding and prevention", next: BRIEF },
+        { id: "yes", label: "Yes, into rounding and the protocols", capture: "the freed time will go to rounding and the protocols", next: BRIEF },
         { id: "unsure", label: "Not sure", capture: "whether freed time reaches the bedside is still open", next: BRIEF },
         { id: "no", label: "Honestly, not reliably", capture: "the freed time is unlikely to reach the bedside reliably", honest: true, next: BRIEF },
       ],
@@ -792,12 +792,12 @@ nursingRevenue.thesis = (t) => {
 };
 
 nursingQuality.thesis = (t) => {
-  if (t.pick("gate") === "little") return `You were honest that this harm largely happens despite good care, so we would not book a dollar against it. Worth naming before the ROI.`;
-  const focus = { falls: "falls with injury", hapi: "pressure injuries", clabsi: "central-line infections", sepsis: "catching sepsis earlier" }[t.pick("outcome") ?? ""] ?? "preventing harm";
+  if (t.pick("gate") === "little") return `You were honest that this largely happens despite good care, so we would not book a dollar against it. Worth naming before the ROI.`;
+  const focus = { falls: "falls with injury", hapi: "pressure injuries", clabsi: "central-line infections", sepsis: "catching sepsis earlier" }[t.pick("outcome") ?? ""] ?? "the safety measures";
   const money = t.lever ? `The money is ${LEVER_LINE[t.lever.driverId]}` : t.proof ? `This one is ${t.proof}` : "";
   const act = t.pick("act");
-  const hinge = act === "no" ? "But the freed time is unlikely to reach the bedside reliably, which caps how much lands." : act === "unsure" ? "The open question is whether the freed time actually reaches the bedside." : "And the freed time will go to rounding and prevention, which is what converts it.";
-  return `Nursing quality is the one place documentation time turns into prevented harm you can actually cost. You are focused on ${focus}. ${money} ${hinge}`;
+  const hinge = act === "no" ? "But the freed time is unlikely to reach the bedside reliably, which caps how much lands." : act === "unsure" ? "The open question is whether the freed time actually reaches the bedside." : "And the freed time will go to rounding and the protocols, which is what converts it.";
+  return `Nursing quality is the one place documentation time most directly supports the safety measures you can actually cost. You are focused on ${focus}. ${money} ${hinge}`;
 };
 
 // answer-derived additions to the table

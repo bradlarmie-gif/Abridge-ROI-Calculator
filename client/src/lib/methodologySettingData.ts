@@ -129,7 +129,7 @@ export const settingData: Record<MethodologyCareSetting, SettingPDFData> = {
       },
       {
         domain: "REVENUE",
-        badge: "Coding Integrity & Denial Prevention",
+        badge: "Coding Integrity & Medical Necessity Denials",
         northStar: "Revenue Per Visit",
         direction: "↑",
         sub: "E/M level 4 and 5 codes require documentation of High Medical Decision Making: the differential reasoning, the data reviewed, the risk assessment. That clinical thinking happens in the conversation; under time pressure, it rarely makes it into the note. A provider works through a careful differential on a high-acuity chest pain, orders appropriately, and then writes 'chest pain workup, 12-lead ordered' because three more patients are waiting. Ambient capture preserves the MDM as it happens. The coding change isn't upcoding: it's the note finally reflecting what was actually managed.",
@@ -493,7 +493,7 @@ export const settingData: Record<MethodologyCareSetting, SettingPDFData> = {
         badge: "Patient Safety & Bundle Compliance",
         northStar: "Nursing-Sensitive Harm Events",
         direction: "↓",
-        sub: "A care bundle completed but not documented is, for compliance measurement, a bundle step not completed. CAUTI prevention protocols, CLABSI insertion checklists, fall prevention interventions, and HAPI repositioning logs all run through nursing documentation. The mechanism is specific to each harm type: HAPIs are prevented when Stage 1 skin changes are documented while still Stage 1, triggering repositioning before injury progresses. Falls are prevented when Morse Fall Scale scores are updated at point of care after medication changes and ambulation events, not recalled at shift end. CAUTIs are prevented when daily catheter necessity documentation creates the workflow trigger that prompts removal. CLABSIs are prevented when bundle elements are timestamped as performed, creating an auditable compliance record. SEP-1 compliance is protected when antibiotics are documented at administration rather than recalled later: a 45-minute documentation lag can flip a compliant case to non-compliant in the quality system.",
+        sub: "A care bundle completed but not documented is, for compliance measurement, a bundle step not completed. CAUTI protocols, CLABSI insertion checklists, fall interventions, and HAPI repositioning logs all run through nursing documentation. The mechanism is specific to each measure: a Stage 1 skin change documented while still Stage 1 lets the team act on repositioning before it progresses. A Morse Fall Scale score updated at point of care, after medication changes and ambulation events rather than recalled at shift end, keeps the risk picture current for the team acting on it. Daily catheter necessity documentation creates the workflow trigger that prompts the removal decision. Timestamped bundle elements create an auditable compliance record. SEP-1 compliance is protected when antibiotics are documented at administration rather than recalled later: a 45-minute documentation lag can flip a compliant case to non-compliant in the quality system.",
         matterMostIf:
           "Your CNO or VP of Patient Safety is tracking nursing-sensitive harm event rates as a safety program goal, your hospital participates in the CMS HAC Reduction Program, or your patient safety program has specific targets for fall rates, HAPI incidence, or bundle compliance that nursing documentation quality directly enables.",
         alsoNote:
@@ -615,7 +615,7 @@ export const settingData: Record<MethodologyCareSetting, SettingPDFData> = {
       },
       {
         domain: "REVENUE",
-        badge: "E/M Accuracy & Denial Prevention",
+        badge: "E/M Accuracy & Medical Necessity Denials",
         northStar: "Revenue Per Visit",
         direction: "↑",
         sub: "Under AMA 2021 E/M guidelines, a Level 4 or Level 5 code requires documentation of High Medical Decision Making: the number and complexity of problems addressed, the data reviewed and analyzed, the risk of complications. That clinical reasoning happens in the conversation: the differential the provider worked through, the records they reviewed, the risk they discussed. Under time pressure, providers code defensively at Level 3 because documenting the MDM elements takes longer than documenting the action. Ambient capture records the MDM as it's happening. The code change isn't upcoding: it's the note finally reflecting the work that was actually done.",

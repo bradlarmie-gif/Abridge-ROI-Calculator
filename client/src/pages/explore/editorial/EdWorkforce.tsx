@@ -145,7 +145,7 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
             key={driver.id}
             title={driver.label}
             subtitle={driver.shortDescription}
-            hint="Turn on to value the departures documentation relief can prevent."
+            hint="Turn on to value the departures a lighter documentation load can help avoid."
             onToggle={() => toggleEnabled(driver)}
             testId={`ed-toggle-${driver.id}`}
           />
@@ -425,7 +425,7 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
             key={driver.id}
             title={driver.label}
             subtitle={driver.shortDescription}
-            hint="Turn on to value the RN departures documentation relief can prevent."
+            hint="Turn on to value the RN departures a lighter documentation load can help avoid."
             onToggle={() => toggleEnabled(driver)}
             testId={`ed-toggle-${driver.id}`}
           />

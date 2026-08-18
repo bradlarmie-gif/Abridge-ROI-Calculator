@@ -304,7 +304,7 @@ const edDomainCards: EDDomainCardData[] = [
   {
     domain: 'REVENUE',
     number: 'Domain 3 of 4',
-    badge: 'Coding Integrity & Denial Prevention',
+    badge: 'Coding Integrity & Medical Necessity Denials',
     northStar: 'Revenue Per Visit',
     direction: '↑',
     northStarSub: 'The revenue story in ED runs on two tracks — E/M coding lift and denial reduction. Neither alone tells the full picture. Both are driven by documentation completeness.',
@@ -347,7 +347,7 @@ const edDomainCards: EDDomainCardData[] = [
         detail: {
           cols: [
             { l: 'What it captures', b: 'The clinical reasoning behind diagnostic and treatment decisions — the "why" of the encounter, not just the "what." Payers require this to approve medical necessity.' },
-            { l: 'Where it shows up', b: 'Denial prevention: notes with clear medical necessity reasoning are far less likely to trigger payer denials. CDI: better reasoning reduces CDI query loops on admissions.' },
+            { l: 'Where it shows up', b: 'Medical Necessity Denials: notes with clear medical necessity reasoning are far less likely to trigger payer denials. CDI: better reasoning reduces CDI query loops on admissions.' },
             { l: "Why it's separate", b: 'Medical necessity evidence and E/M level support are related but distinct. A note can support a high E/M level but still lack the clinical reasoning needed to withstand a payer audit.' },
           ],
         },

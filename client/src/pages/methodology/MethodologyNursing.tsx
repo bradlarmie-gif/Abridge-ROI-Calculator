@@ -86,7 +86,7 @@ const nursingDomainCards: NursingDomainCardData[] = [
     badge: 'Shift Completion & Staffing Efficiency',
     northStar: 'Nursing Overtime',
     direction: '↓',
-    northStarSub: "Nursing is the only care setting where documentation time savings convert directly to a payroll dollar. Nurses are hourly. Every minute of post-shift charting that ambient flowsheet capture eliminates is a minute that doesn't appear on the overtime register — multiplied across a panel of 5–6 patients per shift.",
+    northStarSub: "Nursing is the only care setting where documentation time savings convert directly to a payroll dollar. Nurses are hourly. Every minute of post-shift charting that ambient flowsheet capture eliminates is a minute that doesn't appear on the overtime register, multiplied across a panel of 5–6 patients per shift.",
     matterBoxes: [
       {
         tag: 'COO / CNO',
