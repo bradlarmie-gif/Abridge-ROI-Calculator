@@ -610,10 +610,12 @@ function StackedBar({ data }: { data: ProformaPdfData }): JSX.Element {
 function HowValueInner({ data }: { data: ProformaPdfData }): JSX.Element {
   const years = data.years;
   const sum = (f: (y: PfYearRow) => number) => years.reduce((a, y) => a + f(y), 0);
-  // The 3-year ROI reconciles with THIS table's rows: it's the final year's cumulative ROI
-  // (total value ÷ total ongoing investment, the same basis as the Investment and Net rows above),
-  // so the row builds monotonically instead of the term ROI reading lower than the last year.
-  const roi3 = years.length ? years[years.length - 1].roi : data.roi;
+  // The final column is a 3-YEAR TOTAL column (Investment and Net above it are 3-year sums),
+  // so the ROI in it must be the true term ratio: total value ÷ total investment. Anything else
+  // (e.g. the last year's annual ROI) fails to foot against the Investment/Net totals in its own
+  // column and contradicts the cover's 3-year ROI. total value = total net + total investment.
+  const totalInvestment = sum((y) => y.investment);
+  const roi3 = totalInvestment > 0 ? (sum((y) => y.net) + totalInvestment) / totalInvestment : data.roi;
   return (
     <>
       <RunningHeader label={`The ${data.termYears}-year case · ${data.org}`} num="02" />

@@ -242,9 +242,19 @@ export default function AttainFlowV2({
           {phase === "partner" && (
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#EA2C00] mb-3">Step 1 · Start here</p>
-              <h1 className="font-abridge text-[32px] md:text-[42px] text-[#1A1A1A] leading-[1.1] mb-5">Start with the outcome.<br className="hidden md:inline" /> Trace back to what makes it real.</h1>
-              <p className="text-[16px] text-[#4A4A4A] leading-relaxed max-w-[600px] mb-3">Before any ROI or financial model, a value attainment strategy maps how the outcome actually happens: the operating conditions, the decisions, the behaviors, and the dependencies that have to hold for it to land.</p>
-              <p className="text-[16px] text-[#4A4A4A] leading-relaxed max-w-[600px] mb-10">The financial work comes later and proves it. First, who are we building this for?</p>
+              {mode === "strategy" ? (
+                <>
+                  <h1 className="font-abridge text-[32px] md:text-[42px] text-[#1A1A1A] leading-[1.1] mb-5">Start with the outcome.<br className="hidden md:inline" /> Trace back to what makes it real.</h1>
+                  <p className="text-[16px] text-[#4A4A4A] leading-relaxed max-w-[600px] mb-3">Before any ROI or financial model, a value attainment strategy maps how the outcome actually happens: the operating conditions, the decisions, the behaviors, and the dependencies that have to hold for it to land.</p>
+                  <p className="text-[16px] text-[#4A4A4A] leading-relaxed max-w-[600px] mb-10">The financial work comes later and proves it. First, who are we building this for?</p>
+                </>
+              ) : (
+                <>
+                  <h1 className="font-abridge text-[32px] md:text-[42px] text-[#1A1A1A] leading-[1.1] mb-5">Turn the strategy into a plan<br className="hidden md:inline" /> you can run.</h1>
+                  <p className="text-[16px] text-[#4A4A4A] leading-relaxed max-w-[600px] mb-3">This turns the value attainment strategy into an owned, step-by-step plan: the metrics that prove it, the owner on each one, the plays that move them, and the review cadence that keeps it honest.</p>
+                  <p className="text-[16px] text-[#4A4A4A] leading-relaxed max-w-[600px] mb-10">You track attainment against it over time. First, who are we building this for?</p>
+                </>
+              )}
               <label className="block text-[11px] font-bold uppercase tracking-[1.5px] text-[#8C8073] mb-3">Partner or organization</label>
               <input value={partner} onChange={(e) => setPartner(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && canContinue) goNext(); }} placeholder="e.g., Northgate Medical Group" autoFocus className="w-full max-w-[520px] bg-transparent border-0 border-b-2 border-[#E0D9CE] rounded-none px-0 pb-2 font-abridge text-[26px] text-[#1A1A1A] outline-none transition-colors focus:border-[#EA2C00] placeholder:text-[#C4BCB0] placeholder:font-sans placeholder:text-[18px]" />
               {partner.trim() && loadPlanByName(partner)?.setting && <p className="text-[12px] text-[#EA2C00] mt-3">A saved plan for this name will pick up where you left off.</p>}

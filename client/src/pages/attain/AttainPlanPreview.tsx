@@ -187,7 +187,11 @@ export default function AttainPlanPreview() {
         <p className="text-[14px] text-[#6B6B6B] leading-relaxed mb-5 max-w-[600px]">The value in play and the outcomes you named. Everything we measure below connects back to these.</p>
         <div className="rounded-2xl border border-[#E8E2DA] p-5 mb-14">
           <div className="flex flex-wrap items-baseline gap-x-6 gap-y-1.5 mb-4 pb-4 border-b border-[#E8E2DA]">
-            <span className="text-[13px] text-[#3A3A3A]">Value in play <span className="font-abridge text-[20px] text-[#EA2C00]">{fmt$(CARRIED.valueInPlay)}/yr</span></span>
+            {CARRIED.valueInPlay > 0 ? (
+              <span className="text-[13px] text-[#3A3A3A]">Value in play <span className="font-abridge text-[20px] text-[#EA2C00]">{fmt$(CARRIED.valueInPlay)}/yr</span></span>
+            ) : (
+              <span className="text-[13px] text-[#8C8C8C]">Value in play <span className="font-abridge text-[20px] text-[#B4A896]">pending your numbers</span></span>
+            )}
             <span className="text-[13px] text-[#8C8C8C]">across {CARRIED.specialties.join(" + ")}</span>
           </div>
           <div className="space-y-2.5">

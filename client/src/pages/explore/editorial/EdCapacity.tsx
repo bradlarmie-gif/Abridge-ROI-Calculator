@@ -459,8 +459,8 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
           <MathCascade
             steps={[
               { label: "Providers", running: formatNum(eff) },
-              { label: "Freed time they reinvest", factor: { value: td.capacityRealizationPercent ?? 25, onChange: (v: number) => updateTimeDriverInputs({ capacityRealizationPercent: v }), suffix: "%" }, running: `${formatNum1(hrsPerProvWk * reinvest)} hrs/wk` },
-              { label: "At this visit length", factor: { value: td.visitDuration ?? 30, onChange: (v: number) => updateTimeDriverInputs({ visitDuration: v }), suffix: "min" }, running: `${formatNum1(visitsPerWk)} visits/wk` },
+              { label: "Freed time they reinvest", factor: { value: td.capacityRealizationPercent ?? 25, onChange: (v: number) => updateTimeDriverInputs({ capacityRealizationPercent: v }), suffix: "%" }, running: `${formatNum1(visitsPerWk * eff * visitHrs)} hrs/wk` },
+              { label: "At this visit length", factor: { value: td.visitDuration ?? 30, onChange: (v: number) => updateTimeDriverInputs({ visitDuration: v }), suffix: "min" }, running: `${formatNum1(visitsPerWk * eff)} visits/wk` },
               { label: "Across the year", running: `${formatNum(visitsPerWk * eff * 48)} visits`, note: "× 48 weeks" },
               { label: "Margin per visit", factor: { value: td.revenuePerVisit, onChange: (v: number) => updateTimeDriverInputs({ revenuePerVisit: v }), prefix: "$" }, running: formatCurrency(paValue), final: true },
             ]}

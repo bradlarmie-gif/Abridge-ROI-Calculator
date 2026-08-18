@@ -1207,7 +1207,7 @@ export default function ProformaWorkbench({ settings, config, onUpdateSetting, o
           <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
             {scoreboard.map((m) => (
               <div key={m.k}>
-                <AnimatedMoney value={m.v} className="font-abridge" style={{ fontSize: 18, lineHeight: 1, color: m.coral ? T.coral : T.ink, display: "block" }} />
+                <AnimatedMoney value={m.v} className="font-abridge" style={{ fontSize: 18, lineHeight: 1, color: m.v === 0 ? T.off : (m.coral ? T.coral : T.ink), display: "block" }} />
                 <div style={{ fontSize: 9, color: T.faint, textTransform: "uppercase", letterSpacing: "0.07em", fontWeight: 800, marginTop: 3 }}>{m.k}</div>
               </div>
             ))}

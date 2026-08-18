@@ -113,7 +113,7 @@ function DomainCard({ d }: { d: MethodDomain }) {
             {dr.mode === "dollar" ? (
               <span className="flex-shrink-0 text-[12px] font-extrabold text-[#B02200] bg-[#FBEAE4] px-[11px] py-[6px] rounded-[8px] tracking-[0.02em]">$ / yr</span>
             ) : (
-              <span className="flex-shrink-0 text-[10px] font-extrabold tracking-[0.1em] uppercase text-[#8C8073] border border-[#E8E2DA] rounded-full px-[10px] py-[5px]">Watch</span>
+              <span className="flex-shrink-0 text-[10px] font-extrabold tracking-[0.1em] uppercase text-[#8C8073] border border-[#E8E2DA] rounded-full px-[10px] py-[5px]">Tracked</span>
             )}
           </div>
         ))}
