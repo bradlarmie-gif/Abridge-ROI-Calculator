@@ -1225,7 +1225,7 @@ function InvestmentPage({ data }: { data: ExplorePDFData }): JSX.Element {
             <span style={{ fontSize: 13, fontWeight: 700, color: C.label }}>
               True Year-1 cash outlay
             </span>
-            <span className="font-abridge" style={{ fontSize: 19, color: C.coral }}>
+            <span className="font-abridge" style={{ fontSize: 19, color: C.ink }}>
               {fmtFull(year1Cash)}
             </span>
           </div>

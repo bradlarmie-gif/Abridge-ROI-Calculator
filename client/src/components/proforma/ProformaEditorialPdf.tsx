@@ -691,7 +691,7 @@ function HowValueInner({ data }: { data: ProformaPdfData }): JSX.Element {
           <tr>
             <td>Cumulative net</td>
             {years.map((y, i) => <td className="num" key={i}>{fmtM(y.cumulativeNet)}</td>)}
-            <td style={{ color: "var(--off)" }}>—</td>
+            <td className="num" style={{ color: "var(--off)" }}>n/a</td>
           </tr>
           <tr>
             <td>Return on investment</td>
@@ -772,7 +772,7 @@ function CashFlowCurve({ data }: { data: ProformaPdfData }): JSX.Element {
 
 function InvestmentInner({ data }: { data: ProformaPdfData }): JSX.Element {
   const years = data.years;
-  const cell = (v: number) => (v === 0 ? "—" : fmtMoney(v));
+  const cell = (v: number) => (v === 0 ? "$0" : fmtMoney(v));
   return (
     <>
       <RunningHeader label={`The ${data.termYears}-year case · ${data.org}`} num="03" />

@@ -167,9 +167,9 @@ function ReportCover({ data }: { data: AppRatPdfData }): JSX.Element {
   const subtitle = `${model.vendorCount} ${model.vendorCount === 1 ? "tool" : "tools"} · ${fmtShort(model.stackTotal)} / yr documentation spend`;
   return (
     <div style={{ width: 816, height: 1056, background: "#FFFFFF", breakAfter: "page", position: "relative", overflow: "hidden" }}>
-      <img src={abridgeLogoRed} alt="Abridge" style={{ position: "absolute", top: 60, left: 64, width: 120 }} />
+      <img src={abridgeLogoRed} alt="Abridge" style={{ position: "absolute", top: 60, left: 60, width: 120 }} />
       <img src={abridgeSymbol} alt="" style={{ position: "absolute", bottom: 92, right: 10, width: 340, opacity: 0.06 }} />
-      <div style={{ position: "absolute", inset: 0, padding: "0 64px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+      <div style={{ position: "absolute", inset: 0, padding: "0 60px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
         <div style={{ fontSize: 11, color: "#666666", letterSpacing: "3px", textTransform: "uppercase", marginBottom: 16 }}>
           App Rationalization
         </div>
@@ -214,7 +214,7 @@ function PitchPage({ data }: { data: AppRatPdfData }): JSX.Element {
         <span className="font-abridge" style={{ fontSize: 20, color: C.coral }}>ABRIDGE</span>
         <span style={sLbl}>App Rationalization</span>
       </div>
-      <div style={{ marginTop: 128 }}>
+      <div style={{ marginTop: 88 }}>
         <div style={sEyebrow}>The consolidation case</div>
         <h2 className="font-abridge" style={{ fontSize: 44, lineHeight: 1.06, color: C.ink, margin: "10px 0 0", maxWidth: 680, letterSpacing: "-0.5px" }}>
           {fmtShort(model.freed)} a year of your stack consolidates onto the Abridge you already run.
@@ -254,7 +254,7 @@ function PitchPage({ data }: { data: AppRatPdfData }): JSX.Element {
           </div>
         ))}
       </div>
-      <div style={{ marginTop: "auto" }}>
+      <div style={{ marginTop: 52 }}>
         <div style={{ ...sLbl, marginBottom: 6 }}>Inside this plan</div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", columnGap: 44 }}>
           {toc.map((r) => (
@@ -265,7 +265,7 @@ function PitchPage({ data }: { data: AppRatPdfData }): JSX.Element {
           ))}
         </div>
       </div>
-      <div style={{ marginTop: 20 }}>
+      <div style={{ marginTop: "auto", paddingTop: 20 }}>
         <div style={{ ...sRule, marginBottom: 9 }} />
         <div style={{ display: "flex", justifyContent: "space-between" }}>
           <span style={{ fontSize: 10, color: C.faint }}>Prepared for {data.orgName || "your team"} · {data.date}</span>
@@ -469,12 +469,13 @@ function StepChart({ items }: { items: AppRatItem[] }): JSX.Element | null {
       )}
       {nodes.map((n) => <circle key={n.id} cx={n.x} cy={n.y} r={5} fill={C.coral} stroke="#fff" strokeWidth={2.5} />)}
       <text x={x0 - 8} y={yf(FULL) + 4} textAnchor="end" fontSize={10} fontWeight={700} fill={C.faint}>{fmtShort(FULL)}</text>
+      <text x={x0 - 8} y={(yTop + yBase) / 2 + 3} textAnchor="end" fontSize={10} fill={C.off}>{fmtShort(FULL / 2)}</text>
       <text x={x0 - 8} y={yBase + 3} textAnchor="end" fontSize={10} fill={C.off}>$0</text>
       {marks.map((m) => (
         <text key={m} x={xf(m)} y={yBase + 18} textAnchor={m === 0 ? "start" : m === axisMax ? "end" : "middle"} fontSize={9} fill={C.faint}>{m === 0 ? "now" : renewalDateLabel(m)}</text>
       ))}
       <text x={x1} y={yTop - 14} textAnchor="end" fontSize={9} fontWeight={700} fill={C.coral}>{fmtShort(FULL)} / yr · full run-rate</text>
-      {showYear1 && <text x={y1x + 5} y={Math.max(y1y - 6, yTop + 13)} fontSize={9} fontWeight={700} fill={C.muted}>Year 1 · {fmtShort(year1)}</text>}
+      {showYear1 && <text x={y1x + 5} y={Math.max(y1y - 14, yTop + 13)} fontSize={9} fontWeight={700} fill={C.muted}>Year 1 · {fmtShort(year1)}</text>}
     </svg>
   );
 }

@@ -5,6 +5,7 @@ import {
 } from "@/lib/methodologyContent";
 import abridgeLogoRed from "@assets/abridge-logo-wordmark-red_1769187440253.png";
 import abridgeSymbol from "@assets/abridge-logo-symbol_1774906992195.png";
+import { DOMAIN_COLORS } from "@/lib/domainColors";
 
 // ────────────────────────────────────────────────────────────────
 // Editorial "The Methodology" print-to-PDF document.
@@ -320,13 +321,13 @@ function RecordPage(): JSX.Element {
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 14 }}>
           <FloorCell
-            dot={C.coral}
+            dot={DOMAIN_COLORS.Revenue}
             name="Revenue"
             desc="Acuity and services already delivered, captured instead of lost to thin notes."
           />
-          <FloorCell dot={C.cap} name="Capacity" desc="Clinician hours returned from after-hours charting to patient care." />
-          <FloorCell dot={C.wf} name="Workforce" desc="The documentation burden that drives burnout, lifted." />
-          <FloorCell dot={C.off} name="Quality" desc="Care gaps and safety signals surfaced in the record, tracked, not counted." />
+          <FloorCell dot={DOMAIN_COLORS.Capacity} name="Capacity" desc="Clinician hours returned from after-hours charting to patient care." />
+          <FloorCell dot={DOMAIN_COLORS.Workforce} name="Workforce" desc="The documentation burden that drives burnout, lifted." />
+          <FloorCell dot={DOMAIN_COLORS.Quality} name="Quality" desc="Care gaps and safety signals surfaced in the record, tracked, not counted." />
         </div>
       </div>
 

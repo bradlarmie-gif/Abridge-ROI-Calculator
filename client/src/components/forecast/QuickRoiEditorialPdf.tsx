@@ -407,7 +407,7 @@ function UpsidePage({ data }: { data: QuickRoiPdfData }): JSX.Element {
 
       {/* the return */}
       <div style={{ marginTop: 26 }}>
-        <div style={sEyebrow}>The return</div>
+        <div style={sEyebrow}>The return, on today's case</div>
         {priced ? (
           <div style={{ marginTop: 14, display: "flex", gap: 64, alignItems: "flex-end" }}>
             <div>
@@ -455,6 +455,13 @@ export const SAMPLE_QUICK_ROI_PDF_DATA: QuickRoiPdfData = {
   account: { totalProviders: 90, onAbridge: 60, encPerProvider: 2500, utilNow: 68, minutesSaved: 1.1 },
   vals: {
     wrvuBefore: 1.95, wrvuAfter: 2.03, cf: 33.4, wrvuRealization: 75,
+    // $/HCC at the Medicare Advantage anchor (see lib/hccPayers.ts) — this fixture
+    // is an MA-heavy partner, tuned so the demo lands in the ~5x band against its
+    // $550K price. NOTE: the Explore/Proforma/Methodology fixtures use a lower
+    // blended $283/HCC tuned to THEIR params, so the fixtures are independently
+    // balanced, not cross-consistent. The proper one-source fix is to regenerate
+    // all PDF fixtures from the live engine (which reads the payer model); the
+    // live customer PDFs already do.
     hccMembers: 18000, hccAvg: 2.5, hccRecaptureNow: 65, hccRecaptureLift: 5, hccNetNew: 0.05, hccPerHcc: 1500, hccRealization: 50,
     medNecessityDenialRate: 3, denialsCustomPercent: 50, avgClaimValue: 200, denialsRealization: 60,
   },
