@@ -7,7 +7,7 @@ import { fmtMoney } from "./DriverLedger";
  * The right-hand "Your model" ledger, computed identically on every driver
  * screen so the accumulation reads the same as you move through the flow.
  * Counted domains itemize to a subtotal; the domain you're on is broken out,
- * the others are carried; tracked domains sit under "Tracked as proof".
+ * the others are carried; tracked domains sit under "Tracked metrics".
  *
  * Single source: reads dollars straight from the canonical engine, so the
  * ledger can never drift from the screen totals / proforma / PDF.
@@ -22,7 +22,7 @@ interface CountedItem {
 
 // Counted (dollar) drivers per setting, by domain. Engine keys, not registry
 // ids (they differ for wRVU/E&M). Tracked domains are empty here and surface
-// under "Tracked as proof". Values always read from computeAllDriverValues.
+// under "Tracked metrics". Values always read from computeAllDriverValues.
 const COUNTED_BY_SETTING: Record<ExploreCareSetting, Record<Domain, CountedItem[]>> = {
   outpatient: {
     Capacity: [{ label: "Patient Access", engineKey: "patientAccess" }],
@@ -67,18 +67,18 @@ const COUNTED_BY_SETTING: Record<ExploreCareSetting, Record<Domain, CountedItem[
     Quality: [],
   },
   nursing: {
-    Capacity: [{ label: "Overtime Spend", engineKey: "nursingOvertime" }],
+    Capacity: [{ label: "Documentation Overtime", engineKey: "nursingOvertime" }],
     Workforce: [
       { label: "RN Retention", engineKey: "nursingRetention" },
       { label: "Travel & Agency Spend", engineKey: "nursingAgency" },
     ],
     Revenue: [],
     Quality: [
-      { label: "HAPI Prevention", engineKey: "nursingHapi" },
-      { label: "Falls Prevention", engineKey: "nursingFalls" },
-      { label: "CAUTI Prevention", engineKey: "nursingCauti" },
-      { label: "CLABSI Prevention", engineKey: "nursingClabsi" },
-      { label: "Sepsis Bundle Compliance", engineKey: "nursingSepsis" },
+      { label: "Pressure Injuries (HAPI)", engineKey: "nursingHapi" },
+      { label: "Patient Falls", engineKey: "nursingFalls" },
+      { label: "CAUTI", engineKey: "nursingCauti" },
+      { label: "CLABSI", engineKey: "nursingClabsi" },
+      { label: "Sepsis Bundle (SEP-1)", engineKey: "nursingSepsis" },
     ],
   },
 };
@@ -151,7 +151,7 @@ export function buildDriverLedger(
     });
   }
 
-  // 3) Tracked as proof — domains with no counted dollar, plus retention when
+  // 3) Tracked metrics — domains with no counted dollar, plus retention when
   // its domain still counts on another driver (so it isn't double-listed).
   const trackedItems = order
     .filter((d) => countedFor(d).length === 0)
@@ -160,7 +160,7 @@ export function buildDriverLedger(
     trackedItems.push({ label: retentionLabelFor(careSetting), value: "tracked", tone: "dim" as const });
   }
   if (trackedItems.length > 0) {
-    groups.push({ label: "Tracked as proof", items: trackedItems });
+    groups.push({ label: "Tracked metrics", items: trackedItems });
   }
 
   const driversOn = countedDomains

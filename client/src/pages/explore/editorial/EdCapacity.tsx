@@ -297,7 +297,7 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
   // Inpatient is the one setting where Capacity is a NON-FINANCIAL proof layer:
   // we're only in the documentation, so we can show the signals move but we
   // won't put a dollar on throughput or length of stay we don't control. Present
-  // it deliberately as proof (like Quality), never as an empty/unfinished dollar slot.
+  // it deliberately  as a metric (like Quality), never as an empty/unfinished dollar slot.
   const capacityIsProofLayer = setting === "inpatient";
 
   // ─── Inpatient V2 driver ledger ───
@@ -310,7 +310,7 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
         id: "ipCensusCapacity",
         label: "Census Capacity",
         kind: "tracked",
-        mechanism: "The hours documentation gives back are clinical capacity. As volume grows, the existing team absorbs more census without adding providers. We track that headroom as proof, not a dollar.",
+        mechanism: "The hours documentation gives back are clinical capacity. As volume grows, the existing team absorbs more census without adding providers. We track that headroom as a metric, not a dollar.",
         signals: ["Census grows without adding FTEs", "More admissions carried per provider"],
       },
       {
@@ -331,7 +331,7 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
       <DriverLedger
         eyebrow="Value Model · Step 4 of 9 · Capacity"
         title="What does the freed time become?"
-        intro="Freed documentation time is clinical capacity: room for the existing team to carry more census and consult volume as you grow. We hold it as proof, not a dollar; we do not put a number on capacity we do not control."
+        intro="Freed documentation time is clinical capacity: room for the existing team to carry more census and consult volume as you grow. We hold it as a metric, not a dollar; we do not put a number on capacity we do not control."
         sectionLabel="The proof · tracked, not counted"
         rows={rows}
         ledgerGroups={ledger.groups}
@@ -364,10 +364,10 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
     const rows: LedgerRow[] = [
       {
         id: "nursingOvertime",
-        label: "Overtime Spend",
+        label: "Documentation Overtime",
         kind: "counted",
         mechanism:
-          "When documentation happens at the bedside instead of piling up for end of shift, the charting that used to spill into paid overtime falls away.",
+          "This is the overtime driven by charting that spills past the end of a shift, not overtime from staffing or census. When documentation happens at the bedside instead, that slice of paid overtime falls away.",
         enabled: Boolean(td.nursingOtEnabled),
         onToggle: () => {
           const current = Boolean(td.nursingOtEnabled);
@@ -381,7 +381,7 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
           <MathCascade
             steps={[
               { label: "Nurses on the unit", running: formatNum(nurses) },
-              { label: "Overtime hours per nurse each week", factor: { value: td.nursingOtHoursPerNurseWeek, onChange: (v: number) => updateTimeDriverInputs({ nursingOtHoursPerNurseWeek: v }), suffix: "hrs", decimal: true }, running: `${formatNum1(nurses * hrsWk)} /wk` },
+              { label: "Documentation overtime, per nurse each week", factor: { value: td.nursingOtHoursPerNurseWeek, onChange: (v: number) => updateTimeDriverInputs({ nursingOtHoursPerNurseWeek: v }), suffix: "hrs", decimal: true }, running: `${formatNum1(nurses * hrsWk)} /wk` },
               { label: "Share Abridge takes back", factor: { value: td.nursingOtReductionPercent, onChange: (v: number) => updateTimeDriverInputs({ nursingOtReductionPercent: v }), suffix: "%" }, running: `${formatNum1(nurses * hrsWk * red)} /wk` },
               { label: "Across the year", running: `${formatNum(otHrs)} hrs`, note: "× 52 weeks" },
               { label: "Overtime rate", factor: { value: td.nursingOtHourlyRate, onChange: (v: number) => updateTimeDriverInputs({ nursingOtHourlyRate: v }), prefix: "$" }, running: formatCurrency(otValue), final: true },
@@ -394,7 +394,7 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
         label: "Time at the Bedside",
         kind: "tracked",
         mechanism:
-          "The time documentation gives back is time at the bedside. We track that as proof; we do not put a dollar on capacity we do not control.",
+          "The time documentation gives back is time at the bedside. We track that as a metric; we do not put a dollar on capacity we do not control.",
         signals: ["Point-of-care documentation rises", "Post-shift charting queue shrinks"],
       },
     ];
@@ -594,7 +594,7 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
           {capacityIsProofLayer ? (
             <>
               Those <b className="text-[#EA2C00] font-bold">{formatNum(totalHoursSaved)}</b> hours give the team room to move
-              earlier in the day. In inpatient we hold capacity as proof, not a dollar: the signals below are ones we can
+              earlier in the day. In inpatient we hold capacity as a metric, not a dollar: the signals below are ones we can
               show move, and we leave the throughput itself uncounted.
             </>
           ) : (

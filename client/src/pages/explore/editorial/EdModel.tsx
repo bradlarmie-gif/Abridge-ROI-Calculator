@@ -237,6 +237,32 @@ export default function EdModel({
   const paybackY = paybackMonthFrac !== null ? chartY(annualInvestment * (paybackMonthFrac / 12)) : null;
   const valueEndY = chartY(cumPoints[12].value);
 
+  // ───── "When it lands" — RUN-RATE view (not cumulative) ─────
+  // The cumulative year-1 view reads as "underwater" mid-deployment simply
+  // because value ramps with adoption while cost is flat — true of any rollout,
+  // but it makes a positive deal look like a bad investment. The honest and
+  // fairer read is the run-rate: the annualized value climbs to its full rate
+  // and clears the flat annual cost partway through the year. We plot that.
+  const rrMax = Math.max(rampPoints[12].value, annualInvestment, 1);
+  const rrY = (value: number) => 220 - Math.max(0, Math.min(1, value / rrMax)) * 185;
+  const rrValuePath = rampPoints.map((p) => `${p.month === 0 ? "M" : "L"}${chartX(p.month).toFixed(1)},${rrY(p.value).toFixed(1)}`).join(" ");
+  const rrAreaPath = `M40,220 ${rampPoints.map((p) => `L${chartX(p.month).toFixed(1)},${rrY(p.value).toFixed(1)}`).join(" ")} L620,220 Z`;
+  const rrCostY = rrY(annualInvestment);
+  let runRateCrossover: number | null = null;
+  if (annualInvestment > 0) {
+    for (let m = 1; m <= 12; m++) {
+      if (rampPoints[m].value >= annualInvestment) {
+        const prev = rampPoints[m - 1].value - annualInvestment;
+        const cur = rampPoints[m].value - annualInvestment;
+        const frac = cur === prev ? 0 : (0 - prev) / (cur - prev);
+        runRateCrossover = (m - 1) + Math.max(0, Math.min(1, frac));
+        break;
+      }
+    }
+  }
+  const rrCrossX = runRateCrossover !== null ? chartX(runRateCrossover) : null;
+  const rrEndY = rrY(rampPoints[12].value);
+
   // ───── Quadrant contribution bars ─────
   // Which domain is the non-financial proof layer depends on the setting
   // (nursing = Revenue is proof, Quality carries a dollar; everyone else the
@@ -542,20 +568,21 @@ export default function EdModel({
             <div className="flex flex-col gap-[17px]">
               {QUADRANT_ORDER.map((q) => {
                 const proofNote = proofForSetting[q];
-                if (proofNote) {
-                  return (
-                    <div key={q} className="flex justify-between items-baseline gap-4">
-                      <span className="text-[14px] font-bold text-[#1A1A1A]">{q}</span>
-                      <span className="text-[12px] text-[#8C8073] italic text-right max-w-[210px] leading-[1.4]">{proofNote}</span>
-                    </div>
-                  );
-                }
                 const value = valueByQuadrant[q];
-                if (q === "Workforce" && value === 0 && state.retentionMode === "tracked") {
+                const workforceTracked = q === "Workforce" && value === 0 && state.retentionMode === "tracked";
+                // Tracked domains get a designed chip + a plain signal line, not a
+                // grey italic apology, so a tracked area still reads as premium.
+                if (proofNote || workforceTracked) {
+                  const phrase = workforceTracked
+                    ? "The retention signal moves as documentation load falls. Switch Retention to Dollar to book it."
+                    : proofNote;
                   return (
-                    <div key={q} className="flex justify-between items-baseline gap-4">
-                      <span className="text-[14px] font-bold text-[#1A1A1A]">{q}</span>
-                      <span className="text-[12px] text-[#8C8073] italic text-right max-w-[220px] leading-[1.4]">tracked as a signal; switch Retention to Dollar to count</span>
+                    <div key={q} className="flex justify-between items-start gap-4">
+                      <span className="flex items-center gap-2 flex-shrink-0">
+                        <span className="text-[14px] font-bold text-[#1A1A1A]">{q}</span>
+                        <span className="text-[9px] font-extrabold tracking-[0.06em] uppercase text-[#8C8073] border border-[#DAD3C8] rounded-full px-[7px] py-[2px]">Tracked</span>
+                      </span>
+                      <span className="text-[12.5px] text-[#6E675C] text-right max-w-[240px] leading-[1.45]">{phrase}</span>
                     </div>
                   );
                 }
@@ -581,10 +608,10 @@ export default function EdModel({
             <div className={sectHead}>When it lands</div>
             <p className="text-[13px] text-[#8C8073] mt-[8px] mb-[16px] leading-[1.55]">
               {annualInvestment <= 0
-                ? <>Value builds as adoption grows, so year 1 lands around {fmtShort(cumPoints[12].value)} and the run-rate reaches its full {fmtShort(totalAnnualValue)} / yr by month 12. Add your investment to see the payback point.</>
-                : paybackMonthFrac !== null
-                  ? <>Cumulative value catches the cumulative cost by month {Math.max(1, Math.ceil(paybackMonthFrac))}, the payback point. From there it keeps compounding, and the run-rate reaches its full {fmtShort(totalAnnualValue)} / yr by month 12.</>
-                  : <>Value builds as adoption grows. At this scope the cumulative value is still catching up to the cost at month 12.</>}
+                ? <>The annualized value builds as adoption grows, reaching its full {fmtShort(totalAnnualValue)} / yr run-rate by month 12. Add your investment to see where it clears the cost.</>
+                : runRateCrossover !== null
+                  ? <>The annualized value passes the {fmtShort(annualInvestment)} / yr cost by month {Math.max(1, Math.ceil(runRateCrossover))} and reaches its full {fmtShort(totalAnnualValue)} / yr run-rate by month 12.</>
+                  : <>At this scope the run-rate is still below the {fmtShort(annualInvestment)} / yr cost at month 12. Add scale or adoption to clear it.</>}
             </p>
             {totalAnnualValue > 0 ? (
               <>
@@ -598,22 +625,25 @@ export default function EdModel({
                   <line x1="40" y1="35" x2="620" y2="35" stroke="#EDE7DD" strokeWidth="1" />
                   <line x1="40" y1="128" x2="620" y2="128" stroke="#EDE7DD" strokeWidth="1" />
                   <line x1="40" y1="220" x2="620" y2="220" stroke="#E7E3DD" strokeWidth="1" />
-                  <path d={areaPath} fill="url(#edModelRampGradient)" />
+                  <path d={rrAreaPath} fill="url(#edModelRampGradient)" />
                   {annualInvestment > 0 && (
-                    <path d={costPath} fill="none" stroke="#9C8E7E" strokeWidth="1.6" strokeDasharray="5 4" strokeLinejoin="round" strokeLinecap="round" />
-                  )}
-                  <path d={valuePath} fill="none" stroke="#EA2C00" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
-                  {paybackX !== null && paybackY !== null && (
                     <>
-                      <line x1={paybackX} y1={paybackY} x2={paybackX} y2="220" stroke="#C9BCA9" strokeWidth="1" strokeDasharray="3 3" />
-                      <circle cx={paybackX} cy={paybackY} r="4.5" fill="#fff" stroke="#EA2C00" strokeWidth="2.5" />
-                      <text x={Math.max(44, Math.min(paybackX - 6, 512))} y={paybackY - 11} fontFamily="Manrope" fontSize="11" fontWeight="700" fill="#B02200" textAnchor={paybackX > 300 ? "end" : "start"}>
-                        pays back · Mo {Math.max(1, Math.ceil(paybackMonthFrac ?? 1))}
+                      <line x1="40" y1={rrCostY} x2="620" y2={rrCostY} stroke="#9C8E7E" strokeWidth="1.6" strokeDasharray="5 4" />
+                      <text x="620" y={Math.min(214, rrCostY + 15)} fontFamily="Manrope" fontSize="10.5" fontWeight="700" fill="#9C8E7E" textAnchor="end">cost · {fmtShort(annualInvestment)} / yr</text>
+                    </>
+                  )}
+                  <path d={rrValuePath} fill="none" stroke="#EA2C00" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
+                  {rrCrossX !== null && (
+                    <>
+                      <line x1={rrCrossX} y1={rrCostY} x2={rrCrossX} y2="220" stroke="#C9BCA9" strokeWidth="1" strokeDasharray="3 3" />
+                      <circle cx={rrCrossX} cy={rrCostY} r="4.5" fill="#fff" stroke="#EA2C00" strokeWidth="2.5" />
+                      <text x={Math.max(44, Math.min(rrCrossX - 6, 540))} y={rrCostY - 11} fontFamily="Manrope" fontSize="11" fontWeight="700" fill="#B02200" textAnchor={rrCrossX > 300 ? "end" : "start"}>
+                        clears cost · Mo {Math.max(1, Math.ceil(runRateCrossover ?? 1))}
                       </text>
                     </>
                   )}
-                  <circle cx="620" cy={valueEndY} r="4" fill="#EA2C00" />
-                  <text x="616" y={Math.max(24, valueEndY - 10)} fontFamily="Manrope" fontSize="10.5" fontWeight="700" fill="#9C8E7E" textAnchor="end">{fmtShort(cumPoints[12].value)} cumulative · year 1</text>
+                  <circle cx="620" cy={rrEndY} r="4" fill="#EA2C00" />
+                  <text x="616" y={Math.max(24, rrEndY - 10)} fontFamily="Manrope" fontSize="10.5" fontWeight="700" fill="#EA2C00" textAnchor="end">{fmtShort(totalAnnualValue)} / yr run-rate</text>
                   <text x="40" y="238" fontFamily="Manrope" fontSize="11" fill="#7C766F">Mo 1</text>
                   <text x="330" y="238" fontFamily="Manrope" fontSize="11" fill="#7C766F" textAnchor="middle">Mo 6</text>
                   <text x="620" y="238" fontFamily="Manrope" fontSize="11" fill="#7C766F" textAnchor="end">Mo 12</text>
@@ -621,12 +651,12 @@ export default function EdModel({
                 <div className="flex gap-5 mt-3">
                   <div className="flex items-center gap-[7px] text-[12px] text-[#565250]">
                     <span className="w-[14px] h-[3px] rounded-[2px] bg-[#EA2C00] inline-block" />
-                    Cumulative value
+                    Annualized value (run-rate)
                   </div>
                   {annualInvestment > 0 && (
                     <div className="flex items-center gap-[7px] text-[12px] text-[#565250]">
                       <span className="w-[14px] h-[3px] rounded-[2px] bg-[#9C8E7E] inline-block" />
-                      Cumulative cost · {fmtShort(annualInvestment)} / yr
+                      Annual cost · {fmtShort(annualInvestment)} / yr
                     </div>
                   )}
                 </div>

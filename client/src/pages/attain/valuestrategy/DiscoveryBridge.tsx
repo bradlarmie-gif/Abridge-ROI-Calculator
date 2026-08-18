@@ -39,7 +39,7 @@ export default function DiscoveryBridge({ info, onContinue, onBack, onHome }: { 
         <div className="border-l-2 border-[#EA2C00] pl-6 space-y-6">
           <Row label="Care setting" items={[info.settingLabel]} />
           {info.counted.length > 0 && <Row label="Turned on for you" items={info.counted} coral />}
-          {info.tracked.length > 0 && <Row label="Tracked as proof" items={info.tracked} muted />}
+          {info.tracked.length > 0 && <Row label="Tracked metrics" items={info.tracked} muted />}
           {nothing && (
             <p className="text-[14px] text-[#6E675C] leading-relaxed max-w-[560px]">
               Nothing is pre-selected: you told us documentation is not the main lever here. The ROI opens on your setting so you can explore it honestly.

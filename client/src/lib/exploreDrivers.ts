@@ -334,8 +334,8 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
   },
   {
     id: 'nursingOvertime',
-    label: 'Overtime Spend',
-    shortDescription: 'Actual overtime spend, before and after. Faster charting can reduce the documentation-driven overtime you pay. The value is the reduction.',
+    label: 'Documentation Overtime',
+    shortDescription: 'The overtime driven by charting that spills past the end of a shift. When documentation happens at the bedside instead, that slice of paid overtime falls away. The value is only that reduction, not overtime from staffing or census.',
     // Capacity, not Workforce: for nursing, documentation-time savings convert
     // straight to payroll (overtime), that's nursing's capacity-recapture story.
     // Matches the methodology, the Model rollup, and the proforma, which all
@@ -562,8 +562,8 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
   // Nursing (5 quantified + 2 qualitative)
   {
     id: 'nursingHapi',
-    label: 'HAPI Prevention',
-    shortDescription: 'Real-time Braden scores and turning events documented at the bedside, not batched after Stage 1 has already progressed.',
+    label: 'Pressure Injuries (HAPI)',
+    shortDescription: 'Braden scores and turning events documented at the bedside keep the record current, so the care team is working from live information. The value counts only the share timely documentation can support.',
     quadrant: 'Quality',
     settings: ['nursing'],
     visibility: 'quantified',
@@ -586,8 +586,8 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
   },
   {
     id: 'nursingFalls',
-    label: 'Falls Prevention',
-    shortDescription: 'Protocols act on the documented Morse score. Point-of-care reassessment keeps the chart current, not frozen at the score from eight hours ago.',
+    label: 'Patient Falls',
+    shortDescription: 'A Morse score updated at the point of care, rather than hours later, gives the fall protocol current information to act on. The value counts only the share timely documentation can support.',
     quadrant: 'Quality',
     settings: ['nursing'],
     visibility: 'quantified',
@@ -610,8 +610,8 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
   },
   {
     id: 'nursingCauti',
-    label: 'CAUTI Prevention',
-    shortDescription: 'Each point-of-care necessity review is the timestamped prompt for removal. Every catheter day avoided is one fewer chance for a CAUTI.',
+    label: 'CAUTI',
+    shortDescription: 'Point-of-care necessity reviews create a timestamped record of line necessity, supporting the care team’s timely removal decisions. The value counts only the share timely documentation can support.',
     quadrant: 'Quality',
     settings: ['nursing'],
     visibility: 'quantified',
@@ -634,8 +634,8 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
   },
   {
     id: 'nursingClabsi',
-    label: 'CLABSI Prevention',
-    shortDescription: 'Bundle compliance is scored from timestamps. Undocumented care looks non-compliant even when every element was performed.',
+    label: 'CLABSI',
+    shortDescription: 'Central-line bundle steps documented as they happen give an accurate compliance record, so care that was performed is not scored as a gap. The value counts only the share timely documentation can support.',
     quadrant: 'Quality',
     settings: ['nursing'],
     visibility: 'quantified',
@@ -658,8 +658,8 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
   },
   {
     id: 'nursingSepsis',
-    label: 'Sepsis Bundle Compliance',
-    shortDescription: 'SEP-1 is scored on timestamps. A 45-minute documentation lag can flip a compliant case to non-compliant.',
+    label: 'Sepsis Bundle (SEP-1)',
+    shortDescription: 'SEP-1 is scored on timestamps. Documenting bundle steps as they happen keeps compliant care from reading non-compliant on a documentation lag. The value counts only the share timely documentation can support.',
     quadrant: 'Quality',
     settings: ['nursing'],
     visibility: 'quantified',

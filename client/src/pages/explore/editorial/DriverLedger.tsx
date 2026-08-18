@@ -14,6 +14,8 @@ import { EditorialHeader, EditorialShell } from "./EditorialHeader";
 export interface LedgerRow {
   id: string;
   label: string;
+  /** optional small group heading rendered above this row (e.g. "Harm events") */
+  subhead?: string;
   mechanism: string;
   kind: "counted" | "tracked" | "coming-soon";
   /** counted only */
@@ -92,6 +94,10 @@ function DriverRow({ row, depth = 0 }: { row: LedgerRow; depth?: number }) {
   // omits its own bottom border (otherwise the two stack into a double line).
   const hasChildren = Boolean(row.children && row.children.length > 0);
   return (
+    <>
+    {row.subhead && (
+      <div className="text-[10.5px] font-extrabold tracking-[0.09em] uppercase text-[#8C8073] mt-7 mb-1 first:mt-1">{row.subhead}</div>
+    )}
     <div className={`py-6 ${hasChildren ? "" : "border-b border-[#EDE8E1]"} ${depth > 0 ? "pl-6 ml-[3px] border-l-2 border-[#E4DACE]" : ""}`}>
       <div className="flex justify-between items-start gap-5">
         <div className="min-w-0">
@@ -157,6 +163,7 @@ function DriverRow({ row, depth = 0 }: { row: LedgerRow; depth?: number }) {
         </div>
       )}
     </div>
+    </>
   );
 }
 

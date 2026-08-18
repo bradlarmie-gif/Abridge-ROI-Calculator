@@ -102,7 +102,7 @@ function ProofChainScreen({ state, totalHoursSaved, onNext, onBack, onHome, sett
             </>
           }
         >
-          The proof
+          Tracked metrics
         </SectionLabel>
 
         <p className="text-[14px] text-[#565250] leading-[1.55] mb-[20px] max-w-[640px]">
@@ -215,10 +215,11 @@ function NursingQualityScreen({
   const rows: LedgerRow[] = [
     {
       id: "nursingHapi",
-      label: "HAPI Prevention",
+      subhead: "Harm events",
+      label: "Pressure Injuries (HAPI)",
       kind: "counted",
       mechanism:
-        "Real-time Braden scores and turning events documented at the point of care let protocols act before a pressure injury progresses.",
+        "Braden scores and turning events documented at the bedside keep the record current for the care team to act on. The value counts only the share timely documentation can support.",
       enabled: Boolean(dq.nursingHapiEnabled),
       onToggle: () => {
         const current = Boolean(dq.nursingHapiEnabled);
@@ -233,7 +234,7 @@ function NursingQualityScreen({
           steps={[
             { label: "Patient days a year", running: formatNum(patientDays) },
             { label: "HAPIs per 1,000 patient days", factor: { value: dq.nursingHapiRate, onChange: (v: number) => updateDq({ nursingHapiRate: v }), suffix: "/1k", decimal: true }, running: `${formatNum1(hapiEvents)} events` },
-            { label: "Prevented with complete documentation", factor: { value: dq.nursingHapiPreventionRate, onChange: (v: number) => updateDq({ nursingHapiPreventionRate: v }), suffix: "%", decimal: true }, running: `${formatNum1(hapiPrevented)} prevented` },
+            { label: "Documentation-attributable share", factor: { value: dq.nursingHapiPreventionRate, onChange: (v: number) => updateDq({ nursingHapiPreventionRate: v }), suffix: "%", decimal: true }, running: `${formatNum1(hapiPrevented)} attributable` },
             { label: "Cost per HAPI", factor: { value: dq.nursingHapiCost, onChange: (v: number) => updateDq({ nursingHapiCost: v }), prefix: "$" }, running: formatCurrency(valueFor("nursingHapi")), final: true },
           ]}
         />
@@ -241,7 +242,7 @@ function NursingQualityScreen({
     },
     {
       id: "nursingFalls",
-      label: "Falls Prevention",
+      label: "Patient Falls",
       kind: "counted",
       mechanism: "Protocols act on a current Morse score instead of a stale one.",
       enabled: Boolean(dq.nursingFallsEnabled),
@@ -258,7 +259,7 @@ function NursingQualityScreen({
           steps={[
             { label: "Patient days a year", running: formatNum(patientDays) },
             { label: "Falls per 1,000 patient days", factor: { value: dq.nursingFallsRate, onChange: (v: number) => updateDq({ nursingFallsRate: v }), suffix: "/1k", decimal: true }, running: `${formatNum1(fallsEvents)} events` },
-            { label: "Prevented with complete documentation", factor: { value: dq.nursingFallsPreventionRate, onChange: (v: number) => updateDq({ nursingFallsPreventionRate: v }), suffix: "%", decimal: true }, running: `${formatNum1(fallsPrevented)} prevented` },
+            { label: "Documentation-attributable share", factor: { value: dq.nursingFallsPreventionRate, onChange: (v: number) => updateDq({ nursingFallsPreventionRate: v }), suffix: "%", decimal: true }, running: `${formatNum1(fallsPrevented)} attributable` },
             { label: "Cost per fall", factor: { value: dq.nursingFallsCost, onChange: (v: number) => updateDq({ nursingFallsCost: v }), prefix: "$" }, running: formatCurrency(valueFor("nursingFalls")), final: true },
           ]}
         />
@@ -266,10 +267,11 @@ function NursingQualityScreen({
     },
     {
       id: "nursingCauti",
-      label: "CAUTI Prevention",
+      subhead: "Bundle compliance",
+      label: "CAUTI",
       kind: "counted",
       mechanism:
-        "Each point-of-care necessity review is the timestamped prompt to pull the catheter. Every catheter day avoided is one fewer chance for a CAUTI.",
+        "Point-of-care necessity reviews create a timestamped record supporting the care team.s timely removal decisions.",
       enabled: Boolean(dq.nursingCautiEnabled),
       onToggle: () => {
         const current = Boolean(dq.nursingCautiEnabled);
@@ -285,7 +287,7 @@ function NursingQualityScreen({
             { label: "Patient days a year", running: formatNum(patientDays) },
             { label: "On a urinary catheter", factor: { value: dq.nursingCautiUtilizationRatio, onChange: (v: number) => updateDq({ nursingCautiUtilizationRatio: v }), suffix: "%" }, running: `${formatNum(cautiCathDays)} cath-days` },
             { label: "CAUTIs per 1,000 catheter days", factor: { value: dq.nursingCautiRate, onChange: (v: number) => updateDq({ nursingCautiRate: v }), suffix: "/1k", decimal: true }, running: `${formatNum1(cautiEvents)} events` },
-            { label: "Prevented via each necessity review", factor: { value: dq.nursingCautiPreventionRate, onChange: (v: number) => updateDq({ nursingCautiPreventionRate: v }), suffix: "%", decimal: true }, running: `${formatNum1(cautiPrevented)} prevented` },
+            { label: "Documentation-attributable share", factor: { value: dq.nursingCautiPreventionRate, onChange: (v: number) => updateDq({ nursingCautiPreventionRate: v }), suffix: "%", decimal: true }, running: `${formatNum1(cautiPrevented)} attributable` },
             { label: "Cost per CAUTI", factor: { value: dq.nursingCautiCost, onChange: (v: number) => updateDq({ nursingCautiCost: v }), prefix: "$" }, running: formatCurrency(valueFor("nursingCauti")), final: true },
           ]}
         />
@@ -293,10 +295,10 @@ function NursingQualityScreen({
     },
     {
       id: "nursingClabsi",
-      label: "CLABSI Prevention",
+      label: "CLABSI",
       kind: "counted",
       mechanism:
-        "Bundle compliance is scored from timestamps. A central line reviewed and documented at the point of care is one fewer chance for a CLABSI.",
+        "Central-line bundle steps documented as they happen give an accurate compliance record, so care that was performed is not scored as a gap.",
       enabled: Boolean(dq.nursingClabsiEnabled),
       onToggle: () => {
         const current = Boolean(dq.nursingClabsiEnabled);
@@ -312,7 +314,7 @@ function NursingQualityScreen({
             { label: "Patient days a year", running: formatNum(patientDays) },
             { label: "On a central line", factor: { value: dq.nursingClabsiUtilizationRatio, onChange: (v: number) => updateDq({ nursingClabsiUtilizationRatio: v }), suffix: "%" }, running: `${formatNum(clabsiLineDays)} line-days` },
             { label: "CLABSIs per 1,000 line days", factor: { value: dq.nursingClabsiRate, onChange: (v: number) => updateDq({ nursingClabsiRate: v }), suffix: "/1k", decimal: true }, running: `${formatNum1(clabsiEvents)} events` },
-            { label: "Prevented with complete documentation", factor: { value: dq.nursingClabsiPreventionRate, onChange: (v: number) => updateDq({ nursingClabsiPreventionRate: v }), suffix: "%", decimal: true }, running: `${formatNum1(clabsiPrevented)} prevented` },
+            { label: "Documentation-attributable share", factor: { value: dq.nursingClabsiPreventionRate, onChange: (v: number) => updateDq({ nursingClabsiPreventionRate: v }), suffix: "%", decimal: true }, running: `${formatNum1(clabsiPrevented)} attributable` },
             { label: "Cost per CLABSI", factor: { value: dq.nursingClabsiCost, onChange: (v: number) => updateDq({ nursingClabsiCost: v }), prefix: "$" }, running: formatCurrency(valueFor("nursingClabsi")), final: true },
           ]}
         />
@@ -320,10 +322,10 @@ function NursingQualityScreen({
     },
     {
       id: "nursingSepsis",
-      label: "Sepsis Bundle Compliance",
+      label: "Sepsis Bundle (SEP-1)",
       kind: "counted",
       mechanism:
-        "SEP-1 is scored on timestamps. When bundle elements are documented as they happen, cases that would read non-compliant on a documentation lag stay in compliance.",
+        "SEP-1 is scored on timestamps. When bundle elements are documented as they happen, cases are not scored as non-compliant on a documentation lag.",
       enabled: Boolean(dq.nursingSepsisEnabled),
       onToggle: () => {
         const current = Boolean(dq.nursingSepsisEnabled);
@@ -340,7 +342,7 @@ function NursingQualityScreen({
             { label: "Sepsis cases per 1,000", factor: { value: dq.nursingSepsisRatePerThousand, onChange: (v: number) => updateDq({ nursingSepsisRatePerThousand: v }), suffix: "/1k", decimal: true }, running: `${formatNum1(sepsisEvents)} cases` },
             { label: "Current bundle compliance", factor: { value: dq.nursingSepsisCurrentCompliance, onChange: (v: number) => updateDq({ nursingSepsisCurrentCompliance: v }), suffix: "%" }, running: `${formatNum1(sepsisNonComp)} out of bundle`, note: "gap = 100 − compliance", pivot: true },
             { label: "Where documentation is the lag", factor: { value: dq.nursingSepsisDocLagPercent, onChange: (v: number) => updateDq({ nursingSepsisDocLagPercent: v }), suffix: "%" }, running: `${formatNum1(sepsisDocLag)} cases` },
-            { label: "Realization", factor: { value: dq.nursingSepsisRealization, onChange: (v: number) => updateDq({ nursingSepsisRealization: v }), suffix: "%" }, running: `${formatNum1(sepsisPrevented)} prevented` },
+            { label: "Realization", factor: { value: dq.nursingSepsisRealization, onChange: (v: number) => updateDq({ nursingSepsisRealization: v }), suffix: "%" }, running: `${formatNum1(sepsisPrevented)} attributable` },
             { label: "Excess cost per case", factor: { value: dq.nursingSepsisExcessCostPerCase, onChange: (v: number) => updateDq({ nursingSepsisExcessCostPerCase: v }), prefix: "$" }, running: formatCurrency(valueFor("nursingSepsis")), final: true },
           ]}
         />
@@ -348,10 +350,11 @@ function NursingQualityScreen({
     },
     {
       id: "nursingHcahps",
+      subhead: "Tracked signals",
       label: "HCAHPS Nurse Communication",
       kind: "tracked",
       mechanism:
-        "Time back at the bedside shows up in how patients rate their nursing care. We track it as proof, not a dollar.",
+        "Time back at the bedside shows up in how patients rate their nursing care. We track it as a metric, not a dollar.",
       signals: ["Nurse communication scores move", "More time with the patient, less with the keyboard"],
     },
     {
@@ -367,7 +370,7 @@ function NursingQualityScreen({
   return (
     <DriverLedger
       eyebrow="Value Model · Step 7 of 9 · Quality"
-      title="Where does nursing documentation prevent harm?"
+      title="Where does nursing documentation show up in harm and safety?"
       intro="Harm events are scored on timestamps. Documented in real time at the bedside, the same care that was delivered is the care that counts. Turn on only what you can stand behind; it adds to the ledger as you go."
       sectionLabel="The drivers · turn on what applies"
       rows={rows}
@@ -417,7 +420,7 @@ export default function EdQuality({ state, updateState, totalHoursSaved, onNext,
         eyebrow="Value Model · Step 7 of 9 · Quality"
         title="Where does the quality show up?"
         intro="Better inpatient notes make sure the acuity and care you delivered are reflected in the measures you already report. Abridge does not change the score; it keeps real care from being lost to an incomplete note."
-        sectionLabel="The proof · tracked, not counted"
+        sectionLabel="Tracked metrics · not counted"
         rows={rows}
         ledgerGroups={ledger.groups}
         grandLabel="Model so far"
@@ -476,8 +479,8 @@ export default function EdQuality({ state, updateState, totalHoursSaved, onNext,
       <DriverLedger
         eyebrow="Value Model · Step 7 of 9 · Quality"
         title="Where does the quality show up?"
-        intro="Quality scores are built from documentation. Capture the visit accurately and the scores reflect the care you delivered. We track these as proof, not a dollar; anything financial is counted once, in Revenue, through HCC and denials."
-        sectionLabel="The proof · tracked, not counted"
+        intro="Quality scores are built from documentation. Capture the visit accurately and the scores reflect the care you delivered. We track these as metrics, not a dollar; anything financial is counted once, in Revenue, through HCC and denials."
+        sectionLabel="Tracked metrics · not counted"
         rows={rows}
         ledgerGroups={ledger.groups}
         grandLabel="Model so far"
@@ -544,8 +547,8 @@ export default function EdQuality({ state, updateState, totalHoursSaved, onNext,
       <DriverLedger
         eyebrow="Value Model · Step 7 of 9 · Quality"
         title="Where does the quality show up?"
-        intro="Better ED notes make sure the care delivered is reflected in the measures you already report. Abridge does not change the score; it keeps a busy shift's care from being lost to an incomplete note. We track these as proof, not a dollar; anything financial is counted once, in Revenue."
-        sectionLabel="The proof · tracked, not counted"
+        intro="Better ED notes make sure the care delivered is reflected in the measures you already report. Abridge does not change the score; it keeps a busy shift's care from being lost to an incomplete note. We track these as metrics, not a dollar; anything financial is counted once, in Revenue."
+        sectionLabel="Tracked metrics · not counted"
         rows={rows}
         ledgerGroups={ledger.groups}
         grandLabel="Model so far"

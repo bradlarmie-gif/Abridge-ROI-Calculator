@@ -351,7 +351,7 @@ function proofQuality(opts: {
       if (g === "little") return `On quality, you were honest that this is mostly structural, not something more attention in the room changes. That is worth saying out loud before anyone builds a case on it.`;
       const act = t.pick("act");
       const hinge = act === "no" ? "But the freed attention is unlikely to reach the work today, which caps it." : act === "unsure" ? "The open question is whether the freed attention actually reaches the work." : "And the team will act on it, which is what turns attention into outcomes.";
-      return `${capfirst(t.narrative[0] ?? "improving quality")} is real here, but it lands as better measures and fewer gaps, not a hard dollar, so we track it as proof rather than book it. ${hinge}`;
+      return `${capfirst(t.narrative[0] ?? "improving quality")} is real here, but it lands as better measures and fewer gaps, not a hard dollar, so we track it as a metric rather than book it. ${hinge}`;
     },
     questions: {
       outcome: {
@@ -386,7 +386,7 @@ function proofQuality(opts: {
 
 const outpatientQuality = proofQuality({
   briefIntro: "You said quality. In the outpatient world this is real, but it shows up as better measures and closed gaps, not a hard ROI dollar.",
-  proofLine: "closing care gaps and lifting quality measures, tracked as proof rather than booked as a dollar.",
+  proofLine: "closing care gaps and lifting quality measures, tracked as a metric rather than booked as a dollar.",
   roles: ["Quality leadership", "The care-team lead", "Population health"],
   caveat: "The freed attention only becomes better care if it is pointed at the gaps in the room, not just at moving faster.",
   outcomes: [
@@ -398,7 +398,7 @@ const outpatientQuality = proofQuality({
 
 const edQuality = proofQuality({
   briefIntro: "You said quality. In the ED this shows up as faster, more reliable protocol adherence and safety measures, not a hard ROI dollar.",
-  proofLine: "faster, more reliable protocol adherence and safety measures, tracked as proof.",
+  proofLine: "faster, more reliable protocol adherence and safety measures, tracked as metrics.",
   roles: ["ED medical director", "Quality and safety", "Charge nurses"],
   caveat: "Safety only moves if the freed attention reaches the protocol at the bedside, in the moment.",
   outcomes: [
@@ -410,7 +410,7 @@ const edQuality = proofQuality({
 
 const inpatientQuality = proofQuality({
   briefIntro: "You said quality. Inpatient, this shows up as fewer harm events and cleaner safety measures, tracked rather than booked as a hard dollar.",
-  proofLine: "fewer harm events and cleaner safety measures, tracked as proof.",
+  proofLine: "fewer harm events and cleaner safety measures, tracked as metrics.",
   roles: ["Quality leadership", "Hospitalist and nursing leads", "Patient safety"],
   caveat: "Harm prevention only moves if the freed attention reaches rounding and the protocols, and someone acts on early signals.",
   outcomes: [
