@@ -195,7 +195,7 @@ export const INPATIENT_METHODOLOGY: MethodologyData = {
   domains: [
     {
       num: "01", name: "Capacity", chip: { kind: "proof", note: "The proof layer · no dollar" },
-      enable: "Freed documentation time is clinical capacity: the existing team can carry more census and consult volume as you grow, without adding providers. We track that headroom as proof; we do not put a dollar on capacity we do not control.",
+      enable: "Freed documentation time is clinical capacity: the existing team can carry more census and consult volume as you grow, without adding providers. We track that headroom as a metric; we do not put a dollar on capacity we do not control.",
       drivers: [
         { name: "Census Capacity", sub: "The existing team absorbs more census as you grow, without adding FTEs", mode: "watch" },
         { name: "Consult Capacity", sub: "More consult volume carried by the same team, consults land same-day", mode: "watch" },
@@ -204,7 +204,7 @@ export const INPATIENT_METHODOLOGY: MethodologyData = {
     },
     {
       num: "02", name: "Workforce", chip: dollar,
-      enable: "Documentation burden drives hospitalist burnout and the premium coverage bought to absorb it. A lighter load helps you keep your people and lean less on incremental staffing. The administrative friction it also removes is tracked as proof.",
+      enable: "Documentation burden drives hospitalist burnout and the premium coverage bought to absorb it. A lighter load helps you keep your people and lean less on incremental staffing. The administrative friction it also removes is tracked as a metric.",
       drivers: [
         { name: "Provider Retention", sub: "Replacement cost avoided when fewer providers leave", mode: "dollar" },
         { name: "Incremental Staffing Avoided", sub: "Locum, moonlighting, overtime and extra shifts you stop buying", mode: "dollar" },
@@ -267,8 +267,8 @@ export const NURSING_METHODOLOGY: MethodologyData = {
       ],
     },
     {
-      num: "03", name: "Revenue", chip: { kind: "proof", note: "Tracked as proof · no dollar here" },
-      enable: "Strong nursing documentation corroborates the physician record that CDI depends on to close queries. That contribution is real, but the dollar is claimed on the physician side, so here it is tracked as proof.",
+      num: "03", name: "Revenue", chip: { kind: "proof", note: "Tracked metrics · no dollar here" },
+      enable: "Strong nursing documentation corroborates the physician record that CDI depends on to close queries. That contribution is real, but the dollar is claimed on the physician side, so here it is tracked as a metric.",
       drivers: [
         { name: "Documentation Completion Rate", sub: "Flowsheet entries complete and on time", mode: "watch" },
         { name: "CDI Query Response", sub: "Nursing record corroborates the clinical picture", mode: "watch" },

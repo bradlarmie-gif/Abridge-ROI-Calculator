@@ -404,9 +404,9 @@ export function AttainExperience({ setting, cells, baseline, initial, onPersist,
           <div className="space-y-3">
             {CELLS.map((c) => {
               const v = valueByCat(c);
-              // Proof-only categories (retention) never carry a dollar: they read "tracked as proof"
+              // Proof-only categories (retention) never carry a dollar: they read "tracked as a metric"
               // and contribute $0 to the total above — the wellbeing layer, mirrored on the proforma's
-              // "Quality tracked as proof, uncounted" treatment. Their bar is a neutral marker, not a
+              // "Quality tracked as a metric, uncounted" treatment. Their bar is a neutral marker, not a
               // zero-width sliver that would read as broken.
               if (c.proofOnly) {
                 return (
@@ -433,7 +433,7 @@ export function AttainExperience({ setting, cells, baseline, initial, onPersist,
             })}
           </div>
           {CELLS.some((c) => c.proofOnly) && (
-            <p className="text-[12px] text-[#8C8C8C] mt-4 leading-relaxed">Wellbeing is tracked as proof, not counted in the dollar. It's the layer that makes the rest of the case credible.</p>
+            <p className="text-[12px] text-[#8C8C8C] mt-4 leading-relaxed">Wellbeing is tracked as a metric, not counted in the dollar. It's the layer that makes the rest of the case credible.</p>
           )}
         </div>
 
@@ -582,7 +582,7 @@ export function AttainExperience({ setting, cells, baseline, initial, onPersist,
                 <div className="flex items-center justify-between gap-3 mb-1.5">
                   <p className="text-[14px] font-semibold text-[#1A1A1A]">{catLabel(c)}</p>
                   {/* proof-only categories (retention) are measured on their signals, never a realized dollar */}
-                  <span className="text-[11px] font-bold uppercase tracking-[1.5px] rounded-full px-2.5 py-0.5" style={{ color: st.leak ? "#EA2C00" : "#6B6B6B", backgroundColor: st.leak ? "#FBE7E1" : "#F2EDE5" }}>{st.leak ? "Behind" : st.entered ? (c.proofOnly ? `${a}% of signals` : `${a}% attained`) : c.proofOnly ? "Tracked as proof" : "Not entered"}</span>
+                  <span className="text-[11px] font-bold uppercase tracking-[1.5px] rounded-full px-2.5 py-0.5" style={{ color: st.leak ? "#EA2C00" : "#6B6B6B", backgroundColor: st.leak ? "#FBE7E1" : "#F2EDE5" }}>{st.leak ? "Behind" : st.entered ? (c.proofOnly ? `${a}% of signals` : `${a}% attained`) : c.proofOnly ? "Tracked metrics" : "Not entered"}</span>
                 </div>
                 <div className="h-1.5 rounded-full bg-[#E8E2DA] overflow-hidden"><div className="h-full" style={{ width: `${a}%`, backgroundColor: st.leak ? "#EA2C00" : "#1A1A1A" }} /></div>
               </div>

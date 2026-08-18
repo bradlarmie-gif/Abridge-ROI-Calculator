@@ -54,7 +54,7 @@ export type EconModel = {
 // category (see AttainCell.proofOnly): the cost-of-a-provider claim was a stretch, so it's pulled
 // entirely — no replacement-cost input, no prevent-share stance, no dollar. With no entry here,
 // econModel() returns undefined for retention, so the Align economics beat + stance never render
-// and engineValueInPlay() returns 0. The wellbeing story is tracked as proof, never dollarized.
+// and engineValueInPlay() returns 0. The wellbeing story is tracked as a metric, never dollarized.
 
 export const ECON_MODELS: Record<string, EconModel> = {
   // ---- Outpatient ----

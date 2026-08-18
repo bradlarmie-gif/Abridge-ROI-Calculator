@@ -122,7 +122,7 @@ function CategoryBlock({ cell }: { cell: AttainCell }) {
       <div className="flex items-center gap-2.5 mb-4">
         <h2 className="font-abridge text-[22px] text-[#1A1A1A]">{label}</h2>
         {cell.proofOnly && (
-          <span className="text-[10px] font-extrabold tracking-[0.06em] uppercase text-[#8A8072] bg-[#F2ECE3] rounded-full px-2.5 py-1">Tracked as proof</span>
+          <span className="text-[10px] font-extrabold tracking-[0.06em] uppercase text-[#8A8072] bg-[#F2ECE3] rounded-full px-2.5 py-1">Tracked metrics</span>
         )}
       </div>
 

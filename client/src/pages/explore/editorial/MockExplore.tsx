@@ -83,7 +83,7 @@ export default function MockExplore() {
 
             <div style={{ display: "flex", alignItems: "center", gap: 9, marginTop: 18, fontSize: 13, color: MUTED }}>
               <span style={{ width: 8, height: 8, borderRadius: 3, background: "#C4BCB0" }} />
-              Quality signals (E/M level, first-pass rate) are <b style={{ color: INK }}>tracked as proof</b>, not double-counted here.
+              Quality signals (E/M level, first-pass rate) are <b style={{ color: INK }}>tracked as a metric</b>, not double-counted here.
             </div>
           </div>
 

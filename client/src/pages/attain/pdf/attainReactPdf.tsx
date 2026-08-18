@@ -462,7 +462,7 @@ function CategoryPage({ data, c, idx, total }: { data: PdfData; c: PlanCat; idx:
         <View style={s.colNarrow}>
           <Text style={s.sectionLbl}>The assumptions</Text>
           {c.proofOnly ? (
-            <Text style={s.chainLbl}>No dollar is attached. This layer is tracked as proof, not counted, and the signals above are what we measure.</Text>
+            <Text style={s.chainLbl}>No dollar is attached. This layer is tracked as a metric, not counted, and the signals above are what we measure.</Text>
           ) : c.assumptions.length === 0 ? (
             <Text style={s.chainLbl}>Seeded from published figures; no partner inputs required.</Text>
           ) : (

@@ -156,7 +156,7 @@ export type AttainCell = {
   categoryLabel?: string;  // display override when the key reads wrong for the setting, e.g., "Nurse Retention" on Nursing
   // PROOF-ONLY: this category carries NO dollar anywhere. It's the wellbeing / belief / proof
   // layer that makes the other cases credible — tracked, never dollarized (the way quality
-  // signals are "tracked as proof, uncounted"). Drives the Align panel, the Strategy rollup row,
+  // signals are "tracked as a metric, uncounted"). Drives the Align panel, the Strategy rollup row,
   // and the Progress attainment (measured on signals, contributes $0 to the value-in-play total).
   proofOnly?: boolean;
   align: AlignContent;

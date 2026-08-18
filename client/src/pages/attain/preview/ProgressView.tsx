@@ -78,7 +78,7 @@ export default function ProgressView({ cell, committed = [], readings, setReadin
           </div>
           {proofOnly ? (
             <div className="text-right max-w-[240px]">
-              <p className="text-[13px] text-[#6B6B6B] leading-relaxed">Tracked as proof, not a dollar. The burnout pulse, likelihood-to-stay, and turnover are the scoreboard here.</p>
+              <p className="text-[13px] text-[#6B6B6B] leading-relaxed">Tracked metrics, not a dollar. The burnout pulse, likelihood-to-stay, and turnover are the scoreboard here.</p>
             </div>
           ) : (
             <div className="text-right">
@@ -125,7 +125,7 @@ export default function ProgressView({ cell, committed = [], readings, setReadin
         <LiveLink title="The outcomes" tone={leak ? "leak" : "on"} statusLabel={outAvg === null ? "Awaiting readings" : leak ? "Behind the signals" : `${Math.round(Math.max(0, outAvg) * 100)}% of the way`}
           metrics={outcomeMetrics} readings={readings} setReadings={setReadings} prog={prog} />
         <LiveLink title={proofOnly ? "The proof" : "The value"} tone="value" statusLabel={proofOnly ? `${attainPct}% of signals` : `${attainPct}% attained`}
-          note={proofOnly ? "Tracked as proof, not a dollar. We hold ourselves to the signals moving." : `${fmt$(realized)} of ${fmt$(plan.valueInPlay)} realized so far.`} />
+          note={proofOnly ? "Tracked metrics, not a dollar. We hold ourselves to the signals moving." : `${fmt$(realized)} of ${fmt$(plan.valueInPlay)} realized so far.`} />
       </div>
 
       {/* log this review — snapshots the readings into the climb */}

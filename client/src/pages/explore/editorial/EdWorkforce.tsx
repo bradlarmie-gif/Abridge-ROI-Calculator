@@ -696,7 +696,7 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
         id: "adminEfficiency",
         label: "Administrative Efficiency",
         kind: "tracked",
-        mechanism: "Fewer clarifications and queries to chase. We track these as proof; the dollars they touch are counted once, in Revenue.",
+        mechanism: "Fewer clarifications and queries to chase. We track these as a metric; the dollars they touch are counted once, in Revenue.",
         children: [
           {
             id: "umClarification",

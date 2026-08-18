@@ -515,7 +515,7 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
         label: "CDI Query Response",
         kind: "tracked",
         mechanism:
-          "Strong nursing documentation corroborates the physician record CDI depends on to close queries. The dollar is claimed on the physician side, so here it is tracked as proof.",
+          "Strong nursing documentation corroborates the physician record CDI depends on to close queries. The dollar is claimed on the physician side, so here it is tracked as a metric.",
         signals: ["CDI queries close faster", "Nursing record corroborates the clinical picture"],
       },
       {

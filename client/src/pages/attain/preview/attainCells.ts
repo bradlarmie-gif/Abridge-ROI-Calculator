@@ -110,7 +110,7 @@ const edAccess: AttainCell = {
 // Retention carries NO dollar anywhere: the cost-of-a-provider claim is a stretch, so it's
 // pulled entirely (no economics beat, no replacement-cost input, no prevent-share stance, no
 // scope). This is the wellbeing / belief / proof layer that makes the OTHER cases credible —
-// tracked as proof, never dollarized (the way quality signals are "tracked as proof, uncounted").
+// tracked as a metric, never dollarized (the way quality signals are "tracked as a metric, uncounted").
 // The honesty the stance used to carry now lives entirely in the Q4 driver gate ("mostly pay or
 // life → a lighter day won't be the deciding factor") and the framing. The ~7-beat walk:
 //   Q1 outcomes (the human goals) → Q2 burden anatomy → Q3 who's at risk → Q4 driver gate →
@@ -144,14 +144,14 @@ function retentionCell(cfg: RetentionConfig): AttainCell {
     setting,
     category: "Provider Retention", // stable key across settings; nurses aren't providers, so relabel the heading
     categoryLabel: isNurse ? "Nurse Retention" : undefined,
-    proofOnly: true, // NO dollar: tracked as proof everywhere (Align panel, Strategy rollup, Progress)
+    proofOnly: true, // NO dollar: tracked as a metric everywhere (Align panel, Strategy rollup, Progress)
     align: {
       outcomesMode: "multi",
       // Unused for a proof-only cell (the engine returns $0 and the panel is non-dollar), but the
       // ValueModel field is required by the type; keep a harmless placeholder.
       value: { mode: "scopeBased", perScope: 0, scopeNoun: nounPlural, mathTail: `` },
       outcomesPrompt: "What are you really after?",
-      outcomesHelper: `When a team says "we want to work on wellness," that's the goal. Our job is to already know what it breaks down into for your setting and walk you there. Pick everything you're after for your ${nounPlural}. This is the wellbeing layer of the plan: we track it as proof, and it's what makes the rest of the cases credible. There's no dollar attached, on purpose.`,
+      outcomesHelper: `When a team says "we want to work on wellness," that's the goal. Our job is to already know what it breaks down into for your setting and walk you there. Pick everything you're after for your ${nounPlural}. This is the wellbeing layer of the plan: we track it as a metric, and it's what makes the rest of the cases credible. There's no dollar attached, on purpose.`,
       outcomes: [
         { id: "betterday", title: "A lighter, more livable day", desc: `The same team, with the day that finally ends when it's supposed to.`, plays: ["Protect the freed time, don't just refill it", "Cut the after-hours charting", bedsideOrScreen], proof: ["pulse", "stay", "tin", "wow"] },
         { id: "keep", title: "Keep the people you have", desc: `Fewer of the ${nounPlural} you have today choosing to leave.`, plays: ["Check in with the people most at risk of leaving", "Make the lighter day visible to the team", "Protect the freed time so it's actually felt"], proof: ["turnover", "pulse"] },
@@ -193,7 +193,7 @@ function retentionCell(cfg: RetentionConfig): AttainCell {
       },
       valueNoun: nounPlural,
       panelKicker: "The proof you're building",
-      honestNote: "Retention is tracked as proof, not counted in dollars. It's the wellbeing layer that makes the rest of the plan credible. We hold ourselves to the signals moving, not a replacement-cost claim.",
+      honestNote: "Retention is tracked as a metric, not counted in dollars. It's the wellbeing layer that makes the rest of the plan credible. We hold ourselves to the signals moving, not a replacement-cost claim.",
     },
     plan: {
       valueInPlay: engineValueInPlay(setting, "Provider Retention"),

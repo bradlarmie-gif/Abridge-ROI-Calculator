@@ -26,7 +26,7 @@ export type PlanCat = {
   /** The leaks named in Align — carried into the plan as "what we're watching for", the risks
    * the named owner watches each review. Absent/empty when none were named. */
   watchouts?: { title: string; desc: string }[];
-  /** Retention: tracked as proof, no dollar. The renderer must not print a
+  /** Retention: tracked as a metric, no dollar. The renderer must not print a
    * dollar value or a replacement-cost chain for a proof-only category. */
   proofOnly?: boolean;
 };
@@ -245,7 +245,7 @@ export function buildFromSnapshot(snap: AttainSnapshot | null | undefined): { da
       // realized-to-date within this category's own promise (0 before any review is logged)
       realized: hasReviews && inPlan.has(c.category) && !c.proofOnly ? realizedOf(c.category) : 0,
       note: c.proofOnly
-        ? "Tracked as proof: turnover, burnout, likelihood to stay. No dollar attached, on purpose."
+        ? "Tracked metrics: turnover, burnout, likelihood to stay. No dollar attached, on purpose."
         : (NOTE[c.category] ?? ""),
       opens: (c.align.unlock?.options ?? []).slice(0, 2).map((o) => o.title),
       entered: inPlan.has(c.category),
@@ -281,7 +281,7 @@ export function buildFromSnapshot(snap: AttainSnapshot | null | undefined): { da
             return { label: a.label, value: `${a.prefix ?? ""}${v}${a.suffix ?? ""}` };
           }),
       honesty: c.proofOnly
-        ? "Tracked as proof, not counted in the dollar. The wellbeing layer that makes the rest of the plan credible."
+        ? "Tracked metrics, not counted in the dollar. The wellbeing layer that makes the rest of the plan credible."
         : (m?.capNote ?? "Counted conservatively, from your own numbers."),
       opens: (c.align.unlock?.options ?? []).slice(0, 3).map((o) => ({ title: o.title, desc: o.desc })),
       watchouts: (() => {

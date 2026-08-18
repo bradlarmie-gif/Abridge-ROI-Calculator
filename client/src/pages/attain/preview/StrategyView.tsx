@@ -55,7 +55,7 @@ export default function StrategyView({ cell, committed = [] }: { cell: AttainCel
           <div>
             <p className={`${LBL} mb-1`}>{proofOnly ? "How we hold it" : "The value in play"}</p>
             {proofOnly
-              ? <p className="font-abridge text-3xl text-[#1A1A1A] leading-none">Tracked as proof</p>
+              ? <p className="font-abridge text-3xl text-[#1A1A1A] leading-none">Tracked metrics</p>
               : <p className="font-abridge text-4xl text-[#1A1A1A] leading-none">{fmt$(plan.valueInPlay)}<span className="text-base font-normal text-[#8C8C8C]"> / yr</span></p>}
           </div>
           <p className="text-[12px] text-[#8C8C8C] max-w-[320px] leading-relaxed">{align.honestNote}</p>
@@ -94,7 +94,7 @@ export default function StrategyView({ cell, committed = [] }: { cell: AttainCel
         {/* node 4 — value (proof-only: the proof lands, no dollar) */}
         <ChainNode label={proofOnly ? "The proof lands" : "The value lands"} sub={proofOnly ? "the signals move, and the team stays" : "the payoff, once the outcomes follow"} last>
           {proofOnly
-            ? <p className="font-abridge text-[22px] text-[#EA2C00] leading-none">Tracked as proof<span className="text-[13px] font-normal text-[#8C8C8C]">, not a dollar</span></p>
+            ? <p className="font-abridge text-[22px] text-[#EA2C00] leading-none">Tracked metrics<span className="text-[13px] font-normal text-[#8C8C8C]">, not a dollar</span></p>
             : <p className="font-abridge text-[26px] text-[#EA2C00] leading-none">{fmt$(plan.valueInPlay)}<span className="text-[13px] font-normal text-[#8C8C8C]"> / yr in play</span></p>}
         </ChainNode>
       </div>

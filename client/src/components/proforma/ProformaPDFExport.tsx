@@ -23,7 +23,7 @@ import {
 // ────────────────────────────────────────────────────────────────
 // Builds a fully-reconciled ProformaPdfData FROM the live proforma engine.
 // The dollar case is built on the clinical domains only (Revenue + Capacity +
-// Workforce): Quality is tracked as proof and Cost Displacement is surfaced
+// Workforce): Quality is tracked as a metric and Cost Displacement is surfaced
 // separately in App Rationalization — neither is added to the ROI here. That
 // keeps every number tying out: drivers → domain → setting, settings → system,
 // domain-by-year → year totals, and sensitivity / cash-flow → term net.

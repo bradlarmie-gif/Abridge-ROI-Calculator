@@ -34,7 +34,7 @@ const SAMPLE: PdfData = {
   total: 549_000,
   categories: [
     { name: "Patient Access", value: 549_000, realized: 210_000, note: "Filling freed-time headroom at $220 a visit", opens: ["Take on a new contract or payer", "Keep a service line whole"], entered: true },
-    { name: "Provider Retention", value: 0, proofOnly: true, note: "Tracked as proof: turnover, burnout, likelihood to stay. No dollar attached, on purpose.", opens: ["Protect a fragile service line", "Wind down agency spend"], entered: true },
+    { name: "Provider Retention", value: 0, proofOnly: true, note: "Tracked metrics: turnover, burnout, likelihood to stay. No dollar attached, on purpose.", opens: ["Protect a fragile service line", "Wind down agency spend"], entered: true },
     { name: "Revenue Capture", value: 0, note: "Keeping the documentation-driven coding lift", opens: ["Fund the documentation program", "Stop writing off preventable denials"], entered: false },
   ],
   chain: [
@@ -67,7 +67,7 @@ function CategoryRow({ c, total, review }: { c: Cat; total: number; review?: boo
     );
   }
   if (c.proofOnly) {
-    // Tracked as proof (retention): no dollar, no bar, no realized $. It's the
+    // Tracked metrics (retention): no dollar, no bar, no realized $. It's the
     // wellbeing layer — shown as signals, deliberately kept out of the number.
     return (
       <div className="py-[10px] border-b border-[#EFEAE1] last:border-b-0">

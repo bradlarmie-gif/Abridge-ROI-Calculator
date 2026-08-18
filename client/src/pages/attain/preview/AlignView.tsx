@@ -482,7 +482,7 @@ export default function AlignView({ c, settingLabel, categoryLabel, categoryKey,
 
       {/* Closing panel — sits at the end of the content, not floating over it. Proof-only
           categories (retention) get a NON-DOLLAR panel: the signals they're building + what
-          it protects, tracked as proof, never a figure. Everything else keeps the live dollar. */}
+          it protects, tracked as a metric, never a figure. Everything else keeps the live dollar. */}
       <div>
         {proofOnly ? (
           <ProofPanel kicker={c.panelKicker} note={c.honestNote} signals={c.proof.signals.filter((s) => proof.has(s.id))} allSignals={c.proof.signals} protects={c.unlock.options.filter((u) => unlock.has(u.id))} />
@@ -522,7 +522,7 @@ function ProofPanel({ kicker, note, signals, allSignals, protects }: {
   return (
     <div className="rounded-2xl border-2 border-[#1A1A1A] bg-[#1A1A1A] p-6 md:p-7">
       <p className="text-[10px] font-bold uppercase tracking-[2px] text-white/50 mb-2">{kicker}</p>
-      <p className="font-abridge text-2xl md:text-[26px] text-[#EA2C00] leading-tight">Tracked as proof, not a dollar</p>
+      <p className="font-abridge text-2xl md:text-[26px] text-[#EA2C00] leading-tight">Tracked metrics, not a dollar</p>
       <p className="text-[13px] text-white/70 mt-3 leading-relaxed max-w-[560px]">{note}</p>
 
       <div className="mt-6 pt-5 border-t border-white/10">
