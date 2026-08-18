@@ -101,9 +101,10 @@ export interface ProformaCaseViewProps {
   settings: ProformaSettingSnapshot[];
   config: ProformaConfig;
   onNavigate: (c: Chapter) => void;
+  onHome?: () => void;
 }
 
-export default function ProformaCaseView({ settings, config, onNavigate }: ProformaCaseViewProps) {
+export default function ProformaCaseView({ settings, config, onNavigate, onHome }: ProformaCaseViewProps) {
   const model = useMemo(() => computeCaseModel(settings, config), [settings, config]);
   const [mode, setMode] = useState<"year" | "quarter">("year");
   const [isolatedId, setIsolatedId] = useState<string | null>(null);
@@ -138,6 +139,7 @@ export default function ProformaCaseView({ settings, config, onNavigate }: Profo
         pathType="forecast"
         pathLabel="Financial"
         showBack={false}
+        onHome={onHome}
         centerContent={<ChapterNav active="case" onNavigate={onNavigate} />}
         rightAction={
           <div style={{ display: "flex", alignItems: "center", gap: 18 }}>

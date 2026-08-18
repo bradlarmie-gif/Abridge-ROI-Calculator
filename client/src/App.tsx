@@ -49,6 +49,7 @@ import MethodologyEditorialPdfRoute from "@/components/methodology/MethodologyEd
 import { ExploreFlow, type ExploreState, type ExploreCareSetting, type ExplorePhase, DEFAULT_EXPLORE_STATE } from "@/pages/explore";
 import { loadSnapshot } from "@/pages/attain/attainStorage";
 import { resolveResult } from "@/lib/attain/discovery";
+import DiscoveryBridge, { type BridgeInfo } from "@/pages/attain/valuestrategy/DiscoveryBridge";
 import type { AttainSetting, GoalId } from "@/lib/attain/attainTypes";
 import AttainConsultPreview from "@/pages/attain/AttainConsultPreview";
 import AttainPlanPreview from "@/pages/attain/AttainPlanPreview";
@@ -80,7 +81,7 @@ import { mergeExploreEditIntoSetting } from "@/lib/proformaCalculations";
 import { type CareSettingType } from "@/lib/SETTING_CONFIG";
 import { type RoiInputs } from "@/lib/roi-types";
 
-type AppView = "splash" | "journey" | "explore" | "baseline-setup" | "model-builder" | "investment" | "calculator" | "expand" | "switch" | "learn" | "measure" | "forecast" | "forecast-mode" | "forecast-roi-calc" | "proforma-hub" | "proforma-view" | "explore-intake" | "measure-data-request" | "explore-intake-receipt" | "measure-data-receipt" | "data-request-builder" | "forecast-app-rationalization" | "attain" | "hub" | "strategy-hub" | "financial-hub" | "planning-hub" | "value-strategy" | "planning";
+type AppView = "splash" | "journey" | "explore" | "baseline-setup" | "model-builder" | "investment" | "calculator" | "expand" | "switch" | "learn" | "measure" | "forecast" | "forecast-mode" | "forecast-roi-calc" | "proforma-hub" | "proforma-view" | "explore-intake" | "measure-data-request" | "explore-intake-receipt" | "measure-data-receipt" | "data-request-builder" | "forecast-app-rationalization" | "attain" | "hub" | "strategy-hub" | "financial-hub" | "planning-hub" | "value-strategy" | "planning" | "explore-bridge";
 
 interface SelectionState {
   selectedSettings: CareSettingType[];
@@ -427,6 +428,8 @@ export default function App() {
   // proforma-edit atom so Explore behaves like a normal run (keeps the investment
   // page, backs out to the financial hub), not a proforma edit.
   const [exploreSeedState, setExploreSeedState] = useState<ExploreState | undefined>(undefined);
+  // What the discovery→ROI bridge screen narrates (carried-over setting + drivers).
+  const [bridgeInfo, setBridgeInfo] = useState<BridgeInfo | null>(null);
   const [measureFromForecastMode, setMeasureFromForecastMode] = useState(false);
 
   const handleAddToProforma = useCallback((snapshot: ProformaSettingSnapshot) => {
@@ -464,7 +467,7 @@ export default function App() {
     setProformaSettings([]);
     setProformaConfig({ ...DEFAULT_PROFORMA_CONFIG });
     setProformaAddCareSetting(undefined);
-    setExploreSeedState(undefined);
+    setExploreSeedState(undefined); setBridgeInfo(null);
     setCurrentView("splash");
   }, []);
 
@@ -520,7 +523,7 @@ export default function App() {
   const handleBackToProforma = useCallback(() => {
     setProformaAddCareSetting(undefined);
     setProformaEditExploreState(undefined);
-    setExploreSeedState(undefined);
+    setExploreSeedState(undefined); setBridgeInfo(null);
     navigateTo("proforma-hub");
   }, [navigateTo]);
 
@@ -535,11 +538,15 @@ export default function App() {
     const answers = snap.discovery ?? {};
     const driverIds = new Set<string>();       // counted levers → toggle on
     const proofDriverIds = new Set<string>();  // proof-first drivers (retention) → toggle on in tracked mode
+    const countedLabels = new Set<string>();
+    const trackedLabels = new Set<string>();
+    const proofLabel: Record<string, string> = { providerWellbeing: "Provider Retention", nursingRetention: "Nurse Retention" };
     for (const g of (snap.goals ?? []) as GoalId[]) {
       const r = resolveResult(snap.setting as AttainSetting, g, answers);
-      if (r?.lever) driverIds.add(r.lever.driverId);
-      if (r?.proofDriverId && !r.honest) proofDriverIds.add(r.proofDriverId);
+      if (r?.lever) { driverIds.add(r.lever.driverId); countedLabels.add(r.lever.label); }
+      if (r?.proofDriverId && !r.honest) { proofDriverIds.add(r.proofDriverId); trackedLabels.add(proofLabel[r.proofDriverId] ?? "Tracked"); }
     }
+    const SETTING_LABEL: Record<string, string> = { outpatient: "Outpatient", ed: "Emergency", inpatient: "Inpatient", nursing: "Nursing" };
     const td = { ...DEFAULT_EXPLORE_STATE.timeDriverInputs };
     const dq = { ...DEFAULT_EXPLORE_STATE.docQualityInputs };
     // Proof-first drivers land ON but stay in tracked mode (retentionMode default
@@ -567,7 +574,8 @@ export default function App() {
     setProformaAddCareSetting(undefined);
     setProformaEditExploreState(undefined);
     setExploreSeedState(seeded);
-    navigateTo("explore");
+    setBridgeInfo({ partner: snap.partner ?? "", settingLabel: SETTING_LABEL[setting] ?? setting, counted: Array.from(countedLabels), tracked: Array.from(trackedLabels) });
+    navigateTo("explore-bridge");
   }, [navigateTo]);
 
   const hasSelection = selectionState.selectedSettings.length > 0;
@@ -595,7 +603,7 @@ export default function App() {
                   setExploreInitialSettings({});
                   setProformaAddCareSetting(undefined);
                   setProformaEditExploreState(undefined);
-                  setExploreSeedState(undefined);
+                  setExploreSeedState(undefined); setBridgeInfo(null);
                   navigateTo("explore");
                 }}
                 onSelectExpand={() => navigateTo("measure")}
@@ -638,6 +646,7 @@ export default function App() {
                 mode="strategy"
                 chapters={["align", "strategy"]}
                 onFinish={handleBuildRoiFromDiscovery}
+                onHome={() => navigateTo("hub")}
                 onBackToJourney={() => navigateTo("strategy-hub")}
                 flowLabel="Value Attainment Strategy"
                 buildCta="Start discovery"
@@ -650,6 +659,7 @@ export default function App() {
               <AttainFlowV2
                 autoResume
                 chapters={["plan", "progress"]}
+                onHome={() => navigateTo("hub")}
                 onBackToJourney={() => navigateTo("planning-hub")}
                 flowLabel="Planning"
                 experienceLabel="Build the plan"
@@ -671,7 +681,7 @@ export default function App() {
                   setExploreInitialSettings({});
                   setProformaAddCareSetting(undefined);
                   setProformaEditExploreState(undefined);
-                  setExploreSeedState(undefined);
+                  setExploreSeedState(undefined); setBridgeInfo(null);
                   navigateTo("explore");
                 }}
               />
@@ -685,15 +695,26 @@ export default function App() {
               />
             )}
 
+            {currentView === "explore-bridge" && bridgeInfo && (
+              <DiscoveryBridge
+                info={bridgeInfo}
+                onContinue={() => navigateTo("explore")}
+                onBack={() => navigateTo("strategy-hub")}
+                onHome={() => navigateTo("hub")}
+              />
+            )}
+
             {currentView === "explore" && (
               <ExploreFlow
                 editorial
-                onBackToJourney={hubMode ? () => navigateTo("financial-hub") : handleBackToJourney}
+                onBackToJourney={hubMode ? () => navigateTo("hub") : handleBackToJourney}
                 onBackToProforma={(proformaAddCareSetting || proformaEditExploreState) ? handleBackToProforma : undefined}
                 initialCareSetting={proformaAddCareSetting || exploreInitialSettings.careSetting}
                 initialPhase={exploreInitialSettings.phase}
                 initialExploreState={proformaEditExploreState ?? exploreSeedState}
                 onAddToProforma={exploreSeedState ? undefined : handleAddToProforma}
+                lockCareSetting={!!exploreSeedState}
+                onExitToDiscovery={() => navigateTo("explore-bridge")}
                 disabledCareSettings={proformaSettings.map(s => s.careSetting as ExploreCareSetting)}
                 onDataRequest={() => navigateTo("data-request-builder")}
               />
@@ -800,7 +821,7 @@ export default function App() {
                 onSelectNewDeal={() => navigateTo("proforma-hub")}
                 onSelectPartnerModel={() => { setMeasureFromForecastMode(true); navigateTo("measure"); }}
                 onSelectAppRationalization={() => navigateTo("forecast-app-rationalization")}
-                onHome={() => navigateTo("journey")}
+                onHome={() => navigateTo(hubMode ? "hub" : "journey")}
               />
             )}
 
@@ -874,8 +895,8 @@ export default function App() {
                   }}
                   onRemoveSetting={handleRemoveFromProforma}
                   onUpdateSetting={handleUpdateProformaSetting}
-                  onHome={() => navigateTo("journey")}
-                  onBack={() => navigateTo("journey")}
+                  onHome={() => navigateTo(hubMode ? "hub" : "journey")}
+                  onBack={() => navigateTo(hubMode ? "financial-hub" : "journey")}
                 />
               ) : (
                 <ProformaEditorialHost
@@ -899,6 +920,7 @@ export default function App() {
                   }}
                   onRemoveSetting={handleRemoveFromProforma}
                   onBack={() => navigateTo(hubMode ? "financial-hub" : "journey")}
+                  onHome={() => navigateTo(hubMode ? "hub" : "journey")}
                 />
               )
             )}

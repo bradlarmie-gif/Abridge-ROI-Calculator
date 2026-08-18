@@ -720,7 +720,7 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
 
     return (
       <DriverLedger
-        eyebrow="Value Estimator · Step 5 of 9 · Workforce"
+        eyebrow="Value Model · Step 5 of 9 · Workforce"
         title="What is Abridge worth to your workforce?"
         intro="Documentation burden is a leading reason providers leave. Turn on only what you can stand behind; it adds to the ledger as you go."
         sectionLabel="The drivers · turn on what applies"
@@ -837,7 +837,7 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
 
     return (
       <DriverLedger
-        eyebrow="Value Estimator · Step 5 of 9 · Workforce"
+        eyebrow="Value Model · Step 5 of 9 · Workforce"
         title="What is Abridge worth to your workforce?"
         intro="Documentation burden is a leading reason nurses burn out and leave the bedside. Turn on only what you can stand behind; it adds to the ledger as you go."
         sectionLabel="The drivers · turn on what applies"
@@ -1006,7 +1006,7 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
 
     return (
       <DriverLedger
-        eyebrow="Value Estimator · Step 5 of 9 · Workforce"
+        eyebrow="Value Model · Step 5 of 9 · Workforce"
         title="What is Abridge worth to your workforce?"
         intro="Documentation burden is a leading reason providers burn out and leave. Turn on only what you can stand behind; it adds to the ledger as you go."
         sectionLabel="The drivers · turn on what applies"
@@ -1174,7 +1174,7 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
 
     return (
       <DriverLedger
-        eyebrow="Value Estimator · Step 5 of 9 · Workforce"
+        eyebrow="Value Model · Step 5 of 9 · Workforce"
         title="What is Abridge worth to your workforce?"
         intro="Documentation load is a leading reason emergency physicians burn out and lean on locum coverage. Turn on only what you can stand behind; it adds to the ledger as you go."
         sectionLabel="The drivers · turn on what applies"
@@ -1197,7 +1197,7 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
     <EditorialShell>
       <EditorialHeader stepName="Workforce" stepIndex={5} onBack={onBack} onHome={onHome} />
       <div className="max-w-[1160px] mx-auto px-5 sm:px-8 lg:px-12 pt-11 pb-[60px]">
-        <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#565250]">Value Estimator · Step 5 of 9</div>
+        <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#565250]">Value Model · Step 5 of 9</div>
         <h1 className="font-abridge text-[26px] sm:text-[32px] lg:text-[38px] leading-[1.08] text-[#1A1A1A] mt-[10px]">What is Abridge worth to your workforce?</h1>
         <p className="text-[16px] text-[#565250] mt-[13px] max-w-[680px] leading-[1.5]">
           <>Documentation burden is a leading reason providers burn out and leave. As the after-hours load comes down, fewer walk out the door. Turn on only what you can stand behind, and nothing counts until you switch it on.</>

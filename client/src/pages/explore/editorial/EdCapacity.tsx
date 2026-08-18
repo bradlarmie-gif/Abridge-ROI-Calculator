@@ -329,7 +329,7 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
     ];
     return (
       <DriverLedger
-        eyebrow="Value Estimator · Step 4 of 9 · Capacity"
+        eyebrow="Value Model · Step 4 of 9 · Capacity"
         title="What does the freed time become?"
         intro="Freed documentation time is clinical capacity: room for the existing team to carry more census and consult volume as you grow. We hold it as proof, not a dollar; we do not put a number on capacity we do not control."
         sectionLabel="The proof · tracked, not counted"
@@ -401,7 +401,7 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
 
     return (
       <DriverLedger
-        eyebrow="Value Estimator · Step 4 of 9 · Capacity"
+        eyebrow="Value Model · Step 4 of 9 · Capacity"
         title="What is Abridge worth to your unit's capacity?"
         intro="Charting that used to spill past the shift gets done at the bedside. Turn on only what you can stand behind; it adds to the ledger as you go."
         sectionLabel="The drivers · turn on what applies"
@@ -471,7 +471,7 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
 
     return (
       <DriverLedger
-        eyebrow="Value Estimator · Step 4 of 9 · Capacity"
+        eyebrow="Value Model · Step 4 of 9 · Capacity"
         title="What does the freed time become?"
         intro="Charting that used to happen after the visit gets done in the room, and the time it gives back becomes room on the schedule. Turn on only what you can stand behind; it adds to the ledger as you go."
         sectionLabel="The drivers · turn on what applies"
@@ -565,7 +565,7 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
 
     return (
       <DriverLedger
-        eyebrow="Value Estimator · Step 4 of 9 · Capacity"
+        eyebrow="Value Model · Step 4 of 9 · Capacity"
         title="What does faster throughput recover?"
         intro="Faster documentation moves patients through the department sooner. Some who would have left before being seen stay to be treated, and a share of them need admission. Turn on only what you can stand behind; it adds to the ledger as you go."
         sectionLabel="The drivers · turn on what applies"
@@ -588,7 +588,7 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
     <EditorialShell>
       <EditorialHeader stepName="Capacity" stepIndex={4} onBack={onBack} onHome={onHome} />
       <div className="max-w-[1160px] mx-auto px-5 sm:px-8 lg:px-12 pt-11 pb-[60px]">
-        <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#565250]">Value Estimator · Step 4 of 9</div>
+        <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#565250]">Value Model · Step 4 of 9</div>
         <h1 className="font-abridge text-[26px] sm:text-[32px] lg:text-[38px] leading-[1.08] text-[#1A1A1A] mt-[10px]">What does the freed time become?</h1>
         <p className="text-[16px] text-[#565250] mt-[13px] max-w-[660px] leading-[1.5]">
           {capacityIsProofLayer ? (

@@ -20,6 +20,7 @@ export interface ProformaEditorialHostProps {
   onRemoveSetting: (id: string) => void;
   onAddSetting: (careSetting?: string) => void;
   onBack: () => void;
+  onHome?: () => void; // Abridge logo → top home hub
   org?: string;
 }
 
@@ -31,6 +32,7 @@ export default function ProformaEditorialHost({
   onRemoveSetting,
   onAddSetting,
   onBack,
+  onHome,
   org = "Your organization",
 }: ProformaEditorialHostProps) {
   const [chapter, setChapter] = useState<Chapter>("build");
@@ -44,10 +46,10 @@ export default function ProformaEditorialHost({
   const resolved = useMemo(() => applyExclusions(settings), [settings]);
 
   if (chapter === "case") {
-    return <ProformaCaseView settings={resolved} config={config} onNavigate={navigate} />;
+    return <ProformaCaseView settings={resolved} config={config} onNavigate={navigate} onHome={onHome} />;
   }
   if (chapter === "present") {
-    return <ProformaPresentView settings={resolved} config={config} org={org} onNavigate={navigate} />;
+    return <ProformaPresentView settings={resolved} config={config} org={org} onNavigate={navigate} onHome={onHome} />;
   }
 
   return (
@@ -60,6 +62,7 @@ export default function ProformaEditorialHost({
       onNavigate={navigate}
       onAddSetting={onAddSetting}
       onBack={onBack}
+      onHome={onHome}
     />
   );
 }

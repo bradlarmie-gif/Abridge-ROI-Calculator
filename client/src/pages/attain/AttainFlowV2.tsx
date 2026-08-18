@@ -41,6 +41,7 @@ type Phase = "partner" | "setting" | "vision" | "scope" | "experience";
 
 export default function AttainFlowV2({
   onBackToJourney,
+  onHome,
   chapters,
   onFinish,
   autoResume,
@@ -50,6 +51,8 @@ export default function AttainFlowV2({
   mode,
 }: {
   onBackToJourney?: () => void;
+  // The Abridge logo target: always the top home hub. Falls back to onBackToJourney.
+  onHome?: () => void;
   // Value Attainment Hub: mount a SUBSET of chapters. Value Strategy runs
   // ["align","strategy"] and hands off via onFinish; Planning runs
   // ["plan","progress"] and autoResumes the active saved plan (skips the funnel).
@@ -212,7 +215,7 @@ export default function AttainFlowV2({
         totalSteps={PHASES.length}
         stepName={stepName}
         onBack={goBack}
-        onHome={onBackToJourney ?? (() => setPhase("setting"))}
+        onHome={onHome ?? onBackToJourney ?? (() => setPhase("setting"))}
         rightAction={(partner.trim() || saved) ? (
           <div className="flex items-center gap-3 text-[11px]">
             {/* Export PDF drives the dollar-based Attain plan PDF; the no-dollar

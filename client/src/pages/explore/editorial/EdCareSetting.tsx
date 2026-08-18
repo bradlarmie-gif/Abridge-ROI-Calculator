@@ -27,7 +27,7 @@ export default function EdCareSetting({ selectedSetting, onSelectSetting, onNext
     <EditorialShell>
       <EditorialHeader stepName="Care setting" stepIndex={1} onDataRequest={onDataRequest} onBack={onBack} onHome={onHome} />
       <div className="max-w-[720px] mx-auto px-6 sm:px-8 pt-[52px] pb-[80px]">
-        <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#565250]">Value Estimator · Step 1 of 9</div>
+        <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#565250]">Value Model · Step 1 of 9</div>
         <h1 className="font-abridge text-[30px] sm:text-[40px] leading-[1.08] text-[#1A1A1A] mt-[10px]">
           Which care setting<br className="hidden sm:inline" /> should we model first?
         </h1>

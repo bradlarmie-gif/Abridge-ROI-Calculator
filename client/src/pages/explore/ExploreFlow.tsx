@@ -1036,9 +1036,14 @@ interface ExploreFlowProps {
   /** THROWAWAY preview flag (?explorepreview=1): render editorial-brand screens
    * where built, else fall back to the existing (interactive) screen. */
   editorial?: boolean;
+  /** Entered pre-seeded (e.g. from the discovery brief): the care setting is
+   * already chosen, so the practice step's Back returns to the discovery bridge
+   * via onExitToDiscovery instead of re-asking the care setting. */
+  lockCareSetting?: boolean;
+  onExitToDiscovery?: () => void;
 }
 
-export default function ExploreFlow({ onBackToJourney, onBackToProforma, initialCareSetting, initialPhase, initialExploreState, onAddToProforma, disabledCareSettings = [], onDataRequest, editorial = false }: ExploreFlowProps) {
+export default function ExploreFlow({ onBackToJourney, onBackToProforma, initialCareSetting, initialPhase, initialExploreState, onAddToProforma, disabledCareSettings = [], onDataRequest, editorial = false, lockCareSetting = false, onExitToDiscovery }: ExploreFlowProps) {
   const [phase, setPhase] = useState<ExplorePhase>(() => {
     const requested = initialPhase || (initialExploreState ? 'practice' : 'careSetting');
     return resolveExplorePhase(requested, !!initialExploreState && !!onAddToProforma);
@@ -1287,7 +1292,7 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
           state={state}
           updateState={updateState}
           onNext={() => navigate('timeSavings')}
-          onBack={() => navigate('careSetting')}
+          onBack={() => (lockCareSetting && onExitToDiscovery ? onExitToDiscovery() : navigate('careSetting'))}
           onHome={goHome}
           onReturnToBusinessCase={cameFromProforma ? fastExitToProforma : undefined}
         />
@@ -1296,7 +1301,7 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
           state={state}
           updateState={updateState}
           onNext={() => navigate('timeSavings')}
-          onBack={() => navigate('careSetting')}
+          onBack={() => (lockCareSetting && onExitToDiscovery ? onExitToDiscovery() : navigate('careSetting'))}
           onHome={goHome}
           onReturnToBusinessCase={cameFromProforma ? fastExitToProforma : undefined}
         />

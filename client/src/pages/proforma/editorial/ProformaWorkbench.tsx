@@ -1031,6 +1031,7 @@ export interface ProformaWorkbenchProps {
   onAddSetting?: (careSetting?: string) => void;
   /** Leave the proforma (back to the journey/home). */
   onBack?: () => void;
+  onHome?: () => void;
 }
 
 // Deal-wide engine levers behind "Advanced deal assumptions". These are real:
@@ -1109,7 +1110,7 @@ function AdvancedAssumptions({ config, onUpdateConfig }: { config: ProformaConfi
   );
 }
 
-export default function ProformaWorkbench({ settings, config, onUpdateSetting, onUpdateConfig, onRemoveSetting, onNavigate, onAddSetting, onBack }: ProformaWorkbenchProps) {
+export default function ProformaWorkbench({ settings, config, onUpdateSetting, onUpdateConfig, onRemoveSetting, onNavigate, onAddSetting, onBack, onHome }: ProformaWorkbenchProps) {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(() => new Set(settings.slice(0, 1).map((s) => s.id)));
   const [advOpen, setAdvOpen] = useState(false);
 
@@ -1189,6 +1190,7 @@ export default function ProformaWorkbench({ settings, config, onUpdateSetting, o
         pathType="forecast"
         pathLabel="Financial"
         onBack={onBack}
+        onHome={onHome}
         centerContent={
           <div style={{ display: "flex", gap: 26 }}>
             {CHAPTERS.map((c) => {

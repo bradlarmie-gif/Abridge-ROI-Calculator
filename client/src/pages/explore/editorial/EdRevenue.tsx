@@ -485,7 +485,7 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
     ];
     return (
       <DriverLedger
-        eyebrow="Value Estimator · Step 6 of 9 · Revenue"
+        eyebrow="Value Model · Step 6 of 9 · Revenue"
         title="How does documentation protect what you're already owed?"
         intro="Turn on the drivers that apply. Each one models against your numbers and adds to the ledger."
         sectionLabel="The drivers · turn on what applies"
@@ -528,7 +528,7 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
     ];
     return (
       <DriverLedger
-        eyebrow="Value Estimator · Step 6 of 9 · Revenue"
+        eyebrow="Value Model · Step 6 of 9 · Revenue"
         title="Where does nursing documentation show up in revenue?"
         intro="Nursing documentation supports the revenue cycle rather than driving it directly. The dollars it touches are claimed once, on the physician side, so nothing is counted here. We track the proof instead."
         sectionLabel="The proof · tracked, not counted"
@@ -729,7 +729,7 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
 
     return (
       <DriverLedger
-        eyebrow="Value Estimator · Step 6 of 9 · Revenue"
+        eyebrow="Value Model · Step 6 of 9 · Revenue"
         title="How does documentation turn into revenue?"
         intro="The same complete note earns money differently depending on how you're paid. Turn on the drivers that apply; each models against your numbers and adds to the ledger."
         sectionLabel="The drivers · turn on what applies"
@@ -818,7 +818,7 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
 
     return (
       <DriverLedger
-        eyebrow="Value Estimator · Step 6 of 9 · Revenue"
+        eyebrow="Value Model · Step 6 of 9 · Revenue"
         title="How does documentation turn into revenue?"
         intro="The same complete note supports accurate E/M coding and fewer denied claims. Turn on the drivers that apply; each models against your numbers and adds to the ledger."
         sectionLabel="The drivers · turn on what applies"
@@ -875,7 +875,7 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
     <EditorialShell>
       <EditorialHeader stepName="Revenue" stepIndex={6} onBack={onBack} onHome={onHome} />
       <div className="max-w-[1160px] mx-auto px-5 sm:px-8 lg:px-12 pt-11 pb-[60px]">
-        <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#565250]">Value Estimator · Step 6 of 9</div>
+        <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#565250]">Value Model · Step 6 of 9</div>
         <h1 className="font-abridge text-[26px] sm:text-[32px] lg:text-[38px] leading-[1.08] text-[#1A1A1A] mt-[10px] max-w-[680px]">{heading}</h1>
         <p className="text-[16px] text-[#565250] mt-[13px] max-w-[640px] leading-[1.5]">{sub}</p>
 

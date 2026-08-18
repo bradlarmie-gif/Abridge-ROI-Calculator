@@ -87,7 +87,7 @@ function ProofChainScreen({ state, totalHoursSaved, onNext, onBack, onHome, sett
     <EditorialShell>
       <EditorialHeader stepName="Quality" stepIndex={stepIndex} onBack={onBack} onHome={onHome} />
       <div className="max-w-[1160px] mx-auto px-5 sm:px-8 lg:px-12 pt-11 pb-[60px]">
-        <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#565250]">Value Estimator · Step 7 of 9</div>
+        <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#565250]">Value Model · Step 7 of 9</div>
         <h1 className="font-abridge text-[26px] sm:text-[32px] lg:text-[38px] leading-[1.08] text-[#1A1A1A] mt-[10px] max-w-[700px]">{copy.h1}</h1>
         <p className="text-[16px] text-[#565250] mt-[13px] max-w-[660px] leading-[1.5]">{copy.sub}</p>
 
@@ -366,7 +366,7 @@ function NursingQualityScreen({
 
   return (
     <DriverLedger
-      eyebrow="Value Estimator · Step 7 of 9 · Quality"
+      eyebrow="Value Model · Step 7 of 9 · Quality"
       title="Where does nursing documentation prevent harm?"
       intro="Harm events are scored on timestamps. Documented in real time at the bedside, the same care that was delivered is the care that counts. Turn on only what you can stand behind; it adds to the ledger as you go."
       sectionLabel="The drivers · turn on what applies"
@@ -414,7 +414,7 @@ export default function EdQuality({ state, updateState, totalHoursSaved, onNext,
     ];
     return (
       <DriverLedger
-        eyebrow="Value Estimator · Step 7 of 9 · Quality"
+        eyebrow="Value Model · Step 7 of 9 · Quality"
         title="Where does the quality show up?"
         intro="Better inpatient notes make sure the acuity and care you delivered are reflected in the measures you already report. Abridge does not change the score; it keeps real care from being lost to an incomplete note."
         sectionLabel="The proof · tracked, not counted"
@@ -474,7 +474,7 @@ export default function EdQuality({ state, updateState, totalHoursSaved, onNext,
     ];
     return (
       <DriverLedger
-        eyebrow="Value Estimator · Step 7 of 9 · Quality"
+        eyebrow="Value Model · Step 7 of 9 · Quality"
         title="Where does the quality show up?"
         intro="Quality scores are built from documentation. Capture the visit accurately and the scores reflect the care you delivered. We track these as proof, not a dollar; anything financial is counted once, in Revenue, through HCC and denials."
         sectionLabel="The proof · tracked, not counted"
@@ -542,7 +542,7 @@ export default function EdQuality({ state, updateState, totalHoursSaved, onNext,
     ];
     return (
       <DriverLedger
-        eyebrow="Value Estimator · Step 7 of 9 · Quality"
+        eyebrow="Value Model · Step 7 of 9 · Quality"
         title="Where does the quality show up?"
         intro="Better ED notes make sure the care delivered is reflected in the measures you already report. Abridge does not change the score; it keeps a busy shift's care from being lost to an incomplete note. We track these as proof, not a dollar; anything financial is counted once, in Revenue."
         sectionLabel="The proof · tracked, not counted"

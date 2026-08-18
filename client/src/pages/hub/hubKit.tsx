@@ -101,14 +101,14 @@ export function HubCard({
       onClick={comingSoon ? undefined : onClick}
       data-testid={testId}
       aria-disabled={comingSoon || undefined}
-      className={`group relative flex flex-col rounded-xl p-8 min-h-[300px] transition-all duration-300 ease-out ${
+      className={`group relative flex flex-col rounded-xl p-7 min-h-[236px] transition-all duration-300 ease-out ${
         comingSoon
           ? "bg-[#F5F0EB]/60 cursor-default"
           : "cursor-pointer bg-[#F5F0EB] hover:bg-[#EDE7E0] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#EA2C00] focus-visible:ring-offset-2"
       }`}
     >
-      <div className={`w-12 h-12 rounded-full bg-white flex items-center justify-center mb-5 ${comingSoon ? "opacity-60" : ""}`}>
-        <Icon className="w-6 h-6 text-[#EA2C00]" />
+      <div className={`w-11 h-11 rounded-full bg-white flex items-center justify-center mb-4 ${comingSoon ? "opacity-60" : ""}`}>
+        <Icon className="w-[22px] h-[22px] text-[#EA2C00]" />
       </div>
       <div className="flex items-center gap-2 mb-1.5">
         <p className="text-[13px] text-[#EA2C00] font-medium">{tagline}</p>
@@ -118,8 +118,8 @@ export function HubCard({
       </div>
       {/* reserve two lines so a title that wraps (e.g. "App Rationalization") keeps
           the body/CTA aligned with its single-line neighbors across a card row */}
-      <h3 className={`text-2xl font-bold leading-[1.15] min-h-[2.3em] mb-2.5 ${comingSoon ? "text-[#8A8073]" : "text-[#1A1A1A]"}`}>{title}</h3>
-      <p className={`text-sm leading-relaxed flex-1 mb-6 ${comingSoon ? "text-[#9A9086]" : "text-[#666666]"}`}>{description}</p>
+      <h3 className={`text-[22px] font-bold leading-[1.15] min-h-[2.3em] mb-2 ${comingSoon ? "text-[#8A8073]" : "text-[#1A1A1A]"}`}>{title}</h3>
+      <p className={`text-[13.5px] leading-relaxed flex-1 mb-5 ${comingSoon ? "text-[#9A9086]" : "text-[#666666]"}`}>{description}</p>
       {comingSoon ? (
         <div className="w-full text-center rounded-md border border-[#E0D9CE] text-[#9A9086] text-[14px] font-semibold py-2.5 select-none" data-testid={testId ? `${testId}-comingsoon` : undefined}>
           Coming soon

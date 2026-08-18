@@ -110,9 +110,10 @@ export interface ProformaPresentViewProps {
   config: ProformaConfig;
   org: string;
   onNavigate: (c: Chapter) => void;
+  onHome?: () => void;
 }
 
-export default function ProformaPresentView({ settings, config, org, onNavigate }: ProformaPresentViewProps) {
+export default function ProformaPresentView({ settings, config, org, onNavigate, onHome }: ProformaPresentViewProps) {
   const model = useMemo(() => computeCaseModel(settings, config), [settings, config]);
   const [isolatedId, setIsolatedId] = useState<string | null>(null);
   const [showStress, setShowStress] = useState(false);
@@ -147,6 +148,7 @@ export default function ProformaPresentView({ settings, config, org, onNavigate 
         pathType="forecast"
         pathLabel="Financial"
         showBack={false}
+        onHome={onHome}
         centerContent={<ChapterNav active="present" onNavigate={onNavigate} />}
         rightAction={
           <button

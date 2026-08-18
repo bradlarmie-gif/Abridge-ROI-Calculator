@@ -24,7 +24,7 @@ export function EditorialHeader({
     <>
       <UnifiedHeader
         pathType="explore"
-        pathLabel="Value Estimator"
+        pathLabel="Value Model"
         currentStep={stepIndex}
         totalSteps={9}
         stepName={stepName}

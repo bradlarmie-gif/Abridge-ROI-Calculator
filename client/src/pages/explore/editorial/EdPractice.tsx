@@ -301,7 +301,7 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
       <EditorialHeader stepName="Practice" stepIndex={2} onBack={onBack} onHome={onHome} />
       <div className="max-w-[1080px] mx-auto px-5 sm:px-8 lg:px-12 pt-12 pb-14">
         <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#565250]">
-          Value Estimator · Step 2 of 9
+          Value Model · Step 2 of 9
         </div>
         <h1 className="font-abridge text-[27px] sm:text-[34px] lg:text-[40px] leading-[1.08] text-[#1A1A1A] mt-[10px] max-w-[640px]">
           How big is the {settingHeadline}?
