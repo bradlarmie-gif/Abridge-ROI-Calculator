@@ -31,11 +31,17 @@ function Cap({ children }: { children: ReactNode }) {
 /** An editable number, inline in the equation. The underline hugs the value (sizes to content)
  * and the number is centered over it, matching the mock — not a full-width coral bar. Bound to
  * state via onChange. `width` is retained for call-site compatibility but sizing is content-based. */
-export function EqNum({ cap, value, onChange, prefix, suffix, decimal }: { cap: string; value: number; onChange: (v: number) => void; prefix?: string; suffix?: string; decimal?: boolean; width?: number }) {
+export function EqNum({ cap, value, onChange, prefix, suffix, decimal, width }: { cap: string; value: number; onChange: (v: number) => void; prefix?: string; suffix?: string; decimal?: boolean; width?: number }) {
   return (
     <div className="flex flex-col justify-end items-center">
       {cap ? <Cap>{cap}</Cap> : null}
-      <div className="inline-flex items-baseline w-fit border-b-2 border-[#EA2C00] pb-[2px] transition-colors focus-within:border-[#B02200]">
+      {/* `width` sets a MIN underline length so sibling fields in a row share a
+          consistent bar even when one is empty (e.g. Lives blank vs $1,500);
+          the value+unit stay centered over it. */}
+      <div
+        className="inline-flex items-baseline justify-center w-fit border-b-2 border-[#EA2C00] pb-[2px] transition-colors focus-within:border-[#B02200]"
+        style={width ? { minWidth: width } : undefined}
+      >
         {prefix && <span className="font-abridge text-[19px] text-[#1A1A1A] leading-none">{prefix}</span>}
         <NumberField value={value} onValueChange={onChange} decimal={decimal} className="bg-transparent outline-none border-0 p-0 font-abridge text-[19px] text-[#1A1A1A] tabular-nums leading-none text-center [field-sizing:content] min-w-[1ch]" />
         {/* "%" hugs the number; word suffixes (hrs, min, "of N") need a space so it's not "1hrs". */}

@@ -8,6 +8,7 @@ import { computeAllDriverValues } from "@/lib/exploreDriverCalcs";
 import { engineKeyForDriver } from "@/lib/exploreDriverKeys";
 import { driverScaleReadiness } from "@/lib/exploreScaleGate";
 import AwaitingScale from "@/components/explore/drivers/AwaitingScale";
+import { HCC_VALUE_BY_PAYER } from "@/lib/hccPayers";
 
 const UPLIFT_OPTIONS: { key: 'conservative' | 'typical' | 'optimistic'; label: string; pp: number }[] = [
   { key: 'conservative', label: 'Conservative', pp: 3 },
@@ -19,10 +20,10 @@ const UPLIFT_OPTIONS: { key: 'conservative' | 'typical' | 'optimistic'; label: s
 // ASSUMPTIONS ($/HCC, gap/recapture rates) but never a fabricated panel size.
 // The partner enters their own panel per provider; no dollar shows until they do.
 const PLAN_TYPE_DEFAULTS: Record<HccPlan['planType'], Omit<HccPlan, 'id'>> = {
-  medicare_advantage: { planType: 'medicare_advantage', name: 'Medicare Advantage', panelSize: 0, valuePerHcc: 1500, gapRate: 65, currentRecaptureRate: 65, uplift: 'typical', netNewEnabled: false, netNewDiscoveryRate: 3, netNewAvgConditions: 1.2 },
-  aca_marketplace:    { planType: 'aca_marketplace',    name: 'ACA Marketplace',    panelSize: 0, valuePerHcc: 800,  gapRate: 60, currentRecaptureRate: 60, uplift: 'typical', netNewEnabled: false, netNewDiscoveryRate: 2, netNewAvgConditions: 1.0 },
-  medicaid_mco:       { planType: 'medicaid_mco',       name: 'Medicaid MCO',       panelSize: 0, valuePerHcc: 600,  gapRate: 55, currentRecaptureRate: 55, uplift: 'typical', netNewEnabled: false, netNewDiscoveryRate: 2, netNewAvgConditions: 1.0 },
-  custom:             { planType: 'custom',              name: 'Custom Plan',        panelSize: 0, valuePerHcc: 1000, gapRate: 60, currentRecaptureRate: 60, uplift: 'typical', netNewEnabled: false, netNewDiscoveryRate: 3, netNewAvgConditions: 1.2 },
+  medicare_advantage: { planType: 'medicare_advantage', name: 'Medicare Advantage', panelSize: 0, valuePerHcc: HCC_VALUE_BY_PAYER.medicare_advantage, gapRate: 65, currentRecaptureRate: 65, uplift: 'typical', netNewEnabled: false, netNewDiscoveryRate: 3, netNewAvgConditions: 1.2 },
+  aca_marketplace:    { planType: 'aca_marketplace',    name: 'ACA Marketplace',    panelSize: 0, valuePerHcc: HCC_VALUE_BY_PAYER.aca_marketplace,    gapRate: 60, currentRecaptureRate: 60, uplift: 'typical', netNewEnabled: false, netNewDiscoveryRate: 2, netNewAvgConditions: 1.0 },
+  medicaid_mco:       { planType: 'medicaid_mco',       name: 'Medicaid MCO',       panelSize: 0, valuePerHcc: HCC_VALUE_BY_PAYER.medicaid_mco,       gapRate: 55, currentRecaptureRate: 55, uplift: 'typical', netNewEnabled: false, netNewDiscoveryRate: 2, netNewAvgConditions: 1.0 },
+  custom:             { planType: 'custom',              name: 'Custom Plan',        panelSize: 0, valuePerHcc: HCC_VALUE_BY_PAYER.custom,             gapRate: 60, currentRecaptureRate: 60, uplift: 'typical', netNewEnabled: false, netNewDiscoveryRate: 3, netNewAvgConditions: 1.2 },
 };
 
 const PLAN_TYPE_LABELS: Record<HccPlan['planType'], string> = {

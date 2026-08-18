@@ -25,6 +25,7 @@ import { engineKeyForDriver } from "@/lib/exploreDriverKeys";
 import { driverScaleReadiness } from "@/lib/exploreScaleGate";
 import { getDriversForPage } from "@/lib/exploreDrivers";
 import { type ExploreState, type HccPlan } from "../ExploreFlow";
+import { hccValueFor, HCC_VALUE_GENERIC } from "@/lib/hccPayers";
 import { SignalWatch } from "./SignalWatch";
 import { watchDomainFor } from "@/lib/exploreWatchSignals";
 import ValueRail from "./ValueRail";
@@ -146,7 +147,7 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
       planType: "custom",
       name: "Custom plan",
       panelSize: 0, // SCALE — blank until the partner enters this plan's panel
-      valuePerHcc: 1000,
+      valuePerHcc: HCC_VALUE_GENERIC,
       gapRate: sharedPlan?.gapRate ?? 65,
       currentRecaptureRate: recaptureRateToday,
       uplift: sharedPlan?.uplift ?? "typical",
@@ -211,7 +212,7 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
               <div className="flex items-center justify-between gap-3 mb-3">
                 <select
                   value={p.planType}
-                  onChange={(e) => patchPlan(p.id, { planType: e.target.value as HccPlan["planType"] })}
+                  onChange={(e) => { const t = e.target.value as HccPlan["planType"]; patchPlan(p.id, { planType: t, valuePerHcc: hccValueFor(t) }); }}
                   className="font-abridge text-[17px] text-[#1A1A1A] bg-transparent border-0 outline-none cursor-pointer -ml-1"
                 >
                   {[["medicare_advantage", "Medicare Advantage"], ["aca_marketplace", "ACA / Exchange"], ["medicaid_mco", "Medicaid managed care"], ["custom", "Custom plan"]].map(([k, l]) => (
@@ -262,7 +263,7 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
           <button type="button" onClick={addPlan} className="mt-1 mb-3 inline-flex items-center gap-1.5 text-[12.5px] font-bold text-[#EA2C00]"><Plus className="w-3.5 h-3.5" /> Add a risk plan</button>
           <div className="flex items-baseline justify-between gap-4 pt-3 border-t border-[#E7E3DD] flex-wrap">
             <div className="flex items-end gap-2">
-              <EqNum cap="share that survives RADV / audit" value={dq.hccRealization} onChange={(v) => updateDq({ hccRealization: v })} suffix="%" width={40} />
+              <EqNum cap="kept after audit and attribution" value={dq.hccRealization} onChange={(v) => updateDq({ hccRealization: v })} suffix="%" width={40} />
             </div>
             <div className="text-[13px] text-[#565250]">Across {plans.length} {plans.length === 1 ? "plan" : "plans"}&nbsp; {totalPanel > 0 ? <b className="font-abridge text-[19px] text-[#EA2C00]">+{fmt$(hccValue)}</b> : <b className="font-abridge text-[19px] text-[#C9BDAD]">&ndash;</b>} / yr</div>
           </div>
@@ -606,7 +607,7 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
               <div className="flex items-center justify-between gap-3 mb-3">
                 <select
                   value={p.planType}
-                  onChange={(e) => patchPlan(p.id, { planType: e.target.value as HccPlan["planType"] })}
+                  onChange={(e) => { const t = e.target.value as HccPlan["planType"]; patchPlan(p.id, { planType: t, valuePerHcc: hccValueFor(t) }); }}
                   className="font-abridge text-[17px] text-[#1A1A1A] bg-transparent border-0 outline-none cursor-pointer -ml-1"
                 >
                   {[["medicare_advantage", "Medicare Advantage"], ["aca_marketplace", "ACA / Exchange"], ["medicaid_mco", "Medicaid managed care"], ["custom", "Custom plan"]].map(([k, l]) => (
@@ -656,7 +657,7 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
           <button type="button" onClick={addPlan} className="mt-1 mb-3 inline-flex items-center gap-1.5 text-[12.5px] font-bold text-[#EA2C00]"><Plus className="w-3.5 h-3.5" /> Add a risk plan</button>
           <div className="flex items-baseline justify-between gap-4 pt-3 border-t border-[#E7E3DD] flex-wrap">
             <div className="flex items-end gap-2">
-              <EqNum cap="share that survives RADV / audit" value={dq.hccRealization} onChange={(v) => updateDq({ hccRealization: v })} suffix="%" width={40} />
+              <EqNum cap="kept after audit and attribution" value={dq.hccRealization} onChange={(v) => updateDq({ hccRealization: v })} suffix="%" width={40} />
             </div>
             <div className="text-[13px] text-[#565250]">Across {plans.length} {plans.length === 1 ? "plan" : "plans"}&nbsp; {totalPanel > 0 ? <b className="font-abridge text-[19px] text-[#EA2C00]">+{fmt$(hccValue)}</b> : <b className="font-abridge text-[19px] text-[#C9BDAD]">&ndash;</b>} / yr</div>
           </div>
