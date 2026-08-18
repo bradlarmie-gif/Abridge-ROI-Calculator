@@ -29,8 +29,9 @@ export interface DiscoveryOption {
   label: string;
   teach?: string; // what this answer means / educates / corrects
   capture?: string; // a fact, in the partner's frame, appended to the brief narrative
-  lever?: DiscoveryLever; // pins where the real money is
+  lever?: DiscoveryLever; // pins where the real money is (COUNTED)
   proof?: string; // this outcome is a proof-play (tracked, not counted): the line to show
+  proofDriverId?: string; // a proof-play that still toggles an Explore driver ON (in tracked mode), e.g. retention
   honest?: boolean; // the honest "not really documentation's to fix" answer
   reflect?: string; // a one-line "got it, so..." acknowledgment shown on the next question
   next: string | typeof BRIEF;
@@ -116,9 +117,9 @@ const outpatientAccess: DiscoveryScript = {
       prompt: "What is actually in the way of seeing more patients today?",
       teach: "Ambient documentation only helps if clinician time is the real constraint. If it is not, we will tell you.",
       options: [
-        { id: "charting", label: "Providers are buried in charting", teach: "This is the constraint Abridge moves directly.", capture: "the constraint today is documentation time", reflect: "So it is charting time, not the templates or the front desk. That is the one Abridge moves directly.", lever: { driverId: "patientAccess", label: "Patient Access" }, next: "reinvest" },
-        { id: "template", label: "The schedule templates have no room", teach: "Freeing time helps, but only if the template changes to add the slots.", capture: "the constraint is scheduling templates, which will have to change", reflect: "Noted: the time helps, but the template has to change to add the slots. We will flag that.", lever: { driverId: "patientAccess", label: "Patient Access" }, next: "reinvest" },
-        { id: "demand", label: "You are at capacity, with demand waiting", capture: "already at capacity, with demand waiting", reflect: "Good: the demand is there, capacity is the wall. That is the gap freed time can fill.", lever: { driverId: "patientAccess", label: "Patient Access" }, next: "reinvest" },
+        { id: "charting", label: "Providers are buried in charting", teach: "This is the constraint Abridge moves directly.", capture: "the constraint today is documentation time", reflect: "So it is charting time, not the templates or the front desk. That is the one Abridge moves directly.", lever: { driverId: "patientAccess", label: "Net-new visit margin" }, next: "reinvest" },
+        { id: "template", label: "The schedule templates have no room", teach: "Freeing time helps, but only if the template changes to add the slots.", capture: "the constraint is scheduling templates, which will have to change", reflect: "Noted: the time helps, but the template has to change to add the slots. We will flag that.", lever: { driverId: "patientAccess", label: "Net-new visit margin" }, next: "reinvest" },
+        { id: "demand", label: "You are at capacity, with demand waiting", capture: "already at capacity, with demand waiting", reflect: "Good: the demand is there, capacity is the wall. That is the gap freed time can fill.", lever: { driverId: "patientAccess", label: "Net-new visit margin" }, next: "reinvest" },
         { id: "frontdesk", label: "It is really a front-desk or referral-workflow problem", teach: "Then documentation is not your main lever here, and we should say so.", capture: "the real constraint is front-desk and referral workflow, which documentation does not fix", honest: true, next: BRIEF },
       ],
     },
@@ -204,12 +205,13 @@ const outpatientRevenue: DiscoveryScript = {
 };
 
 // ── Retention (a shared shape, authored per setting) ─────────────────────────
-const PW = { driverId: "providerWellbeing", label: "Provider Retention" };
-const NR = { driverId: "nursingRetention", label: "Nurse Retention" };
-
+// Retention is PROOF-FIRST (tracked, not counted): the value is the replacement
+// cost avoided by keeping people, which a CFO counts only when they choose to.
+// So it pins no counted `lever`; it carries a `proofDriverId` that still toggles
+// the retention driver ON in Explore (in tracked mode) at the handoff.
 function retentionScript(opts: {
   who: string; // "providers" | "clinicians" | "hospitalists" | "nurses"
-  lever: DiscoveryLever;
+  driverId: string; // "providerWellbeing" | "nursingRetention"
   briefIntro: string;
   roles: string[];
   anatomy: { id: string; label: string; capture: string }[];
@@ -234,8 +236,8 @@ function retentionScript(opts: {
         prompt: `Why are ${opts.who} actually leaving?`,
         teach: "Ambient documentation helps if the load is a real driver. If it is mostly pay or life elsewhere, a lighter day will not be the deciding factor, and we will say so.",
         options: [
-          { id: "burden", label: "Burnout and documentation load", capture: "burnout and documentation load are driving turnover", reflect: "So it is the load driving people out, not pay or life elsewhere. That is the part ambient documentation actually moves.", lever: opts.lever, next: "anatomy" },
-          { id: "workload", label: "Workload and pace", capture: "workload and pace are the driver", reflect: "So it is the workload, not pay or life elsewhere. Then the question is whether a lighter day is protected.", lever: opts.lever, next: "anatomy" },
+          { id: "burden", label: "Burnout and documentation load", capture: "burnout and documentation load are driving turnover", reflect: "So it is the load driving people out, not pay or life elsewhere. That is the part ambient documentation actually moves.", proof: LEVER_LINE[opts.driverId], proofDriverId: opts.driverId, next: "anatomy" },
+          { id: "workload", label: "Workload and pace", capture: "workload and pace are the driver", reflect: "So it is the workload, not pay or life elsewhere. Then the question is whether a lighter day is protected.", proof: LEVER_LINE[opts.driverId], proofDriverId: opts.driverId, next: "anatomy" },
           { id: "paylife", label: "Mostly pay, or life elsewhere", capture: "the main driver is pay or life elsewhere, which documentation will not fix", honest: true, next: BRIEF },
         ],
       },
@@ -266,7 +268,7 @@ function retentionScript(opts: {
 }
 
 const outpatientRetention = retentionScript({
-  who: "providers", lever: PW,
+  who: "providers", driverId: "providerWellbeing",
   briefIntro: "You said retention. Whether a lighter day changes who stays depends on what is actually driving people out.",
   roles: ["Clinical leadership", "The medical group's people lead", "Department chiefs"],
   anatomy: [
@@ -282,7 +284,7 @@ const outpatientRetention = retentionScript({
 });
 
 const edRetention = retentionScript({
-  who: "clinicians", lever: PW,
+  who: "clinicians", driverId: "providerWellbeing",
   briefIntro: "You said retention. In the ED the after-shift documentation tail is often the driver, but not always, so we check.",
   roles: ["ED medical director", "Nursing and physician leadership", "The group's people lead"],
   anatomy: [
@@ -298,7 +300,7 @@ const edRetention = retentionScript({
 });
 
 const inpatientRetention = retentionScript({
-  who: "hospitalists", lever: PW,
+  who: "hospitalists", driverId: "providerWellbeing",
   briefIntro: "You said retention. For hospitalists the note load of the service is often the driver, but we confirm before we build on it.",
   roles: ["Hospitalist group leadership", "The service medical director", "The people lead"],
   anatomy: [
@@ -315,7 +317,7 @@ const inpatientRetention = retentionScript({
 
 const nursingRetentionScript = ((): DiscoveryScript => {
   const s = retentionScript({
-    who: "nurses", lever: NR,
+    who: "nurses", driverId: "nursingRetention",
     briefIntro: "You said retention. For nurses the charting that keeps them past the end of the shift is often the driver, but we check first.",
     roles: ["Nursing leadership", "Unit managers", "The CNO's office"],
     anatomy: [
@@ -800,7 +802,6 @@ nursingQuality.thesis = (t) => {
 
 // answer-derived additions to the table
 outpatientAccess.extraRoles = (t) => (t.pick("gap") === "template" ? ["The scheduling-template owner"] : []);
-inpatientCapacity.extraRoles = (t) => (t.pick("act") !== "no" ? ["Case management as the lead"] : []);
 
 export const DISCOVERY: Partial<Record<AttainSetting, Partial<Record<GoalId, DiscoveryScript>>>> = {
   outpatient: { access: outpatientAccess, revenue: outpatientRevenue, retention: outpatientRetention, quality: outpatientQuality },
@@ -820,8 +821,9 @@ export type DiscoveryAnswers = Record<string, string>;
 export interface DiscoveryResult {
   goal: GoalId;
   narrative: string[]; // the captured facts, in path order
-  lever?: DiscoveryLever; // where the real money is (last pinned wins)
-  proof?: string; // if this resolved to a proof-play outcome
+  lever?: DiscoveryLever; // where the real money is, COUNTED (cleared if an honest-out is chosen)
+  proof?: string; // if this resolved to a proof-play outcome (tracked, not counted)
+  proofDriverId?: string; // an Explore driver to toggle ON in tracked mode (retention)
   honest: boolean; // did they pick an honest "not documentation's" answer
   complete: boolean; // did the path reach BRIEF (fully answered)
 }
@@ -833,6 +835,7 @@ export function resolveResult(setting: AttainSetting, goal: GoalId, answers: Dis
   const narrative: string[] = [];
   let lever: DiscoveryLever | undefined;
   let proof: string | undefined;
+  let proofDriverId: string | undefined;
   let honest = false;
   let qid: string | typeof BRIEF = script.entry;
   const guard = new Set<string>();
@@ -848,18 +851,24 @@ export function resolveResult(setting: AttainSetting, goal: GoalId, answers: Dis
     if (opt.capture) narrative.push(opt.capture);
     if (opt.lever) lever = opt.lever;
     if (opt.proof) proof = opt.proof;
+    if (opt.proofDriverId) proofDriverId = opt.proofDriverId;
     if (opt.honest) honest = true;
     qid = opt.next;
     if (qid === BRIEF) complete = true;
   }
-  return { goal, narrative, lever, proof, honest, complete };
+  // An honest-out ("not documentation's to fix / mostly downstream / payer pushback")
+  // reached later on the path must UNDO the counted lever pinned earlier — otherwise the
+  // brief headlines it as counted money and the handoff pre-enables a driver the partner
+  // just said is not the note's to fix. This is the whole honesty promise.
+  if (honest) lever = undefined;
+  return { goal, narrative, lever, proof, proofDriverId, honest, complete };
 }
 
 // ── brief synthesis (authored per goal, generic fallback) ────────────────────
 const capfirst = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
 function joinC(c: string[]): string {
   if (c.length <= 1) return c[0] ?? "";
-  if (c.length === 2) return `${c[0]}, and ${c[1]}`;
+  if (c.length === 2) return `${c[0]} and ${c[1]}`;
   return `${c.slice(0, -1).join(", ")}, and ${c[c.length - 1]}`;
 }
 export function moneyClause(t: ThesisCtx): string {

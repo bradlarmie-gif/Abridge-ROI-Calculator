@@ -327,7 +327,7 @@ function Brief({
 
       <div className="mt-12 flex items-center justify-end border-t border-[#E8E2DA] pt-6">
         <button type="button" onClick={onFinish} data-testid="discovery-build-roi" className="inline-flex items-center gap-2 rounded-xl bg-[#EA2C00] text-white text-[14px] font-semibold px-5 py-2.5 hover:bg-[#d12800] transition-colors">
-          Build the ROI on this <ArrowRight className="w-4 h-4" />
+          {counted.length > 0 ? "Build the ROI on this" : "Take this into the ROI"} <ArrowRight className="w-4 h-4" />
         </button>
       </div>
     </div>
@@ -392,7 +392,7 @@ function ChainArrow() {
 // ── helpers ──────────────────────────────────────────────────────────────────
 function joinClauses(clauses: string[]): string {
   if (clauses.length === 1) return clauses[0];
-  if (clauses.length === 2) return `${clauses[0]}, and ${clauses[1]}`;
+  if (clauses.length === 2) return `${clauses[0]} and ${clauses[1]}`;
   return `${clauses.slice(0, -1).join(", ")}, and ${clauses[clauses.length - 1]}`;
 }
 function listPhrase(items: string[]): string {

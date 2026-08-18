@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { DISCOVERY, BRIEF, briefThesis, briefRoles, type DiscoveryScript, type DiscoveryAnswers } from "@/lib/attain/discovery";
+import { DISCOVERY, BRIEF, briefThesis, briefRoles, resolveResult, type DiscoveryScript, type DiscoveryAnswers } from "@/lib/attain/discovery";
 import { EXPLORE_DRIVERS } from "@/lib/exploreDrivers";
 import { engineKeyForDriver } from "@/lib/exploreDriverKeys";
 import type { AttainSetting, GoalId } from "@/lib/attain/attainTypes";
@@ -31,6 +31,19 @@ describe("discovery integrity", () => {
   it("has at least the two flagship scripts", () => {
     expect(DISCOVERY.outpatient?.access).toBeTruthy();
     expect(DISCOVERY.outpatient?.revenue).toBeTruthy();
+  });
+
+  it("retention is proof-first everywhere: proofDriverId, never a counted lever", () => {
+    for (const setting of SETTINGS) {
+      const s = DISCOVERY[setting]?.retention;
+      if (!s) continue;
+      const nonHonest = s.questions[s.entry].options.filter((o) => !o.honest);
+      expect(nonHonest.length, `${setting} retention has no non-honest option`).toBeGreaterThan(0);
+      for (const o of nonHonest) {
+        expect(o.lever, `${setting} retention pins a COUNTED lever`).toBeUndefined();
+        expect(o.proofDriverId, `${setting} retention missing proofDriverId (handoff would no-op)`).toBeTruthy();
+      }
+    }
   });
 
   for (const { setting, goal, script } of scripts()) {
@@ -109,6 +122,24 @@ describe("discovery integrity", () => {
           const thesis = briefThesis(setting, goal, "Test Partner", answers);
           expect(thesis.trim().length, "empty thesis").toBeGreaterThan(20);
           expect(briefRoles(setting, goal, "Test Partner", answers).length, "no roles").toBeGreaterThan(0);
+        }
+      });
+
+      it("an honest-out answer never leaves a COUNTED lever (honesty guard)", () => {
+        // enumerate every root-to-BRIEF path; an honest path must not resolve a lever
+        const paths: DiscoveryAnswers[] = [];
+        const walk = (qid: string, acc: DiscoveryAnswers) => {
+          const q = script.questions[qid];
+          for (const o of q.options) {
+            const next = { ...acc, [`${goal}:${qid}`]: o.id };
+            if (o.next === BRIEF) paths.push(next);
+            else walk(o.next, next);
+          }
+        };
+        walk(script.entry, {});
+        for (const answers of paths) {
+          const r = resolveResult(setting, goal, answers)!;
+          if (r.honest) expect(r.lever, `an honest-out path still counts a lever in ${setting}/${goal}`).toBeUndefined();
         }
       });
     });

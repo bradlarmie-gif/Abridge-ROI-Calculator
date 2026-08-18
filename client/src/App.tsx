@@ -533,13 +533,21 @@ export default function App() {
     const setting = snap?.setting as ExploreCareSetting | undefined;
     if (!snap || !setting) { navigateTo("financial-hub"); return; }
     const answers = snap.discovery ?? {};
-    const driverIds = new Set<string>();
+    const driverIds = new Set<string>();       // counted levers → toggle on
+    const proofDriverIds = new Set<string>();  // proof-first drivers (retention) → toggle on in tracked mode
     for (const g of (snap.goals ?? []) as GoalId[]) {
       const r = resolveResult(snap.setting as AttainSetting, g, answers);
       if (r?.lever) driverIds.add(r.lever.driverId);
+      if (r?.proofDriverId && !r.honest) proofDriverIds.add(r.proofDriverId);
     }
     const td = { ...DEFAULT_EXPLORE_STATE.timeDriverInputs };
     const dq = { ...DEFAULT_EXPLORE_STATE.docQualityInputs };
+    // Proof-first drivers land ON but stay in tracked mode (retentionMode default
+    // is "tracked" → $0), so the card is visible without over-claiming a dollar.
+    proofDriverIds.forEach((id) => {
+      if (id === "providerWellbeing") { td.wellbeingEnabled = true; td.calculateRetentionValue = true; }
+      else if (id === "nursingRetention") { td.nursingRetentionEnabled = true; }
+    });
     driverIds.forEach((id) => {
       switch (id) {
         case "patientAccess": td.patientAccessEnabled = true; break;

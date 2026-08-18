@@ -28,7 +28,7 @@ export default function StepVision({ setting, selectedGoals, onToggle, goals: go
         <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-3" data-testid="text-step-eyebrow">
           Step 3 · What are you actually chasing?
         </p>
-        <h1 className="text-2xl md:text-4xl font-bold text-black mb-3 font-abridge uppercase tracking-tight" data-testid="text-step-title">
+        <h1 className="text-2xl md:text-4xl font-bold text-black mb-3 font-abridge tracking-tight" data-testid="text-step-title">
           Pick the goals
         </h1>
         <p className="text-sm text-[#666666] leading-relaxed max-w-[560px]" data-testid="text-step-teach">
