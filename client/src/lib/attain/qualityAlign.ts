@@ -383,12 +383,12 @@ export function deriveQualityAlignProof(values: LeverValues, ctx: AlignContext):
     "Abridge can surface the risk earlier and free up time to act on it; your team is what turns that into the outcome.";
 
   const headlineLabel =
-    prevented > 0 ? "Harm events prevented a year" : hcahpsCommitted ? "Patient experience" : "Harm events prevented a year";
+    prevented > 0 ? "Safety events a year" : hcahpsCommitted ? "Patient experience" : "Safety events a year";
 
   const headlineSub = !ready
     ? "the proof of what you just aligned on"
     : prevented > 0
-      ? `about ${fmtEventCount(prevented)} harm events kept from happening. ${attributionLine}`
+      ? `about ${fmtEventCount(prevented)} fewer safety events a year. ${attributionLine}`
       : `a patient-experience commitment: its value shows up in your HCAHPS domain scores, not a harm-events count. ${attributionLine}`;
 
   const dollarNote =

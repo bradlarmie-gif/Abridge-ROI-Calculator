@@ -431,7 +431,7 @@ const nursingQuality: AttainCell = {
       options: [
         { id: "hac", title: "Get out of HAC penalties", desc: "Fewer hospital-acquired conditions on the CMS ledger." },
         { id: "reputation", title: "Protect your quality reputation", desc: "The scores boards, payers, and patients actually see." },
-        { id: "nurses", title: "Give nurses time at the bedside", desc: "Freed charting time is presence at the bedside, the moments where harm is most preventable." },
+        { id: "nurses", title: "Give nurses time at the bedside", desc: "Freed charting time is presence at the bedside, the moments that matter most for patient safety." },
         { id: "vbc", title: "Strengthen value-based performance", desc: "Quality is the lever your risk contracts turn on." },
       ],
     },

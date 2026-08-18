@@ -116,9 +116,9 @@ export function UnifiedHeader({
 
   return (
     <header className="fixed top-0 left-0 right-0 bg-white border-b border-slate-200 z-50 h-14 sm:h-16 overflow-hidden">
-      <div className="max-w-[1400px] mx-auto px-3 sm:px-6 md:px-12 h-full flex items-center justify-between gap-2">
+      <div className="max-w-[1400px] mx-auto px-3 sm:px-6 md:px-12 h-full grid grid-cols-[1fr_auto_1fr] items-center gap-2">
         {/* Left: Logo + Back */}
-        <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-shrink-0">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0 justify-self-start">
           <a 
             href="#" 
             onClick={handleLogoClick}
@@ -147,8 +147,10 @@ export function UnifiedHeader({
           )}
         </div>
 
-        {/* Center: custom content, or the default Path + Step breadcrumb */}
-        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1 justify-center overflow-hidden">
+        {/* Center: custom content, or the default Path + Step breadcrumb.
+            Lives in the middle (auto) grid column so it stays pinned to the
+            true page center regardless of the left/right widths. */}
+        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 justify-center overflow-hidden">
           {centerContent ?? (<>
           <span className={`text-xs sm:text-sm truncate min-w-0 ${stepName || hasSteps ? "text-slate-500 font-medium" : "text-slate-900 font-semibold"}`}>{pathLabel}</span>
           {(stepName || hasSteps) && <span className="text-slate-300 flex-shrink-0 hidden min-[480px]:inline">·</span>}
@@ -163,7 +165,7 @@ export function UnifiedHeader({
         </div>
 
         {/* Right: optional action + Progress indicator */}
-        <div className="flex items-center flex-shrink-0 gap-2 sm:gap-3">
+        <div className="flex items-center min-w-0 gap-2 sm:gap-3 justify-self-end">
           {rightAction}
           {hasSteps && (
             <>

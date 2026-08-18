@@ -413,7 +413,7 @@ const inpatientRevenue: OutcomeTrace = {
 // ── Inpatient · Quality & Safety ─────────────────────────────────────────────
 const inpatientQuality: OutcomeTrace = {
   outcome: "Safer inpatient care from more time with patients and clearer records.",
-  outcomeSub: "Time back at the bedside and accurate problem lists support harm prevention and earlier response.",
+  outcomeSub: "Time back at the bedside and accurate problem lists support safer care and earlier response.",
   conditions: [
     { id: "c_present", label: "Rounding and bedside attention are freed", helper: "Teams spend more of the round with the patient.", defaultOn: true },
     { id: "c_targets", label: "There are harm targets that depend on it", helper: "For example, hospital-acquired conditions, readmissions, or safety events.", defaultOn: true },
@@ -427,7 +427,7 @@ const inpatientQuality: OutcomeTrace = {
     { id: "d_roles", label: "Roles in the protocols are defined", helper: "Who acts on an early warning." },
   ],
   behaviors: [
-    { id: "b_steps", label: "Teams complete harm-prevention steps", helper: "The freed attention shows up as reliable protocol completion.", defaultOn: true },
+    { id: "b_steps", label: "Teams complete safety-protocol steps", helper: "The freed attention shows up as reliable protocol completion.", defaultOn: true },
     { id: "b_problem", label: "Problem lists and present-on-admission are documented accurately", helper: "The record supports the right quality picture.", defaultOn: true },
     { id: "b_escalate", label: "Teams act on early-warning signals", helper: "Deterioration is caught and escalated sooner." },
     { id: "b_review", label: "Events are reviewed", helper: "Misses feed back into practice." },
@@ -532,7 +532,7 @@ const nursingRevenue: OutcomeTrace = {
 
 // ── Nursing · Quality & Safety ───────────────────────────────────────────────
 const nursingQuality: OutcomeTrace = {
-  outcome: "Fewer preventable harm events from more time at the bedside.",
+  outcome: "Safer care from more time at the bedside.",
   outcomeSub: "Time returned from charting is time for rounding, assessments, and catching deterioration early.",
   conditions: [
     { id: "c_present", label: "Bedside time is freed", helper: "Nurses spend more of the shift with patients, not the keyboard.", defaultOn: true },

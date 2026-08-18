@@ -16,7 +16,7 @@ const SETTINGS: { id: AttainSetting; label: string; desc: string; Icon: typeof S
   { id: "outpatient", label: "Outpatient", desc: "Primary care and specialty. Panel access, coding capture, and provider retention across clinics.", Icon: Stethoscope },
   { id: "ed", label: "Emergency", desc: "The emergency department. Throughput, LWBS recovery, coding accuracy, and staff wellbeing.", Icon: Zap },
   { id: "inpatient", label: "Inpatient", desc: "Hospital medicine. DRG accuracy, CDI turnaround, and hospitalist retention.", Icon: Building2 },
-  { id: "nursing", label: "Nursing", desc: "Inpatient nursing. Bundle compliance, preventable harm, and nurse retention.", Icon: HeartPulse },
+  { id: "nursing", label: "Nursing", desc: "Inpatient nursing. Bundle compliance, patient safety, and nurse retention.", Icon: HeartPulse },
 ];
 
 const SETTING_GOALS: Record<AttainSetting, GoalId[]> = {

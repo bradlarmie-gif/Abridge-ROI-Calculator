@@ -823,7 +823,7 @@ function buildChoicesReveal(data: NursingPDFInput): string {
     return "Your model is anchored by overtime reduction — the most directly measurable line in the staffing budget. Worth pairing with retention and agency analysis once turnover data is in hand.";
   }
   if (qualityOn && !workforceOn) {
-    return "Your model is anchored by quality outcomes — preventable harm events that documentation timing influences. Worth pairing with workforce drivers (retention, OT, agency) for a complete labor-and-quality story.";
+    return "Your model is anchored by quality outcomes: safety events that documentation timing influences. Worth pairing with workforce drivers (retention, OT, agency) for a complete labor-and-quality story.";
   }
   return "Your model spans labor economics and care quality. Validate each driver against your unit's actual data to convert potential into committed value.";
 }
@@ -1297,9 +1297,9 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
               Real-time documentation is the visibility layer that makes early intervention possible.
             </Text>
             <Text style={styles.body}>
-              Preventable harm events happen when risk signals are missed or delayed.
+              Safety events are more likely when risk signals are missed or delayed.
               The hypothesis we model: real-time flowsheet capture surfaces those
-              signals while there's still time to act — with the actual outcome
+              signals while there's still time to act, with the actual outcome
               determined by clinical practice on each unit. The values below are
               <Text style={{ fontWeight: "bold", color: colors.primaryText }}> potential</Text>;
               documentation creates the visibility, the care team creates the outcome.

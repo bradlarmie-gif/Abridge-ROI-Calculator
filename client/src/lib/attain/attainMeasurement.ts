@@ -1602,7 +1602,7 @@ export function deriveQualityMeasurementPlan(
         id: `${e.id}-events-prevented`,
         label: "Events prevented per year",
         unit: countUnit,
-        helper: "The count of harm events kept from happening a year. This is the number you lead with for this event, never a dollar.",
+        helper: "The count of fewer safety events a year. This is the number you lead with for this event, never a dollar.",
         baseline: "0 today",
         baselineTag: "data",
         defaultTarget: preventedTarget,
@@ -1622,7 +1622,7 @@ export function deriveQualityMeasurementPlan(
         id: `${e.id}-cost-harm-avoided`,
         label: "Cost of harm avoided (soft)",
         unit: "$ / yr",
-        helper: "A soft, illustrative figure only: the events prevented priced at a typical cost of harm, attributed conservatively. It is a footnote, never the number you lead with.",
+        helper: "A soft, illustrative figure only: the safety events priced at a typical cost of harm, attributed conservatively. It is a footnote, never the number you lead with.",
         baseline: "$0 today",
         baselineTag: "benchmark",
         defaultTarget: e.value > 0 ? `~${fmtMoneyCompact(e.value)} / yr (soft)` : "soft, not priced",
@@ -1724,7 +1724,7 @@ export function deriveQualityMeasurementPlan(
   // ── The safety-first header: a COUNT leads, the dollar is a soft footnote ───
   const heroValue =
     prevented > 0
-      ? `~${fmtEventCount(prevented)} harm events / yr`
+      ? `~${fmtEventCount(prevented)} safety events / yr`
       : hcahpsChosen
         ? "patient experience"
         : "count pending";

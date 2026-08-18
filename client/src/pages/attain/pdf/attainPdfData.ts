@@ -43,14 +43,14 @@ const CHAIN: Record<string, string[]> = {
   "Patient Access": ["Lighter notes", "Freed clinician time", "Visit headroom", "Filled headroom at your margin"],
   "Provider Retention": ["Lighter day", "Less burnout-driven turnover", "Fewer departures to replace", "Less agency spend to cover gaps"],
   "Revenue Capture": ["Complete notes", "Documentation-driven coding lift", "Captured and kept through billing"],
-  "Quality & Safety": ["Earlier deterioration surfaced", "Preventable events caught sooner", "Fewer events at their seeded cost"],
+  "Quality & Safety": ["Earlier deterioration surfaced", "Safety events surfaced sooner", "Fewer events at their seeded cost"],
   "Nursing Capacity": ["Lighter documentation", "Shift time given back", "Less documentation-tied overtime"],
 };
 const NOTE: Record<string, string> = {
   "Patient Access": "Filling freed-time headroom at your margin per visit",
   "Provider Retention": "Preventing the burnout-driven share of turnover",
   "Revenue Capture": "Keeping the documentation-driven coding lift",
-  "Quality & Safety": "Preventing the documentation-preventable share of harm",
+  "Quality & Safety": "Counting the documentation-attributable share of safety events",
   "Nursing Capacity": "Recovering documentation-tied overtime",
 };
 
@@ -89,7 +89,7 @@ function chainFor(settingLabel: string, category: string, inp: CellInputs): { va
   if (category === "Quality & Safety")
     return [
       { value: nn(inp.scope || 0), label: "staffed beds" },
-      { value: `${st}%`, label: "of preventable harm prevented" },
+      { value: `${st}%`, label: "of safety exposure, documentation-attributable" },
       { value: "seeded", label: "cost per event, from published figures" },
     ];
   if (category === "Nursing Capacity")

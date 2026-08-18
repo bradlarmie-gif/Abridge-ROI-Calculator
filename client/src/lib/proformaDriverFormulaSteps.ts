@@ -380,7 +380,7 @@ export function getDriverFallback(driverId: string): string {
     obsDefense:           "Status / medical-necessity denials, the inpatient stays a complete note keeps off observation, auditable per-case.",
     nursingHcahps:        "HCAHPS score improvement from provider presence and communication quality.",
     nursingSepsis:        "Earlier sepsis recognition via documentation quality — outcomes and cost improvement.",
-    nursingEarlyDeterioration: "Earlier harm event prevention through real-time flowsheet documentation of clinical deterioration signals.",
+    nursingEarlyDeterioration: "Earlier documentation of clinical deterioration signals through real-time flowsheet capture.",
     nursingBundleCompliance:   "Care bundle compliance improvement — CLABSI, VAP, sepsis bundles tracked through complete flowsheet documentation.",
     opCdiQueryTrend:      "CDI query volume reduction from outpatient documentation completeness.",
     opCareGapClosureRate: "Care gap closure improvement — HEDIS-relevant conditions documented at point of care.",

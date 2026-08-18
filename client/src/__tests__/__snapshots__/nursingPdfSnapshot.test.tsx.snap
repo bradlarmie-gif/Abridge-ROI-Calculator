@@ -3750,7 +3750,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                     "children": [
                       {
                         "kind": "text",
-                        "value": "Preventable harm events happen when risk signals are missed or delayed. The hypothesis we model: real-time flowsheet capture surfaces those signals while there's still time to act — with the actual outcome determined by clinical practice on each unit. The values below are",
+                        "value": "Safety events are more likely when risk signals are missed or delayed. The hypothesis we model: real-time flowsheet capture surfaces those signals while there's still time to act, with the actual outcome determined by clinical practice on each unit. The values below are",
                       },
                       {
                         "children": [
@@ -15683,7 +15683,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                     "children": [
                       {
                         "kind": "text",
-                        "value": "Preventable harm events happen when risk signals are missed or delayed. The hypothesis we model: real-time flowsheet capture surfaces those signals while there's still time to act — with the actual outcome determined by clinical practice on each unit. The values below are",
+                        "value": "Safety events are more likely when risk signals are missed or delayed. The hypothesis we model: real-time flowsheet capture surfaces those signals while there's still time to act, with the actual outcome determined by clinical practice on each unit. The values below are",
                       },
                       {
                         "children": [

@@ -129,7 +129,7 @@ export default function MethodologyContinuum({ onBack, onHome, onNavigate }: Pro
           <div className="mt-10">
             <div className="text-[11px] font-extrabold tracking-[0.13em] uppercase text-[#443A32]">The read</div>
             <p className="mt-4 text-[15px] sm:text-[16px] leading-[1.65] text-[#5E534A] max-w-[720px]">
-              Notice where the color moves. In most settings Quality is tracked, not counted, the place you watch rather than bill. In nursing it inverts: the harm-prevention dollar lives in Quality, and Revenue becomes the one tracked, not counted. Inpatient carries two tracked, not counted layers, Capacity and Quality, because the dollar it frees shows up in Revenue. The model never counts a dollar twice. Each one appears once, in the setting and the domain where it is earned.
+              Notice where the color moves. In most settings Quality is tracked, not counted, the place you watch rather than bill. In nursing it inverts: the safety-cost dollar lives in Quality, and Revenue becomes the one tracked, not counted. Inpatient carries two tracked, not counted layers, Capacity and Quality, because the dollar it frees shows up in Revenue. The model never counts a dollar twice. Each one appears once, in the setting and the domain where it is earned.
             </p>
           </div>
         </div>

@@ -4,6 +4,7 @@ import type { LucideIcon } from "lucide-react";
 import { ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UnifiedHeader } from "@/components/UnifiedHeader";
+import { BackgroundShape } from "@/components/BackgroundShape";
 
 /**
  * Shared scaffold for the Value Attainment Hub landings (home + sub-hubs).
@@ -18,6 +19,7 @@ export function HubPage({
   footer,
   onHome,
   showBack = true,
+  watermark = true,
 }: {
   pageName: string;
   header: ReactNode;
@@ -28,9 +30,13 @@ export function HubPage({
   onHome?: () => void;
   // The top-level home passes false — there is nowhere to go back to from root.
   showBack?: boolean;
+  // The faint half-visible "A" watermark behind the hub landings. On by default
+  // for every hub (home + Strategy / Financial / Planning).
+  watermark?: boolean;
 }) {
   return (
     <div className="min-h-screen bg-[#FFFFFF] relative overflow-hidden">
+      {watermark && <BackgroundShape />}
       <UnifiedHeader pathType="forecast" pathLabel={pageName} onHome={onHome} showBack={showBack} />
       <div className="max-w-6xl mx-auto px-4 md:px-6 pt-[88px] md:pt-[96px] pb-8 relative z-10">
         <motion.section

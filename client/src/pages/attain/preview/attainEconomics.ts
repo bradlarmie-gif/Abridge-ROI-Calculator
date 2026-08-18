@@ -200,8 +200,8 @@ export const ECON_MODELS: Record<string, EconModel> = {
 
   // ---- Nursing ----
   "Nursing|Quality & Safety": {
-    title: "How much harm do you expect to prevent?",
-    helper: "The note surfaces early deterioration sooner: pressure injuries, falls, CLABSI, and sepsis caught before they progress. Your current event rates are yours to set in the assumptions; event costs we seed from published figures. How much of the preventable harm you actually prevent is yours to set below.",
+    title: "How much of the safety exposure can documentation move?",
+    helper: "The note surfaces early deterioration sooner: pressure injuries, falls, CLABSI, and sepsis show earlier in a complete record. Your current event rates are yours to set in the assumptions; event costs we seed from published figures. How much of that exposure the documentation can move is yours to set below.",
     fields: [],
     assumptions: [
       { key: "fallsRate", label: "Falls per 1,000 patient-days", default: "3.4" },
@@ -209,11 +209,11 @@ export const ECON_MODELS: Record<string, EconModel> = {
       { key: "clabsiRate", label: "CLABSI per 1,000 line-days", default: "1.0" },
       { key: "sepsisRate", label: "Sepsis cases per 1,000", default: "2.0" },
     ],
-    stancePrompt: "How much of the preventable harm do you expect to prevent?",
+    stancePrompt: "How much of the safety exposure do you expect documentation to move?",
     stanceBands: [10, 20, 30],
     stanceCap: 40,
-    capNote: "We cap this at 40 percent. Prevention is hard-won, and only some harm is documentation-preventable.",
-    math: (i) => `Preventable falls, pressure injuries, CLABSI and sepsis across ${nn(i.scope)} beds × ${i.stancePct}% prevented, at your rates and seeded cost per event.`,
+    capNote: "We cap this at 40 percent. The gains are hard-won, and only some of the exposure is documentation-attributable.",
+    math: (i) => `Falls, pressure injuries, CLABSI and sepsis across ${nn(i.scope)} beds × ${i.stancePct}% documentation-attributable, at your rates and seeded cost per event.`,
   },
   // Nursing|Provider Retention — intentionally omitted (proof-only, no dollar).
   "Nursing|Nursing Capacity": {

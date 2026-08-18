@@ -390,8 +390,8 @@ export const GOAL_CATALOG: Record<GoalId, GoalDef> = {
     label: "Quality & Safety",
     pill: "Quality",
     pillBg: "#6B7280",
-    domainSub: "Care Bundles & Preventable Harm",
-    chainTitle: "How Harm Is Prevented",
+    domainSub: "Care Bundles & Patient Safety",
+    chainTitle: "How Safety Events Fall",
     chainArrow: "↓",
     quadrant: "Quality",
     chain: [
@@ -475,9 +475,9 @@ export const GOAL_CATALOG: Record<GoalId, GoalDef> = {
       { label: "Events ↓", kind: "end" },
     ],
     valueUnit: {
-      countNoun: "harm events prevented a year",
+      countNoun: "safety events a year",
       heroIsDollar: false,
-      outcomeTemplate: "Prevent about {count} harm events a year.",
+      outcomeTemplate: "Work toward about {count} fewer safety events a year.",
     },
   },
 
@@ -1199,7 +1199,7 @@ const nursingQuality: SettingGoalContent = {
     { k: "Cost / prevented event", n: "$20K to $50K", benchmark: true, f: "Typical avoided cost" },
   ],
   opportunity:
-    "Ambient frees nurses from end-of-shift batch charting, so documentation happens with the care event, not hours later. That timeliness is what makes bundle compliance real and deterioration visible early. Each prevented pressure injury or bloodstream infection is $20K to $50K in avoided cost, and harm a patient never experiences. The plan turns timelier notes into that outcome.",
+    "Ambient frees nurses from end-of-shift batch charting, so documentation happens with the care event, not hours later. That timeliness is what makes bundle compliance real and deterioration visible early. Each pressure injury or bloodstream infection runs $20K to $50K in cost, and is harm a patient should never experience. The plan turns timelier notes into stronger safety measures.",
   trappedLabel: "How harm slips through",
   trappedSteps: [
     "End-of-shift batch charting",
@@ -1250,7 +1250,7 @@ const nursingQuality: SettingGoalContent = {
     "Did last month's ask get done? If yes, expand. If no, escalate to the goal-owner.",
   ],
   renewal:
-    'The conversation is no longer "was it worth the price." It is "we set out to prevent the harm this documentation makes visible, we are on our way, here is the runway on the rest." The documentation was always getting timelier. This is the plan that turned it into fewer events. Price becomes progress.',
+    'The conversation is no longer "was it worth the price." It is "we set out to move the safety measures this documentation makes visible, we are on our way, here is the runway on the rest." The documentation was always getting timelier. This is the plan that turned it into stronger safety measures. Price becomes progress.',
   ambition: [
     { key: "conservative", label: "Conservative", goalLabel: "Goal · $900K · 12 events prevented", goalMargin: 900_000 },
     { key: "typical", label: "Typical", goalLabel: "Goal · $1.6M · 22 events prevented", goalMargin: 1_600_000 },

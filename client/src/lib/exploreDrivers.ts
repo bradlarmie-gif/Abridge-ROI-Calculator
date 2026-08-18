@@ -705,7 +705,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     id: 'nursingEarlyDeterioration',
     label: 'Early Deterioration Documentation',
     shortDescription: 'Real-time flowsheet documentation captures subtle clinical changes (abnormal vitals, altered mental status, early sepsis indicators) as they happen rather than hours later. Earlier capture can support earlier escalation.',
-    tagline: 'Timely clinical signal capture that supports harm prevention',
+    tagline: 'Timely clinical signal capture that supports safer care',
     quadrant: 'Quality',
     settings: ['nursing'],
     visibility: 'qualitative',
@@ -720,7 +720,7 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
       scaleAxis: 'fixed',
       benchmarkHint: 'Track median minutes from an abnormal vital or assessment entry (elevated NEWS/MEWS, dropping SpO₂, altered Braden) to documented escalation. Point-of-care flowsheet entry should trigger escalation within 15–30 minutes of the change, not hours after a batched end-of-shift chart entry.',
     },
-    valueArc: { signal: { timing: 'Month 1-3', metric: 'Point-of-care doc timeliness ↑' }, trend: { timing: 'Month 2-5', metric: 'Rapid response triggers ↓' }, proof: { timing: 'Month 6-12', metric: 'Preventable harm events ↓' } },
+    valueArc: { signal: { timing: 'Month 1-3', metric: 'Point-of-care doc timeliness ↑' }, trend: { timing: 'Month 2-5', metric: 'Rapid response triggers ↓' }, proof: { timing: 'Month 6-12', metric: 'Safety events ↓' } },
   },
   {
     id: 'nursingBundleCompliance',

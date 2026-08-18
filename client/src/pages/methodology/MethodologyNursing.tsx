@@ -421,7 +421,7 @@ const nursingDomainCards: NursingDomainCardData[] = [
             { l: 'Why real-time matters for safety', b: "A fall risk reassessment entered 4 hours after it was conducted is a 4-hour window where a change in fall risk isn't visible to the care team. The oncoming nurse, the charge nurse, and the attending physician all work from a stale record during that window." },
             { l: 'What Abridge Nursing changes', b: "Ambient flowsheet documentation captures assessments as the nurse completes them at the bedside. The chart reflects the current patient state continuously rather than episodically — closing the documentation lag that creates safety gaps." },
           ],
-          grad: "When assessment completion rates reach a consistent high and on-time rates stabilize, the documentation foundation for harm prevention has been established. Watch protocol and bundle compliance rates as the next signal.",
+          grad: "When assessment completion rates reach a consistent high and on-time rates stabilize, the documentation foundation for the unit's safety program has been established. Watch protocol and bundle compliance rates as the next signal.",
         },
       },
       {
@@ -470,7 +470,7 @@ const nursingDomainCards: NursingDomainCardData[] = [
         window: 'Week 4–Month 2',
         desc: 'Assessment timeliness responds',
         metrics: [
-          { name: 'Fall Risk Assessment Completion Rate', source: 'EHR quality dashboard · % of required fall risk reassessments completed on time · Abridge units vs. control · daily tracking', badge: 'Week 4–8', why: "Falls are the most common nursing-sensitive harm event. On-time fall risk reassessment is the upstream gate — if it's not happening consistently, prevention protocols can't be triggered reliably." },
+          { name: 'Fall Risk Assessment Completion Rate', source: 'EHR quality dashboard · % of required fall risk reassessments completed on time · Abridge units vs. control · daily tracking', badge: 'Week 4–8', why: "Falls are the most common nursing-sensitive safety event. On-time fall risk reassessment is the upstream gate: if it's not happening consistently, prevention protocols can't be triggered reliably." },
           { name: 'Skin & Pressure Injury Assessment Completion Rate', source: 'EHR quality dashboard · Braden scale completion within required window · per unit · pre/post comparison', badge: 'Week 4–8', why: "Braden scale completion within required windows is the documentation gate for pressure injury prevention. Abridge can reduce the documentation competition that leads nurses to defer these assessments." },
         ],
         callout: "Why start here: Assessment completion rates are the most direct and fastest-moving signal for nursing quality. They're tracked by quality teams already, require no new data infrastructure, and show improvement before bundle compliance or harm event data is available.",
@@ -595,8 +595,8 @@ const nursingFramework: FrameworkItem[] = [
   {
     domain: 'QUALITY',
     tag: 'modeled',
-    narrative: "Nursing-sensitive harm events — pressure injuries (HAPIs), falls, CAUTIs, CLABSIs, and sepsis — are documentation-sensitive: real-time assessment and bundle documentation is what lets prevention protocols be triggered and verified. The model quantifies this in dollars, conservatively. For each condition it starts from the unit's event rate per 1,000 patient-days, credits only the fraction of events that better documentation can realistically prevent — not all of them, because the causal link is indirect — and multiplies by the cost per event. Because only that documentation-attributable prevention fraction is credited, the figure is deliberately conservative. Harm-rate confirmation in the field still takes 12–18 months; the expected dollar impact is modeled up front.",
-    chain: ['Assessment Timeliness ↑', 'Bundle Documentation Rate ↑', 'Prevention Protocols Verified ↑', 'Harm Events ↓'],
+    narrative: "Nursing-sensitive safety events, pressure injuries (HAPIs), falls, CAUTIs, CLABSIs, and sepsis, are documentation-sensitive: real-time assessment and bundle documentation is what lets safety protocols be documented and verified. The model quantifies this in dollars, conservatively. For each condition it starts from the unit's event rate per 1,000 patient-days, credits only the documentation-attributable fraction of events, not all of them, because the causal link is indirect, and multiplies by the cost per event. Because only that documentation-attributable fraction is credited, the figure is deliberately conservative. Rate confirmation in the field still takes 12 to 18 months; the expected dollar impact is modeled up front.",
+    chain: ['Assessment Timeliness ↑', 'Bundle Documentation Rate ↑', 'Safety Protocols Documented ↑', 'Safety Events ↓'],
     chainOutput: 'Avoided Harm-Event Cost ↓',
     steps: [
       {
@@ -618,11 +618,11 @@ const nursingFramework: FrameworkItem[] = [
           { v: 'Events avoided/year', kind: 'derived' },
           { v: 'Cost per event', kind: 'benchmark', hint: '$3.5K–$25K' },
         ],
-        result: 'Estimated harm-prevention savings',
+        result: 'Estimated avoided safety-event cost',
         isFinal: true,
       },
     ],
-    note: "Modeled per condition (HAPI, falls, CAUTI, CLABSI, sepsis) from your event rates per 1,000 patient-days. Conservative by design — only the documentation-attributable prevention fraction is credited, since the causal link is indirect. Harm-rate trends still take 12–18 months to confirm in the field.",
+    note: "Modeled per condition (HAPI, falls, CAUTI, CLABSI, sepsis) from your event rates per 1,000 patient-days. Conservative by design: only the documentation-attributable fraction is credited, since the causal link is indirect. Event-rate trends still take 12 to 18 months to confirm in the field.",
   },
 ];
 

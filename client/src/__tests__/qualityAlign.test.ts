@@ -215,7 +215,7 @@ describe("SAFETY FIRST: the hero is events prevented, the dollar is a soft label
     expect(proof.headlineFormatter).toBeDefined();
     // The count formatter never renders a dollar sign.
     expect(proof.headlineFormatter!(proof.headlineValue)).not.toContain("$");
-    expect(proof.headlineLabel.toLowerCase()).toContain("prevented");
+    expect(proof.headlineLabel.toLowerCase()).toContain("safety events");
   });
 
   it("the cost of harm avoided is present but explicitly labeled SOFT, never the headline", () => {
