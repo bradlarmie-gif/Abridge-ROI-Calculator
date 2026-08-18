@@ -1,24 +1,19 @@
+import abridgeSymbol from "@assets/abridge-logo-symbol_1774906992195.png";
+
+/**
+ * The faint Abridge "A" watermark behind the hub landings. Uses the real brand
+ * symbol asset (the same one the PDFs use), not a hand-drawn path, so it reads
+ * as the Abridge mark and not a jagged wedge. Fixed to the lower-right, low
+ * opacity, cropped slightly off the edge for an elegant partial.
+ */
 export function BackgroundShape() {
   return (
-    <>
-      {/* Large "A" logo - right side, half visible */}
-      <div 
-        className="fixed top-1/2 -translate-y-1/2 right-0 pointer-events-none"
-        style={{ zIndex: 0 }}
-        aria-hidden="true"
-      >
-        <svg 
-          viewBox="0 0 400 800" 
-          className="h-[120vh] w-auto opacity-[0.06]"
-          style={{ transform: 'translateX(50%)' }}
-        >
-          <path 
-            d="M200 50 L350 750 L280 750 L250 650 L150 650 L120 750 L50 750 L200 50 Z M200 200 L165 550 L235 550 L200 200 Z" 
-            fill="#EA2C00"
-            fillRule="evenodd"
-          />
-        </svg>
-      </div>
-    </>
+    <img
+      src={abridgeSymbol}
+      alt=""
+      aria-hidden="true"
+      className="fixed pointer-events-none select-none"
+      style={{ bottom: "-5%", right: "-3%", width: "min(42vw, 560px)", opacity: 0.05, zIndex: 0 }}
+    />
   );
 }
