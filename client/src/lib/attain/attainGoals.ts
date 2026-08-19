@@ -437,7 +437,7 @@ export const GOAL_CATALOG: Record<GoalId, GoalDef> = {
       },
       {
         n: 6,
-        name: "Events prevented",
+        name: "Safety events fall",
         signal: "Event rate vs baseline",
         ownerRole: "Joint / quality",
         fragile: false,
@@ -445,8 +445,8 @@ export const GOAL_CATALOG: Record<GoalId, GoalDef> = {
       },
       {
         n: 7,
-        name: "Cost & harm avoided",
-        signal: "Cost per prevented event",
+        name: "Safety-cost exposure reduced",
+        signal: "Cost per safety event",
         ownerRole: "Finance / quality",
         fragile: false,
         isAbridge: false,
@@ -1196,7 +1196,7 @@ const nursingQuality: SettingGoalContent = {
   worldCards: [
     { k: "HAPI rate", n: "2.0 / 1k", benchmark: true, f: "Benchmark, per 1,000 patient-days" },
     { k: "Bundle compliance", n: "95%+", benchmark: true, f: "Typical target" },
-    { k: "Cost / prevented event", n: "$20K to $50K", benchmark: true, f: "Typical avoided cost" },
+    { k: "Cost / safety event", n: "$20K to $50K", benchmark: true, f: "Typical cost per event" },
   ],
   opportunity:
     "Ambient frees nurses from end-of-shift batch charting, so documentation happens with the care event, not hours later. That timeliness is what makes bundle compliance real and deterioration visible early. Each pressure injury or bloodstream infection runs $20K to $50K in cost, and is harm a patient should never experience. The plan turns timelier notes into stronger safety measures.",
@@ -1212,8 +1212,8 @@ const nursingQuality: SettingGoalContent = {
   goodHead: 'What "good" looks like, 12 months out',
   goodCells: [
     { n: "-0.9", k: "HAPI rate / 1,000" },
-    { n: "22", k: "Events prevented / year" },
-    { n: "$1.6M", coral: true, k: "Cost & harm avoided" },
+    { n: "22", k: "Fewer safety events / year" },
+    { n: "$1.6M", coral: true, k: "Safety-cost exposure" },
     { n: "95%", k: "Bundle compliance" },
   ],
   curveIntro:
@@ -1252,9 +1252,9 @@ const nursingQuality: SettingGoalContent = {
   renewal:
     'The conversation is no longer "was it worth the price." It is "we set out to move the safety measures this documentation makes visible, we are on our way, here is the runway on the rest." The documentation was always getting timelier. This is the plan that turned it into stronger safety measures. Price becomes progress.',
   ambition: [
-    { key: "conservative", label: "Conservative", goalLabel: "Goal · $900K · 12 events prevented", goalMargin: 900_000 },
-    { key: "typical", label: "Typical", goalLabel: "Goal · $1.6M · 22 events prevented", goalMargin: 1_600_000 },
-    { key: "ambitious", label: "Ambitious", goalLabel: "Goal · $2.3M · 32 events prevented", goalMargin: 2_300_000 },
+    { key: "conservative", label: "Conservative", goalLabel: "Goal · $900K · 12 fewer safety events", goalMargin: 900_000 },
+    { key: "typical", label: "Typical", goalLabel: "Goal · $1.6M · 22 fewer safety events", goalMargin: 1_600_000 },
+    { key: "ambitious", label: "Ambitious", goalLabel: "Goal · $2.3M · 32 fewer safety events", goalMargin: 2_300_000 },
   ],
 };
 

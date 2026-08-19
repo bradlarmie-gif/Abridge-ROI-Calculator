@@ -75,6 +75,9 @@ export interface OutcomePlan {
   outcomeStepN: number;
 }
 
+/** The single enabling owner for the Abridge-proven leading signals. */
+export const ABRIDGE_OWNER = "Abridge + your champion";
+
 /** Infer a measurement source from a chain link's role in the outcome. */
 function sourceFor(link: ChainLink): MetricSource {
   const role = link.ownerRole.toLowerCase();
@@ -123,10 +126,13 @@ export function buildOutcomePlan(setting: AttainSetting, goal: GoalId): OutcomeP
       fragile: link.fragile,
       isAbridge: link.isAbridge,
     };
-    // Group by owner, preserving first-appearance order (chain order).
-    const existing = byOwner.get(link.ownerRole);
+    // Collapse the Abridge-side links (1-2) under ONE enabling owner so the plan
+    // doesn't read as three near-identical "Abridge" rows. Partner links keep
+    // their own owner-role. Group preserving first-appearance (chain) order.
+    const ownerKey = link.isAbridge ? ABRIDGE_OWNER : link.ownerRole;
+    const existing = byOwner.get(ownerKey);
     if (existing) existing.steps.push(step);
-    else byOwner.set(link.ownerRole, { role: link.ownerRole, isAbridge: link.isAbridge, steps: [step] });
+    else byOwner.set(ownerKey, { role: ownerKey, isAbridge: link.isAbridge, steps: [step] });
   }
 
   return {
@@ -139,6 +145,15 @@ export function buildOutcomePlan(setting: AttainSetting, goal: GoalId): OutcomeP
     leadingCount: chain.filter((l) => l.isAbridge).length,
     outcomeStepN: lastN,
   };
+}
+
+/** The vital-few owners the partner must actually name — the make-or-break
+ * (fragile) owners and the outcome owner. A consultant scopes accountability to
+ * these, not to every link. Excludes the shared Abridge owner. */
+export function keyOwners(plan: OutcomePlan): PlanOwner[] {
+  return plan.owners.filter(
+    (o) => !o.isAbridge && o.steps.some((s) => s.fragile || s.layer === "outcome"),
+  );
 }
 
 /** Per-step partner overlay, keyed by step n. Blank entries are ignored. */
