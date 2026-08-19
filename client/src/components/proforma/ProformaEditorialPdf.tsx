@@ -294,7 +294,7 @@ const CSS = `
 .pf .tbl .sub td:first-child { padding-left:22px; }
 .pf .step { display:flex; gap:12px; align-items:flex-start; padding:8px 0; }
 .pf .stepn { width:24px; height:24px; border-radius:99px; border:1.5px solid var(--coral); color:var(--coral); font-family:'Abridge'; font-size:13px; display:flex; align-items:center; justify-content:center; flex:none; }
-.pf .sig { display:flex; align-items:baseline; gap:8px; padding:6px 0; border-bottom:1px solid var(--soft); }
+.pf .sig { display:flex; align-items:baseline; gap:8px; padding:14px 0; border-bottom:1px solid var(--soft); }
 .pf .sig .d { width:5px; height:5px; border-radius:99px; background:var(--coral); flex:none; position:relative; top:-2px; }
 .pf .held { display:flex; gap:9px; padding:8px 0; border-bottom:1px solid var(--soft); }
 .pf .held .d { width:5px; height:5px; border-radius:99px; background:var(--coral); flex:none; position:relative; top:6px; }
@@ -921,12 +921,12 @@ function SettingTrailer({ s }: { s: PfSetting }): JSX.Element {
   const maxVal = Math.max(...s.ramp.map((r) => r.value), 1);
   return (
     <>
-      <div style={{ marginTop: 18 }}>
+      <div style={{ marginTop: 34 }}>
         <div className="lbl" style={{ marginBottom: 11 }}>This setting over the term</div>
         {s.ramp.map((r, i) => (
-          <div key={i} style={{ display: "flex", alignItems: "center", gap: 14, padding: "8px 0", borderBottom: i < s.ramp.length - 1 ? "1px solid var(--soft)" : "none" }}>
+          <div key={i} style={{ display: "flex", alignItems: "center", gap: 14, padding: "24px 0", borderBottom: i < s.ramp.length - 1 ? "1px solid var(--soft)" : "none" }}>
             <span style={{ width: 54, fontSize: 12, color: "var(--muted)" }}>Year {r.year}</span>
-            <div style={{ flex: 1, height: 11, background: "var(--soft)", borderRadius: 99, overflow: "hidden" }}>
+            <div style={{ flex: 1, height: 22, background: "var(--soft)", borderRadius: 99, overflow: "hidden" }}>
               <div style={{ width: `${(r.value / maxVal) * 100}%`, height: "100%", background: "var(--coral)" }} />
             </div>
             <span className="abr" style={{ width: 58, textAlign: "right", fontSize: 15 }}>{fmtM(r.value)}</span>
@@ -934,7 +934,7 @@ function SettingTrailer({ s }: { s: PfSetting }): JSX.Element {
           </div>
         ))}
       </div>
-      <div style={{ marginTop: 20 }}>
+      <div style={{ marginTop: 36 }}>
         <div className="lbl" style={{ marginBottom: 9 }}>Signals to track · quality, not counted</div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 30px" }}>
           {s.signals.map((sig, i) => (

@@ -214,7 +214,8 @@ function PitchPage({ data }: { data: AppRatPdfData }): JSX.Element {
         <span className="font-abridge" style={{ fontSize: 20, color: C.coral }}>ABRIDGE</span>
         <span style={sLbl}>App Rationalization</span>
       </div>
-      <div style={{ marginTop: 88 }}>
+      <div style={{ flexGrow: 1 }} />
+      <div style={{ marginTop: 32 }}>
         <div style={sEyebrow}>The consolidation case</div>
         <h2 className="font-abridge" style={{ fontSize: 44, lineHeight: 1.06, color: C.ink, margin: "10px 0 0", maxWidth: 680, letterSpacing: "-0.5px" }}>
           {fmtShort(model.freed)} a year of your stack consolidates onto the Abridge you already run.
@@ -240,7 +241,8 @@ function PitchPage({ data }: { data: AppRatPdfData }): JSX.Element {
           </div>
         )}
       </div>
-      <div style={{ ...sRule, margin: "30px 0 22px" }} />
+      <div style={{ flexGrow: 1 }} />
+      <div style={{ ...sRule, margin: "20px 0 16px" }} />
       <div style={{ display: "flex", gap: 56 }}>
         {[
           { v: fmtShort(model.stackTotal), k: "Documentation spend today", coral: false },
@@ -254,7 +256,8 @@ function PitchPage({ data }: { data: AppRatPdfData }): JSX.Element {
           </div>
         ))}
       </div>
-      <div style={{ marginTop: 52 }}>
+      <div style={{ flexGrow: 1 }} />
+      <div style={{ marginTop: 16 }}>
         <div style={{ ...sLbl, marginBottom: 6 }}>Inside this plan</div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", columnGap: 44 }}>
           {toc.map((r) => (
@@ -265,7 +268,8 @@ function PitchPage({ data }: { data: AppRatPdfData }): JSX.Element {
           ))}
         </div>
       </div>
-      <div style={{ marginTop: "auto", paddingTop: 20 }}>
+      <div style={{ flexGrow: 1 }} />
+      <div style={{ marginTop: 16 }}>
         <div style={{ ...sRule, marginBottom: 9 }} />
         <div style={{ display: "flex", justifyContent: "space-between" }}>
           <span style={{ fontSize: 10, color: C.faint }}>Prepared for {data.orgName || "your team"} · {data.date}</span>
@@ -301,7 +305,7 @@ function StackPage({ data }: { data: AppRatPdfData }): JSX.Element {
 
       {/* Hero: one bar, each tool sized by spend and split freed (coral) vs stays (tan) */}
       <div style={{ ...sLbl, marginTop: 24, marginBottom: 9 }}>Your documentation stack today · {fmtShort(model.stackTotal)} / yr</div>
-      <div style={{ display: "flex", height: 54, borderRadius: 9, overflow: "hidden", border: `1px solid ${C.hair}` }}>
+      <div style={{ display: "flex", height: 72, borderRadius: 9, overflow: "hidden", border: `1px solid ${C.hair}` }}>
         {model.rows.map((r, i) => (
           <div key={r.id} style={{ width: `${r.widthPct}%`, display: "flex", borderRight: i < model.rows.length - 1 ? "2px solid #fff" : "none" }}>
             {r.retiredPct > 0 && <div style={{ width: `${r.retiredPct}%`, background: C.coral }} />}
@@ -337,7 +341,7 @@ function StackPage({ data }: { data: AppRatPdfData }): JSX.Element {
       </div>
 
       <div style={{ marginTop: 22, border: `1px solid ${C.hair}`, borderRadius: 12, overflow: "hidden" }}>
-        <div style={{ display: "flex", background: C.tile, padding: "10px 16px" }}>
+        <div style={{ display: "flex", background: C.tile, padding: "16px 16px" }}>
           {th.map((t, i) => (
             <span key={i} style={{ ...sLbl, fontSize: 9, flex: cols[i][0], textAlign: cols[i][1] }}>{t}</span>
           ))}
@@ -345,7 +349,7 @@ function StackPage({ data }: { data: AppRatPdfData }): JSX.Element {
         {rows.map((it, i) => {
           const freed = itemRetired(it);
           return (
-            <div key={it.id} style={{ display: "flex", alignItems: "center", padding: "10px 16px", background: i % 2 ? C.card : "#fff", borderTop: `1px solid ${C.soft}` }}>
+            <div key={it.id} style={{ display: "flex", alignItems: "center", padding: "16px 16px", background: i % 2 ? C.card : "#fff", borderTop: `1px solid ${C.soft}` }}>
               <span style={{ flex: cols[0][0], minWidth: 0 }}>
                 <span className="font-abridge" style={{ fontSize: 13, color: C.ink, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", display: "block" }}>{itemDisplayName(it)}</span>
               </span>
@@ -369,6 +373,7 @@ function StackPage({ data }: { data: AppRatPdfData }): JSX.Element {
         </div>
       </div>
 
+      <div style={{ flexGrow: 1 }} />
       {(() => {
         // "Stays" has two sources, and they read differently: tools Abridge wholly doesn't replace
         // (staysOnly), and the residual on tools it covers only in part. Naming a 75%-freed tool as
@@ -389,6 +394,7 @@ function StackPage({ data }: { data: AppRatPdfData }): JSX.Element {
           </div>
         );
       })()}
+      <div style={{ flexGrow: 1 }} />
       <Footer note="Figures use only the tools and annual spend you entered. For planning purposes, not a guarantee of savings." num="01" />
     </Page>
   );
@@ -409,7 +415,7 @@ function StepChart({ items }: { items: AppRatItem[] }): JSX.Element | null {
   const spanEnd = Math.max(summary.renewalFinishMonths, summary.planFinishMonths, 6);
   const axisMax = Math.max(12, Math.ceil((spanEnd + 4) / 6) * 6);
   const xStep = axisMax <= 24 ? 6 : 12;
-  const W = 690, H = 218, x0 = 50, x1 = 678, yTop = 34, yBase = 174;
+  const W = 690, H = 252, x0 = 50, x1 = 678, yTop = 40, yBase = 202;
   const xf = (m: number) => x0 + (Math.max(0, Math.min(m, axisMax)) / axisMax) * (x1 - x0);
   const yf = (v: number) => yBase - (v / FULL) * (yBase - yTop);
   const step = (key: "sunsetMonths" | "contractMonths"): [number, number][] => {
@@ -566,6 +572,7 @@ function TimingPage({ data }: { data: AppRatPdfData }): JSX.Element {
       )}
       <TimingReadLine items={data.items} />
 
+      <div style={{ flexGrow: 1 }} />
       <div style={{ ...sLbl, marginTop: 22, marginBottom: 4 }}>Each tool&rsquo;s sunset</div>
       <div style={{ display: "flex", ...sLbl, fontSize: 9, marginBottom: 6 }}>
         <span style={{ flex: 2 }}>Tool</span>
@@ -574,7 +581,7 @@ function TimingPage({ data }: { data: AppRatPdfData }): JSX.Element {
         <span style={{ width: 90, textAlign: "right" }}>Freed / yr</span>
       </div>
       {savers.map((it) => (
-        <div key={it.id} style={{ display: "flex", alignItems: "baseline", padding: "8px 0", borderTop: `1px solid ${C.soft}` }}>
+        <div key={it.id} style={{ display: "flex", alignItems: "baseline", padding: "13px 0", borderTop: `1px solid ${C.soft}` }}>
           <span style={{ flex: 2, fontSize: 13, color: C.label, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{itemDisplayName(it)}</span>
           <span style={{ width: 120, textAlign: "right", fontSize: 12, color: C.faint }}>{renewalDateLabel(it.sunsetMonths)}</span>
           <span style={{ width: 90, textAlign: "right", fontSize: 12, color: C.faint }}>{it.rampMonths > 0 ? `${it.rampMonths} mo` : "instant"}</span>
@@ -587,6 +594,7 @@ function TimingPage({ data }: { data: AppRatPdfData }): JSX.Element {
           The finish line is gated by {summary.gatingToolName}, the latest contract to run out.
         </div>
       )}
+      <div style={{ flexGrow: 1 }} />
       <Footer note="An estimate built from the figures you entered, not a guarantee. Contracts and adoption set the real pace." num="02" />
     </Page>
   );

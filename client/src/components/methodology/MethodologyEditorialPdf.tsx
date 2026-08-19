@@ -238,14 +238,14 @@ function RecordCard({
       >
         {caption}
       </div>
-      <div style={{ fontSize: 12, color: C.muted, marginBottom: 18 }}>{subcaption}</div>
+      <div style={{ fontSize: 12, color: C.muted, marginBottom: 22 }}>{subcaption}</div>
       {widths.map((w, i) => (
         <div
           key={i}
           style={{
-            height: 9,
-            borderRadius: 5,
-            marginBottom: 12,
+            height: 13,
+            borderRadius: 6,
+            marginBottom: 17,
             width: `${w}%`,
             background: accent ? (inkAt.has(i) ? C.coral : "#F2B7A6") : inkAt.has(i) ? "#CFC6B9" : "#E7DFD5",
           }}
@@ -314,7 +314,8 @@ function RecordPage(): JSX.Element {
         <b style={{ color: C.ink, fontWeight: 700 }}>Every number in this document comes from closing that gap.</b>
       </p>
 
-      <div style={{ marginTop: "auto", borderTop: `1px solid ${C.hair}`, paddingTop: 16 }}>
+      <div style={{ flexGrow: 1 }} />
+      <div style={{ marginTop: 24, borderTop: `1px solid ${C.hair}`, paddingTop: 16 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 12 }}>
           <span style={sLbl}>What we can measure today</span>
           <span style={{ fontSize: 11, color: C.faint, fontStyle: "italic" }}>the floor, not the ceiling</span>
@@ -331,6 +332,7 @@ function RecordPage(): JSX.Element {
         </div>
       </div>
 
+      <div style={{ flexGrow: 1 }} />
       <Footer
         note="These four are the part we can put a defensible number on. A complete record makes more possible than we count here."
         num="01"
@@ -351,7 +353,7 @@ const SETTING_DOT: Record<string, string> = {
 function ComparisonRow({ s }: { s: MethodologySetting }): JSX.Element {
   return (
     <tr>
-      <td style={{ padding: "15px 12px 15px 0", borderBottom: `1px solid ${C.hair}`, verticalAlign: "top", width: 130 }}>
+      <td style={{ padding: "32px 12px 32px 0", borderBottom: `1px solid ${C.hair}`, verticalAlign: "top", width: 130 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
           <span style={{ width: 9, height: 9, borderRadius: 99, background: SETTING_DOT[s.id], display: "inline-block" }} />
           <span className="font-abridge" style={{ fontSize: 17, color: C.ink }}>
@@ -375,16 +377,16 @@ function ComparisonRow({ s }: { s: MethodologySetting }): JSX.Element {
           {s.unit}
         </span>
       </td>
-      <td style={{ padding: "15px 12px 15px 0", borderBottom: `1px solid ${C.hair}`, verticalAlign: "top", fontSize: 12, color: C.muted, lineHeight: 1.4 }}>
+      <td style={{ padding: "32px 12px 32px 0", borderBottom: `1px solid ${C.hair}`, verticalAlign: "top", fontSize: 12, color: C.muted, lineHeight: 1.4 }}>
         {s.dominantLever}
       </td>
-      <td style={{ padding: "15px 12px 15px 0", borderBottom: `1px solid ${C.hair}`, verticalAlign: "top", fontSize: 12, color: C.muted, lineHeight: 1.4 }}>
+      <td style={{ padding: "32px 12px 32px 0", borderBottom: `1px solid ${C.hair}`, verticalAlign: "top", fontSize: 12, color: C.muted, lineHeight: 1.4 }}>
         {s.recordChanges}
       </td>
-      <td style={{ padding: "15px 12px 15px 0", borderBottom: `1px solid ${C.hair}`, verticalAlign: "top", fontSize: 12, color: C.muted, lineHeight: 1.4 }}>
+      <td style={{ padding: "32px 12px 32px 0", borderBottom: `1px solid ${C.hair}`, verticalAlign: "top", fontSize: 12, color: C.muted, lineHeight: 1.4 }}>
         {s.comparisonSignals}
       </td>
-      <td style={{ padding: "15px 0 15px 0", borderBottom: `1px solid ${C.hair}`, verticalAlign: "top", fontSize: 12, color: C.muted, lineHeight: 1.4 }}>
+      <td style={{ padding: "32px 0 32px 0", borderBottom: `1px solid ${C.hair}`, verticalAlign: "top", fontSize: 12, color: C.muted, lineHeight: 1.4 }}>
         {s.comparisonOutcomes}
       </td>
     </tr>
@@ -435,12 +437,14 @@ function ComparisonPage(): JSX.Element {
           ))}
         </tbody>
       </table>
+      <div style={{ flexGrow: 1 }} />
       <p style={{ fontSize: 11.5, color: C.faint, marginTop: 16, lineHeight: 1.5, fontStyle: "italic" }}>
         Read down the &ldquo;signal you see first&rdquo; column: in every setting, the leading indicator is
         a documentation signal you can watch in weeks. The outcomes follow over quarters. That order is the
         whole basis for attaining the value.
       </p>
 
+      <div style={{ flexGrow: 1 }} />
       <Footer
         note="One mechanism, four economics. The chapters that follow build each column out with the math."
         num="02"
@@ -498,10 +502,11 @@ function ChapterPage({ s, index }: { s: MethodologySetting; index: number }): JS
       </h2>
       <p style={sLead}>{s.leverBlurb}</p>
 
+      <div style={{ flexGrow: 1 }} />
       <div
         style={{
           display: "flex",
-          marginTop: 20,
+          marginTop: 14,
           border: `1px solid ${C.hair}`,
           borderRadius: 14,
           overflow: "hidden",
@@ -512,12 +517,14 @@ function ChapterPage({ s, index }: { s: MethodologySetting; index: number }): JS
         ))}
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18, marginTop: 18 }}>
+      <div style={{ flexGrow: 1 }} />
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18, marginTop: 14 }}>
         <SignalCard heading="The signal you see first &middot; weeks" items={s.leadingSignals} />
         <SignalCard heading="The outcome it opens &middot; quarters" items={s.laggingOutcomes} />
       </div>
 
-      <div style={{ marginTop: 20 }}>
+      <div style={{ flexGrow: 1 }} />
+      <div style={{ marginTop: 14 }}>
         <div style={{ ...sLbl, marginBottom: 4 }}>The math, illustrated</div>
         {s.math.map((m, i) => (
           <div
@@ -543,7 +550,8 @@ function ChapterPage({ s, index }: { s: MethodologySetting; index: number }): JS
         ))}
       </div>
 
-      <div style={{ marginTop: 22 }}>
+      <div style={{ flexGrow: 1 }} />
+      <div style={{ marginTop: 14 }}>
         <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: ".14em", textTransform: "uppercase", color: C.coral, marginBottom: 13 }}>
           How you attain it
         </div>
@@ -564,6 +572,7 @@ function ChapterPage({ s, index }: { s: MethodologySetting; index: number }): JS
         </div>
       </div>
 
+      <div style={{ flexGrow: 1 }} />
       <Footer note="Illustrative figures. Your own volume and economics are modeled in Explore." num={`0${index + 3}`} />
     </Page>
   );
@@ -614,6 +623,7 @@ function ClosePage(): JSX.Element {
         of this tool.
       </p>
 
+      <div style={{ flexGrow: 1 }} />
       <div
         style={{
           display: "flex",
@@ -628,7 +638,7 @@ function ClosePage(): JSX.Element {
             key={step.n}
             style={{
               flex: 1,
-              padding: "18px 20px",
+              padding: "24px",
               borderRight: i < ATTAINMENT_STEPS.length - 1 ? `1px solid ${C.hair}` : "none",
             }}
           >
@@ -643,10 +653,11 @@ function ClosePage(): JSX.Element {
         ))}
       </div>
 
+      <div style={{ flexGrow: 1 }} />
       <div style={{ marginTop: 30 }}>
         <div style={{ ...sLbl, marginBottom: 12 }}>Where each step lives</div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 20 }}>
-          <div style={{ border: `1px solid ${C.hair}`, borderRadius: 14, padding: "18px 20px", background: C.card }}>
+          <div style={{ border: `1px solid ${C.hair}`, borderRadius: 14, padding: "24px", background: C.card }}>
             <div className="font-abridge" style={{ fontSize: 17, color: C.ink }}>
               Explore
             </div>
@@ -654,7 +665,7 @@ function ClosePage(): JSX.Element {
               Builds the model on your own volume and economics, replacing the illustrative figures here.
             </div>
           </div>
-          <div style={{ border: `1px solid ${C.hair}`, borderRadius: 14, padding: "18px 20px", background: C.card }}>
+          <div style={{ border: `1px solid ${C.hair}`, borderRadius: 14, padding: "24px", background: C.card }}>
             <div className="font-abridge" style={{ fontSize: 17, color: C.ink }}>
               Measure
             </div>
@@ -666,7 +677,7 @@ function ClosePage(): JSX.Element {
             style={{
               border: `1.5px solid ${C.coral}`,
               borderRadius: 14,
-              padding: "18px 20px",
+              padding: "24px",
               background: "#FEF6F3",
             }}
           >
@@ -679,6 +690,30 @@ function ClosePage(): JSX.Element {
             </div>
           </div>
         </div>
+      </div>
+
+      <div style={{ flexGrow: 1 }} />
+      <div
+        style={{
+          marginTop: 24,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          border: `1.5px solid ${C.coral}`,
+          borderRadius: 14,
+          background: "#FEF6F3",
+          padding: "20px 26px",
+        }}
+      >
+        <div>
+          <div className="font-abridge" style={{ fontSize: 18, color: C.ink }}>
+            Build your own number in Explore
+          </div>
+          <div style={{ fontSize: 11.5, color: C.muted, marginTop: 5, lineHeight: 1.45 }}>
+            Replace the illustrative figures in this document with your own volume and economics.
+          </div>
+        </div>
+        <span className="font-abridge" style={{ fontSize: 22, color: C.coral }}>&rarr;</span>
       </div>
 
       <Footer

@@ -1080,24 +1080,24 @@ function ScenarioCard({
       style={{
         border: highlight ? `1.5px solid ${C.coral}` : `1px solid ${C.hair}`,
         borderRadius: 16,
-        padding: "18px 20px",
+        padding: "26px 24px",
         background: highlight ? "#FEF6F3" : C.card,
       }}
     >
       <div style={{ ...sLbl, color: highlight ? C.coral : C.faint }}>{eyebrow}</div>
       <div
         className="font-abridge"
-        style={{ fontSize: 31, marginTop: 6, color: highlight ? C.coral : C.ink }}
+        style={{ fontSize: 38, marginTop: 10, color: highlight ? C.coral : C.ink }}
       >
         {amount}
       </div>
       <div
         className="font-abridge"
-        style={{ fontSize: 16, marginTop: 2, color: highlight ? C.coral : C.label }}
+        style={{ fontSize: 18, marginTop: 4, color: highlight ? C.coral : C.label }}
       >
         {ret}
       </div>
-      <div style={{ fontSize: 11, color: C.faint, marginTop: 6 }}>{note}</div>
+      <div style={{ fontSize: 11.5, color: C.faint, marginTop: 9, lineHeight: 1.4 }}>{note}</div>
     </div>
   );
 }
@@ -1108,7 +1108,7 @@ function CostRow({ k, children }: { k: ReactNode; children: ReactNode }): JSX.El
       style={{
         display: "flex",
         justifyContent: "space-between",
-        padding: "10px 0",
+        padding: "15px 0",
         borderBottom: `1px solid ${C.soft}`,
       }}
     >
@@ -1208,7 +1208,9 @@ function InvestmentPage({ data }: { data: ExplorePDFData }): JSX.Element {
         />
       </div>
 
+      <div style={{ flexGrow: 1 }} />
       <div style={{ ...sRule, margin: "26px 0 0" }} />
+      <div style={{ flexGrow: 1 }} />
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 40, marginTop: 22 }}>
         <div>
           <div style={{ ...sLbl, marginBottom: 12 }}>What it costs</div>
@@ -1236,7 +1238,7 @@ function InvestmentPage({ data }: { data: ExplorePDFData }): JSX.Element {
             style={{
               border: `1px solid ${C.hair}`,
               borderRadius: 16,
-              padding: "20px 22px",
+              padding: "26px 26px",
               background: C.card,
             }}
           >
@@ -1251,7 +1253,7 @@ function InvestmentPage({ data }: { data: ExplorePDFData }): JSX.Element {
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "baseline",
-                marginTop: 10,
+                marginTop: 15,
               }}
             >
               <span style={{ fontSize: 13, color: C.muted }}>Recurring investment</span>
@@ -1259,7 +1261,7 @@ function InvestmentPage({ data }: { data: ExplorePDFData }): JSX.Element {
                 {fmtShort(inv)}
               </span>
             </div>
-            <div style={{ ...sRule, margin: "14px 0" }} />
+            <div style={{ ...sRule, margin: "18px 0" }} />
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
               <span style={{ fontSize: 13, fontWeight: 700, color: C.label }}>{priced ? "Net annual value" : "Value before cost"}</span>
               <span className="font-abridge" style={{ fontSize: 26 }}>
@@ -1271,7 +1273,7 @@ function InvestmentPage({ data }: { data: ExplorePDFData }): JSX.Element {
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "baseline",
-                marginTop: 10,
+                marginTop: 15,
               }}
             >
               <span style={{ fontSize: 13, fontWeight: 700, color: C.label }}>Year-1 return</span>
@@ -1290,6 +1292,7 @@ function InvestmentPage({ data }: { data: ExplorePDFData }): JSX.Element {
         </div>
       </div>
 
+      <div style={{ flexGrow: 1 }} />
       <Footer
         note="Scenarios flex performance ±30% against plan; every input stays yours. An estimate, not a guarantee."
         num="03"

@@ -194,7 +194,8 @@ function PitchPage({ data }: { data: QuickRoiPdfData }): JSX.Element {
         <span className="font-abridge" style={{ fontSize: 20, color: C.coral }}>ABRIDGE</span>
         <span style={sLbl}>ROI Calculator</span>
       </div>
-      <div style={{ marginTop: 128 }}>
+      <div style={{ flexGrow: 1 }} />
+      <div style={{ marginTop: 32 }}>
         <div style={sEyebrow}>The value case</div>
         <h2 className="font-abridge" style={{ fontSize: 44, lineHeight: 1.06, color: C.ink, margin: "10px 0 0", maxWidth: 680, letterSpacing: "-0.5px" }}>
           To {data.orgName || "this partner"}, Abridge is worth {fmtShort(m.todayValue)} a year in {m.meta.label.toLowerCase()}.
@@ -218,7 +219,8 @@ function PitchPage({ data }: { data: QuickRoiPdfData }): JSX.Element {
           </div>
         )}
       </div>
-      <div style={{ ...sRule, margin: "30px 0 22px" }} />
+      <div style={{ flexGrow: 1 }} />
+      <div style={{ ...sRule, margin: "20px 0 16px" }} />
       <div style={{ display: "flex", gap: 48 }}>
         {stats.map((s, i) => (
           <div key={i}>
@@ -227,7 +229,8 @@ function PitchPage({ data }: { data: QuickRoiPdfData }): JSX.Element {
           </div>
         ))}
       </div>
-      <div style={{ marginTop: "auto" }}>
+      <div style={{ flexGrow: 1 }} />
+      <div style={{ marginTop: 16 }}>
         <div style={{ ...sLbl, marginBottom: 6 }}>Inside this one-pager</div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", columnGap: 44 }}>
           {[{ n: "01", t: "The numbers, itemized" }, { n: "02", t: "The upside, if they expand" }].map((r) => (
@@ -238,7 +241,8 @@ function PitchPage({ data }: { data: QuickRoiPdfData }): JSX.Element {
           ))}
         </div>
       </div>
-      <div style={{ marginTop: 20 }}>
+      <div style={{ flexGrow: 1 }} />
+      <div style={{ marginTop: 16 }}>
         <div style={{ ...sRule, marginBottom: 9 }} />
         <div style={{ display: "flex", justifyContent: "space-between" }}>
           <span style={{ fontSize: 10, color: C.faint }}>Prepared for {data.orgName || "your team"} · {data.date}</span>
@@ -278,7 +282,7 @@ function NumbersPage({ data }: { data: QuickRoiPdfData }): JSX.Element {
       {/* Composition bar — how the number is built, by weight */}
       <div style={{ marginTop: 34 }}>
         <div style={sLbl}>How the number is built</div>
-        <div style={{ marginTop: 12, display: "flex", height: 60, borderRadius: 10, overflow: "hidden", gap: 2, background: C.tile }}>
+        <div style={{ marginTop: 12, display: "flex", height: 96, borderRadius: 14, overflow: "hidden", gap: 2, background: C.tile }}>
           {items.map((it, i) => (
             <div key={it.id} style={{ width: `${Math.max(pct(it.value), 3).toFixed(2)}%`, background: CORAL_RAMP[i % CORAL_RAMP.length], minWidth: 6, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
               {pct(it.value) >= 16 && (
@@ -292,7 +296,7 @@ function NumbersPage({ data }: { data: QuickRoiPdfData }): JSX.Element {
       {/* Ledger — each driver ties to its bar segment by the swatch color */}
       <div style={{ marginTop: 26 }}>
         {items.map((it, i) => (
-          <div key={it.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 24, padding: "15px 0", borderTop: `1px solid ${C.hair}` }}>
+          <div key={it.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 24, padding: "28px 0", borderTop: `1px solid ${C.hair}` }}>
             <div style={{ display: "flex", gap: 13, alignItems: "baseline", maxWidth: 540 }}>
               <span style={{ width: 11, height: 11, borderRadius: 3, background: CORAL_RAMP[i % CORAL_RAMP.length], flexShrink: 0, alignSelf: "center" }} />
               <div>
@@ -318,12 +322,13 @@ function NumbersPage({ data }: { data: QuickRoiPdfData }): JSX.Element {
         </div>
       )}
 
-      <div style={{ marginTop: "auto" }}>
+      <div style={{ marginTop: 22 }}>
         <div style={{ fontSize: 15, color: C.label, lineHeight: 1.55, maxWidth: 640 }}>
           This is what the documentation already supports at today's footprint. The next page holds the same measured effect flat and grows only the volume it runs on.
         </div>
       </div>
 
+      <div style={{ flexGrow: 1 }} />
       <Footer note="Realization and attribution rates are applied inside each line; the total counts lift only, never gross charges." num="02" />
     </Page>
   );
@@ -363,7 +368,7 @@ function UpsidePage({ data }: { data: QuickRoiPdfData }): JSX.Element {
 
       {/* the made-today / on-the-table meter */}
       <div style={{ marginTop: 22 }}>
-        <div style={{ height: 12, borderRadius: 6, background: "#F3D9D0", overflow: "hidden" }}>
+        <div style={{ height: 18, borderRadius: 9, background: "#F3D9D0", overflow: "hidden" }}>
           <div style={{ width: `${Math.max(2, Math.min(100, todayPct)).toFixed(1)}%`, height: "100%", background: C.coral }} />
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8 }}>
@@ -373,10 +378,11 @@ function UpsidePage({ data }: { data: QuickRoiPdfData }): JSX.Element {
       </div>
 
       {/* the stretch, spelled out — the two levers that grow the volume */}
-      <div style={{ marginTop: 34 }}>
+      <div style={{ flexGrow: 1 }} />
+      <div style={{ marginTop: 24 }}>
         <div style={sLbl}>The stretch, spelled out</div>
         <div style={{ marginTop: 12 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "12px 0", borderTop: `1px solid ${C.hair}` }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "18px 0", borderTop: `1px solid ${C.hair}` }}>
             <div>
               <div style={{ fontSize: 14, fontWeight: 700, color: C.ink }}>More {m.meta.providerWord} on Abridge</div>
               <div style={{ fontSize: 11.5, color: C.faint, marginTop: 3 }}>{fmtInt(data.account.onAbridge)} of {fmtInt(data.account.totalProviders)} today</div>
@@ -387,7 +393,7 @@ function UpsidePage({ data }: { data: QuickRoiPdfData }): JSX.Element {
             </div>
           </div>
           {!m.isNursing && (
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "12px 0", borderTop: `1px solid ${C.hair}` }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "18px 0", borderTop: `1px solid ${C.hair}` }}>
               <div>
                 <div style={{ fontSize: 14, fontWeight: 700, color: C.ink }}>Documenting more of their encounters</div>
                 <div style={{ fontSize: 11.5, color: C.faint, marginTop: 3 }}>the share written with Abridge</div>
@@ -403,9 +409,11 @@ function UpsidePage({ data }: { data: QuickRoiPdfData }): JSX.Element {
         </div>
       </div>
 
+      <div style={{ flexGrow: 1 }} />
       <div style={{ ...sRule, margin: "32px 0 0" }} />
 
       {/* the return */}
+      <div style={{ flexGrow: 1 }} />
       <div style={{ marginTop: 26 }}>
         <div style={sEyebrow}>The return, on today's case</div>
         {priced ? (
