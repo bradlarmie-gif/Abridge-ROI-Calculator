@@ -78,6 +78,52 @@ export interface OutcomePlan {
 /** The single enabling owner for the Abridge-proven leading signals. */
 export const ABRIDGE_OWNER = "Abridge + your champion";
 
+/**
+ * Setting-specific step language. `GOAL_CATALOG[goal].chain` is authored per
+ * GOAL (outpatient-flavored), so ED and inpatient need their own words for the
+ * middle + outcome steps or the plan gives a CFO the wrong advice (an ED plan
+ * must talk LWBS / door-to-provider, not "slots on the template"). Only the
+ * steps that diverge are overridden; the leading adoption links are universal.
+ * Grounded in the setting cells in attainCells.ts.
+ */
+type StepOverride = { name?: string; signal?: string; ownerRole?: string };
+const SETTING_STEP_OVERRIDES: Record<string, Record<number, StepOverride>> = {
+  "ed:access": {
+    3: { name: "Freed charting time redeployed to the front end", signal: "Provider-in-triage hours, intake time", ownerRole: "ED operations" },
+    4: { name: "The front end moves faster", signal: "Door-to-provider time falling", ownerRole: "ED charge-nurse leadership" },
+    5: { name: "Patients kept from leaving", signal: "LWBS rate falling vs baseline", ownerRole: "ED front-end" },
+    6: { name: "Recovered visits completed", signal: "Recovered visit volume vs baseline", ownerRole: "Joint" },
+  },
+  "ed:revenue": {
+    3: { name: "Acuity documented at the bedside", signal: "E/M level distribution vs baseline", ownerRole: "ED coding / CDI" },
+    4: { name: "Charts support the level of care", signal: "Down-coding and query rate", ownerRole: "ED physician leadership" },
+    5: { name: "Claims clear on first pass", signal: "First-pass acceptance, denial rate", ownerRole: "Billing" },
+    6: { name: "Captured level realized", signal: "E/M capture vs baseline", ownerRole: "Joint" },
+  },
+  "inpatient:capacity": {
+    1: { name: "Abridge adopted", signal: "% hospitalists recording", ownerRole: ABRIDGE_OWNER },
+    3: { name: "Discharge summaries land earlier", signal: "Discharge-summary turnaround", ownerRole: "Hospitalist leadership" },
+    4: { name: "Discharge orders move before noon", signal: "Discharge-before-noon rate", ownerRole: "Care management" },
+    5: { name: "Beds turn sooner", signal: "Bed-turn time, throughput", ownerRole: "Bed management" },
+    6: { name: "Capacity used, not added", signal: "Effective bed capacity vs baseline", ownerRole: "Joint" },
+    7: { name: "Avoided-cost / added throughput", signal: "Cost per patient-day, throughput value", ownerRole: "Finance" },
+  },
+  "inpatient:revenue": {
+    3: { name: "Acuity and complications documented", signal: "CC/MCC capture rate", ownerRole: "CDI" },
+    4: { name: "DRGs reflect the care delivered", signal: "Case-mix index vs baseline", ownerRole: "Hospitalist / CDI" },
+    5: { name: "Queries close before the bill drops", signal: "Query turnaround, close rate", ownerRole: "CDI / providers" },
+    6: { name: "Captured weight realized", signal: "DRG weight vs baseline", ownerRole: "Joint" },
+  },
+};
+
+/** Setting-specific outcome titles where the shared goal title reads wrong for
+ * the setting (the capacity goal title is nursing-overtime; inpatient capacity is
+ * the discharge/bed-turn play). */
+const SETTING_TITLE_OVERRIDES: Record<string, string> = {
+  "inpatient:capacity": "How Capacity Opens",
+  "ed:access": "How Throughput Improves",
+};
+
 /** Infer a measurement source from a chain link's role in the outcome. */
 function sourceFor(link: ChainLink): MetricSource {
   const role = link.ownerRole.toLowerCase();
@@ -109,9 +155,13 @@ export function buildOutcomePlan(setting: AttainSetting, goal: GoalId): OutcomeP
   const def = GOAL_CATALOG[goal];
   const chain = def.chain;
   const lastN = chain.length; // the booked outcome is the final link
+  const overrides = SETTING_STEP_OVERRIDES[`${setting}:${goal}`] ?? {};
   const byOwner = new Map<string, PlanOwner>();
 
-  for (const link of chain) {
+  for (const baseLink of chain) {
+    // Apply the setting-specific override so ED/inpatient read in their own terms.
+    const ov = overrides[baseLink.n] ?? {};
+    const link = { ...baseLink, name: ov.name ?? baseLink.name, signal: ov.signal ?? baseLink.signal, ownerRole: ov.ownerRole ?? baseLink.ownerRole };
     const layer: StepLayer = link.isAbridge
       ? "leading"
       : link.n === lastN
@@ -140,7 +190,7 @@ export function buildOutcomePlan(setting: AttainSetting, goal: GoalId): OutcomeP
     goal,
     category: categoryForGoal(setting, goal),
     outcomeLabel: def.label,
-    chainTitle: def.chainTitle,
+    chainTitle: SETTING_TITLE_OVERRIDES[`${setting}:${goal}`] ?? def.chainTitle,
     owners: Array.from(byOwner.values()),
     leadingCount: chain.filter((l) => l.isAbridge).length,
     outcomeStepN: lastN,
