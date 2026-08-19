@@ -209,11 +209,11 @@ function PitchPage({ data }: { data: QuickRoiPdfData }): JSX.Element {
           <div style={{ marginTop: 16, fontSize: 14.5, color: C.label, lineHeight: 1.5, maxWidth: 620 }}>
             {m.net >= 0 ? (
               <>Net of the <b style={{ color: C.ink }}>{fmtFull(data.price)} / yr</b> Abridge price,{" "}
-                <b style={{ color: C.coral }}>{fmtFull(m.net)} / yr</b> comes back, or{" "}
+                <b style={{ color: C.coral }}>{fmtShort(m.net)} / yr</b> comes back, or{" "}
                 <b style={{ color: C.ink }}>{m.roi.toFixed(1)}×</b> the Abridge spend.</>
             ) : (
               <>The <b style={{ color: C.ink }}>{fmtFull(data.price)} / yr</b> Abridge price runs{" "}
-                <b style={{ color: C.ink }}>{fmtFull(-m.net)} / yr</b> above the value counted here.</>
+                <b style={{ color: C.ink }}>{fmtShort(-m.net)} / yr</b> above the value counted here.</>
             )}
           </div>
         )}
@@ -449,7 +449,7 @@ export function QuickRoiEditorialPdfDocument({ data }: { data: QuickRoiPdfData }
 
 // Sample data so the print route always renders (outpatient, priced).
 export const SAMPLE_QUICK_ROI_PDF_DATA: QuickRoiPdfData = {
-  orgName: "Prospective partner",
+  orgName: "Summit Medical Group",
   date: new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }),
   setting: "outpatient",
   account: { totalProviders: 90, onAbridge: 60, encPerProvider: 2500, utilNow: 68, minutesSaved: 1.1 },
