@@ -18,7 +18,7 @@ export function BackgroundShape() {
         width: "min(90vh, 1040px)",
         height: "min(90vh, 1040px)",
         backgroundColor: "#E7DCC7",
-        opacity: 0.9,
+        opacity: 0.6,
         zIndex: 0,
         WebkitMaskImage: `url(${abridgeSymbol})`,
         maskImage: `url(${abridgeSymbol})`,
