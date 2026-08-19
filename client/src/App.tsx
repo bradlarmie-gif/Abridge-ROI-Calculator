@@ -53,6 +53,7 @@ import DiscoveryBridge, { type BridgeInfo } from "@/pages/attain/valuestrategy/D
 import type { AttainSetting, GoalId } from "@/lib/attain/attainTypes";
 import AttainConsultPreview from "@/pages/attain/AttainConsultPreview";
 import AttainPlanPreview from "@/pages/attain/AttainPlanPreview";
+import PlanBuildExperience from "@/pages/attain/planning/PlanBuildExperience";
 import AttainMatrixPreview from "@/pages/attain/preview/AttainMatrixPreview";
 import MultiCategoryPreview from "@/pages/attain/preview/MultiCategoryPreview";
 import ProformaPreview from "@/pages/proforma/editorial/ProformaPreview";
@@ -235,6 +236,14 @@ export default function App() {
   // THROWAWAY: ?planpreview=1 renders the Plan chapter prototype. Remove with AttainPlanPreview.tsx.
   if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("planpreview") === "1") {
     return <AttainPlanPreview />;
+  }
+  // Planning rebuild (Phase A preview) — ?planbuild=1 or ?planbuild=<setting>. Safe of the live Planning path.
+  if (typeof window !== "undefined") {
+    const pb = new URLSearchParams(window.location.search).get("planbuild");
+    if (pb) {
+      const setting = (["outpatient", "ed", "inpatient", "nursing"].includes(pb) ? pb : "outpatient") as AttainSetting;
+      return <PlanBuildExperience setting={setting} />;
+    }
   }
   // THROWAWAY ?inpatientmock=1 / ?mock=<setting> — real Explore path pre-filled for review.
   if (typeof window !== "undefined") {
