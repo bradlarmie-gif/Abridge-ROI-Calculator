@@ -482,12 +482,12 @@ export function computeAllDriverCalcSummaries(
       const perMember = dq.avgHccs * (effective / 100) + (p.netNewAvgConditions ?? 0);
       return `${p.name}: ${fmtN(members)} members × ${perMember.toFixed(3)} HCCs per member × ${fmt$(p.valuePerHcc)}/HCC`;
     }).join(' | ');
-    out.hccCapture = `${planLines} × ${dq.hccRealization}% realization`;
+    out.hccCapture = `${planLines} × ${dq.hccRealization}% surviving audit`;
   }
   if (dq.denialsEnabled && (isOP || isED)) {
     const prevPct = denialsScenarios[dq.denialsScenario] ?? 0;
     const claimsBase = dq.denialsAnnualClaims > 0 ? dq.denialsAnnualClaims : eligibleEncounters;
-    out.denialPrevention = `${fmtN(claimsBase)} claims × ${dq.medNecessityDenialRate}% medical necessity denial rate × ${prevPct}% reduction target × ${fmt$(dq.avgClaimValue)}/claim × ${dq.denialsRealization}% realization`;
+    out.denialPrevention = `${fmtN(claimsBase)} claims × ${dq.medNecessityDenialRate}% medical necessity denial rate × ${prevPct}% reduction target × ${fmt$(dq.avgClaimValue)}/claim × ${dq.denialsRealization}% of it landing`;
   }
   if (isIP && dq.ipDrgEnabled) {
     out.drgAccuracy = (() => {

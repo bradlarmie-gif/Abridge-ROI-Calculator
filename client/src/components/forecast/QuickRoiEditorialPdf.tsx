@@ -6,6 +6,7 @@ import {
   DRIVERS,
   DOMAIN_ORDER,
   SETTING_META,
+  withFullRealization,
   type SettingKey,
   type Domain,
   type RoiAccount,
@@ -75,8 +76,17 @@ export function buildQuickRoiPdfModel(data: QuickRoiPdfData) {
     adoptionPct: data.targetAdoptionPct,
     utilPct: data.targetUtilPct,
   });
+  // Same two runs the answer screen shows: the cautious read, and the same
+  // plan with none of the "how much of this sticks" haircuts applied.
+  const todayFull = runRoi(data.setting, data.account, withFullRealization(data.vals), data.enabled);
+  const potentialFull = runRoi(data.setting, data.account, withFullRealization(data.vals), data.enabled, {
+    adoptionPct: data.targetAdoptionPct,
+    utilPct: data.targetUtilPct,
+  });
   const todayValue = today.total;
+  const todayValueFull = Math.max(todayFull.total, todayValue);
   const potentialValue = Math.max(potential.total, todayValue);
+  const potentialValueFull = Math.max(potentialFull.total, todayValueFull, potentialValue);
   const headroom = Math.max(0, potentialValue - todayValue);
   const isNursing = !!meta.isNursing;
   const hours = isNursing ? 0 : today.totalHoursSaved;
@@ -97,7 +107,7 @@ export function buildQuickRoiPdfModel(data: QuickRoiPdfData) {
       // scenario-% float (e.g. "4.1025641%25 lift").
       summary: d.work ? d.work(data.vals, Math.round(onEnc)) : (today.summaryById[d.id] ?? ""),
     }));
-  return { meta, today, potentialValue, headroom, todayValue, isNursing, hours, roi, net, onEnc, adoptionNow, items };
+  return { meta, today, potentialValue, potentialValueFull, headroom, todayValue, todayValueFull, isNursing, hours, roi, net, onEnc, adoptionNow, items };
 }
 
 // ───────────────────────── Shell ─────────────────────────
@@ -264,24 +274,34 @@ function NumbersPage({ data }: { data: QuickRoiPdfData }): JSX.Element {
   const items = [...m.items].sort((a, b) => b.value - a.value);
   const pct = (v: number) => (total > 0 ? (v / total) * 100 : 0);
   const domainList = Array.from(new Set(items.map((it) => it.domain))).join(", ").toLowerCase();
+  const hasRange = m.todayValueFull > total * 1.01;
+  const biggest = items.length > 0 ? items[0].value : 0;
   return (
     <Page>
       <RunningHeader org={data.orgName} />
       <SectionEyebrow num="01" title="What Abridge is worth" />
 
       {/* Hero — the number lands first */}
-      <div style={{ marginTop: 12, display: "flex", alignItems: "flex-end", gap: 14 }}>
+      <div style={{ marginTop: 12, display: "flex", alignItems: "flex-end", gap: 12, flexWrap: "wrap" }}>
         <span className="font-abridge" style={{ fontSize: 66, lineHeight: 0.92, color: C.coral, letterSpacing: "-1px" }}>{fmtShort(total)}</span>
-        <span style={{ fontSize: 17, color: C.muted, paddingBottom: 8 }}>a year, counted</span>
+        {hasRange && (
+          <span className="font-abridge" style={{ fontSize: 38, lineHeight: 1, color: C.ink, paddingBottom: 4 }}>
+            <span style={{ fontSize: 17, color: C.muted, fontFamily: "inherit" }}>to </span>{fmtShort(m.todayValueFull)}
+          </span>
+        )}
+        <span style={{ fontSize: 17, color: C.muted, paddingBottom: 8 }}>a year</span>
       </div>
       <div style={{ ...sLead, marginTop: 12, maxWidth: 640 }}>
-        Built from {items.length} {items.length === 1 ? "driver" : "drivers"} across {domainList}, at today's {Math.round(m.adoptionNow)}% rollout
-        and {Math.round(data.account.utilNow)}% documentation utilization. Every dollar is lift only, net of realization and attribution.
+        Built from {items.length} {items.length === 1 ? "thing" : "things"} you switched on across {domainList}, at the {Math.round(m.adoptionNow)}% rollout
+        and {Math.round(data.account.utilNow)}% usage you set.
+        {hasRange
+          ? " The lower figure assumes a share never lands: claims downcoded, denials that stay denied, coding that does not survive an audit. The higher figure assumes all of it lands."
+          : " Every dollar counts the change only, never the whole bill."}
       </div>
 
       {/* Composition bar — how the number is built, by weight */}
       <div style={{ marginTop: 34 }}>
-        <div style={sLbl}>How the number is built</div>
+        <div style={sLbl}>What makes it up</div>
         <div style={{ marginTop: 12, display: "flex", height: 96, borderRadius: 14, overflow: "hidden", gap: 2, background: C.tile }}>
           {items.map((it, i) => (
             <div key={it.id} style={{ width: `${Math.max(pct(it.value), 3).toFixed(2)}%`, background: CORAL_RAMP[i % CORAL_RAMP.length], minWidth: 6, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
@@ -296,18 +316,20 @@ function NumbersPage({ data }: { data: QuickRoiPdfData }): JSX.Element {
       {/* Ledger — each driver ties to its bar segment by the swatch color */}
       <div style={{ marginTop: 26 }}>
         {items.map((it, i) => (
-          <div key={it.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 24, padding: "28px 0", borderTop: `1px solid ${C.hair}` }}>
-            <div style={{ display: "flex", gap: 13, alignItems: "baseline", maxWidth: 540 }}>
-              <span style={{ width: 11, height: 11, borderRadius: 3, background: CORAL_RAMP[i % CORAL_RAMP.length], flexShrink: 0, alignSelf: "center" }} />
-              <div>
-                <div style={{ fontSize: 14.5, fontWeight: 700, color: C.ink }}>{it.title}</div>
-                <div style={{ fontSize: 10.5, color: C.faint, lineHeight: 1.5, marginTop: 2 }}>{it.summary}</div>
+          <div key={it.id} style={{ padding: "20px 0", borderTop: `1px solid ${C.hair}` }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 24 }}>
+              <div style={{ fontSize: 14.5, fontWeight: 700, color: C.ink, maxWidth: 540 }}>{it.title}</div>
+              <div style={{ textAlign: "right", whiteSpace: "nowrap" }}>
+                <span className="font-abridge" style={{ fontSize: 19, color: C.coral }}>{fmtShort(it.value)}</span>
+                <span style={{ fontSize: 11, color: C.faint, marginLeft: 7 }}>{Math.round(pct(it.value))}%</span>
               </div>
             </div>
-            <div style={{ textAlign: "right", whiteSpace: "nowrap" }}>
-              <span className="font-abridge" style={{ fontSize: 19, color: C.coral }}>{fmtShort(it.value)}</span>
-              <span style={{ fontSize: 11, color: C.faint, marginLeft: 7 }}>{Math.round(pct(it.value))}%</span>
+            {/* one bar per line, scaled to the biggest line: the eye can rank
+                them without doing arithmetic on the percentages */}
+            <div style={{ marginTop: 9, height: 9, borderRadius: 5, background: C.tile, overflow: "hidden" }}>
+              <div style={{ width: `${(biggest > 0 ? Math.max((it.value / biggest) * 100, 1.5) : 0).toFixed(2)}%`, height: "100%", background: CORAL_RAMP[i % CORAL_RAMP.length], borderRadius: 5 }} />
             </div>
+            <div style={{ fontSize: 10.5, color: C.faint, lineHeight: 1.5, marginTop: 8 }}>{it.summary}</div>
           </div>
         ))}
       </div>
@@ -324,12 +346,14 @@ function NumbersPage({ data }: { data: QuickRoiPdfData }): JSX.Element {
 
       <div style={{ marginTop: 22 }}>
         <div style={{ fontSize: 15, color: C.label, lineHeight: 1.55, maxWidth: 640 }}>
-          This is what the documentation already supports at today's footprint. The next page holds the same measured effect flat and grows only the volume it runs on.
+          That is the plan you described. The next page keeps every one of these
+          numbers exactly where you set it and changes one thing only: how many
+          clinicians use Abridge, and on how many encounters.
         </div>
       </div>
 
       <div style={{ flexGrow: 1 }} />
-      <Footer note="Realization and attribution rates are applied inside each line; the total counts lift only, never gross charges." num="02" />
+      <Footer note="Each line counts only the change, never the whole bill, and each is discounted for the share that typically does not land." num="02" />
     </Page>
   );
 }

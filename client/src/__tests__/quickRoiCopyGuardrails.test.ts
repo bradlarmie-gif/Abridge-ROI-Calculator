@@ -30,6 +30,10 @@ const FILES: string[] = [
   "components/forecast/QuickRoiEditorialPdfRoute.tsx",
   "components/UnifiedHeader.tsx",
   "lib/exploreDrivers.ts",
+  // the driver titles, notes, field labels and worked-math strings all render
+  // on the "what changes" step and inside the PDF, so they are live copy too
+  "pages/forecast/roiEngine.ts",
+  "lib/exploreDriverCalcs.ts",
 ];
 
 /**
@@ -44,6 +48,11 @@ const FILES: string[] = [
  */
 const AUDIENCE_RULES: Rule[] = [
   { name: "rep-vocabulary", hit: (c) => /\b(partner|partners|the rep|impact analysis|impact-analysis|data pull|prospect)\b/i.test(c) },
+  // "realization" was removed from the inputs; it must not come back in the
+  // worked math or a label either. Matches the phrasings a reader would SEE
+  // ("x 75% realization", "realization rate"), not the identifiers and field
+  // names the engine legitimately uses (f.realization, wrvuRealization).
+  { name: "realization-jargon", hit: (c) => /%\s*realization\b/i.test(c) || /\brealization\s+(rate|rates|share|assumption)\b/i.test(c) },
 ];
 
 describe("ROI Calculator COPY guardrails", () => {
@@ -59,7 +68,11 @@ describe("ROI Calculator COPY guardrails", () => {
   });
 
   it("speaks to a practice sizing itself, not to a rep selling a partner", () => {
-    const hits = scanFiles(CLIENT_SRC, FILES, AUDIENCE_RULES).filter((h) => h.rule === "rep-vocabulary");
+    const names = new Set(AUDIENCE_RULES.map((r) => r.name));
+    // Filter to the audience rules only (the core tripwires have their own
+    // test above), but never to a single rule: filtering by one name is how a
+    // rule can sit in the list doing nothing, which is what happened here.
+    const hits = scanFiles(CLIENT_SRC, FILES, AUDIENCE_RULES).filter((h) => names.has(h.rule));
     expect(hits.length, `Rep-facing vocabulary in self-service copy (${hits.length}):\n${formatHits(hits)}`).toBe(0);
   });
 });
