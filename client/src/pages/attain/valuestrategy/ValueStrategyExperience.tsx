@@ -514,10 +514,13 @@ function FoundationCard({ settingLabel, goalLabel, foundation }: { settingLabel:
 }
 
 function FoundationRow({ label, value, coral }: { label: string; value: string; coral?: boolean }) {
+  // `coral` marks the success signal. It is a leading metric, not money or an
+  // action, so it gets the warm accent (not coral, which is reserved for dollars
+  // and controls) — and it emphasizes the line that becomes the Plan's metric.
   return (
     <div>
       <div className="text-[10px] font-bold uppercase tracking-[0.06em] text-[#B4A896] mb-1">{label}</div>
-      <div className={`text-[15px] leading-snug ${coral ? "text-[#EA2C00] font-semibold" : "text-[#1A1A1A] font-medium"}`}>{value}</div>
+      <div className={`text-[15px] leading-snug ${coral ? "text-[#8A6D3B] font-semibold" : "text-[#1A1A1A] font-medium"}`}>{value}</div>
     </div>
   );
 }

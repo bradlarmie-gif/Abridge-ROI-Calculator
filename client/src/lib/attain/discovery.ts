@@ -219,19 +219,23 @@ function makeFoundation(spec: FoundationSpec): DiscoveryScript {
     const target = spec.targets.find((x) => x.id === t.pick("target"));
     const horizon = HORIZON_Q_OPTIONS.find((o) => o.id === t.pick("horizon"))?.value;
     const success = spec.successes.find((x) => x.id === t.pick("success"));
+    // Keep the two columns balanced (3 x 3): scope / driver / scale on the left,
+    // target / timeframe / signal on the right. "Already tried" is context that
+    // was gathered in the walk; it rides in the bridge, not as a fourth row.
     const current: FoundationItem[] = [
       scope ? { label: spec.scopeLabel ?? "Concentrated in", value: scope } : null,
       d ? { label: spec.currentLabel, value: d.value } : null,
       scale ? { label: spec.scaleLabel, value: scale } : null,
-      tried ? { label: "Already tried", value: tried } : null,
     ].filter(Boolean) as FoundationItem[];
     const desired: FoundationItem[] = [
       target ? { label: spec.targetLabel, value: target.value } : null,
       horizon ? { label: "On what timeframe", value: horizon } : null,
       success ? { label: "You'll know it's working when", value: success.value } : null,
     ].filter(Boolean) as FoundationItem[];
-    const bridge = d?.honest ? spec.bridgeHonest : d?.lever ? spec.bridgeDoc : spec.bridgeProof;
-    return { current, desired, bridge, signalLabel: "You'll know it's working when" };
+    const base = d?.honest ? spec.bridgeHonest : d?.lever ? spec.bridgeDoc : spec.bridgeProof;
+    // Fold the double-count context in: if a program is already in place, say so.
+    const triedNote = tried && t.ground?.("tried") !== "nothing" ? ` You already have ${tried} in place, so we size only the headroom left.` : "";
+    return { current, desired, bridge: base + triedNote, signalLabel: "You'll know it's working when" };
   };
   return script;
 }
@@ -636,7 +640,7 @@ const nursingQuality = makeFoundation({
   targetTeach: "The direction you want to steer safety.",
   targetLabel: "The change you want",
   targets: [
-    { id: "fewer", label: "Fewer of these events", capture: "fewer of these events", value: "fewer of these events" },
+    { id: "fewer", label: "Fewer safety events", capture: "fewer safety events", value: "fewer safety events" },
     { id: "earlier", label: "Earlier recognition and response", capture: "earlier recognition and response", value: "earlier recognition and response" },
     { id: "protocols", label: "Tighter protocol adherence", capture: "tighter protocol adherence", value: "tighter protocol adherence" },
   ],
