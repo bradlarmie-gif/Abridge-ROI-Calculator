@@ -121,7 +121,7 @@ describe("discovery integrity", () => {
         for (const answers of [walk(() => 0), walk((n) => n - 1)]) {
           const thesis = briefThesis(setting, goal, "Test Partner", answers);
           expect(thesis.trim().length, "empty thesis").toBeGreaterThan(20);
-          expect(briefRoles(setting, goal, "Test Partner", answers).length, "no roles").toBeGreaterThan(0);
+          expect(briefRoles(setting, goal).length, "no roles").toBeGreaterThan(0);
         }
       });
 

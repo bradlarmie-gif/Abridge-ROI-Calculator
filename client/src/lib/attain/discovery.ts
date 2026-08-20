@@ -72,19 +72,6 @@ export interface FoundationRead {
   signalLabel?: string;
 }
 
-/**
- * The OPERATING layer: the qualified thesis turned into a felt, ownable playbook.
- * Diagnosis says WHERE the money is; this says HOW it actually gets run on the
- * floor, what you FEEL first (before any dollar moves), and where it usually
- * stalls. Rendered as the "How this actually runs" brief panel. Number-free.
- */
-export interface OperatingPlaybook {
-  lever: string; // the isolated driver + its rough (number-free) size, so the ceiling is honest
-  mechanism: string; // how the freed time actually converts to the dollar
-  holds: string; // the operating condition/dependency that has to be true
-  signal: string; // the felt leading indicator, which becomes the tracked metric in the Plan
-}
-
 export interface DiscoveryScript {
   entry: string;
   questions: Record<string, DiscoveryQuestion>;
@@ -95,18 +82,10 @@ export interface DiscoveryScript {
   /** the fragile-link caveat used when they did NOT pick an honest answer */
   caveat: string;
   /** for proof-plays with no counted ROI dollar (e.g. inpatient capacity,
-   * non-nursing quality): the "where the value is" line, tracked not counted. */
+   * nursing HAPI/CLABSI): the "where the value is" line, tracked not counted. */
   proofLine?: string;
-  /** an authored, answer-keyed synthesis for the brief. Falls back to a generic
-   * composer when absent. This is what makes the brief read like a consultant. */
-  thesis?: (t: ThesisCtx) => string;
-  /** optional answer-derived additions to "who should be at the table". */
-  extraRoles?: (t: ThesisCtx) => string[];
-  /** Optional OPERATING layer, keyed to the operating-chapter answers. Returns
-   * null on honest or not-yet-answered paths so the panel degrades cleanly. */
-  playbook?: (t: ThesisCtx) => OperatingPlaybook | null;
-  /** Optional FOUNDATION read (current-state / desired-state mirror). When
-   * present, the brief renders this instead of the thesis/verdict layout. */
+  /** FOUNDATION read (current-state / desired-state mirror) — what the brief
+   * renders. Every reachable script defines one. */
   foundation?: (t: ThesisCtx) => FoundationRead | null;
 }
 
@@ -656,95 +635,10 @@ const nursingQuality = makeFoundation({
   bridgeHonest: "The gap between these is what the ROI sizes next, and the Plan closes.",
 });
 
-// ── Quality proof-play factory (dormant for OP/ED/IP; not in the goal matrix) ─
-function proofQuality(opts: {
-  briefIntro: string; proofLine: string; roles: string[]; caveat: string;
-  outcomes: { id: string; label: string; capture: string }[];
-}): DiscoveryScript {
-  return {
-    entry: "outcome",
-    briefIntro: opts.briefIntro,
-    proofLine: opts.proofLine,
-    roles: opts.roles,
-    caveat: opts.caveat,
-    thesis: (t) => {
-      const g = t.pick("gate");
-      if (g === "little") return `On quality, you were honest that this is mostly structural, not something more attention in the room changes. That is worth saying out loud before anyone builds a case on it.`;
-      const act = t.pick("act");
-      const hinge = act === "no" ? "But the freed attention is unlikely to reach the work today, which caps it." : act === "unsure" ? "The open question is whether the freed attention actually reaches the work." : "And the team will act on it, which is what turns attention into outcomes.";
-      return `${capfirst(t.narrative[0] ?? "improving quality")} is real here, but it lands as better measures and fewer gaps, not a hard dollar, so we track it as a metric rather than book it. ${hinge}`;
-    },
-    questions: {
-      outcome: {
-        eyebrow: "The outcome",
-        prompt: "Which quality outcome are you after?",
-        teach: "Attention returns to the patient when the keyboard recedes. Where should it go?",
-        options: opts.outcomes.map((o) => ({ id: o.id, label: o.label, capture: o.capture, next: "gate" })),
-      },
-      gate: {
-        eyebrow: "The honest part",
-        prompt: "How much could more attention actually change this?",
-        teach: "Be honest. Some of this moves with attention; some is structural.",
-        options: [
-          { id: "lot", label: "A lot, we see it coming", capture: "attention can move this materially", next: "act" },
-          { id: "some", label: "Some of it", capture: "attention moves part of this", next: "act" },
-          { id: "little", label: "Little, it is mostly structural", capture: "this is mostly structural, not an attention problem", honest: true, next: BRIEF },
-        ],
-      },
-      act: {
-        eyebrow: "The fragile link",
-        prompt: "Will the freed attention actually reach the work?",
-        teach: "Quality only moves if someone acts, in the moment or right after.",
-        options: [
-          { id: "yes", label: "Yes, the team will act on it", capture: "the team will act on it", next: BRIEF },
-          { id: "unsure", label: "Not sure", capture: "whether the team acts on it is still open", next: BRIEF },
-          { id: "no", label: "Honestly, probably not today", capture: "it is unlikely to be acted on today", honest: true, next: BRIEF },
-        ],
-      },
-    },
-  };
-}
-
-const outpatientQuality = proofQuality({
-  briefIntro: "You said quality. In the outpatient world this is real, but it shows up as better measures and closed gaps, not a hard ROI dollar.",
-  proofLine: "closing care gaps and lifting quality measures, tracked as a metric rather than booked as a dollar.",
-  roles: ["Quality leadership", "The care-team lead", "Population health"],
-  caveat: "The freed attention only becomes better care if it is pointed at the gaps in the room, not just at moving faster.",
-  outcomes: [
-    { id: "gaps", label: "Close care gaps and screening", capture: "closing care gaps and screening" },
-    { id: "followup", label: "Tighten follow-up and closure", capture: "tightening follow-up and closure" },
-    { id: "experience", label: "Improve the patient experience", capture: "improving the patient experience" },
-  ],
-});
-
-const edQuality = proofQuality({
-  briefIntro: "You said quality. In the ED this shows up as faster, more reliable protocol adherence and safety measures, not a hard ROI dollar.",
-  proofLine: "faster, more reliable protocol adherence and safety measures, tracked as metrics.",
-  roles: ["ED medical director", "Quality and safety", "Charge nurses"],
-  caveat: "Safety only moves if the freed attention reaches the protocol at the bedside, in the moment.",
-  outcomes: [
-    { id: "sepsis", label: "Sepsis bundle (SEP-1) compliance", capture: "improving sepsis bundle compliance" },
-    { id: "stroke", label: "Stroke and time-critical response", capture: "sharpening time-critical stroke response" },
-    { id: "reassess", label: "Timely reassessment", capture: "improving timely reassessment" },
-  ],
-});
-
-const inpatientQuality = proofQuality({
-  briefIntro: "You said quality. Inpatient, this shows up as a stronger safety record and cleaner safety measures, tracked rather than booked as a hard dollar.",
-  proofLine: "a stronger safety record and cleaner safety measures, tracked as metrics.",
-  roles: ["Quality leadership", "Hospitalist and nursing leads", "Patient safety"],
-  caveat: "The safety measures only move if the freed attention reaches rounding and the protocols, and someone acts on the early signals the record surfaces.",
-  outcomes: [
-    { id: "hac", label: "Hospital-acquired conditions", capture: "improving hospital-acquired-condition rates" },
-    { id: "readmit", label: "Readmissions", capture: "reducing readmissions" },
-    { id: "events", label: "Safety events", capture: "improving safety-event rates" },
-  ],
-});
-
 export const DISCOVERY: Partial<Record<AttainSetting, Partial<Record<GoalId, DiscoveryScript>>>> = {
-  outpatient: { access: outpatientAccess, revenue: outpatientRevenue, retention: outpatientRetention, quality: outpatientQuality },
-  ed: { access: edAccess, retention: edRetention, revenue: edRevenue, quality: edQuality },
-  inpatient: { capacity: inpatientCapacity, retention: inpatientRetention, revenue: inpatientRevenue, quality: inpatientQuality },
+  outpatient: { access: outpatientAccess, revenue: outpatientRevenue, retention: outpatientRetention },
+  ed: { access: edAccess, retention: edRetention, revenue: edRevenue },
+  inpatient: { capacity: inpatientCapacity, retention: inpatientRetention, revenue: inpatientRevenue },
   nursing: { capacity: nursingCapacity, retention: nursingRetentionScript, revenue: nursingRevenue, quality: nursingQuality },
 };
 
@@ -835,29 +729,18 @@ function ctxFor(setting: AttainSetting, goal: GoalId, settingLabel: string, answ
     settingLabel,
   };
 }
-/** The synthesized brief paragraph for a goal (authored thesis, else generic). */
+/** A generic synthesized paragraph for a goal. Kept as the coherence guard the
+ * integrity suite asserts against (the brief itself renders the foundation). */
 export function briefThesis(setting: AttainSetting, goal: GoalId, settingLabel: string, answers: DiscoveryAnswers): string {
   const script = getScript(setting, goal);
   if (!script) return "";
-  const ctx = ctxFor(setting, goal, settingLabel, answers);
-  return script.thesis ? script.thesis(ctx) : genericThesis(ctx);
+  return genericThesis(ctxFor(setting, goal, settingLabel, answers));
 }
-/** Who should be at the table, with any answer-derived additions. */
-export function briefRoles(setting: AttainSetting, goal: GoalId, settingLabel: string, answers: DiscoveryAnswers): string[] {
+/** Who should be at the table. */
+export function briefRoles(setting: AttainSetting, goal: GoalId): string[] {
   const script = getScript(setting, goal);
   if (!script) return [];
-  const extra = script.extraRoles ? script.extraRoles(ctxFor(setting, goal, settingLabel, answers)) : [];
-  return [...script.roles, ...extra.filter((r) => !script.roles.includes(r))];
-}
-/** The operating playbook for a goal (authored, keyed to the operating-chapter
- * answers). Null when the script has no operating layer, the path went honest,
- * or the operating chapter has not been answered yet. */
-export function briefPlaybook(setting: AttainSetting, goal: GoalId, settingLabel: string, answers: DiscoveryAnswers): OperatingPlaybook | null {
-  const script = getScript(setting, goal);
-  if (!script?.playbook) return null;
-  const ctx = ctxFor(setting, goal, settingLabel, answers);
-  if (ctx.honest) return null;
-  return script.playbook(ctx);
+  return [...script.roles];
 }
 /** The foundation read (current-state / desired-state mirror), when the script
  * defines one and the path is complete enough to fill it. Null otherwise. */
