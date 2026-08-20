@@ -38,8 +38,23 @@ export interface PlanBuildState {
   overlayByGoal: Partial<Record<GoalId, PlanOverlay>>;
   cadence: "monthly" | "quarterly";
   execOwner: string;
+  /** Progress: this review's current reading per step, keyed by goal then step n. */
+  readingsByGoal?: Partial<Record<GoalId, Record<number, string>>>;
 }
-const EMPTY_STATE: PlanBuildState = { ownerNames: {}, overlayByGoal: {}, cadence: "monthly", execOwner: "" };
+const EMPTY_STATE: PlanBuildState = { ownerNames: {}, overlayByGoal: {}, cadence: "monthly", execOwner: "", readingsByGoal: {} };
+
+/** parse a loose numeric string ("55%", "1,200") to a number, or null. */
+function numOf(s?: string): number | null {
+  if (!s) return null;
+  const n = Number(s.replace(/[^0-9.-]/g, ""));
+  return Number.isFinite(n) ? n : null;
+}
+/** how far a reading has moved from baseline toward target, 0..1, or null. */
+function stepAttain(baseline?: string, target?: string, reading?: string): number | null {
+  const b = numOf(baseline), t = numOf(target), r = numOf(reading);
+  if (b === null || t === null || r === null || t === b) return null;
+  return Math.max(0, Math.min(1, (r - b) / (t - b)));
+}
 
 const LAYER_LABEL: Record<PlanStep["layer"], string> = {
   leading: "Abridge proves", operational: "The team runs", outcome: "The outcome",
@@ -131,7 +146,8 @@ export default function PlanBuildExperience({
   const basePlans = useMemo(() => goals.map((g) => buildOutcomePlan(setting, g)), [setting, goals]);
   const [state, setState] = useState<PlanBuildState>(initial ?? EMPTY_STATE);
   const [pos, setPos] = useState(0);
-  useEffect(() => { window.scrollTo({ top: 0 }); }, [pos]);
+  const [tracking, setTracking] = useState(false);
+  useEffect(() => { window.scrollTo({ top: 0 }); }, [pos, tracking]);
   useEffect(() => { onPersist?.(state); }, [state, onPersist]);
 
   const stepKey = STEPS[pos].key;
@@ -139,6 +155,9 @@ export default function PlanBuildExperience({
   const setOwner = (role: string, name: string) => patch({ ownerNames: { ...state.ownerNames, [role]: name } });
   const setEntry = (goal: GoalId, n: number, field: "target" | "byWhen" | "baseline", v: string) =>
     patch({ overlayByGoal: { ...state.overlayByGoal, [goal]: { ...(state.overlayByGoal[goal] ?? {}), [n]: { ...((state.overlayByGoal[goal] ?? {})[n] ?? {}), [field]: v } } } });
+  const readings = state.readingsByGoal ?? {};
+  const setReading = (goal: GoalId, n: number, v: string) =>
+    patch({ readingsByGoal: { ...readings, [goal]: { ...(readings[goal] ?? {}), [n]: v } } });
 
   // plans with the partner overlay applied (for targets + final plan)
   const plans = useMemo(
@@ -146,6 +165,67 @@ export default function PlanBuildExperience({
     [basePlans, state.overlayByGoal, state.ownerNames],
   );
   const namedOwnerCount = Object.values(state.ownerNames).filter((v) => v.trim()).length;
+
+  // ── Progress / tracking mode ───────────────────────────────────────────────
+  if (tracking) {
+    const allSteps = plans.flatMap((p) => p.owners.flatMap((o) => o.steps.map((s) => ({ goal: p.goal, s }))));
+    const attains = allSteps.map(({ goal, s }) => stepAttain(s.baseline, s.target, readings[goal]?.[s.n])).filter((a): a is number => a !== null);
+    const overall = attains.length ? Math.round((attains.reduce((x, y) => x + y, 0) / attains.length) * 100) : 0;
+    return (
+      <div className={embedded ? "bg-white" : "min-h-screen bg-white"}>
+        <div className={`${embedded ? "" : "sticky top-0 z-10"} bg-white/95 backdrop-blur border-b border-[#EDE8E1]`}>
+          <div className="max-w-[960px] mx-auto px-6 h-14 flex items-center justify-center">
+            <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#EA2C00]">Progress</span>
+          </div>
+        </div>
+        <div className="max-w-[960px] mx-auto px-6 pt-12 pb-28">
+          <Eyebrow>The plan, measured</Eyebrow>
+          <h1 className="font-abridge text-[34px] md:text-[40px] leading-[1.08] text-[#1A1A1A] mb-3">How far along are we?</h1>
+          <p className="text-[15px] text-[#4A4238] leading-relaxed mb-8 max-w-[600px]">Drop in this review's reading for each metric. Attainment builds from how far each has moved from its baseline toward the target.</p>
+          <div className="rounded-[16px] border border-[#E8E2DA] bg-[#FCFBF9] px-6 py-6 mb-10">
+            <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#8C8073] mb-2">Attainment, all outcomes</div>
+            <div className="font-abridge text-[52px] leading-none text-[#EA2C00]">{overall}<span className="text-[26px]">%</span></div>
+            <div className="mt-4 h-2 rounded-full bg-[#E8E2DA] overflow-hidden"><div className="h-full bg-[#EA2C00] transition-all" style={{ width: `${overall}%` }} /></div>
+            <div className="text-[12px] text-[#8C8073] mt-2">{attains.length ? `${attains.length} ${attains.length === 1 ? "metric" : "metrics"} with a reading so far.` : "Enter readings below and this fills in."}</div>
+          </div>
+          {plans.map((p) => (
+            <section key={p.goal} className="mb-10">
+              <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#EA2C00] mb-3">{p.chainTitle}</div>
+              <div className="rounded-[14px] border border-[#E8E2DA] overflow-hidden">
+                {p.owners.flatMap((o) => o.steps).map((s, i, arr) => {
+                  const a = stepAttain(s.baseline, s.target, readings[p.goal]?.[s.n]);
+                  return (
+                    <div key={s.n} className={`px-5 py-4 ${i < arr.length - 1 ? "border-b border-[#EDE8E1]" : ""}`}>
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="min-w-0">
+                          <div className="text-[14px] text-[#2E2822] leading-tight">{s.name}</div>
+                          <div className="text-[12px] text-[#8C8073] mt-0.5">{s.signal}</div>
+                        </div>
+                        <div className="flex items-center gap-2.5 flex-shrink-0 text-[13px]">
+                          <span className="text-[#A79E92] tabular-nums w-[54px] text-right">{s.baseline || "—"}</span>
+                          <ArrowRight className="w-3.5 h-3.5 text-[#C9BDAD]" />
+                          <TextInput value={readings[p.goal]?.[s.n] ?? ""} onChange={(v) => setReading(p.goal, s.n, v)} placeholder="now" width={64} />
+                          <ArrowRight className="w-3.5 h-3.5 text-[#C9BDAD]" />
+                          <span className="tabular-nums w-[54px] text-[#EA2C00] font-semibold">{s.target || "target"}</span>
+                        </div>
+                      </div>
+                      {a !== null && <div className="mt-2.5 h-1.5 rounded-full bg-[#E8E2DA] overflow-hidden"><div className="h-full bg-[#EA2C00]" style={{ width: `${Math.round(a * 100)}%` }} /></div>}
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          ))}
+        </div>
+        <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur border-t border-[#EDE8E1]">
+          <div className="max-w-[960px] mx-auto px-6 h-[68px] flex items-center justify-between">
+            <button onClick={() => setTracking(false)} className="inline-flex items-center gap-1.5 text-[14px] font-semibold text-[#6E675C] hover:text-[#1A1A1A]"><ArrowLeft className="w-4 h-4" /> Back to the plan</button>
+            <span className="text-[12px] text-[#8C8073]">Reviewed {state.cadence}{state.execOwner ? ` · ${state.execOwner} accountable` : ""}</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={embedded ? "bg-white" : "min-h-screen bg-white"}>
@@ -287,7 +367,7 @@ export default function PlanBuildExperience({
                 <button className="inline-flex items-center gap-2 rounded-[10px] bg-[#EA2C00] text-white px-6 py-3 text-[14px] font-bold hover:bg-[#d12800]">
                   Download the plan <ArrowRight className="w-4 h-4" />
                 </button>
-                <button className="inline-flex items-center gap-2 rounded-[10px] border border-white/25 text-white px-6 py-3 text-[14px] font-bold hover:bg-white/5">
+                <button onClick={() => setTracking(true)} className="inline-flex items-center gap-2 rounded-[10px] border border-white/25 text-white px-6 py-3 text-[14px] font-bold hover:bg-white/5">
                   Start tracking <Check className="w-4 h-4" />
                 </button>
               </div>
@@ -310,7 +390,7 @@ export default function PlanBuildExperience({
               {stepKey === "cadence" ? "See the plan" : "Continue"} <ArrowRight className="w-4 h-4" />
             </button>
           ) : (
-            <button className="inline-flex items-center gap-2 rounded-[10px] bg-[#EA2C00] text-white px-6 py-3 text-[14px] font-bold hover:bg-[#d12800]">
+            <button onClick={() => setTracking(true)} className="inline-flex items-center gap-2 rounded-[10px] bg-[#EA2C00] text-white px-6 py-3 text-[14px] font-bold hover:bg-[#d12800]">
               <Check className="w-4 h-4" /> Start tracking
             </button>
           )}
