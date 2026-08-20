@@ -8,6 +8,9 @@ interface FormattedNumberInputProps {
   onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
   onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
   step?: number;
+  /** Hard ceiling. A percentage cannot exceed 100, so typing past it is a slip,
+   *  not an intent: clamp instead of letting the math run on a nonsense share. */
+  max?: number;
   className?: string;
   style?: React.CSSProperties;
   placeholder?: string;
@@ -38,6 +41,7 @@ export function FormattedNumberInput({
   onFocus: externalOnFocus,
   onBlur: externalOnBlur,
   step = 1,
+  max,
   className = '',
   style,
   placeholder = '',
@@ -90,7 +94,9 @@ export function FormattedNumberInput({
       newCursorPos = formatted.length;
     }
 
-    setDisplayValue(formatted);
+    const parsedRaw = parseFormattedNumber(formatted);
+    const clamped = max !== undefined && parsedRaw > max;
+    setDisplayValue(clamped ? formatWithCommas(max, decimals) : formatted);
 
     requestAnimationFrame(() => {
       if (inputRef.current && document.activeElement === inputRef.current) {
@@ -98,21 +104,22 @@ export function FormattedNumberInput({
       }
     });
 
-    const parsed = parseFormattedNumber(formatted);
-    onChange(parsed);
-  }, [onChange]);
+    onChange(clamped ? max! : parsedRaw);
+  }, [onChange, max, decimals]);
 
   const handleBlur = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
     setIsFocused(false);
-    const parsed = parseFormattedNumber(displayValue);
+    const raw = parseFormattedNumber(displayValue);
+    const parsed = max !== undefined ? Math.min(raw, max) : raw;
     setDisplayValue(parsed === 0 ? '' : formatWithCommas(parsed, decimals));
+    if (parsed !== raw) onChange(parsed);
     if (onBlurValue) {
       onBlurValue(parsed);
     }
     if (externalOnBlur) {
       externalOnBlur(e);
     }
-  }, [displayValue, decimals, onBlurValue, externalOnBlur]);
+  }, [displayValue, decimals, onBlurValue, externalOnBlur, max, onChange]);
 
   const handleFocus = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
     setIsFocused(true);

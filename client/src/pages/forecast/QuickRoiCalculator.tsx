@@ -15,6 +15,7 @@ import {
   defaultVals,
   defaultEnabled,
   runRoi,
+  withFullRealization,
 } from "./roiEngine";
 
 /**
@@ -227,13 +228,28 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
     () => runRoi(setting, account, vals, enabled, { adoptionPct: targetAdoptionPct, utilPct: targetUtilPct }),
     [setting, account, vals, enabled, targetAdoptionPct, targetUtilPct],
   );
+  // Top of the range: the same plan with none of the "how much of this sticks"
+  // haircuts applied. The practice is never asked to set those, so the honest
+  // way to show them is as the gap between a cautious and an optimistic read.
+  const todayFull = useMemo(
+    () => runRoi(setting, account, withFullRealization(vals), enabled),
+    [setting, account, vals, enabled],
+  );
+  // The rollout figure has to be on the same basis as the headline, or the top
+  // of the headline range can read higher than the "if you expand" number.
+  const potentialFull = useMemo(
+    () => runRoi(setting, account, withFullRealization(vals), enabled, { adoptionPct: targetAdoptionPct, utilPct: targetUtilPct }),
+    [setting, account, vals, enabled, targetAdoptionPct, targetUtilPct],
+  );
 
   const encToday = onAbridge * encPerProvider * (utilNow / 100);
   const hoursReclaimed = isNursing ? 0 : today.totalHoursSaved;
   const practiceName = practice.trim() || `your ${orgWord}`;
 
   const todayValue = today.total;
+  const todayValueFull = Math.max(todayFull.total, todayValue);
   const potentialValue = Math.max(potential.total, todayValue);
+  const potentialValueFull = Math.max(potentialFull.total, todayValueFull, potentialValue);
   const headroom = Math.max(0, potentialValue - todayValue);
 
   const breakdown = DRIVERS[setting]
@@ -354,7 +370,7 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
       )}
 
       {step === 2 && (
-        <AnswerStep practiceName={practiceName} encWord={meta.encWord} breakdown={breakdown} todayValue={todayValue}
+        <AnswerStep practiceName={practiceName} encWord={meta.encWord} breakdown={breakdown} todayValue={todayValue} todayValueFull={todayValueFull} potentialValueFull={potentialValueFull}
           potentialValue={potentialValue} headroom={headroom} hoursReclaimed={hoursReclaimed}
           adoptionNow={adoptionNow} utilNow={utilNow} totalProviders={totalProviders}
           targetAdoptionPct={targetAdoptionPct} setTargetAdoptionPct={setTargetAdoptionPct}
@@ -391,20 +407,23 @@ function Row({ label, hint, grow, children }: { label: string; hint?: string; gr
 
 // Underlined editorial inputs
 const UINPUT_CLASS = "flex-1 min-w-0 h-auto border-0 rounded-none bg-transparent p-0 shadow-none text-right text-[19px] font-bold text-[#1A1A1A] tabular-nums focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:not-italic placeholder:font-normal placeholder:text-[15px] placeholder:text-[#C9BDAD]";
-function NumInput({ value, onChange, suffix, prefix, step = 1, w = "w-[168px]", placeholder }: { value: number; onChange: (n: number) => void; suffix?: string; prefix?: string; step?: number; w?: string; placeholder?: string }) {
+function NumInput({ value, onChange, suffix, prefix, step = 1, w = "w-[168px]", placeholder, max }: { value: number; onChange: (n: number) => void; suffix?: string; prefix?: string; step?: number; w?: string; placeholder?: string; max?: number }) {
+  // A field measured in "%" is a share of something: 100 is the ceiling.
+  const cap = max ?? (suffix === "%" ? 100 : undefined);
   return (
     <div className={`${w} inline-flex items-baseline gap-1.5 border-b-2 border-[#E0D9CE] focus-within:border-[#EA2C00] transition-colors pb-1`}>
       {prefix && <span className="text-[14px] text-[#A69A88]">{prefix}</span>}
-      <FormattedNumberInput value={value} onChange={onChange} step={step} className={UINPUT_CLASS} placeholder={placeholder} />
+      <FormattedNumberInput value={value} onChange={onChange} step={step} max={cap} className={UINPUT_CLASS} placeholder={placeholder} />
       {suffix && <span className="text-[14px] text-[#A69A88]">{suffix}</span>}
     </div>
   );
 }
 
 function NumInputAccent({ value, onChange, suffix, step = 0.01, w = "w-[96px]", placeholder }: { value: number; onChange: (n: number) => void; suffix?: string; step?: number; w?: string; placeholder?: string }) {
+  const cap = suffix === "%" ? 100 : undefined;
   return (
     <div className={`${w} inline-flex items-baseline gap-1.5 border-b-2 border-[#EA2C00] pb-1`}>
-      <FormattedNumberInput value={value} onChange={onChange} step={step} className={UINPUT_CLASS} placeholder={placeholder} />
+      <FormattedNumberInput value={value} onChange={onChange} step={step} max={cap} className={UINPUT_CLASS} placeholder={placeholder} />
       {suffix && <span className="text-[14px] text-[#A69A88]">{suffix}</span>}
     </div>
   );
@@ -412,9 +431,9 @@ function NumInputAccent({ value, onChange, suffix, step = 0.01, w = "w-[96px]", 
 
 function TextInput({ value, onChange, placeholder }: { value: string; onChange: (s: string) => void; placeholder?: string }) {
   return (
-    <div className="w-full min-w-[150px] inline-flex border-b-2 border-[#E0D9CE] focus-within:border-[#EA2C00] transition-colors pb-1">
+    <div className="w-[300px] max-w-full inline-flex border-b-2 border-[#E0D9CE] focus-within:border-[#EA2C00] transition-colors pb-1">
       <input value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder}
-        className="w-full bg-transparent outline-none text-right text-[18px] font-bold text-[#1A1A1A] placeholder:font-normal placeholder:text-[15px] placeholder:text-[#C9BDAD]" />
+        className="w-full bg-transparent outline-none text-right text-[16px] font-bold text-[#1A1A1A] placeholder:font-normal placeholder:text-[14px] placeholder:text-[#C9BDAD]" />
     </div>
   );
 }
@@ -541,7 +560,7 @@ function DriverCard({ driver, vals, setVal, on, onToggle, value, summary, eligib
             lowerIsBetter={ba.lowerIsBetter} />
         </div>
       )}
-      {driver.fields.map((f) => (
+      {driver.fields.filter((f) => !f.realization).map((f) => (
         <FieldRow key={f.k} field={f} value={vals[f.k]} onChange={(v) => setVal(f.k, v)} />
       ))}
       <WorkedMath summary={workStr} value={value} />
@@ -617,7 +636,7 @@ function PatientAccessCard({ driver, vals, setVal, on, onToggle, value, summary,
   return (
     <DriverShell title={driver.title} on={on} onToggle={onToggle} value={value}>
       {driver.note && <p className="text-[13px] leading-[1.55] text-[#8C8073] max-w-[560px] mb-1">{driver.note}</p>}
-      {driver.fields.map((f) => (
+      {driver.fields.filter((f) => !f.realization).map((f) => (
         <FieldRow key={f.k} field={f} value={vals[f.k]} onChange={(v) => setVal(f.k, v)} />
       ))}
       {V > 0 && hoursReclaimed > 0 && (
@@ -765,13 +784,16 @@ function NavRow({ onBack, onNext, nextLabel }: { onBack?: () => void; onNext: ()
 
 function AnswerStep(p: {
   practiceName: string; encWord: string; breakdown: { title: string; value: number }[];
-  todayValue: number; potentialValue: number; headroom: number; hoursReclaimed: number;
+  todayValue: number; todayValueFull: number; potentialValueFull: number; potentialValue: number; headroom: number; hoursReclaimed: number;
   adoptionNow: number; utilNow: number; totalProviders: number;
   targetAdoptionPct: number; setTargetAdoptionPct: (n: number) => void; targetUtilPct: number; setTargetUtilPct: (n: number) => void;
   showUtilDial: boolean; price: number; setPrice: (n: number) => void; onBack: () => void; onExport: () => void;
 }) {
   const todayShown = useCountUp(p.todayValue);
+  const todayFullShown = useCountUp(p.todayValueFull);
+  const hasRange = p.todayValueFull > p.todayValue * 1.01;
   const potentialShown = useCountUp(p.potentialValue);
+  const potentialFullShown = useCountUp(p.potentialValueFull);
   const roi = p.price > 0 ? p.todayValue / p.price : 0;
   const todayPct = p.potentialValue > 0 ? (p.todayValue / p.potentialValue) * 100 : 0;
   const headroomPct = Math.max(0, 100 - todayPct);
@@ -800,16 +822,36 @@ function AnswerStep(p: {
       {/* Beat 1 — what it's worth today */}
       <div className={EYEBROW}>Your number</div>
       <h1 className="font-abridge text-[26px] sm:text-[32px] leading-[1.14] text-[#4A3F35] mt-4">For {p.practiceName}, Abridge could be worth</h1>
-      <div className="font-abridge text-[66px] sm:text-[92px] leading-[0.88] text-[#EA2C00] mt-3">{fmtShort(todayShown)}<span className="text-[26px] text-[#9A8C7A] font-normal"> a year</span></div>
+      <div className="font-abridge text-[66px] sm:text-[92px] leading-[0.88] text-[#EA2C00] mt-3 flex flex-wrap items-baseline gap-x-4">
+        <span>{fmtShort(todayShown)}</span>
+        {hasRange && (
+          <span className="text-[34px] sm:text-[46px] text-[#1A1A1A]">
+            <span className="text-[22px] sm:text-[26px] text-[#9A8C7A] font-normal">to </span>{fmtShort(todayFullShown)}
+          </span>
+        )}
+        <span className="text-[26px] text-[#9A8C7A] font-normal">a year</span>
+      </div>
       <p className="mt-5 text-[16px] leading-[1.6] text-[#5E534A] max-w-[560px]">
         {makeup ? <>From {makeup}, at the {Math.round(p.adoptionNow)}% rollout and {Math.round(p.utilNow)}% usage you set. Change either one and this moves.</> : "Switch on the changes you expect and the number builds here."}
       </p>
+      {hasRange && (
+        <p className="mt-3 text-[14px] leading-[1.6] text-[#8C8073] max-w-[560px]">
+          The lower figure assumes a share of this never lands: claims downcoded,
+          denials that stay denied, coding that does not survive an audit. The
+          higher figure assumes all of it lands. Most practices sit in between,
+          which is why we show both rather than pick one for you.
+        </p>
+      )}
 
       {/* Beat 2 — the upside */}
       <div className="mt-14 pt-1">
         <div className={EYEBROW}>If you rolled it out further</div>
         <div className="mt-4 flex flex-wrap items-baseline gap-x-5 gap-y-1">
-          <span className="font-abridge text-[44px] sm:text-[56px] leading-[0.9] text-[#1A1A1A]">{fmtShort(potentialShown)}<span className="text-[20px] text-[#9A8C7A] font-normal"> a year</span></span>
+          <span className="font-abridge text-[44px] sm:text-[56px] leading-[0.9] text-[#1A1A1A]">
+            {fmtShort(potentialShown)}
+            {hasRange && <span className="text-[26px] sm:text-[32px]"><span className="text-[18px] text-[#9A8C7A] font-normal"> to </span>{fmtShort(potentialFullShown)}</span>}
+            <span className="text-[20px] text-[#9A8C7A] font-normal"> a year</span>
+          </span>
           <span className="font-abridge text-[22px] text-[#EA2C00]">+{fmtShort(p.headroom)} on the table</span>
         </div>
 
@@ -837,33 +879,59 @@ function AnswerStep(p: {
         </p>
       </div>
 
-      {/* THE RETURN — the payoff a CFO actually reads: price in, multiple + net out */}
-      <div className="mt-16 pt-8 border-t-2 border-[#E7E2DB]">
-        <div className={EYEBROW}>The return</div>
-        <div className="mt-5 flex flex-wrap items-end gap-x-12 gap-y-6">
-          <div>
-            <div className="text-[12.5px] text-[#8C8073] mb-2">What Abridge would cost you</div>
-            <div className="w-[180px] inline-flex items-baseline gap-1.5 border-b-2 border-[#E0D9CE] focus-within:border-[#EA2C00] transition-colors pb-1">
-              <span className="text-[16px] text-[#A69A88]">$</span>
-              <FormattedNumberInput value={p.price} onChange={p.setPrice}
-                className="flex-1 min-w-0 h-auto border-0 rounded-none bg-transparent p-0 shadow-none text-[24px] font-bold text-[#1A1A1A] tabular-nums focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:not-italic placeholder:font-normal placeholder:text-[16px] placeholder:text-[#C9BDAD]"
-                placeholder="a year, all in" />
-            </div>
+      {/* THE RETURN — the one thing they still have to type. Before a price is
+          in, this is an unanswered question, so it is styled as a prompt (tinted
+          card, coral rule, a caret) rather than a quiet row that reads optional. */}
+      <div className="mt-16">
+        <div className={`rounded-2xl border transition-colors ${p.price > 0 ? "border-[#EAE3D9] bg-[#FDFBF8]" : "border-[#EA2C00]/35 bg-[#FFF7F4]"}`}>
+          <div className="px-7 sm:px-9 py-8">
+            <div className={EYEBROW}>The return</div>
+            {p.price > 0 ? (
+              <>
+                <h2 className="font-abridge text-[22px] sm:text-[26px] leading-[1.2] text-[#1A1A1A] mt-3">
+                  What you keep, after paying for it
+                </h2>
+                <div className="mt-7 flex flex-wrap items-end gap-x-12 gap-y-6">
+                  <div>
+                    <div className="text-[12.5px] text-[#8C8073] mb-2">What Abridge would cost you</div>
+                    <div className="w-[190px] inline-flex items-baseline gap-1.5 border-b-2 border-[#E0D9CE] focus-within:border-[#EA2C00] transition-colors pb-1">
+                      <span className="text-[16px] text-[#A69A88]">$</span>
+                      <FormattedNumberInput value={p.price} onChange={p.setPrice}
+                        className="flex-1 min-w-0 h-auto border-0 rounded-none bg-transparent p-0 shadow-none text-[24px] font-bold text-[#1A1A1A] tabular-nums focus-visible:ring-0 focus-visible:ring-offset-0"
+                        placeholder="a year, all in" />
+                    </div>
+                  </div>
+                  <div>
+                    <div className="font-abridge text-[46px] sm:text-[56px] leading-none text-[#EA2C00]">{roi.toFixed(1)}×</div>
+                    <div className="text-[12.5px] text-[#8C8073] mt-2">back for every dollar spent</div>
+                  </div>
+                  <div>
+                    <div className="font-abridge text-[46px] sm:text-[56px] leading-none text-[#1A1A1A]">{fmtShort(p.todayValue - p.price)}</div>
+                    <div className="text-[12.5px] text-[#8C8073] mt-2">left over each year, after paying for it</div>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <h2 className="font-abridge text-[24px] sm:text-[30px] leading-[1.16] text-[#1A1A1A] mt-3 max-w-[520px]">
+                  One more number: what would Abridge cost you?
+                </h2>
+                <p className="mt-3 text-[15px] leading-[1.6] text-[#8C8073] max-w-[500px]">
+                  Put in the annual price you have been quoted and we will show what
+                  is left after paying for it, and how many times over it pays back.
+                </p>
+                <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3">
+                  <div className="w-[250px] inline-flex items-baseline gap-2 border-b-[3px] border-[#EA2C00] pb-1.5">
+                    <span className="text-[22px] text-[#EA2C00] font-bold">$</span>
+                    <FormattedNumberInput value={p.price} onChange={p.setPrice}
+                      className="flex-1 min-w-0 h-auto border-0 rounded-none bg-transparent p-0 shadow-none text-[30px] font-bold text-[#1A1A1A] tabular-nums focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:not-italic placeholder:font-normal placeholder:text-[17px] placeholder:text-[#C0A79C]"
+                      placeholder="a year, all in" />
+                  </div>
+                  <span className="text-[13px] font-semibold text-[#B4776A]">Type your price here</span>
+                </div>
+              </>
+            )}
           </div>
-          {p.price > 0 ? (
-            <>
-              <div>
-                <div className="font-abridge text-[46px] sm:text-[56px] leading-none text-[#EA2C00]">{roi.toFixed(1)}×</div>
-                <div className="text-[12.5px] text-[#8C8073] mt-2">back for every dollar spent</div>
-              </div>
-              <div>
-                <div className="font-abridge text-[46px] sm:text-[56px] leading-none text-[#1A1A1A]">{fmtShort(p.todayValue - p.price)}</div>
-                <div className="text-[12.5px] text-[#8C8073] mt-2">left over each year, after paying for it</div>
-              </div>
-            </>
-          ) : (
-            <div className="text-[15px] text-[#A69A88] italic pb-2">Add a price and we will show what you keep.</div>
-          )}
         </div>
       </div>
 

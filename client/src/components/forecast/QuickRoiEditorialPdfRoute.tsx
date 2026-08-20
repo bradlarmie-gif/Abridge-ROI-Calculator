@@ -38,6 +38,21 @@ export default function QuickRoiEditorialPdfRoute() {
 
   return (
     <div style={{ background: "#e9e5df", minHeight: "100vh", padding: "0" }}>
+      {/*
+        Chrome drops background colours when it prints, so every filled shape in
+        this document (the composition bar, the swatches, the tinted panels)
+        came out blank in the saved PDF while the coloured TEXT still printed.
+        That is why the bar read as three grey numbers floating in white space.
+        print-color-adjust: exact tells the print engine to honour the fills.
+      */}
+      <style>{`
+        @media print {
+          html, body, #root, * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+        }
+      `}</style>
       <QuickRoiEditorialPdfDocument data={data} />
     </div>
   );

@@ -45,6 +45,14 @@ export interface RoiField {
   prefix?: string;
   suffix?: string;
   step?: number;
+  /**
+   * A "how much of this actually sticks" haircut (payer mix, downcoding, audit
+   * survival, appeals). It is the least intuitive thing on the page for a
+   * practice sizing itself, so the screen does not ask for it: the calibrated
+   * default is applied, shown inside the worked math, and the difference
+   * between the haircut and the full amount is presented as a range instead.
+   */
+  realization?: true;
 }
 
 /** A measured before -> after pair, rendered with the editorial BeforeAfter input. */
@@ -175,7 +183,7 @@ const codingDriver = (id: "wrvu" | "edEmLevel", beforeDef: number, afterDef: num
   },
   fields: [
     { k: "cf", label: "What you are paid per wRVU", def: 33.4, hint: "the 2026 Medicare conversion factor, change it to your own rate", prefix: "$", step: 0.1 },
-    { k: "wrvuRealization", label: "How much of this you would actually keep", def: 75, hint: "after payer mix, downcoding and anything you would not defend", suffix: "%" },
+    { k: "wrvuRealization", realization: true, label: "How much of this you would actually keep", def: 75, hint: "after payer mix, downcoding and anything you would not defend", suffix: "%" },
   ],
   applyToState: (s, v) => {
     const d = dq(s);
@@ -207,7 +215,7 @@ const denialDriver = (denialsCustomDef: number): RoiDriver => ({
     { k: "medNecessityDenialRate", label: "Medical-necessity denial rate today", def: 3, suffix: "%", step: 0.1 },
     { k: "denialsCustomPercent", label: "Share of those a fuller note could head off", def: denialsCustomDef, hint: "only the ones that turn on documentation, not all denials", suffix: "%" },
     { k: "avgClaimValue", label: "Average claim value", def: 200, prefix: "$" },
-    { k: "denialsRealization", label: "How much of this you would actually keep", def: 60, hint: "not every overturned denial gets paid in full", suffix: "%" },
+    { k: "denialsRealization", realization: true, label: "How much of this you would actually keep", def: 60, hint: "not every overturned denial gets paid in full", suffix: "%" },
   ],
   applyToState: (s, v) => {
     const d = dq(s);
@@ -307,7 +315,7 @@ const hccDriver: RoiDriver = {
     { k: "hccRecaptureLift", label: "Recapture-rate lift with Abridge", def: 5, suffix: "pp", hint: "percentage points, capped by the remaining gap" },
     { k: "hccNetNew", label: "Net-new HCCs surfaced per member", def: 0.05, step: 0.01, hint: "conditions surfaced in the visit that weren't coded before" },
     { k: "hccPerHcc", label: "Value per HCC captured (RAF)", def: 1500, prefix: "$" },
-    { k: "hccRealization", label: "How much of this survives an audit", def: 50, hint: "risk adjustment is audited hard, so this is deliberately low", suffix: "%" },
+    { k: "hccRealization", realization: true, label: "How much of this survives an audit", def: 50, hint: "risk adjustment is audited hard, so this is deliberately low", suffix: "%" },
   ],
   applyToState: (s, v, ctx) => {
     const d = dq(s);
@@ -346,7 +354,7 @@ const patientAccessDriver: RoiDriver = {
   // reinvested. The card reads back what share of the reclaimed hours it uses.
   fields: [
     { k: "accessVisitsPerProvWk", label: "Added visits per clinician, each week", def: 0, step: 0.5, hint: "only what the freed-up time could realistically absorb" },
-    { k: "visitDuration", label: "Minutes per added visit", def: 30, suffix: "min" },
+    { k: "visitDuration", label: "Average visit length", def: 30, hint: "how long a typical visit takes in your practice", suffix: "min" },
     { k: "revenuePerVisit", label: "Margin per added visit", def: 200, prefix: "$" },
   ],
   applyToState: (s, v) => {
@@ -374,7 +382,7 @@ const lwbsDriver: RoiDriver = {
     { k: "edLwbsRate", label: "Left-without-being-seen rate today", def: 3, suffix: "%", step: 0.1 },
     { k: "edLwbsReduction", label: "Reduction in LWBS", def: 10, suffix: "%" },
     { k: "edRevenuePerVisit", label: "Margin per recovered visit", def: 480, prefix: "$" },
-    { k: "edLwbsRealization", label: "How much of this you would actually keep", def: 50, hint: "a conservative share, not the full amount", suffix: "%" },
+    { k: "edLwbsRealization", realization: true, label: "How much of this you would actually keep", def: 50, hint: "a conservative share, not the full amount", suffix: "%" },
   ],
   applyToState: (s, v) => {
     const t = td(s);
@@ -395,7 +403,7 @@ const admissionDriver: RoiDriver = {
   fields: [
     { k: "edAdmissionRate", label: "Share of recovered patients admitted", def: 18, suffix: "%" },
     { k: "edAdmissionRevenue", label: "Margin per admission", def: 4000, prefix: "$" },
-    { k: "edAdmissionRealization", label: "How much of this you would actually keep", def: 75, hint: "a conservative share, not the full amount", suffix: "%" },
+    { k: "edAdmissionRealization", realization: true, label: "How much of this you would actually keep", def: 75, hint: "a conservative share, not the full amount", suffix: "%" },
   ],
   applyToState: (s, v) => {
     const t = td(s);
@@ -444,7 +452,7 @@ const obsDriver: RoiDriver = {
     { k: "ipObsDefenseDenialRate", label: "Admissions downgraded to observation today", def: 5, suffix: "%", step: 0.1 },
     { k: "ipObsDefenseCustomPercent", label: "Share the note can defend", def: 40, suffix: "%" },
     { k: "ipObsDefenseRevenueDelta", label: "Revenue delta per defended case", def: 5000, prefix: "$" },
-    { k: "ipObsDefenseRealization", label: "How much of this survives appeal", def: 50, hint: "some of these get overturned back against you", suffix: "%" },
+    { k: "ipObsDefenseRealization", realization: true, label: "How much of this survives appeal", def: 50, hint: "some of these get overturned back against you", suffix: "%" },
   ],
   applyToState: (s, v) => {
     const d = dq(s);
@@ -602,7 +610,7 @@ const nursingSepsisDriver: RoiDriver = {
     { k: "nursingSepsisCurrentCompliance", label: "SEP-1 bundle compliance today", def: 75, suffix: "%" },
     { k: "nursingSepsisDocLagPercent", label: "Doc-lag share of non-compliant cases", def: 30, suffix: "%" },
     { k: "nursingSepsisExcessCostPerCase", label: "Excess cost per case", def: 3500, prefix: "$" },
-    { k: "nursingSepsisRealization", label: "How much of this you would actually keep", def: 60, hint: "a conservative share, not the full amount", suffix: "%" },
+    { k: "nursingSepsisRealization", realization: true, label: "How much of this you would actually keep", def: 60, hint: "a conservative share, not the full amount", suffix: "%" },
   ],
   applyToState: (s, v) => {
     const d = dq(s);
@@ -780,6 +788,27 @@ export interface RoiRun {
   totalsByQuadrant: Record<Domain, number>;
   total: number;
   totalHoursSaved: number;
+}
+
+/**
+ * Every realization key across every setting, derived from the driver
+ * definitions so a new driver participates automatically.
+ */
+export const REALIZATION_KEYS: string[] = Array.from(
+  new Set(
+    (Object.keys(DRIVERS) as SettingKey[])
+      .flatMap((k) => DRIVERS[k])
+      .flatMap((d) => d.fields)
+      .filter((f) => f.realization)
+      .map((f) => f.k),
+  ),
+);
+
+/** The same inputs with nothing discounted: the top of the range. */
+export function withFullRealization(vals: Record<string, number>): Record<string, number> {
+  const out = { ...vals };
+  for (const k of REALIZATION_KEYS) if (k in out) out[k] = 100;
+  return out;
 }
 
 export function runRoi(
