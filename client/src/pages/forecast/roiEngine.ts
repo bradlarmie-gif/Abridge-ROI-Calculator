@@ -215,7 +215,7 @@ const codingDriver = (id: "wrvu" | "edEmLevel", beforeDef: number, afterDef: num
   },
   fields: [
     { k: "cf", label: "What you are paid per wRVU", def: 33.4, hint: "the 2026 Medicare conversion factor, change it to your own rate", prefix: "$", step: 0.1 },
-    { k: "wrvuRealization", realization: true, label: "How much of this you would actually keep", def: 75, hint: "after payer mix, downcoding and anything you would not defend", suffix: "%" },
+    { k: "wrvuRealization", realization: true, label: "Share you would credit to the note", def: 75, hint: "coding education and CDI move this too, so we do not claim all of it", suffix: "%" },
   ],
   applyToState: (s, v) => {
     const d = dq(s);
@@ -236,7 +236,7 @@ const codingDriver = (id: "wrvu" | "edEmLevel", beforeDef: number, afterDef: num
     const lift = codingLift(v.wrvuBefore ?? 0, v.wrvuAfter ?? 0);
     // render it exactly as the field does, or the card contradicts its own input
     const cf = `$${v.cf}`;
-    return `${enc.toLocaleString("en-US")} ${encNoun} × ${lift.toFixed(2)} wRVU lift (${v.wrvuBefore} → ${v.wrvuAfter}) × ${cf}/wRVU × ${v.wrvuRealization}% of it landing`;
+    return `${enc.toLocaleString("en-US")} ${encNoun} × ${lift.toFixed(2)} wRVU lift (${v.wrvuBefore} → ${v.wrvuAfter}) × ${cf}/wRVU × ${v.wrvuRealization}% attributed to the note`;
   },
   };
 };
@@ -417,7 +417,7 @@ const lwbsDriver: RoiDriver = {
     { k: "edLwbsRate", label: "Left-without-being-seen rate today", def: 3, suffix: "%", step: 0.1 },
     { k: "edLwbsReduction", label: "Reduction in LWBS", def: 10, suffix: "%" },
     { k: "edRevenuePerVisit", label: "Margin per recovered visit", def: 480, prefix: "$" },
-    { k: "edLwbsRealization", realization: true, label: "How much of this you would actually keep", def: 50, hint: "a conservative share, not the full amount", suffix: "%" },
+    { k: "edLwbsRealization", realization: true, label: "Share that becomes a billable visit", def: 50, hint: "not every patient who stays completes a billable visit", suffix: "%" },
   ],
   applyToState: (s, v) => {
     const t = td(s);
@@ -439,7 +439,7 @@ const admissionDriver: RoiDriver = {
   fields: [
     { k: "edAdmissionRate", label: "Share of recovered patients admitted", def: 18, suffix: "%" },
     { k: "edAdmissionRevenue", label: "Margin per admission", def: 4000, prefix: "$" },
-    { k: "edAdmissionRealization", realization: true, label: "How much of this you would actually keep", def: 75, hint: "a conservative share, not the full amount", suffix: "%" },
+    { k: "edAdmissionRealization", realization: true, label: "Share that converts to an admission", def: 75, hint: "bed availability decides some of this, not documentation", suffix: "%" },
   ],
   applyToState: (s, v) => {
     const t = td(s);
@@ -650,7 +650,7 @@ const nursingSepsisDriver: RoiDriver = {
     { k: "nursingSepsisCurrentCompliance", label: "SEP-1 bundle compliance today", def: 75, suffix: "%" },
     { k: "nursingSepsisDocLagPercent", label: "Doc-lag share of non-compliant cases", def: 30, suffix: "%" },
     { k: "nursingSepsisExcessCostPerCase", label: "Excess cost per case", def: 3500, prefix: "$" },
-    { k: "nursingSepsisRealization", realization: true, label: "How much of this you would actually keep", def: 60, hint: "a conservative share, not the full amount", suffix: "%" },
+    { k: "nursingSepsisRealization", realization: true, label: "Share you would credit to the note", def: 60, hint: "the bundle is a whole-team response, so we do not claim all of it", suffix: "%" },
   ],
   applyToState: (s, v) => {
     const d = dq(s);
