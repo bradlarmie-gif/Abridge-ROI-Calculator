@@ -222,14 +222,8 @@ export default function AttainFlowV2({
         onHome={onHome ?? onBackToJourney ?? (() => setPhase("setting"))}
         rightAction={(partner.trim() || saved) ? (
           <div className="flex items-center gap-3 text-[11px]">
-            {/* Export PDF drives the dollar-based Attain plan PDF; the no-dollar
-                strategy trace has no PDF yet, so it's suppressed in strategy mode. */}
-            {phase === "experience" && mode !== "strategy" && (
-              <button type="button" onClick={handleExport} disabled={exporting} data-testid="attain-export-pdf" className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg border border-[#E8E2DA] bg-white text-[12px] font-bold text-[#1A1A1A] hover:border-[#1A1A1A] disabled:opacity-50 transition-colors">
-                <Download className="w-3.5 h-3.5" strokeWidth={2.25} />
-                {exporting ? "Preparing…" : "Export PDF"}
-              </button>
-            )}
+            {/* The planning walk carries its own "Download the plan" (plan-based PDF);
+                the old dollar-based header export is retired here. */}
             <span className="hidden md:inline text-[#B4A896] italic whitespace-nowrap">autosaved{partner.trim() ? ` · ${partner.trim()}` : ""}</span>
             <button type="button" onClick={() => setConfirmingReset(true)} className="hidden md:inline-flex items-center gap-1 text-slate-500 hover:text-[#EA2C00] transition-colors"><RotateCcw className="w-3 h-3" /> Start over</button>
           </div>

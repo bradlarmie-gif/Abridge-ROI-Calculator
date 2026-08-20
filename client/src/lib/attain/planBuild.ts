@@ -114,6 +114,13 @@ const SETTING_STEP_OVERRIDES: Record<string, Record<number, StepOverride>> = {
     5: { name: "Queries close before the bill drops", signal: "Query turnaround, close rate", ownerRole: "CDI / providers" },
     6: { name: "Captured weight realized", signal: "DRG weight vs baseline", ownerRole: "Joint" },
   },
+  // The retention chain is authored provider-flavored; nursing reads in its own terms.
+  "nursing:retention": {
+    1: { signal: "% nurses recording, % notes via Abridge" },
+    3: { ownerRole: "Nurse managers" },
+    4: { ownerRole: "Nursing ops / staffing" },
+    5: { ownerRole: "Nursing leadership / CNO" },
+  },
 };
 
 /** Setting-specific outcome titles where the shared goal title reads wrong for

@@ -111,7 +111,7 @@ function OwnerCard({ owner }: { owner: PlanOwner }) {
     <div className="rounded-[14px] border border-[#E8E2DA] bg-[#FCFBF9] px-5 py-[18px] mb-3">
       <div className="flex items-baseline justify-between gap-3 mb-2.5 pb-2.5 border-b border-[#E8E2DA]">
         <div className="min-w-0">
-          <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#8C8073] mb-1">{owner.isAbridge ? "Abridge + your champion" : "Owner"}</div>
+          <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#8C8073] mb-1">{owner.isAbridge ? "Enables it · shared" : "Owner"}</div>
           <div className="font-abridge text-[18px] text-[#1A1A1A] leading-tight">{owner.person || owner.role}</div>
           {owner.person && <div className="text-[12px] text-[#8C8073] mt-0.5">{owner.role}</div>}
         </div>
@@ -184,9 +184,15 @@ export default function PlanBuildExperience({
           <p className="text-[15px] text-[#4A4238] leading-relaxed mb-8 max-w-[600px]">Drop in this review's reading for each metric. Attainment builds from how far each has moved from its baseline toward the target.</p>
           <div className="rounded-[16px] border border-[#E8E2DA] bg-[#FCFBF9] px-6 py-6 mb-10">
             <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#8C8073] mb-2">Attainment, all outcomes</div>
-            <div className="font-abridge text-[52px] leading-none text-[#EA2C00]">{overall}<span className="text-[26px]">%</span></div>
-            <div className="mt-4 h-2 rounded-full bg-[#E8E2DA] overflow-hidden"><div className="h-full bg-[#EA2C00] transition-all" style={{ width: `${overall}%` }} /></div>
-            <div className="text-[12px] text-[#8C8073] mt-2">{attains.length ? `${attains.length} ${attains.length === 1 ? "metric" : "metrics"} with a reading so far.` : "Enter readings below and this fills in."}</div>
+            {attains.length ? (
+              <>
+                <div className="font-abridge text-[52px] leading-none text-[#EA2C00]">{overall}<span className="text-[26px]">%</span></div>
+                <div className="mt-4 h-2 rounded-full bg-[#E8E2DA] overflow-hidden"><div className="h-full bg-[#EA2C00] transition-all" style={{ width: `${overall}%` }} /></div>
+                <div className="text-[12px] text-[#8C8073] mt-2">{attains.length} {attains.length === 1 ? "metric" : "metrics"} with a reading, against its baseline and target.</div>
+              </>
+            ) : (
+              <p className="text-[15px] text-[#4A4238] leading-relaxed mt-1 max-w-[520px]">Enter this review's readings below. Attainment builds here as each metric moves from its baseline toward the target.</p>
+            )}
           </div>
           {plans.map((p) => (
             <section key={p.goal} className="mb-10">
@@ -206,7 +212,7 @@ export default function PlanBuildExperience({
                           <ArrowRight className="w-3.5 h-3.5 text-[#C9BDAD]" />
                           <TextInput value={readings[p.goal]?.[s.n] ?? ""} onChange={(v) => setReading(p.goal, s.n, v)} placeholder="now" width={64} />
                           <ArrowRight className="w-3.5 h-3.5 text-[#C9BDAD]" />
-                          <span className="tabular-nums w-[54px] text-[#EA2C00] font-semibold">{s.target || "target"}</span>
+                          <span className={`tabular-nums w-[54px] ${s.target ? "text-[#EA2C00] font-semibold" : "text-[#C4BCB0]"}`}>{s.target || "target"}</span>
                         </div>
                       </div>
                       {a !== null && <div className="mt-2.5 h-1.5 rounded-full bg-[#E8E2DA] overflow-hidden"><div className="h-full bg-[#EA2C00]" style={{ width: `${Math.round(a * 100)}%` }} /></div>}
@@ -289,7 +295,7 @@ export default function PlanBuildExperience({
           <div>
             <Eyebrow>Build the plan · Targets</Eyebrow>
             <h1 className="font-abridge text-[34px] md:text-[40px] leading-[1.08] text-[#1A1A1A] mb-3">Set the target for each metric.</h1>
-            <p className="text-[15px] text-[#4A4238] leading-relaxed mb-9 max-w-[600px]">Baselines carry forward from your numbers where we have them. For each metric, set where you want it and by when.</p>
+            <p className="text-[15px] text-[#4A4238] leading-relaxed mb-9 max-w-[600px]">For each metric, set where it is today, where you're driving it, and by when. These become the baseline the plan is measured against.</p>
             {plans.map((p) => (
               <section key={p.goal} className="mb-10">
                 <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#EA2C00] mb-3">{p.chainTitle}</div>
@@ -301,11 +307,11 @@ export default function PlanBuildExperience({
                         <div className="text-[12px] text-[#8C8073] mt-0.5">{s.signal}</div>
                       </div>
                       <div className="flex items-center gap-3 flex-shrink-0 text-[13px]">
-                        <span className="text-[#A79E92] tabular-nums w-[70px] text-right">{s.baseline || "baseline"}</span>
+                        <TextInput value={(state.overlayByGoal[p.goal]?.[s.n]?.baseline) ?? (s.baseline ?? "")} onChange={(v) => setEntry(p.goal, s.n, "baseline", v)} placeholder="today" width={64} />
                         <ArrowRight className="w-3.5 h-3.5 text-[#C9BDAD]" />
-                        <TextInput value={(state.overlayByGoal[p.goal]?.[s.n]?.target) ?? ""} onChange={(v) => setEntry(p.goal, s.n, "target", v)} placeholder="target" width={72} />
+                        <TextInput value={(state.overlayByGoal[p.goal]?.[s.n]?.target) ?? ""} onChange={(v) => setEntry(p.goal, s.n, "target", v)} placeholder="target" width={64} />
                         <span className="text-[#C9BDAD]">by</span>
-                        <TextInput value={(state.overlayByGoal[p.goal]?.[s.n]?.byWhen) ?? ""} onChange={(v) => setEntry(p.goal, s.n, "byWhen", v)} placeholder="when" width={64} />
+                        <TextInput value={(state.overlayByGoal[p.goal]?.[s.n]?.byWhen) ?? ""} onChange={(v) => setEntry(p.goal, s.n, "byWhen", v)} placeholder="when" width={56} />
                       </div>
                     </div>
                   ))}
@@ -364,7 +370,7 @@ export default function PlanBuildExperience({
               </p>
               <p className="text-[13px] text-white/45 mb-7">This is the deal after the deal: the promise, made real and tracked against your own numbers.</p>
               <div className="flex flex-wrap items-center gap-3">
-                <button className="inline-flex items-center gap-2 rounded-[10px] bg-[#EA2C00] text-white px-6 py-3 text-[14px] font-bold hover:bg-[#d12800]">
+                <button onClick={() => window.open(`/?planpdf=${setting}`, "_blank")} className="inline-flex items-center gap-2 rounded-[10px] bg-[#EA2C00] text-white px-6 py-3 text-[14px] font-bold hover:bg-[#d12800]">
                   Download the plan <ArrowRight className="w-4 h-4" />
                 </button>
                 <button onClick={() => setTracking(true)} className="inline-flex items-center gap-2 rounded-[10px] border border-white/25 text-white px-6 py-3 text-[14px] font-bold hover:bg-white/5">
@@ -383,7 +389,7 @@ export default function PlanBuildExperience({
       <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur border-t border-[#EDE8E1]">
         <div className="max-w-[960px] mx-auto px-6 h-[68px] flex items-center justify-between">
           <button onClick={() => (pos === 0 ? onExit?.() : setPos((p) => Math.max(0, p - 1)))} disabled={pos === 0 && !onExit} className={`inline-flex items-center gap-1.5 text-[14px] font-semibold ${pos === 0 && !onExit ? "text-[#C9BDAD]" : "text-[#6E675C] hover:text-[#1A1A1A]"}`}>
-            <ArrowLeft className="w-4 h-4" /> Back
+            <ArrowLeft className="w-4 h-4" /> {pos === 0 ? "Back" : "Previous step"}
           </button>
           {pos < STEPS.length - 1 ? (
             <button onClick={() => setPos((p) => Math.min(STEPS.length - 1, p + 1))} className="inline-flex items-center gap-2 rounded-[10px] bg-[#EA2C00] text-white px-6 py-3 text-[14px] font-bold hover:bg-[#d12800]">
