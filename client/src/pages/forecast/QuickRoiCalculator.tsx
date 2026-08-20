@@ -179,9 +179,15 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
   // caps while typing, but the total can be lowered AFTER the subset is set,
   // which would leave a stale value above it: adoption over 100%, and an upside
   // slider whose floor sits above its own ceiling. Pull it back down.
+  // Depend on the TOTAL only, and use the functional updater so the current
+  // subset is read at commit time. The first version listed onAbridge in its
+  // deps and also set it, which is a feedback loop: it could fire on a render
+  // where the comparison was momentarily true and stamp the total over a value
+  // the user had just typed, then blank the field after it. React bails out
+  // when the updater returns the same value, so this cannot re-enter.
   useEffect(() => {
-    if (totalProviders > 0 && onAbridge > totalProviders) setOnAbridge(totalProviders);
-  }, [totalProviders, onAbridge]);
+    if (totalProviders > 0) setOnAbridge((cur) => (cur > totalProviders ? totalProviders : cur));
+  }, [totalProviders]);
   const [occupancy, setOccupancy] = useState(d.occupancy ?? 0);
   // Documentation minutes in notes (before -> after). Feeds Patient Access
   // dollars (outpatient) and the reclaimed-hours proof (all physician settings).

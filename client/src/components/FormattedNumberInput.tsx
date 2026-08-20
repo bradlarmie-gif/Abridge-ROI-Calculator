@@ -53,9 +53,13 @@ export function FormattedNumberInput({
   const [displayValue, setDisplayValue] = useState(() => value === '' || value === 0 ? '' : formatWithCommas(numValue, decimals));
   const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  // Focus in a ref as well as state: state lags a render, and the resync
+  // effect below can run before it commits. Defensive; the character-eating
+  // bug was the select-on-focus race handled in handleFocus.
+  const focusedRef = useRef(false);
 
   useEffect(() => {
-    if (isFocused) return;
+    if (focusedRef.current || isFocused) return;
     const currentParsed = parseFormattedNumber(displayValue);
     if (currentParsed !== numValue) {
       setDisplayValue(value === '' || value === 0 ? '' : formatWithCommas(numValue, decimals));
@@ -108,6 +112,7 @@ export function FormattedNumberInput({
   }, [onChange, max, decimals]);
 
   const handleBlur = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
+    focusedRef.current = false;
     setIsFocused(false);
     const raw = parseFormattedNumber(displayValue);
     const parsed = max !== undefined ? Math.min(raw, max) : raw;
@@ -122,9 +127,19 @@ export function FormattedNumberInput({
   }, [displayValue, decimals, onBlurValue, externalOnBlur, max, onChange]);
 
   const handleFocus = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
+    focusedRef.current = true;
     setIsFocused(true);
+    /**
+     * THE FIX. Select-all is deferred a tick so it lands after the browser's
+     * own focus handling, which means the user may already have typed by the
+     * time it runs. Unguarded, it selected the character they had just typed
+     * and the next keystroke replaced it: "42" became "2", "2400" became
+     * "400", every numeric field on every screen. Focus never moved, so it
+     * looked like nothing was wrong. Only select if the field is untouched.
+     */
+    const atFocus = e.target.value;
     setTimeout(() => {
-      e.target.select();
+      if (inputRef.current && inputRef.current.value === atFocus) inputRef.current.select();
     }, 0);
     if (externalOnFocus) {
       externalOnFocus(e);

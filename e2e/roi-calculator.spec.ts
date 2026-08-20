@@ -110,8 +110,10 @@ for (const vp of VIEWPORTS) {
       await expect(using, "lowering the headcount should pull the subset down").toHaveValue("12");
     });
 
-    test("how you are paid decides which revenue cards exist", async ({ page }) => {
-      // fee for service: coding, no risk capture
+    // Split per payer model on purpose: one test doing two full walks was the
+    // longest in the suite and intermittently tripped the 45s timeout under
+    // load. Two short tests also say which half broke.
+    async function revenueOnly(page: Page, payer: "ffs" | "vbc") {
       await enterCalculator(page);
       await page.getByText("Outpatient", { exact: true }).first().click();
       await page.getByTestId("goal-revenue").click();
@@ -119,25 +121,55 @@ for (const vp of VIEWPORTS) {
         page.getByRole("button", { name: /next: your numbers/i }),
         "revenue picked but no payer answer should keep the flow gated",
       ).toBeDisabled();
-      await page.getByTestId("payer-ffs").click();
+      await page.getByTestId(`payer-${payer}`).click();
       await page.getByRole("button", { name: /next: your numbers/i }).click();
       const inputs = page.locator("input");
-      for (const [i, v] of [["Riverbend"], ["42"], ["30"], ["2400"], ["68"]].entries()) await inputs.nth(i).fill(v[0]);
+      const vals = ["Riverbend", "42", "30", "2400", "68"];
+      for (let i = 0; i < vals.length; i++) await inputs.nth(i).fill(vals[i]);
       await page.getByRole("button", { name: /next: what changes/i }).click();
+    }
+
+    test("fee for service shows coding, not risk capture", async ({ page }) => {
+      await revenueOnly(page, "ffs");
       await expect(page.getByText("Coding accuracy")).toBeVisible();
       await expect(page.getByText("Risk capture (HCC)")).toHaveCount(0);
+    });
 
-      // value based: risk capture, no coding
-      await enterCalculator(page);
-      await page.getByText("Outpatient", { exact: true }).first().click();
-      await page.getByTestId("goal-revenue").click();
-      await page.getByTestId("payer-vbc").click();
-      await page.getByRole("button", { name: /next: your numbers/i }).click();
-      const inputs2 = page.locator("input");
-      for (const [i, v] of [["Riverbend"], ["42"], ["30"], ["2400"], ["68"]].entries()) await inputs2.nth(i).fill(v[0]);
-      await page.getByRole("button", { name: /next: what changes/i }).click();
+    test("value based shows risk capture, not coding", async ({ page }) => {
+      await revenueOnly(page, "vbc");
       await expect(page.getByText("Risk capture (HCC)")).toBeVisible();
       await expect(page.getByText("Coding accuracy")).toHaveCount(0);
+    });
+
+    /**
+     * Typed one character at a time, the way a person does. `fill()` cannot
+     * catch this class: the bug was a deferred select-on-focus landing AFTER
+     * the first keystroke, selecting it so the second keystroke replaced it.
+     * Every numeric field silently ate its first character ("42" became "2")
+     * and focus never moved, so nothing looked wrong on screen.
+     */
+    test("typing a number keeps every character", async ({ page }) => {
+      await enterCalculator(page);
+      await page.getByText("Outpatient", { exact: true }).first().click();
+      await pickAllGoals(page);
+
+      const typed: [number, string, string][] = [
+        [1, "42", "42"],
+        [2, "30", "30"],
+        [3, "2400", "2,400"],
+        [4, "68", "68"],
+      ];
+      for (const [idx, keys, expected] of typed) {
+        const field = page.locator("input").nth(idx);
+        await field.click();
+        await page.keyboard.type(keys, { delay: 25 });
+        await expect(field, `typing "${keys}" should leave "${expected}"`).toHaveValue(expected);
+      }
+
+      await expect(
+        page.getByRole("button", { name: /next: what changes/i }),
+        "all four numbers are in, so the step should be complete",
+      ).toBeEnabled();
     });
 
     test("a full run produces a dollar answer", async ({ page }) => {
