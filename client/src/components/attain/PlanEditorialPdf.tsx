@@ -32,6 +32,12 @@ export interface PlanPdfData {
   orgName: string;
   date: string;
   setting: AttainSetting;
+  /** The fully-resolved, personalized plan (owner names + baselines + targets
+   * applied). When present the PDF renders these verbatim; absent, it falls back
+   * to the base structure for the setting (the sample). */
+  plans?: OutcomePlan[];
+  cadence?: "monthly" | "quarterly";
+  execOwner?: string;
 }
 
 const C = {
@@ -154,7 +160,7 @@ function ReportCover({ data, outcomeCount }: { data: PlanPdfData; outcomeCount: 
         </h1>
         <div style={{ width: 80, height: 3, background: C.coral, marginBottom: 24 }} />
         <div style={{ fontSize: 17, color: "#666666", marginBottom: 44 }}>
-          {outcomeCount} outcomes, owned and measured
+          {outcomeCount} {outcomeCount === 1 ? "outcome" : "outcomes"}, owned and measured
         </div>
         <div style={{ fontSize: 10, color: "#999999", letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: 6 }}>
           Prepared by
@@ -395,7 +401,7 @@ function ClosingPage({ data, plans, pgnum }: { data: PlanPdfData; plans: Outcome
         </h2>
         <p style={{ fontSize: 14.5, lineHeight: 1.6, color: "rgba(255,255,255,0.7)", maxWidth: 600, marginTop: 20 }}>
           <b style={{ color: "#FFFFFF" }}>{totalOwners}</b> owner {totalOwners === 1 ? "role carries" : "roles carry"} the
-          make-or-break across {plans.length} outcomes, {totalSignals} signals tell us early whether each one is on track,
+          make-or-break across {plans.length} {plans.length === 1 ? "outcome" : "outcomes"}, {totalSignals} signals tell us early whether each one is on track,
           and the leading signals Abridge proves move first.
         </p>
         <p style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", marginTop: 14, maxWidth: 600 }}>
@@ -414,15 +420,17 @@ function ClosingPage({ data, plans, pgnum }: { data: PlanPdfData; plans: Outcome
 
 export function PlanEditorialPdfDocument({ data }: { data: PlanPdfData }): JSX.Element {
   const goals = SETTING_GOAL_MATRIX[data.setting];
-  const plans = goals.map((g) => buildOutcomePlan(data.setting, g));
+  const plans = data.plans && data.plans.length ? data.plans : goals.map((g) => buildOutcomePlan(data.setting, g));
   const atomPagesPerPlan = plans.map((plan) => packAtomsIntoPages(buildOutcomeAtoms(plan)));
   const totalOutcomePages = atomPagesPerPlan.reduce((a, pages) => a + pages.length, 0);
   const total = 1 /* cover */ + totalOutcomePages + 1 /* closing */;
   const pg = (n: number) => `Abridge · Value Attainment Plan · ${n} of ${total}`;
   let p = 2; // page 1 is the cover, which carries no visible page number
 
-  const disclaimerNote =
-    `Owners and targets are set with ${SETTING_LABEL[data.setting]}'s own team; baselines and by-when dates are added as the plan is built out and never fabricated ahead of that conversation.`;
+  const personalized = !!(data.plans && data.plans.length);
+  const disclaimerNote = personalized
+    ? `This plan is set with ${data.orgName}'s own team${data.execOwner ? `, with ${data.execOwner} accountable` : ""}, reviewed ${data.cadence ?? "quarterly"} against your own numbers. Blank baselines and dates are the ones still to be agreed, never fabricated.`
+    : `Owners and targets are set with ${SETTING_LABEL[data.setting]}'s own team; baselines and by-when dates are added as the plan is built out and never fabricated ahead of that conversation.`;
 
   const pageEls: ReactNode[] = [];
   plans.forEach((plan, pi) => {

@@ -391,6 +391,9 @@ export default function PlanBuildExperience({
                       orgName: partner && partner !== "your team" ? partner : "Your organization",
                       date: new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }),
                       setting,
+                      plans,             // fully resolved: owner names + baselines + targets applied
+                      cadence: state.cadence,
+                      execOwner: state.execOwner || undefined,
                     }));
                   } catch { /* private mode: fall back to the sample */ }
                   window.open(`/?planpdf=${setting}`, "_blank");
