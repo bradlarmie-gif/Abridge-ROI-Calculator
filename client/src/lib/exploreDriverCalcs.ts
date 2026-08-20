@@ -406,12 +406,12 @@ export function computeAllDriverCalcSummaries(
     out.patientAccess = `${fmtN(eff)} providers × ${fmtNd(visitsPerWk)} visits/wk × 48 wks × ${fmt$(td.revenuePerVisit)}/visit`;
   }
   if (isED && td.edLwbsEnabled) {
-    out.lwbsRecovery = `${fmtN(state.annualEncounters)} ED visits × ${td.edLwbsRate}% LWBS × ${td.edLwbsReduction}% reduction × ${fmt$(td.edRevenuePerVisit)}/visit × ${td.edLwbsRealization}% conversion`;
+    out.lwbsRecovery = `${fmtN(state.annualEncounters)} ED visits × ${td.edLwbsRate}% LWBS × ${td.edLwbsReduction}% reduction × ${fmt$(td.edRevenuePerVisit)}/visit × ${td.edLwbsRealization}% counted`;
     if (td.edThroughputEnabled) {
       const recovered = Math.round(
         state.annualEncounters * (td.edLwbsRate / 100) * (td.edLwbsReduction / 100),
       );
-      out.admissionCapture = `${fmtN(recovered)} recovered visits × ${td.edAdmissionRate}% admit rate × ${fmt$(td.edAdmissionRevenue)}/admit × ${td.edAdmissionRealization}% conversion`;
+      out.admissionCapture = `${fmtN(recovered)} recovered visits × ${td.edAdmissionRate}% admit rate × ${fmt$(td.edAdmissionRevenue)}/admit × ${td.edAdmissionRealization}% counted`;
     }
   }
 
@@ -468,7 +468,7 @@ export function computeAllDriverCalcSummaries(
     // so the printed chain reproduces the value exactly — Finance's test.
     const cf = dq.conversionFactor % 1 === 0 ? `$${dq.conversionFactor}` : `$${dq.conversionFactor.toFixed(2)}`;
     const encNoun = setting === "outpatient" ? "visits" : setting === "ed" ? "ED visits" : setting === "inpatient" ? "admissions" : "encounters";
-    const summary = `${fmtN(eligibleEncounters)} ${encNoun} × ${dq.currentWrvu} current wRVU × ${liftPct}% lift × ${cf}/wRVU × ${dq.wrvuRealization}% attribution`;
+    const summary = `${fmtN(eligibleEncounters)} ${encNoun} × ${dq.currentWrvu} current wRVU × ${liftPct}% lift × ${cf}/wRVU × ${dq.wrvuRealization}% counted`;
     if (isED) out.edEmLevel = summary;
     else if (state.paymentModel !== "risk") out.wrvu = summary;
   }
@@ -483,12 +483,12 @@ export function computeAllDriverCalcSummaries(
       const perMember = dq.avgHccs * (effective / 100) + (p.netNewAvgConditions ?? 0);
       return `${p.name}: ${fmtN(members)} members × ${perMember.toFixed(3)} HCCs per member × ${fmt$(p.valuePerHcc)}/HCC`;
     }).join(' | ');
-    out.hccCapture = `${planLines} × ${dq.hccRealization}% surviving audit`;
+    out.hccCapture = `${planLines} × ${dq.hccRealization}% counted`;
   }
   if (dq.denialsEnabled && (isOP || isED)) {
     const prevPct = denialsScenarios[dq.denialsScenario] ?? 0;
     const claimsBase = dq.denialsAnnualClaims > 0 ? dq.denialsAnnualClaims : eligibleEncounters;
-    out.denialPrevention = `${fmtN(claimsBase)} claims × ${dq.medNecessityDenialRate}% medical necessity denial rate × ${prevPct}% reduction target × ${fmt$(dq.avgClaimValue)}/claim × ${dq.denialsRealization}% of it landing`;
+    out.denialPrevention = `${fmtN(claimsBase)} claims × ${dq.medNecessityDenialRate}% medical necessity denial rate × ${prevPct}% reduction target × ${fmt$(dq.avgClaimValue)}/claim × ${dq.denialsRealization}% counted`;
   }
   if (isIP && dq.ipDrgEnabled) {
     out.drgAccuracy = (() => {
@@ -545,7 +545,7 @@ export function computeAllDriverCalcSummaries(
         excessCostPerCase: dq.nursingSepsisExcessCostPerCase,
         realizationPct: dq.nursingSepsisRealization,
       });
-      out.nursingSepsis = `${fmtN(patientDays)} patient-days × ${dq.nursingSepsisRatePerThousand}/1k sepsis × ${sepsisCalc.complianceGapPct}% non-compliance × ${dq.nursingSepsisDocLagPercent}% doc lag × ${fmt$(dq.nursingSepsisExcessCostPerCase)}/case × ${dq.nursingSepsisRealization}% attribution`;
+      out.nursingSepsis = `${fmtN(patientDays)} patient-days × ${dq.nursingSepsisRatePerThousand}/1k sepsis × ${sepsisCalc.complianceGapPct}% non-compliance × ${dq.nursingSepsisDocLagPercent}% doc lag × ${fmt$(dq.nursingSepsisExcessCostPerCase)}/case × ${dq.nursingSepsisRealization}% counted`;
     }
   }
 

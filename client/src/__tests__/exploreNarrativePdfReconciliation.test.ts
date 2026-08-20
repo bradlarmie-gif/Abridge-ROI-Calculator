@@ -473,11 +473,15 @@ describe("Explore OP/ED/IP PDF reconciliation — engine math vs. printed formul
       };
       const values = computeAllDriverValues(state, TOTAL_HOURS_SAVED);
       const summaries = computeAllDriverCalcSummaries(state, TOTAL_HOURS_SAVED);
-      // Tamper: drop the attribution multiplier from the printed formula.
-      const tampered = (summaries.wrvu ?? "").replace(
-        /×\s*\d+%\s*attribution/,
-        "",
-      );
+      // Tamper: drop the trailing share multiplier from the printed formula.
+      // The customer-facing word for it is "counted" (the attribution vs
+      // conversion vs realization distinction now lives in a plain-English
+      // reason line, not in three different words in the math). Accept the
+      // older spellings too so this guard keeps working either way.
+      const tamperRe = /×\s*\d+%\s*(counted|attribution|realization|conversion)/;
+      const original = summaries.wrvu ?? "";
+      expect(original, "the printed wRVU formula no longer carries a share multiplier, so this guard can no longer construct a drift").toMatch(tamperRe);
+      const tampered = original.replace(tamperRe, "");
       expect(() =>
         assertReconciles("wrvu (tampered)", values.wrvu, tampered),
       ).toThrow(/PDF formula no longer matches engine value/);

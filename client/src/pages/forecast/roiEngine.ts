@@ -105,6 +105,14 @@ export interface RoiDriver {
   optional?: boolean;
   /** Only shown when the practice is paid this way. Untagged = shown either way. */
   payerModel?: PayerModel;
+  /**
+   * Why this driver does not count the whole amount, in the practice's own
+   * words. Three different things are going on underneath (attribution on wRVU
+   * and sepsis, conversion on LWBS and admissions, realization on denials, HCC
+   * and status) and a doctor should not have to learn three vocabulary words to
+   * read a number. The math says "x N% counted" everywhere; this line says why.
+   */
+  haircutReason?: string;
   note?: string;
   /** Special renderer: 'hcc' draws the bespoke HccCard. */
   kind?: "hcc";
@@ -200,6 +208,7 @@ const codingDriver = (id: "wrvu" | "edEmLevel", beforeDef: number, afterDef: num
   const encNoun = id === "edEmLevel" ? "ED visits" : "visits";
   return {
   payerModel: "ffs",
+  haircutReason: "Coding education and CDI move this too, so we credit the note with part of it, not all of it.",
   id,
   domain: "Revenue",
   title,
@@ -214,7 +223,7 @@ const codingDriver = (id: "wrvu" | "edEmLevel", beforeDef: number, afterDef: num
     afterDef,
   },
   fields: [
-    { k: "cf", label: "What you are paid per wRVU", def: 33.4, hint: "the 2026 Medicare conversion factor, change it to your own rate", prefix: "$", step: 0.1 },
+    { k: "cf", label: "What you are paid per wRVU", def: 33.4, hint: "the 2026 Medicare conversion factor, change it to your own rate", prefix: "$", step: 0.01 },
     { k: "wrvuRealization", realization: true, label: "Share you would credit to the note", def: 75, hint: "coding education and CDI move this too, so we do not claim all of it", suffix: "%" },
   ],
   applyToState: (s, v) => {
@@ -234,15 +243,16 @@ const codingDriver = (id: "wrvu" | "edEmLevel", beforeDef: number, afterDef: num
   // Uses the SAME clamped lift the engine input uses, so string == dollar.
   work: (v, enc) => {
     const lift = codingLift(v.wrvuBefore ?? 0, v.wrvuAfter ?? 0);
-    // render it exactly as the field does, or the card contradicts its own input
-    const cf = `$${v.cf}`;
-    return `${enc.toLocaleString("en-US")} ${encNoun} × ${lift.toFixed(2)} wRVU lift (${v.wrvuBefore} → ${v.wrvuAfter}) × ${cf}/wRVU × ${v.wrvuRealization}% attributed to the note`;
+    // two decimals in both places: the field shows 33.40, so must the math
+    const cf = `$${v.cf.toFixed(2)}`;
+    return `${enc.toLocaleString("en-US")} ${encNoun} × ${lift.toFixed(2)} wRVU lift (${v.wrvuBefore} → ${v.wrvuAfter}) × ${cf}/wRVU × ${v.wrvuRealization}% counted`;
   },
   };
 };
 
 const denialDriver = (denialsCustomDef: number): RoiDriver => ({
   id: "denialPrevention",
+  haircutReason: "An overturned denial does not always get paid in full, so we count a share of it.",
   domain: "Revenue",
   title: "Medical necessity denials",
   fields: [
@@ -334,6 +344,7 @@ const scribeDriver: RoiDriver = {
 const hccDriver: RoiDriver = {
   payerModel: "vbc",
   id: "hccCapture",
+  haircutReason: "Risk adjustment gets audited hard, so we count only the share that would hold up.",
   domain: "Revenue",
   title: "Risk capture (HCC)",
   optional: true,
@@ -408,6 +419,7 @@ const patientAccessDriver: RoiDriver = {
 
 const lwbsDriver: RoiDriver = {
   id: "lwbsRecovery",
+  haircutReason: "Not every patient who stays goes on to complete a billable visit.",
   // Recovered visits and their margin are revenue, not a time signal. Kept in
   // Revenue so the ED Capacity tab is a pure "time given back" proof card, like
   // inpatient, instead of mixing counted dollars under a "not counted" header.
@@ -431,6 +443,7 @@ const lwbsDriver: RoiDriver = {
 
 const admissionDriver: RoiDriver = {
   id: "admissionCapture",
+  haircutReason: "Bed availability decides some of these, not documentation.",
   dependsOn: "lwbsRecovery",
   domain: "Revenue",
   title: "Admission capture",
@@ -643,6 +656,7 @@ const nursingClabsiDriver: RoiDriver = {
 
 const nursingSepsisDriver: RoiDriver = {
   id: "nursingSepsis",
+  haircutReason: "The sepsis bundle is a whole-team response, so we credit the note with part of it.",
   domain: "Quality",
   title: "Sepsis (SEP-1)",
   fields: [

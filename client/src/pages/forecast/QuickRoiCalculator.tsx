@@ -633,11 +633,18 @@ function Mono({ children }: { children: React.ReactNode }) {
 }
 
 /** The engine's own multiplicand formula string + the engine's value. */
-function WorkedMath({ summary, value }: { summary: string; value: number }) {
+function WorkedMath({ summary, value, reason }: { summary: string; value: number; reason?: string }) {
   return (
     <div className="mt-7 pt-6 border-t border-[#EFE9E0]">
       <div className="text-[10.5px] font-extrabold tracking-[0.14em] uppercase text-[#A69A88] mb-3">How the number is built</div>
       <div className="text-[15px] leading-[1.9] text-[#5E534A]">{summary || "Set the numbers above and the math builds here."}</div>
+      {/* The "x N% counted" factor is the one a sceptic stops on. Say why in
+          plain words rather than making them learn which kind of haircut it is. */}
+      {reason && summary && (
+        <div className="mt-3 text-[13px] leading-[1.55] text-[#8C8073] max-w-[560px]">
+          <span className="font-semibold text-[#5E534A]">Why not all of it: </span>{reason}
+        </div>
+      )}
       <div className="mt-4 flex items-baseline justify-between">
         <span className="text-[13px] text-[#A69A88]">equals</span>
         <span className={`font-abridge text-[34px] leading-none ${value > 0 ? "text-[#EA2C00]" : "text-[#C9BDAD]"}`}>{fmtShort(value)}<span className="text-[15px] text-[#9A8C7A]"> a year</span></span>
@@ -738,7 +745,7 @@ function DriverCard({ driver, vals, setVal, on, onToggle, value, summary, eligib
       {driver.fields.filter((f) => !f.realization).map((f) => (
         <FieldRow key={f.k} field={f} value={vals[f.k]} onChange={(v) => setVal(f.k, v)} />
       ))}
-      <WorkedMath summary={workStr} value={value} />
+      <WorkedMath summary={workStr} value={value} reason={driver.haircutReason} />
     </DriverShell>
   );
 }
@@ -793,7 +800,7 @@ function HccDriverCard({ driver, vals, setVal, on, onToggle, value, summary }: {
         <FieldRow key={f.k} field={f} value={vals[f.k]} onChange={(v) => setVal(f.k, v)} />
       ))}
 
-      <WorkedMath summary={summary} value={value} />
+      <WorkedMath summary={summary} value={value} reason={driver.haircutReason} />
     </DriverShell>
   );
 }
@@ -826,7 +833,7 @@ function PatientAccessCard({ driver, vals, setVal, on, onToggle, value, summary,
             : "The rest of that time stays as capacity."}
         </div>
       )}
-      <WorkedMath summary={summary} value={value} />
+      <WorkedMath summary={summary} value={value} reason={driver.haircutReason} />
     </DriverShell>
   );
 }
