@@ -338,7 +338,7 @@ function NumbersPage({ data }: { data: QuickRoiPdfData }): JSX.Element {
         <div style={{ fontSize: 15, color: C.label, lineHeight: 1.55, maxWidth: 640 }}>
           That is the plan you described. The next page keeps every one of these
           numbers exactly where you set it and changes one thing only: how many
-          clinicians use Abridge, and on how many encounters.
+          {m.meta.providerWord} use Abridge, and on how many {m.meta.encWord}.
         </div>
       </div>
 
@@ -362,7 +362,7 @@ function UpsidePage({ data }: { data: QuickRoiPdfData }): JSX.Element {
       </h2>
       <div style={{ ...sLead }}>
         The per-unit effect stays exactly where you set it. Only the volume it runs on grows: more {m.meta.providerWord} on
-        Abridge{m.isNursing ? "" : ", documenting more of their encounters"}.
+        Abridge{m.isNursing ? "" : `, documenting more of their ${m.meta.encWord}`}.
       </div>
 
       <div style={{ marginTop: 26, display: "flex", gap: 56, alignItems: "flex-end" }}>
@@ -409,7 +409,7 @@ function UpsidePage({ data }: { data: QuickRoiPdfData }): JSX.Element {
           {!m.isNursing && (
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "18px 0", borderTop: `1px solid ${C.hair}` }}>
               <div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: C.ink }}>Documenting more of their encounters</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: C.ink }}>Documenting more of their {m.meta.encWord}</div>
                 <div style={{ fontSize: 11.5, color: C.faint, marginTop: 3 }}>the share written with Abridge</div>
               </div>
               <div style={{ fontSize: 15, color: C.label }}>

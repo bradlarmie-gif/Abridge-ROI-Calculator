@@ -1,5 +1,12 @@
 # Explore Value Drivers — The Shared Mental Model (Abridge)
 
+> **Still current, with one caveat.** The Explore *screens* this was written for
+> were removed when this repo became the Self Service ROI Tool. The *engine* it
+> describes (`lib/exploreDriverCalcs.ts`, the driver definitions, the
+> realization and attribution doctrine) is exactly the engine this app still
+> runs every number through, so the math and the defensibility argument below
+> remain the source of truth. Read "Explore screen" as "the what-changes step".
+
 **Purpose:** one mental model, for everyone at Abridge, of how Explore turns documentation into value:
 what the drivers are, how the math is conducted, and why it's defensible. Scalable across all 4 care
 settings. Calibrated to LEAD the category without overstating, and not so conservative that our

@@ -234,7 +234,8 @@ const codingDriver = (id: "wrvu" | "edEmLevel", beforeDef: number, afterDef: num
   // Uses the SAME clamped lift the engine input uses, so string == dollar.
   work: (v, enc) => {
     const lift = codingLift(v.wrvuBefore ?? 0, v.wrvuAfter ?? 0);
-    const cf = v.cf % 1 === 0 ? `$${v.cf}` : `$${v.cf.toFixed(2)}`;
+    // render it exactly as the field does, or the card contradicts its own input
+    const cf = `$${v.cf}`;
     return `${enc.toLocaleString("en-US")} ${encNoun} × ${lift.toFixed(2)} wRVU lift (${v.wrvuBefore} → ${v.wrvuAfter}) × ${cf}/wRVU × ${v.wrvuRealization}% of it landing`;
   },
   };

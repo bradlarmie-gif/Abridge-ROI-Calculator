@@ -520,7 +520,7 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
       )}
 
       {step === 3 && (
-        <AnswerStep practiceName={practiceName} encWord={meta.encWord} breakdown={breakdown} todayValue={todayValue} todayValueFull={todayValueFull} potentialValueFull={potentialValueFull} providerWord={scopeWord}
+        <AnswerStep practiceName={practiceName} encWord={meta.encWord} breakdown={breakdown} todayValue={todayValue} todayValueFull={todayValueFull} potentialValueFull={potentialValueFull} providerWord={meta.providerWord}
           potentialValue={potentialValue} headroom={headroom} hoursReclaimed={hoursReclaimed}
           adoptionNow={adoptionNow} utilNow={utilNow} totalProviders={totalProviders}
           targetAdoptionPct={targetAdoptionPct} setTargetAdoptionPct={setTargetAdoptionPct}
@@ -571,7 +571,7 @@ function NumInput({ value, onChange, suffix, prefix, step = 1, w = "w-[168px]", 
     <div className={`${w} inline-flex items-baseline gap-1.5 border-b-2 border-[#E0D9CE] focus-within:border-[#EA2C00] transition-colors pb-1`}>
       {prefix && <span className="text-[14px] text-[#A69A88]">{prefix}</span>}
       <FormattedNumberInput value={value} onChange={onChange} step={step} max={cap} className={UINPUT_CLASS} placeholder={placeholder} />
-      {suffix && <span className="text-[14px] text-[#A69A88]">{suffix}</span>}
+      {suffix && <span className={`text-[14px] text-[#A69A88] ${suffix === "%" ? "-ml-1" : ""}`}>{suffix}</span>}
     </div>
   );
 }
@@ -1142,8 +1142,8 @@ function Slider({ label, value, min, onChange, right }: { label: string; value: 
   const pct = 100 - lo > 0 ? ((value - lo) / (100 - lo)) * 100 : 0;
   return (
     <div>
-      <div className="flex items-baseline justify-between gap-4 mb-2">
-        <span className="text-[14px] font-medium text-[#1A1A1A] min-w-0">{label}</span>
+      <div className="flex items-start justify-between gap-4 mb-2 min-h-[38px]">
+        <span className="text-[14px] font-medium text-[#1A1A1A] min-w-0 leading-snug">{label}</span>
         <span className="font-abridge text-[15px] text-[#EA2C00] whitespace-nowrap flex-shrink-0">{right}</span>
       </div>
       {/* Browser-default range controls read as unstyled next to the bespoke
