@@ -47,12 +47,42 @@ export interface DiscoveryQuestion {
 /** What an authored thesis reads: the partner's answers + the resolved result. */
 export interface ThesisCtx {
   pick: (qid: string) => string | undefined;
+  /** read a shared grounding answer (scope, tried, whynow), for foundation reads. */
+  ground?: (gid: string) => string | undefined;
   narrative: string[];
   lever?: DiscoveryLever;
   proof?: string;
   honest: boolean;
   goalLabel: string;
   settingLabel: string;
+}
+
+/**
+ * The FOUNDATION read: Strategy's real job. Not a hypothesis or a verdict, a
+ * mirror of what the partner told us: where they are today and where they want
+ * to go. The gap between the two is what the ROI sizes and the Plan closes.
+ * Honesty falls out of the current-state picture (the bridge line), not a gate.
+ */
+export interface FoundationItem { label: string; value: string; }
+export interface FoundationRead {
+  current: FoundationItem[];
+  desired: FoundationItem[];
+  bridge: string;
+  /** the desired-state item that is the success signal (rendered as the accent). */
+  signalLabel?: string;
+}
+
+/**
+ * The OPERATING layer: the qualified thesis turned into a felt, ownable playbook.
+ * Diagnosis says WHERE the money is; this says HOW it actually gets run on the
+ * floor, what you FEEL first (before any dollar moves), and where it usually
+ * stalls. Rendered as the "How this actually runs" brief panel. Number-free.
+ */
+export interface OperatingPlaybook {
+  lever: string; // the isolated driver + its rough (number-free) size, so the ceiling is honest
+  mechanism: string; // how the freed time actually converts to the dollar
+  holds: string; // the operating condition/dependency that has to be true
+  signal: string; // the felt leading indicator, which becomes the tracked metric in the Plan
 }
 
 export interface DiscoveryScript {
@@ -72,6 +102,12 @@ export interface DiscoveryScript {
   thesis?: (t: ThesisCtx) => string;
   /** optional answer-derived additions to "who should be at the table". */
   extraRoles?: (t: ThesisCtx) => string[];
+  /** Optional OPERATING layer, keyed to the operating-chapter answers. Returns
+   * null on honest or not-yet-answered paths so the panel degrades cleanly. */
+  playbook?: (t: ThesisCtx) => OperatingPlaybook | null;
+  /** Optional FOUNDATION read (current-state / desired-state mirror). When
+   * present, the brief renders this instead of the thesis/verdict layout. */
+  foundation?: (t: ThesisCtx) => FoundationRead | null;
 }
 
 // A short "where the real money is" line per lever, for the brief.
@@ -138,9 +174,21 @@ const outpatientAccess: DiscoveryScript = {
       prompt: "Can the schedule actually take on the added visits?",
       teach: "Freed time only converts to access if there is somewhere for it to go.",
       options: [
-        { id: "yes", label: "Yes, there is demand and room to book it", capture: "there is demand and room to absorb the added visits", next: BRIEF },
-        { id: "templates", label: "Only if we adjust the templates", capture: "it will take a scheduling-template change to land", next: BRIEF },
+        { id: "yes", label: "Yes, there is demand and room to book it", capture: "there is demand and room to absorb the added visits", next: "operating" },
+        { id: "templates", label: "Only if we adjust the templates", capture: "it will take a scheduling-template change to land", next: "operating" },
         { id: "no", label: "Not really, not today", capture: "there is not room to absorb more visits today", honest: true, next: BRIEF },
+      ],
+    },
+    // ── operating chapter: turn the qualified thesis into a runnable play ──
+    operating: {
+      eyebrow: "What has to hold",
+      prompt: "For the freed time to become visits and not just an easier day, what has to change in how the day runs?",
+      teach: "This is the operating condition the outcome depends on. The time is only access if something concrete changes on the schedule. Who owns it and how often it is reviewed comes later, in the Plan.",
+      options: [
+        { id: "book", label: "Open slots get added to the template and actively booked", capture: "opened time is added to the template and actively booked", next: BRIEF },
+        { id: "central", label: "Central scheduling fills the opened time by rule", capture: "central scheduling fills the opened time by rule", next: BRIEF },
+        { id: "sameday", label: "Providers hold the time for same-day and overflow", capture: "the freed time is held for same-day and overflow demand", next: BRIEF },
+        { id: "undesigned", label: "Honestly, we have not designed that yet", teach: "Worth naming. Without a concrete move, the time quietly becomes a lighter day.", capture: "the operational move is not yet designed", next: BRIEF },
       ],
     },
   },
@@ -633,40 +681,68 @@ const inpatientRevenue: DiscoveryScript = {
 
 // ── Nursing · Capacity (overtime) ────────────────────────────────────────────
 const nursingCapacity: DiscoveryScript = {
-  entry: "aim",
+  entry: "drivers",
   briefIntro: "You said capacity. In nursing that is the documentation-driven overtime you can stop paying, and the time it puts back at the bedside.",
   roles: ["Nursing operations", "Unit managers", "Finance, for the overtime line"],
   caveat: "Freed minutes only cut overtime if they are protected, not absorbed by a heavier assignment.",
+  // Posture: this is intake, not an argument. We gather the current picture and
+  // the target; the honesty falls out of the picture (see foundation), not gates.
   questions: {
-    aim: {
-      eyebrow: "The aim",
-      prompt: "What are you trying to move?",
-      teach: "The clearest dollar is the documentation-driven overtime.",
+    // ── Where you are ──
+    drivers: {
+      eyebrow: "Where you are",
+      prompt: "Where is the overtime coming from today?",
+      teach: "Just the real picture. Overtime has a few sources, and the mix is the foundation everything else builds on.",
       options: [
-        { id: "cost", label: "Cut documentation-driven overtime", capture: "cutting documentation-driven overtime", lever: { driverId: "nursingOvertime", label: "Overtime Spend" }, next: "where" },
-        { id: "ontime", label: "Finish shifts on time", capture: "finishing shifts on time", lever: { driverId: "nursingOvertime", label: "Overtime Spend" }, next: "where" },
-        { id: "bedside", label: "Put time back at the bedside", capture: "putting time back at the bedside", lever: { driverId: "nursingOvertime", label: "Overtime Spend" }, next: "where" },
-        { id: "agency", label: "Lean off agency and travel", capture: "leaning off agency and travel", lever: { driverId: "nursingOvertime", label: "Overtime Spend" }, next: "where" },
+        // Documentation-driven paths carry the overtime driver into the ROI. The
+        // staffing/census paths honestly carry no counted lever (the bridge line
+        // says so). This is metadata for the handoff, not an argument in the UX.
+        { id: "postshift", label: "Nurses finishing charting after the shift ends", capture: "overtime shows up as post-shift charting", lever: { driverId: "nursingOvertime", label: "Overtime Spend" }, next: "scale" },
+        { id: "batching", label: "Charting piles up during the day and spills over", capture: "charting batches up during the day and spills into overtime", lever: { driverId: "nursingOvertime", label: "Overtime Spend" }, next: "scale" },
+        { id: "shortstaff", label: "Open positions and short-staffing", capture: "overtime is largely open positions and short-staffing", honest: true, next: "scale" },
+        { id: "census", label: "Census and acuity spikes", capture: "overtime is largely census and acuity spikes", honest: true, next: "scale" },
       ],
     },
-    where: {
-      eyebrow: "The honest part",
-      prompt: "Is the overtime actually documentation-driven?",
-      teach: "If overtime comes from open positions, less charting will not remove it, and we will say so.",
+    scale: {
+      eyebrow: "Where you are",
+      prompt: "How big a problem is it right now?",
+      teach: "Directional, not a number. It tells us how much weight this carries before the ROI puts a figure on it.",
       options: [
-        { id: "postshift", label: "Yes, it is post-shift charting", capture: "the overtime is post-shift charting", reflect: "So it is post-shift charting, exactly what ambient capture moves. Then it is whether the relief is protected.", next: "protect" },
-        { id: "batching", label: "Partly, charting batches up during the day", capture: "charting batches up during the day", reflect: "So it batches up during the day and spills into overtime. Then it is whether the relief is protected.", next: "protect" },
-        { id: "shortstaff", label: "No, it is short-staffing", capture: "the overtime is short-staffing, which documentation does not fix", honest: true, next: BRIEF },
+        { id: "watch", label: "A line item leadership keeps an eye on", capture: "overtime is a watched line item today", next: "target" },
+        { id: "pressure", label: "A serious budget pressure this year", capture: "overtime is a serious budget pressure this year", next: "target" },
+        { id: "top", label: "One of your top workforce costs", capture: "overtime is one of the top workforce costs", next: "target" },
       ],
     },
-    protect: {
-      eyebrow: "The fork that decides it",
-      prompt: "Will the freed time be protected?",
-      teach: "Overtime only falls if the recovered minutes are not reclaimed by heavier ratios.",
+    // ── Where you want to go ──
+    target: {
+      eyebrow: "Where you want to go",
+      prompt: "What does better look like?",
+      teach: "In your words. This is the direction we steer toward.",
       options: [
-        { id: "yes", label: "Yes, ratios hold", capture: "ratios will hold so the relief lands", next: BRIEF },
-        { id: "unsure", label: "Not sure", capture: "whether ratios hold is still open", next: BRIEF },
-        { id: "no", label: "Honestly, it will be absorbed", capture: "the freed time is likely to be absorbed by heavier ratios", honest: true, next: BRIEF },
+        { id: "inshift", label: "Charting done in-shift, so nurses leave on time", capture: "the target is charting done in-shift so nurses leave on time", next: "horizon" },
+        { id: "runrate", label: "Overtime down to a lower run-rate", capture: "the target is a lower overtime run-rate", next: "horizon" },
+        { id: "agency", label: "Leaning off agency and travel", capture: "the target is leaning off agency and travel", next: "horizon" },
+        { id: "bedside", label: "More of that time back at the bedside", capture: "the target is time back at the bedside", next: "horizon" },
+      ],
+    },
+    horizon: {
+      eyebrow: "Where you want to go",
+      prompt: "On what timeframe?",
+      teach: "When you want to see it move.",
+      options: [
+        { id: "year", label: "This budget year", capture: "on a this-budget-year timeframe", next: "success" },
+        { id: "quarters", label: "The next two or three quarters", capture: "over the next two to three quarters", next: "success" },
+        { id: "longer", label: "A longer, steadier horizon", capture: "on a longer, steadier horizon", next: "success" },
+      ],
+    },
+    success: {
+      eyebrow: "Where you want to go",
+      prompt: "What would tell you it's working?",
+      teach: "The signal you would trust. This becomes what the plan tracks.",
+      options: [
+        { id: "clockout", label: "Nurses clocking out on time", capture: "success looks like nurses clocking out on time", next: BRIEF },
+        { id: "othours", label: "Overtime hours falling on the report", capture: "success looks like overtime hours falling on the report", next: BRIEF },
+        { id: "agencyspend", label: "Less agency and travel spend", capture: "success looks like less agency and travel spend", next: BRIEF },
       ],
     },
   },
@@ -710,6 +786,35 @@ outpatientAccess.thesis = (t) => {
   const gapTxt = { charting: "the constraint is documentation time, which is exactly what Abridge frees", template: "the constraint is the schedule template, so the freed time only lands if you change the template to add slots", demand: "you are at capacity with demand waiting, so freed time converts straight into visits" }[gap ?? ""] ?? "capacity is the constraint";
   const absorb = { yes: "and there is demand and room to seat them", templates: "though it will take a template change to seat them", no: "though there is little room to absorb more today, which caps the near-term upside" }[t.pick("absorb") ?? ""] ?? "";
   return `This is a supply problem you can convert into booked visits. You want to ${aim}, ${gapTxt}, ${absorb}. The money is ${LEVER_LINE.patientAccess} The one decision that makes or breaks it: committing those freed hours to the schedule instead of letting them become a quieter day.`;
+};
+
+// The OPERATING playbook: the qualified thesis turned into how it actually runs
+// on the floor, what they feel first, and where it stalls. Keyed to the
+// operating-chapter answers; null when that chapter was not reached.
+outpatientAccess.playbook = (t) => {
+  const move = t.pick("operating");
+  if (!move) return null;
+  const aim = t.pick("aim");
+  const gap = t.pick("gap");
+  const absorb = t.pick("absorb");
+  const lever =
+    gap === "demand" ? "The lever is the freed clinician time, converted into booked visits. You are already at capacity with demand waiting, so nearly all of it can land as access."
+    : gap === "template" ? "The lever is the freed clinician time, converted into booked visits, but the ceiling is capped by the schedule template until it is changed to open slots."
+    : "The lever is the freed clinician time, converted into booked visits. The ceiling is only as big as the demand you can point it at.";
+  const mechanism = "Freed documentation time becomes bookable slots, and the money is the margin on the net-new visits. Only the time you actually point at the schedule counts, so we size that share, not the gross.";
+  const holds =
+    move === "book" ? "The opened time has to be added to the template and actively booked, not absorbed into a lighter day."
+    : move === "central" ? "Central scheduling has to fill the opened time by rule, so the capacity does not depend on each provider remembering to use it."
+    : move === "sameday" ? "The freed time has to be protected as same-day and overflow capacity, so it lands as access the moment demand shows up."
+    : (gap === "template" || absorb === "templates") ? "The schedule-template change has to actually get approved, or the slots never open and the time defaults to relief."
+    : "The freed time has to be deliberately pointed at the schedule; left alone it becomes an easier day, not access.";
+  const signal =
+    aim === "backlog" ? "The wait-list getting visibly shorter and third-next-available dropping, weeks before any revenue moves."
+    : aim === "wait" ? "The new-patient wait shrinking on the schedule, well before it shows up as revenue."
+    : aim === "noshow" ? "Recovered slots getting rebooked instead of sitting empty, ahead of the dollars."
+    : aim === "grow" ? "The panel absorbing new patients without the team feeling more underwater, before any revenue lands."
+    : "Providers finishing their notes inside the workday, the leading sign the time was actually freed.";
+  return { lever, mechanism, holds, signal };
 };
 
 outpatientRevenue.thesis = (t) => {
@@ -777,13 +882,35 @@ inpatientRevenue.thesis = (t) => {
   return `This is a severity-capture story. ${lead} is what earns the DRG weight the acuity warrants. The money is ${LEVER_LINE.drgAccuracy} It only becomes revenue if CDI and coding act on it and it survives the audit.`;
 };
 
-nursingCapacity.thesis = (t) => {
-  const w = t.pick("where");
-  if (w === "shortstaff") return `The honest read first: you told us the overtime is short-staffing, not documentation. Less charting will not remove overtime that comes from open positions, so this is a staffing conversation, not an Abridge ROI.`;
-  const p = t.pick("protect");
-  const hinge = p === "no" ? "But you flagged the freed time will likely be absorbed by heavier ratios, which is how this quietly fails." : p === "unsure" ? "The open question is whether ratios hold so the relief actually lands." : "And ratios will hold, so the recovered minutes become real overtime savings and time back at the bedside.";
-  const mid = w === "postshift" ? "You told us it shows up as post-shift charting, which is exactly what ambient capture moves." : "Charting batches up during the day and spills into overtime, which is what we target.";
-  return `The clearest dollar in nursing is the documentation-driven overtime. ${mid} The money is ${LEVER_LINE.nursingOvertime} ${hinge}`;
+// Nursing overtime, reshaped: Strategy is a foundation read, not a hypothesis.
+// We mirror back where they are and where they want to go. The honesty falls
+// out of the current-state picture (the bridge line), not a gate.
+nursingCapacity.foundation = (t) => {
+  const scope = { medsurg: "med-surg units", icu: "the ICUs and step-down", ed: "ED nursing", all: "house-wide" }[t.ground?.("scope") ?? ""];
+  const drivers = t.pick("drivers");
+  const driverTxt = { postshift: "post-shift charting", batching: "charting that batches up during the day", shortstaff: "open positions and short-staffing", census: "census and acuity spikes" }[drivers ?? ""] ?? "a mix of sources";
+  const scale = { watch: "a watched line item", pressure: "a serious budget pressure this year", top: "one of your top workforce costs" }[t.pick("scale") ?? ""];
+  const tried = { nothing: "nothing formal yet", program: "a CDI or coding program", scribes: "scribes", ambient: "another ambient tool", mix: "a mix of programs" }[t.ground?.("tried") ?? ""];
+  const target = { inshift: "charting done in-shift, so nurses leave on time", runrate: "a lower overtime run-rate", agency: "leaning off agency and travel", bedside: "more time back at the bedside" }[t.pick("target") ?? ""] ?? "lower overtime";
+  const horizon = { year: "this budget year", quarters: "the next two to three quarters", longer: "a longer, steadier horizon" }[t.pick("horizon") ?? ""];
+  const success = { clockout: "nurses clocking out on time", othours: "overtime hours falling on the report", agencyspend: "less agency and travel spend" }[t.pick("success") ?? ""];
+
+  const docLever = drivers === "postshift" || drivers === "batching";
+  const current: FoundationItem[] = [
+    scope ? { label: "Concentrated in", value: scope } : null,
+    { label: "Mostly driven by", value: driverTxt },
+    scale ? { label: "Today it is", value: scale } : null,
+    tried ? { label: "Already tried", value: tried } : null,
+  ].filter(Boolean) as FoundationItem[];
+  const desired: FoundationItem[] = [
+    { label: "The change you want", value: target },
+    horizon ? { label: "On what timeframe", value: horizon } : null,
+    success ? { label: "You'll know it's working when", value: success } : null,
+  ].filter(Boolean) as FoundationItem[];
+  const bridge = docLever
+    ? "The gap between these is what the ROI sizes next, and the Plan closes. The piece Abridge moves is the charting, so the ceiling is the share of overtime that is documentation, not staffing or census."
+    : "The gap between these is what the ROI sizes next. Straight talk: you told us the overtime is mostly staffing and census, which a better note does not fix, so the documentation-attributable piece here is modest.";
+  return { current, desired, bridge, signalLabel: "You'll know it's working when" };
 };
 
 nursingRevenue.thesis = (t) => {
@@ -888,6 +1015,7 @@ function ctxFor(setting: AttainSetting, goal: GoalId, settingLabel: string, answ
   const res = resolveResult(setting, goal, answers);
   return {
     pick: (qid) => answers[`${goal}:${qid}`],
+    ground: (gid) => answers[`_ground:${gid}`],
     narrative: res?.narrative ?? [],
     lever: res?.lever,
     proof: res?.proof,
@@ -909,6 +1037,23 @@ export function briefRoles(setting: AttainSetting, goal: GoalId, settingLabel: s
   if (!script) return [];
   const extra = script.extraRoles ? script.extraRoles(ctxFor(setting, goal, settingLabel, answers)) : [];
   return [...script.roles, ...extra.filter((r) => !script.roles.includes(r))];
+}
+/** The operating playbook for a goal (authored, keyed to the operating-chapter
+ * answers). Null when the script has no operating layer, the path went honest,
+ * or the operating chapter has not been answered yet. */
+export function briefPlaybook(setting: AttainSetting, goal: GoalId, settingLabel: string, answers: DiscoveryAnswers): OperatingPlaybook | null {
+  const script = getScript(setting, goal);
+  if (!script?.playbook) return null;
+  const ctx = ctxFor(setting, goal, settingLabel, answers);
+  if (ctx.honest) return null;
+  return script.playbook(ctx);
+}
+/** The foundation read (current-state / desired-state mirror), when the script
+ * defines one and the path is complete enough to fill it. Null otherwise. */
+export function briefFoundation(setting: AttainSetting, goal: GoalId, settingLabel: string, answers: DiscoveryAnswers): FoundationRead | null {
+  const script = getScript(setting, goal);
+  if (!script?.foundation) return null;
+  return script.foundation(ctxFor(setting, goal, settingLabel, answers));
 }
 export { capfirst };
 

@@ -8,6 +8,7 @@ import StepScope from "./steps/StepScope";
 import { SettingStep } from "./preview/AttainFunnel";
 import { AttainExperience, type ExperienceSlice, type Chapter } from "./preview/MultiCategoryPreview";
 import ValueStrategyExperience, { type VSEHandle } from "./valuestrategy/ValueStrategyExperience";
+import PlanBuildExperience from "./planning/PlanBuildExperience";
 import { ATTAIN_MATRIX } from "./preview/attainCells";
 import { loadPlanByName, loadSnapshot, saveSnapshot, clearSnapshot, type AttainSnapshot } from "./attainStorage";
 import { categoryForGoal, goalDefs } from "@/lib/attain/attainGoals";
@@ -235,7 +236,7 @@ export default function AttainFlowV2({
         mode === "strategy" ? (
           <><UnifiedHeaderSpacer /><ValueStrategyExperience ref={vseRef} key={partner} setting={setting!} settingLabel={SETTING_LABEL[setting!]} goals={goals} partner={partner} initialAnswers={discoveryRef.current ?? {}} onPersistAnswers={onPersistAnswers} onFinish={onFinish} onExit={() => setPhase("vision")} /></>
         ) : (
-          <><UnifiedHeaderSpacer /><AttainExperience key={partner} setting={SETTING_LABEL[setting!]} cells={cells} baseline={baseline} initial={buildSnapshot()} onPersist={onPersist} chapters={chapters} onFinish={onFinish} flowLabel={flowLabel} /></>
+          <><UnifiedHeaderSpacer /><PlanBuildExperience key={partner} embedded setting={setting!} goals={goals} partner={partner.trim() || undefined} onExit={() => setPhase("vision")} /></>
         )
       ) : (
         <><UnifiedHeaderSpacer /><div className={`${phase === "scope" ? "max-w-[1040px]" : "max-w-[760px]"} mx-auto px-6 py-8 md:py-12`}>

@@ -7,12 +7,15 @@ import {
   resolveResult,
   briefThesis,
   briefRoles,
+  briefPlaybook,
+  briefFoundation,
   groundingQuestions,
   WHY_NOW,
   BRIEF,
   type DiscoveryAnswers,
   type DiscoveryScript,
   type GroundingQuestion,
+  type FoundationRead,
 } from "@/lib/attain/discovery";
 
 /**
@@ -296,25 +299,77 @@ function Brief({
   if (proofs.length) rankBits.push(`${listPhrase(proofs)} ${proofs.length > 1 ? "are" : "is"} proof, tracked not counted`);
   if (honests.length) rankBits.push(`${listPhrase(honests)} ${honests.length > 1 ? "are" : "is"} honestly not documentation's to fix`);
 
+  const classOf = (goal: GoalId): "counted" | "proof" | "honest" => {
+    const r = results.find((x) => x.goal === goal);
+    if (r?.res?.lever) return "counted";
+    if (r?.res?.honest) return "honest";
+    return "proof";
+  };
+  const [selected, setSelected] = useState<GoalId>(order[0]);
+  const active = order.includes(selected) ? selected : order[0];
+  const activeEntry = results.find((r) => r.goal === active)!;
+  const activeFoundation = briefFoundation(setting, active, settingLabel, answers);
+
   return (
-    <div className="max-w-[820px] mx-auto px-6 py-8 md:py-12">
-      <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#EA2C00] mb-3">The discovery brief</p>
-      <h1 className="font-abridge text-[30px] md:text-[40px] text-[#1A1A1A] leading-[1.1] mb-4">
-        Here is what you are really after{partner.trim() ? <>, {partner.trim()}</> : null}.
-      </h1>
-      <p className="text-[15.5px] text-[#4A4238] leading-relaxed max-w-[640px] mb-3">
-        No numbers, on purpose. This is the problem in plain terms and where the value actually is. Next we put your figures to it and build the ROI together.
-      </p>
-      {triaged && rankBits.length > 0 && (
-        <p className="text-[15.5px] text-[#1A1A1A] leading-relaxed max-w-[640px] mb-2">
-          <span className="font-semibold">The shape of it:</span> you put <span className="font-semibold text-[#EA2C00]">{categoryForGoal(setting, order[0])}</span> first. {cap(rankBits.join("; "))}.
-        </p>
+    <div className="max-w-[1080px] mx-auto px-6 md:px-10 py-8 md:py-12">
+      {/* hero — a mirror ("where you are, where you want to go") when the active
+          goal is a foundation read; the older verdict framing otherwise. */}
+      {activeFoundation ? (
+        <>
+          <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#EA2C00] mb-3">The foundation</p>
+          <h1 className="font-abridge text-[32px] md:text-[46px] text-[#1A1A1A] leading-[1.05] mb-4">
+            {partner.trim() ? `Where ${partner.trim()} stands today, and where you want to go.` : "Where you are today, and where you want to go."}
+          </h1>
+          <p className="text-[15.5px] text-[#4A4238] leading-relaxed max-w-[620px]">
+            No numbers yet. This is your current picture and your target, in plain terms. Next we size the gap between them, then build the plan to close it.
+          </p>
+        </>
+      ) : (
+        <>
+          <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#EA2C00] mb-3">The discovery brief</p>
+          <h1 className="font-abridge text-[32px] md:text-[46px] text-[#1A1A1A] leading-[1.05] mb-4">
+            Here is what you are really after{partner.trim() ? <>, {partner.trim()}</> : null}.
+          </h1>
+          <p className="text-[15.5px] text-[#4A4238] leading-relaxed max-w-[600px]">
+            No numbers, on purpose. This is the problem in plain terms and where the value actually is. Next we put your figures to it and build the ROI together.
+          </p>
+          {rankBits.length > 0 && (
+            <div className="mt-7 rounded-2xl border border-[#E8E2DA] bg-[#FCFBF9] pl-5 pr-6 py-4 border-l-[3px] border-l-[#EA2C00] max-w-[760px]">
+              <p className="text-[10px] font-bold uppercase tracking-[1.6px] text-[#EA2C00] mb-1.5">The verdict</p>
+              <p className="text-[15.5px] text-[#1A1A1A] leading-relaxed">{cap(rankBits.join("; "))}.</p>
+            </div>
+          )}
+        </>
       )}
 
-      <div className="mt-9 space-y-12">
-        {results.map(({ goal, script, res }) => (
-          <GoalBrief key={goal} setting={setting} settingLabel={settingLabel} goal={goal} script={script} res={res} answers={answers} />
-        ))}
+      {/* goal pills — one goal read at a time */}
+      {order.length > 1 && (
+        <div className="flex flex-wrap gap-2.5 mt-8">
+          {order.map((goal) => {
+            const on = goal === active;
+            const c = classOf(goal);
+            const dot = c === "counted" ? "bg-[#EA2C00]" : c === "proof" ? "bg-[#B78A5A]" : "bg-[#C4B8A8]";
+            return (
+              <button
+                key={goal}
+                type="button"
+                onClick={() => setSelected(goal)}
+                data-testid={`brief-pill-${goal}`}
+                className={`inline-flex items-center gap-2 rounded-full pl-3 pr-4 py-2 text-[13px] font-semibold border transition-colors ${
+                  on ? "bg-[#1A1A1A] text-white border-[#1A1A1A]" : "bg-white text-[#4A4238] border-[#E8E2DA] hover:border-[#B4A896]"
+                }`}
+              >
+                <span className={`w-[7px] h-[7px] rounded-full ${dot}`} />
+                {categoryForGoal(setting, goal)}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* the selected goal read */}
+      <div className="mt-8">
+        <GoalBrief setting={setting} settingLabel={settingLabel} goal={active} script={activeEntry.script} res={activeEntry.res} answers={answers} />
       </div>
 
       {pending.length > 0 && (
@@ -345,48 +400,147 @@ function GoalBrief({
   const proof = res?.proof ?? (res && !lever && !res.honest ? script.proofLine : undefined);
   const honest = res?.honest;
 
+  const foundation = briefFoundation(setting, goal, settingLabel, answers);
+  if (foundation) {
+    return <FoundationCard settingLabel={settingLabel} goalLabel={goalLabel} foundation={foundation} />;
+  }
+
   const thesis = briefThesis(setting, goal, settingLabel, answers);
   const roles = briefRoles(setting, goal, settingLabel, answers);
+  const playbook = briefPlaybook(setting, goal, settingLabel, answers);
 
   // theory-of-change chain
   const testNode = honest ? "not documentation's to fix" : proof ? "a proof-play" : "documentation is the lever";
   const valueNode = lever ? lever.label : proof ? "Tracked, not counted" : "Elsewhere";
 
+  const hingeText = honest
+    ? "You flagged that a good part of this sits outside what a better note can fix, so we would size only the documentation-attributable share and be straight about the rest."
+    : script.caveat;
+
   return (
-    <div className="border-l-2 border-[#EA2C00] pl-6">
-      <p className="text-[10px] font-bold uppercase tracking-[1.5px] text-[#8C8073] mb-2">{settingLabel} · {goalLabel}</p>
+    <div className="rounded-3xl border border-[#E8E2DA] bg-white overflow-hidden">
+      <div className="grid grid-cols-1 lg:grid-cols-12">
+        {/* LEFT: the read */}
+        <div className="lg:col-span-7 px-7 py-7 lg:pr-9">
+          <p className="text-[10px] font-bold uppercase tracking-[1.6px] text-[#8C8073] mb-3">{settingLabel} · {goalLabel}</p>
+          <p className="text-[19px] md:text-[20px] text-[#1A1A1A] leading-[1.55]">{thesis}</p>
 
-      <p className="text-[17px] text-[#1A1A1A] leading-[1.5] max-w-[600px]">{thesis}</p>
+          {/* the theory-of-change chain */}
+          <div className="mt-6 flex items-stretch gap-2">
+            <ChainNode label="The aim" value={goalLabel} />
+            <ChainArrow />
+            <ChainNode label="The test" value={testNode} muted />
+            <ChainArrow />
+            <ChainNode label="Where the value is" value={valueNode} coral={!!lever} />
+          </div>
 
-      {/* the theory-of-change chain */}
-      <div className="mt-5 flex flex-wrap items-stretch gap-2">
-        <ChainNode label="The aim" value={goalLabel} />
-        <ChainArrow />
-        <ChainNode label="The test" value={testNode} muted />
-        <ChainArrow />
-        <ChainNode label="Where the value is" value={valueNode} coral={!!lever} />
+          {playbook && (
+            <p className="text-[13px] text-[#8C8073] leading-relaxed mt-6 pt-5 border-t border-[#F0EAE3]">
+              <span className="font-bold uppercase tracking-[0.06em] text-[#B4A896] text-[10px] mr-1.5">At the table</span>
+              {roles.join(" · ")}
+            </p>
+          )}
+        </div>
+
+        {/* RIGHT: the operating read, or the hinge + table when there is no play yet */}
+        <div className="lg:col-span-5 bg-[#FBFAF7] border-t lg:border-t-0 lg:border-l border-[#EFE9E1] px-7 py-7 flex flex-col">
+          {playbook ? (
+            <>
+              <p className="text-[10px] font-bold uppercase tracking-[1.6px] text-[#B78A5A] mb-4">The operating read</p>
+              <div className="space-y-4">
+                <PlaybookRow label="The lever" value={playbook.lever} />
+                <PlaybookRow label="How it turns into money" value={playbook.mechanism} />
+                <PlaybookRow label="What has to hold" value={playbook.holds} />
+                <PlaybookRow label="You'll see it first as" value={playbook.signal} coral />
+              </div>
+              <p className="text-[11.5px] text-[#8C8073] leading-relaxed mt-5 pt-3.5 border-t border-[#EFE9E1]">
+                The owner and review cadence get set in the Plan, and the signal above becomes what it tracks.
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="text-[10px] font-bold uppercase tracking-[1.6px] text-[#B78A5A] mb-3">The hinge</p>
+              <p className="text-[14px] text-[#3A342E] leading-relaxed">{hingeText}</p>
+              <div className="mt-5 pt-4 border-t border-[#EFE9E1]">
+                <p className="text-[10px] font-bold uppercase tracking-[0.06em] text-[#B4A896] mb-1.5">At the table</p>
+                <p className="text-[13px] text-[#6E675C] leading-relaxed">{roles.join(" · ")}</p>
+              </div>
+            </>
+          )}
+        </div>
       </div>
+    </div>
+  );
+}
 
-      <p className="text-[13.5px] text-[#6E675C] leading-relaxed max-w-[600px] mt-5">
-        <span className="font-semibold text-[#4A4238]">The hinge:</span> {honest ? "you flagged that a good part of this sits outside what a better note can fix, so we would size only the documentation-attributable share and be straight about the rest." : script.caveat}
-      </p>
-      <p className="text-[13px] text-[#8C8073] leading-relaxed max-w-[600px] mt-3">
-        <span className="font-semibold text-[#6E675C]">At the table:</span> {roles.join(" · ")}
-      </p>
+// The foundation read: a current-state / desired-state mirror. Strategy's real
+// job, per the reshape — gather where they are and where they want to go, and
+// let the honesty fall out of the picture (the bridge), not a verdict.
+function FoundationCard({ settingLabel, goalLabel, foundation }: { settingLabel: string; goalLabel: string; foundation: FoundationRead }) {
+  return (
+    <div className="rounded-3xl border border-[#E8E2DA] bg-white overflow-hidden">
+      <div className="px-7 pt-6 pb-1">
+        <p className="text-[10px] font-bold uppercase tracking-[1.6px] text-[#8C8073]">{settingLabel} · {goalLabel}</p>
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2">
+        {/* WHERE YOU ARE */}
+        <div className="px-7 pt-5 pb-7 lg:pr-9">
+          <p className="text-[11px] font-bold uppercase tracking-[1.6px] text-[#4A4238] mb-4">Where you are</p>
+          <div className="space-y-4">
+            {foundation.current.map((it) => (
+              <FoundationRow key={it.label} label={it.label} value={it.value} />
+            ))}
+          </div>
+        </div>
+        {/* WHERE YOU WANT TO GO */}
+        <div className="px-7 pt-5 pb-7 bg-[#FBFAF7] border-t lg:border-t-0 lg:border-l border-[#EFE9E1]">
+          <p className="text-[11px] font-bold uppercase tracking-[1.6px] text-[#B78A5A] mb-4">Where you want to go</p>
+          <div className="space-y-4">
+            {foundation.desired.map((it) => (
+              <FoundationRow key={it.label} label={it.label} value={it.value} coral={it.label === foundation.signalLabel} />
+            ))}
+          </div>
+        </div>
+      </div>
+      {/* the bridge: the gap goes to ROI, the path to the Plan; honesty lives here */}
+      <div className="px-7 py-5 border-t border-[#EFE9E1] bg-[#FCFBF9]">
+        <p className="text-[13.5px] text-[#4A4238] leading-relaxed">
+          <span className="font-bold uppercase tracking-[0.06em] text-[#B4A896] text-[10px] mr-2">Next</span>
+          {foundation.bridge}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function FoundationRow({ label, value, coral }: { label: string; value: string; coral?: boolean }) {
+  return (
+    <div>
+      <div className="text-[10px] font-bold uppercase tracking-[0.06em] text-[#B4A896] mb-1">{label}</div>
+      <div className={`text-[15px] leading-snug ${coral ? "text-[#EA2C00] font-semibold" : "text-[#1A1A1A] font-medium"}`}>{value}</div>
+    </div>
+  );
+}
+
+function PlaybookRow({ label, value, coral }: { label: string; value: string; coral?: boolean }) {
+  return (
+    <div>
+      <div className="text-[10px] font-bold uppercase tracking-[0.06em] text-[#B4A896] mb-1">{label}</div>
+      <div className={`text-[13.5px] leading-snug ${coral ? "text-[#EA2C00] font-semibold" : "text-[#3A342E]"}`}>{value}</div>
     </div>
   );
 }
 
 function ChainNode({ label, value, coral, muted }: { label: string; value: string; coral?: boolean; muted?: boolean }) {
   return (
-    <div className={`rounded-xl border px-3.5 py-2.5 min-w-[150px] max-w-[220px] ${coral ? "border-[#EA2C00] bg-[#FBE7E1]/40" : "border-[#E8E2DA] bg-[#FCFBF9]"}`}>
+    <div className={`flex-1 min-w-0 rounded-xl border px-3.5 py-3 ${coral ? "border-[#EA2C00] bg-[#FBE7E1]/50" : "border-[#E8E2DA] bg-[#FCFBF9]"}`}>
       <div className="text-[9px] font-bold uppercase tracking-[0.07em] text-[#B4A896] mb-1">{label}</div>
       <div className={`text-[13.5px] leading-snug ${coral ? "font-abridge text-[#EA2C00]" : muted ? "text-[#6E675C]" : "font-semibold text-[#1A1A1A]"}`}>{value}</div>
     </div>
   );
 }
 function ChainArrow() {
-  return <div className="flex items-center text-[#C9BDAD]"><ArrowRight className="w-4 h-4" strokeWidth={2} /></div>;
+  return <div className="flex items-center text-[#C9BDAD] flex-shrink-0"><ArrowRight className="w-4 h-4" strokeWidth={2} /></div>;
 }
 
 // ── helpers ──────────────────────────────────────────────────────────────────

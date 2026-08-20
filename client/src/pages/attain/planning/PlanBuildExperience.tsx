@@ -107,6 +107,44 @@ function OwnerCard({ owner }: { owner: PlanOwner }) {
   );
 }
 
+// ── progress / tracking ─────────────────────────────────────────────────────
+const numOf = (s?: string): number | null => {
+  if (!s) return null;
+  const n = parseFloat(s.replace(/[^0-9.\-]/g, ""));
+  return Number.isFinite(n) ? n : null;
+};
+/** 0-1 progress of a metric from baseline -> current toward target (direction-aware). */
+function metricProgress(baseline?: string, current?: string, target?: string): number | null {
+  const b = numOf(baseline), c = numOf(current), t = numOf(target);
+  if (b === null || c === null || t === null || b === t) return null;
+  return Math.max(0, Math.min(1, (c - b) / (t - b)));
+}
+
+function TrackStepRow({ step, current, onCurrent }: { step: PlanStep; current: string; onCurrent: (v: string) => void }) {
+  const p = metricProgress(step.baseline, current, step.target);
+  const isOutcome = step.layer === "outcome";
+  return (
+    <div className="py-[13px] border-b border-[#EDE8E1] last:border-b-0">
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <div className={`text-[9px] font-bold uppercase tracking-[0.1em] mb-1 ${isOutcome ? "text-[#EA2C00]" : step.layer === "leading" ? "text-[#8C8073]" : "text-[#A79E92]"}`}>{LAYER_LABEL[step.layer]}</div>
+          <div className={`text-[14px] leading-tight ${isOutcome ? "font-bold text-[#1A1A1A]" : "text-[#2E2822]"}`}>{step.name}</div>
+          <div className="text-[12px] text-[#8C8073] mt-0.5">{step.signal}</div>
+        </div>
+        <div className="flex items-center gap-2.5 flex-shrink-0 text-[13px]">
+          <span className="text-[#A79E92] tabular-nums w-[54px] text-right">{step.baseline || "—"}</span>
+          <TextInput value={current} onChange={onCurrent} placeholder="now" width={60} />
+          <span className="text-[#C9BDAD]">/</span>
+          <span className="text-[#A79E92] tabular-nums w-[54px]">{step.target || "target"}</span>
+        </div>
+      </div>
+      <div className="mt-2 h-[5px] rounded-full bg-[#F1EBE3] overflow-hidden">
+        <div className="h-full rounded-full bg-[#EA2C00] transition-all" style={{ width: `${(p ?? 0) * 100}%` }} />
+      </div>
+    </div>
+  );
+}
+
 // ── the walk ─────────────────────────────────────────────────────────────────
 type StepKey = "owners" | "targets" | "cadence" | "plan";
 const STEPS: { key: StepKey; label: string }[] = [
@@ -116,16 +154,28 @@ const STEPS: { key: StepKey; label: string }[] = [
 
 export default function PlanBuildExperience({
   setting = "outpatient", partner = "your team",
+  goals: goalsProp, embedded = false, onExit,
   initial, onPersist,
 }: {
   setting?: AttainSetting; partner?: string;
+  /** The outcomes carried from the funnel; defaults to the setting's full set. */
+  goals?: GoalId[];
+  /** Embedded in the AttainFlowV2 shell (hide our own top bar; the shared header is above). */
+  embedded?: boolean;
+  /** Called when Back is pressed on the first step (exit to the funnel). */
+  onExit?: () => void;
   initial?: PlanBuildState; onPersist?: (s: PlanBuildState) => void;
 }) {
-  const goals = SETTING_GOAL_MATRIX[setting];
+  const goals = useMemo(
+    () => (goalsProp && goalsProp.length ? goalsProp : SETTING_GOAL_MATRIX[setting]),
+    [goalsProp, setting],
+  );
   const basePlans = useMemo(() => goals.map((g) => buildOutcomePlan(setting, g)), [setting, goals]);
   const [state, setState] = useState<PlanBuildState>(initial ?? EMPTY_STATE);
   const [pos, setPos] = useState(0);
-  useEffect(() => { window.scrollTo({ top: 0 }); }, [pos]);
+  const [tracking, setTracking] = useState(false);
+  const [readings, setReadings] = useState<Partial<Record<GoalId, Record<number, string>>>>({});
+  useEffect(() => { window.scrollTo({ top: 0 }); }, [pos, tracking]);
   useEffect(() => { onPersist?.(state); }, [state, onPersist]);
 
   const stepKey = STEPS[pos].key;
@@ -140,13 +190,70 @@ export default function PlanBuildExperience({
     [basePlans, state.overlayByGoal, state.ownerNames],
   );
   const namedOwnerCount = Object.values(state.ownerNames).filter((v) => v.trim()).length;
+  const setReading = (goal: GoalId, n: number, v: string) =>
+    setReadings((r) => ({ ...r, [goal]: { ...(r[goal] ?? {}), [n]: v } }));
+
+  // ── Track mode: owner-centric progress against the plan ──────────────────────
+  if (tracking) {
+    // overall attainment = average of each outcome's booked-outcome-step progress
+    const outcomeProgs = plans
+      .map((p) => {
+        const o = p.owners.flatMap((ow) => ow.steps).find((s) => s.layer === "outcome");
+        return o ? metricProgress(o.baseline, readings[p.goal]?.[o.n], o.target) : null;
+      })
+      .filter((x): x is number => x !== null);
+    const overall = outcomeProgs.length ? Math.round((outcomeProgs.reduce((a, b) => a + b, 0) / outcomeProgs.length) * 100) : 0;
+    return (
+      <div className="min-h-screen bg-white">
+        {!embedded && (
+          <div className="sticky top-0 z-10 bg-white/95 backdrop-blur border-b border-[#EDE8E1]">
+            <div className="max-w-[960px] mx-auto px-6 h-14 flex items-center justify-between">
+              <span className="font-abridge text-[18px] text-[#EA2C00]">ABRIDGE</span>
+              <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#1A1A1A]">Track progress</span>
+            </div>
+          </div>
+        )}
+        <div className="max-w-[960px] mx-auto px-6 pt-12 pb-28">
+          <Eyebrow>The promise, measured</Eyebrow>
+          <div className="flex items-baseline gap-4 mb-2">
+            <h1 className="font-abridge text-[40px] leading-none text-[#EA2C00]">{overall}%</h1>
+            <span className="text-[15px] text-[#4A4238]">of the plan attained so far</span>
+          </div>
+          <p className="text-[14px] text-[#6E675C] mb-10 max-w-[600px]">Enter each metric's current reading. The leading signals move first; the outcome follows.</p>
+          {plans.map((p) => (
+            <section key={p.goal} className="mb-12">
+              <div className="border-l-2 border-[#EA2C00] pl-5 mb-5">
+                <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#EA2C00] mb-1.5">The outcome · {p.category}</div>
+                <h2 className="font-abridge text-[24px] leading-[1.1] text-[#1A1A1A]">{p.chainTitle}</h2>
+              </div>
+              {p.owners.map((o) => (
+                <div key={o.role} className="rounded-[14px] border border-[#E8E2DA] bg-[#FCFBF9] px-5 py-[16px] mb-3">
+                  <div className="font-abridge text-[16px] text-[#1A1A1A] mb-2 pb-2 border-b border-[#E8E2DA]">{o.person || o.role}</div>
+                  {o.steps.map((s) => (
+                    <TrackStepRow key={s.n} step={s} current={readings[p.goal]?.[s.n] ?? ""} onCurrent={(v) => setReading(p.goal, s.n, v)} />
+                  ))}
+                </div>
+              ))}
+            </section>
+          ))}
+        </div>
+        <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur border-t border-[#EDE8E1]">
+          <div className="max-w-[960px] mx-auto px-6 h-[68px] flex items-center justify-between">
+            <button onClick={() => setTracking(false)} className="inline-flex items-center gap-1.5 text-[14px] font-semibold text-[#6E675C] hover:text-[#1A1A1A]">
+              <ArrowLeft className="w-4 h-4" /> Back to the plan
+            </button>
+            <span className="text-[12px] text-[#8C8073]">Log a review each {state.cadence === "monthly" ? "month" : "quarter"} to build the climb.</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white">
-      {/* progress rail */}
-      <div className="sticky top-0 z-10 bg-white/95 backdrop-blur border-b border-[#EDE8E1]">
-        <div className="max-w-[960px] mx-auto px-6 h-14 flex items-center justify-between">
-          <span className="font-abridge text-[18px] text-[#EA2C00]">ABRIDGE</span>
+      {/* progress rail — hidden when embedded (the shared header is above) */}
+      <div className={`sticky ${embedded ? "top-14 sm:top-16" : "top-0"} z-10 bg-white/95 backdrop-blur border-b border-[#EDE8E1]`}>
+        <div className="max-w-[960px] mx-auto px-6 h-12 flex items-center justify-end">
           <div className="flex items-center gap-2">
             {STEPS.map((s, i) => (
               <span key={s.key} className={`text-[11px] font-bold uppercase tracking-[0.1em] ${i === pos ? "text-[#1A1A1A]" : i < pos ? "text-[#EA2C00]" : "text-[#C9BDAD]"}`}>
@@ -277,10 +384,10 @@ export default function PlanBuildExperience({
               </p>
               <p className="text-[13px] text-white/45 mb-7">This is the deal after the deal: the promise, made real and tracked against your own numbers.</p>
               <div className="flex flex-wrap items-center gap-3">
-                <button className="inline-flex items-center gap-2 rounded-[10px] bg-[#EA2C00] text-white px-6 py-3 text-[14px] font-bold hover:bg-[#d12800]">
+                <button onClick={() => window.open(`/?planpdf=${setting}`, "_blank")} className="inline-flex items-center gap-2 rounded-[10px] bg-[#EA2C00] text-white px-6 py-3 text-[14px] font-bold hover:bg-[#d12800]">
                   Download the plan <ArrowRight className="w-4 h-4" />
                 </button>
-                <button className="inline-flex items-center gap-2 rounded-[10px] border border-white/25 text-white px-6 py-3 text-[14px] font-bold hover:bg-white/5">
+                <button onClick={() => setTracking(true)} className="inline-flex items-center gap-2 rounded-[10px] border border-white/25 text-white px-6 py-3 text-[14px] font-bold hover:bg-white/5">
                   Start tracking <Check className="w-4 h-4" />
                 </button>
               </div>
@@ -295,7 +402,7 @@ export default function PlanBuildExperience({
       {/* footer nav */}
       <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur border-t border-[#EDE8E1]">
         <div className="max-w-[960px] mx-auto px-6 h-[68px] flex items-center justify-between">
-          <button onClick={() => setPos((p) => Math.max(0, p - 1))} disabled={pos === 0} className={`inline-flex items-center gap-1.5 text-[14px] font-semibold ${pos === 0 ? "text-[#C9BDAD]" : "text-[#6E675C] hover:text-[#1A1A1A]"}`}>
+          <button onClick={() => (pos === 0 ? onExit?.() : setPos(pos - 1))} disabled={pos === 0 && !onExit} className={`inline-flex items-center gap-1.5 text-[14px] font-semibold ${pos === 0 && !onExit ? "text-[#C9BDAD]" : "text-[#6E675C] hover:text-[#1A1A1A]"}`}>
             <ArrowLeft className="w-4 h-4" /> Back
           </button>
           {pos < STEPS.length - 1 ? (
@@ -303,7 +410,7 @@ export default function PlanBuildExperience({
               {stepKey === "cadence" ? "See the plan" : "Continue"} <ArrowRight className="w-4 h-4" />
             </button>
           ) : (
-            <button className="inline-flex items-center gap-2 rounded-[10px] bg-[#EA2C00] text-white px-6 py-3 text-[14px] font-bold hover:bg-[#d12800]">
+            <button onClick={() => setTracking(true)} className="inline-flex items-center gap-2 rounded-[10px] bg-[#EA2C00] text-white px-6 py-3 text-[14px] font-bold hover:bg-[#d12800]">
               <Check className="w-4 h-4" /> Start tracking
             </button>
           )}
