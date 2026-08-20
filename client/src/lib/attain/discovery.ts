@@ -754,7 +754,33 @@ export { capfirst };
 // ── Grounding: shared qualitative context asked once, before the goal walks ───
 // No hard numbers. Scope is "which lines/units", not "how many".
 export interface GroundingOption { id: string; label: string; capture: string }
-export interface GroundingQuestion { id: string; eyebrow: string; prompt: string; teach: string; options: GroundingOption[] }
+export interface GroundingQuestion { id: string; eyebrow: string; prompt: string; teach: string; options: GroundingOption[]; multi?: boolean }
+
+// What's already in place, per setting. Kept SETTING-NATIVE (same discipline as
+// goalDisplayLabel): a nursing leader has agency/float-pool and self-scheduling,
+// not CDI and scribes, so the shelf must reflect that buyer's world or the step
+// silently signals "this wasn't built for you". "nothing" stays a shared id so
+// the UI can treat it as the exclusive "clear the rest" choice.
+const PHYSICIAN_TRIED: GroundingOption[] = [
+  { id: "cdi", label: "A CDI or coding program", capture: "a CDI or coding program is in place" },
+  { id: "scribes", label: "Scribes", capture: "scribes are in use" },
+  { id: "ambient", label: "Another ambient or voice tool", capture: "another ambient tool is in use" },
+  { id: "templates", label: "Note templates and smart phrases", capture: "note templates and smart phrases are in use" },
+  { id: "nothing", label: "Nothing formal yet", capture: "nothing formal is in place yet" },
+];
+const TRIED_BY_SETTING: Record<AttainSetting, GroundingOption[]> = {
+  outpatient: PHYSICIAN_TRIED,
+  ed: PHYSICIAN_TRIED,
+  inpatient: PHYSICIAN_TRIED,
+  nursing: [
+    { id: "agency", label: "Agency or travel nurses and a float pool", capture: "agency/travel staff and a float pool are in use" },
+    { id: "scheduling", label: "Self-scheduling or flexible shifts", capture: "self-scheduling or flexible shifts are in place" },
+    { id: "flowsheet", label: "A flowsheet or charting-burden effort", capture: "a flowsheet/charting-burden effort is underway" },
+    { id: "wellness", label: "A wellness or burnout program", capture: "a wellness or burnout program is in place" },
+    { id: "ambient", label: "Another ambient or voice tool", capture: "another ambient tool is in use" },
+    { id: "nothing", label: "Nothing formal yet", capture: "nothing formal is in place yet" },
+  ],
+};
 
 const SCOPE_BY_SETTING: Record<AttainSetting, GroundingOption[]> = {
   outpatient: [
@@ -795,15 +821,10 @@ export function groundingQuestions(setting: AttainSetting): GroundingQuestion[] 
     {
       id: "tried",
       eyebrow: "Grounding",
-      prompt: "What have you already tried here?",
-      teach: "What is already in place changes how much headroom is left, so we do not double-count work you have already done.",
-      options: [
-        { id: "nothing", label: "Nothing formal yet", capture: "nothing formal has been tried yet" },
-        { id: "program", label: "A CDI or coding program", capture: "a CDI or coding program is already in place" },
-        { id: "scribes", label: "Scribes", capture: "scribes are already in use" },
-        { id: "ambient", label: "Another ambient tool", capture: "another ambient tool is already in use" },
-        { id: "mix", label: "A mix of the above", capture: "a mix of programs are already in place" },
-      ],
+      prompt: "What's already in place here?",
+      teach: "What is already running changes how much headroom is left, so we do not double-count work you have already done. Pick any that apply.",
+      options: TRIED_BY_SETTING[setting],
+      multi: true,
     },
   ];
 }

@@ -74,12 +74,32 @@ const ValueStrategyExperience = forwardRef<VSEHandle, Props>(function ValueStrat
   const goalEntry = (goalIdx: number): Pos => ({ kind: "goal", goalIdx, qid: getScript(setting, order[goalIdx])!.entry });
 
   // ── transitions ────────────────────────────────────────────────────────────
-  const answerGround = (qid: string, optId: string) => {
+  const advanceFromGround = () => {
     if (pos.kind !== "ground") return;
-    persist({ ...answers, [`_ground:${qid}`]: optId });
     if (pos.idx + 1 < ground.length) advance(pos, { kind: "ground", idx: pos.idx + 1 });
     else if (multi) advance(pos, { kind: "triage" });
     else advance(pos, goalEntry(0));
+  };
+  const answerGround = (qid: string, optId: string) => {
+    if (pos.kind !== "ground") return;
+    persist({ ...answers, [`_ground:${qid}`]: optId });
+    advanceFromGround();
+  };
+  // Multi-select grounding (an inventory, not a single judgment): each pick is a
+  // boolean key so it round-trips through autosave; "Nothing formal yet" is the
+  // exclusive choice that clears the rest.
+  const toggleGround = (q: GroundingQuestion, optId: string) => {
+    const key = `_ground:${q.id}:${optId}`;
+    const next = { ...answers };
+    if (optId === "nothing") {
+      const wasOn = !!next[key];
+      for (const o of q.options) delete next[`_ground:${q.id}:${o.id}`];
+      if (!wasOn) next[key] = "1";
+    } else {
+      delete next[`_ground:${q.id}:nothing`];
+      if (next[key]) delete next[key]; else next[key] = "1";
+    }
+    persist(next);
   };
   const answerTriage = (goalId: GoalId) => {
     if (pos.kind !== "triage") return;
@@ -143,13 +163,24 @@ const ValueStrategyExperience = forwardRef<VSEHandle, Props>(function ValueStrat
   let options: { id: string; label: string; teach?: string }[] = [];
   let selected: string | undefined;
   let onPick: (id: string) => void = () => {};
+  let multiSelect = false;
+  let selectedIds: string[] = [];
+  let onToggle: (id: string) => void = () => {};
+  let onContinue: () => void = () => {};
 
   if (pos.kind === "ground") {
     const q = ground[pos.idx];
     stepEyebrow = q.eyebrow;
     prompt = q.prompt; teach = q.teach; options = q.options;
-    selected = answers[`_ground:${q.id}`];
-    onPick = (id) => answerGround(q.id, id);
+    if (q.multi) {
+      multiSelect = true;
+      selectedIds = q.options.filter((o) => answers[`_ground:${q.id}:${o.id}`] === "1").map((o) => o.id);
+      onToggle = (id) => toggleGround(q, id);
+      onContinue = () => advanceFromGround();
+    } else {
+      selected = answers[`_ground:${q.id}`];
+      onPick = (id) => answerGround(q.id, id);
+    }
   } else if (pos.kind === "triage") {
     stepEyebrow = "First, the priority";
     prompt = "If you could only move one of these this year, which matters most?";
@@ -195,25 +226,43 @@ const ValueStrategyExperience = forwardRef<VSEHandle, Props>(function ValueStrat
 
           <div className="border-t border-[#E8E2DA]">
             {options.map((o) => {
-              const on = selected === o.id;
+              const on = multiSelect ? selectedIds.includes(o.id) : selected === o.id;
               return (
                 <button
                   key={o.id}
                   type="button"
-                  onClick={() => onPick(o.id)}
+                  onClick={() => (multiSelect ? onToggle(o.id) : onPick(o.id))}
                   data-testid={testId(pos, o.id)}
-                  className={`group relative w-full text-left flex items-center gap-4 pl-4 pr-3 py-5 border-b border-[#E8E2DA] transition-all cursor-pointer hover:pl-5 ${on ? "bg-[#FBE7E1]/40" : "hover:bg-[#F6F2EC]"}`}
+                  aria-pressed={multiSelect ? on : undefined}
+                  className={`group relative w-full text-left flex items-center gap-4 pl-4 pr-3 py-5 border-b border-[#E8E2DA] transition-all cursor-pointer ${multiSelect ? "" : "hover:pl-5"} ${on ? "bg-[#FBE7E1]/40" : "hover:bg-[#F6F2EC]"}`}
                 >
                   {on && <span className="absolute left-0 top-2 bottom-2 w-[3px] rounded-full bg-[#EA2C00]" aria-hidden />}
                   <div className="min-w-0 flex-1">
                     <div className={`text-[17px] leading-snug ${on ? "font-semibold text-[#EA2C00]" : "font-medium text-[#1A1A1A]"}`}>{o.label}</div>
                     {o.teach && <div className="text-[13px] text-[#8C8073] leading-snug mt-1 max-w-[520px]">{o.teach}</div>}
                   </div>
-                  <ArrowRight className={`w-5 h-5 flex-shrink-0 transition-all ${on ? "text-[#EA2C00]" : "text-[#C9BDAD] group-hover:text-[#EA2C00] group-hover:translate-x-1"}`} strokeWidth={1.8} />
+                  {multiSelect ? (
+                    <span className={`w-[22px] h-[22px] rounded-[6px] border-[1.5px] flex items-center justify-center flex-shrink-0 transition-colors ${on ? "bg-[#EA2C00] border-[#EA2C00]" : "border-[#CDBFAF] group-hover:border-[#EA2C00]"}`}>
+                      {on && <Check className="w-3.5 h-3.5 text-white" strokeWidth={2.75} />}
+                    </span>
+                  ) : (
+                    <ArrowRight className={`w-5 h-5 flex-shrink-0 transition-all ${on ? "text-[#EA2C00]" : "text-[#C9BDAD] group-hover:text-[#EA2C00] group-hover:translate-x-1"}`} strokeWidth={1.8} />
+                  )}
                 </button>
               );
             })}
           </div>
+          {multiSelect && (
+            <button
+              type="button"
+              onClick={onContinue}
+              disabled={selectedIds.length === 0}
+              data-testid="ground-continue"
+              className={`mt-7 inline-flex items-center gap-2 rounded-full px-6 py-3 text-[14px] font-semibold transition-colors ${selectedIds.length === 0 ? "bg-[#EFE9E1] text-[#B4A896] cursor-not-allowed" : "bg-[#EA2C00] text-white hover:bg-[#D02700] cursor-pointer"}`}
+            >
+              Continue <ArrowRight className="w-4 h-4" strokeWidth={2} />
+            </button>
+          )}
         </div>
 
         {/* vertical hairline */}
@@ -235,9 +284,12 @@ function buildLedger(setting: AttainSetting, ground: GroundingQuestion[], order:
   const groups: LedgerGroup[] = [];
   const groundItems: string[] = [];
   for (const q of ground) {
-    const a = answers[`_ground:${q.id}`];
-    const opt = q.options.find((o) => o.id === a);
-    if (opt) groundItems.push(opt.capture);
+    if (q.multi) {
+      for (const o of q.options) if (answers[`_ground:${q.id}:${o.id}`] === "1") groundItems.push(o.capture);
+    } else {
+      const opt = q.options.find((o) => o.id === answers[`_ground:${q.id}`]);
+      if (opt) groundItems.push(opt.capture);
+    }
   }
   if (groundItems.length) groups.push({ label: "Grounding", items: groundItems });
 

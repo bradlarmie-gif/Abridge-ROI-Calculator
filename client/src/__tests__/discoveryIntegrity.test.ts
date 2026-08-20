@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { DISCOVERY, BRIEF, briefThesis, briefRoles, resolveResult, type DiscoveryScript, type DiscoveryAnswers } from "@/lib/attain/discovery";
+import { DISCOVERY, BRIEF, briefThesis, briefRoles, resolveResult, groundingQuestions, type DiscoveryScript, type DiscoveryAnswers } from "@/lib/attain/discovery";
 import { EXPLORE_DRIVERS } from "@/lib/exploreDrivers";
 import { engineKeyForDriver } from "@/lib/exploreDriverKeys";
 import type { AttainSetting, GoalId } from "@/lib/attain/attainTypes";
@@ -26,6 +26,40 @@ function scripts(): { setting: AttainSetting; goal: GoalId; script: DiscoveryScr
   }
   return out;
 }
+
+describe("grounding is setting-native (domain-fit guard)", () => {
+  // Physician-side vocabulary that must NEVER appear on the nursing shelf — the
+  // exact class of bug this guard exists to catch (a nursing leader offered CDI
+  // and scribes reads as "this wasn't built for you").
+  const PHYSICIAN_ONLY = /\bCDI\b|coding|scrib|wRVU|E\/?M\b/i;
+
+  for (const setting of SETTINGS) {
+    it(`${setting}: has a scope + a multi-select "tried" inventory with unique ids and a "nothing" out`, () => {
+      const qs = groundingQuestions(setting);
+      const tried = qs.find((q) => q.id === "tried")!;
+      expect(tried, `${setting} has no "tried" grounding question`).toBeTruthy();
+      expect(tried.multi, `${setting} "tried" should be multi-select`).toBe(true);
+      expect(tried.options.length, `${setting} "tried" has too few options`).toBeGreaterThanOrEqual(3);
+      const ids = new Set(tried.options.map((o) => o.id));
+      expect(ids.size, `${setting} "tried" has duplicate option ids`).toBe(tried.options.length);
+      expect(ids.has("nothing"), `${setting} "tried" is missing the exclusive "nothing" option`).toBe(true);
+    });
+  }
+
+  it("the nursing shelf carries no physician-only vocabulary", () => {
+    const tried = groundingQuestions("nursing").find((q) => q.id === "tried")!;
+    for (const o of tried.options) {
+      const blob = `${o.label} ${o.capture}`;
+      expect(PHYSICIAN_ONLY.test(blob), `nursing "tried" option leaks physician vocab: "${o.label}"`).toBe(false);
+    }
+  });
+
+  it("positive control: physician settings DO carry CDI/coding (proves the map isn't uniformly nursing)", () => {
+    const blob = groundingQuestions("outpatient").find((q) => q.id === "tried")!
+      .options.map((o) => `${o.label} ${o.capture}`).join(" ");
+    expect(/CDI|coding/i.test(blob), "outpatient lost its physician shelf").toBe(true);
+  });
+});
 
 describe("discovery integrity", () => {
   it("has at least the two flagship scripts", () => {
