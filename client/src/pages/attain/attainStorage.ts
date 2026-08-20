@@ -9,6 +9,7 @@
 
 import type { AttainBaseline } from "@/lib/attain/attainLevers";
 import type { DiscoveryAnswers } from "@/lib/attain/discovery";
+import type { PlanBuildState } from "./planning/PlanBuildExperience";
 
 const NS = "attain:plan:v1:";           // one saved plan per partner, keyed by name
 const ACTIVE = "attain:plan:v1:active"; // which partner's plan to resume on refresh
@@ -46,6 +47,8 @@ export type AttainSnapshot = {
   // answers, keyed "goal:questionId" -> optionId. No numbers here. Optional so it
   // never affects the Plan/Progress mount, which ignores it.
   discovery?: DiscoveryAnswers;
+  // Planning (rebuilt owner-grouped plan): owner names, per-goal targets, cadence.
+  planBuild?: PlanBuildState;
   savedAt: number;
 };
 

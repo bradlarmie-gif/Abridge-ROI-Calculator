@@ -116,12 +116,18 @@ const STEPS: { key: StepKey; label: string }[] = [
 
 export default function PlanBuildExperience({
   setting = "outpatient", partner = "your team",
-  initial, onPersist,
+  initial, onPersist, goals: goalsProp, embedded = false, onExit,
 }: {
   setting?: AttainSetting; partner?: string;
   initial?: PlanBuildState; onPersist?: (s: PlanBuildState) => void;
+  /** the goals the partner picked in the funnel; defaults to the full matrix. */
+  goals?: GoalId[];
+  /** when mounted inside the funnel, suppress the standalone header and route
+   * Back-at-first-step to the funnel instead of a dead end. */
+  embedded?: boolean;
+  onExit?: () => void;
 }) {
-  const goals = SETTING_GOAL_MATRIX[setting];
+  const goals = (goalsProp && goalsProp.length ? goalsProp : SETTING_GOAL_MATRIX[setting]);
   const basePlans = useMemo(() => goals.map((g) => buildOutcomePlan(setting, g)), [setting, goals]);
   const [state, setState] = useState<PlanBuildState>(initial ?? EMPTY_STATE);
   const [pos, setPos] = useState(0);
@@ -142,11 +148,12 @@ export default function PlanBuildExperience({
   const namedOwnerCount = Object.values(state.ownerNames).filter((v) => v.trim()).length;
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* progress rail */}
-      <div className="sticky top-0 z-10 bg-white/95 backdrop-blur border-b border-[#EDE8E1]">
-        <div className="max-w-[960px] mx-auto px-6 h-14 flex items-center justify-between">
-          <span className="font-abridge text-[18px] text-[#EA2C00]">ABRIDGE</span>
+    <div className={embedded ? "bg-white" : "min-h-screen bg-white"}>
+      {/* progress rail — standalone only; the funnel supplies its own header. When
+          embedded, the step rail sits just under the app header instead. */}
+      <div className={`${embedded ? "" : "sticky top-0 z-10"} bg-white/95 backdrop-blur border-b border-[#EDE8E1]`}>
+        <div className={`max-w-[960px] mx-auto px-6 h-14 flex items-center ${embedded ? "justify-center" : "justify-between"}`}>
+          {!embedded && <span className="font-abridge text-[18px] text-[#EA2C00]">ABRIDGE</span>}
           <div className="flex items-center gap-2">
             {STEPS.map((s, i) => (
               <span key={s.key} className={`text-[11px] font-bold uppercase tracking-[0.1em] ${i === pos ? "text-[#1A1A1A]" : i < pos ? "text-[#EA2C00]" : "text-[#C9BDAD]"}`}>
@@ -295,7 +302,7 @@ export default function PlanBuildExperience({
       {/* footer nav */}
       <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur border-t border-[#EDE8E1]">
         <div className="max-w-[960px] mx-auto px-6 h-[68px] flex items-center justify-between">
-          <button onClick={() => setPos((p) => Math.max(0, p - 1))} disabled={pos === 0} className={`inline-flex items-center gap-1.5 text-[14px] font-semibold ${pos === 0 ? "text-[#C9BDAD]" : "text-[#6E675C] hover:text-[#1A1A1A]"}`}>
+          <button onClick={() => (pos === 0 ? onExit?.() : setPos((p) => Math.max(0, p - 1)))} disabled={pos === 0 && !onExit} className={`inline-flex items-center gap-1.5 text-[14px] font-semibold ${pos === 0 && !onExit ? "text-[#C9BDAD]" : "text-[#6E675C] hover:text-[#1A1A1A]"}`}>
             <ArrowLeft className="w-4 h-4" /> Back
           </button>
           {pos < STEPS.length - 1 ? (

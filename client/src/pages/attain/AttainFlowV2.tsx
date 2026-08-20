@@ -6,8 +6,9 @@ import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import StepVision from "./steps/StepVision";
 import StepScope from "./steps/StepScope";
 import { SettingStep } from "./preview/AttainFunnel";
-import { AttainExperience, type ExperienceSlice, type Chapter } from "./preview/MultiCategoryPreview";
+import { type ExperienceSlice, type Chapter } from "./preview/MultiCategoryPreview";
 import ValueStrategyExperience, { type VSEHandle } from "./valuestrategy/ValueStrategyExperience";
+import PlanBuildExperience, { type PlanBuildState } from "./planning/PlanBuildExperience";
 import { ATTAIN_MATRIX } from "./preview/attainCells";
 import { loadPlanByName, loadSnapshot, saveSnapshot, clearSnapshot, type AttainSnapshot } from "./attainStorage";
 import { categoryForGoal, goalDefs } from "@/lib/attain/attainGoals";
@@ -91,6 +92,9 @@ export default function AttainFlowV2({
   // The discovery experience exposes its back() so the header's single Back button
   // steps back through the interview, then exits to the funnel (no double Back).
   const vseRef = useRef<VSEHandle | null>(null);
+  // The rebuilt owner-grouped Plan (planning mode) keeps its state in its own ref
+  // so it persists to the snapshot without touching the Align/Progress slice.
+  const planBuildRef = useRef<PlanBuildState | null>(null);
 
   // Strategy mode is the pre-ROI discovery interview, so it drops the numeric
   // Starting Point step (numbers get agreed later, in the Plan/ROI).
@@ -115,14 +119,15 @@ export default function AttainFlowV2({
     catIdx: expRef.current?.catIdx,
     reviewLog: expRef.current?.reviewLog ?? [],
     discovery: discoveryRef.current ?? undefined,
+    planBuild: planBuildRef.current ?? undefined,
     savedAt: 0,
   });
 
   // autosave once a plan actually exists (setting chosen) — not while typing the name on step 1
   useEffect(() => { if (setting) saveSnapshot(buildSnapshot()); /* eslint-disable-next-line */ }, [partner, phase, setting, goals, baseline]);
 
-  const onPersist = (slice: ExperienceSlice) => { expRef.current = slice; saveSnapshot(buildSnapshot()); };
   const onPersistAnswers = (a: DiscoveryAnswers) => { discoveryRef.current = a; saveSnapshot(buildSnapshot()); };
+  const onPersistPlanBuild = (s: PlanBuildState) => { planBuildRef.current = s; saveSnapshot(buildSnapshot()); };
 
   // Export the live plan as the real editorial PDF (cover + the case + a spread
   // per category), built from the SAME engine the on-screen numbers use so the
@@ -146,7 +151,7 @@ export default function AttainFlowV2({
 
   const startOver = () => {
     clearSnapshot(partner);
-    expRef.current = null; discoveryRef.current = null; setSaved(null); setConfirmingReset(false);
+    expRef.current = null; discoveryRef.current = null; planBuildRef.current = null; setSaved(null); setConfirmingReset(false);
     setPartner(""); setSetting(null); setGoals([]); setBaseline({}); setPhase("partner");
   };
 
@@ -156,6 +161,7 @@ export default function AttainFlowV2({
   const hydrateFrom = (existing: AttainSnapshot) => {
     expRef.current = existing as unknown as ExperienceSlice;
     discoveryRef.current = existing.discovery ?? null;
+    planBuildRef.current = existing.planBuild ?? null;
     setSaved(existing);
     setPartner(existing.partner ?? partner);
     setSetting((existing.setting as AttainSetting) ?? null);
@@ -190,8 +196,6 @@ export default function AttainFlowV2({
   const idx = PHASES.indexOf(phase);
   const canContinue = phase === "partner" ? partner.trim().length > 0 : phase === "setting" ? !!setting : phase === "vision" ? goals.length > 0 : true;
   const stepName = phase === "partner" ? "Who it's for" : phase === "setting" ? "Care setting" : phase === "vision" ? "What you're after" : phase === "scope" ? "Starting point" : (experienceLabel ?? "Your plan");
-
-  const cells = setting ? cellsFor(setting, goals) : [];
 
   const goBack = () => {
     // In the discovery interview, the header Back steps back through the questions
@@ -235,7 +239,7 @@ export default function AttainFlowV2({
         mode === "strategy" ? (
           <><UnifiedHeaderSpacer /><ValueStrategyExperience ref={vseRef} key={partner} setting={setting!} settingLabel={SETTING_LABEL[setting!]} goals={goals} partner={partner} initialAnswers={discoveryRef.current ?? {}} onPersistAnswers={onPersistAnswers} onFinish={onFinish} onExit={() => setPhase("vision")} /></>
         ) : (
-          <><UnifiedHeaderSpacer /><AttainExperience key={partner} setting={SETTING_LABEL[setting!]} cells={cells} baseline={baseline} initial={buildSnapshot()} onPersist={onPersist} chapters={chapters} onFinish={onFinish} flowLabel={flowLabel} /></>
+          <><UnifiedHeaderSpacer /><PlanBuildExperience key={partner} embedded setting={setting!} goals={goals} partner={partner.trim() || undefined} initial={planBuildRef.current ?? undefined} onPersist={onPersistPlanBuild} onExit={() => setPhase("vision")} /></>
         )
       ) : (
         <><UnifiedHeaderSpacer /><div className={`${phase === "scope" ? "max-w-[1040px]" : "max-w-[760px]"} mx-auto px-6 py-8 md:py-12`}>
