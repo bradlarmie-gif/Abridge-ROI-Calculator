@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowRight, RotateCcw, Download } from "lucide-react";
+import { ArrowRight, RotateCcw } from "lucide-react";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { useToast } from "@/hooks/use-toast";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import StepVision from "./steps/StepVision";
 import StepScope from "./steps/StepScope";
@@ -81,8 +80,6 @@ export default function AttainFlowV2({
   const [baseline, setBaseline] = useState<AttainBaseline>({});
   const [partner, setPartner] = useState<string>("");
   const [confirmingReset, setConfirmingReset] = useState(false);
-  const [exporting, setExporting] = useState(false);
-  const { toast } = useToast();
 
   // latest experience answers, reported up from AttainExperience; set on resume or as they work
   const expRef = useRef<ExperienceSlice | null>(null);
@@ -128,26 +125,6 @@ export default function AttainFlowV2({
 
   const onPersistAnswers = (a: DiscoveryAnswers) => { discoveryRef.current = a; saveSnapshot(buildSnapshot()); };
   const onPersistPlanBuild = (s: PlanBuildState) => { planBuildRef.current = s; saveSnapshot(buildSnapshot()); };
-
-  // Export the live plan as the real editorial PDF (cover + the case + a spread
-  // per category), built from the SAME engine the on-screen numbers use so the
-  // download reconciles with what the partner just saw. Never fail silently: a
-  // throw inside pdf().toBlob() surfaces a destructive toast so the rep can retry.
-  const handleExport = async () => {
-    setExporting(true);
-    try {
-      const mod = await import("./pdf/attainReactPdf");
-      await mod.generateAttainPdf(buildSnapshot());
-    } catch (err) {
-      console.error("Attain PDF export failed:", err);
-      // Surface the real reason instead of a generic line, so a failure in the
-      // field is self-describing (no DevTools needed to diagnose it).
-      const reason = err instanceof Error && err.message ? err.message : "Unknown error";
-      toast({ title: "Export failed", description: reason, variant: "destructive" });
-    } finally {
-      setExporting(false);
-    }
-  };
 
   const startOver = () => {
     clearSnapshot(partner);
@@ -233,7 +210,7 @@ export default function AttainFlowV2({
         mode === "strategy" ? (
           <><UnifiedHeaderSpacer /><ValueStrategyExperience ref={vseRef} key={partner} setting={setting!} settingLabel={SETTING_LABEL[setting!]} goals={goals} partner={partner} initialAnswers={discoveryRef.current ?? {}} onPersistAnswers={onPersistAnswers} onFinish={onFinish} onExit={() => setPhase("vision")} /></>
         ) : (
-          <><UnifiedHeaderSpacer /><PlanBuildExperience key={partner} embedded setting={setting!} goals={goals} partner={partner.trim() || undefined} initial={planBuildRef.current ?? undefined} onPersist={onPersistPlanBuild} onExit={() => setPhase("vision")} /></>
+          <><UnifiedHeaderSpacer /><PlanBuildExperience key={partner} embedded setting={setting!} goals={goals} partner={partner.trim() || undefined} baseline={baseline} initial={planBuildRef.current ?? undefined} onPersist={onPersistPlanBuild} onExit={() => setPhase("vision")} /></>
         )
       ) : (
         <><UnifiedHeaderSpacer /><div className={`${phase === "scope" ? "max-w-[1040px]" : "max-w-[760px]"} mx-auto px-6 py-8 md:py-12`}>

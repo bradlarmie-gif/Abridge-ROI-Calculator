@@ -13,6 +13,7 @@ import {
 } from "@/lib/attain/planBuild";
 import { SETTING_GOAL_MATRIX } from "@/lib/attain/attainGoals";
 import type { AttainSetting, GoalId } from "@/lib/attain/attainTypes";
+import type { AttainBaseline } from "@/lib/attain/attainLevers";
 
 /**
  * The rebuilt Planning experience — a guided build-walk that deconstructs each
@@ -131,7 +132,7 @@ const STEPS: { key: StepKey; label: string }[] = [
 
 export default function PlanBuildExperience({
   setting = "outpatient", partner = "your team",
-  initial, onPersist, goals: goalsProp, embedded = false, onExit,
+  initial, onPersist, goals: goalsProp, embedded = false, onExit, baseline,
 }: {
   setting?: AttainSetting; partner?: string;
   initial?: PlanBuildState; onPersist?: (s: PlanBuildState) => void;
@@ -141,9 +142,21 @@ export default function PlanBuildExperience({
    * Back-at-first-step to the funnel instead of a dead end. */
   embedded?: boolean;
   onExit?: () => void;
+  /** Starting Point numbers, carried in so the adoption baseline pre-fills. */
+  baseline?: AttainBaseline;
 }) {
   const goals = (goalsProp && goalsProp.length ? goalsProp : SETTING_GOAL_MATRIX[setting]);
-  const basePlans = useMemo(() => goals.map((g) => buildOutcomePlan(setting, g)), [setting, goals]);
+  // Carry the thread: the recording % from the Starting Point becomes the leading
+  // "Abridge adopted" step's baseline on every outcome. Everything else stays
+  // editable-blank (no fabricated numbers).
+  const basePlans = useMemo(() => {
+    const mruPct = baseline?.mruRecording && baseline?.providers ? Math.round((baseline.mruRecording / baseline.providers) * 100) : null;
+    return goals.map((g) => {
+      const plan = buildOutcomePlan(setting, g);
+      if (mruPct === null) return plan;
+      return { ...plan, owners: plan.owners.map((o) => ({ ...o, steps: o.steps.map((s) => (s.isAbridge && /recording/i.test(s.signal) && !s.baseline ? { ...s, baseline: `${mruPct}%` } : s)) })) };
+    });
+  }, [setting, goals, baseline]);
   const [state, setState] = useState<PlanBuildState>(initial ?? EMPTY_STATE);
   const [pos, setPos] = useState(0);
   const [tracking, setTracking] = useState(false);
@@ -370,7 +383,18 @@ export default function PlanBuildExperience({
               </p>
               <p className="text-[13px] text-white/45 mb-7">This is the deal after the deal: the promise, made real and tracked against your own numbers.</p>
               <div className="flex flex-wrap items-center gap-3">
-                <button onClick={() => window.open(`/?planpdf=${setting}`, "_blank")} className="inline-flex items-center gap-2 rounded-[10px] bg-[#EA2C00] text-white px-6 py-3 text-[14px] font-bold hover:bg-[#d12800]">
+                <button onClick={() => {
+                  // Hand the real org + setting to the plan PDF (localStorage is the
+                  // route's data channel) so it never opens on the sample org.
+                  try {
+                    localStorage.setItem("abridge:plan-pdf-data", JSON.stringify({
+                      orgName: partner && partner !== "your team" ? partner : "Your organization",
+                      date: new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }),
+                      setting,
+                    }));
+                  } catch { /* private mode: fall back to the sample */ }
+                  window.open(`/?planpdf=${setting}`, "_blank");
+                }} className="inline-flex items-center gap-2 rounded-[10px] bg-[#EA2C00] text-white px-6 py-3 text-[14px] font-bold hover:bg-[#d12800]">
                   Download the plan <ArrowRight className="w-4 h-4" />
                 </button>
                 <button onClick={() => setTracking(true)} className="inline-flex items-center gap-2 rounded-[10px] border border-white/25 text-white px-6 py-3 text-[14px] font-bold hover:bg-white/5">
