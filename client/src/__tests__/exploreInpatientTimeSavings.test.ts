@@ -3,7 +3,7 @@ import {
   deriveInpatientMinutesPerAdmission,
   DEFAULT_EXPLORE_STATE,
   type ExploreState,
-} from "@/pages/explore/ExploreFlow";
+} from "@/pages/explore/exploreState";
 
 /**
  * Inpatient time savings is modeled per note type (H&P once per admission + a

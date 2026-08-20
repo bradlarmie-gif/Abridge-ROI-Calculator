@@ -6,7 +6,7 @@ import {
 import {
   DEFAULT_EXPLORE_STATE,
   type ExploreState,
-} from "@/pages/explore/ExploreFlow";
+} from "@/pages/explore/exploreState";
 
 /**
  * Reconciliation guardrail for the OP / ED / IP narrative PDF

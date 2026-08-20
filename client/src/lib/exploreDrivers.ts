@@ -1,5 +1,5 @@
 import type { ComponentType } from "react";
-import type { ExploreState } from "@/pages/explore/ExploreFlow";
+import type { ExploreState } from "@/pages/explore/exploreState";
 import PatientAccessCalc from "@/components/explore/drivers/PatientAccessCalc";
 import LwbsRecoveryCalc from "@/components/explore/drivers/LwbsRecoveryCalc";
 import AdmissionCaptureCalc from "@/components/explore/drivers/AdmissionCaptureCalc";

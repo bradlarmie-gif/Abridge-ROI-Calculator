@@ -15,7 +15,7 @@ import {
   DEFAULT_PROFORMA_CONFIG,
 } from "@/pages/proforma/proformaTypes";
 import { recomputeDriverFromExploreState, buildDriverChangeUpdate } from "@/pages/proforma/ModelAssumptionDrawer";
-import { DEFAULT_EXPLORE_STATE, type ExploreState } from "@/pages/explore/ExploreFlow";
+import { DEFAULT_EXPLORE_STATE, type ExploreState } from "@/pages/explore/exploreState";
 import { computeAllDriverValues } from "@/lib/exploreDriverCalcs";
 
 /**

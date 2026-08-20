@@ -3,7 +3,7 @@ import {
 } from "@react-pdf/renderer";
 import { savePdfBlob } from "@/lib/pdf-save";
 import type { ExploreIntakeResponse } from "@/lib/intakeUrlState";
-import type { ExploreCareSetting } from "@/pages/explore/ExploreFlow";
+import type { ExploreCareSetting } from "@/pages/explore/exploreState";
 import { PDFCoverPage } from "@/components/pdf/PDFCoverPage";
 import abridgeLogoRed from "@assets/abridge-logo-wordmark-red_1769187440253.png";
 import manropeRegular from "../../assets/fonts/manrope-regular.ttf";

@@ -1,5 +1,5 @@
 import LZString from 'lz-string';
-import type { ExploreCareSetting } from '../pages/explore/ExploreFlow';
+import type { ExploreCareSetting } from '../pages/explore/exploreState';
 
 export interface ExploreIntakeResponse {
   settings: ExploreCareSetting[];

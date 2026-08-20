@@ -14,7 +14,7 @@
  * dollar can never fork across the app again. Change a number here, it moves
  * everywhere. Values are conservative starting anchors and stay editable in the tool.
  *
- * Keep this union in sync with `HccPlan['planType']` in `pages/explore/ExploreFlow.tsx`.
+ * Keep this union in sync with `HccPlan['planType']` in `pages/explore/exploreState.ts`.
  */
 export type HccPayerType = "medicare_advantage" | "aca_marketplace" | "medicaid_mco" | "custom";
 

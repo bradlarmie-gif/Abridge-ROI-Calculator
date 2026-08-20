@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { DEFAULT_EXPLORE_STATE, type ExploreState } from "@/pages/explore/ExploreFlow";
+import { DEFAULT_EXPLORE_STATE, type ExploreState } from "@/pages/explore/exploreState";
 import { computeAllDriverValues } from "@/lib/exploreDriverCalcs";
 import { scaledExploreStateFor } from "@/lib/presentFormulas";
 import { buildDriverFormula } from "@/lib/proformaDriverFormulaSteps";

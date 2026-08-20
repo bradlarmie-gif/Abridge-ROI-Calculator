@@ -7,7 +7,7 @@ import {
   type ProformaDriver,
   DEFAULT_PROFORMA_CONFIG,
 } from "@/pages/proforma/proformaTypes";
-import { DEFAULT_EXPLORE_STATE, type ExploreState } from "@/pages/explore/ExploreFlow";
+import { DEFAULT_EXPLORE_STATE, type ExploreState } from "@/pages/explore/exploreState";
 
 /**
  * Visual / structural snapshot guardrail for the multi-page Financial Proforma

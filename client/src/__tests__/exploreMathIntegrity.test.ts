@@ -5,7 +5,7 @@ import {
   computeExploreTotals,
 } from "@/lib/exploreDriverCalcs";
 import { EXPLORE_DRIVERS } from "@/lib/exploreDrivers";
-import { DEFAULT_EXPLORE_STATE, type ExploreState, type ExploreCareSetting } from "@/pages/explore/ExploreFlow";
+import { DEFAULT_EXPLORE_STATE, type ExploreState, type ExploreCareSetting } from "@/pages/explore/exploreState";
 
 /**
  * LAYER 1 of the Explore integrity harness — MATH (the "Finance believes it" gate).

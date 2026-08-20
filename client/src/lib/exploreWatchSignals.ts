@@ -1,4 +1,4 @@
-import type { ExploreCareSetting } from "@/pages/explore/ExploreFlow";
+import type { ExploreCareSetting } from "@/pages/explore/exploreState";
 import type { ExploreQuadrant } from "@/lib/exploreDrivers";
 
 /**

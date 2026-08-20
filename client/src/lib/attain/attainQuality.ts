@@ -1,7 +1,7 @@
 import type { AttainBaseline, LeverContribution, LeverContributionsResult, LeverValues } from "./attainLevers";
 import { calcHapi, calcFalls, calcClabsi, calcCauti, calcSepsis } from "@/lib/nursingQualityCalcs";
 import { computeAllDriverValues, computeAllDriverCalcSummaries } from "@/lib/exploreDriverCalcs";
-import { DEFAULT_EXPLORE_STATE, type ExploreState } from "@/pages/explore/ExploreFlow";
+import { DEFAULT_EXPLORE_STATE, type ExploreState } from "@/pages/explore/exploreState";
 import type { AttainSetting } from "./attainTypes";
 
 /**

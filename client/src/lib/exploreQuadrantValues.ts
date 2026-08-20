@@ -1,4 +1,4 @@
-import type { ExploreState, OtherFinancialBenefitItem } from "@/pages/explore/ExploreFlow";
+import type { ExploreState, OtherFinancialBenefitItem } from "@/pages/explore/exploreState";
 import {
   wrvuScenariosFor,
   denialsScenariosFor,

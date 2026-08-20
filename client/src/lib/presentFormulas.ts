@@ -1,5 +1,5 @@
 import type { ProformaSettingSnapshot } from "@/pages/proforma/proformaTypes";
-import type { ExploreState } from "@/pages/explore/ExploreFlow";
+import type { ExploreState } from "@/pages/explore/exploreState";
 import { computeAllDriverCalcSummaries } from "@/lib/exploreDriverCalcs";
 
 /**

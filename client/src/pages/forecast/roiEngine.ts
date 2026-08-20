@@ -6,7 +6,7 @@ import {
   DEFAULT_EXPLORE_STATE,
   type ExploreState,
   type ExploreCareSetting,
-} from "@/pages/explore/ExploreFlow";
+} from "@/pages/explore/exploreState";
 
 /**
  * ROI Calculator engine adapter.

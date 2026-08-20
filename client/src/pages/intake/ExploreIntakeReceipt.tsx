@@ -2,7 +2,7 @@ import { useState } from "react";
 import { CheckCircle, Download, ArrowRight } from "lucide-react";
 import type { ExploreIntakeResponse } from "@/lib/intakeUrlState";
 import { downloadIntakeReceiptPDF } from "@/components/intake/IntakeReceiptPDF";
-import type { ExploreCareSetting } from "@/pages/explore/ExploreFlow";
+import type { ExploreCareSetting } from "@/pages/explore/exploreState";
 import abridgeLogo from "@assets/abridge-logo-wordmark-red_1769020684647.png";
 
 interface ExploreIntakeReceiptProps {

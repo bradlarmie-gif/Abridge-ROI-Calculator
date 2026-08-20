@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { computeAllDriverValues, computeExploreTotals } from "@/lib/exploreDriverCalcs";
 import { computeRevenueBreakdown, computeWorkforceBreakdown, computeCapacityBreakdown } from "@/lib/exploreQuadrantValues";
 import { driverScaleReadiness } from "@/lib/exploreScaleGate";
-import { DEFAULT_EXPLORE_STATE, type ExploreState } from "@/pages/explore/ExploreFlow";
+import { DEFAULT_EXPLORE_STATE, type ExploreState } from "@/pages/explore/exploreState";
 
 const td = (overrides: Partial<ExploreState["timeDriverInputs"]>): ExploreState["timeDriverInputs"] => ({
   ...DEFAULT_EXPLORE_STATE.timeDriverInputs,

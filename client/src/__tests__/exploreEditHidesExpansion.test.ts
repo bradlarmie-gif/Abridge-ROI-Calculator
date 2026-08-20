@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { resolveExplorePhase } from "@/pages/explore/ExploreFlow";
+import { resolveExplorePhase } from "@/pages/explore/exploreState";
 
 /**
  * Guardrail: when editing an existing proforma setting, the Explore "expansion"

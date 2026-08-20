@@ -1,7 +1,7 @@
 import type { AttainBaseline, LeverContribution, LeverContributionsResult, LeverValues } from "./attainLevers";
 import { realizedValue, formulaWithRealization } from "./attainLevers";
 import { computeAllDriverValues, computeAllDriverCalcSummaries } from "@/lib/exploreDriverCalcs";
-import { DEFAULT_EXPLORE_STATE, type ExploreState, type HccPlan } from "@/pages/explore/ExploreFlow";
+import { DEFAULT_EXPLORE_STATE, type ExploreState, type HccPlan } from "@/pages/explore/exploreState";
 import type { AttainSetting } from "./attainTypes";
 
 /**

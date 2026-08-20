@@ -7,7 +7,7 @@ import {
   type ProformaDriver,
   DEFAULT_PROFORMA_CONFIG,
 } from "@/pages/proforma/proformaTypes";
-import { DEFAULT_EXPLORE_STATE, type ExploreState } from "@/pages/explore/ExploreFlow";
+import { DEFAULT_EXPLORE_STATE, type ExploreState } from "@/pages/explore/exploreState";
 
 // Guards the PDF financial summary against the footing bug where per-setting
 // rows used a displacement/quality-inclusive basis while the Total row used the

@@ -5,7 +5,7 @@ import {
   calcClabsi,
   calcSepsis,
 } from "@/lib/nursingQualityCalcs";
-import type { ExploreState } from "@/pages/explore/ExploreFlow";
+import type { ExploreState } from "@/pages/explore/exploreState";
 import { EXPLORE_DRIVERS, type ExploreQuadrant } from "@/lib/exploreDrivers";
 import { physicianRetentionRates, nursingRetentionRates } from "@/lib/retentionScenarios";
 

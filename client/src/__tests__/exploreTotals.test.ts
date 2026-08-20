@@ -7,7 +7,7 @@ import { EXPLORE_DRIVERS, type ExploreQuadrant } from "@/lib/exploreDrivers";
 import {
   DEFAULT_EXPLORE_STATE,
   type ExploreState,
-} from "@/pages/explore/ExploreFlow";
+} from "@/pages/explore/exploreState";
 
 /**
  * Guardrail against the "two value engines" bug: the Investment screen

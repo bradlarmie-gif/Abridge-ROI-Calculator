@@ -1,4 +1,4 @@
-import type { ExploreState } from "@/pages/explore/ExploreFlow";
+import type { ExploreState } from "@/pages/explore/exploreState";
 
 /**
  * Scale-gating readiness for the Explore path (DISPLAY layer only).

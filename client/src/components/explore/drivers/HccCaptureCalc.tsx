@@ -2,7 +2,7 @@ import { useState } from "react";
 import { ChevronDown, Info, Plus, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { ExploreCalcComponentProps } from "@/lib/exploreDrivers";
-import type { HccPlan } from "@/pages/explore/ExploreFlow";
+import type { HccPlan } from "@/pages/explore/exploreState";
 import { NumberField } from "@/components/NumberField";
 import { computeAllDriverValues } from "@/lib/exploreDriverCalcs";
 import { engineKeyForDriver } from "@/lib/exploreDriverKeys";

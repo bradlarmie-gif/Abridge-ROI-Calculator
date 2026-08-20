@@ -23,7 +23,7 @@ import {
 import { computeSettingDriverFormulas } from "@/lib/presentFormulas";
 import { recomputeSettingValues } from "@/pages/proforma/ModelAssumptionDrawer";
 import { LensToggle } from "@/pages/explore/editorial/EdValueScreenKit";
-import type { ExploreState } from "@/pages/explore/ExploreFlow";
+import type { ExploreState } from "@/pages/explore/exploreState";
 import { applyExclusions, useNarrow } from "./editorialShared";
 
 /* ─────────────────────────── design tokens ─────────────────────────── */

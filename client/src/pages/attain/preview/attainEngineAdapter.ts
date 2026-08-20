@@ -1,5 +1,5 @@
 import { computeAllDriverValues } from "@/lib/exploreDriverCalcs";
-import type { ExploreState } from "@/pages/explore/ExploreFlow";
+import type { ExploreState } from "@/pages/explore/exploreState";
 import { econModel } from "./attainEconomics";
 
 /**

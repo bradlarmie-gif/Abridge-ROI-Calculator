@@ -6,7 +6,7 @@ import {
   parseChain,
 } from "@/components/explore/ExploreEditorialPdf";
 import type { ExplorePDFData } from "@/components/explore/ExplorePDFExport";
-import type { ExploreCareSetting } from "@/pages/explore/ExploreFlow";
+import type { ExploreCareSetting } from "@/pages/explore/exploreState";
 
 /**
  * Permanent guard for the two Explore-PDF regressions we hit:
