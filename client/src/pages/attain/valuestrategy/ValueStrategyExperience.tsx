@@ -1,6 +1,6 @@
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useState } from "react";
 import { ArrowRight, ArrowLeft, Check } from "lucide-react";
-import { categoryForGoal } from "@/lib/attain/attainGoals";
+import { goalDisplayLabel } from "@/lib/attain/attainGoals";
 import type { AttainSetting, GoalId } from "@/lib/attain/attainTypes";
 import {
   getScript,
@@ -154,7 +154,7 @@ const ValueStrategyExperience = forwardRef<VSEHandle, Props>(function ValueStrat
     stepEyebrow = "First, the priority";
     prompt = "If you could only move one of these this year, which matters most?";
     teach = "A good strategy is a choice. We will walk them all, but the one you pick leads the plan.";
-    options = order.map((g) => ({ id: g, label: categoryForGoal(setting, g) }));
+    options = order.map((g) => ({ id: g, label: goalDisplayLabel(setting, g) }));
     selected = answers["_triage"];
     onPick = (id) => answerTriage(id as GoalId);
   } else if (pos.kind === "whynow") {
@@ -166,7 +166,7 @@ const ValueStrategyExperience = forwardRef<VSEHandle, Props>(function ValueStrat
     const goal = order[pos.goalIdx];
     const script = getScript(setting, goal)!;
     const q = script.questions[pos.qid];
-    stepEyebrow = q.eyebrow ?? categoryForGoal(setting, goal);
+    stepEyebrow = q.eyebrow ?? goalDisplayLabel(setting, goal);
     prompt = q.prompt; teach = q.teach ?? ""; options = q.options;
     selected = answers[`${goal}:${pos.qid}`];
     onPick = (id) => answerGoal(id);
@@ -174,7 +174,7 @@ const ValueStrategyExperience = forwardRef<VSEHandle, Props>(function ValueStrat
 
   const contextLabel =
     pos.kind === "goal"
-      ? `${settingLabel} · ${categoryForGoal(setting, order[pos.goalIdx])}${order.length > 1 ? ` · ${pos.goalIdx + 1} of ${order.length}` : ""}`
+      ? `${settingLabel} · ${goalDisplayLabel(setting, order[pos.goalIdx])}${order.length > 1 ? ` · ${pos.goalIdx + 1} of ${order.length}` : ""}`
       : settingLabel;
 
   return (
@@ -243,7 +243,7 @@ function buildLedger(setting: AttainSetting, ground: GroundingQuestion[], order:
 
   for (const goal of order) {
     const res = resolveResult(setting, goal, answers);
-    if (res && res.narrative.length) groups.push({ label: categoryForGoal(setting, goal), items: res.narrative });
+    if (res && res.narrative.length) groups.push({ label: goalDisplayLabel(setting, goal), items: res.narrative });
   }
   const why = WHY_NOW.options.find((o) => o.id === answers["_ground:whynow"]);
   if (why) groups.push({ label: "Why now", items: [why.capture] });
@@ -287,9 +287,9 @@ function Brief({
   const results = order.map((goal) => ({ goal, script: getScript(setting, goal)!, res: resolveResult(setting, goal, answers) }));
 
   // cross-goal ranking sentence
-  const counted = results.filter((r) => r.res?.lever).map((r) => categoryForGoal(setting, r.goal));
-  const proofs = results.filter((r) => !r.res?.lever && (r.res?.proof || r.script.proofLine) && !r.res?.honest).map((r) => categoryForGoal(setting, r.goal));
-  const honests = results.filter((r) => r.res?.honest && !r.res?.lever).map((r) => categoryForGoal(setting, r.goal));
+  const counted = results.filter((r) => r.res?.lever).map((r) => goalDisplayLabel(setting, r.goal));
+  const proofs = results.filter((r) => !r.res?.lever && (r.res?.proof || r.script.proofLine) && !r.res?.honest).map((r) => goalDisplayLabel(setting, r.goal));
+  const honests = results.filter((r) => r.res?.honest && !r.res?.lever).map((r) => goalDisplayLabel(setting, r.goal));
   const rankBits: string[] = [];
   if (counted.length) rankBits.push(`${listPhrase(counted)} ${counted.length > 1 ? "carry" : "carries"} the near-term dollars`);
   if (proofs.length) rankBits.push(`${listPhrase(proofs)} ${proofs.length > 1 ? "are" : "is"} proof, tracked not counted`);
@@ -355,7 +355,7 @@ function Brief({
                 }`}
               >
                 <span className={`w-[7px] h-[7px] rounded-full ${dot}`} />
-                {categoryForGoal(setting, goal)}
+                {goalDisplayLabel(setting, goal)}
               </button>
             );
           })}
@@ -370,7 +370,7 @@ function Brief({
       {pending.length > 0 && (
         <div className="mt-10 rounded-xl bg-[#FAF7F2] border border-dashed border-[#D8CFC0] px-5 py-4">
           <p className="text-[13px] text-[#8C8073] leading-relaxed">
-            {pending.map((g) => categoryForGoal(setting, g)).join(", ")}: the discovery for {pending.length > 1 ? "these is" : "this is"} being authored and will join the brief soon.
+            {pending.map((g) => goalDisplayLabel(setting, g)).join(", ")}: the discovery for {pending.length > 1 ? "these is" : "this is"} being authored and will join the brief soon.
           </p>
         </div>
       )}
@@ -391,7 +391,7 @@ function GoalBrief({
 }) {
   const foundation = briefFoundation(setting, goal, settingLabel, answers);
   if (!foundation) return null;
-  return <FoundationCard settingLabel={settingLabel} goalLabel={categoryForGoal(setting, goal)} foundation={foundation} />;
+  return <FoundationCard settingLabel={settingLabel} goalLabel={goalDisplayLabel(setting, goal)} foundation={foundation} />;
 }
 
 // The foundation read: a current-state / desired-state mirror. Strategy's real

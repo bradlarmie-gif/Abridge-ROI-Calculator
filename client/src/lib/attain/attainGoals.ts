@@ -613,6 +613,19 @@ export function categoryForGoal(setting: AttainSetting, goal: GoalId): string {
   return base[goal];
 }
 
+/**
+ * The CUSTOMER-FACING label for a (setting, goal). Kept SEPARATE from
+ * `categoryForGoal` because that returns the stable cell-lookup KEY (funnel,
+ * PDF, scope econ models, tests all depend on "Provider Retention"), which
+ * must never change. Display can and should be setting-native: nurses are not
+ * "providers", so nursing retention reads "Nurse Retention". Everything else
+ * delegates to the key. Use this anywhere a category is SHOWN to the customer.
+ */
+export function goalDisplayLabel(setting: AttainSetting, goal: GoalId): string {
+  if (goal === "retention" && setting === "nursing") return "Nurse Retention";
+  return categoryForGoal(setting, goal);
+}
+
 // ────────────────────────────────────────────────────────────────────────
 // CONTENT - per (setting, goal) copy
 // ────────────────────────────────────────────────────────────────────────

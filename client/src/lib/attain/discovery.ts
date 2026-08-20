@@ -1,5 +1,5 @@
 import type { AttainSetting, GoalId } from "./attainTypes";
-import { categoryForGoal } from "./attainGoals";
+import { goalDisplayLabel } from "./attainGoals";
 
 /**
  * VALUE ATTAINMENT STRATEGY: the pre-ROI discovery interview.
@@ -725,7 +725,7 @@ function ctxFor(setting: AttainSetting, goal: GoalId, settingLabel: string, answ
     lever: res?.lever,
     proof: res?.proof,
     honest: !!res?.honest,
-    goalLabel: categoryForGoal(setting, goal),
+    goalLabel: goalDisplayLabel(setting, goal),
     settingLabel,
   };
 }
