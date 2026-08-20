@@ -20,7 +20,7 @@
  *      text escaping its own box, and SVG <text> overlapping a chart path
  *      (the floating-label class). Hard defects exit non-zero.
  *
- * Usage:  npx vite --port 5199 --strictPort   (in another shell)
+ * Usage:  run the dev server on :5210 (in another shell)
  *         node scripts/visual-sweep.mjs
  * Review: open every PNG in scripts/visual-sweep-out/ and eyeball it. The point
  *         is the LOOK — the auto-checks are a floor, not the ceiling.
@@ -31,7 +31,7 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 const { chromium } = pkg;
 
-const BASE = process.env.SWEEP_BASE || "http://localhost:5199";
+const BASE = process.env.SWEEP_BASE || "http://localhost:5210";
 const OUT = join(dirname(fileURLToPath(import.meta.url)), "visual-sweep-out");
 rmSync(OUT, { recursive: true, force: true });
 mkdirSync(OUT, { recursive: true });
@@ -60,33 +60,41 @@ const fillAllNumbers = async (page, val = "200") => {
 
 // The reusable Explore drive: land on a value (driver) screen for a setting,
 // turn drivers on, and open every assumptions tray. Returns the step title.
-async function driveExploreToValue(page, setting) {
-  await page.goto(`${BASE}/?explorepreview=1`, { waitUntil: "networkidle" });
-  await page.waitForTimeout(700);
-  await clickIf(page, `[data-testid=ed-setting-${setting}]`);
-  await page.waitForTimeout(200);
-  await clickIf(page, "[data-testid=ed-careSetting-continue]");
+async function driveCalculator(page, setting, { stopAt = "answer" } = {}) {
+  await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
   await page.waitForTimeout(500);
-  await fillAllNumbers(page);
-  await clickText(page, /Typical/);
-  await clickIf(page, "[data-testid=ed-practice-continue]");
-  await page.waitForTimeout(400);
-  await clickText(page, /Typical/);
-  await clickIf(page, "[data-testid=ed-timesavings-continue]");
+  await page.getByRole("button", { name: /estimate my value|calculate your roi/i }).first().click({ timeout: 6000 });
+  await page.waitForTimeout(500);
+  if (stopAt === "setting") return `${setting} — care setting`;
+
+  const LABEL = { outpatient: "Outpatient", ed: "Emergency", inpatient: "Inpatient", nursing: "Nursing" };
+  await page.getByText(LABEL[setting], { exact: true }).first().click({ timeout: 6000 });
   await page.waitForTimeout(600);
-  // turn on any drivers on this screen, then open every assumptions tray
-  for (const t of await page.$$("[data-testid^=ed-toggle-],[data-testid^=toggle-]")) {
-    try { await t.click({ timeout: 800, force: true }); await page.waitForTimeout(120); } catch {}
+  if (stopAt === "account") return `${setting} — the account (empty)`;
+
+  const inputs = page.locator("input");
+  const vals = ["Riverbend Family Medicine", "42", "30", "2400", "68"];
+  for (let i = 0; i < vals.length; i++) {
+    await inputs.nth(i).fill(vals[i], { timeout: 4000 }).catch(() => {});
   }
-  await page.waitForTimeout(200);
-  for (const b of await page.$$("[data-testid=button-adjust-assumptions]")) {
-    try { await b.click({ timeout: 800, force: true }); await page.waitForTimeout(120); } catch {}
-  }
-  await page.waitForTimeout(300);
-  return page.evaluate(() => document.querySelector("h1")?.innerText?.slice(0, 40) || "");
+  await page.evaluate(() => document.activeElement?.blur?.());
+  await page.waitForTimeout(400);
+  if (stopAt === "account-filled") return `${setting} — the account (filled)`;
+
+  await page.getByRole("button", { name: /next: the lift/i }).first().click({ timeout: 6000 }).catch(() => {});
+  await page.waitForTimeout(700);
+
+  const toggles = page.locator('button[role="switch"], input[type="checkbox"]');
+  const n = Math.min(4, await toggles.count());
+  for (let i = 0; i < n; i++) { await toggles.nth(i).click({ timeout: 1500 }).catch(() => {}); }
+  await page.waitForTimeout(500);
+  if (stopAt === "lift") return `${setting} — the lift, ${n} drivers on`;
+
+  await page.getByRole("button", { name: /see the answer/i }).first().click({ timeout: 6000 }).catch(() => {});
+  await page.waitForTimeout(900);
+  return `${setting} — the answer`;
 }
 
-// ── The in-page auto-audit (the checks smoke lacks) ──────────────────────────
 function audit() {
   const out = { overflow: 0, overlaps: [], escaped: [], svgLabels: [] };
   out.overflow = document.documentElement.scrollWidth - window.innerWidth;
@@ -165,141 +173,27 @@ async function scene(browser, name, setup, { width = 1440, height = 1000 } = {})
 const browser = await chromium.launch();
 
 // ── A. On-screen surfaces, including interactive states ──────────────────────
-await scene(browser, "explore-caresetting-empty", async (p) => {
-  await p.goto(`${BASE}/?explorepreview=1`, { waitUntil: "networkidle" });
+// The app is one path, so the matrix is: the home screen, then every step of
+// the calculator, walked for every care setting (the copy and drivers differ
+// per setting, which is exactly where setting-wrong wording hides).
+await scene(browser, "home", async (p) => {
+  await p.goto(`${BASE}/`, { waitUntil: "networkidle" });
   await p.waitForTimeout(700);
-  return p.evaluate(() => document.querySelector("h1")?.innerText?.slice(0, 40) || "");
+  return "landing screen";
 });
-await scene(browser, "explore-caresetting-hover", async (p) => {
-  await p.goto(`${BASE}/?explorepreview=1`, { waitUntil: "networkidle" });
-  await p.waitForTimeout(600);
-  await clickIf(p, "[data-testid=ed-setting-ed]");
-  await p.waitForTimeout(300);
-  return "hovered ed";
-});
+
+await scene(browser, "calc-1-care-setting", (p) => driveCalculator(p, "outpatient", { stopAt: "setting" }));
+
 for (const s of ["outpatient", "ed", "inpatient", "nursing"]) {
-  await scene(browser, `explore-value-${s}-trays-open`, (p) => driveExploreToValue(p, s), { height: 1500 });
+  await scene(browser, `calc-2-account-${s}-empty`, (p) => driveCalculator(p, s, { stopAt: "account" }), { height: 1300 });
+  await scene(browser, `calc-2-account-${s}-filled`, (p) => driveCalculator(p, s, { stopAt: "account-filled" }), { height: 1300 });
+  await scene(browser, `calc-3-lift-${s}`, (p) => driveCalculator(p, s, { stopAt: "lift" }), { height: 1800 });
+  await scene(browser, `calc-4-answer-${s}`, (p) => driveCalculator(p, s), { height: 1600 });
 }
-
-// Proforma chapters + the advanced-assumptions panel open
-await scene(browser, "proforma-build", async (p) => {
-  await p.goto(`${BASE}/?proformapreview=1`, { waitUntil: "networkidle" });
-  await p.waitForTimeout(900);
-  await clickIf(p, "[data-testid=button-advanced-assumptions]");
-  await p.waitForTimeout(300);
-  return "build + advanced open";
-}, { height: 1600 });
-await scene(browser, "proforma-case", async (p) => {
-  await p.goto(`${BASE}/?proformapreview=1`, { waitUntil: "networkidle" });
-  await p.waitForTimeout(800);
-  await clickText(p, /The case/);
-  await p.waitForTimeout(600);
-  return "case";
-}, { height: 1600 });
-await scene(browser, "proforma-present", async (p) => {
-  await p.goto(`${BASE}/?proformapreview=1`, { waitUntil: "networkidle" });
-  await p.waitForTimeout(800);
-  await clickText(p, /Present/);
-  await p.waitForTimeout(600);
-  return "present";
-}, { height: 1600 });
-
-// App Rationalization: enter via Forecast, add two tools, then screenshot each
-// step (consolidation two-sink + legend hover, timing pill, moat). Defensive —
-// captures whatever state it reaches. This is the flow whose hover/timeline
-// states slipped through because it was never in a screenshot gate.
-async function arAddTool(page, name, spend) {
-  if (!(await clickIf(page, "[data-testid=ar-add-custom-tool]"))) return;
-  await page.waitForTimeout(250);
-  try { await page.getByTestId("ar-add-vendor").fill(name, { timeout: 1500 }); } catch {}
-  try { await page.getByTestId("ar-add-spend").fill(String(spend), { timeout: 1500 }); } catch {}
-  await page.waitForTimeout(150);
-  await clickIf(page, "[data-testid=ar-add-confirm]");
-  await page.waitForTimeout(300);
-}
-async function arEnter(page) {
-  await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
-  await page.waitForTimeout(700);
-  await clickIf(page, "[data-testid=button-enter-app]");
-  await page.waitForTimeout(400);
-  await clickText(page, /^Forecast$/);
-  await page.waitForTimeout(400);
-  await clickText(page, /App Rationalization/);
-  await page.waitForTimeout(500);
-  await arAddTool(page, "Fluency", 250000);
-  await arAddTool(page, "UpToDate", 160000);
-  await page.waitForTimeout(200);
-}
-await scene(browser, "apprat-consolidation", async (p) => {
-  await arEnter(p);
-  await clickIf(p, "[data-testid=ar-see-consolidation]");
-  await page_hoverFirstLegend(p);
-  return "consolidation + legend hover";
-}, { height: 1500 });
-await scene(browser, "apprat-timing", async (p) => {
-  await arEnter(p);
-  await clickIf(p, "[data-testid=ar-see-consolidation]"); await p.waitForTimeout(300);
-  await clickIf(p, "[data-testid=ar-see-timing]"); await p.waitForTimeout(400);
-  // Pull the first contract's exit in early (low sunset month) so the
-  // "N months sooner" pill renders — the state that only appears once the plan
-  // finishes ahead of ride-to-renewal.
-  const slider = await p.$("[data-testid^=ar-timing-slider-]");
-  if (slider) {
-    const id = await slider.getAttribute("data-testid");
-    try {
-      await slider.fill("2", { timeout: 1500 });
-    } catch {
-      // React tracks value via its own setter; set through the native setter and
-      // dispatch input+change so onChange fires.
-      await p.$eval(`[data-testid="${id}"]`, (el) => {
-        const set = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
-        set.call(el, "2");
-        el.dispatchEvent(new Event("input", { bubbles: true }));
-        el.dispatchEvent(new Event("change", { bubbles: true }));
-      });
-    }
-    await p.waitForTimeout(500);
-  }
-  return "timing (contract pulled in → 'N months sooner' pill)";
-}, { height: 1500 });
-await scene(browser, "apprat-moat", async (p) => {
-  await arEnter(p);
-  await clickIf(p, "[data-testid=ar-see-consolidation]"); await p.waitForTimeout(300);
-  await clickIf(p, "[data-testid=ar-see-timing]"); await p.waitForTimeout(300);
-  await clickIf(p, "[data-testid=ar-see-moat]"); await p.waitForTimeout(400);
-  return "moat";
-}, { height: 1500 });
-
-// ── Attain (Value Attainment): the flow that was NEVER in the sweep, which is
-// how placeholder/centering bugs on the workforce category reached the user.
-// Each preview is URL-reachable; the matrix also gets a workforce variant.
-for (const [flag, name] of [["consultpreview", "attain-align"], ["planpreview", "attain-plan"], ["attainpreview", "attain-matrix"], ["multipreview", "attain-multi"], ["attainv2", "attain-v2"]]) {
-  await scene(browser, name, async (p) => {
-    await p.goto(`${BASE}/?${flag}=1`, { waitUntil: "networkidle" });
-    await p.waitForTimeout(1000);
-    return name;
-  }, { height: 1600 });
-}
-// Workforce category specifically (the one flagged) — matrix + Provider Retention.
-await scene(browser, "attain-matrix-workforce", async (p) => {
-  await p.goto(`${BASE}/?attainpreview=1`, { waitUntil: "networkidle" });
-  await p.waitForTimeout(900);
-  await clickText(p, /Provider Retention/);
-  await p.waitForTimeout(600);
-  return "workforce (Provider Retention)";
-}, { height: 1800 });
-await scene(browser, "attain-multi-workforce", async (p) => {
-  await p.goto(`${BASE}/?multipreview=1`, { waitUntil: "networkidle" });
-  await p.waitForTimeout(900);
-  await clickText(p, /Provider Retention/);
-  await p.waitForTimeout(600);
-  return "workforce (multi)";
-}, { height: 1800 });
 
 // ── B. PDFs, one screenshot PER PAGE (so each page gets its own eyeball) ──────
 const PDF_ROUTES = [
-  { url: "/?proformapdf=1", label: "proforma-pdf" },
-  { url: "/?explorepdf=1", label: "explore-pdf" },
+  { url: "/?quickroipdf=1", label: "roi-one-pager" },
 ];
 const PAGE_H = 1056;
 for (const route of PDF_ROUTES) {

@@ -10,12 +10,12 @@
  *   - a chapter-nav label wraps to more than one line.
  *
  * Run after ANY layout/responsive change:  npm run layout:smoke
- * (requires the dev server: npx vite --port 5199 --strictPort)
+ * (requires the dev server on :5210 — see the run command in package.json)
  */
 import pkg from "../node_modules/playwright-core/index.js";
 const { chromium } = pkg;
 
-const BASE = process.env.SMOKE_BASE || "http://localhost:5199";
+const BASE = process.env.SMOKE_BASE || "http://localhost:5210";
 // Desktop widths get the full check (overflow + header height + clipped inputs).
 // The narrow tier gets ONLY the clipped-input check — a value cut mid-word is a
 // bug at any width (this is the "minimized window" regime that hid the offset-row
@@ -34,46 +34,53 @@ const LONG_NAME = "Legacy ambient documentation platform";
 // Every routable surface. `click` = a nav-button label to press after load;
 // `drive` = a custom interaction (used to reach states behind clicks/modals,
 // e.g. App Rationalization only shows its vendor rows once a tool is added).
+// The app is a single path, so these are all of its screens: the landing
+// screen and the calculator's four steps. `drive` walks the flow, since the
+// later steps are only reachable by filling the earlier ones.
+const fillAccount = async (page) => {
+  const inputs = page.locator("input");
+  const vals = [LONG_NAME, "900", "600", "2500", "68"];
+  for (let i = 0; i < vals.length; i++) {
+    await inputs.nth(i).fill(vals[i], { timeout: 6000 }).catch(() => {});
+  }
+  await page.evaluate(() => (document.activeElement)?.blur?.());
+  await page.waitForTimeout(200);
+};
+
+const toCareSetting = async (page) => {
+  await page.getByRole("button", { name: /calculate your roi/i }).first().click({ timeout: 6000 });
+  await page.waitForTimeout(500);
+};
+
+const toAccount = async (page) => {
+  await toCareSetting(page);
+  await page.getByText("Outpatient", { exact: true }).first().click({ timeout: 6000 });
+  await page.waitForTimeout(500);
+};
+
+const toLift = async (page) => {
+  await toAccount(page);
+  await fillAccount(page);
+  await page.getByRole("button", { name: /next: the lift/i }).first().click({ timeout: 6000 });
+  await page.waitForTimeout(600);
+};
+
+const toAnswer = async (page) => {
+  await toLift(page);
+  const toggles = page.locator('button[role="switch"], input[type="checkbox"]');
+  const n = Math.min(3, await toggles.count());
+  for (let i = 0; i < n; i++) { await toggles.nth(i).click({ timeout: 2000 }).catch(() => {}); }
+  await page.waitForTimeout(300);
+  await page.getByRole("button", { name: /see the answer/i }).first().click({ timeout: 6000 });
+  await page.waitForTimeout(700);
+};
+
 const ROUTES = [
-  { url: "/?proformapreview=1", label: "Proforma · Build" },
-  { url: "/?proformapreview=1", label: "Proforma · Case", click: "The case" },
-  { url: "/?proformapreview=1", label: "Proforma · Present", click: "Present" },
-  { url: "/?explorepreview=1", label: "Explore · flow" },
-  { url: "/?explore=outpatient", label: "Explore · outpatient" },
-  { url: "/?explore=ed", label: "Explore · ED" },
-  { url: "/?explore=inpatient", label: "Explore · inpatient" },
-  { url: "/?explore=nursing", label: "Explore · nursing" },
-  { url: "/?multipreview=1", label: "Attain · multi-category" },
-  { url: "/?attainpreview=1", label: "Attain · matrix" },
-  { url: "/?consultpreview=1", label: "Attain · align" },
-  { url: "/?planpreview=1", label: "Attain · plan" },
-  { url: "/?attainv2=1", label: "Attain · v2 funnel" },
-  { url: "/learn/overview", label: "Methodology · overview" },
-  { url: "/learn/continuum", label: "Methodology · across settings" },
-  { url: "/forecast", label: "Forecast · hub" },
-  {
-    url: "/",
-    label: "App Rationalization · row",
-    // Home splash -> Forecast -> App Rationalization -> add a long-named custom
-    // tool (needs annual spend > 0 to enable "Add to stack") so the vendor row
-    // renders and any name clip is exposed.
-    drive: async (page) => {
-      await page.getByRole("button", { name: /get started/i }).first().click({ timeout: 6000 }).catch(() => {});
-      await page.waitForTimeout(400);
-      await page.getByText("Forecast", { exact: true }).first().click({ timeout: 6000 });
-      await page.waitForTimeout(500);
-      await page.getByText("App Rationalization", { exact: true }).first().click({ timeout: 6000 });
-      await page.waitForTimeout(500);
-      await page.getByTestId("ar-add-custom-tool").click({ timeout: 6000 });
-      await page.waitForTimeout(300);
-      await page.getByTestId("ar-add-vendor").fill(LONG_NAME, { timeout: 6000 });
-      await page.getByTestId("ar-add-spend").fill("180000", { timeout: 6000 });
-      await page.waitForTimeout(150);
-      await page.getByTestId("ar-add-confirm").click({ timeout: 6000 });
-      await page.waitForTimeout(400);
-      await page.evaluate(() => (document.activeElement)?.blur?.());
-    },
-  },
+  { url: "/", label: "Home" },
+  { url: "/", label: "ROI Calculator · care setting", drive: toCareSetting },
+  { url: "/", label: "ROI Calculator · the account", drive: toAccount },
+  { url: "/", label: "ROI Calculator · the lift", drive: toLift },
+  { url: "/", label: "ROI Calculator · the answer", drive: toAnswer },
 ];
 
 const fails = [];
@@ -129,20 +136,15 @@ for (const route of ROUTES) {
 }
 
 // ── PDF health ────────────────────────────────────────────────────────────
-// The four tool PDFs are HTML-print documents (?...pdf=...), a rendering path
+// The one-pager is an HTML-print document (?quickroipdf=1), a rendering path
 // vitest never sees. Each page is a fixed 816×1056 box; the risks are a page
 // that fails to render (doc collapses), content that bleeds past a page box,
-// a number that comes out "$NaN", or sideways overflow. Render each with print
-// media and check all four. minPages guards against a page silently dropping.
+// a number that comes out "$NaN", or sideways overflow. Render it with print
+// media. minPages guards against a page silently dropping.
 const PDF_PAGE_H = 1056;
 const SPARSE_MAX = 330; // px of dead space above a body page's footer before it reads as "not dense"
 const PDF_ROUTES = [
-  { url: "/?explorepdf=1", label: "Explore PDF", minPages: 5 },
-  { url: "/?proformapdf=1", label: "Proforma PDF", minPages: 6 },
-  { url: "/?attainpdf=review", label: "Attain PDF", minPages: 4 },
-  { url: "/?appratpdf=1", label: "App Rationalization PDF", minPages: 5 },
-  { url: "/?methodpdf=1", label: "Methodology PDF", minPages: 6 },
-  { url: "/?quickroipdf=1", label: "ROI Calculator PDF", minPages: 4 },
+  { url: "/?quickroipdf=1", label: "ROI Calculator PDF", minPages: 1 },
 ];
 for (const route of PDF_ROUTES) {
   const ctx = await browser.newContext({ viewport: { width: 816, height: PDF_PAGE_H } });
@@ -221,9 +223,8 @@ try {
   await page.waitForTimeout(400);
   const enter = await page.$('[data-testid="button-enter-app"]');
   if (enter) { await enter.click(); await page.waitForTimeout(300); }
-  await page.click('[data-testid="card-forecast"]'); await page.waitForTimeout(250);
-  await page.click('[data-testid="card-forecast-roi-calculator-button"]'); await page.waitForTimeout(250);
   await page.click('button:has-text("Inpatient")'); await page.waitForTimeout(250);
+  await fillAccount(page);
   await page.click('button:has-text("Next: the lift")'); await page.waitForTimeout(350);
   // scroll to the bottom of the lift, then advance — the answer must land at top
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
@@ -242,4 +243,4 @@ if (fails.length) {
   console.error(`\n✗ LAYOUT SMOKE FAILED (${fails.length}):\n` + fails.map((f) => "  " + f).join("\n") + "\n");
   process.exit(1);
 }
-console.log("✓ layout smoke passed — no overflow, no wrapped/squished headers, no clipped inputs across all routes × widths; all 4 PDFs render clean (pages, no bleed, no NaN)");
+console.log("✓ layout smoke passed — no overflow, no wrapped/squished headers, no clipped inputs across all routes × widths; the one-pager PDF renders clean (pages, no bleed, no NaN)");

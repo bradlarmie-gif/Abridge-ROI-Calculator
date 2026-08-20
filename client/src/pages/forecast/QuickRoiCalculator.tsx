@@ -75,9 +75,9 @@ function useCountUp(value: number, ms = 550): number {
 const EYEBROW = "text-[10.5px] font-extrabold tracking-[0.14em] uppercase text-[#A69A88]";
 const STEPS = ["The account", "The lift", "The answer"];
 
-interface Props { onBack: () => void; onHome: () => void; pathLabel?: string; }
+interface Props { onBack: () => void; onHome: () => void; }
 
-export default function QuickRoiCalculator({ onBack, onHome, pathLabel }: Props) {
+export default function QuickRoiCalculator({ onBack, onHome }: Props) {
   const [setting, setSetting] = useState<SettingKey | null>(null);
   const [step, setStep] = useState(0); // 0 = account, 1 = lift, 2 = answer
   const inPicker = setting === null;
@@ -101,7 +101,7 @@ export default function QuickRoiCalculator({ onBack, onHome, pathLabel }: Props)
     <div className="min-h-screen bg-[#FFFFFF] text-[#5E534A] antialiased">
       <UnifiedHeader
         pathType="forecast"
-        pathLabel={pathLabel}
+        pathLabel=""
         currentStep={inPicker ? 1 : step + 2}
         totalSteps={4}
         stepName={inPicker ? "Care setting" : STEPS[step]}

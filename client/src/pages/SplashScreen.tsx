@@ -121,7 +121,7 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
           className="border border-white/30 min-h-[44px]"
           data-testid="button-enter-app"
         >
-          Get Started
+          Calculate Your ROI
           <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
         </Button>
       </div>

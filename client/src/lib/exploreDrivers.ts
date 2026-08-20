@@ -1,25 +1,6 @@
 import type { ComponentType } from "react";
 import type { ExploreState } from "@/pages/explore/exploreState";
-import PatientAccessCalc from "@/components/explore/drivers/PatientAccessCalc";
-import LwbsRecoveryCalc from "@/components/explore/drivers/LwbsRecoveryCalc";
-import AdmissionCaptureCalc from "@/components/explore/drivers/AdmissionCaptureCalc";
-import ProviderWellbeingCalc from "@/components/explore/drivers/ProviderWellbeingCalc";
-import PhysicianLocumAgencyCalc from "@/components/explore/drivers/PhysicianLocumAgencyCalc";
-import NursingRetentionCalc from "@/components/explore/drivers/NursingRetentionCalc";
-import NursingAgencyCalc from "@/components/explore/drivers/NursingAgencyCalc";
-import NursingOvertimeCalc from "@/components/explore/drivers/NursingOvertimeCalc";
-import NursingHapiCalc from "@/components/explore/drivers/NursingHapiCalc";
-import NursingFallsCalc from "@/components/explore/drivers/NursingFallsCalc";
-import NursingCautiCalc from "@/components/explore/drivers/NursingCautiCalc";
-import NursingClabsiCalc from "@/components/explore/drivers/NursingClabsiCalc";
-import NursingSepsisCalc from "@/components/explore/drivers/NursingSepsisCalc";
-import WrvuCalc from "@/components/explore/drivers/WrvuCalc";
-import HccCaptureCalc from "@/components/explore/drivers/HccCaptureCalc";
-import DenialPreventionCalc from "@/components/explore/drivers/DenialPreventionCalc";
-import DrgAccuracyCalc from "@/components/explore/drivers/DrgAccuracyCalc";
 
-import ObsDefenseCalc from "@/components/explore/drivers/ObsDefenseCalc";
-import ScribeCostReductionCalc from "@/components/explore/drivers/ScribeCostReductionCalc";
 
 export type ExploreQuadrant = 'Capacity' | 'Workforce' | 'Revenue' | 'Quality';
 
@@ -87,7 +68,6 @@ export interface ExploreDriver {
   subGroup?: string;
   comingSoon?: boolean;
   trackedMeasureIds?: string[];
-  calcComponent?: ComponentType<ExploreCalcComponentProps>;
   measureDefaults?: ExploreDriverMeasureDefaults;
   valueArc?: ValueArc;
   measurePhase?: 'emerging' | 'demonstrated' | 'strategic';
@@ -106,7 +86,6 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     visibility: 'quantified',
     enabledStateKey: 'patientAccessEnabled',
     expandedStateKey: 'patientAccessExpanded',
-    calcComponent: PatientAccessCalc,
     trackedMeasureIds: ['patientsPerProvider', 'visitsPerHour', 'timeInNote'],
     measureDefaults: {
       deltaLabel: 'Additional visits created per year',
@@ -129,7 +108,6 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     visibility: 'quantified',
     enabledStateKey: 'edLwbsEnabled',
     expandedStateKey: 'edLwbsExpanded',
-    calcComponent: LwbsRecoveryCalc,
     trackedMeasureIds: ['lwbsRate', 'doorToProvider'],
     measureDefaults: {
       deltaLabel: 'LWBS rate',
@@ -155,7 +133,6 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     enabledStateKey: 'edThroughputEnabled',
     expandedStateKey: 'edThroughputExpanded',
     childOfDriverId: 'lwbsRecovery',
-    calcComponent: AdmissionCaptureCalc,
     measureDefaults: {
       deltaLabel: 'Additional admissions captured per year',
       deltaUnit: 'admissions',
@@ -200,7 +177,6 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     visibility: 'quantified',
     enabledStateKey: 'wellbeingEnabled',
     expandedStateKey: 'wellbeingExpanded',
-    calcComponent: ProviderWellbeingCalc,
     trackedMeasureIds: ['burnoutAssessment', 'likelihoodToStay', 'workOutsideWorkEmpirical'],
     measureDefaults: {
       deltaLabel: 'Provider departures per year',
@@ -247,7 +223,6 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     enabledStateKey: 'physicianAgencyEnabled',
     expandedStateKey: 'physicianAgencyExpanded',
     childOfDriverId: 'providerWellbeing',
-    calcComponent: PhysicianLocumAgencyCalc,
     trackedMeasureIds: ['agencyLocumSpend'],
     measureDefaults: {
       deltaLabel: 'Annual locum & agency spend',
@@ -283,7 +258,6 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
       benchmarkHint: 'Enter total annual scribe spend before and after Abridge, including salary, benefits, and any service fees. The value is the difference. In-person scribes typically run $30K to $45K per year all-in.',
     },
     measurePhase: 'demonstrated',
-    calcComponent: ScribeCostReductionCalc,
   },
   {
     id: 'nursingRetention',
@@ -294,7 +268,6 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     visibility: 'quantified',
     enabledStateKey: 'nursingRetentionEnabled',
     expandedStateKey: 'nursingRetentionExpanded',
-    calcComponent: NursingRetentionCalc,
     trackedMeasureIds: ['nurseRetentionRate', 'burnoutAssessment', 'likelihoodToStay'],
     measureDefaults: {
       deltaLabel: 'RN departures per year',
@@ -318,7 +291,6 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     enabledStateKey: 'nursingAgencyEnabled',
     expandedStateKey: 'nursingAgencyExpanded',
     childOfDriverId: 'nursingRetention',
-    calcComponent: NursingAgencyCalc,
     trackedMeasureIds: ['travelNurseSpend'],
     measureDefaults: {
       deltaLabel: 'Annual travel & agency spend',
@@ -345,7 +317,6 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     visibility: 'quantified',
     enabledStateKey: 'nursingOtEnabled',
     expandedStateKey: 'nursingOtExpanded',
-    calcComponent: NursingOvertimeCalc,
     trackedMeasureIds: ['overtimeHours', 'chartingAfterShift'],
     measureDefaults: {
       deltaLabel: 'Annual overtime spend',
@@ -570,7 +541,6 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     enabledStateKey: 'nursingHapiEnabled',
     expandedStateKey: 'nursingHapiExpanded',
     subGroup: 'Harm Events',
-    calcComponent: NursingHapiCalc,
     measureDefaults: {
       deltaLabel: 'HAPI rate (per 1,000 patient days)',
       deltaUnit: '/1,000 pt-days',
@@ -594,7 +564,6 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     enabledStateKey: 'nursingFallsEnabled',
     expandedStateKey: 'nursingFallsExpanded',
     subGroup: 'Harm Events',
-    calcComponent: NursingFallsCalc,
     measureDefaults: {
       deltaLabel: 'Fall rate (per 1,000 patient days)',
       deltaUnit: '/1,000 pt-days',
@@ -618,7 +587,6 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     enabledStateKey: 'nursingCautiEnabled',
     expandedStateKey: 'nursingCautiExpanded',
     subGroup: 'Bundle Compliance',
-    calcComponent: NursingCautiCalc,
     measureDefaults: {
       deltaLabel: 'CAUTI rate (per 1,000 catheter days)',
       deltaUnit: '/1,000 cath-days',
@@ -642,7 +610,6 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     enabledStateKey: 'nursingClabsiEnabled',
     expandedStateKey: 'nursingClabsiExpanded',
     subGroup: 'Bundle Compliance',
-    calcComponent: NursingClabsiCalc,
     measureDefaults: {
       deltaLabel: 'CLABSI rate (per 1,000 line days)',
       deltaUnit: '/1,000 line-days',
@@ -666,7 +633,6 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     enabledStateKey: 'nursingSepsisEnabled',
     expandedStateKey: 'nursingSepsisExpanded',
     subGroup: 'Bundle Compliance',
-    calcComponent: NursingSepsisCalc,
     measureDefaults: {
       deltaLabel: 'SEP-1 non-compliance rate (%)',
       deltaUnit: '% non-compliant',
@@ -755,7 +721,6 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     visibility: 'quantified',
     enabledStateKey: 'wrvuEnabled',
     expandedStateKey: 'wrvuExpanded',
-    calcComponent: WrvuCalc,
     trackedMeasureIds: ['wrvu'],
     measureDefaults: {
       deltaLabel: 'Avg wRVU per encounter',
@@ -777,7 +742,6 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     visibility: 'quantified',
     enabledStateKey: 'wrvuEnabled',
     expandedStateKey: 'wrvuExpanded',
-    calcComponent: WrvuCalc,
     trackedMeasureIds: ['wrvu', 'emLevel'],
     measureDefaults: {
       deltaLabel: 'Avg wRVU per encounter',
@@ -800,7 +764,6 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     visibility: 'quantified',
     enabledStateKey: 'hccEnabled',
     expandedStateKey: 'hccExpanded',
-    calcComponent: HccCaptureCalc,
     trackedMeasureIds: ['hccCapture'],
     measureDefaults: {
       deltaLabel: 'Avg HCCs per patient',
@@ -825,7 +788,6 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     visibility: 'quantified',
     enabledStateKey: 'denialsEnabled',
     expandedStateKey: 'denialsExpanded',
-    calcComponent: DenialPreventionCalc,
     trackedMeasureIds: ['cleanClaimRate', 'medicalNecessityDenialRate'],
     measureDefaults: {
       deltaLabel: 'Medical necessity denial rate',
@@ -850,7 +812,6 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     visibility: 'quantified',
     enabledStateKey: 'ipDrgEnabled',
     expandedStateKey: 'ipDrgExpanded',
-    calcComponent: DrgAccuracyCalc,
     trackedMeasureIds: ['drgAccuracyRate', 'ccMccCaptureRate', 'caseMixIndex'],
     measureDefaults: {
       deltaLabel: 'Case Mix Index (CMI)',
@@ -874,7 +835,6 @@ export const EXPLORE_DRIVERS: ExploreDriver[] = [
     visibility: 'quantified',
     enabledStateKey: 'ipObsDefenseEnabled',
     expandedStateKey: 'ipObsDefenseExpanded',
-    calcComponent: ObsDefenseCalc,
     trackedMeasureIds: ['medicalNecessityDenialRate'],
     measureDefaults: {
       deltaLabel: 'IP-to-obs downgrade rate',
