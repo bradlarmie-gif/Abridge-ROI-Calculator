@@ -29,12 +29,18 @@ const FILES: string[] = [
   "components/forecast/QuickRoiEditorialPdf.tsx",
   "components/forecast/QuickRoiEditorialPdfRoute.tsx",
   "components/UnifiedHeader.tsx",
-  "lib/exploreDrivers.ts",
   // the driver titles, notes, field labels and worked-math strings all render
   // on the "what changes" step and inside the PDF, so they are live copy too
   "pages/forecast/roiEngine.ts",
   "lib/exploreDriverCalcs.ts",
 ];
+
+// Deliberately NOT scanned: lib/exploreDrivers.ts. It reads as copy (it is full
+// of taglines and shortDescriptions) but this app only consumes its driver ids
+// and quadrant mapping; none of its prose reaches the screen. Verified by
+// dumping the rendered text of every screen in every setting and finding zero
+// matches. Scanning it only produces findings on dead strings, which is how a
+// guard trains people to ignore it. If any of it is ever rendered, add it back.
 
 /**
  * AUDIENCE rules, specific to this tool.
@@ -53,6 +59,16 @@ const AUDIENCE_RULES: Rule[] = [
   // ("x 75% realization", "realization rate"), not the identifiers and field
   // names the engine legitimately uses (f.realization, wrvuRealization).
   { name: "realization-jargon", hit: (c) => /%\s*realization\b/i.test(c) || /\brealization\s+(rate|rates|share|assumption)\b/i.test(c) },
+  /**
+   * Harm-prevention claims. The shared core rule catches the verb "prevents",
+   * but the noun forms walked straight past it: the nursing quality drivers
+   * shipped "x 10% prevention" and a field labelled "Prevention attributable to
+   * timely docs", which tells a physician the product prevents falls, CLABSI and
+   * pressure injuries. It does not. It surfaces documentation sooner, and the
+   * care team decides and acts. Any avoided-harm share must keep the team as the
+   * actor. "preventable"/"avoidable" as a standing clinical descriptor is fine.
+   */
+  { name: "prevention-claim", hit: (c) => /\bprevent(ion|ions|ed|ing)\b/i.test(c) },
 ];
 
 describe("ROI Calculator COPY guardrails", () => {

@@ -76,6 +76,8 @@ async function driveCalculator(page, setting, { stopAt = "answer" } = {}) {
   const goalCards = page.locator("[data-testid^=goal-]");
   const goalCount = await goalCards.count();
   for (let i = 0; i < goalCount; i++) await goalCards.nth(i).click({ timeout: 3000 }).catch(() => {});
+  const payer = page.getByTestId("payer-both");
+  if (await payer.count()) await payer.click({ timeout: 3000 }).catch(() => {});
   await page.waitForTimeout(250);
   if (stopAt === "goals-picked") return `${setting} — goals (${goalCount} picked)`;
   await page.getByRole("button", { name: /next: your numbers/i }).first().click({ timeout: 6000 }).catch(() => {});

@@ -13,6 +13,7 @@ import {
   DRIVERS,
   DOMAIN_ORDER,
   DOMAIN_GOALS,
+  type PayerModel,
   defaultVals,
   defaultEnabled,
   runRoi,
@@ -57,9 +58,11 @@ import {
 const fmtInt = (n: number) => Math.round(n).toLocaleString("en-US");
 const fmtShort = (n: number) => {
   const a = Math.abs(n);
-  if (a >= 1e6) return `$${(n / 1e6).toFixed(2).replace(/\.?0+$/, "")}M`;
-  if (a >= 1e3) return `$${Math.round(n / 1e3)}K`;
-  return `$${Math.round(n)}`;
+  // sign outside the symbol: "-$120K", never "$-120K"
+  const sign = n < 0 ? "-" : "";
+  if (a >= 1e6) return `${sign}$${(a / 1e6).toFixed(2).replace(/\.?0+$/, "")}M`;
+  if (a >= 1e3) return `${sign}$${Math.round(a / 1e3)}K`;
+  return `${sign}$${Math.round(a)}`;
 };
 
 function useCountUp(value: number, ms = 550): number {
@@ -109,18 +112,19 @@ export default function QuickRoiCalculator({ onBack, onHome }: Props) {
     else setStep(n - 2);
   };
   return (
-    <div className="min-h-screen bg-[#FFFFFF] text-[#5E534A] antialiased">
+    <div className="min-h-screen bg-[#FDFCFA] text-[#5E534A] antialiased">
       <UnifiedHeader
         pathType="forecast"
         pathLabel=""
         currentStep={inPicker ? 1 : step + 2}
         totalSteps={5}
-        stepName={inPicker ? "Setting" : STEPS[step]}
+        stepName={inPicker ? "Care setting" : STEPS[step]}
         onBack={goBack}
         onHome={onHome}
         onStepClick={onStepClick}
-        stepLabels={["Setting", "Your goals", "Your numbers", "What changes", "Your number"]}
+        stepLabels={["Care setting", "Your goals", "Your numbers", "What changes", "Your number"]}
       />
+      <style>{SLIDER_CSS}</style>
       <UnifiedHeaderSpacer />
       <div className="max-w-[760px] mx-auto px-5 sm:px-8">
         {inPicker
@@ -178,7 +182,7 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
   useEffect(() => {
     if (totalProviders > 0 && onAbridge > totalProviders) setOnAbridge(totalProviders);
   }, [totalProviders, onAbridge]);
-  const [occupancy, setOccupancy] = useState(d.occupancy ?? 85);
+  const [occupancy, setOccupancy] = useState(d.occupancy ?? 0);
   // Documentation minutes in notes (before -> after). Feeds Patient Access
   // dollars (outpatient) and the reclaimed-hours proof (all physician settings).
   // Blank by default: the practice sets its own before and after. The setting's
@@ -191,7 +195,14 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
   const [vals, setVals] = useState<Record<string, number>>(() => defaultVals(setting));
   const [enabled, setEnabled] = useState<Record<string, boolean>>(() => defaultEnabled(setting));
   const setVal = (k: string, v: number) => setVals((p) => ({ ...p, [k]: v }));
-  const toggle = (id: string) => setEnabled((p) => ({ ...p, [id]: !p[id] }));
+  const toggle = (id: string) => setEnabled((prev) => {
+    const next = { ...prev, [id]: !prev[id] };
+    // turning a parent off takes its dependants with it
+    if (!next[id]) {
+      for (const d of DRIVERS[setting]) if (d.dependsOn === id) next[d.id] = false;
+    }
+    return next;
+  });
 
   // ── headroom dials ────────────────────────────────────────────────────────
   const adoptionNow = totalProviders > 0 ? (onAbridge / totalProviders) * 100 : 0;
@@ -276,6 +287,30 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
   // What they said they were actually trying to fix. That choice, not the
   // catalogue, decides how many sections the next step has.
   const [goals, setGoals] = useState<Domain[]>([]);
+  // Only ask how they are paid when the setting actually has both kinds of
+  // revenue driver. An ED has no risk-capture card, so the question would be
+  // a dead end there.
+  const hasPayerSplit = useMemo(
+    () => DRIVERS[setting].some((d) => d.payerModel === "vbc") && DRIVERS[setting].some((d) => d.payerModel === "ffs"),
+    [setting],
+  );
+  const [payerModel, setPayerModel] = useState<PayerModel | "both" | null>(null);
+  const revenuePicked = goals.includes("Revenue");
+  // Switching the payer answer must also switch OFF anything it hides, or a
+  // driver the practice can no longer see keeps contributing to their total.
+  useEffect(() => {
+    if (!hasPayerSplit) return;
+    setEnabled((prev) => {
+      let changed = false;
+      const next = { ...prev };
+      for (const d of DRIVERS[setting]) {
+        const hidden = !!d.payerModel && payerModel !== null && payerModel !== "both" && d.payerModel !== payerModel;
+        if (hidden && next[d.id]) { next[d.id] = false; changed = true; }
+      }
+      return changed ? next : prev;
+    });
+  }, [payerModel, hasPayerSplit, setting]);
+  const needsPayerModel = hasPayerSplit && revenuePicked && payerModel === null;
   const toggleGoal = (d: Domain) => setGoals((g) => (g.includes(d) ? g.filter((x) => x !== d) : [...g, d]));
   const domains = useMemo(
     () => availableDomains.filter((d) => goals.includes(d)),
@@ -287,10 +322,12 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
       .filter((dr) => dr.domain === dom && enabled[dr.id])
       .reduce((s, dr) => s + (today.valueById[dr.id] ?? 0), 0);
     if (dollar > 0) return fmtShort(dollar);
-    // Capacity is a measured signal, never a toggle — show its hours, or a neutral
-    // dash before the account numbers are in, but never "Off".
-    if (dom === "Capacity" && !isNursing) return hoursReclaimed > 0 ? `${fmtInt(hoursReclaimed)} hrs` : "—";
-    return "Off";
+    // Capacity is a signal, never a toggle: it shows hours, or says it is waiting
+    // on the minutes. Everything else says how many cards are still off. One
+    // vocabulary, so two null states are never ambiguous side by side.
+    if (dom === "Capacity" && !isNursing) return hoursReclaimed > 0 ? `${fmtInt(hoursReclaimed)} hrs` : "Add minutes";
+    const cards = DRIVERS[setting].filter((dr) => dr.domain === dom).length;
+    return cards > 0 ? `${cards} to switch on` : "Nothing on";
   };
   const activeDomain = domains[Math.min(liftTab, Math.max(0, domains.length - 1))];
 
@@ -328,7 +365,7 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
                   onClick={() => toggleGoal(dom)}
                   aria-pressed={on}
                   data-testid={`goal-${dom.toLowerCase()}`}
-                  className={`group w-full text-left flex items-start justify-between gap-6 px-4 sm:px-5 py-6 border-b border-[#E8E2DA] transition-colors ${on ? "bg-[#FDFBF8]" : "hover:bg-[#FCFAF7]"}`}
+                  className={`group w-full text-left flex items-start justify-between gap-6 px-4 sm:px-5 py-6 border-b border-[#E8E2DA] border-l-[3px] transition-colors ${on ? "border-l-[#EA2C00] bg-[#FDFBF8]" : "border-l-transparent hover:bg-[#FBF8F4]"}`}
                 >
                   <div className="min-w-0">
                     <div className={`text-[10.5px] font-extrabold tracking-[0.14em] uppercase ${on ? "text-[#EA2C00]" : "text-[#B4A896]"}`}>{dom}</div>
@@ -349,14 +386,49 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
               );
             })}
           </div>
+          {hasPayerSplit && revenuePicked && (
+            <div className="mt-8 rounded-xl border border-[#EAE3D9] bg-[#FDFBF8] px-5 sm:px-6 py-6">
+              <div className="text-[10.5px] font-extrabold tracking-[0.14em] uppercase text-[#A69A88]">One follow-up on revenue</div>
+              <div className="font-abridge text-[20px] leading-tight text-[#1A1A1A] mt-2">How are you paid for this work?</div>
+              <p className="text-[13.5px] leading-[1.5] text-[#8C8073] mt-1.5 max-w-[460px]">
+                It decides which revenue questions are worth your time. There is no
+                point asking a fee-for-service practice about risk capture.
+              </p>
+              <div className="mt-5 flex flex-wrap gap-2.5">
+                {([
+                  { k: "ffs", label: "Fee for service", sub: "you bill per visit" },
+                  { k: "vbc", label: "Value based", sub: "you are paid on the panel" },
+                  { k: "both", label: "Both", sub: "a mix of the two" },
+                ] as const).map((opt) => {
+                  const on = payerModel === opt.k;
+                  return (
+                    <button
+                      key={opt.k}
+                      type="button"
+                      onClick={() => setPayerModel(opt.k)}
+                      aria-pressed={on}
+                      data-testid={`payer-${opt.k}`}
+                      className={`text-left rounded-lg border px-4 py-3 transition-colors ${on ? "border-[#EA2C00] bg-white" : "border-[#E0D9CE] bg-white hover:border-[#B4A896]"}`}
+                    >
+                      <div className={`text-[14.5px] font-bold ${on ? "text-[#EA2C00]" : "text-[#1A1A1A]"}`}>{opt.label}</div>
+                      <div className="text-[12px] text-[#A69A88] mt-0.5">{opt.sub}</div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           <p className="mt-7 text-[15px] leading-[1.6] text-[#5E534A]">
-            {goals.length > 0 ? (
+            {needsPayerModel ? (
+              <span className="text-[#A69A88]">Answer the revenue question above to carry on.</span>
+            ) : goals.length > 0 ? (
               <>You picked <span className="font-abridge text-[#1A1A1A]">{goals.length}</span> of {availableDomains.length}. The next steps will only ask about {goals.length === 1 ? "that one" : "those"}.</>
             ) : (
-              <span className="italic text-[#A69A88]">Pick at least one to carry on.</span>
+              <span className="text-[#A69A88]">Pick at least one to carry on.</span>
             )}
           </p>
-          <NavRow onNext={() => setStep(1)} nextLabel="Next: your numbers" disabled={goals.length === 0} />
+          <NavRow onNext={() => setStep(1)} nextLabel="Next: your numbers" disabled={goals.length === 0 || needsPayerModel} />
         </StepShell>
       )}
 
@@ -364,7 +436,7 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
         <StepShell title={`Now, how big is your ${orgWord}?`} sub="Rough numbers are fine. Nothing here is locked, and you can come back and change any of it.">
           <div className="border-t border-[#E8E2DA]">
             <Row label={`${orgWord.charAt(0).toUpperCase()}${orgWord.slice(1)} name`} hint="only used to label your summary" grow>
-              <TextInput value={practice} onChange={setPractice} placeholder="e.g., Riverbend Family Medicine" />
+              <TextInput value={practice} onChange={setPractice} placeholder={meta.namePlaceholder ?? `e.g., your ${orgWord}`} />
             </Row>
             <Row label={`How many ${scopeWord} are in your ${orgWord}?`} hint={`everyone doing ${settingWord} documentation today`}>
               <NumInput value={totalProviders} onChange={setTotalProviders} placeholder="e.g., 90" />
@@ -373,19 +445,21 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
               <NumInput value={onAbridge} onChange={setOnAbridge} placeholder="e.g., 60"
                 max={totalProviders > 0 ? totalProviders : undefined} />
             </Row>
-            <Row label={`About how many ${meta.encWord} does each ${meta.providerWord.replace(/s$/, "")} see in a year?`} hint="a normal full year, not a busy month scaled up">
-              <NumInput value={encPerProvider} onChange={setEncPerProvider} placeholder="e.g., 2,500" />
+            <Row
+              label={`About how many ${meta.encWord} does each ${meta.providerWord.replace(/s$/, "")} ${meta.volumeVerb ?? "see"} in a year?`}
+              hint={meta.volumeHint ?? "a normal full year, not a busy month scaled up"}>
+              <NumInput value={encPerProvider} onChange={setEncPerProvider} placeholder={`e.g., ${meta.volumePlaceholder ?? "2,500"}`} />
             </Row>
             <Row label={`What share of those ${meta.encWord} would you document with Abridge?`} hint={`not every ${meta.encWord.replace(/s$/, "")} suits ambient capture, so this is rarely 100%`}>
               <NumInput value={utilNow} onChange={setUtilNow} suffix="%" placeholder="e.g., 68" />
             </Row>
             {isNursing && (
               <>
-                <Row label="How many staffed beds?" hint="this sets the patient-days the quality math runs on">
+                <Row label="How many staffed beds?" hint="beds and occupancy give us the patient-days everything below is counted on">
                   <NumInput value={staffedBeds} onChange={setStaffedBeds} placeholder="e.g., 300" />
                 </Row>
-                <Row label="Average occupancy?">
-                  <NumInput value={occupancy} onChange={setOccupancy} suffix="%" />
+                <Row label="Average occupancy?" hint="how full the unit typically runs">
+                  <NumInput value={occupancy} onChange={setOccupancy} suffix="%" placeholder="e.g., 85" />
                 </Row>
               </>
             )}
@@ -394,10 +468,10 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
             {encToday > 0 ? (
               <>That puts Abridge on about <span className="font-abridge text-[#1A1A1A]">{fmtInt(encToday)}</span> {meta.encWord} a year: {Math.round(adoptionNow)}% of your {scopeWord}, on {Math.round(utilNow)}% of their {meta.encWord}. Everything from here is calculated on that number.</>
             ) : (
-              <span className="italic text-[#A69A88]">Fill in the numbers above and we'll show how many {meta.encWord} your figure will be built on.</span>
+              <span className="text-[#A69A88]">Fill in the numbers above and we'll show how many {meta.encWord} your figure will be built on.</span>
             )}
           </p>
-          <NavRow onBack={() => setStep(0)} onNext={() => setStep(2)} nextLabel="Next: what changes" />
+          <NavRow onBack={() => setStep(0)} onNext={() => setStep(2)} nextLabel="Next: what changes" disabled={encToday <= 0} />
         </StepShell>
       )}
 
@@ -425,8 +499,17 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
                 dollarized={setting === "outpatient"}
                 placeholderBefore={String(meta.timeMetric.before)} placeholderAfter={String(meta.timeMetric.after)} />
             )}
-            {DRIVERS[setting].filter((dr) => dr.domain === activeDomain).map((dr) => (
+            {DRIVERS[setting].filter((dr) => dr.domain === activeDomain).filter((dr) => {
+              // a purely fee-for-service practice never sees the risk-capture
+              // card, and vice versa; untagged drivers apply either way
+              if (!dr.payerModel || !hasPayerSplit) return true;
+              if (payerModel === "both" || payerModel === null) return true;
+              return dr.payerModel === payerModel;
+            }).map((dr) => (
               <DriverCard key={dr.id} driver={dr} vals={vals} setVal={setVal}
+                blockedBy={dr.dependsOn && !enabled[dr.dependsOn]
+                  ? (DRIVERS[setting].find((d) => d.id === dr.dependsOn)?.title ?? null)
+                  : null}
                 on={!!enabled[dr.id]} onToggle={() => toggle(dr.id)} eligibleEncounters={Math.round(encToday)}
                 hoursReclaimed={hoursReclaimed} providersOnAbridge={onAbridge}
                 value={today.valueById[dr.id] ?? 0} summary={today.summaryById[dr.id] ?? ""} />
@@ -437,7 +520,7 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
       )}
 
       {step === 3 && (
-        <AnswerStep practiceName={practiceName} encWord={meta.encWord} breakdown={breakdown} todayValue={todayValue} todayValueFull={todayValueFull} potentialValueFull={potentialValueFull}
+        <AnswerStep practiceName={practiceName} encWord={meta.encWord} breakdown={breakdown} todayValue={todayValue} todayValueFull={todayValueFull} potentialValueFull={potentialValueFull} providerWord={scopeWord}
           potentialValue={potentialValue} headroom={headroom} hoursReclaimed={hoursReclaimed}
           adoptionNow={adoptionNow} utilNow={utilNow} totalProviders={totalProviders}
           targetAdoptionPct={targetAdoptionPct} setTargetAdoptionPct={setTargetAdoptionPct}
@@ -460,21 +543,27 @@ function StepShell({ title, sub, children }: { title: string; sub: string; child
 
 function Row({ label, hint, grow, children }: { label: string; hint?: string; grow?: boolean; children: React.ReactNode }) {
   return (
-    <div className={`flex justify-between gap-x-6 gap-y-3 py-5 border-b border-[#E8E2DA] ${grow ? "flex-col items-start sm:flex-row sm:items-center" : "items-center"}`}>
+    // Below sm every row stacks: label and hint first, then the control on its
+    // own line. Side by side, a label that wraps to three lines pushed the input
+    // to the vertical middle and left the hint sitting UNDER the input's
+    // underline, which reads as a broken layout rather than a dense one.
+    <div className="flex flex-col items-stretch gap-y-3 sm:flex-row sm:items-center sm:justify-between sm:gap-x-6 py-5 border-b border-[#E8E2DA]">
       <div className="min-w-0">
         <div className="text-[15px] font-medium text-[#1A1A1A] leading-snug">{label}</div>
         {hint && <div className="text-[12.5px] text-[#A69A88] mt-1 leading-snug">{hint}</div>}
       </div>
       {/* grow: free text has no natural width, so a box sized for a number cuts
-          real names off mid-word. Give it room, and on a narrow screen let it
-          drop under the label and use the whole row. */}
-      <div className={grow ? "w-full sm:w-auto sm:flex-1 sm:min-w-0 flex sm:justify-end" : "flex-shrink-0"}>{children}</div>
+          real names off mid-word. Give it the rest of the row on desktop. */}
+      <div className={`flex w-full justify-start sm:w-auto sm:justify-end ${grow ? "sm:flex-1 sm:min-w-0" : "sm:flex-shrink-0"}`}>{children}</div>
     </div>
   );
 }
 
 // Underlined editorial inputs
-const UINPUT_CLASS = "flex-1 min-w-0 h-auto border-0 rounded-none bg-transparent p-0 shadow-none text-right text-[19px] font-bold text-[#1A1A1A] tabular-nums focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:not-italic placeholder:font-normal placeholder:text-[15px] placeholder:text-[#C9BDAD]";
+// NOTE: the md: duplicates are load-bearing. The shared <Input> ships
+// `md:text-sm`; without a same-variant override it beats a base text-[Npx]
+// from the md breakpoint up, which is every desktop.
+const UINPUT_CLASS = "flex-1 min-w-0 h-auto border-0 rounded-none bg-transparent p-0 shadow-none text-right text-[19px] md:text-[19px] font-bold text-[#1A1A1A] tabular-nums focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:not-italic placeholder:font-normal placeholder:text-[15px] placeholder:text-[#C9BDAD]";
 function NumInput({ value, onChange, suffix, prefix, step = 1, w = "w-[168px]", placeholder, max }: { value: number; onChange: (n: number) => void; suffix?: string; prefix?: string; step?: number; w?: string; placeholder?: string; max?: number }) {
   // A field measured in "%" is a share of something: 100 is the ceiling.
   const cap = max ?? (suffix === "%" ? 100 : undefined);
@@ -572,8 +661,8 @@ function Toggle({ on, onToggle, label }: { on: boolean; onToggle: () => void; la
  * and the boundary between one driver and the next is unmistakable. The card's
  * own annual total sits in the header so the list is scannable.
  */
-function DriverShell({ title, on, onToggle, value, children }: {
-  title: string; on: boolean; onToggle: () => void; value: number; children: React.ReactNode;
+function DriverShell({ title, on, onToggle, value, children, awaiting }: {
+  title: string; on: boolean; onToggle: () => void; value: number; children: React.ReactNode; awaiting?: string;
 }) {
   const [open, setOpen] = useState(true);
   return (
@@ -581,9 +670,11 @@ function DriverShell({ title, on, onToggle, value, children }: {
       <div className="flex items-center justify-between gap-4 px-6 py-5">
         <span className={`text-[17px] font-bold ${on ? "text-[#1A1A1A]" : "text-[#B4A896]"}`}>{title}</span>
         <div className="flex items-center gap-4">
-          {on
-            ? <span className={`font-abridge text-[18px] tabular-nums ${value > 0 ? "text-[#EA2C00]" : "text-[#C9BDAD]"}`}>{fmtShort(value)}</span>
-            : <span className="text-[12px] font-semibold text-[#B4A896] whitespace-nowrap">Not counted</span>}
+          {!on
+            ? <span className="text-[12px] font-semibold text-[#B4A896] whitespace-nowrap">Not counted</span>
+            : awaiting
+              ? <span className="text-[12px] font-semibold text-[#B4776A] whitespace-nowrap">{awaiting}</span>
+              : <span className={`font-abridge text-[18px] tabular-nums ${value > 0 ? "text-[#EA2C00]" : "text-[#C9BDAD]"}`}>{fmtShort(value)}</span>}
           <Toggle on={on} onToggle={onToggle} label={`Include ${title}`} />
         </div>
       </div>
@@ -601,11 +692,27 @@ function DriverShell({ title, on, onToggle, value, children }: {
 }
 
 /** Renders one engine driver: before/after (if any) + its editable fields + the worked math. */
-function DriverCard({ driver, vals, setVal, on, onToggle, value, summary, eligibleEncounters, hoursReclaimed, providersOnAbridge }: {
+function DriverCard({ driver, vals, setVal, on, onToggle, value, summary, eligibleEncounters, hoursReclaimed, providersOnAbridge, blockedBy }: {
   driver: RoiDriver; vals: Record<string, number>; setVal: (k: string, v: number) => void;
   on: boolean; onToggle: () => void; value: number; summary: string; eligibleEncounters: number;
-  hoursReclaimed: number; providersOnAbridge: number;
+  hoursReclaimed: number; providersOnAbridge: number; blockedBy?: string | null;
 }) {
+  // This driver is valued off another driver's pool. With the parent off there
+  // is no pool, so the card says so instead of offering a switch that would
+  // book a dollar against a population the practice just ruled out.
+  if (blockedBy) {
+    return (
+      <div className="rounded-xl border border-[#EFE9E0] px-6 py-5">
+        <div className="flex items-center justify-between gap-4">
+          <span className="text-[17px] font-bold text-[#B4A896]">{driver.title}</span>
+          <span className="text-[12px] font-semibold text-[#B4A896] whitespace-nowrap">Needs {blockedBy}</span>
+        </div>
+        <p className="text-[13px] leading-[1.55] text-[#A69A88] mt-2 max-w-[560px]">
+          This is valued from the patients {blockedBy.toLowerCase()} brings back, so switch that on first.
+        </p>
+      </div>
+    );
+  }
   if (driver.kind === "hcc") {
     return <HccDriverCard driver={driver} vals={vals} setVal={setVal} on={on} onToggle={onToggle} value={value} summary={summary} />;
   }
@@ -655,8 +762,12 @@ function HccDriverCard({ driver, vals, setVal, on, onToggle, value, summary }: {
 }) {
   const pops = driver.populations ?? [];
   const [popIdx, setPopIdx] = useState(0);
+  // The panel size is the one figure we cannot infer or seed, and without it the
+  // card renders a dead $0 with "0 members" in its own worked math, which reads
+  // as broken. Say what is needed instead.
+  const needsPanel = on && !(vals.hccMembers > 0);
   return (
-    <DriverShell title={driver.title} on={on} onToggle={onToggle} value={value}>
+    <DriverShell title={driver.title} on={on} onToggle={onToggle} value={value} awaiting={needsPanel ? "Add your panel size" : undefined}>
       <p className="text-[13px] leading-[1.55] text-[#8C8073] max-w-[540px] mb-1">Risk capture is valued on the panel, once per member per year, never per visit. Abridge lifts the recapture rate on the conditions a member already carries.</p>
 
       {pops.length > 0 && (
@@ -678,7 +789,7 @@ function HccDriverCard({ driver, vals, setVal, on, onToggle, value, summary }: {
         <NumInput value={vals.hccMembers} onChange={(v) => setVal("hccMembers", v)} placeholder="e.g., 45,000" w="w-[128px]" />
       </div>
 
-      {driver.fields.filter((f) => f.k !== "hccMembers").map((f) => (
+      {driver.fields.filter((f) => f.k !== "hccMembers" && !f.realization).map((f) => (
         <FieldRow key={f.k} field={f} value={vals[f.k]} onChange={(v) => setVal(f.k, v)} />
       ))}
 
@@ -802,7 +913,7 @@ function TimeBackBlock({ table, encWord, before, after, onBefore, onAfter, encTo
     <div className="rounded-xl border border-[#EAE3D9] bg-[#FDFBF8] px-6 py-6">
       <div className="flex items-center justify-between gap-4">
         <span className="text-[17px] font-bold text-[#1A1A1A]">Time back in the day</span>
-        <span className="rounded-full bg-[#F2ECE2] px-3 py-1 text-[10px] font-extrabold tracking-[0.12em] uppercase text-[#8C7F6D] whitespace-nowrap">{dollarized ? "Measured · shown as time" : "Measured · not counted in $"}</span>
+        <span className="rounded-full bg-[#F2ECE2] px-3 py-1 text-[10px] font-extrabold tracking-[0.12em] uppercase text-[#8C7F6D] whitespace-nowrap">{dollarized ? "Counted as time, not dollars" : "Counted as time, not dollars"}</span>
       </div>
       <div className="mt-5">
         <BeforeAfter label="Minutes in notes per encounter" table={table} unit="min" step={0.1}
@@ -852,7 +963,7 @@ function NavRow({ onBack, onNext, nextLabel, disabled }: { onBack?: () => void; 
 }
 
 function AnswerStep(p: {
-  practiceName: string; encWord: string; breakdown: { title: string; value: number }[];
+  practiceName: string; encWord: string; providerWord: string; breakdown: { title: string; value: number }[];
   todayValue: number; todayValueFull: number; potentialValueFull: number; potentialValue: number; headroom: number; hoursReclaimed: number;
   adoptionNow: number; utilNow: number; totalProviders: number;
   targetAdoptionPct: number; setTargetAdoptionPct: (n: number) => void; targetUtilPct: number; setTargetUtilPct: (n: number) => void;
@@ -867,8 +978,10 @@ function AnswerStep(p: {
   const todayPct = p.potentialValue > 0 ? (p.todayValue / p.potentialValue) * 100 : 0;
   const headroomPct = Math.max(0, 100 - todayPct);
   const dollarLevers = p.breakdown;
+  const listOf = (xs: string[]) =>
+    xs.length <= 1 ? (xs[0] ?? "") : `${xs.slice(0, -1).join(", ")} and ${xs[xs.length - 1]}`;
   const makeup = [
-    dollarLevers.map((r) => r.title).join(", "),
+    listOf(dollarLevers.map((r) => r.title.toLowerCase())),
     p.hoursReclaimed > 0 ? `${fmtInt(p.hoursReclaimed)} clinician hours back` : "",
   ].filter(Boolean).join(", plus ");
 
@@ -889,7 +1002,6 @@ function AnswerStep(p: {
   return (
     <div>
       {/* Beat 1 — what it's worth today */}
-      <div className={EYEBROW}>Your number</div>
       <h1 className="font-abridge text-[26px] sm:text-[32px] leading-[1.14] text-[#4A3F35] mt-4">For {p.practiceName}, Abridge could be worth</h1>
       <div className="font-abridge text-[66px] sm:text-[92px] leading-[0.88] text-[#EA2C00] mt-3 flex flex-wrap items-baseline gap-x-4">
         <span>{fmtShort(todayShown)}</span>
@@ -921,7 +1033,7 @@ function AnswerStep(p: {
             {hasRange && <span className="text-[26px] sm:text-[32px]"><span className="text-[18px] text-[#9A8C7A] font-normal"> to </span>{fmtShort(potentialFullShown)}</span>}
             <span className="text-[20px] text-[#9A8C7A] font-normal"> a year</span>
           </span>
-          <span className="font-abridge text-[22px] text-[#EA2C00]">+{fmtShort(p.headroom)} on the table</span>
+          <span className="font-abridge text-[22px] text-[#EA2C00]">+{fmtShort(p.headroom)} not yet counted</span>
         </div>
 
         {/* the meter: solid coral = already made, light = reachable headroom */}
@@ -932,13 +1044,13 @@ function AnswerStep(p: {
           </div>
           <div className="flex justify-between mt-2.5 text-[12.5px]">
             <span className="flex items-center gap-1.5 text-[#8C8073]"><span className="w-2 h-2 rounded-full bg-[#EA2C00]" /> At your plan {fmtShort(p.todayValue)}</span>
-            <span className="flex items-center gap-1.5 text-[#8C8073]"><span className="w-2 h-2 rounded-full bg-[#F6B7A6]" /> Still on the table {fmtShort(p.headroom)}</span>
+            <span className="flex items-center gap-1.5 text-[#8C8073]"><span className="w-2 h-2 rounded-full bg-[#F6B7A6]" /> Not yet counted {fmtShort(p.headroom)}</span>
           </div>
         </div>
 
         {/* the dials */}
         <div className={`mt-9 grid grid-cols-1 ${p.showUtilDial ? "sm:grid-cols-2" : ""} gap-x-10 gap-y-6`}>
-          <Slider label="More of your clinicians using it" value={p.targetAdoptionPct} min={Math.round(p.adoptionNow)} onChange={p.setTargetAdoptionPct} right={`${fmtInt(Math.round(p.totalProviders * p.targetAdoptionPct / 100))} of ${fmtInt(p.totalProviders)}`} />
+          <Slider label={`More of your ${p.providerWord} using it`} value={p.targetAdoptionPct} min={Math.round(p.adoptionNow)} onChange={p.setTargetAdoptionPct} right={`${fmtInt(Math.round(p.totalProviders * p.targetAdoptionPct / 100))} of ${fmtInt(p.totalProviders)}`} />
           {p.showUtilDial && (
             <Slider label={`Using it on more of their ${p.encWord}`} value={p.targetUtilPct} min={Math.round(p.utilNow)} onChange={p.setTargetUtilPct} right={`${p.targetUtilPct}%`} />
           )}
@@ -966,7 +1078,7 @@ function AnswerStep(p: {
                     <div className="w-[190px] inline-flex items-baseline gap-1.5 border-b-2 border-[#E0D9CE] focus-within:border-[#EA2C00] transition-colors pb-1">
                       <span className="text-[16px] text-[#A69A88]">$</span>
                       <FormattedNumberInput value={p.price} onChange={p.setPrice}
-                        className="flex-1 min-w-0 h-auto border-0 rounded-none bg-transparent p-0 shadow-none text-[24px] font-bold text-[#1A1A1A] tabular-nums focus-visible:ring-0 focus-visible:ring-offset-0"
+                        className="flex-1 min-w-0 h-auto border-0 rounded-none bg-transparent p-0 shadow-none text-[24px] md:text-[24px] font-bold text-[#1A1A1A] tabular-nums focus-visible:ring-0 focus-visible:ring-offset-0"
                         placeholder="a year, all in" />
                     </div>
                   </div>
@@ -993,10 +1105,10 @@ function AnswerStep(p: {
                   <div className="w-[250px] inline-flex items-baseline gap-2 border-b-[3px] border-[#EA2C00] pb-1.5">
                     <span className="text-[22px] text-[#EA2C00] font-bold">$</span>
                     <FormattedNumberInput value={p.price} onChange={p.setPrice}
-                      className="flex-1 min-w-0 h-auto border-0 rounded-none bg-transparent p-0 shadow-none text-[30px] font-bold text-[#1A1A1A] tabular-nums focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:not-italic placeholder:font-normal placeholder:text-[17px] placeholder:text-[#C0A79C]"
+                      className="flex-1 min-w-0 h-auto border-0 rounded-none bg-transparent p-0 shadow-none text-[30px] md:text-[30px] font-bold text-[#1A1A1A] tabular-nums focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:not-italic placeholder:font-normal placeholder:text-[17px] placeholder:text-[#C0A79C]"
                       placeholder="a year, all in" />
                   </div>
-                  <span className="text-[13px] font-semibold text-[#B4776A]">Type your price here</span>
+
                 </div>
               </>
             )}
@@ -1005,7 +1117,10 @@ function AnswerStep(p: {
       </div>
 
       {/* quiet breakdown of where the value came from */}
-      <div className="mt-10 pt-5 border-t border-[#E8E2DA] flex flex-wrap items-baseline gap-x-6 gap-y-1">
+      <div className="mt-10 pt-5 border-t border-[#E8E2DA]">
+        <div className={EYEBROW}>Where it comes from</div>
+      </div>
+      <div className="mt-3 flex flex-wrap items-baseline gap-x-6 gap-y-1">
         {dollarLevers.map((r) => (
           <span key={r.title} className="text-[13px] text-[#8C8073]">{r.title} <span className="font-abridge text-[15px] text-[#1A1A1A]">{fmtShort(r.value)}</span></span>
         ))}
@@ -1023,14 +1138,49 @@ function AnswerStep(p: {
 }
 
 function Slider({ label, value, min, onChange, right }: { label: string; value: number; min: number; onChange: (n: number) => void; right: string }) {
+  const lo = Math.max(0, Math.floor(min));
+  const pct = 100 - lo > 0 ? ((value - lo) / (100 - lo)) * 100 : 0;
   return (
     <div>
-      <div className="flex items-baseline justify-between mb-2">
-        <span className="text-[14px] font-medium text-[#1A1A1A]">{label}</span>
-        <span className="font-abridge text-[15px] text-[#EA2C00]">{right}</span>
+      <div className="flex items-baseline justify-between gap-4 mb-2">
+        <span className="text-[14px] font-medium text-[#1A1A1A] min-w-0">{label}</span>
+        <span className="font-abridge text-[15px] text-[#EA2C00] whitespace-nowrap flex-shrink-0">{right}</span>
       </div>
-      <input type="range" step={1} min={Math.max(0, Math.floor(min))} max={100} value={value}
-        onChange={(e) => onChange(parseInt(e.target.value, 10))} className="w-full accent-[#EA2C00] h-1 cursor-pointer" />
+      {/* Browser-default range controls read as unstyled next to the bespoke
+          two-tone meter directly above them. Draw the track fill so the part
+          already dialled in reads coral, like everything else that is counted. */}
+      <input
+        type="range" step={1} min={lo} max={100} value={value}
+        onChange={(e) => onChange(parseInt(e.target.value, 10))}
+        className="roi-slider w-full cursor-pointer"
+        style={{ ["--roi-fill" as string]: `${pct}%` }}
+      />
     </div>
   );
 }
+
+const SLIDER_CSS = `
+/* index.css carries a global input[type="range"] block (monochrome, black fill)
+   whose element+attribute selector outranks a bare class, so these have to be
+   qualified the same way to win. Without the qualifier the rules load and do
+   nothing, which is exactly how this looked unstyled the first time. */
+input[type="range"].roi-slider { -webkit-appearance: none; appearance: none; background: transparent; height: 22px; padding: 0; }
+input[type="range"].roi-slider::-webkit-slider-runnable-track {
+  height: 4px; border-radius: 999px; border: 0;
+  background: linear-gradient(to right, #EA2C00 0%, #EA2C00 var(--roi-fill), #EDE5D8 var(--roi-fill), #EDE5D8 100%);
+}
+input[type="range"].roi-slider::-moz-range-track { height: 4px; border-radius: 999px; background: #EDE5D8; border: 0; }
+input[type="range"].roi-slider::-moz-range-progress { height: 4px; border-radius: 999px; background: #EA2C00; }
+input[type="range"].roi-slider::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 18px; height: 18px; margin-top: -7px; border-radius: 999px;
+  background: #EA2C00; border: 3px solid #FFFFFF; box-shadow: 0 1px 3px rgba(74,63,53,0.30);
+  cursor: pointer;
+}
+input[type="range"].roi-slider::-moz-range-thumb {
+  width: 18px; height: 18px; border-radius: 999px;
+  background: #EA2C00; border: 3px solid #FFFFFF; box-shadow: 0 1px 3px rgba(74,63,53,0.30);
+  cursor: pointer;
+}
+input[type="range"].roi-slider:focus-visible::-webkit-slider-thumb { outline: 2px solid #EA2C00; outline-offset: 2px; }
+`;

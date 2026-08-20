@@ -22,7 +22,7 @@ function ProgressDots({ currentStep, totalSteps, onStepClick, stepLabels }: Prog
             onClick={() => onStepClick(stepNum)}
             title={label || `Step ${stepNum}`}
             className={`h-1.5 sm:h-2 min-h-0 min-w-0 rounded-full transition-all cursor-pointer hover:opacity-60 ${
-              'w-1.5 sm:w-2 bg-slate-800'
+              'w-1.5 sm:w-2 bg-[#4A3F35]'
             }`}
             data-testid={`progress-dot-${stepNum}`}
           />
@@ -34,8 +34,8 @@ function ProgressDots({ currentStep, totalSteps, onStepClick, stepLabels }: Prog
               i === currentStep - 1
                 ? 'w-4 sm:w-6 bg-[#EA2C00]'
                 : i < currentStep
-                  ? 'w-1.5 sm:w-2 bg-slate-800'
-                  : 'w-1.5 sm:w-2 bg-slate-200'
+                  ? 'w-1.5 sm:w-2 bg-[#4A3F35]'
+                  : 'w-1.5 sm:w-2 bg-[#E8E2DA]'
             }`}
             data-testid={`progress-dot-${stepNum}`}
           />
@@ -115,7 +115,7 @@ export function UnifiedHeader({
   const hasSteps = currentStep != null && totalSteps != null;
 
   return (
-    <header className="fixed top-0 left-0 right-0 bg-white border-b border-slate-200 z-50 h-14 sm:h-16 overflow-hidden">
+    <header className="fixed top-0 left-0 right-0 bg-[#FDFCFA] border-b border-[#E8E2DA] z-50 h-14 sm:h-16 overflow-hidden">
       <div className="max-w-[1400px] mx-auto px-3 sm:px-6 md:px-12 h-full grid grid-cols-[1fr_auto_1fr] items-center gap-2">
         {/* Left: Logo + Back */}
         <div className="flex items-center gap-2 sm:gap-3 min-w-0 justify-self-start">
@@ -134,10 +134,10 @@ export function UnifiedHeader({
           
           {showBack && (
             <>
-              <div className="w-px h-5 bg-slate-200 hidden sm:block" />
+              <div className="w-px h-5 bg-[#E8E2DA] hidden sm:block" />
               <button
                 onClick={handleBack}
-                className="flex items-center gap-1 text-slate-600 hover:text-slate-900 transition-colors p-1.5 -ml-1 rounded-md hover:bg-slate-100"
+                className="flex items-center gap-1 text-[#8C8073] hover:text-[#1A1A1A] transition-colors p-1.5 -ml-1 rounded-md hover:bg-[#F5F0E8]"
                 data-testid="button-back"
               >
                 <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -153,13 +153,13 @@ export function UnifiedHeader({
         <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 justify-center overflow-hidden">
           {centerContent ?? (<>
           {pathLabel && (
-            <span className={`text-xs sm:text-sm truncate min-w-0 ${stepName || hasSteps ? "text-slate-500 font-medium" : "text-slate-900 font-semibold"}`}>{pathLabel}</span>
+            <span className={`text-xs sm:text-sm truncate min-w-0 ${stepName || hasSteps ? "text-[#A69A88] font-medium" : "text-[#1A1A1A] font-semibold"}`}>{pathLabel}</span>
           )}
-          {pathLabel && (stepName || hasSteps) && <span className="text-slate-300 flex-shrink-0 hidden min-[480px]:inline">·</span>}
+          {pathLabel && (stepName || hasSteps) && <span className="text-[#D8CFC2] flex-shrink-0 hidden min-[480px]:inline">·</span>}
           {stepName ? (
-            <span className="text-xs sm:text-sm text-slate-900 font-semibold truncate hidden min-[480px]:inline">{stepName}</span>
+            <span className="text-xs sm:text-sm text-[#1A1A1A] font-semibold truncate hidden min-[480px]:inline">{stepName}</span>
           ) : hasSteps ? (
-            <span className="text-xs sm:text-sm text-slate-600 flex-shrink-0 hidden min-[480px]:inline">
+            <span className="text-xs sm:text-sm text-[#8C8073] flex-shrink-0 hidden min-[480px]:inline">
               Step {currentStep} of {totalSteps}
             </span>
           ) : null}
@@ -172,7 +172,7 @@ export function UnifiedHeader({
           {hasSteps && (
             <>
               {/* Narrow phones (<480px): compact step counter only */}
-              <span className="text-xs text-slate-500 font-medium tabular-nums min-[480px]:hidden" data-testid="step-counter-compact">
+              <span className="text-xs text-[#A69A88] font-medium tabular-nums min-[480px]:hidden" data-testid="step-counter-compact">
                 {currentStep} / {totalSteps}
               </span>
               {/* Wider phones & up (≥480px): progress dots */}

@@ -171,8 +171,8 @@ function ReportCover({ data }: { data: QuickRoiPdfData }): JSX.Element {
         </h1>
         <div style={{ width: 80, height: 3, background: C.coral, marginBottom: 24 }} />
         <div style={{ fontSize: 17, color: "#666666", marginBottom: 44 }}>{subtitle}</div>
-        <div style={{ fontSize: 10, color: "#999999", letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: 6 }}>Prepared by</div>
-        <div style={{ fontSize: 14, color: "#666666" }}>Abridge · {data.date}</div>
+        <div style={{ fontSize: 10, color: "#999999", letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: 6 }}>Built from your own numbers</div>
+        <div style={{ fontSize: 14, color: "#666666" }}>{data.date}</div>
       </div>
       <div style={{ position: "absolute", bottom: 44, left: 64, right: 64, borderTop: "1px solid #E0E0E0", paddingTop: 12 }}>
         <div style={{ fontSize: 10.5, color: "#999999", lineHeight: 1.5 }}>
@@ -184,13 +184,13 @@ function ReportCover({ data }: { data: QuickRoiPdfData }): JSX.Element {
   );
 }
 
-// ───────────────────────── Page 2 · The value case ─────────────────────────
+// ───────────────────────── Page 2 · What this comes to ─────────────────────────
 function PitchPage({ data }: { data: QuickRoiPdfData }): JSX.Element {
   const m = buildQuickRoiPdfModel(data);
   const priced = data.price > 0;
   const stats: { v: string; k: string; coral?: boolean }[] = [
     { v: fmtShort(m.todayValue), k: "Worth a year, at your plan", coral: true },
-    { v: fmtShort(m.headroom), k: "On the table if you roll out further" },
+    { v: fmtShort(m.headroom), k: "Not yet counted, if you roll out further" },
   ];
   if (priced) {
     stats.push({ v: `${m.roi.toFixed(1)}×`, k: "Back for every dollar spent" });
@@ -206,7 +206,7 @@ function PitchPage({ data }: { data: QuickRoiPdfData }): JSX.Element {
       </div>
       <div style={{ flexGrow: 1 }} />
       <div style={{ marginTop: 32 }}>
-        <div style={sEyebrow}>The value case</div>
+        <div style={sEyebrow}>What this comes to</div>
         <h2 className="font-abridge" style={{ fontSize: 44, lineHeight: 1.06, color: C.ink, margin: "10px 0 0", maxWidth: 680, letterSpacing: "-0.5px" }}>
           For {data.orgName || "your practice"}, Abridge could be worth {fmtShort(m.todayValue)} a year in {m.meta.label.toLowerCase()}.
         </h2>
@@ -241,22 +241,10 @@ function PitchPage({ data }: { data: QuickRoiPdfData }): JSX.Element {
       </div>
       <div style={{ flexGrow: 1 }} />
       <div style={{ marginTop: 16 }}>
-        <div style={{ ...sLbl, marginBottom: 6 }}>Inside this one-pager</div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", columnGap: 44 }}>
-          {[{ n: "01", t: "The numbers, itemized" }, { n: "02", t: "The upside, if you roll out further" }].map((r) => (
-            <div key={r.n} style={{ display: "flex", gap: 14, alignItems: "baseline", padding: "12px 0", borderTop: `1px solid ${C.hair}` }}>
-              <span className="font-abridge" style={{ fontSize: 13, color: C.off }}>{r.n}</span>
-              <span style={{ fontSize: 14, color: C.label }}>{r.t}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-      <div style={{ flexGrow: 1 }} />
-      <div style={{ marginTop: 16 }}>
         <div style={{ ...sRule, marginBottom: 9 }} />
         <div style={{ display: "flex", justifyContent: "space-between" }}>
           <span style={{ fontSize: 10, color: C.faint }}>Prepared for {data.orgName || "your team"} · {data.date}</span>
-          <span style={sLbl}>Confidential</span>
+          <span style={sLbl}>Your figures</span>
         </div>
       </div>
     </Page>
@@ -275,7 +263,6 @@ function NumbersPage({ data }: { data: QuickRoiPdfData }): JSX.Element {
   const pct = (v: number) => (total > 0 ? (v / total) * 100 : 0);
   const domainList = Array.from(new Set(items.map((it) => it.domain))).join(", ").toLowerCase();
   const hasRange = m.todayValueFull > total * 1.01;
-  const biggest = items.length > 0 ? items[0].value : 0;
   return (
     <Page>
       <RunningHeader org={data.orgName} />
@@ -302,9 +289,9 @@ function NumbersPage({ data }: { data: QuickRoiPdfData }): JSX.Element {
       {/* Composition bar — how the number is built, by weight */}
       <div style={{ marginTop: 34 }}>
         <div style={sLbl}>What makes it up</div>
-        <div style={{ marginTop: 12, display: "flex", height: 96, borderRadius: 14, overflow: "hidden", gap: 2, background: C.tile }}>
+        <div style={{ marginTop: 12, display: "flex", height: 72, borderRadius: 12, overflow: "hidden", background: C.tile }}>
           {items.map((it, i) => (
-            <div key={it.id} style={{ width: `${Math.max(pct(it.value), 3).toFixed(2)}%`, background: CORAL_RAMP[i % CORAL_RAMP.length], minWidth: 6, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+            <div key={it.id} style={{ width: `${pct(it.value).toFixed(2)}%`, background: CORAL_RAMP[i % CORAL_RAMP.length], display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
               {pct(it.value) >= 16 && (
                 <span className="font-abridge" style={{ fontSize: 15, color: "#FFFFFF", whiteSpace: "nowrap" }}>{fmtShort(it.value)}</span>
               )}
@@ -318,16 +305,19 @@ function NumbersPage({ data }: { data: QuickRoiPdfData }): JSX.Element {
         {items.map((it, i) => (
           <div key={it.id} style={{ padding: "20px 0", borderTop: `1px solid ${C.hair}` }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 24 }}>
-              <div style={{ fontSize: 14.5, fontWeight: 700, color: C.ink, maxWidth: 540 }}>{it.title}</div>
+              <div style={{ display: "flex", alignItems: "baseline", gap: 10, maxWidth: 540 }}>
+                <span style={{ width: 10, height: 10, borderRadius: 3, background: CORAL_RAMP[i % CORAL_RAMP.length], flexShrink: 0, transform: "translateY(-1px)" }} />
+                <span style={{ fontSize: 14.5, fontWeight: 700, color: C.ink }}>{it.title}</span>
+              </div>
               <div style={{ textAlign: "right", whiteSpace: "nowrap" }}>
                 <span className="font-abridge" style={{ fontSize: 19, color: C.coral }}>{fmtShort(it.value)}</span>
                 <span style={{ fontSize: 11, color: C.faint, marginLeft: 7 }}>{Math.round(pct(it.value))}%</span>
               </div>
             </div>
-            {/* one bar per line, scaled to the biggest line: the eye can rank
-                them without doing arithmetic on the percentages */}
+            {/* same scale as the bar above (share of total), so a row reading
+                86% draws at 86% and the two encodings cannot disagree */}
             <div style={{ marginTop: 9, height: 9, borderRadius: 5, background: C.tile, overflow: "hidden" }}>
-              <div style={{ width: `${(biggest > 0 ? Math.max((it.value / biggest) * 100, 1.5) : 0).toFixed(2)}%`, height: "100%", background: CORAL_RAMP[i % CORAL_RAMP.length], borderRadius: 5 }} />
+              <div style={{ width: `${Math.max(pct(it.value), 0.8).toFixed(2)}%`, height: "100%", background: CORAL_RAMP[i % CORAL_RAMP.length], borderRadius: 5 }} />
             </div>
             <div style={{ fontSize: 10.5, color: C.faint, lineHeight: 1.5, marginTop: 8 }}>{it.summary}</div>
           </div>
@@ -340,7 +330,7 @@ function NumbersPage({ data }: { data: QuickRoiPdfData }): JSX.Element {
             <div style={{ fontSize: 13, fontWeight: 700, color: C.ink }}>Plus {fmtInt(m.hours)} clinician hours back a year</div>
             <div style={{ fontSize: 11, color: C.faint, marginTop: 3 }}>about {(m.hours / 2080).toFixed(1)} full-time clinicians' worth of documentation time</div>
           </div>
-          <span style={{ ...sLbl, color: C.off }}>Measured · not counted in $</span>
+          <span style={{ ...sLbl, color: C.off }}>Counted as time, not dollars</span>
         </div>
       )}
 
@@ -353,7 +343,7 @@ function NumbersPage({ data }: { data: QuickRoiPdfData }): JSX.Element {
       </div>
 
       <div style={{ flexGrow: 1 }} />
-      <Footer note="Each line counts only the change, never the whole bill, and each is discounted for the share that typically does not land." num="02" />
+      <Footer note="Each line counts only the change, never the whole bill, and each is discounted for the share that typically does not land." num="03" />
     </Page>
   );
 }
@@ -368,10 +358,10 @@ function UpsidePage({ data }: { data: QuickRoiPdfData }): JSX.Element {
       <RunningHeader org={data.orgName} />
       <SectionEyebrow num="02" title="The upside, if you roll out further" />
       <h2 className="font-abridge" style={{ fontSize: 30, lineHeight: 1.1, color: C.ink, margin: "8px 0 0" }}>
-        Same measured effect, more of their volume
+        The same effect you set, running on more volume
       </h2>
       <div style={{ ...sLead }}>
-        The measured effect stays exactly where the data put it. Only the volume it runs on grows: more {m.meta.providerWord} on
+        The per-unit effect stays exactly where you set it. Only the volume it runs on grows: more {m.meta.providerWord} on
         Abridge{m.isNursing ? "" : ", documenting more of their encounters"}.
       </div>
 
@@ -429,16 +419,17 @@ function UpsidePage({ data }: { data: QuickRoiPdfData }): JSX.Element {
           )}
         </div>
         <div style={{ marginTop: 14, fontSize: 12.5, color: C.faint, lineHeight: 1.55, maxWidth: 620 }}>
-          The measured per-encounter effect is held exactly flat. Only these grow, so nothing here assumes a bigger lift than the data already showed.
+          The per-unit effect you set is held exactly flat. Only these grow, so nothing here assumes a bigger effect than you entered.
         </div>
       </div>
 
+      {/* One spacer, one distribution. Two flexGrow spacers with a bare rule
+          between them left the rule floating in an empty band separating nothing
+          from nothing, and pushed the closing figures hard against the footer. */}
       <div style={{ flexGrow: 1 }} />
-      <div style={{ ...sRule, margin: "32px 0 0" }} />
 
       {/* the return */}
-      <div style={{ flexGrow: 1 }} />
-      <div style={{ marginTop: 26 }}>
+      <div style={{ marginTop: 26, paddingTop: 30, borderTop: `1px solid ${C.hair}`, marginBottom: 30 }}>
         <div style={sEyebrow}>The return, on the plan you set</div>
         {priced ? (
           <div style={{ marginTop: 14, display: "flex", gap: 64, alignItems: "flex-end" }}>
@@ -456,13 +447,14 @@ function UpsidePage({ data }: { data: QuickRoiPdfData }): JSX.Element {
             </div>
           </div>
         ) : (
-          <div style={{ ...sLead, marginTop: 10, fontStyle: "italic", color: C.off }}>
-            Add the Abridge price on the answer screen to show the return and the net.
+          <div style={{ ...sLead, marginTop: 10, color: C.off }}>
+            Add what Abridge would cost you on the answer screen, and this page will
+            show what is left after paying for it.
           </div>
         )}
       </div>
 
-      <Footer note="The upside holds the measured per-unit effect flat and grows only the volume; it is a ceiling, not a forecast." num="03" />
+      <Footer note="The upside holds the per-unit effect you set flat and grows only the volume; it is a ceiling, not a forecast." num="04" />
     </Page>
   );
 }

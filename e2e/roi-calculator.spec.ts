@@ -28,12 +28,17 @@ async function enterCalculator(page: Page) {
   await expect(page.getByText("Outpatient", { exact: true })).toBeVisible();
 }
 
-/** Pick every goal the setting offers, then move on to the numbers step. */
-async function pickAllGoals(page: Page) {
+/**
+ * Pick every goal the setting offers, answer the revenue follow-up if this
+ * setting has one, then move on to the numbers step.
+ */
+async function pickAllGoals(page: Page, payer: "ffs" | "vbc" | "both" = "both") {
   const cards = page.locator("[data-testid^=goal-]");
   const n = await cards.count();
   expect(n, "the goals step offered nothing to pick").toBeGreaterThan(0);
   for (let i = 0; i < n; i++) await cards.nth(i).click();
+  const payerBtn = page.getByTestId(`payer-${payer}`);
+  if (await payerBtn.count()) await payerBtn.click();
   await page.getByRole("button", { name: /next: your numbers/i }).click();
 }
 
@@ -70,6 +75,7 @@ for (const vp of VIEWPORTS) {
       await page.getByText("Outpatient", { exact: true }).first().click();
       // pick Revenue only
       await page.getByTestId("goal-revenue").click();
+      await page.getByTestId("payer-both").click();
       await page.getByRole("button", { name: /next: your numbers/i }).click();
 
       const inputs = page.locator("input");
@@ -102,6 +108,36 @@ for (const vp of VIEWPORTS) {
       await total.fill("12");
       await page.locator("body").click();
       await expect(using, "lowering the headcount should pull the subset down").toHaveValue("12");
+    });
+
+    test("how you are paid decides which revenue cards exist", async ({ page }) => {
+      // fee for service: coding, no risk capture
+      await enterCalculator(page);
+      await page.getByText("Outpatient", { exact: true }).first().click();
+      await page.getByTestId("goal-revenue").click();
+      await expect(
+        page.getByRole("button", { name: /next: your numbers/i }),
+        "revenue picked but no payer answer should keep the flow gated",
+      ).toBeDisabled();
+      await page.getByTestId("payer-ffs").click();
+      await page.getByRole("button", { name: /next: your numbers/i }).click();
+      const inputs = page.locator("input");
+      for (const [i, v] of [["Riverbend"], ["42"], ["30"], ["2400"], ["68"]].entries()) await inputs.nth(i).fill(v[0]);
+      await page.getByRole("button", { name: /next: what changes/i }).click();
+      await expect(page.getByText("Coding accuracy")).toBeVisible();
+      await expect(page.getByText("Risk capture (HCC)")).toHaveCount(0);
+
+      // value based: risk capture, no coding
+      await enterCalculator(page);
+      await page.getByText("Outpatient", { exact: true }).first().click();
+      await page.getByTestId("goal-revenue").click();
+      await page.getByTestId("payer-vbc").click();
+      await page.getByRole("button", { name: /next: your numbers/i }).click();
+      const inputs2 = page.locator("input");
+      for (const [i, v] of [["Riverbend"], ["42"], ["30"], ["2400"], ["68"]].entries()) await inputs2.nth(i).fill(v[0]);
+      await page.getByRole("button", { name: /next: what changes/i }).click();
+      await expect(page.getByText("Risk capture (HCC)")).toBeVisible();
+      await expect(page.getByText("Coding accuracy")).toHaveCount(0);
     });
 
     test("a full run produces a dollar answer", async ({ page }) => {

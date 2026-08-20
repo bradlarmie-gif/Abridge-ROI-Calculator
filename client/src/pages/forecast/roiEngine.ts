@@ -37,6 +37,16 @@ import {
 export type SettingKey = "outpatient" | "ed" | "inpatient" | "nursing";
 export type Domain = "Capacity" | "Workforce" | "Revenue" | "Quality";
 
+/**
+ * How a practice is paid for this driver.
+ *   "ffs" — fee for service: you bill the visit, so coding accuracy is the lever.
+ *   "vbc" — value based: you are paid on the risk of the panel, so capture is.
+ * Untagged drivers (denials, capacity, workforce, quality) apply either way.
+ * A practice that is purely one or the other should never be shown the other's
+ * card, let alone a dead $0 one it has no data for.
+ */
+export type PayerModel = "ffs" | "vbc";
+
 export interface RoiField {
   k: string;
   label: string;
@@ -80,11 +90,21 @@ export interface RoiCtx {
 }
 
 export interface RoiDriver {
+  /**
+   * This driver's value is derived from another driver's pool, so it cannot be
+   * counted on its own. Switching the parent off must switch this off too: the
+   * ED admission margin comes from LWBS patients who were recovered, so booking
+   * it while the practice has said those patients are NOT recovered counts a
+   * dollar off a population they just told us does not exist.
+   */
+  dependsOn?: string;
   /** Engine driver id — the key into computeAllDriverValues / calc summaries. */
   id: string;
   domain: Domain;
   title: string;
   optional?: boolean;
+  /** Only shown when the practice is paid this way. Untagged = shown either way. */
+  payerModel?: PayerModel;
   note?: string;
   /** Special renderer: 'hcc' draws the bespoke HccCard. */
   kind?: "hcc";
@@ -140,6 +160,14 @@ export interface SettingMeta {
     staffedBeds?: number;
     occupancy?: number;
   };
+  /** The verb that fits this setting: clinicians see visits, nurses document care events. */
+  volumeVerb?: string;
+  /** Example value for the annual-volume question, in this setting's own units. */
+  volumePlaceholder?: string;
+  /** Extra clarification under the annual-volume question, where it is ambiguous. */
+  volumeHint?: string;
+  /** Example name for this setting, so a nursing unit is not offered a clinic name. */
+  namePlaceholder?: string;
   /** OP/ED/IP show a reclaimed-documentation-time metric (also feeds minutesSaved). */
   timeMetric?: { before: number; after: number; table: string };
 }
@@ -167,7 +195,11 @@ const codingLift = (before: number, after: number) =>
   before > 0 && after > before ? after - before : 0;
 
 /** Coding accuracy: OP emits `wrvu`, ED emits `edEmLevel`. Same fields + math. */
-const codingDriver = (id: "wrvu" | "edEmLevel", beforeDef: number, afterDef: number, title = "Coding accuracy"): RoiDriver => ({
+const codingDriver = (id: "wrvu" | "edEmLevel", beforeDef: number, afterDef: number, title = "Coding accuracy"): RoiDriver => {
+  // the worked math must call the volume what the rest of the setting calls it
+  const encNoun = id === "edEmLevel" ? "ED visits" : "visits";
+  return {
+  payerModel: "ffs",
   id,
   domain: "Revenue",
   title,
@@ -203,14 +235,15 @@ const codingDriver = (id: "wrvu" | "edEmLevel", beforeDef: number, afterDef: num
   work: (v, enc) => {
     const lift = codingLift(v.wrvuBefore ?? 0, v.wrvuAfter ?? 0);
     const cf = v.cf % 1 === 0 ? `$${v.cf}` : `$${v.cf.toFixed(2)}`;
-    return `${enc.toLocaleString("en-US")} encounters × ${lift.toFixed(2)} wRVU lift (${v.wrvuBefore} → ${v.wrvuAfter}) × ${cf}/wRVU × ${v.wrvuRealization}% of it landing`;
+    return `${enc.toLocaleString("en-US")} ${encNoun} × ${lift.toFixed(2)} wRVU lift (${v.wrvuBefore} → ${v.wrvuAfter}) × ${cf}/wRVU × ${v.wrvuRealization}% of it landing`;
   },
-});
+  };
+};
 
 const denialDriver = (denialsCustomDef: number): RoiDriver => ({
   id: "denialPrevention",
   domain: "Revenue",
-  title: "Medical Necessity Denials",
+  title: "Medical necessity denials",
   fields: [
     { k: "medNecessityDenialRate", label: "Medical-necessity denial rate today", def: 3, suffix: "%", step: 0.1 },
     { k: "denialsCustomPercent", label: "Share of those a fuller note could head off", def: denialsCustomDef, hint: "only the ones that turn on documentation, not all denials", suffix: "%" },
@@ -298,6 +331,7 @@ const scribeDriver: RoiDriver = {
 };
 
 const hccDriver: RoiDriver = {
+  payerModel: "vbc",
   id: "hccCapture",
   domain: "Revenue",
   title: "Risk capture (HCC)",
@@ -396,6 +430,7 @@ const lwbsDriver: RoiDriver = {
 
 const admissionDriver: RoiDriver = {
   id: "admissionCapture",
+  dependsOn: "lwbsRecovery",
   domain: "Revenue",
   title: "Admission capture",
   optional: true,
@@ -447,7 +482,7 @@ const drgDriver: RoiDriver = {
 const obsDriver: RoiDriver = {
   id: "obsDefense",
   domain: "Revenue",
-  title: "Status / Medical Necessity Denials",
+  title: "Status / medical necessity denials",
   fields: [
     { k: "ipObsDefenseDenialRate", label: "Admissions downgraded to observation today", def: 5, suffix: "%", step: 0.1 },
     { k: "ipObsDefenseCustomPercent", label: "Share the note can defend", def: 40, suffix: "%" },
@@ -529,9 +564,10 @@ const nursingHapiDriver: RoiDriver = {
   id: "nursingHapi",
   domain: "Quality",
   title: "Pressure injuries (HAPI)",
+  note: "Abridge surfaces the documentation sooner. Whether a case is actually avoided depends on your team acting on it, so treat this share as your own judgement rather than a figure we are putting to you. Off by default.",
   fields: [
     { k: "nursingHapiRate", label: "HAPI per 1,000 patient-days", def: 2.5, step: 0.1 },
-    { k: "nursingHapiPreventionRate", label: "Prevention attributable to timely docs", def: 6.5, suffix: "%", step: 0.1 },
+    { k: "nursingHapiPreventionRate", label: "Share your team could avoid with earlier documentation", hint: "your judgement, not ours", def: 6.5, suffix: "%", step: 0.1 },
     { k: "nursingHapiCost", label: "Cost per HAPI", def: 25000, prefix: "$" },
   ],
   applyToState: (s, v) => {
@@ -547,9 +583,10 @@ const nursingFallsDriver: RoiDriver = {
   id: "nursingFalls",
   domain: "Quality",
   title: "Falls",
+  note: "Abridge surfaces the documentation sooner. Whether a case is actually avoided depends on your team acting on it, so treat this share as your own judgement rather than a figure we are putting to you. Off by default.",
   fields: [
     { k: "nursingFallsRate", label: "Falls per 1,000 patient-days", def: 3.5, step: 0.1 },
-    { k: "nursingFallsPreventionRate", label: "Prevention attributable to timely docs", def: 10, suffix: "%", step: 0.1 },
+    { k: "nursingFallsPreventionRate", label: "Share your team could avoid with earlier documentation", hint: "your judgement, not ours", def: 10, suffix: "%", step: 0.1 },
     { k: "nursingFallsCost", label: "Cost per fall", def: 6500, prefix: "$" },
   ],
   applyToState: (s, v) => {
@@ -565,10 +602,11 @@ const nursingCautiDriver: RoiDriver = {
   id: "nursingCauti",
   domain: "Quality",
   title: "CAUTI",
+  note: "Abridge surfaces the documentation sooner. Whether a case is actually avoided depends on your team acting on it, so treat this share as your own judgement rather than a figure we are putting to you. Off by default.",
   fields: [
     { k: "nursingCautiUtilizationRatio", label: "Catheter days as % of patient-days", def: 30, suffix: "%" },
     { k: "nursingCautiRate", label: "CAUTI per 1,000 catheter-days", def: 1.8, step: 0.1 },
-    { k: "nursingCautiPreventionRate", label: "Prevention attributable to timely docs", def: 12, suffix: "%", step: 0.1 },
+    { k: "nursingCautiPreventionRate", label: "Share your team could avoid with earlier documentation", hint: "your judgement, not ours", def: 12, suffix: "%", step: 0.1 },
     { k: "nursingCautiCost", label: "Cost per CAUTI", def: 13000, prefix: "$" },
   ],
   applyToState: (s, v) => {
@@ -585,10 +623,11 @@ const nursingClabsiDriver: RoiDriver = {
   id: "nursingClabsi",
   domain: "Quality",
   title: "CLABSI",
+  note: "Abridge surfaces the documentation sooner. Whether a case is actually avoided depends on your team acting on it, so treat this share as your own judgement rather than a figure we are putting to you. Off by default.",
   fields: [
     { k: "nursingClabsiUtilizationRatio", label: "Central-line days as % of patient-days", def: 20, suffix: "%" },
     { k: "nursingClabsiRate", label: "CLABSI per 1,000 line-days", def: 0.8, step: 0.1 },
-    { k: "nursingClabsiPreventionRate", label: "Prevention attributable to timely docs", def: 8, suffix: "%", step: 0.1 },
+    { k: "nursingClabsiPreventionRate", label: "Share your team could avoid with earlier documentation", hint: "your judgement, not ours", def: 8, suffix: "%", step: 0.1 },
     { k: "nursingClabsiCost", label: "Cost per CLABSI", def: 32000, prefix: "$" },
   ],
   applyToState: (s, v) => {
@@ -628,6 +667,8 @@ const nursingSepsisDriver: RoiDriver = {
 export const SETTING_META: Record<SettingKey, SettingMeta> = {
   outpatient: {
     label: "Outpatient",
+    volumePlaceholder: "2,500",
+    namePlaceholder: "e.g., Riverbend Family Medicine",
     blurb: "Clinic visits, primary care and specialty.",
     providerWord: "clinicians",
     orgWord: "practice",
@@ -638,6 +679,8 @@ export const SETTING_META: Record<SettingKey, SettingMeta> = {
   },
   ed: {
     label: "Emergency",
+    volumePlaceholder: "3,000",
+    namePlaceholder: "e.g., Southside Emergency Physicians",
     blurb: "Emergency visits, including patients who leave before being seen.",
     providerWord: "clinicians",
     orgWord: "group",
@@ -651,20 +694,27 @@ export const SETTING_META: Record<SettingKey, SettingMeta> = {
     blurb: "Admission and progress notes for admitted patients.",
     providerWord: "clinicians",
     orgWord: "group",
-    encWord: "encounters",
-    visitWord: "encounter",
+    encWord: "admissions",
+    visitWord: "admission",
     defaults: { totalProviders: 0, onAbridge: 0, encPerProvider: 0, utilNow: 0 },
+    volumePlaceholder: "300",
+    volumeVerb: "look after",
+    namePlaceholder: "e.g., Lakeside Hospitalists",
+    volumeHint: "patients admitted under their care, not the number of notes they write",
     timeMetric: { before: 9.0, after: 6.5, table: "your EHR, or your best estimate" },
   },
   nursing: {
     label: "Nursing",
+    volumePlaceholder: "1,800",
+    volumeVerb: "document",
+    namePlaceholder: "e.g., 4 West Medical Surgical",
     blurb: "Bedside charting, keeping nurses, and avoidable harm.",
     providerWord: "nurses",
     orgWord: "unit",
     encWord: "care events",
     visitWord: "care event",
     isNursing: true,
-    defaults: { totalProviders: 0, onAbridge: 0, encPerProvider: 0, utilNow: 0, staffedBeds: 0, occupancy: 85 },
+    defaults: { totalProviders: 0, onAbridge: 0, encPerProvider: 0, utilNow: 0, staffedBeds: 0, occupancy: 0 },
   },
 };
 

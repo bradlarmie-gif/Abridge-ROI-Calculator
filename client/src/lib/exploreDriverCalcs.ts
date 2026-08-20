@@ -452,7 +452,7 @@ export function computeAllDriverCalcSummaries(
     }
   }
   if (isNursing && td.nursingOtEnabled) {
-    out.nursingOvertime = `${fmtN(state.numberOfProviders)} nurses × ${td.nursingOtHoursPerNurseWeek} OT hrs/wk × ${td.nursingOtReductionPercent}% reduction × 52 wks × ${fmt$(td.nursingOtHourlyRate)}/hr`;
+    out.nursingOvertime = `${fmtN(state.numberOfProviders)} nurses × ${td.nursingOtHoursPerNurseWeek} overtime ${td.nursingOtHoursPerNurseWeek === 1 ? "hour" : "hours"} a week × ${td.nursingOtReductionPercent}% reduction × 52 weeks × ${fmt$(td.nursingOtHourlyRate)} an hour`;
   }
   if (isIP && td.ipIncrementalStaffingEnabled) {
     out.incrementalStaffing = `${fmt$(td.ipStaffingCurrentSpend || 0)} current incremental-staffing spend × ${td.ipStaffingReductionPct}% reduction with Abridge`;
@@ -467,7 +467,8 @@ export function computeAllDriverCalcSummaries(
     // Show the conversion factor at its true precision (e.g. $33.40, not $33)
     // so the printed chain reproduces the value exactly — Finance's test.
     const cf = dq.conversionFactor % 1 === 0 ? `$${dq.conversionFactor}` : `$${dq.conversionFactor.toFixed(2)}`;
-    const summary = `${fmtN(eligibleEncounters)} encounters × ${dq.currentWrvu} current wRVU × ${liftPct}% lift × ${cf}/wRVU × ${dq.wrvuRealization}% attribution`;
+    const encNoun = setting === "outpatient" ? "visits" : setting === "ed" ? "ED visits" : setting === "inpatient" ? "admissions" : "encounters";
+    const summary = `${fmtN(eligibleEncounters)} ${encNoun} × ${dq.currentWrvu} current wRVU × ${liftPct}% lift × ${cf}/wRVU × ${dq.wrvuRealization}% attribution`;
     if (isED) out.edEmLevel = summary;
     else if (state.paymentModel !== "risk") out.wrvu = summary;
   }
@@ -510,10 +511,10 @@ export function computeAllDriverCalcSummaries(
     const patientDays =
       state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365;
     if (dq.nursingHapiEnabled) {
-      out.nursingHapi = `${fmtN(patientDays)} patient-days × ${dq.nursingHapiRate}/1k HAPI × ${dq.nursingHapiPreventionRate}% prevention × ${fmt$(dq.nursingHapiCost)}/case`;
+      out.nursingHapi = `${fmtN(patientDays)} patient-days × ${dq.nursingHapiRate}/1k HAPI × ${dq.nursingHapiPreventionRate}% your team could avoid × ${fmt$(dq.nursingHapiCost)}/case`;
     }
     if (dq.nursingFallsEnabled) {
-      out.nursingFalls = `${fmtN(patientDays)} patient-days × ${dq.nursingFallsRate}/1k falls × ${dq.nursingFallsPreventionRate}% prevention × ${fmt$(dq.nursingFallsCost)}/case`;
+      out.nursingFalls = `${fmtN(patientDays)} patient-days × ${dq.nursingFallsRate}/1k falls × ${dq.nursingFallsPreventionRate}% your team could avoid × ${fmt$(dq.nursingFallsCost)}/case`;
     }
     if (dq.nursingCautiEnabled) {
       const cautiCalc = calcCauti({
@@ -523,7 +524,7 @@ export function computeAllDriverCalcSummaries(
         preventionPct: dq.nursingCautiPreventionRate,
         cost: dq.nursingCautiCost,
       });
-      out.nursingCauti = `${fmtN(cautiCalc.catheterDays)} cath-days × ${dq.nursingCautiRate}/1k CAUTI × ${dq.nursingCautiPreventionRate}% prevention × ${fmt$(dq.nursingCautiCost)}/case`;
+      out.nursingCauti = `${fmtN(cautiCalc.catheterDays)} cath-days × ${dq.nursingCautiRate}/1k CAUTI × ${dq.nursingCautiPreventionRate}% your team could avoid × ${fmt$(dq.nursingCautiCost)}/case`;
     }
     if (dq.nursingClabsiEnabled) {
       const clabsiCalc = calcClabsi({
@@ -533,7 +534,7 @@ export function computeAllDriverCalcSummaries(
         preventionPct: dq.nursingClabsiPreventionRate,
         cost: dq.nursingClabsiCost,
       });
-      out.nursingClabsi = `${fmtN(clabsiCalc.lineDays)} line-days × ${dq.nursingClabsiRate}/1k CLABSI × ${dq.nursingClabsiPreventionRate}% prevention × ${fmt$(dq.nursingClabsiCost)}/case`;
+      out.nursingClabsi = `${fmtN(clabsiCalc.lineDays)} line-days × ${dq.nursingClabsiRate}/1k CLABSI × ${dq.nursingClabsiPreventionRate}% your team could avoid × ${fmt$(dq.nursingClabsiCost)}/case`;
     }
     if (dq.nursingSepsisEnabled) {
       const sepsisCalc = calcSepsis({

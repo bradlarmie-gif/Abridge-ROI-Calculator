@@ -59,6 +59,9 @@ const pickAllGoals = async (page) => {
   const cards = page.locator("[data-testid^=goal-]");
   const n = await cards.count();
   for (let i = 0; i < n; i++) await cards.nth(i).click({ timeout: 4000 }).catch(() => {});
+  // settings with both fee-for-service and value-based revenue ask one follow-up
+  const payer = page.getByTestId("payer-both");
+  if (await payer.count()) await payer.click({ timeout: 3000 }).catch(() => {});
   await page.waitForTimeout(250);
 };
 
