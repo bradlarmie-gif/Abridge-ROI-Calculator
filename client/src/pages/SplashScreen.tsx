@@ -12,10 +12,10 @@ interface SplashScreenProps {
  * panel on the right. There is one button and it goes straight into the care
  * setting picker, because there is nothing else in this app to choose between.
  *
- * The right panel carries no numbers on purpose. Every figure in this tool is
- * one the practice typed in themselves, and a specimen number on the landing
- * screen would be the one exception, which reads as a claim rather than a
- * calculation.
+ * The right panel is the mark alone: no numbers, no caption. Every figure in
+ * this tool is one the practice typed in themselves, so a specimen number on
+ * the landing screen would be the one exception, and would read as a claim
+ * rather than a calculation.
  */
 export default function SplashScreen({ onEnter }: SplashScreenProps) {
   return (
@@ -48,14 +48,6 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
               Estimate my value
               <ArrowRight className="h-[18px] w-[18px] transition-transform group-hover:translate-x-1" />
             </button>
-
-            <div className="mt-12 border-t border-[#E8E2DA] pt-6">
-              <p className="text-[13px] leading-[1.6] text-[#A69A88] max-w-[420px]">
-                Takes about four minutes. Nothing you type leaves this browser,
-                and every assumption behind the math stays open for you to
-                change.
-              </p>
-            </div>
           </div>
         </div>
 
@@ -68,13 +60,6 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
             className="w-[52%] max-w-[420px] select-none pointer-events-none"
             style={{ opacity: 0.22 }}
           />
-          <div className="absolute bottom-12 left-12 right-12">
-            <div className="h-px w-full bg-[#DED4C6]" />
-            <p className="mt-5 font-abridge text-[17px] leading-[1.45] text-[#6B5F52] max-w-[340px]">
-              Four steps: your setting, your numbers, what would change, and
-              what it comes to.
-            </p>
-          </div>
         </div>
       </div>
     </div>
