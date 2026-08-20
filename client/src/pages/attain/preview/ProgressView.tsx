@@ -22,6 +22,9 @@ export default function ProgressView({ cell, committed = [], readings, setReadin
 }) {
   const { plan } = cell;
   const proofOnly = !!cell.proofOnly; // measured on its signals, never a realized dollar
+  // No dollar to show yet: proof-only categories, or a plan with no value carried
+  // from the ROI. Either way, lead with the signals instead of a broken "$0".
+  const noDollar = proofOnly || plan.valueInPlay <= 0;
   const chosenPlays = committed.flatMap((c) => c.chosen);
 
   const signals = plan.abridgeSignals;
@@ -74,11 +77,11 @@ export default function ProgressView({ cell, committed = [], readings, setReadin
           <div>
             <p className={`${LBL} mb-2`}>{proofOnly ? "Signals moving" : "Attainment"}</p>
             <p className="font-abridge text-6xl text-[#EA2C00] leading-none">{attainPct}<span className="text-3xl">%</span></p>
-            <p className="text-[13px] text-[#8C8C8C] mt-2">{proofOnly ? "of the way to the signal targets you set" : `of the ${fmt$(plan.valueInPlay)}/yr promise`}</p>
+            <p className="text-[13px] text-[#8C8C8C] mt-2">{noDollar ? "of the way to the signal targets you set" : `of the ${fmt$(plan.valueInPlay)}/yr promise`}</p>
           </div>
-          {proofOnly ? (
+          {noDollar ? (
             <div className="text-right max-w-[240px]">
-              <p className="text-[13px] text-[#6B6B6B] leading-relaxed">Tracked metrics, not a dollar. The burnout pulse, likelihood-to-stay, and turnover are the scoreboard here.</p>
+              <p className="text-[13px] text-[#6B6B6B] leading-relaxed">{proofOnly ? "Tracked metrics, not a dollar. The burnout pulse, likelihood-to-stay, and turnover are the scoreboard here." : "The signals are the scoreboard here. Add your figures in the ROI to put a dollar on the promise."}</p>
             </div>
           ) : (
             <div className="text-right">
@@ -124,8 +127,8 @@ export default function ProgressView({ cell, committed = [], readings, setReadin
           note={chosenPlays.length ? chosenPlays.join(" · ") : "Set your plays in Align."} />
         <LiveLink title="The outcomes" tone={leak ? "leak" : "on"} statusLabel={outAvg === null ? "Awaiting readings" : leak ? "Behind the signals" : `${Math.round(Math.max(0, outAvg) * 100)}% of the way`}
           metrics={outcomeMetrics} readings={readings} setReadings={setReadings} prog={prog} />
-        <LiveLink title={proofOnly ? "The proof" : "The value"} tone="value" statusLabel={proofOnly ? `${attainPct}% of signals` : `${attainPct}% attained`}
-          note={proofOnly ? "Tracked metrics, not a dollar. We hold ourselves to the signals moving." : `${fmt$(realized)} of ${fmt$(plan.valueInPlay)} realized so far.`} />
+        <LiveLink title={noDollar ? "The proof" : "The value"} tone="value" statusLabel={noDollar ? `${attainPct}% of signals` : `${attainPct}% attained`}
+          note={noDollar ? "Tracked metrics, not a dollar. We hold ourselves to the signals moving." : `${fmt$(realized)} of ${fmt$(plan.valueInPlay)} realized so far.`} />
       </div>
 
       {/* log this review — snapshots the readings into the climb */}

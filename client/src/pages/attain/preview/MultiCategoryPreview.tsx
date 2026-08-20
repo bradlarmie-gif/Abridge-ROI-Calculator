@@ -530,12 +530,18 @@ export function AttainExperience({ setting, cells, baseline, initial, onPersist,
             <div>
               <p className={`${LBL} mb-2`}>Attainment, all categories</p>
               <p className="font-abridge text-6xl text-[#EA2C00] leading-none"><AnimatedNumber value={overall} format={(n) => `${Math.round(n)}`} /><span className="text-3xl">%</span></p>
-              <p className="text-[13px] text-[#8C8C8C] mt-2">of the {fmt$(totalValue)}/yr promise</p>
+              <p className="text-[13px] text-[#8C8C8C] mt-2">{totalValue > 0 ? <>of the {fmt$(totalValue)}/yr promise</> : "against the signal targets you set"}</p>
             </div>
-            <div className="text-right">
-              <p className="text-[14px] text-[#1A1A1A]"><span className="font-abridge text-[22px]">{fmt$(totalRealized)}</span> realized</p>
-              <p className="text-[14px] text-[#8C8C8C] mt-1"><span className="font-abridge text-[22px] text-[#1A1A1A]">{fmt$(totalValue - totalRealized)}</span> still on the table</p>
-            </div>
+            {totalValue > 0 ? (
+              <div className="text-right">
+                <p className="text-[14px] text-[#1A1A1A]"><span className="font-abridge text-[22px]">{fmt$(totalRealized)}</span> realized</p>
+                <p className="text-[14px] text-[#8C8C8C] mt-1"><span className="font-abridge text-[22px] text-[#1A1A1A]">{fmt$(totalValue - totalRealized)}</span> still on the table</p>
+              </div>
+            ) : (
+              <div className="text-right max-w-[240px]">
+                <p className="text-[13px] text-[#6B6B6B] leading-relaxed">The signals are the scoreboard here. Add your figures in the ROI to put a dollar on the promise.</p>
+              </div>
+            )}
           </div>
           <div className="h-3 rounded-full bg-[#E8E2DA] overflow-hidden"><div className="h-full bg-[#EA2C00] transition-all" style={{ width: `${overall}%` }} /></div>
           {/* the climb only charts once there's real history to plot — a single flat line reads as broken */}
