@@ -86,7 +86,7 @@ export interface RoiDriver {
   /** Writes this driver's editable values (+ its enable flag) onto a real ExploreState. */
   applyToState: (state: ExploreState, v: Record<string, number>, ctx: RoiCtx) => void;
   /**
-   * Optional clean "show the work" string that reads in the rep's before/after
+   * Optional clean "show the work" string that reads in the practice's before/after
    * idiom instead of the engine's scenario-% phrasing. MUST multiply out to the
    * same value the engine returns (the displayed dollar always comes from the
    * engine). Used where the engine summary would leak an ugly derived float.
@@ -115,6 +115,12 @@ export interface SettingMeta {
   label: string;
   blurb: string;
   providerWord: string;
+  /**
+   * What the reader calls the thing they are sizing. An outpatient physician
+   * has a "practice"; an ED or hospitalist reader has a "group"; a nursing
+   * reader has a "unit". Saying "practice" to all four is the reused-copy bug.
+   */
+  orgWord: string;
   encWord: string;
   visitWord: string;
   isNursing?: boolean;
@@ -159,7 +165,7 @@ const codingDriver = (id: "wrvu" | "edEmLevel", beforeDef: number, afterDef: num
   title,
   beforeAfter: {
     label: "wRVU / visit",
-    table: "your wRVU analysis",
+    table: "your billing report",
     unit: "wRVU",
     step: 0.01,
     beforeK: "wrvuBefore",
@@ -168,8 +174,8 @@ const codingDriver = (id: "wrvu" | "edEmLevel", beforeDef: number, afterDef: num
     afterDef,
   },
   fields: [
-    { k: "cf", label: "Paid per wRVU (2026 conversion factor)", def: 33.4, prefix: "$", step: 0.1 },
-    { k: "wrvuRealization", label: "Realization (defensible share)", def: 75, suffix: "%" },
+    { k: "cf", label: "What you are paid per wRVU", def: 33.4, hint: "the 2026 Medicare conversion factor, change it to your own rate", prefix: "$", step: 0.1 },
+    { k: "wrvuRealization", label: "How much of this you would actually keep", def: 75, hint: "after payer mix, downcoding and anything you would not defend", suffix: "%" },
   ],
   applyToState: (s, v) => {
     const d = dq(s);
@@ -199,9 +205,9 @@ const denialDriver = (denialsCustomDef: number): RoiDriver => ({
   title: "Medical Necessity Denials",
   fields: [
     { k: "medNecessityDenialRate", label: "Medical-necessity denial rate today", def: 3, suffix: "%", step: 0.1 },
-    { k: "denialsCustomPercent", label: "Share of those denials a complete note is positioned to reduce", def: denialsCustomDef, suffix: "%" },
+    { k: "denialsCustomPercent", label: "Share of those a fuller note could head off", def: denialsCustomDef, hint: "only the ones that turn on documentation, not all denials", suffix: "%" },
     { k: "avgClaimValue", label: "Average claim value", def: 200, prefix: "$" },
-    { k: "denialsRealization", label: "Realization (defensible share)", def: 60, suffix: "%" },
+    { k: "denialsRealization", label: "How much of this you would actually keep", def: 60, hint: "not every overturned denial gets paid in full", suffix: "%" },
   ],
   applyToState: (s, v) => {
     const d = dq(s);
@@ -219,7 +225,7 @@ const providerWellbeingDriver: RoiDriver = {
   domain: "Workforce",
   title: "Retention (burnout)",
   optional: true,
-  note: "The softest number on the page: it rests on a replacement-cost estimate a CFO may discount. Off by default. Turn it on only if the partner buys the retention story.",
+  note: "The softest number here: it rests on what replacing someone costs, which is always arguable. Off by default. Turn it on only if you believe it.",
   fields: [
     { k: "turnover", label: "Annual provider turnover", def: 6, suffix: "%", step: 0.1 },
     { k: "burnout", label: "Share of turnover that is burnout-related", def: 40, suffix: "%" },
@@ -267,7 +273,7 @@ const scribeDriver: RoiDriver = {
   domain: "Workforce",
   title: "Scribe cost reduction",
   optional: true,
-  note: "Only if the partner can retire scribe positions they pay for today.",
+  note: "Only if you would actually stop paying for scribes you use today.",
   fields: [
     { k: "scribeHeadcount", label: "Scribe positions today", def: 0 },
     { k: "scribePositionsEliminated", label: "Scribe positions you could retire", def: 0 },
@@ -301,7 +307,7 @@ const hccDriver: RoiDriver = {
     { k: "hccRecaptureLift", label: "Recapture-rate lift with Abridge", def: 5, suffix: "pp", hint: "percentage points, capped by the remaining gap" },
     { k: "hccNetNew", label: "Net-new HCCs surfaced per member", def: 0.05, step: 0.01, hint: "conditions surfaced in the visit that weren't coded before" },
     { k: "hccPerHcc", label: "Value per HCC captured (RAF)", def: 1500, prefix: "$" },
-    { k: "hccRealization", label: "Realization (audit survival)", def: 50, suffix: "%" },
+    { k: "hccRealization", label: "How much of this survives an audit", def: 50, hint: "risk adjustment is audited hard, so this is deliberately low", suffix: "%" },
   ],
   applyToState: (s, v, ctx) => {
     const d = dq(s);
@@ -334,12 +340,12 @@ const patientAccessDriver: RoiDriver = {
   id: "patientAccess",
   domain: "Capacity",
   title: "Patient access (reclaimed capacity)",
-  note: "The added visits the partner is already seeing now that notes are faster. We count what they observe, then show what share of the reclaimed hours it uses.",
+  note: "Extra visits you could take on once notes stop running late. Put in what you think is realistic, and we will show how much of your reclaimed time it uses up.",
   // The partner is live, so they OBSERVE their added visits — we count that
   // directly (visits/provider/wk) rather than assuming a % of freed time gets
   // reinvested. The card reads back what share of the reclaimed hours it uses.
   fields: [
-    { k: "accessVisitsPerProvWk", label: "Added visits per provider, each week", def: 0, step: 0.5, hint: "what the partner is actually seeing now that notes are faster" },
+    { k: "accessVisitsPerProvWk", label: "Added visits per clinician, each week", def: 0, step: 0.5, hint: "only what the freed-up time could realistically absorb" },
     { k: "visitDuration", label: "Minutes per added visit", def: 30, suffix: "min" },
     { k: "revenuePerVisit", label: "Margin per added visit", def: 200, prefix: "$" },
   ],
@@ -368,7 +374,7 @@ const lwbsDriver: RoiDriver = {
     { k: "edLwbsRate", label: "Left-without-being-seen rate today", def: 3, suffix: "%", step: 0.1 },
     { k: "edLwbsReduction", label: "Reduction in LWBS", def: 10, suffix: "%" },
     { k: "edRevenuePerVisit", label: "Margin per recovered visit", def: 480, prefix: "$" },
-    { k: "edLwbsRealization", label: "Realization", def: 50, suffix: "%" },
+    { k: "edLwbsRealization", label: "How much of this you would actually keep", def: 50, hint: "a conservative share, not the full amount", suffix: "%" },
   ],
   applyToState: (s, v) => {
     const t = td(s);
@@ -389,7 +395,7 @@ const admissionDriver: RoiDriver = {
   fields: [
     { k: "edAdmissionRate", label: "Share of recovered patients admitted", def: 18, suffix: "%" },
     { k: "edAdmissionRevenue", label: "Margin per admission", def: 4000, prefix: "$" },
-    { k: "edAdmissionRealization", label: "Realization", def: 75, suffix: "%" },
+    { k: "edAdmissionRealization", label: "How much of this you would actually keep", def: 75, hint: "a conservative share, not the full amount", suffix: "%" },
   ],
   applyToState: (s, v) => {
     const t = td(s);
@@ -438,7 +444,7 @@ const obsDriver: RoiDriver = {
     { k: "ipObsDefenseDenialRate", label: "Admissions downgraded to observation today", def: 5, suffix: "%", step: 0.1 },
     { k: "ipObsDefenseCustomPercent", label: "Share the note can defend", def: 40, suffix: "%" },
     { k: "ipObsDefenseRevenueDelta", label: "Revenue delta per defended case", def: 5000, prefix: "$" },
-    { k: "ipObsDefenseRealization", label: "Realization (survives appeal)", def: 50, suffix: "%" },
+    { k: "ipObsDefenseRealization", label: "How much of this survives appeal", def: 50, hint: "some of these get overturned back against you", suffix: "%" },
   ],
   applyToState: (s, v) => {
     const d = dq(s);
@@ -475,7 +481,7 @@ const nursingRetentionDriver: RoiDriver = {
   domain: "Workforce",
   title: "Retention (burnout)",
   optional: true,
-  note: "The softest number on the page: it rests on a replacement-cost estimate a CFO may discount. Off by default. Turn it on only if the partner buys the retention story.",
+  note: "The softest number here: it rests on what replacing someone costs, which is always arguable. Off by default. Turn it on only if you believe it.",
   fields: [
     { k: "nursingTurnoverRate", label: "Annual nurse turnover", def: 18, suffix: "%", step: 0.1 },
     { k: "nursingBurnout", label: "Share of turnover that is burnout-related", def: 40, suffix: "%" },
@@ -596,7 +602,7 @@ const nursingSepsisDriver: RoiDriver = {
     { k: "nursingSepsisCurrentCompliance", label: "SEP-1 bundle compliance today", def: 75, suffix: "%" },
     { k: "nursingSepsisDocLagPercent", label: "Doc-lag share of non-compliant cases", def: 30, suffix: "%" },
     { k: "nursingSepsisExcessCostPerCase", label: "Excess cost per case", def: 3500, prefix: "$" },
-    { k: "nursingSepsisRealization", label: "Realization", def: 60, suffix: "%" },
+    { k: "nursingSepsisRealization", label: "How much of this you would actually keep", def: 60, hint: "a conservative share, not the full amount", suffix: "%" },
   ],
   applyToState: (s, v) => {
     const d = dq(s);
@@ -614,35 +620,39 @@ const nursingSepsisDriver: RoiDriver = {
 export const SETTING_META: Record<SettingKey, SettingMeta> = {
   outpatient: {
     label: "Outpatient",
-    blurb: "Office visits, primary care and specialty.",
-    providerWord: "providers",
+    blurb: "Clinic visits, primary care and specialty.",
+    providerWord: "clinicians",
+    orgWord: "practice",
     encWord: "visits",
     visitWord: "visit",
     defaults: { totalProviders: 0, onAbridge: 0, encPerProvider: 0, utilNow: 0 },
-    timeMetric: { before: 6.3, after: 5.2, table: "your time-in-notes data" },
+    timeMetric: { before: 6.3, after: 5.2, table: "your EHR, or your best estimate" },
   },
   ed: {
     label: "Emergency",
-    blurb: "LWBS recovery, admission capture, and E&M accuracy.",
-    providerWord: "providers",
+    blurb: "Emergency visits, including patients who leave before being seen.",
+    providerWord: "clinicians",
+    orgWord: "group",
     encWord: "ED visits",
     visitWord: "visit",
     defaults: { totalProviders: 0, onAbridge: 0, encPerProvider: 0, utilNow: 0 },
-    timeMetric: { before: 6.5, after: 5.1, table: "your time-in-notes data" },
+    timeMetric: { before: 6.5, after: 5.1, table: "your EHR, or your best estimate" },
   },
   inpatient: {
     label: "Inpatient",
-    blurb: "Hospitalist notes, DRG accuracy, and length-of-stay signals.",
-    providerWord: "providers",
+    blurb: "Admission and progress notes for admitted patients.",
+    providerWord: "clinicians",
+    orgWord: "group",
     encWord: "encounters",
     visitWord: "encounter",
     defaults: { totalProviders: 0, onAbridge: 0, encPerProvider: 0, utilNow: 0 },
-    timeMetric: { before: 9.0, after: 6.5, table: "your time-in-notes data" },
+    timeMetric: { before: 9.0, after: 6.5, table: "your EHR, or your best estimate" },
   },
   nursing: {
     label: "Nursing",
-    blurb: "Bedside charting time, retention, and harm-reduction quality.",
+    blurb: "Bedside charting, keeping nurses, and avoidable harm.",
     providerWord: "nurses",
+    orgWord: "unit",
     encWord: "care events",
     visitWord: "care event",
     isNursing: true,
@@ -705,8 +715,8 @@ export function defaultVals(setting: SettingKey): Record<string, number> {
 }
 
 export function defaultEnabled(setting: SettingKey): Record<string, boolean> {
-  // Everything off at the jump — the rep turns on only what the partner's pull
-  // supports, co-building the number the way the Explore path does.
+  // Everything off at the jump — the practice turns on only what it believes
+  // would actually change, so the number is one they built rather than received.
   const out: Record<string, boolean> = {};
   for (const d of DRIVERS[setting]) out[d.id] = false;
   return out;

@@ -17,7 +17,7 @@ import {
 // (p2), then the itemized numbers (p3) and the upside + return (p4).
 //
 // Every dollar is recomputed here from the SAME engine (`runRoi`) the answer
-// screen uses, off a snapshot of the rep's inputs — so the PDF and the screen
+// screen uses, off a snapshot of the practice's own inputs — so the PDF and the screen
 // reconcile by construction (guarded by quickRoiPdfReconciliation.test).
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -149,7 +149,7 @@ function SectionEyebrow({ num, title }: { num: string; title: string }): JSX.Ele
 // ───────────────────────── Page 1 · Report cover ─────────────────────────
 function ReportCover({ data }: { data: QuickRoiPdfData }): JSX.Element {
   const m = buildQuickRoiPdfModel(data);
-  const subtitle = `${m.meta.label} · Abridge is worth ${fmtShort(m.todayValue)} a year`;
+  const subtitle = `${m.meta.label} · Abridge could be worth ${fmtShort(m.todayValue)} a year`;
   return (
     <div style={{ width: 816, height: 1056, background: "#FFFFFF", breakAfter: "page", position: "relative", overflow: "hidden" }}>
       <img src={abridgeLogoRed} alt="Abridge" style={{ position: "absolute", top: 60, left: 64, width: 120 }} />
@@ -157,7 +157,7 @@ function ReportCover({ data }: { data: QuickRoiPdfData }): JSX.Element {
       <div style={{ position: "absolute", inset: 0, padding: "0 64px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
         <div style={{ fontSize: 11, color: "#666666", letterSpacing: "3px", textTransform: "uppercase", marginBottom: 16 }}>ROI Calculator</div>
         <h1 className="font-abridge" style={{ fontSize: 48, lineHeight: 1.12, color: "#1A1A1A", letterSpacing: "-0.5px", margin: "0 0 20px", maxWidth: 620 }}>
-          {data.orgName || "Prospective partner"}
+          {data.orgName || "Your practice"}
         </h1>
         <div style={{ width: 80, height: 3, background: C.coral, marginBottom: 24 }} />
         <div style={{ fontSize: 17, color: "#666666", marginBottom: 44 }}>{subtitle}</div>
@@ -166,8 +166,8 @@ function ReportCover({ data }: { data: QuickRoiPdfData }): JSX.Element {
       </div>
       <div style={{ position: "absolute", bottom: 44, left: 64, right: 64, borderTop: "1px solid #E0E0E0", paddingTop: 12 }}>
         <div style={{ fontSize: 10.5, color: "#999999", lineHeight: 1.5 }}>
-          Figures are directional estimates built from the impact-analysis numbers you entered. Actual value depends on
-          adoption, documentation utilization, and your contracts. Not a commitment or guarantee.
+          Every figure here is calculated from numbers you entered yourself. What you actually see depends on how many
+          clinicians use Abridge, how often, and the rates you are paid. This is an estimate, not a commitment or guarantee.
         </div>
       </div>
     </div>
@@ -179,12 +179,12 @@ function PitchPage({ data }: { data: QuickRoiPdfData }): JSX.Element {
   const m = buildQuickRoiPdfModel(data);
   const priced = data.price > 0;
   const stats: { v: string; k: string; coral?: boolean }[] = [
-    { v: fmtShort(m.todayValue), k: "Worth today", coral: true },
-    { v: fmtShort(m.headroom), k: "On the table if they expand" },
+    { v: fmtShort(m.todayValue), k: "Worth a year, at your plan", coral: true },
+    { v: fmtShort(m.headroom), k: "On the table if you roll out further" },
   ];
   if (priced) {
-    stats.push({ v: `${m.roi.toFixed(1)}×`, k: "Return on the Abridge spend" });
-    stats.push({ v: fmtShort(m.net), k: "Net a year, after the price" });
+    stats.push({ v: `${m.roi.toFixed(1)}×`, k: "Back for every dollar spent" });
+    stats.push({ v: fmtShort(m.net), k: "Left over each year, after paying for it" });
   } else if (m.hours > 0) {
     stats.push({ v: fmtInt(m.hours), k: "Clinician hours back a year" });
   }
@@ -198,12 +198,12 @@ function PitchPage({ data }: { data: QuickRoiPdfData }): JSX.Element {
       <div style={{ marginTop: 32 }}>
         <div style={sEyebrow}>The value case</div>
         <h2 className="font-abridge" style={{ fontSize: 44, lineHeight: 1.06, color: C.ink, margin: "10px 0 0", maxWidth: 680, letterSpacing: "-0.5px" }}>
-          To {data.orgName || "this partner"}, Abridge is worth {fmtShort(m.todayValue)} a year in {m.meta.label.toLowerCase()}.
+          For {data.orgName || "your practice"}, Abridge could be worth {fmtShort(m.todayValue)} a year in {m.meta.label.toLowerCase()}.
         </h2>
         <div style={{ ...sLead, marginTop: 16, maxWidth: 620 }}>
-          Built from the measured before and after in the impact analysis, at today's {Math.round(m.adoptionNow)}% rollout
-          and {Math.round(data.account.utilNow)}% documentation utilization. Every number traces to a line the team can
-          check.
+          Built from the before and after you set yourself, at the {Math.round(m.adoptionNow)}% rollout
+          and {Math.round(data.account.utilNow)}% usage you chose. Every number traces back to a line you can
+          check and change.
           {m.hours > 0 && ` On top of the dollars, ${fmtInt(m.hours)} clinician hours a year come back, shown as time given back rather than a made-up dollar.`}
         </div>
         {priced && (
@@ -233,7 +233,7 @@ function PitchPage({ data }: { data: QuickRoiPdfData }): JSX.Element {
       <div style={{ marginTop: 16 }}>
         <div style={{ ...sLbl, marginBottom: 6 }}>Inside this one-pager</div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", columnGap: 44 }}>
-          {[{ n: "01", t: "The numbers, itemized" }, { n: "02", t: "The upside, if they expand" }].map((r) => (
+          {[{ n: "01", t: "The numbers, itemized" }, { n: "02", t: "The upside, if you roll out further" }].map((r) => (
             <div key={r.n} style={{ display: "flex", gap: 14, alignItems: "baseline", padding: "12px 0", borderTop: `1px solid ${C.hair}` }}>
               <span className="font-abridge" style={{ fontSize: 13, color: C.off }}>{r.n}</span>
               <span style={{ fontSize: 14, color: C.label }}>{r.t}</span>
@@ -342,7 +342,7 @@ function UpsidePage({ data }: { data: QuickRoiPdfData }): JSX.Element {
   return (
     <Page>
       <RunningHeader org={data.orgName} />
-      <SectionEyebrow num="02" title="The upside, if they expand" />
+      <SectionEyebrow num="02" title="The upside, if you roll out further" />
       <h2 className="font-abridge" style={{ fontSize: 30, lineHeight: 1.1, color: C.ink, margin: "8px 0 0" }}>
         Same measured effect, more of their volume
       </h2>
@@ -353,7 +353,7 @@ function UpsidePage({ data }: { data: QuickRoiPdfData }): JSX.Element {
 
       <div style={{ marginTop: 26, display: "flex", gap: 56, alignItems: "flex-end" }}>
         <div>
-          <div style={sLbl}>Worth today</div>
+          <div style={sLbl}>At your plan</div>
           <div className="font-abridge" style={{ fontSize: 40, lineHeight: 1, color: C.ink, marginTop: 6 }}>{fmtShort(m.todayValue)}</div>
         </div>
         <div style={{ fontSize: 24, color: C.off, paddingBottom: 4 }}>→</div>
@@ -372,7 +372,7 @@ function UpsidePage({ data }: { data: QuickRoiPdfData }): JSX.Element {
           <div style={{ width: `${Math.max(2, Math.min(100, todayPct)).toFixed(1)}%`, height: "100%", background: C.coral }} />
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8 }}>
-          <span style={{ fontSize: 11, color: C.muted }}>Made today {fmtShort(m.todayValue)}</span>
+          <span style={{ fontSize: 11, color: C.muted }}>At your plan {fmtShort(m.todayValue)}</span>
           <span style={{ fontSize: 11, color: C.faint }}>On the table {fmtShort(m.headroom)}</span>
         </div>
       </div>
@@ -385,7 +385,7 @@ function UpsidePage({ data }: { data: QuickRoiPdfData }): JSX.Element {
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "18px 0", borderTop: `1px solid ${C.hair}` }}>
             <div>
               <div style={{ fontSize: 14, fontWeight: 700, color: C.ink }}>More {m.meta.providerWord} on Abridge</div>
-              <div style={{ fontSize: 11.5, color: C.faint, marginTop: 3 }}>{fmtInt(data.account.onAbridge)} of {fmtInt(data.account.totalProviders)} today</div>
+              <div style={{ fontSize: 11.5, color: C.faint, marginTop: 3 }}>{fmtInt(data.account.onAbridge)} of {fmtInt(data.account.totalProviders)} in your plan</div>
             </div>
             <div style={{ fontSize: 15, color: C.label }}>
               {Math.round(m.adoptionNow)}% <span style={{ color: C.off }}>→</span> <b style={{ color: C.coral }}>{data.targetAdoptionPct}%</b>
@@ -415,7 +415,7 @@ function UpsidePage({ data }: { data: QuickRoiPdfData }): JSX.Element {
       {/* the return */}
       <div style={{ flexGrow: 1 }} />
       <div style={{ marginTop: 26 }}>
-        <div style={sEyebrow}>The return, on today's case</div>
+        <div style={sEyebrow}>The return, on the plan you set</div>
         {priced ? (
           <div style={{ marginTop: 14, display: "flex", gap: 64, alignItems: "flex-end" }}>
             <div>

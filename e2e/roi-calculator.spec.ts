@@ -58,13 +58,13 @@ for (const vp of VIEWPORTS) {
       const vals = ["Riverbend Family Medicine", "42", "30", "2400", "68"];
       for (let i = 0; i < vals.length; i++) await inputs.nth(i).fill(vals[i]);
 
-      await page.getByRole("button", { name: /next: the lift/i }).click();
+      await page.getByRole("button", { name: /next: what changes/i }).click();
 
       const toggles = page.locator('button[role="switch"], input[type="checkbox"]');
       const n = Math.min(3, await toggles.count());
       for (let i = 0; i < n; i++) await toggles.nth(i).click();
 
-      await page.getByRole("button", { name: /see the answer/i }).click();
+      await page.getByRole("button", { name: /see my number/i }).click();
 
       // the headline number must be real money, not $0 and not NaN
       const body = await page.locator("body").innerText();

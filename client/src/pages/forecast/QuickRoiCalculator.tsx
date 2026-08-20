@@ -18,30 +18,38 @@ import {
 } from "./roiEngine";
 
 /**
- * ROI Calculator — a guided, editorial three-step flow that turns an Abridge
- * impact-analysis data pull into dollars for a partner, then shows the headroom
- * if they expand.
+ * ROI Calculator — the whole of the Self Service ROI Tool.
+ *
+ * A guided, editorial flow that a practice drives on its own, with no Abridge
+ * rep in the room and no impact-analysis data pull to read from. It asks four
+ * things: which setting, how big the practice is, what they believe would
+ * change, and what Abridge would cost. Out comes a defensible annual figure.
+ *
+ * Because the practice is evaluating rather than measuring, "adoption" here
+ * means the rollout they are planning, not a live go-live count, and every
+ * before/after is a number they set themselves rather than one read off a pull.
+ * The arithmetic is unchanged either way.
  *
  * Every dollar is produced by the SAME canonical Explore engine
- * (`computeAllDriverValues`) the Explore path uses — see `roiEngine.ts`. The
- * "how the number is built" line is the engine's own calc-summary string, so the
- * number and its arithmetic can never disagree, and can never disagree with the
- * promise the partner was sold in Explore. That reconciliation is the point:
- * this is the proof side of the same value story.
+ * (`computeAllDriverValues`) — see `roiEngine.ts`. The "how the number is built"
+ * line is the engine's own calc-summary string, so the number and its arithmetic
+ * can never disagree.
  *
- * Design rules the partner-success rep must never trip over:
+ * Design rules this screen must never break:
  *   - every input is editable, including realization / attribution — no locked
  *     numbers, ever;
- *   - the drivers are the real per-setting Explore drivers (the ED has LWBS and
- *     admission capture, not HCC; outpatient has Patient Access, not a made-up
- *     capacity lever) — nothing invented;
+ *   - nothing is pre-filled with invented data: a blank field stays blank and
+ *     the benchmark shows as a ghost placeholder;
+ *   - nothing counts until the practice switches it on;
+ *   - the drivers are the real per-setting drivers (the ED has LWBS and
+ *     admission capture, not HCC) — nothing invented;
  *   - reclaimed documentation time is shown as a COUNT of clinician hours, never
  *     dollarized on its own.
  *
- * Value today runs the engine on the encounters Abridge touches now (providers
- * on Abridge × their visits × utilization). Headroom re-runs the same engine
- * with the adoption + utilization dials turned up. Volume scales, the measured
- * effect never does.
+ * The headline figure runs the engine on the encounters their planned rollout
+ * would cover (clinicians using it × their visits × the share documented). The
+ * upside re-runs the same engine with the adoption and usage dials turned up.
+ * Volume scales, the per-encounter effect never does.
  */
 
 const fmtInt = (n: number) => Math.round(n).toLocaleString("en-US");
@@ -73,7 +81,7 @@ function useCountUp(value: number, ms = 550): number {
 }
 
 const EYEBROW = "text-[10.5px] font-extrabold tracking-[0.14em] uppercase text-[#A69A88]";
-const STEPS = ["The account", "The lift", "The answer"];
+const STEPS = ["Your numbers", "What changes", "Your number"];
 
 interface Props { onBack: () => void; onHome: () => void; }
 
@@ -104,11 +112,11 @@ export default function QuickRoiCalculator({ onBack, onHome }: Props) {
         pathLabel=""
         currentStep={inPicker ? 1 : step + 2}
         totalSteps={4}
-        stepName={inPicker ? "Care setting" : STEPS[step]}
+        stepName={inPicker ? "Setting" : STEPS[step]}
         onBack={goBack}
         onHome={onHome}
         onStepClick={onStepClick}
-        stepLabels={["Care setting", "The account", "The lift", "The answer"]}
+        stepLabels={["Setting", "Your numbers", "What changes", "Your number"]}
       />
       <UnifiedHeaderSpacer />
       <div className="max-w-[760px] mx-auto px-5 sm:px-8">
@@ -124,9 +132,9 @@ function SettingPicker({ onPick }: { onPick: (s: SettingKey) => void }) {
   return (
     <div className="pt-12 sm:pt-16 pb-24">
       <div className={EYEBROW}>ROI Calculator</div>
-      <h1 className="font-abridge text-[28px] sm:text-[34px] leading-[1.12] text-[#4A3F35] mt-4 max-w-[640px]">How much is Abridge worth to your partner?</h1>
+      <h1 className="font-abridge text-[28px] sm:text-[34px] leading-[1.12] text-[#4A3F35] mt-4 max-w-[640px]">Where does most of your documentation happen?</h1>
       <p className="mt-5 text-[16px] leading-[1.55] text-[#8C8073] max-w-[520px]">
-        Three quick steps, straight from the impact analysis. First, which care setting?
+        Pick one to start. Each setting is scored on its own drivers, so the questions after this are the ones that fit how you actually work.
       </p>
       <div className="mt-12 border-t border-[#E8E2DA] max-w-[680px]">
         {(Object.keys(SETTING_META) as SettingKey[]).map((k) => (
@@ -149,11 +157,12 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
   const d = meta.defaults;
   const isNursing = !!meta.isNursing;
   // Everything is scoped to THIS care setting, not the whole system.
-  const scopeWord = isNursing ? "nurses" : `${meta.label.toLowerCase()} providers`;
+  const scopeWord = isNursing ? "nurses" : `${meta.label.toLowerCase()} clinicians`;
   const settingWord = meta.label.toLowerCase();
+  const orgWord = meta.orgWord;
 
   // ── account ──────────────────────────────────────────────────────────────
-  const [partner, setPartner] = useState("");
+  const [practice, setPractice] = useState("");
   const [totalProviders, setTotalProviders] = useState(d.totalProviders);
   const [onAbridge, setOnAbridge] = useState(d.onAbridge);
   const [encPerProvider, setEncPerProvider] = useState(d.encPerProvider);
@@ -162,9 +171,9 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
   const [occupancy, setOccupancy] = useState(d.occupancy ?? 85);
   // Documentation minutes in notes (before -> after). Feeds Patient Access
   // dollars (outpatient) and the reclaimed-hours proof (all physician settings).
-  // Blank by default (a live partner reads their own before/after off the impact
-  // analysis); the setting's benchmark shows as a ghost placeholder, not a
-  // fabricated pre-filled value.
+  // Blank by default: the practice sets its own before and after. The setting's
+  // benchmark shows only as a ghost placeholder, never as a pre-filled value we
+  // pretend is theirs.
   const [timeBefore, setTimeBefore] = useState(0);
   const [timeAfter, setTimeAfter] = useState(0);
 
@@ -183,7 +192,7 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
     const now = d.totalProviders > 0 ? (d.onAbridge / d.totalProviders) * 100 : 0;
     return Math.min(100, Math.max(Math.round(now) + 15, 70));
   });
-  // The account starts blank (partner facts are entered from the pull), so the
+  // The account starts blank (the practice types its own facts in), so the
   // stretch target has to recompute once the real adoption is in — otherwise it
   // stays frozen at the blank-state 70% and can sit BELOW today's adoption (a
   // regressive "upside"). Re-derive a reachable stretch whenever adoption changes;
@@ -201,8 +210,8 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
   const [price, setPrice] = useState(0);
 
   // HCC panel size is account-specific (the MA / risk-adjusted membership from the
-  // partner's own risk-adjustment pull), so we never fabricate it from provider
-  // count. It stays blank until the rep enters the real number; the driver reads
+  // practice's own risk-adjustment pull), so we never fabricate it from provider
+  // count. It stays blank until the practice enters the real number; the driver reads
   // $0 until then rather than inflating off a guessed panel.
 
   const account: RoiAccount = useMemo(() => ({
@@ -221,7 +230,7 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
 
   const encToday = onAbridge * encPerProvider * (utilNow / 100);
   const hoursReclaimed = isNursing ? 0 : today.totalHoursSaved;
-  const partnerName = partner.trim() || "this partner";
+  const practiceName = practice.trim() || `your ${orgWord}`;
 
   const todayValue = today.total;
   const potentialValue = Math.max(potential.total, todayValue);
@@ -255,7 +264,7 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
   // through runRoi, so it reconciles with this screen by construction.
   const onExportPdf = () => {
     const data = {
-      orgName: partner.trim() || "Prospective partner",
+      orgName: practice.trim() || "Your practice",
       date: new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }),
       setting, account, vals, enabled, price, targetAdoptionPct, targetUtilPct,
     };
@@ -270,26 +279,26 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
       </div>
 
       {step === 0 && (
-        <StepShell title="Who is this partner, and how big are they?" sub="These come from the impact analysis, on its methodology and utilization pages.">
+        <StepShell title={`First, how big is your ${orgWord}?`} sub="Rough numbers are fine. Nothing here is locked, and you can come back and change any of it.">
           <div className="border-t border-[#E8E2DA]">
-            <Row label="Partner name">
-              <TextInput value={partner} onChange={setPartner} placeholder="e.g., Abridge Healthcare" />
+            <Row label={`${orgWord.charAt(0).toUpperCase()}${orgWord.slice(1)} name`} hint="only used to label your summary" grow>
+              <TextInput value={practice} onChange={setPractice} placeholder="e.g., Riverbend Family Medicine" />
             </Row>
-            <Row label={`How many ${scopeWord} does this partner have?`} hint={`the ${settingWord} population, everyone who could use Abridge here`}>
+            <Row label={`How many ${scopeWord} are in your ${orgWord}?`} hint={`everyone doing ${settingWord} documentation today`}>
               <NumInput value={totalProviders} onChange={setTotalProviders} placeholder="e.g., 90" />
             </Row>
-            <Row label="How many are on Abridge today?" hint={totalProviders > 0 ? `of ${fmtInt(totalProviders)} ${scopeWord} with a go-live date` : `${scopeWord} with a go-live date`}>
+            <Row label="How many of them would use Abridge?" hint={totalProviders > 0 ? `of your ${fmtInt(totalProviders)} ${scopeWord}. Starting with a subset is normal` : "starting with a subset is normal, you can raise this later"}>
               <NumInput value={onAbridge} onChange={setOnAbridge} placeholder="e.g., 60" />
             </Row>
-            <Row label={`About how many ${meta.encWord} does each ${meta.providerWord.replace(/s$/, "")} handle a year?`}>
+            <Row label={`About how many ${meta.encWord} does each ${meta.providerWord.replace(/s$/, "")} see in a year?`} hint="a normal full year, not a busy month scaled up">
               <NumInput value={encPerProvider} onChange={setEncPerProvider} placeholder="e.g., 2,500" />
             </Row>
-            <Row label={`Of their ${meta.encWord}, what share are documented with Abridge?`} hint="the documentation utilization % from the impact analysis">
+            <Row label={`What share of those ${meta.encWord} would you document with Abridge?`} hint={`not every ${meta.encWord.replace(/s$/, "")} suits ambient capture, so this is rarely 100%`}>
               <NumInput value={utilNow} onChange={setUtilNow} suffix="%" placeholder="e.g., 68" />
             </Row>
             {isNursing && (
               <>
-                <Row label="How many staffed beds?" hint="drives the patient-days behind the quality math">
+                <Row label="How many staffed beds?" hint="this sets the patient-days the quality math runs on">
                   <NumInput value={staffedBeds} onChange={setStaffedBeds} placeholder="e.g., 300" />
                 </Row>
                 <Row label="Average occupancy?">
@@ -300,17 +309,17 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
           </div>
           <p className="mt-7 text-[15px] leading-[1.6] text-[#5E534A]">
             {encToday > 0 ? (
-              <>So Abridge is on about <span className="font-abridge text-[#1A1A1A]">{fmtInt(encToday)}</span> {meta.encWord} a year in {settingWord} right now. That is {Math.round(adoptionNow)}% of {scopeWord}, on {Math.round(utilNow)}% of their {meta.encWord}.</>
+              <>That puts Abridge on about <span className="font-abridge text-[#1A1A1A]">{fmtInt(encToday)}</span> {meta.encWord} a year: {Math.round(adoptionNow)}% of your {scopeWord}, on {Math.round(utilNow)}% of their {meta.encWord}. Everything from here is calculated on that number.</>
             ) : (
-              <span className="italic text-[#A69A88]">Enter the partner's numbers above and we'll show today's Abridge footprint.</span>
+              <span className="italic text-[#A69A88]">Fill in the numbers above and we'll show how many {meta.encWord} your figure will be built on.</span>
             )}
           </p>
-          <NavRow onNext={() => setStep(1)} nextLabel="Next: the lift" />
+          <NavRow onNext={() => setStep(1)} nextLabel="Next: what changes" />
         </StepShell>
       )}
 
       {step === 1 && (
-        <StepShell title="What changed after they turned Abridge on?" sub="Read the before and after off the impact analysis. It was this, now it's this. Every number here is yours to edit.">
+        <StepShell title="Now, what would actually change?" sub={`Turn on only the things you believe would move in your ${orgWord}, and set each one yourself. Anything left off counts as zero.`}>
           {/* section tabs — navigate between the domains */}
           <div className="flex items-center gap-7 border-b border-[#E8E2DA] flex-wrap">
             {domains.map((dom, i) => {
@@ -328,7 +337,7 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
 
           <div className="pt-6 space-y-4">
             {activeDomain === "Capacity" && !isNursing && meta.timeMetric && (
-              <TimeBackBlock table={meta.timeMetric.table} before={timeBefore} after={timeAfter}
+              <TimeBackBlock table={meta.timeMetric.table} encWord={meta.encWord} before={timeBefore} after={timeAfter}
                 onBefore={setTimeBefore} onAfter={setTimeAfter} encToday={encToday} hours={hoursReclaimed}
                 dollarized={setting === "outpatient"}
                 placeholderBefore={String(meta.timeMetric.before)} placeholderAfter={String(meta.timeMetric.after)} />
@@ -340,12 +349,12 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
                 value={today.valueById[dr.id] ?? 0} summary={today.summaryById[dr.id] ?? ""} />
             ))}
           </div>
-          <NavRow onBack={() => setStep(0)} onNext={() => setStep(2)} nextLabel="See the answer" />
+          <NavRow onBack={() => setStep(0)} onNext={() => setStep(2)} nextLabel="See my number" />
         </StepShell>
       )}
 
       {step === 2 && (
-        <AnswerStep partnerName={partnerName} breakdown={breakdown} todayValue={todayValue}
+        <AnswerStep practiceName={practiceName} encWord={meta.encWord} breakdown={breakdown} todayValue={todayValue}
           potentialValue={potentialValue} headroom={headroom} hoursReclaimed={hoursReclaimed}
           adoptionNow={adoptionNow} utilNow={utilNow} totalProviders={totalProviders}
           targetAdoptionPct={targetAdoptionPct} setTargetAdoptionPct={setTargetAdoptionPct}
@@ -366,14 +375,16 @@ function StepShell({ title, sub, children }: { title: string; sub: string; child
   );
 }
 
-function Row({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
+function Row({ label, hint, grow, children }: { label: string; hint?: string; grow?: boolean; children: React.ReactNode }) {
   return (
     <div className="flex items-center justify-between gap-6 py-5 border-b border-[#E8E2DA]">
       <div className="min-w-0">
         <div className="text-[15px] font-medium text-[#1A1A1A] leading-snug">{label}</div>
         {hint && <div className="text-[12.5px] text-[#A69A88] mt-1 leading-snug">{hint}</div>}
       </div>
-      <div className="flex-shrink-0">{children}</div>
+      {/* grow: free text has no natural width, so a fixed box cuts real names
+          off mid-word. Let it take the rest of the row instead. */}
+      <div className={grow ? "flex-1 min-w-0 flex justify-end" : "flex-shrink-0"}>{children}</div>
     </div>
   );
 }
@@ -401,7 +412,7 @@ function NumInputAccent({ value, onChange, suffix, step = 0.01, w = "w-[96px]", 
 
 function TextInput({ value, onChange, placeholder }: { value: string; onChange: (s: string) => void; placeholder?: string }) {
   return (
-    <div className="w-[168px] inline-flex border-b-2 border-[#E0D9CE] focus-within:border-[#EA2C00] transition-colors pb-1">
+    <div className="w-full min-w-[150px] inline-flex border-b-2 border-[#E0D9CE] focus-within:border-[#EA2C00] transition-colors pb-1">
       <input value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder}
         className="w-full bg-transparent outline-none text-right text-[18px] font-bold text-[#1A1A1A] placeholder:font-normal placeholder:text-[15px] placeholder:text-[#C9BDAD]" />
     </div>
@@ -423,12 +434,12 @@ function BeforeAfter({ label, table, unit, before, after, onBefore, onAfter, ste
       </div>
       <div className="flex items-baseline gap-4 flex-wrap">
         <div>
-          <div className="text-[10px] font-extrabold tracking-[0.1em] uppercase text-[#A69A88] mb-1">Before</div>
+          <div className="text-[10px] font-extrabold tracking-[0.1em] uppercase text-[#A69A88] mb-1">Today</div>
           <NumInput value={before} onChange={onBefore} step={step} suffix={unit} w="w-[96px]" placeholder={placeholderBefore} />
         </div>
         <ArrowRight className="w-4 h-4 text-[#C9BDAD] self-end mb-2.5" />
         <div>
-          <div className="text-[10px] font-extrabold tracking-[0.1em] uppercase text-[#EA2C00] mb-1">After</div>
+          <div className="text-[10px] font-extrabold tracking-[0.1em] uppercase text-[#EA2C00] mb-1">With Abridge</div>
           <NumInputAccent value={after} onChange={onAfter} step={step} suffix={unit} w="w-[96px]" placeholder={placeholderAfter} />
         </div>
         {bothEntered && (
@@ -450,7 +461,7 @@ function WorkedMath({ summary, value }: { summary: string; value: number }) {
   return (
     <div className="mt-7 pt-6 border-t border-[#EFE9E0]">
       <div className="text-[10.5px] font-extrabold tracking-[0.14em] uppercase text-[#A69A88] mb-3">How the number is built</div>
-      <div className="text-[15px] leading-[1.9] text-[#5E534A]">{summary || "Enter the numbers above to build this."}</div>
+      <div className="text-[15px] leading-[1.9] text-[#5E534A]">{summary || "Set the numbers above and the math builds here."}</div>
       <div className="mt-4 flex items-baseline justify-between">
         <span className="text-[13px] text-[#A69A88]">equals</span>
         <span className={`font-abridge text-[34px] leading-none ${value > 0 ? "text-[#EA2C00]" : "text-[#C9BDAD]"}`}>{fmtShort(value)}<span className="text-[15px] text-[#9A8C7A]"> a year</span></span>
@@ -590,7 +601,7 @@ function HccDriverCard({ driver, vals, setVal, on, onToggle, value, summary }: {
 }
 
 /**
- * Patient access — anchored on the OBSERVED added visits a live partner already
+ * Patient access — anchored on the OBSERVED added visits a live practice already
  * sees, not an assumed reinvest %. The read-back shows what share of the
  * reclaimed hours those visits use, so the number stays tied to the time proof.
  */
@@ -694,8 +705,8 @@ function DrgFunnelCard({ vals, setVal, on, onToggle, value, discharges }: {
 }
 
 /** Reclaimed documentation time, shown as a COUNT of clinician hours, never dollarized here. */
-function TimeBackBlock({ table, before, after, onBefore, onAfter, encToday, hours, dollarized, placeholderBefore, placeholderAfter }: {
-  table: string; before: number; after: number; onBefore: (n: number) => void; onAfter: (n: number) => void;
+function TimeBackBlock({ table, encWord, before, after, onBefore, onAfter, encToday, hours, dollarized, placeholderBefore, placeholderAfter }: {
+  table: string; encWord: string; before: number; after: number; onBefore: (n: number) => void; onAfter: (n: number) => void;
   encToday: number; hours: number; dollarized: boolean; placeholderBefore?: string; placeholderAfter?: string;
 }) {
   const hasNumbers = encToday > 0 && hours > 0;
@@ -716,7 +727,7 @@ function TimeBackBlock({ table, before, after, onBefore, onAfter, encToday, hour
         {hasNumbers ? (
           <>
             <div className="text-[15px] leading-[1.9] text-[#5E534A]">
-              <Mono>{Math.max(0, before - after).toFixed(1)} min</Mono> saved × <Mono>{fmtInt(encToday)}</Mono> Abridge encounters ÷ 60
+              <Mono>{Math.max(0, before - after).toFixed(1)} min</Mono> saved × <Mono>{fmtInt(encToday)}</Mono> Abridge {encWord} ÷ 60
             </div>
             <div className="mt-4 flex items-baseline justify-between">
               <span className="text-[13px] text-[#A69A88]">equals</span>
@@ -733,7 +744,7 @@ function TimeBackBlock({ table, before, after, onBefore, onAfter, encToday, hour
           </>
         ) : (
           <p className="text-[14px] leading-[1.55] italic text-[#A69A88]">
-            Enter the before and after minutes above, plus the partner's encounter numbers on the first step, to see the hours reclaimed.
+            Fill in the minutes above, and your numbers on the first step, to see the hours you would get back.
           </p>
         )}
       </div>
@@ -753,7 +764,7 @@ function NavRow({ onBack, onNext, nextLabel }: { onBack?: () => void; onNext: ()
 }
 
 function AnswerStep(p: {
-  partnerName: string; breakdown: { title: string; value: number }[];
+  practiceName: string; encWord: string; breakdown: { title: string; value: number }[];
   todayValue: number; potentialValue: number; headroom: number; hoursReclaimed: number;
   adoptionNow: number; utilNow: number; totalProviders: number;
   targetAdoptionPct: number; setTargetAdoptionPct: (n: number) => void; targetUtilPct: number; setTargetUtilPct: (n: number) => void;
@@ -775,10 +786,10 @@ function AnswerStep(p: {
     return (
       <div>
         <div className={EYEBROW}>The answer</div>
-        <h1 className="font-abridge text-[30px] sm:text-[36px] leading-[1.12] text-[#1A1A1A] mt-4 max-w-[540px]">No drivers are on yet</h1>
-        <p className="mt-5 text-[16px] leading-[1.6] text-[#5E534A] max-w-[520px]">Go back and switch on the drivers your data supports. Each one you turn on builds the number here.</p>
+        <h1 className="font-abridge text-[30px] sm:text-[36px] leading-[1.12] text-[#1A1A1A] mt-4 max-w-[540px]">Nothing is switched on yet</h1>
+        <p className="mt-5 text-[16px] leading-[1.6] text-[#5E534A] max-w-[520px]">Go back and switch on the changes you believe you would see. Each one you turn on adds to the number here.</p>
         <button onClick={p.onBack} className="mt-8 inline-flex items-center gap-2 rounded-full bg-[#EA2C00] text-white text-[14px] font-bold px-7 py-3.5 hover:bg-[#d12800] transition-colors">
-          Back to the drivers <ArrowRight className="w-4 h-4" />
+          Back to what changes <ArrowRight className="w-4 h-4" />
         </button>
       </div>
     );
@@ -787,16 +798,16 @@ function AnswerStep(p: {
   return (
     <div>
       {/* Beat 1 — what it's worth today */}
-      <div className={EYEBROW}>The answer</div>
-      <h1 className="font-abridge text-[26px] sm:text-[32px] leading-[1.14] text-[#4A3F35] mt-4">To {p.partnerName}, Abridge is worth</h1>
+      <div className={EYEBROW}>Your number</div>
+      <h1 className="font-abridge text-[26px] sm:text-[32px] leading-[1.14] text-[#4A3F35] mt-4">For {p.practiceName}, Abridge could be worth</h1>
       <div className="font-abridge text-[66px] sm:text-[92px] leading-[0.88] text-[#EA2C00] mt-3">{fmtShort(todayShown)}<span className="text-[26px] text-[#9A8C7A] font-normal"> a year</span></div>
       <p className="mt-5 text-[16px] leading-[1.6] text-[#5E534A] max-w-[560px]">
-        {makeup ? <>From {makeup}, at today's {Math.round(p.adoptionNow)}% rollout and {Math.round(p.utilNow)}% utilization.</> : "Turn on the drivers your data supports to build the number."}
+        {makeup ? <>From {makeup}, at the {Math.round(p.adoptionNow)}% rollout and {Math.round(p.utilNow)}% usage you set. Change either one and this moves.</> : "Switch on the changes you expect and the number builds here."}
       </p>
 
       {/* Beat 2 — the upside */}
       <div className="mt-14 pt-1">
-        <div className={EYEBROW}>The upside, if they expand</div>
+        <div className={EYEBROW}>If you rolled it out further</div>
         <div className="mt-4 flex flex-wrap items-baseline gap-x-5 gap-y-1">
           <span className="font-abridge text-[44px] sm:text-[56px] leading-[0.9] text-[#1A1A1A]">{fmtShort(potentialShown)}<span className="text-[20px] text-[#9A8C7A] font-normal"> a year</span></span>
           <span className="font-abridge text-[22px] text-[#EA2C00]">+{fmtShort(p.headroom)} on the table</span>
@@ -809,20 +820,20 @@ function AnswerStep(p: {
             <div className="h-full bg-[#F6B7A6] transition-all duration-500" style={{ width: `${headroomPct}%` }} />
           </div>
           <div className="flex justify-between mt-2.5 text-[12.5px]">
-            <span className="flex items-center gap-1.5 text-[#8C8073]"><span className="w-2 h-2 rounded-full bg-[#EA2C00]" /> Made today {fmtShort(p.todayValue)}</span>
-            <span className="flex items-center gap-1.5 text-[#8C8073]"><span className="w-2 h-2 rounded-full bg-[#F6B7A6]" /> On the table {fmtShort(p.headroom)}</span>
+            <span className="flex items-center gap-1.5 text-[#8C8073]"><span className="w-2 h-2 rounded-full bg-[#EA2C00]" /> At your plan {fmtShort(p.todayValue)}</span>
+            <span className="flex items-center gap-1.5 text-[#8C8073]"><span className="w-2 h-2 rounded-full bg-[#F6B7A6]" /> Still on the table {fmtShort(p.headroom)}</span>
           </div>
         </div>
 
         {/* the dials */}
         <div className={`mt-9 grid grid-cols-1 ${p.showUtilDial ? "sm:grid-cols-2" : ""} gap-x-10 gap-y-6`}>
-          <Slider label="More providers on Abridge" value={p.targetAdoptionPct} min={Math.round(p.adoptionNow)} onChange={p.setTargetAdoptionPct} right={`${fmtInt(Math.round(p.totalProviders * p.targetAdoptionPct / 100))} of ${fmtInt(p.totalProviders)}`} />
+          <Slider label="More of your clinicians using it" value={p.targetAdoptionPct} min={Math.round(p.adoptionNow)} onChange={p.setTargetAdoptionPct} right={`${fmtInt(Math.round(p.totalProviders * p.targetAdoptionPct / 100))} of ${fmtInt(p.totalProviders)}`} />
           {p.showUtilDial && (
-            <Slider label="Using it on more of their encounters" value={p.targetUtilPct} min={Math.round(p.utilNow)} onChange={p.setTargetUtilPct} right={`${p.targetUtilPct}%`} />
+            <Slider label={`Using it on more of their ${p.encWord}`} value={p.targetUtilPct} min={Math.round(p.utilNow)} onChange={p.setTargetUtilPct} right={`${p.targetUtilPct}%`} />
           )}
         </div>
         <p className="mt-6 text-[13.5px] leading-[1.6] text-[#8C8073] max-w-[560px]">
-          The measured effect stays exactly where the data put it. Only the volume it runs on grows.
+          The per-{p.encWord.replace(/s$/, "")} effect stays exactly where you set it. The only thing growing here is how many {p.encWord} it runs on.
         </p>
       </div>
 
@@ -831,27 +842,27 @@ function AnswerStep(p: {
         <div className={EYEBROW}>The return</div>
         <div className="mt-5 flex flex-wrap items-end gap-x-12 gap-y-6">
           <div>
-            <div className="text-[12.5px] text-[#8C8073] mb-2">Abridge price</div>
+            <div className="text-[12.5px] text-[#8C8073] mb-2">What Abridge would cost you</div>
             <div className="w-[180px] inline-flex items-baseline gap-1.5 border-b-2 border-[#E0D9CE] focus-within:border-[#EA2C00] transition-colors pb-1">
               <span className="text-[16px] text-[#A69A88]">$</span>
               <FormattedNumberInput value={p.price} onChange={p.setPrice}
                 className="flex-1 min-w-0 h-auto border-0 rounded-none bg-transparent p-0 shadow-none text-[24px] font-bold text-[#1A1A1A] tabular-nums focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:not-italic placeholder:font-normal placeholder:text-[16px] placeholder:text-[#C9BDAD]"
-                placeholder="your contract rate" />
+                placeholder="a year, all in" />
             </div>
           </div>
           {p.price > 0 ? (
             <>
               <div>
                 <div className="font-abridge text-[46px] sm:text-[56px] leading-none text-[#EA2C00]">{roi.toFixed(1)}×</div>
-                <div className="text-[12.5px] text-[#8C8073] mt-2">return on the Abridge spend</div>
+                <div className="text-[12.5px] text-[#8C8073] mt-2">back for every dollar spent</div>
               </div>
               <div>
                 <div className="font-abridge text-[46px] sm:text-[56px] leading-none text-[#1A1A1A]">{fmtShort(p.todayValue - p.price)}</div>
-                <div className="text-[12.5px] text-[#8C8073] mt-2">net a year, after the price</div>
+                <div className="text-[12.5px] text-[#8C8073] mt-2">left over each year, after paying for it</div>
               </div>
             </>
           ) : (
-            <div className="text-[15px] text-[#A69A88] italic pb-2">Enter the Abridge price to see the return.</div>
+            <div className="text-[15px] text-[#A69A88] italic pb-2">Add a price and we will show what you keep.</div>
           )}
         </div>
       </div>
@@ -865,9 +876,9 @@ function AnswerStep(p: {
       </div>
 
       <div className="mt-10 pt-7 border-t border-[#E8E2DA] flex items-center justify-between gap-4 flex-wrap">
-        <button onClick={p.onBack} className="text-[14px] font-semibold text-[#A69A88] hover:text-[#1A1A1A] transition-colors rounded outline-none focus-visible:ring-2 focus-visible:ring-[#EA2C00] focus-visible:ring-offset-2">Back to the numbers</button>
+        <button onClick={p.onBack} className="text-[14px] font-semibold text-[#A69A88] hover:text-[#1A1A1A] transition-colors rounded outline-none focus-visible:ring-2 focus-visible:ring-[#EA2C00] focus-visible:ring-offset-2">Back to what changes</button>
         <button onClick={p.onExport} className="inline-flex items-center gap-2 rounded-full bg-[#EA2C00] text-white text-[14px] font-bold px-7 py-3.5 hover:bg-[#d12800] transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[#EA2C00] focus-visible:ring-offset-2">
-          <Download className="w-4 h-4" /> Export the one-pager
+          <Download className="w-4 h-4" /> Save my summary
         </button>
       </div>
     </div>

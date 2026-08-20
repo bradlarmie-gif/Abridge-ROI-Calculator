@@ -1,156 +1,82 @@
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
-import brandShape from "@assets/IMG_0419_1770480513063.png";
-import patternA from "@assets/pattern-9-a_1769391110218.png";
+import brandSymbol from "@assets/abridge-logo-symbol_1774906992195.png";
 
 interface SplashScreenProps {
   onEnter: () => void;
 }
 
-const COLS = 6;
-const ROWS = 5;
-const BASE_OPACITY = 0.25;
-const PEAK_OPACITY = 0.68;
-
-function getShapeSize(width: number): number {
-  if (width < 480) return 48;
-  if (width < 640) return 56;
-  if (width < 1024) return 80;
-  return 120;
-}
-
-function getRotation(row: number, col: number): number {
-  const pattern = [
-    [0, 90, 180, 270, 0, 90],
-    [270, 180, 90, 0, 270, 180],
-    [180, 270, 0, 90, 180, 270],
-    [90, 0, 270, 180, 90, 0],
-    [0, 90, 180, 270, 0, 90],
-  ];
-  return pattern[row % pattern.length][col % pattern[0].length];
-}
-
-interface GridCell {
-  leftPercent: number;
-  topPercent: number;
-  rotation: number;
-  waveDelay: number;
-}
-
-function buildGrid(): GridCell[] {
-  const cells: GridCell[] = [];
-  for (let r = 0; r < ROWS; r++) {
-    for (let c = 0; c < COLS; c++) {
-      cells.push({
-        leftPercent: ((c + 0.5) / COLS) * 100,
-        topPercent: ((r + 0.5) / ROWS) * 100,
-        rotation: getRotation(r, c),
-        waveDelay: (r + c) * 1.0,
-      });
-    }
-  }
-  return cells;
-}
-
-const gridCells = buildGrid();
-
+/**
+ * The landing screen.
+ *
+ * A split: the pitch and the single action on the left, a quiet tan brand
+ * panel on the right. There is one button and it goes straight into the care
+ * setting picker, because there is nothing else in this app to choose between.
+ *
+ * The right panel carries no numbers on purpose. Every figure in this tool is
+ * one the practice typed in themselves, and a specimen number on the landing
+ * screen would be the one exception, which reads as a claim rather than a
+ * calculation.
+ */
 export default function SplashScreen({ onEnter }: SplashScreenProps) {
-  const [shapeSize, setShapeSize] = useState(120);
-
-  useEffect(() => {
-    const update = () => setShapeSize(getShapeSize(window.innerWidth));
-    update();
-    window.addEventListener('resize', update);
-    return () => window.removeEventListener('resize', update);
-  }, []);
-
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black overflow-hidden">
-      <div className="absolute inset-0 pointer-events-none">
-        {gridCells.map((cell, i) => (
-          <img
-            key={i}
-            src={brandShape}
-            alt=""
-            className="absolute splash-tile"
-            style={{
-              width: `${shapeSize}px`,
-              height: `${shapeSize}px`,
-              left: `${cell.leftPercent}%`,
-              top: `${cell.topPercent}%`,
-              marginLeft: `-${shapeSize / 2}px`,
-              marginTop: `-${shapeSize / 2}px`,
-              filter: 'grayscale(100%) brightness(0.6)',
-              '--tile-rot': `${cell.rotation}deg`,
-              '--tile-delay': `${cell.waveDelay}s`,
-            } as React.CSSProperties}
-            data-testid={`shape-bg-${i}`}
-          />
-        ))}
-      </div>
+    <div className="min-h-screen bg-[#FDFCFA] text-[#5E534A] antialiased">
+      <div className="grid min-h-screen grid-cols-1 lg:grid-cols-[1.05fr_0.95fr]">
+        {/* Left: the pitch and the one action */}
+        <div className="flex items-center px-7 sm:px-14 lg:px-20 py-16 lg:py-0">
+          <div className="w-full max-w-[540px]">
+            <div className="text-[11px] font-extrabold tracking-[0.16em] uppercase text-[#A69A88]">
+              Abridge ROI
+            </div>
 
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background: 'radial-gradient(ellipse 60% 55% at 50% 48%, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.2) 55%, transparent 100%)',
-        }}
-      />
+            {/* no hard breaks: a forced wrap that reads well at 52px orphans a
+                word on a phone. Let the measure do the wrapping. */}
+            <h1 className="font-abridge text-[34px] sm:text-[44px] lg:text-[52px] leading-[1.08] text-[#3F352C] mt-6">
+              What could Abridge be worth to your practice?
+            </h1>
 
-      <div className="relative z-10 text-center px-6 max-w-2xl mx-auto">
-        <div className="mb-12 flex justify-center">
-          <img
-            src={patternA}
-            alt="Abridge"
-            className="w-24 md:w-32 splash-logo"
-          />
+            <p className="mt-7 text-[16.5px] sm:text-[17px] leading-[1.6] text-[#8C8073] max-w-[440px]">
+              Answer a few questions about how your practice actually runs.
+              You will get an annual figure you can defend, built only from
+              numbers you entered yourself.
+            </p>
+
+            <button
+              onClick={onEnter}
+              data-testid="button-enter-app"
+              className="group mt-11 inline-flex items-center gap-3 rounded-full bg-[#EA2C00] px-8 py-4 text-[15px] font-bold text-white transition-colors hover:bg-[#D12800] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#EA2C00] focus-visible:ring-offset-2"
+            >
+              Estimate my value
+              <ArrowRight className="h-[18px] w-[18px] transition-transform group-hover:translate-x-1" />
+            </button>
+
+            <div className="mt-12 border-t border-[#E8E2DA] pt-6">
+              <p className="text-[13px] leading-[1.6] text-[#A69A88] max-w-[420px]">
+                Takes about four minutes. Nothing you type leaves this browser,
+                and every assumption behind the math stays open for you to
+                change.
+              </p>
+            </div>
+          </div>
         </div>
 
-        <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold text-white mb-6 leading-tight font-abridge uppercase">
-          Build Your Value Story
-        </h1>
-
-        <p className="text-slate-400 text-lg md:text-xl mb-12 max-w-lg mx-auto">
-          Discover the ROI of ambient AI documentation
-        </p>
-
-        <Button
-          onClick={onEnter}
-          size="lg"
-          variant="secondary"
-          className="border border-white/30 min-h-[44px]"
-          data-testid="button-enter-app"
-        >
-          Calculate Your ROI
-          <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-        </Button>
+        {/* Right: the tan brand panel */}
+        <div className="relative hidden lg:flex items-center justify-center overflow-hidden bg-[#F2EBE1] border-l border-[#E8E2DA]">
+          <img
+            src={brandSymbol}
+            alt=""
+            aria-hidden="true"
+            className="w-[52%] max-w-[420px] select-none pointer-events-none"
+            style={{ opacity: 0.22 }}
+          />
+          <div className="absolute bottom-12 left-12 right-12">
+            <div className="h-px w-full bg-[#DED4C6]" />
+            <p className="mt-5 font-abridge text-[17px] leading-[1.45] text-[#6B5F52] max-w-[340px]">
+              Four steps: your setting, your numbers, what would change, and
+              what it comes to.
+            </p>
+          </div>
+        </div>
       </div>
-
-      <style>{`
-        .splash-tile {
-          animation: tileWave 9s ease-in-out var(--tile-delay, 0s) infinite backwards;
-          transform: rotate(var(--tile-rot, 0deg));
-        }
-        @keyframes tileWave {
-          0%, 100% { opacity: ${BASE_OPACITY}; transform: rotate(var(--tile-rot, 0deg)) scale(1); }
-          50%      { opacity: ${PEAK_OPACITY}; transform: rotate(var(--tile-rot, 0deg)) scale(1.04); }
-        }
-        .splash-logo {
-          animation: splashLogoEnter 0.4s ease-out forwards, splashLogoPulse 4s ease-in-out 0.4s infinite;
-        }
-        @keyframes splashLogoEnter {
-          0% { opacity: 0; transform: scale(0.85); }
-          100% { opacity: 1; transform: scale(1); }
-        }
-        @keyframes splashLogoPulse {
-          0%, 100% { opacity: 1; transform: scale(1); }
-          50% { opacity: 0.88; transform: scale(1.02); }
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .splash-tile { animation: none !important; opacity: 0.4 !important; }
-          .splash-logo { animation: none !important; opacity: 1 !important; }
-        }
-      `}</style>
     </div>
   );
 }

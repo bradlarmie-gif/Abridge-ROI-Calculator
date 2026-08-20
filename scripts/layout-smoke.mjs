@@ -48,7 +48,7 @@ const fillAccount = async (page) => {
 };
 
 const toCareSetting = async (page) => {
-  await page.getByRole("button", { name: /calculate your roi/i }).first().click({ timeout: 6000 });
+  await page.getByRole("button", { name: /estimate my value/i }).first().click({ timeout: 6000 });
   await page.waitForTimeout(500);
 };
 
@@ -58,10 +58,17 @@ const toAccount = async (page) => {
   await page.waitForTimeout(500);
 };
 
-const toLift = async (page) => {
+// The account step must be checked WITH a long value in it: the clipped-input
+// probe reads scrollWidth on rendered fields, so an empty account step can never
+// expose a name box that is too narrow. This state is the one that catches it.
+const toAccountFilled = async (page) => {
   await toAccount(page);
   await fillAccount(page);
-  await page.getByRole("button", { name: /next: the lift/i }).first().click({ timeout: 6000 });
+};
+
+const toLift = async (page) => {
+  await toAccountFilled(page);
+  await page.getByRole("button", { name: /next: what changes/i }).first().click({ timeout: 6000 });
   await page.waitForTimeout(600);
 };
 
@@ -71,7 +78,7 @@ const toAnswer = async (page) => {
   const n = Math.min(3, await toggles.count());
   for (let i = 0; i < n; i++) { await toggles.nth(i).click({ timeout: 2000 }).catch(() => {}); }
   await page.waitForTimeout(300);
-  await page.getByRole("button", { name: /see the answer/i }).first().click({ timeout: 6000 });
+  await page.getByRole("button", { name: /see my number/i }).first().click({ timeout: 6000 });
   await page.waitForTimeout(700);
 };
 
@@ -79,6 +86,7 @@ const ROUTES = [
   { url: "/", label: "Home" },
   { url: "/", label: "ROI Calculator · care setting", drive: toCareSetting },
   { url: "/", label: "ROI Calculator · the account", drive: toAccount },
+  { url: "/", label: "ROI Calculator · the account, filled", drive: toAccountFilled },
   { url: "/", label: "ROI Calculator · the lift", drive: toLift },
   { url: "/", label: "ROI Calculator · the answer", drive: toAnswer },
 ];
@@ -225,11 +233,11 @@ try {
   if (enter) { await enter.click(); await page.waitForTimeout(300); }
   await page.click('button:has-text("Inpatient")'); await page.waitForTimeout(250);
   await fillAccount(page);
-  await page.click('button:has-text("Next: the lift")'); await page.waitForTimeout(350);
+  await page.click('button:has-text("Next: what changes")'); await page.waitForTimeout(350);
   // scroll to the bottom of the lift, then advance — the answer must land at top
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
   await page.waitForTimeout(150);
-  await page.click('button:has-text("See the answer")'); await page.waitForTimeout(450);
+  await page.click('button:has-text("See my number")'); await page.waitForTimeout(450);
   const y = await page.evaluate(() => window.scrollY);
   if (y > 4) fails.push(`ROI calc: the Answer step opens at scrollY=${Math.round(y)}, not the top (step change didn't reset scroll)`);
   await ctx.close();

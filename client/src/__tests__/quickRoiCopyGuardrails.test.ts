@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { existsSync } from "fs";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
-import { scanFiles, formatHits } from "./support/copyGuardrail";
+import { scanFiles, formatHits, type Rule } from "./support/copyGuardrail";
 
 /**
  * COPY guardrails for the Self Service ROI Tool.
@@ -32,6 +32,20 @@ const FILES: string[] = [
   "lib/exploreDrivers.ts",
 ];
 
+/**
+ * AUDIENCE rules, specific to this tool.
+ *
+ * This is self service: the reader is a doctor or a small group sizing their
+ * own practice. They have no Abridge rep and no impact-analysis data pull, so
+ * copy inherited from the rep-facing calculator ("your partner", "read it off
+ * the impact analysis", "the rep dials it") is not merely off-tone, it points
+ * at something the reader does not have. This tool used to be that tool, so
+ * the vocabulary is a live regression risk, not a hypothetical one.
+ */
+const AUDIENCE_RULES: Rule[] = [
+  { name: "rep-vocabulary", hit: (c) => /\b(partner|partners|the rep|impact analysis|impact-analysis|data pull|prospect)\b/i.test(c) },
+];
+
 describe("ROI Calculator COPY guardrails", () => {
   it("every file this guard claims to scan actually exists", () => {
     const missing = FILES.filter((rel) => !existsSync(join(CLIENT_SRC, rel)));
@@ -42,5 +56,10 @@ describe("ROI Calculator COPY guardrails", () => {
   it("no em dashes, no causal/guarantee absolutes, no 'credited to' in live copy", () => {
     const hits = scanFiles(CLIENT_SRC, FILES);
     expect(hits.length, `Copy guardrail hits (${hits.length}):\n${formatHits(hits)}`).toBe(0);
+  });
+
+  it("speaks to a practice sizing itself, not to a rep selling a partner", () => {
+    const hits = scanFiles(CLIENT_SRC, FILES, AUDIENCE_RULES).filter((h) => h.rule === "rep-vocabulary");
+    expect(hits.length, `Rep-facing vocabulary in self-service copy (${hits.length}):\n${formatHits(hits)}`).toBe(0);
   });
 });

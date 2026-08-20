@@ -81,7 +81,7 @@ async function driveCalculator(page, setting, { stopAt = "answer" } = {}) {
   await page.waitForTimeout(400);
   if (stopAt === "account-filled") return `${setting} — the account (filled)`;
 
-  await page.getByRole("button", { name: /next: the lift/i }).first().click({ timeout: 6000 }).catch(() => {});
+  await page.getByRole("button", { name: /next: what changes/i }).first().click({ timeout: 6000 }).catch(() => {});
   await page.waitForTimeout(700);
 
   const toggles = page.locator('button[role="switch"], input[type="checkbox"]');
@@ -90,7 +90,7 @@ async function driveCalculator(page, setting, { stopAt = "answer" } = {}) {
   await page.waitForTimeout(500);
   if (stopAt === "lift") return `${setting} — the lift, ${n} drivers on`;
 
-  await page.getByRole("button", { name: /see the answer/i }).first().click({ timeout: 6000 }).catch(() => {});
+  await page.getByRole("button", { name: /see my number/i }).first().click({ timeout: 6000 }).catch(() => {});
   await page.waitForTimeout(900);
   return `${setting} — the answer`;
 }
