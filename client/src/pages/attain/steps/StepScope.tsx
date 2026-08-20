@@ -291,7 +291,7 @@ export default function StepScope({ setting, goals = [], baseline, onChangeBasel
               ))}
             </div>
             <p className="text-[12.5px] text-[#8C8C8C] leading-relaxed mt-6 pt-5 border-t border-[#E8E2DA]">
-              These hold the line, they don't move. Defaults sit here; change any if you know yours. The plan is measured against them.
+              Seeded conservatively; change any you know. The plan's dollars are measured against these.
             </p>
           </>
         ) : (
