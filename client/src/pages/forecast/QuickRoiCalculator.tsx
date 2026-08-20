@@ -47,9 +47,10 @@ import {
 const fmtInt = (n: number) => Math.round(n).toLocaleString("en-US");
 const fmtShort = (n: number) => {
   const a = Math.abs(n);
-  if (a >= 1e6) return `$${(n / 1e6).toFixed(2).replace(/\.?0+$/, "")}M`;
-  if (a >= 1e3) return `$${Math.round(n / 1e3)}K`;
-  return `$${Math.round(n)}`;
+  const s = n < 0 ? "-" : "";
+  if (a >= 1e6) return `${s}$${(a / 1e6).toFixed(2).replace(/\.?0+$/, "")}M`;
+  if (a >= 1e3) return `${s}$${Math.round(a / 1e3)}K`;
+  return `${s}$${Math.round(a)}`;
 };
 
 function useCountUp(value: number, ms = 550): number {

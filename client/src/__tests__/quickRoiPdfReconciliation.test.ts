@@ -17,11 +17,15 @@ import { runRoi, DRIVERS, type SettingKey, type RoiAccount } from "@/pages/forec
  * scenario-% float, and the document renders with no NaN across every setting.
  */
 
+// Mirrors the canonical fmtShort shared by the app answer screen and the PDF
+// (2-decimal millions, sign outside the $), so the guard asserts the PDF renders
+// the SAME figure the screen shows.
 const shortMoney = (n: number) => {
   const a = Math.abs(n);
-  if (a >= 1e6) return `$${(n / 1e6).toFixed(a >= 1e7 ? 0 : 1).replace(/\.0$/, "")}M`;
-  if (a >= 1e3) return `$${Math.round(n / 1e3)}K`;
-  return `$${Math.round(n)}`;
+  const s = n < 0 ? "-" : "";
+  if (a >= 1e6) return `${s}$${(a / 1e6).toFixed(2).replace(/\.?0+$/, "")}M`;
+  if (a >= 1e3) return `${s}$${Math.round(a / 1e3)}K`;
+  return `${s}$${Math.round(a)}`;
 };
 
 const render = (data: QuickRoiPdfData) =>

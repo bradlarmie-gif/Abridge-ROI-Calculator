@@ -54,9 +54,10 @@ function fmtFull(n: number): string {
 }
 function fmtShort(n: number): string {
   const a = Math.abs(n);
-  if (a >= 1e6) return `$${(n / 1e6).toFixed(a >= 1e7 ? 0 : 1).replace(/\.0$/, "")}M`;
-  if (a >= 1e3) return `$${Math.round(n / 1e3)}K`;
-  return `$${Math.round(n)}`;
+  const s = n < 0 ? "-" : "";
+  if (a >= 1e6) return `${s}$${(a / 1e6).toFixed(2).replace(/\.?0+$/, "")}M`;
+  if (a >= 1e3) return `${s}$${Math.round(a / 1e3)}K`;
+  return `${s}$${Math.round(a)}`;
 }
 function fmtInt(n: number): string {
   return Math.round(n).toLocaleString("en-US");

@@ -304,7 +304,7 @@ export default function ArConsolidationView({
                 <p className="text-[13px] text-[#8C7E6E] mt-3.5" data-testid="ar-caption">
                   <b className="text-[#2E2822] font-bold">{h.name}</b> is <b className="text-[#2E2822] font-bold tabular-nums">{fmtM(h.spend)}</b> / yr.{" "}
                   {h.staysOnly ? (
-                    <>It <b className="text-[#2E2822] font-bold">stays on</b> &mdash; Abridge doesn&rsquo;t replace it.</>
+                    <>It <b className="text-[#2E2822] font-bold">stays on</b>. Abridge doesn&rsquo;t replace it.</>
                   ) : (
                     <>
                       <b className="text-[#EA2C00] font-bold tabular-nums">{fmtM(h.retired)}</b> folds onto Abridge
@@ -347,7 +347,7 @@ export default function ArConsolidationView({
         </div>
         <div className="py-[22px] pl-7">
           <div className="text-[11px] font-extrabold uppercase tracking-[0.07em] text-[#443A32]">
-            Freed every year
+            Freed at full consolidation
           </div>
           <div className="font-abridge text-[30px] mt-2 text-[#EA2C00] tabular-nums">
             {fmtFull(model.freed)}

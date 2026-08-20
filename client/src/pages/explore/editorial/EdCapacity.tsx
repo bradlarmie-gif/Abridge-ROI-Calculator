@@ -125,7 +125,9 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
       const hrsPerProvPerWeek = state.numberOfProviders > 0 ? totalHoursSaved / state.numberOfProviders / 48 : 0;
       const reinvest = (td.capacityRealizationPercent ?? 25) / 100;
       const visitHrs = (td.visitDuration ?? 30) / 60;
-      const visitsPerWeek = visitHrs > 0 ? Math.round((hrsPerProvPerWeek * reinvest / visitHrs) * 10) / 10 : 0;
+      // Full precision so `annualVisits × margin` foots to the engine value;
+      // rounding the per-provider fraction first would inflate the visit count.
+      const visitsPerWeek = visitHrs > 0 ? hrsPerProvPerWeek * reinvest / visitHrs : 0;
       const annualVisits = Math.round(visitsPerWeek * effectiveAccessProviders * 48);
       const value = valueFor(driver.id);
       const awaiting = gate(driver.id);
@@ -430,11 +432,13 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
     const hrsPerProvWk = state.numberOfProviders > 0 ? totalHoursSaved / state.numberOfProviders / 48 : 0;
     const reinvest = (td.capacityRealizationPercent ?? 25) / 100;
     const visitHrs = (td.visitDuration ?? 30) / 60;
+    // Full precision (matches the engine); rounding this per-provider fraction
+    // before scaling would inflate the running chain and the "hrs/wk" readout.
     const visitsPerWk =
       td.patientAccessVisitsPerProvWk && td.patientAccessVisitsPerProvWk > 0
         ? td.patientAccessVisitsPerProvWk
         : visitHrs > 0
-          ? Math.round((hrsPerProvWk * reinvest / visitHrs) * 10) / 10
+          ? hrsPerProvWk * reinvest / visitHrs
           : 0;
     const paValue = valueFor("patientAccess");
     const paAwait = gate("patientAccess");

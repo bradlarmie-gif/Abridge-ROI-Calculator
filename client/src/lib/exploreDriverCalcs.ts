@@ -110,15 +110,17 @@ export function computeAllDriverValues(
     // visits/provider they actually see, so we count that directly instead of
     // deriving it from an assumed reinvest %. Explore leaves the override unset
     // and keeps the reinvest-driven model.
+    // Keep the per-provider visits/wk at FULL precision — rounding this tiny
+    // fraction (e.g. 0.175 → 0.2) before scaling by providers × weeks inflates
+    // the headline ~14%. We round only the final integer visit count.
     const visitsPerWk =
       td.patientAccessVisitsPerProvWk && td.patientAccessVisitsPerProvWk > 0
         ? td.patientAccessVisitsPerProvWk
         : visitHrs > 0
-          ? Math.round((hrsPerProvWk * reinvest / visitHrs) * 10) / 10
+          ? hrsPerProvWk * reinvest / visitHrs
           : 0;
-    result.patientAccess = Math.round(
-      visitsPerWk * eff * 48 * td.revenuePerVisit,
-    );
+    const addedVisitsPerYr = Math.round(visitsPerWk * eff * 48);
+    result.patientAccess = Math.round(addedVisitsPerYr * td.revenuePerVisit);
   }
   if (isED && td.edLwbsEnabled) {
     const lwbs = state.annualEncounters * (td.edLwbsRate / 100);
@@ -397,13 +399,17 @@ export function computeAllDriverCalcSummaries(
     // visits/provider they actually see, so we count that directly instead of
     // deriving it from an assumed reinvest %. Explore leaves the override unset
     // and keeps the reinvest-driven model.
+    // Full precision (see the calc above); the worked math shows the aggregate
+    // added-visits count so a skeptic multiplying the two visible factors gets
+    // the exact dollar, instead of a rounded per-provider fraction that would not.
     const visitsPerWk =
       td.patientAccessVisitsPerProvWk && td.patientAccessVisitsPerProvWk > 0
         ? td.patientAccessVisitsPerProvWk
         : visitHrs > 0
-          ? Math.round((hrsPerProvWk * reinvest / visitHrs) * 10) / 10
+          ? hrsPerProvWk * reinvest / visitHrs
           : 0;
-    out.patientAccess = `${fmtN(eff)} providers × ${fmtNd(visitsPerWk)} visits/wk × 48 wks × ${fmt$(td.revenuePerVisit)}/visit`;
+    const addedVisitsPerYr = Math.round(visitsPerWk * eff * 48);
+    out.patientAccess = `${fmtN(addedVisitsPerYr)} added ${addedVisitsPerYr === 1 ? "visit" : "visits"} a year, from freed time reinvested × ${fmt$(td.revenuePerVisit)}/visit`;
   }
   if (isED && td.edLwbsEnabled) {
     out.lwbsRecovery = `${fmtN(state.annualEncounters)} ED visits × ${td.edLwbsRate}% LWBS × ${td.edLwbsReduction}% reduction × ${fmt$(td.edRevenuePerVisit)}/visit × ${td.edLwbsRealization}% conversion`;

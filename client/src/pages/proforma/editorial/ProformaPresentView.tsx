@@ -233,7 +233,7 @@ export default function ProformaPresentView({ settings, config, org, onNavigate,
           <div style={{ borderTop: "1px solid #F6D9CF", marginTop: 22, paddingTop: 20 }}>
             <div style={{ marginBottom: 4 }}><Lbl style={{ color: T.label }}>How we prove it, together</Lbl></div>
             {[
-              { t: "Instrument the signals in your Epic", b: "The same drivers above, wired to live Epic signals, no new reporting burden." },
+              { t: "Instrument the signals in your EHR", b: "The same drivers above, wired to live EHR signals, no new reporting burden." },
               { t: "Measure the before, then the after", b: "A clean baseline so the lift is yours, not a benchmark." },
               { t: "Report attainment every quarter", b: "Track the case against reality, and adjust the deal as the numbers land." },
             ].map((s, i) => (

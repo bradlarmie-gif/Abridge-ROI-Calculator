@@ -191,10 +191,14 @@ export function buildProformaPdfData(
 
   // ── System-level year rows (clinical basis) ────────────────────────────────
   let cum = 0;
+  let cumClinical = 0;
+  let cumInvestment = 0;
   const years: PfYearRow[] = yearly.map((y) => {
     const total = y.revenueValue + y.capacityValue + y.workforceValue + y.qualityValue;
     const net = total - y.investment;
     cum += net;
+    cumClinical += total;
+    cumInvestment += y.investment;
     return {
       // Per-setting cut uses the SAME clinical basis as the Total row
       // (revenue + capacity + workforce + quality). Only DISPLACEMENT is excluded
@@ -212,7 +216,10 @@ export function buildProformaPdfData(
       investment: y.investment,
       net,
       cumulativeNet: cum,
-      roi: y.investment > 0 ? total / y.investment : 0,
+      // CUMULATIVE ROI (value-to-date / investment-to-date) to match the on-screen
+      // Case view; the marginal per-year ratio climbed then read as a "drop" at the
+      // cumulative 3-year total, so screen and PDF now tell the same year-by-year story.
+      roi: cumInvestment > 0 ? cumClinical / cumInvestment : 0,
     };
   });
 
@@ -255,9 +262,12 @@ export function buildProformaPdfData(
     settings.reduce((a, s) => (Math.floor((s.goLiveMonth - 1) / 12) === i ? a + s.implementationFee : a), 0),
   );
   const subByYear = years.map((y, i) => y.investment - implByYear[i]);
+  const implTotal = implByYear.reduce((a, b) => a + b, 0);
+  // Only exhibit the one-time implementation row when there is a fee — a row of
+  // $0 / $0 / $0 reads like an unfinished placeholder in a formal proposal.
   const costRows = [
     { label: "Subscription, annual", years: subByYear, total: subByYear.reduce((a, b) => a + b, 0) },
-    { label: "Implementation, one-time", years: implByYear, total: implByYear.reduce((a, b) => a + b, 0) },
+    ...(implTotal > 0 ? [{ label: "Implementation, one-time", years: implByYear, total: implTotal }] : []),
   ];
   const totalInvestmentRow = {
     label: "Total investment",
@@ -351,7 +361,7 @@ export function buildProformaPdfData(
     // today's ramp; otherwise tell the true story (base clears, or it builds).
     scenarioNote:
       termValue * 0.7 - termInvestment > 0
-        ? "Flex realization by ±30% and even the conservative case clears its cost. Today's figure sits toward the conservative end, so there's upside if adoption runs ahead of plan."
+        ? "Flex realization by ±30% and even the conservative case clears its cost. The base sits between the two, with room on either side as adoption runs behind or ahead of plan."
         : termNet > 0
           ? "Flex realization by ±30%. The base case clears its cost; the conservative end is where it runs tightest, with upside if adoption runs ahead of plan."
           : "Flex realization by ±30%. At today's ramp the case does not yet clear its cost over the term; it builds as adoption deepens and legacy tooling is displaced.",
@@ -373,7 +383,7 @@ export function buildProformaPdfData(
     closingStatement:
       "Every figure here is your own volume and economics, yours to verify, and ours to prove alongside you.",
     proofSteps: [
-      { title: "Instrument the signals in your Epic", body: "The same drivers in this model, wired to live Epic signals, no new reporting burden." },
+      { title: "Instrument the signals in your EHR", body: "The same drivers in this model, wired to live EHR signals, no new reporting burden." },
       { title: "Measure the before, then the after", body: "A clean baseline so the lift is yours, not a benchmark." },
       { title: "Report attainment every quarter", body: "Track the case against reality, and adjust the deal as the numbers land." },
     ],

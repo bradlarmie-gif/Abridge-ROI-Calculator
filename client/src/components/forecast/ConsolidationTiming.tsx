@@ -367,9 +367,13 @@ export default function ConsolidationTiming({
         </div>
         <div className="py-[22px] pl-7 border-r border-[#E8E2DA]">
           <div className="text-[11px] font-extrabold tracking-[0.07em] uppercase text-[#443A32]">Captured sooner by acting</div>
-          <div className="font-abridge text-[30px] mt-2">
-            <AnimatedValue value={captured} format={fmtFull} duration={600} className="tabular-nums" style={{ color: captured > 0 ? "#EA2C00" : "#B4A99B" }} />
-          </div>
+          {captured > 0 ? (
+            <div className="font-abridge text-[30px] mt-2">
+              <AnimatedValue value={captured} format={fmtFull} duration={600} className="tabular-nums" style={{ color: "#EA2C00" }} />
+            </div>
+          ) : (
+            <div className="text-[13.5px] text-[#8C7E6E] leading-snug mt-2 max-w-[200px]">Drag an exit earlier to capture that spend sooner.</div>
+          )}
         </div>
         <div className="py-[22px] pl-7">
           <div className="text-[11px] font-extrabold tracking-[0.07em] uppercase text-[#443A32]">Fully consolidated</div>

@@ -102,8 +102,9 @@ export default function ExploreCapacity({ state, updateState, totalHoursSaved, p
       const hrsPerProvPerWeek = state.numberOfProviders > 0 ? totalHoursSaved / state.numberOfProviders / 48 : 0;
       const reinvestRate = (td.capacityRealizationPercent ?? 25) / 100;
       const visitDurationHrs = (td.visitDuration ?? 30) / 60;
-      const visitsPerWeek = visitDurationHrs > 0 ? Math.round((hrsPerProvPerWeek * reinvestRate / visitDurationHrs) * 10) / 10 : 0;
-      // Match PatientAccessCalc card formula exactly: round annual visits before multiplying by revenue
+      // Full precision — round only the final integer visit count, never the
+      // per-provider fraction (rounding it first inflates the headline ~14%).
+      const visitsPerWeek = visitDurationHrs > 0 ? hrsPerProvPerWeek * reinvestRate / visitDurationHrs : 0;
       const annualVisits = Math.round(visitsPerWeek * effectiveAccessProviders * 48);
       result.patientAccess = Math.round(annualVisits * td.revenuePerVisit);
     }

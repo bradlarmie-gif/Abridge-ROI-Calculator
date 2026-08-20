@@ -75,12 +75,14 @@ export function buildDriverFormula(
       const accessProv   = tdi.accessProviders ? Math.round(tdi.accessProviders * providerScaleFactor) : providers;
       const eff          = Math.min(accessProv, providers);
       const hrsPerProvWk = providers > 0 ? scaledHours / providers / 48 : 0;
-      const visitHrs     = visitDur / 60;
-      const visitsPerWk  = visitHrs > 0 ? Math.round((hrsPerProvWk * (realPct / 100) / visitHrs) * 10) / 10 : 0;
+      // Derive the annual added-visit count from the authoritative engine value
+      // (value ÷ margin), so the result foots exactly and we never round the tiny
+      // per-provider visits/wk fraction — rounding that first inflated the count.
+      const annualVisits = rev > 0 ? Math.round(driverValue / rev) : 0;
       return [
         { label: `${n(scaledHours)} provider-hours freed/yr  ÷  ${n(providers)} providers  ÷  48 wks`, value: `${hrsPerProvWk.toFixed(1)} hrs/provider/wk` },
-        { label: `${hrsPerProvWk.toFixed(1)} hrs  ×  ${p(realPct)} reinvested  ÷  ${visitDur}-min visits`, value: `${visitsPerWk} added visits/provider/wk` },
-        { label: `${visitsPerWk} visits/wk  ×  ${n(eff)} providers  ×  48 wks  ×  ${d(rev)}/visit`, value: fmt(driverValue), isResult: true },
+        { label: `${hrsPerProvWk.toFixed(1)} hrs/provider/wk  ×  ${p(realPct)} reinvested  ÷  ${visitDur}-min visits  ×  ${n(eff)} providers  ×  48 wks`, value: `${n(annualVisits)} added visits/yr` },
+        { label: `${n(annualVisits)} added visits/yr  ×  ${d(rev)}/visit`, value: fmt(driverValue), isResult: true },
       ];
     }
 

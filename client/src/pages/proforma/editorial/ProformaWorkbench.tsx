@@ -1155,9 +1155,11 @@ export default function ProformaWorkbench({ settings, config, onUpdateSetting, o
   const displacedPayback = summary.paybackMonth;
   const dispBeat = displacedPerYr > 0 && displacedPayback != null && clinicalPayback != null && displacedPayback < clinicalPayback;
   const read =
-    clinicalPayback != null
-      ? `At this ramp the deal clears its cost on clinical value by month ${clinicalPayback} and reaches ${fmt(summary.termNet)} net over ${termYears === 1 ? "the first year" : `${termYears} years`}.${dispBeat ? ` Counting the legacy spend Abridge displaces, real break-even is month ${displacedPayback}.` : ""} ${topDomain} carries about ${topShare}% of the value at run-rate.`
-      : `The deal has not yet cleared its cost inside a ${termYears}-year term. Tune the ramp, pricing, or drivers below. ${topDomain} carries about ${topShare}% of the value at run-rate.`;
+    yearlyValue <= 0
+      ? `Add a care setting to model the deal. Value, payback, and the domain mix appear here as you build it.`
+      : clinicalPayback != null
+        ? `At this ramp the deal clears its cost on clinical value by month ${clinicalPayback} and reaches ${fmt(summary.termNet)} net over ${termYears === 1 ? "the first year" : `${termYears} years`}.${dispBeat ? ` Counting the legacy spend Abridge displaces, real break-even is month ${displacedPayback}.` : ""} ${topDomain} carries about ${topShare}% of the value at run-rate.`
+        : `The deal has not yet cleared its cost inside a ${termYears}-year term. Tune the ramp, pricing, or drivers below. ${topDomain} carries about ${topShare}% of the value at run-rate.`;
 
   const toggleExpanded = (id: string) =>
     setExpandedIds((cur) => {

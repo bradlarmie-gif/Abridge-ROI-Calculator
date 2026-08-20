@@ -69,7 +69,11 @@ const PREVENTED_BY = /\bprevented by\b/i;
 const ELIMINATES = /\b(eliminates|eradicates)\b/i;
 
 const CORE_RULES: Rule[] = [
-  { name: "em-dash", hit: (c) => c.includes("—") },
+  // Catch the literal EM dash AND its HTML-entity forms — an entity-encoded em
+  // dash renders identically to the customer but slipped past a literal-only
+  // check. Deliberately NOT the en dash (–): it is correct in numeric ranges
+  // ("$150K–$350K", "0–100") and is not the "AI wrote this" tell we guard.
+  { name: "em-dash", hit: (c) => /—|&mdash;|&#8212;|&#x2014;/i.test(c) },
   { name: "guarantee-claim", hit: (c) => GUARANTEE.test(c) && !GUARANTEE_NEGATED.test(c) },
   { name: "ensures", hit: (c) => ENSURES.test(c) },
   { name: "proven-to", hit: (c) => PROVEN.test(c) },

@@ -299,14 +299,16 @@ export default function EdModel({
     : baselineCount > 0 && state.utilizationPercent > 0
       ? (expandedProviders / baselineCount) * (expandedUtilization / state.utilizationPercent)
       : 0;
-  // Screen keeps NET (its card is a net-vs-net comparison, labeled "net value").
-  const expandedValue = Math.round(netAnnualValue * expansionMultiplier);
-  // The PDF's "at full scale" page compares against the GROSS modeled value, so
-  // it needs a gross-scaled figure (today-gross → full-scale-gross, always
-  // grows). Net-scaling there pitted gross vs net and could invert.
+  // Value scales with encounters (the expansion multiplier); cost scales only
+  // with PROVIDERS (the smaller provider ratio). Net at full scale is therefore
+  // gross-at-scale minus investment-at-scale — NOT net × multiplier, which
+  // wrongly inflates the cost by the encounter multiplier and can turn a
+  // profitable expansion into a deeper loss. This also matches the PDF, which
+  // already gross-scales; both surfaces now use the same method.
   const expandedGross = Math.round(totalAnnualValue * expansionMultiplier);
   const providerExpansionRatio = baselineCount > 0 ? expandedProviders / baselineCount : 0;
   const expandedInvestment = annualInvestment * providerExpansionRatio;
+  const expandedValue = Math.round(expandedGross - expandedInvestment);
   const expandedRoi = expandedInvestment > 0 ? (totalAnnualValue * expansionMultiplier) / expandedInvestment : 0;
 
   const providersPct = providersTrackMax > 0 ? (expandedProviders / providersTrackMax) * 100 : 0;

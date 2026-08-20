@@ -500,7 +500,7 @@ export function StressTest({ termValue, termInvestment, termNet }: { termValue: 
         </div>
       </div>
       <p style={{ fontSize: 12.5, color: T.muted, lineHeight: 1.5, marginBottom: 16, maxWidth: 640 }}>
-        Today's figure sits toward the conservative end, so there's upside if adoption runs ahead of plan.
+        Flex realization by ±{pct}% and watch the term net swing. The low end is where adoption runs behind plan; the high end is where it runs ahead.
       </p>
       <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%" }}>
         <line x1={30} y1={56} x2={530} y2={56} stroke={T.hair} />
