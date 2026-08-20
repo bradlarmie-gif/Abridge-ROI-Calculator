@@ -171,6 +171,13 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
   const [encPerProvider, setEncPerProvider] = useState(d.encPerProvider);
   const [utilNow, setUtilNow] = useState(d.utilNow);
   const [staffedBeds, setStaffedBeds] = useState(d.staffedBeds ?? 0);
+  // You cannot roll Abridge out to more clinicians than you employ. The input
+  // caps while typing, but the total can be lowered AFTER the subset is set,
+  // which would leave a stale value above it: adoption over 100%, and an upside
+  // slider whose floor sits above its own ceiling. Pull it back down.
+  useEffect(() => {
+    if (totalProviders > 0 && onAbridge > totalProviders) setOnAbridge(totalProviders);
+  }, [totalProviders, onAbridge]);
   const [occupancy, setOccupancy] = useState(d.occupancy ?? 85);
   // Documentation minutes in notes (before -> after). Feeds Patient Access
   // dollars (outpatient) and the reclaimed-hours proof (all physician settings).
@@ -363,7 +370,8 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
               <NumInput value={totalProviders} onChange={setTotalProviders} placeholder="e.g., 90" />
             </Row>
             <Row label="How many of them would use Abridge?" hint={totalProviders > 0 ? `of your ${fmtInt(totalProviders)} ${scopeWord}. Starting with a subset is normal` : "starting with a subset is normal, you can raise this later"}>
-              <NumInput value={onAbridge} onChange={setOnAbridge} placeholder="e.g., 60" />
+              <NumInput value={onAbridge} onChange={setOnAbridge} placeholder="e.g., 60"
+                max={totalProviders > 0 ? totalProviders : undefined} />
             </Row>
             <Row label={`About how many ${meta.encWord} does each ${meta.providerWord.replace(/s$/, "")} see in a year?`} hint="a normal full year, not a busy month scaled up">
               <NumInput value={encPerProvider} onChange={setEncPerProvider} placeholder="e.g., 2,500" />

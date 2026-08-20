@@ -82,6 +82,28 @@ for (const vp of VIEWPORTS) {
       await expect(page.getByRole("button", { name: /^Capacity/ })).toHaveCount(0);
     });
 
+    test("cannot roll out to more clinicians than the practice has", async ({ page }) => {
+      await enterCalculator(page);
+      await page.getByText("Outpatient", { exact: true }).first().click();
+      await pickAllGoals(page);
+
+      const inputs = page.locator("input");
+      const total = inputs.nth(1);
+      const using = inputs.nth(2);
+
+      // typing past the headcount is capped as you type
+      await total.fill("40");
+      await using.fill("200");
+      await expect(using, "the subset should cap at the headcount while typing").toHaveValue("40");
+
+      // and lowering the headcount afterwards pulls the subset down with it,
+      // otherwise adoption reads over 100%
+      await using.fill("40");
+      await total.fill("12");
+      await page.locator("body").click();
+      await expect(using, "lowering the headcount should pull the subset down").toHaveValue("12");
+    });
+
     test("a full run produces a dollar answer", async ({ page }) => {
       await enterCalculator(page);
       await page.getByText("Outpatient", { exact: true }).first().click();
