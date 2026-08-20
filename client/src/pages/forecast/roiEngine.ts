@@ -708,6 +708,74 @@ export const DRIVERS: Record<SettingKey, RoiDriver[]> = {
 /** Domain order for the Step 2 section tabs. */
 export const DOMAIN_ORDER: Domain[] = ["Revenue", "Capacity", "Workforce", "Quality"];
 
+/**
+ * What each domain means to the person reading it, in their own terms.
+ *
+ * The practice picks its goals before it sees any drivers, and that choice is
+ * what decides how many sections the next step has. Written per setting on
+ * purpose: "keep your clinicians" and "keep your nurses" are the same domain
+ * but not the same sentence, and an ED reads its revenue very differently from
+ * a clinic. Only domains that actually have drivers for a setting appear.
+ */
+export const DOMAIN_GOALS: Record<SettingKey, Partial<Record<Domain, { title: string; blurb: string }>>> = {
+  outpatient: {
+    Revenue: {
+      title: "Bill accurately for the care you already give",
+      blurb: "Notes that carry the full complexity of the visit, and fewer denials to rework.",
+    },
+    Capacity: {
+      title: "Get time back, and decide what to do with it",
+      blurb: "Finish notes sooner. That time can become more visits, or it can just go home with you.",
+    },
+    Workforce: {
+      title: "Keep the clinicians you have",
+      blurb: "A day that ends on time is a day people stay for, with less locum cover to buy.",
+    },
+  },
+  ed: {
+    Revenue: {
+      title: "Capture what you already treat",
+      blurb: "Coding that matches the acuity you saw, fewer denials, and fewer patients leaving before they are seen.",
+    },
+    Capacity: {
+      title: "Get time back during the shift",
+      blurb: "Notes closer to real time instead of a pile waiting at the end of the shift.",
+    },
+    Workforce: {
+      title: "Keep the clinicians you have",
+      blurb: "Burnout is what drives the locum and agency line. A sustainable shift is what shrinks it.",
+    },
+  },
+  inpatient: {
+    Revenue: {
+      title: "Reflect how sick the patient actually was",
+      blurb: "Documentation that supports the coding, and holds up when the admission status is questioned.",
+    },
+    Capacity: {
+      title: "Get time back on rounds",
+      blurb: "Progress notes and admissions written closer to the bedside than to the end of the day.",
+    },
+    Workforce: {
+      title: "Keep the clinicians you have",
+      blurb: "Fewer departures, and less reliance on locum cover to fill the gaps.",
+    },
+  },
+  nursing: {
+    Capacity: {
+      title: "Cut the overtime charting creates",
+      blurb: "Charting that keeps pace with the shift rather than spilling past the end of it.",
+    },
+    Workforce: {
+      title: "Keep the nurses you have",
+      blurb: "Less burnout on the unit, and less agency cover to backfill it.",
+    },
+    Quality: {
+      title: "Support the work that catches harm sooner",
+      blurb: "Fuller, earlier documentation feeds the bundles your quality program already runs on.",
+    },
+  },
+};
+
 // ─── Defaults helpers (for UI init) ──────────────────────────────────────────
 
 export function defaultVals(setting: SettingKey): Record<string, number> {

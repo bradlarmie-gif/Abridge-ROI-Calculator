@@ -52,9 +52,26 @@ const toCareSetting = async (page) => {
   await page.waitForTimeout(500);
 };
 
-const toAccount = async (page) => {
+// The goals step decides how many sections the "what changes" step has, so the
+// walk has to pass through it. Picking every goal is the widest case, which is
+// the one worth checking for layout.
+const pickAllGoals = async (page) => {
+  const cards = page.locator("[data-testid^=goal-]");
+  const n = await cards.count();
+  for (let i = 0; i < n; i++) await cards.nth(i).click({ timeout: 4000 }).catch(() => {});
+  await page.waitForTimeout(250);
+};
+
+const toGoals = async (page) => {
   await toCareSetting(page);
   await page.getByText("Outpatient", { exact: true }).first().click({ timeout: 6000 });
+  await page.waitForTimeout(500);
+};
+
+const toAccount = async (page) => {
+  await toGoals(page);
+  await pickAllGoals(page);
+  await page.getByRole("button", { name: /next: your numbers/i }).first().click({ timeout: 6000 });
   await page.waitForTimeout(500);
 };
 
@@ -85,6 +102,8 @@ const toAnswer = async (page) => {
 const ROUTES = [
   { url: "/", label: "Home" },
   { url: "/", label: "ROI Calculator · care setting", drive: toCareSetting },
+  { url: "/", label: "ROI Calculator · goals", drive: toGoals },
+  { url: "/", label: "ROI Calculator · goals, all picked", drive: async (p) => { await toGoals(p); await pickAllGoals(p); } },
   { url: "/", label: "ROI Calculator · the account", drive: toAccount },
   { url: "/", label: "ROI Calculator · the account, filled", drive: toAccountFilled },
   { url: "/", label: "ROI Calculator · the lift", drive: toLift },
@@ -232,6 +251,8 @@ try {
   const enter = await page.$('[data-testid="button-enter-app"]');
   if (enter) { await enter.click(); await page.waitForTimeout(300); }
   await page.click('button:has-text("Inpatient")'); await page.waitForTimeout(250);
+  await pickAllGoals(page);
+  await page.click('button:has-text("Next: your numbers")'); await page.waitForTimeout(300);
   await fillAccount(page);
   await page.click('button:has-text("Next: what changes")'); await page.waitForTimeout(350);
   // scroll to the bottom of the lift, then advance — the answer must land at top

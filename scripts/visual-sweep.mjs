@@ -70,6 +70,16 @@ async function driveCalculator(page, setting, { stopAt = "answer" } = {}) {
   const LABEL = { outpatient: "Outpatient", ed: "Emergency", inpatient: "Inpatient", nursing: "Nursing" };
   await page.getByText(LABEL[setting], { exact: true }).first().click({ timeout: 6000 });
   await page.waitForTimeout(600);
+  if (stopAt === "goals") return `${setting} — goals (empty)`;
+
+  // the goals step scopes everything after it; pick them all for the widest case
+  const goalCards = page.locator("[data-testid^=goal-]");
+  const goalCount = await goalCards.count();
+  for (let i = 0; i < goalCount; i++) await goalCards.nth(i).click({ timeout: 3000 }).catch(() => {});
+  await page.waitForTimeout(250);
+  if (stopAt === "goals-picked") return `${setting} — goals (${goalCount} picked)`;
+  await page.getByRole("button", { name: /next: your numbers/i }).first().click({ timeout: 6000 }).catch(() => {});
+  await page.waitForTimeout(600);
   if (stopAt === "account") return `${setting} — the account (empty)`;
 
   const inputs = page.locator("input");
@@ -185,10 +195,12 @@ await scene(browser, "home", async (p) => {
 await scene(browser, "calc-1-care-setting", (p) => driveCalculator(p, "outpatient", { stopAt: "setting" }));
 
 for (const s of ["outpatient", "ed", "inpatient", "nursing"]) {
-  await scene(browser, `calc-2-account-${s}-empty`, (p) => driveCalculator(p, s, { stopAt: "account" }), { height: 1300 });
-  await scene(browser, `calc-2-account-${s}-filled`, (p) => driveCalculator(p, s, { stopAt: "account-filled" }), { height: 1300 });
-  await scene(browser, `calc-3-lift-${s}`, (p) => driveCalculator(p, s, { stopAt: "lift" }), { height: 1800 });
-  await scene(browser, `calc-4-answer-${s}`, (p) => driveCalculator(p, s), { height: 1600 });
+  await scene(browser, `calc-2-goals-${s}`, (p) => driveCalculator(p, s, { stopAt: "goals" }), { height: 1200 });
+  await scene(browser, `calc-2-goals-${s}-picked`, (p) => driveCalculator(p, s, { stopAt: "goals-picked" }), { height: 1200 });
+  await scene(browser, `calc-3-account-${s}-empty`, (p) => driveCalculator(p, s, { stopAt: "account" }), { height: 1300 });
+  await scene(browser, `calc-3-account-${s}-filled`, (p) => driveCalculator(p, s, { stopAt: "account-filled" }), { height: 1300 });
+  await scene(browser, `calc-4-lift-${s}`, (p) => driveCalculator(p, s, { stopAt: "lift" }), { height: 1800 });
+  await scene(browser, `calc-5-answer-${s}`, (p) => driveCalculator(p, s), { height: 1600 });
 }
 
 // ── B. PDFs, one screenshot PER PAGE (so each page gets its own eyeball) ──────

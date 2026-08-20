@@ -28,6 +28,15 @@ async function enterCalculator(page: Page) {
   await expect(page.getByText("Outpatient", { exact: true })).toBeVisible();
 }
 
+/** Pick every goal the setting offers, then move on to the numbers step. */
+async function pickAllGoals(page: Page) {
+  const cards = page.locator("[data-testid^=goal-]");
+  const n = await cards.count();
+  expect(n, "the goals step offered nothing to pick").toBeGreaterThan(0);
+  for (let i = 0; i < n; i++) await cards.nth(i).click();
+  await page.getByRole("button", { name: /next: your numbers/i }).click();
+}
+
 for (const vp of VIEWPORTS) {
   test.describe(`${vp.name}`, () => {
     test.use({ viewport: { width: vp.width, height: vp.height } });
@@ -41,18 +50,42 @@ for (const vp of VIEWPORTS) {
       await expectNoHorizontalOverflow(page, "care setting");
     });
 
-    test("every care setting opens its own account step", async ({ page }) => {
+    test("every care setting offers its own goals, and cannot be skipped", async ({ page }) => {
       for (const setting of ["Outpatient", "Emergency", "Inpatient", "Nursing"]) {
         await enterCalculator(page);
         await page.getByText(setting, { exact: true }).first().click();
+        // the goals step gates the flow: nothing picked, nothing to continue to
+        const next = page.getByRole("button", { name: /next: your numbers/i });
+        await expect(next, `${setting}: continue should be disabled with no goal picked`).toBeDisabled();
+        await expect(page.locator("[data-testid^=goal-]").first()).toBeVisible();
+        await expectNoHorizontalOverflow(page, `${setting} goals step`);
+        await pickAllGoals(page);
         await expect(page.locator("h1")).toBeVisible();
         await expectNoHorizontalOverflow(page, `${setting} account step`);
       }
     });
 
+    test("what changes only shows the goals that were picked", async ({ page }) => {
+      await enterCalculator(page);
+      await page.getByText("Outpatient", { exact: true }).first().click();
+      // pick Revenue only
+      await page.getByTestId("goal-revenue").click();
+      await page.getByRole("button", { name: /next: your numbers/i }).click();
+
+      const inputs = page.locator("input");
+      const vals = ["Riverbend Family Medicine", "42", "30", "2400", "68"];
+      for (let i = 0; i < vals.length; i++) await inputs.nth(i).fill(vals[i]);
+      await page.getByRole("button", { name: /next: what changes/i }).click();
+
+      await expect(page.getByRole("button", { name: /^Revenue/ })).toBeVisible();
+      await expect(page.getByRole("button", { name: /^Workforce/ })).toHaveCount(0);
+      await expect(page.getByRole("button", { name: /^Capacity/ })).toHaveCount(0);
+    });
+
     test("a full run produces a dollar answer", async ({ page }) => {
       await enterCalculator(page);
       await page.getByText("Outpatient", { exact: true }).first().click();
+      await pickAllGoals(page);
 
       const inputs = page.locator("input");
       const vals = ["Riverbend Family Medicine", "42", "30", "2400", "68"];

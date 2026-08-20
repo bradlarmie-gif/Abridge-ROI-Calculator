@@ -12,6 +12,7 @@ import {
   SETTING_META,
   DRIVERS,
   DOMAIN_ORDER,
+  DOMAIN_GOALS,
   defaultVals,
   defaultEnabled,
   runRoi,
@@ -82,13 +83,13 @@ function useCountUp(value: number, ms = 550): number {
 }
 
 const EYEBROW = "text-[10.5px] font-extrabold tracking-[0.14em] uppercase text-[#A69A88]";
-const STEPS = ["Your numbers", "What changes", "Your number"];
+const STEPS = ["Your goals", "Your numbers", "What changes", "Your number"];
 
 interface Props { onBack: () => void; onHome: () => void; }
 
 export default function QuickRoiCalculator({ onBack, onHome }: Props) {
   const [setting, setSetting] = useState<SettingKey | null>(null);
-  const [step, setStep] = useState(0); // 0 = account, 1 = lift, 2 = answer
+  const [step, setStep] = useState(0); // 0 = goals, 1 = account, 2 = lift, 3 = answer
   const inPicker = setting === null;
   // Every step change starts a new screen — always open it at the top. Without
   // this, advancing while scrolled down (e.g. Lift -> Answer) opens the next
@@ -102,6 +103,7 @@ export default function QuickRoiCalculator({ onBack, onHome }: Props) {
     else if (step > 0) setStep(step - 1);
     else { setSetting(null); setStep(0); }
   };
+
   const onStepClick = (n: number) => {
     if (n === 1) { setSetting(null); setStep(0); }
     else setStep(n - 2);
@@ -112,12 +114,12 @@ export default function QuickRoiCalculator({ onBack, onHome }: Props) {
         pathType="forecast"
         pathLabel=""
         currentStep={inPicker ? 1 : step + 2}
-        totalSteps={4}
+        totalSteps={5}
         stepName={inPicker ? "Setting" : STEPS[step]}
         onBack={goBack}
         onHome={onHome}
         onStepClick={onStepClick}
-        stepLabels={["Setting", "Your numbers", "What changes", "Your number"]}
+        stepLabels={["Setting", "Your goals", "Your numbers", "What changes", "Your number"]}
       />
       <UnifiedHeaderSpacer />
       <div className="max-w-[760px] mx-auto px-5 sm:px-8">
@@ -258,11 +260,21 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
 
   // ── lift-step domain tabs ──────────────────────────────────────────────────
   const [liftTab, setLiftTab] = useState(0);
-  const domains = useMemo(() => DOMAIN_ORDER.filter((dom) => {
+  // Every domain this setting could speak to.
+  const availableDomains = useMemo(() => DOMAIN_ORDER.filter((dom) => {
     const hasDrivers = DRIVERS[setting].some((dr) => dr.domain === dom);
     const capacityTime = dom === "Capacity" && !isNursing; // reclaimed-hours proof lives here
-    return hasDrivers || capacityTime;
+    return (hasDrivers || capacityTime) && !!DOMAIN_GOALS[setting][dom];
   }), [setting, isNursing]);
+  // What they said they were actually trying to fix. That choice, not the
+  // catalogue, decides how many sections the next step has.
+  const [goals, setGoals] = useState<Domain[]>([]);
+  const toggleGoal = (d: Domain) => setGoals((g) => (g.includes(d) ? g.filter((x) => x !== d) : [...g, d]));
+  const domains = useMemo(
+    () => availableDomains.filter((d) => goals.includes(d)),
+    [availableDomains, goals],
+  );
+  useEffect(() => { setLiftTab(0); }, [goals.length]);
   const tabSummary = (dom: Domain): string => {
     const dollar = DRIVERS[setting]
       .filter((dr) => dr.domain === dom && enabled[dr.id])
@@ -295,7 +307,54 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
       </div>
 
       {step === 0 && (
-        <StepShell title={`First, how big is your ${orgWord}?`} sub="Rough numbers are fine. Nothing here is locked, and you can come back and change any of it.">
+        <StepShell
+          title="What are you hoping Abridge fixes?"
+          sub="Pick everything that matters to you, one or more. Only what you choose gets asked about, and only what you choose can add to the number.">
+          <div className="border-t border-[#E8E2DA]">
+            {availableDomains.map((dom) => {
+              const goal = DOMAIN_GOALS[setting][dom]!;
+              const on = goals.includes(dom);
+              return (
+                <button
+                  key={dom}
+                  type="button"
+                  onClick={() => toggleGoal(dom)}
+                  aria-pressed={on}
+                  data-testid={`goal-${dom.toLowerCase()}`}
+                  className={`group w-full text-left flex items-start justify-between gap-6 px-4 sm:px-5 py-6 border-b border-[#E8E2DA] transition-colors ${on ? "bg-[#FDFBF8]" : "hover:bg-[#FCFAF7]"}`}
+                >
+                  <div className="min-w-0">
+                    <div className={`text-[10.5px] font-extrabold tracking-[0.14em] uppercase ${on ? "text-[#EA2C00]" : "text-[#B4A896]"}`}>{dom}</div>
+                    <div className={`font-abridge text-[21px] leading-tight mt-2 ${on ? "text-[#1A1A1A]" : "text-[#4A3F35] group-hover:text-[#1A1A1A]"}`}>{goal.title}</div>
+                    <div className="text-[13.5px] leading-[1.5] text-[#8C8073] mt-1.5 max-w-[460px]">{goal.blurb}</div>
+                  </div>
+                  <span
+                    aria-hidden="true"
+                    className={`mt-1 flex h-[22px] w-[22px] flex-shrink-0 items-center justify-center rounded-[6px] border-2 transition-colors ${on ? "border-[#EA2C00] bg-[#EA2C00]" : "border-[#D8CFC2] group-hover:border-[#B4A896]"}`}
+                  >
+                    {on && (
+                      <svg viewBox="0 0 12 10" className="h-[11px] w-[11px]" fill="none">
+                        <path d="M1 5l3.2 3.2L11 1.4" stroke="#FFFFFF" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    )}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+          <p className="mt-7 text-[15px] leading-[1.6] text-[#5E534A]">
+            {goals.length > 0 ? (
+              <>You picked <span className="font-abridge text-[#1A1A1A]">{goals.length}</span> of {availableDomains.length}. The next steps will only ask about {goals.length === 1 ? "that one" : "those"}.</>
+            ) : (
+              <span className="italic text-[#A69A88]">Pick at least one to carry on.</span>
+            )}
+          </p>
+          <NavRow onNext={() => setStep(1)} nextLabel="Next: your numbers" disabled={goals.length === 0} />
+        </StepShell>
+      )}
+
+      {step === 1 && (
+        <StepShell title={`Now, how big is your ${orgWord}?`} sub="Rough numbers are fine. Nothing here is locked, and you can come back and change any of it.">
           <div className="border-t border-[#E8E2DA]">
             <Row label={`${orgWord.charAt(0).toUpperCase()}${orgWord.slice(1)} name`} hint="only used to label your summary" grow>
               <TextInput value={practice} onChange={setPractice} placeholder="e.g., Riverbend Family Medicine" />
@@ -330,12 +389,12 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
               <span className="italic text-[#A69A88]">Fill in the numbers above and we'll show how many {meta.encWord} your figure will be built on.</span>
             )}
           </p>
-          <NavRow onNext={() => setStep(1)} nextLabel="Next: what changes" />
+          <NavRow onBack={() => setStep(0)} onNext={() => setStep(2)} nextLabel="Next: what changes" />
         </StepShell>
       )}
 
-      {step === 1 && (
-        <StepShell title="Now, what would actually change?" sub={`Turn on only the things you believe would move in your ${orgWord}, and set each one yourself. Anything left off counts as zero.`}>
+      {step === 2 && (
+        <StepShell title="So, what would actually change?" sub={`Turn on only the things you believe would move in your ${orgWord}, and set each one yourself. Anything left off counts as zero.`}>
           {/* section tabs — navigate between the domains */}
           <div className="flex items-center gap-7 border-b border-[#E8E2DA] flex-wrap">
             {domains.map((dom, i) => {
@@ -365,17 +424,17 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
                 value={today.valueById[dr.id] ?? 0} summary={today.summaryById[dr.id] ?? ""} />
             ))}
           </div>
-          <NavRow onBack={() => setStep(0)} onNext={() => setStep(2)} nextLabel="See my number" />
+          <NavRow onBack={() => setStep(1)} onNext={() => setStep(3)} nextLabel="See my number" />
         </StepShell>
       )}
 
-      {step === 2 && (
+      {step === 3 && (
         <AnswerStep practiceName={practiceName} encWord={meta.encWord} breakdown={breakdown} todayValue={todayValue} todayValueFull={todayValueFull} potentialValueFull={potentialValueFull}
           potentialValue={potentialValue} headroom={headroom} hoursReclaimed={hoursReclaimed}
           adoptionNow={adoptionNow} utilNow={utilNow} totalProviders={totalProviders}
           targetAdoptionPct={targetAdoptionPct} setTargetAdoptionPct={setTargetAdoptionPct}
           targetUtilPct={targetUtilPct} setTargetUtilPct={setTargetUtilPct} showUtilDial={!isNursing}
-          price={price} setPrice={setPrice} onBack={() => setStep(1)} onExport={onExportPdf} />
+          price={price} setPrice={setPrice} onBack={() => setStep(2)} onExport={onExportPdf} />
       )}
     </div>
   );
@@ -393,14 +452,15 @@ function StepShell({ title, sub, children }: { title: string; sub: string; child
 
 function Row({ label, hint, grow, children }: { label: string; hint?: string; grow?: boolean; children: React.ReactNode }) {
   return (
-    <div className="flex items-center justify-between gap-6 py-5 border-b border-[#E8E2DA]">
+    <div className={`flex justify-between gap-x-6 gap-y-3 py-5 border-b border-[#E8E2DA] ${grow ? "flex-col items-start sm:flex-row sm:items-center" : "items-center"}`}>
       <div className="min-w-0">
         <div className="text-[15px] font-medium text-[#1A1A1A] leading-snug">{label}</div>
         {hint && <div className="text-[12.5px] text-[#A69A88] mt-1 leading-snug">{hint}</div>}
       </div>
-      {/* grow: free text has no natural width, so a fixed box cuts real names
-          off mid-word. Let it take the rest of the row instead. */}
-      <div className={grow ? "flex-1 min-w-0 flex justify-end" : "flex-shrink-0"}>{children}</div>
+      {/* grow: free text has no natural width, so a box sized for a number cuts
+          real names off mid-word. Give it room, and on a narrow screen let it
+          drop under the label and use the whole row. */}
+      <div className={grow ? "w-full sm:w-auto sm:flex-1 sm:min-w-0 flex sm:justify-end" : "flex-shrink-0"}>{children}</div>
     </div>
   );
 }
@@ -431,7 +491,7 @@ function NumInputAccent({ value, onChange, suffix, step = 0.01, w = "w-[96px]", 
 
 function TextInput({ value, onChange, placeholder }: { value: string; onChange: (s: string) => void; placeholder?: string }) {
   return (
-    <div className="w-[300px] max-w-full inline-flex border-b-2 border-[#E0D9CE] focus-within:border-[#EA2C00] transition-colors pb-1">
+    <div className="w-full sm:w-[340px] inline-flex border-b-2 border-[#E0D9CE] focus-within:border-[#EA2C00] transition-colors pb-1">
       <input value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder}
         className="w-full bg-transparent outline-none text-right text-[16px] font-bold text-[#1A1A1A] placeholder:font-normal placeholder:text-[14px] placeholder:text-[#C9BDAD]" />
     </div>
@@ -771,11 +831,12 @@ function TimeBackBlock({ table, encWord, before, after, onBefore, onAfter, encTo
   );
 }
 
-function NavRow({ onBack, onNext, nextLabel }: { onBack?: () => void; onNext: () => void; nextLabel: string }) {
+function NavRow({ onBack, onNext, nextLabel, disabled }: { onBack?: () => void; onNext: () => void; nextLabel: string; disabled?: boolean }) {
   return (
     <div className="flex items-center justify-between mt-10">
       {onBack ? <button onClick={onBack} className="text-[14px] font-semibold text-[#A69A88] hover:text-[#1A1A1A] transition-colors">Back</button> : <span />}
-      <button onClick={onNext} className="inline-flex items-center gap-2 rounded-full bg-[#EA2C00] text-white text-[14px] font-bold px-7 py-3.5 hover:bg-[#d12800] transition-colors">
+      <button onClick={onNext} disabled={disabled}
+        className={`inline-flex items-center gap-2 rounded-full text-[14px] font-bold px-7 py-3.5 transition-colors ${disabled ? "bg-[#E5DDD2] text-[#AFA394] cursor-not-allowed" : "bg-[#EA2C00] text-white hover:bg-[#d12800]"}`}>
         {nextLabel} <ArrowRight className="w-4 h-4" />
       </button>
     </div>
