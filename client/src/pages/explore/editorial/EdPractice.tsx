@@ -358,7 +358,7 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
               >
                 {usingTotalInput ? (
                   <span className={entryWrap}>
-                    <FormattedNumberInput value={totalEncountersInput} onChange={handleTotalEncountersChange} placeholder="e.g. 24,000" className={entryInput} data-testid="ed-input-total-encounters" />
+                    <FormattedNumberInput value={totalEncountersInput} onChange={handleTotalEncountersChange} placeholder={isInpatient ? "e.g. 14,000" : "e.g. 24,000"} className={entryInput} data-testid="ed-input-total-encounters" />
                     <span className={entryUnit}>/ yr</span>
                   </span>
                 ) : (

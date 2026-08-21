@@ -20,10 +20,13 @@ import { GOAL_CATALOG, categoryForGoal, goalDisplayLabel } from "./attainGoals";
 import type { AttainSetting, GoalId, ChainLink } from "./attainTypes";
 
 /** Where a signal is measured from — the provenance a CFO trusts. */
+// EHR-neutral source labels: the leave-behind ships to Epic and non-Epic systems
+// alike, so a metric's source is named generically ("EHR signal" / "EHR report"),
+// never a specific vendor tool.
 export type MetricSource =
   | "Abridge platform"
-  | "Epic Signal"
-  | "Reporting Workbench"
+  | "EHR signal"
+  | "EHR report"
   | "Finance"
   | "HRIS";
 
@@ -153,8 +156,8 @@ function sourceFor(link: ChainLink): MetricSource {
   const name = link.name.toLowerCase();
   const signal = link.signal.toLowerCase();
   if (link.isAbridge) {
-    // Adoption is an Abridge-platform fact; the note-timeliness signals are Epic-observable.
-    return /adopt|recording|using/.test(name + signal) ? "Abridge platform" : "Epic Signal";
+    // Adoption is an Abridge-platform fact; the note-timeliness signals are EHR-observable.
+    return /adopt|recording|using/.test(name + signal) ? "Abridge platform" : "EHR signal";
   }
   if (/margin|revenue|cost|contribution|reimburse|captured/.test(name + signal) || role.includes("finance")) {
     return "Finance";
@@ -162,11 +165,11 @@ function sourceFor(link: ChainLink): MetricSource {
   if (/turnover|retention|departure|vacanc|agency/.test(name + signal) || /\bhr\b|people/.test(role)) {
     return "HRIS";
   }
-  // Most operational mid-chain and quality/volume outcomes are pulled from Epic
-  // reporting; the final booked outcome lands in Reporting Workbench.
+  // Most operational mid-chain and quality/volume outcomes come from EHR
+  // reporting; the final booked outcome lands in an EHR report.
   return /rate|volume|events|compliance|third-next|fill|slots|visits|admission|discharge/.test(signal)
-    ? "Reporting Workbench"
-    : "Epic Signal";
+    ? "EHR report"
+    : "EHR signal";
 }
 
 /**

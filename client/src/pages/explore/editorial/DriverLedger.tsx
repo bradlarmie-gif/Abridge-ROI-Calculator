@@ -66,12 +66,14 @@ export interface DriverLedgerProps {
 
 const sectCls = "text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#8C8073]";
 
-function Toggle({ on, onClick }: { on: boolean; onClick?: () => void }) {
+function Toggle({ on, onClick, label }: { on: boolean; onClick?: () => void; label?: string }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      aria-pressed={on}
+      role="switch"
+      aria-checked={on}
+      aria-label={label ? `${label}, ${on ? "on" : "off"}` : undefined}
       className={`relative w-[42px] h-[25px] rounded-full flex-shrink-0 transition-colors ${on ? "bg-[#EA2C00]" : "bg-[#DDD5C9]"}`}
     >
       <span className={`absolute top-[3px] w-[19px] h-[19px] rounded-full bg-white transition-[left] ${on ? "left-[20px]" : "left-[3px]"}`} />
@@ -125,7 +127,7 @@ function DriverRow({ row, depth = 0 }: { row: LedgerRow; depth?: number }) {
               <ChevronDown className={`w-[18px] h-[18px] transition-transform ${expanded ? "" : "-rotate-90"}`} strokeWidth={2} />
             </button>
           )}
-          {isCounted && <Toggle on={on} onClick={row.onToggle} />}
+          {isCounted && <Toggle on={on} onClick={row.onToggle} label={row.label} />}
           {row.kind === "tracked" && (
             <span className="text-[11px] font-bold uppercase tracking-[0.05em] text-[#7C766F]">Tracked</span>
           )}

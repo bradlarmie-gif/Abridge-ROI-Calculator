@@ -110,7 +110,7 @@ export function InlineDriverCard({
           </div>
           <div className="text-[13px] text-[#565250] mt-[5px] max-w-[520px] leading-[1.45]">{subtitle}</div>
         </div>
-        <button type="button" onClick={onToggle} data-testid={testId} className={`w-[46px] h-[27px] rounded-full relative transition-colors flex-shrink-0 mt-1 ${enabled ? "bg-[#EA2C00]" : "bg-[#DCD5CB]"}`}>
+        <button type="button" onClick={onToggle} data-testid={testId} role="switch" aria-checked={enabled} aria-label={`${typeof title === "string" ? `${title} ` : ""}driver, ${enabled ? "on" : "off"}`} className={`w-[46px] h-[27px] rounded-full relative transition-colors flex-shrink-0 mt-1 ${enabled ? "bg-[#EA2C00]" : "bg-[#DCD5CB]"}`}>
           <span className={`absolute top-[3px] w-[21px] h-[21px] rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] transition-all ${enabled ? "left-[22px]" : "left-[3px]"}`} />
         </button>
       </div>

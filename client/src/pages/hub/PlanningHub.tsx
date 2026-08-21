@@ -19,7 +19,7 @@ export default function PlanningHub({ onOpenPlanning, onOpenMetrics, onHome }: P
           tagline="The plan"
           title="Build the Plan"
           description="Turn your value attainment strategy into an owned, step-by-step plan with owners, plays, and a review cadence."
-          cta="Build the Plan"
+          cta="Start building"
           onClick={onOpenPlanning}
           testId="planning-card-build"
           delay={0.15}
@@ -28,7 +28,7 @@ export default function PlanningHub({ onOpenPlanning, onOpenMetrics, onHome }: P
           icon={Activity}
           tagline="Prove it"
           title="Metrics"
-          description="A library of the signals that prove each outcome, the Abridge and Epic metrics you'll track and exactly where to find them."
+          description="A library of the signals that prove each outcome, the Abridge and EHR metrics you'll track and exactly where to find them."
           cta="Open the Library"
           onClick={onOpenMetrics}
           testId="planning-card-metrics"

@@ -143,6 +143,9 @@ export function Toggle({ on, onClick, testId }: { on: boolean; onClick: () => vo
         type="button"
         onClick={onClick}
         data-testid={testId}
+        role="switch"
+        aria-checked={on}
+        aria-label={`Driver, ${on ? "on" : "off"}`}
         className={`w-[46px] h-[27px] rounded-full relative transition-colors ${on ? "bg-[#EA2C00]" : "bg-[#E7E3DD]"}`}
       >
         <span
