@@ -476,12 +476,23 @@ function Brief({
   const [selected, setSelected] = useState<GoalId>(order[0]);
   const active = order.includes(selected) ? selected : order[0];
   const activeFoundation = briefFoundation(setting, active, settingLabel, answers);
+  const downloadWriteup = () => { try { window.open("?strategypdf=1&print=1", "_blank"); } catch { /* ignore */ } };
 
   return (
     <div className="max-w-[1080px] mx-auto px-6 md:px-10 py-8 md:py-12">
       {/* hero — the current/target mirror, then (multi-goal) the one-line read of
           which priority carries the dollars vs. what's tracked as proof. */}
-      <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#EA2C00] mb-3">The foundation</p>
+      <div className="flex items-start justify-between gap-4 mb-3">
+        <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#EA2C00] pt-1">The foundation</p>
+        <button
+          type="button"
+          onClick={downloadWriteup}
+          data-testid="discovery-download-writeup"
+          className="inline-flex items-center gap-2 rounded-full border border-[#D8CFC0] px-4 py-2 text-[13px] font-semibold text-[#4A4238] hover:border-[#B4A896] hover:bg-[#FAF7F2] transition-colors flex-shrink-0"
+        >
+          <Download className="w-4 h-4" /> Download the write-up
+        </button>
+      </div>
       <h1 className="font-abridge text-[32px] md:text-[46px] text-[#1A1A1A] leading-[1.05] mb-4">
         {partner.trim() ? `Where ${partner.trim()} stands today, and where you want to go.` : "Where you are today, and where you want to go."}
       </h1>
@@ -535,15 +546,7 @@ function Brief({
         </div>
       )}
 
-      <div className="mt-12 flex items-center justify-between border-t border-[#E8E2DA] pt-6">
-        <button
-          type="button"
-          onClick={() => { try { window.open("?strategypdf=1&print=1", "_blank"); } catch { /* ignore */ } }}
-          data-testid="discovery-download-writeup"
-          className="inline-flex items-center gap-2 text-[14px] font-semibold text-[#4A4238] hover:text-[#1A1A1A] transition-colors"
-        >
-          <Download className="w-4 h-4" /> Download the write-up
-        </button>
+      <div className="mt-12 flex items-center justify-end border-t border-[#E8E2DA] pt-6">
         <button type="button" onClick={onFinish} data-testid="discovery-build-roi" className="inline-flex items-center gap-2 rounded-xl bg-[#EA2C00] text-white text-[14px] font-semibold px-5 py-2.5 hover:bg-[#d12800] transition-colors">
           {counted.length > 0 ? "Build the ROI on this" : "Take this into the ROI"} <ArrowRight className="w-4 h-4" />
         </button>
