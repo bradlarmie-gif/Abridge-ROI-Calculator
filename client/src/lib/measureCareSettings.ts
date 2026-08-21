@@ -1951,7 +1951,7 @@ export const NURSING_METRICS: MetricDefinition[] = [
     whyItMatters: 'Delinquent nursing documentation holds up billing, delays discharge, and creates compliance exposure.',
     plainEnglishTemplate:
       'Nursing documentation is now completed on time {{after}}% of the time, up from {{before}}%. ' +
-      'A {{delta}}-point improvement means more encounters per year with complete, timely nursing records.',
+      'A {{delta}}-point improvement means more complete, timely nursing records across the year.',
     roiQuadrant: 'Revenue',
     shortDescription: 'Share of required nursing documentation completed within mandated timeframes.',
     exploreVisibility: 'driver-qualitative',

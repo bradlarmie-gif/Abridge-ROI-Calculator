@@ -38,7 +38,9 @@ const NURSING_DOMAIN_DESCRIPTIONS: Record<string, string> = {
   revenue: "Impact on CDI query burden, coding support, and documentation timeliness.",
 };
 
-function domainDescription(domain: string, setting: MeasureCareSetting): string {
+// Exported so the domain-vocabulary guard can assert these read native per
+// setting (this is where "wRVU capture"/"Provider retention" leaked onto nursing).
+export function domainDescription(domain: string, setting: MeasureCareSetting): string {
   if (setting === "nursing" && NURSING_DOMAIN_DESCRIPTIONS[domain]) return NURSING_DOMAIN_DESCRIPTIONS[domain];
   return DOMAIN_DESCRIPTIONS[domain] || "";
 }

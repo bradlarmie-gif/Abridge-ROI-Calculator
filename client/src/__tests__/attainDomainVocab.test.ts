@@ -3,6 +3,8 @@ import { DISCOVERY, groundingQuestions } from "@/lib/attain/discovery";
 import { goalDisplayLabel, SETTING_GOAL_MATRIX } from "@/lib/attain/attainGoals";
 import { buildOutcomePlan } from "@/lib/attain/planBuild";
 import { EXPLORE_DRIVERS, type ExploreDriver } from "@/lib/exploreDrivers";
+import { OUTPATIENT_METRICS, ED_METRICS, INPATIENT_METRICS, NURSING_METRICS, type MetricDefinition } from "@/lib/measureCareSettings";
+import { domainDescription } from "@/pages/intake/MeasureDataRequest";
 import type { AttainSetting, GoalId } from "@/lib/attain/attainTypes";
 
 /**
@@ -148,6 +150,35 @@ describe("attain domain-vocabulary guard — copy reads native to its buyer", ()
     }
     expect(hits, `wrong-buyer vocabulary in explore driver copy:\n${hits.join("\n")}`).toEqual([]);
   });
+
+  // MEASURE flow: the data-request domain descriptions + per-setting metric copy.
+  // This is where "wRVU capture" / "Provider retention" / "documentation quality"
+  // leaked onto the nursing form. Scan each setting's metrics + the descriptions
+  // for the domains those metrics actually use.
+  const MEASURE_METRICS: Record<AttainSetting, MetricDefinition[]> = {
+    outpatient: OUTPATIENT_METRICS, ed: ED_METRICS, inpatient: INPATIENT_METRICS, nursing: NURSING_METRICS,
+  };
+  // Strip {{...}} template placeholders before scanning: a placeholder VARIABLE
+  // named {{providers}} is a data key substituted with a count at render — the
+  // visible prose around it says "nurses". Matching the key name is a false hit.
+  const stripTemplates = (s: string) => s.replace(/\{\{[^}]*\}\}/g, " ");
+  const metricStrings = (m: MetricDefinition): string[] =>
+    [m.label, m.description, m.whyItMatters, m.shortDescription, m.plainEnglishTemplate, m.unitLabel].filter(Boolean).map(stripTemplates);
+
+  for (const setting of SETTINGS) {
+    it(`${setting}: measure data-request + metric copy carry no wrong-buyer vocabulary`, () => {
+      const metrics = MEASURE_METRICS[setting];
+      const strings: string[] = [];
+      for (const d of new Set(metrics.map((m) => m.domain))) strings.push(domainDescription(d, setting));
+      for (const m of metrics) strings.push(...metricStrings(m));
+      const hits: string[] = [];
+      for (const s of strings) {
+        if (ALLOW.some((a) => a.test(s))) continue;
+        for (const rule of FORBIDDEN[setting]) if (rule.test(s)) hits.push(`[${rule.source}] "${s.slice(0, 100)}"`);
+      }
+      expect(hits, `wrong-buyer vocabulary in ${setting} measure copy:\n${hits.join("\n")}`).toEqual([]);
+    });
+  }
 
   it("negative control: the guard actually fires (a planted nursing 'wRVU' is caught)", () => {
     const planted = "The wRVU lift nurses capture";
