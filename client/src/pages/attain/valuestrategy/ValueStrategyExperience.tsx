@@ -11,6 +11,7 @@ import {
   type DiscoveryAnswers,
   type GroundingQuestion,
   type FoundationRead,
+  type FoundationItem,
 } from "@/lib/attain/discovery";
 
 /**
@@ -264,9 +265,9 @@ const ValueStrategyExperience = forwardRef<VSEHandle, Props>(function ValueStrat
         <div>
           <p className="text-[10px] font-bold uppercase tracking-[1.5px] text-[#B4A896] mb-5">{contextLabel}</p>
           {reflect && (
-            <div className="mb-6 flex items-start gap-2.5 rounded-xl bg-[#FAF7F2] border border-[#EDE8E1] px-4 py-3">
-              <Check className="w-4 h-4 text-[#EA2C00] mt-[2px] flex-shrink-0" strokeWidth={2.5} />
-              <p className="text-[13.5px] text-[#3A342E] leading-snug">{reflect}</p>
+            <div className="mb-6 flex items-center gap-2.5">
+              <Check className="w-4 h-4 text-[#EA2C00] flex-shrink-0" strokeWidth={2.5} />
+              <p className="text-[14px] text-[#5A5248] leading-snug">{reflect}</p>
             </div>
           )}
           {stepEyebrow && <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#EA2C00] mb-3">{stepEyebrow}</p>}
@@ -305,22 +306,31 @@ const ValueStrategyExperience = forwardRef<VSEHandle, Props>(function ValueStrat
               );
             })}
           </div>
-          {(multiSelect || rankMode) && (
-            <div className="mt-7 flex items-center gap-5">
-              <button
-                type="button"
-                onClick={onContinue}
-                disabled={rankMode ? rankCount === 0 : selectedIds.length === 0}
-                data-testid={rankMode ? "triage-continue" : "ground-continue"}
-                className={`inline-flex items-center gap-2 rounded-full px-6 py-3 text-[14px] font-semibold transition-colors ${(rankMode ? rankCount === 0 : selectedIds.length === 0) ? "bg-[#EFE9E1] text-[#B4A896] cursor-not-allowed" : "bg-[#EA2C00] text-white hover:bg-[#D02700] cursor-pointer"}`}
-              >
-                Continue <ArrowRight className="w-4 h-4" strokeWidth={2} />
-              </button>
-              {rankMode && rankCount > 0 && (
-                <button type="button" onClick={resetRank} data-testid="triage-reset" className="text-[13px] text-[#B4A896] hover:text-[#8C8073] transition-colors">Reset</button>
-              )}
-            </div>
-          )}
+          {(multiSelect || rankMode) && (() => {
+            // Rank mode requires EVERY selected goal ranked — so no goal the partner
+            // didn't order gets stamped "#N priority" in the brief.
+            const blocked = rankMode ? rankCount < authoredAll.length : selectedIds.length === 0;
+            const remaining = authoredAll.length - rankCount;
+            return (
+              <div className="mt-7 flex items-center gap-5">
+                <button
+                  type="button"
+                  onClick={onContinue}
+                  disabled={blocked}
+                  data-testid={rankMode ? "triage-continue" : "ground-continue"}
+                  className={`inline-flex items-center gap-2 rounded-full px-6 py-3 text-[14px] font-semibold transition-colors ${blocked ? "bg-[#EFE9E1] text-[#B4A896] cursor-not-allowed" : "bg-[#EA2C00] text-white hover:bg-[#D02700] cursor-pointer"}`}
+                >
+                  Continue <ArrowRight className="w-4 h-4" strokeWidth={2} />
+                </button>
+                {rankMode && blocked && rankCount > 0 && (
+                  <span className="text-[13px] text-[#B4A896]">Rank {remaining} more to continue</span>
+                )}
+                {rankMode && rankCount > 0 && (
+                  <button type="button" onClick={resetRank} data-testid="triage-reset" className="text-[13px] text-[#B4A896] hover:text-[#8C8073] transition-colors">Reset</button>
+                )}
+              </div>
+            );
+          })()}
         </div>
 
         {/* vertical hairline */}
@@ -381,7 +391,6 @@ function Ledger({ groups }: { groups: LedgerGroup[] }) {
                 <div key={g.label} className="flex items-center gap-2">
                   <Check className="w-3.5 h-3.5 text-[#B0A48F] flex-shrink-0" strokeWidth={2.5} />
                   <span className="text-[10px] font-bold uppercase tracking-[0.06em] text-[#B4A896]">{g.label}</span>
-                  {g.items.length > 0 && <span className="text-[11px] text-[#CFC3B2]">· {g.items.length} noted</span>}
                 </div>
               );
             }
@@ -391,15 +400,38 @@ function Ledger({ groups }: { groups: LedgerGroup[] }) {
                 <div key={g.label} className="text-[10px] font-bold uppercase tracking-[0.06em] text-[#D6CBBA]">{g.label}</div>
               );
             }
-            // Grounding (context) and the active goal: expanded with items.
-            const activeHead = g.state === "active";
+            // The active goal: a filled marker + darker header make it clearly "you are
+            // here," and a placeholder line orients before the first pick lands.
+            if (g.state === "active") {
+              return (
+                <div key={g.label}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="w-[6px] h-[6px] rounded-full bg-[#8C8073] flex-shrink-0" />
+                    <span className="text-[10px] font-extrabold uppercase tracking-[0.06em] text-[#4A4238]">{g.label}</span>
+                  </div>
+                  {g.items.length ? (
+                    <ul className="space-y-2 pl-[14px]">
+                      {g.items.map((it, i) => (
+                        <li key={i} className="flex items-start gap-2.5 text-[13.5px] leading-snug text-[#3A342E]">
+                          <span className="mt-[7px] w-[5px] h-[5px] rounded-full flex-shrink-0 bg-[#C4B9A8]" />
+                          <span>{cap(it)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-[13px] text-[#C4B9A8] italic leading-snug pl-[14px]">Building as you answer.</p>
+                  )}
+                </div>
+              );
+            }
+            // Grounding (context): expanded, muted header.
             return (
               <div key={g.label}>
-                <div className={`text-[10px] font-bold uppercase tracking-[0.06em] mb-2 ${activeHead ? "text-[#8C8073]" : "text-[#B4A896]"}`}>{g.label}</div>
+                <div className="text-[10px] font-bold uppercase tracking-[0.06em] mb-2 text-[#B4A896]">{g.label}</div>
                 <ul className="space-y-2">
                   {g.items.map((it, i) => (
                     <li key={i} className="flex items-start gap-2.5 text-[13.5px] leading-snug text-[#3A342E]">
-                      <span className={`mt-[7px] w-[5px] h-[5px] rounded-full flex-shrink-0 ${activeHead ? "bg-[#C4B9A8]" : "bg-[#D8CFC0]"}`} />
+                      <span className="mt-[7px] w-[5px] h-[5px] rounded-full flex-shrink-0 bg-[#D8CFC0]" />
                       <span>{cap(it)}</span>
                     </li>
                   ))}
@@ -434,6 +466,10 @@ function Brief({
   const classOf = (goal: GoalId): "counted" | "proof" | "honest" => {
     const r = results.find((x) => x.goal === goal);
     if (r?.res?.lever) return "counted";
+    // A real documentation play survives even when an honest-out was ALSO picked
+    // (mirrors the bridge, which stays bridgeProof). Only fall to "honest" when it
+    // stands alone — otherwise the pill dot would contradict the bridge + handoff.
+    if (r?.res?.proofDriverId || r?.res?.proof) return "proof";
     if (r?.res?.honest) return "honest";
     return "proof";
   };
@@ -443,34 +479,19 @@ function Brief({
 
   return (
     <div className="max-w-[1080px] mx-auto px-6 md:px-10 py-8 md:py-12">
-      {/* hero — a mirror ("where you are, where you want to go") when the active
-          goal is a foundation read; the older verdict framing otherwise. */}
-      {activeFoundation ? (
-        <>
-          <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#EA2C00] mb-3">The foundation</p>
-          <h1 className="font-abridge text-[32px] md:text-[46px] text-[#1A1A1A] leading-[1.05] mb-4">
-            {partner.trim() ? `Where ${partner.trim()} stands today, and where you want to go.` : "Where you are today, and where you want to go."}
-          </h1>
-          <p className="text-[15.5px] text-[#4A4238] leading-relaxed max-w-[620px]">
-            No numbers yet. This is your current picture and your target, in plain terms. Next we size the gap between them, then build the plan to close it.
-          </p>
-        </>
-      ) : (
-        <>
-          <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#EA2C00] mb-3">The discovery brief</p>
-          <h1 className="font-abridge text-[32px] md:text-[46px] text-[#1A1A1A] leading-[1.05] mb-4">
-            Here is what you are really after{partner.trim() ? <>, {partner.trim()}</> : null}.
-          </h1>
-          <p className="text-[15.5px] text-[#4A4238] leading-relaxed max-w-[600px]">
-            No numbers, on purpose. This is the problem in plain terms and where the value actually is. Next we put your figures to it and build the ROI together.
-          </p>
-          {rankBits.length > 0 && (
-            <div className="mt-7 rounded-2xl border border-[#E8E2DA] bg-[#FCFBF9] pl-5 pr-6 py-4 border-l-[3px] border-l-[#EA2C00] max-w-[760px]">
-              <p className="text-[10px] font-bold uppercase tracking-[1.6px] text-[#EA2C00] mb-1.5">The verdict</p>
-              <p className="text-[15.5px] text-[#1A1A1A] leading-relaxed">{cap(rankBits.join("; "))}.</p>
-            </div>
-          )}
-        </>
+      {/* hero — the current/target mirror, then (multi-goal) the one-line read of
+          which priority carries the dollars vs. what's tracked as proof. */}
+      <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#EA2C00] mb-3">The foundation</p>
+      <h1 className="font-abridge text-[32px] md:text-[46px] text-[#1A1A1A] leading-[1.05] mb-4">
+        {partner.trim() ? `Where ${partner.trim()} stands today, and where you want to go.` : "Where you are today, and where you want to go."}
+      </h1>
+      <p className="text-[15.5px] text-[#4A4238] leading-relaxed max-w-[620px]">
+        No numbers yet. This is your current picture and your target, in plain terms. Next we size the gap between them, then build the plan to close it.
+      </p>
+      {order.length > 1 && rankBits.length > 0 && (
+        <p className="mt-6 text-[16px] text-[#1A1A1A] leading-relaxed max-w-[840px] font-medium">
+          {cap(rankBits.join("; "))}.
+        </p>
       )}
 
       {/* goal pills — shown in ranked priority order, one goal read at a time */}
@@ -530,12 +551,25 @@ function GoalBrief({
 }) {
   const foundation = briefFoundation(setting, goal, settingLabel, answers);
   if (!foundation) return null;
-  // With multiple goals, the priority rank sits where scale's "today it is" used to,
-  // so the left column reads scope / driver / priority (3 x 3). Single goal omits it.
-  const withRank = rank && total && total > 1
-    ? { ...foundation, current: [...foundation.current, { label: "Priority this year", value: `#${rank} of ${total}` }] }
-    : foundation;
-  return <FoundationCard settingLabel={settingLabel} goalLabel={goalDisplayLabel(setting, goal)} foundation={withRank} />;
+  // The left column carries a third "where you are" row so it balances the right (3 x 3):
+  // multi-goal gets the priority rank (where scale's "today it is" used to sit); single-goal
+  // gets "already in place" from grounding, since there's no rank to show.
+  const thirdRow: FoundationItem = rank && total && total > 1
+    ? { label: "Priority this year", value: `#${rank} of ${total}` }
+    : (triedFoundationRow(setting, answers) ?? { label: "", value: "" });
+  const current = thirdRow.label ? [...foundation.current, thirdRow] : foundation.current;
+  return <FoundationCard settingLabel={settingLabel} goalLabel={goalDisplayLabel(setting, goal)} foundation={{ ...foundation, current }} />;
+}
+
+// The "already in place" row for single-goal briefs: what they told us is already
+// running (from grounding "tried"), so the left column has a real third row.
+function triedFoundationRow(setting: AttainSetting, answers: DiscoveryAnswers): FoundationItem | null {
+  const q = groundingQuestions(setting).find((x) => x.id === "tried");
+  if (!q) return null;
+  const picks = q.options.filter((o) => answers[`_ground:tried:${o.id}`] === "1");
+  if (!picks.length) return null;
+  if (picks.some((o) => o.id === "nothing")) return { label: "Already in place", value: "Nothing formal yet" };
+  return { label: "Already in place", value: picks.map((o) => o.label) };
 }
 
 // The foundation read: a current-state / desired-state mirror. Strategy's real

@@ -1082,16 +1082,3 @@ export function groundingQuestions(setting: AttainSetting): GroundingQuestion[] 
   ];
 }
 
-export const WHY_NOW: GroundingQuestion = {
-  id: "whynow",
-  eyebrow: "Grounding",
-  prompt: "Why now?",
-  teach: "The reason this is live this year tells us how real the commitment is, and who has to be behind it.",
-  options: [
-    { id: "board", label: "A board or executive goal", capture: "driven by a board or executive goal" },
-    { id: "budget", label: "A budget cycle or contract coming up", capture: "timed to a budget cycle or contract" },
-    { id: "pain", label: "The pain finally boiled over", capture: "the pain finally boiled over" },
-    { id: "compete", label: "A competing pilot or vendor", capture: "prompted by a competing pilot or vendor" },
-    { id: "explore", label: "Just exploring for now", capture: "still in an exploring posture", },
-  ],
-};
