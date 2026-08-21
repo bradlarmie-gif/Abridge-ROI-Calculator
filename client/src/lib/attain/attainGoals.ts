@@ -554,8 +554,8 @@ export const GOAL_CATALOG: Record<GoalId, GoalDef> = {
         body: "Charting in the moment only cuts overtime if the recovered minute stays on the shift, not turned into a new task. The freed time has to close the shift on time.",
       },
       {
-        heading: "Only the overtime charting causes",
-        body: "Overtime from short staffing or a census surge is not Abridge's to fix. The documentation-attributable share is the ceiling, so the number never claims overtime charting did not cause.",
+        heading: "Only the overtime that charting causes",
+        body: "Overtime from short staffing or a census surge is not Abridge's to fix. The documentation-attributable share is the ceiling, so the number never claims overtime that charting did not cause.",
       },
       {
         heading: "Counted once, not twice",
@@ -1347,7 +1347,7 @@ const nursingRetention: SettingGoalContent = {
 const nursingCapacity: SettingGoalContent = {
   subtitle: "Med-Surg & ICU · Nursing",
   thesis1: "The overtime is real.",
-  thesis2: "This is the plan to take out the share charting causes.",
+  thesis2: "This is the plan to take out the share of overtime that charting causes.",
   p1Lead:
     "Nurses in this scope are staying past the end of the shift to finish charting, batching notes and catching up late, sometimes working through lunch to get the record done. Some of that overtime is short staffing and census, which no documentation tool can move. But a real share of it is the charting itself. Ambient documentation lets nurses chart in the moment, so the shift can close on time. Whether that freed minute lands on the shift, or turns into a new task, is the difference between overtime that comes down and overtime that holds.",
   worldCards: [

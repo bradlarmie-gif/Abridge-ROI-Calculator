@@ -16,7 +16,7 @@
  * plan PDF, and Progress all read, mirroring how discovery's `resolveResult`
  * drives its ledger + brief.
  */
-import { GOAL_CATALOG, categoryForGoal } from "./attainGoals";
+import { GOAL_CATALOG, categoryForGoal, goalDisplayLabel } from "./attainGoals";
 import type { AttainSetting, GoalId, ChainLink } from "./attainTypes";
 
 /** Where a signal is measured from — the provenance a CFO trusts. */
@@ -66,6 +66,10 @@ export interface OutcomePlan {
   goal: GoalId;
   /** Stable category string (join key elsewhere), e.g. "Nursing Quality". */
   category: string;
+  /** Customer-facing category label — setting-native (nursing retention reads
+   * "Nurse Retention", not the "Provider Retention" join key). Use this for any
+   * label SHOWN to the customer (PDF eyebrow, on-screen walk); never `category`. */
+  displayCategory: string;
   /** The outcome being attained, in the partner's words. */
   outcomeLabel: string;
   chainTitle: string;
@@ -100,6 +104,12 @@ const SETTING_STEP_OVERRIDES: Record<string, Record<number, StepOverride>> = {
     5: { name: "Claims clear on first pass", signal: "First-pass acceptance, denial rate", ownerRole: "Billing" },
     6: { name: "Captured level realized", signal: "E/M capture vs baseline", ownerRole: "Joint" },
   },
+  // Outpatient is ambulatory wRVU/E&M — DRG weight is an inpatient concept and
+  // must not inherit onto the outpatient outcome signal (the base signal carries
+  // all three; ED and inpatient override it, outpatient did not until now).
+  "outpatient:revenue": {
+    6: { name: "Captured level realized", signal: "wRVU / E&M capture vs baseline", ownerRole: "Joint" },
+  },
   "inpatient:capacity": {
     1: { name: "Abridge adopted", signal: "% hospitalists recording", ownerRole: ABRIDGE_OWNER },
     3: { name: "Discharge summaries land earlier", signal: "Discharge-summary turnaround", ownerRole: "Hospitalist leadership" },
@@ -109,17 +119,23 @@ const SETTING_STEP_OVERRIDES: Record<string, Record<number, StepOverride>> = {
     7: { name: "Avoided-cost / added throughput", signal: "Cost per patient-day, throughput value", ownerRole: "Finance" },
   },
   "inpatient:revenue": {
+    1: { signal: "% hospitalists recording, % notes via Abridge" },
     3: { name: "Acuity and complications documented", signal: "CC/MCC capture rate", ownerRole: "CDI" },
     4: { name: "DRGs reflect the care delivered", signal: "Case-mix index vs baseline", ownerRole: "Hospitalist / CDI" },
     5: { name: "Queries close before the bill drops", signal: "Query turnaround, close rate", ownerRole: "CDI / providers" },
     6: { name: "Captured weight realized", signal: "DRG weight vs baseline", ownerRole: "Joint" },
   },
-  // The retention chain is authored provider-flavored; nursing reads in its own terms.
+  // The retention chain is authored provider-flavored (link-3 signal is "Panel
+  // size", a PCP concept); nursing and inpatient read it in their own terms.
   "nursing:retention": {
     1: { signal: "% nurses recording, % notes via Abridge" },
-    3: { ownerRole: "Nurse managers" },
+    3: { ownerRole: "Nurse managers", signal: "Assignment load / ratios, schedule stability" },
     4: { ownerRole: "Nursing ops / staffing" },
     5: { ownerRole: "Nursing leadership / CNO" },
+  },
+  "inpatient:retention": {
+    1: { signal: "% hospitalists recording, % notes via Abridge" },
+    3: { ownerRole: "Hospitalist leadership", signal: "Census / service load, schedule stability" },
   },
 };
 
@@ -196,6 +212,7 @@ export function buildOutcomePlan(setting: AttainSetting, goal: GoalId): OutcomeP
     setting,
     goal,
     category: categoryForGoal(setting, goal),
+    displayCategory: goalDisplayLabel(setting, goal),
     outcomeLabel: def.label,
     chainTitle: SETTING_TITLE_OVERRIDES[`${setting}:${goal}`] ?? def.chainTitle,
     owners: Array.from(byOwner.values()),

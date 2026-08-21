@@ -319,8 +319,9 @@ export default function EdTimeSavings({ state, updateState, onNext, onBack, onHo
           How much time can Abridge give back?
         </h1>
         <p className="text-[16.5px] text-[#565250] mt-[14px] max-w-[600px] leading-[1.5]">
-          A couple of minutes off each {noteUnit} adds up fast across your volume. Pick a starting point or type your
-          own; confirm the real figure when you measure.
+          {isNursing
+            ? "Time off charting each shift adds up fast across every nurse and every day. Pick a starting point or type your own; confirm the real figure when you measure."
+            : "A couple of minutes off each note adds up fast across your volume. Pick a starting point or type your own; confirm the real figure when you measure."}
         </p>
 
         <div className="grid grid-cols-1 lg:grid-cols-[1.15fr_1px_1fr] gap-x-[56px] gap-y-10 mt-[46px]">
@@ -338,7 +339,7 @@ export default function EdTimeSavings({ state, updateState, onNext, onBack, onHo
                   value={state.minutesSavedPerEncounter}
                   onChange={handleCustomMinutes}
                   step={0.1}
-                  placeholder="e.g. 2.5"
+                  placeholder={isNursing ? "e.g. 30" : "e.g. 2.5"}
                   data-testid="ed-input-minutes-saved"
                   className="min-w-[36px] max-w-[120px] [field-sizing:content] text-right font-abridge text-[30px] leading-none text-[#1A1A1A] tabular-nums bg-transparent border-0 p-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-[15px] placeholder:font-sans placeholder:font-normal placeholder:not-italic placeholder:text-[#C7BFB4]"
                 />

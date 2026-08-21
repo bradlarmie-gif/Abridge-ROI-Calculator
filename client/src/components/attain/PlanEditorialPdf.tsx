@@ -2,7 +2,7 @@ import { type ReactNode } from "react";
 import abridgeLogoRed from "@assets/abridge-logo-wordmark-red_1769187440253.png";
 import abridgeSymbol from "@assets/abridge-logo-symbol_1774906992195.png";
 import { buildOutcomePlan, type OutcomePlan, type PlanOwner, type PlanStep } from "@/lib/attain/planBuild";
-import { SETTING_GOAL_MATRIX } from "@/lib/attain/attainGoals";
+import { SETTING_GOAL_MATRIX, goalDisplayLabel } from "@/lib/attain/attainGoals";
 import type { AttainSetting } from "@/lib/attain/attainTypes";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -400,8 +400,8 @@ function ClosingPage({ data, plans, pgnum }: { data: PlanPdfData; plans: Outcome
           {plans.length} {plans.length === 1 ? "outcome" : "outcomes"}, owned and measured. Not left to hope.
         </h2>
         <p style={{ fontSize: 14.5, lineHeight: 1.6, color: "rgba(255,255,255,0.7)", maxWidth: 600, marginTop: 20 }}>
-          <b style={{ color: "#FFFFFF" }}>{totalOwners}</b> owner {totalOwners === 1 ? "role carries" : "roles carry"} the
-          make-or-break across {plans.length} {plans.length === 1 ? "outcome" : "outcomes"}, {totalSignals} signals tell us early whether each one is on track,
+          <b style={{ color: "#FFFFFF" }}>{totalOwners}</b> owner {totalOwners === 1 ? "role carries" : "roles carry"} this
+          plan across {plans.length} {plans.length === 1 ? "outcome" : "outcomes"}, {totalSignals} signals tell us early whether each one is on track,
           and the leading signals Abridge proves move first.
         </p>
         <p style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", marginTop: 14, maxWidth: 600 }}>
@@ -442,7 +442,7 @@ export function PlanEditorialPdfDocument({ data }: { data: PlanPdfData }): JSX.E
           <RunningHeader org={data.orgName} />
           {qi === 0 ? (
             <>
-              <SectionEyebrow num={chapterNum} title={`The outcome · ${plan.category}`} />
+              <SectionEyebrow num={chapterNum} title={`The outcome · ${plan.displayCategory ?? goalDisplayLabel(plan.setting, plan.goal)}`} />
               <h2 className="font-abridge" style={{ fontSize: 27, lineHeight: 1.16, color: C.ink, margin: "8px 0 0", maxWidth: 640 }}>
                 {plan.chainTitle}
               </h2>

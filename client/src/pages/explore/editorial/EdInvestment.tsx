@@ -253,13 +253,17 @@ export default function EdInvestment({
 
             {QUADRANT_ORDER.map((q) => {
               const proofNote = (PROOF_LAYER[state.careSetting ?? ""] ?? {})[q];
+              // Same rule as Step 9 (EdModel): Workforce with no counted dollars
+              // because retention is booked as a signal is TRACKED, not a bare $0.
+              const workforceTracked = q === "Workforce" && (valueByQuadrant[q] || 0) === 0 && state.retentionMode === "tracked";
+              const isTracked = !!proofNote || workforceTracked;
               return (
                 <div key={q} className="flex justify-between items-baseline py-[11px] border-b border-[#EDE8E1] text-[15px]">
-                  <span className={`flex items-center gap-[10px] ${proofNote ? "text-[#7C766F]" : "text-[#3A342E]"}`}>
+                  <span className={`flex items-center gap-[10px] ${isTracked ? "text-[#7C766F]" : "text-[#3A342E]"}`}>
                     <span className="w-[10px] h-[10px] rounded-[3px] flex-shrink-0" style={{ background: DOMAIN_COLORS[q] }} />
                     {q}
                   </span>
-                  {proofNote ? (
+                  {isTracked ? (
                     <span className="text-[9px] font-bold uppercase tracking-[0.12em] text-[#8C8073] border border-[#DAD3C8] rounded-full px-[7px] py-[2px]">Tracked</span>
                   ) : (
                     <span className="font-abridge text-[18px] text-[#1A1A1A]">{formatCurrency(valueByQuadrant[q])}</span>

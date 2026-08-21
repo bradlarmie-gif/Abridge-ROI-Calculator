@@ -201,7 +201,7 @@ export default function PlanBuildExperience({
               <>
                 <div className="font-abridge text-[52px] leading-none text-[#EA2C00]">{overall}<span className="text-[26px]">%</span></div>
                 <div className="mt-4 h-2 rounded-full bg-[#E8E2DA] overflow-hidden"><div className="h-full bg-[#EA2C00] transition-all" style={{ width: `${overall}%` }} /></div>
-                <div className="text-[12px] text-[#8C8073] mt-2">{attains.length} {attains.length === 1 ? "metric" : "metrics"} with a reading, against its baseline and target.</div>
+                <div className="text-[12px] text-[#8C8073] mt-2">{attains.length} {attains.length === 1 ? "metric" : "metrics"} with a reading, against {attains.length === 1 ? "its" : "their"} baseline and target.</div>
               </>
             ) : (
               <p className="text-[15px] text-[#4A4238] leading-relaxed mt-1 max-w-[520px]">Enter this review's readings below. Attainment builds here as each metric moves from its baseline toward the target.</p>
@@ -363,7 +363,7 @@ export default function PlanBuildExperience({
             {plans.map((p) => (
               <section key={p.goal} className="mb-12">
                 <div className="border-l-2 border-[#EA2C00] pl-5 mb-5">
-                  <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#EA2C00] mb-1.5">The outcome · {p.category}</div>
+                  <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#EA2C00] mb-1.5">The outcome · {p.displayCategory}</div>
                   <h2 className="font-abridge text-[26px] leading-[1.1] text-[#1A1A1A]">{p.chainTitle}</h2>
                 </div>
                 {p.owners.map((o) => <OwnerCard key={o.role} owner={o} />)}

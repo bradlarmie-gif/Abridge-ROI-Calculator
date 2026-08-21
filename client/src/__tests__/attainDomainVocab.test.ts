@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { DISCOVERY, groundingQuestions } from "@/lib/attain/discovery";
-import { goalDisplayLabel } from "@/lib/attain/attainGoals";
+import { goalDisplayLabel, SETTING_GOAL_MATRIX } from "@/lib/attain/attainGoals";
+import { buildOutcomePlan } from "@/lib/attain/planBuild";
 import { EXPLORE_DRIVERS, type ExploreDriver } from "@/lib/exploreDrivers";
 import type { AttainSetting, GoalId } from "@/lib/attain/attainTypes";
 
@@ -22,11 +23,14 @@ import type { AttainSetting, GoalId } from "@/lib/attain/attainTypes";
 const SETTINGS: AttainSetting[] = ["outpatient", "ed", "inpatient", "nursing"];
 
 const FORBIDDEN: Record<AttainSetting, RegExp[]> = {
-  // Physician clinic + ED baselines: this vocabulary IS the default here.
-  outpatient: [],
+  // Ambulatory physicians capture wRVU/E&M. "DRG weight" is an inpatient CAPTURE
+  // metric and must not be claimed as an outpatient outcome. Note: bare "DRG" is
+  // NOT banned — ED admissions legitimately feed downstream inpatient DRG coding
+  // ("DRG coding/assignment"), a supporting reference, not a wrong-buyer metric.
+  outpatient: [/DRG weight/i],
   ed: [],
   // Hospitalists live in admissions / discharges / census / ALOS — never
-  // outpatient-clinic language.
+  // outpatient-clinic language. (DRG is legit here, so it is NOT banned.)
   inpatient: [/\bclinic\b/i, /\bpanel\b/i, /\bappointment/i],
   // Nurses are never "providers" and never do physician-productivity/coding work.
   // NOTE: CDI / HCC / DRG are deliberately NOT here — they are shared billing
@@ -80,6 +84,22 @@ describe("attain domain-vocabulary guard — copy reads native to its buyer", ()
       // Retention on nursing" bug: if goalDisplayLabel regresses, it lands here)
       for (const goal of Object.keys(DISCOVERY[setting] ?? {}) as GoalId[]) {
         strings.push(goalDisplayLabel(setting, goal));
+      }
+      // the OUTCOME PLAN surface (Plan PDF + on-screen planning walk) — the path
+      // that shipped "Provider Retention" on nursing AND "DRG weight" on
+      // outpatient, both invisible to the earlier scans. Skip the stable `category`
+      // join key; scan the customer-facing displayCategory, outcome, and every
+      // owner role + step signal/name.
+      for (const goal of (SETTING_GOAL_MATRIX[setting] ?? [])) {
+        const plan = buildOutcomePlan(setting, goal);
+        // displayCategory + chainTitle + owner roles + step name/signal are the
+        // customer-facing strings the Plan PDF / walk render. (outcomeLabel is an
+        // internal field, not shown, so it's not scanned.)
+        strings.push(plan.displayCategory, plan.chainTitle);
+        for (const owner of plan.owners) {
+          strings.push(owner.role);
+          for (const step of owner.steps) strings.push(step.name, step.signal);
+        }
       }
 
       const rules = FORBIDDEN[setting];
