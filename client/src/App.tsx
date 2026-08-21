@@ -533,7 +533,7 @@ export default function App() {
     const proofLabel: Record<string, string> = { providerWellbeing: "Provider Retention", nursingRetention: "Nurse Retention" };
     for (const g of (snap.goals ?? []) as GoalId[]) {
       const r = resolveResult(snap.setting as AttainSetting, g, answers);
-      if (r?.lever) { driverIds.add(r.lever.driverId); countedLabels.add(r.lever.label); }
+      for (const lv of r?.levers ?? []) { driverIds.add(lv.driverId); countedLabels.add(lv.label); }
       if (r?.proofDriverId && !r.honest) { proofDriverIds.add(r.proofDriverId); trackedLabels.add(proofLabel[r.proofDriverId] ?? "Tracked"); }
     }
     const SETTING_LABEL: Record<string, string> = { outpatient: "Outpatient", ed: "Emergency", inpatient: "Inpatient", nursing: "Nursing" };

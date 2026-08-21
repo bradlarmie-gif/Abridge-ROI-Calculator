@@ -116,6 +116,46 @@ describe("nurse retention multi-select (comprehensive capture)", () => {
   });
 });
 
+describe("inpatient revenue multi-select (several plays at once)", () => {
+  it("carries BOTH levers when DRG weight AND status are picked (handoff enables both)", () => {
+    const r = resolveResult("inpatient" as AttainSetting, "revenue" as GoalId, {
+      "revenue:drivers:drg": "1",
+      "revenue:drivers:obs": "1",
+    })!;
+    const ids = r.levers.map((l) => l.driverId).sort();
+    expect(ids).toEqual(["drgAccuracy", "obsDefense"]);
+    expect(r.lever?.driverId, "primary lever = first picked").toBe("drgAccuracy");
+  });
+
+  it("the CDI query load stays a proof-play, not a counted lever, even alongside DRG", () => {
+    const r = resolveResult("inpatient" as AttainSetting, "revenue" as GoalId, {
+      "revenue:drivers:drg": "1",
+      "revenue:drivers:cdi": "1",
+    })!;
+    expect(r.levers.map((l) => l.driverId)).toEqual(["drgAccuracy"]); // cdi adds proof, not a lever
+    expect(r.proof, "cdi contributes a proof line").toBeTruthy();
+  });
+});
+
+describe("F3 honesty: drivers documentation doesn't move carry no counted lever", () => {
+  it("outpatient access no-shows is an honest-out, not a net-new-visit lever", () => {
+    const noshow = DISCOVERY.outpatient!.access!.questions.drivers.options.find((o) => o.id === "noshow")!;
+    expect(noshow.honest, "no-shows should be honest").toBe(true);
+    expect(noshow.lever, "ambient does not reduce no-shows").toBeUndefined();
+  });
+  it("ED access front-end intake/triage and provider staffing are honest-outs, not LWBS levers", () => {
+    const opts = DISCOVERY.ed!.access!.questions.drivers.options;
+    for (const id of ["frontend", "provider"]) {
+      const o = opts.find((x) => x.id === id)!;
+      expect(o.honest, `${id} should be honest`).toBe(true);
+      expect(o.lever, `${id} is not documentation's to move`).toBeUndefined();
+    }
+    // the charting load on providers REMAINS the real lever
+    const docload = opts.find((o) => o.id === "docload")!;
+    expect(docload.lever?.driverId).toBe("lwbsRecovery");
+  });
+});
+
 describe("discovery integrity", () => {
   it("has at least the two flagship scripts", () => {
     expect(DISCOVERY.outpatient?.access).toBeTruthy();

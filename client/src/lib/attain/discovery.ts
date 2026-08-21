@@ -245,7 +245,7 @@ function makeFoundation(spec: FoundationSpec): DiscoveryScript {
     ].filter(Boolean) as FoundationItem[];
     const allHonest = ds.length > 0 && ds.every((x) => x.honest);
     const base = allHonest ? spec.bridgeHonest : ds.some((x) => x.lever) ? spec.bridgeDoc : spec.bridgeProof;
-    const connectNote = cs.length && !allHonest ? ` The documentation day here shows up as ${join(cs)}.` : "";
+    const connectNote = cs.length && !allHonest ? ` Concretely, that shows up as ${join(cs)}.` : "";
     // Fold the double-count context in: if a program is already in place, say so.
     const triedNote = tried && t.ground?.("tried") !== "nothing" ? ` You already have ${tried} in place, so we size only the headroom left.` : "";
     return { current, desired, bridge: base + connectNote + triedNote, signalLabel: "You'll know it's working when" };
@@ -265,7 +265,7 @@ const outpatientAccess = makeFoundation({
   drivers: [
     { id: "backlog", label: "A referral and new-patient backlog already waiting", capture: "a referral and new-patient backlog already waiting", value: "a referral and new-patient backlog", lever: { driverId: "patientAccess", label: "Net-new visit margin" } },
     { id: "wait", label: "Long waits for a new appointment", capture: "long new-patient waits", value: "long new-patient waits", lever: { driverId: "patientAccess", label: "Net-new visit margin" } },
-    { id: "noshow", label: "Slots lost to no-shows", capture: "slots lost to no-shows", value: "slots lost to no-shows", lever: { driverId: "patientAccess", label: "Net-new visit margin" } },
+    { id: "noshow", label: "Slots lost to no-shows", capture: "slots lost to no-shows, which a lighter note does not fix", value: "slots lost to no-shows", honest: true },
     { id: "template", label: "No room in the schedule template", capture: "no room in the schedule template", value: "no room in the schedule template", lever: { driverId: "patientAccess", label: "Net-new visit margin" } },
     { id: "frontdesk", label: "A front-desk or referral-workflow problem", capture: "front-desk and referral workflow", value: "front-desk and referral workflow", honest: true },
   ],
@@ -460,8 +460,8 @@ const edAccess = makeFoundation({
   currentLabel: "The bottleneck today",
   drivers: [
     { id: "docload", label: "The charting load on providers", capture: "the charting load is part of the bottleneck", value: "the front-end charting load", lever: { driverId: "lwbsRecovery", label: "LWBS Recovery" } },
-    { id: "frontend", label: "Front-end intake and triage", capture: "front-end intake is part of the bottleneck", value: "front-end intake and triage", lever: { driverId: "lwbsRecovery", label: "LWBS Recovery" } },
-    { id: "provider", label: "Provider availability at the front", capture: "provider availability at the front is a constraint", value: "front-end provider availability", lever: { driverId: "lwbsRecovery", label: "LWBS Recovery" } },
+    { id: "frontend", label: "Front-end intake and triage", capture: "front-end intake and triage, which documentation does not fix", value: "front-end intake and triage", honest: true },
+    { id: "provider", label: "Not enough providers to cover the front", capture: "front-end provider staffing is short, which documentation does not fix", value: "short front-end provider staffing", honest: true },
     { id: "boarding", label: "Back-end boarding and disposition", capture: "the bottleneck is back-end boarding, which documentation does not fix", value: "back-end boarding and disposition", honest: true },
   ],
   scaleLabel: "Today it is",
@@ -561,15 +561,28 @@ const inpatientRevenue = makeFoundation({
   briefIntro: "You said revenue. Inpatient, that forks into the DRG weight you earn, the status you defend, and the CDI query load. Here is where it leaks and where you want it.",
   roles: ["CDI leadership", "Revenue cycle and coding", "The hospitalist medical director"],
   caveat: "The note improving only turns into revenue if CDI and coding act on it and it survives the audit.",
-  driversPrompt: "Where is inpatient revenue leaking today?",
-  driversTeach: "Three different plays, each with its own honesty test.",
+  driversPrompt: "Where is inpatient revenue leaking? Pick every one that's real.",
+  driversTeach: "Three different plays, each with its own honesty test. Most hospitals leak in more than one at once.",
   currentLabel: "Where the revenue is leaking",
+  multiDrivers: true, multiTargets: true, multiSuccess: true,
   drivers: [
     { id: "drg", label: "The DRG weight the acuity earns is slipping", capture: "the DRG weight the acuity earns is slipping", value: "DRG weight slipping", lever: { driverId: "drgAccuracy", label: "Case Mix (DRG Accuracy)" } },
     { id: "obs", label: "Inpatient status getting downgraded", capture: "inpatient status getting downgraded", value: "status downgrades", lever: { driverId: "obsDefense", label: "Status / Medical-Necessity Denials" } },
     { id: "cdi", label: "A heavy CDI query load", capture: "a heavy CDI query load", value: "a heavy CDI query load", proof: "a lighter, faster CDI query load: a labor and throughput win tracked rather than booked as DRG dollars." },
     { id: "downstream", label: "Mostly downstream or payer pushback", capture: "the gap is mostly downstream or payer pushback", value: "downstream or payer pushback", honest: true },
   ],
+  // Connect the dots: the documentation gaps behind the leak — what a fuller note closes.
+  connect: {
+    prompt: "Where does the note actually fall short today?",
+    teach: "The documentation gaps behind the leak. This is what a fuller note closes, and what the plan tracks.",
+    label: "Where the note falls short",
+    options: [
+      { id: "specificity", label: "Comorbidities and complications under-specified", capture: "comorbidities and complications are under-specified", value: "under-specified comorbidities" },
+      { id: "acuity", label: "Severity and acuity not captured at the point of care", capture: "severity and acuity are not captured at the point of care", value: "acuity not captured at the point of care" },
+      { id: "status", label: "The rationale for inpatient status is thin", capture: "the rationale for inpatient status is thin", value: "thin status rationale" },
+      { id: "queries", label: "CDI and coders chasing detail that should be in the note", capture: "CDI and coders chase detail that should be in the note", value: "queries chasing missing detail" },
+    ],
+  },
   scaleLabel: "Today it is",
   targetPrompt: "What does better look like?",
   targetTeach: "The direction you want to steer inpatient revenue.",
@@ -716,7 +729,8 @@ export type DiscoveryAnswers = Record<string, string>;
 export interface DiscoveryResult {
   goal: GoalId;
   narrative: string[]; // the captured facts, in path order
-  lever?: DiscoveryLever; // where the real money is, COUNTED (cleared if an honest-out is chosen)
+  lever?: DiscoveryLever; // the PRIMARY counted lever (= levers[0]); kept for back-compat
+  levers: DiscoveryLever[]; // EVERY counted lever picked (multi-select can name several, e.g. DRG + status)
   proof?: string; // if this resolved to a proof-play outcome (tracked, not counted)
   proofDriverId?: string; // an Explore driver to toggle ON in tracked mode (retention)
   honest: boolean; // did they pick an honest "not documentation's" answer
@@ -728,7 +742,8 @@ export function resolveResult(setting: AttainSetting, goal: GoalId, answers: Dis
   const script = getScript(setting, goal);
   if (!script) return null;
   const narrative: string[] = [];
-  let lever: DiscoveryLever | undefined;
+  const leverMap = new Map<string, DiscoveryLever>(); // dedup counted levers by driverId, path order
+  const addLever = (l: DiscoveryLever) => { if (!leverMap.has(l.driverId)) leverMap.set(l.driverId, l); };
   let proof: string | undefined;
   let proofDriverId: string | undefined;
   let honest = false;
@@ -746,7 +761,7 @@ export function resolveResult(setting: AttainSetting, goal: GoalId, answers: Dis
       if (chosen.length === 0) break; // not answered yet
       for (const o of chosen) {
         if (o.capture) narrative.push(o.capture);
-        if (o.lever) lever = o.lever;
+        if (o.lever) addLever(o.lever);
         if (o.proof) proof = o.proof;
         if (o.proofDriverId) proofDriverId = o.proofDriverId;
         if (o.honest) honest = true;
@@ -759,7 +774,7 @@ export function resolveResult(setting: AttainSetting, goal: GoalId, answers: Dis
     const opt = q.options.find((o) => o.id === chosen);
     if (!opt) break; // not answered yet
     if (opt.capture) narrative.push(opt.capture);
-    if (opt.lever) lever = opt.lever;
+    if (opt.lever) addLever(opt.lever);
     if (opt.proof) proof = opt.proof;
     if (opt.proofDriverId) proofDriverId = opt.proofDriverId;
     if (opt.honest) honest = true;
@@ -772,9 +787,10 @@ export function resolveResult(setting: AttainSetting, goal: GoalId, answers: Dis
   // just said is not the note's to fix. This is the whole honesty promise.
   // ...but only when the honest-out stands ALONE. On a multi step a partner can name a
   // documentation driver AND an honest-out ("some leave for pay too"); the documentation
-  // case still holds, so a real lever/proof driver survives beside it.
-  if (honest && !lever && !proof && !proofDriverId) lever = undefined;
-  return { goal, narrative, lever, proof, proofDriverId, honest, complete };
+  // case still holds, so a real lever/proof driver survives beside it. When it stands
+  // alone (no lever, no proof) the levers map is already empty, so nothing to wipe.
+  const levers = Array.from(leverMap.values());
+  return { goal, narrative, lever: levers[0], levers, proof, proofDriverId, honest, complete };
 }
 
 // ── brief synthesis (authored per goal, generic fallback) ────────────────────
