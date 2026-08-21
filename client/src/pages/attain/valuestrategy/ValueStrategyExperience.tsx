@@ -500,10 +500,15 @@ function Brief({
 }) {
   const results = order.map((goal) => ({ goal, script: getScript(setting, goal)!, res: resolveResult(setting, goal, answers) }));
 
-  // cross-goal ranking sentence
-  const counted = results.filter((r) => r.res?.lever).map((r) => goalDisplayLabel(setting, r.goal));
-  const proofs = results.filter((r) => !r.res?.lever && (r.res?.proof || r.script.proofLine) && !r.res?.honest).map((r) => goalDisplayLabel(setting, r.goal));
-  const honests = results.filter((r) => r.res?.honest && !r.res?.lever).map((r) => goalDisplayLabel(setting, r.goal));
+  // cross-goal ranking sentence. Classify the same way the pill dots do: a real
+  // documentation play (proofDriverId/proof/proofLine) counts as PROOF even when an
+  // honest-out was also picked — only a pure honest-out lands in "not ours to fix".
+  const isCounted = (r: typeof results[number]) => !!r.res?.lever;
+  const isProof = (r: typeof results[number]) => !isCounted(r) && !!(r.res?.proofDriverId || r.res?.proof || r.script.proofLine);
+  const isHonest = (r: typeof results[number]) => !isCounted(r) && !isProof(r) && !!r.res?.honest;
+  const counted = results.filter(isCounted).map((r) => goalDisplayLabel(setting, r.goal));
+  const proofs = results.filter(isProof).map((r) => goalDisplayLabel(setting, r.goal));
+  const honests = results.filter(isHonest).map((r) => goalDisplayLabel(setting, r.goal));
   const rankBits: string[] = [];
   if (counted.length) rankBits.push(`${listPhrase(counted)} ${counted.length > 1 ? "carry" : "carries"} the near-term dollars`);
   if (proofs.length) rankBits.push(`${listPhrase(proofs)} ${proofs.length > 1 ? "are" : "is"} proof, tracked not counted`);

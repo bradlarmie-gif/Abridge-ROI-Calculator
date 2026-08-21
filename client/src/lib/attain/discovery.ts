@@ -511,18 +511,20 @@ const nursingRetentionScript = retentionFoundation({
       { id: "handoff", label: "Rushed or incomplete handoffs", capture: "handoffs are rushed by the charting load", value: "rushed handoffs" },
     ],
   },
+  // Retention is the PEOPLE story: who you keep. The hours/overtime outcomes live
+  // in Capacity, so they are deliberately not repeated here.
   targets: [
     { id: "stay", label: "Keep the nurses you have", capture: "keeping the nurses you have", value: "keeping the nurses you have" },
-    { id: "lighter", label: "Charting that fits inside the shift", capture: "charting that fits in the shift", value: "charting that fits in the shift" },
     { id: "firstyear", label: "Hold onto first-year nurses", capture: "holding onto first-year nurses", value: "holding onto first-year nurses" },
     { id: "reputation", label: "Be a unit nurses want to stay on", capture: "becoming a unit nurses want to stay on", value: "a unit nurses want to stay on" },
+    { id: "agencyoff", label: "Lean off travel and agency coverage", capture: "leaning off travel and agency as retention stabilizes", value: "leaning off travel and agency" },
   ],
   successes: [
-    { id: "endshift", label: "End-of-shift charting time falling", capture: "success looks like end-of-shift charting falling", value: "end-of-shift charting falling" },
-    { id: "breaks", label: "Fewer missed breaks", capture: "success looks like fewer missed breaks", value: "fewer missed breaks" },
     { id: "turnover", label: "Turnover easing on high-ratio units", capture: "success looks like turnover easing on high-ratio units", value: "turnover easing on high-ratio units" },
+    { id: "intent", label: "Fewer nurses signaling they're looking", capture: "success looks like fewer nurses signaling they're looking", value: "fewer nurses signaling they're looking" },
     { id: "firstyearstay", label: "First-year nurses staying past year one", capture: "success looks like first-year nurses staying past year one", value: "first-year nurses staying past year one" },
     { id: "engagement", label: "Engagement scores rising", capture: "success looks like engagement scores rising", value: "engagement scores rising" },
+    { id: "agency", label: "Less reliance on travel and agency", capture: "success looks like less reliance on travel and agency", value: "less reliance on travel and agency" },
   ],
 });
 
@@ -734,24 +736,26 @@ const nursingCapacity = makeFoundation({
     { id: "census", label: "Census and acuity spikes", capture: "overtime is largely census and acuity spikes", value: "census and acuity spikes", honest: true },
   ],
   connect: {
-    prompt: "Where does the charting actually pile up?",
-    teach: "The moments the overtime is created. This is what the plan tracks.",
-    label: "Where the charting piles up",
+    prompt: "Where do the overtime minutes actually go?",
+    teach: "The mechanics behind the hours, not the reasons again. This is what the plan tracks.",
+    label: "Where the minutes go",
     options: [
-      { id: "afterclock", label: "Charting finished after clock-out", capture: "charting is finished after clock-out", value: "charting after clock-out" },
-      { id: "endbatch", label: "Notes batched to the end of the shift", capture: "notes are batched to the end of the shift", value: "notes batched to shift end" },
       { id: "interruptions", label: "Charting redone after interruptions", capture: "charting is redone after interruptions", value: "charting redone after interruptions" },
       { id: "flowsheets", label: "Flowsheets and repetitive documentation", capture: "flowsheets and repetitive documentation add up", value: "heavy flowsheet documentation" },
+      { id: "doublecharting", label: "Double-charting the same thing across systems", capture: "the same thing is charted across systems", value: "double-charting across systems" },
+      { id: "workstation", label: "Hunting for an open workstation to chart", capture: "time goes to hunting for a workstation", value: "hunting for a workstation" },
     ],
   },
   scaleLabel: "Today it is",
   targetPrompt: "What does better look like?",
   targetTeach: "The direction you want to steer overtime.",
   targetLabel: "The change you want",
+  // Capacity is the HOURS/DOLLARS story: the paid overtime you stop buying and the
+  // time it returns to the bedside. Agency/travel savings ride with Retention (the
+  // ROI books them there), so they are not claimed here.
   targets: [
     { id: "inshift", label: "Charting done in-shift, so nurses leave on time", capture: "the target is charting done in-shift so nurses leave on time", value: "charting done in-shift, so nurses leave on time" },
     { id: "runrate", label: "Overtime down to a lower run-rate", capture: "the target is a lower overtime run-rate", value: "a lower overtime run-rate" },
-    { id: "agency", label: "Leaning off agency and travel", capture: "the target is leaning off agency and travel", value: "leaning off agency and travel" },
     { id: "bedside", label: "More of that time back at the bedside", capture: "the target is time back at the bedside", value: "time back at the bedside" },
   ],
   successPrompt: "What would tell you it's working?",
@@ -759,7 +763,7 @@ const nursingCapacity = makeFoundation({
   successes: [
     { id: "clockout", label: "Nurses clocking out on time", capture: "success looks like nurses clocking out on time", value: "nurses clocking out on time" },
     { id: "othours", label: "Overtime hours falling on the report", capture: "success looks like overtime hours falling on the report", value: "overtime hours falling on the report" },
-    { id: "agencyspend", label: "Less agency and travel spend", capture: "success looks like less agency and travel spend", value: "less agency and travel spend" },
+    { id: "chartingtime", label: "Charting time per shift falling", capture: "success looks like charting time per shift falling", value: "charting time per shift falling" },
   ],
   bridgeDoc: "The gap between these is what the ROI sizes next, and the Plan closes. The piece Abridge moves is the charting, so the ceiling is the share of overtime that is documentation, not staffing or census.",
   bridgeProof: "The gap between these is what the ROI sizes next, and the Plan closes.",
@@ -821,7 +825,7 @@ const nursingQuality = makeFoundation({
   roles: ["Nursing quality", "Unit managers", "Infection prevention"],
   caveat: "A timely chart only helps if someone acts at the bedside. The freed time has to reach the room.",
   driversPrompt: "Which safety outcomes are you focused on? Pick all that hold true.",
-  driversTeach: "Each has a different amount of documentation leverage, so we are honest about which move most.",
+  driversTeach: "Each carries different documentation leverage. A real-time note moves fall-risk and sepsis timing most, though sepsis is a whole-team bundle where nursing owns early recognition. Pressure injuries and central lines are more a turn-schedule and staffing story, so we track those rather than book them.",
   currentLabel: "The safety outcomes",
   multiDrivers: true, multiTargets: true, multiSuccess: true,
   drivers: [

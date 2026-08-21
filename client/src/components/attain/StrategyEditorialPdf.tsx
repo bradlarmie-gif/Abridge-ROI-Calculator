@@ -111,9 +111,13 @@ function groundingItems(setting: AttainSetting, answers: DiscoveryAnswers): stri
 // The one-line read: which priority carries the dollars vs. what's proof/honest.
 function verdictLine(setting: AttainSetting, order: GoalId[], answers: DiscoveryAnswers): string {
   const results = order.map((g) => ({ g, res: resolveResult(setting, g, answers), script: getScript(setting, g)! }));
-  const counted = results.filter((r) => r.res?.lever).map((r) => goalDisplayLabel(setting, r.g));
-  const proofs = results.filter((r) => !r.res?.lever && (r.res?.proofDriverId || r.res?.proof || r.script.proofLine) && !r.res?.honest).map((r) => goalDisplayLabel(setting, r.g));
-  const honests = results.filter((r) => r.res?.honest && !r.res?.lever && !r.res?.proofDriverId && !r.res?.proof).map((r) => goalDisplayLabel(setting, r.g));
+  // A real documentation play counts as PROOF even alongside an honest-out; only a
+  // pure honest-out is "not documentation's to fix" (matches the on-screen pills).
+  const isCounted = (r: typeof results[number]) => !!r.res?.lever;
+  const isProof = (r: typeof results[number]) => !isCounted(r) && !!(r.res?.proofDriverId || r.res?.proof || r.script.proofLine);
+  const counted = results.filter(isCounted).map((r) => goalDisplayLabel(setting, r.g));
+  const proofs = results.filter(isProof).map((r) => goalDisplayLabel(setting, r.g));
+  const honests = results.filter((r) => !isCounted(r) && !isProof(r) && !!r.res?.honest).map((r) => goalDisplayLabel(setting, r.g));
   const bits: string[] = [];
   if (counted.length) bits.push(`${listPhrase(counted)} ${counted.length > 1 ? "carry" : "carries"} the near-term dollars`);
   if (proofs.length) bits.push(`${listPhrase(proofs)} ${proofs.length > 1 ? "are" : "is"} proof, tracked not counted`);
