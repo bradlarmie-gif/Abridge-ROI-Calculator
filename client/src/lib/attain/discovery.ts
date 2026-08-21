@@ -68,7 +68,7 @@ export interface ThesisCtx {
  * to go. The gap between the two is what the ROI sizes and the Plan closes.
  * Honesty falls out of the current-state picture (the bridge line), not a gate.
  */
-export interface FoundationItem { label: string; value: string; }
+export interface FoundationItem { label: string; value: string | string[]; }
 export interface FoundationRead {
   current: FoundationItem[];
   desired: FoundationItem[];
@@ -221,14 +221,17 @@ function makeFoundation(spec: FoundationSpec): DiscoveryScript {
     // Left column: scope / driver. The brief adds the priority-rank row ("#N priority")
     // where scale used to sit, so multi-goal reads 3 x 3; single-goal reads scope /
     // driver. "Already tried" and the connect-the-dots context ride in the bridge.
+    // Multi-select fields carry the list (each pick its own line in the brief); single
+    // fields stay one string. The bridge still reads the joined prose form.
+    const listOf = (xs: { value: string }[], isMulti?: boolean) => (isMulti ? xs.map((x) => x.value) : join(xs));
     const current: FoundationItem[] = [
       scope ? { label: spec.scopeLabel ?? "Concentrated in", value: scope } : null,
-      ds.length ? { label: spec.currentLabel, value: join(ds) } : null,
+      ds.length ? { label: spec.currentLabel, value: listOf(ds, spec.multiDrivers) } : null,
     ].filter(Boolean) as FoundationItem[];
     const desired: FoundationItem[] = [
-      ts.length ? { label: spec.targetLabel, value: join(ts) } : null,
+      ts.length ? { label: spec.targetLabel, value: listOf(ts, spec.multiTargets) } : null,
       horizon ? { label: "On what timeframe", value: horizon } : null,
-      ss.length ? { label: "You'll know it's working when", value: join(ss) } : null,
+      ss.length ? { label: "You'll know it's working when", value: listOf(ss, spec.multiSuccess) } : null,
     ].filter(Boolean) as FoundationItem[];
     const allHonest = ds.length > 0 && ds.every((x) => x.honest);
     const base = allHonest ? spec.bridgeHonest : ds.some((x) => x.lever) ? spec.bridgeDoc : spec.bridgeProof;

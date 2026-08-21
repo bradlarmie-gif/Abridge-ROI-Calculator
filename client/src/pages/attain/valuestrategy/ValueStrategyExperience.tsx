@@ -520,36 +520,39 @@ function GoalBrief({
 // The foundation read: a current-state / desired-state mirror. Strategy's real
 // job, per the reshape — gather where they are and where they want to go, and
 // let the honesty fall out of the picture (the bridge), not a verdict.
+// The foundation read, de-boxed: no card border, no tinted panel — structure comes
+// from typography, whitespace, and one center hairline. Multi-select fields render as
+// clean stacked lines, not comma run-ons.
 function FoundationCard({ settingLabel, goalLabel, foundation }: { settingLabel: string; goalLabel: string; foundation: FoundationRead }) {
   return (
-    <div className="rounded-3xl border border-[#E8E2DA] bg-white overflow-hidden">
-      <div className="px-7 pt-6 pb-1">
-        <p className="text-[10px] font-bold uppercase tracking-[1.6px] text-[#8C8073]">{goalLabel.toLowerCase().startsWith(settingLabel.toLowerCase()) ? goalLabel : `${settingLabel} · ${goalLabel}`}</p>
-      </div>
-      <div className="grid grid-cols-1 lg:grid-cols-2">
+    <div>
+      <p className="text-[10px] font-bold uppercase tracking-[1.9px] text-[#8C8073] mb-8">{goalLabel.toLowerCase().startsWith(settingLabel.toLowerCase()) ? goalLabel : `${settingLabel} · ${goalLabel}`}</p>
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_1px_1fr] gap-x-14 gap-y-10">
         {/* WHERE YOU ARE */}
-        <div className="px-7 pt-5 pb-7 lg:pr-9">
-          <p className="text-[11px] font-bold uppercase tracking-[1.6px] text-[#4A4238] mb-4">Where you are</p>
-          <div className="space-y-4">
+        <div>
+          <p className="text-[11px] font-bold uppercase tracking-[1.9px] text-[#4A4238] mb-7">Where you are</p>
+          <div className="space-y-7">
             {foundation.current.map((it) => (
               <FoundationRow key={it.label} label={it.label} value={it.value} />
             ))}
           </div>
         </div>
+        {/* center hairline */}
+        <div className="hidden lg:block bg-[#EAE4DB]" />
         {/* WHERE YOU WANT TO GO */}
-        <div className="px-7 pt-5 pb-7 bg-[#FBFAF7] border-t lg:border-t-0 lg:border-l border-[#EFE9E1]">
-          <p className="text-[11px] font-bold uppercase tracking-[1.6px] text-[#B78A5A] mb-4">Where you want to go</p>
-          <div className="space-y-4">
+        <div>
+          <p className="text-[11px] font-bold uppercase tracking-[1.9px] text-[#B78A5A] mb-7">Where you want to go</p>
+          <div className="space-y-7">
             {foundation.desired.map((it) => (
               <FoundationRow key={it.label} label={it.label} value={it.value} coral={it.label === foundation.signalLabel} />
             ))}
           </div>
         </div>
       </div>
-      {/* the bridge: the gap goes to ROI, the path to the Plan; honesty lives here */}
-      <div className="px-7 py-5 border-t border-[#EFE9E1] bg-[#FCFBF9]">
-        <p className="text-[13.5px] text-[#4A4238] leading-relaxed">
-          <span className="font-bold uppercase tracking-[0.06em] text-[#B4A896] text-[10px] mr-2">Next</span>
+      {/* the bridge: quiet, hairline-separated — the gap goes to ROI, honesty lives here */}
+      <div className="mt-11 pt-6 border-t border-[#EAE4DB] max-w-[880px]">
+        <p className="text-[14px] text-[#5A5248] leading-relaxed">
+          <span className="font-bold uppercase tracking-[0.08em] text-[#B4A896] text-[10px] mr-2 align-[1px]">Next</span>
           {foundation.bridge}
         </p>
       </div>
@@ -557,14 +560,19 @@ function FoundationCard({ settingLabel, goalLabel, foundation }: { settingLabel:
   );
 }
 
-function FoundationRow({ label, value, coral }: { label: string; value: string; coral?: boolean }) {
-  // `coral` marks the success signal. It is a leading metric, not money or an
-  // action, so it gets the warm accent (not coral, which is reserved for dollars
-  // and controls) — and it emphasizes the line that becomes the Plan's metric.
+function FoundationRow({ label, value, coral }: { label: string; value: string | string[]; coral?: boolean }) {
+  // `coral` marks the success signal — a leading metric, not money or an action, so it
+  // gets the warm accent. A multi-select value comes as a list: each pick its own line
+  // (capitalized), so it reads as structure, not a comma run-on.
+  const items = (Array.isArray(value) ? value : [value]).map((v) => cap(v));
   return (
     <div>
-      <div className="text-[10px] font-bold uppercase tracking-[0.06em] text-[#B4A896] mb-1">{label}</div>
-      <div className={`text-[15px] leading-snug ${coral ? "text-[#8A6D3B] font-semibold" : "text-[#1A1A1A] font-medium"}`}>{value}</div>
+      <div className="text-[10px] font-bold uppercase tracking-[0.1em] text-[#B4A896] mb-2">{label}</div>
+      <div className="space-y-1.5">
+        {items.map((v, i) => (
+          <div key={i} className={`text-[16px] leading-snug ${coral ? "text-[#8A6D3B] font-semibold" : "text-[#1A1A1A] font-medium"}`}>{v}</div>
+        ))}
+      </div>
     </div>
   );
 }
