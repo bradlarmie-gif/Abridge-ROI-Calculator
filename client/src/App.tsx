@@ -530,7 +530,7 @@ export default function App() {
     const proofDriverIds = new Set<string>();  // proof-first drivers (retention) → toggle on in tracked mode
     const countedLabels = new Set<string>();
     const trackedLabels = new Set<string>();
-    const proofLabel: Record<string, string> = { providerWellbeing: "Provider Retention", nursingRetention: "Nurse Retention" };
+    const proofLabel: Record<string, string> = { providerWellbeing: "Provider Retention", nursingRetention: "Nurse Retention", ipLengthOfStay: "Inpatient Capacity" };
     for (const g of (snap.goals ?? []) as GoalId[]) {
       const r = resolveResult(snap.setting as AttainSetting, g, answers);
       for (const lv of r?.levers ?? []) { driverIds.add(lv.driverId); countedLabels.add(lv.label); }
@@ -547,6 +547,9 @@ export default function App() {
     proofDriverIds.forEach((id) => {
       if (id === "providerWellbeing") { td.wellbeingEnabled = true; td.calculateRetentionValue = true; }
       else if (id === "nursingRetention") { td.nursingRetentionEnabled = true; }
+      // Inpatient capacity stays a tracked signal (LOS attribution to ambient is hard),
+      // so light up the LOS driver alongside the documentation drivers that move it.
+      else if (id === "ipLengthOfStay") { td.ipLengthOfStayEnabled = true; td.ipDocumentationLagEnabled = true; td.ipDischargeGoalDocEnabled = true; }
     });
     driverIds.forEach((id) => {
       switch (id) {

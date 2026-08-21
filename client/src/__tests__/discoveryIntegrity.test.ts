@@ -137,6 +137,14 @@ describe("inpatient revenue multi-select (several plays at once)", () => {
   });
 });
 
+describe("inpatient capacity stays tracked, but now enables a driver", () => {
+  it("a documentation driver resolves the LOS tracked driver (no counted dollar)", () => {
+    const r = resolveResult("inpatient" as AttainSetting, "capacity" as GoalId, { "capacity:drivers:notelag": "1" })!;
+    expect(r.proofDriverId, "should track LOS").toBe("ipLengthOfStay");
+    expect(r.levers, "capacity is tracked, not counted").toEqual([]);
+  });
+});
+
 describe("F3 honesty: drivers documentation doesn't move carry no counted lever", () => {
   it("outpatient access no-shows is an honest-out, not a net-new-visit lever", () => {
     const noshow = DISCOVERY.outpatient!.access!.questions.drivers.options.find((o) => o.id === "noshow")!;

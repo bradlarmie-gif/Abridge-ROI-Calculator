@@ -618,8 +618,8 @@ const inpatientCapacity = makeFoundation({
   currentLabel: "What holds the discharge",
   multiDrivers: true, multiTargets: true, multiSuccess: true,
   drivers: [
-    { id: "notelag", label: "The discharge note or summary lags the decision", capture: "the discharge note lags the decision to discharge", value: "the discharge-note lag" },
-    { id: "rounding", label: "Rounding and progress notes finished late in the day", capture: "rounding and progress notes are finished late", value: "late rounding notes" },
+    { id: "notelag", label: "The discharge note or summary lags the decision", capture: "the discharge note lags the decision to discharge", value: "the discharge-note lag", proofDriverId: "ipLengthOfStay" },
+    { id: "rounding", label: "Rounding and progress notes finished late in the day", capture: "rounding and progress notes are finished late", value: "late rounding notes", proofDriverId: "ipLengthOfStay" },
     { id: "placement", label: "Placement, auth, or consults", capture: "the delay is placement and auth, which documentation does not fix", value: "placement, auth, and consults", honest: true },
   ],
   connect: {
