@@ -59,6 +59,14 @@ describe("grounding is setting-native (domain-fit guard)", () => {
       .options.map((o) => `${o.label} ${o.capture}`).join(" ");
     expect(/CDI|coding/i.test(blob), "outpatient lost its physician shelf").toBe(true);
   });
+
+  it("every nursing script seats a nursing-side owner (no all-finance table)", () => {
+    const NURSE_SEAT = /nurs|CNO|unit manager|bedside|charge nurse/i;
+    for (const goal of Object.keys(DISCOVERY.nursing ?? {}) as GoalId[]) {
+      const roles = briefRoles("nursing", goal);
+      expect(roles.some((r) => NURSE_SEAT.test(r)), `nursing/${goal} names no nursing-side owner: ${roles.join(", ")}`).toBe(true);
+    }
+  });
 });
 
 describe("discovery integrity", () => {

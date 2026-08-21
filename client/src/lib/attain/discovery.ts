@@ -569,7 +569,7 @@ const nursingCapacity = makeFoundation({
 const nursingRevenue = makeFoundation({
   setting: "nursing",
   briefIntro: "You said revenue. Nursing documentation supports charge capture and the acuity picture, a supporting role rather than a primary Abridge revenue lever.",
-  roles: ["Revenue cycle and coding", "Nursing informatics", "Charge-capture owners"],
+  roles: ["Nursing leadership", "Nursing informatics", "Revenue cycle and coding"],
   caveat: "Charges only land if capture is reconciled to the documentation. The primary revenue levers live with the providers.",
   proofLine: "more complete, timely nursing documentation that supports charge capture and acuity, tracked as a supporting signal rather than booked as a primary dollar.",
   driversPrompt: "What part of revenue does nursing documentation touch here?",
