@@ -52,11 +52,7 @@ import { loadSnapshot } from "@/pages/attain/attainStorage";
 import { resolveResult } from "@/lib/attain/discovery";
 import DiscoveryBridge, { type BridgeInfo } from "@/pages/attain/valuestrategy/DiscoveryBridge";
 import type { AttainSetting, GoalId } from "@/lib/attain/attainTypes";
-import AttainConsultPreview from "@/pages/attain/AttainConsultPreview";
-import AttainPlanPreview from "@/pages/attain/AttainPlanPreview";
 import PlanBuildExperience from "@/pages/attain/planning/PlanBuildExperience";
-import AttainMatrixPreview from "@/pages/attain/preview/AttainMatrixPreview";
-import MultiCategoryPreview from "@/pages/attain/preview/MultiCategoryPreview";
 import ProformaPreview from "@/pages/proforma/editorial/ProformaPreview";
 import ProformaEditorialHost from "@/pages/proforma/editorial/ProformaEditorialHost";
 import AttainFlowV2 from "@/pages/attain/AttainFlowV2";
@@ -229,15 +225,6 @@ const INITIAL_DEEP_LINK = getInitialDeepLink();
 export default function App() {
   usePreventNumberInputScroll();
 
-  // THROWAWAY: ?consultpreview=1 renders the reimagined Align mechanism prototype
-  // (one driver). Remove this and AttainConsultPreview.tsx once the direction settles.
-  if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("consultpreview") === "1") {
-    return <AttainConsultPreview />;
-  }
-  // THROWAWAY: ?planpreview=1 renders the Plan chapter prototype. Remove with AttainPlanPreview.tsx.
-  if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("planpreview") === "1") {
-    return <AttainPlanPreview />;
-  }
   // Planning rebuild (Phase A preview) — ?planbuild=1 or ?planbuild=<setting>. Safe of the live Planning path.
   if (typeof window !== "undefined") {
     const pb = new URLSearchParams(window.location.search).get("planbuild");
@@ -257,18 +244,6 @@ export default function App() {
   // Metrics card stays "coming soon" until it's wired in.
   if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("metriclibrary") === "1") {
     return <MetricLibrary />;
-  }
-  // THROWAWAY: ?attainpreview=1 renders the unified matrix preview (setting x category, Align + Plan).
-  if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("attainpreview") === "1") {
-    return <AttainMatrixPreview />;
-  }
-  // THROWAWAY: ?multipreview=1 renders the multi-category mock (one setting, several categories).
-  if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("multipreview") === "1") {
-    return <MultiCategoryPreview />;
-  }
-  // THROWAWAY: ?attainv2=1 = the graft target — real funnel + header + editorial experience.
-  if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("attainv2") === "1") {
-    return <AttainFlowV2 />;
   }
   // THROWAWAY: ?attainpdf=1 (kickoff) or ?attainpdf=review = the full Attain PDF.
   if (typeof window !== "undefined" && ["1", "review"].includes(new URLSearchParams(window.location.search).get("attainpdf") ?? "")) {

@@ -218,14 +218,14 @@ async function arAddTool(page, name, spend) {
   await page.waitForTimeout(300);
 }
 async function arEnter(page) {
-  await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
+  // Live path: hub → Financial → App Rationalization ("Build the case").
+  // (The old Forecast-journey nav landed on the hub and captured the wrong screen.)
+  await page.goto(`${BASE}/?hub=1`, { waitUntil: "networkidle" });
   await page.waitForTimeout(700);
-  await clickIf(page, "[data-testid=button-enter-app]");
+  await clickText(page, /Open Financial/);
   await page.waitForTimeout(400);
-  await clickText(page, /^Forecast$/);
-  await page.waitForTimeout(400);
-  await clickText(page, /App Rationalization/);
-  await page.waitForTimeout(500);
+  await clickIf(page, "[data-testid=financial-card-app-rationalization-button]");
+  await page.waitForTimeout(600);
   await arAddTool(page, "Fluency", 250000);
   await arAddTool(page, "UpToDate", 160000);
   await page.waitForTimeout(200);
@@ -270,36 +270,42 @@ await scene(browser, "apprat-moat", async (p) => {
   return "moat";
 }, { height: 1500 });
 
-// ── Attain (Value Attainment): the flow that was NEVER in the sweep, which is
-// how placeholder/centering bugs on the workforce category reached the user.
-// Each preview is URL-reachable; the matrix also gets a workforce variant.
-for (const [flag, name] of [["consultpreview", "attain-align"], ["planpreview", "attain-plan"], ["attainpreview", "attain-matrix"], ["multipreview", "attain-multi"], ["attainv2", "attain-v2"]]) {
-  await scene(browser, name, async (p) => {
-    await p.goto(`${BASE}/?${flag}=1`, { waitUntil: "networkidle" });
-    await p.waitForTimeout(1000);
-    return name;
-  }, { height: 1600 });
+// ── Attain (Value Attainment): the LIVE hub flow. The old ?*preview prototypes
+// were deleted (they showed a "PROTOTYPE" label + inconsistent chrome), so the
+// sweep now drives the real hub → Strategy/Planning funnel. Nursing is used
+// deliberately (the reused-content bugs surfaced there first).
+async function attainFunnel(p, openRe, buildRe) {
+  await p.goto(`${BASE}/?hub=1`, { waitUntil: "networkidle" });
+  await p.waitForTimeout(600);
+  await clickText(p, openRe); await p.waitForTimeout(400);
+  await clickText(p, buildRe); await p.waitForTimeout(400);
+  const input = await p.$("input"); if (input) { await input.fill("Utah Health"); await p.waitForTimeout(150); }
+  await clickText(p, /^Continue/); await p.waitForTimeout(400);
+  await clickText(p, /Nursing/); await p.waitForTimeout(400);
+  for (const bx of (await p.$$("[data-testid^=checkbox-attain-goal]")).slice(0, 2)) { try { await bx.click(); await p.waitForTimeout(150); } catch {} }
 }
-// Workforce category specifically (the one flagged) — matrix + Provider Retention.
-await scene(browser, "attain-matrix-workforce", async (p) => {
-  await p.goto(`${BASE}/?attainpreview=1`, { waitUntil: "networkidle" });
-  await p.waitForTimeout(900);
-  await clickText(p, /Provider Retention/);
-  await p.waitForTimeout(600);
-  return "workforce (Provider Retention)";
-}, { height: 1800 });
-await scene(browser, "attain-multi-workforce", async (p) => {
-  await p.goto(`${BASE}/?multipreview=1`, { waitUntil: "networkidle" });
-  await p.waitForTimeout(900);
-  await clickText(p, /Provider Retention/);
-  await p.waitForTimeout(600);
-  return "workforce (multi)";
-}, { height: 1800 });
+await scene(browser, "attain-hub", async (p) => {
+  await p.goto(`${BASE}/?hub=1`, { waitUntil: "networkidle" });
+  await p.waitForTimeout(700);
+  return "value attainment hub";
+});
+await scene(browser, "attain-strategy-grounding", async (p) => {
+  await attainFunnel(p, /Open Strategy/, /Build the Strategy/);
+  await clickText(p, /Start discovery/); await p.waitForTimeout(500);
+  await clickIf(p, "[data-testid=discovery-ground-0-medsurg]"); await p.waitForTimeout(500);
+  return "nursing strategy grounding (live)";
+}, { height: 1200 });
+await scene(browser, "attain-planning", async (p) => {
+  await attainFunnel(p, /Open Planning/, /Start building/);
+  await p.waitForTimeout(500);
+  return "nursing planning walk (live)";
+}, { height: 1700 });
 
 // ── B. PDFs, one screenshot PER PAGE (so each page gets its own eyeball) ──────
 const PDF_ROUTES = [
   { url: "/?proformapdf=1", label: "proforma-pdf" },
   { url: "/?explorepdf=1", label: "explore-pdf" },
+  { url: "/?planpdf=nursing", label: "plan-pdf-nursing" },
 ];
 const PAGE_H = 1056;
 for (const route of PDF_ROUTES) {
