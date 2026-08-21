@@ -534,7 +534,10 @@ export default function App() {
     for (const g of (snap.goals ?? []) as GoalId[]) {
       const r = resolveResult(snap.setting as AttainSetting, g, answers);
       for (const lv of r?.levers ?? []) { driverIds.add(lv.driverId); countedLabels.add(lv.label); }
-      if (r?.proofDriverId && !r.honest) { proofDriverIds.add(r.proofDriverId); trackedLabels.add(proofLabel[r.proofDriverId] ?? "Tracked"); }
+      // A proofDriverId is only set when a real documentation driver was named, so we
+      // track it even if an honest-out was ALSO picked on a multi step (a pure honest-out
+      // sets no proofDriverId, so it never lands here). Tracked mode is $0 — no over-claim.
+      if (r?.proofDriverId) { proofDriverIds.add(r.proofDriverId); trackedLabels.add(proofLabel[r.proofDriverId] ?? "Tracked"); }
     }
     const SETTING_LABEL: Record<string, string> = { outpatient: "Outpatient", ed: "Emergency", inpatient: "Inpatient", nursing: "Nursing" };
     const td = { ...DEFAULT_EXPLORE_STATE.timeDriverInputs };

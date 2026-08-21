@@ -371,9 +371,30 @@ function retentionFoundation(opts: { setting: AttainSetting; who: string; driver
 }
 
 const outpatientRetention = retentionFoundation({
-  setting: "outpatient", who: "providers", driverId: "providerWellbeing",
+  setting: "outpatient", who: "providers", driverId: "providerWellbeing", multi: true,
   briefIntro: "You said retention. Here is what is driving people out today and where you want to be.",
   roles: ["Clinical leadership", "The medical group's people lead", "Department chiefs"],
+  driversPrompt: "Why are providers actually leaving? Pick every one that's real.",
+  driversTeach: "Some of these documentation can move, some it can't. Name them all and we'll sort which is which.",
+  drivers: [
+    { id: "afterhours", label: "After-hours charting (pajama time)", capture: "after-hours charting is driving people out", value: "after-hours charting", proofDriverId: "providerWellbeing", proof: LEVER_LINE["providerWellbeing"] },
+    { id: "inbox", label: "In-basket and inbox burden", capture: "the in-basket and inbox burden is a driver", value: "in-basket burden", proofDriverId: "providerWellbeing", proof: LEVER_LINE["providerWellbeing"] },
+    { id: "pace", label: "Visit volume and pace", capture: "visit volume and pace are a driver", value: "visit volume and pace", proofDriverId: "providerWellbeing", proof: LEVER_LINE["providerWellbeing"] },
+    { id: "newer", label: "Newer clinicians burning out early", capture: "newer clinicians are burning out early", value: "newer clinicians burning out early", proofDriverId: "providerWellbeing", proof: LEVER_LINE["providerWellbeing"] },
+    { id: "paylife", label: "Pay, or life elsewhere", capture: "some leave for pay or life elsewhere, which documentation will not fix", value: "pay or life elsewhere", honest: true },
+    { id: "culture", label: "Leadership, culture, or load beyond the note", capture: "leadership and culture are a driver documentation will not fix", value: "leadership and culture", honest: true },
+  ],
+  connect: {
+    prompt: "Where does the documentation day show up for them?",
+    teach: "The moments a lighter note would land. This is what we track once the plan is running.",
+    label: "The documentation day",
+    options: [
+      { id: "athome", label: "Charting at home at night", capture: "they chart at home at night", value: "charting at home at night" },
+      { id: "betweenpts", label: "Charting between patients instead of connecting", capture: "they chart between patients instead of connecting", value: "charting between patients" },
+      { id: "inboxpile", label: "Inbox and results piling up", capture: "the inbox and results pile up", value: "inbox piling up" },
+      { id: "weekend", label: "Catching up on notes over the weekend", capture: "they catch up on notes over the weekend", value: "weekend note catch-up" },
+    ],
+  },
   targets: [
     { id: "stay", label: "Keep the providers you have", capture: "keeping the providers you have", value: "keeping the providers you have" },
     { id: "lighter", label: "A sustainably lighter day", capture: "a sustainably lighter day", value: "a sustainably lighter day" },
@@ -387,9 +408,30 @@ const outpatientRetention = retentionFoundation({
 });
 
 const edRetention = retentionFoundation({
-  setting: "ed", who: "ED clinicians", driverId: "providerWellbeing",
+  setting: "ed", who: "ED clinicians", driverId: "providerWellbeing", multi: true,
   briefIntro: "You said retention. In the ED the after-shift documentation tail is often the driver, but not always, so we gather the real picture.",
   roles: ["ED medical director", "Nursing and physician leadership", "The group's people lead"],
+  driversPrompt: "Why are ED clinicians actually leaving? Pick every one that's real.",
+  driversTeach: "Some of these documentation can move, some it can't. Name them all and we'll sort which is which.",
+  drivers: [
+    { id: "aftershift", label: "The after-shift charting tail", capture: "the after-shift charting tail is a driver", value: "the after-shift charting tail", proofDriverId: "providerWellbeing", proof: LEVER_LINE["providerWellbeing"] },
+    { id: "pace", label: "Pace and patient volume per shift", capture: "pace and volume per shift are a driver", value: "pace and volume per shift", proofDriverId: "providerWellbeing", proof: LEVER_LINE["providerWellbeing"] },
+    { id: "newer", label: "Newer attendings and APPs leaving early", capture: "newer attendings and APPs are leaving early", value: "newer attendings and APPs leaving early", proofDriverId: "providerWellbeing", proof: LEVER_LINE["providerWellbeing"] },
+    { id: "boarding", label: "Boarding and moral injury", capture: "boarding and moral injury are a driver documentation will not fix", value: "boarding and moral injury", honest: true },
+    { id: "nights", label: "Nights, weekends, and coverage burden", capture: "the schedule burden is a driver documentation will not fix", value: "nights and coverage burden", honest: true },
+    { id: "paylife", label: "Pay, or life elsewhere", capture: "some leave for pay or life elsewhere, which documentation will not fix", value: "pay or life elsewhere", honest: true },
+  ],
+  connect: {
+    prompt: "Where does the documentation day show up for them?",
+    teach: "The moments a lighter note would land. This is what we track once the plan is running.",
+    label: "The documentation day",
+    options: [
+      { id: "aftershiftcharts", label: "Finishing charts after the shift ends", capture: "they finish charts after the shift ends", value: "charts finished after the shift" },
+      { id: "board", label: "Charting instead of managing the board", capture: "they chart instead of managing the board", value: "charting instead of the board" },
+      { id: "disposition", label: "Disposition notes and discharge instructions piling up", capture: "disposition notes pile up", value: "disposition notes piling up" },
+      { id: "signout", label: "Rushed sign-outs from the charting load", capture: "sign-outs are rushed by the charting load", value: "rushed sign-outs" },
+    ],
+  },
   targets: [
     { id: "stay", label: "Keep the attendings you have", capture: "keeping the attendings you have", value: "keeping the attendings you have" },
     { id: "lighter", label: "A lighter after-shift charting tail", capture: "a lighter after-shift tail", value: "a lighter after-shift tail" },
@@ -403,9 +445,30 @@ const edRetention = retentionFoundation({
 });
 
 const inpatientRetention = retentionFoundation({
-  setting: "inpatient", who: "hospitalists", driverId: "providerWellbeing",
+  setting: "inpatient", who: "hospitalists", driverId: "providerWellbeing", multi: true,
   briefIntro: "You said retention. For hospitalists the note load of the service is often the driver, but we gather the real picture first.",
   roles: ["Hospitalist group leadership", "The service medical director", "The people lead"],
+  driversPrompt: "Why are hospitalists actually leaving? Pick every one that's real.",
+  driversTeach: "Some of these documentation can move, some it can't. Name them all and we'll sort which is which.",
+  drivers: [
+    { id: "noteload", label: "The note load of a full service", capture: "the note load of a full service is a driver", value: "the note load of a full service", proofDriverId: "providerWellbeing", proof: LEVER_LINE["providerWellbeing"] },
+    { id: "rounding", label: "Documentation eating into rounding", capture: "documentation is eating into rounding", value: "documentation eating into rounding", proofDriverId: "providerWellbeing", proof: LEVER_LINE["providerWellbeing"] },
+    { id: "newer", label: "Newer hospitalists leaving early", capture: "newer hospitalists are leaving early", value: "newer hospitalists leaving early", proofDriverId: "providerWellbeing", proof: LEVER_LINE["providerWellbeing"] },
+    { id: "census", label: "High census and admissions volume", capture: "high census and volume are a driver documentation will not fully fix", value: "high census and volume", honest: true },
+    { id: "schedule", label: "Nights, weekends, and the 7-on grind", capture: "the schedule grind is a driver documentation will not fix", value: "the schedule grind", honest: true },
+    { id: "paylife", label: "Pay, or life elsewhere", capture: "some leave for pay or life elsewhere, which documentation will not fix", value: "pay or life elsewhere", honest: true },
+  ],
+  connect: {
+    prompt: "Where does the documentation day show up for them?",
+    teach: "The moments a lighter note would land. This is what we track once the plan is running.",
+    label: "The documentation day",
+    options: [
+      { id: "afterrounds", label: "Notes finished long after rounds", capture: "notes are finished long after rounds", value: "notes finished after rounds" },
+      { id: "duringrounds", label: "Charting during rounds instead of with patients", capture: "they chart during rounds instead of with patients", value: "charting during rounds" },
+      { id: "admissions", label: "Admission and H&P documentation piling up", capture: "admission and H&P documentation piles up", value: "admission documentation piling up" },
+      { id: "discharge", label: "Discharge summaries stacking up", capture: "discharge summaries stack up", value: "discharge summaries stacking up" },
+    ],
+  },
   targets: [
     { id: "stay", label: "Keep the hospitalists you have", capture: "keeping the hospitalists you have", value: "keeping the hospitalists you have" },
     { id: "lighter", label: "Note load that scales with a full census", capture: "a note load that fits a full census", value: "a note load that fits a full census" },
