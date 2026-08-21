@@ -36,7 +36,7 @@ export const OUTPATIENT_METRICS: MetricDefinition[] = [
     source: 'abridge',
     sourceLabel: 'Abridge Platform',
     description: 'Percentage of eligible providers actively using Abridge.',
-    whyItMatters: 'Every downstream financial calculation is scoped to Abridge-documented encounters. Low utilization doesn\'t mean low value — it means less of your total encounter volume is in the calculation. This metric sets the denominator.',
+    whyItMatters: 'Every downstream financial calculation is scoped to Abridge-documented encounters. Low utilization doesn\'t mean low value, it means less of your total encounter volume is in the calculation. This metric sets the denominator.',
     financialStream: 'Adoption signal',
     plainEnglishTemplate: '{{after}}% of eligible providers are actively using Abridge.',
     phase3Roadmap: false,
@@ -119,7 +119,7 @@ export const OUTPATIENT_METRICS: MetricDefinition[] = [
     description: 'Percentage of discussed diagnoses that appear in the coded record.',
     whyItMatters: 'When a chronic condition is discussed but not documented, it cannot be coded. For Medicare Advantage patients, each uncoded HCC condition represents a missed risk adjustment payment \u2014 typically $1,200\u2013$1,500 per condition per year from CMS. The mechanic: Abridge captures the diagnosis in the note \u2192 coder can code it \u2192 plan receives the RAF-adjusted payment. A 5pp improvement on 5,000 MA encounters can represent hundreds of thousands in recaptured revenue.',
     financialStream: 'HCC value \u00b7 Billing capture',
-    plainEnglishTemplate: 'Diagnosis capture improved {{delta}} points — more of what\'s discussed in the visit is making it into the record.',
+    plainEnglishTemplate: 'Diagnosis capture improved {{delta}} points, more of what\'s discussed in the visit is making it into the record.',
     phase3Roadmap: false,
     roiQuadrant: 'Quality',
     shortDescription: 'Share of diagnoses discussed during the encounter that appear in the coded record.',
@@ -139,7 +139,7 @@ export const OUTPATIENT_METRICS: MetricDefinition[] = [
     description: 'Percentage of diagnoses coded to the highest available ICD-10 specificity.',
     whyItMatters: 'ICD-10 has thousands of codes, and payers reimburse differently based on specificity level. \u2018Diabetes\u2019 (E11.9) is worth less than \u2018Type 2 diabetes with CKD stage 3\u2019 (E11.65). Abridge captures the clinical detail providers discuss \u2014 which allows coders to use the more specific, higher-value code. Each specificity shift also affects HCC tier and RAF score.',
     financialStream: 'HCC value \u00b7 Billing capture',
-    plainEnglishTemplate: 'Diagnosis specificity improved from {{before}}% to {{after}}% — {{delta}} more percentage points of diagnoses coded to highest specificity.',
+    plainEnglishTemplate: 'Diagnosis specificity improved from {{before}}% to {{after}}%, {{delta}} more percentage points of diagnoses coded to highest specificity.',
     phase3Roadmap: false,
     roiQuadrant: 'Quality',
     shortDescription: 'Share of diagnoses coded to the highest available ICD-10 specificity.',
@@ -156,11 +156,11 @@ export const OUTPATIENT_METRICS: MetricDefinition[] = [
     unitLabel: 'hours',
     lowerIsBetter: true,
     source: 'epic',
-    sourceLabel: 'Epic Clarity',
+    sourceLabel: 'EHR report',
     description: 'Average time from encounter end to note signature.',
     whyItMatters: 'Time to close measures how long documentation follows a provider after the patient leaves. The financial path isn\'t the time itself \u2014 physicians are salaried. The path is: high close times correlate with higher after-hours burden, higher burnout scores, and lower likelihood-to-stay. A reduction here feeds the retention risk model downstream, not a time-dollar calculation.',
     financialStream: 'Workforce burden',
-    plainEnglishTemplate: 'Time to close dropped {{delta}} hours per encounter — notes are being completed closer to the point of care.',
+    plainEnglishTemplate: 'Time to close dropped {{delta}} hours per encounter, notes are being completed closer to the point of care.',
     phase3Roadmap: false,
     roiQuadrant: 'Workforce',
     shortDescription: '',
@@ -168,7 +168,7 @@ export const OUTPATIENT_METRICS: MetricDefinition[] = [
   },
   {
     id: 'work_after_hours_perceived',
-    label: 'Work After Hours — Perceived',
+    label: 'Work After Hours (Perceived)',
     domain: 'workforce',
     phase: 1,
     inputType: 'before-after',
@@ -180,7 +180,7 @@ export const OUTPATIENT_METRICS: MetricDefinition[] = [
     description: 'Percentage of providers who report doing documentation work after hours.',
     whyItMatters: 'After-hours documentation is the primary burnout driver in most physician surveys. The financial mechanic: providers who report high after-hours burden score significantly lower on likelihood-to-stay surveys. When that survey score improves, departure probability changes. This metric provides the leading signal \u2014 it\u2019s the \u2018why\u2019 behind the retention numbers, which makes the downstream cost avoidance defensible.',
     financialStream: 'Retention cost',
-    plainEnglishTemplate: 'After-hours work perception dropped from {{before}}% to {{after}}% of providers — {{delta}} fewer percentage points report working after hours.',
+    plainEnglishTemplate: 'After-hours work perception dropped from {{before}}% to {{after}}% of providers, {{delta}} fewer percentage points report working after hours.',
     phase3Roadmap: false,
     roiQuadrant: 'Workforce',
     shortDescription: '',
@@ -188,7 +188,7 @@ export const OUTPATIENT_METRICS: MetricDefinition[] = [
   },
   {
     id: 'work_outside_work_empirical',
-    label: 'Work Outside Work — Empirical',
+    label: 'Work Outside Work (Empirical)',
     domain: 'workforce',
     phase: 1,
     inputType: 'before-after',
@@ -196,11 +196,11 @@ export const OUTPATIENT_METRICS: MetricDefinition[] = [
     unitLabel: 'hours per week',
     lowerIsBetter: true,
     source: 'epic',
-    sourceLabel: 'Epic Clarity',
+    sourceLabel: 'EHR report',
     description: 'Average hours per week providers spend on documentation outside scheduled work hours.',
     whyItMatters: 'Empirical after-hours documentation \u2014 from EHR audit trails \u2014 is more defensible than survey perception because it\'s not self-reported. The financial path isn\'t hours \u00d7 salary: physicians are salaried and that math doesn\'t hold. The path is that providers doing documentation at 10pm have measurably lower likelihood-to-stay scores \u2014 and each departure costs $350K\u2013$500K to replace. This metric provides the signal. The retention cost model provides the dollar.',
     financialStream: 'Retention cost',
-    plainEnglishTemplate: 'Providers are spending {{delta}} fewer hours per week on documentation outside of work — down from {{before}} to {{after}} hrs/wk.',
+    plainEnglishTemplate: 'Providers are spending {{delta}} fewer hours per week on documentation outside of work, down from {{before}} to {{after}} hrs/wk.',
     phase3Roadmap: false,
     roiQuadrant: 'Workforce',
     shortDescription: 'EHR activity logged outside scheduled clinical hours, derived from audit logs. A common signal for after-hours documentation work.',
@@ -220,7 +220,7 @@ export const OUTPATIENT_METRICS: MetricDefinition[] = [
     description: 'Composite burnout score from validated survey instrument, normalized to 0–100.',
     whyItMatters: 'Validated burnout instruments (Maslach, MBI-HSS) are predictive of departure. The mechanic: physicians scoring in the high-burnout range have 2\u20133\u00d7 the departure rate of those in the low range. A 10-point normalized improvement in burnout score correlates with roughly a 1% reduction in annualized departure probability. At 100 providers \u00d7 $350K AMGA replacement cost, that\u2019s $350K of cost avoidance per 10-point improvement.',
     financialStream: 'Retention cost',
-    plainEnglishTemplate: 'Burnout score improved from {{before}} to {{after}} — a {{delta}}-point improvement on a 100-point scale.',
+    plainEnglishTemplate: 'Burnout score improved from {{before}} to {{after}}, a {{delta}}-point improvement on a 100-point scale.',
     phase3Roadmap: false,
     roiQuadrant: 'Workforce',
     shortDescription: 'Score from a validated burnout instrument (e.g., Maslach Burnout Inventory). Used as a leading indicator for retention risk.',
@@ -240,7 +240,7 @@ export const OUTPATIENT_METRICS: MetricDefinition[] = [
     description: 'Percentage of clinicians responding "likely" or "very likely" to stay at the organization.',
     whyItMatters: 'This metric measures the percentage of providers who say they\u2019re likely to still be here in 12 months. The financial mechanic: (1) baseline \u2018at-risk\u2019 population = 100% minus this percentage; (2) industry data shows roughly 15\u201325% of at-risk providers actually depart in a 12-month window; (3) a 5pp improvement in a 100-physician group moves 5 providers from at-risk to stable \u2014 at 20% conversion that\u2019s 1 departure avoided; (4) at AMGA\u2019s $350K benchmark, 1 avoided departure = $350K.',
     financialStream: 'Retention cost',
-    plainEnglishTemplate: 'Likelihood to stay improved from {{before}}% to {{after}}% — {{delta}} more percentage points of clinicians plan to stay.',
+    plainEnglishTemplate: 'Likelihood to stay improved from {{before}}% to {{after}}%, {{delta}} more percentage points of clinicians plan to stay.',
     phase3Roadmap: false,
     roiQuadrant: 'Workforce',
     shortDescription: 'Survey item measuring intent to remain in current role over a defined timeframe (typically 12 months).',
@@ -257,7 +257,7 @@ export const OUTPATIENT_METRICS: MetricDefinition[] = [
     unitLabel: 'minutes per encounter',
     lowerIsBetter: true,
     source: 'epic',
-    sourceLabel: 'Epic Clarity',
+    sourceLabel: 'EHR report',
     description: 'Average minutes spent in the note per appointment, including review and edits.',
     whyItMatters: 'Minutes per appointment spent in the note is the upstream input to the capacity calculation. The mechanic: minutes saved \u00d7 encounters/day \u00d7 working days = total hours recovered. Those hours can be redeployed as additional patient slots. The model uses your revenue-per-visit rate to translate slots into dollars.',
     financialStream: 'Capacity revenue',
@@ -281,7 +281,7 @@ export const OUTPATIENT_METRICS: MetricDefinition[] = [
     description: 'Self-reported percentage reduction in documentation effort compared to before Abridge.',
     whyItMatters: 'Self-reported effort reduction is a reasonable proxy when time-tracking data isn\u2019t available. It\u2019s less precise than time-in-note, but the mechanic is the same: percentage reduction \u00d7 estimated minutes/note \u00d7 encounters = hours recovered \u2192 patient slots \u2192 revenue. Useful for early-stage conversations where hard data isn\u2019t in yet.',
     financialStream: 'Capacity revenue',
-    plainEnglishTemplate: 'Providers report {{after}}% reduction in documentation effort — up from {{before}}% baseline.',
+    plainEnglishTemplate: 'Providers report {{after}}% reduction in documentation effort, up from {{before}}% baseline.',
     phase3Roadmap: false,
     roiQuadrant: 'Capacity',
     shortDescription: '',
@@ -297,11 +297,11 @@ export const OUTPATIENT_METRICS: MetricDefinition[] = [
     unitLabel: 'patients per month',
     lowerIsBetter: false,
     source: 'epic',
-    sourceLabel: 'Epic Clarity',
+    sourceLabel: 'EHR report',
     description: 'Average number of patients seen per provider per month.',
     whyItMatters: 'This is the direct capacity revenue driver \u2014 the cleanest metric on this screen. The mechanic: (after \u2212 before) \u00d7 providers \u00d7 12 months \u00d7 revenue-per-visit = annual revenue impact. No assumptions about conversion rates or attribution needed \u2014 if the number is real, the math is straightforward. A 1-patient-per-provider-per-month improvement on a 100-provider group at $200/visit = $240K/year.',
     financialStream: 'Capacity revenue',
-    plainEnglishTemplate: 'Providers are seeing {{delta}} more patients per month on average — {{providers}} providers \u00d7 {{delta}} patients = {{total}} additional patient visits per month.',
+    plainEnglishTemplate: 'Providers are seeing {{delta}} more patients per month on average, {{providers}} providers \u00d7 {{delta}} patients = {{total}} additional patient visits per month.',
     phase3Roadmap: false,
     roiQuadrant: 'Capacity',
     shortDescription: 'Average patient encounters per provider per month.',
@@ -317,11 +317,11 @@ export const OUTPATIENT_METRICS: MetricDefinition[] = [
     unitLabel: 'visits per hour',
     lowerIsBetter: false,
     source: 'epic',
-    sourceLabel: 'Epic Clarity',
+    sourceLabel: 'EHR report',
     description: 'Number of completed patient visits per scheduled clinician hour.',
     whyItMatters: 'Throughput per hour measures how efficiently providers move through patient volume. The financial mechanic: improvement in visits/hour \u00d7 scheduled hours \u00d7 working days \u00d7 revenue-per-visit = incremental revenue from the same staffing base. Most useful in high-volume ambulatory or ED settings where scheduling is tight and every slot has value.',
     financialStream: 'Capacity revenue',
-    plainEnglishTemplate: 'Throughput improved from {{before}} to {{after}} visits per clinician hour — a {{delta}} visit improvement per hour scheduled.',
+    plainEnglishTemplate: 'Throughput improved from {{before}} to {{after}} visits per clinician hour, a {{delta}} visit improvement per hour scheduled.',
     phase3Roadmap: false,
     roiQuadrant: 'Capacity',
     shortDescription: 'Completed patient visits per scheduled clinician hour.',
@@ -338,11 +338,11 @@ export const OUTPATIENT_METRICS: MetricDefinition[] = [
     unitLabel: 'work RVUs',
     lowerIsBetter: false,
     source: 'epic',
-    sourceLabel: 'Epic Clarity',
+    sourceLabel: 'EHR report',
     description: 'Average work Relative Value Units generated per encounter.',
     whyItMatters: 'wRVU is the unit of physician reimbursement in outpatient. The mechanic is direct: (after \u2212 before) wRVU \u00d7 Abridge-documented encounters \u00d7 conversion factor ($33 default) = billing capture. Better documentation allows coders to justify higher E/M levels, which map to higher wRVU values. A 0.1 wRVU improvement on 10,000 encounters at $33 = $33,000. This is not a projection \u2014 it\u2019s arithmetic from your data.',
     financialStream: 'Billing capture',
-    plainEnglishTemplate: 'wRVU per encounter improved {{delta}} — across {{encounters}} encounters at ${{cf}} conversion, that\'s {{value}} in additional revenue.',
+    plainEnglishTemplate: 'wRVU per encounter improved {{delta}}, across {{encounters}} encounters at ${{cf}} conversion, that\'s {{value}} in additional revenue.',
     phase3Roadmap: false,
     roiQuadrant: 'Revenue',
     shortDescription: 'Average work RVU value per outpatient encounter.',
@@ -362,7 +362,7 @@ export const OUTPATIENT_METRICS: MetricDefinition[] = [
     description: 'Average E/M level (99211–99215) across Abridge-documented encounters.',
     whyItMatters: 'E/M levels (99211\u201399215) have defined wRVU values. A shift from average 99213 to 99214 is roughly a 0.7 wRVU difference per encounter. The mechanic: (after level \u2212 before level) \u00d7 wRVU difference per level \u00d7 encounters \u00d7 conversion factor = billing capture. This is the second path to billing capture if wRVU data isn\u2019t available \u2014 coders can report before/after average level, and the model translates it.',
     financialStream: 'Billing capture',
-    plainEnglishTemplate: 'Average E/M level improved from {{before}} to {{after}} — documentation is supporting more accurate visit complexity coding.',
+    plainEnglishTemplate: 'Average E/M level improved from {{before}} to {{after}}, documentation is supporting more accurate visit complexity coding.',
     phase3Roadmap: false,
     roiQuadrant: 'Revenue',
     shortDescription: '',
@@ -382,7 +382,7 @@ export const OUTPATIENT_METRICS: MetricDefinition[] = [
     description: 'Percentage of known Hierarchical Condition Category gaps that are documented and coded at the visit.',
     whyItMatters: 'Medicare Advantage plans are paid by CMS based on the risk (RAF) score of their enrolled population. Each HCC code contributes to that score. The mechanic: (after rate \u2212 before rate) \u00d7 MA-eligible encounters \u00d7 $1,200 per HCC point = annual revenue impact. The $1,200 figure is the CMS-published average per-HCC payment in MA risk adjustment. Organizations with large MA populations \u2014 even 20\u201330% of encounters \u2014 often find this is the largest single value stream.',
     financialStream: 'HCC value',
-    plainEnglishTemplate: 'HCC capture improved {{delta}} points — more chronic conditions discussed in the visit are making it into the coded record, supporting accurate risk adjustment.',
+    plainEnglishTemplate: 'HCC capture improved {{delta}} points, more chronic conditions discussed in the visit are making it into the coded record, supporting accurate risk adjustment.',
     phase3Roadmap: false,
     roiQuadrant: 'Revenue',
     shortDescription: 'Share of known HCC diagnostic gaps documented and coded during the visit. HCC capture contributes to the RAF score that determines Medicare Advantage capitated payment.',
@@ -402,7 +402,7 @@ export const OUTPATIENT_METRICS: MetricDefinition[] = [
     description: 'Percentage of claims accepted on first submission without requiring correction or additional documentation.',
     whyItMatters: 'A denied claim costs $25\u2013$50 to rework and delays cash by 30\u201360 days \u2014 or gets written off entirely. The mechanic: (after rate \u2212 before rate) \u00d7 total claims \u00d7 average denial cost = denial management savings. Better documentation reduces the most common denial triggers: insufficient clinical detail, missing diagnoses, unsupported E/M level. This metric captures that relationship directly.',
     financialStream: 'Revenue recovery',
-    plainEnglishTemplate: 'Clean claim rate improved from {{before}}% to {{after}}% — {{delta}} points fewer claims requiring rework or resubmission.',
+    plainEnglishTemplate: 'Clean claim rate improved from {{before}}% to {{after}}%, {{delta}} points fewer claims requiring rework or resubmission.',
     phase3Roadmap: false,
     roiQuadrant: 'Revenue',
     shortDescription: '',
@@ -422,7 +422,7 @@ export const OUTPATIENT_METRICS: MetricDefinition[] = [
     description: 'Percentage of claims denied on first submission.',
     whyItMatters: 'Abridge surfaces documentation gaps that can lead to denials. When teams close them, fewer claims come back.',
     financialStream: 'Revenue recovery',
-    plainEnglishTemplate: 'Initial denial rate dropped from {{before}}% to {{after}}% — {{delta}} points fewer claims denied on first submission.',
+    plainEnglishTemplate: 'Initial denial rate dropped from {{before}}% to {{after}}%, {{delta}} points fewer claims denied on first submission.',
     phase3Roadmap: false,
     roiQuadrant: 'Revenue',
     shortDescription: 'Share of claims accepted on first submission without correction.',
@@ -440,9 +440,9 @@ export const OUTPATIENT_METRICS: MetricDefinition[] = [
     source: 'rcm',
     sourceLabel: 'RCM Platform',
     description: 'Net collections as a percentage of net collectible revenue after adjustments.',
-    whyItMatters: 'The downstream impact of cleaner documentation and fewer denials — more of what\'s owed is actually collected.',
+    whyItMatters: 'The downstream impact of cleaner documentation and fewer denials, more of what\'s owed is actually collected.',
     financialStream: 'Revenue recovery',
-    plainEnglishTemplate: 'Net collection rate improved from {{before}}% to {{after}}% — more of what\'s billed is being collected.',
+    plainEnglishTemplate: 'Net collection rate improved from {{before}}% to {{after}}%, more of what\'s billed is being collected.',
     phase3Roadmap: false,
     roiQuadrant: 'Revenue',
     shortDescription: '',
@@ -479,11 +479,11 @@ export const OUTPATIENT_METRICS: MetricDefinition[] = [
     unitLabel: 'days to 3rd next available appointment',
     lowerIsBetter: true,
     source: 'epic',
-    sourceLabel: 'Epic Cadence',
-    description: 'Days until the third next available appointment slot per provider — the standard measure of access.',
+    sourceLabel: 'EHR scheduling',
+    description: 'Days until the third next available appointment slot per provider, the standard measure of access.',
     whyItMatters: 'When time savings are reinvested in scheduling capacity, access can improve. This metric is where that shows up.',
     financialStream: 'Capacity revenue',
-    plainEnglishTemplate: 'Time to 3rd next available dropped from {{before}} to {{after}} days — patients are getting in sooner.',
+    plainEnglishTemplate: 'Time to 3rd next available dropped from {{before}} to {{after}} days, patients are getting in sooner.',
     phase3Roadmap: true,
     roiQuadrant: 'Capacity',
     shortDescription: '',
@@ -523,7 +523,7 @@ export const OUTPATIENT_METRICS: MetricDefinition[] = [
     description: 'Average Risk Adjustment Factor score for Medicare Advantage patient population.',
     whyItMatters: 'RAF scores determine MA capitation payments. Better HCC capture and diagnosis specificity can raise RAF scores over time.',
     financialStream: 'HCC value',
-    plainEnglishTemplate: 'Average RAF score improved from {{before}} to {{after}} — supporting more accurate capitation payments.',
+    plainEnglishTemplate: 'Average RAF score improved from {{before}} to {{after}}, supporting more accurate capitation payments.',
     phase3Roadmap: true,
     roiQuadrant: 'Revenue',
     shortDescription: '',
@@ -683,7 +683,7 @@ export const ED_METRICS: MetricDefinition[] = [
     whyItMatters: 'Pulled from Abridge platform data. Measures documentation burden per encounter.',
     plainEnglishTemplate:
       'ED providers are spending {{after}} minutes per note, down from {{before}}. ' +
-      "That's {{delta}} minutes back per encounter — across {{providers}} providers and {{encounters}} annual encounters, " +
+      "That's {{delta}} minutes back per encounter, across {{providers}} providers and {{encounters}} annual encounters, " +
       "that's {{totalHours}} hours of documentation time returned annually.",
     roiQuadrant: 'Workforce',
     shortDescription: 'Average minutes spent actively documenting per ED encounter, captured from EHR audit logs.',
@@ -691,7 +691,7 @@ export const ED_METRICS: MetricDefinition[] = [
   },
   {
     id: 'wowTime',
-    label: 'Words on Workday (WoW) Time',
+    label: 'Work Outside of Work (WOW) Time',
     domain: 'quality',
     phase: 1,
     inputType: 'before-after',
@@ -701,9 +701,9 @@ export const ED_METRICS: MetricDefinition[] = [
     source: 'abridge',
     sourceLabel: 'Abridge Platform',
     description: 'ED-specific Abridge metric capturing after-hours documentation burden.',
-    whyItMatters: 'Captures after-hours and outside-shift documentation burden on Epic Clarity.',
+    whyItMatters: 'Captures after-hours and outside-shift documentation burden in EHR reporting.',
     plainEnglishTemplate:
-      "WoW time is down {{delta}} minutes per encounter. " +
+      "Work Outside of Work is down {{delta}} minutes per encounter. " +
       "For {{providers}} ED providers, that's approximately {{totalHours}} hours of after-hours documentation avoided annually.",
     roiQuadrant: 'Workforce',
     shortDescription: 'EHR documentation activity captured outside scheduled patient-care time.',
@@ -724,7 +724,7 @@ export const ED_METRICS: MetricDefinition[] = [
     whyItMatters: 'Pulled from Abridge platform or EHR timestamp data.',
     plainEnglishTemplate:
       "Note completion time has dropped from {{before}}h to {{after}}h after the encounter ends. " +
-      "That's {{delta}} hours per note — for {{providers}} providers doing {{encounters}} encounters, " +
+      "That's {{delta}} hours per note, for {{providers}} providers doing {{encounters}} encounters, " +
       'this represents {{totalHours}} hours of shifted or avoided after-hours work annually.',
     roiQuadrant: 'Workforce',
     shortDescription: '',
@@ -740,9 +740,9 @@ export const ED_METRICS: MetricDefinition[] = [
     unitLabel: 'hours',
     lowerIsBetter: true,
     source: 'epic',
-    sourceLabel: 'EHR / Epic',
+    sourceLabel: 'EHR',
     description: 'Time from patient discharge to full encounter closure in the EHR.',
-    whyItMatters: 'Typically sourced from Epic reporting.',
+    whyItMatters: 'Typically sourced from EHR reporting.',
     plainEnglishTemplate:
       'Encounter close time is down from {{before}}h to {{after}}h. ' +
       'Faster closures reduce after-hours work and improve billing lag for your {{providers}} ED providers.',
@@ -760,9 +760,9 @@ export const ED_METRICS: MetricDefinition[] = [
     unitLabel: 'minutes/week',
     lowerIsBetter: true,
     source: 'epic',
-    sourceLabel: 'EHR / Epic Signal',
+    sourceLabel: 'EHR signal',
     description: 'After-hours EHR activity per provider per week.',
-    whyItMatters: 'Source: Epic Signal, Abridge platform, or provider self-report.',
+    whyItMatters: 'Source: EHR signal, Abridge platform, or provider self-report.',
     plainEnglishTemplate:
       "After-hours documentation is down {{delta}} minutes per provider per week. " +
       "Across {{providers}} ED providers over 52 weeks, that's {{totalHours}} hours of protected time returned annually.",
@@ -801,10 +801,10 @@ export const ED_METRICS: MetricDefinition[] = [
     lowerIsBetter: false,
     source: 'survey',
     sourceLabel: 'Clinician Survey',
-    description: 'Before/after pulse survey — % responding "likely" or "very likely" to stay.',
+    description: 'Before/after pulse survey, % responding "likely" or "very likely" to stay.',
     whyItMatters: 'Align with HR and medical staff office on survey instrument and timing.',
     plainEnglishTemplate:
-      "Provider retention intent is up {{delta}} points — {{after}}% now say they're likely to stay, vs {{before}}% before Abridge.",
+      "Provider retention intent is up {{delta}} points, {{after}}% now say they're likely to stay, vs {{before}}% before Abridge.",
     roiQuadrant: 'Workforce',
     shortDescription: 'Survey item measuring intent to remain in current role over a defined timeframe (typically 12 months).',
     exploreVisibility: 'driver-quantified',
@@ -823,7 +823,7 @@ export const ED_METRICS: MetricDefinition[] = [
     description: 'Per-shift wRVU comparison from provider productivity reports.',
     whyItMatters: 'Source: provider productivity reports from EHR or billing system.',
     plainEnglishTemplate:
-      'wRVU per shift is up {{delta}} — from {{before}} to {{after}}. ' +
+      'wRVU per shift is up {{delta}}, from {{before}} to {{after}}. ' +
       "At your conversion rate, that's {{value}} per shift per provider.",
     roiQuadrant: 'Revenue',
     shortDescription: 'Average work RVU value per ED shift. ED billing is shift-based, distinct from outpatient encounter-based wRVU.',
@@ -863,7 +863,7 @@ export const ED_METRICS: MetricDefinition[] = [
     description: 'The signature ED throughput metric. Each LWBS patient is lost revenue.',
     whyItMatters: 'Each LWBS patient is lost revenue and a potential HCAHPS/quality flag.',
     plainEnglishTemplate:
-      'LWBS rate is down from {{before}}% to {{after}}% — {{delta}} percentage points.',
+      'LWBS rate is down from {{before}}% to {{after}}%, {{delta}} percentage points.',
     roiQuadrant: 'Capacity',
     shortDescription: 'Share of patients leaving the ED before being seen by a provider.',
     exploreVisibility: 'driver-quantified',
@@ -902,7 +902,7 @@ export const ED_METRICS: MetricDefinition[] = [
     description: 'Time from arrival to admit/discharge decision.',
     whyItMatters: 'Reducing door-to-disposition can improve boarding and bed availability.',
     plainEnglishTemplate:
-      'Door-to-disposition is down {{delta}} minutes — from {{before}} to {{after}} minutes. ' +
+      'Door-to-disposition is down {{delta}} minutes, from {{before}} to {{after}} minutes. ' +
       "For {{encounters}} annual visits, that's {{totalMinutes}} minutes of throughput recaptured.",
     roiQuadrant: 'Capacity',
     shortDescription: '',
@@ -919,10 +919,10 @@ export const ED_METRICS: MetricDefinition[] = [
     lowerIsBetter: false,
     source: 'epic',
     sourceLabel: 'Scheduling / EHR',
-    description: 'Provider throughput — a direct measure of capacity.',
+    description: 'Provider throughput, a direct measure of capacity.',
     whyItMatters: 'Increase without quality degradation is the strongest throughput signal.',
     plainEnglishTemplate:
-      'Providers are seeing {{after}} patients per shift, up from {{before}} — {{delta}} more per shift per provider.',
+      'Providers are seeing {{after}} patients per shift, up from {{before}}, {{delta}} more per shift per provider.',
     roiQuadrant: 'Capacity',
     shortDescription: 'Average patient volume per provider per shift.',
     exploreVisibility: 'driver-quantified',
@@ -941,7 +941,7 @@ export const ED_METRICS: MetricDefinition[] = [
     description: 'Completeness of diagnosis coding per encounter.',
     whyItMatters: 'Undercaptured diagnoses in the ED reduce HCC scores and risk-adjustment revenue.',
     plainEnglishTemplate:
-      'Diagnosis capture is up {{delta}} points — from {{before}}% to {{after}}% of encounters fully coded.',
+      'Diagnosis capture is up {{delta}} points, from {{before}}% to {{after}}% of encounters fully coded.',
     roiQuadrant: 'Revenue',
     shortDescription: '',
     exploreVisibility: 'hidden',
@@ -980,7 +980,7 @@ export const ED_METRICS: MetricDefinition[] = [
     description: 'ED-specific denial category tied to insufficient clinical documentation.',
     whyItMatters: 'Denials often tied to insufficient documentation supporting the E/M level billed.',
     plainEnglishTemplate:
-      'Medical necessity denial rate is down from {{before}}% to {{after}}% — a {{delta}}-point improvement.',
+      'Medical necessity denial rate is down from {{before}}% to {{after}}%, a {{delta}}-point improvement.',
     roiQuadrant: 'Revenue',
     shortDescription: 'Share of claims denied for insufficient documentation supporting medical necessity.',
     exploreVisibility: 'driver-quantified',
@@ -999,7 +999,7 @@ export const ED_METRICS: MetricDefinition[] = [
     description: 'Percentage of ED claims that pass on first submission.',
     whyItMatters: 'Documentation completeness is the primary driver.',
     plainEnglishTemplate:
-      'Clean claim rate is up {{delta}} points — from {{before}}% to {{after}}%. ' +
+      'Clean claim rate is up {{delta}} points, from {{before}}% to {{after}}%. ' +
       'Each point of improvement reduces rework cost and accelerates cash flow.',
     roiQuadrant: 'Revenue',
     shortDescription: '',
@@ -1058,7 +1058,7 @@ export const ED_METRICS: MetricDefinition[] = [
     description: 'ED-specific HCAHPS/PG domain. Provider attentiveness is the primary driver.',
     whyItMatters: 'Directly affects value-based care contract performance and network reputation.',
     plainEnglishTemplate:
-      'Patient experience scores have moved from {{before}}th to {{after}}th percentile — a {{delta}}-point improvement. ' +
+      'Patient experience scores have moved from {{before}}th to {{after}}th percentile, a {{delta}}-point improvement. ' +
       'Provider attentiveness accounts for the largest share of the top-box score in the ED.',
     roiQuadrant: 'Quality',
     shortDescription: 'Patient experience scores from Press Ganey or similar instruments, ED-specific subscale.',
@@ -1078,7 +1078,7 @@ export const ED_METRICS: MetricDefinition[] = [
     description: 'Annual retention rate. ED physician turnover cost is typically $500K–$1M+ per physician.',
     whyItMatters: 'Source: HR / medical staff office.',
     plainEnglishTemplate:
-      'ED physician/APP retention has moved from {{before}}% to {{after}}% — {{delta}} points.',
+      'ED physician/APP retention has moved from {{before}}% to {{after}}%, {{delta}} points.',
     phase3Roadmap: true,
     roiQuadrant: 'Workforce',
     shortDescription: '',
@@ -1098,7 +1098,7 @@ export const ED_METRICS: MetricDefinition[] = [
     description: 'Annual total spend on locum/agency coverage.',
     whyItMatters: 'Reduction correlates with improved retention and reduced scheduling gaps.',
     plainEnglishTemplate:
-      'Agency and locum spend is down from {{before}} to {{after}} — a {{delta}} reduction.',
+      'Agency and locum spend is down from {{before}} to {{after}}, a {{delta}} reduction.',
     phase3Roadmap: false,
     roiQuadrant: 'Workforce',
     shortDescription: 'Annual spend on contracted locum or agency physician coverage. Often used as a downstream indicator of retention and scheduling stability.',
@@ -1119,7 +1119,7 @@ export const ED_METRICS: MetricDefinition[] = [
     description: 'Rolls up E/M improvement, denial reduction, and collection rate into a per-visit figure.',
     whyItMatters: 'Annual strategic metric.',
     plainEnglishTemplate:
-      'Net patient revenue per visit has moved from {{before}} to {{after}} — up {{delta}} per visit.',
+      'Net patient revenue per visit has moved from {{before}} to {{after}}, up {{delta}} per visit.',
     phase3Roadmap: true,
     roiQuadrant: 'Revenue',
     shortDescription: '',
@@ -1143,7 +1143,7 @@ export const INPATIENT_METRICS: MetricDefinition[] = [
     whyItMatters: 'Abridge platform metric. Active time spent documenting per inpatient encounter.',
     plainEnglishTemplate:
       'Inpatient providers are spending {{after}} minutes per note, down from {{before}}. ' +
-      "That's {{delta}} minutes back per admission — across {{providers}} providers and {{encounters}} annual admissions, " +
+      "That's {{delta}} minutes back per admission, across {{providers}} providers and {{encounters}} annual admissions, " +
       "that's {{totalHours}} hours of documentation time returned annually.",
     roiQuadrant: 'Workforce',
     shortDescription: 'Average minutes spent actively documenting per inpatient note (H&P, progress notes, discharge summaries).',
@@ -1163,7 +1163,7 @@ export const INPATIENT_METRICS: MetricDefinition[] = [
     description: 'In inpatient, note quality is directly upstream of CC/MCC capture and DRG assignment accuracy.',
     whyItMatters: 'Abridge platform metric. Documentation quality is closely tied to DRG accuracy, CC/MCC capture, and compliance.',
     plainEnglishTemplate:
-      'Average note quality is {{after}} stars — up {{delta}} from {{before}}. ' +
+      'Average note quality is {{after}} stars, up {{delta}} from {{before}}. ' +
       'In inpatient, documentation quality is the upstream driver of DRG accuracy, CC/MCC capture, and compliance defensibility.',
     roiQuadrant: 'Quality',
     shortDescription: 'Provider-assigned quality rating of generated notes (typically 1-5 scale).',
@@ -1171,7 +1171,7 @@ export const INPATIENT_METRICS: MetricDefinition[] = [
   },
   {
     id: 'wowTime',
-    label: 'Words on Workday (WoW) Time',
+    label: 'Work Outside of Work (WOW) Time',
     domain: 'workforce',
     phase: 1,
     inputType: 'before-after',
@@ -1181,9 +1181,9 @@ export const INPATIENT_METRICS: MetricDefinition[] = [
     source: 'abridge',
     sourceLabel: 'Abridge Platform',
     description: 'After-hours and outside-shift documentation burden. Particularly significant for hospitalists covering overnight.',
-    whyItMatters: 'After-hours documentation burden sourced from Epic Clarity or Abridge platform.',
+    whyItMatters: 'After-hours documentation burden sourced from EHR reporting or Abridge platform.',
     plainEnglishTemplate:
-      'WoW time is down {{delta}} minutes per admission. ' +
+      'Work Outside of Work is down {{delta}} minutes per admission. ' +
       "For {{providers}} hospitalists, that's {{totalHours}} hours of after-hours documentation avoided annually, " +
       'a direct driver of overnight burden and on-call burnout.',
     roiQuadrant: 'Workforce',
@@ -1221,9 +1221,9 @@ export const INPATIENT_METRICS: MetricDefinition[] = [
     unitLabel: 'minutes/week',
     lowerIsBetter: true,
     source: 'partner',
-    sourceLabel: 'EHR / Epic Signal',
+    sourceLabel: 'EHR signal',
     description: 'After-hours EHR activity per provider per week. Hospitalists are disproportionately affected.',
-    whyItMatters: 'Source: Epic Signal, pajama time reports, or provider self-report.',
+    whyItMatters: 'Source: EHR signal, pajama time reports, or provider self-report.',
     plainEnglishTemplate:
       "After-hours documentation is down {{delta}} minutes per provider per week. " +
       "For {{providers}} inpatient providers over 52 weeks, that's {{totalHours}} hours of protected time returned annually.",
@@ -1243,7 +1243,7 @@ export const INPATIENT_METRICS: MetricDefinition[] = [
     source: 'survey',
     sourceLabel: 'Clinician Survey',
     description: 'Before/after survey comparison using MBI, single-item, or Maslach scale.',
-    whyItMatters: 'Hospitalist burnout is heavily documentation-driven — high-signal metric for inpatient Abridge deployments.',
+    whyItMatters: 'Hospitalist burnout is heavily documentation-driven, high-signal metric for inpatient Abridge deployments.',
     plainEnglishTemplate:
       'Burnout scores improved from {{before}} to {{after}} on your survey scale. ' +
       'Documentation burden accounts for roughly 40–60% of hospitalist burnout drivers.',
@@ -1262,10 +1262,10 @@ export const INPATIENT_METRICS: MetricDefinition[] = [
     lowerIsBetter: false,
     source: 'survey',
     sourceLabel: 'Clinician Survey',
-    description: 'Before/after pulse survey — % responding "likely" or "very likely" to stay.',
+    description: 'Before/after pulse survey, % responding "likely" or "very likely" to stay.',
     whyItMatters: 'Hospitalist turnover costs $300K–$500K+ per physician. Align with medical staff office on instrument.',
     plainEnglishTemplate:
-      "Provider retention intent is up {{delta}} points — {{after}}% now say they're likely to stay, vs {{before}}% before Abridge.",
+      "Provider retention intent is up {{delta}} points, {{after}}% now say they're likely to stay, vs {{before}}% before Abridge.",
     roiQuadrant: 'Workforce',
     shortDescription: 'Survey item measuring intent to remain in current role over a defined timeframe (typically 12 months).',
     exploreVisibility: 'driver-quantified',
@@ -1284,7 +1284,7 @@ export const INPATIENT_METRICS: MetricDefinition[] = [
     description: 'The single most important inpatient revenue metric. CMI is a weighted average of DRG relative weights.',
     whyItMatters: 'Even small CMI movements represent significant revenue at scale. Source: finance / DRG analytics team.',
     plainEnglishTemplate:
-      'Case Mix Index has moved from {{before}} to {{after}} — a {{delta}} point improvement. ' +
+      'Case Mix Index has moved from {{before}} to {{after}}, a {{delta}} point improvement. ' +
       'At your volume of {{encounters}} annual admissions, each 0.1 CMI improvement is worth significant additional net revenue.',
     roiQuadrant: 'Revenue',
     shortDescription: 'Weighted average of DRG relative weights across discharges.',
@@ -1301,10 +1301,10 @@ export const INPATIENT_METRICS: MetricDefinition[] = [
     lowerIsBetter: false,
     source: 'partner',
     sourceLabel: 'CDI / Coding QA',
-    description: 'CC/MCC capture rate — documentation completeness is the primary lever.',
+    description: 'CC/MCC capture rate, documentation completeness is the primary lever.',
     whyItMatters: 'If it is not in the note, CDI cannot query it. Source: CDI platform or coding QA.',
     plainEnglishTemplate:
-      'CC/MCC capture rate is up {{delta}} points — from {{before}}% to {{after}}%. ' +
+      'CC/MCC capture rate is up {{delta}} points, from {{before}}% to {{after}}%. ' +
       'Each percentage point of CC/MCC improvement raises DRG weight and affects CMI.',
     roiQuadrant: 'Revenue',
     shortDescription: 'Share of admissions with documented complication or comorbidity codes captured.',
@@ -1324,7 +1324,7 @@ export const INPATIENT_METRICS: MetricDefinition[] = [
     description: 'Percentage of cases where initial DRG assignment matches final DRG after coding review.',
     whyItMatters: 'Higher accuracy means fewer reworks and faster billing. Source: coding QA or CDI platform.',
     plainEnglishTemplate:
-      'DRG accuracy is up {{delta}} points — from {{before}}% to {{after}}%. ' +
+      'DRG accuracy is up {{delta}} points, from {{before}}% to {{after}}%. ' +
       'Fewer DRG corrections means faster claim submission and reduced coding rework.',
     roiQuadrant: 'Revenue',
     shortDescription: 'Share of cases where the initial DRG assignment matches the final DRG after coding review.',
@@ -1344,7 +1344,7 @@ export const INPATIENT_METRICS: MetricDefinition[] = [
     description: 'Completeness of diagnosis coding per admission.',
     whyItMatters: 'Undercaptured diagnoses reduce HCC scores and risk-adjustment revenue.',
     plainEnglishTemplate:
-      'Diagnosis capture is up {{delta}} points — from {{before}}% to {{after}}% of admissions fully coded.',
+      'Diagnosis capture is up {{delta}} points, from {{before}}% to {{after}}% of admissions fully coded.',
     roiQuadrant: 'Revenue',
     shortDescription: '',
     exploreVisibility: 'hidden',
@@ -1363,7 +1363,7 @@ export const INPATIENT_METRICS: MetricDefinition[] = [
     description: 'Denials tied to insufficient clinical documentation supporting the admission or procedure.',
     whyItMatters: 'Inpatient denials are high-dollar. Documentation completeness is the primary lever.',
     plainEnglishTemplate:
-      'Medical necessity denial rate is down from {{before}}% to {{after}}% — a {{delta}}-point improvement.',
+      'Medical necessity denial rate is down from {{before}}% to {{after}}%, a {{delta}}-point improvement.',
     roiQuadrant: 'Revenue',
     shortDescription: '',
     exploreVisibility: 'hidden',
@@ -1382,7 +1382,7 @@ export const INPATIENT_METRICS: MetricDefinition[] = [
     description: 'Percentage of inpatient claims that pass on first submission.',
     whyItMatters: 'Documentation completeness is the primary driver.',
     plainEnglishTemplate:
-      'Clean claim rate is up {{delta}} points — from {{before}}% to {{after}}%. ' +
+      'Clean claim rate is up {{delta}} points, from {{before}}% to {{after}}%. ' +
       'Each point of improvement reduces rework cost and accelerates cash flow.',
     roiQuadrant: 'Revenue',
     shortDescription: '',
@@ -1402,7 +1402,7 @@ export const INPATIENT_METRICS: MetricDefinition[] = [
     description: 'The signature inpatient flow metric. Documentation delays are a meaningful component of excess days.',
     whyItMatters: 'Each excess day costs $2,000–$4,000+. Documentation completeness supports discharge readiness.',
     plainEnglishTemplate:
-      'Average length of stay is down {{delta}} days — from {{before}} to {{after}} days. ' +
+      'Average length of stay is down {{delta}} days, from {{before}} to {{after}} days. ' +
       "At {{encounters}} annual admissions, that's {{totalDays}} patient-days freed annually.",
     roiQuadrant: 'Capacity',
     shortDescription: 'Average days per inpatient admission.',
@@ -1422,7 +1422,7 @@ export const INPATIENT_METRICS: MetricDefinition[] = [
     description: 'Discharge timing affects ED boarding and admit-from-ED flow.',
     whyItMatters: 'Source: ADT/EHR discharge timestamp reports.',
     plainEnglishTemplate:
-      'Discharge before noon rate is up {{delta}} points — from {{before}}% to {{after}}% of discharges. ' +
+      'Discharge before noon rate is up {{delta}} points, from {{before}}% to {{after}}% of discharges. ' +
       'Earlier discharges free beds for afternoon admits and reduce ED boarding time.',
     roiQuadrant: 'Capacity',
     shortDescription: 'Share of inpatient discharges completed before noon.',
@@ -1442,7 +1442,7 @@ export const INPATIENT_METRICS: MetricDefinition[] = [
     description: 'Percentage of discharges delayed due to incomplete documentation.',
     whyItMatters: 'Each delayed discharge costs the hospital approximately $2,000–$4,000 in extra bed-days.',
     plainEnglishTemplate:
-      'Documentation-related discharge delays are down {{delta}} points — from {{before}}% to {{after}}% of cases.',
+      'Documentation-related discharge delays are down {{delta}} points, from {{before}}% to {{after}}% of cases.',
     roiQuadrant: 'Capacity',
     shortDescription: 'Share of discharges delayed due to incomplete documentation.',
     exploreVisibility: 'driver-quantified',
@@ -1461,7 +1461,7 @@ export const INPATIENT_METRICS: MetricDefinition[] = [
     description: 'CMS-reportable metric. Discharge summary completeness is a primary driver.',
     whyItMatters: 'Under HRRP, excess readmissions generate CMS penalties. Source: quality department or EHR analytics.',
     plainEnglishTemplate:
-      '30-day readmission rate is down {{delta}} points — from {{before}}% to {{after}}%. ' +
+      '30-day readmission rate is down {{delta}} points, from {{before}}% to {{after}}%. ' +
       'At {{encounters}} admissions, a {{delta}}-point reduction reduces penalty exposure and uncompensated care.',
     roiQuadrant: 'Quality',
     shortDescription: 'Share of inpatient discharges followed by readmission within 30 days. CMS-reportable under HRRP.',
@@ -1481,7 +1481,7 @@ export const INPATIENT_METRICS: MetricDefinition[] = [
     description: 'Inpatient patient experience. "Communication with doctors" domain is most directly affected.',
     whyItMatters: 'HCAHPS performance affects value-based purchasing payments and health system reputation.',
     plainEnglishTemplate:
-      'HCAHPS scores have moved from {{before}}th to {{after}}th percentile — a {{delta}}-point improvement. ' +
+      'HCAHPS scores have moved from {{before}}th to {{after}}th percentile, a {{delta}}-point improvement. ' +
       'The "communication with doctors" domain is most directly tied to ambient documentation.',
     roiQuadrant: 'Quality',
     shortDescription: 'Inpatient patient experience score from the HCAHPS survey.',
@@ -1501,7 +1501,7 @@ export const INPATIENT_METRICS: MetricDefinition[] = [
     description: 'CMS/TJC core measures. Documentation completeness is often the compliance gap.',
     whyItMatters: 'Documentation components (sepsis bundle timing, VTE documentation) improve without additional provider effort.',
     plainEnglishTemplate:
-      'Core quality measure compliance is up {{delta}} points — from {{before}}% to {{after}}%.',
+      'Core quality measure compliance is up {{delta}} points, from {{before}}% to {{after}}%.',
     roiQuadrant: 'Quality',
     shortDescription: '',
     exploreVisibility: 'hidden',
@@ -1540,7 +1540,7 @@ export const INPATIENT_METRICS: MetricDefinition[] = [
     description: 'Annual retention rate. Hospitalist turnover cost is typically $300K–$500K per physician.',
     whyItMatters: 'Source: HR / medical staff office.',
     plainEnglishTemplate:
-      'Inpatient physician retention has moved from {{before}}% to {{after}}% — {{delta}} points.',
+      'Inpatient physician retention has moved from {{before}}% to {{after}}%, {{delta}} points.',
     phase3Roadmap: true,
     roiQuadrant: 'Workforce',
     shortDescription: '',
@@ -1560,7 +1560,7 @@ export const INPATIENT_METRICS: MetricDefinition[] = [
     description: 'Annual total spend on locum/agency hospitalist coverage.',
     whyItMatters: 'Reflects improved hospitalist stability and reduced scheduling gaps.',
     plainEnglishTemplate:
-      'Agency and locum spend is down from {{before}} to {{after}} — a {{delta}} reduction.',
+      'Agency and locum spend is down from {{before}} to {{after}}, a {{delta}} reduction.',
     phase3Roadmap: false,
     roiQuadrant: 'Workforce',
     shortDescription: 'Annual spend on contracted locum hospitalist coverage. Often used as a downstream indicator of retention and scheduling stability.',
@@ -1581,7 +1581,7 @@ export const INPATIENT_METRICS: MetricDefinition[] = [
     description: 'Rolls up CMI improvement, denial reduction, LOS reduction, and DRG accuracy into a per-admission figure.',
     whyItMatters: 'Annual strategic metric. Source: finance.',
     plainEnglishTemplate:
-      'Net patient revenue per admission has moved from {{before}} to {{after}} — up {{delta}} per case. ' +
+      'Net patient revenue per admission has moved from {{before}} to {{after}}, up {{delta}} per case. ' +
       'This rolls up CMI improvement, CC/MCC capture, denial reduction, and LOS savings into one number.',
     phase3Roadmap: true,
     roiQuadrant: 'Revenue',
@@ -1602,7 +1602,7 @@ export const INPATIENT_METRICS: MetricDefinition[] = [
     description: 'HCAHPS, readmission rates, and quality measures all feed into VBP/shared savings performance.',
     whyItMatters: 'Source: value-based care team or payer contracts.',
     plainEnglishTemplate:
-      'Value-based care performance has improved from {{before}} to {{after}} in earned incentives — {{delta}} in incremental performance pay.',
+      'Value-based care performance has improved from {{before}} to {{after}} in earned incentives, {{delta}} in incremental performance pay.',
     phase3Roadmap: true,
     roiQuadrant: 'Quality',
     shortDescription: '',
@@ -1622,7 +1622,7 @@ export const NURSING_METRICS: MetricDefinition[] = [
     lowerIsBetter: true,
     source: 'abridge',
     sourceLabel: 'Abridge Platform',
-    description: 'Total active EHR documentation time per shift — flowsheets, assessments, care plans, handoff notes.',
+    description: 'Total active EHR documentation time per shift, flowsheets, assessments, care plans, handoff notes.',
     whyItMatters: 'The primary platform-native signal for nursing documentation burden.',
     plainEnglishTemplate:
       'Nurses are spending {{after}} minutes per shift on documentation, down from {{before}}. ' +
@@ -1643,10 +1643,10 @@ export const NURSING_METRICS: MetricDefinition[] = [
     lowerIsBetter: false,
     source: 'abridge',
     sourceLabel: 'Abridge Platform',
-    description: 'Quality of nursing documentation — assessments, care plans, handoff notes.',
+    description: 'Quality of nursing documentation, assessments, care plans, handoff notes.',
     whyItMatters: 'Complete, specific nursing assessments reduce CDI query burden and support DRG accuracy.',
     plainEnglishTemplate:
-      'Average nursing documentation quality is {{after}} — up {{delta}} from {{before}}. ' +
+      'Average nursing documentation quality is {{after}}, up {{delta}} from {{before}}. ' +
       'Complete, specific nursing assessments reduce CDI query burden, support DRG accuracy, ' +
       'and are the primary input to nursing-sensitive quality indicators.',
     roiQuadrant: 'Quality',
@@ -1663,11 +1663,11 @@ export const NURSING_METRICS: MetricDefinition[] = [
     unitLabel: 'minutes',
     lowerIsBetter: true,
     source: 'partner',
-    sourceLabel: 'Epic Signal / Time-and-Attendance',
+    sourceLabel: 'EHR signal / Time-and-Attendance',
     description: 'Time nurses spend in the EHR after their scheduled shift end.',
     whyItMatters: 'Chronic after-shift charting is one of the top drivers of nursing burnout and turnover intent.',
     plainEnglishTemplate:
-      'After-shift charting is down {{delta}} minutes per nurse — from {{before}} to {{after}} minutes. ' +
+      'After-shift charting is down {{delta}} minutes per nurse, from {{before}} to {{after}} minutes. ' +
       'Across {{providers}} nurses, ' +
       "that's significant unpaid or overtime documentation avoided. " +
       'This is the most frequently cited burnout driver in nursing workforce surveys.',
@@ -1730,7 +1730,7 @@ export const NURSING_METRICS: MetricDefinition[] = [
     description: 'Percentage of nurses responding "likely" or "very likely" to stay.',
     whyItMatters: 'RN turnover cost is $40K–$65K per nurse. At large scale, even 1-point improvement represents significant avoided cost.',
     plainEnglishTemplate:
-      "Retention intent is up {{delta}} points — {{after}}% of nurses say they're likely to stay, vs {{before}}% before Abridge. " +
+      "Retention intent is up {{delta}} points, {{after}}% of nurses say they're likely to stay, vs {{before}}% before Abridge. " +
       'At {{providers}} nurses, this improvement in likelihood-to-stay can reduce departures and avoid recruitment costs.',
     roiQuadrant: 'Workforce',
     shortDescription: '',
@@ -1768,7 +1768,7 @@ export const NURSING_METRICS: MetricDefinition[] = [
     source: 'partner',
     sourceLabel: 'Wound Care / Quality',
     description: 'NDNQI nursing-sensitive indicator. Stage 2+ HAPIs per 1,000 patient days.',
-    whyItMatters: 'Skin assessment documentation completeness is the primary driver — gaps prevent early intervention.',
+    whyItMatters: 'Skin assessment documentation completeness is the primary driver, gaps prevent early intervention.',
     plainEnglishTemplate:
       'HAPI rate is down from {{before}} to {{after}} per 1,000 patient days. ' +
       'Stage 2+ HAPIs cost $10,700–$151,700 per event and are non-reimbursable under CMS.',
@@ -1850,7 +1850,7 @@ export const NURSING_METRICS: MetricDefinition[] = [
     description: 'The nurse communication domain is the highest-weighted component of inpatient HCAHPS.',
     whyItMatters: 'Time freed from documentation means more time present with patients, which can lift this score.',
     plainEnglishTemplate:
-      'HCAHPS nurse communication scores have moved from {{before}}th to {{after}}th percentile — a {{delta}}-point improvement. ' +
+      'HCAHPS nurse communication scores have moved from {{before}}th to {{after}}th percentile, a {{delta}}-point improvement. ' +
       'The nurse communication domain carries the highest weight in inpatient patient experience scoring.',
     roiQuadrant: 'Quality',
     shortDescription: 'HCAHPS subscale measuring patient-reported quality of nurse communication.',
@@ -1870,7 +1870,7 @@ export const NURSING_METRICS: MetricDefinition[] = [
     description: 'Percent of shift time spent in direct patient care vs. documentation.',
     whyItMatters: 'National benchmark: nurses spend 35–40% of shift time on documentation.',
     plainEnglishTemplate:
-      'Direct care time has increased from {{before}}% to {{after}}% of shift time — {{delta}} points more time with patients. ' +
+      'Direct care time has increased from {{before}}% to {{after}}% of shift time, {{delta}} points more time with patients. ' +
       'For {{providers}} nurses, that represents additional hours of bedside care annually without adding staff.',
     roiQuadrant: 'Capacity',
     shortDescription: 'Share of shift time spent in direct patient care versus documentation.',
@@ -1890,7 +1890,7 @@ export const NURSING_METRICS: MetricDefinition[] = [
     description: 'Travel or agency nurses as percentage of total nursing FTEs.',
     whyItMatters: 'Documentation burden contributes to staff nurse turnover, which increases reliance on expensive travel coverage.',
     plainEnglishTemplate:
-      'Travel and agency nurse utilization is down from {{before}}% to {{after}}% of nursing FTEs — a {{delta}}-point reduction. ' +
+      'Travel and agency nurse utilization is down from {{before}}% to {{after}}% of nursing FTEs, a {{delta}}-point reduction. ' +
       'Each point of utilization reduction saves significant premium labor costs annually.',
     roiQuadrant: 'Capacity',
     shortDescription: '',
@@ -1910,7 +1910,7 @@ export const NURSING_METRICS: MetricDefinition[] = [
     description: 'Percentage of open shifts filled by staff nurses vs. agency or left unfilled.',
     whyItMatters: 'Retention-driven staffing stability metric.',
     plainEnglishTemplate:
-      'Open shift fill rate by staff nurses is up from {{before}}% to {{after}}% — {{delta}} points more shifts covered internally. ' +
+      'Open shift fill rate by staff nurses is up from {{before}}% to {{after}}%, {{delta}} points more shifts covered internally. ' +
       'Higher fill rates reflect improved retention and scheduling stability, and directly reduce agency premium spend.',
     roiQuadrant: 'Capacity',
     shortDescription: 'Share of open shifts filled by staff nurses versus agency or left unfilled.',
@@ -1927,10 +1927,10 @@ export const NURSING_METRICS: MetricDefinition[] = [
     lowerIsBetter: false,
     source: 'partner',
     sourceLabel: 'CDI Platform',
-    description: 'CDI query response rate — percentage of nursing CDI queries answered within 24h.',
+    description: 'CDI query response rate, percentage of nursing CDI queries answered within 24h.',
     whyItMatters: 'Nursing documentation supports CDI queries for DRG accuracy.',
     plainEnglishTemplate:
-      'CDI query response rate is up from {{before}}% to {{after}}% — {{delta}} points. ' +
+      'CDI query response rate is up from {{before}}% to {{after}}%, {{delta}} points. ' +
       'Faster, more complete nursing documentation reduces query volume and accelerates DRG assignment.',
     roiQuadrant: 'Revenue',
     shortDescription: 'Share of CDI queries answered within established timeframes (typically 24 hours).',
@@ -1970,7 +1970,7 @@ export const NURSING_METRICS: MetricDefinition[] = [
     description: 'Annual RN retention rate. Turnover cost is $40K–$65K per nurse.',
     whyItMatters: 'At nursing workforce scale, this is the highest-volume cost lever.',
     plainEnglishTemplate:
-      'RN retention rate has moved from {{before}}% to {{after}}% — {{delta}} points. ' +
+      'RN retention rate has moved from {{before}}% to {{after}}%, {{delta}} points. ' +
       'At your scale, this is likely the largest single financial impact in this analysis.',
     phase3Roadmap: true,
     roiQuadrant: 'Workforce',
@@ -1991,7 +1991,7 @@ export const NURSING_METRICS: MetricDefinition[] = [
     description: 'Total annual travel/agency nursing spend.',
     whyItMatters: 'The most direct financial expression of improved nursing retention and scheduling stability.',
     plainEnglishTemplate:
-      'Travel and agency nursing spend is down from {{before}} to {{after}} — {{delta}} in avoided premium labor costs. ' +
+      'Travel and agency nursing spend is down from {{before}} to {{after}}, {{delta}} in avoided premium labor costs. ' +
       'This is the most direct financial expression of improved nursing retention.',
     phase3Roadmap: true,
     roiQuadrant: 'Capacity',
@@ -2013,7 +2013,7 @@ export const NURSING_METRICS: MetricDefinition[] = [
     description: 'Total annual nursing overtime cost attributable to documentation burden and staffing gaps.',
     whyItMatters: 'Documentation-driven overtime and agency coverage are the two largest controllable cost levers.',
     plainEnglishTemplate:
-      'Annual nursing overtime cost is down from {{before}} to {{after}} — {{delta}} in avoided labor premium.',
+      'Annual nursing overtime cost is down from {{before}} to {{after}}, {{delta}} in avoided labor premium.',
     phase3Roadmap: true,
     roiQuadrant: 'Workforce',
     shortDescription: '',
@@ -2358,8 +2358,8 @@ export const CARE_SETTING_CONFIGS: Record<MeasureCareSetting, CareSettingConfig>
     key: "nursing",
     label: "Nursing",
     shortLabel: "Nursing",
-    fourthDomainKey: "patientFlow",
-    fourthDomainLabel: "Patient Flow",
+    fourthDomainKey: "staffing",
+    fourthDomainLabel: "Staffing",
     deploymentFields: [
       { key: "unitsLive", label: "Units Live", required: true },
       { key: "staffedBeds", label: "Staffed Beds", required: true },

@@ -29,6 +29,20 @@ const DOMAIN_DESCRIPTIONS: Record<string, string> = {
   staffing: "Nursing turnover, overtime, and agency spend trends.",
 };
 
+// Nurses are not providers and do not generate wRVUs; the nursing quality group
+// holds clinical safety outcomes (falls, HAPI, CLABSI), not "documentation
+// quality". Setting-native descriptions so the form reads built-for-them.
+const NURSING_DOMAIN_DESCRIPTIONS: Record<string, string> = {
+  workforce: "Nurse retention, burnout, and satisfaction trends.",
+  quality: "Nursing-sensitive safety and patient-experience outcomes.",
+  revenue: "Impact on CDI query burden, coding support, and documentation timeliness.",
+};
+
+function domainDescription(domain: string, setting: MeasureCareSetting): string {
+  if (setting === "nursing" && NURSING_DOMAIN_DESCRIPTIONS[domain]) return NURSING_DOMAIN_DESCRIPTIONS[domain];
+  return DOMAIN_DESCRIPTIONS[domain] || "";
+}
+
 function getMetricsForSetting(setting: MeasureCareSetting): MetricDefinition[] {
   const map: Record<MeasureCareSetting, MetricDefinition[]> = {
     outpatient: OUTPATIENT_METRICS, ed: ED_METRICS,
@@ -237,7 +251,7 @@ function MetricRow({ metric, checked, entry, onToggle, onUpdate }: {
                 type="text"
                 value={entry?.notes ?? ""}
                 onChange={(e) => onUpdate({ notes: e.target.value || undefined })}
-                placeholder="Context — e.g. Q3 2025, outpatient only, excludes ED"
+                placeholder="Context, e.g. Q3 2025, outpatient only, excludes ED"
                 autoFocus
                 className="w-full mt-2 bg-[#F5F0EB] border-0 rounded-lg px-3 h-10 text-xs text-[#555555] placeholder:text-[#BBBBBB] focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30"
                 data-testid={`input-notes-${metric.id}`}
@@ -310,6 +324,9 @@ function MetricRow({ metric, checked, entry, onToggle, onUpdate }: {
 export default function MeasureDataRequest({ preseed, storageFingerprint }: { preseed?: DataFormPreseed; storageFingerprint?: string }) {
   const settings: MeasureCareSetting[] = preseed?.settings ?? (preseed?.setting ? [preseed.setting] : ["outpatient"]);
   const primarySetting = settings[0];
+  // Adoption is asked once for the whole form; call it "Nurse" on a nursing-only
+  // form (nurses are not "providers"), else keep the physician default.
+  const adoptionNoun = settings.every((s) => s === "nursing") ? "Nurse" : "Provider";
 
   const settingMetricGroups = settings.map(s => ({
     setting: s,
@@ -458,7 +475,7 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
           Help us tell your story
         </h1>
         <p className="text-sm text-[#666666] leading-relaxed text-center max-w-md mx-auto">
-          Select the metrics you track and enter what you have. Before only or after only is fine — partial data is useful. Takes about 10 minutes.
+          Select the metrics you track and enter what you have. Before only or after only is fine. Partial data is useful. Takes about 10 minutes.
         </p>
       </div>
 
@@ -510,7 +527,7 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
               </div>
             </div>
             <div>
-              <p className="text-[11px] font-medium text-[#777777] mb-2 uppercase tracking-wider">Provider Adoption</p>
+              <p className="text-[11px] font-medium text-[#777777] mb-2 uppercase tracking-wider">{adoptionNoun} Adoption</p>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 <div>
                   <label className="block text-[10px] text-gray-400 mb-1">Total in Org</label>
@@ -543,7 +560,7 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] text-gray-400 mb-1">Monthly Active Users</label>
+                  <label className="block text-[10px] text-gray-400 mb-1">Monthly Recording Users</label>
                   <input
                     type="text"
                     inputMode="numeric"
@@ -639,7 +656,7 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
                 Inpatient Model Assumptions
               </p>
               <p className="text-[11px] text-[#AAAAAA] leading-relaxed">
-                These operational inputs calibrate the ROI model. Provide your best estimate — we'll verify these with you during the analysis.
+                These operational inputs calibrate the ROI model. Provide your best estimate. We'll verify these with you during the analysis.
               </p>
             </div>
 
@@ -790,7 +807,7 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
                         {DOMAIN_LABELS[domain] || domain}
                       </p>
                       <p className="text-[11px] text-[#AAAAAA] leading-relaxed">
-                        {DOMAIN_DESCRIPTIONS[domain] || ""}
+                        {domainDescription(domain, s)}
                       </p>
                     </div>
                     <div>
@@ -851,14 +868,14 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
         )}
 
         <p className="text-center text-xs text-[#BBBBBB] pb-8">
-          No account required. Your answers stay in this browser — nothing is stored on any server.
+          No account required. Your answers stay in this browser. Nothing is stored on any server.
         </p>
       </div>
 
       <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-[#E0D9D0] shadow-[0_-4px_16px_rgba(0,0,0,0.06)]">
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
           <p className="text-xs text-[#EA2C00] leading-snug">
-            This form doesn't save — download the PDF before closing this tab.
+            This form doesn't save. Download the PDF before closing this tab.
           </p>
           <button
             onClick={handleDownloadMeasurementPDF}

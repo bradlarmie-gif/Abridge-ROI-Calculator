@@ -34,7 +34,7 @@ function getOutpatientFields(d: ExploreIntakeResponse): { section: string; field
       { label: "Physicians / APPs", value: fmt(d.opProviders) },
       { label: "Annual encounters", value: fmt(d.opAnnualEncounters) },
     ]},
-    { section: "Time & Revenue", fields: [
+    { section: "Productivity & Revenue", fields: [
       { label: "Revenue per visit", value: fmt(d.opRevenuePerVisit, { prefix: "$" }) },
       { label: "Avg wRVU per encounter", value: fmt(d.opCurrentWrvu, { decimals: 2 }) },
       { label: "$/wRVU conversion rate", value: fmt(d.opConversionFactor, { prefix: "$" }) },
@@ -66,7 +66,7 @@ function getEdFields(d: ExploreIntakeResponse): { section: string; fields: Field
       { label: "Current LWBS rate", value: fmt(d.edLwbsRate, { suffix: "%" }) },
       { label: "Revenue per ED visit", value: fmt(d.edRevenuePerVisit, { prefix: "$" }) },
       { label: "% LWBS patients admitted", value: fmt(d.edAdmissionRate, { suffix: "%" }) },
-      { label: "Revenue per admission", value: fmt(d.edAdmissionRevenue, { prefix: "$" }) },
+      { label: "Contribution margin per admission", value: fmt(d.edAdmissionRevenue, { prefix: "$" }) },
     ]},
     { section: "Documentation Quality", fields: [
       { label: "Claim denial rate", value: fmt(d.edDenialRate, { suffix: "%" }) },
@@ -199,10 +199,10 @@ export default function ExploreIntakeReceipt({ data, onLoadInCalculator }: Explo
         <div className="bg-[#F5F0EB] rounded-xl p-6 mb-6" data-testid="receipt-banner">
           <div className="flex items-center gap-3 mb-2">
             <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-            <h1 className="text-lg font-semibold text-[#1A1A1A]">Data received</h1>
+            <h1 className="text-lg font-semibold text-[#1A1A1A]">Summary ready</h1>
           </div>
           <p className="text-sm text-[#888888]">Baseline summary from {settingsLabel}</p>
-          <p className="text-xs text-[#AAAAAA] mt-1">Received {today}</p>
+          <p className="text-xs text-[#AAAAAA] mt-1">Prepared {today}</p>
         </div>
 
         <div className="space-y-4 mb-8">

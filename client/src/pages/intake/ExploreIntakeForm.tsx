@@ -114,6 +114,9 @@ function NumberField({
         {label}
       </label>
       <div className="flex items-center gap-2">
+        {/* Currency reads as a prefix ("$250"), not a lone "$" floating at the far
+            right of the field; other units ("%", "$/hr") stay as suffixes. */}
+        {suffix === "$" && <span className="text-sm text-[#999999] font-medium">$</span>}
         <input
           ref={inputRef}
           type="text"
@@ -127,7 +130,7 @@ function NumberField({
           data-testid={`input-intake-${label.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
           autoComplete="off"
         />
-        {suffix && <span className="text-sm text-[#999999] whitespace-nowrap font-medium">{suffix}</span>}
+        {suffix && suffix !== "$" && <span className="text-sm text-[#999999] whitespace-nowrap font-medium">{suffix}</span>}
       </div>
       {hint && <p className="text-[11px] text-[#BBBBBB] mt-1 leading-snug italic">{hint}</p>}
     </div>
@@ -303,7 +306,7 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
           Help us prepare for our call
         </h1>
         <p className="text-sm text-[#666666] leading-relaxed max-w-md mx-auto">
-          Share what you know about your organization. You don't need every number — fill in what you have. Takes about 10 minutes.
+          Share what you know about your organization. You don't need every number, fill in what you have. Takes about 10 minutes.
         </p>
       </div>
 
@@ -367,7 +370,7 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
 
                 {settingId === "outpatient" && (
                   <div className="space-y-4">
-                    <p className="text-[11px] text-[#AAAAAA] leading-relaxed mb-1">Tell us about your clinic's scale, productivity, and revenue baseline. Most of these numbers live in your EHR or billing system. Fill in what you have — nothing is required.</p>
+                    <p className="text-[11px] text-[#AAAAAA] leading-relaxed mb-1">Tell us about your clinic's scale, productivity, and revenue baseline. Most of these numbers live in your EHR or billing system. Fill in what you have, nothing is required.</p>
 
                     <SectionDivider label="Deployment" context="Anchors the model. Tells us how many providers and how much activity we're working with." />
                     <div className="grid grid-cols-2 gap-4">
@@ -382,7 +385,7 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
                       <NumberField label="Avg wRVU per encounter" value={formState.opCurrentWrvu}
                         onChange={v => update('opCurrentWrvu', v)} placeholder="e.g. 1.8" step="0.1" />
                       <NumberField label="$/wRVU conversion rate" value={formState.opConversionFactor}
-                        onChange={v => update('opConversionFactor', v)} placeholder="e.g. 33" />
+                        onChange={v => update('opConversionFactor', v)} placeholder="e.g. 33" suffix="$" />
                     </div>
                     <NumberField label="Revenue per visit" value={formState.opRevenuePerVisit}
                       onChange={v => update('opRevenuePerVisit', v)} placeholder="e.g. 250" suffix="$" />
@@ -404,7 +407,7 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
                     </div>
                     <NumberField label="Annual payment per RAF point" value={formState.opAnnualPaymentPerRaf}
                       onChange={v => update('opAnnualPaymentPerRaf', v)} placeholder="e.g. 10,000" suffix="$"
-                      hint="from your MA contract — typically $8k–$12k per RAF point/year" />
+                      hint="from your MA contract, typically $8k–$12k per RAF point/year" />
 
                     <SectionDivider label="Workforce" context="Documentation burden is the leading driver of physician burnout and departure. We use your turnover rate and scribe spend to model the retention and cost-reduction impact." />
                     <div className="grid grid-cols-2 gap-4">
@@ -412,17 +415,17 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
                         onChange={v => update('opTurnoverRate', v)} placeholder="e.g. 6" suffix="%" />
                       <NumberField label="Cost to replace one provider" value={formState.opReplacementCost}
                         onChange={v => update('opReplacementCost', v)} placeholder="e.g. 350,000" suffix="$"
-                        hint="recruiting + training + lost revenue — typically $250k–$500k" />
+                        hint="recruiting + training + lost revenue, typically $250k–$500k" />
                     </div>
                     <NumberField label="Annual scribe / documentation support spend" value={formState.opScribeAnnualSpend}
                       onChange={v => update('opScribeAnnualSpend', v)} placeholder="e.g. 500,000" suffix="$"
-                      hint="total annual cost of scribes, virtual scribes, or documentation support staff — leave blank if none" />
+                      hint="total annual cost of scribes, virtual scribes, or documentation support staff, leave blank if none" />
                   </div>
                 )}
 
                 {settingId === "ed" && (
                   <div className="space-y-4">
-                    <p className="text-[11px] text-[#AAAAAA] leading-relaxed mb-1">ED value concentrates in three areas: throughput, documentation quality, and provider retention. Fill in what you have — most lives in your EHR or billing system.</p>
+                    <p className="text-[11px] text-[#AAAAAA] leading-relaxed mb-1">ED value concentrates in three areas: throughput, documentation quality, and provider retention. Fill in what you have, most lives in your EHR or billing system.</p>
 
                     <SectionDivider label="Deployment" context="Scale anchors. Visit volume and provider count drive everything downstream." />
                     <div className="grid grid-cols-2 gap-4">
@@ -432,7 +435,7 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
                         onChange={v => update('edVisits', v)} placeholder="e.g. 35,000" />
                     </div>
 
-                    <SectionDivider label="Throughput & Revenue" context="Documentation speed directly affects throughput. LWBS patients are both a safety and revenue signal — we model what faster charting recovers." />
+                    <SectionDivider label="Throughput & Revenue" context="Documentation speed directly affects throughput. LWBS patients are both a safety and revenue signal, we model what faster charting recovers." />
                     <div className="grid grid-cols-2 gap-4">
                       <NumberField label="Current LWBS rate" value={formState.edLwbsRate}
                         onChange={v => update('edLwbsRate', v)} placeholder="e.g. 2.5" suffix="%" />
@@ -443,8 +446,8 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
                       <NumberField label="% LWBS patients admitted" value={formState.edAdmissionRate}
                         onChange={v => update('edAdmissionRate', v)} placeholder="e.g. 15" suffix="%"
                         hint="of recovered patients who end up admitted" />
-                      <NumberField label="Revenue per admission" value={formState.edAdmissionRevenue}
-                        onChange={v => update('edAdmissionRevenue', v)} placeholder="e.g. 12,000" suffix="$" />
+                      <NumberField label="Contribution margin per admission" value={formState.edAdmissionRevenue}
+                        onChange={v => update('edAdmissionRevenue', v)} placeholder="e.g. 4,000" suffix="$" />
                     </div>
 
                     <SectionDivider label="Claim Denials" context="ED claims carry higher denial rates than most settings. We use your baseline to size what better documentation recovers in first-pass acceptance." />
@@ -464,15 +467,15 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
                     </div>
                     <NumberField label="Annual scribe / documentation support spend" value={formState.edScribeAnnualSpend}
                       onChange={v => update('edScribeAnnualSpend', v)} placeholder="e.g. 300,000" suffix="$"
-                      hint="total annual cost of scribes or documentation support staff across all ED providers — leave blank if none" />
+                      hint="total annual cost of scribes or documentation support staff across all ED providers, leave blank if none" />
                   </div>
                 )}
 
                 {settingId === "inpatient" && (
                   <div className="space-y-4">
-                    <p className="text-[11px] text-[#AAAAAA] leading-relaxed mb-1">Hospital medicine has more revenue drivers than any other setting — DRG accuracy, obs/IP defense, CDI reduction, concurrent review, and E/M billing. Fill in the sections your team has access to.</p>
+                    <p className="text-[11px] text-[#AAAAAA] leading-relaxed mb-1">Hospital medicine has more revenue drivers than any other setting, DRG accuracy, obs/IP defense, CDI reduction, concurrent review, and E/M billing. Fill in the sections your team has access to.</p>
 
-                    <SectionDivider label="Deployment" context="Scale anchors — these drive every estimate across revenue, workforce, and quality." />
+                    <SectionDivider label="Deployment" context="Scale anchors, these drive every estimate across revenue, workforce, and quality." />
                     <div className="grid grid-cols-2 gap-4">
                       <NumberField label="Hospitalists" value={formState.ipProviders}
                         onChange={v => update('ipProviders', v)} placeholder="e.g. 15" />
@@ -481,9 +484,9 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
                     </div>
                     <NumberField label="Average length of stay" value={formState.ipAvgLos}
                       onChange={v => update('ipAvgLos', v)} placeholder="e.g. 4.5" step="0.1"
-                      hint="days — national median ~4.5 for hospital medicine" />
+                      hint="days, national median ~4.5 for hospital medicine" />
 
-                    <SectionDivider label="Obs / IP Status Denials" context="Obs vs. IP disputes are one of the most common and costly denial categories in hospital medicine. We use denial volume and claim value to model the defensibility improvement." />
+                    <SectionDivider label="Status / Medical Necessity Denials" context="Status and medical-necessity disputes are one of the most common and costly denial categories in hospital medicine. We use denial volume and claim value to model the defensibility improvement." />
                     <div className="grid grid-cols-2 gap-4">
                       <NumberField label="Status / med-necessity denial rate" value={formState.ipDenialRate}
                         onChange={v => update('ipDenialRate', v)} placeholder="e.g. 5" suffix="%" />
@@ -492,7 +495,7 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
                         hint="avg $ of claims where Obs vs IP status is disputed" />
                     </div>
 
-                    <SectionDivider label="DRG Accuracy / CC-MCC Capture" context="Missing CC/MCC documentation reduces DRG weight — and net reimbursement. We use at-risk rate and weight lift to size the capture opportunity." />
+                    <SectionDivider label="DRG Accuracy / CC-MCC Capture" context="Missing CC/MCC documentation reduces DRG weight, and net reimbursement. We use at-risk rate and weight lift to size the capture opportunity." />
                     <div className="grid grid-cols-2 gap-4">
                       <NumberField label="DRG at-risk rate" value={formState.ipDrgAtRiskRate}
                         onChange={v => update('ipDrgAtRiskRate', v)} placeholder="e.g. 18" suffix="%"
@@ -537,7 +540,7 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
                     <div className="grid grid-cols-2 gap-4">
                       <NumberField label="Avg revenue per E/M encounter" value={formState.ipEmRevenuePerEncounter}
                         onChange={v => update('ipEmRevenuePerEncounter', v)} placeholder="e.g. 50" suffix="$"
-                        hint="avg physician fee per H&P, progress note, or consult — typically $40–$80" />
+                        hint="avg physician fee per H&P, progress note, or consult, typically $40–$80" />
                       <NumberField label="Consults per admission" value={formState.ipEmConsultsPerAdmission}
                         onChange={v => update('ipEmConsultsPerAdmission', v)} placeholder="e.g. 1.0" step="0.1"
                         hint="avg specialist consults billed per inpatient stay" />
@@ -557,7 +560,7 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
                   <div className="space-y-4">
                     <p className="text-[11px] text-[#AAAAAA] leading-relaxed mb-1">Nursing value centers on overtime reduction, retention, agency cost avoidance, and care quality. Fill in what your team tracks.</p>
 
-                    <SectionDivider label="Deployment" context="Scale anchors — FTEs, beds, and occupancy drive all downstream estimates." />
+                    <SectionDivider label="Deployment" context="Scale anchors, FTEs, beds, and occupancy drive all downstream estimates." />
                     <div className="grid grid-cols-2 gap-4">
                       <NumberField label="Nurse FTEs" value={formState.nursingFTEs}
                         onChange={v => update('nursingFTEs', v)} placeholder="e.g. 300" />
@@ -581,13 +584,13 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
                         onChange={v => update('nursingTurnoverRate', v)} placeholder="e.g. 18" suffix="%" />
                       <NumberField label="Cost to replace one nurse" value={formState.nursingReplacementCost}
                         onChange={v => update('nursingReplacementCost', v)} placeholder="e.g. 56,000" suffix="$"
-                        hint="recruiting + training + agency fill — typically $40k–$75k" />
+                        hint="recruiting + training + agency fill, typically $40k–$75k" />
                     </div>
                     <NumberField label="Current annual agency / travel nurse spend" value={formState.nursingAgencySpend}
                       onChange={v => update('nursingAgencySpend', v)} placeholder="e.g. 2,000,000" suffix="$"
-                      hint="total annual spend on travel nurses, agency fill, and per-diem staff — leave blank if not tracked" />
+                      hint="total annual spend on travel nurses, agency fill, and per-diem staff, leave blank if not tracked" />
 
-                    <SectionDivider label="Quality Metrics" context="If you track hospital-acquired infections and falls, these are the clearest signals of the documentation-to-care-quality link. All optional — fill in only what your team measures." />
+                    <SectionDivider label="Quality Metrics" context="If you track hospital-acquired infections and falls, these are the clearest signals of the documentation-to-care-quality link. All optional, fill in only what your team measures." />
                     <div className="grid grid-cols-2 gap-4">
                       <NumberField label="HAPI rate / 1k pt days" value={formState.hapiRate}
                         onChange={v => update('hapiRate', v)} placeholder="e.g. 1.5" step="0.1" />
@@ -641,14 +644,14 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
         )}
 
         <p className="text-center text-[11px] text-[#CCCCCC] pb-8 mt-4 max-w-sm mx-auto leading-relaxed">
-          No account required. Your answers are saved in this browser tab only — nothing is stored on any server. Download the PDF before closing.
+          No account required. Your answers are saved in this browser tab only, nothing is stored on any server. Download the PDF before closing.
         </p>
       </div>
 
       <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-[#E0D9D0] shadow-[0_-4px_16px_rgba(0,0,0,0.06)]">
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
           <p className="text-xs text-[#EA2C00] leading-snug">
-            This form doesn't save — download the PDF before closing this tab.
+            This form doesn't save, download the PDF before closing this tab.
           </p>
           <button
             onClick={handleDownloadPDF}

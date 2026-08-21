@@ -36,9 +36,12 @@ const s = StyleSheet.create({
   cell: { width: "50%", paddingVertical: 4, paddingRight: 12 },
   fieldLabel: { fontSize: 8, color: C.muted, textTransform: "uppercase", letterSpacing: 0.8 },
   fieldValue: { fontSize: 11, fontWeight: 700, color: C.text, marginTop: 2 },
-  footer: { marginTop: "auto", paddingTop: 10, borderTopWidth: 1, borderTopColor: C.border },
+  // Footer is FIXED to the bottom of every page (never pushed onto its own
+  // orphan page the way marginTop:auto did when a setting's body nearly filled
+  // the page). Sits inside the bottom margin (page paddingBottom is 50).
+  footer: { position: "absolute", bottom: 30, left: 54, right: 54, paddingTop: 8, borderTopWidth: 1, borderTopColor: C.border },
   footerText: { fontSize: 7.5, color: C.muted, lineHeight: 1.5, textAlign: "center" },
-  pageNumber: { position: "absolute", bottom: 24, right: 54, fontSize: 8, color: C.muted },
+  pageNumber: { position: "absolute", bottom: 14, right: 54, fontSize: 8, color: C.muted },
 });
 
 const SETTING_LABELS: Record<ExploreCareSetting, string> = {
@@ -118,7 +121,7 @@ function getInpatientFields(d: ExploreIntakeResponse): { section: string; fields
       { label: "Annual admissions", value: fmt(d.ipAnnualAdmissions) },
       { label: "Avg length of stay", value: d.ipAvgLos != null ? `${d.ipAvgLos.toFixed(1)} days` : null },
     ]},
-    { section: "Obs / IP Status Denials", fields: [
+    { section: "Status / Medical Necessity Denials", fields: [
       { label: "Status / med-necessity denial rate", value: fmt(d.ipDenialRate, { suffix: "%" }) },
       { label: "Avg claim value at risk", value: fmt(d.ipAvgClaimValue, { prefix: "$" }) },
     ]},
@@ -184,12 +187,18 @@ function getFieldsForSetting(setting: ExploreCareSetting, d: ExploreIntakeRespon
 
 function FooterBlock() {
   return (
-    <View style={s.footer}>
+    <View style={s.footer} fixed>
       <Text style={s.footerText}>
-        Share this PDF with your Abridge contact before the discovery call — they'll use it to build your value model. Your data stays private; nothing entered here was stored on any server.
+        Share this PDF with your Abridge contact before the discovery call. They'll use it to build your value model. Your data stays private; nothing entered here was stored on any server.
       </Text>
     </View>
   );
+}
+
+// react-pdf computes the real page count after layout, so this stays correct
+// even when a setting's body overflows onto an extra page.
+function PageNumber() {
+  return <Text style={s.pageNumber} fixed render={({ pageNumber, totalPages }) => `${pageNumber} / ${totalPages}`} />;
 }
 
 function SettingContent({ setting, data }: { setting: ExploreCareSetting; data: ExploreIntakeResponse }) {
@@ -228,18 +237,18 @@ function CoverPage({ data, repName, orgName }: { data: ExploreIntakeResponse; re
       title={displayOrg}
       subtitle={settingsLabel}
       preparedBy={displayRep}
-      disclaimerText={`Thank you for taking the time to fill this in. Your Abridge contact will use these numbers to build a value model specific to ${displayOrg} — you'll review it together on the call. If anything looks off or you want to update a number, just let them know.`}
+      disclaimerText={`Thank you for taking the time to fill this in. Your Abridge contact will use these numbers to build a value model specific to ${displayOrg}. You'll review it together on the call. If anything looks off or you want to update a number, just let them know.`}
     />
   );
 }
 
-function SettingPage({ setting, data, pageNum, totalPages }: { setting: ExploreCareSetting; data: ExploreIntakeResponse; pageNum: number; totalPages: number }) {
+function SettingPage({ setting, data }: { setting: ExploreCareSetting; data: ExploreIntakeResponse }) {
   return (
     <Page size="LETTER" style={s.page}>
-      <Image src={abridgeLogoRed} style={s.contentLogo} />
+      <Image src={abridgeLogoRed} style={s.contentLogo} fixed />
       <SettingContent setting={setting} data={data} />
       <FooterBlock />
-      <Text style={s.pageNumber}>{pageNum} / {totalPages}</Text>
+      <PageNumber />
     </Page>
   );
 }
@@ -249,21 +258,21 @@ function SingleSettingDocument({ data, repName, orgName }: { data: ExploreIntake
     <Document>
       <CoverPage data={data} repName={repName} orgName={orgName} />
       <Page size="LETTER" style={s.page}>
-        <Image src={abridgeLogoRed} style={s.contentLogo} />
+        <Image src={abridgeLogoRed} style={s.contentLogo} fixed />
         <SettingContent setting={data.settings[0]} data={data} />
         <FooterBlock />
+        <PageNumber />
       </Page>
     </Document>
   );
 }
 
 function MultiSettingDocument({ data, repName, orgName }: { data: ExploreIntakeResponse; repName?: string; orgName?: string }) {
-  const totalPages = data.settings.length + 1;
   return (
     <Document>
       <CoverPage data={data} repName={repName} orgName={orgName} />
-      {data.settings.map((setting, i) => (
-        <SettingPage key={setting} setting={setting} data={data} pageNum={i + 2} totalPages={totalPages} />
+      {data.settings.map((setting) => (
+        <SettingPage key={setting} setting={setting} data={data} />
       ))}
     </Document>
   );

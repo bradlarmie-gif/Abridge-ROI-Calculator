@@ -31,6 +31,8 @@ function getMetricsMap(setting: MeasureCareSetting): MetricDefinition[] {
 export default function MeasureDataReceipt({ data, onLoadInCalculator }: MeasureDataReceiptProps) {
   const [pdfLoading, setPdfLoading] = useState(false);
   const metricDefs = getMetricsMap(data.setting);
+  // "Providers" is physician vocab; a nursing summary counts nurses.
+  const adoptionNoun = data.setting === "nursing" ? "Nurse" : "Provider";
   const today = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
 
   async function handleDownloadPDF() {
@@ -71,7 +73,7 @@ export default function MeasureDataReceipt({ data, onLoadInCalculator }: Measure
               )}
               {data.deployment.totalProviders > 0 && (
                 <div>
-                  <p className="text-xs text-[#888888] uppercase tracking-wide">Total Providers</p>
+                  <p className="text-xs text-[#888888] uppercase tracking-wide">Total {adoptionNoun}s</p>
                   <p className="text-sm font-semibold text-[#1A1A1A] mt-0.5">{data.deployment.totalProviders}</p>
                 </div>
               )}

@@ -168,7 +168,7 @@ export function generateIntakeResponseText(data: ExploreIntakeResponse): string 
         line('Current LWBS rate', data.edLwbsRate, { suffix: '%' }),
         line('Revenue per ED visit', data.edRevenuePerVisit, { suffix: ' $' }),
         line('% LWBS patients admitted', data.edAdmissionRate, { suffix: '%' }),
-        line('Revenue per admission', data.edAdmissionRevenue, { suffix: ' $' }),
+        line('Contribution margin per admission', data.edAdmissionRevenue, { suffix: ' $' }),
         line('Claim denial rate', data.edDenialRate, { suffix: '%' }),
         line('Avg denied claim value', data.edAvgClaimValue, { suffix: ' $' }),
         line('Annual provider turnover', data.edTurnoverRate, { suffix: '%' }),
