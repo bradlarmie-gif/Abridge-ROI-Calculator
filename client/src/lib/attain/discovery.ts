@@ -123,11 +123,6 @@ export const LEVER_LINE: Record<string, string> = {
 // per-domain spec so the copy is specific to that setting and problem.
 // ─────────────────────────────────────────────────────────────────────────────
 
-const SCALE_Q_OPTIONS = [
-  { id: "watch", label: "A line item leadership keeps an eye on", capture: "a watched item today", value: "a watched line item" },
-  { id: "pressure", label: "A serious pressure this year", capture: "a serious pressure this year", value: "a serious pressure this year" },
-  { id: "top", label: "One of your top priorities this year", capture: "one of the top priorities this year", value: "one of your top priorities" },
-];
 const HORIZON_Q_OPTIONS = [
   { id: "year", label: "This budget year", capture: "on a this-budget-year timeframe", value: "this budget year" },
   { id: "quarters", label: "The next two or three quarters", capture: "over the next two to three quarters", value: "the next two to three quarters" },
@@ -173,13 +168,7 @@ function makeFoundation(spec: FoundationSpec): DiscoveryScript {
         prompt: spec.driversPrompt,
         teach: spec.driversTeach,
         multi: spec.multiDrivers,
-        options: spec.drivers.map((d) => ({ id: d.id, label: d.label, capture: d.capture, lever: d.lever, proofDriverId: d.proofDriverId, proof: d.proof, honest: d.honest, next: spec.connect ? "connect" : "scale" })),
-      },
-      scale: {
-        eyebrow: "Where you are",
-        prompt: "How big a problem is it right now?",
-        teach: "Directional, not a number. It tells us how much weight this carries before the ROI puts a figure on it.",
-        options: SCALE_Q_OPTIONS.map((o) => ({ id: o.id, label: o.label, capture: o.capture, next: "target" })),
+        options: spec.drivers.map((d) => ({ id: d.id, label: d.label, capture: d.capture, lever: d.lever, proofDriverId: d.proofDriverId, proof: d.proof, honest: d.honest, next: spec.connect ? "connect" : "target" })),
       },
       target: {
         eyebrow: "Where you want to go",
@@ -203,7 +192,7 @@ function makeFoundation(spec: FoundationSpec): DiscoveryScript {
       },
     },
   };
-  // The optional connect-the-dots beat sits between drivers and scale. drivers already
+  // The optional connect-the-dots beat sits between drivers and target. drivers already
   // point to it (next: "connect") whenever spec.connect is set.
   if (spec.connect) {
     script.questions.connect = {
@@ -211,7 +200,7 @@ function makeFoundation(spec: FoundationSpec): DiscoveryScript {
       prompt: spec.connect.prompt,
       teach: spec.connect.teach,
       multi: true,
-      options: spec.connect.options.map((d) => ({ id: d.id, label: d.label, capture: d.capture, honest: d.honest, next: "scale" })),
+      options: spec.connect.options.map((d) => ({ id: d.id, label: d.label, capture: d.capture, honest: d.honest, next: "target" })),
     };
   }
   script.foundation = (t) => {
@@ -225,18 +214,16 @@ function makeFoundation(spec: FoundationSpec): DiscoveryScript {
     const scope = scopeValueFor(spec.setting, t.ground?.("scope"));
     const tried = TRIED_VALUE[t.ground?.("tried") ?? ""];
     const ds = chosenOf("drivers", spec.drivers, spec.multiDrivers);
-    const scale = SCALE_Q_OPTIONS.find((o) => o.id === t.pick("scale"))?.value;
     const ts = chosenOf("target", spec.targets, spec.multiTargets);
     const horizon = HORIZON_Q_OPTIONS.find((o) => o.id === t.pick("horizon"))?.value;
     const ss = chosenOf("success", spec.successes, spec.multiSuccess);
     const cs = spec.connect ? chosenOf("connect", spec.connect.options, true) : [];
-    // Keep the two columns balanced (3 x 3): scope / driver / scale on the left,
-    // target / timeframe / signal on the right. "Already tried" and the connect-the-dots
-    // context ride in the bridge, not as a fourth row.
+    // Left column: scope / driver. The brief adds the priority-rank row ("#N priority")
+    // where scale used to sit, so multi-goal reads 3 x 3; single-goal reads scope /
+    // driver. "Already tried" and the connect-the-dots context ride in the bridge.
     const current: FoundationItem[] = [
       scope ? { label: spec.scopeLabel ?? "Concentrated in", value: scope } : null,
       ds.length ? { label: spec.currentLabel, value: join(ds) } : null,
-      scale ? { label: spec.scaleLabel, value: scale } : null,
     ].filter(Boolean) as FoundationItem[];
     const desired: FoundationItem[] = [
       ts.length ? { label: spec.targetLabel, value: join(ts) } : null,

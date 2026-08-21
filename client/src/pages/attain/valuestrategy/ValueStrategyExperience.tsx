@@ -56,8 +56,15 @@ const ValueStrategyExperience = forwardRef<VSEHandle, Props>(function ValueStrat
   const multi = authoredAll.length > 1;
 
   const [answers, setAnswers] = useState<DiscoveryAnswers>(initialAnswers);
-  // priority order (triage can move the chosen goal first)
-  const [order, setOrder] = useState<GoalId[]>(authoredAll);
+  // priority order — the triage rank sets it; restore from a saved rank on reload.
+  const [order, setOrder] = useState<GoalId[]>(() => {
+    const raw = initialAnswers["_rank"];
+    if (raw) {
+      const rank = (raw.split(",").filter(Boolean) as GoalId[]).filter((g) => authoredAll.includes(g));
+      return [...rank, ...authoredAll.filter((g) => !rank.includes(g))];
+    }
+    return authoredAll;
+  });
   const [pos, setPos] = useState<Pos>(() => (authoredAll.length ? { kind: "ground", idx: 0 } : { kind: "brief" }));
   const [history, setHistory] = useState<Pos[]>([]);
   const [reflect, setReflect] = useState<string | null>(null);
@@ -101,12 +108,25 @@ const ValueStrategyExperience = forwardRef<VSEHandle, Props>(function ValueStrat
     }
     persist(next);
   };
-  const answerTriage = (goalId: GoalId) => {
+  // Priority ranking: tap in order (1, 2, 3…); tap a ranked goal to drop it and the
+  // rest renumber; Reset clears. The rank drives the walk order and the brief.
+  const currentRank = (): GoalId[] => {
+    const raw = answers["_rank"];
+    return raw ? (raw.split(",").filter(Boolean) as GoalId[]).filter((g) => authoredAll.includes(g)) : [];
+  };
+  const toggleRank = (goalId: GoalId) => {
+    const rank = currentRank();
+    const next = rank.includes(goalId) ? rank.filter((g) => g !== goalId) : [...rank, goalId];
+    persist({ ...answers, ["_rank"]: next.join(",") });
+  };
+  const resetRank = () => persist({ ...answers, ["_rank"]: "" });
+  const continueTriage = () => {
     if (pos.kind !== "triage") return;
-    const reordered = [goalId, ...authoredAll.filter((g) => g !== goalId)];
-    setOrder(reordered);
-    persist({ ...answers, ["_triage"]: goalId });
-    advance(pos, { kind: "goal", goalIdx: 0, qid: getScript(setting, reordered[0])!.entry });
+    const rank = currentRank();
+    const ordered = [...rank, ...authoredAll.filter((g) => !rank.includes(g))];
+    setOrder(ordered);
+    persist({ ...answers, ["_rank"]: rank.join(","), ["_triage"]: rank[0] ?? ordered[0] });
+    advance(pos, { kind: "goal", goalIdx: 0, qid: getScript(setting, ordered[0])!.entry });
   };
   const answerGoal = (optId: string) => {
     if (pos.kind !== "goal") return;
@@ -187,6 +207,9 @@ const ValueStrategyExperience = forwardRef<VSEHandle, Props>(function ValueStrat
   let selectedIds: string[] = [];
   let onToggle: (id: string) => void = () => {};
   let onContinue: () => void = () => {};
+  let rankMode = false;
+  let rankOf: (id: string) => number = () => 0;
+  let rankCount = 0;
 
   if (pos.kind === "ground") {
     const q = ground[pos.idx];
@@ -202,12 +225,16 @@ const ValueStrategyExperience = forwardRef<VSEHandle, Props>(function ValueStrat
       onPick = (id) => answerGround(q.id, id);
     }
   } else if (pos.kind === "triage") {
-    stepEyebrow = "First, the priority";
-    prompt = "If you could only move one of these this year, which matters most?";
-    teach = "A good strategy is a choice. We will walk them all, but the one you pick leads the plan.";
-    options = order.map((g) => ({ id: g, label: goalDisplayLabel(setting, g) }));
-    selected = answers["_triage"];
-    onPick = (id) => answerTriage(id as GoalId);
+    stepEyebrow = "First, your priorities";
+    prompt = "Rank these by what matters most this year.";
+    teach = "A good strategy is a choice. Tap in the order that matters; #1 leads the plan and we walk them that way.";
+    options = authoredAll.map((g) => ({ id: g, label: goalDisplayLabel(setting, g) }));
+    rankMode = true;
+    const rank = currentRank();
+    rankOf = (id) => { const i = rank.indexOf(id as GoalId); return i < 0 ? 0 : i + 1; };
+    rankCount = rank.length;
+    onToggle = (id) => toggleRank(id as GoalId);
+    onContinue = () => continueTriage();
   } else if (pos.kind === "whynow") {
     stepEyebrow = WHY_NOW.eyebrow;
     prompt = WHY_NOW.prompt; teach = WHY_NOW.teach; options = WHY_NOW.options;
@@ -253,22 +280,26 @@ const ValueStrategyExperience = forwardRef<VSEHandle, Props>(function ValueStrat
 
           <div className="border-t border-[#E8E2DA]">
             {options.map((o) => {
-              const on = multiSelect ? selectedIds.includes(o.id) : selected === o.id;
+              const rnk = rankMode ? rankOf(o.id) : 0;
+              const on = rankMode ? rnk > 0 : multiSelect ? selectedIds.includes(o.id) : selected === o.id;
+              const pickIt = rankMode || multiSelect ? onToggle : onPick;
               return (
                 <button
                   key={o.id}
                   type="button"
-                  onClick={() => (multiSelect ? onToggle(o.id) : onPick(o.id))}
+                  onClick={() => pickIt(o.id)}
                   data-testid={testId(pos, o.id)}
-                  aria-pressed={multiSelect ? on : undefined}
-                  className={`group relative w-full text-left flex items-center gap-4 pl-4 pr-3 py-5 border-b border-[#E8E2DA] transition-all cursor-pointer ${multiSelect ? "" : "hover:pl-5"} ${on ? "bg-[#F3EEE7]" : "hover:bg-[#F9F6F1]"}`}
+                  aria-pressed={rankMode || multiSelect ? on : undefined}
+                  className={`group relative w-full text-left flex items-center gap-4 pl-4 pr-3 py-5 border-b border-[#E8E2DA] transition-all cursor-pointer ${rankMode || multiSelect ? "" : "hover:pl-5"} ${on ? "bg-[#F3EEE7]" : "hover:bg-[#F9F6F1]"}`}
                 >
                   {on && <span className="absolute left-0 top-2 bottom-2 w-[3px] rounded-full bg-[#C4B9A8]" aria-hidden />}
                   <div className="min-w-0 flex-1">
                     <div className={`text-[17px] leading-snug ${on ? "font-semibold text-[#1A1A1A]" : "font-medium text-[#1A1A1A]"}`}>{o.label}</div>
                     {o.teach && <div className="text-[13px] text-[#8C8073] leading-snug mt-1 max-w-[520px]">{o.teach}</div>}
                   </div>
-                  {multiSelect ? (
+                  {rankMode ? (
+                    <span className={`w-[26px] h-[26px] rounded-full border-[1.5px] flex items-center justify-center flex-shrink-0 text-[13px] font-bold transition-colors ${rnk > 0 ? "bg-[#8C8073] border-[#8C8073] text-white" : "border-[#CDBFAF] text-transparent group-hover:border-[#8C8073]"}`}>{rnk > 0 ? rnk : "0"}</span>
+                  ) : multiSelect ? (
                     <span className={`w-[22px] h-[22px] rounded-[6px] border-[1.5px] flex items-center justify-center flex-shrink-0 transition-colors ${on ? "bg-[#8C8073] border-[#8C8073]" : "border-[#CDBFAF] group-hover:border-[#8C8073]"}`}>
                       {on && <Check className="w-3.5 h-3.5 text-white" strokeWidth={2.75} />}
                     </span>
@@ -279,16 +310,21 @@ const ValueStrategyExperience = forwardRef<VSEHandle, Props>(function ValueStrat
               );
             })}
           </div>
-          {multiSelect && (
-            <button
-              type="button"
-              onClick={onContinue}
-              disabled={selectedIds.length === 0}
-              data-testid="ground-continue"
-              className={`mt-7 inline-flex items-center gap-2 rounded-full px-6 py-3 text-[14px] font-semibold transition-colors ${selectedIds.length === 0 ? "bg-[#EFE9E1] text-[#B4A896] cursor-not-allowed" : "bg-[#EA2C00] text-white hover:bg-[#D02700] cursor-pointer"}`}
-            >
-              Continue <ArrowRight className="w-4 h-4" strokeWidth={2} />
-            </button>
+          {(multiSelect || rankMode) && (
+            <div className="mt-7 flex items-center gap-5">
+              <button
+                type="button"
+                onClick={onContinue}
+                disabled={rankMode ? rankCount === 0 : selectedIds.length === 0}
+                data-testid={rankMode ? "triage-continue" : "ground-continue"}
+                className={`inline-flex items-center gap-2 rounded-full px-6 py-3 text-[14px] font-semibold transition-colors ${(rankMode ? rankCount === 0 : selectedIds.length === 0) ? "bg-[#EFE9E1] text-[#B4A896] cursor-not-allowed" : "bg-[#EA2C00] text-white hover:bg-[#D02700] cursor-pointer"}`}
+              >
+                Continue <ArrowRight className="w-4 h-4" strokeWidth={2} />
+              </button>
+              {rankMode && rankCount > 0 && (
+                <button type="button" onClick={resetRank} data-testid="triage-reset" className="text-[13px] text-[#B4A896] hover:text-[#8C8073] transition-colors">Reset</button>
+              )}
+            </div>
           )}
         </div>
 
@@ -416,9 +452,11 @@ function Brief({
         </>
       )}
 
-      {/* goal pills — one goal read at a time */}
+      {/* goal pills — shown in ranked priority order, one goal read at a time */}
       {order.length > 1 && (
-        <div className="flex flex-wrap gap-2.5 mt-8">
+        <div className="mt-8">
+          <p className="text-[10px] font-bold uppercase tracking-[1.6px] text-[#B4A896] mb-3">Your priorities, in order</p>
+          <div className="flex flex-wrap gap-2.5">
           {order.map((goal) => {
             const on = goal === active;
             const c = classOf(goal);
@@ -438,12 +476,13 @@ function Brief({
               </button>
             );
           })}
+          </div>
         </div>
       )}
 
       {/* the selected goal read */}
       <div className="mt-8">
-        <GoalBrief setting={setting} settingLabel={settingLabel} goal={active} answers={answers} />
+        <GoalBrief setting={setting} settingLabel={settingLabel} goal={active} answers={answers} rank={order.indexOf(active) + 1} total={order.length} />
       </div>
 
       {pending.length > 0 && (
@@ -464,13 +503,18 @@ function Brief({
 }
 
 function GoalBrief({
-  setting, settingLabel, goal, answers,
+  setting, settingLabel, goal, answers, rank, total,
 }: {
-  setting: AttainSetting; settingLabel: string; goal: GoalId; answers: DiscoveryAnswers;
+  setting: AttainSetting; settingLabel: string; goal: GoalId; answers: DiscoveryAnswers; rank?: number; total?: number;
 }) {
   const foundation = briefFoundation(setting, goal, settingLabel, answers);
   if (!foundation) return null;
-  return <FoundationCard settingLabel={settingLabel} goalLabel={goalDisplayLabel(setting, goal)} foundation={foundation} />;
+  // With multiple goals, the priority rank sits where scale's "today it is" used to,
+  // so the left column reads scope / driver / priority (3 x 3). Single goal omits it.
+  const withRank = rank && total && total > 1
+    ? { ...foundation, current: [...foundation.current, { label: "Priority this year", value: `#${rank} of ${total}` }] }
+    : foundation;
+  return <FoundationCard settingLabel={settingLabel} goalLabel={goalDisplayLabel(setting, goal)} foundation={withRank} />;
 }
 
 // The foundation read: a current-state / desired-state mirror. Strategy's real

@@ -77,9 +77,9 @@ describe("nurse retention multi-select (comprehensive capture)", () => {
     expect(script.questions[script.entry].multi, "nurse drivers should be multi").toBe(true);
     expect(script.questions.connect, "missing connect-the-dots beat").toBeTruthy();
     expect(script.questions.connect.multi).toBe(true);
-    // drivers → connect → scale
+    // drivers → connect → target (scale removed; rank up front replaces it)
     expect(script.questions[script.entry].options.every((o) => o.next === "connect")).toBe(true);
-    expect(script.questions.connect.options.every((o) => o.next === "scale")).toBe(true);
+    expect(script.questions.connect.options.every((o) => o.next === "target")).toBe(true);
   });
 
   it("folds in EVERY chosen driver + connect moment (not just one)", () => {
