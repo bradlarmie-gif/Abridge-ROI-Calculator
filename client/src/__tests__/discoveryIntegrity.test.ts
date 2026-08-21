@@ -69,6 +69,53 @@ describe("grounding is setting-native (domain-fit guard)", () => {
   });
 });
 
+describe("nurse retention multi-select (comprehensive capture)", () => {
+  const S = "nursing" as AttainSetting, G = "retention" as GoalId;
+  const script = DISCOVERY.nursing!.retention!;
+
+  it("drivers is multi-select and has a connect-the-dots beat before scale", () => {
+    expect(script.questions[script.entry].multi, "nurse drivers should be multi").toBe(true);
+    expect(script.questions.connect, "missing connect-the-dots beat").toBeTruthy();
+    expect(script.questions.connect.multi).toBe(true);
+    // drivers → connect → scale
+    expect(script.questions[script.entry].options.every((o) => o.next === "connect")).toBe(true);
+    expect(script.questions.connect.options.every((o) => o.next === "scale")).toBe(true);
+  });
+
+  it("folds in EVERY chosen driver + connect moment (not just one)", () => {
+    const answers: DiscoveryAnswers = {
+      [`${G}:drivers:burden`]: "1",
+      [`${G}:drivers:workload`]: "1",
+      [`${G}:connect:afterShift`]: "1",
+      [`${G}:connect:breaks`]: "1",
+    };
+    const r = resolveResult(S, G, answers)!;
+    // both drivers AND both connect moments land in the receipt narrative
+    expect(r.narrative.some((n) => /past the end of the shift/.test(n))).toBe(true);
+    expect(r.narrative.some((n) => /workload and ratios/.test(n))).toBe(true);
+    expect(r.narrative.some((n) => /after the shift ends/.test(n))).toBe(true);
+    expect(r.narrative.some((n) => /skip breaks/.test(n))).toBe(true);
+    // a documentation driver was named → proof handoff fires, not an honest wipe
+    expect(r.proofDriverId).toBe("nursingRetention");
+  });
+
+  it("a documentation driver survives even when an honest-out is ALSO picked", () => {
+    const answers: DiscoveryAnswers = {
+      [`${G}:drivers:burden`]: "1",
+      [`${G}:drivers:paylife`]: "1",
+    };
+    const r = resolveResult(S, G, answers)!;
+    expect(r.honest, "an honest-out was picked").toBe(true);
+    expect(r.proofDriverId, "the documentation case still holds").toBe("nursingRetention");
+  });
+
+  it("honest-out ALONE stays honest with no counted lever", () => {
+    const r = resolveResult(S, G, { [`${G}:drivers:paylife`]: "1" })!;
+    expect(r.honest).toBe(true);
+    expect(r.lever).toBeUndefined();
+  });
+});
+
 describe("discovery integrity", () => {
   it("has at least the two flagship scripts", () => {
     expect(DISCOVERY.outpatient?.access).toBeTruthy();
@@ -155,7 +202,8 @@ describe("discovery integrity", () => {
             guard.add(qid);
             const q = script.questions[qid];
             const opt = q.options[pickIdx(q.options.length)];
-            answers[`${goal}:${qid}`] = opt.id;
+            if (q.multi) answers[`${goal}:${qid}:${opt.id}`] = "1";
+            else answers[`${goal}:${qid}`] = opt.id;
             qid = opt.next;
           }
           return answers;
@@ -173,7 +221,7 @@ describe("discovery integrity", () => {
         const walk = (qid: string, acc: DiscoveryAnswers) => {
           const q = script.questions[qid];
           for (const o of q.options) {
-            const next = { ...acc, [`${goal}:${qid}`]: o.id };
+            const next = { ...acc, ...(q.multi ? { [`${goal}:${qid}:${o.id}`]: "1" } : { [`${goal}:${qid}`]: o.id }) };
             if (o.next === BRIEF) paths.push(next);
             else walk(o.next, next);
           }

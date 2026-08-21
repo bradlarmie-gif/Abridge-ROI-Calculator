@@ -122,6 +122,26 @@ const ValueStrategyExperience = forwardRef<VSEHandle, Props>(function ValueStrat
       advance(pos, { kind: "goal", goalIdx: pos.goalIdx, qid: opt.next }, opt.reflect ?? null);
     }
   };
+  // A multi-select goal question stores one boolean per chosen option, then Continue
+  // advances via the step's shared next (every option on a multi step shares one).
+  const toggleGoal = (goal: GoalId, qid: string, optId: string) => {
+    const key = `${goal}:${qid}:${optId}`;
+    const next = { ...answers };
+    if (next[key]) delete next[key]; else next[key] = "1";
+    persist(next);
+  };
+  const continueGoal = () => {
+    if (pos.kind !== "goal") return;
+    const goal = order[pos.goalIdx];
+    const q = getScript(setting, goal)!.questions[pos.qid];
+    const nextId = q.options[0]?.next;
+    if (nextId === BRIEF) {
+      if (pos.goalIdx + 1 < order.length) advance(pos, goalEntry(pos.goalIdx + 1));
+      else advance(pos, { kind: "whynow" });
+    } else if (nextId) {
+      advance(pos, { kind: "goal", goalIdx: pos.goalIdx, qid: nextId });
+    }
+  };
   const answerWhyNow = (optId: string) => {
     if (pos.kind !== "whynow") return;
     persist({ ...answers, ["_ground:whynow"]: optId });
@@ -199,8 +219,15 @@ const ValueStrategyExperience = forwardRef<VSEHandle, Props>(function ValueStrat
     const q = script.questions[pos.qid];
     stepEyebrow = q.eyebrow ?? goalDisplayLabel(setting, goal);
     prompt = q.prompt; teach = q.teach ?? ""; options = q.options;
-    selected = answers[`${goal}:${pos.qid}`];
-    onPick = (id) => answerGoal(id);
+    if (q.multi) {
+      multiSelect = true;
+      selectedIds = q.options.filter((o) => answers[`${goal}:${pos.qid}:${o.id}`] === "1").map((o) => o.id);
+      onToggle = (id) => toggleGoal(goal, pos.qid, id);
+      onContinue = () => continueGoal();
+    } else {
+      selected = answers[`${goal}:${pos.qid}`];
+      onPick = (id) => answerGoal(id);
+    }
   }
 
   const contextLabel =
@@ -234,19 +261,19 @@ const ValueStrategyExperience = forwardRef<VSEHandle, Props>(function ValueStrat
                   onClick={() => (multiSelect ? onToggle(o.id) : onPick(o.id))}
                   data-testid={testId(pos, o.id)}
                   aria-pressed={multiSelect ? on : undefined}
-                  className={`group relative w-full text-left flex items-center gap-4 pl-4 pr-3 py-5 border-b border-[#E8E2DA] transition-all cursor-pointer ${multiSelect ? "" : "hover:pl-5"} ${on ? "bg-[#FBE7E1]/40" : "hover:bg-[#F6F2EC]"}`}
+                  className={`group relative w-full text-left flex items-center gap-4 pl-4 pr-3 py-5 border-b border-[#E8E2DA] transition-all cursor-pointer ${multiSelect ? "" : "hover:pl-5"} ${on ? "bg-[#F3EEE7]" : "hover:bg-[#F9F6F1]"}`}
                 >
-                  {on && <span className="absolute left-0 top-2 bottom-2 w-[3px] rounded-full bg-[#EA2C00]" aria-hidden />}
+                  {on && <span className="absolute left-0 top-2 bottom-2 w-[3px] rounded-full bg-[#C4B9A8]" aria-hidden />}
                   <div className="min-w-0 flex-1">
-                    <div className={`text-[17px] leading-snug ${on ? "font-semibold text-[#EA2C00]" : "font-medium text-[#1A1A1A]"}`}>{o.label}</div>
+                    <div className={`text-[17px] leading-snug ${on ? "font-semibold text-[#1A1A1A]" : "font-medium text-[#1A1A1A]"}`}>{o.label}</div>
                     {o.teach && <div className="text-[13px] text-[#8C8073] leading-snug mt-1 max-w-[520px]">{o.teach}</div>}
                   </div>
                   {multiSelect ? (
-                    <span className={`w-[22px] h-[22px] rounded-[6px] border-[1.5px] flex items-center justify-center flex-shrink-0 transition-colors ${on ? "bg-[#EA2C00] border-[#EA2C00]" : "border-[#CDBFAF] group-hover:border-[#EA2C00]"}`}>
+                    <span className={`w-[22px] h-[22px] rounded-[6px] border-[1.5px] flex items-center justify-center flex-shrink-0 transition-colors ${on ? "bg-[#8C8073] border-[#8C8073]" : "border-[#CDBFAF] group-hover:border-[#8C8073]"}`}>
                       {on && <Check className="w-3.5 h-3.5 text-white" strokeWidth={2.75} />}
                     </span>
                   ) : (
-                    <ArrowRight className={`w-5 h-5 flex-shrink-0 transition-all ${on ? "text-[#EA2C00]" : "text-[#C9BDAD] group-hover:text-[#EA2C00] group-hover:translate-x-1"}`} strokeWidth={1.8} />
+                    <ArrowRight className={`w-5 h-5 flex-shrink-0 transition-all ${on ? "text-[#6E675C]" : "text-[#C9BDAD] group-hover:text-[#8C8073] group-hover:translate-x-1"}`} strokeWidth={1.8} />
                   )}
                 </button>
               );

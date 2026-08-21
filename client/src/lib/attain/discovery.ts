@@ -42,11 +42,16 @@ export interface DiscoveryQuestion {
   prompt: string;
   teach?: string;
   options: DiscoveryOption[];
+  /** When true, the partner can pick several answers (checkbox + Continue).
+   * All options must share one `next` (a multi step has no per-option branch). */
+  multi?: boolean;
 }
 
 /** What an authored thesis reads: the partner's answers + the resolved result. */
 export interface ThesisCtx {
   pick: (qid: string) => string | undefined;
+  /** read every option id chosen for a multi-select question, in authored order. */
+  picks: (qid: string) => string[];
   /** read a shared grounding answer (scope, tried, whynow), for foundation reads. */
   ground?: (gid: string) => string | undefined;
   narrative: string[];
@@ -148,6 +153,11 @@ interface FoundationSpec {
   successPrompt: string; successTeach: string; successes: FChoice[];
   scopeLabel?: string;
   bridgeDoc: string; bridgeProof: string; bridgeHonest: string;
+  // Comprehensive capture: let the partner name several answers where reality is plural.
+  multiDrivers?: boolean; multiTargets?: boolean; multiSuccess?: boolean;
+  // The optional "connect the dots" beat, inserted right after drivers: name the concrete
+  // documentation moments behind the reasons they just gave. Always multi.
+  connect?: { prompt: string; teach?: string; label: string; options: FDriver[]; };
 }
 
 function makeFoundation(spec: FoundationSpec): DiscoveryScript {
@@ -162,7 +172,8 @@ function makeFoundation(spec: FoundationSpec): DiscoveryScript {
         eyebrow: "Where you are",
         prompt: spec.driversPrompt,
         teach: spec.driversTeach,
-        options: spec.drivers.map((d) => ({ id: d.id, label: d.label, capture: d.capture, lever: d.lever, proofDriverId: d.proofDriverId, proof: d.proof, honest: d.honest, next: "scale" })),
+        multi: spec.multiDrivers,
+        options: spec.drivers.map((d) => ({ id: d.id, label: d.label, capture: d.capture, lever: d.lever, proofDriverId: d.proofDriverId, proof: d.proof, honest: d.honest, next: spec.connect ? "connect" : "scale" })),
       },
       scale: {
         eyebrow: "Where you are",
@@ -174,6 +185,7 @@ function makeFoundation(spec: FoundationSpec): DiscoveryScript {
         eyebrow: "Where you want to go",
         prompt: spec.targetPrompt,
         teach: spec.targetTeach,
+        multi: spec.multiTargets,
         options: spec.targets.map((x) => ({ id: x.id, label: x.label, capture: x.capture, next: "horizon" })),
       },
       horizon: {
@@ -186,35 +198,57 @@ function makeFoundation(spec: FoundationSpec): DiscoveryScript {
         eyebrow: "Where you want to go",
         prompt: spec.successPrompt,
         teach: spec.successTeach,
+        multi: spec.multiSuccess,
         options: spec.successes.map((x) => ({ id: x.id, label: x.label, capture: x.capture, next: BRIEF })),
       },
     },
   };
+  // The optional connect-the-dots beat sits between drivers and scale. drivers already
+  // point to it (next: "connect") whenever spec.connect is set.
+  if (spec.connect) {
+    script.questions.connect = {
+      eyebrow: "Where you are",
+      prompt: spec.connect.prompt,
+      teach: spec.connect.teach,
+      multi: true,
+      options: spec.connect.options.map((d) => ({ id: d.id, label: d.label, capture: d.capture, honest: d.honest, next: "scale" })),
+    };
+  }
   script.foundation = (t) => {
+    // One reader for single- and multi-select questions: a multi step returns every
+    // chosen option, a single step the one pick. Values join into one plain clause.
+    const chosenOf = <T extends { id: string }>(qid: string, pool: T[], multi?: boolean): T[] => {
+      const ids = multi ? t.picks(qid) : [t.pick(qid)].filter(Boolean) as string[];
+      return ids.map((id) => pool.find((x) => x.id === id)).filter(Boolean) as T[];
+    };
+    const join = (xs: { value: string }[]) => xs.map((x) => x.value).join(", ");
     const scope = scopeValueFor(spec.setting, t.ground?.("scope"));
     const tried = TRIED_VALUE[t.ground?.("tried") ?? ""];
-    const d = spec.drivers.find((x) => x.id === t.pick("drivers"));
+    const ds = chosenOf("drivers", spec.drivers, spec.multiDrivers);
     const scale = SCALE_Q_OPTIONS.find((o) => o.id === t.pick("scale"))?.value;
-    const target = spec.targets.find((x) => x.id === t.pick("target"));
+    const ts = chosenOf("target", spec.targets, spec.multiTargets);
     const horizon = HORIZON_Q_OPTIONS.find((o) => o.id === t.pick("horizon"))?.value;
-    const success = spec.successes.find((x) => x.id === t.pick("success"));
+    const ss = chosenOf("success", spec.successes, spec.multiSuccess);
+    const cs = spec.connect ? chosenOf("connect", spec.connect.options, true) : [];
     // Keep the two columns balanced (3 x 3): scope / driver / scale on the left,
-    // target / timeframe / signal on the right. "Already tried" is context that
-    // was gathered in the walk; it rides in the bridge, not as a fourth row.
+    // target / timeframe / signal on the right. "Already tried" and the connect-the-dots
+    // context ride in the bridge, not as a fourth row.
     const current: FoundationItem[] = [
       scope ? { label: spec.scopeLabel ?? "Concentrated in", value: scope } : null,
-      d ? { label: spec.currentLabel, value: d.value } : null,
+      ds.length ? { label: spec.currentLabel, value: join(ds) } : null,
       scale ? { label: spec.scaleLabel, value: scale } : null,
     ].filter(Boolean) as FoundationItem[];
     const desired: FoundationItem[] = [
-      target ? { label: spec.targetLabel, value: target.value } : null,
+      ts.length ? { label: spec.targetLabel, value: join(ts) } : null,
       horizon ? { label: "On what timeframe", value: horizon } : null,
-      success ? { label: "You'll know it's working when", value: success.value } : null,
+      ss.length ? { label: "You'll know it's working when", value: join(ss) } : null,
     ].filter(Boolean) as FoundationItem[];
-    const base = d?.honest ? spec.bridgeHonest : d?.lever ? spec.bridgeDoc : spec.bridgeProof;
+    const allHonest = ds.length > 0 && ds.every((x) => x.honest);
+    const base = allHonest ? spec.bridgeHonest : ds.some((x) => x.lever) ? spec.bridgeDoc : spec.bridgeProof;
+    const connectNote = cs.length && !allHonest ? ` The documentation day here shows up as ${join(cs)}.` : "";
     // Fold the double-count context in: if a program is already in place, say so.
     const triedNote = tried && t.ground?.("tried") !== "nothing" ? ` You already have ${tried} in place, so we size only the headroom left.` : "";
-    return { current, desired, bridge: base + triedNote, signalLabel: "You'll know it's working when" };
+    return { current, desired, bridge: base + connectNote + triedNote, signalLabel: "You'll know it's working when" };
   };
   return script;
 }
@@ -293,21 +327,23 @@ const outpatientRevenue = makeFoundation({
 });
 
 // ── Retention (proof-first: tracked, not counted) ────────────────────────────
-function retentionFoundation(opts: { setting: AttainSetting; who: string; driverId: string; briefIntro: string; roles: string[]; workloadLabel?: string; targets: FChoice[]; successes: FChoice[]; }): DiscoveryScript {
+function retentionFoundation(opts: { setting: AttainSetting; who: string; driverId: string; briefIntro: string; roles: string[]; workloadLabel?: string; targets: FChoice[]; successes: FChoice[]; multi?: boolean; drivers?: FDriver[]; driversPrompt?: string; driversTeach?: string; connect?: FoundationSpec["connect"]; }): DiscoveryScript {
   return makeFoundation({
     setting: opts.setting,
     briefIntro: opts.briefIntro,
     roles: opts.roles,
     caveat: "Retention only moves if the recovered time is protected, not quietly refilled with more work.",
     proofLine: LEVER_LINE[opts.driverId],
-    driversPrompt: `Why are ${opts.who} actually leaving today?`,
-    driversTeach: "Ambient documentation helps if the load is a real driver. If it is mostly pay or life elsewhere, a lighter day will not be the deciding factor, and we will say so.",
+    driversPrompt: opts.driversPrompt ?? `Why are ${opts.who} actually leaving today?`,
+    driversTeach: opts.driversTeach ?? "Ambient documentation helps if the load is a real driver. If it is mostly pay or life elsewhere, a lighter day will not be the deciding factor, and we will say so.",
     currentLabel: "Why people are leaving",
-    drivers: [
+    drivers: opts.drivers ?? [
       { id: "burden", label: "Burnout and documentation load", capture: "burnout and documentation load are driving turnover", value: "burnout and documentation load", proofDriverId: opts.driverId, proof: LEVER_LINE[opts.driverId] },
       { id: "workload", label: opts.workloadLabel ?? "Workload and pace", capture: "workload and pace are the driver", value: opts.workloadLabel ?? "workload and pace", proofDriverId: opts.driverId, proof: LEVER_LINE[opts.driverId] },
       { id: "paylife", label: "Mostly pay, or life elsewhere", capture: "the main driver is pay or life elsewhere, which documentation will not fix", value: "pay or life elsewhere", honest: true },
     ],
+    multiDrivers: opts.multi, multiTargets: opts.multi, multiSuccess: opts.multi,
+    connect: opts.connect,
     scaleLabel: "Today it is",
     targetPrompt: "What does better look like?",
     targetTeach: "The direction you want to steer retention.",
@@ -371,18 +407,45 @@ const inpatientRetention = retentionFoundation({
 });
 
 const nursingRetentionScript = retentionFoundation({
-  setting: "nursing", who: "nurses", driverId: "nursingRetention", workloadLabel: "Workload and ratios",
+  setting: "nursing", who: "nurses", driverId: "nursingRetention", multi: true,
   briefIntro: "You said retention. For nurses the charting that keeps them past the end of the shift is often the driver, but we gather the real picture first.",
   roles: ["Nursing leadership", "Unit managers", "The CNO's office"],
+  // WHY they leave. Plural by nature, so name every one that is real.
+  driversPrompt: "Why are nurses actually leaving? Pick every one that's real.",
+  driversTeach: "Some of these documentation can move, some it can't. Name them all and we'll sort which is which.",
+  drivers: [
+    { id: "burden", label: "Charting that runs past the end of the shift", capture: "charting runs past the end of the shift", value: "charting past the shift", proofDriverId: "nursingRetention", proof: LEVER_LINE["nursingRetention"] },
+    { id: "workload", label: "Workload and ratios", capture: "workload and ratios are a driver", value: "workload and ratios", proofDriverId: "nursingRetention", proof: LEVER_LINE["nursingRetention"] },
+    { id: "cognitive", label: "Burnout and cognitive load", capture: "burnout and cognitive load are a driver", value: "burnout and cognitive load", proofDriverId: "nursingRetention", proof: LEVER_LINE["nursingRetention"] },
+    { id: "firstyear", label: "New nurses overwhelmed early", capture: "new nurses are overwhelmed early", value: "new nurses overwhelmed early", proofDriverId: "nursingRetention", proof: LEVER_LINE["nursingRetention"] },
+    { id: "paylife", label: "Pay, or life elsewhere", capture: "some leave for pay or life elsewhere, which documentation will not fix", value: "pay or life elsewhere", honest: true },
+    { id: "schedule", label: "Scheduling and flexibility", capture: "scheduling and flexibility are a driver documentation will not fix", value: "scheduling and flexibility", honest: true },
+  ],
+  // CONNECT THE DOTS: the concrete documentation moments behind those reasons.
+  connect: {
+    prompt: "Where does the documentation day actually show up for them?",
+    teach: "The moments a lighter note would land. This is what we track once the plan is running.",
+    label: "The documentation day",
+    options: [
+      { id: "afterShift", label: "Charting after the shift ends", capture: "they chart after the shift ends", value: "charting after the shift" },
+      { id: "duringCare", label: "Charting pulling them away from patients", capture: "charting pulls them from the bedside", value: "charting away from the bedside" },
+      { id: "breaks", label: "Skipping breaks to catch up on notes", capture: "they skip breaks to catch up on notes", value: "skipped breaks to chart" },
+      { id: "mentalLoad", label: "Carrying unfinished notes home in their head", capture: "they carry unfinished notes home", value: "unfinished notes on their mind" },
+      { id: "handoff", label: "Rushed or incomplete handoffs", capture: "handoffs are rushed by the charting load", value: "rushed handoffs" },
+    ],
+  },
   targets: [
     { id: "stay", label: "Keep the nurses you have", capture: "keeping the nurses you have", value: "keeping the nurses you have" },
     { id: "lighter", label: "Charting that fits inside the shift", capture: "charting that fits in the shift", value: "charting that fits in the shift" },
     { id: "firstyear", label: "Hold onto first-year nurses", capture: "holding onto first-year nurses", value: "holding onto first-year nurses" },
+    { id: "reputation", label: "Be a unit nurses want to stay on", capture: "becoming a unit nurses want to stay on", value: "a unit nurses want to stay on" },
   ],
   successes: [
     { id: "endshift", label: "End-of-shift charting time falling", capture: "success looks like end-of-shift charting falling", value: "end-of-shift charting falling" },
     { id: "breaks", label: "Fewer missed breaks", capture: "success looks like fewer missed breaks", value: "fewer missed breaks" },
     { id: "turnover", label: "Turnover easing on high-ratio units", capture: "success looks like turnover easing on high-ratio units", value: "turnover easing on high-ratio units" },
+    { id: "firstyearstay", label: "First-year nurses staying past year one", capture: "success looks like first-year nurses staying past year one", value: "first-year nurses staying past year one" },
+    { id: "engagement", label: "Engagement scores rising", capture: "success looks like engagement scores rising", value: "engagement scores rising" },
   ],
 });
 
@@ -677,6 +740,21 @@ export function resolveResult(setting: AttainSetting, goal: GoalId, answers: Dis
     guard.add(qid);
     const q = script.questions[qid];
     if (!q) break;
+    if (q.multi) {
+      // A multi step: fold in every chosen option. All options share one next.
+      const chosen = q.options.filter((o) => answers[`${goal}:${qid}:${o.id}`] === "1");
+      if (chosen.length === 0) break; // not answered yet
+      for (const o of chosen) {
+        if (o.capture) narrative.push(o.capture);
+        if (o.lever) lever = o.lever;
+        if (o.proof) proof = o.proof;
+        if (o.proofDriverId) proofDriverId = o.proofDriverId;
+        if (o.honest) honest = true;
+      }
+      qid = q.options[0].next;
+      if (qid === BRIEF) complete = true;
+      continue;
+    }
     const chosen = answers[`${goal}:${qid}`];
     const opt = q.options.find((o) => o.id === chosen);
     if (!opt) break; // not answered yet
@@ -692,7 +770,10 @@ export function resolveResult(setting: AttainSetting, goal: GoalId, answers: Dis
   // reached later on the path must UNDO the counted lever pinned earlier — otherwise the
   // brief headlines it as counted money and the handoff pre-enables a driver the partner
   // just said is not the note's to fix. This is the whole honesty promise.
-  if (honest) lever = undefined;
+  // ...but only when the honest-out stands ALONE. On a multi step a partner can name a
+  // documentation driver AND an honest-out ("some leave for pay too"); the documentation
+  // case still holds, so a real lever/proof driver survives beside it.
+  if (honest && !lever && !proof && !proofDriverId) lever = undefined;
   return { goal, narrative, lever, proof, proofDriverId, honest, complete };
 }
 
@@ -720,6 +801,11 @@ function ctxFor(setting: AttainSetting, goal: GoalId, settingLabel: string, answ
   const res = resolveResult(setting, goal, answers);
   return {
     pick: (qid) => answers[`${goal}:${qid}`],
+    picks: (qid) => {
+      const q = getScript(setting, goal)?.questions[qid];
+      if (!q) return [];
+      return q.options.filter((o) => answers[`${goal}:${qid}:${o.id}`] === "1").map((o) => o.id);
+    },
     ground: (gid) => answers[`_ground:${gid}`],
     narrative: res?.narrative ?? [],
     lever: res?.lever,
