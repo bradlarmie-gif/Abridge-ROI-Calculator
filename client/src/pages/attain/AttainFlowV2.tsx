@@ -255,7 +255,7 @@ export default function AttainFlowV2({
           {/* The care-setting step advances on row click (Explore parity), so it
               carries no Continue button; every other funnel step does. */}
           {phase !== "setting" && (
-            <div className="mt-10 flex items-center justify-end border-t border-[#E8E2DA] pt-6">
+            <div className="mt-10 flex items-center justify-end">
               <button onClick={goNext} disabled={!canContinue} className="inline-flex items-center gap-2 rounded-xl bg-[#EA2C00] text-white text-[14px] font-semibold px-5 py-2.5 hover:bg-[#d12800] disabled:bg-transparent disabled:text-[#B4A896] disabled:border disabled:border-[#E0D9CE] disabled:cursor-not-allowed transition-colors">
                 {idx === PHASES.length - 2 ? (buildCta ?? "Build the plan") : "Continue"} <ArrowRight className="w-4 h-4" />
               </button>
