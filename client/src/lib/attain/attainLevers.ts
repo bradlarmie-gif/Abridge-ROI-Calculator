@@ -944,6 +944,12 @@ export const LEVERS: Record<GoalId, Lever[]> = {
       signalOptions: ["On-time shift completion %", "Overtime hours avoided vs the documentation-attributable pool", "Missed-lunch rate"],
     },
   ],
+
+  // Patient Experience is a strategy-discovery-only goal (nursing). It never
+  // enters the planning/measurement funnel (not in SETTING_GOAL_MATRIX), so it
+  // carries no measurement levers; this entry exists only to satisfy the
+  // exhaustive Record<GoalId, Lever[]> type.
+  experience: [],
 };
 
 /**

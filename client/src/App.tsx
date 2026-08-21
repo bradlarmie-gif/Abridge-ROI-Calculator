@@ -536,7 +536,7 @@ export default function App() {
     const proofDriverIds = new Set<string>();  // proof-first drivers (retention) → toggle on in tracked mode
     const countedLabels = new Set<string>();
     const trackedLabels = new Set<string>();
-    const proofLabel: Record<string, string> = { providerWellbeing: "Provider Retention", nursingRetention: "Nurse Retention", ipLengthOfStay: "Inpatient Capacity" };
+    const proofLabel: Record<string, string> = { providerWellbeing: "Provider Retention", nursingRetention: "Nurse Retention", ipLengthOfStay: "Inpatient Capacity", nursingHcahps: "Patient Experience" };
     for (const g of (snap.goals ?? []) as GoalId[]) {
       const r = resolveResult(snap.setting as AttainSetting, g, answers);
       for (const lv of r?.levers ?? []) { driverIds.add(lv.driverId); countedLabels.add(lv.label); }
@@ -556,6 +556,9 @@ export default function App() {
       // Inpatient capacity stays a tracked signal (LOS attribution to ambient is hard),
       // so light up the LOS driver alongside the documentation drivers that move it.
       else if (id === "ipLengthOfStay") { td.ipLengthOfStayEnabled = true; td.ipDocumentationLagEnabled = true; td.ipDischargeGoalDocEnabled = true; }
+      // Patient Experience stays a tracked HCAHPS signal (nurse-communication is
+      // qualitative, $0), lit up alongside the bedside-time driver that moves it.
+      else if (id === "nursingHcahps") { dq.nursingHcahpsEnabled = true; td.nursingCareTimeEnabled = true; }
     });
     driverIds.forEach((id) => {
       switch (id) {

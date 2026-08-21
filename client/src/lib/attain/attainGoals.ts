@@ -576,6 +576,45 @@ export const GOAL_CATALOG: Record<GoalId, GoalDef> = {
       outcomeTemplate: "Take about {count} overtime hours a year off the schedule.",
     },
   },
+
+  // Nursing's Patient Experience play: less time charting -> more presence at the
+  // bedside -> clearer nurse-patient communication -> HCAHPS. A proof/experience
+  // story (tracked, not a hard dollar) that lives in the strategy discovery only.
+  experience: {
+    id: "experience",
+    label: "Patient Experience",
+    pill: "Experience",
+    pillBg: "#0891B2",
+    domainSub: "Bedside Presence & Communication",
+    chainTitle: "How Experience Rises",
+    chainArrow: "↑",
+    quadrant: "Quality",
+    chain: [
+      { n: 1, name: "Abridge adopted", signal: "% staff documenting via Abridge", ownerRole: "Abridge CSM + unit champion", fragile: false, isAbridge: true },
+      { n: 2, name: "Charting off the bedside conversation", signal: "Point-of-care doc rate", ownerRole: "Abridge", fragile: false, isAbridge: true },
+      { n: 3, name: "Nurses present at the bedside", signal: "Direct-care time ratio", ownerRole: "Charge nurses / unit leads", fragile: true, isAbridge: false },
+      { n: 4, name: "Clearer nurse-patient communication", signal: "Rounding + teaching quality", ownerRole: "Unit / bedside nurses", fragile: true, isAbridge: false },
+      { n: 5, name: "Experience captured in the survey", signal: "HCAHPS response rate", ownerRole: "Patient experience office", fragile: false, isAbridge: false },
+      { n: 6, name: "Nurse-communication score rises", signal: "HCAHPS nurse-communication domain", ownerRole: "Nursing / experience", fragile: false, isAbridge: false },
+      { n: 7, name: "VBP position improves", signal: "Value-based purchasing score", ownerRole: "Finance / quality", fragile: false, isAbridge: false },
+    ],
+    mechanisms: [
+      { heading: "Take the screen out of the room", body: "When the note happens in the conversation, the nurse faces the patient instead of the workstation." },
+      { heading: "Return the minutes to the bedside", body: "Time saved on charting only helps experience if it is spent in the room, not refilled with more assignment." },
+      { heading: "Make the survey a habit, not a surprise", body: "Experience leadership reviews nurse-communication scores with units regularly, so the signal reaches the people who shape it." },
+    ],
+    flow: [
+      { label: "Abridge Ambient", kind: "start" },
+      { label: "Bedside presence", kind: "mid" },
+      { label: "Time protected", kind: "risk" },
+      { label: "HCAHPS ↑", kind: "end" },
+    ],
+    valueUnit: {
+      countNoun: "points of HCAHPS nurse-communication",
+      heroIsDollar: false,
+      outcomeTemplate: "Move the HCAHPS nurse-communication score, tracked as an experience signal.",
+    },
+  },
 };
 
 // ────────────────────────────────────────────────────────────────────────
@@ -609,6 +648,7 @@ export function categoryForGoal(setting: AttainSetting, goal: GoalId): string {
     retention: "Provider Retention",
     revenue: "Revenue Capture",
     quality: "Quality & Safety",
+    experience: "Patient Experience",
   };
   return base[goal];
 }

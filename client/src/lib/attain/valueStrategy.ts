@@ -501,31 +501,31 @@ const nursingRetention: OutcomeTrace = {
 };
 
 // ── Nursing · Revenue Capture ────────────────────────────────────────────────
-const nursingRevenue: OutcomeTrace = {
-  outcome: "Make sure nursing documentation supports the charges and acuity already earned.",
-  outcomeSub: "Complete, timely nursing documentation supports charge capture and the severity picture coding relies on.",
+const nursingExperience: OutcomeTrace = {
+  outcome: "Give nurses more time at the bedside, and let it show up in the patient experience.",
+  outcomeSub: "When the note happens in the conversation instead of at the workstation, nurses face the patient, and HCAHPS nurse-communication tracks it.",
   conditions: [
-    { id: "c_complete", label: "Nursing documentation is complete and timely", helper: "Interventions and assessments are captured while they are fresh.", defaultOn: true },
-    { id: "c_leak", label: "There is known charge or acuity leakage nursing docs affect", helper: "Missed infusion, procedure, or supply charges, or unsupported acuity.", defaultOn: true },
-    { id: "c_rely", label: "Coding relies on nursing documentation", helper: "The nursing record feeds charge capture and the severity picture." },
-    { id: "c_room", label: "There is genuine capture to recover", helper: "Late or dropped charges that are truly earned." },
+    { id: "c_time", label: "Charting is pulling nurses off the bedside today", helper: "Time at the workstation is time not in the room.", defaultOn: true },
+    { id: "c_measured", label: "Patient experience is measured", helper: "HCAHPS nurse-communication, rounding, or complaint data exists to move.", defaultOn: true },
+    { id: "c_room", label: "There is genuine room in the score to move", helper: "Nurse-communication is not already at ceiling." },
+    { id: "c_reach", label: "Time saved can actually reach the room", helper: "Freed minutes are protected, not refilled with more assignment." },
   ],
   decisions: [
-    { id: "d_focus", label: "The charge or acuity areas to focus are chosen", helper: "For example, infusions, procedures, or observation support.", defaultOn: true },
-    { id: "d_standard", label: "The standard is accurate capture", helper: "Charges the record truly supports, not more.", defaultOn: true },
-    { id: "d_align", label: "Coding and nursing are aligned", helper: "The two see the same documentation and expectations." },
-    { id: "d_baseline", label: "A baseline and target are set", helper: "Current late-charge or leakage rate and where it should land." },
+    { id: "d_reinvest", label: "Freed time is reinvested in presence, not throughput", helper: "The point is more time in the room, not more patients per nurse.", defaultOn: true },
+    { id: "d_focus", label: "The experience signal to move is chosen", helper: "For example, nurse-communication, rounding, or discharge teaching.", defaultOn: true },
+    { id: "d_baseline", label: "A baseline and target are set", helper: "Current nurse-communication score and where it should land." },
+    { id: "d_review", label: "Units review the score regularly", helper: "The signal reaches the people who shape it." },
   ],
   behaviors: [
-    { id: "b_document", label: "Nurses document billable interventions completely", helper: "The work that was done is in the record.", defaultOn: true },
-    { id: "b_reconcile", label: "Charge capture is reconciled to documentation", helper: "The charges have to match the record, or the capture does not land.", defaultOn: true, fragile: true },
-    { id: "b_acuity", label: "Nurses document acuity and status support", helper: "The record supports the right severity and status picture." },
-    { id: "b_feedback", label: "Nurses respond to coder feedback", helper: "The loop closes." },
+    { id: "b_present", label: "Nurses chart in the conversation, facing the patient", helper: "The screen comes out of the room.", defaultOn: true },
+    { id: "b_round", label: "The recovered time goes into rounding and teaching", helper: "Presence only lifts experience if the minutes reach the room.", defaultOn: true, fragile: true },
+    { id: "b_teach", label: "Discharge teaching is done unhurried", helper: "Teaching that sticks, not squeezed in late." },
+    { id: "b_respond", label: "Units act on the score they see", helper: "The feedback loop closes." },
   ],
   dependencies: [
-    { id: "dep_charges", label: "Charge-capture and late-charge data", helper: "The leakage picture you are trying to move.", defaultOn: true },
-    { id: "dep_workflow", label: "A coding workflow that uses nursing documentation", helper: "The path from the nursing note to the charge.", defaultOn: true },
-    { id: "dep_status", label: "Status and acuity tracking", helper: "So the severity support is visible." },
+    { id: "dep_hcahps", label: "HCAHPS nurse-communication reporting", helper: "The experience signal you are trying to move.", defaultOn: true },
+    { id: "dep_time", label: "Point-of-care documentation in the room", helper: "The path from a note in the conversation to time at the bedside.", defaultOn: true },
+    { id: "dep_staffing", label: "Staffing that lets presence happen", helper: "So the freed time is not immediately absorbed." },
     { id: "dep_adoption", label: "Adoption by unit", helper: "Who is live." },
   ],
 };
@@ -564,7 +564,7 @@ export const VALUE_STRATEGY: Partial<Record<AttainSetting, Partial<Record<GoalId
   outpatient: { access: outpatientAccess, retention: outpatientRetention, revenue: outpatientRevenue, quality: outpatientQuality },
   ed: { access: edAccess, retention: edRetention, revenue: edRevenue, quality: edQuality },
   inpatient: { capacity: inpatientCapacity, retention: inpatientRetention, revenue: inpatientRevenue, quality: inpatientQuality },
-  nursing: { capacity: nursingCapacity, retention: nursingRetention, revenue: nursingRevenue, quality: nursingQuality },
+  nursing: { capacity: nursingCapacity, retention: nursingRetention, experience: nursingExperience, quality: nursingQuality },
 };
 
 /**
@@ -578,7 +578,7 @@ export const STRATEGY_GOALS: Record<AttainSetting, GoalId[]> = {
   outpatient: ["access", "retention", "revenue", "quality"],
   ed: ["access", "retention", "revenue", "quality"],
   inpatient: ["capacity", "retention", "revenue", "quality"],
-  nursing: ["capacity", "retention", "revenue", "quality"],
+  nursing: ["capacity", "retention", "experience", "quality"],
 };
 
 export function getTrace(setting: AttainSetting, goal: GoalId): OutcomeTrace | null {

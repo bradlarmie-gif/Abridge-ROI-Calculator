@@ -7,8 +7,8 @@
  */
 
 export type AttainSetting = "outpatient" | "ed" | "inpatient" | "nursing";
-export type GoalId = "access" | "retention" | "revenue" | "quality" | "capacity";
-export type DomainPillKey = "Capacity" | "Workforce" | "Revenue" | "Quality";
+export type GoalId = "access" | "retention" | "revenue" | "quality" | "capacity" | "experience";
+export type DomainPillKey = "Capacity" | "Workforce" | "Revenue" | "Quality" | "Experience";
 export type AmbitionKey = "conservative" | "typical" | "ambitious";
 
 /** One link in a goal's 7-link value chain. Structural template only — the

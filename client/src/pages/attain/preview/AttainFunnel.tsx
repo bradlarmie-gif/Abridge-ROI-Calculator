@@ -31,6 +31,7 @@ const GOAL_INFO: Record<GoalId, { label: string; desc: string }> = {
   revenue: { label: "Revenue Capture", desc: "Bill accurately for care you already delivered." },
   quality: { label: "Quality & Safety", desc: "Fewer harm events from time back at the bedside." },
   capacity: { label: "Nursing Capacity", desc: "Cut the documentation-driven overtime." },
+  experience: { label: "Patient Experience", desc: "More time at the bedside, tracked in HCAHPS." },
 };
 
 const cardCls = (sel: boolean) =>

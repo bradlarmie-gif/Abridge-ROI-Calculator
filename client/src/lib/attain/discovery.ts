@@ -112,6 +112,7 @@ export const LEVER_LINE: Record<string, string> = {
   nursingSepsis: "the excess cost of sepsis caught late, the share a faster documented response can reduce.",
   providerWellbeing: "the replacement cost you avoid by keeping the people you have. This is usually carried as a proof signal and counted only when you choose to.",
   nursingRetention: "the replacement cost you avoid by keeping nurses. This is usually carried as a proof signal and counted only when you choose to.",
+  nursingHcahps: "the nurse-communication experience score (HCAHPS), tracked as an experience signal rather than booked as a dollar.",
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -770,52 +771,57 @@ const nursingCapacity = makeFoundation({
   bridgeHonest: "The gap between these is what the ROI sizes next. Straight talk: you told us the overtime is mostly staffing and census, which a better note does not fix, so the documentation-attributable piece here is modest.",
 });
 
-// ── Nursing · Revenue (supporting play, proof) ───────────────────────────────
-const nursingRevenue = makeFoundation({
+// ── Nursing · Patient Experience (proof play, HCAHPS nurse-communication) ─────
+// Less time charting -> more presence at the bedside -> clearer nurse-patient
+// communication -> HCAHPS. Tracked as an experience signal, never booked as a
+// hard dollar. Toggles the nursingHcahps Explore driver ON in tracked mode.
+const nursingExperience = makeFoundation({
   setting: "nursing",
-  briefIntro: "You said revenue. Nursing documentation supports charge capture and the acuity picture, a supporting role rather than a primary Abridge revenue lever.",
-  roles: ["Nursing leadership", "Nursing informatics", "Revenue cycle and coding"],
-  caveat: "Charges only land if capture is reconciled to the documentation. The primary revenue levers live with the providers.",
-  proofLine: "more complete, timely nursing documentation that supports charge capture and acuity, tracked as a supporting signal rather than booked as a primary dollar.",
-  driversPrompt: "Where does nursing documentation touch revenue? Choose any that matter here.",
-  driversTeach: "Be clear-eyed: nursing documentation supports capture, it rarely drives it.",
-  currentLabel: "Where documentation touches revenue",
+  briefIntro: "You said patient experience. In nursing this comes down to presence: when the note happens in the conversation instead of at the workstation, the nurse faces the patient, and that shows up in HCAHPS nurse-communication.",
+  roles: ["Nursing leadership", "Patient experience office", "Charge nurses and unit leads"],
+  caveat: "Time saved on charting only lifts experience if it is spent in the room, not refilled with more assignment.",
+  proofLine: "more time present at the bedside and clearer nurse-patient communication, tracked in the HCAHPS nurse-communication score rather than booked as a dollar.",
+  driversPrompt: "Where is the patient experience with nursing slipping? Choose any that are real here.",
+  driversTeach: "Some of this is documentation pulling nurses off the bedside, which is what a note in the conversation helps. Some of it is staffing or facilities, which a better note does not fix, so it is worth naming honestly.",
+  currentLabel: "Where the experience slips",
   multiDrivers: true, multiTargets: true, multiSuccess: true,
   drivers: [
-    { id: "charges", label: "Charge capture for interventions and supplies", capture: "supporting charge capture for interventions and supplies", value: "charge capture for interventions and supplies", proof: "supporting charge capture, tracked as a signal rather than booked as a primary dollar." },
-    { id: "acuity", label: "The acuity and status picture coders rely on", capture: "supporting the acuity and status picture", value: "the acuity and status picture", proof: "supporting the acuity picture, tracked as a signal rather than booked as a primary dollar." },
-    { id: "reconcile", label: "Downstream charge reconciliation", capture: "the gap is downstream charge reconciliation, not the nursing documentation", value: "downstream charge reconciliation", honest: true },
+    { id: "wow", label: "Time spent at the workstation, not in the room", capture: "nurses spend the visit at the workstation, not in the room", value: "time at the workstation not the bedside", proofDriverId: "nursingHcahps", proof: LEVER_LINE["nursingHcahps"] },
+    { id: "rounding", label: "Rushed or skipped rounding", capture: "rounding is rushed or skipped", value: "rushed rounding", proofDriverId: "nursingHcahps", proof: LEVER_LINE["nursingHcahps"] },
+    { id: "teaching", label: "Rushed discharge teaching that does not stick", capture: "discharge teaching is rushed and does not stick", value: "rushed discharge teaching", proofDriverId: "nursingHcahps", proof: LEVER_LINE["nursingHcahps"] },
+    { id: "staffing", label: "Short staffing and ratios", capture: "the experience gap is mostly staffing and ratios", value: "staffing and ratios", honest: true },
+    { id: "facilities", label: "Facilities, noise, or food (not nursing)", capture: "the experience gap is facilities, noise, or food, not nursing", value: "facilities and environment", honest: true },
   ],
   connect: {
-    prompt: "Where does nursing documentation fall short today?",
-    teach: "The documentation gaps behind the capture. This is what a fuller note supports, and what the plan tracks.",
-    label: "Where the note falls short",
+    prompt: "Where does documentation pull nurses off the bedside today?",
+    teach: "The charting moments that turn a nurse away from the patient. This is what a note in the conversation helps, and what the plan tracks.",
+    label: "Where the note pulls them away",
     options: [
-      { id: "interventions", label: "Interventions and supplies not consistently documented", capture: "interventions and supplies are not consistently documented", value: "under-documented interventions" },
-      { id: "timing", label: "Charting done late, after the charge window", capture: "charting is done late, after the charge window", value: "late charting past the charge window" },
-      { id: "acuity", label: "Acuity and severity not captured for coders", capture: "acuity and severity are not captured for coders", value: "acuity not captured for coders" },
-      { id: "flowsheet", label: "Flowsheet detail thin for what was done", capture: "flowsheet detail is thin for what was done", value: "thin flowsheet detail" },
+      { id: "backturned", label: "Charting with their back to the patient", capture: "nurses chart with their back to the patient", value: "back-turned charting" },
+      { id: "catchup", label: "Catching up on notes instead of rounding", capture: "nurses catch up on notes instead of rounding", value: "notes instead of rounding" },
+      { id: "screen", label: "Eyes on the screen during the conversation", capture: "eyes are on the screen during the conversation", value: "eyes on the screen not the patient" },
+      { id: "latedischarge", label: "Discharge teaching squeezed in late", capture: "discharge teaching is squeezed in late", value: "late discharge teaching" },
     ],
   },
   scaleLabel: "Today it is",
   targetPrompt: "What does better look like?",
-  targetTeach: "The direction you want to steer this supporting play.",
+  targetTeach: "The experience you want patients to feel.",
   targetLabel: "The change you want",
   targets: [
-    { id: "capture", label: "More complete charge capture", capture: "more complete charge capture", value: "more complete charge capture" },
-    { id: "picture", label: "A clearer acuity picture for coders", capture: "a clearer acuity picture for coders", value: "a clearer acuity picture for coders" },
-    { id: "timely", label: "Charges captured in the right window", capture: "charges captured in the right window", value: "charges captured in the window" },
+    { id: "present", label: "Nurses present and facing the patient", capture: "nurses present and facing the patient", value: "nurses present at the bedside" },
+    { id: "communication", label: "Clearer, unhurried communication", capture: "clearer, unhurried communication", value: "clearer communication" },
+    { id: "teaching", label: "Teaching that patients remember", capture: "teaching that patients remember", value: "teaching that sticks" },
   ],
   successPrompt: "What would tell you it's working?",
-  successTeach: "The signal you would trust.",
+  successTeach: "The signal you would trust. This becomes what the plan tracks.",
   successes: [
-    { id: "reconciled", label: "Charges reconciled to the documentation", capture: "success looks like charges reconciled to the documentation", value: "charges reconciled to the documentation" },
-    { id: "fewer", label: "Fewer missed charges", capture: "success looks like fewer missed charges", value: "fewer missed charges" },
-    { id: "window", label: "Fewer late or missed charge windows", capture: "success looks like fewer missed charge windows", value: "fewer missed charge windows" },
+    { id: "hcahps", label: "HCAHPS nurse-communication score rising", capture: "success looks like the HCAHPS nurse-communication score rising", value: "HCAHPS nurse-communication rising" },
+    { id: "timeinroom", label: "More documented time in the room", capture: "success looks like more time in the room", value: "more time in the room" },
+    { id: "complaints", label: "Fewer patient complaints about communication", capture: "success looks like fewer complaints about communication", value: "fewer communication complaints" },
   ],
   bridgeDoc: "The gap between these is what the ROI sizes next, and the Plan closes.",
-  bridgeProof: "The gap between these is what the ROI sizes next, and the Plan closes. Nursing documentation plays a supporting role here, tracked as a signal rather than booked as a primary dollar; the primary revenue levers live with the providers.",
-  bridgeHonest: "The gap between these is what the ROI sizes next. Straight talk: you told us the gap is downstream charge reconciliation, not the nursing documentation.",
+  bridgeProof: "The gap between these is what the ROI sizes next, and the Plan closes. Experience is tracked here as the HCAHPS nurse-communication signal rather than booked as a dollar, and it only moves if the time saved on charting actually reaches the room.",
+  bridgeHonest: "The gap between these is what the ROI sizes next. Straight talk: you told us the experience gap is mostly staffing or facilities, which a better note does not fix.",
 });
 
 // ── Nursing · Quality & Safety (counted for falls/sepsis; proof for HAPI/CLABSI)
@@ -870,7 +876,7 @@ export const DISCOVERY: Partial<Record<AttainSetting, Partial<Record<GoalId, Dis
   outpatient: { access: outpatientAccess, revenue: outpatientRevenue, retention: outpatientRetention },
   ed: { access: edAccess, retention: edRetention, revenue: edRevenue },
   inpatient: { capacity: inpatientCapacity, retention: inpatientRetention, revenue: inpatientRevenue },
-  nursing: { capacity: nursingCapacity, retention: nursingRetentionScript, revenue: nursingRevenue, quality: nursingQuality },
+  nursing: { capacity: nursingCapacity, retention: nursingRetentionScript, experience: nursingExperience, quality: nursingQuality },
 };
 
 export function getScript(setting: AttainSetting, goal: GoalId): DiscoveryScript | null {
