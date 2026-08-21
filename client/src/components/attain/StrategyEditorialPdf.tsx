@@ -288,6 +288,11 @@ export function StrategyEditorialPdfDocument({ data }: { data: StrategyPdfData }
 
   return (
     <div style={{ fontFamily: "Inter, system-ui, sans-serif", color: C.ink }}>
+      {/* Map each 816x1056 page div exactly onto an 8.5x11in sheet: kills the
+          browser's default margins (which clipped the right edge and split each
+          page into a near-empty second sheet) and its header/footer chrome
+          (timestamp, URL, page number). Matches every other editorial PDF. */}
+      <style>{`@page { size: Letter; margin: 0; } @media print { body { margin: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; } }`}</style>
       <ReportCover data={data} goalCount={total} />
 
       <Page pgnum={pg(2)}>

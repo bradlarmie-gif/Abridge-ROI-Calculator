@@ -67,6 +67,16 @@ describe("Value Attainment Strategy write-up PDF", () => {
     });
   }
 
+  it("carries the print page rule so 816x1056 divs map 1:1 onto Letter sheets", () => {
+    // Without `@page { margin: 0 }` the browser's default print margins shrink the
+    // printable area below 8.5x11in: each page div then clips on the right and
+    // splits into a near-empty second sheet (the "sucks ass" 4-page bug). This rule
+    // (present in every editorial PDF) is what keeps the write-up tight and clean.
+    const html = renderToStaticMarkup(<StrategyEditorialPdfDocument data={sampleStrategyData("nursing")} />);
+    expect(html).toMatch(/@page\s*\{[^}]*margin:\s*0/);
+    expect(html).toContain("size: Letter");
+  });
+
   it("a two-goal discovery still fits on a single content page (cover + 1)", () => {
     const base = sampleStrategyData("nursing");
     const twoGoals = (Object.keys(DISCOVERY.nursing ?? {}) as GoalId[]).slice(0, 2);
