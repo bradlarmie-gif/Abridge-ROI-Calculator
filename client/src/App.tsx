@@ -47,6 +47,7 @@ import AppRatEditorialPdfRoute from "@/components/forecast/AppRatEditorialPdfRou
 import QuickRoiEditorialPdfRoute from "@/components/forecast/QuickRoiEditorialPdfRoute";
 import MethodologyEditorialPdfRoute from "@/components/methodology/MethodologyEditorialPdfRoute";
 import PlanEditorialPdfRoute from "@/components/attain/PlanEditorialPdfRoute";
+import StrategyEditorialPdfRoute from "@/components/attain/StrategyEditorialPdfRoute";
 import { ExploreFlow, type ExploreState, type ExploreCareSetting, type ExplorePhase, DEFAULT_EXPLORE_STATE } from "@/pages/explore";
 import { loadSnapshot } from "@/pages/attain/attainStorage";
 import { resolveResult } from "@/lib/attain/discovery";
@@ -292,6 +293,11 @@ export default function App() {
   // ?planpdf=<setting> e.g. ?planpdf=outpatient to preview a specific setting).
   if (typeof window !== "undefined" && new URLSearchParams(window.location.search).has("planpdf")) {
     return <PlanEditorialPdfRoute />;
+  }
+  // Print route for the editorial Value Attainment Strategy write-up (?strategypdf=1,
+  // or ?strategypdf=<setting> to preview a specific setting from a full sample).
+  if (typeof window !== "undefined" && new URLSearchParams(window.location.search).has("strategypdf")) {
+    return <StrategyEditorialPdfRoute />;
   }
 
   // State for deep link settings

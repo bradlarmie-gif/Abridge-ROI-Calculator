@@ -1,5 +1,5 @@
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useState } from "react";
-import { ArrowRight, ArrowLeft, Check } from "lucide-react";
+import { ArrowRight, ArrowLeft, Check, Download } from "lucide-react";
 import { goalDisplayLabel } from "@/lib/attain/attainGoals";
 import type { AttainSetting, GoalId } from "@/lib/attain/attainTypes";
 import {
@@ -535,7 +535,15 @@ function Brief({
         </div>
       )}
 
-      <div className="mt-12 flex items-center justify-end border-t border-[#E8E2DA] pt-6">
+      <div className="mt-12 flex items-center justify-between border-t border-[#E8E2DA] pt-6">
+        <button
+          type="button"
+          onClick={() => { try { window.open("?strategypdf=1&print=1", "_blank"); } catch { /* ignore */ } }}
+          data-testid="discovery-download-writeup"
+          className="inline-flex items-center gap-2 text-[14px] font-semibold text-[#4A4238] hover:text-[#1A1A1A] transition-colors"
+        >
+          <Download className="w-4 h-4" /> Download the write-up
+        </button>
         <button type="button" onClick={onFinish} data-testid="discovery-build-roi" className="inline-flex items-center gap-2 rounded-xl bg-[#EA2C00] text-white text-[14px] font-semibold px-5 py-2.5 hover:bg-[#d12800] transition-colors">
           {counted.length > 0 ? "Build the ROI on this" : "Take this into the ROI"} <ArrowRight className="w-4 h-4" />
         </button>
