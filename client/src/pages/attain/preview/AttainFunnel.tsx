@@ -40,15 +40,19 @@ const cardCls = (sel: boolean) =>
 // Matches the Explore care-setting picker (EdCareSetting): one hairline list, a
 // bare icon per row, a one-line blurb, click a row to advance. Keeps the whole
 // Value Attainment flow reading as one product with Explore.
-export function SettingStep({ selected, onPick }: { selected: AttainSetting | null; onPick: (s: AttainSetting) => void }) {
+export function SettingStep({ selected, onPick, savedBySetting }: { selected: AttainSetting | null; onPick: (s: AttainSetting) => void; savedBySetting?: Record<string, string> }) {
+  const anySaved = savedBySetting && Object.keys(savedBySetting).length > 0;
   return (
     <div>
       <p className={`${LBL} mb-2`}>Step 2 · Where does this plan live?</p>
       <h2 className={`${H2} mb-3`}>Pick the care setting</h2>
-      <p className={`${HELP} mb-9`}>Every plan is scoped to one care setting, because the outcomes, the operating conditions, and what has to be true all change with it. You can build a separate plan for another setting later.</p>
+      <p className={`${HELP} mb-9`}>{anySaved
+        ? "You've worked with this partner before. Pick a setting with saved work to pick up where you left off, or choose a new one to start a fresh conversation. Each setting keeps its own plan."
+        : "Every plan is scoped to one care setting, because the outcomes, the operating conditions, and what has to be true all change with it. You can build a separate plan for another setting later."}</p>
       <div className="border-t border-[#E8E2DA]">
         {SETTINGS.map(({ id, label, desc, Icon }) => {
           const sel = selected === id;
+          const savedLabel = savedBySetting?.[id];
           return (
             <button
               key={id}
@@ -62,6 +66,11 @@ export function SettingStep({ selected, onPick }: { selected: AttainSetting | nu
                 <div className={`font-abridge text-[24px] sm:text-[26px] leading-tight transition-colors ${sel ? "text-[#EA2C00]" : "text-[#1A1A1A] group-hover:text-[#EA2C00]"}`}>{label}</div>
                 <div className="text-[14px] text-[#8C8073] mt-1 leading-[1.5]">{desc}</div>
               </div>
+              {savedLabel && (
+                <span data-testid={`attain-setting-saved-${id}`} className="flex-shrink-0 inline-flex items-center gap-1.5 rounded-full border border-[#E6D3B8] bg-[#F5EEE2] px-2.5 py-1 text-[11px] font-semibold tracking-wide text-[#8A6D3B] whitespace-nowrap">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#B78A5A]" />{savedLabel}
+                </span>
+              )}
               <ArrowRight className={`w-5 h-5 flex-shrink-0 transition-all ${sel ? "text-[#EA2C00]" : "text-[#C9BDAD] group-hover:text-[#EA2C00] group-hover:translate-x-1"}`} strokeWidth={1.8} />
             </button>
           );

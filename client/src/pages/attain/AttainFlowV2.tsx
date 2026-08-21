@@ -9,7 +9,7 @@ import { type ExperienceSlice, type Chapter } from "./preview/MultiCategoryPrevi
 import ValueStrategyExperience, { type VSEHandle } from "./valuestrategy/ValueStrategyExperience";
 import PlanBuildExperience, { type PlanBuildState } from "./planning/PlanBuildExperience";
 import { ATTAIN_MATRIX } from "./preview/attainCells";
-import { loadPlanByName, loadSnapshot, saveSnapshot, clearSnapshot, type AttainSnapshot } from "./attainStorage";
+import { loadPlan, savedSettingsForPartner, loadSnapshot, saveSnapshot, clearSnapshot, type AttainSnapshot } from "./attainStorage";
 import { categoryForGoal, goalDefs } from "@/lib/attain/attainGoals";
 import { STRATEGY_GOALS } from "@/lib/attain/valueStrategy";
 import type { DiscoveryAnswers } from "@/lib/attain/discovery";
@@ -71,8 +71,9 @@ export default function AttainFlowV2({
 } = {}) {
   // Always open on the name step. We never auto-resume the "active" plan, because that
   // silently assumed the last partner (reopening straight into, say, Mayo Clinic, with no
-  // way to start someone new). Instead the partner types a name; if a plan is saved under
-  // that exact name, Continue resumes it (see resumeIfExists), otherwise they start fresh.
+  // way to start someone new). The partner types a name and always lands on the care-setting
+  // step; settings with saved work are badged there so they can resume one (see pickSetting)
+  // or start a new one — a partner can hold a separate plan per care setting.
   const [saved, setSaved] = useState<AttainSnapshot | null>(null);
   const [phase, setPhase] = useState<Phase>("partner");
   const [setting, setSetting] = useState<AttainSetting | null>(null);
@@ -130,7 +131,7 @@ export default function AttainFlowV2({
   const onPersistPlanBuild = (s: PlanBuildState) => { planBuildRef.current = s; saveSnapshot(buildSnapshot()); };
 
   const startOver = () => {
-    clearSnapshot(partner);
+    clearSnapshot(partner, setting ?? undefined);
     expRef.current = null; discoveryRef.current = null; planBuildRef.current = null; setSaved(null); setConfirmingReset(false);
     setPartner(""); setSetting(null); setGoals([]); setBaseline({}); setPhase("partner");
   };
@@ -165,15 +166,28 @@ export default function AttainFlowV2({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // typing an existing partner name and continuing resumes that partner's saved plan
-  const resumeIfExists = (): boolean => {
-    const existing = loadPlanByName(partner);
-    if (!existing?.setting) return false;
-    hydrateFrom(existing);
-    return true;
+  // On the care-setting step: picking a setting that already has saved work for
+  // this partner resumes it where they left off; picking a fresh setting starts a
+  // clean conversation (never carrying another setting's answers). Typing the name
+  // never auto-jumps into a workflow — the setting choice always stays in the loop.
+  const pickSetting = (s: AttainSetting) => {
+    const existing = loadPlan(partner, s);
+    if (existing?.setting) { hydrateFrom(existing); return; }
+    expRef.current = null; discoveryRef.current = null; planBuildRef.current = null;
+    setSaved(null); setSetting(s); setGoals([]); setBaseline({}); setPhase("vision");
   };
 
   const idx = PHASES.indexOf(phase);
+  // Which care settings already have saved work for this partner (badged on the
+  // setting step so they can resume one or start a new one). Read from storage on
+  // the name/setting steps only.
+  const savedBySetting: Record<string, string> = {};
+  if (partner.trim() && (phase === "partner" || phase === "setting")) {
+    for (const { setting: st, snapshot } of savedSettingsForPartner(partner)) {
+      const n = snapshot.goals?.length ?? 0;
+      savedBySetting[st] = n > 0 ? `Resume · ${n} ${n === 1 ? "priority" : "priorities"}` : "Resume";
+    }
+  }
   const canContinue = phase === "partner" ? partner.trim().length > 0 : phase === "setting" ? !!setting : phase === "vision" ? goals.length > 0 : true;
   const stepName = phase === "partner" ? "Who it's for" : phase === "setting" ? "Care setting" : phase === "vision" ? "What you're after" : phase === "scope" ? "Starting point" : (mode !== "strategy" && planTracking ? "Progress" : (experienceLabel ?? "Your plan"));
 
@@ -185,7 +199,6 @@ export default function AttainFlowV2({
   };
   const goNext = () => {
     if (!canContinue) return;
-    if (phase === "partner" && resumeIfExists()) return;
     if (idx < PHASES.length - 1) setPhase(PHASES[idx + 1]);
   };
 
@@ -211,9 +224,9 @@ export default function AttainFlowV2({
       />
       {phase === "experience" ? (
         mode === "strategy" ? (
-          <><UnifiedHeaderSpacer /><ValueStrategyExperience ref={vseRef} key={partner} setting={setting!} settingLabel={SETTING_LABEL[setting!]} goals={goals} partner={partner} initialAnswers={discoveryRef.current ?? {}} onPersistAnswers={onPersistAnswers} onFinish={onFinish} onExit={() => setPhase("vision")} /></>
+          <><UnifiedHeaderSpacer /><ValueStrategyExperience ref={vseRef} key={`${partner}::${setting}`} setting={setting!} settingLabel={SETTING_LABEL[setting!]} goals={goals} partner={partner} initialAnswers={discoveryRef.current ?? {}} onPersistAnswers={onPersistAnswers} onFinish={onFinish} onExit={() => setPhase("vision")} /></>
         ) : (
-          <><UnifiedHeaderSpacer /><PlanBuildExperience key={partner} embedded setting={setting!} goals={goals} partner={partner.trim() || undefined} baseline={baseline} initial={planBuildRef.current ?? undefined} onPersist={onPersistPlanBuild} onTrackingChange={setPlanTracking} onExit={() => setPhase("vision")} /></>
+          <><UnifiedHeaderSpacer /><PlanBuildExperience key={`${partner}::${setting}`} embedded setting={setting!} goals={goals} partner={partner.trim() || undefined} baseline={baseline} initial={planBuildRef.current ?? undefined} onPersist={onPersistPlanBuild} onTrackingChange={setPlanTracking} onExit={() => setPhase("vision")} /></>
         )
       ) : (
         <><UnifiedHeaderSpacer /><div className={`${phase === "scope" ? "max-w-[1040px]" : "max-w-[760px]"} mx-auto px-6 py-8 md:py-12`}>
@@ -235,10 +248,10 @@ export default function AttainFlowV2({
               )}
               <label className="block text-[11px] font-bold uppercase tracking-[1.5px] text-[#8C8073] mb-3">Partner or organization</label>
               <input value={partner} onChange={(e) => setPartner(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && canContinue) goNext(); }} placeholder="e.g., Northgate Medical Group" autoFocus className="w-full max-w-[520px] bg-transparent border-0 border-b-2 border-[#E0D9CE] rounded-none px-0 pb-2 font-abridge text-[26px] text-[#1A1A1A] outline-none transition-colors focus:border-[#EA2C00] placeholder:text-[#C4BCB0] placeholder:font-sans placeholder:text-[18px]" />
-              {partner.trim() && loadPlanByName(partner)?.setting && <p className="text-[12px] text-[#EA2C00] mt-3">A saved plan for this name will pick up where you left off.</p>}
+              {Object.keys(savedBySetting).length > 0 && <p className="text-[12px] text-[#EA2C00] mt-3">You've worked with this partner before. On the next step, pick a care setting to resume it or start a new one.</p>}
             </div>
           )}
-          {phase === "setting" && <SettingStep selected={setting} onPick={(s) => { setSetting(s); setPhase("vision"); }} />}
+          {phase === "setting" && <SettingStep selected={setting} onPick={pickSetting} savedBySetting={savedBySetting} />}
           {phase === "vision" && setting && (
             <StepVision
               setting={setting}
