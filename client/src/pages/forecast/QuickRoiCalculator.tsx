@@ -124,7 +124,7 @@ export default function QuickRoiCalculator({ onBack, onHome, pathLabel }: Props)
 function SettingPicker({ onPick }: { onPick: (s: SettingKey) => void }) {
   return (
     <div className="pt-12 sm:pt-16 pb-24">
-      <div className={EYEBROW}>ROI Calculator</div>
+      <div className={EYEBROW}>ROI Calculator · Step 1 of 4</div>
       <h1 className="font-abridge text-[28px] sm:text-[34px] leading-[1.12] text-[#4A3F35] mt-4 max-w-[640px]">How much is Abridge worth to your partner?</h1>
       <p className="mt-5 text-[16px] leading-[1.55] text-[#8C8073] max-w-[520px]">
         Three quick steps, straight from the impact analysis. First, which care setting?
@@ -267,7 +267,7 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
   return (
     <div className="pt-10 pb-28">
       <div className="mb-7 text-[11px] font-extrabold tracking-[0.14em] uppercase text-[#A69A88]">
-        {meta.label} <button onClick={onChangeSetting} className="text-[#B4A896] hover:text-[#EA2C00] transition-colors">· change</button>
+        {meta.label} · Step {step + 2} of 4 <button onClick={onChangeSetting} className="text-[#B4A896] hover:text-[#EA2C00] transition-colors">· change</button>
       </div>
 
       {step === 0 && (

@@ -132,7 +132,7 @@ const STEPS: { key: StepKey; label: string }[] = [
 
 export default function PlanBuildExperience({
   setting = "outpatient", partner = "your team",
-  initial, onPersist, goals: goalsProp, embedded = false, onExit, baseline,
+  initial, onPersist, goals: goalsProp, embedded = false, onExit, baseline, onTrackingChange,
 }: {
   setting?: AttainSetting; partner?: string;
   initial?: PlanBuildState; onPersist?: (s: PlanBuildState) => void;
@@ -144,6 +144,9 @@ export default function PlanBuildExperience({
   onExit?: () => void;
   /** Starting Point numbers, carried in so the adoption baseline pre-fills. */
   baseline?: AttainBaseline;
+  /** Report when the walk flips into Progress/tracking, so the funnel header
+   * breadcrumb can read "Progress" instead of "Your plan". */
+  onTrackingChange?: (tracking: boolean) => void;
 }) {
   const goals = (goalsProp && goalsProp.length ? goalsProp : SETTING_GOAL_MATRIX[setting]);
   // Carry the thread: the recording % from the Starting Point becomes the leading
@@ -162,6 +165,7 @@ export default function PlanBuildExperience({
   const [tracking, setTracking] = useState(false);
   useEffect(() => { window.scrollTo({ top: 0 }); }, [pos, tracking]);
   useEffect(() => { onPersist?.(state); }, [state, onPersist]);
+  useEffect(() => { onTrackingChange?.(tracking); }, [tracking, onTrackingChange]);
 
   const stepKey = STEPS[pos].key;
   const patch = (p: Partial<PlanBuildState>) => setState((s) => ({ ...s, ...p }));

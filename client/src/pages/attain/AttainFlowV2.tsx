@@ -80,6 +80,9 @@ export default function AttainFlowV2({
   const [baseline, setBaseline] = useState<AttainBaseline>({});
   const [partner, setPartner] = useState<string>("");
   const [confirmingReset, setConfirmingReset] = useState(false);
+  // Planning's build-walk flips into a Progress/tracking view internally; it
+  // reports that up so the header breadcrumb reads "Progress" instead of "Your plan".
+  const [planTracking, setPlanTracking] = useState(false);
 
   // latest experience answers, reported up from AttainExperience; set on resume or as they work
   const expRef = useRef<ExperienceSlice | null>(null);
@@ -172,7 +175,7 @@ export default function AttainFlowV2({
 
   const idx = PHASES.indexOf(phase);
   const canContinue = phase === "partner" ? partner.trim().length > 0 : phase === "setting" ? !!setting : phase === "vision" ? goals.length > 0 : true;
-  const stepName = phase === "partner" ? "Who it's for" : phase === "setting" ? "Care setting" : phase === "vision" ? "What you're after" : phase === "scope" ? "Starting point" : (experienceLabel ?? "Your plan");
+  const stepName = phase === "partner" ? "Who it's for" : phase === "setting" ? "Care setting" : phase === "vision" ? "What you're after" : phase === "scope" ? "Starting point" : (mode !== "strategy" && planTracking ? "Progress" : (experienceLabel ?? "Your plan"));
 
   const goBack = () => {
     // In the discovery interview, the header Back steps back through the questions
@@ -210,7 +213,7 @@ export default function AttainFlowV2({
         mode === "strategy" ? (
           <><UnifiedHeaderSpacer /><ValueStrategyExperience ref={vseRef} key={partner} setting={setting!} settingLabel={SETTING_LABEL[setting!]} goals={goals} partner={partner} initialAnswers={discoveryRef.current ?? {}} onPersistAnswers={onPersistAnswers} onFinish={onFinish} onExit={() => setPhase("vision")} /></>
         ) : (
-          <><UnifiedHeaderSpacer /><PlanBuildExperience key={partner} embedded setting={setting!} goals={goals} partner={partner.trim() || undefined} baseline={baseline} initial={planBuildRef.current ?? undefined} onPersist={onPersistPlanBuild} onExit={() => setPhase("vision")} /></>
+          <><UnifiedHeaderSpacer /><PlanBuildExperience key={partner} embedded setting={setting!} goals={goals} partner={partner.trim() || undefined} baseline={baseline} initial={planBuildRef.current ?? undefined} onPersist={onPersistPlanBuild} onTrackingChange={setPlanTracking} onExit={() => setPhase("vision")} /></>
         )
       ) : (
         <><UnifiedHeaderSpacer /><div className={`${phase === "scope" ? "max-w-[1040px]" : "max-w-[760px]"} mx-auto px-6 py-8 md:py-12`}>
