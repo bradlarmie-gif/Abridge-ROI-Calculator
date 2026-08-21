@@ -36,14 +36,15 @@ export interface StrategyPdfData {
 
 const C = {
   page: "#FFFFFF",
+  card: "#FDFBF8",
   hair: "#E8E2DA",
-  soft: "#EFE9E1",
+  soft: "#F1EBE3",
   coral: "#EA2C00",
   ink: "#1A1A1A",
-  label: "#4A4238",
-  muted: "#5A5248",
-  faint: "#8C8073",
-  off: "#B4A896",
+  label: "#2E2822",
+  muted: "#5E534A",
+  faint: "#786C5E",
+  off: "#AFA491",
   warm: "#B78A5A",
   signal: "#8A6D3B",
 } as const;
@@ -199,11 +200,11 @@ function ValueLines({ value, signal }: { value: string | string[]; signal?: bool
   );
 }
 
-function Column({ heading, headingColor, rows, signalLabel }: { heading: string; headingColor: string; rows: FoundationRead["current"]; signalLabel?: string }): JSX.Element {
+function Column({ heading, headingColor, rows, signalLabel, rowGap = 12, headGap = 12 }: { heading: string; headingColor: string; rows: FoundationRead["current"]; signalLabel?: string; rowGap?: number; headGap?: number }): JSX.Element {
   return (
     <div style={{ flex: 1, minWidth: 0 }}>
-      <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: ".14em", textTransform: "uppercase", color: headingColor, marginBottom: 12 }}>{heading}</div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: ".14em", textTransform: "uppercase", color: headingColor, marginBottom: headGap }}>{heading}</div>
+      <div style={{ display: "flex", flexDirection: "column", gap: rowGap }}>
         {rows.map((it) => (
           <div key={it.label}>
             <div style={{ fontSize: 8.5, fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase", color: C.off, marginBottom: 3 }}>{it.label}</div>
@@ -216,11 +217,21 @@ function Column({ heading, headingColor, rows, signalLabel }: { heading: string;
 }
 
 type GoalClass = "counted" | "proof" | "honest";
-const CLASS_TAG: Record<GoalClass, { label: string; color: string }> = {
-  counted: { label: "Counted, near-term dollars", color: C.coral },
-  proof: { label: "Tracked as proof, not counted", color: C.warm },
-  honest: { label: "Not documentation's to fix", color: C.faint },
+const CLASS_TAG: Record<GoalClass, { label: string; color: string; tint: string; border: string }> = {
+  counted: { label: "Counted, near-term dollars", color: C.coral, tint: "#FBE9E3", border: "#F3C9BC" },
+  proof: { label: "Tracked as proof, not counted", color: C.warm, tint: "#F5EEE2", border: "#E6D3B8" },
+  honest: { label: "Not documentation's to fix", color: C.faint, tint: "#F1ECE5", border: "#E1D8CC" },
 };
+
+function TagPill({ cls }: { cls: GoalClass }): JSX.Element {
+  const t = CLASS_TAG[cls];
+  return (
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 6, border: `1px solid ${t.border}`, background: t.tint, borderRadius: 99, padding: "3px 10px 3px 8px", flexShrink: 0 }}>
+      <span style={{ width: 6, height: 6, borderRadius: 99, background: t.color }} />
+      <span style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: ".07em", textTransform: "uppercase", color: t.color, whiteSpace: "nowrap" }}>{t.label}</span>
+    </span>
+  );
+}
 
 function NoteBlock({ notes, label = "In your words" }: { notes: string[]; label?: string }): JSX.Element | null {
   if (!notes.length) return null;
@@ -234,25 +245,30 @@ function NoteBlock({ notes, label = "In your words" }: { notes: string[]; label?
   );
 }
 
-function GoalFoundation({ setting, goal, rank, total, foundation, cls, answers }: { setting: AttainSetting; goal: GoalId; rank: number; total: number; foundation: FoundationRead; cls: GoalClass; answers: DiscoveryAnswers }): JSX.Element {
-  const current = total > 1 ? [...foundation.current, { label: "Priority this year", value: `#${rank} of ${total}` }] : foundation.current;
-  const tag = CLASS_TAG[cls];
+function GoalFoundation({ setting, goal, rank, total, foundation, cls, answers, compact = false }: { setting: AttainSetting; goal: GoalId; rank: number; total: number; foundation: FoundationRead; cls: GoalClass; answers: DiscoveryAnswers; compact?: boolean }): JSX.Element {
   const notes = goalNotes(setting, goal, answers);
+  const pad = compact ? "12px 18px" : "16px 20px";
+  const headPad = compact ? 8 : 11;
+  const headMargin = compact ? 11 : 14;
+  const rowGap = compact ? 8 : 12;
+  const headGap = compact ? 9 : 12;
   return (
-    <div>
-      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12, marginBottom: 13 }}>
-        <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase", color: C.faint }}>
-          {SETTING_LABEL[setting]} · {goalDisplayLabel(setting, goal)}
+    <div style={{ border: `1px solid ${C.hair}`, borderRadius: 14, background: C.card, padding: pad }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, borderBottom: `1px solid ${C.hair}`, paddingBottom: headPad, marginBottom: headMargin }}>
+        <div style={{ display: "flex", alignItems: "baseline", gap: 9, minWidth: 0 }}>
+          {total > 1 && (
+            <span className="font-abridge" style={{ fontSize: 15, fontWeight: 700, color: C.coral, lineHeight: 1 }}>{rank}</span>
+          )}
+          <span style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase", color: C.faint }}>
+            {SETTING_LABEL[setting]} · {goalDisplayLabel(setting, goal)}
+          </span>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
-          <span style={{ width: 6, height: 6, borderRadius: 99, background: tag.color }} />
-          <span style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: ".08em", textTransform: "uppercase", color: tag.color }}>{tag.label}</span>
-        </div>
+        <TagPill cls={cls} />
       </div>
       <div style={{ display: "flex", gap: 26 }}>
-        <Column heading="Where you are" headingColor={C.label} rows={current} />
+        <Column heading="Where you are" headingColor={C.label} rows={foundation.current} rowGap={rowGap} headGap={headGap} />
         <div style={{ width: 1, background: C.hair, alignSelf: "stretch" }} />
-        <Column heading="Where you want to go" headingColor={C.warm} rows={foundation.desired} signalLabel={foundation.signalLabel} />
+        <Column heading="Where you want to go" headingColor={C.warm} rows={foundation.desired} signalLabel={foundation.signalLabel} rowGap={rowGap} headGap={headGap} />
       </div>
       <NoteBlock notes={notes} />
     </div>
@@ -279,11 +295,16 @@ export function StrategyEditorialPdfDocument({ data }: { data: StrategyPdfData }
     .filter((x): x is { goal: GoalId; rank: number; cls: GoalClass; foundation: FoundationRead } => !!x.foundation);
   const total = foundations.length;
 
-  // Page 1 leads with the read + up to two priorities; page 2 carries the rest.
-  const pageOneGoals = foundations.slice(0, 2);
-  const pageTwoGoals = foundations.slice(2);
-  const contentPages = 1 + (pageTwoGoals.length ? 1 : 0);
-  const totalPages = 1 /* cover */ + contentPages;
+  // A discovery names at most four priorities (STRATEGY_GOALS has four per
+  // setting). 1-3 land on ONE content page after the cover (compacting at 3 so
+  // all three still breathe); four rich cards genuinely can't fit one sheet, so
+  // they split 2+2 across two pages rather than one full page + one orphan.
+  const perPage = total <= 3 ? Math.max(total, 1) : 2;
+  const compact = total === 3; // the only case that must squeeze onto one page
+  const pages: typeof foundations[] = [];
+  for (let i = 0; i < foundations.length; i += perPage) pages.push(foundations.slice(i, i + perPage));
+  if (pages.length === 0) pages.push([]);
+  const totalPages = 1 /* cover */ + pages.length;
   const pg = (n: number) => `Abridge · Value Attainment Strategy · ${n} of ${totalPages}`;
 
   return (
@@ -295,61 +316,57 @@ export function StrategyEditorialPdfDocument({ data }: { data: StrategyPdfData }
       <style>{`@page { size: Letter; margin: 0; } @media print { body { margin: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; } }`}</style>
       <ReportCover data={data} goalCount={total} />
 
-      <Page pgnum={pg(2)}>
-        <RunningHeader org={data.orgName} />
-        <div style={{ marginTop: 22 }}>
-          <Eyebrow>What we heard</Eyebrow>
-          <h2 className="font-abridge" style={{ fontSize: 30, lineHeight: 1.1, color: C.ink, margin: "8px 0 0", maxWidth: 640 }}>
-            {data.orgName.trim() ? `Where ${data.orgName.trim()} stands today, and where you want to go.` : "Where you are today, and where you want to go."}
-          </h2>
-          {verdict && (
-            <p style={{ fontSize: 14.5, color: C.ink, lineHeight: 1.45, margin: "14px 0 0", maxWidth: 660, fontWeight: 500 }}>{verdict}</p>
-          )}
-        </div>
-
-        <div style={{ display: "flex", gap: 40, margin: "22px 0 4px", paddingBottom: 18, borderBottom: `1px solid ${C.hair}` }}>
-          {(grounding.length > 0 || gNotes.length > 0) && (
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: ".1em", textTransform: "uppercase", color: C.off, marginBottom: 8 }}>Grounding</div>
-              {grounding.map((g, i) => (
-                <div key={i} style={{ fontSize: 12, color: C.muted, lineHeight: 1.35, marginBottom: 3 }}>{g}</div>
-              ))}
-              {gNotes.map((n, i) => (
-                <div key={`n${i}`} style={{ fontSize: 12, color: C.faint, lineHeight: 1.35, marginBottom: 3, fontStyle: "italic" }}>&ldquo;{n}&rdquo;</div>
-              ))}
-            </div>
-          )}
-          {order.length > 1 && (
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: ".1em", textTransform: "uppercase", color: C.off, marginBottom: 8 }}>Your priorities, in order</div>
-              {order.map((g, i) => (
-                <div key={g} style={{ fontSize: 12, color: C.ink, lineHeight: 1.4, marginBottom: 3, fontWeight: 500 }}>
-                  <span style={{ color: C.faint, marginRight: 6 }}>{i + 1}.</span>{goalDisplayLabel(data.setting, g)}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div style={{ marginTop: 20, display: "flex", flexDirection: "column", gap: 22 }}>
-          {pageOneGoals.map((x) => (
-            <GoalFoundation key={x.goal} setting={data.setting} goal={x.goal} rank={x.rank} total={total} foundation={x.foundation} cls={x.cls} answers={data.answers} />
-          ))}
-        </div>
-        <div style={{ flexGrow: 1 }} />
-      </Page>
-
-      {pageTwoGoals.length > 0 && (
-        <Page pgnum={pg(3)}>
+      {pages.map((cards, pi) => (
+        <Page key={pi} pgnum={pg(pi + 2)}>
           <RunningHeader org={data.orgName} />
-          <div style={{ marginTop: 22, display: "flex", flexDirection: "column", gap: 22 }}>
-            {pageTwoGoals.map((x) => (
-              <GoalFoundation key={x.goal} setting={data.setting} goal={x.goal} rank={x.rank} total={total} foundation={x.foundation} cls={x.cls} answers={data.answers} />
+          {pi === 0 ? (
+            <>
+              <div style={{ marginTop: compact ? 14 : 22 }}>
+                <Eyebrow>What we heard</Eyebrow>
+                <h2 className="font-abridge" style={{ fontSize: compact ? 25 : 30, lineHeight: 1.1, color: C.ink, margin: "8px 0 0", maxWidth: 640 }}>
+                  {data.orgName.trim() ? `Where ${data.orgName.trim()} stands today, and where you want to go.` : "Where you are today, and where you want to go."}
+                </h2>
+                {verdict && (
+                  <p style={{ fontSize: compact ? 12.5 : 14.5, color: C.ink, lineHeight: 1.4, margin: compact ? "10px 0 0" : "14px 0 0", maxWidth: 660, fontWeight: 500 }}>{verdict}</p>
+                )}
+              </div>
+
+              <div style={{ display: "flex", gap: 40, margin: compact ? "13px 0 4px" : "22px 0 4px", paddingBottom: compact ? 12 : 18, borderBottom: `1px solid ${C.hair}` }}>
+                {(grounding.length > 0 || gNotes.length > 0) && (
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: ".1em", textTransform: "uppercase", color: C.off, marginBottom: compact ? 6 : 8 }}>Grounding</div>
+                    {grounding.map((g, i) => (
+                      <div key={i} style={{ fontSize: 12, color: C.muted, lineHeight: 1.35, marginBottom: 3 }}>{g}</div>
+                    ))}
+                    {gNotes.map((n, i) => (
+                      <div key={`n${i}`} style={{ fontSize: 12, color: C.faint, lineHeight: 1.35, marginBottom: 3, fontStyle: "italic" }}>&ldquo;{n}&rdquo;</div>
+                    ))}
+                  </div>
+                )}
+                {order.length > 1 && (
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: ".1em", textTransform: "uppercase", color: C.off, marginBottom: compact ? 6 : 8 }}>Your priorities, in order</div>
+                    {order.map((g, i) => (
+                      <div key={g} style={{ fontSize: 12, color: C.ink, lineHeight: 1.4, marginBottom: 3, fontWeight: 500 }}>
+                        <span style={{ color: C.faint, marginRight: 6 }}>{i + 1}.</span>{goalDisplayLabel(data.setting, g)}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </>
+          ) : (
+            <div style={{ marginTop: 22 }} />
+          )}
+
+          <div style={{ marginTop: pi === 0 ? (compact ? 14 : 20) : 0, display: "flex", flexDirection: "column", gap: compact ? 11 : 16 }}>
+            {cards.map((x) => (
+              <GoalFoundation key={x.goal} setting={data.setting} goal={x.goal} rank={x.rank} total={total} foundation={x.foundation} cls={x.cls} answers={data.answers} compact={compact} />
             ))}
           </div>
           <div style={{ flexGrow: 1 }} />
         </Page>
-      )}
+      ))}
     </div>
   );
 }
