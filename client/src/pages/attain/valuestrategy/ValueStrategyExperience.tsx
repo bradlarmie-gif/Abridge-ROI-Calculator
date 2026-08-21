@@ -7,7 +7,6 @@ import {
   resolveResult,
   briefFoundation,
   groundingQuestions,
-  WHY_NOW,
   BRIEF,
   type DiscoveryAnswers,
   type GroundingQuestion,
@@ -38,7 +37,6 @@ type Pos =
   | { kind: "ground"; idx: number }
   | { kind: "triage" }
   | { kind: "goal"; goalIdx: number; qid: string }
-  | { kind: "whynow" }
   | { kind: "brief" };
 
 const cap = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
@@ -79,6 +77,10 @@ const ValueStrategyExperience = forwardRef<VSEHandle, Props>(function ValueStrat
   };
 
   const goalEntry = (goalIdx: number): Pos => ({ kind: "goal", goalIdx, qid: getScript(setting, order[goalIdx])!.entry });
+  // Shown as a "you're in a new section now" beat when the walk moves to the next
+  // ranked goal (only when there's more than one).
+  const goalTransition = (nextIdx: number): string | null =>
+    order.length > 1 ? `Now your #${nextIdx + 1} priority: ${goalDisplayLabel(setting, order[nextIdx])}.` : null;
 
   // ── transitions ────────────────────────────────────────────────────────────
   const advanceFromGround = () => {
@@ -136,8 +138,8 @@ const ValueStrategyExperience = forwardRef<VSEHandle, Props>(function ValueStrat
     if (!opt) return;
     persist({ ...answers, [`${goal}:${pos.qid}`]: optId });
     if (opt.next === BRIEF) {
-      if (pos.goalIdx + 1 < order.length) advance(pos, goalEntry(pos.goalIdx + 1));
-      else advance(pos, { kind: "whynow" });
+      if (pos.goalIdx + 1 < order.length) advance(pos, goalEntry(pos.goalIdx + 1), goalTransition(pos.goalIdx + 1));
+      else advance(pos, { kind: "brief" });
     } else {
       advance(pos, { kind: "goal", goalIdx: pos.goalIdx, qid: opt.next }, opt.reflect ?? null);
     }
@@ -156,16 +158,11 @@ const ValueStrategyExperience = forwardRef<VSEHandle, Props>(function ValueStrat
     const q = getScript(setting, goal)!.questions[pos.qid];
     const nextId = q.options[0]?.next;
     if (nextId === BRIEF) {
-      if (pos.goalIdx + 1 < order.length) advance(pos, goalEntry(pos.goalIdx + 1));
-      else advance(pos, { kind: "whynow" });
+      if (pos.goalIdx + 1 < order.length) advance(pos, goalEntry(pos.goalIdx + 1), goalTransition(pos.goalIdx + 1));
+      else advance(pos, { kind: "brief" });
     } else if (nextId) {
       advance(pos, { kind: "goal", goalIdx: pos.goalIdx, qid: nextId });
     }
-  };
-  const answerWhyNow = (optId: string) => {
-    if (pos.kind !== "whynow") return;
-    persist({ ...answers, ["_ground:whynow"]: optId });
-    advance(pos, { kind: "brief" });
   };
 
   const back = () => {
@@ -189,8 +186,11 @@ const ValueStrategyExperience = forwardRef<VSEHandle, Props>(function ValueStrat
     );
   }
 
-  // ── the "what we're hearing" ledger (accumulates as they answer) ─────────────
-  const ledger = buildLedger(setting, ground, order, answers);
+  // ── the "what we're hearing" ledger (a progress spine that accumulates) ──────
+  // activeIdx marks which goal is being walked: earlier goals collapse to a checked
+  // line, later goals show faint. Before any goal (ground/triage) nothing is active.
+  const activeIdx = pos.kind === "goal" ? pos.goalIdx : pos.kind === "brief" ? order.length : -1;
+  const ledger = buildLedger(setting, ground, order, answers, activeIdx);
 
   if (pos.kind === "brief") {
     return <Brief setting={setting} settingLabel={settingLabel} partner={partner} order={order} pending={pending} answers={answers} triaged={multi} onFinish={onFinish} />;
@@ -235,11 +235,6 @@ const ValueStrategyExperience = forwardRef<VSEHandle, Props>(function ValueStrat
     rankCount = rank.length;
     onToggle = (id) => toggleRank(id as GoalId);
     onContinue = () => continueTriage();
-  } else if (pos.kind === "whynow") {
-    stepEyebrow = WHY_NOW.eyebrow;
-    prompt = WHY_NOW.prompt; teach = WHY_NOW.teach; options = WHY_NOW.options;
-    selected = answers["_ground:whynow"];
-    onPick = (id) => answerWhyNow(id);
   } else {
     const goal = order[pos.goalIdx];
     const script = getScript(setting, goal)!;
@@ -259,7 +254,7 @@ const ValueStrategyExperience = forwardRef<VSEHandle, Props>(function ValueStrat
 
   const contextLabel =
     pos.kind === "goal"
-      ? `${settingLabel} · ${goalDisplayLabel(setting, order[pos.goalIdx])}${order.length > 1 ? ` · ${pos.goalIdx + 1} of ${order.length}` : ""}`
+      ? `${settingLabel} · ${goalDisplayLabel(setting, order[pos.goalIdx])}${order.length > 1 ? ` · Priority ${pos.goalIdx + 1} of ${order.length}` : ""}`
       : settingLabel;
 
   return (
@@ -340,10 +335,15 @@ const ValueStrategyExperience = forwardRef<VSEHandle, Props>(function ValueStrat
 
 export default ValueStrategyExperience;
 
-// ── the accumulating ledger ──────────────────────────────────────────────────
-interface LedgerGroup { label: string; items: string[] }
+// ── the accumulating ledger (a progress spine) ───────────────────────────────
+// Grounding stays as persistent context. Each goal is a section: the one being
+// walked is expanded (building live), completed goals collapse to a checked
+// headline, and upcoming goals show faint — so the rail stays short and doubles
+// as "where am I in the walk."
+type LedgerState = "context" | "done" | "active" | "upcoming";
+interface LedgerGroup { label: string; items: string[]; state: LedgerState }
 
-function buildLedger(setting: AttainSetting, ground: GroundingQuestion[], order: GoalId[], answers: DiscoveryAnswers): LedgerGroup[] {
+function buildLedger(setting: AttainSetting, ground: GroundingQuestion[], order: GoalId[], answers: DiscoveryAnswers, activeIdx: number): LedgerGroup[] {
   const groups: LedgerGroup[] = [];
   const groundItems: string[] = [];
   for (const q of ground) {
@@ -354,38 +354,59 @@ function buildLedger(setting: AttainSetting, ground: GroundingQuestion[], order:
       if (opt) groundItems.push(opt.capture);
     }
   }
-  if (groundItems.length) groups.push({ label: "Grounding", items: groundItems });
+  if (groundItems.length) groups.push({ label: "Grounding", items: groundItems, state: "context" });
 
-  for (const goal of order) {
+  order.forEach((goal, i) => {
     const res = resolveResult(setting, goal, answers);
-    if (res && res.narrative.length) groups.push({ label: goalDisplayLabel(setting, goal), items: res.narrative });
-  }
-  const why = WHY_NOW.options.find((o) => o.id === answers["_ground:whynow"]);
-  if (why) groups.push({ label: "Why now", items: [why.capture] });
+    const items = res?.narrative ?? [];
+    const state: LedgerState = i < activeIdx ? "done" : i === activeIdx ? "active" : "upcoming";
+    groups.push({ label: goalDisplayLabel(setting, goal), items, state });
+  });
   return groups;
 }
 
 function Ledger({ groups }: { groups: LedgerGroup[] }) {
+  const answered = groups.some((g) => g.items.length);
   return (
     <div className="lg:pt-1">
       <div className="text-[11px] font-extrabold tracking-[0.09em] uppercase text-[#8C8073]">What we're hearing</div>
-      {groups.length === 0 ? (
+      {!answered ? (
         <p className="text-[13px] text-[#B4A896] italic mt-4 leading-relaxed">We will assemble the picture here as we go.</p>
       ) : (
         <div className="mt-4 space-y-5">
-          {groups.map((g) => (
-            <div key={g.label}>
-              <div className="text-[10px] font-bold uppercase tracking-[0.06em] text-[#B4A896] mb-2">{g.label}</div>
-              <ul className="space-y-2">
-                {g.items.map((it, i) => (
-                  <li key={i} className="flex items-start gap-2.5 text-[13.5px] leading-snug text-[#3A342E]">
-                    <span className="mt-[7px] w-[5px] h-[5px] rounded-full bg-[#D8CFC0] flex-shrink-0" />
-                    <span>{cap(it)}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          {groups.map((g) => {
+            // Completed goal: one calm checked line, not its full list.
+            if (g.state === "done") {
+              return (
+                <div key={g.label} className="flex items-center gap-2">
+                  <Check className="w-3.5 h-3.5 text-[#B0A48F] flex-shrink-0" strokeWidth={2.5} />
+                  <span className="text-[10px] font-bold uppercase tracking-[0.06em] text-[#B4A896]">{g.label}</span>
+                  {g.items.length > 0 && <span className="text-[11px] text-[#CFC3B2]">· {g.items.length} noted</span>}
+                </div>
+              );
+            }
+            // Upcoming goal: faint header only.
+            if (g.state === "upcoming") {
+              return (
+                <div key={g.label} className="text-[10px] font-bold uppercase tracking-[0.06em] text-[#D6CBBA]">{g.label}</div>
+              );
+            }
+            // Grounding (context) and the active goal: expanded with items.
+            const activeHead = g.state === "active";
+            return (
+              <div key={g.label}>
+                <div className={`text-[10px] font-bold uppercase tracking-[0.06em] mb-2 ${activeHead ? "text-[#8C8073]" : "text-[#B4A896]"}`}>{g.label}</div>
+                <ul className="space-y-2">
+                  {g.items.map((it, i) => (
+                    <li key={i} className="flex items-start gap-2.5 text-[13.5px] leading-snug text-[#3A342E]">
+                      <span className={`mt-[7px] w-[5px] h-[5px] rounded-full flex-shrink-0 ${activeHead ? "bg-[#C4B9A8]" : "bg-[#D8CFC0]"}`} />
+                      <span>{cap(it)}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
@@ -589,7 +610,6 @@ function listPhrase(items: string[]): string {
 function testId(pos: Pos, optId: string): string {
   if (pos.kind === "ground") return `discovery-ground-${pos.idx}-${optId}`;
   if (pos.kind === "triage") return `discovery-triage-${optId}`;
-  if (pos.kind === "whynow") return `discovery-whynow-${optId}`;
   if (pos.kind === "goal") return `discovery-opt-${optId}`; // goal option ids are unique within a question
   return `discovery-${optId}`;
 }
